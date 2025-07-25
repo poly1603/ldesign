@@ -24,3 +24,12 @@
 [submodule "packages/engine"]
 	path = packages/engine
 	url = https://github.com/poly1603/ldesign-engine.git
+[submodule "packages/router"]
+	path = packages/router
+	url = https://github.com/poly1603/ldesign-router.git
+[submodule "packages/error"]
+	path = packages/error
+	url = https://github.com/poly1603/ldesign-error.git
+[submodule "packages/logger"]
+	path = packages/logger
+	url = https://github.com/poly1603/ldesign-logger.git
