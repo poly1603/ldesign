@@ -1,0 +1,55 @@
+{
+  "recommendations": [
+    // Vue 开发
+    "Vue.volar",
+    "Vue.vscode-typescript-vue-plugin",
+
+    // TypeScript 开发
+    "ms-vscode.vscode-typescript-next",
+
+    // 代码质量
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // Git 工具
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // 开发工具
+    "bradlc.vscode-tailwindcss",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "ms-vscode.vscode-json",
+
+    // 测试工具
+    "vitest.explorer",
+    "ms-playwright.playwright",
+
+    // 文档工具
+    "yzhang.markdown-all-in-one",
+    "DavidAnson.vscode-markdownlint",
+
+    // 主题和图标
+    "PKief.material-icon-theme",
+    "antfu.theme-vitesse",
+
+    // 实用工具
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.hexeditor",
+    "ms-vscode-remote.remote-containers",
+
+    // 性能工具
+    "ms-vscode.vscode-js-profile-flame",
+
+    // API 工具
+    "humao.rest-client",
+
+    // 数据库工具
+    "ms-mssql.mssql"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "octref.vetur"
+  ]
+}

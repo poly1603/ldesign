@@ -1,0 +1,30 @@
+{
+  "git": {
+    "defaultBranch": "main",
+    "autoStash": true,
+    "autoPush": true,
+    "commitMessageTemplate": "feat: {message}",
+    "requireCommitMessage": true
+  },
+  "submodules": {
+    "defaultBranch": "main",
+    "autoCheckout": true,
+    "autoUpdate": true,
+    "trackRemoteBranch": true
+  },
+  "project": {
+    "autoInstallDeps": true,
+    "runChecksAfterInit": true,
+    "showProjectInfo": true
+  },
+  "logging": {
+    "level": "info",
+    "colorOutput": true,
+    "timestampFormat": "HH:mm:ss"
+  },
+  "paths": {
+    "packagesDir": "packages",
+    "scriptsDir": "scripts",
+    "docsDir": "docs"
+  }
+}
