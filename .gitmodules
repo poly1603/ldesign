@@ -1,0 +1,26 @@
+[submodule "packages/store"]
+	path = packages/store
+	url = https://github.com/poly1603/ldesign-store.git
+	branch = main
+[submodule "packages/size"]
+	path = packages/size
+	url = https://github.com/poly1603/ldesign-size.git
+	branch = main
+[submodule "packages/http"]
+	path = packages/http
+	url = https://github.com/poly1603/ldesign-http.git
+[submodule "packages/device"]
+	path = packages/device
+	url = https://github.com/poly1603/ldesign-device.git
+[submodule "packages/i18n"]
+	path = packages/i18n
+	url = https://github.com/poly1603/ldesign-i18n.git
+[submodule "packages/color"]
+	path = packages/color
+	url = https://github.com/poly1603/ldesign-color.git
+[submodule "packages/crypto"]
+	path = packages/crypto
+	url = https://github.com/poly1603/ldesign-crypto.git
+[submodule "packages/engine"]
+	path = packages/engine
+	url = https://github.com/poly1603/ldesign-engine.git
