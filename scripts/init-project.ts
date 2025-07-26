@@ -1,8 +1,13 @@
 #!/usr/bin/env tsx
 
+import { resolve } from 'node:path'
 import { Command } from 'commander'
-import { resolve } from 'path'
-import { execCommand, getSubmodules, logger, confirmAction } from './utils/common.js'
+import {
+  confirmAction,
+  execCommand,
+  getSubmodules,
+  logger,
+} from './utils/common.js'
 
 interface InitOptions {
   skipDeps?: boolean
@@ -14,14 +19,21 @@ interface InitOptions {
 /**
  * 初始化 submodule
  */
-async function initializeSubmodules(rootPath: string, dryRun = false): Promise<boolean> {
+async function initializeSubmodules(
+  rootPath: string,
+  dryRun = false
+): Promise<boolean> {
   logger.step('初始化所有 submodule...')
-  
+
   // 初始化并更新所有 submodule
-  const initResult = await execCommand('git', ['submodule', 'update', '--init', '--recursive'], {
-    cwd: rootPath,
-    dryRun
-  })
+  const initResult = await execCommand(
+    'git',
+    ['submodule', 'update', '--init', '--recursive'],
+    {
+      cwd: rootPath,
+      dryRun,
+    }
+  )
 
   if (initResult.exitCode !== 0) {
     logger.error('初始化 submodule 失败:')
@@ -31,7 +43,7 @@ async function initializeSubmodules(rootPath: string, dryRun = false): Promise<b
 
   // 获取所有 submodule 信息
   const submodules = await getSubmodules(rootPath)
-  
+
   if (submodules.length === 0) {
     logger.info('没有找到 submodule')
     return true
@@ -45,10 +57,14 @@ async function initializeSubmodules(rootPath: string, dryRun = false): Promise<b
     logger.step(`设置 ${submodule.path} 分支为 ${submodule.branch}...`)
 
     // 检查远程分支是否存在
-    const remoteResult = await execCommand('git', ['ls-remote', '--heads', 'origin', submodule.branch], {
-      cwd: submodulePath,
-      dryRun
-    })
+    const remoteResult = await execCommand(
+      'git',
+      ['ls-remote', '--heads', 'origin', submodule.branch],
+      {
+        cwd: submodulePath,
+        dryRun,
+      }
+    )
 
     if (remoteResult.exitCode !== 0 || !remoteResult.stdout.trim()) {
       logger.warning(`远程分支 ${submodule.branch} 不存在，使用默认分支`)
@@ -56,10 +72,14 @@ async function initializeSubmodules(rootPath: string, dryRun = false): Promise<b
     }
 
     // 切换到指定分支
-    const checkoutResult = await execCommand('git', ['checkout', '-B', submodule.branch, `origin/${submodule.branch}`], {
-      cwd: submodulePath,
-      dryRun
-    })
+    const checkoutResult = await execCommand(
+      'git',
+      ['checkout', '-B', submodule.branch, `origin/${submodule.branch}`],
+      {
+        cwd: submodulePath,
+        dryRun,
+      }
+    )
 
     if (checkoutResult.exitCode !== 0) {
       logger.warning(`切换 ${submodule.path} 到分支 ${submodule.branch} 失败`)
@@ -67,10 +87,14 @@ async function initializeSubmodules(rootPath: string, dryRun = false): Promise<b
     }
 
     // 拉取最新代码
-    const pullResult = await execCommand('git', ['pull', 'origin', submodule.branch], {
-      cwd: submodulePath,
-      dryRun
-    })
+    const pullResult = await execCommand(
+      'git',
+      ['pull', 'origin', submodule.branch],
+      {
+        cwd: submodulePath,
+        dryRun,
+      }
+    )
 
     if (pullResult.exitCode === 0) {
       logger.success(`✓ ${submodule.path} 初始化完成`)
@@ -85,13 +109,16 @@ async function initializeSubmodules(rootPath: string, dryRun = false): Promise<b
 /**
  * 安装项目依赖
  */
-async function installDependencies(rootPath: string, dryRun = false): Promise<boolean> {
+async function installDependencies(
+  rootPath: string,
+  dryRun = false
+): Promise<boolean> {
   logger.step('安装项目依赖...')
 
   const installResult = await execCommand('pnpm', ['install'], {
     cwd: rootPath,
     stdio: 'inherit',
-    dryRun
+    dryRun,
   })
 
   if (installResult.exitCode !== 0) {
@@ -106,13 +133,16 @@ async function installDependencies(rootPath: string, dryRun = false): Promise<bo
 /**
  * 运行初始化检查
  */
-async function runInitialChecks(rootPath: string, dryRun = false): Promise<void> {
+async function runInitialChecks(
+  rootPath: string,
+  dryRun = false
+): Promise<void> {
   logger.step('运行初始化检查...')
 
   // 检查 TypeScript 配置
   const typecheckResult = await execCommand('pnpm', ['typecheck'], {
     cwd: rootPath,
-    dryRun
+    dryRun,
   })
 
   if (typecheckResult.exitCode === 0) {
@@ -124,7 +154,7 @@ async function runInitialChecks(rootPath: string, dryRun = false): Promise<void>
   // 检查代码格式
   const lintResult = await execCommand('pnpm', ['lint'], {
     cwd: rootPath,
-    dryRun
+    dryRun,
   })
 
   if (lintResult.exitCode === 0) {
@@ -141,10 +171,16 @@ async function showProjectInfo(rootPath: string): Promise<void> {
   logger.title('📊 项目信息')
 
   // 显示 Git 信息
-  const branchResult = await execCommand('git', ['branch', '--show-current'], { cwd: rootPath })
+  const branchResult = await execCommand('git', ['branch', '--show-current'], {
+    cwd: rootPath,
+  })
   const currentBranch = branchResult.stdout.trim()
-  
-  const remoteResult = await execCommand('git', ['remote', 'get-url', 'origin'], { cwd: rootPath })
+
+  const remoteResult = await execCommand(
+    'git',
+    ['remote', 'get-url', 'origin'],
+    { cwd: rootPath }
+  )
   const remoteUrl = remoteResult.stdout.trim()
 
   logger.info(`Git 仓库: ${remoteUrl}`)
@@ -157,7 +193,7 @@ async function showProjectInfo(rootPath: string): Promise<void> {
   // 显示 Node.js 和 pnpm 版本
   const nodeResult = await execCommand('node', ['--version'])
   const pnpmResult = await execCommand('pnpm', ['--version'])
-  
+
   logger.info(`Node.js 版本: ${nodeResult.stdout.trim()}`)
   logger.info(`pnpm 版本: ${pnpmResult.stdout.trim()}`)
 
@@ -177,7 +213,12 @@ async function showProjectInfo(rootPath: string): Promise<void> {
  * 主初始化函数
  */
 async function initializeProject(options: InitOptions): Promise<void> {
-  const { skipDeps = false, skipSubmodules = false, dryRun = false, force = false } = options
+  const {
+    skipDeps = false,
+    skipSubmodules = false,
+    dryRun = false,
+    force = false,
+  } = options
   const rootPath = resolve(process.cwd())
 
   logger.title('🚀 LDesign 项目初始化')
@@ -187,7 +228,9 @@ async function initializeProject(options: InitOptions): Promise<void> {
   }
 
   if (!force) {
-    const shouldContinue = await confirmAction('确定要初始化项目吗？这将会更新所有 submodule 并安装依赖。')
+    const shouldContinue = await confirmAction(
+      '确定要初始化项目吗？这将会更新所有 submodule 并安装依赖。'
+    )
     if (!shouldContinue) {
       logger.info('操作已取消')
       return
@@ -200,14 +243,14 @@ async function initializeProject(options: InitOptions): Promise<void> {
     // 初始化 submodule
     if (!skipSubmodules) {
       logger.title('📦 初始化 Submodule')
-      success = await initializeSubmodules(rootPath, dryRun) && success
+      success = (await initializeSubmodules(rootPath, dryRun)) && success
       console.log()
     }
 
     // 安装依赖
     if (!skipDeps) {
       logger.title('📥 安装依赖')
-      success = await installDependencies(rootPath, dryRun) && success
+      success = (await installDependencies(rootPath, dryRun)) && success
       console.log()
     }
 
@@ -227,7 +270,6 @@ async function initializeProject(options: InitOptions): Promise<void> {
       logger.warning('初始化过程中遇到一些问题，请检查上面的错误信息')
       process.exit(1)
     }
-
   } catch (error) {
     logger.error('初始化过程中发生错误:')
     console.error(error)
@@ -238,17 +280,14 @@ async function initializeProject(options: InitOptions): Promise<void> {
 // 命令行接口
 const program = new Command()
 
-program
-  .name('init-project')
-  .description('初始化 LDesign 项目')
-  .version('1.0.0')
+program.name('init-project').description('初始化 LDesign 项目').version('1.0.0')
 
 program
   .option('--skip-deps', '跳过依赖安装')
   .option('--skip-submodules', '跳过 submodule 初始化')
   .option('-d, --dry-run', '预览模式，不执行实际操作')
   .option('-f, --force', '强制执行，跳过确认')
-  .action(async (options) => {
+  .action(async options => {
     await initializeProject(options)
   })
 

@@ -46,7 +46,7 @@
     "prepare": "husky install",
     "clean": "pnpm -r clean && rimraf node_modules",
     "reset": "pnpm clean && pnpm install",
-    "script:main": "node scripts/start.js",
+    "script:main": "pnpm exec tsx scripts/main.ts",
     "script:commit": "pnpm exec tsx scripts/git-commit.ts",
     "script:update": "pnpm exec tsx scripts/git-update.ts",
     "script:submodule": "pnpm exec tsx scripts/submodule-manager.ts",
@@ -55,7 +55,9 @@
   },
   "workspaces": [
     "packages/*",
-    "docs"
+    "docs",
+    "app",
+    "packages/*/examples"
   ],
   "devDependencies": {
     "@antfu/eslint-config": "^2.6.4",

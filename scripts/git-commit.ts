@@ -1,8 +1,14 @@
 #!/usr/bin/env tsx
 
+import { resolve } from 'node:path'
 import { Command } from 'commander'
-import { resolve } from 'path'
-import { execCommand, getGitStatus, logger, confirmAction, getUserInput } from './utils/common.js'
+import {
+  confirmAction,
+  execCommand,
+  getGitStatus,
+  getUserInput,
+  logger,
+} from './utils/common.js'
 
 interface CommitOptions {
   path?: string
@@ -23,13 +29,15 @@ async function commitCode(options: CommitOptions): Promise<void> {
 
   // 检查 Git 状态
   const gitStatus = await getGitStatus(targetPath)
-  
+
   if (!gitStatus.isGitRepo) {
     logger.error('当前目录不是 Git 仓库')
     process.exit(1)
   }
 
-  logger.info(`仓库类型: ${gitStatus.isSubmodule ? 'Submodule' : 'Root Repository'}`)
+  logger.info(
+    `仓库类型: ${gitStatus.isSubmodule ? 'Submodule' : 'Root Repository'}`
+  )
   logger.info(`当前分支: ${gitStatus.currentBranch}`)
 
   if (!gitStatus.currentBranch) {
@@ -50,24 +58,34 @@ async function commitCode(options: CommitOptions): Promise<void> {
   try {
     // 步骤 1: 保存本地更改
     logger.step('1. 保存本地未提交的更改...')
-    const stashResult = await execCommand('git', ['stash', 'push', '-m', 'auto-stash-before-commit'], {
-      cwd: targetPath,
-      dryRun
-    })
-    
-    const hasStash = stashResult.exitCode === 0 && !stashResult.stdout.includes('No local changes to save')
+    const stashResult = await execCommand(
+      'git',
+      ['stash', 'push', '-m', 'auto-stash-before-commit'],
+      {
+        cwd: targetPath,
+        dryRun,
+      }
+    )
+
+    const hasStash =
+      stashResult.exitCode === 0 &&
+      !stashResult.stdout.includes('No local changes to save')
 
     // 步骤 2: 拉取最新代码
     logger.step('2. 拉取最新代码...')
-    const pullResult = await execCommand('git', ['pull', 'origin', gitStatus.currentBranch], {
-      cwd: targetPath,
-      dryRun
-    })
+    const pullResult = await execCommand(
+      'git',
+      ['pull', 'origin', gitStatus.currentBranch],
+      {
+        cwd: targetPath,
+        dryRun,
+      }
+    )
 
     if (pullResult.exitCode !== 0) {
       logger.error('拉取代码失败:')
       console.log(pullResult.stderr)
-      
+
       if (hasStash) {
         logger.step('恢复本地更改...')
         await execCommand('git', ['stash', 'pop'], { cwd: targetPath, dryRun })
@@ -80,7 +98,7 @@ async function commitCode(options: CommitOptions): Promise<void> {
       logger.step('3. 恢复本地更改...')
       const popResult = await execCommand('git', ['stash', 'pop'], {
         cwd: targetPath,
-        dryRun
+        dryRun,
       })
 
       if (popResult.exitCode !== 0) {
@@ -95,7 +113,7 @@ async function commitCode(options: CommitOptions): Promise<void> {
     logger.step('4. 清理 stash...')
     await execCommand('git', ['stash', 'clear'], {
       cwd: targetPath,
-      dryRun
+      dryRun,
     })
 
     // 步骤 5: 获取提交信息
@@ -113,7 +131,7 @@ async function commitCode(options: CommitOptions): Promise<void> {
     logger.step('5. 添加文件到暂存区...')
     const addResult = await execCommand('git', ['add', '.'], {
       cwd: targetPath,
-      dryRun
+      dryRun,
     })
 
     if (addResult.exitCode !== 0) {
@@ -123,9 +141,13 @@ async function commitCode(options: CommitOptions): Promise<void> {
     }
 
     // 检查是否有文件被添加
-    const statusResult = await execCommand('git', ['status', '--porcelain', '--cached'], {
-      cwd: targetPath
-    })
+    const statusResult = await execCommand(
+      'git',
+      ['status', '--porcelain', '--cached'],
+      {
+        cwd: targetPath,
+      }
+    )
 
     if (!statusResult.stdout.trim() && !force) {
       logger.warning('没有文件需要提交')
@@ -134,10 +156,14 @@ async function commitCode(options: CommitOptions): Promise<void> {
 
     // 步骤 7: 提交代码
     logger.step('6. 提交代码...')
-    const commitResult = await execCommand('git', ['commit', '-m', commitMessage], {
-      cwd: targetPath,
-      dryRun
-    })
+    const commitResult = await execCommand(
+      'git',
+      ['commit', '-m', commitMessage],
+      {
+        cwd: targetPath,
+        dryRun,
+      }
+    )
 
     if (commitResult.exitCode !== 0) {
       logger.error('提交失败:')
@@ -147,10 +173,14 @@ async function commitCode(options: CommitOptions): Promise<void> {
 
     // 步骤 8: 推送代码
     logger.step('7. 推送代码到远程仓库...')
-    const pushResult = await execCommand('git', ['push', 'origin', gitStatus.currentBranch], {
-      cwd: targetPath,
-      dryRun
-    })
+    const pushResult = await execCommand(
+      'git',
+      ['push', 'origin', gitStatus.currentBranch],
+      {
+        cwd: targetPath,
+        dryRun,
+      }
+    )
 
     if (pushResult.exitCode !== 0) {
       logger.error('推送失败:')
@@ -161,7 +191,6 @@ async function commitCode(options: CommitOptions): Promise<void> {
     logger.success('✨ 代码提交成功!')
     logger.info(`提交信息: ${commitMessage}`)
     logger.info(`分支: ${gitStatus.currentBranch}`)
-
   } catch (error) {
     logger.error('提交过程中发生错误:')
     console.error(error)
@@ -172,10 +201,7 @@ async function commitCode(options: CommitOptions): Promise<void> {
 // 命令行接口
 const program = new Command()
 
-program
-  .name('git-commit')
-  .description('智能提交代码到 GitHub')
-  .version('1.0.0')
+program.name('git-commit').description('智能提交代码到 GitHub').version('1.0.0')
 
 program
   .argument('[path]', '目标路径 (默认为当前目录)')

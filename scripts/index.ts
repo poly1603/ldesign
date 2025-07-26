@@ -19,9 +19,13 @@ program
   .option('-f, --force', '强制执行')
   .action(async (path, options) => {
     const { execCommand } = await import('./utils/common.js')
-    await execCommand('tsx', ['scripts/git-commit.ts', path, ...formatOptions(options)], {
-      stdio: 'inherit'
-    })
+    await execCommand(
+      'tsx',
+      ['scripts/git-commit.ts', path, ...formatOptions(options)],
+      {
+        stdio: 'inherit',
+      }
+    )
   })
 
 // Git 更新命令
@@ -34,9 +38,13 @@ program
   .option('-f, --force', '强制更新')
   .action(async (path, options) => {
     const { execCommand } = await import('./utils/common.js')
-    await execCommand('tsx', ['scripts/git-update.ts', path, ...formatOptions(options)], {
-      stdio: 'inherit'
-    })
+    await execCommand(
+      'tsx',
+      ['scripts/git-update.ts', path, ...formatOptions(options)],
+      {
+        stdio: 'inherit',
+      }
+    )
   })
 
 // Submodule 管理命令
@@ -47,9 +55,18 @@ program
   .option('-d, --dry-run', '预览模式')
   .action(async (action, args, options) => {
     const { execCommand } = await import('./utils/common.js')
-    await execCommand('tsx', ['scripts/submodule-manager.ts', action, ...args, ...formatOptions(options)], {
-      stdio: 'inherit'
-    })
+    await execCommand(
+      'tsx',
+      [
+        'scripts/submodule-manager.ts',
+        action,
+        ...args,
+        ...formatOptions(options),
+      ],
+      {
+        stdio: 'inherit',
+      }
+    )
   })
 
 // 项目初始化命令
@@ -60,18 +77,22 @@ program
   .option('--skip-submodules', '跳过 submodule 初始化')
   .option('-d, --dry-run', '预览模式')
   .option('-f, --force', '强制执行')
-  .action(async (options) => {
+  .action(async options => {
     const { execCommand } = await import('./utils/common.js')
-    await execCommand('tsx', ['scripts/init-project.ts', ...formatOptions(options)], {
-      stdio: 'inherit'
-    })
+    await execCommand(
+      'tsx',
+      ['scripts/init-project.ts', ...formatOptions(options)],
+      {
+        stdio: 'inherit',
+      }
+    )
   })
 
 // 帮助命令
 program
   .command('help [command]')
   .description('显示帮助信息')
-  .action((command) => {
+  .action(command => {
     if (command) {
       program.commands.find(cmd => cmd.name() === command)?.help()
     } else {
@@ -84,7 +105,7 @@ program
  */
 function formatOptions(options: Record<string, any>): string[] {
   const args: string[] = []
-  
+
   for (const [key, value] of Object.entries(options)) {
     if (value === true) {
       args.push(`--${key}`)
@@ -92,7 +113,7 @@ function formatOptions(options: Record<string, any>): string[] {
       args.push(`--${key}`, String(value))
     }
   }
-  
+
   return args
 }
 
@@ -102,18 +123,18 @@ function formatOptions(options: Record<string, any>): string[] {
 function showMainHelp(): void {
   logger.title('🛠️ LDesign 脚本工具集')
   console.log()
-  
+
   console.log('用法:')
   console.log('  pnpm script:<command> [options]')
   console.log()
-  
+
   console.log('可用命令:')
   console.log('  commit [path]           - 智能提交代码')
   console.log('  update [path]           - 更新项目代码')
   console.log('  submodule <action>      - 管理 submodule')
   console.log('  init                    - 初始化项目')
   console.log()
-  
+
   console.log('示例:')
   console.log('  pnpm script:commit                    # 提交当前目录')
   console.log('  pnpm script:commit packages/color     # 提交指定 submodule')
@@ -122,13 +143,13 @@ function showMainHelp(): void {
   console.log('  pnpm script:submodule list             # 列出所有 submodule')
   console.log('  pnpm script:init                       # 初始化项目')
   console.log()
-  
+
   console.log('选项:')
   console.log('  -d, --dry-run          预览模式，不执行实际操作')
   console.log('  -f, --force            强制执行，跳过确认')
   console.log('  -h, --help             显示帮助信息')
   console.log()
-  
+
   console.log('更多信息:')
   console.log('  pnpm script:help <command>  # 查看特定命令的帮助')
 }

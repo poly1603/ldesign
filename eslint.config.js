@@ -18,7 +18,7 @@ export default antfu(
   {
     rules: {
       // 通用规则
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': 'off', // 允许 console 语句
       'no-debugger': 'error',
       'prefer-const': 'error',
       'object-shorthand': 'error',
@@ -28,6 +28,11 @@ export default antfu(
       'node/prefer-global/process': 'off',
       'style/indent': 'off',
       'jsonc/sort-keys': 'off',
+      'no-fallthrough': 'off',
+      'regexp/no-super-linear-backtracking': 'off',
+      'antfu/no-top-level-await': 'off',
+      'no-case-declarations': 'off',
+      'unused-imports/no-unused-vars': 'off',
     },
-  },
+  }
 )

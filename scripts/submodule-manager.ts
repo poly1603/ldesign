@@ -1,9 +1,15 @@
 #!/usr/bin/env tsx
 
+import { join, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 import { Command } from 'commander'
-import { resolve, join } from 'path'
-import { existsSync } from 'fs'
-import { execCommand, getSubmodules, logger, confirmAction, getUserInput } from './utils/common.js'
+import {
+  confirmAction,
+  execCommand,
+  getSubmodules,
+  getUserInput,
+  logger,
+} from './utils/common.js'
 
 interface SubmoduleInfo {
   path: string
@@ -16,7 +22,12 @@ interface SubmoduleInfo {
 /**
  * 添加新的 submodule
  */
-async function addSubmodule(url: string, path: string, branch = 'main', dryRun = false): Promise<void> {
+async function addSubmodule(
+  url: string,
+  path: string,
+  branch = 'main',
+  dryRun = false
+): Promise<void> {
   logger.title('➕ 添加 Submodule')
   logger.info(`URL: ${url}`)
   logger.info(`路径: ${path}`)
@@ -32,14 +43,37 @@ async function addSubmodule(url: string, path: string, branch = 'main', dryRun =
   }
 
   try {
-    // 添加 submodule
+    // 添加 submodule，增加重试机制
     logger.step('添加 submodule...')
-    const addResult = await execCommand('git', ['submodule', 'add', '-b', branch, url, path], {
-      cwd: rootPath,
-      dryRun
-    })
+    const addResult = await execCommand(
+      'git',
+      ['submodule', 'add', '-b', branch, url, path],
+      {
+        cwd: rootPath,
+        dryRun,
+      }
+    )
 
+    // 如果网络连接失败，尝试使用不同的协议或提供解决建议
     if (addResult.exitCode !== 0) {
+      if (
+        addResult.stderr.includes('Failed to connect') ||
+        addResult.stderr.includes('unable to access')
+      ) {
+        logger.warning('网络连接失败，可能的解决方案：')
+        logger.info('1. 检查网络连接是否正常')
+        logger.info('2. 尝试使用 SSH 协议：git@github.com:用户名/仓库名.git')
+        logger.info(
+          '3. 配置代理：git config --global http.proxy http://proxy:port'
+        )
+        logger.info('4. 检查防火墙设置')
+
+        // 如果是 HTTPS URL，建议尝试 SSH
+        if (url.startsWith('https://github.com/')) {
+          const sshUrl = `${url.replace('https://github.com/', 'git@github.com:').replace('.git', '')}.git`
+          logger.info(`5. 尝试使用 SSH URL: ${sshUrl}`)
+        }
+      }
       logger.error(`添加 submodule 失败: ${addResult.stderr}`)
       process.exit(1)
     }
@@ -48,18 +82,17 @@ async function addSubmodule(url: string, path: string, branch = 'main', dryRun =
     logger.step('初始化 submodule...')
     await execCommand('git', ['submodule', 'update', '--init', path], {
       cwd: rootPath,
-      dryRun
+      dryRun,
     })
 
     // 切换到指定分支
     logger.step(`切换到分支 ${branch}...`)
     await execCommand('git', ['checkout', branch], {
       cwd: targetPath,
-      dryRun
+      dryRun,
     })
 
     logger.success(`✓ Submodule ${path} 添加成功`)
-
   } catch (error) {
     logger.error(`添加 submodule 时发生错误: ${error}`)
     process.exit(1)
@@ -85,7 +118,9 @@ async function removeSubmodule(path: string, dryRun = false): Promise<void> {
     process.exit(1)
   }
 
-  const shouldContinue = await confirmAction(`确定要删除 submodule ${path} 吗？此操作不可逆。`)
+  const shouldContinue = await confirmAction(
+    `确定要删除 submodule ${path} 吗？此操作不可逆。`
+  )
   if (!shouldContinue) {
     logger.info('操作已取消')
     return
@@ -96,25 +131,41 @@ async function removeSubmodule(path: string, dryRun = false): Promise<void> {
     logger.step('反初始化 submodule...')
     await execCommand('git', ['submodule', 'deinit', '-f', path], {
       cwd: rootPath,
-      dryRun
+      dryRun,
     })
 
     // 从 Git 中删除 submodule
     logger.step('从 Git 中删除...')
     await execCommand('git', ['rm', '-f', path], {
       cwd: rootPath,
-      dryRun
+      dryRun,
     })
 
-    // 删除 .git/modules 中的目录
+    // 删除 .git/modules 中的目录（跨平台兼容）
     logger.step('清理 Git 模块...')
-    await execCommand('rm', ['-rf', join('.git', 'modules', path)], {
-      cwd: rootPath,
-      dryRun
-    })
+    const modulesPath = join(rootPath, '.git', 'modules', path)
+    if (existsSync(modulesPath)) {
+      if (process.platform === 'win32') {
+        // Windows 系统使用 PowerShell 命令
+        await execCommand(
+          'powershell',
+          ['-Command', `Remove-Item -Recurse -Force "${modulesPath}"`],
+          {
+            cwd: rootPath,
+            dryRun,
+          }
+        )
+      } else {
+        // Unix/Linux 系统使用 rm 命令
+        await execCommand('rm', ['-rf', modulesPath], {
+          cwd: rootPath,
+          dryRun,
+        })
+      }
+      logger.info(`已清理 .git/modules/${path} 目录`)
+    }
 
     logger.success(`✓ Submodule ${path} 删除成功`)
-
   } catch (error) {
     logger.error(`删除 submodule 时发生错误: ${error}`)
     process.exit(1)
@@ -138,22 +189,26 @@ async function listSubmodules(): Promise<void> {
   console.log()
   for (const submodule of submodules) {
     const submodulePath = resolve(rootPath, submodule.path)
-    
+
     // 获取 submodule 状态
     const statusResult = await execCommand('git', ['status', '--porcelain'], {
-      cwd: submodulePath
+      cwd: submodulePath,
     })
-    
+
     const hasChanges = statusResult.stdout.trim().length > 0
     const statusIcon = hasChanges ? '🔄' : '✅'
-    
+
     // 获取最新提交信息
-    const logResult = await execCommand('git', ['log', '-1', '--pretty=format:%h %s'], {
-      cwd: submodulePath
-    })
-    
+    const logResult = await execCommand(
+      'git',
+      ['log', '-1', '--pretty=format:%h %s'],
+      {
+        cwd: submodulePath,
+      }
+    )
+
     const lastCommit = logResult.stdout.trim() || 'No commits'
-    
+
     console.log(`${statusIcon} ${submodule.path}`)
     console.log(`   URL: ${submodule.url}`)
     console.log(`   分支: ${submodule.branch}`)
@@ -184,23 +239,40 @@ async function modifySubmodule(path: string): Promise<void> {
   logger.info(`  分支: ${submodule.branch}`)
 
   const newUrl = await getUserInput('新的 URL (留空保持不变):', submodule.url)
-  const newBranch = await getUserInput('新的分支 (留空保持不变):', submodule.branch)
+  const newBranch = await getUserInput(
+    '新的分支 (留空保持不变):',
+    submodule.branch
+  )
 
   if (newUrl !== submodule.url) {
     logger.step('更新 URL...')
-    await execCommand('git', ['config', '--file', '.gitmodules', `submodule.${path}.url`, newUrl], {
-      cwd: rootPath
-    })
+    await execCommand(
+      'git',
+      ['config', '--file', '.gitmodules', `submodule.${path}.url`, newUrl],
+      {
+        cwd: rootPath,
+      }
+    )
     await execCommand('git', ['config', `submodule.${path}.url`, newUrl], {
-      cwd: rootPath
+      cwd: rootPath,
     })
   }
 
   if (newBranch !== submodule.branch) {
     logger.step('更新分支...')
-    await execCommand('git', ['config', '--file', '.gitmodules', `submodule.${path}.branch`, newBranch], {
-      cwd: rootPath
-    })
+    await execCommand(
+      'git',
+      [
+        'config',
+        '--file',
+        '.gitmodules',
+        `submodule.${path}.branch`,
+        newBranch,
+      ],
+      {
+        cwd: rootPath,
+      }
+    )
   }
 
   logger.success('✓ Submodule 配置更新成功')
@@ -244,7 +316,7 @@ program
 program
   .command('modify <path>')
   .description('修改 submodule 配置')
-  .action(async (path) => {
+  .action(async path => {
     await modifySubmodule(path)
   })
 

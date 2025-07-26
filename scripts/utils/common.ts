@@ -1,7 +1,7 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { execa } from 'execa'
 import chalk from 'chalk'
-import { existsSync, readFileSync } from 'fs'
-import { join, resolve } from 'path'
 
 export interface ExecOptions {
   cwd?: string
@@ -38,13 +38,13 @@ export async function execCommand(
     return {
       stdout: result.stdout || '',
       stderr: result.stderr || '',
-      exitCode: result.exitCode || 0
+      exitCode: result.exitCode || 0,
     }
   } catch (error: any) {
     return {
       stdout: error.stdout || '',
       stderr: error.stderr || error.message || '',
-      exitCode: error.exitCode || 1
+      exitCode: error.exitCode || 1,
     }
   }
 }
@@ -62,7 +62,7 @@ export function isGitRepository(path: string): boolean {
 export function isGitSubmodule(path: string): boolean {
   const gitFile = join(path, '.git')
   if (!existsSync(gitFile)) return false
-  
+
   try {
     const content = readFileSync(gitFile, 'utf-8')
     return content.startsWith('gitdir:')
@@ -76,25 +76,29 @@ export function isGitSubmodule(path: string): boolean {
  */
 export async function getGitStatus(path: string): Promise<GitStatus> {
   const isRepo = isGitRepository(path) || isGitSubmodule(path)
-  
+
   if (!isRepo) {
     return {
       isGitRepo: false,
       isSubmodule: false,
       currentBranch: '',
       hasUncommittedChanges: false,
-      hasUnpushedCommits: false
+      hasUnpushedCommits: false,
     }
   }
 
   const isSubmodule = isGitSubmodule(path)
-  
+
   // 获取当前分支
-  const branchResult = await execCommand('git', ['branch', '--show-current'], { cwd: path })
+  const branchResult = await execCommand('git', ['branch', '--show-current'], {
+    cwd: path,
+  })
   const currentBranch = branchResult.stdout.trim()
 
   // 检查未提交的更改
-  const statusResult = await execCommand('git', ['status', '--porcelain'], { cwd: path })
+  const statusResult = await execCommand('git', ['status', '--porcelain'], {
+    cwd: path,
+  })
   const hasUncommittedChanges = statusResult.stdout.trim().length > 0
 
   // 检查未推送的提交
@@ -102,11 +106,19 @@ export async function getGitStatus(path: string): Promise<GitStatus> {
   let remoteBranch: string | undefined
 
   if (currentBranch) {
-    const remoteResult = await execCommand('git', ['rev-parse', '--abbrev-ref', `${currentBranch}@{upstream}`], { cwd: path })
+    const remoteResult = await execCommand(
+      'git',
+      ['rev-parse', '--abbrev-ref', `${currentBranch}@{upstream}`],
+      { cwd: path }
+    )
     if (remoteResult.exitCode === 0) {
       remoteBranch = remoteResult.stdout.trim()
-      const aheadResult = await execCommand('git', ['rev-list', '--count', `${remoteBranch}..HEAD`], { cwd: path })
-      hasUnpushedCommits = parseInt(aheadResult.stdout.trim() || '0') > 0
+      const aheadResult = await execCommand(
+        'git',
+        ['rev-list', '--count', `${remoteBranch}..HEAD`],
+        { cwd: path }
+      )
+      hasUnpushedCommits = Number.parseInt(aheadResult.stdout.trim() || '0') > 0
     }
   }
 
@@ -116,48 +128,68 @@ export async function getGitStatus(path: string): Promise<GitStatus> {
     currentBranch,
     hasUncommittedChanges,
     hasUnpushedCommits,
-    remoteBranch
+    remoteBranch,
   }
 }
 
 /**
  * 获取所有 submodule 信息
  */
-export async function getSubmodules(rootPath: string): Promise<Array<{
-  path: string
-  url: string
-  branch: string
-  commit: string
-}>> {
-  const submodules: Array<{ path: string; url: string; branch: string; commit: string }> = []
-  
-  const result = await execCommand('git', ['submodule', 'status'], { cwd: rootPath })
+export async function getSubmodules(rootPath: string): Promise<
+  Array<{
+    path: string
+    url: string
+    branch: string
+    commit: string
+  }>
+> {
+  const submodules: Array<{
+    path: string
+    url: string
+    branch: string
+    commit: string
+  }> = []
+
+  const result = await execCommand('git', ['submodule', 'status'], {
+    cwd: rootPath,
+  })
   if (result.exitCode !== 0) return submodules
 
-  const lines = result.stdout.trim().split('\n').filter(line => line.trim())
-  
+  const lines = result.stdout
+    .trim()
+    .split('\n')
+    .filter(line => line.trim())
+
   for (const line of lines) {
     const match = line.match(/^.?([a-f0-9]+)\s+(.+?)(?:\s+\((.+)\))?$/)
     if (match) {
       const [, commit, path, branch] = match
-      
+
       // 获取 submodule URL
-      const urlResult = await execCommand('git', ['config', '--file', '.gitmodules', `submodule.${path}.url`], { cwd: rootPath })
+      const urlResult = await execCommand(
+        'git',
+        ['config', '--file', '.gitmodules', `submodule.${path}.url`],
+        { cwd: rootPath }
+      )
       const url = urlResult.stdout.trim()
-      
+
       // 获取 submodule 分支
-      const branchResult = await execCommand('git', ['config', '--file', '.gitmodules', `submodule.${path}.branch`], { cwd: rootPath })
+      const branchResult = await execCommand(
+        'git',
+        ['config', '--file', '.gitmodules', `submodule.${path}.branch`],
+        { cwd: rootPath }
+      )
       const configBranch = branchResult.stdout.trim() || 'main'
-      
+
       submodules.push({
         path,
         url,
         branch: branch || configBranch,
-        commit
+        commit,
       })
     }
   }
-  
+
   return submodules
 }
 
@@ -170,7 +202,7 @@ export const logger = {
   warning: (message: string) => console.log(chalk.yellow('⚠'), message),
   error: (message: string) => console.log(chalk.red('✗'), message),
   step: (message: string) => console.log(chalk.cyan('→'), message),
-  title: (message: string) => console.log(chalk.bold.magenta(message))
+  title: (message: string) => console.log(chalk.bold.magenta(message)),
 }
 
 /**
@@ -183,8 +215,8 @@ export async function confirmAction(message: string): Promise<boolean> {
       type: 'confirm',
       name: 'confirm',
       message,
-      default: false
-    }
+      default: false,
+    },
   ])
   return confirm
 }
@@ -192,15 +224,18 @@ export async function confirmAction(message: string): Promise<boolean> {
 /**
  * 获取用户输入
  */
-export async function getUserInput(message: string, defaultValue?: string): Promise<string> {
+export async function getUserInput(
+  message: string,
+  defaultValue?: string
+): Promise<string> {
   const { default: inquirer } = await import('inquirer')
   const { input } = await inquirer.prompt([
     {
       type: 'input',
       name: 'input',
       message,
-      default: defaultValue
-    }
+      default: defaultValue,
+    },
   ])
   return input
 }
