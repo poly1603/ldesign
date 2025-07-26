@@ -33,3 +33,10 @@
 [submodule "packages/logger"]
 	path = packages/logger
 	url = https://github.com/poly1603/ldesign-logger.git
+[submodule "packages/template"]
+	path = packages/template
+	url = https://github.com/poly1603/ldesign-template.git
+[submodule "app"]
+	path = app
+	url = https://github.com/poly1603/ldesign-app.git
+	branch = main
