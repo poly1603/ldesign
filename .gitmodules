@@ -40,3 +40,7 @@
 	path = app
 	url = https://github.com/poly1603/ldesign-app.git
 	branch = main
+[submodule "packages/ui"]
+	path = packages/ui
+	url = https://github.com/poly1603/ldesign-ui.git
+	branch = main
