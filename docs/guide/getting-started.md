@@ -1,161 +1,206 @@
-﻿# 蹇€熷紑濮?
+# 快速开始
 
-鏈妭灏嗗府鍔╀綘蹇€熶笂鎵?LDesign銆?
+本指南将帮助您快速上手 LDesign，从安装到创建第一个应用。
 
-## 瀹夎
+## 环境要求
 
-### 浣跨敤鍖呯鐞嗗櫒
+在开始之前，请确保您的开发环境满足以下要求：
 
-鎴戜滑鎺ㄨ崘浣跨敤 pnpm 浣滀负鍖呯鐞嗗櫒锛?
+- **Node.js** >= 18.0.0
+- **Vue** >= 3.3.0
+- **TypeScript** >= 5.0.0 (推荐)
 
-```bash
-# pnpm (鎺ㄨ崘)
-pnpm add @ldesign/core
+## 安装
 
-# npm
-npm install @ldesign/core
+LDesign 采用模块化设计，您可以根据需要安装不同的包：
 
-# yarn
-yarn add @ldesign/core
+::: code-group
+
+```bash [完整安装]
+pnpm add @ldesign/engine @ldesign/router @ldesign/store @ldesign/color
 ```
 
-### CDN 寮曞叆
-
-浣犱篃鍙互閫氳繃 CDN 鐨勬柟寮忓紩鍏?LDesign锛?
-
-```html
-<!-- 寮曞叆鏍峰紡 -->
-<link rel="stylesheet" href="https://unpkg.com/@ldesign/core/dist/style.css" />
-
-<!-- 寮曞叆缁勪欢搴?-->
-<script src="https://unpkg.com/@ldesign/core/dist/ldesign.umd.js"></script>
+```bash [最小安装]
+pnpm add @ldesign/engine @ldesign/router
 ```
 
-## 瀹屾暣寮曞叆
+```bash [单独安装]
+pnpm add @ldesign/engine
+pnpm add @ldesign/router
+pnpm add @ldesign/store
+pnpm add @ldesign/color
+```
 
-鍦?main.ts 涓啓鍏ヤ互涓嬪唴瀹癸細
+:::
+
+## 创建基础应用
+
+### 1. 创建 Vue 应用
+
+首先创建一个标准的 Vue 3 应用：
 
 ```typescript
+// main.ts
 import { createApp } from 'vue'
-import LDesign from '@ldesign/core'
-import '@ldesign/core/dist/style.css'
 import App from './App.vue'
 
 const app = createApp(App)
-app.use(LDesign)
 app.mount('#app')
 ```
 
-浠ヤ笂浠ｇ爜渚垮畬鎴愪簡 LDesign 鐨勫紩鍏ャ€傞渶瑕佹敞鎰忕殑鏄紝鏍峰紡鏂囦欢闇€瑕佸崟鐙紩鍏ャ€?
-
-## 鎸夐渶寮曞叆
-
-LDesign 鏀寔鍩轰簬 ES modules 鐨?tree shaking锛屽彲浠ュ彧寮曞叆闇€瑕佺殑缁勪欢锛?
+### 2. 集成 LDesign Engine
 
 ```typescript
+// main.ts
 import { createApp } from 'vue'
-import { Button, Input } from '@ldesign/core'
+import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
 
+// 创建引擎实例
+const engine = createEngine({
+  name: 'my-app',
+  version: '1.0.0',
+  debug: true, // 开发环境启用调试
+})
+
 const app = createApp(App)
-app.use(Button).use(Input)
+
+// 提供引擎实例给组件
+app.provide('engine', engine)
+
 app.mount('#app')
 ```
 
-### 鑷姩鎸夐渶寮曞叆
-
-鎺ㄨ崘浣跨敤 [unplugin-vue-components](https://github.com/antfu/unplugin-vue-components) 瀹炵幇鑷姩鎸夐渶寮曞叆锛?
-
-```bash
-pnpm add -D unplugin-vue-components
-```
-
-鐒跺悗鍦?`vite.config.ts` 涓厤缃細
+### 3. 添加路由管理
 
 ```typescript
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import Components from 'unplugin-vue-components/vite'
-import { LDesignResolver } from '@ldesign/resolver'
+// router/index.ts
+import { createLDesignRouter } from '@ldesign/router'
+import type { RouteConfig } from '@ldesign/router'
 
-export default defineConfig({
-  plugins: [
-    vue(),
-    Components({
-      resolvers: [LDesignResolver()],
-    }),
-  ],
+const routes: RouteConfig[] = [
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
+    meta: {
+      title: '首页',
+      description: '应用首页',
+    },
+  },
+]
+
+export default createLDesignRouter({
+  history: 'history',
+  routes,
+
+  // 启用主题管理
+  themeManager: {
+    enabled: true,
+    defaultTheme: 'light',
+    persistent: true,
+  },
+
+  // 启用国际化
+  i18nManager: {
+    enabled: true,
+    defaultLocale: 'zh-CN',
+    fallbackLocale: 'en-US',
+  },
 })
 ```
 
-## 鍏ㄥ眬閰嶇疆
-
-鍦ㄥ紩鍏?LDesign 鏃讹紝鍙互浼犲叆涓€涓叏灞€閰嶇疆瀵硅薄锛?
-
 ```typescript
+// main.ts
 import { createApp } from 'vue'
-import LDesign from '@ldesign/core'
+import { createEngine } from '@ldesign/engine'
+import router from './router'
 import App from './App.vue'
 
-const app = createApp(App)
-app.use(LDesign, {
-  // 鍏ㄥ眬閰嶇疆
-  size: 'large', // 缁勪欢榛樿灏哄
-  zIndex: 3000, // 寮瑰嚭灞傜殑鍒濆 z-index
-  locale: 'zh-CN', // 璇█璁剧疆
+const engine = createEngine({
+  name: 'my-app',
+  version: '1.0.0',
 })
+
+const app = createApp(App)
+app.use(router)
+app.provide('engine', engine)
 app.mount('#app')
 ```
 
-## 寮€濮嬩娇鐢?
+## 项目结构
 
-鐜板湪浣犲彲浠ュ湪缁勪欢涓娇鐢?LDesign 浜嗭細
+推荐的项目结构如下：
 
-```vue
-<template>
-  <div>
-    <l-button type="primary">涓昏鎸夐挳</l-button>
-    <l-button type="success">鎴愬姛鎸夐挳</l-button>
-    <l-button type="warning">璀﹀憡鎸夐挳</l-button>
-    <l-button type="danger">鍗遍櫓鎸夐挳</l-button>
-  </div>
-</template>
+```
+src/
+├── components/          # 组件
+│   ├── common/         # 通用组件
+│   ├── layout/         # 布局组件
+│   └── business/       # 业务组件
+├── views/              # 页面视图
+├── router/             # 路由配置
+├── stores/             # 状态管理
+├── composables/        # 组合式函数
+├── utils/              # 工具函数
+├── types/              # 类型定义
+├── assets/             # 静态资源
+└── main.ts             # 入口文件
 ```
 
-## TypeScript 鏀寔
+## 下一步
 
-LDesign 瀹屽叏浣跨敤 TypeScript 缂栧啓锛屾彁渚涗簡瀹屾暣鐨勭被鍨嬪畾涔夈€?
+现在您已经成功创建了一个基于 LDesign 的应用！接下来您可以：
 
-濡傛灉浣犱娇鐢?Volar锛屽彲浠ュ湪 `tsconfig.json` 涓厤缃被鍨嬪０鏄庯細
+- 📖 阅读 [路由管理指南](/guide/router) 了解更多路由功能
+- 🎨 查看 [主题系统指南](/guide/theme) 学习主题定制
+- 📦 探索 [状态管理指南](/guide/store) 管理应用状态
+- 🌍 了解 [国际化指南](/guide/i18n) 支持多语言
+
+## 常见问题
+
+### TypeScript 支持
+
+LDesign 完全支持 TypeScript，所有包都提供了完整的类型定义。确保在 `tsconfig.json` 中包含正确的类型：
 
 ```json
 {
   "compilerOptions": {
-    "types": ["@ldesign/core/global"]
+    "types": ["@ldesign/engine", "@ldesign/router"]
   }
 }
 ```
 
-## 寮€鍙戝伐鍏?
+### Vite 配置
 
-### Vetur 鏀寔
+如果您使用 Vite，建议添加以下别名配置：
 
-濡傛灉浣犱娇鐢?Vetur锛屽彲浠ュ畨瑁?`@ldesign/vetur` 鏉ヨ幏寰楃粍浠剁殑鏅鸿兘鎻愮ず锛?
+```typescript
+// vite.config.ts
+import { resolve } from 'node:path'
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
 
-```bash
-pnpm add -D @ldesign/vetur
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+  },
+})
 ```
 
-### Volar 鏀寔
+### 样式配置
 
-濡傛灉浣犱娇鐢?Volar锛屽彲浠ュ畨瑁?`@ldesign/volar` 鏉ヨ幏寰楁洿濂界殑寮€鍙戜綋楠岋細
+LDesign 使用 CSS 变量进行主题管理，您可以在全局样式中自定义这些变量：
 
-```bash
-pnpm add -D @ldesign/volar
+```css
+/* styles/global.css */
+:root {
+  --primary-color: #1890ff;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+}
 ```
-
-## 涓嬩竴姝?
-
-- 鏌ョ湅 [缁勪欢鎬昏](/components/overview) 浜嗚В鎵€鏈夊彲鐢ㄧ粍浠?
-- 闃呰 [涓婚瀹氬埗](/guide/theming) 瀛︿範濡備綍鑷畾涔変富棰?
-- 鎺㈢储 [宸ュ叿闆哴(/utils/overview) 浜嗚В瀹炵敤宸ュ叿鍑芥暟

@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "LDesign"
-  text: "现代化的 Vue3 组件库"
-  tagline: "🚀 高性能 · 🎨 美观 · 🛠️ 易用 · 📱 响应式"
+  name: 'LDesign'
+  text: '现代化的 Vue3 组件库和工具集'
+  tagline: '🚀 高性能 · 🎨 智能主题 · 🧭 路由管理 · 📦 状态管理'
   image:
     src: /logo.svg
     alt: LDesign
@@ -16,63 +16,81 @@ hero:
       text: 查看组件
       link: /components/overview
     - theme: alt
+      text: 演示应用
+      link: /demo
+    - theme: alt
       text: GitHub
       link: https://github.com/poly1603/ldesign
 
 features:
-  - icon: ⚡️
-    title: 高性能
-    details: 基于 Vue3 Composition API，提供卓越的性能表现和更小的包体积
+  - icon: 🚀
+    title: 现代化架构
+    details: 基于 Vue 3 Composition API 和 TypeScript，提供完整的类型支持和最佳开发体验
   - icon: 🎨
-    title: 精美设计
-    details: 遵循现代设计原则，提供美观且一致的用户界面体验
-  - icon: 🛠️
-    title: 开发友好
-    details: 完整的 TypeScript 支持，丰富的 API 文档和示例代码
-  - icon: 📱
-    title: 响应式设计
-    details: 完美适配各种屏幕尺寸，提供一致的移动端体验
-  - icon: 🔧
-    title: 高度可定制
-    details: 灵活的主题系统和丰富的配置选项，满足各种定制需求
+    title: 智能主题系统
+    details: 基于色彩科学的主题生成器，支持深色模式、自定义主题和动态主题切换
+  - icon: 🧭
+    title: 强大的路由管理
+    details: 集成设备适配、权限管理、缓存策略、面包屑导航等企业级路由功能
+  - icon: 📦
+    title: 状态管理
+    details: 基于 Pinia 的增强状态管理，支持装饰器、插件系统和时间旅行调试
   - icon: 🌍
     title: 国际化支持
-    details: 内置国际化解决方案，轻松支持多语言应用
-  - icon: 🧪
-    title: 测试覆盖
-    details: 完整的单元测试和 E2E 测试，确保组件质量和稳定性
-  - icon: 📦
-    title: 模块化设计
-    details: 支持按需引入，优化打包体积，提升应用性能
-  - icon: 🔒
-    title: 类型安全
-    details: 完整的 TypeScript 类型定义，提供更好的开发体验
+    details: 内置多语言支持，自动检测浏览器语言，支持动态语言切换
+  - icon: 🔐
+    title: 安全加密
+    details: 提供对称加密、非对称加密、哈希算法和国密算法的完整加密解决方案
+  - icon: 📱
+    title: 设备检测
+    details: 智能设备检测和特性检测，支持响应式设计和设备适配
+  - icon: ⚡
+    title: 高性能
+    details: 优化的构建配置、运行时性能和内存管理，确保最佳用户体验
+  - icon: 🔧
+    title: 开发友好
+    details: 完善的开发工具、详细文档和丰富示例，大幅提升开发效率
 ---
 
-## 快速体验
+## 🚀 快速体验
 
 ```bash
-# 安装
-pnpm add @ldesign/core
+# 安装核心包
+pnpm add @ldesign/engine @ldesign/router @ldesign/store
 
-# 使用
+# 创建应用
 import { createApp } from 'vue'
-import LDesign from '@ldesign/core'
-import '@ldesign/core/dist/style.css'
+import { createEngine } from '@ldesign/engine'
+import { createLDesignRouter } from '@ldesign/router'
+
+const engine = createEngine({
+  name: 'my-app',
+  version: '1.0.0'
+})
+
+const router = createLDesignRouter({
+  routes: [
+    { path: '/', component: Home }
+  ],
+  themeManager: { enabled: true },
+  i18nManager: { enabled: true }
+})
 
 const app = createApp(App)
-app.use(LDesign)
+app.use(router)
 ```
 
-## 生态系统
+## 🏗️ 生态系统
 
-LDesign 不仅仅是一个组件库，更是一个完整的前端开发生态系统：
+LDesign 提供完整的前端开发解决方案：
 
-- **@ldesign/core** - 核心组件库
-- **@ldesign/utils** - 实用工具集
-- **@ldesign/icons** - 图标库
-- **@ldesign/theme** - 主题系统
-- **@ldesign/cli** - 开发工具
+- **@ldesign/engine** - 核心引擎和插件系统
+- **@ldesign/router** - 企业级路由管理
+- **@ldesign/store** - 增强状态管理
+- **@ldesign/color** - 智能主题生成器
+- **@ldesign/crypto** - 安全加密工具
+- **@ldesign/device** - 设备检测工具
+- **@ldesign/http** - HTTP 请求库
 
 ## 谁在使用
 

@@ -53,9 +53,7 @@ export default defineConfig({
       '/components/': [
         {
           text: '组件总览',
-          items: [
-            { text: '概述', link: '/components/overview' },
-          ],
+          items: [{ text: '概述', link: '/components/overview' }],
         },
         {
           text: '基础组件',
@@ -68,9 +66,7 @@ export default defineConfig({
       '/utils/': [
         {
           text: '工具总览',
-          items: [
-            { text: '概述', link: '/utils/overview' },
-          ],
+          items: [{ text: '概述', link: '/utils/overview' }],
         },
         {
           text: '核心工具',
@@ -80,10 +76,8 @@ export default defineConfig({
             { text: 'Device 设备', link: '/utils/device' },
             { text: 'Engine 引擎', link: '/utils/engine' },
             { text: 'HTTP 请求', link: '/utils/http' },
-            { text: 'I18n 国际化', link: '/utils/i18n' },
-            { text: 'Size 尺寸', link: '/utils/size' },
+            { text: 'Router 路由', link: '/utils/router' },
             { text: 'Store 状态', link: '/utils/store' },
-            { text: 'Template 模板', link: '/utils/template' },
           ],
         },
       ],

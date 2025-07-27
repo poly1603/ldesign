@@ -1,4 +1,4 @@
-﻿# 蹇€熷紑濮?
+# 蹇€熷紑濮?
 
 鏈妭灏嗗府鍔╀綘蹇€熶笂鎵?LDesign銆?
 
@@ -114,10 +114,28 @@ app.mount('#app')
 ```vue
 <template>
   <div>
-    <l-button type="primary">涓昏鎸夐挳</l-button>
-    <l-button type="success">鎴愬姛鎸夐挳</l-button>
-    <l-button type="warning">璀﹀憡鎸夐挳</l-button>
-    <l-button type="danger">鍗遍櫓鎸夐挳</l-button>
+    <l-button
+      type="prima
+
+ry"
+    >
+      涓昏 鎸夐挳
+    </l-button>
+    <l-button
+      type="succes
+
+s"
+    >
+      鎴愬姛 鎸夐挳
+    </l-button>
+    <l-button
+      type="warning
+
+"
+    >
+      璀﹀憡鎸 夐挳
+    </l-button>
+    <l-button type="danger">鍗遍櫓鎸夐 挳</l-button>
   </div>
 </template>
 ```

@@ -1,6 +1,6 @@
 packages:
   - 'packages/*'
-  - 'docs'
-  - 'playground'
-  - 'app'
+  - docs
+  - playground
+  - app
   - packages/*/examples
