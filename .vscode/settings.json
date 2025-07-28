@@ -5,32 +5,34 @@
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
+  "git.detectSubmodulesLimit": 30,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit"
   },
-  "editor.rulers": [80, 120],
+  "editor.rulers": [
+    80,
+    120
+  ],
   "editor.wordWrap": "bounded",
   "editor.wordWrapColumn": 120,
-
   // 文件配置
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.exclude": {
-    "**/node_modules": true,
-    "**/dist": true,
-    "**/coverage": true,
-    "**/.vitepress/cache": true,
-    "**/.vitepress/dist": true
+    "**/node_modules": false,
+    "**/dist": false,
+    "**/coverage": false,
+    "**/.vitepress/cache": false,
+    "**/.vitepress/dist": false
   },
   "files.watcherExclude": {
     "**/node_modules/**": true,
     "**/dist/**": true,
     "**/coverage/**": true
   },
-
   // TypeScript 配置
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "typescript.suggest.autoImports": true,
@@ -38,12 +40,10 @@
   "typescript.inlayHints.parameterNames.enabled": "all",
   "typescript.inlayHints.variableTypes.enabled": true,
   "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
-
   // Vue 配置
   "vue.codeActions.enabled": true,
   "vue.complete.casing.tags": "pascal",
   "vue.complete.casing.props": "camel",
-
   // ESLint 配置
   "eslint.validate": [
     "javascript",
@@ -52,12 +52,12 @@
     "typescriptreact",
     "vue"
   ],
-  "eslint.workingDirectories": ["packages/*"],
-
+  "eslint.workingDirectories": [
+    "packages/*"
+  ],
   // Prettier 配置
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": false,
-
   // 搜索配置
   "search.exclude": {
     "**/node_modules": true,
@@ -67,28 +67,26 @@
     "**/.vitepress/dist": true,
     "**/pnpm-lock.yaml": true
   },
-
   // 终端配置
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
       "source": "PowerShell",
-      "args": ["-NoLogo"]
+      "args": [
+        "-NoLogo"
+      ]
     }
   },
-
   // 扩展配置
   "emmet.includeLanguages": {
     "vue": "html",
     "typescript": "html"
   },
   "emmet.triggerExpansionOnTab": true,
-
   // Git 配置
   "git.autofetch": true,
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
-
   // 工作区配置
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
@@ -100,11 +98,9 @@
     ".eslintrc.*": ".eslintignore, .prettierrc*, .prettierignore",
     "README.md": "CHANGELOG.md, LICENSE, .gitignore"
   },
-
   // 调试配置
   "debug.allowBreakpointsEverywhere": true,
   "debug.inlineValues": "on",
-
   // 性能配置
   "extensions.experimental.affinity": {
     "asvetliakov.vscode-neovim": 1

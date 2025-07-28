@@ -2,19 +2,12 @@
 	path = packages/store
 	url = https://github.com/poly1603/ldesign-store.git
 	branch = main
-[submodule "packages/size"]
-	path = packages/size
-	url = https://github.com/poly1603/ldesign-size.git
-	branch = main
 [submodule "packages/http"]
 	path = packages/http
 	url = https://github.com/poly1603/ldesign-http.git
 [submodule "packages/device"]
 	path = packages/device
 	url = https://github.com/poly1603/ldesign-device.git
-[submodule "packages/i18n"]
-	path = packages/i18n
-	url = https://github.com/poly1603/ldesign-i18n.git
 [submodule "packages/color"]
 	path = packages/color
 	url = https://github.com/poly1603/ldesign-color.git
@@ -27,15 +20,6 @@
 [submodule "packages/router"]
 	path = packages/router
 	url = https://github.com/poly1603/ldesign-router.git
-[submodule "packages/error"]
-	path = packages/error
-	url = https://github.com/poly1603/ldesign-error.git
-[submodule "packages/logger"]
-	path = packages/logger
-	url = https://github.com/poly1603/ldesign-logger.git
-[submodule "packages/template"]
-	path = packages/template
-	url = https://github.com/poly1603/ldesign-template.git
 [submodule "app"]
 	path = app
 	url = https://github.com/poly1603/ldesign-app.git
@@ -43,4 +27,52 @@
 [submodule "packages/ui"]
 	path = packages/ui
 	url = https://github.com/poly1603/ldesign-ui.git
+	branch = main
+[submodule "packages/i18n"]
+	path = packages/i18n
+	url = https://github.com/poly1603/ldesign-i18n.git
+	branch = main
+[submodule "packages/notification"]
+	path = packages/notification
+	url = https://github.com/poly1603/ldesign-notification.git
+	branch = main
+[submodule "packages/permission"]
+	path = packages/permission
+	url = https://github.com/poly1603/ldesign-permission.git
+	branch = main
+[submodule "packages/form"]
+	path = packages/form
+	url = https://github.com/poly1603/ldesign-form.git
+	branch = main
+[submodule "packages/animation"]
+	path = packages/animation
+	url = https://github.com/poly1603/ldesign-animation.git
+	branch = main
+[submodule "packages/charts"]
+	path = packages/charts
+	url = https://github.com/poly1603/ldesign-charts.git
+	branch = main
+[submodule "packages/testing"]
+	path = packages/testing
+	url = https://github.com/poly1603/ldesign-testing.git
+	branch = main
+[submodule "packages/devtools"]
+	path = packages/devtools
+	url = https://github.com/poly1603/ldesign-devtools.git
+	branch = main
+[submodule "packages/performance"]
+	path = packages/performance
+	url = https://github.com/poly1603/ldesign-performance.git
+	branch = main
+[submodule "packages/pwa"]
+	path = packages/pwa
+	url = https://github.com/poly1603/ldesign-pwa.git
+	branch = main
+[submodule "packages/file"]
+	path = packages/file
+	url = https://github.com/poly1603/ldesign-file.git
+	branch = main
+[submodule "packages/template"]
+	path = packages/template
+	url = https://github.com/poly1603/ldesign-template.git
 	branch = main
