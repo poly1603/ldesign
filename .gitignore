@@ -3,3 +3,5 @@ dist
 cjs
 es
 types/**/*.d.ts
+packages/engine/docs/.vitepress/cache/**
+packages/engine/docs/.vitepress/temp/**

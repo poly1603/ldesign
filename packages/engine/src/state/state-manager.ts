@@ -1,0 +1,302 @@
+import { reactive, watch } from 'vue'
+
+type UnwatchFn = () => void
+import type { StateManager, Logger } from '../types'
+
+export class StateManagerImpl implements StateManager {
+  private state = reactive<Record<string, any>>({})
+  private watchers = new Map<string, UnwatchFn[]>()
+  constructor(_logger?: Logger) {
+    // logger参数保留用于未来扩展
+  }
+
+  get<T = any>(key: string): T | undefined {
+    return this.getNestedValue(this.state, key) as T
+  }
+
+  set<T = any>(key: string, value: T): void {
+    this.setNestedValue(this.state, key, value)
+  }
+
+  remove(key: string): void {
+    this.deleteNestedValue(this.state, key)
+  }
+
+  clear(): void {
+    // 清理所有监听器
+    Array.from(this.watchers.values()).forEach(watcherArray => {
+      watcherArray.forEach(unwatch => {
+        unwatch()
+      })
+    })
+    this.watchers.clear()
+
+    // 清空状态
+    Object.keys(this.state).forEach(key => {
+      delete this.state[key]
+    })
+  }
+
+  watch<T = any>(key: string, callback: (newValue: T, oldValue: T) => void): () => void {
+    const unwatch = watch(
+      () => this.get<T>(key),
+      (newValue, oldValue) => {
+        if (newValue !== undefined && oldValue !== undefined) {
+          callback(newValue, oldValue)
+        }
+      },
+      { deep: true }
+    )
+
+    // 记录监听器以便清理
+    if (!this.watchers.has(key)) {
+      this.watchers.set(key, [])
+    }
+    this.watchers.get(key)!.push(unwatch)
+
+    // 返回取消监听的函数
+    return () => {
+      unwatch()
+      const watcherArray = this.watchers.get(key)
+      if (watcherArray) {
+        const index = watcherArray.indexOf(unwatch)
+        if (index > -1) {
+          watcherArray.splice(index, 1)
+        }
+        if (watcherArray.length === 0) {
+          this.watchers.delete(key)
+        }
+      }
+    }
+  }
+
+  // 获取嵌套值
+  private getNestedValue(obj: any, path: string): any {
+    const keys = path.split('.')
+    let current = obj
+
+    for (const key of keys) {
+      if (current === null || current === undefined) {
+        return undefined
+      }
+      current = current[key]
+    }
+
+    return current
+  }
+
+  // 设置嵌套值
+  private setNestedValue(obj: any, path: string, value: any): void {
+    const keys = path.split('.')
+    let current = obj
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i]
+      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+        current[key] = {}
+      }
+      current = current[key]
+    }
+
+    current[keys[keys.length - 1]] = value
+  }
+
+  // 删除嵌套值
+  private deleteNestedValue(obj: any, path: string): void {
+    const keys = path.split('.')
+    let current = obj
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i]
+      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+        return // 路径不存在
+      }
+      current = current[key]
+    }
+
+    delete current[keys[keys.length - 1]]
+  }
+
+  // 检查键是否存在
+  has(key: string): boolean {
+    return this.getNestedValue(this.state, key) !== undefined
+  }
+
+  // 获取所有键
+  keys(): string[] {
+    return this.getAllKeys(this.state)
+  }
+
+  // 递归获取所有键
+  private getAllKeys(obj: any, prefix = ''): string[] {
+    const keys: string[] = []
+    
+    for (const key in obj) {
+      const fullKey = prefix ? `${prefix}.${key}` : key
+      keys.push(fullKey)
+      
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+        keys.push(...this.getAllKeys(obj[key], fullKey))
+      }
+    }
+    
+    return keys
+  }
+
+  // 获取状态快照
+  getSnapshot(): Record<string, any> {
+    return JSON.parse(JSON.stringify(this.state))
+  }
+
+  // 从快照恢复状态
+  restoreFromSnapshot(snapshot: Record<string, any>): void {
+    this.clear()
+    Object.assign(this.state, snapshot)
+  }
+
+  // 合并状态
+  merge(newState: Record<string, any>): void {
+    this.deepMerge(this.state, newState)
+  }
+
+  // 深度合并对象
+  private deepMerge(target: any, source: any): void {
+    for (const key in source) {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        if (!target[key] || typeof target[key] !== 'object') {
+          target[key] = {}
+        }
+        this.deepMerge(target[key], source[key])
+      } else {
+        target[key] = source[key]
+      }
+    }
+  }
+
+  // 获取状态统计信息
+  getStats(): {
+    totalKeys: number
+    totalWatchers: number
+    memoryUsage: string
+  } {
+    const totalWatchers = Array.from(this.watchers.values())
+      .reduce((sum, array) => sum + array.length, 0)
+    
+    const memoryUsage = JSON.stringify(this.state).length
+    
+    return {
+      totalKeys: this.keys().length,
+      totalWatchers,
+      memoryUsage: `${(memoryUsage / 1024).toFixed(2)} KB`
+    }
+  }
+
+  // 创建命名空间
+  namespace(ns: string): StateNamespace {
+    return new StateNamespace(this, ns)
+  }
+}
+
+// 状态命名空间类
+export class StateNamespace implements StateManager {
+  constructor(
+    private stateManager: StateManager,
+    private namespaceName: string
+  ) {}
+
+  private getKey(key: string): string {
+    return `${this.namespaceName}.${key}`
+  }
+
+  get<T = any>(key: string): T | undefined {
+    return this.stateManager.get<T>(this.getKey(key))
+  }
+
+  set<T = any>(key: string, value: T): void {
+    this.stateManager.set(this.getKey(key), value)
+  }
+
+  remove(key: string): void {
+    this.stateManager.remove(this.getKey(key))
+  }
+
+  watch<T = any>(key: string, callback: (newValue: T, oldValue: T) => void): () => void {
+    return this.stateManager.watch(this.getKey(key), callback)
+  }
+
+  clear(): void {
+    // 只清理当前命名空间的状态
+    const keys = this.stateManager.keys()
+    const namespacePrefix = `${this.namespaceName}.`
+    
+    keys.forEach(key => {
+      if (key.startsWith(namespacePrefix)) {
+        this.stateManager.remove(key)
+      }
+    })
+  }
+
+  keys(): string[] {
+    const allKeys = this.stateManager.keys()
+    const namespacePrefix = `${this.namespaceName}.`
+    
+    return allKeys
+      .filter(key => key.startsWith(namespacePrefix))
+      .map(key => key.substring(namespacePrefix.length))
+  }
+
+  namespace(name: string): StateManager {
+    return this.stateManager.namespace(`${this.namespaceName}.${name}`)
+  }
+}
+
+export function createStateManager(logger?: Logger): StateManager {
+  return new StateManagerImpl(logger)
+}
+
+// 预定义的状态模块
+export const stateModules = {
+  // 用户状态模块
+  user: (stateManager: StateManager) => {
+    const userState = stateManager.namespace('user')
+    
+    return {
+      setUser: (user: any) => userState.set('profile', user),
+      getUser: () => userState.get('profile'),
+      setToken: (token: string) => userState.set('token', token),
+      getToken: () => userState.get('token'),
+      logout: () => {
+        userState.clear()
+      },
+      isLoggedIn: () => !!userState.get('token')
+    }
+  },
+
+  // 应用状态模块
+  app: (stateManager: StateManager) => {
+    const appState = stateManager.namespace('app')
+    
+    return {
+      setLoading: (loading: boolean) => appState.set('loading', loading),
+      isLoading: () => appState.get('loading') || false,
+      setError: (error: string | null) => appState.set('error', error),
+      getError: () => appState.get('error'),
+      clearError: () => appState.remove('error'),
+      setTitle: (title: string) => appState.set('title', title),
+      getTitle: () => appState.get('title')
+    }
+  },
+
+  // 设置状态模块
+  settings: (stateManager: StateManager) => {
+    const settingsState = stateManager.namespace('settings')
+    
+    return {
+      setSetting: (key: string, value: any) => settingsState.set(key, value),
+      getSetting: (key: string, defaultValue?: any) => settingsState.get(key) ?? defaultValue,
+      removeSetting: (key: string) => settingsState.remove(key),
+      getAllSettings: () => settingsState.get('') || {},
+      resetSettings: () => settingsState.clear()
+    }
+  }
+}
