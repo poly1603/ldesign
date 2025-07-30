@@ -1,0 +1,69 @@
+import { vi } from 'vitest'
+
+// Mock fetch API
+global.fetch = vi.fn()
+
+// Mock AbortController
+global.AbortController = vi.fn().mockImplementation(() => ({
+  signal: {
+    aborted: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  },
+  abort: vi.fn(),
+})) as any
+
+// Mock console methods in tests
+global.console = {
+  ...console,
+  // 在测试中静默 console.log
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+}
+
+// 设置测试超时
+vi.setConfig({
+  testTimeout: 10000,
+})
+
+// 全局测试工具函数
+export const createMockResponse = <T = any>(
+  data: T,
+  status = 200,
+  statusText = 'OK',
+  headers: Record<string, string> = {}
+) => ({
+  data,
+  status,
+  statusText,
+  headers: {
+    'content-type': 'application/json',
+    ...headers,
+  },
+  config: {},
+  raw: null,
+})
+
+export const createMockError = (
+  message: string,
+  code?: string,
+  status?: number
+) => {
+  const error = new Error(message) as any
+  error.code = code
+  error.status = status
+  error.isNetworkError = false
+  error.isTimeoutError = false
+  error.isCancelError = false
+  return error
+}
+
+// 延迟函数，用于测试异步操作
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+// 清理函数，在每个测试后执行
+afterEach(() => {
+  vi.clearAllMocks()
+  vi.clearAllTimers()
+})

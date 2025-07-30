@@ -1,0 +1,322 @@
+import type {
+  HttpClient,
+  HttpClientConfig,
+  RequestConfig,
+  ResponseData,
+  HttpAdapter,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor,
+  InterceptorManager,
+  HttpError,
+  RetryConfig,
+} from '@/types'
+import { InterceptorManagerImpl } from '@/interceptors/manager'
+import { mergeConfig, createHttpError } from '@/utils'
+import { RetryManager, TimeoutManager, ErrorHandler } from '@/utils/error'
+import { CancelManager, globalCancelManager } from '@/utils/cancel'
+import { CacheManager } from '@/utils/cache'
+import { ConcurrencyManager } from '@/utils/concurrency'
+
+/**
+ * HTTP 客户端实现
+ */
+export class HttpClientImpl implements HttpClient {
+  private config: HttpClientConfig
+  private adapter: HttpAdapter
+  private retryManager: RetryManager
+  private timeoutManager: TimeoutManager
+  private cancelManager: CancelManager
+  private cacheManager: CacheManager
+  private concurrencyManager: ConcurrencyManager
+
+  public interceptors: {
+    request: InterceptorManager<RequestInterceptor>
+    response: InterceptorManager<ResponseInterceptor>
+    error: InterceptorManager<ErrorInterceptor>
+  }
+
+  constructor(config: HttpClientConfig = {}, adapter?: HttpAdapter) {
+    this.config = {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      ...config,
+    }
+
+    if (!adapter) {
+      throw new Error('HTTP adapter is required')
+    }
+    this.adapter = adapter
+
+    // 初始化管理器
+    this.retryManager = new RetryManager(config.retry)
+    this.timeoutManager = new TimeoutManager()
+    this.cancelManager = globalCancelManager
+    this.cacheManager = new CacheManager(config.cache)
+    this.concurrencyManager = new ConcurrencyManager(config.concurrency)
+
+    // 初始化拦截器
+    this.interceptors = {
+      request: new InterceptorManagerImpl<RequestInterceptor>(),
+      response: new InterceptorManagerImpl<ResponseInterceptor>(),
+      error: new InterceptorManagerImpl<ErrorInterceptor>(),
+    }
+  }
+
+  /**
+   * 发送请求
+   */
+  async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+    // 合并配置
+    const mergedConfig = mergeConfig(this.config, config)
+
+    // 如果启用了重试，使用重试管理器
+    if (mergedConfig.retry && mergedConfig.retry.retries && mergedConfig.retry.retries > 0) {
+      return this.retryManager.executeWithRetry(
+        () => this.executeRequest<T>(mergedConfig),
+        mergedConfig
+      )
+    }
+
+    return this.executeRequest<T>(mergedConfig)
+  }
+
+  /**
+   * 执行单次请求
+   */
+  private async executeRequest<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+    // 检查缓存
+    const cachedResponse = await this.cacheManager.get<T>(config)
+    if (cachedResponse) {
+      return cachedResponse
+    }
+
+    // 使用并发控制执行请求
+    return this.concurrencyManager.execute(
+      () => this.performRequest<T>(config),
+      config
+    )
+  }
+
+  /**
+   * 执行实际的请求
+   */
+  private async performRequest<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+    try {
+      // 执行请求拦截器
+      const processedConfig = await this.processRequestInterceptors(config)
+
+      // 发送请求
+      let response = await this.adapter.request<T>(processedConfig)
+
+      // 执行响应拦截器
+      response = await this.processResponseInterceptors(response)
+
+      // 缓存响应
+      await this.cacheManager.set(processedConfig, response)
+
+      return response
+    } catch (error) {
+      // 执行错误拦截器
+      const processedError = await this.processErrorInterceptors(error as HttpError)
+      throw processedError
+    }
+  }
+
+  /**
+   * GET 请求
+   */
+  get<T = any>(url: string, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'GET',
+      url,
+    })
+  }
+
+  /**
+   * POST 请求
+   */
+  post<T = any>(url: string, data?: any, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'POST',
+      url,
+      data,
+    })
+  }
+
+  /**
+   * PUT 请求
+   */
+  put<T = any>(url: string, data?: any, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'PUT',
+      url,
+      data,
+    })
+  }
+
+  /**
+   * DELETE 请求
+   */
+  delete<T = any>(url: string, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'DELETE',
+      url,
+    })
+  }
+
+  /**
+   * PATCH 请求
+   */
+  patch<T = any>(url: string, data?: any, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'PATCH',
+      url,
+      data,
+    })
+  }
+
+  /**
+   * HEAD 请求
+   */
+  head<T = any>(url: string, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'HEAD',
+      url,
+    })
+  }
+
+  /**
+   * OPTIONS 请求
+   */
+  options<T = any>(url: string, config: RequestConfig = {}): Promise<ResponseData<T>> {
+    return this.request<T>({
+      ...config,
+      method: 'OPTIONS',
+      url,
+    })
+  }
+
+  /**
+   * 取消所有请求
+   */
+  cancelAll(reason?: string): void {
+    this.cancelManager.cancelAll(reason)
+  }
+
+  /**
+   * 获取活跃请求数量
+   */
+  getActiveRequestCount(): number {
+    return this.cancelManager.getActiveRequestCount()
+  }
+
+  /**
+   * 更新重试配置
+   */
+  updateRetryConfig(config: Partial<RetryConfig>): void {
+    this.retryManager.updateConfig(config)
+  }
+
+  /**
+   * 获取当前配置
+   */
+  getConfig(): HttpClientConfig {
+    return { ...this.config }
+  }
+
+  /**
+   * 清空缓存
+   */
+  clearCache(): Promise<void> {
+    return this.cacheManager.clear()
+  }
+
+  /**
+   * 获取并发状态
+   */
+  getConcurrencyStatus() {
+    return this.concurrencyManager.getStatus()
+  }
+
+  /**
+   * 取消队列中的所有请求
+   */
+  cancelQueue(reason?: string): void {
+    this.concurrencyManager.cancelQueue(reason)
+  }
+
+  /**
+   * 处理请求拦截器
+   */
+  private async processRequestInterceptors(config: RequestConfig): Promise<RequestConfig> {
+    let processedConfig = config
+
+    const interceptors = (this.interceptors.request as InterceptorManagerImpl<RequestInterceptor>)
+      .getInterceptors()
+
+    for (const interceptor of interceptors) {
+      try {
+        processedConfig = await interceptor.fulfilled(processedConfig)
+      } catch (error) {
+        if (interceptor.rejected) {
+          throw await interceptor.rejected(error as HttpError)
+        }
+        throw error
+      }
+    }
+
+    return processedConfig
+  }
+
+  /**
+   * 处理响应拦截器
+   */
+  private async processResponseInterceptors<T>(response: ResponseData<T>): Promise<ResponseData<T>> {
+    let processedResponse = response
+
+    const interceptors = (this.interceptors.response as InterceptorManagerImpl<ResponseInterceptor>)
+      .getInterceptors()
+
+    for (const interceptor of interceptors) {
+      try {
+        processedResponse = await interceptor.fulfilled(processedResponse)
+      } catch (error) {
+        if (interceptor.rejected) {
+          throw await interceptor.rejected(error as HttpError)
+        }
+        throw error
+      }
+    }
+
+    return processedResponse
+  }
+
+  /**
+   * 处理错误拦截器
+   */
+  private async processErrorInterceptors(error: HttpError): Promise<HttpError> {
+    let processedError = error
+
+    const interceptors = (this.interceptors.error as InterceptorManagerImpl<ErrorInterceptor>)
+      .getInterceptors()
+
+    for (const interceptor of interceptors) {
+      try {
+        processedError = await interceptor.fulfilled(processedError)
+      } catch (err) {
+        processedError = err as HttpError
+      }
+    }
+
+    return processedError
+  }
+}

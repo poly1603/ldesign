@@ -1,9 +1,9 @@
 {
-  "name": "ldesign",
+  "name": "scaffold-tool",
   "private": true,
   "type": "module",
   "version": "1.0.0",
-  "description": "LDesign Vue引擎项目 - 基于Vue3的现代化前端开发引擎",
+  "description": "现代化的前端Node.js脚手架工具 - 采用模块化架构设计",
   "workspaces": [
     "packages/**"
   ],
@@ -20,21 +20,27 @@
     "clean": "pnpm -r run clean"
   },
   "keywords": [
-    "vue3",
-    "engine",
+    "scaffold",
+    "cli",
     "frontend",
     "monorepo",
-    "typescript"
+    "typescript",
+    "vite",
+    "vue",
+    "react"
   ],
-  "author": "LDesign Team",
+  "author": "Scaffold Tool Team",
   "license": "MIT",
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@latest",
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
     "@changesets/cli": "^2.27.0",
+    "@types/node": "^22.0.0",
     "eslint": "^9.0.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
