@@ -1,0 +1,23 @@
+{
+  "name": "@ldesign/i18n-vue-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vue 3 example for @ldesign/i18n",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@ldesign/i18n": "workspace:*",
+    "vue": "^3.4.15"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.3",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vue-tsc": "^1.8.27"
+  }
+}
