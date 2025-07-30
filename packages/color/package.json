@@ -1,0 +1,121 @@
+{
+  "name": "@ldesign/color",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "A framework-agnostic theme color management library with Vue 3 integration",
+  "author": "ldesign",
+  "license": "MIT",
+  "keywords": [
+    "color",
+    "theme",
+    "color-management",
+    "css-variables",
+    "vue3",
+    "typescript",
+    "framework-agnostic"
+  ],
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.js",
+      "browser": "./dist/index.js"
+    },
+    "./vue": {
+      "types": "./types/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.js",
+      "browser": "./dist/vue.js"
+    },
+    "./core/*": {
+      "types": "./types/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.js"
+    },
+    "./utils/*": {
+      "types": "./types/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.js"
+    },
+    "./themes/*": {
+      "types": "./types/themes/*.d.ts",
+      "import": "./es/themes/*.js",
+      "require": "./lib/themes/*.js"
+    },
+
+    "./es": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js"
+    },
+    "./lib": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js"
+    },
+    "./dist": {
+      "types": "./types/index.d.ts",
+      "browser": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
+  "browser": "dist/index.js",
+  "files": [
+    "CHANGELOG.md",
+    "README.md",
+    "dist",
+    "es",
+    "lib",
+    "types"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --fix",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "example:vanilla": "cd examples/vanilla && pnpm dev",
+    "example:vue": "cd examples/vue && pnpm dev"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@arco-design/color": "^0.4.0",
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.6.4",
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.5",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitest/ui": "^1.2.1",
+    "@vue/test-utils": "^2.4.4",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
+    "jsdom": "^24.0.0",
+    "rollup": "^4.9.6",
+    "rollup-plugin-dts": "^6.1.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitepress": "^1.0.0-rc.39",
+    "vitest": "^1.2.1",
+    "vue": "^3.4.15",
+    "vue-tsc": "^1.8.27"
+  }
+}
