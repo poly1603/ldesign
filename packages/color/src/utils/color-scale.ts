@@ -104,7 +104,7 @@ export class ColorScaleGenerator {
 
   /**
    * 为灰色系生成特殊的色阶
-   * 先生成4个基础灰色，然后基于这些基础灰色平滑插值生成完整的10级色阶
+   * 基于a-nice-red算法，先生成4个基础中性色，然后通过平滑插值生成完整的10级色阶
    */
   generateGrayScale(baseGray: ColorValue, mode: ColorMode = 'light'): ColorScale {
     if (!isValidHex(baseGray)) {
@@ -118,38 +118,50 @@ export class ColorScaleGenerator {
       throw new Error(`Failed to parse hex color: ${baseGray}`)
     }
 
-    // 生成4个基础灰色的亮度值
-    const baseLightnesses = mode === 'dark'
-      ? [20, 35, 55, 80] // 暗色模式：从深到浅的基础点
-      : [85, 65, 45, 25] // 亮色模式：从浅到深的基础点
+    // 基于a-nice-red算法生成4个基础中性色
+    // 使用纯中性灰色（0度色相，0饱和度）确保真正的中性效果
+    const baseHue = 0 // 使用0度色相
+    const baseSaturation = 0 // 完全无饱和度，确保纯中性
 
-    // 生成4个基础灰色
+    // 优化的4个基础亮度值，确保良好的视觉层次
+    const baseLightnesses = mode === 'dark'
+      ? [22, 38, 58, 85] // 暗色模式：从深到浅的基础点
+      : [88, 68, 45, 22] // 亮色模式：从浅到深的基础点
+
+    // 生成4个基础中性灰色
     const baseGrays = baseLightnesses.map(lightness => {
-      return hslToHex(hsl.h, hsl.s, lightness)
+      return hslToHex(baseHue, baseSaturation, lightness)
     })
 
-    // 基于4个基础灰色插值生成10级色阶
+    // 使用改进的插值算法生成10级色阶
     const grayColors: string[] = []
 
-    // 使用线性插值在基础灰色之间生成平滑过渡
+    // 使用三次贝塞尔曲线插值，创建更自然的过渡
     for (let i = 0; i < 10; i++) {
-      const position = i / 9 // 0 到 1 之间的位置
-      const segmentPosition = position * 3 // 0 到 3 之间，对应4个基础色的3个区间
-      const segmentIndex = Math.floor(segmentPosition)
-      const localPosition = segmentPosition - segmentIndex
+      const t = i / 9 // 0 到 1 之间的位置
+
+      // 将t映射到4个基础色的区间
+      const scaledT = t * 3 // 0 到 3 之间
+      const segmentIndex = Math.floor(scaledT)
+      const localT = scaledT - segmentIndex
 
       let lightness: number
+
       if (segmentIndex >= 3) {
         // 最后一个区间
         lightness = baseLightnesses[3]
       } else {
-        // 在两个基础亮度之间插值
+        // 使用平滑插值（三次插值）在两个基础亮度之间过渡
         const startLightness = baseLightnesses[segmentIndex]
         const endLightness = baseLightnesses[segmentIndex + 1]
-        lightness = startLightness + (endLightness - startLightness) * localPosition
+
+        // 三次插值公式：f(t) = (1-t)³*P0 + 3(1-t)²t*P1 + 3(1-t)t²*P2 + t³*P3
+        // 简化为线性插值加上平滑因子
+        const smoothFactor = localT * localT * (3 - 2 * localT) // 平滑步函数
+        lightness = startLightness + (endLightness - startLightness) * smoothFactor
       }
 
-      const grayHex = hslToHex(hsl.h, hsl.s, Math.round(lightness))
+      const grayHex = hslToHex(baseHue, baseSaturation, Math.round(lightness))
       grayColors.push(grayHex)
     }
 

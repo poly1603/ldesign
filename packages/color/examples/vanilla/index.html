@@ -16,101 +16,176 @@
 
     <!-- 主要内容 -->
     <main class="main">
-      <!-- 控制面板 -->
-      <section class="control-panel">
-        <h2>主题控制</h2>
-        
-        <div class="control-group">
-          <label for="theme-select">选择主题:</label>
-          <select id="theme-select" class="theme-select">
-            <option value="">加载中...</option>
-          </select>
-        </div>
+      <div class="container">
+        <!-- 主题控制面板 -->
+        <section class="card">
+          <h2 class="card-title">🎛️ 主题控制</h2>
 
-        <div class="control-group">
-          <label for="mode-select">颜色模式:</label>
-          <select id="mode-select" class="mode-select">
-            <option value="light">亮色模式</option>
-            <option value="dark">暗色模式</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <button id="toggle-mode" class="btn btn-primary">切换模式</button>
-          <button id="random-theme" class="btn btn-secondary">随机主题</button>
-          <button id="system-sync" class="btn btn-secondary">同步系统主题</button>
-        </div>
-
-        <div class="status-info">
-          <div class="status-item">
-            <span class="label">当前主题:</span>
-            <span id="current-theme" class="value">-</span>
-          </div>
-          <div class="status-item">
-            <span class="label">当前模式:</span>
-            <span id="current-mode" class="value">-</span>
-          </div>
-          <div class="status-item">
-            <span class="label">系统主题:</span>
-            <span id="system-theme" class="value">-</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 颜色生成演示 -->
-      <section class="color-generator">
-        <h2>颜色生成演示</h2>
-        
-        <div class="generator-controls">
-          <label for="primary-color">主色调:</label>
-          <input type="color" id="primary-color" value="#1890ff">
-          <button id="generate-colors" class="btn btn-primary">生成颜色</button>
-        </div>
-
-        <div id="generated-colors" class="color-palette">
-          <!-- 生成的颜色将在这里显示 -->
-        </div>
-      </section>
-
-      <!-- 色阶展示 -->
-      <section class="color-scales">
-        <h2>色阶展示</h2>
-        <div id="color-scales-container" class="scales-container">
-          <!-- 色阶将在这里显示 -->
-        </div>
-      </section>
-
-      <!-- 自定义主题 -->
-      <section class="custom-theme">
-        <h2>自定义主题</h2>
-        
-        <div class="custom-controls">
           <div class="control-group">
-            <label for="custom-name">主题名称:</label>
-            <input type="text" id="custom-name" placeholder="输入主题名称">
+            <label for="theme-select">选择主题:</label>
+            <select id="theme-select" class="theme-select">
+              <option value="">加载中...</option>
+            </select>
           </div>
-          
-          <div class="control-group">
-            <label for="custom-primary">主色调:</label>
-            <input type="color" id="custom-primary" value="#ff6b35">
-          </div>
-          
-          <div class="control-group">
-            <label for="custom-dark-primary">暗色主色调:</label>
-            <input type="color" id="custom-dark-primary" value="#e55a2b">
-          </div>
-          
-          <button id="create-custom-theme" class="btn btn-primary">创建自定义主题</button>
-        </div>
-      </section>
 
-      <!-- 性能信息 -->
-      <section class="performance-info">
-        <h2>性能信息</h2>
-        <div id="performance-stats" class="stats-grid">
-          <!-- 性能统计将在这里显示 -->
-        </div>
-      </section>
+          <div class="control-group">
+            <label for="mode-select">颜色模式:</label>
+            <select id="mode-select" class="mode-select">
+              <option value="light">亮色模式</option>
+              <option value="dark">暗色模式</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <button id="toggle-mode" class="btn btn-primary">切换模式</button>
+            <button id="random-theme" class="btn btn-secondary">随机主题</button>
+            <button id="system-sync" class="btn btn-secondary">同步系统主题</button>
+          </div>
+
+          <div class="status-info">
+            <div class="status-item">
+              <span class="label">当前主题:</span>
+              <span id="current-theme" class="value">-</span>
+            </div>
+            <div class="status-item">
+              <span class="label">当前模式:</span>
+              <span id="current-mode" class="value">-</span>
+            </div>
+            <div class="status-item">
+              <span class="label">系统主题:</span>
+              <span id="system-theme" class="value">-</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 主题预览 -->
+        <section class="card">
+          <h2 class="card-title">🎨 主题预览</h2>
+          <p class="card-description">选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案</p>
+
+          <!-- 基础主题 -->
+          <div class="theme-section">
+            <h3 class="section-title">基础主题</h3>
+            <div id="basic-themes" class="theme-grid">
+              <!-- 基础主题将在这里显示 -->
+            </div>
+          </div>
+
+          <!-- 彩色主题 -->
+          <div class="theme-section">
+            <h3 class="section-title">彩色主题</h3>
+            <div id="colorful-themes" class="theme-grid">
+              <!-- 彩色主题将在这里显示 -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 颜色生成器 -->
+        <section class="card">
+          <h2 class="card-title">🎨 颜色生成器</h2>
+          <p class="card-description">从主色调实时生成完整色彩体系，包括成功、警告、危险、灰色等配套颜色</p>
+
+          <div class="generator-controls">
+            <div class="form-group">
+              <label class="form-label">主色调</label>
+              <div class="color-input-group">
+                <input type="color" id="primary-color" class="color-picker" value="#1890ff">
+                <input type="text" id="primary-color-text" class="form-control" placeholder="#1890ff" value="#1890ff">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">生成策略</label>
+              <select id="generation-preset" class="form-control">
+                <option value="default">默认</option>
+                <option value="soft">柔和</option>
+                <option value="vibrant">鲜艳</option>
+                <option value="monochrome">单色</option>
+              </select>
+            </div>
+
+            <button id="generate-colors" class="btn btn-primary">
+              <span class="icon">🎨</span>
+              生成颜色
+            </button>
+          </div>
+
+          <!-- 生成状态指示器 -->
+          <div id="generating-indicator" class="generating-indicator" style="display: none;">
+            <div class="spinner"></div>
+            <span>正在生成颜色...</span>
+          </div>
+
+          <!-- 生成的颜色展示 -->
+          <div id="generated-colors" class="generated-colors">
+            <!-- 生成的颜色将在这里显示 -->
+          </div>
+
+          <!-- 色阶预览 -->
+          <div id="color-scales-preview" class="color-scales-preview">
+            <h3 class="scales-title">色阶预览</h3>
+            <div id="scales-container" class="scales-container">
+              <!-- 色阶将在这里显示 -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 色阶展示 -->
+        <section class="card">
+          <h2 class="card-title">🌈 色阶展示</h2>
+          <p class="card-description">当前主题的完整色阶展示，点击色块可复制颜色值</p>
+          <div id="color-scales-container" class="scales-container">
+            <!-- 色阶将在这里显示 -->
+          </div>
+        </section>
+
+        <!-- 自定义主题 -->
+        <section class="card">
+          <h2 class="card-title">🔧 自定义主题</h2>
+          <p class="card-description">创建您专属的主题配色方案</p>
+
+          <div class="custom-controls">
+            <div class="form-group">
+              <label class="form-label" for="custom-name">主题名称</label>
+              <input type="text" id="custom-name" class="form-control" placeholder="输入主题名称">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custom-primary">亮色模式主色调</label>
+              <input type="color" id="custom-primary" class="color-picker" value="#ff6b35">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custom-dark-primary">暗色模式主色调</label>
+              <input type="color" id="custom-dark-primary" class="color-picker" value="#e55a2b">
+            </div>
+
+            <button id="create-custom-theme" class="btn btn-primary">
+              <span class="icon">✨</span>
+              创建并应用主题
+            </button>
+          </div>
+        </section>
+
+        <!-- 性能监控 -->
+        <section class="card">
+          <h2 class="card-title">📊 性能监控</h2>
+          <p class="card-description">实时监控主题系统的性能状态和统计信息</p>
+          <div id="performance-stats" class="stats-grid">
+            <!-- 性能统计将在这里显示 -->
+          </div>
+          <div class="performance-actions">
+            <button id="pregenerate-all" class="btn btn-secondary">
+              <span class="icon">⚡</span>
+              预生成所有主题
+            </button>
+            <button id="refresh-stats" class="btn btn-secondary">
+              <span class="icon">🔄</span>
+              刷新统计
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
 
     <!-- 底部 -->
