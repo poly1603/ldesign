@@ -6,9 +6,7 @@ import ThemePreview from '@/components/ThemePreview.vue'
 import ColorGenerator from '@/components/ColorGenerator.vue'
 import ColorScales from '@/components/ColorScales.vue'
 import CustomThemeCreator from '@/components/CustomThemeCreator.vue'
-import ComposableDemo from '@/components/ComposableDemo.vue'
 import PerformanceMonitor from '@/components/PerformanceMonitor.vue'
-import SystemThemeSync from '@/components/SystemThemeSync.vue'
 import Notification from '@/components/Notification.vue'
 </script>
 
@@ -23,29 +21,20 @@ import Notification from '@/components/Notification.vue'
         <!-- 主题控制面板 -->
         <ThemeControlPanel />
 
-        <!-- 功能演示区域 -->
-        <div class="demo-grid">
-          <!-- 主题预览 -->
-          <ThemePreview />
+        <!-- 主题预览 -->
+        <ThemePreview />
 
-          <!-- 颜色生成器 -->
-          <ColorGenerator />
+        <!-- 颜色生成器 -->
+        <ColorGenerator />
 
-          <!-- 色阶展示 -->
-          <ColorScales />
+        <!-- 色阶展示 -->
+        <ColorScales />
 
-          <!-- 自定义主题 -->
-          <CustomThemeCreator />
+        <!-- 自定义主题 -->
+        <CustomThemeCreator />
 
-          <!-- 组合式 API 演示 -->
-          <ComposableDemo />
-
-          <!-- 性能监控 -->
-          <PerformanceMonitor />
-
-          <!-- 系统主题同步 -->
-          <SystemThemeSync />
-        </div>
+        <!-- 性能监控 -->
+        <PerformanceMonitor />
       </div>
     </main>
 
@@ -66,25 +55,19 @@ import Notification from '@/components/Notification.vue'
 
 .main {
   flex: 1;
-  padding: 2rem 0;
+  padding: 2rem 1rem;
+  background: var(--color-background-light, #f9fafb);
 }
 
-.demo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
   .main {
-    padding: 1rem 0;
-  }
-
-  .demo-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-top: 1rem;
+    padding: 1rem 0.5rem;
   }
 }
 </style>

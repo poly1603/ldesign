@@ -7,6 +7,8 @@ import type {
   Middleware
 } from './types'
 
+import './styles/index.less'
+
 // 导出主要类型
 export type {
   Engine,

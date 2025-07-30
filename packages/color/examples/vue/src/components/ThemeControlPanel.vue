@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useTheme } from '@ldesign/color/vue'
-import { getRandomPresetTheme } from '@ldesign/color'
+import { getRandomPresetTheme, getSystemTheme } from '@ldesign/color'
 import type { ColorMode } from '@ldesign/color'
 
 const {
@@ -15,11 +15,7 @@ const {
 } = useTheme()
 
 const selectedTheme = ref(currentTheme.value)
-
-const modes = [
-  { value: 'light' as ColorMode, label: '亮色', icon: '☀️' },
-  { value: 'dark' as ColorMode, label: '暗色', icon: '🌙' },
-]
+const systemTheme = ref(getSystemTheme())
 
 // 监听当前主题变化，同步选择器
 watch(currentTheme, (newTheme) => {
@@ -56,6 +52,19 @@ async function randomTheme() {
   await setTheme(randomThemeConfig.name)
 }
 
+// 随机主题
+async function handleRandomTheme() {
+  const randomTheme = getRandomPresetTheme()
+  await setTheme(randomTheme.name)
+}
+
+// 同步系统主题
+function syncSystemTheme() {
+  const currentSystemTheme = getSystemTheme()
+  systemTheme.value = currentSystemTheme
+  setMode(currentSystemTheme)
+}
+
 // 重置为默认主题
 async function resetToDefault() {
   await setTheme('default')
@@ -66,253 +75,175 @@ async function resetToDefault() {
 <template>
   <div class="card">
     <h2 class="card-title">
-      🎨 主题控制面板
+      🎛️ 主题控制
     </h2>
 
-    <div class="controls-grid">
-      <!-- 主题选择 -->
-      <div class="control-group">
-        <label class="form-label">选择主题</label>
-        <select
-          v-model="selectedTheme"
-          class="form-control"
-          @change="handleThemeChange"
+    <div class="control-group">
+      <label for="theme-select">选择主题:</label>
+      <select
+        id="theme-select"
+        v-model="selectedTheme"
+        class="theme-select"
+        @change="handleThemeChange"
+      >
+        <option
+          v-for="theme in availableThemes"
+          :key="theme"
+          :value="theme"
         >
-          <option
-            v-for="theme in availableThemes"
-            :key="theme"
-            :value="theme"
-          >
-            {{ getThemeDisplayName(theme) }}
-          </option>
-        </select>
+          {{ getThemeDisplayName(theme) }}
+        </option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="mode-select">颜色模式:</label>
+      <select
+        id="mode-select"
+        :value="currentMode"
+        class="mode-select"
+        @change="setMode($event.target.value)"
+      >
+        <option value="light">亮色模式</option>
+        <option value="dark">暗色模式</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <button
+        class="btn btn-primary"
+        @click="toggleMode"
+      >
+        切换到{{ currentMode === 'light' ? '暗色' : '亮色' }}模式
+      </button>
+      <button
+        class="btn btn-secondary"
+        @click="handleRandomTheme"
+      >
+        随机主题
+      </button>
+      <button
+        class="btn btn-secondary"
+        @click="syncSystemTheme"
+      >
+        同步系统主题
+      </button>
+    </div>
+
+    <div class="status-info">
+      <div class="status-item">
+        <span class="label">当前主题:</span>
+        <span class="value">{{ getThemeDisplayName(currentTheme) }}</span>
       </div>
-
-      <!-- 模式选择 -->
-      <div class="control-group">
-        <label class="form-label">颜色模式</label>
-        <div class="mode-selector">
-          <button
-            v-for="mode in modes"
-            :key="mode.value"
-            class="mode-btn" :class="[
-              { active: currentMode === mode.value },
-            ]"
-            @click="setMode(mode.value)"
-          >
-            <span class="mode-icon">{{ mode.icon }}</span>
-            <span class="mode-label">{{ mode.label }}</span>
-          </button>
-        </div>
+      <div class="status-item">
+        <span class="label">当前模式:</span>
+        <span class="value">{{ currentMode === 'light' ? '亮色模式' : '暗色模式' }}</span>
       </div>
-
-      <!-- 快速操作 -->
-      <div class="control-group">
-        <label class="form-label">快速操作</label>
-        <div class="quick-actions">
-          <button
-            class="btn btn-secondary btn-sm"
-            title="切换亮色/暗色模式"
-            @click="toggleMode"
-          >
-            <span class="icon">🔄</span>
-            切换模式
-          </button>
-
-          <button
-            class="btn btn-secondary btn-sm"
-            title="随机选择主题"
-            @click="randomTheme"
-          >
-            <span class="icon">🎲</span>
-            随机主题
-          </button>
-
-          <button
-            class="btn btn-secondary btn-sm"
-            title="重置为默认主题"
-            @click="resetToDefault"
-          >
-            <span class="icon">🏠</span>
-            重置默认
-          </button>
-        </div>
-      </div>
-
-      <!-- 主题预览 -->
-      <div class="control-group full-width">
-        <label class="form-label">主题预览</label>
-        <div class="theme-preview">
-          <div class="preview-colors">
-            <div
-              v-for="color in previewColors"
-              :key="color.name"
-              class="preview-color" :class="[color.name]"
-              :title="`${color.label}: ${color.value}`"
-            >
-              <span class="color-label">{{ color.label }}</span>
-            </div>
-          </div>
-        </div>
+      <div class="status-item">
+        <span class="label">系统主题:</span>
+        <span class="value">{{ systemTheme }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.controls-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
 .control-group {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 1.5rem;
 }
 
-.full-width {
-  grid-column: 1 / -1;
+.control-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.875rem;
 }
 
-.mode-selector {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.mode-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.75rem 0.5rem;
-  border: 2px solid var(--color-border, #e8e8e8);
-  border-radius: 8px;
-  background: var(--color-background, #ffffff);
-  color: var(--color-text, #333);
-  cursor: pointer;
+.theme-select,
+.mode-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: 0.875rem;
   transition: all 0.2s ease;
 }
 
-.mode-btn:hover {
-  border-color: var(--color-primary, #1890ff);
-  background: var(--color-primary-1, #e6f7ff);
+.theme-select:focus,
+.mode-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
 }
 
-.mode-btn.active {
-  border-color: var(--color-primary, #1890ff);
-  background: var(--color-primary, #1890ff);
-  color: white;
-}
-
-.mode-icon {
-  font-size: 1.25rem;
-}
-
-.mode-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.quick-actions .btn {
-  flex: 1;
-  min-width: 120px;
-}
-
-.icon {
-  margin-right: 0.25rem;
-}
-
-.theme-preview {
-  border: 1px solid var(--color-border, #e8e8e8);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.preview-colors {
-  display: flex;
-  height: 80px;
-}
-
-.preview-color {
-  flex: 1;
-  display: flex;
+.btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 500;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
   font-size: 0.875rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s ease;
-  position: relative;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.preview-color:hover {
-  transform: scale(1.05);
-  z-index: 1;
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
 }
 
-.preview-color.primary {
-  background: var(--color-primary, #1890ff);
+.btn-primary:hover {
+  background: #0958d9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.preview-color.success {
-  background: var(--color-success, #52c41a);
+.btn-secondary {
+  background: var(--color-background);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
-.preview-color.warning {
-  background: var(--color-warning, #faad14);
+.btn-secondary:hover {
+  background: var(--color-background-light);
+  border-color: var(--color-primary);
 }
 
-.preview-color.danger {
-  background: var(--color-danger, #ff4d4f);
+.status-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
 }
 
-.preview-color.gray {
-  background: var(--color-gray-5, #8c8c8c);
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
 }
 
-.color-label {
-  font-size: 0.75rem;
-  opacity: 0.9;
+.status-item .label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
 }
 
-@media (max-width: 768px) {
-  .controls-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .mode-selector {
-    flex-direction: column;
-  }
-
-  .mode-btn {
-    flex-direction: row;
-    justify-content: center;
-    padding: 0.5rem 1rem;
-  }
-
-  .quick-actions .btn {
-    min-width: auto;
-  }
-
-  .preview-colors {
-    flex-wrap: wrap;
-    height: auto;
-  }
-
-  .preview-color {
-    min-height: 50px;
-    flex-basis: 50%;
-  }
+.status-item .value {
+  font-weight: 600;
+  color: var(--color-primary);
 }
 </style>

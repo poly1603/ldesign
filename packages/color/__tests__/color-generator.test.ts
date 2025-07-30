@@ -159,6 +159,19 @@ describe('color-generator', () => {
       expect(colors1.success).not.toBe(colors2.success)
       expect(colors1.warning).not.toBe(colors2.warning)
       expect(colors1.danger).not.toBe(colors2.danger)
+      // 注意：使用纯中性灰色时，不同主色调的灰色应该相同
+      expect(colors1.gray).toBe(colors2.gray)
+    })
+
+    it('should generate different gray colors when using tinted gray generator', () => {
+      const generator = new ColorGeneratorImpl({ grayMixPrimary: true })
+      const colors1 = generator.generateColors('#1890ff')
+      const colors2 = generator.generateColors('#52c41a')
+
+      expect(colors1.success).not.toBe(colors2.success)
+      expect(colors1.warning).not.toBe(colors2.warning)
+      expect(colors1.danger).not.toBe(colors2.danger)
+      // 使用带主色调倾向的灰色时，不同主色调的灰色应该不同
       expect(colors1.gray).not.toBe(colors2.gray)
     })
   })

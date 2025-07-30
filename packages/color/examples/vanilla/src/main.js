@@ -6,9 +6,12 @@ import {
   createCustomTheme,
   createThemeManagerWithPresets,
   generateColorConfig,
+  generateColorScales,
   getRandomPresetTheme,
   getSystemTheme,
   watchSystemTheme,
+  presetThemes,
+  themeCategories,
 } from '@ldesign/color'
 
 class ColorDemo {
@@ -60,15 +63,23 @@ class ColorDemo {
       currentTheme: document.getElementById('current-theme'),
       currentMode: document.getElementById('current-mode'),
       systemTheme: document.getElementById('system-theme'),
+      basicThemes: document.getElementById('basic-themes'),
+      colorfulThemes: document.getElementById('colorful-themes'),
       primaryColorInput: document.getElementById('primary-color'),
+      primaryColorText: document.getElementById('primary-color-text'),
+      generationPreset: document.getElementById('generation-preset'),
       generateColorsBtn: document.getElementById('generate-colors'),
+      generatingIndicator: document.getElementById('generating-indicator'),
       generatedColors: document.getElementById('generated-colors'),
+      scalesContainer: document.getElementById('scales-container'),
       colorScalesContainer: document.getElementById('color-scales-container'),
       customName: document.getElementById('custom-name'),
       customPrimary: document.getElementById('custom-primary'),
       customDarkPrimary: document.getElementById('custom-dark-primary'),
       createCustomThemeBtn: document.getElementById('create-custom-theme'),
       performanceStats: document.getElementById('performance-stats'),
+      pregenerateAllBtn: document.getElementById('pregenerate-all'),
+      refreshStatsBtn: document.getElementById('refresh-stats'),
     }
   }
 
@@ -93,6 +104,9 @@ class ColorDemo {
 
     // 填充主题选择器
     this.populateThemeSelect()
+
+    // 渲染主题预览
+    this.renderThemePreview()
   }
 
   populateThemeSelect() {
@@ -110,6 +124,81 @@ class ColorDemo {
   getThemeDisplayName(themeName) {
     const themeConfig = this.themeManager.getThemeConfig(themeName)
     return themeConfig?.displayName || themeName
+  }
+
+  renderThemePreview() {
+    // 渲染基础主题
+    this.renderThemeCategory('basic', this.elements.basicThemes, themeCategories.basic)
+
+    // 渲染彩色主题
+    this.renderThemeCategory('colorful', this.elements.colorfulThemes, themeCategories.colorful)
+  }
+
+  renderThemeCategory(categoryName, container, themes) {
+    container.innerHTML = ''
+
+    themes.forEach(theme => {
+      const themeCard = this.createThemeCard(theme)
+      container.appendChild(themeCard)
+    })
+  }
+
+  createThemeCard(theme) {
+    const card = document.createElement('div')
+    card.className = 'theme-card'
+    card.dataset.themeName = theme.name
+
+    // 检查是否为当前主题
+    if (theme.name === this.themeManager.getCurrentTheme()) {
+      card.classList.add('active')
+    }
+
+    // 生成主题颜色预览
+    const lightColors = generateColorConfig(theme.light.primary)
+    const darkColors = generateColorConfig(theme.dark.primary)
+
+    card.innerHTML = `
+      <div class="theme-info">
+        <div class="theme-name">${theme.displayName}</div>
+        <div class="theme-description">${theme.description}</div>
+      </div>
+
+      <div class="theme-colors">
+        <div class="theme-color" style="background-color: ${lightColors.primary}" title="主色调"></div>
+        <div class="theme-color" style="background-color: ${lightColors.success}" title="成功色"></div>
+        <div class="theme-color" style="background-color: ${lightColors.warning}" title="警告色"></div>
+        <div class="theme-color" style="background-color: ${lightColors.danger}" title="危险色"></div>
+        <div class="theme-color" style="background-color: ${lightColors.gray}" title="灰色"></div>
+      </div>
+
+      <div class="theme-modes">
+        <div class="theme-mode">亮色模式</div>
+        <div class="theme-mode">暗色模式</div>
+      </div>
+    `
+
+    // 点击切换主题
+    card.addEventListener('click', () => {
+      this.themeManager.setTheme(theme.name)
+      this.updateThemePreviewActive()
+    })
+
+    return card
+  }
+
+  updateThemePreviewActive() {
+    const currentTheme = this.themeManager.getCurrentTheme()
+
+    // 移除所有活跃状态
+    document.querySelectorAll('.theme-card').forEach(card => {
+      card.classList.remove('active')
+    })
+
+    // 添加当前主题的活跃状态
+    const activeCard = document.querySelector(`[data-theme-name="${currentTheme}"]`)
+    if (activeCard) {
+      activeCard.classList.add('active')
+    }
   }
 
   bindEvents() {
@@ -155,8 +244,34 @@ class ColorDemo {
     })
 
     // 主色调输入变化
-    this.elements.primaryColorInput.addEventListener('input', () => {
+    this.elements.primaryColorInput.addEventListener('input', (e) => {
+      this.elements.primaryColorText.value = e.target.value
       this.generateAndDisplayColors()
+    })
+
+    // 主色调文本输入变化
+    this.elements.primaryColorText.addEventListener('input', (e) => {
+      if (this.isValidHexColor(e.target.value)) {
+        this.elements.primaryColorInput.value = e.target.value
+        this.generateAndDisplayColors()
+      }
+    })
+
+    // 预生成所有主题
+    this.elements.pregenerateAllBtn.addEventListener('click', async () => {
+      try {
+        await this.themeManager.preGenerateAllThemes()
+        this.showToast('所有主题预生成完成', 'success')
+        this.updatePerformanceStats()
+      } catch (error) {
+        this.showToast('预生成失败', 'error')
+      }
+    })
+
+    // 刷新统计
+    this.elements.refreshStatsBtn.addEventListener('click', () => {
+      this.updatePerformanceStats()
+      this.showToast('统计信息已刷新', 'success')
     })
   }
 
@@ -174,8 +289,8 @@ class ColorDemo {
     const currentMode = this.themeManager.getCurrentMode()
 
     // 更新状态显示
-    this.elements.currentTheme.textContent = currentTheme
-    this.elements.currentMode.textContent = currentMode
+    this.elements.currentTheme.textContent = this.getThemeDisplayName(currentTheme)
+    this.elements.currentMode.textContent = currentMode === 'light' ? '亮色模式' : '暗色模式'
 
     // 更新选择器
     this.elements.themeSelect.value = currentTheme
@@ -184,18 +299,40 @@ class ColorDemo {
     // 更新切换按钮文本
     const nextMode = currentMode === 'light' ? '暗色' : '亮色'
     this.elements.toggleModeBtn.textContent = `切换到${nextMode}模式`
+
+    // 更新主题预览活跃状态
+    this.updateThemePreviewActive()
+
+    // 更新性能统计
+    this.updatePerformanceStats()
   }
 
-  generateAndDisplayColors() {
+  async generateAndDisplayColors() {
     const primaryColor = this.elements.primaryColorInput.value
 
+    // 显示生成指示器
+    this.elements.generatingIndicator.style.display = 'flex'
+    this.elements.generatedColors.style.opacity = '0.5'
+
     try {
+      // 模拟异步处理
+      await new Promise(resolve => setTimeout(resolve, 300))
+
       const colorConfig = generateColorConfig(primaryColor)
       this.displayGeneratedColors(colorConfig)
-    }
-    catch (error) {
+
+      // 生成色阶预览
+      const lightScales = generateColorScales(colorConfig, 'light')
+      const darkScales = generateColorScales(colorConfig, 'dark')
+      this.displayColorScalesPreview(lightScales, darkScales)
+
+    } catch (error) {
       console.error('颜色生成失败:', error)
       this.showError(`颜色生成失败: ${error.message}`)
+    } finally {
+      // 隐藏生成指示器
+      this.elements.generatingIndicator.style.display = 'none'
+      this.elements.generatedColors.style.opacity = '1'
     }
   }
 
@@ -232,6 +369,23 @@ class ColorDemo {
       })
 
       container.appendChild(colorItem)
+    })
+  }
+
+  displayColorScalesPreview(lightScales, darkScales) {
+    const container = this.elements.scalesContainer
+    container.innerHTML = ''
+
+    const currentMode = this.themeManager.getCurrentMode()
+    const scales = currentMode === 'light' ? lightScales : darkScales
+
+    const colorCategories = ['primary', 'success', 'warning', 'danger', 'gray']
+
+    colorCategories.forEach((category) => {
+      if (scales[category]) {
+        const scaleGroup = this.createScaleGroup(category, scales[category])
+        container.appendChild(scaleGroup)
+      }
     })
   }
 
@@ -389,6 +543,10 @@ class ColorDemo {
   }
 
   // 工具方法
+  isValidHexColor(hex) {
+    return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)
+  }
+
   async copyToClipboard(text) {
     try {
       if (navigator.clipboard) {

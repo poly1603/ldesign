@@ -48,8 +48,9 @@ onMounted(() => {
 <template>
   <div class="card">
     <h2 class="card-title">
-      ⚡ 性能监控
+      📊 性能监控
     </h2>
+    <p class="card-description">实时监控主题系统的性能状态和统计信息</p>
 
     <div class="stats-grid">
       <div class="stat-item">
@@ -108,11 +109,13 @@ onMounted(() => {
     </div>
 
     <div class="performance-actions">
-      <button class="btn btn-sm btn-secondary" @click="refreshStats">
-        🔄 刷新统计
+      <button class="btn btn-secondary" @click="preGenerateAll">
+        <span class="icon">⚡</span>
+        预生成所有主题
       </button>
-      <button class="btn btn-sm btn-secondary" @click="preGenerateAll">
-        ⚡ 预生成所有主题
+      <button class="btn btn-secondary" @click="refreshStats">
+        <span class="icon">🔄</span>
+        刷新统计
       </button>
     </div>
   </div>

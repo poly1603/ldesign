@@ -18,6 +18,8 @@ interface ColorGenerationConfig {
   dangerHueOffset: number
   /** 灰色饱和度 */
   graySaturation: number
+  /** 是否混入主色调到灰色中 */
+  grayMixPrimary: boolean
   /** 饱和度调整范围 */
   saturationRange: [number, number]
   /** 亮度调整范围 */
@@ -32,6 +34,7 @@ const DEFAULT_CONFIG: ColorGenerationConfig = {
   warningHueOffset: 45, // 橙色区域
   dangerHueOffset: 0, // 红色区域（与主色调相近）
   graySaturation: 8, // 低饱和度灰色
+  grayMixPrimary: false, // 默认不混入主色调，生成纯中性灰色
   saturationRange: [0.7, 1.2], // 饱和度调整倍数
   lightnessRange: [0.8, 1.2], // 亮度调整倍数
 }
@@ -177,35 +180,60 @@ export class ColorGeneratorImpl implements ColorGenerator {
 
   /**
    * 生成灰色系
-   * 基于色彩和谐理论，生成带有主色调倾向的中性灰色
+   * 基于配置选择生成纯中性灰色或带有主色调倾向的灰色
    */
   private generateGrayColor(primaryHsl: { h: number, s: number, l: number }): string {
-    // 保持主色调的色相，但大幅降低饱和度，创建带有主色调倾向的灰色
-    const hue = primaryHsl.h
+    if (this.config.grayMixPrimary) {
+      // 混入主色调的灰色
+      const hue = primaryHsl.h
+      const saturation = Math.max(3, Math.min(15, primaryHsl.s * 0.2))
+      const lightness = 55
+      return hslToHex(hue, saturation, lightness)
+    } else {
+      // 纯中性灰色（基于a-nice-red算法的中性色生成）
+      return this.generateNeutralGray()
+    }
+  }
 
-    // 灰色的饱和度应该很低，但保留一点主色调的倾向
-    const saturation = Math.max(3, Math.min(15, primaryHsl.s * 0.2))
-
-    // 灰色的亮度应该是中性的
-    const lightness = 55
+  /**
+   * 生成纯中性灰色
+   * 基于a-nice-red算法，生成不带任何色彩倾向的中性灰色
+   */
+  private generateNeutralGray(): string {
+    // 使用0度色相（红色）但极低饱和度，创建真正的中性灰
+    // 这是a-nice-red算法中推荐的中性色生成方式
+    const hue = 0
+    const saturation = 0 // 完全无饱和度
+    const lightness = 55 // 中等亮度
 
     return hslToHex(hue, saturation, lightness)
   }
 
   /**
    * 生成四个基础灰色
-   * 基于主色调生成四个不同层次的灰色，用于后续的色阶插值
+   * 基于a-nice-red算法和配置选择生成纯中性或带主色调倾向的基础灰色
    */
   generateBaseGrays(primaryHsl: { h: number, s: number, l: number }): string[] {
-    const hue = primaryHsl.h
-    // 灰色的饱和度应该很低，但保留一点主色调的倾向
-    const baseSaturation = Math.max(3, Math.min(15, primaryHsl.s * 0.2))
+    // 根据配置决定色相和饱和度
+    let hue: number
+    let saturation: number
 
-    // 生成四个基础灰色：浅灰、中浅灰、中深灰、深灰
-    const lightnesses = [85, 65, 45, 25]
+    if (this.config.grayMixPrimary) {
+      // 混入主色调的灰色
+      hue = primaryHsl.h
+      saturation = Math.max(3, Math.min(15, primaryHsl.s * 0.2))
+    } else {
+      // 纯中性灰色（a-nice-red推荐方式）
+      hue = 0
+      saturation = 0
+    }
+
+    // 生成四个基础灰色的亮度值：浅灰、中浅灰、中深灰、深灰
+    // 这些亮度值经过优化，确保良好的视觉层次和对比度
+    const lightnesses = [88, 68, 45, 22]
 
     return lightnesses.map(lightness => {
-      return hslToHex(hue, baseSaturation, lightness)
+      return hslToHex(hue, saturation, lightness)
     })
   }
 
@@ -327,21 +355,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     return { ...this.config }
   }
 
-  /**
-   * 生成四个基础灰色（参考 a-nice-red 算法）
-   * 返回从浅到深的四个灰色值
-   */
-  generateBaseGrays(primaryHsl: { h: number, s: number, l: number }): string[] {
-    const hue = primaryHsl.h
-    const baseSaturation = this.config.graySaturation
 
-    // 生成四个不同亮度的灰色
-    const lightnesses = [85, 65, 45, 25] // 从浅到深
-
-    return lightnesses.map(lightness => {
-      return hslToHex(hue, baseSaturation, lightness)
-    })
-  }
 
   /**
    * 生成色阶（实现 ColorGenerator 接口）
@@ -383,9 +397,31 @@ export function createColorGenerator(config?: Partial<ColorGenerationConfig>): C
 }
 
 /**
- * 默认颜色生成器实例
+ * 创建纯中性灰色生成器
+ * 生成不带任何色彩倾向的纯中性灰色
  */
-export const defaultColorGenerator = new ColorGeneratorImpl()
+export function createNeutralGrayGenerator(): ColorGenerator {
+  return new ColorGeneratorImpl({
+    grayMixPrimary: false,
+    graySaturation: 0,
+  })
+}
+
+/**
+ * 创建带主色调倾向的灰色生成器
+ * 生成带有主色调倾向的灰色
+ */
+export function createTintedGrayGenerator(saturation: number = 8): ColorGenerator {
+  return new ColorGeneratorImpl({
+    grayMixPrimary: true,
+    graySaturation: saturation,
+  })
+}
+
+/**
+ * 默认颜色生成器实例（使用纯中性灰色）
+ */
+export const defaultColorGenerator = createNeutralGrayGenerator()
 
 /**
  * 便捷函数：从主色调生成完整的颜色配置

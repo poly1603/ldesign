@@ -127,6 +127,8 @@ export {
   COLOR_GENERATION_PRESETS,
   ColorGeneratorImpl,
   createColorGenerator,
+  createNeutralGrayGenerator,
+  createTintedGrayGenerator,
   defaultColorGenerator,
   generateColorConfig,
   safeGenerateColorConfig,

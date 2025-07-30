@@ -44,7 +44,7 @@ declare class ColorScaleGenerator {
     generateScale(color: ColorValue, mode?: ColorMode): ColorScale;
     /**
      * 为灰色系生成特殊的色阶
-     * 先生成4个基础灰色，然后基于这些基础灰色平滑插值生成完整的10级色阶
+     * 基于a-nice-red算法，先生成4个基础中性色，然后通过平滑插值生成完整的10级色阶
      */
     generateGrayScale(baseGray: ColorValue, mode?: ColorMode): ColorScale;
     /**

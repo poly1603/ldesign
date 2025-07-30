@@ -17,6 +17,8 @@ interface ColorGenerationConfig {
     dangerHueOffset: number;
     /** 灰色饱和度 */
     graySaturation: number;
+    /** 是否混入主色调到灰色中 */
+    grayMixPrimary: boolean;
     /** 饱和度调整范围 */
     saturationRange: [number, number];
     /** 亮度调整范围 */
@@ -51,9 +53,23 @@ declare class ColorGeneratorImpl implements ColorGenerator {
     private generateDangerColor;
     /**
      * 生成灰色系
-     * 基于色彩和谐理论，生成带有主色调倾向的中性灰色
+     * 基于配置选择生成纯中性灰色或带有主色调倾向的灰色
      */
     private generateGrayColor;
+    /**
+     * 生成纯中性灰色
+     * 基于a-nice-red算法，生成不带任何色彩倾向的中性灰色
+     */
+    private generateNeutralGray;
+    /**
+     * 生成四个基础灰色
+     * 基于a-nice-red算法和配置选择生成纯中性或带主色调倾向的基础灰色
+     */
+    generateBaseGrays(primaryHsl: {
+        h: number;
+        s: number;
+        l: number;
+    }): string[];
     /**
      * 生成完整的灰色系配置
      * 基于四个基础灰色生成完整的灰色系统
@@ -108,9 +124,19 @@ declare class ColorGeneratorImpl implements ColorGenerator {
  */
 declare function createColorGenerator(config?: Partial<ColorGenerationConfig>): ColorGenerator;
 /**
- * 默认颜色生成器实例
+ * 创建纯中性灰色生成器
+ * 生成不带任何色彩倾向的纯中性灰色
  */
-declare const defaultColorGenerator: ColorGeneratorImpl;
+declare function createNeutralGrayGenerator(): ColorGenerator;
+/**
+ * 创建带主色调倾向的灰色生成器
+ * 生成带有主色调倾向的灰色
+ */
+declare function createTintedGrayGenerator(saturation?: number): ColorGenerator;
+/**
+ * 默认颜色生成器实例（使用纯中性灰色）
+ */
+declare const defaultColorGenerator: ColorGenerator;
 /**
  * 便捷函数：从主色调生成完整的颜色配置
  */
@@ -133,6 +159,7 @@ declare const COLOR_GENERATION_PRESETS: {
         readonly warningHueOffset: number;
         readonly dangerHueOffset: number;
         readonly graySaturation: number;
+        readonly grayMixPrimary: boolean;
     };
     /** 鲜艳配置 - 提高饱和度和对比度 */
     readonly vibrant: {
@@ -142,6 +169,7 @@ declare const COLOR_GENERATION_PRESETS: {
         readonly warningHueOffset: number;
         readonly dangerHueOffset: number;
         readonly graySaturation: number;
+        readonly grayMixPrimary: boolean;
     };
     /** 单色配置 - 基于主色调的不同明度 */
     readonly monochrome: {
@@ -149,9 +177,10 @@ declare const COLOR_GENERATION_PRESETS: {
         readonly warningHueOffset: 0;
         readonly dangerHueOffset: 0;
         readonly graySaturation: 0;
+        readonly grayMixPrimary: boolean;
         readonly saturationRange: [number, number];
         readonly lightnessRange: [number, number];
     };
 };
 
-export { COLOR_GENERATION_PRESETS, ColorGeneratorImpl, createColorGenerator, defaultColorGenerator, generateColorConfig, safeGenerateColorConfig };
+export { COLOR_GENERATION_PRESETS, ColorGeneratorImpl, createColorGenerator, createNeutralGrayGenerator, createTintedGrayGenerator, defaultColorGenerator, generateColorConfig, safeGenerateColorConfig };
