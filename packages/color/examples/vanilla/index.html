@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ldesign/color - Vanilla JavaScript 示例</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 头部 -->
+    <header class="header">
+      <h1>@ldesign/color</h1>
+      <p>Vanilla JavaScript 示例演示</p>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main">
+      <!-- 控制面板 -->
+      <section class="control-panel">
+        <h2>主题控制</h2>
+        
+        <div class="control-group">
+          <label for="theme-select">选择主题:</label>
+          <select id="theme-select" class="theme-select">
+            <option value="">加载中...</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="mode-select">颜色模式:</label>
+          <select id="mode-select" class="mode-select">
+            <option value="light">亮色模式</option>
+            <option value="dark">暗色模式</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <button id="toggle-mode" class="btn btn-primary">切换模式</button>
+          <button id="random-theme" class="btn btn-secondary">随机主题</button>
+          <button id="system-sync" class="btn btn-secondary">同步系统主题</button>
+        </div>
+
+        <div class="status-info">
+          <div class="status-item">
+            <span class="label">当前主题:</span>
+            <span id="current-theme" class="value">-</span>
+          </div>
+          <div class="status-item">
+            <span class="label">当前模式:</span>
+            <span id="current-mode" class="value">-</span>
+          </div>
+          <div class="status-item">
+            <span class="label">系统主题:</span>
+            <span id="system-theme" class="value">-</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 颜色生成演示 -->
+      <section class="color-generator">
+        <h2>颜色生成演示</h2>
+        
+        <div class="generator-controls">
+          <label for="primary-color">主色调:</label>
+          <input type="color" id="primary-color" value="#1890ff">
+          <button id="generate-colors" class="btn btn-primary">生成颜色</button>
+        </div>
+
+        <div id="generated-colors" class="color-palette">
+          <!-- 生成的颜色将在这里显示 -->
+        </div>
+      </section>
+
+      <!-- 色阶展示 -->
+      <section class="color-scales">
+        <h2>色阶展示</h2>
+        <div id="color-scales-container" class="scales-container">
+          <!-- 色阶将在这里显示 -->
+        </div>
+      </section>
+
+      <!-- 自定义主题 -->
+      <section class="custom-theme">
+        <h2>自定义主题</h2>
+        
+        <div class="custom-controls">
+          <div class="control-group">
+            <label for="custom-name">主题名称:</label>
+            <input type="text" id="custom-name" placeholder="输入主题名称">
+          </div>
+          
+          <div class="control-group">
+            <label for="custom-primary">主色调:</label>
+            <input type="color" id="custom-primary" value="#ff6b35">
+          </div>
+          
+          <div class="control-group">
+            <label for="custom-dark-primary">暗色主色调:</label>
+            <input type="color" id="custom-dark-primary" value="#e55a2b">
+          </div>
+          
+          <button id="create-custom-theme" class="btn btn-primary">创建自定义主题</button>
+        </div>
+      </section>
+
+      <!-- 性能信息 -->
+      <section class="performance-info">
+        <h2>性能信息</h2>
+        <div id="performance-stats" class="stats-grid">
+          <!-- 性能统计将在这里显示 -->
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部 -->
+    <footer class="footer">
+      <p>&copy; 2024 ldesign. 基于 MIT 许可证开源。</p>
+    </footer>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

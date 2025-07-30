@@ -2,6 +2,9 @@ node_modules
 dist
 cjs
 es
+lib
+.rollup.cache
 types/**/*.d.ts
+types/*.d.ts
 packages/engine/docs/.vitepress/cache/**
 packages/engine/docs/.vitepress/temp/**
