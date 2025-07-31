@@ -3,7 +3,7 @@
  * 参考：https://github.com/Jahallahan/a-nice-red
  */
 
-import type { ColorConfig, ColorGenerator } from '../core/types'
+import type { ColorConfig, ColorGenerator, ColorMode } from '../core/types'
 import { clamp, hexToHsl, hslToHex, isValidHex, normalizeHex, normalizeHue } from './color-converter'
 
 /**
@@ -45,6 +45,7 @@ const DEFAULT_CONFIG: ColorGenerationConfig = {
  */
 export class ColorGeneratorImpl implements ColorGenerator {
   private config: ColorGenerationConfig
+  private currentMode: ColorMode = 'light'
 
   constructor(config?: Partial<ColorGenerationConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config }
@@ -355,6 +356,62 @@ export class ColorGeneratorImpl implements ColorGenerator {
     return { ...this.config }
   }
 
+  /**
+   * 设置颜色模式
+   */
+  setMode(mode: ColorMode): void {
+    this.currentMode = mode
+  }
+
+  /**
+   * 切换颜色模式
+   */
+  toggleMode(): ColorMode {
+    this.currentMode = this.currentMode === 'light' ? 'dark' : 'light'
+    return this.currentMode
+  }
+
+  /**
+   * 获取当前颜色模式
+   */
+  getCurrentMode(): ColorMode {
+    return this.currentMode
+  }
+
+  /**
+   * 根据当前模式生成颜色
+   * 在不同模式下调整颜色的亮度和饱和度
+   */
+  generateColorsForCurrentMode(primary: string): Omit<ColorConfig, 'primary'> {
+    const baseColors = this.generateColors(primary)
+
+    if (this.currentMode === 'dark') {
+      // 暗色模式下调整颜色
+      return {
+        success: this.adjustColorForDarkMode(baseColors.success),
+        warning: this.adjustColorForDarkMode(baseColors.warning),
+        danger: this.adjustColorForDarkMode(baseColors.danger),
+        gray: this.adjustColorForDarkMode(baseColors.gray),
+      }
+    }
+
+    return baseColors
+  }
+
+  /**
+   * 为暗色模式调整颜色
+   */
+  private adjustColorForDarkMode(color: string): string {
+    const hsl = hexToHsl(color)
+    if (!hsl) return color
+
+    // 暗色模式下降低亮度，稍微提高饱和度
+    const adjustedLightness = Math.max(20, hsl.l * 0.7) // 降低亮度但不低于20
+    const adjustedSaturation = Math.min(100, hsl.s * 1.1) // 稍微提高饱和度
+
+    return hslToHex(hsl.h, adjustedSaturation, adjustedLightness)
+  }
+
 
 
   /**
@@ -386,6 +443,84 @@ export class ColorGeneratorImpl implements ColorGenerator {
     }
 
     return variables
+  }
+
+  /**
+   * 生成完整的CSS变量集合
+   * 包括基础颜色、色阶、中性色等
+   */
+  generateCompleteCSSVariables(
+    colors: Omit<ColorConfig, 'primary'>,
+    scales: Record<string, any>,
+    neutralColors?: any,
+    mode: ColorMode = 'light',
+    prefix = '--color'
+  ): Record<string, string> {
+    const variables: Record<string, string> = {}
+
+    // 基础颜色变量
+    for (const [category, color] of Object.entries(colors)) {
+      variables[`${prefix}-${category}`] = color as string
+    }
+
+    // 色阶变量
+    for (const [category, scale] of Object.entries(scales)) {
+      if (scale && scale.indices) {
+        for (const [index, color] of Object.entries(scale.indices)) {
+          variables[`${prefix}-${category}-${index}`] = color as string
+        }
+      }
+    }
+
+    // 中性色变量
+    if (neutralColors) {
+      for (const [category, scale] of Object.entries(neutralColors)) {
+        if (scale && scale.indices) {
+          for (const [index, color] of Object.entries(scale.indices)) {
+            variables[`${prefix}-${category}-${index}`] = color as string
+          }
+        }
+      }
+    }
+
+    // 语义化变量（根据模式调整）
+    this.addSemanticVariables(variables, colors, mode, prefix)
+
+    return variables
+  }
+
+  /**
+   * 添加语义化CSS变量
+   */
+  private addSemanticVariables(
+    variables: Record<string, string>,
+    colors: Omit<ColorConfig, 'primary'>,
+    mode: ColorMode,
+    prefix: string
+  ): void {
+    if (mode === 'light') {
+      // 亮色模式的语义化变量
+      variables[`${prefix}-background`] = '#ffffff'
+      variables[`${prefix}-background-secondary`] = '#f8f9fa'
+      variables[`${prefix}-background-tertiary`] = '#f1f3f4'
+      variables[`${prefix}-text-primary`] = '#212529'
+      variables[`${prefix}-text-secondary`] = '#6c757d'
+      variables[`${prefix}-text-tertiary`] = '#adb5bd'
+      variables[`${prefix}-border`] = '#dee2e6'
+      variables[`${prefix}-border-light`] = '#e9ecef'
+      variables[`${prefix}-shadow`] = 'rgba(0, 0, 0, 0.1)'
+    } else {
+      // 暗色模式的语义化变量
+      variables[`${prefix}-background`] = '#1a1a1a'
+      variables[`${prefix}-background-secondary`] = '#2d2d2d'
+      variables[`${prefix}-background-tertiary`] = '#404040'
+      variables[`${prefix}-text-primary`] = '#ffffff'
+      variables[`${prefix}-text-secondary`] = '#b3b3b3'
+      variables[`${prefix}-text-tertiary`] = '#808080'
+      variables[`${prefix}-border`] = '#404040'
+      variables[`${prefix}-border-light`] = '#333333'
+      variables[`${prefix}-shadow`] = 'rgba(0, 0, 0, 0.3)'
+    }
   }
 }
 

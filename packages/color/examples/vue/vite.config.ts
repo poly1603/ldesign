@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@ldesign/color': resolve(__dirname, '../../src')
     },
   },
   build: {

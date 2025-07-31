@@ -12,6 +12,8 @@ import {
   watchSystemTheme,
   presetThemes,
   themeCategories,
+  injectThemeVariables,
+  globalCSSInjector,
 } from '@ldesign/color'
 
 class ColorDemo {
@@ -303,8 +305,40 @@ class ColorDemo {
     // 更新主题预览活跃状态
     this.updateThemePreviewActive()
 
+    // 注入CSS变量
+    this.injectCurrentThemeVariables()
+
     // 更新性能统计
     this.updatePerformanceStats()
+  }
+
+  /**
+   * 注入当前主题的CSS变量
+   */
+  async injectCurrentThemeVariables() {
+    try {
+      const currentTheme = this.themeManager.getCurrentTheme()
+      const currentMode = this.themeManager.getCurrentMode()
+
+      // 获取当前主题配置
+      const themeConfig = this.themeManager.getThemeConfig(currentTheme)
+      if (!themeConfig) return
+
+      const modeConfig = themeConfig[currentMode]
+      if (!modeConfig) return
+
+      // 生成颜色配置
+      const colorConfig = generateColorConfig(modeConfig.primary)
+
+      // 生成色阶
+      const scales = generateColorScales(colorConfig, currentMode)
+
+      // 注入CSS变量
+      injectThemeVariables(colorConfig, scales, undefined, currentMode)
+
+    } catch (error) {
+      console.warn('CSS变量注入失败:', error)
+    }
   }
 
   async generateAndDisplayColors() {

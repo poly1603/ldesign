@@ -1,0 +1,17 @@
+{
+  "name": "@ldesign/device-vanilla-example",
+  "version": "1.0.0",
+  "description": "Vanilla JavaScript example for @ldesign/device",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ldesign/device": "file:../.."
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

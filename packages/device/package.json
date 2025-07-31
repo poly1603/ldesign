@@ -1,0 +1,91 @@
+{
+  "name": "@ldesign/device",
+  "version": "0.1.0",
+  "description": "Modern device information detection library with Vue3 integration",
+  "keywords": [
+    "device",
+    "detection",
+    "responsive",
+    "vue3",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/device#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ldesign/device.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/device/issues"
+  },
+  "main": "dist/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./dist/index.js"
+    },
+    "./vue": {
+      "types": "./types/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./dist/vue/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "es",
+    "types",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "build:types": "tsc --emitDeclarationOnly",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --fix",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "prepublishOnly": "npm run build",
+    "release": "changeset publish"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.6.4",
+    "@changesets/cli": "^2.27.1",
+    "@playwright/test": "^1.40.1",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/node": "^20.10.5",
+    "@vitest/coverage-v8": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "@vue/test-utils": "^2.4.3",
+    "eslint": "^8.56.0",
+    "happy-dom": "^12.10.3",
+    "rollup": "^4.9.1",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-vue": "^6.0.0",
+    "typescript": "^5.3.3",
+    "vitepress": "^1.6.3",
+    "vitest": "^1.1.0",
+    "vue": "^3.4.3"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "name": "@ldesign/router",
+  "version": "1.0.0",
+  "description": "A powerful Vue router library for Vue applications",
+  "type": "module",
+  "main": "dist/index.umd.js",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./es/index.js",
+      "require": "./dist/index.umd.js",
+      "types": "./es/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "es",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --fix",
+    "type-check": "tsc --noEmit",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "example:dev": "cd examples && npm run dev",
+    "example:build": "cd examples && npm run build"
+  },
+  "keywords": [
+    "vue",
+    "router",
+    "vue-router",
+    "navigation",
+    "spa",
+    "typescript"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/router"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/router#readme",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.6.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.5",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitest/coverage-v8": "^1.2.2",
+    "@vitest/ui": "^1.2.2",
+    "@vue/test-utils": "^2.4.4",
+    "eslint": "^8.56.0",
+    "happy-dom": "^13.3.1",
+    "rollup": "^4.9.6",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitepress": "^1.0.0-rc.40",
+    "vitest": "^1.2.2",
+    "vue": "^3.4.15"
+  }
+}

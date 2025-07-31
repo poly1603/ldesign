@@ -1,4 +1,4 @@
-import { ColorGenerator, ColorConfig } from '../core/types.js';
+import { ColorGenerator, ColorConfig, ColorMode } from '../core/types.js';
 
 /**
  * 基于 a-nice-red 算法的颜色生成器
@@ -30,6 +30,7 @@ interface ColorGenerationConfig {
  */
 declare class ColorGeneratorImpl implements ColorGenerator {
     private config;
+    private currentMode;
     constructor(config?: Partial<ColorGenerationConfig>);
     /**
      * 从主色调生成其他颜色
@@ -111,6 +112,27 @@ declare class ColorGeneratorImpl implements ColorGenerator {
      */
     getConfig(): ColorGenerationConfig;
     /**
+     * 设置颜色模式
+     */
+    setMode(mode: ColorMode): void;
+    /**
+     * 切换颜色模式
+     */
+    toggleMode(): ColorMode;
+    /**
+     * 获取当前颜色模式
+     */
+    getCurrentMode(): ColorMode;
+    /**
+     * 根据当前模式生成颜色
+     * 在不同模式下调整颜色的亮度和饱和度
+     */
+    generateColorsForCurrentMode(primary: string): Omit<ColorConfig, 'primary'>;
+    /**
+     * 为暗色模式调整颜色
+     */
+    private adjustColorForDarkMode;
+    /**
      * 生成色阶（实现 ColorGenerator 接口）
      */
     generateScale(color: string, _mode: 'light' | 'dark'): any;
@@ -118,6 +140,15 @@ declare class ColorGeneratorImpl implements ColorGenerator {
      * 生成 CSS 变量（实现 ColorGenerator 接口）
      */
     generateCSSVariables(scales: Record<string, any>, prefix?: string): Record<string, string>;
+    /**
+     * 生成完整的CSS变量集合
+     * 包括基础颜色、色阶、中性色等
+     */
+    generateCompleteCSSVariables(colors: Omit<ColorConfig, 'primary'>, scales: Record<string, any>, neutralColors?: any, mode?: ColorMode, prefix?: string): Record<string, string>;
+    /**
+     * 添加语义化CSS变量
+     */
+    private addSemanticVariables;
 }
 /**
  * 创建颜色生成器实例

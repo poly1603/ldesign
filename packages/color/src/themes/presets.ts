@@ -160,7 +160,7 @@ export const minimalTheme: ThemeConfig = {
     primary: '#595959', // 保持经典灰色
   },
   dark: {
-    primary: '#8c8c8c',
+    primary: '#a6a6a6', // 调整为更适合暗色模式的亮灰色，确保足够的对比度
   },
 }
 

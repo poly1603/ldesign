@@ -64,6 +64,9 @@ export type {
   GeneratedTheme,
   IdleProcessor,
   LRUCache,
+  // 中性色相关
+  NeutralColorCategory,
+  NeutralColors,
   // 组件接口
   Storage,
   SystemThemeDetector,
@@ -122,6 +125,16 @@ export type {
   RGB,
 } from './utils/color-converter'
 
+// 导出CSS变量工具
+export {
+  CSSVariableInjector,
+  getCSSVariableValue,
+  globalCSSInjector,
+  injectThemeVariables,
+  setCSSVariableValue,
+  toggleThemeMode,
+} from './utils/css-variables'
+
 // 导出颜色生成器
 export {
   COLOR_GENERATION_PRESETS,
@@ -136,20 +149,10 @@ export {
 
 // 导出色阶生成器
 export {
-  COLOR_SCALE_PRESETS,
   ColorScaleGenerator,
-  createColorScaleGenerator,
-  defaultColorScaleGenerator,
+  colorScaleGenerator,
   generateColorScale,
   generateColorScales,
-  getColorFromScale,
-  isValidColorScale,
-  safeGenerateColorScale,
-  safeGenerateColorScales,
-} from './utils/color-scale'
-
-export type {
-  ColorScaleOptions,
 } from './utils/color-scale'
 
 // 导出 CSS 注入器

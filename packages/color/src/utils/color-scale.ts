@@ -1,206 +1,229 @@
 /**
  * 色阶生成系统
- * 集成 @arco-design/color 库实现亮色和暗色模式的完整色阶生成
+ * 使用优化的HSL算法实现高质量的色阶生成，确保亮色和暗色模式都有正确的色阶效果
  */
 
-// @arco-design/color 类型声明
-declare module '@arco-design/color' {
-  interface RGB {
-    r: number
-    g: number
-    b: number
-  }
-
-  interface GenerateOptions {
-    list?: boolean
-    dark?: boolean
-    index?: number
-  }
-
-  export function generate(
-    color: string,
-    options?: GenerateOptions
-  ): string | string[] | RGB | RGB[]
-
-  export function getRgbStr(rgb: RGB): string
-}
-
-import { generate, getRgbStr } from '@arco-design/color'
-import type { ColorCategory, ColorMode, ColorScale, ColorValue } from '../core/types'
-import { isValidHex, normalizeHex, hexToHsl, hslToHex } from './color-converter'
+import type { ColorCategory, ColorMode, ColorScale, ColorValue, NeutralColors } from '../core/types'
+import { hexToHsl, hslToHex, isValidHex, normalizeHex } from './color-converter'
 
 /**
- * 色阶生成选项
+ * 不同颜色类别的默认色阶配置
  */
-export interface ColorScaleOptions {
-  /** 色阶数量 */
-  count?: number
-  /** 颜色模式 */
-  mode?: ColorMode
-  /** 是否包含原色 */
-  includeOriginal?: boolean
-  /** 自定义色阶索引映射 */
-  customIndices?: number[]
-}
-
-/**
- * 默认色阶选项
- */
-const DEFAULT_SCALE_OPTIONS: Required<ColorScaleOptions> = {
-  count: 10,
-  mode: 'light',
-  includeOriginal: true,
-  customIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-}
+const SCALE_CONFIGS = {
+  primary: { count: 12, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  success: { count: 12, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  warning: { count: 12, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  danger: { count: 12, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  gray: { count: 14, indices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] },
+} as const
 
 /**
  * 色阶生成器类
  */
 export class ColorScaleGenerator {
-  private options: Required<ColorScaleOptions>
-
-  constructor(options?: ColorScaleOptions) {
-    this.options = { ...DEFAULT_SCALE_OPTIONS, ...options }
-  }
-
   /**
    * 生成单个颜色的色阶
    */
-  generateScale(color: ColorValue, mode: ColorMode = 'light'): ColorScale {
-    if (!isValidHex(color)) {
-      throw new Error(`Invalid hex color: ${color}`)
-    }
-
-    const normalizedColor = normalizeHex(color)
-
-    // 使用 @arco-design/color 生成色阶
-    const colors = generate(normalizedColor, {
-      list: true,
-      dark: mode === 'dark',
-    }) as (string | { r: number; g: number; b: number })[]
-
-    // 转换为 hex 格式
-    const hexColors = colors.map((c) => {
-      if (typeof c === 'string') {
-        return c
-      }
-      // 如果是 RGB 对象，转换为 hex
-      return getRgbStr(c)
-    })
-
-    // 创建索引映射
-    const indices: Record<number, ColorValue> = {}
-    this.options.customIndices.forEach((index, i) => {
-      if (i < hexColors.length) {
-        indices[index] = hexColors[i]
-      }
-    })
-
-    return {
-      colors: hexColors,
-      indices,
-    }
-  }
-
-  /**
-   * 为灰色系生成特殊的色阶
-   * 基于a-nice-red算法，先生成4个基础中性色，然后通过平滑插值生成完整的10级色阶
-   */
-  generateGrayScale(baseGray: ColorValue, mode: ColorMode = 'light'): ColorScale {
-    if (!isValidHex(baseGray)) {
-      throw new Error(`Invalid hex color: ${baseGray}`)
-    }
-
-    const normalizedColor = normalizeHex(baseGray)
-    const hsl = hexToHsl(normalizedColor)
-
-    if (!hsl) {
-      throw new Error(`Failed to parse hex color: ${baseGray}`)
-    }
-
-    // 基于a-nice-red算法生成4个基础中性色
-    // 使用纯中性灰色（0度色相，0饱和度）确保真正的中性效果
-    const baseHue = 0 // 使用0度色相
-    const baseSaturation = 0 // 完全无饱和度，确保纯中性
-
-    // 优化的4个基础亮度值，确保良好的视觉层次
-    const baseLightnesses = mode === 'dark'
-      ? [22, 38, 58, 85] // 暗色模式：从深到浅的基础点
-      : [88, 68, 45, 22] // 亮色模式：从浅到深的基础点
-
-    // 生成4个基础中性灰色
-    const baseGrays = baseLightnesses.map(lightness => {
-      return hslToHex(baseHue, baseSaturation, lightness)
-    })
-
-    // 使用改进的插值算法生成10级色阶
-    const grayColors: string[] = []
-
-    // 使用三次贝塞尔曲线插值，创建更自然的过渡
-    for (let i = 0; i < 10; i++) {
-      const t = i / 9 // 0 到 1 之间的位置
-
-      // 将t映射到4个基础色的区间
-      const scaledT = t * 3 // 0 到 3 之间
-      const segmentIndex = Math.floor(scaledT)
-      const localT = scaledT - segmentIndex
-
-      let lightness: number
-
-      if (segmentIndex >= 3) {
-        // 最后一个区间
-        lightness = baseLightnesses[3]
-      } else {
-        // 使用平滑插值（三次插值）在两个基础亮度之间过渡
-        const startLightness = baseLightnesses[segmentIndex]
-        const endLightness = baseLightnesses[segmentIndex + 1]
-
-        // 三次插值公式：f(t) = (1-t)³*P0 + 3(1-t)²t*P1 + 3(1-t)t²*P2 + t³*P3
-        // 简化为线性插值加上平滑因子
-        const smoothFactor = localT * localT * (3 - 2 * localT) // 平滑步函数
-        lightness = startLightness + (endLightness - startLightness) * smoothFactor
-      }
-
-      const grayHex = hslToHex(baseHue, baseSaturation, Math.round(lightness))
-      grayColors.push(grayHex)
-    }
-
-    // 创建索引映射
-    const indices: Record<number, ColorValue> = {}
-    this.options.customIndices.forEach((index, i) => {
-      if (i < grayColors.length) {
-        indices[index] = grayColors[i]
-      }
-    })
-
-    return {
-      colors: grayColors,
-      indices,
-    }
-  }
-
-  /**
-   * 批量生成多个颜色的色阶
-   */
-  generateScales(
-    colors: Record<ColorCategory, ColorValue>,
+  generateScale(
+    baseColor: string,
+    category: ColorCategory,
     mode: ColorMode = 'light',
-  ): Record<ColorCategory, ColorScale> {
-    const scales: Record<ColorCategory, ColorScale> = {} as Record<ColorCategory, ColorScale>
+  ): ColorScale {
+    if (!isValidHex(baseColor)) {
+      throw new Error(`Invalid hex color: ${baseColor}`)
+    }
 
-    for (const [category, color] of Object.entries(colors) as [ColorCategory, ColorValue][]) {
+    const normalizedColor = normalizeHex(baseColor)
+    const config = SCALE_CONFIGS[category]
+
+    let colors: string[]
+
+    if (category === 'gray') {
+      colors = this.generateGrayScale(normalizedColor, config.count, mode)
+    }
+    else {
+      colors = this.generateColorScale(normalizedColor, config.count, mode)
+    }
+
+    // 创建索引映射
+    const indices: Record<number, string> = {}
+    config.indices.forEach((index, i) => {
+      if (i < colors.length) {
+        indices[index] = colors[i]
+      }
+    })
+
+    return {
+      colors,
+      indices,
+      count: colors.length,
+      category,
+      mode,
+    }
+  }
+
+  /**
+   * 生成彩色色阶
+   */
+  private generateColorScale(baseColor: string, count: number, mode: ColorMode): string[] {
+    const baseHsl = hexToHsl(baseColor)
+    if (!baseHsl) {
+      throw new Error(`Failed to parse color: ${baseColor}`)
+    }
+
+    const colors: string[] = []
+
+    for (let i = 0; i < count; i++) {
+      const factor = i / (count - 1)
+
+      // 根据模式调整色阶方向
+      let lightness: number
+      if (mode === 'dark') {
+        // 暗色模式：从深到浅（1级=最深色，12级=最浅色）
+        lightness = 5 + (factor * 80) // 从5到85
+      }
+      else {
+        // 亮色模式：从浅到深（1级=最浅色，12级=最深色）
+        lightness = 95 - (factor * 90) // 从95到5
+      }
+
+      // 保持饱和度相对稳定，在中间位置稍微提高
+      const saturationFactor = 1.0 - Math.abs(factor - 0.5) * 0.3
+      const saturation = baseHsl.s * saturationFactor
+
+      colors.push(hslToHex(baseHsl.h, Math.max(0, Math.min(100, saturation)), Math.max(0, Math.min(100, lightness))))
+    }
+
+    return colors
+  }
+
+  /**
+   * 生成灰色色阶
+   */
+  private generateGrayScale(baseColor: string, count: number, mode: ColorMode): string[] {
+    const baseHsl = hexToHsl(baseColor)
+    if (!baseHsl) {
+      throw new Error(`Failed to parse color: ${baseColor}`)
+    }
+
+    const colors: string[] = []
+    const saturation = Math.min(baseHsl.s, 15) // 限制饱和度
+
+    for (let i = 0; i < count; i++) {
+      const factor = i / (count - 1)
+
+      // 根据模式调整色阶方向
+      let lightness: number
+      if (mode === 'dark') {
+        // 暗色模式：从深到浅（1级=最深色，14级=最浅色）
+        lightness = 5 + (factor * 80) // 从5到85
+      }
+      else {
+        // 亮色模式：从浅到深（1级=最浅色，14级=最深色）
+        lightness = 95 - (factor * 90) // 从95到5
+      }
+
+      colors.push(hslToHex(baseHsl.h, saturation, lightness))
+    }
+
+    return colors
+  }
+
+  /**
+   * 扩展色阶到目标数量
+   */
+  private extendColorScale(colors: string[], targetCount: number, mode: ColorMode): string[] {
+    if (colors.length >= targetCount) {
+      return colors.slice(0, targetCount)
+    }
+
+    const extended: string[] = []
+    const sourceCount = colors.length
+
+    for (let i = 0; i < targetCount; i++) {
+      const position = i / (targetCount - 1)
+      const sourcePosition = position * (sourceCount - 1)
+
+      const lowerIndex = Math.floor(sourcePosition)
+      const upperIndex = Math.ceil(sourcePosition)
+      const factor = sourcePosition - lowerIndex
+
+      if (lowerIndex === upperIndex || upperIndex >= sourceCount) {
+        extended.push(colors[Math.min(lowerIndex, sourceCount - 1)])
+      }
+      else {
+        // 在两个颜色之间插值
+        const interpolated = this.interpolateColors(colors[lowerIndex], colors[upperIndex], factor)
+        extended.push(interpolated)
+      }
+    }
+
+    return extended
+  }
+
+  /**
+   * 在两个颜色之间插值
+   */
+  private interpolateColors(color1: string, color2: string, factor: number): string {
+    const hsl1 = hexToHsl(color1)
+    const hsl2 = hexToHsl(color2)
+
+    if (!hsl1 || !hsl2) {
+      return factor < 0.5 ? color1 : color2
+    }
+
+    // 简单的HSL插值
+    const h = this.interpolateHue(hsl1.h, hsl2.h, factor)
+    const s = hsl1.s + (hsl2.s - hsl1.s) * factor
+    const l = hsl1.l + (hsl2.l - hsl1.l) * factor
+
+    return hslToHex(h, s, l)
+  }
+
+  /**
+   * 色相插值 - 处理色相环的最短路径
+   */
+  private interpolateHue(h1: number, h2: number, factor: number): number {
+    let diff = h2 - h1
+
+    // 处理色相环的跨越（0-360度）
+    if (Math.abs(diff) > 180) {
+      if (diff > 0) {
+        diff -= 360
+      }
+      else {
+        diff += 360
+      }
+    }
+
+    let result = h1 + diff * factor
+
+    // 确保结果在0-360范围内
+    if (result < 0)
+      result += 360
+    if (result >= 360)
+      result -= 360
+
+    return result
+  }
+
+  /**
+   * 生成多个颜色类别的色阶
+   */
+  generateScales<T extends ColorCategory>(
+    colors: Record<T, ColorValue>,
+    mode: ColorMode = 'light',
+  ): Record<T, ColorScale> {
+    const scales: Record<T, ColorScale> = {} as Record<T, ColorScale>
+
+    for (const [category, color] of Object.entries(colors) as [T, ColorValue][]) {
       try {
-        // 对灰色使用特殊的生成方法
-        if (category === 'gray') {
-          scales[category] = this.generateGrayScale(color, mode)
-        } else {
-          scales[category] = this.generateScale(color, mode)
-        }
+        scales[category] = this.generateScale(color, category as ColorCategory, mode)
       }
       catch (error) {
         console.warn(`Failed to generate scale for ${category}:`, error)
-        // 提供默认的色阶
-        scales[category] = this.createFallbackScale(color)
+        // 提供回退色阶
+        scales[category] = this.createFallbackScale(category as ColorCategory, mode)
       }
     }
 
@@ -208,148 +231,72 @@ export class ColorScaleGenerator {
   }
 
   /**
-   * 创建回退色阶（当生成失败时使用）
+   * 创建回退色阶
    */
-  private createFallbackScale(color: ColorValue): ColorScale {
-    const colors = Array(this.options.count).fill(color)
-    const indices: Record<number, ColorValue> = {}
+  private createFallbackScale(category: ColorCategory, mode: ColorMode): ColorScale {
+    const config = SCALE_CONFIGS[category]
+    const colors: string[] = []
 
-    this.options.customIndices.forEach((index, i) => {
+    // 使用灰色作为回退
+    for (let i = 0; i < config.count; i++) {
+      const factor = i / (config.count - 1)
+      const lightness = 95 - (factor * 90)
+      colors.push(hslToHex(0, 0, lightness))
+    }
+
+    const indices: Record<number, string> = {}
+    config.indices.forEach((index, i) => {
       if (i < colors.length) {
-        indices[index] = color
+        indices[index] = colors[i]
       }
     })
 
-    return { colors, indices }
+    return {
+      colors,
+      indices,
+      count: colors.length,
+      category,
+      mode,
+    }
   }
 
   /**
-   * 更新生成选项
+   * 生成中性色（灰色）色阶
    */
-  updateOptions(options: Partial<ColorScaleOptions>): void {
-    this.options = { ...this.options, ...options }
-  }
+  generateNeutralColors(mode: ColorMode = 'light'): NeutralColors {
+    const grayScale = this.generateGrayScale('#595959', 14, mode)
 
-  /**
-   * 获取当前选项
-   */
-  getOptions(): Required<ColorScaleOptions> {
-    return { ...this.options }
+    return {
+      50: grayScale[0],
+      100: grayScale[1],
+      200: grayScale[2],
+      300: grayScale[3],
+      400: grayScale[4],
+      500: grayScale[5],
+      600: grayScale[6],
+      700: grayScale[7],
+      800: grayScale[8],
+      900: grayScale[9],
+      950: grayScale[10],
+    }
   }
 }
 
-/**
- * 预设的色阶配置
- */
-export const COLOR_SCALE_PRESETS = {
-  /** 标准 10 级色阶 */
-  standard: {
-    count: 10,
-    customIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  },
+// 导出单例实例
+export const colorScaleGenerator = new ColorScaleGenerator()
 
-  /** 简化 5 级色阶 */
-  simple: {
-    count: 5,
-    customIndices: [1, 2, 3, 4, 5],
-  },
-
-  /** 扩展 12 级色阶 */
-  extended: {
-    count: 12,
-    customIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-  },
-
-  /** 自定义索引色阶 */
-  custom: {
-    count: 10,
-    customIndices: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900],
-  },
-} as const
-
-/**
- * 创建色阶生成器实例
- */
-export function createColorScaleGenerator(options?: ColorScaleOptions): ColorScaleGenerator {
-  return new ColorScaleGenerator(options)
+// 导出便捷函数
+export function generateColorScales<T extends ColorCategory>(
+  colors: Record<T, ColorValue>,
+  mode: ColorMode = 'light',
+): Record<T, ColorScale> {
+  return colorScaleGenerator.generateScales(colors, mode)
 }
 
-/**
- * 默认色阶生成器实例
- */
-export const defaultColorScaleGenerator = new ColorScaleGenerator()
-
-/**
- * 便捷函数：生成单个颜色的色阶
- */
 export function generateColorScale(
-  color: ColorValue,
+  baseColor: string,
+  category: ColorCategory,
   mode: ColorMode = 'light',
-  options?: ColorScaleOptions,
 ): ColorScale {
-  const generator = options ? new ColorScaleGenerator(options) : defaultColorScaleGenerator
-  return generator.generateScale(color, mode)
-}
-
-/**
- * 便捷函数：批量生成色阶
- */
-export function generateColorScales(
-  colors: Record<ColorCategory, ColorValue>,
-  mode: ColorMode = 'light',
-  options?: ColorScaleOptions,
-): Record<ColorCategory, ColorScale> {
-  const generator = options ? new ColorScaleGenerator(options) : defaultColorScaleGenerator
-  return generator.generateScales(colors, mode)
-}
-
-/**
- * 便捷函数：安全生成色阶（不抛出异常）
- */
-export function safeGenerateColorScale(
-  color: ColorValue,
-  mode: ColorMode = 'light',
-  options?: ColorScaleOptions,
-): ColorScale | null {
-  try {
-    return generateColorScale(color, mode, options)
-  }
-  catch (error) {
-    console.warn('Failed to generate color scale:', error)
-    return null
-  }
-}
-
-/**
- * 便捷函数：安全批量生成色阶
- */
-export function safeGenerateColorScales(
-  colors: Record<ColorCategory, ColorValue>,
-  mode: ColorMode = 'light',
-  options?: ColorScaleOptions,
-): Record<ColorCategory, ColorScale> | null {
-  try {
-    return generateColorScales(colors, mode, options)
-  }
-  catch (error) {
-    console.warn('Failed to generate color scales:', error)
-    return null
-  }
-}
-
-/**
- * 获取色阶中的特定颜色
- */
-export function getColorFromScale(scale: ColorScale, index: number): ColorValue | undefined {
-  return scale.indices[index] || scale.colors[index - 1]
-}
-
-/**
- * 检查色阶是否有效
- */
-export function isValidColorScale(scale: ColorScale): boolean {
-  return Array.isArray(scale.colors)
-    && scale.colors.length > 0
-    && typeof scale.indices === 'object'
-    && scale.indices !== null
+  return colorScaleGenerator.generateScale(baseColor, category, mode)
 }
