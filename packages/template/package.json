@@ -1,0 +1,111 @@
+{
+  "name": "@ldesign/template",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign-org/template#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign-org/template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign-org/template/issues"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "template",
+    "template-engine",
+    "dynamic-rendering",
+    "responsive",
+    "typescript",
+    "composition-api"
+  ],
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./vue": {
+      "types": "./types/vue.d.ts",
+      "import": "./lib/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./dist": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./dist/vue": {
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
+    },
+    "./lib/*": {
+      "import": "./lib/*.js",
+      "require": "./lib/*.cjs"
+    }
+  },
+  "main": "lib/index.cjs",
+  "module": "lib/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "README.md",
+    "dist",
+    "lib",
+    "types"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "dev": "rollup -c -w",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.6.4",
+    "@playwright/test": "^1.40.0",
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.10.6",
+    "@vitejs/plugin-vue": "^5.0.2",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "@vitest/ui": "^1.1.0",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^8.56.0",
+    "jsdom": "^23.0.1",
+    "less": "^4.2.0",
+    "playwright": "^1.40.0",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.4",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-esbuild": "^6.2.1",
+    "rollup-plugin-vue": "^6.0.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitepress": "^1.6.3",
+    "vitest": "^1.1.0",
+    "vue": "^3.4.5",
+    "vue-tsc": "^1.8.25"
+  }
+}

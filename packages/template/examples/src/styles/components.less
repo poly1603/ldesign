@@ -1,0 +1,266 @@
+// 组件样式
+
+// 按钮组件
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: @font-size-base;
+  font-weight: 500;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: @border-radius;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  // 按钮尺寸
+  &.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: @font-size-sm;
+  }
+  
+  &.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: @font-size-lg;
+  }
+  
+  // 按钮类型
+  &.btn-primary {
+    background-color: @primary-color;
+    border-color: @primary-color;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: @primary-color-hover;
+      border-color: @primary-color-hover;
+    }
+  }
+  
+  &.btn-secondary {
+    background-color: @text-color-secondary;
+    border-color: @text-color-secondary;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: @text-color;
+      border-color: @text-color;
+    }
+  }
+  
+  &.btn-outline {
+    background-color: transparent;
+    border-color: @primary-color;
+    color: @primary-color;
+    
+    &:hover:not(:disabled) {
+      background-color: @primary-color;
+      color: white;
+    }
+  }
+  
+  &.btn-success {
+    background-color: @success-color;
+    border-color: @success-color;
+    color: white;
+  }
+  
+  &.btn-danger {
+    background-color: @danger-color;
+    border-color: @danger-color;
+    color: white;
+  }
+}
+
+// 卡片组件
+.card {
+  background-color: var(--card-bg, @bg-color);
+  border: 1px solid var(--border-color, @border-color);
+  border-radius: @border-radius-lg;
+  box-shadow: @box-shadow-sm;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: @box-shadow;
+  }
+  
+  .card-header {
+    padding: @spacing-lg;
+    border-bottom: 1px solid var(--border-color, @border-color);
+    background-color: var(--bg-color-secondary, @bg-color-secondary);
+    
+    .card-title {
+      margin: 0;
+      font-size: @font-size-lg;
+      font-weight: 600;
+    }
+  }
+  
+  .card-body {
+    padding: @spacing-lg;
+  }
+  
+  .card-footer {
+    padding: @spacing-lg;
+    border-top: 1px solid var(--border-color, @border-color);
+    background-color: var(--bg-color-secondary, @bg-color-secondary);
+  }
+}
+
+// 表单组件
+.form-group {
+  margin-bottom: @spacing-lg;
+  
+  .form-label {
+    display: block;
+    margin-bottom: @spacing-sm;
+    font-weight: 500;
+    color: var(--text-color, @text-color);
+  }
+  
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    font-size: @font-size-base;
+    border: 1px solid var(--border-color, @border-color);
+    border-radius: @border-radius;
+    background-color: var(--bg-color, @bg-color);
+    color: var(--text-color, @text-color);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    
+    &:focus {
+      outline: none;
+      border-color: @primary-color;
+      box-shadow: 0 0 0 2px fade(@primary-color, 20%);
+    }
+    
+    &::placeholder {
+      color: var(--text-color-light, @text-color-light);
+    }
+  }
+  
+  .form-text {
+    margin-top: @spacing-sm;
+    font-size: @font-size-sm;
+    color: var(--text-color-secondary, @text-color-secondary);
+  }
+  
+  .form-error {
+    margin-top: @spacing-sm;
+    font-size: @font-size-sm;
+    color: @danger-color;
+  }
+}
+
+// 加载组件
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: @spacing-xl;
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color, @border-color);
+    border-top: 4px solid @primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// 错误组件
+.error {
+  padding: @spacing-lg;
+  text-align: center;
+  color: @danger-color;
+  
+  .error-icon {
+    font-size: 3rem;
+    margin-bottom: @spacing-md;
+  }
+  
+  .error-message {
+    font-size: @font-size-lg;
+    margin-bottom: @spacing-md;
+  }
+  
+  .error-details {
+    font-size: @font-size-sm;
+    color: var(--text-color-secondary, @text-color-secondary);
+    margin-bottom: @spacing-lg;
+  }
+}
+
+// 空状态组件
+.empty {
+  padding: @spacing-xl;
+  text-align: center;
+  color: var(--text-color-secondary, @text-color-secondary);
+  
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: @spacing-lg;
+    opacity: 0.5;
+  }
+  
+  .empty-message {
+    font-size: @font-size-lg;
+    margin-bottom: @spacing-md;
+  }
+  
+  .empty-description {
+    font-size: @font-size-sm;
+    margin-bottom: @spacing-lg;
+  }
+}
+
+// 标签组件
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: @font-size-sm;
+  font-weight: 500;
+  border-radius: @border-radius-sm;
+  background-color: @bg-color-secondary;
+  color: var(--text-color, @text-color);
+  border: 1px solid var(--border-color, @border-color);
+  
+  &.tag-primary {
+    background-color: @primary-color-light;
+    color: @primary-color;
+    border-color: @primary-color;
+  }
+  
+  &.tag-success {
+    background-color: fade(@success-color, 20%);
+    color: @success-color;
+    border-color: @success-color;
+  }
+  
+  &.tag-warning {
+    background-color: fade(@warning-color, 20%);
+    color: darken(@warning-color, 20%);
+    border-color: @warning-color;
+  }
+  
+  &.tag-danger {
+    background-color: fade(@danger-color, 20%);
+    color: @danger-color;
+    border-color: @danger-color;
+  }
+}

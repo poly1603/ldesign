@@ -1,0 +1,197 @@
+/* 验证码组件样式 */
+.captcha-component {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.captcha-image-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.captcha-image {
+  width: 120px;
+  height: 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  
+  &:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.captcha-loading {
+  width: 120px;
+  height: 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.captcha-refresh-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #e5e7eb;
+    transform: rotate(90deg);
+  }
+  
+  &:active {
+    transform: rotate(90deg) scale(0.95);
+  }
+}
+
+.captcha-input-container {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+}
+
+.captcha-input {
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  background: white;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &.valid {
+    border-color: #10b981;
+    background: #f0fdf4;
+    
+    &:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+  }
+  
+  &.invalid {
+    border-color: #ef4444;
+    background: #fef2f2;
+    
+    &:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+    font-weight: normal;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+}
+
+.captcha-status {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  font-weight: bold;
+  
+  &.valid {
+    color: #10b981;
+  }
+  
+  &.invalid {
+    color: #ef4444;
+  }
+}
+
+/* 不同设备尺寸的适配 */
+@media (max-width: 768px) {
+  .captcha-component {
+    gap: 10px;
+  }
+  
+  .captcha-image {
+    width: 100px;
+    height: 35px;
+  }
+  
+  .captcha-loading {
+    width: 100px;
+    height: 35px;
+    font-size: 11px;
+  }
+  
+  .captcha-input {
+    font-size: 14px;
+    padding: 8px 35px 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .captcha-image-container {
+    justify-content: center;
+  }
+  
+  .captcha-input-container {
+    width: 100%;
+  }
+}
+
+/* 动画效果 */
+@keyframes captcha-refresh {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.captcha-refresh-btn.refreshing {
+  animation: captcha-refresh 0.5s ease-in-out;
+}
+
+@keyframes captcha-validate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.captcha-status.valid {
+  animation: captcha-validate 0.3s ease-in-out;
+}
