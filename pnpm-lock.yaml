@@ -10,11 +10,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^3.0.0
-<<<<<<< HEAD
         version: 3.16.0(@typescript-eslint/utils@8.38.0(eslint@9.32.0)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9)
-=======
-        version: 3.16.0(@typescript-eslint/utils@8.38.0(eslint@9.32.0)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9(@types/node@22.16.5)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
       '@changesets/cli':
         specifier: ^2.27.0
         version: 2.29.5
@@ -35,7 +31,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^2.0.0
-        version: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+        version: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
 
   packages/color:
     dependencies:
@@ -108,11 +104,7 @@ importers:
         version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
       vitest:
         specifier: ^1.2.1
-<<<<<<< HEAD
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
-=======
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.15
         version: 3.5.18(typescript@5.8.3)
@@ -199,7 +191,7 @@ importers:
         version: 1.3.13
       '@vitejs/plugin-vue':
         specifier: ^5.0.3
-        version: 5.2.4(vite@5.4.19(@types/node@20.19.9)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
+        version: 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
       '@vitest/coverage-v8':
         specifier: ^1.2.1
         version: 1.6.1(vitest@1.6.1)
@@ -232,13 +224,13 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^5.0.12
-        version: 5.4.19(@types/node@20.19.9)(terser@5.43.1)
+        version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
       vitepress:
         specifier: ^1.0.0-rc.39
-        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
+        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
       vitest:
         specifier: ^1.2.1
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.15
         version: 3.5.18(typescript@5.8.3)
@@ -254,7 +246,7 @@ importers:
     devDependencies:
       vite:
         specifier: ^5.0.12
-        version: 5.4.19(@types/node@22.16.5)(terser@5.43.1)
+        version: 5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)
 
   packages/crypto/examples/vue:
     dependencies:
@@ -267,13 +259,13 @@ importers:
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.3
-        version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
+        version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
       typescript:
         specifier: ^5.3.3
         version: 5.8.3
       vite:
         specifier: ^5.0.12
-        version: 5.4.19(@types/node@22.16.5)(terser@5.43.1)
+        version: 5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)
       vue-tsc:
         specifier: ^1.8.27
         version: 1.8.27(typescript@5.8.3)
@@ -330,10 +322,10 @@ importers:
         version: 5.8.3
       vitepress:
         specifier: ^1.6.3
-        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
+        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
       vitest:
         specifier: ^1.1.0
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.3
         version: 3.5.18(typescript@5.8.3)
@@ -346,7 +338,7 @@ importers:
     devDependencies:
       vite:
         specifier: ^5.0.0
-        version: 5.4.19(@types/node@22.16.5)(terser@5.43.1)
+        version: 5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)
 
   packages/device/examples/vue-example:
     dependencies:
@@ -359,10 +351,10 @@ importers:
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
+        version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
       vite:
         specifier: ^5.0.0
-        version: 5.4.19(@types/node@22.16.5)(terser@5.43.1)
+        version: 5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)
 
   packages/engine:
     devDependencies:
@@ -410,11 +402,7 @@ importers:
         version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
       vitest:
         specifier: ^1.2.1
-<<<<<<< HEAD
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
-=======
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.15
         version: 3.5.18(typescript@5.8.3)
@@ -439,11 +427,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^2.6.4
-<<<<<<< HEAD
         version: 2.27.3(@typescript-eslint/utils@8.38.0(eslint@8.57.1)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9)
-=======
-        version: 2.27.3(@typescript-eslint/utils@8.38.0(eslint@8.57.1)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9(@types/node@20.19.9)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
       '@types/node':
         specifier: ^20.11.5
         version: 20.19.9
@@ -527,7 +511,7 @@ importers:
         version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@22.16.5)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+        version: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.8.3)
@@ -625,11 +609,7 @@ importers:
         version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
       vitest:
         specifier: ^1.2.1
-<<<<<<< HEAD
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
-=======
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.15
         version: 3.5.18(typescript@5.8.3)
@@ -668,6 +648,66 @@ importers:
       vue-tsc:
         specifier: ^1.8.27
         version: 1.8.27(typescript@5.8.3)
+
+  packages/router:
+    devDependencies:
+      '@antfu/eslint-config':
+        specifier: ^2.6.4
+        version: 2.27.3(@typescript-eslint/utils@8.38.0(eslint@8.57.1)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@8.57.1)(typescript@5.8.3)(vitest@1.6.1)
+      '@rollup/plugin-commonjs':
+        specifier: ^25.0.7
+        version: 25.0.8(rollup@4.46.1)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.3
+        version: 15.3.1(rollup@4.46.1)
+      '@rollup/plugin-typescript':
+        specifier: ^11.1.6
+        version: 11.1.6(rollup@4.46.1)(tslib@2.8.1)(typescript@5.8.3)
+      '@types/node':
+        specifier: ^20.11.5
+        version: 20.19.9
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.3
+        version: 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
+      '@vitest/coverage-v8':
+        specifier: ^1.2.2
+        version: 1.6.1(vitest@1.6.1)
+      '@vitest/ui':
+        specifier: ^1.2.2
+        version: 1.6.1(vitest@1.6.1)
+      '@vue/test-utils':
+        specifier: ^2.4.4
+        version: 2.4.6
+      eslint:
+        specifier: ^8.56.0
+        version: 8.57.1
+      happy-dom:
+        specifier: ^13.3.1
+        version: 13.10.1
+      rollup:
+        specifier: ^4.9.6
+        version: 4.46.1
+      rollup-plugin-dts:
+        specifier: ^6.1.0
+        version: 6.2.1(rollup@4.46.1)(typescript@5.8.3)
+      rollup-plugin-terser:
+        specifier: ^7.0.2
+        version: 7.0.2(rollup@4.46.1)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.8.3
+      vite:
+        specifier: ^5.0.12
+        version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
+      vitepress:
+        specifier: ^1.0.0-rc.40
+        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+      vue:
+        specifier: ^3.4.15
+        version: 3.5.18(typescript@5.8.3)
 
   packages/template:
     devDependencies:
@@ -745,7 +785,7 @@ importers:
         version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@20.19.9)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(search-insights@2.17.3)(terser@5.43.1)(typescript@5.8.3)
       vitest:
         specifier: ^1.1.0
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@23.2.0)(less@4.4.0)(terser@5.43.1)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@23.2.0)(less@4.4.0)(terser@5.43.1)
       vue:
         specifier: ^3.4.5
         version: 3.5.18(typescript@5.8.3)
@@ -861,12 +901,9 @@ packages:
     resolution: {integrity: sha512-o0mqRYbS82Rt4DE02Od7RL6pNtV7oSxScPuIw8LW4aqO2V5eCF05Pry/SnUgcI/Vb2QCYC66hytBCqzyC/toZA==}
     engines: {node: '>= 14.0.0'}
 
-<<<<<<< HEAD
   '@alova/shared@1.3.1':
     resolution: {integrity: sha512-ijSOaFLUFcVzMKSY3avoEE5C03/p9atjMDPBwvNkwnzaCrhv6/m4A121NdadF8YlHCRuifyYfz90IyEdMXTsJg==}
 
-=======
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
@@ -2166,7 +2203,11 @@ packages:
       vite: ^5.0.0 || ^6.0.0
       vue: ^3.2.25
 
-<<<<<<< HEAD
+  '@vitest/coverage-v8@1.6.1':
+    resolution: {integrity: sha512-6YeRZwuO4oTGKxD3bijok756oktHSIm3eczVVzNe3scqzuhLwltIF3S9ZL/vwOVIpURmU6SnZhziXXAfw8/Qlw==}
+    peerDependencies:
+      vitest: 1.6.1
+
   '@vitest/coverage-v8@2.1.9':
     resolution: {integrity: sha512-Z2cOr0ksM00MpEfyVE8KXIYPEcBFxdbLSs56L8PO0QQMxt/6bDj45uQfxoc96v05KW3clk7vvgP0qfDit9DmfQ==}
     peerDependencies:
@@ -2175,12 +2216,6 @@ packages:
     peerDependenciesMeta:
       '@vitest/browser':
         optional: true
-=======
-  '@vitest/coverage-v8@1.6.1':
-    resolution: {integrity: sha512-6YeRZwuO4oTGKxD3bijok756oktHSIm3eczVVzNe3scqzuhLwltIF3S9ZL/vwOVIpURmU6SnZhziXXAfw8/Qlw==}
-    peerDependencies:
-      vitest: 1.6.1
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
 
   '@vitest/eslint-plugin@1.3.4':
     resolution: {integrity: sha512-EOg8d0jn3BAiKnR55WkFxmxfWA3nmzrbIIuOXyTe6A72duryNgyU+bdBEauA97Aab3ho9kLmAwgPX63Ckj4QEg==}
@@ -2672,17 +2707,15 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
-<<<<<<< HEAD
-  css-tree@2.3.1:
-    resolution: {integrity: sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw==}
-    engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
-=======
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
 
+  css-tree@2.3.1:
+    resolution: {integrity: sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw==}
+    engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
+
   css.escape@1.5.1:
     resolution: {integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==}
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
 
   cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
@@ -3341,6 +3374,10 @@ packages:
   happy-dom@12.10.3:
     resolution: {integrity: sha512-JzUXOh0wdNGY54oKng5hliuBkq/+aT1V3YpTM+lrN/GoLQTANZsMaIvmHiHe612rauHvPJnDZkZ+5GZR++1Abg==}
 
+  happy-dom@13.10.1:
+    resolution: {integrity: sha512-9GZLEFvQL5EgfJX2zcBgu1nsPUn98JF/EiJnSfQbdxI6YEQGqpd09lXXxOmYonRBIEFz9JlGCOiPflDzgS1p8w==}
+    engines: {node: '>=16.0.0'}
+
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
@@ -3541,6 +3578,10 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
+  jest-worker@26.6.2:
+    resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
+    engines: {node: '>= 10.13.0'}
+
   js-beautify@1.15.4:
     resolution: {integrity: sha512-9/KXeZUKKJwqCXUdBxFJ3vPh467OCckSBmYDwSK/EtV090K+iMJ7zx2S3HLVDIWFQdqMIsZWbnaGiba18aWhaA==}
     engines: {node: '>=14'}
@@ -3680,13 +3721,10 @@ packages:
   magicast@0.3.5:
     resolution: {integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==}
 
-<<<<<<< HEAD
   make-dir@2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
     engines: {node: '>=6'}
 
-=======
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
@@ -3940,16 +3978,14 @@ packages:
     resolution: {integrity: sha512-kKHJhxwpR/Okycz4HhQKKlhWe4ASEfPgkSWNmKFHd7+ezuQlxkA5cM3+XkBPvm1gmHen3w53qsYAv+8GwRrBlg==}
     engines: {node: '>=18'}
 
-<<<<<<< HEAD
   needle@3.3.1:
     resolution: {integrity: sha512-6k0YULvhpw+RoLNiQCRKOl09Rv1dPLr8hHnVjHqdolKwDrdNyk+Hmrthi4lIGPPz3r39dLx0hsF5s40sZ3Us4Q==}
     engines: {node: '>= 4.4.x'}
     hasBin: true
-=======
+
   node-forge@1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
 
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
@@ -4300,7 +4336,6 @@ packages:
       rollup: ^3.29.4 || ^4
       typescript: ^4.5 || ^5.0
 
-<<<<<<< HEAD
   rollup-plugin-esbuild@6.2.1:
     resolution: {integrity: sha512-jTNOMGoMRhs0JuueJrJqbW8tOwxumaWYq+V5i+PD+8ecSCVkuX27tGW7BXqDgoULQ55rO7IdNxPcnsWtshz3AA==}
     engines: {node: '>=14.18.0'}
@@ -4308,8 +4343,12 @@ packages:
       esbuild: '>=0.18.0'
       rollup: ^1.20.0 || ^2.0.0 || ^3.0.0 || ^4.0.0
 
-=======
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+  rollup-plugin-terser@7.0.2:
+    resolution: {integrity: sha512-w3iIaU4OxcF52UUXiZNsNeuXIMDvFrr+ZXK6bFZ0Q60qyVfq4uLptoS4bbq3paG3x216eQllFZX7zt6TIImguQ==}
+    deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-terser
+    peerDependencies:
+      rollup: ^2.0.0
+
   rollup-plugin-vue@6.0.0:
     resolution: {integrity: sha512-oVvUd84d5u73M2HYM3XsMDLtZRIA/tw2U0dmHlXU2UWP5JARYHzh/U9vcxaN/x/9MrepY7VH3pHFeOhrWpxs/Q==}
     peerDependencies:
@@ -4367,6 +4406,9 @@ packages:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
     hasBin: true
+
+  serialize-javascript@4.0.0:
+    resolution: {integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==}
 
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
@@ -4532,15 +4574,13 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-<<<<<<< HEAD
-  test-exclude@7.0.1:
-    resolution: {integrity: sha512-pFYqmTw68LXVjeWJMST4+borgQP2AyMNbg1BpZh9LbyhUeNkeaPF9gzfPGUAnSMV3qPYdWUwDIjjCLiSDOl7vg==}
-    engines: {node: '>=18'}
-=======
   test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+
+  test-exclude@7.0.1:
+    resolution: {integrity: sha512-pFYqmTw68LXVjeWJMST4+borgQP2AyMNbg1BpZh9LbyhUeNkeaPF9gzfPGUAnSMV3qPYdWUwDIjjCLiSDOl7vg==}
+    engines: {node: '>=18'}
 
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
@@ -5124,11 +5164,8 @@ snapshots:
     dependencies:
       '@algolia/client-common': 5.34.1
 
-<<<<<<< HEAD
   '@alova/shared@1.3.1': {}
 
-=======
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
   '@ampproject/remapping@2.3.0':
     dependencies:
       '@jridgewell/gen-mapping': 0.3.12
@@ -5182,11 +5219,7 @@ snapshots:
       - typescript
       - vitest
 
-<<<<<<< HEAD
   '@antfu/eslint-config@2.27.3(@typescript-eslint/utils@8.38.0(eslint@8.57.1)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9)':
-=======
-  '@antfu/eslint-config@2.27.3(@typescript-eslint/utils@8.38.0(eslint@8.57.1)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9(@types/node@20.19.9)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))':
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@clack/prompts': 0.7.0
@@ -5194,11 +5227,7 @@ snapshots:
       '@stylistic/eslint-plugin': 2.13.0(eslint@8.57.1)(typescript@5.8.3)
       '@typescript-eslint/eslint-plugin': 8.38.0(@typescript-eslint/parser@8.38.0(eslint@9.32.0)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
       '@typescript-eslint/parser': 8.38.0(eslint@8.57.1)(typescript@5.8.3)
-<<<<<<< HEAD
       '@vitest/eslint-plugin': 1.3.4(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9)
-=======
-      '@vitest/eslint-plugin': 1.3.4(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9(@types/node@20.19.9)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
       eslint: 8.57.1
       eslint-config-flat-gitignore: 0.1.8
       eslint-flat-config-utils: 0.3.1
@@ -5238,11 +5267,7 @@ snapshots:
       - typescript
       - vitest
 
-<<<<<<< HEAD
   '@antfu/eslint-config@3.16.0(@typescript-eslint/utils@8.38.0(eslint@9.32.0)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9)':
-=======
-  '@antfu/eslint-config@3.16.0(@typescript-eslint/utils@8.38.0(eslint@9.32.0)(typescript@5.8.3))(@vue/compiler-sfc@3.5.18)(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9(@types/node@22.16.5)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))':
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.9.1
@@ -5251,11 +5276,7 @@ snapshots:
       '@stylistic/eslint-plugin': 2.13.0(eslint@9.32.0)(typescript@5.8.3)
       '@typescript-eslint/eslint-plugin': 8.38.0(@typescript-eslint/parser@8.38.0(eslint@9.32.0)(typescript@5.8.3))(eslint@9.32.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 8.38.0(eslint@9.32.0)(typescript@5.8.3)
-<<<<<<< HEAD
       '@vitest/eslint-plugin': 1.3.4(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9)
-=======
-      '@vitest/eslint-plugin': 1.3.4(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9(@types/node@22.16.5)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
       eslint: 9.32.0
       eslint-config-flat-gitignore: 1.0.1(eslint@9.32.0)
       eslint-flat-config-utils: 1.1.0
@@ -6602,16 +6623,12 @@ snapshots:
       vite: 5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)
       vue: 3.5.18(typescript@5.8.3)
 
-<<<<<<< HEAD
   '@vitejs/plugin-vue@5.2.4(vite@6.3.5(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))(vue@3.5.18(typescript@5.8.3))':
     dependencies:
       vite: 6.3.5(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
       vue: 3.5.18(typescript@5.8.3)
 
-  '@vitest/coverage-v8@2.1.9(vitest@2.1.9)':
-=======
   '@vitest/coverage-v8@1.6.1(vitest@1.6.1)':
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -6622,18 +6639,29 @@ snapshots:
       istanbul-reports: 3.1.7
       magic-string: 0.30.17
       magicast: 0.3.5
-<<<<<<< HEAD
-      std-env: 3.9.0
-      test-exclude: 7.0.1
-      tinyrainbow: 1.2.0
-      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
-=======
       picocolors: 1.1.1
       std-env: 3.9.0
       strip-literal: 2.1.1
       test-exclude: 6.0.0
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.9)':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 0.2.3
+      debug: 4.4.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.1.7
+      magic-string: 0.30.17
+      magicast: 0.3.5
+      std-env: 3.9.0
+      test-exclude: 7.0.1
+      tinyrainbow: 1.2.0
+      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -6643,47 +6671,27 @@ snapshots:
       eslint: 8.57.1
     optionalDependencies:
       typescript: 5.8.3
-<<<<<<< HEAD
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
     transitivePeerDependencies:
       - supports-color
 
   '@vitest/eslint-plugin@1.3.4(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9)':
-=======
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitest/eslint-plugin@1.3.4(eslint@8.57.1)(typescript@5.8.3)(vitest@2.1.9(@types/node@20.19.9)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))':
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
     dependencies:
       '@typescript-eslint/utils': 8.38.0(eslint@8.57.1)(typescript@5.8.3)
       eslint: 8.57.1
     optionalDependencies:
       typescript: 5.8.3
-<<<<<<< HEAD
-      vitest: 2.1.9(@types/node@20.19.9)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+      vitest: 2.1.9(@types/node@20.19.9)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
     transitivePeerDependencies:
       - supports-color
 
   '@vitest/eslint-plugin@1.3.4(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9)':
-=======
-      vitest: 2.1.9(@types/node@20.19.9)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitest/eslint-plugin@1.3.4(eslint@9.32.0)(typescript@5.8.3)(vitest@2.1.9(@types/node@22.16.5)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1))':
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
     dependencies:
       '@typescript-eslint/utils': 8.38.0(eslint@9.32.0)(typescript@5.8.3)
       eslint: 9.32.0
     optionalDependencies:
       typescript: 5.8.3
-<<<<<<< HEAD
-      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
-=======
-      vitest: 2.1.9(@types/node@22.16.5)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -6761,8 +6769,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-<<<<<<< HEAD
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
+      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
 
   '@vitest/ui@2.1.9(vitest@2.1.9)':
     dependencies:
@@ -6773,10 +6780,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 1.2.0
-      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
-=======
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1)
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -7247,16 +7251,14 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-<<<<<<< HEAD
+  crypto-js@4.2.0: {}
+
   css-tree@2.3.1:
     dependencies:
       mdn-data: 2.0.30
       source-map-js: 1.2.1
-=======
-  crypto-js@4.2.0: {}
 
   css.escape@1.5.1: {}
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
 
   cssesc@3.0.0: {}
 
@@ -8219,6 +8221,12 @@ snapshots:
       whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
 
+  happy-dom@13.10.1:
+    dependencies:
+      entities: 4.5.0
+      webidl-conversions: 7.0.0
+      whatwg-mimetype: 3.0.0
+
   has-flag@4.0.0: {}
 
   has-symbols@1.1.0: {}
@@ -8400,6 +8408,12 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
+  jest-worker@26.6.2:
+    dependencies:
+      '@types/node': 20.19.9
+      merge-stream: 2.0.0
+      supports-color: 7.2.0
+
   js-beautify@1.15.4:
     dependencies:
       config-chain: 1.1.13
@@ -8580,15 +8594,12 @@ snapshots:
       '@babel/types': 7.28.2
       source-map-js: 1.2.1
 
-<<<<<<< HEAD
   make-dir@2.1.0:
     dependencies:
       pify: 4.0.1
       semver: 5.7.2
     optional: true
 
-=======
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
   make-dir@4.0.0:
     dependencies:
       semver: 7.7.2
@@ -9018,15 +9029,13 @@ snapshots:
 
   natural-orderby@5.0.0: {}
 
-<<<<<<< HEAD
   needle@3.3.1:
     dependencies:
       iconv-lite: 0.6.3
       sax: 1.4.1
     optional: true
-=======
+
   node-forge@1.3.1: {}
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
 
   node-releases@2.0.19: {}
 
@@ -9352,7 +9361,6 @@ snapshots:
     optionalDependencies:
       '@babel/code-frame': 7.27.1
 
-<<<<<<< HEAD
   rollup-plugin-esbuild@6.2.1(esbuild@0.25.8)(rollup@4.46.1):
     dependencies:
       debug: 4.4.1
@@ -9364,8 +9372,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-=======
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+  rollup-plugin-terser@7.0.2(rollup@4.46.1):
+    dependencies:
+      '@babel/code-frame': 7.27.1
+      jest-worker: 26.6.2
+      rollup: 4.46.1
+      serialize-javascript: 4.0.0
+      terser: 5.43.1
+
   rollup-plugin-vue@6.0.0(@vue/compiler-sfc@3.5.18):
     dependencies:
       '@vue/compiler-sfc': 3.5.18
@@ -9439,6 +9453,10 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.2: {}
+
+  serialize-javascript@4.0.0:
+    dependencies:
+      randombytes: 2.1.0
 
   serialize-javascript@6.0.2:
     dependencies:
@@ -9600,19 +9618,17 @@ snapshots:
       commander: 2.20.3
       source-map-support: 0.5.21
 
-<<<<<<< HEAD
-  test-exclude@7.0.1:
-    dependencies:
-      '@istanbuljs/schema': 0.1.3
-      glob: 10.4.5
-      minimatch: 9.0.5
-=======
   test-exclude@6.0.0:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 7.2.3
       minimatch: 3.1.2
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+
+  test-exclude@7.0.1:
+    dependencies:
+      '@istanbuljs/schema': 0.1.3
+      glob: 10.4.5
+      minimatch: 9.0.5
 
   text-table@0.2.0: {}
 
@@ -9983,47 +9999,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-<<<<<<< HEAD
-  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@23.2.0)(less@4.4.0)(terser@5.43.1):
-=======
-  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1):
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
-    dependencies:
-      '@vitest/expect': 1.6.1
-      '@vitest/runner': 1.6.1
-      '@vitest/snapshot': 1.6.1
-      '@vitest/spy': 1.6.1
-      '@vitest/utils': 1.6.1
-      acorn-walk: 8.3.4
-      chai: 4.5.0
-      debug: 4.4.1
-      execa: 8.0.1
-      local-pkg: 0.5.1
-      magic-string: 0.30.17
-      pathe: 1.1.2
-      picocolors: 1.1.1
-      std-env: 3.9.0
-      strip-literal: 2.1.1
-      tinybench: 2.9.0
-      tinypool: 0.8.4
-      vite: 5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
-      vite-node: 1.6.1(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 20.19.9
-      '@vitest/ui': 1.6.1(vitest@1.6.1)
-      jsdom: 23.2.0
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
+  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
@@ -10060,11 +10036,81 @@ snapshots:
       - supports-color
       - terser
 
-<<<<<<< HEAD
-  vitest@2.1.9(@types/node@20.19.9)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
-=======
-  vitest@2.1.9(@types/node@20.19.9)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1):
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@23.2.0)(less@4.4.0)(terser@5.43.1):
+    dependencies:
+      '@vitest/expect': 1.6.1
+      '@vitest/runner': 1.6.1
+      '@vitest/snapshot': 1.6.1
+      '@vitest/spy': 1.6.1
+      '@vitest/utils': 1.6.1
+      acorn-walk: 8.3.4
+      chai: 4.5.0
+      debug: 4.4.1
+      execa: 8.0.1
+      local-pkg: 0.5.1
+      magic-string: 0.30.17
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      std-env: 3.9.0
+      strip-literal: 2.1.1
+      tinybench: 2.9.0
+      tinypool: 0.8.4
+      vite: 5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
+      vite-node: 1.6.1(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 20.19.9
+      '@vitest/ui': 1.6.1(vitest@1.6.1)
+      happy-dom: 13.10.1
+      jsdom: 23.2.0
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
+    dependencies:
+      '@vitest/expect': 1.6.1
+      '@vitest/runner': 1.6.1
+      '@vitest/snapshot': 1.6.1
+      '@vitest/spy': 1.6.1
+      '@vitest/utils': 1.6.1
+      acorn-walk: 8.3.4
+      chai: 4.5.0
+      debug: 4.4.1
+      execa: 8.0.1
+      local-pkg: 0.5.1
+      magic-string: 0.30.17
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      std-env: 3.9.0
+      strip-literal: 2.1.1
+      tinybench: 2.9.0
+      tinypool: 0.8.4
+      vite: 5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
+      vite-node: 1.6.1(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 20.19.9
+      '@vitest/ui': 1.6.1(vitest@1.6.1)
+      happy-dom: 13.10.1
+      jsdom: 24.1.3
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@2.1.9(@types/node@20.19.9)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(terser@5.43.1))
@@ -10088,11 +10134,8 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.9
-<<<<<<< HEAD
       '@vitest/ui': 2.1.9(vitest@2.1.9)
-=======
-      happy-dom: 12.10.3
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+      happy-dom: 13.10.1
       jsdom: 24.1.3
     transitivePeerDependencies:
       - less
@@ -10106,11 +10149,7 @@ snapshots:
       - terser
     optional: true
 
-<<<<<<< HEAD
-  vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
-=======
-  vitest@2.1.9(@types/node@22.16.5)(happy-dom@12.10.3)(jsdom@24.1.3)(terser@5.43.1):
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+  vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@13.10.1)(jsdom@24.1.3)(less@4.4.0)(terser@5.43.1):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(terser@5.43.1))
@@ -10134,11 +10173,8 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.16.5
-<<<<<<< HEAD
       '@vitest/ui': 2.1.9(vitest@2.1.9)
-=======
-      happy-dom: 12.10.3
->>>>>>> dc339f6 (feat: 添加设备检测库核心功能与示例)
+      happy-dom: 13.10.1
       jsdom: 24.1.3
     transitivePeerDependencies:
       - less
