@@ -278,15 +278,23 @@
   }
 }
 
-// 适配安全区域
-@supports (padding: max(0px)) {
-  .mobile-simple-login {
-    &__header {
-      padding-top: max(60px, env(safe-area-inset-top) + 20px);
+// 适配安全区域 - 使用固定值替代CSS函数
+.mobile-simple-login {
+  &__header {
+    padding-top: 60px;
+
+    // 为有刘海的设备添加额外间距
+    @media screen and (max-height: 812px) and (orientation: portrait) {
+      padding-top: 80px;
     }
-    
-    &__content {
-      padding-bottom: max(24px, env(safe-area-inset-bottom) + 24px);
+  }
+
+  &__content {
+    padding-bottom: 24px;
+
+    // 为有底部安全区域的设备添加额外间距
+    @media screen and (max-height: 812px) and (orientation: portrait) {
+      padding-bottom: 44px;
     }
   }
 }

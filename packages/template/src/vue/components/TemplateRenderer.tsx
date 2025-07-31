@@ -1,271 +1,207 @@
-import {
-  type Component,
-  type PropType,
-  computed,
-  defineComponent,
-  h,
-  onMounted,
-  ref,
-  watch,
-} from 'vue'
-import type { DeviceType } from '../../types'
-import { useTemplate } from '../composables/useTemplate'
+import { defineComponent, watch } from 'vue'
+import { useTemplate } from '../composables/useTemplateSystem'
+import type { DeviceType } from '../composables/useTemplateSystem'
+
+export interface TemplateRendererProps {
+  category: string
+  templateId?: string
+  deviceType?: DeviceType
+  showSelector?: boolean
+  selectorPosition?: 'top' | 'bottom' | 'left' | 'right'
+  autoDetectDevice?: boolean
+  config?: Record<string, any>
+}
 
 /**
- * 默认加载组件
- */
-const DefaultLoadingComponent = defineComponent({
-  name: 'DefaultLoading',
-  setup() {
-    return () => (
-      <div class="template-loading">
-        <div class="template-loading__spinner"></div>
-        <div class="template-loading__text">正在加载模板...</div>
-      </div>
-    )
-  }
-})
-
-/**
- * 默认错误组件
- */
-const DefaultErrorComponent = defineComponent({
-  name: 'DefaultError',
-  props: {
-    error: {
-      type: Object as PropType<Error>,
-      required: true
-    },
-    retry: {
-      type: Function as PropType<() => void>,
-      required: true
-    }
-  },
-  setup(props) {
-    return () => (
-      <div class="template-error">
-        <div class="template-error__icon">⚠️</div>
-        <div class="template-error__title">模板加载失败</div>
-        <div class="template-error__message">{props.error.message}</div>
-        <button class="template-error__retry" onClick={props.retry}>
-          重试
-        </button>
-      </div>
-    )
-  }
-})
-
-/**
- * 默认空状态组件
- */
-const DefaultEmptyComponent = defineComponent({
-  name: 'DefaultEmpty',
-  setup() {
-    return () => (
-      <div class="template-empty">
-        <div class="template-empty__icon">📄</div>
-        <div class="template-empty__text">未找到指定模板</div>
-      </div>
-    )
-  }
-})
-
-/**
- * 模板渲染器组件
+ * 模板渲染组件
+ * 
+ * @example
+ * ```vue
+ * <template>
+ *   <TemplateRenderer 
+ *     category="login"
+ *     :show-selector="true"
+ *     @login="handleLogin"
+ *   />
+ * </template>
+ * ```
  */
 export const TemplateRenderer = defineComponent({
   name: 'TemplateRenderer',
   props: {
-    /** 模板分类 */
     category: {
       type: String,
       required: true
     },
-    /** 设备类型 */
-    device: {
-      type: String as PropType<DeviceType>,
-      default: undefined
-    },
-    /** 模板名称 */
-    template: {
+    templateId: {
       type: String,
-      required: true
-    },
-    /** 传递给模板的属性 */
-    templateProps: {
-      type: Object as PropType<Record<string, any>>,
-      default: () => ({})
-    },
-    /** 是否启用缓存 */
-    cache: {
-      type: Boolean,
-      default: true
-    },
-    /** 加载组件 */
-    loading: {
-      type: Object as PropType<Component>,
       default: undefined
     },
-    /** 错误组件 */
-    error: {
-      type: Object as PropType<Component>,
+    deviceType: {
+      type: String,
       default: undefined
     },
-    /** 空状态组件 */
-    empty: {
-      type: Object as PropType<Component>,
-      default: undefined
-    },
-    /** 加载超时时间 */
-    timeout: {
-      type: Number,
-      default: 10000
-    },
-    /** 是否自动重试 */
-    autoRetry: {
+    showSelector: {
       type: Boolean,
       default: false
     },
-    /** 重试次数 */
-    retryCount: {
-      type: Number,
-      default: 3
+    selectorPosition: {
+      type: String,
+      default: 'top'
+    },
+    autoDetectDevice: {
+      type: Boolean,
+      default: true
+    },
+    config: {
+      type: Object,
+      default: () => ({})
     }
   },
-  emits: {
-    load: (_component: Component) => true,
-    error: (_error: Error) => true,
-    retry: (_attempt: number) => true
-  },
-  setup(props, { emit, slots }) {
+  emits: ['template-change', 'device-change', 'render-error'],
+  setup(props, { emit, attrs }) {
     const {
-      manager,
-      currentDevice,
-      loading,
-      error,
-      hasTemplate
-    } = useTemplate({ autoScan: true })
-
-    const renderedComponent = ref<Component | null>(null)
-    const retryAttempts = ref(0)
-    const isTemplateExists = ref(false)
-
-    // 计算实际使用的设备类型
-    const actualDevice = computed(() => props.device || currentDevice.value)
-
-    // 计算组件
-    const LoadingComponent = computed(() => props.loading || DefaultLoadingComponent)
-    const ErrorComponent = computed(() => props.error || DefaultErrorComponent)
-    const EmptyComponent = computed(() => props.empty || DefaultEmptyComponent)
-
-    /**
-     * 加载模板
-     */
-    const loadTemplate = async (): Promise<void> => {
-      try {
-        loading.value = true
-        error.value = null
-
-        // 检查模板是否存在
-        const exists = await hasTemplate(props.category, actualDevice.value, props.template)
-        isTemplateExists.value = exists
-
-        if (!exists) {
-          return
-        }
-
-        // 渲染模板
-        const component = await manager.render({
-          category: props.category,
-          device: actualDevice.value,
-          template: props.template,
-          props: props.templateProps,
-          cache: props.cache,
-          timeout: props.timeout
-        })
-
-        renderedComponent.value = component
-        emit('load', component)
-        retryAttempts.value = 0
-      }
-      catch (err) {
-        const errorObj = err as Error
-        error.value = errorObj
-        emit('error', errorObj)
-
-        // 自动重试
-        if (props.autoRetry && retryAttempts.value < props.retryCount) {
-          retryAttempts.value++
-          emit('retry', retryAttempts.value)
-          setTimeout(() => {
-            loadTemplate()
-          }, 1000 * retryAttempts.value) // 递增延迟
-        }
-      }
-      finally {
-        loading.value = false
-      }
-    }
-
-    /**
-     * 手动重试
-     */
-    const retry = (): void => {
-      retryAttempts.value++
-      emit('retry', retryAttempts.value)
-      loadTemplate()
-    }
-
-    // 监听属性变化，重新加载模板
-    watch(
-      [() => props.category, () => props.template, actualDevice],
-      () => {
-        renderedComponent.value = null
-        loadTemplate()
-      },
-      { immediate: false }
-    )
-
-    // 监听模板属性变化
-    watch(
-      () => props.templateProps,
-      () => {
-        if (renderedComponent.value) {
-          loadTemplate()
-        }
-      },
-      { deep: true }
-    )
-
-    // 组件挂载时加载模板
-    onMounted(() => {
-      loadTemplate()
+      currentTemplate,
+      currentTemplateId,
+      availableTemplates,
+      deviceType,
+      switchTemplate,
+      switchDevice,
+      TemplateComponent,
+      templateConfig
+    } = useTemplate({
+      category: props.category,
+      deviceType: props.deviceType,
+      defaultTemplate: props.templateId,
+      autoSwitch: props.autoDetectDevice
     })
 
+    // 监听模板变化
+    watch(currentTemplateId, (newTemplateId) => {
+      emit('template-change', newTemplateId)
+    })
+
+    // 监听设备变化
+    watch(deviceType, (newDevice) => {
+      emit('device-change', newDevice)
+    })
+
+    // 渲染模板选择器
+    const renderSelector = () => {
+      if (!props.showSelector) return null
+
+      return (
+        <div class="template-renderer__selector">
+          <div class="template-renderer__selector-group">
+            <label class="template-renderer__label">模板:</label>
+            <select
+              class="template-renderer__select"
+              value={currentTemplateId.value}
+              onChange={(e: Event) => {
+                const target = e.target as HTMLSelectElement
+                switchTemplate(target.value)
+              }}
+            >
+              {availableTemplates.value.map(template => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div class="template-renderer__selector-group">
+            <label class="template-renderer__label">设备:</label>
+            <select
+              class="template-renderer__select"
+              value={deviceType.value}
+              onChange={(e: Event) => {
+                const target = e.target as HTMLSelectElement
+                switchDevice(target.value as DeviceType)
+              }}
+            >
+              <option value="desktop">桌面</option>
+              <option value="tablet">平板</option>
+              <option value="mobile">手机</option>
+            </select>
+          </div>
+        </div>
+      )
+    }
+
+    // 渲染模板内容
+    const renderContent = () => {
+      try {
+        if (!TemplateComponent.value) {
+          return <div class="template-renderer__error">未找到模板</div>
+        }
+        
+        // 合并配置
+        const finalConfig = {
+          ...templateConfig.value,
+          ...props.config
+        }
+        
+        return (
+          <TemplateComponent.value 
+            {...finalConfig}
+            {...attrs}
+          />
+        )
+      } catch (error) {
+        emit('render-error', error)
+        return <div class="template-renderer__error">模板渲染失败: {error.message}</div>
+      }
+    }
+
     return () => {
-      // 加载状态
-      if (loading.value) {
-        return slots.loading?.() || h(LoadingComponent.value)
-      }
+      const selector = renderSelector()
+      const content = renderContent()
 
-      // 错误状态
-      if (error.value) {
-        return slots.error?.({ error: error.value, retry }) || h(ErrorComponent.value, { error: error.value, retry })
-      }
+      const className = [
+        'template-renderer',
+        props.selectorPosition === 'left' || props.selectorPosition === 'right' 
+          ? 'template-renderer--horizontal' 
+          : 'template-renderer--vertical'
+      ].join(' ')
 
-      // 模板不存在
-      if (!isTemplateExists.value) {
-        return slots.empty?.() || h(EmptyComponent.value)
+      if (props.selectorPosition === 'top') {
+        return (
+          <div class={className}>
+            {selector}
+            <div class="template-renderer__content">
+              {content}
+            </div>
+          </div>
+        )
+      } else if (props.selectorPosition === 'bottom') {
+        return (
+          <div class={className}>
+            <div class="template-renderer__content">
+              {content}
+            </div>
+            {selector}
+          </div>
+        )
+      } else if (props.selectorPosition === 'left') {
+        return (
+          <div class={className}>
+            {selector}
+            <div class="template-renderer__content">
+              {content}
+            </div>
+          </div>
+        )
+      } else {
+        return (
+          <div class={className}>
+            <div class="template-renderer__content">
+              {content}
+            </div>
+            {selector}
+          </div>
+        )
       }
-
-      // 渲染模板
-      if (renderedComponent.value) {
-        const TemplateComponent = renderedComponent.value
-        return h(TemplateComponent, props.templateProps)
-      }
-
-      // 默认状态
-      return slots.default?.() || null
     }
   }
 })

@@ -339,12 +339,16 @@
   }
 }
 
-// 适配安全区域
-@supports (padding: max(0px)) {
-  .mobile-card-login {
-    &__container {
-      padding-top: max(40px, env(safe-area-inset-top) + 20px);
-      padding-bottom: max(20px, env(safe-area-inset-bottom) + 20px);
+// 适配安全区域 - 使用固定值替代CSS函数
+.mobile-card-login {
+  &__container {
+    padding-top: 40px;
+    padding-bottom: 20px;
+
+    // 为有刘海的设备添加额外间距
+    @media screen and (max-height: 812px) and (orientation: portrait) {
+      padding-top: 60px;
+      padding-bottom: 40px;
     }
   }
 }

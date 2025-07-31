@@ -1,18 +1,16 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import { createRouter, createWebHistory } from 'vue-router'
-
 import App from './App.vue'
+import router from './router'
 
-// 导入样式
-import './styles/main.less'
+console.log('🚀 LDesign Template Examples 启动中...')
 
+// 创建应用实例
 const app = createApp(App)
 
-// 状态管理
-const pinia = createPinia()
-app.use(pinia)
+// 使用路由
+app.use(router)
 
-// 路由
-
+// 挂载应用
 app.mount('#app')
+
+console.log('✅ LDesign Template Examples 启动完成')
