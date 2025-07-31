@@ -42,7 +42,6 @@
       "import": "./es/themes/*.js",
       "require": "./lib/themes/*.js"
     },
-
     "./es": {
       "types": "./types/index.d.ts",
       "import": "./es/index.js"
@@ -93,6 +92,7 @@
   },
   "dependencies": {
     "@arco-design/color": "^0.4.0",
+    "chroma-js": "^3.1.2",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
@@ -102,6 +102,7 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@types/chroma-js": "^3.1.1",
     "@types/node": "^20.11.5",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitest/ui": "^1.2.1",

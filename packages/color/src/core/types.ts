@@ -23,6 +23,11 @@ export type ThemeType = 'system' | 'light' | 'dark' | 'custom'
 export type ColorCategory = 'primary' | 'success' | 'warning' | 'danger' | 'gray'
 
 /**
+ * 中性色类别
+ */
+export type NeutralColorCategory = 'border' | 'background' | 'text' | 'white' | 'shadow'
+
+/**
  * 颜色配置接口
  */
 export interface ColorConfig {
@@ -46,6 +51,22 @@ export interface ColorScale {
   colors: ColorValue[]
   /** 色阶索引映射 */
   indices: Record<number, ColorValue>
+}
+
+/**
+ * 中性色配置
+ */
+export interface NeutralColors {
+  /** 边框色系统 */
+  border: ColorScale
+  /** 背景色系统 */
+  background: ColorScale
+  /** 文字色系统 */
+  text: ColorScale
+  /** 白色变体系统 */
+  white: ColorScale
+  /** 阴影颜色系统 */
+  shadow: ColorScale
 }
 
 /**
@@ -280,6 +301,18 @@ export interface ColorGenerator {
     scales: Record<ColorCategory, ColorScale>,
     prefix?: string
   ) => Record<string, ColorValue>
+
+  /** 设置颜色模式 */
+  setMode: (mode: ColorMode) => void
+
+  /** 切换颜色模式 */
+  toggleMode: () => ColorMode
+
+  /** 获取当前颜色模式 */
+  getCurrentMode: () => ColorMode
+
+  /** 根据当前模式生成颜色 */
+  generateColorsForCurrentMode: (primary: ColorValue) => Omit<ColorConfig, 'primary'>
 }
 
 /**

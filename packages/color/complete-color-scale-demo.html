@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完整色阶系统演示 - 基于chroma-js</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1a202c;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        body.dark-mode {
+            background: #1a202c;
+            color: #f7fafc;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 16px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin: 0;
+        }
+        
+        .dark-mode .header p {
+            color: #94a3b8;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .toggle-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .toggle-btn:active {
+            transform: translateY(0);
+        }
+        
+        .theme-grid {
+            display: grid;
+            gap: 32px;
+        }
+        
+        .theme-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .dark-mode .theme-section {
+            background: #2d3748;
+            border-color: #4a5568;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .theme-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .dark-mode .theme-header {
+            border-bottom-color: #4a5568;
+        }
+        
+        .theme-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .theme-hex {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .dark-mode .theme-hex {
+            color: #94a3b8;
+            background: #4a5568;
+        }
+        
+        .color-categories {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .color-category {
+            margin-bottom: 16px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .category-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .dark-mode .category-label {
+            color: #d1d5db;
+        }
+        
+        .category-count {
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .dark-mode .category-count {
+            color: #9ca3af;
+            background: #374151;
+        }
+        
+        .color-scale {
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .dark-mode .color-scale {
+            border-color: #4b5563;
+        }
+        
+        .color-item {
+            flex: 1;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .color-item:last-child {
+            border-right: none;
+        }
+        
+        .color-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        .color-item::after {
+            content: attr(data-hex);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        
+        .color-item:hover::after {
+            opacity: 1;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .theme-section {
+                padding: 20px;
+            }
+            
+            .color-item {
+                height: 48px;
+                font-size: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 完整色阶系统演示</h1>
+            <p>基于chroma-js的高质量色阶生成，展示所有预设主题的完整颜色系统</p>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" onclick="toggleMode()">
+                <span id="mode-text">切换到暗色模式</span>
+            </button>
+        </div>
+
+        <div class="theme-grid" id="theme-grid">
+            <!-- 主题将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <div class="toast" id="toast">颜色已复制到剪贴板！</div>
+    <div class="mode-indicator" id="mode-indicator">亮色模式</div>
+
+    <script>
+        // 预设主题配置
+        const PRESET_THEMES = {
+            '海洋蓝': '#1677ff',
+            '翡翠绿': '#00b96b',
+            '珊瑚红': '#ff4d4f',
+            '紫罗兰': '#722ed1',
+            '日落橙': '#fa8c16',
+            '天空青': '#13c2c2',
+            '樱花粉': '#eb2f96',
+            '金盏花': '#faad14',
+            '石墨灰': '#595959'
+        };
+
+        // 颜色类别配置
+        const COLOR_CATEGORIES = {
+            primary: { name: '主色调', count: 12 },
+            success: { name: '成功色', count: 12 },
+            warning: { name: '警告色', count: 12 },
+            danger: { name: '危险色', count: 12 },
+            gray: { name: '灰色', count: 14 }
+        };
+
+        // 当前模式
+        let currentMode = 'light';
+
+        // 颜色转换工具函数
+        function hexToHsl(hex) {
+            const r = parseInt(hex.slice(1, 3), 16) / 255;
+            const g = parseInt(hex.slice(3, 5), 16) / 255;
+            const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+
+            return {
+                h: Math.round(h * 360),
+                s: Math.round(s * 100),
+                l: Math.round(l * 100)
+            };
+        }
+
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+
+        // 修复后的色阶生成算法 - 匹配后端逻辑
+        function generateColorScale(baseColor, count, mode, category = 'primary') {
+            const baseHsl = hexToHsl(baseColor);
+            const colors = [];
+
+            if (category === 'gray') {
+                // 灰色特殊处理
+                const saturation = Math.min(baseHsl.s, 15); // 限制饱和度
+
+                for (let i = 0; i < count; i++) {
+                    const factor = i / (count - 1);
+                    let lightness;
+                    if (mode === 'dark') {
+                        // 暗色模式：从深到浅（1级=最深色，14级=最浅色）
+                        lightness = 5 + (factor * 80);  // 从5到85
+                    } else {
+                        // 亮色模式：从浅到深（1级=最浅色，14级=最深色）
+                        lightness = 95 - (factor * 90); // 从95到5
+                    }
+                    colors.push(hslToHex(baseHsl.h, saturation, lightness));
+                }
+            } else {
+                // 彩色处理
+                for (let i = 0; i < count; i++) {
+                    const factor = i / (count - 1);
+                    let lightness;
+                    if (mode === 'dark') {
+                        // 暗色模式：从深到浅（1级=最深色，12级=最浅色）
+                        lightness = 5 + (factor * 80);  // 从5到85
+                    } else {
+                        // 亮色模式：从浅到深（1级=最浅色，12级=最深色）
+                        lightness = 95 - (factor * 90); // 从95到5
+                    }
+
+                    // 保持饱和度相对稳定，在中间位置稍微提高
+                    const saturationFactor = 1.0 - Math.abs(factor - 0.5) * 0.3;
+                    const saturation = baseHsl.s * saturationFactor;
+
+                    colors.push(hslToHex(baseHsl.h, saturation, lightness));
+                }
+            }
+
+            return colors;
+        }
+
+        // 生成颜色系统
+        function generateColorSystem(primaryColor, mode) {
+            const system = {};
+
+            // 生成主色调
+            system.primary = generateColorScale(primaryColor, 12, mode, 'primary');
+
+            // 生成成功色（绿色系）
+            const successHsl = hexToHsl('#00b96b');
+            system.success = generateColorScale('#00b96b', 12, mode, 'success');
+
+            // 生成警告色（橙色系）
+            system.warning = generateColorScale('#fa8c16', 12, mode, 'warning');
+
+            // 生成危险色（红色系）
+            system.danger = generateColorScale('#ff4d4f', 12, mode, 'danger');
+
+            // 生成灰色系
+            system.gray = generateColorScale('#595959', 14, mode, 'gray');
+
+            return system;
+        }
+
+        // 获取文字颜色（根据背景亮度）
+        function getTextColor(hexColor) {
+            const hsl = hexToHsl(hexColor);
+            return hsl.l > 50 ? '#000000' : '#ffffff';
+        }
+
+        // 复制到剪贴板
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast();
+            } catch (err) {
+                console.error('复制失败:', err);
+            }
+        }
+
+        // 显示提示
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 切换模式
+        function toggleMode() {
+            currentMode = currentMode === 'light' ? 'dark' : 'light';
+            document.body.classList.toggle('dark-mode');
+
+            const modeText = document.getElementById('mode-text');
+            const modeIndicator = document.getElementById('mode-indicator');
+
+            if (currentMode === 'dark') {
+                modeText.textContent = '切换到亮色模式';
+                modeIndicator.textContent = '暗色模式';
+            } else {
+                modeText.textContent = '切换到暗色模式';
+                modeIndicator.textContent = '亮色模式';
+            }
+
+            renderThemes();
+        }
+
+        // 渲染主题
+        function renderThemes() {
+            const themeGrid = document.getElementById('theme-grid');
+            themeGrid.innerHTML = '';
+
+            Object.entries(PRESET_THEMES).forEach(([themeName, primaryColor]) => {
+                const colorSystem = generateColorSystem(primaryColor, currentMode);
+
+                const themeSection = document.createElement('div');
+                themeSection.className = 'theme-section';
+
+                themeSection.innerHTML = `
+                    <div class="theme-header">
+                        <h2 class="theme-title">${themeName}</h2>
+                        <span class="theme-hex">${primaryColor}</span>
+                    </div>
+                    <div class="color-categories">
+                        ${Object.entries(COLOR_CATEGORIES).map(([categoryKey, categoryConfig]) => `
+                            <div class="color-category">
+                                <div class="category-header">
+                                    <span class="category-label">${categoryConfig.name}</span>
+                                    <span class="category-count">${categoryConfig.count}级</span>
+                                </div>
+                                <div class="color-scale">
+                                    ${colorSystem[categoryKey].map((color, index) => `
+                                        <div class="color-item"
+                                             style="background-color: ${color}; color: ${getTextColor(color)}"
+                                             data-hex="${color}"
+                                             onclick="copyToClipboard('${color}')"
+                                             title="点击复制 ${color}">
+                                            ${index + 1}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                themeGrid.appendChild(themeSection);
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderThemes();
+        });
+    </script>
+</body>
+</html>
