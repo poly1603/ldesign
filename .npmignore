@@ -1,0 +1,311 @@
+# Source files
+src/
+__tests__/
+tests/
+e2e/
+examples/
+docs/
+.github/
+tools/
+
+# Configuration files
+*.config.js
+*.config.ts
+*.config.mjs
+*.config.cjs
+tsconfig.json
+tsconfig.*.json
+vitest.config.*
+playwright.config.*
+eslint.config.*
+rollup.config.*
+vite.config.*
+jest.config.*
+babel.config.*
+webpack.config.*
+.eslintrc*
+.prettierrc*
+.stylelintrc*
+.editorconfig
+.gitignore
+.gitattributes
+.npmignore
+.nvmrc
+.node-version
+
+# Development files
+.env*
+.local
+*.local
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+node_modules/
+.pnpm-store/
+.yarn/
+.npm/
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.output/
+.vercel/
+.netlify/
+tmp/
+temp/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Test results
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Cache files
+*.tsbuildinfo
+.eslintcache
+.prettiercache
+.stylelintcache
+.rollup.cache
+.vite
+.turbo
+
+# Lock files
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+appveyor.yml
+Jenkinsfile
+
+# Documentation
+README.dev.md
+CONTRIBUTING.md
+DEVELOPMENT.md
+*.md
+!README.md
+!CHANGELOG.md
+
+# Scripts
+scripts/
+build/
+
+# Monorepo files
+lerna.json
+rush.json
+pnpm-workspace.yaml
+workspaces.json
+
+# Editor files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.tmp
+*.temp
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Security files
+*.pem
+*.key
+*.crt
+*.csr
+.secrets
+secrets/
+*.secret
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes files
+*.yaml
+*.yml
+!package.json
+
+# Cloud files
+.aws/
+.azure/
+.gcloud/
+.serverless/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*~
+*.swp
+*.swo
+.#*
+#*#
+
+# Generated files
+generated/
+auto-generated/
+
+# Benchmark files
+benchmark-results/
+*.benchmark
+
+# Performance files
+.clinic/
+*.clinic
+*.prof
+*.heapsnapshot
+*.cpuprofile
+
+# Size limit files
+.size-limit.json
+
+# Changesets
+.changeset/
+
+# Local development
+local.config.*
+.local.config.*
+
+# Storybook
+.storybook/
+storybook-static/
+
+# Cypress
+cypress/
+
+# Firebase
+.firebase/
+.firebaserc
+firebase.json
+
+# Supabase
+.supabase/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Vagrant
+Vagrantfile
+.vagrant/
+
+# Ansible
+ansible.cfg
+*.retry
+
+# Helm
+Chart.yaml
+values.yaml
+templates/
+
+# Makefile
+Makefile
+makefile
+
+# Shell scripts
+*.sh
+*.bat
+*.cmd
+*.ps1
+
+# Python files
+*.py
+*.pyc
+__pycache__/
+
+# Ruby files
+*.rb
+Gemfile*
+
+# Go files
+*.go
+go.mod
+go.sum
+
+# Rust files
+*.rs
+Cargo.toml
+Cargo.lock
+
+# Java files
+*.java
+*.class
+pom.xml
+build.gradle
+
+# C/C++ files
+*.c
+*.cpp
+*.h
+*.hpp
+CMakeLists.txt
+Makefile
+
+# PHP files
+*.php
+composer.json
+composer.lock
+
+# Monitoring
+.sentryclirc
+
+# Analytics
+.vercel/
+.netlify/
+
+# Keep only essential files for npm package
+# The following files should be included:
+# - dist/ (build output)
+# - package.json
+# - README.md
+# - CHANGELOG.md
+# - LICENSE

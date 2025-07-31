@@ -1,0 +1,166 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# JavaScript, TypeScript, Vue, JSON
+[*.{js,jsx,ts,tsx,vue,json,json5}]
+indent_style = space
+indent_size = 2
+
+# CSS, SCSS, LESS, Stylus
+[*.{css,scss,sass,less,styl}]
+indent_style = space
+indent_size = 2
+
+# HTML, XML
+[*.{html,htm,xml,svg}]
+indent_style = space
+indent_size = 2
+
+# Markdown
+[*.{md,mdx}]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# YAML
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# TOML
+[*.toml]
+indent_style = space
+indent_size = 2
+
+# Shell scripts
+[*.{sh,bash,zsh}]
+indent_style = space
+indent_size = 2
+
+# Batch files
+[*.{bat,cmd}]
+end_of_line = crlf
+indent_style = space
+indent_size = 2
+
+# PowerShell
+[*.ps1]
+indent_style = space
+indent_size = 2
+
+# Python
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Go
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# Rust
+[*.rs]
+indent_style = space
+indent_size = 4
+
+# C/C++
+[*.{c,cpp,h,hpp}]
+indent_style = space
+indent_size = 4
+
+# Java
+[*.java]
+indent_style = space
+indent_size = 4
+
+# C#
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# PHP
+[*.php]
+indent_style = space
+indent_size = 4
+
+# Ruby
+[*.rb]
+indent_style = space
+indent_size = 2
+
+# Makefile
+[Makefile]
+indent_style = tab
+
+# Package files
+[package.json]
+indent_style = space
+indent_size = 2
+
+[package-lock.json]
+indent_style = space
+indent_size = 2
+insert_final_newline = false
+
+[pnpm-lock.yaml]
+indent_style = space
+indent_size = 2
+
+# Configuration files
+[*.config.{js,ts,mjs,cjs}]
+indent_style = space
+indent_size = 2
+
+[{tsconfig,jsconfig}.json]
+indent_style = space
+indent_size = 2
+
+[.eslintrc*]
+indent_style = space
+indent_size = 2
+
+[.prettierrc*]
+indent_style = space
+indent_size = 2
+
+[.stylelintrc*]
+indent_style = space
+indent_size = 2
+
+# Docker
+[Dockerfile*]
+indent_style = space
+indent_size = 2
+
+[docker-compose*.yml]
+indent_style = space
+indent_size = 2
+
+# GitHub Actions
+[.github/workflows/*.yml]
+indent_style = space
+indent_size = 2
+
+# Ignore generated files
+[dist/**]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+[coverage/**]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+[node_modules/**]
+insert_final_newline = false
+trim_trailing_whitespace = false
