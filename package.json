@@ -17,7 +17,9 @@
     "docs:build": "pnpm -r run docs:build",
     "release": "pnpm build && pnpm test && changeset publish",
     "dev": "pnpm -r --parallel run dev",
-    "clean": "pnpm -r run clean"
+    "clean": "pnpm -r run clean",
+    "commit": "tsx tools/git-commit.ts",
+    "c": "tsx tools/git-commit.ts"
   },
   "keywords": [
     "scaffold",
