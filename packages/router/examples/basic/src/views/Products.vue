@@ -1,85 +1,6 @@
-<template>
-  <div class="products">
-    <h2>🛍️ Products</h2>
-    <p>This page demonstrates query parameter handling and filtering.</p>
-    
-    <div class="filters">
-      <h3>Filters:</h3>
-      <div class="filter-group">
-        <label>
-          Category:
-          <select v-model="filters.category" @change="updateFilters">
-            <option value="">All Categories</option>
-            <option value="electronics">Electronics</option>
-            <option value="clothing">Clothing</option>
-            <option value="books">Books</option>
-            <option value="home">Home & Garden</option>
-          </select>
-        </label>
-        
-        <label>
-          Sort by:
-          <select v-model="filters.sort" @change="updateFilters">
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-            <option value="rating">Rating</option>
-            <option value="date">Date Added</option>
-          </select>
-        </label>
-        
-        <label>
-          Order:
-          <select v-model="filters.order" @change="updateFilters">
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </label>
-        
-        <button @click="clearFilters" class="clear-button">Clear Filters</button>
-      </div>
-    </div>
-    
-    <div class="products-grid">
-      <div 
-        v-for="product in filteredProducts" 
-        :key="product.id"
-        class="product-card"
-        @click="viewProduct(product.id)"
-      >
-        <div class="product-image">{{ product.emoji }}</div>
-        <div class="product-info">
-          <h4>{{ product.name }}</h4>
-          <p class="product-category">{{ product.category }}</p>
-          <div class="product-price">${{ product.price }}</div>
-          <div class="product-rating">
-            <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= product.rating }">★</span>
-            <span class="rating-text">({{ product.rating }}/5)</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="pagination">
-      <button 
-        v-for="page in totalPages" 
-        :key="page"
-        :class="['page-button', { active: currentPage === page }]"
-        @click="goToPage(page)"
-      >
-        {{ page }}
-      </button>
-    </div>
-    
-    <div class="query-info">
-      <h3>Current Query Parameters:</h3>
-      <pre>{{ JSON.stringify($route.query, null, 2) }}</pre>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
+import { useRoute, useRouter } from '@ldesign/router'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -88,7 +9,7 @@ const route = useRoute()
 const filters = ref({
   category: '',
   sort: 'name',
-  order: 'asc'
+  order: 'asc',
 })
 
 const currentPage = ref(1)
@@ -107,22 +28,22 @@ const products = ref([
   { id: 9, name: 'Headphones', category: 'electronics', price: 199, rating: 5, emoji: '🎧', date: '2023-06-01' },
   { id: 10, name: 'Sneakers', category: 'clothing', price: 129, rating: 4, emoji: '👟', date: '2023-06-15' },
   { id: 11, name: 'Tablet', category: 'electronics', price: 399, rating: 4, emoji: '📱', date: '2023-07-01' },
-  { id: 12, name: 'Cushion', category: 'home', price: 45, rating: 3, emoji: '🛏️', date: '2023-07-10' }
+  { id: 12, name: 'Cushion', category: 'home', price: 45, rating: 3, emoji: '🛏️', date: '2023-07-10' },
 ])
 
 // 计算属性
 const filteredProducts = computed(() => {
   let result = [...products.value]
-  
+
   // 按类别过滤
   if (filters.value.category) {
     result = result.filter(p => p.category === filters.value.category)
   }
-  
+
   // 排序
   result.sort((a, b) => {
     let aVal, bVal
-    
+
     switch (filters.value.sort) {
       case 'price':
         aVal = a.price
@@ -140,13 +61,13 @@ const filteredProducts = computed(() => {
         aVal = a.name.toLowerCase()
         bVal = b.name.toLowerCase()
     }
-    
+
     if (filters.value.order === 'desc') {
       return aVal < bVal ? 1 : -1
     }
     return aVal > bVal ? 1 : -1
   })
-  
+
   // 分页
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
@@ -155,63 +76,72 @@ const filteredProducts = computed(() => {
 
 const totalPages = computed(() => {
   let result = [...products.value]
-  
+
   if (filters.value.category) {
     result = result.filter(p => p.category === filters.value.category)
   }
-  
+
   return Math.ceil(result.length / itemsPerPage)
 })
 
 // 方法
-const updateFilters = () => {
+function updateFilters() {
   currentPage.value = 1
-  
+
   const query: Record<string, string> = {}
-  
-  if (filters.value.category) query.category = filters.value.category
-  if (filters.value.sort !== 'name') query.sort = filters.value.sort
-  if (filters.value.order !== 'asc') query.order = filters.value.order
-  if (currentPage.value !== 1) query.page = currentPage.value.toString()
-  
+
+  if (filters.value.category)
+    query.category = filters.value.category
+  if (filters.value.sort !== 'name')
+    query.sort = filters.value.sort
+  if (filters.value.order !== 'asc')
+    query.order = filters.value.order
+  if (currentPage.value !== 1)
+    query.page = currentPage.value.toString()
+
   router.replace({ query })
 }
 
-const clearFilters = () => {
+function clearFilters() {
   filters.value = {
     category: '',
     sort: 'name',
-    order: 'asc'
+    order: 'asc',
   }
   currentPage.value = 1
   router.replace({ query: {} })
 }
 
-const goToPage = (page: number) => {
+function goToPage(page: number) {
   currentPage.value = page
-  
+
   const query = { ...route.value.query }
   if (page === 1) {
     delete query.page
-  } else {
+  }
+  else {
     query.page = page.toString()
   }
-  
+
   router.replace({ query })
 }
 
-const viewProduct = (productId: number) => {
+function viewProduct(productId: number) {
   // 这里可以导航到产品详情页
   alert(`Viewing product ${productId}`)
 }
 
-const loadFromQuery = () => {
+function loadFromQuery() {
   const query = route.value.query
-  
-  if (query.category) filters.value.category = query.category as string
-  if (query.sort) filters.value.sort = query.sort as string
-  if (query.order) filters.value.order = query.order as string
-  if (query.page) currentPage.value = parseInt(query.page as string) || 1
+
+  if (query.category)
+    filters.value.category = query.category as string
+  if (query.sort)
+    filters.value.sort = query.sort as string
+  if (query.order)
+    filters.value.order = query.order as string
+  if (query.page)
+    currentPage.value = Number.parseInt(query.page as string) || 1
 }
 
 // 生命周期
@@ -224,6 +154,93 @@ watch(() => route.value.query, () => {
   loadFromQuery()
 })
 </script>
+
+<template>
+  <div class="products">
+    <h2>🛍️ Products</h2>
+    <p>This page demonstrates query parameter handling and filtering.</p>
+
+    <div class="filters">
+      <h3>Filters:</h3>
+      <div class="filter-group">
+        <label>
+          Category:
+          <select v-model="filters.category" @change="updateFilters">
+            <option value="">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="books">Books</option>
+            <option value="home">Home & Garden</option>
+          </select>
+        </label>
+
+        <label>
+          Sort by:
+          <select v-model="filters.sort" @change="updateFilters">
+            <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="rating">Rating</option>
+            <option value="date">Date Added</option>
+          </select>
+        </label>
+
+        <label>
+          Order:
+          <select v-model="filters.order" @change="updateFilters">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </label>
+
+        <button class="clear-button" @click="clearFilters">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <div class="products-grid">
+      <div
+        v-for="product in filteredProducts"
+        :key="product.id"
+        class="product-card"
+        @click="viewProduct(product.id)"
+      >
+        <div class="product-image">
+          {{ product.emoji }}
+        </div>
+        <div class="product-info">
+          <h4>{{ product.name }}</h4>
+          <p class="product-category">
+            {{ product.category }}
+          </p>
+          <div class="product-price">
+            ${{ product.price }}
+          </div>
+          <div class="product-rating">
+            <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= product.rating }">★</span>
+            <span class="rating-text">({{ product.rating }}/5)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="page-button" :class="[{ active: currentPage === page }]"
+        @click="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+    </div>
+
+    <div class="query-info">
+      <h3>Current Query Parameters:</h3>
+      <pre>{{ JSON.stringify($route.query, null, 2) }}</pre>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .products {

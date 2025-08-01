@@ -1,37 +1,39 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ref, nextTick } from 'vue'
-import { useRequest } from '@/vue/useRequest'
 import type { HttpClient, RequestConfig } from '@/types'
-import { createMockResponse, createMockError, delay } from '../../setup'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick, ref } from 'vue'
+import { useRequest } from '@/vue/useRequest'
+import { createMockError, createMockResponse } from '../../setup'
 
 // 创建模拟 HTTP 客户端
-const createMockClient = (): HttpClient => ({
-  request: vi.fn(),
-  get: vi.fn(),
-  post: vi.fn(),
-  put: vi.fn(),
-  delete: vi.fn(),
-  patch: vi.fn(),
-  head: vi.fn(),
-  options: vi.fn(),
-  interceptors: {
-    request: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-    response: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-    error: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-  },
-  cancelAll: vi.fn(),
-  getActiveRequestCount: vi.fn().mockReturnValue(0),
-  updateRetryConfig: vi.fn(),
-  getConfig: vi.fn().mockReturnValue({}),
-  clearCache: vi.fn(),
-  getConcurrencyStatus: vi.fn().mockReturnValue({
-    activeCount: 0,
-    queuedCount: 0,
-    maxConcurrent: 10,
-    maxQueueSize: 100,
-  }),
-  cancelQueue: vi.fn(),
-})
+function createMockClient(): HttpClient {
+  return {
+    request: vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
+    head: vi.fn(),
+    options: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+      error: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+    },
+    cancelAll: vi.fn(),
+    getActiveRequestCount: vi.fn().mockReturnValue(0),
+    updateRetryConfig: vi.fn(),
+    getConfig: vi.fn().mockReturnValue({}),
+    clearCache: vi.fn(),
+    getConcurrencyStatus: vi.fn().mockReturnValue({
+      activeCount: 0,
+      queuedCount: 0,
+      maxConcurrent: 10,
+      maxQueueSize: 100,
+    }),
+    cancelQueue: vi.fn(),
+  }
+}
 
 describe('useRequest', () => {
   let mockClient: HttpClient
@@ -158,7 +160,7 @@ describe('useRequest', () => {
     const mockResponse = createMockResponse({ name: 'john' })
     vi.mocked(mockClient.request).mockResolvedValue(mockResponse)
 
-    const transform = vi.fn((data) => ({ ...data, name: data.name.toUpperCase() }))
+    const transform = vi.fn(data => ({ ...data, name: data.name.toUpperCase() }))
     const config: RequestConfig = { url: '/test', method: 'GET' }
     const { data, execute } = useRequest(mockClient, config, {
       immediate: false,
@@ -183,7 +185,7 @@ describe('useRequest', () => {
     await refresh()
 
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining(config)
+      expect.objectContaining(config),
     )
   })
 
@@ -213,7 +215,7 @@ describe('useRequest', () => {
     vi.mocked(mockClient.request).mockResolvedValue(mockResponse)
 
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    
+
     useRequest(mockClient, config)
 
     // 等待下一个 tick 让 watch 执行
@@ -227,12 +229,12 @@ describe('useRequest', () => {
     vi.mocked(mockClient.request).mockResolvedValue(mockResponse)
 
     const config = ref<RequestConfig>({ url: '/test1', method: 'GET' })
-    
+
     useRequest(mockClient, config)
 
     await nextTick()
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({ url: '/test1' })
+      expect.objectContaining({ url: '/test1' }),
     )
 
     // 更改配置
@@ -240,14 +242,14 @@ describe('useRequest', () => {
     await nextTick()
 
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({ url: '/test2' })
+      expect.objectContaining({ url: '/test2' }),
     )
   })
 
   it('should handle cancellation', async () => {
     // 模拟长时间运行的请求
-    vi.mocked(mockClient.request).mockImplementation(() => 
-      new Promise((resolve) => setTimeout(resolve, 1000))
+    vi.mocked(mockClient.request).mockImplementation(() =>
+      new Promise(resolve => setTimeout(resolve, 1000)),
     )
 
     const config: RequestConfig = { url: '/test', method: 'GET' }
@@ -256,11 +258,11 @@ describe('useRequest', () => {
     })
 
     const promise = execute()
-    
+
     expect(canCancel.value).toBe(true)
-    
+
     cancel()
-    
+
     // 取消后应该能够处理
     await expect(promise).rejects.toThrow()
   })

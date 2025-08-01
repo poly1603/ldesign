@@ -8,10 +8,10 @@
 
 ```typescript
 interface EventManager {
-  on<T = any>(event: string, handler: EventHandler<T>): void
-  off(event: string, handler?: EventHandler): void
-  emit<T = any>(event: string, data?: T): void
-  once<T = any>(event: string, handler: EventHandler<T>): void
+  on: <T = any>(event: string, handler: EventHandler<T>) => void
+  off: (event: string, handler?: EventHandler) => void
+  emit: <T = any>(event: string, data?: T) => void
+  once: <T = any>(event: string, handler: EventHandler<T>) => void
 }
 
 type EventHandler<T = any> = (data: T) => void | Promise<void>
@@ -59,7 +59,7 @@ engine.events.emit('app:ready')
 
 ```typescript
 // 定义事件处理函数
-const handleUserLogin = (userData) => {
+function handleUserLogin(userData) {
   console.log('处理用户登录:', userData)
 }
 
@@ -175,12 +175,13 @@ engine.events.on('data:save', async (data) => {
     // 异步保存数据
     await saveToDatabase(data)
     console.log('数据保存成功')
-    
+
     // 发送成功事件
     engine.events.emit('data:saved', data)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('数据保存失败:', error)
-    
+
     // 发送错误事件
     engine.events.emit('data:save:error', { data, error })
   }
@@ -202,7 +203,7 @@ async function initializeApp() {
   // 等待配置加载完成
   const config = await waitForEvent<AppConfig>('config:loaded')
   console.log('配置已加载:', config)
-  
+
   // 等待用户认证完成
   const user = await waitForEvent<User>('auth:completed')
   console.log('用户认证完成:', user)
@@ -240,7 +241,7 @@ engine.events.on('user:action', adminUserFilter((user) => {
 engine.events.on('api:response', (response) => {
   // 转换API响应为应用数据格式
   const transformedData = transformApiResponse(response)
-  
+
   // 发送转换后的事件
   engine.events.emit('data:updated', transformedData)
 })
@@ -300,7 +301,8 @@ engine.events.emit('event1', data)
 engine.events.on('data:process', async (data) => {
   try {
     await processData(data)
-  } catch (error) {
+  }
+  catch (error) {
     // 不要让错误传播到事件系统
     engine.logger.error('数据处理失败:', error)
     engine.events.emit('data:process:error', { data, error })
@@ -314,7 +316,7 @@ engine.events.on('data:process', async (data) => {
 // 在组件卸载时清理事件监听
 class MyComponent {
   private eventHandlers: Array<() => void> = []
-  
+
   constructor(private engine: Engine) {
     // 保存清理函数
     this.eventHandlers.push(
@@ -322,12 +324,12 @@ class MyComponent {
       this.addEventHandler('user:logout', this.handleUserLogout)
     )
   }
-  
+
   private addEventHandler(event: string, handler: EventHandler) {
     this.engine.events.on(event, handler)
     return () => this.engine.events.off(event, handler)
   }
-  
+
   destroy() {
     // 清理所有事件监听
     this.eventHandlers.forEach(cleanup => cleanup())
@@ -361,10 +363,10 @@ engine.events.emit(USER_EVENTS.LOGIN, userData)
 ```typescript
 // 定义事件类型
 interface EventMap {
-  'user:login': { id: number; name: string; email: string }
+  'user:login': { id: number, name: string, email: string }
   'user:logout': { id: number }
-  'data:loaded': { type: string; data: any[] }
-  'error:occurred': { message: string; stack?: string }
+  'data:loaded': { type: string, data: any[] }
+  'error:occurred': { message: string, stack?: string }
 }
 
 // 类型安全的事件发送

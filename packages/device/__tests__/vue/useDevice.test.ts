@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { useDevice, useNetwork, useBattery, useGeolocation } from '../../src/vue/composables/useDevice'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+import { useBattery, useDevice, useGeolocation, useNetwork } from '../../src/vue/composables/useDevice'
 
 // Mock window and navigator
 const mockWindow = {
@@ -73,7 +73,7 @@ Object.defineProperty(global.navigator, 'geolocation', {
   configurable: true,
 })
 
-describe('Vue Composables', () => {
+describe('vue Composables', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -146,7 +146,7 @@ describe('Vue Composables', () => {
 
       const wrapper = mount(TestComponent)
       await nextTick()
-      
+
       const vm = wrapper.vm as any
 
       expect(vm.isOnline).toBe(true)
@@ -195,7 +195,7 @@ describe('Vue Composables', () => {
 
       const wrapper = mount(TestComponent)
       await nextTick()
-      
+
       const vm = wrapper.vm as any
 
       expect(vm.level).toBe(0.8)
@@ -221,7 +221,7 @@ describe('Vue Composables', () => {
 
       const wrapper = mount(TestComponent)
       await nextTick()
-      
+
       const vm = wrapper.vm as any
       expect(vm.level).toBeNull()
       expect(vm.charging).toBeNull()
@@ -375,7 +375,7 @@ describe('Vue Composables', () => {
       // 触发 resize 事件
       const resizeEvent = new Event('resize')
       window.dispatchEvent(resizeEvent)
-      
+
       // 等待防抖完成
       await new Promise(resolve => setTimeout(resolve, 300))
       await nextTick()

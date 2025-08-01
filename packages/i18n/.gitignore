@@ -1,5 +1,5 @@
-node_modules
-lib
 es
+lib
 dist
+node_modules
 types/**/*.d.ts

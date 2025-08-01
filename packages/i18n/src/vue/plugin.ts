@@ -1,15 +1,15 @@
 import type { App } from 'vue'
+import type { I18nDirectiveBinding, VueI18nOptions, VueI18nPlugin } from './types'
+import type { I18nInstance } from '@/core/types'
 import { I18n } from '@/core/i18n'
 import { I18N_INJECTION_KEY } from './composables'
-import type { VueI18nOptions, VueI18nPlugin, I18nDirectiveBinding } from './types'
-import type { I18nInstance } from '@/core/types'
 
 /**
  * 默认插件选项
  */
 const DEFAULT_PLUGIN_OPTIONS: Required<Omit<VueI18nOptions, keyof I18nInstance>> = {
   globalInjection: true,
-  globalPropertyName: '$t'
+  globalPropertyName: '$t',
 }
 
 /**
@@ -38,7 +38,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
         Object.defineProperty(app.config.globalProperties, '$t', {
           get() {
             return global.t
-          }
+          },
         })
       }
 
@@ -51,7 +51,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
         // 绑定值更新时
         updated(el, binding) {
           updateElementText(el, binding, global)
-        }
+        },
       })
 
       // 监听语言变更，更新所有使用 v-t 指令的元素
@@ -70,14 +70,14 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
         if (Object.keys(i18nOptions).length > 0) {
           // 更新 I18n 配置
           Object.assign(global, i18nOptions)
-          
+
           // 如果还没有初始化，则初始化
-          global.init().catch(error => {
+          global.init().catch((error) => {
             console.error('Failed to initialize I18n:', error)
           })
         }
       }
-    }
+    },
   }
 
   return plugin
@@ -92,7 +92,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 function updateElementText(
   el: HTMLElement,
   binding: { value: I18nDirectiveBinding },
-  i18n: I18nInstance
+  i18n: I18nInstance,
 ) {
   try {
     let key: string
@@ -101,24 +101,28 @@ function updateElementText(
 
     if (typeof binding.value === 'string') {
       key = binding.value
-    } else if (binding.value && typeof binding.value === 'object') {
+    }
+    else if (binding.value && typeof binding.value === 'object') {
       key = binding.value.key
       params = binding.value.params || {}
       options = binding.value.options || {}
-    } else {
+    }
+    else {
       console.warn('v-t directive expects a string or object value')
       return
     }
 
     const translatedText = i18n.t(key, params, options)
-    
+
     // 更新元素文本内容
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
       ;(el as HTMLInputElement).placeholder = translatedText
-    } else {
+    }
+    else {
       el.textContent = translatedText
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error in v-t directive:', error)
   }
 }
@@ -170,4 +174,4 @@ export function getGlobalI18n(): I18nInstance {
 }
 
 // 导出类型
-export type { VueI18nOptions, VueI18nPlugin, I18nDirectiveBinding }
+export type { I18nDirectiveBinding, VueI18nOptions, VueI18nPlugin }

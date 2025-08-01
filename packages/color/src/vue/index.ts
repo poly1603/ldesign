@@ -3,13 +3,13 @@
  */
 
 import type { App, Plugin, Ref } from 'vue'
-import { computed, inject, onMounted, onUnmounted, provide, ref } from 'vue'
 import type {
   ColorMode,
   ThemeConfig,
   ThemeManagerInstance,
   ThemeManagerOptions,
 } from '../core/types'
+import { computed, inject, onMounted, onUnmounted, provide, ref } from 'vue'
 import { ThemeManager } from '../core/theme-manager'
 import { presetThemes } from '../themes/presets'
 

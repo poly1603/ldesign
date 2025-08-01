@@ -15,7 +15,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/engine" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>🛣️ 路由系统</h3>
     <p>动态路由、守卫、懒加载等功能演示</p>
@@ -24,7 +24,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/router" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>🌐 HTTP客户端</h3>
     <p>请求拦截、缓存、重试等功能展示</p>
@@ -33,7 +33,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/http" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>🔐 加密工具</h3>
     <p>AES、RSA加密，哈希算法等安全功能</p>
@@ -42,7 +42,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/crypto" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>📱 设备检测</h3>
     <p>设备类型、传感器、网络状态检测</p>
@@ -51,7 +51,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/device" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>🎨 模板系统</h3>
     <p>动态模板、多设备适配、主题切换</p>
@@ -60,7 +60,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/template" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>🌈 颜色系统</h3>
     <p>颜色管理、主题生成、暗色模式</p>
@@ -69,7 +69,7 @@
       <a href="https://github.com/ldesign-org/ldesign/tree/main/examples/color" class="demo-link">查看源码</a>
     </div>
   </div>
-  
+
   <div class="demo-card">
     <h3>🌍 国际化</h3>
     <p>多语言支持、动态切换、本地化</p>
@@ -86,10 +86,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/engine.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/engine.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="引擎系统演示">
     </iframe>
@@ -110,10 +110,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/router.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/router.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="路由系统演示">
     </iframe>
@@ -134,10 +134,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/http.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/http.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="HTTP客户端演示">
     </iframe>
@@ -158,10 +158,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/crypto.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/crypto.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="加密工具演示">
     </iframe>
@@ -182,10 +182,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/device.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/device.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="设备检测演示">
     </iframe>
@@ -206,10 +206,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/template.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/template.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="模板系统演示">
     </iframe>
@@ -230,10 +230,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/color.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/color.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="颜色系统演示">
     </iframe>
@@ -254,10 +254,10 @@
 
 <div class="interactive-demo">
   <div class="demo-container">
-    <iframe 
-      src="/demos/i18n.html" 
-      width="100%" 
-      height="500" 
+    <iframe
+      src="/demos/i18n.html"
+      width="100%"
+      height="500"
       frameborder="0"
       title="国际化演示">
     </iframe>
@@ -365,12 +365,12 @@
       <div class="metric-label">核心包大小</div>
     </div>
   </div>
-  
+
   <div class="performance-actions">
     <button class="perf-btn" onclick="runPerformanceTest()">运行性能测试</button>
     <button class="perf-btn" onclick="showBenchmarks()">查看基准测试</button>
   </div>
-  
+
   <div id="performance-results" class="performance-results">
     <!-- 性能测试结果将在这里显示 -->
   </div>
@@ -412,17 +412,17 @@
     <h3>在线代码编辑器</h3>
     <p>在浏览器中直接编写和运行 LDesign 代码</p>
   </div>
-  
+
   <div class="playground-container">
-    <iframe 
-      src="https://stackblitz.com/edit/ldesign-playground?embed=1&file=src/main.ts" 
-      width="100%" 
-      height="600" 
+    <iframe
+      src="https://stackblitz.com/edit/ldesign-playground?embed=1&file=src/main.ts"
+      width="100%"
+      height="600"
       frameborder="0"
       title="LDesign 代码编辑器">
     </iframe>
   </div>
-  
+
   <div class="playground-actions">
     <a href="https://stackblitz.com/edit/ldesign-playground" class="playground-btn">在新窗口打开</a>
     <a href="https://codesandbox.io/s/ldesign-template" class="playground-btn">CodeSandbox</a>
@@ -823,24 +823,24 @@
   .demo-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .interactive-demo {
     grid-template-columns: 1fr;
   }
-  
+
   .app-demo {
     grid-template-columns: 1fr;
   }
-  
+
   .devtools-demo {
     grid-template-columns: 1fr;
   }
-  
+
   .mobile-qr {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .performance-metrics {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -852,7 +852,7 @@ function runPerformanceTest() {
   const results = document.getElementById('performance-results')
   results.style.display = 'block'
   results.innerHTML = '<p>正在运行性能测试...</p>'
-  
+
   // 模拟性能测试
   setTimeout(() => {
     results.innerHTML = `

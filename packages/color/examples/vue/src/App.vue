@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import ThemeControlPanel from '@/components/ThemeControlPanel.vue'
-import ThemePreview from '@/components/ThemePreview.vue'
+import AppHeader from '@/components/AppHeader.vue'
 import ColorGenerator from '@/components/ColorGenerator.vue'
 import ColorScales from '@/components/ColorScales.vue'
 import CustomThemeCreator from '@/components/CustomThemeCreator.vue'
-import PerformanceMonitor from '@/components/PerformanceMonitor.vue'
 import Notification from '@/components/Notification.vue'
+import PerformanceMonitor from '@/components/PerformanceMonitor.vue'
+import ThemeControlPanel from '@/components/ThemeControlPanel.vue'
+import ThemePreview from '@/components/ThemePreview.vue'
 </script>
 
 <template>

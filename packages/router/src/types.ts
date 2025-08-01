@@ -300,3 +300,12 @@ export interface UseRouterReturn {
 export interface UseRouteReturn {
   route: ComputedRef<RouteLocationNormalized>
 }
+
+/**
+ * 认证守卫配置
+ */
+export interface AuthGuardConfig {
+  priority?: number
+  isAuthenticated?: () => boolean
+  loginPath?: string
+}

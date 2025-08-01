@@ -7,10 +7,10 @@
 ### 基础安装
 
 ```typescript
-// main.ts
-import { createApp } from 'vue'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// main.ts
+import { createApp } from 'vue'
 import App from './App.vue'
 
 async function bootstrap() {
@@ -27,10 +27,10 @@ async function bootstrap() {
   // 创建应用并安装插件
   const app = createApp(App)
   app.use(vueI18nPlugin, {
-    globalInjection: true,        // 注入全局属性
-    globalPropertyName: '$t'      // 全局属性名称
+    globalInjection: true, // 注入全局属性
+    globalPropertyName: '$t' // 全局属性名称
   })
-  
+
   app.mount('#app')
 }
 
@@ -61,15 +61,36 @@ app.use(vueI18nPlugin, {
 主要的 I18n 钩子，提供完整的国际化功能：
 
 ```vue
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const {
+  t, // 翻译函数
+  locale, // 当前语言（响应式）
+  availableLanguages, // 可用语言列表（响应式）
+  changeLanguage, // 切换语言方法
+  exists, // 检查键是否存在
+  getKeys, // 获取所有键
+  i18n // I18n 实例
+} = useI18n()
+
+const selectedLocale = ref(locale.value)
+
+async function handleLanguageChange() {
+  await changeLanguage(selectedLocale.value)
+}
+</script>
+
 <template>
   <div>
     <h1>{{ t('common.welcome', { name: 'Vue' }) }}</h1>
     <p>{{ t('common.currentLanguage') }}: {{ locale }}</p>
-    
+
     <select v-model="selectedLocale" @change="handleLanguageChange">
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
         :value="lang.code"
       >
         {{ lang.nativeName }}
@@ -77,27 +98,6 @@ app.use(vueI18nPlugin, {
     </select>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { 
-  t,                    // 翻译函数
-  locale,               // 当前语言（响应式）
-  availableLanguages,   // 可用语言列表（响应式）
-  changeLanguage,       // 切换语言方法
-  exists,               // 检查键是否存在
-  getKeys,              // 获取所有键
-  i18n                  // I18n 实例
-} = useI18n()
-
-const selectedLocale = ref(locale.value)
-
-const handleLanguageChange = async () => {
-  await changeLanguage(selectedLocale.value)
-}
-</script>
 ```
 
 ### useLanguageSwitcher()
@@ -105,10 +105,21 @@ const handleLanguageChange = async () => {
 专门用于语言切换的钩子：
 
 ```vue
+<script setup lang="ts">
+import { useLanguageSwitcher } from '@ldesign/i18n/vue'
+
+const {
+  locale, // 当前语言
+  availableLanguages, // 可用语言
+  isChanging, // 是否正在切换
+  switchLanguage // 切换语言方法
+} = useLanguageSwitcher()
+</script>
+
 <template>
   <div class="language-switcher">
-    <button 
-      v-for="lang in availableLanguages" 
+    <button
+      v-for="lang in availableLanguages"
       :key="lang.code"
       :class="{ active: locale === lang.code, loading: isChanging }"
       :disabled="isChanging"
@@ -118,17 +129,6 @@ const handleLanguageChange = async () => {
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useLanguageSwitcher } from '@ldesign/i18n/vue'
-
-const { 
-  locale,               // 当前语言
-  availableLanguages,   // 可用语言
-  isChanging,           // 是否正在切换
-  switchLanguage        // 切换语言方法
-} = useLanguageSwitcher()
-</script>
 ```
 
 ### useBatchTranslation()
@@ -136,14 +136,6 @@ const {
 批量翻译钩子：
 
 ```vue
-<template>
-  <div>
-    <button>{{ translations['common.save'] }}</button>
-    <button>{{ translations['common.cancel'] }}</button>
-    <button>{{ translations['common.delete'] }}</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useBatchTranslation } from '@ldesign/i18n/vue'
 
@@ -153,6 +145,14 @@ const translations = useBatchTranslation([
   'common.delete'
 ])
 </script>
+
+<template>
+  <div>
+    <button>{{ translations['common.save'] }}</button>
+    <button>{{ translations['common.cancel'] }}</button>
+    <button>{{ translations['common.delete'] }}</button>
+  </div>
+</template>
 ```
 
 ### useConditionalTranslation()
@@ -160,18 +160,9 @@ const translations = useBatchTranslation([
 条件翻译钩子：
 
 ```vue
-<template>
-  <div>
-    <label>
-      <input v-model="isOnline" type="checkbox" />
-      {{ statusText }}
-    </label>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useConditionalTranslation } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
 
 const isOnline = ref(true)
 
@@ -181,6 +172,15 @@ const statusText = useConditionalTranslation(
   'common.offline'
 )
 </script>
+
+<template>
+  <div>
+    <label>
+      <input v-model="isOnline" type="checkbox">
+      {{ statusText }}
+    </label>
+  </div>
+</template>
 ```
 
 ## 模板指令
@@ -193,20 +193,22 @@ const statusText = useConditionalTranslation(
 <template>
   <div>
     <!-- 基础用法 -->
-    <div v-t="'common.save'"></div>
-    
+    <div v-t="'common.save'" />
+
     <!-- 带参数 -->
-    <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }"></div>
-    
+    <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }" />
+
     <!-- 输入框占位符 -->
-    <input v-t="'common.searchPlaceholder'" />
-    
+    <input v-t="'common.searchPlaceholder'">
+
     <!-- 带选项 -->
-    <div v-t="{ 
-      key: 'common.message', 
-      params: { content: '<script>' },
-      options: { escapeValue: true }
-    }"></div>
+    <div
+      v-t="{
+        key: 'common.message',
+        params: { content: '<script>' },
+        options: { escapeValue: true },
+      }"
+    />
   </div>
 </template>
 ```
@@ -230,20 +232,20 @@ v-t="{
 当启用 `globalInjection` 时，可以在模板中使用全局属性：
 
 ```vue
+<script setup lang="ts">
+// 无需导入，直接使用全局属性
+</script>
+
 <template>
   <div>
     <!-- 使用 $t 全局属性 -->
     <h1>{{ $t('common.title') }}</h1>
     <p>{{ $t('common.description', { name: 'Vue' }) }}</p>
-    
+
     <!-- 访问 I18n 实例 -->
     <div>{{ $i18n.getCurrentLanguage() }}</div>
   </div>
 </template>
-
-<script setup lang="ts">
-// 无需导入，直接使用全局属性
-</script>
 ```
 
 ## TypeScript 支持
@@ -251,9 +253,9 @@ v-t="{
 ### 组件类型扩展
 
 ```typescript
+import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 // types/vue.d.ts
 import '@vue/runtime-core'
-import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -295,11 +297,11 @@ export function useCustomI18n() {
     info: { name: 'Custom', code: 'custom', ... },
     translations: { ... }
   })
-  
+
   // 创建自定义 I18n 实例
   const customI18n = new I18n({ defaultLocale: 'custom' })
   customI18n.setLoader(loader)
-  
+
   // 使用自定义实例
   return useI18nWithInstance(customI18n)
 }
@@ -332,24 +334,9 @@ const localTranslations = {
 
 ```vue
 <!-- UserProfile.vue -->
-<template>
-  <div class="user-profile">
-    <h2>{{ t('userProfile.title') }}</h2>
-    <form @submit="handleSubmit">
-      <input 
-        v-model="form.name"
-        :placeholder="t('userProfile.namePlaceholder')"
-      />
-      <button type="submit">
-        {{ t('userProfile.saveButton') }}
-      </button>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { reactive } from 'vue'
 
 const { t } = useI18n()
 
@@ -357,46 +344,40 @@ const form = reactive({
   name: ''
 })
 
-const handleSubmit = () => {
+function handleSubmit() {
   // 处理表单提交
 }
 </script>
+
+<template>
+  <div class="user-profile">
+    <h2>{{ t('userProfile.title') }}</h2>
+    <form @submit="handleSubmit">
+      <input
+        v-model="form.name"
+        :placeholder="t('userProfile.namePlaceholder')"
+      >
+      <button type="submit">
+        {{ t('userProfile.saveButton') }}
+      </button>
+    </form>
+  </div>
+</template>
 ```
 
 ### 2. 响应式语言切换
 
 ```vue
 <!-- LanguageSwitcher.vue -->
-<template>
-  <div class="language-switcher">
-    <select 
-      v-model="currentLocale" 
-      @change="handleLanguageChange"
-      :disabled="isChanging"
-    >
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
-        :value="lang.code"
-      >
-        {{ lang.nativeName }}
-      </option>
-    </select>
-    <span v-if="isChanging" class="loading">
-      {{ t('common.loading') }}
-    </span>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useLanguageSwitcher } from '@ldesign/i18n/vue'
+import { ref, watch } from 'vue'
 
-const { 
-  locale, 
-  availableLanguages, 
-  isChanging, 
-  switchLanguage 
+const {
+  locale,
+  availableLanguages,
+  isChanging,
+  switchLanguage
 } = useLanguageSwitcher()
 
 const currentLocale = ref(locale.value)
@@ -409,18 +390,39 @@ watch(locale, (newLocale) => {
   document.documentElement.lang = newLocale
 })
 
-const handleLanguageChange = async () => {
+async function handleLanguageChange() {
   await switchLanguage(currentLocale.value)
 }
 </script>
+
+<template>
+  <div class="language-switcher">
+    <select
+      v-model="currentLocale"
+      :disabled="isChanging"
+      @change="handleLanguageChange"
+    >
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        :value="lang.code"
+      >
+        {{ lang.nativeName }}
+      </option>
+    </select>
+    <span v-if="isChanging" class="loading">
+      {{ t('common.loading') }}
+    </span>
+  </div>
+</template>
 ```
 
 ### 3. 错误处理
 
 ```vue
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { onMounted, ref } from 'vue'
 
 const { i18n } = useI18n()
 const error = ref<string>('')

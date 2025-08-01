@@ -1,4 +1,4 @@
-import type { Storage, LRUCache, CacheItem } from './types'
+import type { CacheItem, LRUCache, Storage } from './types'
 
 /**
  * LRU 缓存实现
@@ -53,7 +53,7 @@ export class LRUCacheImpl<T = any> implements LRUCache<T> {
     this.cache.set(key, {
       value,
       timestamp: Date.now(),
-      accessCount: 1
+      accessCount: 1,
     })
   }
 
@@ -125,7 +125,8 @@ export class LocalStorage implements Storage {
         return null
       }
       return window.localStorage.getItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get language from localStorage:', error)
       return null
     }
@@ -141,7 +142,8 @@ export class LocalStorage implements Storage {
         return
       }
       window.localStorage.setItem(this.storageKey, locale)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set language to localStorage:', error)
     }
   }
@@ -155,7 +157,8 @@ export class LocalStorage implements Storage {
         return
       }
       window.localStorage.removeItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear language from localStorage:', error)
     }
   }
@@ -181,7 +184,8 @@ export class SessionStorage implements Storage {
         return null
       }
       return window.sessionStorage.getItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get language from sessionStorage:', error)
       return null
     }
@@ -197,7 +201,8 @@ export class SessionStorage implements Storage {
         return
       }
       window.sessionStorage.setItem(this.storageKey, locale)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set language to sessionStorage:', error)
     }
   }
@@ -211,7 +216,8 @@ export class SessionStorage implements Storage {
         return
       }
       window.sessionStorage.removeItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear language from sessionStorage:', error)
     }
   }
@@ -296,13 +302,13 @@ export class CookieStorage implements Storage {
       domain?: string
       secure?: boolean
       sameSite?: 'strict' | 'lax' | 'none'
-    } = {}
+    } = {},
   ) {
     this.storageKey = storageKey
     this.options = {
       expires: 365, // 默认1年
       path: '/',
-      ...options
+      ...options,
     }
   }
 
@@ -324,7 +330,8 @@ export class CookieStorage implements Storage {
         }
       }
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get language from cookie:', error)
       return null
     }
@@ -365,7 +372,8 @@ export class CookieStorage implements Storage {
       }
 
       document.cookie = cookieString
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set language to cookie:', error)
     }
   }
@@ -390,7 +398,8 @@ export class CookieStorage implements Storage {
       }
 
       document.cookie = cookieString
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear language from cookie:', error)
     }
   }
@@ -404,7 +413,7 @@ export class CookieStorage implements Storage {
  */
 export function createStorage(
   type: 'localStorage' | 'sessionStorage' | 'memory' | 'cookie' | 'none' = 'localStorage',
-  storageKey = 'i18n-locale'
+  storageKey = 'i18n-locale',
 ): Storage {
   switch (type) {
     case 'localStorage':

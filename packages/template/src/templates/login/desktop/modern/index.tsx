@@ -6,32 +6,32 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '欢迎登录'
+      default: '欢迎登录',
     },
     subtitle: {
       type: String,
-      default: '开始您的数字化之旅'
+      default: '开始您的数字化之旅',
     },
     logo: {
       type: String,
-      default: ''
+      default: '',
     },
     showRememberMe: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showForgotPassword: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showThirdPartyLogin: {
       type: Boolean,
-      default: true
+      default: true,
     },
     thirdPartyProviders: {
       type: Array,
-      default: () => ['github', 'google', 'wechat']
-    }
+      default: () => ['github', 'google', 'wechat'],
+    },
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin'],
   setup(props, { emit }) {
@@ -39,7 +39,7 @@ export default defineComponent({
     const form = reactive({
       username: '',
       password: '',
-      remember: false
+      remember: false,
     })
 
     const handleLogin = async () => {
@@ -99,8 +99,8 @@ export default defineComponent({
               <div class="modern-login__form-group">
                 <div class="modern-login__input-wrapper">
                   <svg class="modern-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" />
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" />
                   </svg>
                   <input
                     type="text"
@@ -114,9 +114,9 @@ export default defineComponent({
               <div class="modern-login__form-group">
                 <div class="modern-login__input-wrapper">
                   <svg class="modern-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="16" r="1" fill="currentColor"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
+                    <circle cx="12" cy="16" r="1" fill="currentColor" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" />
                   </svg>
                   <input
                     type="password"
@@ -187,5 +187,5 @@ export default defineComponent({
         </div>
       </div>
     )
-  }
+  },
 })

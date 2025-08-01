@@ -5,24 +5,28 @@
 ## 🔐 基础加密示例
 
 ### [AES 对称加密](./aes.md)
+
 - AES-128/192/256 加密演示
 - 不同加密模式（CBC、ECB、CFB、OFB、CTR）
 - 自定义 IV 和密钥生成
 - 交互式加密/解密工具
 
 ### [RSA 非对称加密](./rsa.md)
+
 - RSA 密钥对生成
 - 公钥加密，私钥解密
 - 不同密钥长度演示
 - 交互式 RSA 工具
 
 ### [哈希算法](./hash.md)
+
 - MD5、SHA-1、SHA-224、SHA-256、SHA-384、SHA-512
 - 批量哈希计算
 - 哈希验证功能
 - 交互式哈希计算器
 
 ### [数字签名](./signature.md)
+
 - RSA 数字签名生成
 - 签名验证功能
 - 不同哈希算法的签名
@@ -31,24 +35,28 @@
 ## 🎯 Vue 3 集成示例
 
 ### [Composition API](./vue-composables.md)
+
 - useCrypto Hook 演示
 - useHash Hook 演示
 - useSignature Hook 演示
 - 响应式状态管理
 
 ### [插件使用](./vue-plugin.md)
+
 - 全局属性访问
 - 依赖注入使用
 - 配置选项演示
 - 组件封装示例
 
 ### [表单加密](./vue-form.md)
+
 - 表单数据加密
 - 实时加密预览
 - 错误处理演示
 - 用户体验优化
 
 ### [文件处理](./vue-file.md)
+
 - 文件内容加密
 - 文件哈希计算
 - 批量文件处理
@@ -57,24 +65,28 @@
 ## 🚀 实际应用示例
 
 ### [用户认证](./authentication.md)
+
 - 密码哈希存储
 - 登录验证流程
 - JWT 令牌签名
 - 会话管理
 
 ### [数据传输](./data-transfer.md)
+
 - API 请求签名
 - 数据完整性验证
 - 端到端加密
 - 安全传输协议
 
 ### [本地存储](./local-storage.md)
+
 - 敏感数据加密存储
 - 配置文件保护
 - 缓存数据安全
 - 跨标签页数据共享
 
 ### [API 安全](./api-security.md)
+
 - 请求签名验证
 - 防重放攻击
 - 时间戳验证
@@ -107,7 +119,7 @@
 
 ```typescript
 // 示例代码会显示在这样的代码块中
-import { encrypt, decrypt } from '@ldesign/crypto'
+import { decrypt, encrypt } from '@ldesign/crypto'
 
 const data = 'Hello, World!'
 const key = 'my-secret-key'

@@ -96,7 +96,7 @@ export interface ValidationError {
 
 ```typescript
 // stores/form.ts
-import { BaseStore, State, Action, AsyncAction, Getter, CachedGetter } from '@ldesign/store'
+import { Action, AsyncAction, BaseStore, CachedGetter, Getter, State } from '@ldesign/store'
 
 export class FormStore extends BaseStore {
   @State({ default: {} })
@@ -127,7 +127,7 @@ export class FormStore extends BaseStore {
     this.errors = {}
     this.touched = {}
 
-    fields.forEach(field => {
+    fields.forEach((field) => {
       this.fields[field.name] = field
       this.values[field.name] = field.defaultValue
       this.errors[field.name] = []
@@ -140,7 +140,8 @@ export class FormStore extends BaseStore {
 
   @Action()
   setFieldValue(fieldName: string, value: any) {
-    if (!this.fields[fieldName]) return
+    if (!this.fields[fieldName])
+      return
 
     this.values[fieldName] = value
     this.touched[fieldName] = true
@@ -175,7 +176,7 @@ export class FormStore extends BaseStore {
 
   @Action()
   resetForm() {
-    Object.keys(this.fields).forEach(fieldName => {
+    Object.keys(this.fields).forEach((fieldName) => {
       this.values[fieldName] = this.fields[fieldName].defaultValue
       this.errors[fieldName] = []
       this.touched[fieldName] = false
@@ -189,18 +190,19 @@ export class FormStore extends BaseStore {
   @AsyncAction()
   async validateField(fieldName: string) {
     const field = this.fields[fieldName]
-    if (!field) return
+    if (!field)
+      return
 
     const validationStore = new ValidationStore('validation')
     const errors = await validationStore.validateField(field, this.values[fieldName], this.values)
-    
+
     this.setFieldError(fieldName, errors)
     return errors.length === 0
   }
 
   @AsyncAction()
   async validateForm() {
-    const validationPromises = Object.keys(this.fields).map(fieldName => 
+    const validationPromises = Object.keys(this.fields).map(fieldName =>
       this.validateField(fieldName)
     )
 
@@ -210,7 +212,8 @@ export class FormStore extends BaseStore {
 
   @AsyncAction()
   async submitForm() {
-    if (this.submitting) return
+    if (this.submitting)
+      return
 
     this.submitting = true
     this.submitError = null
@@ -227,23 +230,25 @@ export class FormStore extends BaseStore {
       const result = await submissionStore.submit(this.values)
 
       this.submitted = true
-      
+
       // 清除草稿
       const draftStore = new DraftStore('draft')
       draftStore.clearDraft(this.formId)
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.submitError = error instanceof Error ? error.message : '提交失败'
       throw error
-    } finally {
+    }
+    finally {
       this.submitting = false
     }
   }
 
   private processDependencies() {
-    Object.values(this.fields).forEach(field => {
-      field.dependencies.forEach(dependency => {
+    Object.values(this.fields).forEach((field) => {
+      field.dependencies.forEach((dependency) => {
         const dependentValue = this.values[dependency.field]
         const shouldTrigger = this.evaluateCondition(
           dependentValue,
@@ -277,7 +282,8 @@ export class FormStore extends BaseStore {
 
   private applyDependencyAction(fieldName: string, dependency: FieldDependency) {
     const field = this.fields[fieldName]
-    if (!field) return
+    if (!field)
+      return
 
     switch (dependency.action) {
       case 'show':
@@ -338,9 +344,10 @@ export class FormStore extends BaseStore {
   @CachedGetter(['values', 'fields'])
   get completionRate() {
     const requiredFields = this.requiredFields
-    if (requiredFields.length === 0) return 100
+    if (requiredFields.length === 0)
+      return 100
 
-    const completedFields = requiredFields.filter(field => {
+    const completedFields = requiredFields.filter((field) => {
       const value = this.values[field.name]
       return value !== null && value !== undefined && value !== ''
     })
@@ -351,7 +358,7 @@ export class FormStore extends BaseStore {
   @Getter()
   get fieldErrors() {
     const allErrors: ValidationError[] = []
-    Object.values(this.errors).forEach(fieldErrors => {
+    Object.values(this.errors).forEach((fieldErrors) => {
       allErrors.push(...fieldErrors)
     })
     return allErrors
@@ -368,7 +375,7 @@ export class FormStore extends BaseStore {
 
 ```typescript
 // stores/validation.ts
-import { BaseStore, State, Action, CachedAction } from '@ldesign/store'
+import { Action, BaseStore, CachedAction, State } from '@ldesign/store'
 
 export class ValidationStore extends BaseStore {
   @State({ default: new Map() })
@@ -401,7 +408,7 @@ export class ValidationStore extends BaseStore {
 
     for (const rule of field.validation) {
       const isValid = await this.validateRule(rule, value, formData, field)
-      
+
       if (!isValid) {
         errors.push({
           field: field.name,
@@ -438,28 +445,38 @@ export class ValidationStore extends BaseStore {
   }
 
   private validateRequired(value: any): boolean {
-    if (value === null || value === undefined) return false
-    if (typeof value === 'string') return value.trim().length > 0
-    if (Array.isArray(value)) return value.length > 0
+    if (value === null || value === undefined)
+      return false
+    if (typeof value === 'string')
+      return value.trim().length > 0
+    if (Array.isArray(value))
+      return value.length > 0
     return true
   }
 
   private validateMin(value: any, min: number): boolean {
-    if (typeof value === 'number') return value >= min
-    if (typeof value === 'string') return value.length >= min
-    if (Array.isArray(value)) return value.length >= min
+    if (typeof value === 'number')
+      return value >= min
+    if (typeof value === 'string')
+      return value.length >= min
+    if (Array.isArray(value))
+      return value.length >= min
     return true
   }
 
   private validateMax(value: any, max: number): boolean {
-    if (typeof value === 'number') return value <= max
-    if (typeof value === 'string') return value.length <= max
-    if (Array.isArray(value)) return value.length <= max
+    if (typeof value === 'number')
+      return value <= max
+    if (typeof value === 'string')
+      return value.length <= max
+    if (Array.isArray(value))
+      return value.length <= max
     return true
   }
 
   private validatePattern(value: any, pattern: string | RegExp): boolean {
-    if (!value) return true
+    if (!value)
+      return true
     const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern
     return regex.test(String(value))
   }
@@ -486,7 +503,7 @@ export class ValidationStore extends BaseStore {
   setupBuiltinValidators() {
     // 邮箱验证
     this.registerValidator('email', (value: string) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
       return !value || emailRegex.test(value)
     })
 
@@ -498,30 +515,33 @@ export class ValidationStore extends BaseStore {
 
     // 身份证验证
     this.registerValidator('idCard', (value: string) => {
-      const idCardRegex = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/
+      const idCardRegex = /(^\d{15}$)|(^\d{18}$)|(^\d{17}([\dX])$)/i
       return !value || idCardRegex.test(value)
     })
 
     // 密码强度验证
     this.registerValidator('strongPassword', (value: string) => {
-      if (!value) return true
+      if (!value)
+        return true
       const hasLower = /[a-z]/.test(value)
       const hasUpper = /[A-Z]/.test(value)
       const hasNumber = /\d/.test(value)
       const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(value)
       const isLongEnough = value.length >= 8
-      
+
       return hasLower && hasUpper && hasNumber && hasSpecial && isLongEnough
     })
 
     // 异步验证：检查用户名是否可用
     this.registerValidator('uniqueUsername', async (value: string) => {
-      if (!value) return true
-      
+      if (!value)
+        return true
+
       try {
         const response = await api.checkUsername(value)
         return response.available
-      } catch (error) {
+      }
+      catch (error) {
         return false
       }
     })
@@ -533,7 +553,7 @@ export class ValidationStore extends BaseStore {
 
 ```typescript
 // stores/step.ts
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 export class StepStore extends BaseStore {
   @State({ default: [] })
@@ -590,10 +610,11 @@ export class StepStore extends BaseStore {
   @Action()
   async validateCurrentStep() {
     const currentStepData = this.steps[this.currentStep]
-    if (!currentStepData) return false
+    if (!currentStepData)
+      return false
 
     const formStore = new FormStore('form')
-    
+
     // 验证当前步骤的所有字段
     const validationPromises = currentStepData.fields.map(fieldName =>
       formStore.validateField(fieldName)
@@ -633,13 +654,15 @@ export class StepStore extends BaseStore {
 
   @Getter()
   get progress() {
-    if (this.steps.length === 0) return 0
+    if (this.steps.length === 0)
+      return 0
     return Math.round(((this.currentStep + 1) / this.steps.length) * 100)
   }
 
   @Getter()
   get completionProgress() {
-    if (this.steps.length === 0) return 0
+    if (this.steps.length === 0)
+      return 0
     return Math.round((this.completedSteps.length / this.steps.length) * 100)
   }
 
@@ -657,9 +680,11 @@ export class StepStore extends BaseStore {
   private getStepStatus(stepIndex: number): 'pending' | 'current' | 'completed' | 'error' {
     if (stepIndex < this.currentStep) {
       return this.steps[stepIndex].completed ? 'completed' : 'error'
-    } else if (stepIndex === this.currentStep) {
+    }
+    else if (stepIndex === this.currentStep) {
       return 'current'
-    } else {
+    }
+    else {
       return 'pending'
     }
   }
@@ -670,7 +695,7 @@ export class StepStore extends BaseStore {
 
 ```typescript
 // stores/draft.ts
-import { BaseStore, PersistentState, State, Action, AsyncAction, Getter } from '@ldesign/store'
+import { Action, AsyncAction, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
 
 export class DraftStore extends BaseStore {
   @PersistentState({ default: new Map() })
@@ -706,9 +731,10 @@ export class DraftStore extends BaseStore {
   @Action()
   loadDraft(formId: string): FormDraft | null {
     const draft = this.drafts.get(formId)
-    
-    if (!draft) return null
-    
+
+    if (!draft)
+      return null
+
     // 检查是否过期
     if (draft.expiresAt && new Date() > draft.expiresAt) {
       this.drafts.delete(formId)
@@ -731,7 +757,7 @@ export class DraftStore extends BaseStore {
   @Action()
   startAutoSave(formId: string) {
     this.stopAutoSave()
-    
+
     this.autoSaveTimer = setInterval(() => {
       const formStore = new FormStore('form')
       if (formStore.isDirty) {
@@ -752,11 +778,12 @@ export class DraftStore extends BaseStore {
   @AsyncAction()
   async syncDraftsToServer() {
     const draftsToSync = Array.from(this.drafts.values())
-    
+
     for (const draft of draftsToSync) {
       try {
         await draftApi.saveDraft(draft)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('同步草稿失败:', error)
       }
     }
@@ -766,18 +793,19 @@ export class DraftStore extends BaseStore {
   async loadDraftsFromServer() {
     try {
       const serverDrafts = await draftApi.getDrafts()
-      
-      serverDrafts.forEach(draft => {
+
+      serverDrafts.forEach((draft) => {
         this.drafts.set(draft.formId, draft)
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('加载服务器草稿失败:', error)
     }
   }
 
   private cleanupExpiredDrafts() {
     const now = new Date()
-    
+
     for (const [formId, draft] of this.drafts.entries()) {
       if (draft.expiresAt && now > draft.expiresAt) {
         this.drafts.delete(formId)
@@ -810,17 +838,132 @@ export class DraftStore extends BaseStore {
 
 ```vue
 <!-- components/DynamicForm.vue -->
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted } from 'vue'
+import { DraftStore } from '@/stores/draft'
+import { FormStore } from '@/stores/form'
+import { StepStore } from '@/stores/step'
+import { ValidationStore } from '@/stores/validation'
+
+interface Props {
+  formConfig: {
+    id: string
+    fields: FormField[]
+    steps?: FormStep[]
+  }
+}
+
+const props = defineProps<Props>()
+
+const formStore = new FormStore('form')
+const stepStore = new StepStore('step')
+const draftStore = new DraftStore('draft')
+const validationStore = new ValidationStore('validation')
+
+onMounted(async () => {
+  // 初始化验证器
+  validationStore.setupBuiltinValidators()
+
+  // 初始化表单
+  formStore.initializeForm(props.formConfig.fields)
+
+  // 初始化步骤
+  if (props.formConfig.steps) {
+    stepStore.initializeSteps(props.formConfig.steps)
+  }
+
+  // 加载草稿
+  const draft = draftStore.loadDraft(props.formConfig.id)
+  if (draft) {
+    formStore.values = { ...draft.data }
+    stepStore.goToStep(draft.step)
+  }
+
+  // 开始自动保存
+  draftStore.startAutoSave(props.formConfig.id)
+})
+
+onUnmounted(() => {
+  draftStore.stopAutoSave()
+})
+
+const currentStepFields = computed(() => {
+  if (stepStore.steps.length === 0) {
+    return formStore.visibleFields
+  }
+
+  const currentStep = stepStore.currentStepData
+  if (!currentStep)
+    return []
+
+  return currentStep.fields
+    .map(fieldName => formStore.fields[fieldName])
+    .filter(field => field && field.visible)
+})
+
+const canProceed = computed(() => {
+  return currentStepFields.value.every((field) => {
+    if (!field.required)
+      return true
+    const value = formStore.values[field.name]
+    return value !== null && value !== undefined && value !== ''
+  })
+})
+
+function handleFieldChange(fieldName: string, value: any) {
+  formStore.setFieldValue(fieldName, value)
+}
+
+function handleFieldBlur(fieldName: string) {
+  formStore.setFieldTouched(fieldName, true)
+  formStore.validateField(fieldName)
+}
+
+async function handleNextStep() {
+  const isValid = await stepStore.validateCurrentStep()
+  if (isValid) {
+    stepStore.nextStep()
+  }
+}
+
+function handleStepClick(stepIndex: number) {
+  const step = stepStore.steps[stepIndex]
+  if (step && (step.completed || stepIndex <= stepStore.currentStep)) {
+    stepStore.goToStep(stepIndex)
+  }
+}
+
+async function handleSubmit() {
+  try {
+    await formStore.submitForm()
+    // 提交成功处理
+  }
+  catch (error) {
+    console.error('提交失败:', error)
+  }
+}
+
+function handleLoadDraft(draft: FormDraft) {
+  formStore.values = { ...draft.data }
+  stepStore.goToStep(draft.step)
+}
+
+function handleClearDraft() {
+  draftStore.clearDraft(props.formConfig.id)
+}
+</script>
+
 <template>
   <div class="dynamic-form">
     <!-- 步骤导航 -->
-    <StepNavigation 
+    <StepNavigation
       v-if="stepStore.steps.length > 1"
       :steps="stepStore.stepNavigation"
       @step-click="handleStepClick"
     />
 
     <!-- 表单内容 -->
-    <form @submit.prevent="handleSubmit" class="form-content">
+    <form class="form-content" @submit.prevent="handleSubmit">
       <!-- 当前步骤的字段 -->
       <div class="form-fields">
         <FormField
@@ -840,8 +983,8 @@ export class DraftStore extends BaseStore {
         <button
           v-if="!stepStore.isFirstStep"
           type="button"
-          @click="stepStore.prevStep"
           class="btn-secondary"
+          @click="stepStore.prevStep"
         >
           上一步
         </button>
@@ -849,9 +992,9 @@ export class DraftStore extends BaseStore {
         <button
           v-if="!stepStore.isLastStep"
           type="button"
-          @click="handleNextStep"
           :disabled="!canProceed"
           class="btn-primary"
+          @click="handleNextStep"
         >
           下一步
         </button>
@@ -877,8 +1020,8 @@ export class DraftStore extends BaseStore {
     <!-- 进度指示器 -->
     <div class="form-progress">
       <div class="progress-bar">
-        <div 
-          class="progress-fill" 
+        <div
+          class="progress-fill"
           :style="{ width: `${formStore.completionRate}%` }"
         />
       </div>
@@ -888,118 +1031,6 @@ export class DraftStore extends BaseStore {
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
-import { FormStore } from '@/stores/form'
-import { StepStore } from '@/stores/step'
-import { DraftStore } from '@/stores/draft'
-import { ValidationStore } from '@/stores/validation'
-
-interface Props {
-  formConfig: {
-    id: string
-    fields: FormField[]
-    steps?: FormStep[]
-  }
-}
-
-const props = defineProps<Props>()
-
-const formStore = new FormStore('form')
-const stepStore = new StepStore('step')
-const draftStore = new DraftStore('draft')
-const validationStore = new ValidationStore('validation')
-
-onMounted(async () => {
-  // 初始化验证器
-  validationStore.setupBuiltinValidators()
-  
-  // 初始化表单
-  formStore.initializeForm(props.formConfig.fields)
-  
-  // 初始化步骤
-  if (props.formConfig.steps) {
-    stepStore.initializeSteps(props.formConfig.steps)
-  }
-  
-  // 加载草稿
-  const draft = draftStore.loadDraft(props.formConfig.id)
-  if (draft) {
-    formStore.values = { ...draft.data }
-    stepStore.goToStep(draft.step)
-  }
-  
-  // 开始自动保存
-  draftStore.startAutoSave(props.formConfig.id)
-})
-
-onUnmounted(() => {
-  draftStore.stopAutoSave()
-})
-
-const currentStepFields = computed(() => {
-  if (stepStore.steps.length === 0) {
-    return formStore.visibleFields
-  }
-  
-  const currentStep = stepStore.currentStepData
-  if (!currentStep) return []
-  
-  return currentStep.fields
-    .map(fieldName => formStore.fields[fieldName])
-    .filter(field => field && field.visible)
-})
-
-const canProceed = computed(() => {
-  return currentStepFields.value.every(field => {
-    if (!field.required) return true
-    const value = formStore.values[field.name]
-    return value !== null && value !== undefined && value !== ''
-  })
-})
-
-const handleFieldChange = (fieldName: string, value: any) => {
-  formStore.setFieldValue(fieldName, value)
-}
-
-const handleFieldBlur = (fieldName: string) => {
-  formStore.setFieldTouched(fieldName, true)
-  formStore.validateField(fieldName)
-}
-
-const handleNextStep = async () => {
-  const isValid = await stepStore.validateCurrentStep()
-  if (isValid) {
-    stepStore.nextStep()
-  }
-}
-
-const handleStepClick = (stepIndex: number) => {
-  const step = stepStore.steps[stepIndex]
-  if (step && (step.completed || stepIndex <= stepStore.currentStep)) {
-    stepStore.goToStep(stepIndex)
-  }
-}
-
-const handleSubmit = async () => {
-  try {
-    await formStore.submitForm()
-    // 提交成功处理
-  } catch (error) {
-    console.error('提交失败:', error)
-  }
-}
-
-const handleLoadDraft = (draft: FormDraft) => {
-  formStore.values = { ...draft.data }
-  stepStore.goToStep(draft.step)
-}
-
-const handleClearDraft = () => {
-  draftStore.clearDraft(props.formConfig.id)
-}
-</script>
 
 <style scoped>
 .dynamic-form {
@@ -1068,7 +1099,7 @@ export class LazyFieldStore extends BaseStore {
   @Action()
   preloadCommonFields() {
     const commonFields = ['text', 'email', 'select', 'checkbox']
-    commonFields.forEach(fieldType => {
+    commonFields.forEach((fieldType) => {
       this.loadFieldDefinition(fieldType)
     })
   }
@@ -1087,7 +1118,7 @@ export class FormSerializerStore extends BaseStore {
       timestamp: Date.now(),
       data: this.processForSerialization(formData)
     }
-    
+
     return JSON.stringify(serialized)
   }
 
@@ -1096,7 +1127,8 @@ export class FormSerializerStore extends BaseStore {
     try {
       const parsed = JSON.parse(serializedData)
       return this.processForDeserialization(parsed.data)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('反序列化失败:', error)
       return {}
     }
@@ -1104,23 +1136,25 @@ export class FormSerializerStore extends BaseStore {
 
   private processForSerialization(data: Record<string, any>): Record<string, any> {
     const processed = {}
-    
+
     for (const [key, value] of Object.entries(data)) {
       if (value instanceof Date) {
         processed[key] = { __type: 'Date', value: value.toISOString() }
-      } else if (value instanceof File) {
+      }
+      else if (value instanceof File) {
         processed[key] = { __type: 'File', name: value.name, size: value.size }
-      } else {
+      }
+      else {
         processed[key] = value
       }
     }
-    
+
     return processed
   }
 
   private processForDeserialization(data: Record<string, any>): Record<string, any> {
     const processed = {}
-    
+
     for (const [key, value] of Object.entries(data)) {
       if (value && typeof value === 'object' && value.__type) {
         switch (value.__type) {
@@ -1134,11 +1168,12 @@ export class FormSerializerStore extends BaseStore {
           default:
             processed[key] = value.value
         }
-      } else {
+      }
+      else {
         processed[key] = value
       }
     }
-    
+
     return processed
   }
 }
@@ -1158,13 +1193,14 @@ export class FormStateManager {
       touched: { ...formStore.touched },
       timestamp: Date.now()
     }
-    
+
     this.snapshots.set(formId, snapshot)
   }
 
   restoreSnapshot(formId: string, formStore: FormStore): boolean {
     const snapshot = this.snapshots.get(formId)
-    if (!snapshot) return false
+    if (!snapshot)
+      return false
 
     formStore.values = { ...snapshot.values }
     formStore.errors = { ...snapshot.errors }

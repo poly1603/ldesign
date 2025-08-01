@@ -1,5 +1,5 @@
-import App from './App.vue'
 import { createApp, presets } from '@ldesign/engine'
+import App from './App.vue'
 import './style.css'
 
 // 使用引擎创建Vue应用（简化API）
@@ -8,8 +8,8 @@ const engine = createApp(App, {
   config: {
     debug: true,
     appName: 'Vue3 Engine Example',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 
 // 获取Vue应用实例并提供engine

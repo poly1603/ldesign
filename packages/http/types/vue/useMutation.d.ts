@@ -1,5 +1,5 @@
-import { UseMutationOptions, UseMutationReturn } from '../types/vue.js';
-import { HttpClient, RequestConfig, ResponseData } from '../types/index.js';
+import { UseMutationOptions, UseMutationReturn } from '@/types/vue';
+import { HttpClient, RequestConfig, ResponseData } from '@/types';
 
 /**
  * useMutation Hook

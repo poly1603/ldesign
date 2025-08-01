@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
-import App from './App.vue'
 import { createI18nWithBuiltinLocales } from '../../es/index.js'
 import { createI18n } from '../../es/vue/index.js'
+import App from './App.vue'
 
 async function bootstrap() {
   try {
@@ -14,7 +14,7 @@ async function bootstrap() {
       storageKey: 'vue-i18n-locale',
       cache: {
         enabled: true,
-        maxSize: 1000
+        maxSize: 1000,
       },
       onLanguageChanged: (locale) => {
         console.log('Language changed to:', locale)
@@ -22,7 +22,7 @@ async function bootstrap() {
       },
       onLoadError: (locale, error) => {
         console.error(`Failed to load language '${locale}':`, error)
-      }
+      },
     })
 
     // 创建 Vue I18n 插件
@@ -34,7 +34,7 @@ async function bootstrap() {
     // 安装 I18n 插件
     app.use(vueI18nPlugin, {
       globalInjection: true,
-      globalPropertyName: '$t'
+      globalPropertyName: '$t',
     })
 
     // 添加一些示例翻译键到语言包中
@@ -48,14 +48,14 @@ async function bootstrap() {
         batch: 'Batch Translation',
         conditional: 'Conditional Translation',
         info: 'Language Information',
-        status: 'Status'
-      }
+        status: 'Status',
+      },
     }
 
     // 为每种语言添加示例翻译
     const languages = ['en', 'zh-CN', 'ja']
     const exampleTranslationsLocalized = {
-      en: {
+      'en': {
         examples: {
           basic: 'Basic Translation',
           interpolation: 'Interpolation',
@@ -65,8 +65,8 @@ async function bootstrap() {
           batch: 'Batch Translation',
           conditional: 'Conditional Translation',
           info: 'Language Information',
-          status: 'Status'
-        }
+          status: 'Status',
+        },
       },
       'zh-CN': {
         examples: {
@@ -78,10 +78,10 @@ async function bootstrap() {
           batch: '批量翻译',
           conditional: '条件翻译',
           info: '语言信息',
-          status: '状态'
-        }
+          status: '状态',
+        },
       },
-      ja: {
+      'ja': {
         examples: {
           basic: '基本翻訳',
           interpolation: '補間翻訳',
@@ -91,9 +91,9 @@ async function bootstrap() {
           batch: 'バッチ翻訳',
           conditional: '条件翻訳',
           info: '言語情報',
-          status: 'ステータス'
-        }
-      }
+          status: 'ステータス',
+        },
+      },
     }
 
     // 扩展语言包（这里只是示例，实际项目中应该在语言包文件中定义）
@@ -112,10 +112,10 @@ async function bootstrap() {
     console.log('Vue I18n example app started successfully')
     console.log('Current language:', i18nInstance.getCurrentLanguage())
     console.log('Available languages:', i18nInstance.getAvailableLanguages())
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
-    
+
     // 显示错误信息
     document.body.innerHTML = `
       <div style="

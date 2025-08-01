@@ -1,6 +1,4 @@
-import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import type { Ref } from 'vue'
-import { DeviceDetector } from '../../core/DeviceDetector'
 import type {
   DeviceDetectorOptions,
   DeviceInfo,
@@ -8,6 +6,8 @@ import type {
   Orientation,
   UseDeviceReturn,
 } from '../../types'
+import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
+import { DeviceDetector } from '../../core/DeviceDetector'
 
 /**
  * Vue3 设备检测 Composition API

@@ -60,11 +60,12 @@ export class BrowserDetector implements Detector {
     const seen = new Set<string>()
 
     for (const lang of languages) {
-      if (!lang) continue
+      if (!lang)
+        continue
 
       // 标准化语言代码格式
       const normalizedLang = this.normalizeLanguageCode(lang)
-      
+
       if (normalizedLang && !seen.has(normalizedLang)) {
         normalized.push(normalizedLang)
         seen.add(normalizedLang)
@@ -87,7 +88,8 @@ export class BrowserDetector implements Detector {
    * @returns 标准化后的语言代码
    */
   private normalizeLanguageCode(lang: string): string {
-    if (!lang) return ''
+    if (!lang)
+      return ''
 
     // 移除空格并转换为小写
     let normalized = lang.trim().toLowerCase()
@@ -106,7 +108,7 @@ export class BrowserDetector implements Detector {
       // 主语言代码保持小写
       const mainLang = parts[0].toLowerCase()
       // 区域代码转换为大写
-      const regions = parts.slice(1).map(part => {
+      const regions = parts.slice(1).map((part) => {
         // 如果是2位字母的区域代码，转换为大写
         if (/^[a-z]{2}$/.test(part)) {
           return part.toUpperCase()
@@ -117,7 +119,7 @@ export class BrowserDetector implements Detector {
         }
         return part
       })
-      
+
       normalized = [mainLang, ...regions].join('-')
     }
 
@@ -132,11 +134,11 @@ export class BrowserDetector implements Detector {
   isSupported(locale: string): boolean {
     const detectedLanguages = this.detect()
     const normalizedLocale = this.normalizeLanguageCode(locale)
-    
-    return detectedLanguages.some(lang => 
-      lang === normalizedLocale || 
-      lang.startsWith(normalizedLocale + '-') ||
-      normalizedLocale.startsWith(lang + '-')
+
+    return detectedLanguages.some(lang =>
+      lang === normalizedLocale
+      || lang.startsWith(`${normalizedLocale}-`)
+      || normalizedLocale.startsWith(`${lang}-`),
     )
   }
 
@@ -147,8 +149,8 @@ export class BrowserDetector implements Detector {
    */
   getBestMatch(availableLocales: string[]): string | null {
     const detectedLanguages = this.detect()
-    const normalizedAvailable = availableLocales.map(locale => 
-      this.normalizeLanguageCode(locale)
+    const normalizedAvailable = availableLocales.map(locale =>
+      this.normalizeLanguageCode(locale),
     ).filter(Boolean)
 
     // 精确匹配
@@ -161,8 +163,8 @@ export class BrowserDetector implements Detector {
     // 主语言匹配
     for (const detected of detectedLanguages) {
       const mainLang = detected.split('-')[0]
-      const match = normalizedAvailable.find(available => 
-        available.startsWith(mainLang + '-') || available === mainLang
+      const match = normalizedAvailable.find(available =>
+        available.startsWith(`${mainLang}-`) || available === mainLang,
       )
       if (match) {
         return match
@@ -171,7 +173,7 @@ export class BrowserDetector implements Detector {
 
     // 区域匹配
     for (const detected of detectedLanguages) {
-      const match = normalizedAvailable.find(available => {
+      const match = normalizedAvailable.find((available) => {
         const detectedMain = detected.split('-')[0]
         const availableMain = available.split('-')[0]
         return detectedMain === availableMain
@@ -246,7 +248,7 @@ export class ManualDetector implements Detector {
  */
 export function createDetector(
   type: 'browser' | 'manual' = 'browser',
-  options?: { languages?: string[] }
+  options?: { languages?: string[] },
 ): Detector {
   switch (type) {
     case 'browser':

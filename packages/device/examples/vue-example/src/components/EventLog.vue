@@ -1,58 +1,6 @@
-<template>
-  <div class="card">
-    <div class="header">
-      <h3>📋 事件日志</h3>
-      <div class="controls">
-        <button @click="clearLogs" class="btn btn-secondary">
-          🗑️ 清空日志
-        </button>
-        <button @click="toggleAutoScroll" class="btn" :class="autoScroll ? 'btn-primary' : 'btn-secondary'">
-          {{ autoScroll ? '🔄' : '⏸️' }} 自动滚动
-        </button>
-      </div>
-    </div>
-    
-    <div class="log-container" ref="logContainer">
-      <div v-if="logs.length === 0" class="empty-state">
-        <span class="icon">📝</span>
-        <p>暂无事件日志</p>
-        <p class="hint">调整窗口大小、旋转设备或触发其他事件来查看日志</p>
-      </div>
-      
-      <div v-else class="log-list">
-        <div 
-          v-for="log in logs" 
-          :key="log.id"
-          class="log-item"
-          :class="`log-${log.type}`"
-        >
-          <div class="log-header">
-            <span class="log-icon">{{ getLogIcon(log.type) }}</span>
-            <span class="log-type">{{ getLogTypeText(log.type) }}</span>
-            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
-          </div>
-          <div class="log-content">
-            <div class="log-message">{{ log.message }}</div>
-            <div v-if="log.data" class="log-data">
-              <pre>{{ formatData(log.data) }}</pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="footer">
-      <span class="log-count">共 {{ logs.length }} 条日志</span>
-      <span v-if="logs.length > 0" class="last-update">
-        最后更新: {{ formatTime(logs[logs.length - 1].timestamp) }}
-      </span>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDevice } from '@ldesign/device/vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 const logs = ref([])
 const logContainer = ref(null)
@@ -62,22 +10,22 @@ const logIdCounter = ref(0)
 const { deviceDetector } = useDevice()
 
 // 添加日志
-const addLog = (type, message, data = null) => {
+function addLog(type, message, data = null) {
   const log = {
     id: ++logIdCounter.value,
     type,
     message,
     data,
-    timestamp: new Date()
+    timestamp: new Date(),
   }
-  
+
   logs.value.push(log)
-  
+
   // 限制日志数量，避免内存溢出
   if (logs.value.length > 100) {
     logs.value.shift()
   }
-  
+
   // 自动滚动到底部
   if (autoScroll.value) {
     nextTick(() => {
@@ -87,12 +35,12 @@ const addLog = (type, message, data = null) => {
 }
 
 // 清空日志
-const clearLogs = () => {
+function clearLogs() {
   logs.value = []
 }
 
 // 切换自动滚动
-const toggleAutoScroll = () => {
+function toggleAutoScroll() {
   autoScroll.value = !autoScroll.value
   if (autoScroll.value) {
     nextTick(() => {
@@ -102,14 +50,14 @@ const toggleAutoScroll = () => {
 }
 
 // 滚动到底部
-const scrollToBottom = () => {
+function scrollToBottom() {
   if (logContainer.value) {
     logContainer.value.scrollTop = logContainer.value.scrollHeight
   }
 }
 
 // 获取日志图标
-const getLogIcon = (type) => {
+function getLogIcon(type) {
   const icons = {
     device: '📱',
     orientation: '🔄',
@@ -119,13 +67,13 @@ const getLogIcon = (type) => {
     geolocation: '📍',
     module: '🔧',
     error: '❌',
-    info: 'ℹ️'
+    info: 'ℹ️',
   }
   return icons[type] || '📝'
 }
 
 // 获取日志类型文本
-const getLogTypeText = (type) => {
+function getLogTypeText(type) {
   const texts = {
     device: '设备检测',
     orientation: '方向变化',
@@ -135,24 +83,24 @@ const getLogTypeText = (type) => {
     geolocation: '地理位置',
     module: '模块操作',
     error: '错误',
-    info: '信息'
+    info: '信息',
   }
   return texts[type] || '未知'
 }
 
 // 格式化时间
-const formatTime = (timestamp) => {
+function formatTime(timestamp) {
   return timestamp.toLocaleTimeString('zh-CN', {
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    fractionalSecondDigits: 3
+    fractionalSecondDigits: 3,
   })
 }
 
 // 格式化数据
-const formatData = (data) => {
+function formatData(data) {
   if (typeof data === 'object') {
     return JSON.stringify(data, null, 2)
   }
@@ -160,66 +108,67 @@ const formatData = (data) => {
 }
 
 // 设置事件监听器
-const setupEventListeners = () => {
-  if (!deviceDetector.value) return
-  
+function setupEventListeners() {
+  if (!deviceDetector.value)
+    return
+
   // 设备检测事件
   deviceDetector.value.on('deviceChange', (deviceInfo) => {
     addLog('device', '设备类型发生变化', {
       type: deviceInfo.type,
       width: deviceInfo.width,
-      height: deviceInfo.height
+      height: deviceInfo.height,
     })
   })
-  
+
   // 方向变化事件
   deviceDetector.value.on('orientationChange', (orientation) => {
     addLog('orientation', `设备方向变为: ${orientation}`, { orientation })
   })
-  
+
   // 窗口大小变化事件
   deviceDetector.value.on('resize', (size) => {
     addLog('resize', '窗口大小发生变化', {
       width: size.width,
-      height: size.height
+      height: size.height,
     })
   })
-  
+
   // 网络状态事件
   deviceDetector.value.on('networkChange', (networkInfo) => {
     addLog('network', '网络状态发生变化', networkInfo)
   })
-  
+
   // 电池状态事件
   deviceDetector.value.on('batteryChange', (batteryInfo) => {
     addLog('battery', '电池状态发生变化', batteryInfo)
   })
-  
+
   // 地理位置事件
   deviceDetector.value.on('positionChange', (position) => {
     addLog('geolocation', '地理位置发生变化', {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,
-      accuracy: position.coords.accuracy
+      accuracy: position.coords.accuracy,
     })
   })
-  
+
   // 模块加载事件
   deviceDetector.value.on('moduleLoaded', (moduleName) => {
     addLog('module', `模块 ${moduleName} 已加载`, { module: moduleName })
   })
-  
+
   // 模块卸载事件
   deviceDetector.value.on('moduleUnloaded', (moduleName) => {
     addLog('module', `模块 ${moduleName} 已卸载`, { module: moduleName })
   })
-  
+
   // 错误事件
   deviceDetector.value.on('error', (error) => {
     addLog('error', `发生错误: ${error.message}`, {
       name: error.name,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     })
   })
 }
@@ -243,6 +192,62 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="card">
+    <div class="header">
+      <h3>📋 事件日志</h3>
+      <div class="controls">
+        <button class="btn btn-secondary" @click="clearLogs">
+          🗑️ 清空日志
+        </button>
+        <button class="btn" :class="autoScroll ? 'btn-primary' : 'btn-secondary'" @click="toggleAutoScroll">
+          {{ autoScroll ? '🔄' : '⏸️' }} 自动滚动
+        </button>
+      </div>
+    </div>
+
+    <div ref="logContainer" class="log-container">
+      <div v-if="logs.length === 0" class="empty-state">
+        <span class="icon">📝</span>
+        <p>暂无事件日志</p>
+        <p class="hint">
+          调整窗口大小、旋转设备或触发其他事件来查看日志
+        </p>
+      </div>
+
+      <div v-else class="log-list">
+        <div
+          v-for="log in logs"
+          :key="log.id"
+          class="log-item"
+          :class="`log-${log.type}`"
+        >
+          <div class="log-header">
+            <span class="log-icon">{{ getLogIcon(log.type) }}</span>
+            <span class="log-type">{{ getLogTypeText(log.type) }}</span>
+            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
+          </div>
+          <div class="log-content">
+            <div class="log-message">
+              {{ log.message }}
+            </div>
+            <div v-if="log.data" class="log-data">
+              <pre>{{ formatData(log.data) }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span class="log-count">共 {{ logs.length }} 条日志</span>
+      <span v-if="logs.length > 0" class="last-update">
+        最后更新: {{ formatTime(logs[logs.length - 1].timestamp) }}
+      </span>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .card {
@@ -358,15 +363,33 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.log-device { border-left-color: #ff6b6b; }
-.log-orientation { border-left-color: #4ecdc4; }
-.log-resize { border-left-color: #45b7d1; }
-.log-network { border-left-color: #96ceb4; }
-.log-battery { border-left-color: #feca57; }
-.log-geolocation { border-left-color: #ff9ff3; }
-.log-module { border-left-color: #54a0ff; }
-.log-error { border-left-color: #ff6b6b; }
-.log-info { border-left-color: #74b9ff; }
+.log-device {
+  border-left-color: #ff6b6b;
+}
+.log-orientation {
+  border-left-color: #4ecdc4;
+}
+.log-resize {
+  border-left-color: #45b7d1;
+}
+.log-network {
+  border-left-color: #96ceb4;
+}
+.log-battery {
+  border-left-color: #feca57;
+}
+.log-geolocation {
+  border-left-color: #ff9ff3;
+}
+.log-module {
+  border-left-color: #54a0ff;
+}
+.log-error {
+  border-left-color: #ff6b6b;
+}
+.log-info {
+  border-left-color: #74b9ff;
+}
 
 .log-header {
   display: flex;
@@ -458,21 +481,21 @@ onUnmounted(() => {
     gap: 12px;
     align-items: stretch;
   }
-  
+
   .controls {
     justify-content: center;
   }
-  
+
   .footer {
     flex-direction: column;
     gap: 8px;
     text-align: center;
   }
-  
+
   .log-header {
     flex-wrap: wrap;
   }
-  
+
   .log-time {
     margin-left: 0;
     width: 100%;

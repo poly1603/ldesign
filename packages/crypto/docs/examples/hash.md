@@ -7,12 +7,12 @@
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔢 哈希计算演示</h3>
-    
+
     <div class="form-group">
       <label>要哈希的数据:</label>
       <textarea id="hash-data" placeholder="输入要哈希的数据">Hello, Hash Algorithm!</textarea>
     </div>
-    
+
     <div class="form-row">
       <div class="form-group">
         <label>哈希算法:</label>
@@ -25,7 +25,7 @@
           <option value="SHA512">SHA512</option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label>输出编码:</label>
         <select id="hash-encoding">
@@ -34,14 +34,14 @@
         </select>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button id="hash-calculate-btn" class="btn primary">🔢 计算哈希</button>
       <button id="hash-all-btn" class="btn secondary">📊 计算所有算法</button>
       <button id="hash-verify-btn" class="btn success">✅ 验证哈希</button>
       <button id="hash-clear-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="hash-result" class="result-box" style="display: none;">
       <h4>🔢 哈希结果</h4>
       <div class="result-item">
@@ -61,18 +61,19 @@
         <div id="hash-length" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="hash-all-result" class="result-box" style="display: none;">
       <h4>📊 所有哈希结果</h4>
       <div id="hash-all-values"></div>
     </div>
-    
+
     <div id="hash-verify-result" class="result-box success" style="display: none;">
       <h4>✅ 哈希验证</h4>
       <div id="hash-verify-message" class="result-value"></div>
     </div>
-    
+
     <div id="hash-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
@@ -81,17 +82,17 @@
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔐 HMAC 消息认证码演示</h3>
-    
+
     <div class="form-group">
       <label>消息:</label>
       <textarea id="hmac-message" placeholder="输入消息">Hello, HMAC!</textarea>
     </div>
-    
+
     <div class="form-group">
       <label>密钥:</label>
       <input type="text" id="hmac-key" placeholder="输入HMAC密钥" value="secret-key">
     </div>
-    
+
     <div class="form-group">
       <label>HMAC算法:</label>
       <select id="hmac-algorithm">
@@ -102,14 +103,14 @@
         <option value="SHA512">HMAC-SHA512</option>
       </select>
     </div>
-    
+
     <div class="form-actions">
       <button id="hmac-calculate-btn" class="btn primary">🔐 计算HMAC</button>
       <button id="hmac-verify-btn" class="btn success">✅ 验证HMAC</button>
       <button id="hmac-generate-key-btn" class="btn secondary">🔑 生成密钥</button>
       <button id="hmac-clear-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="hmac-result" class="result-box" style="display: none;">
       <h4>🔐 HMAC结果</h4>
       <div class="result-item">
@@ -121,13 +122,14 @@
         <div id="hmac-algorithm-used" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="hmac-verify-result" class="result-box success" style="display: none;">
       <h4>✅ HMAC验证</h4>
       <div id="hmac-verify-message" class="result-value"></div>
     </div>
-    
+
     <div id="hmac-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
@@ -225,34 +227,9 @@ console.log('HMAC 验证:', isValid) // true
 ## Vue 3 集成示例
 
 ```vue
-<template>
-  <div>
-    <h2>哈希计算</h2>
-    
-    <div>
-      <textarea v-model="data" placeholder="输入要哈希的数据"></textarea>
-      <select v-model="algorithm">
-        <option value="MD5">MD5</option>
-        <option value="SHA1">SHA1</option>
-        <option value="SHA256">SHA256</option>
-        <option value="SHA384">SHA384</option>
-        <option value="SHA512">SHA512</option>
-      </select>
-      <button @click="calculateHash" :disabled="isHashing">
-        {{ isHashing ? '计算中...' : '计算哈希' }}
-      </button>
-    </div>
-    
-    <div v-if="hashResult">
-      <h3>哈希结果</h3>
-      <p>{{ algorithm }}: {{ hashResult }}</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useHash } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const { md5, sha1, sha256, sha384, sha512, isHashing } = useHash()
 
@@ -260,7 +237,7 @@ const data = ref('Hello, Vue Hash!')
 const algorithm = ref('SHA256')
 const hashResult = ref('')
 
-const calculateHash = async () => {
+async function calculateHash() {
   try {
     switch (algorithm.value) {
       case 'MD5':
@@ -279,11 +256,47 @@ const calculateHash = async () => {
         hashResult.value = await sha512(data.value)
         break
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
 </script>
+
+<template>
+  <div>
+    <h2>哈希计算</h2>
+
+    <div>
+      <textarea v-model="data" placeholder="输入要哈希的数据" />
+      <select v-model="algorithm">
+        <option value="MD5">
+          MD5
+        </option>
+        <option value="SHA1">
+          SHA1
+        </option>
+        <option value="SHA256">
+          SHA256
+        </option>
+        <option value="SHA384">
+          SHA384
+        </option>
+        <option value="SHA512">
+          SHA512
+        </option>
+      </select>
+      <button :disabled="isHashing" @click="calculateHash">
+        {{ isHashing ? '计算中...' : '计算哈希' }}
+      </button>
+    </div>
+
+    <div v-if="hashResult">
+      <h3>哈希结果</h3>
+      <p>{{ algorithm }}: {{ hashResult }}</p>
+    </div>
+  </div>
+</template>
 ```
 
 ## 实际应用场景
@@ -300,7 +313,7 @@ class PasswordManager {
     const hashedPassword = hash.sha256(password + salt)
     return `${salt}:${hashedPassword}`
   }
-  
+
   // 验证密码
   static verifyPassword(password: string, storedHash: string): boolean {
     const [salt, expectedHash] = storedHash.split(':')
@@ -324,13 +337,13 @@ class FileIntegrityChecker {
   static calculateFileHash(fileContent: string): string {
     return hash.sha256(fileContent)
   }
-  
+
   // 验证文件完整性
   static verifyFileIntegrity(fileContent: string, expectedHash: string): boolean {
     const actualHash = this.calculateFileHash(fileContent)
     return actualHash === expectedHash
   }
-  
+
   // 生成文件校验和
   static generateChecksum(fileContent: string): {
     md5: string
@@ -356,17 +369,17 @@ console.log('文件校验和:', checksum)
 ```typescript
 class APIRequestSigner {
   private secretKey: string
-  
+
   constructor(secretKey: string) {
     this.secretKey = secretKey
   }
-  
+
   // 生成请求签名
   signRequest(method: string, url: string, body: string, timestamp: number): string {
     const message = `${method}\n${url}\n${body}\n${timestamp}`
     return hmac.sha256(message, this.secretKey)
   }
-  
+
   // 验证请求签名
   verifyRequest(method: string, url: string, body: string, timestamp: number, signature: string): boolean {
     const expectedSignature = this.signRequest(method, url, body, timestamp)
@@ -386,24 +399,24 @@ console.log('请求签名:', signature)
 ```typescript
 class DataDeduplicator {
   private hashes = new Set<string>()
-  
+
   // 检查是否重复
   isDuplicate(data: string): boolean {
     const dataHash = hash.sha256(data)
-    
+
     if (this.hashes.has(dataHash)) {
       return true
     }
-    
+
     this.hashes.add(dataHash)
     return false
   }
-  
+
   // 获取数据指纹
   getFingerprint(data: string): string {
     return hash.sha256(data)
   }
-  
+
   // 清除缓存
   clear(): void {
     this.hashes.clear()
@@ -425,25 +438,25 @@ console.log(deduplicator.isDuplicate('data1')) // true (重复)
 function performanceTest() {
   const data = 'A'.repeat(10000) // 10KB 数据
   const iterations = 1000
-  
+
   console.time('MD5')
   for (let i = 0; i < iterations; i++) {
     hash.md5(data)
   }
   console.timeEnd('MD5')
-  
+
   console.time('SHA1')
   for (let i = 0; i < iterations; i++) {
     hash.sha1(data)
   }
   console.timeEnd('SHA1')
-  
+
   console.time('SHA256')
   for (let i = 0; i < iterations; i++) {
     hash.sha256(data)
   }
   console.timeEnd('SHA256')
-  
+
   console.time('SHA512')
   for (let i = 0; i < iterations; i++) {
     hash.sha512(data)

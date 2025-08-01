@@ -1,6 +1,6 @@
+import type { AESOptions, DecryptResult, EncryptResult, IEncryptor } from '../types'
 import CryptoJS from 'crypto-js'
-import type { AESOptions, EncryptResult, DecryptResult, IEncryptor } from '../types'
-import { RandomUtils, ValidationUtils, ErrorUtils, CONSTANTS } from '../utils'
+import { CONSTANTS, ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**
  * AES 加密器
@@ -31,13 +31,13 @@ export class AESEncryptor implements IEncryptor {
       // 生成或使用提供的 IV
       const iv = opts.iv || RandomUtils.generateIV(CONSTANTS.AES.IV_LENGTH)
       const ivWordArray = CryptoJS.enc.Hex.parse(iv)
-      
+
       // 准备密钥
       const keyWordArray = this.prepareKey(key, opts.keySize)
-      
+
       // 选择加密模式
       const mode = this.getMode(opts.mode)
-      
+
       // 加密配置
       const config = {
         mode,
@@ -47,13 +47,14 @@ export class AESEncryptor implements IEncryptor {
 
       // 执行加密
       const encrypted = CryptoJS.AES.encrypt(data, keyWordArray, config)
-      
+
       return {
         data: encrypted.toString(),
         algorithm: `AES-${opts.keySize}-${opts.mode}`,
         iv,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -81,7 +82,8 @@ export class AESEncryptor implements IEncryptor {
         if (!iv) {
           throw ErrorUtils.createDecryptionError('IV is required for decryption', 'AES')
         }
-      } else {
+      }
+      else {
         ciphertext = encryptedData.data
         iv = encryptedData.iv || opts.iv
         if (!iv) {
@@ -89,15 +91,13 @@ export class AESEncryptor implements IEncryptor {
         }
       }
 
-
-
       // 准备密钥和 IV
       const keyWordArray = this.prepareKey(key, opts.keySize)
       const ivWordArray = CryptoJS.enc.Hex.parse(iv)
-      
+
       // 选择加密模式
       const mode = this.getMode(opts.mode)
-      
+
       // 解密配置
       const config = {
         mode,
@@ -117,7 +117,8 @@ export class AESEncryptor implements IEncryptor {
         data: decryptedString,
         success: true,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         return {
           data: '',

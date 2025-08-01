@@ -40,11 +40,11 @@ const i18n = await createI18nWithBuiltinLocales({
 
 ```typescript
 // 简单翻译
-console.log(i18n.t('common.ok'))        // "OK"
-console.log(i18n.t('common.cancel'))    // "Cancel"
+console.log(i18n.t('common.ok')) // "OK"
+console.log(i18n.t('common.cancel')) // "Cancel"
 
 // 嵌套键
-console.log(i18n.t('menu.file.new'))    // "New"
+console.log(i18n.t('menu.file.new')) // "New"
 ```
 
 ### 3. 插值翻译
@@ -63,11 +63,11 @@ console.log(i18n.t('common.pageOf', { current: 1, total: 10 }))
 ```typescript
 // 切换到中文
 await i18n.changeLanguage('zh-CN')
-console.log(i18n.t('common.ok'))        // "确定"
+console.log(i18n.t('common.ok')) // "确定"
 
 // 切换到日语
 await i18n.changeLanguage('ja')
-console.log(i18n.t('common.ok'))        // "OK"
+console.log(i18n.t('common.ok')) // "OK"
 ```
 
 ## Vue 3 集成
@@ -75,10 +75,10 @@ console.log(i18n.t('common.ok'))        // "OK"
 ### 1. 安装插件
 
 ```typescript
-// main.ts
-import { createApp } from 'vue'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// main.ts
+import { createApp } from 'vue'
 import App from './App.vue'
 
 async function bootstrap() {
@@ -103,23 +103,36 @@ bootstrap()
 ### 2. 在组件中使用
 
 ```vue
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const { t, locale, availableLanguages, changeLanguage } = useI18n()
+
+const currentLocale = ref(locale.value)
+
+async function handleLanguageChange() {
+  await changeLanguage(currentLocale.value)
+}
+</script>
+
 <template>
   <div>
     <!-- 使用组合式 API -->
     <h1>{{ t('common.welcome', { name: 'Vue' }) }}</h1>
-    
+
     <!-- 使用全局属性 -->
     <p>{{ $t('common.description') }}</p>
-    
+
     <!-- 使用指令 -->
-    <button v-t="'common.save'"></button>
-    <input v-t="{ key: 'common.searchPlaceholder' }" />
-    
+    <button v-t="'common.save'" />
+    <input v-t="{ key: 'common.searchPlaceholder' }">
+
     <!-- 语言切换器 -->
     <select v-model="currentLocale" @change="handleLanguageChange">
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
         :value="lang.code"
       >
         {{ lang.nativeName }}
@@ -127,19 +140,6 @@ bootstrap()
     </select>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, locale, availableLanguages, changeLanguage } = useI18n()
-
-const currentLocale = ref(locale.value)
-
-const handleLanguageChange = async () => {
-  await changeLanguage(currentLocale.value)
-}
-</script>
 ```
 
 ## 配置选项
@@ -148,32 +148,32 @@ const handleLanguageChange = async () => {
 const i18n = await createI18nWithBuiltinLocales({
   // 默认语言
   defaultLocale: 'en',
-  
+
   // 降级语言（当翻译不存在时使用）
   fallbackLocale: 'en',
-  
+
   // 自动检测浏览器语言
   autoDetect: true,
-  
+
   // 存储方式
   storage: 'localStorage',
   storageKey: 'app-locale',
-  
+
   // 预加载语言
   preload: ['en', 'zh-CN'],
-  
+
   // 缓存配置
   cache: {
     enabled: true,
     maxSize: 1000
   },
-  
+
   // 事件回调
   onLanguageChanged: (locale) => {
     console.log('Language changed to:', locale)
     document.documentElement.lang = locale
   },
-  
+
   onLoadError: (locale, error) => {
     console.error(`Failed to load language '${locale}':`, error)
   }
@@ -185,7 +185,7 @@ const i18n = await createI18nWithBuiltinLocales({
 @ldesign/i18n 内置了三种语言的完整翻译：
 
 - **English (en)** - 英语
-- **中文简体 (zh-CN)** - 简体中文  
+- **中文简体 (zh-CN)** - 简体中文
 - **日本語 (ja)** - 日语
 
 每种语言包含以下模块：
@@ -199,16 +199,16 @@ const i18n = await createI18nWithBuiltinLocales({
 
 ```typescript
 // 通用文本
-i18n.t('common.ok')           // "OK" / "确定" / "OK"
-i18n.t('common.cancel')       // "Cancel" / "取消" / "キャンセル"
-i18n.t('common.loading')      // "Loading..." / "加载中..." / "読み込み中..."
+i18n.t('common.ok') // "OK" / "确定" / "OK"
+i18n.t('common.cancel') // "Cancel" / "取消" / "キャンセル"
+i18n.t('common.loading') // "Loading..." / "加载中..." / "読み込み中..."
 
 // 验证信息
 i18n.t('validation.required') // "This field is required" / "此字段为必填项" / "この項目は必須です"
 
 // 菜单文本
-i18n.t('menu.file.new')      // "New" / "新建" / "新規"
-i18n.t('menu.edit.copy')     // "Copy" / "复制" / "コピー"
+i18n.t('menu.file.new') // "New" / "新建" / "新規"
+i18n.t('menu.edit.copy') // "Copy" / "复制" / "コピー"
 
 // 日期格式
 i18n.t('date.formats.short') // "M/D/YYYY" / "YYYY/M/D" / "YYYY/M/D"
@@ -263,8 +263,8 @@ A: 在 SSR 环境中，您需要禁用自动检测并手动设置语言：
 ```typescript
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
-  autoDetect: false,  // 禁用自动检测
-  storage: 'none'     // 禁用存储
+  autoDetect: false, // 禁用自动检测
+  storage: 'none' // 禁用存储
 })
 
 // 根据请求头或其他方式设置语言

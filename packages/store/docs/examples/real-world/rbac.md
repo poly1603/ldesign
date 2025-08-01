@@ -96,7 +96,7 @@ export interface MenuItem {
 
 ```typescript
 // stores/user-management.ts
-import { BaseStore, State, AsyncAction, Getter, CachedGetter } from '@ldesign/store'
+import { AsyncAction, BaseStore, CachedGetter, Getter, State } from '@ldesign/store'
 
 export class UserManagementStore extends BaseStore {
   @State({ default: [] })
@@ -136,7 +136,8 @@ export class UserManagementStore extends BaseStore {
 
       this.users = response.users
       this.totalCount = response.total
-    } catch (error) {
+    }
+    catch (error) {
       console.error('获取用户列表失败:', error)
       throw error
     }
@@ -149,7 +150,8 @@ export class UserManagementStore extends BaseStore {
       this.users.push(user)
       this.totalCount++
       return user
-    } catch (error) {
+    }
+    catch (error) {
       console.error('创建用户失败:', error)
       throw error
     }
@@ -164,7 +166,8 @@ export class UserManagementStore extends BaseStore {
         this.users[index] = updatedUser
       }
       return updatedUser
-    } catch (error) {
+    }
+    catch (error) {
       console.error('更新用户失败:', error)
       throw error
     }
@@ -179,7 +182,8 @@ export class UserManagementStore extends BaseStore {
         this.users.splice(index, 1)
         this.totalCount--
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('删除用户失败:', error)
       throw error
     }
@@ -194,7 +198,8 @@ export class UserManagementStore extends BaseStore {
         this.users[index] = user
       }
       return user
-    } catch (error) {
+    }
+    catch (error) {
       console.error('分配角色失败:', error)
       throw error
     }
@@ -205,7 +210,8 @@ export class UserManagementStore extends BaseStore {
     try {
       await userApi.lockUser(userId, reason)
       await this.updateUser(userId, { status: 'locked' })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('锁定用户失败:', error)
       throw error
     }
@@ -216,7 +222,8 @@ export class UserManagementStore extends BaseStore {
     try {
       await userApi.unlockUser(userId)
       await this.updateUser(userId, { status: 'active' })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('解锁用户失败:', error)
       throw error
     }
@@ -236,7 +243,7 @@ export class UserManagementStore extends BaseStore {
   @CachedGetter(['users'])
   get usersByRole() {
     return this.users.reduce((acc, user) => {
-      user.roles.forEach(role => {
+      user.roles.forEach((role) => {
         if (!acc[role.id]) {
           acc[role.id] = []
         }
@@ -262,7 +269,7 @@ export class UserManagementStore extends BaseStore {
 
 ```typescript
 // stores/authorization.ts
-import { BaseStore, State, Action, Getter, CachedGetter } from '@ldesign/store'
+import { Action, BaseStore, CachedGetter, Getter, State } from '@ldesign/store'
 
 export class AuthorizationStore extends BaseStore {
   @State({ default: null })
@@ -295,13 +302,13 @@ export class AuthorizationStore extends BaseStore {
 
   private extractUserPermissions() {
     const permissionSet = new Set<Permission>()
-    
-    this.userRoles.forEach(role => {
-      role.permissions.forEach(permission => {
+
+    this.userRoles.forEach((role) => {
+      role.permissions.forEach((permission) => {
         permissionSet.add(permission)
       })
     })
-    
+
     this.userPermissions = Array.from(permissionSet)
   }
 
@@ -388,16 +395,16 @@ export class AuthorizationStore extends BaseStore {
   get roleHierarchy() {
     // 构建角色层次结构
     const hierarchy = new Map<string, number>()
-    
+
     const roleWeights = {
-      'super_admin': 1000,
-      'admin': 800,
-      'manager': 600,
-      'user': 400,
-      'guest': 200
+      super_admin: 1000,
+      admin: 800,
+      manager: 600,
+      user: 400,
+      guest: 200
     }
 
-    this.userRoles.forEach(role => {
+    this.userRoles.forEach((role) => {
       const weight = roleWeights[role.code] || 0
       hierarchy.set(role.code, weight)
     })
@@ -410,7 +417,7 @@ export class AuthorizationStore extends BaseStore {
     let highestWeight = 0
     let highestRole: Role | null = null
 
-    this.userRoles.forEach(role => {
+    this.userRoles.forEach((role) => {
       const weight = this.roleHierarchy.get(role.code) || 0
       if (weight > highestWeight) {
         highestWeight = weight
@@ -427,7 +434,7 @@ export class AuthorizationStore extends BaseStore {
 
 ```typescript
 // stores/menu.ts
-import { BaseStore, State, Action, Getter, CachedGetter } from '@ldesign/store'
+import { Action, BaseStore, CachedGetter, Getter, State } from '@ldesign/store'
 
 export class MenuStore extends BaseStore {
   @State({ default: [] })
@@ -460,12 +467,13 @@ export class MenuStore extends BaseStore {
   }
 
   private filterMenusByPermissions(menus: MenuItem[], authStore: AuthorizationStore): MenuItem[] {
-    return menus.filter(menu => {
+    return menus.filter((menu) => {
       // 检查菜单权限
-      const hasPermission = menu.permissions.length === 0 || 
-        menu.permissions.some(permission => authStore.hasPermission(permission))
+      const hasPermission = menu.permissions.length === 0
+        || menu.permissions.some(permission => authStore.hasPermission(permission))
 
-      if (!hasPermission) return false
+      if (!hasPermission)
+        return false
 
       // 递归过滤子菜单
       if (menu.children) {
@@ -480,14 +488,15 @@ export class MenuStore extends BaseStore {
     const findMenuPath = (menus: MenuItem[], targetId: string, path: MenuItem[] = []): MenuItem[] | null => {
       for (const menu of menus) {
         const currentPath = [...path, menu]
-        
+
         if (menu.id === targetId) {
           return currentPath
         }
-        
+
         if (menu.children) {
           const result = findMenuPath(menu.children, targetId, currentPath)
-          if (result) return result
+          if (result)
+            return result
         }
       }
       return null
@@ -512,14 +521,14 @@ export class MenuStore extends BaseStore {
   get flatMenus() {
     const flatten = (menus: MenuItem[]): MenuItem[] => {
       let result: MenuItem[] = []
-      
-      menus.forEach(menu => {
+
+      menus.forEach((menu) => {
         result.push(menu)
         if (menu.children) {
           result = result.concat(flatten(menu.children))
         }
       })
-      
+
       return result
     }
 
@@ -562,7 +571,7 @@ export function RequirePermission(permission: string) {
 
     descriptor.value = function (...args: any[]) {
       const authStore = new AuthorizationStore('auth')
-      
+
       if (!authStore.hasPermission(permission)) {
         throw new Error(`权限不足: 需要 ${permission} 权限`)
       }
@@ -578,7 +587,7 @@ export function RequireRole(role: string) {
 
     descriptor.value = function (...args: any[]) {
       const authStore = new AuthorizationStore('auth')
-      
+
       if (!authStore.hasRole(role)) {
         throw new Error(`权限不足: 需要 ${role} 角色`)
       }
@@ -594,7 +603,7 @@ export function RequireAnyRole(roles: string[]) {
 
     descriptor.value = function (...args: any[]) {
       const authStore = new AuthorizationStore('auth')
-      
+
       if (!authStore.hasAnyRole(roles)) {
         throw new Error(`权限不足: 需要以下角色之一: ${roles.join(', ')}`)
       }
@@ -662,7 +671,8 @@ export const vPermission: Directive = {
     if (value !== oldValue) {
       if (value && !authStore.hasPermission(value)) {
         el.style.display = 'none'
-      } else {
+      }
+      else {
         el.style.display = ''
       }
     }
@@ -685,18 +695,6 @@ export const vRole: Directive = {
 
 ```vue
 <!-- components/PermissionGuard.vue -->
-<template>
-  <slot v-if="hasAccess" />
-  <div v-else-if="showFallback" class="permission-denied">
-    <slot name="fallback">
-      <div class="text-center p-4">
-        <Icon name="lock" class="text-4xl text-gray-400 mb-2" />
-        <p class="text-gray-600">您没有访问此内容的权限</p>
-      </div>
-    </slot>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { AuthorizationStore } from '@/stores/authorization'
@@ -719,27 +717,69 @@ const hasAccess = computed(() => {
   if (props.permission) {
     return authStore.hasPermission(props.permission)
   }
-  
+
   if (props.role) {
     return authStore.hasRole(props.role)
   }
-  
+
   if (props.anyRole) {
     return authStore.hasAnyRole(props.anyRole)
   }
-  
+
   if (props.allRoles) {
     return authStore.hasAllRoles(props.allRoles)
   }
-  
+
   return true
 })
 </script>
+
+<template>
+  <slot v-if="hasAccess" />
+  <div v-else-if="showFallback" class="permission-denied">
+    <slot name="fallback">
+      <div class="text-center p-4">
+        <Icon name="lock" class="text-4xl text-gray-400 mb-2" />
+        <p class="text-gray-600">
+          您没有访问此内容的权限
+        </p>
+      </div>
+    </slot>
+  </div>
+</template>
 ```
 
 ### 使用示例
 
 ```vue
+<script setup lang="ts">
+import { AuthorizationStore } from '@/stores/authorization'
+import { UserManagementStore } from '@/stores/user-management'
+
+const userStore = new UserManagementStore('user')
+const authStore = new AuthorizationStore('auth')
+
+async function createUser() {
+  try {
+    await userStore.createUser({
+      username: 'newuser',
+      email: 'newuser@example.com',
+      name: 'New User',
+      status: 'active',
+      tenantId: 'tenant1',
+      roles: []
+    })
+  }
+  catch (error) {
+    console.error('创建用户失败:', error)
+  }
+}
+
+function requestAccess() {
+  // 申请权限逻辑
+}
+</script>
+
 <template>
   <div class="admin-panel">
     <!-- 使用权限指令 -->
@@ -763,39 +803,14 @@ const hasAccess = computed(() => {
       <template #fallback>
         <div class="upgrade-prompt">
           <p>此功能需要管理员权限</p>
-          <button @click="requestAccess">申请权限</button>
+          <button @click="requestAccess">
+            申请权限
+          </button>
         </div>
       </template>
     </PermissionGuard>
   </div>
 </template>
-
-<script setup lang="ts">
-import { UserManagementStore } from '@/stores/user-management'
-import { AuthorizationStore } from '@/stores/authorization'
-
-const userStore = new UserManagementStore('user')
-const authStore = new AuthorizationStore('auth')
-
-const createUser = async () => {
-  try {
-    await userStore.createUser({
-      username: 'newuser',
-      email: 'newuser@example.com',
-      name: 'New User',
-      status: 'active',
-      tenantId: 'tenant1',
-      roles: []
-    })
-  } catch (error) {
-    console.error('创建用户失败:', error)
-  }
-}
-
-const requestAccess = () => {
-  // 申请权限逻辑
-}
-</script>
 ```
 
 ## 最佳实践
@@ -811,13 +826,13 @@ const PERMISSIONS = {
   USER_UPDATE: 'user:update',
   USER_DELETE: 'user:delete',
   USER_ASSIGN_ROLE: 'user:assign_role',
-  
+
   // 角色管理
   ROLE_CREATE: 'role:create',
   ROLE_READ: 'role:read',
   ROLE_UPDATE: 'role:update',
   ROLE_DELETE: 'role:delete',
-  
+
   // 系统管理
   SYSTEM_CONFIG: 'system:config',
   SYSTEM_MONITOR: 'system:monitor',
@@ -830,7 +845,7 @@ const PERMISSIONS = {
 ```typescript
 export class PermissionCacheStore extends BaseStore {
   @State({ default: new Map() })
-  cache: Map<string, { result: boolean; expiry: number }> = new Map()
+  cache: Map<string, { result: boolean, expiry: number }> = new Map()
 
   @Action()
   cachePermission(permission: string, result: boolean, ttl: number = 300000) {
@@ -843,13 +858,14 @@ export class PermissionCacheStore extends BaseStore {
   @Action()
   getCachedPermission(permission: string): boolean | null {
     const cached = this.cache.get(permission)
-    if (!cached) return null
-    
+    if (!cached)
+      return null
+
     if (Date.now() > cached.expiry) {
       this.cache.delete(permission)
       return null
     }
-    
+
     return cached.result
   }
 
@@ -878,8 +894,9 @@ export class TenantAwareStore extends BaseStore {
   @Action()
   filterByTenant<T extends { tenantId: string }>(items: T[]): T[] {
     const tenantId = this.currentTenantId
-    if (!tenantId) return []
-    
+    if (!tenantId)
+      return []
+
     return items.filter(item => item.tenantId === tenantId)
   }
 
@@ -889,7 +906,7 @@ export class TenantAwareStore extends BaseStore {
     if (!tenantId) {
       throw new Error('未找到租户信息')
     }
-    
+
     return await apiCall(tenantId)
   }
 }

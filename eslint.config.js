@@ -12,8 +12,8 @@ export default antfu(
       '**/types/**',
       '**/coverage/**',
       '**/node_modules/**',
-      '**/.trae/**'
-    ]
+      '**/.trae/**',
+    ],
   },
   {
     rules: {
@@ -21,7 +21,7 @@ export default antfu(
       'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'error',
-      'no-var': 'error'
-    }
-  }
+      'no-var': 'error',
+    },
+  },
 )

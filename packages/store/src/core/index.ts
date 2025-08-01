@@ -11,10 +11,10 @@ export * from './utils'
 
 // 类型定义
 export type {
-  StateDefinition,
   ActionDefinition,
   GetterDefinition,
-  StoreOptions,
-  PersistOptions,
   BaseStore as IBaseStore,
+  PersistOptions,
+  StateDefinition,
+  StoreOptions,
 } from '@/types'

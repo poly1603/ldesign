@@ -7,7 +7,7 @@ export const menu = {
   overview: 'Overview',
   analytics: 'Analytics',
   reports: 'Reports',
-  
+
   // 用户管理
   users: 'Users',
   userManagement: 'User Management',
@@ -18,7 +18,7 @@ export const menu = {
   addUser: 'Add User',
   editUser: 'Edit User',
   deleteUser: 'Delete User',
-  
+
   // 内容管理
   content: 'Content',
   contentManagement: 'Content Management',
@@ -28,7 +28,7 @@ export const menu = {
   categories: 'Categories',
   tags: 'Tags',
   comments: 'Comments',
-  
+
   // 系统管理
   system: 'System',
   systemSettings: 'System Settings',
@@ -37,7 +37,7 @@ export const menu = {
   logs: 'Logs',
   backup: 'Backup',
   restore: 'Restore',
-  
+
   // 工具
   tools: 'Tools',
   utilities: 'Utilities',
@@ -45,7 +45,7 @@ export const menu = {
   export: 'Export',
   migration: 'Migration',
   cleanup: 'Cleanup',
-  
+
   // 帮助
   help: 'Help',
   documentation: 'Documentation',
@@ -53,7 +53,7 @@ export const menu = {
   about: 'About',
   contact: 'Contact',
   feedback: 'Feedback',
-  
+
   // 导航
   navigation: {
     home: 'Home',
@@ -66,9 +66,9 @@ export const menu = {
     first: 'First',
     last: 'Last',
     previous: 'Previous',
-    next: 'Next'
+    next: 'Next',
   },
-  
+
   // 文件菜单
   file: {
     file: 'File',
@@ -79,9 +79,9 @@ export const menu = {
     close: 'Close',
     exit: 'Exit',
     recent: 'Recent Files',
-    properties: 'Properties'
+    properties: 'Properties',
   },
-  
+
   // 编辑菜单
   edit: {
     edit: 'Edit',
@@ -94,9 +94,9 @@ export const menu = {
     selectAll: 'Select All',
     find: 'Find',
     replace: 'Replace',
-    preferences: 'Preferences'
+    preferences: 'Preferences',
   },
-  
+
   // 视图菜单
   view: {
     view: 'View',
@@ -110,9 +110,9 @@ export const menu = {
     layout: 'Layout',
     sidebar: 'Sidebar',
     toolbar: 'Toolbar',
-    statusBar: 'Status Bar'
+    statusBar: 'Status Bar',
   },
-  
+
   // 账户菜单
   account: {
     account: 'Account',
@@ -124,9 +124,9 @@ export const menu = {
     billing: 'Billing',
     subscription: 'Subscription',
     logout: 'Logout',
-    switchAccount: 'Switch Account'
+    switchAccount: 'Switch Account',
   },
-  
+
   // 上下文菜单
   context: {
     open: 'Open',
@@ -143,9 +143,9 @@ export const menu = {
     share: 'Share',
     download: 'Download',
     bookmark: 'Bookmark',
-    addToFavorites: 'Add to Favorites'
+    addToFavorites: 'Add to Favorites',
   },
-  
+
   // 管理员菜单
   admin: {
     admin: 'Admin',
@@ -158,8 +158,8 @@ export const menu = {
     logs: 'Logs',
     database: 'Database',
     cache: 'Cache',
-    performance: 'Performance'
-  }
+    performance: 'Performance',
+  },
 }
 
 export default menu

@@ -68,14 +68,14 @@ export const developmentConfig = {
 ### 2. 主入口文件
 
 ```typescript
+import { createApp, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets } from '@ldesign/engine'
-import { productionConfig } from './config/production'
 import { developmentConfig } from './config/development'
+import { productionConfig } from './config/production'
 
 // 根据环境选择配置
-const config = process.env.NODE_ENV === 'production' 
+const config = process.env.NODE_ENV === 'production'
   ? { ...presets.production(), ...productionConfig }
   : { ...presets.development(), ...developmentConfig }
 
@@ -93,7 +93,7 @@ if (process.env.NODE_ENV === 'production') {
       stack: event.error?.stack
     })
   })
-  
+
   // Promise 错误捕获
   window.addEventListener('unhandledrejection', (event) => {
     engine.logger.error('未处理的Promise错误', {
@@ -112,33 +112,33 @@ export { engine }
 ### 1. Vite 配置优化
 
 ```typescript
+import { resolve } from 'node:path'
+import vue from '@vitejs/plugin-vue'
 // vite.config.ts
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  
+
   // 构建优化
   build: {
     // 生成源码映射（可选）
     sourcemap: process.env.NODE_ENV !== 'production',
-    
+
     // 代码分割
     rollupOptions: {
       output: {
         manualChunks: {
           // 将引擎相关代码分离
-          'engine': ['@ldesign/engine'],
+          engine: ['@ldesign/engine'],
           // 将Vue相关代码分离
-          'vue': ['vue', 'vue-router'],
+          vue: ['vue', 'vue-router'],
           // 将工具库分离
-          'utils': ['lodash', 'dayjs']
+          utils: ['lodash', 'dayjs']
         }
       }
     },
-    
+
     // 压缩配置
     minify: 'terser',
     terserOptions: {
@@ -149,14 +149,14 @@ export default defineConfig({
       }
     }
   },
-  
+
   // 别名配置
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
     }
   },
-  
+
   // 环境变量
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version)
@@ -188,31 +188,34 @@ VUE_APP_VERSION=dev
 
 ```toml
 [build]
-  publish = "dist"
-  command = "npm run build"
+publish = "dist"
+command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "18"
+NODE_VERSION = "18"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
 
 [[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "/assets/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "*.js"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "*.css"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 ```
 
 ### 2. Vercel 部署
@@ -250,35 +253,35 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build
-      run: npm run build
-      env:
-        VUE_APP_API_BASE_URL: ${{ secrets.API_BASE_URL }}
-        
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VUE_APP_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
 ```
 
 ### 4. Docker 部署
@@ -327,31 +330,31 @@ events {
 http {
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
-    
+
     # Gzip压缩
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-    
+
     server {
         listen 80;
         server_name localhost;
-        
+
         root /usr/share/nginx/html;
         index index.html;
-        
+
         # 静态资源缓存
         location /assets/ {
             expires 1y;
             add_header Cache-Control "public, immutable";
         }
-        
+
         # SPA路由支持
         location / {
             try_files $uri $uri/ /index.html;
         }
-        
+
         # 安全头
         add_header X-Frame-Options "SAMEORIGIN" always;
         add_header X-Content-Type-Options "nosniff" always;
@@ -369,7 +372,7 @@ services:
   app:
     build: .
     ports:
-      - "80:80"
+      - '80:80'
     environment:
       - NODE_ENV=production
     restart: unless-stopped
@@ -413,7 +416,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.meta?.preload) {
     // 预加载组件
-    to.matched.forEach(record => {
+    to.matched.forEach((record) => {
       if (typeof record.component === 'function') {
         record.component()
       }
@@ -436,7 +439,7 @@ export const performancePlugin = creators.plugin('performance', (engine) => {
   const lazyLoadImages = () => {
     const images = document.querySelectorAll('img[data-src]')
     const imageObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const img = entry.target as HTMLImageElement
           img.src = img.dataset.src!
@@ -445,23 +448,23 @@ export const performancePlugin = creators.plugin('performance', (engine) => {
         }
       })
     })
-    
+
     images.forEach(img => imageObserver.observe(img))
   }
-  
+
   // 预加载关键资源
   const preloadCriticalResources = () => {
     const criticalResources = [
       '/api/user/profile',
       '/api/app/config'
     ]
-    
-    criticalResources.forEach(url => {
+
+    criticalResources.forEach((url) => {
       fetch(url, { method: 'HEAD' })
         .catch(() => {}) // 忽略错误
     })
   }
-  
+
   // 应用挂载后执行优化
   engine.events.on('app:mounted', () => {
     lazyLoadImages()
@@ -475,9 +478,9 @@ export const performancePlugin = creators.plugin('performance', (engine) => {
 ### 1. 错误监控
 
 ```typescript
+import { creators } from '@ldesign/engine'
 // plugins/sentry.ts
 import * as Sentry from '@sentry/vue'
-import { creators } from '@ldesign/engine'
 
 export const sentryPlugin = creators.plugin('sentry', (engine) => {
   if (process.env.NODE_ENV === 'production') {
@@ -486,10 +489,10 @@ export const sentryPlugin = creators.plugin('sentry', (engine) => {
       dsn: process.env.VUE_APP_SENTRY_DSN,
       environment: process.env.NODE_ENV,
       release: process.env.VUE_APP_VERSION,
-      
+
       // 性能监控
       tracesSampleRate: 0.1,
-      
+
       // 用户上下文
       beforeSend(event) {
         const user = engine.state.get('user')
@@ -502,7 +505,7 @@ export const sentryPlugin = creators.plugin('sentry', (engine) => {
         return event
       }
     })
-    
+
     // 集成引擎日志
     engine.logger.addOutput({
       type: 'custom',
@@ -533,7 +536,7 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
       })
     }
   }
-  
+
   // 用户行为统计
   const trackEvent = (action: string, category: string, label?: string) => {
     if (typeof gtag !== 'undefined') {
@@ -543,26 +546,26 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
       })
     }
   }
-  
+
   // 性能指标统计
   const trackPerformance = () => {
     if ('performance' in window) {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-      
+
       // 页面加载时间
       const loadTime = navigation.loadEventEnd - navigation.fetchStart
-      
+
       trackEvent('page_load_time', 'performance', loadTime.toString())
     }
   }
-  
+
   // 暴露分析方法
   engine.analytics = {
     trackPageView,
     trackEvent,
     trackPerformance
   }
-  
+
   // 自动统计
   engine.events.on('app:mounted', () => {
     trackPerformance()
@@ -577,27 +580,30 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
 在 `index.html` 中添加：
 
 ```html
-<meta http-equiv="Content-Security-Policy" content="
+<meta
+  http-equiv="Content-Security-Policy"
+  content="
   default-src 'self';
   script-src 'self' 'unsafe-inline' https://www.googletagmanager.com;
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: https:;
   font-src 'self' https://fonts.gstatic.com;
   connect-src 'self' https://api.example.com;
-">
+"
+/>
 ```
 
 ### 2. 敏感信息处理
 
 ```typescript
 // utils/security.ts
-export const sanitizeUserData = (data: any) => {
+export function sanitizeUserData(data: any) {
   // 移除敏感字段
   const { password, token, ...safeData } = data
   return safeData
 }
 
-export const encryptStorage = (data: any) => {
+export function encryptStorage(data: any) {
   // 加密存储敏感数据
   if (process.env.NODE_ENV === 'production') {
     return btoa(JSON.stringify(data))
@@ -605,13 +611,14 @@ export const encryptStorage = (data: any) => {
   return JSON.stringify(data)
 }
 
-export const decryptStorage = (encryptedData: string) => {
+export function decryptStorage(encryptedData: string) {
   try {
     if (process.env.NODE_ENV === 'production') {
       return JSON.parse(atob(encryptedData))
     }
     return JSON.parse(encryptedData)
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -620,6 +627,7 @@ export const decryptStorage = (encryptedData: string) => {
 ## 部署检查清单
 
 ### 构建前检查
+
 - [ ] 环境变量配置正确
 - [ ] 生产环境配置已设置
 - [ ] 敏感信息已移除
@@ -627,6 +635,7 @@ export const decryptStorage = (encryptedData: string) => {
 - [ ] 性能优化已实施
 
 ### 部署后检查
+
 - [ ] 应用正常启动
 - [ ] 路由功能正常
 - [ ] API接口连接正常
@@ -636,6 +645,7 @@ export const decryptStorage = (encryptedData: string) => {
 - [ ] 安全头设置正确
 
 ### 监控设置
+
 - [ ] 错误监控已配置
 - [ ] 性能监控已启用
 - [ ] 日志收集正常

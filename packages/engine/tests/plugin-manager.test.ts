@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { Plugin, PluginManager } from '../src/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPluginManager } from '../src/plugins/plugin-manager'
-import type { PluginManager, Plugin } from '../src/types'
 
-describe('PluginManager', () => {
+describe('pluginManager', () => {
   let pluginManager: PluginManager
 
   beforeEach(() => {
@@ -14,11 +14,11 @@ describe('PluginManager', () => {
       const plugin: Plugin = {
         name: 'test-plugin',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin)
-      
+
       expect(pluginManager.has('test-plugin')).toBe(true)
       expect(pluginManager.get('test-plugin')).toBe(plugin)
     })
@@ -27,17 +27,17 @@ describe('PluginManager', () => {
       const plugin1: Plugin = {
         name: 'duplicate-plugin',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const plugin2: Plugin = {
         name: 'duplicate-plugin',
         version: '2.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin1)
-      
+
       expect(() => pluginManager.register(plugin2)).toThrow()
     })
 
@@ -45,7 +45,7 @@ describe('PluginManager', () => {
       const invalidPlugin = {
         // 缺少 name
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       } as Plugin
 
       expect(() => pluginManager.register(invalidPlugin)).toThrow()
@@ -57,18 +57,18 @@ describe('PluginManager', () => {
       const pluginA: Plugin = {
         name: 'plugin-a',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const pluginB: Plugin = {
         name: 'plugin-b',
         version: '1.0.0',
         dependencies: ['plugin-a'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(pluginA)
-      
+
       expect(pluginManager.checkDependencies(pluginB)).toBe(true)
     })
 
@@ -77,7 +77,7 @@ describe('PluginManager', () => {
         name: 'plugin-with-deps',
         version: '1.0.0',
         dependencies: ['missing-plugin'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       expect(pluginManager.checkDependencies(plugin)).toBe(false)
@@ -87,30 +87,30 @@ describe('PluginManager', () => {
       const pluginA: Plugin = {
         name: 'plugin-a',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const pluginB: Plugin = {
         name: 'plugin-b',
         version: '1.0.0',
         dependencies: ['plugin-a'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const pluginC: Plugin = {
         name: 'plugin-c',
         version: '1.0.0',
         dependencies: ['plugin-b'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(pluginA)
       pluginManager.register(pluginB)
       pluginManager.register(pluginC)
-      
+
       const order = pluginManager.getLoadOrder()
       const names = order.map(p => p.name)
-      
+
       expect(names.indexOf('plugin-a')).toBeLessThan(names.indexOf('plugin-b'))
       expect(names.indexOf('plugin-b')).toBeLessThan(names.indexOf('plugin-c'))
     })
@@ -120,19 +120,19 @@ describe('PluginManager', () => {
         name: 'plugin-a',
         version: '1.0.0',
         dependencies: ['plugin-b'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const pluginB: Plugin = {
         name: 'plugin-b',
         version: '1.0.0',
         dependencies: ['plugin-a'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(pluginA)
       pluginManager.register(pluginB)
-      
+
       expect(() => pluginManager.getLoadOrder()).toThrow('循环依赖')
     })
   })
@@ -143,12 +143,12 @@ describe('PluginManager', () => {
         name: 'test-plugin',
         version: '1.0.0',
         install: vi.fn(),
-        uninstall: vi.fn()
+        uninstall: vi.fn(),
       }
 
       pluginManager.register(plugin)
       expect(pluginManager.has('test-plugin')).toBe(true)
-      
+
       pluginManager.unregister('test-plugin')
       expect(pluginManager.has('test-plugin')).toBe(false)
       expect(plugin.uninstall).toHaveBeenCalled()
@@ -158,18 +158,18 @@ describe('PluginManager', () => {
       const plugin1: Plugin = {
         name: 'plugin-1',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const plugin2: Plugin = {
         name: 'plugin-2',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin1)
       pluginManager.register(plugin2)
-      
+
       const plugins = pluginManager.getAll()
       expect(plugins).toHaveLength(2)
       expect(plugins).toContain(plugin1)
@@ -180,19 +180,19 @@ describe('PluginManager', () => {
       const plugin1: Plugin = {
         name: 'plugin-1',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const plugin2: Plugin = {
         name: 'plugin-2',
         version: '1.0.0',
         dependencies: ['plugin-1'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin1)
       pluginManager.register(plugin2)
-      
+
       const stats = pluginManager.getStats()
       expect(stats.total).toBe(2)
       expect(stats.withDependencies).toBe(1)
@@ -205,7 +205,7 @@ describe('PluginManager', () => {
       const plugin: Plugin = {
         name: '',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       expect(() => pluginManager.register(plugin)).toThrow('插件名称不能为空')
@@ -215,7 +215,7 @@ describe('PluginManager', () => {
       const plugin: Plugin = {
         name: 'test-plugin',
         version: '',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       expect(() => pluginManager.register(plugin)).toThrow('插件版本不能为空')
@@ -224,7 +224,7 @@ describe('PluginManager', () => {
     it('应该验证安装函数', () => {
       const plugin = {
         name: 'test-plugin',
-        version: '1.0.0'
+        version: '1.0.0',
         // 缺少 install 函数
       } as Plugin
 
@@ -237,21 +237,21 @@ describe('PluginManager', () => {
       const pluginA: Plugin = {
         name: 'plugin-a',
         version: '1.0.0',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       const pluginB: Plugin = {
         name: 'plugin-b',
         version: '1.0.0',
         dependencies: ['plugin-a'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(pluginA)
       pluginManager.register(pluginB)
-      
+
       const graph = pluginManager.getDependencyGraph()
-      
+
       expect(graph['plugin-a']).toEqual([])
       expect(graph['plugin-b']).toEqual(['plugin-a'])
     })
@@ -261,11 +261,11 @@ describe('PluginManager', () => {
         name: 'plugin-with-missing-dep',
         version: '1.0.0',
         dependencies: ['missing-plugin'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin)
-      
+
       expect(() => pluginManager.validateDependencies()).toThrow('依赖项不存在')
     })
   })
@@ -276,11 +276,11 @@ describe('PluginManager', () => {
         name: 'test-plugin',
         version: '1.0.0',
         description: 'A test plugin',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin)
-      
+
       const registered = pluginManager.get('test-plugin')
       expect(registered?.description).toBe('A test plugin')
     })
@@ -290,11 +290,11 @@ describe('PluginManager', () => {
         name: 'test-plugin',
         version: '1.0.0',
         author: 'Test Author',
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin)
-      
+
       const registered = pluginManager.get('test-plugin')
       expect(registered?.author).toBe('Test Author')
     })
@@ -304,11 +304,11 @@ describe('PluginManager', () => {
         name: 'test-plugin',
         version: '1.0.0',
         keywords: ['test', 'plugin', 'vue'],
-        install: vi.fn()
+        install: vi.fn(),
       }
 
       pluginManager.register(plugin)
-      
+
       const registered = pluginManager.get('test-plugin')
       expect(registered?.keywords).toEqual(['test', 'plugin', 'vue'])
     })

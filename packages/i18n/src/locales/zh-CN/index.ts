@@ -1,8 +1,8 @@
-import common from './common'
-import validation from './validation'
-import menu from './menu'
-import date from './date'
 import type { LanguagePackage } from '@/core/types'
+import common from './common'
+import date from './date'
+import menu from './menu'
+import validation from './validation'
 
 /**
  * 中文语言包

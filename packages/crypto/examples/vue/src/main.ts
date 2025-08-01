@@ -1,5 +1,5 @@
-import { createApp } from 'vue'
 import { CryptoPlugin } from '@ldesign/crypto/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import './style.css'
 
@@ -13,8 +13,8 @@ app.use(CryptoPlugin, {
     defaultAESKeySize: 256,
     defaultRSAKeySize: 2048,
     defaultHashAlgorithm: 'SHA256',
-    defaultEncoding: 'hex'
-  }
+    defaultEncoding: 'hex',
+  },
 })
 
 app.mount('#app')

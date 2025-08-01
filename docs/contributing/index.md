@@ -16,7 +16,7 @@
       <li>提交修复的 Pull Request</li>
     </ul>
   </div>
-  
+
   <div class="contribution-card">
     <h4>✨ 新功能</h4>
     <p>为项目添加新的功能特性</p>
@@ -26,7 +26,7 @@
       <li>确保功能完整且有测试</li>
     </ul>
   </div>
-  
+
   <div class="contribution-card">
     <h4>📚 文档改进</h4>
     <p>完善项目文档和示例</p>
@@ -36,7 +36,7 @@
       <li>翻译多语言文档</li>
     </ul>
   </div>
-  
+
   <div class="contribution-card">
     <h4>🧪 测试增强</h4>
     <p>提高代码测试覆盖率</p>
@@ -55,17 +55,17 @@
     <h4>💬 社区支持</h4>
     <p>在 GitHub Discussions、Discord 或其他平台帮助其他用户解决问题</p>
   </div>
-  
+
   <div class="contrib-item">
     <h4>🎨 设计建议</h4>
     <p>提供 UI/UX 设计建议，改善用户体验</p>
   </div>
-  
+
   <div class="contrib-item">
     <h4>📢 推广宣传</h4>
     <p>在博客、社交媒体或技术会议上分享 LDesign</p>
   </div>
-  
+
   <div class="contrib-item">
     <h4>🔍 问题反馈</h4>
     <p>报告使用过程中遇到的问题和改进建议</p>
@@ -84,13 +84,17 @@ git clone https://github.com/ldesign-org/ldesign.git
 cd ldesign
 
 # 安装依赖
+
 pnpm install
 
 # 构建所有包
+
 pnpm build
 
 # 运行测试
+
 pnpm test</code></pre>
+
   </div>
 </div>
 
@@ -142,7 +146,7 @@ pnpm test</code></pre>
       <span class="rule">每次合并都会触发发布</span>
     </div>
   </div>
-  
+
   <div class="branch-item">
     <h4>🚧 develop</h4>
     <p>开发分支，包含最新的开发代码</p>
@@ -151,7 +155,7 @@ pnpm test</code></pre>
       <span class="rule">定期合并到 main</span>
     </div>
   </div>
-  
+
   <div class="branch-item">
     <h4>🔧 feature/*</h4>
     <p>功能分支，用于开发新功能</p>
@@ -160,7 +164,7 @@ pnpm test</code></pre>
       <span class="rule">完成后合并回 develop</span>
     </div>
   </div>
-  
+
   <div class="branch-item">
     <h4>🐛 fix/*</h4>
     <p>修复分支，用于修复问题</p>
@@ -181,8 +185,9 @@ pnpm test</code></pre>
 [optional body]
 
 [optional footer(s)]</code></pre>
+
   </div>
-  
+
   <div class="commit-types">
     <div class="commit-type">
       <strong>feat:</strong> 新功能
@@ -215,7 +220,7 @@ pnpm test</code></pre>
       <strong>chore:</strong> 其他杂项
     </div>
   </div>
-  
+
   <div class="commit-examples">
     <h5>提交示例</h5>
     <div class="code-block">
@@ -223,16 +228,21 @@ pnpm test</code></pre>
 feat(router): 添加动态路由支持
 
 # 问题修复
+
 fix(http): 修复请求超时问题
 
 # 文档更新
+
 docs: 更新安装指南
 
 # 重大变更
+
 feat!: 重构核心 API
 
 BREAKING CHANGE: Engine.init() 方法签名已更改</code></pre>
-    </div>
+
+</div>
+
   </div>
 </div>
 
@@ -246,7 +256,7 @@ BREAKING CHANGE: Engine.init() 方法签名已更改</code></pre>
       <p>在开始开发前，先创建 Issue 描述要解决的问题或要添加的功能</p>
     </div>
   </div>
-  
+
   <div class="workflow-step">
     <div class="step-number">2</div>
     <div class="step-content">
@@ -254,7 +264,7 @@ BREAKING CHANGE: Engine.init() 方法签名已更改</code></pre>
       <p>将项目 Fork 到您的 GitHub 账户下</p>
     </div>
   </div>
-  
+
   <div class="workflow-step">
     <div class="step-number">3</div>
     <div class="step-content">
@@ -267,7 +277,7 @@ git checkout -b feature/your-feature-name</code></pre>
       </div>
     </div>
   </div>
-  
+
   <div class="workflow-step">
     <div class="step-number">4</div>
     <div class="step-content">
@@ -278,14 +288,18 @@ git checkout -b feature/your-feature-name</code></pre>
 pnpm test
 
 # 代码检查
+
 pnpm lint
 
 # 类型检查
+
 pnpm type-check</code></pre>
-      </div>
-    </div>
+
+</div>
+</div>
+
   </div>
-  
+
   <div class="workflow-step">
     <div class="step-number">5</div>
     <div class="step-content">
@@ -297,7 +311,7 @@ git commit -m "feat(scope): 添加新功能描述"</code></pre>
       </div>
     </div>
   </div>
-  
+
   <div class="workflow-step">
     <div class="step-number">6</div>
     <div class="step-content">
@@ -342,6 +356,7 @@ Closes #issue_number
 ## 📚 其他说明
 
 任何其他相关信息</code></pre>
+
   </div>
 </div>
 
@@ -358,13 +373,17 @@ Closes #issue_number
 pnpm test:unit
 
 # 监听模式
+
 pnpm test:unit --watch
 
 # 覆盖率报告
+
 pnpm test:unit --coverage</code></pre>
-    </div>
+
+</div>
+
   </div>
-  
+
   <div class="test-type">
     <h4>🔗 集成测试</h4>
     <p>测试多个模块之间的交互</p>
@@ -373,10 +392,13 @@ pnpm test:unit --coverage</code></pre>
 pnpm test:integration
 
 # 特定包的测试
+
 pnpm test --filter @ldesign/engine</code></pre>
-    </div>
+
+</div>
+
   </div>
-  
+
   <div class="test-type">
     <h4>🌐 E2E 测试</h4>
     <p>端到端的用户场景测试</p>
@@ -385,8 +407,11 @@ pnpm test --filter @ldesign/engine</code></pre>
 pnpm test:e2e
 
 # 可视化模式
+
 pnpm test:e2e --ui</code></pre>
-    </div>
+
+</div>
+
   </div>
 </div>
 
@@ -401,7 +426,7 @@ pnpm test:e2e --ui</code></pre>
       <li>E2E 测试放在 <code>tests/e2e</code> 目录</li>
     </ul>
   </div>
-  
+
   <div class="guideline">
     <h4>✍️ 命名规范</h4>
     <ul>
@@ -410,7 +435,7 @@ pnpm test:e2e --ui</code></pre>
       <li>使用 <code>it</code> 或 <code>test</code> 描述具体测试用例</li>
     </ul>
   </div>
-  
+
   <div class="guideline">
     <h4>🎯 测试原则</h4>
     <ul>
@@ -437,7 +462,7 @@ pnpm test:e2e --ui</code></pre>
       <li>注意事项</li>
     </ul>
   </div>
-  
+
   <div class="doc-type">
     <h4>📝 指南文档</h4>
     <p>使用教程和最佳实践</p>
@@ -448,7 +473,7 @@ pnpm test:e2e --ui</code></pre>
       <li>最佳实践建议</li>
     </ul>
   </div>
-  
+
   <div class="doc-type">
     <h4>💡 示例项目</h4>
     <p>完整的使用示例</p>
@@ -473,7 +498,7 @@ pnpm test:e2e --ui</code></pre>
       <li>添加相关链接</li>
     </ul>
   </div>
-  
+
   <div class="doc-guideline">
     <h4>✍️ 写作风格</h4>
     <ul>
@@ -483,7 +508,7 @@ pnpm test:e2e --ui</code></pre>
       <li>保持内容更新</li>
     </ul>
   </div>
-  
+
   <div class="doc-guideline">
     <h4>🎨 格式规范</h4>
     <ul>
@@ -512,7 +537,7 @@ pnpm test:e2e --ui</code></pre>
       <li><strong>PATCH:</strong> 向后兼容的问题修复</li>
     </ul>
   </div>
-  
+
   <div class="version-info">
     <h4>🔄 发布周期</h4>
     <ul>
@@ -528,7 +553,7 @@ pnpm test:e2e --ui</code></pre>
 
 <div class="changesets-workflow">
   <h4>使用 Changesets 管理变更</h4>
-  
+
   <div class="changeset-step">
     <h5>1. 添加变更记录</h5>
     <div class="code-block">
@@ -536,11 +561,15 @@ pnpm test:e2e --ui</code></pre>
 pnpm changeset
 
 # 选择变更的包
+
 # 选择变更类型（major/minor/patch）
+
 # 编写变更描述</code></pre>
+
     </div>
+
   </div>
-  
+
   <div class="changeset-step">
     <h5>2. 版本更新</h5>
     <div class="code-block">
@@ -548,11 +577,14 @@ pnpm changeset
 pnpm changeset version
 
 # 提交版本变更
+
 git add .
 git commit -m "chore: release packages"</code></pre>
-    </div>
+
+</div>
+
   </div>
-  
+
   <div class="changeset-step">
     <h5>3. 发布包</h5>
     <div class="code-block">
@@ -560,8 +592,11 @@ git commit -m "chore: release packages"</code></pre>
 pnpm build
 
 # 发布到 npm
+
 pnpm changeset publish</code></pre>
-    </div>
+
+</div>
+
   </div>
 </div>
 
@@ -579,7 +614,7 @@ pnpm changeset publish</code></pre>
       <li>参与社区讨论</li>
     </ul>
   </div>
-  
+
   <div class="path-step">
     <h4>🚀 活跃贡献者</h4>
     <ul>
@@ -589,7 +624,7 @@ pnpm changeset publish</code></pre>
       <li>维护文档</li>
     </ul>
   </div>
-  
+
   <div class="path-step">
     <h4>⭐ 核心贡献者</h4>
     <ul>
@@ -612,7 +647,7 @@ pnpm changeset publish</code></pre>
       <li>年度贡献者奖</li>
     </ul>
   </div>
-  
+
   <div class="benefit">
     <h4>📚 学习机会</h4>
     <ul>
@@ -621,7 +656,7 @@ pnpm changeset publish</code></pre>
       <li>开源项目经验</li>
     </ul>
   </div>
-  
+
   <div class="benefit">
     <h4>🤝 社区网络</h4>
     <ul>
@@ -640,19 +675,19 @@ pnpm changeset publish</code></pre>
     <p>技术讨论和问题求助</p>
     <a href="https://github.com/ldesign-org/ldesign/discussions">加入讨论</a>
   </div>
-  
+
   <div class="contact-item">
     <h4>🐛 GitHub Issues</h4>
     <p>Bug 报告和功能请求</p>
     <a href="https://github.com/ldesign-org/ldesign/issues">提交 Issue</a>
   </div>
-  
+
   <div class="contact-item">
     <h4>💬 Discord 社区</h4>
     <p>实时聊天和社区交流</p>
     <a href="https://discord.gg/ldesign">加入 Discord</a>
   </div>
-  
+
   <div class="contact-item">
     <h4>📧 邮件联系</h4>
     <p>商务合作和其他事务</p>
@@ -671,17 +706,17 @@ pnpm changeset publish</code></pre>
     <h4>🤝 尊重包容</h4>
     <p>尊重不同背景和观点的贡献者</p>
   </div>
-  
+
   <div class="principle">
     <h4>🎯 建设性沟通</h4>
     <p>提供有建设性的反馈和建议</p>
   </div>
-  
+
   <div class="principle">
     <h4>🚀 共同成长</h4>
     <p>帮助他人学习和成长</p>
   </div>
-  
+
   <div class="principle">
     <h4>🌟 质量优先</h4>
     <p>追求代码和文档的高质量</p>
@@ -1291,60 +1326,60 @@ pnpm changeset publish</code></pre>
   .contribution-section {
     grid-template-columns: 1fr;
   }
-  
+
   .non-code-contributions {
     grid-template-columns: 1fr;
   }
-  
+
   .requirements {
     grid-template-columns: 1fr;
   }
-  
+
   .branch-strategy {
     grid-template-columns: 1fr;
   }
-  
+
   .commit-types {
     grid-template-columns: 1fr;
   }
-  
+
   .workflow-step {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .test-types {
     grid-template-columns: 1fr;
   }
-  
+
   .test-guidelines {
     grid-template-columns: 1fr;
   }
-  
+
   .doc-types {
     grid-template-columns: 1fr;
   }
-  
+
   .doc-guidelines {
     grid-template-columns: 1fr;
   }
-  
+
   .version-management {
     grid-template-columns: 1fr;
   }
-  
+
   .contributor-path {
     grid-template-columns: 1fr;
   }
-  
+
   .contributor-benefits {
     grid-template-columns: 1fr;
   }
-  
+
   .contact-info {
     grid-template-columns: 1fr;
   }
-  
+
   .code-of-conduct {
     grid-template-columns: 1fr;
   }

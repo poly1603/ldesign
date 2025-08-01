@@ -7,7 +7,7 @@ export const menu = {
   overview: '概要',
   analytics: '分析',
   reports: 'レポート',
-  
+
   // 用户管理
   users: 'ユーザー',
   userManagement: 'ユーザー管理',
@@ -18,7 +18,7 @@ export const menu = {
   addUser: 'ユーザー追加',
   editUser: 'ユーザー編集',
   deleteUser: 'ユーザー削除',
-  
+
   // 内容管理
   content: 'コンテンツ',
   contentManagement: 'コンテンツ管理',
@@ -28,7 +28,7 @@ export const menu = {
   categories: 'カテゴリー',
   tags: 'タグ',
   comments: 'コメント',
-  
+
   // 系统管理
   system: 'システム',
   systemSettings: 'システム設定',
@@ -37,7 +37,7 @@ export const menu = {
   logs: 'ログ',
   backup: 'バックアップ',
   restore: '復元',
-  
+
   // 工具
   tools: 'ツール',
   utilities: 'ユーティリティ',
@@ -45,7 +45,7 @@ export const menu = {
   export: 'エクスポート',
   migration: '移行',
   cleanup: 'クリーンアップ',
-  
+
   // 帮助
   help: 'ヘルプ',
   documentation: 'ドキュメント',
@@ -53,7 +53,7 @@ export const menu = {
   about: 'について',
   contact: '連絡先',
   feedback: 'フィードバック',
-  
+
   // 导航
   navigation: {
     home: 'ホーム',
@@ -66,9 +66,9 @@ export const menu = {
     first: '最初',
     last: '最後',
     previous: '前',
-    next: '次'
+    next: '次',
   },
-  
+
   // 文件菜单
   file: {
     file: 'ファイル',
@@ -79,9 +79,9 @@ export const menu = {
     close: '閉じる',
     exit: '終了',
     recent: '最近のファイル',
-    properties: 'プロパティ'
+    properties: 'プロパティ',
   },
-  
+
   // 编辑菜单
   edit: {
     edit: '編集',
@@ -94,9 +94,9 @@ export const menu = {
     selectAll: 'すべて選択',
     find: '検索',
     replace: '置換',
-    preferences: '環境設定'
+    preferences: '環境設定',
   },
-  
+
   // 视图菜单
   view: {
     view: '表示',
@@ -110,9 +110,9 @@ export const menu = {
     layout: 'レイアウト',
     sidebar: 'サイドバー',
     toolbar: 'ツールバー',
-    statusBar: 'ステータスバー'
+    statusBar: 'ステータスバー',
   },
-  
+
   // 账户菜单
   account: {
     account: 'アカウント',
@@ -124,8 +124,8 @@ export const menu = {
     billing: '請求',
     subscription: 'サブスクリプション',
     logout: 'ログアウト',
-    switchAccount: 'アカウント切り替え'
-  }
+    switchAccount: 'アカウント切り替え',
+  },
 }
 
 export default menu

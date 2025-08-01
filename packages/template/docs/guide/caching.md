@@ -105,13 +105,13 @@ console.log('缓存统计:', {
 const manager = new TemplateManager({
   // 启用缓存
   cacheEnabled: true,
-  
+
   // 缓存大小
   cacheSize: 100,
-  
+
   // 缓存过期时间（毫秒）
   cacheTTL: 30 * 60 * 1000, // 30分钟
-  
+
   // 启用预加载
   preloadEnabled: true
 })
@@ -127,7 +127,7 @@ const manager = new TemplateManager({
     template="login"
     :cache="true"
   />
-  
+
   <!-- 禁用缓存（每次都重新加载） -->
   <LTemplateRenderer
     category="dynamic"
@@ -149,7 +149,7 @@ const manager = new TemplateManager({
       cache: true,
     }"
   />
-  
+
   <!-- 禁用缓存 -->
   <div
     v-template="{
@@ -195,7 +195,7 @@ function getTemplatesForRoute(routeName: string) {
       { category: 'user', template: 'profile' }
     ]
   }
-  
+
   return routeTemplates[routeName] || []
 }
 ```
@@ -208,7 +208,7 @@ const preloadManager = {
   // 预加载用户可能访问的模板
   async preloadForUser(userRole: string) {
     const templates = []
-    
+
     if (userRole === 'admin') {
       templates.push(
         { category: 'admin', template: 'dashboard' },
@@ -221,17 +221,17 @@ const preloadManager = {
         { category: 'user', template: 'profile' }
       )
     }
-    
+
     await manager.preload(templates)
   },
-  
+
   // 基于设备类型预加载
   async preloadForDevice(device: DeviceType) {
     const commonTemplates = [
       { category: 'layout', device, template: 'header' },
       { category: 'layout', device, template: 'footer' }
     ]
-    
+
     await manager.preload(commonTemplates)
   }
 }
@@ -245,7 +245,7 @@ const preloadManager = {
 // 监控内存使用
 function monitorCache() {
   const stats = manager.getCacheStats()
-  
+
   // 内存使用过高时清理缓存
   if (stats.memoryUsage > 50 * 1024 * 1024) { // 50MB
     manager.clearCache()
@@ -278,9 +278,9 @@ const l2Cache = new LRUCache(100, 30 * 60 * 1000) // L2: 100个项目，30分钟
 function getFromCache(key: string) {
   // 先从 L1 缓存获取
   let value = l1Cache.get(key)
-  if (value) 
+  if (value)
     return value
-  
+
   // 再从 L2 缓存获取
   value = l2Cache.get(key)
   if (value) {
@@ -288,7 +288,7 @@ function getFromCache(key: string) {
     l1Cache.set(key, value)
     return value
   }
-  
+
   return null
 }
 ```
@@ -320,11 +320,11 @@ manager.on('cache:clear', (event) => {
 // 缓存性能监控
 const cacheMonitor = {
   startTime: Date.now(),
-  
+
   logStats() {
     const stats = manager.getCacheStats()
     const runtime = Date.now() - this.startTime
-    
+
     console.log('缓存性能报告:', {
       运行时间: `${runtime / 1000}秒`,
       总请求: stats.hits + stats.misses,
@@ -355,7 +355,7 @@ setInterval(() => cacheMonitor.logStats(), 5 * 60 * 1000) // 每5分钟
 if (process.env.NODE_ENV === 'development') {
   // 开发环境禁用缓存
   manager.setCacheEnabled(false)
-  
+
   // 或者设置较短的过期时间
   manager.setCacheTTL(10 * 1000) // 10秒
 }
@@ -368,7 +368,7 @@ if (process.env.NODE_ENV === 'development') {
 function debugCache() {
   const cache = manager.getCache()
   const entries = cache.entries()
-  
+
   console.table(Array.from(entries).map(([key, value]) => ({
     键: key,
     大小: JSON.stringify(value).length,

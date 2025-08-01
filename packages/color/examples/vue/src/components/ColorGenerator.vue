@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
 import {
   COLOR_GENERATION_PRESETS,
   createCustomTheme,
@@ -8,6 +7,7 @@ import {
   isValidHex,
 } from '@ldesign/color'
 import { useTheme } from '@ldesign/color/vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { registerTheme, setTheme, currentMode } = useTheme()
@@ -75,24 +75,27 @@ async function generateColorsRealtime() {
     // 等待DOM更新后生成色阶
     await nextTick()
     await generateScalesRealtime()
-
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err instanceof Error ? err.message : '颜色生成失败'
     generatedColors.value = null
     generatedScales.value = null
-  } finally {
+  }
+  finally {
     isGenerating.value = false
   }
 }
 
 // 实时生成色阶
 async function generateScalesRealtime() {
-  if (!generatedColors.value) return
+  if (!generatedColors.value)
+    return
 
   try {
     const scales = generateColorScales(generatedColors.value, currentMode.value)
     generatedScales.value = scales
-  } catch (err) {
+  }
+  catch (err) {
     console.warn('Failed to generate color scales:', err)
     generatedScales.value = null
   }
@@ -192,7 +195,7 @@ async function applyAsTheme(category: string, color: string) {
 
     <!-- 生成状态指示器 -->
     <div v-if="isGenerating" class="generating-indicator">
-      <div class="spinner"></div>
+      <div class="spinner" />
       <span>正在生成颜色...</span>
     </div>
 
@@ -238,7 +241,9 @@ async function applyAsTheme(category: string, color: string) {
 
     <!-- 色阶预览 -->
     <div v-if="generatedScales && !isGenerating" class="color-scales-preview">
-      <h3 class="scales-title">色阶预览</h3>
+      <h3 class="scales-title">
+        色阶预览
+      </h3>
       <div class="scales-container">
         <div
           v-for="(scale, category) in generatedScales"
@@ -402,8 +407,12 @@ async function applyAsTheme(category: string, color: string) {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 色阶预览样式 */

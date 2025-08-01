@@ -63,7 +63,7 @@
     "build": "rollup -c",
     "build:watch": "rollup -c -w",
     "dev": "rollup -c -w",
-    "type-check": "tsc --noEmit",
+    "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "test": "vitest",
@@ -74,7 +74,14 @@
     "test:e2e:ui": "playwright test --ui",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "deploy": "tsx ../../tools/deploy/package-deployer.ts template",
+    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts template --tag beta",
+    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts template --tag alpha",
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts template --dry-run"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

@@ -35,9 +35,9 @@ yarn add @ldesign/engine
 使用新的简化API，无需手动创建Vue应用：
 
 ```typescript
+import { createApp, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets } from '@ldesign/engine'
 
 // 一行代码创建应用和引擎
 const engine = createApp(App, {
@@ -61,9 +61,9 @@ export { engine }
 如果你需要更多控制，也可以使用传统方式：
 
 ```typescript
+import { createEngine } from '@ldesign/engine'
 // main.ts
 import { createApp } from 'vue'
-import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
 
 // 创建引擎实例
@@ -122,16 +122,6 @@ const engine = createEngine(presets.minimal())
 
 ```vue
 <!-- App.vue -->
-<template>
-  <div class="app">
-    <h1>{{ appName }}</h1>
-    <button @click="showNotification">显示通知</button>
-    <button @click="logMessage">记录日志</button>
-    <button @click="updateState">更新状态</button>
-    <p>当前用户: {{ user?.name || '未登录' }}</p>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { engine } from './main'
@@ -143,7 +133,7 @@ const appName = computed(() => engine.config.get('appName'))
 const user = computed(() => engine.state.get('user'))
 
 // 显示通知
-const showNotification = () => {
+function showNotification() {
   engine.notifications.show({
     type: 'success',
     title: '操作成功',
@@ -152,7 +142,7 @@ const showNotification = () => {
 }
 
 // 记录日志
-const logMessage = () => {
+function logMessage() {
   engine.logger.info('用户点击了日志按钮', {
     timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent
@@ -160,7 +150,7 @@ const logMessage = () => {
 }
 
 // 更新状态
-const updateState = () => {
+function updateState() {
   engine.state.set('user', {
     name: 'John Doe',
     email: 'john@example.com',
@@ -188,6 +178,22 @@ onMounted(() => {
   })
 })
 </script>
+
+<template>
+  <div class="app">
+    <h1>{{ appName }}</h1>
+    <button @click="showNotification">
+      显示通知
+    </button>
+    <button @click="logMessage">
+      记录日志
+    </button>
+    <button @click="updateState">
+      更新状态
+    </button>
+    <p>当前用户: {{ user?.name || '未登录' }}</p>
+  </div>
+</template>
 
 <style scoped>
 .app {
@@ -230,14 +236,14 @@ const engine = createEngine({
 })
 
 // 访问各个管理器
-engine.config    // 配置管理器
-engine.plugins   // 插件管理器
+engine.config // 配置管理器
+engine.plugins // 插件管理器
 engine.middleware // 中间件管理器
-engine.events    // 事件管理器
-engine.state     // 状态管理器
+engine.events // 事件管理器
+engine.state // 状态管理器
 engine.directives // 指令管理器
-engine.errors    // 错误管理器
-engine.logger    // 日志系统
+engine.errors // 错误管理器
+engine.logger // 日志系统
 engine.notifications // 通知管理器
 ```
 

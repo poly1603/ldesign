@@ -59,8 +59,8 @@ console.log('LDesign Template 安装成功！', manager)
 如果你使用 Vite，建议在 `vite.config.ts` 中添加以下配置：
 
 ```typescript
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],

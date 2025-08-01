@@ -12,34 +12,72 @@ export const date = {
     time: 'h:mm A',
     timeWithSeconds: 'h:mm:ss A',
     datetime: 'M/D/YYYY h:mm A',
-    datetimeWithSeconds: 'M/D/YYYY h:mm:ss A'
+    datetimeWithSeconds: 'M/D/YYYY h:mm:ss A',
   },
-  
+
   // 月份名称
   months: {
     full: [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ],
     short: [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ]
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ],
   },
-  
+
   // 星期名称
   weekdays: {
     full: [
-      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ],
     short: [
-      'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+      'Sun',
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
     ],
     min: [
-      'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'
-    ]
+      'Su',
+      'Mo',
+      'Tu',
+      'We',
+      'Th',
+      'Fr',
+      'Sa',
+    ],
   },
-  
+
   // 相对时间
   relative: {
     now: 'now',
@@ -57,7 +95,7 @@ export const date = {
     monthsAgo: '{{count}} months ago',
     yearAgo: 'a year ago',
     yearsAgo: '{{count}} years ago',
-    
+
     // 未来时间
     inSeconds: 'in {{count}} seconds',
     inMinute: 'in a minute',
@@ -71,9 +109,9 @@ export const date = {
     inMonth: 'in a month',
     inMonths: 'in {{count}} months',
     inYear: 'in a year',
-    inYears: 'in {{count}} years'
+    inYears: 'in {{count}} years',
   },
-  
+
   // 时间段
   periods: {
     am: 'AM',
@@ -83,9 +121,9 @@ export const date = {
     evening: 'evening',
     night: 'night',
     midnight: 'midnight',
-    noon: 'noon'
+    noon: 'noon',
   },
-  
+
   // 日期选择器
   picker: {
     selectDate: 'Select date',
@@ -107,9 +145,9 @@ export const date = {
     timeSelect: 'Select time',
     hourSelect: 'Select hour',
     minuteSelect: 'Select minute',
-    secondSelect: 'Select second'
+    secondSelect: 'Select second',
   },
-  
+
   // 日历
   calendar: {
     today: 'Today',
@@ -124,9 +162,9 @@ export const date = {
     noEventsInRange: 'No events in this range',
     showMore: 'Show {{count}} more',
     previous: 'Previous',
-    next: 'Next'
+    next: 'Next',
   },
-  
+
   // 持续时间
   duration: {
     seconds: '{{count, plural, =1{# second} other{# seconds}}}',
@@ -135,15 +173,15 @@ export const date = {
     days: '{{count, plural, =1{# day} other{# days}}}',
     weeks: '{{count, plural, =1{# week} other{# weeks}}}',
     months: '{{count, plural, =1{# month} other{# months}}}',
-    years: '{{count, plural, =1{# year} other{# years}}}'
+    years: '{{count, plural, =1{# year} other{# years}}}',
   },
-  
+
   // 时区
   timezone: {
     utc: 'UTC',
     local: 'Local time',
-    selectTimezone: 'Select timezone'
-  }
+    selectTimezone: 'Select timezone',
+  },
 }
 
 export default date

@@ -1,4 +1,4 @@
-import { RequestConfig, ResponseData } from '../types/index.js';
+import { RequestConfig, ResponseData } from '@/types';
 import { BaseAdapter } from './base.js';
 
 /**

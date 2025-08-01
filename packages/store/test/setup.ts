@@ -1,6 +1,6 @@
-import 'reflect-metadata'
-import { vi } from 'vitest'
 import { config } from '@vue/test-utils'
+import { vi } from 'vitest'
+import 'reflect-metadata'
 
 // 全局测试设置
 beforeEach(() => {

@@ -7,31 +7,37 @@
 ## 核心功能实现
 
 ### ✅ 1. 类设计
+
 - 创建了 `ThemeManager` 主题管理类
 - 用户通过实例化该类并传入配置参数来获得主题管理对象
 - 提供了多种便捷的创建函数：`createThemeManagerWithPresets`、`createSimpleThemeManager`、`createCustomThemeManager`
 
 ### ✅ 2. 主题预设与配置
+
 - 支持多个预设主题配置（10个内置主题）
 - 每个主题包含主色调配置和可选的其他颜色配置
 - 实现了完整的主题配置接口和类型定义
 
 ### ✅ 3. 色彩生成系统
+
 - 基于 a-nice-red 算法实现颜色生成系统
 - 从主色调自动生成 success、warning、danger、gray 等颜色
 - 提供多种生成预设：default、soft、vibrant、monochrome
 
 ### ✅ 4. 色阶生成系统
+
 - 集成 @arco-design/color 库
 - 生成亮色和暗色模式的完整色阶（10级）
 - 将生成的颜色转换为 CSS 自定义属性
 
 ### ✅ 5. CSS Variables 管理
+
 - 实现 CSS 自定义属性的生成、注入和管理
 - 支持动态插入到页面 head 中
 - 提供语义化变量名和索引变量名两种模式
 
 ### ✅ 6. 性能优化系统
+
 - **闲时处理**：使用 `requestIdleCallback` 在浏览器空闲时预生成主题
 - **非阻塞**：确保不占用主线程资源
 - **即时切换**：页面刷新时立即应用当前设置的主题色
@@ -39,11 +45,13 @@
 - **内存优化**：LRU 缓存机制，最小化内存占用
 
 ### ✅ 7. 系统主题检测
+
 - 支持 `prefers-color-scheme` 媒体查询
 - 自动检测和切换系统主题
 - 提供浏览器和手动两种检测器实现
 
 ### ✅ 8. Vue 3 集成
+
 - 提供完整的 Vue 3 组合式 API
 - 包含 `useTheme`、`useThemeToggle`、`useThemeSelector`、`useSystemThemeSync` 等
 - 支持 Vue 插件安装方式
@@ -86,26 +94,31 @@ packages/color/
 ## 技术特点
 
 ### 🚀 高性能
+
 - 闲时处理机制，不阻塞主线程
 - LRU 缓存，避免重复计算
 - 预生成策略，即时切换主题
 
 ### 🎨 智能颜色生成
+
 - 基于 HSL 颜色空间的算法
 - 自动生成和谐的配套颜色
 - 支持多种生成策略
 
 ### 🌈 完整色阶系统
+
 - 集成 @arco-design/color
 - 支持亮色和暗色模式
 - 10级色阶，满足各种设计需求
 
 ### 🔧 框架无关
+
 - 核心功能不依赖任何框架
 - 可在任何 JavaScript 环境中使用
 - 提供 Vue 3 专门集成
 
 ### 📦 完整的包管理
+
 - 支持 ESM、CommonJS、UMD 格式
 - 完整的 TypeScript 类型定义
 - 遵循现代包管理最佳实践
@@ -119,6 +132,7 @@ packages/color/
 ## 使用示例
 
 ### 基础使用
+
 ```typescript
 import { createThemeManagerWithPresets } from '@ldesign/color'
 
@@ -131,6 +145,7 @@ await themeManager.setTheme('green', 'dark')
 ```
 
 ### Vue 3 集成
+
 ```typescript
 import { useTheme } from '@ldesign/color/vue'
 

@@ -1,13 +1,13 @@
+<script setup lang="ts">
+// 应用根组件
+console.log('🎨 LDesign Template System App 启动')
+</script>
+
 <template>
   <div id="app">
     <router-view />
   </div>
 </template>
-
-<script setup lang="ts">
-// 应用根组件
-console.log('🎨 LDesign Template System App 启动')
-</script>
 
 <style scoped>
 #app {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useTheme } from '@ldesign/color/vue'
 import { getSystemTheme } from '@ldesign/color'
+import { useTheme } from '@ldesign/color/vue'
+import { onMounted, ref } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { themeManager, currentTheme, currentMode, availableThemes } = useTheme()
@@ -50,7 +50,9 @@ onMounted(() => {
     <h2 class="card-title">
       📊 性能监控
     </h2>
-    <p class="card-description">实时监控主题系统的性能状态和统计信息</p>
+    <p class="card-description">
+      实时监控主题系统的性能状态和统计信息
+    </p>
 
     <div class="stats-grid">
       <div class="stat-item">

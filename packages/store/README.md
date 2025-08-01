@@ -9,17 +9,20 @@
 ## ✨ 特性亮点
 
 🎯 **四种使用方式，随心所欲**
+
 - 🏛️ **类式**：面向对象，装饰器加持，优雅如诗
 - 🪝 **Hook式**：函数式编程，简洁明了，React开发者的最爱
 - 🔌 **Provider式**：依赖注入，解耦合，架构师的选择
 - 🧩 **组合式**：Vue3 Composition API，原生体验
 
 ⚡ **性能爆表，快如闪电**
+
 - 🏎️ 基于 Pinia 的高性能状态管理
 - 🧠 智能缓存、防抖、节流，性能优化到极致
 - 🦥 懒加载和按需创建，资源利用最大化
 
 🛠️ **功能丰富，应有尽有**
+
 - 🎨 装饰器支持（@State、@Action、@Getter）
 - 💾 持久化存储，数据永不丢失
 - 📦 批量操作，效率翻倍
@@ -27,6 +30,7 @@
 - 🔧 开发工具支持，调试如虎添翼
 
 📦 **打包友好，兼容性强**
+
 - 📚 支持 ESM、CJS、UMD、IIFE 多种格式
 - 🌳 Tree-shaking 友好，包体积最小化
 - 📝 完整的类型定义文件
@@ -47,7 +51,7 @@ pnpm add @ldesign/store pinia vue reflect-metadata
 ### 30秒上手 - 装饰器方式
 
 ```typescript
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 // 🎨 用装饰器打造你的专属Store
 class CounterStore extends BaseStore {
@@ -84,6 +88,13 @@ console.log(store.displayText) // "My Awesome Counter: 1 🔥"
 ### Vue组件中的魔法时刻
 
 ```vue
+<script setup lang="ts">
+import { CounterStore } from './stores/counter'
+
+// ✨ 一行代码，状态管理就绪！
+const store = new CounterStore('counter')
+</script>
+
 <template>
   <div class="counter-magic">
     <h1>{{ store.displayText }}</h1>
@@ -91,22 +102,15 @@ console.log(store.displayText) // "My Awesome Counter: 1 🔥"
       <span class="count">{{ store.count }}</span>
     </div>
     <div class="button-group">
-      <button @click="store.increment" class="btn btn-plus">
+      <button class="btn btn-plus" @click="store.increment">
         ➕ 增加
       </button>
-      <button @click="store.decrement" class="btn btn-minus">
+      <button class="btn btn-minus" @click="store.decrement">
         ➖ 减少
       </button>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { CounterStore } from './stores/counter'
-
-// ✨ 一行代码，状态管理就绪！
-const store = new CounterStore('counter')
-</script>
 
 <style scoped>
 .counter-magic {
@@ -115,7 +119,7 @@ const store = new CounterStore('counter')
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .counter-display {
@@ -136,7 +140,7 @@ const store = new CounterStore('counter')
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 </style>
 ```
@@ -159,7 +163,8 @@ class UserStore extends BaseStore {
     try {
       this.user = await api.login(credentials)
       console.log('🎉 登录成功！')
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -179,14 +184,14 @@ import { createStore } from '@ldesign/store'
 export const useCounter = createStore('counter', () => {
   const count = ref(0)
   const title = ref('Hook Counter')
-  
+
   const increment = () => {
     count.value++
     console.log('🚀 Hook方式增加！')
   }
-  
+
   const displayText = computed(() => `${title.value}: ${count.value}`)
-  
+
   return {
     state: { count, title },
     actions: { increment },
@@ -198,14 +203,6 @@ export const useCounter = createStore('counter', () => {
 ### 🔌 Provider式（架构师之选）
 
 ```vue
-<template>
-  <StoreProvider :stores="stores">
-    <UserDashboard />
-    <ShoppingCart />
-    <NotificationCenter />
-  </StoreProvider>
-</template>
-
 <script setup lang="ts">
 import { StoreProvider } from '@ldesign/store/vue'
 
@@ -215,6 +212,14 @@ const stores = {
   notifications: NotificationStore
 }
 </script>
+
+<template>
+  <StoreProvider :stores="stores">
+    <UserDashboard />
+    <ShoppingCart />
+    <NotificationCenter />
+  </StoreProvider>
+</template>
 ```
 
 ## 🎨 装饰器魔法秀
@@ -291,7 +296,8 @@ class ShoppingCartStore extends BaseStore {
     const existingItem = this.items.find(item => item.id === product.id)
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.items.push({ ...product, quantity })
     }
     console.log(`🛒 已添加 ${product.name} 到购物车`)
@@ -324,7 +330,8 @@ class ShoppingCartStore extends BaseStore {
       await api.checkout(this.items)
       this.items = []
       console.log('🎉 结账成功！')
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }

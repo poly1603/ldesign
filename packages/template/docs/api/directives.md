@@ -49,7 +49,7 @@ const templateConfig = {
 <template>
   <!-- 使用默认设备和空属性 -->
   <div v-template="'auth/login'" />
-  
+
   <!-- 指定设备 -->
   <div v-template="'auth/mobile/login'" />
 </template>
@@ -96,39 +96,46 @@ interface TemplateDirectiveConfig {
 ### 属性说明
 
 #### `category`
+
 - **类型**: `string`
 - **必需**: 是
 - **描述**: 模板分类
 
 #### `device`
+
 - **类型**: `DeviceType`
 - **必需**: 否
 - **默认值**: 自动检测
 - **描述**: 设备类型
 
 #### `template`
+
 - **类型**: `string`
 - **必需**: 是
 - **描述**: 模板名称
 
 #### `props`
+
 - **类型**: `Record<string, any>`
 - **必需**: 否
 - **默认值**: `{}`
 - **描述**: 传递给模板的属性
 
 #### `cache`
+
 - **类型**: `boolean`
 - **必需**: 否
 - **默认值**: `true`
 - **描述**: 是否启用缓存
 
 #### `onLoad`
+
 - **类型**: `(component: any) => void`
 - **必需**: 否
 - **描述**: 模板加载成功回调
 
 #### `onError`
+
 - **类型**: `(error: Error) => void`
 - **必需**: 否
 - **描述**: 模板加载失败回调
@@ -194,7 +201,7 @@ function handleLogout() {
 <template>
   <div class="app">
     <h1>指令示例</h1>
-    
+
     <!-- 基础用法 -->
     <div class="section">
       <h2>基础用法</h2>
@@ -209,7 +216,7 @@ function handleLogout() {
         }"
       />
     </div>
-    
+
     <!-- 动态配置 -->
     <div class="section">
       <h2>动态配置</h2>
@@ -225,7 +232,7 @@ function handleLogout() {
       </div>
       <div v-template="themeConfig" />
     </div>
-    
+
     <!-- 条件渲染 -->
     <div class="section">
       <h2>条件渲染</h2>
@@ -236,7 +243,7 @@ function handleLogout() {
       </div>
       <div v-template="authConfig" />
     </div>
-    
+
     <!-- 错误处理 -->
     <div class="section">
       <h2>错误处理</h2>
@@ -306,7 +313,7 @@ function handleLogout() {
       cache: false,
     }"
   />
-  
+
   <!-- 静默错误 -->
   <div
     v-template="{
@@ -340,21 +347,21 @@ const templateConfigs = [
 
 <template>
   <!-- 条件渲染 -->
-  <div 
+  <div
     v-if="showTemplate"
     v-template="templateConfig"
   />
-  
+
   <!-- 列表渲染 -->
-  <div 
+  <div
     v-for="config in templateConfigs"
     :key="config.id"
     v-template="config"
   />
-  
+
   <!-- 动画过渡 -->
   <transition name="template-fade">
-    <div 
+    <div
       v-if="currentTemplate"
       v-template="currentTemplate"
     />
@@ -437,7 +444,7 @@ const stableConfig = computed(() => ({
       props: { timestamp: Date.now() },
     }"
   />
-  
+
   <!-- ✅ 推荐：使用计算属性 -->
   <div v-template="stableConfig" />
 </template>
@@ -455,7 +462,7 @@ const stableConfig = computed(() => ({
       cache: true,
     }"
   />
-  
+
   <!-- 对于动态内容禁用缓存 -->
   <div
     v-template="{
@@ -492,7 +499,7 @@ const templateConfigWithErrorHandling = computed(() => ({
   onError: (error) => {
     // 组件级错误处理
     console.warn('功能模板加载失败，使用备用方案')
-    
+
     // 可以触发备用模板加载
     loadFallbackTemplate()
   }

@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { LanguagePackage } from '../src/core/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ManualDetector } from '../src/core/detector'
 import { I18n } from '../src/core/i18n'
 import { StaticLoader } from '../src/core/loader'
 import { MemoryStorage } from '../src/core/storage'
-import { ManualDetector } from '../src/core/detector'
-import type { LanguagePackage } from '../src/core/types'
 
 // 测试用的语言包
 const enPackage: LanguagePackage = {
@@ -12,21 +12,21 @@ const enPackage: LanguagePackage = {
     nativeName: 'English',
     code: 'en',
     direction: 'ltr',
-    dateFormat: 'MM/DD/YYYY'
+    dateFormat: 'MM/DD/YYYY',
   },
   translations: {
     common: {
       ok: 'OK',
       cancel: 'Cancel',
       welcome: 'Welcome, {{name}}!',
-      items: '{count, plural, =0{no items} =1{one item} other{# items}}'
+      items: '{count, plural, =0{no items} =1{one item} other{# items}}',
     },
     nested: {
       deep: {
-        value: 'Deep nested value'
-      }
-    }
-  }
+        value: 'Deep nested value',
+      },
+    },
+  },
 }
 
 const zhPackage: LanguagePackage = {
@@ -35,24 +35,24 @@ const zhPackage: LanguagePackage = {
     nativeName: '中文',
     code: 'zh-CN',
     direction: 'ltr',
-    dateFormat: 'YYYY年M月D日'
+    dateFormat: 'YYYY年M月D日',
   },
   translations: {
     common: {
       ok: '确定',
       cancel: '取消',
       welcome: '欢迎，{{name}}！',
-      items: '{{count}} 个项目'
+      items: '{{count}} 个项目',
     },
     nested: {
       deep: {
-        value: '深层嵌套值'
-      }
-    }
-  }
+        value: '深层嵌套值',
+      },
+    },
+  },
 }
 
-describe('I18n', () => {
+describe('i18n', () => {
   let i18n: I18n
   let loader: StaticLoader
   let storage: MemoryStorage
@@ -63,7 +63,7 @@ describe('I18n', () => {
     loader = new StaticLoader()
     loader.registerPackages({
       'en': enPackage,
-      'zh-CN': zhPackage
+      'zh-CN': zhPackage,
     })
 
     storage = new MemoryStorage()
@@ -77,8 +77,8 @@ describe('I18n', () => {
       autoDetect: false,
       cache: {
         enabled: true,
-        maxSize: 100
-      }
+        maxSize: 100,
+      },
     })
 
     // 设置自定义组件
@@ -146,9 +146,9 @@ describe('I18n', () => {
     it('应该触发语言变更事件', async () => {
       const callback = vi.fn()
       i18n.on('languageChanged', callback)
-      
+
       await i18n.changeLanguage('zh-CN')
-      
+
       expect(callback).toHaveBeenCalledWith('zh-CN', 'en')
     })
 
@@ -167,7 +167,7 @@ describe('I18n', () => {
       const result = i18n.batchTranslate(['common.ok', 'common.cancel'])
       expect(result).toEqual({
         'common.ok': 'OK',
-        'common.cancel': 'Cancel'
+        'common.cancel': 'Cancel',
       })
     })
   })
@@ -227,9 +227,9 @@ describe('I18n', () => {
 
     it('应该支持预加载语言', async () => {
       expect(i18n.isLanguageLoaded('zh-CN')).toBe(false)
-      
+
       await i18n.preloadLanguage('zh-CN')
-      
+
       expect(i18n.isLanguageLoaded('zh-CN')).toBe(true)
     })
   })
@@ -243,38 +243,38 @@ describe('I18n', () => {
           nativeName: 'Partial',
           code: 'partial',
           direction: 'ltr',
-          dateFormat: 'DD/MM/YYYY'
+          dateFormat: 'DD/MM/YYYY',
         },
         translations: {
           common: {
-            ok: 'Partial OK'
+            ok: 'Partial OK',
             // 缺少 cancel 键
-          }
-        }
+          },
+        },
       }
 
       loader.registerPackage('partial', partialPackage)
-      
+
       i18n = new I18n({
         defaultLocale: 'partial',
         fallbackLocale: 'en',
         storage: 'memory',
-        autoDetect: false
+        autoDetect: false,
       })
-      
+
       i18n.setLoader(loader)
       i18n.setStorage(storage)
       i18n.setDetector(detector)
-      
+
       await i18n.init()
     })
 
     it('应该使用降级语言的翻译', async () => {
       await i18n.changeLanguage('partial')
-      
+
       // 存在的键使用当前语言
       expect(i18n.t('common.ok')).toBe('Partial OK')
-      
+
       // 不存在的键使用降级语言
       expect(i18n.t('common.cancel')).toBe('Cancel')
     })
@@ -288,10 +288,10 @@ describe('I18n', () => {
     it('应该缓存翻译结果', () => {
       // 第一次调用
       const result1 = i18n.t('common.ok')
-      
+
       // 第二次调用应该使用缓存
       const result2 = i18n.t('common.ok')
-      
+
       expect(result1).toBe(result2)
       expect(result1).toBe('OK')
     })
@@ -304,15 +304,15 @@ describe('I18n', () => {
 
     it('应该支持添加和移除事件监听器', () => {
       const callback = vi.fn()
-      
+
       i18n.on('languageChanged', callback)
       i18n.emit('languageChanged', 'zh-CN', 'en')
-      
+
       expect(callback).toHaveBeenCalledWith('zh-CN', 'en')
-      
+
       i18n.off('languageChanged', callback)
       i18n.emit('languageChanged', 'en', 'zh-CN')
-      
+
       // 移除后不应该再被调用
       expect(callback).toHaveBeenCalledTimes(1)
     })
@@ -325,7 +325,7 @@ describe('I18n', () => {
 
     it('应该正确销毁实例', () => {
       i18n.destroy()
-      
+
       // 销毁后缓存应该被清空
       expect((i18n as any).cache?.size()).toBe(0)
     })

@@ -1,6 +1,6 @@
 import type { App, Plugin } from 'vue'
-import type { HttpPluginOptions } from '@/types/vue'
 import type { HttpClient, RequestConfig } from '@/types'
+import type { HttpPluginOptions } from '@/types/vue'
 import { createHttpClient } from '@/index'
 import { provideHttpClient } from './useHttp'
 
@@ -21,7 +21,7 @@ export const HttpPlugin: Plugin = {
 
     // 提供全局方法
     app.provide('httpClient', client)
-    
+
     // 注册全局组件（如果需要）
     // app.component('HttpProvider', HttpProvider)
   },
@@ -50,10 +50,10 @@ export const HttpProvider = {
       required: false,
     },
   },
-  setup(props: { client?: HttpClient; config?: RequestConfig }, { slots }: any) {
+  setup(props: { client?: HttpClient, config?: RequestConfig }, { slots }: any) {
     // 使用提供的客户端或创建新的客户端
     const client = props.client || createHttpClient(props.config)
-    
+
     // 提供客户端到子组件
     provideHttpClient(client, props.config)
 

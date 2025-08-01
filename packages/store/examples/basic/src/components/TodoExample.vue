@@ -1,73 +1,3 @@
-<template>
-  <div class="example-card">
-    <h2>待办事项示例</h2>
-    <p>展示列表管理和过滤功能</p>
-
-    <div class="todo-input">
-      <input
-        v-model="newTodoText"
-        @keyup.enter="addTodo"
-        placeholder="添加新的待办事项..."
-        class="input"
-      />
-      <button @click="addTodo" class="btn btn-primary">
-        添加
-      </button>
-    </div>
-
-    <div class="filters">
-      <button
-        v-for="filterOption in filters"
-        :key="filterOption.value"
-        @click="store.setFilter(filterOption.value)"
-        :class="['filter-btn', { active: store.filter === filterOption.value }]"
-      >
-        {{ filterOption.label }}
-        <span class="count">({{ getFilterCount(filterOption.value) }})</span>
-      </button>
-    </div>
-
-    <div class="todo-list">
-      <div
-        v-for="todo in store.filteredTodos"
-        :key="todo.id"
-        :class="['todo-item', { completed: todo.completed }]"
-      >
-        <input
-          type="checkbox"
-          :checked="todo.completed"
-          @change="store.toggleTodo(todo.id)"
-          class="checkbox"
-        />
-        <span class="todo-text">{{ todo.text }}</span>
-        <button @click="store.removeTodo(todo.id)" class="remove-btn">
-          ×
-        </button>
-      </div>
-
-      <div v-if="store.filteredTodos.length === 0" class="empty-state">
-        <p v-if="store.totalCount === 0">还没有待办事项</p>
-        <p v-else>没有符合条件的待办事项</p>
-      </div>
-    </div>
-
-    <div class="todo-footer" v-if="store.totalCount > 0">
-      <div class="stats">
-        <span>总计: {{ store.totalCount }}</span>
-        <span>活跃: {{ store.activeCount }}</span>
-        <span>已完成: {{ store.completedCount }}</span>
-      </div>
-      <button
-        v-if="store.hasCompleted"
-        @click="store.clearCompleted"
-        class="btn btn-secondary"
-      >
-        清除已完成
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { TodoStore } from '../stores/todo'
@@ -78,17 +8,17 @@ const newTodoText = ref('')
 const filters = [
   { value: 'all' as const, label: '全部' },
   { value: 'active' as const, label: '活跃' },
-  { value: 'completed' as const, label: '已完成' }
+  { value: 'completed' as const, label: '已完成' },
 ]
 
-const addTodo = () => {
+function addTodo() {
   if (newTodoText.value.trim()) {
     store.addTodo(newTodoText.value)
     newTodoText.value = ''
   }
 }
 
-const getFilterCount = (filter: 'all' | 'active' | 'completed') => {
+function getFilterCount(filter: 'all' | 'active' | 'completed') {
   switch (filter) {
     case 'all':
       return store.totalCount
@@ -99,6 +29,80 @@ const getFilterCount = (filter: 'all' | 'active' | 'completed') => {
   }
 }
 </script>
+
+<template>
+  <div class="example-card">
+    <h2>待办事项示例</h2>
+    <p>展示列表管理和过滤功能</p>
+
+    <div class="todo-input">
+      <input
+        v-model="newTodoText"
+        placeholder="添加新的待办事项..."
+        class="input"
+        @keyup.enter="addTodo"
+      >
+      <button class="btn btn-primary" @click="addTodo">
+        添加
+      </button>
+    </div>
+
+    <div class="filters">
+      <button
+        v-for="filterOption in filters"
+        :key="filterOption.value"
+        class="filter-btn" :class="[{ active: store.filter === filterOption.value }]"
+        @click="store.setFilter(filterOption.value)"
+      >
+        {{ filterOption.label }}
+        <span class="count">({{ getFilterCount(filterOption.value) }})</span>
+      </button>
+    </div>
+
+    <div class="todo-list">
+      <div
+        v-for="todo in store.filteredTodos"
+        :key="todo.id"
+        class="todo-item" :class="[{ completed: todo.completed }]"
+      >
+        <input
+          type="checkbox"
+          :checked="todo.completed"
+          class="checkbox"
+          @change="store.toggleTodo(todo.id)"
+        >
+        <span class="todo-text">{{ todo.text }}</span>
+        <button class="remove-btn" @click="store.removeTodo(todo.id)">
+          ×
+        </button>
+      </div>
+
+      <div v-if="store.filteredTodos.length === 0" class="empty-state">
+        <p v-if="store.totalCount === 0">
+          还没有待办事项
+        </p>
+        <p v-else>
+          没有符合条件的待办事项
+        </p>
+      </div>
+    </div>
+
+    <div v-if="store.totalCount > 0" class="todo-footer">
+      <div class="stats">
+        <span>总计: {{ store.totalCount }}</span>
+        <span>活跃: {{ store.activeCount }}</span>
+        <span>已完成: {{ store.completedCount }}</span>
+      </div>
+      <button
+        v-if="store.hasCompleted"
+        class="btn btn-secondary"
+        @click="store.clearCompleted"
+      >
+        清除已完成
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .example-card {

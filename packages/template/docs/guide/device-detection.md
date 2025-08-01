@@ -7,7 +7,7 @@ LDesign Template 提供了强大的设备检测功能，能够自动识别用户
 系统支持三种设备类型：
 
 - **desktop**: 桌面端（>= 1024px）
-- **tablet**: 平板端（768px - 1023px）  
+- **tablet**: 平板端（768px - 1023px）
 - **mobile**: 移动端（< 768px）
 
 ## 检测方式
@@ -68,7 +68,7 @@ import { createDeviceWatcher } from '@ldesign/template'
 
 const cleanup = createDeviceWatcher((newDevice, oldDevice) => {
   console.log(`设备从 ${oldDevice} 切换到 ${newDevice}`)
-  
+
   // 可以在这里重新加载模板
   templateManager.setDevice(newDevice)
 })
@@ -110,8 +110,8 @@ const currentDevice = manager.getCurrentDevice()
 
 ```vue
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
 import { createDeviceWatcher, detectDevice } from '@ldesign/template'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const currentDevice = ref(detectDevice())
 
@@ -137,7 +137,7 @@ const dashboardProps = {
     <div class="device-info">
       当前设备: {{ currentDevice }}
     </div>
-    
+
     <!-- 根据设备自动选择模板 -->
     <LTemplateRenderer
       category="dashboard"

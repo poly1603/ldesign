@@ -1,4 +1,4 @@
-import { InterceptorManager, ErrorInterceptor } from '../types/index.js';
+import { InterceptorManager, ErrorInterceptor } from '@/types';
 
 /**
  * 拦截器项

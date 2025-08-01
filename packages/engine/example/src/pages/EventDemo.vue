@@ -1,3 +1,180 @@
+<script setup lang="ts">
+import type { Engine } from '@ldesign/engine'
+import { computed, inject, nextTick, onMounted, ref } from 'vue'
+
+const engine = inject<Engine>('engine')!
+
+const eventCount = ref(0)
+const eventStats = ref({ totalEvents: 0, totalListeners: 0, events: {} })
+const eventLogs = ref<any[]>([])
+const autoScroll = ref(true)
+const logsContainer = ref<HTMLElement>()
+
+const maxListeners = computed(() => engine.events.getMaxListeners())
+
+function emitSimpleEvent() {
+  engine.events.emit('demo:simple')
+  logEvent('demo:simple', 'emit')
+}
+
+function emitDataEvent() {
+  const data = {
+    message: 'Hello Events!',
+    timestamp: Date.now(),
+    random: Math.random(),
+  }
+  engine.events.emit('demo:data', data)
+  logEvent('demo:data', 'emit', data)
+}
+
+function emitPriorityEvent() {
+  engine.events.emit('demo:priority', { priority: 'high' })
+  logEvent('demo:priority', 'emit', { priority: 'high' })
+}
+
+function emitOnceEvent() {
+  engine.events.emit('demo:once')
+  logEvent('demo:once', 'emit')
+}
+
+function emitUserEvent(action: string) {
+  const userNamespace = engine.events.namespace('user')
+  const data = { action, userId: 123, timestamp: Date.now() }
+  userNamespace.emit(action, data)
+  logEvent(`user:${action}`, 'emit', data)
+}
+
+function emitSystemEvent(type: string) {
+  const systemNamespace = engine.events.namespace('system')
+  const data = { type, level: type === 'error' ? 'critical' : 'normal', timestamp: Date.now() }
+  systemNamespace.emit(type, data)
+  logEvent(`system:${type}`, 'emit', data)
+}
+
+function triggerEvent(eventName: string) {
+  engine.events.emit(eventName, { triggered: true, timestamp: Date.now() })
+  logEvent(eventName, 'trigger')
+}
+
+function removeAllListeners(eventName: string) {
+  engine.events.removeAllListeners(eventName)
+  updateStats()
+  logEvent(eventName, 'clear-listeners')
+}
+
+function clearEventLogs() {
+  eventLogs.value = []
+}
+
+function toggleAutoScroll() {
+  autoScroll.value = !autoScroll.value
+}
+
+function logEvent(event: string, type: string, data?: any) {
+  eventCount.value++
+  eventLogs.value.push({
+    id: Date.now() + Math.random(),
+    event,
+    type,
+    data,
+    timestamp: Date.now(),
+  })
+
+  // 限制日志数量
+  if (eventLogs.value.length > 100) {
+    eventLogs.value = eventLogs.value.slice(-100)
+  }
+
+  // 自动滚动
+  if (autoScroll.value) {
+    nextTick(() => {
+      if (logsContainer.value) {
+        logsContainer.value.scrollTop = logsContainer.value.scrollHeight
+      }
+    })
+  }
+}
+
+function updateStats() {
+  eventStats.value = engine.events.getStats()
+}
+
+function formatTime(timestamp: number) {
+  return new Date(timestamp).toLocaleTimeString()
+}
+
+onMounted(() => {
+  // 注册演示事件监听器
+  engine.events.on('demo:simple', () => {
+    logEvent('demo:simple', 'received')
+    engine.logger.info('收到简单事件')
+  })
+
+  engine.events.on('demo:data', (data) => {
+    logEvent('demo:data', 'received', data)
+    engine.logger.info('收到数据事件:', data)
+  })
+
+  // 优先级事件监听器
+  engine.events.on('demo:priority', (data) => {
+    logEvent('demo:priority', 'received-low', data)
+  }, 1) // 低优先级
+
+  engine.events.on('demo:priority', (data) => {
+    logEvent('demo:priority', 'received-high', data)
+  }, 10) // 高优先级
+
+  // 一次性事件监听器
+  engine.events.once('demo:once', () => {
+    logEvent('demo:once', 'received-once')
+    engine.logger.info('收到一次性事件（只会触发一次）')
+  })
+
+  // 用户命名空间事件
+  const userNamespace = engine.events.namespace('user')
+  userNamespace.on('login', (data) => {
+    logEvent('user:login', 'received', data)
+    engine.logger.info('用户登录:', data)
+  })
+
+  userNamespace.on('logout', (data) => {
+    logEvent('user:logout', 'received', data)
+    engine.logger.info('用户登出:', data)
+  })
+
+  userNamespace.on('profile-update', (data) => {
+    logEvent('user:profile-update', 'received', data)
+    engine.logger.info('用户资料更新:', data)
+  })
+
+  // 系统命名空间事件
+  const systemNamespace = engine.events.namespace('system')
+  systemNamespace.on('startup', (data) => {
+    logEvent('system:startup', 'received', data)
+    engine.logger.info('系统启动:', data)
+  })
+
+  systemNamespace.on('warning', (data) => {
+    logEvent('system:warning', 'received', data)
+    engine.logger.warn('系统警告:', data)
+  })
+
+  systemNamespace.on('error', (data) => {
+    logEvent('system:error', 'received', data)
+    engine.logger.error('系统错误:', data)
+  })
+
+  // 定期更新统计信息
+  const updateInterval = setInterval(updateStats, 1000)
+  updateStats()
+
+  // 清理函数
+  return () => {
+    clearInterval(updateInterval)
+  }
+})
+</script>
+
 <template>
   <div class="demo-page">
     <header class="page-header">
@@ -40,7 +217,7 @@
             </button>
           </div>
         </div>
-        
+
         <div class="namespace-group">
           <h3>系统命名空间</h3>
           <div class="demo-controls">
@@ -83,8 +260,8 @@
     <section class="demo-section">
       <h2>事件列表</h2>
       <div class="event-list">
-        <div 
-          v-for="(count, eventName) in eventStats.events" 
+        <div
+          v-for="(count, eventName) in eventStats.events"
           :key="eventName"
           class="event-item"
         >
@@ -117,15 +294,15 @@
           {{ autoScroll ? '关闭' : '开启' }}自动滚动
         </button>
       </div>
-      <div class="event-logs" ref="logsContainer">
-        <div 
-          v-for="log in eventLogs" 
+      <div ref="logsContainer" class="event-logs">
+        <div
+          v-for="log in eventLogs"
           :key="log.id"
           :class="`log-entry log-${log.type}`"
         >
           <span class="log-time">[{{ formatTime(log.timestamp) }}]</span>
           <span class="log-event">{{ log.event }}</span>
-          <span class="log-data" v-if="log.data">{{ JSON.stringify(log.data) }}</span>
+          <span v-if="log.data" class="log-data">{{ JSON.stringify(log.data) }}</span>
         </div>
         <div v-if="eventLogs.length === 0" class="empty-state">
           暂无事件日志
@@ -134,183 +311,6 @@
     </section>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, inject, onMounted, nextTick } from 'vue'
-import type { Engine } from '@ldesign/engine'
-
-const engine = inject<Engine>('engine')!
-
-const eventCount = ref(0)
-const eventStats = ref({ totalEvents: 0, totalListeners: 0, events: {} })
-const eventLogs = ref<any[]>([])
-const autoScroll = ref(true)
-const logsContainer = ref<HTMLElement>()
-
-const maxListeners = computed(() => engine.events.getMaxListeners())
-
-const emitSimpleEvent = () => {
-  engine.events.emit('demo:simple')
-  logEvent('demo:simple', 'emit')
-}
-
-const emitDataEvent = () => {
-  const data = {
-    message: 'Hello Events!',
-    timestamp: Date.now(),
-    random: Math.random()
-  }
-  engine.events.emit('demo:data', data)
-  logEvent('demo:data', 'emit', data)
-}
-
-const emitPriorityEvent = () => {
-  engine.events.emit('demo:priority', { priority: 'high' })
-  logEvent('demo:priority', 'emit', { priority: 'high' })
-}
-
-const emitOnceEvent = () => {
-  engine.events.emit('demo:once')
-  logEvent('demo:once', 'emit')
-}
-
-const emitUserEvent = (action: string) => {
-  const userNamespace = engine.events.namespace('user')
-  const data = { action, userId: 123, timestamp: Date.now() }
-  userNamespace.emit(action, data)
-  logEvent(`user:${action}`, 'emit', data)
-}
-
-const emitSystemEvent = (type: string) => {
-  const systemNamespace = engine.events.namespace('system')
-  const data = { type, level: type === 'error' ? 'critical' : 'normal', timestamp: Date.now() }
-  systemNamespace.emit(type, data)
-  logEvent(`system:${type}`, 'emit', data)
-}
-
-const triggerEvent = (eventName: string) => {
-  engine.events.emit(eventName, { triggered: true, timestamp: Date.now() })
-  logEvent(eventName, 'trigger')
-}
-
-const removeAllListeners = (eventName: string) => {
-  engine.events.removeAllListeners(eventName)
-  updateStats()
-  logEvent(eventName, 'clear-listeners')
-}
-
-const clearEventLogs = () => {
-  eventLogs.value = []
-}
-
-const toggleAutoScroll = () => {
-  autoScroll.value = !autoScroll.value
-}
-
-const logEvent = (event: string, type: string, data?: any) => {
-  eventCount.value++
-  eventLogs.value.push({
-    id: Date.now() + Math.random(),
-    event,
-    type,
-    data,
-    timestamp: Date.now()
-  })
-  
-  // 限制日志数量
-  if (eventLogs.value.length > 100) {
-    eventLogs.value = eventLogs.value.slice(-100)
-  }
-  
-  // 自动滚动
-  if (autoScroll.value) {
-    nextTick(() => {
-      if (logsContainer.value) {
-        logsContainer.value.scrollTop = logsContainer.value.scrollHeight
-      }
-    })
-  }
-}
-
-const updateStats = () => {
-  eventStats.value = engine.events.getStats()
-}
-
-const formatTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleTimeString()
-}
-
-onMounted(() => {
-  // 注册演示事件监听器
-  engine.events.on('demo:simple', () => {
-    logEvent('demo:simple', 'received')
-    engine.logger.info('收到简单事件')
-  })
-  
-  engine.events.on('demo:data', (data) => {
-    logEvent('demo:data', 'received', data)
-    engine.logger.info('收到数据事件:', data)
-  })
-  
-  // 优先级事件监听器
-  engine.events.on('demo:priority', (data) => {
-    logEvent('demo:priority', 'received-low', data)
-  }, 1) // 低优先级
-  
-  engine.events.on('demo:priority', (data) => {
-    logEvent('demo:priority', 'received-high', data)
-  }, 10) // 高优先级
-  
-  // 一次性事件监听器
-  engine.events.once('demo:once', () => {
-    logEvent('demo:once', 'received-once')
-    engine.logger.info('收到一次性事件（只会触发一次）')
-  })
-  
-  // 用户命名空间事件
-  const userNamespace = engine.events.namespace('user')
-  userNamespace.on('login', (data) => {
-    logEvent('user:login', 'received', data)
-    engine.logger.info('用户登录:', data)
-  })
-  
-  userNamespace.on('logout', (data) => {
-    logEvent('user:logout', 'received', data)
-    engine.logger.info('用户登出:', data)
-  })
-  
-  userNamespace.on('profile-update', (data) => {
-    logEvent('user:profile-update', 'received', data)
-    engine.logger.info('用户资料更新:', data)
-  })
-  
-  // 系统命名空间事件
-  const systemNamespace = engine.events.namespace('system')
-  systemNamespace.on('startup', (data) => {
-    logEvent('system:startup', 'received', data)
-    engine.logger.info('系统启动:', data)
-  })
-  
-  systemNamespace.on('warning', (data) => {
-    logEvent('system:warning', 'received', data)
-    engine.logger.warn('系统警告:', data)
-  })
-  
-  systemNamespace.on('error', (data) => {
-    logEvent('system:error', 'received', data)
-    engine.logger.error('系统错误:', data)
-  })
-  
-  // 定期更新统计信息
-  const updateInterval = setInterval(updateStats, 1000)
-  updateStats()
-  
-  // 清理函数
-  return () => {
-    clearInterval(updateInterval)
-  }
-})
-</script>
 
 <style scoped>
 .demo-page {

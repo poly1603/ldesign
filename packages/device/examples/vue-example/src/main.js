@@ -1,5 +1,5 @@
-import { createApp } from 'vue'
 import { createDevicePlugin } from '@ldesign/device/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -8,5 +8,5 @@ const app = createApp(App)
 app.use(createDevicePlugin({
   enableResize: true,
   enableOrientation: true,
-  debounceDelay: 300
+  debounceDelay: 300,
 }))

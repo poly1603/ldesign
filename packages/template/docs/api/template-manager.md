@@ -9,9 +9,11 @@ TemplateManager 是 LDesign Template 系统的核心类，负责模板的管理�
 创建一个新的模板管理器实例。
 
 **参数:**
+
 - `config` (可选): `TemplateManagerConfig` - 配置选项
 
 **示例:**
+
 ```typescript
 import { TemplateManager } from '@ldesign/template'
 
@@ -52,6 +54,7 @@ interface TemplateManagerConfig {
 **返回值:** `Promise<TemplateScanResult>`
 
 **示例:**
+
 ```typescript
 const result = await manager.scanTemplates()
 console.log('扫描结果:', result)
@@ -62,6 +65,7 @@ console.log('扫描结果:', result)
 加载指定的模板组件。
 
 **参数:**
+
 - `category`: `string` - 模板分类
 - `device`: `DeviceType` - 设备类型
 - `template`: `string` - 模板名称
@@ -69,6 +73,7 @@ console.log('扫描结果:', result)
 **返回值:** `Promise<TemplateComponent>`
 
 **示例:**
+
 ```typescript
 const component = await manager.loadTemplate('auth', 'desktop', 'login')
 ```
@@ -78,6 +83,7 @@ const component = await manager.loadTemplate('auth', 'desktop', 'login')
 检查指定模板是否存在。
 
 **参数:**
+
 - `category`: `string` - 模板分类
 - `device`: `DeviceType` - 设备类型
 - `template`: `string` - 模板名称
@@ -85,6 +91,7 @@ const component = await manager.loadTemplate('auth', 'desktop', 'login')
 **返回值:** `Promise<boolean>`
 
 **示例:**
+
 ```typescript
 const exists = await manager.hasTemplate('auth', 'desktop', 'login')
 if (exists) {
@@ -97,11 +104,13 @@ if (exists) {
 渲染指定的模板。
 
 **参数:**
+
 - `options`: `TemplateRenderOptions` - 渲染选项
 
 **返回值:** `Promise<TemplateLoadResult>`
 
 **示例:**
+
 ```typescript
 const result = await manager.render({
   category: 'auth',
@@ -119,11 +128,13 @@ const result = await manager.render({
 获取模板列表。
 
 **参数:**
+
 - `filter` (可选): `TemplateFilter` - 过滤条件
 
 **返回值:** `Promise<TemplateMetadata[]>`
 
 **示例:**
+
 ```typescript
 // 获取所有模板
 const allTemplates = await manager.getTemplates()
@@ -146,11 +157,13 @@ const mobileTemplates = await manager.getTemplates({
 清空缓存。
 
 **参数:**
+
 - `category` (可选): `string` - 模板分类
 - `device` (可选): `DeviceType` - 设备类型
 - `template` (可选): `string` - 模板名称
 
 **示例:**
+
 ```typescript
 // 清空所有缓存
 manager.clearCache()
@@ -167,11 +180,13 @@ manager.clearCache('auth', 'desktop', 'login')
 预加载模板。
 
 **参数:**
+
 - `templates`: `TemplateIdentifier[]` - 要预加载的模板列表
 
 **返回值:** `Promise<void>`
 
 **示例:**
+
 ```typescript
 await manager.preload([
   { category: 'auth', device: 'desktop', template: 'login' },
@@ -186,6 +201,7 @@ await manager.preload([
 **返回值:** `CacheStats`
 
 **示例:**
+
 ```typescript
 const stats = manager.getCacheStats()
 console.log('缓存统计:', {
@@ -205,6 +221,7 @@ console.log('缓存统计:', {
 **返回值:** `DeviceType`
 
 **示例:**
+
 ```typescript
 const device = manager.getCurrentDevice()
 console.log('当前设备:', device)
@@ -215,9 +232,11 @@ console.log('当前设备:', device)
 设置当前设备类型。
 
 **参数:**
+
 - `device`: `DeviceType` - 设备类型
 
 **示例:**
+
 ```typescript
 manager.setDevice('mobile')
 ```
@@ -229,6 +248,7 @@ manager.setDevice('mobile')
 **返回值:** `DeviceType`
 
 **示例:**
+
 ```typescript
 const detectedDevice = manager.detectDevice()
 console.log('检测到的设备:', detectedDevice)
@@ -241,10 +261,12 @@ console.log('检测到的设备:', detectedDevice)
 监听事件。
 
 **参数:**
+
 - `event`: `string` - 事件名称
 - `listener`: `Function` - 事件监听器
 
 **示例:**
+
 ```typescript
 // 监听模板加载事件
 manager.on('template:load', (event) => {
@@ -267,10 +289,12 @@ manager.on('device:change', (event) => {
 移除事件监听器。
 
 **参数:**
+
 - `event`: `string` - 事件名称
 - `listener` (可选): `Function` - 要移除的监听器
 
 **示例:**
+
 ```typescript
 // 移除指定监听器
 manager.off('template:load', myListener)
@@ -284,10 +308,12 @@ manager.off('template:load')
 触发事件。
 
 **参数:**
+
 - `event`: `string` - 事件名称
 - `data`: `any` - 事件数据
 
 **示例:**
+
 ```typescript
 manager.emit('custom:event', { message: 'Hello' })
 ```
@@ -299,9 +325,11 @@ manager.emit('custom:event', { message: 'Hello' })
 手动注册模板。
 
 **参数:**
+
 - `metadata`: `TemplateMetadata` - 模板元数据
 
 **示例:**
+
 ```typescript
 manager.registerTemplate({
   category: 'custom',
@@ -317,11 +345,13 @@ manager.registerTemplate({
 注销模板。
 
 **参数:**
+
 - `category`: `string` - 模板分类
 - `device`: `DeviceType` - 设备类型
 - `template`: `string` - 模板名称
 
 **示例:**
+
 ```typescript
 manager.unregisterTemplate('custom', 'desktop', 'special')
 ```
@@ -331,9 +361,11 @@ manager.unregisterTemplate('custom', 'desktop', 'special')
 设置自定义加载器。
 
 **参数:**
+
 - `loader`: `TemplateLoader` - 模板加载器函数
 
 **示例:**
+
 ```typescript
 manager.setLoader(async (category, device, template) => {
   // 自定义加载逻辑
@@ -347,9 +379,11 @@ manager.setLoader(async (category, device, template) => {
 设置错误处理器。
 
 **参数:**
+
 - `handler`: `ErrorHandler` - 错误处理器
 
 **示例:**
+
 ```typescript
 manager.setErrorHandler({
   onLoadError: async (error, category, device, template) => {

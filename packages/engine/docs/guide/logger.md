@@ -8,11 +8,11 @@
 
 ```typescript
 interface Logger {
-  debug(message: string, ...args: any[]): void
-  info(message: string, ...args: any[]): void
-  warn(message: string, ...args: any[]): void
-  error(message: string, ...args: any[]): void
-  log(level: LogLevel, message: string, ...args: any[]): void
+  debug: (message: string, ...args: any[]) => void
+  info: (message: string, ...args: any[]) => void
+  warn: (message: string, ...args: any[]) => void
+  error: (message: string, ...args: any[]) => void
+  log: (level: LogLevel, message: string, ...args: any[]) => void
 }
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
@@ -91,7 +91,7 @@ const customFormatter = {
     const time = timestamp.toISOString()
     const levelUpper = level.toUpperCase().padEnd(5)
     const argsStr = args.length > 0 ? ` ${JSON.stringify(args)}` : ''
-    
+
     return `[${time}] ${levelUpper} ${message}${argsStr}`
   }
 }
@@ -110,8 +110,9 @@ const engine = createApp(App, {
 const consoleTransport = {
   name: 'console',
   log: (formattedMessage: string, level: LogLevel) => {
-    const method = level === 'error' ? 'error' : 
-                  level === 'warn' ? 'warn' : 'log'
+    const method = level === 'error'
+      ? 'error'
+      : level === 'warn' ? 'warn' : 'log'
     console[method](formattedMessage)
   }
 }
@@ -146,12 +147,12 @@ const localStorageTransport = {
       level,
       timestamp: Date.now()
     })
-    
+
     // 限制日志数量
     if (logs.length > 1000) {
       logs.splice(0, logs.length - 1000)
     }
-    
+
     localStorage.setItem('app_logs', JSON.stringify(logs))
   }
 }
@@ -169,7 +170,7 @@ const engine = createApp(App, {
 
 ```typescript
 // 为特定模块创建日志器
-const createModuleLogger = (moduleName: string) => {
+function createModuleLogger(moduleName: string) {
   return {
     debug: (message: string, ...args: any[]) => {
       engine.logger.debug(`[${moduleName}] ${message}`, ...args)
@@ -198,9 +199,9 @@ apiLogger.error('API调用失败', { endpoint: '/api/data', error: 'timeout' })
 
 ```typescript
 // 创建请求追踪日志器
-const createRequestLogger = (requestId: string) => {
+function createRequestLogger(requestId: string) {
   const context = { requestId, timestamp: Date.now() }
-  
+
   return {
     debug: (message: string, ...args: any[]) => {
       engine.logger.debug(message, { ...context, ...args })
@@ -221,16 +222,17 @@ const createRequestLogger = (requestId: string) => {
 async function fetchUserData(userId: number) {
   const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   const logger = createRequestLogger(requestId)
-  
+
   logger.info('开始获取用户数据', { userId })
-  
+
   try {
     const response = await fetch(`/api/users/${userId}`)
     const userData = await response.json()
-    
+
     logger.info('用户数据获取成功', { userId, dataSize: JSON.stringify(userData).length })
     return userData
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('用户数据获取失败', { userId, error: error.message })
     throw error
   }
@@ -245,43 +247,45 @@ async function fetchUserData(userId: number) {
 // 性能计时器
 class PerformanceLogger {
   private timers = new Map<string, number>()
-  
+
   start(name: string) {
     this.timers.set(name, performance.now())
     engine.logger.debug(`⏱️ 开始计时: ${name}`)
   }
-  
+
   end(name: string, additionalData?: any) {
     const startTime = this.timers.get(name)
     if (startTime) {
       const duration = performance.now() - startTime
       this.timers.delete(name)
-      
+
       engine.logger.info(`⏱️ 计时结束: ${name}`, {
         duration: `${duration.toFixed(2)}ms`,
         ...additionalData
       })
-      
+
       return duration
     }
     return 0
   }
-  
+
   measure<T>(name: string, fn: () => T): T
   measure<T>(name: string, fn: () => Promise<T>): Promise<T>
   measure<T>(name: string, fn: () => T | Promise<T>): T | Promise<T> {
     this.start(name)
-    
+
     try {
       const result = fn()
-      
+
       if (result instanceof Promise) {
         return result.finally(() => this.end(name))
-      } else {
+      }
+      else {
         this.end(name)
         return result
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.end(name, { error: error.message })
       throw error
     }
@@ -303,7 +307,7 @@ async function loadData() {
 
 ```typescript
 // 内存使用监控
-const logMemoryUsage = () => {
+function logMemoryUsage() {
   if ('memory' in performance) {
     const memory = (performance as any).memory
     engine.logger.info('内存使用情况', {
@@ -377,27 +381,27 @@ class LogAnalyzer {
     warn: 0,
     error: 0
   }
-  
+
   private errorPatterns = new Map<string, number>()
-  
+
   constructor() {
     // 监听所有日志
     engine.events.on('logger:log', ({ level, message, args }) => {
       this.stats[level]++
-      
+
       if (level === 'error') {
         this.analyzeError(message, args)
       }
     })
   }
-  
+
   private analyzeError(message: string, args: any[]) {
     // 提取错误模式
     const pattern = message.replace(/\d+/g, 'N').replace(/[a-f0-9-]{36}/g, 'UUID')
     const count = this.errorPatterns.get(pattern) || 0
     this.errorPatterns.set(pattern, count + 1)
   }
-  
+
   getStats() {
     return {
       ...this.stats,
@@ -407,9 +411,9 @@ class LogAnalyzer {
         .slice(0, 10)
     }
   }
-  
+
   reset() {
-    Object.keys(this.stats).forEach(key => {
+    Object.keys(this.stats).forEach((key) => {
       this.stats[key as LogLevel] = 0
     })
     this.errorPatterns.clear()
@@ -434,13 +438,13 @@ setInterval(() => {
 ```typescript
 // ✅ 正确的日志级别使用
 engine.logger.debug('详细的调试信息', { variable: value }) // 开发调试
-engine.logger.info('用户登录成功', { userId: 123 })          // 重要业务事件
-engine.logger.warn('API响应缓慢', { duration: 5000 })        // 潜在问题
-engine.logger.error('数据库连接失败', error)                  // 错误和异常
+engine.logger.info('用户登录成功', { userId: 123 }) // 重要业务事件
+engine.logger.warn('API响应缓慢', { duration: 5000 }) // 潜在问题
+engine.logger.error('数据库连接失败', error) // 错误和异常
 
 // ❌ 错误的日志级别使用
-engine.logger.error('用户点击按钮')  // 普通操作不应该用error
-engine.logger.debug('系统启动')     // 重要事件应该用info
+engine.logger.error('用户点击按钮') // 普通操作不应该用error
+engine.logger.debug('系统启动') // 重要事件应该用info
 ```
 
 ### 2. 结构化日志
@@ -463,23 +467,25 @@ engine.logger.info(`API调用 POST /api/users 耗时150ms 状态200 用户123`)
 
 ```typescript
 // 创建安全的日志记录器
-const createSafeLogger = () => {
+function createSafeLogger() {
   const sensitiveKeys = ['password', 'token', 'secret', 'key', 'auth']
-  
+
   const sanitize = (obj: any): any => {
-    if (typeof obj !== 'object' || obj === null) return obj
-    
+    if (typeof obj !== 'object' || obj === null)
+      return obj
+
     const sanitized = { ...obj }
     for (const key in sanitized) {
       if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
         sanitized[key] = '***'
-      } else if (typeof sanitized[key] === 'object') {
+      }
+      else if (typeof sanitized[key] === 'object') {
         sanitized[key] = sanitize(sanitized[key])
       }
     }
     return sanitized
   }
-  
+
   return {
     debug: (message: string, ...args: any[]) => {
       engine.logger.debug(message, ...args.map(sanitize))
@@ -502,7 +508,7 @@ const safeLogger = createSafeLogger()
 safeLogger.info('用户登录', {
   username: 'john',
   password: 'secret123', // 会被替换为 '***'
-  token: 'abc123'        // 会被替换为 '***'
+  token: 'abc123' // 会被替换为 '***'
 })
 ```
 
@@ -512,11 +518,11 @@ safeLogger.info('用户登录', {
 // 高频日志采样
 class SamplingLogger {
   private counters = new Map<string, number>()
-  
+
   sample(key: string, rate: number, logFn: () => void) {
     const count = this.counters.get(key) || 0
     this.counters.set(key, count + 1)
-    
+
     if (count % rate === 0) {
       logFn()
     }

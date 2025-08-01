@@ -8,14 +8,14 @@
 
 ```typescript
 interface NotificationManager {
-  success(message: string, options?: NotificationOptions): string
-  error(message: string, options?: NotificationOptions): string
-  warning(message: string, options?: NotificationOptions): string
-  info(message: string, options?: NotificationOptions): string
-  show(type: NotificationType, message: string, options?: NotificationOptions): string
-  dismiss(id: string): void
-  dismissAll(): void
-  getAll(): Notification[]
+  success: (message: string, options?: NotificationOptions) => string
+  error: (message: string, options?: NotificationOptions) => string
+  warning: (message: string, options?: NotificationOptions) => string
+  info: (message: string, options?: NotificationOptions) => string
+  show: (type: NotificationType, message: string, options?: NotificationOptions) => string
+  dismiss: (id: string) => void
+  dismissAll: () => void
+  getAll: () => Notification[]
 }
 
 type NotificationType = 'success' | 'error' | 'warning' | 'info'
@@ -52,11 +52,11 @@ engine.notifications.show('success', '自定义成功消息')
 ```typescript
 // 带选项的通知
 engine.notifications.success('文件上传成功', {
-  duration: 5000,        // 显示时长（毫秒）
-  persistent: false,     // 是否持久显示
-  closable: true,        // 是否可关闭
+  duration: 5000, // 显示时长（毫秒）
+  persistent: false, // 是否持久显示
+  closable: true, // 是否可关闭
   position: 'top-right', // 显示位置
-  icon: '✅',            // 自定义图标
+  icon: '✅', // 自定义图标
   className: 'custom-notification' // 自定义CSS类
 })
 
@@ -124,23 +124,23 @@ undoTimer = setTimeout(() => {
 
 ```typescript
 // 显示进度通知
-const showProgressNotification = async (task: () => Promise<void>) => {
+async function showProgressNotification(task: () => Promise<void>) {
   const notificationId = engine.notifications.info('正在处理...', {
     persistent: true,
     progress: 0
   })
-  
+
   try {
     // 模拟进度更新
     for (let i = 0; i <= 100; i += 10) {
       await new Promise(resolve => setTimeout(resolve, 200))
-      
+
       engine.notifications.update(notificationId, {
         message: `处理中... ${i}%`,
         progress: i
       })
     }
-    
+
     // 完成后更新通知
     engine.notifications.update(notificationId, {
       type: 'success',
@@ -149,8 +149,8 @@ const showProgressNotification = async (task: () => Promise<void>) => {
       persistent: false,
       progress: undefined
     })
-    
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.update(notificationId, {
       type: 'error',
       message: '处理失败',
@@ -212,7 +212,7 @@ engine.notifications.success('', {
 
 ```typescript
 // 创建通知组
-const createNotificationGroup = (groupId: string) => {
+function createNotificationGroup(groupId: string) {
   return {
     success: (message: string, options?: NotificationOptions) => {
       return engine.notifications.success(message, {
@@ -270,16 +270,17 @@ class NotificationMerger {
     timer: NodeJS.Timeout
     lastMessage: string
   }>()
-  
+
   merge(key: string, message: string, type: NotificationType = 'info') {
     const existing = this.pendingNotifications.get(key)
-    
+
     if (existing) {
       // 更新计数和消息
       existing.count++
       existing.lastMessage = message
       clearTimeout(existing.timer)
-    } else {
+    }
+    else {
       // 创建新的合并通知
       this.pendingNotifications.set(key, {
         count: 1,
@@ -287,18 +288,19 @@ class NotificationMerger {
         lastMessage: message
       })
     }
-    
+
     // 延迟显示合并后的通知
     const notification = this.pendingNotifications.get(key)!
     notification.timer = setTimeout(() => {
       const { count, lastMessage } = notification
-      
+
       if (count === 1) {
         engine.notifications.show(type, lastMessage)
-      } else {
+      }
+      else {
         engine.notifications.show(type, `${lastMessage} (${count}条消息)`)
       }
-      
+
       this.pendingNotifications.delete(key)
     }, 1000)
   }
@@ -324,7 +326,7 @@ const notificationTemplates = {
   userAction: (action: string, target: string) => {
     return engine.notifications.success(`${action}${target}成功`)
   },
-  
+
   // API错误模板
   apiError: (endpoint: string, error: string) => {
     return engine.notifications.error(`API调用失败: ${endpoint}`, {
@@ -340,7 +342,7 @@ const notificationTemplates = {
       persistent: true
     })
   },
-  
+
   // 表单验证模板
   formValidation: (errors: string[]) => {
     const errorList = errors.map(error => `<li>${error}</li>`).join('')
@@ -356,12 +358,13 @@ const notificationTemplates = {
       duration: 8000
     })
   },
-  
+
   // 网络状态模板
   networkStatus: (isOnline: boolean) => {
     if (isOnline) {
       return engine.notifications.success('网络连接已恢复')
-    } else {
+    }
+    else {
       return engine.notifications.error('网络连接已断开', {
         persistent: true,
         actions: [
@@ -390,7 +393,7 @@ notificationTemplates.networkStatus(false)
 // 持久化重要通知
 class PersistentNotifications {
   private storageKey = 'app_notifications'
-  
+
   save(notification: {
     id: string
     type: NotificationType
@@ -400,20 +403,20 @@ class PersistentNotifications {
   }) {
     const notifications = this.getAll()
     notifications.push(notification)
-    
+
     // 限制数量
     if (notifications.length > 100) {
       notifications.splice(0, notifications.length - 100)
     }
-    
+
     localStorage.setItem(this.storageKey, JSON.stringify(notifications))
   }
-  
+
   getAll() {
     const stored = localStorage.getItem(this.storageKey)
     return stored ? JSON.parse(stored) : []
   }
-  
+
   markAsRead(id: string) {
     const notifications = this.getAll()
     const notification = notifications.find((n: any) => n.id === id)
@@ -422,7 +425,7 @@ class PersistentNotifications {
       localStorage.setItem(this.storageKey, JSON.stringify(notifications))
     }
   }
-  
+
   getUnread() {
     return this.getAll().filter((n: any) => !n.read)
   }
@@ -492,7 +495,7 @@ engine.notifications.info('注意') // 没有说明什么
 class NotificationController {
   private maxNotifications = 5
   private activeNotifications: string[] = []
-  
+
   show(type: NotificationType, message: string, options?: NotificationOptions) {
     // 限制同时显示的通知数量
     if (this.activeNotifications.length >= this.maxNotifications) {
@@ -501,7 +504,7 @@ class NotificationController {
         engine.notifications.dismiss(oldestId)
       }
     }
-    
+
     const id = engine.notifications.show(type, message, {
       ...options,
       onDismiss: () => {
@@ -509,13 +512,13 @@ class NotificationController {
         options?.onDismiss?.()
       }
     })
-    
+
     this.activeNotifications.push(id)
     return id
   }
-  
+
   dismissAll() {
-    this.activeNotifications.forEach(id => {
+    this.activeNotifications.forEach((id) => {
       engine.notifications.dismiss(id)
     })
     this.activeNotifications = []

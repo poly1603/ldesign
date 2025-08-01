@@ -88,7 +88,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
     if (primaryHsl.h >= 90 && primaryHsl.h <= 150) {
       // 主色调已经是绿色系，使用类似色
       hue = normalizeHue(primaryHsl.h + 15)
-    } else {
+    }
+    else {
       // 使用固定的绿色，但根据主色调调整
       hue = 120 // 标准绿色
       // 如果主色调是暖色调，稍微偏向黄绿
@@ -108,7 +109,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
     let lightness = primaryHsl.l
     if (primaryHsl.l < 40) {
       lightness = 45 // 确保在深色背景上可见
-    } else if (primaryHsl.l > 70) {
+    }
+    else if (primaryHsl.l > 70) {
       lightness = 55 // 确保在浅色背景上可见
     }
 
@@ -125,7 +127,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
     if (primaryHsl.h >= 20 && primaryHsl.h <= 70) {
       // 主色调已经是橙色系，使用类似色
       hue = normalizeHue(primaryHsl.h + 10)
-    } else {
+    }
+    else {
       // 使用橙色，但根据主色调的色温调整
       hue = 35 // 标准橙色
       // 如果主色调是冷色调，使用更暖的橙色
@@ -142,7 +145,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     const saturation = Math.max(60, Math.min(95, primaryHsl.s * 1.1))
 
     // 亮度：确保警告色足够明亮和醒目
-    let lightness = Math.max(50, Math.min(70, primaryHsl.l * 1.1))
+    const lightness = Math.max(50, Math.min(70, primaryHsl.l * 1.1))
 
     return hslToHex(hue, saturation, lightness)
   }
@@ -157,7 +160,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
     if (primaryHsl.h >= 330 || primaryHsl.h <= 30) {
       // 主色调已经是红色系，使用类似色
       hue = normalizeHue(primaryHsl.h - 10)
-    } else {
+    }
+    else {
       // 使用红色，但根据主色调调整
       hue = 0 // 标准红色
       // 如果主色调是暖色调，使用稍微偏橙的红色
@@ -174,7 +178,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     const saturation = Math.max(65, Math.min(90, primaryHsl.s * 0.95))
 
     // 亮度：稍微比主色调暗一些，增加严肃感
-    let lightness = Math.max(40, Math.min(60, primaryHsl.l * 0.9))
+    const lightness = Math.max(40, Math.min(60, primaryHsl.l * 0.9))
 
     return hslToHex(hue, saturation, lightness)
   }
@@ -190,7 +194,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
       const saturation = Math.max(3, Math.min(15, primaryHsl.s * 0.2))
       const lightness = 55
       return hslToHex(hue, saturation, lightness)
-    } else {
+    }
+    else {
       // 纯中性灰色（基于a-nice-red算法的中性色生成）
       return this.generateNeutralGray()
     }
@@ -223,7 +228,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
       // 混入主色调的灰色
       hue = primaryHsl.h
       saturation = Math.max(3, Math.min(15, primaryHsl.s * 0.2))
-    } else {
+    }
+    else {
       // 纯中性灰色（a-nice-red推荐方式）
       hue = 0
       saturation = 0
@@ -233,7 +239,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     // 这些亮度值经过优化，确保良好的视觉层次和对比度
     const lightnesses = [88, 68, 45, 22]
 
-    return lightnesses.map(lightness => {
+    return lightnesses.map((lightness) => {
       return hslToHex(hue, saturation, lightness)
     })
   }
@@ -251,10 +257,10 @@ export class ColorGeneratorImpl implements ColorGenerator {
     const baseGrays = this.generateBaseGrays(primaryHsl)
 
     return {
-      lightGray: baseGrays[0],  // 浅灰
-      midGray: baseGrays[1],    // 中灰
-      darkGray: baseGrays[2],   // 深灰
-      black: baseGrays[3]       // 接近黑色
+      lightGray: baseGrays[0], // 浅灰
+      midGray: baseGrays[1], // 中灰
+      darkGray: baseGrays[2], // 深灰
+      black: baseGrays[3], // 接近黑色
     }
   }
 
@@ -264,10 +270,10 @@ export class ColorGeneratorImpl implements ColorGenerator {
    */
   private calculateOptimalSaturation(baseSaturation: number, colorType: 'success' | 'warning' | 'danger' | 'gray'): number {
     const saturationMap = {
-      success: 0.85,  // 成功色保持较高饱和度
-      warning: 0.95,  // 警告色需要更高饱和度以引起注意
-      danger: 0.90,   // 危险色保持高饱和度
-      gray: 0.15      // 灰色保持低饱和度
+      success: 0.85, // 成功色保持较高饱和度
+      warning: 0.95, // 警告色需要更高饱和度以引起注意
+      danger: 0.90, // 危险色保持高饱和度
+      gray: 0.15, // 灰色保持低饱和度
     }
 
     const targetFactor = saturationMap[colorType]
@@ -298,10 +304,10 @@ export class ColorGeneratorImpl implements ColorGenerator {
    */
   private calculateOptimalLightness(baseLightness: number, colorType: 'success' | 'warning' | 'danger' | 'gray'): number {
     const lightnessMap = {
-      success: 0.95,  // 成功色稍微调亮
-      warning: 1.05,  // 警告色稍微调亮以提高可见性
-      danger: 0.90,   // 危险色稍微调暗以增加严肃感
-      gray: 1.0       // 灰色保持原亮度
+      success: 0.95, // 成功色稍微调亮
+      warning: 1.05, // 警告色稍微调亮以提高可见性
+      danger: 0.90, // 危险色稍微调暗以增加严肃感
+      gray: 1.0, // 灰色保持原亮度
     }
 
     const targetFactor = lightnessMap[colorType]
@@ -403,7 +409,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
    */
   private adjustColorForDarkMode(color: string): string {
     const hsl = hexToHsl(color)
-    if (!hsl) return color
+    if (!hsl)
+      return color
 
     // 暗色模式下降低亮度，稍微提高饱和度
     const adjustedLightness = Math.max(20, hsl.l * 0.7) // 降低亮度但不低于20
@@ -412,8 +419,6 @@ export class ColorGeneratorImpl implements ColorGenerator {
     return hslToHex(hsl.h, adjustedSaturation, adjustedLightness)
   }
 
-
-
   /**
    * 生成色阶（实现 ColorGenerator 接口）
    */
@@ -421,7 +426,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     // 这里应该调用色阶生成器，但为了简化，我们返回一个基本实现
     return {
       colors: [color],
-      indices: { 5: color }
+      indices: { 5: color },
     }
   }
 
@@ -430,7 +435,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    */
   generateCSSVariables(
     scales: Record<string, any>,
-    prefix = '--color'
+    prefix = '--color',
   ): Record<string, string> {
     const variables: Record<string, string> = {}
 
@@ -454,7 +459,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     scales: Record<string, any>,
     neutralColors?: any,
     mode: ColorMode = 'light',
-    prefix = '--color'
+    prefix = '--color',
   ): Record<string, string> {
     const variables: Record<string, string> = {}
 
@@ -496,7 +501,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     variables: Record<string, string>,
     colors: Omit<ColorConfig, 'primary'>,
     mode: ColorMode,
-    prefix: string
+    prefix: string,
   ): void {
     if (mode === 'light') {
       // 亮色模式的语义化变量
@@ -509,7 +514,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
       variables[`${prefix}-border`] = '#dee2e6'
       variables[`${prefix}-border-light`] = '#e9ecef'
       variables[`${prefix}-shadow`] = 'rgba(0, 0, 0, 0.1)'
-    } else {
+    }
+    else {
       // 暗色模式的语义化变量
       variables[`${prefix}-background`] = '#1a1a1a'
       variables[`${prefix}-background-secondary`] = '#2d2d2d'

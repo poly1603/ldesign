@@ -12,18 +12,18 @@ graph TB
     A --> C[Storage 存储]
     A --> D[Detector 检测器]
     A --> E[Cache 缓存]
-    
+
     B --> F[StaticLoader]
     B --> G[HttpLoader]
     B --> H[CustomLoader]
-    
+
     C --> I[LocalStorage]
     C --> J[SessionStorage]
     C --> K[MemoryStorage]
-    
+
     D --> L[BrowserDetector]
     D --> M[ManualDetector]
-    
+
     E --> N[LRU Cache]
 ```
 
@@ -43,6 +43,7 @@ const i18n = new I18n({
 ```
 
 **职责：**
+
 - 管理当前语言状态
 - 协调加载器、存储、检测器等组件
 - 提供翻译 API
@@ -54,8 +55,8 @@ const i18n = new I18n({
 
 ```typescript
 interface LanguagePackage {
-  info: LanguageInfo      // 语言元信息
-  translations: object    // 翻译内容
+  info: LanguageInfo // 语言元信息
+  translations: object // 翻译内容
 }
 
 // 示例
@@ -82,13 +83,14 @@ const enPackage = {
 
 ```typescript
 interface Loader {
-  load(locale: string): Promise<void>
-  isLoaded(locale: string): boolean
-  preload(locale: string): Promise<void>
+  load: (locale: string) => Promise<void>
+  isLoaded: (locale: string) => boolean
+  preload: (locale: string) => Promise<void>
 }
 ```
 
 **内置加载器：**
+
 - **StaticLoader**: 静态语言包加载器
 - **HttpLoader**: HTTP 远程加载器
 - **DefaultLoader**: 默认加载器
@@ -99,13 +101,14 @@ interface Loader {
 
 ```typescript
 interface Storage {
-  getLanguage(): string | null
-  setLanguage(locale: string): void
-  removeLanguage(): void
+  getLanguage: () => string | null
+  setLanguage: (locale: string) => void
+  removeLanguage: () => void
 }
 ```
 
 **内置存储：**
+
 - **LocalStorage**: 浏览器本地存储
 - **SessionStorage**: 会话存储
 - **MemoryStorage**: 内存存储
@@ -117,11 +120,12 @@ interface Storage {
 
 ```typescript
 interface Detector {
-  detect(): string[]
+  detect: () => string[]
 }
 ```
 
 **内置检测器：**
+
 - **BrowserDetector**: 浏览器语言检测
 - **ManualDetector**: 手动指定语言
 
@@ -131,10 +135,10 @@ interface Detector {
 
 ```typescript
 interface LRUCache<T> {
-  get(key: string): T | undefined
-  set(key: string, value: T): void
-  clear(): void
-  size(): number
+  get: (key: string) => T | undefined
+  set: (key: string, value: T) => void
+  clear: () => void
+  size: () => number
 }
 ```
 
@@ -155,7 +159,7 @@ const translations = {
 }
 
 // 访问嵌套键
-i18n.t('user.profile.name')  // "Name"
+i18n.t('user.profile.name') // "Name"
 i18n.t('user.profile.email') // "Email"
 ```
 
@@ -170,7 +174,7 @@ i18n.t('user.profile.email') // "Email"
     ok: 'OK',
     cancel: 'Cancel'
   },
-  
+
   // 页面特定文本
   pages: {
     home: {
@@ -178,7 +182,7 @@ i18n.t('user.profile.email') // "Email"
       welcome: 'Welcome to our site'
     }
   },
-  
+
   // 组件特定文本
   components: {
     userCard: {
@@ -186,7 +190,7 @@ i18n.t('user.profile.email') // "Email"
       deleteButton: 'Delete'
     }
   },
-  
+
   // 错误消息
   errors: {
     network: 'Network error',
@@ -203,7 +207,7 @@ i18n.t('user.profile.email') // "Email"
 
 ```typescript
 const template = 'Hello {{name}}!'
-i18n.t('greeting', { name: 'John' })  // "Hello John!"
+i18n.t('greeting', { name: 'John' }) // "Hello John!"
 ```
 
 ### 嵌套参数
@@ -212,11 +216,11 @@ i18n.t('greeting', { name: 'John' })  // "Hello John!"
 
 ```typescript
 const template = 'Welcome {{user.name}}, you have {{user.messages}} messages'
-i18n.t('welcome', { 
-  user: { 
-    name: 'John', 
-    messages: 5 
-  } 
+i18n.t('welcome', {
+  user: {
+    name: 'John',
+    messages: 5
+  }
 })
 ```
 
@@ -225,8 +229,8 @@ i18n.t('welcome', {
 默认启用 HTML 转义以防止 XSS 攻击：
 
 ```typescript
-i18n.t('message', { 
-  content: '<script>alert("xss")</script>' 
+i18n.t('message', {
+  content: '<script>alert("xss")</script>'
 })
 // 输出: "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"
 ```
@@ -240,9 +244,9 @@ i18n.t('message', {
 ```typescript
 const template = '{count, plural, =0{no items} =1{one item} other{# items}}'
 
-i18n.t('items', { count: 0 })  // "no items"
-i18n.t('items', { count: 1 })  // "one item"
-i18n.t('items', { count: 5 })  // "5 items"
+i18n.t('items', { count: 0 }) // "no items"
+i18n.t('items', { count: 1 }) // "one item"
+i18n.t('items', { count: 5 }) // "5 items"
 ```
 
 ### 语言特定复数规则
@@ -261,10 +265,10 @@ i18n.t('items', { count: 5 })  // "5 items"
 ### 事件类型
 
 ```typescript
-type I18nEventType = 
-  | 'languageChanged'  // 语言切换
-  | 'loaded'          // 语言包加载完成
-  | 'loadError'       // 语言包加载失败
+type I18nEventType =
+  | 'languageChanged' // 语言切换
+  | 'loaded' // 语言包加载完成
+  | 'loadError' // 语言包加载失败
 ```
 
 ### 事件监听
@@ -292,7 +296,7 @@ sequenceDiagram
     participant Detector as 检测器
     participant Storage as 存储
     participant Loader as 加载器
-    
+
     App->>I18n: new I18n(options)
     App->>I18n: init()
     I18n->>Storage: getLanguage()
@@ -313,7 +317,7 @@ sequenceDiagram
     participant Loader as 加载器
     participant Storage as 存储
     participant Cache as 缓存
-    
+
     App->>I18n: changeLanguage(locale)
     I18n->>Loader: load(locale)
     Loader-->>I18n: language package

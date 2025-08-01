@@ -1,9 +1,131 @@
+<script setup lang="ts">
+import type { DeviceType, TemplateInfo } from '../../../src/vue'
+import { computed, markRaw, ref } from 'vue'
+import { templateConfigs, useTemplate } from '../../../src/vue'
+
+// 模板画廊页面加载
+
+// 设备类型
+const deviceTypes = [
+  { type: 'all' as const, name: '全部', icon: '🌐' },
+  { type: 'desktop' as DeviceType, name: '桌面', icon: '🖥️' },
+  { type: 'tablet' as DeviceType, name: '平板', icon: '📱' },
+  { type: 'mobile' as DeviceType, name: '手机', icon: '📱' },
+]
+
+// 选中的设备类型
+const selectedDevice = ref<'all' | DeviceType>('all')
+
+// 选中的模板
+const selectedTemplate = ref<TemplateInfo | null>(null)
+
+// 获取各设备类型的模板（优化：避免在computed中重复调用useTemplate）
+const { availableTemplates: desktopTemplates } = useTemplate({
+  category: 'login',
+  deviceType: 'desktop',
+})
+
+const { availableTemplates: tabletTemplates } = useTemplate({
+  category: 'login',
+  deviceType: 'tablet',
+})
+
+const { availableTemplates: mobileTemplates } = useTemplate({
+  category: 'login',
+  deviceType: 'mobile',
+})
+
+// 所有模板（使用markRaw优化性能）
+const allAvailableTemplates = computed(() => {
+  const allTemplates = [
+    ...desktopTemplates.value,
+    ...tabletTemplates.value,
+    ...mobileTemplates.value,
+  ]
+
+  // 使用markRaw标记组件为非响应式
+  return allTemplates.map(template => ({
+    ...template,
+    component: markRaw(template.component),
+  }))
+})
+
+// 过滤后的模板
+const filteredTemplates = computed(() => {
+  if (selectedDevice.value === 'all') {
+    return allAvailableTemplates.value
+  }
+  return allAvailableTemplates.value.filter(template => template.deviceType === selectedDevice.value)
+})
+
+// 获取设备图标
+function getDeviceIcon(deviceType: DeviceType) {
+  const device = deviceTypes.find(d => d.type === deviceType)
+  return device?.icon || '🖥️'
+}
+
+// 选择模板
+function selectTemplate(template: TemplateInfo) {
+  // 使用 markRaw 标记组件为非响应式，避免性能开销
+  selectedTemplate.value = {
+    ...template,
+    component: markRaw(template.component),
+  }
+}
+
+// 获取模板配置
+function getTemplateConfig(template: TemplateInfo) {
+  if (template.deviceType === 'desktop') {
+    return templateConfigs.login[template.id as keyof typeof templateConfigs.login] || templateConfigs.login.default
+  }
+  else if (template.deviceType === 'tablet') {
+    return templateConfigs.login.tablet
+  }
+  else {
+    return templateConfigs.login.mobile
+  }
+}
+
+// 事件处理函数
+function handleLogin(data: any) {
+  alert(`登录成功！\n模板: ${selectedTemplate.value?.name}\n设备: ${selectedTemplate.value?.deviceType}\n用户名: ${data.username}`)
+}
+
+function handleRegister() {
+  alert('跳转到注册页面')
+}
+
+function handleForgotPassword(data: any) {
+  alert(`重置密码链接已发送到与用户名 "${data.username}" 关联的邮箱`)
+}
+
+function handleThirdPartyLogin(data: any) {
+  alert(`使用 ${data.provider} 登录`)
+}
+
+// 初始化默认选中模板
+watch(allAvailableTemplates, (templates) => {
+  if (templates.length > 0 && !selectedTemplate.value) {
+    // 选择第一个模板作为默认模板，并确保组件使用markRaw
+    const firstTemplate = templates[0]
+    selectedTemplate.value = {
+      ...firstTemplate,
+      component: markRaw(firstTemplate.component),
+    }
+  }
+}, { immediate: true })
+</script>
+
 <template>
   <div class="template-gallery">
     <div class="template-gallery__header">
       <div class="template-gallery__container">
-        <router-link to="/" class="template-gallery__back">← 返回首页</router-link>
-        <h1 class="template-gallery__title">🎨 模板画廊</h1>
+        <router-link to="/" class="template-gallery__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="template-gallery__title">
+          🎨 模板画廊
+        </h1>
         <p class="template-gallery__subtitle">
           浏览所有可用的精美模板
         </p>
@@ -19,9 +141,8 @@
               <button
                 v-for="device in deviceTypes"
                 :key="device.type"
-                :class="[
-                  'template-gallery__filter-btn',
-                  { 'template-gallery__filter-btn--active': selectedDevice === device.type }
+                class="template-gallery__filter-btn" :class="[
+                  { 'template-gallery__filter-btn--active': selectedDevice === device.type },
                 ]"
                 @click="selectedDevice = device.type"
               >
@@ -60,17 +181,25 @@
                 ✓
               </div>
             </div>
-            
+
             <div class="template-gallery__card-preview">
               <div class="template-gallery__preview-placeholder">
-                <div class="template-gallery__preview-icon">🎨</div>
-                <div class="template-gallery__preview-text">{{ template.name }}</div>
+                <div class="template-gallery__preview-icon">
+                  🎨
+                </div>
+                <div class="template-gallery__preview-text">
+                  {{ template.name }}
+                </div>
               </div>
             </div>
-            
+
             <div class="template-gallery__card-info">
-              <h3 class="template-gallery__card-title">{{ template.name }}</h3>
-              <p class="template-gallery__card-description">{{ template.description }}</p>
+              <h3 class="template-gallery__card-title">
+                {{ template.name }}
+              </h3>
+              <p class="template-gallery__card-description">
+                {{ template.description }}
+              </p>
             </div>
           </div>
         </div>
@@ -86,7 +215,7 @@
             </div>
           </div>
 
-          <div 
+          <div
             class="template-gallery__preview-container"
             :class="`template-gallery__preview-container--${selectedTemplate.deviceType}`"
           >
@@ -128,7 +257,9 @@
         </div>
 
         <div v-else class="template-gallery__no-selection">
-          <div class="template-gallery__no-selection-icon">👆</div>
+          <div class="template-gallery__no-selection-icon">
+            👆
+          </div>
           <h3>选择一个模板</h3>
           <p>点击上方的模板卡片来预览模板效果</p>
         </div>
@@ -136,122 +267,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, markRaw } from 'vue'
-import { useTemplate, templateConfigs } from '../../../src/vue'
-import type { DeviceType, TemplateInfo } from '../../../src/vue'
-
-// 模板画廊页面加载
-
-// 设备类型
-const deviceTypes = [
-  { type: 'all' as const, name: '全部', icon: '🌐' },
-  { type: 'desktop' as DeviceType, name: '桌面', icon: '🖥️' },
-  { type: 'tablet' as DeviceType, name: '平板', icon: '📱' },
-  { type: 'mobile' as DeviceType, name: '手机', icon: '📱' }
-]
-
-// 选中的设备类型
-const selectedDevice = ref<'all' | DeviceType>('all')
-
-// 选中的模板
-const selectedTemplate = ref<TemplateInfo | null>(null)
-
-// 获取各设备类型的模板（优化：避免在computed中重复调用useTemplate）
-const { availableTemplates: desktopTemplates } = useTemplate({
-  category: 'login',
-  deviceType: 'desktop'
-})
-
-const { availableTemplates: tabletTemplates } = useTemplate({
-  category: 'login',
-  deviceType: 'tablet'
-})
-
-const { availableTemplates: mobileTemplates } = useTemplate({
-  category: 'login',
-  deviceType: 'mobile'
-})
-
-// 所有模板（使用markRaw优化性能）
-const allAvailableTemplates = computed(() => {
-  const allTemplates = [
-    ...desktopTemplates.value,
-    ...tabletTemplates.value,
-    ...mobileTemplates.value
-  ]
-
-  // 使用markRaw标记组件为非响应式
-  return allTemplates.map(template => ({
-    ...template,
-    component: markRaw(template.component)
-  }))
-})
-
-// 过滤后的模板
-const filteredTemplates = computed(() => {
-  if (selectedDevice.value === 'all') {
-    return allAvailableTemplates.value
-  }
-  return allAvailableTemplates.value.filter(template => template.deviceType === selectedDevice.value)
-})
-
-// 获取设备图标
-const getDeviceIcon = (deviceType: DeviceType) => {
-  const device = deviceTypes.find(d => d.type === deviceType)
-  return device?.icon || '🖥️'
-}
-
-// 选择模板
-const selectTemplate = (template: TemplateInfo) => {
-  // 使用 markRaw 标记组件为非响应式，避免性能开销
-  selectedTemplate.value = {
-    ...template,
-    component: markRaw(template.component)
-  }
-}
-
-// 获取模板配置
-const getTemplateConfig = (template: TemplateInfo) => {
-  if (template.deviceType === 'desktop') {
-    return templateConfigs.login[template.id as keyof typeof templateConfigs.login] || templateConfigs.login.default
-  } else if (template.deviceType === 'tablet') {
-    return templateConfigs.login.tablet
-  } else {
-    return templateConfigs.login.mobile
-  }
-}
-
-// 事件处理函数
-const handleLogin = (data: any) => {
-  alert(`登录成功！\n模板: ${selectedTemplate.value?.name}\n设备: ${selectedTemplate.value?.deviceType}\n用户名: ${data.username}`)
-}
-
-const handleRegister = () => {
-  alert('跳转到注册页面')
-}
-
-const handleForgotPassword = (data: any) => {
-  alert(`重置密码链接已发送到与用户名 "${data.username}" 关联的邮箱`)
-}
-
-const handleThirdPartyLogin = (data: any) => {
-  alert(`使用 ${data.provider} 登录`)
-}
-
-// 初始化默认选中模板
-watch(allAvailableTemplates, (templates) => {
-  if (templates.length > 0 && !selectedTemplate.value) {
-    // 选择第一个模板作为默认模板，并确保组件使用markRaw
-    const firstTemplate = templates[0]
-    selectedTemplate.value = {
-      ...firstTemplate,
-      component: markRaw(firstTemplate.component)
-    }
-  }
-}, { immediate: true })
-</script>
 
 <style scoped lang="less">
 .template-gallery {

@@ -1,7 +1,7 @@
-import 'reflect-metadata'
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import App from './App.vue'
+import 'reflect-metadata'
 import './style.css'
 
 const app = createApp(App)

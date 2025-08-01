@@ -1,122 +1,13 @@
-<template>
-  <div id="app">
-    <header class="app-header">
-      <div class="header-content">
-        <div class="logo-section">
-          <h1>🚀 Vue3 Engine</h1>
-          <p>强大的Vue3应用引擎演示平台</p>
-        </div>
-        <div class="engine-status">
-          <span class="status-item">
-            <strong>引擎状态:</strong> 
-            <span :class="engineStatus.class">{{ engineStatus.text }}</span>
-          </span>
-          <span class="status-item">
-            <strong>版本:</strong> {{ engine.config.version }}
-          </span>
-          <span class="status-item">
-            <strong>调试模式:</strong> {{ engine.config.debug ? '开启' : '关闭' }}
-          </span>
-        </div>
-      </div>
-    </header>
-
-    <nav class="app-navigation">
-      <div class="nav-content">
-        <button 
-          v-for="page in pages" 
-          :key="page.id"
-          @click="navigateToPage(page.id)"
-          class="nav-button"
-          :class="{ active: currentPage === page.id }"
-        >
-          <span class="nav-icon">{{ page.icon }}</span>
-          <span class="nav-label">{{ page.label }}</span>
-        </button>
-      </div>
-    </nav>
-
-    <main class="app-main">
-      <div class="page-container">
-        <!-- 主页 -->
-        <Home v-if="currentPage === 'home'" @navigate="navigateToPage" />
-        
-        <!-- 插件演示页 -->
-        <PluginDemo v-else-if="currentPage === 'plugin'" />
-        
-        <!-- 事件演示页 -->
-        <EventDemo v-else-if="currentPage === 'event'" />
-        
-        <!-- 状态演示页 -->
-        <StateDemo v-else-if="currentPage === 'state'" />
-        
-        <!-- 中间件演示页 -->
-        <MiddlewareDemo v-else-if="currentPage === 'middleware'" />
-        
-        <!-- 日志演示页 -->
-        <LoggerDemo v-else-if="currentPage === 'logger'" />
-        
-        <!-- 通知演示页 -->
-        <NotificationDemo v-else-if="currentPage === 'notification'" />
-        
-        <!-- 404页面 -->
-        <div v-else class="page-not-found">
-          <h2>页面未找到</h2>
-          <p>请选择一个有效的页面</p>
-          <button @click="navigateToPage('home')" class="btn btn-primary">
-            返回主页
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- 实时日志显示 -->
-    <aside class="app-sidebar" :class="{ collapsed: sidebarCollapsed }">
-      <div class="sidebar-header">
-        <h3 v-if="!sidebarCollapsed">📝 实时日志</h3>
-        <button @click="toggleSidebar" class="sidebar-toggle">
-          {{ sidebarCollapsed ? '📖' : '📕' }}
-        </button>
-      </div>
-      <div v-if="!sidebarCollapsed" class="log-section">
-        <div class="log-controls">
-          <button @click="clearLogs" class="btn btn-sm btn-secondary">
-            清空日志
-          </button>
-          <button @click="exportLogs" class="btn btn-sm btn-info">
-            导出日志
-          </button>
-        </div>
-        <div class="log-container" ref="logContainer">
-          <div 
-            v-for="(log, index) in logs" 
-            :key="index"
-            class="log-entry"
-            :class="`log-${log.level}`"
-          >
-            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
-            <span class="log-level">{{ log.level.toUpperCase() }}</span>
-            <span class="log-message">{{ log.message }}</span>
-          </div>
-          <div v-if="logs.length === 0" class="empty-logs">
-            暂无日志
-          </div>
-        </div>
-      </div>
-    </aside>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue'
 import type { Engine } from '@ldesign/engine'
-import Home from './pages/Home.vue'
-import PluginDemo from './pages/PluginDemo.vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import EventDemo from './pages/EventDemo.vue'
-import StateDemo from './pages/StateDemo.vue'
-import MiddlewareDemo from './pages/MiddlewareDemo.vue'
+import Home from './pages/Home.vue'
 import LoggerDemo from './pages/LoggerDemo.vue'
+import MiddlewareDemo from './pages/MiddlewareDemo.vue'
 import NotificationDemo from './pages/NotificationDemo.vue'
+import PluginDemo from './pages/PluginDemo.vue'
+import StateDemo from './pages/StateDemo.vue'
 
 // 注入引擎实例
 const engine = inject<Engine>('engine')!
@@ -134,7 +25,7 @@ const pages = ref([
   { id: 'state', label: '状态管理', icon: '💾' },
   { id: 'middleware', label: '中间件', icon: '⚡' },
   { id: 'logger', label: '日志系统', icon: '📝' },
-  { id: 'notification', label: '通知系统', icon: '🔔' }
+  { id: 'notification', label: '通知系统', icon: '🔔' },
 ])
 
 // 计算属性
@@ -142,36 +33,36 @@ const engineStatus = computed(() => {
   const isRunning = engine && engine.config
   return {
     text: isRunning ? '运行中' : '未启动',
-    class: isRunning ? 'status-running' : 'status-stopped'
+    class: isRunning ? 'status-running' : 'status-stopped',
   }
 })
 
 // 方法
-const navigateToPage = (pageId: string) => {
+function navigateToPage(pageId: string) {
   currentPage.value = pageId
   engine.logger.info(`导航到页面: ${pageId}`)
 }
 
-const toggleSidebar = () => {
+function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
 
-const clearLogs = () => {
+function clearLogs() {
   engine.logger.clear()
   logs.value = []
   engine.notifications.show({
     type: 'info',
     title: '信息',
     message: '日志已清空',
-    duration: 3000
+    duration: 3000,
   })
 }
 
-const exportLogs = () => {
-  const logData = logs.value.map(log => 
-    `[${formatTime(log.timestamp)}] ${log.level.toUpperCase()}: ${log.message}`
+function exportLogs() {
+  const logData = logs.value.map(log =>
+    `[${formatTime(log.timestamp)}] ${log.level.toUpperCase()}: ${log.message}`,
   ).join('\n')
-  
+
   const blob = new Blob([logData], { type: 'text/plain' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -181,20 +72,20 @@ const exportLogs = () => {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  
+
   engine.notifications.show({
     type: 'success',
     title: '成功',
     message: '日志已导出',
-    duration: 3000
+    duration: 3000,
   })
 }
 
-const formatTime = (timestamp: number) => {
+function formatTime(timestamp: number) {
   return new Date(timestamp).toLocaleTimeString()
 }
 
-const updateLogs = () => {
+function updateLogs() {
   const engineLogs = engine.logger.getLogs()
   logs.value = engineLogs.slice(-50) // 只显示最近50条
 }
@@ -203,23 +94,134 @@ const updateLogs = () => {
 onMounted(() => {
   // 监听日志更新
   const logInterval = setInterval(updateLogs, 1000)
-  
+
   // 监听页面导航事件
   engine.events.on('app:navigate', (data) => {
     navigateToPage(data.page)
   })
-  
+
   // 记录初始日志
   engine.logger.info('Vue3 Engine 多页面应用已启动')
   engine.logger.info('引擎配置:', engine.config)
   engine.logger.info('可用页面:', pages.value.map(p => p.label).join(', '))
-  
+
   // 清理函数
   return () => {
     clearInterval(logInterval)
   }
 })
 </script>
+
+<template>
+  <div id="app">
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-section">
+          <h1>🚀 Vue3 Engine</h1>
+          <p>强大的Vue3应用引擎演示平台</p>
+        </div>
+        <div class="engine-status">
+          <span class="status-item">
+            <strong>引擎状态:</strong>
+            <span :class="engineStatus.class">{{ engineStatus.text }}</span>
+          </span>
+          <span class="status-item">
+            <strong>版本:</strong> {{ engine.config.version }}
+          </span>
+          <span class="status-item">
+            <strong>调试模式:</strong> {{ engine.config.debug ? '开启' : '关闭' }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="app-navigation">
+      <div class="nav-content">
+        <button
+          v-for="page in pages"
+          :key="page.id"
+          class="nav-button"
+          :class="{ active: currentPage === page.id }"
+          @click="navigateToPage(page.id)"
+        >
+          <span class="nav-icon">{{ page.icon }}</span>
+          <span class="nav-label">{{ page.label }}</span>
+        </button>
+      </div>
+    </nav>
+
+    <main class="app-main">
+      <div class="page-container">
+        <!-- 主页 -->
+        <Home v-if="currentPage === 'home'" @navigate="navigateToPage" />
+
+        <!-- 插件演示页 -->
+        <PluginDemo v-else-if="currentPage === 'plugin'" />
+
+        <!-- 事件演示页 -->
+        <EventDemo v-else-if="currentPage === 'event'" />
+
+        <!-- 状态演示页 -->
+        <StateDemo v-else-if="currentPage === 'state'" />
+
+        <!-- 中间件演示页 -->
+        <MiddlewareDemo v-else-if="currentPage === 'middleware'" />
+
+        <!-- 日志演示页 -->
+        <LoggerDemo v-else-if="currentPage === 'logger'" />
+
+        <!-- 通知演示页 -->
+        <NotificationDemo v-else-if="currentPage === 'notification'" />
+
+        <!-- 404页面 -->
+        <div v-else class="page-not-found">
+          <h2>页面未找到</h2>
+          <p>请选择一个有效的页面</p>
+          <button class="btn btn-primary" @click="navigateToPage('home')">
+            返回主页
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 实时日志显示 -->
+    <aside class="app-sidebar" :class="{ collapsed: sidebarCollapsed }">
+      <div class="sidebar-header">
+        <h3 v-if="!sidebarCollapsed">
+          📝 实时日志
+        </h3>
+        <button class="sidebar-toggle" @click="toggleSidebar">
+          {{ sidebarCollapsed ? '📖' : '📕' }}
+        </button>
+      </div>
+      <div v-if="!sidebarCollapsed" class="log-section">
+        <div class="log-controls">
+          <button class="btn btn-sm btn-secondary" @click="clearLogs">
+            清空日志
+          </button>
+          <button class="btn btn-sm btn-info" @click="exportLogs">
+            导出日志
+          </button>
+        </div>
+        <div ref="logContainer" class="log-container">
+          <div
+            v-for="(log, index) in logs"
+            :key="index"
+            class="log-entry"
+            :class="`log-${log.level}`"
+          >
+            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
+            <span class="log-level">{{ log.level.toUpperCase() }}</span>
+            <span class="log-message">{{ log.message }}</span>
+          </div>
+          <div v-if="logs.length === 0" class="empty-logs">
+            暂无日志
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</template>
 
 <style scoped>
 #app {
@@ -570,14 +572,14 @@ onMounted(() => {
   .app-main {
     flex-direction: column;
   }
-  
+
   .app-sidebar {
     width: 100%;
     border-left: none;
     border-top: 1px solid #e5e7eb;
     max-height: 300px;
   }
-  
+
   .app-sidebar.collapsed {
     width: 100%;
     max-height: 60px;
@@ -589,19 +591,19 @@ onMounted(() => {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .engine-status {
     justify-content: center;
   }
-  
+
   .nav-content {
     padding: 0 1rem;
   }
-  
+
   .page-container {
     padding: 1rem;
   }
-  
+
   .app-sidebar {
     max-height: 250px;
   }
@@ -611,20 +613,20 @@ onMounted(() => {
   .header-content {
     padding: 0;
   }
-  
+
   .logo-section h1 {
     font-size: 1.5rem;
   }
-  
+
   .engine-status {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .nav-button {
     padding: 0.75rem 1rem;
   }
-  
+
   .nav-label {
     display: none;
   }

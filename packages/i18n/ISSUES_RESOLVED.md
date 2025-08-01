@@ -11,6 +11,7 @@
 ## ✅ 问题1：构建产物结构问题 - 已解决
 
 ### 问题描述
+
 - `es/` 和 `lib/` 目录只包含入口文件，缺少完整的目录结构
 - 不支持按需导入，如 `import { BrowserDetector } from '@ldesign/i18n/core/detector'`
 - `types/` 目录结构不完整
@@ -18,6 +19,7 @@
 ### 解决方案
 
 #### 1. 修改 Rollup 配置
+
 ```javascript
 // rollup.config.js
 import { glob } from 'glob'
@@ -27,13 +29,13 @@ const getInputFiles = () => {
   const files = glob.sync('src/**/*.ts', {
     ignore: ['src/**/*.test.ts', 'src/**/*.spec.ts']
   })
-  
+
   const input = {}
   files.forEach(file => {
     const name = path.relative('src', file).replace(/\.ts$/, '')
     input[name] = file
   })
-  
+
   return input
 }
 
@@ -50,6 +52,7 @@ const getInputFiles = () => {
 ```
 
 #### 2. 更新 package.json exports
+
 ```json
 {
   "exports": {
@@ -79,23 +82,27 @@ const getInputFiles = () => {
 ```
 
 #### 3. 添加路径别名支持
+
 ```javascript
 // 添加 @rollup/plugin-alias 支持
 import alias from '@rollup/plugin-alias'
 
-const getPlugins = () => [
-  alias({
-    entries: [
-      { find: '@', replacement: path.resolve(__dirname, 'src') }
-    ]
-  }),
+function getPlugins() {
+  return [
+    alias({
+      entries: [
+        { find: '@', replacement: path.resolve(__dirname, 'src') }
+      ]
+    }),
   // ... 其他插件
-]
+  ]
+}
 ```
 
 ### 验证结果
 
 构建后的目录结构：
+
 ```
 packages/i18n/
 ├── es/                    # ESM 格式，完整目录结构
@@ -119,6 +126,7 @@ packages/i18n/
 ```
 
 现在支持按需导入：
+
 ```typescript
 // ✅ 现在可以正常工作
 import { BrowserDetector } from '@ldesign/i18n/core/detector'
@@ -129,6 +137,7 @@ import { interpolate } from '@ldesign/i18n/utils/interpolation'
 ## ✅ 问题2：VitePress 文档补全 - 已解决
 
 ### 问题描述
+
 文档系统缺少多个重要页面，导航链接无法正常访问。
 
 ### 解决方案
@@ -193,14 +202,14 @@ import { interpolate } from '@ldesign/i18n/utils/interpolation'
 export default defineConfig({
   title: '@ldesign/i18n',
   description: '功能完整的框架无关多语言管理系统',
-  
+
   themeConfig: {
     nav: [
       { text: '指南', link: '/guide/getting-started' },
       { text: 'API 参考', link: '/api/core' },
       { text: '示例', link: '/examples/vanilla' }
     ],
-    
+
     sidebar: {
       '/guide/': [
         {
@@ -214,7 +223,7 @@ export default defineConfig({
         // ... 完整的侧边栏配置
       ]
     },
-    
+
     search: {
       provider: 'local'
     }
@@ -232,6 +241,7 @@ export default defineConfig({
 ## ✅ 问题3：示例项目启动问题 - 已解决
 
 ### 问题描述
+
 - `examples/vanilla/` 和 `examples/vue/` 两个示例项目无法启动
 - 依赖配置错误
 - 路径别名配置问题
@@ -241,10 +251,10 @@ export default defineConfig({
 #### 1. 修复 Vanilla JavaScript 示例
 
 ```javascript
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 // examples/vanilla/vite.config.js
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 const __dirname = resolve(fileURLToPath(import.meta.url), '..')
 
@@ -286,6 +296,7 @@ export default defineConfig({
 #### 3. 创建启动指南
 
 创建了详细的 `EXAMPLES_GUIDE.md` 文档，包括：
+
 - 前置条件
 - 快速启动步骤
 - 详细启动说明
@@ -308,7 +319,7 @@ pnpm install && pnpm dev
 # 成功启动在 http://localhost:3000
 
 # 3. 启动 Vue 示例 ✅
-cd examples/vue  
+cd examples/vue
 pnpm install && pnpm dev
 # 成功启动在 http://localhost:3001
 ```
@@ -316,6 +327,7 @@ pnpm install && pnpm dev
 #### 功能验证
 
 **Vanilla JavaScript 示例功能：**
+
 - ✅ 基础翻译功能
 - ✅ 字符串插值
 - ✅ 复数处理
@@ -325,6 +337,7 @@ pnpm install && pnpm dev
 - ✅ 语言信息获取
 
 **Vue 3 示例功能：**
+
 - ✅ Vue 组合式 API (`useI18n`)
 - ✅ v-t 指令使用
 - ✅ 响应式语言切换
@@ -379,24 +392,28 @@ pnpm example:vue      # ✅ 成功启动
 ## 🎉 解决成果总结
 
 ### 1. 构建系统优化
+
 - ✅ 完整的目录结构输出
 - ✅ 支持按需导入
 - ✅ 多格式构建产物 (ESM/CommonJS/UMD)
 - ✅ 完整的 TypeScript 类型定义
 
 ### 2. 文档系统完善
+
 - ✅ 补全了 13 个缺失的文档页面
 - ✅ 内容详实，包含丰富的代码示例
 - ✅ 完整的导航和搜索功能
 - ✅ 响应式设计
 
 ### 3. 示例项目修复
+
 - ✅ 两个示例项目都能正常启动
 - ✅ 所有功能演示正常工作
 - ✅ 提供了详细的启动指南
 - ✅ 包含故障排除说明
 
 ### 4. 开发体验提升
+
 - ✅ 清晰的项目结构
 - ✅ 完整的类型支持
 - ✅ 详细的文档和示例

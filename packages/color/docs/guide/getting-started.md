@@ -78,10 +78,10 @@ console.log(colors)
 ### 1. 安装插件
 
 ```typescript
+import { ThemePlugin } from '@ldesign/color/vue'
 // main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import { ThemePlugin } from '@ldesign/color/vue'
 
 const app = createApp(App)
 

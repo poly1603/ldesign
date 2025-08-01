@@ -1,22 +1,23 @@
 import type {
+  ErrorInterceptor,
+  HttpAdapter,
   HttpClient,
   HttpClientConfig,
-  RequestConfig,
-  ResponseData,
-  HttpAdapter,
-  RequestInterceptor,
-  ResponseInterceptor,
-  ErrorInterceptor,
-  InterceptorManager,
   HttpError,
+  InterceptorManager,
+  RequestConfig,
+  RequestInterceptor,
+  ResponseData,
+  ResponseInterceptor,
   RetryConfig,
 } from '@/types'
+import type { CancelManager } from '@/utils/cancel'
 import { InterceptorManagerImpl } from '@/interceptors/manager'
-import { mergeConfig, createHttpError } from '@/utils'
-import { RetryManager, TimeoutManager, ErrorHandler } from '@/utils/error'
-import { CancelManager, globalCancelManager } from '@/utils/cancel'
+import { mergeConfig } from '@/utils'
 import { CacheManager } from '@/utils/cache'
+import { globalCancelManager } from '@/utils/cancel'
 import { ConcurrencyManager } from '@/utils/concurrency'
+import { RetryManager, TimeoutManager } from '@/utils/error'
 
 /**
  * HTTP 客户端实现
@@ -76,7 +77,7 @@ export class HttpClientImpl implements HttpClient {
     if (mergedConfig.retry && mergedConfig.retry.retries && mergedConfig.retry.retries > 0) {
       return this.retryManager.executeWithRetry(
         () => this.executeRequest<T>(mergedConfig),
-        mergedConfig
+        mergedConfig,
       )
     }
 
@@ -96,7 +97,7 @@ export class HttpClientImpl implements HttpClient {
     // 使用并发控制执行请求
     return this.concurrencyManager.execute(
       () => this.performRequest<T>(config),
-      config
+      config,
     )
   }
 
@@ -118,7 +119,8 @@ export class HttpClientImpl implements HttpClient {
       await this.cacheManager.set(processedConfig, response)
 
       return response
-    } catch (error) {
+    }
+    catch (error) {
       // 执行错误拦截器
       const processedError = await this.processErrorInterceptors(error as HttpError)
       throw processedError
@@ -266,7 +268,8 @@ export class HttpClientImpl implements HttpClient {
     for (const interceptor of interceptors) {
       try {
         processedConfig = await interceptor.fulfilled(processedConfig)
-      } catch (error) {
+      }
+      catch (error) {
         if (interceptor.rejected) {
           throw await interceptor.rejected(error as HttpError)
         }
@@ -289,7 +292,8 @@ export class HttpClientImpl implements HttpClient {
     for (const interceptor of interceptors) {
       try {
         processedResponse = await interceptor.fulfilled(processedResponse)
-      } catch (error) {
+      }
+      catch (error) {
         if (interceptor.rejected) {
           throw await interceptor.rejected(error as HttpError)
         }
@@ -312,7 +316,8 @@ export class HttpClientImpl implements HttpClient {
     for (const interceptor of interceptors) {
       try {
         processedError = await interceptor.fulfilled(processedError)
-      } catch (err) {
+      }
+      catch (err) {
         processedError = err as HttpError
       }
     }

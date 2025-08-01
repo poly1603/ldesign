@@ -1,6 +1,6 @@
 import { Plugin, App } from 'vue';
-import { HttpPluginOptions } from '../types/vue.js';
-import { HttpClient, RequestConfig } from '../types/index.js';
+import { HttpPluginOptions } from '@/types/vue';
+import { HttpClient, RequestConfig } from '@/types';
 
 /**
  * Vue 3 HTTP 插件
@@ -31,6 +31,11 @@ declare const HttpProvider: {
         config?: RequestConfig;
     }, { slots }: any): () => any;
 };
+/**
+ * 创建 HTTP 插件实例
+ */
+declare function createHttpPlugin(options?: HttpPluginOptions): Plugin;
+
 declare module '@vue/runtime-core' {
     interface ComponentCustomProperties {
         $http: HttpClient;
@@ -40,4 +45,4 @@ declare module '@vue/runtime-core' {
     }
 }
 
-export { HttpPlugin, HttpProvider, HttpPlugin as default, install };
+export { HttpPlugin, HttpProvider, createHttpPlugin, HttpPlugin as default, install };

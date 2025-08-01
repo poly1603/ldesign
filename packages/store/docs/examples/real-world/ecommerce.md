@@ -25,7 +25,7 @@ EcommerceApp
 
 ```typescript
 // stores/auth.ts
-import { BaseStore, PersistentState, State, AsyncAction, Getter } from '@ldesign/store'
+import { AsyncAction, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
 
 interface User {
   id: string
@@ -60,18 +60,19 @@ export class AuthStore extends BaseStore {
   @AsyncAction()
   async login(credentials: LoginCredentials) {
     this.error = null
-    
+
     try {
       const response = await authApi.login(credentials)
       this.currentUser = response.user
       this.token = response.token
       this.updateLastActivity()
-      
+
       // 触发其他 Store 的登录后初始化
       await this.initializeUserData()
-      
+
       return response.user
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '登录失败'
       throw error
     }
@@ -83,7 +84,8 @@ export class AuthStore extends BaseStore {
       if (this.token) {
         await authApi.logout(this.token)
       }
-    } finally {
+    }
+    finally {
       this.currentUser = null
       this.token = null
       this.clearUserData()
@@ -92,14 +94,16 @@ export class AuthStore extends BaseStore {
 
   @AsyncAction()
   async refreshToken() {
-    if (!this.token) return false
+    if (!this.token)
+      return false
 
     try {
       const response = await authApi.refreshToken(this.token)
       this.token = response.token
       this.updateLastActivity()
       return true
-    } catch (error) {
+    }
+    catch (error) {
       await this.logout()
       return false
     }
@@ -114,7 +118,7 @@ export class AuthStore extends BaseStore {
     // 初始化用户相关数据
     const cartStore = new CartStore('cart')
     const orderStore = new OrderStore('order')
-    
+
     await Promise.all([
       cartStore.loadUserCart(this.currentUser!.id),
       orderStore.loadUserOrders(this.currentUser!.id)
@@ -146,7 +150,8 @@ export class AuthStore extends BaseStore {
 
   @Getter()
   get isSessionExpired() {
-    if (!this.lastActivity) return true
+    if (!this.lastActivity)
+      return true
     const thirtyMinutes = 30 * 60 * 1000
     return Date.now() - this.lastActivity.getTime() > thirtyMinutes
   }
@@ -157,7 +162,7 @@ export class AuthStore extends BaseStore {
 
 ```typescript
 // stores/product.ts
-import { BaseStore, State, AsyncAction, Getter, CachedAction, DebouncedAction } from '@ldesign/store'
+import { AsyncAction, BaseStore, CachedAction, DebouncedAction, Getter, State } from '@ldesign/store'
 
 interface Product {
   id: string
@@ -223,7 +228,8 @@ export class ProductStore extends BaseStore {
 
   @AsyncAction()
   async fetchProducts(refresh = false) {
-    if (!refresh && this.products.length > 0) return
+    if (!refresh && this.products.length > 0)
+      return
 
     try {
       const response = await productApi.getProducts({
@@ -237,7 +243,8 @@ export class ProductStore extends BaseStore {
 
       this.products = response.products
       this.totalCount = response.total
-    } catch (error) {
+    }
+    catch (error) {
       console.error('获取商品失败:', error)
       throw error
     }
@@ -255,15 +262,16 @@ export class ProductStore extends BaseStore {
     try {
       const product = await productApi.getProductById(id)
       this.selectedProduct = product
-      
+
       // 更新产品列表中的数据
       const index = this.products.findIndex(p => p.id === id)
       if (index > -1) {
         this.products[index] = product
       }
-      
+
       return product
-    } catch (error) {
+    }
+    catch (error) {
       console.error('获取商品详情失败:', error)
       throw error
     }
@@ -309,9 +317,9 @@ export class ProductStore extends BaseStore {
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase()
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
-        product.tags.some(tag => tag.toLowerCase().includes(query))
+        product.name.toLowerCase().includes(query)
+        || product.description.toLowerCase().includes(query)
+        || product.tags.some(tag => tag.toLowerCase().includes(query))
       )
     }
 
@@ -349,7 +357,8 @@ export class ProductStore extends BaseStore {
 
       if (this.sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1
-      } else {
+      }
+      else {
         return aValue < bValue ? 1 : -1
       }
     })
@@ -390,8 +399,9 @@ export class ProductStore extends BaseStore {
 
   @Getter()
   get priceRange() {
-    if (this.products.length === 0) return [0, 0]
-    
+    if (this.products.length === 0)
+      return [0, 0]
+
     const prices = this.products.map(p => p.price)
     return [Math.min(...prices), Math.max(...prices)]
   }
@@ -402,7 +412,7 @@ export class ProductStore extends BaseStore {
 
 ```typescript
 // stores/cart.ts
-import { BaseStore, PersistentState, State, Action, AsyncAction, Getter } from '@ldesign/store'
+import { Action, AsyncAction, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
 
 interface CartItem {
   id: string
@@ -442,14 +452,15 @@ export class CartStore extends BaseStore {
 
   @Action()
   addItem(product: Product, quantity: number = 1, attributes: Record<string, any> = {}) {
-    const existingItem = this.items.find(item => 
-      item.productId === product.id && 
-      JSON.stringify(item.selectedAttributes) === JSON.stringify(attributes)
+    const existingItem = this.items.find(item =>
+      item.productId === product.id
+      && JSON.stringify(item.selectedAttributes) === JSON.stringify(attributes)
     )
 
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.items.push({
         id: generateId(),
         productId: product.id,
@@ -480,7 +491,8 @@ export class CartStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeItem(itemId)
-      } else {
+      }
+      else {
         item.quantity = quantity
         this.calculateShippingAndTax()
       }
@@ -501,7 +513,8 @@ export class CartStore extends BaseStore {
       const coupon = await couponApi.validateCoupon(couponCode, this.subtotal)
       this.appliedCoupon = coupon
       return coupon
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('优惠券无效或已过期')
     }
   }
@@ -518,7 +531,8 @@ export class CartStore extends BaseStore {
       this.items = cartData.items
       this.appliedCoupon = cartData.coupon
       this.calculateShippingAndTax()
-    } catch (error) {
+    }
+    catch (error) {
       console.error('加载购物车失败:', error)
     }
   }
@@ -526,14 +540,16 @@ export class CartStore extends BaseStore {
   @AsyncAction()
   async syncToServer() {
     const authStore = new AuthStore('auth')
-    if (!authStore.isLoggedIn) return
+    if (!authStore.isLoggedIn)
+      return
 
     try {
       await cartApi.syncCart(authStore.currentUser!.id, {
         items: this.items,
         coupon: this.appliedCoupon
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步购物车失败:', error)
     }
   }
@@ -542,7 +558,8 @@ export class CartStore extends BaseStore {
     // 计算运费
     if (this.subtotal >= 99) {
       this.shippingFee = 0 // 满99免运费
-    } else {
+    }
+    else {
       this.shippingFee = 10
     }
 
@@ -562,12 +579,14 @@ export class CartStore extends BaseStore {
 
   @Getter()
   get discountAmount() {
-    if (!this.appliedCoupon) return 0
+    if (!this.appliedCoupon)
+      return 0
 
     let discount = 0
     if (this.appliedCoupon.type === 'percentage') {
       discount = this.subtotal * (this.appliedCoupon.value / 100)
-    } else {
+    }
+    else {
       discount = this.appliedCoupon.value
     }
 
@@ -601,15 +620,56 @@ export class CartStore extends BaseStore {
 ### 在 Vue 组件中使用
 
 ```vue
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { AuthStore } from '@/stores/auth'
+import { CartStore } from '@/stores/cart'
+import { ProductStore } from '@/stores/product'
+
+const authStore = new AuthStore('auth')
+const productStore = new ProductStore('product')
+const cartStore = new CartStore('cart')
+
+onMounted(async () => {
+  await productStore.fetchProducts()
+  await productStore.fetchFeaturedProducts()
+
+  if (authStore.isLoggedIn) {
+    await cartStore.loadUserCart(authStore.currentUser!.id)
+  }
+})
+
+function handleAddToCart(product: Product, quantity: number) {
+  cartStore.addItem(product, quantity)
+
+  // 如果用户已登录，同步到服务器
+  if (authStore.isLoggedIn) {
+    cartStore.syncToServer()
+  }
+}
+
+async function handleCheckout() {
+  if (!authStore.isLoggedIn) {
+    // 跳转到登录页面
+    router.push('/login')
+    return
+  }
+
+  // 创建订单
+  const orderStore = new OrderStore('order')
+  await orderStore.createOrder(cartStore.items, cartStore.total)
+}
+</script>
+
 <template>
   <div class="ecommerce-app">
     <!-- 商品列表 -->
-    <ProductGrid 
+    <ProductGrid
       :products="productStore.filteredProducts"
       :loading="productStore.loading"
       @add-to-cart="handleAddToCart"
     />
-    
+
     <!-- 购物车 -->
     <ShoppingCart
       :items="cartStore.items"
@@ -620,47 +680,6 @@ export class CartStore extends BaseStore {
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { onMounted } from 'vue'
-import { AuthStore } from '@/stores/auth'
-import { ProductStore } from '@/stores/product'
-import { CartStore } from '@/stores/cart'
-
-const authStore = new AuthStore('auth')
-const productStore = new ProductStore('product')
-const cartStore = new CartStore('cart')
-
-onMounted(async () => {
-  await productStore.fetchProducts()
-  await productStore.fetchFeaturedProducts()
-  
-  if (authStore.isLoggedIn) {
-    await cartStore.loadUserCart(authStore.currentUser!.id)
-  }
-})
-
-const handleAddToCart = (product: Product, quantity: number) => {
-  cartStore.addItem(product, quantity)
-  
-  // 如果用户已登录，同步到服务器
-  if (authStore.isLoggedIn) {
-    cartStore.syncToServer()
-  }
-}
-
-const handleCheckout = async () => {
-  if (!authStore.isLoggedIn) {
-    // 跳转到登录页面
-    router.push('/login')
-    return
-  }
-  
-  // 创建订单
-  const orderStore = new OrderStore('order')
-  await orderStore.createOrder(cartStore.items, cartStore.total)
-}
-</script>
 ```
 
 ## 最佳实践
@@ -692,7 +711,7 @@ export class CartStore extends BaseStore {
   @Action()
   addItem(product: Product, quantity: number) {
     // ... 添加商品逻辑
-    
+
     // 触发事件
     storeEventBus.emit('cart:item-added', { product, quantity })
   }
@@ -701,7 +720,7 @@ export class CartStore extends BaseStore {
 export class InventoryStore extends BaseStore {
   constructor(id: string) {
     super(id)
-    
+
     // 监听购物车事件
     storeEventBus.on('cart:item-added', this.handleCartItemAdded.bind(this))
   }
@@ -728,11 +747,12 @@ export class ApiStore extends BaseStore {
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await apiCall()
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
-        
+
         if (i < maxRetries - 1) {
-          await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)))
+          await new Promise(resolve => setTimeout(resolve, delay * 2 ** i))
         }
       }
     }
@@ -763,7 +783,7 @@ export class OptimizedProductStore extends BaseStore {
       startIndex + Math.ceil(this.containerHeight / this.itemHeight) + 1,
       this.products.length
     )
-    
+
     return this.products.slice(startIndex, endIndex)
   }
 

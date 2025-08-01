@@ -31,7 +31,7 @@ yarn add @ldesign/crypto
 ### 基础用法
 
 ```typescript
-import { encrypt, decrypt, hash } from '@ldesign/crypto'
+import { decrypt, encrypt, hash } from '@ldesign/crypto'
 
 // AES 加密
 const encrypted = encrypt.aes('Hello World', 'secret-key')
@@ -56,12 +56,12 @@ export default {
   setup() {
     const { encrypt, decrypt } = useCrypto()
     const { md5, sha256 } = useHash()
-    
+
     const handleEncrypt = () => {
       const result = encrypt.aes('data', 'key')
       console.log(result)
     }
-    
+
     return {
       handleEncrypt
     }
@@ -70,9 +70,9 @@ export default {
 ```
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // 使用插件
 import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 import App from './App.vue'
 
 const app = createApp(App)

@@ -16,38 +16,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 8
-          
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-          
+          cache: pnpm
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Build packages
         run: pnpm build
-        
+
       - name: Bundle size check
         run: pnpm size-check
-        
+
       - name: Performance benchmark
         run: |
           # 这里可以添加性能基准测试
           echo "Running performance benchmarks..."
           # pnpm test:performance
         continue-on-error: true
-        
+
       - name: Lighthouse CI
         uses: treosh/lighthouse-ci-action@v10
         with:
-          configPath: './lighthouse.config.js'
+          configPath: ./lighthouse.config.js
           uploadArtifacts: true
           temporaryPublicStorage: true
         continue-on-error: true
@@ -58,31 +58,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 8
-          
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-          
+          cache: pnpm
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Build packages
         run: pnpm build
-        
+
       - name: Analyze bundle size
         uses: preactjs/compressed-size-action@v2
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
           pattern: 'packages/*/dist/*.js'
           exclude: '{**/*.map,**/node_modules/**}'
-          
+
       - name: Bundle analyzer
         run: |
           # 分析每个包的构建产物

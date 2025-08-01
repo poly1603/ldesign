@@ -1,181 +1,123 @@
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { dirname, resolve as pathResolve } from 'node:path'
-import { defineConfig } from 'rollup'
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
 import alias from '@rollup/plugin-alias'
-import vue from 'rollup-plugin-vue'
+import commonjs from '@rollup/plugin-commonjs'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import terser from '@rollup/plugin-terser'
+import typescript from '@rollup/plugin-typescript'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
+import { glob } from 'glob'
 import dts from 'rollup-plugin-dts'
-import esbuild from 'rollup-plugin-esbuild'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const external = (id) => {
-  // 排除Vue相关的所有模块
-  if (id === 'vue' || id.startsWith('vue/') || id.startsWith('@vue/')) {
-    return true
-  }
+const external = ['vue']
 
-  // 排除jsx-runtime
-  if (id.includes('jsx-runtime')) {
-    return true
-  }
+// 获取所有 TypeScript 文件作为入口点
+function getInputFiles() {
+  const files = glob.sync('src/**/*.{ts,tsx}', {
+    ignore: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+  })
 
-  // 排除node_modules中的所有模块
-  if (id.includes('node_modules')) {
-    return true
-  }
+  const input = {}
+  files.forEach((file) => {
+    const name = path.relative('src', file).replace(/\.(ts|tsx)$/, '')
+    input[name] = file
+  })
 
-  return false
+  return input
 }
 
-const plugins = [
-  alias({
-    entries: [
-      { find: '@', replacement: pathResolve(__dirname, 'src') },
-    ],
-  }),
-  resolve({
-    preferBuiltins: false,
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.vue'],
-  }),
-  commonjs(),
-  vue({
-    target: 'browser',
-    preprocessStyles: true,
-  }),
-  esbuild({
-    include: /\.[jt]sx?$/,
-    exclude: /node_modules/,
-    sourceMap: true,
-    target: 'es2020',
-    jsx: 'automatic',
-    jsxImportSource: 'vue',
-    tsconfig: './tsconfig.json',
-  }),
-]
+// 通用插件配置
+function getPlugins() {
+  return [
+    alias({
+      entries: [
+        { find: '@', replacement: path.resolve(__dirname, 'src') },
+      ],
+    }),
+    vue(),
+    vueJsx(),
+    nodeResolve({
+      preferBuiltins: false,
+    }),
+    commonjs(),
+    typescript({
+      tsconfig: './tsconfig.json',
+      declaration: false,
+      declarationMap: false,
+      jsx: 'preserve',
+    }),
+  ]
+}
 
-export default defineConfig([
-  // Bundled ESM build for dist/ (browser usage)
+export default [
+  // ESM 格式
   {
-    input: 'src/index.ts',
+    input: getInputFiles(),
     output: {
-      file: 'dist/index.js',
-      format: 'es',
-      sourcemap: true,
-    },
-    external,
-    plugins,
-  },
-  // Bundled Vue ESM build for dist/
-  {
-    input: 'src/vue/index.ts',
-    output: {
-      file: 'dist/vue.js',
-      format: 'es',
-      sourcemap: true,
-    },
-    external,
-    plugins,
-  },
-  // Bundled CJS build for dist/
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.cjs',
-      format: 'cjs',
-      sourcemap: true,
-      exports: 'named',
-    },
-    external,
-    plugins,
-  },
-  // Bundled Vue CJS build for dist/
-  {
-    input: 'src/vue/index.ts',
-    output: {
-      file: 'dist/vue.cjs',
-      format: 'cjs',
-      sourcemap: true,
-      exports: 'named',
-    },
-    external,
-    plugins,
-  },
-  // Modular ESM build for lib/ (preserving structure)
-  {
-    input: [
-      'src/index.ts',
-      'src/vue/index.ts',
-      'src/core/index.ts',
-      'src/utils/index.ts',
-      'src/types/index.ts'
-    ],
-    output: {
-      dir: 'lib',
+      dir: 'es',
       format: 'es',
       sourcemap: true,
       preserveModules: true,
       preserveModulesRoot: 'src',
-      entryFileNames: '[name].js'
     },
     external,
-    plugins,
+    plugins: getPlugins(),
   },
-  // Modular CJS build for lib/
+
+  // CommonJS 格式
   {
-    input: [
-      'src/index.ts',
-      'src/vue/index.ts',
-      'src/core/index.ts',
-      'src/utils/index.ts',
-      'src/types/index.ts'
-    ],
+    input: getInputFiles(),
     output: {
       dir: 'lib',
       format: 'cjs',
       sourcemap: true,
+      exports: 'named',
       preserveModules: true,
       preserveModulesRoot: 'src',
-      entryFileNames: '[name].cjs',
-      exports: 'named'
     },
     external,
-    plugins,
+    plugins: getPlugins(),
   },
-  // Type definitions
+
+  // UMD 格式
   {
     input: 'src/index.ts',
-    output: {
-      file: 'types/index.d.ts',
-      format: 'es',
-    },
-    external,
-    plugins: [
-      alias({
-        entries: [
-          { find: '@', replacement: pathResolve(__dirname, 'src') },
-        ],
-      }),
-      dts(),
+    output: [
+      {
+        file: 'dist/index.js',
+        format: 'umd',
+        name: 'LDesignTemplate',
+        sourcemap: true,
+        globals: { vue: 'Vue' },
+        exports: 'named',
+      },
+      {
+        file: 'dist/index.min.js',
+        format: 'umd',
+        name: 'LDesignTemplate',
+        sourcemap: true,
+        globals: { vue: 'Vue' },
+        exports: 'named',
+        plugins: [terser()],
+      },
     ],
+    external,
+    plugins: getPlugins(),
   },
-  // Vue type definitions
+
+  // 类型定义文件
   {
-    input: 'src/vue/index.ts',
+    input: getInputFiles(),
     output: {
-      file: 'types/vue.d.ts',
+      dir: 'types',
       format: 'es',
+      preserveModules: true,
+      preserveModulesRoot: 'src',
     },
     external,
-    plugins: [
-      alias({
-        entries: [
-          { find: '@', replacement: pathResolve(__dirname, 'src') },
-        ],
-      }),
-      dts(),
-    ],
+    plugins: [dts()],
   },
-])
+]

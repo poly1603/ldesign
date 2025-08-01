@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { RequestConfig } from '@/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CacheManager, MemoryCacheStorage } from '@/utils/cache'
-import type { RequestConfig, ResponseData } from '@/types'
 import { createMockResponse, delay } from '../../setup'
 
-describe('MemoryCacheStorage', () => {
+describe('memoryCacheStorage', () => {
   let storage: MemoryCacheStorage
 
   beforeEach(() => {
@@ -93,7 +93,7 @@ describe('MemoryCacheStorage', () => {
   })
 })
 
-describe('CacheManager', () => {
+describe('cacheManager', () => {
   let cacheManager: CacheManager
   let mockStorage: MemoryCacheStorage
 
@@ -169,15 +169,15 @@ describe('CacheManager', () => {
     })
 
     it('should generate different keys for different params', async () => {
-      const config1: RequestConfig = { 
-        url: '/users', 
+      const config1: RequestConfig = {
+        url: '/users',
         method: 'GET',
-        params: { page: 1 }
+        params: { page: 1 },
       }
-      const config2: RequestConfig = { 
-        url: '/users', 
+      const config2: RequestConfig = {
+        url: '/users',
         method: 'GET',
-        params: { page: 2 }
+        params: { page: 2 },
       }
 
       const response1 = createMockResponse({ users: [], page: 1 })
@@ -194,7 +194,7 @@ describe('CacheManager', () => {
     })
 
     it('should use custom key generator', async () => {
-      const customKeyGenerator = vi.fn((config) => `custom-${config.url}`)
+      const customKeyGenerator = vi.fn(config => `custom-${config.url}`)
       cacheManager.updateConfig({ keyGenerator: customKeyGenerator })
 
       const config: RequestConfig = { url: '/users', method: 'GET' }

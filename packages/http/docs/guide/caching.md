@@ -28,10 +28,10 @@ const response2 = await http.get('/api/users') // 瞬间返回
 ```typescript
 const http = createHttpClient({
   cache: {
-    enabled: true,           // 启用缓存
-    ttl: 300000,            // 缓存时间（毫秒）
-    storage: 'memory',      // 存储类型：'memory' | 'localStorage'
-    keyGenerator: (config) => `${config.method}:${config.url}` // 自定义键生成器
+    enabled: true, // 启用缓存
+    ttl: 300000, // 缓存时间（毫秒）
+    storage: 'memory', // 存储类型：'memory' | 'localStorage'
+    keyGenerator: config => `${config.method}:${config.url}` // 自定义键生成器
   }
 })
 ```
@@ -54,11 +54,13 @@ const http = createHttpClient({
 ```
 
 **优点：**
+
 - ⚡ 访问速度极快
 - 🔒 数据安全（不持久化）
 - 💾 不占用磁盘空间
 
 **缺点：**
+
 - 📱 页面刷新后丢失
 - 🚫 无法跨标签页共享
 
@@ -78,11 +80,13 @@ const http = createHttpClient({
 ```
 
 **优点：**
+
 - 💾 数据持久化
 - 🌐 跨标签页共享
 - 🔄 页面刷新后保留
 
 **缺点：**
+
 - 📦 存储空间有限（通常 5-10MB）
 - 🐌 访问速度相对较慢
 - 🔍 数据可被用户查看
@@ -155,7 +159,7 @@ const http = createHttpClient({
     keyGenerator: (config) => {
       // 包含查询参数的缓存键
       const params = new URLSearchParams(config.params).toString()
-      return `${config.method}:${config.url}${params ? '?' + params : ''}`
+      return `${config.method}:${config.url}${params ? `?${params}` : ''}`
     }
   }
 })
@@ -241,8 +245,8 @@ const { data, loading, isStale } = useQuery(
   'users', // 查询键
   { url: '/api/users' },
   {
-    staleTime: 300000,  // 5分钟内数据不过期
-    cacheTime: 600000,  // 缓存保留10分钟
+    staleTime: 300000, // 5分钟内数据不过期
+    cacheTime: 600000, // 缓存保留10分钟
   }
 )
 </script>
@@ -252,12 +256,12 @@ const { data, loading, isStale } = useQuery(
 
 ```vue
 <script setup lang="ts">
-import { useQuery, useMutation } from '@ldesign/http/vue'
+import { useMutation, useQuery } from '@ldesign/http/vue'
 
 const { data, invalidate } = useQuery('users', { url: '/api/users' })
 
 const { mutate: createUser } = useMutation(
-  (userData) => http.post('/api/users', userData),
+  userData => http.post('/api/users', userData),
   {
     onSuccess: () => {
       // 创建成功后使缓存失效
@@ -281,9 +285,9 @@ class TaggedCacheStorage implements CacheStorage {
 
   async set(key: string, value: any, ttl?: number, tags?: string[]): Promise<void> {
     this.cache.set(key, { value, timestamp: Date.now(), ttl })
-    
+
     if (tags) {
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         if (!this.tags.has(tag)) {
           this.tags.set(tag, new Set())
         }
@@ -345,7 +349,7 @@ class SyncedCacheStorage implements CacheStorage {
 
   async set(key: string, value: any, ttl?: number): Promise<void> {
     await this.baseStorage.set(key, value, ttl)
-    
+
     // 通知其他标签页
     localStorage.setItem(`cache_sync_${key}`, JSON.stringify({
       action: 'set',
@@ -399,8 +403,9 @@ class CompressedCacheStorage implements CacheStorage {
 
   async get(key: string): Promise<any> {
     const compressed = localStorage.getItem(key)
-    if (!compressed) return null
-    
+    if (!compressed)
+      return null
+
     const decompressed = decompress(compressed)
     return JSON.parse(decompressed)
   }
@@ -435,9 +440,9 @@ const http = createHttpClient({
 
 ```typescript
 // 数据变更后及时清除相关缓存
-const updateUser = async (userId: number, data: any) => {
+async function updateUser(userId: number, data: any) {
   await http.put(`/api/users/${userId}`, data)
-  
+
   // 清除相关缓存
   await cacheManager.delete({ url: `/api/users/${userId}` })
   await cacheManager.delete({ url: '/api/users' })
@@ -453,15 +458,16 @@ class MonitoredCacheStorage implements CacheStorage {
 
   async get(key: string): Promise<any> {
     const value = await this.baseStorage.get(key)
-    
+
     if (value) {
       this.hits++
-    } else {
+    }
+    else {
       this.misses++
     }
-    
+
     console.log(`缓存命中率: ${(this.hits / (this.hits + this.misses) * 100).toFixed(2)}%`)
-    
+
     return value
   }
 

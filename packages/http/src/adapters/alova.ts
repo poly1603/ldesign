@@ -12,12 +12,13 @@ export class AlovaAdapter extends BaseAdapter {
   constructor(alovaInstance?: any) {
     super()
     this.alovaInstance = alovaInstance
-    
+
     if (!alovaInstance) {
       try {
         // 动态导入 alova
         this.alova = require('alova')
-      } catch {
+      }
+      catch {
         // alova 未安装
         this.alova = null
       }
@@ -53,7 +54,8 @@ export class AlovaAdapter extends BaseAdapter {
 
       // 转换响应为标准格式
       return this.convertFromAlovaResponse<T>(response, processedConfig)
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleAlovaError(error, processedConfig)
     }
   }
@@ -150,18 +152,18 @@ export class AlovaAdapter extends BaseAdapter {
    */
   private convertFromAlovaResponse<T>(
     alovaResponse: any,
-    config: RequestConfig
+    config: RequestConfig,
   ): ResponseData<T> {
     // alova 的响应格式可能因配置而异
     // 这里假设响应已经被 responded 函数处理过
-    
+
     return this.processResponse<T>(
       alovaResponse,
       200, // alova 通常只在成功时返回数据
       'OK',
       {}, // alova 可能不直接暴露响应头
       config,
-      alovaResponse
+      alovaResponse,
     )
   }
 
@@ -176,7 +178,7 @@ export class AlovaAdapter extends BaseAdapter {
 
     // 网络错误或其他错误
     const httpError = this.processError(error, config)
-    
+
     if (error.message && error.message.includes('fetch')) {
       httpError.isNetworkError = true
     }

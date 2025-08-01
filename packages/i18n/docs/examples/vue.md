@@ -21,10 +21,10 @@ pnpm add -D @vitejs/plugin-vue typescript vue-tsc vite
 ### 主入口文件
 
 ```typescript
-// main.ts
-import { createApp } from 'vue'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// main.ts
+import { createApp } from 'vue'
 import App from './App.vue'
 
 async function bootstrap() {
@@ -65,7 +65,8 @@ async function bootstrap() {
     app.mount('#app')
 
     console.log('Vue I18n example app started successfully')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
   }
 }
@@ -77,129 +78,14 @@ bootstrap()
 
 ```vue
 <!-- App.vue -->
-<template>
-  <div class="app">
-    <header class="header">
-      <h1>@ldesign/i18n</h1>
-      <p>Vue 3 Example</p>
-      <div class="current-language">
-        {{ t('common.language') }}: {{ currentLanguageInfo?.nativeName }} ({{ locale }})
-      </div>
-    </header>
-
-    <!-- 语言切换器 -->
-    <div class="controls">
-      <button
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :class="['btn', { active: locale === lang.code }]"
-        @click="switchLanguage(lang.code)"
-        :disabled="isChanging"
-      >
-        {{ lang.nativeName }}
-        <span v-if="isChanging && locale === lang.code" class="loading">...</span>
-      </button>
-    </div>
-
-    <!-- 基础翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.basic') }}</h3>
-      <div class="example">
-        <div class="code">{{ "t('common.ok')" }}</div>
-        <div class="result">{{ t('common.ok') }}</div>
-      </div>
-      <div class="example">
-        <div class="code">{{ "t('common.cancel')" }}</div>
-        <div class="result">{{ t('common.cancel') }}</div>
-      </div>
-    </section>
-
-    <!-- 插值翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.interpolation') }}</h3>
-      <div class="example">
-        <div class="code">{{ "t('common.pageOf', { current: 1, total: 10 })" }}</div>
-        <div class="result">{{ t('common.pageOf', { current: 1, total: 10 }) }}</div>
-      </div>
-      <div class="example">
-        <div class="code">{{ "t('common.showingItems', { start: 1, end: 20, total: 100 })" }}</div>
-        <div class="result">{{ t('common.showingItems', { start: 1, end: 20, total: 100 }) }}</div>
-      </div>
-    </section>
-
-    <!-- 复数处理示例 -->
-    <section class="section">
-      <h3>{{ t('examples.pluralization') }}</h3>
-      <div class="example">
-        <div class="code">{{ "t('date.duration.minutes', { count: 1 })" }}</div>
-        <div class="result">{{ t('date.duration.minutes', { count: 1 }) }}</div>
-      </div>
-      <div class="example">
-        <div class="code">{{ "t('date.duration.minutes', { count: 5 })" }}</div>
-        <div class="result">{{ t('date.duration.minutes', { count: 5 }) }}</div>
-      </div>
-    </section>
-
-    <!-- 指令示例 -->
-    <section class="section">
-      <h3>{{ t('examples.directive') }}</h3>
-      <div class="example">
-        <div class="code">{{ '<div v-t="\'common.save\'"></div>' }}</div>
-        <div class="result" v-t="'common.save'"></div>
-      </div>
-      <div class="example">
-        <div class="code">{{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}</div>
-        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example" />
-      </div>
-    </section>
-
-    <!-- 批量翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.batch') }}</h3>
-      <div class="example">
-        <div class="code">useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])</div>
-        <pre class="result">{{ JSON.stringify(batchTranslations, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 条件翻译示例 -->
-    <section class="section">
-      <h3>{{ t('examples.conditional') }}</h3>
-      <div class="example">
-        <label>
-          <input v-model="isOnline" type="checkbox" />
-          {{ t('common.online') }} / {{ t('common.offline') }}
-        </label>
-        <div class="result">
-          {{ t('examples.status') }}: {{ conditionalStatus }}
-        </div>
-      </div>
-    </section>
-
-    <!-- 语言信息示例 -->
-    <section class="section">
-      <h3>{{ t('examples.info') }}</h3>
-      <div class="example">
-        <div class="code">getCurrentLanguageInfo()</div>
-        <pre class="result">{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 错误处理 -->
-    <div v-if="error" class="error">
-      {{ error }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { 
-  useI18n, 
-  useLanguageSwitcher, 
-  useBatchTranslation, 
-  useConditionalTranslation 
+import {
+  useBatchTranslation,
+  useConditionalTranslation,
+  useI18n,
+  useLanguageSwitcher
 } from '@ldesign/i18n/vue'
+import { computed, onMounted, ref } from 'vue'
 
 // 使用 I18n 组合式 API
 const { t, i18n } = useI18n()
@@ -241,6 +127,153 @@ i18n.on('loadError', (locale: string, err: Error) => {
   }, 5000)
 })
 </script>
+
+<template>
+  <div class="app">
+    <header class="header">
+      <h1>@ldesign/i18n</h1>
+      <p>Vue 3 Example</p>
+      <div class="current-language">
+        {{ t('common.language') }}: {{ currentLanguageInfo?.nativeName }} ({{ locale }})
+      </div>
+    </header>
+
+    <!-- 语言切换器 -->
+    <div class="controls">
+      <button
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        class="btn" :class="[{ active: locale === lang.code }]"
+        :disabled="isChanging"
+        @click="switchLanguage(lang.code)"
+      >
+        {{ lang.nativeName }}
+        <span v-if="isChanging && locale === lang.code" class="loading">...</span>
+      </button>
+    </div>
+
+    <!-- 基础翻译示例 -->
+    <section class="section">
+      <h3>{{ t('examples.basic') }}</h3>
+      <div class="example">
+        <div class="code">
+          {{ "t('common.ok')" }}
+        </div>
+        <div class="result">
+          {{ t('common.ok') }}
+        </div>
+      </div>
+      <div class="example">
+        <div class="code">
+          {{ "t('common.cancel')" }}
+        </div>
+        <div class="result">
+          {{ t('common.cancel') }}
+        </div>
+      </div>
+    </section>
+
+    <!-- 插值翻译示例 -->
+    <section class="section">
+      <h3>{{ t('examples.interpolation') }}</h3>
+      <div class="example">
+        <div class="code">
+          {{ "t('common.pageOf', { current: 1, total: 10 })" }}
+        </div>
+        <div class="result">
+          {{ t('common.pageOf', { current: 1, total: 10 }) }}
+        </div>
+      </div>
+      <div class="example">
+        <div class="code">
+          {{ "t('common.showingItems', { start: 1, end: 20, total: 100 })" }}
+        </div>
+        <div class="result">
+          {{ t('common.showingItems', { start: 1, end: 20, total: 100 }) }}
+        </div>
+      </div>
+    </section>
+
+    <!-- 复数处理示例 -->
+    <section class="section">
+      <h3>{{ t('examples.pluralization') }}</h3>
+      <div class="example">
+        <div class="code">
+          {{ "t('date.duration.minutes', { count: 1 })" }}
+        </div>
+        <div class="result">
+          {{ t('date.duration.minutes', { count: 1 }) }}
+        </div>
+      </div>
+      <div class="example">
+        <div class="code">
+          {{ "t('date.duration.minutes', { count: 5 })" }}
+        </div>
+        <div class="result">
+          {{ t('date.duration.minutes', { count: 5 }) }}
+        </div>
+      </div>
+    </section>
+
+    <!-- 指令示例 -->
+    <section class="section">
+      <h3>{{ t('examples.directive') }}</h3>
+      <div class="example">
+        <div class="code">
+          {{ '<div v-t="\'common.save\'"></div>' }}
+        </div>
+        <div v-t="'common.save'" class="result" />
+      </div>
+      <div class="example">
+        <div class="code">
+          {{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}
+        </div>
+        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example">
+      </div>
+    </section>
+
+    <!-- 批量翻译示例 -->
+    <section class="section">
+      <h3>{{ t('examples.batch') }}</h3>
+      <div class="example">
+        <div class="code">
+          useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
+        </div>
+        <pre class="result">{{ JSON.stringify(batchTranslations, null, 2) }}</pre>
+      </div>
+    </section>
+
+    <!-- 条件翻译示例 -->
+    <section class="section">
+      <h3>{{ t('examples.conditional') }}</h3>
+      <div class="example">
+        <label>
+          <input v-model="isOnline" type="checkbox">
+          {{ t('common.online') }} / {{ t('common.offline') }}
+        </label>
+        <div class="result">
+          {{ t('examples.status') }}: {{ conditionalStatus }}
+        </div>
+      </div>
+    </section>
+
+    <!-- 语言信息示例 -->
+    <section class="section">
+      <h3>{{ t('examples.info') }}</h3>
+      <div class="example">
+        <div class="code">
+          getCurrentLanguageInfo()
+        </div>
+        <pre class="result">{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
+      </div>
+    </section>
+
+    <!-- 错误处理 -->
+    <div v-if="error" class="error">
+      {{ error }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .app {
@@ -364,7 +397,7 @@ label {
   margin-bottom: 10px;
 }
 
-input[type="checkbox"] {
+input[type='checkbox'] {
   margin: 0;
 }
 </style>
@@ -391,36 +424,15 @@ const message = t('page.welcome', { name: 'Vue' })
 
 ```vue
 <!-- LanguageSwitcher.vue -->
-<template>
-  <div class="language-switcher">
-    <select 
-      v-model="currentLocale" 
-      @change="handleLanguageChange"
-      :disabled="isChanging"
-    >
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
-        :value="lang.code"
-      >
-        {{ lang.nativeName }}
-      </option>
-    </select>
-    <span v-if="isChanging" class="loading">
-      {{ t('common.loading') }}
-    </span>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useLanguageSwitcher } from '@ldesign/i18n/vue'
+import { ref, watch } from 'vue'
 
-const { 
-  locale, 
-  availableLanguages, 
-  isChanging, 
-  switchLanguage 
+const {
+  locale,
+  availableLanguages,
+  isChanging,
+  switchLanguage
 } = useLanguageSwitcher()
 
 const currentLocale = ref(locale.value)
@@ -433,52 +445,40 @@ watch(locale, (newLocale) => {
   document.documentElement.lang = newLocale
 })
 
-const handleLanguageChange = async () => {
+async function handleLanguageChange() {
   await switchLanguage(currentLocale.value)
 }
 </script>
+
+<template>
+  <div class="language-switcher">
+    <select
+      v-model="currentLocale"
+      :disabled="isChanging"
+      @change="handleLanguageChange"
+    >
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        :value="lang.code"
+      >
+        {{ lang.nativeName }}
+      </option>
+    </select>
+    <span v-if="isChanging" class="loading">
+      {{ t('common.loading') }}
+    </span>
+  </div>
+</template>
 ```
 
 ### 表单验证组件
 
 ```vue
 <!-- FormValidation.vue -->
-<template>
-  <form @submit.prevent="handleSubmit">
-    <div class="field">
-      <label>{{ t('form.name') }}</label>
-      <input 
-        v-model="form.name" 
-        :placeholder="t('form.namePlaceholder')"
-        :class="{ error: errors.name }"
-      />
-      <span v-if="errors.name" class="error-message">
-        {{ errors.name }}
-      </span>
-    </div>
-
-    <div class="field">
-      <label>{{ t('form.email') }}</label>
-      <input 
-        v-model="form.email" 
-        type="email"
-        :placeholder="t('form.emailPlaceholder')"
-        :class="{ error: errors.email }"
-      />
-      <span v-if="errors.email" class="error-message">
-        {{ errors.email }}
-      </span>
-    </div>
-
-    <button type="submit" :disabled="isSubmitting">
-      {{ isSubmitting ? t('common.loading') : t('form.submit') }}
-    </button>
-  </form>
-</template>
-
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { reactive, ref } from 'vue'
 
 const { t } = useI18n()
 
@@ -494,7 +494,7 @@ const errors = reactive({
 
 const isSubmitting = ref(false)
 
-const validateForm = () => {
+function validateForm() {
   errors.name = ''
   errors.email = ''
 
@@ -504,28 +504,65 @@ const validateForm = () => {
 
   if (!form.email) {
     errors.email = t('validation.required')
-  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+  }
+  else if (!/\S[^\s@]*@\S+\.\S+/.test(form.email)) {
     errors.email = t('validation.email')
   }
 
   return !errors.name && !errors.email
 }
 
-const handleSubmit = async () => {
-  if (!validateForm()) return
+async function handleSubmit() {
+  if (!validateForm())
+    return
 
   isSubmitting.value = true
   try {
     // 提交表单逻辑
     await new Promise(resolve => setTimeout(resolve, 1000))
     alert(t('form.submitSuccess'))
-  } catch (error) {
+  }
+  catch (error) {
     alert(t('form.submitError'))
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }
 </script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <div class="field">
+      <label>{{ t('form.name') }}</label>
+      <input
+        v-model="form.name"
+        :placeholder="t('form.namePlaceholder')"
+        :class="{ error: errors.name }"
+      >
+      <span v-if="errors.name" class="error-message">
+        {{ errors.name }}
+      </span>
+    </div>
+
+    <div class="field">
+      <label>{{ t('form.email') }}</label>
+      <input
+        v-model="form.email"
+        type="email"
+        :placeholder="t('form.emailPlaceholder')"
+        :class="{ error: errors.email }"
+      >
+      <span v-if="errors.email" class="error-message">
+        {{ errors.email }}
+      </span>
+    </div>
+
+    <button type="submit" :disabled="isSubmitting">
+      {{ isSubmitting ? t('common.loading') : t('form.submit') }}
+    </button>
+  </form>
+</template>
 ```
 
 ## 高级功能示例
@@ -534,8 +571,8 @@ const handleSubmit = async () => {
 
 ```vue
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { ref, watch } from 'vue'
 
 const { i18n, locale } = useI18n()
 const isLoading = ref(false)
@@ -547,9 +584,11 @@ watch(locale, async (newLocale) => {
     try {
       await i18n.preloadLanguage(newLocale)
       console.log(`Language ${newLocale} loaded successfully`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`Failed to load language ${newLocale}:`, error)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -639,8 +678,8 @@ const ct = (key: string, params?: any) => t(`${COMPONENT_PREFIX}.${key}`, params
 
 ```vue
 <script setup lang="ts">
-import { ref, onErrorCaptured } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { onErrorCaptured, ref } from 'vue'
 
 const { t } = useI18n()
 const error = ref<string>('')

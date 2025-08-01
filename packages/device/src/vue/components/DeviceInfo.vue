@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useDevice } from '../composables/useDevice'
-import { DeviceDetector } from '../../core/DeviceDetector'
 import type { BatteryInfo, NetworkInfo } from '../../types'
+import { computed, onMounted, ref } from 'vue'
+import { DeviceDetector } from '../../core/DeviceDetector'
+import { useDevice } from '../composables/useDevice'
 
 interface Props {
   /** 是否显示网络信息 */
@@ -323,8 +323,12 @@ onMounted(() => {
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .device-info__content {

@@ -181,18 +181,18 @@ interface Interceptors {
 
 ```typescript
 // 请求拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 // 响应拦截器
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   return response.data
 })
 
 // 错误拦截器
-http.interceptors.error.use(error => {
+http.interceptors.error.use((error) => {
   console.error('请求错误:', error)
   return error
 })
@@ -300,12 +300,15 @@ interface HttpError extends Error {
 ```typescript
 try {
   const response = await http.get('/users')
-} catch (error) {
+}
+catch (error) {
   if (error.isNetworkError) {
     console.log('网络错误')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     console.log('请求超时')
-  } else if (error.response) {
+  }
+  else if (error.response) {
     console.log('服务器错误:', error.response.status)
   }
 }

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  DEFAULT_BREAKPOINTS,
-  DEFAULT_DEVICE_CONFIG,
   checkDeviceSupport,
   createDeviceWatcher,
+  DEFAULT_BREAKPOINTS,
+  DEFAULT_DEVICE_CONFIG,
   detectDevice,
   detectDeviceByUserAgent,
   detectDeviceByViewport,
@@ -21,12 +21,12 @@ describe('device utils', () => {
     Object.defineProperty(window, 'innerWidth', {
       writable: true,
       configurable: true,
-      value: 1920
+      value: 1920,
     })
     Object.defineProperty(window, 'innerHeight', {
       writable: true,
       configurable: true,
-      value: 1080
+      value: 1080,
     })
   })
 
@@ -67,7 +67,7 @@ describe('device utils', () => {
       // Mock mobile user agent
       Object.defineProperty(navigator, 'userAgent', {
         writable: true,
-        value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)'
+        value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
       })
 
       const isMobile = isMobileDevice()
@@ -78,7 +78,7 @@ describe('device utils', () => {
       // Mock tablet user agent
       Object.defineProperty(navigator, 'userAgent', {
         writable: true,
-        value: 'Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X)'
+        value: 'Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X)',
       })
 
       const isTablet = isTabletDevice()
@@ -121,7 +121,7 @@ describe('device utils', () => {
       const customDetector = () => 'tablet' as const
       const device = detectDevice({
         ...DEFAULT_DEVICE_CONFIG,
-        customDetector
+        customDetector,
       })
       expect(device).toBe('tablet')
     })

@@ -1,11 +1,11 @@
-import type { App, Ref, ComputedRef } from 'vue'
-import type { 
-  I18nInstance, 
-  I18nOptions, 
-  TranslationFunction, 
-  TranslationParams, 
+import type { App, ComputedRef, Ref } from 'vue'
+import type {
+  I18nInstance,
+  I18nOptions,
+  LanguageInfo,
+  TranslationFunction,
   TranslationOptions,
-  LanguageInfo 
+  TranslationParams,
 } from '@/core/types'
 
 /**
@@ -63,7 +63,7 @@ export interface I18nContext {
  */
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties extends I18nContext {}
-  
+
   interface GlobalProperties extends I18nContext {}
 }
 

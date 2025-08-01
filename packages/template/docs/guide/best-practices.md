@@ -69,15 +69,15 @@ export const config: TemplateConfig = {
   description: '传统的登录页面设计，适用于企业级应用',
   version: '1.2.0',
   author: 'LDesign Team',
-  
+
   // 分类信息
   category: 'auth',
   device: 'desktop',
   tags: ['登录', '认证', '企业级', '经典'],
-  
+
   // 预览图片
   preview: '/previews/auth/classic-login.png',
-  
+
   // 属性定义
   props: {
     title: {
@@ -97,7 +97,7 @@ export const config: TemplateConfig = {
       required: true
     }
   },
-  
+
   // 兼容性
   compatibility: {
     vue: '>=3.2.0',
@@ -146,11 +146,11 @@ const wrapperClass = computed(() => [
         <h1>{{ title }}</h1>
       </slot>
     </header>
-    
+
     <main class="template-main">
       <slot name="default" />
     </main>
-    
+
     <footer v-if="showFooter" class="template-footer">
       <slot name="footer" />
     </footer>
@@ -258,7 +258,7 @@ const isDev = process.env.NODE_ENV === 'development'
 const manager = new TemplateManager({
   debug: isDev,
   logLevel: isDev ? 'debug' : 'error',
-  
+
   // 开发环境禁用缓存
   cacheEnabled: !isDev
 })
@@ -268,7 +268,7 @@ if (isDev) {
   manager.on('template:load', (event) => {
     console.log('模板加载:', event)
   })
-  
+
   manager.on('template:error', (event) => {
     console.error('模板错误:', event)
   })
@@ -293,8 +293,8 @@ if (import.meta.hot) {
 ### 单元测试
 
 ```typescript
-import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
 import LoginTemplate from '@/templates/auth/desktop/login/index.vue'
 
 describe('LoginTemplate', () => {
@@ -305,17 +305,17 @@ describe('LoginTemplate', () => {
         onLogin: vi.fn()
       }
     })
-    
+
     expect(wrapper.find('h1').text()).toBe('用户登录')
     expect(wrapper.find('form').exists()).toBe(true)
   })
-  
+
   it('应该在提交时调用回调函数', async () => {
     const onLogin = vi.fn()
     const wrapper = mount(LoginTemplate, {
       props: { onLogin }
     })
-    
+
     await wrapper.find('form').trigger('submit')
     expect(onLogin).toHaveBeenCalled()
   })
@@ -325,16 +325,16 @@ describe('LoginTemplate', () => {
 ### 集成测试
 
 ```typescript
-import { describe, expect, it } from 'vitest'
 import { TemplateManager } from '@ldesign/template'
+import { describe, expect, it } from 'vitest'
 
 describe('TemplateManager Integration', () => {
   it('应该能够加载和渲染模板', async () => {
     const manager = new TemplateManager()
-    
+
     const component = await manager.loadTemplate('auth', 'desktop', 'login')
     expect(component).toBeDefined()
-    
+
     const rendered = await manager.render({
       category: 'auth',
       device: 'desktop',
@@ -352,13 +352,13 @@ import { expect, test } from '@playwright/test'
 
 test('模板切换功能', async ({ page }) => {
   await page.goto('/dashboard')
-  
+
   // 检查默认模板
   await expect(page.locator('.dashboard-admin')).toBeVisible()
-  
+
   // 切换到移动端视图
   await page.setViewportSize({ width: 375, height: 667 })
-  
+
   // 检查移动端模板
   await expect(page.locator('.dashboard-mobile')).toBeVisible()
 })
@@ -375,18 +375,18 @@ function validateConfig(config: TemplateConfig): boolean {
   if (!config.name || !config.category || !config.device) {
     return false
   }
-  
+
   // 验证版本格式
   if (!/^\d+\.\d+\.\d+$/.test(config.version)) {
     return false
   }
-  
+
   // 检查危险标签
   const dangerousTags = ['script', 'iframe', 'object']
   if (config.tags?.some(tag => dangerousTags.includes(tag.toLowerCase()))) {
     return false
   }
-  
+
   return true
 }
 ```
@@ -397,7 +397,7 @@ function validateConfig(config: TemplateConfig): boolean {
 // 清理用户输入
 function sanitizeProps(props: Record<string, any>): Record<string, any> {
   const cleaned: Record<string, any> = {}
-  
+
   for (const [key, value] of Object.entries(props)) {
     if (typeof value === 'string') {
       // 移除潜在的XSS攻击代码
@@ -407,7 +407,7 @@ function sanitizeProps(props: Record<string, any>): Record<string, any> {
       cleaned[key] = value
     }
   }
-  
+
   return cleaned
 }
 ```
@@ -428,7 +428,7 @@ const performanceMonitor = {
       timestamp: Date.now()
     })
   },
-  
+
   trackError: (error: Error, context: any) => {
     // 错误上报
     errorReporting.captureException(error, { extra: context })
@@ -469,17 +469,17 @@ function trackTemplateUsage(category: string, template: string, device: string) 
 function compareVersions(v1: string, v2: string): number {
   const parts1 = v1.split('.').map(Number)
   const parts2 = v2.split('.').map(Number)
-  
+
   for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
     const part1 = parts1[i] || 0
     const part2 = parts2[i] || 0
-    
-    if (part1 > part2) 
+
+    if (part1 > part2)
       return 1
-    if (part1 < part2) 
+    if (part1 < part2)
       return -1
   }
-  
+
   return 0
 }
 
@@ -504,31 +504,33 @@ async function migrateTemplate(from: string, to: string, migrationRules: Migrati
 
 ### 模板文档模板
 
-```markdown
+````markdown
 # 模板名称
 
 ## 概述
+
 简要描述模板的用途和特点。
 
 ## 预览
+
 ![预览图片](./preview.png)
 
 ## 属性
 
-| 属性名 | 类型 | 默认值 | 必需 | 描述 |
-|--------|------|--------|------|------|
-| title  | string | '' | 否 | 页面标题 |
+| 属性名 | 类型   | 默认值 | 必需 | 描述     |
+| ------ | ------ | ------ | ---- | -------- |
+| title  | string | ''     | 否   | 页面标题 |
 
 ## 事件
 
-| 事件名 | 参数 | 描述 |
-|--------|------|------|
+| 事件名 | 参数 | 描述           |
+| ------ | ---- | -------------- |
 | submit | data | 表单提交时触发 |
 
 ## 插槽
 
-| 插槽名 | 描述 |
-|--------|------|
+| 插槽名 | 描述     |
+| ------ | -------- |
 | header | 头部内容 |
 
 ## 示例
@@ -540,16 +542,21 @@ async function migrateTemplate(from: string, to: string, migrationRules: Migrati
   :template-props="{ title: '登录' }"
 />
 ```
+````
 
 ## 更新日志
 
 ### v1.2.0
+
 - 新增暗黑主题支持
 - 优化移动端适配
 
 ### v1.1.0
+
 - 添加记住密码功能
 - 修复样式问题
+
 ```
 
 通过遵循这些最佳实践，你可以构建出高质量、可维护、性能优秀的模板系统。记住，好的实践需要在项目中持续应用和改进。
+```

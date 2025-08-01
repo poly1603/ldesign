@@ -1,4 +1,4 @@
-import { IEncryptor, RSAKeyPair, RSAOptions, EncryptResult, DecryptResult } from '@/types';
+import { RSAKeyPair, RSAOptions, EncryptResult, DecryptResult, IEncryptor } from '../types/index.js';
 
 /**
  * RSA 加密器

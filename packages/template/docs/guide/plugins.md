@@ -22,18 +22,18 @@ interface Plugin {
 const myPlugin = {
   name: 'my-plugin',
   version: '1.0.0',
-  
+
   install(manager, options = {}) {
     // 扩展管理器功能
     manager.addMethod('customMethod', () => {
       console.log('自定义方法被调用')
     })
-    
+
     // 监听事件
     manager.on('template:load', (event) => {
       console.log('插件监听到模板加载:', event.template)
     })
-    
+
     // 添加自定义配置
     manager.setConfig('myPlugin', options)
   }
@@ -46,24 +46,24 @@ const myPlugin = {
 class AdvancedPlugin {
   name = 'advanced-plugin'
   version = '2.0.0'
-  
+
   private manager: TemplateManager
   private options: any
-  
+
   install(manager: TemplateManager, options: any = {}) {
     this.manager = manager
     this.options = options
-    
+
     // 添加自定义加载器
     this.addCustomLoader()
-    
+
     // 添加中间件
     this.addMiddleware()
-    
+
     // 注册自定义指令
     this.registerDirectives()
   }
-  
+
   private addCustomLoader() {
     this.manager.addLoader('remote', async (category, device, template) => {
       const url = `${this.options.baseUrl}/${category}/${device}/${template}.js`
@@ -71,19 +71,19 @@ class AdvancedPlugin {
       return await response.text()
     })
   }
-  
+
   private addMiddleware() {
     this.manager.use('beforeLoad', async (context, next) => {
       console.log('加载前中间件:', context)
       await next()
     })
-    
+
     this.manager.use('afterLoad', async (context, next) => {
       console.log('加载后中间件:', context)
       await next()
     })
   }
-  
+
   private registerDirectives() {
     // 注册自定义指令
     this.manager.directive('my-template', {
@@ -116,9 +116,9 @@ manager.use(myPlugin, {
 ### Vue 插件集成
 
 ```typescript
+import TemplatePlugin from '@ldesign/template'
 // 在 Vue 应用中使用
 import { createApp } from 'vue'
-import TemplatePlugin from '@ldesign/template'
 import myPlugin from './plugins/my-plugin'
 
 const app = createApp(App)
@@ -137,21 +137,21 @@ app.use(TemplatePlugin, {
 ```typescript
 const cachePlugin = {
   name: 'cache-plugin',
-  
+
   install(manager, options = {}) {
     const {
       maxSize = 100,
       ttl = 30 * 60 * 1000,
       strategy = 'lru'
     } = options
-    
+
     // 创建缓存实例
     const cache = new LRUCache(maxSize, ttl)
-    
+
     // 拦截模板加载
     manager.interceptor('load', async (context, next) => {
       const key = `${context.category}:${context.device}:${context.template}`
-      
+
       // 检查缓存
       const cached = cache.get(key)
       if (cached) {
@@ -159,10 +159,10 @@ const cachePlugin = {
         context.fromCache = true
         return
       }
-      
+
       // 执行原始加载
       await next()
-      
+
       // 缓存结果
       if (context.result) {
         cache.set(key, context.result)
@@ -177,20 +177,20 @@ const cachePlugin = {
 ```typescript
 const loggerPlugin = {
   name: 'logger-plugin',
-  
+
   install(manager, options = {}) {
     const {
       level = 'info',
       format = 'json'
     } = options
-    
+
     const logger = createLogger({ level, format })
-    
+
     // 监听所有事件
     manager.on('*', (event) => {
       logger.log(event.type, event.data)
     })
-    
+
     // 添加日志方法
     manager.addMethod('log', (message, level = 'info') => {
       logger.log(level, message)
@@ -204,42 +204,42 @@ const loggerPlugin = {
 ```typescript
 const performancePlugin = {
   name: 'performance-plugin',
-  
+
   install(manager, options = {}) {
     const metrics = new Map()
-    
+
     // 监控模板加载时间
     manager.on('template:beforeLoad', (event) => {
       metrics.set(event.id, Date.now())
     })
-    
+
     manager.on('template:afterLoad', (event) => {
       const startTime = metrics.get(event.id)
       if (startTime) {
         const loadTime = Date.now() - startTime
-        
+
         // 记录性能指标
         this.recordMetric('template-load-time', loadTime)
-        
+
         // 慢加载警告
         if (loadTime > 1000) {
           console.warn(`模板 ${event.template} 加载较慢: ${loadTime}ms`)
         }
-        
+
         metrics.delete(event.id)
       }
     })
-    
+
     // 添加性能报告方法
     manager.addMethod('getPerformanceReport', () => {
       return this.generateReport()
     })
   },
-  
+
   recordMetric(name, value) {
     // 记录性能指标的实现
   },
-  
+
   generateReport() {
     // 生成性能报告的实现
   }
@@ -261,7 +261,7 @@ export interface MyPluginOptions {
 export class MyPlugin {
   name = 'my-plugin'
   version = '1.0.0'
-  
+
   install(manager: TemplateManager, options: MyPluginOptions = {}) {
     // 插件逻辑
   }
@@ -307,11 +307,11 @@ export const defaultConfig = {
 export function validateConfig(config: any) {
   // 配置验证逻辑
   const errors: string[] = []
-  
+
   if (config.timeout && config.timeout < 0) {
     errors.push('timeout 必须大于 0')
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -400,7 +400,7 @@ const sharedState = {
       theme: 'light',
       language: 'zh-CN'
     })
-    
+
     // 将状态注入到管理器
     manager.provide('sharedState', state)
   }
@@ -411,7 +411,7 @@ const consumerPlugin = {
   name: 'consumer-plugin',
   install(manager) {
     const state = manager.inject('sharedState')
-    
+
     // 监听状态变化
     watch(() => state.theme, (newTheme) => {
       console.log('主题变化:', newTheme)
@@ -425,28 +425,28 @@ const consumerPlugin = {
 ### 单元测试
 
 ```typescript
+import { TemplateManager } from '@ldesign/template'
 // tests/plugins/my-plugin.test.ts
 import { describe, expect, it, vi } from 'vitest'
-import { TemplateManager } from '@ldesign/template'
 import myPlugin from '../src/plugins/my-plugin'
 
 describe('MyPlugin', () => {
   it('应该正确安装插件', () => {
     const manager = new TemplateManager()
     const spy = vi.spyOn(manager, 'addMethod')
-    
+
     manager.use(myPlugin)
-    
+
     expect(spy).toHaveBeenCalledWith('customMethod', expect.any(Function))
   })
-  
+
   it('应该监听模板加载事件', () => {
     const manager = new TemplateManager()
     const spy = vi.spyOn(console, 'log')
-    
+
     manager.use(myPlugin)
     manager.emit('template:load', { template: 'test' })
-    
+
     expect(spy).toHaveBeenCalledWith('插件监听到模板加载:', 'test')
   })
 })
@@ -455,20 +455,20 @@ describe('MyPlugin', () => {
 ### 集成测试
 
 ```typescript
+import TemplatePlugin from '@ldesign/template'
 // tests/integration/plugin-integration.test.ts
 import { describe, expect, it } from 'vitest'
 import { createApp } from 'vue'
-import TemplatePlugin from '@ldesign/template'
 import myPlugin from '../src/plugins/my-plugin'
 
 describe('插件集成测试', () => {
   it('应该在 Vue 应用中正常工作', async () => {
     const app = createApp({})
-    
+
     app.use(TemplatePlugin, {
       plugins: [[myPlugin, { option: 'test' }]]
     })
-    
+
     // 测试插件功能
     const manager = app.config.globalProperties.$templateManager
     expect(manager.customMethod).toBeDefined()

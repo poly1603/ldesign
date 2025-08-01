@@ -6,12 +6,12 @@
 
 ### 1. 基本 Markdown 渲染
 
-**粗体文本** 和 *斜体文本*
+**粗体文本** 和 _斜体文本_
 
 ### 2. 代码块
 
 ```typescript
-import { encrypt, decrypt } from '@ldesign/crypto'
+import { decrypt, encrypt } from '@ldesign/crypto'
 
 const data = 'Hello, World!'
 const key = 'test-key'
@@ -30,10 +30,10 @@ console.log('解密结果:', decrypted.data)
 
 ### 4. 表格
 
-| 算法 | 密钥长度 | 安全性 |
-|------|----------|--------|
-| AES-128 | 128位 | 高 |
-| AES-256 | 256位 | 很高 |
+| 算法    | 密钥长度 | 安全性 |
+| ------- | -------- | ------ |
+| AES-128 | 128位    | 高     |
+| AES-256 | 256位    | 很高   |
 
 ### 5. 链接测试
 

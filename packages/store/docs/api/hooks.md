@@ -15,23 +15,26 @@ createStore<T>(
 ```
 
 **参数：**
+
 - `id: string` - Store 的唯一标识符
 - `setup: () => StoreSetup<T>` - Store 设置函数
 - `options?: StoreOptions` - 可选的配置选项
 
 **StoreSetup 接口：**
+
 ```typescript
 interface StoreSetup<T> {
-  state: Record<string, Ref<any>>     // 状态对象
-  actions: Record<string, Function>   // 动作函数
-  getters: Record<string, ComputedRef<any>>  // 计算属性
+  state: Record<string, Ref<any>> // 状态对象
+  actions: Record<string, Function> // 动作函数
+  getters: Record<string, ComputedRef<any>> // 计算属性
 }
 ```
 
 **示例：**
+
 ```typescript
 import { createStore } from '@ldesign/store'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useCounter = createStore('counter', () => {
   // 状态
@@ -70,9 +73,11 @@ useStore<T>(id: string): T | null
 ```
 
 **参数：**
+
 - `id: string` - Store 的唯一标识符
 
 **示例：**
+
 ```typescript
 // 在其他组件中使用
 const counter = useStore('counter')
@@ -93,26 +98,29 @@ useState<T>(
 ```
 
 **参数：**
+
 - `initialValue: T` - 初始值
 - `options?: StateOptions` - 状态选项
 
 **StateOptions 接口：**
+
 ```typescript
 interface StateOptions {
-  persist?: boolean | PersistOptions  // 是否持久化
-  reactive?: boolean                  // 是否深度响应式
-  readonly?: boolean                  // 是否只读
+  persist?: boolean | PersistOptions // 是否持久化
+  reactive?: boolean // 是否深度响应式
+  readonly?: boolean // 是否只读
 }
 ```
 
 **示例：**
+
 ```typescript
 import { useState } from '@ldesign/store'
 
 export const useUserState = createStore('user', () => {
   // 基础状态
   const [name, setName] = useState('', { persist: true })
-  
+
   // 复杂状态
   const [profile, setProfile] = useState({
     email: '',
@@ -142,20 +150,23 @@ useAction<T extends (...args: any[]) => any>(
 ```
 
 **参数：**
+
 - `action: T` - 动作函数
 - `options?: ActionOptions` - 动作选项
 
 **ActionOptions 接口：**
+
 ```typescript
 interface ActionOptions {
-  debounce?: number      // 防抖延迟
-  throttle?: number      // 节流间隔
-  cache?: number         // 缓存时间
+  debounce?: number // 防抖延迟
+  throttle?: number // 节流间隔
+  cache?: number // 缓存时间
   loading?: Ref<boolean> // 加载状态引用
 }
 ```
 
 **示例：**
+
 ```typescript
 import { useAction } from '@ldesign/store'
 
@@ -208,21 +219,24 @@ useGetter<T>(
 ```
 
 **参数：**
+
 - `getter: () => T` - 计算函数
 - `dependencies?: any[]` - 依赖数组
 - `options?: GetterOptions` - 计算属性选项
 
 **GetterOptions 接口：**
+
 ```typescript
 interface GetterOptions {
-  cache?: boolean        // 是否缓存
-  lazy?: boolean         // 是否懒计算
-  onTrack?: (event: DebuggerEvent) => void    // 依赖追踪回调
-  onTrigger?: (event: DebuggerEvent) => void  // 触发回调
+  cache?: boolean // 是否缓存
+  lazy?: boolean // 是否懒计算
+  onTrack?: (event: DebuggerEvent) => void // 依赖追踪回调
+  onTrigger?: (event: DebuggerEvent) => void // 触发回调
 }
 ```
 
 **示例：**
+
 ```typescript
 import { useGetter } from '@ldesign/store'
 
@@ -231,16 +245,13 @@ export const useShoppingCart = createStore('cart', () => {
   const taxRate = ref(0.1)
 
   // 基础计算属性
-  const itemCount = useGetter(() => 
+  const itemCount = useGetter(() =>
     items.value.reduce((sum, item) => sum + item.quantity, 0)
   )
 
   // 缓存的计算属性
-  const subtotal = useGetter(() => 
-    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items],
-    { cache: true }
-  )
+  const subtotal = useGetter(() =>
+    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0), [items], { cache: true })
 
   // 依赖其他计算属性
   const tax = useGetter(() => subtotal.value * taxRate.value)
@@ -267,39 +278,42 @@ usePersist<T>(
 ```
 
 **参数：**
+
 - `key: string` - 存储键名
 - `initialValue: T` - 初始值
 - `options?: PersistOptions` - 持久化选项
 
 **PersistOptions 接口：**
+
 ```typescript
 interface PersistOptions {
-  storage?: 'localStorage' | 'sessionStorage'  // 存储类型
+  storage?: 'localStorage' | 'sessionStorage' // 存储类型
   serializer?: {
     read: (value: string) => T
     write: (value: T) => string
   }
-  beforeRestore?: (stored: string, defaults: T) => T  // 恢复前处理
-  afterRestore?: (restored: T) => T                   // 恢复后处理
+  beforeRestore?: (stored: string, defaults: T) => T // 恢复前处理
+  afterRestore?: (restored: T) => T // 恢复后处理
 }
 ```
 
 **示例：**
+
 ```typescript
 import { usePersist } from '@ldesign/store'
 
 export const useSettings = createStore('settings', () => {
   // 基础持久化
   const [theme, setTheme] = usePersist('theme', 'light')
-  
+
   // 自定义序列化
   const [preferences, setPreferences] = usePersist('preferences', {
     language: 'zh-CN',
     notifications: true
   }, {
     serializer: {
-      read: (value) => JSON.parse(value),
-      write: (value) => JSON.stringify(value)
+      read: value => JSON.parse(value),
+      write: value => JSON.stringify(value)
     }
   })
 
@@ -329,11 +343,13 @@ useWatch<T>(
 ```
 
 **参数：**
+
 - `source: WatchSource<T>` - 监听源
 - `callback: WatchCallback<T>` - 回调函数
 - `options?: WatchOptions` - 监听选项
 
 **示例：**
+
 ```typescript
 import { useWatch } from '@ldesign/store'
 
@@ -369,7 +385,7 @@ export const useDataSync = createStore('dataSync', () => {
 ```typescript
 // composables/useCounter.ts
 import { createStore } from '@ldesign/store'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 export const useCounter = createStore('counter', () => {
   const count = ref(0)
@@ -414,22 +430,26 @@ export const useCounter = createStore('counter', () => {
 ### 在组件中使用
 
 ```vue
-<template>
-  <div>
-    <h1>计数器: {{ counter.count }}</h1>
-    <p>状态: {{ counter.status }}</p>
-    <p>双倍值: {{ counter.doubleCount }}</p>
-    
-    <button @click="counter.increment">+1</button>
-    <button @click="counter.decrement">-1</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useCounter } from '@/composables/useCounter'
 
 const counter = useCounter()
 </script>
+
+<template>
+  <div>
+    <h1>计数器: {{ counter.count }}</h1>
+    <p>状态: {{ counter.status }}</p>
+    <p>双倍值: {{ counter.doubleCount }}</p>
+
+    <button @click="counter.increment">
+      +1
+    </button>
+    <button @click="counter.decrement">
+      -1
+    </button>
+  </div>
+</template>
 ```
 
 ## 高级用法
@@ -469,11 +489,12 @@ export const useApp = createStore('app', () => {
 
 ```typescript
 // 根据条件创建不同的 Store
-export const useConditionalStore = (type: 'admin' | 'user') => {
+export function useConditionalStore(type: 'admin' | 'user') {
   return createStore(`${type}-store`, () => {
     if (type === 'admin') {
       return setupAdminStore()
-    } else {
+    }
+    else {
       return setupUserStore()
     }
   })
@@ -486,7 +507,8 @@ function setupAdminStore() {
   const addUser = (user: User) => users.value.push(user)
   const removeUser = (id: string) => {
     const index = users.value.findIndex(u => u.id === id)
-    if (index > -1) users.value.splice(index, 1)
+    if (index > -1)
+      users.value.splice(index, 1)
   }
 
   return {
@@ -521,9 +543,9 @@ interface CounterState {
 }
 
 interface CounterActions {
-  increment(): void
-  decrement(): void
-  setStep(step: number): void
+  increment: () => void
+  decrement: () => void
+  setStep: (step: number) => void
 }
 
 interface CounterGetters {
@@ -586,7 +608,7 @@ A: 使用 `usePersist` 或在 `useState` 中设置 `persist` 选项：
 const useSettings = createStore('settings', () => {
   const [theme] = usePersist('theme', 'light')
   const [lang] = useState('zh-CN', { persist: true })
-  
+
   return {
     state: { theme, lang },
     actions: {},
@@ -601,9 +623,9 @@ A: 完全支持，提供完整的类型推断和类型安全：
 
 ```typescript
 const useTypedStore = createStore('typed', () => {
-  const count = ref<number>(0)  // 明确类型
+  const count = ref<number>(0) // 明确类型
   const items = ref<Item[]>([]) // 泛型支持
-  
+
   return {
     state: { count, items },
     actions: {},

@@ -28,28 +28,21 @@ vi.setConfig({
 })
 
 // 全局测试工具函数
-export const createMockResponse = <T = any>(
-  data: T,
-  status = 200,
-  statusText = 'OK',
-  headers: Record<string, string> = {}
-) => ({
-  data,
-  status,
-  statusText,
-  headers: {
-    'content-type': 'application/json',
-    ...headers,
-  },
-  config: {},
-  raw: null,
-})
+export function createMockResponse<T = any>(data: T, status = 200, statusText = 'OK', headers: Record<string, string> = {}) {
+  return {
+    data,
+    status,
+    statusText,
+    headers: {
+      'content-type': 'application/json',
+      ...headers,
+    },
+    config: {},
+    raw: null,
+  }
+}
 
-export const createMockError = (
-  message: string,
-  code?: string,
-  status?: number
-) => {
+export function createMockError(message: string, code?: string, status?: number) {
   const error = new Error(message) as any
   error.code = code
   error.status = status

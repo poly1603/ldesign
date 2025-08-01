@@ -1,76 +1,6 @@
-<template>
-  <div class="card">
-    <h3>📍 地理位置</h3>
-    
-    <div v-if="!isLoaded" class="loading-state">
-      <button @click="loadGeolocationModule" class="load-btn" :disabled="loading">
-        {{ loading ? '加载中...' : '📍 获取位置信息' }}
-      </button>
-      <p class="note">需要用户授权访问位置信息</p>
-    </div>
-    
-    <div v-else-if="error" class="error-state">
-      <div class="error-message">
-        <span class="error-icon">⚠️</span>
-        <span>{{ error }}</span>
-      </div>
-      <button @click="retry" class="retry-btn">
-        🔄 重试
-      </button>
-    </div>
-    
-    <div v-else class="info-grid">
-      <div class="coordinates">
-        <div class="coord-item">
-          <span class="coord-label">纬度:</span>
-          <span class="coord-value">{{ formatCoordinate(position?.latitude) }}</span>
-        </div>
-        <div class="coord-item">
-          <span class="coord-label">经度:</span>
-          <span class="coord-value">{{ formatCoordinate(position?.longitude) }}</span>
-        </div>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">精度:</span>
-        <span class="value">{{ formatAccuracy(position?.accuracy) }}</span>
-      </div>
-      
-      <div v-if="position?.altitude" class="info-item">
-        <span class="label">海拔:</span>
-        <span class="value">{{ Math.round(position.altitude) }} 米</span>
-      </div>
-      
-      <div v-if="position?.speed" class="info-item">
-        <span class="label">速度:</span>
-        <span class="value">{{ Math.round(position.speed * 3.6) }} km/h</span>
-      </div>
-      
-      <div v-if="position?.heading" class="info-item">
-        <span class="label">方向:</span>
-        <span class="value">{{ Math.round(position.heading) }}°</span>
-      </div>
-      
-      <div class="timestamp">
-        <span class="label">更新时间:</span>
-        <span class="value">{{ formatTimestamp(timestamp) }}</span>
-      </div>
-    </div>
-    
-    <div v-if="isLoaded" class="controls">
-      <button @click="getCurrentPosition" class="refresh-btn" :disabled="loading">
-        {{ loading ? '获取中...' : '🔄 刷新位置' }}
-      </button>
-      <button @click="unloadModule" class="unload-btn">
-        ❌ 卸载模块
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, computed } from 'vue'
 import { useGeolocation } from '@ldesign/device/vue'
+import { ref } from 'vue'
 
 const isLoaded = ref(false)
 const loading = ref(false)
@@ -84,51 +14,55 @@ const {
   accuracy,
   loadModule,
   unloadModule: unloadGeolocationModule,
-  getCurrentPosition: getPosition
+  getCurrentPosition: getPosition,
 } = useGeolocation()
 
-const loadGeolocationModule = async () => {
+async function loadGeolocationModule() {
   loading.value = true
   error.value = null
-  
+
   try {
     await loadModule()
     await getCurrentPosition()
     isLoaded.value = true
-  } catch (err) {
+  }
+  catch (err) {
     error.value = getErrorMessage(err)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const getCurrentPosition = async () => {
+async function getCurrentPosition() {
   loading.value = true
   error.value = null
-  
+
   try {
     await getPosition()
     timestamp.value = new Date()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = getErrorMessage(err)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const retry = () => {
+function retry() {
   error.value = null
   loadGeolocationModule()
 }
 
-const unloadModule = () => {
+function unloadModule() {
   unloadGeolocationModule()
   isLoaded.value = false
   error.value = null
   timestamp.value = null
 }
 
-const getErrorMessage = (err) => {
+function getErrorMessage(err) {
   switch (err.code) {
     case 1:
       return '用户拒绝了位置访问请求'
@@ -141,18 +75,90 @@ const getErrorMessage = (err) => {
   }
 }
 
-const formatCoordinate = (coord) => {
+function formatCoordinate(coord) {
   return coord ? coord.toFixed(6) : '未知'
 }
 
-const formatAccuracy = (acc) => {
+function formatAccuracy(acc) {
   return acc ? `±${Math.round(acc)} 米` : '未知'
 }
 
-const formatTimestamp = (ts) => {
+function formatTimestamp(ts) {
   return ts ? ts.toLocaleString() : '未知'
 }
 </script>
+
+<template>
+  <div class="card">
+    <h3>📍 地理位置</h3>
+
+    <div v-if="!isLoaded" class="loading-state">
+      <button class="load-btn" :disabled="loading" @click="loadGeolocationModule">
+        {{ loading ? '加载中...' : '📍 获取位置信息' }}
+      </button>
+      <p class="note">
+        需要用户授权访问位置信息
+      </p>
+    </div>
+
+    <div v-else-if="error" class="error-state">
+      <div class="error-message">
+        <span class="error-icon">⚠️</span>
+        <span>{{ error }}</span>
+      </div>
+      <button class="retry-btn" @click="retry">
+        🔄 重试
+      </button>
+    </div>
+
+    <div v-else class="info-grid">
+      <div class="coordinates">
+        <div class="coord-item">
+          <span class="coord-label">纬度:</span>
+          <span class="coord-value">{{ formatCoordinate(position?.latitude) }}</span>
+        </div>
+        <div class="coord-item">
+          <span class="coord-label">经度:</span>
+          <span class="coord-value">{{ formatCoordinate(position?.longitude) }}</span>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <span class="label">精度:</span>
+        <span class="value">{{ formatAccuracy(position?.accuracy) }}</span>
+      </div>
+
+      <div v-if="position?.altitude" class="info-item">
+        <span class="label">海拔:</span>
+        <span class="value">{{ Math.round(position.altitude) }} 米</span>
+      </div>
+
+      <div v-if="position?.speed" class="info-item">
+        <span class="label">速度:</span>
+        <span class="value">{{ Math.round(position.speed * 3.6) }} km/h</span>
+      </div>
+
+      <div v-if="position?.heading" class="info-item">
+        <span class="label">方向:</span>
+        <span class="value">{{ Math.round(position.heading) }}°</span>
+      </div>
+
+      <div class="timestamp">
+        <span class="label">更新时间:</span>
+        <span class="value">{{ formatTimestamp(timestamp) }}</span>
+      </div>
+    </div>
+
+    <div v-if="isLoaded" class="controls">
+      <button class="refresh-btn" :disabled="loading" @click="getCurrentPosition">
+        {{ loading ? '获取中...' : '🔄 刷新位置' }}
+      </button>
+      <button class="unload-btn" @click="unloadModule">
+        ❌ 卸载模块
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .card {
@@ -206,7 +212,8 @@ const formatTimestamp = (ts) => {
   font-size: 1.2rem;
 }
 
-.load-btn, .retry-btn {
+.load-btn,
+.retry-btn {
   padding: 12px 24px;
   background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
   color: white;

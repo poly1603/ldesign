@@ -52,7 +52,7 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
       return true
     }
     return false
-  }
+  },
 }
 
 /**
@@ -64,16 +64,16 @@ export function calculateDelay(attempt: number, config: RetryConfig): number {
   }
 
   // 指数退避算法
-  let delay = config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1)
-  
+  let delay = config.initialDelay * config.backoffMultiplier ** (attempt - 1)
+
   // 限制最大延迟
   delay = Math.min(delay, config.maxDelay)
-  
+
   // 添加抖动
   if (config.enableJitter) {
     delay = delay * (0.5 + Math.random() * 0.5)
   }
-  
+
   return Math.floor(delay)
 }
 
@@ -102,7 +102,7 @@ export class RetryExecutor {
       attempt: 0,
       totalDelay: 0,
       errors: [],
-      startTime: Date.now()
+      startTime: Date.now(),
     }
 
     while (state.attempt <= this.config.maxRetries) {
@@ -113,19 +113,20 @@ export class RetryExecutor {
         return {
           success: true,
           data: result,
-          retryState: state
+          retryState: state,
         }
-      } catch (error) {
+      }
+      catch (error) {
         state.errors.push(error)
 
         // 检查是否应该重试
         const shouldRetry = this.config.shouldRetry?.(error, state.attempt) ?? true
-        
+
         if (state.attempt > this.config.maxRetries || !shouldRetry) {
           return {
             success: false,
             error,
-            retryState: state
+            retryState: state,
           }
         }
 
@@ -139,7 +140,7 @@ export class RetryExecutor {
     return {
       success: false,
       error: state.errors[state.errors.length - 1],
-      retryState: state
+      retryState: state,
     }
   }
 
@@ -177,7 +178,8 @@ export function retry(config?: Partial<RetryConfig>) {
       const result = await executor.execute(() => originalMethod.apply(this, args))
       if (result.success) {
         return result.data
-      } else {
+      }
+      else {
         throw result.error
       }
     }
@@ -196,14 +198,15 @@ export const globalRetryExecutor = createRetryExecutor()
  */
 export async function retryOperation<T>(
   operation: () => Promise<T>,
-  config?: Partial<RetryConfig>
+  config?: Partial<RetryConfig>,
 ): Promise<T> {
   const executor = config ? createRetryExecutor(config) : globalRetryExecutor
   const result = await executor.execute(operation)
-  
+
   if (result.success) {
     return result.data!
-  } else {
+  }
+  else {
     throw result.error
   }
 }

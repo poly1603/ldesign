@@ -1,4 +1,4 @@
-import { IHasher, HashAlgorithm, HashOptions, HashResult } from '@/types';
+import { IHasher, HashAlgorithm, HashOptions, HashResult } from '../types/index.js';
 
 /**
  * 哈希器

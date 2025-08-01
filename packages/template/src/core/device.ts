@@ -18,16 +18,16 @@ export interface DeviceInfo {
 export const DEVICE_BREAKPOINTS = {
   mobile: {
     min: 0,
-    max: 767
+    max: 767,
   },
   tablet: {
     min: 768,
-    max: 1023
+    max: 1023,
   },
   desktop: {
     min: 1024,
-    max: Infinity
-  }
+    max: Infinity,
+  },
 } as const
 
 /**
@@ -35,12 +35,14 @@ export const DEVICE_BREAKPOINTS = {
  */
 export function detectDeviceType(width?: number): DeviceType {
   const screenWidth = width ?? (typeof window !== 'undefined' ? window.innerWidth : 1024)
-  
+
   if (screenWidth <= DEVICE_BREAKPOINTS.mobile.max) {
     return 'mobile'
-  } else if (screenWidth <= DEVICE_BREAKPOINTS.tablet.max) {
+  }
+  else if (screenWidth <= DEVICE_BREAKPOINTS.tablet.max) {
     return 'tablet'
-  } else {
+  }
+  else {
     return 'desktop'
   }
 }
@@ -55,7 +57,7 @@ export function getDeviceInfo(): DeviceInfo {
       width: 1024,
       height: 768,
       orientation: 'landscape',
-      userAgent: ''
+      userAgent: '',
     }
   }
 
@@ -70,7 +72,7 @@ export function getDeviceInfo(): DeviceInfo {
     width,
     height,
     orientation,
-    userAgent
+    userAgent,
   }
 }
 
@@ -78,14 +80,21 @@ export function getDeviceInfo(): DeviceInfo {
  * 检测是否为移动设备
  */
 export function isMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false
-  
+  if (typeof window === 'undefined')
+    return false
+
   const userAgent = navigator.userAgent.toLowerCase()
   const mobileKeywords = [
-    'android', 'webos', 'iphone', 'ipad', 'ipod', 
-    'blackberry', 'windows phone', 'mobile'
+    'android',
+    'webos',
+    'iphone',
+    'ipad',
+    'ipod',
+    'blackberry',
+    'windows phone',
+    'mobile',
   ]
-  
+
   return mobileKeywords.some(keyword => userAgent.includes(keyword))
 }
 
@@ -93,16 +102,17 @@ export function isMobileDevice(): boolean {
  * 检测是否为平板设备
  */
 export function isTabletDevice(): boolean {
-  if (typeof window === 'undefined') return false
-  
+  if (typeof window === 'undefined')
+    return false
+
   const userAgent = navigator.userAgent.toLowerCase()
   const tabletKeywords = ['ipad', 'tablet', 'kindle']
   const width = window.innerWidth
-  
+
   // 基于用户代理和屏幕尺寸判断
   const hasTabletUA = tabletKeywords.some(keyword => userAgent.includes(keyword))
   const hasTabletSize = width >= DEVICE_BREAKPOINTS.tablet.min && width <= DEVICE_BREAKPOINTS.tablet.max
-  
+
   return hasTabletUA || hasTabletSize
 }
 
@@ -146,18 +156,20 @@ export function getDeviceClassName(deviceType?: DeviceType): string {
  * 判断是否为触摸设备
  */
 export function isTouchDevice(): boolean {
-  if (typeof window === 'undefined') return false
-  
-  return 'ontouchstart' in window || 
-         navigator.maxTouchPoints > 0 || 
-         (navigator as any).msMaxTouchPoints > 0
+  if (typeof window === 'undefined')
+    return false
+
+  return 'ontouchstart' in window
+    || navigator.maxTouchPoints > 0
+    || (navigator as any).msMaxTouchPoints > 0
 }
 
 /**
  * 获取设备像素比
  */
 export function getDevicePixelRatio(): number {
-  if (typeof window === 'undefined') return 1
+  if (typeof window === 'undefined')
+    return 1
   return window.devicePixelRatio || 1
 }
 

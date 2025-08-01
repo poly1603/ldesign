@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { FetchAdapter } from '@/adapters/fetch'
 import type { RequestConfig } from '@/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { FetchAdapter } from '@/adapters/fetch'
 
 // Mock fetch
 const mockFetch = vi.fn()
@@ -16,7 +16,7 @@ global.AbortController = vi.fn().mockImplementation(() => ({
   abort: vi.fn(),
 })) as any
 
-describe('FetchAdapter', () => {
+describe('fetchAdapter', () => {
   let adapter: FetchAdapter
 
   beforeEach(() => {
@@ -61,7 +61,7 @@ describe('FetchAdapter', () => {
           method: 'GET',
           headers: expect.any(Object),
           signal: expect.any(Object),
-        })
+        }),
       )
 
       expect(response).toEqual({
@@ -107,7 +107,7 @@ describe('FetchAdapter', () => {
           }),
           body: JSON.stringify(requestData),
           signal: expect.any(Object),
-        })
+        }),
       )
 
       expect(response.data).toEqual(mockResponseData)
@@ -146,7 +146,7 @@ describe('FetchAdapter', () => {
           headers: expect.not.objectContaining({
             'Content-Type': expect.any(String),
           }),
-        })
+        }),
       )
     })
 
@@ -175,7 +175,7 @@ describe('FetchAdapter', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.example.com/users?page=1&limit=10&search=john',
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 
@@ -211,10 +211,10 @@ describe('FetchAdapter', () => {
 
     it('should handle timeout', async () => {
       // 模拟超时
-      mockFetch.mockImplementation(() => 
+      mockFetch.mockImplementation(() =>
         new Promise((_, reject) => {
           setTimeout(() => reject(new Error('timeout')), 100)
-        })
+        }),
       )
 
       const config: RequestConfig = {

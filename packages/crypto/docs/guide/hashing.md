@@ -6,14 +6,14 @@
 
 @ldesign/crypto 支持以下哈希算法：
 
-| 算法 | 输出长度 | 安全性 | 推荐用途 |
-|------|----------|--------|----------|
-| MD5 | 128 位 | 低 | 仅用于非安全场景 |
-| SHA-1 | 160 位 | 低 | 已弃用，不推荐使用 |
-| SHA-224 | 224 位 | 中 | 一般用途 |
-| SHA-256 | 256 位 | 高 | **推荐使用** |
-| SHA-384 | 384 位 | 高 | 高安全要求 |
-| SHA-512 | 512 位 | 高 | 高安全要求 |
+| 算法    | 输出长度 | 安全性 | 推荐用途           |
+| ------- | -------- | ------ | ------------------ |
+| MD5     | 128 位   | 低     | 仅用于非安全场景   |
+| SHA-1   | 160 位   | 低     | 已弃用，不推荐使用 |
+| SHA-224 | 224 位   | 中     | 一般用途           |
+| SHA-256 | 256 位   | 高     | **推荐使用**       |
+| SHA-384 | 384 位   | 高     | 高安全要求         |
+| SHA-512 | 512 位   | 高     | 高安全要求         |
 
 ## 基本用法
 
@@ -107,9 +107,9 @@ console.log(isValid) // true
 function signApiRequest(method: string, url: string, body: string, secretKey: string) {
   const timestamp = Date.now().toString()
   const message = `${method}\n${url}\n${body}\n${timestamp}`
-  
+
   const signature = hmac.sha256(message, secretKey)
-  
+
   return {
     signature,
     timestamp
@@ -131,10 +131,10 @@ import { hash, keyGenerator } from '@ldesign/crypto'
 function hashPassword(password: string): string {
   // 生成随机盐值
   const salt = keyGenerator.generateSalt(16)
-  
+
   // 使用盐值哈希密码
   const hashedPassword = hash.sha256(password + salt)
-  
+
   // 返回盐值和哈希值的组合
   return `${salt}:${hashedPassword}`
 }
@@ -176,14 +176,14 @@ const isFileIntact = verifyFileIntegrity(fileContent, fileHash)
 ```typescript
 class DataDeduplicator {
   private hashes = new Set<string>()
-  
+
   isDuplicate(data: string): boolean {
     const dataHash = hash.sha256(data)
-    
+
     if (this.hashes.has(dataHash)) {
       return true
     }
-    
+
     this.hashes.add(dataHash)
     return false
   }
@@ -251,12 +251,12 @@ function secureCompare(a: string, b: string): boolean {
   if (a.length !== b.length) {
     return false
   }
-  
+
   let result = 0
   for (let i = 0; i < a.length; i++) {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i)
   }
-  
+
   return result === 0
 }
 ```

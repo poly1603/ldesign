@@ -10,7 +10,7 @@ describe('useTemplate', () => {
     it('应该返回正确的对象结构', () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       expect(result.manager).toBeDefined()
@@ -26,7 +26,7 @@ describe('useTemplate', () => {
     it('应该返回正确的方法', () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       expect(typeof result.scanTemplates).toBe('function')
@@ -41,7 +41,7 @@ describe('useTemplate', () => {
     it('应该能扫描模板', async () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       await result.scanTemplates()
@@ -51,7 +51,7 @@ describe('useTemplate', () => {
     it('应该能获取模板列表', async () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       const templates = await result.getTemplates()
@@ -61,7 +61,7 @@ describe('useTemplate', () => {
     it('应该能检查模板是否存在', async () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       const exists = await result.hasTemplate('login', 'desktop', 'classic')
@@ -71,7 +71,7 @@ describe('useTemplate', () => {
     it('应该能清空缓存', () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       expect(() => result.clearCache()).not.toThrow()
@@ -80,7 +80,7 @@ describe('useTemplate', () => {
     it('当前设备应该有效', () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       const device = result.currentDevice.value
@@ -90,7 +90,7 @@ describe('useTemplate', () => {
     it('加载状态应该是布尔值', () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       expect(typeof result.loading.value).toBe('boolean')
@@ -99,7 +99,7 @@ describe('useTemplate', () => {
     it('错误状态应该正确', () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       expect(result.error.value === null || result.error.value instanceof Error).toBe(true)
@@ -108,7 +108,7 @@ describe('useTemplate', () => {
     it('应该能刷新模板列表', async () => {
       const result = useTemplate({
         autoScan: false,
-        autoDetectDevice: false
+        autoDetectDevice: false,
       })
 
       await result.refresh()

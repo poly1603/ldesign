@@ -1,18 +1,18 @@
 // Vue 相关类型定义
 import type {
   DeviceType,
+  TemplateDirectiveBinding,
   TemplateManagerConfig,
   TemplateMetadata,
   TemplateRenderOptions,
-  TemplateDirectiveBinding
 } from '../types'
 
 export type {
   DeviceType,
+  TemplateDirectiveBinding,
   TemplateManagerConfig,
   TemplateMetadata,
   TemplateRenderOptions,
-  TemplateDirectiveBinding
 }
 
 // Vue 组件属性类型
@@ -42,7 +42,7 @@ export interface UseTemplateReturn {
   loading: import('vue').Ref<boolean>
   error: import('vue').Ref<Error | null>
   render: (options: TemplateRenderOptions) => Promise<void>
-  preload: (templates: Array<{ category: string; device?: DeviceType; template: string }>) => Promise<void>
+  preload: (templates: Array<{ category: string, device?: DeviceType, template: string }>) => Promise<void>
   clearCache: (category?: string, device?: DeviceType, template?: string) => void
 }
 

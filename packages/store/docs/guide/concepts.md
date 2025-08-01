@@ -218,7 +218,8 @@ class UserManagementStore extends BaseStore {
     this.loading = true
     try {
       this.currentUser = await authApi.login(credentials)
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -259,15 +260,9 @@ export const useCounter = createStore('counter', () => {
 依赖注入模式，适合大型应用的架构设计：
 
 ```vue
-<template>
-  <StoreProvider :stores="stores">
-    <RouterView />
-  </StoreProvider>
-</template>
-
 <script setup lang="ts">
 import { StoreProvider } from '@ldesign/store/vue'
-import { UserStore, CartStore, SettingsStore } from '@/stores'
+import { CartStore, SettingsStore, UserStore } from '@/stores'
 
 const stores = {
   user: UserStore,
@@ -275,6 +270,12 @@ const stores = {
   settings: SettingsStore
 }
 </script>
+
+<template>
+  <StoreProvider :stores="stores">
+    <RouterView />
+  </StoreProvider>
+</template>
 ```
 
 ### 4. 组合式 API 模式
@@ -283,7 +284,7 @@ const stores = {
 
 ```vue
 <script setup lang="ts">
-import { useStore, useState, useAction } from '@ldesign/store/vue'
+import { useAction, useState, useStore } from '@ldesign/store/vue'
 
 // 使用整个 Store
 const userStore = useStore('user')
@@ -304,7 +305,7 @@ const { execute: login, loading, error } = useAction('user', 'login')
 
 ```typescript
 class SettingsStore extends BaseStore {
-  @ReactiveState({ 
+  @ReactiveState({
     default: {
       theme: { mode: 'dark', color: 'blue' },
       layout: { sidebar: true, header: true }
@@ -336,7 +337,7 @@ class DataAnalysisStore extends BaseStore {
   @Getter()
   get filteredData() {
     // 自动依赖 rawData 和 filter
-    return this.rawData.filter(item => 
+    return this.rawData.filter(item =>
       this.filter === 'all' || item.category === this.filter
     )
   }
@@ -391,7 +392,8 @@ class SearchStore extends BaseStore {
     this.query = query
     if (query.trim()) {
       this.results = await searchApi.search(query)
-    } else {
+    }
+    else {
       this.results = []
     }
   }

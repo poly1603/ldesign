@@ -1,11 +1,76 @@
+# Dependencies
 node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
 dist
 cjs
 es
 lib
+build
 .rollup.cache
 types/**/*.d.ts
 types/*.d.ts
-packages/engine/docs/.vitepress/cache/**
-packages/engine/docs/.vitepress/temp/**
+
+# VitePress
 docs/.vitepress/cache/**
+docs/.vitepress/temp/**
+docs/.vitepress/dist
+packages/*/docs/.vitepress/cache/**
+packages/*/docs/.vitepress/temp/**
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/settings.json
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Coverage
+coverage
+.nyc_output
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.temp
+
+# Test files
+test-results
+playwright-report
+
+# Reports and logs
+build-report.json
+publish-report.json
+*.report.json
+
+# Docker
+.docker
+
+# Examples build
+examples/dist
+examples/node_modules

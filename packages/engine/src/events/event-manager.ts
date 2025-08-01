@@ -1,4 +1,4 @@
-import type { EventManager, EventHandler, Logger } from '../types'
+import type { EventHandler, EventManager, Logger } from '../types'
 
 interface EventListener {
   handler: EventHandler
@@ -24,7 +24,7 @@ export class EventManagerImpl implements EventManager {
     }
 
     const listeners = this.events.get(event)!
-    
+
     if (!handler) {
       // 移除所有监听器
       this.events.delete(event)
@@ -49,14 +49,15 @@ export class EventManagerImpl implements EventManager {
 
     // 创建监听器副本，避免在执行过程中修改原数组
     const listenersToExecute = [...listeners]
-    
+
     // 按优先级排序执行（数字越大优先级越高）
     listenersToExecute.sort((a, b) => b.priority - a.priority)
 
     for (const listener of listenersToExecute) {
       try {
         listener.handler(...args)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Error in event handler for "${event}":`, error)
       }
 
@@ -75,27 +76,27 @@ export class EventManagerImpl implements EventManager {
     event: string,
     handler: EventHandler,
     once: boolean,
-    priority: number
+    priority: number,
   ): void {
     if (!this.events.has(event)) {
       this.events.set(event, [])
     }
 
     const listeners = this.events.get(event)!
-    
+
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(
-        `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
-        `${listeners.length + 1} "${event}" listeners added. ` +
-        `Use setMaxListeners() to increase limit.`
+        `MaxListenersExceededWarning: Possible EventManager memory leak detected. `
+        + `${listeners.length + 1} "${event}" listeners added. `
+        + `Use setMaxListeners() to increase limit.`,
       )
     }
 
     listeners.push({
       handler,
       once,
-      priority
+      priority,
     })
   }
 
@@ -130,7 +131,8 @@ export class EventManagerImpl implements EventManager {
   removeAllListeners(event?: string): void {
     if (event) {
       this.events.delete(event)
-    } else {
+    }
+    else {
       this.events.clear()
     }
   }
@@ -167,7 +169,7 @@ export class EventManagerImpl implements EventManager {
     return {
       totalEvents: this.events.size,
       totalListeners,
-      events
+      events,
     }
   }
 }
@@ -176,7 +178,7 @@ export class EventManagerImpl implements EventManager {
 export class EventNamespace {
   constructor(
     private eventManager: EventManager,
-    private namespace: string
+    private namespace: string,
   ) {}
 
   private getEventName(event: string): string {
@@ -238,5 +240,5 @@ export const ENGINE_EVENTS = {
   THEME_CHANGED: 'theme:changed',
 
   // 语言事件
-  LOCALE_CHANGED: 'locale:changed'
+  LOCALE_CHANGED: 'locale:changed',
 } as const

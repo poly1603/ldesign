@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useNotification } from '@/composables/useNotification'
 import type { NotificationItem } from '@/composables/useNotification'
+import { useNotification } from '@/composables/useNotification'
 
 const { notifications, removeNotification } = useNotification()
 

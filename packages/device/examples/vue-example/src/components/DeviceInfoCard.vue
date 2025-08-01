@@ -1,67 +1,3 @@
-<template>
-  <div class="card">
-    <h3>📱 设备信息</h3>
-    
-    <div class="info-grid">
-      <div class="info-item">
-        <span class="label">设备类型:</span>
-        <span class="value">{{ deviceType }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">屏幕方向:</span>
-        <span class="value">{{ orientation }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">屏幕尺寸:</span>
-        <span class="value">{{ deviceInfo.width }} × {{ deviceInfo.height }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">像素比:</span>
-        <span class="value">{{ deviceInfo.pixelRatio }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">触摸设备:</span>
-        <span class="value">{{ isTouchDevice ? '是' : '否' }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">移动设备:</span>
-        <span class="value" :class="{ 'highlight': isMobile }">{{ isMobile ? '是' : '否' }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">平板设备:</span>
-        <span class="value" :class="{ 'highlight': isTablet }">{{ isTablet ? '是' : '否' }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">桌面设备:</span>
-        <span class="value" :class="{ 'highlight': isDesktop }">{{ isDesktop ? '是' : '否' }}</span>
-      </div>
-    </div>
-    
-    <div class="system-info">
-      <div class="info-item">
-        <span class="label">操作系统:</span>
-        <span class="value">{{ deviceInfo.os.name }} {{ deviceInfo.os.version }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">浏览器:</span>
-        <span class="value">{{ deviceInfo.browser.name }} {{ deviceInfo.browser.version }}</span>
-      </div>
-    </div>
-    
-    <button @click="refresh" class="refresh-btn">
-      🔄 刷新信息
-    </button>
-  </div>
-</template>
-
 <script setup>
 import { useDevice } from '@ldesign/device/vue'
 
@@ -73,9 +9,73 @@ const {
   isTablet,
   isDesktop,
   isTouchDevice,
-  refresh
+  refresh,
 } = useDevice()
 </script>
+
+<template>
+  <div class="card">
+    <h3>📱 设备信息</h3>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="label">设备类型:</span>
+        <span class="value">{{ deviceType }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">屏幕方向:</span>
+        <span class="value">{{ orientation }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">屏幕尺寸:</span>
+        <span class="value">{{ deviceInfo.width }} × {{ deviceInfo.height }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">像素比:</span>
+        <span class="value">{{ deviceInfo.pixelRatio }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">触摸设备:</span>
+        <span class="value">{{ isTouchDevice ? '是' : '否' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">移动设备:</span>
+        <span class="value" :class="{ highlight: isMobile }">{{ isMobile ? '是' : '否' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">平板设备:</span>
+        <span class="value" :class="{ highlight: isTablet }">{{ isTablet ? '是' : '否' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">桌面设备:</span>
+        <span class="value" :class="{ highlight: isDesktop }">{{ isDesktop ? '是' : '否' }}</span>
+      </div>
+    </div>
+
+    <div class="system-info">
+      <div class="info-item">
+        <span class="label">操作系统:</span>
+        <span class="value">{{ deviceInfo.os.name }} {{ deviceInfo.os.version }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">浏览器:</span>
+        <span class="value">{{ deviceInfo.browser.name }} {{ deviceInfo.browser.version }}</span>
+      </div>
+    </div>
+
+    <button class="refresh-btn" @click="refresh">
+      🔄 刷新信息
+    </button>
+  </div>
+</template>
 
 <style scoped>
 .card {

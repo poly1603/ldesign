@@ -6,32 +6,32 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '登录'
+      default: '登录',
     },
     subtitle: {
       type: String,
-      default: '欢迎回来'
+      default: '欢迎回来',
     },
     logo: {
       type: String,
-      default: ''
+      default: '',
     },
     showRememberMe: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showForgotPassword: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showThirdPartyLogin: {
       type: Boolean,
-      default: true
+      default: true,
     },
     thirdPartyProviders: {
       type: Array,
-      default: () => ['wechat', 'qq', 'weibo']
-    }
+      default: () => ['wechat', 'qq', 'weibo'],
+    },
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin'],
   setup(props, { emit }) {
@@ -39,7 +39,7 @@ export default defineComponent({
     const form = reactive({
       username: '',
       password: '',
-      remember: false
+      remember: false,
     })
 
     const handleLogin = async () => {
@@ -164,5 +164,5 @@ export default defineComponent({
         </div>
       </div>
     )
-  }
+  },
 })

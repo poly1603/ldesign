@@ -30,8 +30,8 @@ src/
 ```typescript
 // locales/en/index.ts
 import common from './common'
-import pages from './pages'
 import components from './components'
+import pages from './pages'
 
 export default {
   info: {
@@ -50,10 +50,10 @@ export default {
 ```
 
 ```typescript
-// locales/en/pages/index.ts
-import home from './home'
 import about from './about'
 import contact from './contact'
+// locales/en/pages/index.ts
+import home from './home'
 
 export default {
   home,
@@ -161,9 +161,9 @@ interface OrderSummaryParams {
 }
 
 // 使用时保持类型安全
-const welcomeMessage = t('welcome', { 
-  userName: 'John', 
-  messageCount: 5 
+const welcomeMessage = t('welcome', {
+  userName: 'John',
+  messageCount: 5
 } as WelcomeParams)
 ```
 
@@ -210,38 +210,9 @@ const welcomeMessage = t('welcome', {
 
 ```vue
 <!-- UserProfile.vue -->
-<template>
-  <div class="user-profile">
-    <h2>{{ t('userProfile.title') }}</h2>
-    
-    <!-- 使用组件特定的翻译前缀 -->
-    <form @submit="handleSubmit">
-      <div class="field">
-        <label>{{ ct('form.name') }}</label>
-        <input 
-          v-model="form.name"
-          :placeholder="ct('form.namePlaceholder')"
-        />
-      </div>
-      
-      <div class="field">
-        <label>{{ ct('form.email') }}</label>
-        <input 
-          v-model="form.email"
-          :placeholder="ct('form.emailPlaceholder')"
-        />
-      </div>
-      
-      <button type="submit">
-        {{ ct('form.saveButton') }}
-      </button>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { reactive } from 'vue'
 
 // 组件特定的翻译前缀
 const COMPONENT_PREFIX = 'components.userProfile'
@@ -256,27 +227,48 @@ const form = reactive({
   email: ''
 })
 
-const handleSubmit = () => {
+function handleSubmit() {
   // 表单提交逻辑
 }
 </script>
+
+<template>
+  <div class="user-profile">
+    <h2>{{ t('userProfile.title') }}</h2>
+
+    <!-- 使用组件特定的翻译前缀 -->
+    <form @submit="handleSubmit">
+      <div class="field">
+        <label>{{ ct('form.name') }}</label>
+        <input
+          v-model="form.name"
+          :placeholder="ct('form.namePlaceholder')"
+        >
+      </div>
+
+      <div class="field">
+        <label>{{ ct('form.email') }}</label>
+        <input
+          v-model="form.email"
+          :placeholder="ct('form.emailPlaceholder')"
+        >
+      </div>
+
+      <button type="submit">
+        {{ ct('form.saveButton') }}
+      </button>
+    </form>
+  </div>
+</template>
 ```
 
 ### 可复用的翻译组件
 
 ```vue
 <!-- TranslatedText.vue -->
-<template>
-  <component 
-    :is="tag" 
-    :class="className"
-    v-html="translatedText"
-  />
-</template>
-
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { computed } from 'vue'
 
 interface Props {
   translationKey: string
@@ -299,6 +291,14 @@ const translatedText = computed(() => {
   })
 })
 </script>
+
+<template>
+  <component
+    :is="tag"
+    :class="className"
+    v-html="translatedText"
+  />
+</template>
 ```
 
 ## 性能优化
@@ -310,7 +310,7 @@ const translatedText = computed(() => {
 const i18n = new I18n({
   cache: {
     enabled: true,
-    maxSize: 1000  // 根据应用大小调整
+    maxSize: 1000 // 根据应用大小调整
   }
 })
 
@@ -326,12 +326,12 @@ console.log('Cache size:', i18n.cache?.size())
 const commonLanguages = ['en', 'zh-CN', 'es', 'fr']
 
 async function preloadLanguages() {
-  const promises = commonLanguages.map(locale => 
-    i18n.preloadLanguage(locale).catch(error => 
+  const promises = commonLanguages.map(locale =>
+    i18n.preloadLanguage(locale).catch(error =>
       console.warn(`Failed to preload ${locale}:`, error)
     )
   )
-  
+
   await Promise.allSettled(promises)
 }
 ```
@@ -376,23 +376,23 @@ const buttonTexts = useBatchTranslation([
 const i18n = new I18n({
   onLoadError: (locale, error) => {
     console.error(`Failed to load language ${locale}:`, error)
-    
+
     // 发送错误报告
     analytics.track('i18n_load_error', {
       locale,
       error: error.message
     })
-    
+
     // 显示用户友好的错误消息
     showNotification(
       t('errors.languageLoadFailed', { language: locale }),
       'error'
     )
   },
-  
+
   missingKeyHandler: (key, locale) => {
     console.warn(`Missing translation key: ${key} for locale: ${locale}`)
-    
+
     // 在开发环境中显示警告
     if (process.env.NODE_ENV === 'development') {
       showDevWarning(`Missing translation: ${key}`)
@@ -405,8 +405,8 @@ const i18n = new I18n({
 
 ```vue
 <script setup lang="ts">
-import { ref, onErrorCaptured } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { onErrorCaptured, ref } from 'vue'
 
 const { t } = useI18n()
 const error = ref<string>('')
@@ -420,10 +420,11 @@ onErrorCaptured((err) => {
 })
 
 // 安全的翻译函数
-const safeT = (key: string, params?: any, fallback?: string) => {
+function safeT(key: string, params?: any, fallback?: string) {
   try {
     return t(key, params)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`Translation error for key '${key}':`, error)
     return fallback || key
   }
@@ -436,9 +437,9 @@ const safeT = (key: string, params?: any, fallback?: string) => {
 ### 翻译键测试
 
 ```typescript
-// tests/i18n.test.ts
-import { describe, it, expect } from 'vitest'
 import { I18n } from '@ldesign/i18n'
+// tests/i18n.test.ts
+import { describe, expect, it } from 'vitest'
 import enPackage from '@/i18n/locales/en'
 import zhCNPackage from '@/i18n/locales/zh-CN'
 
@@ -446,18 +447,18 @@ describe('I18n Translation Keys', () => {
   it('should have consistent keys across languages', () => {
     const enKeys = getAllKeys(enPackage.translations)
     const zhKeys = getAllKeys(zhCNPackage.translations)
-    
+
     expect(enKeys.sort()).toEqual(zhKeys.sort())
   })
-  
+
   it('should not have missing interpolation parameters', () => {
     const i18n = new I18n()
-    
+
     const testCases = [
       { key: 'welcome', params: { name: 'John' } },
       { key: 'pageOf', params: { current: 1, total: 10 } }
     ]
-    
+
     testCases.forEach(({ key, params }) => {
       expect(() => i18n.t(key, params)).not.toThrow()
     })
@@ -466,17 +467,18 @@ describe('I18n Translation Keys', () => {
 
 function getAllKeys(obj: any, prefix = ''): string[] {
   const keys: string[] = []
-  
+
   for (const key in obj) {
     const fullKey = prefix ? `${prefix}.${key}` : key
-    
+
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       keys.push(...getAllKeys(obj[key], fullKey))
-    } else {
+    }
+    else {
       keys.push(fullKey)
     }
   }
-  
+
   return keys
 }
 ```
@@ -484,9 +486,9 @@ function getAllKeys(obj: any, prefix = ''): string[] {
 ### Vue 组件测试
 
 ```typescript
+import { createI18n } from '@ldesign/i18n/vue'
 // tests/components/UserProfile.test.ts
 import { mount } from '@vue/test-utils'
-import { createI18n } from '@ldesign/i18n/vue'
 import UserProfile from '@/components/UserProfile.vue'
 
 describe('UserProfile', () => {
@@ -494,18 +496,18 @@ describe('UserProfile', () => {
     const i18nInstance = new I18n({
       defaultLocale: 'en'
     })
-    
+
     const vueI18nPlugin = createI18n(i18nInstance)
-    
+
     const wrapper = mount(UserProfile, {
       global: {
         plugins: [vueI18nPlugin]
       }
     })
-    
+
     expect(wrapper.text()).toContain('User Profile')
   })
-  
+
   it('should update text when language changes', async () => {
     // 测试语言切换
   })
@@ -524,7 +526,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           // 将 i18n 相关代码分离到单独的 chunk
-          'i18n': ['@ldesign/i18n']
+          i18n: ['@ldesign/i18n']
         }
       }
     }
@@ -535,31 +537,32 @@ export default defineConfig({
 ### 翻译管理工作流
 
 ```typescript
+import { readFileSync } from 'node:fs'
 // scripts/extract-keys.ts
 // 提取所有使用的翻译键
 import { glob } from 'glob'
-import { readFileSync } from 'fs'
 
-const extractTranslationKeys = () => {
+function extractTranslationKeys() {
   const files = glob.sync('src/**/*.{ts,vue}')
   const keys = new Set<string>()
-  
-  files.forEach(file => {
+
+  files.forEach((file) => {
     const content = readFileSync(file, 'utf-8')
-    
+
     // 提取 t('key') 模式
     const matches = content.match(/t\(['"`]([^'"`]+)['"`]\)/g)
-    matches?.forEach(match => {
+    matches?.forEach((match) => {
       const key = match.match(/['"`]([^'"`]+)['"`]/)?.[1]
-      if (key) keys.add(key)
+      if (key)
+        keys.add(key)
     })
   })
-  
+
   return Array.from(keys).sort()
 }
 
 // 检查未使用的翻译键
-const findUnusedKeys = (usedKeys: string[], allKeys: string[]) => {
+function findUnusedKeys(usedKeys: string[], allKeys: string[]) {
   return allKeys.filter(key => !usedKeys.includes(key))
 }
 ```
@@ -580,13 +583,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: pnpm install
-      
+
       - name: Check translation keys consistency
         run: pnpm run i18n:check
-      
+
       - name: Check for missing translations
         run: pnpm run i18n:validate
 ```
@@ -613,15 +616,15 @@ const i18n = new I18n({
 
 ```typescript
 // 监控翻译性能
-const measureTranslationPerformance = (key: string, fn: () => string) => {
+function measureTranslationPerformance(key: string, fn: () => string) {
   const start = performance.now()
   const result = fn()
   const end = performance.now()
-  
+
   if (end - start > 10) { // 超过 10ms 的翻译
     console.warn(`Slow translation for key '${key}': ${end - start}ms`)
   }
-  
+
   return result
 }
 ```

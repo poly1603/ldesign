@@ -21,16 +21,19 @@ const {
 ### 响应式状态
 
 #### `currentTemplate`
+
 - **类型**: `Ref<TemplateComponent | null>`
 - **描述**: 当前加载的模板组件
 - **默认值**: `null`
 
 #### `loading`
+
 - **类型**: `Ref<boolean>`
 - **描述**: 模板加载状态
 - **默认值**: `false`
 
 #### `error`
+
 - **类型**: `Ref<Error | null>`
 - **描述**: 加载错误信息
 - **默认值**: `null`
@@ -38,14 +41,17 @@ const {
 ### 方法
 
 #### `render(options)`
+
 加载并渲染指定模板。
 
 **参数:**
+
 - `options`: `TemplateRenderOptions` - 渲染选项
 
 **返回值:** `Promise<TemplateLoadResult>`
 
 **示例:**
+
 ```typescript
 await render({
   category: 'auth',
@@ -58,14 +64,17 @@ await render({
 ```
 
 #### `preload(templates)`
+
 预加载模板列表。
 
 **参数:**
+
 - `templates`: `TemplateIdentifier[]` - 模板标识符列表
 
 **返回值:** `Promise<void>`
 
 **示例:**
+
 ```typescript
 await preload([
   { category: 'auth', device: 'desktop', template: 'login' },
@@ -74,14 +83,17 @@ await preload([
 ```
 
 #### `clearCache(category?, device?, template?)`
+
 清空缓存。
 
 **参数:**
+
 - `category` (可选): `string` - 模板分类
 - `device` (可选): `DeviceType` - 设备类型
 - `template` (可选): `string` - 模板名称
 
 **示例:**
+
 ```typescript
 // 清空所有缓存
 clearCache()
@@ -94,8 +106,8 @@ clearCache('auth', 'desktop', 'login')
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useTemplate } from '@ldesign/template'
+import { ref } from 'vue'
 
 const {
   currentTemplate,
@@ -118,7 +130,7 @@ async function loadLogin() {
     device: 'desktop',
     template: 'login'
   }
-  
+
   lastRenderOptions.value = options
   await render(options)
 }
@@ -129,7 +141,7 @@ async function loadDashboard() {
     device: 'desktop',
     template: 'admin'
   }
-  
+
   lastRenderOptions.value = options
   await render(options)
 }
@@ -163,26 +175,26 @@ function handleLogin(credentials) {
         清空缓存
       </button>
     </div>
-    
+
     <div class="template-display">
       <div v-if="loading" class="loading">
         正在加载模板...
       </div>
-      
+
       <div v-else-if="error" class="error">
         加载失败: {{ error.message }}
         <button @click="retry">
           重试
         </button>
       </div>
-      
+
       <component
         :is="currentTemplate"
         v-else-if="currentTemplate"
         v-bind="templateProps"
         @login="handleLogin"
       />
-      
+
       <div v-else class="empty">
         请选择一个模板
       </div>
@@ -196,8 +208,8 @@ function handleLogin(credentials) {
 ### 条件渲染
 
 ```typescript
-import { computed } from 'vue'
 import { useTemplate } from '@ldesign/template'
+import { computed } from 'vue'
 
 const { render } = useTemplate()
 
@@ -237,7 +249,7 @@ async function loadTemplateWithErrorHandling() {
   }
   catch (err) {
     console.error('模板加载失败:', err)
-    
+
     // 尝试加载备用模板
     try {
       await render({
@@ -256,8 +268,8 @@ async function loadTemplateWithErrorHandling() {
 ### 性能优化
 
 ```typescript
-import { onMounted } from 'vue'
 import { useTemplate } from '@ldesign/template'
+import { onMounted } from 'vue'
 
 const { preload } = useTemplate()
 

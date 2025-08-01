@@ -1,140 +1,7 @@
-<template>
-  <div class="device-demo">
-    <div class="device-demo__header">
-      <div class="device-demo__container">
-        <router-link to="/" class="device-demo__back">← 返回首页</router-link>
-        <h1 class="device-demo__title">📱 响应式设备切换演示</h1>
-        <p class="device-demo__subtitle">
-          体验自动设备检测和模板切换功能
-        </p>
-      </div>
-    </div>
-
-    <div class="device-demo__content">
-      <div class="device-demo__container">
-        <div class="device-demo__controls">
-          <h2>设备模拟器</h2>
-          <p>点击下方按钮模拟不同设备，或调整浏览器窗口大小体验自动检测：</p>
-          
-          <div class="device-demo__device-buttons">
-            <button
-              v-for="device in devices"
-              :key="device.type"
-              :class="[
-                'device-demo__device-btn',
-                { 'device-demo__device-btn--active': currentDevice === device.type }
-              ]"
-              @click="switchDevice(device.type)"
-            >
-              <span class="device-demo__device-icon">{{ device.icon }}</span>
-              <span class="device-demo__device-name">{{ device.name }}</span>
-              <span class="device-demo__device-size">{{ device.size }}</span>
-            </button>
-          </div>
-
-          <div class="device-demo__info-grid">
-            <div class="device-demo__info-card">
-              <h4>当前设备</h4>
-              <div class="device-demo__info-value">
-                {{ devices.find(d => d.type === currentDevice)?.icon }} {{ currentDevice }}
-              </div>
-            </div>
-            
-            <div class="device-demo__info-card">
-              <h4>窗口尺寸</h4>
-              <div class="device-demo__info-value">
-                {{ windowSize.width }} × {{ windowSize.height }}
-              </div>
-            </div>
-            
-            <div class="device-demo__info-card">
-              <h4>当前模板</h4>
-              <div class="device-demo__info-value">
-                {{ currentTemplate?.name || '无可用模板' }}
-              </div>
-            </div>
-            
-            <div class="device-demo__info-card">
-              <h4>可用模板数</h4>
-              <div class="device-demo__info-value">
-                {{ availableTemplates.length }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="device-demo__preview-section">
-          <div class="device-demo__preview-header">
-            <h3>模板预览</h3>
-            <div class="device-demo__auto-detect">
-              <label class="device-demo__checkbox">
-                <input
-                  type="checkbox"
-                  v-model="autoDetect"
-                  @change="toggleAutoDetect"
-                />
-                <span class="device-demo__checkbox-mark"></span>
-                自动检测设备
-              </label>
-            </div>
-          </div>
-
-          <div 
-            class="device-demo__preview-container"
-            :class="`device-demo__preview-container--${currentDevice}`"
-          >
-            <div class="device-demo__device-frame">
-              <div class="device-demo__device-screen">
-                <component
-                  v-if="TemplateComponent"
-                  :is="TemplateComponent"
-                  v-bind="templateConfig"
-                  @login="handleLogin"
-                  @register="handleRegister"
-                  @forgot-password="handleForgotPassword"
-                  @third-party-login="handleThirdPartyLogin"
-                />
-                <div v-else class="device-demo__no-template">
-                  <div class="device-demo__no-template-icon">🚫</div>
-                  <h4>当前设备类型暂无可用模板</h4>
-                  <p>系统将自动使用桌面版本作为备选</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="device-demo__template-list">
-          <h3>可用模板列表</h3>
-          <div class="device-demo__template-grid">
-            <div
-              v-for="template in availableTemplates"
-              :key="template.id"
-              :class="[
-                'device-demo__template-card',
-                { 'device-demo__template-card--active': template.id === currentTemplateId }
-              ]"
-              @click="switchTemplate(template.id)"
-            >
-              <div class="device-demo__template-info">
-                <h4>{{ template.name }}</h4>
-                <p>{{ template.description }}</p>
-                <div class="device-demo__template-device">
-                  {{ getDeviceIcon(template.deviceType) }} {{ template.deviceType }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useTemplate } from '../../../src/vue'
 import type { DeviceType } from '../../../src/vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useTemplate } from '../../../src/vue'
 
 // 响应式设备切换演示页面加载
 
@@ -142,7 +9,7 @@ import type { DeviceType } from '../../../src/vue'
 const devices = [
   { type: 'desktop' as DeviceType, name: '桌面', icon: '🖥️', size: '1200px+' },
   { type: 'tablet' as DeviceType, name: '平板', icon: '📱', size: '768-1024px' },
-  { type: 'mobile' as DeviceType, name: '手机', icon: '📱', size: '<768px' }
+  { type: 'mobile' as DeviceType, name: '手机', icon: '📱', size: '<768px' },
 ]
 
 // 窗口尺寸
@@ -160,26 +27,26 @@ const {
   templateConfig,
   currentTemplate,
   switchTemplate: switchTemplateHook,
-  switchDevice: switchDeviceHook
+  switchDevice: switchDeviceHook,
 } = useTemplate({
   category: 'login',
-  autoSwitch: autoDetect
+  autoSwitch: autoDetect,
 })
 
 // 当前设备
 const currentDevice = computed(() => deviceType.value)
 
 // 更新窗口尺寸（防抖优化）
-const updateWindowSize = () => {
+function updateWindowSize() {
   windowSize.value = {
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
   }
 }
 
 // 防抖处理窗口大小变化
 let resizeTimer: number | null = null
-const debouncedUpdateWindowSize = () => {
+function debouncedUpdateWindowSize() {
   if (resizeTimer) {
     clearTimeout(resizeTimer)
   }
@@ -187,42 +54,42 @@ const debouncedUpdateWindowSize = () => {
 }
 
 // 切换设备
-const switchDevice = (device: DeviceType) => {
+function switchDevice(device: DeviceType) {
   if (!autoDetect.value) {
     switchDeviceHook(device)
   }
 }
 
 // 切换模板
-const switchTemplate = (templateId: string) => {
+function switchTemplate(templateId: string) {
   switchTemplateHook(templateId)
 }
 
 // 切换自动检测
-const toggleAutoDetect = () => {
+function toggleAutoDetect() {
   // autoDetect 是响应式的，会自动更新 useTemplate Hook 的 autoSwitch 参数
 }
 
 // 获取设备图标
-const getDeviceIcon = (deviceType: DeviceType) => {
+function getDeviceIcon(deviceType: DeviceType) {
   const device = devices.find(d => d.type === deviceType)
   return device?.icon || '🖥️'
 }
 
 // 事件处理函数
-const handleLogin = (data: any) => {
+function handleLogin(data: any) {
   alert(`登录成功！\n设备: ${currentDevice.value}\n模板: ${currentTemplate.value?.name}\n用户名: ${data.username}`)
 }
 
-const handleRegister = () => {
+function handleRegister() {
   alert('跳转到注册页面')
 }
 
-const handleForgotPassword = (data: any) => {
+function handleForgotPassword(data: any) {
   alert(`重置密码链接已发送到与用户名 "${data.username}" 关联的邮箱`)
 }
 
-const handleThirdPartyLogin = (data: any) => {
+function handleThirdPartyLogin(data: any) {
   alert(`使用 ${data.provider} 登录`)
 }
 
@@ -239,6 +106,143 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="device-demo">
+    <div class="device-demo__header">
+      <div class="device-demo__container">
+        <router-link to="/" class="device-demo__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="device-demo__title">
+          📱 响应式设备切换演示
+        </h1>
+        <p class="device-demo__subtitle">
+          体验自动设备检测和模板切换功能
+        </p>
+      </div>
+    </div>
+
+    <div class="device-demo__content">
+      <div class="device-demo__container">
+        <div class="device-demo__controls">
+          <h2>设备模拟器</h2>
+          <p>点击下方按钮模拟不同设备，或调整浏览器窗口大小体验自动检测：</p>
+
+          <div class="device-demo__device-buttons">
+            <button
+              v-for="device in devices"
+              :key="device.type"
+              class="device-demo__device-btn" :class="[
+                { 'device-demo__device-btn--active': currentDevice === device.type },
+              ]"
+              @click="switchDevice(device.type)"
+            >
+              <span class="device-demo__device-icon">{{ device.icon }}</span>
+              <span class="device-demo__device-name">{{ device.name }}</span>
+              <span class="device-demo__device-size">{{ device.size }}</span>
+            </button>
+          </div>
+
+          <div class="device-demo__info-grid">
+            <div class="device-demo__info-card">
+              <h4>当前设备</h4>
+              <div class="device-demo__info-value">
+                {{ devices.find(d => d.type === currentDevice)?.icon }} {{ currentDevice }}
+              </div>
+            </div>
+
+            <div class="device-demo__info-card">
+              <h4>窗口尺寸</h4>
+              <div class="device-demo__info-value">
+                {{ windowSize.width }} × {{ windowSize.height }}
+              </div>
+            </div>
+
+            <div class="device-demo__info-card">
+              <h4>当前模板</h4>
+              <div class="device-demo__info-value">
+                {{ currentTemplate?.name || '无可用模板' }}
+              </div>
+            </div>
+
+            <div class="device-demo__info-card">
+              <h4>可用模板数</h4>
+              <div class="device-demo__info-value">
+                {{ availableTemplates.length }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="device-demo__preview-section">
+          <div class="device-demo__preview-header">
+            <h3>模板预览</h3>
+            <div class="device-demo__auto-detect">
+              <label class="device-demo__checkbox">
+                <input
+                  v-model="autoDetect"
+                  type="checkbox"
+                  @change="toggleAutoDetect"
+                >
+                <span class="device-demo__checkbox-mark" />
+                自动检测设备
+              </label>
+            </div>
+          </div>
+
+          <div
+            class="device-demo__preview-container"
+            :class="`device-demo__preview-container--${currentDevice}`"
+          >
+            <div class="device-demo__device-frame">
+              <div class="device-demo__device-screen">
+                <component
+                  :is="TemplateComponent"
+                  v-if="TemplateComponent"
+                  v-bind="templateConfig"
+                  @login="handleLogin"
+                  @register="handleRegister"
+                  @forgot-password="handleForgotPassword"
+                  @third-party-login="handleThirdPartyLogin"
+                />
+                <div v-else class="device-demo__no-template">
+                  <div class="device-demo__no-template-icon">
+                    🚫
+                  </div>
+                  <h4>当前设备类型暂无可用模板</h4>
+                  <p>系统将自动使用桌面版本作为备选</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="device-demo__template-list">
+          <h3>可用模板列表</h3>
+          <div class="device-demo__template-grid">
+            <div
+              v-for="template in availableTemplates"
+              :key="template.id"
+              class="device-demo__template-card" :class="[
+                { 'device-demo__template-card--active': template.id === currentTemplateId },
+              ]"
+              @click="switchTemplate(template.id)"
+            >
+              <div class="device-demo__template-info">
+                <h4>{{ template.name }}</h4>
+                <p>{{ template.description }}</p>
+                <div class="device-demo__template-device">
+                  {{ getDeviceIcon(template.deviceType) }} {{ template.deviceType }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped lang="less">
 .device-demo {
@@ -412,7 +416,7 @@ onUnmounted(() => {
     color: #666;
     cursor: pointer;
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
       display: none;
     }
   }

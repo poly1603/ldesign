@@ -25,11 +25,11 @@ src/
 ## 应用入口配置
 
 ```typescript
+import TemplatePlugin from '@ldesign/template'
+import { createPinia } from 'pinia'
 // main.ts
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
-import TemplatePlugin from '@ldesign/template'
 import App from './App.vue'
 import routes from './router'
 
@@ -66,8 +66,8 @@ app.mount('#app')
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from './stores/user'
 import { useTemplateStore } from './stores/template'
+import { useUserStore } from './stores/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -77,7 +77,7 @@ const templateStore = useTemplateStore()
 const user = computed(() => userStore.currentUser)
 
 const layoutTemplate = computed(() => {
-  if (!user.value) 
+  if (!user.value)
     return 'public'
   return user.value.role === 'admin' ? 'admin' : 'user'
 })
@@ -97,19 +97,19 @@ function getMenuItems() {
       { id: 'about', title: '关于', path: '/about' }
     ]
   }
-  
+
   const baseItems = [
     { id: 'dashboard', title: '仪表板', path: '/dashboard' },
     { id: 'profile', title: '个人资料', path: '/profile' }
   ]
-  
+
   if (user.value.role === 'admin') {
     baseItems.push(
       { id: 'users', title: '用户管理', path: '/admin/users' },
       { id: 'settings', title: '系统设置', path: '/admin/settings' }
     )
   }
-  
+
   return baseItems
 }
 
@@ -139,7 +139,7 @@ function goToLogin() {
       <template #default>
         <router-view />
       </template>
-      
+
       <!-- 用户信息插槽 -->
       <template #user-info>
         <div class="user-info">
@@ -201,16 +201,16 @@ export const useUserStore = defineStore('user', () => {
   async function login(credentials: { email: string, password: string }) {
     isLoading.value = true
     error.value = null
-    
+
     try {
       // 模拟登录API调用
       const response = await mockLogin(credentials)
       currentUser.value = response.user
-      
+
       // 保存到本地存储
       localStorage.setItem('user', JSON.stringify(response.user))
       localStorage.setItem('token', response.token)
-      
+
       return response
     }
     catch (err) {
@@ -248,7 +248,7 @@ export const useUserStore = defineStore('user', () => {
 // 模拟登录API
 async function mockLogin(credentials: { email: string, password: string }) {
   await new Promise(resolve => setTimeout(resolve, 1000))
-  
+
   if (credentials.email === 'admin@example.com' && credentials.password === 'admin') {
     return {
       user: {
@@ -260,7 +260,7 @@ async function mockLogin(credentials: { email: string, password: string }) {
       token: 'mock-admin-token'
     }
   }
-  
+
   if (credentials.email === 'user@example.com' && credentials.password === 'user') {
     return {
       user: {
@@ -272,26 +272,26 @@ async function mockLogin(credentials: { email: string, password: string }) {
       token: 'mock-user-token'
     }
   }
-  
+
   throw new Error('用户名或密码错误')
 }
 ```
 
 ```typescript
+import { useTemplate } from '@ldesign/template'
 // stores/template.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useTemplate } from '@ldesign/template'
 
 export const useTemplateStore = defineStore('template', () => {
   const currentTheme = ref('default')
   const deviceOverride = ref<string | null>(null)
-  
+
   const { preload, clearCache } = useTemplate()
 
   async function setTheme(theme: string) {
     currentTheme.value = theme
-    
+
     // 预加载新主题的模板
     await preload([
       { category: 'layout', template: theme },
@@ -485,7 +485,7 @@ const dashboardProps = computed(() => ({
               </div>
             </div>
           </div>
-          
+
           <div class="charts-section">
             <h2>数据图表</h2>
             <!-- 这里可以放置图表组件 -->
@@ -599,12 +599,12 @@ withDefaults(defineProps<Props>(), {
         <slot name="user-info" />
       </div>
     </header>
-    
+
     <div class="admin-body">
       <aside class="admin-sidebar">
         <nav class="admin-nav">
-          <div 
-            v-for="item in menuItems" 
+          <div
+            v-for="item in menuItems"
             :key="item.id"
             class="nav-item"
             @click="onMenuClick?.(item)"
@@ -613,7 +613,7 @@ withDefaults(defineProps<Props>(), {
           </div>
         </nav>
       </aside>
-      
+
       <main class="admin-main">
         <slot name="default" />
       </main>

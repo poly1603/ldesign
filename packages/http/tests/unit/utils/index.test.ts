@@ -1,20 +1,20 @@
-import { describe, it, expect } from 'vitest'
+import type { RequestConfig } from '@/types'
+import { describe, expect, it } from 'vitest'
 import {
-  mergeConfig,
   buildQueryString,
   buildURL,
-  isAbsoluteURL,
   combineURLs,
   createHttpError,
   deepClone,
-  isFormData,
-  isBlob,
+  isAbsoluteURL,
   isArrayBuffer,
+  isBlob,
+  isFormData,
   isURLSearchParams,
+  mergeConfig,
 } from '@/utils'
-import type { RequestConfig } from '@/types'
 
-describe('Utils', () => {
+describe('utils', () => {
   describe('mergeConfig', () => {
     it('should merge configs correctly', () => {
       const defaultConfig: RequestConfig = {
@@ -31,7 +31,7 @@ describe('Utils', () => {
       const customConfig: RequestConfig = {
         timeout: 10000,
         headers: {
-          'Authorization': 'Bearer token',
+          Authorization: 'Bearer token',
         },
         params: {
           page: 1,

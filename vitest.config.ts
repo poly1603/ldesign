@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
 import { resolve } from 'node:path'
+import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [vue()],
@@ -10,7 +10,7 @@ export default defineConfig({
     include: [
       'packages/**/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       'packages/**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-      'packages/**/tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+      'packages/**/tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
     exclude: [
       '**/node_modules/**',
@@ -20,7 +20,7 @@ export default defineConfig({
       '**/types/**',
       '**/coverage/**',
       '**/examples/**',
-      '**/docs/**'
+      '**/docs/**',
     ],
     coverage: {
       provider: 'v8',
@@ -38,17 +38,17 @@ export default defineConfig({
         '**/docs/**',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/bin/**'
+        '**/bin/**',
       ],
       thresholds: {
         global: {
           branches: 85,
           functions: 85,
           lines: 85,
-          statements: 85
-        }
-      }
-    }
+          statements: 85,
+        },
+      },
+    },
   },
   resolve: {
     alias: {
@@ -61,7 +61,7 @@ export default defineConfig({
       '@ldesign/router': resolve(__dirname, 'packages/router/src'),
       '@ldesign/store': resolve(__dirname, 'packages/store/src'),
       '@ldesign/template': resolve(__dirname, 'packages/template/src'),
-      '@': resolve(__dirname, 'packages')
-    }
-  }
+      '@': resolve(__dirname, 'packages'),
+    },
+  },
 })

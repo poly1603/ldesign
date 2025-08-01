@@ -7,7 +7,7 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔑 RSA 密钥生成演示</h3>
-    
+
     <div class="form-group">
       <label>密钥长度:</label>
       <select id="rsa-key-size">
@@ -17,12 +17,12 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
         <option value="4096">4096 位（最高安全）</option>
       </select>
     </div>
-    
+
     <div class="form-actions">
       <button id="rsa-generate-keys-btn" class="btn primary">🔑 生成密钥对</button>
       <button id="rsa-clear-keys-btn" class="btn">🗑️ 清除密钥</button>
     </div>
-    
+
     <div id="rsa-keys-result" class="result-box" style="display: none;">
       <h4>🔑 RSA 密钥对</h4>
       <div class="result-item">
@@ -38,35 +38,36 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
         <div id="rsa-key-info" class="result-value"></div>
       </div>
     </div>
+
   </div>
 </div>
 
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔐 RSA 加密解密演示</h3>
-    
+
     <div class="form-group">
       <label>要加密的数据:</label>
       <textarea id="rsa-data" placeholder="输入要加密的数据（RSA适合加密小量数据）">Hello, RSA Encryption!</textarea>
     </div>
-    
+
     <div class="form-group">
       <label>公钥 (用于加密):</label>
       <textarea id="rsa-encrypt-public-key" placeholder="粘贴公钥或先生成密钥对"></textarea>
     </div>
-    
+
     <div class="form-group">
       <label>私钥 (用于解密):</label>
       <textarea id="rsa-decrypt-private-key" placeholder="粘贴私钥或先生成密钥对"></textarea>
     </div>
-    
+
     <div class="form-actions">
       <button id="rsa-encrypt-btn" class="btn primary">🔒 RSA 加密</button>
       <button id="rsa-decrypt-btn" class="btn secondary">🔓 RSA 解密</button>
       <button id="rsa-copy-keys-btn" class="btn success">📋 复制密钥</button>
       <button id="rsa-clear-data-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="rsa-encrypted-result" class="result-box" style="display: none;">
       <h4>🔒 RSA 加密结果</h4>
       <div class="result-item">
@@ -78,7 +79,7 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
         <div id="rsa-encrypt-info" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="rsa-decrypted-result" class="result-box success" style="display: none;">
       <h4>🔓 RSA 解密结果</h4>
       <div class="result-item">
@@ -86,30 +87,31 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
         <div id="rsa-decrypted-data" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="rsa-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>✍️ RSA 数字签名演示</h3>
-    
+
     <div class="form-group">
       <label>要签名的数据:</label>
       <textarea id="rsa-sign-data" placeholder="输入要签名的数据">This is a message to be signed.</textarea>
     </div>
-    
+
     <div class="form-group">
       <label>签名私钥:</label>
       <textarea id="rsa-sign-private-key" placeholder="粘贴私钥用于签名"></textarea>
     </div>
-    
+
     <div class="form-group">
       <label>验证公钥:</label>
       <textarea id="rsa-verify-public-key" placeholder="粘贴公钥用于验证"></textarea>
     </div>
-    
+
     <div class="form-row">
       <div class="form-group">
         <label>哈希算法:</label>
@@ -121,13 +123,13 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
         </select>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button id="rsa-sign-btn" class="btn primary">✍️ 生成签名</button>
       <button id="rsa-verify-btn" class="btn success">✅ 验证签名</button>
       <button id="rsa-clear-sign-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="rsa-signature-result" class="result-box" style="display: none;">
       <h4>✍️ 数字签名</h4>
       <div class="result-item">
@@ -139,13 +141,14 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
         <div id="rsa-signature-info" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="rsa-verify-result" class="result-box success" style="display: none;">
       <h4>✅ 签名验证结果</h4>
       <div id="rsa-verify-message" class="result-value"></div>
     </div>
-    
+
     <div id="rsa-sign-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
@@ -154,7 +157,7 @@ RSA 是一种非对称加密算法，使用公钥加密、私钥解密。本页�
 ### 基本 RSA 加密解密
 
 ```typescript
-import { encrypt, decrypt, rsa } from '@ldesign/crypto'
+import { decrypt, encrypt, rsa } from '@ldesign/crypto'
 
 // 1. 生成 RSA 密钥对
 const keyPair = rsa.generateKeyPair(2048)
@@ -175,18 +178,18 @@ console.log('解密结果:', decrypted.data)
 
 ```typescript
 // 生成不同长度的密钥
-const keyPair1024 = rsa.generateKeyPair(1024)  // 不推荐，安全性不足
-const keyPair2048 = rsa.generateKeyPair(2048)  // 推荐
-const keyPair4096 = rsa.generateKeyPair(4096)  // 高安全性
+const keyPair1024 = rsa.generateKeyPair(1024) // 不推荐，安全性不足
+const keyPair2048 = rsa.generateKeyPair(2048) // 推荐
+const keyPair4096 = rsa.generateKeyPair(4096) // 高安全性
 
 // 使用不同的填充方式
 const encrypted1 = encrypt.rsa(data, publicKey, {
-  padding: 'OAEP',        // 推荐的填充方式
+  padding: 'OAEP', // 推荐的填充方式
   hashAlgorithm: 'SHA256'
 })
 
 const encrypted2 = encrypt.rsa(data, publicKey, {
-  padding: 'PKCS1',       // 传统填充方式
+  padding: 'PKCS1', // 传统填充方式
   hashAlgorithm: 'SHA1'
 })
 ```
@@ -214,50 +217,9 @@ console.log('签名验证:', isValid ? '✅ 有效' : '❌ 无效')
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <h2>RSA 加密演示</h2>
-    
-    <div>
-      <button @click="generateKeys" :disabled="isGenerating">
-        {{ isGenerating ? '生成中...' : '生成密钥对' }}
-      </button>
-    </div>
-    
-    <div v-if="keyPair">
-      <h3>密钥对已生成</h3>
-      <p>密钥长度: {{ keyPair.keySize }} 位</p>
-      
-      <div>
-        <textarea v-model="data" placeholder="输入要加密的数据"></textarea>
-        <button @click="encryptData" :disabled="isEncrypting">
-          {{ isEncrypting ? '加密中...' : '加密' }}
-        </button>
-        <button @click="decryptData" :disabled="isDecrypting || !encryptedResult">
-          {{ isDecrypting ? '解密中...' : '解密' }}
-        </button>
-      </div>
-    </div>
-    
-    <div v-if="encryptedResult">
-      <h3>加密结果</h3>
-      <pre>{{ encryptedResult.data }}</pre>
-    </div>
-    
-    <div v-if="decryptedResult">
-      <h3>解密结果</h3>
-      <p>{{ decryptedResult.data }}</p>
-    </div>
-    
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const {
   generateRSAKeyPair,
@@ -275,40 +237,87 @@ const decryptedResult = ref(null)
 const isGenerating = ref(false)
 const error = computed(() => lastError.value)
 
-const generateKeys = async () => {
+async function generateKeys() {
   try {
     isGenerating.value = true
     keyPair.value = await generateRSAKeyPair(2048)
     encryptedResult.value = null
     decryptedResult.value = null
-  } catch (err) {
+  }
+  catch (err) {
     console.error('密钥生成失败:', err)
-  } finally {
+  }
+  finally {
     isGenerating.value = false
   }
 }
 
-const encryptData = async () => {
-  if (!keyPair.value) return
-  
+async function encryptData() {
+  if (!keyPair.value)
+    return
+
   try {
     encryptedResult.value = await encryptRSA(data.value, keyPair.value.publicKey)
     decryptedResult.value = null
-  } catch (err) {
+  }
+  catch (err) {
     console.error('加密失败:', err)
   }
 }
 
-const decryptData = async () => {
-  if (!keyPair.value || !encryptedResult.value) return
-  
+async function decryptData() {
+  if (!keyPair.value || !encryptedResult.value)
+    return
+
   try {
     decryptedResult.value = await decryptRSA(encryptedResult.value, keyPair.value.privateKey)
-  } catch (err) {
+  }
+  catch (err) {
     console.error('解密失败:', err)
   }
 }
 </script>
+
+<template>
+  <div>
+    <h2>RSA 加密演示</h2>
+
+    <div>
+      <button :disabled="isGenerating" @click="generateKeys">
+        {{ isGenerating ? '生成中...' : '生成密钥对' }}
+      </button>
+    </div>
+
+    <div v-if="keyPair">
+      <h3>密钥对已生成</h3>
+      <p>密钥长度: {{ keyPair.keySize }} 位</p>
+
+      <div>
+        <textarea v-model="data" placeholder="输入要加密的数据" />
+        <button :disabled="isEncrypting" @click="encryptData">
+          {{ isEncrypting ? '加密中...' : '加密' }}
+        </button>
+        <button :disabled="isDecrypting || !encryptedResult" @click="decryptData">
+          {{ isDecrypting ? '解密中...' : '解密' }}
+        </button>
+      </div>
+    </div>
+
+    <div v-if="encryptedResult">
+      <h3>加密结果</h3>
+      <pre>{{ encryptedResult.data }}</pre>
+    </div>
+
+    <div v-if="decryptedResult">
+      <h3>解密结果</h3>
+      <p>{{ decryptedResult.data }}</p>
+    </div>
+
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 实际应用场景
@@ -320,30 +329,30 @@ const decryptData = async () => {
 class SecureCommunication {
   private clientKeyPair: any
   private serverPublicKey: string
-  
+
   constructor(serverPublicKey: string) {
     this.serverPublicKey = serverPublicKey
     this.clientKeyPair = rsa.generateKeyPair(2048)
   }
-  
+
   // 发送加密消息给服务器
   sendSecureMessage(message: string): string {
     const encrypted = encrypt.rsa(message, this.serverPublicKey)
     return JSON.stringify(encrypted)
   }
-  
+
   // 接收服务器的加密消息
   receiveSecureMessage(encryptedMessage: string): string {
     const encrypted = JSON.parse(encryptedMessage)
     const decrypted = decrypt.rsa(encrypted, this.clientKeyPair.privateKey)
-    
+
     if (!decrypted.success) {
       throw new Error('消息解密失败')
     }
-    
+
     return decrypted.data
   }
-  
+
   // 获取客户端公钥（发送给服务器）
   getPublicKey(): string {
     return this.clientKeyPair.publicKey
@@ -367,11 +376,11 @@ const decryptedMessage = comm.receiveSecureMessage(encryptedMessage)
 // 数字证书管理
 class DigitalCertificate {
   private issuerKeyPair: any
-  
+
   constructor() {
     this.issuerKeyPair = rsa.generateKeyPair(4096)
   }
-  
+
   // 签发证书
   issueCertificate(userInfo: {
     name: string
@@ -384,20 +393,20 @@ class DigitalCertificate {
       issuer: 'My Certificate Authority',
       issuedAt: Date.now()
     })
-    
+
     const signature = digitalSignature.sign(
-      certificateData, 
-      this.issuerKeyPair.privateKey, 
+      certificateData,
+      this.issuerKeyPair.privateKey,
       'SHA256'
     )
-    
+
     return JSON.stringify({
       data: certificateData,
-      signature: signature,
+      signature,
       issuerPublicKey: this.issuerKeyPair.publicKey
     })
   }
-  
+
   // 验证证书
   verifyCertificate(certificate: string): boolean {
     try {
@@ -408,17 +417,19 @@ class DigitalCertificate {
         cert.issuerPublicKey,
         'SHA256'
       )
-      
-      if (!isValid) return false
-      
+
+      if (!isValid)
+        return false
+
       // 检查证书是否过期
       const certData = JSON.parse(cert.data)
       if (Date.now() > certData.validUntil) {
         return false
       }
-      
+
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -450,38 +461,38 @@ class HybridEncryption {
   } {
     // 1. 生成随机 AES 密钥
     const aesKey = keyGenerator.generateKey(32) // 256位密钥
-    
+
     // 2. 使用 AES 加密数据
     const encryptedData = encrypt.aes(data, aesKey)
-    
+
     // 3. 使用 RSA 加密 AES 密钥
     const encryptedKey = encrypt.rsa(aesKey, rsaPublicKey)
-    
+
     return {
       encryptedData,
       encryptedKey
     }
   }
-  
+
   static decrypt(
-    encryptedData: any, 
-    encryptedKey: any, 
+    encryptedData: any,
+    encryptedKey: any,
     rsaPrivateKey: string
   ): string {
     // 1. 使用 RSA 解密 AES 密钥
     const decryptedKey = decrypt.rsa(encryptedKey, rsaPrivateKey)
-    
+
     if (!decryptedKey.success) {
       throw new Error('密钥解密失败')
     }
-    
+
     // 2. 使用 AES 密钥解密数据
     const decryptedData = decrypt.aes(encryptedData, decryptedKey.data)
-    
+
     if (!decryptedData.success) {
       throw new Error('数据解密失败')
     }
-    
+
     return decryptedData.data
   }
 }
@@ -492,14 +503,14 @@ const largeData = 'A'.repeat(10000) // 10KB 数据
 
 // 加密
 const { encryptedData, encryptedKey } = HybridEncryption.encrypt(
-  largeData, 
+  largeData,
   keyPair.publicKey
 )
 
 // 解密
 const decryptedData = HybridEncryption.decrypt(
-  encryptedData, 
-  encryptedKey, 
+  encryptedData,
+  encryptedKey,
   keyPair.privateKey
 )
 
@@ -510,12 +521,12 @@ console.log('数据匹配:', decryptedData === largeData)
 
 ### 密钥长度选择
 
-| 密钥长度 | 安全级别 | 性能 | 推荐用途 |
-|----------|----------|------|----------|
-| 1024 位 | 低 | 快 | 不推荐使用 |
-| 2048 位 | 高 | 中等 | **推荐用于一般用途** |
-| 3072 位 | 很高 | 慢 | 高安全要求 |
-| 4096 位 | 最高 | 很慢 | 最高安全要求 |
+| 密钥长度 | 安全级别 | 性能 | 推荐用途             |
+| -------- | -------- | ---- | -------------------- |
+| 1024 位  | 低       | 快   | 不推荐使用           |
+| 2048 位  | 高       | 中等 | **推荐用于一般用途** |
+| 3072 位  | 很高     | 慢   | 高安全要求           |
+| 4096 位  | 最高     | 很慢 | 最高安全要求         |
 
 ### RSA 使用限制
 
@@ -528,16 +539,16 @@ console.log('数据匹配:', decryptedData === largeData)
 ```typescript
 // 安全的 RSA 配置
 const secureRSAConfig = {
-  keySize: 2048,          // 最小推荐长度
-  padding: 'OAEP',        // 使用 OAEP 填充
+  keySize: 2048, // 最小推荐长度
+  padding: 'OAEP', // 使用 OAEP 填充
   hashAlgorithm: 'SHA256' // 使用 SHA256
 }
 
 // 不安全的配置（避免使用）
 const insecureConfig = {
-  keySize: 1024,          // 密钥长度不足
-  padding: 'PKCS1',       // 较弱的填充
-  hashAlgorithm: 'SHA1'   // 已被破解的哈希
+  keySize: 1024, // 密钥长度不足
+  padding: 'PKCS1', // 较弱的填充
+  hashAlgorithm: 'SHA1' // 已被破解的哈希
 }
 ```
 

@@ -6,24 +6,24 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '登录'
+      default: '登录',
     },
     subtitle: {
       type: String,
-      default: '请输入您的账号信息'
+      default: '请输入您的账号信息',
     },
     logo: {
       type: String,
-      default: ''
+      default: '',
     },
     showRememberMe: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showForgotPassword: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   emits: ['login', 'register', 'forgotPassword'],
   setup(props, { emit }) {
@@ -31,7 +31,7 @@ export default defineComponent({
     const form = reactive({
       username: '',
       password: '',
-      remember: false
+      remember: false,
     })
 
     const handleLogin = async () => {
@@ -126,5 +126,5 @@ export default defineComponent({
         </div>
       </div>
     )
-  }
+  },
 })

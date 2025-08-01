@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 
 test.describe('Global E2E Tests', () => {
   test('should have working documentation site', async ({ page }) => {

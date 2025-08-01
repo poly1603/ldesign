@@ -28,10 +28,10 @@ import App from './App.vue'
 const myPlugin = creators.plugin('my-plugin', (engine) => {
   // 插件安装逻辑
   engine.logger.info('My plugin installed!')
-  
+
   // 注册全局状态
   engine.state.set('myPluginData', { count: 0 })
-  
+
   // 监听事件
   engine.events.on('my-event', (data) => {
     console.log('My event triggered:', data)
@@ -51,7 +51,7 @@ const asyncPlugin = creators.plugin('async-plugin', async (engine) => {
   // 异步初始化
   const data = await fetch('/api/plugin-config')
   const config = await data.json()
-  
+
   engine.state.set('asyncPluginConfig', config)
   engine.logger.info('Async plugin loaded with config:', config)
 })
@@ -69,7 +69,7 @@ const dependentPlugin = {
     if (!engine.plugins.isRegistered('base-plugin')) {
       throw new Error('base-plugin is required')
     }
-    
+
     engine.logger.info('Dependent plugin installed')
   }
 }
@@ -166,7 +166,8 @@ const robustPlugin = creators.plugin('robust-plugin', (engine) => {
   try {
     // 插件逻辑
     engine.state.set('data', processData())
-  } catch (error) {
+  }
+  catch (error) {
     engine.logger.error('Plugin initialization failed:', error)
     // 优雅降级
     engine.state.set('data', getDefaultData())
@@ -183,7 +184,7 @@ const cleanPlugin = {
     const timer = setInterval(() => {
       // 定期任务
     }, 1000)
-    
+
     // 保存定时器引用以便清理
     engine.state.set('cleanPluginTimer', timer)
   },
@@ -206,7 +207,7 @@ interface MyPluginOptions {
   timeout: number
 }
 
-const configurablePlugin = (options: MyPluginOptions) => {
+function configurablePlugin(options: MyPluginOptions) {
   return creators.plugin('configurable-plugin', (engine) => {
     // 使用配置
     engine.state.set('apiConfig', {

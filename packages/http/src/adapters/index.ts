@@ -1,12 +1,12 @@
 import type { HttpAdapter } from '@/types'
-import { FetchAdapter } from './fetch'
-import { AxiosAdapter } from './axios'
 import { AlovaAdapter } from './alova'
+import { AxiosAdapter } from './axios'
+import { FetchAdapter } from './fetch'
 
+export { AlovaAdapter } from './alova'
+export { AxiosAdapter } from './axios'
 export { BaseAdapter } from './base'
 export { FetchAdapter } from './fetch'
-export { AxiosAdapter } from './axios'
-export { AlovaAdapter } from './alova'
 
 /**
  * 适配器工厂
@@ -41,14 +41,15 @@ export class AdapterFactory {
    */
   static getAvailable(): string[] {
     const available: string[] = []
-    
+
     this.adapters.forEach((factory, name) => {
       try {
         const adapter = factory()
         if (adapter.isSupported()) {
           available.push(name)
         }
-      } catch {
+      }
+      catch {
         // 忽略不可用的适配器
       }
     })
@@ -61,14 +62,14 @@ export class AdapterFactory {
    */
   static getDefault(): HttpAdapter {
     const available = this.getAvailable()
-    
+
     if (available.length === 0) {
       throw new Error('No available HTTP adapter found')
     }
 
     // 优先级：fetch > axios > alova
     const priority = ['fetch', 'axios', 'alova']
-    
+
     for (const name of priority) {
       if (available.includes(name)) {
         return this.create(name)
@@ -113,7 +114,8 @@ export function isAdapterAvailable(name: string): boolean {
   try {
     const adapter = AdapterFactory.create(name)
     return adapter.isSupported()
-  } catch {
+  }
+  catch {
     return false
   }
 }

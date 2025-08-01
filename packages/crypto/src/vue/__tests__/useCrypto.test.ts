@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { useCrypto } from '../composables/useCrypto'
 
 describe('useCrypto Composable', () => {
@@ -10,7 +10,7 @@ describe('useCrypto Composable', () => {
     crypto = useCrypto()
   })
 
-  describe('State Management', () => {
+  describe('state Management', () => {
     it('should initialize with correct default state', () => {
       expect(crypto.isEncrypting.value).toBe(false)
       expect(crypto.isDecrypting.value).toBe(false)
@@ -22,9 +22,9 @@ describe('useCrypto Composable', () => {
       // Set some state
       crypto.lastError.value = 'test error'
       crypto.isEncrypting.value = true
-      
+
       crypto.reset()
-      
+
       expect(crypto.isEncrypting.value).toBe(false)
       expect(crypto.isDecrypting.value).toBe(false)
       expect(crypto.lastError.value).toBe(null)
@@ -38,7 +38,7 @@ describe('useCrypto Composable', () => {
     })
   })
 
-  describe('AES Encryption', () => {
+  describe('aES Encryption', () => {
     it('should encrypt and decrypt AES successfully', async () => {
       const encrypted = await crypto.encryptAES(testData, testKey)
       expect(encrypted.data).toBeDefined()
@@ -54,7 +54,8 @@ describe('useCrypto Composable', () => {
     it('should handle AES encryption errors', async () => {
       try {
         await crypto.encryptAES('', testKey)
-      } catch (error) {
+      }
+      catch (error) {
         expect(error).toBeInstanceOf(Error)
         expect(crypto.lastError.value).toBeDefined()
       }
@@ -69,7 +70,7 @@ describe('useCrypto Composable', () => {
     })
   })
 
-  describe('RSA Encryption', () => {
+  describe('rSA Encryption', () => {
     it('should handle RSA operations', async () => {
       // Generate key pair first
       const keyPair = await crypto.generateRSAKeyPair(1024) // Use smaller key for faster tests
@@ -87,7 +88,7 @@ describe('useCrypto Composable', () => {
     })
   })
 
-  describe('Base64 Encoding', () => {
+  describe('base64 Encoding', () => {
     it('should encode and decode Base64', async () => {
       const encoded = await crypto.encodeBase64(testData)
       expect(encoded).toBeDefined()
@@ -98,7 +99,7 @@ describe('useCrypto Composable', () => {
     })
   })
 
-  describe('Hex Encoding', () => {
+  describe('hex Encoding', () => {
     it('should encode and decode Hex', async () => {
       const encoded = await crypto.encodeHex(testData)
       expect(encoded).toBeDefined()
@@ -110,7 +111,7 @@ describe('useCrypto Composable', () => {
     })
   })
 
-  describe('Key Generation', () => {
+  describe('key Generation', () => {
     it('should generate random key', async () => {
       const key = await crypto.generateKey(32)
       expect(key).toBeDefined()
@@ -144,7 +145,7 @@ describe('useCrypto Composable', () => {
     })
   })
 
-  describe('Direct Access', () => {
+  describe('direct Access', () => {
     it('should provide direct access to core functions', () => {
       expect(crypto.encrypt).toBeDefined()
       expect(crypto.decrypt).toBeDefined()
@@ -154,17 +155,18 @@ describe('useCrypto Composable', () => {
     it('should work with direct access', () => {
       const encrypted = crypto.encrypt.aes(testData, testKey)
       const decrypted = crypto.decrypt.aes(encrypted, testKey)
-      
+
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
   })
 
-  describe('Error Handling', () => {
+  describe('error Handling', () => {
     it('should handle and store errors properly', async () => {
       try {
         await crypto.encryptAES('', testKey)
-      } catch (error) {
+      }
+      catch (error) {
         expect(crypto.lastError.value).toBeDefined()
         expect(crypto.lastError.value).toContain('Data cannot be empty')
       }
@@ -173,10 +175,10 @@ describe('useCrypto Composable', () => {
     it('should clear previous errors on successful operations', async () => {
       // Set an error
       crypto.lastError.value = 'previous error'
-      
+
       // Perform successful operation
       await crypto.encodeBase64(testData)
-      
+
       expect(crypto.lastError.value).toBe(null)
     })
   })

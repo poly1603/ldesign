@@ -1,6 +1,6 @@
 import { Ref } from 'vue';
-import { HashOptions, HashAlgorithm } from '@/types';
-import { hash, hmac } from '@/core';
+import { HashOptions, HashAlgorithm } from '../../types/index.js';
+import { hash, hmac } from '../../core/index.js';
 
 /**
  * 哈希状态接口

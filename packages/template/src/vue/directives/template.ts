@@ -30,7 +30,7 @@ function parseBinding(binding: DirectiveBinding): TemplateDirectiveBinding | nul
         category: parts[0],
         device: parts[1] as DeviceType,
         template: parts[2] || parts[1],
-        props: {}
+        props: {},
       }
     }
     return null
@@ -52,7 +52,7 @@ function parseBinding(binding: DirectiveBinding): TemplateDirectiveBinding | nul
  */
 async function renderTemplate(
   el: TemplateDirectiveElement,
-  binding: TemplateDirectiveBinding
+  binding: TemplateDirectiveBinding,
 ): Promise<void> {
   const data = el.__templateDirective
   if (!data)
@@ -68,7 +68,7 @@ async function renderTemplate(
       category: binding.category,
       device: binding.device,
       template: binding.template,
-      props: binding.props
+      props: binding.props,
     })
 
     // 创建 Vue 应用实例来渲染组件
@@ -123,7 +123,7 @@ export const templateDirective: Directive<TemplateDirectiveElement, any> = {
     el.__templateDirective = {
       manager: createTemplateManager(),
       currentTemplate: undefined,
-      cleanup: undefined
+      cleanup: undefined,
     }
 
     // 添加基础样式类
@@ -189,9 +189,9 @@ export const templateDirective: Directive<TemplateDirectiveElement, any> = {
       'template-directive',
       'template-directive-loading-state',
       'template-directive-loaded-state',
-      'template-directive-error-state'
+      'template-directive-error-state',
     )
-  }
+  },
 }
 
 /**

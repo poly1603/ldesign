@@ -1,13 +1,13 @@
 // 组件安装函数
 import type { App } from 'vue'
-import { RouterView } from './RouterView'
 import { RouterLink } from './RouterLink'
+import { RouterView } from './RouterView'
 
-export { RouterView, default as RouterViewDefault } from './RouterView'
 export { RouterLink, default as RouterLinkDefault } from './RouterLink'
+export { RouterView, default as RouterViewDefault } from './RouterView'
 
 // 导出组件类型
-export type { RouterViewProps, RouterLinkProps } from './types'
+export type { RouterLinkProps, RouterViewProps } from './types'
 
 export function installComponents(app: App): void {
   app.component('RouterView', RouterView)

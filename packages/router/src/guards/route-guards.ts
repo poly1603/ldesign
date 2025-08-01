@@ -3,7 +3,7 @@
  * 提供更强大的路由守卫机制，支持异步守卫、条件守卫等
  */
 
-import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
+import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
 export type GuardResult = boolean | string | Error | void
 export type AsyncGuardResult = Promise<GuardResult> | GuardResult
@@ -118,7 +118,8 @@ export class RouteGuardManager {
         if (result !== undefined && result !== true) {
           return result
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Guard ${guard.name} failed:`, error)
         return error instanceof Error ? error : new Error(String(error))
       }
@@ -148,4 +149,18 @@ export class RouteGuardManager {
  */
 export function createAuthGuard(config: AuthGuardConfig): GuardConfig {
   return {
-    name:
+    name: 'auth-guard',
+    priority: config.priority || 100,
+    enabled: true,
+    handler: async (context) => {
+      // 认证逻辑实现
+      if (config.isAuthenticated && !config.isAuthenticated()) {
+        return {
+          type: 'redirect',
+          path: config.loginPath || '/login',
+        }
+      }
+      return { type: 'continue' }
+    },
+  }
+}

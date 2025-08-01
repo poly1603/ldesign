@@ -76,8 +76,8 @@ pnpm build
 
 ```typescript
 import { createEngine } from '@ldesign/engine'
-import { createRouter } from '@ldesign/router'
 import { createHttpClient } from '@ldesign/http'
+import { createRouter } from '@ldesign/router'
 import App from './App.vue'
 import router from './router'
 import './style.css'
@@ -146,7 +146,7 @@ app.mount('#app')
 if (import.meta.env.DEV) {
   console.log('LDesign引擎已启动')
   console.log('引擎实例:', engine)
-  
+
   // 性能监控
   engine.performance.on('violation', (violation) => {
     console.warn('性能警告:', violation)
@@ -158,8 +158,8 @@ if (import.meta.env.DEV) {
 
 ```typescript
 import { createRouter } from '@ldesign/router'
-import Home from '../views/Home.vue'
 import About from '../views/About.vue'
+import Home from '../views/Home.vue'
 import Users from '../views/Users.vue'
 
 const router = createRouter({
@@ -209,7 +209,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta?.title) {
     document.title = `${to.meta.title} - LDesign 基础应用`
   }
-  
+
   // 检查认证（示例）
   if (to.meta?.requiresAuth) {
     const isAuthenticated = localStorage.getItem('token')
@@ -218,7 +218,7 @@ router.beforeEach((to, from, next) => {
       return
     }
   }
-  
+
   next()
 })
 
@@ -233,9 +233,9 @@ export default router
 ### stores/user.ts - 状态管理
 
 ```typescript
-import { ref, computed } from 'vue'
 import { defineStore } from '@ldesign/engine'
 import { useHttp } from '@ldesign/http'
+import { computed, ref } from 'vue'
 
 export interface User {
   id: number
@@ -247,72 +247,76 @@ export interface User {
 
 export const useUserStore = defineStore('user', () => {
   const http = useHttp()
-  
+
   // 状态
   const users = ref<User[]>([])
   const currentUser = ref<User | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  
+
   // 计算属性
   const userCount = computed(() => users.value.length)
   const hasUsers = computed(() => users.value.length > 0)
-  
+
   // 操作
   const fetchUsers = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
       const response = await http.get<User[]>('/users')
       users.value = response.data
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : '获取用户列表失败'
       console.error('获取用户失败:', err)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
-  
+
   const getUserById = async (id: number) => {
     loading.value = true
     error.value = null
-    
+
     try {
       const response = await http.get<User>(`/users/${id}`)
       currentUser.value = response.data
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : '获取用户详情失败'
       console.error('获取用户详情失败:', err)
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
-  
+
   const clearError = () => {
     error.value = null
   }
-  
+
   const reset = () => {
     users.value = []
     currentUser.value = null
     loading.value = false
     error.value = null
   }
-  
+
   return {
     // 状态
     users,
     currentUser,
     loading,
     error,
-    
+
     // 计算属性
     userCount,
     hasUsers,
-    
+
     // 操作
     fetchUsers,
     getUserById,
@@ -325,36 +329,11 @@ export const useUserStore = defineStore('user', () => {
 ### App.vue - 根组件
 
 ```vue
-<template>
-  <div id="app">
-    <Header />
-    
-    <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </main>
-    
-    <Footer />
-    
-    <!-- 错误提示 -->
-    <div v-if="error" class="error-toast">
-      {{ error }}
-      <button @click="clearError">×</button>
-    </div>
-    
-    <!-- 性能监控面板（开发环境） -->
-    <PerformancePanel v-if="isDev" />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onErrorCaptured } from 'vue'
 import { useEngine } from '@ldesign/engine'
-import Header from './components/Header.vue'
+import { onErrorCaptured, onMounted, ref } from 'vue'
 import Footer from './components/Footer.vue'
+import Header from './components/Header.vue'
 import PerformancePanel from './components/PerformancePanel.vue'
 
 const engine = useEngine()
@@ -362,7 +341,7 @@ const error = ref<string | null>(null)
 const isDev = import.meta.env.DEV
 
 // 错误处理
-const clearError = () => {
+function clearError() {
   error.value = null
 }
 
@@ -379,13 +358,40 @@ onMounted(() => {
     console.error('全局错误:', event.error)
     error.value = `全局错误: ${event.error?.message || '未知错误'}`
   })
-  
+
   window.addEventListener('unhandledrejection', (event) => {
     console.error('未处理的Promise拒绝:', event.reason)
     error.value = `Promise错误: ${event.reason?.message || '未知错误'}`
   })
 })
 </script>
+
+<template>
+  <div id="app">
+    <Header />
+
+    <main class="main-content">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
+
+    <Footer />
+
+    <!-- 错误提示 -->
+    <div v-if="error" class="error-toast">
+      {{ error }}
+      <button @click="clearError">
+        ×
+      </button>
+    </div>
+
+    <!-- 性能监控面板（开发环境） -->
+    <PerformancePanel v-if="isDev" />
+  </div>
+</template>
 
 <style scoped>
 #app {
@@ -446,76 +452,9 @@ onMounted(() => {
 ### views/Home.vue - 首页
 
 ```vue
-<template>
-  <div class="home">
-    <div class="hero">
-      <h1>欢迎使用 LDesign</h1>
-      <p class="hero-description">
-        基于Vue3的现代化前端开发引擎，提供完整的插件化架构和跨框架兼容性
-      </p>
-      <div class="hero-actions">
-        <router-link to="/users" class="btn btn-primary">
-          查看用户列表
-        </router-link>
-        <router-link to="/about" class="btn btn-secondary">
-          了解更多
-        </router-link>
-      </div>
-    </div>
-    
-    <div class="features">
-      <div class="feature-card">
-        <div class="feature-icon">🚀</div>
-        <h3>高性能</h3>
-        <p>基于Vue3构建，提供卓越的性能表现和开发体验</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">🔧</div>
-        <h3>插件化</h3>
-        <p>完整的插件系统，支持按需加载和热插拔</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">📱</div>
-        <h3>跨平台</h3>
-        <p>支持多种平台和设备类型，一套代码多端运行</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">🛡️</div>
-        <h3>安全可靠</h3>
-        <p>内置安全防护机制，保障应用和数据安全</p>
-      </div>
-    </div>
-    
-    <div class="stats">
-      <div class="stat-item">
-        <div class="stat-number">{{ engineInfo.version }}</div>
-        <div class="stat-label">引擎版本</div>
-      </div>
-      
-      <div class="stat-item">
-        <div class="stat-number">{{ engineInfo.pluginCount }}</div>
-        <div class="stat-label">已加载插件</div>
-      </div>
-      
-      <div class="stat-item">
-        <div class="stat-number">{{ performanceInfo.fps }}</div>
-        <div class="stat-label">当前FPS</div>
-      </div>
-      
-      <div class="stat-item">
-        <div class="stat-number">{{ performanceInfo.memory }}</div>
-        <div class="stat-label">内存使用(MB)</div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
 import { useEngine } from '@ldesign/engine'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const engine = useEngine()
 
@@ -532,7 +471,7 @@ const performanceInfo = ref({
 let performanceTimer: number
 
 // 获取引擎信息
-const getEngineInfo = () => {
+function getEngineInfo() {
   engineInfo.value = {
     version: engine.version || '1.0.0',
     pluginCount: engine.plugins?.size || 0
@@ -540,7 +479,7 @@ const getEngineInfo = () => {
 }
 
 // 获取性能信息
-const getPerformanceInfo = () => {
+function getPerformanceInfo() {
   if (engine.performance) {
     const metrics = engine.performance.getMetrics()
     performanceInfo.value = {
@@ -553,7 +492,7 @@ const getPerformanceInfo = () => {
 onMounted(() => {
   getEngineInfo()
   getPerformanceInfo()
-  
+
   // 定期更新性能信息
   performanceTimer = setInterval(getPerformanceInfo, 1000)
 })
@@ -564,6 +503,97 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="home">
+    <div class="hero">
+      <h1>欢迎使用 LDesign</h1>
+      <p class="hero-description">
+        基于Vue3的现代化前端开发引擎，提供完整的插件化架构和跨框架兼容性
+      </p>
+      <div class="hero-actions">
+        <router-link to="/users" class="btn btn-primary">
+          查看用户列表
+        </router-link>
+        <router-link to="/about" class="btn btn-secondary">
+          了解更多
+        </router-link>
+      </div>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">
+          🚀
+        </div>
+        <h3>高性能</h3>
+        <p>基于Vue3构建，提供卓越的性能表现和开发体验</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          🔧
+        </div>
+        <h3>插件化</h3>
+        <p>完整的插件系统，支持按需加载和热插拔</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          📱
+        </div>
+        <h3>跨平台</h3>
+        <p>支持多种平台和设备类型，一套代码多端运行</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          🛡️
+        </div>
+        <h3>安全可靠</h3>
+        <p>内置安全防护机制，保障应用和数据安全</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-number">
+          {{ engineInfo.version }}
+        </div>
+        <div class="stat-label">
+          引擎版本
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-number">
+          {{ engineInfo.pluginCount }}
+        </div>
+        <div class="stat-label">
+          已加载插件
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-number">
+          {{ performanceInfo.fps }}
+        </div>
+        <div class="stat-label">
+          当前FPS
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-number">
+          {{ performanceInfo.memory }}
+        </div>
+        <div class="stat-label">
+          内存使用(MB)
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .home {
@@ -695,20 +725,20 @@ onUnmounted(() => {
   .hero h1 {
     font-size: 2rem;
   }
-  
+
   .hero-description {
     font-size: 1rem;
   }
-  
+
   .hero-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .features {
     grid-template-columns: 1fr;
   }
-  
+
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -784,7 +814,7 @@ const engine = createEngine({
   performance: {
     thresholds: {
       responseTime: 1000, // 1秒
-      fps: 30,           // 30FPS
+      fps: 30, // 30FPS
       memory: 50 * 1024 * 1024 // 50MB
     }
   }
@@ -799,10 +829,10 @@ const engine = createEngine({
 // 开发环境调试
 if (import.meta.env.DEV) {
   console.log('调试信息:', engine)
-  
+
   // 性能监控
   engine.performance.on('violation', console.warn)
-  
+
   // 错误监控
   engine.errors.on('error', console.error)
 }

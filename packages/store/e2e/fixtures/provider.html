@@ -1,64 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LDesign Store - Provider Test</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
-  <script src="https://unpkg.com/reflect-metadata@0.2.1/Reflect.js"></script>
-</head>
-<body>
-  <div id="app">
-    <h1>Provider 测试</h1>
-    <div>
-      <p>主题: <span id="theme">{{ theme }}</span></p>
-      <p>语言: <span id="language">{{ language }}</span></p>
-      <button id="toggleTheme" @click="toggleTheme">切换主题</button>
-      <button id="changeLanguage" @click="changeLanguage">切换语言</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LDesign Store - Provider Test</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
+    <script src="https://unpkg.com/reflect-metadata@0.2.1/Reflect.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Provider 测试</h1>
+      <div>
+        <p>主题: <span id="theme">{{ theme }}</span></p>
+        <p>语言: <span id="language">{{ language }}</span></p>
+        <button id="toggleTheme" @click="toggleTheme">切换主题</button>
+        <button id="changeLanguage" @click="changeLanguage">切换语言</button>
+      </div>
     </div>
-  </div>
 
-  <script type="module">
-    const { createApp, ref, provide, inject } = Vue
-    const { createPinia, defineStore } = Pinia
+    <script type="module">
+      const { createApp, ref, provide, inject } = Vue
+      const { createPinia, defineStore } = Pinia
 
-    // 模拟 Provider Store
-    const useSettingsStore = defineStore('settings', () => {
-      const theme = ref('light')
-      const language = ref('zh-CN')
-      
-      function toggleTheme() {
-        theme.value = theme.value === 'light' ? 'dark' : 'light'
-      }
-      
-      function changeLanguage() {
-        language.value = language.value === 'zh-CN' ? 'en-US' : 'zh-CN'
-      }
-      
-      return {
-        theme,
-        language,
-        toggleTheme,
-        changeLanguage
-      }
-    })
+      // 模拟 Provider Store
+      const useSettingsStore = defineStore('settings', () => {
+        const theme = ref('light')
+        const language = ref('zh-CN')
 
-    const app = createApp({
-      setup() {
-        const store = useSettingsStore()
-        
-        return {
-          theme: store.theme,
-          language: store.language,
-          toggleTheme: store.toggleTheme,
-          changeLanguage: store.changeLanguage
+        function toggleTheme() {
+          theme.value = theme.value === 'light' ? 'dark' : 'light'
         }
-      }
-    })
 
-    app.use(createPinia())
-    app.mount('#app')
-  </script>
-</body>
+        function changeLanguage() {
+          language.value = language.value === 'zh-CN' ? 'en-US' : 'zh-CN'
+        }
+
+        return {
+          theme,
+          language,
+          toggleTheme,
+          changeLanguage,
+        }
+      })
+
+      const app = createApp({
+        setup() {
+          const store = useSettingsStore()
+
+          return {
+            theme: store.theme,
+            language: store.language,
+            toggleTheme: store.toggleTheme,
+            changeLanguage: store.changeLanguage,
+          }
+        },
+      })
+
+      app.use(createPinia())
+      app.mount('#app')
+    </script>
+  </body>
 </html>

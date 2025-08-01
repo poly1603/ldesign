@@ -6,32 +6,32 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '用户登录'
+      default: '用户登录',
     },
     subtitle: {
       type: String,
-      default: '欢迎使用我们的平台'
+      default: '欢迎使用我们的平台',
     },
     logo: {
       type: String,
-      default: ''
+      default: '',
     },
     showRememberMe: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showForgotPassword: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showThirdPartyLogin: {
       type: Boolean,
-      default: true
+      default: true,
     },
     thirdPartyProviders: {
       type: Array,
-      default: () => ['github', 'google', 'microsoft', 'apple']
-    }
+      default: () => ['github', 'google', 'microsoft', 'apple'],
+    },
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin'],
   setup(props, { emit }) {
@@ -39,7 +39,7 @@ export default defineComponent({
     const form = reactive({
       username: '',
       password: '',
-      remember: false
+      remember: false,
     })
 
     const handleLogin = async () => {
@@ -85,12 +85,12 @@ export default defineComponent({
               )}
               <h1 class="tablet-split-login__brand-title">{props.title}</h1>
               <p class="tablet-split-login__brand-subtitle">{props.subtitle}</p>
-              
+
               <div class="tablet-split-login__features">
                 <div class="tablet-split-login__feature">
                   <div class="tablet-split-login__feature-icon">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" />
                     </svg>
                   </div>
                   <div class="tablet-split-login__feature-text">
@@ -98,11 +98,11 @@ export default defineComponent({
                     <p>企业级安全保障</p>
                   </div>
                 </div>
-                
+
                 <div class="tablet-split-login__feature">
                   <div class="tablet-split-login__feature-icon">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2"/>
+                      <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" />
                     </svg>
                   </div>
                   <div class="tablet-split-login__feature-text">
@@ -110,11 +110,11 @@ export default defineComponent({
                     <p>快速响应，流畅体验</p>
                   </div>
                 </div>
-                
+
                 <div class="tablet-split-login__feature">
                   <div class="tablet-split-login__feature-icon">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2"/>
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" />
                     </svg>
                   </div>
                   <div class="tablet-split-login__feature-text">
@@ -124,7 +124,7 @@ export default defineComponent({
                 </div>
               </div>
             </div>
-            
+
             <div class="tablet-split-login__decoration">
               <div class="tablet-split-login__circle tablet-split-login__circle--1"></div>
               <div class="tablet-split-login__circle tablet-split-login__circle--2"></div>
@@ -145,7 +145,7 @@ export default defineComponent({
                 <label class="tablet-split-login__label">用户名或邮箱</label>
                 <div class="tablet-split-login__input-wrapper">
                   <svg class="tablet-split-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="2" />
                   </svg>
                   <input
                     type="text"
@@ -160,9 +160,9 @@ export default defineComponent({
                 <label class="tablet-split-login__label">密码</label>
                 <div class="tablet-split-login__input-wrapper">
                   <svg class="tablet-split-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="16" r="1" fill="currentColor"/>
-                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2"/>
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
+                    <circle cx="12" cy="16" r="1" fill="currentColor" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2" />
                   </svg>
                   <input
                     type="password"
@@ -239,5 +239,5 @@ export default defineComponent({
         </div>
       </div>
     )
-  }
+  },
 })

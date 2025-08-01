@@ -32,6 +32,7 @@ yarn add @ldesign/crypto
 
 <!-- 生产版本（压缩） -->
 <script src="https://unpkg.com/@ldesign/crypto/dist/index.min.js"></script>
+
 ```
 
 使用 UMD 格式时，库会暴露为全局变量 `LDesignCrypto`：
@@ -39,10 +40,11 @@ yarn add @ldesign/crypto
 ```html
 <script>
   const { encrypt, decrypt, hash } = LDesignCrypto
-  
+
   const encrypted = encrypt.aes('Hello World', 'secret-key')
   console.log(encrypted)
 </script>
+
 ```
 
 ### ESM 格式
@@ -50,10 +52,11 @@ yarn add @ldesign/crypto
 ```html
 <script type="module">
   import { encrypt, decrypt, hash } from 'https://unpkg.com/@ldesign/crypto/es/index.js'
-  
+
   const encrypted = encrypt.aes('Hello World', 'secret-key')
   console.log(encrypted)
 </script>
+
 ```
 
 ## Vue 3 项目安装
@@ -116,44 +119,35 @@ console.log('Success:', decrypted.data === 'Hello World')
 ### 浏览器环境
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Crypto Test</title>
-</head>
-<body>
+  </head>
+  <body>
     <script type="module">
-        import { encrypt, decrypt, hash } from '@ldesign/crypto'
-        
-        // 测试基本功能
-        const encrypted = encrypt.aes('Hello World', 'test-key')
-        const decrypted = decrypt.aes(encrypted, 'test-key')
-        
-        console.log('Original:', 'Hello World')
-        console.log('Encrypted:', encrypted.data)
-        console.log('Decrypted:', decrypted.data)
-        console.log('Success:', decrypted.data === 'Hello World')
+      import { encrypt, decrypt, hash } from '@ldesign/crypto'
+
+      // 测试基本功能
+      const encrypted = encrypt.aes('Hello World', 'test-key')
+      const decrypted = decrypt.aes(encrypted, 'test-key')
+
+      console.log('Original:', 'Hello World')
+      console.log('Encrypted:', encrypted.data)
+      console.log('Decrypted:', decrypted.data)
+      console.log('Success:', decrypted.data === 'Hello World')
     </script>
-</body>
+  </body>
 </html>
+
 ```
 
 ### Vue 3 环境
 
 ```vue
-<template>
-  <div>
-    <h1>Crypto Test</h1>
-    <p>Original: {{ original }}</p>
-    <p>Encrypted: {{ encrypted }}</p>
-    <p>Decrypted: {{ decrypted }}</p>
-    <p>Success: {{ success }}</p>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { onMounted, ref } from 'vue'
 
 const { encryptAES, decryptAES } = useCrypto()
 
@@ -166,16 +160,27 @@ onMounted(async () => {
   try {
     const encryptResult = await encryptAES(original.value, 'test-key')
     encrypted.value = encryptResult.data
-    
+
     const decryptResult = await decryptAES(encryptResult, 'test-key')
     decrypted.value = decryptResult.data
-    
+
     success.value = decryptResult.data === original.value
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Test failed:', error)
   }
 })
 </script>
+
+<template>
+  <div>
+    <h1>Crypto Test</h1>
+    <p>Original: {{ original }}</p>
+    <p>Encrypted: {{ encrypted }}</p>
+    <p>Decrypted: {{ decrypted }}</p>
+    <p>Success: {{ success }}</p>
+  </div>
+</template>
 ```
 
 ## 构建工具配置
@@ -193,9 +198,9 @@ Vite 开箱即用，无需额外配置。
 module.exports = {
   resolve: {
     fallback: {
-      "crypto": require.resolve("crypto-browserify"),
-      "stream": require.resolve("stream-browserify"),
-      "buffer": require.resolve("buffer")
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer')
     }
   }
 }
@@ -204,9 +209,9 @@ module.exports = {
 ### Rollup
 
 ```javascript
+import commonjs from '@rollup/plugin-commonjs'
 // rollup.config.js
 import { nodeResolve } from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
 
 export default {
   plugins: [

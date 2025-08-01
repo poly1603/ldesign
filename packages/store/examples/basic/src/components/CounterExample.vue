@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { CounterStore } from '../stores/counter'
+
+const store = new CounterStore('counter')
+
+const countClass = computed(() => ({
+  positive: store.isPositive,
+  negative: store.isNegative,
+  zero: store.count === 0,
+}))
+
+const statusText = computed(() => {
+  if (store.isPositive)
+    return '正数'
+  if (store.isNegative)
+    return '负数'
+  return '零'
+})
+
+const statusClass = computed(() => ({
+  positive: store.isPositive,
+  negative: store.isNegative,
+  zero: store.count === 0,
+}))
+
+function updateStep(event: Event) {
+  const target = event.target as HTMLInputElement
+  store.setStep(Number.parseInt(target.value) || 1)
+}
+</script>
+
 <template>
   <div class="example-card">
     <h2>计数器示例</h2>
@@ -13,23 +45,23 @@
     <div class="controls">
       <div class="step-control">
         <label>步长:</label>
-        <input 
-          type="number" 
-          :value="store.step" 
-          @input="updateStep"
+        <input
+          type="number"
+          :value="store.step"
           min="1"
           max="10"
-        />
+          @input="updateStep"
+        >
       </div>
 
       <div class="buttons">
-        <button @click="store.decrement" class="btn btn-danger">
+        <button class="btn btn-danger" @click="store.decrement">
           -{{ store.step }}
         </button>
-        <button @click="store.reset" class="btn btn-secondary">
+        <button class="btn btn-secondary" @click="store.reset">
           重置
         </button>
-        <button @click="store.increment" class="btn btn-success">
+        <button class="btn btn-success" @click="store.increment">
           +{{ store.step }}
         </button>
       </div>
@@ -49,36 +81,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { CounterStore } from '../stores/counter'
-
-const store = new CounterStore('counter')
-
-const countClass = computed(() => ({
-  positive: store.isPositive,
-  negative: store.isNegative,
-  zero: store.count === 0
-}))
-
-const statusText = computed(() => {
-  if (store.isPositive) return '正数'
-  if (store.isNegative) return '负数'
-  return '零'
-})
-
-const statusClass = computed(() => ({
-  positive: store.isPositive,
-  negative: store.isNegative,
-  zero: store.count === 0
-}))
-
-const updateStep = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  store.setStep(parseInt(target.value) || 1)
-}
-</script>
 
 <style scoped>
 .example-card {

@@ -1,6 +1,6 @@
-import CryptoJS from 'crypto-js'
 import type { EncodingType, IEncoder } from '../types'
-import { ValidationUtils, ErrorUtils } from '../utils'
+import CryptoJS from 'crypto-js'
+import { ErrorUtils, ValidationUtils } from '../utils'
 
 /**
  * 编码器
@@ -25,7 +25,8 @@ export class Encoder implements IEncoder {
         default:
           throw ErrorUtils.createEncryptionError(`Unsupported encoding type: ${encoding}`, 'Encoding')
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -52,7 +53,8 @@ export class Encoder implements IEncoder {
         default:
           throw ErrorUtils.createDecryptionError(`Unsupported encoding type: ${encoding}`, 'Decoding')
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -68,13 +70,16 @@ export class Encoder implements IEncoder {
       // 使用浏览器原生 API 或 Node.js Buffer
       if (typeof btoa !== 'undefined') {
         return btoa(unescape(encodeURIComponent(data)))
-      } else if (typeof Buffer !== 'undefined') {
+      }
+      else if (typeof Buffer !== 'undefined') {
         return Buffer.from(data, 'utf8').toString('base64')
-      } else {
+      }
+      else {
         // 使用 CryptoJS 作为后备
         return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(data))
       }
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createEncryptionError('Failed to encode Base64', 'Base64')
     }
   }
@@ -92,13 +97,16 @@ export class Encoder implements IEncoder {
       // 使用浏览器原生 API 或 Node.js Buffer
       if (typeof atob !== 'undefined') {
         return decodeURIComponent(escape(atob(encodedData)))
-      } else if (typeof Buffer !== 'undefined') {
+      }
+      else if (typeof Buffer !== 'undefined') {
         return Buffer.from(encodedData, 'base64').toString('utf8')
-      } else {
+      }
+      else {
         // 使用 CryptoJS 作为后备
         return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(encodedData))
       }
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createDecryptionError('Failed to decode Base64', 'Base64')
     }
   }
@@ -110,7 +118,8 @@ export class Encoder implements IEncoder {
     try {
       // 使用 CryptoJS
       return CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(data))
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createEncryptionError('Failed to encode Hex', 'Hex')
     }
   }
@@ -127,7 +136,8 @@ export class Encoder implements IEncoder {
 
       // 使用 CryptoJS
       return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Hex.parse(encodedData))
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createDecryptionError('Failed to decode Hex', 'Hex')
     }
   }
@@ -146,13 +156,13 @@ export class Encoder implements IEncoder {
   decodeBase64Url(encodedData: string): string {
     // 恢复标准 Base64 格式
     let base64 = encodedData.replace(/-/g, '+').replace(/_/g, '/')
-    
+
     // 添加必要的填充
     const padding = base64.length % 4
     if (padding) {
       base64 += '='.repeat(4 - padding)
     }
-    
+
     return this.decodeBase64(base64)
   }
 }

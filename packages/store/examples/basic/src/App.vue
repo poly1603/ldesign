@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import CounterExample from './components/CounterExample.vue'
+import TodoExample from './components/TodoExample.vue'
+import UserExample from './components/UserExample.vue'
+</script>
+
 <template>
   <div class="app">
     <header class="header">
@@ -15,19 +21,13 @@
 
     <footer class="footer">
       <p>
-        查看 
-        <a href="https://github.com/ldesign/store" target="_blank">GitHub</a> 
+        查看
+        <a href="https://github.com/ldesign/store" target="_blank">GitHub</a>
         了解更多信息
       </p>
     </footer>
   </div>
 </template>
-
-<script setup lang="ts">
-import CounterExample from './components/CounterExample.vue'
-import TodoExample from './components/TodoExample.vue'
-import UserExample from './components/UserExample.vue'
-</script>
 
 <style scoped>
 .app {

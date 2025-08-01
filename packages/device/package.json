@@ -2,13 +2,6 @@
   "name": "@ldesign/device",
   "version": "0.1.0",
   "description": "Modern device information detection library with Vue3 integration",
-  "keywords": [
-    "device",
-    "detection",
-    "responsive",
-    "vue3",
-    "typescript"
-  ],
   "author": "ldesign",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/device#readme",
@@ -19,9 +12,13 @@
   "bugs": {
     "url": "https://github.com/ldesign/device/issues"
   },
-  "main": "dist/index.js",
-  "module": "es/index.js",
-  "types": "types/index.d.ts",
+  "keywords": [
+    "device",
+    "detection",
+    "responsive",
+    "vue3",
+    "typescript"
+  ],
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
@@ -34,13 +31,19 @@
       "require": "./dist/vue/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
   "files": [
+    "CHANGELOG.md",
+    "README.md",
     "dist",
     "es",
-    "types",
-    "README.md",
-    "CHANGELOG.md"
+    "types"
   ],
+  "engines": {
+    "node": ">=16"
+  },
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rollup -c",
@@ -48,13 +51,24 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint src --fix",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --fix",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "prepublishOnly": "npm run build",
-    "release": "changeset publish"
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "release": "changeset publish",
+    "build:watch": "rollup -c -w",
+    "type-check": "vue-tsc --noEmit",
+    "lint:check": "eslint .",
+    "test:run": "vitest run",
+    "test:e2e:ui": "playwright test --ui",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "deploy": "tsx ../../tools/deploy/package-deployer.ts device",
+    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts device --tag beta",
+    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts device --tag alpha",
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts device --dry-run"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
@@ -84,8 +98,5 @@
     "vitepress": "^1.6.3",
     "vitest": "^1.1.0",
     "vue": "^3.4.3"
-  },
-  "engines": {
-    "node": ">=16"
   }
 }

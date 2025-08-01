@@ -7,17 +7,17 @@ AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔐 AES 加密演示</h3>
-    
+
     <div class="form-group">
       <label>要加密的数据:</label>
       <textarea id="aes-data" placeholder="输入要加密的数据">Hello, AES Encryption!</textarea>
     </div>
-    
+
     <div class="form-group">
       <label>密钥:</label>
       <input type="text" id="aes-key" placeholder="输入密钥" value="my-secret-key-32-characters-long">
     </div>
-    
+
     <div class="form-row">
       <div class="form-group">
         <label>密钥长度:</label>
@@ -27,7 +27,7 @@ AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本
           <option value="256" selected>AES-256</option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label>加密模式:</label>
         <select id="aes-mode">
@@ -39,14 +39,14 @@ AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本
         </select>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button id="aes-encrypt-btn" class="btn primary">🔒 加密</button>
       <button id="aes-decrypt-btn" class="btn secondary">🔓 解密</button>
       <button id="aes-generate-key-btn" class="btn success">🔑 生成密钥</button>
       <button id="aes-clear-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="aes-encrypted-result" class="result-box" style="display: none;">
       <h4>🔒 加密结果</h4>
       <div class="result-item">
@@ -62,7 +62,7 @@ AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本
         <div id="aes-iv" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="aes-decrypted-result" class="result-box success" style="display: none;">
       <h4>🔓 解密结果</h4>
       <div class="result-item">
@@ -70,8 +70,9 @@ AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本
         <div id="aes-decrypted-data" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="aes-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
@@ -80,7 +81,7 @@ AES (Advanced Encryption Standard) 是最广泛使用的对称加密算法。本
 ### 基本用法
 
 ```typescript
-import { encrypt, decrypt } from '@ldesign/crypto'
+import { decrypt, encrypt } from '@ldesign/crypto'
 
 // 基本 AES 加密
 const data = 'Hello, AES!'
@@ -152,33 +153,9 @@ const decrypted256 = decrypt.aes256(encrypted256, key)
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <input v-model="data" placeholder="输入数据" />
-    <input v-model="key" placeholder="输入密钥" />
-    <button @click="handleEncrypt" :disabled="isEncrypting">
-      {{ isEncrypting ? '加密中...' : '加密' }}
-    </button>
-    <button @click="handleDecrypt" :disabled="isDecrypting">
-      {{ isDecrypting ? '解密中...' : '解密' }}
-    </button>
-    
-    <div v-if="encryptedResult">
-      <h3>加密结果</h3>
-      <p>数据: {{ encryptedResult.data }}</p>
-      <p>算法: {{ encryptedResult.algorithm }}</p>
-    </div>
-    
-    <div v-if="decryptedResult">
-      <h3>解密结果</h3>
-      <p>{{ decryptedResult.data }}</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const { encryptAES, decryptAES, isEncrypting, isDecrypting } = useCrypto()
 
@@ -187,17 +164,41 @@ const key = ref('vue-secret-key')
 const encryptedResult = ref(null)
 const decryptedResult = ref(null)
 
-const handleEncrypt = async () => {
+async function handleEncrypt() {
   encryptedResult.value = await encryptAES(data.value, key.value)
   decryptedResult.value = null
 }
 
-const handleDecrypt = async () => {
+async function handleDecrypt() {
   if (encryptedResult.value) {
     decryptedResult.value = await decryptAES(encryptedResult.value, key.value)
   }
 }
 </script>
+
+<template>
+  <div>
+    <input v-model="data" placeholder="输入数据">
+    <input v-model="key" placeholder="输入密钥">
+    <button :disabled="isEncrypting" @click="handleEncrypt">
+      {{ isEncrypting ? '加密中...' : '加密' }}
+    </button>
+    <button :disabled="isDecrypting" @click="handleDecrypt">
+      {{ isDecrypting ? '解密中...' : '解密' }}
+    </button>
+
+    <div v-if="encryptedResult">
+      <h3>加密结果</h3>
+      <p>数据: {{ encryptedResult.data }}</p>
+      <p>算法: {{ encryptedResult.algorithm }}</p>
+    </div>
+
+    <div v-if="decryptedResult">
+      <h3>解密结果</h3>
+      <p>{{ decryptedResult.data }}</p>
+    </div>
+  </div>
+</template>
 ```
 
 ## 实际应用场景
@@ -207,31 +208,34 @@ const handleDecrypt = async () => {
 ```typescript
 class SecureStorage {
   private key: string
-  
+
   constructor(userKey: string) {
     this.key = userKey
   }
-  
+
   // 加密存储
   setItem(key: string, value: any): void {
     const serialized = JSON.stringify(value)
     const encrypted = encrypt.aes(serialized, this.key)
     localStorage.setItem(key, JSON.stringify(encrypted))
   }
-  
+
   // 解密读取
   getItem(key: string): any {
     const stored = localStorage.getItem(key)
-    if (!stored) return null
-    
+    if (!stored)
+      return null
+
     try {
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, this.key)
-      
-      if (!decrypted.success) return null
-      
+
+      if (!decrypted.success)
+        return null
+
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -254,22 +258,24 @@ interface AppConfig {
 
 class ConfigManager {
   private static readonly CONFIG_KEY = 'app-config-key'
-  
+
   static saveConfig(config: AppConfig): string {
     const configJson = JSON.stringify(config)
     const encrypted = encrypt.aes256(configJson, this.CONFIG_KEY)
     return JSON.stringify(encrypted)
   }
-  
+
   static loadConfig(encryptedConfig: string): AppConfig | null {
     try {
       const encrypted = JSON.parse(encryptedConfig)
       const decrypted = decrypt.aes256(encrypted, this.CONFIG_KEY)
-      
-      if (!decrypted.success) return null
-      
+
+      if (!decrypted.success)
+        return null
+
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -282,33 +288,35 @@ class ConfigManager {
 class FormEncryption {
   static encryptFormData(formData: FormData, key: string): string {
     const data: Record<string, string> = {}
-    
+
     for (const [key, value] of formData.entries()) {
       data[key] = value.toString()
     }
-    
+
     const jsonData = JSON.stringify(data)
     const encrypted = encrypt.aes(jsonData, key)
-    
+
     return JSON.stringify(encrypted)
   }
-  
+
   static decryptFormData(encryptedData: string, key: string): FormData | null {
     try {
       const encrypted = JSON.parse(encryptedData)
       const decrypted = decrypt.aes(encrypted, key)
-      
-      if (!decrypted.success) return null
-      
+
+      if (!decrypted.success)
+        return null
+
       const data = JSON.parse(decrypted.data)
       const formData = new FormData()
-      
+
       for (const [key, value] of Object.entries(data)) {
         formData.append(key, value as string)
       }
-      
+
       return formData
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -323,17 +331,17 @@ class FormEncryption {
 function performanceTest() {
   const data = 'A'.repeat(10000) // 10KB 数据
   const key = 'performance-test-key-32-chars-long'
-  
+
   console.time('AES-128')
   const encrypted128 = encrypt.aes128(data, key)
   const decrypted128 = decrypt.aes128(encrypted128, key)
   console.timeEnd('AES-128')
-  
+
   console.time('AES-192')
   const encrypted192 = encrypt.aes192(data, key)
   const decrypted192 = decrypt.aes192(encrypted192, key)
   console.timeEnd('AES-192')
-  
+
   console.time('AES-256')
   const encrypted256 = encrypt.aes256(data, key)
   const decrypted256 = decrypt.aes256(encrypted256, key)
@@ -350,13 +358,13 @@ function modePerformanceTest() {
   const data = 'Performance test data'
   const key = 'test-key'
   const modes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR']
-  
-  modes.forEach(mode => {
+
+  modes.forEach((mode) => {
     console.time(`AES-256-${mode}`)
-    
+
     const encrypted = encrypt.aes(data, key, { mode })
     const decrypted = decrypt.aes(encrypted, key, { mode })
-    
+
     console.timeEnd(`AES-256-${mode}`)
     console.log(`${mode} 结果匹配:`, decrypted.data === data)
   })
@@ -395,14 +403,15 @@ const encrypted = encrypt.aes(data, key, { iv: randomIV })
 function safeDecrypt(encryptedData: any, key: string) {
   try {
     const result = decrypt.aes(encryptedData, key)
-    
+
     if (!result.success) {
       console.error('解密失败:', result.error)
       return null
     }
-    
+
     return result.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密异常:', error.message)
     return null
   }

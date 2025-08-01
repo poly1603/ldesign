@@ -42,10 +42,10 @@ pnpm add @ldesign/store pinia vue reflect-metadata
 在你的应用入口文件（如 `main.ts`）中导入：
 
 ```typescript
-import 'reflect-metadata'
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import App from './App.vue'
+import 'reflect-metadata'
 
 const app = createApp(App)
 app.use(createPinia())
@@ -58,7 +58,7 @@ app.mount('#app')
 
 ```typescript
 // stores/counter.ts
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 export class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -97,26 +97,34 @@ export class CounterStore extends BaseStore {
 ### 在组件中使用
 
 ```vue
-<template>
-  <div class="counter">
-    <h2>{{ store.displayText }}</h2>
-    <p>当前计数: {{ store.count }}</p>
-    <p v-if="store.isPositive" class="positive">计数为正数！</p>
-    
-    <div class="buttons">
-      <button @click="store.increment">增加</button>
-      <button @click="store.decrement">减少</button>
-      <button @click="store.reset">重置</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { CounterStore } from '@/stores/counter'
 
 // 创建 store 实例
 const store = new CounterStore('counter')
 </script>
+
+<template>
+  <div class="counter">
+    <h2>{{ store.displayText }}</h2>
+    <p>当前计数: {{ store.count }}</p>
+    <p v-if="store.isPositive" class="positive">
+      计数为正数！
+    </p>
+
+    <div class="buttons">
+      <button @click="store.increment">
+        增加
+      </button>
+      <button @click="store.decrement">
+        减少
+      </button>
+      <button @click="store.reset">
+        重置
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .counter {
@@ -151,14 +159,14 @@ import { createStore } from '@ldesign/store'
 export const useCounter = createStore('counter', () => {
   const count = ref(0)
   const title = ref('My Counter')
-  
+
   const increment = () => count.value++
   const decrement = () => count.value--
   const reset = () => count.value = 0
-  
+
   const displayText = computed(() => `${title.value}: ${count.value}`)
   const isPositive = computed(() => count.value > 0)
-  
+
   return {
     state: { count, title },
     actions: { increment, decrement, reset },
@@ -170,17 +178,17 @@ export const useCounter = createStore('counter', () => {
 ### Provider 方式
 
 ```vue
-<template>
-  <StoreProvider :stores="{ counter: CounterStore }">
-    <CounterComponent />
-  </StoreProvider>
-</template>
-
 <script setup lang="ts">
 import { StoreProvider } from '@ldesign/store/vue'
 import { CounterStore } from '@/stores/counter'
 import CounterComponent from './CounterComponent.vue'
 </script>
+
+<template>
+  <StoreProvider :stores="{ counter: CounterStore }">
+    <CounterComponent />
+  </StoreProvider>
+</template>
 ```
 
 ## 下一步

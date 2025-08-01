@@ -31,8 +31,8 @@ pnpm add @ldesign/router
 ## 🚀 快速开始
 
 ```typescript
-import { createApp } from 'vue'
 import { createRouter, createWebHistory } from '@ldesign/router'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 定义路由
@@ -63,8 +63,12 @@ app.mount('#app')
 <template>
   <div id="app">
     <nav>
-      <RouterLink to="/">首页</RouterLink>
-      <RouterLink to="/about">关于</RouterLink>
+      <RouterLink to="/">
+        首页
+      </RouterLink>
+      <RouterLink to="/about">
+        关于
+      </RouterLink>
     </nav>
     <main>
       <RouterView />
@@ -120,16 +124,17 @@ router.go(-1) // 后退
 
 ```typescript
 // 全局前置守卫
+// 组件内守卫
+import { onBeforeRouteEnter, onBeforeRouteUpdate } from '@ldesign/router'
+
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated()) {
     next('/login')
-  } else {
+  }
+  else {
     next()
   }
 })
-
-// 组件内守卫
-import { onBeforeRouteEnter, onBeforeRouteUpdate } from '@ldesign/router'
 
 onBeforeRouteEnter((to, from, next) => {
   // 进入路由前
@@ -151,16 +156,16 @@ export default {
   setup() {
     const route = useRoute()
     const router = useRouter()
-    
+
     // 获取当前路由信息
     console.log(route.params.id)
     console.log(route.query.tab)
-    
+
     // 编程式导航
     const goToUser = (id: string) => {
       router.push(`/user/${id}`)
     }
-    
+
     return { goToUser }
   }
 }

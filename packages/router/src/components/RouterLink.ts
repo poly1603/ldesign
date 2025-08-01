@@ -1,17 +1,17 @@
 import type {
   PropType,
 } from 'vue'
+import type {
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  Router,
+} from '../types'
 import {
   computed,
   defineComponent,
   h,
   inject,
 } from 'vue'
-import type {
-  RouteLocationNormalized,
-  RouteLocationRaw,
-  Router,
-} from '../types'
 import { isSameRouteLocation, warn } from '../utils'
 
 /**

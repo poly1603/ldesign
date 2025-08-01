@@ -100,7 +100,7 @@ execute()
 ```typescript
 const { data } = useRequest(
   { url: '/api/users' },
-  { 
+  {
     initialData: [] // 初始为空数组
   }
 )
@@ -273,7 +273,8 @@ watchEffect(() => {
   if (error.value) {
     if (error.value.isNetworkError) {
       console.log('网络错误')
-    } else if (error.value.response?.status === 404) {
+    }
+    else if (error.value.response?.status === 404) {
       console.log('资源不存在')
     }
   }
@@ -331,11 +332,12 @@ const response2 = await execute({
 const { refresh } = useRequest({ url: '/api/users' })
 
 // 刷新数据
-const handleRefresh = async () => {
+async function handleRefresh() {
   try {
     await refresh()
     showNotification('数据已刷新')
-  } catch (error) {
+  }
+  catch (error) {
     showNotification('刷新失败')
   }
 }
@@ -351,7 +353,7 @@ const handleRefresh = async () => {
 const { cancel, canCancel } = useRequest({ url: '/api/users' })
 
 // 取消请求
-const handleCancel = () => {
+function handleCancel() {
   if (canCancel.value) {
     cancel()
   }
@@ -368,7 +370,7 @@ const handleCancel = () => {
 const { reset, data, loading, error } = useRequest({ url: '/api/users' })
 
 // 重置状态
-const handleReset = () => {
+function handleReset() {
   reset()
   // 此时 data.value 为 initialData，loading.value 为 false，error.value 为 null
 }
@@ -392,24 +394,6 @@ const { canCancel } = useRequest({ url: '/api/users' })
 ### 基础用法
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else-if="data">
-      <h2>用户列表</h2>
-      <ul>
-        <li v-for="user in data" :key="user.id">
-          {{ user.name }} - {{ user.email }}
-        </li>
-      </ul>
-    </div>
-    
-    <button @click="refresh" :disabled="loading">刷新</button>
-    <button @click="cancel" :disabled="!canCancel">取消</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useRequest } from '@ldesign/http/vue'
 
@@ -424,14 +408,40 @@ const { data, loading, error, refresh, cancel, canCancel } = useRequest<User[]>(
   method: 'GET'
 })
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else-if="data">
+      <h2>用户列表</h2>
+      <ul>
+        <li v-for="user in data" :key="user.id">
+          {{ user.name }} - {{ user.email }}
+        </li>
+      </ul>
+    </div>
+
+    <button :disabled="loading" @click="refresh">
+      刷新
+    </button>
+    <button :disabled="!canCancel" @click="cancel">
+      取消
+    </button>
+  </div>
+</template>
 ```
 
 ### 响应式配置
 
 ```vue
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useRequest } from '@ldesign/http/vue'
+import { computed, ref } from 'vue'
 
 const userId = ref(1)
 const includeProfile = ref(false)
@@ -453,20 +463,20 @@ const { data, loading } = useRequest(
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRequest } from '@ldesign/http/vue'
+import { ref } from 'vue'
 
 const searchTerm = ref('')
 
 const { data, loading, execute } = useRequest(
   { url: '/api/search' },
-  { 
+  {
     immediate: false,
-    transform: (data) => data.results
+    transform: data => data.results
   }
 )
 
-const handleSearch = async () => {
+async function handleSearch() {
   if (searchTerm.value.trim()) {
     await execute({
       params: { q: searchTerm.value }

@@ -9,6 +9,7 @@
 基于浏览器原生 `fetch` API 的适配器，是默认选择。
 
 **优点：**
+
 - 🌐 浏览器原生支持，无需额外依赖
 - 🚀 性能优秀，体积小
 - 🔄 支持流式响应
@@ -36,6 +37,7 @@ const http2 = createHttpClient({
 基于流行的 axios 库的适配器。
 
 **优点：**
+
 - 📦 功能丰富，生态成熟
 - 🔧 配置选项多样
 - 📊 内置请求/响应拦截器
@@ -63,6 +65,7 @@ const http = createHttpClient({
 基于新兴的 alova 库的适配器。
 
 **优点：**
+
 - ⚡ 轻量级，性能优秀
 - 🎯 专为现代前端设计
 - 🔄 内置缓存和状态管理
@@ -108,13 +111,13 @@ const http = createHttpClient({
 
 ```typescript
 // 使用字符串指定
+// 使用适配器实例
+import { AxiosAdapter } from '@ldesign/http'
+
 const http = createHttpClient({
   adapter: 'axios',
   baseURL: 'https://api.example.com'
 })
-
-// 使用适配器实例
-import { AxiosAdapter } from '@ldesign/http'
 
 const http2 = createHttpClient({
   adapter: new AxiosAdapter(),
@@ -134,24 +137,27 @@ console.log('Alova 可用:', isAdapterAvailable('alova'))
 
 ## 适配器对比
 
-| 特性 | Fetch | Axios | Alova |
-|------|-------|-------|-------|
-| 包大小 | 0KB (原生) | ~13KB | ~8KB |
-| 浏览器支持 | 现代浏览器 | IE11+ | 现代浏览器 |
-| Node.js 支持 | 需要 polyfill | ✅ | ✅ |
-| 流式响应 | ✅ | ❌ | ✅ |
-| 请求取消 | ✅ | ✅ | ✅ |
-| 上传进度 | ❌ | ✅ | ✅ |
-| 自动 JSON 解析 | 手动 | ✅ | ✅ |
-| 拦截器 | 手动实现 | ✅ | ✅ |
+| 特性           | Fetch         | Axios | Alova      |
+| -------------- | ------------- | ----- | ---------- |
+| 包大小         | 0KB (原生)    | ~13KB | ~8KB       |
+| 浏览器支持     | 现代浏览器    | IE11+ | 现代浏览器 |
+| Node.js 支持   | 需要 polyfill | ✅    | ✅         |
+| 流式响应       | ✅            | ❌    | ✅         |
+| 请求取消       | ✅            | ✅    | ✅         |
+| 上传进度       | ❌            | ✅    | ✅         |
+| 自动 JSON 解析 | 手动          | ✅    | ✅         |
+| 拦截器         | 手动实现      | ✅    | ✅         |
 
 ## 自定义适配器
 
 你可以创建自己的适配器来支持其他 HTTP 库：
 
 ```typescript
-import { BaseAdapter } from '@ldesign/http'
 import type { RequestConfig, ResponseData } from '@ldesign/http'
+import { BaseAdapter } from '@ldesign/http'
+
+// 注册自定义适配器
+import { AdapterFactory } from '@ldesign/http'
 
 class CustomAdapter extends BaseAdapter {
   name = 'custom'
@@ -178,15 +184,13 @@ class CustomAdapter extends BaseAdapter {
         processedConfig,
         response
       )
-    } catch (error) {
+    }
+    catch (error) {
       // 处理错误
       throw this.processError(error, processedConfig)
     }
   }
 }
-
-// 注册自定义适配器
-import { AdapterFactory } from '@ldesign/http'
 
 AdapterFactory.register('custom', () => new CustomAdapter())
 
@@ -205,12 +209,12 @@ const http = createHttpClient({
 interface HttpAdapter {
   /** 适配器名称 */
   name: string
-  
+
   /** 检查是否支持当前环境 */
-  isSupported(): boolean
-  
+  isSupported: () => boolean
+
   /** 发送 HTTP 请求 */
-  request<T = any>(config: RequestConfig): Promise<ResponseData<T>>
+  request: <T = any>(config: RequestConfig) => Promise<ResponseData<T>>
 }
 ```
 
@@ -243,8 +247,8 @@ const http = createHttpClient({
   adapter: 'fetch',
   // Fetch 特定配置
   credentials: 'include', // 发送 cookies
-  mode: 'cors',          // CORS 模式
-  cache: 'no-cache'      // 缓存策略
+  mode: 'cors', // CORS 模式
+  cache: 'no-cache' // 缓存策略
 })
 ```
 
@@ -254,10 +258,10 @@ const http = createHttpClient({
 const http = createHttpClient({
   adapter: 'axios',
   // Axios 特定配置
-  maxRedirects: 5,       // 最大重定向次数
-  validateStatus: (status) => status < 400, // 状态验证
-  transformRequest: [(data) => JSON.stringify(data)], // 请求转换
-  transformResponse: [(data) => JSON.parse(data)]     // 响应转换
+  maxRedirects: 5, // 最大重定向次数
+  validateStatus: status => status < 400, // 状态验证
+  transformRequest: [data => JSON.stringify(data)], // 请求转换
+  transformResponse: [data => JSON.parse(data)] // 响应转换
 })
 ```
 
@@ -267,9 +271,9 @@ const http = createHttpClient({
 const http = createHttpClient({
   adapter: 'alova',
   // Alova 特定配置
-  cacheFor: 300000,      // 缓存时间
-  staleTime: 60000,      // 数据过期时间
-  enableCache: true      // 启用缓存
+  cacheFor: 300000, // 缓存时间
+  staleTime: 60000, // 数据过期时间
+  enableCache: true // 启用缓存
 })
 ```
 
@@ -297,7 +301,8 @@ let adapter: string
 if (needsAdvancedFeatures) {
   await import('axios')
   adapter = 'axios'
-} else {
+}
+else {
   adapter = 'fetch'
 }
 
@@ -307,17 +312,17 @@ const http = createHttpClient({ adapter })
 ### 3. 适配器降级
 
 ```typescript
-import { isAdapterAvailable, createHttpClient } from '@ldesign/http'
+import { createHttpClient, isAdapterAvailable } from '@ldesign/http'
 
 function createOptimalClient() {
   const adapters = ['fetch', 'axios', 'alova']
-  
+
   for (const adapter of adapters) {
     if (isAdapterAvailable(adapter)) {
       return createHttpClient({ adapter })
     }
   }
-  
+
   throw new Error('No available HTTP adapter')
 }
 ```

@@ -136,17 +136,20 @@ await http.delete('/posts', {
 try {
   const response = await http.get('/posts/999')
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   console.error('Request failed:', error.message)
-  
+
   if (error.response) {
     // 服务器返回了错误状态码
     console.log('Status:', error.response.status)
     console.log('Data:', error.response.data)
-  } else if (error.isNetworkError) {
+  }
+  else if (error.isNetworkError) {
     // 网络错误
     console.log('Network error occurred')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     // 超时错误
     console.log('Request timed out')
   }
@@ -160,7 +163,8 @@ async function handleRequest() {
   try {
     const response = await http.get('/api/data')
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     // 根据错误类型进行不同处理
     if (error.response) {
       switch (error.response.status) {
@@ -179,13 +183,17 @@ async function handleRequest() {
         default:
           throw new Error(`请求失败: ${error.response.status}`)
       }
-    } else if (error.isNetworkError) {
+    }
+    else if (error.isNetworkError) {
       throw new Error('网络连接失败，请检查网络设置')
-    } else if (error.isTimeoutError) {
+    }
+    else if (error.isTimeoutError) {
       throw new Error('请求超时，请稍后重试')
-    } else if (error.isCancelError) {
+    }
+    else if (error.isCancelError) {
       console.log('请求已取消')
-    } else {
+    }
+    else {
       throw new Error('未知错误')
     }
   }
@@ -198,7 +206,7 @@ async function handleRequest() {
 
 ```typescript
 // 添加认证头
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -207,13 +215,13 @@ http.interceptors.request.use(config => {
 })
 
 // 添加请求 ID
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers['X-Request-ID'] = generateRequestId()
   return config
 })
 
 // 记录请求日志
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   console.log(`发送请求: ${config.method?.toUpperCase()} ${config.url}`)
   return config
 })
@@ -223,18 +231,18 @@ http.interceptors.request.use(config => {
 
 ```typescript
 // 统一处理响应数据
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   // 如果响应包含 code 字段，检查业务状态码
   if (response.data.code && response.data.code !== 200) {
     throw new Error(response.data.message || '业务错误')
   }
-  
+
   // 返回实际数据
   return response.data.data || response.data
 })
 
 // 记录响应日志
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   console.log(`收到响应: ${response.status} ${response.config.url}`)
   return response
 })
@@ -244,19 +252,20 @@ http.interceptors.response.use(response => {
 
 ```typescript
 // 全局错误处理
-http.interceptors.error.use(error => {
+http.interceptors.error.use((error) => {
   if (error.response?.status === 401) {
     // 清除本地存储的认证信息
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    
+
     // 重定向到登录页
     window.location.href = '/login'
-  } else if (error.response?.status >= 500) {
+  }
+  else if (error.response?.status >= 500) {
     // 显示服务器错误提示
     showNotification('服务器错误，请稍后重试', 'error')
   }
-  
+
   return error
 })
 ```
@@ -274,13 +283,14 @@ async function loadDashboardData() {
       http.get('/posts'),
       http.get('/comments')
     ])
-    
+
     return {
       users: users.data,
       posts: posts.data,
       comments: comments.data
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to load dashboard data:', error)
     throw error
   }
@@ -297,22 +307,23 @@ async function loadOptionalData() {
     http.get('/posts'),
     http.get('/comments')
   ]
-  
+
   const results = await Promise.allSettled(requests)
-  
+
   const data = {}
-  
+
   results.forEach((result, index) => {
     const keys = ['users', 'posts', 'comments']
-    
+
     if (result.status === 'fulfilled') {
       data[keys[index]] = result.value.data
-    } else {
+    }
+    else {
       console.warn(`Failed to load ${keys[index]}:`, result.reason)
       data[keys[index]] = []
     }
   })
-  
+
   return data
 }
 ```
@@ -337,10 +348,12 @@ setTimeout(() => {
 try {
   const response = await requestPromise
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   if (error.isCancelError) {
     console.log('请求已取消')
-  } else {
+  }
+  else {
     console.error('请求失败:', error)
   }
 }
@@ -351,25 +364,26 @@ try {
 ```typescript
 class DataService {
   private currentRequest: AbortController | null = null
-  
+
   async searchUsers(query: string) {
     // 取消之前的请求
     if (this.currentRequest) {
       this.currentRequest.abort()
     }
-    
+
     // 创建新的请求
     this.currentRequest = new AbortController()
-    
+
     try {
       const response = await http.get('/users/search', {
         params: { q: query },
         signal: this.currentRequest.signal
       })
-      
+
       this.currentRequest = null
       return response.data
-    } catch (error) {
+    }
+    catch (error) {
       if (!error.isCancelError) {
         this.currentRequest = null
         throw error
@@ -388,17 +402,18 @@ async function uploadFile(file: File) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('description', 'Uploaded file')
-  
+
   try {
     const response = await http.post('/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
-    
+
     console.log('Upload successful:', response.data)
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Upload failed:', error)
     throw error
   }
@@ -410,20 +425,21 @@ async function uploadFile(file: File) {
 ```typescript
 async function uploadMultipleFiles(files: FileList) {
   const formData = new FormData()
-  
+
   Array.from(files).forEach((file, index) => {
     formData.append(`files[${index}]`, file)
   })
-  
+
   try {
     const response = await http.post('/upload/multiple', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
-    
+
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Multiple upload failed:', error)
     throw error
   }
@@ -437,41 +453,41 @@ async function uploadMultipleFiles(files: FileList) {
 ```typescript
 class ApiService {
   constructor(private http: HttpClient) {}
-  
+
   // 用户相关 API
   async getUsers(page = 1, limit = 10) {
     return this.http.get('/users', {
       params: { page, limit }
     })
   }
-  
+
   async getUserById(id: number) {
     return this.http.get(`/users/${id}`)
   }
-  
+
   async createUser(userData: any) {
     return this.http.post('/users', userData)
   }
-  
+
   async updateUser(id: number, userData: any) {
     return this.http.put(`/users/${id}`, userData)
   }
-  
+
   async deleteUser(id: number) {
     return this.http.delete(`/users/${id}`)
   }
-  
+
   // 文章相关 API
   async getPosts(userId?: number) {
     return this.http.get('/posts', {
       params: userId ? { userId } : {}
     })
   }
-  
+
   async getPostById(id: number) {
     return this.http.get(`/posts/${id}`)
   }
-  
+
   async createPost(postData: any) {
     return this.http.post('/posts', postData)
   }

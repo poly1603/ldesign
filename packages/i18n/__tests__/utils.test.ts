@@ -1,34 +1,34 @@
-import { describe, it, expect } from 'vitest'
-import { 
-  getNestedValue, 
-  setNestedValue, 
-  hasNestedPath,
+import { describe, expect, it } from 'vitest'
+import {
+  extractInterpolationKeys,
+  hasInterpolation,
+  interpolate,
+  validateInterpolationParams,
+} from '../src/utils/interpolation'
+import {
   deepMerge,
   flattenObject,
-  unflattenObject
+  getNestedValue,
+  hasNestedPath,
+  setNestedValue,
+  unflattenObject,
 } from '../src/utils/path'
-import { 
-  interpolate, 
-  hasInterpolation, 
-  extractInterpolationKeys,
-  validateInterpolationParams
-} from '../src/utils/interpolation'
-import { 
-  getPluralRule, 
-  parsePluralExpression, 
+import {
+  getPluralRule,
   hasPluralExpression,
-  processPluralization
+  parsePluralExpression,
+  processPluralization,
 } from '../src/utils/pluralization'
 
-describe('Path Utils', () => {
+describe('path Utils', () => {
   const testObject = {
     level1: {
       level2: {
-        value: 'nested value'
+        value: 'nested value',
       },
-      simple: 'simple value'
+      simple: 'simple value',
     },
-    root: 'root value'
+    root: 'root value',
   }
 
   describe('getNestedValue', () => {
@@ -75,13 +75,13 @@ describe('Path Utils', () => {
     it('应该深度合并对象', () => {
       const obj1 = { a: { b: 1, c: 2 }, d: 3 }
       const obj2 = { a: { b: 4, e: 5 }, f: 6 }
-      
+
       const result = deepMerge(obj1, obj2)
-      
+
       expect(result).toEqual({
         a: { b: 4, c: 2, e: 5 },
         d: 3,
-        f: 6
+        f: 6,
       })
     })
   })
@@ -89,11 +89,11 @@ describe('Path Utils', () => {
   describe('flattenObject', () => {
     it('应该扁平化对象', () => {
       const result = flattenObject(testObject)
-      
+
       expect(result).toEqual({
         'level1.level2.value': 'nested value',
         'level1.simple': 'simple value',
-        'root': 'root value'
+        'root': 'root value',
       })
     })
   })
@@ -103,17 +103,17 @@ describe('Path Utils', () => {
       const flattened = {
         'level1.level2.value': 'nested value',
         'level1.simple': 'simple value',
-        'root': 'root value'
+        'root': 'root value',
       }
-      
+
       const result = unflattenObject(flattened)
-      
+
       expect(result).toEqual(testObject)
     })
   })
 })
 
-describe('Interpolation Utils', () => {
+describe('interpolation Utils', () => {
   describe('interpolate', () => {
     it('应该正确插值', () => {
       expect(interpolate('Hello {{name}}!', { name: 'John' })).toBe('Hello John!')
@@ -136,9 +136,7 @@ describe('Interpolation Utils', () => {
     })
 
     it('应该支持禁用转义', () => {
-      expect(interpolate('Content: {{content}}', 
-        { content: '<strong>Bold</strong>' }, 
-        { escapeValue: false }
+      expect(interpolate('Content: {{content}}', { content: '<strong>Bold</strong>' }, { escapeValue: false },
       )).toBe('Content: <strong>Bold</strong>')
     })
   })
@@ -173,7 +171,7 @@ describe('Interpolation Utils', () => {
   })
 })
 
-describe('Pluralization Utils', () => {
+describe('pluralization Utils', () => {
   describe('getPluralRule', () => {
     it('应该返回正确的复数规则', () => {
       const enRule = getPluralRule('en')
@@ -197,7 +195,7 @@ describe('Pluralization Utils', () => {
   describe('parsePluralExpression', () => {
     it('应该解析复数表达式', () => {
       const expression = '{count, plural, =0{no items} =1{one item} other{# items}}'
-      
+
       expect(parsePluralExpression(expression, { count: 0 }, 'en')).toBe('no items')
       expect(parsePluralExpression(expression, { count: 1 }, 'en')).toBe('one item')
       expect(parsePluralExpression(expression, { count: 5 }, 'en')).toBe('5 items')
@@ -205,7 +203,7 @@ describe('Pluralization Utils', () => {
 
     it('应该处理不同语言的复数规则', () => {
       const expression = '{count, plural, other{# items}}'
-      
+
       expect(parsePluralExpression(expression, { count: 1 }, 'zh-CN')).toBe('1 items')
       expect(parsePluralExpression(expression, { count: 5 }, 'zh-CN')).toBe('5 items')
     })
@@ -214,7 +212,7 @@ describe('Pluralization Utils', () => {
   describe('processPluralization', () => {
     it('应该处理包含复数的文本', () => {
       const text = 'You have {count, plural, =0{no items} =1{one item} other{# items}} in your cart.'
-      
+
       expect(processPluralization(text, { count: 0 }, 'en'))
         .toBe('You have no items in your cart.')
       expect(processPluralization(text, { count: 1 }, 'en'))

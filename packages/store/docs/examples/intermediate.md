@@ -10,7 +10,7 @@
 
 ```typescript
 // stores/user.ts
-import { BaseStore, State, AsyncAction, Getter, CachedAction } from '@ldesign/store'
+import { AsyncAction, BaseStore, CachedAction, Getter, State } from '@ldesign/store'
 
 interface User {
   id: string
@@ -64,10 +64,11 @@ export class UserStore extends BaseStore {
         pageSize: this.pageSize,
         filters: this.filters
       })
-      
+
       this.users = response.users
       this.totalCount = response.total
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '获取用户失败'
       throw error
     }
@@ -79,7 +80,8 @@ export class UserStore extends BaseStore {
     try {
       const response = await userApi.getUserById(id)
       return response.user
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '获取用户详情失败'
       throw error
     }
@@ -94,7 +96,8 @@ export class UserStore extends BaseStore {
       this.users.push(response.user)
       this.totalCount++
       return response.user
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '创建用户失败'
       throw error
     }
@@ -114,7 +117,8 @@ export class UserStore extends BaseStore {
         this.selectedUser = response.user
       }
       return response.user
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '更新用户失败'
       throw error
     }
@@ -134,7 +138,8 @@ export class UserStore extends BaseStore {
       if (this.selectedUser?.id === id) {
         this.selectedUser = null
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '删除用户失败'
       throw error
     }
@@ -156,12 +161,14 @@ export class UserStore extends BaseStore {
   // 选择用户
   @Action()
   async selectUser(id: string) {
-    if (this.selectedUser?.id === id) return
-    
+    if (this.selectedUser?.id === id)
+      return
+
     try {
       const user = await this.fetchUserById(id)
       this.selectedUser = user
-    } catch (error) {
+    }
+    catch (error) {
       console.error('选择用户失败:', error)
     }
   }
@@ -179,9 +186,9 @@ export class UserStore extends BaseStore {
 
     if (this.filters.search) {
       const search = this.filters.search.toLowerCase()
-      filtered = filtered.filter(user => 
-        user.name.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search)
+      filtered = filtered.filter(user =>
+        user.name.toLowerCase().includes(search)
+        || user.email.toLowerCase().includes(search)
       )
     }
 
@@ -228,24 +235,77 @@ export class UserStore extends BaseStore {
 ### 在组件中使用
 
 ```vue
+<script setup lang="ts">
+import { debounce } from '@ldesign/store'
+import { onMounted, ref, watch } from 'vue'
+import { UserStore } from '@/stores/user'
+
+const userStore = new UserStore('user')
+
+// 防抖搜索
+const handleSearch = debounce(() => {
+  userStore.setFilters({ search: userStore.filters.search })
+  userStore.fetchUsers()
+}, 300)
+
+function handleFilterChange() {
+  userStore.fetchUsers()
+}
+
+function editUser(user: User) {
+  // 编辑用户逻辑
+  console.log('编辑用户:', user)
+}
+
+async function deleteUser(id: string) {
+  if (confirm('确定要删除这个用户吗？')) {
+    try {
+      await userStore.deleteUser(id)
+    }
+    catch (error) {
+      console.error('删除失败:', error)
+    }
+  }
+}
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN').format(new Date(date))
+}
+
+// 监听过滤器变化
+watch(() => userStore.filters, () => {
+  userStore.fetchUsers()
+}, { deep: true })
+
+onMounted(() => {
+  userStore.fetchUsers()
+})
+</script>
+
 <template>
   <div class="user-management">
     <!-- 搜索和过滤 -->
     <div class="filters">
       <input
         v-model="userStore.filters.search"
-        @input="handleSearch"
         placeholder="搜索用户..."
         class="search-input"
-      />
-      
+        @input="handleSearch"
+      >
+
       <select v-model="userStore.filters.status" @change="handleFilterChange">
-        <option value="all">所有状态</option>
-        <option value="active">活跃</option>
-        <option value="inactive">非活跃</option>
+        <option value="all">
+          所有状态
+        </option>
+        <option value="active">
+          活跃
+        </option>
+        <option value="inactive">
+          非活跃
+        </option>
       </select>
-      
-      <button @click="userStore.fetchUsers()" class="refresh-btn">
+
+      <button class="refresh-btn" @click="userStore.fetchUsers()">
         刷新
       </button>
     </div>
@@ -258,44 +318,50 @@ export class UserStore extends BaseStore {
     <!-- 错误状态 -->
     <div v-if="userStore.error" class="error">
       {{ userStore.error }}
-      <button @click="userStore.fetchUsers()">重试</button>
+      <button @click="userStore.fetchUsers()">
+        重试
+      </button>
     </div>
 
     <!-- 用户列表 -->
     <div v-if="!userStore.loading" class="user-list">
-      <div 
-        v-for="user in userStore.filteredUsers" 
+      <div
+        v-for="user in userStore.filteredUsers"
         :key="user.id"
         :class="{ selected: userStore.selectedUser?.id === user.id }"
-        @click="userStore.selectUser(user.id)"
         class="user-item"
+        @click="userStore.selectUser(user.id)"
       >
-        <img :src="user.avatar" :alt="user.name" class="avatar" />
+        <img :src="user.avatar" :alt="user.name" class="avatar">
         <div class="user-info">
           <h3>{{ user.name }}</h3>
           <p>{{ user.email }}</p>
         </div>
         <div class="user-actions">
-          <button @click.stop="editUser(user)">编辑</button>
-          <button @click.stop="deleteUser(user.id)">删除</button>
+          <button @click.stop="editUser(user)">
+            编辑
+          </button>
+          <button @click.stop="deleteUser(user.id)">
+            删除
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 分页 -->
     <div class="pagination">
-      <button 
+      <button
         :disabled="userStore.isFirstPage"
         @click="userStore.setCurrentPage(userStore.currentPage - 1)"
       >
         上一页
       </button>
-      
+
       <span>
         第 {{ userStore.currentPage }} 页，共 {{ userStore.totalPages }} 页
       </span>
-      
-      <button 
+
+      <button
         :disabled="userStore.isLastPage"
         @click="userStore.setCurrentPage(userStore.currentPage + 1)"
       >
@@ -311,56 +377,12 @@ export class UserStore extends BaseStore {
         <p><strong>邮箱:</strong> {{ userStore.selectedUser.email }}</p>
         <p><strong>创建时间:</strong> {{ formatDate(userStore.selectedUser.createdAt) }}</p>
       </div>
-      <button @click="userStore.clearSelection()">关闭</button>
+      <button @click="userStore.clearSelection()">
+        关闭
+      </button>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { UserStore } from '@/stores/user'
-import { debounce } from '@ldesign/store'
-
-const userStore = new UserStore('user')
-
-// 防抖搜索
-const handleSearch = debounce(() => {
-  userStore.setFilters({ search: userStore.filters.search })
-  userStore.fetchUsers()
-}, 300)
-
-const handleFilterChange = () => {
-  userStore.fetchUsers()
-}
-
-const editUser = (user: User) => {
-  // 编辑用户逻辑
-  console.log('编辑用户:', user)
-}
-
-const deleteUser = async (id: string) => {
-  if (confirm('确定要删除这个用户吗？')) {
-    try {
-      await userStore.deleteUser(id)
-    } catch (error) {
-      console.error('删除失败:', error)
-    }
-  }
-}
-
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat('zh-CN').format(new Date(date))
-}
-
-// 监听过滤器变化
-watch(() => userStore.filters, () => {
-  userStore.fetchUsers()
-}, { deep: true })
-
-onMounted(() => {
-  userStore.fetchUsers()
-})
-</script>
 ```
 
 ## 状态组合模式
@@ -382,12 +404,12 @@ export class ProductStore extends BaseStore {
   async fetchProducts(category?: string) {
     const response = await productApi.getProducts({ category })
     this.products = response.products
-    
+
     // 更新缓存
-    response.products.forEach(product => {
+    response.products.forEach((product) => {
       this.productCache.set(product.id, product)
     })
-    
+
     return response.products
   }
 
@@ -432,7 +454,8 @@ export class CartStore extends BaseStore {
     const existingItem = this.items.find(item => item.productId === productId)
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.items.push({
         id: generateId(),
         productId,
@@ -444,7 +467,7 @@ export class CartStore extends BaseStore {
 
   @Getter()
   get enrichedItems() {
-    return this.items.map(item => {
+    return this.items.map((item) => {
       const product = this.productStore.getProduct(item.productId)
       return {
         ...item,
@@ -462,11 +485,13 @@ export class CartStore extends BaseStore {
   }
 
   private calculateDiscount(subtotal: number): number {
-    if (!this.appliedCoupon) return 0
-    
+    if (!this.appliedCoupon)
+      return 0
+
     if (this.appliedCoupon.type === 'percentage') {
       return subtotal * (this.appliedCoupon.value / 100)
-    } else {
+    }
+    else {
       return Math.min(this.appliedCoupon.value, subtotal)
     }
   }
@@ -495,7 +520,8 @@ export class AppStore extends BaseStore {
         this.productStore.fetchProducts(),
         this.loadUserPreferences()
       ])
-    } catch (error) {
+    }
+    catch (error) {
       console.error('应用初始化失败:', error)
     }
   }
@@ -504,7 +530,7 @@ export class AppStore extends BaseStore {
   @AsyncAction()
   async login(credentials: LoginCredentials) {
     await this.userStore.login(credentials)
-    
+
     // 登录后加载用户相关数据
     await this.loadUserData()
   }
@@ -584,11 +610,11 @@ export class DataCacheStore extends BaseStore {
     }
 
     // 创建新请求
-    const request = fetcher().then(data => {
+    const request = fetcher().then((data) => {
       this.setCachedData(key, data, ttl)
       this.requestQueue.delete(key)
       return data
-    }).catch(error => {
+    }).catch((error) => {
       this.requestQueue.delete(key)
       throw error
     })
@@ -608,11 +634,12 @@ export class DataCacheStore extends BaseStore {
     const result: Record<string, T> = {}
 
     // 检查缓存
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const cached = this.getCachedData<T>(key)
       if (cached) {
         result[key] = cached
-      } else {
+      }
+      else {
         uncachedKeys.push(key)
       }
     })
@@ -620,7 +647,7 @@ export class DataCacheStore extends BaseStore {
     // 获取未缓存的数据
     if (uncachedKeys.length > 0) {
       const fetchedData = await fetcher(uncachedKeys)
-      
+
       Object.entries(fetchedData).forEach(([key, data]) => {
         this.setCachedData(key, data, ttl)
         result[key] = data
@@ -632,7 +659,8 @@ export class DataCacheStore extends BaseStore {
 
   private getCachedData<T>(key: string): T | null {
     const entry = this.cache.get(key)
-    if (!entry) return null
+    if (!entry)
+      return null
 
     if (Date.now() > entry.expiry) {
       this.cache.delete(key)
@@ -682,7 +710,7 @@ export class DataCacheStore extends BaseStore {
   get cacheStats() {
     const entries = Array.from(this.cache.values())
     const now = Date.now()
-    
+
     return {
       total: entries.length,
       expired: entries.filter(entry => now > entry.expiry).length,
@@ -741,7 +769,7 @@ export class FormStore extends BaseStore {
   setFieldValue(name: string, value: any) {
     this.values[name] = value
     this.touched[name] = true
-    
+
     // 清除该字段的错误
     if (this.errors[name]) {
       delete this.errors[name]
@@ -756,7 +784,8 @@ export class FormStore extends BaseStore {
   setFieldError(name: string, errors: string[]) {
     if (errors.length > 0) {
       this.errors[name] = errors
-    } else {
+    }
+    else {
       delete this.errors[name]
     }
   }
@@ -765,7 +794,8 @@ export class FormStore extends BaseStore {
   @AsyncAction()
   async validateField(name: string) {
     const meta = this.fieldMeta[name]
-    if (!meta || !meta.validators) return
+    if (!meta || !meta.validators)
+      return
 
     const value = this.values[name]
     const errors: string[] = []
@@ -776,7 +806,8 @@ export class FormStore extends BaseStore {
         if (result !== true) {
           errors.push(typeof result === 'string' ? result : '验证失败')
         }
-      } catch (error) {
+      }
+      catch (error) {
         errors.push(error instanceof Error ? error.message : '验证错误')
       }
     }
@@ -810,9 +841,11 @@ export class FormStore extends BaseStore {
       const result = await onSubmit(this.values)
       this.submitted = true
       return result
-    } catch (error) {
+    }
+    catch (error) {
       throw error
-    } finally {
+    }
+    finally {
       this.submitting = false
     }
   }
@@ -831,7 +864,7 @@ export class FormStore extends BaseStore {
   @Action()
   registerField(name: string, meta: FieldMeta) {
     this.fieldMeta[name] = meta
-    
+
     if (meta.defaultValue !== undefined) {
       this.values[name] = meta.defaultValue
     }

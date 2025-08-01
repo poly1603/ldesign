@@ -1,35 +1,34 @@
-import { createApp, type App, type Component } from 'vue'
 import type {
+  DirectiveManager,
   Engine,
   EngineConfig,
+  ErrorManager,
+  EventManager,
+  I18nAdapter,
+  Logger,
+  MiddlewareManager,
+  NotificationManager,
   Plugin,
   PluginManager,
-  MiddlewareManager,
-  EventManager,
-  StateManager,
-  DirectiveManager,
-  ErrorManager,
-  Logger,
-  NotificationManager,
   RouterAdapter,
   StateAdapter,
-  I18nAdapter,
-  ThemeAdapter
+  StateManager,
+  ThemeAdapter,
 } from '../types'
-import { createPluginManager } from '../plugins/plugin-manager'
-import { createMiddlewareManager } from '../middleware/middleware-manager'
-import { createEventManager } from '../events/event-manager'
-import { createStateManager } from '../state/state-manager'
+import { type App, type Component, createApp } from 'vue'
 import { createDirectiveManager } from '../directives/directive-manager'
 import { createErrorManager } from '../errors/error-manager'
+import { createEventManager } from '../events/event-manager'
 import { createLogger } from '../logger/logger'
+import { createMiddlewareManager } from '../middleware/middleware-manager'
 import { createNotificationManager } from '../notifications/notification-manager'
+import { createPluginManager } from '../plugins/plugin-manager'
+import { createStateManager } from '../state/state-manager'
 
 export class EngineImpl implements Engine {
   private _app?: App
   private _mounted = false
   private _mountTarget?: string | Element
-
 
   readonly config: EngineConfig
   readonly plugins: PluginManager
@@ -50,7 +49,7 @@ export class EngineImpl implements Engine {
   constructor(config: EngineConfig = {}) {
     this.config = {
       debug: false,
-      ...config
+      ...config,
     }
 
     // 初始化核心模块
@@ -73,17 +72,17 @@ export class EngineImpl implements Engine {
     // 监听全局错误
     this.errors.onError((errorInfo) => {
       this.logger.error('Global error captured', errorInfo)
-      
+
       // 发送错误事件
       this.events.emit('engine:error', errorInfo)
-      
+
       // 显示错误通知（仅在非生产环境）
       if (this.config.debug) {
         this.notifications.show({
           type: 'error',
           title: 'Error Captured',
           message: errorInfo.message,
-          duration: 5000
+          duration: 5000,
         })
       }
     })
@@ -97,10 +96,10 @@ export class EngineImpl implements Engine {
     }
 
     this._app = createApp(rootComponent)
-    
+
     // 自动安装引擎
     this.install(this._app)
-    
+
     this.logger.info('Vue app created with engine')
     return this._app
   }

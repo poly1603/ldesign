@@ -32,16 +32,16 @@ English | [简体中文](./README.md)
 
 ## 📦 Package Structure
 
-| Package | Version | Description | Documentation |
-|---------|---------|-------------|---------------|
-| [@ldesign/engine](./packages/engine) | ![npm](https://img.shields.io/npm/v/@ldesign/engine) | 🚀 Engine Core - Plugin system, middleware, global management | [Docs](./packages/engine/README.md) |
-| [@ldesign/color](./packages/color) | ![npm](https://img.shields.io/npm/v/@ldesign/color) | 🎨 Color Management - Theme switching, color generation, CSS variables | [Docs](./packages/color/README.md) |
-| [@ldesign/router](./packages/router) | ![npm](https://img.shields.io/npm/v/@ldesign/router) | 🛣️ Router System - Vue router enhancement, guards, caching | [Docs](./packages/router/README.md) |
-| [@ldesign/http](./packages/http) | ![npm](https://img.shields.io/npm/v/@ldesign/http) | 🌐 HTTP Client - Request library, interceptors, caching | [Docs](./packages/http/README.md) |
-| [@ldesign/i18n](./packages/i18n) | ![npm](https://img.shields.io/npm/v/@ldesign/i18n) | 🌍 Internationalization - Multi-language support, dynamic loading | [Docs](./packages/i18n/README.md) |
-| [@ldesign/device](./packages/device) | ![npm](https://img.shields.io/npm/v/@ldesign/device) | 📱 Device Detection - Device info, sensors, network status | [Docs](./packages/device/README.md) |
-| [@ldesign/crypto](./packages/crypto) | ![npm](https://img.shields.io/npm/v/@ldesign/crypto) | 🔐 Crypto Tools - Encryption algorithms, hashing, signing | [Docs](./packages/crypto/README.md) |
-| [@ldesign/template](./packages/template) | ![npm](https://img.shields.io/npm/v/@ldesign/template) | 📄 Template Engine - Template compilation, SSR support | [Docs](./packages/template/README.md) |
+| Package                                  | Version                                                | Description                                                            | Documentation                         |
+| ---------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------- |
+| [@ldesign/engine](./packages/engine)     | ![npm](https://img.shields.io/npm/v/@ldesign/engine)   | 🚀 Engine Core - Plugin system, middleware, global management          | [Docs](./packages/engine/README.md)   |
+| [@ldesign/color](./packages/color)       | ![npm](https://img.shields.io/npm/v/@ldesign/color)    | 🎨 Color Management - Theme switching, color generation, CSS variables | [Docs](./packages/color/README.md)    |
+| [@ldesign/router](./packages/router)     | ![npm](https://img.shields.io/npm/v/@ldesign/router)   | 🛣️ Router System - Vue router enhancement, guards, caching             | [Docs](./packages/router/README.md)   |
+| [@ldesign/http](./packages/http)         | ![npm](https://img.shields.io/npm/v/@ldesign/http)     | 🌐 HTTP Client - Request library, interceptors, caching                | [Docs](./packages/http/README.md)     |
+| [@ldesign/i18n](./packages/i18n)         | ![npm](https://img.shields.io/npm/v/@ldesign/i18n)     | 🌍 Internationalization - Multi-language support, dynamic loading      | [Docs](./packages/i18n/README.md)     |
+| [@ldesign/device](./packages/device)     | ![npm](https://img.shields.io/npm/v/@ldesign/device)   | 📱 Device Detection - Device info, sensors, network status             | [Docs](./packages/device/README.md)   |
+| [@ldesign/crypto](./packages/crypto)     | ![npm](https://img.shields.io/npm/v/@ldesign/crypto)   | 🔐 Crypto Tools - Encryption algorithms, hashing, signing              | [Docs](./packages/crypto/README.md)   |
+| [@ldesign/template](./packages/template) | ![npm](https://img.shields.io/npm/v/@ldesign/template) | 📄 Template Engine - Template compilation, SSR support                 | [Docs](./packages/template/README.md) |
 
 ## 🚀 Quick Start
 
@@ -61,12 +61,12 @@ pnpm add @ldesign/engine
 ### Basic Usage
 
 ```typescript
-import { createApp } from 'vue'
-import { createLDesign } from '@ldesign/engine'
 import { createColorManager } from '@ldesign/color'
-import { createRouter } from '@ldesign/router'
+import { createLDesign } from '@ldesign/engine'
 import { createHttpClient } from '@ldesign/http'
 import { createI18n } from '@ldesign/i18n'
+import { createRouter } from '@ldesign/router'
+import { createApp } from 'vue'
 
 const app = createApp(App)
 
@@ -110,7 +110,7 @@ app.mount('#app')
 
 ```vue
 <script setup lang="ts">
-import { useLDesign, useColorManager, useRouter, useHttp, useI18n } from '@ldesign/engine'
+import { useColorManager, useHttp, useI18n, useLDesign, useRouter } from '@ldesign/engine'
 
 // Get LDesign instance
 const ldesign = useLDesign()
@@ -128,18 +128,18 @@ const { get, post, put, delete: del } = useHttp()
 const { t, locale, setLocale } = useI18n()
 
 // Toggle theme
-const toggleTheme = () => {
+function toggleTheme() {
   setTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
 // Send request
-const fetchData = async () => {
+async function fetchData() {
   const data = await get('/users')
   console.log(data)
 }
 
 // Toggle locale
-const toggleLocale = () => {
+function toggleLocale() {
   setLocale(locale.value === 'zh-CN' ? 'en-US' : 'zh-CN')
 }
 </script>
@@ -147,9 +147,15 @@ const toggleLocale = () => {
 <template>
   <div>
     <h1>{{ t('hello') }}</h1>
-    <button @click="toggleTheme">Toggle Theme</button>
-    <button @click="fetchData">Fetch Data</button>
-    <button @click="toggleLocale">Toggle Language</button>
+    <button @click="toggleTheme">
+      Toggle Theme
+    </button>
+    <button @click="fetchData">
+      Fetch Data
+    </button>
+    <button @click="toggleLocale">
+      Toggle Language
+    </button>
   </div>
 </template>
 ```
@@ -255,9 +261,9 @@ pnpm test:ui
 ### Vite Configuration
 
 ```typescript
-import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],

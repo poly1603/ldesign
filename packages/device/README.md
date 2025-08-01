@@ -54,26 +54,28 @@ detector.on('orientationChange', (orientation) => {
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <p>设备类型: {{ deviceType }}</p>
-    <p>屏幕方向: {{ orientation }}</p>
-    <p v-device:mobile>仅在移动设备显示</p>
-  </div>
-</template>
-
 <script setup>
 import { useDevice } from '@ldesign/device/vue'
 
 const { deviceType, orientation, isMobile, isTablet, isDesktop } = useDevice()
 </script>
+
+<template>
+  <div>
+    <p>设备类型: {{ deviceType }}</p>
+    <p>屏幕方向: {{ orientation }}</p>
+    <p v-device:mobile>
+      仅在移动设备显示
+    </p>
+  </div>
+</template>
 ```
 
 ### 使用插件
 
 ```typescript
-import { createApp } from 'vue'
 import { DevicePlugin } from '@ldesign/device/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -84,13 +86,13 @@ app.mount('#app')
 ### 使用组件
 
 ```vue
-<template>
-  <DeviceInfo :show-network="true" :show-battery="true" />
-</template>
-
 <script setup>
 import { DeviceInfo } from '@ldesign/device/vue'
 </script>
+
+<template>
+  <DeviceInfo :show-network="true" :show-battery="true" />
+</template>
 ```
 
 ## 扩展模块

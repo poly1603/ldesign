@@ -12,34 +12,72 @@ export const date = {
     time: 'HH:mm',
     timeWithSeconds: 'HH:mm:ss',
     datetime: 'YYYY/M/D HH:mm',
-    datetimeWithSeconds: 'YYYY/M/D HH:mm:ss'
+    datetimeWithSeconds: 'YYYY/M/D HH:mm:ss',
   },
-  
+
   // 月份名称
   months: {
     full: [
-      '1月', '2月', '3月', '4月', '5月', '6月',
-      '7月', '8月', '9月', '10月', '11月', '12月'
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
     ],
     short: [
-      '1月', '2月', '3月', '4月', '5月', '6月',
-      '7月', '8月', '9月', '10月', '11月', '12月'
-    ]
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
+    ],
   },
-  
+
   // 星期名称
   weekdays: {
     full: [
-      '日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'
+      '日曜日',
+      '月曜日',
+      '火曜日',
+      '水曜日',
+      '木曜日',
+      '金曜日',
+      '土曜日',
     ],
     short: [
-      '日', '月', '火', '水', '木', '金', '土'
+      '日',
+      '月',
+      '火',
+      '水',
+      '木',
+      '金',
+      '土',
     ],
     min: [
-      '日', '月', '火', '水', '木', '金', '土'
-    ]
+      '日',
+      '月',
+      '火',
+      '水',
+      '木',
+      '金',
+      '土',
+    ],
   },
-  
+
   // 相对时间
   relative: {
     now: '今',
@@ -57,7 +95,7 @@ export const date = {
     monthsAgo: '{{count}} ヶ月前',
     yearAgo: '1 年前',
     yearsAgo: '{{count}} 年前',
-    
+
     // 未来时间
     inSeconds: '{{count}} 秒後',
     inMinute: '1 分後',
@@ -71,9 +109,9 @@ export const date = {
     inMonth: '1 ヶ月後',
     inMonths: '{{count}} ヶ月後',
     inYear: '1 年後',
-    inYears: '{{count}} 年後'
+    inYears: '{{count}} 年後',
   },
-  
+
   // 时间段
   periods: {
     am: '午前',
@@ -83,9 +121,9 @@ export const date = {
     evening: '夕方',
     night: '夜',
     midnight: '深夜',
-    noon: '正午'
+    noon: '正午',
   },
-  
+
   // 日期选择器
   picker: {
     selectDate: '日付を選択',
@@ -107,9 +145,9 @@ export const date = {
     timeSelect: '時刻を選択',
     hourSelect: '時を選択',
     minuteSelect: '分を選択',
-    secondSelect: '秒を選択'
+    secondSelect: '秒を選択',
   },
-  
+
   // 日历
   calendar: {
     today: '今日',
@@ -124,9 +162,9 @@ export const date = {
     noEventsInRange: 'この期間にイベントはありません',
     showMore: '他 {{count}} 件を表示',
     previous: '前',
-    next: '次'
+    next: '次',
   },
-  
+
   // 持续时间
   duration: {
     seconds: '{{count}} 秒',
@@ -135,15 +173,15 @@ export const date = {
     days: '{{count}} 日',
     weeks: '{{count}} 週',
     months: '{{count}} ヶ月',
-    years: '{{count}} 年'
+    years: '{{count}} 年',
   },
-  
+
   // 时区
   timezone: {
     utc: 'UTC',
     local: 'ローカル時間',
-    selectTimezone: 'タイムゾーンを選択'
-  }
+    selectTimezone: 'タイムゾーンを選択',
+  },
 }
 
 export default date

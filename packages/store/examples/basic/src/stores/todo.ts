@@ -1,4 +1,4 @@
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 export interface Todo {
   id: number
@@ -21,7 +21,7 @@ export class TodoStore extends BaseStore {
         id: Date.now(),
         text: text.trim(),
         completed: false,
-        createdAt: new Date()
+        createdAt: new Date(),
       })
     }
   }

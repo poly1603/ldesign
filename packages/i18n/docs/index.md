@@ -82,7 +82,7 @@ const i18n = await createI18nWithBuiltinLocales({
 console.log(i18n.t('common.ok')) // "OK"
 
 // 插值翻译
-console.log(i18n.t('common.pageOf', { current: 1, total: 10 })) 
+console.log(i18n.t('common.pageOf', { current: 1, total: 10 }))
 // "Page 1 of 10"
 
 // 切换语言
@@ -93,10 +93,10 @@ console.log(i18n.t('common.ok')) // "确定"
 ### Vue 3 集成
 
 ```typescript
-// main.ts
-import { createApp } from 'vue'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// main.ts
+import { createApp } from 'vue'
 import App from './App.vue'
 
 async function bootstrap() {
@@ -105,7 +105,7 @@ async function bootstrap() {
   })
 
   const vueI18nPlugin = createI18n(i18nInstance)
-  
+
   const app = createApp(App)
   app.use(vueI18nPlugin)
   app.mount('#app')
@@ -116,19 +116,25 @@ bootstrap()
 
 ```vue
 <!-- App.vue -->
+<script setup>
+import { useI18n } from '@ldesign/i18n/vue'
+
+const { t, availableLanguages, changeLanguage } = useI18n()
+</script>
+
 <template>
   <div>
     <!-- 使用组合式 API -->
     <h1>{{ t('common.welcome') }}</h1>
-    
+
     <!-- 使用指令 -->
-    <button v-t="'common.save'"></button>
-    
+    <button v-t="'common.save'" />
+
     <!-- 语言切换 -->
     <select @change="changeLanguage($event.target.value)">
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
         :value="lang.code"
       >
         {{ lang.nativeName }}
@@ -136,12 +142,6 @@ bootstrap()
     </select>
   </div>
 </template>
-
-<script setup>
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, availableLanguages, changeLanguage } = useI18n()
-</script>
 ```
 
 ## 为什么选择 @ldesign/i18n？

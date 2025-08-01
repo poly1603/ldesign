@@ -22,6 +22,7 @@ pnpm add @ldesign/crypto
 ### Q: 支持哪些环境？
 
 **A:** @ldesign/crypto 支持：
+
 - **浏览器**: Chrome 37+, Firefox 34+, Safari 7.1+, Edge 12+
 - **Node.js**: 12.0.0+
 - **TypeScript**: 4.0+
@@ -32,7 +33,7 @@ pnpm add @ldesign/crypto
 **A:** 库已包含完整的类型定义，直接导入即可：
 
 ```typescript
-import { encrypt, decrypt, hash } from '@ldesign/crypto'
+import { decrypt, encrypt, hash } from '@ldesign/crypto'
 
 // TypeScript 会自动提供类型提示和检查
 const encrypted = encrypt.aes('data', 'key')
@@ -43,6 +44,7 @@ const encrypted = encrypt.aes('data', 'key')
 ### Q: AES 加密时应该选择哪种密钥长度？
 
 **A:** 推荐选择：
+
 - **AES-256** (32字节密钥): 推荐用于一般用途，安全性高
 - **AES-192** (24字节密钥): 平衡安全性和性能
 - **AES-128** (16字节密钥): 性能最好，安全性足够
@@ -78,6 +80,7 @@ if (!decrypted.success) {
 ### Q: RSA 加密有数据大小限制吗？
 
 **A:** 是的，RSA 有数据大小限制：
+
 - **RSA-1024**: 最大 117 字节
 - **RSA-2048**: 最大 245 字节
 - **RSA-4096**: 最大 501 字节
@@ -123,12 +126,12 @@ const derivedKey = hash.pbkdf2(masterKey, salt, {
 
 **A:** 算法选择建议：
 
-| 用途 | 推荐算法 | 原因 |
-|------|----------|------|
-| 密码存储 | SHA-256 + PBKDF2 | 安全性高，抗暴力破解 |
-| 数据完整性 | SHA-256 | 平衡安全性和性能 |
-| 数字签名 | SHA-256 或 SHA-512 | 广泛支持，安全性高 |
-| 快速校验 | SHA-256 | 不推荐 MD5 和 SHA-1 |
+| 用途       | 推荐算法           | 原因                 |
+| ---------- | ------------------ | -------------------- |
+| 密码存储   | SHA-256 + PBKDF2   | 安全性高，抗暴力破解 |
+| 数据完整性 | SHA-256            | 平衡安全性和性能     |
+| 数字签名   | SHA-256 或 SHA-512 | 广泛支持，安全性高   |
+| 快速校验   | SHA-256            | 不推荐 MD5 和 SHA-1  |
 
 ```typescript
 // ❌ 不推荐：MD5 和 SHA-1 已不安全
@@ -146,26 +149,26 @@ const sha512Hash = hash.sha512(data)
 
 ```typescript
 // 存储密码
-const storePassword = (password: string): string => {
+function storePassword(password: string): string {
   const salt = keyGenerator.generateSalt(16)
   const hashedPassword = hash.pbkdf2(password, salt, {
-    iterations: 100000,  // 足够的迭代次数
+    iterations: 100000, // 足够的迭代次数
     keyLength: 32,
     hashAlgorithm: 'SHA256'
   })
-  
+
   return `${salt}:${hashedPassword}`
 }
 
 // 验证密码
-const verifyPassword = (password: string, storedHash: string): boolean => {
+function verifyPassword(password: string, storedHash: string): boolean {
   const [salt, expectedHash] = storedHash.split(':')
   const computedHash = hash.pbkdf2(password, salt, {
     iterations: 100000,
     keyLength: 32,
     hashAlgorithm: 'SHA256'
   })
-  
+
   return computedHash === expectedHash
 }
 ```
@@ -194,13 +197,14 @@ const isValidHmac = hmac.verify(data, secretKey, hmacValue, 'SHA256')
 **A:** 有两种方式：
 
 **方式1：使用 Composition API**
+
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
 
 export default {
   setup() {
     const { encryptAES, decryptAES, isEncrypting } = useCrypto()
-    
+
     return {
       encryptAES,
       decryptAES,
@@ -211,6 +215,7 @@ export default {
 ```
 
 **方式2：使用插件**
+
 ```typescript
 // main.ts
 import { CryptoPlugin } from '@ldesign/crypto/vue'
@@ -232,8 +237,8 @@ export default {
 
 ```vue
 <script setup>
-import { ref, watch } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref, watch } from 'vue'
 
 const { encryptAES, lastError, clearError } = useCrypto()
 const errorMessage = ref('')
@@ -250,12 +255,13 @@ watch(lastError, (error) => {
   }
 })
 
-const handleEncrypt = async () => {
+async function handleEncrypt() {
   try {
     clearError()
     const result = await encryptAES(data.value, key.value)
     // 处理成功结果
-  } catch (error) {
+  }
+  catch (error) {
     // 错误会自动设置到 lastError
     console.error('加密失败:', error)
   }
@@ -282,18 +288,18 @@ const handleEncrypt = async () => {
 
 ```typescript
 // 批量加密
-const batchEncrypt = (dataList: string[], key: string) => {
+function batchEncrypt(dataList: string[], key: string) {
   return dataList.map(data => encrypt.aes(data, key))
 }
 
 // 使用缓存
 const encryptionCache = new Map()
-const cachedEncrypt = (data: string, key: string) => {
+function cachedEncrypt(data: string, key: string) {
   const cacheKey = `${data}:${key}`
   if (encryptionCache.has(cacheKey)) {
     return encryptionCache.get(cacheKey)
   }
-  
+
   const result = encrypt.aes(data, key)
   encryptionCache.set(cacheKey, result)
   return result
@@ -305,19 +311,19 @@ const cachedEncrypt = (data: string, key: string) => {
 **A:** 使用分块处理：
 
 ```typescript
-const encryptLargeFile = async (fileContent: string, key: string) => {
+async function encryptLargeFile(fileContent: string, key: string) {
   const chunkSize = 64 * 1024 // 64KB 块
   const chunks = []
-  
+
   for (let i = 0; i < fileContent.length; i += chunkSize) {
     const chunk = fileContent.slice(i, i + chunkSize)
     const encrypted = encrypt.aes(chunk, key)
     chunks.push(encrypted)
-    
+
     // 让出控制权，避免阻塞 UI
     await new Promise(resolve => setTimeout(resolve, 0))
   }
-  
+
   return chunks
 }
 ```
@@ -333,14 +339,15 @@ const encryptLargeFile = async (fileContent: string, key: string) => {
 const unsafeCompare = (a: string, b: string) => a === b
 
 // 安全的常数时间比较
-const safeCompare = (a: string, b: string): boolean => {
-  if (a.length !== b.length) return false
-  
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length)
+    return false
+
   let result = 0
   for (let i = 0; i < a.length; i++) {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i)
   }
-  
+
   return result === 0
 }
 ```
@@ -386,28 +393,29 @@ const isValid = digitalSignature.verify(document, signature, keyPair.publicKey)
 **A:** 分层错误处理：
 
 ```typescript
-const safeEncrypt = async (data: string, key: string) => {
+async function safeEncrypt(data: string, key: string) {
   try {
     // 输入验证
     if (!data || !key) {
       throw new Error('数据和密钥不能为空')
     }
-    
+
     if (key.length < 16) {
       throw new Error('密钥长度不足')
     }
-    
+
     // 执行加密
     const result = encrypt.aes(data, key)
-    
+
     return {
       success: true,
       data: result,
       error: null
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密错误:', error)
-    
+
     return {
       success: false,
       data: null,
@@ -422,22 +430,25 @@ const safeEncrypt = async (data: string, key: string) => {
 **A:** 过滤敏感信息：
 
 ```typescript
-const sanitizeError = (error: Error, isProduction: boolean): string => {
+function sanitizeError(error: Error, isProduction: boolean): string {
   if (!isProduction) {
     return error.message // 开发环境显示详细错误
   }
-  
+
   // 生产环境过滤敏感信息
   const sensitivePatterns = [
-    /key/i, /password/i, /secret/i, /token/i
+    /key/i,
+    /password/i,
+    /secret/i,
+    /token/i
   ]
-  
+
   for (const pattern of sensitivePatterns) {
     if (pattern.test(error.message)) {
       return '操作失败，请重试' // 通用错误消息
     }
   }
-  
+
   return error.message
 }
 ```
@@ -449,9 +460,9 @@ const sanitizeError = (error: Error, isProduction: boolean): string => {
 **A:** 检查浏览器支持并提供降级方案：
 
 ```typescript
-const checkCryptoSupport = (): boolean => {
-  return typeof crypto !== 'undefined' && 
-         typeof crypto.getRandomValues === 'function'
+function checkCryptoSupport(): boolean {
+  return typeof crypto !== 'undefined'
+    && typeof crypto.getRandomValues === 'function'
 }
 
 if (!checkCryptoSupport()) {
@@ -464,12 +475,12 @@ if (!checkCryptoSupport()) {
 
 **A:** 主要区别：
 
-| 特性 | Node.js | 浏览器 |
-|------|---------|--------|
+| 特性       | Node.js            | 浏览器                 |
+| ---------- | ------------------ | ---------------------- |
 | 随机数生成 | crypto.randomBytes | crypto.getRandomValues |
-| 模块导入 | require/import | import |
-| 文件系统 | 支持 | 不支持 |
-| 性能 | 更好 | 受限 |
+| 模块导入   | require/import     | import                 |
+| 文件系统   | 支持               | 不支持                 |
+| 性能       | 更好               | 受限                   |
 
 库会自动处理这些差异，无需手动适配。
 
@@ -486,7 +497,7 @@ if (!checkCryptoSupport()) {
 
 ```typescript
 // 迁移示例：从旧库迁移到新库
-const migrateEncryptedData = (oldEncryptedData: any, key: string) => {
+function migrateEncryptedData(oldEncryptedData: any, key: string) {
   try {
     // 尝试用新库解密
     const decrypted = decrypt.aes(oldEncryptedData, key)
@@ -494,7 +505,8 @@ const migrateEncryptedData = (oldEncryptedData: any, key: string) => {
       // 用新库重新加密
       return encrypt.aes(decrypted.data, key)
     }
-  } catch {
+  }
+  catch {
     // 如果新库无法解密，使用旧库解密后重新加密
     const oldDecrypted = oldLibrary.decrypt(oldEncryptedData, key)
     return encrypt.aes(oldDecrypted, key)

@@ -1,6 +1,6 @@
 import { MaybeRef } from 'vue';
-import { UseQueryOptions, UseQueryReturn } from '../types/vue.js';
-import { HttpClient, RequestConfig } from '../types/index.js';
+import { UseQueryOptions, UseQueryReturn } from '@/types/vue';
+import { HttpClient, RequestConfig } from '@/types';
 
 /**
  * useQuery Hook

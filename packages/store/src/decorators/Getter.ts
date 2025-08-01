@@ -1,28 +1,28 @@
-import 'reflect-metadata'
 import type {
+  DecoratorMetadata,
   GetterDecoratorOptions,
-  DecoratorMetadata
 } from '@/types'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import 'reflect-metadata'
 
 /**
  * Getter 装饰器
  * 用于标记类方法为计算属性
- * 
+ *
  * @example
  * ```typescript
  * class UserStore extends BaseStore {
  *   @State({ default: '' })
  *   firstName: string = ''
- * 
+ *
  *   @State({ default: '' })
  *   lastName: string = ''
- * 
+ *
  *   @Getter({ deps: ['firstName', 'lastName'] })
  *   get fullName() {
  *     return `${this.firstName} ${this.lastName}`
  *   }
- * 
+ *
  *   @Getter({ cache: true })
  *   get expensiveComputation() {
  *     return this.someExpensiveCalculation()
@@ -33,12 +33,12 @@ import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     if (typeof propertyKey === 'symbol') {
-      throw new Error('Getter decorator does not support symbol properties')
+      throw new TypeError('Getter decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[] = 
-      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[]
+      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -54,7 +54,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     const originalGetter = descriptor.get
 
     if (typeof originalGetter !== 'function') {
-      throw new Error(`Getter decorator can only be applied to getter methods`)
+      throw new TypeError(`Getter decorator can only be applied to getter methods`)
     }
 
     // 创建缓存（如果需要）
@@ -66,7 +66,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     descriptor.get = function (this: any) {
       // 检查依赖是否变化
       if (options.deps && options.deps.length > 0) {
-        const currentDepsValues = options.deps.map(dep => {
+        const currentDepsValues = options.deps.map((dep) => {
           if (this._store) {
             return this._store.$state[dep]
           }
@@ -101,9 +101,9 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     // 添加清除缓存的方法
     if (options.cache) {
       const clearCacheMethodName = `clear${propertyKey.charAt(0).toUpperCase() + propertyKey.slice(1)}Cache`
-      
+
       Object.defineProperty(target, clearCacheMethodName, {
-        value: function (this: any) {
+        value(this: any) {
           isCached = false
           cachedValue = undefined
         },
@@ -153,11 +153,13 @@ export function MemoizedGetter(deps: string[]): MethodDecorator {
  * 工具函数：比较两个数组是否相等
  */
 function arraysEqual(a: any[], b: any[]): boolean {
-  if (a.length !== b.length) return false
-  
+  if (a.length !== b.length)
+    return false
+
   for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false
+    if (a[i] !== b[i])
+      return false
   }
-  
+
   return true
 }

@@ -107,12 +107,12 @@ watch(currentStep, (newStep) => {
       <slot name="header" :current-step="currentStep" :total-steps="totalSteps">
         <h2>{{ title }}</h2>
         <div class="step-indicator">
-          <div 
-            v-for="(step, index) in steps" 
+          <div
+            v-for="(step, index) in steps"
             :key="step.id"
-            class="step" :class="[{ 
-              active: index === currentStep, 
-              completed: index < currentStep, 
+            class="step" :class="[{
+              active: index === currentStep,
+              completed: index < currentStep,
             }]"
           >
             {{ index + 1 }}
@@ -120,7 +120,7 @@ watch(currentStep, (newStep) => {
         </div>
       </slot>
     </div>
-    
+
     <div class="wizard-content">
       <transition name="step-fade" mode="out-in">
         <component
@@ -133,11 +133,11 @@ watch(currentStep, (newStep) => {
         />
       </transition>
     </div>
-    
+
     <div class="wizard-footer">
-      <slot 
-        name="footer" 
-        :current-step="currentStep" 
+      <slot
+        name="footer"
+        :current-step="currentStep"
         :total-steps="totalSteps"
         :can-go-back="canGoBack"
         :can-go-next="canGoNext"
@@ -146,25 +146,25 @@ watch(currentStep, (newStep) => {
         :submit="submit"
       >
         <div class="wizard-actions">
-          <button 
-            v-if="canGoBack" 
+          <button
+            v-if="canGoBack"
             class="btn btn-secondary"
             @click="goBack"
           >
             上一步
           </button>
-          
-          <button 
-            v-if="canGoNext" 
+
+          <button
+            v-if="canGoNext"
             :disabled="!isCurrentStepValid"
             class="btn btn-primary"
             @click="goNext"
           >
             下一步
           </button>
-          
-          <button 
-            v-if="isLastStep" 
+
+          <button
+            v-if="isLastStep"
             :disabled="!isFormValid"
             class="btn btn-success"
             @click="submit"
@@ -344,7 +344,7 @@ function onFormSubmit(data: any) {
 <template>
   <div class="app">
     <h1>自定义表单向导示例</h1>
-    
+
     <LTemplateRenderer
       category="form"
       device="desktop"
@@ -359,14 +359,14 @@ function onFormSubmit(data: any) {
           <h2>用户注册向导</h2>
           <p>步骤 {{ currentStep + 1 }} / {{ totalSteps }}</p>
           <div class="progress-bar">
-            <div 
-              class="progress-fill" 
+            <div
+              class="progress-fill"
               :style="{ width: `${((currentStep + 1) / totalSteps) * 100}%` }"
             />
           </div>
         </div>
       </template>
-      
+
       <!-- 自定义底部 -->
       <template #footer="{ currentStep, canGoBack, canGoNext, goBack, goNext, submit }">
         <div class="custom-footer">
@@ -494,9 +494,9 @@ const currentPage = ref(1)
 
 // 计算属性
 const filteredData = computed(() => {
-  if (!searchQuery.value) 
+  if (!searchQuery.value)
     return props.data
-  
+
   return props.data.filter(row =>
     Object.values(row).some(value =>
       String(value).toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -505,29 +505,29 @@ const filteredData = computed(() => {
 })
 
 const sortedData = computed(() => {
-  if (!sortKey.value) 
+  if (!sortKey.value)
     return filteredData.value
-  
+
   return [...filteredData.value].sort((a, b) => {
     const aVal = a[sortKey.value]
     const bVal = b[sortKey.value]
-    
-    if (aVal < bVal) 
+
+    if (aVal < bVal)
       return sortDirection.value === 'asc' ? -1 : 1
-    if (aVal > bVal) 
+    if (aVal > bVal)
       return sortDirection.value === 'asc' ? 1 : -1
     return 0
   })
 })
 
-const totalPages = computed(() => 
+const totalPages = computed(() =>
   Math.ceil(sortedData.value.length / props.pageSize)
 )
 
 const paginatedData = computed(() => {
-  if (!props.pagination) 
+  if (!props.pagination)
     return sortedData.value
-  
+
   const start = (currentPage.value - 1) * props.pageSize
   const end = start + props.pageSize
   return sortedData.value.slice(start, end)
@@ -542,12 +542,12 @@ function sort(key: string) {
     sortKey.value = key
     sortDirection.value = 'asc'
   }
-  
+
   emit('sort', key, sortDirection.value)
 }
 
 function getSortIndicator(key: string) {
-  if (sortKey.value !== key) 
+  if (sortKey.value !== key)
     return '↕'
   return sortDirection.value === 'asc' ? '↑' : '↓'
 }
@@ -592,13 +592,13 @@ watch(searchQuery, () => {
         </div>
       </slot>
     </div>
-    
+
     <div class="table-container">
       <table class="table">
         <thead>
           <tr>
-            <th 
-              v-for="column in columns" 
+            <th
+              v-for="column in columns"
               :key="column.key"
               :class="{ sortable: column.sortable }"
               @click="column.sortable && sort(column.key)"
@@ -616,9 +616,9 @@ watch(searchQuery, () => {
         <tbody>
           <tr v-for="(row, index) in paginatedData" :key="getRowKey(row, index)">
             <td v-for="column in columns" :key="column.key">
-              <slot 
-                :name="`column-${column.key}`" 
-                :row="row" 
+              <slot
+                :name="`column-${column.key}`"
+                :row="row"
                 :value="row[column.key]"
                 :index="index"
               >
@@ -639,21 +639,21 @@ watch(searchQuery, () => {
         </tbody>
       </table>
     </div>
-    
+
     <div v-if="pagination" class="table-footer">
       <div class="pagination">
-        <button 
+        <button
           :disabled="currentPage === 1"
           @click="goToPage(currentPage - 1)"
         >
           上一页
         </button>
-        
+
         <span class="page-info">
           第 {{ currentPage }} 页，共 {{ totalPages }} 页
         </span>
-        
-        <button 
+
+        <button
           :disabled="currentPage === totalPages"
           @click="goToPage(currentPage + 1)"
         >

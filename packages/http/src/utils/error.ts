@@ -24,7 +24,7 @@ export class ErrorHandler {
     const error = createHttpError(
       'Network Error: Unable to connect to the server',
       config,
-      ErrorType.NETWORK
+      ErrorType.NETWORK,
     )
     error.isNetworkError = true
     error.cause = originalError
@@ -38,7 +38,7 @@ export class ErrorHandler {
     const error = createHttpError(
       `Timeout Error: Request timed out after ${timeout}ms`,
       config,
-      ErrorType.TIMEOUT
+      ErrorType.TIMEOUT,
     )
     error.isTimeoutError = true
     return error
@@ -51,7 +51,7 @@ export class ErrorHandler {
     const error = createHttpError(
       'Cancel Error: Request was cancelled',
       config,
-      ErrorType.CANCEL
+      ErrorType.CANCEL,
     )
     error.isCancelError = true
     return error
@@ -64,13 +64,13 @@ export class ErrorHandler {
     status: number,
     statusText: string,
     config: RequestConfig,
-    response?: ResponseData
+    response?: ResponseData,
   ): HttpError {
     const error = createHttpError(
       `HTTP Error: ${status} ${statusText}`,
       config,
       ErrorType.HTTP,
-      response
+      response,
     )
     return error
   }
@@ -82,7 +82,7 @@ export class ErrorHandler {
     const error = createHttpError(
       'Parse Error: Failed to parse response data',
       config,
-      ErrorType.PARSE
+      ErrorType.PARSE,
     )
     error.cause = originalError
     return error
@@ -171,7 +171,7 @@ export class RetryManager {
    */
   async executeWithRetry<T>(
     requestFn: () => Promise<T>,
-    requestConfig?: RequestConfig
+    requestConfig?: RequestConfig,
   ): Promise<T> {
     let lastError: HttpError
     let retryCount = 0
@@ -179,7 +179,8 @@ export class RetryManager {
     while (retryCount <= this.config.retries) {
       try {
         return await requestFn()
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as HttpError
 
         // 检查是否应该重试
@@ -189,10 +190,10 @@ export class RetryManager {
 
         // 计算延迟时间
         const delayTime = this.config.retryDelayFunction(retryCount, lastError)
-        
+
         // 等待重试
         await delay(delayTime)
-        
+
         retryCount++
       }
     }
@@ -205,11 +206,11 @@ export class RetryManager {
    */
   private defaultRetryDelayFunction(retryCount: number, error: HttpError): number {
     const baseDelay = this.config.retryDelay
-    const exponentialDelay = baseDelay * Math.pow(2, retryCount)
-    
+    const exponentialDelay = baseDelay * 2 ** retryCount
+
     // 添加随机抖动，避免雷群效应
     const jitter = Math.random() * 0.1 * exponentialDelay
-    
+
     return Math.min(exponentialDelay + jitter, 30000) // 最大延迟 30 秒
   }
 

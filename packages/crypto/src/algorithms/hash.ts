@@ -1,6 +1,6 @@
-import CryptoJS from 'crypto-js'
 import type { HashAlgorithm, HashOptions, HashResult, IHasher } from '../types'
-import { ValidationUtils, ErrorUtils, CONSTANTS } from '../utils'
+import CryptoJS from 'crypto-js'
+import { CONSTANTS, ErrorUtils, ValidationUtils } from '../utils'
 
 /**
  * 哈希器
@@ -48,7 +48,7 @@ export class Hasher implements IHasher {
 
       // 计算哈希
       const hashWordArray = hashFunction(data)
-      
+
       // 根据编码类型转换输出
       let hashString: string
       switch (opts.encoding) {
@@ -70,7 +70,8 @@ export class Hasher implements IHasher {
         algorithm,
         encoding: opts.encoding,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -85,7 +86,8 @@ export class Hasher implements IHasher {
     try {
       const result = this.hash(data, algorithm, options)
       return result.hash === expectedHash
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -148,7 +150,7 @@ export class HMACHasher {
 
       // 计算 HMAC
       const hmacWordArray = hmacFunction(data, key)
-      
+
       // 根据编码类型转换输出
       let hmacString: string
       switch (opts.encoding) {
@@ -170,7 +172,8 @@ export class HMACHasher {
         algorithm: `HMAC-${algorithm}`,
         encoding: opts.encoding,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -185,7 +188,8 @@ export class HMACHasher {
     try {
       const result = this.hmac(data, key, algorithm, options)
       return result.hash === expectedHmac
-    } catch {
+    }
+    catch {
       return false
     }
   }

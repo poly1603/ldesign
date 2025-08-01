@@ -20,12 +20,12 @@ const http = createHttpClient({
 
 ### 配置选项
 
-| 选项 | 类型 | 默认值 | 描述 |
-|------|------|--------|------|
-| `baseURL` | `string` | - | 基础 URL |
-| `timeout` | `number` | `10000` | 超时时间（毫秒） |
-| `headers` | `object` | `{}` | 默认请求头 |
-| `adapter` | `string \| HttpAdapter` | `'fetch'` | HTTP 适配器 |
+| 选项      | 类型                    | 默认值    | 描述             |
+| --------- | ----------------------- | --------- | ---------------- |
+| `baseURL` | `string`                | -         | 基础 URL         |
+| `timeout` | `number`                | `10000`   | 超时时间（毫秒） |
+| `headers` | `object`                | `{}`      | 默认请求头       |
+| `adapter` | `string \| HttpAdapter` | `'fetch'` | HTTP 适配器      |
 
 ## 发送请求
 
@@ -152,12 +152,12 @@ const response = await http.get('/users', {
 
 ```typescript
 interface ResponseData<T> {
-  data: T              // 响应数据
-  status: number       // HTTP 状态码
-  statusText: string   // 状态文本
-  headers: object      // 响应头
-  config: object       // 请求配置
-  raw?: any           // 原始响应对象
+  data: T // 响应数据
+  status: number // HTTP 状态码
+  statusText: string // 状态文本
+  headers: object // 响应头
+  config: object // 请求配置
+  raw?: any // 原始响应对象
 }
 ```
 
@@ -166,10 +166,10 @@ interface ResponseData<T> {
 ```typescript
 const response = await http.get('/users/1')
 
-console.log(response.data)       // 用户数据
-console.log(response.status)     // 200
+console.log(response.data) // 用户数据
+console.log(response.status) // 200
 console.log(response.statusText) // "OK"
-console.log(response.headers)    // 响应头对象
+console.log(response.headers) // 响应头对象
 ```
 
 ## 错误处理
@@ -180,18 +180,22 @@ console.log(response.headers)    // 响应头对象
 try {
   const response = await http.get('/users/999')
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   if (error.response) {
     // 服务器返回了错误状态码
     console.log('错误状态:', error.response.status)
     console.log('错误数据:', error.response.data)
-  } else if (error.isNetworkError) {
+  }
+  else if (error.isNetworkError) {
     // 网络错误
     console.log('网络连接失败')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     // 超时错误
     console.log('请求超时')
-  } else {
+  }
+  else {
     // 其他错误
     console.log('未知错误:', error.message)
   }
@@ -220,7 +224,8 @@ const results = await Promise.allSettled([
 results.forEach((result, index) => {
   if (result.status === 'fulfilled') {
     console.log(`请求 ${index} 成功:`, result.value.data)
-  } else {
+  }
+  else {
     console.log(`请求 ${index} 失败:`, result.reason.message)
   }
 })
@@ -246,7 +251,8 @@ setTimeout(() => {
 try {
   const response = await requestPromise
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   if (error.isCancelError) {
     console.log('请求已取消')
   }
@@ -308,7 +314,7 @@ const newUser = await userService.createUser({
 async function uploadFile(file: File, onProgress?: (progress: number) => void) {
   const formData = new FormData()
   formData.append('file', file)
-  
+
   return http.post('/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'

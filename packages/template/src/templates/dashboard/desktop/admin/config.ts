@@ -11,5 +11,5 @@ export default {
   responsive: true,
   minWidth: 1200,
   createdAt: '2024-01-01',
-  updatedAt: '2024-01-15'
+  updatedAt: '2024-01-15',
 } as TemplateConfig

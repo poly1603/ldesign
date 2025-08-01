@@ -77,8 +77,8 @@ pnpm add -D webpack vue-loader
 如果你使用 Vite，在 `vite.config.ts` 中添加：
 
 ```typescript
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],
@@ -119,10 +119,10 @@ module.exports = {
 在你的应用入口文件（如 `main.ts`）的最顶部导入：
 
 ```typescript
-import 'reflect-metadata' // 必须在最顶部
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import App from './App.vue'
+import 'reflect-metadata' // 必须在最顶部
 
 const app = createApp(App)
 app.use(createPinia())
@@ -133,7 +133,7 @@ app.mount('#app')
 
 ```typescript
 // stores/counter.ts
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 export class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -154,19 +154,21 @@ export class CounterStore extends BaseStore {
 ### 3. 在组件中使用
 
 ```vue
-<template>
-  <div>
-    <p>计数: {{ store.count }}</p>
-    <p>双倍: {{ store.doubleCount }}</p>
-    <button @click="store.increment">增加</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { CounterStore } from '@/stores/counter'
 
 const store = new CounterStore('counter')
 </script>
+
+<template>
+  <div>
+    <p>计数: {{ store.count }}</p>
+    <p>双倍: {{ store.doubleCount }}</p>
+    <button @click="store.increment">
+      增加
+    </button>
+  </div>
+</template>
 ```
 
 ## CDN 使用
@@ -174,52 +176,52 @@ const store = new CounterStore('counter')
 如果你不使用构建工具，可以通过 CDN 直接使用：
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
-  <script src="https://unpkg.com/reflect-metadata@0.2.1/Reflect.js"></script>
-  <script src="https://unpkg.com/@ldesign/store/dist/index.js"></script>
-</head>
-<body>
-  <div id="app">
-    <p>计数: {{ count }}</p>
-    <button @click="increment">增加</button>
-  </div>
+  <head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
+    <script src="https://unpkg.com/reflect-metadata@0.2.1/Reflect.js"></script>
+    <script src="https://unpkg.com/@ldesign/store/dist/index.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <p>计数: {{ count }}</p>
+      <button @click="increment">增加</button>
+    </div>
 
-  <script>
-    const { createApp } = Vue
-    const { createPinia } = Pinia
-    const { BaseStore, State, Action } = LDesignStore
+    <script>
+      const { createApp } = Vue
+      const { createPinia } = Pinia
+      const { BaseStore, State, Action } = LDesignStore
 
-    // 定义 Store
-    class CounterStore extends BaseStore {
-      constructor(id) {
-        super(id)
-        this.count = 0
-      }
-      
-      increment() {
-        this.count++
-      }
-    }
+      // 定义 Store
+      class CounterStore extends BaseStore {
+        constructor(id) {
+          super(id)
+          this.count = 0
+        }
 
-    // 创建应用
-    const app = createApp({
-      setup() {
-        const store = new CounterStore('counter')
-        return {
-          count: store.count,
-          increment: store.increment
+        increment() {
+          this.count++
         }
       }
-    })
 
-    app.use(createPinia())
-    app.mount('#app')
-  </script>
-</body>
+      // 创建应用
+      const app = createApp({
+        setup() {
+          const store = new CounterStore('counter')
+          return {
+            count: store.count,
+            increment: store.increment,
+          }
+        },
+      })
+
+      app.use(createPinia())
+      app.mount('#app')
+    </script>
+  </body>
 </html>
 ```
 
@@ -228,9 +230,9 @@ const store = new CounterStore('counter')
 创建一个简单的测试文件来验证安装是否成功：
 
 ```typescript
+import { Action, BaseStore, State } from '@ldesign/store'
 // test-installation.ts
 import 'reflect-metadata'
-import { BaseStore, State, Action } from '@ldesign/store'
 
 class TestStore extends BaseStore {
   @State({ default: 'Hello World' })
@@ -254,12 +256,15 @@ console.log('更新后消息:', store.message) // "安装成功！"
 ## 常见问题
 
 ### Q: 装饰器不工作？
+
 A: 确保在 `tsconfig.json` 中启用了 `experimentalDecorators` 和 `emitDecoratorMetadata`，并且导入了 `reflect-metadata`。
 
 ### Q: 构建时出现错误？
+
 A: 检查是否正确配置了构建工具，确保支持装饰器和 Vue 单文件组件。
 
 ### Q: 类型提示不正确？
+
 A: 确保安装了 TypeScript 和相关类型定义，并且 IDE 支持 TypeScript。
 
 ## 下一步

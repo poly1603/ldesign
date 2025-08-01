@@ -1,17 +1,18 @@
-import type { Plugin } from 'vue';
-import { DeviceDetector } from '../../core/DeviceDetector';
-import type { DevicePluginOptions } from '../../types';
+import { Plugin } from 'vue';
+import { DeviceDetector } from '../../core/DeviceDetector.js';
+import { DevicePluginOptions } from '../../types/index.js';
+
 /**
  * Vue3 设备检测插件
  */
-export declare const DevicePlugin: Plugin;
+declare const DevicePlugin: Plugin;
 /**
  * 创建设备检测插件
  */
-export declare function createDevicePlugin(options?: DevicePluginOptions): Plugin;
+declare function createDevicePlugin(options?: DevicePluginOptions): Plugin;
 /**
  * 在组合式 API 中获取设备检测器实例
  */
-export declare function useDeviceDetector(): DeviceDetector;
-export default DevicePlugin;
-//# sourceMappingURL=index.d.ts.map
+declare function useDeviceDetector(): DeviceDetector;
+
+export { DevicePlugin, createDevicePlugin, DevicePlugin as default, useDeviceDetector };

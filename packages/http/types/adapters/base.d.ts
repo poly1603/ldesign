@@ -1,4 +1,4 @@
-import { HttpAdapter, RequestConfig, ResponseData, HttpError } from '../types/index.js';
+import { HttpAdapter, RequestConfig, ResponseData, HttpError } from '@/types';
 
 /**
  * 适配器基类

@@ -17,46 +17,46 @@ export const config: TemplateConfig = {
     '大按钮操作',
     '简化表单',
     '快速登录',
-    '触摸友好'
+    '触摸友好',
   ],
   props: {
     title: {
       type: 'string',
       default: '登录',
-      description: '登录页面标题'
+      description: '登录页面标题',
     },
     subtitle: {
       type: 'string',
       default: '欢迎回来',
-      description: '登录页面副标题'
+      description: '登录页面副标题',
     },
     logo: {
       type: 'string',
       default: '',
-      description: '公司或产品Logo'
+      description: '公司或产品Logo',
     },
     showRememberMe: {
       type: 'boolean',
       default: false,
-      description: '是否显示记住密码选项'
+      description: '是否显示记住密码选项',
     },
     showForgotPassword: {
       type: 'boolean',
       default: true,
-      description: '是否显示忘记密码链接'
+      description: '是否显示忘记密码链接',
     },
     showThirdPartyLogin: {
       type: 'boolean',
       default: true,
-      description: '是否显示第三方登录'
-    }
+      description: '是否显示第三方登录',
+    },
   },
   breakpoints: {
     minWidth: null,
-    maxWidth: 768
+    maxWidth: 768,
   },
   createdAt: '2024-01-01',
-  updatedAt: '2024-01-15'
+  updatedAt: '2024-01-15',
 }
 
 export default config

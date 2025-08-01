@@ -13,12 +13,12 @@ npm install @ldesign/store pinia vue reflect-metadata
 ### 应用配置
 
 ```typescript
+import { createStorePlugin } from '@ldesign/store'
+import { createPinia } from 'pinia'
+import { createApp } from 'vue'
+import App from './App.vue'
 // main.ts
 import 'reflect-metadata'
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import { createStorePlugin } from '@ldesign/store'
-import App from './App.vue'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -42,25 +42,8 @@ app.mount('#app')
 ### 在组合式 API 中使用
 
 ```vue
-<template>
-  <div class="user-profile">
-    <h1>{{ userStore.displayName }}</h1>
-    <p>邮箱: {{ userStore.email }}</p>
-    <p>状态: {{ userStore.isOnline ? '在线' : '离线' }}</p>
-    
-    <button @click="userStore.updateProfile(newProfile)">
-      更新资料
-    </button>
-    
-    <div v-if="userStore.loading">加载中...</div>
-    <div v-if="userStore.error" class="error">
-      {{ userStore.error }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { UserStore } from '@/stores/user'
 
 // 创建 Store 实例
@@ -90,39 +73,50 @@ onUnmounted(() => {
   unsubscribe()
 })
 </script>
+
+<template>
+  <div class="user-profile">
+    <h1>{{ userStore.displayName }}</h1>
+    <p>邮箱: {{ userStore.email }}</p>
+    <p>状态: {{ userStore.isOnline ? '在线' : '离线' }}</p>
+
+    <button @click="userStore.updateProfile(newProfile)">
+      更新资料
+    </button>
+
+    <div v-if="userStore.loading">
+      加载中...
+    </div>
+    <div v-if="userStore.error" class="error">
+      {{ userStore.error }}
+    </div>
+  </div>
+</template>
 ```
 
 ### 在选项式 API 中使用
 
 ```vue
-<template>
-  <div class="counter">
-    <h1>{{ counter.displayText }}</h1>
-    <button @click="counter.increment">+1</button>
-    <button @click="counter.decrement">-1</button>
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CounterStore } from '@/stores/counter'
 
 export default defineComponent({
   name: 'CounterComponent',
-  
+
   data() {
     return {
       counter: new CounterStore('counter')
     }
   },
-  
+
   mounted() {
     // 监听状态变化
     this.unsubscribe = this.counter.$subscribe((mutation, state) => {
       console.log('计数器变化:', state.count)
     })
   },
-  
+
   beforeUnmount() {
     if (this.unsubscribe) {
       this.unsubscribe()
@@ -131,6 +125,18 @@ export default defineComponent({
   }
 })
 </script>
+
+<template>
+  <div class="counter">
+    <h1>{{ counter.displayText }}</h1>
+    <button @click="counter.increment">
+      +1
+    </button>
+    <button @click="counter.decrement">
+      -1
+    </button>
+  </div>
+</template>
 ```
 
 ## 响应式集成
@@ -139,8 +145,8 @@ export default defineComponent({
 
 ```typescript
 // stores/reactive.ts
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
-import { ref, computed, watch } from 'vue'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
+import { computed, ref, watch } from 'vue'
 
 export class ReactiveStore extends BaseStore {
   @State({ default: [] })
@@ -158,7 +164,7 @@ export class ReactiveStore extends BaseStore {
 
   constructor(id: string) {
     super(id)
-    
+
     // 监听 Vue 响应式数据
     watch(this.debouncedQuery, (newQuery) => {
       this.performSearch(newQuery)
@@ -177,8 +183,9 @@ export class ReactiveStore extends BaseStore {
 
   @Getter()
   get filteredItems() {
-    if (!this.filter) return this.items
-    return this.items.filter(item => 
+    if (!this.filter)
+      return this.items
+    return this.items.filter(item =>
       item.name.toLowerCase().includes(this.filter.toLowerCase())
     )
   }
@@ -188,23 +195,6 @@ export class ReactiveStore extends BaseStore {
 ### 与 Vue 响应式系统集成
 
 ```vue
-<template>
-  <div>
-    <!-- 直接绑定 Store 状态 -->
-    <input v-model="store.searchQuery" placeholder="搜索..." />
-    
-    <!-- 使用计算属性 -->
-    <div class="results-count">
-      找到 {{ store.filteredItems.length }} 个结果
-    </div>
-    
-    <!-- 列表渲染 -->
-    <div v-for="item in store.filteredItems" :key="item.id">
-      {{ item.name }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { ReactiveStore } from '@/stores/reactive'
@@ -222,9 +212,26 @@ watch(() => store.items.length, (newLength, oldLength) => {
 // 双向绑定 Store 状态
 const searchQuery = computed({
   get: () => store.searchQuery,
-  set: (value) => store.setSearchQuery(value)
+  set: value => store.setSearchQuery(value)
 })
 </script>
+
+<template>
+  <div>
+    <!-- 直接绑定 Store 状态 -->
+    <input v-model="store.searchQuery" placeholder="搜索...">
+
+    <!-- 使用计算属性 -->
+    <div class="results-count">
+      找到 {{ store.filteredItems.length }} 个结果
+    </div>
+
+    <!-- 列表渲染 -->
+    <div v-for="item in store.filteredItems" :key="item.id">
+      {{ item.name }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 依赖注入
@@ -233,9 +240,9 @@ const searchQuery = computed({
 
 ```typescript
 // composables/useStoreProvider.ts
-import { provide, inject, InjectionKey } from 'vue'
-import { UserStore } from '@/stores/user'
+import { inject, InjectionKey, provide } from 'vue'
 import { CartStore } from '@/stores/cart'
+import { UserStore } from '@/stores/user'
 
 // 定义注入键
 export const UserStoreKey: InjectionKey<UserStore> = Symbol('UserStore')
@@ -245,10 +252,10 @@ export const CartStoreKey: InjectionKey<CartStore> = Symbol('CartStore')
 export function provideStores() {
   const userStore = new UserStore('user')
   const cartStore = new CartStore('cart')
-  
+
   provide(UserStoreKey, userStore)
   provide(CartStoreKey, cartStore)
-  
+
   return { userStore, cartStore }
 }
 
@@ -274,14 +281,6 @@ export function useCartStore() {
 
 ```vue
 <!-- App.vue -->
-<template>
-  <div id="app">
-    <Header />
-    <router-view />
-    <Footer />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { provideStores } from '@/composables/useStoreProvider'
 
@@ -292,23 +291,31 @@ const { userStore, cartStore } = provideStores()
 userStore.initializeFromToken()
 cartStore.loadFromStorage()
 </script>
+
+<template>
+  <div id="app">
+    <Header />
+    <router-view />
+    <Footer />
+  </div>
+</template>
 ```
 
 ```vue
 <!-- 子组件中注入使用 -->
+<script setup lang="ts">
+import { useCartStore, useUserStore } from '@/composables/useStoreProvider'
+
+const userStore = useUserStore()
+const cartStore = useCartStore()
+</script>
+
 <template>
   <div class="user-info">
     <span>{{ userStore.name }}</span>
     <span>购物车: {{ cartStore.itemCount }}</span>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useUserStore, useCartStore } from '@/composables/useStoreProvider'
-
-const userStore = useUserStore()
-const cartStore = useCartStore()
-</script>
 ```
 
 ## 路由集成
@@ -333,10 +340,10 @@ export function setupRouterGuards(router: Router) {
 
     // 检查权限
     if (to.meta.permissions) {
-      const hasPermission = to.meta.permissions.every(permission => 
+      const hasPermission = to.meta.permissions.every(permission =>
         authStore.hasPermission(permission)
       )
-      
+
       if (!hasPermission) {
         next('/403')
         return
@@ -359,8 +366,8 @@ export function setupRouterGuards(router: Router) {
 
 ```typescript
 // stores/router.ts
-import { BaseStore, State, Action } from '@ldesign/store'
-import { Router, RouteLocationNormalized } from 'vue-router'
+import { Action, BaseStore, State } from '@ldesign/store'
+import { RouteLocationNormalized, Router } from 'vue-router'
 
 export class RouterStore extends BaseStore {
   @State({ default: null })
@@ -391,7 +398,7 @@ export class RouterStore extends BaseStore {
       this.currentRoute = to
       this.history.push(to)
       this.isNavigating = false
-      
+
       // 只保留最近 50 条历史记录
       if (this.history.length > 50) {
         this.history.shift()
@@ -426,7 +433,7 @@ import { StorePlugin } from '@ldesign/store'
 
 export const loggerPlugin: StorePlugin = {
   name: 'logger',
-  
+
   install(store, options) {
     // 监听所有状态变化
     store.$subscribe((mutation, state) => {
@@ -439,13 +446,13 @@ export const loggerPlugin: StorePlugin = {
     // 监听所有动作执行
     store.$onAction(({ name, args, after, onError }) => {
       const startTime = Date.now()
-      
+
       console.log(`🚀 [${store.$id}] Action: ${name}`, args)
-      
+
       after(() => {
         console.log(`✅ [${store.$id}] Action ${name} completed in ${Date.now() - startTime}ms`)
       })
-      
+
       onError((error) => {
         console.error(`❌ [${store.$id}] Action ${name} failed:`, error)
       })
@@ -472,7 +479,7 @@ app.use(createStorePlugin({
 
 ```typescript
 // stores/devtools.ts
-import { BaseStore, State, Action } from '@ldesign/store'
+import { Action, BaseStore, State } from '@ldesign/store'
 
 export class DevToolsStore extends BaseStore {
   @State({ default: 0 })
@@ -480,7 +487,7 @@ export class DevToolsStore extends BaseStore {
 
   constructor(id: string) {
     super(id)
-    
+
     // 开发环境下启用 DevTools
     if (process.env.NODE_ENV === 'development') {
       this.setupDevTools()
@@ -505,7 +512,7 @@ export class DevToolsStore extends BaseStore {
   @Action()
   increment() {
     this.count++
-    
+
     // 发送自定义事件到 DevTools
     this.$devtools?.addTimelineEvent({
       layerId: 'counter',
@@ -595,14 +602,6 @@ onMounted(() => {
 ### 组件级 Store
 
 ```vue
-<template>
-  <div class="form-component">
-    <input v-model="formStore.name" />
-    <input v-model="formStore.email" />
-    <button @click="formStore.submit">提交</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { onUnmounted } from 'vue'
 import { FormStore } from '@/stores/form'
@@ -615,6 +614,16 @@ onUnmounted(() => {
   formStore.$dispose()
 })
 </script>
+
+<template>
+  <div class="form-component">
+    <input v-model="formStore.name">
+    <input v-model="formStore.email">
+    <button @click="formStore.submit">
+      提交
+    </button>
+  </div>
+</template>
 ```
 
 ## 测试集成
@@ -622,10 +631,10 @@ onUnmounted(() => {
 ### 单元测试
 
 ```typescript
-// tests/stores/user.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+// tests/stores/user.test.ts
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApp } from 'vue'
 import { UserStore } from '@/stores/user'
 
 describe('UserStore', () => {
@@ -636,7 +645,7 @@ describe('UserStore', () => {
     // 创建测试环境
     app = createApp({})
     app.use(createPinia())
-    
+
     userStore = new UserStore('test-user')
   })
 
@@ -647,7 +656,7 @@ describe('UserStore', () => {
 
   it('should login user successfully', async () => {
     const mockUser = { id: '1', name: 'Test User' }
-    
+
     // Mock API
     vi.mocked(userApi.login).mockResolvedValue({ user: mockUser })
 
@@ -662,10 +671,10 @@ describe('UserStore', () => {
 ### 组件测试
 
 ```typescript
-// tests/components/UserProfile.test.ts
-import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
+// tests/components/UserProfile.test.ts
+import { describe, expect, it } from 'vitest'
 import UserProfile from '@/components/UserProfile.vue'
 import { UserStore } from '@/stores/user'
 
@@ -673,7 +682,7 @@ describe('UserProfile', () => {
   it('should display user information', async () => {
     const pinia = createPinia()
     const userStore = new UserStore('user')
-    
+
     // 设置测试数据
     userStore.currentUser = {
       id: '1',
@@ -703,6 +712,9 @@ A: 确保在 Vue 应用初始化后创建 Store：
 // utils/api.ts
 import { UserStore } from '@/stores/user'
 
+// main.ts
+import { initializeStores } from '@/utils/api'
+
 let userStore: UserStore
 
 export function initializeStores() {
@@ -715,9 +727,6 @@ export function getUserStore() {
   }
   return userStore
 }
-
-// main.ts
-import { initializeStores } from '@/utils/api'
 
 const app = createApp(App)
 app.use(createPinia())

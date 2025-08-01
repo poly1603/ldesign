@@ -1,8 +1,11 @@
 import { Plugin, App } from 'vue';
-import { encrypt, decrypt, hash, hmac, keyGenerator, digitalSignature, aes, rsa, encoding, base64, hex } from '@/core';
+import { encrypt, decrypt, hash, hmac, keyGenerator, digitalSignature } from '../core/index.js';
 import { useCrypto } from './composables/useCrypto.js';
 import { useHash } from './composables/useHash.js';
 import { useSignature } from './composables/useSignature.js';
+import { aes } from '../algorithms/aes.js';
+import { rsa } from '../algorithms/rsa.js';
+import { encoding, base64, hex } from '../algorithms/encoding.js';
 
 /**
  * 插件选项接口

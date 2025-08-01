@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import type { RequestInterceptor } from '@/types'
+import { describe, expect, it, vi } from 'vitest'
 import { InterceptorManagerImpl } from '@/interceptors/manager'
-import type { RequestInterceptor, ErrorInterceptor } from '@/types'
 
-describe('InterceptorManagerImpl', () => {
+describe('interceptorManagerImpl', () => {
   let manager: InterceptorManagerImpl<RequestInterceptor>
 
   beforeEach(() => {
@@ -11,7 +11,7 @@ describe('InterceptorManagerImpl', () => {
 
   describe('use', () => {
     it('should add interceptor and return id', () => {
-      const interceptor = vi.fn((config) => config)
+      const interceptor = vi.fn(config => config)
       const id = manager.use(interceptor)
 
       expect(typeof id).toBe('number')
@@ -19,8 +19,8 @@ describe('InterceptorManagerImpl', () => {
     })
 
     it('should add multiple interceptors with incremental ids', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
 
       const id1 = manager.use(interceptor1)
       const id2 = manager.use(interceptor2)
@@ -30,8 +30,8 @@ describe('InterceptorManagerImpl', () => {
     })
 
     it('should add interceptor with error handler', () => {
-      const fulfilled = vi.fn((config) => config)
-      const rejected = vi.fn((error) => error)
+      const fulfilled = vi.fn(config => config)
+      const rejected = vi.fn(error => error)
 
       const id = manager.use(fulfilled, rejected)
 
@@ -41,7 +41,7 @@ describe('InterceptorManagerImpl', () => {
 
   describe('eject', () => {
     it('should remove interceptor by id', () => {
-      const interceptor = vi.fn((config) => config)
+      const interceptor = vi.fn(config => config)
       const id = manager.use(interceptor)
 
       manager.eject(id)
@@ -56,9 +56,9 @@ describe('InterceptorManagerImpl', () => {
     })
 
     it('should not affect other interceptors', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
-      const interceptor3 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
+      const interceptor3 = vi.fn(config => config)
 
       const id1 = manager.use(interceptor1)
       const id2 = manager.use(interceptor2)
@@ -75,8 +75,8 @@ describe('InterceptorManagerImpl', () => {
 
   describe('clear', () => {
     it('should remove all interceptors', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
 
       manager.use(interceptor1)
       manager.use(interceptor2)
@@ -90,8 +90,8 @@ describe('InterceptorManagerImpl', () => {
 
   describe('forEach', () => {
     it('should iterate over all interceptors', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
 
       manager.use(interceptor1)
       manager.use(interceptor2)
@@ -111,8 +111,8 @@ describe('InterceptorManagerImpl', () => {
     })
 
     it('should skip ejected interceptors', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
 
       const id1 = manager.use(interceptor1)
       manager.use(interceptor2)
@@ -131,8 +131,8 @@ describe('InterceptorManagerImpl', () => {
 
   describe('getInterceptors', () => {
     it('should return all active interceptors', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
 
       manager.use(interceptor1)
       manager.use(interceptor2)
@@ -145,9 +145,9 @@ describe('InterceptorManagerImpl', () => {
     })
 
     it('should exclude ejected interceptors', () => {
-      const interceptor1 = vi.fn((config) => config)
-      const interceptor2 = vi.fn((config) => config)
-      const interceptor3 = vi.fn((config) => config)
+      const interceptor1 = vi.fn(config => config)
+      const interceptor2 = vi.fn(config => config)
+      const interceptor3 = vi.fn(config => config)
 
       const id1 = manager.use(interceptor1)
       manager.use(interceptor2)

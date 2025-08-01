@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useTheme } from '@ldesign/color/vue'
+import { computed } from 'vue'
 
 const { availableThemes } = useTheme()
 

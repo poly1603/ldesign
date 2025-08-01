@@ -1,8 +1,9 @@
-import type { EventListener } from '../types';
+import { EventListener } from '../types/index.js';
+
 /**
  * 简单的事件发射器实现
  */
-export declare class EventEmitter<T extends Record<string, any> = Record<string, any>> {
+declare class EventEmitter<T extends Record<string, any> = Record<string, any>> {
     private events;
     /**
      * 添加事件监听器
@@ -41,4 +42,5 @@ export declare class EventEmitter<T extends Record<string, any> = Record<string,
      */
     hasListeners<K extends keyof T>(event: K): boolean;
 }
-//# sourceMappingURL=EventEmitter.d.ts.map
+
+export { EventEmitter };

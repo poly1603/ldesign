@@ -1,3 +1,41 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { UserStore } from '../stores/user'
+
+const store = new UserStore('user')
+const email = ref('')
+const password = ref('')
+
+const roleClass = computed(() => ({
+  admin: store.userRole === 'admin',
+  user: store.userRole === 'user',
+  guest: store.userRole === 'guest',
+}))
+
+async function handleLogin() {
+  await store.login(email.value, password.value)
+  if (store.isLoggedIn) {
+    email.value = ''
+    password.value = ''
+  }
+}
+
+async function handleLogout() {
+  await store.logout()
+}
+
+function getRoleText(role: string) {
+  switch (role) {
+    case 'admin':
+      return '管理员'
+    case 'user':
+      return '普通用户'
+    default:
+      return '游客'
+  }
+}
+</script>
+
 <template>
   <div class="example-card">
     <h2>用户管理示例</h2>
@@ -14,7 +52,7 @@
             placeholder="输入邮箱"
             class="input"
             :disabled="store.loading"
-          />
+          >
         </div>
         <div class="form-group">
           <label>密码:</label>
@@ -24,7 +62,7 @@
             placeholder="输入密码"
             class="input"
             :disabled="store.loading"
-          />
+          >
         </div>
         <button
           type="submit"
@@ -59,8 +97,12 @@
           {{ store.user?.name?.charAt(0) || 'U' }}
         </div>
         <div class="user-info">
-          <div class="user-name">{{ store.userName }}</div>
-          <div class="user-email">{{ store.user?.email }}</div>
+          <div class="user-name">
+            {{ store.userName }}
+          </div>
+          <div class="user-email">
+            {{ store.user?.email }}
+          </div>
           <div class="user-role" :class="roleClass">
             {{ getRoleText(store.userRole) }}
           </div>
@@ -85,53 +127,15 @@
       </div>
 
       <button
-        @click="handleLogout"
         :disabled="store.loading"
         class="btn btn-secondary"
+        @click="handleLogout"
       >
         {{ store.loading ? '退出中...' : '退出登录' }}
       </button>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { UserStore } from '../stores/user'
-
-const store = new UserStore('user')
-const email = ref('')
-const password = ref('')
-
-const roleClass = computed(() => ({
-  admin: store.userRole === 'admin',
-  user: store.userRole === 'user',
-  guest: store.userRole === 'guest'
-}))
-
-const handleLogin = async () => {
-  await store.login(email.value, password.value)
-  if (store.isLoggedIn) {
-    email.value = ''
-    password.value = ''
-  }
-}
-
-const handleLogout = async () => {
-  await store.logout()
-}
-
-const getRoleText = (role: string) => {
-  switch (role) {
-    case 'admin':
-      return '管理员'
-    case 'user':
-      return '普通用户'
-    default:
-      return '游客'
-  }
-}
-</script>
 
 <style scoped>
 .example-card {

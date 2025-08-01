@@ -44,7 +44,7 @@ graph TD
     A --> F[Device 设备]
     A --> G[Crypto 加密]
     A --> H[Template 模板]
-    
+
     B --> I[应用层]
     C --> I
     D --> I
@@ -245,8 +245,8 @@ export class UserManager {
 ```vue
 <!-- ✅ 好的实践 -->
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import type { UserOptions } from '@ldesign/engine'
+import { computed, ref } from 'vue'
 
 interface Props {
   user: UserOptions
@@ -287,7 +287,7 @@ const displayName = computed(() => props.user.name)
 
 ```
     /\     E2E Tests (少量)
-   /  \    
+   /  \
   /____\   Integration Tests (适量)
  /______\  Unit Tests (大量)
 ```
@@ -296,7 +296,7 @@ const displayName = computed(() => props.user.name)
 
 ```typescript
 // __tests__/user-manager.test.ts
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { UserManager } from '../src/core/user-manager'
 
 describe('UserManager', () => {
@@ -325,15 +325,15 @@ describe('UserManager', () => {
 
 ```typescript
 // e2e/user-flow.spec.ts
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('User Flow', () => {
   test('should create and display user', async ({ page }) => {
     await page.goto('/user')
-    
+
     await page.fill('[data-testid="name-input"]', 'John Doe')
     await page.click('[data-testid="create-button"]')
-    
+
     await expect(page.locator('[data-testid="user-name"]')).toHaveText('John Doe')
   })
 })
@@ -477,7 +477,8 @@ export class UserManager {
         throw new UserNotFoundError(`User with id ${id} not found`)
       }
       return user
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error('Failed to get user', { id, error })
       throw error
     }
@@ -487,10 +488,10 @@ export class UserManager {
 
 ### 文档编写
 
-```typescript
+````typescript
 /**
  * 用户管理器
- * 
+ *
  * @example
  * ```typescript
  * const manager = new UserManager({ apiUrl: '/api' })
@@ -500,7 +501,7 @@ export class UserManager {
 export class UserManager {
   /**
    * 获取用户信息
-   * 
+   *
    * @param id - 用户ID
    * @returns 用户信息
    * @throws {UserNotFoundError} 当用户不存在时
@@ -509,7 +510,7 @@ export class UserManager {
     // 实现
   }
 }
-```
+````
 
 ## 故障排除
 

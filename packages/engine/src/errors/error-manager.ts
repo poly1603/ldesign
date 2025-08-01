@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { ErrorManager, ErrorInfo, ErrorHandler, Logger } from '../types'
+import type { ErrorHandler, ErrorInfo, ErrorManager, Logger } from '../types'
 
 export class ErrorManagerImpl implements ErrorManager {
   private errorHandlers = new Set<ErrorHandler>()
@@ -25,7 +25,7 @@ export class ErrorManagerImpl implements ErrorManager {
       component,
       info,
       timestamp: Date.now(),
-      level: 'error'
+      level: 'error',
     }
 
     // 添加到错误列表
@@ -37,7 +37,7 @@ export class ErrorManagerImpl implements ErrorManager {
 
   private addError(errorInfo: ErrorInfo): void {
     this.errors.unshift(errorInfo)
-    
+
     // 限制错误数量
     if (this.errors.length > this.maxErrors) {
       this.errors = this.errors.slice(0, this.maxErrors)
@@ -48,7 +48,8 @@ export class ErrorManagerImpl implements ErrorManager {
     for (const handler of this.errorHandlers) {
       try {
         handler(errorInfo)
-      } catch (handlerError) {
+      }
+      catch (handlerError) {
         console.error('Error in error handler:', handlerError)
       }
     }
@@ -82,8 +83,8 @@ export class ErrorManagerImpl implements ErrorManager {
 
   // 按时间范围获取错误
   getErrorsByTimeRange(startTime: number, endTime: number): ErrorInfo[] {
-    return this.errors.filter(error => 
-      error.timestamp >= startTime && error.timestamp <= endTime
+    return this.errors.filter(error =>
+      error.timestamp >= startTime && error.timestamp <= endTime,
     )
   }
 
@@ -95,10 +96,10 @@ export class ErrorManagerImpl implements ErrorManager {
   // 搜索错误
   searchErrors(query: string): ErrorInfo[] {
     const lowerQuery = query.toLowerCase()
-    return this.errors.filter(error => 
-      error.message.toLowerCase().includes(lowerQuery) ||
-      (error.stack && error.stack.toLowerCase().includes(lowerQuery)) ||
-      (error.info && error.info.toLowerCase().includes(lowerQuery))
+    return this.errors.filter(error =>
+      error.message.toLowerCase().includes(lowerQuery)
+      || (error.stack && error.stack.toLowerCase().includes(lowerQuery))
+      || (error.info && error.info.toLowerCase().includes(lowerQuery)),
     )
   }
 
@@ -116,7 +117,7 @@ export class ErrorManagerImpl implements ErrorManager {
     const byLevel: Record<string, number> = {
       error: 0,
       warn: 0,
-      info: 0
+      info: 0,
     }
 
     let recent24h = 0
@@ -124,11 +125,11 @@ export class ErrorManagerImpl implements ErrorManager {
 
     for (const error of this.errors) {
       byLevel[error.level]++
-      
+
       if (now - error.timestamp <= day) {
         recent24h++
       }
-      
+
       if (now - error.timestamp <= hour) {
         recentHour++
       }
@@ -138,7 +139,7 @@ export class ErrorManagerImpl implements ErrorManager {
       total: this.errors.length,
       byLevel,
       recent24h,
-      recentHour
+      recentHour,
     }
   }
 
@@ -146,16 +147,17 @@ export class ErrorManagerImpl implements ErrorManager {
   exportErrors(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
       return JSON.stringify(this.errors, null, 2)
-    } else {
+    }
+    else {
       const headers = ['timestamp', 'level', 'message', 'stack', 'info']
       const rows = this.errors.map(error => [
         new Date(error.timestamp).toISOString(),
         error.level,
         `"${error.message.replace(/"/g, '""')}"`,
         `"${(error.stack || '').replace(/"/g, '""')}"`,
-        `"${(error.info || '').replace(/"/g, '""')}"`
+        `"${(error.info || '').replace(/"/g, '""')}"`,
       ])
-      
+
       return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
     }
   }
@@ -164,18 +166,18 @@ export class ErrorManagerImpl implements ErrorManager {
   createErrorReport(): {
     summary: ReturnType<ErrorManagerImpl['getErrorStats']>
     recentErrors: ErrorInfo[]
-    topErrors: Array<{ message: string; count: number }>
+    topErrors: Array<{ message: string, count: number }>
   } {
     const summary = this.getErrorStats()
     const recentErrors = this.getRecentErrors(10)
-    
+
     // 统计最常见的错误
     const errorCounts = new Map<string, number>()
     for (const error of this.errors) {
       const count = errorCounts.get(error.message) || 0
       errorCounts.set(error.message, count + 1)
     }
-    
+
     const topErrors = Array.from(errorCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
@@ -184,7 +186,7 @@ export class ErrorManagerImpl implements ErrorManager {
     return {
       summary,
       recentErrors,
-      topErrors
+      topErrors,
     }
   }
 }
@@ -197,15 +199,16 @@ export function createErrorManager(logger?: Logger): ErrorManager {
 export const errorHandlers = {
   // 控制台错误处理器
   console: (errorInfo: ErrorInfo) => {
-    const method = errorInfo.level === 'error' ? 'error' : 
-                  errorInfo.level === 'warn' ? 'warn' : 'info'
-    
+    const method = errorInfo.level === 'error'
+      ? 'error'
+      : errorInfo.level === 'warn' ? 'warn' : 'info'
+
     console[method]('Engine Error:', {
       message: errorInfo.message,
       timestamp: new Date(errorInfo.timestamp).toISOString(),
       component: errorInfo.component,
       info: errorInfo.info,
-      stack: errorInfo.stack
+      stack: errorInfo.stack,
     })
   },
 
@@ -216,35 +219,36 @@ export const errorHandlers = {
         type: 'error',
         title: 'Application Error',
         message: errorInfo.message,
-        duration: 5000
+        duration: 5000,
       })
     }
   },
 
   // 远程上报错误处理器
-  remote: (config: { endpoint: string; apiKey?: string }) => async (errorInfo: ErrorInfo) => {
+  remote: (config: { endpoint: string, apiKey?: string }) => async (errorInfo: ErrorInfo) => {
     try {
       const payload = {
         ...errorInfo,
         userAgent: navigator.userAgent,
         url: window.location.href,
-        timestamp: new Date(errorInfo.timestamp).toISOString()
+        timestamp: new Date(errorInfo.timestamp).toISOString(),
       }
 
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       }
 
       if (config.apiKey) {
-        headers['Authorization'] = `Bearer ${config.apiKey}`
+        headers.Authorization = `Bearer ${config.apiKey}`
       }
 
       await fetch(config.endpoint, {
         method: 'POST',
         headers,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to report error to remote service:', error)
     }
   },
@@ -254,19 +258,20 @@ export const errorHandlers = {
     try {
       const stored = localStorage.getItem(key)
       const errors = stored ? JSON.parse(stored) : []
-      
+
       errors.unshift(errorInfo)
-      
+
       // 限制存储的错误数量
       if (errors.length > 50) {
         errors.splice(50)
       }
-      
+
       localStorage.setItem(key, JSON.stringify(errors))
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to store error in localStorage:', error)
     }
-  }
+  },
 }
 
 // 错误边界组件工厂
@@ -276,27 +281,27 @@ export function createErrorBoundary(errorManager: ErrorManager) {
     data() {
       return {
         hasError: false,
-        error: null as Error | null
+        error: null as Error | null,
       }
     },
     errorCaptured(error: Error, component: Component, info: string) {
       (this as any).hasError = true;
       (this as any).error = error
-      
+
       // 捕获错误到错误管理器
       errorManager.captureError(error, component, info)
-      
+
       // 阻止错误继续传播
       return false
     },
     render() {
       const self = this as any
       if (self.hasError) {
-        return self.$slots.fallback?.({ error: self.error }) || 
-               'Something went wrong. Please try again.'
+        return self.$slots.fallback?.({ error: self.error })
+          || 'Something went wrong. Please try again.'
       }
-      
+
       return self.$slots.default?.()
-    }
+    },
   }
 }

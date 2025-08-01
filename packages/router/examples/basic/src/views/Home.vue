@@ -1,41 +1,6 @@
-<template>
-  <div class="home">
-    <h2>🏠 Welcome to LDesign Router</h2>
-    <p>This is the home page demonstrating the basic functionality of @ldesign/router.</p>
-    
-    <div class="features">
-      <h3>Features Demonstrated:</h3>
-      <ul>
-        <li>✅ Basic routing with RouterLink and RouterView</li>
-        <li>✅ Dynamic route parameters</li>
-        <li>✅ Query parameters and hash fragments</li>
-        <li>✅ Navigation guards</li>
-        <li>✅ Route transitions</li>
-        <li>✅ Programmatic navigation</li>
-        <li>✅ Scroll behavior</li>
-      </ul>
-    </div>
-    
-    <div class="actions">
-      <h3>Try Navigation:</h3>
-      <div class="button-group">
-        <button @click="goToAbout">Go to About</button>
-        <button @click="goToUser">Go to User Profile</button>
-        <button @click="goToProducts">Go to Products</button>
-        <button @click="goBack" :disabled="!canGoBack">Go Back</button>
-      </div>
-    </div>
-    
-    <div class="route-info">
-      <h3>Current Route Information:</h3>
-      <pre>{{ routeInfo }}</pre>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
+import { useRoute, useRouter } from '@ldesign/router'
 import { computed } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
 
 const router = useRouter()
 const route = useRoute()
@@ -50,29 +15,72 @@ const routeInfo = computed(() => ({
   query: route.value.query,
   hash: route.value.hash,
   fullPath: route.value.fullPath,
-  meta: route.value.meta
+  meta: route.value.meta,
 }))
 
 // 方法
-const goToAbout = () => {
+function goToAbout() {
   router.push('/about')
 }
 
-const goToUser = () => {
+function goToUser() {
   router.push({ name: 'User', params: { id: '456' } })
 }
 
-const goToProducts = () => {
+function goToProducts() {
   router.push({
     path: '/products',
-    query: { category: 'electronics', sort: 'price' }
+    query: { category: 'electronics', sort: 'price' },
   })
 }
 
-const goBack = () => {
+function goBack() {
   router.back()
 }
 </script>
+
+<template>
+  <div class="home">
+    <h2>🏠 Welcome to LDesign Router</h2>
+    <p>This is the home page demonstrating the basic functionality of @ldesign/router.</p>
+
+    <div class="features">
+      <h3>Features Demonstrated:</h3>
+      <ul>
+        <li>✅ Basic routing with RouterLink and RouterView</li>
+        <li>✅ Dynamic route parameters</li>
+        <li>✅ Query parameters and hash fragments</li>
+        <li>✅ Navigation guards</li>
+        <li>✅ Route transitions</li>
+        <li>✅ Programmatic navigation</li>
+        <li>✅ Scroll behavior</li>
+      </ul>
+    </div>
+
+    <div class="actions">
+      <h3>Try Navigation:</h3>
+      <div class="button-group">
+        <button @click="goToAbout">
+          Go to About
+        </button>
+        <button @click="goToUser">
+          Go to User Profile
+        </button>
+        <button @click="goToProducts">
+          Go to Products
+        </button>
+        <button :disabled="!canGoBack" @click="goBack">
+          Go Back
+        </button>
+      </div>
+    </div>
+
+    <div class="route-info">
+      <h3>Current Route Information:</h3>
+      <pre>{{ routeInfo }}</pre>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .home {

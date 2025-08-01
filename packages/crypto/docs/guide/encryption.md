@@ -19,7 +19,7 @@ AES 是目前最广泛使用的对称加密算法，支持 128、192 和 256 位
 #### 基本用法
 
 ```typescript
-import { encrypt, decrypt } from '@ldesign/crypto'
+import { decrypt, encrypt } from '@ldesign/crypto'
 
 // 使用默认设置 (AES-256-CBC)
 const encrypted = encrypt.aes('Hello, World!', 'my-secret-key')
@@ -66,12 +66,12 @@ import { keyGenerator } from '@ldesign/crypto'
 const iv = keyGenerator.generateIV(16)
 
 const encrypted = encrypt.aes('data', 'key', {
-  iv: iv
+  iv
 })
 
 // 解密时使用相同的 IV
 const decrypted = decrypt.aes(encrypted, 'key', {
-  iv: iv
+  iv
 })
 ```
 
@@ -88,7 +88,7 @@ import { rsa } from '@ldesign/crypto'
 
 // 生成 2048 位密钥对
 const keyPair = rsa.generateKeyPair(2048)
-console.log(keyPair.publicKey)  // PEM 格式公钥
+console.log(keyPair.publicKey) // PEM 格式公钥
 console.log(keyPair.privateKey) // PEM 格式私钥
 
 // 支持的密钥长度: 1024, 2048, 3072, 4096
@@ -153,11 +153,12 @@ const salt = keyGenerator.generateSalt(16)
 try {
   const encrypted = encrypt.aes('data', 'key')
   const decrypted = decrypt.aes(encrypted, 'key')
-  
+
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
   }
-} catch (error) {
+}
+catch (error) {
   console.error('加密操作失败:', error.message)
 }
 ```

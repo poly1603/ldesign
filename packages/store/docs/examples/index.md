@@ -26,7 +26,7 @@
 
 ```typescript
 // stores/counter.ts
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 export class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -69,37 +69,47 @@ export class CounterStore extends BaseStore {
 
 ```vue
 <!-- components/Counter.vue -->
-<template>
-  <div class="counter">
-    <h2>{{ store.displayText }}</h2>
-    <p class="count">{{ store.count }}</p>
-    <p v-if="store.isPositive" class="positive">正数！</p>
-    
-    <div class="controls">
-      <label>
-        步长: 
-        <input 
-          v-model.number="store.step" 
-          type="number" 
-          min="1" 
-          max="10"
-        />
-      </label>
-      
-      <div class="buttons">
-        <button @click="store.decrement">-{{ store.step }}</button>
-        <button @click="store.reset">重置</button>
-        <button @click="store.increment">+{{ store.step }}</button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { CounterStore } from '@/stores/counter'
 
 const store = new CounterStore('counter')
 </script>
+
+<template>
+  <div class="counter">
+    <h2>{{ store.displayText }}</h2>
+    <p class="count">
+      {{ store.count }}
+    </p>
+    <p v-if="store.isPositive" class="positive">
+      正数！
+    </p>
+
+    <div class="controls">
+      <label>
+        步长:
+        <input
+          v-model.number="store.step"
+          type="number"
+          min="1"
+          max="10"
+        >
+      </label>
+
+      <div class="buttons">
+        <button @click="store.decrement">
+          -{{ store.step }}
+        </button>
+        <button @click="store.reset">
+          重置
+        </button>
+        <button @click="store.increment">
+          +{{ store.step }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .counter {
@@ -140,7 +150,7 @@ const store = new CounterStore('counter')
 
 ```typescript
 // stores/todos.ts
-import { BaseStore, PersistentState, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
 
 interface Todo {
   id: number
@@ -213,7 +223,7 @@ export class TodoStore extends BaseStore {
   @Action()
   markAllCompleted() {
     const hasIncomplete = this.todos.some(todo => !todo.completed)
-    this.todos.forEach(todo => {
+    this.todos.forEach((todo) => {
       todo.completed = hasIncomplete
     })
   }
@@ -247,7 +257,8 @@ export class TodoStore extends BaseStore {
 
   @Getter()
   get completionRate() {
-    if (this.totalCount === 0) return 0
+    if (this.totalCount === 0)
+      return 0
     return Math.round((this.completedCount / this.totalCount) * 100)
   }
 }
@@ -255,6 +266,40 @@ export class TodoStore extends BaseStore {
 
 ```vue
 <!-- components/TodoApp.vue -->
+<script setup lang="ts">
+import { ref } from 'vue'
+import { TodoStore } from '@/stores/todos'
+
+const store = new TodoStore('todos')
+const selectedPriority = ref<'low' | 'medium' | 'high'>('medium')
+
+const filters = [
+  { value: 'all', label: '全部' },
+  { value: 'active', label: '待完成' },
+  { value: 'completed', label: '已完成' }
+]
+
+function addTodo() {
+  if (store.newTodoText.trim()) {
+    store.addTodo(store.newTodoText, selectedPriority.value)
+  }
+}
+
+function getPriorityText(priority: string) {
+  const map = { low: '低', medium: '中', high: '高' }
+  return map[priority] || priority
+}
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(date))
+}
+</script>
+
 <template>
   <div class="todo-app">
     <header class="header">
@@ -270,21 +315,29 @@ export class TodoStore extends BaseStore {
     <div class="input-section">
       <input
         v-model="store.newTodoText"
-        @keyup.enter="addTodo"
         placeholder="添加新的待办事项..."
         class="new-todo"
-      />
+        @keyup.enter="addTodo"
+      >
       <select v-model="selectedPriority">
-        <option value="low">低优先级</option>
-        <option value="medium">中优先级</option>
-        <option value="high">高优先级</option>
+        <option value="low">
+          低优先级
+        </option>
+        <option value="medium">
+          中优先级
+        </option>
+        <option value="high">
+          高优先级
+        </option>
       </select>
-      <button @click="addTodo">添加</button>
+      <button @click="addTodo">
+        添加
+      </button>
     </div>
 
     <div class="filters">
-      <button 
-        v-for="filter in filters" 
+      <button
+        v-for="filter in filters"
         :key="filter.value"
         :class="{ active: store.filter === filter.value }"
         @click="store.setFilter(filter.value)"
@@ -294,23 +347,25 @@ export class TodoStore extends BaseStore {
     </div>
 
     <ul class="todo-list">
-      <li 
-        v-for="todo in store.filteredTodos" 
+      <li
+        v-for="todo in store.filteredTodos"
         :key="todo.id"
-        :class="{ 
+        :class="{
           completed: todo.completed,
-          [`priority-${todo.priority}`]: true
+          [`priority-${todo.priority}`]: true,
         }"
       >
         <input
           type="checkbox"
           :checked="todo.completed"
           @change="store.toggleTodo(todo.id)"
-        />
+        >
         <span class="todo-text">{{ todo.text }}</span>
         <span class="priority">{{ getPriorityText(todo.priority) }}</span>
         <span class="date">{{ formatDate(todo.createdAt) }}</span>
-        <button @click="store.removeTodo(todo.id)" class="remove">删除</button>
+        <button class="remove" @click="store.removeTodo(todo.id)">
+          删除
+        </button>
       </li>
     </ul>
 
@@ -318,8 +373,8 @@ export class TodoStore extends BaseStore {
       <button @click="store.markAllCompleted">
         {{ store.activeCount > 0 ? '全部完成' : '全部未完成' }}
       </button>
-      <button 
-        v-if="store.completedCount > 0" 
+      <button
+        v-if="store.completedCount > 0"
         @click="store.clearCompleted"
       >
         清除已完成
@@ -327,40 +382,6 @@ export class TodoStore extends BaseStore {
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { TodoStore } from '@/stores/todos'
-
-const store = new TodoStore('todos')
-const selectedPriority = ref<'low' | 'medium' | 'high'>('medium')
-
-const filters = [
-  { value: 'all', label: '全部' },
-  { value: 'active', label: '待完成' },
-  { value: 'completed', label: '已完成' }
-]
-
-const addTodo = () => {
-  if (store.newTodoText.trim()) {
-    store.addTodo(store.newTodoText, selectedPriority.value)
-  }
-}
-
-const getPriorityText = (priority: string) => {
-  const map = { low: '低', medium: '中', high: '高' }
-  return map[priority] || priority
-}
-
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat('zh-CN', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(date))
-}
-</script>
 
 <style scoped>
 .todo-app {
@@ -493,7 +514,7 @@ const formatDate = (date: Date) => {
 
 ```typescript
 // stores/shopping.ts
-import { BaseStore, PersistentState, State, Action, Getter, AsyncAction } from '@ldesign/store'
+import { Action, AsyncAction, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
 
 interface Product {
   id: string
@@ -540,12 +561,15 @@ export class ShoppingStore extends BaseStore {
 
     try {
       const response = await fetch('/api/products')
-      if (!response.ok) throw new Error('获取产品失败')
-      
+      if (!response.ok)
+        throw new Error('获取产品失败')
+
       this.products = await response.json()
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '获取产品失败'
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -554,10 +578,11 @@ export class ShoppingStore extends BaseStore {
   @Action()
   addToCart(product: Product, quantity: number = 1) {
     const existingItem = this.cartItems.find(item => item.id === product.id)
-    
+
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.cartItems.push({
         ...product,
         quantity,
@@ -580,7 +605,8 @@ export class ShoppingStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeFromCart(productId)
-      } else {
+      }
+      else {
         item.quantity = Math.min(quantity, item.stock)
       }
     }
@@ -605,13 +631,16 @@ export class ShoppingStore extends BaseStore {
         body: JSON.stringify({ code: couponCode, amount: this.subtotal })
       })
 
-      if (!response.ok) throw new Error('优惠券无效')
+      if (!response.ok)
+        throw new Error('优惠券无效')
 
       const coupon = await response.json()
       this.appliedCoupon = coupon
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '优惠券验证失败'
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -644,15 +673,18 @@ export class ShoppingStore extends BaseStore {
         body: JSON.stringify(orderData)
       })
 
-      if (!response.ok) throw new Error('结账失败')
+      if (!response.ok)
+        throw new Error('结账失败')
 
       const order = await response.json()
       this.clearCart()
       return order
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '结账失败'
       throw error
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -670,10 +702,12 @@ export class ShoppingStore extends BaseStore {
 
   @Getter()
   get discountAmount() {
-    if (!this.appliedCoupon) return 0
-    
-    if (this.subtotal < this.appliedCoupon.minAmount) return 0
-    
+    if (!this.appliedCoupon)
+      return 0
+
+    if (this.subtotal < this.appliedCoupon.minAmount)
+      return 0
+
     return Math.min(
       this.subtotal * (this.appliedCoupon.discount / 100),
       this.subtotal
@@ -715,7 +749,7 @@ export class ShoppingStore extends BaseStore {
 ```typescript
 // hooks/useAuth.ts
 import { createStore } from '@ldesign/store'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface User {
   id: number
@@ -748,7 +782,8 @@ export const useAuth = createStore('auth', () => {
         body: JSON.stringify(credentials)
       })
 
-      if (!response.ok) throw new Error('登录失败')
+      if (!response.ok)
+        throw new Error('登录失败')
 
       const data = await response.json()
       user.value = data.user
@@ -756,10 +791,12 @@ export const useAuth = createStore('auth', () => {
       localStorage.setItem('auth_token', data.token)
 
       return data.user
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : '登录失败'
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -771,10 +808,11 @@ export const useAuth = createStore('auth', () => {
       if (token.value) {
         await fetch('/api/auth/logout', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token.value}` }
+          headers: { Authorization: `Bearer ${token.value}` }
         })
       }
-    } finally {
+    }
+    finally {
       user.value = null
       token.value = null
       localStorage.removeItem('auth_token')
@@ -783,26 +821,30 @@ export const useAuth = createStore('auth', () => {
   }
 
   const checkAuth = async () => {
-    if (!token.value) return false
+    if (!token.value)
+      return false
 
     loading.value = true
 
     try {
       const response = await fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token.value}` }
+        headers: { Authorization: `Bearer ${token.value}` }
       })
 
       if (response.ok) {
         user.value = await response.json()
         return true
-      } else {
+      }
+      else {
         await logout()
         return false
       }
-    } catch (error) {
+    }
+    catch (error) {
       await logout()
       return false
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -811,7 +853,8 @@ export const useAuth = createStore('auth', () => {
   const isLoggedIn = computed(() => user.value !== null && token.value !== null)
   const userName = computed(() => user.value?.name || '游客')
   const userAvatar = computed(() => {
-    if (user.value?.avatar) return user.value.avatar
+    if (user.value?.avatar)
+      return user.value.avatar
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(userName.value)}`
   })
 
@@ -828,7 +871,7 @@ export const useAuth = createStore('auth', () => {
 ```typescript
 // hooks/useApi.ts
 import { createStore } from '@ldesign/store'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export function createApiHook<T>(url: string, options: {
   immediate?: boolean
@@ -847,19 +890,22 @@ export function createApiHook<T>(url: string, options: {
       try {
         const searchParams = params ? new URLSearchParams(params) : ''
         const fullUrl = searchParams ? `${url}?${searchParams}` : url
-        
+
         const response = await window.fetch(fullUrl)
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        if (!response.ok)
+          throw new Error(`HTTP ${response.status}`)
 
         const rawData = await response.json()
         data.value = options.transform ? options.transform(rawData) : rawData
         lastFetch.value = new Date()
 
         return data.value
-      } catch (err) {
+      }
+      catch (err) {
         error.value = err instanceof Error ? err : new Error('请求失败')
         throw err
-      } finally {
+      }
+      finally {
         loading.value = false
       }
     }
@@ -879,7 +925,8 @@ export function createApiHook<T>(url: string, options: {
     const hasData = computed(() => data.value !== null)
     const hasError = computed(() => error.value !== null)
     const isStale = computed(() => {
-      if (!lastFetch.value) return true
+      if (!lastFetch.value)
+        return true
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
       return lastFetch.value < fiveMinutesAgo
     })
@@ -894,7 +941,7 @@ export function createApiHook<T>(url: string, options: {
 
 // 使用示例
 export const useUsers = createApiHook<User[]>('/api/users', {
-  transform: (data) => data.map(user => ({
+  transform: data => data.map(user => ({
     ...user,
     fullName: `${user.firstName} ${user.lastName}`
   }))
@@ -909,6 +956,23 @@ export const usePosts = createApiHook<Post[]>('/api/posts')
 
 ```vue
 <!-- App.vue -->
+<script setup lang="ts">
+import { StoreProvider } from '@ldesign/store/vue'
+import {
+  NotificationStore,
+  SettingsStore,
+  ThemeStore,
+  UserStore
+} from '@/stores'
+
+const stores = {
+  user: UserStore,
+  settings: SettingsStore,
+  notifications: NotificationStore,
+  theme: ThemeStore
+}
+</script>
+
 <template>
   <StoreProvider :stores="stores">
     <div id="app">
@@ -920,29 +984,23 @@ export const usePosts = createApiHook<Post[]>('/api/posts')
     </div>
   </StoreProvider>
 </template>
-
-<script setup lang="ts">
-import { StoreProvider } from '@ldesign/store/vue'
-import { 
-  UserStore, 
-  SettingsStore, 
-  NotificationStore,
-  ThemeStore 
-} from '@/stores'
-
-const stores = {
-  user: UserStore,
-  settings: SettingsStore,
-  notifications: NotificationStore,
-  theme: ThemeStore
-}
-</script>
 ```
 
 ### 页面级 Provider
 
 ```vue
 <!-- pages/ShoppingPage.vue -->
+<script setup lang="ts">
+import { StoreProvider } from '@ldesign/store/vue'
+import { CartStore, ProductStore, ShoppingStore } from '@/stores'
+
+const shoppingStores = {
+  shopping: ShoppingStore,
+  products: ProductStore,
+  cart: CartStore
+}
+</script>
+
 <template>
   <StoreProvider :stores="shoppingStores">
     <div class="shopping-page">
@@ -952,17 +1010,6 @@ const stores = {
     </div>
   </StoreProvider>
 </template>
-
-<script setup lang="ts">
-import { StoreProvider } from '@ldesign/store/vue'
-import { ShoppingStore, ProductStore, CartStore } from '@/stores'
-
-const shoppingStores = {
-  shopping: ShoppingStore,
-  products: ProductStore,
-  cart: CartStore
-}
-</script>
 ```
 
 ## 下一步

@@ -7,8 +7,8 @@
 首先，在你的 Vue 3 应用中安装并注册 LDesign Template 插件：
 
 ```typescript
-import { createApp } from 'vue'
 import TemplatePlugin from '@ldesign/template'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -71,7 +71,7 @@ function handleLogin() {
     username: username.value,
     password: password.value
   }
-  
+
   props.onLogin?.(loginData)
 }
 </script>
@@ -170,7 +170,7 @@ export const config: TemplateConfig = {
   device: 'desktop',
   tags: ['经典', '简洁', '商务'],
   preview: '/previews/login-classic.png',
-  
+
   // 支持的属性
   props: {
     title: {
@@ -183,10 +183,10 @@ export const config: TemplateConfig = {
       description: '登录回调函数'
     }
   },
-  
+
   // 依赖的其他模板或组件
   dependencies: [],
-  
+
   // 兼容性信息
   compatibility: {
     vue: '>=3.2.0',

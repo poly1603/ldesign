@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('基础功能测试', () => {
   test.beforeEach(async ({ page }) => {
@@ -57,7 +57,7 @@ test.describe('基础功能测试', () => {
   test('应该能够增加计数', async ({ page }) => {
     await page.click('#increment')
     await expect(page.locator('#count')).toContainText('1')
-    
+
     await page.click('#increment')
     await expect(page.locator('#count')).toContainText('2')
   })
@@ -71,14 +71,14 @@ test.describe('基础功能测试', () => {
     // 先修改状态
     await page.click('#increment')
     await page.click('#setName')
-    
+
     // 验证状态已修改
     await expect(page.locator('#count')).toContainText('1')
     await expect(page.locator('#name')).toContainText('Vue')
-    
+
     // 重置状态
     await page.click('#reset')
-    
+
     // 验证状态已重置
     await expect(page.locator('#count')).toContainText('0')
     await expect(page.locator('#name')).toContainText('Test')

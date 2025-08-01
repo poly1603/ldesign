@@ -1,113 +1,5 @@
-<template>
-  <div id="app">
-    <header class="header">
-      <h1>@ldesign/http - Vue 3 示例</h1>
-      <p>演示 HTTP 客户端在 Vue 3 中的使用</p>
-    </header>
-
-    <main class="main">
-      <!-- 基础请求示例 -->
-      <section class="section">
-        <h2>🚀 基础请求示例</h2>
-        <div class="controls">
-          <button @click="sendGetRequest" :disabled="loading">GET 请求</button>
-          <button @click="sendPostRequest" :disabled="loading" class="btn-success">POST 请求</button>
-          <button @click="sendErrorRequest" :disabled="loading" class="btn-danger">错误请求</button>
-        </div>
-        
-        <div class="output">
-          <div v-if="loading" class="loading">🔄 请求中...</div>
-          <div v-else-if="error" class="error">
-            ❌ 错误: {{ error.message }}
-          </div>
-          <div v-else-if="data" class="success">
-            ✅ 成功: <pre>{{ JSON.stringify(data, null, 2) }}</pre>
-          </div>
-          <div v-else class="placeholder">
-            点击上方按钮发送请求...
-          </div>
-        </div>
-      </section>
-
-      <!-- useRequest Hook 示例 -->
-      <section class="section">
-        <h2>🎣 useRequest Hook 示例</h2>
-        <div class="controls">
-          <button @click="userRequest.execute" :disabled="userRequest.loading.value">
-            获取用户信息
-          </button>
-          <button @click="userRequest.refresh" :disabled="userRequest.loading.value">
-            刷新
-          </button>
-          <button @click="userRequest.reset">重置</button>
-        </div>
-        
-        <div class="output">
-          <div v-if="userRequest.loading.value" class="loading">🔄 加载中...</div>
-          <div v-else-if="userRequest.error.value" class="error">
-            ❌ 错误: {{ userRequest.error.value.message }}
-          </div>
-          <div v-else-if="userRequest.data.value" class="success">
-            ✅ 用户信息: <pre>{{ JSON.stringify(userRequest.data.value, null, 2) }}</pre>
-          </div>
-          <div v-else class="placeholder">
-            点击上方按钮获取用户信息...
-          </div>
-        </div>
-      </section>
-
-      <!-- useMutation Hook 示例 -->
-      <section class="section">
-        <h2>✏️ useMutation Hook 示例</h2>
-        <form @submit.prevent="handleSubmit" class="form">
-          <div class="form-group">
-            <label>标题:</label>
-            <input v-model="form.title" type="text" required />
-          </div>
-          <div class="form-group">
-            <label>内容:</label>
-            <textarea v-model="form.body" required></textarea>
-          </div>
-          <button type="submit" :disabled="createPost.loading.value" class="btn-success">
-            {{ createPost.loading.value ? '提交中...' : '创建文章' }}
-          </button>
-        </form>
-        
-        <div class="output">
-          <div v-if="createPost.loading.value" class="loading">🔄 创建中...</div>
-          <div v-else-if="createPost.error.value" class="error">
-            ❌ 创建失败: {{ createPost.error.value.message }}
-          </div>
-          <div v-else-if="createPost.data.value" class="success">
-            ✅ 创建成功: <pre>{{ JSON.stringify(createPost.data.value, null, 2) }}</pre>
-          </div>
-        </div>
-      </section>
-
-      <!-- 状态统计 -->
-      <section class="section">
-        <h2>📊 状态统计</h2>
-        <div class="stats">
-          <div class="stat-card">
-            <div class="stat-value">{{ requestCount }}</div>
-            <div class="stat-label">总请求数</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ successCount }}</div>
-            <div class="stat-label">成功请求</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ errorCount }}</div>
-            <div class="stat-label">失败请求</div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 // 模拟 HTTP 客户端和 hooks
 // 在实际项目中应该导入：
@@ -125,21 +17,21 @@ const errorCount = ref(0)
 // 表单数据
 const form = reactive({
   title: '',
-  body: ''
+  body: '',
 })
 
 // 模拟 HTTP 请求函数
-const mockRequest = async (url: string, options: any = {}) => {
+async function mockRequest(url: string, options: any = {}) {
   requestCount.value++
-  
+
   // 模拟网络延迟
   await new Promise(resolve => setTimeout(resolve, 1000))
-  
+
   if (url.includes('error')) {
     errorCount.value++
     throw new Error('模拟网络错误')
   }
-  
+
   successCount.value++
   return {
     data: {
@@ -147,51 +39,57 @@ const mockRequest = async (url: string, options: any = {}) => {
       url,
       method: options.method || 'GET',
       timestamp: new Date().toISOString(),
-      ...options.data
+      ...options.data,
     },
     status: 200,
-    statusText: 'OK'
+    statusText: 'OK',
   }
 }
 
 // 基础请求方法
-const sendGetRequest = async () => {
+async function sendGetRequest() {
   try {
     loading.value = true
     error.value = null
     const response = await mockRequest('/api/posts/1')
     data.value = response.data
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const sendPostRequest = async () => {
+async function sendPostRequest() {
   try {
     loading.value = true
     error.value = null
     const response = await mockRequest('/api/posts', {
       method: 'POST',
-      data: { title: '新文章', body: '文章内容' }
+      data: { title: '新文章', body: '文章内容' },
     })
     data.value = response.data
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const sendErrorRequest = async () => {
+async function sendErrorRequest() {
   try {
     loading.value = true
     error.value = null
     await mockRequest('/api/error')
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -202,7 +100,7 @@ const userRequest = {
   loading: ref(false),
   error: ref(null),
   finished: ref(false),
-  
+
   execute: async () => {
     try {
       userRequest.loading.value = true
@@ -210,24 +108,26 @@ const userRequest = {
       const response = await mockRequest('/api/users/1')
       userRequest.data.value = response.data
       userRequest.finished.value = true
-    } catch (err) {
+    }
+    catch (err) {
       userRequest.error.value = err as Error
       userRequest.finished.value = true
-    } finally {
+    }
+    finally {
       userRequest.loading.value = false
     }
   },
-  
+
   refresh: async () => {
     await userRequest.execute()
   },
-  
+
   reset: () => {
     userRequest.data.value = null
     userRequest.loading.value = false
     userRequest.error.value = null
     userRequest.finished.value = false
-  }
+  },
 }
 
 // 模拟 useMutation hook
@@ -235,36 +135,172 @@ const createPost = {
   data: ref(null),
   loading: ref(false),
   error: ref(null),
-  
+
   mutate: async (postData: any) => {
     try {
       createPost.loading.value = true
       createPost.error.value = null
       const response = await mockRequest('/api/posts', {
         method: 'POST',
-        data: postData
+        data: postData,
       })
       createPost.data.value = response.data
-      
+
       // 重置表单
       form.title = ''
       form.body = ''
-    } catch (err) {
+    }
+    catch (err) {
       createPost.error.value = err as Error
-    } finally {
+    }
+    finally {
       createPost.loading.value = false
     }
-  }
+  },
 }
 
-const handleSubmit = () => {
+function handleSubmit() {
   createPost.mutate({
     title: form.title,
     body: form.body,
-    userId: 1
+    userId: 1,
   })
 }
 </script>
+
+<template>
+  <div id="app">
+    <header class="header">
+      <h1>@ldesign/http - Vue 3 示例</h1>
+      <p>演示 HTTP 客户端在 Vue 3 中的使用</p>
+    </header>
+
+    <main class="main">
+      <!-- 基础请求示例 -->
+      <section class="section">
+        <h2>🚀 基础请求示例</h2>
+        <div class="controls">
+          <button :disabled="loading" @click="sendGetRequest">
+            GET 请求
+          </button>
+          <button :disabled="loading" class="btn-success" @click="sendPostRequest">
+            POST 请求
+          </button>
+          <button :disabled="loading" class="btn-danger" @click="sendErrorRequest">
+            错误请求
+          </button>
+        </div>
+
+        <div class="output">
+          <div v-if="loading" class="loading">
+            🔄 请求中...
+          </div>
+          <div v-else-if="error" class="error">
+            ❌ 错误: {{ error.message }}
+          </div>
+          <div v-else-if="data" class="success">
+            ✅ 成功: <pre>{{ JSON.stringify(data, null, 2) }}</pre>
+          </div>
+          <div v-else class="placeholder">
+            点击上方按钮发送请求...
+          </div>
+        </div>
+      </section>
+
+      <!-- useRequest Hook 示例 -->
+      <section class="section">
+        <h2>🎣 useRequest Hook 示例</h2>
+        <div class="controls">
+          <button :disabled="userRequest.loading.value" @click="userRequest.execute">
+            获取用户信息
+          </button>
+          <button :disabled="userRequest.loading.value" @click="userRequest.refresh">
+            刷新
+          </button>
+          <button @click="userRequest.reset">
+            重置
+          </button>
+        </div>
+
+        <div class="output">
+          <div v-if="userRequest.loading.value" class="loading">
+            🔄 加载中...
+          </div>
+          <div v-else-if="userRequest.error.value" class="error">
+            ❌ 错误: {{ userRequest.error.value.message }}
+          </div>
+          <div v-else-if="userRequest.data.value" class="success">
+            ✅ 用户信息: <pre>{{ JSON.stringify(userRequest.data.value, null, 2) }}</pre>
+          </div>
+          <div v-else class="placeholder">
+            点击上方按钮获取用户信息...
+          </div>
+        </div>
+      </section>
+
+      <!-- useMutation Hook 示例 -->
+      <section class="section">
+        <h2>✏️ useMutation Hook 示例</h2>
+        <form class="form" @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <label>标题:</label>
+            <input v-model="form.title" type="text" required>
+          </div>
+          <div class="form-group">
+            <label>内容:</label>
+            <textarea v-model="form.body" required />
+          </div>
+          <button type="submit" :disabled="createPost.loading.value" class="btn-success">
+            {{ createPost.loading.value ? '提交中...' : '创建文章' }}
+          </button>
+        </form>
+
+        <div class="output">
+          <div v-if="createPost.loading.value" class="loading">
+            🔄 创建中...
+          </div>
+          <div v-else-if="createPost.error.value" class="error">
+            ❌ 创建失败: {{ createPost.error.value.message }}
+          </div>
+          <div v-else-if="createPost.data.value" class="success">
+            ✅ 创建成功: <pre>{{ JSON.stringify(createPost.data.value, null, 2) }}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 状态统计 -->
+      <section class="section">
+        <h2>📊 状态统计</h2>
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-value">
+              {{ requestCount }}
+            </div>
+            <div class="stat-label">
+              总请求数
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">
+              {{ successCount }}
+            </div>
+            <div class="stat-label">
+              成功请求
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">
+              {{ errorCount }}
+            </div>
+            <div class="stat-label">
+              失败请求
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 * {
@@ -283,7 +319,7 @@ const handleSubmit = () => {
   text-align: center;
   padding: 40px 20px;
   background: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
 
@@ -308,7 +344,7 @@ const handleSubmit = () => {
   margin: 20px 0;
   padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .section h2 {

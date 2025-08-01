@@ -5,6 +5,7 @@
 ## 什么是数字签名
 
 数字签名具有以下特性：
+
 - **身份验证**: 确认签名者的身份
 - **完整性**: 确保数据未被篡改
 - **不可否认**: 签名者无法否认已签名的数据
@@ -69,16 +70,16 @@ interface SignedDocument {
 
 class DocumentSigner {
   private keyPair: any
-  
+
   constructor() {
     this.keyPair = rsa.generateKeyPair(2048)
   }
-  
+
   signDocument(content: string): SignedDocument {
     const timestamp = Date.now()
     const dataToSign = `${content}|${timestamp}`
     const signature = digitalSignature.sign(dataToSign, this.keyPair.privateKey, 'sha256')
-    
+
     return {
       content,
       signature,
@@ -87,7 +88,7 @@ class DocumentSigner {
       algorithm: 'RSA-SHA256'
     }
   }
-  
+
   static verifyDocument(signedDoc: SignedDocument): boolean {
     const dataToVerify = `${signedDoc.content}|${signedDoc.timestamp}`
     return digitalSignature.verify(
@@ -118,16 +119,16 @@ interface APIRequest {
 
 class APIRequestSigner {
   constructor(private privateKey: string) {}
-  
+
   signRequest(request: APIRequest): string {
     const message = this.createSignatureMessage(request)
     return digitalSignature.sign(message, this.privateKey, 'sha256')
   }
-  
+
   private createSignatureMessage(request: APIRequest): string {
     return `${request.method}\n${request.url}\n${request.body}\n${request.timestamp}`
   }
-  
+
   static verifyRequest(request: APIRequest, signature: string, publicKey: string): boolean {
     const message = `${request.method}\n${request.url}\n${request.body}\n${request.timestamp}`
     return digitalSignature.verify(message, signature, publicKey, 'sha256')
@@ -160,12 +161,12 @@ interface SoftwarePackage {
 
 class PackagePublisher {
   constructor(private keyPair: any) {}
-  
+
   publishPackage(name: string, version: string, content: string): SoftwarePackage {
     const packageInfo = `${name}@${version}`
     const dataToSign = `${packageInfo}\n${content}`
     const signature = digitalSignature.sign(dataToSign, this.keyPair.privateKey, 'sha256')
-    
+
     return {
       name,
       version,
@@ -174,11 +175,11 @@ class PackagePublisher {
       publisherPublicKey: this.keyPair.publicKey
     }
   }
-  
+
   static verifyPackage(pkg: SoftwarePackage): boolean {
     const packageInfo = `${pkg.name}@${pkg.version}`
     const dataToVerify = `${packageInfo}\n${pkg.content}`
-    
+
     return digitalSignature.verify(
       dataToVerify,
       pkg.signature,
@@ -208,12 +209,12 @@ interface SignedEmail {
 
 class EmailSigner {
   constructor(private privateKey: string) {}
-  
+
   signEmail(from: string, to: string, subject: string, body: string): SignedEmail {
     const timestamp = Date.now()
     const emailData = `From: ${from}\nTo: ${to}\nSubject: ${subject}\nTimestamp: ${timestamp}\n\n${body}`
     const signature = digitalSignature.sign(emailData, this.privateKey, 'sha256')
-    
+
     return {
       from,
       to,
@@ -223,10 +224,10 @@ class EmailSigner {
       timestamp
     }
   }
-  
+
   static verifyEmail(signedEmail: SignedEmail, senderPublicKey: string): boolean {
     const emailData = `From: ${signedEmail.from}\nTo: ${signedEmail.to}\nSubject: ${signedEmail.subject}\nTimestamp: ${signedEmail.timestamp}\n\n${signedEmail.body}`
-    
+
     return digitalSignature.verify(
       emailData,
       signedEmail.signature,
@@ -242,16 +243,16 @@ class EmailSigner {
 ```typescript
 class BatchSigner {
   constructor(private privateKey: string) {}
-  
-  signMultiple(dataList: string[]): Array<{ data: string; signature: string }> {
+
+  signMultiple(dataList: string[]): Array<{ data: string, signature: string }> {
     return dataList.map(data => ({
       data,
       signature: digitalSignature.sign(data, this.privateKey, 'sha256')
     }))
   }
-  
+
   static verifyMultiple(
-    signedDataList: Array<{ data: string; signature: string }>,
+    signedDataList: Array<{ data: string, signature: string }>,
     publicKey: string
   ): boolean[] {
     return signedDataList.map(item =>
@@ -279,7 +280,7 @@ class SecureKeyManager {
     const encrypted = encrypt.aes(privateKey, password)
     return JSON.stringify(encrypted)
   }
-  
+
   private static decryptPrivateKey(encryptedKey: string, password: string): string {
     // 解密私钥
     const encryptedData = JSON.parse(encryptedKey)
@@ -289,14 +290,14 @@ class SecureKeyManager {
     }
     return decrypted.data
   }
-  
-  static saveKeyPair(keyPair: any, password: string): { publicKey: string; encryptedPrivateKey: string } {
+
+  static saveKeyPair(keyPair: any, password: string): { publicKey: string, encryptedPrivateKey: string } {
     return {
       publicKey: keyPair.publicKey,
       encryptedPrivateKey: this.encryptPrivateKey(keyPair.privateKey, password)
     }
   }
-  
+
   static loadKeyPair(publicKey: string, encryptedPrivateKey: string, password: string): any {
     return {
       publicKey,
@@ -311,25 +312,25 @@ class SecureKeyManager {
 ```typescript
 class TimestampedSigner {
   private static readonly MAX_AGE = 5 * 60 * 1000 // 5 分钟
-  
-  static signWithTimestamp(data: string, privateKey: string): { signature: string; timestamp: number } {
+
+  static signWithTimestamp(data: string, privateKey: string): { signature: string, timestamp: number } {
     const timestamp = Date.now()
     const dataWithTimestamp = `${data}|${timestamp}`
     const signature = digitalSignature.sign(dataWithTimestamp, privateKey, 'sha256')
-    
+
     return { signature, timestamp }
   }
-  
+
   static verifyWithTimestamp(
     data: string,
     signature: string,
     timestamp: number,
     publicKey: string
-  ): { valid: boolean; expired: boolean } {
+  ): { valid: boolean, expired: boolean } {
     const dataWithTimestamp = `${data}|${timestamp}`
     const valid = digitalSignature.verify(dataWithTimestamp, signature, publicKey, 'sha256')
     const expired = Date.now() - timestamp > this.MAX_AGE
-    
+
     return { valid, expired }
   }
 }
@@ -358,7 +359,7 @@ class MultiSigner {
     const timestamp = Date.now()
     const dataToSign = `${chain.data}|${JSON.stringify(chain.signatures)}|${timestamp}`
     const signature = digitalSignature.sign(dataToSign, signerPrivateKey, 'sha256')
-    
+
     return {
       ...chain,
       signatures: [
@@ -372,12 +373,12 @@ class MultiSigner {
       ]
     }
   }
-  
+
   static verifyChain(chain: SignatureChain): boolean[] {
     return chain.signatures.map((sig, index) => {
       const previousSignatures = chain.signatures.slice(0, index)
       const dataToVerify = `${chain.data}|${JSON.stringify(previousSignatures)}|${sig.timestamp}`
-      
+
       return digitalSignature.verify(dataToVerify, sig.signature, sig.signerPublicKey, 'sha256')
     })
   }
@@ -406,17 +407,17 @@ class MultiSigner {
 async function signBatchAsync(dataList: string[], privateKey: string): Promise<string[]> {
   const batchSize = 10
   const results: string[] = []
-  
+
   for (let i = 0; i < dataList.length; i += batchSize) {
     const batch = dataList.slice(i, i + batchSize)
-    const batchPromises = batch.map(data => 
+    const batchPromises = batch.map(data =>
       Promise.resolve(digitalSignature.sign(data, privateKey, 'sha256'))
     )
-    
+
     const batchResults = await Promise.all(batchPromises)
     results.push(...batchResults)
   }
-  
+
   return results
 }
 ```

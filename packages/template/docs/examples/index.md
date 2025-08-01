@@ -5,6 +5,7 @@
 ## 🚀 基础示例
 
 ### [基础用法](./basic.md)
+
 学习如何创建和使用第一个模板，包括模板组件、配置文件和基本渲染。
 
 ```vue
@@ -16,6 +17,7 @@
 ```
 
 ### [响应式模板](./responsive.md)
+
 了解如何创建适配不同设备的响应式模板，实现一套代码多端适配。
 
 ```vue
@@ -27,6 +29,7 @@
 ```
 
 ### [动态切换](./dynamic.md)
+
 掌握如何在运行时动态切换模板，实现主题切换、布局变更等功能。
 
 ```vue
@@ -43,7 +46,7 @@
         暗黑主题
       </option>
     </select>
-    
+
     <LTemplateRenderer
       category="layout"
       :template="currentTheme"
@@ -55,6 +58,7 @@
 ## 🎨 进阶示例
 
 ### [自定义组件](./custom.md)
+
 学习如何创建复杂的自定义模板组件，包括状态管理、事件处理和插槽使用。
 
 ```vue
@@ -71,7 +75,7 @@
   <template #header>
     <h2>表单向导</h2>
   </template>
-  
+
   <template #footer="{ currentStep, totalSteps }">
     <div>步骤 {{ currentStep }} / {{ totalSteps }}</div>
   </template>
@@ -79,11 +83,13 @@
 ```
 
 ### [完整应用](./full-app.md)
+
 查看一个完整的应用示例，展示如何在实际项目中组织和使用模板系统。
 
 ## 📱 设备适配示例
 
 ### 桌面端模板
+
 ```vue
 <!-- src/templates/dashboard/desktop/admin/index.vue -->
 <template>
@@ -99,6 +105,7 @@
 ```
 
 ### 移动端模板
+
 ```vue
 <!-- src/templates/dashboard/mobile/admin/index.vue -->
 <template>
@@ -119,6 +126,7 @@
 ## 🔧 实用工具示例
 
 ### 设备检测
+
 ```typescript
 import { createDeviceWatcher, detectDevice } from '@ldesign/template'
 
@@ -134,6 +142,7 @@ console.log('当前设备:', currentDevice)
 ```
 
 ### 缓存管理
+
 ```typescript
 import { TemplateCache } from '@ldesign/template'
 
@@ -151,6 +160,7 @@ console.log('缓存命中率:', stats.hits / (stats.hits + stats.misses))
 ## 🎪 高级用法示例
 
 ### 模板继承
+
 ```typescript
 // 基础模板配置
 const baseConfig = {
@@ -172,6 +182,7 @@ export const config = {
 ```
 
 ### 模板组合
+
 ```vue
 <template>
   <div class="composite-template">
@@ -181,14 +192,14 @@ export const config = {
       template="header"
       :template-props="headerProps"
     />
-    
+
     <!-- 主要内容模板 -->
     <LTemplateRenderer
       category="content"
       :template="contentTemplate"
       :template-props="contentProps"
     />
-    
+
     <!-- 底部模板 -->
     <LTemplateRenderer
       category="layout"
@@ -200,6 +211,7 @@ export const config = {
 ```
 
 ### 条件渲染
+
 ```vue
 <template>
   <div>
@@ -209,13 +221,13 @@ export const config = {
       category="dashboard"
       template="admin"
     />
-    
+
     <LTemplateRenderer
       v-else-if="userRole === 'user'"
       category="dashboard"
       template="user"
     />
-    
+
     <LTemplateRenderer
       v-else
       category="auth"
@@ -228,6 +240,7 @@ export const config = {
 ## 🔍 调试示例
 
 ### 开发模式调试
+
 ```typescript
 import { TemplateManager } from '@ldesign/template'
 
@@ -243,6 +256,7 @@ manager.on('*', (event) => {
 ```
 
 ### 错误处理
+
 ```vue
 <script setup>
 function handleError(error) {
@@ -269,7 +283,7 @@ function handleLoad(component) {
         正在加载模板...
       </div>
     </template>
-    
+
     <!-- 错误状态 -->
     <template #error="{ error, retry }">
       <div class="error">
@@ -279,7 +293,7 @@ function handleLoad(component) {
         </button>
       </div>
     </template>
-    
+
     <!-- 空状态 -->
     <template #empty>
       <div class="empty">
@@ -293,6 +307,7 @@ function handleLoad(component) {
 ## 📊 性能优化示例
 
 ### 预加载策略
+
 ```typescript
 import { useTemplate } from '@ldesign/template'
 
@@ -307,6 +322,7 @@ preload([
 ```
 
 ### 懒加载实现
+
 ```vue
 <template>
   <div>

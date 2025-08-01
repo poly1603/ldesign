@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
-import { ThemePlugin } from '@ldesign/color/vue'
 import type { ColorMode } from '@ldesign/color'
 import { generateColorConfig, generateColorScales, injectThemeVariables } from '@ldesign/color'
+import { ThemePlugin } from '@ldesign/color/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import './styles/index.css'
 
@@ -22,7 +22,8 @@ app.use(ThemePlugin, {
       const colorConfig = generateColorConfig(primaryColor)
       const scales = generateColorScales(colorConfig, mode)
       injectThemeVariables(colorConfig, scales, undefined, mode)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('CSS变量注入失败:', error)
     }
   },

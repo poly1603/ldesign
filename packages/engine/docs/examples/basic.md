@@ -7,9 +7,9 @@
 ### 1. 最简单的应用
 
 ```typescript
+import { createApp } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp } from '@ldesign/engine'
 
 // 创建并挂载应用
 const engine = createApp(App)
@@ -19,9 +19,9 @@ engine.mount('#app')
 ### 2. 使用预设配置
 
 ```typescript
+import { createApp, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets } from '@ldesign/engine'
 
 // 使用开发环境预设
 const engine = createApp(App, presets.development())
@@ -31,9 +31,9 @@ engine.mount('#app')
 ### 3. 自定义配置
 
 ```typescript
+import { createApp } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp } from '@ldesign/engine'
 
 // 自定义配置
 const engine = createApp(App, {
@@ -87,22 +87,6 @@ engine.state.delete('user')
 
 ```vue
 <!-- UserProfile.vue -->
-<template>
-  <div class="user-profile">
-    <h2>用户信息</h2>
-    <div v-if="user">
-      <p>姓名: {{ user.name }}</p>
-      <p>邮箱: {{ user.email }}</p>
-      <p>登录次数: {{ loginCount }}</p>
-      <button @click="updateProfile">更新信息</button>
-    </div>
-    <div v-else>
-      <p>请先登录</p>
-      <button @click="login">登录</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { engine } from '../main'
@@ -112,7 +96,7 @@ const user = computed(() => engine.state.get('user'))
 const loginCount = computed(() => engine.state.get('user.loginCount', 0))
 
 // 登录
-const login = () => {
+function login() {
   engine.state.set('user', {
     id: 1,
     name: '张三',
@@ -122,7 +106,7 @@ const login = () => {
 }
 
 // 更新信息
-const updateProfile = () => {
+function updateProfile() {
   const currentUser = engine.state.get('user')
   engine.state.set('user', {
     ...currentUser,
@@ -131,32 +115,52 @@ const updateProfile = () => {
   })
 }
 </script>
+
+<template>
+  <div class="user-profile">
+    <h2>用户信息</h2>
+    <div v-if="user">
+      <p>姓名: {{ user.name }}</p>
+      <p>邮箱: {{ user.email }}</p>
+      <p>登录次数: {{ loginCount }}</p>
+      <button @click="updateProfile">
+        更新信息
+      </button>
+    </div>
+    <div v-else>
+      <p>请先登录</p>
+      <button @click="login">
+        登录
+      </button>
+    </div>
+  </div>
+</template>
 ```
 
 ### 3. 状态监听
 
 ```typescript
 // composables/useAuth.ts
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { engine } from '../main'
 
 export function useAuth() {
   const isLoggedIn = ref(false)
   const user = ref(null)
-  
+
   // 监听用户状态变化
   const unwatch = engine.state.watch('user', (newUser, oldUser) => {
     isLoggedIn.value = !!newUser
     user.value = newUser
-    
+
     console.log('用户状态变化:', { newUser, oldUser })
   })
-  
+
   // 组件卸载时取消监听
   onUnmounted(() => {
     unwatch()
   })
-  
+
   return {
     isLoggedIn,
     user
@@ -184,12 +188,12 @@ engine.events.on('user:logout', () => {
 })
 
 // 发送事件
-export const login = (user) => {
+export function login(user) {
   engine.state.set('user', user)
   engine.events.emit('user:login', user)
 }
 
-export const logout = () => {
+export function logout() {
   engine.state.delete('user')
   engine.events.emit('user:logout')
 }
@@ -234,33 +238,34 @@ engine.events.on('system:error', (error) => {
 // services/api.ts
 import { engine } from '../main'
 
-export const fetchUserData = async (userId: string) => {
+export async function fetchUserData(userId: string) {
   // 记录开始
   engine.logger.info('开始获取用户数据', { userId })
-  
+
   try {
     const response = await fetch(`/api/users/${userId}`)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     const userData = await response.json()
-    
+
     // 记录成功
     engine.logger.info('用户数据获取成功', {
       userId,
       dataSize: JSON.stringify(userData).length
     })
-    
+
     return userData
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     engine.logger.error('用户数据获取失败', {
       userId,
       error: error.message
     })
-    
+
     throw error
   }
 }
@@ -294,7 +299,7 @@ import { engine } from '../main'
 export function useLogger(component: string) {
   // 创建带上下文的日志器
   const logger = engine.logger.child({ component })
-  
+
   return {
     debug: (message: string, data?: any) => logger.debug(message, data),
     info: (message: string, data?: any) => logger.info(message, data),
@@ -307,7 +312,7 @@ export function useLogger(component: string) {
 // UserList.vue
 const logger = useLogger('UserList')
 
-const loadUsers = async () => {
+async function loadUsers() {
   logger.info('开始加载用户列表')
   // ...
 }
@@ -389,30 +394,34 @@ uploadGroup.clear()
 // plugins/counter.ts
 import { creators } from '@ldesign/engine'
 
+// 使用插件
+import { createApp } from '@ldesign/engine'
+import { counterPlugin } from './plugins/counter'
+
 export const counterPlugin = creators.plugin('counter', (engine) => {
   // 初始化计数器状态
   engine.state.set('counter', { value: 0 })
-  
+
   // 增加计数
   const increment = () => {
     const current = engine.state.get('counter.value')
     engine.state.set('counter.value', current + 1)
     engine.events.emit('counter:increment', current + 1)
   }
-  
+
   // 减少计数
   const decrement = () => {
     const current = engine.state.get('counter.value')
     engine.state.set('counter.value', current - 1)
     engine.events.emit('counter:decrement', current - 1)
   }
-  
+
   // 重置计数
   const reset = () => {
     engine.state.set('counter.value', 0)
     engine.events.emit('counter:reset')
   }
-  
+
   // 暴露计数器API
   engine.counter = {
     increment,
@@ -420,13 +429,9 @@ export const counterPlugin = creators.plugin('counter', (engine) => {
     reset,
     getValue: () => engine.state.get('counter.value')
   }
-  
+
   engine.logger.info('计数器插件已安装')
 })
-
-// 使用插件
-import { createApp } from '@ldesign/engine'
-import { counterPlugin } from './plugins/counter'
 
 const engine = createApp(App, {
   plugins: [counterPlugin]
@@ -437,17 +442,6 @@ const engine = createApp(App, {
 
 ```vue
 <!-- Counter.vue -->
-<template>
-  <div class="counter">
-    <h2>计数器: {{ count }}</h2>
-    <div class="buttons">
-      <button @click="decrement">-</button>
-      <button @click="reset">重置</button>
-      <button @click="increment">+</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { engine } from '../main'
@@ -467,6 +461,23 @@ engine.events.on('counter:increment', (value) => {
   }
 })
 </script>
+
+<template>
+  <div class="counter">
+    <h2>计数器: {{ count }}</h2>
+    <div class="buttons">
+      <button @click="decrement">
+        -
+      </button>
+      <button @click="reset">
+        重置
+      </button>
+      <button @click="increment">
+        +
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .counter {
@@ -504,13 +515,13 @@ import { creators } from '@ldesign/engine'
 
 export const performanceMiddleware = creators.middleware('performance', async (context, next) => {
   const startTime = performance.now()
-  
+
   // 执行下一个中间件
   await next()
-  
+
   const endTime = performance.now()
   const duration = endTime - startTime
-  
+
   // 记录性能数据
   context.engine.logger.info('阶段执行时间', {
     phase: context.phase,

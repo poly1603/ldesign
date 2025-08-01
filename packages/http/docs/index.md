@@ -73,14 +73,6 @@ console.log(response.data)
 ## Vue 3 集成
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else>{{ data }}</div>
-  </div>
-</template>
-
 <script setup>
 import { useRequest } from '@ldesign/http/vue'
 
@@ -89,6 +81,20 @@ const { data, loading, error } = useRequest({
   method: 'GET'
 })
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else>
+      {{ data }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 主要特性
@@ -114,13 +120,13 @@ const response = await http.get<User[]>('/users')
 
 ```typescript
 // 请求拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 // 响应拦截器
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   return response.data
 })
 ```
@@ -151,7 +157,7 @@ const http = createHttpClient({
   retry: {
     retries: 3,
     retryDelay: 1000,
-    retryCondition: (error) => error.isNetworkError
+    retryCondition: error => error.isNetworkError
   }
 })
 ```

@@ -1,4 +1,4 @@
-import { RequestInterceptor, ResponseInterceptor, ErrorInterceptor, HttpError } from '../types/index.js';
+import { RequestInterceptor, ResponseInterceptor, ErrorInterceptor, HttpError } from '@/types';
 
 /**
  * 请求日志拦截器

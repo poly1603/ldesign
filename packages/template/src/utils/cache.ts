@@ -57,7 +57,7 @@ export class LRUCache<K, V> {
       createdAt: now,
       lastAccessedAt: now,
       accessCount: 1,
-      expiresAt
+      expiresAt,
     })
   }
 
@@ -146,7 +146,7 @@ export class LRUCache<K, V> {
       averageAge: items.length > 0
         ? items.reduce((sum, item) => sum + (now - item.createdAt), 0) / items.length
         : 0,
-      expiredCount: items.filter(item => item.expiresAt && now > item.expiresAt).length
+      expiredCount: items.filter(item => item.expiresAt && now > item.expiresAt).length,
     }
   }
 
@@ -216,7 +216,7 @@ export class TemplateCache {
     category: string,
     device: string,
     template: string,
-    component: TemplateComponent
+    component: TemplateComponent,
   ): void {
     const key = this.getCacheKey(category, device, template)
     this.componentCache.set(key, component)
@@ -237,7 +237,7 @@ export class TemplateCache {
     category: string,
     device: string,
     template: string,
-    metadata: TemplateMetadata
+    metadata: TemplateMetadata,
   ): void {
     const key = this.getCacheKey(category, device, template)
     this.metadataCache.set(key, metadata)
@@ -314,7 +314,7 @@ export class TemplateCache {
   cleanup(): { components: number, metadata: number } {
     return {
       components: this.componentCache.cleanup(),
-      metadata: this.metadataCache.cleanup()
+      metadata: this.metadataCache.cleanup(),
     }
   }
 
@@ -360,7 +360,7 @@ export class TemplateCache {
       misses: this.misses,
       components: componentStats,
       metadata: this.metadataCache.getStats(),
-      preloadQueue: this.preloadQueue.size
+      preloadQueue: this.preloadQueue.size,
     }
   }
 }

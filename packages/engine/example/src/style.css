@@ -63,7 +63,9 @@ body {
   border-radius: 15px;
   padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   border: 1px solid #f0f0f0;
 }
 
@@ -247,19 +249,19 @@ body {
   .container {
     padding: 20px;
   }
-  
+
   .header h1 {
     font-size: 2rem;
   }
-  
+
   .features {
     grid-template-columns: 1fr;
   }
-  
+
   .demo-buttons {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
     justify-content: center;

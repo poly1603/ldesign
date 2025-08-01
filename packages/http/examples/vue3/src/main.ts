@@ -10,7 +10,7 @@ const app = createApp(App)
 // const httpClient = createHttpClient({
 //   baseURL: 'https://jsonplaceholder.typicode.com'
 // })
-// 
+//
 // app.use(HttpPlugin, {
 //   client: httpClient
 // })

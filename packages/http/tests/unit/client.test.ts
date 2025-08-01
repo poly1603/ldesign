@@ -1,16 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { HttpAdapter } from '@/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HttpClientImpl } from '@/client'
-import type { HttpAdapter, RequestConfig, ResponseData } from '@/types'
-import { createMockResponse, createMockError } from '../setup'
+import { createMockError, createMockResponse } from '../setup'
 
 // 创建模拟适配器
-const createMockAdapter = (): HttpAdapter => ({
-  name: 'mock',
-  isSupported: () => true,
-  request: vi.fn(),
-})
+function createMockAdapter(): HttpAdapter {
+  return {
+    name: 'mock',
+    isSupported: () => true,
+    request: vi.fn(),
+  }
+}
 
-describe('HttpClientImpl', () => {
+describe('httpClientImpl', () => {
   let client: HttpClientImpl
   let mockAdapter: HttpAdapter
 
@@ -28,7 +30,7 @@ describe('HttpClientImpl', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        })
+        }),
       )
     })
 
@@ -37,7 +39,7 @@ describe('HttpClientImpl', () => {
         baseURL: 'https://api.example.com',
         timeout: 5000,
         headers: {
-          'Authorization': 'Bearer token',
+          Authorization: 'Bearer token',
         },
       }
 
@@ -50,7 +52,7 @@ describe('HttpClientImpl', () => {
         expect.objectContaining({
           'Content-Type': 'application/json',
           'Authorization': 'Bearer token',
-        })
+        }),
       )
     })
 
@@ -62,7 +64,7 @@ describe('HttpClientImpl', () => {
   describe('request methods', () => {
     beforeEach(() => {
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true })
+        createMockResponse({ success: true }),
       )
     })
 
@@ -73,7 +75,7 @@ describe('HttpClientImpl', () => {
         expect.objectContaining({
           method: 'GET',
           url: '/users',
-        })
+        }),
       )
     })
 
@@ -86,7 +88,7 @@ describe('HttpClientImpl', () => {
           method: 'POST',
           url: '/users',
           data,
-        })
+        }),
       )
     })
 
@@ -99,7 +101,7 @@ describe('HttpClientImpl', () => {
           method: 'PUT',
           url: '/users/1',
           data,
-        })
+        }),
       )
     })
 
@@ -110,7 +112,7 @@ describe('HttpClientImpl', () => {
         expect.objectContaining({
           method: 'DELETE',
           url: '/users/1',
-        })
+        }),
       )
     })
 
@@ -123,7 +125,7 @@ describe('HttpClientImpl', () => {
           method: 'PATCH',
           url: '/users/1',
           data,
-        })
+        }),
       )
     })
 
@@ -134,7 +136,7 @@ describe('HttpClientImpl', () => {
         expect.objectContaining({
           method: 'HEAD',
           url: '/users/1',
-        })
+        }),
       )
     })
 
@@ -145,7 +147,7 @@ describe('HttpClientImpl', () => {
         expect.objectContaining({
           method: 'OPTIONS',
           url: '/users',
-        })
+        }),
       )
     })
   })
@@ -160,7 +162,7 @@ describe('HttpClientImpl', () => {
       client.interceptors.request.use(requestInterceptor)
 
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true })
+        createMockResponse({ success: true }),
       )
 
       await client.get('/test')
@@ -171,7 +173,7 @@ describe('HttpClientImpl', () => {
           headers: expect.objectContaining({
             'X-Custom': 'test',
           }),
-        })
+        }),
       )
     })
 
@@ -184,7 +186,7 @@ describe('HttpClientImpl', () => {
       client.interceptors.response.use(responseInterceptor)
 
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true })
+        createMockResponse({ success: true }),
       )
 
       const response = await client.get('/test')
@@ -198,7 +200,7 @@ describe('HttpClientImpl', () => {
 
     it('should execute error interceptors', async () => {
       const errorInterceptor = vi.fn((error) => {
-        error.message = 'Intercepted: ' + error.message
+        error.message = `Intercepted: ${error.message}`
         return error
       })
 
@@ -217,14 +219,14 @@ describe('HttpClientImpl', () => {
       const globalConfig = {
         baseURL: 'https://api.example.com',
         headers: {
-          'Authorization': 'Bearer token',
+          Authorization: 'Bearer token',
         },
       }
 
       const clientWithConfig = new HttpClientImpl(globalConfig, mockAdapter)
 
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true })
+        createMockResponse({ success: true }),
       )
 
       await clientWithConfig.get('/users', {
@@ -241,7 +243,7 @@ describe('HttpClientImpl', () => {
             'X-Custom': 'test',
             'Content-Type': 'application/json',
           }),
-        })
+        }),
       )
     })
   })

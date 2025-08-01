@@ -13,6 +13,7 @@ isRef(value: any): value is Ref<any>
 ```
 
 **示例：**
+
 ```typescript
 import { isRef } from '@ldesign/store'
 import { ref } from 'vue'
@@ -21,7 +22,7 @@ const count = ref(0)
 const name = 'hello'
 
 console.log(isRef(count)) // true
-console.log(isRef(name))  // false
+console.log(isRef(name)) // false
 ```
 
 ### isReactive
@@ -33,6 +34,7 @@ isReactive(value: any): value is object
 ```
 
 **示例：**
+
 ```typescript
 import { isReactive } from '@ldesign/store'
 import { reactive } from 'vue'
@@ -41,7 +43,7 @@ const state = reactive({ count: 0 })
 const obj = { count: 0 }
 
 console.log(isReactive(state)) // true
-console.log(isReactive(obj))   // false
+console.log(isReactive(obj)) // false
 ```
 
 ### toRaw
@@ -53,6 +55,7 @@ toRaw<T>(observed: T): T
 ```
 
 **示例：**
+
 ```typescript
 import { toRaw } from '@ldesign/store'
 import { reactive } from 'vue'
@@ -61,7 +64,7 @@ const state = reactive({ count: 0 })
 const raw = toRaw(state)
 
 console.log(raw === state) // false
-console.log(raw.count)     // 0
+console.log(raw.count) // 0
 ```
 
 ### unref
@@ -73,6 +76,7 @@ unref<T>(ref: T | Ref<T>): T
 ```
 
 **示例：**
+
 ```typescript
 import { unref } from '@ldesign/store'
 import { ref } from 'vue'
@@ -81,7 +85,7 @@ const count = ref(10)
 const name = 'hello'
 
 console.log(unref(count)) // 10
-console.log(unref(name))  // 'hello'
+console.log(unref(name)) // 'hello'
 ```
 
 ## 类型工具
@@ -95,6 +99,7 @@ isStore(value: any): value is Store
 ```
 
 **示例：**
+
 ```typescript
 import { isStore } from '@ldesign/store'
 import { UserStore } from '@/stores/user'
@@ -103,7 +108,7 @@ const userStore = new UserStore('user')
 const obj = { count: 0 }
 
 console.log(isStore(userStore)) // true
-console.log(isStore(obj))       // false
+console.log(isStore(obj)) // false
 ```
 
 ### getStoreId
@@ -115,6 +120,7 @@ getStoreId(store: Store): string
 ```
 
 **示例：**
+
 ```typescript
 import { getStoreId } from '@ldesign/store'
 
@@ -131,6 +137,7 @@ getStoreMetadata(StoreClass: typeof BaseStore): StoreMetadata
 ```
 
 **StoreMetadata 接口：**
+
 ```typescript
 interface StoreMetadata {
   states: StateMetadata[]
@@ -160,6 +167,7 @@ interface GetterMetadata {
 ```
 
 **示例：**
+
 ```typescript
 import { getStoreMetadata } from '@ldesign/store'
 
@@ -179,9 +187,9 @@ class UserStore extends BaseStore {
 }
 
 const metadata = getStoreMetadata(UserStore)
-console.log(metadata.states)   // [{ name: 'user', type: 'State', ... }]
-console.log(metadata.actions)  // [{ name: 'setUser', type: 'sync', ... }]
-console.log(metadata.getters)  // [{ name: 'isLoggedIn', ... }]
+console.log(metadata.states) // [{ name: 'user', type: 'State', ... }]
+console.log(metadata.actions) // [{ name: 'setUser', type: 'sync', ... }]
+console.log(metadata.getters) // [{ name: 'isLoggedIn', ... }]
 ```
 
 ## 序列化工具
@@ -195,16 +203,18 @@ serialize(store: Store, options?: SerializeOptions): string
 ```
 
 **SerializeOptions 接口：**
+
 ```typescript
 interface SerializeOptions {
-  include?: string[]     // 包含的字段
-  exclude?: string[]     // 排除的字段
-  space?: number         // JSON 格式化空格数
-  replacer?: (key: string, value: any) => any  // 自定义替换函数
+  include?: string[] // 包含的字段
+  exclude?: string[] // 排除的字段
+  space?: number // JSON 格式化空格数
+  replacer?: (key: string, value: any) => any // 自定义替换函数
 }
 ```
 
 **示例：**
+
 ```typescript
 import { serialize } from '@ldesign/store'
 
@@ -235,15 +245,17 @@ deserialize(store: Store, json: string, options?: DeserializeOptions): void
 ```
 
 **DeserializeOptions 接口：**
+
 ```typescript
 interface DeserializeOptions {
-  merge?: boolean        // 是否合并现有状态
-  validate?: boolean     // 是否验证数据
-  reviver?: (key: string, value: any) => any  // 自定义恢复函数
+  merge?: boolean // 是否合并现有状态
+  validate?: boolean // 是否验证数据
+  reviver?: (key: string, value: any) => any // 自定义恢复函数
 }
 ```
 
 **示例：**
+
 ```typescript
 import { deserialize } from '@ldesign/store'
 
@@ -278,30 +290,33 @@ createCache<K, V>(options?: CacheOptions): Cache<K, V>
 ```
 
 **CacheOptions 接口：**
+
 ```typescript
 interface CacheOptions {
-  maxSize?: number       // 最大缓存数量
-  ttl?: number          // 默认过期时间（毫秒）
-  onEvict?: (key: K, value: V) => void  // 驱逐回调
+  maxSize?: number // 最大缓存数量
+  ttl?: number // 默认过期时间（毫秒）
+  onEvict?: (key: K, value: V) => void // 驱逐回调
 }
 ```
 
 **Cache 接口：**
+
 ```typescript
 interface Cache<K, V> {
-  get(key: K): V | undefined
-  set(key: K, value: V, ttl?: number): void
-  has(key: K): boolean
-  delete(key: K): boolean
-  clear(): void
+  get: (key: K) => V | undefined
+  set: (key: K, value: V, ttl?: number) => void
+  has: (key: K) => boolean
+  delete: (key: K) => boolean
+  clear: () => void
   size: number
-  keys(): IterableIterator<K>
-  values(): IterableIterator<V>
-  entries(): IterableIterator<[K, V]>
+  keys: () => IterableIterator<K>
+  values: () => IterableIterator<V>
+  entries: () => IterableIterator<[K, V]>
 }
 ```
 
 **示例：**
+
 ```typescript
 import { createCache } from '@ldesign/store'
 
@@ -334,15 +349,17 @@ memoize<T extends (...args: any[]) => any>(
 ```
 
 **MemoizeOptions 接口：**
+
 ```typescript
 interface MemoizeOptions {
-  maxSize?: number       // 最大缓存数量
-  ttl?: number          // 缓存过期时间
-  keyGenerator?: (...args: any[]) => string  // 自定义键生成器
+  maxSize?: number // 最大缓存数量
+  ttl?: number // 缓存过期时间
+  keyGenerator?: (...args: any[]) => string // 自定义键生成器
 }
 ```
 
 **示例：**
+
 ```typescript
 import { memoize } from '@ldesign/store'
 
@@ -382,15 +399,17 @@ debounce<T extends (...args: any[]) => any>(
 ```
 
 **DebounceOptions 接口：**
+
 ```typescript
 interface DebounceOptions {
-  leading?: boolean      // 是否在延迟开始时执行
-  trailing?: boolean     // 是否在延迟结束时执行
-  maxWait?: number       // 最大等待时间
+  leading?: boolean // 是否在延迟开始时执行
+  trailing?: boolean // 是否在延迟结束时执行
+  maxWait?: number // 最大等待时间
 }
 ```
 
 **示例：**
+
 ```typescript
 import { debounce } from '@ldesign/store'
 
@@ -423,14 +442,16 @@ throttle<T extends (...args: any[]) => any>(
 ```
 
 **ThrottleOptions 接口：**
+
 ```typescript
 interface ThrottleOptions {
-  leading?: boolean      // 是否在间隔开始时执行
-  trailing?: boolean     // 是否在间隔结束时执行
+  leading?: boolean // 是否在间隔开始时执行
+  trailing?: boolean // 是否在间隔结束时执行
 }
 ```
 
 **示例：**
+
 ```typescript
 import { throttle } from '@ldesign/store'
 
@@ -456,6 +477,7 @@ deepClone<T>(obj: T): T
 ```
 
 **示例：**
+
 ```typescript
 import { deepClone } from '@ldesign/store'
 
@@ -468,7 +490,7 @@ const cloned = deepClone(original)
 cloned.user.profile.name = 'Jane'
 
 console.log(original.user.profile.name) // 'John'
-console.log(cloned.user.profile.name)   // 'Jane'
+console.log(cloned.user.profile.name) // 'Jane'
 ```
 
 ### deepMerge
@@ -480,6 +502,7 @@ deepMerge<T>(target: T, ...sources: Partial<T>[]): T
 ```
 
 **示例：**
+
 ```typescript
 import { deepMerge } from '@ldesign/store'
 
@@ -509,6 +532,7 @@ deepEqual(a: any, b: any): boolean
 ```
 
 **示例：**
+
 ```typescript
 import { deepEqual } from '@ldesign/store'
 
@@ -531,6 +555,7 @@ validateSchema(data: any, schema: JSONSchema): ValidationResult
 ```
 
 **ValidationResult 接口：**
+
 ```typescript
 interface ValidationResult {
   valid: boolean
@@ -545,6 +570,7 @@ interface ValidationError {
 ```
 
 **示例：**
+
 ```typescript
 import { validateSchema } from '@ldesign/store'
 
@@ -562,7 +588,8 @@ const result = validateSchema(data, schema)
 
 if (result.valid) {
   console.log('数据有效')
-} else {
+}
+else {
   console.log('验证错误:', result.errors)
 }
 ```
@@ -578,6 +605,7 @@ createValidator<T>(
 ```
 
 **ValidationRule 接口：**
+
 ```typescript
 interface ValidationRule<T> {
   field: keyof T
@@ -587,6 +615,7 @@ interface ValidationRule<T> {
 ```
 
 **示例：**
+
 ```typescript
 import { createValidator } from '@ldesign/store'
 
@@ -599,17 +628,17 @@ interface User {
 const userValidator = createValidator<User>([
   {
     field: 'name',
-    validator: (value) => typeof value === 'string' && value.length > 0,
+    validator: value => typeof value === 'string' && value.length > 0,
     message: '姓名不能为空'
   },
   {
     field: 'email',
-    validator: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+    validator: value => /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(value),
     message: '邮箱格式不正确'
   },
   {
     field: 'age',
-    validator: (value) => typeof value === 'number' && value >= 0,
+    validator: value => typeof value === 'number' && value >= 0,
     message: '年龄必须是非负数'
   }
 ])
@@ -632,17 +661,19 @@ createEventBus(): EventBus
 ```
 
 **EventBus 接口：**
+
 ```typescript
 interface EventBus {
-  on<T>(event: string, handler: (data: T) => void): () => void
-  off(event: string, handler?: Function): void
-  emit<T>(event: string, data?: T): void
-  once<T>(event: string, handler: (data: T) => void): () => void
-  clear(): void
+  on: <T>(event: string, handler: (data: T) => void) => () => void
+  off: (event: string, handler?: Function) => void
+  emit: <T>(event: string, data?: T) => void
+  once: <T>(event: string, handler: (data: T) => void) => () => void
+  clear: () => void
 }
 ```
 
 **示例：**
+
 ```typescript
 import { createEventBus } from '@ldesign/store'
 
@@ -682,8 +713,8 @@ A: 缓存工具提供了多种内存管理策略：
 
 ```typescript
 const cache = createCache({
-  maxSize: 100,        // 限制最大数量
-  ttl: 60000,         // 自动过期
+  maxSize: 100, // 限制最大数量
+  ttl: 60000, // 自动过期
   onEvict: (k, v) => { // 驱逐回调
     console.log('清理缓存:', k)
   }

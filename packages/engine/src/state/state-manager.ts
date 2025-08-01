@@ -1,7 +1,7 @@
+import type { Logger, StateManager } from '../types'
 import { reactive, watch } from 'vue'
 
 type UnwatchFn = () => void
-import type { StateManager, Logger } from '../types'
 
 export class StateManagerImpl implements StateManager {
   private state = reactive<Record<string, any>>({})
@@ -24,15 +24,15 @@ export class StateManagerImpl implements StateManager {
 
   clear(): void {
     // 清理所有监听器
-    Array.from(this.watchers.values()).forEach(watcherArray => {
-      watcherArray.forEach(unwatch => {
+    Array.from(this.watchers.values()).forEach((watcherArray) => {
+      watcherArray.forEach((unwatch) => {
         unwatch()
       })
     })
     this.watchers.clear()
 
     // 清空状态
-    Object.keys(this.state).forEach(key => {
+    Object.keys(this.state).forEach((key) => {
       delete this.state[key]
     })
   }
@@ -45,7 +45,7 @@ export class StateManagerImpl implements StateManager {
           callback(newValue, oldValue)
         }
       },
-      { deep: true }
+      { deep: true },
     )
 
     // 记录监听器以便清理
@@ -130,16 +130,16 @@ export class StateManagerImpl implements StateManager {
   // 递归获取所有键
   private getAllKeys(obj: any, prefix = ''): string[] {
     const keys: string[] = []
-    
+
     for (const key in obj) {
       const fullKey = prefix ? `${prefix}.${key}` : key
       keys.push(fullKey)
-      
+
       if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
         keys.push(...this.getAllKeys(obj[key], fullKey))
       }
     }
-    
+
     return keys
   }
 
@@ -167,7 +167,8 @@ export class StateManagerImpl implements StateManager {
           target[key] = {}
         }
         this.deepMerge(target[key], source[key])
-      } else {
+      }
+      else {
         target[key] = source[key]
       }
     }
@@ -181,13 +182,13 @@ export class StateManagerImpl implements StateManager {
   } {
     const totalWatchers = Array.from(this.watchers.values())
       .reduce((sum, array) => sum + array.length, 0)
-    
+
     const memoryUsage = JSON.stringify(this.state).length
-    
+
     return {
       totalKeys: this.keys().length,
       totalWatchers,
-      memoryUsage: `${(memoryUsage / 1024).toFixed(2)} KB`
+      memoryUsage: `${(memoryUsage / 1024).toFixed(2)} KB`,
     }
   }
 
@@ -201,7 +202,7 @@ export class StateManagerImpl implements StateManager {
 export class StateNamespace implements StateManager {
   constructor(
     private stateManager: StateManager,
-    private namespaceName: string
+    private namespaceName: string,
   ) {}
 
   private getKey(key: string): string {
@@ -228,8 +229,8 @@ export class StateNamespace implements StateManager {
     // 只清理当前命名空间的状态
     const keys = this.stateManager.keys()
     const namespacePrefix = `${this.namespaceName}.`
-    
-    keys.forEach(key => {
+
+    keys.forEach((key) => {
       if (key.startsWith(namespacePrefix)) {
         this.stateManager.remove(key)
       }
@@ -239,7 +240,7 @@ export class StateNamespace implements StateManager {
   keys(): string[] {
     const allKeys = this.stateManager.keys()
     const namespacePrefix = `${this.namespaceName}.`
-    
+
     return allKeys
       .filter(key => key.startsWith(namespacePrefix))
       .map(key => key.substring(namespacePrefix.length))
@@ -259,7 +260,7 @@ export const stateModules = {
   // 用户状态模块
   user: (stateManager: StateManager) => {
     const userState = stateManager.namespace('user')
-    
+
     return {
       setUser: (user: any) => userState.set('profile', user),
       getUser: () => userState.get('profile'),
@@ -268,14 +269,14 @@ export const stateModules = {
       logout: () => {
         userState.clear()
       },
-      isLoggedIn: () => !!userState.get('token')
+      isLoggedIn: () => !!userState.get('token'),
     }
   },
 
   // 应用状态模块
   app: (stateManager: StateManager) => {
     const appState = stateManager.namespace('app')
-    
+
     return {
       setLoading: (loading: boolean) => appState.set('loading', loading),
       isLoading: () => appState.get('loading') || false,
@@ -283,20 +284,20 @@ export const stateModules = {
       getError: () => appState.get('error'),
       clearError: () => appState.remove('error'),
       setTitle: (title: string) => appState.set('title', title),
-      getTitle: () => appState.get('title')
+      getTitle: () => appState.get('title'),
     }
   },
 
   // 设置状态模块
   settings: (stateManager: StateManager) => {
     const settingsState = stateManager.namespace('settings')
-    
+
     return {
       setSetting: (key: string, value: any) => settingsState.set(key, value),
       getSetting: (key: string, defaultValue?: any) => settingsState.get(key) ?? defaultValue,
       removeSetting: (key: string) => settingsState.remove(key),
       getAllSettings: () => settingsState.get('') || {},
-      resetSettings: () => settingsState.clear()
+      resetSettings: () => settingsState.clear(),
     }
-  }
+  },
 }

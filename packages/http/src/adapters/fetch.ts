@@ -1,6 +1,6 @@
 import type { RequestConfig, ResponseData } from '@/types'
+import { isArrayBuffer, isBlob, isFormData, isURLSearchParams } from '@/utils'
 import { BaseAdapter } from './base'
-import { isFormData, isBlob, isArrayBuffer, isURLSearchParams } from '@/utils'
 
 /**
  * Fetch 适配器
@@ -24,7 +24,7 @@ export class FetchAdapter extends BaseAdapter {
     try {
       // 创建超时控制器
       const timeoutController = this.createTimeoutController(processedConfig.timeout)
-      
+
       // 合并 AbortSignal
       const signal = this.mergeAbortSignals([
         processedConfig.signal,
@@ -52,7 +52,8 @@ export class FetchAdapter extends BaseAdapter {
 
       // 处理响应
       return await this.handleResponse<T>(response, processedConfig)
-    } catch (error) {
+    }
+    catch (error) {
       throw this.processError(error, processedConfig)
     }
   }
@@ -67,12 +68,15 @@ export class FetchAdapter extends BaseAdapter {
     if (config.data && !headers['content-type'] && !headers['Content-Type']) {
       if (typeof config.data === 'string') {
         headers['Content-Type'] = 'text/plain'
-      } else if (isFormData(config.data)) {
+      }
+      else if (isFormData(config.data)) {
         // FormData 会自动设置 Content-Type，包括 boundary
         delete headers['Content-Type']
-      } else if (isURLSearchParams(config.data)) {
+      }
+      else if (isURLSearchParams(config.data)) {
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
-      } else if (typeof config.data === 'object') {
+      }
+      else if (typeof config.data === 'object') {
         headers['Content-Type'] = 'application/json'
       }
     }
@@ -90,12 +94,12 @@ export class FetchAdapter extends BaseAdapter {
 
     // 直接支持的类型
     if (
-      typeof data === 'string' ||
-      isFormData(data) ||
-      isBlob(data) ||
-      isArrayBuffer(data) ||
-      isURLSearchParams(data) ||
-      data instanceof ReadableStream
+      typeof data === 'string'
+      || isFormData(data)
+      || isBlob(data)
+      || isArrayBuffer(data)
+      || isURLSearchParams(data)
+      || data instanceof ReadableStream
     ) {
       return data
     }
@@ -123,10 +127,10 @@ export class FetchAdapter extends BaseAdapter {
    */
   private async handleResponse<T>(
     response: Response,
-    config: RequestConfig
+    config: RequestConfig,
   ): Promise<ResponseData<T>> {
     const headers = this.parseHeaders(response.headers)
-    
+
     // 解析响应数据
     const data = await this.parseResponseData<T>(response, config.responseType)
 
@@ -135,7 +139,7 @@ export class FetchAdapter extends BaseAdapter {
       const error = this.processError(
         new Error(`Request failed with status ${response.status}`),
         config,
-        this.processResponse(data, response.status, response.statusText, headers, config, response)
+        this.processResponse(data, response.status, response.statusText, headers, config, response),
       )
       throw error
     }
@@ -146,7 +150,7 @@ export class FetchAdapter extends BaseAdapter {
       response.statusText,
       headers,
       config,
-      response
+      response,
     )
   }
 
@@ -155,7 +159,7 @@ export class FetchAdapter extends BaseAdapter {
    */
   private async parseResponseData<T>(
     response: Response,
-    responseType?: string
+    responseType?: string,
   ): Promise<T> {
     if (!response.body) {
       return null as T
@@ -177,19 +181,23 @@ export class FetchAdapter extends BaseAdapter {
           const contentType = response.headers.get('content-type') || ''
           if (contentType.includes('application/json')) {
             return await response.json()
-          } else if (contentType.includes('text/')) {
+          }
+          else if (contentType.includes('text/')) {
             return (await response.text()) as T
-          } else {
+          }
+          else {
             // 尝试解析为 JSON，失败则返回文本
             const text = await response.text()
             try {
               return JSON.parse(text)
-            } catch {
+            }
+            catch {
               return text as T
             }
           }
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 解析失败，返回空值
       return null as T
     }

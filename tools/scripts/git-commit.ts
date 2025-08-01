@@ -19,13 +19,12 @@
  * @version 1.0.0
  */
 
-import { execSync, spawn } from 'child_process'
-import { createInterface } from 'readline'
-import { promisify } from 'util'
+import { execSync } from 'node:child_process'
+import { createInterface } from 'node:readline'
 
 /**
  * Git 自动提交工具
- * 
+ *
  * 功能：
  * - 自动拉取最新代码并使用 rebase 保持线性历史
  * - 添加所有更改文件
@@ -44,7 +43,7 @@ interface GitStatus {
 class GitCommitTool {
   private rl = createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   })
 
   /**
@@ -54,11 +53,12 @@ class GitCommitTool {
     try {
       const result = execSync(command, {
         encoding: 'utf8',
-        stdio: silent ? 'pipe' : 'inherit'
+        stdio: silent ? 'pipe' : 'inherit',
       })
       // 确保结果不为 null 或 undefined，并转换为字符串
       return (result || '').toString().trim()
-    } catch (error) {
+    }
+    catch (error) {
       if (!silent) {
         console.error(`❌ 命令执行失败: ${command}`)
         console.error(error)
@@ -70,11 +70,12 @@ class GitCommitTool {
   /**
    * 安全执行命令，不抛出异常
    */
-  private safeExec(command: string): { success: boolean; output: string } {
+  private safeExec(command: string): { success: boolean, output: string } {
     try {
       const output = this.exec(command, true)
       return { success: true, output }
-    } catch (error) {
+    }
+    catch (error) {
       return { success: false, output: '' }
     }
   }
@@ -91,7 +92,7 @@ class GitCommitTool {
       hasChanges: statusResult.success && statusResult.output.length > 0,
       currentBranch: branchResult.success ? branchResult.output : 'unknown',
       isClean: statusResult.success && statusResult.output.length === 0,
-      hasUnpushedCommits: unpushedResult.success && unpushedResult.output.length > 0
+      hasUnpushedCommits: unpushedResult.success && unpushedResult.output.length > 0,
     }
   }
 
@@ -122,25 +123,27 @@ class GitCommitTool {
    */
   private async pullWithRebase(): Promise<boolean> {
     console.log('🔄 正在拉取最新代码...')
-    
+
     try {
       // 先 fetch 获取最新的远程信息
       this.exec('git fetch origin')
-      
+
       // 检查是否有远程更新
       const behindResult = this.safeExec('git rev-list HEAD..@{u} --count')
-      const behind = behindResult.success ? parseInt(behindResult.output) : 0
-      
+      const behind = behindResult.success ? Number.parseInt(behindResult.output) : 0
+
       if (behind > 0) {
         console.log(`📥 发现 ${behind} 个远程提交，正在执行 rebase...`)
         this.exec('git pull --rebase origin')
         console.log('✅ Rebase 完成')
-      } else {
+      }
+      else {
         console.log('✅ 本地代码已是最新')
       }
-      
+
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 拉取代码失败，可能存在冲突')
       console.log('💡 请手动解决冲突后重新运行此脚本')
       return false
@@ -170,13 +173,14 @@ class GitCommitTool {
    */
   private async push(branch: string): Promise<void> {
     console.log('🚀 正在推送到远程仓库...')
-    
+
     try {
       this.exec(`git push origin ${branch}`)
       console.log('✅ 推送完成')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 推送失败')
-      
+
       // 检查是否需要设置上游分支
       const upstreamResult = this.safeExec('git rev-parse --abbrev-ref @{u}')
       if (!upstreamResult.success) {
@@ -185,7 +189,8 @@ class GitCommitTool {
           this.exec(`git push --set-upstream origin ${branch}`)
           console.log('✅ 上游分支设置完成并推送成功')
         }
-      } else {
+      }
+      else {
         throw error
       }
     }
@@ -266,8 +271,8 @@ class GitCommitTool {
 
       console.log('\n🎉 所有操作完成！')
       this.rl.close()
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 执行过程中发生错误:', error)
       this.rl.close()
       process.exit(1)

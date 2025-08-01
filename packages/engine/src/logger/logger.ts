@@ -1,4 +1,4 @@
-import type { Logger, LogLevel, LogEntry } from '../types'
+import type { LogEntry, Logger, LogLevel } from '../types'
 
 export class LoggerImpl implements Logger {
   private logs: LogEntry[] = []
@@ -8,7 +8,7 @@ export class LoggerImpl implements Logger {
     debug: 0,
     info: 1,
     warn: 2,
-    error: 3
+    error: 3,
   }
 
   constructor(level: LogLevel = 'info') {
@@ -41,7 +41,7 @@ export class LoggerImpl implements Logger {
       level,
       message,
       timestamp: Date.now(),
-      data
+      data,
     }
 
     // 添加到日志列表
@@ -53,7 +53,7 @@ export class LoggerImpl implements Logger {
 
   private addLog(entry: LogEntry): void {
     this.logs.unshift(entry)
-    
+
     // 限制日志数量
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(0, this.maxLogs)
@@ -63,46 +63,47 @@ export class LoggerImpl implements Logger {
   private outputToConsole(entry: LogEntry): void {
     const timestamp = new Date(entry.timestamp).toISOString()
     const prefix = `[${timestamp}] [${entry.level.toUpperCase()}]`
-    
+
     const styles = this.getConsoleStyles(entry.level)
-    
+
     if (entry.data) {
       console.groupCollapsed(`%c${prefix} ${entry.message}`, styles.prefix)
       console.log('%cData:', styles.data, entry.data)
       console.groupEnd()
-    } else {
+    }
+    else {
       console.log(`%c${prefix} ${entry.message}`, styles.prefix)
     }
   }
 
-  private getConsoleStyles(level: LogLevel): { prefix: string; data: string } {
+  private getConsoleStyles(level: LogLevel): { prefix: string, data: string } {
     const baseStyle = 'font-weight: bold; padding: 2px 4px; border-radius: 2px;'
-    
+
     switch (level) {
       case 'debug':
         return {
           prefix: `${baseStyle} background: #e3f2fd; color: #1976d2;`,
-          data: 'color: #1976d2;'
+          data: 'color: #1976d2;',
         }
       case 'info':
         return {
           prefix: `${baseStyle} background: #e8f5e8; color: #2e7d32;`,
-          data: 'color: #2e7d32;'
+          data: 'color: #2e7d32;',
         }
       case 'warn':
         return {
           prefix: `${baseStyle} background: #fff3e0; color: #f57c00;`,
-          data: 'color: #f57c00;'
+          data: 'color: #f57c00;',
         }
       case 'error':
         return {
           prefix: `${baseStyle} background: #ffebee; color: #d32f2f;`,
-          data: 'color: #d32f2f;'
+          data: 'color: #d32f2f;',
         }
       default:
         return {
           prefix: baseStyle,
-          data: ''
+          data: '',
         }
     }
   }
@@ -147,17 +148,17 @@ export class LoggerImpl implements Logger {
 
   // 按时间范围获取日志
   getLogsByTimeRange(startTime: number, endTime: number): LogEntry[] {
-    return this.logs.filter(log => 
-      log.timestamp >= startTime && log.timestamp <= endTime
+    return this.logs.filter(log =>
+      log.timestamp >= startTime && log.timestamp <= endTime,
     )
   }
 
   // 搜索日志
   searchLogs(query: string): LogEntry[] {
     const lowerQuery = query.toLowerCase()
-    return this.logs.filter(log => 
-      log.message.toLowerCase().includes(lowerQuery) ||
-      (log.data && JSON.stringify(log.data).toLowerCase().includes(lowerQuery))
+    return this.logs.filter(log =>
+      log.message.toLowerCase().includes(lowerQuery)
+      || (log.data && JSON.stringify(log.data).toLowerCase().includes(lowerQuery)),
     )
   }
 
@@ -176,7 +177,7 @@ export class LoggerImpl implements Logger {
       debug: 0,
       info: 0,
       warn: 0,
-      error: 0
+      error: 0,
     }
 
     let recent24h = 0
@@ -184,11 +185,11 @@ export class LoggerImpl implements Logger {
 
     for (const log of this.logs) {
       byLevel[log.level]++
-      
+
       if (now - log.timestamp <= day) {
         recent24h++
       }
-      
+
       if (now - log.timestamp <= hour) {
         recentHour++
       }
@@ -198,7 +199,7 @@ export class LoggerImpl implements Logger {
       total: this.logs.length,
       byLevel,
       recent24h,
-      recentHour
+      recentHour,
     }
   }
 
@@ -207,24 +208,24 @@ export class LoggerImpl implements Logger {
     switch (format) {
       case 'json':
         return JSON.stringify(this.logs, null, 2)
-      
+
       case 'csv':
         const headers = ['timestamp', 'level', 'message', 'data']
         const rows = this.logs.map(log => [
           new Date(log.timestamp).toISOString(),
           log.level,
           `"${log.message.replace(/"/g, '""')}"`,
-          log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : ''
+          log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : '',
         ])
         return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
-      
+
       case 'txt':
-        return this.logs.map(log => {
+        return this.logs.map((log) => {
           const timestamp = new Date(log.timestamp).toISOString()
           const dataStr = log.data ? ` | Data: ${JSON.stringify(log.data)}` : ''
           return `[${timestamp}] [${log.level.toUpperCase()}] ${log.message}${dataStr}`
         }).join('\n')
-      
+
       default:
         return ''
     }
@@ -245,7 +246,7 @@ export class LoggerImpl implements Logger {
 class ChildLogger implements Logger {
   constructor(
     private parent: Logger,
-    private prefix: string
+    private prefix: string,
   ) {}
 
   debug(message: string, data?: any): void {
@@ -304,9 +305,9 @@ export const logFormatters = {
   json: (entry: LogEntry): string => {
     return JSON.stringify({
       ...entry,
-      timestamp: new Date(entry.timestamp).toISOString()
+      timestamp: new Date(entry.timestamp).toISOString(),
     })
-  }
+  },
 }
 
 // 日志传输器
@@ -314,8 +315,9 @@ export const logTransports = {
   // 控制台传输器
   console: (formatter = logFormatters.simple) => (entry: LogEntry) => {
     const formatted = formatter(entry)
-    const method = entry.level === 'error' ? 'error' : 
-                  entry.level === 'warn' ? 'warn' : 'log'
+    const method = entry.level === 'error'
+      ? 'error'
+      : entry.level === 'warn' ? 'warn' : 'log'
     console[method](formatted)
   },
 
@@ -324,46 +326,48 @@ export const logTransports = {
     try {
       const stored = localStorage.getItem(key)
       const logs = stored ? JSON.parse(stored) : []
-      
+
       logs.unshift(entry)
-      
+
       if (logs.length > maxEntries) {
         logs.splice(maxEntries)
       }
-      
+
       localStorage.setItem(key, JSON.stringify(logs))
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to store log in localStorage:', error)
     }
   },
 
   // 远程传输器
-  remote: (config: { endpoint: string; apiKey?: string; batchSize?: number }) => {
+  remote: (config: { endpoint: string, apiKey?: string, batchSize?: number }) => {
     const batch: LogEntry[] = []
     const batchSize = config.batchSize || 10
-    
+
     return async (entry: LogEntry) => {
       batch.push(entry)
-      
+
       if (batch.length >= batchSize) {
         try {
           const headers: Record<string, string> = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           }
-          
+
           if (config.apiKey) {
-            headers['Authorization'] = `Bearer ${config.apiKey}`
+            headers.Authorization = `Bearer ${config.apiKey}`
           }
-          
+
           await fetch(config.endpoint, {
             method: 'POST',
             headers,
-            body: JSON.stringify(batch.splice(0, batchSize))
+            body: JSON.stringify(batch.splice(0, batchSize)),
           })
-        } catch (error) {
+        }
+        catch (error) {
           console.error('Failed to send logs to remote service:', error)
         }
       }
     }
-  }
+  },
 }

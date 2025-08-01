@@ -45,11 +45,11 @@ export function setNestedValue(obj: NestedObject, path: string, value: string): 
 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i]
-    
+
     if (!(key in current) || typeof current[key] !== 'object') {
       current[key] = {}
     }
-    
+
     current = current[key]
   }
 
@@ -81,7 +81,8 @@ export function getAllPaths(obj: NestedObject, prefix = ''): string[] {
 
     if (typeof value === 'string') {
       paths.push(currentPath)
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       paths.push(...getAllPaths(value, currentPath))
     }
   }
@@ -101,10 +102,12 @@ export function deepMerge(target: NestedObject, source: NestedObject): NestedObj
   for (const [key, value] of Object.entries(source)) {
     if (typeof value === 'string') {
       result[key] = value
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       if (typeof result[key] === 'object' && result[key] !== null) {
         result[key] = deepMerge(result[key] as NestedObject, value)
-      } else {
+      }
+      else {
         result[key] = deepMerge({}, value)
       }
     }
@@ -127,7 +130,8 @@ export function flattenObject(obj: NestedObject, prefix = ''): Record<string, st
 
     if (typeof value === 'string') {
       flattened[currentPath] = value
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       Object.assign(flattened, flattenObject(value, currentPath))
     }
   }

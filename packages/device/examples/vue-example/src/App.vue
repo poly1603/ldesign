@@ -1,3 +1,12 @@
+<script setup>
+import BatteryInfoCard from './components/BatteryInfoCard.vue'
+import DeviceInfoCard from './components/DeviceInfoCard.vue'
+import DirectiveExample from './components/DirectiveExample.vue'
+import EventLog from './components/EventLog.vue'
+import GeolocationCard from './components/GeolocationCard.vue'
+import NetworkInfoCard from './components/NetworkInfoCard.vue'
+</script>
+
 <template>
   <div class="app">
     <header class="header">
@@ -9,34 +18,25 @@
       <div class="grid">
         <!-- 设备信息卡片 -->
         <DeviceInfoCard />
-        
+
         <!-- 网络信息卡片 -->
         <NetworkInfoCard />
-        
+
         <!-- 电池信息卡片 -->
         <BatteryInfoCard />
-        
+
         <!-- 地理位置信息卡片 -->
         <GeolocationCard />
       </div>
 
       <!-- 指令示例 -->
       <DirectiveExample />
-      
+
       <!-- 事件日志 -->
       <EventLog />
     </main>
   </div>
 </template>
-
-<script setup>
-import DeviceInfoCard from './components/DeviceInfoCard.vue'
-import NetworkInfoCard from './components/NetworkInfoCard.vue'
-import BatteryInfoCard from './components/BatteryInfoCard.vue'
-import GeolocationCard from './components/GeolocationCard.vue'
-import DirectiveExample from './components/DirectiveExample.vue'
-import EventLog from './components/EventLog.vue'
-</script>
 
 <style>
 * {
@@ -91,11 +91,11 @@ body {
   .header h1 {
     font-size: 2.5rem;
   }
-  
+
   .grid {
     grid-template-columns: 1fr;
   }
-  
+
   .app {
     padding: 15px;
   }

@@ -1,8 +1,8 @@
 import type { LanguagePackage } from '@/core/types'
 import common from './common'
-import validation from './validation'
-import menu from './menu'
 import date from './date'
+import menu from './menu'
+import validation from './validation'
 
 /**
  * 日语语言包
@@ -14,14 +14,14 @@ const jaLanguagePackage: LanguagePackage = {
     code: 'ja',
     region: 'JP',
     direction: 'ltr',
-    dateFormat: 'YYYY年M月D日'
+    dateFormat: 'YYYY年M月D日',
   },
   translations: {
     common,
     validation,
     menu,
-    date
-  }
+    date,
+  },
 }
 
 export default jaLanguagePackage

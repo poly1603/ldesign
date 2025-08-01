@@ -1,6 +1,6 @@
 import { MaybeRef } from 'vue';
-import { UseRequestOptions, UseRequestReturn } from '../types/vue.js';
-import { HttpClient, RequestConfig, ResponseData } from '../types/index.js';
+import { UseRequestOptions, UseRequestReturn } from '@/types/vue';
+import { HttpClient, RequestConfig, ResponseData } from '@/types';
 
 /**
  * useRequest Hook

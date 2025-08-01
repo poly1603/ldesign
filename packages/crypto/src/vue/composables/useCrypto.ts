@@ -1,12 +1,12 @@
-import { ref, computed, type Ref } from 'vue'
 import type {
   AESOptions,
-  RSAOptions,
-  EncryptResult,
   DecryptResult,
+  EncryptResult,
   RSAKeyPair,
+  RSAOptions,
 } from '../../types'
-import { encrypt, decrypt, keyGenerator } from '../../core'
+import { computed, ref, type Ref } from 'vue'
+import { decrypt, encrypt, keyGenerator } from '../../core'
 
 /**
  * 加密状态接口
@@ -25,28 +25,28 @@ export interface CryptoActions {
   // AES 加密
   encryptAES: (data: string, key: string, options?: AESOptions) => Promise<EncryptResult>
   decryptAES: (encryptedData: string | EncryptResult, key: string, options?: AESOptions) => Promise<DecryptResult>
-  
+
   // RSA 加密
   encryptRSA: (data: string, publicKey: string, options?: RSAOptions) => Promise<EncryptResult>
   decryptRSA: (encryptedData: string | EncryptResult, privateKey: string, options?: RSAOptions) => Promise<DecryptResult>
-  
+
   // Base64 编码
   encodeBase64: (data: string) => Promise<string>
   decodeBase64: (encodedData: string) => Promise<string>
-  
+
   // Hex 编码
   encodeHex: (data: string) => Promise<string>
   decodeHex: (encodedData: string) => Promise<string>
-  
+
   // 密钥生成
   generateRSAKeyPair: (keySize?: number) => Promise<RSAKeyPair>
   generateKey: (length?: number) => Promise<string>
   generateSalt: (length?: number) => Promise<string>
   generateIV: (length?: number) => Promise<string>
-  
+
   // 清除错误
   clearError: () => void
-  
+
   // 重置状态
   reset: () => void
 }
@@ -84,7 +84,7 @@ export function useCrypto(): UseCryptoReturn {
   // 异步操作包装器
   const wrapAsync = async <T>(
     operation: () => T,
-    loadingRef: Ref<boolean>
+    loadingRef: Ref<boolean>,
   ): Promise<T> => {
     try {
       loadingRef.value = true
@@ -92,9 +92,11 @@ export function useCrypto(): UseCryptoReturn {
       const result = operation()
       lastResult.value = result as any
       return result
-    } catch (error) {
+    }
+    catch (error) {
       handleError(error)
-    } finally {
+    }
+    finally {
       loadingRef.value = false
     }
   }
@@ -103,7 +105,7 @@ export function useCrypto(): UseCryptoReturn {
   const encryptAES = async (
     data: string,
     key: string,
-    options?: AESOptions
+    options?: AESOptions,
   ): Promise<EncryptResult> => {
     return wrapAsync(() => encrypt.aes(data, key, options), isEncrypting)
   }
@@ -112,7 +114,7 @@ export function useCrypto(): UseCryptoReturn {
   const decryptAES = async (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: AESOptions
+    options?: AESOptions,
   ): Promise<DecryptResult> => {
     return wrapAsync(() => decrypt.aes(encryptedData, key, options), isDecrypting)
   }
@@ -121,7 +123,7 @@ export function useCrypto(): UseCryptoReturn {
   const encryptRSA = async (
     data: string,
     publicKey: string,
-    options?: RSAOptions
+    options?: RSAOptions,
   ): Promise<EncryptResult> => {
     return wrapAsync(() => encrypt.rsa(data, publicKey, options), isEncrypting)
   }
@@ -130,7 +132,7 @@ export function useCrypto(): UseCryptoReturn {
   const decryptRSA = async (
     encryptedData: string | EncryptResult,
     privateKey: string,
-    options?: RSAOptions
+    options?: RSAOptions,
   ): Promise<DecryptResult> => {
     return wrapAsync(() => decrypt.rsa(encryptedData, privateKey, options), isDecrypting)
   }
@@ -194,7 +196,7 @@ export function useCrypto(): UseCryptoReturn {
     isDecrypting,
     lastError,
     lastResult,
-    
+
     // 操作
     encryptAES,
     decryptAES,
@@ -210,7 +212,7 @@ export function useCrypto(): UseCryptoReturn {
     generateIV,
     clearError,
     reset,
-    
+
     // 便捷访问
     encrypt,
     decrypt,

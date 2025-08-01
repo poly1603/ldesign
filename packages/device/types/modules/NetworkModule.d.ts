@@ -1,8 +1,9 @@
-import type { DeviceModule, NetworkInfo, NetworkStatus, NetworkType } from '../types';
+import { DeviceModule, NetworkInfo, NetworkStatus, NetworkType } from '../types/index.js';
+
 /**
  * 网络信息模块
  */
-export declare class NetworkModule implements DeviceModule {
+declare class NetworkModule implements DeviceModule {
     name: string;
     private networkInfo;
     private connection;
@@ -71,4 +72,5 @@ export declare class NetworkModule implements DeviceModule {
      */
     private removeEventListeners;
 }
-//# sourceMappingURL=NetworkModule.d.ts.map
+
+export { NetworkModule };

@@ -1,148 +1,6 @@
-<template>
-  <div class="contact">
-    <h2>📞 Contact Us</h2>
-    <p>This page demonstrates hash fragment navigation and scroll behavior.</p>
-    
-    <div class="contact-nav">
-      <h3>Quick Navigation:</h3>
-      <div class="nav-links">
-        <a href="#form" @click.prevent="scrollToSection('form')">Contact Form</a>
-        <a href="#info" @click.prevent="scrollToSection('info')">Contact Info</a>
-        <a href="#map" @click.prevent="scrollToSection('map')">Location</a>
-        <a href="#faq" @click.prevent="scrollToSection('faq')">FAQ</a>
-      </div>
-    </div>
-    
-    <section id="form" class="section">
-      <h3>📝 Contact Form</h3>
-      <div class="form-container">
-        <form @submit.prevent="submitForm" class="contact-form">
-          <div class="form-group">
-            <label for="name">Name:</label>
-            <input 
-              type="text" 
-              id="name" 
-              v-model="form.name" 
-              required
-              placeholder="Your full name"
-            >
-          </div>
-          
-          <div class="form-group">
-            <label for="email">Email:</label>
-            <input 
-              type="email" 
-              id="email" 
-              v-model="form.email" 
-              required
-              placeholder="your.email@example.com"
-            >
-          </div>
-          
-          <div class="form-group">
-            <label for="subject">Subject:</label>
-            <select id="subject" v-model="form.subject" required>
-              <option value="">Select a subject</option>
-              <option value="general">General Inquiry</option>
-              <option value="support">Technical Support</option>
-              <option value="billing">Billing Question</option>
-              <option value="feature">Feature Request</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="message">Message:</label>
-            <textarea 
-              id="message" 
-              v-model="form.message" 
-              required
-              rows="5"
-              placeholder="Please describe your inquiry..."
-            ></textarea>
-          </div>
-          
-          <button type="submit" class="submit-button">Send Message</button>
-        </form>
-      </div>
-    </section>
-    
-    <section id="info" class="section">
-      <h3>📍 Contact Information</h3>
-      <div class="info-grid">
-        <div class="info-card">
-          <div class="info-icon">📧</div>
-          <h4>Email</h4>
-          <p>support@ldesign.com</p>
-          <p>sales@ldesign.com</p>
-        </div>
-        
-        <div class="info-card">
-          <div class="info-icon">📞</div>
-          <h4>Phone</h4>
-          <p>+1 (555) 123-4567</p>
-          <p>+1 (555) 987-6543</p>
-        </div>
-        
-        <div class="info-card">
-          <div class="info-icon">🏢</div>
-          <h4>Office</h4>
-          <p>123 Tech Street</p>
-          <p>San Francisco, CA 94105</p>
-        </div>
-        
-        <div class="info-card">
-          <div class="info-icon">🕒</div>
-          <h4>Hours</h4>
-          <p>Mon-Fri: 9:00 AM - 6:00 PM</p>
-          <p>Sat-Sun: 10:00 AM - 4:00 PM</p>
-        </div>
-      </div>
-    </section>
-    
-    <section id="map" class="section">
-      <h3>🗺️ Our Location</h3>
-      <div class="map-container">
-        <div class="map-placeholder">
-          <div class="map-icon">🗺️</div>
-          <p>Interactive Map</p>
-          <p>123 Tech Street, San Francisco, CA</p>
-          <button @click="openMaps" class="map-button">Open in Maps</button>
-        </div>
-      </div>
-    </section>
-    
-    <section id="faq" class="section">
-      <h3>❓ Frequently Asked Questions</h3>
-      <div class="faq-list">
-        <div 
-          v-for="(faq, index) in faqs" 
-          :key="index"
-          class="faq-item"
-          :class="{ open: openFaq === index }"
-          @click="toggleFaq(index)"
-        >
-          <div class="faq-question">
-            <span>{{ faq.question }}</span>
-            <span class="faq-toggle">{{ openFaq === index ? '−' : '+' }}</span>
-          </div>
-          <div class="faq-answer" v-show="openFaq === index">
-            <p>{{ faq.answer }}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <div class="hash-info">
-      <h3>Current Hash:</h3>
-      <p>{{ $route.hash || 'No hash' }}</p>
-      <p><small>Try clicking the navigation links above to see hash changes</small></p>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
+import { useRoute, useRouter } from '@ldesign/router'
+import { onMounted, ref } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -152,7 +10,7 @@ const form = ref({
   name: '',
   email: '',
   subject: '',
-  message: ''
+  message: '',
 })
 
 const openFaq = ref<number | null>(null)
@@ -160,56 +18,56 @@ const openFaq = ref<number | null>(null)
 const faqs = ref([
   {
     question: 'How do I get started with LDesign Router?',
-    answer: 'Simply install the package via npm and follow our getting started guide in the documentation.'
+    answer: 'Simply install the package via npm and follow our getting started guide in the documentation.',
   },
   {
     question: 'Is LDesign Router compatible with Vue 3?',
-    answer: 'Yes! LDesign Router is built specifically for Vue 3 and takes full advantage of the Composition API.'
+    answer: 'Yes! LDesign Router is built specifically for Vue 3 and takes full advantage of the Composition API.',
   },
   {
     question: 'Can I use TypeScript with LDesign Router?',
-    answer: 'Absolutely! LDesign Router is written in TypeScript and provides excellent type safety out of the box.'
+    answer: 'Absolutely! LDesign Router is written in TypeScript and provides excellent type safety out of the box.',
   },
   {
     question: 'How do I handle authentication with the router?',
-    answer: 'You can use navigation guards to implement authentication checks before allowing access to protected routes.'
+    answer: 'You can use navigation guards to implement authentication checks before allowing access to protected routes.',
   },
   {
     question: 'Does it support lazy loading?',
-    answer: 'Yes, you can use dynamic imports to lazy load your route components for better performance.'
-  }
+    answer: 'Yes, you can use dynamic imports to lazy load your route components for better performance.',
+  },
 ])
 
 // 方法
-const scrollToSection = (sectionId: string) => {
+function scrollToSection(sectionId: string) {
   const element = document.getElementById(sectionId)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' })
-    
+
     // 更新 URL hash
     router.replace({ hash: `#${sectionId}` })
   }
 }
 
-const submitForm = () => {
+function submitForm() {
   // 模拟表单提交
   alert(`Thank you, ${form.value.name}! Your message has been sent.`)
-  
+
   // 重置表单
   form.value = {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   }
 }
 
-const openMaps = () => {
+function openMaps() {
   const address = encodeURIComponent('123 Tech Street, San Francisco, CA 94105')
   window.open(`https://maps.google.com/maps?q=${address}`, '_blank')
 }
 
-const toggleFaq = (index: number) => {
+function toggleFaq(index: number) {
   openFaq.value = openFaq.value === index ? null : index
 }
 
@@ -224,6 +82,172 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="contact">
+    <h2>📞 Contact Us</h2>
+    <p>This page demonstrates hash fragment navigation and scroll behavior.</p>
+
+    <div class="contact-nav">
+      <h3>Quick Navigation:</h3>
+      <div class="nav-links">
+        <a href="#form" @click.prevent="scrollToSection('form')">Contact Form</a>
+        <a href="#info" @click.prevent="scrollToSection('info')">Contact Info</a>
+        <a href="#map" @click.prevent="scrollToSection('map')">Location</a>
+        <a href="#faq" @click.prevent="scrollToSection('faq')">FAQ</a>
+      </div>
+    </div>
+
+    <section id="form" class="section">
+      <h3>📝 Contact Form</h3>
+      <div class="form-container">
+        <form class="contact-form" @submit.prevent="submitForm">
+          <div class="form-group">
+            <label for="name">Name:</label>
+            <input
+              id="name"
+              v-model="form.name"
+              type="text"
+              required
+              placeholder="Your full name"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              required
+              placeholder="your.email@example.com"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject:</label>
+            <select id="subject" v-model="form.subject" required>
+              <option value="">
+                Select a subject
+              </option>
+              <option value="general">
+                General Inquiry
+              </option>
+              <option value="support">
+                Technical Support
+              </option>
+              <option value="billing">
+                Billing Question
+              </option>
+              <option value="feature">
+                Feature Request
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea
+              id="message"
+              v-model="form.message"
+              required
+              rows="5"
+              placeholder="Please describe your inquiry..."
+            />
+          </div>
+
+          <button type="submit" class="submit-button">
+            Send Message
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section id="info" class="section">
+      <h3>📍 Contact Information</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-icon">
+            📧
+          </div>
+          <h4>Email</h4>
+          <p>support@ldesign.com</p>
+          <p>sales@ldesign.com</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">
+            📞
+          </div>
+          <h4>Phone</h4>
+          <p>+1 (555) 123-4567</p>
+          <p>+1 (555) 987-6543</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">
+            🏢
+          </div>
+          <h4>Office</h4>
+          <p>123 Tech Street</p>
+          <p>San Francisco, CA 94105</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">
+            🕒
+          </div>
+          <h4>Hours</h4>
+          <p>Mon-Fri: 9:00 AM - 6:00 PM</p>
+          <p>Sat-Sun: 10:00 AM - 4:00 PM</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="map" class="section">
+      <h3>🗺️ Our Location</h3>
+      <div class="map-container">
+        <div class="map-placeholder">
+          <div class="map-icon">
+            🗺️
+          </div>
+          <p>Interactive Map</p>
+          <p>123 Tech Street, San Francisco, CA</p>
+          <button class="map-button" @click="openMaps">
+            Open in Maps
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="section">
+      <h3>❓ Frequently Asked Questions</h3>
+      <div class="faq-list">
+        <div
+          v-for="(faq, index) in faqs"
+          :key="index"
+          class="faq-item"
+          :class="{ open: openFaq === index }"
+          @click="toggleFaq(index)"
+        >
+          <div class="faq-question">
+            <span>{{ faq.question }}</span>
+            <span class="faq-toggle">{{ openFaq === index ? '−' : '+' }}</span>
+          </div>
+          <div v-show="openFaq === index" class="faq-answer">
+            <p>{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="hash-info">
+      <h3>Current Hash:</h3>
+      <p>{{ $route.hash || 'No hash' }}</p>
+      <p><small>Try clicking the navigation links above to see hash changes</small></p>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .contact {

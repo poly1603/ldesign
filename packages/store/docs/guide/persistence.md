@@ -7,7 +7,7 @@
 ### 使用 @PersistentState 装饰器
 
 ```typescript
-import { BaseStore, PersistentState, State, Action } from '@ldesign/store'
+import { Action, BaseStore, PersistentState, State } from '@ldesign/store'
 
 class SettingsStore extends BaseStore {
   // 自动持久化到 localStorage
@@ -46,39 +46,9 @@ const settingsStore = new SettingsStore('settings')
 ### 使用 usePersist Hook
 
 ```vue
-<template>
-  <div class="settings">
-    <h2>应用设置</h2>
-    
-    <div class="setting-item">
-      <label>主题:</label>
-      <select v-model="theme">
-        <option value="light">浅色</option>
-        <option value="dark">深色</option>
-      </select>
-    </div>
-    
-    <div class="setting-item">
-      <label>语言:</label>
-      <select v-model="language">
-        <option value="zh-CN">中文</option>
-        <option value="en-US">English</option>
-      </select>
-    </div>
-    
-    <div class="actions">
-      <button @click="save">手动保存</button>
-      <button @click="load">重新加载</button>
-      <button @click="clear">清除设置</button>
-    </div>
-    
-    <p v-if="isPersisted">✅ 设置已保存</p>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { usePersist } from '@ldesign/store/vue'
+import { ref } from 'vue'
 import { SettingsStore } from '@/stores/settings'
 
 const settingsStore = new SettingsStore('settings')
@@ -96,6 +66,52 @@ watch([theme, language], () => {
   settingsStore.setLanguage(language.value)
 })
 </script>
+
+<template>
+  <div class="settings">
+    <h2>应用设置</h2>
+
+    <div class="setting-item">
+      <label>主题:</label>
+      <select v-model="theme">
+        <option value="light">
+          浅色
+        </option>
+        <option value="dark">
+          深色
+        </option>
+      </select>
+    </div>
+
+    <div class="setting-item">
+      <label>语言:</label>
+      <select v-model="language">
+        <option value="zh-CN">
+          中文
+        </option>
+        <option value="en-US">
+          English
+        </option>
+      </select>
+    </div>
+
+    <div class="actions">
+      <button @click="save">
+        手动保存
+      </button>
+      <button @click="load">
+        重新加载
+      </button>
+      <button @click="clear">
+        清除设置
+      </button>
+    </div>
+
+    <p v-if="isPersisted">
+      ✅ 设置已保存
+    </p>
+  </div>
+</template>
 ```
 
 ## 高级持久化配置
@@ -105,15 +121,15 @@ watch([theme, language], () => {
 ```typescript
 class UserPreferencesStore extends BaseStore {
   // 自定义存储键
-  @PersistentState({ 
+  @PersistentState({
     default: {},
     key: 'user_preferences_v2', // 自定义键名
-    storage: 'localStorage'      // 指定存储类型
+    storage: 'localStorage' // 指定存储类型
   })
   preferences: UserPreferences = {}
 
   // 使用会话存储
-  @PersistentState({ 
+  @PersistentState({
     default: null,
     key: 'current_session',
     storage: 'sessionStorage'
@@ -121,7 +137,7 @@ class UserPreferencesStore extends BaseStore {
   currentSession: Session | null = null
 
   // 自定义序列化
-  @PersistentState({ 
+  @PersistentState({
     default: new Date(),
     key: 'last_visit',
     serialize: (date: Date) => date.toISOString(),
@@ -138,7 +154,7 @@ class ConditionalPersistStore extends BaseStore {
   @State({ default: null })
   user: User | null = null
 
-  @PersistentState({ 
+  @PersistentState({
     default: [],
     // 只有在用户登录时才持久化
     condition: () => this.user !== null
@@ -148,7 +164,7 @@ class ConditionalPersistStore extends BaseStore {
   @Action()
   setUser(user: User | null) {
     this.user = user
-    
+
     // 如果用户登出，清除持久化数据
     if (!user) {
       this.clearUserData()
@@ -171,10 +187,10 @@ class ConditionalPersistStore extends BaseStore {
 ```typescript
 // storage/adapters.ts
 export interface StorageAdapter {
-  getItem(key: string): string | null
-  setItem(key: string, value: string): void
-  removeItem(key: string): void
-  clear(): void
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+  clear: () => void
 }
 
 // IndexedDB 适配器
@@ -192,13 +208,13 @@ export class IndexedDBAdapter implements StorageAdapter {
   private async init() {
     return new Promise<void>((resolve, reject) => {
       const request = indexedDB.open(this.dbName, 1)
-      
+
       request.onerror = () => reject(request.error)
       request.onsuccess = () => {
         this.db = request.result
         resolve()
       }
-      
+
       request.onupgradeneeded = () => {
         const db = request.result
         if (!db.objectStoreNames.contains(this.storeName)) {
@@ -209,52 +225,56 @@ export class IndexedDBAdapter implements StorageAdapter {
   }
 
   async getItem(key: string): Promise<string | null> {
-    if (!this.db) await this.init()
-    
+    if (!this.db)
+      await this.init()
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readonly')
       const store = transaction.objectStore(this.storeName)
       const request = store.get(key)
-      
+
       request.onerror = () => reject(request.error)
       request.onsuccess = () => resolve(request.result || null)
     })
   }
 
   async setItem(key: string, value: string): Promise<void> {
-    if (!this.db) await this.init()
-    
+    if (!this.db)
+      await this.init()
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
       const request = store.put(value, key)
-      
+
       request.onerror = () => reject(request.error)
       request.onsuccess = () => resolve()
     })
   }
 
   async removeItem(key: string): Promise<void> {
-    if (!this.db) await this.init()
-    
+    if (!this.db)
+      await this.init()
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
       const request = store.delete(key)
-      
+
       request.onerror = () => reject(request.error)
       request.onsuccess = () => resolve()
     })
   }
 
   async clear(): Promise<void> {
-    if (!this.db) await this.init()
-    
+    if (!this.db)
+      await this.init()
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
       const request = store.clear()
-      
+
       request.onerror = () => reject(request.error)
       request.onsuccess = () => resolve()
     })
@@ -294,11 +314,13 @@ export class EncryptedStorageAdapter implements StorageAdapter {
 
   getItem(key: string): string | null {
     const encrypted = this.baseAdapter.getItem(key)
-    if (!encrypted) return null
-    
+    if (!encrypted)
+      return null
+
     try {
       return this.decrypt(encrypted)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('解密失败:', error)
       return null
     }
@@ -333,24 +355,24 @@ export class EncryptedStorageAdapter implements StorageAdapter {
 ### 使用自定义适配器
 
 ```typescript
-import { IndexedDBAdapter, EncryptedStorageAdapter } from '@/storage/adapters'
+import { EncryptedStorageAdapter, IndexedDBAdapter } from '@/storage/adapters'
 
 class AdvancedPersistStore extends BaseStore {
   private indexedDBAdapter = new IndexedDBAdapter()
   private encryptedAdapter = new EncryptedStorageAdapter(
-    localStorage, 
+    localStorage,
     'my-secret-key'
   )
 
   // 使用 IndexedDB 存储大量数据
-  @PersistentState({ 
+  @PersistentState({
     default: [],
     adapter: this.indexedDBAdapter
   })
   largeDataset: any[] = []
 
   // 使用加密存储敏感数据
-  @PersistentState({ 
+  @PersistentState({
     default: null,
     adapter: this.encryptedAdapter
   })
@@ -385,14 +407,14 @@ class VersionedPersistStore extends BaseStore {
   private static MIGRATIONS: MigrationConfig[] = [
     {
       version: 2,
-      migrate: (oldData) => ({
+      migrate: oldData => ({
         ...oldData,
         newField: 'default value'
       })
     },
     {
       version: 3,
-      migrate: (oldData) => ({
+      migrate: oldData => ({
         ...oldData,
         settings: {
           ...oldData.settings,
@@ -402,7 +424,7 @@ class VersionedPersistStore extends BaseStore {
     }
   ]
 
-  @PersistentState({ 
+  @PersistentState({
     default: { version: VersionedPersistStore.CURRENT_VERSION },
     key: 'app_data',
     beforeLoad: this.migrateData.bind(this)
@@ -413,10 +435,10 @@ class VersionedPersistStore extends BaseStore {
     try {
       let data = JSON.parse(rawData)
       const currentVersion = data.version || 1
-      
+
       if (currentVersion < VersionedPersistStore.CURRENT_VERSION) {
         console.log(`迁移数据从版本 ${currentVersion} 到 ${VersionedPersistStore.CURRENT_VERSION}`)
-        
+
         // 应用所有需要的迁移
         for (const migration of VersionedPersistStore.MIGRATIONS) {
           if (migration.version > currentVersion) {
@@ -425,9 +447,10 @@ class VersionedPersistStore extends BaseStore {
           }
         }
       }
-      
+
       return JSON.stringify(data)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('数据迁移失败:', error)
       return rawData
     }
@@ -452,7 +475,7 @@ class BackupRestoreStore extends BaseStore {
         // 其他需要导出的数据
       }
     }
-    
+
     return JSON.stringify(exportData, null, 2)
   }
 
@@ -460,21 +483,22 @@ class BackupRestoreStore extends BaseStore {
   importData(jsonData: string): boolean {
     try {
       const importData = JSON.parse(jsonData)
-      
+
       // 验证数据格式
       if (!this.validateImportData(importData)) {
         throw new Error('无效的数据格式')
       }
-      
+
       // 备份当前数据
       this.createBackup()
-      
+
       // 导入新数据
       this.userData = importData.data.userData
-      
+
       console.log('数据导入成功')
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('数据导入失败:', error)
       return false
     }
@@ -484,12 +508,12 @@ class BackupRestoreStore extends BaseStore {
   createBackup(): string {
     const backupKey = `backup_${Date.now()}`
     const backupData = this.exportData()
-    
+
     localStorage.setItem(backupKey, backupData)
-    
+
     // 清理旧备份（只保留最近5个）
     this.cleanupOldBackups()
-    
+
     return backupKey
   }
 
@@ -500,37 +524,37 @@ class BackupRestoreStore extends BaseStore {
       console.error('备份不存在')
       return false
     }
-    
+
     return this.importData(backupData)
   }
 
   @Action()
   getAvailableBackups(): string[] {
     const backups: string[] = []
-    
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       if (key && key.startsWith('backup_')) {
         backups.push(key)
       }
     }
-    
+
     return backups.sort().reverse() // 最新的在前
   }
 
   private validateImportData(data: any): boolean {
     return (
-      data &&
-      typeof data.version === 'number' &&
-      typeof data.timestamp === 'string' &&
-      data.data &&
-      typeof data.data === 'object'
+      data
+      && typeof data.version === 'number'
+      && typeof data.timestamp === 'string'
+      && data.data
+      && typeof data.data === 'object'
     )
   }
 
   private cleanupOldBackups(): void {
     const backups = this.getAvailableBackups()
-    
+
     // 只保留最近5个备份
     if (backups.length > 5) {
       const toDelete = backups.slice(5)
@@ -549,7 +573,7 @@ class OptimizedPersistStore extends BaseStore {
   private persistTimer: NodeJS.Timeout | null = null
   private pendingChanges = new Set<string>()
 
-  @PersistentState({ 
+  @PersistentState({
     default: {},
     lazy: true, // 延迟持久化
     debounce: 1000 // 1秒后保存
@@ -564,11 +588,11 @@ class OptimizedPersistStore extends BaseStore {
 
   private schedulePersist(key: string) {
     this.pendingChanges.add(key)
-    
+
     if (this.persistTimer) {
       clearTimeout(this.persistTimer)
     }
-    
+
     this.persistTimer = setTimeout(() => {
       this.persistChanges()
     }, 1000)
@@ -578,13 +602,13 @@ class OptimizedPersistStore extends BaseStore {
     if (this.pendingChanges.size > 0) {
       // 只持久化有变化的数据
       const changedData = {}
-      this.pendingChanges.forEach(key => {
+      this.pendingChanges.forEach((key) => {
         changedData[key] = this.frequentlyChangedData[key]
       })
-      
+
       // 执行持久化
       this.saveToPersistentStorage(changedData)
-      
+
       this.pendingChanges.clear()
       this.persistTimer = null
     }
@@ -606,10 +630,10 @@ class OptimizedPersistStore extends BaseStore {
 import LZString from 'lz-string'
 
 class CompressedPersistStore extends BaseStore {
-  @PersistentState({ 
+  @PersistentState({
     default: [],
     compress: true,
-    serialize: (data) => LZString.compress(JSON.stringify(data)),
+    serialize: data => LZString.compress(JSON.stringify(data)),
     deserialize: (compressed) => {
       const decompressed = LZString.decompress(compressed)
       return decompressed ? JSON.parse(decompressed) : null
@@ -683,7 +707,7 @@ class NestedDataStore extends BaseStore {
 
 ```typescript
 class RobustPersistStore extends BaseStore {
-  @PersistentState({ 
+  @PersistentState({
     default: {},
     onError: (error, key) => {
       console.error(`持久化失败 [${key}]:`, error)

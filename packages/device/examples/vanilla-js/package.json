@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/device-vanilla-example",
+  "type": "module",
   "version": "1.0.0",
   "description": "Vanilla JavaScript example for @ldesign/device",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

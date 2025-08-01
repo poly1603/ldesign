@@ -91,8 +91,8 @@ const newUser = await http.post<User, CreateUserRequest>('/users', {
 ### 安装 Vue 插件
 
 ```typescript
+import { createHttpClient, HttpPlugin } from '@ldesign/http'
 import { createApp } from 'vue'
-import { HttpPlugin, createHttpClient } from '@ldesign/http'
 
 const app = createApp({})
 
@@ -110,24 +110,6 @@ app.use(HttpPlugin, {
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error" class="error">
-      错误: {{ error.message }}
-    </div>
-    <div v-else>
-      <h2>用户列表</h2>
-      <ul>
-        <li v-for="user in data" :key="user.id">
-          {{ user.name }} - {{ user.email }}
-        </li>
-      </ul>
-    </div>
-    <button @click="refresh">刷新</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useRequest } from '@ldesign/http/vue'
 
@@ -144,6 +126,28 @@ const { data, loading, error, refresh } = useRequest<User[]>({
   immediate: true
 })
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error" class="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else>
+      <h2>用户列表</h2>
+      <ul>
+        <li v-for="user in data" :key="user.id">
+          {{ user.name }} - {{ user.email }}
+        </li>
+      </ul>
+    </div>
+    <button @click="refresh">
+      刷新
+    </button>
+  </div>
+</template>
 ```
 
 ### 使用查询 Hook
@@ -166,19 +170,9 @@ const { data, loading, error, refresh } = useQuery<User[]>(
 ### 使用变更 Hook
 
 ```vue
-<template>
-  <form @submit.prevent="handleSubmit">
-    <input v-model="form.name" placeholder="姓名" required />
-    <input v-model="form.email" type="email" placeholder="邮箱" required />
-    <button type="submit" :disabled="loading">
-      {{ loading ? '提交中...' : '提交' }}
-    </button>
-  </form>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useMutation } from '@ldesign/http/vue'
+import { ref } from 'vue'
 
 const form = ref({
   name: '',
@@ -198,10 +192,20 @@ const { mutate, loading, error } = useMutation(
   }
 )
 
-const handleSubmit = () => {
+function handleSubmit() {
   mutate(form.value)
 }
 </script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="form.name" placeholder="姓名" required>
+    <input v-model="form.email" type="email" placeholder="邮箱" required>
+    <button type="submit" :disabled="loading">
+      {{ loading ? '提交中...' : '提交' }}
+    </button>
+  </form>
+</template>
 ```
 
 ## 配置选项
@@ -212,29 +216,29 @@ const handleSubmit = () => {
 const http = createHttpClient({
   // 基础 URL
   baseURL: 'https://api.example.com',
-  
+
   // 超时时间（毫秒）
   timeout: 10000,
-  
+
   // 默认请求头
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  
+
   // 缓存配置
   cache: {
     enabled: true,
     ttl: 300000, // 5 分钟
   },
-  
+
   // 重试配置
   retry: {
     retries: 3,
     retryDelay: 1000,
-    retryCondition: (error) => error.isNetworkError
+    retryCondition: error => error.isNetworkError
   },
-  
+
   // 并发控制
   concurrency: {
     maxConcurrent: 10,
@@ -250,7 +254,7 @@ const http = createHttpClient({
 const response = await http.get('/users', {
   timeout: 5000,
   headers: {
-    'Authorization': 'Bearer token'
+    Authorization: 'Bearer token'
   },
   cache: {
     enabled: false

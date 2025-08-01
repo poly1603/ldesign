@@ -1,4 +1,4 @@
-import { IEncryptor, AESOptions, EncryptResult, DecryptResult } from '@/types';
+import { AESOptions, EncryptResult, DecryptResult, IEncryptor } from '../types/index.js';
 
 /**
  * AES 加密器

@@ -1,6 +1,6 @@
+import type { DeviceType } from '../composables/useTemplateSystem'
 import { defineComponent, watch } from 'vue'
 import { useTemplate } from '../composables/useTemplateSystem'
-import type { DeviceType } from '../composables/useTemplateSystem'
 
 export interface TemplateRendererProps {
   category: string
@@ -14,11 +14,11 @@ export interface TemplateRendererProps {
 
 /**
  * 模板渲染组件
- * 
+ *
  * @example
  * ```vue
  * <template>
- *   <TemplateRenderer 
+ *   <TemplateRenderer
  *     category="login"
  *     :show-selector="true"
  *     @login="handleLogin"
@@ -31,32 +31,32 @@ export const TemplateRenderer = defineComponent({
   props: {
     category: {
       type: String,
-      required: true
+      required: true,
     },
     templateId: {
       type: String,
-      default: undefined
+      default: undefined,
     },
     deviceType: {
       type: String,
-      default: undefined
+      default: undefined,
     },
     showSelector: {
       type: Boolean,
-      default: false
+      default: false,
     },
     selectorPosition: {
       type: String,
-      default: 'top'
+      default: 'top',
     },
     autoDetectDevice: {
       type: Boolean,
-      default: true
+      default: true,
     },
     config: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   emits: ['template-change', 'device-change', 'render-error'],
   setup(props, { emit, attrs }) {
@@ -68,12 +68,12 @@ export const TemplateRenderer = defineComponent({
       switchTemplate,
       switchDevice,
       TemplateComponent,
-      templateConfig
+      templateConfig,
     } = useTemplate({
       category: props.category,
       deviceType: props.deviceType,
       defaultTemplate: props.templateId,
-      autoSwitch: props.autoDetectDevice
+      autoSwitch: props.autoDetectDevice,
     })
 
     // 监听模板变化
@@ -88,7 +88,8 @@ export const TemplateRenderer = defineComponent({
 
     // 渲染模板选择器
     const renderSelector = () => {
-      if (!props.showSelector) return null
+      if (!props.showSelector)
+        return null
 
       return (
         <div class="template-renderer__selector">
@@ -109,7 +110,7 @@ export const TemplateRenderer = defineComponent({
               ))}
             </select>
           </div>
-          
+
           <div class="template-renderer__selector-group">
             <label class="template-renderer__label">设备:</label>
             <select
@@ -135,22 +136,28 @@ export const TemplateRenderer = defineComponent({
         if (!TemplateComponent.value) {
           return <div class="template-renderer__error">未找到模板</div>
         }
-        
+
         // 合并配置
         const finalConfig = {
           ...templateConfig.value,
-          ...props.config
+          ...props.config,
         }
-        
+
         return (
-          <TemplateComponent.value 
+          <TemplateComponent.value
             {...finalConfig}
             {...attrs}
           />
         )
-      } catch (error) {
+      }
+      catch (error) {
         emit('render-error', error)
-        return <div class="template-renderer__error">模板渲染失败: {error.message}</div>
+        return (
+          <div class="template-renderer__error">
+            模板渲染失败:
+            {error.message}
+          </div>
+        )
       }
     }
 
@@ -160,9 +167,9 @@ export const TemplateRenderer = defineComponent({
 
       const className = [
         'template-renderer',
-        props.selectorPosition === 'left' || props.selectorPosition === 'right' 
-          ? 'template-renderer--horizontal' 
-          : 'template-renderer--vertical'
+        props.selectorPosition === 'left' || props.selectorPosition === 'right'
+          ? 'template-renderer--horizontal'
+          : 'template-renderer--vertical',
       ].join(' ')
 
       if (props.selectorPosition === 'top') {
@@ -174,7 +181,8 @@ export const TemplateRenderer = defineComponent({
             </div>
           </div>
         )
-      } else if (props.selectorPosition === 'bottom') {
+      }
+      else if (props.selectorPosition === 'bottom') {
         return (
           <div class={className}>
             <div class="template-renderer__content">
@@ -183,7 +191,8 @@ export const TemplateRenderer = defineComponent({
             {selector}
           </div>
         )
-      } else if (props.selectorPosition === 'left') {
+      }
+      else if (props.selectorPosition === 'left') {
         return (
           <div class={className}>
             {selector}
@@ -192,7 +201,8 @@ export const TemplateRenderer = defineComponent({
             </div>
           </div>
         )
-      } else {
+      }
+      else {
         return (
           <div class={className}>
             <div class="template-renderer__content">
@@ -203,7 +213,7 @@ export const TemplateRenderer = defineComponent({
         )
       }
     }
-  }
+  },
 })
 
 export default TemplateRenderer

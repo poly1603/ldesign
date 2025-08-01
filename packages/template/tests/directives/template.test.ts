@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { registerTemplateDirective, templateDirective } from '@/vue/directives/template'
+import { afterEach, describe, expect, it } from 'vitest'
 import { destroyGlobalManager } from '@/vue/composables/useTemplate'
+import { registerTemplateDirective, templateDirective } from '@/vue/directives/template'
 
 describe('templateDirective', () => {
   afterEach(() => {
@@ -26,8 +26,8 @@ describe('templateDirective', () => {
       const TestComponent = {
         template: '<div v-template="{ category: \'login\', device: \'desktop\', template: \'classic\' }"></div>',
         directives: {
-          template: templateDirective
-        }
+          template: templateDirective,
+        },
       }
 
       const wrapper = mount(TestComponent)
@@ -38,8 +38,8 @@ describe('templateDirective', () => {
       const TestComponent = {
         template: '<div v-template="\'login:desktop:classic\'"></div>',
         directives: {
-          template: templateDirective
-        }
+          template: templateDirective,
+        },
       }
 
       const wrapper = mount(TestComponent)
@@ -50,8 +50,8 @@ describe('templateDirective', () => {
       const TestComponent = {
         template: '<div v-template="null"></div>',
         directives: {
-          template: templateDirective
-        }
+          template: templateDirective,
+        },
       }
 
       const wrapper = mount(TestComponent)
@@ -64,8 +64,8 @@ describe('templateDirective', () => {
       const TestComponent = {
         template: '<div v-template="{ category: \'login\', device: \'desktop\', template: \'classic\' }"></div>',
         directives: {
-          template: templateDirective
-        }
+          template: templateDirective,
+        },
       }
 
       const wrapper = mount(TestComponent)
@@ -76,20 +76,20 @@ describe('templateDirective', () => {
       const TestComponent = {
         data() {
           return {
-            templateConfig: { category: 'login', device: 'desktop', template: 'classic' }
+            templateConfig: { category: 'login', device: 'desktop', template: 'classic' },
           }
         },
         template: '<div v-template="templateConfig"></div>',
         directives: {
-          template: templateDirective
-        }
+          template: templateDirective,
+        },
       }
 
       const wrapper = mount(TestComponent)
-      
+
       // 更新配置
       await wrapper.setData({
-        templateConfig: { category: 'login', device: 'desktop', template: 'modern' }
+        templateConfig: { category: 'login', device: 'desktop', template: 'modern' },
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -99,13 +99,13 @@ describe('templateDirective', () => {
       const TestComponent = {
         template: '<div v-template="{ category: \'login\', device: \'desktop\', template: \'classic\' }"></div>',
         directives: {
-          template: templateDirective
-        }
+          template: templateDirective,
+        },
       }
 
       const wrapper = mount(TestComponent)
       wrapper.unmount()
-      
+
       // 验证组件已被卸载
       expect(wrapper.exists()).toBe(false)
     })

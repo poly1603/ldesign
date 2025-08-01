@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['json', { outputFile: 'playwright-report/results.json' }],
-    ['junit', { outputFile: 'playwright-report/results.xml' }]
+    ['junit', { outputFile: 'playwright-report/results.xml' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -28,35 +28,35 @@ export default defineConfig({
     /* Take screenshot only when test fails */
     screenshot: 'only-on-failure',
     /* Record video only when test fails */
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: { ...devices['Desktop Chrome'] },
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      use: { ...devices['Desktop Firefox'] },
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'] },
     },
 
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] }
+      use: { ...devices['Pixel 5'] },
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] }
-    }
+      use: { ...devices['iPhone 12'] },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
@@ -64,7 +64,7 @@ export default defineConfig({
     {
       command: 'pnpm dev',
       port: 5173,
-      reuseExistingServer: !process.env.CI
-    }
-  ]
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 })

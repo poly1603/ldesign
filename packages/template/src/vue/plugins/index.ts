@@ -26,7 +26,7 @@ const defaultOptions: Required<TemplatePluginOptions> = {
   deviceDetection: {
     mobileBreakpoint: 768,
     tabletBreakpoint: 992,
-    desktopBreakpoint: 1200
+    desktopBreakpoint: 1200,
   },
   enableCache: true,
   cacheLimit: 50,
@@ -36,7 +36,7 @@ const defaultOptions: Required<TemplatePluginOptions> = {
   componentPrefix: 'L',
   registerComponents: true,
   registerDirectives: true,
-  provideGlobalProperties: true
+  provideGlobalProperties: true,
 }
 
 /**
@@ -77,7 +77,7 @@ export const TemplatePlugin: Plugin = {
     if (typeof window !== 'undefined') {
       globalManager.scanTemplates().catch(console.warn)
     }
-  }
+  },
 }
 
 /**

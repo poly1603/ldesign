@@ -4,7 +4,7 @@ export default defineConfig({
   title: '@ldesign/device',
   description: '现代化的设备检测库，支持 Vue 3 集成',
   base: '/device/',
-  
+
   head: [
     ['link', { rel: 'icon', href: '/device/favicon.ico' }],
     ['meta', { name: 'theme-color', content: '#646cff' }],
@@ -12,7 +12,7 @@ export default defineConfig({
 
   themeConfig: {
     logo: '/logo.svg',
-    
+
     nav: [
       { text: '指南', link: '/guide/' },
       { text: 'API', link: '/api/' },

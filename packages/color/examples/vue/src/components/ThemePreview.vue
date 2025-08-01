@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useTheme } from '@ldesign/color/vue'
 import { presetThemes, themeCategories } from '@ldesign/color'
+import { useTheme } from '@ldesign/color/vue'
+import { computed } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { setTheme, currentTheme, currentMode } = useTheme()
@@ -11,7 +11,7 @@ const { showNotification } = useNotification()
 const categorizedThemes = computed(() => {
   return {
     basic: themeCategories.basic,
-    colorful: themeCategories.colorful
+    colorful: themeCategories.colorful,
   }
 })
 
@@ -20,7 +20,8 @@ async function applyTheme(themeName: string) {
   try {
     await setTheme(themeName, currentMode.value)
     showNotification(`已应用 ${getThemeDisplayName(themeName)} 主题`, 'success')
-  } catch (error) {
+  }
+  catch (error) {
     showNotification('主题应用失败', 'error')
     console.error('Failed to apply theme:', error)
   }
@@ -61,7 +62,9 @@ function isCurrentTheme(themeName: string): boolean {
 
     <!-- 基础主题 -->
     <div class="theme-section">
-      <h3 class="section-title">基础主题</h3>
+      <h3 class="section-title">
+        基础主题
+      </h3>
       <div class="theme-grid">
         <div
           v-for="theme in categorizedThemes.basic"
@@ -70,7 +73,7 @@ function isCurrentTheme(themeName: string): boolean {
           :class="{ active: isCurrentTheme(theme.name) }"
           @click="applyTheme(theme.name)"
         >
-          <div 
+          <div
             class="theme-preview"
             :style="{ backgroundColor: getThemePrimaryColor(theme.name) }"
           >
@@ -79,8 +82,12 @@ function isCurrentTheme(themeName: string): boolean {
             </div>
           </div>
           <div class="theme-info">
-            <h4 class="theme-name">{{ getThemeDisplayName(theme.name) }}</h4>
-            <p class="theme-description">{{ getThemeDescription(theme.name) }}</p>
+            <h4 class="theme-name">
+              {{ getThemeDisplayName(theme.name) }}
+            </h4>
+            <p class="theme-description">
+              {{ getThemeDescription(theme.name) }}
+            </p>
           </div>
         </div>
       </div>
@@ -88,7 +95,9 @@ function isCurrentTheme(themeName: string): boolean {
 
     <!-- 彩色主题 -->
     <div class="theme-section">
-      <h3 class="section-title">彩色主题</h3>
+      <h3 class="section-title">
+        彩色主题
+      </h3>
       <div class="theme-grid">
         <div
           v-for="theme in categorizedThemes.colorful"
@@ -97,7 +106,7 @@ function isCurrentTheme(themeName: string): boolean {
           :class="{ active: isCurrentTheme(theme.name) }"
           @click="applyTheme(theme.name)"
         >
-          <div 
+          <div
             class="theme-preview"
             :style="{ backgroundColor: getThemePrimaryColor(theme.name) }"
           >
@@ -106,8 +115,12 @@ function isCurrentTheme(themeName: string): boolean {
             </div>
           </div>
           <div class="theme-info">
-            <h4 class="theme-name">{{ getThemeDisplayName(theme.name) }}</h4>
-            <p class="theme-description">{{ getThemeDescription(theme.name) }}</p>
+            <h4 class="theme-name">
+              {{ getThemeDisplayName(theme.name) }}
+            </h4>
+            <p class="theme-description">
+              {{ getThemeDescription(theme.name) }}
+            </p>
           </div>
         </div>
       </div>
@@ -223,19 +236,19 @@ function isCurrentTheme(themeName: string): boolean {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.75rem;
   }
-  
+
   .theme-preview {
     height: 60px;
   }
-  
+
   .theme-info {
     padding: 0.75rem;
   }
-  
+
   .theme-name {
     font-size: 0.9rem;
   }
-  
+
   .theme-description {
     font-size: 0.75rem;
   }

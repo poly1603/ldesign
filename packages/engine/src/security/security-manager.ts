@@ -56,7 +56,7 @@ export enum SecurityEventType {
   CSRF_ATTACK = 'csrf_attack',
   CSP_VIOLATION = 'csp_violation',
   CLICKJACKING_ATTEMPT = 'clickjacking_attempt',
-  INSECURE_REQUEST = 'insecure_request'
+  INSECURE_REQUEST = 'insecure_request',
 }
 
 // 安全事件信息
@@ -73,28 +73,28 @@ export interface SecurityEvent {
 // 安全管理器接口
 export interface SecurityManager {
   // XSS防护
-  sanitizeHTML(html: string): XSSResult
-  validateInput(input: string, type?: 'html' | 'text' | 'url'): boolean
-  
+  sanitizeHTML: (html: string) => XSSResult
+  validateInput: (input: string, type?: 'html' | 'text' | 'url') => boolean
+
   // CSRF防护
-  generateCSRFToken(): CSRFToken
-  validateCSRFToken(token: string): boolean
-  getCSRFToken(): string | null
-  
+  generateCSRFToken: () => CSRFToken
+  validateCSRFToken: (token: string) => boolean
+  getCSRFToken: () => string | null
+
   // CSP管理
-  generateCSPHeader(): string
-  reportCSPViolation(violation: any): void
-  
+  generateCSPHeader: () => string
+  reportCSPViolation: (violation: any) => void
+
   // 安全头设置
-  getSecurityHeaders(): Record<string, string>
-  
+  getSecurityHeaders: () => Record<string, string>
+
   // 事件处理
-  onSecurityEvent(callback: (event: SecurityEvent) => void): void
-  reportSecurityEvent(event: SecurityEvent): void
-  
+  onSecurityEvent: (callback: (event: SecurityEvent) => void) => void
+  reportSecurityEvent: (event: SecurityEvent) => void
+
   // 配置管理
-  updateConfig(config: Partial<SecurityConfig>): void
-  getConfig(): SecurityConfig
+  updateConfig: (config: Partial<SecurityConfig>) => void
+  getConfig: () => SecurityConfig
 }
 
 // XSS防护实现
@@ -105,22 +105,38 @@ class XSSProtector {
 
   constructor(config: SecurityConfig['xss'] = {}) {
     this.allowedTags = new Set(config.allowedTags || [
-      'p', 'br', 'strong', 'em', 'u', 'i', 'b',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'ul', 'ol', 'li', 'blockquote', 'code', 'pre'
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      'i',
+      'b',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'ul',
+      'ol',
+      'li',
+      'blockquote',
+      'code',
+      'pre',
     ])
-    
+
     this.allowedAttributes = new Map()
     const attrs = config.allowedAttributes || {
-      'a': ['href', 'title'],
-      'img': ['src', 'alt', 'title', 'width', 'height'],
-      'blockquote': ['cite']
+      a: ['href', 'title'],
+      img: ['src', 'alt', 'title', 'width', 'height'],
+      blockquote: ['cite'],
     }
-    
+
     for (const [tag, attrList] of Object.entries(attrs)) {
       this.allowedAttributes.set(tag, new Set(attrList))
     }
-    
+
     this.stripIgnoreTag = config.stripIgnoreTag ?? true
   }
 
@@ -167,56 +183,58 @@ class XSSProtector {
     return {
       safe: threats.length === 0,
       sanitized,
-      threats
+      threats,
     }
   }
 
   private filterTags(html: string, threats: string[]): string {
-    const tagRegex = /<\/?([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g
-    
+    const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/gi
+
     return html.replace(tagRegex, (match, tagName) => {
       const tag = tagName.toLowerCase()
-      
+
       if (!this.allowedTags.has(tag)) {
         threats.push(`Disallowed tag: ${tag}`)
         return this.stripIgnoreTag ? '' : match.replace(/</g, '&lt;').replace(/>/g, '&gt;')
       }
-      
+
       return match
     })
   }
 
   private filterAttributes(html: string, threats: string[]): string {
-    const tagRegex = /<([a-zA-Z][a-zA-Z0-9]*)([^>]*)>/g
-    
+    const tagRegex = /<([a-z][a-z0-9]*)([^>]*)>/gi
+
     return html.replace(tagRegex, (match, tagName, attributes) => {
       const tag = tagName.toLowerCase()
       const allowedAttrs = this.allowedAttributes.get(tag) || new Set()
-      
+
       if (!attributes.trim()) {
         return match
       }
-      
-      const attrRegex = /\s+([a-zA-Z][a-zA-Z0-9-]*)\s*=\s*["']([^"']*)["']/g
+
+      const attrRegex = /\s+([a-z][a-z0-9-]*)\s*=\s*["']([^"']*)["']/gi
       let filteredAttributes = ''
       let attrMatch
-      
+
       while ((attrMatch = attrRegex.exec(attributes)) !== null) {
         const [, attrName, attrValue] = attrMatch
         const attr = attrName.toLowerCase()
-        
+
         if (allowedAttrs.has(attr)) {
           // 验证属性值
           if (this.isValidAttributeValue(attr, attrValue)) {
             filteredAttributes += ` ${attrName}="${attrValue}"`
-          } else {
+          }
+          else {
             threats.push(`Invalid attribute value: ${attr}="${attrValue}"`)
           }
-        } else {
+        }
+        else {
           threats.push(`Disallowed attribute: ${attr}`)
         }
       }
-      
+
       return `<${tagName}${filteredAttributes}>`
     })
   }
@@ -227,9 +245,9 @@ class XSSProtector {
       /javascript\s*:/i,
       /vbscript\s*:/i,
       /data\s*:(?!image\/)/i,
-      /expression\s*\(/i
+      /expression\s*\(/i,
     ]
-    
+
     return !dangerousPatterns.some(pattern => pattern.test(value))
   }
 }
@@ -246,7 +264,7 @@ class CSRFProtector {
       headerName: 'X-CSRF-Token',
       cookieName: 'csrf_token',
       sameSite: 'strict',
-      ...config
+      ...config,
     }
   }
 
@@ -254,33 +272,33 @@ class CSRFProtector {
     const token = this.generateRandomToken()
     const now = Date.now()
     const expires = now + 24 * 60 * 60 * 1000 // 24小时
-    
+
     const csrfToken: CSRFToken = {
       token,
       timestamp: now,
-      expires
+      expires,
     }
-    
+
     this.tokens.set(token, csrfToken)
-    
+
     // 清理过期令牌
     this.cleanupExpiredTokens()
-    
+
     return csrfToken
   }
 
   validateToken(token: string): boolean {
     const csrfToken = this.tokens.get(token)
-    
+
     if (!csrfToken) {
       return false
     }
-    
+
     if (Date.now() > csrfToken.expires) {
       this.tokens.delete(token)
       return false
     }
-    
+
     return true
   }
 
@@ -288,13 +306,14 @@ class CSRFProtector {
     const array = new Uint8Array(32)
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       crypto.getRandomValues(array)
-    } else {
+    }
+    else {
       // Fallback for environments without crypto.getRandomValues
       for (let i = 0; i < array.length; i++) {
         array[i] = Math.floor(Math.random() * 256)
       }
     }
-    
+
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
   }
 
@@ -324,7 +343,7 @@ export class SecurityManagerImpl implements SecurityManager {
         allowedTags: [],
         allowedAttributes: {},
         stripIgnoreTag: true,
-        ...config.xss
+        ...config.xss,
       },
       csrf: {
         enabled: true,
@@ -332,27 +351,27 @@ export class SecurityManagerImpl implements SecurityManager {
         headerName: 'X-CSRF-Token',
         cookieName: 'csrf_token',
         sameSite: 'strict',
-        ...config.csrf
+        ...config.csrf,
       },
       csp: {
         enabled: true,
         directives: {
-          'default-src': ["'self'"],
-          'script-src': ["'self'", "'unsafe-inline'"],
-          'style-src': ["'self'", "'unsafe-inline'"],
-          'img-src': ["'self'", 'data:', 'https:'],
-          'font-src': ["'self'"],
-          'connect-src': ["'self'"],
-          'frame-ancestors': ["'none'"]
+          'default-src': ['\'self\''],
+          'script-src': ['\'self\'', '\'unsafe-inline\''],
+          'style-src': ['\'self\'', '\'unsafe-inline\''],
+          'img-src': ['\'self\'', 'data:', 'https:'],
+          'font-src': ['\'self\''],
+          'connect-src': ['\'self\''],
+          'frame-ancestors': ['\'none\''],
         },
         reportOnly: false,
         reportUri: '/csp-report',
-        ...config.csp
+        ...config.csp,
       },
       clickjacking: {
         enabled: true,
         policy: 'deny',
-        ...config.clickjacking
+        ...config.clickjacking,
       },
       https: {
         enabled: true,
@@ -360,10 +379,10 @@ export class SecurityManagerImpl implements SecurityManager {
           maxAge: 31536000, // 1年
           includeSubDomains: true,
           preload: false,
-          ...config.https?.hsts
+          ...config.https?.hsts,
         },
-        ...config.https
-      }
+        ...config.https,
+      },
     }
 
     this.xssProtector = new XSSProtector(this.config.xss)
@@ -375,12 +394,12 @@ export class SecurityManagerImpl implements SecurityManager {
       return {
         safe: true,
         sanitized: html,
-        threats: []
+        threats: [],
       }
     }
 
     const result = this.xssProtector.sanitize(html)
-    
+
     if (!result.safe) {
       this.reportSecurityEvent({
         type: SecurityEventType.XSS_DETECTED,
@@ -388,9 +407,9 @@ export class SecurityManagerImpl implements SecurityManager {
         details: {
           originalHTML: html,
           sanitizedHTML: result.sanitized,
-          threats: result.threats
+          threats: result.threats,
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
 
@@ -405,7 +424,8 @@ export class SecurityManagerImpl implements SecurityManager {
         try {
           new URL(input)
           return !input.toLowerCase().startsWith('javascript:')
-        } catch {
+        }
+        catch {
           return false
         }
       case 'text':
@@ -419,7 +439,7 @@ export class SecurityManagerImpl implements SecurityManager {
     if (!this.config.csrf.enabled) {
       throw new Error('CSRF protection is disabled')
     }
-    
+
     return this.csrfProtector.generateToken()
   }
 
@@ -427,18 +447,18 @@ export class SecurityManagerImpl implements SecurityManager {
     if (!this.config.csrf.enabled) {
       return true
     }
-    
+
     const isValid = this.csrfProtector.validateToken(token)
-    
+
     if (!isValid) {
       this.reportSecurityEvent({
         type: SecurityEventType.CSRF_ATTACK,
         message: 'Invalid CSRF token detected',
         details: { token },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
-    
+
     return isValid
   }
 
@@ -446,7 +466,7 @@ export class SecurityManagerImpl implements SecurityManager {
     if (!this.config.csrf.enabled) {
       return null
     }
-    
+
     // 尝试从cookie或meta标签获取
     if (typeof document !== 'undefined') {
       const meta = document.querySelector(`meta[name="${this.config.csrf.tokenName}"]`)
@@ -454,7 +474,7 @@ export class SecurityManagerImpl implements SecurityManager {
         return meta.getAttribute('content')
       }
     }
-    
+
     return null
   }
 
@@ -462,15 +482,15 @@ export class SecurityManagerImpl implements SecurityManager {
     if (!this.config.csp.enabled) {
       return ''
     }
-    
+
     const directives = Object.entries(this.config.csp.directives)
       .map(([key, values]) => `${key} ${values.join(' ')}`)
       .join('; ')
-    
-    const headerName = this.config.csp.reportOnly 
+
+    const headerName = this.config.csp.reportOnly
       ? 'Content-Security-Policy-Report-Only'
       : 'Content-Security-Policy'
-    
+
     return `${headerName}: ${directives}`
   }
 
@@ -479,13 +499,13 @@ export class SecurityManagerImpl implements SecurityManager {
       type: SecurityEventType.CSP_VIOLATION,
       message: 'Content Security Policy violation',
       details: violation,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
   getSecurityHeaders(): Record<string, string> {
     const headers: Record<string, string> = {}
-    
+
     // CSP头
     if (this.config.csp.enabled) {
       const cspHeader = this.generateCSPHeader()
@@ -494,7 +514,7 @@ export class SecurityManagerImpl implements SecurityManager {
         headers[headerName] = headerValue
       }
     }
-    
+
     // 点击劫持防护
     if (this.config.clickjacking.enabled) {
       switch (this.config.clickjacking.policy) {
@@ -511,7 +531,7 @@ export class SecurityManagerImpl implements SecurityManager {
           break
       }
     }
-    
+
     // HTTPS相关头
     if (this.config.https.enabled) {
       const { hsts } = this.config.https
@@ -524,12 +544,12 @@ export class SecurityManagerImpl implements SecurityManager {
       }
       headers['Strict-Transport-Security'] = hstsValue
     }
-    
+
     // 其他安全头
     headers['X-Content-Type-Options'] = 'nosniff'
     headers['X-XSS-Protection'] = '1; mode=block'
     headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    
+
     return headers
   }
 
@@ -542,18 +562,19 @@ export class SecurityManagerImpl implements SecurityManager {
     if (this.engine?.logger) {
       this.engine.logger.warn('Security event detected', event)
     }
-    
+
     // 触发事件回调
-    this.eventCallbacks.forEach(callback => {
+    this.eventCallbacks.forEach((callback) => {
       try {
         callback(event)
-      } catch (error) {
+      }
+      catch (error) {
         if (this.engine?.logger) {
           this.engine.logger.error('Error in security event callback', error)
         }
       }
     })
-    
+
     // 发送到引擎事件系统
     if (this.engine?.events) {
       this.engine.events.emit('security:event', event)
@@ -568,9 +589,9 @@ export class SecurityManagerImpl implements SecurityManager {
       csrf: { ...this.config.csrf, ...config.csrf },
       csp: { ...this.config.csp, ...config.csp },
       clickjacking: { ...this.config.clickjacking, ...config.clickjacking },
-      https: { ...this.config.https, ...config.https }
+      https: { ...this.config.https, ...config.https },
     }
-    
+
     // 重新初始化保护器
     this.xssProtector = new XSSProtector(this.config.xss)
     this.csrfProtector = new CSRFProtector(this.config.csrf)

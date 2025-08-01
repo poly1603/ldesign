@@ -66,7 +66,7 @@ async function preloadCoreTemplates() {
     { category: 'layout', template: 'footer' },
     { category: 'auth', template: 'login' }
   ]
-  
+
   await templateManager.preload(coreTemplates)
 }
 
@@ -82,7 +82,7 @@ async function preloadUserTemplates(userRole: string) {
       { category: 'user', template: 'profile' }
     ]
   }
-  
+
   const templates = roleTemplates[userRole] || []
   await templateManager.preload(templates)
 }
@@ -100,11 +100,11 @@ const manager = new TemplateManager({
   cacheEnabled: true,
   cacheSize: 100, // 根据应用规模调整
   cacheTTL: 30 * 60 * 1000, // 30分钟，根据更新频率调整
-  
+
   // 预加载配置
   preloadEnabled: true,
   preloadBatchSize: 5, // 批量预加载数量
-  
+
   // 性能配置
   loadTimeout: 10000, // 10秒加载超时
   retryAttempts: 3 // 重试次数
@@ -120,30 +120,30 @@ class MultiLevelCache {
   private l1Cache = new LRUCache(20, 5 * 60 * 1000) // 热点缓存
   private l2Cache = new LRUCache(100, 30 * 60 * 1000) // 常用缓存
   private l3Cache = new LRUCache(500, 2 * 60 * 60 * 1000) // 长期缓存
-  
+
   get(key: string) {
     // L1 缓存
     let value = this.l1Cache.get(key)
-    if (value) 
+    if (value)
       return value
-    
+
     // L2 缓存
     value = this.l2Cache.get(key)
     if (value) {
       this.l1Cache.set(key, value) // 提升到 L1
       return value
     }
-    
+
     // L3 缓存
     value = this.l3Cache.get(key)
     if (value) {
       this.l2Cache.set(key, value) // 提升到 L2
       return value
     }
-    
+
     return null
   }
-  
+
   set(key: string, value: any, priority: 'high' | 'medium' | 'low' = 'medium') {
     switch (priority) {
       case 'high':
@@ -167,14 +167,14 @@ class MultiLevelCache {
 ```typescript
 async function warmupCache() {
   const startTime = Date.now()
-  
+
   // 预加载关键模板
   const criticalTemplates = [
     { category: 'layout', template: 'header', priority: 'high' },
     { category: 'layout', template: 'footer', priority: 'high' },
     { category: 'auth', template: 'login', priority: 'medium' }
   ]
-  
+
   await Promise.all(
     criticalTemplates.map(async ({ priority, ...template }) => {
       try {
@@ -183,7 +183,7 @@ async function warmupCache() {
           'desktop',
           template.template
         )
-        
+
         // 设置缓存优先级
         cache.set(getCacheKey(template), component, priority)
       }
@@ -192,7 +192,7 @@ async function warmupCache() {
       }
     })
   )
-  
+
   const duration = Date.now() - startTime
   console.log(`缓存预热完成，耗时 ${duration}ms`)
 }
@@ -232,18 +232,18 @@ async function warmupCache() {
 // 组件池管理
 class ComponentPool {
   private pools = new Map<string, Component[]>()
-  
+
   acquire(type: string): Component | null {
     const pool = this.pools.get(type) || []
     return pool.pop() || null
   }
-  
+
   release(type: string, component: Component) {
     const pool = this.pools.get(type) || []
     pool.push(component)
     this.pools.set(type, pool)
   }
-  
+
   clear() {
     this.pools.clear()
   }
@@ -254,15 +254,15 @@ const componentPool = new ComponentPool()
 // 在模板管理器中使用组件池
 async function loadTemplateWithPool(category: string, device: string, template: string) {
   const type = `${category}:${device}:${template}`
-  
+
   // 尝试从池中获取
   let component = componentPool.acquire(type)
-  
+
   if (!component) {
     // 池中没有，创建新的
     component = await loadTemplateComponent(category, device, template)
   }
-  
+
   return component
 }
 ```
@@ -275,31 +275,31 @@ async function loadTemplateWithPool(category: string, device: string, template: 
 class RenderBatcher {
   private queue: RenderTask[] = []
   private isProcessing = false
-  
+
   add(task: RenderTask) {
     this.queue.push(task)
     this.process()
   }
-  
+
   private async process() {
-    if (this.isProcessing) 
+    if (this.isProcessing)
       return
     this.isProcessing = true
-    
+
     while (this.queue.length > 0) {
       const batch = this.queue.splice(0, 5) // 每批处理5个
-      
+
       await Promise.all(
         batch.map(task => this.renderTemplate(task))
       )
-      
+
       // 让出控制权，避免阻塞UI
       await new Promise(resolve => setTimeout(resolve, 0))
     }
-    
+
     this.isProcessing = false
   }
-  
+
   private async renderTemplate(task: RenderTask) {
     try {
       const component = await templateManager.loadTemplate(
@@ -325,43 +325,43 @@ class RenderBatcher {
 ```typescript
 class MemoryMonitor {
   private checkInterval: number
-  
+
   constructor(interval = 60000) { // 每分钟检查一次
     this.checkInterval = setInterval(() => {
       this.checkMemoryUsage()
     }, interval)
   }
-  
+
   private checkMemoryUsage() {
     const stats = templateManager.getCacheStats()
     const memoryUsage = stats.memoryUsage
-    
+
     console.log('内存使用情况:', {
       缓存大小: stats.size,
       内存使用: `${(memoryUsage / 1024 / 1024).toFixed(2)}MB`,
       命中率: `${((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(2)}%`
     })
-    
+
     // 内存使用过高时清理
     if (memoryUsage > 100 * 1024 * 1024) { // 100MB
       this.cleanup()
     }
   }
-  
+
   private cleanup() {
     console.log('开始内存清理...')
-    
+
     // 清理最少使用的缓存
     templateManager.clearLeastUsedCache(0.3) // 清理30%
-    
+
     // 强制垃圾回收（如果可用）
     if (window.gc) {
       window.gc()
     }
-    
+
     console.log('内存清理完成')
   }
-  
+
   destroy() {
     clearInterval(this.checkInterval)
   }
@@ -378,18 +378,18 @@ const memoryMonitor = new MemoryMonitor()
 class TemplateRegistry {
   private templates = new WeakMap<Component, TemplateMetadata>()
   private refs = new Map<string, WeakRef<Component>>()
-  
+
   register(component: Component, metadata: TemplateMetadata) {
     this.templates.set(component, metadata)
-    
+
     const key = this.getKey(metadata)
     this.refs.set(key, new WeakRef(component))
   }
-  
+
   get(category: string, device: string, template: string): Component | null {
     const key = this.getKey({ category, device, template })
     const ref = this.refs.get(key)
-    
+
     if (ref) {
       const component = ref.deref()
       if (component) {
@@ -400,10 +400,10 @@ class TemplateRegistry {
         this.refs.delete(key)
       }
     }
-    
+
     return null
   }
-  
+
   private getKey(metadata: { category: string, device: string, template: string }) {
     return `${metadata.category}:${metadata.device}:${metadata.template}`
   }
@@ -430,7 +430,7 @@ export default defineConfig({
         }
       }
     },
-    
+
     // 启用压缩
     minify: 'terser',
     terserOptions: {
@@ -451,11 +451,11 @@ export default defineConfig({
 // 服务器端配置
 app.get('/templates/:category/:device/:template', (req, res) => {
   const { category, device, template } = req.params
-  
+
   // 推送相关资源
   res.push('/templates/common/styles.css')
   res.push('/templates/common/utils.js')
-  
+
   // 返回模板
   res.sendFile(getTemplatePath(category, device, template))
 })
@@ -469,7 +469,7 @@ app.get('/templates/:category/:device/:template', (req, res) => {
 const templateLoader = {
   async loadFromCDN(category: string, device: string, template: string) {
     const cdnUrl = `https://cdn.example.com/templates/${category}/${device}/${template}.js`
-    
+
     try {
       const response = await fetch(cdnUrl)
       if (response.ok) {
@@ -479,7 +479,7 @@ const templateLoader = {
     catch (error) {
       console.warn('CDN 加载失败，回退到本地:', error)
     }
-    
+
     // 回退到本地加载
     return await this.loadFromLocal(category, device, template)
   }
@@ -495,26 +495,26 @@ const templateLoader = {
 ```typescript
 class PerformanceTracker {
   private metrics = new Map<string, number[]>()
-  
+
   track(name: string, value: number) {
     const values = this.metrics.get(name) || []
     values.push(value)
-    
+
     // 只保留最近100个数据点
     if (values.length > 100) {
       values.shift()
     }
-    
+
     this.metrics.set(name, values)
   }
-  
+
   getStats(name: string) {
     const values = this.metrics.get(name) || []
-    if (values.length === 0) 
+    if (values.length === 0)
       return null
-    
+
     const sorted = [...values].sort((a, b) => a - b)
-    
+
     return {
       count: values.length,
       min: sorted[0],
@@ -525,7 +525,7 @@ class PerformanceTracker {
       p99: sorted[Math.floor(sorted.length * 0.99)]
     }
   }
-  
+
   report() {
     console.log('性能报告:')
     for (const [name, _] of this.metrics) {

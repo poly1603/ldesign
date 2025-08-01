@@ -1,4 +1,4 @@
-import type { TranslationParams, InterpolationOptions } from '@/core/types'
+import type { InterpolationOptions, TranslationParams } from '@/core/types'
 
 /**
  * 默认插值选项
@@ -6,7 +6,7 @@ import type { TranslationParams, InterpolationOptions } from '@/core/types'
 const DEFAULT_OPTIONS: Required<InterpolationOptions> = {
   prefix: '{{',
   suffix: '}}',
-  escapeValue: true
+  escapeValue: true,
 }
 
 /**
@@ -17,8 +17,8 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
   '<': '&lt;',
   '>': '&gt;',
   '"': '&quot;',
-  "'": '&#x27;',
-  '/': '&#x2F;'
+  '\'': '&#x27;',
+  '/': '&#x2F;',
 }
 
 /**
@@ -53,18 +53,18 @@ function formatValue(value: any, escapeValue: boolean): string {
  */
 function parseExpression(expression: string, params: TranslationParams): any {
   const trimmed = expression.trim()
-  
+
   // 支持点分隔的嵌套属性访问
   const keys = trimmed.split('.')
   let value: any = params
-  
+
   for (const key of keys) {
     if (value === null || value === undefined) {
       return undefined
     }
     value = value[key]
   }
-  
+
   return value
 }
 
@@ -78,7 +78,7 @@ function parseExpression(expression: string, params: TranslationParams): any {
 export function interpolate(
   template: string,
   params: TranslationParams = {},
-  options: InterpolationOptions = {}
+  options: InterpolationOptions = {},
 ): string {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const { prefix, suffix, escapeValue } = opts
@@ -109,11 +109,11 @@ function escapeRegExp(str: string): string {
  */
 export function hasInterpolation(
   template: string,
-  options: InterpolationOptions = {}
+  options: InterpolationOptions = {},
 ): boolean {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const { prefix, suffix } = opts
-  
+
   const regex = new RegExp(`${escapeRegExp(prefix)}\\s*[^${escapeRegExp(suffix)}]+\\s*${escapeRegExp(suffix)}`)
   return regex.test(template)
 }
@@ -126,11 +126,11 @@ export function hasInterpolation(
  */
 export function extractInterpolationKeys(
   template: string,
-  options: InterpolationOptions = {}
+  options: InterpolationOptions = {},
 ): string[] {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const { prefix, suffix } = opts
-  
+
   const regex = new RegExp(`${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(suffix)}`, 'g')
   const keys: string[] = []
   let match: RegExpExecArray | null
@@ -155,8 +155,8 @@ export function extractInterpolationKeys(
 export function validateInterpolationParams(
   template: string,
   params: TranslationParams,
-  options: InterpolationOptions = {}
-): { valid: boolean; missingKeys: string[] } {
+  options: InterpolationOptions = {},
+): { valid: boolean, missingKeys: string[] } {
   const requiredKeys = extractInterpolationKeys(template, options)
   const missingKeys: string[] = []
 
@@ -169,7 +169,7 @@ export function validateInterpolationParams(
 
   return {
     valid: missingKeys.length === 0,
-    missingKeys
+    missingKeys,
   }
 }
 
@@ -183,7 +183,7 @@ export function validateInterpolationParams(
 export function batchInterpolate(
   templates: string[],
   params: TranslationParams = {},
-  options: InterpolationOptions = {}
+  options: InterpolationOptions = {},
 ): string[] {
   return templates.map(template => interpolate(template, params, options))
 }

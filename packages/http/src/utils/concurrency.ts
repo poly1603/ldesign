@@ -32,11 +32,11 @@ export class ConcurrencyManager {
    */
   async execute<T = any>(
     requestFn: () => Promise<ResponseData<T>>,
-    config: RequestConfig
+    config: RequestConfig,
   ): Promise<ResponseData<T>> {
     return new Promise<ResponseData<T>>((resolve, reject) => {
       const taskId = this.generateTaskId()
-      
+
       const task: RequestTask<T> = {
         id: taskId,
         execute: requestFn,
@@ -54,7 +54,8 @@ export class ConcurrencyManager {
       // 如果当前并发数未达到限制，直接执行
       if (this.activeRequests.size < this.config.maxConcurrent) {
         this.executeTask(task)
-      } else {
+      }
+      else {
         // 否则加入队列
         this.requestQueue.push(task)
       }
@@ -70,9 +71,11 @@ export class ConcurrencyManager {
     try {
       const result = await task.execute()
       task.resolve(result)
-    } catch (error) {
+    }
+    catch (error) {
       task.reject(error)
-    } finally {
+    }
+    finally {
       this.activeRequests.delete(task.id)
       this.processQueue()
     }
@@ -83,8 +86,8 @@ export class ConcurrencyManager {
    */
   private processQueue(): void {
     if (
-      this.requestQueue.length > 0 &&
-      this.activeRequests.size < this.config.maxConcurrent
+      this.requestQueue.length > 0
+      && this.activeRequests.size < this.config.maxConcurrent
     ) {
       const nextTask = this.requestQueue.shift()
       if (nextTask) {
@@ -125,7 +128,7 @@ export class ConcurrencyManager {
    */
   updateConfig(config: Partial<ConcurrencyConfig>): void {
     Object.assign(this.config, config)
-    
+
     // 如果降低了最大并发数，需要处理队列
     this.processQueue()
   }
@@ -156,7 +159,7 @@ export class DeduplicationManager {
    */
   async execute<T = any>(
     key: string,
-    requestFn: () => Promise<ResponseData<T>>
+    requestFn: () => Promise<ResponseData<T>>,
   ): Promise<ResponseData<T>> {
     // 检查是否有相同的请求正在进行
     const existingRequest = this.pendingRequests.get(key)
@@ -222,10 +225,10 @@ export class RateLimitManager {
    */
   canMakeRequest(): boolean {
     const now = Date.now()
-    
+
     // 清理过期的请求记录
     this.requests = this.requests.filter(
-      timestamp => now - timestamp < this.timeWindow
+      timestamp => now - timestamp < this.timeWindow,
     )
 
     return this.requests.length < this.maxRequests
@@ -304,7 +307,7 @@ export function createDeduplicationManager(): DeduplicationManager {
  */
 export function createRateLimitManager(
   maxRequests?: number,
-  timeWindow?: number
+  timeWindow?: number,
 ): RateLimitManager {
   return new RateLimitManager(maxRequests, timeWindow)
 }

@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/http-vue3-example",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

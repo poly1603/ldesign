@@ -28,6 +28,7 @@ pnpm build
 ```
 
 **验证构建成功：**
+
 ```bash
 # 检查构建产物
 ls -la es/     # ESM 格式
@@ -71,6 +72,7 @@ pnpm dev
 ### Vanilla JavaScript 示例
 
 #### 目录结构
+
 ```
 examples/vanilla/
 ├── index.html          # 主页面
@@ -80,6 +82,7 @@ examples/vanilla/
 ```
 
 #### 启动命令
+
 ```bash
 # 方法1：从主项目根目录
 pnpm example:vanilla
@@ -94,6 +97,7 @@ pnpm dev --port 3002
 ```
 
 #### 功能演示
+
 - ✅ 基础翻译功能
 - ✅ 字符串插值
 - ✅ 复数处理
@@ -105,6 +109,7 @@ pnpm dev --port 3002
 ### Vue 3 示例
 
 #### 目录结构
+
 ```
 examples/vue/
 ├── src/
@@ -118,6 +123,7 @@ examples/vue/
 ```
 
 #### 启动命令
+
 ```bash
 # 方法1：从主项目根目录
 pnpm example:vue
@@ -133,6 +139,7 @@ pnpm preview
 ```
 
 #### 功能演示
+
 - ✅ Vue 组合式 API (`useI18n`)
 - ✅ v-t 指令使用
 - ✅ 响应式语言切换
@@ -148,11 +155,13 @@ pnpm preview
 #### 1. 模块找不到错误
 
 **错误信息：**
+
 ```
 Cannot resolve module '@ldesign/i18n'
 ```
 
 **解决方案：**
+
 ```bash
 # 确保主项目已构建
 cd packages/i18n
@@ -170,11 +179,13 @@ pnpm install
 #### 2. TypeScript 类型错误
 
 **错误信息：**
+
 ```
 Cannot find module '@ldesign/i18n/vue' or its corresponding type declarations
 ```
 
 **解决方案：**
+
 ```bash
 # 确保类型定义文件存在
 ls -la types/vue/index.d.ts
@@ -186,11 +197,13 @@ ls -la types/vue/index.d.ts
 #### 3. 端口冲突
 
 **错误信息：**
+
 ```
 Port 3000 is already in use
 ```
 
 **解决方案：**
+
 ```bash
 # 方法1：指定其他端口
 pnpm dev --port 3002
@@ -202,11 +215,13 @@ pnpm dev --port 3002
 #### 4. 构建失败
 
 **错误信息：**
+
 ```
 Build failed with errors
 ```
 
 **解决方案：**
+
 ```bash
 # 清理缓存
 pnpm store prune
@@ -224,6 +239,7 @@ node --version  # 应该 >= 16.0.0
 **症状：** 页面空白或 JavaScript 错误
 
 **解决方案：**
+
 - 使用现代浏览器 (Chrome 90+, Firefox 88+, Safari 14+)
 - 检查浏览器控制台错误信息
 - 尝试无痕模式排除扩展干扰
@@ -237,7 +253,7 @@ node --version  # 应该 >= 16.0.0
 ```javascript
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
-  debug: true,  // 启用调试模式
+  debug: true, // 启用调试模式
   onLanguageChanged: (locale) => {
     console.log('Language changed to:', locale)
   },
@@ -250,6 +266,7 @@ const i18n = await createI18nWithBuiltinLocales({
 #### 2. 检查网络请求
 
 打开浏览器开发者工具的 Network 标签，检查：
+
 - 静态资源是否正确加载
 - 是否有 404 错误
 - 响应时间是否正常
@@ -257,6 +274,7 @@ const i18n = await createI18nWithBuiltinLocales({
 #### 3. 查看控制台日志
 
 检查浏览器控制台的错误和警告信息：
+
 ```javascript
 // 在示例代码中添加日志
 console.log('I18n instance:', i18n)
@@ -269,22 +287,24 @@ console.log('Available languages:', i18n.getAvailableLanguages())
 ### 修改端口
 
 #### Vanilla 示例
+
 ```javascript
 // examples/vanilla/vite.config.js
 export default defineConfig({
   server: {
-    port: 3002,  // 修改端口
+    port: 3002, // 修改端口
     open: true
   }
 })
 ```
 
 #### Vue 示例
+
 ```typescript
 // examples/vue/vite.config.ts
 export default defineConfig({
   server: {
-    port: 3003,  // 修改端口
+    port: 3003, // 修改端口
     open: true
   }
 })
@@ -293,6 +313,7 @@ export default defineConfig({
 ### 添加新功能
 
 #### 在 Vanilla 示例中添加新功能
+
 ```javascript
 // 在 index.html 中添加新的演示
 function demonstrateNewFeature() {
@@ -303,19 +324,20 @@ function demonstrateNewFeature() {
 ```
 
 #### 在 Vue 示例中添加新组件
+
 ```vue
 <!-- 创建新的 Vue 组件 -->
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+const { t } = useI18n()
+</script>
+
 <template>
   <div class="new-feature">
     <h3>{{ t('newFeature.title') }}</h3>
     <p>{{ t('newFeature.description') }}</p>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useI18n } from '@ldesign/i18n/vue'
-const { t } = useI18n()
-</script>
 ```
 
 ## 性能监控
@@ -340,9 +362,9 @@ console.log('Cache hit rate:', i18n.cache?.getHitRate?.())
 // 监控内存使用
 if (performance.memory) {
   console.log('Memory usage:', {
-    used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
-    total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB',
-    limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + ' MB'
+    used: `${Math.round(performance.memory.usedJSHeapSize / 1024 / 1024)} MB`,
+    total: `${Math.round(performance.memory.totalJSHeapSize / 1024 / 1024)} MB`,
+    limit: `${Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024)} MB`
   })
 }
 ```
@@ -352,6 +374,7 @@ if (performance.memory) {
 ### 构建生产版本
 
 #### Vanilla 示例
+
 ```bash
 cd examples/vanilla
 pnpm build
@@ -359,6 +382,7 @@ pnpm build
 ```
 
 #### Vue 示例
+
 ```bash
 cd examples/vue
 pnpm build
@@ -395,6 +419,6 @@ cd packages/i18n && pnpm install && pnpm build
 # 2. 启动 Vanilla 示例
 cd examples/vanilla && pnpm install && pnpm dev
 
-# 3. 启动 Vue 示例  
+# 3. 启动 Vue 示例
 cd examples/vue && pnpm install && pnpm dev
 ```

@@ -28,10 +28,10 @@ import App from './App.vue'
 const loggingMiddleware = creators.middleware('logging', async (context, next) => {
   console.log(`[${context.phase}] 开始执行`)
   const startTime = Date.now()
-  
+
   // 调用下一个中间件
   await next()
-  
+
   const endTime = Date.now()
   console.log(`[${context.phase}] 执行完成，耗时: ${endTime - startTime}ms`)
 })
@@ -49,13 +49,13 @@ const conditionalMiddleware = creators.middleware('conditional', async (context,
   // 只在开发环境执行
   if (context.engine.config.debug) {
     console.log('开发环境中间件执行')
-    
+
     // 添加开发工具
     if (typeof window !== 'undefined') {
       (window as any).__ENGINE_DEBUG__ = context.engine
     }
   }
-  
+
   await next()
 })
 ```
@@ -66,17 +66,18 @@ const conditionalMiddleware = creators.middleware('conditional', async (context,
 const errorHandlingMiddleware = creators.middleware('error-handler', async (context, next) => {
   try {
     await next()
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     context.engine.logger.error('中间件执行错误:', error)
-    
+
     // 发送错误事件
     context.engine.events.emit('middleware:error', {
       phase: context.phase,
       error,
       middleware: 'error-handler'
     })
-    
+
     // 可以选择重新抛出错误或进行错误恢复
     if (context.phase === 'beforeMount') {
       // 在挂载前的错误可能需要阻止应用启动
@@ -98,15 +99,15 @@ const initMiddleware = creators.middleware('init', async (context, next) => {
   if (context.phase === 'beforeMount') {
     // 初始化全局状态
     context.engine.state.set('appStartTime', Date.now())
-    
+
     // 加载用户配置
     const userConfig = await loadUserConfig()
     context.engine.state.set('userConfig', userConfig)
-    
+
     // 初始化第三方服务
     await initAnalytics()
   }
-  
+
   await next()
 })
 ```
@@ -118,14 +119,14 @@ const initMiddleware = creators.middleware('init', async (context, next) => {
 ```typescript
 const postMountMiddleware = creators.middleware('post-mount', async (context, next) => {
   await next()
-  
+
   if (context.phase === 'afterMount') {
     // 发送应用启动事件
     context.engine.events.emit('app:mounted')
-    
+
     // 启动后台任务
     startBackgroundTasks()
-    
+
     // 显示启动完成通知
     context.engine.notifications.success('应用启动成功')
   }
@@ -141,14 +142,14 @@ const cleanupMiddleware = creators.middleware('cleanup', async (context, next) =
   if (context.phase === 'beforeUnmount') {
     // 保存用户数据
     await saveUserData(context.engine.state.getAll())
-    
+
     // 清理定时器
     clearAllTimers()
-    
+
     // 断开WebSocket连接
     disconnectWebSocket()
   }
-  
+
   await next()
 })
 ```
@@ -160,11 +161,11 @@ const cleanupMiddleware = creators.middleware('cleanup', async (context, next) =
 ```typescript
 const finalCleanupMiddleware = creators.middleware('final-cleanup', async (context, next) => {
   await next()
-  
+
   if (context.phase === 'afterUnmount') {
     // 最终清理
     context.engine.logger.info('应用已完全卸载')
-    
+
     // 清理全局变量
     if (typeof window !== 'undefined') {
       delete (window as any).__ENGINE_DEBUG__
@@ -180,14 +181,14 @@ const finalCleanupMiddleware = creators.middleware('final-cleanup', async (conte
 ### commonMiddleware
 
 ```typescript
-import { createApp, commonMiddleware } from '@ldesign/engine'
+import { commonMiddleware, createApp } from '@ldesign/engine'
 
 const engine = createApp(App, {
   middleware: [
-    commonMiddleware.logging,      // 日志记录
-    commonMiddleware.performance,  // 性能监控
+    commonMiddleware.logging, // 日志记录
+    commonMiddleware.performance, // 性能监控
     commonMiddleware.errorHandler, // 错误处理
-    commonMiddleware.stateSync     // 状态同步
+    commonMiddleware.stateSync // 状态同步
   ]
 })
 ```
@@ -253,11 +254,11 @@ console.log('已注册的中间件:', allMiddleware.map(m => m.name))
 ```typescript
 const engine = createApp(App, {
   middleware: [
-    errorHandlingMiddleware,  // 1. 错误处理（最外层）
-    loggingMiddleware,        // 2. 日志记录
-    authMiddleware,           // 3. 身份验证
-    permissionMiddleware,     // 4. 权限检查
-    businessLogicMiddleware   // 5. 业务逻辑（最内层）
+    errorHandlingMiddleware, // 1. 错误处理（最外层）
+    loggingMiddleware, // 2. 日志记录
+    authMiddleware, // 3. 身份验证
+    permissionMiddleware, // 4. 权限检查
+    businessLogicMiddleware // 5. 业务逻辑（最内层）
   ]
 })
 ```
@@ -271,10 +272,10 @@ const asyncMiddleware = creators.middleware('async', async (context, next) => {
     fetchUserData(),
     fetchAppConfig()
   ])
-  
+
   context.engine.state.set('userData', userData)
   context.engine.state.set('appConfig', appConfig)
-  
+
   await next()
 })
 ```
@@ -285,12 +286,12 @@ const asyncMiddleware = creators.middleware('async', async (context, next) => {
 const conditionalMiddleware = creators.middleware('conditional', async (context, next) => {
   // 根据环境或配置决定是否执行
   const shouldExecute = context.engine.config.enableFeature
-  
+
   if (shouldExecute) {
     // 执行特定逻辑
     await setupFeature(context.engine)
   }
-  
+
   await next()
 })
 ```
@@ -304,7 +305,7 @@ const dataMiddleware = creators.middleware('data', async (context, next) => {
     timestamp: Date.now(),
     userAgent: navigator.userAgent
   }
-  
+
   await next()
 })
 
@@ -314,7 +315,7 @@ const consumerMiddleware = creators.middleware('consumer', async (context, next)
     console.log('请求时间:', context.data.timestamp)
     console.log('用户代理:', context.data.userAgent)
   }
-  
+
   await next()
 })
 ```
@@ -330,9 +331,9 @@ const debugMiddleware = creators.middleware('debug', async (context, next) => {
     console.log('上下文:', context)
     console.time('执行时间')
   }
-  
+
   await next()
-  
+
   if (context.engine.config.debug) {
     console.timeEnd('执行时间')
     console.groupEnd()
@@ -345,19 +346,19 @@ const debugMiddleware = creators.middleware('debug', async (context, next) => {
 ```typescript
 const performanceMiddleware = creators.middleware('performance', async (context, next) => {
   const startTime = performance.now()
-  
+
   await next()
-  
+
   const endTime = performance.now()
   const duration = endTime - startTime
-  
+
   // 记录性能数据
   context.engine.events.emit('middleware:performance', {
     phase: context.phase,
     duration,
     timestamp: Date.now()
   })
-  
+
   // 如果执行时间过长，发出警告
   if (duration > 100) {
     context.engine.logger.warn(`中间件执行时间过长: ${duration.toFixed(2)}ms`)

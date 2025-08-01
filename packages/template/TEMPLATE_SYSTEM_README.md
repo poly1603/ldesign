@@ -53,14 +53,17 @@ packages/template/
 ### 2. 内置模板库
 
 #### 桌面端模板
+
 - **经典登录** (默认): 传统企业级登录界面，简洁大方
 - **现代登录**: 现代化设计，渐变背景和动画效果
 
 #### 移动端模板
+
 - **简洁登录** (默认): 全屏设计，大按钮操作，触摸友好
 - **卡片登录**: 卡片式设计，层次分明，视觉效果佳
 
 #### 平板端模板
+
 - **自适应登录** (默认): 兼顾横屏和竖屏使用场景
 - **分屏登录**: 左右分栏设计，专业感强
 
@@ -76,25 +79,6 @@ packages/template/
 ### 基础使用
 
 ```vue
-<template>
-  <div class="login-page">
-    <!-- 模板选择器 -->
-    <TemplateSelector
-      category="login"
-      v-model:value="selectedTemplate"
-      :show-device-info="true"
-      @change="handleTemplateChange"
-    />
-
-    <!-- 动态模板渲染 -->
-    <component
-      :is="currentTemplateComponent"
-      v-bind="templateProps"
-      @login="handleLogin"
-    />
-  </div>
-</template>
-
 <script setup>
 import { useTemplateSwitch } from '@ldesign/template/vue'
 
@@ -109,6 +93,25 @@ const {
   cacheEnabled: true
 })
 </script>
+
+<template>
+  <div class="login-page">
+    <!-- 模板选择器 -->
+    <TemplateSelector
+      v-model:value="selectedTemplate"
+      category="login"
+      :show-device-info="true"
+      @change="handleTemplateChange"
+    />
+
+    <!-- 动态模板渲染 -->
+    <component
+      :is="currentTemplateComponent"
+      v-bind="templateProps"
+      @login="handleLogin"
+    />
+  </div>
+</template>
 ```
 
 ### 高级配置
@@ -118,11 +121,11 @@ const {
 import { registerTemplate } from '@ldesign/template/core'
 
 registerTemplate(
-  'login',           // 分类
-  'desktop',         // 设备类型
-  'custom',          // 变体名称
-  customConfig,      // 模板配置
-  CustomComponent    // 模板组件
+  'login', // 分类
+  'desktop', // 设备类型
+  'custom', // 变体名称
+  customConfig, // 模板配置
+  CustomComponent // 模板组件
 )
 
 // 使用组合式API
@@ -147,12 +150,12 @@ const templateSwitch = useTemplateSwitch({
 
 ```typescript
 interface UseTemplateSwitchOptions {
-  category: string              // 模板分类
-  initialVariant?: string       // 初始模板变体
-  autoSwitch?: boolean         // 是否自动切换
-  cacheEnabled?: boolean       // 是否启用缓存
-  onDeviceChange?: Function    // 设备变化回调
-  onTemplateChange?: Function  // 模板变化回调
+  category: string // 模板分类
+  initialVariant?: string // 初始模板变体
+  autoSwitch?: boolean // 是否自动切换
+  cacheEnabled?: boolean // 是否启用缓存
+  onDeviceChange?: Function // 设备变化回调
+  onTemplateChange?: Function // 模板变化回调
 }
 ```
 
@@ -162,11 +165,11 @@ interface UseTemplateSwitchOptions {
 
 ```typescript
 interface TemplateSelectorProps {
-  category: string             // 模板分类
-  value?: string              // 当前选中的模板
-  showDeviceInfo?: boolean    // 是否显示设备信息
-  showPreview?: boolean       // 是否显示预览图
-  disabled?: boolean          // 是否禁用
+  category: string // 模板分类
+  value?: string // 当前选中的模板
+  showDeviceInfo?: boolean // 是否显示设备信息
+  showPreview?: boolean // 是否显示预览图
+  disabled?: boolean // 是否禁用
 }
 ```
 
@@ -175,6 +178,7 @@ interface TemplateSelectorProps {
 ### 创建新模板
 
 1. **创建模板目录结构**：
+
 ```
 src/templates/[category]/[device]/[variant]/
 ├── config.ts    # 模板配置
@@ -183,6 +187,7 @@ src/templates/[category]/[device]/[variant]/
 ```
 
 2. **定义模板配置**：
+
 ```typescript
 export const config: TemplateConfig = {
   id: 'login-desktop-custom',
@@ -197,6 +202,7 @@ export const config: TemplateConfig = {
 ```
 
 3. **实现模板组件**：
+
 ```tsx
 export default defineComponent({
   name: 'CustomLoginTemplate',
@@ -247,11 +253,13 @@ export const DEVICE_BREAKPOINTS = {
 ## 📱 响应式特性
 
 ### 断点系统
+
 - **移动端**: 0-767px
-- **平板端**: 768-1023px  
+- **平板端**: 768-1023px
 - **桌面端**: 1024px+
 
 ### 自适应特性
+
 - **方向检测**: 自动检测横屏/竖屏
 - **触摸支持**: 针对触摸设备优化
 - **高分辨率**: 支持Retina等高DPI屏幕
@@ -277,24 +285,27 @@ export const DEVICE_BREAKPOINTS = {
 ## 🚀 快速开始
 
 1. **安装依赖**：
+
 ```bash
 pnpm install
 ```
 
 2. **启动示例**：
+
 ```bash
 cd packages/template/examples
 pnpm dev
 ```
 
 3. **访问演示**：
-打开 http://localhost:3001/login 查看完整的模板系统演示
+   打开 http://localhost:3001/login 查看完整的模板系统演示
 
 ## 🎉 总结
 
 LDesign Template 智能模板系统为开发者提供了一个完整的、可扩展的模板管理解决方案。通过智能的设备检测、自动模板切换和用户偏好记忆，为不同设备的用户提供最佳的使用体验。
 
 系统具有以下优势：
+
 - ✅ **开箱即用**：内置多种精美模板
 - ✅ **智能切换**：自动适配不同设备
 - ✅ **高度可定制**：支持自定义模板开发

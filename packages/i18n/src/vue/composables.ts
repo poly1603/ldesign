@@ -1,6 +1,6 @@
-import { ref, computed, inject, onUnmounted } from 'vue'
 import type { UseI18nReturn } from './types'
 import type { I18nInstance } from '@/core/types'
+import { computed, inject, onUnmounted, ref } from 'vue'
 
 /**
  * I18n 注入键
@@ -14,17 +14,17 @@ export const I18N_INJECTION_KEY = Symbol('i18n')
 export function useI18n(): UseI18nReturn {
   // 从 Vue 应用中注入 I18n 实例
   const i18n = inject<I18nInstance>(I18N_INJECTION_KEY)
-  
+
   if (!i18n) {
     throw new Error(
-      'useI18n() must be called within a component that has access to the I18n plugin. ' +
-      'Make sure you have installed the I18n plugin using app.use(i18nPlugin).'
+      'useI18n() must be called within a component that has access to the I18n plugin. '
+      + 'Make sure you have installed the I18n plugin using app.use(i18nPlugin).',
     )
   }
 
   // 创建响应式的当前语言
   const locale = ref(i18n.getCurrentLanguage())
-  
+
   // 创建响应式的可用语言列表
   const availableLanguages = computed(() => i18n.getAvailableLanguages())
 
@@ -63,7 +63,7 @@ export function useI18n(): UseI18nReturn {
     changeLanguage,
     exists,
     getKeys,
-    i18n
+    i18n,
   }
 }
 
@@ -75,7 +75,7 @@ export function useI18n(): UseI18nReturn {
 export function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn {
   // 创建响应式的当前语言
   const locale = ref(i18nInstance.getCurrentLanguage())
-  
+
   // 创建响应式的可用语言列表
   const availableLanguages = computed(() => i18nInstance.getAvailableLanguages())
 
@@ -114,7 +114,7 @@ export function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn {
     changeLanguage,
     exists,
     getKeys,
-    i18n: i18nInstance
+    i18n: i18nInstance,
   }
 }
 
@@ -142,29 +142,30 @@ export function useAvailableLanguages() {
  */
 export function useLanguageSwitcher() {
   const { locale, availableLanguages, changeLanguage } = useI18n()
-  
+
   // 切换状态
   const isChanging = ref(false)
-  
+
   // 切换语言的包装方法
   const switchLanguage = async (newLocale: string) => {
     if (isChanging.value || locale.value === newLocale) {
       return
     }
-    
+
     try {
       isChanging.value = true
       await changeLanguage(newLocale)
-    } finally {
+    }
+    finally {
       isChanging.value = false
     }
   }
-  
+
   return {
     locale,
     availableLanguages,
     isChanging,
-    switchLanguage
+    switchLanguage,
   }
 }
 
@@ -184,7 +185,7 @@ export function useTranslation() {
  */
 export function useBatchTranslation(keys: string[]) {
   const { t, locale } = useI18n()
-  
+
   return computed(() => {
     const result: Record<string, string> = {}
     for (const key of keys) {
@@ -204,10 +205,10 @@ export function useBatchTranslation(keys: string[]) {
 export function useConditionalTranslation(
   condition: (() => boolean) | { value: boolean },
   trueKey: string,
-  falseKey: string
+  falseKey: string,
 ) {
   const { t, locale } = useI18n()
-  
+
   return computed(() => {
     const isTrue = typeof condition === 'function' ? condition() : condition.value
     return t(isTrue ? trueKey : falseKey)

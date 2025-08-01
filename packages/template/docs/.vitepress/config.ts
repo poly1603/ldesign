@@ -4,14 +4,14 @@ export default defineConfig({
   title: 'LDesign Template',
   description: '为 Vue 3 而生的多模板管理及动态渲染系统',
   lang: 'zh-CN',
-  
+
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/installation' },
       { text: 'API', link: '/api/' },
       { text: '示例', link: '/examples/' },
-      { text: 'GitHub', link: 'https://github.com/ldesign/template' }
+      { text: 'GitHub', link: 'https://github.com/ldesign/template' },
     ],
 
     sidebar: {
@@ -21,8 +21,8 @@ export default defineConfig({
           items: [
             { text: '安装', link: '/guide/installation' },
             { text: '快速开始', link: '/guide/getting-started' },
-            { text: '基础概念', link: '/guide/concepts' }
-          ]
+            { text: '基础概念', link: '/guide/concepts' },
+          ],
         },
         {
           text: '核心功能',
@@ -30,8 +30,8 @@ export default defineConfig({
             { text: '模板管理', link: '/guide/template-management' },
             { text: '设备检测', link: '/guide/device-detection' },
             { text: '缓存机制', link: '/guide/caching' },
-            { text: '插件系统', link: '/guide/plugins' }
-          ]
+            { text: '插件系统', link: '/guide/plugins' },
+          ],
         },
         {
           text: '高级用法',
@@ -39,9 +39,9 @@ export default defineConfig({
             { text: '自定义模板', link: '/guide/custom-templates' },
             { text: '最佳实践', link: '/guide/best-practices' },
             { text: '性能优化', link: '/guide/performance' },
-            { text: '故障排除', link: '/guide/troubleshooting' }
-          ]
-        }
+            { text: '故障排除', link: '/guide/troubleshooting' },
+          ],
+        },
       ],
       '/api/': [
         {
@@ -52,9 +52,9 @@ export default defineConfig({
             { text: 'useTemplate', link: '/api/use-template' },
             { text: 'TemplateRenderer', link: '/api/template-renderer' },
             { text: '指令', link: '/api/directives' },
-            { text: '工具函数', link: '/api/utilities' }
-          ]
-        }
+            { text: '工具函数', link: '/api/utilities' },
+          ],
+        },
       ],
       '/examples/': [
         {
@@ -65,45 +65,45 @@ export default defineConfig({
             { text: '响应式模板', link: '/examples/responsive' },
             { text: '动态切换', link: '/examples/dynamic' },
             { text: '自定义组件', link: '/examples/custom' },
-            { text: '完整应用', link: '/examples/full-app' }
-          ]
-        }
-      ]
+            { text: '完整应用', link: '/examples/full-app' },
+          ],
+        },
+      ],
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/template' }
+      { icon: 'github', link: 'https://github.com/ldesign/template' },
     ],
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 LDesign Team'
+      copyright: 'Copyright © 2024 LDesign Team',
     },
 
     search: {
-      provider: 'local'
+      provider: 'local',
     },
 
     editLink: {
       pattern: 'https://github.com/ldesign/template/edit/main/docs/:path',
-      text: '在 GitHub 上编辑此页'
+      text: '在 GitHub 上编辑此页',
     },
 
     lastUpdated: {
       text: '最后更新',
       formatOptions: {
         dateStyle: 'short',
-        timeStyle: 'medium'
-      }
-    }
+        timeStyle: 'medium',
+      },
+    },
   },
 
   markdown: {
     theme: {
       light: 'github-light',
-      dark: 'github-dark'
+      dark: 'github-dark',
     },
-    lineNumbers: true
+    lineNumbers: true,
   },
 
   head: [
@@ -111,6 +111,6 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#646cff' }],
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:locale', content: 'zh-CN' }],
-    ['meta', { name: 'og:site_name', content: 'LDesign Template' }]
-  ]
+    ['meta', { name: 'og:site_name', content: 'LDesign Template' }],
+  ],
 })

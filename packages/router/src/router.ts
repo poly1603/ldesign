@@ -1,15 +1,15 @@
 import type { App } from 'vue'
-import { readonly, ref } from 'vue'
 import type {
   NavigationFailure,
   NavigationGuard,
   NavigationHookAfter,
   RouteLocationNormalized,
   RouteLocationRaw,
-  RouteRecordRaw,
   Router,
+  RouteRecordRaw,
   RouterOptions,
 } from './types'
+import { ref } from 'vue'
 import { NavigationFailureType, START_LOCATION } from './constants'
 import { createRouterMatcher } from './matcher'
 

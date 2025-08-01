@@ -1,88 +1,3 @@
-<template>
-  <div class="hook-demo">
-    <div class="hook-demo__header">
-      <div class="hook-demo__container">
-        <router-link to="/" class="hook-demo__back">← 返回首页</router-link>
-        <h1 class="hook-demo__title">🪝 useTemplate Hook 演示</h1>
-        <p class="hook-demo__subtitle">
-          使用 Composition API 风格的 Hook 进行模板管理
-        </p>
-      </div>
-    </div>
-
-    <div class="hook-demo__content">
-      <div class="hook-demo__container">
-        <div class="hook-demo__controls">
-          <div class="hook-demo__control-group">
-            <label class="hook-demo__label">选择模板:</label>
-            <select v-model="currentTemplateId" class="hook-demo__select">
-              <option v-for="template in availableTemplates" :key="template.id" :value="template.id">
-                {{ template.name }} - {{ template.description }}
-              </option>
-            </select>
-          </div>
-
-          <div class="hook-demo__control-group">
-            <label class="hook-demo__label">设备类型:</label>
-            <select v-model="deviceType" class="hook-demo__select">
-              <option value="desktop">🖥️ 桌面</option>
-              <option value="tablet">📱 平板</option>
-              <option value="mobile">📱 手机</option>
-            </select>
-          </div>
-
-          <div class="hook-demo__info">
-            <div class="hook-demo__info-item">
-              <span class="hook-demo__info-label">当前模板:</span>
-              <span class="hook-demo__info-value">{{ currentTemplate?.name || '无' }}</span>
-            </div>
-            <div class="hook-demo__info-item">
-              <span class="hook-demo__info-label">设备类型:</span>
-              <span class="hook-demo__info-value">{{ deviceType }}</span>
-            </div>
-            <div class="hook-demo__info-item">
-              <span class="hook-demo__info-label">可用模板数:</span>
-              <span class="hook-demo__info-value">{{ availableTemplates.length }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="hook-demo__preview">
-          <div class="hook-demo__preview-header">
-            <h3>模板预览</h3>
-            <div class="hook-demo__device-indicator">
-              {{ deviceType === 'desktop' ? '🖥️' : deviceType === 'tablet' ? '📱' : '📱' }}
-              {{ deviceType }}
-            </div>
-          </div>
-          
-          <div class="hook-demo__template-container">
-            <component
-              v-if="TemplateComponent"
-              :is="TemplateComponent"
-              v-bind="templateConfig"
-              @login="handleLogin"
-              @register="handleRegister"
-              @forgot-password="handleForgotPassword"
-              @third-party-login="handleThirdPartyLogin"
-            />
-            <div v-else class="hook-demo__no-template">
-              <div class="hook-demo__no-template-icon">🚫</div>
-              <h4>当前设备类型暂无可用模板</h4>
-              <p>请尝试切换到其他设备类型或选择其他模板</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="hook-demo__code">
-          <h3>代码示例</h3>
-          <pre class="hook-demo__code-block"><code>{{ codeExample }}</code></pre>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTemplate } from '../../../src/vue'
@@ -96,26 +11,26 @@ const {
   deviceType,
   TemplateComponent,
   templateConfig,
-  currentTemplate
+  currentTemplate,
 } = useTemplate({
   category: 'login',
-  autoSwitch: true // 启用自动设备切换以响应窗口大小变化
+  autoSwitch: true, // 启用自动设备切换以响应窗口大小变化
 })
 
 // 事件处理函数
-const handleLogin = (data: any) => {
+function handleLogin(data: any) {
   alert(`登录成功！\n模板: ${currentTemplate.value?.name}\n设备: ${deviceType.value}\n用户名: ${data.username}`)
 }
 
-const handleRegister = () => {
+function handleRegister() {
   alert('跳转到注册页面')
 }
 
-const handleForgotPassword = (data: any) => {
+function handleForgotPassword(data: any) {
   alert(`重置密码链接已发送到与用户名 "${data.username}" 关联的邮箱`)
 }
 
-const handleThirdPartyLogin = (data: any) => {
+function handleThirdPartyLogin(data: any) {
   alert(`使用 ${data.provider} 登录`)
 }
 
@@ -143,6 +58,103 @@ const {
   @register="handleRegister"
 />`)
 </script>
+
+<template>
+  <div class="hook-demo">
+    <div class="hook-demo__header">
+      <div class="hook-demo__container">
+        <router-link to="/" class="hook-demo__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="hook-demo__title">
+          🪝 useTemplate Hook 演示
+        </h1>
+        <p class="hook-demo__subtitle">
+          使用 Composition API 风格的 Hook 进行模板管理
+        </p>
+      </div>
+    </div>
+
+    <div class="hook-demo__content">
+      <div class="hook-demo__container">
+        <div class="hook-demo__controls">
+          <div class="hook-demo__control-group">
+            <label class="hook-demo__label">选择模板:</label>
+            <select v-model="currentTemplateId" class="hook-demo__select">
+              <option v-for="template in availableTemplates" :key="template.id" :value="template.id">
+                {{ template.name }} - {{ template.description }}
+              </option>
+            </select>
+          </div>
+
+          <div class="hook-demo__control-group">
+            <label class="hook-demo__label">设备类型:</label>
+            <select v-model="deviceType" class="hook-demo__select">
+              <option value="desktop">
+                🖥️ 桌面
+              </option>
+              <option value="tablet">
+                📱 平板
+              </option>
+              <option value="mobile">
+                📱 手机
+              </option>
+            </select>
+          </div>
+
+          <div class="hook-demo__info">
+            <div class="hook-demo__info-item">
+              <span class="hook-demo__info-label">当前模板:</span>
+              <span class="hook-demo__info-value">{{ currentTemplate?.name || '无' }}</span>
+            </div>
+            <div class="hook-demo__info-item">
+              <span class="hook-demo__info-label">设备类型:</span>
+              <span class="hook-demo__info-value">{{ deviceType }}</span>
+            </div>
+            <div class="hook-demo__info-item">
+              <span class="hook-demo__info-label">可用模板数:</span>
+              <span class="hook-demo__info-value">{{ availableTemplates.length }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hook-demo__preview">
+          <div class="hook-demo__preview-header">
+            <h3>模板预览</h3>
+            <div class="hook-demo__device-indicator">
+              {{ deviceType === 'desktop' ? '🖥️' : deviceType === 'tablet' ? '📱' : '📱' }}
+              {{ deviceType }}
+            </div>
+          </div>
+
+          <div class="hook-demo__template-container">
+            <component
+              :is="TemplateComponent"
+              v-if="TemplateComponent"
+              v-bind="templateConfig"
+              @login="handleLogin"
+              @register="handleRegister"
+              @forgot-password="handleForgotPassword"
+              @third-party-login="handleThirdPartyLogin"
+            />
+            <div v-else class="hook-demo__no-template">
+              <div class="hook-demo__no-template-icon">
+                🚫
+              </div>
+              <h4>当前设备类型暂无可用模板</h4>
+              <p>请尝试切换到其他设备类型或选择其他模板</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hook-demo__code">
+          <h3>代码示例</h3>
+          <pre class="hook-demo__code-block"><code>{{ codeExample }}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped lang="less">
 .hook-demo {

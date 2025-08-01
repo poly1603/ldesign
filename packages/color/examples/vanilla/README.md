@@ -5,27 +5,32 @@
 ## 功能特性
 
 ### 🎨 主题管理
+
 - 预设主题切换（10个内置主题）
 - 亮色/暗色模式切换
 - 随机主题选择
 - 系统主题检测和同步
 
 ### 🌈 颜色生成
+
 - 从主色调自动生成配套颜色
 - 实时颜色预览
 - 点击复制颜色值
 
 ### 📊 色阶展示
+
 - 完整的 10 级色阶可视化
 - 支持亮色和暗色模式
 - 交互式色阶预览
 
 ### 🛠️ 自定义主题
+
 - 创建自定义主题
 - 支持亮色和暗色模式配置
 - 实时预览效果
 
 ### ⚡ 性能监控
+
 - 显示性能统计信息
 - 闲时处理状态
 - 缓存使用情况
@@ -168,6 +173,7 @@ await themeManager.setTheme('my-theme')
 .hover-effect:hover {
   background: var(--color-primary-hover);
 }
+
 ```
 
 ## 性能优化
@@ -175,6 +181,7 @@ await themeManager.setTheme('my-theme')
 示例展示了多种性能优化技术：
 
 ### 闲时处理
+
 ```javascript
 const themeManager = await createThemeManagerWithPresets({
   idleProcessing: true // 启用闲时处理
@@ -185,6 +192,7 @@ await themeManager.preGenerateAllThemes()
 ```
 
 ### 缓存配置
+
 ```javascript
 const themeManager = await createThemeManagerWithPresets({
   cache: {
@@ -204,12 +212,14 @@ const themeManager = await createThemeManagerWithPresets({
 ## 调试技巧
 
 1. **查看生成的 CSS 变量**：
+
    ```javascript
    const theme = themeManager.getGeneratedTheme('default')
    console.log(theme.light.cssVariables)
    ```
 
 2. **监听主题变化**：
+
    ```javascript
    themeManager.on('theme-changed', (data) => {
      console.log('主题变化:', data)
@@ -225,10 +235,13 @@ const themeManager = await createThemeManagerWithPresets({
 ## 常见问题
 
 ### Q: 为什么主题切换没有效果？
+
 A: 确保 CSS 中使用了正确的 CSS 变量名，并且主题管理器已经正确初始化。
 
 ### Q: 如何自定义 CSS 变量前缀？
+
 A: 在创建主题管理器时设置 `cssPrefix` 选项：
+
 ```javascript
 const themeManager = await createThemeManagerWithPresets({
   cssPrefix: '--my-app-color'
@@ -236,6 +249,7 @@ const themeManager = await createThemeManagerWithPresets({
 ```
 
 ### Q: 如何在服务端渲染中使用？
+
 A: 核心功能支持 SSR，但需要在客户端激活系统主题检测等浏览器特性。
 
 ## 相关链接

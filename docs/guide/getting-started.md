@@ -64,9 +64,9 @@ pnpm add @ldesign/i18n
 创建一个新的Vue项目或在现有项目中集成LDesign：
 
 ```typescript
+import { createEngine } from '@ldesign/engine'
 // main.ts
 import { createApp } from 'vue'
-import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
 
 // 创建LDesign引擎
@@ -90,8 +90,8 @@ app.mount('#app')
 import { createEngine } from '@ldesign/engine'
 import { createRouter } from '@ldesign/router'
 import App from './App.vue'
-import Home from './views/Home.vue'
 import About from './views/About.vue'
+import Home from './views/Home.vue'
 
 // 创建路由
 const router = createRouter({
@@ -165,19 +165,6 @@ function getToken() {
 ### App.vue
 
 ```vue
-<template>
-  <div id="app">
-    <nav>
-      <router-link to="/">首页</router-link>
-      <router-link to="/about">关于</router-link>
-    </nav>
-    
-    <main>
-      <router-view />
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 // 可以在这里使用LDesign的composables
 import { useEngine } from '@ldesign/engine'
@@ -185,6 +172,23 @@ import { useEngine } from '@ldesign/engine'
 const engine = useEngine()
 console.log('引擎实例:', engine)
 </script>
+
+<template>
+  <div id="app">
+    <nav>
+      <router-link to="/">
+        首页
+      </router-link>
+      <router-link to="/about">
+        关于
+      </router-link>
+    </nav>
+
+    <main>
+      <router-view />
+    </main>
+  </div>
+</template>
 
 <style scoped>
 nav {
@@ -211,54 +215,62 @@ main {
 ### Home.vue
 
 ```vue
-<template>
-  <div class="home">
-    <h1>欢迎使用 LDesign</h1>
-    <p>这是一个基于Vue3的现代化前端开发引擎</p>
-    
-    <div class="features">
-      <div class="feature">
-        <h3>🚀 高性能</h3>
-        <p>基于Vue3构建，提供卓越的性能表现</p>
-      </div>
-      
-      <div class="feature">
-        <h3>🔧 插件化</h3>
-        <p>完整的插件系统，支持按需加载</p>
-      </div>
-      
-      <div class="feature">
-        <h3>📱 跨平台</h3>
-        <p>支持多种平台和设备类型</p>
-      </div>
-    </div>
-    
-    <button @click="fetchData">获取数据</button>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="data">{{ data }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useHttp } from '@ldesign/http'
+import { ref } from 'vue'
 
 const http = useHttp()
 const loading = ref(false)
 const data = ref(null)
 
-const fetchData = async () => {
+async function fetchData() {
   loading.value = true
   try {
     const result = await http.get('/api/data')
     data.value = result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('获取数据失败:', error)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 </script>
+
+<template>
+  <div class="home">
+    <h1>欢迎使用 LDesign</h1>
+    <p>这是一个基于Vue3的现代化前端开发引擎</p>
+
+    <div class="features">
+      <div class="feature">
+        <h3>🚀 高性能</h3>
+        <p>基于Vue3构建，提供卓越的性能表现</p>
+      </div>
+
+      <div class="feature">
+        <h3>🔧 插件化</h3>
+        <p>完整的插件系统，支持按需加载</p>
+      </div>
+
+      <div class="feature">
+        <h3>📱 跨平台</h3>
+        <p>支持多种平台和设备类型</p>
+      </div>
+    </div>
+
+    <button @click="fetchData">
+      获取数据
+    </button>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="data">
+      {{ data }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .home {
@@ -306,7 +318,7 @@ button:hover {
 const engine = createEngine({
   // 调试模式
   debug: process.env.NODE_ENV === 'development',
-  
+
   // 性能监控
   performance: {
     enabled: true,
@@ -316,14 +328,14 @@ const engine = createEngine({
       memory: 100 * 1024 * 1024 // 100MB
     }
   },
-  
+
   // 缓存配置
   cache: {
     strategy: 'lru',
     maxSize: 100,
     ttl: 5 * 60 * 1000 // 5分钟
   },
-  
+
   // 安全配置
   security: {
     xss: true,
@@ -331,12 +343,12 @@ const engine = createEngine({
     csp: {
       enabled: true,
       directives: {
-        'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'"]
+        'default-src': ['\'self\''],
+        'script-src': ['\'self\'', '\'unsafe-inline\'']
       }
     }
   },
-  
+
   // 错误处理
   errorHandler: (error, instance, info) => {
     console.error('应用错误:', error, info)
@@ -413,3 +425,4 @@ const engine = createEngine({
     errorReporting.captureException(error)
   }
 })
+```

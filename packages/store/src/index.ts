@@ -8,11 +8,11 @@ import 'reflect-metadata'
 // 核心功能
 export * from './core'
 
+// 默认导出
+export { BaseStore } from './core/BaseStore'
+
 // 装饰器
 export * from './decorators'
-
-// Vue 集成
-export * from './vue'
 
 // Hooks
 export * from './hooks'
@@ -23,5 +23,5 @@ export * from './types'
 // 版本信息
 export const version = '0.1.0'
 
-// 默认导出
-export { BaseStore } from './core/BaseStore'
+// Vue 集成
+export * from './vue'

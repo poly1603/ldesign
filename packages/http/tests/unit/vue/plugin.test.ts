@@ -1,38 +1,40 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { HttpClient } from '@/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from 'vue'
 import { HttpPlugin, HttpProvider } from '@/vue/plugin'
-import type { HttpClient } from '@/types'
 
 // 创建模拟 HTTP 客户端
-const createMockClient = (): HttpClient => ({
-  request: vi.fn(),
-  get: vi.fn(),
-  post: vi.fn(),
-  put: vi.fn(),
-  delete: vi.fn(),
-  patch: vi.fn(),
-  head: vi.fn(),
-  options: vi.fn(),
-  interceptors: {
-    request: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-    response: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-    error: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
-  },
-  cancelAll: vi.fn(),
-  getActiveRequestCount: vi.fn().mockReturnValue(0),
-  updateRetryConfig: vi.fn(),
-  getConfig: vi.fn().mockReturnValue({}),
-  clearCache: vi.fn(),
-  getConcurrencyStatus: vi.fn().mockReturnValue({
-    activeCount: 0,
-    queuedCount: 0,
-    maxConcurrent: 10,
-    maxQueueSize: 100,
-  }),
-  cancelQueue: vi.fn(),
-})
+function createMockClient(): HttpClient {
+  return {
+    request: vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
+    head: vi.fn(),
+    options: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+      error: { use: vi.fn(), eject: vi.fn(), clear: vi.fn() },
+    },
+    cancelAll: vi.fn(),
+    getActiveRequestCount: vi.fn().mockReturnValue(0),
+    updateRetryConfig: vi.fn(),
+    getConfig: vi.fn().mockReturnValue({}),
+    clearCache: vi.fn(),
+    getConcurrencyStatus: vi.fn().mockReturnValue({
+      activeCount: 0,
+      queuedCount: 0,
+      maxConcurrent: 10,
+      maxQueueSize: 100,
+    }),
+    cancelQueue: vi.fn(),
+  }
+}
 
-describe('HttpPlugin', () => {
+describe('httpPlugin', () => {
   let app: ReturnType<typeof createApp>
   let mockClient: HttpClient
 
@@ -67,32 +69,32 @@ describe('HttpPlugin', () => {
 
     it('should install plugin with custom global property name', () => {
       expect(() => {
-        app.use(HttpPlugin, { 
+        app.use(HttpPlugin, {
           client: mockClient,
-          globalProperty: '$api' 
+          globalProperty: '$api',
         })
       }).not.toThrow()
     })
 
     it('should register global property', () => {
       app.use(HttpPlugin, { client: mockClient })
-      
+
       // 检查全局属性是否注册
       expect(app.config.globalProperties.$http).toBe(mockClient)
     })
 
     it('should register custom global property name', () => {
-      app.use(HttpPlugin, { 
+      app.use(HttpPlugin, {
         client: mockClient,
-        globalProperty: '$api' 
+        globalProperty: '$api',
       })
-      
+
       expect(app.config.globalProperties.$api).toBe(mockClient)
     })
   })
 })
 
-describe('HttpProvider', () => {
+describe('httpProvider', () => {
   it('should have correct name', () => {
     expect(HttpProvider.name).toBe('HttpProvider')
   })
@@ -100,7 +102,7 @@ describe('HttpProvider', () => {
   it('should have correct props definition', () => {
     expect(HttpProvider.props).toHaveProperty('client')
     expect(HttpProvider.props).toHaveProperty('config')
-    
+
     expect(HttpProvider.props.client.required).toBe(false)
     expect(HttpProvider.props.config.required).toBe(false)
   })
@@ -112,12 +114,12 @@ describe('HttpProvider', () => {
 
     const setupResult = HttpProvider.setup(
       { client: createMockClient() },
-      { slots: mockSlots }
+      { slots: mockSlots },
     )
 
     // 调用渲染函数
     const result = setupResult()
-    
+
     expect(mockSlots.default).toHaveBeenCalled()
     expect(result).toBe('test content')
   })

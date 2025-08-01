@@ -35,15 +35,15 @@ export const config: TemplateConfig = {
   description: '标准的用户登录界面，支持用户名密码登录',
   version: '1.2.0',
   author: 'LDesign Team',
-  
+
   // 分类信息
   category: 'auth',
   device: 'desktop',
   tags: ['登录', '认证', '表单'],
-  
+
   // 预览图片
   preview: '/previews/auth/login-desktop.png',
-  
+
   // 属性定义
   props: {
     title: {
@@ -69,7 +69,7 @@ export const config: TemplateConfig = {
       required: false
     }
   },
-  
+
   // 插槽定义
   slots: {
     header: {
@@ -82,7 +82,7 @@ export const config: TemplateConfig = {
       description: '额外内容区域'
     }
   },
-  
+
   // 事件定义
   events: {
     login: {
@@ -94,13 +94,13 @@ export const config: TemplateConfig = {
       payload: 'void'
     }
   },
-  
+
   // 依赖关系
   dependencies: [
     '@/components/FormInput',
     '@/components/Button'
   ],
-  
+
   // 兼容性信息
   compatibility: {
     vue: '>=3.2.0',
@@ -111,7 +111,7 @@ export const config: TemplateConfig = {
       'Edge >= 88'
     ]
   },
-  
+
   // 更新日志
   changelog: [
     {
@@ -205,7 +205,7 @@ async function loadTemplate(userRole: string) {
     user: 'user-dashboard',
     guest: 'public-dashboard'
   }
-  
+
   const template = templateMap[userRole] || 'public-dashboard'
   return await manager.loadTemplate('dashboard', 'desktop', template)
 }
@@ -251,18 +251,18 @@ manager.setCacheStrategy({
   keyGenerator: (category, device, template) => {
     return `${category}:${device}:${template}:${Date.now()}`
   },
-  
+
   // 缓存过期检查
   isExpired: (item) => {
     return Date.now() - item.timestamp > 60 * 60 * 1000 // 1小时
   },
-  
+
   // 缓存优先级
   priority: (category, device, template) => {
     // 登录页面优先级最高
-    if (category === 'auth') 
+    if (category === 'auth')
       return 10
-    if (category === 'dashboard') 
+    if (category === 'dashboard')
       return 8
     return 5
   }
@@ -309,12 +309,12 @@ manager.registerTemplates([
 async function loadRemoteTemplate(url: string) {
   const response = await fetch(url)
   const templateData = await response.json()
-  
+
   // 动态创建组件
-  const component = defineAsyncComponent(() => 
+  const component = defineAsyncComponent(() =>
     import(templateData.componentUrl)
   )
-  
+
   // 注册模板
   manager.registerTemplate({
     category: templateData.category,
@@ -381,25 +381,25 @@ const searchResults = manager.search('登录', {
 // 验证模板配置
 function validateConfig(config: TemplateConfig): ValidationResult {
   const errors: string[] = []
-  
+
   // 检查必需字段
-  if (!config.name) 
+  if (!config.name)
     errors.push('模板名称不能为空')
-  if (!config.category) 
+  if (!config.category)
     errors.push('模板分类不能为空')
-  if (!config.device) 
+  if (!config.device)
     errors.push('设备类型不能为空')
-  
+
   // 检查版本格式
   if (!/^\d+\.\d+\.\d+$/.test(config.version)) {
     errors.push('版本号格式不正确')
   }
-  
+
   // 检查兼容性
   if (config.compatibility?.vue && !semver.satisfies(Vue.version, config.compatibility.vue)) {
     errors.push('Vue版本不兼容')
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -413,19 +413,19 @@ function validateConfig(config: TemplateConfig): ValidationResult {
 // 验证模板组件
 function validateComponent(component: Component): boolean {
   // 检查组件是否有效
-  if (!component) 
+  if (!component)
     return false
-  
+
   // 检查组件类型
   if (typeof component !== 'object' && typeof component !== 'function') {
     return false
   }
-  
+
   // 检查异步组件
   if (component.__asyncLoader) {
     return typeof component.__asyncLoader === 'function'
   }
-  
+
   return true
 }
 ```
@@ -441,7 +441,7 @@ if (process.env.NODE_ENV === 'development') {
     watchPaths: ['src/templates'],
     debounce: 300
   })
-  
+
   // 监听文件变化
   manager.on('template:updated', (event) => {
     console.log('模板已更新:', event.template)
@@ -458,19 +458,19 @@ if (process.env.NODE_ENV === 'development') {
 async function updateTemplate(templateInfo: TemplateInfo) {
   // 下载新版本
   const newTemplate = await downloadTemplate(templateInfo.url)
-  
+
   // 验证模板
   const validation = validateTemplate(newTemplate)
   if (!validation.valid) {
     throw new Error(`模板验证失败: ${validation.errors.join(', ')}`)
   }
-  
+
   // 备份当前版本
   await backupTemplate(templateInfo)
-  
+
   // 更新模板
   await manager.updateTemplate(templateInfo, newTemplate)
-  
+
   // 清理缓存
   manager.clearCache(templateInfo.category, templateInfo.device, templateInfo.template)
 }
@@ -485,7 +485,7 @@ async function updateTemplate(templateInfo: TemplateInfo) {
 manager.setErrorHandler({
   onLoadError: async (error, category, device, template) => {
     console.error('模板加载失败:', error)
-    
+
     // 尝试加载备用模板
     if (device !== 'desktop') {
       try {
@@ -495,11 +495,11 @@ manager.setErrorHandler({
         console.error('备用模板也加载失败:', fallbackError)
       }
     }
-    
+
     // 返回默认错误组件
     return ErrorComponent
   },
-  
+
   onValidationError: (error, config) => {
     console.error('模板配置验证失败:', error)
     // 上报错误到监控系统
@@ -516,7 +516,7 @@ manager.setRetryStrategy({
   maxRetries: 3,
   retryDelay: 1000,
   backoffMultiplier: 2,
-  
+
   shouldRetry: (error, attempt) => {
     // 网络错误才重试
     return error.code === 'NETWORK_ERROR' && attempt < 3
@@ -532,7 +532,7 @@ manager.setRetryStrategy({
 // 监控模板加载性能
 manager.on('template:load', (event) => {
   const loadTime = event.endTime - event.startTime
-  
+
   // 记录性能指标
   performance.mark(`template-load-${event.template}`, {
     detail: {
@@ -543,7 +543,7 @@ manager.on('template:load', (event) => {
       cacheHit: event.fromCache
     }
   })
-  
+
   // 慢加载警告
   if (loadTime > 1000) {
     console.warn('模板加载较慢:', event.template, `${loadTime}ms`)
@@ -557,13 +557,13 @@ manager.on('template:load', (event) => {
 // 监控内存使用
 function monitorMemory() {
   const stats = manager.getMemoryStats()
-  
+
   console.log('内存使用情况:', {
     templateCount: stats.templateCount,
     cacheSize: stats.cacheSize,
     memoryUsage: stats.memoryUsage
   })
-  
+
   // 内存使用过高时清理缓存
   if (stats.memoryUsage > 100 * 1024 * 1024) { // 100MB
     manager.clearCache()

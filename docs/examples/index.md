@@ -66,30 +66,30 @@ pnpm dev
 
 ### 基础功能示例
 
-| 示例名称 | 描述 | 技术栈 | 在线演示 |
-|----------|------|--------|----------|
-| [基础应用](./basic-app) | 最简单的LDesign应用 | Vue3 + LDesign | [演示](https://ldesign-basic.netlify.app) |
-| [路由应用](./router-app) | 路由系统完整示例 | Vue3 + Router | [演示](https://ldesign-router.netlify.app) |
-| [HTTP客户端](./http-client) | HTTP请求和拦截器 | Vue3 + HTTP | [演示](https://ldesign-http.netlify.app) |
-| [状态管理](./state-management) | 响应式状态管理 | Vue3 + State | [演示](https://ldesign-state.netlify.app) |
+| 示例名称                       | 描述                | 技术栈         | 在线演示                                   |
+| ------------------------------ | ------------------- | -------------- | ------------------------------------------ |
+| [基础应用](./basic-app)        | 最简单的LDesign应用 | Vue3 + LDesign | [演示](https://ldesign-basic.netlify.app)  |
+| [路由应用](./router-app)       | 路由系统完整示例    | Vue3 + Router  | [演示](https://ldesign-router.netlify.app) |
+| [HTTP客户端](./http-client)    | HTTP请求和拦截器    | Vue3 + HTTP    | [演示](https://ldesign-http.netlify.app)   |
+| [状态管理](./state-management) | 响应式状态管理      | Vue3 + State   | [演示](https://ldesign-state.netlify.app)  |
 
 ### 高级功能示例
 
-| 示例名称 | 描述 | 技术栈 | 在线演示 |
-|----------|------|--------|----------|
-| [企业级应用](./enterprise-app) | 完整的企业级架构 | 全栈 + 微前端 | [演示](https://ldesign-enterprise.netlify.app) |
-| [多页面应用](./multi-page-app) | MPA架构示例 | Vue3 + Vite | [演示](https://ldesign-mpa.netlify.app) |
-| [插件系统](./plugin-system) | 自定义插件开发 | Plugin API | [演示](https://ldesign-plugins.netlify.app) |
-| [性能监控](./performance-monitoring) | 性能监控和优化 | Performance API | [演示](https://ldesign-perf.netlify.app) |
+| 示例名称                             | 描述             | 技术栈          | 在线演示                                       |
+| ------------------------------------ | ---------------- | --------------- | ---------------------------------------------- |
+| [企业级应用](./enterprise-app)       | 完整的企业级架构 | 全栈 + 微前端   | [演示](https://ldesign-enterprise.netlify.app) |
+| [多页面应用](./multi-page-app)       | MPA架构示例      | Vue3 + Vite     | [演示](https://ldesign-mpa.netlify.app)        |
+| [插件系统](./plugin-system)          | 自定义插件开发   | Plugin API      | [演示](https://ldesign-plugins.netlify.app)    |
+| [性能监控](./performance-monitoring) | 性能监控和优化   | Performance API | [演示](https://ldesign-perf.netlify.app)       |
 
 ### 专题功能示例
 
-| 示例名称 | 描述 | 技术栈 | 在线演示 |
-|----------|------|--------|----------|
-| [移动端应用](./mobile-app) | 移动端适配和PWA | Vue3 + PWA | [演示](https://ldesign-mobile.netlify.app) |
-| [国际化应用](./i18n-app) | 多语言支持 | Vue3 + I18n | [演示](https://ldesign-i18n.netlify.app) |
-| [主题系统](./theme-system) | 动态主题切换 | Vue3 + Color | [演示](https://ldesign-theme.netlify.app) |
-| [模板系统](./template-system) | 动态模板渲染 | Vue3 + Template | [演示](https://ldesign-template.netlify.app) |
+| 示例名称                      | 描述            | 技术栈          | 在线演示                                     |
+| ----------------------------- | --------------- | --------------- | -------------------------------------------- |
+| [移动端应用](./mobile-app)    | 移动端适配和PWA | Vue3 + PWA      | [演示](https://ldesign-mobile.netlify.app)   |
+| [国际化应用](./i18n-app)      | 多语言支持      | Vue3 + I18n     | [演示](https://ldesign-i18n.netlify.app)     |
+| [主题系统](./theme-system)    | 动态主题切换    | Vue3 + Color    | [演示](https://ldesign-theme.netlify.app)    |
+| [模板系统](./template-system) | 动态模板渲染    | Vue3 + Template | [演示](https://ldesign-template.netlify.app) |
 
 ## 🛠️ 开发工具示例
 

@@ -1,5 +1,5 @@
 import { Ref } from 'vue';
-import { digitalSignature } from '@/core';
+import { digitalSignature } from '../../core/index.js';
 
 /**
  * 数字签名状态接口

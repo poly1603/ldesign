@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/i18n-vue-example",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "description": "Vue 3 example for @ldesign/i18n",
   "scripts": {
     "dev": "vite",

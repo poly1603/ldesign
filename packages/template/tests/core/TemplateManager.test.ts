@@ -1,6 +1,6 @@
+import type { TemplateManagerConfig } from '@/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TemplateManager } from '@/core/TemplateManager'
-import type { TemplateManagerConfig } from '@/types'
 
 describe('templateManager', () => {
   let manager: TemplateManager
@@ -12,7 +12,7 @@ describe('templateManager', () => {
       enableCache: true,
       cacheLimit: 10,
       enablePreload: false,
-      defaultDevice: 'desktop'
+      defaultDevice: 'desktop',
     }
     manager = new TemplateManager(config)
   })

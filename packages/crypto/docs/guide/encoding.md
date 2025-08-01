@@ -6,12 +6,12 @@
 
 @ldesign/crypto 支持以下编码格式：
 
-| 编码类型 | 用途 | 特点 |
-|----------|------|------|
-| Base64 | 数据传输、存储 | 可打印字符，适合文本协议 |
-| URL-safe Base64 | URL 参数、文件名 | 不包含 +、/ 和 = 字符 |
-| Hex | 调试、显示 | 十六进制表示，易读 |
-| UTF-8 | 文本处理 | 默认字符编码 |
+| 编码类型        | 用途             | 特点                     |
+| --------------- | ---------------- | ------------------------ |
+| Base64          | 数据传输、存储   | 可打印字符，适合文本协议 |
+| URL-safe Base64 | URL 参数、文件名 | 不包含 +、/ 和 = 字符    |
+| Hex             | 调试、显示       | 十六进制表示，易读       |
+| UTF-8           | 文本处理         | 默认字符编码             |
 
 ## Base64 编码
 
@@ -178,8 +178,9 @@ function createSecureUrl(baseUrl: string, data: object): string {
 function parseSecureUrl(url: string): object {
   const urlObj = new URL(url)
   const encodedData = urlObj.searchParams.get('data')
-  if (!encodedData) throw new Error('No data parameter')
-  
+  if (!encodedData)
+    throw new Error('No data parameter')
+
   const dataJson = base64.decodeUrl(encodedData)
   return JSON.parse(dataJson)
 }
@@ -198,7 +199,7 @@ function logBinaryData(data: Uint8Array, label: string): void {
   const dataString = String.fromCharCode(...data)
   const hexString = hex.encode(dataString)
   const base64String = base64.encode(dataString)
-  
+
   console.log(`${label}:`)
   console.log(`  Hex: ${hexString}`)
   console.log(`  Base64: ${base64String}`)
@@ -225,17 +226,18 @@ function createDataPacket(data: string): string {
   return base64.encode(JSON.stringify(packet))
 }
 
-function verifyDataPacket(encodedPacket: string): { data: string; valid: boolean } {
+function verifyDataPacket(encodedPacket: string): { data: string, valid: boolean } {
   try {
     const packetJson = base64.decode(encodedPacket)
     const packet = JSON.parse(packetJson)
-    
+
     const originalData = base64.decode(packet.data)
     const computedHash = hash.sha256(originalData)
     const valid = computedHash === packet.hash
-    
+
     return { data: originalData, valid }
-  } catch {
+  }
+  catch {
     return { data: '', valid: false }
   }
 }
@@ -255,12 +257,12 @@ function verifyDataPacket(encodedPacket: string): { data: string; valid: boolean
 // 分块处理大数据
 function encodeInChunks(data: string, chunkSize: number = 1024): string {
   const chunks: string[] = []
-  
+
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.slice(i, i + chunkSize)
     chunks.push(base64.encode(chunk))
   }
-  
+
   return chunks.join('|') // 使用分隔符连接
 }
 
@@ -276,20 +278,20 @@ function decodeFromChunks(encodedChunks: string): string {
 // 流式处理（概念示例）
 class StreamEncoder {
   private buffer = ''
-  
+
   write(data: string): string {
     this.buffer += data
-    
+
     // 当缓冲区达到一定大小时进行编码
     if (this.buffer.length >= 1024) {
       const encoded = base64.encode(this.buffer)
       this.buffer = ''
       return encoded
     }
-    
+
     return ''
   }
-  
+
   flush(): string {
     if (this.buffer.length > 0) {
       const encoded = base64.encode(this.buffer)
@@ -304,26 +306,28 @@ class StreamEncoder {
 ## 错误处理
 
 ```typescript
-function safeEncode(data: string, type: 'base64' | 'hex'): { result: string; error?: string } {
+function safeEncode(data: string, type: 'base64' | 'hex'): { result: string, error?: string } {
   try {
     const result = encoding.encode(data, type)
     return { result }
-  } catch (error) {
-    return { 
-      result: '', 
-      error: error instanceof Error ? error.message : 'Unknown encoding error' 
+  }
+  catch (error) {
+    return {
+      result: '',
+      error: error instanceof Error ? error.message : 'Unknown encoding error'
     }
   }
 }
 
-function safeDecode(encodedData: string, type: 'base64' | 'hex'): { result: string; error?: string } {
+function safeDecode(encodedData: string, type: 'base64' | 'hex'): { result: string, error?: string } {
   try {
     const result = encoding.decode(encodedData, type)
     return { result }
-  } catch (error) {
-    return { 
-      result: '', 
-      error: error instanceof Error ? error.message : 'Unknown decoding error' 
+  }
+  catch (error) {
+    return {
+      result: '',
+      error: error instanceof Error ? error.message : 'Unknown decoding error'
     }
   }
 }
@@ -332,7 +336,8 @@ function safeDecode(encodedData: string, type: 'base64' | 'hex'): { result: stri
 const encodeResult = safeEncode('test data', 'base64')
 if (encodeResult.error) {
   console.error('编码失败:', encodeResult.error)
-} else {
+}
+else {
   console.log('编码成功:', encodeResult.result)
 }
 ```

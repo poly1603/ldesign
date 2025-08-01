@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { Hasher, HMACHasher, hash, hmac } from '../hash'
-import type { HashAlgorithm, HashOptions } from '../../types'
+import type { HashAlgorithm } from '../../types'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { hash, Hasher, hmac, HMACHasher } from '../hash'
 
-describe('Hash Algorithms', () => {
+describe('hash Algorithms', () => {
   let hasher: Hasher
   let hmacHasher: HMACHasher
   const testData = 'Hello, World!'
@@ -13,7 +13,7 @@ describe('Hash Algorithms', () => {
     hmacHasher = new HMACHasher()
   })
 
-  describe('Hasher Class', () => {
+  describe('hasher Class', () => {
     it('should generate MD5 hash', () => {
       const result = hasher.hash(testData, 'MD5')
       expect(result.hash).toBeDefined()
@@ -46,7 +46,7 @@ describe('Hash Algorithms', () => {
       expect(base64Result.encoding).toBe('base64')
       expect(hexResult.hash).not.toBe(base64Result.hash)
       expect(hexResult.hash).toMatch(/^[0-9a-f]+$/)
-      expect(base64Result.hash).toMatch(/^[A-Za-z0-9+/]+=*$/)
+      expect(base64Result.hash).toMatch(/^[A-Z0-9+/]+=*$/i)
     })
 
     it('should verify hash correctly', () => {
@@ -57,7 +57,7 @@ describe('Hash Algorithms', () => {
 
     it('should handle all supported algorithms', () => {
       const algorithms: HashAlgorithm[] = ['MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512']
-      
+
       algorithms.forEach((algorithm) => {
         const result = hasher.hash(testData, algorithm)
         expect(result.hash).toBeDefined()
@@ -71,7 +71,7 @@ describe('Hash Algorithms', () => {
     })
   })
 
-  describe('HMACHasher Class', () => {
+  describe('hMACHasher Class', () => {
     it('should generate HMAC-SHA256', () => {
       const result = hmacHasher.hmac(testData, testKey, 'SHA256')
       expect(result.hash).toBeDefined()
@@ -83,7 +83,7 @@ describe('Hash Algorithms', () => {
     it('should generate different HMACs with different keys', () => {
       const hmac1 = hmacHasher.hmac(testData, 'key1', 'SHA256')
       const hmac2 = hmacHasher.hmac(testData, 'key2', 'SHA256')
-      
+
       expect(hmac1.hash).not.toBe(hmac2.hash)
     })
 
@@ -96,7 +96,7 @@ describe('Hash Algorithms', () => {
 
     it('should support all HMAC algorithms', () => {
       const algorithms: HashAlgorithm[] = ['MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512']
-      
+
       algorithms.forEach((algorithm) => {
         const result = hmacHasher.hmac(testData, testKey, algorithm)
         expect(result.hash).toBeDefined()
@@ -111,7 +111,7 @@ describe('Hash Algorithms', () => {
     })
   })
 
-  describe('Hash Convenience Functions', () => {
+  describe('hash Convenience Functions', () => {
     it('should work with hash convenience functions', () => {
       expect(hash.md5(testData)).toBeDefined()
       expect(hash.sha1(testData)).toBeDefined()
@@ -142,7 +142,7 @@ describe('Hash Algorithms', () => {
     })
   })
 
-  describe('Consistency Tests', () => {
+  describe('consistency Tests', () => {
     it('should produce consistent hashes', () => {
       const hash1 = hash.sha256(testData)
       const hash2 = hash.sha256(testData)
@@ -162,7 +162,7 @@ describe('Hash Algorithms', () => {
     })
   })
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     it('should handle long text', () => {
       const longText = 'A'.repeat(10000)
       const result = hash.sha256(longText)

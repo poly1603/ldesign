@@ -1,7 +1,3 @@
-// 核心功能
-// 导入用于默认导出
-import { createRouter } from './router'
-import { createMemoryHistory, createWebHashHistory, createWebHistory } from './history'
 import { RouterLink, RouterView } from './components'
 import {
   onBeforeRouteLeave,
@@ -10,102 +6,106 @@ import {
   useRoute,
   useRouter,
 } from './composables'
+import { START_LOCATION } from './constants'
 import {
-  NavigationFailureType,
   createGuardManager,
   isNavigationFailure,
+  NavigationFailureType,
 } from './guards'
-import { START_LOCATION } from './constants'
-
-export { createRouter } from './router'
-export { createWebHistory, createWebHashHistory, createMemoryHistory } from './history'
-export { createRouterMatcher } from './matcher'
+import { createMemoryHistory, createWebHashHistory, createWebHistory } from './history'
+// 核心功能
+// 导入用于默认导出
+import { createRouter } from './router'
 
 // 组件
-export { RouterView, RouterLink } from './components'
-
+export { RouterLink, RouterView } from './components'
+// 组件类型
+export type {
+  RouterLinkProps,
+  RouterLinkSlotProps,
+  RouterViewProps,
+  RouterViewSlotProps,
+} from './components/types'
 // 组合式 API
 export {
-  useRouter,
-  useRoute,
-  useLink,
-  onBeforeRouteUpdate,
   onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  useHash,
+  useLink,
+  useMatched,
+  useMeta,
   useParams,
   useQuery,
-  useHash,
-  useMeta,
-  useMatched,
+  useRoute,
+  useRouter,
 } from './composables'
+
+// 常量
+export {
+  DEFAULT_LINK_ACTIVE_CLASS,
+  DEFAULT_LINK_EXACT_ACTIVE_CLASS,
+  ErrorTypes,
+  NavigationFailureType as NavigationFailureTypeEnum,
+  ROUTER_VIEW_LOCATION_SYMBOL,
+  START_LOCATION,
+} from './constants'
 
 // 导航守卫
 export {
-  GuardManager,
   createGuardManager,
-  NavigationFailureType,
-  isNavigationFailure,
   createNavigationFailure,
+  GuardManager,
+  isNavigationFailure,
+  NavigationFailureType,
 } from './guards'
+
+export { createMemoryHistory, createWebHashHistory, createWebHistory } from './history'
+
+export { createRouterMatcher } from './matcher'
+
+export { createRouter } from './router'
 
 // 类型定义
 export type {
-  Router,
-  RouteRecordRaw,
-  RouteLocation,
-  RouteLocationRaw,
-  RouteLocationNormalized,
-  RouteParams,
-  RouteQuery,
-  RouteMeta,
+  HistoryLocation,
+  HistoryState,
+  NavigationFailure,
   NavigationGuard,
   NavigationGuardNext,
   NavigationGuardReturn,
   NavigationHookAfter,
-  NavigationFailure,
+  RouteComponent,
+  RouteLocation,
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  RouteMeta,
+  RouteParams,
+  RouteQuery,
+  Router,
+  RouteRecordNormalized,
+  RouteRecordRaw,
   RouterHistory,
   RouterOptions,
-  UseRouterReturn,
-  UseRouteReturn,
-  RouteComponent,
-  RouteRecordNormalized,
-  HistoryLocation,
-  HistoryState,
-  ScrollPosition,
   ScrollBehavior,
+  ScrollPosition,
+  UseRouteReturn,
+  UseRouterReturn,
 } from './types'
-
-// 组件类型
-export type {
-  RouterViewProps,
-  RouterLinkProps,
-  RouterViewSlotProps,
-  RouterLinkSlotProps,
-} from './components/types'
-
-// 常量
-export {
-  START_LOCATION,
-  NavigationFailureType as NavigationFailureTypeEnum,
-  ErrorTypes,
-  ROUTER_VIEW_LOCATION_SYMBOL,
-  DEFAULT_LINK_ACTIVE_CLASS,
-  DEFAULT_LINK_EXACT_ACTIVE_CLASS,
-} from './constants'
 
 // 工具函数
 export {
-  parseURL,
-  stringifyURL,
-  parseQuery,
-  stringifyQuery,
-  normalizeParams,
-  warn,
   assert,
-  deepClone,
-  merge,
-  isSameRouteLocation,
   debounce,
+  deepClone,
+  isSameRouteLocation,
+  merge,
+  normalizeParams,
+  parseQuery,
+  parseURL,
+  stringifyQuery,
+  stringifyURL,
   throttle,
+  warn,
 } from './utils'
 
 // 默认导出

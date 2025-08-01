@@ -1,8 +1,9 @@
-import type { DeviceModule, ModuleLoader as IModuleLoader } from '../types';
+import { ModuleLoader as ModuleLoader$1, DeviceModule } from '../types/index.js';
+
 /**
  * 模块加载器实现
  */
-export declare class ModuleLoader implements IModuleLoader {
+declare class ModuleLoader implements ModuleLoader$1 {
     private modules;
     private loadingPromises;
     /**
@@ -46,4 +47,5 @@ export declare class ModuleLoader implements IModuleLoader {
      */
     private loadGeolocationModule;
 }
-//# sourceMappingURL=ModuleLoader.d.ts.map
+
+export { ModuleLoader };

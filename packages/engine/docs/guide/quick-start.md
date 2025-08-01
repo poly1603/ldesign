@@ -29,9 +29,9 @@ pnpm add @ldesign/engine
 创建一个新的Vue项目或在现有项目中使用引擎：
 
 ```typescript
+import { createApp } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp } from '@ldesign/engine'
 
 // 创建引擎应用
 const engine = createApp(App)
@@ -48,9 +48,9 @@ export { engine }
 引擎提供了几种预设配置，适用于不同的开发场景：
 
 ```typescript
+import { createApp, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets } from '@ldesign/engine'
 
 // 开发环境预设（包含调试工具、详细日志等）
 const engine = createApp(App, presets.development())
@@ -69,9 +69,9 @@ engine.mount('#app')
 你也可以完全自定义引擎配置：
 
 ```typescript
+import { createApp } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp } from '@ldesign/engine'
 
 const engine = createApp(App, {
   config: {
@@ -104,20 +104,6 @@ engine.mount('#app')
 
 ```vue
 <!-- UserProfile.vue -->
-<template>
-  <div>
-    <h2>用户信息</h2>
-    <div v-if="user">
-      <p>姓名: {{ user.name }}</p>
-      <p>邮箱: {{ user.email }}</p>
-      <button @click="logout">退出登录</button>
-    </div>
-    <div v-else>
-      <button @click="login">登录</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { engine } from '../main'
@@ -126,23 +112,41 @@ import { engine } from '../main'
 const user = computed(() => engine.state.get('user'))
 
 // 登录
-const login = () => {
+function login() {
   engine.state.set('user', {
     id: 1,
     name: '张三',
     email: 'zhangsan@example.com'
   })
-  
+
   // 显示成功通知
   engine.notifications.success('登录成功！')
 }
 
 // 退出登录
-const logout = () => {
+function logout() {
   engine.state.delete('user')
   engine.notifications.info('已退出登录')
 }
 </script>
+
+<template>
+  <div>
+    <h2>用户信息</h2>
+    <div v-if="user">
+      <p>姓名: {{ user.name }}</p>
+      <p>邮箱: {{ user.email }}</p>
+      <button @click="logout">
+        退出登录
+      </button>
+    </div>
+    <div v-else>
+      <button @click="login">
+        登录
+      </button>
+    </div>
+  </div>
+</template>
 ```
 
 ### 事件系统
@@ -166,19 +170,20 @@ engine.events.on('user:logout', () => {
 })
 
 // 登录函数
-export const login = async (credentials) => {
+export async function login(credentials) {
   try {
     // 执行登录逻辑
     const user = await authenticateUser(credentials)
-    
+
     // 更新状态
     engine.state.set('user', user)
-    
+
     // 发送登录事件
     engine.events.emit('user:login', user)
-    
+
     return user
-  } catch (error) {
+  }
+  catch (error) {
     engine.logger.error('登录失败', error)
     engine.notifications.error('登录失败，请检查用户名和密码')
     throw error
@@ -194,33 +199,34 @@ export const login = async (credentials) => {
 // utils/api.ts
 import { engine } from '../main'
 
-export const fetchUserData = async (userId: string) => {
+export async function fetchUserData(userId: string) {
   // 记录开始
   engine.logger.info('开始获取用户数据', { userId })
-  
+
   try {
     const response = await fetch(`/api/users/${userId}`)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
-    
+
     const data = await response.json()
-    
+
     // 记录成功
     engine.logger.info('用户数据获取成功', {
       userId,
       dataSize: JSON.stringify(data).length
     })
-    
+
     return data
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     engine.logger.error('用户数据获取失败', {
       userId,
       error: error.message
     })
-    
+
     throw error
   }
 }
@@ -231,9 +237,9 @@ export const fetchUserData = async (userId: string) => {
 ### 使用内置插件
 
 ```typescript
+import { createApp, plugins } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, plugins } from '@ldesign/engine'
 
 const engine = createApp(App, {
   plugins: [
@@ -244,7 +250,7 @@ const engine = createApp(App, {
         { path: '/about', component: About }
       ]
     }),
-    
+
     // HTTP客户端插件
     plugins.http({
       baseURL: '/api',
@@ -265,7 +271,7 @@ import { creators } from '@ldesign/engine'
 export const counterPlugin = creators.plugin('counter', (engine) => {
   // 初始化状态
   engine.state.set('counter', { value: 0 })
-  
+
   // 提供方法
   engine.counter = {
     increment: () => {
@@ -273,19 +279,19 @@ export const counterPlugin = creators.plugin('counter', (engine) => {
       engine.state.set('counter.value', current + 1)
       engine.events.emit('counter:increment', current + 1)
     },
-    
+
     decrement: () => {
       const current = engine.state.get('counter.value')
       engine.state.set('counter.value', current - 1)
       engine.events.emit('counter:decrement', current - 1)
     },
-    
+
     reset: () => {
       engine.state.set('counter.value', 0)
       engine.events.emit('counter:reset')
     }
   }
-  
+
   engine.logger.info('计数器插件已安装')
 })
 
@@ -305,19 +311,19 @@ import { creators } from '@ldesign/engine'
 
 export const performanceMiddleware = creators.middleware('performance', async (context, next) => {
   const startTime = performance.now()
-  
+
   // 执行下一个中间件
   await next()
-  
+
   const endTime = performance.now()
   const duration = endTime - startTime
-  
+
   // 记录性能数据
   context.engine.logger.info('阶段执行时间', {
     phase: context.phase,
     duration: `${duration.toFixed(2)}ms`
   })
-  
+
   // 性能警告
   if (duration > 100) {
     context.engine.notifications.warning(
@@ -337,9 +343,9 @@ const engine = createApp(App, {
 ### 开发环境
 
 ```typescript
+import { createApp, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets } from '@ldesign/engine'
 
 const engine = createApp(App, {
   ...presets.development(),
@@ -355,9 +361,9 @@ engine.mount('#app')
 ### 生产环境
 
 ```typescript
+import { createApp, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets } from '@ldesign/engine'
 
 const engine = createApp(App, {
   ...presets.production(),
@@ -412,17 +418,20 @@ console.log(window.__ENGINE__.getInstalledMiddleware())
 A: 有几种方式：
 
 1. 导入引擎实例：
+
 ```typescript
 import { engine } from '../main'
 ```
 
 2. 使用组合式API：
+
 ```typescript
 import { inject } from 'vue'
 const engine = inject('engine')
 ```
 
 3. 使用全局属性：
+
 ```typescript
 // 在组件中
 this.$engine
@@ -457,7 +466,7 @@ const dependentPlugin = creators.plugin('dependent', (engine) => {
   if (!engine.hasPlugin('auth')) {
     throw new Error('dependent插件需要auth插件')
   }
-  
+
   // 使用其他插件的功能
   const authPlugin = engine.getPlugin('auth')
 }, {

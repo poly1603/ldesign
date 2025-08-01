@@ -1,191 +1,6 @@
-<template>
-  <div class="shopping-cart-demo">
-    <div class="demo-header">
-      <h3>🛒 购物车示例</h3>
-      <p>体验复杂业务逻辑和计算属性</p>
-    </div>
-
-    <div class="demo-content">
-      <!-- 商品列表 -->
-      <div class="products-section">
-        <h4>商品列表</h4>
-        <div class="products-grid">
-          <div 
-            v-for="product in products" 
-            :key="product.id"
-            class="product-card"
-          >
-            <div class="product-image">{{ product.emoji }}</div>
-            <div class="product-info">
-              <h5 class="product-name">{{ product.name }}</h5>
-              <div class="product-price">¥{{ product.price }}</div>
-              <div class="product-stock">库存: {{ product.stock }}</div>
-            </div>
-            <button 
-              @click="addToCart(product)"
-              :disabled="product.stock === 0"
-              class="btn btn-primary btn-sm"
-            >
-              {{ product.stock === 0 ? '缺货' : '加入购物车' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 购物车 -->
-      <div class="cart-section">
-        <div class="cart-header">
-          <h4>购物车 ({{ cartStore.itemCount }})</h4>
-          <button 
-            v-if="!cartStore.isEmpty"
-            @click="cartStore.clearCart"
-            class="btn btn-outline btn-sm"
-          >
-            清空购物车
-          </button>
-        </div>
-
-        <div v-if="cartStore.isEmpty" class="empty-cart">
-          <div class="empty-icon">🛒</div>
-          <div class="empty-text">购物车是空的</div>
-        </div>
-
-        <div v-else class="cart-items">
-          <div 
-            v-for="item in cartStore.items" 
-            :key="item.id"
-            class="cart-item"
-          >
-            <div class="item-image">{{ item.emoji }}</div>
-            <div class="item-info">
-              <div class="item-name">{{ item.name }}</div>
-              <div class="item-price">¥{{ item.price }}</div>
-            </div>
-            <div class="item-quantity">
-              <button 
-                @click="cartStore.updateQuantity(item.id, item.quantity - 1)"
-                class="quantity-btn"
-                :disabled="item.quantity <= 1"
-              >
-                -
-              </button>
-              <span class="quantity">{{ item.quantity }}</span>
-              <button 
-                @click="cartStore.updateQuantity(item.id, item.quantity + 1)"
-                class="quantity-btn"
-                :disabled="item.quantity >= getProductStock(item.productId)"
-              >
-                +
-              </button>
-            </div>
-            <div class="item-total">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
-            <button 
-              @click="cartStore.removeItem(item.id)"
-              class="btn btn-danger btn-sm"
-            >
-              删除
-            </button>
-          </div>
-        </div>
-
-        <!-- 优惠券 -->
-        <div v-if="!cartStore.isEmpty" class="coupon-section">
-          <div class="coupon-input">
-            <input
-              v-model="couponCode"
-              placeholder="输入优惠券代码"
-              class="coupon-field"
-              :disabled="cartStore.appliedCoupon !== null"
-            />
-            <button 
-              v-if="cartStore.appliedCoupon === null"
-              @click="applyCoupon"
-              :disabled="!couponCode.trim()"
-              class="btn btn-outline btn-sm"
-            >
-              使用
-            </button>
-            <button 
-              v-else
-              @click="cartStore.removeCoupon"
-              class="btn btn-outline btn-sm"
-            >
-              移除
-            </button>
-          </div>
-          <div v-if="cartStore.appliedCoupon" class="applied-coupon">
-            <span class="coupon-info">
-              已使用优惠券: {{ cartStore.appliedCoupon.code }}
-              (-¥{{ cartStore.discountAmount.toFixed(2) }})
-            </span>
-          </div>
-        </div>
-
-        <!-- 价格汇总 -->
-        <div v-if="!cartStore.isEmpty" class="price-summary">
-          <div class="summary-row">
-            <span>商品小计:</span>
-            <span>¥{{ cartStore.subtotal.toFixed(2) }}</span>
-          </div>
-          <div v-if="cartStore.discountAmount > 0" class="summary-row discount">
-            <span>优惠金额:</span>
-            <span>-¥{{ cartStore.discountAmount.toFixed(2) }}</span>
-          </div>
-          <div class="summary-row">
-            <span>运费:</span>
-            <span>{{ cartStore.shippingFee === 0 ? '免费' : `¥${cartStore.shippingFee.toFixed(2)}` }}</span>
-          </div>
-          <div class="summary-row">
-            <span>税费:</span>
-            <span>¥{{ cartStore.tax.toFixed(2) }}</span>
-          </div>
-          <div class="summary-row total">
-            <span>总计:</span>
-            <span>¥{{ cartStore.total.toFixed(2) }}</span>
-          </div>
-          <div class="shipping-notice">
-            {{ cartStore.subtotal >= 99 ? '🎉 已享受免运费' : `还差 ¥${(99 - cartStore.subtotal).toFixed(2)} 即可免运费` }}
-          </div>
-        </div>
-
-        <!-- 结算按钮 -->
-        <div v-if="!cartStore.isEmpty" class="checkout-section">
-          <button 
-            @click="checkout"
-            class="btn btn-primary btn-large"
-          >
-            立即结算 (¥{{ cartStore.total.toFixed(2) }})
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 代码展示 -->
-    <div class="code-section">
-      <details>
-        <summary>查看源代码</summary>
-        <div class="code-tabs">
-          <button 
-            v-for="tab in codeTabs" 
-            :key="tab.name"
-            @click="activeTab = tab.name"
-            :class="{ active: activeTab === tab.name }"
-            class="tab-button"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-        <div class="code-content">
-          <pre><code v-html="highlightedCode"></code></pre>
-        </div>
-      </details>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
-import { BaseStore, PersistentState, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import { computed, onUnmounted, ref } from 'vue'
 
 interface Product {
   id: string
@@ -233,7 +48,8 @@ class ShoppingCartStore extends BaseStore {
 
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.items.push({
         id: `${product.id}-${Date.now()}`,
         productId: product.id,
@@ -241,7 +57,7 @@ class ShoppingCartStore extends BaseStore {
         price: product.price,
         quantity,
         emoji: product.emoji,
-        addedAt: new Date()
+        addedAt: new Date(),
       })
     }
 
@@ -263,7 +79,8 @@ class ShoppingCartStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeItem(itemId)
-      } else {
+      }
+      else {
         item.quantity = quantity
         this.calculateShippingAndTax()
       }
@@ -294,7 +111,8 @@ class ShoppingCartStore extends BaseStore {
     // 计算运费
     if (this.subtotal >= 99) {
       this.shippingFee = 0 // 满99免运费
-    } else {
+    }
+    else {
       this.shippingFee = 10
     }
 
@@ -314,12 +132,14 @@ class ShoppingCartStore extends BaseStore {
 
   @Getter()
   get discountAmount() {
-    if (!this.appliedCoupon) return 0
+    if (!this.appliedCoupon)
+      return 0
 
     let discount = 0
     if (this.appliedCoupon.type === 'percentage') {
       discount = this.subtotal * (this.appliedCoupon.value / 100)
-    } else {
+    }
+    else {
       discount = this.appliedCoupon.value
     }
 
@@ -352,21 +172,21 @@ const products = ref<Product[]>([
   { id: '3', name: 'AirPods Pro', price: 1999, stock: 15, emoji: '🎧' },
   { id: '4', name: 'iPad Air', price: 4599, stock: 8, emoji: '📱' },
   { id: '5', name: 'Apple Watch', price: 2999, stock: 12, emoji: '⌚' },
-  { id: '6', name: 'Magic Mouse', price: 799, stock: 20, emoji: '🖱️' }
+  { id: '6', name: 'Magic Mouse', price: 799, stock: 20, emoji: '🖱️' },
 ])
 
 // 模拟优惠券
 const availableCoupons: Record<string, Coupon> = {
-  'SAVE10': { code: 'SAVE10', type: 'percentage', value: 10, minAmount: 100 },
-  'SAVE50': { code: 'SAVE50', type: 'fixed', value: 50, minAmount: 200 },
-  'VIP20': { code: 'VIP20', type: 'percentage', value: 20, minAmount: 500, maxDiscount: 200 }
+  SAVE10: { code: 'SAVE10', type: 'percentage', value: 10, minAmount: 100 },
+  SAVE50: { code: 'SAVE50', type: 'fixed', value: 50, minAmount: 200 },
+  VIP20: { code: 'VIP20', type: 'percentage', value: 20, minAmount: 500, maxDiscount: 200 },
 }
 
 const couponCode = ref('')
 const activeTab = ref('store')
 
 // 方法
-const addToCart = (product: Product) => {
+function addToCart(product: Product) {
   if (product.stock > 0) {
     cartStore.addItem(product)
     // 模拟减少库存
@@ -374,26 +194,27 @@ const addToCart = (product: Product) => {
   }
 }
 
-const getProductStock = (productId: string) => {
+function getProductStock(productId: string) {
   const product = products.value.find(p => p.id === productId)
   return product ? product.stock : 0
 }
 
-const applyCoupon = () => {
+function applyCoupon() {
   const coupon = availableCoupons[couponCode.value.toUpperCase()]
   if (coupon) {
     cartStore.applyCoupon(coupon)
     couponCode.value = ''
-  } else {
+  }
+  else {
     alert('无效的优惠券代码')
   }
 }
 
-const checkout = () => {
+function checkout() {
   alert(`结算成功！总金额: ¥${cartStore.total.toFixed(2)}`)
   cartStore.clearCart()
   // 重置库存
-  products.value.forEach(product => {
+  products.value.forEach((product) => {
     switch (product.id) {
       case '1': product.stock = 5; break
       case '2': product.stock = 10; break
@@ -409,7 +230,7 @@ const checkout = () => {
 const codeTabs = [
   { name: 'store', label: 'Store 定义' },
   { name: 'usage', label: '使用方式' },
-  { name: 'features', label: '功能特性' }
+  { name: 'features', label: '功能特性' },
 ]
 
 const codeExamples = {
@@ -535,7 +356,7 @@ console.log(cartStore.total)         // 总计`,
 5. 响应式计算
    - 实时计算总价
    - 自动更新运费
-   - 动态显示优惠信息`
+   - 动态显示优惠信息`,
 }
 
 const highlightedCode = computed(() => {
@@ -551,6 +372,211 @@ onUnmounted(() => {
   cartStore.$dispose()
 })
 </script>
+
+<template>
+  <div class="shopping-cart-demo">
+    <div class="demo-header">
+      <h3>🛒 购物车示例</h3>
+      <p>体验复杂业务逻辑和计算属性</p>
+    </div>
+
+    <div class="demo-content">
+      <!-- 商品列表 -->
+      <div class="products-section">
+        <h4>商品列表</h4>
+        <div class="products-grid">
+          <div
+            v-for="product in products"
+            :key="product.id"
+            class="product-card"
+          >
+            <div class="product-image">
+              {{ product.emoji }}
+            </div>
+            <div class="product-info">
+              <h5 class="product-name">
+                {{ product.name }}
+              </h5>
+              <div class="product-price">
+                ¥{{ product.price }}
+              </div>
+              <div class="product-stock">
+                库存: {{ product.stock }}
+              </div>
+            </div>
+            <button
+              :disabled="product.stock === 0"
+              class="btn btn-primary btn-sm"
+              @click="addToCart(product)"
+            >
+              {{ product.stock === 0 ? '缺货' : '加入购物车' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 购物车 -->
+      <div class="cart-section">
+        <div class="cart-header">
+          <h4>购物车 ({{ cartStore.itemCount }})</h4>
+          <button
+            v-if="!cartStore.isEmpty"
+            class="btn btn-outline btn-sm"
+            @click="cartStore.clearCart"
+          >
+            清空购物车
+          </button>
+        </div>
+
+        <div v-if="cartStore.isEmpty" class="empty-cart">
+          <div class="empty-icon">
+            🛒
+          </div>
+          <div class="empty-text">
+            购物车是空的
+          </div>
+        </div>
+
+        <div v-else class="cart-items">
+          <div
+            v-for="item in cartStore.items"
+            :key="item.id"
+            class="cart-item"
+          >
+            <div class="item-image">
+              {{ item.emoji }}
+            </div>
+            <div class="item-info">
+              <div class="item-name">
+                {{ item.name }}
+              </div>
+              <div class="item-price">
+                ¥{{ item.price }}
+              </div>
+            </div>
+            <div class="item-quantity">
+              <button
+                class="quantity-btn"
+                :disabled="item.quantity <= 1"
+                @click="cartStore.updateQuantity(item.id, item.quantity - 1)"
+              >
+                -
+              </button>
+              <span class="quantity">{{ item.quantity }}</span>
+              <button
+                class="quantity-btn"
+                :disabled="item.quantity >= getProductStock(item.productId)"
+                @click="cartStore.updateQuantity(item.id, item.quantity + 1)"
+              >
+                +
+              </button>
+            </div>
+            <div class="item-total">
+              ¥{{ (item.price * item.quantity).toFixed(2) }}
+            </div>
+            <button
+              class="btn btn-danger btn-sm"
+              @click="cartStore.removeItem(item.id)"
+            >
+              删除
+            </button>
+          </div>
+        </div>
+
+        <!-- 优惠券 -->
+        <div v-if="!cartStore.isEmpty" class="coupon-section">
+          <div class="coupon-input">
+            <input
+              v-model="couponCode"
+              placeholder="输入优惠券代码"
+              class="coupon-field"
+              :disabled="cartStore.appliedCoupon !== null"
+            >
+            <button
+              v-if="cartStore.appliedCoupon === null"
+              :disabled="!couponCode.trim()"
+              class="btn btn-outline btn-sm"
+              @click="applyCoupon"
+            >
+              使用
+            </button>
+            <button
+              v-else
+              class="btn btn-outline btn-sm"
+              @click="cartStore.removeCoupon"
+            >
+              移除
+            </button>
+          </div>
+          <div v-if="cartStore.appliedCoupon" class="applied-coupon">
+            <span class="coupon-info">
+              已使用优惠券: {{ cartStore.appliedCoupon.code }}
+              (-¥{{ cartStore.discountAmount.toFixed(2) }})
+            </span>
+          </div>
+        </div>
+
+        <!-- 价格汇总 -->
+        <div v-if="!cartStore.isEmpty" class="price-summary">
+          <div class="summary-row">
+            <span>商品小计:</span>
+            <span>¥{{ cartStore.subtotal.toFixed(2) }}</span>
+          </div>
+          <div v-if="cartStore.discountAmount > 0" class="summary-row discount">
+            <span>优惠金额:</span>
+            <span>-¥{{ cartStore.discountAmount.toFixed(2) }}</span>
+          </div>
+          <div class="summary-row">
+            <span>运费:</span>
+            <span>{{ cartStore.shippingFee === 0 ? '免费' : `¥${cartStore.shippingFee.toFixed(2)}` }}</span>
+          </div>
+          <div class="summary-row">
+            <span>税费:</span>
+            <span>¥{{ cartStore.tax.toFixed(2) }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>总计:</span>
+            <span>¥{{ cartStore.total.toFixed(2) }}</span>
+          </div>
+          <div class="shipping-notice">
+            {{ cartStore.subtotal >= 99 ? '🎉 已享受免运费' : `还差 ¥${(99 - cartStore.subtotal).toFixed(2)} 即可免运费` }}
+          </div>
+        </div>
+
+        <!-- 结算按钮 -->
+        <div v-if="!cartStore.isEmpty" class="checkout-section">
+          <button
+            class="btn btn-primary btn-large"
+            @click="checkout"
+          >
+            立即结算 (¥{{ cartStore.total.toFixed(2) }})
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 代码展示 -->
+    <div class="code-section">
+      <details>
+        <summary>查看源代码</summary>
+        <div class="code-tabs">
+          <button
+            v-for="tab in codeTabs"
+            :key="tab.name"
+            :class="{ active: activeTab === tab.name }"
+            class="tab-button"
+            @click="activeTab = tab.name"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+        <div class="code-content">
+          <pre><code v-html="highlightedCode" /></pre>
+        </div>
+      </details>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .shopping-cart-demo {

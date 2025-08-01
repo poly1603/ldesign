@@ -12,20 +12,19 @@ Store 实例的基础接口。
 interface Store {
   readonly $id: string
   readonly $state: Ref<any>
-  $patch(partialState: any): void
-  $patch(mutator: (state: any) => void): void
-  $reset(): void
-  $subscribe(callback: SubscriptionCallback): () => void
-  $onAction(callback: ActionCallback): () => void
-  $dispose(): void
-  $hydrate(data: any): void
-  $serialize(): any
-  $nextTick(callback?: () => void): Promise<void>
-  $watch<T>(
+  $patch: ((partialState: any) => void) & ((mutator: (state: any) => void) => void)
+  $reset: () => void
+  $subscribe: (callback: SubscriptionCallback) => () => void
+  $onAction: (callback: ActionCallback) => () => void
+  $dispose: () => void
+  $hydrate: (data: any) => void
+  $serialize: () => any
+  $nextTick: (callback?: () => void) => Promise<void>
+  $watch: <T>(
     getter: (state: any) => T,
     callback: (newValue: T, oldValue: T) => void,
     options?: WatchOptions
-  ): () => void
+  ) => () => void
 }
 ```
 
@@ -37,9 +36,9 @@ interface Store {
 abstract class BaseStore implements Store {
   readonly $id: string
   readonly $state: Ref<any>
-  
+
   constructor(id: string, options?: StoreOptions)
-  
+
   $patch(partialState: any): void
   $patch(mutator: (state: any) => void): void
   $reset(): void
@@ -170,10 +169,10 @@ interface PersistOptions {
 
 ```typescript
 interface StorageAdapter {
-  getItem(key: string): string | null
-  setItem(key: string, value: string): void
-  removeItem(key: string): void
-  clear(): void
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+  clear: () => void
 }
 ```
 
@@ -183,8 +182,8 @@ interface StorageAdapter {
 
 ```typescript
 interface Serializer {
-  serialize(value: any): string
-  deserialize(value: string): any
+  serialize: (value: any) => string
+  deserialize: (value: string) => any
 }
 ```
 
@@ -292,15 +291,15 @@ interface GetterOptions {
 
 ```typescript
 interface Cache<K, V> {
-  get(key: K): V | undefined
-  set(key: K, value: V, ttl?: number): void
-  has(key: K): boolean
-  delete(key: K): boolean
-  clear(): void
+  get: (key: K) => V | undefined
+  set: (key: K, value: V, ttl?: number) => void
+  has: (key: K) => boolean
+  delete: (key: K) => boolean
+  clear: () => void
   size: number
-  keys(): IterableIterator<K>
-  values(): IterableIterator<V>
-  entries(): IterableIterator<[K, V]>
+  keys: () => IterableIterator<K>
+  values: () => IterableIterator<V>
+  entries: () => IterableIterator<[K, V]>
 }
 ```
 
@@ -396,11 +395,11 @@ interface ValidationRule<T> {
 
 ```typescript
 interface EventBus {
-  on<T>(event: string, handler: (data: T) => void): () => void
-  off(event: string, handler?: Function): void
-  emit<T>(event: string, data?: T): void
-  once<T>(event: string, handler: (data: T) => void): () => void
-  clear(): void
+  on: <T>(event: string, handler: (data: T) => void) => () => void
+  off: (event: string, handler?: Function) => void
+  emit: <T>(event: string, data?: T) => void
+  once: <T>(event: string, handler: (data: T) => void) => () => void
+  clear: () => void
 }
 ```
 
@@ -413,7 +412,7 @@ interface EventBus {
 ```typescript
 interface Plugin {
   name: string
-  install(store: Store, options?: any): void
+  install: (store: Store, options?: any) => void
 }
 ```
 
@@ -424,13 +423,13 @@ Store 插件类型。
 ```typescript
 interface StorePlugin {
   name: string
-  install(store: Store, options?: any): void
-  beforeCreate?(options: StoreOptions): void
-  created?(store: Store): void
-  beforeMount?(store: Store): void
-  mounted?(store: Store): void
-  beforeDestroy?(store: Store): void
-  destroyed?(store: Store): void
+  install: (store: Store, options?: any) => void
+  beforeCreate?: (options: StoreOptions) => void
+  created?: (store: Store) => void
+  beforeMount?: (store: Store) => void
+  mounted?: (store: Store) => void
+  beforeDestroy?: (store: Store) => void
+  destroyed?: (store: Store) => void
 }
 ```
 
@@ -569,7 +568,7 @@ type UnwrapRef<T> = T extends Ref<infer U> ? U : T
 Store 约束类型。
 
 ```typescript
-type StoreConstraint = {
+interface StoreConstraint {
   [key: string]: any
   $id: string
   $state: Ref<any>
@@ -605,9 +604,9 @@ interface UserState {
 }
 
 interface UserActions {
-  login(credentials: LoginCredentials): Promise<void>
-  logout(): void
-  updateProfile(data: Partial<UserState>): void
+  login: (credentials: LoginCredentials) => Promise<void>
+  logout: () => void
+  updateProfile: (data: Partial<UserState>) => void
 }
 
 interface UserGetters {
@@ -666,9 +665,9 @@ interface CounterState {
 }
 
 interface CounterActions {
-  increment(): void
-  decrement(): void
-  reset(): void
+  increment: () => void
+  decrement: () => void
+  reset: () => void
 }
 
 interface CounterGetters {
@@ -710,7 +709,7 @@ interface MyStoreState {
 }
 
 interface MyStoreActions {
-  fetchData(): Promise<void>
+  fetchData: () => Promise<void>
 }
 
 class MyStore extends BaseStore implements MyStoreState, MyStoreActions {

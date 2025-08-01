@@ -1,4 +1,4 @@
-import { RequestConfig, HttpError, ResponseData, RetryConfig } from '../types/index.js';
+import { RequestConfig, HttpError, ResponseData, RetryConfig } from '@/types';
 
 /**
  * 错误类型枚举

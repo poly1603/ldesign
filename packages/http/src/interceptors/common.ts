@@ -1,4 +1,4 @@
-import type { RequestConfig, ResponseData, HttpError, RequestInterceptor, ResponseInterceptor, ErrorInterceptor } from '@/types'
+import type { ErrorInterceptor, HttpError, RequestInterceptor, ResponseInterceptor } from '@/types'
 
 /**
  * 请求日志拦截器
@@ -81,7 +81,7 @@ export const requestIdInterceptor: RequestInterceptor = (config) => {
  */
 export const timestampInterceptor: RequestInterceptor = (config) => {
   const timestamp = Date.now()
-  
+
   // 为 GET 请求添加时间戳参数防止缓存
   if (config.method === 'GET') {
     config.params = {
@@ -89,13 +89,13 @@ export const timestampInterceptor: RequestInterceptor = (config) => {
       _t: timestamp,
     }
   }
-  
+
   // 添加时间戳头部
   config.headers = {
     ...config.headers,
     'X-Timestamp': timestamp.toString(),
   }
-  
+
   return config
 }
 
@@ -161,7 +161,7 @@ export const statusCodeInterceptor: ResponseInterceptor = (response) => {
  * 数据转换拦截器工厂
  */
 export function createDataTransformInterceptor<T, R>(
-  transform: (data: T) => R
+  transform: (data: T) => R,
 ): ResponseInterceptor<R> {
   return (response) => {
     return {
@@ -177,7 +177,7 @@ export function createDataTransformInterceptor<T, R>(
 export function createRetryInterceptor(
   maxRetries: number = 3,
   retryDelay: number = 1000,
-  retryCondition?: (error: HttpError) => boolean
+  retryCondition?: (error: HttpError) => boolean,
 ): ErrorInterceptor {
   return async (error) => {
     const config = error.config
@@ -186,8 +186,9 @@ export function createRetryInterceptor(
     }
 
     // 检查是否应该重试
-    const shouldRetry = retryCondition ? retryCondition(error) : 
-      error.isNetworkError || error.isTimeoutError
+    const shouldRetry = retryCondition
+      ? retryCondition(error)
+      : error.isNetworkError || error.isTimeoutError
 
     if (!shouldRetry) {
       return error
@@ -195,7 +196,7 @@ export function createRetryInterceptor(
 
     // 获取当前重试次数
     const retryCount = (config as any).__retryCount || 0
-    
+
     if (retryCount >= maxRetries) {
       return error
     }
@@ -204,7 +205,7 @@ export function createRetryInterceptor(
     ;(config as any).__retryCount = retryCount + 1
 
     // 延迟重试
-    await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, retryCount)))
+    await new Promise(resolve => setTimeout(resolve, retryDelay * 2 ** retryCount))
 
     // 这里需要重新发送请求，但由于拦截器的限制，我们只能返回错误
     // 实际的重试逻辑应该在 HttpClient 中实现

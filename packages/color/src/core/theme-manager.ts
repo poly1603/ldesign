@@ -3,27 +3,27 @@
  */
 
 import type {
-  ThemeManagerOptions,
-  ThemeManagerInstance,
-  ThemeConfig,
-  GeneratedTheme,
-  ColorMode,
-  Storage,
-  LRUCache,
   ColorGenerator,
-  SystemThemeDetector,
-  IdleProcessor,
+  ColorMode,
   CSSInjector,
   EventEmitter,
+  GeneratedTheme,
+  IdleProcessor,
+  LRUCache,
+  Storage,
+  SystemThemeDetector,
+  ThemeConfig,
+  ThemeEventListener,
   ThemeEventType,
-  ThemeEventListener
+  ThemeManagerInstance,
+  ThemeManagerOptions,
 } from './types'
 
 import { ColorGeneratorImpl } from '../utils/color-generator'
 import { ColorScaleGenerator } from '../utils/color-scale'
 import { CSSInjectorImpl, CSSVariableGenerator } from '../utils/css-injector'
-import { IdleProcessorImpl } from '../utils/idle-processor'
 import { EventEmitterImpl } from '../utils/event-emitter'
+import { IdleProcessorImpl } from '../utils/idle-processor'
 
 /**
  * 默认主题管理器选项
@@ -43,7 +43,7 @@ const DEFAULT_OPTIONS: Required<Omit<ThemeManagerOptions, 'onThemeChanged' | 'on
   cssPrefix: '--color',
   idleProcessing: true,
   onThemeChanged: undefined,
-  onError: undefined
+  onError: undefined,
 }
 
 /**
@@ -55,7 +55,7 @@ export class ThemeManager implements ThemeManagerInstance {
     onError?: (error: Error) => void
     themes: ThemeConfig[]
   }
-  
+
   private currentTheme: string
   private currentMode: ColorMode
   private storage: Storage
@@ -74,26 +74,26 @@ export class ThemeManager implements ThemeManagerInstance {
     this.options = { ...DEFAULT_OPTIONS, ...options }
     this.currentTheme = this.options.defaultTheme
     this.currentMode = 'light'
-    
+
     // 初始化组件
     this.eventEmitter = new EventEmitterImpl()
     this.colorGenerator = new ColorGeneratorImpl()
     this.scaleGenerator = new ColorScaleGenerator()
     this.cssInjector = new CSSInjectorImpl({
       prefix: this.options.cssPrefix,
-      styleId: 'ldesign-theme-variables'
+      styleId: 'ldesign-theme-variables',
     })
     this.cssVariableGenerator = new CSSVariableGenerator(this.options.cssPrefix)
     this.idleProcessor = new IdleProcessorImpl({
-      autoStart: this.options.idleProcessing
+      autoStart: this.options.idleProcessing,
     })
-    
+
     // 初始化存储
     this.storage = this.createStorage()
-    
+
     // 初始化缓存
     this.cache = this.createCache()
-    
+
     // 注册预设主题
     if (this.options.themes.length > 0) {
       this.registerThemes(this.options.themes)
@@ -128,9 +128,10 @@ export class ThemeManager implements ThemeManagerInstance {
       this.isInitialized = true
       this.eventEmitter.emit('theme-changed', {
         theme: this.currentTheme,
-        mode: this.currentMode
+        mode: this.currentMode,
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -155,7 +156,7 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   async setTheme(theme: string, mode?: ColorMode): Promise<void> {
     const targetMode = mode || this.currentMode
-    
+
     if (theme === this.currentTheme && targetMode === this.currentMode) {
       return
     }
@@ -183,14 +184,15 @@ export class ThemeManager implements ThemeManagerInstance {
         theme: this.currentTheme,
         mode: this.currentMode,
         oldTheme,
-        oldMode
+        oldMode,
       })
 
       // 调用回调
       if (this.options.onThemeChanged) {
         this.options.onThemeChanged(this.currentTheme, this.currentMode)
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -209,11 +211,12 @@ export class ThemeManager implements ThemeManagerInstance {
   registerTheme(config: ThemeConfig): void {
     // 检查主题是否已存在
     const existingIndex = this.options.themes.findIndex(t => t.name === config.name)
-    
+
     if (existingIndex >= 0) {
       // 更新现有主题
       this.options.themes[existingIndex] = config
-    } else {
+    }
+    else {
       // 添加新主题
       this.options.themes.push(config)
     }
@@ -265,7 +268,7 @@ export class ThemeManager implements ThemeManagerInstance {
     }
 
     const cacheKey = `${name}-generated`
-    
+
     // 检查缓存
     if (this.cache.has(cacheKey)) {
       return
@@ -274,9 +277,10 @@ export class ThemeManager implements ThemeManagerInstance {
     try {
       const generatedTheme = await this.generateThemeData(config)
       this.cache.set(cacheKey, generatedTheme)
-      
+
       this.eventEmitter.emit('theme-generated', { theme: name })
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -287,13 +291,14 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   async preGenerateAllThemes(): Promise<void> {
     const tasks = this.getThemeNames().map(name => () => this.preGenerateTheme(name))
-    
+
     if (this.options.idleProcessing) {
       // 使用闲时处理
       tasks.forEach((task, index) => {
         this.idleProcessor.addTask(task, index)
       })
-    } else {
+    }
+    else {
       // 直接执行
       await Promise.all(tasks.map(task => task()))
     }
@@ -372,7 +377,7 @@ export class ThemeManager implements ThemeManagerInstance {
       getItem: (key: string) => store.get(key) || null,
       setItem: (key: string, value: string) => store.set(key, value),
       removeItem: (key: string) => store.delete(key),
-      clear: () => store.clear()
+      clear: () => store.clear(),
     }
   }
 
@@ -380,7 +385,7 @@ export class ThemeManager implements ThemeManagerInstance {
    * 创建缓存实例
    */
   private createCache(): LRUCache<GeneratedTheme> {
-    const cache = new Map<string, { value: GeneratedTheme; accessed: number }>()
+    const cache = new Map<string, { value: GeneratedTheme, accessed: number }>()
     const maxSize = typeof this.options.cache === 'object' ? this.options.cache.maxSize || 50 : 50
 
     return {
@@ -412,7 +417,7 @@ export class ThemeManager implements ThemeManagerInstance {
       delete: (key: string) => cache.delete(key),
       clear: () => cache.clear(),
       size: () => cache.size,
-      has: (key: string) => cache.has(key)
+      has: (key: string) => cache.has(key),
     }
   }
 
@@ -436,7 +441,7 @@ export class ThemeManager implements ThemeManagerInstance {
         }
         mediaQuery.addEventListener('change', handler)
         return () => mediaQuery.removeEventListener('change', handler)
-      }
+      },
     }
 
     // 监听系统主题变化
@@ -462,7 +467,8 @@ export class ThemeManager implements ThemeManagerInstance {
           this.currentMode = mode
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to restore theme from storage:', error)
     }
 
@@ -479,10 +485,11 @@ export class ThemeManager implements ThemeManagerInstance {
     try {
       const data = {
         theme: this.currentTheme,
-        mode: this.currentMode
+        mode: this.currentMode,
       }
       this.storage.setItem(this.options.storageKey, JSON.stringify(data))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to save theme to storage:', error)
     }
   }
@@ -508,7 +515,7 @@ export class ThemeManager implements ThemeManagerInstance {
       success: lightColors.success || '#52c41a',
       warning: lightColors.warning || '#faad14',
       danger: lightColors.danger || '#ff4d4f',
-      gray: lightColors.gray || '#8c8c8c'
+      gray: lightColors.gray || '#8c8c8c',
     }
 
     const darkColors = config.dark
@@ -520,7 +527,7 @@ export class ThemeManager implements ThemeManagerInstance {
           success: darkColors.success || '#49aa19',
           warning: darkColors.warning || '#d4b106',
           danger: darkColors.danger || '#dc4446',
-          gray: darkColors.gray || '#8c8c8c'
+          gray: darkColors.gray || '#8c8c8c',
         }
       : lightColorConfig
 
@@ -536,13 +543,13 @@ export class ThemeManager implements ThemeManagerInstance {
       name: config.name,
       light: {
         scales: lightScales,
-        cssVariables: lightCSSVariables
+        cssVariables: lightCSSVariables,
       },
       dark: {
         scales: darkScales,
-        cssVariables: darkCSSVariables
+        cssVariables: darkCSSVariables,
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 

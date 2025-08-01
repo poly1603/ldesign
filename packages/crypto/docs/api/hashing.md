@@ -13,13 +13,16 @@ hash.md5(data: string, options?: HashOptions): string
 ```
 
 **参数：**
+
 - `data` (string): 要哈希的数据
 - `options` (HashOptions, 可选): 哈希选项
 
 **返回值：**
+
 - `string`: MD5 哈希值
 
 **示例：**
+
 ```typescript
 import { hash } from '@ldesign/crypto'
 
@@ -44,6 +47,7 @@ hash.sha1(data: string, options?: HashOptions): string
 ```
 
 **示例：**
+
 ```typescript
 const sha1Hash = hash.sha1('Hello, SHA1!')
 console.log('SHA1:', sha1Hash)
@@ -68,6 +72,7 @@ hash.sha256(data: string, options?: HashOptions): string
 ```
 
 **示例：**
+
 ```typescript
 const sha256Hash = hash.sha256('Hello, SHA256!')
 console.log('SHA256:', sha256Hash)
@@ -91,6 +96,7 @@ hash.sha512(data: string, options?: HashOptions): string
 ```
 
 **示例：**
+
 ```typescript
 const sha512Hash = hash.sha512('Hello, SHA512!')
 console.log('SHA512:', sha512Hash)
@@ -105,15 +111,18 @@ hash.verify(data: string, expectedHash: string, algorithm: HashAlgorithm, option
 ```
 
 **参数：**
+
 - `data` (string): 原始数据
 - `expectedHash` (string): 期望的哈希值
 - `algorithm` (HashAlgorithm): 哈希算法
 - `options` (HashOptions, 可选): 哈希选项
 
 **返回值：**
+
 - `boolean`: 验证结果
 
 **示例：**
+
 ```typescript
 const data = 'Hello, World!'
 const expectedHash = hash.sha256(data)
@@ -139,11 +148,13 @@ hmac.md5(data: string, key: string, options?: HashOptions): string
 ```
 
 **参数：**
+
 - `data` (string): 要计算 HMAC 的数据
 - `key` (string): HMAC 密钥
 - `options` (HashOptions, 可选): 选项
 
 **示例：**
+
 ```typescript
 import { hmac } from '@ldesign/crypto'
 
@@ -171,6 +182,7 @@ hmac.sha256(data: string, key: string, options?: HashOptions): string
 ```
 
 **示例：**
+
 ```typescript
 const hmacSha256 = hmac.sha256('Important message', 'secret-key')
 console.log('HMAC-SHA256:', hmacSha256)
@@ -201,6 +213,7 @@ hmac.verify(data: string, key: string, expectedHmac: string, algorithm: HashAlgo
 ```
 
 **参数：**
+
 - `data` (string): 原始数据
 - `key` (string): HMAC 密钥
 - `expectedHmac` (string): 期望的 HMAC 值
@@ -208,6 +221,7 @@ hmac.verify(data: string, key: string, expectedHmac: string, algorithm: HashAlgo
 - `options` (HashOptions, 可选): 选项
 
 **示例：**
+
 ```typescript
 const data = 'API request data'
 const key = 'api-secret-key'
@@ -228,9 +242,9 @@ console.log('HMAC 验证:', isValid) // true
 
 ```typescript
 interface HashOptions {
-  encoding?: EncodingType    // 输出编码，默认 'hex'
-  iterations?: number        // 迭代次数（用于 PBKDF2）
-  salt?: string             // 盐值
+  encoding?: EncodingType // 输出编码，默认 'hex'
+  iterations?: number // 迭代次数（用于 PBKDF2）
+  salt?: string // 盐值
 }
 ```
 
@@ -266,13 +280,14 @@ interface PBKDF2Options {
 ```
 
 **示例：**
+
 ```typescript
 const password = 'user-password'
 const salt = keyGenerator.generateSalt(16)
 
 const derivedKey = hash.pbkdf2(password, salt, {
-  iterations: 100000,    // 10万次迭代
-  keyLength: 32,         // 256位密钥
+  iterations: 100000, // 10万次迭代
+  keyLength: 32, // 256位密钥
   hashAlgorithm: 'SHA256'
 })
 
@@ -294,9 +309,10 @@ interface ScryptOptions {
 ```
 
 **示例：**
+
 ```typescript
 const scryptKey = hash.scrypt(password, salt, {
-  N: 16384,    // 2^14
+  N: 16384, // 2^14
   r: 8,
   p: 1,
   keyLength: 32
@@ -311,7 +327,7 @@ const scryptKey = hash.scrypt(password, salt, {
 class PasswordHasher {
   private static readonly SALT_LENGTH = 16
   private static readonly ITERATIONS = 100000
-  
+
   // 哈希密码
   static hashPassword(password: string): string {
     const salt = keyGenerator.generateSalt(this.SALT_LENGTH)
@@ -320,11 +336,11 @@ class PasswordHasher {
       keyLength: 32,
       hashAlgorithm: 'SHA256'
     })
-    
+
     // 返回盐值和哈希值的组合
     return `${salt}:${hashedPassword}`
   }
-  
+
   // 验证密码
   static verifyPassword(password: string, storedHash: string): boolean {
     try {
@@ -334,22 +350,24 @@ class PasswordHasher {
         keyLength: 32,
         hashAlgorithm: 'SHA256'
       })
-      
+
       // 使用常数时间比较防止时间攻击
       return this.constantTimeEquals(computedHash, expectedHash)
-    } catch {
+    }
+    catch {
       return false
     }
   }
-  
+
   private static constantTimeEquals(a: string, b: string): boolean {
-    if (a.length !== b.length) return false
-    
+    if (a.length !== b.length)
+      return false
+
     let result = 0
     for (let i = 0; i < a.length; i++) {
       result |= a.charCodeAt(i) ^ b.charCodeAt(i)
     }
-    
+
     return result === 0
   }
 }
@@ -375,7 +393,7 @@ class FileIntegrityChecker {
       default: return hash.sha256(fileContent)
     }
   }
-  
+
   // 生成文件校验和
   static generateChecksum(fileContent: string): {
     md5: string
@@ -390,28 +408,28 @@ class FileIntegrityChecker {
       sha512: hash.sha512(fileContent)
     }
   }
-  
+
   // 验证文件完整性
   static verifyFileIntegrity(
-    fileContent: string, 
-    expectedHash: string, 
+    fileContent: string,
+    expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256'
   ): boolean {
     const actualHash = this.calculateFileHash(fileContent, algorithm)
     return actualHash === expectedHash
   }
-  
+
   // 批量验证文件
   static verifyMultipleFiles(files: Array<{
     content: string
     expectedHash: string
     algorithm?: HashAlgorithm
-  }>): Array<{ index: number; valid: boolean; actualHash: string }> {
+  }>): Array<{ index: number, valid: boolean, actualHash: string }> {
     return files.map((file, index) => {
       const algorithm = file.algorithm || 'SHA256'
       const actualHash = this.calculateFileHash(file.content, algorithm)
       const valid = actualHash === file.expectedHash
-      
+
       return { index, valid, actualHash }
     })
   }
@@ -423,8 +441,8 @@ const checksum = FileIntegrityChecker.generateChecksum(fileContent)
 console.log('文件校验和:', checksum)
 
 const isValid = FileIntegrityChecker.verifyFileIntegrity(
-  fileContent, 
-  checksum.sha256, 
+  fileContent,
+  checksum.sha256,
   'SHA256'
 )
 console.log('文件完整性:', isValid ? '✅ 完整' : '❌ 已损坏')
@@ -435,11 +453,11 @@ console.log('文件完整性:', isValid ? '✅ 完整' : '❌ 已损坏')
 ```typescript
 class APIRequestSigner {
   private secretKey: string
-  
+
   constructor(secretKey: string) {
     this.secretKey = secretKey
   }
-  
+
   // 生成请求签名
   signRequest(method: string, url: string, body: string, timestamp?: number): {
     signature: string
@@ -448,43 +466,43 @@ class APIRequestSigner {
     const requestTimestamp = timestamp || Date.now()
     const message = this.createSignatureMessage(method, url, body, requestTimestamp)
     const signature = hmac.sha256(message, this.secretKey)
-    
+
     return {
       signature,
       timestamp: requestTimestamp
     }
   }
-  
+
   // 验证请求签名
   verifyRequest(
-    method: string, 
-    url: string, 
-    body: string, 
-    timestamp: number, 
+    method: string,
+    url: string,
+    body: string,
+    timestamp: number,
     signature: string,
     maxAge: number = 300000 // 5分钟
-  ): { valid: boolean; reason?: string } {
+  ): { valid: boolean, reason?: string } {
     // 检查时间戳
     const now = Date.now()
     if (now - timestamp > maxAge) {
       return { valid: false, reason: '请求已过期' }
     }
-    
+
     if (timestamp > now + 60000) { // 允许1分钟的时钟偏差
       return { valid: false, reason: '请求时间戳无效' }
     }
-    
+
     // 验证签名
     const message = this.createSignatureMessage(method, url, body, timestamp)
     const expectedSignature = hmac.sha256(message, this.secretKey)
-    
+
     if (signature !== expectedSignature) {
       return { valid: false, reason: '签名验证失败' }
     }
-    
+
     return { valid: true }
   }
-  
+
   private createSignatureMessage(method: string, url: string, body: string, timestamp: number): string {
     return `${method}\n${url}\n${body}\n${timestamp}`
   }
@@ -495,15 +513,15 @@ const signer = new APIRequestSigner('api-secret-key')
 
 // 签名请求
 const { signature, timestamp } = signer.signRequest(
-  'POST', 
-  '/api/users', 
+  'POST',
+  '/api/users',
   '{"name":"John","email":"john@example.com"}'
 )
 
 // 验证请求
 const verification = signer.verifyRequest(
-  'POST', 
-  '/api/users', 
+  'POST',
+  '/api/users',
   '{"name":"John","email":"john@example.com"}',
   timestamp,
   signature
@@ -516,38 +534,38 @@ console.log('请求验证:', verification.valid ? '✅ 有效' : `❌ ${verifica
 
 ### 算法性能对比
 
-| 算法 | 相对速度 | 输出长度 | 安全性 | 推荐用途 |
-|------|----------|----------|--------|----------|
-| MD5 | 最快 | 128位 | 低 | 仅校验和 |
-| SHA-1 | 快 | 160位 | 低 | 已弃用 |
-| SHA-224 | 中等 | 224位 | 中 | 一般用途 |
-| SHA-256 | 中等 | 256位 | 高 | **推荐** |
-| SHA-384 | 慢 | 384位 | 高 | 高安全要求 |
-| SHA-512 | 慢 | 512位 | 高 | 高安全要求 |
+| 算法    | 相对速度 | 输出长度 | 安全性 | 推荐用途   |
+| ------- | -------- | -------- | ------ | ---------- |
+| MD5     | 最快     | 128位    | 低     | 仅校验和   |
+| SHA-1   | 快       | 160位    | 低     | 已弃用     |
+| SHA-224 | 中等     | 224位    | 中     | 一般用途   |
+| SHA-256 | 中等     | 256位    | 高     | **推荐**   |
+| SHA-384 | 慢       | 384位    | 高     | 高安全要求 |
+| SHA-512 | 慢       | 512位    | 高     | 高安全要求 |
 
 ### 批量哈希优化
 
 ```typescript
 // 批量哈希处理
-const batchHash = (dataList: string[], algorithm: HashAlgorithm = 'SHA256') => {
+function batchHash(dataList: string[], algorithm: HashAlgorithm = 'SHA256') {
   const hashFunction = hash[algorithm.toLowerCase()]
   return dataList.map(data => hashFunction(data))
 }
 
 // 异步批量处理
-const batchHashAsync = async (dataList: string[], algorithm: HashAlgorithm = 'SHA256') => {
+async function batchHashAsync(dataList: string[], algorithm: HashAlgorithm = 'SHA256') {
   const results = []
   const batchSize = 100
-  
+
   for (let i = 0; i < dataList.length; i += batchSize) {
     const batch = dataList.slice(i, i + batchSize)
     const batchResults = batch.map(data => hash[algorithm.toLowerCase()](data))
     results.push(...batchResults)
-    
+
     // 让出控制权
     await new Promise(resolve => setTimeout(resolve, 0))
   }
-  
+
   return results
 }
 ```
@@ -565,14 +583,15 @@ const batchHashAsync = async (dataList: string[], algorithm: HashAlgorithm = 'SH
 
 ```typescript
 // 安全的哈希比较
-const secureHashCompare = (hash1: string, hash2: string): boolean => {
-  if (hash1.length !== hash2.length) return false
-  
+function secureHashCompare(hash1: string, hash2: string): boolean {
+  if (hash1.length !== hash2.length)
+    return false
+
   let result = 0
   for (let i = 0; i < hash1.length; i++) {
     result |= hash1.charCodeAt(i) ^ hash2.charCodeAt(i)
   }
-  
+
   return result === 0
 }
 ```

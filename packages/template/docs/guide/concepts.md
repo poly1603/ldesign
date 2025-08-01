@@ -157,7 +157,7 @@ export const config: TemplateConfig = {
   category: 'auth',
   device: 'desktop',
   tags: ['登录', '认证'],
-  
+
   // 属性定义
   props: {
     title: {
@@ -166,7 +166,7 @@ export const config: TemplateConfig = {
       description: '页面标题'
     }
   },
-  
+
   // 兼容性
   compatibility: {
     vue: '>=3.2.0',

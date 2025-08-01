@@ -40,31 +40,40 @@ const PLURAL_RULES: PluralRules = {
   'ru': (count: number) => {
     const mod10 = count % 10
     const mod100 = count % 100
-    
-    if (mod10 === 1 && mod100 !== 11) return 0
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 1
+
+    if (mod10 === 1 && mod100 !== 11)
+      return 0
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return 1
     return 2
   },
 
   // 波兰语：复杂的复数规则
   'pl': (count: number) => {
-    if (count === 1) return 0
+    if (count === 1)
+      return 0
     const mod10 = count % 10
     const mod100 = count % 100
-    
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 1
+
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return 1
     return 2
   },
 
   // 阿拉伯语：非常复杂的复数规则
   'ar': (count: number) => {
-    if (count === 0) return 0
-    if (count === 1) return 1
-    if (count === 2) return 2
-    if (count % 100 >= 3 && count % 100 <= 10) return 3
-    if (count % 100 >= 11) return 4
+    if (count === 0)
+      return 0
+    if (count === 1)
+      return 1
+    if (count === 2)
+      return 2
+    if (count % 100 >= 3 && count % 100 <= 10)
+      return 3
+    if (count % 100 >= 11)
+      return 4
     return 5
-  }
+  },
 }
 
 /**
@@ -99,7 +108,7 @@ export function getPluralRule(locale: string): PluralRule {
 export function parsePluralExpression(
   expression: string,
   params: TranslationParams,
-  locale: string
+  locale: string,
 ): string {
   // 匹配复数表达式的正则
   const pluralRegex = /\{(\w+),\s*plural,\s*(.+)\}/
@@ -114,10 +123,10 @@ export function parsePluralExpression(
 
   // 解析规则部分
   const ruleMap = parsePluralRules(rules)
-  
+
   // 获取复数规则函数
   const pluralRule = getPluralRule(locale)
-  
+
   // 首先检查精确匹配（=0, =1, =2 等）
   const exactKey = `=${count}`
   if (ruleMap[exactKey]) {
@@ -127,7 +136,7 @@ export function parsePluralExpression(
   // 使用复数规则确定使用哪个形式
   const pluralIndex = pluralRule(count)
   const pluralKeys = ['zero', 'one', 'two', 'few', 'many', 'other']
-  
+
   // 按优先级查找匹配的规则
   for (let i = pluralIndex; i < pluralKeys.length; i++) {
     if (ruleMap[pluralKeys[i]]) {
@@ -151,7 +160,7 @@ export function parsePluralExpression(
  */
 function parsePluralRules(rulesStr: string): Record<string, string> {
   const rules: Record<string, string> = {}
-  
+
   // 匹配规则的正则：=0{...} 或 other{...}
   const ruleRegex = /(=\d+|zero|one|two|few|many|other)\{([^}]*)\}/g
   let match: RegExpExecArray | null
@@ -180,7 +189,7 @@ function interpolatePluralRule(rule: string, count: number): string {
  * @returns 是否包含复数表达式
  */
 export function hasPluralExpression(str: string): boolean {
-  const pluralRegex = /\{\w+,\s*plural,\s*.+\}/
+  const pluralRegex = /\{\w+,\s*plural,\s*(?:\S.*|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/
   return pluralRegex.test(str)
 }
 
@@ -191,7 +200,7 @@ export function hasPluralExpression(str: string): boolean {
  */
 export function extractPluralKeys(expression: string): string[] {
   const keys: string[] = []
-  const pluralRegex = /\{(\w+),\s*plural,\s*.+\}/g
+  const pluralRegex = /\{(\w+),\s*plural,\s*(?:\S.*|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/g
   let match: RegExpExecArray | null
 
   while ((match = pluralRegex.exec(expression)) !== null) {
@@ -231,14 +240,14 @@ export function getSupportedPluralLocales(): string[] {
 export function processPluralization(
   template: string,
   params: TranslationParams,
-  locale: string
+  locale: string,
 ): string {
   if (!hasPluralExpression(template)) {
     return template
   }
 
   // 替换所有复数表达式
-  return template.replace(/\{\w+,\s*plural,\s*.+?\}/g, (match) => {
+  return template.replace(/\{\w+,\s*plural,\s*(?:\S.*?|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/g, (match) => {
     return parsePluralExpression(match, params, locale)
   })
 }

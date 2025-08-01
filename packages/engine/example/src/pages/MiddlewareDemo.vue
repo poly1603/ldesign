@@ -1,228 +1,6 @@
-<template>
-  <div class="middleware-demo">
-    <div class="demo-header">
-      <h1>🔧 中间件系统演示</h1>
-      <p>展示中间件的注册、执行顺序和错误处理机制</p>
-    </div>
-
-    <div class="demo-grid">
-      <!-- 中间件注册 -->
-      <div class="demo-card">
-        <h3>📝 中间件注册</h3>
-        <div class="form-group">
-          <label>中间件名称:</label>
-          <input 
-            v-model="newMiddleware.name" 
-            type="text" 
-            placeholder="例如: auth-middleware"
-            class="form-input"
-          >
-        </div>
-        <div class="form-group">
-          <label>优先级:</label>
-          <input 
-            v-model.number="newMiddleware.priority" 
-            type="number" 
-            placeholder="数字越大优先级越高"
-            class="form-input"
-          >
-        </div>
-        <div class="form-group">
-          <label>中间件类型:</label>
-          <select v-model="newMiddleware.type" class="form-select">
-            <option value="request">请求中间件</option>
-            <option value="response">响应中间件</option>
-            <option value="error">错误处理中间件</option>
-            <option value="auth">认证中间件</option>
-            <option value="logging">日志中间件</option>
-          </select>
-        </div>
-        <div class="button-group">
-          <button @click="registerMiddleware" class="btn btn-primary">
-            注册中间件
-          </button>
-          <button @click="registerPresetMiddlewares" class="btn btn-secondary">
-            注册预设中间件
-          </button>
-        </div>
-      </div>
-
-      <!-- 中间件列表 -->
-      <div class="demo-card">
-        <h3>📋 已注册中间件</h3>
-        <div class="middleware-list">
-          <div 
-            v-for="middleware in middlewareList" 
-            :key="middleware.name"
-            class="middleware-item"
-            :class="{ active: middleware.enabled }"
-          >
-            <div class="middleware-info">
-              <div class="middleware-header">
-                <span class="middleware-name">{{ middleware.name }}</span>
-                <span class="middleware-priority">优先级: {{ middleware.priority }}</span>
-              </div>
-              <div class="middleware-meta">
-                <span class="middleware-type">{{ getTypeLabel(middleware.type) }}</span>
-                <span class="middleware-status" :class="middleware.enabled ? 'enabled' : 'disabled'">
-                  {{ middleware.enabled ? '已启用' : '已禁用' }}
-                </span>
-              </div>
-            </div>
-            <div class="middleware-actions">
-              <button 
-                @click="toggleMiddleware(middleware.name)" 
-                class="btn btn-sm"
-                :class="middleware.enabled ? 'btn-warning' : 'btn-success'"
-              >
-                {{ middleware.enabled ? '禁用' : '启用' }}
-              </button>
-              <button 
-                @click="removeMiddleware(middleware.name)" 
-                class="btn btn-sm btn-danger"
-              >
-                删除
-              </button>
-            </div>
-          </div>
-          <div v-if="middlewareList.length === 0" class="empty-state">
-            暂无中间件，请先注册一些中间件
-          </div>
-        </div>
-      </div>
-
-      <!-- 中间件测试 -->
-      <div class="demo-card">
-        <h3>🧪 中间件测试</h3>
-        <div class="test-section">
-          <div class="form-group">
-            <label>测试数据:</label>
-            <textarea 
-              v-model="testData" 
-              class="form-textarea"
-              placeholder="输入测试数据 (JSON格式)"
-              rows="4"
-            ></textarea>
-          </div>
-          <div class="button-group">
-            <button @click="testMiddleware('request')" class="btn btn-primary">
-              测试请求中间件
-            </button>
-            <button @click="testMiddleware('response')" class="btn btn-success">
-              测试响应中间件
-            </button>
-            <button @click="testErrorMiddleware" class="btn btn-danger">
-              测试错误处理
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 执行日志 -->
-      <div class="demo-card full-width">
-        <h3>📊 执行日志</h3>
-        <div class="log-controls">
-          <button @click="clearLogs" class="btn btn-secondary">
-            清空日志
-          </button>
-          <button @click="exportLogs" class="btn btn-info">
-            导出日志
-          </button>
-          <label class="checkbox-label">
-            <input v-model="autoScroll" type="checkbox">
-            自动滚动
-          </label>
-        </div>
-        <div 
-          ref="logContainer" 
-          class="log-container"
-          :class="{ 'auto-scroll': autoScroll }"
-        >
-          <div 
-            v-for="(log, index) in executionLogs" 
-            :key="index"
-            class="log-entry"
-            :class="`log-${log.level}`"
-          >
-            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
-            <span class="log-level">{{ log.level.toUpperCase() }}</span>
-            <span class="log-middleware">{{ log.middleware }}</span>
-            <span class="log-message">{{ log.message }}</span>
-            <div v-if="log.data" class="log-data">
-              <pre>{{ JSON.stringify(log.data, null, 2) }}</pre>
-            </div>
-          </div>
-          <div v-if="executionLogs.length === 0" class="empty-logs">
-            暂无执行日志
-          </div>
-        </div>
-      </div>
-
-      <!-- 性能统计 -->
-      <div class="demo-card">
-        <h3>📈 性能统计</h3>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value">{{ middlewareStats.totalExecutions }}</div>
-            <div class="stat-label">总执行次数</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ middlewareStats.avgExecutionTime }}ms</div>
-            <div class="stat-label">平均执行时间</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ middlewareStats.errorCount }}</div>
-            <div class="stat-label">错误次数</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ middlewareStats.successRate }}%</div>
-            <div class="stat-label">成功率</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 中间件配置 -->
-      <div class="demo-card">
-        <h3>⚙️ 全局配置</h3>
-        <div class="config-section">
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input v-model="globalConfig.enableLogging" type="checkbox">
-              启用详细日志
-            </label>
-          </div>
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input v-model="globalConfig.enableTiming" type="checkbox">
-              启用性能计时
-            </label>
-          </div>
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input v-model="globalConfig.stopOnError" type="checkbox">
-              遇到错误时停止执行
-            </label>
-          </div>
-          <div class="form-group">
-            <label>最大执行时间 (ms):</label>
-            <input 
-              v-model.number="globalConfig.maxExecutionTime" 
-              type="number" 
-              class="form-input"
-            >
-          </div>
-          <button @click="applyGlobalConfig" class="btn btn-primary">
-            应用配置
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, nextTick, watch } from 'vue'
 import type { Engine } from '@ldesign/engine'
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
 
 const engine = inject<Engine>('engine')!
 
@@ -230,7 +8,7 @@ const engine = inject<Engine>('engine')!
 const newMiddleware = ref({
   name: '',
   priority: 0,
-  type: 'request' as 'request' | 'response' | 'error' | 'auth' | 'logging'
+  type: 'request' as 'request' | 'response' | 'error' | 'auth' | 'logging',
 })
 
 const testData = ref(JSON.stringify({ message: 'Hello World', userId: 123 }, null, 2))
@@ -261,14 +39,14 @@ const middlewareStats = ref({
   totalExecutions: 0,
   avgExecutionTime: 0,
   errorCount: 0,
-  successRate: 100
+  successRate: 100,
 })
 
 const globalConfig = ref({
   enableLogging: true,
   enableTiming: true,
   stopOnError: false,
-  maxExecutionTime: 5000
+  maxExecutionTime: 5000,
 })
 
 // 计算属性
@@ -277,26 +55,26 @@ const sortedMiddlewares = computed(() => {
 })
 
 // 方法
-const getTypeLabel = (type: string) => {
+function getTypeLabel(type: string) {
   const labels: Record<string, string> = {
     request: '请求中间件',
     response: '响应中间件',
     error: '错误处理',
     auth: '认证中间件',
-    logging: '日志中间件'
+    logging: '日志中间件',
   }
   return labels[type] || type
 }
 
-const addLog = (level: 'info' | 'warn' | 'error' | 'success', middleware: string, message: string, data?: any) => {
+function addLog(level: 'info' | 'warn' | 'error' | 'success', middleware: string, message: string, data?: any) {
   executionLogs.value.push({
     timestamp: Date.now(),
     level,
     middleware,
     message,
-    data
+    data,
   })
-  
+
   if (autoScroll.value) {
     nextTick(() => {
       if (logContainer.value) {
@@ -306,15 +84,15 @@ const addLog = (level: 'info' | 'warn' | 'error' | 'success', middleware: string
   }
 }
 
-const createMiddlewareHandler = (name: string, type: string) => {
+function createMiddlewareHandler(name: string, type: string) {
   return async (context: any, next: Function) => {
     const startTime = performance.now()
-    
+
     try {
       if (globalConfig.value.enableLogging) {
         addLog('info', name, `开始执行 ${getTypeLabel(type)}`, context)
       }
-      
+
       // 模拟中间件逻辑
       switch (type) {
         case 'auth':
@@ -323,27 +101,27 @@ const createMiddlewareHandler = (name: string, type: string) => {
             addLog('success', name, '用户认证成功', context.user)
           }
           break
-          
+
         case 'logging':
           addLog('info', name, '记录请求日志', {
             method: context.method || 'GET',
             url: context.url || '/api/test',
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
           break
-          
+
         case 'request':
           context.processedAt = Date.now()
           addLog('info', name, '请求预处理完成')
           break
-          
+
         case 'response':
           context.responseTime = Date.now() - (context.processedAt || Date.now())
           addLog('success', name, '响应后处理完成', {
-            responseTime: context.responseTime
+            responseTime: context.responseTime,
           })
           break
-          
+
         case 'error':
           if (context.error) {
             addLog('error', name, '处理错误', context.error)
@@ -351,165 +129,166 @@ const createMiddlewareHandler = (name: string, type: string) => {
           }
           break
       }
-      
+
       // 调用下一个中间件
       await next()
-      
+
       const endTime = performance.now()
       const executionTime = endTime - startTime
-      
+
       if (globalConfig.value.enableTiming) {
         addLog('success', name, `执行完成，耗时: ${executionTime.toFixed(2)}ms`)
       }
-      
+
       // 更新统计
       middlewareStats.value.totalExecutions++
       const totalTime = middlewareStats.value.avgExecutionTime * (middlewareStats.value.totalExecutions - 1) + executionTime
       middlewareStats.value.avgExecutionTime = totalTime / middlewareStats.value.totalExecutions
-      
-    } catch (error) {
+    }
+    catch (error) {
       const endTime = performance.now()
       const executionTime = endTime - startTime
-      
+
       addLog('error', name, `执行失败: ${error}`, { error, executionTime })
       middlewareStats.value.errorCount++
-      
+
       if (globalConfig.value.stopOnError) {
         throw error
       }
     }
-    
+
     // 更新成功率
     middlewareStats.value.successRate = Math.round(
-      ((middlewareStats.value.totalExecutions - middlewareStats.value.errorCount) / 
-       middlewareStats.value.totalExecutions) * 100
+      ((middlewareStats.value.totalExecutions - middlewareStats.value.errorCount)
+        / middlewareStats.value.totalExecutions) * 100,
     )
   }
 }
 
-const registerMiddleware = () => {
+function registerMiddleware() {
   if (!newMiddleware.value.name.trim()) {
     engine.notifications.show({
       type: 'error',
       title: '注册失败',
-      message: '请输入中间件名称'
+      message: '请输入中间件名称',
     })
     return
   }
-  
+
   const handler = createMiddlewareHandler(newMiddleware.value.name, newMiddleware.value.type)
-  
+
   try {
     engine.middleware.use(newMiddleware.value.name, handler, {
-      priority: newMiddleware.value.priority
+      priority: newMiddleware.value.priority,
     })
-    
+
     middlewareList.value.push({
       name: newMiddleware.value.name,
       priority: newMiddleware.value.priority,
       type: newMiddleware.value.type,
       enabled: true,
-      handler
+      handler,
     })
-    
+
     addLog('success', 'System', `中间件 "${newMiddleware.value.name}" 注册成功`)
-    
+
     engine.notifications.show({
       type: 'success',
       title: '注册成功',
-      message: `中间件 "${newMiddleware.value.name}" 已注册`
+      message: `中间件 "${newMiddleware.value.name}" 已注册`,
     })
-    
+
     // 重置表单
     newMiddleware.value = {
       name: '',
       priority: 0,
-      type: 'request'
+      type: 'request',
     }
-    
-  } catch (error) {
+  }
+  catch (error) {
     addLog('error', 'System', `中间件注册失败: ${error}`)
     engine.notifications.show({
       type: 'error',
       title: '注册失败',
-      message: `${error}`
+      message: `${error}`,
     })
   }
 }
 
-const registerPresetMiddlewares = () => {
+function registerPresetMiddlewares() {
   const presets = [
     { name: 'auth-middleware', type: 'auth', priority: 100 },
     { name: 'logging-middleware', type: 'logging', priority: 90 },
     { name: 'request-validator', type: 'request', priority: 80 },
     { name: 'response-formatter', type: 'response', priority: 70 },
-    { name: 'error-handler', type: 'error', priority: 60 }
+    { name: 'error-handler', type: 'error', priority: 60 },
   ]
-  
-  presets.forEach(preset => {
+
+  presets.forEach((preset) => {
     const handler = createMiddlewareHandler(preset.name, preset.type)
-    
+
     try {
       engine.middleware.use(preset.name, handler, {
-        priority: preset.priority
+        priority: preset.priority,
       })
-      
+
       middlewareList.value.push({
         name: preset.name,
         priority: preset.priority,
         type: preset.type,
         enabled: true,
-        handler
+        handler,
       })
-      
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`预设中间件 ${preset.name} 注册失败:`, error)
     }
   })
-  
+
   addLog('success', 'System', `已注册 ${presets.length} 个预设中间件`)
-  
+
   engine.notifications.show({
     type: 'success',
     title: '批量注册成功',
-    message: `已注册 ${presets.length} 个预设中间件`
+    message: `已注册 ${presets.length} 个预设中间件`,
   })
 }
 
-const toggleMiddleware = (name: string) => {
+function toggleMiddleware(name: string) {
   const middleware = middlewareList.value.find(m => m.name === name)
   if (middleware) {
     middleware.enabled = !middleware.enabled
-    
+
     if (middleware.enabled) {
       engine.middleware.use(name, middleware.handler)
       addLog('info', 'System', `中间件 "${name}" 已启用`)
-    } else {
+    }
+    else {
       engine.middleware.remove(name)
       addLog('warn', 'System', `中间件 "${name}" 已禁用`)
     }
   }
 }
 
-const removeMiddleware = (name: string) => {
+function removeMiddleware(name: string) {
   try {
     engine.middleware.remove(name)
     middlewareList.value = middlewareList.value.filter(m => m.name !== name)
-    
+
     addLog('warn', 'System', `中间件 "${name}" 已删除`)
-    
+
     engine.notifications.show({
       type: 'warning',
       title: '删除成功',
-      message: `中间件 "${name}" 已删除`
+      message: `中间件 "${name}" 已删除`,
     })
-    
-  } catch (error) {
+  }
+  catch (error) {
     addLog('error', 'System', `删除中间件失败: ${error}`)
   }
 }
 
-const testMiddleware = async (type: 'request' | 'response') => {
+async function testMiddleware(type: 'request' | 'response') {
   try {
     const data = JSON.parse(testData.value)
     const context = {
@@ -517,74 +296,75 @@ const testMiddleware = async (type: 'request' | 'response') => {
       data,
       method: 'POST',
       url: '/api/test',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
-    
+
     addLog('info', 'Test', `开始测试 ${type} 中间件`, context)
-    
+
     // 模拟中间件执行
     const enabledMiddlewares = middlewareList.value
       .filter(m => m.enabled && (m.type === type || m.type === 'logging'))
       .sort((a, b) => b.priority - a.priority)
-    
+
     for (const middleware of enabledMiddlewares) {
       await middleware.handler(context, () => Promise.resolve())
     }
-    
+
     addLog('success', 'Test', `${type} 中间件测试完成`, context)
-    
-  } catch (error) {
+  }
+  catch (error) {
     addLog('error', 'Test', `测试失败: ${error}`)
     engine.notifications.show({
       type: 'error',
       title: '测试失败',
-      message: `${error}`
+      message: `${error}`,
     })
   }
 }
 
-const testErrorMiddleware = async () => {
+async function testErrorMiddleware() {
   try {
     const context = {
       type: 'error',
       error: new Error('模拟错误'),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
-    
+
     addLog('error', 'Test', '模拟错误情况', context)
-    
+
     const errorMiddlewares = middlewareList.value
       .filter(m => m.enabled && m.type === 'error')
       .sort((a, b) => b.priority - a.priority)
-    
+
     for (const middleware of errorMiddlewares) {
       await middleware.handler(context, () => Promise.resolve())
     }
-    
+
     if (context.handled) {
       addLog('success', 'Test', '错误已被处理', context)
-    } else {
+    }
+    else {
       addLog('warn', 'Test', '错误未被处理', context)
     }
-    
-  } catch (error) {
+  }
+  catch (error) {
     addLog('error', 'Test', `错误测试失败: ${error}`)
   }
 }
 
-const clearLogs = () => {
+function clearLogs() {
   executionLogs.value = []
   addLog('info', 'System', '日志已清空')
 }
 
-const exportLogs = () => {
+function exportLogs() {
   const data = {
     logs: executionLogs.value,
     stats: middlewareStats.value,
     middlewares: middlewareList.value,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   }
-  
+
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -592,25 +372,25 @@ const exportLogs = () => {
   a.download = `middleware-logs-${Date.now()}.json`
   a.click()
   URL.revokeObjectURL(url)
-  
+
   engine.notifications.show({
     type: 'success',
     title: '导出成功',
-    message: '日志已导出到文件'
+    message: '日志已导出到文件',
   })
 }
 
-const applyGlobalConfig = () => {
+function applyGlobalConfig() {
   addLog('info', 'System', '全局配置已更新', globalConfig.value)
-  
+
   engine.notifications.show({
     type: 'success',
     title: '配置更新',
-    message: '全局配置已应用'
+    message: '全局配置已应用',
   })
 }
 
-const formatTime = (timestamp: number) => {
+function formatTime(timestamp: number) {
   return new Date(timestamp).toLocaleTimeString()
 }
 
@@ -630,6 +410,254 @@ onMounted(() => {
   engine.logger.info('中间件演示页面已初始化')
 })
 </script>
+
+<template>
+  <div class="middleware-demo">
+    <div class="demo-header">
+      <h1>🔧 中间件系统演示</h1>
+      <p>展示中间件的注册、执行顺序和错误处理机制</p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- 中间件注册 -->
+      <div class="demo-card">
+        <h3>📝 中间件注册</h3>
+        <div class="form-group">
+          <label>中间件名称:</label>
+          <input
+            v-model="newMiddleware.name"
+            type="text"
+            placeholder="例如: auth-middleware"
+            class="form-input"
+          >
+        </div>
+        <div class="form-group">
+          <label>优先级:</label>
+          <input
+            v-model.number="newMiddleware.priority"
+            type="number"
+            placeholder="数字越大优先级越高"
+            class="form-input"
+          >
+        </div>
+        <div class="form-group">
+          <label>中间件类型:</label>
+          <select v-model="newMiddleware.type" class="form-select">
+            <option value="request">
+              请求中间件
+            </option>
+            <option value="response">
+              响应中间件
+            </option>
+            <option value="error">
+              错误处理中间件
+            </option>
+            <option value="auth">
+              认证中间件
+            </option>
+            <option value="logging">
+              日志中间件
+            </option>
+          </select>
+        </div>
+        <div class="button-group">
+          <button class="btn btn-primary" @click="registerMiddleware">
+            注册中间件
+          </button>
+          <button class="btn btn-secondary" @click="registerPresetMiddlewares">
+            注册预设中间件
+          </button>
+        </div>
+      </div>
+
+      <!-- 中间件列表 -->
+      <div class="demo-card">
+        <h3>📋 已注册中间件</h3>
+        <div class="middleware-list">
+          <div
+            v-for="middleware in middlewareList"
+            :key="middleware.name"
+            class="middleware-item"
+            :class="{ active: middleware.enabled }"
+          >
+            <div class="middleware-info">
+              <div class="middleware-header">
+                <span class="middleware-name">{{ middleware.name }}</span>
+                <span class="middleware-priority">优先级: {{ middleware.priority }}</span>
+              </div>
+              <div class="middleware-meta">
+                <span class="middleware-type">{{ getTypeLabel(middleware.type) }}</span>
+                <span class="middleware-status" :class="middleware.enabled ? 'enabled' : 'disabled'">
+                  {{ middleware.enabled ? '已启用' : '已禁用' }}
+                </span>
+              </div>
+            </div>
+            <div class="middleware-actions">
+              <button
+                class="btn btn-sm"
+                :class="middleware.enabled ? 'btn-warning' : 'btn-success'"
+                @click="toggleMiddleware(middleware.name)"
+              >
+                {{ middleware.enabled ? '禁用' : '启用' }}
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                @click="removeMiddleware(middleware.name)"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+          <div v-if="middlewareList.length === 0" class="empty-state">
+            暂无中间件，请先注册一些中间件
+          </div>
+        </div>
+      </div>
+
+      <!-- 中间件测试 -->
+      <div class="demo-card">
+        <h3>🧪 中间件测试</h3>
+        <div class="test-section">
+          <div class="form-group">
+            <label>测试数据:</label>
+            <textarea
+              v-model="testData"
+              class="form-textarea"
+              placeholder="输入测试数据 (JSON格式)"
+              rows="4"
+            />
+          </div>
+          <div class="button-group">
+            <button class="btn btn-primary" @click="testMiddleware('request')">
+              测试请求中间件
+            </button>
+            <button class="btn btn-success" @click="testMiddleware('response')">
+              测试响应中间件
+            </button>
+            <button class="btn btn-danger" @click="testErrorMiddleware">
+              测试错误处理
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 执行日志 -->
+      <div class="demo-card full-width">
+        <h3>📊 执行日志</h3>
+        <div class="log-controls">
+          <button class="btn btn-secondary" @click="clearLogs">
+            清空日志
+          </button>
+          <button class="btn btn-info" @click="exportLogs">
+            导出日志
+          </button>
+          <label class="checkbox-label">
+            <input v-model="autoScroll" type="checkbox">
+            自动滚动
+          </label>
+        </div>
+        <div
+          ref="logContainer"
+          class="log-container"
+          :class="{ 'auto-scroll': autoScroll }"
+        >
+          <div
+            v-for="(log, index) in executionLogs"
+            :key="index"
+            class="log-entry"
+            :class="`log-${log.level}`"
+          >
+            <span class="log-time">{{ formatTime(log.timestamp) }}</span>
+            <span class="log-level">{{ log.level.toUpperCase() }}</span>
+            <span class="log-middleware">{{ log.middleware }}</span>
+            <span class="log-message">{{ log.message }}</span>
+            <div v-if="log.data" class="log-data">
+              <pre>{{ JSON.stringify(log.data, null, 2) }}</pre>
+            </div>
+          </div>
+          <div v-if="executionLogs.length === 0" class="empty-logs">
+            暂无执行日志
+          </div>
+        </div>
+      </div>
+
+      <!-- 性能统计 -->
+      <div class="demo-card">
+        <h3>📈 性能统计</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">
+              {{ middlewareStats.totalExecutions }}
+            </div>
+            <div class="stat-label">
+              总执行次数
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">
+              {{ middlewareStats.avgExecutionTime }}ms
+            </div>
+            <div class="stat-label">
+              平均执行时间
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">
+              {{ middlewareStats.errorCount }}
+            </div>
+            <div class="stat-label">
+              错误次数
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">
+              {{ middlewareStats.successRate }}%
+            </div>
+            <div class="stat-label">
+              成功率
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中间件配置 -->
+      <div class="demo-card">
+        <h3>⚙️ 全局配置</h3>
+        <div class="config-section">
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input v-model="globalConfig.enableLogging" type="checkbox">
+              启用详细日志
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input v-model="globalConfig.enableTiming" type="checkbox">
+              启用性能计时
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input v-model="globalConfig.stopOnError" type="checkbox">
+              遇到错误时停止执行
+            </label>
+          </div>
+          <div class="form-group">
+            <label>最大执行时间 (ms):</label>
+            <input
+              v-model.number="globalConfig.maxExecutionTime"
+              type="number"
+              class="form-input"
+            >
+          </div>
+          <button class="btn btn-primary" @click="applyGlobalConfig">
+            应用配置
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .middleware-demo {
@@ -720,7 +748,7 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: auto;
 }
 
@@ -1019,23 +1047,23 @@ onMounted(() => {
   .demo-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .middleware-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .middleware-actions {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .log-entry {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .log-time,
   .log-level,
   .log-middleware {

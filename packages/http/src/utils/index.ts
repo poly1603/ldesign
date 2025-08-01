@@ -1,11 +1,11 @@
-import type { RequestConfig, HttpError } from '@/types'
+import type { HttpError, RequestConfig } from '@/types'
 
 /**
  * 合并配置对象
  */
 export function mergeConfig(
   defaultConfig: RequestConfig,
-  customConfig: RequestConfig = {}
+  customConfig: RequestConfig = {},
 ): RequestConfig {
   const merged: RequestConfig = { ...defaultConfig }
 
@@ -15,9 +15,11 @@ export function mergeConfig(
     if (value !== undefined) {
       if (key === 'headers' && typeof value === 'object' && value !== null) {
         merged.headers = { ...merged.headers, ...value }
-      } else if (key === 'params' && typeof value === 'object' && value !== null) {
+      }
+      else if (key === 'params' && typeof value === 'object' && value !== null) {
         merged.params = { ...merged.params, ...value }
-      } else {
+      }
+      else {
         ;(merged as any)[key] = value
       }
     }
@@ -31,7 +33,7 @@ export function mergeConfig(
  */
 export function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams()
-  
+
   Object.keys(params).forEach((key) => {
     const value = params[key]
     if (value !== null && value !== undefined) {
@@ -39,12 +41,13 @@ export function buildQueryString(params: Record<string, any>): string {
         value.forEach((item) => {
           searchParams.append(key, String(item))
         })
-      } else {
+      }
+      else {
         searchParams.append(key, String(value))
       }
     }
   })
-  
+
   return searchParams.toString()
 }
 
@@ -83,7 +86,7 @@ export function isAbsoluteURL(url: string): boolean {
  */
 export function combineURLs(baseURL: string, relativeURL: string): string {
   return relativeURL
-    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+    ? `${baseURL.replace(/\/+$/, '')}/${relativeURL.replace(/^\/+/, '')}`
     : baseURL
 }
 
@@ -94,7 +97,7 @@ export function createHttpError(
   message: string,
   config?: RequestConfig,
   code?: string,
-  response?: any
+  response?: any,
 ): HttpError {
   const error = new Error(message) as HttpError
   error.config = config
@@ -107,9 +110,11 @@ export function createHttpError(
   // 判断错误类型
   if (code === 'ECONNABORTED' || message.includes('timeout')) {
     error.isTimeoutError = true
-  } else if (code === 'NETWORK_ERROR' || message.includes('Network Error')) {
+  }
+  else if (code === 'NETWORK_ERROR' || message.includes('Network Error')) {
     error.isNetworkError = true
-  } else if (code === 'CANCELED' || message.includes('canceled')) {
+  }
+  else if (code === 'CANCELED' || message.includes('canceled')) {
     error.isCancelError = true
   }
 
@@ -127,8 +132,8 @@ export function delay(ms: number): Promise<void> {
  * 生成唯一 ID
  */
 export function generateId(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15)
+  return Math.random().toString(36).substring(2, 15)
+    + Math.random().toString(36).substring(2, 15)
 }
 
 /**
@@ -143,7 +148,7 @@ export function deepClone<T>(obj: T): T {
     return new Date(obj.getTime()) as unknown as T
   }
 
-  if (obj instanceof Array) {
+  if (Array.isArray(obj)) {
     return obj.map(item => deepClone(item)) as unknown as T
   }
 

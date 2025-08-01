@@ -9,11 +9,9 @@ import {
   generateColorScales,
   getRandomPresetTheme,
   getSystemTheme,
-  watchSystemTheme,
-  presetThemes,
-  themeCategories,
   injectThemeVariables,
-  globalCSSInjector,
+  themeCategories,
+  watchSystemTheme,
 } from '@ldesign/color'
 
 class ColorDemo {
@@ -139,7 +137,7 @@ class ColorDemo {
   renderThemeCategory(categoryName, container, themes) {
     container.innerHTML = ''
 
-    themes.forEach(theme => {
+    themes.forEach((theme) => {
       const themeCard = this.createThemeCard(theme)
       container.appendChild(themeCard)
     })
@@ -192,7 +190,7 @@ class ColorDemo {
     const currentTheme = this.themeManager.getCurrentTheme()
 
     // 移除所有活跃状态
-    document.querySelectorAll('.theme-card').forEach(card => {
+    document.querySelectorAll('.theme-card').forEach((card) => {
       card.classList.remove('active')
     })
 
@@ -265,7 +263,8 @@ class ColorDemo {
         await this.themeManager.preGenerateAllThemes()
         this.showToast('所有主题预生成完成', 'success')
         this.updatePerformanceStats()
-      } catch (error) {
+      }
+      catch (error) {
         this.showToast('预生成失败', 'error')
       }
     })
@@ -322,10 +321,12 @@ class ColorDemo {
 
       // 获取当前主题配置
       const themeConfig = this.themeManager.getThemeConfig(currentTheme)
-      if (!themeConfig) return
+      if (!themeConfig)
+        return
 
       const modeConfig = themeConfig[currentMode]
-      if (!modeConfig) return
+      if (!modeConfig)
+        return
 
       // 生成颜色配置
       const colorConfig = generateColorConfig(modeConfig.primary)
@@ -335,8 +336,8 @@ class ColorDemo {
 
       // 注入CSS变量
       injectThemeVariables(colorConfig, scales, undefined, currentMode)
-
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('CSS变量注入失败:', error)
     }
   }
@@ -359,11 +360,12 @@ class ColorDemo {
       const lightScales = generateColorScales(colorConfig, 'light')
       const darkScales = generateColorScales(colorConfig, 'dark')
       this.displayColorScalesPreview(lightScales, darkScales)
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('颜色生成失败:', error)
       this.showError(`颜色生成失败: ${error.message}`)
-    } finally {
+    }
+    finally {
       // 隐藏生成指示器
       this.elements.generatingIndicator.style.display = 'none'
       this.elements.generatedColors.style.opacity = '1'
@@ -578,7 +580,7 @@ class ColorDemo {
 
   // 工具方法
   isValidHexColor(hex) {
-    return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex)
+    return /^#([A-F0-9]{6}|[A-F0-9]{3})$/i.test(hex)
   }
 
   async copyToClipboard(text) {

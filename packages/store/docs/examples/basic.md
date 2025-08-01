@@ -11,7 +11,7 @@
 ### 代码实现
 
 ```typescript
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -161,14 +161,6 @@ class ExampleStore extends BaseStore {
 ### 在组件中使用
 
 ```vue
-<template>
-  <div>
-    <h1>{{ store.name }}</h1>
-    <p>项目数量: {{ store.itemCount }}</p>
-    <button @click="store.addItem(newItem)">添加项目</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ExampleStore } from '@/stores/example'
 
@@ -181,6 +173,16 @@ const newItem = {
   value: 100
 }
 </script>
+
+<template>
+  <div>
+    <h1>{{ store.name }}</h1>
+    <p>项目数量: {{ store.itemCount }}</p>
+    <button @click="store.addItem(newItem)">
+      添加项目
+    </button>
+  </div>
+</template>
 ```
 
 ### 响应式监听

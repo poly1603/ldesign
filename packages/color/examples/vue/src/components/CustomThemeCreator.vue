@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { createCustomTheme, isValidHex } from '@ldesign/color'
 import { useTheme } from '@ldesign/color/vue'
+import { computed, ref } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { registerTheme, setTheme } = useTheme()

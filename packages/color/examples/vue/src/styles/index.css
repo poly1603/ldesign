@@ -10,7 +10,9 @@ body {
   line-height: 1.6;
   background: var(--color-background, #ffffff);
   color: var(--color-text, #333333);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 #app {
@@ -142,7 +144,9 @@ body {
   background: var(--color-background, #ffffff);
   color: var(--color-text, #333);
   font-size: 0.9rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .form-control:focus {
@@ -293,18 +297,18 @@ body {
   .container {
     padding: 0 0.5rem;
   }
-  
+
   .card {
     padding: 1rem;
     margin-bottom: 1rem;
   }
-  
+
   .grid-2,
   .grid-3,
   .grid-4 {
     grid-template-columns: 1fr;
   }
-  
+
   .btn {
     width: 100%;
     justify-content: center;

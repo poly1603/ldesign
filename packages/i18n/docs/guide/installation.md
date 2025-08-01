@@ -41,6 +41,7 @@ yarn add @ldesign/i18n
 
 <!-- Vue 集成 -->
 <script src="https://unpkg.com/@ldesign/i18n/dist/vue.min.js"></script>
+
 ```
 
 ### 通过 jsDelivr
@@ -51,6 +52,7 @@ yarn add @ldesign/i18n
 
 <!-- 指定版本 -->
 <script src="https://cdn.jsdelivr.net/npm/@ldesign/i18n@0.1.0/dist/index.min.js"></script>
+
 ```
 
 ## 不同环境的安装配置
@@ -68,24 +70,25 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 ### 浏览器环境
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <script src="https://unpkg.com/@ldesign/i18n/dist/index.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <script>
-        // 全局变量 LDesignI18n 可用
-        const { createI18nWithBuiltinLocales } = LDesignI18n
-        
-        createI18nWithBuiltinLocales({
-            defaultLocale: 'en'
-        }).then(i18n => {
-            console.log(i18n.t('common.ok'))
-        })
+      // 全局变量 LDesignI18n 可用
+      const { createI18nWithBuiltinLocales } = LDesignI18n
+
+      createI18nWithBuiltinLocales({
+        defaultLocale: 'en',
+      }).then((i18n) => {
+        console.log(i18n.t('common.ok'))
+      })
     </script>
-</body>
+  </body>
 </html>
+
 ```
 
 ### Webpack 环境
@@ -143,9 +146,9 @@ import '@ldesign/i18n'
 ### Vue 项目的类型配置
 
 ```typescript
+import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 // types/vue.d.ts
 import '@vue/runtime-core'
-import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -165,16 +168,16 @@ import { I18n } from '@ldesign/i18n'
 
 // 导入特定组件
 import { BrowserDetector } from '@ldesign/i18n/core/detector'
-import { LocalStorage } from '@ldesign/i18n/core/storage'
 import { StaticLoader } from '@ldesign/i18n/core/loader'
-
-// 导入工具函数
-import { interpolate } from '@ldesign/i18n/utils/interpolation'
-import { getNestedValue } from '@ldesign/i18n/utils/path'
+import { LocalStorage } from '@ldesign/i18n/core/storage'
 
 // 导入语言包
 import enPackage from '@ldesign/i18n/locales/en'
 import zhCNPackage from '@ldesign/i18n/locales/zh-CN'
+
+// 导入工具函数
+import { interpolate } from '@ldesign/i18n/utils/interpolation'
+import { getNestedValue } from '@ldesign/i18n/utils/path'
 ```
 
 ## 验证安装
@@ -190,16 +193,16 @@ async function testInstallation() {
     const i18n = await createI18nWithBuiltinLocales({
       defaultLocale: 'en'
     })
-    
+
     console.log('✅ 安装成功!')
     console.log('当前语言:', i18n.getCurrentLanguage())
     console.log('测试翻译:', i18n.t('common.ok'))
-    
+
     // 测试语言切换
     await i18n.changeLanguage('zh-CN')
     console.log('切换后翻译:', i18n.t('common.ok'))
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 安装验证失败:', error)
   }
 }
@@ -214,6 +217,7 @@ node test-installation.js
 ```
 
 预期输出：
+
 ```
 ✅ 安装成功!
 当前语言: en
@@ -226,6 +230,7 @@ node test-installation.js
 ### Q: 安装后提示模块找不到
 
 **A:** 检查以下几点：
+
 1. 确认包已正确安装：`npm list @ldesign/i18n`
 2. 检查 Node.js 版本是否 >= 16.0.0
 3. 清除缓存：`npm cache clean --force`
@@ -233,6 +238,7 @@ node test-installation.js
 ### Q: TypeScript 类型错误
 
 **A:** 确保：
+
 1. TypeScript 版本 >= 4.5.0
 2. 在 tsconfig.json 中启用 `moduleResolution: "bundler"`
 3. 重启 TypeScript 服务
@@ -242,9 +248,9 @@ node test-installation.js
 **A:** 添加类型声明文件：
 
 ```typescript
+import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 // src/types/vue.d.ts
 import '@vue/runtime-core'
-import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -274,8 +280,8 @@ import { BrowserDetector } from '@ldesign/i18n/core/detector'
 ```typescript
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
-  autoDetect: false,  // 禁用浏览器语言检测
-  storage: 'none'     // 禁用本地存储
+  autoDetect: false, // 禁用浏览器语言检测
+  storage: 'none' // 禁用本地存储
 })
 ```
 

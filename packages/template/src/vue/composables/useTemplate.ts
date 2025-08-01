@@ -1,10 +1,10 @@
-import { type Component, type Ref, onMounted, onUnmounted, ref } from 'vue'
 import type {
   DeviceType,
   TemplateManagerConfig,
   TemplateMetadata,
   TemplateRenderOptions,
 } from '../../types'
+import { type Component, onMounted, onUnmounted, type Ref, ref } from 'vue'
 import { TemplateManager } from '../../core/TemplateManager'
 
 /**
@@ -133,7 +133,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const [templates, categories, devices] = await Promise.all([
         manager.getAvailableTemplates(),
         manager.getAvailableCategories(),
-        manager.getAvailableDevices()
+        manager.getAvailableDevices(),
       ])
 
       availableTemplates.value = templates
@@ -171,7 +171,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const switchTemplate = async (
     category: string,
     device: DeviceType,
-    template: string
+    template: string,
   ): Promise<void> => {
     loading.value = true
     error.value = null
@@ -194,7 +194,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
    */
   const getTemplates = async (
     category?: string,
-    device?: DeviceType
+    device?: DeviceType,
   ): Promise<TemplateMetadata[]> => {
     return manager.getAvailableTemplates(category, device)
   }
@@ -205,7 +205,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const hasTemplate = async (
     category: string,
     device: DeviceType,
-    template: string
+    template: string,
   ): Promise<boolean> => {
     return manager.hasTemplate(category, device, template)
   }
@@ -281,7 +281,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     getTemplates,
     hasTemplate,
     clearCache,
-    refresh
+    refresh,
   }
 }
 

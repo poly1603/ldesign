@@ -1,4 +1,4 @@
-import type { CacheStorage, CacheConfig, RequestConfig, ResponseData } from '@/types'
+import type { CacheConfig, CacheStorage, RequestConfig, ResponseData } from '@/types'
 
 /**
  * 缓存项接口
@@ -18,7 +18,7 @@ export class MemoryCacheStorage implements CacheStorage {
 
   async get(key: string): Promise<any> {
     const item = this.cache.get(key)
-    
+
     if (!item) {
       return null
     }
@@ -50,13 +50,13 @@ export class MemoryCacheStorage implements CacheStorage {
     const timer = setTimeout(() => {
       this.delete(key)
     }, ttl)
-    
+
     this.timers.set(key, timer)
   }
 
   async delete(key: string): Promise<void> {
     this.cache.delete(key)
-    
+
     const timer = this.timers.get(key)
     if (timer) {
       clearTimeout(timer)
@@ -66,7 +66,7 @@ export class MemoryCacheStorage implements CacheStorage {
 
   async clear(): Promise<void> {
     this.cache.clear()
-    
+
     this.timers.forEach((timer) => {
       clearTimeout(timer)
     })
@@ -110,7 +110,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
       }
 
       const parsed = JSON.parse(item) as CacheItem
-      
+
       // 检查是否过期
       if (Date.now() - parsed.timestamp > parsed.ttl) {
         this.delete(key)
@@ -118,7 +118,8 @@ export class LocalStorageCacheStorage implements CacheStorage {
       }
 
       return parsed.data
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -134,9 +135,10 @@ export class LocalStorageCacheStorage implements CacheStorage {
         timestamp: Date.now(),
         ttl,
       }
-      
+
       localStorage.setItem(this.prefix + key, JSON.stringify(item))
-    } catch {
+    }
+    catch {
       // 存储失败，可能是空间不足
     }
   }
@@ -177,7 +179,7 @@ export class CacheManager {
       keyGenerator: config.keyGenerator ?? this.defaultKeyGenerator,
       storage: config.storage ?? new MemoryCacheStorage(),
     }
-    
+
     this.storage = this.config.storage
   }
 
@@ -247,10 +249,10 @@ export class CacheManager {
    */
   private defaultKeyGenerator(config: RequestConfig): string {
     const { method = 'GET', url = '', params = {}, data } = config
-    
+
     // 构建基础键
     let key = `${method}:${url}`
-    
+
     // 添加查询参数
     const paramKeys = Object.keys(params).sort()
     if (paramKeys.length > 0) {
@@ -259,17 +261,15 @@ export class CacheManager {
         .join('&')
       key += `?${paramString}`
     }
-    
+
     // 对于 POST 等请求，添加数据哈希
     if (data && method !== 'GET') {
       const dataString = typeof data === 'string' ? data : JSON.stringify(data)
       key += `:${simpleHash(dataString)}`
     }
-    
+
     return key
   }
-
-
 }
 
 /**

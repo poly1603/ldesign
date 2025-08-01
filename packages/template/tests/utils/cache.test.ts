@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { LRUCache, TemplateCache } from '@/utils/cache'
 
-describe('TemplateCache', () => {
+describe('templateCache', () => {
   let cache: TemplateCache
 
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('TemplateCache', () => {
 
       cache.set(key, value)
       expect(cache.has(key)).toBe(true)
-      
+
       cache.delete(key)
       expect(cache.has(key)).toBe(false)
     })
@@ -40,25 +40,25 @@ describe('TemplateCache', () => {
     it('应该能清空所有缓存', () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
-      
+
       expect(cache.size).toBe(2)
-      
+
       cache.clear()
       expect(cache.size).toBe(0)
     })
 
     it('应该返回正确的缓存大小', () => {
       expect(cache.size).toBe(0)
-      
+
       cache.set('key1', 'value1')
       expect(cache.size).toBe(1)
-      
+
       cache.set('key2', 'value2')
       expect(cache.size).toBe(2)
     })
   })
 
-  describe('TTL 功能', () => {
+  describe('tTL 功能', () => {
     it('应该支持 TTL 过期', async () => {
       const key = 'ttl-key'
       const value = { test: 'data' }
@@ -121,25 +121,25 @@ describe('TemplateCache', () => {
   })
 })
 
-describe('LRUCache', () => {
+describe('lRUCache', () => {
   let cache: LRUCache<string, string>
 
   beforeEach(() => {
     cache = new LRUCache<string, string>(3) // 最大容量为 3
   })
 
-  describe('LRU 淘汰策略', () => {
+  describe('lRU 淘汰策略', () => {
     it('应该在超出容量时淘汰最久未使用的项', () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
       cache.set('key3', 'value3')
-      
+
       expect(cache.size).toBe(3)
       expect(cache.has('key1')).toBe(true)
 
       // 添加第四个项，应该淘汰 key1
       cache.set('key4', 'value4')
-      
+
       expect(cache.size).toBe(3)
       expect(cache.has('key1')).toBe(false)
       expect(cache.has('key4')).toBe(true)
@@ -171,10 +171,10 @@ describe('LRUCache', () => {
 
     it('应该返回正确的大小', () => {
       expect(cache.size).toBe(0)
-      
+
       cache.set('key1', 'value1')
       expect(cache.size).toBe(1)
-      
+
       cache.set('key2', 'value2')
       expect(cache.size).toBe(2)
     })
@@ -182,9 +182,9 @@ describe('LRUCache', () => {
     it('应该能删除指定项', () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
-      
+
       expect(cache.size).toBe(2)
-      
+
       cache.delete('key1')
       expect(cache.size).toBe(1)
       expect(cache.has('key1')).toBe(false)
@@ -194,9 +194,9 @@ describe('LRUCache', () => {
     it('应该能清空所有项', () => {
       cache.set('key1', 'value1')
       cache.set('key2', 'value2')
-      
+
       expect(cache.size).toBe(2)
-      
+
       cache.clear()
       expect(cache.size).toBe(0)
     })

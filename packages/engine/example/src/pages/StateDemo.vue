@@ -1,3 +1,357 @@
+<script setup lang="ts">
+import type { Engine } from '@ldesign/engine'
+import { computed, inject, onMounted, ref } from 'vue'
+
+const engine = inject<Engine>('engine')!
+
+// 响应式数据
+const newKey = ref('')
+const newValue = ref('')
+const getKey = ref('')
+const getResult = ref<any>(null)
+const removeKey = ref('')
+const watchKey = ref('')
+const watchers = ref<any[]>([])
+const stateLogs = ref<any[]>([])
+const allKeys = ref<string[]>([])
+
+// 计算属性
+const memoryUsage = computed(() => {
+  const stateStr = JSON.stringify(allKeys.value.map(key => ({ [key]: engine.state.get(key) })))
+  return Math.round(new Blob([stateStr]).size / 1024 * 100) / 100
+})
+
+// 基础状态操作
+function setState() {
+  if (!newKey.value)
+    return
+
+  let value: any = newValue.value
+
+  // 尝试解析JSON
+  try {
+    value = JSON.parse(newValue.value)
+  }
+  catch {
+    // 保持字符串值
+  }
+
+  const oldValue = engine.state.get(newKey.value)
+  engine.state.set(newKey.value, value)
+
+  logStateChange('set', newKey.value, value, oldValue)
+  updateKeys()
+
+  newKey.value = ''
+  newValue.value = ''
+
+  engine.notifications.show({
+    type: 'success',
+    title: '成功',
+    message: `状态 ${newKey.value} 已设置`,
+    duration: 2000,
+  })
+}
+
+function getState() {
+  if (!getKey.value)
+    return
+
+  getResult.value = engine.state.get(getKey.value)
+  logStateChange('get', getKey.value, getResult.value)
+
+  engine.notifications.show({
+    type: 'info',
+    title: '获取状态',
+    message: `键: ${getKey.value}`,
+    duration: 2000,
+  })
+}
+
+function removeState(key?: string) {
+  const keyToRemove = key || removeKey.value
+  if (!keyToRemove)
+    return
+
+  const oldValue = engine.state.get(keyToRemove)
+  engine.state.remove(keyToRemove)
+
+  logStateChange('remove', keyToRemove, undefined, oldValue)
+  updateKeys()
+
+  if (!key)
+    removeKey.value = ''
+
+  engine.notifications.show({
+    type: 'warning',
+    title: '删除状态',
+    message: `状态 ${keyToRemove} 已删除`,
+    duration: 2000,
+  })
+}
+
+// 预设操作
+function setUserProfile() {
+  const profile = {
+    id: 123,
+    name: '张三',
+    email: 'zhangsan@example.com',
+    avatar: 'https://example.com/avatar.jpg',
+    preferences: {
+      theme: 'dark',
+      language: 'zh-CN',
+      notifications: true,
+    },
+  }
+
+  engine.state.set('user.profile', profile)
+  logStateChange('set', 'user.profile', profile)
+  updateKeys()
+}
+
+function setAppSettings() {
+  const settings = {
+    version: '1.0.0',
+    debug: true,
+    apiUrl: 'https://api.example.com',
+    features: {
+      darkMode: true,
+      analytics: false,
+      beta: true,
+    },
+  }
+
+  engine.state.set('app.settings', settings)
+  logStateChange('set', 'app.settings', settings)
+  updateKeys()
+}
+
+function updateCounter() {
+  const current = engine.state.get('counter', 0) as number
+  const newValue = current + 1
+
+  engine.state.set('counter', newValue)
+  logStateChange('set', 'counter', newValue, current)
+  updateKeys()
+}
+
+function setNestedData() {
+  const data = {
+    level1: {
+      level2: {
+        level3: {
+          value: 'deep nested value',
+          timestamp: Date.now(),
+        },
+      },
+    },
+  }
+
+  engine.state.set('nested.data', data)
+  logStateChange('set', 'nested.data', data)
+  updateKeys()
+}
+
+function clearAllState() {
+  engine.state.clear()
+  logStateChange('clear', 'all')
+  updateKeys()
+
+  engine.notifications.show({
+    type: 'warning',
+    title: '清空状态',
+    message: '所有状态已清空',
+    duration: 2000,
+  })
+}
+
+// 监听器管理
+function addWatcher() {
+  if (!watchKey.value)
+    return
+
+  const watcherId = Date.now() + Math.random()
+  const unwatch = engine.state.watch(watchKey.value, (newValue, oldValue) => {
+    logStateChange('watch', watchKey.value, newValue, oldValue)
+    engine.logger.info(`状态监听器触发: ${watchKey.value}`, { newValue, oldValue })
+  })
+
+  watchers.value.push({
+    id: watcherId,
+    key: watchKey.value,
+    unwatch,
+  })
+
+  watchKey.value = ''
+
+  engine.notifications.show({
+    type: 'success',
+    title: '监听器',
+    message: '监听器已添加',
+    duration: 2000,
+  })
+}
+
+function removeWatcher(watcherId: number) {
+  const index = watchers.value.findIndex(w => w.id === watcherId)
+  if (index > -1) {
+    const watcher = watchers.value[index]
+    watcher.unwatch()
+    watchers.value.splice(index, 1)
+
+    engine.notifications.show({
+      type: 'info',
+      title: '监听器',
+      message: '监听器已移除',
+      duration: 2000,
+    })
+  }
+}
+
+function clearWatchers() {
+  watchers.value.forEach(watcher => watcher.unwatch())
+  watchers.value = []
+
+  engine.notifications.show({
+    type: 'info',
+    title: '监听器',
+    message: '所有监听器已清除',
+    duration: 2000,
+  })
+}
+
+// 命名空间操作
+function setUserNamespaceData() {
+  const userNamespace = engine.state.namespace('user')
+  userNamespace.set('profile.name', '李四')
+  userNamespace.set('profile.age', 25)
+  userNamespace.set('settings.theme', 'light')
+
+  logStateChange('namespace-set', 'user.*')
+  updateKeys()
+}
+
+function getUserNamespaceData() {
+  const userNamespace = engine.state.namespace('user')
+  const data = {
+    name: userNamespace.get('profile.name'),
+    age: userNamespace.get('profile.age'),
+    theme: userNamespace.get('settings.theme'),
+  }
+
+  engine.logger.info('用户命名空间数据:', data)
+  logStateChange('namespace-get', 'user.*', data)
+}
+
+function clearUserNamespace() {
+  const userNamespace = engine.state.namespace('user')
+  userNamespace.clear()
+
+  logStateChange('namespace-clear', 'user.*')
+  updateKeys()
+}
+
+function setAppNamespaceData() {
+  const appNamespace = engine.state.namespace('app')
+  appNamespace.set('config.version', '2.0.0')
+  appNamespace.set('config.debug', false)
+  appNamespace.set('stats.users', 1000)
+
+  logStateChange('namespace-set', 'app.*')
+  updateKeys()
+}
+
+function getAppNamespaceData() {
+  const appNamespace = engine.state.namespace('app')
+  const data = {
+    version: appNamespace.get('config.version'),
+    debug: appNamespace.get('config.debug'),
+    users: appNamespace.get('stats.users'),
+  }
+
+  engine.logger.info('应用命名空间数据:', data)
+  logStateChange('namespace-get', 'app.*', data)
+}
+
+function clearAppNamespace() {
+  const appNamespace = engine.state.namespace('app')
+  appNamespace.clear()
+
+  logStateChange('namespace-clear', 'app.*')
+  updateKeys()
+}
+
+// 工具函数
+function updateKeys() {
+  allKeys.value = engine.state.keys()
+}
+
+function logStateChange(type: string, key: string, value?: any, oldValue?: any) {
+  stateLogs.value.unshift({
+    id: Date.now() + Math.random(),
+    type,
+    key,
+    value,
+    oldValue,
+    timestamp: Date.now(),
+  })
+
+  // 限制日志数量
+  if (stateLogs.value.length > 100) {
+    stateLogs.value = stateLogs.value.slice(0, 100)
+  }
+}
+
+function clearStateLogs() {
+  stateLogs.value = []
+}
+
+function exportStateLogs() {
+  const data = JSON.stringify(stateLogs.value, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `state-logs-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+
+  engine.notifications.show({
+    type: 'success',
+    title: '导出成功',
+    message: '状态日志已导出',
+    duration: 2000,
+  })
+}
+
+function formatValue(value: any): string {
+  if (value === null)
+    return 'null'
+  if (value === undefined)
+    return 'undefined'
+  if (typeof value === 'string')
+    return `"${value}"`
+  if (typeof value === 'object')
+    return JSON.stringify(value)
+  return String(value)
+}
+
+function formatTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString()
+}
+
+onMounted(() => {
+  updateKeys()
+
+  // 设置一些初始数据
+  engine.state.set('demo.initialized', true)
+  engine.state.set('demo.timestamp', Date.now())
+
+  logStateChange('init', 'demo.*')
+  updateKeys()
+})
+</script>
+
 <template>
   <div class="demo-page">
     <header class="page-header">
@@ -11,13 +365,13 @@
         <div class="operation-group">
           <h3>设置状态</h3>
           <div class="input-group">
-            <input 
-              v-model="newKey" 
+            <input
+              v-model="newKey"
               placeholder="状态键名"
               class="form-input"
             >
-            <input 
-              v-model="newValue" 
+            <input
+              v-model="newValue"
               placeholder="状态值"
               class="form-input"
             >
@@ -26,12 +380,12 @@
             </button>
           </div>
         </div>
-        
+
         <div class="operation-group">
           <h3>获取状态</h3>
           <div class="input-group">
-            <input 
-              v-model="getKey" 
+            <input
+              v-model="getKey"
               placeholder="要获取的键名"
               class="form-input"
             >
@@ -43,12 +397,12 @@
             结果: {{ getResult }}
           </div>
         </div>
-        
+
         <div class="operation-group">
           <h3>删除状态</h3>
           <div class="input-group">
-            <input 
-              v-model="removeKey" 
+            <input
+              v-model="removeKey"
               placeholder="要删除的键名"
               class="form-input"
             >
@@ -85,8 +439,8 @@
       <h2>状态监听</h2>
       <div class="watch-section">
         <div class="watch-controls">
-          <input 
-            v-model="watchKey" 
+          <input
+            v-model="watchKey"
             placeholder="要监听的键名"
             class="form-input"
           >
@@ -97,10 +451,10 @@
             清除所有监听器
           </button>
         </div>
-        
+
         <div class="watchers-list">
           <h4>活跃监听器 ({{ watchers.length }})</h4>
-          <div class="watcher-item" v-for="watcher in watchers" :key="watcher.id">
+          <div v-for="watcher in watchers" :key="watcher.id" class="watcher-item">
             <span class="watcher-key">{{ watcher.key }}</span>
             <button class="btn btn-sm btn-danger" @click="removeWatcher(watcher.id)">
               移除
@@ -130,7 +484,7 @@
             </button>
           </div>
         </div>
-        
+
         <div class="namespace-group">
           <h3>应用命名空间</h3>
           <div class="namespace-operations">
@@ -165,13 +519,17 @@
             <span class="value">{{ memoryUsage }} KB</span>
           </div>
         </div>
-        
+
         <div class="state-tree">
           <h4>状态树</h4>
           <div class="tree-container">
             <div v-for="key in allKeys" :key="key" class="tree-item">
-              <div class="tree-key">{{ key }}</div>
-              <div class="tree-value">{{ formatValue(engine.state.get(key)) }}</div>
+              <div class="tree-key">
+                {{ key }}
+              </div>
+              <div class="tree-value">
+                {{ formatValue(engine.state.get(key)) }}
+              </div>
               <button class="btn btn-sm btn-danger" @click="removeState(key)">
                 删除
               </button>
@@ -195,16 +553,16 @@
         </button>
       </div>
       <div class="state-logs">
-        <div 
-          v-for="log in stateLogs" 
+        <div
+          v-for="log in stateLogs"
           :key="log.id"
           :class="`log-entry log-${log.type}`"
         >
           <span class="log-time">[{{ formatTime(log.timestamp) }}]</span>
           <span class="log-type">{{ log.type.toUpperCase() }}</span>
           <span class="log-key">{{ log.key }}</span>
-          <span class="log-value" v-if="log.value !== undefined">{{ formatValue(log.value) }}</span>
-          <span class="log-old-value" v-if="log.oldValue !== undefined">← {{ formatValue(log.oldValue) }}</span>
+          <span v-if="log.value !== undefined" class="log-value">{{ formatValue(log.value) }}</span>
+          <span v-if="log.oldValue !== undefined" class="log-old-value">← {{ formatValue(log.oldValue) }}</span>
         </div>
         <div v-if="stateLogs.length === 0" class="empty-state">
           暂无状态变更日志
@@ -213,350 +571,6 @@
     </section>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, inject, onMounted, nextTick } from 'vue'
-import type { Engine } from '@ldesign/engine'
-
-const engine = inject<Engine>('engine')!
-
-// 响应式数据
-const newKey = ref('')
-const newValue = ref('')
-const getKey = ref('')
-const getResult = ref<any>(null)
-const removeKey = ref('')
-const watchKey = ref('')
-const watchers = ref<any[]>([])
-const stateLogs = ref<any[]>([])
-const allKeys = ref<string[]>([])
-
-// 计算属性
-const memoryUsage = computed(() => {
-  const stateStr = JSON.stringify(allKeys.value.map(key => ({ [key]: engine.state.get(key) })))
-  return Math.round(new Blob([stateStr]).size / 1024 * 100) / 100
-})
-
-// 基础状态操作
-const setState = () => {
-  if (!newKey.value) return
-  
-  let value: any = newValue.value
-  
-  // 尝试解析JSON
-  try {
-    value = JSON.parse(newValue.value)
-  } catch {
-    // 保持字符串值
-  }
-  
-  const oldValue = engine.state.get(newKey.value)
-  engine.state.set(newKey.value, value)
-  
-  logStateChange('set', newKey.value, value, oldValue)
-  updateKeys()
-  
-  newKey.value = ''
-  newValue.value = ''
-  
-  engine.notifications.show({
-    type: 'success',
-    title: '成功',
-    message: `状态 ${newKey.value} 已设置`,
-    duration: 2000
-  })
-}
-
-const getState = () => {
-  if (!getKey.value) return
-  
-  getResult.value = engine.state.get(getKey.value)
-  logStateChange('get', getKey.value, getResult.value)
-  
-  engine.notifications.show({
-    type: 'info',
-    title: '获取状态',
-    message: `键: ${getKey.value}`,
-    duration: 2000
-  })
-}
-
-const removeState = (key?: string) => {
-  const keyToRemove = key || removeKey.value
-  if (!keyToRemove) return
-  
-  const oldValue = engine.state.get(keyToRemove)
-  engine.state.remove(keyToRemove)
-  
-  logStateChange('remove', keyToRemove, undefined, oldValue)
-  updateKeys()
-  
-  if (!key) removeKey.value = ''
-  
-  engine.notifications.show({
-    type: 'warning',
-    title: '删除状态',
-    message: `状态 ${keyToRemove} 已删除`,
-    duration: 2000
-  })
-}
-
-// 预设操作
-const setUserProfile = () => {
-  const profile = {
-    id: 123,
-    name: '张三',
-    email: 'zhangsan@example.com',
-    avatar: 'https://example.com/avatar.jpg',
-    preferences: {
-      theme: 'dark',
-      language: 'zh-CN',
-      notifications: true
-    }
-  }
-  
-  engine.state.set('user.profile', profile)
-  logStateChange('set', 'user.profile', profile)
-  updateKeys()
-}
-
-const setAppSettings = () => {
-  const settings = {
-    version: '1.0.0',
-    debug: true,
-    apiUrl: 'https://api.example.com',
-    features: {
-      darkMode: true,
-      analytics: false,
-      beta: true
-    }
-  }
-  
-  engine.state.set('app.settings', settings)
-  logStateChange('set', 'app.settings', settings)
-  updateKeys()
-}
-
-const updateCounter = () => {
-  const current = engine.state.get('counter', 0) as number
-  const newValue = current + 1
-  
-  engine.state.set('counter', newValue)
-  logStateChange('set', 'counter', newValue, current)
-  updateKeys()
-}
-
-const setNestedData = () => {
-  const data = {
-    level1: {
-      level2: {
-        level3: {
-          value: 'deep nested value',
-          timestamp: Date.now()
-        }
-      }
-    }
-  }
-  
-  engine.state.set('nested.data', data)
-  logStateChange('set', 'nested.data', data)
-  updateKeys()
-}
-
-const clearAllState = () => {
-  engine.state.clear()
-  logStateChange('clear', 'all')
-  updateKeys()
-  
-  engine.notifications.show({
-    type: 'warning',
-    title: '清空状态',
-    message: '所有状态已清空',
-    duration: 2000
-  })
-}
-
-// 监听器管理
-const addWatcher = () => {
-  if (!watchKey.value) return
-  
-  const watcherId = Date.now() + Math.random()
-  const unwatch = engine.state.watch(watchKey.value, (newValue, oldValue) => {
-    logStateChange('watch', watchKey.value, newValue, oldValue)
-    engine.logger.info(`状态监听器触发: ${watchKey.value}`, { newValue, oldValue })
-  })
-  
-  watchers.value.push({
-    id: watcherId,
-    key: watchKey.value,
-    unwatch
-  })
-  
-  watchKey.value = ''
-  
-  engine.notifications.show({
-    type: 'success',
-    title: '监听器',
-    message: '监听器已添加',
-    duration: 2000
-  })
-}
-
-const removeWatcher = (watcherId: number) => {
-  const index = watchers.value.findIndex(w => w.id === watcherId)
-  if (index > -1) {
-    const watcher = watchers.value[index]
-    watcher.unwatch()
-    watchers.value.splice(index, 1)
-    
-    engine.notifications.show({
-      type: 'info',
-      title: '监听器',
-      message: '监听器已移除',
-      duration: 2000
-    })
-  }
-}
-
-const clearWatchers = () => {
-  watchers.value.forEach(watcher => watcher.unwatch())
-  watchers.value = []
-  
-  engine.notifications.show({
-    type: 'info',
-    title: '监听器',
-    message: '所有监听器已清除',
-    duration: 2000
-  })
-}
-
-// 命名空间操作
-const setUserNamespaceData = () => {
-  const userNamespace = engine.state.namespace('user')
-  userNamespace.set('profile.name', '李四')
-  userNamespace.set('profile.age', 25)
-  userNamespace.set('settings.theme', 'light')
-  
-  logStateChange('namespace-set', 'user.*')
-  updateKeys()
-}
-
-const getUserNamespaceData = () => {
-  const userNamespace = engine.state.namespace('user')
-  const data = {
-    name: userNamespace.get('profile.name'),
-    age: userNamespace.get('profile.age'),
-    theme: userNamespace.get('settings.theme')
-  }
-  
-  engine.logger.info('用户命名空间数据:', data)
-  logStateChange('namespace-get', 'user.*', data)
-}
-
-const clearUserNamespace = () => {
-  const userNamespace = engine.state.namespace('user')
-  userNamespace.clear()
-  
-  logStateChange('namespace-clear', 'user.*')
-  updateKeys()
-}
-
-const setAppNamespaceData = () => {
-  const appNamespace = engine.state.namespace('app')
-  appNamespace.set('config.version', '2.0.0')
-  appNamespace.set('config.debug', false)
-  appNamespace.set('stats.users', 1000)
-  
-  logStateChange('namespace-set', 'app.*')
-  updateKeys()
-}
-
-const getAppNamespaceData = () => {
-  const appNamespace = engine.state.namespace('app')
-  const data = {
-    version: appNamespace.get('config.version'),
-    debug: appNamespace.get('config.debug'),
-    users: appNamespace.get('stats.users')
-  }
-  
-  engine.logger.info('应用命名空间数据:', data)
-  logStateChange('namespace-get', 'app.*', data)
-}
-
-const clearAppNamespace = () => {
-  const appNamespace = engine.state.namespace('app')
-  appNamespace.clear()
-  
-  logStateChange('namespace-clear', 'app.*')
-  updateKeys()
-}
-
-// 工具函数
-const updateKeys = () => {
-  allKeys.value = engine.state.keys()
-}
-
-const logStateChange = (type: string, key: string, value?: any, oldValue?: any) => {
-  stateLogs.value.unshift({
-    id: Date.now() + Math.random(),
-    type,
-    key,
-    value,
-    oldValue,
-    timestamp: Date.now()
-  })
-  
-  // 限制日志数量
-  if (stateLogs.value.length > 100) {
-    stateLogs.value = stateLogs.value.slice(0, 100)
-  }
-}
-
-const clearStateLogs = () => {
-  stateLogs.value = []
-}
-
-const exportStateLogs = () => {
-  const data = JSON.stringify(stateLogs.value, null, 2)
-  const blob = new Blob([data], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `state-logs-${Date.now()}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-  
-  engine.notifications.show({
-    type: 'success',
-    title: '导出成功',
-    message: '状态日志已导出',
-    duration: 2000
-  })
-}
-
-const formatValue = (value: any): string => {
-  if (value === null) return 'null'
-  if (value === undefined) return 'undefined'
-  if (typeof value === 'string') return `"${value}"`
-  if (typeof value === 'object') return JSON.stringify(value)
-  return String(value)
-}
-
-const formatTime = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleTimeString()
-}
-
-onMounted(() => {
-  updateKeys()
-  
-  // 设置一些初始数据
-  engine.state.set('demo.initialized', true)
-  engine.state.set('demo.timestamp', Date.now())
-  
-  logStateChange('init', 'demo.*')
-  updateKeys()
-})
-</script>
 
 <style scoped>
 .demo-page {

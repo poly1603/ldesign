@@ -48,7 +48,7 @@ export class TemplateScanner {
       templates,
       duration,
       scannedDirectories,
-      errors
+      errors,
     }
   }
 
@@ -79,8 +79,8 @@ export class TemplateScanner {
           version: '1.0.0',
           author: 'LDesign Team',
           tags: ['classic', 'simple'],
-          responsive: true
-        }
+          responsive: true,
+        },
       }),
       '/src/templates/login/desktop/modern/config.ts': () => Promise.resolve({
         default: {
@@ -90,8 +90,8 @@ export class TemplateScanner {
           version: '1.0.0',
           author: 'LDesign Team',
           tags: ['modern', 'gradient'],
-          responsive: true
-        }
+          responsive: true,
+        },
       }),
       '/src/templates/login/mobile/simple/config.ts': () => Promise.resolve({
         default: {
@@ -102,8 +102,8 @@ export class TemplateScanner {
           author: 'LDesign Team',
           tags: ['mobile', 'simple'],
           responsive: true,
-          maxWidth: 768
-        }
+          maxWidth: 768,
+        },
       }),
       '/src/templates/dashboard/desktop/admin/config.ts': () => Promise.resolve({
         default: {
@@ -114,9 +114,9 @@ export class TemplateScanner {
           author: 'LDesign Team',
           tags: ['admin', 'dashboard'],
           responsive: true,
-          minWidth: 1200
-        }
-      })
+          minWidth: 1200,
+        },
+      }),
     }
   }
 
@@ -125,7 +125,7 @@ export class TemplateScanner {
    */
   private async parseTemplatePath(
     configPath: string,
-    moduleFactory: () => Promise<any>
+    moduleFactory: () => Promise<any>,
   ): Promise<TemplateMetadata | null> {
     try {
       // 解析路径: /src/templates/category/device/template/config.ts
@@ -154,7 +154,7 @@ export class TemplateScanner {
         template,
         config,
         componentPath,
-        stylePath
+        stylePath,
       }
     }
     catch (error) {
@@ -192,7 +192,7 @@ export class TemplateScanner {
   getTemplatesByCategoryAndDevice(category: string, device: DeviceType): TemplateMetadata[] {
     return Array.from(this.scannedTemplates.values())
       .filter(template =>
-        template.category === category && template.device === device
+        template.category === category && template.device === device,
       )
   }
 

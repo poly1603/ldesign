@@ -7,7 +7,7 @@
 ### 创建基础 Store 类
 
 ```typescript
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 class CounterStore extends BaseStore {
   // 定义状态
@@ -57,36 +57,44 @@ const counterStore = new CounterStore('counter')
 ### 在 Vue 组件中使用
 
 ```vue
-<template>
-  <div class="counter">
-    <h2>{{ store.displayText }}</h2>
-    <p>当前计数: {{ store.count }}</p>
-    <p v-if="store.isPositive" class="positive">计数为正数！</p>
-    
-    <div class="controls">
-      <button @click="store.decrement">-</button>
-      <button @click="store.reset">重置</button>
-      <button @click="store.increment">+</button>
-    </div>
-    
-    <input 
-      v-model="store.title" 
-      placeholder="设置标题"
-      @input="updateTitle"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { CounterStore } from '@/stores/counter'
 
 const store = new CounterStore('counter')
 
-const updateTitle = (event: Event) => {
+function updateTitle(event: Event) {
   const target = event.target as HTMLInputElement
   store.setTitle(target.value)
 }
 </script>
+
+<template>
+  <div class="counter">
+    <h2>{{ store.displayText }}</h2>
+    <p>当前计数: {{ store.count }}</p>
+    <p v-if="store.isPositive" class="positive">
+      计数为正数！
+    </p>
+
+    <div class="controls">
+      <button @click="store.decrement">
+        -
+      </button>
+      <button @click="store.reset">
+        重置
+      </button>
+      <button @click="store.increment">
+        +
+      </button>
+    </div>
+
+    <input
+      v-model="store.title"
+      placeholder="设置标题"
+      @input="updateTitle"
+    >
+  </div>
+</template>
 ```
 
 ## 复杂状态管理
@@ -136,13 +144,15 @@ class UserStore extends BaseStore {
       const response = await authApi.login(credentials)
       this.currentUser = response.user
       this.addToRecentUsers(response.user)
-      
+
       // 触发登录成功事件
       this.onLoginSuccess(response.user)
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error.message : '登录失败'
       throw error
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -154,7 +164,8 @@ class UserStore extends BaseStore {
       await authApi.logout()
       this.currentUser = null
       this.error = null
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -169,7 +180,8 @@ class UserStore extends BaseStore {
     try {
       const updatedUser = await userApi.updateProfile(this.currentUser.id, updates)
       this.currentUser = { ...this.currentUser, ...updatedUser }
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -202,7 +214,7 @@ class UserStore extends BaseStore {
       this.recentUsers.splice(existingIndex, 1)
     }
     this.recentUsers.unshift(user)
-    
+
     // 只保留最近 5 个用户
     if (this.recentUsers.length > 5) {
       this.recentUsers = this.recentUsers.slice(0, 5)
@@ -242,8 +254,9 @@ class UserStore extends BaseStore {
 
   @CachedGetter(['currentUser'])
   get userDisplayInfo() {
-    if (!this.currentUser) return null
-    
+    if (!this.currentUser)
+      return null
+
     return {
       name: this.currentUser.name,
       email: this.currentUser.email,
@@ -301,17 +314,18 @@ class ShoppingCartStore extends BaseStore {
   @Action()
   addItem(product: Product, quantity: number = 1) {
     const existingItem = this.items.find(item => item.id === product.id)
-    
+
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.items.push({
         ...product,
         quantity,
         addedAt: new Date()
       })
     }
-    
+
     this.notifyItemAdded(product, quantity)
   }
 
@@ -331,7 +345,8 @@ class ShoppingCartStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeItem(productId)
-      } else {
+      }
+      else {
         item.quantity = quantity
       }
     }
@@ -351,9 +366,11 @@ class ShoppingCartStore extends BaseStore {
       const response = await couponApi.validate(couponCode)
       this.coupon = couponCode
       this.discount = response.discount
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('优惠券无效或已过期')
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -372,11 +389,12 @@ class ShoppingCartStore extends BaseStore {
         discount: this.discount,
         total: this.finalTotal
       }
-      
+
       const order = await orderApi.create(orderData)
       this.clearCart()
       return order
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -479,7 +497,8 @@ abstract class BaseApiStore extends BaseStore {
 
   @Getter()
   get isStale() {
-    if (!this.lastUpdated) return true
+    if (!this.lastUpdated)
+      return true
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
     return this.lastUpdated < fiveMinutesAgo
   }
@@ -502,9 +521,11 @@ class ProductStore extends BaseApiStore {
       const products = await productApi.getAll()
       this.products = products
       this.updateTimestamp()
-    } catch (error) {
+    }
+    catch (error) {
       this.setError(error instanceof Error ? error.message : '获取产品失败')
-    } finally {
+    }
+    finally {
       this.setLoading(false)
     }
   }
@@ -560,19 +581,21 @@ class AppStore extends BaseStore {
       const serverCart = await cartApi.getUserCart(this.userStore.currentUser!.id)
       // 合并本地购物车和服务器购物车
       this.mergeCart(serverCart)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步购物车失败:', error)
     }
   }
 
   private mergeCart(serverCart: CartItem[]) {
     // 购物车合并逻辑
-    serverCart.forEach(serverItem => {
+    serverCart.forEach((serverItem) => {
       const localItem = this.cartStore.items.find(item => item.id === serverItem.id)
       if (localItem) {
         // 取较大的数量
         localItem.quantity = Math.max(localItem.quantity, serverItem.quantity)
-      } else {
+      }
+      else {
         this.cartStore.addItem(serverItem, serverItem.quantity)
       }
     })
@@ -674,7 +697,8 @@ class RobustStore extends BaseStore {
     try {
       this.error = null
       this.data = await api.getData()
-    } catch (error) {
+    }
+    catch (error) {
       this.error = error instanceof Error ? error : new Error('未知错误')
       // 记录错误日志
       console.error('获取数据失败:', error)

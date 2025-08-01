@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/engine-docs",
-  "version": "0.1.0",
   "type": "module",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "vitepress dev",

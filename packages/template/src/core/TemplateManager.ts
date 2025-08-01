@@ -1,4 +1,3 @@
-import { type Component, defineAsyncComponent, markRaw } from 'vue'
 import type {
   DeviceType,
   TemplateChangeEvent,
@@ -9,10 +8,11 @@ import type {
   TemplateRenderOptions,
   TemplateScanResult,
 } from '../types'
+import { type Component, defineAsyncComponent, markRaw } from 'vue'
 import { TemplateLoadingState } from '../types'
-import { TemplateScanner } from '../utils/scanner'
 import { TemplateCache } from '../utils/cache'
 import { createDeviceWatcher, detectDevice } from '../utils/device'
+import { TemplateScanner } from '../utils/scanner'
 
 /**
  * 事件发射器
@@ -76,14 +76,14 @@ export class TemplateManager extends EventEmitter<{
         mobileBreakpoint: 768,
         tabletBreakpoint: 992,
         desktopBreakpoint: 1200,
-        ...config.deviceDetection
+        ...config.deviceDetection,
       },
       enableCache: true,
       cacheLimit: 50,
       enablePreload: false,
       preloadTemplates: [],
       defaultDevice: 'desktop',
-      ...config
+      ...config,
     }
 
     this.scanner = new TemplateScanner(this.config.templateRoot)
@@ -111,7 +111,7 @@ export class TemplateManager extends EventEmitter<{
           this.autoSwitchDeviceTemplate(device)
         }
       },
-      this.config.deviceDetection
+      this.config.deviceDetection,
     )
   }
 
@@ -189,7 +189,7 @@ export class TemplateManager extends EventEmitter<{
   private async loadTemplate(
     category: string,
     device: DeviceType,
-    template: string
+    template: string,
   ): Promise<TemplateLoadResult> {
     const cacheKey = this.getCacheKey(category, device, template)
 
@@ -205,7 +205,7 @@ export class TemplateManager extends EventEmitter<{
         return {
           state: TemplateLoadingState.LOADED,
           component: cached,
-          duration: 0
+          duration: 0,
         }
       }
     }
@@ -230,7 +230,7 @@ export class TemplateManager extends EventEmitter<{
   private async performTemplateLoad(
     category: string,
     device: DeviceType,
-    template: string
+    template: string,
   ): Promise<TemplateLoadResult> {
     const startTime = Date.now()
 
@@ -249,7 +249,7 @@ export class TemplateManager extends EventEmitter<{
         component,
         metadata,
         loaded: true,
-        loadedAt: Date.now()
+        loadedAt: Date.now(),
       }
 
       // 缓存组件
@@ -262,7 +262,7 @@ export class TemplateManager extends EventEmitter<{
       return {
         state: TemplateLoadingState.LOADED,
         component: templateComponent,
-        duration
+        duration,
       }
     }
     catch (error) {
@@ -274,7 +274,7 @@ export class TemplateManager extends EventEmitter<{
       return {
         state: TemplateLoadingState.ERROR,
         error: err,
-        duration
+        duration,
       }
     }
   }
@@ -298,7 +298,7 @@ export class TemplateManager extends EventEmitter<{
       loadingComponent: undefined, // 可以在这里设置加载组件
       errorComponent: undefined, // 可以在这里设置错误组件
       delay: 0,
-      timeout: options.timeout || 10000
+      timeout: options.timeout || 10000,
     })
   }
 
@@ -321,7 +321,7 @@ export class TemplateManager extends EventEmitter<{
       this.emit('template:change', {
         from: oldTemplate,
         to: this.currentTemplate,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
     catch (error) {

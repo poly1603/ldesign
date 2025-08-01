@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test'
-import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { expect, test } from '@playwright/test'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

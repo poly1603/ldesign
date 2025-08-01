@@ -48,7 +48,7 @@ pnpm add @ldesign/store pinia vue reflect-metadata
 ### 类式使用
 
 ```typescript
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -72,7 +72,7 @@ const store = new CounterStore('counter')
 
 ```typescript
 import { createStore } from '@ldesign/store'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useCounter = createStore('counter', () => {
   const count = ref(0)
@@ -90,18 +90,20 @@ export const useCounter = createStore('counter', () => {
 ### 在组件中使用
 
 ```vue
-<template>
-  <div>
-    <p>{{ store.displayText }}</p>
-    <button @click="store.increment">+1</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { CounterStore } from '@/stores/counter'
 
 const store = new CounterStore('counter')
 </script>
+
+<template>
+  <div>
+    <p>{{ store.displayText }}</p>
+    <button @click="store.increment">
+      +1
+    </button>
+  </div>
+</template>
 ```
 
 ## 为什么选择 @ldesign/store？
@@ -113,6 +115,7 @@ const store = new CounterStore('counter')
 ### 🎯 灵活多样
 
 四种使用方式任你选择：
+
 - **类式** - 面向对象，装饰器加持
 - **Hook式** - 函数式编程，React 开发者友好
 - **Provider式** - 依赖注入，架构清晰

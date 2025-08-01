@@ -20,7 +20,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
+    background-image:
       radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
       radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
     background-size: 50px 50px;
@@ -51,7 +51,7 @@
 
   &__logo {
     margin-bottom: 24px;
-    
+
     img {
       width: 80px;
       height: 80px;
@@ -189,13 +189,13 @@
     font-size: 16px;
     background: white;
     transition: all 0.3s ease;
-    
+
     &:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
-    
+
     &::placeholder {
       color: #a0aec0;
     }
@@ -214,7 +214,7 @@
     cursor: pointer;
     font-size: 14px;
     color: #4a5568;
-    
+
     input {
       display: none;
     }
@@ -228,7 +228,7 @@
     margin-right: 8px;
     position: relative;
     transition: all 0.3s ease;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -247,7 +247,7 @@
   &__checkbox input:checked + &__checkbox-mark {
     background: #667eea;
     border-color: #667eea;
-    
+
     &::after {
       opacity: 1;
     }
@@ -258,7 +258,7 @@
     color: #667eea;
     text-decoration: none;
     transition: color 0.3s ease;
-    
+
     &:hover {
       color: #5a67d8;
     }
@@ -277,17 +277,17 @@
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
-    
+
     &:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
     }
-    
+
     &:disabled {
       cursor: not-allowed;
       opacity: 0.7;
     }
-    
+
     &--loading {
       .tablet-adaptive-login__submit-text {
         opacity: 0.7;
@@ -316,7 +316,7 @@
     position: relative;
     text-align: center;
     margin: 24px 0;
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -326,7 +326,7 @@
       height: 1px;
       background: #e2e8f0;
     }
-    
+
     span {
       background: rgba(255, 255, 255, 0.95);
       padding: 0 16px;
@@ -356,27 +356,27 @@
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
-    
+
     &:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     &--github:hover {
       border-color: #333;
       color: #333;
     }
-    
+
     &--google:hover {
       border-color: #db4437;
       color: #db4437;
     }
-    
+
     &--wechat:hover {
       border-color: #07c160;
       color: #07c160;
     }
-    
+
     &--apple:hover {
       border-color: #000;
       color: #000;
@@ -387,19 +387,19 @@
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    
+
     &--github {
       background: #333;
     }
-    
+
     &--google {
       background: #db4437;
     }
-    
+
     &--wechat {
       background: #07c160;
     }
-    
+
     &--apple {
       background: #000;
     }
@@ -414,13 +414,13 @@
     color: #718096;
     font-size: 14px;
     margin-top: 24px;
-    
+
     a {
       color: #667eea;
       text-decoration: none;
       margin-left: 8px;
       transition: color 0.3s ease;
-      
+
       &:hover {
         color: #5a67d8;
       }
@@ -438,7 +438,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
     opacity: 0.7;
   }
@@ -449,8 +450,12 @@
 }
 
 @keyframes spin {
-  0% { transform: translateY(-50%) rotate(0deg); }
-  100% { transform: translateY(-50%) rotate(360deg); }
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 // 竖屏适配
@@ -459,29 +464,29 @@
     &__container {
       flex-direction: column;
     }
-    
+
     &__sidebar {
       flex: none;
       padding: 32px 24px;
     }
-    
+
     &__title {
       font-size: 28px;
     }
-    
+
     &__subtitle {
       font-size: 16px;
     }
-    
+
     &__illustration {
       width: 150px;
       height: 150px;
     }
-    
+
     &__main {
       padding: 24px;
     }
-    
+
     &__form-container {
       padding: 32px 24px;
     }
@@ -494,19 +499,19 @@
     &__sidebar {
       padding: 24px;
     }
-    
+
     &__title {
       font-size: 24px;
     }
-    
+
     &__main {
       padding: 24px;
     }
-    
+
     &__form-container {
       padding: 32px 24px;
     }
-    
+
     &__third-party-grid {
       grid-template-columns: 1fr;
     }

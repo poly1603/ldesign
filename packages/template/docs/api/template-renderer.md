@@ -20,34 +20,40 @@
 ## 属性 (Props)
 
 ### `category`
+
 - **类型**: `string`
 - **必需**: 是
 - **描述**: 模板分类
 
 ### `device`
+
 - **类型**: `DeviceType`
 - **必需**: 否
 - **默认值**: 自动检测
 - **描述**: 设备类型 (`'desktop'` | `'tablet'` | `'mobile'`)
 
 ### `template`
+
 - **类型**: `string`
 - **必需**: 是
 - **描述**: 模板名称
 
 ### `templateProps`
+
 - **类型**: `Record<string, any>`
 - **必需**: 否
 - **默认值**: `{}`
 - **描述**: 传递给模板组件的属性
 
 ### `cache`
+
 - **类型**: `boolean`
 - **必需**: 否
 - **默认值**: `true`
 - **描述**: 是否启用缓存
 
 ### `preload`
+
 - **类型**: `boolean`
 - **必需**: 否
 - **默认值**: `false`
@@ -56,13 +62,16 @@
 ## 事件 (Events)
 
 ### `@load`
+
 模板加载成功时触发。
 
 **参数:**
+
 - `component`: `TemplateComponent` - 加载的模板组件
 - `metadata`: `TemplateMetadata` - 模板元数据
 
 **示例:**
+
 ```vue
 <LTemplateRenderer
   category="auth"
@@ -78,12 +87,15 @@ function onTemplateLoad(component, metadata) {
 ```
 
 ### `@error`
+
 模板加载失败时触发。
 
 **参数:**
+
 - `error`: `Error` - 错误对象
 
 **示例:**
+
 ```vue
 <LTemplateRenderer
   category="auth"
@@ -99,23 +111,29 @@ function onTemplateError(error) {
 ```
 
 ### `@before-load`
+
 模板开始加载前触发。
 
 **参数:**
+
 - `options`: `TemplateRenderOptions` - 渲染选项
 
 ### `@after-load`
+
 模板加载完成后触发（无论成功或失败）。
 
 ## 插槽 (Slots)
 
 ### `#loading`
+
 自定义加载状态。
 
 **作用域参数:**
+
 - `loading`: `boolean` - 加载状态
 
 **示例:**
+
 ```vue
 <LTemplateRenderer category="auth" template="login">
   <template #loading>
@@ -128,13 +146,16 @@ function onTemplateError(error) {
 ```
 
 ### `#error`
+
 自定义错误状态。
 
 **作用域参数:**
+
 - `error`: `Error` - 错误对象
 - `retry`: `Function` - 重试函数
 
 **示例:**
+
 ```vue
 <LTemplateRenderer category="auth" template="login">
   <template #error="{ error, retry }">
@@ -148,9 +169,11 @@ function onTemplateError(error) {
 ```
 
 ### `#empty`
+
 自定义空状态（模板不存在时）。
 
 **示例:**
+
 ```vue
 <LTemplateRenderer category="auth" template="login">
   <template #empty>
@@ -218,7 +241,7 @@ function resetTemplate() {
           注册页
         </option>
       </select>
-      
+
       <select v-model="selectedDevice">
         <option value="desktop">
           桌面端
@@ -231,7 +254,7 @@ function resetTemplate() {
         </option>
       </select>
     </div>
-    
+
     <div class="template-container">
       <LTemplateRenderer
         category="auth"
@@ -250,7 +273,7 @@ function resetTemplate() {
             <p>正在加载 {{ selectedTemplate }} 模板...</p>
           </div>
         </template>
-        
+
         <!-- 自定义错误状态 -->
         <template #error="{ error, retry }">
           <div class="error-container">
@@ -266,7 +289,7 @@ function resetTemplate() {
             </div>
           </div>
         </template>
-        
+
         <!-- 自定义空状态 -->
         <template #empty>
           <div class="empty-container">
@@ -327,8 +350,12 @@ function resetTemplate() {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container {
@@ -390,7 +417,7 @@ const currentCategory = ref('auth')
 const currentTemplate = ref('login')
 
 // 使用 key 强制重新渲染
-const templateKey = computed(() => 
+const templateKey = computed(() =>
   `${currentCategory.value}-${currentTemplate.value}`
 )
 
@@ -426,7 +453,7 @@ const shouldRenderTemplate = computed(() => {
     :template="template"
     :template-props="templateProps"
   />
-  
+
   <div v-else class="fallback">
     使用默认内容
   </div>

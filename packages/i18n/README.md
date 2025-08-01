@@ -46,7 +46,7 @@ const i18n = await createI18nWithBuiltinLocales({
 console.log(i18n.t('common.ok')) // "OK"
 
 // 插值翻译
-console.log(i18n.t('common.pageOf', { current: 1, total: 10 })) 
+console.log(i18n.t('common.pageOf', { current: 1, total: 10 }))
 // "Page 1 of 10"
 
 // 切换语言
@@ -57,10 +57,10 @@ console.log(i18n.t('common.ok')) // "确定"
 ### Vue 3 集成
 
 ```typescript
-// main.ts
-import { createApp } from 'vue'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// main.ts
+import { createApp } from 'vue'
 import App from './App.vue'
 
 async function bootstrap() {
@@ -84,19 +84,25 @@ bootstrap()
 
 ```vue
 <!-- App.vue -->
+<script setup>
+import { useI18n } from '@ldesign/i18n/vue'
+
+const { t, availableLanguages, changeLanguage } = useI18n()
+</script>
+
 <template>
   <div>
     <!-- 使用组合式 API -->
     <h1>{{ t('common.welcome') }}</h1>
-    
+
     <!-- 使用指令 -->
-    <button v-t="'common.save'"></button>
-    
+    <button v-t="'common.save'" />
+
     <!-- 语言切换 -->
     <select @change="changeLanguage($event.target.value)">
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
         :value="lang.code"
       >
         {{ lang.nativeName }}
@@ -104,12 +110,6 @@ bootstrap()
     </select>
   </div>
 </template>
-
-<script setup>
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, availableLanguages, changeLanguage } = useI18n()
-</script>
 ```
 
 ## 📚 API 文档
@@ -121,29 +121,29 @@ const { t, availableLanguages, changeLanguage } = useI18n()
 ```typescript
 class I18n {
   constructor(options?: I18nOptions)
-  
+
   // 初始化
   async init(): Promise<void>
-  
+
   // 翻译
   t<T = string>(key: string, params?: TranslationParams, options?: TranslationOptions): T
-  
+
   // 批量翻译
   batchTranslate(keys: string[], params?: TranslationParams): BatchTranslationResult
-  
+
   // 语言管理
   async changeLanguage(locale: string): Promise<void>
   getCurrentLanguage(): string
   getAvailableLanguages(): LanguageInfo[]
-  
+
   // 预加载
   async preloadLanguage(locale: string): Promise<void>
   isLanguageLoaded(locale: string): boolean
-  
+
   // 工具方法
   exists(key: string, locale?: string): boolean
   getKeys(locale?: string): string[]
-  
+
   // 事件
   on(event: I18nEventType, listener: I18nEventListener): void
   off(event: I18nEventType, listener: I18nEventListener): void
@@ -154,18 +154,18 @@ class I18n {
 
 ```typescript
 interface I18nOptions {
-  defaultLocale: string              // 默认语言
-  fallbackLocale?: string           // 降级语言
-  storage?: 'localStorage' | 'sessionStorage' | 'none'  // 存储方式
-  storageKey?: string               // 存储键名
-  autoDetect?: boolean              // 自动检测浏览器语言
-  preload?: string[]                // 预加载的语言列表
-  cache?: {                         // 缓存配置
+  defaultLocale: string // 默认语言
+  fallbackLocale?: string // 降级语言
+  storage?: 'localStorage' | 'sessionStorage' | 'none' // 存储方式
+  storageKey?: string // 存储键名
+  autoDetect?: boolean // 自动检测浏览器语言
+  preload?: string[] // 预加载的语言列表
+  cache?: { // 缓存配置
     enabled: boolean
     maxSize: number
   }
-  onLanguageChanged?: (locale: string) => void  // 语言切换回调
-  onLoadError?: (locale: string, error: Error) => void  // 加载错误回调
+  onLanguageChanged?: (locale: string) => void // 语言切换回调
+  onLoadError?: (locale: string, error: Error) => void // 加载错误回调
 }
 ```
 
@@ -200,8 +200,8 @@ function useConditionalTranslation(
 
 ```typescript
 interface VueI18nOptions extends I18nOptions {
-  globalInjection?: boolean         // 是否注入全局属性
-  globalPropertyName?: string       // 全局属性名称
+  globalInjection?: boolean // 是否注入全局属性
+  globalPropertyName?: string // 全局属性名称
 }
 ```
 
@@ -223,10 +223,11 @@ interface VueI18nOptions extends I18nOptions {
 库内置了三种语言的完整翻译：
 
 - **English (en)** - 英语
-- **中文简体 (zh-CN)** - 简体中文  
+- **中文简体 (zh-CN)** - 简体中文
 - **日本語 (ja)** - 日语
 
 每种语言包含以下模块：
+
 - `common` - 通用文本（按钮、状态、导航等）
 - `validation` - 表单验证信息
 - `menu` - 菜单相关文本
@@ -263,16 +264,16 @@ i18n.setStorage(cookieStorage)
 
 ```typescript
 // 支持 ICU 复数语法
-i18n.t('items', { 
-  count: 0 
+i18n.t('items', {
+  count: 0
 }) // "no items"
 
-i18n.t('items', { 
-  count: 1 
+i18n.t('items', {
+  count: 1
 }) // "1 item"
 
-i18n.t('items', { 
-  count: 5 
+i18n.t('items', {
+  count: 5
 }) // "5 items"
 ```
 
@@ -280,15 +281,15 @@ i18n.t('items', {
 
 ```typescript
 // HTML 转义（默认开启）
-i18n.t('message', { 
-  content: '<script>alert("xss")</script>' 
+i18n.t('message', {
+  content: '<script>alert("xss")</script>'
 })
 
 // 禁用转义
-i18n.t('message', { 
-  content: '<strong>Bold</strong>' 
-}, { 
-  escapeValue: false 
+i18n.t('message', {
+  content: '<strong>Bold</strong>'
+}, {
+  escapeValue: false
 })
 ```
 

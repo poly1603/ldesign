@@ -1,9 +1,64 @@
+<script setup>
+import { useBattery } from '@ldesign/device/vue'
+import { computed, ref } from 'vue'
+
+const isLoaded = ref(false)
+const loading = ref(false)
+
+const {
+  batteryInfo,
+  loadModule,
+  unloadModule: unloadBatteryModule,
+} = useBattery()
+
+const batteryLevel = computed(() => {
+  return batteryInfo.value ? Math.round(batteryInfo.value.level * 100) : 0
+})
+
+const isCharging = computed(() => {
+  return batteryInfo.value?.charging || false
+})
+
+async function loadBatteryModule() {
+  loading.value = true
+  try {
+    await loadModule()
+    isLoaded.value = true
+  }
+  catch (error) {
+    console.error('加载电池模块失败:', error)
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+function unloadModule() {
+  unloadBatteryModule()
+  isLoaded.value = false
+}
+
+function formatTime(seconds) {
+  if (!seconds || seconds === Infinity) {
+    return '未知'
+  }
+
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+
+  if (hours > 0) {
+    return `${hours}小时${minutes}分钟`
+  }
+  return `${minutes}分钟`
+}
+</script>
+
 <template>
   <div class="card">
     <h3>🔋 电池信息</h3>
 
     <div v-if="!isLoaded" class="loading-state">
-      <button @click="loadBatteryModule" class="load-btn" :disabled="loading">
+      <button class="load-btn" :disabled="loading" @click="loadBatteryModule">
         {{ loading ? '加载中...' : '🔋 加载电池模块' }}
       </button>
     </div>
@@ -12,8 +67,10 @@
       <div class="battery-level">
         <div class="level-container">
           <div class="level-bar">
-            <div class="level-fill" :style="{ width: `${batteryLevel}%` }"
-              :class="{ 'low': batteryLevel < 20, 'charging': isCharging }"></div>
+            <div
+              class="level-fill" :style="{ width: `${batteryLevel}%` }"
+              :class="{ low: batteryLevel < 20, charging: isCharging }"
+            />
           </div>
           <span class="level-text">{{ batteryLevel }}%</span>
         </div>
@@ -38,65 +95,12 @@
     </div>
 
     <div v-if="isLoaded" class="controls">
-      <button @click="unloadModule" class="unload-btn">
+      <button class="unload-btn" @click="unloadModule">
         ❌ 卸载模块
       </button>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from 'vue'
-import { useBattery } from '@ldesign/device/vue'
-
-const isLoaded = ref(false)
-const loading = ref(false)
-
-const {
-  batteryInfo,
-  loadModule,
-  unloadModule: unloadBatteryModule
-} = useBattery()
-
-const batteryLevel = computed(() => {
-  return batteryInfo.value ? Math.round(batteryInfo.value.level * 100) : 0
-})
-
-const isCharging = computed(() => {
-  return batteryInfo.value?.charging || false
-})
-
-const loadBatteryModule = async () => {
-  loading.value = true
-  try {
-    await loadModule()
-    isLoaded.value = true
-  } catch (error) {
-    console.error('加载电池模块失败:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const unloadModule = () => {
-  unloadBatteryModule()
-  isLoaded.value = false
-}
-
-const formatTime = (seconds) => {
-  if (!seconds || seconds === Infinity) {
-    return '未知'
-  }
-
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-
-  if (hours > 0) {
-    return `${hours}小时${minutes}分钟`
-  }
-  return `${minutes}分钟`
-}
-</script>
 
 <style scoped>
 .card {

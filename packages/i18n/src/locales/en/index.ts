@@ -1,8 +1,8 @@
 import type { LanguagePackage } from '@/core/types'
 import common from './common'
-import validation from './validation'
-import menu from './menu'
 import date from './date'
+import menu from './menu'
+import validation from './validation'
 
 /**
  * 英语语言包
@@ -14,14 +14,14 @@ const enLanguagePackage: LanguagePackage = {
     code: 'en',
     region: 'US',
     direction: 'ltr',
-    dateFormat: 'MM/DD/YYYY'
+    dateFormat: 'MM/DD/YYYY',
   },
   translations: {
     common,
     validation,
     menu,
-    date
-  }
+    date,
+  },
 }
 
 export default enLanguagePackage

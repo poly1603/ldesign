@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { DeviceDetector } from '../src/core/DeviceDetector'
 import type { DeviceDetectorOptions } from '../src/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { DeviceDetector } from '../src/core/DeviceDetector'
 
 // Mock window and navigator
 const mockWindow = {
@@ -39,7 +39,7 @@ Object.defineProperty(global, 'screen', {
   writable: true,
 })
 
-describe('DeviceDetector', () => {
+describe('deviceDetector', () => {
   let detector: DeviceDetector
 
   beforeEach(() => {
@@ -79,7 +79,7 @@ describe('DeviceDetector', () => {
     it('应该返回完整的设备信息', () => {
       detector = new DeviceDetector()
       const deviceInfo = detector.getDeviceInfo()
-      
+
       expect(deviceInfo).toMatchObject({
         type: 'desktop',
         orientation: 'landscape',
@@ -146,7 +146,7 @@ describe('DeviceDetector', () => {
           tablet: 900,
         },
       }
-      
+
       mockWindow.innerWidth = 650
       detector = new DeviceDetector(options)
       expect(detector.getDeviceType()).toBe('tablet')
@@ -157,7 +157,7 @@ describe('DeviceDetector', () => {
         enableResize: false,
         enableOrientation: false,
       }
-      
+
       detector = new DeviceDetector(options)
       expect(mockWindow.addEventListener).not.toHaveBeenCalled()
     })
@@ -167,10 +167,10 @@ describe('DeviceDetector', () => {
     it('应该支持事件监听', () => {
       detector = new DeviceDetector()
       const callback = vi.fn()
-      
+
       detector.on('deviceChange', callback)
       expect(detector.listenerCount('deviceChange')).toBe(1)
-      
+
       detector.off('deviceChange', callback)
       expect(detector.listenerCount('deviceChange')).toBe(0)
     })
@@ -178,10 +178,10 @@ describe('DeviceDetector', () => {
     it('应该支持一次性事件监听', () => {
       detector = new DeviceDetector()
       const callback = vi.fn()
-      
+
       detector.once('deviceChange', callback)
       expect(detector.listenerCount('deviceChange')).toBe(1)
-      
+
       detector.emit('deviceChange', detector.getDeviceInfo())
       expect(callback).toHaveBeenCalledTimes(1)
       expect(detector.listenerCount('deviceChange')).toBe(0)
@@ -204,14 +204,14 @@ describe('DeviceDetector', () => {
     it('应该正确销毁检测器', async () => {
       detector = new DeviceDetector()
       await detector.destroy()
-      
+
       expect(mockWindow.removeEventListener).toHaveBeenCalled()
     })
 
     it('销毁后不应该响应事件', async () => {
       detector = new DeviceDetector()
       await detector.destroy()
-      
+
       expect(() => detector.refresh()).not.toThrow()
     })
   })
@@ -221,15 +221,15 @@ describe('DeviceDetector', () => {
       const originalWindow = global.window
       // @ts-expect-error - 测试用途
       delete global.window
-      
+
       detector = new DeviceDetector()
       const deviceInfo = detector.getDeviceInfo()
-      
+
       expect(deviceInfo.type).toBe('desktop')
       expect(deviceInfo.orientation).toBe('landscape')
       expect(deviceInfo.width).toBe(1920)
       expect(deviceInfo.height).toBe(1080)
-      
+
       global.window = originalWindow
     })
   })

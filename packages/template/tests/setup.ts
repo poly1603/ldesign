@@ -31,5 +31,5 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Mock import.meta.glob
 vi.mock('import.meta', () => ({
-  glob: vi.fn(() => ({}))
+  glob: vi.fn(() => ({})),
 }))

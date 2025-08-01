@@ -1,7 +1,7 @@
-import { defineComponent, ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { getDeviceInfo, watchDeviceChange, type DeviceType } from '../../core/device'
-import { getTemplatesByDevice, getDefaultTemplate, type TemplateInfo } from '../../core/template-manager'
+import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { getCachedTemplate, setCachedTemplate } from '../../core/cache'
+import { getDeviceInfo, watchDeviceChange } from '../../core/device'
+import { getDefaultTemplate, getTemplatesByDevice } from '../../core/template-manager'
 import './TemplateSelector.less'
 
 export interface TemplateSelectorProps {
@@ -17,24 +17,24 @@ export default defineComponent({
   props: {
     category: {
       type: String,
-      required: true
+      required: true,
     },
     value: {
       type: String,
-      default: ''
+      default: '',
     },
     showDeviceInfo: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showPreview: {
       type: Boolean,
-      default: false
+      default: false,
     },
     disabled: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['update:value', 'change', 'deviceChange'],
   setup(props, { emit }) {
@@ -73,7 +73,8 @@ export default defineComponent({
 
     // 切换模板
     const selectTemplate = (variant: string) => {
-      if (props.disabled) return
+      if (props.disabled)
+        return
 
       selectedTemplate.value = variant
       isOpen.value = false
@@ -86,7 +87,7 @@ export default defineComponent({
       emit('change', {
         variant,
         template: currentTemplate.value,
-        device: deviceInfo.value.type
+        device: deviceInfo.value.type,
       })
     }
 
@@ -105,14 +106,15 @@ export default defineComponent({
         emit('deviceChange', {
           oldDevice,
           newDevice: newDeviceInfo.type,
-          deviceInfo: newDeviceInfo
+          deviceInfo: newDeviceInfo,
         })
       }
     }
 
     // 切换下拉菜单
     const toggleDropdown = () => {
-      if (props.disabled) return
+      if (props.disabled)
+        return
       isOpen.value = !isOpen.value
     }
 
@@ -159,10 +161,11 @@ export default defineComponent({
     })
 
     return () => (
-      <div class={['template-selector', { 
+      <div class={['template-selector', {
         'template-selector--open': isOpen.value,
-        'template-selector--disabled': props.disabled
-      }]}>
+        'template-selector--disabled': props.disabled,
+      }]}
+      >
         {props.showDeviceInfo && (
           <div class="template-selector__device-info">
             <span class="template-selector__device-type">
@@ -171,7 +174,10 @@ export default defineComponent({
               {deviceInfo.value.type === 'mobile' && '📱 移动端'}
             </span>
             <span class="template-selector__device-size">
-              {deviceInfo.value.width} × {deviceInfo.value.height}
+              {deviceInfo.value.width}
+              {' '}
+              ×
+              {deviceInfo.value.height}
             </span>
           </div>
         )}
@@ -192,7 +198,7 @@ export default defineComponent({
               )}
             </div>
             <svg class="template-selector__arrow" viewBox="0 0 24 24" fill="none">
-              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" />
             </svg>
           </button>
 
@@ -204,7 +210,7 @@ export default defineComponent({
                   type="button"
                   class={[
                     'template-selector__option',
-                    { 'template-selector__option--selected': template.variant === selectedTemplate.value }
+                    { 'template-selector__option--selected': template.variant === selectedTemplate.value },
                   ]}
                   onClick={() => selectTemplate(template.variant)}
                 >
@@ -244,5 +250,5 @@ export default defineComponent({
         )}
       </div>
     )
-  }
+  },
 })

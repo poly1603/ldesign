@@ -67,8 +67,8 @@ function handleClick() {
         {{ message }}
       </p>
       <div class="greeting-actions">
-        <button 
-          v-if="showButton" 
+        <button
+          v-if="showButton"
           class="greeting-button"
           @click="handleClick"
         >
@@ -154,15 +154,15 @@ export const config: TemplateConfig = {
   description: '一个简单的问候模板，展示基础的模板功能',
   version: '1.0.0',
   author: 'LDesign Team',
-  
+
   // 分类信息
   category: 'greeting',
   device: 'desktop',
   tags: ['问候', '示例', '基础'],
-  
+
   // 预览图片（可选）
   preview: '/previews/greeting/hello-desktop.png',
-  
+
   // 属性定义
   props: {
     title: {
@@ -195,7 +195,7 @@ export const config: TemplateConfig = {
       required: false
     }
   },
-  
+
   // 事件定义
   events: {
     click: {
@@ -206,7 +206,7 @@ export const config: TemplateConfig = {
       payload: 'string'
     }
   },
-  
+
   // 兼容性
   compatibility: {
     vue: '>=3.2.0',
@@ -222,9 +222,9 @@ export const config: TemplateConfig = {
 在你的 Vue 应用中安装插件：
 
 ```typescript
+import TemplatePlugin from '@ldesign/template'
 // main.ts
 import { createApp } from 'vue'
-import TemplatePlugin from '@ldesign/template'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -259,7 +259,7 @@ function onTemplateGreet(message: string) {
 <template>
   <div class="app">
     <h1>LDesign Template 基础示例</h1>
-    
+
     <!-- 使用模板渲染器组件 -->
     <LTemplateRenderer
       category="greeting"
@@ -295,8 +295,8 @@ function onTemplateGreet(message: string) {
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useTemplate } from '@ldesign/template'
+import { ref } from 'vue'
 
 // 使用模板管理 composable
 const {
@@ -328,7 +328,7 @@ function switchMessage() {
     '又一条新消息！',
     'LDesign Template 很棒！'
   ]
-  
+
   const currentIndex = messages.indexOf(templateMessage.value)
   const nextIndex = (currentIndex + 1) % messages.length
   templateMessage.value = messages[nextIndex]
@@ -357,7 +357,7 @@ function onGreet(message: string) {
 <template>
   <div class="app">
     <h1>使用 Composable</h1>
-    
+
     <div class="controls">
       <button @click="loadTemplate">
         加载模板
@@ -369,19 +369,19 @@ function onGreet(message: string) {
         清空模板
       </button>
     </div>
-    
+
     <div class="template-container">
       <div v-if="loading" class="loading">
         正在加载模板...
       </div>
-      
+
       <div v-else-if="error" class="error">
         加载失败: {{ error.message }}
         <button @click="retry">
           重试
         </button>
       </div>
-      
+
       <component
         :is="currentTemplate"
         v-else-if="currentTemplate"
@@ -390,7 +390,7 @@ function onGreet(message: string) {
         :on-click="handleTemplateClick"
         @greet="onGreet"
       />
-      
+
       <div v-else class="empty">
         点击"加载模板"开始
       </div>
@@ -434,7 +434,9 @@ function onGreet(message: string) {
   justify-content: center;
 }
 
-.loading, .error, .empty {
+.loading,
+.error,
+.empty {
   text-align: center;
   color: #666;
   font-size: 1.1rem;
@@ -465,9 +467,9 @@ import { computed, ref } from 'vue'
 const selectedTemplate = ref('')
 
 const templateConfig = computed(() => {
-  if (!selectedTemplate.value) 
+  if (!selectedTemplate.value)
     return null
-  
+
   return {
     category: 'greeting',
     device: 'desktop',
@@ -490,7 +492,7 @@ function updateTemplate() {
 <template>
   <div class="app">
     <h1>使用指令</h1>
-    
+
     <div class="controls">
       <label>
         选择模板:
@@ -500,14 +502,14 @@ function updateTemplate() {
         </select>
       </label>
     </div>
-    
+
     <!-- 使用 v-template 指令 -->
     <div
       v-if="templateConfig"
       v-template="templateConfig"
       class="template-container"
     />
-    
+
     <div v-else class="empty">
       请选择一个模板
     </div>
@@ -588,7 +590,7 @@ function handleLoad(component: any) {
           <p>正在加载问候模板...</p>
         </div>
       </template>
-      
+
       <!-- 自定义错误状态 -->
       <template #error="{ error, retry }">
         <div class="custom-error">
@@ -599,7 +601,7 @@ function handleLoad(component: any) {
           </button>
         </div>
       </template>
-      
+
       <!-- 自定义空状态 -->
       <template #empty>
         <div class="custom-empty">
@@ -628,8 +630,12 @@ function handleLoad(component: any) {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .custom-error {

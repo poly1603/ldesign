@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # 主项目开发环境
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - '3000:3000'
+      - '5173:5173'
+      - '4173:4173'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/*/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_DEV_SERVER_HOST=0.0.0.0
+    command: pnpm dev
+    networks:
+      - ldesign-dev
+    stdin_open: true
+    tty: true
+
+  # 文档开发环境
+  docs:
+    build:
+      context: .
+      dockerfile: docs/Dockerfile
+      target: development
+    ports:
+      - '5174:5173'
+    volumes:
+      - ./docs:/app/docs
+      - ./packages:/app/packages
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: [pnpm, 'docs:dev', --host, 0.0.0.0, --port, '5173']
+    networks:
+      - ldesign-dev
+    stdin_open: true
+    tty: true
+
+  # 测试环境
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+    command: pnpm test
+    networks:
+      - ldesign-dev
+    profiles:
+      - test
+
+  # E2E 测试环境
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+    command: pnpm test:e2e
+    networks:
+      - ldesign-dev
+    profiles:
+      - e2e
+    depends_on:
+      - app
+
+networks:
+  ldesign-dev:
+    driver: bridge

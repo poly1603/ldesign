@@ -1,8 +1,8 @@
 {
-  "name": "@ldesign/{{PACKAGE_NAME}}",
+  "name": "@ldesign/placeholder",
   "type": "module",
   "version": "0.1.0",
-  "description": "{{PACKAGE_DESCRIPTION}}",
+  "description": "Package description",
   "author": "LDesign Team",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
@@ -17,8 +17,7 @@
   "keywords": [
     "ldesign",
     "vue3",
-    "typescript",
-    "{{PACKAGE_NAME}}"
+    "typescript"
   ],
   "sideEffects": false,
   "exports": {

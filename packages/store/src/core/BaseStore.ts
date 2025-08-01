@@ -1,13 +1,13 @@
-import { defineStore } from 'pinia'
 import type { Store, StoreDefinition } from 'pinia'
 import type {
-  StateDefinition,
   ActionDefinition,
+  DecoratorMetadata,
   GetterDefinition,
-  StoreOptions,
   BaseStore as IBaseStore,
-  DecoratorMetadata
+  StateDefinition,
+  StoreOptions,
 } from '@/types'
+import { defineStore } from 'pinia'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 
 /**
@@ -53,16 +53,16 @@ export abstract class BaseStore<
   get $actions(): TActions {
     const actions = {} as TActions
     const metadata = this._getDecoratorMetadata()
-    
+
     metadata
       .filter(meta => meta.type === 'action')
-      .forEach(meta => {
+      .forEach((meta) => {
         const method = (this as any)[meta.key]
         if (typeof method === 'function') {
           actions[meta.key as keyof TActions] = method.bind(this) as any
         }
       })
-    
+
     return actions
   }
 
@@ -72,16 +72,16 @@ export abstract class BaseStore<
   get $getters(): TGetters {
     const getters = {} as TGetters
     const metadata = this._getDecoratorMetadata()
-    
+
     metadata
       .filter(meta => meta.type === 'getter')
-      .forEach(meta => {
+      .forEach((meta) => {
         const getter = (this as any)[meta.key]
         if (typeof getter === 'function') {
           getters[meta.key as keyof TGetters] = getter.bind(this) as any
         }
       })
-    
+
     return getters
   }
 
@@ -91,7 +91,8 @@ export abstract class BaseStore<
   $reset(): void {
     if (this._store && this._initialState) {
       this._store.$patch(this._initialState)
-    } else {
+    }
+    else {
       this._store?.$reset()
     }
   }
@@ -164,22 +165,22 @@ export abstract class BaseStore<
    * 构建状态
    */
   private _buildState(
-    metadata: DecoratorMetadata[], 
-    customState?: () => TState
+    metadata: DecoratorMetadata[],
+    customState?: () => TState,
   ): () => TState {
     return () => {
       const state = customState?.() || {} as TState
-      
+
       // 添加装饰器定义的状态
       metadata
         .filter(meta => meta.type === 'state')
-        .forEach(meta => {
+        .forEach((meta) => {
           const value = (this as any)[meta.key]
           if (value !== undefined) {
             (state as any)[meta.key] = value
           }
         })
-      
+
       return state
     }
   }
@@ -189,13 +190,13 @@ export abstract class BaseStore<
    */
   private _buildActions(
     metadata: DecoratorMetadata[],
-    customActions?: TActions
+    customActions?: TActions,
   ): TActions {
     const actions = { ...customActions } as TActions
 
     metadata
       .filter(meta => meta.type === 'action')
-      .forEach(meta => {
+      .forEach((meta) => {
         const method = (this as any)[meta.key]
         if (typeof method === 'function') {
           // 绑定 this 上下文并包装方法以支持 $onAction
@@ -213,20 +214,20 @@ export abstract class BaseStore<
    * 构建 Getters
    */
   private _buildGetters(
-    metadata: DecoratorMetadata[], 
-    customGetters?: TGetters
+    metadata: DecoratorMetadata[],
+    customGetters?: TGetters,
   ): TGetters {
     const getters = { ...customGetters } as TGetters
-    
+
     metadata
       .filter(meta => meta.type === 'getter')
-      .forEach(meta => {
+      .forEach((meta) => {
         const getter = (this as any)[meta.key]
         if (typeof getter === 'function') {
           getters[meta.key as keyof TGetters] = getter.bind(this) as any
         }
       })
-    
+
     return getters
   }
 

@@ -61,8 +61,8 @@ LDesign 是一个专为现代前端开发而设计的Vue3引擎，它不仅仅�
 
 ```typescript
 import { createEngine } from '@ldesign/engine'
-import { createRouter } from '@ldesign/router'
 import { createHttpClient } from '@ldesign/http'
+import { createRouter } from '@ldesign/router'
 
 // 创建引擎实例
 const engine = createEngine({
@@ -88,16 +88,16 @@ app.mount('#app')
 
 ### 📦 核心包概览
 
-| 包名 | 描述 | 版本 | 状态 |
-|------|------|------|------|
-| [@ldesign/engine](./packages/engine/) | 核心引擎和插件系统 | ![npm](https://img.shields.io/npm/v/@ldesign/engine) | ✅ 稳定 |
-| [@ldesign/router](./packages/router/) | Vue路由增强版 | ![npm](https://img.shields.io/npm/v/@ldesign/router) | ✅ 稳定 |
-| [@ldesign/http](./packages/http/) | HTTP请求库 | ![npm](https://img.shields.io/npm/v/@ldesign/http) | ✅ 稳定 |
-| [@ldesign/crypto](./packages/crypto/) | 加密工具包 | ![npm](https://img.shields.io/npm/v/@ldesign/crypto) | ✅ 稳定 |
-| [@ldesign/device](./packages/device/) | 设备检测和适配 | ![npm](https://img.shields.io/npm/v/@ldesign/device) | ✅ 稳定 |
-| [@ldesign/template](./packages/template/) | 模板管理系统 | ![npm](https://img.shields.io/npm/v/@ldesign/template) | ✅ 稳定 |
-| [@ldesign/color](./packages/color/) | 颜色和主题工具 | ![npm](https://img.shields.io/npm/v/@ldesign/color) | ✅ 稳定 |
-| [@ldesign/i18n](./packages/i18n/) | 国际化解决方案 | ![npm](https://img.shields.io/npm/v/@ldesign/i18n) | ✅ 稳定 |
+| 包名                                      | 描述               | 版本                                                   | 状态    |
+| ----------------------------------------- | ------------------ | ------------------------------------------------------ | ------- |
+| [@ldesign/engine](./packages/engine/)     | 核心引擎和插件系统 | ![npm](https://img.shields.io/npm/v/@ldesign/engine)   | ✅ 稳定 |
+| [@ldesign/router](./packages/router/)     | Vue路由增强版      | ![npm](https://img.shields.io/npm/v/@ldesign/router)   | ✅ 稳定 |
+| [@ldesign/http](./packages/http/)         | HTTP请求库         | ![npm](https://img.shields.io/npm/v/@ldesign/http)     | ✅ 稳定 |
+| [@ldesign/crypto](./packages/crypto/)     | 加密工具包         | ![npm](https://img.shields.io/npm/v/@ldesign/crypto)   | ✅ 稳定 |
+| [@ldesign/device](./packages/device/)     | 设备检测和适配     | ![npm](https://img.shields.io/npm/v/@ldesign/device)   | ✅ 稳定 |
+| [@ldesign/template](./packages/template/) | 模板管理系统       | ![npm](https://img.shields.io/npm/v/@ldesign/template) | ✅ 稳定 |
+| [@ldesign/color](./packages/color/)       | 颜色和主题工具     | ![npm](https://img.shields.io/npm/v/@ldesign/color)    | ✅ 稳定 |
+| [@ldesign/i18n](./packages/i18n/)         | 国际化解决方案     | ![npm](https://img.shields.io/npm/v/@ldesign/i18n)     | ✅ 稳定 |
 
 ### 🌟 特色功能
 
@@ -135,12 +135,6 @@ yarn add @ldesign/engine
 ### 基础使用
 
 ```vue
-<template>
-  <div id="app">
-    <router-view />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { createEngine } from '@ldesign/engine'
 import { createRouter } from '@ldesign/router'
@@ -163,6 +157,12 @@ engine.use(router)
 const app = engine.createApp()
 app.mount('#app')
 </script>
+
+<template>
+  <div id="app">
+    <router-view />
+  </div>
+</template>
 ```
 
 ## 📚 学习资源

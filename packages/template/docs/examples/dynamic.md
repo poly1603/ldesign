@@ -37,8 +37,8 @@ function onThemeLoad(component: any) {
     <div class="theme-switcher">
       <h2>选择主题</h2>
       <div class="theme-options">
-        <button 
-          v-for="theme in themes" 
+        <button
+          v-for="theme in themes"
           :key="theme.name"
           :class="{ active: currentTheme === theme.name }"
           @click="switchTheme(theme.name)"
@@ -47,7 +47,7 @@ function onThemeLoad(component: any) {
         </button>
       </div>
     </div>
-    
+
     <div class="template-container">
       <LTemplateRenderer
         category="layout"
@@ -146,7 +146,7 @@ function onLayoutChange() {
         </option>
       </select>
     </div>
-    
+
     <transition name="layout-fade" mode="out-in">
       <LTemplateRenderer
         :key="currentLayout"
@@ -234,8 +234,8 @@ function getPermissions(role: string) {
     <div class="user-controls">
       <h2>用户角色</h2>
       <div class="role-buttons">
-        <button 
-          v-for="role in roles" 
+        <button
+          v-for="role in roles"
           :key="role.name"
           :class="{ active: currentRole === role.name }"
           @click="switchRole(role.name)"
@@ -244,7 +244,7 @@ function getPermissions(role: string) {
         </button>
       </div>
     </div>
-    
+
     <div class="dashboard-container">
       <LTemplateRenderer
         category="dashboard"
@@ -290,8 +290,8 @@ function getPermissions(role: string) {
 
 ```vue
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { useTemplate } from '@ldesign/template'
+import { computed, ref } from 'vue'
 
 const {
   currentTemplate,
@@ -321,16 +321,16 @@ async function loadRandomTemplate() {
   const randomTemplate = availableTemplates[
     Math.floor(Math.random() * availableTemplates.length)
   ]
-  
+
   const startTime = Date.now()
-  
+
   try {
     const result = await render({
       category: randomTemplate.category,
       device: 'desktop',
       template: randomTemplate.template
     })
-    
+
     loadTime.value = Date.now() - startTime
     fromCache.value = result?.fromCache || false
     currentTemplateName.value = randomTemplate.template
@@ -347,7 +347,7 @@ async function preloadTemplates() {
       device: 'desktop',
       template: t.template
     })))
-    
+
     console.log('模板预加载完成')
   }
   catch (err) {
@@ -378,31 +378,31 @@ function retryLoad() {
         清空模板
       </button>
     </div>
-    
+
     <div v-if="currentTemplate" class="template-info">
       <p>当前模板: {{ currentTemplateName }}</p>
       <p>加载时间: {{ loadTime }}ms</p>
       <p>来自缓存: {{ fromCache ? '是' : '否' }}</p>
     </div>
-    
+
     <div class="template-display">
       <div v-if="loading" class="loading">
         正在加载模板...
       </div>
-      
+
       <div v-else-if="error" class="error">
         加载失败: {{ error.message }}
         <button @click="retryLoad">
           重试
         </button>
       </div>
-      
+
       <component
         :is="currentTemplate"
         v-else-if="currentTemplate"
         v-bind="templateProps"
       />
-      
+
       <div v-else class="empty">
         点击按钮加载模板
       </div>
@@ -457,7 +457,9 @@ function retryLoad() {
   justify-content: center;
 }
 
-.loading, .error, .empty {
+.loading,
+.error,
+.empty {
   text-align: center;
   color: #666;
 }

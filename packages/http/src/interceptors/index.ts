@@ -1,2 +1,2 @@
-export { InterceptorManagerImpl } from './manager'
 export * from './common'
+export { InterceptorManagerImpl } from './manager'

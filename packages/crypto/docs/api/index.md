@@ -149,7 +149,7 @@ const isValid = rsa.verify(data, signature, publicKey, algorithm?)
 ### 编码算法
 
 ```typescript
-import { encoding, base64, hex } from '@ldesign/crypto'
+import { base64, encoding, hex } from '@ldesign/crypto'
 
 // 通用编码接口
 const encoded = encoding.encode(data, type)
@@ -177,33 +177,33 @@ const {
   // AES 加密
   encryptAES,
   decryptAES,
-  
+
   // RSA 加密
   encryptRSA,
   decryptRSA,
   generateRSAKeyPair,
-  
+
   // 编码
   encodeBase64,
   decodeBase64,
   encodeHex,
   decodeHex,
-  
+
   // 密钥生成
   generateKey,
   generateSalt,
   generateIV,
-  
+
   // 状态
   isEncrypting,
   isDecrypting,
   lastError,
   lastResult,
-  
+
   // 操作
   clearError,
   reset,
-  
+
   // 直接访问
   encrypt,
   decrypt,
@@ -224,26 +224,26 @@ const {
   sha256,
   sha384,
   sha512,
-  
+
   // HMAC 算法
   hmacMd5,
   hmacSha1,
   hmacSha256,
   hmacSha384,
   hmacSha512,
-  
+
   // 验证
   verify,
   verifyHmac,
-  
+
   // 批量操作
   hashMultiple,
-  
+
   // 状态
   isHashing,
   lastError,
   lastResult,
-  
+
   // 操作
   clearError,
   reset
@@ -259,13 +259,13 @@ const {
   // 签名操作
   sign,
   verify,
-  
+
   // 状态
   isSigning,
   isVerifying,
   lastError,
   lastResult,
-  
+
   // 操作
   clearError,
   reset
@@ -385,16 +385,19 @@ class EncodingError extends Error {
 try {
   const encrypted = encrypt.aes(data, key)
   const decrypted = decrypt.aes(encrypted, key)
-  
+
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
   }
-} catch (error) {
+}
+catch (error) {
   if (error instanceof EncryptionError) {
     console.error('加密错误:', error.message)
-  } else if (error instanceof DecryptionError) {
+  }
+  else if (error instanceof DecryptionError) {
     console.error('解密错误:', error.message)
-  } else {
+  }
+  else {
     console.error('未知错误:', error.message)
   }
 }

@@ -250,7 +250,7 @@
       <span class="find-tag" onclick="filterByTag('i18n')">国际化</span>
     </div>
   </div>
-  
+
   <div class="find-section">
     <h4>按使用场景查找</h4>
     <div class="find-tags">
@@ -272,46 +272,49 @@
     <pre><code class="language-typescript">import { Engine } from '@ldesign/engine'
 
 const engine = new Engine({
-  debug: true,
-  performance: {
-    monitoring: true,
-    threshold: 100
-  }
+debug: true,
+performance: {
+monitoring: true,
+threshold: 100
+}
 })
 
 engine.start()</code></pre>
+
   </div>
-  
+
   <div class="snippet">
     <h4>配置路由</h4>
     <pre><code class="language-typescript">import { Router } from '@ldesign/router'
 
 const router = new Router({
-  routes: [
-    {
-      path: '/',
-      component: () => import('./Home.vue')
-    },
-    {
-      path: '/about',
-      component: () => import('./About.vue')
-    }
-  ]
+routes: [
+{
+path: '/',
+component: () => import('./Home.vue')
+},
+{
+path: '/about',
+component: () => import('./About.vue')
+}
+]
 })</code></pre>
+
   </div>
-  
+
   <div class="snippet">
     <h4>HTTP请求</h4>
     <pre><code class="language-typescript">import { HttpClient } from '@ldesign/http'
 
 const http = new HttpClient({
-  baseURL: 'https://api.example.com',
-  timeout: 5000
+baseURL: 'https://api.example.com',
+timeout: 5000
 })
 
 const data = await http.get('/users')</code></pre>
+
   </div>
-  
+
   <div class="snippet">
     <h4>数据加密</h4>
     <pre><code class="language-typescript">import { AESCrypto } from '@ldesign/crypto'
@@ -319,6 +322,7 @@ const data = await http.get('/users')</code></pre>
 const crypto = new AESCrypto('your-secret-key')
 const encrypted = crypto.encrypt('sensitive data')
 const decrypted = crypto.decrypt(encrypted)</code></pre>
+
   </div>
 </div>
 
@@ -337,12 +341,13 @@ const decrypted = crypto.decrypt(encrypted)</code></pre>
 }
 
 interface PerformanceConfig {
-  monitoring?: boolean
-  threshold?: number
-  sampling?: number
+monitoring?: boolean
+threshold?: number
+sampling?: number
 }</code></pre>
+
   </div>
-  
+
   <div class="type-section">
     <h4>事件类型</h4>
     <pre><code class="language-typescript">interface EventData {
@@ -354,11 +359,12 @@ interface PerformanceConfig {
 type EventHandler<T = any> = (data: T) => void | Promise<void>
 
 interface EventBusOptions {
-  maxListeners?: number
-  async?: boolean
+maxListeners?: number
+async?: boolean
 }</code></pre>
+
   </div>
-  
+
   <div class="type-section">
     <h4>路由类型</h4>
     <pre><code class="language-typescript">interface RouteConfig {
@@ -370,10 +376,11 @@ interface EventBusOptions {
 }
 
 interface RouteMeta {
-  title?: string
-  requiresAuth?: boolean
-  roles?: string[]
+title?: string
+requiresAuth?: boolean
+roles?: string[]
 }</code></pre>
+
   </div>
 </div>
 
@@ -389,7 +396,7 @@ interface RouteMeta {
       <li><a href="/troubleshooting/">问题排查</a></li>
     </ul>
   </div>
-  
+
   <div class="link-section">
     <h4>社区支持</h4>
     <ul>
@@ -399,7 +406,7 @@ interface RouteMeta {
       <li><a href="/contributing/">贡献指南</a></li>
     </ul>
   </div>
-  
+
   <div class="link-section">
     <h4>工具和扩展</h4>
     <ul>
@@ -685,23 +692,23 @@ interface RouteMeta {
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .api-links {
     flex-direction: column;
   }
-  
+
   .search-container {
     flex-direction: column;
   }
-  
+
   .find-tags {
     flex-direction: column;
   }
-  
+
   .code-snippets {
     grid-template-columns: 1fr;
   }
-  
+
   .related-links {
     grid-template-columns: 1fr;
   }
@@ -712,15 +719,15 @@ interface RouteMeta {
 function searchAPI() {
   const query = document.getElementById('api-search').value
   const results = document.getElementById('search-results')
-  
+
   if (!query.trim()) {
     results.style.display = 'none'
     return
   }
-  
+
   results.style.display = 'block'
   results.innerHTML = '<p>正在搜索...</p>'
-  
+
   // 模拟搜索
   setTimeout(() => {
     results.innerHTML = `

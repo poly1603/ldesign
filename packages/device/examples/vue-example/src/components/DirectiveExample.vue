@@ -1,82 +1,88 @@
+<script setup>
+import { useDevice } from '@ldesign/device/vue'
+
+const { deviceType, deviceInfo, orientation } = useDevice()
+</script>
+
 <template>
   <div class="card">
     <h3>🎯 指令示例</h3>
     <p class="description">
       以下元素会根据当前设备类型自动显示或隐藏，请尝试调整浏览器窗口大小来测试效果。
     </p>
-    
+
     <div class="directive-examples">
       <!-- 基础指令示例 -->
       <div class="example-section">
         <h4>基础指令</h4>
-        
+
         <div v-device="'mobile'" class="device-box mobile">
           <span class="icon">📱</span>
           <span>仅在移动设备显示</span>
         </div>
-        
+
         <div v-device="'tablet'" class="device-box tablet">
           <span class="icon">📟</span>
           <span>仅在平板设备显示</span>
         </div>
-        
+
         <div v-device="'desktop'" class="device-box desktop">
           <span class="icon">🖥️</span>
           <span>仅在桌面设备显示</span>
         </div>
       </div>
-      
+
       <!-- 多设备类型指令 -->
       <div class="example-section">
         <h4>多设备类型</h4>
-        
+
         <div v-device="['mobile', 'tablet']" class="device-box mobile-tablet">
           <span class="icon">📱📟</span>
           <span>在移动设备和平板显示</span>
         </div>
-        
+
         <div v-device="['tablet', 'desktop']" class="device-box tablet-desktop">
           <span class="icon">📟🖥️</span>
           <span>在平板和桌面设备显示</span>
         </div>
       </div>
-      
+
       <!-- 反向指令示例 -->
       <div class="example-section">
         <h4>反向指令</h4>
-        
+
         <div v-device="{ type: 'mobile', inverse: true }" class="device-box inverse">
           <span class="icon">🚫📱</span>
           <span>在非移动设备显示</span>
         </div>
-        
+
         <div v-device="{ type: ['mobile', 'tablet'], inverse: true }" class="device-box inverse">
           <span class="icon">🚫📱📟</span>
           <span>在非移动和非平板设备显示</span>
         </div>
       </div>
-      
+
       <!-- 专用指令示例 -->
       <div class="example-section">
         <h4>专用指令</h4>
-        
+
         <div v-device-mobile class="device-box mobile">
           <span class="icon">📱</span>
           <span>v-device-mobile 指令</span>
         </div>
-        
+
         <div v-device-tablet class="device-box tablet">
           <span class="icon">📟</span>
           <span>v-device-tablet 指令</span>
         </div>
-        
+
         <div v-device-desktop class="device-box desktop">
           <span class="icon">🖥️</span>
           <span>v-device-desktop 指令</span>
         </div>
       </div>
     </div>
-    
+
     <!-- 当前设备信息 -->
     <div class="current-device">
       <h4>当前设备信息</h4>
@@ -94,12 +100,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { useDevice } from '@ldesign/device/vue'
-
-const { deviceType, deviceInfo, orientation } = useDevice()
-</script>
 
 <style scoped>
 .card {
@@ -229,11 +229,11 @@ const { deviceType, deviceInfo, orientation } = useDevice()
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .device-box {
     padding: 12px;
   }
-  
+
   .device-box .icon {
     font-size: 1.3rem;
   }

@@ -311,12 +311,14 @@ class ErrorHandlingStore extends BaseStore {
     try {
       const data = await api.getData(id)
       this.data = data
-    } catch (error) {
+    }
+    catch (error) {
       this.error = this.normalizeError(error)
       // 记录错误日志
       this.logError(error, 'fetchData', { id })
       throw error // 重新抛出，让调用者处理
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -362,7 +364,8 @@ class OptimisticUpdateStore extends BaseStore {
   async toggleTodoOptimistic(id: string) {
     // 立即更新 UI
     const todo = this.todos.find(t => t.id === id)
-    if (!todo) return
+    if (!todo)
+      return
 
     const originalCompleted = todo.completed
     todo.completed = !todo.completed
@@ -370,7 +373,8 @@ class OptimisticUpdateStore extends BaseStore {
     try {
       // 发送到服务器
       await todoApi.update(id, { completed: todo.completed })
-    } catch (error) {
+    }
+    catch (error) {
       // 失败时回滚
       todo.completed = originalCompleted
       throw error
@@ -394,13 +398,14 @@ class OptimisticUpdateStore extends BaseStore {
     try {
       // 发送到服务器
       const savedTodo = await todoApi.create({ text })
-      
+
       // 替换临时项目
       const index = this.todos.findIndex(t => t.id === tempId)
       if (index > -1) {
         this.todos[index] = { ...savedTodo, pending: false }
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 失败时移除临时项目
       const index = this.todos.findIndex(t => t.id === tempId)
       if (index > -1) {
@@ -450,8 +455,8 @@ class BatchOperationStore extends BaseStore {
 
   // ✅ 批量更新
   @Action()
-  updateItemsBatch(updates: Array<{ id: string; changes: Partial<Item> }>) {
-    const updatedItems = this.items.map(item => {
+  updateItemsBatch(updates: Array<{ id: string, changes: Partial<Item> }>) {
+    const updatedItems = this.items.map((item) => {
       const update = updates.find(u => u.id === item.id)
       return update ? { ...item, ...update.changes } : item
     })
@@ -478,7 +483,7 @@ class BatchOperationStore extends BaseStore {
 
 ```typescript
 // stores/__tests__/user.test.ts
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { UserStore } from '../user'
 
 describe('UserStore', () => {
@@ -495,7 +500,7 @@ describe('UserStore', () => {
 
   it('should login user successfully', async () => {
     const mockUser = { id: '1', name: 'Test User', email: 'test@example.com' }
-    
+
     // Mock API
     vi.mocked(userApi.login).mockResolvedValue({ user: mockUser, token: 'token' })
 
@@ -509,7 +514,8 @@ describe('UserStore', () => {
     vi.mocked(userApi.login).mockRejectedValue(new Error('Invalid credentials'))
 
     await expect(store.login({ email: 'test@example.com', password: 'wrong' }))
-      .rejects.toThrow('Invalid credentials')
+      .rejects
+      .toThrow('Invalid credentials')
 
     expect(store.currentUser).toBeNull()
     expect(store.isLoggedIn).toBe(false)
@@ -521,10 +527,10 @@ describe('UserStore', () => {
 
 ```typescript
 // tests/integration/shopping-flow.test.ts
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { CartStore } from '@/stores/cart'
 import { ShoppingStore } from '@/stores/shopping'
 import { UserStore } from '@/stores/user'
-import { CartStore } from '@/stores/cart'
 
 describe('Shopping Flow Integration', () => {
   it('should complete full shopping flow', async () => {
@@ -581,20 +587,20 @@ src/
 ### 2. 导出策略
 
 ```typescript
+export { CartStore } from './modules/cart'
+export { ProductStore } from './modules/products'
 // stores/index.ts
 // 导出 Store 类
 export { UserStore } from './modules/user'
-export { CartStore } from './modules/cart'
-export { ProductStore } from './modules/products'
 
 // 导出 Store 实例（单例模式）
 export const userStore = new UserStore('user')
 export const cartStore = new CartStore('cart')
 export const productStore = new ProductStore('products')
 
-// 导出类型
-export type { User, LoginCredentials } from './types/user'
 export type { CartItem, Product } from './types/cart'
+// 导出类型
+export type { LoginCredentials, User } from './types/user'
 
 // 导出工具函数
 export { createStoreInstance, disposeStore } from './utils/factory'
@@ -640,7 +646,7 @@ class Store extends BaseStore {
 class DebuggableStore extends BaseStore {
   constructor(id: string) {
     super(id)
-    
+
     if (process.env.NODE_ENV === 'development') {
       this.enableDebugMode()
     }
@@ -658,13 +664,13 @@ class DebuggableStore extends BaseStore {
     // 监听 Action 执行
     this.$onAction(({ name, args, after, onError }) => {
       const startTime = Date.now()
-      
+
       console.log(`🚀 Action: ${name}`, args)
-      
+
       after(() => {
         console.log(`✅ Action ${name} completed in ${Date.now() - startTime}ms`)
       })
-      
+
       onError((error) => {
         console.error(`❌ Action ${name} failed:`, error)
       })
@@ -682,7 +688,7 @@ class MonitoredStore extends BaseStore {
   @AsyncAction()
   async performCriticalOperation(data: any) {
     const operationId = generateId()
-    
+
     try {
       this.analytics.trackEvent('critical_operation_start', {
         operationId,
@@ -697,7 +703,8 @@ class MonitoredStore extends BaseStore {
       })
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.analytics.trackEvent('critical_operation_error', {
         operationId,
         error: error.message
@@ -717,7 +724,7 @@ class MonitoredStore extends BaseStore {
 class MigratableStore extends BaseStore {
   private static readonly CURRENT_VERSION = 2
 
-  @PersistentState({ 
+  @PersistentState({
     default: { version: MigratableStore.CURRENT_VERSION },
     beforeLoad: this.migrateData.bind(this)
   })
@@ -733,7 +740,8 @@ class MigratableStore extends BaseStore {
       }
 
       return rawData
-    } catch (error) {
+    }
+    catch (error) {
       console.error('数据迁移失败:', error)
       return JSON.stringify({ version: MigratableStore.CURRENT_VERSION })
     }

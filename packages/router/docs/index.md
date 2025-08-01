@@ -61,8 +61,8 @@ pnpm add @ldesign/router
 ## 简单示例
 
 ```typescript
-import { createApp } from 'vue'
 import { createRouter, createWebHistory } from '@ldesign/router'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 定义路由

@@ -3,14 +3,6 @@
  * 导出所有装饰器相关的功能
  */
 
-// State 装饰器
-export {
-  State,
-  ReactiveState,
-  PersistentState,
-  ReadonlyState,
-} from './State'
-
 // Action 装饰器
 export {
   Action,
@@ -22,20 +14,28 @@ export {
 
 // Getter 装饰器
 export {
-  Getter,
   CachedGetter,
   DependentGetter,
+  Getter,
   MemoizedGetter,
 } from './Getter'
 
+// State 装饰器
+export {
+  PersistentState,
+  ReactiveState,
+  ReadonlyState,
+  State,
+} from './State'
+
 // 类型定义
 export type {
-  StateDecoratorOptions,
   ActionDecoratorOptions,
-  GetterDecoratorOptions,
-  DecoratorType,
   Constructor,
   DecoratorFactory,
+  DecoratorType,
+  GetterDecoratorOptions,
+  StateDecoratorOptions,
 } from '@/types/decorators'
 
 // 常量

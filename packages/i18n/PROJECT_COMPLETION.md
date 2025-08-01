@@ -9,12 +9,14 @@
 ### 1. 启动示例项目 ✅
 
 #### Vanilla JavaScript 示例
+
 - ✅ 创建了完整的开发服务器配置 (`examples/vanilla/`)
 - ✅ 配置了 Vite 开发服务器
 - ✅ 提供了 `package.json` 和 `vite.config.js`
 - ✅ 创建了详细的使用示例和演示页面
 
 **启动命令：**
+
 ```bash
 cd examples/vanilla
 pnpm install
@@ -22,12 +24,14 @@ pnpm dev  # 启动在 http://localhost:3000
 ```
 
 #### Vue 3 示例
+
 - ✅ 创建了完整的 Vue 3 项目配置 (`examples/vue/`)
 - ✅ 配置了 TypeScript 支持
 - ✅ 提供了 `package.json`、`vite.config.ts`、`tsconfig.json`
 - ✅ 创建了完整的 Vue 组件示例
 
 **启动命令：**
+
 ```bash
 cd examples/vue
 pnpm install
@@ -35,6 +39,7 @@ pnpm dev  # 启动在 http://localhost:3001
 ```
 
 #### 示例功能展示
+
 - ✅ 基础翻译功能
 - ✅ 字符串插值
 - ✅ 复数处理
@@ -47,12 +52,14 @@ pnpm dev  # 启动在 http://localhost:3001
 ### 2. 创建 VitePress 文档 ✅
 
 #### 文档系统配置
+
 - ✅ 在 `docs/` 目录创建了完整的 VitePress 文档系统
 - ✅ 配置了 `.vitepress/config.ts` 配置文件
 - ✅ 设置了导航菜单和侧边栏结构
 - ✅ 配置了搜索、编辑链接等功能
 
 #### 文档内容
+
 - ✅ **首页** (`docs/index.md`)：功能特性展示和快速开始
 - ✅ **快速开始指南** (`docs/guide/getting-started.md`)：详细的入门教程
 - ✅ **Vue 3 集成指南** (`docs/guide/vue-integration.md`)：完整的 Vue 集成文档
@@ -60,6 +67,7 @@ pnpm dev  # 启动在 http://localhost:3001
 - ✅ **示例文档** (`docs/examples/vanilla.md`)：实用的示例代码
 
 #### 文档特性
+
 - ✅ 响应式设计，支持移动端
 - ✅ 代码高亮和语法提示
 - ✅ 搜索功能
@@ -67,6 +75,7 @@ pnpm dev  # 启动在 http://localhost:3001
 - ✅ GitHub 集成
 
 **启动文档：**
+
 ```bash
 pnpm docs:dev  # 启动文档开发服务器
 pnpm docs:build  # 构建文档
@@ -75,6 +84,7 @@ pnpm docs:build  # 构建文档
 ### 3. 优化构建配置 ✅
 
 #### 多格式输出
+
 - ✅ **ESM 格式** → `es/` 目录
   - `es/index.js` - 主入口
   - `es/vue.js` - Vue 集成
@@ -88,12 +98,14 @@ pnpm docs:build  # 构建文档
   - `dist/vue.min.js` - Vue 压缩版本
 
 #### 类型定义文件
+
 - ✅ **主要类型定义** → `types/` 目录
   - `types/index.d.ts` - 核心类型
   - `types/vue.d.ts` - Vue 类型
 - ✅ **向后兼容** → `dist/` 目录也包含类型定义
 
 #### package.json 优化
+
 - ✅ 更新了 `exports` 字段支持多种导入方式：
   ```json
   {
@@ -115,6 +127,7 @@ pnpm docs:build  # 构建文档
 - ✅ 更新了 `main`、`module`、`types`、`browser` 字段
 
 #### 构建特性
+
 - ✅ TypeScript 编译和类型检查
 - ✅ 代码压缩和优化
 - ✅ Source Map 生成
@@ -150,11 +163,13 @@ packages/i18n/
 ## 📦 使用方式
 
 ### 安装
+
 ```bash
 pnpm add @ldesign/i18n
 ```
 
 ### 基础使用
+
 ```typescript
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 
@@ -163,10 +178,11 @@ const i18n = await createI18nWithBuiltinLocales({
   fallbackLocale: 'en'
 })
 
-console.log(i18n.t('common.ok'))  // "OK"
+console.log(i18n.t('common.ok')) // "OK"
 ```
 
 ### Vue 3 集成
+
 ```typescript
 import { createI18n } from '@ldesign/i18n/vue'
 
@@ -175,6 +191,7 @@ app.use(vueI18nPlugin)
 ```
 
 ### 不同格式导入
+
 ```typescript
 // ESM
 import { I18n } from '@ldesign/i18n'

@@ -1,5 +1,5 @@
-import { ref, computed, type Ref } from 'vue'
 import type { HashAlgorithm, HashOptions } from '../../types'
+import { computed, ref, type Ref } from 'vue'
 import { hash, hmac } from '../../core'
 
 /**
@@ -22,35 +22,35 @@ export interface HashActions {
   sha256: (data: string, options?: HashOptions) => Promise<string>
   sha384: (data: string, options?: HashOptions) => Promise<string>
   sha512: (data: string, options?: HashOptions) => Promise<string>
-  
+
   // 通用哈希函数
   hashData: (data: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string>
-  
+
   // 哈希验证
   verify: (data: string, expectedHash: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<boolean>
-  
+
   // HMAC 函数
   hmacMd5: (data: string, key: string, options?: HashOptions) => Promise<string>
   hmacSha1: (data: string, key: string, options?: HashOptions) => Promise<string>
   hmacSha256: (data: string, key: string, options?: HashOptions) => Promise<string>
   hmacSha384: (data: string, key: string, options?: HashOptions) => Promise<string>
   hmacSha512: (data: string, key: string, options?: HashOptions) => Promise<string>
-  
+
   // 通用 HMAC 函数
   hmacData: (data: string, key: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string>
-  
+
   // HMAC 验证
   verifyHmac: (data: string, key: string, expectedHmac: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<boolean>
-  
+
   // 批量哈希
   hashMultiple: (dataList: string[], algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string[]>
-  
+
   // 文件哈希（模拟）
   hashFile: (fileContent: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string>
-  
+
   // 清除错误
   clearError: () => void
-  
+
   // 重置状态
   reset: () => void
 }
@@ -62,7 +62,7 @@ export interface UseHashReturn extends HashState, HashActions {
   // 便捷访问
   hash: typeof hash
   hmac: typeof hmac
-  
+
   // 计算属性
   isLoading: Ref<boolean>
 }
@@ -96,9 +96,11 @@ export function useHash(): UseHashReturn {
         lastHash.value = result
       }
       return result
-    } catch (error) {
+    }
+    catch (error) {
       handleError(error)
-    } finally {
+    }
+    finally {
       isHashing.value = false
     }
   }
@@ -137,7 +139,7 @@ export function useHash(): UseHashReturn {
   const hashData = async (
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.hash(data, algorithm, options))
   }
@@ -147,7 +149,7 @@ export function useHash(): UseHashReturn {
     data: string,
     expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<boolean> => {
     return wrapAsync(() => hash.verify(data, expectedHash, algorithm, options))
   }
@@ -182,7 +184,7 @@ export function useHash(): UseHashReturn {
     data: string,
     key: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.hmac(data, key, algorithm, options))
   }
@@ -193,7 +195,7 @@ export function useHash(): UseHashReturn {
     key: string,
     expectedHmac: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<boolean> => {
     return wrapAsync(() => hmac.verify(data, key, expectedHmac, algorithm, options))
   }
@@ -202,7 +204,7 @@ export function useHash(): UseHashReturn {
   const hashMultiple = async (
     dataList: string[],
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string[]> => {
     return wrapAsync(() => {
       return dataList.map(data => hash.hash(data, algorithm, options))
@@ -213,7 +215,7 @@ export function useHash(): UseHashReturn {
   const hashFile = async (
     fileContent: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.hash(fileContent, algorithm, options))
   }
@@ -236,7 +238,7 @@ export function useHash(): UseHashReturn {
     lastError,
     lastHash,
     isLoading,
-    
+
     // 基础哈希函数
     md5,
     sha1,
@@ -246,7 +248,7 @@ export function useHash(): UseHashReturn {
     sha512,
     hashData,
     verify,
-    
+
     // HMAC 函数
     hmacMd5,
     hmacSha1,
@@ -255,15 +257,15 @@ export function useHash(): UseHashReturn {
     hmacSha512,
     hmacData,
     verifyHmac,
-    
+
     // 高级功能
     hashMultiple,
     hashFile,
-    
+
     // 工具函数
     clearError,
     reset,
-    
+
     // 便捷访问
     hash,
     hmac,

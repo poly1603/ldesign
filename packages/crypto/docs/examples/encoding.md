@@ -7,12 +7,12 @@
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>📝 Base64 编码演示</h3>
-    
+
     <div class="form-group">
       <label>要编码的数据:</label>
       <textarea id="base64-data" placeholder="输入要编码的数据">Hello, Base64 Encoding! 你好，Base64编码！</textarea>
     </div>
-    
+
     <div class="form-row">
       <div class="form-group">
         <label>编码类型:</label>
@@ -22,13 +22,13 @@
         </select>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button id="base64-encode-btn" class="btn primary">📝 Base64 编码</button>
       <button id="base64-decode-btn" class="btn secondary">🔓 Base64 解码</button>
       <button id="base64-clear-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="base64-encoded-result" class="result-box" style="display: none;">
       <h4>📝 Base64 编码结果</h4>
       <div class="result-item">
@@ -40,7 +40,7 @@
         <div id="base64-encode-info" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="base64-decoded-result" class="result-box success" style="display: none;">
       <h4>🔓 Base64 解码结果</h4>
       <div class="result-item">
@@ -48,20 +48,21 @@
         <div id="base64-decoded-data" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="base64-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔢 Hex 编码演示</h3>
-    
+
     <div class="form-group">
       <label>要编码的数据:</label>
       <textarea id="hex-data" placeholder="输入要编码的数据">Hello, Hex Encoding! 你好，十六进制编码！</textarea>
     </div>
-    
+
     <div class="form-row">
       <div class="form-group">
         <label>输出格式:</label>
@@ -70,7 +71,7 @@
           <option value="uppercase">大写 (A-F)</option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label>分隔符:</label>
         <select id="hex-separator">
@@ -81,13 +82,13 @@
         </select>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button id="hex-encode-btn" class="btn primary">🔢 Hex 编码</button>
       <button id="hex-decode-btn" class="btn secondary">🔓 Hex 解码</button>
       <button id="hex-clear-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="hex-encoded-result" class="result-box" style="display: none;">
       <h4>🔢 Hex 编码结果</h4>
       <div class="result-item">
@@ -99,7 +100,7 @@
         <div id="hex-encode-info" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="hex-decoded-result" class="result-box success" style="display: none;">
       <h4>🔓 Hex 解码结果</h4>
       <div class="result-item">
@@ -107,20 +108,21 @@
         <div id="hex-decoded-data" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="hex-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
 <div class="crypto-demo">
   <div class="demo-section">
     <h3>🔄 编码转换演示</h3>
-    
+
     <div class="form-group">
       <label>输入数据:</label>
       <textarea id="convert-input" placeholder="输入要转换的数据">Hello, Encoding Conversion!</textarea>
     </div>
-    
+
     <div class="form-row">
       <div class="form-group">
         <label>输入格式:</label>
@@ -131,7 +133,7 @@
           <option value="binary">二进制</option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label>输出格式:</label>
         <select id="convert-to">
@@ -142,12 +144,12 @@
         </select>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button id="convert-btn" class="btn primary">🔄 转换</button>
       <button id="convert-clear-btn" class="btn">🗑️ 清除</button>
     </div>
-    
+
     <div id="convert-result" class="result-box" style="display: none;">
       <h4>🔄 转换结果</h4>
       <div class="result-item">
@@ -159,8 +161,9 @@
         <div id="convert-info" class="result-value"></div>
       </div>
     </div>
-    
+
     <div id="convert-error" class="result-box error" style="display: none;"></div>
+
   </div>
 </div>
 
@@ -169,7 +172,7 @@
 ### Base64 编码
 
 ```typescript
-import { encrypt, decrypt } from '@ldesign/crypto'
+import { decrypt, encrypt } from '@ldesign/crypto'
 
 // 基本 Base64 编码
 const data = 'Hello, Base64!'
@@ -239,49 +242,9 @@ console.log('Hex 解码:', hexDecoded)
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <h2>编码演示</h2>
-    
-    <div>
-      <textarea v-model="inputData" placeholder="输入要编码的数据"></textarea>
-      
-      <div>
-        <label>编码类型:</label>
-        <select v-model="encodingType">
-          <option value="base64">Base64</option>
-          <option value="hex">Hex</option>
-          <option value="base64url">URL 安全 Base64</option>
-        </select>
-      </div>
-      
-      <button @click="encode" :disabled="isEncoding">
-        {{ isEncoding ? '编码中...' : '编码' }}
-      </button>
-      <button @click="decode" :disabled="isDecoding || !encodedResult">
-        {{ isDecoding ? '解码中...' : '解码' }}
-      </button>
-    </div>
-    
-    <div v-if="encodedResult">
-      <h3>编码结果</h3>
-      <pre>{{ encodedResult }}</pre>
-    </div>
-    
-    <div v-if="decodedResult">
-      <h3>解码结果</h3>
-      <p>{{ decodedResult }}</p>
-    </div>
-    
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const {
   encodeBase64,
@@ -299,7 +262,7 @@ const encodedResult = ref('')
 const decodedResult = ref('')
 const error = computed(() => lastError.value)
 
-const encode = async () => {
+async function encode() {
   try {
     switch (encodingType.value) {
       case 'base64':
@@ -313,12 +276,13 @@ const encode = async () => {
         break
     }
     decodedResult.value = ''
-  } catch (err) {
+  }
+  catch (err) {
     console.error('编码失败:', err)
   }
 }
 
-const decode = async () => {
+async function decode() {
   try {
     switch (encodingType.value) {
       case 'base64':
@@ -331,11 +295,58 @@ const decode = async () => {
         decodedResult.value = await decodeBase64Url(encodedResult.value)
         break
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('解码失败:', err)
   }
 }
 </script>
+
+<template>
+  <div>
+    <h2>编码演示</h2>
+
+    <div>
+      <textarea v-model="inputData" placeholder="输入要编码的数据" />
+
+      <div>
+        <label>编码类型:</label>
+        <select v-model="encodingType">
+          <option value="base64">
+            Base64
+          </option>
+          <option value="hex">
+            Hex
+          </option>
+          <option value="base64url">
+            URL 安全 Base64
+          </option>
+        </select>
+      </div>
+
+      <button :disabled="isEncoding" @click="encode">
+        {{ isEncoding ? '编码中...' : '编码' }}
+      </button>
+      <button :disabled="isDecoding || !encodedResult" @click="decode">
+        {{ isDecoding ? '解码中...' : '解码' }}
+      </button>
+    </div>
+
+    <div v-if="encodedResult">
+      <h3>编码结果</h3>
+      <pre>{{ encodedResult }}</pre>
+    </div>
+
+    <div v-if="decodedResult">
+      <h3>解码结果</h3>
+      <p>{{ decodedResult }}</p>
+    </div>
+
+    <div v-if="error" class="error">
+      错误: {{ error }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 实际应用场景
@@ -350,36 +361,37 @@ class DataTransferEncoder {
     const jsonString = JSON.stringify(data)
     return encrypt.base64(jsonString)
   }
-  
+
   // 解码 API 响应数据
   static decodeApiResponse(encodedData: string): any {
     try {
       const jsonString = decrypt.base64(encodedData)
       return JSON.parse(jsonString)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('API 响应解码失败')
     }
   }
-  
+
   // 编码文件数据
   static encodeFileData(fileBuffer: ArrayBuffer): string {
     const uint8Array = new Uint8Array(fileBuffer)
     const binaryString = Array.from(uint8Array)
       .map(byte => String.fromCharCode(byte))
       .join('')
-    
+
     return encrypt.base64(binaryString)
   }
-  
+
   // 解码文件数据
   static decodeFileData(encodedData: string): ArrayBuffer {
     const binaryString = decrypt.base64(encodedData)
     const uint8Array = new Uint8Array(binaryString.length)
-    
+
     for (let i = 0; i < binaryString.length; i++) {
       uint8Array[i] = binaryString.charCodeAt(i)
     }
-    
+
     return uint8Array.buffer
   }
 }
@@ -400,32 +412,33 @@ class URLParameterEncoder {
     const jsonString = JSON.stringify(data)
     return encrypt.base64Url(jsonString)
   }
-  
+
   // 解码 URL 参数
   static decodeUrlParam(encodedParam: string): any {
     try {
       const jsonString = decrypt.base64Url(encodedParam)
       return JSON.parse(jsonString)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('URL 参数解码失败')
     }
   }
-  
+
   // 构建带编码参数的 URL
   static buildUrlWithParams(baseUrl: string, params: Record<string, any>): string {
     const encodedParams = this.encodeUrlParam(params)
     return `${baseUrl}?data=${encodedParams}`
   }
-  
+
   // 从 URL 解析参数
   static parseUrlParams(url: string): Record<string, any> {
     const urlObj = new URL(url)
     const encodedData = urlObj.searchParams.get('data')
-    
+
     if (!encodedData) {
       return {}
     }
-    
+
     return this.decodeUrlParam(encodedData)
   }
 }
@@ -450,18 +463,19 @@ console.log('解析的参数:', parsedParams)
 // 配置文件编码存储
 class ConfigEncoder {
   private static readonly CONFIG_KEY = 'app-config'
-  
+
   // 编码并存储配置
   static saveConfig(config: any): void {
     try {
       const configJson = JSON.stringify(config, null, 2)
       const encodedConfig = encrypt.base64(configJson)
       localStorage.setItem(this.CONFIG_KEY, encodedConfig)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('配置保存失败')
     }
   }
-  
+
   // 读取并解码配置
   static loadConfig(): any {
     try {
@@ -469,32 +483,34 @@ class ConfigEncoder {
       if (!encodedConfig) {
         return null
       }
-      
+
       const configJson = decrypt.base64(encodedConfig)
       return JSON.parse(configJson)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('配置读取失败:', error)
       return null
     }
   }
-  
+
   // 导出配置（用于备份）
   static exportConfig(): string {
     const config = this.loadConfig()
     if (!config) {
       throw new Error('没有可导出的配置')
     }
-    
+
     return encrypt.base64(JSON.stringify(config))
   }
-  
+
   // 导入配置（从备份恢复）
   static importConfig(encodedConfig: string): void {
     try {
       const configJson = decrypt.base64(encodedConfig)
       const config = JSON.parse(configJson)
       this.saveConfig(config)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('配置导入失败')
     }
   }
@@ -531,21 +547,22 @@ class QRCodeDataEncoder {
       timestamp: Date.now(),
       version: '1.0'
     }
-    
+
     const jsonString = JSON.stringify(qrData)
     return encrypt.base64Url(jsonString)
   }
-  
+
   // 解码二维码数据
   static decodeQRData(encodedData: string): any {
     try {
       const jsonString = decrypt.base64Url(encodedData)
       return JSON.parse(jsonString)
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('二维码数据解码失败')
     }
   }
-  
+
   // 生成 WiFi 二维码数据
   static generateWiFiQR(ssid: string, password: string, security: string = 'WPA'): string {
     return this.encodeQRData({
@@ -558,7 +575,7 @@ class QRCodeDataEncoder {
       }
     })
   }
-  
+
   // 生成联系人二维码数据
   static generateContactQR(contact: {
     name: string
@@ -590,33 +607,33 @@ console.log('联系人二维码数据:', contactQR)
 
 ### 特性对比
 
-| 编码格式 | 输出长度 | URL 安全 | 可读性 | 用途 |
-|----------|----------|----------|--------|------|
-| Base64 | +33% | 否 | 中等 | 通用数据传输 |
-| Base64 URL | +33% | 是 | 中等 | URL 参数 |
-| Hex | +100% | 是 | 高 | 调试、显示 |
-| Binary | 原始 | 否 | 低 | 内部处理 |
+| 编码格式   | 输出长度 | URL 安全 | 可读性 | 用途         |
+| ---------- | -------- | -------- | ------ | ------------ |
+| Base64     | +33%     | 否       | 中等   | 通用数据传输 |
+| Base64 URL | +33%     | 是       | 中等   | URL 参数     |
+| Hex        | +100%    | 是       | 高     | 调试、显示   |
+| Binary     | 原始     | 否       | 低     | 内部处理     |
 
 ### 性能对比
 
 ```typescript
 // 编码性能测试
-const performanceTest = () => {
+function performanceTest() {
   const testData = 'A'.repeat(10000) // 10KB 数据
   const iterations = 1000
-  
+
   console.time('Base64 编码')
   for (let i = 0; i < iterations; i++) {
     encrypt.base64(testData)
   }
   console.timeEnd('Base64 编码')
-  
+
   console.time('Hex 编码')
   for (let i = 0; i < iterations; i++) {
     encrypt.hex(testData)
   }
   console.timeEnd('Hex 编码')
-  
+
   console.time('Base64 URL 编码')
   for (let i = 0; i < iterations; i++) {
     encrypt.base64Url(testData)
@@ -633,7 +650,7 @@ performanceTest()
 
 ```typescript
 // 根据用途选择编码格式
-const chooseEncoding = (purpose: string, data: string) => {
+function chooseEncoding(purpose: string, data: string) {
   switch (purpose) {
     case 'url-param':
       return encrypt.base64Url(data) // URL 安全
@@ -653,7 +670,7 @@ const chooseEncoding = (purpose: string, data: string) => {
 
 ```typescript
 // 安全的编码解码
-const safeEncode = (data: string, type: 'base64' | 'hex' | 'base64url') => {
+function safeEncode(data: string, type: 'base64' | 'hex' | 'base64url') {
   try {
     switch (type) {
       case 'base64': return encrypt.base64(data)
@@ -661,13 +678,14 @@ const safeEncode = (data: string, type: 'base64' | 'hex' | 'base64url') => {
       case 'base64url': return encrypt.base64Url(data)
       default: throw new Error('不支持的编码类型')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('编码失败:', error)
     return null
   }
 }
 
-const safeDecode = (encodedData: string, type: 'base64' | 'hex' | 'base64url') => {
+function safeDecode(encodedData: string, type: 'base64' | 'hex' | 'base64url') {
   try {
     switch (type) {
       case 'base64': return decrypt.base64(encodedData)
@@ -675,7 +693,8 @@ const safeDecode = (encodedData: string, type: 'base64' | 'hex' | 'base64url') =
       case 'base64url': return decrypt.base64Url(encodedData)
       default: throw new Error('不支持的解码类型')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解码失败:', error)
     return null
   }

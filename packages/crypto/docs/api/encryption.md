@@ -13,14 +13,17 @@ encrypt.aes(data: string, key: string, options?: AESOptions): EncryptResult
 ```
 
 **参数：**
+
 - `data` (string): 要加密的数据
 - `key` (string): 加密密钥
 - `options` (AESOptions, 可选): 加密选项
 
 **返回值：**
+
 - `EncryptResult`: 加密结果对象
 
 **示例：**
+
 ```typescript
 import { encrypt } from '@ldesign/crypto'
 
@@ -47,6 +50,7 @@ encrypt.aes128(data: string, key: string, options?: AESOptions): EncryptResult
 ```
 
 **示例：**
+
 ```typescript
 const encrypted = encrypt.aes128('Hello, World!', 'my-key')
 ```
@@ -76,11 +80,13 @@ encrypt.rsa(data: string, publicKey: string, options?: RSAOptions): EncryptResul
 ```
 
 **参数：**
+
 - `data` (string): 要加密的数据
 - `publicKey` (string): RSA 公钥
 - `options` (RSAOptions, 可选): 加密选项
 
 **示例：**
+
 ```typescript
 import { encrypt, rsa } from '@ldesign/crypto'
 
@@ -100,12 +106,15 @@ encrypt.base64(data: string): string
 ```
 
 **参数：**
+
 - `data` (string): 要编码的数据
 
 **返回值：**
+
 - `string`: Base64 编码后的字符串
 
 **示例：**
+
 ```typescript
 const encoded = encrypt.base64('Hello, Base64!')
 // 输出: "SGVsbG8sIEJhc2U2NCE="
@@ -120,6 +129,7 @@ encrypt.base64Url(data: string): string
 ```
 
 **示例：**
+
 ```typescript
 const encoded = encrypt.base64Url('Hello, URL-safe Base64!')
 ```
@@ -133,6 +143,7 @@ encrypt.hex(data: string): string
 ```
 
 **示例：**
+
 ```typescript
 const encoded = encrypt.hex('Hello, Hex!')
 // 输出: "48656c6c6f2c20486578210"
@@ -146,12 +157,12 @@ const encoded = encrypt.hex('Hello, Hex!')
 
 ```typescript
 interface EncryptResult {
-  data: string          // 加密后的数据
-  algorithm: string     // 使用的算法
-  iv?: string          // 初始化向量（如果适用）
-  keySize?: number     // 密钥长度
-  mode?: string        // 加密模式
-  timestamp?: number   // 加密时间戳
+  data: string // 加密后的数据
+  algorithm: string // 使用的算法
+  iv?: string // 初始化向量（如果适用）
+  keySize?: number // 密钥长度
+  mode?: string // 加密模式
+  timestamp?: number // 加密时间戳
 }
 ```
 
@@ -161,11 +172,11 @@ AES 加密选项。
 
 ```typescript
 interface AESOptions {
-  keySize?: 128 | 192 | 256    // 密钥长度，默认 256
-  mode?: AESMode               // 加密模式，默认 'CBC'
-  iv?: string                  // 自定义初始化向量
-  padding?: string             // 填充方式，默认 'Pkcs7'
-  encoding?: EncodingType      // 输出编码，默认 'hex'
+  keySize?: 128 | 192 | 256 // 密钥长度，默认 256
+  mode?: AESMode // 加密模式，默认 'CBC'
+  iv?: string // 自定义初始化向量
+  padding?: string // 填充方式，默认 'Pkcs7'
+  encoding?: EncodingType // 输出编码，默认 'hex'
 }
 ```
 
@@ -183,10 +194,10 @@ RSA 加密选项。
 
 ```typescript
 interface RSAOptions {
-  keyFormat?: 'pem' | 'der'    // 密钥格式，默认 'pem'
-  padding?: string             // 填充方式，默认 'OAEP'
-  hashAlgorithm?: string       // 哈希算法，默认 'SHA256'
-  encoding?: EncodingType      // 输出编码，默认 'hex'
+  keyFormat?: 'pem' | 'der' // 密钥格式，默认 'pem'
+  padding?: string // 填充方式，默认 'OAEP'
+  hashAlgorithm?: string // 哈希算法，默认 'SHA256'
+  encoding?: EncodingType // 输出编码，默认 'hex'
 }
 ```
 
@@ -211,10 +222,12 @@ class EncryptionError extends Error {
 ```
 
 **错误处理示例：**
+
 ```typescript
 try {
   const encrypted = encrypt.aes('data', 'key')
-} catch (error) {
+}
+catch (error) {
   if (error instanceof EncryptionError) {
     console.error('加密错误:', error.message)
     console.error('算法:', error.algorithm)
@@ -240,7 +253,7 @@ const encrypted = encrypt.aes('data', 'key', {
 ### 批量加密
 
 ```typescript
-const batchEncrypt = (dataList: string[], key: string) => {
+function batchEncrypt(dataList: string[], key: string) {
   return dataList.map(data => encrypt.aes(data, key))
 }
 
@@ -254,16 +267,16 @@ const encryptedList = batchEncrypt(dataList, 'my-key')
 class StreamEncryptor {
   private key: string
   private options: AESOptions
-  
+
   constructor(key: string, options: AESOptions = {}) {
     this.key = key
     this.options = options
   }
-  
+
   encryptChunk(chunk: string): EncryptResult {
     return encrypt.aes(chunk, this.key, this.options)
   }
-  
+
   encryptStream(chunks: string[]): EncryptResult[] {
     return chunks.map(chunk => this.encryptChunk(chunk))
   }
@@ -278,14 +291,14 @@ const encryptedChunks = encryptor.encryptStream(chunks)
 
 ### 算法性能对比
 
-| 算法 | 相对速度 | 安全性 | 推荐用途 |
-|------|----------|--------|----------|
-| AES-128 | 最快 | 高 | 一般用途 |
-| AES-192 | 中等 | 很高 | 敏感数据 |
-| AES-256 | 较慢 | 最高 | 高度敏感数据 |
-| RSA-1024 | 很慢 | 低 | 不推荐 |
-| RSA-2048 | 慢 | 高 | 推荐 |
-| RSA-4096 | 最慢 | 最高 | 高安全要求 |
+| 算法     | 相对速度 | 安全性 | 推荐用途     |
+| -------- | -------- | ------ | ------------ |
+| AES-128  | 最快     | 高     | 一般用途     |
+| AES-192  | 中等     | 很高   | 敏感数据     |
+| AES-256  | 较慢     | 最高   | 高度敏感数据 |
+| RSA-1024 | 很慢     | 低     | 不推荐       |
+| RSA-2048 | 慢       | 高     | 推荐         |
+| RSA-4096 | 最慢     | 最高   | 高安全要求   |
 
 ### 性能优化建议
 
@@ -298,15 +311,15 @@ const encryptedChunks = encryptor.encryptStream(chunks)
 
 ```typescript
 // 大数据加密的内存优化
-const encryptLargeData = (data: string, key: string, chunkSize = 64 * 1024) => {
+function encryptLargeData(data: string, key: string, chunkSize = 64 * 1024) {
   const chunks = []
-  
+
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.slice(i, i + chunkSize)
     const encrypted = encrypt.aes(chunk, key)
     chunks.push(encrypted)
   }
-  
+
   return chunks
 }
 ```

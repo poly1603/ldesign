@@ -1,11 +1,9 @@
-import type { Engine } from '../types'
-
 // 缓存策略枚举
 export enum CacheStrategy {
   LRU = 'lru',
   LFU = 'lfu',
   FIFO = 'fifo',
-  TTL = 'ttl'
+  TTL = 'ttl',
 }
 
 // 缓存项接口
@@ -40,18 +38,18 @@ export interface CacheStats {
 
 // 缓存管理器接口
 export interface CacheManager {
-  get<T = any>(key: string): T | undefined
-  set<T = any>(key: string, value: T, ttl?: number): void
-  has(key: string): boolean
-  delete(key: string): boolean
-  clear(): void
-  size(): number
-  keys(): string[]
-  values(): any[]
-  entries(): [string, any][]
-  getStats(): CacheStats
-  resetStats(): void
-  namespace(name: string): CacheManager
+  get: <T = any>(key: string) => T | undefined
+  set: <T = any>(key: string, value: T, ttl?: number) => void
+  has: (key: string) => boolean
+  delete: (key: string) => boolean
+  clear: () => void
+  size: () => number
+  keys: () => string[]
+  values: () => any[]
+  entries: () => [string, any][]
+  getStats: () => CacheStats
+  resetStats: () => void
+  namespace: (name: string) => CacheManager
 }
 
 // LRU缓存实现
@@ -69,7 +67,7 @@ class LRUCache<T = any> {
       deletes: 0,
       evictions: 0,
       size: 0,
-      hitRate: 0
+      hitRate: 0,
     }
   }
 
@@ -93,11 +91,11 @@ class LRUCache<T = any> {
     // 更新访问信息
     item.lastAccessed = Date.now()
     item.accessCount++
-    
+
     // 移到最后（最近使用）
     this.cache.delete(key)
     this.cache.set(key, item)
-    
+
     this.stats.hits++
     this.updateHitRate()
     return item.value
@@ -121,7 +119,7 @@ class LRUCache<T = any> {
       timestamp: Date.now(),
       ttl,
       accessCount: 0,
-      lastAccessed: Date.now()
+      lastAccessed: Date.now(),
     }
 
     this.cache.set(key, item)
@@ -131,8 +129,9 @@ class LRUCache<T = any> {
 
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item) return false
-    
+    if (!item)
+      return false
+
     // 检查TTL
     if (item.ttl && Date.now() - item.timestamp > item.ttl) {
       this.cache.delete(key)
@@ -140,7 +139,7 @@ class LRUCache<T = any> {
       this.stats.size = this.cache.size
       return false
     }
-    
+
     return true
   }
 
@@ -186,7 +185,7 @@ class LRUCache<T = any> {
       deletes: 0,
       evictions: 0,
       size: this.cache.size,
-      hitRate: 0
+      hitRate: 0,
     }
   }
 
@@ -209,9 +208,9 @@ export class CacheManagerImpl implements CacheManager {
       strategy: CacheStrategy.LRU,
       enableStats: true,
       onEvict: () => {},
-      ...config
+      ...config,
     }
-    
+
     this.cache = new LRUCache(this.config.maxSize)
   }
 
@@ -276,7 +275,7 @@ export class CacheManagerImpl implements CacheManager {
 class NamespacedCacheManager implements CacheManager {
   constructor(
     private parent: CacheManager,
-    private namespace: string
+    private namespace: string,
   ) {}
 
   private getKey(key: string): string {
@@ -353,7 +352,7 @@ export function getGlobalCacheManager(): CacheManager {
     globalCacheManager = createCacheManager({
       maxSize: 1000,
       defaultTTL: 30 * 60 * 1000, // 30分钟
-      enableStats: true
+      enableStats: true,
     })
   }
   return globalCacheManager

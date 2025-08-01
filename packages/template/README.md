@@ -35,9 +35,9 @@ yarn add @ldesign/template
 ### 1. 插件方式 (推荐)
 
 ```typescript
+import TemplatePlugin from '@ldesign/template'
 // main.ts
 import { createApp } from 'vue'
-import TemplatePlugin from '@ldesign/template'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -257,8 +257,8 @@ export default defineComponent({
 ## 🔧 高级配置
 
 ```typescript
-import { createApp } from 'vue'
 import TemplatePlugin from '@ldesign/template'
+import { createApp } from 'vue'
 
 const app = createApp(App)
 

@@ -27,8 +27,8 @@ function createApp(
 ### 示例
 
 ```typescript
-import App from './App.vue'
 import { createApp, presets } from '@ldesign/engine'
+import App from './App.vue'
 
 // 基本用法
 const engine = createApp(App)
@@ -69,8 +69,8 @@ function createEngine(options?: EngineOptions): Engine
 ### 示例
 
 ```typescript
-import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 创建引擎
@@ -108,13 +108,13 @@ interface Engine {
   errors: ErrorManager
   logger: Logger
   notifications: NotificationManager
-  
+
   // 扩展接口
   router?: RouterExtension
   store?: StoreExtension
   i18n?: I18nExtension
   theme?: ThemeExtension
-  
+
   // 配置
   config: EngineConfig
 }
@@ -131,9 +131,11 @@ install(app: App): void
 ```
 
 **参数:**
+
 - `app`: Vue应用实例
 
 **示例:**
+
 ```typescript
 const app = createApp(App)
 engine.install(app)
@@ -148,12 +150,15 @@ createApp(rootComponent: Component): App
 ```
 
 **参数:**
+
 - `rootComponent`: Vue根组件
 
 **返回值:**
+
 - Vue应用实例
 
 **示例:**
+
 ```typescript
 const app = engine.createApp(App)
 app.mount('#app')
@@ -168,9 +173,11 @@ use(plugin: Plugin): Promise<void>
 ```
 
 **参数:**
+
 - `plugin`: 插件实例
 
 **示例:**
+
 ```typescript
 await engine.use(myPlugin)
 ```
@@ -184,9 +191,11 @@ mount(container: string | Element): void
 ```
 
 **参数:**
+
 - `container`: DOM选择器字符串或DOM元素
 
 **示例:**
+
 ```typescript
 engine.mount('#app')
 engine.mount(document.getElementById('app'))
@@ -201,6 +210,7 @@ unmount(): void
 ```
 
 **示例:**
+
 ```typescript
 engine.unmount()
 ```
@@ -232,11 +242,11 @@ interface EngineOptions {
 
 ```typescript
 interface EngineConfig {
-  debug?: boolean          // 调试模式
-  appName?: string         // 应用名称
-  version?: string         // 应用版本
-  env?: string            // 环境标识
-  [key: string]: any      // 自定义配置
+  debug?: boolean // 调试模式
+  appName?: string // 应用名称
+  version?: string // 应用版本
+  env?: string // 环境标识
+  [key: string]: any // 自定义配置
 }
 ```
 
@@ -245,7 +255,7 @@ interface EngineConfig {
 插件列表。
 
 ```typescript
-type Plugin = {
+interface Plugin {
   name: string
   version?: string
   dependencies?: string[]
@@ -259,7 +269,7 @@ type Plugin = {
 中间件列表。
 
 ```typescript
-type Middleware = {
+interface Middleware {
   name: string
   handler: (context: MiddlewareContext, next: () => Promise<void>) => Promise<void>
 }
@@ -271,9 +281,9 @@ type Middleware = {
 
 ```typescript
 interface LoggerOptions {
-  level?: LogLevel                    // 日志级别
-  formatter?: LogFormatter           // 格式化器
-  transports?: LogTransport[]        // 输出目标
+  level?: LogLevel // 日志级别
+  formatter?: LogFormatter // 格式化器
+  transports?: LogTransport[] // 输出目标
 }
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
@@ -286,9 +296,9 @@ type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 ```typescript
 interface StateOptions {
   persistence?: {
-    keys?: string[]                   // 需要持久化的状态键
+    keys?: string[] // 需要持久化的状态键
     adapter?: StorageAdapter | string // 存储适配器
-    prefix?: string                   // 存储键前缀
+    prefix?: string // 存储键前缀
   }
   modules?: Record<string, StateModule> // 状态模块
 }
@@ -300,10 +310,10 @@ interface StateOptions {
 
 ```typescript
 interface NotificationOptions {
-  position?: NotificationPosition     // 默认位置
-  duration?: number                   // 默认显示时长
-  maxNotifications?: number          // 最大通知数量
-  theme?: NotificationTheme          // 主题样式
+  position?: NotificationPosition // 默认位置
+  duration?: number // 默认显示时长
+  maxNotifications?: number // 最大通知数量
+  theme?: NotificationTheme // 主题样式
 }
 ```
 
@@ -320,6 +330,7 @@ function development(): EngineOptions
 ```
 
 **包含的功能:**
+
 - 调试模式开启
 - 详细日志记录
 - 性能监控中间件
@@ -327,6 +338,7 @@ function development(): EngineOptions
 - 开发工具集成
 
 **示例:**
+
 ```typescript
 const engine = createApp(App, {
   ...presets.development(),
@@ -345,12 +357,14 @@ function production(): EngineOptions
 ```
 
 **包含的功能:**
+
 - 性能优化
 - 错误收集和上报
 - 日志级别限制
 - 安全中间件
 
 **示例:**
+
 ```typescript
 const engine = createApp(App, {
   ...presets.production(),
@@ -370,11 +384,13 @@ function minimal(): EngineOptions
 ```
 
 **包含的功能:**
+
 - 基础插件管理
 - 基础事件系统
 - 基础状态管理
 
 **示例:**
+
 ```typescript
 const engine = createEngine(presets.minimal())
 ```
@@ -395,6 +411,7 @@ const creators = {
 ```
 
 **示例:**
+
 ```typescript
 import { creators } from '@ldesign/engine'
 
@@ -424,6 +441,7 @@ const utils = {
 ```
 
 **示例:**
+
 ```typescript
 import { utils } from '@ldesign/engine'
 
@@ -457,6 +475,7 @@ const ENGINE_EVENTS = {
 ```
 
 **示例:**
+
 ```typescript
 import { ENGINE_EVENTS } from '@ldesign/engine'
 
@@ -474,6 +493,7 @@ const VERSION: string
 ```
 
 **示例:**
+
 ```typescript
 import { VERSION } from '@ldesign/engine'
 

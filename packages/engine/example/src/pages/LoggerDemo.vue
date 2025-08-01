@@ -1,3 +1,380 @@
+<script setup lang="ts">
+import type { Engine } from '@ldesign/engine'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+
+const engine = inject<Engine>('engine')!
+
+// 响应式数据
+const newLog = ref({
+  level: 'info' as 'debug' | 'info' | 'warn' | 'error',
+  message: '',
+  data: '',
+})
+
+const currentLevel = ref('debug')
+const maxLogs = ref(1000)
+const searchQuery = ref('')
+const realTimeMode = ref(true)
+const autoScroll = ref(true)
+const showTimestamp = ref(true)
+const updateFrequency = ref(1000)
+const pageSize = ref(100)
+const currentPage = ref(1)
+const clearLevel = ref('debug')
+const retentionDays = ref(7)
+
+const logLevels = ['debug', 'info', 'warn', 'error']
+const levelFilters = ref({
+  debug: true,
+  info: true,
+  warn: true,
+  error: true,
+})
+
+const timeRange = ref({
+  start: '',
+  end: '',
+})
+
+const logContainer = ref<HTMLElement>()
+const updateInterval = ref<number>()
+
+// 计算属性
+const totalLogs = computed(() => engine.logger.getLogs().length)
+
+const filteredLogs = computed(() => {
+  let logs = engine.logger.getLogs()
+
+  // 级别过滤
+  logs = logs.filter(log => levelFilters.value[log.level as keyof typeof levelFilters.value])
+
+  // 搜索过滤
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    logs = logs.filter(log =>
+      log.message.toLowerCase().includes(query)
+      || (log.data && JSON.stringify(log.data).toLowerCase().includes(query)),
+    )
+  }
+
+  // 时间范围过滤
+  if (timeRange.value.start) {
+    const startTime = new Date(timeRange.value.start).getTime()
+    logs = logs.filter(log => log.timestamp >= startTime)
+  }
+
+  if (timeRange.value.end) {
+    const endTime = new Date(timeRange.value.end).getTime()
+    logs = logs.filter(log => log.timestamp <= endTime)
+  }
+
+  return logs.reverse() // 最新的在前面
+})
+
+const totalPages = computed(() => {
+  if (pageSize.value === -1)
+    return 1
+  return Math.ceil(filteredLogs.value.length / pageSize.value)
+})
+
+const paginatedLogs = computed(() => {
+  if (pageSize.value === -1)
+    return filteredLogs.value
+
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredLogs.value.slice(start, end)
+})
+
+const logStats = computed(() => {
+  const stats = { debug: 0, info: 0, warn: 0, error: 0 }
+  engine.logger.getLogs().forEach((log) => {
+    if (stats.hasOwnProperty(log.level)) {
+      stats[log.level as keyof typeof stats]++
+    }
+  })
+  return stats
+})
+
+const memoryUsage = computed(() => {
+  const logs = engine.logger.getLogs()
+  const size = JSON.stringify(logs).length
+  return `${(size / 1024).toFixed(1)} KB`
+})
+
+// 方法
+function addLog() {
+  if (!newLog.value.message.trim()) {
+    engine.notifications.show({
+      type: 'error',
+      title: '记录失败',
+      message: '请输入日志消息',
+    })
+    return
+  }
+
+  try {
+    let data: any
+    if (newLog.value.data.trim()) {
+      data = JSON.parse(newLog.value.data)
+    }
+
+    engine.logger[newLog.value.level](newLog.value.message, data)
+
+    // 重置表单
+    newLog.value.message = ''
+    newLog.value.data = ''
+
+    engine.notifications.show({
+      type: 'success',
+      title: '记录成功',
+      message: `${newLog.value.level.toUpperCase()} 日志已记录`,
+    })
+  }
+  catch (error) {
+    engine.notifications.show({
+      type: 'error',
+      title: '记录失败',
+      message: `数据格式错误: ${error}`,
+    })
+  }
+}
+
+function addBatchLogs() {
+  const messages = [
+    { level: 'debug', message: '调试信息：用户登录流程开始', data: { userId: 123, ip: '192.168.1.1' } },
+    { level: 'info', message: '用户登录成功', data: { userId: 123, username: 'testuser' } },
+    { level: 'warn', message: '检测到异常登录尝试', data: { ip: '192.168.1.100', attempts: 3 } },
+    { level: 'error', message: '数据库连接失败', data: { error: 'Connection timeout', retries: 3 } },
+    { level: 'info', message: '系统性能监控报告', data: { cpu: '45%', memory: '67%', disk: '23%' } },
+    { level: 'debug', message: 'API请求处理', data: { endpoint: '/api/users', method: 'GET', duration: 120 } },
+    { level: 'warn', message: '缓存命中率较低', data: { hitRate: 0.65, threshold: 0.8 } },
+    { level: 'error', message: '支付处理失败', data: { orderId: 'ORD-001', amount: 99.99, reason: 'Card declined' } },
+  ]
+
+  messages.forEach((msg, index) => {
+    setTimeout(() => {
+      engine.logger[msg.level as keyof typeof engine.logger](msg.message, msg.data)
+    }, index * 200)
+  })
+
+  engine.notifications.show({
+    type: 'info',
+    title: '批量测试',
+    message: `正在生成 ${messages.length} 条测试日志`,
+  })
+}
+
+function updateLogLevel() {
+  engine.logger.setLevel(currentLevel.value as any)
+  engine.notifications.show({
+    type: 'info',
+    title: '级别更新',
+    message: `日志级别已设置为 ${currentLevel.value.toUpperCase()}`,
+  })
+}
+
+function updateMaxLogs() {
+  engine.logger.setMaxLogs(maxLogs.value)
+  engine.notifications.show({
+    type: 'info',
+    title: '配置更新',
+    message: `最大日志数量已设置为 ${maxLogs.value}`,
+  })
+}
+
+function clearFilters() {
+  searchQuery.value = ''
+  levelFilters.value = {
+    debug: true,
+    info: true,
+    warn: true,
+    error: true,
+  }
+  timeRange.value = {
+    start: '',
+    end: '',
+  }
+  currentPage.value = 1
+}
+
+function clearAllLogs() {
+  engine.logger.clear()
+  currentPage.value = 1
+
+  engine.notifications.show({
+    type: 'warning',
+    title: '日志清空',
+    message: '所有日志已清空',
+  })
+}
+
+function clearByLevel() {
+  const logs = engine.logger.getLogs()
+  const filteredLogs = logs.filter(log => log.level !== clearLevel.value)
+
+  engine.logger.clear()
+  filteredLogs.forEach((log) => {
+    engine.logger[log.level as keyof typeof engine.logger](log.message, ...log.data)
+  })
+
+  engine.notifications.show({
+    type: 'warning',
+    title: '按级别清空',
+    message: `${clearLevel.value.toUpperCase()} 级别的日志已清空`,
+  })
+}
+
+function clearOldLogs() {
+  const cutoffTime = Date.now() - (retentionDays.value * 24 * 60 * 60 * 1000)
+  const logs = engine.logger.getLogs()
+  const recentLogs = logs.filter(log => log.timestamp >= cutoffTime)
+
+  const removedCount = logs.length - recentLogs.length
+
+  engine.logger.clear()
+  recentLogs.forEach((log) => {
+    engine.logger[log.level as keyof typeof engine.logger](log.message, ...log.data)
+  })
+
+  engine.notifications.show({
+    type: 'info',
+    title: '清理完成',
+    message: `已清理 ${removedCount} 条旧日志`,
+  })
+}
+
+function refreshLogs() {
+  // 强制重新计算
+  currentPage.value = 1
+
+  engine.notifications.show({
+    type: 'info',
+    title: '刷新完成',
+    message: '日志列表已刷新',
+  })
+}
+
+function exportLogs() {
+  const data = {
+    logs: engine.logger.getLogs(),
+    stats: logStats.value,
+    config: {
+      level: currentLevel.value,
+      maxLogs: maxLogs.value,
+    },
+    exportTime: Date.now(),
+  }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `logs-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+
+  engine.notifications.show({
+    type: 'success',
+    title: '导出成功',
+    message: '日志已导出到文件',
+  })
+}
+
+function exportFilteredLogs() {
+  const data = {
+    logs: filteredLogs.value,
+    filters: {
+      search: searchQuery.value,
+      levels: levelFilters.value,
+      timeRange: timeRange.value,
+    },
+    exportTime: Date.now(),
+  }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `filtered-logs-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+
+  engine.notifications.show({
+    type: 'success',
+    title: '导出成功',
+    message: '过滤后的日志已导出',
+  })
+}
+
+function formatTimestamp(timestamp: number) {
+  return new Date(timestamp).toLocaleString()
+}
+
+function formatLogData(data: any) {
+  if (typeof data === 'object') {
+    return JSON.stringify(data, null, 2)
+  }
+  return String(data)
+}
+
+function getBarHeight(count: number) {
+  const maxCount = Math.max(...Object.values(logStats.value))
+  return maxCount > 0 ? (count / maxCount) * 100 : 0
+}
+
+// 监听自动滚动
+watch([paginatedLogs, autoScroll], () => {
+  if (autoScroll.value) {
+    nextTick(() => {
+      if (logContainer.value) {
+        logContainer.value.scrollTop = logContainer.value.scrollHeight
+      }
+    })
+  }
+}, { deep: true })
+
+// 监听实时模式
+watch(realTimeMode, (enabled) => {
+  if (enabled) {
+    updateInterval.value = setInterval(() => {
+      // 触发重新计算
+      if (autoScroll.value && logContainer.value) {
+        logContainer.value.scrollTop = logContainer.value.scrollHeight
+      }
+    }, updateFrequency.value)
+  }
+  else {
+    if (updateInterval.value) {
+      clearInterval(updateInterval.value)
+    }
+  }
+})
+
+onMounted(() => {
+  // 初始化配置
+  currentLevel.value = engine.logger.getLevel()
+  maxLogs.value = engine.logger.getMaxLogs()
+
+  // 启动实时监控
+  if (realTimeMode.value) {
+    updateInterval.value = setInterval(() => {
+      if (autoScroll.value && logContainer.value) {
+        logContainer.value.scrollTop = logContainer.value.scrollHeight
+      }
+    }, updateFrequency.value)
+  }
+
+  engine.logger.info('日志系统演示页面已加载')
+})
+
+onUnmounted(() => {
+  if (updateInterval.value) {
+    clearInterval(updateInterval.value)
+  }
+})
+</script>
+
 <template>
   <div class="logger-demo">
     <div class="demo-header">
@@ -12,17 +389,25 @@
         <div class="form-group">
           <label>日志级别:</label>
           <select v-model="newLog.level" class="form-select">
-            <option value="debug">Debug</option>
-            <option value="info">Info</option>
-            <option value="warn">Warn</option>
-            <option value="error">Error</option>
+            <option value="debug">
+              Debug
+            </option>
+            <option value="info">
+              Info
+            </option>
+            <option value="warn">
+              Warn
+            </option>
+            <option value="error">
+              Error
+            </option>
           </select>
         </div>
         <div class="form-group">
           <label>日志消息:</label>
-          <input 
-            v-model="newLog.message" 
-            type="text" 
+          <input
+            v-model="newLog.message"
+            type="text"
             placeholder="输入日志消息"
             class="form-input"
             @keyup.enter="addLog"
@@ -30,18 +415,18 @@
         </div>
         <div class="form-group">
           <label>附加数据 (可选):</label>
-          <textarea 
-            v-model="newLog.data" 
+          <textarea
+            v-model="newLog.data"
             class="form-textarea"
             placeholder="JSON格式的附加数据"
             rows="3"
-          ></textarea>
+          />
         </div>
         <div class="button-group">
-          <button @click="addLog" class="btn btn-primary">
+          <button class="btn btn-primary" @click="addLog">
             记录日志
           </button>
-          <button @click="addBatchLogs" class="btn btn-secondary">
+          <button class="btn btn-secondary" @click="addBatchLogs">
             批量测试日志
           </button>
         </div>
@@ -52,19 +437,27 @@
         <h3>⚙️ 日志配置</h3>
         <div class="form-group">
           <label>当前日志级别:</label>
-          <select v-model="currentLevel" @change="updateLogLevel" class="form-select">
-            <option value="debug">Debug (显示所有)</option>
-            <option value="info">Info (隐藏Debug)</option>
-            <option value="warn">Warn (只显示警告和错误)</option>
-            <option value="error">Error (只显示错误)</option>
+          <select v-model="currentLevel" class="form-select" @change="updateLogLevel">
+            <option value="debug">
+              Debug (显示所有)
+            </option>
+            <option value="info">
+              Info (隐藏Debug)
+            </option>
+            <option value="warn">
+              Warn (只显示警告和错误)
+            </option>
+            <option value="error">
+              Error (只显示错误)
+            </option>
           </select>
         </div>
         <div class="form-group">
           <label>最大日志数量:</label>
-          <input 
-            v-model.number="maxLogs" 
-            type="number" 
-            min="10" 
+          <input
+            v-model.number="maxLogs"
+            type="number"
+            min="10"
             max="10000"
             class="form-input"
             @change="updateMaxLogs"
@@ -91,9 +484,9 @@
         <h3>🔍 过滤和搜索</h3>
         <div class="form-group">
           <label>搜索关键词:</label>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
+          <input
+            v-model="searchQuery"
+            type="text"
             placeholder="搜索日志内容"
             class="form-input"
           >
@@ -102,8 +495,8 @@
           <label>级别过滤:</label>
           <div class="level-filters">
             <label v-for="level in logLevels" :key="level" class="checkbox-label">
-              <input 
-                v-model="levelFilters[level]" 
+              <input
+                v-model="levelFilters[level]"
                 type="checkbox"
               >
               <span class="level-badge" :class="`level-${level}`">{{ level.toUpperCase() }}</span>
@@ -113,24 +506,24 @@
         <div class="form-group">
           <label>时间范围:</label>
           <div class="time-range">
-            <input 
-              v-model="timeRange.start" 
-              type="datetime-local" 
+            <input
+              v-model="timeRange.start"
+              type="datetime-local"
               class="form-input"
             >
             <span>到</span>
-            <input 
-              v-model="timeRange.end" 
-              type="datetime-local" 
+            <input
+              v-model="timeRange.end"
+              type="datetime-local"
               class="form-input"
             >
           </div>
         </div>
         <div class="button-group">
-          <button @click="clearFilters" class="btn btn-secondary">
+          <button class="btn btn-secondary" @click="clearFilters">
             清除过滤
           </button>
-          <button @click="exportFilteredLogs" class="btn btn-info">
+          <button class="btn btn-info" @click="exportFilteredLogs">
             导出过滤结果
           </button>
         </div>
@@ -140,20 +533,26 @@
       <div class="demo-card">
         <h3>📊 日志统计</h3>
         <div class="stats-grid">
-          <div class="stat-item" v-for="(count, level) in logStats" :key="level">
-            <div class="stat-value" :class="`level-${level}`">{{ count }}</div>
-            <div class="stat-label">{{ level.toUpperCase() }}</div>
+          <div v-for="(count, level) in logStats" :key="level" class="stat-item">
+            <div class="stat-value" :class="`level-${level}`">
+              {{ count }}
+            </div>
+            <div class="stat-label">
+              {{ level.toUpperCase() }}
+            </div>
           </div>
         </div>
         <div class="chart-container">
-          <div class="chart-title">日志级别分布</div>
+          <div class="chart-title">
+            日志级别分布
+          </div>
           <div class="chart-bars">
-            <div 
-              v-for="(count, level) in logStats" 
+            <div
+              v-for="(count, level) in logStats"
               :key="level"
               class="chart-bar"
               :class="`level-${level}`"
-              :style="{ height: getBarHeight(count) + '%' }"
+              :style="{ height: `${getBarHeight(count)}%` }"
               :title="`${level}: ${count} 条`"
             >
               <span class="bar-label">{{ count }}</span>
@@ -167,31 +566,39 @@
         <h3>🗂️ 日志管理</h3>
         <div class="management-section">
           <div class="button-group">
-            <button @click="clearAllLogs" class="btn btn-danger">
+            <button class="btn btn-danger" @click="clearAllLogs">
               清空所有日志
             </button>
-            <button @click="clearByLevel" class="btn btn-warning">
+            <button class="btn btn-warning" @click="clearByLevel">
               按级别清空
             </button>
-            <button @click="clearOldLogs" class="btn btn-secondary">
+            <button class="btn btn-secondary" @click="clearOldLogs">
               清空旧日志
             </button>
           </div>
           <div class="form-group">
             <label>清空级别:</label>
             <select v-model="clearLevel" class="form-select">
-              <option value="debug">Debug</option>
-              <option value="info">Info</option>
-              <option value="warn">Warn</option>
-              <option value="error">Error</option>
+              <option value="debug">
+                Debug
+              </option>
+              <option value="info">
+                Info
+              </option>
+              <option value="warn">
+                Warn
+              </option>
+              <option value="error">
+                Error
+              </option>
             </select>
           </div>
           <div class="form-group">
             <label>保留天数:</label>
-            <input 
-              v-model.number="retentionDays" 
-              type="number" 
-              min="1" 
+            <input
+              v-model.number="retentionDays"
+              type="number"
+              min="1"
               max="365"
               class="form-input"
             >
@@ -235,47 +642,55 @@
         <h3>📋 日志列表</h3>
         <div class="log-controls">
           <div class="control-group">
-            <button @click="refreshLogs" class="btn btn-primary">
+            <button class="btn btn-primary" @click="refreshLogs">
               刷新日志
             </button>
-            <button @click="exportLogs" class="btn btn-success">
+            <button class="btn btn-success" @click="exportLogs">
               导出日志
             </button>
             <select v-model="pageSize" class="form-select">
-              <option value="50">显示 50 条</option>
-              <option value="100">显示 100 条</option>
-              <option value="200">显示 200 条</option>
-              <option value="-1">显示全部</option>
+              <option value="50">
+                显示 50 条
+              </option>
+              <option value="100">
+                显示 100 条
+              </option>
+              <option value="200">
+                显示 200 条
+              </option>
+              <option value="-1">
+                显示全部
+              </option>
             </select>
           </div>
-          <div class="pagination" v-if="pageSize !== -1">
-            <button 
-              @click="currentPage--" 
+          <div v-if="pageSize !== -1" class="pagination">
+            <button
               :disabled="currentPage <= 1"
               class="btn btn-sm btn-secondary"
+              @click="currentPage--"
             >
               上一页
             </button>
             <span class="page-info">
               第 {{ currentPage }} 页，共 {{ totalPages }} 页
             </span>
-            <button 
-              @click="currentPage++" 
+            <button
               :disabled="currentPage >= totalPages"
               class="btn btn-sm btn-secondary"
+              @click="currentPage++"
             >
               下一页
             </button>
           </div>
         </div>
-        
-        <div 
-          ref="logContainer" 
+
+        <div
+          ref="logContainer"
           class="log-display"
           :class="{ 'auto-scroll': autoScroll }"
         >
-          <div 
-            v-for="(log, index) in paginatedLogs" 
+          <div
+            v-for="(log, index) in paginatedLogs"
             :key="index"
             class="log-entry"
             :class="`log-${log.level}`"
@@ -290,8 +705,8 @@
               <span class="log-message">{{ log.message }}</span>
             </div>
             <div v-if="log.data && log.data.length > 0" class="log-data">
-              <div 
-                v-for="(item, dataIndex) in log.data" 
+              <div
+                v-for="(item, dataIndex) in log.data"
                 :key="dataIndex"
                 class="log-data-item"
               >
@@ -307,380 +722,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, inject, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import type { Engine } from '@ldesign/engine'
-
-const engine = inject<Engine>('engine')!
-
-// 响应式数据
-const newLog = ref({
-  level: 'info' as 'debug' | 'info' | 'warn' | 'error',
-  message: '',
-  data: ''
-})
-
-const currentLevel = ref('debug')
-const maxLogs = ref(1000)
-const searchQuery = ref('')
-const realTimeMode = ref(true)
-const autoScroll = ref(true)
-const showTimestamp = ref(true)
-const updateFrequency = ref(1000)
-const pageSize = ref(100)
-const currentPage = ref(1)
-const clearLevel = ref('debug')
-const retentionDays = ref(7)
-
-const logLevels = ['debug', 'info', 'warn', 'error']
-const levelFilters = ref({
-  debug: true,
-  info: true,
-  warn: true,
-  error: true
-})
-
-const timeRange = ref({
-  start: '',
-  end: ''
-})
-
-const logContainer = ref<HTMLElement>()
-const updateInterval = ref<number>()
-
-// 计算属性
-const totalLogs = computed(() => engine.logger.getLogs().length)
-
-const filteredLogs = computed(() => {
-  let logs = engine.logger.getLogs()
-  
-  // 级别过滤
-  logs = logs.filter(log => levelFilters.value[log.level as keyof typeof levelFilters.value])
-  
-  // 搜索过滤
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    logs = logs.filter(log => 
-      log.message.toLowerCase().includes(query) ||
-      (log.data && JSON.stringify(log.data).toLowerCase().includes(query))
-    )
-  }
-  
-  // 时间范围过滤
-  if (timeRange.value.start) {
-    const startTime = new Date(timeRange.value.start).getTime()
-    logs = logs.filter(log => log.timestamp >= startTime)
-  }
-  
-  if (timeRange.value.end) {
-    const endTime = new Date(timeRange.value.end).getTime()
-    logs = logs.filter(log => log.timestamp <= endTime)
-  }
-  
-  return logs.reverse() // 最新的在前面
-})
-
-const totalPages = computed(() => {
-  if (pageSize.value === -1) return 1
-  return Math.ceil(filteredLogs.value.length / pageSize.value)
-})
-
-const paginatedLogs = computed(() => {
-  if (pageSize.value === -1) return filteredLogs.value
-  
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-  return filteredLogs.value.slice(start, end)
-})
-
-const logStats = computed(() => {
-  const stats = { debug: 0, info: 0, warn: 0, error: 0 }
-  engine.logger.getLogs().forEach(log => {
-    if (stats.hasOwnProperty(log.level)) {
-      stats[log.level as keyof typeof stats]++
-    }
-  })
-  return stats
-})
-
-const memoryUsage = computed(() => {
-  const logs = engine.logger.getLogs()
-  const size = JSON.stringify(logs).length
-  return `${(size / 1024).toFixed(1)} KB`
-})
-
-// 方法
-const addLog = () => {
-  if (!newLog.value.message.trim()) {
-    engine.notifications.show({
-      type: 'error',
-      title: '记录失败',
-      message: '请输入日志消息'
-    })
-    return
-  }
-  
-  try {
-    let data: any = undefined
-    if (newLog.value.data.trim()) {
-      data = JSON.parse(newLog.value.data)
-    }
-    
-    engine.logger[newLog.value.level](newLog.value.message, data)
-    
-    // 重置表单
-    newLog.value.message = ''
-    newLog.value.data = ''
-    
-    engine.notifications.show({
-      type: 'success',
-      title: '记录成功',
-      message: `${newLog.value.level.toUpperCase()} 日志已记录`
-    })
-    
-  } catch (error) {
-    engine.notifications.show({
-      type: 'error',
-      title: '记录失败',
-      message: `数据格式错误: ${error}`
-    })
-  }
-}
-
-const addBatchLogs = () => {
-  const messages = [
-    { level: 'debug', message: '调试信息：用户登录流程开始', data: { userId: 123, ip: '192.168.1.1' } },
-    { level: 'info', message: '用户登录成功', data: { userId: 123, username: 'testuser' } },
-    { level: 'warn', message: '检测到异常登录尝试', data: { ip: '192.168.1.100', attempts: 3 } },
-    { level: 'error', message: '数据库连接失败', data: { error: 'Connection timeout', retries: 3 } },
-    { level: 'info', message: '系统性能监控报告', data: { cpu: '45%', memory: '67%', disk: '23%' } },
-    { level: 'debug', message: 'API请求处理', data: { endpoint: '/api/users', method: 'GET', duration: 120 } },
-    { level: 'warn', message: '缓存命中率较低', data: { hitRate: 0.65, threshold: 0.8 } },
-    { level: 'error', message: '支付处理失败', data: { orderId: 'ORD-001', amount: 99.99, reason: 'Card declined' } }
-  ]
-  
-  messages.forEach((msg, index) => {
-    setTimeout(() => {
-      engine.logger[msg.level as keyof typeof engine.logger](msg.message, msg.data)
-    }, index * 200)
-  })
-  
-  engine.notifications.show({
-    type: 'info',
-    title: '批量测试',
-    message: `正在生成 ${messages.length} 条测试日志`
-  })
-}
-
-const updateLogLevel = () => {
-  engine.logger.setLevel(currentLevel.value as any)
-  engine.notifications.show({
-    type: 'info',
-    title: '级别更新',
-    message: `日志级别已设置为 ${currentLevel.value.toUpperCase()}`
-  })
-}
-
-const updateMaxLogs = () => {
-  engine.logger.setMaxLogs(maxLogs.value)
-  engine.notifications.show({
-    type: 'info',
-    title: '配置更新',
-    message: `最大日志数量已设置为 ${maxLogs.value}`
-  })
-}
-
-const clearFilters = () => {
-  searchQuery.value = ''
-  levelFilters.value = {
-    debug: true,
-    info: true,
-    warn: true,
-    error: true
-  }
-  timeRange.value = {
-    start: '',
-    end: ''
-  }
-  currentPage.value = 1
-}
-
-const clearAllLogs = () => {
-  engine.logger.clear()
-  currentPage.value = 1
-  
-  engine.notifications.show({
-    type: 'warning',
-    title: '日志清空',
-    message: '所有日志已清空'
-  })
-}
-
-const clearByLevel = () => {
-  const logs = engine.logger.getLogs()
-  const filteredLogs = logs.filter(log => log.level !== clearLevel.value)
-  
-  engine.logger.clear()
-  filteredLogs.forEach(log => {
-    engine.logger[log.level as keyof typeof engine.logger](log.message, ...log.data)
-  })
-  
-  engine.notifications.show({
-    type: 'warning',
-    title: '按级别清空',
-    message: `${clearLevel.value.toUpperCase()} 级别的日志已清空`
-  })
-}
-
-const clearOldLogs = () => {
-  const cutoffTime = Date.now() - (retentionDays.value * 24 * 60 * 60 * 1000)
-  const logs = engine.logger.getLogs()
-  const recentLogs = logs.filter(log => log.timestamp >= cutoffTime)
-  
-  const removedCount = logs.length - recentLogs.length
-  
-  engine.logger.clear()
-  recentLogs.forEach(log => {
-    engine.logger[log.level as keyof typeof engine.logger](log.message, ...log.data)
-  })
-  
-  engine.notifications.show({
-    type: 'info',
-    title: '清理完成',
-    message: `已清理 ${removedCount} 条旧日志`
-  })
-}
-
-const refreshLogs = () => {
-  // 强制重新计算
-  currentPage.value = 1
-  
-  engine.notifications.show({
-    type: 'info',
-    title: '刷新完成',
-    message: '日志列表已刷新'
-  })
-}
-
-const exportLogs = () => {
-  const data = {
-    logs: engine.logger.getLogs(),
-    stats: logStats.value,
-    config: {
-      level: currentLevel.value,
-      maxLogs: maxLogs.value
-    },
-    exportTime: Date.now()
-  }
-  
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `logs-${Date.now()}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-  
-  engine.notifications.show({
-    type: 'success',
-    title: '导出成功',
-    message: '日志已导出到文件'
-  })
-}
-
-const exportFilteredLogs = () => {
-  const data = {
-    logs: filteredLogs.value,
-    filters: {
-      search: searchQuery.value,
-      levels: levelFilters.value,
-      timeRange: timeRange.value
-    },
-    exportTime: Date.now()
-  }
-  
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `filtered-logs-${Date.now()}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-  
-  engine.notifications.show({
-    type: 'success',
-    title: '导出成功',
-    message: '过滤后的日志已导出'
-  })
-}
-
-const formatTimestamp = (timestamp: number) => {
-  return new Date(timestamp).toLocaleString()
-}
-
-const formatLogData = (data: any) => {
-  if (typeof data === 'object') {
-    return JSON.stringify(data, null, 2)
-  }
-  return String(data)
-}
-
-const getBarHeight = (count: number) => {
-  const maxCount = Math.max(...Object.values(logStats.value))
-  return maxCount > 0 ? (count / maxCount) * 100 : 0
-}
-
-// 监听自动滚动
-watch([paginatedLogs, autoScroll], () => {
-  if (autoScroll.value) {
-    nextTick(() => {
-      if (logContainer.value) {
-        logContainer.value.scrollTop = logContainer.value.scrollHeight
-      }
-    })
-  }
-}, { deep: true })
-
-// 监听实时模式
-watch(realTimeMode, (enabled) => {
-  if (enabled) {
-    updateInterval.value = setInterval(() => {
-      // 触发重新计算
-      if (autoScroll.value && logContainer.value) {
-        logContainer.value.scrollTop = logContainer.value.scrollHeight
-      }
-    }, updateFrequency.value)
-  } else {
-    if (updateInterval.value) {
-      clearInterval(updateInterval.value)
-    }
-  }
-})
-
-onMounted(() => {
-  // 初始化配置
-  currentLevel.value = engine.logger.getLevel()
-  maxLogs.value = engine.logger.getMaxLogs()
-  
-  // 启动实时监控
-  if (realTimeMode.value) {
-    updateInterval.value = setInterval(() => {
-      if (autoScroll.value && logContainer.value) {
-        logContainer.value.scrollTop = logContainer.value.scrollHeight
-      }
-    }, updateFrequency.value)
-  }
-  
-  engine.logger.info('日志系统演示页面已加载')
-})
-
-onUnmounted(() => {
-  if (updateInterval.value) {
-    clearInterval(updateInterval.value)
-  }
-})
-</script>
 
 <style scoped>
 .logger-demo {
@@ -772,7 +813,7 @@ onUnmounted(() => {
   margin-bottom: 0.5rem;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: auto;
 }
 
@@ -1174,27 +1215,27 @@ onUnmounted(() => {
   .demo-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .time-range {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .log-controls {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .control-group {
     justify-content: center;
   }
-  
+
   .log-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .chart-bars {
     height: 100px;
   }

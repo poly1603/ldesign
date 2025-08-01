@@ -15,9 +15,11 @@ constructor(options?: I18nOptions)
 创建一个新的 I18n 实例。
 
 **参数：**
+
 - `options` - 可选的配置选项
 
 **示例：**
+
 ```typescript
 import { I18n } from '@ldesign/i18n'
 
@@ -39,6 +41,7 @@ async init(): Promise<void>
 初始化 I18n 实例，加载默认语言包。
 
 **示例：**
+
 ```typescript
 await i18n.init()
 ```
@@ -47,8 +50,8 @@ await i18n.init()
 
 ```typescript
 t<T = string>(
-  key: string, 
-  params?: TranslationParams, 
+  key: string,
+  params?: TranslationParams,
   options?: TranslationOptions
 ): T
 ```
@@ -56,23 +59,26 @@ t<T = string>(
 翻译指定的键。
 
 **参数：**
+
 - `key` - 翻译键，支持点分隔的嵌套键
 - `params` - 可选的插值参数
 - `options` - 可选的翻译选项
 
 **返回：**
+
 - 翻译后的字符串
 
 **示例：**
+
 ```typescript
 // 基础翻译
-i18n.t('common.ok')  // "OK"
+i18n.t('common.ok') // "OK"
 
 // 插值翻译
-i18n.t('common.welcome', { name: 'John' })  // "Welcome, John!"
+i18n.t('common.welcome', { name: 'John' }) // "Welcome, John!"
 
 // 带选项的翻译
-i18n.t('nonexistent.key', {}, { defaultValue: 'Default' })  // "Default"
+i18n.t('nonexistent.key', {}, { defaultValue: 'Default' }) // "Default"
 ```
 
 #### changeLanguage()
@@ -84,9 +90,11 @@ async changeLanguage(locale: string): Promise<void>
 切换到指定语言。
 
 **参数：**
+
 - `locale` - 目标语言代码
 
 **示例：**
+
 ```typescript
 await i18n.changeLanguage('zh-CN')
 ```
@@ -100,11 +108,13 @@ getCurrentLanguage(): string
 获取当前语言代码。
 
 **返回：**
+
 - 当前语言代码
 
 **示例：**
+
 ```typescript
-const currentLang = i18n.getCurrentLanguage()  // "en"
+const currentLang = i18n.getCurrentLanguage() // "en"
 ```
 
 #### getAvailableLanguages()
@@ -116,9 +126,11 @@ getAvailableLanguages(): LanguageInfo[]
 获取所有可用语言的信息。
 
 **返回：**
+
 - 语言信息数组
 
 **示例：**
+
 ```typescript
 const languages = i18n.getAvailableLanguages()
 // [
@@ -131,7 +143,7 @@ const languages = i18n.getAvailableLanguages()
 
 ```typescript
 batchTranslate(
-  keys: string[], 
+  keys: string[],
   params?: TranslationParams
 ): BatchTranslationResult
 ```
@@ -139,13 +151,16 @@ batchTranslate(
 批量翻译多个键。
 
 **参数：**
+
 - `keys` - 翻译键数组
 - `params` - 可选的插值参数
 
 **返回：**
+
 - 键值对形式的翻译结果
 
 **示例：**
+
 ```typescript
 const result = i18n.batchTranslate(['common.ok', 'common.cancel'])
 // { 'common.ok': 'OK', 'common.cancel': 'Cancel' }
@@ -160,16 +175,19 @@ exists(key: string, locale?: string): boolean
 检查翻译键是否存在。
 
 **参数：**
+
 - `key` - 翻译键
 - `locale` - 可选的语言代码，默认为当前语言
 
 **返回：**
+
 - 是否存在
 
 **示例：**
+
 ```typescript
-i18n.exists('common.ok')  // true
-i18n.exists('nonexistent.key')  // false
+i18n.exists('common.ok') // true
+i18n.exists('nonexistent.key') // false
 ```
 
 #### preloadLanguage()
@@ -181,9 +199,11 @@ async preloadLanguage(locale: string): Promise<void>
 预加载指定语言包。
 
 **参数：**
+
 - `locale` - 语言代码
 
 **示例：**
+
 ```typescript
 await i18n.preloadLanguage('zh-CN')
 ```
@@ -197,14 +217,17 @@ isLanguageLoaded(locale: string): boolean
 检查语言包是否已加载。
 
 **参数：**
+
 - `locale` - 语言代码
 
 **返回：**
+
 - 是否已加载
 
 **示例：**
+
 ```typescript
-i18n.isLanguageLoaded('en')  // true
+i18n.isLanguageLoaded('en') // true
 ```
 
 ### 事件方法
@@ -218,10 +241,12 @@ on(event: I18nEventType, listener: I18nEventListener): void
 添加事件监听器。
 
 **参数：**
+
 - `event` - 事件类型
 - `listener` - 监听器函数
 
 **示例：**
+
 ```typescript
 i18n.on('languageChanged', (locale, previousLocale) => {
   console.log(`Language changed from ${previousLocale} to ${locale}`)
@@ -250,15 +275,15 @@ emit(event: I18nEventType, ...args: any[]): void
 
 ```typescript
 interface I18nOptions {
-  defaultLocale: string              // 默认语言
-  fallbackLocale?: string           // 降级语言
-  storage?: 'localStorage' | 'sessionStorage' | 'none'  // 存储方式
-  storageKey?: string               // 存储键名
-  autoDetect?: boolean              // 自动检测浏览器语言
-  preload?: string[]                // 预加载的语言列表
-  cache?: CacheOptions              // 缓存配置
-  onLanguageChanged?: (locale: string) => void  // 语言切换回调
-  onLoadError?: (locale: string, error: Error) => void  // 加载错误回调
+  defaultLocale: string // 默认语言
+  fallbackLocale?: string // 降级语言
+  storage?: 'localStorage' | 'sessionStorage' | 'none' // 存储方式
+  storageKey?: string // 存储键名
+  autoDetect?: boolean // 自动检测浏览器语言
+  preload?: string[] // 预加载的语言列表
+  cache?: CacheOptions // 缓存配置
+  onLanguageChanged?: (locale: string) => void // 语言切换回调
+  onLoadError?: (locale: string, error: Error) => void // 加载错误回调
 }
 ```
 
@@ -266,8 +291,8 @@ interface I18nOptions {
 
 ```typescript
 interface CacheOptions {
-  enabled: boolean    // 是否启用缓存
-  maxSize: number     // 最大缓存条目数
+  enabled: boolean // 是否启用缓存
+  maxSize: number // 最大缓存条目数
 }
 ```
 
@@ -275,10 +300,10 @@ interface CacheOptions {
 
 ```typescript
 interface TranslationOptions {
-  defaultValue?: string    // 默认值
-  escapeValue?: boolean    // 是否转义HTML
-  count?: number          // 计数（用于复数）
-  context?: string        // 上下文
+  defaultValue?: string // 默认值
+  escapeValue?: boolean // 是否转义HTML
+  count?: number // 计数（用于复数）
+  context?: string // 上下文
 }
 ```
 
@@ -330,12 +355,12 @@ type I18nEventType = 'languageChanged' | 'loaded' | 'loadError'
 
 ```typescript
 interface LanguageInfo {
-  name: string           // 语言显示名称
-  nativeName: string     // 本地语言名称
-  code: string           // ISO 639-1 语言代码
-  region?: string        // ISO 3166-1 区域代码
-  direction: 'ltr' | 'rtl'  // 文本方向
-  dateFormat: string     // 默认日期格式
+  name: string // 语言显示名称
+  nativeName: string // 本地语言名称
+  code: string // ISO 639-1 语言代码
+  region?: string // ISO 3166-1 区域代码
+  direction: 'ltr' | 'rtl' // 文本方向
+  dateFormat: string // 默认日期格式
 }
 ```
 

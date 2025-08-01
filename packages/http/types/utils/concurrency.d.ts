@@ -1,4 +1,4 @@
-import { ConcurrencyConfig, ResponseData, RequestConfig } from '../types/index.js';
+import { ConcurrencyConfig, ResponseData, RequestConfig } from '@/types';
 
 /**
  * 并发控制管理器

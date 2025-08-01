@@ -9,7 +9,7 @@ export const DEFAULT_BREAKPOINTS: ResponsiveBreakpoints = {
   md: 768,
   lg: 992,
   xl: 1200,
-  xxl: 1600
+  xxl: 1600,
 }
 
 /**
@@ -18,7 +18,7 @@ export const DEFAULT_BREAKPOINTS: ResponsiveBreakpoints = {
 export const DEFAULT_DEVICE_CONFIG: DeviceDetectionConfig = {
   mobileBreakpoint: DEFAULT_BREAKPOINTS.md,
   tabletBreakpoint: DEFAULT_BREAKPOINTS.lg,
-  desktopBreakpoint: DEFAULT_BREAKPOINTS.xl
+  desktopBreakpoint: DEFAULT_BREAKPOINTS.xl,
 }
 
 /**
@@ -55,7 +55,7 @@ export function isMobileDevice(): boolean {
     'blackberry',
     'windows phone',
     'opera mini',
-    'iemobile'
+    'iemobile',
   ]
 
   return mobileKeywords.some(keyword => userAgent.includes(keyword))
@@ -145,7 +145,7 @@ export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONF
  */
 export function createDeviceWatcher(
   callback: (device: DeviceType) => void,
-  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG
+  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG,
 ): () => void {
   if (typeof window === 'undefined') {
     return () => {}
@@ -197,7 +197,7 @@ export function getDeviceInfo() {
     isTablet,
     isTouch,
     aspectRatio: width / height,
-    orientation: width > height ? 'landscape' : 'portrait'
+    orientation: width > height ? 'landscape' : 'portrait',
   }
 }
 

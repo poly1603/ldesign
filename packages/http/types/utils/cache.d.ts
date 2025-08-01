@@ -1,4 +1,4 @@
-import { CacheConfig, RequestConfig, ResponseData, CacheStorage } from '../types/index.js';
+import { CacheConfig, RequestConfig, ResponseData, CacheStorage } from '@/types';
 
 /**
  * 内存缓存存储实现

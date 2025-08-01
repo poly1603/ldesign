@@ -1,18 +1,18 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   debounce,
-  throttle,
-  isMobileDevice,
-  isTouchDevice,
-  getDeviceTypeByWidth,
-  getScreenOrientation,
-  parseOS,
-  parseBrowser,
-  getPixelRatio,
-  isAPISupported,
-  safeNavigatorAccess,
   formatBytes,
   generateId,
+  getDeviceTypeByWidth,
+  getPixelRatio,
+  getScreenOrientation,
+  isAPISupported,
+  isMobileDevice,
+  isTouchDevice,
+  parseBrowser,
+  parseOS,
+  safeNavigatorAccess,
+  throttle,
 } from '../src/utils'
 
 describe('工具函数测试', () => {
@@ -28,10 +28,10 @@ describe('工具函数测试', () => {
     it('应该延迟执行函数', () => {
       const fn = vi.fn()
       const debouncedFn = debounce(fn, 100)
-      
+
       debouncedFn()
       expect(fn).not.toHaveBeenCalled()
-      
+
       vi.advanceTimersByTime(100)
       expect(fn).toHaveBeenCalledTimes(1)
     })
@@ -39,11 +39,11 @@ describe('工具函数测试', () => {
     it('应该在多次调用时只执行最后一次', () => {
       const fn = vi.fn()
       const debouncedFn = debounce(fn, 100)
-      
+
       debouncedFn('first')
       debouncedFn('second')
       debouncedFn('third')
-      
+
       vi.advanceTimersByTime(100)
       expect(fn).toHaveBeenCalledTimes(1)
       expect(fn).toHaveBeenCalledWith('third')
@@ -62,13 +62,13 @@ describe('工具函数测试', () => {
     it('应该限制函数执行频率', () => {
       const fn = vi.fn()
       const throttledFn = throttle(fn, 100)
-      
+
       throttledFn()
       throttledFn()
       throttledFn()
-      
+
       expect(fn).toHaveBeenCalledTimes(1)
-      
+
       vi.advanceTimersByTime(100)
       throttledFn()
       expect(fn).toHaveBeenCalledTimes(2)
@@ -79,10 +79,10 @@ describe('工具函数测试', () => {
     it('应该正确识别移动设备 User Agent', () => {
       const mobileUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15'
       expect(isMobileDevice(mobileUA)).toBe(true)
-      
+
       const androidUA = 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
       expect(isMobileDevice(androidUA)).toBe(true)
-      
+
       const desktopUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       expect(isMobileDevice(desktopUA)).toBe(false)
     })
@@ -96,7 +96,7 @@ describe('工具函数测试', () => {
         configurable: true,
       })
       expect(isTouchDevice()).toBe(true)
-      
+
       Object.defineProperty(global.navigator, 'maxTouchPoints', {
         value: 0,
         configurable: true,
@@ -134,17 +134,17 @@ describe('工具函数测试', () => {
       const windowsOS = parseOS(windowsUA)
       expect(windowsOS.name).toBe('Windows')
       expect(windowsOS.version).toBe('10.0')
-      
+
       const macUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
       const macOS = parseOS(macUA)
       expect(macOS.name).toBe('macOS')
       expect(macOS.version).toBe('10.15.7')
-      
+
       const iosUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15'
       const ios = parseOS(iosUA)
       expect(ios.name).toBe('iOS')
       expect(ios.version).toBe('14.7.1')
-      
+
       const androidUA = 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
       const android = parseOS(androidUA)
       expect(android.name).toBe('Android')
@@ -158,12 +158,12 @@ describe('工具函数测试', () => {
       const chrome = parseBrowser(chromeUA)
       expect(chrome.name).toBe('Chrome')
       expect(chrome.version).toBe('91.0.4472.124')
-      
+
       const firefoxUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
       const firefox = parseBrowser(firefoxUA)
       expect(firefox.name).toBe('Firefox')
       expect(firefox.version).toBe('89.0')
-      
+
       const safariUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15'
       const safari = parseBrowser(safariUA)
       expect(safari.name).toBe('Safari')
@@ -178,7 +178,7 @@ describe('工具函数测试', () => {
         configurable: true,
       })
       expect(getPixelRatio()).toBe(2)
-      
+
       Object.defineProperty(global.window, 'devicePixelRatio', {
         value: undefined,
         configurable: true,
@@ -195,7 +195,7 @@ describe('工具函数测试', () => {
         configurable: true,
       })
       expect(isAPISupported('geolocation')).toBe(true)
-      
+
       Object.defineProperty(global.navigator, 'geolocation', {
         value: undefined,
         configurable: true,
@@ -211,7 +211,7 @@ describe('工具函数测试', () => {
         configurable: true,
       })
       expect(safeNavigatorAccess('onLine')).toBe(true)
-      
+
       expect(safeNavigatorAccess('nonExistentProperty')).toBeUndefined()
     })
   })

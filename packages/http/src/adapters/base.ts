@@ -1,5 +1,5 @@
-import type { HttpAdapter, RequestConfig, ResponseData, HttpError } from '@/types'
-import { createHttpError, buildURL } from '@/utils'
+import type { HttpAdapter, HttpError, RequestConfig, ResponseData } from '@/types'
+import { buildURL, createHttpError } from '@/utils'
 
 /**
  * 适配器基类
@@ -28,7 +28,7 @@ export abstract class BaseAdapter implements HttpAdapter {
       processedConfig.url = buildURL(
         processedConfig.url,
         processedConfig.baseURL,
-        processedConfig.params
+        processedConfig.params,
       )
     }
 
@@ -54,7 +54,7 @@ export abstract class BaseAdapter implements HttpAdapter {
     statusText: string,
     headers: Record<string, string>,
     config: RequestConfig,
-    raw?: any
+    raw?: any,
   ): ResponseData<T> {
     return {
       data,
@@ -72,7 +72,7 @@ export abstract class BaseAdapter implements HttpAdapter {
   protected processError(
     error: any,
     config: RequestConfig,
-    response?: ResponseData
+    response?: ResponseData,
   ): HttpError {
     let message = 'Request failed'
     let code: string | undefined
@@ -80,7 +80,8 @@ export abstract class BaseAdapter implements HttpAdapter {
     if (error instanceof Error) {
       message = error.message
       code = (error as any).code
-    } else if (typeof error === 'string') {
+    }
+    else if (typeof error === 'string') {
       message = error
     }
 
@@ -91,10 +92,12 @@ export abstract class BaseAdapter implements HttpAdapter {
     if (error.name === 'AbortError' || message.includes('aborted')) {
       httpError.isCancelError = true
       httpError.code = 'CANCELED'
-    } else if (error.name === 'TimeoutError' || message.includes('timeout')) {
+    }
+    else if (error.name === 'TimeoutError' || message.includes('timeout')) {
       httpError.isTimeoutError = true
       httpError.code = 'TIMEOUT'
-    } else if (message.includes('Network') || message.includes('fetch')) {
+    }
+    else if (message.includes('Network') || message.includes('fetch')) {
       httpError.isNetworkError = true
       httpError.code = 'NETWORK_ERROR'
     }
@@ -132,8 +135,8 @@ export abstract class BaseAdapter implements HttpAdapter {
    * 合并 AbortSignal
    */
   protected mergeAbortSignals(signals: (AbortSignal | undefined)[]): AbortSignal {
-    const validSignals = signals.filter((signal): signal is AbortSignal => 
-      signal !== undefined
+    const validSignals = signals.filter((signal): signal is AbortSignal =>
+      signal !== undefined,
     )
 
     if (validSignals.length === 0) {
@@ -172,7 +175,8 @@ export abstract class BaseAdapter implements HttpAdapter {
       headers.forEach((value, key) => {
         result[key.toLowerCase()] = value
       })
-    } else {
+    }
+    else {
       Object.keys(headers).forEach((key) => {
         result[key.toLowerCase()] = headers[key]!
       })

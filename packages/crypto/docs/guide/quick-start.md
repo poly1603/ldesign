@@ -8,10 +8,10 @@
 
 ```typescript
 // 导入核心功能
-import { encrypt, decrypt, hash, hmac } from '@ldesign/crypto'
+import { decrypt, encrypt, hash, hmac } from '@ldesign/crypto'
 
 // 或者导入特定算法
-import { aes, rsa, base64 } from '@ldesign/crypto'
+import { aes, base64, rsa } from '@ldesign/crypto'
 ```
 
 ### AES 加密
@@ -122,9 +122,9 @@ const urlSafeDecoded = base64.decodeUrl(urlSafeEncoded)
 ### 安装插件
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -135,40 +135,9 @@ app.mount('#app')
 ### 使用 Composition API
 
 ```vue
-<template>
-  <div>
-    <h2>加密示例</h2>
-    <div>
-      <input v-model="inputData" placeholder="输入要加密的数据" />
-      <input v-model="inputKey" placeholder="输入密钥" />
-      <button @click="handleEncrypt" :disabled="isEncrypting">
-        {{ isEncrypting ? '加密中...' : '加密' }}
-      </button>
-    </div>
-    
-    <div v-if="encryptedResult">
-      <h3>加密结果</h3>
-      <p>数据: {{ encryptedResult.data }}</p>
-      <p>算法: {{ encryptedResult.algorithm }}</p>
-      <button @click="handleDecrypt" :disabled="isDecrypting">
-        {{ isDecrypting ? '解密中...' : '解密' }}
-      </button>
-    </div>
-    
-    <div v-if="decryptedResult">
-      <h3>解密结果</h3>
-      <p>{{ decryptedResult.data }}</p>
-    </div>
-    
-    <div v-if="lastError" class="error">
-      错误: {{ lastError }}
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const {
   encryptAES,
@@ -184,25 +153,58 @@ const inputKey = ref('')
 const encryptedResult = ref(null)
 const decryptedResult = ref(null)
 
-const handleEncrypt = async () => {
+async function handleEncrypt() {
   try {
     clearError()
     encryptedResult.value = await encryptAES(inputData.value, inputKey.value)
     decryptedResult.value = null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加密失败:', error)
   }
 }
 
-const handleDecrypt = async () => {
+async function handleDecrypt() {
   try {
     clearError()
     decryptedResult.value = await decryptAES(encryptedResult.value, inputKey.value)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('解密失败:', error)
   }
 }
 </script>
+
+<template>
+  <div>
+    <h2>加密示例</h2>
+    <div>
+      <input v-model="inputData" placeholder="输入要加密的数据">
+      <input v-model="inputKey" placeholder="输入密钥">
+      <button :disabled="isEncrypting" @click="handleEncrypt">
+        {{ isEncrypting ? '加密中...' : '加密' }}
+      </button>
+    </div>
+
+    <div v-if="encryptedResult">
+      <h3>加密结果</h3>
+      <p>数据: {{ encryptedResult.data }}</p>
+      <p>算法: {{ encryptedResult.algorithm }}</p>
+      <button :disabled="isDecrypting" @click="handleDecrypt">
+        {{ isDecrypting ? '解密中...' : '解密' }}
+      </button>
+    </div>
+
+    <div v-if="decryptedResult">
+      <h3>解密结果</h3>
+      <p>{{ decryptedResult.data }}</p>
+    </div>
+
+    <div v-if="lastError" class="error">
+      错误: {{ lastError }}
+    </div>
+  </div>
+</template>
 
 <style>
 .error {
@@ -215,14 +217,42 @@ const handleDecrypt = async () => {
 ### 使用哈希 Hook
 
 ```vue
+<script setup>
+import { useHash } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
+
+const { md5, sha256, sha512, isHashing } = useHash()
+
+const inputText = ref('')
+const hashResults = ref([])
+
+async function calculateHash() {
+  if (!inputText.value)
+    return
+
+  try {
+    const results = await Promise.all([
+      { algorithm: 'MD5', hash: await md5(inputText.value) },
+      { algorithm: 'SHA256', hash: await sha256(inputText.value) },
+      { algorithm: 'SHA512', hash: await sha512(inputText.value) }
+    ])
+
+    hashResults.value = results
+  }
+  catch (error) {
+    console.error('哈希计算失败:', error)
+  }
+}
+</script>
+
 <template>
   <div>
     <h2>哈希示例</h2>
-    <input v-model="inputText" placeholder="输入要哈希的文本" />
-    <button @click="calculateHash" :disabled="isHashing">
+    <input v-model="inputText" placeholder="输入要哈希的文本">
+    <button :disabled="isHashing" @click="calculateHash">
       {{ isHashing ? '计算中...' : '计算哈希' }}
     </button>
-    
+
     <div v-if="hashResults.length">
       <h3>哈希结果</h3>
       <div v-for="result in hashResults" :key="result.algorithm">
@@ -231,32 +261,6 @@ const handleDecrypt = async () => {
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useHash } from '@ldesign/crypto/vue'
-
-const { md5, sha256, sha512, isHashing } = useHash()
-
-const inputText = ref('')
-const hashResults = ref([])
-
-const calculateHash = async () => {
-  if (!inputText.value) return
-  
-  try {
-    const results = await Promise.all([
-      { algorithm: 'MD5', hash: await md5(inputText.value) },
-      { algorithm: 'SHA256', hash: await sha256(inputText.value) },
-      { algorithm: 'SHA512', hash: await sha512(inputText.value) }
-    ])
-    
-    hashResults.value = results
-  } catch (error) {
-    console.error('哈希计算失败:', error)
-  }
-}
-</script>
 ```
 
 ## 实际应用示例
@@ -264,16 +268,16 @@ const calculateHash = async () => {
 ### 用户密码加密
 
 ```typescript
-import { hash, encrypt, keyGenerator } from '@ldesign/crypto'
+import { encrypt, hash, keyGenerator } from '@ldesign/crypto'
 
 // 用户注册时加密密码
 function hashPassword(password: string): string {
   // 生成盐值
   const salt = keyGenerator.generateSalt()
-  
+
   // 使用盐值和密码生成哈希
   const hashedPassword = hash.sha256(password + salt)
-  
+
   // 返回盐值和哈希值的组合
   return `${salt}:${hashedPassword}`
 }
@@ -294,9 +298,9 @@ import { hmac } from '@ldesign/crypto'
 function signApiRequest(method: string, url: string, body: string, secretKey: string): string {
   const timestamp = Date.now().toString()
   const message = `${method}\n${url}\n${body}\n${timestamp}`
-  
+
   const signature = hmac.sha256(message, secretKey)
-  
+
   return `${timestamp}:${signature}`
 }
 
@@ -307,33 +311,36 @@ const signature = signApiRequest('POST', '/api/users', JSON.stringify({ name: 'J
 ### 本地存储加密
 
 ```typescript
-import { encrypt, decrypt } from '@ldesign/crypto'
+import { decrypt, encrypt } from '@ldesign/crypto'
 
 class SecureStorage {
   private key: string
-  
+
   constructor(key: string) {
     this.key = key
   }
-  
+
   setItem(key: string, value: any): void {
     const serialized = JSON.stringify(value)
     const encrypted = encrypt.aes(serialized, this.key)
     localStorage.setItem(key, JSON.stringify(encrypted))
   }
-  
+
   getItem(key: string): any {
     const stored = localStorage.getItem(key)
-    if (!stored) return null
-    
+    if (!stored)
+      return null
+
     try {
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, this.key)
-      
-      if (!decrypted.success) return null
-      
+
+      if (!decrypted.success)
+        return null
+
       return JSON.parse(decrypted.data)
-    } catch {
+    }
+    catch {
       return null
     }
   }

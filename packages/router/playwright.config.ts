@@ -1,8 +1,9 @@
-import { createPlaywrightConfig } from '../../tools/playwright.config.base'
+import { createPlaywrightConfig } from '../../tools/test/playwright.config.base.js'
 
 export default createPlaywrightConfig({
+  testDir: './e2e',
   webServer: {
     command: 'cd examples/basic && pnpm dev',
-    port: 5173
-  }
+    port: 5173,
+  },
 })

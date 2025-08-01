@@ -1,8 +1,8 @@
 import type {
+  Logger,
   NotificationManager,
   NotificationOptions,
   NotificationType,
-  Logger
 } from '../types'
 
 interface NotificationItem extends NotificationOptions {
@@ -50,7 +50,7 @@ export class NotificationManagerImpl implements NotificationManager {
       type: options.type || 'info',
       duration: options.duration ?? this.defaultDuration,
       closable: options.closable ?? true,
-      ...options
+      ...options,
     }
 
     // 检查通知数量限制
@@ -97,7 +97,7 @@ export class NotificationManagerImpl implements NotificationManager {
         message: n.message,
         type: n.type,
         duration: n.duration,
-        closable: n.closable
+        closable: n.closable,
       }))
   }
 
@@ -232,7 +232,7 @@ export class NotificationManagerImpl implements NotificationManager {
     if (element) {
       element.style.transform = 'translateX(100%)'
       element.style.opacity = '0'
-      
+
       setTimeout(() => {
         element.remove()
       }, 300)
@@ -240,7 +240,8 @@ export class NotificationManagerImpl implements NotificationManager {
   }
 
   private getTypeColor(type: NotificationType | undefined): string {
-    if (!type) type = 'info'
+    if (!type)
+      type = 'info'
     switch (type) {
       case 'success':
         return '#10b981'
@@ -255,7 +256,8 @@ export class NotificationManagerImpl implements NotificationManager {
   }
 
   private getTypeIcon(type: NotificationType | undefined): string {
-    if (!type) type = 'info'
+    if (!type)
+      type = 'info'
     switch (type) {
       case 'success':
         return `<svg viewBox="0 0 20 20" fill="currentColor">
@@ -308,7 +310,7 @@ export class NotificationManagerImpl implements NotificationManager {
       success: 0,
       error: 0,
       warning: 0,
-      info: 0
+      info: 0,
     }
 
     let visible = 0
@@ -324,7 +326,7 @@ export class NotificationManagerImpl implements NotificationManager {
     return {
       total: this.notifications.size,
       visible,
-      byType
+      byType,
     }
   }
 
@@ -348,7 +350,7 @@ export const notificationTypes = {
     type: 'success' as const,
     message,
     title,
-    ...options
+    ...options,
   }),
 
   error: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
@@ -356,22 +358,22 @@ export const notificationTypes = {
     message,
     title,
     duration: 0, // 错误通知默认不自动关闭
-    ...options
+    ...options,
   }),
 
   warning: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
     type: 'warning' as const,
     message,
     title,
-    ...options
+    ...options,
   }),
 
   info: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
     type: 'info' as const,
     message,
     title,
-    ...options
-  })
+    ...options,
+  }),
 }
 
 // 通知管理器的便捷方法
@@ -409,13 +411,13 @@ export function createNotificationHelpers(manager: NotificationManager) {
           closable: false,
           // 这里可以添加自定义按钮逻辑
         })
-        
+
         // 简化版本，实际应该添加确认/取消按钮
         setTimeout(() => {
           manager.hide(id)
           resolve(true)
         }, 3000)
       })
-    }
+    },
   }
 }

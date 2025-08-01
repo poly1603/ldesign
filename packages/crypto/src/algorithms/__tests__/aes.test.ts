@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { AESEncryptor, aes } from '../aes'
 import type { AESOptions } from '../../types'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { aes, AESEncryptor } from '../aes'
 
-describe('AES Encryption', () => {
+describe('aES Encryption', () => {
   let encryptor: AESEncryptor
   const testData = 'Hello, World!'
   const testKey = 'my-secret-key-32-characters-long'
@@ -11,7 +11,7 @@ describe('AES Encryption', () => {
     encryptor = new AESEncryptor()
   })
 
-  describe('AESEncryptor Class', () => {
+  describe('aESEncryptor Class', () => {
     it('should encrypt and decrypt data successfully', () => {
       const encrypted = encryptor.encrypt(testData, testKey)
       expect(encrypted.data).toBeDefined()
@@ -86,7 +86,7 @@ describe('AES Encryption', () => {
     })
   })
 
-  describe('AES Convenience Functions', () => {
+  describe('aES Convenience Functions', () => {
     it('should work with aes.encrypt and aes.decrypt', () => {
       const encrypted = aes.encrypt(testData, testKey)
       const decrypted = aes.decrypt(encrypted, testKey)
@@ -118,7 +118,7 @@ describe('AES Encryption', () => {
     })
   })
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     it('should handle long text', () => {
       const longText = 'A'.repeat(10000)
       const encrypted = aes.encrypt(longText, testKey)

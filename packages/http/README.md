@@ -9,7 +9,7 @@
 
 **🚀 现代化的 HTTP 请求库，为 TypeScript 和 Vue 3 而生**
 
-*功能强大 • 类型安全 • 开箱即用*
+_功能强大 • 类型安全 • 开箱即用_
 
 [快速开始](#快速开始) • [文档](./docs) • [示例](./examples) • [API 参考](./docs/api)
 
@@ -19,15 +19,15 @@
 
 ## ✨ 特性亮点
 
-🎯 **多适配器架构** - 支持 fetch、axios、alova，自动选择最佳适配器  
-🔧 **强大拦截器** - 完整的请求/响应拦截器链，支持异步处理  
-💾 **智能缓存** - 内置缓存系统，支持内存和本地存储  
-🔄 **自动重试** - 可配置的重试机制，指数退避算法  
-❌ **请求取消** - 基于 AbortController 的优雅取消机制  
-⚡ **并发控制** - 内置并发限制和请求去重  
-🎯 **TypeScript 优先** - 完整类型支持，智能提示  
-🌟 **Vue 3 深度集成** - 专为 Vue 3 设计的 Composition API  
-🛠️ **高度可配置** - 灵活的配置选项，满足各种需求  
+🎯 **多适配器架构** - 支持 fetch、axios、alova，自动选择最佳适配器
+🔧 **强大拦截器** - 完整的请求/响应拦截器链，支持异步处理
+💾 **智能缓存** - 内置缓存系统，支持内存和本地存储
+🔄 **自动重试** - 可配置的重试机制，指数退避算法
+❌ **请求取消** - 基于 AbortController 的优雅取消机制
+⚡ **并发控制** - 内置并发限制和请求去重
+🎯 **TypeScript 优先** - 完整类型支持，智能提示
+🌟 **Vue 3 深度集成** - 专为 Vue 3 设计的 Composition API
+🛠️ **高度可配置** - 灵活的配置选项，满足各种需求
 
 ## 🚀 快速开始
 
@@ -63,21 +63,6 @@ console.log(response.data)
 ### Vue 3 集成
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else>
-      <h2>用户列表</h2>
-      <ul>
-        <li v-for="user in data" :key="user.id">
-          {{ user.name }}
-        </li>
-      </ul>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useRequest } from '@ldesign/http/vue'
 
@@ -92,6 +77,25 @@ const { data, loading, error } = useRequest<User[]>({
   method: 'GET'
 })
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else>
+      <h2>用户列表</h2>
+      <ul>
+        <li v-for="user in data" :key="user.id">
+          {{ user.name }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
 ```
 
 ## 🎯 核心概念
@@ -140,7 +144,7 @@ const newUser = await http.post<User>('/users', {
 
 ```typescript
 // 请求拦截器 - 自动添加认证头
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -149,12 +153,12 @@ http.interceptors.request.use(config => {
 })
 
 // 响应拦截器 - 统一处理响应
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   return response.data // 直接返回数据
 })
 
 // 错误拦截器 - 统一错误处理
-http.interceptors.error.use(error => {
+http.interceptors.error.use((error) => {
   if (error.response?.status === 401) {
     // 处理未授权错误
     window.location.href = '/login'
@@ -190,8 +194,8 @@ const http = createHttpClient({
     retryDelay: 1000,
     retryCondition: (error) => {
       // 只重试网络错误和 5xx 错误
-      return error.isNetworkError || 
-             (error.response?.status >= 500)
+      return error.isNetworkError
+        || (error.response?.status >= 500)
     }
   }
 })
@@ -202,8 +206,8 @@ const http = createHttpClient({
 ### 安装插件
 
 ```typescript
+import { createHttpClient, HttpPlugin } from '@ldesign/http'
 import { createApp } from 'vue'
-import { HttpPlugin, createHttpClient } from '@ldesign/http'
 
 const app = createApp({})
 
@@ -226,12 +230,12 @@ const { data, loading, error, execute, refresh } = useRequest({
   method: 'GET'
 }, {
   immediate: true, // 立即执行
-  onSuccess: (data) => console.log('成功:', data),
-  onError: (error) => console.error('错误:', error)
+  onSuccess: data => console.log('成功:', data),
+  onError: error => console.error('错误:', error)
 })
 
 // 手动触发
-const handleRefresh = () => {
+function handleRefresh() {
   refresh()
 }
 </script>
@@ -262,7 +266,7 @@ const { data, loading, error, isStale } = useQuery(
 import { useMutation } from '@ldesign/http/vue'
 
 const { mutate, loading, error } = useMutation(
-  (userData) => http.post('/api/users', userData),
+  userData => http.post('/api/users', userData),
   {
     onSuccess: () => {
       // 刷新用户列表
@@ -271,7 +275,7 @@ const { mutate, loading, error } = useMutation(
   }
 )
 
-const handleSubmit = (formData) => {
+function handleSubmit(formData) {
   mutate(formData)
 }
 </script>
@@ -316,9 +320,8 @@ const http = createHttpClient({
 })
 
 // 发送多个请求，自动排队处理
-const promises = Array.from({ length: 10 }, (_, i) => 
-  http.get(`/api/data/${i}`)
-)
+const promises = Array.from({ length: 10 }, (_, i) =>
+  http.get(`/api/data/${i}`))
 
 const results = await Promise.all(promises)
 ```
@@ -348,11 +351,11 @@ import { BaseAdapter } from '@ldesign/http'
 
 class CustomAdapter extends BaseAdapter {
   name = 'custom'
-  
+
   isSupported() {
     return true
   }
-  
+
   async request(config) {
     // 自定义请求逻辑
     return customFetch(config)
@@ -369,23 +372,23 @@ const http = createHttpClient({
 
 ### HttpClient
 
-| 方法 | 描述 | 类型 |
-|------|------|------|
-| `get(url, config?)` | GET 请求 | `Promise<ResponseData<T>>` |
-| `post(url, data?, config?)` | POST 请求 | `Promise<ResponseData<T>>` |
-| `put(url, data?, config?)` | PUT 请求 | `Promise<ResponseData<T>>` |
-| `delete(url, config?)` | DELETE 请求 | `Promise<ResponseData<T>>` |
-| `patch(url, data?, config?)` | PATCH 请求 | `Promise<ResponseData<T>>` |
-| `request(config)` | 通用请求 | `Promise<ResponseData<T>>` |
+| 方法                         | 描述        | 类型                       |
+| ---------------------------- | ----------- | -------------------------- |
+| `get(url, config?)`          | GET 请求    | `Promise<ResponseData<T>>` |
+| `post(url, data?, config?)`  | POST 请求   | `Promise<ResponseData<T>>` |
+| `put(url, data?, config?)`   | PUT 请求    | `Promise<ResponseData<T>>` |
+| `delete(url, config?)`       | DELETE 请求 | `Promise<ResponseData<T>>` |
+| `patch(url, data?, config?)` | PATCH 请求  | `Promise<ResponseData<T>>` |
+| `request(config)`            | 通用请求    | `Promise<ResponseData<T>>` |
 
 ### Vue Hooks
 
-| Hook | 描述 | 返回值 |
-|------|------|--------|
-| `useRequest(config, options?)` | 基础请求 | `{ data, loading, error, execute, refresh }` |
-| `useQuery(key, config, options?)` | 带缓存查询 | `{ data, loading, error, isStale, invalidate }` |
-| `useMutation(mutationFn, options?)` | 变更操作 | `{ mutate, loading, error, reset }` |
-| `useResource(baseUrl)` | RESTful 资源 | `{ useList, useDetail, useCreate, useUpdate, useDelete }` |
+| Hook                                | 描述         | 返回值                                                    |
+| ----------------------------------- | ------------ | --------------------------------------------------------- |
+| `useRequest(config, options?)`      | 基础请求     | `{ data, loading, error, execute, refresh }`              |
+| `useQuery(key, config, options?)`   | 带缓存查询   | `{ data, loading, error, isStale, invalidate }`           |
+| `useMutation(mutationFn, options?)` | 变更操作     | `{ mutate, loading, error, reset }`                       |
+| `useResource(baseUrl)`              | RESTful 资源 | `{ useList, useDetail, useCreate, useUpdate, useDelete }` |
 
 ## 🎨 示例项目
 

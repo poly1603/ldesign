@@ -152,7 +152,7 @@ export const common = {
   notifications: 'Notifications',
   language: 'Language',
   theme: 'Theme',
-  appearance: 'Appearance'
+  appearance: 'Appearance',
 }
 
 export default common

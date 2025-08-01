@@ -1,9 +1,9 @@
 import type { ComputedRef } from 'vue'
-import { computed, inject } from 'vue'
 import type {
   RouteLocationNormalized,
   Router,
 } from '../types'
+import { computed, inject } from 'vue'
 import { warn } from '../utils'
 
 /**

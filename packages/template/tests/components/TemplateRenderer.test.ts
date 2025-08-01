@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { afterEach, describe, expect, it } from 'vitest'
 import { TemplateRenderer } from '@/vue/components/TemplateRenderer'
 import { destroyGlobalManager } from '@/vue/composables/useTemplate'
 
-describe('TemplateRenderer', () => {
+describe('templateRenderer', () => {
   afterEach(() => {
     destroyGlobalManager()
   })
@@ -14,8 +14,8 @@ describe('TemplateRenderer', () => {
         props: {
           category: 'login',
           device: 'desktop',
-          template: 'classic'
-        }
+          template: 'classic',
+        },
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -34,8 +34,8 @@ describe('TemplateRenderer', () => {
           empty: 'div',
           timeout: 5000,
           autoRetry: false,
-          retryCount: 2
-        }
+          retryCount: 2,
+        },
       })
 
       expect(wrapper.props('category')).toBe('login')
@@ -54,8 +54,8 @@ describe('TemplateRenderer', () => {
         props: {
           category: 'login',
           device: 'desktop',
-          template: 'classic'
-        }
+          template: 'classic',
+        },
       })
 
       // 等待组件加载
@@ -72,11 +72,11 @@ describe('TemplateRenderer', () => {
         props: {
           category: 'login',
           device: 'desktop',
-          template: 'classic'
+          template: 'classic',
         },
         slots: {
-          loading: '<div class="custom-loading">Loading...</div>'
-        }
+          loading: '<div class="custom-loading">Loading...</div>',
+        },
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -87,11 +87,11 @@ describe('TemplateRenderer', () => {
         props: {
           category: 'login',
           device: 'desktop',
-          template: 'nonexistent'
+          template: 'nonexistent',
         },
         slots: {
-          error: '<div class="custom-error">Error occurred</div>'
-        }
+          error: '<div class="custom-error">Error occurred</div>',
+        },
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -102,11 +102,11 @@ describe('TemplateRenderer', () => {
         props: {
           category: 'nonexistent',
           device: 'desktop',
-          template: 'classic'
+          template: 'classic',
         },
         slots: {
-          empty: '<div class="custom-empty">No template found</div>'
-        }
+          empty: '<div class="custom-empty">No template found</div>',
+        },
       })
 
       expect(wrapper.exists()).toBe(true)

@@ -5,17 +5,20 @@
 ## 快速导航
 
 ### 核心 API
+
 - [ThemeManager](/api/theme-manager) - 主题管理器核心类
 - [创建函数](/api/create-functions) - 便捷的创建函数
 - [类型定义](/api/types) - TypeScript 类型定义
 
 ### 工具 API
+
 - [颜色转换](/api/color-converter) - 颜色格式转换工具
 - [颜色生成](/api/color-generator) - 智能颜色生成器
 - [色阶生成](/api/color-scales) - 色阶生成系统
 - [CSS 注入](/api/css-injector) - CSS 变量注入器
 
 ### Vue API
+
 - [组合式 API](/api/vue-composables) - Vue 3 组合式 API
 - [Vue 插件](/api/vue-plugin) - Vue 插件和配置
 
@@ -29,26 +32,26 @@ export { ThemeManager } from './core/theme-manager'
 
 // 便捷创建函数
 export {
-  createThemeManager,
-  createThemeManagerWithPresets,
+  createCustomThemeManager,
   createSimpleThemeManager,
-  createCustomThemeManager
+  createThemeManager,
+  createThemeManagerWithPresets
 } from './index'
 
 // 颜色生成
 export {
-  generateColorConfig,
-  safeGenerateColorConfig,
   ColorGeneratorImpl,
-  createColorGenerator
+  createColorGenerator,
+  generateColorConfig,
+  safeGenerateColorConfig
 } from './utils/color-generator'
 
 // 色阶生成
 export {
-  generateColorScale,
-  generateColorScales,
   ColorScaleGenerator,
-  createColorScaleGenerator
+  createColorScaleGenerator,
+  generateColorScale,
+  generateColorScales
 } from './utils/color-scale'
 ```
 
@@ -57,15 +60,15 @@ export {
 ```typescript
 // 核心类型
 export type {
-  ThemeManagerInstance,
-  ThemeManagerOptions,
-  ThemeConfig,
-  GeneratedTheme,
+  ColorCategory,
   ColorConfig,
+  ColorMode,
   ColorScale,
   ColorValue,
-  ColorMode,
-  ColorCategory
+  GeneratedTheme,
+  ThemeConfig,
+  ThemeManagerInstance,
+  ThemeManagerOptions
 } from './core/types'
 
 // 工具类型
@@ -88,16 +91,16 @@ export type {
 ```typescript
 // Vue 组合式 API
 export {
+  useSystemThemeSync,
   useTheme,
-  useThemeToggle,
   useThemeSelector,
-  useSystemThemeSync
+  useThemeToggle
 } from './vue'
 
 // Vue 插件
 export {
-  ThemePlugin,
-  installThemePlugin
+  installThemePlugin,
+  ThemePlugin
 } from './vue'
 ```
 
@@ -117,9 +120,9 @@ await themeManager.setTheme('green')
 ```typescript
 import {
   COLOR_GENERATION_PRESETS,
-  ThemeManager,
   createColorGenerator,
-  generateColorConfig
+  generateColorConfig,
+  ThemeManager
 } from '@ldesign/color'
 
 // 自定义颜色生成
@@ -186,10 +189,10 @@ catch (error) {
 ```typescript
 // 推荐：按需导入
 import { createThemeManager } from '@ldesign/color'
-import { useTheme } from '@ldesign/color/vue'
-
 // 避免：全量导入
 import * as LDesignColor from '@ldesign/color'
+
+import { useTheme } from '@ldesign/color/vue'
 ```
 
 ### 预生成优化

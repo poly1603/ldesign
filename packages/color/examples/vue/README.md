@@ -5,40 +5,47 @@
 ## 功能特性
 
 ### 🎨 完整的主题管理
+
 - 预设主题切换和预览
 - 亮色/暗色模式切换
 - 主题状态实时同步
 - 随机主题和快速操作
 
 ### 🌈 智能颜色系统
+
 - 从主色调自动生成配套颜色
 - 多种生成策略（默认、柔和、鲜艳、单色）
 - 实时颜色预览和复制
 - 一键应用为主题
 
 ### 📊 完整色阶展示
+
 - 10 级色阶可视化
 - 支持亮色和暗色模式
 - 交互式色阶预览
 - 点击复制颜色值
 
 ### 🛠️ 自定义主题创建
+
 - 可视化主题创建界面
 - 支持亮色和暗色模式配置
 - 实时预览和应用
 
 ### 🔧 组合式 API 演示
+
 - `useTheme` - 基础主题管理
 - `useThemeToggle` - 主题切换器
 - `useThemeSelector` - 主题选择器
 - `useSystemThemeSync` - 系统主题同步
 
 ### ⚡ 性能监控
+
 - 实时性能统计
 - 缓存状态监控
 - 预生成功能演示
 
 ### 🌙 系统主题同步
+
 - 自动检测系统主题
 - 实时同步状态显示
 - 手动和自动同步选项
@@ -114,9 +121,9 @@ vue/
 ### 1. Vue 插件安装
 
 ```typescript
+import { ThemePlugin } from '@ldesign/color/vue'
 // main.ts
 import { createApp } from 'vue'
-import { ThemePlugin } from '@ldesign/color/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -253,19 +260,23 @@ const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
 .dark-bg {
   background: var(--color-primary-9);
 }
+
 ```
 
 ## 组件特性
 
 ### 响应式设计
+
 所有组件都支持响应式设计，在移动设备上有良好的显示效果。
 
 ### 无障碍支持
+
 - 键盘导航支持
 - 语义化 HTML 结构
 - 适当的 ARIA 标签
 
 ### 性能优化
+
 - 组件懒加载
 - 事件防抖处理
 - 内存泄漏防护
@@ -275,9 +286,9 @@ const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
 ### 添加新的组合式 API
 
 ```typescript
+import { useTheme } from '@ldesign/color/vue'
 // composables/useCustomTheme.ts
 import { computed } from 'vue'
-import { useTheme } from '@ldesign/color/vue'
 
 export function useCustomTheme() {
   const { currentTheme, setTheme } = useTheme()

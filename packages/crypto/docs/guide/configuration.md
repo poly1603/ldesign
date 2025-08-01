@@ -13,31 +13,31 @@ import { setGlobalConfig } from '@ldesign/crypto'
 setGlobalConfig({
   // AES 配置
   aes: {
-    keySize: 256,           // 默认密钥长度
-    mode: 'CBC',            // 默认加密模式
-    padding: 'Pkcs7',       // 填充方式
-    encoding: 'hex'         // 输出编码
+    keySize: 256, // 默认密钥长度
+    mode: 'CBC', // 默认加密模式
+    padding: 'Pkcs7', // 填充方式
+    encoding: 'hex' // 输出编码
   },
-  
+
   // RSA 配置
   rsa: {
-    keySize: 2048,          // 默认密钥长度
-    keyFormat: 'pem',       // 密钥格式
-    padding: 'OAEP',        // 填充方式
+    keySize: 2048, // 默认密钥长度
+    keyFormat: 'pem', // 密钥格式
+    padding: 'OAEP', // 填充方式
     hashAlgorithm: 'SHA256' // 哈希算法
   },
-  
+
   // 哈希配置
   hash: {
-    algorithm: 'SHA256',    // 默认哈希算法
-    encoding: 'hex',        // 输出编码
-    iterations: 1000        // PBKDF2 迭代次数
+    algorithm: 'SHA256', // 默认哈希算法
+    encoding: 'hex', // 输出编码
+    iterations: 1000 // PBKDF2 迭代次数
   },
-  
+
   // 编码配置
   encoding: {
-    charset: 'utf8',        // 字符编码
-    urlSafe: false          // Base64 URL 安全模式
+    charset: 'utf8', // 字符编码
+    urlSafe: false // Base64 URL 安全模式
   }
 })
 ```
@@ -63,12 +63,12 @@ export const cryptoConfigs = {
     // 开发环境：优化性能
     aes: {
       ...baseConfig.aes,
-      keySize: 128  // 使用较小的密钥提高开发速度
+      keySize: 128 // 使用较小的密钥提高开发速度
     },
     debug: true,
     strictValidation: false
   },
-  
+
   production: {
     ...baseConfig,
     // 生产环境：最高安全性
@@ -78,12 +78,12 @@ export const cryptoConfigs = {
     },
     rsa: {
       ...baseConfig.rsa,
-      keySize: 4096  // 使用更大的密钥
+      keySize: 4096 // 使用更大的密钥
     },
     debug: false,
     strictValidation: true
   },
-  
+
   test: {
     ...baseConfig,
     // 测试环境：快速执行
@@ -106,6 +106,9 @@ export const currentConfig = cryptoConfigs[env]
 ```typescript
 import { getGlobalConfig, updateGlobalConfig } from '@ldesign/crypto'
 
+// 重置为默认配置
+import { resetGlobalConfig } from '@ldesign/crypto'
+
 // 获取当前配置
 const currentConfig = getGlobalConfig()
 console.log('当前配置:', currentConfig)
@@ -113,12 +116,9 @@ console.log('当前配置:', currentConfig)
 // 动态更新配置
 updateGlobalConfig({
   aes: {
-    keySize: 192  // 只更新 AES 密钥长度
+    keySize: 192 // 只更新 AES 密钥长度
   }
 })
-
-// 重置为默认配置
-import { resetGlobalConfig } from '@ldesign/crypto'
 resetGlobalConfig()
 ```
 
@@ -131,19 +131,19 @@ import { encrypt } from '@ldesign/crypto'
 
 // 方式1：通过选项参数配置
 const encrypted = encrypt.aes(data, key, {
-  keySize: 256,           // 密钥长度：128, 192, 256
-  mode: 'CBC',            // 加密模式：CBC, ECB, CFB, OFB, CTR
-  padding: 'Pkcs7',       // 填充方式：Pkcs7, NoPadding
-  iv: 'custom-iv',        // 自定义初始化向量
-  encoding: 'base64'      // 输出编码：hex, base64
+  keySize: 256, // 密钥长度：128, 192, 256
+  mode: 'CBC', // 加密模式：CBC, ECB, CFB, OFB, CTR
+  padding: 'Pkcs7', // 填充方式：Pkcs7, NoPadding
+  iv: 'custom-iv', // 自定义初始化向量
+  encoding: 'base64' // 输出编码：hex, base64
 })
 
 // 方式2：创建配置对象
 const aesConfig = {
   keySize: 256,
-  mode: 'GCM',            // 认证加密模式
-  tagLength: 128,         // GCM 标签长度
-  additionalData: 'metadata'  // 附加认证数据
+  mode: 'GCM', // 认证加密模式
+  tagLength: 128, // GCM 标签长度
+  additionalData: 'metadata' // 附加认证数据
 }
 
 const encrypted = encrypt.aes(data, key, aesConfig)
@@ -156,7 +156,7 @@ import { rsa } from '@ldesign/crypto'
 
 // 密钥生成配置
 const keyPair = rsa.generateKeyPair(2048, {
-  keyFormat: 'pem',       // 密钥格式：pem, der
+  keyFormat: 'pem', // 密钥格式：pem, der
   publicKeyEncoding: {
     type: 'spki',
     format: 'pem'
@@ -164,17 +164,17 @@ const keyPair = rsa.generateKeyPair(2048, {
   privateKeyEncoding: {
     type: 'pkcs8',
     format: 'pem',
-    cipher: 'aes256',     // 私钥加密算法
-    passphrase: 'secret'  // 私钥密码
+    cipher: 'aes256', // 私钥加密算法
+    passphrase: 'secret' // 私钥密码
   }
 })
 
 // 加密配置
 const encrypted = encrypt.rsa(data, publicKey, {
-  padding: 'OAEP',        // 填充方式：OAEP, PKCS1
+  padding: 'OAEP', // 填充方式：OAEP, PKCS1
   hashAlgorithm: 'SHA256', // 哈希算法
-  mgf: 'MGF1',            // 掩码生成函数
-  saltLength: 32          // 盐值长度
+  mgf: 'MGF1', // 掩码生成函数
+  saltLength: 32 // 盐值长度
 })
 ```
 
@@ -185,24 +185,24 @@ import { hash } from '@ldesign/crypto'
 
 // 基本哈希配置
 const hashValue = hash.sha256(data, {
-  encoding: 'hex',        // 输出编码：hex, base64, binary
-  iterations: 1,          // 迭代次数
-  salt: 'custom-salt'     // 自定义盐值
+  encoding: 'hex', // 输出编码：hex, base64, binary
+  iterations: 1, // 迭代次数
+  salt: 'custom-salt' // 自定义盐值
 })
 
 // PBKDF2 配置
 const derivedKey = hash.pbkdf2(password, salt, {
-  iterations: 10000,      // 迭代次数
-  keyLength: 32,          // 输出密钥长度
+  iterations: 10000, // 迭代次数
+  keyLength: 32, // 输出密钥长度
   hashAlgorithm: 'SHA256' // 哈希算法
 })
 
 // Scrypt 配置
 const scryptKey = hash.scrypt(password, salt, {
-  N: 16384,               // CPU/内存成本参数
-  r: 8,                   // 块大小参数
-  p: 1,                   // 并行化参数
-  keyLength: 32           // 输出密钥长度
+  N: 16384, // CPU/内存成本参数
+  r: 8, // 块大小参数
+  p: 1, // 并行化参数
+  keyLength: 32 // 输出密钥长度
 })
 ```
 
@@ -211,22 +211,22 @@ const scryptKey = hash.scrypt(password, salt, {
 ### 插件安装配置
 
 ```typescript
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 // main.ts
 import { createApp } from 'vue'
-import { CryptoPlugin } from '@ldesign/crypto/vue'
 
 const app = createApp(App)
 
 app.use(CryptoPlugin, {
   // 全局属性名称
   globalPropertyName: '$crypto',
-  
+
   // 是否注册全局组合式函数
   registerComposables: true,
-  
+
   // 是否启用开发工具支持
   devtools: process.env.NODE_ENV === 'development',
-  
+
   // 自定义配置
   config: {
     // 默认算法参数
@@ -234,17 +234,17 @@ app.use(CryptoPlugin, {
     defaultRSAKeySize: 2048,
     defaultHashAlgorithm: 'SHA256',
     defaultEncoding: 'hex',
-    
+
     // 性能配置
     enableCache: true,
     cacheSize: 100,
     enableWorker: true,
-    
+
     // 安全配置
     strictMode: true,
     validateInputs: true,
     clearMemoryOnError: true,
-    
+
     // 调试配置
     enableLogs: process.env.NODE_ENV === 'development',
     logLevel: 'info'
@@ -263,15 +263,15 @@ const crypto = useCrypto({
   autoRetry: true,
   retryCount: 3,
   retryDelay: 1000,
-  
+
   // 缓存配置
   enableCache: true,
   cacheTimeout: 300000, // 5分钟
-  
+
   // 错误处理配置
   throwOnError: false,
   logErrors: true,
-  
+
   // 性能配置
   enableWorker: false,
   batchSize: 10
@@ -291,12 +291,12 @@ registerAlgorithm('CUSTOM_AES', {
     // 自定义加密实现
     return customEncrypt(data, key, options)
   },
-  
+
   decrypt: (encryptedData, key, options) => {
     // 自定义解密实现
     return customDecrypt(encryptedData, key, options)
   },
-  
+
   generateKey: (keySize) => {
     // 自定义密钥生成
     return customGenerateKey(keySize)
@@ -315,29 +315,29 @@ import { addMiddleware } from '@ldesign/crypto'
 // 添加加密前中间件
 addMiddleware('beforeEncrypt', (data, key, options) => {
   console.log('准备加密:', data.length, '字节')
-  
+
   // 数据预处理
   if (options.compress) {
     data = compress(data)
   }
-  
+
   // 密钥验证
   if (!validateKey(key)) {
     throw new Error('无效的密钥')
   }
-  
+
   return { data, key, options }
 })
 
 // 添加加密后中间件
 addMiddleware('afterEncrypt', (result, originalData, key, options) => {
   console.log('加密完成:', result.algorithm)
-  
+
   // 结果后处理
   if (options.addChecksum) {
     result.checksum = calculateChecksum(result.data)
   }
-  
+
   return result
 })
 ```
@@ -355,27 +355,27 @@ setPerformanceConfig({
     taskTimeout: 30000,
     workerScript: '/crypto-worker.js'
   },
-  
+
   // 缓存配置
   cache: {
     enabled: true,
     maxSize: 1000,
-    ttl: 300000,        // 5分钟
-    strategy: 'lru'     // LRU 策略
+    ttl: 300000, // 5分钟
+    strategy: 'lru' // LRU 策略
   },
-  
+
   // 批处理配置
   batch: {
     enabled: true,
     maxBatchSize: 100,
-    batchTimeout: 1000  // 1秒
+    batchTimeout: 1000 // 1秒
   },
-  
+
   // 内存管理
   memory: {
     autoCleanup: true,
-    cleanupInterval: 60000,  // 1分钟
-    maxMemoryUsage: 100 * 1024 * 1024  // 100MB
+    cleanupInterval: 60000, // 1分钟
+    maxMemoryUsage: 100 * 1024 * 1024 // 100MB
   }
 })
 ```
@@ -444,7 +444,7 @@ export default {
     rsa: { keySize: 2048, keyFormat: 'pem' },
     hash: { algorithm: 'SHA256', encoding: 'hex' }
   },
-  
+
   // 环境覆盖
   environments: {
     development: {
@@ -456,7 +456,7 @@ export default {
       strictMode: true
     }
   },
-  
+
   // 功能特定配置
   features: {
     vue: {
@@ -479,41 +479,42 @@ import defaultConfig from '../crypto.config'
 
 export class ConfigLoader {
   private config: any
-  
+
   constructor() {
     this.config = this.loadConfig()
   }
-  
+
   private loadConfig() {
     const env = process.env.NODE_ENV || 'development'
     const envConfig = defaultConfig.environments[env] || {}
-    
+
     return {
       ...defaultConfig.base,
       ...envConfig,
       ...defaultConfig.features
     }
   }
-  
+
   get(path: string, defaultValue?: any) {
     return this.getNestedValue(this.config, path, defaultValue)
   }
-  
+
   set(path: string, value: any) {
     this.setNestedValue(this.config, path, value)
   }
-  
+
   private getNestedValue(obj: any, path: string, defaultValue?: any) {
     return path.split('.').reduce((current, key) => {
       return current && current[key] !== undefined ? current[key] : defaultValue
     }, obj)
   }
-  
+
   private setNestedValue(obj: any, path: string, value: any) {
     const keys = path.split('.')
     const lastKey = keys.pop()!
     const target = keys.reduce((current, key) => {
-      if (!current[key]) current[key] = {}
+      if (!current[key])
+        current[key] = {}
       return current[key]
     }, obj)
     target[lastKey] = value

@@ -1,5 +1,5 @@
 import { Ref, ComputedRef } from 'vue';
-import { HttpClient, RequestConfig, ResponseData, HttpError } from './index.js';
+import { HttpClient, HttpError, RequestConfig, ResponseData } from './index.js';
 
 /**
  * 请求状态接口

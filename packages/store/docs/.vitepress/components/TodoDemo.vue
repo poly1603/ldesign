@@ -1,188 +1,6 @@
-<template>
-  <div class="todo-demo">
-    <div class="demo-header">
-      <h3>📝 待办事项示例</h3>
-      <p>体验持久化状态管理和复杂业务逻辑</p>
-    </div>
-
-    <div class="demo-content">
-      <!-- 统计信息 -->
-      <div class="stats-bar">
-        <div class="stat-item">
-          <span class="stat-value">{{ store.totalCount }}</span>
-          <span class="stat-label">总计</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ store.activeCount }}</span>
-          <span class="stat-label">待完成</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ store.completedCount }}</span>
-          <span class="stat-label">已完成</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ store.completionRate }}%</span>
-          <span class="stat-label">完成率</span>
-        </div>
-      </div>
-
-      <!-- 添加新任务 -->
-      <div class="add-todo">
-        <div class="input-group">
-          <input
-            v-model="newTodoText"
-            @keyup.enter="addTodo"
-            placeholder="添加新的待办事项..."
-            class="todo-input"
-          />
-          <select v-model="selectedPriority" class="priority-select">
-            <option value="low">低优先级</option>
-            <option value="medium">中优先级</option>
-            <option value="high">高优先级</option>
-          </select>
-          <button @click="addTodo" class="btn btn-primary">添加</button>
-        </div>
-      </div>
-
-      <!-- 过滤器 -->
-      <div class="filters">
-        <button 
-          v-for="filter in filters" 
-          :key="filter.value"
-          :class="{ active: store.filter === filter.value }"
-          @click="store.setFilter(filter.value)"
-          class="filter-btn"
-        >
-          {{ filter.label }}
-          <span class="filter-count">({{ getFilterCount(filter.value) }})</span>
-        </button>
-      </div>
-
-      <!-- 任务列表 -->
-      <div class="todo-list">
-        <div 
-          v-for="todo in store.filteredTodos" 
-          :key="todo.id"
-          :class="{ 
-            completed: todo.completed,
-            [`priority-${todo.priority}`]: true
-          }"
-          class="todo-item"
-        >
-          <div class="todo-content">
-            <input
-              type="checkbox"
-              :checked="todo.completed"
-              @change="store.toggleTodo(todo.id)"
-              class="todo-checkbox"
-            />
-            <span class="todo-text">{{ todo.text }}</span>
-            <span class="todo-priority">{{ getPriorityText(todo.priority) }}</span>
-            <span class="todo-date">{{ formatDate(todo.createdAt) }}</span>
-          </div>
-          <div class="todo-actions">
-            <button 
-              @click="editTodo(todo)" 
-              class="btn btn-sm btn-outline"
-              title="编辑"
-            >
-              ✏️
-            </button>
-            <button 
-              @click="store.removeTodo(todo.id)" 
-              class="btn btn-sm btn-danger"
-              title="删除"
-            >
-              🗑️
-            </button>
-          </div>
-        </div>
-
-        <div v-if="store.filteredTodos.length === 0" class="empty-state">
-          <div class="empty-icon">📝</div>
-          <div class="empty-text">
-            {{ store.filter === 'all' ? '还没有任务，添加一个吧！' : `没有${getFilterLabel(store.filter)}的任务` }}
-          </div>
-        </div>
-      </div>
-
-      <!-- 批量操作 -->
-      <div v-if="store.totalCount > 0" class="bulk-actions">
-        <button 
-          @click="store.markAllCompleted"
-          class="btn btn-outline"
-        >
-          {{ store.activeCount > 0 ? '全部完成' : '全部未完成' }}
-        </button>
-        <button 
-          v-if="store.completedCount > 0" 
-          @click="store.clearCompleted"
-          class="btn btn-outline"
-        >
-          清除已完成 ({{ store.completedCount }})
-        </button>
-        <button 
-          @click="clearAllTodos"
-          class="btn btn-danger"
-        >
-          清空所有
-        </button>
-      </div>
-    </div>
-
-    <!-- 编辑模态框 -->
-    <div v-if="editingTodo" class="modal-overlay" @click="cancelEdit">
-      <div class="modal" @click.stop>
-        <div class="modal-header">
-          <h4>编辑任务</h4>
-          <button @click="cancelEdit" class="close-btn">×</button>
-        </div>
-        <div class="modal-body">
-          <input
-            v-model="editText"
-            @keyup.enter="saveEdit"
-            class="edit-input"
-            placeholder="任务内容"
-          />
-          <select v-model="editPriority" class="edit-select">
-            <option value="low">低优先级</option>
-            <option value="medium">中优先级</option>
-            <option value="high">高优先级</option>
-          </select>
-        </div>
-        <div class="modal-footer">
-          <button @click="cancelEdit" class="btn btn-outline">取消</button>
-          <button @click="saveEdit" class="btn btn-primary">保存</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 代码展示 -->
-    <div class="code-section">
-      <details>
-        <summary>查看源代码</summary>
-        <div class="code-tabs">
-          <button 
-            v-for="tab in codeTabs" 
-            :key="tab.name"
-            @click="activeTab = tab.name"
-            :class="{ active: activeTab === tab.name }"
-            class="tab-button"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-        <div class="code-content">
-          <pre><code v-html="highlightedCode"></code></pre>
-        </div>
-      </details>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { BaseStore, PersistentState, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import { computed, onUnmounted, ref } from 'vue'
 
 interface Todo {
   id: number
@@ -210,7 +28,7 @@ class TodoStore extends BaseStore {
         text: text.trim(),
         completed: false,
         createdAt: new Date(),
-        priority
+        priority,
       })
     }
   }
@@ -252,7 +70,7 @@ class TodoStore extends BaseStore {
   @Action()
   markAllCompleted() {
     const hasIncomplete = this.todos.some(todo => !todo.completed)
-    this.todos.forEach(todo => {
+    this.todos.forEach((todo) => {
       todo.completed = hasIncomplete
     })
   }
@@ -291,7 +109,8 @@ class TodoStore extends BaseStore {
 
   @Getter()
   get completionRate() {
-    if (this.totalCount === 0) return 0
+    if (this.totalCount === 0)
+      return 0
     return Math.round((this.completedCount / this.totalCount) * 100)
   }
 }
@@ -311,46 +130,46 @@ const activeTab = ref('store')
 const filters = [
   { value: 'all', label: '全部' },
   { value: 'active', label: '待完成' },
-  { value: 'completed', label: '已完成' }
+  { value: 'completed', label: '已完成' },
 ]
 
 // 方法
-const addTodo = () => {
+function addTodo() {
   if (newTodoText.value.trim()) {
     store.addTodo(newTodoText.value, selectedPriority.value)
     newTodoText.value = ''
   }
 }
 
-const editTodo = (todo: Todo) => {
+function editTodo(todo: Todo) {
   editingTodo.value = todo
   editText.value = todo.text
   editPriority.value = todo.priority
 }
 
-const saveEdit = () => {
+function saveEdit() {
   if (editingTodo.value && editText.value.trim()) {
     store.updateTodo(editingTodo.value.id, {
       text: editText.value.trim(),
-      priority: editPriority.value
+      priority: editPriority.value,
     })
     cancelEdit()
   }
 }
 
-const cancelEdit = () => {
+function cancelEdit() {
   editingTodo.value = null
   editText.value = ''
   editPriority.value = 'medium'
 }
 
-const clearAllTodos = () => {
+function clearAllTodos() {
   if (confirm('确定要清空所有任务吗？')) {
     store.clearAll()
   }
 }
 
-const getFilterCount = (filter: FilterType) => {
+function getFilterCount(filter: FilterType) {
   switch (filter) {
     case 'active':
       return store.activeCount
@@ -361,22 +180,22 @@ const getFilterCount = (filter: FilterType) => {
   }
 }
 
-const getFilterLabel = (filter: FilterType) => {
+function getFilterLabel(filter: FilterType) {
   const filterMap = { all: '全部', active: '待完成', completed: '已完成' }
   return filterMap[filter]
 }
 
-const getPriorityText = (priority: Todo['priority']) => {
+function getPriorityText(priority: Todo['priority']) {
   const map = { low: '低', medium: '中', high: '高' }
   return map[priority]
 }
 
-const formatDate = (date: Date) => {
+function formatDate(date: Date) {
   return new Intl.DateTimeFormat('zh-CN', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   }).format(new Date(date))
 }
 
@@ -384,7 +203,7 @@ const formatDate = (date: Date) => {
 const codeTabs = [
   { name: 'store', label: 'Store 定义' },
   { name: 'usage', label: '使用方式' },
-  { name: 'features', label: '功能特性' }
+  { name: 'features', label: '功能特性' },
 ]
 
 const codeExamples = {
@@ -482,7 +301,7 @@ console.log(todoStore.activeCount)    // 待完成数量`,
 
 5. 开发工具支持
    - 支持 Vue DevTools
-   - 状态变更追踪`
+   - 状态变更追踪`,
 }
 
 const highlightedCode = computed(() => {
@@ -498,6 +317,210 @@ onUnmounted(() => {
   store.$dispose()
 })
 </script>
+
+<template>
+  <div class="todo-demo">
+    <div class="demo-header">
+      <h3>📝 待办事项示例</h3>
+      <p>体验持久化状态管理和复杂业务逻辑</p>
+    </div>
+
+    <div class="demo-content">
+      <!-- 统计信息 -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-value">{{ store.totalCount }}</span>
+          <span class="stat-label">总计</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ store.activeCount }}</span>
+          <span class="stat-label">待完成</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ store.completedCount }}</span>
+          <span class="stat-label">已完成</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ store.completionRate }}%</span>
+          <span class="stat-label">完成率</span>
+        </div>
+      </div>
+
+      <!-- 添加新任务 -->
+      <div class="add-todo">
+        <div class="input-group">
+          <input
+            v-model="newTodoText"
+            placeholder="添加新的待办事项..."
+            class="todo-input"
+            @keyup.enter="addTodo"
+          >
+          <select v-model="selectedPriority" class="priority-select">
+            <option value="low">
+              低优先级
+            </option>
+            <option value="medium">
+              中优先级
+            </option>
+            <option value="high">
+              高优先级
+            </option>
+          </select>
+          <button class="btn btn-primary" @click="addTodo">
+            添加
+          </button>
+        </div>
+      </div>
+
+      <!-- 过滤器 -->
+      <div class="filters">
+        <button
+          v-for="filter in filters"
+          :key="filter.value"
+          :class="{ active: store.filter === filter.value }"
+          class="filter-btn"
+          @click="store.setFilter(filter.value)"
+        >
+          {{ filter.label }}
+          <span class="filter-count">({{ getFilterCount(filter.value) }})</span>
+        </button>
+      </div>
+
+      <!-- 任务列表 -->
+      <div class="todo-list">
+        <div
+          v-for="todo in store.filteredTodos"
+          :key="todo.id"
+          :class="{
+            completed: todo.completed,
+            [`priority-${todo.priority}`]: true,
+          }"
+          class="todo-item"
+        >
+          <div class="todo-content">
+            <input
+              type="checkbox"
+              :checked="todo.completed"
+              class="todo-checkbox"
+              @change="store.toggleTodo(todo.id)"
+            >
+            <span class="todo-text">{{ todo.text }}</span>
+            <span class="todo-priority">{{ getPriorityText(todo.priority) }}</span>
+            <span class="todo-date">{{ formatDate(todo.createdAt) }}</span>
+          </div>
+          <div class="todo-actions">
+            <button
+              class="btn btn-sm btn-outline"
+              title="编辑"
+              @click="editTodo(todo)"
+            >
+              ✏️
+            </button>
+            <button
+              class="btn btn-sm btn-danger"
+              title="删除"
+              @click="store.removeTodo(todo.id)"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <div v-if="store.filteredTodos.length === 0" class="empty-state">
+          <div class="empty-icon">
+            📝
+          </div>
+          <div class="empty-text">
+            {{ store.filter === 'all' ? '还没有任务，添加一个吧！' : `没有${getFilterLabel(store.filter)}的任务` }}
+          </div>
+        </div>
+      </div>
+
+      <!-- 批量操作 -->
+      <div v-if="store.totalCount > 0" class="bulk-actions">
+        <button
+          class="btn btn-outline"
+          @click="store.markAllCompleted"
+        >
+          {{ store.activeCount > 0 ? '全部完成' : '全部未完成' }}
+        </button>
+        <button
+          v-if="store.completedCount > 0"
+          class="btn btn-outline"
+          @click="store.clearCompleted"
+        >
+          清除已完成 ({{ store.completedCount }})
+        </button>
+        <button
+          class="btn btn-danger"
+          @click="clearAllTodos"
+        >
+          清空所有
+        </button>
+      </div>
+    </div>
+
+    <!-- 编辑模态框 -->
+    <div v-if="editingTodo" class="modal-overlay" @click="cancelEdit">
+      <div class="modal" @click.stop>
+        <div class="modal-header">
+          <h4>编辑任务</h4>
+          <button class="close-btn" @click="cancelEdit">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <input
+            v-model="editText"
+            class="edit-input"
+            placeholder="任务内容"
+            @keyup.enter="saveEdit"
+          >
+          <select v-model="editPriority" class="edit-select">
+            <option value="low">
+              低优先级
+            </option>
+            <option value="medium">
+              中优先级
+            </option>
+            <option value="high">
+              高优先级
+            </option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" @click="cancelEdit">
+            取消
+          </button>
+          <button class="btn btn-primary" @click="saveEdit">
+            保存
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 代码展示 -->
+    <div class="code-section">
+      <details>
+        <summary>查看源代码</summary>
+        <div class="code-tabs">
+          <button
+            v-for="tab in codeTabs"
+            :key="tab.name"
+            :class="{ active: activeTab === tab.name }"
+            class="tab-button"
+            @click="activeTab = tab.name"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+        <div class="code-content">
+          <pre><code v-html="highlightedCode" /></pre>
+        </div>
+      </details>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .todo-demo {

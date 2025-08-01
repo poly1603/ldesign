@@ -1,4 +1,4 @@
-import type { Loader, LanguagePackage, NestedObject, LanguageInfo } from './types'
+import type { LanguagePackage, Loader } from './types'
 
 /**
  * 默认语言包加载器
@@ -36,7 +36,8 @@ export class DefaultLoader implements Loader {
       const languagePackage = await loadingPromise
       this.loadedPackages.set(locale, languagePackage)
       return languagePackage
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(locale)
     }
   }
@@ -75,7 +76,8 @@ export class DefaultLoader implements Loader {
     if (locale) {
       this.loadedPackages.delete(locale)
       this.loadingPromises.delete(locale)
-    } else {
+    }
+    else {
       this.loadedPackages.clear()
       this.loadingPromises.clear()
     }
@@ -90,13 +92,14 @@ export class DefaultLoader implements Loader {
     try {
       // 动态导入语言包
       const localeModule = await import(`../locales/${locale}/index.js`)
-      
+
       if (!localeModule.default) {
         throw new Error(`Language package for '${locale}' does not have a default export`)
       }
 
       return localeModule.default as LanguagePackage
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to load language package for '${locale}': ${error}`)
     }
   }
@@ -219,16 +222,16 @@ export class HttpLoader implements Loader {
 
   constructor(
     baseUrl: string,
-    fetchOptions: RequestInit = {}
+    fetchOptions: RequestInit = {},
   ) {
     this.baseUrl = baseUrl.replace(/\/$/, '') // 移除末尾的斜杠
     this.fetchOptions = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...fetchOptions.headers
+        ...fetchOptions.headers,
       },
-      ...fetchOptions
+      ...fetchOptions,
     }
   }
 
@@ -256,7 +259,8 @@ export class HttpLoader implements Loader {
       const languagePackage = await loadingPromise
       this.loadedPackages.set(locale, languagePackage)
       return languagePackage
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(locale)
     }
   }
@@ -285,23 +289,24 @@ export class HttpLoader implements Loader {
    */
   private async fetchLanguagePackage(locale: string): Promise<LanguagePackage> {
     const url = `${this.baseUrl}/${locale}.json`
-    
+
     try {
       const response = await fetch(url, this.fetchOptions)
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const data = await response.json()
-      
+
       // 验证数据格式
       if (!this.isValidLanguagePackage(data)) {
         throw new Error('Invalid language package format')
       }
 
       return data as LanguagePackage
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to fetch language package for '${locale}' from '${url}': ${error}`)
     }
   }
@@ -313,14 +318,14 @@ export class HttpLoader implements Loader {
    */
   private isValidLanguagePackage(data: any): boolean {
     return (
-      data &&
-      typeof data === 'object' &&
-      data.info &&
-      typeof data.info === 'object' &&
-      typeof data.info.name === 'string' &&
-      typeof data.info.code === 'string' &&
-      data.translations &&
-      typeof data.translations === 'object'
+      data
+      && typeof data === 'object'
+      && data.info
+      && typeof data.info === 'object'
+      && typeof data.info.name === 'string'
+      && typeof data.info.code === 'string'
+      && data.translations
+      && typeof data.translations === 'object'
     )
   }
 }

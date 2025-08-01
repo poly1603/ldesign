@@ -8,13 +8,13 @@
 
 ```typescript
 interface StateManager {
-  set<T>(key: string, value: T): void
-  get<T>(key: string): T | undefined
-  has(key: string): boolean
-  remove(key: string): boolean
-  clear(): void
-  getAll(): Record<string, any>
-  subscribe(key: string, callback: StateChangeCallback): () => void
+  set: <T>(key: string, value: T) => void
+  get: <T>(key: string) => T | undefined
+  has: (key: string) => boolean
+  remove: (key: string) => boolean
+  clear: () => void
+  getAll: () => Record<string, any>
+  subscribe: (key: string, callback: StateChangeCallback) => () => void
 }
 
 type StateChangeCallback<T = any> = (newValue: T, oldValue: T) => void
@@ -78,12 +78,13 @@ const unsubscribe = engine.state.subscribe('user', (newUser, oldUser) => {
   console.log('用户状态变化:')
   console.log('旧值:', oldUser)
   console.log('新值:', newUser)
-  
+
   // 响应状态变化
   if (newUser && !oldUser) {
     console.log('用户已登录')
     engine.events.emit('user:login', newUser)
-  } else if (!newUser && oldUser) {
+  }
+  else if (!newUser && oldUser) {
     console.log('用户已登出')
     engine.events.emit('user:logout', oldUser)
   }
@@ -125,7 +126,7 @@ const userStateModule = {
       language: 'zh-CN'
     }
   },
-  
+
   // 状态操作方法
   actions: {
     login: (engine: Engine, userData: User) => {
@@ -133,14 +134,14 @@ const userStateModule = {
       engine.state.set('user.isAuthenticated', true)
       engine.events.emit('user:login', userData)
     },
-    
+
     logout: (engine: Engine) => {
       const currentUser = engine.state.get('user.currentUser')
       engine.state.set('user.currentUser', null)
       engine.state.set('user.isAuthenticated', false)
       engine.events.emit('user:logout', currentUser)
     },
-    
+
     updatePreferences: (engine: Engine, preferences: Partial<UserPreferences>) => {
       const current = engine.state.get('user.preferences') || {}
       engine.state.set('user.preferences', { ...current, ...preferences })
@@ -209,7 +210,7 @@ const customStorageAdapter = {
     const response = await fetch(`/api/state/${key}`)
     return response.ok ? await response.text() : null
   },
-  
+
   setItem: async (key: string, value: string): Promise<void> => {
     // 保存状态到服务器
     await fetch(`/api/state/${key}`, {
@@ -218,7 +219,7 @@ const customStorageAdapter = {
       body: value
     })
   },
-  
+
   removeItem: async (key: string): Promise<void> => {
     await fetch(`/api/state/${key}`, { method: 'DELETE' })
   }
@@ -258,7 +259,8 @@ engine.state.setValidator('user', userStateSchema)
 // 无效状态会抛出错误
 try {
   engine.state.set('user', { name: '' }) // 验证失败
-} catch (error) {
+}
+catch (error) {
   console.error('状态验证失败:', error.message)
 }
 ```
@@ -267,10 +269,13 @@ try {
 
 ```typescript
 // 自定义验证函数
-const validateUser = (user: any): boolean => {
-  if (!user || typeof user !== 'object') return false
-  if (!user.id || !user.name || !user.email) return false
-  if (!user.email.includes('@')) return false
+function validateUser(user: any): boolean {
+  if (!user || typeof user !== 'object')
+    return false
+  if (!user.id || !user.name || !user.email)
+    return false
+  if (!user.email.includes('@'))
+    return false
   return true
 }
 
@@ -284,9 +289,9 @@ engine.state.setValidator('user', validateUser)
 
 ```typescript
 // 创建状态中间件
-const stateLoggingMiddleware = (key: string, newValue: any, oldValue: any) => {
+function stateLoggingMiddleware(key: string, newValue: any, oldValue: any) {
   console.log(`状态变化: ${key}`, { oldValue, newValue })
-  
+
   // 记录到分析系统
   analytics.track('state_changed', {
     key,
@@ -303,18 +308,18 @@ engine.state.use(stateLoggingMiddleware)
 
 ```typescript
 // 状态转换中间件
-const stateTransformMiddleware = (key: string, value: any) => {
+function stateTransformMiddleware(key: string, value: any) {
   // 自动转换日期字符串为Date对象
   if (key.includes('date') && typeof value === 'string') {
     return new Date(value)
   }
-  
+
   // 自动清理敏感信息
   if (key === 'user' && value && value.password) {
     const { password, ...cleanUser } = value
     return cleanUser
   }
-  
+
   return value
 }
 
@@ -330,7 +335,7 @@ engine.state.use(stateTransformMiddleware)
 if (engine.config.debug) {
   // 将状态管理器暴露到全局
   (window as any).__ENGINE_STATE__ = engine.state
-  
+
   // 监听所有状态变化
   engine.state.subscribe('*', (key, newValue, oldValue) => {
     console.group(`🔄 状态变化: ${key}`)
@@ -346,7 +351,7 @@ if (engine.config.debug) {
 
 ```typescript
 // 创建状态快照
-const createSnapshot = () => {
+function createSnapshot() {
   return {
     timestamp: Date.now(),
     state: JSON.parse(JSON.stringify(engine.state.getAll()))
@@ -358,7 +363,7 @@ const stateHistory: Array<ReturnType<typeof createSnapshot>> = []
 
 engine.state.subscribe('*', () => {
   stateHistory.push(createSnapshot())
-  
+
   // 限制历史记录数量
   if (stateHistory.length > 50) {
     stateHistory.shift()
@@ -366,7 +371,7 @@ engine.state.subscribe('*', () => {
 })
 
 // 恢复到指定快照
-const restoreSnapshot = (index: number) => {
+function restoreSnapshot(index: number) {
   const snapshot = stateHistory[index]
   if (snapshot) {
     engine.state.clear()
@@ -417,7 +422,7 @@ const badStateStructure = {
 
 ```typescript
 // ✅ 不可变更新
-const updateUserProfile = (updates: Partial<UserProfile>) => {
+function updateUserProfile(updates: Partial<UserProfile>) {
   const currentProfile = engine.state.get('user.profile')
   engine.state.set('user.profile', {
     ...currentProfile,
@@ -426,7 +431,7 @@ const updateUserProfile = (updates: Partial<UserProfile>) => {
 }
 
 // ❌ 直接修改状态
-const badUpdateUserProfile = (updates: Partial<UserProfile>) => {
+function badUpdateUserProfile(updates: Partial<UserProfile>) {
   const profile = engine.state.get('user.profile')
   Object.assign(profile, updates) // 直接修改原对象
   engine.state.set('user.profile', profile)
@@ -437,7 +442,7 @@ const badUpdateUserProfile = (updates: Partial<UserProfile>) => {
 
 ```typescript
 // 创建状态访问器
-const createStateAccessor = <T>(key: string) => {
+function createStateAccessor<T>(key: string) {
   return {
     get: (): T | undefined => engine.state.get(key),
     set: (value: T) => engine.state.set(key, value),

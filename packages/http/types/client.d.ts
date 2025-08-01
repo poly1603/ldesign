@@ -1,4 +1,4 @@
-import { HttpClient, InterceptorManager, RequestInterceptor, ResponseInterceptor, ErrorInterceptor, HttpClientConfig, HttpAdapter, RequestConfig, ResponseData, RetryConfig } from './types/index.js';
+import { HttpClient, InterceptorManager, RequestInterceptor, ResponseInterceptor, ErrorInterceptor, HttpClientConfig, HttpAdapter, RequestConfig, ResponseData, RetryConfig } from '@/types';
 
 /**
  * HTTP 客户端实现

@@ -27,9 +27,9 @@ class UserStore extends BaseStore {
 
 ```typescript
 interface StateDecoratorOptions {
-  default?: any        // 默认值
-  deep?: boolean      // 是否深度响应式
-  persist?: boolean   // 是否持久化
+  default?: any // 默认值
+  deep?: boolean // 是否深度响应式
+  persist?: boolean // 是否持久化
 }
 ```
 
@@ -39,8 +39,8 @@ interface StateDecoratorOptions {
 
 ```typescript
 class ProfileStore extends BaseStore {
-  @ReactiveState({ 
-    default: { 
+  @ReactiveState({
+    default: {
       personal: { name: '', age: 0 },
       contact: { email: '', phone: '' }
     }
@@ -118,11 +118,11 @@ class TodoStore extends BaseStore {
 
 ```typescript
 interface ActionDecoratorOptions {
-  async?: boolean      // 是否异步
-  cache?: boolean      // 是否缓存结果
-  cacheTime?: number   // 缓存时间（毫秒）
-  debounce?: number    // 防抖延迟（毫秒）
-  throttle?: number    // 节流间隔（毫秒）
+  async?: boolean // 是否异步
+  cache?: boolean // 是否缓存结果
+  cacheTime?: number // 缓存时间（毫秒）
+  debounce?: number // 防抖延迟（毫秒）
+  throttle?: number // 节流间隔（毫秒）
 }
 ```
 
@@ -144,7 +144,8 @@ class ApiStore extends BaseStore {
     try {
       const response = await fetch('/api/users')
       this.users = await response.json()
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -180,7 +181,8 @@ class SearchStore extends BaseStore {
     if (query.trim()) {
       const response = await fetch(`/api/search?q=${query}`)
       this.results = await response.json()
-    } else {
+    }
+    else {
       this.results = []
     }
   }
@@ -233,8 +235,8 @@ class ShoppingCartStore extends BaseStore {
 
 ```typescript
 interface GetterDecoratorOptions {
-  cache?: boolean      // 是否缓存
-  deps?: string[]      // 依赖的状态字段
+  cache?: boolean // 是否缓存
+  deps?: string[] // 依赖的状态字段
 }
 ```
 
@@ -278,8 +280,10 @@ class UserStore extends BaseStore {
 
   @DependentGetter(['age'])
   get ageGroup() {
-    if (this.age < 18) return 'minor'
-    if (this.age < 65) return 'adult'
+    if (this.age < 18)
+      return 'minor'
+    if (this.age < 65)
+      return 'adult'
     return 'senior'
   }
 }
@@ -295,7 +299,8 @@ class FibonacciStore extends BaseStore {
   @MemoizedGetter(['n'])
   get fibonacci() {
     const fib = (num: number): number => {
-      if (num <= 1) return num
+      if (num <= 1)
+        return num
       return fib(num - 1) + fib(num - 2)
     }
     return fib(this.n)
@@ -329,7 +334,8 @@ class BlogStore extends BaseStore {
     try {
       const response = await fetch('/api/posts')
       this.posts = await response.json()
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -349,7 +355,8 @@ class BlogStore extends BaseStore {
   get postsByCategory() {
     return this.posts.reduce((acc, post) => {
       const category = post.category || 'uncategorized'
-      if (!acc[category]) acc[category] = []
+      if (!acc[category])
+        acc[category] = []
       acc[category].push(post)
       return acc
     }, {} as Record<string, BlogPost[]>)
@@ -358,10 +365,11 @@ class BlogStore extends BaseStore {
   // 依赖特定字段的计算
   @DependentGetter(['searchQuery', 'posts'])
   get filteredPosts() {
-    if (!this.searchQuery.trim()) return this.posts
-    return this.posts.filter(post => 
-      post.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(this.searchQuery.toLowerCase())
+    if (!this.searchQuery.trim())
+      return this.posts
+    return this.posts.filter(post =>
+      post.title.toLowerCase().includes(this.searchQuery.toLowerCase())
+      || post.content.toLowerCase().includes(this.searchQuery.toLowerCase())
     )
   }
 }

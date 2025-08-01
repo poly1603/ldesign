@@ -1,4 +1,4 @@
-import { RequestConfig, HttpError } from '../types/index.js';
+import { RequestConfig, HttpError } from '@/types';
 
 /**
  * 合并配置对象

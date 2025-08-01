@@ -11,13 +11,13 @@
 ```typescript
 class BaseStore {
   constructor(id: string, options?: StoreOptions)
-  
+
   // 状态管理
   $patch(partialState: Partial<State>): void
   $reset(): void
   $subscribe(callback: SubscriptionCallback): () => void
   $onAction(callback: ActionCallback): () => void
-  
+
   // 生命周期
   $dispose(): void
 }
@@ -30,10 +30,12 @@ constructor(id: string, options?: StoreOptions)
 ```
 
 **参数:**
+
 - `id: string` - Store 的唯一标识符
 - `options?: StoreOptions` - 可选的配置选项
 
 **StoreOptions:**
+
 ```typescript
 interface StoreOptions {
   persist?: PersistOptions
@@ -55,6 +57,7 @@ $patch(partialState: Partial<State>): void
 ```
 
 **示例:**
+
 ```typescript
 store.$patch({
   count: 10,
@@ -79,9 +82,10 @@ $subscribe(callback: SubscriptionCallback): () => void
 ```
 
 **SubscriptionCallback:**
+
 ```typescript
 type SubscriptionCallback = (
-  mutation: { type: string; payload: any },
+  mutation: { type: string, payload: any },
   state: State
 ) => void
 ```
@@ -97,6 +101,7 @@ $onAction(callback: ActionCallback): () => void
 ```
 
 **ActionCallback:**
+
 ```typescript
 type ActionCallback = (context: {
   name: string
@@ -119,6 +124,7 @@ type ActionCallback = (context: {
 ```
 
 **StateDecoratorOptions:**
+
 ```typescript
 interface StateDecoratorOptions {
   default?: any
@@ -128,6 +134,7 @@ interface StateDecoratorOptions {
 ```
 
 **示例:**
+
 ```typescript
 class MyStore extends BaseStore {
   @State({ default: 0 })
@@ -144,6 +151,7 @@ class MyStore extends BaseStore {
 ```
 
 **示例:**
+
 ```typescript
 class MyStore extends BaseStore {
   @ReactiveState({ default: {} })
@@ -160,6 +168,7 @@ class MyStore extends BaseStore {
 ```
 
 **PersistentStateOptions:**
+
 ```typescript
 interface PersistentStateOptions extends StateDecoratorOptions {
   key?: string
@@ -189,6 +198,7 @@ interface PersistentStateOptions extends StateDecoratorOptions {
 ```
 
 **ActionDecoratorOptions:**
+
 ```typescript
 interface ActionDecoratorOptions {
   debounce?: number
@@ -214,6 +224,7 @@ interface ActionDecoratorOptions {
 ```
 
 **参数:**
+
 - `ttl?: number` - 缓存时间（毫秒），默认 5000ms
 
 #### @DebouncedAction
@@ -225,6 +236,7 @@ interface ActionDecoratorOptions {
 ```
 
 **参数:**
+
 - `delay: number` - 防抖延迟（毫秒）
 
 #### @ThrottledAction
@@ -236,6 +248,7 @@ interface ActionDecoratorOptions {
 ```
 
 **参数:**
+
 - `interval: number` - 节流间隔（毫秒）
 
 ### 计算装饰器
@@ -249,6 +262,7 @@ interface ActionDecoratorOptions {
 ```
 
 **GetterDecoratorOptions:**
+
 ```typescript
 interface GetterDecoratorOptions {
   cache?: boolean
@@ -265,6 +279,7 @@ interface GetterDecoratorOptions {
 ```
 
 **参数:**
+
 - `dependencies?: string[]` - 依赖的状态字段
 
 #### @MemoizedGetter
@@ -276,6 +291,7 @@ interface GetterDecoratorOptions {
 ```
 
 **MemoizedOptions:**
+
 ```typescript
 interface MemoizedOptions {
   maxSize?: number
@@ -305,17 +321,19 @@ function createStore<T>(
 ```
 
 **参数:**
+
 - `id: string` - Store 标识符
 - `setup: () => T` - Store 设置函数
 
 **返回值:** Hook 函数
 
 **示例:**
+
 ```typescript
 const useCounter = createStore('counter', () => {
   const count = ref(0)
   const increment = () => count.value++
-  
+
   return {
     state: { count },
     actions: { increment },
@@ -336,6 +354,7 @@ function createState<T>(
 ```
 
 **StateHookReturn:**
+
 ```typescript
 interface StateHookReturn<T> {
   value: Ref<T>
@@ -355,6 +374,7 @@ function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
 ```
 
 **AsyncActionHookReturn:**
+
 ```typescript
 interface AsyncActionHookReturn<T> {
   execute: T
@@ -377,6 +397,7 @@ function createPersistedState<T>(
 ```
 
 **PersistedStateHookReturn:**
+
 ```typescript
 interface PersistedStateHookReturn<T> {
   value: Ref<T>
@@ -411,6 +432,7 @@ function createComputed<T>(
 ```
 
 **Props:**
+
 ```typescript
 interface StoreProviderProps {
   stores: Record<string, any>
@@ -429,12 +451,13 @@ function useStoreProvider(): StoreProviderContext
 ```
 
 **StoreProviderContext:**
+
 ```typescript
 interface StoreProviderContext {
-  getStore<T>(id: string): T | undefined
-  hasStore(id: string): boolean
-  registerStore(id: string, store: any): void
-  unregisterStore(id: string): void
+  getStore: <T>(id: string) => T | undefined
+  hasStore: (id: string) => boolean
+  registerStore: (id: string, store: any) => void
+  unregisterStore: (id: string) => void
 }
 ```
 
@@ -469,6 +492,7 @@ function useAction<T extends (...args: any[]) => any>(
 ```
 
 **ActionHookReturn:**
+
 ```typescript
 interface ActionHookReturn<T> {
   execute: T
@@ -499,6 +523,7 @@ function useBatch(): BatchHookReturn
 ```
 
 **BatchHookReturn:**
+
 ```typescript
 interface BatchHookReturn {
   batch: (fn: () => void) => void
@@ -515,6 +540,7 @@ function usePersist(storeId: string): PersistHookReturn
 ```
 
 **PersistHookReturn:**
+
 ```typescript
 interface PersistHookReturn {
   save: () => void

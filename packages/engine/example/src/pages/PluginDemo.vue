@@ -1,3 +1,111 @@
+<script setup lang="ts">
+import type { Engine } from '@ldesign/engine'
+import { computed, inject, onMounted, ref } from 'vue'
+
+const engine = inject<Engine>('engine')!
+
+const plugins = ref<any[]>([])
+const pluginCounter = ref(0)
+
+const pluginCount = computed(() => plugins.value.length)
+const hasPlugins = computed(() => plugins.value.length > 0)
+
+async function loadPlugin() {
+  pluginCounter.value++
+  const plugin = {
+    name: `demo-plugin-${pluginCounter.value}`,
+    version: '1.0.0',
+    dependencies: pluginCounter.value > 1 ? [`demo-plugin-${pluginCounter.value - 1}`] : [],
+    install: (engine: Engine) => {
+      engine.logger.info(`插件 ${plugin.name} 已安装`)
+      engine.events.emit('plugin:demo-loaded', { name: plugin.name })
+
+      // 模拟插件功能
+      engine.state.set(`plugins.${plugin.name}`, {
+        loadTime: Date.now(),
+        status: 'active',
+      })
+    },
+    uninstall: (engine: Engine) => {
+      engine.logger.info(`插件 ${plugin.name} 已卸载`)
+      engine.state.remove(`plugins.${plugin.name}`)
+    },
+  }
+
+  try {
+    await engine.use(plugin)
+    updatePluginList()
+    engine.notifications.show({
+      type: 'success',
+      title: '成功',
+      message: `插件 ${plugin.name} 加载成功`,
+      duration: 3000,
+    })
+  }
+  catch (error) {
+    engine.notifications.show({
+      type: 'error',
+      title: '错误',
+      message: `插件加载失败: ${error}`,
+      duration: 3000,
+    })
+  }
+}
+
+function showPlugins() {
+  const pluginNames = plugins.value.map(p => p.name).join(', ')
+  engine.logger.info(`已注册插件: ${pluginNames || '无'}`)
+  engine.notifications.show({
+    type: 'info',
+    title: '信息',
+    message: '查看控制台了解插件详情',
+    duration: 3000,
+  })
+}
+
+async function unloadPlugin() {
+  if (plugins.value.length === 0)
+    return
+
+  const lastPlugin = plugins.value[plugins.value.length - 1]
+  await unloadSpecificPlugin(lastPlugin.name)
+}
+
+async function unloadSpecificPlugin(pluginName: string) {
+  try {
+    await engine.plugins.unregister(pluginName)
+    updatePluginList()
+    engine.notifications.show({
+      type: 'success',
+      title: '成功',
+      message: `插件 ${pluginName} 卸载成功`,
+      duration: 3000,
+    })
+  }
+  catch (error) {
+    engine.notifications.show({
+      type: 'error',
+      title: '错误',
+      message: `插件卸载失败: ${error}`,
+      duration: 3000,
+    })
+  }
+}
+
+function updatePluginList() {
+  plugins.value = engine.plugins.getAll()
+}
+
+onMounted(() => {
+  updatePluginList()
+
+  // 监听插件事件
+  engine.events.on('plugin:demo-loaded', (data) => {
+    engine.logger.info('收到插件加载事件:', data)
+  })
+})
+</script>
+
 <template>
   <div class="demo-page">
     <header class="page-header">
@@ -14,7 +122,7 @@
         <button class="btn btn-secondary" @click="showPlugins">
           查看已注册插件 ({{ pluginCount }})
         </button>
-        <button class="btn btn-danger" @click="unloadPlugin" :disabled="!hasPlugins">
+        <button class="btn btn-danger" :disabled="!hasPlugins" @click="unloadPlugin">
           卸载最后一个插件
         </button>
       </div>
@@ -23,15 +131,17 @@
     <section class="demo-section">
       <h2>插件列表</h2>
       <div class="plugin-list">
-        <div 
-          v-for="plugin in plugins" 
+        <div
+          v-for="plugin in plugins"
           :key="plugin.name"
           class="plugin-card"
         >
           <div class="plugin-info">
             <h3>{{ plugin.name }}</h3>
             <p>版本: {{ plugin.version || '1.0.0' }}</p>
-            <p v-if="plugin.dependencies?.length">依赖: {{ plugin.dependencies.join(', ') }}</p>
+            <p v-if="plugin.dependencies?.length">
+              依赖: {{ plugin.dependencies.join(', ') }}
+            </p>
           </div>
           <div class="plugin-actions">
             <button class="btn btn-sm btn-danger" @click="unloadSpecificPlugin(plugin.name)">
@@ -55,12 +165,12 @@
   install: (engine) => {
     // 插件安装逻辑
     engine.logger.info('Plugin installed!')
-    
+
     // 注册事件监听器
     engine.events.on('app:ready', () => {
       console.log('App is ready!')
     })
-    
+
     // 添加全局方法
     engine.addGlobalMethod('myMethod', () => {
       return 'Hello from plugin!'
@@ -78,111 +188,6 @@ await engine.use(myPlugin)</code></pre>
     </section>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, inject, onMounted } from 'vue'
-import type { Engine } from '@ldesign/engine'
-
-const engine = inject<Engine>('engine')!
-
-const plugins = ref<any[]>([])
-const pluginCounter = ref(0)
-
-const pluginCount = computed(() => plugins.value.length)
-const hasPlugins = computed(() => plugins.value.length > 0)
-
-const loadPlugin = async () => {
-  pluginCounter.value++
-  const plugin = {
-    name: `demo-plugin-${pluginCounter.value}`,
-    version: '1.0.0',
-    dependencies: pluginCounter.value > 1 ? [`demo-plugin-${pluginCounter.value - 1}`] : [],
-    install: (engine: Engine) => {
-      engine.logger.info(`插件 ${plugin.name} 已安装`)
-      engine.events.emit('plugin:demo-loaded', { name: plugin.name })
-      
-      // 模拟插件功能
-      engine.state.set(`plugins.${plugin.name}`, {
-        loadTime: Date.now(),
-        status: 'active'
-      })
-    },
-    uninstall: (engine: Engine) => {
-      engine.logger.info(`插件 ${plugin.name} 已卸载`)
-      engine.state.remove(`plugins.${plugin.name}`)
-    }
-  }
-  
-  try {
-    await engine.use(plugin)
-    updatePluginList()
-    engine.notifications.show({
-      type: 'success',
-      title: '成功',
-      message: `插件 ${plugin.name} 加载成功`,
-      duration: 3000
-    })
-  } catch (error) {
-    engine.notifications.show({
-      type: 'error',
-      title: '错误',
-      message: `插件加载失败: ${error}`,
-      duration: 3000
-    })
-  }
-}
-
-const showPlugins = () => {
-  const pluginNames = plugins.value.map(p => p.name).join(', ')
-  engine.logger.info(`已注册插件: ${pluginNames || '无'}`)
-  engine.notifications.show({
-    type: 'info',
-    title: '信息',
-    message: '查看控制台了解插件详情',
-    duration: 3000
-  })
-}
-
-const unloadPlugin = async () => {
-  if (plugins.value.length === 0) return
-  
-  const lastPlugin = plugins.value[plugins.value.length - 1]
-  await unloadSpecificPlugin(lastPlugin.name)
-}
-
-const unloadSpecificPlugin = async (pluginName: string) => {
-  try {
-    await engine.plugins.unregister(pluginName)
-    updatePluginList()
-    engine.notifications.show({
-      type: 'success',
-      title: '成功',
-      message: `插件 ${pluginName} 卸载成功`,
-      duration: 3000
-    })
-  } catch (error) {
-    engine.notifications.show({
-      type: 'error',
-      title: '错误',
-      message: `插件卸载失败: ${error}`,
-      duration: 3000
-    })
-  }
-}
-
-const updatePluginList = () => {
-  plugins.value = engine.plugins.getAll()
-}
-
-onMounted(() => {
-  updatePluginList()
-  
-  // 监听插件事件
-  engine.events.on('plugin:demo-loaded', (data) => {
-    engine.logger.info('收到插件加载事件:', data)
-  })
-})
-</script>
 
 <style scoped>
 .demo-page {

@@ -1,4 +1,4 @@
-import { AESOptions, EncryptResult, RSAOptions, EncodingType, DecryptResult, HashOptions, HashAlgorithm, RSAKeyPair } from '@/types';
+import { AESOptions, EncryptResult, RSAOptions, EncodingType, DecryptResult, HashOptions, HashAlgorithm, RSAKeyPair } from '../types/index.js';
 
 /**
  * 加密类

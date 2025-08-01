@@ -3,16 +3,16 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: '@ldesign/crypto',
   description: '一个全面的加解密库，支持所有主流 JavaScript 框架，并专门为 Vue 3 生态系统提供了深度集成',
-  
+
   base: '/crypto/',
-  
+
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/' },
       { text: 'API', link: '/api/' },
       { text: '示例', link: '/examples/' },
-      { text: 'GitHub', link: 'https://github.com/ldesign/crypto' }
+      { text: 'GitHub', link: 'https://github.com/ldesign/crypto' },
     ],
 
     sidebar: {
@@ -23,7 +23,7 @@ export default defineConfig({
             { text: '介绍', link: '/guide/' },
             { text: '安装', link: '/guide/installation' },
             { text: '快速开始', link: '/guide/quick-start' },
-          ]
+          ],
         },
         {
           text: '核心概念',
@@ -32,7 +32,7 @@ export default defineConfig({
             { text: '哈希算法', link: '/guide/hashing' },
             { text: '编码算法', link: '/guide/encoding' },
             { text: '数字签名', link: '/guide/digital-signature' },
-          ]
+          ],
         },
         {
           text: 'Vue 3 集成',
@@ -40,7 +40,7 @@ export default defineConfig({
             { text: 'Composition API', link: '/guide/vue-composables' },
             { text: '插件使用', link: '/guide/vue-plugin' },
             { text: '最佳实践', link: '/guide/vue-best-practices' },
-          ]
+          ],
         },
         {
           text: '高级用法',
@@ -48,8 +48,8 @@ export default defineConfig({
             { text: '自定义配置', link: '/guide/configuration' },
             { text: '性能优化', link: '/guide/performance' },
             { text: '安全考虑', link: '/guide/security' },
-          ]
-        }
+          ],
+        },
       ],
       '/api/': [
         {
@@ -60,7 +60,7 @@ export default defineConfig({
             { text: '解密 API', link: '/api/decryption' },
             { text: '哈希 API', link: '/api/hashing' },
             { text: '编码 API', link: '/api/encoding' },
-          ]
+          ],
         },
         {
           text: '算法 API',
@@ -70,7 +70,7 @@ export default defineConfig({
             { text: 'Hash', link: '/api/hash' },
             { text: 'HMAC', link: '/api/hmac' },
             { text: 'Base64', link: '/api/base64' },
-          ]
+          ],
         },
         {
           text: 'Vue 3 API',
@@ -79,7 +79,7 @@ export default defineConfig({
             { text: 'useHash', link: '/api/use-hash' },
             { text: 'useSignature', link: '/api/use-signature' },
             { text: 'Plugin', link: '/api/plugin' },
-          ]
+          ],
         },
         {
           text: '工具 API',
@@ -87,8 +87,8 @@ export default defineConfig({
             { text: '密钥生成', link: '/api/key-generation' },
             { text: '工具函数', link: '/api/utilities' },
             { text: '类型定义', link: '/api/types' },
-          ]
-        }
+          ],
+        },
       ],
       '/examples/': [
         {
@@ -99,7 +99,7 @@ export default defineConfig({
             { text: 'RSA 加密', link: '/examples/rsa' },
             { text: '哈希计算', link: '/examples/hash' },
             { text: '数字签名', link: '/examples/signature' },
-          ]
+          ],
         },
         {
           text: 'Vue 3 示例',
@@ -108,7 +108,7 @@ export default defineConfig({
             { text: '插件使用', link: '/examples/vue-plugin' },
             { text: '表单加密', link: '/examples/vue-form' },
             { text: '文件处理', link: '/examples/vue-file' },
-          ]
+          ],
         },
         {
           text: '实际应用',
@@ -117,44 +117,44 @@ export default defineConfig({
             { text: '数据传输', link: '/examples/data-transfer' },
             { text: '本地存储', link: '/examples/local-storage' },
             { text: 'API 安全', link: '/examples/api-security' },
-          ]
-        }
-      ]
+          ],
+        },
+      ],
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/crypto' }
+      { icon: 'github', link: 'https://github.com/ldesign/crypto' },
     ],
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 LDesign Team'
+      copyright: 'Copyright © 2024 LDesign Team',
     },
 
     search: {
-      provider: 'local'
+      provider: 'local',
     },
 
     editLink: {
       pattern: 'https://github.com/ldesign/crypto/edit/main/packages/crypto/docs/:path',
-      text: '在 GitHub 上编辑此页'
+      text: '在 GitHub 上编辑此页',
     },
 
     lastUpdated: {
       text: '最后更新',
       formatOptions: {
         dateStyle: 'short',
-        timeStyle: 'medium'
-      }
-    }
+        timeStyle: 'medium',
+      },
+    },
   },
 
   markdown: {
     theme: {
       light: 'github-light',
-      dark: 'github-dark'
+      dark: 'github-dark',
     },
-    lineNumbers: true
+    lineNumbers: true,
   },
 
   head: [
@@ -164,5 +164,5 @@ export default defineConfig({
     ['meta', { name: 'og:locale', content: 'zh-CN' }],
     ['meta', { name: 'og:site_name', content: '@ldesign/crypto' }],
     ['meta', { name: 'og:image', content: '/crypto/og-image.png' }],
-  ]
+  ],
 })

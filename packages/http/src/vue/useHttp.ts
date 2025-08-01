@@ -1,9 +1,9 @@
-import { inject, provide, ref, computed } from 'vue'
 import type { InjectionKey, Ref } from 'vue'
 import type { HttpClient, RequestConfig } from '@/types'
-import { useRequest } from './useRequest'
+import { computed, inject, provide, ref } from 'vue'
+import { useDelete, useMutation, usePatch, usePost, usePut } from './useMutation'
 import { useQuery } from './useQuery'
-import { useMutation, usePost, usePut, usePatch, useDelete } from './useMutation'
+import { useRequest } from './useRequest'
 
 /**
  * HTTP 客户端注入键
@@ -70,28 +70,28 @@ export function useHttp() {
     globalConfig,
 
     // 基础请求方法
-    request: <T = any>(config: RequestConfig) => 
+    request: <T = any>(config: RequestConfig) =>
       client.request<T>(mergeConfig(config)),
 
-    get: <T = any>(url: string, config?: RequestConfig) => 
+    get: <T = any>(url: string, config?: RequestConfig) =>
       client.get<T>(url, mergeConfig(config)),
 
-    post: <T = any>(url: string, data?: any, config?: RequestConfig) => 
+    post: <T = any>(url: string, data?: any, config?: RequestConfig) =>
       client.post<T>(url, data, mergeConfig(config)),
 
-    put: <T = any>(url: string, data?: any, config?: RequestConfig) => 
+    put: <T = any>(url: string, data?: any, config?: RequestConfig) =>
       client.put<T>(url, data, mergeConfig(config)),
 
-    delete: <T = any>(url: string, config?: RequestConfig) => 
+    delete: <T = any>(url: string, config?: RequestConfig) =>
       client.delete<T>(url, mergeConfig(config)),
 
-    patch: <T = any>(url: string, data?: any, config?: RequestConfig) => 
+    patch: <T = any>(url: string, data?: any, config?: RequestConfig) =>
       client.patch<T>(url, data, mergeConfig(config)),
 
-    head: <T = any>(url: string, config?: RequestConfig) => 
+    head: <T = any>(url: string, config?: RequestConfig) =>
       client.head<T>(url, mergeConfig(config)),
 
-    options: <T = any>(url: string, config?: RequestConfig) => 
+    options: <T = any>(url: string, config?: RequestConfig) =>
       client.options<T>(url, mergeConfig(config)),
 
     // Composition API hooks
@@ -137,41 +137,41 @@ export function useResource<T = any>(baseUrl: string) {
       useQuery(
         ['resource-list', baseUrl, params],
         { url: baseUrl, params },
-        options
+        options,
       ),
 
     useDetail: (id: string | number, options?: any) =>
       useQuery(
         ['resource-detail', baseUrl, id],
         { url: `${baseUrl}/${id}` },
-        options
+        options,
       ),
 
     // 变更操作
     useCreate: (options?: any) =>
       useMutation(
         (data: T) => post<T>(`${baseUrl}`, data),
-        options
+        options,
       ),
 
     useUpdate: (options?: any) =>
       useMutation(
-        ({ id, data }: { id: string | number; data: Partial<T> }) =>
+        ({ id, data }: { id: string | number, data: Partial<T> }) =>
           put<T>(`${baseUrl}/${id}`, data),
-        options
+        options,
       ),
 
     usePatch: (options?: any) =>
       useMutation(
-        ({ id, data }: { id: string | number; data: Partial<T> }) =>
+        ({ id, data }: { id: string | number, data: Partial<T> }) =>
           patch<T>(`${baseUrl}/${id}`, data),
-        options
+        options,
       ),
 
     useDelete: (options?: any) =>
       useMutation(
         (id: string | number) => del(`${baseUrl}/${id}`),
-        options
+        options,
       ),
 
     // 直接调用方法
@@ -190,7 +190,7 @@ export function useResource<T = any>(baseUrl: string) {
 export function usePagination<T = any>(
   baseUrl: string,
   initialPage = 1,
-  initialPageSize = 10
+  initialPageSize = 10,
 ) {
   const page = ref(initialPage)
   const pageSize = ref(initialPageSize)
@@ -263,7 +263,7 @@ export function usePagination<T = any>(
     goToPage,
     setPageSize,
     refresh: query.refresh,
-    
+
     // 查询状态
     ...query,
   }

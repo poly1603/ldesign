@@ -1,14 +1,13 @@
 import { AESOptions, EncryptResult, DecryptResult, RSAKeyPair, RSAOptions, EncodingType } from './types/index.js';
 export { AESKeySize, AESMode, EncryptionAlgorithm, HMACAlgorithm, HMACOptions, HashAlgorithm, HashOptions, HashResult, IEncoder, IEncryptor, IHMACer, IHasher, IKeyGenerator, KeyGenerationOptions, RSAKeyFormat } from './types/index.js';
 export { decrypt, digitalSignature, encrypt, hash, hmac, keyGenerator } from './core/index.js';
-export { AESEncryptor } from './algorithms/aes.js';
-export { RSAEncryptor } from './algorithms/rsa.js';
+export { AESEncryptor, aes } from './algorithms/aes.js';
+export { RSAEncryptor, rsa } from './algorithms/rsa.js';
 export { HMACHasher, Hasher } from './algorithms/hash.js';
-export { Encoder } from './algorithms/encoding.js';
+export { Encoder, base64, encoding, hex } from './algorithms/encoding.js';
 import { StringUtils, RandomUtils, ValidationUtils, ErrorUtils } from './utils/index.js';
 export { CONSTANTS } from './utils/index.js';
 import { Encrypt, Decrypt, Hash, HMAC, KeyGenerator, DigitalSignature } from './core/crypto.js';
-export { aes, base64, encoding, hex, rsa } from '@/algorithms';
 
 declare const cryptoDefault: {
     encrypt: Encrypt;

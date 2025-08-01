@@ -16,20 +16,22 @@
 - 📦 **模块化** - 按需导入，减少包体积
 - 🛠️ **开发友好** - 完善的开发工具和文档
 - 🧪 **测试覆盖** - 高质量的单元测试和E2E测试
+- ⚙️ **标准化** - 统一的构建、测试和部署流程
+- 🔧 **工具链** - 完整的开发工具链支持
 
 ## 📦 核心包
 
-| 包名 | 版本 | 描述 | 文档 |
-|------|------|------|------|
-| [@ldesign/engine](./packages/engine) | ![npm](https://img.shields.io/npm/v/@ldesign/engine) | 核心引擎，提供插件系统和基础架构 | [📖](./packages/engine/README.md) |
-| [@ldesign/color](./packages/color) | ![npm](https://img.shields.io/npm/v/@ldesign/color) | 颜色处理工具包 | [📖](./packages/color/README.md) |
-| [@ldesign/crypto](./packages/crypto) | ![npm](https://img.shields.io/npm/v/@ldesign/crypto) | 加密解密工具包 | [📖](./packages/crypto/README.md) |
-| [@ldesign/device](./packages/device) | ![npm](https://img.shields.io/npm/v/@ldesign/device) | 设备检测和适配工具包 | [📖](./packages/device/README.md) |
-| [@ldesign/http](./packages/http) | ![npm](https://img.shields.io/npm/v/@ldesign/http) | HTTP请求处理工具包 | [📖](./packages/http/README.md) |
-| [@ldesign/i18n](./packages/i18n) | ![npm](https://img.shields.io/npm/v/@ldesign/i18n) | 国际化工具包 | [📖](./packages/i18n/README.md) |
-| [@ldesign/router](./packages/router) | ![npm](https://img.shields.io/npm/v/@ldesign/router) | 路由管理工具包 | [📖](./packages/router/README.md) |
-| [@ldesign/store](./packages/store) | ![npm](https://img.shields.io/npm/v/@ldesign/store) | 状态管理工具包 | [📖](./packages/store/README.md) |
-| [@ldesign/template](./packages/template) | ![npm](https://img.shields.io/npm/v/@ldesign/template) | 模板引擎工具包 | [📖](./packages/template/README.md) |
+| 包名                                     | 版本                                                   | 描述                             | 文档                                |
+| ---------------------------------------- | ------------------------------------------------------ | -------------------------------- | ----------------------------------- |
+| [@ldesign/engine](./packages/engine)     | ![npm](https://img.shields.io/npm/v/@ldesign/engine)   | 核心引擎，提供插件系统和基础架构 | [📖](./packages/engine/README.md)   |
+| [@ldesign/color](./packages/color)       | ![npm](https://img.shields.io/npm/v/@ldesign/color)    | 颜色处理工具包                   | [📖](./packages/color/README.md)    |
+| [@ldesign/crypto](./packages/crypto)     | ![npm](https://img.shields.io/npm/v/@ldesign/crypto)   | 加密解密工具包                   | [📖](./packages/crypto/README.md)   |
+| [@ldesign/device](./packages/device)     | ![npm](https://img.shields.io/npm/v/@ldesign/device)   | 设备检测和适配工具包             | [📖](./packages/device/README.md)   |
+| [@ldesign/http](./packages/http)         | ![npm](https://img.shields.io/npm/v/@ldesign/http)     | HTTP请求处理工具包               | [📖](./packages/http/README.md)     |
+| [@ldesign/i18n](./packages/i18n)         | ![npm](https://img.shields.io/npm/v/@ldesign/i18n)     | 国际化工具包                     | [📖](./packages/i18n/README.md)     |
+| [@ldesign/router](./packages/router)     | ![npm](https://img.shields.io/npm/v/@ldesign/router)   | 路由管理工具包                   | [📖](./packages/router/README.md)   |
+| [@ldesign/store](./packages/store)       | ![npm](https://img.shields.io/npm/v/@ldesign/store)    | 状态管理工具包                   | [📖](./packages/store/README.md)    |
+| [@ldesign/template](./packages/template) | ![npm](https://img.shields.io/npm/v/@ldesign/template) | 模板引擎工具包                   | [📖](./packages/template/README.md) |
 
 ## 🚀 快速开始
 
@@ -150,15 +152,76 @@ packages/[package-name]/
 └── README.md                  # 📚 包文档
 ```
 
+## 🔧 开发工具链
+
+LDesign 提供了完整的标准化开发工具链，确保所有包的一致性和高质量。
+
+### 📦 包管理工具
+
+```bash
+# 创建新包
+pnpm tools:create-package my-package --vue --description "我的包"
+
+# 标准化所有包配置
+pnpm tools:standardize
+
+# 验证包配置一致性
+node tools/verify-standardization.js
+```
+
+### 🚀 构建和发布
+
+```bash
+# 构建所有包
+pnpm build
+
+# 发布管理
+pnpm tools:release
+
+# 部署到各个平台
+pnpm deploy              # 部署到所有平台
+pnpm deploy:npm          # 仅部署到 npm
+pnpm deploy:docs         # 仅部署文档
+pnpm deploy --dry-run    # 干运行模式
+```
+
+### 🧪 测试和验证
+
+```bash
+# 运行所有测试
+pnpm test:run
+
+# 生成覆盖率报告
+pnpm test:coverage
+
+# 运行 E2E 测试
+pnpm test:e2e
+
+# 验证部署状态
+tsx tools/deploy/verify-deployment.ts
+```
+
+### 📋 标准化配置
+
+所有包都遵循统一的配置标准：
+
+- **构建配置**: 继承 `tools/build/rollup.config.base.js`
+- **测试配置**: 继承 `tools/test/vitest.config.base.js`
+- **E2E配置**: 继承 `tools/test/playwright.config.base.js`
+- **TypeScript**: 继承 `tools/build/tsconfig.base.json`
+- **代码检查**: 使用 `@antfu/eslint-config`
+
 ## 🛠️ 技术栈
 
 ### 核心技术
+
 - **Vue 3** - 渐进式 JavaScript 框架
 - **TypeScript** - 类型安全的 JavaScript 超集
 - **Rollup** - 模块打包器
 - **pnpm** - 高效的包管理器
 
 ### 开发工具
+
 - **ESLint** - 代码质量检查
 - **Vitest** - 单元测试框架
 - **Playwright** - E2E 测试框架
@@ -166,6 +229,7 @@ packages/[package-name]/
 - **Changesets** - 版本管理和发布
 
 ### CI/CD
+
 - **GitHub Actions** - 持续集成和部署
 - **Codecov** - 代码覆盖率报告
 - **Size Limit** - 包体积监控

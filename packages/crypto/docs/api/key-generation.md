@@ -13,12 +13,15 @@ keyGenerator.generateKey(length?: number): string
 ```
 
 **参数：**
+
 - `length` (number, 可选): 密钥长度（字节），默认 32（256位）
 
 **返回值：**
+
 - `string`: 十六进制格式的随机密钥
 
 **示例：**
+
 ```typescript
 import { keyGenerator } from '@ldesign/crypto'
 
@@ -44,12 +47,15 @@ keyGenerator.generateSalt(length?: number): string
 ```
 
 **参数：**
+
 - `length` (number, 可选): 盐值长度（字节），默认 16
 
 **返回值：**
+
 - `string`: 十六进制格式的随机盐值
 
 **示例：**
+
 ```typescript
 // 生成 16字节盐值
 const salt = keyGenerator.generateSalt()
@@ -69,12 +75,15 @@ keyGenerator.generateIV(length?: number): string
 ```
 
 **参数：**
+
 - `length` (number, 可选): IV 长度（字节），默认 16
 
 **返回值：**
+
 - `string`: 十六进制格式的随机 IV
 
 **示例：**
+
 ```typescript
 // 生成 AES 的 IV（16字节）
 const iv = keyGenerator.generateIV()
@@ -94,13 +103,16 @@ keyGenerator.generateRSAKeyPair(keySize?: number, options?: RSAKeyGenerationOpti
 ```
 
 **参数：**
+
 - `keySize` (number, 可选): 密钥长度（位），默认 2048
 - `options` (RSAKeyGenerationOptions, 可选): 密钥生成选项
 
 **返回值：**
+
 - `RSAKeyPair`: RSA 密钥对对象
 
 **示例：**
+
 ```typescript
 // 生成 2048位 RSA 密钥对
 const keyPair = keyGenerator.generateRSAKeyPair()
@@ -134,12 +146,15 @@ keyGenerator.generateRandomBytes(length: number): Uint8Array
 ```
 
 **参数：**
+
 - `length` (number): 字节数组长度
 
 **返回值：**
+
 - `Uint8Array`: 随机字节数组
 
 **示例：**
+
 ```typescript
 // 生成 32字节随机数据
 const randomBytes = keyGenerator.generateRandomBytes(32)
@@ -161,13 +176,16 @@ keyGenerator.generateRandomString(length: number, charset?: string): string
 ```
 
 **参数：**
+
 - `length` (number): 字符串长度
 - `charset` (string, 可选): 字符集，默认为字母数字
 
 **返回值：**
+
 - `string`: 随机字符串
 
 **示例：**
+
 ```typescript
 // 生成 16位随机字符串
 const randomString = keyGenerator.generateRandomString(16)
@@ -190,10 +208,10 @@ RSA 密钥对接口。
 
 ```typescript
 interface RSAKeyPair {
-  publicKey: string      // 公钥（PEM 格式）
-  privateKey: string     // 私钥（PEM 格式）
-  keySize: number        // 密钥长度（位）
-  format: string         // 密钥格式
+  publicKey: string // 公钥（PEM 格式）
+  privateKey: string // 私钥（PEM 格式）
+  keySize: number // 密钥长度（位）
+  format: string // 密钥格式
 }
 ```
 
@@ -203,16 +221,16 @@ RSA 密钥生成选项。
 
 ```typescript
 interface RSAKeyGenerationOptions {
-  keyFormat?: 'pem' | 'der'                    // 密钥格式
+  keyFormat?: 'pem' | 'der' // 密钥格式
   publicKeyEncoding?: {
-    type: 'spki' | 'pkcs1'                     // 公钥编码类型
-    format: 'pem' | 'der'                      // 公钥格式
+    type: 'spki' | 'pkcs1' // 公钥编码类型
+    format: 'pem' | 'der' // 公钥格式
   }
   privateKeyEncoding?: {
-    type: 'pkcs8' | 'pkcs1'                    // 私钥编码类型
-    format: 'pem' | 'der'                      // 私钥格式
-    cipher?: string                            // 私钥加密算法
-    passphrase?: string                        // 私钥密码
+    type: 'pkcs8' | 'pkcs1' // 私钥编码类型
+    format: 'pem' | 'der' // 私钥格式
+    cipher?: string // 私钥加密算法
+    passphrase?: string // 私钥密码
   }
 }
 ```
@@ -223,7 +241,7 @@ interface RSAKeyGenerationOptions {
 
 ```typescript
 // 从密码派生密钥
-const deriveKeyFromPassword = (password: string, salt: string, keyLength: number = 32): string => {
+function deriveKeyFromPassword(password: string, salt: string, keyLength: number = 32): string {
   return hash.pbkdf2(password, salt, {
     iterations: 100000,
     keyLength,
@@ -242,42 +260,44 @@ console.log('派生密钥:', derivedKey)
 
 ```typescript
 // 验证密钥强度
-const validateKeyStrength = (key: string): {
+function validateKeyStrength(key: string): {
   valid: boolean
   strength: 'weak' | 'medium' | 'strong'
   issues: string[]
-} => {
+} {
   const issues: string[] = []
   let strength: 'weak' | 'medium' | 'strong' = 'weak'
-  
+
   // 检查长度
   if (key.length < 16) {
     issues.push('密钥长度不足（建议至少16字符）')
-  } else if (key.length >= 32) {
+  }
+  else if (key.length >= 32) {
     strength = 'strong'
-  } else if (key.length >= 24) {
+  }
+  else if (key.length >= 24) {
     strength = 'medium'
   }
-  
+
   // 检查字符多样性
   const hasLower = /[a-z]/.test(key)
   const hasUpper = /[A-Z]/.test(key)
   const hasDigit = /\d/.test(key)
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(key)
-  
+
   const charTypes = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length
-  
+
   if (charTypes < 2) {
     issues.push('密钥字符类型不够多样化')
     strength = 'weak'
   }
-  
+
   // 检查重复模式
   if (/(.)\1{2,}/.test(key)) {
     issues.push('密钥包含重复字符')
     strength = 'weak'
   }
-  
+
   return {
     valid: issues.length === 0,
     strength,
@@ -303,7 +323,7 @@ class KeyManager {
     lastUsed: number
     usage: number
   }> = new Map()
-  
+
   // 生成并存储密钥
   generateKey(keyId: string, length: number = 32): string {
     const key = keyGenerator.generateKey(length)
@@ -315,7 +335,7 @@ class KeyManager {
     })
     return key
   }
-  
+
   // 获取密钥
   getKey(keyId: string): string | null {
     const key = this.keys.get(keyId)
@@ -326,7 +346,7 @@ class KeyManager {
     }
     return key || null
   }
-  
+
   // 轮换密钥
   rotateKey(keyId: string, length: number = 32): string {
     const oldKey = this.keys.get(keyId)
@@ -334,32 +354,32 @@ class KeyManager {
       // 保存旧密钥用于解密旧数据
       this.keys.set(`${keyId}_old_${Date.now()}`, oldKey)
     }
-    
+
     return this.generateKey(keyId, length)
   }
-  
+
   // 删除密钥
   deleteKey(keyId: string): boolean {
     const deleted = this.keys.delete(keyId)
     this.keyMetadata.delete(keyId)
     return deleted
   }
-  
+
   // 清理旧密钥
   cleanupOldKeys(maxAge: number = 30 * 24 * 60 * 60 * 1000): number {
     const now = Date.now()
     let cleaned = 0
-    
+
     for (const [keyId, metadata] of this.keyMetadata.entries()) {
       if (keyId.includes('_old_') && now - metadata.created > maxAge) {
         this.deleteKey(keyId)
         cleaned++
       }
     }
-    
+
     return cleaned
   }
-  
+
   // 获取密钥统计
   getKeyStats(): {
     totalKeys: number
@@ -370,17 +390,17 @@ class KeyManager {
     const totalKeys = this.keys.size
     const oldKeys = Array.from(this.keys.keys()).filter(k => k.includes('_old_')).length
     const activeKeys = totalKeys - oldKeys
-    
+
     let mostUsedKey: string | null = null
     let maxUsage = 0
-    
+
     for (const [keyId, metadata] of this.keyMetadata.entries()) {
       if (!keyId.includes('_old_') && metadata.usage > maxUsage) {
         maxUsage = metadata.usage
         mostUsedKey = keyId
       }
     }
-    
+
     return {
       totalKeys,
       activeKeys,
@@ -414,11 +434,11 @@ console.log('密钥统计:', stats)
 
 ```typescript
 // 检查随机数生成器的可用性
-const checkRandomnessAvailability = (): {
+function checkRandomnessAvailability(): {
   available: boolean
   source: string
   quality: 'high' | 'medium' | 'low'
-} => {
+} {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     return {
       available: true,
@@ -426,10 +446,10 @@ const checkRandomnessAvailability = (): {
       quality: 'high'
     }
   }
-  
+
   if (typeof require !== 'undefined') {
     try {
-      const nodeCrypto = require('crypto')
+      const nodeCrypto = require('node:crypto')
       if (nodeCrypto.randomBytes) {
         return {
           available: true,
@@ -437,11 +457,12 @@ const checkRandomnessAvailability = (): {
           quality: 'high'
         }
       }
-    } catch {
+    }
+    catch {
       // Node.js crypto 不可用
     }
   }
-  
+
   return {
     available: false,
     source: 'none',
@@ -462,37 +483,36 @@ if (!randomnessCheck.available) {
 
 ```typescript
 // 简单的随机性测试
-const testRandomness = (generator: () => number, samples: number = 10000): {
+function testRandomness(generator: () => number, samples: number = 10000): {
   mean: number
   variance: number
   uniformity: number
-} => {
+} {
   const values: number[] = []
-  
+
   for (let i = 0; i < samples; i++) {
     values.push(generator())
   }
-  
+
   // 计算均值
   const mean = values.reduce((sum, val) => sum + val, 0) / samples
-  
+
   // 计算方差
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / samples
-  
+  const variance = values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / samples
+
   // 计算均匀性（简化版卡方检验）
-  const buckets = new Array(10).fill(0)
-  values.forEach(val => {
+  const buckets = Array.from({ length: 10 }).fill(0)
+  values.forEach((val) => {
     const bucket = Math.floor(val * 10)
     if (bucket >= 0 && bucket < 10) {
       buckets[bucket]++
     }
   })
-  
+
   const expected = samples / 10
-  const chiSquare = buckets.reduce((sum, observed) => 
-    sum + Math.pow(observed - expected, 2) / expected, 0
-  )
-  
+  const chiSquare = buckets.reduce((sum, observed) =>
+    sum + (observed - expected) ** 2 / expected, 0)
+
   return {
     mean,
     variance,
@@ -511,32 +531,32 @@ console.log('随机数质量测试:', testResults)
 
 ```typescript
 // 批量生成密钥
-const generateKeysBatch = (count: number, length: number = 32): string[] => {
+function generateKeysBatch(count: number, length: number = 32): string[] {
   const keys: string[] = []
-  
+
   for (let i = 0; i < count; i++) {
     keys.push(keyGenerator.generateKey(length))
   }
-  
+
   return keys
 }
 
 // 异步批量生成
-const generateKeysBatchAsync = async (count: number, length: number = 32): Promise<string[]> => {
+async function generateKeysBatchAsync(count: number, length: number = 32): Promise<string[]> {
   const keys: string[] = []
   const batchSize = 100
-  
+
   for (let i = 0; i < count; i += batchSize) {
     const batchCount = Math.min(batchSize, count - i)
     const batch = generateKeysBatch(batchCount, length)
     keys.push(...batch)
-    
+
     // 让出控制权
     if (i + batchSize < count) {
       await new Promise(resolve => setTimeout(resolve, 0))
     }
   }
-  
+
   return keys
 }
 
@@ -553,31 +573,31 @@ class KeyPool {
   private pool: string[] = []
   private keyLength: number
   private maxSize: number
-  
+
   constructor(keyLength: number = 32, maxSize: number = 100) {
     this.keyLength = keyLength
     this.maxSize = maxSize
     this.refillPool()
   }
-  
+
   // 获取密钥
   getKey(): string {
     if (this.pool.length === 0) {
       this.refillPool()
     }
-    
+
     return this.pool.pop() || keyGenerator.generateKey(this.keyLength)
   }
-  
+
   // 补充密钥池
   private refillPool(): void {
     while (this.pool.length < this.maxSize) {
       this.pool.push(keyGenerator.generateKey(this.keyLength))
     }
   }
-  
+
   // 获取池状态
-  getPoolStatus(): { available: number; maxSize: number } {
+  getPoolStatus(): { available: number, maxSize: number } {
     return {
       available: this.pool.length,
       maxSize: this.maxSize
@@ -610,14 +630,14 @@ console.log('密钥池状态:', keyPool.getPoolStatus())
 
 ### 密钥长度建议
 
-| 用途 | 推荐长度 | 最小长度 |
-|------|----------|----------|
-| AES-128 | 16 字节 | 16 字节 |
-| AES-192 | 24 字节 | 24 字节 |
-| AES-256 | 32 字节 | 32 字节 |
-| HMAC | 32 字节 | 16 字节 |
-| 盐值 | 16 字节 | 8 字节 |
-| IV | 16 字节 | 12 字节 |
+| 用途    | 推荐长度 | 最小长度 |
+| ------- | -------- | -------- |
+| AES-128 | 16 字节  | 16 字节  |
+| AES-192 | 24 字节  | 24 字节  |
+| AES-256 | 32 字节  | 32 字节  |
+| HMAC    | 32 字节  | 16 字节  |
+| 盐值    | 16 字节  | 8 字节   |
+| IV      | 16 字节  | 12 字节  |
 
 ## 相关 API
 

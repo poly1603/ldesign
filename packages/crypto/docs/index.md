@@ -51,7 +51,7 @@ features:
 ### 基础用法
 
 ```typescript
-import { encrypt, decrypt, hash } from '@ldesign/crypto'
+import { decrypt, encrypt, hash } from '@ldesign/crypto'
 
 // AES 加密
 const encrypted = encrypt.aes('Hello World', 'secret-key')
@@ -69,22 +69,9 @@ const decoded = decrypt.base64(encoded)
 ### Vue 3 集成
 
 ```vue
-<template>
-  <div>
-    <input v-model="data" placeholder="输入要加密的数据" />
-    <input v-model="key" placeholder="输入密钥" />
-    <button @click="handleEncrypt" :disabled="isEncrypting">
-      {{ isEncrypting ? '加密中...' : '加密' }}
-    </button>
-    <div v-if="encryptedData">
-      加密结果: {{ encryptedData }}
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
 
 const { encryptAES, isEncrypting } = useCrypto()
 
@@ -92,11 +79,24 @@ const data = ref('')
 const key = ref('')
 const encryptedData = ref('')
 
-const handleEncrypt = async () => {
+async function handleEncrypt() {
   const result = await encryptAES(data.value, key.value)
   encryptedData.value = result.data
 }
 </script>
+
+<template>
+  <div>
+    <input v-model="data" placeholder="输入要加密的数据">
+    <input v-model="key" placeholder="输入密钥">
+    <button :disabled="isEncrypting" @click="handleEncrypt">
+      {{ isEncrypting ? '加密中...' : '加密' }}
+    </button>
+    <div v-if="encryptedData">
+      加密结果: {{ encryptedData }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 安装
@@ -119,13 +119,13 @@ yarn add @ldesign/crypto
 
 ## 支持的算法
 
-| 类型 | 算法 | 描述 |
-|------|------|------|
-| 对称加密 | AES-128/192/256 | 高级加密标准，支持多种模式 |
-| 非对称加密 | RSA | 公钥加密算法，支持签名验证 |
-| 哈希算法 | MD5, SHA-1/224/256/384/512 | 消息摘要算法 |
-| 消息认证 | HMAC-MD5/SHA1/SHA256/SHA384/SHA512 | 基于哈希的消息认证码 |
-| 编码算法 | Base64, Hex | 数据编码转换 |
+| 类型       | 算法                               | 描述                       |
+| ---------- | ---------------------------------- | -------------------------- |
+| 对称加密   | AES-128/192/256                    | 高级加密标准，支持多种模式 |
+| 非对称加密 | RSA                                | 公钥加密算法，支持签名验证 |
+| 哈希算法   | MD5, SHA-1/224/256/384/512         | 消息摘要算法               |
+| 消息认证   | HMAC-MD5/SHA1/SHA256/SHA384/SHA512 | 基于哈希的消息认证码       |
+| 编码算法   | Base64, Hex                        | 数据编码转换               |
 
 ## 为什么选择 @ldesign/crypto？
 

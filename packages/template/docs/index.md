@@ -60,8 +60,8 @@ yarn add @ldesign/template
 ### 基础用法
 
 ```typescript
-import { createApp } from 'vue'
 import TemplatePlugin from '@ldesign/template'
+import { createApp } from 'vue'
 
 const app = createApp(App)
 app.use(TemplatePlugin)

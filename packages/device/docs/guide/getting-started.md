@@ -47,9 +47,11 @@ console.log(deviceType) // 'mobile' | 'tablet' | 'desktop'
 // 使用便捷方法
 if (detector.isMobile()) {
   console.log('当前是移动设备')
-} else if (detector.isTablet()) {
+}
+else if (detector.isTablet()) {
   console.log('当前是平板设备')
-} else if (detector.isDesktop()) {
+}
+else if (detector.isDesktop()) {
   console.log('当前是桌面设备')
 }
 ```
@@ -100,16 +102,16 @@ detector.on('orientationChange', (orientation) => {
 const detector = new DeviceDetector({
   // 自定义断点
   breakpoints: {
-    mobile: 600,   // 小于 600px 为移动设备
-    tablet: 1024,  // 600px - 1024px 为平板设备
+    mobile: 600, // 小于 600px 为移动设备
+    tablet: 1024, // 600px - 1024px 为平板设备
   },
-  
+
   // 防抖延迟（毫秒）
   debounceDelay: 250,
-  
+
   // 是否启用窗口大小变化监听
   enableResize: true,
-  
+
   // 是否启用屏幕方向变化监听
   enableOrientation: true,
 })
@@ -120,31 +122,6 @@ const detector = new DeviceDetector({
 如果你使用 Vue 3，可以使用我们提供的 Composition API：
 
 ```vue
-<template>
-  <div>
-    <h2>设备信息</h2>
-    <p>设备类型: {{ deviceType }}</p>
-    <p>屏幕方向: {{ orientation }}</p>
-    <p>屏幕尺寸: {{ width }} x {{ height }}</p>
-    <p>像素比: {{ pixelRatio }}</p>
-    
-    <div v-if="isMobile">
-      <h3>移动设备专用内容</h3>
-      <p>这里是移动设备的特殊布局</p>
-    </div>
-    
-    <div v-else-if="isTablet">
-      <h3>平板设备专用内容</h3>
-      <p>这里是平板设备的特殊布局</p>
-    </div>
-    
-    <div v-else>
-      <h3>桌面设备专用内容</h3>
-      <p>这里是桌面设备的特殊布局</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { useDevice } from '@ldesign/device/vue'
 
@@ -160,6 +137,31 @@ const {
   isTouchDevice,
 } = useDevice()
 </script>
+
+<template>
+  <div>
+    <h2>设备信息</h2>
+    <p>设备类型: {{ deviceType }}</p>
+    <p>屏幕方向: {{ orientation }}</p>
+    <p>屏幕尺寸: {{ width }} x {{ height }}</p>
+    <p>像素比: {{ pixelRatio }}</p>
+
+    <div v-if="isMobile">
+      <h3>移动设备专用内容</h3>
+      <p>这里是移动设备的特殊布局</p>
+    </div>
+
+    <div v-else-if="isTablet">
+      <h3>平板设备专用内容</h3>
+      <p>这里是平板设备的特殊布局</p>
+    </div>
+
+    <div v-else>
+      <h3>桌面设备专用内容</h3>
+      <p>这里是桌面设备的特殊布局</p>
+    </div>
+  </div>
+</template>
 ```
 
 ### 使用 Vue 插件
@@ -167,8 +169,8 @@ const {
 你也可以将 `@ldesign/device` 作为 Vue 插件使用：
 
 ```typescript
-import { createApp } from 'vue'
 import { DevicePlugin } from '@ldesign/device/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -177,7 +179,7 @@ const app = createApp(App)
 app.use(DevicePlugin, {
   // 全局属性名（可选）
   globalProperty: '$device',
-  
+
   // 设备检测器配置（可选）
   detectorOptions: {
     breakpoints: {
@@ -193,17 +195,6 @@ app.mount('#app')
 然后在组件中使用：
 
 ```vue
-<template>
-  <div>
-    <p>设备类型: {{ $device.getDeviceType() }}</p>
-    
-    <!-- 使用指令 -->
-    <div v-device-mobile>移动设备内容</div>
-    <div v-device-tablet>平板设备内容</div>
-    <div v-device-desktop>桌面设备内容</div>
-  </div>
-</template>
-
 <script setup>
 import { useDeviceDetector } from '@ldesign/device/vue'
 
@@ -215,6 +206,23 @@ detector.on('deviceChange', (info) => {
   console.log('设备信息变化:', info)
 })
 </script>
+
+<template>
+  <div>
+    <p>设备类型: {{ $device.getDeviceType() }}</p>
+
+    <!-- 使用指令 -->
+    <div v-device-mobile>
+      移动设备内容
+    </div>
+    <div v-device-tablet>
+      平板设备内容
+    </div>
+    <div v-device-desktop>
+      桌面设备内容
+    </div>
+  </div>
+</template>
 ```
 
 ## 扩展功能

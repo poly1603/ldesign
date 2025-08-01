@@ -1,47 +1,17 @@
 {
   "name": "@ldesign/http",
+  "type": "module",
   "version": "0.1.0",
   "description": "一个功能强大的通用 HTTP 请求库，支持多种适配器、拦截器、缓存、重试等高级功能，完美集成 Vue 3",
-  "type": "module",
-  "main": "dist/index.cjs",
-  "module": "es/index.js",
-  "types": "types/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./es/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./types/index.d.ts"
-    },
-    "./vue": {
-      "import": "./es/vue.js",
-      "require": "./dist/vue.cjs",
-      "types": "./types/vue.d.ts"
-    }
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/http#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/http.git"
   },
-  "files": [
-    "dist",
-    "es",
-    "types",
-    "README.md"
-  ],
-  "scripts": {
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w",
-    "dev": "rollup -c -w",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint .",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "clean": "rimraf dist es types coverage .nyc_output",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run"
+  "bugs": {
+    "url": "https://github.com/ldesign/http/issues"
   },
   "keywords": [
     "http",
@@ -57,16 +27,55 @@
     "retry",
     "adapter"
   ],
-  "author": "ldesign",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/http.git"
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vue": {
+      "types": "./types/vue.d.ts",
+      "import": "./es/vue.js",
+      "require": "./dist/vue.cjs"
+    }
   },
-  "bugs": {
-    "url": "https://github.com/ldesign/http/issues"
+  "main": "dist/index.cjs",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "README.md",
+    "dist",
+    "es",
+    "types"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   },
-  "homepage": "https://github.com/ldesign/http#readme",
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "dev": "rollup -c -w",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "deploy": "tsx ../../tools/deploy/package-deployer.ts http",
+    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts http --tag beta",
+    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts http --tag alpha",
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts http --dry-run"
+  },
   "peerDependencies": {
     "vue": "^3.3.0"
   },
@@ -99,9 +108,5 @@
     "vitest": "^2.0.0",
     "vue": "^3.4.0",
     "vue-tsc": "^2.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
   }
 }

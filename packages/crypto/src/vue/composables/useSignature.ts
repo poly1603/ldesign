@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { digitalSignature } from '../../core'
 
 /**
@@ -18,13 +18,13 @@ export interface SignatureState {
 export interface SignatureActions {
   // RSA 签名
   sign: (data: string, privateKey: string, algorithm?: string) => Promise<string>
-  
+
   // RSA 验证签名
   verify: (data: string, signature: string, publicKey: string, algorithm?: string) => Promise<boolean>
-  
+
   // 批量签名
   signMultiple: (dataList: string[], privateKey: string, algorithm?: string) => Promise<string[]>
-  
+
   // 批量验证签名
   verifyMultiple: (
     verificationList: Array<{
@@ -34,16 +34,16 @@ export interface SignatureActions {
       algorithm?: string
     }>
   ) => Promise<boolean[]>
-  
+
   // 签名文件（模拟）
   signFile: (fileContent: string, privateKey: string, algorithm?: string) => Promise<string>
-  
+
   // 验证文件签名（模拟）
   verifyFile: (fileContent: string, signature: string, publicKey: string, algorithm?: string) => Promise<boolean>
-  
+
   // 清除错误
   clearError: () => void
-  
+
   // 重置状态
   reset: () => void
 }
@@ -54,7 +54,7 @@ export interface SignatureActions {
 export interface UseSignatureReturn extends SignatureState, SignatureActions {
   // 便捷访问
   digitalSignature: typeof digitalSignature
-  
+
   // 计算属性
   isLoading: Ref<boolean>
 }
@@ -83,24 +83,27 @@ export function useSignature(): UseSignatureReturn {
   // 异步操作包装器
   const wrapAsync = async <T>(
     operation: () => T,
-    loadingRef: Ref<boolean>
+    loadingRef: Ref<boolean>,
   ): Promise<T> => {
     try {
       loadingRef.value = true
       lastError.value = null
       const result = operation()
-      
+
       // 更新相关状态
       if (typeof result === 'string' && loadingRef === isSigning) {
         lastSignature.value = result
-      } else if (typeof result === 'boolean' && loadingRef === isVerifying) {
+      }
+      else if (typeof result === 'boolean' && loadingRef === isVerifying) {
         lastVerificationResult.value = result
       }
-      
+
       return result
-    } catch (error) {
+    }
+    catch (error) {
       handleError(error)
-    } finally {
+    }
+    finally {
       loadingRef.value = false
     }
   }
@@ -109,7 +112,7 @@ export function useSignature(): UseSignatureReturn {
   const sign = async (
     data: string,
     privateKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): Promise<string> => {
     return wrapAsync(() => digitalSignature.sign(data, privateKey, algorithm), isSigning)
   }
@@ -119,7 +122,7 @@ export function useSignature(): UseSignatureReturn {
     data: string,
     signature: string,
     publicKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): Promise<boolean> => {
     return wrapAsync(() => digitalSignature.verify(data, signature, publicKey, algorithm), isVerifying)
   }
@@ -128,7 +131,7 @@ export function useSignature(): UseSignatureReturn {
   const signMultiple = async (
     dataList: string[],
     privateKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): Promise<string[]> => {
     return wrapAsync(() => {
       return dataList.map(data => digitalSignature.sign(data, privateKey, algorithm))
@@ -142,16 +145,16 @@ export function useSignature(): UseSignatureReturn {
       signature: string
       publicKey: string
       algorithm?: string
-    }>
+    }>,
   ): Promise<boolean[]> => {
     return wrapAsync(() => {
-      return verificationList.map(item => 
+      return verificationList.map(item =>
         digitalSignature.verify(
           item.data,
           item.signature,
           item.publicKey,
-          item.algorithm || 'sha256'
-        )
+          item.algorithm || 'sha256',
+        ),
       )
     }, isVerifying)
   }
@@ -160,7 +163,7 @@ export function useSignature(): UseSignatureReturn {
   const signFile = async (
     fileContent: string,
     privateKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): Promise<string> => {
     return wrapAsync(() => digitalSignature.sign(fileContent, privateKey, algorithm), isSigning)
   }
@@ -170,7 +173,7 @@ export function useSignature(): UseSignatureReturn {
     fileContent: string,
     signature: string,
     publicKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): Promise<boolean> => {
     return wrapAsync(() => digitalSignature.verify(fileContent, signature, publicKey, algorithm), isVerifying)
   }
@@ -197,7 +200,7 @@ export function useSignature(): UseSignatureReturn {
     lastSignature,
     lastVerificationResult,
     isLoading,
-    
+
     // 操作
     sign,
     verify,
@@ -207,7 +210,7 @@ export function useSignature(): UseSignatureReturn {
     verifyFile,
     clearError,
     reset,
-    
+
     // 便捷访问
     digitalSignature,
   }

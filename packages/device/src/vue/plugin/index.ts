@@ -1,7 +1,7 @@
 import type { App, Plugin } from 'vue'
+import type { DevicePluginOptions } from '../../types'
 import { inject } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
-import type { DevicePluginOptions } from '../../types'
 import { vDevice, vDeviceDesktop, vDeviceMobile, vDeviceTablet } from '../directives/vDevice'
 
 /**

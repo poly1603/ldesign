@@ -11,6 +11,7 @@ LDesign Template 提供了一系列工具函数，用于设备检测、缓存管
 **返回值:** `DeviceType`
 
 **示例:**
+
 ```typescript
 import { detectDevice } from '@ldesign/template'
 
@@ -23,12 +24,14 @@ console.log('当前设备:', currentDevice) // 'desktop' | 'tablet' | 'mobile'
 根据视口尺寸检测设备类型。
 
 **参数:**
+
 - `width` (可选): `number` - 视口宽度，默认为 `window.innerWidth`
 - `height` (可选): `number` - 视口高度，默认为 `window.innerHeight`
 
 **返回值:** `DeviceType`
 
 **示例:**
+
 ```typescript
 import { detectDeviceByViewport } from '@ldesign/template'
 
@@ -45,11 +48,13 @@ console.log('768x1024 设备类型:', device2) // 'tablet'
 根据 User Agent 检测设备类型。
 
 **参数:**
+
 - `userAgent` (可选): `string` - User Agent 字符串，默认为 `navigator.userAgent`
 
 **返回值:** `DeviceType`
 
 **示例:**
+
 ```typescript
 import { detectDeviceByUserAgent } from '@ldesign/template'
 
@@ -66,18 +71,20 @@ console.log('iPhone 设备类型:', device2) // 'mobile'
 创建设备变化监听器。
 
 **参数:**
+
 - `callback`: `(newDevice: DeviceType, oldDevice: DeviceType) => void` - 设备变化回调
 - `options` (可选): `DeviceWatcherOptions` - 监听选项
 
 **返回值:** `() => void` - 清理函数
 
 **示例:**
+
 ```typescript
 import { createDeviceWatcher } from '@ldesign/template'
 
 const cleanup = createDeviceWatcher((newDevice, oldDevice) => {
   console.log(`设备从 ${oldDevice} 切换到 ${newDevice}`)
-  
+
   // 可以在这里触发模板重新加载
   templateManager.setDevice(newDevice)
 })
@@ -104,6 +111,7 @@ interface DeviceBreakpoints {
 ```
 
 **高级示例:**
+
 ```typescript
 const cleanup = createDeviceWatcher(
   (newDevice, oldDevice) => {
@@ -127,15 +135,18 @@ const cleanup = createDeviceWatcher(
 模板缓存类，提供 LRU 缓存功能。
 
 **构造函数:**
+
 ```typescript
 new TemplateCache(maxSize?: number, ttl?: number)
 ```
 
 **参数:**
+
 - `maxSize` (可选): `number` - 最大缓存数量，默认 50
 - `ttl` (可选): `number` - 缓存过期时间（毫秒），默认无过期
 
 **示例:**
+
 ```typescript
 import { TemplateCache } from '@ldesign/template'
 
@@ -162,24 +173,31 @@ console.log('缓存统计:', stats)
 #### 方法
 
 ##### `setComponent(category, device, template, component)`
+
 设置组件缓存。
 
 ##### `getComponent(category, device, template)`
+
 获取组件缓存。
 
 ##### `hasComponent(category, device, template)`
+
 检查组件是否存在于缓存中。
 
 ##### `removeComponent(category, device, template)`
+
 移除指定组件缓存。
 
 ##### `clear()`
+
 清空所有缓存。
 
 ##### `getStats()`
+
 获取缓存统计信息。
 
 **返回值:**
+
 ```typescript
 interface CacheStats {
   hits: number
@@ -194,11 +212,13 @@ interface CacheStats {
 通用 LRU 缓存类。
 
 **构造函数:**
+
 ```typescript
 new LRUCache<K, V>(maxSize?: number, ttl?: number)
 ```
 
 **示例:**
+
 ```typescript
 import { LRUCache } from '@ldesign/template'
 
@@ -231,11 +251,13 @@ const stats = cache.getStats()
 检查值是否为有效的设备类型。
 
 **参数:**
+
 - `value`: `any` - 要检查的值
 
 **返回值:** `boolean`
 
 **示例:**
+
 ```typescript
 import { isDeviceType } from '@ldesign/template'
 
@@ -249,11 +271,13 @@ console.log(isDeviceType('invalid')) // false
 标准化设备类型值。
 
 **参数:**
+
 - `value`: `string` - 设备类型字符串
 
 **返回值:** `DeviceType | null`
 
 **示例:**
+
 ```typescript
 import { normalizeDeviceType } from '@ldesign/template'
 
@@ -269,11 +293,13 @@ console.log(normalizeDeviceType('invalid')) // null
 解析模板路径。
 
 **参数:**
+
 - `path`: `string` - 模板路径，格式为 `category/device/template` 或 `category/template`
 
 **返回值:** `TemplatePathInfo | null`
 
 **示例:**
+
 ```typescript
 import { parseTemplatePath } from '@ldesign/template'
 
@@ -292,6 +318,7 @@ console.log(info3) // null
 构建模板路径。
 
 **参数:**
+
 - `category`: `string` - 模板分类
 - `device`: `DeviceType | null` - 设备类型
 - `template`: `string` - 模板名称
@@ -299,6 +326,7 @@ console.log(info3) // null
 **返回值:** `string`
 
 **示例:**
+
 ```typescript
 import { buildTemplatePath } from '@ldesign/template'
 
@@ -316,11 +344,13 @@ console.log(path2) // 'auth/login'
 验证模板配置。
 
 **参数:**
+
 - `config`: `TemplateConfig` - 模板配置对象
 
 **返回值:** `ValidationResult`
 
 **示例:**
+
 ```typescript
 import { validateTemplateConfig } from '@ldesign/template'
 
@@ -356,12 +386,14 @@ interface ValidationResult {
 验证模板属性。
 
 **参数:**
+
 - `props`: `Record<string, any>` - 属性对象
 - `schema`: `PropSchema` - 属性模式
 
 **返回值:** `ValidationResult`
 
 **示例:**
+
 ```typescript
 import { validateTemplateProps } from '@ldesign/template'
 
@@ -385,9 +417,11 @@ const result = validateTemplateProps(props, schema)
 启用或禁用调试模式。
 
 **参数:**
+
 - `enabled` (可选): `boolean` - 是否启用，默认 `true`
 
 **示例:**
+
 ```typescript
 import { enableDebugMode } from '@ldesign/template'
 
@@ -405,6 +439,7 @@ enableDebugMode(false)
 **返回值:** `DebugInfo`
 
 **示例:**
+
 ```typescript
 import { getDebugInfo } from '@ldesign/template'
 
@@ -428,11 +463,11 @@ interface DebugInfo {
 
 ```typescript
 import {
-  TemplateCache,
   createDeviceWatcher,
   detectDevice,
   enableDebugMode,
   parseTemplatePath,
+  TemplateCache,
   validateTemplateConfig
 } from '@ldesign/template'
 

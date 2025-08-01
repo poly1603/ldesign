@@ -1,9 +1,9 @@
 import type {
+  Logger,
   Middleware,
-  MiddlewareManager,
   MiddlewareContext,
+  MiddlewareManager,
   MiddlewareNext,
-  Logger
 } from '../types'
 
 export class MiddlewareManagerImpl implements MiddlewareManager {
@@ -19,7 +19,8 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
     if (existingIndex > -1) {
       // 替换现有中间件
       this.middleware[existingIndex] = middleware
-    } else {
+    }
+    else {
       // 添加新中间件
       this.middleware.push(middleware)
     }
@@ -50,7 +51,8 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
       const middleware = this.middleware[index++]
       try {
         await middleware.handler(context, next)
-      } catch (error) {
+      }
+      catch (error) {
         // 将错误添加到上下文中
         context.error = error as Error
         throw error
@@ -99,36 +101,36 @@ export function createMiddlewareManager(logger?: Logger): MiddlewareManager {
 export function createRequestMiddleware(
   name: string,
   handler: (context: MiddlewareContext, next: MiddlewareNext) => Promise<void> | void,
-  priority = 50
+  priority = 50,
 ): Middleware {
   return {
     name,
     handler,
-    priority
+    priority,
   }
 }
 
 export function createResponseMiddleware(
   name: string,
   handler: (context: MiddlewareContext, next: MiddlewareNext) => Promise<void> | void,
-  priority = 50
+  priority = 50,
 ): Middleware {
   return {
     name,
     handler,
-    priority
+    priority,
   }
 }
 
 export function createErrorMiddleware(
   name: string,
   handler: (context: MiddlewareContext, next: MiddlewareNext) => Promise<void> | void,
-  priority = 90
+  priority = 90,
 ): Middleware {
   return {
     name,
     handler,
-    priority
+    priority,
   }
 }
 
@@ -140,13 +142,13 @@ export const commonMiddleware = {
     async (context, next) => {
       const start = Date.now()
       logger.info('Middleware execution started', { context })
-      
+
       await next()
-      
+
       const duration = Date.now() - start
       logger.info('Middleware execution completed', { duration, context })
     },
-    10
+    10,
   ),
 
   // 错误处理中间件
@@ -155,13 +157,14 @@ export const commonMiddleware = {
     async (context, next) => {
       try {
         await next()
-      } catch (error) {
+      }
+      catch (error) {
         errorManager.captureError(error as Error)
         context.error = error as Error
         // 不重新抛出错误，让后续中间件处理
       }
     },
-    100
+    100,
   ),
 
   // 性能监控中间件
@@ -169,14 +172,14 @@ export const commonMiddleware = {
     'performance',
     async (context, next) => {
       const start = performance.now()
-      
+
       await next()
-      
+
       const duration = performance.now() - start
       if (duration > 100) { // 超过100ms记录警告
         logger.warn('Slow middleware execution detected', { duration, context })
       }
     },
-    20
-  )
+    20,
+  ),
 }

@@ -5,6 +5,7 @@
 已在 `packages/color/docs/` 目录下创建了完整的 VitePress 文档站点：
 
 ### 文档结构
+
 ```
 docs/
 ├── .vitepress/
@@ -19,6 +20,7 @@ docs/
 ```
 
 ### 文档特性
+
 - 🎨 **美观的首页** - Hero 区域展示核心特性
 - 📖 **完整的导航** - 指南、API、示例三大板块
 - 🔍 **本地搜索** - 支持全文搜索
@@ -27,6 +29,7 @@ docs/
 - 🔗 **外部链接** - GitHub、NPM 等相关链接
 
 ### 运行文档
+
 ```bash
 # 开发模式
 pnpm docs:dev
@@ -43,6 +46,7 @@ pnpm docs:preview
 已在 `packages/color/examples/vanilla/` 创建了完整的纯 JavaScript 示例：
 
 ### 项目结构
+
 ```
 vanilla/
 ├── src/
@@ -55,6 +59,7 @@ vanilla/
 ```
 
 ### 功能特性
+
 - 🎨 **主题管理** - 10个预设主题切换
 - 🌈 **颜色生成** - 从主色调自动生成配套颜色
 - 📊 **色阶展示** - 完整的10级色阶可视化
@@ -64,6 +69,7 @@ vanilla/
 - 📋 **交互功能** - 点击复制、实时预览等
 
 ### 运行示例
+
 ```bash
 # 开发模式
 pnpm example:vanilla
@@ -77,6 +83,7 @@ cd examples/vanilla && pnpm dev
 已在 `packages/color/examples/vue/` 创建了完整的 Vue 3 示例：
 
 ### 项目结构
+
 ```
 vue/
 ├── src/
@@ -106,6 +113,7 @@ vue/
 ```
 
 ### 功能特性
+
 - 🎨 **完整的主题管理** - 预设主题切换和预览
 - 🌈 **智能颜色系统** - 多种生成策略和实时预览
 - 📊 **完整色阶展示** - 10级色阶可视化
@@ -117,12 +125,14 @@ vue/
 - 🔔 **通知系统** - 优雅的 Toast 通知
 
 ### 组合式 API 演示
+
 - `useTheme` - 基础主题管理
 - `useThemeToggle` - 主题切换器
 - `useThemeSelector` - 主题选择器
 - `useSystemThemeSync` - 系统主题同步
 
 ### 运行示例
+
 ```bash
 # 开发模式
 pnpm example:vue
@@ -140,6 +150,7 @@ cd examples/vue && pnpm build
 ## 🎯 核心特性展示
 
 ### 1. 框架无关的核心功能
+
 - ✅ 智能颜色生成（基于 a-nice-red 算法）
 - ✅ 完整色阶系统（集成 @arco-design/color）
 - ✅ 性能优化（闲时处理、LRU缓存）
@@ -147,12 +158,14 @@ cd examples/vue && pnpm build
 - ✅ 多种存储方式支持
 
 ### 2. Vue 3 专门集成
+
 - ✅ 完整的组合式 API
 - ✅ Vue 插件支持
 - ✅ TypeScript 类型安全
 - ✅ 响应式状态管理
 
 ### 3. 开发体验
+
 - ✅ 完整的 TypeScript 类型定义
 - ✅ 详细的文档和示例
 - ✅ 丰富的便捷函数
@@ -161,6 +174,7 @@ cd examples/vue && pnpm build
 ## 📊 项目统计
 
 ### 代码量统计
+
 - **核心代码**: ~2000 行 TypeScript
 - **文档内容**: ~1500 行 Markdown
 - **示例代码**: ~1500 行 (Vanilla JS + Vue)
@@ -168,6 +182,7 @@ cd examples/vue && pnpm build
 - **测试代码**: ~300 行
 
 ### 文件统计
+
 - **核心文件**: 15个 TypeScript 文件
 - **文档文件**: 6个 Markdown 文件
 - **示例文件**: 20个文件 (HTML/JS/Vue/CSS)
@@ -176,6 +191,7 @@ cd examples/vue && pnpm build
 ## 🚀 使用方式
 
 ### 快速开始
+
 ```bash
 # 安装依赖
 pnpm install
@@ -195,6 +211,7 @@ pnpm example:vue      # Vue 3 示例
 ```
 
 ### 在项目中使用
+
 ```typescript
 // 基础使用
 import { createThemeManagerWithPresets } from '@ldesign/color'

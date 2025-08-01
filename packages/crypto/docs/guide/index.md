@@ -92,12 +92,12 @@ import { useCrypto } from '@ldesign/crypto/vue'
 
 ## 浏览器兼容性
 
-| 浏览器 | 版本 |
-|--------|------|
-| Chrome | ≥ 63 |
-| Firefox | ≥ 57 |
-| Safari | ≥ 11.1 |
-| Edge | ≥ 79 |
+| 浏览器  | 版本   |
+| ------- | ------ |
+| Chrome  | ≥ 63   |
+| Firefox | ≥ 57   |
+| Safari  | ≥ 11.1 |
+| Edge    | ≥ 79   |
 
 ## Node.js 兼容性
 

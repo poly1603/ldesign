@@ -88,7 +88,7 @@ export const commonDirectives = {
         document.removeEventListener('click', el._clickOutsideHandler)
         delete el._clickOutsideHandler
       }
-    }
+    },
   } as Directive,
 
   // 复制到剪贴板指令
@@ -98,27 +98,28 @@ export const commonDirectives = {
         try {
           const text = binding.value || el.textContent || ''
           await navigator.clipboard.writeText(text)
-          
+
           // 触发成功回调
           if (binding.arg === 'success' && typeof binding.modifiers.callback === 'function') {
             binding.modifiers.callback(text)
           }
-          
+
           // 添加成功样式
           el.classList.add('copy-success')
           setTimeout(() => {
             el.classList.remove('copy-success')
           }, 1000)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('Failed to copy text:', error)
-          
+
           // 触发错误回调
           if (binding.arg === 'error' && typeof binding.modifiers.callback === 'function') {
             binding.modifiers.callback(error)
           }
         }
       }
-      
+
       el.addEventListener('click', el._copyHandler)
       el.style.cursor = 'pointer'
     },
@@ -127,7 +128,7 @@ export const commonDirectives = {
         el.removeEventListener('click', el._copyHandler)
         delete el._copyHandler
       }
-    }
+    },
   } as Directive,
 
   // 懒加载指令
@@ -136,25 +137,26 @@ export const commonDirectives = {
       const options = {
         threshold: 0.1,
         rootMargin: '50px',
-        ...binding.value?.options
+        ...binding.value?.options,
       }
-      
+
       el._lazyObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             // 执行懒加载回调
             if (typeof binding.value === 'function') {
               binding.value(el)
-            } else if (typeof binding.value?.callback === 'function') {
+            }
+            else if (typeof binding.value?.callback === 'function') {
               binding.value.callback(el)
             }
-            
+
             // 停止观察
             el._lazyObserver?.unobserve(el)
           }
         })
       }, options)
-      
+
       el._lazyObserver.observe(el)
     },
     unmounted(el: HTMLElement) {
@@ -162,7 +164,7 @@ export const commonDirectives = {
         el._lazyObserver.disconnect()
         delete el._lazyObserver
       }
-    }
+    },
   } as Directive,
 
   // 防抖指令
@@ -170,18 +172,19 @@ export const commonDirectives = {
     mounted(el: HTMLElement, binding: any) {
       const delay = binding.value?.delay || 300
       const event = binding.arg || 'click'
-      
+
       el._debounceHandler = (...args: any[]) => {
         clearTimeout(el._debounceTimer)
         el._debounceTimer = window.setTimeout(() => {
           if (typeof binding.value === 'function') {
             binding.value(...args)
-          } else if (typeof binding.value?.callback === 'function') {
+          }
+          else if (typeof binding.value?.callback === 'function') {
             binding.value.callback(...args)
           }
         }, delay)
       }
-      
+
       el.addEventListener(event, el._debounceHandler)
     },
     updated(el: HTMLElement, binding: any) {
@@ -197,7 +200,7 @@ export const commonDirectives = {
         el.removeEventListener(event, el._debounceHandler)
         delete el._debounceHandler
       }
-    }
+    },
   } as Directive,
 
   // 节流指令
@@ -206,19 +209,20 @@ export const commonDirectives = {
       const delay = binding.value?.delay || 300
       const event = binding.arg || 'click'
       let lastTime = 0
-      
+
       el._throttleHandler = (...args: any[]) => {
         const now = Date.now()
         if (now - lastTime >= delay) {
           lastTime = now
           if (typeof binding.value === 'function') {
             binding.value(...args)
-          } else if (typeof binding.value?.callback === 'function') {
+          }
+          else if (typeof binding.value?.callback === 'function') {
             binding.value.callback(...args)
           }
         }
       }
-      
+
       el.addEventListener(event, el._throttleHandler)
     },
     unmounted(el: HTMLElement) {
@@ -227,7 +231,7 @@ export const commonDirectives = {
         el.removeEventListener(event, el._throttleHandler)
         delete el._throttleHandler
       }
-    }
+    },
   } as Directive,
 
   // 权限控制指令
@@ -238,19 +242,21 @@ export const commonDirectives = {
         // 这里应该调用实际的权限检查逻辑
         return checkPermission(permission)
       })
-      
+
       if (!hasPermission) {
         if (binding.modifiers.hide) {
           el.style.display = 'none'
-        } else if (binding.modifiers.disable) {
+        }
+        else if (binding.modifiers.disable) {
           el.setAttribute('disabled', 'true')
           el.style.opacity = '0.5'
           el.style.pointerEvents = 'none'
-        } else {
+        }
+        else {
           el.remove()
         }
       }
-    }
+    },
   } as Directive,
 
   // 焦点指令
@@ -264,8 +270,8 @@ export const commonDirectives = {
       if (binding.value && !binding.oldValue) {
         el.focus()
       }
-    }
-  } as Directive
+    },
+  } as Directive,
 }
 
 // 权限检查函数（示例实现）

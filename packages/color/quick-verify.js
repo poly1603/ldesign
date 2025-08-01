@@ -4,17 +4,18 @@
 
 // 模拟后端算法
 function hexToHsl(hex) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255
-  const g = parseInt(hex.slice(3, 5), 16) / 255
-  const b = parseInt(hex.slice(5, 7), 16) / 255
+  const r = Number.parseInt(hex.slice(1, 3), 16) / 255
+  const g = Number.parseInt(hex.slice(3, 5), 16) / 255
+  const b = Number.parseInt(hex.slice(5, 7), 16) / 255
 
   const max = Math.max(r, g, b)
   const min = Math.min(r, g, b)
-  let h, s, l = (max + min) / 2
+  let h; let s; const l = (max + min) / 2
 
   if (max === min) {
     h = s = 0
-  } else {
+  }
+  else {
     const d = max - min
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
     switch (max) {
@@ -31,7 +32,7 @@ function hexToHsl(hex) {
 function hslToHex(h, s, l) {
   l /= 100
   const a = s * Math.min(l, 1 - l) / 100
-  const f = n => {
+  const f = (n) => {
     const k = (n + h / 30) % 12
     const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
     return Math.round(255 * color).toString(16).padStart(2, '0')
@@ -50,10 +51,11 @@ function generateColorScale(baseColor, count, mode) {
 
     if (mode === 'dark') {
       // 暗色模式：从深到浅（1级=最深色，12级=最浅色）
-      lightness = 5 + (factor * 80)  // 从5到85
-    } else {
+      lightness = 5 + (factor * 80) // 从5到85
+    }
+    else {
       // 亮色模式：从浅到深（1级=最浅色，12级=最深色）
-      lightness = 95 - (factor * 90)  // 从95到5
+      lightness = 95 - (factor * 90) // 从95到5
     }
 
     // 保持饱和度相对稳定，在中间位置稍微提高
@@ -105,6 +107,7 @@ if (lightFirst.l > lightLast.l && darkFirst.l < darkLast.l) {
   console.log('\n现在可以在浏览器中查看视觉效果：')
   console.log('- 示例项目: http://localhost:3001 和 http://localhost:3003')
   console.log('- 完整演示: complete-color-scale-demo.html')
-} else {
+}
+else {
   console.log('\n❌ 修复验证失败，需要进一步调试')
 }

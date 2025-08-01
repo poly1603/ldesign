@@ -31,12 +31,12 @@ export interface CacheItem {
 }
 
 export interface CacheStorage {
-  get(key: string): Promise<CacheItem | null>
-  set(key: string, item: CacheItem): Promise<void>
-  delete(key: string): Promise<boolean>
-  clear(): Promise<void>
-  keys(): Promise<string[]>
-  size(): Promise<number>
+  get: (key: string) => Promise<CacheItem | null>
+  set: (key: string, item: CacheItem) => Promise<void>
+  delete: (key: string) => Promise<boolean>
+  clear: () => Promise<void>
+  keys: () => Promise<string[]>
+  size: () => Promise<number>
 }
 
 export interface CacheStats {
@@ -59,7 +59,8 @@ export class MemoryCacheStorage implements CacheStorage {
 
   async get(key: string): Promise<CacheItem | null> {
     const item = this.cache.get(key)
-    if (!item) return null
+    if (!item)
+      return null
 
     // 检查是否过期
     if (Date.now() > item.timestamp + item.ttl * 1000) {
@@ -112,10 +113,11 @@ export class LocalStorageCacheStorage implements CacheStorage {
   async get(key: string): Promise<CacheItem | null> {
     try {
       const data = localStorage.getItem(this.prefix + key)
-      if (!data) return null
+      if (!data)
+        return null
 
       const item: CacheItem = JSON.parse(data)
-      
+
       // 检查是否过期
       if (Date.now() > item.timestamp + item.ttl * 1000) {
         await this.delete(key)
@@ -123,7 +125,8 @@ export class LocalStorageCacheStorage implements CacheStorage {
       }
 
       return item
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -131,12 +134,14 @@ export class LocalStorageCacheStorage implements CacheStorage {
   async set(key: string, item: CacheItem): Promise<void> {
     try {
       localStorage.setItem(this.prefix + key, JSON.stringify(item))
-    } catch (error) {
+    }
+    catch (error) {
       // 存储空间不足时清理过期条目
       await this.cleanup()
       try {
         localStorage.setItem(this.prefix + key, JSON.stringify(item))
-      } catch {
+      }
+      catch {
         // 仍然失败则忽略
       }
     }
@@ -171,7 +176,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
   private async cleanup(): Promise<void> {
     const keys = await this.keys()
     const now = Date.now()
-    
+
     for (const key of keys) {
       const item = await this.get(key)
       if (!item || now > item.timestamp + item.ttl * 1000) {
@@ -191,7 +196,7 @@ export class HttpCacheManager {
     hits: 0,
     misses: 0,
     size: 0,
-    hitRate: 0
+    hitRate: 0,
   }
 
   constructor(config: Partial<CacheConfig> = {}) {
@@ -200,7 +205,7 @@ export class HttpCacheManager {
       maxSize: 100,
       enableCompression: false,
       strategy: 'memory',
-      ...config
+      ...config,
     }
 
     this.storage = this.createStorage()
@@ -231,7 +236,7 @@ export class HttpCacheManager {
     const method = options.method || 'GET'
     const params = options.params ? JSON.stringify(options.params) : ''
     const headers = options.headers ? JSON.stringify(options.headers) : ''
-    
+
     return `${method}:${url}:${params}:${headers}`
   }
 
@@ -241,13 +246,13 @@ export class HttpCacheManager {
   async get(url: string, options: any = {}): Promise<any | null> {
     const key = this.generateKey(url, options)
     const item = await this.storage.get(key)
-    
+
     if (item) {
       this.stats.hits++
       this.updateStats()
       return item.data
     }
-    
+
     this.stats.misses++
     this.updateStats()
     return null
@@ -257,11 +262,11 @@ export class HttpCacheManager {
    * 设置缓存
    */
   async set(
-    url: string, 
-    options: any, 
-    data: any, 
+    url: string,
+    options: any,
+    data: any,
     ttl?: number,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): Promise<void> {
     const key = this.generateKey(url, options)
     const item: CacheItem = {
@@ -269,7 +274,7 @@ export class HttpCacheManager {
       timestamp: Date.now(),
       ttl: ttl || this.config.defaultTTL,
       headers,
-      size: this.calculateSize(data)
+      size: this.calculateSize(data),
     }
 
     await this.storage.set(key, item)
@@ -318,7 +323,8 @@ export class HttpCacheManager {
   private calculateSize(data: any): number {
     try {
       return JSON.stringify(data).length
-    } catch {
+    }
+    catch {
       return 0
     }
   }

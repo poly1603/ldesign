@@ -12,6 +12,24 @@ interface CancelToken {
     throwIfRequested(): void;
 }
 /**
+ * 取消令牌实现
+ */
+declare class CancelTokenImpl implements CancelToken {
+    isCancelled: boolean;
+    reason?: string;
+    promise: Promise<string>;
+    private resolvePromise;
+    constructor();
+    /**
+     * 取消请求
+     */
+    cancel(reason?: string): void;
+    /**
+     * 如果已取消则抛出错误
+     */
+    throwIfRequested(): void;
+}
+/**
  * 取消令牌源
  */
 declare class CancelTokenSource {
@@ -78,5 +96,5 @@ declare function isCancelError(error: any): boolean;
  */
 declare function createTimeoutCancelToken(timeout: number): CancelTokenSource;
 
-export { CancelManager, CancelTokenSource, createCancelTokenSource, createTimeoutCancelToken, globalCancelManager, isCancelError };
+export { CancelManager, CancelTokenImpl, CancelTokenSource, createCancelTokenSource, createTimeoutCancelToken, globalCancelManager, isCancelError };
 export type { CancelToken };

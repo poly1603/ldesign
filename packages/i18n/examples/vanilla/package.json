@@ -1,18 +1,18 @@
 {
   "name": "@ldesign/i18n-vanilla-example",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "description": "Vanilla JavaScript example for @ldesign/i18n",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "devDependencies": {
-    "vite": "^5.0.12"
-  },
   "dependencies": {
     "@ldesign/i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.12"
   }
 }

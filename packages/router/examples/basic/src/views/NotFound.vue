@@ -1,107 +1,6 @@
-<template>
-  <div class="not-found">
-    <div class="error-container">
-      <div class="error-code">
-        <span class="four">4</span>
-        <span class="zero">0</span>
-        <span class="four">4</span>
-      </div>
-      
-      <div class="error-message">
-        <h1>Page Not Found</h1>
-        <p>Oops! The page you're looking for doesn't exist.</p>
-        <p class="error-details">
-          The requested URL <code>{{ $route.fullPath }}</code> was not found on this server.
-        </p>
-      </div>
-      
-      <div class="error-actions">
-        <button @click="goHome" class="btn btn-primary">
-          🏠 Go Home
-        </button>
-        
-        <button @click="goBack" class="btn btn-secondary">
-          ← Go Back
-        </button>
-        
-        <button @click="refresh" class="btn btn-outline">
-          🔄 Refresh
-        </button>
-      </div>
-      
-      <div class="suggestions">
-        <h3>You might be looking for:</h3>
-        <div class="suggestion-links">
-          <RouterLink to="/" class="suggestion-link">
-            🏠 Home Page
-          </RouterLink>
-          
-          <RouterLink to="/about" class="suggestion-link">
-            ℹ️ About Us
-          </RouterLink>
-          
-          <RouterLink to="/users" class="suggestion-link">
-            👥 Users
-          </RouterLink>
-          
-          <RouterLink to="/products" class="suggestion-link">
-            📦 Products
-          </RouterLink>
-          
-          <RouterLink to="/contact" class="suggestion-link">
-            📞 Contact
-          </RouterLink>
-        </div>
-      </div>
-      
-      <div class="debug-info" v-if="showDebugInfo">
-        <h3>Debug Information:</h3>
-        <div class="debug-details">
-          <div class="debug-item">
-            <strong>Current Route:</strong>
-            <pre>{{ JSON.stringify($route, null, 2) }}</pre>
-          </div>
-          
-          <div class="debug-item">
-            <strong>Available Routes:</strong>
-            <ul>
-              <li v-for="route in availableRoutes" :key="route.path">
-                <code>{{ route.path }}</code> - {{ route.name || 'Unnamed' }}
-              </li>
-            </ul>
-          </div>
-          
-          <div class="debug-item">
-            <strong>Navigation History:</strong>
-            <p>{{ navigationHistory.length }} entries in history</p>
-            <button @click="showHistory = !showHistory" class="btn btn-small">
-              {{ showHistory ? 'Hide' : 'Show' }} History
-            </button>
-            <ul v-if="showHistory">
-              <li v-for="(entry, index) in navigationHistory.slice(-5)" :key="index">
-                {{ entry }}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      
-      <div class="toggle-debug">
-        <button @click="showDebugInfo = !showDebugInfo" class="btn btn-small">
-          {{ showDebugInfo ? 'Hide' : 'Show' }} Debug Info
-        </button>
-      </div>
-    </div>
-    
-    <div class="floating-elements">
-      <div class="floating-element" v-for="n in 6" :key="n" :style="getFloatingStyle(n)"></div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute, RouterLink } from '@ldesign/router'
+import { RouterLink, useRoute, useRouter } from '@ldesign/router'
+import { computed, onMounted, ref } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -120,59 +19,60 @@ const availableRoutes = computed(() => {
     { path: '/users', name: 'Users' },
     { path: '/users/:id', name: 'User' },
     { path: '/products', name: 'Products' },
-    { path: '/contact', name: 'Contact' }
+    { path: '/contact', name: 'Contact' },
   ]
 })
 
 // 方法
-const goHome = () => {
+function goHome() {
   addToHistory('Navigated to Home')
   router.push('/')
 }
 
-const goBack = () => {
+function goBack() {
   if (window.history.length > 1) {
     addToHistory('Went back in history')
     router.back()
-  } else {
+  }
+  else {
     // 如果没有历史记录，回到首页
     goHome()
   }
 }
 
-const refresh = () => {
+function refresh() {
   addToHistory('Page refreshed')
   window.location.reload()
 }
 
-const addToHistory = (action: string) => {
+function addToHistory(action: string) {
   const timestamp = new Date().toLocaleTimeString()
   navigationHistory.value.push(`${timestamp}: ${action}`)
-  
+
   // 保持历史记录在合理范围内
   if (navigationHistory.value.length > 20) {
     navigationHistory.value = navigationHistory.value.slice(-20)
   }
 }
 
-const getFloatingStyle = (index: number) => {
+function getFloatingStyle(index: number) {
   const delay = index * 0.5
   const duration = 3 + (index % 3)
   const size = 20 + (index % 4) * 10
-  
+
   return {
     '--delay': `${delay}s`,
     '--duration': `${duration}s`,
     '--size': `${size}px`,
-    left: `${10 + (index % 5) * 15}%`,
-    top: `${20 + (index % 4) * 20}%`
+    'left': `${10 + (index % 5) * 15}%`,
+    'top': `${20 + (index % 4) * 20}%`,
   }
 }
 
 // 生命周期
 onMounted(() => {
   addToHistory(`404 error on ${route.value.fullPath}`)
-  
+
   // 记录一些有用的调试信息
   console.group('🚫 404 Error Debug Information')
   console.log('Requested Path:', route.value.fullPath)
@@ -181,6 +81,107 @@ onMounted(() => {
   console.groupEnd()
 })
 </script>
+
+<template>
+  <div class="not-found">
+    <div class="error-container">
+      <div class="error-code">
+        <span class="four">4</span>
+        <span class="zero">0</span>
+        <span class="four">4</span>
+      </div>
+
+      <div class="error-message">
+        <h1>Page Not Found</h1>
+        <p>Oops! The page you're looking for doesn't exist.</p>
+        <p class="error-details">
+          The requested URL <code>{{ $route.fullPath }}</code> was not found on this server.
+        </p>
+      </div>
+
+      <div class="error-actions">
+        <button class="btn btn-primary" @click="goHome">
+          🏠 Go Home
+        </button>
+
+        <button class="btn btn-secondary" @click="goBack">
+          ← Go Back
+        </button>
+
+        <button class="btn btn-outline" @click="refresh">
+          🔄 Refresh
+        </button>
+      </div>
+
+      <div class="suggestions">
+        <h3>You might be looking for:</h3>
+        <div class="suggestion-links">
+          <RouterLink to="/" class="suggestion-link">
+            🏠 Home Page
+          </RouterLink>
+
+          <RouterLink to="/about" class="suggestion-link">
+            ℹ️ About Us
+          </RouterLink>
+
+          <RouterLink to="/users" class="suggestion-link">
+            👥 Users
+          </RouterLink>
+
+          <RouterLink to="/products" class="suggestion-link">
+            📦 Products
+          </RouterLink>
+
+          <RouterLink to="/contact" class="suggestion-link">
+            📞 Contact
+          </RouterLink>
+        </div>
+      </div>
+
+      <div v-if="showDebugInfo" class="debug-info">
+        <h3>Debug Information:</h3>
+        <div class="debug-details">
+          <div class="debug-item">
+            <strong>Current Route:</strong>
+            <pre>{{ JSON.stringify($route, null, 2) }}</pre>
+          </div>
+
+          <div class="debug-item">
+            <strong>Available Routes:</strong>
+            <ul>
+              <li v-for="route in availableRoutes" :key="route.path">
+                <code>{{ route.path }}</code> - {{ route.name || 'Unnamed' }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="debug-item">
+            <strong>Navigation History:</strong>
+            <p>{{ navigationHistory.length }} entries in history</p>
+            <button class="btn btn-small" @click="showHistory = !showHistory">
+              {{ showHistory ? 'Hide' : 'Show' }} History
+            </button>
+            <ul v-if="showHistory">
+              <li v-for="(entry, index) in navigationHistory.slice(-5)" :key="index">
+                {{ entry }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggle-debug">
+        <button class="btn btn-small" @click="showDebugInfo = !showDebugInfo">
+          {{ showDebugInfo ? 'Hide' : 'Show' }} Debug Info
+        </button>
+      </div>
+    </div>
+
+    <div class="floating-elements">
+      <div v-for="n in 6" :key="n" class="floating-element" :style="getFloatingStyle(n)" />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .not-found {
@@ -438,7 +439,11 @@ onMounted(() => {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -450,7 +455,8 @@ onMounted(() => {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
     opacity: 0.3;
   }
@@ -465,21 +471,21 @@ onMounted(() => {
     margin: 1rem;
     padding: 1.5rem;
   }
-  
+
   .error-code span {
     font-size: 4rem;
     margin: 0 0.25rem;
   }
-  
+
   .error-message h1 {
     font-size: 1.8rem;
   }
-  
+
   .error-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .suggestion-links {
     flex-direction: column;
     align-items: center;

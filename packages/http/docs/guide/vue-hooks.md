@@ -11,15 +11,6 @@
 #### 基础用法
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else-if="data">{{ data }}</div>
-    <button @click="execute">重新请求</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useRequest } from '@ldesign/http/vue'
 
@@ -30,19 +21,36 @@ const { data, loading, error, execute } = useRequest({
   immediate: true // 立即执行
 })
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else-if="data">
+      {{ data }}
+    </div>
+    <button @click="execute">
+      重新请求
+    </button>
+  </div>
+</template>
 ```
 
 #### 配置选项
 
 ```typescript
 interface UseRequestOptions<T> {
-  immediate?: boolean                    // 是否立即执行，默认 true
-  initialData?: T                       // 初始数据
-  transform?: (data: any) => T          // 数据转换函数
-  onSuccess?: (data: T, response: ResponseData<T>) => void  // 成功回调
-  onError?: (error: HttpError) => void  // 错误回调
-  onFinally?: () => void               // 完成回调
-  cancelOnUnmount?: boolean            // 组件卸载时是否取消请求，默认 true
+  immediate?: boolean // 是否立即执行，默认 true
+  initialData?: T // 初始数据
+  transform?: (data: any) => T // 数据转换函数
+  onSuccess?: (data: T, response: ResponseData<T>) => void // 成功回调
+  onError?: (error: HttpError) => void // 错误回调
+  onFinally?: () => void // 完成回调
+  cancelOnUnmount?: boolean // 组件卸载时是否取消请求，默认 true
 }
 ```
 
@@ -50,15 +58,15 @@ interface UseRequestOptions<T> {
 
 ```typescript
 interface UseRequestReturn<T> {
-  data: Ref<T | null>                  // 响应数据
-  loading: Ref<boolean>                // 加载状态
-  error: Ref<HttpError | null>         // 错误信息
-  finished: Ref<boolean>               // 是否已完成
-  execute: (config?: RequestConfig) => Promise<ResponseData<T>>  // 执行请求
-  refresh: () => Promise<ResponseData<T>>  // 刷新请求
-  cancel: () => void                   // 取消请求
-  reset: () => void                    // 重置状态
-  canCancel: ComputedRef<boolean>      // 是否可以取消
+  data: Ref<T | null> // 响应数据
+  loading: Ref<boolean> // 加载状态
+  error: Ref<HttpError | null> // 错误信息
+  finished: Ref<boolean> // 是否已完成
+  execute: (config?: RequestConfig) => Promise<ResponseData<T>> // 执行请求
+  refresh: () => Promise<ResponseData<T>> // 刷新请求
+  cancel: () => void // 取消请求
+  reset: () => void // 重置状态
+  canCancel: ComputedRef<boolean> // 是否可以取消
 }
 ```
 
@@ -66,8 +74,8 @@ interface UseRequestReturn<T> {
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRequest } from '@ldesign/http/vue'
+import { ref } from 'vue'
 
 interface User {
   id: number
@@ -122,8 +130,8 @@ const { data, loading, error, isStale } = useQuery(
   'users', // 查询键
   { url: '/api/users', method: 'GET' },
   {
-    staleTime: 300000,  // 5分钟内数据不过期
-    cacheTime: 600000,  // 缓存保留10分钟
+    staleTime: 300000, // 5分钟内数据不过期
+    cacheTime: 600000, // 缓存保留10分钟
   }
 )
 </script>
@@ -133,8 +141,8 @@ const { data, loading, error, isStale } = useQuery(
 
 ```vue
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useQuery } from '@ldesign/http/vue'
+import { computed, ref } from 'vue'
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -157,12 +165,12 @@ const { data, loading } = useQuery(
 
 ```typescript
 interface UseQueryOptions<T> {
-  enabled?: MaybeRef<boolean>          // 是否启用查询
-  staleTime?: number                   // 数据过期时间
-  cacheTime?: number                   // 缓存保留时间
-  refetchOnWindowFocus?: boolean       // 窗口聚焦时重新获取
-  refetchOnReconnect?: boolean         // 网络重连时重新获取
-  refetchInterval?: number             // 定时重新获取间隔
+  enabled?: MaybeRef<boolean> // 是否启用查询
+  staleTime?: number // 数据过期时间
+  cacheTime?: number // 缓存保留时间
+  refetchOnWindowFocus?: boolean // 窗口聚焦时重新获取
+  refetchOnReconnect?: boolean // 网络重连时重新获取
+  refetchInterval?: number // 定时重新获取间隔
   retry?: boolean | number | ((retryCount: number, error: HttpError) => boolean)
   retryDelay?: number | ((retryCount: number) => number)
   // ... 其他选项
@@ -176,27 +184,9 @@ interface UseQueryOptions<T> {
 #### 基础用法
 
 ```vue
-<template>
-  <form @submit.prevent="handleSubmit">
-    <input v-model="form.name" placeholder="姓名" required />
-    <input v-model="form.email" type="email" placeholder="邮箱" required />
-    <button type="submit" :disabled="loading">
-      {{ loading ? '提交中...' : '提交' }}
-    </button>
-  </form>
-  
-  <div v-if="error" class="error">
-    错误: {{ error.message }}
-  </div>
-  
-  <div v-if="data" class="success">
-    创建成功: {{ data.name }}
-  </div>
-</template>
-
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { useMutation } from '@ldesign/http/vue'
+import { reactive } from 'vue'
 
 const form = reactive({
   name: '',
@@ -204,7 +194,7 @@ const form = reactive({
 })
 
 const { mutate, loading, error, data } = useMutation(
-  (userData) => http.post('/api/users', userData),
+  userData => http.post('/api/users', userData),
   {
     onSuccess: (data) => {
       console.log('创建成功:', data)
@@ -218,10 +208,28 @@ const { mutate, loading, error, data } = useMutation(
   }
 )
 
-const handleSubmit = () => {
+function handleSubmit() {
   mutate(form)
 }
 </script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="form.name" placeholder="姓名" required>
+    <input v-model="form.email" type="email" placeholder="邮箱" required>
+    <button type="submit" :disabled="loading">
+      {{ loading ? '提交中...' : '提交' }}
+    </button>
+  </form>
+
+  <div v-if="error" class="error">
+    错误: {{ error.message }}
+  </div>
+
+  <div v-if="data" class="success">
+    创建成功: {{ data.name }}
+  </div>
+</template>
 ```
 
 #### 乐观更新
@@ -238,10 +246,10 @@ const { mutate: updateUser } = useMutation(
     onMutate: async ({ id, data }) => {
       // 取消正在进行的查询
       await queryClient.cancelQueries('users')
-      
+
       // 保存当前数据快照
       const previousUsers = users.value
-      
+
       // 乐观更新
       if (users.value) {
         const index = users.value.findIndex(user => user.id === id)
@@ -249,7 +257,7 @@ const { mutate: updateUser } = useMutation(
           users.value[index] = { ...users.value[index], ...data }
         }
       }
-      
+
       return { previousUsers }
     },
     onError: (error, variables, context) => {
@@ -316,32 +324,6 @@ const { mutate: deleteUser } = userResource.useDelete({
 分页查询的便利 hook。
 
 ```vue
-<template>
-  <div>
-    <!-- 数据列表 -->
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else>
-      <div v-for="item in data?.data" :key="item.id">
-        {{ item.name }}
-      </div>
-    </div>
-    
-    <!-- 分页控件 -->
-    <div class="pagination">
-      <button @click="prevPage" :disabled="!hasPrevPage">上一页</button>
-      <span>第 {{ page }} 页，共 {{ totalPages }} 页</span>
-      <button @click="nextPage" :disabled="!hasNextPage">下一页</button>
-      
-      <select v-model="pageSize" @change="setPageSize">
-        <option value="10">10 条/页</option>
-        <option value="20">20 条/页</option>
-        <option value="50">50 条/页</option>
-      </select>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { usePagination } from '@ldesign/http/vue'
 
@@ -362,6 +344,46 @@ const {
   refresh
 } = usePagination('/api/users', 1, 10)
 </script>
+
+<template>
+  <div>
+    <!-- 数据列表 -->
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else>
+      <div v-for="item in data?.data" :key="item.id">
+        {{ item.name }}
+      </div>
+    </div>
+
+    <!-- 分页控件 -->
+    <div class="pagination">
+      <button :disabled="!hasPrevPage" @click="prevPage">
+        上一页
+      </button>
+      <span>第 {{ page }} 页，共 {{ totalPages }} 页</span>
+      <button :disabled="!hasNextPage" @click="nextPage">
+        下一页
+      </button>
+
+      <select v-model="pageSize" @change="setPageSize">
+        <option value="10">
+          10 条/页
+        </option>
+        <option value="20">
+          20 条/页
+        </option>
+        <option value="50">
+          50 条/页
+        </option>
+      </select>
+    </div>
+  </div>
+</template>
 ```
 
 ## 高级用法
@@ -370,8 +392,8 @@ const {
 
 ```vue
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useQuery } from '@ldesign/http/vue'
+import { computed, ref } from 'vue'
 
 const searchTerm = ref('')
 const enabled = computed(() => searchTerm.value.length > 2)
@@ -415,23 +437,6 @@ const { data: permissions } = useQuery(
 ### 无限滚动
 
 ```vue
-<template>
-  <div>
-    <div v-for="page in data?.pages" :key="page.page">
-      <div v-for="item in page.data" :key="item.id">
-        {{ item.name }}
-      </div>
-    </div>
-    
-    <button 
-      @click="fetchNextPage" 
-      :disabled="!hasNextPage || isFetchingNextPage"
-    >
-      {{ isFetchingNextPage ? '加载中...' : '加载更多' }}
-    </button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useInfiniteQuery } from '@ldesign/http/vue'
 
@@ -455,6 +460,23 @@ const {
   }
 )
 </script>
+
+<template>
+  <div>
+    <div v-for="page in data?.pages" :key="page.page">
+      <div v-for="item in page.data" :key="item.id">
+        {{ item.name }}
+      </div>
+    </div>
+
+    <button
+      :disabled="!hasNextPage || isFetchingNextPage"
+      @click="fetchNextPage"
+    >
+      {{ isFetchingNextPage ? '加载中...' : '加载更多' }}
+    </button>
+  </div>
+</template>
 ```
 
 ## 错误处理
@@ -462,9 +484,9 @@ const {
 ### 全局错误处理
 
 ```typescript
+import { HttpPlugin } from '@ldesign/http/vue'
 // main.ts
 import { createApp } from 'vue'
-import { HttpPlugin } from '@ldesign/http/vue'
 
 const app = createApp({})
 
@@ -474,7 +496,8 @@ app.use(HttpPlugin, {
     if (error.response?.status === 401) {
       // 处理未授权错误
       router.push('/login')
-    } else if (error.response?.status >= 500) {
+    }
+    else if (error.response?.status >= 500) {
       // 处理服务器错误
       showErrorNotification('服务器错误，请稍后重试')
     }
@@ -494,9 +517,11 @@ const { data, loading, error, execute } = useRequest(
     onError: (error) => {
       if (error.isNetworkError) {
         showNotification('网络连接失败', 'error')
-      } else if (error.response?.status === 404) {
+      }
+      else if (error.response?.status === 404) {
         showNotification('数据不存在', 'warning')
-      } else {
+      }
+      else {
         showNotification('请求失败', 'error')
       }
     }
@@ -528,8 +553,8 @@ const { data: config } = useQuery('app-config', { url: '/api/config' }, {
 
 // 动态数据：短时间缓存
 const { data: notifications } = useQuery('notifications', { url: '/api/notifications' }, {
-  staleTime: 30000,   // 30秒
-  cacheTime: 300000,  // 5分钟
+  staleTime: 30000, // 30秒
+  cacheTime: 300000, // 5分钟
   refetchInterval: 60000 // 每分钟刷新
 })
 ```

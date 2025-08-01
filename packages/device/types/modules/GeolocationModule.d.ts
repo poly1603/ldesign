@@ -1,8 +1,9 @@
-import type { DeviceModule, GeolocationInfo } from '../types';
+import { DeviceModule, GeolocationInfo } from '../types/index.js';
+
 /**
  * 地理位置模块
  */
-export declare class GeolocationModule implements DeviceModule {
+declare class GeolocationModule implements DeviceModule {
     name: string;
     private geolocationInfo;
     private watchId;
@@ -81,4 +82,5 @@ export declare class GeolocationModule implements DeviceModule {
      */
     private parseGeolocationError;
 }
-//# sourceMappingURL=GeolocationModule.d.ts.map
+
+export { GeolocationModule };

@@ -1,78 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LDesign Store - Basic Test</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
-  <script src="https://unpkg.com/reflect-metadata@0.2.1/Reflect.js"></script>
-</head>
-<body>
-  <div id="app">
-    <h1>基础测试</h1>
-    <div>
-      <p>计数: <span id="count">{{ count }}</span></p>
-      <p>名称: <span id="name">{{ name }}</span></p>
-      <p>全名: <span id="fullName">{{ fullName }}</span></p>
-      <button id="increment" @click="increment">增加</button>
-      <button id="setName" @click="setName('Vue')">设置名称</button>
-      <button id="reset" @click="reset">重置</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LDesign Store - Basic Test</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/pinia@2/dist/pinia.iife.js"></script>
+    <script src="https://unpkg.com/reflect-metadata@0.2.1/Reflect.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>基础测试</h1>
+      <div>
+        <p>计数: <span id="count">{{ count }}</span></p>
+        <p>名称: <span id="name">{{ name }}</span></p>
+        <p>全名: <span id="fullName">{{ fullName }}</span></p>
+        <button id="increment" @click="increment">增加</button>
+        <button id="setName" @click="setName('Vue')">设置名称</button>
+        <button id="reset" @click="reset">重置</button>
+      </div>
     </div>
-  </div>
 
-  <script type="module">
-    // 模拟 @ldesign/store 的基本功能
-    const { createApp, ref, computed } = Vue
-    const { createPinia, defineStore } = Pinia
+    <script type="module">
+      // 模拟 @ldesign/store 的基本功能
+      const { createApp, ref, computed } = Vue
+      const { createPinia, defineStore } = Pinia
 
-    // 创建一个简单的 store
-    const useCounterStore = defineStore('counter', () => {
-      const count = ref(0)
-      const name = ref('Test')
-      
-      const fullName = computed(() => `Name: ${name.value}`)
-      
-      function increment() {
-        count.value++
-      }
-      
-      function setName(newName) {
-        name.value = newName
-      }
-      
-      function reset() {
-        count.value = 0
-        name.value = 'Test'
-      }
-      
-      return {
-        count,
-        name,
-        fullName,
-        increment,
-        setName,
-        reset
-      }
-    })
+      // 创建一个简单的 store
+      const useCounterStore = defineStore('counter', () => {
+        const count = ref(0)
+        const name = ref('Test')
 
-    const app = createApp({
-      setup() {
-        const store = useCounterStore()
-        
-        return {
-          count: store.count,
-          name: store.name,
-          fullName: store.fullName,
-          increment: store.increment,
-          setName: store.setName,
-          reset: store.reset
+        const fullName = computed(() => `Name: ${name.value}`)
+
+        function increment() {
+          count.value++
         }
-      }
-    })
 
-    app.use(createPinia())
-    app.mount('#app')
-  </script>
-</body>
+        function setName(newName) {
+          name.value = newName
+        }
+
+        function reset() {
+          count.value = 0
+          name.value = 'Test'
+        }
+
+        return {
+          count,
+          name,
+          fullName,
+          increment,
+          setName,
+          reset,
+        }
+      })
+
+      const app = createApp({
+        setup() {
+          const store = useCounterStore()
+
+          return {
+            count: store.count,
+            name: store.name,
+            fullName: store.fullName,
+            increment: store.increment,
+            setName: store.setName,
+            reset: store.reset,
+          }
+        },
+      })
+
+      app.use(createPinia())
+      app.mount('#app')
+    </script>
+  </body>
 </html>

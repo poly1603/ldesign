@@ -5,7 +5,11 @@ export default antfu({
   vue: true,
   ignores: [
     'dist',
+    'es',
+    'lib',
+    'types',
     'node_modules',
-    '*.d.ts'
-  ]
+    'coverage',
+    '*.d.ts',
+  ],
 })

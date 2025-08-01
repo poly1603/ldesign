@@ -7,6 +7,7 @@
 ### 基础 Store 迁移
 
 **Pinia 代码：**
+
 ```typescript
 import { defineStore } from 'pinia'
 
@@ -15,28 +16,29 @@ export const useCounterStore = defineStore('counter', {
     count: 0,
     name: 'Counter'
   }),
-  
+
   actions: {
     increment() {
       this.count++
     },
-    
+
     async fetchData() {
       const response = await api.getData()
       this.data = response
     }
   },
-  
+
   getters: {
-    doubleCount: (state) => state.count * 2,
-    displayText: (state) => `${state.name}: ${state.count}`
+    doubleCount: state => state.count * 2,
+    displayText: state => `${state.name}: ${state.count}`
   }
 })
 ```
 
 **@ldesign/store 代码：**
+
 ```typescript
-import { BaseStore, State, Action, Getter, AsyncAction } from '@ldesign/store'
+import { Action, AsyncAction, BaseStore, Getter, State } from '@ldesign/store'
 
 export class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -74,6 +76,7 @@ const counterStore = new CounterStore('counter')
 ### 组合式 API 迁移
 
 **Pinia 组合式 API：**
+
 ```typescript
 export const useCounterStore = defineStore('counter', () => {
   const count = ref(0)
@@ -90,9 +93,10 @@ export const useCounterStore = defineStore('counter', () => {
 ```
 
 **@ldesign/store Hook 方式：**
+
 ```typescript
 import { createStore } from '@ldesign/store'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useCounter = createStore('counter', () => {
   const count = ref(0)
@@ -115,6 +119,7 @@ export const useCounter = createStore('counter', () => {
 ### 模块化 Store 迁移
 
 **Vuex 代码：**
+
 ```typescript
 const userModule = {
   namespaced: true,
@@ -122,7 +127,7 @@ const userModule = {
     currentUser: null,
     loading: false
   },
-  
+
   mutations: {
     SET_USER(state, user) {
       state.currentUser = user
@@ -131,19 +136,20 @@ const userModule = {
       state.loading = loading
     }
   },
-  
+
   actions: {
     async login({ commit }, credentials) {
       commit('SET_LOADING', true)
       try {
         const user = await authApi.login(credentials)
         commit('SET_USER', user)
-      } finally {
+      }
+      finally {
         commit('SET_LOADING', false)
       }
     }
   },
-  
+
   getters: {
     isLoggedIn: state => state.currentUser !== null,
     userName: state => state.currentUser?.name || 'Guest'
@@ -152,8 +158,9 @@ const userModule = {
 ```
 
 **@ldesign/store 代码：**
+
 ```typescript
-import { BaseStore, State, AsyncAction, Getter } from '@ldesign/store'
+import { AsyncAction, BaseStore, Getter, State } from '@ldesign/store'
 
 export class UserStore extends BaseStore {
   @State({ default: null })
@@ -184,52 +191,54 @@ export class UserStore extends BaseStore {
 ### 组件使用迁移
 
 **Vuex 组件：**
-```vue
-<template>
-  <div>
-    <p>{{ userName }}</p>
-    <button @click="login" :disabled="loading">
-      {{ loading ? '登录中...' : '登录' }}
-    </button>
-  </div>
-</template>
 
+```vue
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 
 export default {
   computed: {
     ...mapState('user', ['loading']),
     ...mapGetters('user', ['userName'])
   },
-  
+
   methods: {
     ...mapActions('user', ['login'])
   }
 }
 </script>
-```
 
-**@ldesign/store 组件：**
-```vue
 <template>
   <div>
-    <p>{{ userStore.userName }}</p>
-    <button @click="handleLogin" :disabled="userStore.loading">
-      {{ userStore.loading ? '登录中...' : '登录' }}
+    <p>{{ userName }}</p>
+    <button :disabled="loading" @click="login">
+      {{ loading ? '登录中...' : '登录' }}
     </button>
   </div>
 </template>
+```
 
+**@ldesign/store 组件：**
+
+```vue
 <script setup lang="ts">
 import { UserStore } from '@/stores/user'
 
 const userStore = new UserStore('user')
 
-const handleLogin = async () => {
+async function handleLogin() {
   await userStore.login({ email: 'user@example.com', password: 'password' })
 }
 </script>
+
+<template>
+  <div>
+    <p>{{ userStore.userName }}</p>
+    <button :disabled="userStore.loading" @click="handleLogin">
+      {{ userStore.loading ? '登录中...' : '登录' }}
+    </button>
+  </div>
+</template>
 ```
 
 ## 从 Redux 迁移
@@ -237,6 +246,7 @@ const handleLogin = async () => {
 ### Action 和 Reducer 迁移
 
 **Redux 代码：**
+
 ```typescript
 // Actions
 const INCREMENT = 'INCREMENT'
@@ -245,10 +255,10 @@ const SET_LOADING = 'SET_LOADING'
 
 const increment = () => ({ type: INCREMENT })
 const decrement = () => ({ type: DECREMENT })
-const setLoading = (loading) => ({ type: SET_LOADING, payload: loading })
+const setLoading = loading => ({ type: SET_LOADING, payload: loading })
 
 // Reducer
-const counterReducer = (state = { count: 0, loading: false }, action) => {
+function counterReducer(state = { count: 0, loading: false }, action) {
   switch (action.type) {
     case INCREMENT:
       return { ...state, count: state.count + 1 }
@@ -262,20 +272,24 @@ const counterReducer = (state = { count: 0, loading: false }, action) => {
 }
 
 // Async actions (with redux-thunk)
-const fetchData = () => async (dispatch) => {
-  dispatch(setLoading(true))
-  try {
-    const data = await api.getData()
-    dispatch({ type: 'SET_DATA', payload: data })
-  } finally {
-    dispatch(setLoading(false))
+function fetchData() {
+  return async (dispatch) => {
+    dispatch(setLoading(true))
+    try {
+      const data = await api.getData()
+      dispatch({ type: 'SET_DATA', payload: data })
+    }
+    finally {
+      dispatch(setLoading(false))
+    }
   }
 }
 ```
 
 **@ldesign/store 代码：**
+
 ```typescript
-import { BaseStore, State, Action, AsyncAction } from '@ldesign/store'
+import { Action, AsyncAction, BaseStore, State } from '@ldesign/store'
 
 export class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -313,6 +327,7 @@ export class CounterStore extends BaseStore {
 #### 1. 装饰器语法变化
 
 **v1.x：**
+
 ```typescript
 class UserStore extends BaseStore {
   @state({ default: null })
@@ -331,17 +346,18 @@ class UserStore extends BaseStore {
 ```
 
 **v2.x：**
+
 ```typescript
 class UserStore extends BaseStore {
-  @State({ default: null })  // 首字母大写
+  @State({ default: null }) // 首字母大写
   user: User | null = null
 
-  @Action()  // 需要括号
+  @Action() // 需要括号
   setUser(user: User) {
     this.user = user
   }
 
-  @Getter()  // 需要括号
+  @Getter() // 需要括号
   get isLoggedIn() {
     return this.user !== null
   }
@@ -351,6 +367,7 @@ class UserStore extends BaseStore {
 #### 2. 持久化配置变化
 
 **v1.x：**
+
 ```typescript
 class SettingsStore extends BaseStore {
   @state({ default: 'light', persist: true })
@@ -359,9 +376,10 @@ class SettingsStore extends BaseStore {
 ```
 
 **v2.x：**
+
 ```typescript
 class SettingsStore extends BaseStore {
-  @PersistentState({ default: 'light' })  // 使用专门的装饰器
+  @PersistentState({ default: 'light' }) // 使用专门的装饰器
   theme: string = 'light'
 }
 ```
@@ -369,21 +387,23 @@ class SettingsStore extends BaseStore {
 #### 3. Hook API 变化
 
 **v1.x：**
+
 ```typescript
 export const useCounter = defineStore('counter', () => {
   const count = ref(0)
   const increment = () => count.value++
-  
+
   return { count, increment }
 })
 ```
 
 **v2.x：**
+
 ```typescript
 export const useCounter = createStore('counter', () => {
   const count = ref(0)
   const increment = () => count.value++
-  
+
   return {
     state: { count },
     actions: { increment },
@@ -437,11 +457,11 @@ npm install @ldesign/store reflect-metadata
 #### 3. 更新应用入口
 
 ```typescript
-// main.ts
-import 'reflect-metadata'  // 添加这行
+import { createPinia } from 'pinia' // 仍然需要 Pinia 作为底层
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'  // 仍然需要 Pinia 作为底层
 import App from './App.vue'
+// main.ts
+import 'reflect-metadata' // 添加这行
 
 const app = createApp(App)
 app.use(createPinia())
@@ -454,8 +474,8 @@ app.mount('#app')
 
 ```typescript
 // migrate.js
-const fs = require('fs')
-const path = require('path')
+const fs = require('node:fs')
+const path = require('node:path')
 
 function migratePiniaStore(content) {
   // 替换 defineStore 为类定义
@@ -463,7 +483,7 @@ function migratePiniaStore(content) {
     /export const (\w+) = defineStore\('(\w+)', \{/g,
     'export class $1 extends BaseStore {'
   )
-  
+
   // 替换 state 定义
   content = content.replace(
     /state: \(\) => \(\{([\s\S]*?)\}\),/g,
@@ -474,7 +494,7 @@ function migratePiniaStore(content) {
       )
     }
   )
-  
+
   // 替换 actions
   content = content.replace(
     /actions: \{([\s\S]*?)\},/g,
@@ -485,13 +505,13 @@ function migratePiniaStore(content) {
       )
     }
   )
-  
+
   return content
 }
 
 // 使用脚本迁移文件
 const storeFiles = fs.readdirSync('./src/stores')
-storeFiles.forEach(file => {
+storeFiles.forEach((file) => {
   if (file.endsWith('.ts')) {
     const content = fs.readFileSync(`./src/stores/${file}`, 'utf8')
     const migrated = migratePiniaStore(content)
@@ -504,14 +524,14 @@ storeFiles.forEach(file => {
 
 ### 功能对比
 
-| 功能 | Pinia | Vuex | @ldesign/store |
-|------|-------|------|----------------|
-| 类型安全 | ✅ | ❌ | ✅ |
-| 装饰器支持 | ❌ | ❌ | ✅ |
-| 自动持久化 | 插件 | 插件 | ✅ |
-| 性能优化 | 手动 | 手动 | ✅ |
-| 多种使用方式 | ❌ | ❌ | ✅ |
-| 开发工具 | ✅ | ✅ | ✅ |
+| 功能         | Pinia | Vuex | @ldesign/store |
+| ------------ | ----- | ---- | -------------- |
+| 类型安全     | ✅    | ❌   | ✅             |
+| 装饰器支持   | ❌    | ❌   | ✅             |
+| 自动持久化   | 插件  | 插件 | ✅             |
+| 性能优化     | 手动  | 手动 | ✅             |
+| 多种使用方式 | ❌    | ❌   | ✅             |
+| 开发工具     | ✅    | ✅   | ✅             |
 
 ### 迁移验证
 
@@ -519,24 +539,24 @@ storeFiles.forEach(file => {
 
 ```typescript
 // tests/migration.test.ts
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { CounterStore } from '@/stores/counter'
 
 describe('Migration Verification', () => {
   it('should maintain same functionality after migration', () => {
     const store = new CounterStore('counter')
-    
+
     // 验证初始状态
     expect(store.count).toBe(0)
-    
+
     // 验证 actions
     store.increment()
     expect(store.count).toBe(1)
-    
+
     // 验证 getters
     expect(store.doubleCount).toBe(2)
   })
-  
+
   it('should preserve data after migration', () => {
     // 如果有持久化数据，验证迁移后数据完整性
     const store = new CounterStore('counter')
@@ -558,6 +578,7 @@ A: 是的，@ldesign/store 与 Pinia 兼容，你可以在同一个项目中同�
 ### Q: 迁移工具支持哪些场景？
 
 A: 迁移工具支持：
+
 - Pinia defineStore 语法
 - Vuex 模块语法
 - 基础的 Redux 模式
@@ -566,6 +587,7 @@ A: 迁移工具支持：
 ### Q: 如何处理复杂的迁移场景？
 
 A: 对于复杂场景，建议：
+
 1. 先使用自动迁移工具处理基础部分
 2. 手动调整复杂逻辑
 3. 编写测试验证功能完整性

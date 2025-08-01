@@ -1,57 +1,6 @@
-<template>
-  <div class="card">
-    <h3>🌐 网络信息</h3>
-    
-    <div v-if="!isLoaded" class="loading-state">
-      <button @click="loadNetworkModule" class="load-btn" :disabled="loading">
-        {{ loading ? '加载中...' : '📡 加载网络模块' }}
-      </button>
-    </div>
-    
-    <div v-else class="info-grid">
-      <div class="info-item">
-        <span class="label">连接状态:</span>
-        <span class="status" :class="networkInfo?.status">
-          {{ networkInfo?.status || '未知' }}
-        </span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">连接类型:</span>
-        <span class="value">{{ networkInfo?.type || '未知' }}</span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">下载速度:</span>
-        <span class="value">
-          {{ networkInfo?.downlink ? `${networkInfo.downlink} Mbps` : '未知' }}
-        </span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">往返时间:</span>
-        <span class="value">
-          {{ networkInfo?.rtt ? `${networkInfo.rtt} ms` : '未知' }}
-        </span>
-      </div>
-      
-      <div class="info-item">
-        <span class="label">节省流量:</span>
-        <span class="value">{{ networkInfo?.saveData ? '是' : '否' }}</span>
-      </div>
-    </div>
-    
-    <div v-if="isLoaded" class="controls">
-      <button @click="unloadModule" class="unload-btn">
-        ❌ 卸载模块
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useNetwork } from '@ldesign/device/vue'
+import { ref } from 'vue'
 
 const isLoaded = ref(false)
 const loading = ref(false)
@@ -60,26 +9,79 @@ const {
   networkInfo,
   isOnline,
   loadModule,
-  unloadModule: unloadNetworkModule
+  unloadModule: unloadNetworkModule,
 } = useNetwork()
 
-const loadNetworkModule = async () => {
+async function loadNetworkModule() {
   loading.value = true
   try {
     await loadModule()
     isLoaded.value = true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加载网络模块失败:', error)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const unloadModule = () => {
+function unloadModule() {
   unloadNetworkModule()
   isLoaded.value = false
 }
 </script>
+
+<template>
+  <div class="card">
+    <h3>🌐 网络信息</h3>
+
+    <div v-if="!isLoaded" class="loading-state">
+      <button class="load-btn" :disabled="loading" @click="loadNetworkModule">
+        {{ loading ? '加载中...' : '📡 加载网络模块' }}
+      </button>
+    </div>
+
+    <div v-else class="info-grid">
+      <div class="info-item">
+        <span class="label">连接状态:</span>
+        <span class="status" :class="networkInfo?.status">
+          {{ networkInfo?.status || '未知' }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">连接类型:</span>
+        <span class="value">{{ networkInfo?.type || '未知' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">下载速度:</span>
+        <span class="value">
+          {{ networkInfo?.downlink ? `${networkInfo.downlink} Mbps` : '未知' }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">往返时间:</span>
+        <span class="value">
+          {{ networkInfo?.rtt ? `${networkInfo.rtt} ms` : '未知' }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="label">节省流量:</span>
+        <span class="value">{{ networkInfo?.saveData ? '是' : '否' }}</span>
+      </div>
+    </div>
+
+    <div v-if="isLoaded" class="controls">
+      <button class="unload-btn" @click="unloadModule">
+        ❌ 卸载模块
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .card {

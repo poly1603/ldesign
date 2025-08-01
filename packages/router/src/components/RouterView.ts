@@ -1,17 +1,17 @@
 import type {
   Component,
 } from 'vue'
+import type {
+  RouteComponent,
+  RouteLocationNormalized,
+  Router,
+} from '../types'
 import {
   computed,
   defineComponent,
   h,
   inject,
 } from 'vue'
-import type {
-  RouteComponent,
-  RouteLocationNormalized,
-  Router,
-} from '../types'
 import { warn } from '../utils'
 
 /**

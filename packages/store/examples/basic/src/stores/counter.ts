@@ -1,4 +1,4 @@
-import { BaseStore, State, Action, Getter } from '@ldesign/store'
+import { Action, BaseStore, Getter, State } from '@ldesign/store'
 
 export class CounterStore extends BaseStore {
   @State({ default: 0 })

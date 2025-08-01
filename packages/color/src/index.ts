@@ -125,16 +125,6 @@ export type {
   RGB,
 } from './utils/color-converter'
 
-// 导出CSS变量工具
-export {
-  CSSVariableInjector,
-  getCSSVariableValue,
-  globalCSSInjector,
-  injectThemeVariables,
-  setCSSVariableValue,
-  toggleThemeMode,
-} from './utils/css-variables'
-
 // 导出颜色生成器
 export {
   COLOR_GENERATION_PRESETS,
@@ -170,6 +160,16 @@ export {
 export type {
   CSSInjectionOptions,
 } from './utils/css-injector'
+
+// 导出CSS变量工具
+export {
+  CSSVariableInjector,
+  getCSSVariableValue,
+  globalCSSInjector,
+  injectThemeVariables,
+  setCSSVariableValue,
+  toggleThemeMode,
+} from './utils/css-variables'
 
 // 导出事件发射器
 export {

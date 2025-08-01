@@ -4,7 +4,7 @@ import { beforeEach } from 'vitest'
 beforeEach(() => {
   // 清理DOM
   document.body.innerHTML = ''
-  
+
   // 重置location
   if (typeof window !== 'undefined') {
     window.history.replaceState({}, '', '/')
@@ -25,14 +25,14 @@ Object.defineProperty(window, 'location', {
     hash: '',
     assign: vi.fn(),
     replace: vi.fn(),
-    reload: vi.fn()
+    reload: vi.fn(),
   },
-  writable: true
+  writable: true,
 })
 
 // Mock console methods for cleaner test output
 global.console = {
   ...console,
   warn: vi.fn(),
-  error: vi.fn()
+  error: vi.fn(),
 }

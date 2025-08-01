@@ -13,22 +13,25 @@ constructor(id: string, options?: StoreOptions)
 ```
 
 **参数：**
+
 - `id: string` - Store 的唯一标识符，用于区分不同的 Store 实例
 - `options?: StoreOptions` - 可选的配置选项
 
 **StoreOptions 接口：**
+
 ```typescript
 interface StoreOptions {
-  persist?: PersistOptions          // 持久化配置
-  devtools?: boolean               // 是否启用开发工具支持
-  actions?: ActionDefinition[]     // 预定义的动作
-  getters?: GetterDefinition[]     // 预定义的计算属性
-  state?: StateDefinition[]        // 预定义的状态
-  plugins?: Plugin[]               // 插件列表
+  persist?: PersistOptions // 持久化配置
+  devtools?: boolean // 是否启用开发工具支持
+  actions?: ActionDefinition[] // 预定义的动作
+  getters?: GetterDefinition[] // 预定义的计算属性
+  state?: StateDefinition[] // 预定义的状态
+  plugins?: Plugin[] // 插件列表
 }
 ```
 
 **示例：**
+
 ```typescript
 import { BaseStore } from '@ldesign/store'
 
@@ -59,10 +62,12 @@ $patch(mutator: (state: State) => void): void
 ```
 
 **参数：**
+
 - `partialState: Partial<State>` - 要更新的部分状态对象
 - `mutator: (state: State) => void` - 状态变更函数
 
 **示例：**
+
 ```typescript
 // 对象方式更新
 store.$patch({
@@ -80,6 +85,7 @@ store.$patch((state) => {
 **返回值：** `void`
 
 **注意事项：**
+
 - 使用 `$patch` 可以减少响应式更新的次数，提升性能
 - 函数方式适合复杂的状态变更逻辑
 - 所有变更会在一个事务中完成
@@ -93,12 +99,14 @@ $reset(): void
 ```
 
 **示例：**
+
 ```typescript
 store.$reset()
 console.log(store.count) // 回到初始值
 ```
 
 **行为：**
+
 - 将所有状态字段重置为初始值
 - 清除所有错误状态
 - 触发重置事件
@@ -115,31 +123,35 @@ $subscribe(
 ```
 
 **参数：**
+
 - `callback: SubscriptionCallback` - 状态变化回调函数
 - `options?: SubscriptionOptions` - 订阅选项
 
 **SubscriptionCallback 类型：**
+
 ```typescript
 type SubscriptionCallback = (
   mutation: {
-    type: string        // 变更类型
-    payload: any        // 变更数据
-    storeId: string     // Store ID
+    type: string // 变更类型
+    payload: any // 变更数据
+    storeId: string // Store ID
   },
-  state: State          // 当前状态
+  state: State // 当前状态
 ) => void
 ```
 
 **SubscriptionOptions 接口：**
+
 ```typescript
 interface SubscriptionOptions {
-  immediate?: boolean   // 是否立即执行回调
-  deep?: boolean       // 是否深度监听
-  flush?: 'pre' | 'post' | 'sync'  // 回调执行时机
+  immediate?: boolean // 是否立即执行回调
+  deep?: boolean // 是否深度监听
+  flush?: 'pre' | 'post' | 'sync' // 回调执行时机
 }
 ```
 
 **示例：**
+
 ```typescript
 const unsubscribe = store.$subscribe((mutation, state) => {
   console.log('状态变化:', mutation.type, mutation.payload)
@@ -164,20 +176,23 @@ $onAction(callback: ActionCallback): () => void
 ```
 
 **参数：**
+
 - `callback: ActionCallback` - Action 执行回调
 
 **ActionCallback 类型：**
+
 ```typescript
 type ActionCallback = (context: {
-  name: string                           // Action 名称
-  args: any[]                           // Action 参数
-  store: Store                          // Store 实例
+  name: string // Action 名称
+  args: any[] // Action 参数
+  store: Store // Store 实例
   after: (callback: () => void) => void // 执行后回调
   onError: (callback: (error: Error) => void) => void // 错误回调
 }) => void
 ```
 
 **示例：**
+
 ```typescript
 const unsubscribe = store.$onAction(({
   name,
@@ -186,11 +201,11 @@ const unsubscribe = store.$onAction(({
   onError
 }) => {
   console.log(`开始执行 Action: ${name}`, args)
-  
+
   after(() => {
     console.log(`Action ${name} 执行完成`)
   })
-  
+
   onError((error) => {
     console.error(`Action ${name} 执行失败:`, error)
   })
@@ -210,11 +225,13 @@ $dispose(): void
 ```
 
 **示例：**
+
 ```typescript
 store.$dispose()
 ```
 
 **行为：**
+
 - 清除所有订阅
 - 停止所有定时器
 - 清理持久化数据（可选）
@@ -229,9 +246,11 @@ $hydrate(data: any): void
 ```
 
 **参数：**
+
 - `data: any` - 要恢复的状态数据
 
 **示例：**
+
 ```typescript
 const savedData = localStorage.getItem('store-data')
 if (savedData) {
@@ -248,6 +267,7 @@ $serialize(): any
 ```
 
 **示例：**
+
 ```typescript
 const serializedData = store.$serialize()
 localStorage.setItem('store-data', JSON.stringify(serializedData))
@@ -266,6 +286,7 @@ readonly $state: Ref<State>
 ```
 
 **示例：**
+
 ```typescript
 console.log(store.$state.value) // 当前完整状态
 ```
@@ -279,6 +300,7 @@ readonly $id: string
 ```
 
 **示例：**
+
 ```typescript
 console.log(store.$id) // 'user'
 ```
@@ -294,9 +316,11 @@ $nextTick(callback?: () => void): Promise<void>
 ```
 
 **参数：**
+
 - `callback?: () => void` - 可选的回调函数
 
 **示例：**
+
 ```typescript
 store.count++
 await store.$nextTick()
@@ -321,23 +345,26 @@ $watch<T>(
 ```
 
 **参数：**
+
 - `getter: (state: State) => T` - 状态获取函数
 - `callback: (newValue: T, oldValue: T) => void` - 变化回调
 - `options?: WatchOptions` - 监听选项
 
 **WatchOptions 接口：**
+
 ```typescript
 interface WatchOptions {
-  immediate?: boolean   // 是否立即执行
-  deep?: boolean       // 是否深度监听
+  immediate?: boolean // 是否立即执行
+  deep?: boolean // 是否深度监听
   flush?: 'pre' | 'post' | 'sync'
 }
 ```
 
 **示例：**
+
 ```typescript
 const unwatch = store.$watch(
-  (state) => state.count,
+  state => state.count,
   (newCount, oldCount) => {
     console.log(`计数从 ${oldCount} 变为 ${newCount}`)
   },
@@ -365,6 +392,7 @@ class StoreError extends Error {
 ```
 
 **属性：**
+
 - `message: string` - 错误消息
 - `storeId: string` - 发生错误的 Store ID
 - `cause?: Error` - 原始错误（如果有）
@@ -385,6 +413,7 @@ class ActionError extends StoreError {
 ```
 
 **属性：**
+
 - `actionName: string` - 发生错误的 Action 名称
 
 ### ValidationError
@@ -403,6 +432,7 @@ class ValidationError extends StoreError {
 ```
 
 **属性：**
+
 - `field: string` - 验证失败的字段名
 - `value: any` - 验证失败的值
 
@@ -416,20 +446,19 @@ Store 实例的基础接口。
 interface Store {
   readonly $id: string
   readonly $state: Ref<any>
-  $patch(partialState: any): void
-  $patch(mutator: (state: any) => void): void
-  $reset(): void
-  $subscribe(callback: SubscriptionCallback): () => void
-  $onAction(callback: ActionCallback): () => void
-  $dispose(): void
-  $hydrate(data: any): void
-  $serialize(): any
-  $nextTick(callback?: () => void): Promise<void>
-  $watch<T>(
+  $patch: ((partialState: any) => void) & ((mutator: (state: any) => void) => void)
+  $reset: () => void
+  $subscribe: (callback: SubscriptionCallback) => () => void
+  $onAction: (callback: ActionCallback) => () => void
+  $dispose: () => void
+  $hydrate: (data: any) => void
+  $serialize: () => any
+  $nextTick: (callback?: () => void) => Promise<void>
+  $watch: <T>(
     getter: (state: any) => T,
     callback: (newValue: T, oldValue: T) => void,
     options?: WatchOptions
-  ): () => void
+  ) => () => void
 }
 ```
 
@@ -459,10 +488,10 @@ A: 使用单例模式或依赖注入：
 
 ```typescript
 // 单例模式
-export const userStore = new UserStore('user')
-
 // 依赖注入
-import { provide, inject } from 'vue'
+import { inject, provide } from 'vue'
+
+export const userStore = new UserStore('user')
 
 // 提供
 provide('userStore', userStore)

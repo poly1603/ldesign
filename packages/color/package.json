@@ -80,7 +80,20 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "example:vanilla": "cd examples/vanilla && pnpm dev",
-    "example:vue": "cd examples/vue && pnpm dev"
+    "example:vue": "cd examples/vue && pnpm dev",
+    "build:watch": "rollup -c -w",
+    "lint:check": "eslint .",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "deploy": "tsx ../../tools/deploy/package-deployer.ts color",
+    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts color --tag beta",
+    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts color --tag alpha",
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts color --dry-run"
   },
   "peerDependencies": {
     "vue": "^3.3.0"

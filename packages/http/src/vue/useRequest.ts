@@ -1,15 +1,15 @@
-import { ref, computed, onUnmounted, watch, unref } from 'vue'
-import type { Ref, MaybeRef } from 'vue'
+import type { MaybeRef } from 'vue'
+import type {
+  HttpClient,
+  HttpError,
+  RequestConfig,
+  ResponseData,
+} from '@/types'
 import type {
   UseRequestOptions,
   UseRequestReturn,
 } from '@/types/vue'
-import type {
-  RequestConfig,
-  ResponseData,
-  HttpError,
-  HttpClient,
-} from '@/types'
+import { computed, onUnmounted, ref, unref, watch } from 'vue'
 import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
 
 /**
@@ -19,7 +19,7 @@ import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
 export function useRequest<T = any>(
   client: HttpClient,
   config: MaybeRef<RequestConfig>,
-  options: UseRequestOptions<T> = {}
+  options: UseRequestOptions<T> = {},
 ): UseRequestReturn<T> {
   // 响应式状态
   const data = ref<T | null>(options.initialData ?? null)
@@ -72,7 +72,8 @@ export function useRequest<T = any>(
       }
 
       return response
-    } catch (err) {
+    }
+    catch (err) {
       const httpError = err as HttpError
 
       // 如果不是取消错误，更新错误状态
@@ -87,7 +88,8 @@ export function useRequest<T = any>(
       }
 
       throw httpError
-    } finally {
+    }
+    finally {
       loading.value = false
 
       // 调用完成回调
@@ -130,7 +132,7 @@ export function useRequest<T = any>(
       () => {
         execute()
       },
-      { immediate: true, deep: true }
+      { immediate: true, deep: true },
     )
   }
 
@@ -160,7 +162,7 @@ export function useRequest<T = any>(
 export function useAsyncRequest<T = any>(
   client: HttpClient,
   requestFn: () => Promise<ResponseData<T>>,
-  options: Omit<UseRequestOptions<T>, 'immediate'> = {}
+  options: Omit<UseRequestOptions<T>, 'immediate'> = {},
 ): UseRequestReturn<T> {
   const data = ref<T | null>(options.initialData ?? null)
   const loading = ref(false)
@@ -194,7 +196,8 @@ export function useAsyncRequest<T = any>(
       }
 
       return response
-    } catch (err) {
+    }
+    catch (err) {
       const httpError = err as HttpError
 
       if (!isCancelError(httpError)) {
@@ -207,7 +210,8 @@ export function useAsyncRequest<T = any>(
       }
 
       throw httpError
-    } finally {
+    }
+    finally {
       loading.value = false
 
       if (options.onFinally) {

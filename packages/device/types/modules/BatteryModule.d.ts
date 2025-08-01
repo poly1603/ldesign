@@ -1,8 +1,9 @@
-import type { BatteryInfo, DeviceModule } from '../types';
+import { DeviceModule, BatteryInfo } from '../types/index.js';
+
 /**
  * 电池信息模块
  */
-export declare class BatteryModule implements DeviceModule {
+declare class BatteryModule implements DeviceModule {
     name: string;
     private batteryInfo;
     private battery;
@@ -81,4 +82,5 @@ export declare class BatteryModule implements DeviceModule {
      */
     private removeEventListeners;
 }
-//# sourceMappingURL=BatteryModule.d.ts.map
+
+export { BatteryModule };

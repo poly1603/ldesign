@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useSystemThemeSync, useTheme } from '@ldesign/color/vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { currentMode } = useTheme()

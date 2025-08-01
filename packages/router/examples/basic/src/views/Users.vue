@@ -1,46 +1,6 @@
-<template>
-  <div class="users">
-    <h2>👥 Users List</h2>
-    <p>This page demonstrates route parameters and programmatic navigation.</p>
-    
-    <div class="user-list">
-      <h3>Available Users:</h3>
-      <div class="user-grid">
-        <div 
-          v-for="user in users" 
-          :key="user.id"
-          class="user-card"
-          @click="goToUser(user.id)"
-        >
-          <div class="user-avatar">{{ user.name.charAt(0) }}</div>
-          <div class="user-info">
-            <h4>{{ user.name }}</h4>
-            <p>{{ user.email }}</p>
-            <small>ID: {{ user.id }}</small>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="actions">
-      <h3>Quick Actions:</h3>
-      <div class="button-group">
-        <button @click="goToRandomUser">Random User</button>
-        <button @click="goToUserWithQuery">User with Query</button>
-        <button @click="addNewUser">Add New User</button>
-      </div>
-    </div>
-    
-    <div class="route-params" v-if="Object.keys($route.query).length">
-      <h3>Current Query Parameters:</h3>
-      <pre>{{ $route.query }}</pre>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
+import { useRoute, useRouter } from '@ldesign/router'
 import { ref } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
 
 const router = useRouter()
 const route = useRoute()
@@ -52,39 +12,87 @@ const users = ref([
   { id: 3, name: 'Charlie Brown', email: 'charlie@example.com' },
   { id: 4, name: 'Diana Prince', email: 'diana@example.com' },
   { id: 5, name: 'Edward Norton', email: 'edward@example.com' },
-  { id: 6, name: 'Fiona Green', email: 'fiona@example.com' }
+  { id: 6, name: 'Fiona Green', email: 'fiona@example.com' },
 ])
 
 // 方法
-const goToUser = (userId: number) => {
+function goToUser(userId: number) {
   router.push({ name: 'User', params: { id: userId.toString() } })
 }
 
-const goToRandomUser = () => {
+function goToRandomUser() {
   const randomUser = users.value[Math.floor(Math.random() * users.value.length)]
   router.push(`/user/${randomUser.id}`)
 }
 
-const goToUserWithQuery = () => {
+function goToUserWithQuery() {
   router.push({
     name: 'User',
     params: { id: '1' },
-    query: { tab: 'profile', edit: 'true' }
+    query: { tab: 'profile', edit: 'true' },
   })
 }
 
-const addNewUser = () => {
+function addNewUser() {
   const newId = Math.max(...users.value.map(u => u.id)) + 1
   users.value.push({
     id: newId,
     name: `User ${newId}`,
-    email: `user${newId}@example.com`
+    email: `user${newId}@example.com`,
   })
-  
+
   // Navigate to the new user
   router.push({ name: 'User', params: { id: newId.toString() } })
 }
 </script>
+
+<template>
+  <div class="users">
+    <h2>👥 Users List</h2>
+    <p>This page demonstrates route parameters and programmatic navigation.</p>
+
+    <div class="user-list">
+      <h3>Available Users:</h3>
+      <div class="user-grid">
+        <div
+          v-for="user in users"
+          :key="user.id"
+          class="user-card"
+          @click="goToUser(user.id)"
+        >
+          <div class="user-avatar">
+            {{ user.name.charAt(0) }}
+          </div>
+          <div class="user-info">
+            <h4>{{ user.name }}</h4>
+            <p>{{ user.email }}</p>
+            <small>ID: {{ user.id }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <h3>Quick Actions:</h3>
+      <div class="button-group">
+        <button @click="goToRandomUser">
+          Random User
+        </button>
+        <button @click="goToUserWithQuery">
+          User with Query
+        </button>
+        <button @click="addNewUser">
+          Add New User
+        </button>
+      </div>
+    </div>
+
+    <div v-if="Object.keys($route.query).length" class="route-params">
+      <h3>Current Query Parameters:</h3>
+      <pre>{{ $route.query }}</pre>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .users {

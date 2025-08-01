@@ -58,7 +58,7 @@ export type TranslationParams = Record<string, any>
 /**
  * 嵌套对象类型
  */
-export type NestedObject = {
+export interface NestedObject {
   [key: string]: string | NestedObject
 }
 
@@ -77,11 +77,11 @@ export interface LanguagePackage {
  */
 export interface Loader {
   /** 加载语言包 */
-  load(locale: string): Promise<LanguagePackage>
+  load: (locale: string) => Promise<LanguagePackage>
   /** 预加载语言包 */
-  preload(locale: string): Promise<void>
+  preload: (locale: string) => Promise<void>
   /** 检查语言包是否已加载 */
-  isLoaded(locale: string): boolean
+  isLoaded: (locale: string) => boolean
 }
 
 /**
@@ -89,11 +89,11 @@ export interface Loader {
  */
 export interface Storage {
   /** 获取存储的语言 */
-  getLanguage(): string | null
+  getLanguage: () => string | null
   /** 设置存储的语言 */
-  setLanguage(locale: string): void
+  setLanguage: (locale: string) => void
   /** 清除存储的语言 */
-  clearLanguage(): void
+  clearLanguage: () => void
 }
 
 /**
@@ -101,7 +101,7 @@ export interface Storage {
  */
 export interface Detector {
   /** 检测浏览器语言 */
-  detect(): string[]
+  detect: () => string[]
 }
 
 /**
@@ -157,15 +157,15 @@ export interface CacheItem<T = any> {
  */
 export interface LRUCache<T = any> {
   /** 获取缓存项 */
-  get(key: string): T | undefined
+  get: (key: string) => T | undefined
   /** 设置缓存项 */
-  set(key: string, value: T): void
+  set: (key: string, value: T) => void
   /** 删除缓存项 */
-  delete(key: string): boolean
+  delete: (key: string) => boolean
   /** 清空缓存 */
-  clear(): void
+  clear: () => void
   /** 获取缓存大小 */
-  size(): number
+  size: () => number
 }
 
 /**
@@ -183,11 +183,11 @@ export type I18nEventListener = (...args: any[]) => void
  */
 export interface EventEmitter {
   /** 添加事件监听器 */
-  on(event: I18nEventType, listener: I18nEventListener): void
+  on: (event: I18nEventType, listener: I18nEventListener) => void
   /** 移除事件监听器 */
-  off(event: I18nEventType, listener: I18nEventListener): void
+  off: (event: I18nEventType, listener: I18nEventListener) => void
   /** 触发事件 */
-  emit(event: I18nEventType, ...args: any[]): void
+  emit: (event: I18nEventType, ...args: any[]) => void
 }
 
 /**
@@ -211,21 +211,21 @@ export interface BatchTranslationResult {
  */
 export interface I18nInstance extends EventEmitter {
   /** 初始化 */
-  init(): Promise<void>
+  init: () => Promise<void>
   /** 切换语言 */
-  changeLanguage(locale: string): Promise<void>
+  changeLanguage: (locale: string) => Promise<void>
   /** 翻译函数 */
   t: TranslationFunction
   /** 批量翻译 */
-  batchTranslate(keys: string[], params?: TranslationParams): BatchTranslationResult
+  batchTranslate: (keys: string[], params?: TranslationParams) => BatchTranslationResult
   /** 获取可用语言列表 */
-  getAvailableLanguages(): LanguageInfo[]
+  getAvailableLanguages: () => LanguageInfo[]
   /** 获取当前语言 */
-  getCurrentLanguage(): string
+  getCurrentLanguage: () => string
   /** 预加载语言 */
-  preloadLanguage(locale: string): Promise<void>
+  preloadLanguage: (locale: string) => Promise<void>
   /** 检查语言是否已加载 */
-  isLanguageLoaded(locale: string): boolean
+  isLanguageLoaded: (locale: string) => boolean
   /** 销毁实例 */
-  destroy(): void
+  destroy: () => void
 }

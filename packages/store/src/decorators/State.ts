@@ -1,20 +1,20 @@
-import 'reflect-metadata'
 import type {
+  DecoratorMetadata,
   StateDecoratorOptions,
-  DecoratorMetadata
 } from '@/types'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
+import 'reflect-metadata'
 
 /**
  * State 装饰器
  * 用于标记类属性为状态
- * 
+ *
  * @example
  * ```typescript
  * class UserStore extends BaseStore {
  *   @State({ default: '' })
  *   name: string = ''
- * 
+ *
  *   @State({ default: 0, persist: true })
  *   age: number = 0
  * }
@@ -23,12 +23,12 @@ import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     if (typeof propertyKey === 'symbol') {
-      throw new Error('State decorator does not support symbol properties')
+      throw new TypeError('State decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[] = 
-      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[]
+      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -39,13 +39,14 @@ export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
 
     // 检查是否已存在相同的状态定义
     const existingIndex = existingMetadata.findIndex(
-      meta => meta.type === 'state' && meta.key === propertyKey
+      meta => meta.type === 'state' && meta.key === propertyKey,
     )
 
     if (existingIndex >= 0) {
       // 更新现有的元数据
       existingMetadata[existingIndex] = newMetadata
-    } else {
+    }
+    else {
       // 添加新的元数据
       existingMetadata.push(newMetadata)
     }
@@ -67,7 +68,8 @@ export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
         // 如果有 store 实例，更新 store 状态
         if (this._store) {
           this._store.$patch({ [propertyKey]: value })
-        } else {
+        }
+        else {
           // 否则直接设置属性值
           Object.defineProperty(this, `_${propertyKey}`, {
             value,
@@ -115,12 +117,12 @@ export function PersistentState(options: StateDecoratorOptions = {}): PropertyDe
 export function ReadonlyState(options: Omit<StateDecoratorOptions, 'default'> & { value: any }): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     if (typeof propertyKey === 'symbol') {
-      throw new Error('ReadonlyState decorator does not support symbol properties')
+      throw new TypeError('ReadonlyState decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[] =
-      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[]
+      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {

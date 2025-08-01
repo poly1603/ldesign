@@ -35,16 +35,18 @@ import 'reflect-metadata'
 ```
 
 **StateDecoratorOptions 接口：**
+
 ```typescript
 interface StateDecoratorOptions {
-  default?: any        // 默认值
-  reactive?: boolean   // 是否深度响应式，默认 true
-  readonly?: boolean   // 是否只读，默认 false
-  serialize?: boolean  // 是否参与序列化，默认 true
+  default?: any // 默认值
+  reactive?: boolean // 是否深度响应式，默认 true
+  readonly?: boolean // 是否只读，默认 false
+  serialize?: boolean // 是否参与序列化，默认 true
 }
 ```
 
 **示例：**
+
 ```typescript
 class UserStore extends BaseStore {
   @State({ default: '' })
@@ -62,6 +64,7 @@ class UserStore extends BaseStore {
 ```
 
 **特性：**
+
 - 自动创建响应式状态
 - 支持类型推断
 - 可配置默认值和行为
@@ -75,9 +78,10 @@ class UserStore extends BaseStore {
 ```
 
 **示例：**
+
 ```typescript
 class SettingsStore extends BaseStore {
-  @ReactiveState({ 
+  @ReactiveState({
     default: {
       theme: 'light',
       language: 'zh-CN',
@@ -99,6 +103,7 @@ class SettingsStore extends BaseStore {
 ```
 
 **与 @State 的区别：**
+
 - 强制深度响应式
 - 适合嵌套对象
 - 性能开销稍大
@@ -112,19 +117,21 @@ class SettingsStore extends BaseStore {
 ```
 
 **PersistentStateOptions 接口：**
+
 ```typescript
 interface PersistentStateOptions extends StateDecoratorOptions {
-  key?: string                    // 存储键名，默认使用字段名
-  storage?: 'localStorage' | 'sessionStorage'  // 存储类型
-  adapter?: StorageAdapter        // 自定义存储适配器
-  serialize?: (value: any) => string    // 自定义序列化
-  deserialize?: (value: string) => any  // 自定义反序列化
-  condition?: () => boolean       // 持久化条件
-  ttl?: number                   // 过期时间（毫秒）
+  key?: string // 存储键名，默认使用字段名
+  storage?: 'localStorage' | 'sessionStorage' // 存储类型
+  adapter?: StorageAdapter // 自定义存储适配器
+  serialize?: (value: any) => string // 自定义序列化
+  deserialize?: (value: string) => any // 自定义反序列化
+  condition?: () => boolean // 持久化条件
+  ttl?: number // 过期时间（毫秒）
 }
 ```
 
 **示例：**
+
 ```typescript
 class AppStore extends BaseStore {
   // 基础持久化
@@ -132,21 +139,21 @@ class AppStore extends BaseStore {
   theme: 'light' | 'dark' = 'light'
 
   // 自定义存储键
-  @PersistentState({ 
+  @PersistentState({
     default: [],
     key: 'user_favorites_v2'
   })
   favorites: string[] = []
 
   // 使用 sessionStorage
-  @PersistentState({ 
+  @PersistentState({
     default: null,
     storage: 'sessionStorage'
   })
   currentSession: Session | null = null
 
   // 自定义序列化
-  @PersistentState({ 
+  @PersistentState({
     default: new Date(),
     serialize: (date: Date) => date.toISOString(),
     deserialize: (str: string) => new Date(str)
@@ -154,7 +161,7 @@ class AppStore extends BaseStore {
   lastVisit: Date = new Date()
 
   // 条件持久化
-  @PersistentState({ 
+  @PersistentState({
     default: [],
     condition: () => this.isLoggedIn
   })
@@ -171,14 +178,16 @@ class AppStore extends BaseStore {
 ```
 
 **ReadonlyStateOptions 接口：**
+
 ```typescript
 interface ReadonlyStateOptions {
-  value: any           // 只读值
-  computed?: boolean   // 是否为计算属性
+  value: any // 只读值
+  computed?: boolean // 是否为计算属性
 }
 ```
 
 **示例：**
+
 ```typescript
 class ConfigStore extends BaseStore {
   @ReadonlyState({ value: '1.0.0' })
@@ -187,7 +196,7 @@ class ConfigStore extends BaseStore {
   @ReadonlyState({ value: 'production' })
   readonly environment: string
 
-  @ReadonlyState({ 
+  @ReadonlyState({
     value: {
       apiUrl: 'https://api.example.com',
       timeout: 5000
@@ -208,15 +217,17 @@ class ConfigStore extends BaseStore {
 ```
 
 **ActionDecoratorOptions 接口：**
+
 ```typescript
 interface ActionDecoratorOptions {
-  name?: string        // 动作名称，默认使用方法名
-  validate?: boolean   // 是否验证参数，默认 false
-  track?: boolean      // 是否跟踪执行，默认 true
+  name?: string // 动作名称，默认使用方法名
+  validate?: boolean // 是否验证参数，默认 false
+  track?: boolean // 是否跟踪执行，默认 true
 }
 ```
 
 **示例：**
+
 ```typescript
 class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -248,16 +259,18 @@ class CounterStore extends BaseStore {
 ```
 
 **AsyncActionOptions 接口：**
+
 ```typescript
 interface AsyncActionOptions extends ActionDecoratorOptions {
-  loadingState?: string    // 加载状态字段名，默认 'loading'
-  errorState?: string      // 错误状态字段名，默认 'error'
-  autoLoading?: boolean    // 是否自动管理加载状态，默认 true
-  timeout?: number         // 超时时间（毫秒）
+  loadingState?: string // 加载状态字段名，默认 'loading'
+  errorState?: string // 错误状态字段名，默认 'error'
+  autoLoading?: boolean // 是否自动管理加载状态，默认 true
+  timeout?: number // 超时时间（毫秒）
 }
 ```
 
 **示例：**
+
 ```typescript
 class UserStore extends BaseStore {
   @State({ default: null })
@@ -277,7 +290,7 @@ class UserStore extends BaseStore {
     // loading 自动设置为 false
   }
 
-  @AsyncAction({ 
+  @AsyncAction({
     loadingState: 'saving',
     errorState: 'saveError',
     timeout: 10000
@@ -298,19 +311,22 @@ class UserStore extends BaseStore {
 ```
 
 **参数：**
+
 - `ttl?: number` - 缓存时间（毫秒），默认 5000ms
 - `options?: CachedActionOptions` - 缓存选项
 
 **CachedActionOptions 接口：**
+
 ```typescript
 interface CachedActionOptions {
-  key?: string | ((args: any[]) => string)  // 缓存键生成函数
-  maxSize?: number         // 最大缓存数量
-  serialize?: boolean      // 是否序列化参数作为键
+  key?: string | ((args: any[]) => string) // 缓存键生成函数
+  maxSize?: number // 最大缓存数量
+  serialize?: boolean // 是否序列化参数作为键
 }
 ```
 
 **示例：**
+
 ```typescript
 class DataStore extends BaseStore {
   @State({ default: new Map() })
@@ -331,7 +347,7 @@ class DataStore extends BaseStore {
 
   // 自定义缓存键
   @CachedAction(60000, {
-    key: (args) => `user-${args[0]}-profile`,
+    key: args => `user-${args[0]}-profile`,
     maxSize: 100
   })
   async fetchUserProfile(userId: string) {
@@ -349,19 +365,22 @@ class DataStore extends BaseStore {
 ```
 
 **参数：**
+
 - `delay: number` - 防抖延迟（毫秒）
 - `options?: DebouncedActionOptions` - 防抖选项
 
 **DebouncedActionOptions 接口：**
+
 ```typescript
 interface DebouncedActionOptions {
-  leading?: boolean    // 是否在延迟开始时执行，默认 false
-  trailing?: boolean   // 是否在延迟结束时执行，默认 true
-  maxWait?: number     // 最大等待时间
+  leading?: boolean // 是否在延迟开始时执行，默认 false
+  trailing?: boolean // 是否在延迟结束时执行，默认 true
+  maxWait?: number // 最大等待时间
 }
 ```
 
 **示例：**
+
 ```typescript
 class SearchStore extends BaseStore {
   @State({ default: '' })
@@ -400,18 +419,21 @@ class SearchStore extends BaseStore {
 ```
 
 **参数：**
+
 - `interval: number` - 节流间隔（毫秒）
 - `options?: ThrottledActionOptions` - 节流选项
 
 **ThrottledActionOptions 接口：**
+
 ```typescript
 interface ThrottledActionOptions {
-  leading?: boolean    // 是否在间隔开始时执行，默认 true
-  trailing?: boolean   // 是否在间隔结束时执行，默认 false
+  leading?: boolean // 是否在间隔开始时执行，默认 true
+  trailing?: boolean // 是否在间隔结束时执行，默认 false
 }
 ```
 
 **示例：**
+
 ```typescript
 class ScrollStore extends BaseStore {
   @State({ default: 0 })
@@ -425,7 +447,7 @@ class ScrollStore extends BaseStore {
   updateScrollPosition(y: number) {
     this.scrollY = y
     this.isScrolling = true
-    
+
     setTimeout(() => {
       this.isScrolling = false
     }, 150)
@@ -450,14 +472,16 @@ class ScrollStore extends BaseStore {
 ```
 
 **GetterDecoratorOptions 接口：**
+
 ```typescript
 interface GetterDecoratorOptions {
-  cache?: boolean      // 是否缓存结果，默认 true
-  dependencies?: string[]  // 依赖的状态字段
+  cache?: boolean // 是否缓存结果，默认 true
+  dependencies?: string[] // 依赖的状态字段
 }
 ```
 
 **示例：**
+
 ```typescript
 class ShoppingCartStore extends BaseStore {
   @State({ default: [] })
@@ -497,18 +521,21 @@ class ShoppingCartStore extends BaseStore {
 ```
 
 **参数：**
+
 - `dependencies: string[]` - 依赖的状态字段列表
 - `options?: CachedGetterOptions` - 缓存选项
 
 **CachedGetterOptions 接口：**
+
 ```typescript
 interface CachedGetterOptions {
-  ttl?: number         // 缓存时间（毫秒）
-  maxSize?: number     // 最大缓存数量
+  ttl?: number // 缓存时间（毫秒）
+  maxSize?: number // 最大缓存数量
 }
 ```
 
 **示例：**
+
 ```typescript
 class AnalyticsStore extends BaseStore {
   @State({ default: [] })
@@ -546,15 +573,17 @@ class AnalyticsStore extends BaseStore {
 ```
 
 **MemoizedGetterOptions 接口：**
+
 ```typescript
 interface MemoizedGetterOptions {
-  maxSize?: number     // 最大缓存数量，默认 100
-  ttl?: number         // 缓存时间（毫秒）
-  keyGenerator?: (...args: any[]) => string  // 自定义键生成器
+  maxSize?: number // 最大缓存数量，默认 100
+  ttl?: number // 缓存时间（毫秒）
+  keyGenerator?: (...args: any[]) => string // 自定义键生成器
 }
 ```
 
 **示例：**
+
 ```typescript
 class ProductStore extends BaseStore {
   @State({ default: [] })
@@ -564,23 +593,23 @@ class ProductStore extends BaseStore {
   @MemoizedGetter({ maxSize: 10, ttl: 60000 })
   getFilteredProducts(category: string, priceRange: [number, number]) {
     console.log(`过滤产品: ${category}, ${priceRange}`)
-    return this.products.filter(product => 
-      product.category === category &&
-      product.price >= priceRange[0] &&
-      product.price <= priceRange[1]
+    return this.products.filter(product =>
+      product.category === category
+      && product.price >= priceRange[0]
+      && product.price <= priceRange[1]
     )
   }
 
   // 自定义键生成器
-  @MemoizedGetter({ 
+  @MemoizedGetter({
     maxSize: 20,
     keyGenerator: (query, filters) => `${query}-${JSON.stringify(filters)}`
   })
   searchProducts(query: string, filters: any = {}) {
     console.log(`搜索产品: ${query}`)
-    return this.products.filter(product => {
+    return this.products.filter((product) => {
       const matchesQuery = product.name.toLowerCase().includes(query.toLowerCase())
-      const matchesFilters = Object.entries(filters).every(([key, value]) => 
+      const matchesFilters = Object.entries(filters).every(([key, value]) =>
         product[key] === value
       )
       return matchesQuery && matchesFilters
@@ -598,6 +627,7 @@ class ProductStore extends BaseStore {
 ```
 
 **示例：**
+
 ```typescript
 class UserProfileStore extends BaseStore {
   @State({ default: '' })
@@ -718,9 +748,9 @@ class ExampleStore extends BaseStore {
 
 // 获取 Store 的元数据
 const metadata = getStoreMetadata(ExampleStore)
-console.log(metadata.states)   // 状态字段信息
-console.log(metadata.actions)  // 动作方法信息
-console.log(metadata.getters)  // 计算属性信息
+console.log(metadata.states) // 状态字段信息
+console.log(metadata.actions) // 动作方法信息
+console.log(metadata.getters) // 计算属性信息
 ```
 
 ## 常见问题

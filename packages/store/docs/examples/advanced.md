@@ -10,7 +10,7 @@
 
 ```typescript
 // plugins/advanced-persist.ts
-import { StorePlugin, Store } from '@ldesign/store'
+import { Store, StorePlugin } from '@ldesign/store'
 
 interface AdvancedPersistOptions {
   key?: string
@@ -42,10 +42,10 @@ export class AdvancedPersistPlugin implements StorePlugin {
 
   install(store: Store) {
     const key = this.options.key || `store-${store.$id}`
-    
+
     // 恢复状态
     this.restoreState(store, key)
-    
+
     // 监听状态变化并保存
     store.$subscribe((mutation, state) => {
       this.debouncedSave(store, key, state)
@@ -59,30 +59,32 @@ export class AdvancedPersistPlugin implements StorePlugin {
   private async restoreState(store: Store, key: string) {
     try {
       const stored = this.options.storage?.getItem(key)
-      if (!stored) return
+      if (!stored)
+        return
 
       let data = JSON.parse(stored)
-      
+
       // 解密
       if (this.options.encrypt) {
         data = await this.decrypt(data)
       }
-      
+
       // 解压缩
       if (this.options.compress) {
         data = await this.decompress(data)
       }
-      
+
       // 版本迁移
       if (data.version !== this.options.version) {
         data = this.migrateData(data)
       }
-      
+
       // 过滤字段
       const filteredData = this.filterData(data.state, 'restore')
-      
+
       store.$hydrate(filteredData)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('恢复状态失败:', error)
     }
   }
@@ -107,38 +109,40 @@ export class AdvancedPersistPlugin implements StorePlugin {
     try {
       // 过滤字段
       const filteredState = this.filterData(state, 'save')
-      
+
       let data = {
         state: filteredState,
         version: this.options.version,
         timestamp: Date.now()
       }
-      
+
       // 压缩
       if (this.options.compress) {
         data = await this.compress(data)
       }
-      
+
       // 加密
       if (this.options.encrypt) {
         data = await this.encrypt(data)
       }
-      
+
       this.options.storage?.setItem(key, JSON.stringify(data))
-    } catch (error) {
+    }
+    catch (error) {
       console.error('保存状态失败:', error)
-      
+
       // 重试机制
       if (retryCount < this.options.maxRetries!) {
         setTimeout(() => {
           this.saveState(store, key, state, retryCount + 1)
-        }, Math.pow(2, retryCount) * 1000)
+        }, 2 ** retryCount * 1000)
       }
     }
   }
 
   private filterData(data: any, operation: 'save' | 'restore'): any {
-    if (!data || typeof data !== 'object') return data
+    if (!data || typeof data !== 'object')
+      return data
 
     const { include, exclude } = this.options
     const result = { ...data }
@@ -146,7 +150,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
     if (include && include.length > 0) {
       // 只包含指定字段
       const filtered = {}
-      include.forEach(key => {
+      include.forEach((key) => {
         if (key in result) {
           filtered[key] = result[key]
         }
@@ -156,7 +160,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
 
     if (exclude && exclude.length > 0) {
       // 排除指定字段
-      exclude.forEach(key => {
+      exclude.forEach((key) => {
         delete result[key]
       })
     }
@@ -166,7 +170,8 @@ export class AdvancedPersistPlugin implements StorePlugin {
 
   private migrateData(data: any): any {
     const { migrations } = this.options
-    if (!migrations) return data
+    if (!migrations)
+      return data
 
     let currentVersion = data.version || 1
     const targetVersion = this.options.version!
@@ -176,7 +181,8 @@ export class AdvancedPersistPlugin implements StorePlugin {
       if (migration) {
         data.state = migration(data.state)
         currentVersion++
-      } else {
+      }
+      else {
         break
       }
     }
@@ -285,7 +291,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
       after(() => {
         const endTime = performance.now()
         const endMemory = this.getMemoryUsage()
-        
+
         this.addMetric(store.$id, {
           type: 'action',
           name,
@@ -298,7 +304,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
 
       onError((error) => {
         const endTime = performance.now()
-        
+
         this.addMetric(store.$id, {
           type: 'action-error',
           name,
@@ -316,7 +322,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
 
     store.$subscribe((mutation, state) => {
       const diff = this.calculateStateDiff(previousState, state)
-      
+
       if (Object.keys(diff.changed).length > 0) {
         this.addMetric(store.$id, {
           type: 'state-change',
@@ -334,7 +340,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
   private setupMemoryTracking(store: Store) {
     setInterval(() => {
       const memoryUsage = this.getMemoryUsage()
-      
+
       this.addMetric(store.$id, {
         type: 'memory-snapshot',
         name: 'memory-usage',
@@ -360,7 +366,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
 
   private generateReport(storeId: string): PerformanceReport {
     const metrics = this.metrics.get(storeId) || []
-    
+
     const actionMetrics = metrics.filter(m => m.type === 'action')
     const stateChangeMetrics = metrics.filter(m => m.type === 'state-change')
     const memoryMetrics = metrics.filter(m => m.type === 'memory-snapshot')
@@ -389,7 +395,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
 
     return Object.entries(actionGroups).map(([name, actionMetrics]) => {
       const durations = actionMetrics.map(m => m.duration!).filter(d => d !== undefined)
-      
+
       return {
         name,
         count: actionMetrics.length,
@@ -411,7 +417,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
 
   private analyzeMemoryMetrics(metrics: PerformanceMetric[]) {
     const memoryUsages = metrics.map(m => m.memoryUsage!).filter(m => m !== undefined)
-    
+
     return {
       avgMemoryUsage: memoryUsages.reduce((sum, m) => sum + m, 0) / memoryUsages.length,
       minMemoryUsage: Math.min(...memoryUsages),
@@ -440,7 +446,8 @@ export class PerformanceMonitorPlugin implements StorePlugin {
     for (const key in newState) {
       if (!(key in oldState)) {
         added[key] = newState[key]
-      } else if (oldState[key] !== newState[key]) {
+      }
+      else if (oldState[key] !== newState[key]) {
         changed[key] = {
           from: oldState[key],
           to: newState[key]
@@ -462,19 +469,21 @@ export class PerformanceMonitorPlugin implements StorePlugin {
   }
 
   private serializeArgs(args: any[]): any {
-    return args.map(arg => {
-      if (typeof arg === 'function') return '[Function]'
-      if (arg instanceof Error) return arg.message
+    return args.map((arg) => {
+      if (typeof arg === 'function')
+        return '[Function]'
+      if (arg instanceof Error)
+        return arg.message
       return arg
     })
   }
 
-  private getMostChangedFields(metrics: PerformanceMetric[]): Array<{ field: string; count: number }> {
+  private getMostChangedFields(metrics: PerformanceMetric[]): Array<{ field: string, count: number }> {
     const fieldCounts = {}
-    
-    metrics.forEach(metric => {
+
+    metrics.forEach((metric) => {
       if (metric.diff) {
-        Object.keys(metric.diff.changed).forEach(field => {
+        Object.keys(metric.diff.changed).forEach((field) => {
           fieldCounts[field] = (fieldCounts[field] || 0) + 1
         })
       }
@@ -487,14 +496,17 @@ export class PerformanceMonitorPlugin implements StorePlugin {
   }
 
   private calculateMemoryTrend(memoryUsages: number[]): 'increasing' | 'decreasing' | 'stable' {
-    if (memoryUsages.length < 2) return 'stable'
-    
+    if (memoryUsages.length < 2)
+      return 'stable'
+
     const first = memoryUsages[0]
     const last = memoryUsages[memoryUsages.length - 1]
     const threshold = first * 0.1 // 10% 阈值
 
-    if (last > first + threshold) return 'increasing'
-    if (last < first - threshold) return 'decreasing'
+    if (last > first + threshold)
+      return 'increasing'
+    if (last < first - threshold)
+      return 'decreasing'
     return 'stable'
   }
 
@@ -526,7 +538,7 @@ interface PerformanceMetric {
 interface PerformanceReport {
   storeId: string
   totalMetrics: number
-  timeRange: { start: number; end: number }
+  timeRange: { start: number, end: number }
   actions: any[]
   stateChanges: any
   memory: any
@@ -547,7 +559,7 @@ export function RequirePermission(permission: string) {
 
     descriptor.value = async function (...args: any[]) {
       const authStore = new AuthStore('auth')
-      
+
       if (!authStore.hasPermission(permission)) {
         throw new Error(`权限不足: 需要 ${permission} 权限`)
       }
@@ -565,7 +577,7 @@ export function RequireRole(role: string) {
 
     descriptor.value = async function (...args: any[]) {
       const authStore = new AuthStore('auth')
-      
+
       if (!authStore.hasRole(role)) {
         throw new Error(`权限不足: 需要 ${role} 角色`)
       }
@@ -628,7 +640,8 @@ export function LogExecution(options: LogOptions = {}) {
         }
 
         return result
-      } catch (error) {
+      }
+      catch (error) {
         const duration = performance.now() - startTime
 
         if (options.logError) {
@@ -682,25 +695,26 @@ export function Retry(options: RetryOptions = {}) {
       maxAttempts = 3,
       delay = 1000,
       backoff = 'exponential',
-      retryCondition = (error) => true
+      retryCondition = error => true
     } = options
 
     descriptor.value = async function (...args: any[]) {
       let lastError: Error
-      
+
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           return await originalMethod.apply(this, args)
-        } catch (error) {
+        }
+        catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error))
-          
+
           if (attempt === maxAttempts || !retryCondition(lastError)) {
             throw lastError
           }
 
           const waitTime = calculateDelay(delay, attempt, backoff)
           console.warn(`[Retry] ${propertyKey} 第 ${attempt} 次尝试失败，${waitTime}ms 后重试:`, lastError.message)
-          
+
           await new Promise(resolve => setTimeout(resolve, waitTime))
         }
       }
@@ -717,7 +731,7 @@ function calculateDelay(baseDelay: number, attempt: number, backoff: 'linear' | 
     case 'linear':
       return baseDelay * attempt
     case 'exponential':
-      return baseDelay * Math.pow(2, attempt - 1)
+      return baseDelay * 2 ** (attempt - 1)
     default:
       return baseDelay
   }
@@ -736,7 +750,7 @@ class ApiStore extends BaseStore {
     maxAttempts: 3,
     delay: 1000,
     backoff: 'exponential',
-    retryCondition: (error) => error.message.includes('network')
+    retryCondition: error => error.message.includes('network')
   })
   @AsyncAction()
   async fetchData() {
@@ -830,10 +844,12 @@ export class StateMachineStore extends BaseStore {
     return (event: string) => {
       const currentStateConfig = this.stateMachine.getState(this.currentState)
       const transition = currentStateConfig.transitions[event]
-      
-      if (!transition) return false
-      if (!transition.guard) return true
-      
+
+      if (!transition)
+        return false
+      if (!transition.guard)
+        return true
+
       return transition.guard(this.context)
     }
   }
@@ -909,7 +925,7 @@ const orderStateMachine = {
         },
         cancel: {
           target: 'cancelled',
-          guard: (context) => !context.paymentId
+          guard: context => !context.paymentId
         }
       }
     },
@@ -924,7 +940,7 @@ const orderStateMachine = {
         },
         refund: {
           target: 'refunded',
-          guard: (context) => Date.now() - context.paidAt < 24 * 60 * 60 * 1000 // 24小时内
+          guard: context => Date.now() - context.paidAt < 24 * 60 * 60 * 1000 // 24小时内
         }
       }
     },
@@ -961,7 +977,8 @@ class OrderStore extends StateMachineStore {
       const result = await paymentApi.process(paymentData)
       this.transition('pay', { paymentId: result.id })
       return result
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('支付失败')
     }
   }
@@ -972,7 +989,8 @@ class OrderStore extends StateMachineStore {
       const result = await shippingApi.ship(shippingData)
       this.transition('ship', { trackingNumber: result.trackingNumber })
       return result
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error('发货失败')
     }
   }
@@ -1003,7 +1021,7 @@ export class EventDrivenStore extends BaseStore {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, [])
     }
-    
+
     this.eventHandlers.get(event)!.push(handler)
     return this.eventBus.on(event, handler)
   }
@@ -1077,12 +1095,12 @@ class UserEventStore extends EventDrivenStore {
     this.users.push(user)
   }
 
-  private handleUserUpdated({ user, updates }: { user: User; updates: any }) {
+  private handleUserUpdated({ user, updates }: { user: User, updates: any }) {
     const index = this.users.findIndex(u => u.id === user.id)
     if (index > -1) {
       this.users[index] = user
     }
-    
+
     if (this.currentUser?.id === user.id) {
       this.currentUser = user
     }
@@ -1093,7 +1111,7 @@ class UserEventStore extends EventDrivenStore {
     if (index > -1) {
       this.users.splice(index, 1)
     }
-    
+
     if (this.currentUser?.id === id) {
       this.currentUser = null
     }

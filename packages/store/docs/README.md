@@ -86,7 +86,7 @@ docs/
 
 ```typescript
 // TypeScript 代码
-import { BaseStore, State, Action } from '@ldesign/store'
+import { Action, BaseStore, State } from '@ldesign/store'
 
 class CounterStore extends BaseStore {
   @State({ default: 0 })
@@ -101,15 +101,15 @@ class CounterStore extends BaseStore {
 
 ```vue
 <!-- Vue 组件 -->
-<template>
-  <div>{{ store.count }}</div>
-</template>
-
 <script setup lang="ts">
 import { CounterStore } from '@/stores/counter'
 
 const store = new CounterStore('counter')
 </script>
+
+<template>
+  <div>{{ store.count }}</div>
+</template>
 ```
 
 ## 🎯 文档特性

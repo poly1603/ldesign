@@ -1,6 +1,6 @@
 import { Ref } from 'vue';
-import { EncryptResult, DecryptResult, AESOptions, RSAOptions, RSAKeyPair } from '@/types';
-import { encrypt, decrypt, keyGenerator } from '@/core';
+import { EncryptResult, DecryptResult, AESOptions, RSAOptions, RSAKeyPair } from '../../types/index.js';
+import { encrypt, decrypt, keyGenerator } from '../../core/index.js';
 
 /**
  * 加密状态接口

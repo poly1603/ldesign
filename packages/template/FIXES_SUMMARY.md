@@ -3,6 +3,7 @@
 ## 🎯 修复概述
 
 本次修复解决了两个主要问题：
+
 1. **Examples项目启动问题** - 解决了示例项目无法正常启动的问题
 2. **构建产物配置优化** - 修复了ES模块、TypeScript类型定义和Lib产物的构建配置
 
@@ -11,6 +12,7 @@
 ### 1. Examples项目启动问题修复
 
 #### 问题描述
+
 - Examples项目无法启动，出现模块解析错误
 - 缺失多个Vue组件文件
 - Vite配置中的别名设置不正确
@@ -19,11 +21,13 @@
 #### 修复措施
 
 **✅ 创建缺失的Vue组件文件：**
+
 - `src/views/Dashboard.vue` - 仪表板页面
-- `src/views/Templates.vue` - 模板管理页面  
+- `src/views/Templates.vue` - 模板管理页面
 - `src/views/Examples.vue` - 示例展示页面
 
 **✅ 修复Vite配置 (`examples/vite.config.ts`)：**
+
 ```typescript
 // 修复前：指向具体的lib文件路径
 '@ldesign/template': resolve(__dirname, '../lib/index.js')
@@ -37,11 +41,13 @@ resolve: {
 ```
 
 **✅ 修复TypeScript配置 (`examples/tsconfig.json`)：**
+
 - 移除了不必要的路径映射
 - 移除了有问题的项目引用
 - 简化了配置结构
 
 **✅ 简化路由配置：**
+
 - 移除了缺失的组件引用
 - 保留了核心页面路由
 - 确保所有路由都有对应的组件文件
@@ -49,6 +55,7 @@ resolve: {
 ### 2. 构建产物配置优化
 
 #### 问题描述
+
 - Lib构建产物中包含了Vue源码路径
 - External配置不够完整，导致Vue依赖被错误打包
 - JSX运行时配置有问题
@@ -56,6 +63,7 @@ resolve: {
 #### 修复措施
 
 **✅ 优化External配置 (`rollup.config.js`)：**
+
 ```javascript
 // 修复前：简单的数组配置
 const external = ['vue']
@@ -66,22 +74,23 @@ const external = (id) => {
   if (id === 'vue' || id.startsWith('vue/') || id.startsWith('@vue/')) {
     return true
   }
-  
+
   // 排除jsx-runtime
   if (id.includes('jsx-runtime')) {
     return true
   }
-  
+
   // 排除node_modules中的所有模块
   if (id.includes('node_modules')) {
     return true
   }
-  
+
   return false
 }
 ```
 
 **✅ 验证构建产物：**
+
 ```javascript
 // 修复前：包含node_modules路径
 import { jsx } from '../../node_modules/.pnpm/vue@3.5.18_typescript@5.8.3/node_modules/vue/jsx-runtime/index.js';
@@ -93,6 +102,7 @@ import { jsxs, jsx } from 'vue/jsx-runtime';
 ## 🚀 验证结果
 
 ### Examples项目启动成功
+
 ```bash
 cd packages/template/examples
 pnpm dev
@@ -104,6 +114,7 @@ pnpm dev
 ```
 
 ### 构建产物验证
+
 ```bash
 cd packages/template
 pnpm build
@@ -122,6 +133,7 @@ pnpm build
 ## 📁 项目结构
 
 ### Examples项目结构
+
 ```
 packages/template/examples/
 ├── src/
@@ -140,6 +152,7 @@ packages/template/examples/
 ```
 
 ### 构建产物结构
+
 ```
 packages/template/
 ├── dist/                     ✅ 打包版本（浏览器使用）
@@ -162,18 +175,21 @@ packages/template/
 ## 🎨 功能特性
 
 ### Dashboard页面
+
 - 📊 数据统计展示
 - 🎨 模板渲染示例
 - 🔄 动态模板切换
 - 📱 响应式设计
 
 ### Templates页面
+
 - 🗂️ 模板分类管理
 - 🔍 搜索和筛选功能
 - 👁️ 模板预览功能
 - 📱 设备类型适配
 
 ### Examples页面
+
 - 📚 基础用法示例
 - 🚀 高级功能演示
 - 🔧 组合式API展示
@@ -182,6 +198,7 @@ packages/template/
 ## 🛠️ 开发指南
 
 ### 启动Examples项目
+
 ```bash
 # 进入examples目录
 cd packages/template/examples
@@ -196,6 +213,7 @@ pnpm dev
 ```
 
 ### 构建组件库
+
 ```bash
 # 进入template目录
 cd packages/template
@@ -208,6 +226,7 @@ pnpm dev
 ```
 
 ### 运行测试
+
 ```bash
 # 运行单元测试
 pnpm test
@@ -230,6 +249,7 @@ pnpm test:coverage
 ## 🎉 总结
 
 通过本次修复，LDesign Template项目现在具备了：
+
 - ✅ 完整可运行的Examples示例项目
 - ✅ 正确的构建配置和产物
 - ✅ 完善的TypeScript类型支持

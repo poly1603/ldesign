@@ -1,5 +1,5 @@
-import CryptoJS from 'crypto-js'
 import type { EncodingType } from '../types'
+import CryptoJS from 'crypto-js'
 
 /**
  * 字符串转换工具
@@ -145,7 +145,8 @@ export class ValidationUtils {
   static isValidBase64(str: string): boolean {
     try {
       return btoa(atob(str)) === str
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -154,7 +155,7 @@ export class ValidationUtils {
    * 验证是否为有效的 Hex 字符串
    */
   static isValidHex(str: string): boolean {
-    return /^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0
+    return /^[0-9a-f]+$/i.test(str) && str.length % 2 === 0
   }
 
   /**
@@ -226,23 +227,23 @@ export const CONSTANTS = {
     DEFAULT_KEY_SIZE: 256 as const,
     IV_LENGTH: 16,
   },
-  
+
   // RSA 相关常量
   RSA: {
     KEY_SIZES: [1024, 2048, 3072, 4096] as const,
     DEFAULT_KEY_SIZE: 2048 as const,
   },
-  
+
   // 哈希相关常量
   HASH: {
     ALGORITHMS: ['MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'] as const,
   },
-  
+
   // HMAC 相关常量
   HMAC: {
     ALGORITHMS: ['HMAC-MD5', 'HMAC-SHA1', 'HMAC-SHA256', 'HMAC-SHA384', 'HMAC-SHA512'] as const,
   },
-  
+
   // 编码相关常量
   ENCODING: {
     TYPES: ['base64', 'hex', 'utf8'] as const,

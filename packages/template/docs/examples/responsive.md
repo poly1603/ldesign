@@ -106,13 +106,13 @@ function toggleMenu() {
       </button>
       <h1>{{ title }}</h1>
     </header>
-    
+
     <nav v-if="showMenu" class="mobile-nav">
       <div v-for="item in menuItems" :key="item.id" class="nav-item">
         {{ item.title }}
       </div>
     </nav>
-    
+
     <main class="mobile-main">
       <slot />
     </main>
@@ -184,8 +184,8 @@ const dashboardProps = {
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
 import type { DeviceType } from '@ldesign/template'
+import { ref } from 'vue'
 
 const devices: DeviceType[] = ['desktop', 'tablet', 'mobile']
 const deviceLabels = {
@@ -208,8 +208,8 @@ function switchDevice(device: DeviceType) {
 <template>
   <div class="app">
     <div class="device-switcher">
-      <button 
-        v-for="device in devices" 
+      <button
+        v-for="device in devices"
         :key="device"
         :class="{ active: currentDevice === device }"
         @click="switchDevice(device)"
@@ -217,7 +217,7 @@ function switchDevice(device: DeviceType) {
         {{ deviceLabels[device] }}
       </button>
     </div>
-    
+
     <LTemplateRenderer
       category="dashboard"
       :device="currentDevice"
@@ -253,8 +253,8 @@ function switchDevice(device: DeviceType) {
 
 ```vue
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
 import { createDeviceWatcher } from '@ldesign/template'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const currentDevice = ref('unknown')
 
@@ -283,7 +283,7 @@ const dashboardProps = {
     <div class="device-info">
       当前设备: {{ currentDevice }}
     </div>
-    
+
     <LTemplateRenderer
       category="dashboard"
       template="admin"

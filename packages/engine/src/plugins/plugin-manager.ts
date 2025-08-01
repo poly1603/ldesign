@@ -1,4 +1,4 @@
-import type { Plugin, PluginManager, Engine } from '../types'
+import type { Engine, Plugin, PluginManager } from '../types'
 
 export class PluginManagerImpl implements PluginManager {
   private plugins = new Map<string, Plugin>()
@@ -36,7 +36,7 @@ export class PluginManagerImpl implements PluginManager {
       if (this.engine?.logger) {
         this.engine.logger.info(`Plugin "${plugin.name}" registered successfully`, {
           version: plugin.version,
-          dependencies: plugin.dependencies
+          dependencies: plugin.dependencies,
         })
       }
 
@@ -44,7 +44,7 @@ export class PluginManagerImpl implements PluginManager {
       if (this.engine?.events) {
         this.engine.events.emit('plugin:registered', {
           name: plugin.name,
-          plugin
+          plugin,
         })
       }
     }
@@ -73,7 +73,7 @@ export class PluginManagerImpl implements PluginManager {
     const dependents = this.getDependents(name)
     if (dependents.length > 0) {
       throw new Error(
-        `Cannot unregister plugin "${name}" because it is required by: ${dependents.join(', ')}`
+        `Cannot unregister plugin "${name}" because it is required by: ${dependents.join(', ')}`,
       )
     }
 
@@ -98,7 +98,7 @@ export class PluginManagerImpl implements PluginManager {
       if (this.engine?.events) {
         this.engine.events.emit('plugin:unregistered', {
           name,
-          plugin
+          plugin,
         })
       }
     }
@@ -125,13 +125,13 @@ export class PluginManagerImpl implements PluginManager {
   // 获取插件的依赖者
   private getDependents(pluginName: string): string[] {
     const dependents: string[] = []
-    
+
     for (const [name, plugin] of this.plugins) {
       if (plugin.dependencies?.includes(pluginName)) {
         dependents.push(name)
       }
     }
-    
+
     return dependents
   }
 
@@ -143,18 +143,18 @@ export class PluginManagerImpl implements PluginManager {
   // 获取插件依赖图
   getDependencyGraph(): Record<string, string[]> {
     const graph: Record<string, string[]> = {}
-    
+
     for (const [name, plugin] of this.plugins) {
       graph[name] = plugin.dependencies || []
     }
-    
+
     return graph
   }
 
   // 验证插件依赖
-  validateDependencies(): { valid: boolean; errors: string[] } {
+  validateDependencies(): { valid: boolean, errors: string[] } {
     const errors: string[] = []
-    
+
     for (const [name, plugin] of this.plugins) {
       if (plugin.dependencies) {
         for (const dep of plugin.dependencies) {
@@ -164,10 +164,10 @@ export class PluginManagerImpl implements PluginManager {
         }
       }
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -180,7 +180,7 @@ export class PluginManagerImpl implements PluginManager {
     return {
       total: this.plugins.size,
       loaded: this.getLoadOrder(),
-      dependencies: this.getDependencyGraph()
+      dependencies: this.getDependencyGraph(),
     }
   }
 }

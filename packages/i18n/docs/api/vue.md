@@ -13,15 +13,18 @@ function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin
 创建 Vue I18n 插件。
 
 **参数：**
+
 - `i18nInstance` - 可选的 I18n 实例
 
 **返回：**
+
 - Vue I18n 插件实例
 
 **示例：**
+
 ```typescript
-import { createI18n } from '@ldesign/i18n/vue'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
+import { createI18n } from '@ldesign/i18n/vue'
 
 const i18nInstance = await createI18nWithBuiltinLocales()
 const vueI18nPlugin = createI18n(i18nInstance)
@@ -41,9 +44,11 @@ function createI18nWithOptions(options: VueI18nOptions): VueI18nPlugin
 创建带有预配置的 Vue I18n 插件。
 
 **参数：**
+
 - `options` - Vue I18n 配置选项
 
 **示例：**
+
 ```typescript
 const vueI18nPlugin = createI18nWithOptions({
   defaultLocale: 'en',
@@ -63,6 +68,7 @@ function useI18n(): UseI18nReturn
 主要的 I18n 组合式 API，提供完整的国际化功能。
 
 **返回：**
+
 ```typescript
 interface UseI18nReturn {
   t: TranslationFunction
@@ -76,16 +82,29 @@ interface UseI18nReturn {
 ```
 
 **示例：**
+
 ```vue
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const { t, locale, availableLanguages, changeLanguage } = useI18n()
+const selectedLocale = ref(locale.value)
+
+async function handleLanguageChange() {
+  await changeLanguage(selectedLocale.value)
+}
+</script>
+
 <template>
   <div>
     <h1>{{ t('common.title') }}</h1>
     <p>{{ t('common.currentLanguage') }}: {{ locale }}</p>
-    
+
     <select v-model="selectedLocale" @change="handleLanguageChange">
-      <option 
-        v-for="lang in availableLanguages" 
-        :key="lang.code" 
+      <option
+        v-for="lang in availableLanguages"
+        :key="lang.code"
         :value="lang.code"
       >
         {{ lang.nativeName }}
@@ -93,18 +112,6 @@ interface UseI18nReturn {
     </select>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from '@ldesign/i18n/vue'
-
-const { t, locale, availableLanguages, changeLanguage } = useI18n()
-const selectedLocale = ref(locale.value)
-
-const handleLanguageChange = async () => {
-  await changeLanguage(selectedLocale.value)
-}
-</script>
 ```
 
 ### useLanguageSwitcher()
@@ -121,11 +128,18 @@ function useLanguageSwitcher(): {
 专门用于语言切换的组合式 API。
 
 **示例：**
+
 ```vue
+<script setup lang="ts">
+import { useLanguageSwitcher } from '@ldesign/i18n/vue'
+
+const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSwitcher()
+</script>
+
 <template>
   <div class="language-switcher">
-    <button 
-      v-for="lang in availableLanguages" 
+    <button
+      v-for="lang in availableLanguages"
       :key="lang.code"
       :class="{ active: locale === lang.code }"
       :disabled="isChanging"
@@ -136,12 +150,6 @@ function useLanguageSwitcher(): {
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useLanguageSwitcher } from '@ldesign/i18n/vue'
-
-const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSwitcher()
-</script>
 ```
 
 ### useBatchTranslation()
@@ -153,21 +161,16 @@ function useBatchTranslation(keys: string[]): ComputedRef<Record<string, string>
 批量翻译的组合式 API。
 
 **参数：**
+
 - `keys` - 翻译键数组
 
 **返回：**
+
 - 翻译结果的计算属性
 
 **示例：**
-```vue
-<template>
-  <div>
-    <button>{{ translations['common.save'] }}</button>
-    <button>{{ translations['common.cancel'] }}</button>
-    <button>{{ translations['common.delete'] }}</button>
-  </div>
-</template>
 
+```vue
 <script setup lang="ts">
 import { useBatchTranslation } from '@ldesign/i18n/vue'
 
@@ -177,6 +180,14 @@ const translations = useBatchTranslation([
   'common.delete'
 ])
 </script>
+
+<template>
+  <div>
+    <button>{{ translations['common.save'] }}</button>
+    <button>{{ translations['common.cancel'] }}</button>
+    <button>{{ translations['common.delete'] }}</button>
+  </div>
+</template>
 ```
 
 ### useConditionalTranslation()
@@ -192,24 +203,17 @@ function useConditionalTranslation(
 条件翻译的组合式 API。
 
 **参数：**
+
 - `condition` - 条件函数或响应式引用
 - `trueKey` - 条件为真时的翻译键
 - `falseKey` - 条件为假时的翻译键
 
 **示例：**
-```vue
-<template>
-  <div>
-    <label>
-      <input v-model="isOnline" type="checkbox" />
-      {{ statusText }}
-    </label>
-  </div>
-</template>
 
+```vue
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useConditionalTranslation } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
 
 const isOnline = ref(true)
 
@@ -219,6 +223,15 @@ const statusText = useConditionalTranslation(
   'common.offline'
 )
 </script>
+
+<template>
+  <div>
+    <label>
+      <input v-model="isOnline" type="checkbox">
+      {{ statusText }}
+    </label>
+  </div>
+</template>
 ```
 
 ### useI18nWithInstance()
@@ -230,9 +243,11 @@ function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn
 使用自定义 I18n 实例的组合式 API。
 
 **参数：**
+
 - `i18nInstance` - 自定义的 I18n 实例
 
 **示例：**
+
 ```typescript
 import { I18n, StaticLoader } from '@ldesign/i18n'
 import { useI18nWithInstance } from '@ldesign/i18n/vue'
@@ -254,27 +269,31 @@ const { t } = useI18nWithInstance(customI18n)
 用于在模板中直接进行翻译的指令。
 
 **基础用法：**
+
 ```vue
 <template>
   <!-- 简单翻译 -->
-  <div v-t="'common.save'"></div>
-  
+  <div v-t="'common.save'" />
+
   <!-- 带参数的翻译 -->
-  <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }"></div>
-  
+  <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }" />
+
   <!-- 输入框占位符 -->
-  <input v-t="'common.searchPlaceholder'" />
-  
+  <input v-t="'common.searchPlaceholder'">
+
   <!-- 带选项的翻译 -->
-  <div v-t="{ 
-    key: 'common.message', 
-    params: { content: userInput },
-    options: { escapeValue: true }
-  }"></div>
+  <div
+    v-t="{
+      key: 'common.message',
+      params: { content: userInput },
+      options: { escapeValue: true },
+    }"
+  />
 </template>
 ```
 
 **指令参数类型：**
+
 ```typescript
 type I18nDirectiveBinding = string | {
   key: string
@@ -319,12 +338,13 @@ type I18nDirectiveBinding = string | {
 
 ```typescript
 interface VueI18nOptions extends I18nOptions {
-  globalInjection?: boolean     // 是否注入全局属性，默认 true
-  globalPropertyName?: string   // 全局属性名称，默认 '$t'
+  globalInjection?: boolean // 是否注入全局属性，默认 true
+  globalPropertyName?: string // 全局属性名称，默认 '$t'
 }
 ```
 
 **示例：**
+
 ```typescript
 app.use(vueI18nPlugin, {
   // I18n 选项
@@ -332,7 +352,7 @@ app.use(vueI18nPlugin, {
   fallbackLocale: 'en',
   autoDetect: true,
   storage: 'localStorage',
-  
+
   // Vue 特定选项
   globalInjection: true,
   globalPropertyName: '$t'
@@ -378,16 +398,16 @@ interface I18nContext {
 ### 组件属性扩展
 
 ```typescript
+import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 // types/vue.d.ts
 import '@vue/runtime-core'
-import type { I18nInstance, TranslationFunction } from '@ldesign/i18n'
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $t: TranslationFunction
     $i18n: I18nInstance
   }
-  
+
   interface GlobalProperties {
     $t: TranslationFunction
     $i18n: I18nInstance
@@ -417,9 +437,9 @@ const count: number = i18n.t<number>('common.count')
 
 ```vue
 <script setup lang="ts">
-import { provide } from 'vue'
 import { I18n } from '@ldesign/i18n'
 import { I18N_INJECTION_KEY } from '@ldesign/i18n/vue'
+import { provide } from 'vue'
 
 // 为子组件提供独立的 I18n 实例
 const componentI18n = new I18n({
@@ -435,8 +455,8 @@ provide(I18N_INJECTION_KEY, componentI18n)
 
 ```vue
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { ref, watch } from 'vue'
 
 const { i18n, locale } = useI18n()
 const isLoading = ref(false)
@@ -447,9 +467,11 @@ watch(locale, async (newLocale) => {
     isLoading.value = true
     try {
       await i18n.preloadLanguage(newLocale)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load language:', error)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -461,8 +483,8 @@ watch(locale, async (newLocale) => {
 
 ```vue
 <script setup lang="ts">
-import { ref, onErrorCaptured } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { onErrorCaptured, ref } from 'vue'
 
 const { i18n } = useI18n()
 const error = ref<string>('')
@@ -498,8 +520,8 @@ const { t } = useI18n()
 
 ```vue
 <script setup lang="ts">
-import { watch } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { watch } from 'vue'
 
 const { locale } = useI18n()
 

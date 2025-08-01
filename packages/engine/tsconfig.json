@@ -1,32 +1,19 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tools/build/tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "composite": true,
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     }
   },
   "include": [
     "src/**/*",
-    "example/**/*",
-    "__tests__/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
+    "examples/**/*",
+    "__tests__/**/*",
+    "tests/**/*",
+    "test/**/*",
+    "e2e/**/*"
   ]
 }

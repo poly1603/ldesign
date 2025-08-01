@@ -19,9 +19,9 @@ const translations = {
 }
 
 // 使用翻译
-i18n.t('common.ok')     // "OK"
+i18n.t('common.ok') // "OK"
 i18n.t('common.cancel') // "Cancel"
-i18n.t('common.save')   // "Save"
+i18n.t('common.save') // "Save"
 ```
 
 ### 嵌套键访问
@@ -45,8 +45,8 @@ const translations = {
 }
 
 // 访问深层嵌套的键
-i18n.t('pages.user.profile.title')        // "User Profile"
-i18n.t('pages.user.profile.fields.name')  // "Full Name"
+i18n.t('pages.user.profile.title') // "User Profile"
+i18n.t('pages.user.profile.fields.name') // "Full Name"
 i18n.t('pages.user.profile.fields.email') // "Email Address"
 ```
 
@@ -144,9 +144,9 @@ const translations = {
   messages: '{count, plural, =0{No messages} =1{One message} other{# messages}}'
 }
 
-i18n.t('items', { count: 0 })  // "no items"
-i18n.t('items', { count: 1 })  // "one item"
-i18n.t('items', { count: 5 })  // "5 items"
+i18n.t('items', { count: 0 }) // "no items"
+i18n.t('items', { count: 1 }) // "one item"
+i18n.t('items', { count: 5 }) // "5 items"
 ```
 
 ### 复杂复数规则
@@ -196,8 +196,8 @@ const translations = {
   }
 }
 
-i18n.t('button', {}, { context: 'save' })   // "Save"
-i18n.t('button', {}, { context: 'edit' })   // "Update"
+i18n.t('button', {}, { context: 'save' }) // "Save"
+i18n.t('button', {}, { context: 'edit' }) // "Update"
 i18n.t('button', {}, { context: 'create' }) // "Create"
 ```
 
@@ -212,7 +212,7 @@ const translations = {
   }
 }
 
-i18n.t('welcome.male', { name: 'John' })   // "Welcome, Mr. John"
+i18n.t('welcome.male', { name: 'John' }) // "Welcome, Mr. John"
 i18n.t('welcome.female', { name: 'Jane' }) // "Welcome, Ms. Jane"
 ```
 
@@ -293,7 +293,7 @@ i18n.setFallbackResolver((key, locale) => {
 ```typescript
 // 全局默认值
 const i18n = new I18n({
-  defaultValue: (key) => `Missing: ${key}`
+  defaultValue: key => `Missing: ${key}`
 })
 
 // 单次翻译默认值
@@ -314,16 +314,16 @@ i18n.t('user.greeting', { name: 'John' }, {
 
 ```typescript
 interface TranslationOptions {
-  defaultValue?: string        // 默认值
-  escapeValue?: boolean       // 是否转义HTML
-  context?: string           // 上下文
-  count?: number            // 复数计数
-  lng?: string             // 指定语言
-  fallbackLng?: string[]   // 降级语言
-  interpolation?: {        // 插值选项
-    prefix?: string        // 插值前缀，默认 '{{'
-    suffix?: string        // 插值后缀，默认 '}}'
-    escapeValue?: boolean  // 是否转义
+  defaultValue?: string // 默认值
+  escapeValue?: boolean // 是否转义HTML
+  context?: string // 上下文
+  count?: number // 复数计数
+  lng?: string // 指定语言
+  fallbackLng?: string[] // 降级语言
+  interpolation?: { // 插值选项
+    prefix?: string // 插值前缀，默认 '{{'
+    suffix?: string // 插值后缀，默认 '}}'
+    escapeValue?: boolean // 是否转义
   }
 }
 ```
@@ -464,7 +464,8 @@ console.log('Missing keys:', coverage.missingKeys)
 function safeTranslate(key, params = {}) {
   try {
     return i18n.t(key, params)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Translation error:', error)
     return key // 返回键名作为降级
   }

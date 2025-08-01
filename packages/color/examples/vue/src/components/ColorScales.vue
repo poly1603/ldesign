@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { useTheme } from '@ldesign/color/vue'
+import { computed, ref } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 
 const { themeManager, currentTheme, currentMode } = useTheme()
@@ -30,7 +30,7 @@ const colorScales = computed(() => {
       const indices = scale.indices as Record<string, string>
       result[category] = {
         colors: Object.values(indices),
-        indices
+        indices,
       }
     }
   }
@@ -41,7 +41,8 @@ const colorScales = computed(() => {
 // 获取色阶中的特定颜色
 function getScaleColor(category: string, index: number): string {
   const scale = colorScales.value[category]
-  if (!scale || !scale.colors) return ''
+  if (!scale || !scale.colors)
+    return ''
   return scale.colors[index] || ''
 }
 
@@ -49,9 +50,9 @@ function getScaleColor(category: string, index: number): string {
 function getContrastTextColor(backgroundColor: string): string {
   // 简单的对比度计算，实际项目中可以使用更精确的算法
   const hex = backgroundColor.replace('#', '')
-  const r = parseInt(hex.substr(0, 2), 16)
-  const g = parseInt(hex.substr(2, 2), 16)
-  const b = parseInt(hex.substr(4, 2), 16)
+  const r = Number.parseInt(hex.substr(0, 2), 16)
+  const g = Number.parseInt(hex.substr(2, 2), 16)
+  const b = Number.parseInt(hex.substr(4, 2), 16)
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 128 ? '#000000' : '#ffffff'
 }
@@ -100,7 +101,7 @@ async function copyColor(color: string) {
             class="scale-color"
             :style="{
               backgroundColor: color,
-              color: getContrastTextColor(color)
+              color: getContrastTextColor(color),
             }"
             :title="`${category}-${index + 1}: ${color}`"
             @click="copyColor(color)"

@@ -1,36 +1,18 @@
 {
   "name": "@ldesign/router",
+  "type": "module",
   "version": "1.0.0",
   "description": "A powerful Vue router library for Vue applications",
-  "type": "module",
-  "main": "dist/index.umd.js",
-  "module": "es/index.js",
-  "types": "es/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./es/index.js",
-      "require": "./dist/index.umd.js",
-      "types": "./es/index.d.ts"
-    }
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/router#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/router"
   },
-  "files": [
-    "dist",
-    "es",
-    "README.md"
-  ],
-  "scripts": {
-    "dev": "rollup -c -w",
-    "build": "rollup -c",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint src --fix",
-    "type-check": "tsc --noEmit",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "example:dev": "cd examples && npm run dev",
-    "example:build": "cd examples && npm run build"
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
   },
   "keywords": [
     "vue",
@@ -40,17 +22,47 @@
     "spa",
     "typescript"
   ],
-  "author": "LDesign Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/router"
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./dist/index.umd.js"
+    }
   },
-  "bugs": {
-    "url": "https://github.com/ldesign/ldesign/issues"
+  "main": "dist/index.umd.js",
+  "module": "es/index.js",
+  "types": "es/index.d.ts",
+  "files": [
+    "README.md",
+    "dist",
+    "es"
+  ],
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --fix",
+    "type-check": "vue-tsc --noEmit",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "example:dev": "cd examples && npm run dev",
+    "example:build": "cd examples && npm run build",
+    "build:watch": "rollup -c -w",
+    "lint:check": "eslint .",
+    "test:run": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "deploy": "tsx ../../tools/deploy/package-deployer.ts router",
+    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts router --tag beta",
+    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts router --tag alpha",
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts router --dry-run"
   },
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/router#readme",
   "peerDependencies": {
     "vue": "^3.0.0"
   },

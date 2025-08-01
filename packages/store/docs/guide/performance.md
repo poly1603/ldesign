@@ -26,10 +26,10 @@ class DataAnalysisStore extends BaseStore {
   // 记忆化缓存，支持参数
   @MemoizedGetter({ maxSize: 100, ttl: 60000 })
   getFilteredData(category: string, dateRange: [Date, Date]) {
-    return this.processedData.filter(point => 
-      point.category === category &&
-      point.date >= dateRange[0] &&
-      point.date <= dateRange[1]
+    return this.processedData.filter(point =>
+      point.category === category
+      && point.date >= dateRange[0]
+      && point.date <= dateRange[1]
     )
   }
 
@@ -102,7 +102,7 @@ class SearchStore extends BaseStore {
   @DebouncedAction(300)
   async performSearch(query: string) {
     this.query = query
-    
+
     if (!query.trim()) {
       this.results = []
       return
@@ -112,7 +112,8 @@ class SearchStore extends BaseStore {
     try {
       const response = await searchApi.search(query)
       this.results = response.data
-    } finally {
+    }
+    finally {
       this.searching = false
     }
   }
@@ -207,20 +208,13 @@ storeRegistry.register('products', () => new ProductStore('products'))
 ### 组件级懒加载
 
 ```vue
-<template>
-  <div>
-    <button @click="loadHeavyComponent">加载重型组件</button>
-    <component :is="heavyComponent" v-if="heavyComponent" />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
 import { storeRegistry } from '@/stores/registry'
 
 const heavyComponent = ref(null)
 
-const loadHeavyComponent = async () => {
+async function loadHeavyComponent() {
   if (!heavyComponent.value) {
     // 懒加载组件和对应的 Store
     const [component] = await Promise.all([
@@ -228,11 +222,20 @@ const loadHeavyComponent = async () => {
       // 预加载相关 Store
       storeRegistry.getInstance('heavyData')
     ])
-    
+
     heavyComponent.value = component.default
   }
 }
 </script>
+
+<template>
+  <div>
+    <button @click="loadHeavyComponent">
+      加载重型组件
+    </button>
+    <component :is="heavyComponent" v-if="heavyComponent" />
+  </div>
+</template>
 ```
 
 ## 内存管理
@@ -268,7 +271,7 @@ class MemoryManagedStore extends BaseStore {
   subscribe(callback: () => void) {
     const unsubscribe = this.$subscribe(callback)
     this.activeSubscriptions.add(unsubscribe)
-    
+
     return () => {
       unsubscribe()
       this.activeSubscriptions.delete(unsubscribe)
@@ -391,7 +394,8 @@ class BatchUpdateStore extends BaseStore {
         updating: false,
         lastUpdated: new Date()
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.updating = false
       throw error
     }
@@ -500,7 +504,8 @@ class PaginatedStore extends BaseStore {
       this.currentPage = page
 
       return response.items
-    } finally {
+    }
+    finally {
       this.loading = false
     }
   }
@@ -603,11 +608,12 @@ function MonitorPerformance(operationName?: string) {
     descriptor.value = async function (...args: any[]) {
       const perfStore = new PerformanceStore('performance')
       perfStore.startTiming(name)
-      
+
       try {
         const result = await originalMethod.apply(this, args)
         return result
-      } finally {
+      }
+      finally {
         perfStore.endTiming(name)
       }
     }
@@ -676,13 +682,13 @@ export function usePerformanceMonitor() {
     const start = performance.now()
     const result = fn()
     const duration = performance.now() - start
-    
+
     metrics.value.set(name, duration)
-    
+
     if (duration > 100) {
       console.warn(`慢操作检测: ${name} 耗时 ${duration.toFixed(2)}ms`)
     }
-    
+
     return result
   }
 

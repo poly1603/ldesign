@@ -9,23 +9,23 @@ export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') {
     return obj
   }
-  
+
   if (obj instanceof Date) {
     return new Date(obj.getTime()) as unknown as T
   }
-  
-  if (obj instanceof Array) {
+
+  if (Array.isArray(obj)) {
     return obj.map(item => deepClone(item)) as unknown as T
   }
-  
+
   if (typeof obj === 'object') {
     const cloned = {} as T
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       (cloned as any)[key] = deepClone((obj as any)[key])
     })
     return cloned
   }
-  
+
   return obj
 }
 
@@ -33,24 +33,31 @@ export function deepClone<T>(obj: T): T {
  * 检查两个值是否深度相等
  */
 export function deepEqual(a: any, b: any): boolean {
-  if (a === b) return true
-  
-  if (a == null || b == null) return false
-  
-  if (typeof a !== typeof b) return false
-  
-  if (typeof a !== 'object') return false
-  
+  if (a === b)
+    return true
+
+  if (a == null || b == null)
+    return false
+
+  if (typeof a !== typeof b)
+    return false
+
+  if (typeof a !== 'object')
+    return false
+
   const keysA = Object.keys(a)
   const keysB = Object.keys(b)
-  
-  if (keysA.length !== keysB.length) return false
-  
+
+  if (keysA.length !== keysB.length)
+    return false
+
   for (const key of keysA) {
-    if (!keysB.includes(key)) return false
-    if (!deepEqual(a[key], b[key])) return false
+    if (!keysB.includes(key))
+      return false
+    if (!deepEqual(a[key], b[key]))
+      return false
   }
-  
+
   return true
 }
 
@@ -59,15 +66,15 @@ export function deepEqual(a: any, b: any): boolean {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
-  
+
   return function (...args: Parameters<T>) {
     if (timeout) {
       clearTimeout(timeout)
     }
-    
+
     timeout = setTimeout(() => {
       func(...args)
     }, wait)
@@ -79,13 +86,13 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
-  
+
   return function (...args: Parameters<T>) {
     const now = Date.now()
-    
+
     if (now - lastTime >= wait) {
       lastTime = now
       func(...args)
@@ -108,14 +115,14 @@ export function getNestedValue(obj: any, path: string): any {
 export function setNestedValue(obj: any, path: string, value: any): void {
   const keys = path.split('.')
   const lastKey = keys.pop()!
-  
+
   const target = keys.reduce((current, key) => {
     if (!current[key] || typeof current[key] !== 'object') {
       current[key] = {}
     }
     return current[key]
   }, obj)
-  
+
   target[lastKey] = value
 }
 

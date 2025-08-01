@@ -7,6 +7,7 @@
 ### 属性
 
 #### `app`
+
 - **类型**: `App<Element>`
 - **描述**: Vue应用实例
 - **只读**: 是
@@ -16,6 +17,7 @@ const vueApp = engine.app
 ```
 
 #### `config`
+
 - **类型**: `EngineConfig`
 - **描述**: 引擎配置对象
 - **只读**: 是
@@ -26,6 +28,7 @@ console.log(config.appName) // 应用名称
 ```
 
 #### `state`
+
 - **类型**: `StateManager`
 - **描述**: 状态管理器实例
 
@@ -38,6 +41,7 @@ const user = engine.state.get('user')
 ```
 
 #### `events`
+
 - **类型**: `EventManager`
 - **描述**: 事件管理器实例
 
@@ -52,6 +56,7 @@ engine.events.emit('user:login', userData)
 ```
 
 #### `logger`
+
 - **类型**: `Logger`
 - **描述**: 日志记录器实例
 
@@ -62,6 +67,7 @@ engine.logger.error('错误信息', error)
 ```
 
 #### `notifications`
+
 - **类型**: `NotificationManager`
 - **描述**: 通知管理器实例
 
@@ -74,6 +80,7 @@ engine.notifications.error('操作失败')
 ### 方法
 
 #### `mount(container)`
+
 挂载Vue应用到指定容器。
 
 - **参数**:
@@ -91,6 +98,7 @@ engine.mount(container)
 ```
 
 #### `unmount()`
+
 卸载Vue应用。
 
 - **返回值**: `void`
@@ -101,6 +109,7 @@ engine.unmount()
 ```
 
 #### `use(plugin, options?)`
+
 安装插件。
 
 - **参数**:
@@ -119,6 +128,7 @@ engine.use(myPlugin, {
 ```
 
 #### `addMiddleware(middleware)`
+
 添加中间件。
 
 - **参数**:
@@ -133,6 +143,7 @@ engine.addMiddleware(authMiddleware)
 ```
 
 #### `removeMiddleware(name)`
+
 移除指定名称的中间件。
 
 - **参数**:
@@ -146,6 +157,7 @@ console.log(removed) // true 或 false
 ```
 
 #### `getPlugin(name)`
+
 获取指定名称的插件。
 
 - **参数**:
@@ -161,6 +173,7 @@ if (authPlugin) {
 ```
 
 #### `hasPlugin(name)`
+
 检查是否安装了指定名称的插件。
 
 - **参数**:
@@ -175,6 +188,7 @@ if (engine.hasPlugin('auth')) {
 ```
 
 #### `getMiddleware(name)`
+
 获取指定名称的中间件。
 
 - **参数**:
@@ -190,6 +204,7 @@ if (authMiddleware) {
 ```
 
 #### `hasMiddleware(name)`
+
 检查是否安装了指定名称的中间件。
 
 - **参数**:
@@ -208,6 +223,7 @@ if (engine.hasMiddleware('auth')) {
 ### 方法
 
 #### `set(key, value)`
+
 设置状态值。
 
 - **参数**:
@@ -228,6 +244,7 @@ engine.state.set('user.name', '李四')
 ```
 
 #### `get(key, defaultValue?)`
+
 获取状态值。
 
 - **参数**:
@@ -251,6 +268,7 @@ const theme = engine.state.get('theme', 'light')
 ```
 
 #### `has(key)`
+
 检查状态是否存在。
 
 - **参数**:
@@ -265,6 +283,7 @@ if (engine.state.has('user')) {
 ```
 
 #### `delete(key)`
+
 删除状态。
 
 - **参数**:
@@ -278,6 +297,7 @@ console.log(deleted) // true 或 false
 ```
 
 #### `clear()`
+
 清空所有状态。
 
 - **返回值**: `void`
@@ -288,6 +308,7 @@ engine.state.clear()
 ```
 
 #### `watch(key, callback)`
+
 监听状态变化。
 
 - **参数**:
@@ -306,6 +327,7 @@ unwatch()
 ```
 
 #### `computed(getter)`
+
 创建计算状态。
 
 - **参数**:
@@ -327,6 +349,7 @@ console.log(fullName.value) // 计算结果
 ### 方法
 
 #### `on(event, listener)`
+
 监听事件。
 
 - **参数**:
@@ -345,6 +368,7 @@ off()
 ```
 
 #### `once(event, listener)`
+
 监听事件一次。
 
 - **参数**:
@@ -360,6 +384,7 @@ engine.events.once('app:ready', () => {
 ```
 
 #### `off(event, listener?)`
+
 取消事件监听。
 
 - **参数**:
@@ -377,6 +402,7 @@ engine.events.off('user:login')
 ```
 
 #### `emit(event, ...args)`
+
 发送事件。
 
 - **参数**:
@@ -397,6 +423,7 @@ engine.events.emit('data:update', id, newData, timestamp)
 ```
 
 #### `listenerCount(event)`
+
 获取事件监听器数量。
 
 - **参数**:
@@ -410,6 +437,7 @@ console.log(`user:login 事件有 ${count} 个监听器`)
 ```
 
 #### `eventNames()`
+
 获取所有事件名称。
 
 - **返回值**: `string[]`
@@ -425,6 +453,7 @@ console.log('所有事件:', events)
 ### 方法
 
 #### `debug(message, data?)`
+
 记录调试日志。
 
 - **参数**:
@@ -438,6 +467,7 @@ engine.logger.debug('调试信息', { component: 'UserList' })
 ```
 
 #### `info(message, data?)`
+
 记录信息日志。
 
 - **参数**:
@@ -451,6 +481,7 @@ engine.logger.info('用户登录', { userId: 123 })
 ```
 
 #### `warn(message, data?)`
+
 记录警告日志。
 
 - **参数**:
@@ -464,6 +495,7 @@ engine.logger.warn('性能警告', { loadTime: 2000 })
 ```
 
 #### `error(message, data?)`
+
 记录错误日志。
 
 - **参数**:
@@ -477,6 +509,7 @@ engine.logger.error('操作失败', { error: error.message })
 ```
 
 #### `child(context)`
+
 创建子日志器。
 
 - **参数**:
@@ -494,6 +527,7 @@ componentLogger.info('组件渲染') // 自动包含 component: 'UserList'
 ### 方法
 
 #### `success(message, options?)`
+
 显示成功通知。
 
 - **参数**:
@@ -513,6 +547,7 @@ engine.notifications.success('保存成功', {
 ```
 
 #### `info(message, options?)`
+
 显示信息通知。
 
 - **参数**:
@@ -526,6 +561,7 @@ engine.notifications.info('这是一条信息')
 ```
 
 #### `warning(message, options?)`
+
 显示警告通知。
 
 - **参数**:
@@ -539,6 +575,7 @@ engine.notifications.warning('请注意')
 ```
 
 #### `error(message, options?)`
+
 显示错误通知。
 
 - **参数**:
@@ -552,6 +589,7 @@ engine.notifications.error('操作失败')
 ```
 
 #### `dismiss(id)`
+
 关闭指定通知。
 
 - **参数**:
@@ -567,6 +605,7 @@ setTimeout(() => {
 ```
 
 #### `clear()`
+
 清除所有通知。
 
 - **返回值**: `void`
@@ -577,6 +616,7 @@ engine.notifications.clear()
 ```
 
 #### `group(name)`
+
 创建通知组。
 
 - **参数**:

@@ -1,6 +1,6 @@
 import type { Directive, DirectiveBinding } from 'vue'
-import { DeviceDetector } from '../../core/DeviceDetector'
 import type { DeviceDirectiveValue, DeviceType } from '../../types'
+import { DeviceDetector } from '../../core/DeviceDetector'
 
 // 全局设备检测器实例
 let globalDetector: DeviceDetector | null = null
@@ -154,7 +154,7 @@ export const vDeviceMobile: Directive<HTMLElement> = {
     const detector = getGlobalDetector()
     const currentType = detector.getDeviceType()
     updateElementVisibility(el, binding, currentType)
-    
+
     const handleDeviceChange = (deviceInfo: any) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }
@@ -193,7 +193,7 @@ export const vDeviceTablet: Directive<HTMLElement> = {
     const detector = getGlobalDetector()
     const currentType = detector.getDeviceType()
     updateElementVisibility(el, binding, currentType)
-    
+
     const handleDeviceChange = (deviceInfo: any) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }
@@ -232,7 +232,7 @@ export const vDeviceDesktop: Directive<HTMLElement> = {
     const detector = getGlobalDetector()
     const currentType = detector.getDeviceType()
     updateElementVisibility(el, binding, currentType)
-    
+
     const handleDeviceChange = (deviceInfo: any) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }

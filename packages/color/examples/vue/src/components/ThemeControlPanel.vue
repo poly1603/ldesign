@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useTheme } from '@ldesign/color/vue'
 import { getRandomPresetTheme, getSystemTheme } from '@ldesign/color'
-import type { ColorMode } from '@ldesign/color'
+import { useTheme } from '@ldesign/color/vue'
+import { computed, ref, watch } from 'vue'
 
 const {
   currentTheme,
@@ -104,8 +103,12 @@ async function resetToDefault() {
         class="mode-select"
         @change="setMode($event.target.value)"
       >
-        <option value="light">亮色模式</option>
-        <option value="dark">暗色模式</option>
+        <option value="light">
+          亮色模式
+        </option>
+        <option value="dark">
+          暗色模式
+        </option>
       </select>
     </div>
 

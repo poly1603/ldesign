@@ -2,8 +2,8 @@
  * 模板管理器
  */
 
-import type { DeviceType } from './device'
 import type { TemplateConfig } from '../types'
+import type { DeviceType } from './device'
 
 export interface TemplateInfo {
   id: string
@@ -37,12 +37,12 @@ export function registerTemplate(
   device: DeviceType,
   variant: string,
   config: TemplateConfig,
-  component: any
+  component: any,
 ): void {
   if (!templateRegistry[category]) {
     templateRegistry[category] = {}
   }
-  
+
   if (!templateRegistry[category][device]) {
     templateRegistry[category][device] = {}
   }
@@ -55,7 +55,7 @@ export function registerTemplate(
     variant,
     isDefault: config.isDefault || false,
     config,
-    component
+    component,
   }
 
   templateRegistry[category][device][variant] = templateInfo
@@ -67,13 +67,15 @@ export function registerTemplate(
 export function getTemplate(
   category: string,
   device: DeviceType,
-  variant?: string
+  variant?: string,
 ): TemplateInfo | null {
   const categoryTemplates = templateRegistry[category]
-  if (!categoryTemplates) return null
+  if (!categoryTemplates)
+    return null
 
   const deviceTemplates = categoryTemplates[device]
-  if (!deviceTemplates) return null
+  if (!deviceTemplates)
+    return null
 
   if (variant) {
     return deviceTemplates[variant] || null
@@ -81,7 +83,8 @@ export function getTemplate(
 
   // 如果没有指定变体，返回默认模板
   const defaultTemplate = Object.values(deviceTemplates).find(t => t.isDefault)
-  if (defaultTemplate) return defaultTemplate
+  if (defaultTemplate)
+    return defaultTemplate
 
   // 如果没有默认模板，返回第一个
   const firstTemplate = Object.values(deviceTemplates)[0]
@@ -93,13 +96,15 @@ export function getTemplate(
  */
 export function getTemplatesByDevice(
   category: string,
-  device: DeviceType
+  device: DeviceType,
 ): TemplateInfo[] {
   const categoryTemplates = templateRegistry[category]
-  if (!categoryTemplates) return []
+  if (!categoryTemplates)
+    return []
 
   const deviceTemplates = categoryTemplates[device]
-  if (!deviceTemplates) return []
+  if (!deviceTemplates)
+    return []
 
   return Object.values(deviceTemplates)
 }
@@ -109,12 +114,13 @@ export function getTemplatesByDevice(
  */
 export function getTemplatesByCategory(category: string): TemplateInfo[] {
   const categoryTemplates = templateRegistry[category]
-  if (!categoryTemplates) return []
+  if (!categoryTemplates)
+    return []
 
   const allTemplates: TemplateInfo[] = []
-  
-  Object.values(categoryTemplates).forEach(deviceTemplates => {
-    Object.values(deviceTemplates).forEach(template => {
+
+  Object.values(categoryTemplates).forEach((deviceTemplates) => {
+    Object.values(deviceTemplates).forEach((template) => {
       allTemplates.push(template)
     })
   })
@@ -127,10 +133,10 @@ export function getTemplatesByCategory(category: string): TemplateInfo[] {
  */
 export function getAllTemplates(): TemplateInfo[] {
   const allTemplates: TemplateInfo[] = []
-  
-  Object.values(templateRegistry).forEach(categoryTemplates => {
-    Object.values(categoryTemplates).forEach(deviceTemplates => {
-      Object.values(deviceTemplates).forEach(template => {
+
+  Object.values(templateRegistry).forEach((categoryTemplates) => {
+    Object.values(categoryTemplates).forEach((deviceTemplates) => {
+      Object.values(deviceTemplates).forEach((template) => {
         allTemplates.push(template)
       })
     })
@@ -144,7 +150,7 @@ export function getAllTemplates(): TemplateInfo[] {
  */
 export function getDefaultTemplate(
   category: string,
-  device: DeviceType
+  device: DeviceType,
 ): TemplateInfo | null {
   const deviceTemplates = getTemplatesByDevice(category, device)
   return deviceTemplates.find(t => t.isDefault) || deviceTemplates[0] || null
@@ -156,7 +162,7 @@ export function getDefaultTemplate(
 export function hasTemplate(
   category: string,
   device: DeviceType,
-  variant: string
+  variant: string,
 ): boolean {
   return getTemplate(category, device, variant) !== null
 }
@@ -167,7 +173,7 @@ export function hasTemplate(
 export function getTemplateConfig(
   category: string,
   device: DeviceType,
-  variant: string
+  variant: string,
 ): TemplateConfig | null {
   const template = getTemplate(category, device, variant)
   return template?.config || null
@@ -179,7 +185,7 @@ export function getTemplateConfig(
 export function getTemplateComponent(
   category: string,
   device: DeviceType,
-  variant: string
+  variant: string,
 ): any {
   const template = getTemplate(category, device, variant)
   return template?.component || null
@@ -189,7 +195,7 @@ export function getTemplateComponent(
  * 清空模板注册表
  */
 export function clearTemplateRegistry(): void {
-  Object.keys(templateRegistry).forEach(key => {
+  Object.keys(templateRegistry).forEach((key) => {
     delete templateRegistry[key]
   })
 }
@@ -208,11 +214,11 @@ export function getTemplateStats(): {
   const deviceBreakdown: Record<DeviceType, number> = {
     desktop: 0,
     tablet: 0,
-    mobile: 0
+    mobile: 0,
   }
   const categoryBreakdown: Record<string, number> = {}
 
-  allTemplates.forEach(template => {
+  allTemplates.forEach((template) => {
     categories.add(template.category)
     deviceBreakdown[template.device]++
     categoryBreakdown[template.category] = (categoryBreakdown[template.category] || 0) + 1
@@ -222,6 +228,6 @@ export function getTemplateStats(): {
     totalTemplates: allTemplates.length,
     categoriesCount: categories.size,
     deviceBreakdown,
-    categoryBreakdown
+    categoryBreakdown,
   }
 }

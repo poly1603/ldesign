@@ -6,66 +6,93 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+export interface CreatePackageOptions {
+  vue?: boolean
+  template?: 'basic' | 'vue' | 'node'
+  description?: string
+  author?: string
+  license?: string
+}
+
 /**
  * 创建新的包
- * @param {string} packageName 包名
- * @param {string} description 包描述
- * @param {Object} options 选项
+ * @param packageName 包名
+ * @param options 选项
  */
-function createPackage(packageName, description, options = {}) {
-  const { vue = false, template = 'basic' } = options
-  
-  const packagesDir = path.resolve(__dirname, '../packages')
+export function createPackage(packageName: string, options: CreatePackageOptions = {}): void {
+  const {
+    vue = false,
+    template = 'basic',
+    description = `LDesign ${packageName} package`,
+    author = 'LDesign Team',
+    license = 'MIT',
+  } = options
+
+  const packagesDir = path.resolve(__dirname, '../../packages')
   const packageDir = path.resolve(packagesDir, packageName)
-  
+
   // 检查包是否已存在
   if (fs.existsSync(packageDir)) {
     console.error(`❌ 包 ${packageName} 已存在`)
     process.exit(1)
   }
-  
+
   console.log(`🚀 创建包: @ldesign/${packageName}`)
-  
+
   // 创建包目录
   fs.mkdirSync(packageDir, { recursive: true })
-  
+
   // 创建基础目录结构
   const dirs = [
     'src',
     'src/types',
     'src/utils',
     '__tests__',
+    'e2e',
     'docs',
     'examples',
-    'e2e'
   ]
-  
+
   if (vue) {
     dirs.push('src/vue')
   }
-  
-  dirs.forEach(dir => {
+
+  dirs.forEach((dir) => {
     fs.mkdirSync(path.resolve(packageDir, dir), { recursive: true })
   })
-  
+
   // 读取模板文件
-  const templatePath = path.resolve(__dirname, 'package-template.json')
+  const templatePath = path.resolve(__dirname, '../templates/package-template.json')
   const packageTemplate = JSON.parse(fs.readFileSync(templatePath, 'utf-8'))
-  
+
   // 替换模板变量
-  const packageJson = JSON.stringify(packageTemplate, null, 2)
-    .replace(/\{\{PACKAGE_NAME\}\}/g, packageName)
-    .replace(/\{\{PACKAGE_DESCRIPTION\}\}/g, description)
-  
+  packageTemplate.name = `@ldesign/${packageName}`
+  packageTemplate.description = description
+  packageTemplate.author = author
+  packageTemplate.license = license
+
+  // 添加包名到关键词
+  if (packageTemplate.keywords) {
+    packageTemplate.keywords.push(packageName)
+  }
+
+  // 更新部署脚本中的包名
+  if (packageTemplate.scripts) {
+    packageTemplate.scripts.deploy = `tsx ../../tools/deploy/package-deployer.ts ${packageName}`
+    packageTemplate.scripts['deploy:beta'] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --tag beta`
+    packageTemplate.scripts['deploy:alpha'] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --tag alpha`
+    packageTemplate.scripts['deploy:dry-run'] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --dry-run`
+  }
+
   // 写入 package.json
   fs.writeFileSync(
     path.resolve(packageDir, 'package.json'),
-    packageJson
+    JSON.stringify(packageTemplate, null, 2),
   )
-  
+
   // 创建基础文件
   createBasicFiles(packageDir, packageName, description, { vue })
-  
+
   console.log(`✅ 包 @ldesign/${packageName} 创建成功`)
   console.log(`📁 位置: packages/${packageName}`)
   console.log(`\n📝 下一步:`)
@@ -77,18 +104,20 @@ function createPackage(packageName, description, options = {}) {
 /**
  * 创建基础文件
  */
-function createBasicFiles(packageDir, packageName, description, options = {}) {
+function createBasicFiles(packageDir: string, packageName: string, description: string, options: { vue?: boolean } = {}): void {
   const { vue = false } = options
-  
+
   // src/index.ts
-  const indexContent = vue ? `// Core exports
+  const indexContent = vue
+    ? `// Core exports
 export * from './core'
 export * from './types'
 export * from './utils'
 
 // Default export
 export { default } from './core'
-` : `// Core exports
+`
+    : `// Core exports
 export * from './types'
 export * from './utils'
 
@@ -101,12 +130,12 @@ export default {
   ${toCamelCase(packageName)}
 }
 `
-  
+
   fs.writeFileSync(
     path.resolve(packageDir, 'src/index.ts'),
-    indexContent
+    indexContent,
   )
-  
+
   // src/types/index.ts
   fs.writeFileSync(
     path.resolve(packageDir, 'src/types/index.ts'),
@@ -117,9 +146,9 @@ export default {
 export interface ${toPascalCase(packageName)}Instance {
   // 实例接口
 }
-`
+`,
   )
-  
+
   // src/utils/index.ts
   fs.writeFileSync(
     path.resolve(packageDir, 'src/utils/index.ts'),
@@ -129,9 +158,38 @@ export interface ${toPascalCase(packageName)}Instance {
 export function isValidInput(input: unknown): boolean {
   return input != null
 }
-`
+`,
   )
-  
+
+  // src/core/index.ts (仅Vue包需要)
+  if (vue) {
+    fs.mkdirSync(path.resolve(packageDir, 'src/core'), { recursive: true })
+    fs.writeFileSync(
+      path.resolve(packageDir, 'src/core/index.ts'),
+      `/**
+ * ${toPascalCase(packageName)} 核心模块
+ */
+import type { ${toPascalCase(packageName)}Options } from '../types'
+
+export class ${toPascalCase(packageName)} {
+  private options: ${toPascalCase(packageName)}Options
+
+  constructor(options: ${toPascalCase(packageName)}Options = {}) {
+    this.options = options
+  }
+
+  // 核心方法
+  public init(): void {
+    console.log('${toPascalCase(packageName)} initialized')
+  }
+}
+
+// 默认导出
+export default ${toPascalCase(packageName)}
+`,
+    )
+  }
+
   // Vue 集成
   if (vue) {
     fs.writeFileSync(
@@ -149,16 +207,16 @@ export default {
 
 // 重新导出核心功能
 export * from '../index'
-`
+`,
     )
   }
-  
+
   // README.md
   fs.writeFileSync(
     path.resolve(packageDir, 'README.md'),
-    createReadmeContent(packageName, description, vue)
+    createReadmeContent(packageName, description, vue),
   )
-  
+
   // 配置文件
   createConfigFiles(packageDir, packageName, vue)
 }
@@ -166,12 +224,12 @@ export * from '../index'
 /**
  * 创建配置文件
  */
-function createConfigFiles(packageDir, packageName, vue) {
+function createConfigFiles(packageDir: string, packageName: string, vue: boolean): void {
   // tsconfig.json
   fs.writeFileSync(
     path.resolve(packageDir, 'tsconfig.json'),
     `{
-  "extends": "../../tools/tsconfig.base.json",
+  "extends": "../../tools/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -185,11 +243,12 @@ function createConfigFiles(packageDir, packageName, vue) {
     "e2e/**/*"
   ]
 }
-`
+`,
   )
-  
+
   // rollup.config.js
-  const rollupConfig = vue ? `import { createRollupConfig } from '../../tools/rollup.config.base.js'
+  const rollupConfig = vue
+    ? `import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
   external: ['vue'],
@@ -199,33 +258,34 @@ export default createRollupConfig({
   },
   vue: true
 })
-` : `import { createRollupConfig } from '../../tools/rollup.config.base.js'
+`
+    : `import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
   globalName: 'LDesign${toPascalCase(packageName)}'
 })
 `
-  
+
   fs.writeFileSync(
     path.resolve(packageDir, 'rollup.config.js'),
-    rollupConfig
+    rollupConfig,
   )
-  
+
   // vitest.config.ts
   fs.writeFileSync(
     path.resolve(packageDir, 'vitest.config.ts'),
-    `import { createVitestConfig } from '../../tools/vitest.config.base'
+    `import { createVitestConfig } from '../../tools/test/vitest.config.base'
 
 export default createVitestConfig({
   vue: ${vue}
 })
-`
+`,
   )
-  
+
   // playwright.config.ts
   fs.writeFileSync(
     path.resolve(packageDir, 'playwright.config.ts'),
-    `import { createPlaywrightConfig } from '../../tools/playwright.config.base'
+    `import { createPlaywrightConfig } from '../../tools/test/playwright.config.base'
 
 export default createPlaywrightConfig({
   webServer: {
@@ -233,9 +293,9 @@ export default createPlaywrightConfig({
     port: 5173
   }
 })
-`
+`,
   )
-  
+
   // eslint.config.js
   fs.writeFileSync(
     path.resolve(packageDir, 'eslint.config.js'),
@@ -253,14 +313,14 @@ export default antfu({
     '*.d.ts'
   ]
 })
-`
+`,
   )
 }
 
 /**
  * 创建 README 内容
  */
-function createReadmeContent(packageName, description, vue) {
+function createReadmeContent(packageName: string, description: string, vue: boolean): string {
   return `# @ldesign/${packageName}
 
 ${description}
@@ -293,7 +353,8 @@ import { ${toCamelCase(packageName)} } from '@ldesign/${packageName}'
 ${toCamelCase(packageName)}()
 \`\`\`
 
-${vue ? `### Vue 3 集成
+${vue
+  ? `### Vue 3 集成
 
 \`\`\`typescript
 import { createApp } from 'vue'
@@ -312,7 +373,8 @@ import { use${toPascalCase(packageName)} } from '@ldesign/${packageName}/vue'
 const ${toCamelCase(packageName)} = use${toPascalCase(packageName)}()
 </script>
 \`\`\`
-` : ''}
+`
+  : ''}
 
 ## API 文档
 
@@ -347,27 +409,32 @@ MIT © LDesign Team
 }
 
 // 工具函数
-function toCamelCase(str) {
-  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
+function toCamelCase(str: string): string {
+  return str.replace(/-([a-z])/g, g => g[1].toUpperCase())
 }
 
-function toPascalCase(str) {
-  return toCamelCase(str).replace(/^[a-z]/, (g) => g.toUpperCase())
+function toPascalCase(str: string): string {
+  return toCamelCase(str).replace(/^[a-z]/, g => g.toUpperCase())
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
-  
-  if (args.length < 2) {
-    console.log('用法: node create-package.js <package-name> <description> [--vue]')
+
+  if (args.length < 1) {
+    console.log('用法: tsx tools/package/create-package.ts <package-name> [options]')
+    console.log('选项:')
+    console.log('  --vue          创建 Vue 包')
+    console.log('  --description  包描述')
     process.exit(1)
   }
-  
-  const [packageName, description] = args
+
+  const packageName = args[0]
   const vue = args.includes('--vue')
-  
-  createPackage(packageName, description, { vue })
+  const descriptionIndex = args.indexOf('--description')
+  const description = descriptionIndex !== -1 ? args[descriptionIndex + 1] : undefined
+
+  createPackage(packageName, { vue, description })
 }
 
-export { createPackage }
+// createPackage 已在上面导出

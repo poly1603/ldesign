@@ -12,7 +12,7 @@ export interface CancelToken {
   /** 取消回调 */
   promise: Promise<string>
   /** 抛出取消错误 */
-  throwIfRequested(): void
+  throwIfRequested: () => void
 }
 
 /**
@@ -93,7 +93,7 @@ export class CancelManager {
     this.requests.set(requestId, controller)
     if (token) {
       this.cancelTokens.set(requestId, token)
-      
+
       // 监听取消令牌
       token.promise.then(() => {
         this.cancel(requestId)
@@ -164,8 +164,8 @@ export class CancelManager {
    * 创建合并的 AbortSignal
    */
   createMergedSignal(signals: (AbortSignal | undefined)[]): AbortSignal {
-    const validSignals = signals.filter((signal): signal is AbortSignal => 
-      signal !== undefined
+    const validSignals = signals.filter((signal): signal is AbortSignal =>
+      signal !== undefined,
     )
 
     if (validSignals.length === 0) {
@@ -212,11 +212,11 @@ export function createCancelTokenSource(): CancelTokenSource {
  */
 export function isCancelError(error: any): boolean {
   return error && (
-    error.isCancelError ||
-    error.name === 'AbortError' ||
-    error.code === 'CANCELED' ||
-    error.message?.includes('cancelled') ||
-    error.message?.includes('aborted')
+    error.isCancelError
+    || error.name === 'AbortError'
+    || error.code === 'CANCELED'
+    || error.message?.includes('cancelled')
+    || error.message?.includes('aborted')
   )
 }
 
@@ -225,7 +225,7 @@ export function isCancelError(error: any): boolean {
  */
 export function createTimeoutCancelToken(timeout: number): CancelTokenSource {
   const source = createCancelTokenSource()
-  
+
   setTimeout(() => {
     source.cancel(`Request timeout after ${timeout}ms`)
   }, timeout)

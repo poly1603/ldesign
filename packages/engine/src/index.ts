@@ -1,62 +1,62 @@
-import { EngineImpl } from './core/engine'
 import type { Component } from 'vue'
 import type {
-  Engine,
   CreateEngineOptions,
-  Plugin,
-  Middleware
-} from './types'
-
-import './styles/index.less'
-
-// 导出主要类型
-export type {
   Engine,
-  EngineConfig,
-  Plugin,
-  PluginManager,
   Middleware,
-  MiddlewareManager,
-  MiddlewareContext,
-  MiddlewareNext,
-  EventManager,
-  EventHandler,
-  StateManager,
-  DirectiveManager,
-  ErrorManager,
-  ErrorInfo,
-  ErrorHandler,
-  Logger,
-  LogLevel,
-  LogEntry,
-  NotificationManager,
-  NotificationOptions,
-  NotificationType,
-  RouterAdapter,
-  StateAdapter,
-  I18nAdapter,
-  ThemeAdapter,
-  CreateEngineOptions
+  Plugin,
 } from './types'
+import { EngineImpl } from './core/engine'
 
-// 导出核心类
-export { EngineImpl } from './core/engine'
-
-// 导出管理器
-export { createPluginManager } from './plugins/plugin-manager'
-export { createMiddlewareManager, commonMiddleware } from './middleware/middleware-manager'
-export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
-export { createStateManager, stateModules } from './state/state-manager'
-export { createDirectiveManager, commonDirectives } from './directives/directive-manager'
-export { createErrorManager, errorHandlers } from './errors/error-manager'
-export { createLogger, logFormatters, logTransports } from './logger/logger'
-export { createNotificationManager, notificationTypes } from './notifications/notification-manager'
-
+import { commonDirectives } from './directives/directive-manager'
 // 导入需要的模块
 import { createErrorManager } from './errors/error-manager'
 import { createLogger } from './logger/logger'
 import { commonMiddleware } from './middleware/middleware-manager'
-import { commonDirectives } from './directives/directive-manager'
+
+// import './styles/index.less' // 暂时注释掉，需要配置CSS处理插件
+
+// 导出核心类
+export { EngineImpl } from './core/engine'
+
+export { commonDirectives, createDirectiveManager } from './directives/directive-manager'
+
+export { createErrorManager, errorHandlers } from './errors/error-manager'
+export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
+export { createLogger, logFormatters, logTransports } from './logger/logger'
+export { commonMiddleware, createMiddlewareManager } from './middleware/middleware-manager'
+export { createNotificationManager, notificationTypes } from './notifications/notification-manager'
+// 导出管理器
+export { createPluginManager } from './plugins/plugin-manager'
+export { createStateManager, stateModules } from './state/state-manager'
+// 导出主要类型
+export type {
+  CreateEngineOptions,
+  DirectiveManager,
+  Engine,
+  EngineConfig,
+  ErrorHandler,
+  ErrorInfo,
+  ErrorManager,
+  EventHandler,
+  EventManager,
+  I18nAdapter,
+  LogEntry,
+  Logger,
+  LogLevel,
+  Middleware,
+  MiddlewareContext,
+  MiddlewareManager,
+  MiddlewareNext,
+  NotificationManager,
+  NotificationOptions,
+  NotificationType,
+  Plugin,
+  PluginManager,
+  RouterAdapter,
+  StateAdapter,
+  StateManager,
+  ThemeAdapter,
+} from './types'
 
 /**
  * 创建Vue3应用引擎实例
@@ -71,7 +71,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
     router,
     store,
     i18n,
-    theme
+    theme,
   } = options
 
   // 创建引擎实例
@@ -95,14 +95,14 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   }
 
   // 注册中间件
-  middleware.forEach(m => {
+  middleware.forEach((m) => {
     engine.middleware.use(m)
   })
 
   // 注册插件（异步）
   Promise.all(
-    plugins.map(plugin => engine.use(plugin))
-  ).catch(error => {
+    plugins.map(plugin => engine.use(plugin)),
+  ).catch((error) => {
     engine.logger.error('Failed to register plugins', error)
   })
 
@@ -118,10 +118,10 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
 export function createApp(rootComponent: Component, options: CreateEngineOptions = {}): Engine {
   // 创建引擎实例
   const engine = createEngine(options)
-  
+
   // 创建Vue应用
   engine.createApp(rootComponent)
-  
+
   return engine
 }
 
@@ -131,69 +131,68 @@ export function createApp(rootComponent: Component, options: CreateEngineOptions
 // 版本信息
 export const version = '0.1.0'
 
-
-
 // 便捷创建器
 export const creators = {
   engine: createEngine,
   plugin: (name: string, install: Plugin['install'], options?: Partial<Plugin>): Plugin => ({
     name,
     install,
-    ...options
+    ...options,
   }),
   middleware: (name: string, handler: Middleware['handler'], priority?: number): Middleware => ({
     name,
     handler,
-    priority
-  })
+    priority,
+  }),
 }
 
 // 工具函数
 export const utils = {
   // 检查是否为浏览器环境
   isBrowser: () => typeof window !== 'undefined',
-  
+
   // 检查是否为开发环境
   isDev: () => process.env.NODE_ENV === 'development',
-  
+
   // 生成唯一ID
   generateId: (prefix = 'engine') => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-  
+
   // 深度合并对象
   deepMerge: <T extends Record<string, any>>(target: T, source: Partial<T>): T => {
     const result = { ...target }
-    
+
     for (const key in source) {
       if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
         result[key] = utils.deepMerge(result[key] || {} as any, source[key]!) as any
-      } else {
+      }
+      else {
         result[key] = source[key]!
       }
     }
-    
+
     return result
   },
-  
+
   // 防抖函数
   debounce: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): ((...args: Parameters<T>) => void) => {
     let timeout: NodeJS.Timeout
-    
+
     return (...args: Parameters<T>) => {
       clearTimeout(timeout)
       timeout = setTimeout(() => func(...args), wait)
     }
   },
-  
+
   // 节流函数
   throttle: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): ((...args: Parameters<T>) => void) => {
     let lastTime = 0
-    
+
     return (...args: Parameters<T>) => {
       const now = Date.now()
       if (now - lastTime >= wait) {
@@ -201,7 +200,7 @@ export const utils = {
         func(...args)
       }
     }
-  }
+  },
 }
 
 // 常量
@@ -210,9 +209,9 @@ export const constants = {
   DEFAULT_CONFIG: {
     debug: false,
     appName: 'Vue3 Engine App',
-    version: '1.0.0'
+    version: '1.0.0',
   },
-  
+
   // 事件名称
   EVENTS: {
     ENGINE_MOUNTED: 'engine:mounted',
@@ -225,14 +224,14 @@ export const constants = {
     STATE_CHANGED: 'state:changed',
     ERROR_CAPTURED: 'error:captured',
     NOTIFICATION_SHOWN: 'notification:shown',
-    NOTIFICATION_HIDDEN: 'notification:hidden'
+    NOTIFICATION_HIDDEN: 'notification:hidden',
   },
-  
+
   // 日志级别
   LOG_LEVELS: ['debug', 'info', 'warn', 'error'] as const,
-  
+
   // 通知类型
-  NOTIFICATION_TYPES: ['success', 'error', 'warning', 'info'] as const
+  NOTIFICATION_TYPES: ['success', 'error', 'warning', 'info'] as const,
 }
 
 // 预设配置
@@ -243,31 +242,31 @@ export const presets = {
     return {
       config: {
         debug: true,
-        appName: 'Development App'
+        appName: 'Development App',
       },
       middleware: [
         commonMiddleware.logger(logger),
-        commonMiddleware.performance(logger)
-      ]
+        commonMiddleware.performance(logger),
+      ],
     }
   },
-  
+
   // 生产环境预设
   production: (): CreateEngineOptions => ({
     config: {
-      debug: false
+      debug: false,
     },
     middleware: [
-      commonMiddleware.errorHandler(createErrorManager())
-    ]
+      commonMiddleware.errorHandler(createErrorManager()),
+    ],
   }),
-  
+
   // 最小配置预设
   minimal: (): CreateEngineOptions => ({
     config: {
-      debug: false
-    }
-  })
+      debug: false,
+    },
+  }),
 }
 
 // Vue插件安装函数

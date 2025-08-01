@@ -1,15 +1,15 @@
-import { ref, computed, watch, unref, onUnmounted } from 'vue'
-import type { Ref, MaybeRef } from 'vue'
+import type { MaybeRef } from 'vue'
+import type {
+  HttpClient,
+  HttpError,
+  RequestConfig,
+  ResponseData,
+} from '@/types'
 import type {
   UseQueryOptions,
   UseQueryReturn,
 } from '@/types/vue'
-import type {
-  RequestConfig,
-  ResponseData,
-  HttpError,
-  HttpClient,
-} from '@/types'
+import { computed, onUnmounted, ref, unref, watch } from 'vue'
 import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
 
 /**
@@ -24,7 +24,8 @@ class QueryCache {
 
   get(key: string, staleTime: number): any {
     const item = this.cache.get(key)
-    if (!item) return null
+    if (!item)
+      return null
 
     const isStale = Date.now() - item.timestamp > staleTime
     return isStale ? null : item.data
@@ -57,7 +58,7 @@ export function useQuery<T = any>(
   client: HttpClient,
   queryKey: MaybeRef<string | (() => string)>,
   config: MaybeRef<RequestConfig>,
-  options: UseQueryOptions<T> = {}
+  options: UseQueryOptions<T> = {},
 ): UseQueryReturn<T> {
   // 响应式状态
   const data = ref<T | null>(options.initialData ?? null)
@@ -115,7 +116,8 @@ export function useQuery<T = any>(
     // 设置加载状态
     if (!data.value) {
       loading.value = true
-    } else {
+    }
+    else {
       isFetching.value = true
       isStale.value = true
     }
@@ -163,7 +165,8 @@ export function useQuery<T = any>(
         }
 
         return response
-      } catch (err) {
+      }
+      catch (err) {
         const httpError = err as HttpError
 
         // 如果是取消错误，直接抛出
@@ -176,14 +179,14 @@ export function useQuery<T = any>(
 
         // 如果还有重试次数，等待后重试
         if (currentRetry <= maxRetries) {
-          const shouldRetry = typeof retry === 'function' 
+          const shouldRetry = typeof retry === 'function'
             ? retry(currentRetry, httpError)
             : true
 
           if (shouldRetry) {
             const delay = typeof retryDelay === 'function'
               ? retryDelay(currentRetry)
-              : retryDelay * Math.pow(2, currentRetry - 1)
+              : retryDelay * 2 ** (currentRetry - 1)
 
             await new Promise(resolve => setTimeout(resolve, delay))
             continue
@@ -200,7 +203,8 @@ export function useQuery<T = any>(
         }
 
         throw httpError
-      } finally {
+      }
+      finally {
         loading.value = false
         isFetching.value = false
 
@@ -261,7 +265,7 @@ export function useQuery<T = any>(
         execute()
       }
     },
-    { immediate: options.immediate !== false, deep: true }
+    { immediate: options.immediate !== false, deep: true },
   )
 
   // 窗口焦点重新获取

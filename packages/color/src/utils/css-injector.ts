@@ -2,7 +2,7 @@
  * CSS Variables 注入和管理系统
  */
 
-import type { CSSInjector, ColorCategory, ColorScale, ColorValue } from '../core/types'
+import type { ColorCategory, ColorScale, ColorValue, CSSInjector } from '../core/types'
 
 /**
  * CSS 注入选项

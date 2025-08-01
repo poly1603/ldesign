@@ -9,9 +9,9 @@
 创建一个包含用户认证、数据管理和通知的完整应用。
 
 ```typescript
+import { createApp, creators, presets } from '@ldesign/engine'
 // main.ts
 import App from './App.vue'
-import { createApp, presets, creators } from '@ldesign/engine'
 
 // 用户认证插件
 const authPlugin = creators.plugin('auth', (engine) => {
@@ -21,74 +21,76 @@ const authPlugin = creators.plugin('auth', (engine) => {
     isAuthenticated: false,
     token: localStorage.getItem('auth_token')
   })
-  
+
   // 登录方法
   const login = async (credentials: LoginCredentials) => {
     try {
       engine.logger.info('开始用户登录', { username: credentials.username })
-      
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
       })
-      
+
       if (response.ok) {
         const { user, token } = await response.json()
-        
+
         // 更新状态
         engine.state.set('auth', {
           user,
           isAuthenticated: true,
           token
         })
-        
+
         // 保存token
         localStorage.setItem('auth_token', token)
-        
+
         // 发送登录成功事件
         engine.events.emit('auth:login:success', user)
-        
+
         // 显示成功通知
         engine.notifications.success(`欢迎回来，${user.name}！`)
-        
+
         engine.logger.info('用户登录成功', { userId: user.id })
-      } else {
+      }
+      else {
         throw new Error('登录失败')
       }
-    } catch (error) {
+    }
+    catch (error) {
       engine.logger.error('用户登录失败', error)
       engine.events.emit('auth:login:error', error)
       engine.notifications.error('登录失败，请检查用户名和密码')
       throw error
     }
   }
-  
+
   // 登出方法
   const logout = () => {
     const currentUser = engine.state.get('auth.user')
-    
+
     engine.state.set('auth', {
       user: null,
       isAuthenticated: false,
       token: null
     })
-    
+
     localStorage.removeItem('auth_token')
-    
+
     engine.events.emit('auth:logout', currentUser)
     engine.notifications.info('您已安全退出')
     engine.logger.info('用户已退出', { userId: currentUser?.id })
   }
-  
+
   // 暴露认证方法
   engine.auth = { login, logout }
-  
+
   // 监听路由变化，检查认证状态
   engine.events.on('router:beforeEach', (to) => {
     const isAuthenticated = engine.state.get('auth.isAuthenticated')
     const requiresAuth = to.meta?.requiresAuth
-    
+
     if (requiresAuth && !isAuthenticated) {
       engine.events.emit('auth:required', to)
       engine.notifications.warning('请先登录')
@@ -100,52 +102,53 @@ const authPlugin = creators.plugin('auth', (engine) => {
 const dataPlugin = creators.plugin('data', (engine) => {
   // 数据缓存
   const cache = new Map()
-  
+
   // 通用数据获取方法
   const fetchData = async (endpoint: string, options: RequestOptions = {}) => {
     const cacheKey = `${endpoint}:${JSON.stringify(options)}`
-    
+
     // 检查缓存
     if (cache.has(cacheKey) && !options.force) {
       engine.logger.debug('从缓存获取数据', { endpoint })
       return cache.get(cacheKey)
     }
-    
+
     try {
       engine.logger.info('开始获取数据', { endpoint })
-      
+
       const token = engine.state.get('auth.token')
       const headers = {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers
       }
-      
+
       const response = await fetch(endpoint, {
         ...options,
         headers
       })
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
-      
+
       const data = await response.json()
-      
+
       // 缓存数据
       cache.set(cacheKey, data)
-      
+
       engine.logger.info('数据获取成功', { endpoint, dataSize: JSON.stringify(data).length })
       engine.events.emit('data:fetched', { endpoint, data })
-      
+
       return data
-    } catch (error) {
+    }
+    catch (error) {
       engine.logger.error('数据获取失败', { endpoint, error })
       engine.events.emit('data:error', { endpoint, error })
       throw error
     }
   }
-  
+
   // 清除缓存
   const clearCache = (pattern?: string) => {
     if (pattern) {
@@ -154,15 +157,16 @@ const dataPlugin = creators.plugin('data', (engine) => {
           cache.delete(key)
         }
       }
-    } else {
+    }
+    else {
       cache.clear()
     }
     engine.logger.info('缓存已清除', { pattern })
   }
-  
+
   // 暴露数据方法
   engine.data = { fetchData, clearCache }
-  
+
   // 监听认证状态变化，清除缓存
   engine.events.on('auth:logout', () => {
     clearCache()
@@ -172,18 +176,18 @@ const dataPlugin = creators.plugin('data', (engine) => {
 // 性能监控中间件
 const performanceMiddleware = creators.middleware('performance', async (context, next) => {
   const startTime = performance.now()
-  
+
   await next()
-  
+
   const endTime = performance.now()
   const duration = endTime - startTime
-  
+
   // 记录性能数据
   engine.logger.info('中间件性能', {
     phase: context.phase,
     duration: `${duration.toFixed(2)}ms`
   })
-  
+
   // 如果执行时间过长，发出警告
   if (duration > 100) {
     engine.notifications.warning(`${context.phase}阶段执行时间较长: ${duration.toFixed(2)}ms`)
@@ -218,43 +222,8 @@ export { engine }
 
 ```vue
 <!-- UserList.vue -->
-<template>
-  <div class="user-list">
-    <div class="header">
-      <h2>用户列表</h2>
-      <button @click="refreshUsers" :disabled="loading">
-        {{ loading ? '加载中...' : '刷新' }}
-      </button>
-    </div>
-    
-    <div v-if="loading" class="loading">
-      正在加载用户数据...
-    </div>
-    
-    <div v-else-if="error" class="error">
-      {{ error }}
-      <button @click="loadUsers">重试</button>
-    </div>
-    
-    <div v-else class="users">
-      <div v-for="user in users" :key="user.id" class="user-card">
-        <img :src="user.avatar" :alt="user.name" class="avatar">
-        <div class="info">
-          <h3>{{ user.name }}</h3>
-          <p>{{ user.email }}</p>
-          <span class="role">{{ user.role }}</span>
-        </div>
-        <div class="actions">
-          <button @click="editUser(user)">编辑</button>
-          <button @click="deleteUser(user)" class="danger">删除</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { engine } from '../main'
 
 // 响应式数据
@@ -266,57 +235,61 @@ const error = ref<string | null>(null)
 const currentUser = computed(() => engine.state.get('auth.user'))
 
 // 加载用户数据
-const loadUsers = async () => {
+async function loadUsers() {
   loading.value = true
   error.value = null
-  
+
   try {
     const data = await engine.data.fetchData('/api/users')
     users.value = data.users
-    
+
     engine.logger.info('用户列表加载成功', { count: data.users.length })
-  } catch (err) {
+  }
+  catch (err) {
     error.value = '加载用户数据失败'
     engine.logger.error('用户列表加载失败', err)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 刷新用户数据
-const refreshUsers = async () => {
+async function refreshUsers() {
   try {
     const data = await engine.data.fetchData('/api/users', { force: true })
     users.value = data.users
-    
+
     engine.notifications.success('用户列表已刷新')
-  } catch (err) {
+  }
+  catch (err) {
     engine.notifications.error('刷新失败')
   }
 }
 
 // 编辑用户
-const editUser = (user: User) => {
+function editUser(user: User) {
   engine.events.emit('user:edit', user)
   engine.logger.info('开始编辑用户', { userId: user.id })
 }
 
 // 删除用户
-const deleteUser = async (user: User) => {
+async function deleteUser(user: User) {
   const confirmed = await showConfirmDialog(`确定要删除用户 ${user.name} 吗？`)
-  
+
   if (confirmed) {
     try {
       await engine.data.fetchData(`/api/users/${user.id}`, {
         method: 'DELETE'
       })
-      
+
       // 从列表中移除
       users.value = users.value.filter(u => u.id !== user.id)
-      
+
       engine.notifications.success(`用户 ${user.name} 已删除`)
       engine.logger.info('用户删除成功', { userId: user.id })
-    } catch (err) {
+    }
+    catch (err) {
       engine.notifications.error('删除用户失败')
       engine.logger.error('用户删除失败', { userId: user.id, error: err })
     }
@@ -324,7 +297,7 @@ const deleteUser = async (user: User) => {
 }
 
 // 确认对话框
-const showConfirmDialog = (message: string): Promise<boolean> => {
+function showConfirmDialog(message: string): Promise<boolean> {
   return new Promise((resolve) => {
     engine.notifications.warning(message, {
       persistent: true,
@@ -363,6 +336,47 @@ onMounted(() => {
 })
 </script>
 
+<template>
+  <div class="user-list">
+    <div class="header">
+      <h2>用户列表</h2>
+      <button :disabled="loading" @click="refreshUsers">
+        {{ loading ? '加载中...' : '刷新' }}
+      </button>
+    </div>
+
+    <div v-if="loading" class="loading">
+      正在加载用户数据...
+    </div>
+
+    <div v-else-if="error" class="error">
+      {{ error }}
+      <button @click="loadUsers">
+        重试
+      </button>
+    </div>
+
+    <div v-else class="users">
+      <div v-for="user in users" :key="user.id" class="user-card">
+        <img :src="user.avatar" :alt="user.name" class="avatar">
+        <div class="info">
+          <h3>{{ user.name }}</h3>
+          <p>{{ user.email }}</p>
+          <span class="role">{{ user.role }}</span>
+        </div>
+        <div class="actions">
+          <button @click="editUser(user)">
+            编辑
+          </button>
+          <button class="danger" @click="deleteUser(user)">
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
 .user-list {
   padding: 20px;
@@ -375,7 +389,8 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.loading, .error {
+.loading,
+.error {
   text-align: center;
   padding: 40px;
   color: #666;
@@ -485,7 +500,7 @@ interface ThemeDefinition {
   variables: Record<string, string>
 }
 
-export const createThemePlugin = (config: ThemeConfig) => {
+export function createThemePlugin(config: ThemeConfig) {
   return creators.plugin('theme', (engine) => {
     // 初始化主题状态
     const savedTheme = localStorage.getItem(config.storageKey) || config.defaultTheme
@@ -493,7 +508,7 @@ export const createThemePlugin = (config: ThemeConfig) => {
       current: savedTheme,
       available: Object.keys(config.themes)
     })
-    
+
     // 应用主题
     const applyTheme = (themeName: string) => {
       const theme = config.themes[themeName]
@@ -501,40 +516,41 @@ export const createThemePlugin = (config: ThemeConfig) => {
         engine.logger.warn('主题不存在', { themeName })
         return
       }
-      
+
       // 更新CSS变量
       const root = document.documentElement
       Object.entries(theme.variables).forEach(([key, value]) => {
         root.style.setProperty(`--${key}`, value)
       })
-      
+
       // 更新状态
       engine.state.set('theme.current', themeName)
-      
+
       // 保存到本地存储
       localStorage.setItem(config.storageKey, themeName)
-      
+
       // 发送主题变化事件
       engine.events.emit('theme:changed', { theme: themeName, definition: theme })
-      
+
       engine.logger.info('主题已切换', { theme: themeName })
     }
-    
+
     // 切换主题
     const switchTheme = (themeName: string) => {
       if (config.themes[themeName]) {
         applyTheme(themeName)
         engine.notifications.success(`已切换到${config.themes[themeName].name}主题`)
-      } else {
+      }
+      else {
         engine.notifications.error('主题不存在')
       }
     }
-    
+
     // 获取当前主题
     const getCurrentTheme = () => {
       return engine.state.get('theme.current')
     }
-    
+
     // 获取可用主题
     const getAvailableThemes = () => {
       return Object.entries(config.themes).map(([key, theme]) => ({
@@ -542,7 +558,7 @@ export const createThemePlugin = (config: ThemeConfig) => {
         name: theme.name
       }))
     }
-    
+
     // 暴露主题API
     engine.theme = {
       switch: switchTheme,
@@ -550,10 +566,10 @@ export const createThemePlugin = (config: ThemeConfig) => {
       getAvailable: getAvailableThemes,
       apply: applyTheme
     }
-    
+
     // 初始化时应用保存的主题
     applyTheme(savedTheme)
-    
+
     engine.logger.info('主题插件已安装', { defaultTheme: config.defaultTheme })
   })
 }
@@ -608,7 +624,7 @@ interface I18nConfig {
   storageKey: string
 }
 
-export const createI18nPlugin = (config: I18nConfig) => {
+export function createI18nPlugin(config: I18nConfig) {
   return creators.plugin('i18n', (engine) => {
     // 初始化语言状态
     const savedLocale = localStorage.getItem(config.storageKey) || config.defaultLocale
@@ -616,53 +632,53 @@ export const createI18nPlugin = (config: I18nConfig) => {
       locale: savedLocale,
       available: Object.keys(config.messages)
     })
-    
+
     // 翻译函数
     const t = (key: string, params?: Record<string, any>): string => {
       const locale = engine.state.get('i18n.locale')
       const messages = config.messages[locale] || config.messages[config.fallbackLocale]
-      
+
       let message = messages[key] || key
-      
+
       // 参数替换
       if (params) {
         Object.entries(params).forEach(([param, value]) => {
           message = message.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value))
         })
       }
-      
+
       return message
     }
-    
+
     // 切换语言
     const setLocale = (locale: string) => {
       if (!config.messages[locale]) {
         engine.logger.warn('语言不支持', { locale })
         return false
       }
-      
+
       engine.state.set('i18n.locale', locale)
       localStorage.setItem(config.storageKey, locale)
-      
+
       // 发送语言变化事件
       engine.events.emit('i18n:locale:changed', { locale })
-      
+
       engine.logger.info('语言已切换', { locale })
       engine.notifications.success(t('language.switched', { language: locale }))
-      
+
       return true
     }
-    
+
     // 获取当前语言
     const getLocale = () => {
       return engine.state.get('i18n.locale')
     }
-    
+
     // 获取可用语言
     const getAvailableLocales = () => {
       return Object.keys(config.messages)
     }
-    
+
     // 暴露国际化API
     engine.i18n = {
       t,
@@ -670,12 +686,12 @@ export const createI18nPlugin = (config: I18nConfig) => {
       getLocale,
       getAvailableLocales
     }
-    
+
     // 全局注册翻译函数
     if (typeof window !== 'undefined') {
       (window as any).$t = t
     }
-    
+
     engine.logger.info('国际化插件已安装', { locale: savedLocale })
   })
 }
@@ -719,39 +735,39 @@ export const requestInterceptorMiddleware = creators.middleware('request-interce
   if (context.phase === 'afterMount') {
     // 拦截fetch请求
     const originalFetch = window.fetch
-    
+
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
       const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      
+
       // 记录请求开始
       context.engine.logger.info('HTTP请求开始', {
         requestId,
         url,
         method: init?.method || 'GET'
       })
-      
+
       const startTime = performance.now()
-      
+
       try {
         // 添加认证头
         const token = context.engine.state.get('auth.token')
-        if (token && !init?.headers?.['Authorization']) {
+        if (token && !init?.headers?.Authorization) {
           init = {
             ...init,
             headers: {
               ...init?.headers,
-              'Authorization': `Bearer ${token}`
+              Authorization: `Bearer ${token}`
             }
           }
         }
-        
+
         // 执行请求
         const response = await originalFetch(input, init)
-        
+
         const endTime = performance.now()
         const duration = endTime - startTime
-        
+
         // 记录请求完成
         context.engine.logger.info('HTTP请求完成', {
           requestId,
@@ -759,18 +775,19 @@ export const requestInterceptorMiddleware = creators.middleware('request-interce
           status: response.status,
           duration: `${duration.toFixed(2)}ms`
         })
-        
+
         // 处理认证失败
         if (response.status === 401) {
           context.engine.events.emit('auth:unauthorized', { url, response })
           context.engine.notifications.error('认证失败，请重新登录')
         }
-        
+
         return response
-      } catch (error) {
+      }
+      catch (error) {
         const endTime = performance.now()
         const duration = endTime - startTime
-        
+
         // 记录请求错误
         context.engine.logger.error('HTTP请求失败', {
           requestId,
@@ -778,16 +795,16 @@ export const requestInterceptorMiddleware = creators.middleware('request-interce
           error: error.message,
           duration: `${duration.toFixed(2)}ms`
         })
-        
+
         context.engine.events.emit('http:error', { url, error })
-        
+
         throw error
       }
     }
-    
+
     context.engine.logger.info('请求拦截器已安装')
   }
-  
+
   await next()
 })
 ```
@@ -801,28 +818,30 @@ import { creators } from '@ldesign/engine'
 export const errorBoundaryMiddleware = creators.middleware('error-boundary', async (context, next) => {
   try {
     await next()
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     context.engine.logger.error('中间件执行错误', {
       phase: context.phase,
       error: error.message,
       stack: error.stack
     })
-    
+
     // 发送错误事件
     context.engine.events.emit('middleware:error', {
       phase: context.phase,
       error,
       middleware: 'error-boundary'
     })
-    
+
     // 显示错误通知
     if (context.phase === 'beforeMount') {
       context.engine.notifications.error('应用启动失败，请刷新页面重试')
-    } else {
+    }
+    else {
       context.engine.notifications.error('系统出现错误，请稍后重试')
     }
-    
+
     // 在开发环境中重新抛出错误
     if (context.engine.config.debug) {
       throw error
