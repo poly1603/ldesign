@@ -1,0 +1,27 @@
+{
+  "name": "@ldesign/docs",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "serve": "vitepress serve"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "vitepress": "^1.0.0",
+    "vue": "^3.4.0"
+  },
+  "dependencies": {
+    "@ldesign/engine": "workspace:*",
+    "@ldesign/router": "workspace:*",
+    "@ldesign/http": "workspace:*",
+    "@ldesign/crypto": "workspace:*",
+    "@ldesign/device": "workspace:*",
+    "@ldesign/template": "workspace:*",
+    "@ldesign/color": "workspace:*",
+    "@ldesign/i18n": "workspace:*"
+  }
+}
