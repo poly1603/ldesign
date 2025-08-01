@@ -18,12 +18,23 @@
   ],
   "scripts": {
     "build": "rollup -c",
+    "build:watch": "rollup -c -w",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
+    "lint:check": "eslint .",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "coverage": "vitest run --coverage"
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run"
   },
   "keywords": [
     "vue3",

@@ -1,50 +1,10 @@
-import { defineConfig } from 'rollup'
-import typescript from '@rollup/plugin-typescript'
-import { nodeResolve } from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import dts from 'rollup-plugin-dts'
+import { createRollupConfig } from '../../tools/rollup.config.base.js'
 
-const external = ['vue']
-
-export default defineConfig([
-  // ESM and CJS builds
-  {
-    input: 'src/index.ts',
-    external,
-    output: [
-      {
-        file: 'dist/index.js',
-        format: 'es',
-        sourcemap: true,
-        exports: 'named'
-      },
-      {
-        file: 'dist/index.cjs',
-        format: 'cjs',
-        sourcemap: true,
-        exports: 'named'
-      }
-    ],
-    plugins: [
-      nodeResolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false
-      })
-    ]
+export default createRollupConfig({
+  external: ['vue'],
+  globalName: 'LDesignEngine',
+  globals: {
+    'vue': 'Vue'
   },
-  // Type definitions
-  {
-    input: 'src/index.ts',
-    external,
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'es'
-    },
-    plugins: [
-      dts()
-    ]
-  }
-])
+  vue: true
+})

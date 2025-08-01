@@ -1,51 +1,153 @@
 {
-  "name": "scaffold-tool",
+  "name": "@ldesign/monorepo",
   "private": true,
   "type": "module",
   "version": "1.0.0",
-  "description": "现代化的前端Node.js脚手架工具 - 采用模块化架构设计",
+  "description": "基于Vue3的现代化前端开发引擎 - 提供完整的插件化架构和跨框架兼容性",
   "workspaces": [
-    "packages/**"
+    "packages/**",
+    "docs"
   ],
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
-    "test:coverage": "pnpm -r run test:coverage",
-    "lint": "pnpm -r run lint",
-    "lint:fix": "pnpm -r run lint:fix",
+    "build:watch": "pnpm -r --parallel run build:watch",
+    "dev": "pnpm -r --parallel run dev",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:packages": "pnpm -r run test",
+    "test:e2e": "pnpm -r run test:e2e",
+    "test:e2e:ui": "pnpm -r run test:e2e:ui",
+    "type-check": "vue-tsc --noEmit",
+    "type-check:packages": "pnpm -r run type-check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:packages": "pnpm -r run lint",
     "docs:dev": "pnpm -r run docs:dev",
     "docs:build": "pnpm -r run docs:build",
-    "release": "pnpm build && pnpm test && changeset publish",
-    "dev": "pnpm -r --parallel run dev",
-    "clean": "pnpm -r run clean",
+    "docs:preview": "pnpm -r run docs:preview",
+    "clean": "pnpm -r run clean && rimraf dist coverage .nyc_output",
+    "clean:deps": "pnpm -r exec rimraf node_modules && rimraf node_modules",
+    "size-check": "pnpm -r run size-check",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
+    "release": "node tools/release.js",
+    "release:beta": "node tools/release.js beta",
+    "release:check": "pnpm build && pnpm test:run && pnpm size-check",
     "commit": "tsx tools/git-commit.ts",
-    "c": "tsx tools/git-commit.ts"
+    "c": "tsx tools/git-commit.ts",
+    "prepare": "husky install"
   },
   "keywords": [
-    "scaffold",
-    "cli",
-    "frontend",
+    "ldesign",
+    "vue3",
+    "engine",
+    "plugin",
     "monorepo",
     "typescript",
     "vite",
-    "vue",
-    "react"
+    "frontend",
+    "framework",
+    "color",
+    "crypto",
+    "device",
+    "http",
+    "i18n",
+    "router",
+    "store",
+    "template"
   ],
-  "author": "Scaffold Tool Team",
+  "author": "LDesign Team",
   "license": "MIT",
+  "homepage": "https://github.com/ldesign/ldesign#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
   "packageManager": "pnpm@latest",
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
     "@changesets/cli": "^2.27.0",
+    "@playwright/test": "^1.40.1",
     "@types/node": "^22.0.0",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitest/coverage-v8": "^2.0.0",
+    "@vitest/ui": "^2.0.0",
+    "@vue/test-utils": "^2.4.4",
     "eslint": "^9.0.0",
+    "husky": "^9.0.0",
+    "jsdom": "^24.0.0",
+    "lint-staged": "^15.0.0",
+    "rimraf": "^5.0.0",
+    "size-limit": "^11.0.0",
     "tsx": "^4.20.3",
     "typescript": "^5.6.0",
+    "vite": "^5.0.12",
     "vitest": "^2.0.0",
-    "@vitest/coverage-v8": "^2.0.0"
+    "vue": "^3.4.15",
+    "vue-tsc": "^1.8.27"
   },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
-  }
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "size-limit": [
+    {
+      "name": "@ldesign/engine",
+      "path": "packages/engine/dist/index.js",
+      "limit": "50 KB"
+    },
+    {
+      "name": "@ldesign/color",
+      "path": "packages/color/dist/index.js",
+      "limit": "30 KB"
+    },
+    {
+      "name": "@ldesign/crypto",
+      "path": "packages/crypto/dist/index.js",
+      "limit": "100 KB"
+    },
+    {
+      "name": "@ldesign/device",
+      "path": "packages/device/dist/index.js",
+      "limit": "40 KB"
+    },
+    {
+      "name": "@ldesign/http",
+      "path": "packages/http/dist/index.js",
+      "limit": "60 KB"
+    },
+    {
+      "name": "@ldesign/i18n",
+      "path": "packages/i18n/dist/index.js",
+      "limit": "35 KB"
+    },
+    {
+      "name": "@ldesign/router",
+      "path": "packages/router/dist/index.js",
+      "limit": "45 KB"
+    },
+    {
+      "name": "@ldesign/store",
+      "path": "packages/store/dist/index.js",
+      "limit": "40 KB"
+    },
+    {
+      "name": "@ldesign/template",
+      "path": "packages/template/dist/index.js",
+      "limit": "55 KB"
+    }
+  ]
 }
