@@ -4,6 +4,14 @@ export default defineConfig({
   title: '@ldesign/store',
   description: '一个基于Pinia的Vue3状态管理库，支持类、Hook、Provider、装饰器等多种使用方式',
 
+  vue: {
+    template: {
+      compilerOptions: {
+        isCustomElement: (tag) => tag.includes('-')
+      }
+    }
+  },
+
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['meta', { name: 'theme-color', content: '#3c82f6' }],
@@ -77,13 +85,22 @@ export default defineConfig({
       ],
       '/examples/': [
         {
-          text: '示例集合',
+          text: '基础示例',
           items: [
             { text: '概览', link: '/examples/' },
             { text: '基础示例', link: '/examples/basic' },
             { text: '中级示例', link: '/examples/intermediate' },
-            { text: '高级示例', link: '/examples/advanced' },
-            { text: '实战项目', link: '/examples/real-world' }
+            { text: '高级示例', link: '/examples/advanced' }
+          ]
+        },
+        {
+          text: '实战项目',
+          items: [
+            { text: '实战概览', link: '/examples/real-world/' },
+            { text: '电商系统', link: '/examples/real-world/ecommerce' },
+            { text: '权限管理', link: '/examples/real-world/rbac' },
+            { text: '实时同步', link: '/examples/real-world/realtime' },
+            { text: '表单管理', link: '/examples/real-world/forms' }
           ]
         }
       ]

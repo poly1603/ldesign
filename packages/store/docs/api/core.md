@@ -1,0 +1,512 @@
+# 核心 API
+
+@ldesign/store 的核心 API 提供了状态管理的基础功能，包括 Store 基类、状态管理方法和生命周期管理。
+
+## BaseStore
+
+所有 Store 的基类，提供了基础的状态管理功能。
+
+### 构造函数
+
+```typescript
+constructor(id: string, options?: StoreOptions)
+```
+
+**参数：**
+- `id: string` - Store 的唯一标识符，用于区分不同的 Store 实例
+- `options?: StoreOptions` - 可选的配置选项
+
+**StoreOptions 接口：**
+```typescript
+interface StoreOptions {
+  persist?: PersistOptions          // 持久化配置
+  devtools?: boolean               // 是否启用开发工具支持
+  actions?: ActionDefinition[]     // 预定义的动作
+  getters?: GetterDefinition[]     // 预定义的计算属性
+  state?: StateDefinition[]        // 预定义的状态
+  plugins?: Plugin[]               // 插件列表
+}
+```
+
+**示例：**
+```typescript
+import { BaseStore } from '@ldesign/store'
+
+class UserStore extends BaseStore {
+  constructor() {
+    super('user', {
+      persist: {
+        key: 'user-store',
+        storage: 'localStorage'
+      },
+      devtools: true
+    })
+  }
+}
+
+const userStore = new UserStore()
+```
+
+### 状态管理方法
+
+#### $patch()
+
+批量更新状态，提供事务性的状态更新。
+
+```typescript
+$patch(partialState: Partial<State>): void
+$patch(mutator: (state: State) => void): void
+```
+
+**参数：**
+- `partialState: Partial<State>` - 要更新的部分状态对象
+- `mutator: (state: State) => void` - 状态变更函数
+
+**示例：**
+```typescript
+// 对象方式更新
+store.$patch({
+  count: 10,
+  name: 'Updated Name'
+})
+
+// 函数方式更新
+store.$patch((state) => {
+  state.count++
+  state.items.push(newItem)
+})
+```
+
+**返回值：** `void`
+
+**注意事项：**
+- 使用 `$patch` 可以减少响应式更新的次数，提升性能
+- 函数方式适合复杂的状态变更逻辑
+- 所有变更会在一个事务中完成
+
+#### $reset()
+
+重置 Store 到初始状态。
+
+```typescript
+$reset(): void
+```
+
+**示例：**
+```typescript
+store.$reset()
+console.log(store.count) // 回到初始值
+```
+
+**行为：**
+- 将所有状态字段重置为初始值
+- 清除所有错误状态
+- 触发重置事件
+
+#### $subscribe()
+
+订阅状态变化，监听 Store 的状态更新。
+
+```typescript
+$subscribe(
+  callback: SubscriptionCallback,
+  options?: SubscriptionOptions
+): () => void
+```
+
+**参数：**
+- `callback: SubscriptionCallback` - 状态变化回调函数
+- `options?: SubscriptionOptions` - 订阅选项
+
+**SubscriptionCallback 类型：**
+```typescript
+type SubscriptionCallback = (
+  mutation: {
+    type: string        // 变更类型
+    payload: any        // 变更数据
+    storeId: string     // Store ID
+  },
+  state: State          // 当前状态
+) => void
+```
+
+**SubscriptionOptions 接口：**
+```typescript
+interface SubscriptionOptions {
+  immediate?: boolean   // 是否立即执行回调
+  deep?: boolean       // 是否深度监听
+  flush?: 'pre' | 'post' | 'sync'  // 回调执行时机
+}
+```
+
+**示例：**
+```typescript
+const unsubscribe = store.$subscribe((mutation, state) => {
+  console.log('状态变化:', mutation.type, mutation.payload)
+  console.log('当前状态:', state)
+}, {
+  immediate: true,
+  deep: true
+})
+
+// 取消订阅
+unsubscribe()
+```
+
+**返回值：** `() => void` - 取消订阅的函数
+
+#### $onAction()
+
+监听 Action 执行，提供 Action 级别的钩子。
+
+```typescript
+$onAction(callback: ActionCallback): () => void
+```
+
+**参数：**
+- `callback: ActionCallback` - Action 执行回调
+
+**ActionCallback 类型：**
+```typescript
+type ActionCallback = (context: {
+  name: string                           // Action 名称
+  args: any[]                           // Action 参数
+  store: Store                          // Store 实例
+  after: (callback: () => void) => void // 执行后回调
+  onError: (callback: (error: Error) => void) => void // 错误回调
+}) => void
+```
+
+**示例：**
+```typescript
+const unsubscribe = store.$onAction(({
+  name,
+  args,
+  after,
+  onError
+}) => {
+  console.log(`开始执行 Action: ${name}`, args)
+  
+  after(() => {
+    console.log(`Action ${name} 执行完成`)
+  })
+  
+  onError((error) => {
+    console.error(`Action ${name} 执行失败:`, error)
+  })
+})
+```
+
+**返回值：** `() => void` - 取消监听的函数
+
+### 生命周期方法
+
+#### $dispose()
+
+销毁 Store 实例，清理资源。
+
+```typescript
+$dispose(): void
+```
+
+**示例：**
+```typescript
+store.$dispose()
+```
+
+**行为：**
+- 清除所有订阅
+- 停止所有定时器
+- 清理持久化数据（可选）
+- 触发销毁事件
+
+#### $hydrate()
+
+从持久化存储中恢复状态。
+
+```typescript
+$hydrate(data: any): void
+```
+
+**参数：**
+- `data: any` - 要恢复的状态数据
+
+**示例：**
+```typescript
+const savedData = localStorage.getItem('store-data')
+if (savedData) {
+  store.$hydrate(JSON.parse(savedData))
+}
+```
+
+#### $serialize()
+
+序列化当前状态为可持久化的格式。
+
+```typescript
+$serialize(): any
+```
+
+**示例：**
+```typescript
+const serializedData = store.$serialize()
+localStorage.setItem('store-data', JSON.stringify(serializedData))
+```
+
+**返回值：** `any` - 序列化后的状态数据
+
+### 状态访问
+
+#### $state
+
+获取当前状态的响应式引用。
+
+```typescript
+readonly $state: Ref<State>
+```
+
+**示例：**
+```typescript
+console.log(store.$state.value) // 当前完整状态
+```
+
+#### $id
+
+获取 Store 的唯一标识符。
+
+```typescript
+readonly $id: string
+```
+
+**示例：**
+```typescript
+console.log(store.$id) // 'user'
+```
+
+### 工具方法
+
+#### $nextTick()
+
+等待下一次状态更新完成。
+
+```typescript
+$nextTick(callback?: () => void): Promise<void>
+```
+
+**参数：**
+- `callback?: () => void` - 可选的回调函数
+
+**示例：**
+```typescript
+store.count++
+await store.$nextTick()
+console.log('状态更新完成')
+
+// 或使用回调
+store.$nextTick(() => {
+  console.log('状态更新完成')
+})
+```
+
+#### $watch()
+
+监听特定状态字段的变化。
+
+```typescript
+$watch<T>(
+  getter: (state: State) => T,
+  callback: (newValue: T, oldValue: T) => void,
+  options?: WatchOptions
+): () => void
+```
+
+**参数：**
+- `getter: (state: State) => T` - 状态获取函数
+- `callback: (newValue: T, oldValue: T) => void` - 变化回调
+- `options?: WatchOptions` - 监听选项
+
+**WatchOptions 接口：**
+```typescript
+interface WatchOptions {
+  immediate?: boolean   // 是否立即执行
+  deep?: boolean       // 是否深度监听
+  flush?: 'pre' | 'post' | 'sync'
+}
+```
+
+**示例：**
+```typescript
+const unwatch = store.$watch(
+  (state) => state.count,
+  (newCount, oldCount) => {
+    console.log(`计数从 ${oldCount} 变为 ${newCount}`)
+  },
+  { immediate: true }
+)
+
+// 停止监听
+unwatch()
+```
+
+## 错误处理
+
+### StoreError
+
+Store 相关错误的基类。
+
+```typescript
+class StoreError extends Error {
+  constructor(
+    message: string,
+    public storeId: string,
+    public cause?: Error
+  )
+}
+```
+
+**属性：**
+- `message: string` - 错误消息
+- `storeId: string` - 发生错误的 Store ID
+- `cause?: Error` - 原始错误（如果有）
+
+### ActionError
+
+Action 执行错误。
+
+```typescript
+class ActionError extends StoreError {
+  constructor(
+    message: string,
+    public actionName: string,
+    storeId: string,
+    cause?: Error
+  )
+}
+```
+
+**属性：**
+- `actionName: string` - 发生错误的 Action 名称
+
+### ValidationError
+
+验证错误。
+
+```typescript
+class ValidationError extends StoreError {
+  constructor(
+    message: string,
+    public field: string,
+    public value: any,
+    storeId: string
+  )
+}
+```
+
+**属性：**
+- `field: string` - 验证失败的字段名
+- `value: any` - 验证失败的值
+
+## 类型定义
+
+### Store
+
+Store 实例的基础接口。
+
+```typescript
+interface Store {
+  readonly $id: string
+  readonly $state: Ref<any>
+  $patch(partialState: any): void
+  $patch(mutator: (state: any) => void): void
+  $reset(): void
+  $subscribe(callback: SubscriptionCallback): () => void
+  $onAction(callback: ActionCallback): () => void
+  $dispose(): void
+  $hydrate(data: any): void
+  $serialize(): any
+  $nextTick(callback?: () => void): Promise<void>
+  $watch<T>(
+    getter: (state: any) => T,
+    callback: (newValue: T, oldValue: T) => void,
+    options?: WatchOptions
+  ): () => void
+}
+```
+
+### StoreDefinition
+
+Store 定义接口。
+
+```typescript
+interface StoreDefinition<
+  Id extends string = string,
+  S = {},
+  G = {},
+  A = {}
+> {
+  id: Id
+  state?: () => S
+  getters?: G & GettersTree<S, G>
+  actions?: A & ActionsTree<S, G, A>
+}
+```
+
+## 常见问题
+
+### Q: 如何在多个组件间共享 Store 实例？
+
+A: 使用单例模式或依赖注入：
+
+```typescript
+// 单例模式
+export const userStore = new UserStore('user')
+
+// 依赖注入
+import { provide, inject } from 'vue'
+
+// 提供
+provide('userStore', userStore)
+
+// 注入
+const userStore = inject('userStore')
+```
+
+### Q: Store 的状态更新是同步还是异步的？
+
+A: 状态更新本身是同步的，但响应式更新可能是异步的。使用 `$nextTick()` 等待更新完成：
+
+```typescript
+store.count++
+await store.$nextTick()
+// 此时 DOM 已更新
+```
+
+### Q: 如何处理 Store 的内存泄漏？
+
+A: 及时调用 `$dispose()` 方法清理资源：
+
+```typescript
+onUnmounted(() => {
+  store.$dispose()
+})
+```
+
+### Q: 可以在 Store 外部直接修改状态吗？
+
+A: 不推荐。应该通过 Action 或 `$patch()` 方法修改状态：
+
+```typescript
+// ❌ 不推荐
+store.count++
+
+// ✅ 推荐
+store.increment()
+// 或
+store.$patch({ count: store.count + 1 })
+```
+
+## 下一步
+
+- 学习 [装饰器 API](/api/decorators) 了解装饰器的详细用法
+- 查看 [Hook API](/api/hooks) 了解函数式状态管理
+- 探索 [Vue 集成](/api/vue) 了解 Vue 特定功能
