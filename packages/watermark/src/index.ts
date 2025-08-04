@@ -2,6 +2,8 @@
  * 水印系统主入口文件
  */
 
+import type { WatermarkConfig, WatermarkInstance } from './types'
+
 // 核心模块
 export {
   WatermarkCore,
@@ -41,6 +43,11 @@ export type {
   WatermarkImage,
   WatermarkContent,
   RenderMode,
+
+  // 实例类型
+  WatermarkInstance,
+  WatermarkInstanceState,
+  InstanceManager,
 
   // 动画类型
   AnimationConfig,

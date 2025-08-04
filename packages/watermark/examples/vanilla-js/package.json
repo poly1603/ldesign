@@ -1,0 +1,30 @@
+{
+  "name": "@ldesign/watermark-example-vanilla-js",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "LDesign Watermark 原生 JavaScript 示例项目",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ldesign/watermark": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.12",
+    "rimraf": "^5.0.5"
+  },
+  "keywords": [
+    "ldesign",
+    "watermark",
+    "javascript",
+    "vite",
+    "example"
+  ],
+  "author": "ldesign",
+  "license": "MIT"
+}
