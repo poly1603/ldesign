@@ -1,7 +1,7 @@
 import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { getCachedTemplate, setCachedTemplate } from '../../core/cache'
 import { getDeviceInfo, watchDeviceChange } from '../../core/device'
-import { getDefaultTemplate, getTemplatesByDevice } from '../../core/template-manager'
+import { getDefaultTemplate, getTemplatesByDevice } from '../../core/TemplateManager'
 import './TemplateSelector.less'
 
 export interface TemplateSelectorProps {

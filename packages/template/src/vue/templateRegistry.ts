@@ -1,4 +1,4 @@
-import type { DeviceType } from './composables/useTemplateSystem'
+import type { DeviceType, TemplateConfig } from '../types'
 import { defineAsyncComponent } from 'vue'
 import { registerTemplate, templateConfigs } from './composables/useTemplateSystem'
 
@@ -7,17 +7,13 @@ const templateModules = import.meta.glob('../templates/**/index.{ts,tsx,vue,js}'
 
 console.log(templateModules, 'templateRegistry')
 
-// 模板配置映射
-interface TemplateConfig {
-  id: string
-  name: string
-  description: string
-  category: string
+// 模板配置映射（扩展基础配置）
+interface ExtendedTemplateConfig extends TemplateConfig {
   deviceType: DeviceType
 }
 
 // 根据路径解析模板信息
-function parseTemplatePath(path: string): TemplateConfig | null {
+function parseTemplatePath(path: string): ExtendedTemplateConfig | null {
   // 路径格式: ../templates/{category}/{deviceType}/{templateId}/index.{ext}
   const match = path.match(/\.\.\/templates\/([^/]+)\/([^/]+)\/([^/]+)\/index\.(ts|tsx|vue)$/)
   if (!match)

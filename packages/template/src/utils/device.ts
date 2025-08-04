@@ -21,22 +21,47 @@ export const DEFAULT_DEVICE_CONFIG: DeviceDetectionConfig = {
   desktopBreakpoint: DEFAULT_BREAKPOINTS.xl,
 }
 
+// 缓存视口信息，避免重复计算
+let cachedViewport: { width: number; height: number; timestamp: number } | null = null
+const VIEWPORT_CACHE_TTL = 100 // 100ms缓存
+
+/**
+ * 获取当前视口信息（带缓存）
+ */
+function getViewportInfo(): { width: number; height: number } {
+  const now = Date.now()
+
+  // 检查缓存是否有效
+  if (cachedViewport && (now - cachedViewport.timestamp) < VIEWPORT_CACHE_TTL) {
+    return { width: cachedViewport.width, height: cachedViewport.height }
+  }
+
+  // 计算新的视口信息
+  if (typeof window === 'undefined') {
+    const viewport = { width: 1920, height: 1080 }
+    cachedViewport = { ...viewport, timestamp: now }
+    return viewport
+  }
+
+  const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+  const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+
+  cachedViewport = { width, height, timestamp: now }
+  return { width, height }
+}
+
 /**
  * 获取当前视口宽度
  */
 export function getViewportWidth(): number {
-  if (typeof window === 'undefined')
-    return 1920
-  return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+  return getViewportInfo().width
 }
 
 /**
  * 获取当前视口高度
  */
 export function getViewportHeight(): number {
-  if (typeof window === 'undefined')
-    return 1080
-  return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+  return getViewportInfo().height
 }
 
 /**
@@ -114,8 +139,23 @@ export function detectDeviceByUserAgent(): DeviceType {
   return 'desktop'
 }
 
+// 缓存设备检测结果
+let cachedDevice: { device: DeviceType; timestamp: number; configHash: string } | null = null
+const DEVICE_CACHE_TTL = 1000 // 1秒缓存
+
 /**
- * 综合检测设备类型
+ * 生成配置哈希
+ */
+function getConfigHash(config: DeviceDetectionConfig): string {
+  return JSON.stringify({
+    mobile: config.mobileBreakpoint,
+    tablet: config.tabletBreakpoint,
+    desktop: config.desktopBreakpoint,
+  })
+}
+
+/**
+ * 综合检测设备类型（带缓存）
  */
 export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG): DeviceType {
   // 优先使用自定义检测器
@@ -123,21 +163,39 @@ export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONF
     return config.customDetector()
   }
 
+  const now = Date.now()
+  const configHash = getConfigHash(config)
+
+  // 检查缓存是否有效
+  if (cachedDevice &&
+    (now - cachedDevice.timestamp) < DEVICE_CACHE_TTL &&
+    cachedDevice.configHash === configHash) {
+    return cachedDevice.device
+  }
+
   // 结合用户代理和视口宽度检测
   const userAgentDevice = detectDeviceByUserAgent()
   const viewportDevice = detectDeviceByViewport(config)
 
-  // 如果用户代理检测为移动设备，优先采用
-  if (userAgentDevice === 'mobile')
-    return 'mobile'
+  let device: DeviceType
 
+  // 如果用户代理检测为移动设备，优先采用
+  if (userAgentDevice === 'mobile') {
+    device = 'mobile'
+  }
   // 如果用户代理检测为平板，但视口较小，可能是小平板或大手机
-  if (userAgentDevice === 'tablet' && viewportDevice === 'mobile') {
-    return 'tablet'
+  else if (userAgentDevice === 'tablet' && viewportDevice === 'mobile') {
+    device = 'tablet'
+  }
+  // 其他情况采用视口检测结果
+  else {
+    device = viewportDevice
   }
 
-  // 其他情况采用视口检测结果
-  return viewportDevice
+  // 缓存结果
+  cachedDevice = { device, timestamp: now, configHash }
+
+  return device
 }
 
 /**
@@ -148,7 +206,7 @@ export function createDeviceWatcher(
   config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG,
 ): () => void {
   if (typeof window === 'undefined') {
-    return () => {}
+    return () => { }
   }
 
   let currentDevice = detectDevice(config)
@@ -179,15 +237,16 @@ export function createDeviceWatcher(
 }
 
 /**
- * 获取设备信息
+ * 获取设备信息（优化版本，减少重复计算）
  */
 export function getDeviceInfo() {
-  const width = getViewportWidth()
-  const height = getViewportHeight()
+  const { width, height } = getViewportInfo()
   const device = detectDevice()
-  const isMobile = isMobileDevice()
-  const isTablet = isTabletDevice()
-  const isTouch = isTouchDevice()
+
+  // 基于设备类型推断其他属性，避免重复检测
+  const isMobile = device === 'mobile'
+  const isTablet = device === 'tablet'
+  const isTouch = isMobile || isTablet || isTouchDevice()
 
   return {
     width,

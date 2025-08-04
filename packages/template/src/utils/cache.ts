@@ -1,17 +1,13 @@
 import type { TemplateComponent, TemplateMetadata } from '@/types'
 
 /**
- * 缓存项接口
+ * 缓存项接口 - 简化版本，减少内存占用
  */
 interface CacheItem<T> {
   /** 缓存的值 */
   value: T
-  /** 创建时间 */
-  createdAt: number
   /** 最后访问时间 */
   lastAccessedAt: number
-  /** 访问次数 */
-  accessCount: number
   /** 过期时间（可选） */
   expiresAt?: number
 }
@@ -30,33 +26,27 @@ export class LRUCache<K, V> {
   }
 
   /**
-   * 设置缓存项
+   * 设置缓存项 - 优化版本
    */
   set(key: K, value: V, ttl?: number): void {
     const now = Date.now()
     const expiresAt = ttl ? now + ttl : (this.defaultTTL ? now + this.defaultTTL : undefined)
 
-    // 如果已存在，更新值
+    // 如果已存在，更新值并移到末尾（LRU策略）
     if (this.cache.has(key)) {
-      const item = this.cache.get(key)!
-      item.value = value
-      item.lastAccessedAt = now
-      item.accessCount++
-      item.expiresAt = expiresAt
-      return
+      this.cache.delete(key)
+    } else if (this.cache.size >= this.maxSize) {
+      // 删除最旧的项（Map的第一个项）
+      const firstKey = this.cache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey)
+      }
     }
 
-    // 检查缓存大小限制
-    if (this.cache.size >= this.maxSize) {
-      this.evictLeastRecentlyUsed()
-    }
-
-    // 添加新项
+    // 添加到末尾
     this.cache.set(key, {
       value,
-      createdAt: now,
       lastAccessedAt: now,
-      accessCount: 1,
       expiresAt,
     })
   }
@@ -75,12 +65,8 @@ export class LRUCache<K, V> {
       return undefined
     }
 
-    // 更新访问信息
-    const now = Date.now()
-    item.lastAccessedAt = now
-    item.accessCount++
-
-    // 重新插入以更新 Map 中的顺序（LRU 策略）
+    // 更新访问时间并移到末尾（LRU策略）
+    item.lastAccessedAt = Date.now()
     this.cache.delete(key)
     this.cache.set(key, item)
 
@@ -133,7 +119,7 @@ export class LRUCache<K, V> {
   }
 
   /**
-   * 获取缓存统计信息
+   * 获取缓存统计信息 - 简化版本
    */
   getStats() {
     const items = Array.from(this.cache.values())
@@ -142,10 +128,6 @@ export class LRUCache<K, V> {
     return {
       size: this.cache.size,
       maxSize: this.maxSize,
-      totalAccess: items.reduce((sum, item) => sum + item.accessCount, 0),
-      averageAge: items.length > 0
-        ? items.reduce((sum, item) => sum + (now - item.createdAt), 0) / items.length
-        : 0,
       expiredCount: items.filter(item => item.expiresAt && now > item.expiresAt).length,
     }
   }
@@ -167,24 +149,7 @@ export class LRUCache<K, V> {
     return cleanedCount
   }
 
-  /**
-   * 淘汰最少使用的项
-   */
-  private evictLeastRecentlyUsed(): void {
-    let lruKey: K | undefined
-    let lruTime = Infinity
 
-    for (const [key, item] of this.cache.entries()) {
-      if (item.lastAccessedAt < lruTime) {
-        lruTime = item.lastAccessedAt
-        lruKey = key
-      }
-    }
-
-    if (lruKey !== undefined) {
-      this.cache.delete(lruKey)
-    }
-  }
 }
 
 /**

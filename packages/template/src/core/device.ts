@@ -2,7 +2,10 @@
  * 设备类型检测和管理
  */
 
-export type DeviceType = 'desktop' | 'tablet' | 'mobile'
+import type { DeviceType } from '../types'
+
+// 重新导出DeviceType
+export type { DeviceType }
 
 export interface DeviceInfo {
   type: DeviceType
@@ -121,7 +124,7 @@ export function isTabletDevice(): boolean {
  */
 export function watchDeviceChange(callback: (deviceInfo: DeviceInfo) => void): () => void {
   if (typeof window === 'undefined') {
-    return () => {}
+    return () => { }
   }
 
   const handleResize = () => {

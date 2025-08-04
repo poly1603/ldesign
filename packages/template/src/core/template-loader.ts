@@ -45,89 +45,37 @@ export class TemplateLoader {
   }
 
   /**
-   * 初始化模块映射
+   * 初始化模块映射 - 简化版本
    */
   private initializeModules() {
-    console.log(`🔍 尝试扫描模板，基础路径: ${this.currentBasePath}`)
+    console.log(`🔍 扫描模板，基础路径: ${this.currentBasePath}`)
 
     try {
-      // 由于 import.meta.glob 需要静态字符串，直接尝试正确的路径
-      let configFound = false
+      // 尝试主要路径
+      const configModules = import.meta.glob('../templates/**/config.{ts,js}', { eager: false })
+      const componentModules = import.meta.glob('../templates/**/index.{ts,tsx,vue,js}', { eager: false })
 
-      // 首先尝试主要路径 ../templates
-      try {
-        const configModules = import.meta.glob('../templates/**/config.{ts,js}', { eager: false })
-        const componentModules = import.meta.glob('../templates/**/index.{ts,tsx,vue,js}', { eager: false })
-
-        if (Object.keys(configModules).length > 0) {
-          this.configModules = configModules
-          this.componentModules = componentModules
-          console.log(`✅ 成功使用路径: ../templates`)
-          console.log('Found config modules:', Object.keys(this.configModules))
-          configFound = true
-        }
-      } catch (err) {
-        console.warn('路径 ../templates 失败:', err)
+      if (Object.keys(configModules).length > 0) {
+        this.configModules = configModules
+        this.componentModules = componentModules
+        console.log(`✅ 找到 ${Object.keys(configModules).length} 个模板配置`)
+        return
       }
 
-      // 如果主要路径失败，尝试其他可能的路径
-      if (!configFound) {
-        const patterns = [
-          { config: './templates/**/config.{ts,js}', component: './templates/**/index.{ts,tsx,vue,js}', name: './templates' },
-          { config: '../src/templates/**/config.{ts,js}', component: '../src/templates/**/index.{ts,tsx,vue,js}', name: '../src/templates' }
-        ]
-
-        for (const pattern of patterns) {
-          try {
-            let configModules: Record<string, () => Promise<any>> = {}
-            let componentModules: Record<string, () => Promise<any>> = {}
-
-            // 使用静态字符串调用 import.meta.glob
-            if (pattern.name === './templates') {
-              configModules = import.meta.glob('./templates/**/config.{ts,js}', { eager: false })
-              componentModules = import.meta.glob('./templates/**/index.{ts,tsx,vue,js}', { eager: false })
-            } else if (pattern.name === '../src/templates') {
-              configModules = import.meta.glob('../src/templates/**/config.{ts,js}', { eager: false })
-              componentModules = import.meta.glob('../src/templates/**/index.{ts,tsx,vue,js}', { eager: false })
-            }
-
-            console.log({
-              configModules,
-              componentModules
-            })
-
-            if (Object.keys(configModules).length > 0) {
-              this.configModules = configModules
-              this.componentModules = componentModules
-              console.log(`✅ 回退到路径: ${pattern.name}`)
-              console.log('Found config modules:', Object.keys(this.configModules))
-              configFound = true
-              break
-            }
-          } catch (err) {
-            console.warn(`回退路径 ${pattern.name} 失败:`, err)
-          }
-        }
-      }
-
-      // 如果所有模式都失败，使用手动回退方案
-      if (!configFound) {
-        console.warn('🚨 所有 import.meta.glob 路径都失败，使用手动回退方案')
-        this.initializeFallbackModules()
-      }
+      // 如果没有找到模板，使用预定义的模板列表
+      console.warn('⚠️ 未找到模板文件，使用预定义模板列表')
+      this.initializeFallbackModules()
     } catch (error) {
-      console.warn('import.meta.glob not available, using fallback:', error)
+      console.warn('模板扫描失败，使用预定义模板列表:', error)
       this.initializeFallbackModules()
     }
   }
 
   /**
-   * 初始化回退模块（用于不支持 import.meta.glob 的环境）
+   * 初始化回退模块 - 简化版本
    */
   private initializeFallbackModules() {
-    // 尝试动态检测可用的导入路径
     const templatePaths = [
-      // 登录模板
       'login/desktop/default',
       'login/desktop/classic',
       'login/desktop/modern',
@@ -135,11 +83,9 @@ export class TemplateLoader {
       'login/mobile/card',
       'login/tablet/adaptive',
       'login/tablet/split',
-      // 仪表盘模板
       'dashboard/desktop/admin'
     ]
 
-    // 生成配置模块映射
     this.configModules = {}
     this.componentModules = {}
 
@@ -147,68 +93,32 @@ export class TemplateLoader {
       const configKey = `../templates/${templatePath}/config.ts`
       const componentKey = `../templates/${templatePath}/index.tsx`
 
-      // 配置模块 - 基于检测到的路径
+      // 简化的配置模块加载器
       this.configModules[configKey] = async () => {
-        // 根据当前环境构建正确的导入路径
-        const importPaths = this.isESEnvironment
-          ? [
-            `./templates/${templatePath}/config.js`,  // ES 环境，使用 .js 扩展名
-            `./templates/${templatePath}/config`,
-            `../templates/${templatePath}/config.js`,
-            `../templates/${templatePath}/config`,
-          ]
-          : [
-            `../templates/${templatePath}/config`,
-            `./templates/${templatePath}/config`,
-            `../templates/${templatePath}/config.js`,
-            `./templates/${templatePath}/config.js`,
-          ]
-
-        for (const importPath of importPaths) {
-          try {
-            const module = await import(importPath)
-            return module
-          } catch (error) {
-            continue
-          }
+        const basePath = this.isESEnvironment ? './templates' : '../templates'
+        try {
+          const module = await import(/* @vite-ignore */ `${basePath}/${templatePath}/config${this.isESEnvironment ? '.js' : ''}`)
+          return module
+        } catch (error) {
+          console.warn(`无法加载配置: ${templatePath}`)
+          throw new Error(`无法加载配置: ${templatePath}`)
         }
-
-        console.warn(`❌ 无法加载配置: ${templatePath}`)
-        throw new Error(`无法加载配置: ${templatePath}`)
       }
 
-      // 组件模块 - 基于检测到的路径
+      // 简化的组件模块加载器
       this.componentModules[componentKey] = async () => {
-        // 根据当前环境构建正确的导入路径
-        const importPaths = this.isESEnvironment
-          ? [
-            `./templates/${templatePath}/index.js`,  // ES 环境，使用 .js 扩展名
-            `./templates/${templatePath}`,
-            `../templates/${templatePath}/index.js`,
-            `../templates/${templatePath}`,
-          ]
-          : [
-            `../templates/${templatePath}`,
-            `./templates/${templatePath}`,
-            `../templates/${templatePath}/index.js`,
-            `./templates/${templatePath}/index.js`,
-          ]
-
-        for (const importPath of importPaths) {
-          try {
-            const module = await import(importPath)
-            return module
-          } catch (error) {
-            continue
-          }
+        const basePath = this.isESEnvironment ? './templates' : '../templates'
+        try {
+          const module = await import(/* @vite-ignore */ `${basePath}/${templatePath}/index${this.isESEnvironment ? '.js' : ''}`)
+          return module
+        } catch (error) {
+          console.warn(`无法加载组件: ${templatePath}`)
+          throw new Error(`无法加载组件: ${templatePath}`)
         }
-
-        console.warn(`❌ 无法加载组件: ${templatePath}`)
-        throw new Error(`无法加载组件: ${templatePath}`)
       }
     })
 
-    console.log('✅ 回退模块初始化完成，支持的模板:', templatePaths.length)
+    console.log(`✅ 预定义模板初始化完成，共 ${templatePaths.length} 个模板`)
   }
 
   /**
