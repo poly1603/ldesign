@@ -152,13 +152,13 @@
           <div class="demo-container" ref="hookRef2">
             <div class="demo-content">
               <p>使用 useAdvancedWatermark Hook</p>
-              <p>状态: {{ hookWatermark2.status }}</p>
-              <p>更新次数: {{ hookWatermark2.updateCount }}</p>
+              <p>状态: {{ hookWatermark2.isActive ? '活跃' : '未激活' }}</p>
+              <p>错误: {{ hookWatermark2.error?.value?.message || '无' }}</p>
             </div>
           </div>
           <div class="controls">
-            <button class="btn btn-primary" @click="() => hookWatermark2.create()">创建</button>
-            <button class="btn btn-secondary" @click="() => hookWatermark2.update()">更新</button>
+            <button class="btn btn-primary" @click="() => hookWatermark2.create('Advanced Hook')">创建</button>
+            <button class="btn btn-secondary" @click="() => hookWatermark2.update({ style: { color: '#FF6B6B' } })">更新</button>
             <button class="btn btn-danger" @click="() => hookWatermark2.destroy()">销毁</button>
           </div>
         </div>
@@ -176,8 +176,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { createWatermark, destroyWatermark, type WatermarkInstance } from '../mock/watermark'
-import { useWatermark, useAdvancedWatermark } from '../composables/useWatermark'
+import { useWatermark, useWatermarkManager } from '../composables/useWatermark'
 
 // 模板引用
 const reactiveRef = ref<HTMLElement>()
@@ -199,10 +198,8 @@ const lifecycleInfo = reactive({
   updateCount: 0
 })
 
-const lifecycleInstance = ref<WatermarkInstance | null>(null)
-
 const lifecycleStatus = computed(() => {
-  if (!lifecycleInstance.value) {
+  if (!lifecycleWatermark.isActive.value) {
     return { text: '未创建', class: 'status-inactive' }
   }
   return { text: '已创建', class: 'status-active' }
@@ -213,7 +210,6 @@ const conditionalConfig = reactive({
   condition: 'always' as 'always' | 'hover' | 'focus' | 'never'
 })
 
-const conditionalInstance = ref<WatermarkInstance | null>(null)
 const isHovered = ref(false)
 const isFocused = ref(false)
 
@@ -222,8 +218,6 @@ const dynamicConfig = reactive({
   type: 'time' as 'time' | 'counter' | 'random',
   autoUpdate: true
 })
-
-const dynamicInstance = ref<WatermarkInstance | null>(null)
 const counter = ref(0)
 
 const dynamicContent = computed(() => {
@@ -239,106 +233,77 @@ const dynamicContent = computed(() => {
   }
 })
 
+// 为所有示例创建 Hook 实例
+const reactiveWatermark = useWatermark(reactiveRef)
+const lifecycleWatermark = useWatermark(lifecycleRef)
+const conditionalWatermark = useWatermark(conditionalRef)
+const dynamicWatermark = useWatermark(dynamicRef)
+
 // 自定义 Hook 实例
 const hookWatermark1 = useWatermark(hookRef1)
-const hookWatermark2 = useAdvancedWatermark(hookRef2, {
-  content: 'Advanced Hook',
-  style: { color: '#FF6B6B', opacity: 0.3 }
-})
-
-// 响应式水印实例
-const reactiveInstance = ref<WatermarkInstance | null>(null)
+const hookWatermark2 = useWatermark(hookRef2)
 
 // 监听响应式配置变化
 watch(reactiveConfig, async () => {
-  if (!reactiveRef.value) return
-  
   if (reactiveConfig.enabled) {
-    if (reactiveInstance.value) {
-      await destroyWatermark(reactiveInstance.value)
-    }
-    
-    reactiveInstance.value = await createWatermark(reactiveRef.value, {
-      content: reactiveConfig.text,
+    await reactiveWatermark.create(reactiveConfig.text, {
       style: {
         fontSize: 16,
         color: 'rgba(102, 126, 234, 0.2)'
       }
     })
   } else {
-    if (reactiveInstance.value) {
-      await destroyWatermark(reactiveInstance.value)
-      reactiveInstance.value = null
-    }
+    await reactiveWatermark.destroy()
   }
 }, { immediate: true })
 
 // 生命周期管理方法
 const createLifecycleWatermark = async () => {
-  if (!lifecycleRef.value) return
-  
-  if (lifecycleInstance.value) {
-    await destroyWatermark(lifecycleInstance.value)
-  }
-  
-  lifecycleInstance.value = await createWatermark(lifecycleRef.value, {
-    content: 'Lifecycle Watermark',
+  await lifecycleWatermark.create('Lifecycle Watermark', {
     style: {
       fontSize: 14,
       color: 'rgba(76, 175, 80, 0.2)'
     }
   })
-  
+
   lifecycleInfo.createdAt = new Date().toLocaleTimeString()
   lifecycleInfo.updateCount = 0
 }
 
 const updateLifecycleWatermark = async () => {
-  if (!lifecycleInstance.value || !lifecycleRef.value) return
-  
-  await destroyWatermark(lifecycleInstance.value)
-  
-  lifecycleInstance.value = await createWatermark(lifecycleRef.value, {
-    content: `Updated ${lifecycleInfo.updateCount + 1}`,
+  await lifecycleWatermark.create(`Updated ${lifecycleInfo.updateCount + 1}`, {
     style: {
       fontSize: 16 + lifecycleInfo.updateCount * 2,
       color: `hsl(${120 + lifecycleInfo.updateCount * 30}, 70%, 50%)`,
       opacity: 0.3
     }
   })
-  
+
   lifecycleInfo.updateCount++
 }
 
 const destroyLifecycleWatermark = async () => {
-  if (lifecycleInstance.value) {
-    await destroyWatermark(lifecycleInstance.value)
-    lifecycleInstance.value = null
-    lifecycleInfo.createdAt = null
-    lifecycleInfo.updateCount = 0
-  }
+  await lifecycleWatermark.destroy()
+  lifecycleInfo.createdAt = null
+  lifecycleInfo.updateCount = 0
 }
 
 // 条件渲染方法
 const updateConditionalWatermark = async () => {
-  if (!conditionalRef.value) return
-  
-  const shouldShow = 
+  const shouldShow =
     conditionalConfig.condition === 'always' ||
     (conditionalConfig.condition === 'hover' && isHovered.value) ||
     (conditionalConfig.condition === 'focus' && isFocused.value)
-  
-  if (shouldShow && !conditionalInstance.value) {
-    conditionalInstance.value = await createWatermark(conditionalRef.value, {
-      content: 'Conditional Watermark',
+
+  if (shouldShow) {
+    await conditionalWatermark.create('Conditional Watermark', {
       style: {
         fontSize: 14,
         color: 'rgba(156, 39, 176, 0.2)'
       }
     })
-  } else if (!shouldShow && conditionalInstance.value) {
-    await destroyWatermark(conditionalInstance.value)
-    conditionalInstance.value = null
+  } else {
+    await conditionalWatermark.destroy()
   }
 }
 
@@ -367,14 +332,7 @@ watch(() => conditionalConfig.condition, updateConditionalWatermark)
 
 // 动态内容方法
 const updateDynamicWatermark = async () => {
-  if (!dynamicRef.value) return
-  
-  if (dynamicInstance.value) {
-    await destroyWatermark(dynamicInstance.value)
-  }
-  
-  dynamicInstance.value = await createWatermark(dynamicRef.value, {
-    content: dynamicContent.value,
+  await dynamicWatermark.create(dynamicContent.value, {
     style: {
       fontSize: 14,
       color: 'rgba(244, 67, 54, 0.2)'
@@ -411,7 +369,9 @@ onMounted(async () => {
 
   // 自动创建 Hook 示例水印
   await hookWatermark1.create('Hook 水印 1')
-  await hookWatermark2.create()
+  await hookWatermark2.create('Advanced Hook', {
+    style: { color: '#FF6B6B', opacity: 0.3 }
+  })
 
   // 启动自动更新定时器
   autoUpdateTimer = setInterval(() => {
@@ -426,20 +386,8 @@ onUnmounted(async () => {
   if (autoUpdateTimer) {
     clearInterval(autoUpdateTimer)
   }
-  
-  // 清理所有水印实例
-  const instances = [
-    reactiveInstance.value,
-    lifecycleInstance.value,
-    conditionalInstance.value,
-    dynamicInstance.value
-  ]
-  
-  for (const instance of instances) {
-    if (instance) {
-      await destroyWatermark(instance)
-    }
-  }
+
+  // Hook 会自动清理水印实例，无需手动清理
 })
 
 // 代码示例

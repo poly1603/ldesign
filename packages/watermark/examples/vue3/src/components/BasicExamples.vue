@@ -141,7 +141,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
-import { createWatermark, destroyWatermark, type WatermarkInstance } from '../mock/watermark'
+import { useWatermark } from '../composables/useWatermark'
 
 // 模板引用
 const simpleTextRef = ref<HTMLElement>()
@@ -150,14 +150,12 @@ const imageWatermarkRef = ref<HTMLElement>()
 const multiLineRef = ref<HTMLElement>()
 const liveConfigRef = ref<HTMLElement>()
 
-// 水印实例
-const instances = reactive<Record<string, WatermarkInstance | null>>({
-  simpleText: null,
-  customStyle: null,
-  imageWatermark: null,
-  multiLine: null,
-  liveConfig: null
-})
+// 使用 Hook 管理水印实例
+const simpleTextWatermark = useWatermark(simpleTextRef)
+const customStyleWatermark = useWatermark(customStyleRef)
+const imageWatermarkInstance = useWatermark(imageWatermarkRef)
+const multiLineWatermark = useWatermark(multiLineRef)
+const liveConfigWatermark = useWatermark(liveConfigRef)
 
 // 实时配置
 const config = reactive({
@@ -174,15 +172,8 @@ const defaultConfig = { ...config }
 
 // 创建简单文字水印
 const createSimpleText = async () => {
-  if (!simpleTextRef.value) return
-  
   try {
-    if (instances.simpleText) {
-      await destroyWatermark(instances.simpleText)
-    }
-    
-    instances.simpleText = await createWatermark(simpleTextRef.value, {
-      content: '简单水印',
+    await simpleTextWatermark.create('简单水印', {
       style: {
         fontSize: 14,
         color: 'rgba(0, 0, 0, 0.1)'
@@ -195,23 +186,13 @@ const createSimpleText = async () => {
 
 // 销毁简单文字水印
 const destroySimpleText = async () => {
-  if (instances.simpleText) {
-    await destroyWatermark(instances.simpleText)
-    instances.simpleText = null
-  }
+  await simpleTextWatermark.destroy()
 }
 
 // 创建自定义样式水印
 const createCustomStyle = async () => {
-  if (!customStyleRef.value) return
-  
   try {
-    if (instances.customStyle) {
-      await destroyWatermark(instances.customStyle)
-    }
-    
-    instances.customStyle = await createWatermark(customStyleRef.value, {
-      content: '自定义样式',
+    await customStyleWatermark.create('自定义样式', {
       style: {
         fontSize: 18,
         fontFamily: 'Arial, sans-serif',
@@ -233,33 +214,13 @@ const createCustomStyle = async () => {
 
 // 销毁自定义样式水印
 const destroyCustomStyle = async () => {
-  if (instances.customStyle) {
-    await destroyWatermark(instances.customStyle)
-    instances.customStyle = null
-  }
+  await customStyleWatermark.destroy()
 }
 
 // 创建图片水印
 const createImageWatermark = async () => {
-  if (!imageWatermarkRef.value) return
-  
   try {
-    if (instances.imageWatermark) {
-      await destroyWatermark(instances.imageWatermark)
-    }
-    
-    // 创建 SVG 图片
-    const svgData = `
-      <svg width="80" height="40" xmlns="http://www.w3.org/2000/svg">
-        <rect width="80" height="40" fill="none" stroke="#667eea" stroke-width="2" rx="8"/>
-        <text x="40" y="25" text-anchor="middle" font-size="14" fill="#667eea" font-weight="bold">LOGO</text>
-      </svg>
-    `
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml' })
-    const svgUrl = URL.createObjectURL(svgBlob)
-    
-    instances.imageWatermark = await createWatermark(imageWatermarkRef.value, {
-      content: 'LOGO',
+    await imageWatermarkInstance.create('LOGO', {
       layout: {
         gapX: 120,
         gapY: 100
@@ -272,23 +233,13 @@ const createImageWatermark = async () => {
 
 // 销毁图片水印
 const destroyImageWatermark = async () => {
-  if (instances.imageWatermark) {
-    await destroyWatermark(instances.imageWatermark)
-    instances.imageWatermark = null
-  }
+  await imageWatermarkInstance.destroy()
 }
 
 // 创建多行文字水印
 const createMultiLine = async () => {
-  if (!multiLineRef.value) return
-  
   try {
-    if (instances.multiLine) {
-      await destroyWatermark(instances.multiLine)
-    }
-    
-    instances.multiLine = await createWatermark(multiLineRef.value, {
-      content: ['LDesign', 'Watermark', '多行水印'],
+    await multiLineWatermark.create(['LDesign', 'Watermark', '多行水印'], {
       style: {
         fontSize: 16,
         color: 'rgba(156, 39, 176, 0.2)',
@@ -306,24 +257,13 @@ const createMultiLine = async () => {
 
 // 销毁多行文字水印
 const destroyMultiLine = async () => {
-  if (instances.multiLine) {
-    await destroyWatermark(instances.multiLine)
-    instances.multiLine = null
-  }
+  await multiLineWatermark.destroy()
 }
 
 // 应用实时配置
 const applyLiveConfig = async () => {
-  if (!liveConfigRef.value) return
-  
   try {
-    if (instances.liveConfig) {
-      await destroyWatermark(instances.liveConfig)
-    }
-    
-    instances.liveConfig = await createWatermark(liveConfigRef.value, {
-      content: config.content,
-      renderMode: config.renderMode,
+    await liveConfigWatermark.create(config.content, {
       style: {
         fontSize: config.fontSize,
         color: config.color,
@@ -343,15 +283,12 @@ const resetConfig = () => {
 
 // 销毁实时配置水印
 const destroyLiveConfig = async () => {
-  if (instances.liveConfig) {
-    await destroyWatermark(instances.liveConfig)
-    instances.liveConfig = null
-  }
+  await liveConfigWatermark.destroy()
 }
 
 // 监听配置变化，自动应用
 watch(config, () => {
-  if (instances.liveConfig) {
+  if (liveConfigWatermark.isActive.value) {
     applyLiveConfig()
   }
 }, { deep: true })
@@ -366,13 +303,9 @@ onMounted(async () => {
   await applyLiveConfig()
 })
 
-// 组件卸载时清理所有实例
+// 组件卸载时清理所有实例 - Hook 会自动清理
 onUnmounted(async () => {
-  for (const instance of Object.values(instances)) {
-    if (instance) {
-      await destroyWatermark(instance)
-    }
-  }
+  // Hook 会自动清理水印实例，无需手动清理
 })
 
 // 代码示例

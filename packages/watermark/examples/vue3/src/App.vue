@@ -34,7 +34,10 @@
         <AdvancedExamples v-if="activeTab === 'advanced'" />
         
         <!-- 组件化示例 -->
-        <ComponentExamples v-if="activeTab === 'component'" />
+        <div v-if="activeTab === 'component'" class="card glass">
+          <h2>🧩 组件化示例</h2>
+          <p>此功能正在重构中，敬请期待...</p>
+        </div>
       </div>
 
       <!-- 页脚 -->
@@ -51,7 +54,6 @@ import BasicExamples from './components/BasicExamples.vue'
 import CompositionExamples from './components/CompositionExamples.vue'
 import OptionsExamples from './components/OptionsExamples.vue'
 import AdvancedExamples from './components/AdvancedExamples.vue'
-import ComponentExamples from './components/ComponentExamples.vue'
 
 // 标签页配置
 const tabs = [

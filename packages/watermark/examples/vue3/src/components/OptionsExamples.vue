@@ -167,7 +167,7 @@
 </template>
 
 <script>
-import { createWatermark, destroyWatermark } from '../mock/watermark'
+import { createWatermark, destroyWatermark } from '../lib/watermark'
 
 // 水印混入
 const watermarkMixin = {

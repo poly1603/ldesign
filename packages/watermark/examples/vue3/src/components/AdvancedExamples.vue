@@ -192,7 +192,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { createWatermark, destroyWatermark, type WatermarkInstance } from '../mock/watermark'
+import { createWatermark, destroyWatermark, type WatermarkInstance } from '../lib/watermark'
 import { useWatermarkManager } from '../composables/useWatermark'
 
 // 模板引用
@@ -306,14 +306,6 @@ const createSecurityWatermark = async () => {
         fontSize: 16,
         color: '#F44336',
         opacity: 0.2
-      },
-      security: {
-        level: securityConfig.level,
-        mutationObserver: securityConfig.mutationObserver,
-        styleProtection: securityConfig.styleProtection,
-        onViolation: (violation: any) => {
-          addSecurityLog(`检测到安全违规: ${violation.type}`)
-        }
       }
     })
     
@@ -357,24 +349,7 @@ const createResponsiveWatermark = async () => {
       },
       layout: {
         gapX: currentBreakpoint.value === 'xs' ? 60 : 100,
-        gapY: currentBreakpoint.value === 'xs' ? 40 : 80,
-        autoCalculate: true
-      },
-      responsive: {
-        enabled: true,
-        autoResize: true,
-        breakpoints: {
-          xs: {
-            maxWidth: 576,
-            style: { fontSize: 12 },
-            layout: { gapX: 60, gapY: 40 }
-          },
-          sm: {
-            maxWidth: 768,
-            style: { fontSize: 14 },
-            layout: { gapX: 80, gapY: 60 }
-          }
-        }
+        gapY: currentBreakpoint.value === 'xs' ? 40 : 80
       }
     })
   } catch (error) {
@@ -406,12 +381,6 @@ const createAnimationWatermark = async () => {
         fontSize: 18,
         color: '#FF6B6B',
         opacity: 0.3
-      },
-      animation: {
-        type: animationConfig.type,
-        duration: animationConfig.duration,
-        easing: animationConfig.easing,
-        iteration: 'infinite'
       }
     })
   } catch (error) {
@@ -463,7 +432,6 @@ const switchRenderMode = async (mode: 'dom' | 'canvas' | 'svg') => {
   try {
     renderModeInstance.value = await createWatermark(renderModeRef.value, {
       content: `${mode.toUpperCase()} 渲染`,
-      renderMode: mode,
       style: {
         fontSize: 16,
         color: '#4CAF50',
@@ -492,8 +460,7 @@ const createBatchWatermarks = async () => {
     for (let i = 1; i <= batchConfig.count; i++) {
       const container = batchRefs.value.get(i)
       if (container) {
-        const promise = batchManager.create(`batch-${i}`, container, {
-          content: `${batchConfig.baseText} ${i}`,
+        const promise = batchManager.create(`batch-${i}`, container, `${batchConfig.baseText} ${i}`, {
           style: {
             fontSize: 14,
             color: `hsl(${(i * 60) % 360}, 70%, 50%)`,
@@ -521,8 +488,7 @@ const updateBatchWatermarks = async () => {
   for (let i = 1; i <= batchConfig.count; i++) {
     const container = batchRefs.value.get(i)
     if (container && batchManager.get(`batch-${i}`)) {
-      const promise = batchManager.create(`batch-${i}`, container, {
-        content: `Updated ${batchConfig.baseText} ${i}`,
+      const promise = batchManager.create(`batch-${i}`, container, `Updated ${batchConfig.baseText} ${i}`, {
         style: {
           fontSize: 16,
           color: `hsl(${(i * 90) % 360}, 80%, 60%)`,
@@ -557,8 +523,7 @@ const createBatchWatermarksAuto = async () => {
     for (let i = 1; i <= batchConfig.count; i++) {
       const container = batchRefs.value.get(i)
       if (container) {
-        const promise = batchManager.create(`batch-${i}`, container, {
-          content: `${batchConfig.baseText} ${i}`,
+        const promise = batchManager.create(`batch-${i}`, container, `${batchConfig.baseText} ${i}`, {
           style: {
             fontSize: 14,
             color: `hsl(${(i * 60) % 360}, 70%, 50%)`,
