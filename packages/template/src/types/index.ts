@@ -9,22 +9,41 @@ export type DeviceType = 'desktop' | 'mobile' | 'tablet'
  * 模板配置接口
  */
 export interface TemplateConfig {
+  /** 模板唯一标识 */
+  id?: string
   /** 模板名称 */
   name: string
   /** 显示标题 */
-  title: string
+  title?: string
   /** 模板描述 */
   description: string
+  /** 模板分类 */
+  category?: string
+  /** 设备类型 */
+  device?: DeviceType
+  /** 模板变体 */
+  variant?: string
   /** 版本号 */
-  version: string
+  version?: string
   /** 作者 */
   author?: string
   /** 预览图路径 */
   preview?: string
   /** 标签 */
   tags?: string[]
+  /** 功能特性 */
+  features?: string[]
+  /** 模板属性配置 */
+  props?: Record<string, any>
+  /** 断点配置 */
+  breakpoints?: {
+    minWidth?: number | null
+    maxWidth?: number | null
+  }
   /** 是否响应式 */
   responsive?: boolean
+  /** 是否为默认模板 */
+  isDefault?: boolean
   /** 最小宽度 */
   minWidth?: number
   /** 最大宽度 */

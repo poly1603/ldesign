@@ -1,4 +1,4 @@
-import type { TemplateConfig } from '@/types'
+import type { TemplateConfig } from '../../../../types'
 
 export const config: TemplateConfig = {
   id: 'login-mobile-card',

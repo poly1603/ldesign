@@ -19,9 +19,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ldesign/template': resolve(__dirname, '../src'),
-      // 使用包含编译器的Vue版本
-      'vue': 'vue/dist/vue.esm-bundler.js',
+      '@ldesign/template': resolve(__dirname, '../es'),
     },
   },
 

@@ -8,11 +8,12 @@ import type {
   TemplateRenderOptions,
   TemplateScanResult,
 } from '../types'
-import { type Component, defineAsyncComponent, markRaw } from 'vue'
+import { type Component, defineAsyncComponent } from 'vue'
 import { TemplateLoadingState } from '../types'
 import { TemplateCache } from '../utils/cache'
 import { createDeviceWatcher, detectDevice } from '../utils/device'
 import { TemplateScanner } from '../utils/scanner'
+import { templateRegistry } from './template-registry'
 
 /**
  * 事件发射器
@@ -241,9 +242,8 @@ export class TemplateManager extends EventEmitter<{
         throw new Error(`Template not found: ${category}/${device}/${template}`)
       }
 
-      // 动态导入组件
-      const componentModule = await import(/* @vite-ignore */ metadata.componentPath)
-      const component = markRaw(componentModule.default || componentModule)
+      // 使用模板注册表加载组件
+      const component = await templateRegistry.loadTemplateComponent(metadata)
 
       const templateComponent: TemplateComponent = {
         component,

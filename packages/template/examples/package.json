@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "build:rollup": "rollup -c rollup.config.js",
-    "build:prod": "NODE_ENV=production rollup -c rollup.config.js",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit"
   },

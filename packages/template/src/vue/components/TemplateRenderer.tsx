@@ -71,7 +71,7 @@ export const TemplateRenderer = defineComponent({
       templateConfig,
     } = useTemplate({
       category: props.category,
-      deviceType: props.deviceType,
+      deviceType: props.deviceType as DeviceType,
       defaultTemplate: props.templateId,
       autoSwitch: props.autoDetectDevice,
     })
@@ -143,8 +143,17 @@ export const TemplateRenderer = defineComponent({
           ...props.config,
         }
 
+        const Component = TemplateComponent.value
+        if (!Component) {
+          return (
+            <div class="template-renderer__empty">
+              模板组件未找到
+            </div>
+          )
+        }
+
         return (
-          <TemplateComponent.value
+          <Component
             {...finalConfig}
             {...attrs}
           />
@@ -152,10 +161,10 @@ export const TemplateRenderer = defineComponent({
       }
       catch (error) {
         emit('render-error', error)
+        const errorMessage = error instanceof Error ? error.message : String(error)
         return (
           <div class="template-renderer__error">
-            模板渲染失败:
-            {error.message}
+            模板渲染失败: {errorMessage}
           </div>
         )
       }

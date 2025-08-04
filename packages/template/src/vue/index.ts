@@ -7,14 +7,11 @@ export { default as ClassicLoginTemplate } from '../templates/login/desktop/clas
 export { default as DefaultLoginTemplate } from '../templates/login/desktop/default/index'
 
 export { default as ModernLoginTemplate } from '../templates/login/desktop/modern/index'
-// 设备类型
-export type { DeviceType } from '../utils/device'
 export { TemplateRenderer } from './components/TemplateRenderer'
 
 // 旧的系统（保持兼容性）
 export { useTemplate as useTemplateOld } from './composables/useTemplate'
 export {
-  type DeviceType,
   registerTemplate,
   templateConfigs,
   type TemplateInfo,

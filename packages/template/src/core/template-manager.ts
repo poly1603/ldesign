@@ -48,7 +48,7 @@ export function registerTemplate(
   }
 
   const templateInfo: TemplateInfo = {
-    id: config.id,
+    id: config.id || `${category}-${device}-${variant}`,
     name: config.name,
     category,
     device,

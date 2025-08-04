@@ -1,4 +1,4 @@
-import type { TemplateConfig } from '@/types'
+import type { TemplateConfig } from '../../../../types'
 
 export default {
   name: 'admin',

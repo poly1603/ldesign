@@ -32,3 +32,4 @@ export { getGlobalTemplateManager, TemplatePlugin } from './vue/plugins'
 
 // 默认导出插件
 export { TemplatePlugin as default } from './vue/plugins'
+

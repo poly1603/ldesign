@@ -3,7 +3,9 @@ import { defineAsyncComponent } from 'vue'
 import { registerTemplate, templateConfigs } from './composables/useTemplateSystem'
 
 // 使用 import.meta.glob 自动导入所有模板
-const templateModules = import.meta.glob('../templates/**/index.{ts,tsx,vue}', { eager: false })
+const templateModules = import.meta.glob('../templates/**/index.{ts,tsx,vue,js}', { eager: false })
+
+console.log(templateModules, 'templateRegistry')
 
 // 模板配置映射
 interface TemplateConfig {
