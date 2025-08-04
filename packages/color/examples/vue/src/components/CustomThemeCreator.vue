@@ -42,7 +42,7 @@ async function createTheme() {
     lightPrimary.value = '#1890ff'
     darkPrimary.value = '#177ddc'
   }
-  catch (_error) {
+  catch {
     showNotification('创建主题失败', 'error')
   }
 }

@@ -1,12 +1,10 @@
-import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+import process from 'node:process'
+import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default createRollupConfig({
-  external: ['vue', '@arco-design/color', 'chroma-js'],
-  globalName: 'LDesignColor',
-  globals: {
-    'vue': 'Vue',
-    '@arco-design/color': 'ArcoColor',
-    'chroma-js': 'chroma',
-  },
-  vue: true,
+  packageDir: __dirname,
 })

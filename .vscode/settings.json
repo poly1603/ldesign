@@ -19,5 +19,8 @@
     "**/cjs": true,
     "**/types": true,
     "**/coverage": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   }
 }

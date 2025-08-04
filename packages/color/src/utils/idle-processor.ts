@@ -177,7 +177,7 @@ export class IdleProcessorImpl implements IdleProcessor {
           timeRemaining: () => this.options.maxProcessingTime,
           didTimeout: false,
         } as IdleDeadline)
-      }, 0) as any
+      }, 0) as unknown as number
     }
   }
 

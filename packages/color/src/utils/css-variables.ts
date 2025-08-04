@@ -147,7 +147,7 @@ export function injectThemeVariables(
     for (const [category, scale] of Object.entries(neutralColors)) {
       if (scale && scale.indices) {
         for (const [index, color] of Object.entries(scale.indices)) {
-          variables[`${prefix}-${category}-${index}`] = color
+          variables[`${prefix}-${category}-${index}`] = color as string
         }
       }
     }

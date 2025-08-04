@@ -2,6 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -57,7 +58,7 @@ const requiredScripts = [
  * 验证单个包的配置
  */
 function verifyPackage(packageName) {
-  const packageDir = path.resolve(__dirname, '../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
 
   if (!fs.existsSync(packageDir)) {
     console.log(`❌ ${packageName}: 包目录不存在`)
@@ -198,7 +199,7 @@ function verifyPackage(packageName) {
 function verifyAllPackages() {
   console.log('🚀 开始验证所有包配置...')
 
-  const packagesDir = path.resolve(__dirname, '../packages')
+  const packagesDir = path.resolve(__dirname, '../../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
     return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
@@ -258,7 +259,7 @@ function verifyAllPackages() {
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
 
   if (args.length === 0) {

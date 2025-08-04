@@ -2,6 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -22,13 +23,13 @@ export interface CreatePackageOptions {
 export function createPackage(packageName: string, options: CreatePackageOptions = {}): void {
   const {
     vue = false,
-    template = 'basic',
+    // template = 'basic',
     description = `LDesign ${packageName} package`,
     author = 'LDesign Team',
     license = 'MIT',
   } = options
 
-  const packagesDir = path.resolve(__dirname, '../../packages')
+  const packagesDir = path.resolve(__dirname, '../../../packages')
   const packageDir = path.resolve(packagesDir, packageName)
 
   // 检查包是否已存在
@@ -62,7 +63,7 @@ export function createPackage(packageName: string, options: CreatePackageOptions
   })
 
   // 读取模板文件
-  const templatePath = path.resolve(__dirname, '../templates/package-template.json')
+  const templatePath = path.resolve(__dirname, '../../configs/templates/package-template.json')
   const packageTemplate = JSON.parse(fs.readFileSync(templatePath, 'utf-8'))
 
   // 替换模板变量
@@ -229,7 +230,7 @@ function createConfigFiles(packageDir: string, packageName: string, vue: boolean
   fs.writeFileSync(
     path.resolve(packageDir, 'tsconfig.json'),
     `{
-  "extends": "../../tools/build/tsconfig.base.json",
+  "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -248,7 +249,7 @@ function createConfigFiles(packageDir: string, packageName: string, vue: boolean
 
   // rollup.config.js
   const rollupConfig = vue
-    ? `import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+    ? `import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
 
 export default createRollupConfig({
   external: ['vue'],
@@ -259,7 +260,7 @@ export default createRollupConfig({
   vue: true
 })
 `
-    : `import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+    : `import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
 
 export default createRollupConfig({
   globalName: 'LDesign${toPascalCase(packageName)}'
@@ -274,7 +275,7 @@ export default createRollupConfig({
   // vitest.config.ts
   fs.writeFileSync(
     path.resolve(packageDir, 'vitest.config.ts'),
-    `import { createVitestConfig } from '../../tools/test/vitest.config.base'
+    `import { createVitestConfig } from '../../tools/configs/test/vitest.config.base'
 
 export default createVitestConfig({
   vue: ${vue}
@@ -285,7 +286,7 @@ export default createVitestConfig({
   // playwright.config.ts
   fs.writeFileSync(
     path.resolve(packageDir, 'playwright.config.ts'),
-    `import { createPlaywrightConfig } from '../../tools/test/playwright.config.base'
+    `import { createPlaywrightConfig } from '../../tools/configs/test/playwright.config.base'
 
 export default createPlaywrightConfig({
   webServer: {
@@ -354,7 +355,7 @@ ${toCamelCase(packageName)}()
 \`\`\`
 
 ${vue
-  ? `### Vue 3 集成
+      ? `### Vue 3 集成
 
 \`\`\`typescript
 import { createApp } from 'vue'
@@ -374,7 +375,7 @@ const ${toCamelCase(packageName)} = use${toPascalCase(packageName)}()
 </script>
 \`\`\`
 `
-  : ''}
+      : ''}
 
 ## API 文档
 

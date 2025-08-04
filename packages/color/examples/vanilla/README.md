@@ -173,7 +173,6 @@ await themeManager.setTheme('my-theme')
 .hover-effect:hover {
   background: var(--color-primary-hover);
 }
-
 ```
 
 ## 性能优化

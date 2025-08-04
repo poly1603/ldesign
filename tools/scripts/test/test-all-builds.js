@@ -24,7 +24,7 @@ const results = {}
 console.log('🚀 开始测试所有包的构建...\n')
 
 for (const packageName of packages) {
-  const packageDir = path.resolve(__dirname, '../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
 
   if (!fs.existsSync(packageDir)) {
     console.log(`⚠️  包 ${packageName} 不存在，跳过`)

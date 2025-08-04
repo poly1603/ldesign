@@ -56,7 +56,7 @@ declare class CookieStorage implements Storage {
 /**
  * LRU 缓存实现
  */
-declare class LRUCacheImpl<T = any> implements LRUCache<T> {
+declare class LRUCacheImpl<T = unknown> implements LRUCache<T> {
     private cache;
     private options;
     constructor(options?: CacheOptions);
@@ -86,7 +86,7 @@ declare function createStorage(type: 'localStorage' | 'sessionStorage' | 'memory
 /**
  * 创建 LRU 缓存实例
  */
-declare function createLRUCache<T = any>(options?: CacheOptions): LRUCache<T>;
+declare function createLRUCache<T = unknown>(options?: CacheOptions): LRUCache<T>;
 /**
  * 默认存储实例
  */
@@ -94,6 +94,6 @@ declare const defaultStorage: LocalStorage;
 /**
  * 默认缓存实例
  */
-declare const defaultCache: LRUCacheImpl<any>;
+declare const defaultCache: LRUCacheImpl<unknown>;
 
 export { CookieStorage, LRUCacheImpl, LocalStorage, MemoryStorage, NoStorage, SessionStorage, createLRUCache, createStorage, defaultCache, defaultStorage };

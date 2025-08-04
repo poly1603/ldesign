@@ -33,7 +33,7 @@ export default defineComponent({
       default: true,
     },
     thirdPartyProviders: {
-      type: Array,
+      type: Array as () => string[],
       default: () => ['github', 'google', 'wechat'],
     },
   },
@@ -177,7 +177,7 @@ export default defineComponent({
                     <span>或</span>
                   </div>
                   <div class="classic-login__third-party-buttons">
-                    {props.thirdPartyProviders.map((provider: string) => (
+                    {props.thirdPartyProviders.map((provider) => (
                       <button
                         key={provider}
                         type="button"

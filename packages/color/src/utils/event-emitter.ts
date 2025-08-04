@@ -13,7 +13,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 添加事件监听器
    */
-  on<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  on<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
@@ -23,7 +23,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 移除事件监听器
    */
-  off<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  off<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.delete(listener as ThemeEventListener)
@@ -36,7 +36,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 触发事件
    */
-  emit<T = any>(event: ThemeEventType, data?: T): void {
+  emit<T = unknown>(event: ThemeEventType, data?: T): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.forEach((listener) => {
@@ -53,7 +53,7 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 添加一次性事件监听器
    */
-  once<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  once<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
     const onceListener = (data: T) => {
       listener(data)
       this.off(event, onceListener)

@@ -394,10 +394,10 @@ export class ColorGeneratorImpl implements ColorGenerator {
     if (this.currentMode === 'dark') {
       // 暗色模式下调整颜色
       return {
-        success: this.adjustColorForDarkMode(baseColors.success),
-        warning: this.adjustColorForDarkMode(baseColors.warning),
-        danger: this.adjustColorForDarkMode(baseColors.danger),
-        gray: this.adjustColorForDarkMode(baseColors.gray),
+        success: baseColors.success ? this.adjustColorForDarkMode(baseColors.success) : undefined,
+        warning: baseColors.warning ? this.adjustColorForDarkMode(baseColors.warning) : undefined,
+        danger: baseColors.danger ? this.adjustColorForDarkMode(baseColors.danger) : undefined,
+        gray: baseColors.gray ? this.adjustColorForDarkMode(baseColors.gray) : undefined,
       }
     }
 
@@ -422,7 +422,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
   /**
    * 生成色阶（实现 ColorGenerator 接口）
    */
-  generateScale(color: string, _mode: 'light' | 'dark'): any {
+  generateScale(color: string, _mode: 'light' | 'dark'): { colors: string[], indices: Record<number, string> } {
     // 这里应该调用色阶生成器，但为了简化，我们返回一个基本实现
     return {
       colors: [color],
@@ -434,7 +434,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    * 生成 CSS 变量（实现 ColorGenerator 接口）
    */
   generateCSSVariables(
-    scales: Record<string, any>,
+    scales: Record<string, unknown>,
     prefix = '--color',
   ): Record<string, string> {
     const variables: Record<string, string> = {}
@@ -456,8 +456,8 @@ export class ColorGeneratorImpl implements ColorGenerator {
    */
   generateCompleteCSSVariables(
     colors: Omit<ColorConfig, 'primary'>,
-    scales: Record<string, any>,
-    neutralColors?: any,
+    scales: Record<string, unknown>,
+    neutralColors?: unknown,
     mode: ColorMode = 'light',
     prefix = '--color',
   ): Record<string, string> {
@@ -470,7 +470,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
 
     // 色阶变量
     for (const [category, scale] of Object.entries(scales)) {
-      if (scale && scale.indices) {
+      if (scale && typeof scale === 'object' && 'indices' in scale && scale.indices) {
         for (const [index, color] of Object.entries(scale.indices)) {
           variables[`${prefix}-${category}-${index}`] = color as string
         }
@@ -480,7 +480,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
     // 中性色变量
     if (neutralColors) {
       for (const [category, scale] of Object.entries(neutralColors)) {
-        if (scale && scale.indices) {
+        if (scale && typeof scale === 'object' && 'indices' in scale && scale.indices) {
           for (const [index, color] of Object.entries(scale.indices)) {
             variables[`${prefix}-${category}-${index}`] = color as string
           }

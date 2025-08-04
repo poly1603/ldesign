@@ -155,7 +155,7 @@ class ColorDemo {
 
     // 生成主题颜色预览
     const lightColors = generateColorConfig(theme.light.primary)
-    const darkColors = generateColorConfig(theme.dark.primary)
+    // const _darkColors = generateColorConfig(theme.dark.primary)
 
     card.innerHTML = `
       <div class="theme-info">
@@ -264,7 +264,7 @@ class ColorDemo {
         this.showToast('所有主题预生成完成', 'success')
         this.updatePerformanceStats()
       }
-      catch (error) {
+      catch {
         this.showToast('预生成失败', 'error')
       }
     })
@@ -384,7 +384,7 @@ class ColorDemo {
       { key: 'gray', name: '灰色', color: colorConfig.gray },
     ]
 
-    colorCategories.forEach(({ key, name, color }) => {
+    colorCategories.forEach(({ name, color }) => {
       const colorItem = document.createElement('div')
       colorItem.className = 'color-item'
 
@@ -580,7 +580,7 @@ class ColorDemo {
 
   // 工具方法
   isValidHexColor(hex) {
-    return /^#([A-F0-9]{6}|[A-F0-9]{3})$/i.test(hex)
+    return /^#(?:[A-F0-9]{6}|[A-F0-9]{3})$/i.test(hex)
   }
 
   async copyToClipboard(text) {

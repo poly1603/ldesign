@@ -123,10 +123,10 @@ declare class ThemeManager implements ThemeManagerInstance {
      * 处理错误
      */
     private handleError;
-    on<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
-    off<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
-    emit<T = any>(event: ThemeEventType, data?: T): void;
-    once<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
+    on<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
+    off<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
+    emit<T = unknown>(event: ThemeEventType, data?: T): void;
+    once<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
     removeAllListeners(event?: ThemeEventType): void;
     listenerCount(event: ThemeEventType): number;
     eventNames(): ThemeEventType[];

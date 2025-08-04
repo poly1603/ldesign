@@ -311,7 +311,7 @@ ${Object.keys(results).map(name =>
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
 
   const options: VerificationOptions = {

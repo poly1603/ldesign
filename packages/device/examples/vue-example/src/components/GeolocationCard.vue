@@ -9,9 +9,9 @@ const timestamp = ref(null)
 
 const {
   position,
-  latitude,
-  longitude,
-  accuracy,
+  latitude: _latitude,
+  longitude: _longitude,
+  accuracy: _accuracy,
   loadModule,
   unloadModule: unloadGeolocationModule,
   getCurrentPosition: getPosition,

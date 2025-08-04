@@ -19,15 +19,15 @@ export interface Plugin {
 }
 
 export interface PluginManager {
-  register(plugin: Plugin): Promise<void>
-  unregister(name: string): Promise<void>
-  get(name: string): Plugin | undefined
-  getAll(): Plugin[]
-  isRegistered(name: string): boolean
+  register: (plugin: Plugin) => Promise<void>
+  unregister: (name: string) => Promise<void>
+  get: (name: string) => Plugin | undefined
+  getAll: () => Plugin[]
+  isRegistered: (name: string) => boolean
 }
 
 // 中间件相关类型
-export type MiddlewareContext = {
+export interface MiddlewareContext {
   request?: any
   response?: any
   error?: Error
@@ -48,44 +48,44 @@ export interface Middleware {
 }
 
 export interface MiddlewareManager {
-  use(middleware: Middleware): void
-  remove(name: string): void
-  execute(context: MiddlewareContext): Promise<void>
+  use: (middleware: Middleware) => void
+  remove: (name: string) => void
+  execute: (context: MiddlewareContext) => Promise<void>
 }
 
 // 事件相关类型
 export type EventHandler = (...args: any[]) => void
 
 export interface EventManager {
-  on(event: string, handler: EventHandler): void
-  off(event: string, handler?: EventHandler): void
-  emit(event: string, ...args: any[]): void
-  once(event: string, handler: EventHandler): void
-  eventNames(): string[]
-  listenerCount(event: string): number
-  listeners(event: string): EventHandler[]
-  removeAllListeners(event?: string): void
-  setMaxListeners(n: number): void
-  getMaxListeners(): number
+  on: (event: string, handler: EventHandler) => void
+  off: (event: string, handler?: EventHandler) => void
+  emit: (event: string, ...args: any[]) => void
+  once: (event: string, handler: EventHandler) => void
+  eventNames: () => string[]
+  listenerCount: (event: string) => number
+  listeners: (event: string) => EventHandler[]
+  removeAllListeners: (event?: string) => void
+  setMaxListeners: (n: number) => void
+  getMaxListeners: () => number
 }
 
 // 状态管理相关类型
 export interface StateManager {
-  get<T = any>(key: string): T | undefined
-  set<T = any>(key: string, value: T): void
-  remove(key: string): void
-  clear(): void
-  watch<T = any>(key: string, callback: (newValue: T, oldValue: T) => void): () => void
-  keys(): string[]
-  namespace(name: string): StateManager
+  get: <T = any>(key: string) => T | undefined
+  set: <T = any>(key: string, value: T) => void
+  remove: (key: string) => void
+  clear: () => void
+  watch: <T = any>(key: string, callback: (newValue: T, oldValue: T) => void) => () => void
+  keys: () => string[]
+  namespace: (name: string) => StateManager
 }
 
 // 指令管理相关类型
 export interface DirectiveManager {
-  register(name: string, directive: Directive): void
-  unregister(name: string): void
-  get(name: string): Directive | undefined
-  getAll(): Record<string, Directive>
+  register: (name: string, directive: Directive) => void
+  unregister: (name: string) => void
+  get: (name: string) => Directive | undefined
+  getAll: () => Record<string, Directive>
 }
 
 // 错误管理相关类型
@@ -101,11 +101,11 @@ export interface ErrorInfo {
 export type ErrorHandler = (error: ErrorInfo) => void
 
 export interface ErrorManager {
-  onError(handler: ErrorHandler): void
-  offError(handler: ErrorHandler): void
-  captureError(error: Error, component?: Component, info?: string): void
-  getErrors(): ErrorInfo[]
-  clearErrors(): void
+  onError: (handler: ErrorHandler) => void
+  offError: (handler: ErrorHandler) => void
+  captureError: (error: Error, component?: Component, info?: string) => void
+  getErrors: () => ErrorInfo[]
+  clearErrors: () => void
 }
 
 // 日志相关类型
@@ -119,17 +119,17 @@ export interface LogEntry {
 }
 
 export interface Logger {
-  debug(message: string, data?: any): void
-  info(message: string, data?: any): void
-  warn(message: string, data?: any): void
-  error(message: string, data?: any): void
-  setLevel(level: LogLevel): void
-  getLevel(): LogLevel
-  getLogs(): LogEntry[]
-  clearLogs(): void
-  clear(): void
-  setMaxLogs(max: number): void
-  getMaxLogs(): number
+  debug: (message: string, data?: any) => void
+  info: (message: string, data?: any) => void
+  warn: (message: string, data?: any) => void
+  error: (message: string, data?: any) => void
+  setLevel: (level: LogLevel) => void
+  getLevel: () => LogLevel
+  getLogs: () => LogEntry[]
+  clearLogs: () => void
+  clear: () => void
+  setMaxLogs: (max: number) => void
+  getMaxLogs: () => number
 }
 
 // 通知相关类型
@@ -145,40 +145,40 @@ export interface NotificationOptions {
 }
 
 export interface NotificationManager {
-  show(options: NotificationOptions): string
-  hide(id: string): void
-  hideAll(): void
-  getAll(): NotificationOptions[]
+  show: (options: NotificationOptions) => string
+  hide: (id: string) => void
+  hideAll: () => void
+  getAll: () => NotificationOptions[]
 }
 
 // 扩展接口类型
 export interface RouterAdapter {
-  install(engine: Engine): void
-  push(path: string): void
-  replace(path: string): void
-  go(delta: number): void
-  back(): void
-  forward(): void
+  install: (engine: Engine) => void
+  push: (path: string) => void
+  replace: (path: string) => void
+  go: (delta: number) => void
+  back: () => void
+  forward: () => void
 }
 
 export interface StateAdapter {
-  install(engine: Engine): void
-  createStore(options: any): any
-  getStore(name?: string): any
+  install: (engine: Engine) => void
+  createStore: (options: any) => any
+  getStore: (name?: string) => any
 }
 
 export interface I18nAdapter {
-  install(engine: Engine): void
-  setLocale(locale: string): void
-  getLocale(): string
-  t(key: string, params?: any): string
+  install: (engine: Engine) => void
+  setLocale: (locale: string) => void
+  getLocale: () => string
+  t: (key: string, params?: any) => string
 }
 
 export interface ThemeAdapter {
-  install(engine: Engine): void
-  setTheme(theme: string): void
-  getTheme(): string
-  getThemes(): string[]
+  install: (engine: Engine) => void
+  setTheme: (theme: string) => void
+  getTheme: () => string
+  getThemes: () => string[]
 }
 
 // 引擎主类型
@@ -192,18 +192,18 @@ export interface Engine {
   readonly errors: ErrorManager
   readonly logger: Logger
   readonly notifications: NotificationManager
-  
+
   // 扩展接口
   router?: RouterAdapter
   store?: StateAdapter
   i18n?: I18nAdapter
   theme?: ThemeAdapter
-  
-  createApp(rootComponent: Component): App
-  install(app: App): void
-  use(plugin: Plugin): Promise<void>
-  mount(selector: string | Element): void
-  unmount(): void
+
+  createApp: (rootComponent: Component) => App
+  install: (app: App) => void
+  use: (plugin: Plugin) => Promise<void>
+  mount: (selector: string | Element) => void
+  unmount: () => void
 }
 
 // 创建引擎的选项

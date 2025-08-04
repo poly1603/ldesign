@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ldesign/*": ["packages/*/src"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/examples/**/*",
+    "packages/*/tests/**/*",
+    "packages/*/*.ts",
+    "packages/*/*.vue"
+  ]
+}

@@ -18,7 +18,6 @@ import type {
   ThemeManagerInstance,
   ThemeManagerOptions,
 } from './types'
-
 import { ColorGeneratorImpl } from '../utils/color-generator'
 import { ColorScaleGenerator } from '../utils/color-scale'
 import { CSSInjectorImpl, CSSVariableGenerator } from '../utils/css-injector'
@@ -523,12 +522,12 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColors
     const darkColorConfig = config.dark
       ? {
-          primary: config.dark.primary,
-          success: darkColors.success || '#49aa19',
-          warning: darkColors.warning || '#d4b106',
-          danger: darkColors.danger || '#dc4446',
-          gray: darkColors.gray || '#8c8c8c',
-        }
+        primary: config.dark.primary,
+        success: darkColors.success || '#49aa19',
+        warning: darkColors.warning || '#d4b106',
+        danger: darkColors.danger || '#dc4446',
+        gray: darkColors.gray || '#8c8c8c',
+      }
       : lightColorConfig
 
     // 生成色阶
@@ -574,19 +573,19 @@ export class ThemeManager implements ThemeManagerInstance {
   }
 
   // EventEmitter 方法代理
-  on<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  on<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
     this.eventEmitter.on(event, listener)
   }
 
-  off<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  off<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
     this.eventEmitter.off(event, listener)
   }
 
-  emit<T = any>(event: ThemeEventType, data?: T): void {
+  emit<T = unknown>(event: ThemeEventType, data?: T): void {
     this.eventEmitter.emit(event, data)
   }
 
-  once<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  once<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
     this.eventEmitter.once(event, listener)
   }
 

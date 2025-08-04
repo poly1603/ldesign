@@ -29,7 +29,7 @@ export default defineComponent({
       default: true,
     },
     thirdPartyProviders: {
-      type: Array,
+      type: Array as () => string[],
       default: () => ['github', 'google', 'microsoft', 'apple'],
     },
   },
@@ -211,7 +211,7 @@ export default defineComponent({
                   <span>或使用以下方式登录</span>
                 </div>
                 <div class="tablet-split-login__third-party-grid">
-                  {props.thirdPartyProviders.map((provider: string) => (
+                  {props.thirdPartyProviders.map((provider) => (
                     <button
                       key={provider}
                       type="button"

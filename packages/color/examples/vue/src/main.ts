@@ -20,7 +20,11 @@ app.use(ThemePlugin, {
       // 这里需要获取主题配置，暂时使用默认主色调
       const primaryColor = mode === 'light' ? '#1677ff' : '#4096ff'
       const colorConfig = generateColorConfig(primaryColor)
-      const scales = generateColorScales(colorConfig, mode)
+      // 过滤掉undefined的颜色
+      const validColors = Object.fromEntries(
+        Object.entries(colorConfig).filter(([_, value]) => value !== undefined),
+      ) as Record<string, string>
+      const scales = generateColorScales(validColors, mode)
       injectThemeVariables(colorConfig, scales, undefined, mode)
     }
     catch (error) {

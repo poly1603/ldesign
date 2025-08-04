@@ -10,13 +10,13 @@
 import { encrypt } from '@ldesign/crypto'
 
 // AES 对称加密
-const encrypted = encrypt.aes(data, key, options?)
-const encrypted128 = encrypt.aes128(data, key, options?)
-const encrypted192 = encrypt.aes192(data, key, options?)
-const encrypted256 = encrypt.aes256(data, key, options?)
+const encrypted = encrypt.aes(data, key, options)
+const encrypted128 = encrypt.aes128(data, key, options)
+const encrypted192 = encrypt.aes192(data, key, options)
+const encrypted256 = encrypt.aes256(data, key, options)
 
 // RSA 非对称加密
-const encrypted = encrypt.rsa(data, publicKey, options?)
+const encrypted = encrypt.rsa(data, publicKey, options)
 
 // Base64 编码
 const encoded = encrypt.base64(data)
@@ -32,13 +32,13 @@ const encoded = encrypt.hex(data)
 import { decrypt } from '@ldesign/crypto'
 
 // AES 对称解密
-const decrypted = decrypt.aes(encryptedData, key, options?)
-const decrypted128 = decrypt.aes128(encryptedData, key, options?)
-const decrypted192 = decrypt.aes192(encryptedData, key, options?)
-const decrypted256 = decrypt.aes256(encryptedData, key, options?)
+const decrypted = decrypt.aes(encryptedData, key, options)
+const decrypted128 = decrypt.aes128(encryptedData, key, options)
+const decrypted192 = decrypt.aes192(encryptedData, key, options)
+const decrypted256 = decrypt.aes256(encryptedData, key, options)
 
 // RSA 非对称解密
-const decrypted = decrypt.rsa(encryptedData, privateKey, options?)
+const decrypted = decrypt.rsa(encryptedData, privateKey, options)
 
 // Base64 解码
 const decoded = decrypt.base64(encodedData)
@@ -54,15 +54,15 @@ const decoded = decrypt.hex(encodedData)
 import { hash, hmac } from '@ldesign/crypto'
 
 // 哈希算法
-const md5Hash = hash.md5(data, options?)
-const sha1Hash = hash.sha1(data, options?)
-const sha224Hash = hash.sha224(data, options?)
-const sha256Hash = hash.sha256(data, options?)
-const sha384Hash = hash.sha384(data, options?)
-const sha512Hash = hash.sha512(data, options?)
+const md5Hash = hash.md5(data, options)
+const sha1Hash = hash.sha1(data, options)
+const sha224Hash = hash.sha224(data, options)
+const sha256Hash = hash.sha256(data, options)
+const sha384Hash = hash.sha384(data, options)
+const sha512Hash = hash.sha512(data, options)
 
 // 哈希验证
-const isValid = hash.verify(data, expectedHash, algorithm, options?)
+const isValid = hash.verify(data, expectedHash, algorithm, options)
 
 // HMAC 消息认证码
 const hmacMd5 = hmac.md5(data, key)
@@ -113,16 +113,16 @@ const isValid = digitalSignature.verify(data, signature, publicKey, algorithm?)
 import { aes } from '@ldesign/crypto'
 
 // 加密
-const encrypted = aes.encrypt(data, key, options?)
-const encrypted128 = aes.encrypt128(data, key, options?)
-const encrypted192 = aes.encrypt192(data, key, options?)
-const encrypted256 = aes.encrypt256(data, key, options?)
+const encrypted = aes.encrypt(data, key, options)
+const encrypted128 = aes.encrypt128(data, key, options)
+const encrypted192 = aes.encrypt192(data, key, options)
+const encrypted256 = aes.encrypt256(data, key, options)
 
 // 解密
-const decrypted = aes.decrypt(encryptedData, key, options?)
-const decrypted128 = aes.decrypt128(encryptedData, key, options?)
-const decrypted192 = aes.decrypt192(encryptedData, key, options?)
-const decrypted256 = aes.decrypt256(encryptedData, key, options?)
+const decrypted = aes.decrypt(encryptedData, key, options)
+const decrypted128 = aes.decrypt128(encryptedData, key, options)
+const decrypted192 = aes.decrypt192(encryptedData, key, options)
+const decrypted256 = aes.decrypt256(encryptedData, key, options)
 ```
 
 ### RSA 算法
@@ -134,16 +134,16 @@ import { rsa } from '@ldesign/crypto'
 const keyPair = rsa.generateKeyPair(keySize)
 
 // 加密
-const encrypted = rsa.encrypt(data, publicKey, options?)
+const encrypted = rsa.encrypt(data, publicKey, options)
 
 // 解密
-const decrypted = rsa.decrypt(encryptedData, privateKey, options?)
+const decrypted = rsa.decrypt(encryptedData, privateKey, options)
 
 // 签名
-const signature = rsa.sign(data, privateKey, algorithm?)
+const signature = rsa.sign(data, privateKey, algorithm)
 
 // 验证签名
-const isValid = rsa.verify(data, signature, publicKey, algorithm?)
+const isValid = rsa.verify(data, signature, publicKey, algorithm)
 ```
 
 ### 编码算法

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { TemplateRenderer } from '../../../src/vue'
+import { TemplateRenderer } from '@ldesign/template/vue'
 
 // TemplateRenderer 组件演示页面加载
 

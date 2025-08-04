@@ -7,7 +7,7 @@ const loading = ref(false)
 
 const {
   networkInfo,
-  isOnline,
+  isOnline: _isOnline,
   loadModule,
   unloadModule: unloadNetworkModule,
 } = useNetwork()

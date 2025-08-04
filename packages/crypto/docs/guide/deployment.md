@@ -418,8 +418,8 @@ class User {
 ### 数据库迁移脚本
 
 ```typescript
-// migrations/encrypt-existing-data.ts
 import { encrypt } from '@ldesign/crypto'
+// migrations/encrypt-existing-data.ts
 import { User } from '../models/User'
 
 export async function encryptExistingUserData() {

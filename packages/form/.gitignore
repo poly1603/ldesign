@@ -1,0 +1,36 @@
+# Build outputs
+dist/
+es/
+lib/
+types/**/*.d.ts
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+.tmp/
+.temp/

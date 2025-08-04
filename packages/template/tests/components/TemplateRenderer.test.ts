@@ -25,26 +25,22 @@ describe('templateRenderer', () => {
       const wrapper = mount(TemplateRenderer, {
         props: {
           category: 'login',
-          device: 'desktop',
-          template: 'classic',
-          templateProps: { title: 'Test' },
-          cache: false,
-          loading: 'div',
-          error: 'div',
-          empty: 'div',
-          timeout: 5000,
-          autoRetry: false,
-          retryCount: 2,
+          deviceType: 'desktop',
+          templateId: 'classic',
+          showSelector: true,
+          selectorPosition: 'top',
+          autoDetectDevice: false,
+          config: { title: 'Test' },
         },
       })
 
       expect(wrapper.props('category')).toBe('login')
-      expect(wrapper.props('device')).toBe('desktop')
-      expect(wrapper.props('template')).toBe('classic')
-      expect(wrapper.props('cache')).toBe(false)
-      expect(wrapper.props('timeout')).toBe(5000)
-      expect(wrapper.props('autoRetry')).toBe(false)
-      expect(wrapper.props('retryCount')).toBe(2)
+      expect(wrapper.props('deviceType')).toBe('desktop')
+      expect(wrapper.props('templateId')).toBe('classic')
+      expect(wrapper.props('showSelector')).toBe(true)
+      expect(wrapper.props('selectorPosition')).toBe('top')
+      expect(wrapper.props('autoDetectDevice')).toBe(false)
+      expect(wrapper.props('config')).toEqual({ title: 'Test' })
     })
   })
 

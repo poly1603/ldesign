@@ -1,8 +1,8 @@
 import { HttpAdapter } from '@/types';
+export { AlovaAdapter } from './alova.js';
+export { AxiosAdapter } from './axios.js';
 export { BaseAdapter } from './base.js';
 export { FetchAdapter } from './fetch.js';
-export { AxiosAdapter } from './axios.js';
-export { AlovaAdapter } from './alova.js';
 
 /**
  * 适配器工厂

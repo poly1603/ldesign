@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTemplate } from '../../../src/vue'
+import { useTemplate } from '@ldesign/template/vue'
 
 // useTemplate Hook 演示页面加载
 

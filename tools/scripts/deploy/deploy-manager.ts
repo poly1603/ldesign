@@ -38,7 +38,7 @@ export interface DeployConfig {
  * 加载部署配置
  */
 function loadDeployConfig(): DeployConfig {
-  const configPath = path.resolve(__dirname, '../../deploy.config.json')
+  const configPath = path.resolve(__dirname, '../../../deploy.config.json')
 
   const defaultConfig: DeployConfig = {
     npm: {
@@ -377,7 +377,7 @@ export async function deploy(options: DeployOptions = {}): Promise<void> {
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
   const command = args[0]
 

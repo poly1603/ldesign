@@ -83,10 +83,14 @@ const colors = generator.generateColorsForCurrentMode('#1677ff')
 
 ```typescript
 // 修复前
-dark: { primary: '#8c8c8c' }
+dark: {
+  primary: '#8c8c8c'
+}
 
 // 修复后
-dark: { primary: '#a6a6a6' } // 更适合暗色模式的亮灰色，确保足够对比度
+dark: {
+  primary: '#a6a6a6' // 更适合暗色模式的亮灰色，确保足够对比度
+}
 ```
 
 ### ✅ 改进效果
@@ -102,45 +106,58 @@ dark: { primary: '#a6a6a6' } // 更适合暗色模式的亮灰色，确保足够
 #### 基础颜色变量
 
 ```css
---color-primary
---color-success
---color-warning
---color-danger
---color-gray
+:root {
+  --color-primary: #1890ff;
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-danger: #ff4d4f;
+  --color-gray: #8c8c8c;
+}
 ```
 
 #### 色阶变量
 
 ```css
-/* 12级主色调 */
---color-primary-1 到 --color-primary-12
+:root {
+  /* 12级主色调 */
+  --color-primary-1: #e6f7ff;
+  --color-primary-6: #1890ff;
+  --color-primary-12: #002766;
 
-/* 12级功能色 */
---color-success-1 到 --color-success-12
---color-warning-1 到 --color-warning-12
---color-danger-1 到 --color-danger-12
+  /* 12级功能色 */
+  --color-success-1: #f6ffed;
+  --color-success-6: #52c41a;
+  --color-success-12: #092b00;
 
-/* 14级灰色 */
---color-gray-1 到 --color-gray-14
+  /* 14级灰色 */
+  --color-gray-1: #ffffff;
+  --color-gray-7: #8c8c8c;
+  --color-gray-14: #000000;
+}
 ```
 
 #### 中性色变量
 
 ```css
-/* 边框色 */
---color-border-1 到 --color-border-4
+:root {
+  /* 边框色 */
+  --color-border-1: #f0f0f0;
+  --color-border-2: #d9d9d9;
+  --color-border-3: #bfbfbf;
+  --color-border-4: #8c8c8c;
 
-/* 背景色 */
---color-background-1 到 --color-background-4
+  /* 背景色 */
+  --color-background-1: #ffffff;
+  --color-background-2: #fafafa;
+  --color-background-3: #f5f5f5;
+  --color-background-4: #f0f0f0;
 
-/* 文字色 */
---color-text-1 到 --color-text-4
-
-/* 白色变体 */
---color-white-1 到 --color-white-4
-
-/* 阴影颜色 */
---color-shadow-1 到 --color-shadow-4
+  /* 文字色 */
+  --color-text-1: #000000;
+  --color-text-2: #262626;
+  --color-text-3: #595959;
+  --color-text-4: #8c8c8c;
+}
 ```
 
 #### 语义化变量

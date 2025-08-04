@@ -9,7 +9,7 @@ interface CancelToken {
     /** 取消回调 */
     promise: Promise<string>;
     /** 抛出取消错误 */
-    throwIfRequested(): void;
+    throwIfRequested: () => void;
 }
 /**
  * 取消令牌实现

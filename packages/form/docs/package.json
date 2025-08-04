@@ -1,0 +1,14 @@
+{
+  "name": "@ldesign/form-docs",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "自适应表单布局系统文档",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0"
+  }
+}

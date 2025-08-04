@@ -1,5 +1,5 @@
-import CryptoJS from 'crypto-js';
 import { EncodingType } from '../types/index.js';
+import CryptoJS from 'crypto-js';
 
 /**
  * 字符串转换工具

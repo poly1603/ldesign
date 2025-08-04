@@ -74,8 +74,8 @@ export class Encrypt {
   /**
    * 通用编码
    */
-  encode(data: string, encoding: EncodingType): string {
-    return encoding.encode(data, encoding)
+  encode(data: string, encodingType: EncodingType): string {
+    return encoding.encode(data, encodingType)
   }
 }
 

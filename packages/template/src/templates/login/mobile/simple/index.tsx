@@ -29,7 +29,7 @@ export default defineComponent({
       default: true,
     },
     thirdPartyProviders: {
-      type: Array,
+      type: Array as () => string[],
       default: () => ['wechat', 'qq', 'weibo'],
     },
   },
@@ -138,7 +138,7 @@ export default defineComponent({
                 <span>其他登录方式</span>
               </div>
               <div class="mobile-simple-login__third-party-buttons">
-                {props.thirdPartyProviders.map((provider: string) => (
+                {props.thirdPartyProviders.map((provider) => (
                   <button
                     key={provider}
                     type="button"

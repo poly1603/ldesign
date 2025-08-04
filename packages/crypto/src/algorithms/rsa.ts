@@ -144,7 +144,7 @@ export class RSAEncryptor implements IEncryptor {
       const privateKeyObj = this.parsePrivateKey(privateKey)
 
       // 创建消息摘要
-      const md = forge.md[algorithm as keyof typeof forge.md].create()
+      const md = (forge.md as any)[algorithm].create()
       md.update(data, 'utf8')
 
       // 生成签名

@@ -20,10 +20,10 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
-    "skipLibCheck": true,
     "isolatedModules": true,
-    "noUnusedParameters": true
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

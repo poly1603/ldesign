@@ -1,5 +1,5 @@
-import { Ref } from 'vue';
 import { HashOptions, HashAlgorithm } from '../../types/index.js';
+import { Ref } from 'vue';
 import { hash, hmac } from '../../core/index.js';
 
 /**

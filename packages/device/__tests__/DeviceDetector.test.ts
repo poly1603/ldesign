@@ -24,17 +24,17 @@ const mockScreen = {
 }
 
 // Setup global mocks
-Object.defineProperty(global, 'window', {
+Object.defineProperty(globalThis, 'window', {
   value: mockWindow,
   writable: true,
 })
 
-Object.defineProperty(global, 'navigator', {
+Object.defineProperty(globalThis, 'navigator', {
   value: mockNavigator,
   writable: true,
 })
 
-Object.defineProperty(global, 'screen', {
+Object.defineProperty(globalThis, 'screen', {
   value: mockScreen,
   writable: true,
 })
@@ -218,9 +218,9 @@ describe('deviceDetector', () => {
 
   describe('服务端渲染支持', () => {
     it('应该在没有 window 对象时返回默认值', () => {
-      const originalWindow = global.window
+      const originalWindow = globalThis.window
       // @ts-expect-error - 测试用途
-      delete global.window
+      delete globalThis.window
 
       detector = new DeviceDetector()
       const deviceInfo = detector.getDeviceInfo()
@@ -230,7 +230,7 @@ describe('deviceDetector', () => {
       expect(deviceInfo.width).toBe(1920)
       expect(deviceInfo.height).toBe(1080)
 
-      global.window = originalWindow
+      globalThis.window = originalWindow
     })
   })
 })

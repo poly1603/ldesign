@@ -207,7 +207,7 @@ export class CookieStorage implements Storage {
 /**
  * LRU 缓存实现
  */
-export class LRUCacheImpl<T = any> implements LRUCache<T> {
+export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
   private cache: Map<string, CacheItem<T>> = new Map()
   private options: Required<CacheOptions>
 
@@ -346,7 +346,7 @@ export function createStorage(type: 'localStorage' | 'sessionStorage' | 'memory'
 /**
  * 创建 LRU 缓存实例
  */
-export function createLRUCache<T = any>(options?: CacheOptions): LRUCache<T> {
+export function createLRUCache<T = unknown>(options?: CacheOptions): LRUCache<T> {
   return new LRUCacheImpl<T>(options)
 }
 

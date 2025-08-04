@@ -12,19 +12,19 @@ declare class EventEmitterImpl implements EventEmitter {
     /**
      * 添加事件监听器
      */
-    on<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
+    on<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
     /**
      * 移除事件监听器
      */
-    off<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
+    off<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
     /**
      * 触发事件
      */
-    emit<T = any>(event: ThemeEventType, data?: T): void;
+    emit<T = unknown>(event: ThemeEventType, data?: T): void;
     /**
      * 添加一次性事件监听器
      */
-    once<T = any>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
+    once<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void;
     /**
      * 移除所有监听器
      */

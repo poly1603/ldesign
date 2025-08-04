@@ -115,7 +115,7 @@ async function copyColor(color: string) {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制 ${color}`, 'success')
   }
-  catch (err) {
+  catch {
     showNotification('复制失败', 'error')
   }
 }
@@ -133,7 +133,7 @@ async function applyAsTheme(category: string, color: string) {
 
     showNotification(`已应用 ${getCategoryName(category)} 主题`, 'success')
   }
-  catch (_err) {
+  catch {
     showNotification('应用主题失败', 'error')
   }
 }

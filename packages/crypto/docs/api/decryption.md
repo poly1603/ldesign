@@ -9,7 +9,7 @@
 AES 对称解密函数。
 
 ```typescript
-decrypt.aes(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
+function aes(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
 ```
 
 **参数：**
@@ -49,7 +49,7 @@ else {
 AES-128 解密的便捷方法。
 
 ```typescript
-decrypt.aes128(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
+function aes128(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
 ```
 
 **示例：**
@@ -64,7 +64,7 @@ const decrypted = decrypt.aes128(encrypted, 'my-key')
 AES-192 解密的便捷方法。
 
 ```typescript
-decrypt.aes192(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
+function aes192(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
 ```
 
 ### decrypt.aes256()
@@ -72,7 +72,7 @@ decrypt.aes192(encryptedData: EncryptResult, key: string, options?: AESOptions):
 AES-256 解密的便捷方法。
 
 ```typescript
-decrypt.aes256(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
+function aes256(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
 ```
 
 ### decrypt.rsa()
@@ -80,7 +80,7 @@ decrypt.aes256(encryptedData: EncryptResult, key: string, options?: AESOptions):
 RSA 非对称解密函数。
 
 ```typescript
-decrypt.rsa(encryptedData: EncryptResult, privateKey: string, options?: RSAOptions): DecryptResult
+function rsa(encryptedData: EncryptResult, privateKey: string, options?: RSAOptions): DecryptResult
 ```
 
 **参数：**
@@ -113,7 +113,7 @@ if (decrypted.success) {
 Base64 解码函数。
 
 ```typescript
-decrypt.base64(encodedData: string): string
+function base64(encodedData: string): string
 ```
 
 **参数：**
@@ -137,7 +137,7 @@ const decoded = decrypt.base64(encoded)
 URL 安全的 Base64 解码函数。
 
 ```typescript
-decrypt.base64Url(encodedData: string): string
+function base64Url(encodedData: string): string
 ```
 
 **示例：**
@@ -152,7 +152,7 @@ const decoded = decrypt.base64Url(encoded)
 十六进制解码函数。
 
 ```typescript
-decrypt.hex(encodedData: string): string
+function hex(encodedData: string): string
 ```
 
 **示例：**

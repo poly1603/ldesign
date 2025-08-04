@@ -1,12 +1,18 @@
-import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default createRollupConfig({
-  external: ['vue', 'crypto-js', 'node-forge'],
+  packageDir: __dirname,
+  vue: true,
+  external: ['crypto', 'crypto-js', 'node-forge', 'vue'],
   globalName: 'LDesignCrypto',
   globals: {
-    'vue': 'Vue',
+    'crypto': 'crypto',
     'crypto-js': 'CryptoJS',
     'node-forge': 'forge',
-  },
-  vue: true,
+    'vue': 'Vue'
+  }
 })

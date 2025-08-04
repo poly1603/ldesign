@@ -77,7 +77,7 @@ interface ThemeConfig {
     /** 是否为内置主题 */
     builtin?: boolean;
     /** 主题元数据 */
-    meta?: Record<string, any>;
+    meta?: Record<string, unknown>;
 }
 /**
  * 生成的主题数据
@@ -118,7 +118,7 @@ interface Storage {
 /**
  * 缓存项接口
  */
-interface CacheItem<T = any> {
+interface CacheItem<T = unknown> {
     /** 缓存值 */
     value: T;
     /** 过期时间戳 */
@@ -138,7 +138,7 @@ interface CacheOptions {
 /**
  * LRU 缓存接口
  */
-interface LRUCache<T = any> {
+interface LRUCache<T = unknown> {
     /** 获取缓存值 */
     get: (key: string) => T | undefined;
     /** 设置缓存值 */
@@ -221,19 +221,19 @@ type ThemeEventType = 'theme-changed' | 'mode-changed' | 'theme-registered' | 't
 /**
  * 事件监听器
  */
-type ThemeEventListener<T = any> = (data: T) => void;
+type ThemeEventListener<T = unknown> = (data: T) => void;
 /**
  * 事件发射器接口
  */
 interface EventEmitter {
     /** 添加事件监听器 */
-    on: <T = any>(event: ThemeEventType, listener: ThemeEventListener<T>) => void;
+    on: <T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>) => void;
     /** 移除事件监听器 */
-    off: <T = any>(event: ThemeEventType, listener: ThemeEventListener<T>) => void;
+    off: <T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>) => void;
     /** 触发事件 */
-    emit: <T = any>(event: ThemeEventType, data?: T) => void;
+    emit: <T = unknown>(event: ThemeEventType, data?: T) => void;
     /** 添加一次性事件监听器 */
-    once: <T = any>(event: ThemeEventType, listener: ThemeEventListener<T>) => void;
+    once: <T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>) => void;
     /** 移除所有监听器 */
     removeAllListeners: (event?: ThemeEventType) => void;
     /** 获取事件的监听器数量 */

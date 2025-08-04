@@ -81,8 +81,8 @@ async function loadCryptoPlugin() {
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
-// composables/useSecureCrypto.ts
 import { computed, ref } from 'vue'
+// composables/useSecureCrypto.ts
 
 export function useSecureCrypto() {
   const crypto = useCrypto()
@@ -145,8 +145,8 @@ export function useSecureCrypto() {
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
-// composables/useCryptoState.ts
 import { reactive, ref, watch } from 'vue'
+// composables/useCryptoState.ts
 
 export function useCryptoState() {
   const crypto = useCrypto()
@@ -203,8 +203,8 @@ export function useCryptoState() {
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
-// composables/useSecureStorage.ts
 import { ref, watch } from 'vue'
+// composables/useSecureStorage.ts
 
 export function useSecureStorage(storageKey: string, userKey: string) {
   const { encryptAES, decryptAES } = useCrypto()
@@ -553,8 +553,8 @@ export function useLazyCrypto() {
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
-// composables/useCryptoCache.ts
 import { computed, ref } from 'vue'
+// composables/useCryptoCache.ts
 
 export function useCryptoCache(maxCacheSize = 100) {
   const crypto = useCrypto()
@@ -683,8 +683,8 @@ function reset() {
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
-// tests/composables/useCrypto.test.ts
 import { describe, expect, it, vi } from 'vitest'
+// tests/composables/useCrypto.test.ts
 
 describe('useCrypto', () => {
   it('should encrypt and decrypt data correctly', async () => {

@@ -9,7 +9,7 @@
 计算 MD5 哈希值。
 
 ```typescript
-hash.md5(data: string, options?: HashOptions): string
+function md5(data: string, options?: HashOptions): string
 ```
 
 **参数：**
@@ -43,7 +43,7 @@ console.log('MD5 (Base64):', base64Hash)
 计算 SHA-1 哈希值。
 
 ```typescript
-hash.sha1(data: string, options?: HashOptions): string
+function sha1(data: string, options?: HashOptions): string
 ```
 
 **示例：**
@@ -60,7 +60,7 @@ console.log('SHA1:', sha1Hash)
 计算 SHA-224 哈希值。
 
 ```typescript
-hash.sha224(data: string, options?: HashOptions): string
+function sha224(data: string, options?: HashOptions): string
 ```
 
 ### hash.sha256()
@@ -68,7 +68,7 @@ hash.sha224(data: string, options?: HashOptions): string
 计算 SHA-256 哈希值（推荐）。
 
 ```typescript
-hash.sha256(data: string, options?: HashOptions): string
+function sha256(data: string, options?: HashOptions): string
 ```
 
 **示例：**
@@ -84,7 +84,7 @@ console.log('SHA256:', sha256Hash)
 计算 SHA-384 哈希值。
 
 ```typescript
-hash.sha384(data: string, options?: HashOptions): string
+function sha384(data: string, options?: HashOptions): string
 ```
 
 ### hash.sha512()
@@ -92,7 +92,7 @@ hash.sha384(data: string, options?: HashOptions): string
 计算 SHA-512 哈希值。
 
 ```typescript
-hash.sha512(data: string, options?: HashOptions): string
+function sha512(data: string, options?: HashOptions): string
 ```
 
 **示例：**
@@ -107,7 +107,7 @@ console.log('SHA512:', sha512Hash)
 验证哈希值。
 
 ```typescript
-hash.verify(data: string, expectedHash: string, algorithm: HashAlgorithm, options?: HashOptions): boolean
+function verify(data: string, expectedHash: string, algorithm: HashAlgorithm, options?: HashOptions): boolean
 ```
 
 **参数：**
@@ -144,7 +144,7 @@ console.log('篡改数据验证:', isValidTampered) // false
 计算 HMAC-MD5。
 
 ```typescript
-hmac.md5(data: string, key: string, options?: HashOptions): string
+function md5(data: string, key: string, options?: HashOptions): string
 ```
 
 **参数：**
@@ -170,7 +170,7 @@ console.log('HMAC-MD5:', hmacMd5)
 计算 HMAC-SHA1。
 
 ```typescript
-hmac.sha1(data: string, key: string, options?: HashOptions): string
+function sha1(data: string, key: string, options?: HashOptions): string
 ```
 
 ### hmac.sha256()
@@ -178,7 +178,7 @@ hmac.sha1(data: string, key: string, options?: HashOptions): string
 计算 HMAC-SHA256（推荐）。
 
 ```typescript
-hmac.sha256(data: string, key: string, options?: HashOptions): string
+function sha256(data: string, key: string, options?: HashOptions): string
 ```
 
 **示例：**
@@ -193,7 +193,7 @@ console.log('HMAC-SHA256:', hmacSha256)
 计算 HMAC-SHA384。
 
 ```typescript
-hmac.sha384(data: string, key: string, options?: HashOptions): string
+function sha384(data: string, key: string, options?: HashOptions): string
 ```
 
 ### hmac.sha512()
@@ -201,7 +201,7 @@ hmac.sha384(data: string, key: string, options?: HashOptions): string
 计算 HMAC-SHA512。
 
 ```typescript
-hmac.sha512(data: string, key: string, options?: HashOptions): string
+function sha512(data: string, key: string, options?: HashOptions): string
 ```
 
 ### hmac.verify()
@@ -209,7 +209,7 @@ hmac.sha512(data: string, key: string, options?: HashOptions): string
 验证 HMAC 值。
 
 ```typescript
-hmac.verify(data: string, key: string, expectedHmac: string, algorithm: HashAlgorithm, options?: HashOptions): boolean
+function verify(data: string, key: string, expectedHmac: string, algorithm: HashAlgorithm, options?: HashOptions): boolean
 ```
 
 **参数：**
@@ -270,12 +270,12 @@ type EncodingType = 'hex' | 'base64' | 'utf8' | 'binary'
 
 ```typescript
 // PBKDF2 密钥派生函数
-hash.pbkdf2(password: string, salt: string, options: PBKDF2Options): string
+function pbkdf2(password: string, salt: string, options: PBKDF2Options): string
 
 interface PBKDF2Options {
-  iterations: number        // 迭代次数
-  keyLength: number        // 输出密钥长度
-  hashAlgorithm?: HashAlgorithm  // 哈希算法，默认 'SHA256'
+  iterations: number // 迭代次数
+  keyLength: number // 输出密钥长度
+  hashAlgorithm?: HashAlgorithm // 哈希算法，默认 'SHA256'
 }
 ```
 
@@ -298,7 +298,7 @@ console.log('派生密钥:', derivedKey)
 
 ```typescript
 // Scrypt 密钥派生函数
-hash.scrypt(password: string, salt: string, options: ScryptOptions): string
+function scrypt(password: string, salt: string, options: ScryptOptions): string
 
 interface ScryptOptions {
   N: number               // CPU/内存成本参数

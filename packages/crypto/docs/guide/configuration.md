@@ -104,13 +104,11 @@ export const currentConfig = cryptoConfigs[env]
 ### 动态配置
 
 ```typescript
-import { getGlobalConfig, updateGlobalConfig } from '@ldesign/crypto'
-
-// 重置为默认配置
-import { resetGlobalConfig } from '@ldesign/crypto'
+import { getGlobalConfig, updateGlobalConfig, resetGlobalConfig } from '@ldesign/crypto'
 
 // 获取当前配置
 const currentConfig = getGlobalConfig()
+// eslint-disable-next-line no-console
 console.log('当前配置:', currentConfig)
 
 // 动态更新配置
@@ -212,8 +210,8 @@ const scryptKey = hash.scrypt(password, salt, {
 
 ```typescript
 import { CryptoPlugin } from '@ldesign/crypto/vue'
-// main.ts
 import { createApp } from 'vue'
+// main.ts
 
 const app = createApp(App)
 

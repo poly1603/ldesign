@@ -1,5 +1,6 @@
 {
   "name": "@ldesign/device",
+  "type": "module",
   "version": "0.1.0",
   "description": "Modern device information detection library with Vue3 integration",
   "author": "ldesign",
@@ -21,57 +22,45 @@
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./es/index.js",
-      "require": "./dist/index.js"
-    },
-    "./vue": {
-      "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./dist/vue/index.js"
+      "require": "./lib/index.js"
     }
   },
   "main": "dist/index.js",
   "module": "es/index.js",
-  "types": "types/index.d.ts",
+  "types": "dist/index.d.ts",
   "files": [
-    "CHANGELOG.md",
-    "README.md",
     "dist",
     "es",
+    "lib",
     "types"
   ],
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "dev": "rollup -c -w",
     "build": "rollup -c",
-    "build:types": "tsc --emitDeclarationOnly",
+    "build:watch": "rollup -c -w",
+    "dev": "rollup -c -w",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test",
-    "test:coverage": "vitest run --coverage",
-    "lint": "eslint . --fix",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
-    "release": "changeset publish",
-    "build:watch": "rollup -c -w",
-    "type-check": "vue-tsc --noEmit",
-    "lint:check": "eslint .",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "clean": "rimraf dist es lib types coverage .nyc_output",
     "size-check": "size-limit",
-    "deploy": "tsx ../../tools/deploy/package-deployer.ts device",
-    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts device --tag beta",
-    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts device --tag alpha",
-    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts device --dry-run"
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
     "vue": {
@@ -79,24 +68,29 @@
     }
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.6.4",
-    "@changesets/cli": "^2.27.1",
     "@playwright/test": "^1.40.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.5",
-    "@types/node": "^20.10.5",
-    "@vitest/coverage-v8": "^1.1.0",
-    "@vitest/ui": "^1.1.0",
-    "@vue/test-utils": "^2.4.3",
-    "eslint": "^8.56.0",
-    "happy-dom": "^12.10.3",
-    "rollup": "^4.9.1",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^22.0.0",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitest/ui": "^2.0.0",
+    "@vue/test-utils": "^2.4.4",
+    "eslint": "^9.0.0",
+    "jsdom": "^24.0.0",
+    "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
-    "rollup-plugin-vue": "^6.0.0",
-    "typescript": "^5.3.3",
-    "vitepress": "^1.6.3",
-    "vitest": "^1.1.0",
-    "vue": "^3.4.3"
-  }
+    "size-limit": "^11.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.0.12",
+    "vitest": "^2.0.0",
+    "vue": "^3.4.15",
+    "vue-tsc": "^1.8.27"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "40 KB"
+    }
+  ]
 }

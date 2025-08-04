@@ -99,38 +99,38 @@ interface KeyGenerationOptions {
  * 加密器接口
  */
 interface IEncryptor {
-    encrypt(data: string, key: string, options?: any): EncryptResult;
-    decrypt(encryptedData: string | EncryptResult, key: string, options?: any): DecryptResult;
+    encrypt: (data: string, key: string, options?: any) => EncryptResult;
+    decrypt: (encryptedData: string | EncryptResult, key: string, options?: any) => DecryptResult;
 }
 /**
  * 哈希器接口
  */
 interface IHasher {
-    hash(data: string, algorithm?: HashAlgorithm, options?: HashOptions): HashResult;
-    verify(data: string, expectedHash: string, algorithm?: HashAlgorithm, options?: HashOptions): boolean;
+    hash: (data: string, algorithm?: HashAlgorithm, options?: HashOptions) => HashResult;
+    verify: (data: string, expectedHash: string, algorithm?: HashAlgorithm, options?: HashOptions) => boolean;
 }
 /**
  * HMAC 接口
  */
 interface IHMACer {
-    hmac(data: string, key: string, algorithm: HMACAlgorithm, options?: HMACOptions): HashResult;
-    verify(data: string, key: string, hmac: string, algorithm: HMACAlgorithm, options?: HMACOptions): boolean;
+    hmac: (data: string, key: string, algorithm: HMACAlgorithm, options?: HMACOptions) => HashResult;
+    verify: (data: string, key: string, hmac: string, algorithm: HMACAlgorithm, options?: HMACOptions) => boolean;
 }
 /**
  * 编码器接口
  */
 interface IEncoder {
-    encode(data: string, encoding: EncodingType): string;
-    decode(encodedData: string, encoding: EncodingType): string;
+    encode: (data: string, encoding: EncodingType) => string;
+    decode: (encodedData: string, encoding: EncodingType) => string;
 }
 /**
  * 密钥生成器接口
  */
 interface IKeyGenerator {
-    generateKey(options: KeyGenerationOptions): string | RSAKeyPair;
-    generateRandomBytes(length: number): string;
-    generateSalt(length?: number): string;
-    generateIV(length?: number): string;
+    generateKey: (options: KeyGenerationOptions) => string | RSAKeyPair;
+    generateRandomBytes: (length: number) => string;
+    generateSalt: (length?: number) => string;
+    generateIV: (length?: number) => string;
 }
 
 export type { AESKeySize, AESMode, AESOptions, DecryptResult, EncodingType, EncryptResult, EncryptionAlgorithm, HMACAlgorithm, HMACOptions, HashAlgorithm, HashOptions, HashResult, IEncoder, IEncryptor, IHMACer, IHasher, IKeyGenerator, KeyGenerationOptions, RSAKeyFormat, RSAKeyPair, RSAOptions };

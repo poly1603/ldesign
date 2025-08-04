@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Form - Basic Usage</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+      }
+
+      .form-container {
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        min-height: 300px;
+      }
+
+      /* 表单样式 */
+      .adaptive-form-container {
+        padding: 16px;
+      }
+
+      .form-item {
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        padding: 12px;
+        background: #fafafa;
+      }
+
+      .form-item-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      .form-item-required {
+        color: #ff4d4f;
+        margin-left: 4px;
+      }
+
+      .form-input,
+      .form-textarea,
+      .form-select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      .form-input:focus,
+      .form-textarea:focus,
+      .form-select:focus {
+        border-color: #1890ff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      }
+
+      .form-item.has-error {
+        border-color: #ff4d4f;
+      }
+
+      .form-item-error {
+        margin-top: 4px;
+      }
+
+      .error-message {
+        color: #ff4d4f;
+        font-size: 12px;
+      }
+
+      .controls {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 8px 16px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      button:hover {
+        border-color: #1890ff;
+        color: #1890ff;
+      }
+
+      button.primary {
+        background: #1890ff;
+        border-color: #1890ff;
+        color: white;
+      }
+
+      button.primary:hover {
+        background: #40a9ff;
+      }
+
+      .info {
+        margin-top: 20px;
+        padding: 16px;
+        background: #f6ffed;
+        border: 1px solid #b7eb8f;
+        border-radius: 4px;
+      }
+
+      .info h3 {
+        margin: 0 0 10px 0;
+        color: #52c41a;
+      }
+
+      .info pre {
+        background: white;
+        padding: 12px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎯 Adaptive Form - 智能表单布局系统</h1>
+
+      <div class="form-container" id="form-container"></div>
+
+      <div class="controls">
+        <button class="primary" onclick="validateForm()">验证表单</button>
+        <button onclick="resetForm()">重置表单</button>
+        <button onclick="expandForm()">展开表单</button>
+        <button onclick="collapseForm()">收起表单</button>
+        <button onclick="toggleReadonly()">切换只读</button>
+        <button onclick="showValues()">显示值</button>
+      </div>
+
+      <div class="info">
+        <h3>📋 功能说明</h3>
+        <ul>
+          <li><strong>自适应布局</strong>：根据容器宽度自动计算最佳列数</li>
+          <li><strong>响应式设计</strong>：支持多种屏幕尺寸</li>
+          <li><strong>表单验证</strong>：内置验证规则和错误显示</li>
+          <li><strong>展开收起</strong>：支持隐藏多余表单项</li>
+          <li><strong>状态管理</strong>：完整的表单状态管理</li>
+        </ul>
+
+        <h3>📊 当前表单值</h3>
+        <pre id="form-values">{}</pre>
+      </div>
+    </div>
+
+    <script type="module">
+      // 这里应该导入实际的FormManager类
+      // import { FormManager } from '@ldesign/form'
+
+      // 模拟FormManager类（实际使用时应该从包中导入）
+      class MockFormManager {
+        constructor(config, container) {
+          this.config = config
+          this.container = container
+          this.values = {}
+          this.readonly = false
+          this.expanded = false
+
+          this.render()
+        }
+
+        render() {
+          this.container.innerHTML = `
+                    <div class="adaptive-form-container">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                            ${this.config.items.map((item) => this.renderItem(item)).join('')}
+                        </div>
+                    </div>
+                `
+
+          // 绑定事件
+          this.bindEvents()
+        }
+
+        renderItem(item) {
+          const value = this.values[item.key] || item.value || ''
+          const required = item.required ? '<span class="form-item-required">*</span>' : ''
+
+          return `
+                    <div class="form-item" data-key="${item.key}">
+                        <label class="form-item-label">
+                            ${item.label}${required}
+                        </label>
+                        <div class="form-item-input-wrapper">
+                            ${this.renderInput(item, value)}
+                        </div>
+                        <div class="form-item-error"></div>
+                    </div>
+                `
+        }
+
+        renderInput(item, value) {
+          const readonly = this.readonly ? 'readonly' : ''
+          const placeholder = item.placeholder || ''
+
+          switch (item.type) {
+            case 'textarea':
+              return `<textarea class="form-textarea" data-key="${item.key}" placeholder="${placeholder}" ${readonly}>${value}</textarea>`
+            case 'select':
+              const options =
+                item.options
+                  ?.map(
+                    (opt) =>
+                      `<option value="${opt.value}" ${opt.value === value ? 'selected' : ''}>${opt.label}</option>`,
+                  )
+                  .join('') || ''
+              return `<select class="form-select" data-key="${item.key}" ${readonly}>${options}</select>`
+            default:
+              return `<input type="${item.type || 'text'}" class="form-input" data-key="${item.key}" value="${value}" placeholder="${placeholder}" ${readonly}>`
+          }
+        }
+
+        bindEvents() {
+          const inputs = this.container.querySelectorAll('input, textarea, select')
+          inputs.forEach((input) => {
+            input.addEventListener('input', (e) => {
+              this.values[e.target.dataset.key] = e.target.value
+              this.updateFormValues()
+            })
+          })
+        }
+
+        getValue(key) {
+          return key ? this.values[key] : { ...this.values }
+        }
+
+        setValue(key, value) {
+          if (typeof key === 'object') {
+            Object.assign(this.values, key)
+          } else {
+            this.values[key] = value
+          }
+          this.render()
+          this.updateFormValues()
+        }
+
+        validate() {
+          const errors = []
+          this.config.items.forEach((item) => {
+            const value = this.values[item.key]
+            const element = this.container.querySelector(`[data-key="${item.key}"]`).parentElement
+
+            if (item.required && (!value || value.trim() === '')) {
+              errors.push(`${item.label} 是必填项`)
+              element.classList.add('has-error')
+              element.querySelector('.form-item-error').innerHTML =
+                `<div class="error-message">${item.label} 是必填项</div>`
+            } else {
+              element.classList.remove('has-error')
+              element.querySelector('.form-item-error').innerHTML = ''
+            }
+          })
+
+          return { valid: errors.length === 0, errors }
+        }
+
+        reset() {
+          this.values = {}
+          this.render()
+          this.updateFormValues()
+        }
+
+        expand() {
+          this.expanded = true
+          // 简化实现
+          console.log('表单已展开')
+        }
+
+        collapse() {
+          this.expanded = false
+          // 简化实现
+          console.log('表单已收起')
+        }
+
+        setReadonly(readonly) {
+          this.readonly = readonly
+          this.render()
+        }
+
+        updateFormValues() {
+          document.getElementById('form-values').textContent = JSON.stringify(this.values, null, 2)
+        }
+      }
+
+      // 表单配置
+      const formConfig = {
+        items: [
+          {
+            key: 'name',
+            label: '姓名',
+            type: 'input',
+            required: true,
+            placeholder: '请输入姓名',
+          },
+          {
+            key: 'email',
+            label: '邮箱',
+            type: 'email',
+            required: true,
+            placeholder: '请输入邮箱地址',
+          },
+          {
+            key: 'phone',
+            label: '电话',
+            type: 'tel',
+            placeholder: '请输入电话号码',
+          },
+          {
+            key: 'company',
+            label: '公司',
+            type: 'input',
+            placeholder: '请输入公司名称',
+          },
+          {
+            key: 'position',
+            label: '职位',
+            type: 'input',
+            placeholder: '请输入职位',
+          },
+          {
+            key: 'city',
+            label: '城市',
+            type: 'select',
+            options: [
+              { label: '请选择城市', value: '' },
+              { label: '北京', value: 'beijing' },
+              { label: '上海', value: 'shanghai' },
+              { label: '广州', value: 'guangzhou' },
+              { label: '深圳', value: 'shenzhen' },
+            ],
+          },
+          {
+            key: 'experience',
+            label: '工作经验',
+            type: 'select',
+            options: [
+              { label: '请选择经验', value: '' },
+              { label: '1年以下', value: '0-1' },
+              { label: '1-3年', value: '1-3' },
+              { label: '3-5年', value: '3-5' },
+              { label: '5年以上', value: '5+' },
+            ],
+          },
+          {
+            key: 'description',
+            label: '个人描述',
+            type: 'textarea',
+            placeholder: '请简单介绍一下自己...',
+          },
+        ],
+        layout: {
+          defaultRows: 2,
+          minColumns: 1,
+          maxColumns: 4,
+          columnWidth: 250,
+          gap: {
+            horizontal: 16,
+            vertical: 16,
+          },
+        },
+        display: {
+          labelPosition: 'top',
+          showExpandButton: true,
+          expandMode: 'inline',
+        },
+        validation: {
+          validateOnChange: true,
+        },
+        behavior: {
+          readonly: false,
+        },
+      }
+
+      // 创建表单实例
+      const container = document.getElementById('form-container')
+      const formManager = new MockFormManager(formConfig, container)
+
+      // 全局函数
+      window.validateForm = () => {
+        const result = formManager.validate()
+        alert(result.valid ? '表单验证通过！' : `验证失败：\n${result.errors.join('\n')}`)
+      }
+
+      window.resetForm = () => {
+        formManager.reset()
+      }
+
+      window.expandForm = () => {
+        formManager.expand()
+      }
+
+      window.collapseForm = () => {
+        formManager.collapse()
+      }
+
+      window.toggleReadonly = () => {
+        formManager.setReadonly(!formManager.readonly)
+      }
+
+      window.showValues = () => {
+        const values = formManager.getValue()
+        alert('当前表单值：\n' + JSON.stringify(values, null, 2))
+      }
+
+      // 初始化显示
+      formManager.updateFormValues()
+    </script>
+  </body>
+</html>

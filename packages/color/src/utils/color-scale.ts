@@ -56,9 +56,6 @@ export class ColorScaleGenerator {
     return {
       colors,
       indices,
-      count: colors.length,
-      category,
-      mode,
     }
   }
 
@@ -132,7 +129,7 @@ export class ColorScaleGenerator {
   /**
    * 扩展色阶到目标数量
    */
-  private extendColorScale(colors: string[], targetCount: number, mode: ColorMode): string[] {
+  private extendColorScale(colors: string[], targetCount: number, _mode: ColorMode): string[] {
     if (colors.length >= targetCount) {
       return colors.slice(0, targetCount)
     }
@@ -233,7 +230,7 @@ export class ColorScaleGenerator {
   /**
    * 创建回退色阶
    */
-  private createFallbackScale(category: ColorCategory, mode: ColorMode): ColorScale {
+  private createFallbackScale(category: ColorCategory, _mode: ColorMode): ColorScale {
     const config = SCALE_CONFIGS[category]
     const colors: string[] = []
 
@@ -254,9 +251,6 @@ export class ColorScaleGenerator {
     return {
       colors,
       indices,
-      count: colors.length,
-      category,
-      mode,
     }
   }
 
@@ -264,20 +258,14 @@ export class ColorScaleGenerator {
    * 生成中性色（灰色）色阶
    */
   generateNeutralColors(mode: ColorMode = 'light'): NeutralColors {
-    const grayScale = this.generateGrayScale('#595959', 14, mode)
+    const grayScale = this.generateScale('#595959', 'gray', mode)
 
     return {
-      50: grayScale[0],
-      100: grayScale[1],
-      200: grayScale[2],
-      300: grayScale[3],
-      400: grayScale[4],
-      500: grayScale[5],
-      600: grayScale[6],
-      700: grayScale[7],
-      800: grayScale[8],
-      900: grayScale[9],
-      950: grayScale[10],
+      border: grayScale,
+      background: grayScale,
+      text: grayScale,
+      white: grayScale,
+      shadow: grayScale,
     }
   }
 }

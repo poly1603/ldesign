@@ -7,24 +7,20 @@
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "paths": {
-      "@ldesign/*": ["packages/*/src"]
-    },
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
     "noUnusedParameters": true,
     "declaration": true,
     "declarationMap": true,
+    "noEmit": true,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
   "include": [
     "packages/*/src/**/*",

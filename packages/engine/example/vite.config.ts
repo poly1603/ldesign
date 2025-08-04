@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ldesign/engine': resolve(__dirname, '../dist'),
+      '@ldesign/engine': resolve(__dirname, '../es'),
     },
   },
   server: {

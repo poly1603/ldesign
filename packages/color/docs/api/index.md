@@ -148,11 +148,9 @@ await themeManager.init()
 ### Vue 集成使用
 
 ```typescript
-// 插件安装
-import { ThemePlugin } from '@ldesign/color/vue'
+// 插件安装和组合式 API
+import { ThemePlugin, useTheme } from '@ldesign/color/vue'
 
-// 组合式 API
-import { useTheme } from '@ldesign/color/vue'
 app.use(ThemePlugin)
 const { currentTheme, setTheme } = useTheme()
 ```

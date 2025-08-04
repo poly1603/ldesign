@@ -39,7 +39,7 @@ const colorScales = computed(() => {
 })
 
 // 获取色阶中的特定颜色
-function getScaleColor(category: string, index: number): string {
+function _getScaleColor(category: string, index: number): string {
   const scale = colorScales.value[category]
   if (!scale || !scale.colors)
     return ''
@@ -66,7 +66,7 @@ async function copyColor(color: string) {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制 ${color}`, 'success')
   }
-  catch (err) {
+  catch {
     showNotification('复制失败', 'error')
   }
 }

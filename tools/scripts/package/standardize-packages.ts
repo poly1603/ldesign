@@ -2,6 +2,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -313,7 +314,7 @@ function updatePackageScripts(packageDir: string): void {
  * 标准化单个包
  */
 export function standardizePackage(packageName: string): void {
-  const packageDir = path.resolve(__dirname, '../../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
   const config = packageConfigs[packageName]
 
   if (!config) {
@@ -343,7 +344,7 @@ export function standardizePackage(packageName: string): void {
 export function standardizeAllPackages(): void {
   console.log('🚀 开始标准化所有包配置...\n')
 
-  const packagesDir = path.resolve(__dirname, '../../packages')
+  const packagesDir = path.resolve(__dirname, '../../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
     return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
@@ -362,7 +363,7 @@ export function standardizeAllPackages(): void {
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
 
   if (args.length === 0) {

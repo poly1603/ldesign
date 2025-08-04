@@ -799,11 +799,16 @@ const http = createHttpClient({
     maxSize: 100
   }
 })
+```
 
-// 组件缓存
-<keep-alive>
-  <router-view />
-</keep-alive>
+#### 组件缓存
+
+```vue
+<template>
+  <keep-alive>
+    <router-view />
+  </keep-alive>
+</template>
 ```
 
 ### 3. 性能监控

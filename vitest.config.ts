@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vitest/config'
+import { createDevAliases } from './tools/configs/vite-alias'
 
 export default defineConfig({
   plugins: [vue()],
@@ -52,15 +53,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@ldesign/engine': resolve(__dirname, 'packages/engine/src'),
-      '@ldesign/color': resolve(__dirname, 'packages/color/src'),
-      '@ldesign/crypto': resolve(__dirname, 'packages/crypto/src'),
-      '@ldesign/device': resolve(__dirname, 'packages/device/src'),
-      '@ldesign/http': resolve(__dirname, 'packages/http/src'),
-      '@ldesign/i18n': resolve(__dirname, 'packages/i18n/src'),
-      '@ldesign/router': resolve(__dirname, 'packages/router/src'),
-      '@ldesign/store': resolve(__dirname, 'packages/store/src'),
-      '@ldesign/template': resolve(__dirname, 'packages/template/src'),
+      ...createDevAliases(__dirname),
       '@': resolve(__dirname, 'packages'),
     },
   },

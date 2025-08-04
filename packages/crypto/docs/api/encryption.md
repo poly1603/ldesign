@@ -9,7 +9,7 @@
 AES 对称加密函数。
 
 ```typescript
-encrypt.aes(data: string, key: string, options?: AESOptions): EncryptResult
+function aes(data: string, key: string, options?: AESOptions): EncryptResult
 ```
 
 **参数：**
@@ -46,7 +46,7 @@ const encrypted = encrypt.aes(data, key, {
 AES-128 加密的便捷方法。
 
 ```typescript
-encrypt.aes128(data: string, key: string, options?: AESOptions): EncryptResult
+function aes128(data: string, key: string, options?: AESOptions): EncryptResult
 ```
 
 **示例：**
@@ -60,7 +60,7 @@ const encrypted = encrypt.aes128('Hello, World!', 'my-key')
 AES-192 加密的便捷方法。
 
 ```typescript
-encrypt.aes192(data: string, key: string, options?: AESOptions): EncryptResult
+function aes192(data: string, key: string, options?: AESOptions): EncryptResult
 ```
 
 ### encrypt.aes256()
@@ -68,7 +68,7 @@ encrypt.aes192(data: string, key: string, options?: AESOptions): EncryptResult
 AES-256 加密的便捷方法。
 
 ```typescript
-encrypt.aes256(data: string, key: string, options?: AESOptions): EncryptResult
+function aes256(data: string, key: string, options?: AESOptions): EncryptResult
 ```
 
 ### encrypt.rsa()
@@ -76,7 +76,7 @@ encrypt.aes256(data: string, key: string, options?: AESOptions): EncryptResult
 RSA 非对称加密函数。
 
 ```typescript
-encrypt.rsa(data: string, publicKey: string, options?: RSAOptions): EncryptResult
+function rsa(data: string, publicKey: string, options?: RSAOptions): EncryptResult
 ```
 
 **参数：**
@@ -102,7 +102,7 @@ const encrypted = encrypt.rsa('Hello, RSA!', keyPair.publicKey)
 Base64 编码函数。
 
 ```typescript
-encrypt.base64(data: string): string
+function base64(data: string): string
 ```
 
 **参数：**
@@ -125,7 +125,7 @@ const encoded = encrypt.base64('Hello, Base64!')
 URL 安全的 Base64 编码函数。
 
 ```typescript
-encrypt.base64Url(data: string): string
+function base64Url(data: string): string
 ```
 
 **示例：**
@@ -139,7 +139,7 @@ const encoded = encrypt.base64Url('Hello, URL-safe Base64!')
 十六进制编码函数。
 
 ```typescript
-encrypt.hex(data: string): string
+function hex(data: string): string
 ```
 
 **示例：**

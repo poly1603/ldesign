@@ -259,12 +259,11 @@ function testCrypto() {
 ```vue
 <!-- ParentComponent.vue -->
 <script setup>
+import { inject, ref } from 'vue'
 import ChildComponent from './ChildComponent.vue'
 </script>
 
 <script setup>
-import { inject, ref } from 'vue'
-
 const crypto = inject('crypto')
 const hashResult = ref('')
 

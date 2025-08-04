@@ -434,6 +434,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // 使用断点调试
+// eslint-disable-next-line no-debugger
 debugger // 在浏览器开发者工具中会暂停
 ```
 

@@ -1,4 +1,4 @@
-import { RequestInterceptor, ResponseInterceptor, ErrorInterceptor, HttpError } from '@/types';
+import { RequestInterceptor, ResponseInterceptor, HttpError, ErrorInterceptor } from '@/types';
 
 /**
  * 请求日志拦截器

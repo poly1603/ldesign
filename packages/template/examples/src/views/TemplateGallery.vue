@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { DeviceType, TemplateInfo } from '../../../src/vue'
-import { computed, markRaw, ref } from 'vue'
-import { templateConfigs, useTemplate } from '../../../src/vue'
+import type { DeviceType, TemplateInfo } from '@ldesign/template/vue'
+import { computed, markRaw, ref, watch } from 'vue'
+import { templateConfigs, useTemplate } from '@ldesign/template/vue'
 
 // 模板画廊页面加载
 

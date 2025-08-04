@@ -31,17 +31,17 @@ const mockScreen = {
 }
 
 // Setup global mocks
-Object.defineProperty(global, 'window', {
+Object.defineProperty(globalThis, 'window', {
   value: mockWindow,
   writable: true,
 })
 
-Object.defineProperty(global, 'navigator', {
+Object.defineProperty(globalThis, 'navigator', {
   value: mockNavigator,
   writable: true,
 })
 
-Object.defineProperty(global, 'screen', {
+Object.defineProperty(globalThis, 'screen', {
   value: mockScreen,
   writable: true,
 })
@@ -56,7 +56,7 @@ const mockBattery = {
   removeEventListener: vi.fn(),
 }
 
-Object.defineProperty(global.navigator, 'getBattery', {
+Object.defineProperty(globalThis.navigator, 'getBattery', {
   value: vi.fn().mockResolvedValue(mockBattery),
   configurable: true,
 })
@@ -68,7 +68,7 @@ const mockGeolocation = {
   clearWatch: vi.fn(),
 }
 
-Object.defineProperty(global.navigator, 'geolocation', {
+Object.defineProperty(globalThis.navigator, 'geolocation', {
   value: mockGeolocation,
   configurable: true,
 })
@@ -170,7 +170,7 @@ describe('vue Composables', () => {
       await nextTick()
 
       // 模拟网络状态变化
-      Object.defineProperty(global.navigator, 'onLine', {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
         value: false,
         configurable: true,
       })
@@ -208,9 +208,9 @@ describe('vue Composables', () => {
 
     it('应该在不支持电池 API 时返回 null', async () => {
       // 临时移除 getBattery API
-      const originalGetBattery = global.navigator.getBattery
+      const originalGetBattery = globalThis.navigator.getBattery
       // @ts-expect-error - 测试用途
-      delete global.navigator.getBattery
+      delete globalThis.navigator.getBattery
 
       const TestComponent = {
         setup() {
@@ -229,7 +229,7 @@ describe('vue Composables', () => {
       wrapper.unmount()
 
       // 恢复 API
-      global.navigator.getBattery = originalGetBattery
+      globalThis.navigator.getBattery = originalGetBattery
     })
   })
 
@@ -327,9 +327,9 @@ describe('vue Composables', () => {
 
     it('应该在不支持地理位置 API 时返回错误', async () => {
       // 临时移除 geolocation API
-      const originalGeolocation = global.navigator.geolocation
+      const originalGeolocation = globalThis.navigator.geolocation
       // @ts-expect-error - 测试用途
-      delete global.navigator.geolocation
+      delete globalThis.navigator.geolocation
 
       const TestComponent = {
         setup() {
@@ -350,7 +350,7 @@ describe('vue Composables', () => {
       wrapper.unmount()
 
       // 恢复 API
-      global.navigator.geolocation = originalGeolocation
+      globalThis.navigator.geolocation = originalGeolocation
     })
   })
 

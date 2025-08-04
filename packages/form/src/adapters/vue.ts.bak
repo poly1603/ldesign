@@ -1,0 +1,725 @@
+/**
+ * Vue 3 适配器
+ */
+
+import {
+  defineComponent,
+  ref,
+  reactive,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  provide,
+  inject,
+  getCurrentInstance,
+  type Ref,
+  type ComputedRef,
+  type PropType,
+  type InjectionKey,
+} from 'vue'
+import type {
+  FormConfig,
+  FormManagerOptions,
+  AdaptiveFormProps,
+  AdaptiveFormEmits,
+  UseAdaptiveFormReturn,
+  FormProviderState,
+  FormPluginOptions,
+  FormState,
+} from '../types'
+import { FormManager, createFormManager } from '../core/form-manager'
+import type { FormManagerEvents } from '../core/form-manager'
+
+// Vue 3 组件属性
+const adaptiveFormProps = {
+  config: {
+    type: Object as PropType<FormConfig>,
+    required: true,
+  },
+  modelValue: {
+    type: Object as PropType<Record<string, any>>,
+    default: () => ({}),
+  },
+  options: {
+    type: Object as PropType<FormManagerOptions>,
+    default: () => ({}),
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  autoValidate: {
+    type: Boolean,
+    default: true,
+  },
+  validateOnMount: {
+    type: Boolean,
+    default: false,
+  },
+}
+
+// Vue 3 组件事件
+const adaptiveFormEmits = [
+  'update:modelValue',
+  'configUpdated',
+  'layoutUpdated',
+  'stateChanged',
+  'fieldChanged',
+  'fieldFocused',
+  'fieldBlurred',
+  'fieldValidated',
+  'formValidated',
+  'expandToggled',
+  'modalToggled',
+  'groupToggled',
+  'submit',
+  'reset',
+  'mounted',
+  'destroyed',
+] as const
+
+/**
+ * Vue 3 自适应表单组件
+ */
+export const AdaptiveForm = defineComponent({
+  name: 'AdaptiveForm',
+  props: adaptiveFormProps,
+  emits: adaptiveFormEmits,
+  setup(props, { emit, expose }) {
+    const containerRef = ref<HTMLElement>()
+    const formManager = ref<FormManager>()
+    const isReady = ref(false)
+    
+    // 响应式状态
+    const state = reactive({
+      values: { ...props.modelValue },
+      errors: {} as Record<string, string>,
+      touched: {} as Record<string, boolean>,
+      valid: true,
+      loading: props.loading,
+      expanded: false,
+      modalVisible: false,
+    })
+    
+    // 计算属性
+    const hasErrors = computed(() => Object.keys(state.errors).length > 0)
+    const isFormValid = computed(() => state.valid && !hasErrors.value)
+    const canSubmit = computed(() => isFormValid.value && !state.loading)
+    
+    /**
+     * 初始化表单管理器
+     */
+    const initializeFormManager = () => {
+      if (!containerRef.value) return
+      
+      const manager = createFormManager(
+        containerRef.value,
+        props.config,
+        {
+          autoValidate: props.autoValidate,
+          ...props.options,
+        }
+      )
+      
+      // 设置初始值
+      manager.setValues(props.modelValue)
+      
+      // 绑定事件
+      bindFormManagerEvents(manager)
+      
+      formManager.value = manager
+      isReady.value = true
+      
+      emit('mounted', { formManager: manager })
+      
+      // 挂载后验证
+      if (props.validateOnMount) {
+        manager.validateForm()
+      }
+    }
+    
+    /**
+     * 绑定表单管理器事件
+     */
+    const bindFormManagerEvents = (manager: FormManager) => {
+      manager.on('configUpdated', (data) => {
+        emit('configUpdated', data)
+      })
+      
+      manager.on('layoutUpdated', (data) => {
+        emit('layoutUpdated', data)
+      })
+      
+      manager.on('stateChanged', (data) => {
+        Object.assign(state, {
+          values: data.state.values,
+          errors: data.state.errors,
+          touched: data.state.touched,
+          valid: data.state.valid,
+        })
+        emit('stateChanged', data)
+      })
+      
+      manager.on('fieldChanged', (data) => {
+        state.values[data.key] = data.value
+        emit('update:modelValue', { ...state.values })
+        emit('fieldChanged', data)
+      })
+      
+      manager.on('fieldFocused', (data) => {
+        emit('fieldFocused', data)
+      })
+      
+      manager.on('fieldBlurred', (data) => {
+        emit('fieldBlurred', data)
+      })
+      
+      manager.on('fieldValidated', (data) => {
+        if (data.error) {
+          state.errors[data.key] = data.error
+        } else {
+          delete state.errors[data.key]
+        }
+        emit('fieldValidated', data)
+      })
+      
+      manager.on('formValidated', (data) => {
+        state.valid = data.valid
+        state.errors = { ...data.errors }
+        emit('formValidated', data)
+      })
+      
+      manager.on('expandToggled', (data) => {
+        state.expanded = data.expanded
+        emit('expandToggled', data)
+      })
+      
+      manager.on('modalToggled', (data) => {
+        state.modalVisible = data.visible
+        emit('modalToggled', data)
+      })
+      
+      manager.on('groupToggled', (data) => {
+        emit('groupToggled', data)
+      })
+    }
+    
+    /**
+     * 提交表单
+     */
+    const submit = async () => {
+      if (!formManager.value || !canSubmit.value) return false
+      
+      const isValid = await formManager.value.validateForm()
+      if (isValid) {
+        emit('submit', {
+          values: state.values,
+          formManager: formManager.value,
+        })
+      }
+      return isValid
+    }
+    
+    /**
+     * 重置表单
+     */
+    const reset = () => {
+      if (!formManager.value) return
+      
+      formManager.value.reset()
+      emit('reset', { formManager: formManager.value })
+    }
+    
+    /**
+     * 验证表单
+     */
+    const validate = async () => {
+      if (!formManager.value) return false
+      return await formManager.value.validateForm()
+    }
+    
+    /**
+     * 验证字段
+     */
+    const validateField = async (key: string) => {
+      if (!formManager.value) return false
+      return await formManager.value.validateField(key)
+    }
+    
+    /**
+     * 设置字段值
+     */
+    const setFieldValue = (key: string, value: any) => {
+      if (!formManager.value) return
+      formManager.value.setFieldValue(key, value)
+    }
+    
+    /**
+     * 获取字段值
+     */
+    const getFieldValue = (key: string) => {
+      if (!formManager.value) return undefined
+      return formManager.value.getFieldValue(key)
+    }
+    
+    /**
+     * 设置字段错误
+     */
+    const setFieldError = (key: string, error?: string) => {
+      if (!formManager.value) return
+      formManager.value.setFieldError(key, error)
+    }
+    
+    /**
+     * 清除错误
+     */
+    const clearErrors = () => {
+      if (!formManager.value) return
+      formManager.value.clearErrors()
+    }
+    
+    /**
+     * 聚焦字段
+     */
+    const focusField = (key: string) => {
+      if (!formManager.value) return
+      formManager.value.focusField(key)
+    }
+    
+    /**
+     * 滚动到字段
+     */
+    const scrollToField = (key: string) => {
+      if (!formManager.value) return
+      formManager.value.scrollToField(key)
+    }
+    
+    // 监听属性变化
+    watch(
+      () => props.modelValue,
+      (newValue) => {
+        if (formManager.value && newValue !== state.values) {
+          formManager.value.setValues(newValue)
+        }
+      },
+      { deep: true }
+    )
+    
+    watch(
+      () => props.config,
+      (newConfig) => {
+        if (formManager.value) {
+          formManager.value.updateConfig(newConfig)
+        }
+      },
+      { deep: true }
+    )
+    
+    watch(
+      () => props.loading,
+      (newLoading) => {
+        state.loading = newLoading
+      }
+    )
+    
+    // 生命周期
+    onMounted(() => {
+      initializeFormManager()
+    })
+    
+    onUnmounted(() => {
+      if (formManager.value) {
+        formManager.value.destroy()
+        emit('destroyed', {})
+      }
+    })
+    
+    // 暴露方法
+    expose({
+      formManager,
+      state,
+      submit,
+      reset,
+      validate,
+      validateField,
+      setFieldValue,
+      getFieldValue,
+      setFieldError,
+      clearErrors,
+      focusField,
+      scrollToField,
+      isReady,
+      hasErrors,
+      isFormValid,
+      canSubmit,
+    })
+    
+    return {
+      containerRef,
+      formManager,
+      state,
+      isReady,
+      hasErrors,
+      isFormValid,
+      canSubmit,
+      submit,
+      reset,
+      validate,
+      validateField,
+      setFieldValue,
+      getFieldValue,
+      setFieldError,
+      clearErrors,
+      focusField,
+      scrollToField,
+    }
+  },
+  
+  render() {
+    return (
+      <div
+        ref="containerRef"
+        class={[
+          'adaptive-form-vue',
+          {
+            'adaptive-form-loading': this.state.loading,
+            'adaptive-form-disabled': this.disabled,
+            'adaptive-form-readonly': this.readonly,
+            'adaptive-form-expanded': this.state.expanded,
+            'adaptive-form-modal-visible': this.state.modalVisible,
+          },
+        ]}
+        data-adaptive-form="vue"
+      >
+        {this.$slots.default?.()}
+      </div>
+    )
+  },
+})
+
+/**
+ * Vue 3 Composition API Hook
+ */
+export function useAdaptiveForm(
+  config: Ref<FormConfig> | FormConfig,
+  options: Ref<FormManagerOptions> | FormManagerOptions = {}
+): UseAdaptiveFormReturn {
+  const containerRef = ref<HTMLElement>()
+  const formManager = ref<FormManager>()
+  const isReady = ref(false)
+  
+  // 响应式状态
+  const state = reactive({
+    values: {} as Record<string, any>,
+    errors: {} as Record<string, string>,
+    touched: {} as Record<string, boolean>,
+    valid: true,
+    loading: false,
+    expanded: false,
+    modalVisible: false,
+  })
+  
+  // 计算属性
+  const hasErrors = computed(() => Object.keys(state.errors).length > 0)
+  const isFormValid = computed(() => state.valid && !hasErrors.value)
+  const canSubmit = computed(() => isFormValid.value && !state.loading)
+  
+  /**
+   * 初始化表单
+   */
+  const initialize = (container?: HTMLElement) => {
+    const element = container || containerRef.value
+    if (!element) {
+      throw new Error('Container element is required')
+    }
+    
+    const configValue = typeof config === 'object' && 'value' in config ? config.value : config
+    const optionsValue = typeof options === 'object' && 'value' in options ? options.value : options
+    
+    const manager = createFormManager(element, configValue, optionsValue)
+    
+    // 绑定事件
+    manager.on('stateChanged', (data) => {
+      Object.assign(state, {
+        values: data.state.values,
+        errors: data.state.errors,
+        touched: data.state.touched,
+        valid: data.state.valid,
+      })
+    })
+    
+    manager.on('fieldValidated', (data) => {
+      if (data.error) {
+        state.errors[data.key] = data.error
+      } else {
+        delete state.errors[data.key]
+      }
+    })
+    
+    manager.on('formValidated', (data) => {
+      state.valid = data.valid
+      state.errors = { ...data.errors }
+    })
+    
+    manager.on('expandToggled', (data) => {
+      state.expanded = data.expanded
+    })
+    
+    manager.on('modalToggled', (data) => {
+      state.modalVisible = data.visible
+    })
+    
+    formManager.value = manager
+    isReady.value = true
+    
+    return manager
+  }
+  
+  /**
+   * 销毁表单
+   */
+  const destroy = () => {
+    if (formManager.value) {
+      formManager.value.destroy()
+      formManager.value = undefined
+      isReady.value = false
+    }
+  }
+  
+  /**
+   * 提交表单
+   */
+  const submit = async () => {
+    if (!formManager.value || !canSubmit.value) return false
+    return await formManager.value.validateForm()
+  }
+  
+  /**
+   * 重置表单
+   */
+  const reset = () => {
+    if (!formManager.value) return
+    formManager.value.reset()
+  }
+  
+  /**
+   * 验证表单
+   */
+  const validate = async () => {
+    if (!formManager.value) return false
+    return await formManager.value.validateForm()
+  }
+  
+  /**
+   * 验证字段
+   */
+  const validateField = async (key: string) => {
+    if (!formManager.value) return false
+    return await formManager.value.validateField(key)
+  }
+  
+  /**
+   * 设置字段值
+   */
+  const setFieldValue = (key: string, value: any) => {
+    if (!formManager.value) return
+    formManager.value.setFieldValue(key, value)
+  }
+  
+  /**
+   * 获取字段值
+   */
+  const getFieldValue = (key: string) => {
+    if (!formManager.value) return undefined
+    return formManager.value.getFieldValue(key)
+  }
+  
+  /**
+   * 获取所有值
+   */
+  const getValues = () => {
+    if (!formManager.value) return {}
+    return formManager.value.getValues()
+  }
+  
+  /**
+   * 设置所有值
+   */
+  const setValues = (values: Record<string, any>) => {
+    if (!formManager.value) return
+    formManager.value.setValues(values)
+  }
+  
+  /**
+   * 设置字段错误
+   */
+  const setFieldError = (key: string, error?: string) => {
+    if (!formManager.value) return
+    formManager.value.setFieldError(key, error)
+  }
+  
+  /**
+   * 清除错误
+   */
+  const clearErrors = () => {
+    if (!formManager.value) return
+    formManager.value.clearErrors()
+  }
+  
+  /**
+   * 聚焦字段
+   */
+  const focusField = (key: string) => {
+    if (!formManager.value) return
+    formManager.value.focusField(key)
+  }
+  
+  /**
+   * 滚动到字段
+   */
+  const scrollToField = (key: string) => {
+    if (!formManager.value) return
+    formManager.value.scrollToField(key)
+  }
+  
+  // 监听配置变化
+  if (typeof config === 'object' && 'value' in config) {
+    watch(
+      config,
+      (newConfig) => {
+        if (formManager.value) {
+          formManager.value.updateConfig(newConfig)
+        }
+      },
+      { deep: true }
+    )
+  }
+  
+  // 清理
+  onUnmounted(() => {
+    destroy()
+  })
+  
+  return {
+    containerRef,
+    formManager: formManager as Ref<FormManager | undefined>,
+    state,
+    isReady,
+    hasErrors,
+    isFormValid,
+    canSubmit,
+    initialize,
+    destroy,
+    submit,
+    reset,
+    validate,
+    validateField,
+    setFieldValue,
+    getFieldValue,
+    getValues,
+    setValues,
+    setFieldError,
+    clearErrors,
+    focusField,
+    scrollToField,
+  }
+}
+
+/**
+ * 表单提供者注入键
+ */
+export const FormProviderKey: InjectionKey<FormProviderState> = Symbol('FormProvider')
+
+/**
+ * 表单提供者组件
+ */
+export const FormProvider = defineComponent({
+  name: 'FormProvider',
+  props: {
+    config: {
+      type: Object as PropType<FormConfig>,
+      required: true,
+    },
+    options: {
+      type: Object as PropType<FormManagerOptions>,
+      default: () => ({}),
+    },
+  },
+  setup(props, { slots }) {
+    const formManager = ref<FormManager>()
+    const isReady = ref(false)
+    
+    const state = reactive({
+      values: {} as Record<string, any>,
+      errors: {} as Record<string, string>,
+      touched: {} as Record<string, boolean>,
+      valid: true,
+    })
+    
+    const providerState: FormProviderState = {
+      formManager,
+      state,
+      isReady,
+    }
+    
+    provide(FormProviderKey, providerState)
+    
+    return () => slots.default?.()
+  },
+})
+
+/**
+ * 使用表单提供者
+ */
+export function useFormProvider(): FormProviderState {
+  const provider = inject(FormProviderKey)
+  if (!provider) {
+    throw new Error('useFormProvider must be used within FormProvider')
+  }
+  return provider
+}
+
+/**
+ * Vue 3 插件
+ */
+export function createFormPlugin(options: FormPluginOptions = {}) {
+  return {
+    install(app: any) {
+      // 注册全局组件
+      app.component('AdaptiveForm', AdaptiveForm)
+      app.component('FormProvider', FormProvider)
+      
+      // 提供全局配置
+      app.provide('formPluginOptions', options)
+      
+      // 全局属性
+      app.config.globalProperties.$adaptiveForm = {
+        createForm: createFormManager,
+        useForm: useAdaptiveForm,
+      }
+    },
+  }
+}
+
+// 默认导出
+export default AdaptiveForm
+
+// 导出类型
+export type {
+  FormConfig,
+  FormManagerOptions,
+  AdaptiveFormProps,
+  AdaptiveFormEmits,
+  UseAdaptiveFormReturn,
+  FormProviderState,
+  FormPluginOptions,
+}

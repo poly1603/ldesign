@@ -22,7 +22,7 @@ watch(currentTheme, (newTheme) => {
 })
 
 // 预览颜色
-const previewColors = computed(() => {
+const _previewColors = computed(() => {
   return [
     { name: 'primary', label: '主色', value: 'var(--color-primary)' },
     { name: 'success', label: '成功', value: 'var(--color-success)' },
@@ -46,15 +46,15 @@ async function handleThemeChange() {
 }
 
 // 随机主题
-async function randomTheme() {
+async function _randomTheme() {
   const randomThemeConfig = getRandomPresetTheme()
   await setTheme(randomThemeConfig.name)
 }
 
 // 随机主题
 async function handleRandomTheme() {
-  const randomTheme = getRandomPresetTheme()
-  await setTheme(randomTheme.name)
+  const _randomTheme = getRandomPresetTheme()
+  await setTheme(_randomTheme.name)
 }
 
 // 同步系统主题
@@ -65,7 +65,7 @@ function syncSystemTheme() {
 }
 
 // 重置为默认主题
-async function resetToDefault() {
+async function _resetToDefault() {
   await setTheme('default')
   await setMode('light')
 }

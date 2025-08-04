@@ -29,7 +29,7 @@ export default defineComponent({
       default: true,
     },
     thirdPartyProviders: {
-      type: Array,
+      type: Array as () => string[],
       default: () => ['wechat', 'alipay', 'qq'],
     },
   },
@@ -148,7 +148,7 @@ export default defineComponent({
                 <span>快捷登录</span>
               </div>
               <div class="mobile-card-login__third-party-grid">
-                {props.thirdPartyProviders.map((provider: string) => (
+                {props.thirdPartyProviders.map((provider) => (
                   <button
                     key={provider}
                     type="button"

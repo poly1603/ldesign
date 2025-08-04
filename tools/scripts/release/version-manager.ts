@@ -3,6 +3,7 @@
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -90,7 +91,7 @@ function sizeCheck(): void {
     execSync('pnpm size-check', { stdio: 'inherit' })
     console.log('✅ 包大小检查通过\n')
   }
-  catch (error) {
+  catch {
     console.warn('⚠️  包大小检查失败，但继续发布\n')
   }
 }
@@ -164,7 +165,7 @@ function enterPrereleaseMode(tag: string): void {
 /**
  * 退出预发布模式
  */
-function exitPrereleaseMode(): void {
+function _exitPrereleaseMode(): void {
   console.log('🔄 退出预发布模式...')
   execSync('pnpm changeset pre exit', { stdio: 'inherit' })
   console.log('✅ 已退出预发布模式\n')
@@ -281,7 +282,7 @@ export async function prerelease(tag: string = 'beta', options: ReleaseOptions =
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
   const command = args[0]
 

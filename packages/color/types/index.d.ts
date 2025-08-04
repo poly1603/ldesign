@@ -5,10 +5,10 @@ export { CookieStorage, LRUCacheImpl, LocalStorage, MemoryStorage, NoStorage, Se
 export { BrowserSystemThemeDetector, ManualSystemThemeDetector, browserDetector, createSystemThemeDetector, createThemeMediaQuery, getSystemTheme, isSystemThemeSupported, watchSystemTheme } from './core/system-theme-detector.js';
 export { createCustomTheme, cyanTheme, darkTheme, defaultTheme, getPresetTheme, getPresetThemeNames, getRandomPresetTheme, getThemesByCategory, getThemesByTag, greenTheme, isPresetTheme, minimalTheme, orangeTheme, pinkTheme, presetThemes, purpleTheme, recommendThemes, redTheme, themeCategories, themeTags, yellowTheme } from './themes/presets.js';
 export { HSL, RGB, clamp, hexToHsl, hexToRgb, hslToHex, hslToRgb, isValidHex, normalizeHex, normalizeHue, rgbToHex, rgbToHsl } from './utils/color-converter.js';
-export { CSSVariableInjector, getCSSVariableValue, globalCSSInjector, injectThemeVariables, setCSSVariableValue, toggleThemeMode } from './utils/css-variables.js';
 export { COLOR_GENERATION_PRESETS, ColorGeneratorImpl, createColorGenerator, createNeutralGrayGenerator, createTintedGrayGenerator, defaultColorGenerator, generateColorConfig, safeGenerateColorConfig } from './utils/color-generator.js';
 export { ColorScaleGenerator, colorScaleGenerator, generateColorScale, generateColorScales } from './utils/color-scale.js';
 export { CSSInjectionOptions, CSSInjectorImpl, CSSVariableGenerator, createCSSInjector, createCSSVariableGenerator, defaultCSSInjector, defaultCSSVariableGenerator, injectScaleVariables, removeAllColorVariables } from './utils/css-injector.js';
+export { CSSVariableInjector, getCSSVariableValue, globalCSSInjector, injectThemeVariables, setCSSVariableValue, toggleThemeMode } from './utils/css-variables.js';
 export { EventEmitterImpl, createEventEmitter } from './utils/event-emitter.js';
 export { IdleProcessorImpl, IdleProcessorOptions, addIdleTask, addIdleTasks, createConditionalIdleTask, createDelayedIdleTask, createIdleProcessor, defaultIdleProcessor, getDefaultProcessorStatus, supportsIdleCallback } from './utils/idle-processor.js';
 

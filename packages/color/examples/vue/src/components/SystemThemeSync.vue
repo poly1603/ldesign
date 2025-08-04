@@ -23,7 +23,7 @@ async function syncWithSystem() {
     await syncFn()
     showNotification('已同步系统主题', 'success')
   }
-  catch (_error) {
+  catch {
     showNotification('同步失败', 'error')
   }
 }

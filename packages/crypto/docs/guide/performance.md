@@ -631,8 +631,8 @@ console.log('AES 加密性能统计:', stats)
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
-// 优化的 Vue composable
 import { markRaw, nextTick, ref, shallowRef } from 'vue'
+// 优化的 Vue composable
 
 export function useOptimizedCrypto() {
   const crypto = useCrypto()

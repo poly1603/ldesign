@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from 'fs'
-import { join } from 'path'
+import { existsSync, readFileSync } from 'node:fs'
+import process from 'node:process'
 
 interface TestResult {
   name: string
@@ -16,7 +16,7 @@ class SetupVerifier {
     this.results.push({
       name,
       passed: condition,
-      message
+      message,
     })
   }
 
@@ -31,7 +31,7 @@ class SetupVerifier {
     // 检查根目录文件
     const rootFiles = [
       'README.md',
-      'CHANGELOG.md', 
+      'CHANGELOG.md',
       'CONTRIBUTING.md',
       'package.json',
       'pnpm-workspace.yaml',
@@ -39,14 +39,14 @@ class SetupVerifier {
       'Dockerfile',
       'docker-compose.yml',
       '.gitignore',
-      '.dockerignore'
+      '.dockerignore',
     ]
 
-    rootFiles.forEach(file => {
+    rootFiles.forEach((file) => {
       this.test(
         `根目录文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
       )
     })
 
@@ -57,14 +57,14 @@ class SetupVerifier {
       'tools',
       'tools/scripts',
       'tools/configs',
-      'docker'
+      'docker',
     ]
 
-    directories.forEach(dir => {
+    directories.forEach((dir) => {
       this.test(
         `目录: ${dir}`,
         existsSync(dir),
-        `${dir} ${existsSync(dir) ? '存在' : '不存在'}`
+        `${dir} ${existsSync(dir) ? '存在' : '不存在'}`,
       )
     })
   }
@@ -77,14 +77,14 @@ class SetupVerifier {
       'tools/scripts/build/build-manager.ts',
       'tools/scripts/build/version-manager.ts',
       'tools/scripts/deploy/publish-manager.ts',
-      'tools/configs/publish.config.ts'
+      'tools/configs/publish.config.ts',
     ]
 
-    toolsFiles.forEach(file => {
+    toolsFiles.forEach((file) => {
       this.test(
         `工具文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
       )
     })
 
@@ -94,14 +94,14 @@ class SetupVerifier {
       'tools/build',
       'tools/deploy',
       'tools/package',
-      'tools/release'
+      'tools/release',
     ]
 
-    oldFiles.forEach(file => {
+    oldFiles.forEach((file) => {
       this.test(
         `旧文件已移动: ${file}`,
         !existsSync(file),
-        `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`
+        `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`,
       )
     })
   }
@@ -114,14 +114,14 @@ class SetupVerifier {
       'docs/guide/project-structure.md',
       'docs/reports',
       'docs/guide/DEVELOPMENT.md',
-      'docs/guide/DEPLOYMENT.md'
+      'docs/guide/DEPLOYMENT.md',
     ]
 
-    docsFiles.forEach(file => {
+    docsFiles.forEach((file) => {
       this.test(
         `文档文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
       )
     })
 
@@ -131,14 +131,14 @@ class SetupVerifier {
       'BUILD_STATUS_REPORT.md',
       'DEPLOYMENT.md',
       'DEVELOPMENT.md',
-      'README.en.md'
+      'README.en.md',
     ]
 
-    rootDocsFiles.forEach(file => {
+    rootDocsFiles.forEach((file) => {
       this.test(
         `根目录文档已移动: ${file}`,
         !existsSync(file),
-        `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`
+        `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`,
       )
     })
   }
@@ -148,7 +148,7 @@ class SetupVerifier {
 
     try {
       const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
-      
+
       // 检查新的脚本
       const expectedScripts = [
         'build',
@@ -158,14 +158,14 @@ class SetupVerifier {
         'publish',
         'publish:npm',
         'publish:private',
-        'docker:build'
+        'docker:build',
       ]
 
-      expectedScripts.forEach(script => {
+      expectedScripts.forEach((script) => {
         this.test(
           `脚本: ${script}`,
           !!packageJson.scripts[script],
-          `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`
+          `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`,
         )
       })
 
@@ -173,7 +173,7 @@ class SetupVerifier {
       const scriptPaths = [
         ['commit', 'tools/scripts/git-commit.ts'],
         ['tools:create-package', 'tools/scripts/package/create-package.ts'],
-        ['deploy', 'tools/scripts/deploy/deploy-manager.ts']
+        ['deploy', 'tools/scripts/deploy/deploy-manager.ts'],
       ]
 
       scriptPaths.forEach(([script, expectedPath]) => {
@@ -181,15 +181,15 @@ class SetupVerifier {
         this.test(
           `脚本路径: ${script}`,
           actualScript && actualScript.includes(expectedPath),
-          `${script} 路径 ${actualScript && actualScript.includes(expectedPath) ? '正确' : '需要更新'}`
+          `${script} 路径 ${actualScript && actualScript.includes(expectedPath) ? '正确' : '需要更新'}`,
         )
       })
-
-    } catch (error) {
+    }
+    catch (error) {
       this.test(
         'package.json 解析',
         false,
-        `无法解析 package.json: ${error}`
+        `无法解析 package.json: ${error}`,
       )
     }
   }
@@ -204,21 +204,21 @@ class SetupVerifier {
       '.dockerignore',
       'docs/Dockerfile',
       'docker/nginx.conf',
-      'docs/docker/nginx.conf'
+      'docs/docker/nginx.conf',
     ]
 
-    dockerFiles.forEach(file => {
+    dockerFiles.forEach((file) => {
       this.test(
         `Docker文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
       )
     })
   }
 
   async runVerification(): Promise<void> {
     this.log('开始验证项目设置...', 'info')
-    
+
     this.verifyProjectStructure()
     this.verifyToolsStructure()
     this.verifyDocsStructure()
@@ -227,14 +227,14 @@ class SetupVerifier {
 
     // 输出结果
     this.log('\n验证结果:', 'info')
-    
+
     const passed = this.results.filter(r => r.passed).length
     const total = this.results.length
 
-    this.results.forEach(result => {
+    this.results.forEach((result) => {
       this.log(
         `${result.name}: ${result.message}`,
-        result.passed ? 'success' : 'error'
+        result.passed ? 'success' : 'error',
       )
     })
 
@@ -243,16 +243,17 @@ class SetupVerifier {
     if (passed < total) {
       this.log('存在问题需要修复', 'error')
       process.exit(1)
-    } else {
+    }
+    else {
       this.log('所有检查都通过了！', 'success')
     }
   }
 }
 
 // CLI 接口
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const verifier = new SetupVerifier()
-  verifier.runVerification().catch(error => {
+  verifier.runVerification().catch((error) => {
     console.error('验证失败:', error)
     process.exit(1)
   })

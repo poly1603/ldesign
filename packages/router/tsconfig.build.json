@@ -17,17 +17,17 @@
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "declaration": true,
-    "outDir": "dist",
-    "sourceMap": true,
     "noEmit": false,
+    "outDir": "dist",
     "removeComments": false,
+    "sourceMap": true,
     "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "noUnusedParameters": true
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"

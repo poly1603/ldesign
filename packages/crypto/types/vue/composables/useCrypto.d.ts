@@ -1,5 +1,5 @@
-import { Ref } from 'vue';
 import { EncryptResult, DecryptResult, AESOptions, RSAOptions, RSAKeyPair } from '../../types/index.js';
+import { Ref } from 'vue';
 import { encrypt, decrypt, keyGenerator } from '../../core/index.js';
 
 /**

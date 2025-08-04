@@ -260,7 +260,6 @@ const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
 .dark-bg {
   background: var(--color-primary-9);
 }
-
 ```
 
 ## 组件特性

@@ -9,7 +9,7 @@
 生成随机密钥。
 
 ```typescript
-keyGenerator.generateKey(length?: number): string
+function generateKey(length?: number): string
 ```
 
 **参数：**
@@ -43,7 +43,7 @@ console.log('192位密钥:', key192)
 生成随机盐值。
 
 ```typescript
-keyGenerator.generateSalt(length?: number): string
+function generateSalt(length?: number): string
 ```
 
 **参数：**
@@ -71,7 +71,7 @@ console.log('长盐值:', longSalt)
 生成初始化向量（IV）。
 
 ```typescript
-keyGenerator.generateIV(length?: number): string
+function generateIV(length?: number): string
 ```
 
 **参数：**
@@ -99,7 +99,7 @@ console.log('自定义 IV:', customIV)
 生成 RSA 密钥对。
 
 ```typescript
-keyGenerator.generateRSAKeyPair(keySize?: number, options?: RSAKeyGenerationOptions): RSAKeyPair
+function generateRSAKeyPair(keySize?: number, options?: RSAKeyGenerationOptions): RSAKeyPair
 ```
 
 **参数：**
@@ -142,7 +142,7 @@ const customKeyPair = keyGenerator.generateRSAKeyPair(2048, {
 生成随机字节数组。
 
 ```typescript
-keyGenerator.generateRandomBytes(length: number): Uint8Array
+function generateRandomBytes(length: number): Uint8Array
 ```
 
 **参数：**
@@ -172,7 +172,7 @@ console.log('十六进制:', hexString)
 生成随机字符串。
 
 ```typescript
-keyGenerator.generateRandomString(length: number, charset?: string): string
+function generateRandomString(length: number, charset?: string): string
 ```
 
 **参数：**

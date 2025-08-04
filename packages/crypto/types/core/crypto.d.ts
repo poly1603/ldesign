@@ -39,7 +39,7 @@ declare class Encrypt {
     /**
      * 通用编码
      */
-    encode(data: string, encoding: EncodingType): string;
+    encode(data: string, encodingType: EncodingType): string;
 }
 /**
  * 解密类

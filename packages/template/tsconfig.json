@@ -1,19 +1,26 @@
 {
-  "extends": "../../tools/build/tsconfig.base.json",
+  "extends": "../../tools/configs/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
   },
   "include": [
-    "src/**/*",
-    "examples/**/*",
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
     "__tests__/**/*",
     "tests/**/*",
-    "test/**/*",
-    "e2e/**/*"
+    "examples/**/*",
+    "node_modules",
+    "dist",
+    "es",
+    "lib",
+    "types"
   ]
 }

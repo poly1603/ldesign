@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process'
-import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { join } from 'path'
-import { publishConfig, PublishConfig } from '../../configs/publish.config.js'
+import type { PublishConfig } from '../../configs/publish.config.js'
+import { execSync } from 'node:child_process'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { publishConfig } from '../../configs/publish.config.js'
 
 interface PublishOptions {
   registry?: string
@@ -37,26 +38,27 @@ class PublishManager {
     console.log(`${prefix} [${timestamp}] ${message}`)
   }
 
-  private async executeCommand(command: string, cwd?: string): Promise<{ success: boolean; output: string; error?: string }> {
+  private async executeCommand(command: string, cwd?: string): Promise<{ success: boolean, output: string, error?: string }> {
     try {
-      const output = execSync(command, { 
-        cwd: cwd || process.cwd(), 
+      const output = execSync(command, {
+        cwd: cwd || process.cwd(),
         encoding: 'utf8',
-        stdio: 'pipe'
+        stdio: 'pipe',
       })
       return { success: true, output }
-    } catch (error: any) {
-      return { 
-        success: false, 
-        output: '', 
-        error: error.message 
+    }
+    catch (error: any) {
+      return {
+        success: false,
+        output: '',
+        error: error.message,
       }
     }
   }
 
   private async runPrePublishChecks(): Promise<boolean> {
     this.log('开始执行发布前检查...')
-    
+
     const checks = this.config.prePublishChecks
     let allPassed = true
 
@@ -109,24 +111,24 @@ class PublishManager {
   }
 
   private async publishPackage(
-    packageName: string, 
-    registry: string, 
-    options: PublishOptions
+    packageName: string,
+    registry: string,
+    options: PublishOptions,
   ): Promise<PublishResult> {
     const packageConfig = this.config.packages[packageName]
     const registryConfig = this.config.registries[registry]
-    
+
     if (!packageConfig) {
       throw new Error(`未找到包配置: ${packageName}`)
     }
-    
+
     if (!registryConfig) {
       throw new Error(`未找到仓库配置: ${registry}`)
     }
 
     const packagePath = join(process.cwd(), packageConfig.path)
     const packageJsonPath = join(packagePath, 'package.json')
-    
+
     if (!existsSync(packageJsonPath)) {
       throw new Error(`包不存在: ${packageJsonPath}`)
     }
@@ -139,26 +141,26 @@ class PublishManager {
     try {
       // 构建发布命令
       let publishCommand = `npm publish`
-      
+
       if (registryConfig.url) {
         publishCommand += ` --registry ${registryConfig.url}`
       }
-      
+
       if (options.tag) {
         publishCommand += ` --tag ${options.tag}`
       }
-      
+
       if (options.access) {
         publishCommand += ` --access ${options.access}`
       }
-      
+
       if (options.dryRun) {
         publishCommand += ` --dry-run`
       }
 
       // 执行发布
       const result = await this.executeCommand(publishCommand, packagePath)
-      
+
       if (result.success) {
         this.log(`✅ ${packageName}@${version} 发布成功`)
         return {
@@ -166,12 +168,14 @@ class PublishManager {
           registry,
           version,
           success: true,
-          publishTime: new Date().toISOString()
+          publishTime: new Date().toISOString(),
         }
-      } else {
+      }
+      else {
         throw new Error(result.error)
       }
-    } catch (error: any) {
+    }
+    catch (error: any) {
       this.log(`❌ ${packageName}@${version} 发布失败: ${error.message}`, 'error')
       return {
         package: packageName,
@@ -179,7 +183,7 @@ class PublishManager {
         version,
         success: false,
         error: error.message,
-        publishTime: new Date().toISOString()
+        publishTime: new Date().toISOString(),
       }
     }
   }
@@ -193,10 +197,11 @@ class PublishManager {
         // 获取当前版本
         const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
         const version = packageJson.version
-        
+
         await this.executeCommand(`git tag v${version}`)
         this.log(`Git 标签 v${version} 创建成功`)
-      } catch (error: any) {
+      }
+      catch (error: any) {
         this.log(`Git 标签创建失败: ${error.message}`, 'warn')
       }
     }
@@ -206,7 +211,8 @@ class PublishManager {
       try {
         await this.executeCommand('git push --tags')
         this.log('推送成功')
-      } catch (error: any) {
+      }
+      catch (error: any) {
         this.log(`推送失败: ${error.message}`, 'warn')
       }
     }
@@ -224,8 +230,8 @@ class PublishManager {
       summary: {
         total: this.results.length,
         successful: this.results.filter(r => r.success).length,
-        failed: this.results.filter(r => !r.success).length
-      }
+        failed: this.results.filter(r => !r.success).length,
+      },
     }
 
     const reportPath = join(process.cwd(), 'publish-report.json')
@@ -247,10 +253,10 @@ class PublishManager {
 
     // 确定要发布的包
     const packagesToPublish = options.packages || Object.keys(this.config.packages)
-    
+
     // 确定目标仓库
     const targetRegistry = options.registry || 'npm'
-    
+
     if (!this.config.registries[targetRegistry]) {
       throw new Error(`未知的仓库: ${targetRegistry}`)
     }
@@ -258,7 +264,7 @@ class PublishManager {
     // 发布每个包
     for (const packageName of packagesToPublish) {
       const packageConfig = this.config.packages[packageName]
-      
+
       if (!packageConfig) {
         this.log(`跳过未知包: ${packageName}`, 'warn')
         continue
@@ -289,7 +295,7 @@ class PublishManager {
     const totalCount = this.results.length
 
     this.log(`发布完成! 成功: ${successCount}/${totalCount}`)
-    
+
     if (successCount < totalCount) {
       process.exit(1)
     }
@@ -297,11 +303,12 @@ class PublishManager {
 
   async setupLocalRegistry(): Promise<void> {
     this.log('设置本地测试仓库...')
-    
+
     try {
       // 检查是否已安装 verdaccio
       await this.executeCommand('verdaccio --version')
-    } catch {
+    }
+    catch {
       this.log('安装 Verdaccio...')
       await this.executeCommand('npm install -g verdaccio')
     }
@@ -313,17 +320,22 @@ class PublishManager {
 }
 
 // CLI 接口
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
   const options: PublishOptions = {}
 
   // 解析命令行参数
   args.forEach((arg, index) => {
-    if (arg === '--dry-run') options.dryRun = true
-    if (arg === '--skip-checks') options.skipChecks = true
-    if (arg.startsWith('--registry=')) options.registry = arg.split('=')[1]
-    if (arg.startsWith('--tag=')) options.tag = arg.split('=')[1]
-    if (arg.startsWith('--access=')) options.access = arg.split('=')[1] as any
+    if (arg === '--dry-run')
+      options.dryRun = true
+    if (arg === '--skip-checks')
+      options.skipChecks = true
+    if (arg.startsWith('--registry='))
+      options.registry = arg.split('=')[1]
+    if (arg.startsWith('--tag='))
+      options.tag = arg.split('=')[1]
+    if (arg.startsWith('--access='))
+      options.access = arg.split('=')[1] as any
     if (arg.startsWith('--packages=')) {
       options.packages = arg.split('=')[1].split(',')
     }
@@ -334,14 +346,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   switch (command) {
     case 'setup-local':
-      publishManager.setupLocalRegistry().catch(error => {
+      publishManager.setupLocalRegistry().catch((error) => {
         console.error('设置本地仓库失败:', error)
         process.exit(1)
       })
       break
-    
+
     default:
-      publishManager.publish(options).catch(error => {
+      publishManager.publish(options).catch((error) => {
         console.error('发布失败:', error)
         process.exit(1)
       })

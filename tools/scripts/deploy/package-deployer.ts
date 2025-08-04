@@ -21,7 +21,7 @@ export interface PackageDeployOptions {
 function validatePackageBuild(packageName: string): void {
   console.log(`🔍 验证 ${packageName} 构建产物...`)
 
-  const packageDir = path.resolve(__dirname, '../../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
 
   if (!fs.existsSync(packageDir)) {
     throw new Error(`❌ 包 ${packageName} 不存在`)
@@ -73,7 +73,7 @@ function validatePackageBuild(packageName: string): void {
 function validatePackageTests(packageName: string): void {
   console.log(`🧪 验证 ${packageName} 测试覆盖率...`)
 
-  const packageDir = path.resolve(__dirname, '../../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
 
   try {
     execSync('pnpm test:coverage', {
@@ -93,7 +93,7 @@ function validatePackageTests(packageName: string): void {
 function validatePackageSize(packageName: string): void {
   console.log(`📏 验证 ${packageName} 包大小...`)
 
-  const packageDir = path.resolve(__dirname, '../../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
 
   try {
     execSync('pnpm size-check', {
@@ -137,7 +137,7 @@ function generateCdnLinks(packageName: string, version: string): void {
   console.log(`  压缩版本: ${links.unpkg.minified}`)
 
   // 保存链接到文件
-  const packageDir = path.resolve(__dirname, '../../packages', packageName)
+  const packageDir = path.resolve(__dirname, '../../../packages', packageName)
   const linksFile = path.join(packageDir, 'CDN_LINKS.md')
 
   const content = `# CDN 链接
@@ -189,7 +189,7 @@ export async function deployPackage(options: PackageDeployOptions): Promise<void
   console.log(`🚀 开始部署包: ${packageName}\n`)
 
   try {
-    const packageDir = path.resolve(__dirname, '../../packages', packageName)
+    const packageDir = path.resolve(__dirname, '../../../packages', packageName)
 
     // 验证阶段
     if (!skipValidation) {
@@ -242,7 +242,7 @@ export async function deployPackage(options: PackageDeployOptions): Promise<void
 export async function deployAllPackages(options: Omit<PackageDeployOptions, 'packageName'> = {}): Promise<void> {
   console.log('🚀 开始部署所有包...\n')
 
-  const packagesDir = path.resolve(__dirname, '../../packages')
+  const packagesDir = path.resolve(__dirname, '../../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
     return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
@@ -267,7 +267,7 @@ function toCamelCase(str: string): string {
 }
 
 // CLI 处理
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
 
   if (args.length === 0) {

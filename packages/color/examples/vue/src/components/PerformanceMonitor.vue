@@ -32,7 +32,7 @@ async function preGenerateAll() {
     await themeManager.preGenerateAllThemes()
     showNotification('所有主题预生成完成', 'success')
   }
-  catch (_error) {
+  catch {
     showNotification('预生成失败', 'error')
   }
 }

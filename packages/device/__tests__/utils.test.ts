@@ -91,13 +91,13 @@ describe('工具函数测试', () => {
   describe('isTouchDevice', () => {
     it('应该正确检测触摸设备', () => {
       // Mock navigator.maxTouchPoints
-      Object.defineProperty(global.navigator, 'maxTouchPoints', {
+      Object.defineProperty(globalThis.navigator, 'maxTouchPoints', {
         value: 5,
         configurable: true,
       })
       expect(isTouchDevice()).toBe(true)
 
-      Object.defineProperty(global.navigator, 'maxTouchPoints', {
+      Object.defineProperty(globalThis.navigator, 'maxTouchPoints', {
         value: 0,
         configurable: true,
       })
@@ -173,13 +173,13 @@ describe('工具函数测试', () => {
 
   describe('getPixelRatio', () => {
     it('应该返回设备像素比', () => {
-      Object.defineProperty(global.window, 'devicePixelRatio', {
+      Object.defineProperty(globalThis.window, 'devicePixelRatio', {
         value: 2,
         configurable: true,
       })
       expect(getPixelRatio()).toBe(2)
 
-      Object.defineProperty(global.window, 'devicePixelRatio', {
+      Object.defineProperty(globalThis.window, 'devicePixelRatio', {
         value: undefined,
         configurable: true,
       })
@@ -190,13 +190,13 @@ describe('工具函数测试', () => {
   describe('isAPISupported', () => {
     it('应该正确检测 API 支持', () => {
       // Mock navigator.geolocation
-      Object.defineProperty(global.navigator, 'geolocation', {
+      Object.defineProperty(globalThis.navigator, 'geolocation', {
         value: {},
         configurable: true,
       })
       expect(isAPISupported('geolocation')).toBe(true)
 
-      Object.defineProperty(global.navigator, 'geolocation', {
+      Object.defineProperty(globalThis.navigator, 'geolocation', {
         value: undefined,
         configurable: true,
       })
@@ -206,7 +206,7 @@ describe('工具函数测试', () => {
 
   describe('safeNavigatorAccess', () => {
     it('应该安全访问 navigator 属性', () => {
-      Object.defineProperty(global.navigator, 'onLine', {
+      Object.defineProperty(globalThis.navigator, 'onLine', {
         value: true,
         configurable: true,
       })

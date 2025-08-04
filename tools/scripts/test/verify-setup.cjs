@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const { existsSync, readFileSync } = require('fs')
+const { existsSync, readFileSync } = require('node:fs')
+const process = require('node:process')
 
 function log(message, level = 'info') {
   const prefix = level === 'success' ? '✅' : level === 'error' ? '❌' : 'ℹ️'
@@ -11,7 +12,7 @@ function test(name, condition, message) {
   return {
     name,
     passed: condition,
-    message
+    message,
   }
 }
 
@@ -22,7 +23,7 @@ function verifyProjectStructure() {
   // 检查根目录文件
   const rootFiles = [
     'README.md',
-    'CHANGELOG.md', 
+    'CHANGELOG.md',
     'CONTRIBUTING.md',
     'package.json',
     'pnpm-workspace.yaml',
@@ -30,14 +31,14 @@ function verifyProjectStructure() {
     'Dockerfile',
     'docker-compose.yml',
     '.gitignore',
-    '.dockerignore'
+    '.dockerignore',
   ]
 
-  rootFiles.forEach(file => {
+  rootFiles.forEach((file) => {
     results.push(test(
       `根目录文件: ${file}`,
       existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`
+      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
     ))
   })
 
@@ -48,14 +49,14 @@ function verifyProjectStructure() {
     'tools',
     'tools/scripts',
     'tools/configs',
-    'docker'
+    'docker',
   ]
 
-  directories.forEach(dir => {
+  directories.forEach((dir) => {
     results.push(test(
       `目录: ${dir}`,
       existsSync(dir),
-      `${dir} ${existsSync(dir) ? '存在' : '不存在'}`
+      `${dir} ${existsSync(dir) ? '存在' : '不存在'}`,
     ))
   })
 
@@ -71,14 +72,14 @@ function verifyToolsStructure() {
     'tools/scripts/build/build-manager.ts',
     'tools/scripts/build/version-manager.ts',
     'tools/scripts/deploy/publish-manager.ts',
-    'tools/configs/publish.config.ts'
+    'tools/configs/publish.config.ts',
   ]
 
-  toolsFiles.forEach(file => {
+  toolsFiles.forEach((file) => {
     results.push(test(
       `工具文件: ${file}`,
       existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`
+      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
     ))
   })
 
@@ -88,14 +89,14 @@ function verifyToolsStructure() {
     'tools/build',
     'tools/deploy',
     'tools/package',
-    'tools/release'
+    'tools/release',
   ]
 
-  oldFiles.forEach(file => {
+  oldFiles.forEach((file) => {
     results.push(test(
       `旧文件已移动: ${file}`,
       !existsSync(file),
-      `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`
+      `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`,
     ))
   })
 
@@ -111,14 +112,14 @@ function verifyDocsStructure() {
     'docs/guide/project-structure.md',
     'docs/reports',
     'docs/guide/DEVELOPMENT.md',
-    'docs/guide/DEPLOYMENT.md'
+    'docs/guide/DEPLOYMENT.md',
   ]
 
-  docsFiles.forEach(file => {
+  docsFiles.forEach((file) => {
     results.push(test(
       `文档文件: ${file}`,
       existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`
+      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
     ))
   })
 
@@ -128,14 +129,14 @@ function verifyDocsStructure() {
     'BUILD_STATUS_REPORT.md',
     'DEPLOYMENT.md',
     'DEVELOPMENT.md',
-    'README.en.md'
+    'README.en.md',
   ]
 
-  rootDocsFiles.forEach(file => {
+  rootDocsFiles.forEach((file) => {
     results.push(test(
       `根目录文档已移动: ${file}`,
       !existsSync(file),
-      `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`
+      `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`,
     ))
   })
 
@@ -148,7 +149,7 @@ function verifyPackageJson() {
 
   try {
     const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
-    
+
     // 检查新的脚本
     const expectedScripts = [
       'build',
@@ -158,22 +159,22 @@ function verifyPackageJson() {
       'publish',
       'publish:npm',
       'publish:private',
-      'docker:build'
+      'docker:build',
     ]
 
-    expectedScripts.forEach(script => {
+    expectedScripts.forEach((script) => {
       results.push(test(
         `脚本: ${script}`,
         !!packageJson.scripts[script],
-        `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`
+        `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`,
       ))
     })
-
-  } catch (error) {
+  }
+  catch (error) {
     results.push(test(
       'package.json 解析',
       false,
-      `无法解析 package.json: ${error}`
+      `无法解析 package.json: ${error}`,
     ))
   }
 
@@ -191,14 +192,14 @@ function verifyDockerFiles() {
     '.dockerignore',
     'docs/Dockerfile',
     'docker/nginx.conf',
-    'docs/docker/nginx.conf'
+    'docs/docker/nginx.conf',
   ]
 
-  dockerFiles.forEach(file => {
+  dockerFiles.forEach((file) => {
     results.push(test(
       `Docker文件: ${file}`,
       existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`
+      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
     ))
   })
 
@@ -207,25 +208,25 @@ function verifyDockerFiles() {
 
 function runVerification() {
   log('开始验证项目设置...', 'info')
-  
+
   const allResults = [
     ...verifyProjectStructure(),
     ...verifyToolsStructure(),
     ...verifyDocsStructure(),
     ...verifyPackageJson(),
-    ...verifyDockerFiles()
+    ...verifyDockerFiles(),
   ]
 
   // 输出结果
   log('\n验证结果:', 'info')
-  
+
   const passed = allResults.filter(r => r.passed).length
   const total = allResults.length
 
-  allResults.forEach(result => {
+  allResults.forEach((result) => {
     log(
       `${result.name}: ${result.message}`,
-      result.passed ? 'success' : 'error'
+      result.passed ? 'success' : 'error',
     )
   })
 
@@ -234,7 +235,8 @@ function runVerification() {
   if (passed < total) {
     log('存在问题需要修复', 'error')
     process.exit(1)
-  } else {
+  }
+  else {
     log('所有检查都通过了！', 'success')
   }
 }

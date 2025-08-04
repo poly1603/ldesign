@@ -135,16 +135,19 @@ declare class ColorGeneratorImpl implements ColorGenerator {
     /**
      * 生成色阶（实现 ColorGenerator 接口）
      */
-    generateScale(color: string, _mode: 'light' | 'dark'): any;
+    generateScale(color: string, _mode: 'light' | 'dark'): {
+        colors: string[];
+        indices: Record<number, string>;
+    };
     /**
      * 生成 CSS 变量（实现 ColorGenerator 接口）
      */
-    generateCSSVariables(scales: Record<string, any>, prefix?: string): Record<string, string>;
+    generateCSSVariables(scales: Record<string, unknown>, prefix?: string): Record<string, string>;
     /**
      * 生成完整的CSS变量集合
      * 包括基础颜色、色阶、中性色等
      */
-    generateCompleteCSSVariables(colors: Omit<ColorConfig, 'primary'>, scales: Record<string, any>, neutralColors?: any, mode?: ColorMode, prefix?: string): Record<string, string>;
+    generateCompleteCSSVariables(colors: Omit<ColorConfig, 'primary'>, scales: Record<string, unknown>, neutralColors?: unknown, mode?: ColorMode, prefix?: string): Record<string, string>;
     /**
      * 添加语义化CSS变量
      */
