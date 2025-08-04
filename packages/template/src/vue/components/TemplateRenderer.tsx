@@ -61,7 +61,7 @@ export const TemplateRenderer = defineComponent({
   emits: ['template-change', 'device-change', 'render-error'],
   setup(props, { emit, attrs }) {
     const {
-      currentTemplate,
+      // currentTemplate, // 暂时注释掉未使用的变量
       currentTemplateId,
       availableTemplates,
       deviceType,
@@ -152,8 +152,9 @@ export const TemplateRenderer = defineComponent({
           )
         }
 
+        const DynamicComponent = Component as any
         return (
-          <Component
+          <DynamicComponent
             {...finalConfig}
             {...attrs}
           />

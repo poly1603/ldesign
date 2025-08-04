@@ -10,7 +10,6 @@ dist
 cjs
 es
 lib
-build
 .rollup.cache
 types/**/*.d.ts
 types/*.d.ts

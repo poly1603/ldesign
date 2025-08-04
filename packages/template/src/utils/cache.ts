@@ -1,4 +1,4 @@
-import type { TemplateComponent, TemplateMetadata } from '@/types'
+import type { TemplateComponent, TemplateMetadata } from '../types'
 
 /**
  * 缓存项接口 - 简化版本，减少内存占用

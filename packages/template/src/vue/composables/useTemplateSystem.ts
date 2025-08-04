@@ -18,7 +18,7 @@ export interface TemplateInfo {
   description: string
   category: string
   deviceType: DeviceType
-  component: Component
+  component: any // 使用any类型避免复杂的组件类型问题
   preview?: string
   config?: Record<string, any>
 }
@@ -268,7 +268,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
   // 切换设备
   const switchDevice = (device: DeviceType) => {
-    const oldDevice = deviceType.value
+    // const oldDevice = deviceType.value // 暂时注释掉未使用的变量
     deviceType.value = device
 
     // 如果当前模板在新设备上不可用，切换到第一个可用模板
@@ -310,7 +310,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   watch(autoSwitchRef, (newAutoSwitch) => {
     cleanupResizeListener()
     if (newAutoSwitch) {
-      resizeCleanup = setupResizeListener()
+      resizeCleanup = setupResizeListener() || null
     }
   }, { immediate: true })
 
@@ -577,9 +577,9 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   return {
     // 状态
     deviceInfo: readonly(deviceInfo),
-    currentTemplate: readonly(currentTemplate),
+    currentTemplate: readonly(currentTemplate) as Readonly<Ref<TemplateInfo | null>>,
     currentVariant: readonly(currentVariant),
-    availableTemplates: readonly(availableTemplates),
+    availableTemplates: readonly(availableTemplates) as Readonly<Ref<TemplateInfo[]>>,
     isLoading: readonly(isLoading),
 
     // 方法

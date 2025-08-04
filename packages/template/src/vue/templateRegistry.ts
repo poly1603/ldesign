@@ -87,13 +87,13 @@ export async function registerAllTemplates() {
 
     // 注册模板
     registerTemplate({
-      id: templateConfig.id,
+      id: templateConfig.id || 'unknown',
       name: templateConfig.name,
       description: templateConfig.description,
-      category: templateConfig.category,
+      category: templateConfig.category || 'unknown',
       deviceType: templateConfig.deviceType,
       component,
-      config: getTemplateConfig(templateConfig.category, templateConfig.deviceType, templateConfig.id),
+      config: getTemplateConfig(templateConfig.category || 'unknown', templateConfig.deviceType, templateConfig.id || 'unknown'),
     })
   }
 }
@@ -111,12 +111,12 @@ for (const [path, moduleLoader] of Object.entries(templateModules)) {
 
   // 注册模板
   registerTemplate({
-    id: templateConfig.id,
+    id: templateConfig.id || 'unknown',
     name: templateConfig.name,
     description: templateConfig.description,
-    category: templateConfig.category,
+    category: templateConfig.category || 'unknown',
     deviceType: templateConfig.deviceType,
     component,
-    config: getTemplateConfig(templateConfig.category, templateConfig.deviceType, templateConfig.id),
+    config: getTemplateConfig(templateConfig.category || 'unknown', templateConfig.deviceType, templateConfig.id || 'unknown'),
   })
 }

@@ -1,4 +1,4 @@
-import type { DeviceDetectionConfig, DeviceType, ResponsiveBreakpoints } from '@/types'
+import type { DeviceDetectionConfig, DeviceType, ResponsiveBreakpoints } from '../types'
 
 /**
  * 默认响应式断点配置
