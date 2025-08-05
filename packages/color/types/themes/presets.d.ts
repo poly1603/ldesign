@@ -5,19 +5,19 @@ import { ThemeConfig } from '../core/types.js';
  */
 
 /**
- * 海洋蓝主题 - 专业稳重
+ * Arco蓝主题 - 专业稳重（使用Arco Design官方颜色）
  */
 declare const defaultTheme: ThemeConfig;
 /**
- * 翡翠绿主题 - 自然清新
+ * Arco绿主题 - 自然清新（使用Arco Design官方颜色）
  */
 declare const greenTheme: ThemeConfig;
 /**
- * 紫罗兰主题 - 优雅神秘
+ * Arco紫主题 - 优雅神秘（使用Arco Design官方颜色）
  */
 declare const purpleTheme: ThemeConfig;
 /**
- * 珊瑚红主题 - 温暖活力
+ * Arco红主题 - 温暖活力（使用Arco Design官方颜色）
  */
 declare const redTheme: ThemeConfig;
 /**

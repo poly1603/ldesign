@@ -7,12 +7,14 @@ export default defineConfig({
   server: {
     port: 3002,
     open: true,
+    host: true
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-      '@ldesign/color': resolve(__dirname, '../../src'),
-    },
+    alias: [
+      { find: '@', replacement: resolve(__dirname, 'src') },
+      { find: '@ldesign/color/vue', replacement: resolve(__dirname, '../../src/adapt/vue') },
+      { find: '@ldesign/color', replacement: resolve(__dirname, '../../src') },
+    ],
   },
   build: {
     outDir: 'dist',

@@ -5,66 +5,66 @@
 import type { ThemeConfig } from '../core/types'
 
 /**
- * 海洋蓝主题 - 专业稳重
+ * Arco蓝主题 - 专业稳重（使用Arco Design官方颜色）
  */
 export const defaultTheme: ThemeConfig = {
   name: 'default',
-  displayName: '海洋蓝',
-  description: '深邃如海洋的蓝色，专业稳重，适合商务和企业应用',
+  displayName: 'Arco蓝',
+  description: 'Arco Design官方蓝色，专业稳重，适合商务和企业应用',
   builtin: true,
   light: {
-    primary: '#1677ff', // 更现代的蓝色
+    primary: '#165DFF', // Arco Design官方arcoblue
   },
   dark: {
-    primary: '#4096ff',
+    primary: '#165DFF',
   },
 }
 
 /**
- * 翡翠绿主题 - 自然清新
+ * Arco绿主题 - 自然清新（使用Arco Design官方颜色）
  */
 export const greenTheme: ThemeConfig = {
   name: 'green',
-  displayName: '翡翠绿',
-  description: '如翡翠般温润的绿色，象征生机与成长，带来清新自然的感受',
+  displayName: 'Arco绿',
+  description: 'Arco Design官方绿色，象征生机与成长，带来清新自然的感受',
   builtin: true,
   light: {
-    primary: '#00b96b', // 更现代的绿色
+    primary: '#00B42A', // Arco Design官方green
   },
   dark: {
-    primary: '#52c41a',
+    primary: '#00B42A',
   },
 }
 
 /**
- * 紫罗兰主题 - 优雅神秘
+ * Arco紫主题 - 优雅神秘（使用Arco Design官方颜色）
  */
 export const purpleTheme: ThemeConfig = {
   name: 'purple',
-  displayName: '紫罗兰',
-  description: '神秘优雅的紫色，展现创意与想象力，适合设计和艺术类应用',
+  displayName: 'Arco紫',
+  description: 'Arco Design官方紫色，展现创意与想象力，适合设计和艺术类应用',
   builtin: true,
   light: {
-    primary: '#722ed1', // 保持经典紫色
+    primary: '#722ED1', // Arco Design官方purple
   },
   dark: {
-    primary: '#9254de',
+    primary: '#722ED1',
   },
 }
 
 /**
- * 珊瑚红主题 - 温暖活力
+ * Arco红主题 - 温暖活力（使用Arco Design官方颜色）
  */
 export const redTheme: ThemeConfig = {
   name: 'red',
-  displayName: '珊瑚红',
-  description: '温暖如珊瑚的红色，充满活力与激情，传递积极向上的能量',
+  displayName: 'Arco红',
+  description: 'Arco Design官方红色，充满活力与激情，传递积极向上的能量',
   builtin: true,
   light: {
-    primary: '#ff4d4f', // 更温暖的红色
+    primary: '#F53F3F', // Arco Design官方red
   },
   dark: {
-    primary: '#ff7875',
+    primary: '#F53F3F',
   },
 }
 

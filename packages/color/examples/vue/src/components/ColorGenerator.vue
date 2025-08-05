@@ -5,6 +5,7 @@ import {
   generateColorConfig,
   generateColorScales,
   isValidHex,
+  type ColorConfig,
 } from '@ldesign/color'
 import { useTheme } from '@ldesign/color/vue'
 import { computed, nextTick, ref, watch } from 'vue'
@@ -15,7 +16,7 @@ const { showNotification } = useNotification()
 
 const primaryColor = ref('#1890ff')
 const selectedPreset = ref('default')
-const generatedColors = ref<Record<string, string> | null>(null)
+const generatedColors = ref<ColorConfig | null>(null)
 const generatedScales = ref<Record<string, any> | null>(null)
 const error = ref('')
 const isGenerating = ref(false)
@@ -92,7 +93,15 @@ async function generateScalesRealtime() {
     return
 
   try {
-    const scales = generateColorScales(generatedColors.value, currentMode.value)
+    // 确保所有颜色值都存在
+    const colors = {
+      primary: generatedColors.value.primary,
+      success: generatedColors.value.success || generatedColors.value.primary,
+      warning: generatedColors.value.warning || generatedColors.value.primary,
+      danger: generatedColors.value.danger || generatedColors.value.primary,
+      gray: generatedColors.value.gray || '#8c8c8c',
+    }
+    const scales = generateColorScales(colors, currentMode.value)
     generatedScales.value = scales
   }
   catch (err) {
@@ -206,15 +215,16 @@ async function applyAsTheme(category: string, color: string) {
           v-for="(color, category) in generatedColors"
           :key="category"
           class="color-card"
-          @click="copyColor(color)"
+          @click="color && copyColor(color)"
         >
           <div
+            v-if="color"
             class="color-preview"
             :style="{ backgroundColor: color }"
           >
             <span class="color-name">{{ getCategoryName(category) }}</span>
           </div>
-          <div class="color-info">
+          <div v-if="color" class="color-info">
             <div class="color-value">
               {{ color }}
             </div>

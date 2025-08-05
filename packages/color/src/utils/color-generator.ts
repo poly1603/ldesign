@@ -3,8 +3,8 @@
  * 参考：https://github.com/Jahallahan/a-nice-red
  */
 
-import type { ColorConfig, ColorGenerator, ColorMode } from '../core/types'
-import { clamp, hexToHsl, hslToHex, isValidHex, normalizeHex, normalizeHue } from './color-converter'
+import type { ColorConfig, ColorGenerator, ColorMode, ColorScale } from '../core/types'
+import { hexToHsl, hslToHex, isValidHex, normalizeHex, normalizeHue } from './color-converter'
 
 /**
  * 颜色生成配置
@@ -264,89 +264,9 @@ export class ColorGeneratorImpl implements ColorGenerator {
     }
   }
 
-  /**
-   * 计算最优饱和度
-   * 基于 a-nice-red 算法，根据颜色类型和主色调特性计算最佳饱和度
-   */
-  private calculateOptimalSaturation(baseSaturation: number, colorType: 'success' | 'warning' | 'danger' | 'gray'): number {
-    const saturationMap = {
-      success: 0.85, // 成功色保持较高饱和度
-      warning: 0.95, // 警告色需要更高饱和度以引起注意
-      danger: 0.90, // 危险色保持高饱和度
-      gray: 0.15, // 灰色保持低饱和度
-    }
 
-    const targetFactor = saturationMap[colorType]
-    let adjustedSaturation = baseSaturation * targetFactor
 
-    // 根据颜色类型设置合理的饱和度范围
-    switch (colorType) {
-      case 'success':
-        adjustedSaturation = clamp(adjustedSaturation, 60, 90)
-        break
-      case 'warning':
-        adjustedSaturation = clamp(adjustedSaturation, 70, 95)
-        break
-      case 'danger':
-        adjustedSaturation = clamp(adjustedSaturation, 65, 90)
-        break
-      case 'gray':
-        adjustedSaturation = clamp(adjustedSaturation, 5, 20)
-        break
-    }
 
-    return adjustedSaturation
-  }
-
-  /**
-   * 计算最优亮度
-   * 基于 a-nice-red 算法，根据颜色类型和主色调特性计算最佳亮度
-   */
-  private calculateOptimalLightness(baseLightness: number, colorType: 'success' | 'warning' | 'danger' | 'gray'): number {
-    const lightnessMap = {
-      success: 0.95, // 成功色稍微调亮
-      warning: 1.05, // 警告色稍微调亮以提高可见性
-      danger: 0.90, // 危险色稍微调暗以增加严肃感
-      gray: 1.0, // 灰色保持原亮度
-    }
-
-    const targetFactor = lightnessMap[colorType]
-    let adjustedLightness = baseLightness * targetFactor
-
-    // 根据颜色类型设置合理的亮度范围
-    switch (colorType) {
-      case 'success':
-        adjustedLightness = clamp(adjustedLightness, 45, 65)
-        break
-      case 'warning':
-        adjustedLightness = clamp(adjustedLightness, 50, 70)
-        break
-      case 'danger':
-        adjustedLightness = clamp(adjustedLightness, 40, 60)
-        break
-      case 'gray':
-        adjustedLightness = clamp(adjustedLightness, 45, 65)
-        break
-    }
-
-    return adjustedLightness
-  }
-
-  /**
-   * 调整饱和度（保留原方法以兼容性）
-   */
-  private adjustSaturation(baseSaturation: number, factor: number): number {
-    const adjusted = baseSaturation * factor
-    return clamp(adjusted, 0, 100)
-  }
-
-  /**
-   * 调整亮度（保留原方法以兼容性）
-   */
-  private adjustLightness(baseLightness: number, factor: number): number {
-    const adjusted = baseLightness * factor
-    return clamp(adjusted, 0, 100)
-  }
 
   /**
    * 更新生成配置
@@ -434,7 +354,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    * 生成 CSS 变量（实现 ColorGenerator 接口）
    */
   generateCSSVariables(
-    scales: Record<string, unknown>,
+    scales: Record<string, ColorScale>,
     prefix = '--color',
   ): Record<string, string> {
     const variables: Record<string, string> = {}
@@ -499,7 +419,7 @@ export class ColorGeneratorImpl implements ColorGenerator {
    */
   private addSemanticVariables(
     variables: Record<string, string>,
-    colors: Omit<ColorConfig, 'primary'>,
+    _colors: Omit<ColorConfig, 'primary'>,
     mode: ColorMode,
     prefix: string,
   ): void {

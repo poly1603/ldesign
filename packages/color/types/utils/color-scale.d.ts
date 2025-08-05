@@ -14,25 +14,40 @@ declare class ColorScaleGenerator {
      */
     generateScale(baseColor: string, category: ColorCategory, mode?: ColorMode): ColorScale;
     /**
-     * 生成彩色色阶
+     * 生成彩色色阶 - 完全使用Arco Design的原始算法
+     * 直接拷贝自官方源码，不使用硬编码
+     * 暗黑模式下色阶反转：1是最深的，10是最浅的
      */
     private generateColorScale;
     /**
-     * 生成灰色色阶
+     * Arco Design的原始色阶算法 - 直接拷贝自官方源码
+     * 来源: https://github.com/arco-design/color/blob/main/src/palette.js
+     */
+    private arcoColorPalette;
+    /**
+     * 生成额外的浅色（用于扩展到12级或14级）
+     */
+    private generateExtraLightColor;
+    /**
+     * Hex转RGB
+     */
+    private hexToRgb;
+    /**
+     * RGB转Hex
+     */
+    private rgbToHex;
+    /**
+     * RGB转HSV - 完全按照Arco Design的算法
+     */
+    private rgbToHsv;
+    /**
+     * HSV转RGB - 完全按照Arco Design的算法
+     */
+    private hsvToRgb;
+    /**
+     * 生成灰色色阶 - 直接使用Arco Design的预设灰色
      */
     private generateGrayScale;
-    /**
-     * 扩展色阶到目标数量
-     */
-    private extendColorScale;
-    /**
-     * 在两个颜色之间插值
-     */
-    private interpolateColors;
-    /**
-     * 色相插值 - 处理色相环的最短路径
-     */
-    private interpolateHue;
     /**
      * 生成多个颜色类别的色阶
      */

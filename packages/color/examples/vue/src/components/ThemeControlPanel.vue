@@ -101,7 +101,7 @@ async function _resetToDefault() {
         id="mode-select"
         :value="currentMode"
         class="mode-select"
-        @change="setMode($event.target.value)"
+        @change="setMode(($event.target as HTMLSelectElement).value as any)"
       >
         <option value="light">
           亮色模式

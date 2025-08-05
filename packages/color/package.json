@@ -19,6 +19,11 @@
       "types": "./dist/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.js"
+    },
+    "./vue": {
+      "types": "./types/adapt/vue/index.d.ts",
+      "import": "./es/adapt/vue/index.js",
+      "require": "./lib/adapt/vue/index.js"
     }
   },
   "main": "dist/index.js",
@@ -65,10 +70,12 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitest/ui": "^3.2.4",
     "@vue/test-utils": "^2.4.4",
-    "eslint": "^9.0.0",
+    "eslint": "^9.32.0",
     "jsdom": "^24.0.0",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",

@@ -193,6 +193,8 @@ interface ThemeManagerInstance extends EventEmitter {
     setTheme: (theme: string, mode?: ColorMode) => Promise<void>;
     /** 设置颜色模式 */
     setMode: (mode: ColorMode) => Promise<void>;
+    /** 切换颜色模式 */
+    toggleMode: () => Promise<void>;
     /** 注册主题 */
     registerTheme: (config: ThemeConfig) => void;
     /** 注册多个主题 */

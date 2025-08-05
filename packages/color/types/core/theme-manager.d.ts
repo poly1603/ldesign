@@ -44,6 +44,10 @@ declare class ThemeManager implements ThemeManagerInstance {
      */
     setMode(mode: ColorMode): Promise<void>;
     /**
+     * 切换颜色模式
+     */
+    toggleMode(): Promise<void>;
+    /**
      * 注册主题
      */
     registerTheme(config: ThemeConfig): void;

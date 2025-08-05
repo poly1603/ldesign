@@ -39,11 +39,13 @@ describe('color-generator', () => {
         warningHueOffset: 30,
       })
 
-      const _colors1 = generator.generateColors('#ff0000')
+      const colors1 = generator.generateColors('#ff0000')
+      expect(colors1).toBeDefined()
 
       // 更新配置
       generator.updateConfig({ successHueOffset: 150 })
-      const _colors2 = generator.generateColors('#ff0000')
+      const colors2 = generator.generateColors('#ff0000')
+      expect(colors2).toBeDefined()
 
       // 成功色应该不同（因为色相偏移不同）
       // 注意：由于我们改进了算法，对于红色主色调，成功色可能会使用固定的绿色

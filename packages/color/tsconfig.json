@@ -4,12 +4,26 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "skipLibCheck": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": [
-    "src/**/*",
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
     "__tests__/**/*",
     "tests/**/*",
-    "examples/**/*"
+    "examples/**/*",
+    "e2e/**/*",
+    "dist/**/*",
+    "es/**/*",
+    "lib/**/*",
+    "types/**/*"
   ]
 }

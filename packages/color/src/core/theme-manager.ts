@@ -205,6 +205,14 @@ export class ThemeManager implements ThemeManagerInstance {
   }
 
   /**
+   * 切换颜色模式
+   */
+  async toggleMode(): Promise<void> {
+    const newMode = this.currentMode === 'light' ? 'dark' : 'light'
+    await this.setMode(newMode)
+  }
+
+  /**
    * 注册主题
    */
   registerTheme(config: ThemeConfig): void {

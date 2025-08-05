@@ -1,4 +1,4 @@
-import { ColorGenerator, ColorConfig, ColorMode } from '../core/types.js';
+import { ColorGenerator, ColorConfig, ColorMode, ColorScale } from '../core/types.js';
 
 /**
  * 基于 a-nice-red 算法的颜色生成器
@@ -86,24 +86,6 @@ declare class ColorGeneratorImpl implements ColorGenerator {
         black: string;
     };
     /**
-     * 计算最优饱和度
-     * 基于 a-nice-red 算法，根据颜色类型和主色调特性计算最佳饱和度
-     */
-    private calculateOptimalSaturation;
-    /**
-     * 计算最优亮度
-     * 基于 a-nice-red 算法，根据颜色类型和主色调特性计算最佳亮度
-     */
-    private calculateOptimalLightness;
-    /**
-     * 调整饱和度（保留原方法以兼容性）
-     */
-    private adjustSaturation;
-    /**
-     * 调整亮度（保留原方法以兼容性）
-     */
-    private adjustLightness;
-    /**
      * 更新生成配置
      */
     updateConfig(config: Partial<ColorGenerationConfig>): void;
@@ -142,7 +124,7 @@ declare class ColorGeneratorImpl implements ColorGenerator {
     /**
      * 生成 CSS 变量（实现 ColorGenerator 接口）
      */
-    generateCSSVariables(scales: Record<string, unknown>, prefix?: string): Record<string, string>;
+    generateCSSVariables(scales: Record<string, ColorScale>, prefix?: string): Record<string, string>;
     /**
      * 生成完整的CSS变量集合
      * 包括基础颜色、色阶、中性色等

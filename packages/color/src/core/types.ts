@@ -214,6 +214,9 @@ export interface ThemeManagerInstance extends EventEmitter {
   /** 设置颜色模式 */
   setMode: (mode: ColorMode) => Promise<void>
 
+  /** 切换颜色模式 */
+  toggleMode: () => Promise<void>
+
   /** 注册主题 */
   registerTheme: (config: ThemeConfig) => void
 

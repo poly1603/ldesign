@@ -17,11 +17,11 @@ export { IdleProcessorImpl, IdleProcessorOptions, addIdleTask, addIdleTasks, cre
  *
  * 这是一个功能完整的主题色管理库，提供：
  * - 框架无关的核心功能
- * - Vue 3 集成支持
  * - TypeScript 类型安全
  * - 高性能缓存和闲时处理
  * - 灵活的颜色生成算法
  * - 完整的主题预设和自定义支持
+ * - 多框架适配器支持（Vue、React等）
  *
  * @version 0.1.0
  * @author ldesign

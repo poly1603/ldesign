@@ -1,0 +1,274 @@
+/**
+ * Vue 组件样式
+ */
+
+// 主题提供者
+.l-theme-provider {
+  // 基础样式容器，不添加额外样式
+}
+
+// 主题切换器
+.l-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--l-color-bg-hover, rgba(0, 0, 0, 0.04));
+  }
+
+  &--small {
+    padding: 4px;
+    font-size: 12px;
+  }
+
+  &--medium {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  &--large {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  &--switch {
+    .l-theme-toggle__input {
+      display: none;
+    }
+
+    .l-theme-toggle__slider {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background-color: var(--l-color-border, #d9d9d9);
+      border-radius: 12px;
+      transition: background-color 0.2s ease;
+
+      .l-theme-toggle__icon {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+    }
+
+    &.l-theme-toggle--dark .l-theme-toggle__slider {
+      background-color: var(--l-color-primary, #1890ff);
+
+      .l-theme-toggle__icon {
+        transform: translateX(20px);
+      }
+    }
+  }
+
+  &__icon {
+    font-size: 1.2em;
+  }
+
+  &__text {
+    font-size: 0.9em;
+    color: var(--l-color-text, #333);
+  }
+}
+
+// 颜色选择器
+.l-color-picker {
+  position: relative;
+  display: inline-block;
+
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &__trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--l-color-border, #d9d9d9);
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: var(--l-color-primary, #1890ff);
+    }
+  }
+
+  &__preview {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--l-color-border, #d9d9d9);
+  }
+
+  &__input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    min-width: 80px;
+  }
+
+  &__panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    background: white;
+    border: 1px solid var(--l-color-border, #d9d9d9);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 12px;
+    margin-top: 4px;
+    min-width: 200px;
+  }
+
+  &__color-input {
+    margin-bottom: 12px;
+  }
+
+  &__native {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  &__presets {
+    &-title {
+      font-size: 12px;
+      color: var(--l-color-text-secondary, #666);
+      margin-bottom: 8px;
+    }
+
+    &-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+    }
+  }
+
+  &__preset {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--l-color-border, #d9d9d9);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &--active {
+      border-color: var(--l-color-primary, #1890ff);
+      border-width: 2px;
+    }
+  }
+}
+
+// 主题选择器
+.l-theme-selector {
+  &--dropdown {
+    .l-theme-selector__select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--l-color-border, #d9d9d9);
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: var(--l-color-primary, #1890ff);
+      }
+    }
+  }
+
+  &--grid {
+    .l-theme-selector__grid {
+      display: grid;
+      gap: 12px;
+    }
+  }
+
+  &--list {
+    .l-theme-selector__list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+
+  &__item {
+    padding: 12px;
+    border: 1px solid var(--l-color-border, #d9d9d9);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--l-color-primary, #1890ff);
+      box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+    }
+
+    &--active {
+      border-color: var(--l-color-primary, #1890ff);
+      background-color: rgba(24, 144, 255, 0.04);
+    }
+  }
+
+  &__preview {
+    margin-bottom: 8px;
+
+    &-colors {
+      display: flex;
+      gap: 4px;
+    }
+
+    &-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--l-color-border, #d9d9d9);
+    }
+  }
+
+  &__info {
+    .l-theme-selector__name {
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: var(--l-color-text, #333);
+    }
+
+    .l-theme-selector__description {
+      font-size: 12px;
+      color: var(--l-color-text-secondary, #666);
+    }
+  }
+}
+
+// 主题化元素
+.l-themed {
+  transition: all 0.3s ease;
+}

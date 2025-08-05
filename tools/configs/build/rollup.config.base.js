@@ -53,7 +53,7 @@ export function createRollupConfig(options = {}) {
 
     // 如果没有启用 Vue 支持，排除 Vue 相关文件
     if (!vue) {
-      ignorePatterns.push('src/vue/**/*.ts', 'src/vue/**/*.tsx', 'src/vue/**/*.vue')
+      ignorePatterns.push('src/vue/**/*.ts', 'src/vue/**/*.tsx', 'src/vue/**/*.vue', 'src/adapt/vue/**/*.ts', 'src/adapt/vue/**/*.tsx', 'src/adapt/vue/**/*.vue')
     }
 
     // 搜索所有支持的文件类型
@@ -298,11 +298,13 @@ export function createRollupConfig(options = {}) {
 
   // Vue 专用 UMD 构建（如果存在 vue 入口）
   const vueEntryPath = path.resolve(packagePath, 'src/vue/index.ts')
+  const adaptVueEntryPath = path.resolve(packagePath, 'src/adapt/vue/index.ts')
   try {
     const fs = require('node:fs')
-    if (vue && fs.existsSync(vueEntryPath)) {
+    const actualVueEntryPath = fs.existsSync(vueEntryPath) ? vueEntryPath : adaptVueEntryPath
+    if (vue && fs.existsSync(actualVueEntryPath)) {
       configs.push({
-        input: vueEntryPath,
+        input: actualVueEntryPath,
         output: [
           {
             file: path.resolve(packagePath, 'dist/vue.js'),

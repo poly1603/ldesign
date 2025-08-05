@@ -1,7 +1,9 @@
-import { createVitestConfig } from '../../tools/test/vitest.config.base'
+import { defineConfig } from 'vitest/config'
 
-export default createVitestConfig({
-  vue: true,
-  environment: 'jsdom',
-  setupFiles: ['__tests__/setup.ts'],
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['__tests__/setup.ts'],
+  },
 })
