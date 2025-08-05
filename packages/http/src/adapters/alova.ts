@@ -68,15 +68,26 @@ export class AlovaAdapter extends BaseAdapter {
       throw new Error('Alova is not available')
     }
 
-    // 使用 fetch 作为默认请求适配器
-    const { createAlova } = this.alova
-    const GlobalFetch = require('alova/GlobalFetch')
+    try {
+      // 使用 fetch 作为默认请求适配器
+      const { createAlova } = this.alova
+      let GlobalFetch: any
 
-    return createAlova({
-      baseURL: '',
-      requestAdapter: GlobalFetch(),
-      responded: (response: any) => response.json(),
-    })
+      try {
+        GlobalFetch = require('alova/GlobalFetch')
+      } catch {
+        // 如果 GlobalFetch 不可用，使用原生 fetch
+        GlobalFetch = () => fetch
+      }
+
+      return createAlova({
+        baseURL: '',
+        requestAdapter: GlobalFetch(),
+        responded: (response: any) => response.json(),
+      })
+    } catch (error) {
+      throw new Error(`Failed to create Alova instance: ${error}`)
+    }
   }
 
   /**
@@ -139,7 +150,7 @@ export class AlovaAdapter extends BaseAdapter {
     if (config.signal) {
       alovaMethod.abort = () => {
         if (config.signal && !config.signal.aborted) {
-          ;(config.signal as any).abort()
+          ; (config.signal as any).abort()
         }
       }
     }

@@ -1,292 +1,514 @@
-# 🛠️ LDesign 开发工具
+# 🛠️ LDesign 工具使用指南
 
-这个目录包含了 LDesign 项目的所有开发工具和配置文件，按功能组织，使用 TypeScript 编写，支持 ESM 模块格式。
+欢迎使用 LDesign 完整工具集！这里包含了项目开发、测试、部署和维护所需的所有工具。
 
-## 📁 目录结构
+## 📋 目录
+
+- [🚀 快速开始](#-快速开始)
+- [🛠️ 开发工具](#️-开发工具)
+- [🧪 测试工具](#-测试工具)
+- [⚡ 性能工具](#-性能工具)
+- [📚 文档工具](#-文档工具)
+- [🚀 部署工具](#-部署工具)
+- [🏗️ 微前端工具](#️-微前端工具)
+- [🌟 生态系统工具](#-生态系统工具)
+- [🎯 高级功能工具](#-高级功能工具)
+- [❓ 常见问题](#-常见问题)
+
+## 📁 完整目录结构
 
 ```
 tools/
+├── advanced-features/      # 🎯 高级功能工具
+│   ├── analytics-integration.ts     # 分析集成
+│   ├── advanced-cache-manager.ts    # 高级缓存管理
+│   └── advanced-form-manager.ts     # 高级表单管理
 ├── build/                  # 🏗️ 构建相关工具
-│   ├── rollup.config.base.ts    # Rollup 基础配置
-│   └── tsconfig.base.json       # TypeScript 基础配置
-├── test/                   # 🧪 测试相关工具
-│   ├── vitest.config.base.ts    # Vitest 基础配置
-│   └── playwright.config.base.ts # Playwright 基础配置
-├── package/                # 📦 包管理工具
-│   ├── create-package.ts        # 创建新包工具
-│   └── standardize-packages.ts  # 标准化包配置工具
-├── release/                # 🚀 发布相关工具
-│   └── version-manager.ts       # 版本管理和发布工具
-├── templates/              # 📋 模板文件
-│   └── package-template.json    # 包配置模板
+├── configs/                # ⚙️ 配置文件
+│   ├── dev-tools.ts             # 开发工具配置
+│   └── microfrontend/           # 微前端配置
+├── ecosystem/              # 🌟 生态系统工具
+│   ├── plugin-marketplace.ts    # 插件市场
+│   ├── community-contribution.ts # 社区贡献
+│   └── plugin-scaffold.ts       # 插件脚手架
+├── performance/            # ⚡ 性能工具
+│   ├── bundle-analyzer.ts       # 包分析器
+│   └── performance-monitor.ts    # 性能监控
+├── scripts/                # 📜 脚本工具
+│   ├── deploy/                  # 部署脚本
+│   ├── docs/                    # 文档脚本
+│   ├── microfrontend/           # 微前端脚本
+│   └── workflow/                # 工作流脚本
+├── testing/                # 🧪 测试工具
+│   ├── test-generator.ts        # 测试生成器
+│   ├── test-runner.ts           # 测试运行器
+│   └── coverage-reporter.ts     # 覆盖率报告
+├── utils/                  # 🔧 工具函数
+│   └── dev-logger.ts            # 开发日志
 └── README.md              # 📚 本文档
 ```
 
-## 🏗️ 构建工具 (build/)
-
-### rollup.config.base.ts
-
-统一的 Rollup 构建配置，支持多种输出格式。
-
-**功能特性：**
-
-- 🎯 多格式输出：ESM、CJS、UMD
-- 📦 保持模块结构
-- 🔧 TypeScript 支持
-- 🌟 Vue 集成支持
-- 📝 自动生成类型定义
-
-**使用方法：**
-
-```typescript
-import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
-
-export default createRollupConfig({
-  external: ['vue'],
-  globalName: 'LDesignPackage',
-  globals: { vue: 'Vue' },
-  vue: true
-})
-```
-
-**参数说明：**
-
-- `packageDir`: 包目录路径（默认：当前目录）
-- `external`: 外部依赖数组
-- `globalName`: UMD 全局变量名
-- `globals`: UMD 全局变量映射
-- `vue`: 是否启用 Vue 支持
-
-### tsconfig.base.json
-
-TypeScript 基础配置，所有包都应该继承此配置。
-
-**特性：**
-
-- 🎯 ES2020 目标
-- 📦 ESNext 模块
-- 🔧 严格模式
-- 📝 声明文件生成
-- 🌟 Vue JSX 支持
-
-## 🧪 测试工具 (test/)
-
-### vitest.config.base.ts
-
-统一的 Vitest 测试配置。
-
-**功能特性：**
-
-- 🌐 多环境支持：jsdom、happy-dom、node
-- 🌟 Vue 组件测试
-- 📊 代码覆盖率
-- 🔧 自定义设置文件
-- 📝 TypeScript 支持
-
-**使用方法：**
-
-```typescript
-import { createVitestConfig } from '../../tools/test/vitest.config.base'
-
-export default createVitestConfig({
-  vue: true,
-  environment: 'jsdom',
-  setupFiles: ['tests/setup.ts']
-})
-```
-
-**参数说明：**
-
-- `packageDir`: 包目录路径
-- `vue`: 是否启用 Vue 支持
-- `environment`: 测试环境
-- `setupFiles`: 设置文件数组
-- `alias`: 路径别名配置
-- `coverage`: 覆盖率配置
-
-### playwright.config.base.ts
-
-统一的 Playwright E2E 测试配置。
-
-**功能特性：**
-
-- 🌐 多浏览器支持
-- 📱 移动端测试
-- 🎥 视频录制
-- 📸 截图功能
-- 🔄 自动重试
-
-**使用方法：**
-
-```typescript
-import { createPlaywrightConfig } from '../../tools/test/playwright.config.base'
-
-export default createPlaywrightConfig({
-  webServer: {
-    command: 'pnpm dev',
-    port: 5173
-  }
-})
-```
-
-**参数说明：**
-
-- `testDir`: 测试目录
-- `baseURL`: 基础 URL
-- `webServer`: 开发服务器配置
-- `projects`: 测试项目（浏览器）
-- `retries`: 重试次数
-- `workers`: 并发数
-
-## 📦 包管理工具 (package/)
-
-### create-package.ts
-
-创建新包的工具，自动生成标准化的包结构。
-
-**使用方法：**
-
-```bash
-# 创建基础包
-tsx tools/package/create-package.ts my-package --description "我的包"
-
-# 创建 Vue 包
-tsx tools/package/create-package.ts my-vue-package --vue --description "我的Vue包"
-```
-
-**功能特性：**
-
-- 📁 自动创建目录结构
-- 📝 生成配置文件
-- 🌟 Vue 集成支持
-- 📚 自动生成文档
-- 🔧 标准化脚本
-
-**参数说明：**
-
-- `packageName`: 包名（必需）
-- `--vue`: 创建 Vue 包
-- `--description`: 包描述
-- `--template`: 模板类型
-
-### standardize-packages.ts
-
-标准化所有包的配置文件。
-
-**使用方法：**
-
-```bash
-# 标准化所有包
-tsx tools/package/standardize-packages.ts
-
-# 标准化特定包
-tsx tools/package/standardize-packages.ts engine
-```
-
-**功能特性：**
-
-- 🔧 统一配置文件
-- 📁 确保目录结构
-- 📝 标准化脚本
-- 🔄 批量处理
-
-## 🚀 发布工具 (release/)
-
-### version-manager.ts
-
-版本管理和发布工具。
-
-**使用方法：**
-
-```bash
-# 正式发布
-tsx tools/release/version-manager.ts
-
-# Beta 发布
-tsx tools/release/version-manager.ts beta
-
-# Alpha 发布
-tsx tools/release/version-manager.ts alpha
-
-# 干运行模式
-tsx tools/release/version-manager.ts --dry-run
-
-# 跳过测试
-tsx tools/release/version-manager.ts --skip-tests
-```
-
-**功能特性：**
-
-- 🔍 工作目录检查
-- 🧪 自动测试
-- 🏗️ 自动构建
-- 📦 版本管理
-- 🚀 自动发布
-- 🔄 Git 操作
-
-**参数说明：**
-
-- `stable`: 正式发布（默认）
-- `beta`: Beta 发布
-- `alpha`: Alpha 发布
-- `--skip-tests`: 跳过测试
-- `--skip-build`: 跳过构建
-- `--dry-run`: 干运行模式
-
-## 📋 模板文件 (templates/)
-
-### package-template.json
-
-新包的 package.json 模板文件。
-
-**模板变量：**
-
-- `{{PACKAGE_NAME}}`: 包名
-- `{{PACKAGE_DESCRIPTION}}`: 包描述
-- `{{AUTHOR}}`: 作者
-- `{{LICENSE}}`: 许可证
-
 ## 🚀 快速开始
 
-### 1. 创建新包
-
+### 安装依赖
 ```bash
-tsx tools/package/create-package.ts my-package --vue --description "我的新包"
+pnpm install
 ```
 
-### 2. 标准化配置
-
+### 启动开发环境
 ```bash
-tsx tools/package/standardize-packages.ts
+# 标准开发模式
+pnpm dev
+
+# 增强开发模式（推荐）
+pnpm dev:enhanced
+
+# 调试模式
+pnpm dev:debug
 ```
 
-### 3. 发布包
-
+### 运行测试
 ```bash
-# 添加变更集
-pnpm changeset
+# 运行所有测试
+pnpm test
 
-# 发布
-tsx tools/release/version-manager.ts
+# 生成测试覆盖率报告
+pnpm test:coverage
 ```
 
-## 🔧 依赖关系
+### 构建项目
+```bash
+# 构建所有包
+pnpm build
 
-所有工具都依赖以下核心包：
+# 构建特定包
+pnpm build:packages --filter @ldesign/color
+```
 
-- `tsx`: TypeScript 执行器
-- `@rollup/plugin-*`: Rollup 插件
-- `vitest`: 测试框架
-- `@playwright/test`: E2E 测试
-- `@changesets/cli`: 版本管理
+## 🛠️ 开发工具
 
-## 📝 开发规范
+### 增强开发服务器
+```bash
+# 启动增强开发服务器
+pnpm dev:enhanced
 
-1. **TypeScript 优先**: 所有工具使用 TypeScript 编写
-2. **ESM 模块**: 使用 ES 模块格式
-3. **类型安全**: 提供完整的类型定义
-4. **错误处理**: 完善的错误处理和日志
-5. **文档完整**: 详细的使用说明和示例
+# 启动特定包的开发服务器
+pnpm dev:enhanced --packages engine,color
+
+# 启动带测试监听的开发服务器
+pnpm dev:enhanced --test
+
+# 自定义端口
+pnpm dev:enhanced --port 4000
+
+# 自动打开浏览器
+pnpm dev:enhanced --open
+```
+
+**功能特性：**
+- 🔥 智能热重载
+- 🐛 增强错误提示
+- 📊 性能监控
+- 🔍 实时代码检查
+- 🎯 多包并行开发
+
+### 代码质量检查
+```bash
+# 运行 ESLint 检查
+pnpm lint
+
+# 自动修复代码问题
+pnpm lint:fix
+
+# TypeScript 类型检查
+pnpm type-check
+
+# 格式化代码
+pnpm format
+```
+
+### 开发工具配置
+```typescript
+// tools/configs/dev-tools.ts
+import { createDevToolsConfig } from './dev-tools'
+
+const config = createDevToolsConfig({
+  hmr: true,
+  sourcemap: true,
+  debug: true,
+  port: 3000
+})
+```
+
+## 🧪 测试工具
+
+### 自动化测试生成
+```bash
+# 为特定包生成测试文件
+tsx tools/testing/test-generator.ts color
+
+# 生成所有包的测试文件
+pnpm test:generate:all
+```
+
+### 测试运行和监控
+```bash
+# 运行所有测试
+pnpm test
+
+# 运行特定包测试
+pnpm test --filter @ldesign/color
+
+# 监听模式运行测试
+pnpm test:watch
+
+# 生成详细覆盖率报告
+pnpm test:coverage:detail
+
+# 监听所有包测试
+pnpm test:watch:all
+```
+
+### 测试覆盖率分析
+```bash
+# 生成覆盖率报告
+tsx tools/testing/coverage-reporter.ts
+
+# 查看覆盖率详情
+open coverage/index.html
+```
+
+**测试工具特性：**
+- 🤖 自动生成测试用例
+- 📊 详细覆盖率报告
+- 🔄 实时测试监听
+- 🎯 智能测试建议
+
+## ⚡ 性能工具
+
+### 包大小分析
+```bash
+# 分析包大小
+pnpm size
+
+# 详细包分析
+pnpm size:analyze
+
+# 性能监控
+pnpm performance:monitor
+
+# 性能分析
+pnpm performance:analyze
+```
+
+### Bundle 分析
+```bash
+# 运行 bundle 分析器
+tsx tools/performance/bundle-analyzer.ts
+
+# 分析特定包
+tsx tools/performance/bundle-analyzer.ts --package color
+
+# 生成分析报告
+tsx tools/performance/bundle-analyzer.ts --report
+```
+
+### 性能监控
+```bash
+# 启动性能监控
+tsx tools/performance/performance-monitor.ts
+
+# 监控特定包
+tsx tools/performance/performance-monitor.ts --package engine
+
+# 生成性能报告
+tsx tools/performance/performance-monitor.ts --report
+```
+
+**性能工具特性：**
+- 📦 包大小监控
+- 🚀 性能基准测试
+- 📊 详细分析报告
+- ⚠️ 性能回归检测
+
+## 📚 文档工具
+
+### 自动文档生成
+```bash
+# 为特定包生成文档
+tsx tools/scripts/docs/documentation-generator.ts color
+
+# 生成所有包的文档
+pnpm docs:generate:all
+
+# 验证文档示例
+pnpm docs:validate:all
+```
+
+### 示例验证
+```bash
+# 验证特定包的示例
+tsx tools/scripts/docs/example-validator.ts color
+
+# 验证所有示例
+tsx tools/scripts/docs/validate-all-examples.ts
+```
+
+### 文档开发
+```bash
+# 启动文档开发服务器
+pnpm docs:dev
+
+# 构建文档
+pnpm docs:build
+
+# 预览文档
+pnpm docs:preview
+```
+
+**文档工具特性：**
+- 📝 自动 API 文档生成
+- 🧪 示例代码验证
+- 🎮 交互式演示
+- 🔄 实时文档更新
+
+## 🚀 部署工具
+
+### 部署验证
+```bash
+# 验证所有包的部署
+tsx tools/scripts/deploy/deployment-validator.ts
+
+# 验证特定包
+tsx tools/scripts/deploy/deployment-validator.ts color
+
+# 运行部署验证
+pnpm deploy:validate
+```
+
+### 发布流程
+```bash
+# 发布到 staging
+pnpm deploy:staging
+
+# 发布到 production
+pnpm deploy:production
+
+# 回滚部署
+pnpm deploy:rollback
+```
+
+**部署工具特性：**
+- ✅ 自动部署验证
+- 🔄 一键回滚
+- 📊 部署状态监控
+- 🛡️ 安全检查
+
+## 🏗️ 微前端工具
+
+### 微前端部署
+```bash
+# 部署到开发环境
+pnpm microfrontend:deploy:dev
+
+# 部署到测试环境
+pnpm microfrontend:deploy:staging
+
+# 部署到生产环境
+pnpm microfrontend:deploy:prod
+
+# 部署特定包
+tsx tools/scripts/microfrontend/deployment-manager.ts production color,engine
+```
+
+### 模块联邦配置
+```bash
+# 生成模块联邦配置
+tsx tools/configs/microfrontend/module-federation.config.ts
+```
+
+**微前端特性：**
+- 🔗 模块联邦支持
+- 📦 独立包部署
+- 🔄 运行时动态加载
+- 🎯 版本管理
+
+## 🌟 生态系统工具
+
+### 插件市场
+```bash
+# 搜索插件
+pnpm ecosystem:plugin:search
+
+# 安装插件
+pnpm ecosystem:plugin:install plugin-name
+
+# 发布插件
+pnpm ecosystem:plugin:publish
+
+# 创建插件脚手架
+pnpm ecosystem:plugin:scaffold my-plugin
+```
+
+### 社区贡献
+```bash
+# 注册为贡献者
+pnpm ecosystem:community:register
+
+# 提交贡献
+pnpm ecosystem:community:contribute
+```
+
+### 插件开发
+```bash
+# 创建新插件
+tsx tools/ecosystem/plugin-scaffold.ts my-awesome-plugin
+
+# 插件开发选项
+tsx tools/ecosystem/plugin-scaffold.ts my-plugin --type ui-component --typescript
+```
+
+**生态系统特性：**
+- 🔌 插件市场
+- 👥 社区贡献机制
+- 🏆 贡献者奖励系统
+- 🛠️ 插件开发脚手架
+
+## 🎯 高级功能工具
+
+### 分析集成
+```bash
+# 设置分析服务
+pnpm advanced:analytics:setup
+
+# 配置分析集成
+tsx tools/advanced-features/analytics-integration.ts setup
+```
+
+### 高级缓存
+```bash
+# 缓存基准测试
+pnpm advanced:cache:benchmark
+
+# 缓存性能分析
+tsx tools/advanced-features/advanced-cache-manager.ts benchmark
+```
+
+### 表单管理
+```bash
+# 表单生成器
+pnpm advanced:form:generator
+
+# 创建高级表单
+tsx tools/advanced-features/advanced-form-manager.ts generate
+```
+
+**高级功能特性：**
+- 📊 多平台分析集成
+- 💾 智能多层缓存
+- 📝 动态表单系统
+- 🔧 企业级功能
+
+## ❓ 常见问题
+
+### Q: 如何开始开发一个新包？
+```bash
+# 1. 创建包目录结构
+mkdir packages/my-package
+
+# 2. 生成包模板
+tsx tools/scripts/create-package.ts my-package
+
+# 3. 启动开发
+pnpm dev:enhanced --packages my-package
+```
+
+### Q: 如何运行特定包的测试？
+```bash
+# 运行特定包测试
+pnpm test --filter @ldesign/color
+
+# 生成测试文件
+tsx tools/testing/test-generator.ts color
+
+# 监听测试
+pnpm test:watch --filter @ldesign/color
+```
+
+### Q: 如何优化包的性能？
+```bash
+# 1. 分析包大小
+pnpm size:analyze
+
+# 2. 运行性能监控
+pnpm performance:monitor
+
+# 3. 查看分析报告
+tsx tools/performance/bundle-analyzer.ts --package my-package
+```
+
+### Q: 如何发布一个插件？
+```bash
+# 1. 创建插件
+pnpm ecosystem:plugin:scaffold my-plugin
+
+# 2. 开发插件
+cd my-plugin && pnpm dev
+
+# 3. 发布插件
+pnpm ecosystem:plugin:publish
+```
+
+### Q: 如何贡献代码？
+```bash
+# 1. 注册为贡献者
+pnpm ecosystem:community:register
+
+# 2. 提交贡献
+pnpm ecosystem:community:contribute
+
+# 3. 查看贡献统计
+tsx tools/ecosystem/community-contribution.ts stats
+```
+
+## 🎉 快速命令参考
+
+```bash
+# 开发
+pnpm dev:enhanced                    # 启动增强开发服务器
+pnpm dev:debug                       # 调试模式
+
+# 测试
+pnpm test:coverage:detail            # 详细测试覆盖率
+pnpm test:generate:all               # 生成所有测试
+
+# 性能
+pnpm performance:analyze             # 性能分析
+pnpm size:analyze                    # 包大小分析
+
+# 文档
+pnpm docs:generate:all               # 生成所有文档
+pnpm docs:validate:all               # 验证所有示例
+
+# 部署
+pnpm deploy:validate                 # 部署验证
+pnpm microfrontend:deploy:prod       # 微前端生产部署
+
+# 生态系统
+pnpm ecosystem:plugin:scaffold       # 创建插件
+pnpm ecosystem:community:register    # 注册贡献者
+
+# 高级功能
+pnpm advanced:analytics:setup        # 设置分析
+pnpm advanced:cache:benchmark        # 缓存基准测试
+```
+
+## 📞 获取帮助
+
+- 📖 查看详细文档：`docs/` 目录
+- 🐛 报告问题：GitHub Issues
+- 💬 社区讨论：GitHub Discussions
+- 📧 联系维护者：通过 GitHub
 
 ## 🤝 贡献指南
 
@@ -299,3 +521,9 @@ tsx tools/release/version-manager.ts
 ## 📄 许可证
 
 MIT © LDesign Team
+
+---
+
+🎯 **提示**: 所有工具都支持 `--help` 参数来查看详细使用说明！
+
+例如：`tsx tools/testing/test-generator.ts --help`

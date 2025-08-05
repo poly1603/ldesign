@@ -30,9 +30,8 @@ export { ResponsiveManager } from './responsive'
 // 动画模块
 export { AnimationEngine } from './animation'
 
-// Vue3 集成模块（可选导入）
-// 暂时注释掉 Vue 模块，避免构建问题
-// export * from './vue'
+// Vue3 集成模块
+export * from './vue'
 
 // 类型定义
 export type {

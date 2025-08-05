@@ -90,8 +90,19 @@ export class DefaultLoader implements Loader {
    */
   protected async loadLanguagePackage(locale: string): Promise<LanguagePackage> {
     try {
-      // 动态导入语言包
-      const localeModule = await import(`../locales/${locale}/index.js`)
+      // 使用预定义的语言包映射，避免动态导入问题
+      const localeMap: Record<string, () => Promise<any>> = {
+        'en': () => import('../locales/en'),
+        'zh-CN': () => import('../locales/zh-CN'),
+        'ja': () => import('../locales/ja'),
+      }
+
+      const loader = localeMap[locale]
+      if (!loader) {
+        throw new Error(`Language package for '${locale}' is not available`)
+      }
+
+      const localeModule = await loader()
 
       if (!localeModule.default) {
         throw new Error(`Language package for '${locale}' does not have a default export`)

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "LDesign API Documentation",
+  "entryPoints": [
+    "packages/engine/src/index.ts",
+    "packages/http/src/index.ts",
+    "packages/crypto/src/index.ts",
+    "packages/device/src/index.ts"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "docs/api/generated",
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "markdown",
+  "readme": "README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "excludeInternal": false,
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Classes",
+    "Interfaces",
+    "Types",
+    "Functions",
+    "Variables",
+    "Other"
+  ],
+  "sort": ["source-order"],
+  "kindSortOrder": [
+    "Document",
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Constructor",
+    "Property",
+    "Variable",
+    "Function",
+    "Accessor",
+    "Method",
+    "Parameter",
+    "TypeParameter",
+    "TypeLiteral",
+    "CallSignature",
+    "ConstructorSignature",
+    "IndexSignature",
+    "GetSignature",
+    "SetSignature"
+  ],
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "searchInComments": true,
+  "searchInDocuments": true,
+  "cleanOutputDir": true,
+  "titleLink": "https://ldesign.dev",
+  "navigationLinks": {
+    "GitHub": "https://github.com/ldesign-org/ldesign",
+    "Documentation": "https://ldesign.dev/docs",
+    "Examples": "https://ldesign.dev/examples"
+  },
+  "sidebarLinks": {
+    "Getting Started": "https://ldesign.dev/guide/getting-started",
+    "Best Practices": "https://ldesign.dev/best-practices",
+    "Contributing": "https://ldesign.dev/contributing"
+  },
+  "githubPages": false,
+  "gitRevision": "main",
+  "gitRemote": "origin",
+  "sourceLinkTemplate": "https://github.com/ldesign-org/ldesign/blob/{gitRevision}/{path}#L{line}",
+  "blockTags": [
+    "@alpha",
+    "@beta",
+    "@deprecated",
+    "@example",
+    "@experimental",
+    "@internal",
+    "@override",
+    "@packageDocumentation",
+    "@public",
+    "@readonly",
+    "@sealed",
+    "@virtual"
+  ],
+  "inlineTags": [
+    "@inheritDoc",
+    "@label",
+    "@link",
+    "@linkcode",
+    "@linkplain"
+  ],
+  "modifierTags": [
+    "@alpha",
+    "@beta",
+    "@deprecated",
+    "@experimental",
+    "@internal",
+    "@override",
+    "@packageDocumentation",
+    "@public",
+    "@readonly",
+    "@sealed",
+    "@virtual"
+  ]
+}
