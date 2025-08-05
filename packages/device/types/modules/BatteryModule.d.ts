@@ -1,8 +1,5 @@
 import { DeviceModule, BatteryInfo } from '../types/index.js';
 
-/**
- * 电池信息模块
- */
 declare class BatteryModule implements DeviceModule {
     name: string;
     private batteryInfo;

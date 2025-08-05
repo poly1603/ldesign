@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ldesign/device": "file:../.."
+    "@ldesign/device": "workspace:*"
   },
   "devDependencies": {
     "vite": "^5.0.0"

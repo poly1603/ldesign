@@ -67,8 +67,17 @@ describe('deviceDetector', () => {
     })
 
     it('应该正确检测屏幕方向', () => {
+      // 模拟横屏环境
+      vi.stubGlobal('innerWidth', 1920)
+      vi.stubGlobal('innerHeight', 1080)
+      // 移除 screen.orientation 以使用 window 尺寸判断
+      Object.defineProperty(screen, 'orientation', { value: undefined, configurable: true })
+
       detector = new DeviceDetector()
       expect(detector.getOrientation()).toBe('landscape')
+
+      // 恢复
+      vi.unstubAllGlobals()
     })
 
     it('应该正确检测触摸设备', () => {
@@ -77,6 +86,12 @@ describe('deviceDetector', () => {
     })
 
     it('应该返回完整的设备信息', () => {
+      // 模拟横屏环境
+      vi.stubGlobal('innerWidth', 1920)
+      vi.stubGlobal('innerHeight', 1080)
+      // 移除 screen.orientation 以使用 window 尺寸判断
+      Object.defineProperty(screen, 'orientation', { value: undefined, configurable: true })
+
       detector = new DeviceDetector()
       const deviceInfo = detector.getDeviceInfo()
 

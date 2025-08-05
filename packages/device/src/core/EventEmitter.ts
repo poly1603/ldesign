@@ -3,8 +3,8 @@ import type { EventListener } from '../types'
 /**
  * 简单的事件发射器实现
  */
-export class EventEmitter<T extends Record<string, any> = Record<string, any>> {
-  private events: Map<keyof T, Set<EventListener>> = new Map()
+export class EventEmitter<T extends Record<string, unknown> = Record<string, unknown>> {
+  private events: Map<keyof T, Set<EventListener<unknown>>> = new Map()
 
   /**
    * 添加事件监听器
@@ -13,7 +13,7 @@ export class EventEmitter<T extends Record<string, any> = Record<string, any>> {
     if (!this.events.has(event)) {
       this.events.set(event, new Set())
     }
-    this.events.get(event)!.add(listener)
+    this.events.get(event)!.add(listener as EventListener<unknown>)
     return this
   }
 
@@ -37,7 +37,7 @@ export class EventEmitter<T extends Record<string, any> = Record<string, any>> {
       return this
 
     if (listener) {
-      listeners.delete(listener)
+      listeners.delete(listener as EventListener<unknown>)
       if (listeners.size === 0) {
         this.events.delete(event)
       }

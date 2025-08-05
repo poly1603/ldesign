@@ -4,10 +4,19 @@ import { safeNavigatorAccess } from '../utils'
 /**
  * 电池信息模块
  */
+interface BatteryManager {
+  level: number
+  charging: boolean
+  chargingTime: number
+  dischargingTime: number
+  addEventListener: (type: string, listener: () => void) => void
+  removeEventListener: (type: string, listener: () => void) => void
+}
+
 export class BatteryModule implements DeviceModule {
   name = 'battery'
   private batteryInfo: BatteryInfo
-  private battery: any
+  private battery: BatteryManager | null = null
   private eventHandlers: Map<string, () => void> = new Map()
 
   constructor() {
@@ -25,11 +34,12 @@ export class BatteryModule implements DeviceModule {
       // 获取电池 API
       this.battery = await safeNavigatorAccess(
         async (nav) => {
-          if ('getBattery' in nav) {
-            return await (nav as any).getBattery()
+          if ('getBattery' in nav && nav.getBattery) {
+            return await nav.getBattery()
           }
           // 降级到旧版本的 API
-          return (nav as any).battery || (nav as any).mozBattery || (nav as any).webkitBattery
+          const navAny = nav as unknown as Record<string, unknown>
+          return (navAny.battery || navAny.mozBattery || navAny.webkitBattery) as BatteryManager | null
         },
         null,
       )
@@ -195,7 +205,9 @@ export class BatteryModule implements DeviceModule {
         this.updateBatteryInfo()
       }
       this.eventHandlers.set(event, handler)
-      this.battery.addEventListener(event, handler)
+      if (this.battery) {
+        this.battery.addEventListener(event, handler)
+      }
     })
   }
 
@@ -207,7 +219,9 @@ export class BatteryModule implements DeviceModule {
       return
 
     this.eventHandlers.forEach((handler, event) => {
-      this.battery.removeEventListener(event, handler)
+      if (this.battery) {
+        this.battery.removeEventListener(event, handler)
+      }
     })
     this.eventHandlers.clear()
   }

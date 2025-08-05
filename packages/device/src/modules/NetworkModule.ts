@@ -1,13 +1,23 @@
 import type { DeviceModule, NetworkInfo, NetworkStatus, NetworkType } from '../types'
 import { safeNavigatorAccess } from '../utils'
 
+interface NetworkConnection {
+  type?: string
+  effectiveType?: string
+  downlink?: number
+  rtt?: number
+  saveData?: boolean
+  addEventListener?: (type: string, listener: () => void) => void
+  removeEventListener?: (type: string, listener: () => void) => void
+}
+
 /**
  * 网络信息模块
  */
 export class NetworkModule implements DeviceModule {
   name = 'network'
   private networkInfo: NetworkInfo
-  private connection: any
+  private connection: NetworkConnection | null = null
   private onlineHandler?: () => void
   private offlineHandler?: () => void
   private changeHandler?: () => void
@@ -25,7 +35,10 @@ export class NetworkModule implements DeviceModule {
 
     // 获取网络连接对象
     this.connection = safeNavigatorAccess(
-      nav => (nav as any).connection || (nav as any).mozConnection || (nav as any).webkitConnection,
+      (nav) => {
+        const navAny = nav as unknown as Record<string, unknown>
+        return (navAny.connection || navAny.mozConnection || navAny.webkitConnection) as NetworkConnection | null
+      },
       null,
     )
 
@@ -112,7 +125,10 @@ export class NetworkModule implements DeviceModule {
 
     const status: NetworkStatus = navigator.onLine ? 'online' : 'offline'
     const connection = safeNavigatorAccess(
-      nav => (nav as any).connection || (nav as any).mozConnection || (nav as any).webkitConnection,
+      (nav) => {
+        const navAny = nav as unknown as Record<string, unknown>
+        return (navAny.connection || navAny.mozConnection || navAny.webkitConnection) as NetworkConnection | null
+      },
       null,
     )
 
@@ -188,7 +204,9 @@ export class NetworkModule implements DeviceModule {
       this.changeHandler = () => {
         this.updateNetworkInfo()
       }
-      this.connection.addEventListener('change', this.changeHandler)
+      if (this.connection?.addEventListener) {
+        this.connection.addEventListener('change', this.changeHandler)
+      }
     }
   }
 
@@ -209,7 +227,7 @@ export class NetworkModule implements DeviceModule {
       this.offlineHandler = undefined
     }
 
-    if (this.connection && this.changeHandler && 'removeEventListener' in this.connection) {
+    if (this.connection?.removeEventListener && this.changeHandler) {
       this.connection.removeEventListener('change', this.changeHandler)
       this.changeHandler = undefined
     }

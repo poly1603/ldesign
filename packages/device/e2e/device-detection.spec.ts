@@ -93,12 +93,12 @@ test.describe('设备检测功能', () => {
       const { DeviceDetector } = window as any
       const detector = new DeviceDetector()
 
-      // 存储到 window 对象供后续使用
-      ;(window as any).testDetector = detector
-      ;(window as any).deviceChanges = []
+        // 存储到 window 对象供后续使用
+        ; (window as any).testDetector = detector
+      ; (window as any).deviceChanges = []
 
       detector.on('deviceChange', (info: any) => {
-        ;(window as any).deviceChanges.push(info)
+        ; (window as any).deviceChanges.push(info)
       })
     })
 
@@ -331,7 +331,7 @@ test.describe('生命周期管理', () => {
       const detector = new DeviceDetector()
 
       // 添加事件监听器
-      detector.on('deviceChange', () => {})
+      detector.on('deviceChange', () => { })
       const listenerCountBefore = detector.listenerCount('deviceChange')
 
       // 销毁检测器

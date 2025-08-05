@@ -6,7 +6,7 @@ export {
   GeolocationModule,
   ModuleLoader,
   NetworkModule,
-} from '../index'
+} from '../../index'
 
 // 重新导出类型
 export type {
@@ -26,7 +26,7 @@ export type {
   NetworkType,
   Orientation,
   UseDeviceReturn,
-} from '../types'
+} from '../../types'
 
 // Composition API
 export {

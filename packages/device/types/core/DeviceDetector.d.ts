@@ -1,4 +1,4 @@
-import { DeviceDetectorEvents, DeviceDetectorOptions, DeviceType, Orientation, DeviceInfo } from '../types/index.js';
+import { DeviceDetectorEvents, DeviceDetectorOptions, DeviceType, Orientation, DeviceInfo, DeviceModule } from '../types/index.js';
 import { EventEmitter } from './EventEmitter.js';
 
 /**
@@ -11,6 +11,11 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     private resizeHandler?;
     private orientationHandler?;
     private isDestroyed;
+    private cachedUserAgent?;
+    private cachedOS?;
+    private cachedBrowser?;
+    private lastDetectionTime;
+    private readonly minDetectionInterval;
     constructor(options?: DeviceDetectorOptions);
     /**
      * 获取当前设备类型
@@ -47,7 +52,7 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     /**
      * 动态加载扩展模块
      */
-    loadModule<T = any>(name: string): Promise<T>;
+    loadModule<T extends DeviceModule = DeviceModule>(name: string): Promise<T>;
     /**
      * 卸载扩展模块
      */
@@ -72,6 +77,14 @@ declare class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
      * 设置事件监听器
      */
     private setupEventListeners;
+    /**
+     * 处理设备变化 - 优化版本
+     */
+    private handleDeviceChange;
+    /**
+     * 检查设备信息是否发生变化
+     */
+    private hasDeviceInfoChanged;
     /**
      * 移除事件监听器
      */

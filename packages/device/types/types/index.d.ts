@@ -117,7 +117,7 @@ type EventListener<T = any> = (data: T) => void;
 /**
  * 设备检测器事件映射
  */
-interface DeviceDetectorEvents {
+interface DeviceDetectorEvents extends Record<string, unknown> {
     deviceChange: DeviceInfo;
     orientationChange: Orientation;
     resize: {
@@ -149,7 +149,34 @@ interface DeviceModule {
     /** 销毁模块 */
     destroy: () => Promise<void> | void;
     /** 获取模块数据 */
-    getData: () => any;
+    getData: () => unknown;
+}
+/**
+ * 网络模块接口
+ */
+interface NetworkModule extends DeviceModule {
+    getData: () => NetworkInfo;
+    isOnline: () => boolean;
+    getConnectionType: () => string;
+}
+/**
+ * 电池模块接口
+ */
+interface BatteryModule extends DeviceModule {
+    getData: () => BatteryInfo;
+    getLevel: () => number;
+    isCharging: () => boolean;
+    getBatteryStatus: () => string;
+}
+/**
+ * 地理位置模块接口
+ */
+interface GeolocationModule extends DeviceModule {
+    getData: () => GeolocationInfo | null;
+    isSupported: () => boolean;
+    getCurrentPosition: () => Promise<GeolocationInfo>;
+    startWatching: (callback?: (position: GeolocationInfo) => void) => void;
+    stopWatching: () => void;
 }
 /**
  * Vue3 集成相关类型
@@ -192,4 +219,20 @@ declare module 'vue' {
     }
 }
 
-export type { BatteryInfo, DeviceDetectorEvents, DeviceDetectorOptions, DeviceDirectiveValue, DeviceInfo, DeviceModule, DevicePluginOptions, DeviceType, EventListener, GeolocationInfo, ModuleLoader, NetworkInfo, NetworkStatus, NetworkType, Orientation, UseDeviceReturn };
+/**
+ * 扩展 Navigator 接口以支持 Battery API
+ */
+declare global {
+    interface Navigator {
+        getBattery?: () => Promise<{
+            level: number;
+            charging: boolean;
+            chargingTime: number;
+            dischargingTime: number;
+            addEventListener: (type: string, listener: EventListener) => void;
+            removeEventListener: (type: string, listener: EventListener) => void;
+        }>;
+    }
+}
+
+export type { BatteryInfo, BatteryModule, DeviceDetectorEvents, DeviceDetectorOptions, DeviceDirectiveValue, DeviceInfo, DeviceModule, DevicePluginOptions, DeviceType, EventListener, GeolocationInfo, GeolocationModule, ModuleLoader, NetworkInfo, NetworkModule, NetworkStatus, NetworkType, Orientation, UseDeviceReturn };

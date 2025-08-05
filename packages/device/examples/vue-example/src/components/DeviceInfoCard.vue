@@ -30,12 +30,12 @@ const {
 
       <div class="info-item">
         <span class="label">屏幕尺寸:</span>
-        <span class="value">{{ deviceInfo.width }} × {{ deviceInfo.height }}</span>
+        <span class="value">{{ deviceInfo?.width || '-' }} × {{ deviceInfo?.height || '-' }}</span>
       </div>
 
       <div class="info-item">
         <span class="label">像素比:</span>
-        <span class="value">{{ deviceInfo.pixelRatio }}</span>
+        <span class="value">{{ deviceInfo?.pixelRatio || '-' }}</span>
       </div>
 
       <div class="info-item">
@@ -62,12 +62,12 @@ const {
     <div class="system-info">
       <div class="info-item">
         <span class="label">操作系统:</span>
-        <span class="value">{{ deviceInfo.os.name }} {{ deviceInfo.os.version }}</span>
+        <span class="value">{{ deviceInfo?.os?.name || '-' }} {{ deviceInfo?.os?.version || '' }}</span>
       </div>
 
       <div class="info-item">
         <span class="label">浏览器:</span>
-        <span class="value">{{ deviceInfo.browser.name }} {{ deviceInfo.browser.version }}</span>
+        <span class="value">{{ deviceInfo?.browser?.name || '-' }} {{ deviceInfo?.browser?.version || '' }}</span>
       </div>
     </div>
 

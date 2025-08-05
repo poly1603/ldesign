@@ -2,6 +2,7 @@ import type {
   DeviceDetectorEvents,
   DeviceDetectorOptions,
   DeviceInfo,
+  DeviceModule,
   DeviceType,
   Orientation,
 } from '../types'
@@ -27,6 +28,13 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   private resizeHandler?: () => void
   private orientationHandler?: () => void
   private isDestroyed = false
+
+  // 性能优化：缓存计算结果
+  private cachedUserAgent?: string
+  private cachedOS?: { name: string, version: string }
+  private cachedBrowser?: { name: string, version: string }
+  private lastDetectionTime = 0
+  private readonly minDetectionInterval = 16 // 约60fps
 
   constructor(options: DeviceDetectorOptions = {}) {
     super()
@@ -102,39 +110,19 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * 刷新设备信息
    */
   refresh(): void {
-    const oldDeviceInfo = this.currentDeviceInfo
-    this.currentDeviceInfo = this.detectDevice()
-
-    // 检查设备类型是否发生变化
-    if (oldDeviceInfo.type !== this.currentDeviceInfo.type) {
-      this.emit('deviceChange', this.currentDeviceInfo)
-    }
-
-    // 检查方向是否发生变化
-    if (oldDeviceInfo.orientation !== this.currentDeviceInfo.orientation) {
-      this.emit('orientationChange', this.currentDeviceInfo.orientation)
-    }
-
-    // 检查尺寸是否发生变化
-    if (
-      oldDeviceInfo.width !== this.currentDeviceInfo.width
-      || oldDeviceInfo.height !== this.currentDeviceInfo.height
-    ) {
-      this.emit('resize', {
-        width: this.currentDeviceInfo.width,
-        height: this.currentDeviceInfo.height,
-      })
-    }
+    // 强制重新检测，忽略频率限制
+    this.lastDetectionTime = 0
+    this.handleDeviceChange()
   }
 
   /**
    * 动态加载扩展模块
    */
-  async loadModule<T = any>(name: string): Promise<T> {
+  async loadModule<T extends DeviceModule = DeviceModule>(name: string): Promise<T> {
     if (this.isDestroyed) {
       throw new Error('DeviceDetector has been destroyed')
     }
-    return this.moduleLoader.load<T>(name)
+    return this.moduleLoader.loadModuleInstance<T>(name)
   }
 
   /**
@@ -175,6 +163,11 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
     // 清理所有事件监听器
     this.removeAllListeners()
+
+    // 清理缓存
+    this.cachedUserAgent = undefined
+    this.cachedOS = undefined
+    this.cachedBrowser = undefined
   }
 
   /**
@@ -196,9 +189,26 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       }
     }
 
+    // 性能优化：限制检测频率
+    const now = performance.now()
+    if (now - this.lastDetectionTime < this.minDetectionInterval) {
+      return this.currentDeviceInfo
+    }
+    this.lastDetectionTime = now
+
     const width = window.innerWidth
     const height = window.innerHeight
     const userAgent = navigator.userAgent
+
+    // 性能优化：缓存用户代理解析结果
+    let os = this.cachedOS
+    let browser = this.cachedBrowser
+
+    if (this.cachedUserAgent !== userAgent) {
+      this.cachedUserAgent = userAgent
+      this.cachedOS = os = parseOS(userAgent)
+      this.cachedBrowser = browser = parseBrowser(userAgent)
+    }
 
     return {
       type: getDeviceTypeByWidth(width, this.options.breakpoints),
@@ -208,8 +218,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       pixelRatio: getPixelRatio(),
       isTouchDevice: isTouchDevice(),
       userAgent,
-      os: parseOS(userAgent),
-      browser: parseBrowser(userAgent),
+      os: os!,
+      browser: browser!,
     }
   }
 
@@ -224,29 +234,70 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     if (this.options.enableResize) {
       this.resizeHandler = debounce(() => {
         if (!this.isDestroyed) {
-          this.refresh()
+          this.handleDeviceChange()
         }
       }, this.options.debounceDelay)
 
-      window.addEventListener('resize', this.resizeHandler)
+      window.addEventListener('resize', this.resizeHandler, { passive: true })
     }
 
     // 设备方向监听
     if (this.options.enableOrientation) {
       this.orientationHandler = debounce(() => {
         if (!this.isDestroyed) {
-          this.refresh()
+          this.handleDeviceChange()
         }
       }, this.options.debounceDelay)
 
       // 监听 orientationchange 事件
-      window.addEventListener('orientationchange', this.orientationHandler)
+      window.addEventListener('orientationchange', this.orientationHandler, { passive: true })
 
       // 同时监听 resize 事件作为备选方案
       if (!this.options.enableResize) {
-        window.addEventListener('resize', this.orientationHandler)
+        window.addEventListener('resize', this.orientationHandler, { passive: true })
       }
     }
+  }
+
+  /**
+   * 处理设备变化 - 优化版本
+   */
+  private handleDeviceChange(): void {
+    const oldDeviceInfo = this.currentDeviceInfo
+    const newDeviceInfo = this.detectDevice()
+
+    // 只有在真正发生变化时才更新和触发事件
+    if (this.hasDeviceInfoChanged(oldDeviceInfo, newDeviceInfo)) {
+      this.currentDeviceInfo = newDeviceInfo
+
+      // 检查设备类型是否发生变化
+      if (oldDeviceInfo.type !== newDeviceInfo.type) {
+        this.emit('deviceChange', newDeviceInfo)
+      }
+
+      // 检查屏幕方向是否发生变化
+      if (oldDeviceInfo.orientation !== newDeviceInfo.orientation) {
+        this.emit('orientationChange', newDeviceInfo.orientation)
+      }
+
+      // 检查尺寸是否发生变化
+      if (oldDeviceInfo.width !== newDeviceInfo.width || oldDeviceInfo.height !== newDeviceInfo.height) {
+        this.emit('resize', { width: newDeviceInfo.width, height: newDeviceInfo.height })
+      }
+    }
+  }
+
+  /**
+   * 检查设备信息是否发生变化
+   */
+  private hasDeviceInfoChanged(oldInfo: DeviceInfo, newInfo: DeviceInfo): boolean {
+    return (
+      oldInfo.type !== newInfo.type
+      || oldInfo.orientation !== newInfo.orientation
+      || oldInfo.width !== newInfo.width
+      || oldInfo.height !== newInfo.height
+      || oldInfo.pixelRatio !== newInfo.pixelRatio
+    )
   }
 
   /**

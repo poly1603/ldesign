@@ -25,6 +25,11 @@
       "types": "./dist/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.js"
+    },
+    "./vue": {
+      "types": "./types/adapt/vue/index.d.ts",
+      "import": "./es/adapt/vue/index.js",
+      "require": "./lib/adapt/vue/index.js"
     }
   },
   "main": "dist/index.js",

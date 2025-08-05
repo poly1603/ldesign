@@ -1,10 +1,13 @@
 <script setup>
+import AdvancedFeatures from './components/AdvancedFeatures.vue'
 import BatteryInfoCard from './components/BatteryInfoCard.vue'
 import DeviceInfoCard from './components/DeviceInfoCard.vue'
 import DirectiveExample from './components/DirectiveExample.vue'
 import EventLog from './components/EventLog.vue'
 import GeolocationCard from './components/GeolocationCard.vue'
 import NetworkInfoCard from './components/NetworkInfoCard.vue'
+import PerformanceCard from './components/PerformanceCard.vue'
+import DebugTest from './components/DebugTest.vue'
 </script>
 
 <template>
@@ -27,10 +30,19 @@ import NetworkInfoCard from './components/NetworkInfoCard.vue'
 
         <!-- 地理位置信息卡片 -->
         <GeolocationCard />
+
+        <!-- 性能监控卡片 -->
+        <PerformanceCard />
+
+        <!-- 调试信息 -->
+        <DebugTest />
       </div>
 
       <!-- 指令示例 -->
-      <DirectiveExample />
+      <!-- <DirectiveExample /> -->
+
+      <!-- 高级功能演示 -->
+      <!-- <AdvancedFeatures /> -->
 
       <!-- 事件日志 -->
       <EventLog />

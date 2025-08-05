@@ -1,6 +1,11 @@
 import type { Directive, DirectiveBinding } from 'vue'
-import type { DeviceDirectiveValue, DeviceType } from '../../types'
-import { DeviceDetector } from '../../core/DeviceDetector'
+import type { DeviceDirectiveValue, DeviceInfo, DeviceType } from '../../../types'
+import { DeviceDetector } from '../../../core/DeviceDetector'
+
+interface ElementWithDeviceData extends HTMLElement {
+  __deviceChangeHandler?: (deviceInfo: DeviceInfo) => void
+  __deviceDetector?: DeviceDetector
+}
 
 // 全局设备检测器实例
 let globalDetector: DeviceDetector | null = null
@@ -98,19 +103,21 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
     updateElementVisibility(el, binding, currentType)
 
     // 监听设备变化
-    const handleDeviceChange = (deviceInfo: any) => {
+    const handleDeviceChange = (deviceInfo: DeviceInfo) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }
 
     detector.on('deviceChange', handleDeviceChange)
 
     // 将事件处理器存储到元素上，以便在卸载时移除
-    ;(el as any).__deviceChangeHandler = handleDeviceChange
-    ;(el as any).__deviceDetector = detector
+    const elementWithData = el as ElementWithDeviceData
+    elementWithData.__deviceChangeHandler = handleDeviceChange
+    elementWithData.__deviceDetector = detector
   },
 
   updated(el, binding) {
-    const detector = (el as any).__deviceDetector
+    const elementWithData = el as ElementWithDeviceData
+    const detector = elementWithData.__deviceDetector
     if (detector) {
       const currentType = detector.getDeviceType()
       updateElementVisibility(el, binding, currentType)
@@ -118,16 +125,17 @@ export const vDevice: Directive<HTMLElement, DeviceDirectiveValue> = {
   },
 
   unmounted(el) {
-    const detector = (el as any).__deviceDetector
-    const handler = (el as any).__deviceChangeHandler
+    const elementWithData = el as ElementWithDeviceData
+    const detector = elementWithData.__deviceDetector
+    const handler = elementWithData.__deviceChangeHandler
 
     if (detector && handler) {
       detector.off('deviceChange', handler)
     }
 
     // 清理引用
-    delete (el as any).__deviceChangeHandler
-    delete (el as any).__deviceDetector
+    delete elementWithData.__deviceChangeHandler
+    delete elementWithData.__deviceDetector
 
     // 恢复原始显示状态
     if (el.dataset.originalDisplay) {
@@ -155,12 +163,13 @@ export const vDeviceMobile: Directive<HTMLElement> = {
     const currentType = detector.getDeviceType()
     updateElementVisibility(el, binding, currentType)
 
-    const handleDeviceChange = (deviceInfo: any) => {
+    const handleDeviceChange = (deviceInfo: DeviceInfo) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }
     detector.on('deviceChange', handleDeviceChange)
-    ;(el as any).__deviceChangeHandler = handleDeviceChange
-    ;(el as any).__deviceDetector = detector
+    const elementWithData = el as ElementWithDeviceData
+    elementWithData.__deviceChangeHandler = handleDeviceChange
+    elementWithData.__deviceDetector = detector
   },
   updated(el) {
     const binding = {
@@ -171,7 +180,7 @@ export const vDeviceMobile: Directive<HTMLElement> = {
       instance: null,
       oldValue: null,
     }
-    const detector = (el as any).__deviceDetector
+    const detector = (el as ElementWithDeviceData).__deviceDetector
     if (detector) {
       const currentType = detector.getDeviceType()
       updateElementVisibility(el, binding, currentType)
@@ -194,12 +203,13 @@ export const vDeviceTablet: Directive<HTMLElement> = {
     const currentType = detector.getDeviceType()
     updateElementVisibility(el, binding, currentType)
 
-    const handleDeviceChange = (deviceInfo: any) => {
+    const handleDeviceChange = (deviceInfo: DeviceInfo) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }
     detector.on('deviceChange', handleDeviceChange)
-    ;(el as any).__deviceChangeHandler = handleDeviceChange
-    ;(el as any).__deviceDetector = detector
+    const elementWithData = el as ElementWithDeviceData
+    elementWithData.__deviceChangeHandler = handleDeviceChange
+    elementWithData.__deviceDetector = detector
   },
   updated(el) {
     const binding = {
@@ -210,7 +220,7 @@ export const vDeviceTablet: Directive<HTMLElement> = {
       instance: null,
       oldValue: null,
     }
-    const detector = (el as any).__deviceDetector
+    const detector = (el as ElementWithDeviceData).__deviceDetector
     if (detector) {
       const currentType = detector.getDeviceType()
       updateElementVisibility(el, binding, currentType)
@@ -233,12 +243,13 @@ export const vDeviceDesktop: Directive<HTMLElement> = {
     const currentType = detector.getDeviceType()
     updateElementVisibility(el, binding, currentType)
 
-    const handleDeviceChange = (deviceInfo: any) => {
+    const handleDeviceChange = (deviceInfo: DeviceInfo) => {
       updateElementVisibility(el, binding, deviceInfo.type)
     }
     detector.on('deviceChange', handleDeviceChange)
-    ;(el as any).__deviceChangeHandler = handleDeviceChange
-    ;(el as any).__deviceDetector = detector
+    const elementWithData = el as ElementWithDeviceData
+    elementWithData.__deviceChangeHandler = handleDeviceChange
+    elementWithData.__deviceDetector = detector
   },
   updated(el) {
     const binding = {
@@ -249,7 +260,7 @@ export const vDeviceDesktop: Directive<HTMLElement> = {
       instance: null,
       oldValue: null,
     }
-    const detector = (el as any).__deviceDetector
+    const detector = (el as ElementWithDeviceData).__deviceDetector
     if (detector) {
       const currentType = detector.getDeviceType()
       updateElementVisibility(el, binding, currentType)

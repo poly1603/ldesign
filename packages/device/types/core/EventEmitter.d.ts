@@ -3,7 +3,7 @@ import { EventListener } from '../types/index.js';
 /**
  * 简单的事件发射器实现
  */
-declare class EventEmitter<T extends Record<string, any> = Record<string, any>> {
+declare class EventEmitter<T extends Record<string, unknown> = Record<string, unknown>> {
     private events;
     /**
      * 添加事件监听器

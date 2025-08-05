@@ -7,9 +7,13 @@ declare class ModuleLoader implements ModuleLoader$1 {
     private modules;
     private loadingPromises;
     /**
-     * 加载模块
+     * 加载模块并返回数据
      */
-    load<T = any>(name: string): Promise<T>;
+    load<T = unknown>(name: string): Promise<T>;
+    /**
+     * 加载模块并返回模块实例
+     */
+    loadModuleInstance<T extends DeviceModule = DeviceModule>(name: string): Promise<T>;
     /**
      * 卸载模块
      */

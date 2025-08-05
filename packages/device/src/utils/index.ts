@@ -1,47 +1,235 @@
 import type { DeviceType, Orientation } from '../types'
 
 /**
- * 防抖函数
+ * 简单的 LRU 缓存实现
  */
-export function debounce<T extends (...args: any[]) => any>(
+class LRUCache<K, V> {
+  private cache = new Map<K, V>()
+  private maxSize: number
+
+  constructor(maxSize = 50) {
+    this.maxSize = maxSize
+  }
+
+  get(key: K): V | undefined {
+    const value = this.cache.get(key)
+    if (value !== undefined) {
+      // 重新插入以更新顺序
+      this.cache.delete(key)
+      this.cache.set(key, value)
+    }
+    return value
+  }
+
+  set(key: K, value: V): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    }
+    else if (this.cache.size >= this.maxSize) {
+      // 删除最旧的项
+      const firstKey = this.cache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey)
+      }
+    }
+    this.cache.set(key, value)
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+}
+
+// 全局缓存实例
+const userAgentCache = new LRUCache<string, { os: { name: string, version: string }, browser: { name: string, version: string } }>(20)
+
+/**
+ * 解析用户代理字符串（带缓存）
+ */
+function parseUserAgent(userAgent: string): { os: { name: string, version: string }, browser: { name: string, version: string } } {
+  // 检查缓存
+  const cached = userAgentCache.get(userAgent)
+  if (cached) {
+    return cached
+  }
+
+  // 解析 OS
+  const os = { name: 'unknown', version: 'unknown' }
+
+  // Windows
+  const windowsMatch = userAgent.match(/Windows NT (\d+\.\d+)/)
+  if (windowsMatch) {
+    os.name = 'Windows'
+    const version = windowsMatch[1]
+    const versionMap: Record<string, string> = {
+      '10.0': '10',
+      '6.3': '8.1',
+      '6.2': '8',
+      '6.1': '7',
+      '6.0': 'Vista',
+      '5.1': 'XP',
+    }
+    os.version = versionMap[version] || version
+  }
+  // macOS
+  else if (/Mac OS X/.test(userAgent)) {
+    os.name = 'macOS'
+    const macMatch = userAgent.match(/Mac OS X (\d+[._]\d+[._]?\d*)/)
+    if (macMatch) {
+      os.version = macMatch[1].replace(/_/g, '.')
+    }
+  }
+  // iOS
+  else if (/iPhone|iPad|iPod/.test(userAgent)) {
+    os.name = 'iOS'
+    const iosMatch = userAgent.match(/OS (\d+[._]\d+[._]?\d*)/)
+    if (iosMatch) {
+      os.version = iosMatch[1].replace(/_/g, '.')
+    }
+  }
+  // Android
+  else if (/Android/.test(userAgent)) {
+    os.name = 'Android'
+    const androidMatch = userAgent.match(/Android (\d+\.\d+)/)
+    if (androidMatch) {
+      os.version = androidMatch[1]
+    }
+  }
+  // Linux
+  else if (/Linux/.test(userAgent)) {
+    os.name = 'Linux'
+  }
+
+  // 解析浏览器
+  const browser = { name: 'unknown', version: 'unknown' }
+
+  // Chrome
+  const chromeMatch = userAgent.match(/Chrome\/(\d+)/)
+  if (chromeMatch && !/Edg/.test(userAgent)) {
+    browser.name = 'Chrome'
+    browser.version = chromeMatch[1]
+  }
+  // Edge
+  else if (/Edg/.test(userAgent)) {
+    browser.name = 'Edge'
+    const edgeMatch = userAgent.match(/Edg\/(\d+)/)
+    if (edgeMatch) {
+      browser.version = edgeMatch[1]
+    }
+  }
+  // Firefox
+  else if (/Firefox/.test(userAgent)) {
+    browser.name = 'Firefox'
+    const firefoxMatch = userAgent.match(/Firefox\/(\d+)/)
+    if (firefoxMatch) {
+      browser.version = firefoxMatch[1]
+    }
+  }
+  // Safari
+  else if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) {
+    browser.name = 'Safari'
+    const safariMatch = userAgent.match(/Version\/(\d+)/)
+    if (safariMatch) {
+      browser.version = safariMatch[1]
+    }
+  }
+
+  const result = { os, browser }
+  userAgentCache.set(userAgent, result)
+  return result
+}
+
+/**
+ * 高性能防抖函数
+ * @param func - 要防抖的函数
+ * @param wait - 等待时间（毫秒）
+ * @param immediate - 是否立即执行
+ */
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
+  immediate = false,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
+  let result: ReturnType<T>
+
   return (...args: Parameters<T>) => {
-    if (timeout)
+    const callNow = immediate && !timeout
+
+    if (timeout) {
       clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
+    }
+
+    timeout = setTimeout(() => {
+      timeout = null
+      if (!immediate) {
+        result = func(...args) as ReturnType<T>
+      }
+    }, wait)
+
+    if (callNow) {
+      result = func(...args) as ReturnType<T>
+    }
+
+    return result as void
   }
 }
 
 /**
- * 节流函数
+ * 高性能节流函数
+ * @param func - 要节流的函数
+ * @param wait - 等待时间（毫秒）
+ * @param options - 配置选项
+ * @param options.leading - 是否在开始时执行
+ * @param options.trailing - 是否在结束时执行
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
+  options: { leading?: boolean, trailing?: boolean } = {},
 ): (...args: Parameters<T>) => void {
-  let lastTime = 0
+  let timeout: NodeJS.Timeout | null = null
+  let previous = 0
+  const { leading = true, trailing = true } = options
+
   return (...args: Parameters<T>) => {
     const now = Date.now()
-    if (now - lastTime >= wait) {
-      lastTime = now
+
+    if (!previous && !leading) {
+      previous = now
+    }
+
+    const remaining = wait - (now - previous)
+
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+      previous = now
       func(...args)
+    }
+    else if (!timeout && trailing) {
+      timeout = setTimeout(() => {
+        previous = leading ? Date.now() : 0
+        timeout = null
+        func(...args)
+      }, remaining)
     }
   }
 }
 
 /**
  * 检测是否为移动设备
+ * @param userAgent - 可选的用户代理字符串，如果不提供则使用当前浏览器的 userAgent
  */
-export function isMobileDevice(): boolean {
-  if (typeof window === 'undefined')
+export function isMobileDevice(userAgent?: string): boolean {
+  if (typeof window === 'undefined' && !userAgent)
     return false
 
-  const userAgent = window.navigator.userAgent
+  const ua = userAgent || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
   const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-  return mobileRegex.test(userAgent)
+  return mobileRegex.test(ua)
 }
 
 /**
@@ -54,7 +242,7 @@ export function isTouchDevice(): boolean {
   return (
     'ontouchstart' in window
     || navigator.maxTouchPoints > 0
-    || (navigator as any).msMaxTouchPoints > 0
+    || ((navigator as unknown as Record<string, unknown>).msMaxTouchPoints as number || 0) > 0
   )
 }
 
@@ -74,118 +262,41 @@ export function getDeviceTypeByWidth(
 
 /**
  * 获取屏幕方向
+ * @param width - 可选的屏幕宽度，如果不提供则使用当前窗口宽度
+ * @param height - 可选的屏幕高度，如果不提供则使用当前窗口高度
  */
-export function getScreenOrientation(): Orientation {
-  if (typeof window === 'undefined')
+export function getScreenOrientation(width?: number, height?: number): Orientation {
+  if (typeof window === 'undefined' && (width === undefined || height === undefined))
     return 'landscape'
 
+  // 如果提供了宽高参数，直接使用参数判断
+  if (width !== undefined && height !== undefined) {
+    return width >= height ? 'landscape' : 'portrait'
+  }
+
   // 优先使用 screen.orientation API
-  if (screen.orientation)
+  if (typeof window !== 'undefined' && screen.orientation)
     return screen.orientation.angle === 0 || screen.orientation.angle === 180 ? 'portrait' : 'landscape'
 
   // 降级到窗口尺寸判断
-  return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape'
+  if (typeof window !== 'undefined')
+    return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape'
+
+  return 'landscape'
 }
 
 /**
- * 解析用户代理字符串获取操作系统信息
+ * 解析用户代理字符串获取操作系统信息（带缓存）
  */
 export function parseOS(userAgent: string): { name: string, version: string } {
-  const os = { name: 'unknown', version: 'unknown' }
-
-  // Windows
-  const windowsMatch = userAgent.match(/Windows NT (\d+\.\d+)/)
-  if (windowsMatch) {
-    os.name = 'Windows'
-    const version = windowsMatch[1]
-    const versionMap: Record<string, string> = {
-      '10.0': '10',
-      '6.3': '8.1',
-      '6.2': '8',
-      '6.1': '7',
-      '6.0': 'Vista',
-      '5.1': 'XP',
-    }
-    os.version = versionMap[version] || version
-  }
-  // macOS
-  else {
-    const macMatch = userAgent.match(/Mac OS X ([\d_]+)/)
-    if (macMatch) {
-      os.name = 'macOS'
-      os.version = macMatch[1].replace(/_/g, '.')
-    }
-    // iOS
-    else {
-      const iosMatch = userAgent.match(/OS ([\d_]+) like Mac OS X/)
-      if (iosMatch) {
-        os.name = 'iOS'
-        os.version = iosMatch[1].replace(/_/g, '.')
-      }
-      // Android
-      else {
-        const androidMatch = userAgent.match(/Android ([\d.]+)/)
-        if (androidMatch) {
-          os.name = 'Android'
-          os.version = androidMatch[1]
-        }
-        // Linux
-        else if (/Linux/.test(userAgent)) {
-          os.name = 'Linux'
-        }
-      }
-    }
-  }
-
-  return os
+  return parseUserAgent(userAgent).os
 }
 
 /**
- * 解析用户代理字符串获取浏览器信息
+ * 解析用户代理字符串获取浏览器信息（带缓存）
  */
 export function parseBrowser(userAgent: string): { name: string, version: string } {
-  const browser = { name: 'unknown', version: 'unknown' }
-
-  // Chrome
-  const chromeMatch = userAgent.match(/Chrome\/(\d+)/)
-  if (chromeMatch && !/Edg/.test(userAgent)) {
-    browser.name = 'Chrome'
-    browser.version = chromeMatch[1]
-  }
-  // Edge
-  else {
-    const edgeMatch = userAgent.match(/Edg\/(\d+)/)
-    if (edgeMatch) {
-      browser.name = 'Edge'
-      browser.version = edgeMatch[1]
-    }
-    // Firefox
-    else {
-      const firefoxMatch = userAgent.match(/Firefox\/(\d+)/)
-      if (firefoxMatch) {
-        browser.name = 'Firefox'
-        browser.version = firefoxMatch[1]
-      }
-      // Safari
-      else {
-        const safariMatch = userAgent.match(/Version\/(\d+)/)
-        if (safariMatch) {
-          browser.name = 'Safari'
-          browser.version = safariMatch[1]
-        }
-        // Internet Explorer
-        else {
-          const ieMatch = userAgent.match(/MSIE (\d+)/) || userAgent.match(/Trident.*rv:(\d+)/)
-          if (ieMatch) {
-            browser.name = 'Internet Explorer'
-            browser.version = ieMatch[1]
-          }
-        }
-      }
-    }
-  }
-
-  return browser
+  return parseUserAgent(userAgent).browser
 }
 
 /**
@@ -205,12 +316,12 @@ export function isAPISupported(api: string): boolean {
     return false
 
   const parts = api.split('.')
-  let obj: any = window
+  let obj: Record<string, unknown> = window as unknown as Record<string, unknown>
 
   for (const part of parts) {
     if (!(part in obj))
       return false
-    obj = obj[part]
+    obj = obj[part] as Record<string, unknown>
   }
 
   return true
@@ -222,12 +333,25 @@ export function isAPISupported(api: string): boolean {
 export function safeNavigatorAccess<T>(
   accessor: (navigator: Navigator) => T,
   fallback: T,
-): T {
+): T
+export function safeNavigatorAccess<K extends keyof Navigator>(
+  property: K,
+  fallback?: Navigator[K],
+): Navigator[K] | undefined
+export function safeNavigatorAccess<T, K extends keyof Navigator>(
+  accessorOrProperty: ((navigator: Navigator) => T) | K,
+  fallback?: T | Navigator[K],
+): T | Navigator[K] | undefined {
   if (typeof navigator === 'undefined')
     return fallback
 
   try {
-    return accessor(navigator)
+    if (typeof accessorOrProperty === 'function') {
+      return accessorOrProperty(navigator)
+    }
+    else {
+      return navigator[accessorOrProperty] ?? fallback
+    }
   }
   catch {
     return fallback
@@ -252,7 +376,9 @@ export function formatBytes(bytes: number, decimals = 2): string {
 
 /**
  * 生成唯一 ID
+ * @param prefix - 可选的前缀
  */
-export function generateId(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+export function generateId(prefix?: string): string {
+  const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  return prefix ? `${prefix}-${id}` : id
 }

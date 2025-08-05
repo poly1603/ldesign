@@ -10,3 +10,6 @@ app.use(createDevicePlugin({
   enableOrientation: true,
   debounceDelay: 300,
 }))
+
+// 挂载应用
+app.mount('#app')

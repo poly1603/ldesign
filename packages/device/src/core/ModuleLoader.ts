@@ -5,20 +5,20 @@ import type { DeviceModule, ModuleLoader as IModuleLoader } from '../types'
  */
 export class ModuleLoader implements IModuleLoader {
   private modules: Map<string, DeviceModule> = new Map()
-  private loadingPromises: Map<string, Promise<any>> = new Map()
+  private loadingPromises: Map<string, Promise<unknown>> = new Map()
 
   /**
-   * 加载模块
+   * 加载模块并返回数据
    */
-  async load<T = any>(name: string): Promise<T> {
+  async load<T = unknown>(name: string): Promise<T> {
     // 如果模块已经加载，直接返回
     if (this.modules.has(name)) {
-      return this.modules.get(name)!.getData()
+      return this.modules.get(name)!.getData() as T
     }
 
     // 如果正在加载，返回加载中的 Promise
     if (this.loadingPromises.has(name)) {
-      return this.loadingPromises.get(name)!
+      return this.loadingPromises.get(name)! as Promise<T>
     }
 
     // 开始加载模块
@@ -29,7 +29,38 @@ export class ModuleLoader implements IModuleLoader {
       const module = await loadingPromise
       this.modules.set(name, module)
       this.loadingPromises.delete(name)
-      return module.getData()
+      return module.getData() as T
+    }
+    catch (error) {
+      this.loadingPromises.delete(name)
+      throw error
+    }
+  }
+
+  /**
+   * 加载模块并返回模块实例
+   */
+  async loadModuleInstance<T extends DeviceModule = DeviceModule>(name: string): Promise<T> {
+    // 如果模块已加载，直接返回实例
+    if (this.modules.has(name)) {
+      return this.modules.get(name)! as T
+    }
+
+    // 如果正在加载，等待加载完成
+    if (this.loadingPromises.has(name)) {
+      await this.loadingPromises.get(name)!
+      return this.modules.get(name)! as T
+    }
+
+    // 开始加载模块
+    const loadingPromise = this.loadModule(name)
+    this.loadingPromises.set(name, loadingPromise)
+
+    try {
+      const module = await loadingPromise
+      this.modules.set(name, module)
+      this.loadingPromises.delete(name)
+      return module as T
     }
     catch (error) {
       this.loadingPromises.delete(name)

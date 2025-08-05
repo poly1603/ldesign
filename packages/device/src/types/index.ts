@@ -127,7 +127,7 @@ export type EventListener<T = any> = (data: T) => void
 /**
  * 设备检测器事件映射
  */
-export interface DeviceDetectorEvents {
+export interface DeviceDetectorEvents extends Record<string, unknown> {
   deviceChange: DeviceInfo
   orientationChange: Orientation
   resize: { width: number, height: number }
@@ -158,7 +158,37 @@ export interface DeviceModule {
   /** 销毁模块 */
   destroy: () => Promise<void> | void
   /** 获取模块数据 */
-  getData: () => any
+  getData: () => unknown
+}
+
+/**
+ * 网络模块接口
+ */
+export interface NetworkModule extends DeviceModule {
+  getData: () => NetworkInfo
+  isOnline: () => boolean
+  getConnectionType: () => string
+}
+
+/**
+ * 电池模块接口
+ */
+export interface BatteryModule extends DeviceModule {
+  getData: () => BatteryInfo
+  getLevel: () => number
+  isCharging: () => boolean
+  getBatteryStatus: () => string
+}
+
+/**
+ * 地理位置模块接口
+ */
+export interface GeolocationModule extends DeviceModule {
+  getData: () => GeolocationInfo | null
+  isSupported: () => boolean
+  getCurrentPosition: () => Promise<GeolocationInfo>
+  startWatching: (callback?: (position: GeolocationInfo) => void) => void
+  stopWatching: () => void
 }
 
 /**
@@ -208,3 +238,19 @@ declare module 'vue' {
 
 // 重新导出 Ref 类型
 export type { Ref }
+
+/**
+ * 扩展 Navigator 接口以支持 Battery API
+ */
+declare global {
+  interface Navigator {
+    getBattery?: () => Promise<{
+      level: number
+      charging: boolean
+      chargingTime: number
+      dischargingTime: number
+      addEventListener: (type: string, listener: EventListener) => void
+      removeEventListener: (type: string, listener: EventListener) => void
+    }>
+  }
+}

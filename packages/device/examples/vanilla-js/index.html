@@ -285,6 +285,52 @@
               <span class="info-value" id="battery-discharging-time">-</span>
             </div>
           </div>
+
+          <!-- 地理位置信息 -->
+          <div class="card">
+            <h3>📍 地理位置信息</h3>
+            <div class="info-item">
+              <span class="info-label">纬度:</span>
+              <span class="info-value" id="geo-latitude">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">经度:</span>
+              <span class="info-value" id="geo-longitude">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">精度:</span>
+              <span class="info-value" id="geo-accuracy">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">海拔:</span>
+              <span class="info-value" id="geo-altitude">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">监听状态:</span>
+              <span class="status" id="geo-watching">-</span>
+            </div>
+          </div>
+
+          <!-- 性能监控 -->
+          <div class="card">
+            <h3>⚡ 性能监控</h3>
+            <div class="info-item">
+              <span class="info-label">检测次数:</span>
+              <span class="info-value" id="detection-count">0</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">平均检测时间:</span>
+              <span class="info-value" id="avg-detection-time">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">内存使用:</span>
+              <span class="info-value" id="memory-usage">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">已加载模块:</span>
+              <span class="info-value" id="loaded-modules">-</span>
+            </div>
+          </div>
         </div>
 
         <!-- 控制按钮 -->
@@ -293,7 +339,12 @@
           <button class="btn" id="load-network-btn">📡 加载网络模块</button>
           <button class="btn" id="load-battery-btn">🔋 加载电池模块</button>
           <button class="btn" id="load-geolocation-btn">📍 加载地理位置模块</button>
+          <button class="btn" id="start-watching-btn">👁️ 开始位置监听</button>
+          <button class="btn" id="stop-watching-btn">⏹️ 停止位置监听</button>
+          <button class="btn" id="performance-test-btn">⚡ 性能测试</button>
+          <button class="btn" id="simulate-resize-btn">📏 模拟窗口变化</button>
           <button class="btn" id="unload-modules-btn">❌ 卸载所有模块</button>
+          <button class="btn" id="clear-log-btn">🗑️ 清空日志</button>
         </div>
 
         <!-- 事件日志 -->

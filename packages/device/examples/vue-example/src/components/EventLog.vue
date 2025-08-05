@@ -7,7 +7,7 @@ const logContainer = ref(null)
 const autoScroll = ref(true)
 const logIdCounter = ref(0)
 
-const { deviceDetector } = useDevice()
+// const { deviceDetector } = useDevice()
 
 // 添加日志
 function addLog(type, message, data = null) {
@@ -109,87 +109,28 @@ function formatData(data) {
 
 // 设置事件监听器
 function setupEventListeners() {
-  if (!deviceDetector.value)
-    return
-
-  // 设备检测事件
-  deviceDetector.value.on('deviceChange', (deviceInfo) => {
-    addLog('device', '设备类型发生变化', {
-      type: deviceInfo.type,
-      width: deviceInfo.width,
-      height: deviceInfo.height,
-    })
-  })
-
-  // 方向变化事件
-  deviceDetector.value.on('orientationChange', (orientation) => {
-    addLog('orientation', `设备方向变为: ${orientation}`, { orientation })
-  })
-
-  // 窗口大小变化事件
-  deviceDetector.value.on('resize', (size) => {
-    addLog('resize', '窗口大小发生变化', {
-      width: size.width,
-      height: size.height,
-    })
-  })
-
-  // 网络状态事件
-  deviceDetector.value.on('networkChange', (networkInfo) => {
-    addLog('network', '网络状态发生变化', networkInfo)
-  })
-
-  // 电池状态事件
-  deviceDetector.value.on('batteryChange', (batteryInfo) => {
-    addLog('battery', '电池状态发生变化', batteryInfo)
-  })
-
-  // 地理位置事件
-  deviceDetector.value.on('positionChange', (position) => {
-    addLog('geolocation', '地理位置发生变化', {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-      accuracy: position.coords.accuracy,
-    })
-  })
-
-  // 模块加载事件
-  deviceDetector.value.on('moduleLoaded', (moduleName) => {
-    addLog('module', `模块 ${moduleName} 已加载`, { module: moduleName })
-  })
-
-  // 模块卸载事件
-  deviceDetector.value.on('moduleUnloaded', (moduleName) => {
-    addLog('module', `模块 ${moduleName} 已卸载`, { module: moduleName })
-  })
-
-  // 错误事件
-  deviceDetector.value.on('error', (error) => {
-    addLog('error', `发生错误: ${error.message}`, {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    })
-  })
+  // TODO: 实现事件监听器
+  addLog('info', '事件监听器功能暂时禁用')
 }
 
 // 监听 deviceDetector 变化
-watch(() => deviceDetector.value, (newDetector) => {
-  if (newDetector) {
-    setupEventListeners()
-    addLog('info', '设备检测器已初始化')
-  }
-}, { immediate: true })
+// watch(() => deviceDetector.value, (newDetector) => {
+//   if (newDetector) {
+//     setupEventListeners()
+//     addLog('info', '设备检测器已初始化')
+//   }
+// }, { immediate: true })
 
 onMounted(() => {
   addLog('info', 'Vue 示例应用已启动')
+  setupEventListeners()
 })
 
 onUnmounted(() => {
   // 清理事件监听器
-  if (deviceDetector.value) {
-    deviceDetector.value.removeAllListeners()
-  }
+  // if (deviceDetector.value) {
+  //   deviceDetector.value.removeAllListeners()
+  // }
 })
 </script>
 
