@@ -243,7 +243,7 @@ onMounted(() => {
 
     <div class="hash-info">
       <h3>Current Hash:</h3>
-      <p>{{ $route.hash || 'No hash' }}</p>
+      <p>{{ route.hash || 'No hash' }}</p>
       <p><small>Try clicking the navigation links above to see hash changes</small></p>
     </div>
   </div>

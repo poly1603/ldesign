@@ -48,7 +48,7 @@ export type RouteQuery = Record<string, string | string[] | null | undefined>
  * 路由位置原始类型
  */
 export type RouteLocationRaw = string | {
-  name?: string | symbol
+  name?: string | symbol | null | undefined
   path?: string
   params?: RouteParams
   query?: RouteQuery
@@ -67,9 +67,10 @@ export interface RouteLocation {
   query: RouteQuery
   hash: string
   fullPath: string
+  href: string
   matched: RouteRecordNormalized[]
   meta: RouteMeta
-  redirectedFrom?: RouteLocation
+  redirectedFrom?: RouteLocation | undefined
 }
 
 /**
@@ -84,7 +85,7 @@ export interface RouteLocationNormalized extends RouteLocation {
   fullPath: string
   matched: RouteRecordNormalized[]
   meta: RouteMeta
-  redirectedFrom?: RouteLocationNormalized
+  redirectedFrom?: RouteLocationNormalized | undefined
 }
 
 /**
@@ -189,7 +190,7 @@ export interface HistoryState {
 
 export type HistoryStateValue = string | number | boolean | null | undefined | HistoryState | HistoryStateArray
 
-export interface HistoryStateArray extends Array<HistoryStateValue> {}
+export interface HistoryStateArray extends Array<HistoryStateValue> { }
 
 /**
  * 导航回调

@@ -50,7 +50,7 @@ function loadUserData(id: string) {
     999: { name: 'Admin User', email: 'admin@example.com' },
   }
 
-  const user = users[id as keyof typeof users] || {
+  const user = users[id as unknown as keyof typeof users] || {
     name: `User ${id}`,
     email: `user${id}@example.com`,
   }
@@ -220,15 +220,15 @@ watch(userId, (newId) => {
       <div class="info-grid">
         <div class="info-item">
           <label>Route Params:</label>
-          <pre>{{ JSON.stringify($route.params, null, 2) }}</pre>
+          <pre>{{ JSON.stringify(route.params, null, 2) }}</pre>
         </div>
-        <div v-if="Object.keys($route.query).length" class="info-item">
+        <div v-if="Object.keys(route.query).length" class="info-item">
           <label>Query Params:</label>
-          <pre>{{ JSON.stringify($route.query, null, 2) }}</pre>
+          <pre>{{ JSON.stringify(route.query, null, 2) }}</pre>
         </div>
         <div class="info-item">
           <label>Full Path:</label>
-          <span>{{ $route.fullPath }}</span>
+          <span>{{ route.fullPath }}</span>
         </div>
       </div>
     </div>

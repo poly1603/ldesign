@@ -35,6 +35,7 @@ export function createRollupConfig(options = {}) {
     vue = false,
     includeUmd = true,
     formats = ['es', 'cjs', 'umd'],
+    excludePatterns = [],
   } = options
 
   const packagePath = path.resolve(packageDir)
@@ -48,7 +49,8 @@ export function createRollupConfig(options = {}) {
       'src/**/*.spec.ts',
       'src/**/*.spec.tsx',
       'src/**/*.spec.vue',
-      'src/**/*.d.ts' // 排除声明文件
+      'src/**/*.d.ts', // 排除声明文件
+      ...excludePatterns // 添加自定义排除模式
     ]
 
     // 如果没有启用 Vue 支持，排除 Vue 相关文件
@@ -134,11 +136,14 @@ export function createRollupConfig(options = {}) {
         preventAssignment: true,
       }),
       typescript({
-        tsconfig: path.resolve(packagePath, 'tsconfig.json'),
+        tsconfig: path.resolve(packagePath, 'tsconfig.build.json'),
         declaration: false,
         declarationMap: false,
         sourceMap: true,
         exclude: ['**/*.vue'],
+        compilerOptions: {
+          outDir: undefined, // 让 rollup 控制输出目录
+        },
       })
     )
 

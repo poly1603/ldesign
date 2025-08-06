@@ -1,10 +1,10 @@
 import type {
   Component,
+  Ref,
 } from 'vue'
 import type {
   RouteComponent,
   RouteLocationNormalized,
-  Router,
 } from '../types'
 import {
   computed,
@@ -29,8 +29,7 @@ export const RouterView = defineComponent({
     route: Object,
   },
   setup(props, { attrs, slots }) {
-    const injectedRoute = inject<RouteLocationNormalized>('route')
-    const injectedRouter = inject<Router>('router')
+    const injectedRoute = inject<Ref<RouteLocationNormalized>>('route')
 
     if (!injectedRoute) {
       warn('RouterView must be used within a router context')
@@ -63,7 +62,7 @@ export const RouterView = defineComponent({
       const currentRoute = route.value
 
       if (!component) {
-        return slots.default?.({ Component: null, route: currentRoute })
+        return slots.default?.({ Component: null, route: currentRoute }) || null
       }
 
       // 处理异步组件
@@ -100,24 +99,30 @@ export const RouterView = defineComponent({
  */
 function resolveComponent(component: RouteComponent): Component | null {
   if (typeof component === 'function') {
-    // 处理异步组件
-    const result = component()
-    if (result && typeof result.then === 'function') {
-      // 返回 Promise 的异步组件
-      return defineComponent({
-        async setup() {
-          try {
-            const resolved = await result
-            return () => h(resolved.default || resolved)
-          }
-          catch (error) {
-            warn(`Failed to load async component: ${error}`)
-            return () => null
-          }
-        },
-      })
+    // 检查是否是异步组件函数
+    try {
+      const result = (component as () => Promise<Component>)()
+      if (result && typeof result.then === 'function') {
+        // 返回 Promise 的异步组件
+        return defineComponent({
+          async setup() {
+            try {
+              const resolved = await result
+              return () => h((resolved as any).default || resolved)
+            }
+            catch (error) {
+              warn(`Failed to load async component: ${error}`)
+              return () => null
+            }
+          },
+        })
+      }
+      return result as Component
     }
-    return result as Component
+    catch {
+      // 如果调用失败，可能是普通的函数组件
+      return component as Component
+    }
   }
 
   return component as Component

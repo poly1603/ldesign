@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from '@ldesign/router'
+import { useRouter, useRoute } from '@ldesign/router'
 import { ref } from 'vue'
 
 const router = useRouter()
@@ -87,9 +87,9 @@ function addNewUser() {
       </div>
     </div>
 
-    <div v-if="Object.keys($route.query).length" class="route-params">
+    <div v-if="Object.keys(route.query).length" class="route-params">
       <h3>Current Query Parameters:</h3>
-      <pre>{{ $route.query }}</pre>
+      <pre>{{ route.query }}</pre>
     </div>
   </div>
 </template>

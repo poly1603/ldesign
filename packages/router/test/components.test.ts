@@ -1,7 +1,7 @@
 import type { RouteRecordRaw } from '../src'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, h } from 'vue'
 import {
   createMemoryHistory,
   createRouter,
@@ -88,7 +88,7 @@ describe('components', () => {
         },
       })
 
-      expect(wrapper.html()).toBe('<!--v-if-->')
+      expect(wrapper.html()).toBe('')
     })
 
     it('should support named views', async () => {
@@ -127,7 +127,7 @@ describe('components', () => {
           plugins: [router],
         },
         slots: {
-          default: '({ Component, route }) => h("div", { class: "wrapper" }, [Component])',
+          default: ({ Component, route }) => h('div', { class: 'wrapper' }, Component ? [h(Component)] : []),
         },
       })
 
@@ -292,7 +292,7 @@ describe('components', () => {
           plugins: [router],
         },
         slots: {
-          default: '({ href, navigate, isActive }) => h("button", { onClick: navigate, class: { active: isActive } }, "Custom Link")',
+          default: ({ href, navigate, isActive }) => h('button', { onClick: navigate, class: { active: isActive } }, 'Custom Link'),
         },
       })
 

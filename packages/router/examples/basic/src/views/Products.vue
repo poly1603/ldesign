@@ -237,7 +237,7 @@ watch(() => route.value.query, () => {
 
     <div class="query-info">
       <h3>Current Query Parameters:</h3>
-      <pre>{{ JSON.stringify($route.query, null, 2) }}</pre>
+      <pre>{{ JSON.stringify(route.query, null, 2) }}</pre>
     </div>
   </div>
 </template>

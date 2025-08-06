@@ -90,7 +90,7 @@ export function parseQuery(search: string): RouteQuery {
       if (!Array.isArray(currentValue)) {
         currentValue = query[key] = [currentValue as string]
       }
-      ;(currentValue as string[]).push(value as string)
+      ; (currentValue as string[]).push(value as string)
     }
     else {
       query[key] = value
@@ -146,7 +146,7 @@ function decode(str: string): string {
   try {
     return decodeURIComponent(str)
   }
-  catch (err) {
+  catch {
     return str
   }
 }
@@ -278,6 +278,7 @@ export function isSameRouteLocation(
  * 警告函数
  */
 export function warn(msg: string): void {
+  // eslint-disable-next-line node/prefer-global/process
   if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
     console.warn(`[LDesign Router warn]: ${msg}`)
   }

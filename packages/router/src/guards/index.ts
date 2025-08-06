@@ -108,8 +108,8 @@ export class GuardManager {
         const result = guard(to, from, next)
 
         // 如果守卫返回 Promise
-        if (result && typeof result.then === 'function') {
-          result.then(
+        if (result && typeof result === 'object' && 'then' in result && typeof result.then === 'function') {
+          (result as Promise<NavigationGuardReturn>).then(
             (res: NavigationGuardReturn) => {
               if (!isResolved) {
                 isResolved = true

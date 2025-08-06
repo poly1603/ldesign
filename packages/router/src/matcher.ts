@@ -26,10 +26,13 @@ export interface RouterMatcher {
  */
 export function createRouterMatcher(
   routes: RouteRecordRaw[],
-  options: RouterOptions,
+  _options: RouterOptions,
 ): RouterMatcher {
   const matchers: RouteRecordNormalized[] = []
   const matcherMap = new Map<string | symbol, RouteRecordNormalized>()
+
+  // 路径匹配缓存
+  const resolveCache = new Map<string, RouteLocationNormalized>()
 
   // 添加初始路由
   routes.forEach(route => addRoute(route))
@@ -77,6 +80,8 @@ export function createRouterMatcher(
       if (index > -1) {
         matchers.splice(index, 1)
       }
+      // 清理缓存
+      resolveCache.clear()
     }
   }
 
@@ -92,6 +97,16 @@ export function createRouterMatcher(
     location: RouteLocationRaw,
     currentLocation: RouteLocationNormalized,
   ): RouteLocationNormalized {
+    // 创建缓存键
+    const cacheKey = typeof location === 'string'
+      ? location
+      : JSON.stringify(location)
+
+    // 检查缓存
+    if (resolveCache.has(cacheKey)) {
+      return resolveCache.get(cacheKey)!
+    }
+
     let path: string
     let params: RouteParams = {}
     let query: RouteQuery = {}
@@ -105,7 +120,7 @@ export function createRouterMatcher(
       hash = parsed.hash
     }
     else {
-      name = location.name
+      name = location.name || undefined
       path = location.path || currentLocation.path
       params = location.params || {}
       query = { ...currentLocation.query, ...location.query }
@@ -145,9 +160,9 @@ export function createRouterMatcher(
         query,
         hash,
         fullPath: stringifyURL({ path, query, hash }),
+        href: stringifyURL({ path, query, hash }),
         matched: [],
         meta: {},
-        redirectedFrom: undefined,
       }
     }
 
@@ -160,17 +175,29 @@ export function createRouterMatcher(
       Object.assign(meta, record.meta)
     })
 
-    return {
+    const result = {
       name: matcher.name,
       path,
       params: normalizeParams(params),
       query,
       hash,
       fullPath,
+      href: fullPath,
       matched,
       meta,
-      redirectedFrom: undefined,
     }
+
+    // 缓存结果（限制缓存大小）
+    if (resolveCache.size > 500) {
+      // eslint-disable-next-line no-unreachable-loop
+      for (const key of resolveCache.keys()) {
+        resolveCache.delete(key)
+        break
+      }
+    }
+    resolveCache.set(cacheKey, result)
+
+    return result
   }
 
   return {
@@ -200,7 +227,9 @@ function normalizeRouteRecord(
     children: [],
     meta: record.meta || {},
     props: normalizeProps(record.props),
-    beforeEnter: record.beforeEnter,
+    beforeEnter: Array.isArray(record.beforeEnter)
+      ? record.beforeEnter[0]
+      : record.beforeEnter,
     aliasOf: undefined,
     redirect: record.redirect,
   }
@@ -236,38 +265,69 @@ function normalizeProps(props: any): Record<string, any> {
 }
 
 /**
- * 匹配路径
+ * 路径匹配缓存
+ */
+const pathMatchCache = new Map<string, { params: RouteParams } | null>()
+
+/**
+ * 匹配路径（优化版本）
  */
 function matchPath(pattern: string, path: string): { params: RouteParams } | null {
-  // 简化的路径匹配实现
+  // 缓存键
+  const cacheKey = `${pattern}:${path}`
+
+  // 检查缓存
+  if (pathMatchCache.has(cacheKey)) {
+    return pathMatchCache.get(cacheKey)!
+  }
+
+  let result: { params: RouteParams } | null = null
+
+  // 快速路径：完全匹配
   if (pattern === path) {
-    return { params: {} }
+    result = { params: {} }
   }
+  else {
+    // 处理动态参数
+    const patternParts = pattern.split('/')
+    const pathParts = path.split('/')
 
-  // 处理动态参数
-  const patternParts = pattern.split('/')
-  const pathParts = path.split('/')
+    if (patternParts.length === pathParts.length) {
+      const params: RouteParams = {}
+      let isMatch = true
 
-  if (patternParts.length !== pathParts.length) {
-    return null
-  }
+      for (let i = 0; i < patternParts.length && isMatch; i++) {
+        const patternPart = patternParts[i]
+        const pathPart = pathParts[i]
 
-  const params: RouteParams = {}
+        if (patternPart && patternPart.startsWith(':')) {
+          const paramName = patternPart.slice(1)
+          if (pathPart) {
+            params[paramName] = decodeURIComponent(pathPart)
+          }
+        }
+        else if (patternPart !== pathPart) {
+          isMatch = false
+        }
+      }
 
-  for (let i = 0; i < patternParts.length; i++) {
-    const patternPart = patternParts[i]
-    const pathPart = pathParts[i]
-
-    if (patternPart.startsWith(':')) {
-      const paramName = patternPart.slice(1)
-      params[paramName] = pathPart
+      if (isMatch) {
+        result = { params }
+      }
     }
-    else if (patternPart !== pathPart) {
-      return null
-    }
   }
 
-  return { params }
+  // 缓存结果（限制缓存大小）
+  if (pathMatchCache.size > 1000) {
+    // eslint-disable-next-line no-unreachable-loop
+    for (const key of pathMatchCache.keys()) {
+      pathMatchCache.delete(key)
+      break
+    }
+  }
+  pathMatchCache.set(cacheKey, result)
+
+  return result
 }
 
 /**

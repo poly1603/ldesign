@@ -2,6 +2,9 @@ import {
   createRouter,
   createWebHistory,
   type RouteRecordRaw,
+  type RouteLocationNormalized,
+  type NavigationGuardNext,
+  type ScrollPosition,
 } from '@ldesign/router'
 
 import About from '../views/About.vue'
@@ -91,7 +94,7 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to: RouteLocationNormalized, _from: RouteLocationNormalized, savedPosition: ScrollPosition | null) {
     // 如果有保存的位置（浏览器前进/后退）
     if (savedPosition) {
       return savedPosition
@@ -99,17 +102,17 @@ const router = createRouter({
     // 如果有锚点
     if (to.hash) {
       return {
-        el: to.hash,
-        behavior: 'smooth',
+        left: 0,
+        top: 0
       }
     }
     // 默认滚动到顶部
-    return { top: 0 }
+    return { top: 0, left: 0 }
   },
 })
 
 // 全局前置守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
   console.log('Navigation from', from.fullPath, 'to', to.fullPath)
 
   // 模拟身份验证检查
@@ -133,13 +136,13 @@ router.beforeEach((to, from, next) => {
 })
 
 // 全局解析守卫
-router.beforeResolve((to, from, next) => {
+router.beforeResolve((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   console.log('Before resolve:', to.fullPath)
   next()
 })
 
 // 全局后置钩子
-router.afterEach((to, from, failure) => {
+router.afterEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, failure?: any) => {
   if (failure) {
     console.error('Navigation failed:', failure)
   }

@@ -66,11 +66,20 @@ export function useLink(props: {
 
     const resolved = route.value
     if (resolved) {
+      // 转换 RouteLocation 为 RouteLocationRaw
+      const locationRaw = {
+        name: resolved.name,
+        path: resolved.path,
+        params: resolved.params,
+        query: resolved.query,
+        hash: resolved.hash,
+      }
+
       if (props.replace) {
-        return router.replace(resolved)
+        return router.replace(locationRaw)
       }
       else {
-        return router.push(resolved)
+        return router.push(locationRaw)
       }
     }
     return Promise.resolve()

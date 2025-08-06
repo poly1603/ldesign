@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from '@ldesign/router'
+import { RouterLink, RouterView, useRoute } from '@ldesign/router'
+
+const route = useRoute()
 </script>
 
 <template>
@@ -37,8 +39,8 @@ import { RouterLink, RouterView } from '@ldesign/router'
     </main>
 
     <footer style="text-align: center; margin-top: 2rem; color: #666;">
-      <p>Current Route: {{ $route.fullPath }}</p>
-      <p>Route Name: {{ $route.name || 'N/A' }}</p>
+      <p>Current Route: {{ route.fullPath }}</p>
+      <p>Route Name: {{ route.name || 'N/A' }}</p>
     </footer>
   </div>
 </template>

@@ -1,4 +1,4 @@
-import type { App } from 'vue'
+import type { App, Ref } from 'vue'
 import type {
   NavigationFailure,
   NavigationGuard,
@@ -10,6 +10,8 @@ import type {
   RouterOptions,
 } from './types'
 import { ref } from 'vue'
+import { RouterLink } from './components/RouterLink'
+import { RouterView } from './components/RouterView'
 import { NavigationFailureType, START_LOCATION } from './constants'
 import { createRouterMatcher } from './matcher'
 
@@ -20,10 +22,10 @@ export function createRouter(options: RouterOptions): Router {
   const matcher = createRouterMatcher(options.routes, options)
   const currentRoute = ref<RouteLocationNormalized>(START_LOCATION)
 
-  // 导航守卫
-  const beforeGuards: NavigationGuard[] = []
-  const beforeResolveGuards: NavigationGuard[] = []
-  const afterGuards: NavigationHookAfter[] = []
+  // 导航守卫（使用 Set 提高性能）
+  const beforeGuards = new Set<NavigationGuard>()
+  const beforeResolveGuards = new Set<NavigationGuard>()
+  const afterGuards = new Set<NavigationHookAfter>()
 
   // 错误处理
   const errorHandlers: Array<(error: Error, to: RouteLocationNormalized, from: RouteLocationNormalized) => any> = []
@@ -81,29 +83,23 @@ export function createRouter(options: RouterOptions): Router {
     },
 
     beforeEach(guard: NavigationGuard) {
-      beforeGuards.push(guard)
+      beforeGuards.add(guard)
       return () => {
-        const index = beforeGuards.indexOf(guard)
-        if (index > -1)
-          beforeGuards.splice(index, 1)
+        beforeGuards.delete(guard)
       }
     },
 
     beforeResolve(guard: NavigationGuard) {
-      beforeResolveGuards.push(guard)
+      beforeResolveGuards.add(guard)
       return () => {
-        const index = beforeResolveGuards.indexOf(guard)
-        if (index > -1)
-          beforeResolveGuards.splice(index, 1)
+        beforeResolveGuards.delete(guard)
       }
     },
 
     afterEach(guard: NavigationHookAfter) {
-      afterGuards.push(guard)
+      afterGuards.add(guard)
       return () => {
-        const index = afterGuards.indexOf(guard)
-        if (index > -1)
-          afterGuards.splice(index, 1)
+        afterGuards.delete(guard)
       }
     },
 
@@ -147,9 +143,6 @@ export function createRouter(options: RouterOptions): Router {
       app.provide('route', currentRoute)
 
       // 注册全局组件
-      const RouterView = () => import('./components/RouterView')
-      const RouterLink = () => import('./components/RouterLink')
-
       app.component('RouterView', RouterView)
       app.component('RouterLink', RouterLink)
     },
@@ -189,7 +182,9 @@ export function createRouter(options: RouterOptions): Router {
       currentRoute.value = targetLocation
 
       // 执行后置钩子
-      afterGuards.forEach(guard => guard(targetLocation, from))
+      for (const guard of afterGuards) {
+        guard(targetLocation, from)
+      }
     }
     catch (err) {
       if (err instanceof Error) {
@@ -211,7 +206,7 @@ export function createRouter(options: RouterOptions): Router {
    * 执行守卫队列
    */
   async function runGuardQueue(
-    guards: NavigationGuard[],
+    guards: Set<NavigationGuard>,
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
   ): Promise<void> {

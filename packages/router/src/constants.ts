@@ -30,9 +30,9 @@ export const START_LOCATION: RouteLocationNormalized = {
   query: {},
   hash: '',
   fullPath: '/',
+  href: '/',
   matched: [],
   meta: {},
-  redirectedFrom: undefined,
 }
 
 /**

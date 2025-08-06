@@ -1,10 +1,10 @@
-import type {
-  HistoryLocation,
-  HistoryState,
-  NavigationCallback,
+import {
+  type HistoryLocation,
+  type HistoryState,
+  type NavigationCallback,
   NavigationDirection,
   NavigationType,
-  RouterHistory,
+  type RouterHistory,
 } from './types'
 
 /**
@@ -27,7 +27,7 @@ export function createWebHistory(base?: string): RouterHistory {
       window.history.go(delta)
     },
     listen: (callback: NavigationCallback) => {
-      const popstateHandler = (event: PopStateEvent) => {
+      const popstateHandler = (_event: PopStateEvent) => {
         const to = window.location.pathname + window.location.search + window.location.hash
         const from = getCurrentLocation()
         callback(to, from, {
@@ -56,10 +56,10 @@ export function createWebHashHistory(base?: string): RouterHistory {
     base: normalizedBase,
     location: () => window.location.hash.slice(1) || '/',
     state: () => window.history.state,
-    push: (to: HistoryLocation, data?: HistoryState) => {
+    push: (to: HistoryLocation, _data?: HistoryState) => {
       window.location.hash = to
     },
-    replace: (to: HistoryLocation, data?: HistoryState) => {
+    replace: (to: HistoryLocation, _data?: HistoryState) => {
       const href = `${window.location.href.replace(/#.*$/, '')}#${to}`
       window.location.replace(href)
     },
@@ -140,8 +140,10 @@ export function createMemoryHistory(base?: string): RouterHistory {
       const from = location
       position = newPosition
       const entry = stack[position]
-      location = entry.location
-      state = entry.state
+      if (entry) {
+        location = entry.location
+        state = entry.state
+      }
 
       listeners.forEach((listener) => {
         listener(location, from, {
@@ -187,8 +189,8 @@ function createHistory(options: {
     push,
     replace,
     go,
-    back: (triggerListeners = true) => go(-1),
-    forward: (triggerListeners = true) => go(1),
+    back: (_triggerListeners = true) => go(-1),
+    forward: (_triggerListeners = true) => go(1),
     listen,
     createHref: (location: HistoryLocation) => createHref(base, location),
     destroy: () => {

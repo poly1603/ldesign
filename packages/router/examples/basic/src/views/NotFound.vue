@@ -95,7 +95,7 @@ onMounted(() => {
         <h1>Page Not Found</h1>
         <p>Oops! The page you're looking for doesn't exist.</p>
         <p class="error-details">
-          The requested URL <code>{{ $route.fullPath }}</code> was not found on this server.
+          The requested URL <code>{{ route.fullPath }}</code> was not found on this server.
         </p>
       </div>
 
@@ -143,7 +143,7 @@ onMounted(() => {
         <div class="debug-details">
           <div class="debug-item">
             <strong>Current Route:</strong>
-            <pre>{{ JSON.stringify($route, null, 2) }}</pre>
+            <pre>{{ JSON.stringify(route, null, 2) }}</pre>
           </div>
 
           <div class="debug-item">

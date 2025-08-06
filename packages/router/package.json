@@ -1,6 +1,5 @@
 {
   "name": "@ldesign/router",
-  "type": "module",
   "version": "1.0.0",
   "description": "A powerful Vue router library for Vue applications",
   "author": "ldesign",
@@ -53,6 +52,7 @@
     "test:e2e:ui": "playwright test --ui",
     "clean": "rimraf dist es lib types coverage .nyc_output",
     "size-check": "size-limit",
+    "analyze": "rollup -c --bundleConfigAsCjs --environment ANALYZE",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -87,8 +87,25 @@
   },
   "size-limit": [
     {
+      "name": "UMD Bundle",
       "path": "dist/index.js",
       "limit": "45 KB"
+    },
+    {
+      "name": "UMD Bundle (minified)",
+      "path": "dist/index.min.js",
+      "limit": "20 KB"
+    },
+    {
+      "name": "ES Module",
+      "path": "es/index.js",
+      "limit": "40 KB",
+      "import": "{ createRouter }"
+    },
+    {
+      "name": "CommonJS",
+      "path": "lib/index.js",
+      "limit": "40 KB"
     }
   ]
 }

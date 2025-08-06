@@ -1,5 +1,6 @@
 import type {
   PropType,
+  Ref,
 } from 'vue'
 import type {
   RouteLocationNormalized,
@@ -61,7 +62,7 @@ export const RouterLink = defineComponent({
   },
   setup(props, { slots, attrs }) {
     const router = inject<Router>('router')
-    const currentRoute = inject<RouteLocationNormalized>('route')
+    const currentRoute = inject<Ref<RouteLocationNormalized>>('route')
 
     if (!router || !currentRoute) {
       warn('RouterLink must be used within a router context')
@@ -132,11 +133,20 @@ export const RouterLink = defineComponent({
       if (guardEvent(e)) {
         const resolved = resolvedRoute.value
         if (resolved) {
+          // 转换 RouteLocation 为 RouteLocationRaw
+          const locationRaw = {
+            name: resolved.name,
+            path: resolved.path,
+            params: resolved.params,
+            query: resolved.query,
+            hash: resolved.hash,
+          }
+
           if (props.replace) {
-            router.replace(resolved)
+            router.replace(locationRaw)
           }
           else {
-            router.push(resolved)
+            router.push(locationRaw)
           }
         }
       }
