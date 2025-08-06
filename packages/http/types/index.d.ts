@@ -1,7 +1,7 @@
 import { HttpClientConfig } from './types/index.js';
 export { ApiEndpoint, CacheConfig, CacheStorage, ConcurrencyConfig, ContentType, ErrorInterceptor, ExtendedRequestConfig, HttpAdapter, HttpError, HttpMethod, HttpStatusCode, RequestConfig, RequestInterceptor, RequestPriority, ResponseData, ResponseInterceptor, RetryConfig, TypedHttpClient, TypedRequestConfig, TypedResponseData } from './types/index.js';
-import { createAdapter } from './adapters/index.js';
-export { AdapterFactory, isAdapterAvailable } from './adapters/index.js';
+import { createAdapter, AdapterFactory } from './adapters/index.js';
+export { isAdapterAvailable } from './adapters/index.js';
 import { HttpClientImpl } from './client.js';
 export { contentTypeInterceptor, createAuthInterceptor, createBaseURLInterceptor, createDataTransformInterceptor, createResponseTimeInterceptor, createRetryInterceptor, errorLoggerInterceptor, requestIdInterceptor, requestLoggerInterceptor, responseLoggerInterceptor, statusCodeInterceptor, timestampInterceptor } from './interceptors/common.js';
 export { InterceptorManagerImpl as InterceptorManager } from './interceptors/manager.js';
@@ -28,7 +28,7 @@ declare const _default: {
     http: HttpClientImpl;
     HttpClient: typeof HttpClientImpl;
     createAdapter: typeof createAdapter;
-    AdapterFactory: any;
+    AdapterFactory: typeof AdapterFactory;
 };
 
-export { HttpClientImpl as HttpClient, HttpClientConfig, createAdapter, createHttpClient, _default as default, http };
+export { AdapterFactory, HttpClientImpl as HttpClient, HttpClientConfig, createAdapter, createHttpClient, _default as default, http };

@@ -176,7 +176,7 @@ export class FetchAdapter extends BaseAdapter {
         case 'stream':
           return response.body as T
         case 'json':
-        default:
+        default: {
           // 检查 Content-Type
           const contentType = response.headers.get('content-type') || ''
           if (contentType.includes('application/json')) {
@@ -195,9 +195,10 @@ export class FetchAdapter extends BaseAdapter {
               return text as T
             }
           }
+        }
       }
     }
-    catch (error) {
+    catch {
       // 解析失败，返回空值
       return null as T
     }

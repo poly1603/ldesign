@@ -20,7 +20,7 @@ export function mergeConfig(
         merged.params = { ...merged.params, ...value }
       }
       else {
-        ;(merged as any)[key] = value
+        ; (merged as any)[key] = value
       }
     }
   })
@@ -78,7 +78,7 @@ export function buildURL(url: string, baseURL?: string, params?: Record<string, 
  * 判断是否为绝对 URL
  */
 export function isAbsoluteURL(url: string): boolean {
-  return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url)
+  return /^(?:[a-z][a-z\d+\-.]*:)?\/\//i.test(url)
 }
 
 /**
@@ -155,7 +155,7 @@ export function deepClone<T>(obj: T): T {
   if (typeof obj === 'object') {
     const cloned = {} as T
     Object.keys(obj).forEach((key) => {
-      ;(cloned as any)[key] = deepClone((obj as any)[key])
+      ; (cloned as any)[key] = deepClone((obj as any)[key])
     })
     return cloned
   }

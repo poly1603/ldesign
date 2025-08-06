@@ -171,6 +171,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
 export class CacheManager {
   private config: Required<CacheConfig>
   private storage: CacheStorage
+  private keyCache = new Map<string, string>() // 缓存生成的键，避免重复计算
 
   constructor(config: CacheConfig = {}) {
     this.config = {
@@ -191,7 +192,7 @@ export class CacheManager {
       return null
     }
 
-    const key = this.config.keyGenerator(config)
+    const key = this.getCachedKey(config)
     return this.storage.get(key)
   }
 
@@ -208,7 +209,7 @@ export class CacheManager {
       return
     }
 
-    const key = this.config.keyGenerator(config)
+    const key = this.getCachedKey(config)
     await this.storage.set(key, response, this.config.ttl)
   }
 
@@ -216,7 +217,7 @@ export class CacheManager {
    * 删除缓存
    */
   async delete(config: RequestConfig): Promise<void> {
-    const key = this.config.keyGenerator(config)
+    const key = this.getCachedKey(config)
     await this.storage.delete(key)
   }
 
@@ -242,6 +243,31 @@ export class CacheManager {
    */
   getConfig(): Required<CacheConfig> {
     return { ...this.config }
+  }
+
+  /**
+   * 获取缓存的键（带缓存优化）
+   */
+  private getCachedKey(config: RequestConfig): string {
+    // 创建一个简单的配置标识符用于缓存查找
+    const configId = `${config.method || 'GET'}:${config.url}:${JSON.stringify(config.params || {})}:${JSON.stringify(config.data || {})}`
+
+    if (this.keyCache.has(configId)) {
+      return this.keyCache.get(configId)!
+    }
+
+    const key = this.config.keyGenerator(config)
+
+    // 限制缓存大小，避免内存泄漏
+    if (this.keyCache.size > 1000) {
+      const firstKey = this.keyCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.keyCache.delete(firstKey)
+      }
+    }
+
+    this.keyCache.set(configId, key)
+    return key
   }
 
   /**

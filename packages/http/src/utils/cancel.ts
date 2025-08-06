@@ -68,7 +68,7 @@ export class CancelTokenSource {
    * 取消请求
    */
   cancel(reason?: string): void {
-    ;(this.token as CancelTokenImpl).cancel(reason)
+    ; (this.token as CancelTokenImpl).cancel(reason)
   }
 }
 
@@ -115,7 +115,7 @@ export class CancelManager {
 
     const token = this.cancelTokens.get(requestId)
     if (token && !token.isCancelled) {
-      ;(token as CancelTokenImpl).cancel(reason)
+      ; (token as CancelTokenImpl).cancel(reason)
       this.cancelTokens.delete(requestId)
     }
   }
@@ -124,14 +124,14 @@ export class CancelManager {
    * 取消所有请求
    */
   cancelAll(reason = 'All requests cancelled'): void {
-    this.requests.forEach((controller, requestId) => {
+    this.requests.forEach((controller, _requestId) => {
       controller.abort()
     })
     this.requests.clear()
 
-    this.cancelTokens.forEach((token, requestId) => {
+    this.cancelTokens.forEach((token, _requestId) => {
       if (!token.isCancelled) {
-        ;(token as CancelTokenImpl).cancel(reason)
+        ; (token as CancelTokenImpl).cancel(reason)
       }
     })
     this.cancelTokens.clear()

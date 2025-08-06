@@ -1,4 +1,4 @@
-import type { MaybeRef } from 'vue'
+import type { MaybeRef, Ref } from 'vue'
 import type {
   HttpClient,
   HttpError,
@@ -72,7 +72,7 @@ export function useQuery<T = any>(
 
   // 配置选项
   const staleTime = options.staleTime ?? 300000 // 5 分钟
-  const cacheTime = options.cacheTime ?? 600000 // 10 分钟
+  // const cacheTime = options.cacheTime ?? 600000 // 10 分钟 (暂未使用)
   const retry = options.retry ?? 3
   const retryDelay = options.retryDelay ?? 1000
 
@@ -321,7 +321,7 @@ export function useQuery<T = any>(
   }
 
   return {
-    data,
+    data: data as Ref<T | null>,
     loading,
     error,
     finished,

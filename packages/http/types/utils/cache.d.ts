@@ -36,6 +36,7 @@ declare class LocalStorageCacheStorage implements CacheStorage {
 declare class CacheManager {
     private config;
     private storage;
+    private keyCache;
     constructor(config?: CacheConfig);
     /**
      * 获取缓存
@@ -61,6 +62,10 @@ declare class CacheManager {
      * 获取当前配置
      */
     getConfig(): Required<CacheConfig>;
+    /**
+     * 获取缓存的键（带缓存优化）
+     */
+    private getCachedKey;
     /**
      * 默认缓存键生成器
      */

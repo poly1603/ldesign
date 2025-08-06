@@ -135,7 +135,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
     try {
       localStorage.setItem(this.prefix + key, JSON.stringify(item))
     }
-    catch (error) {
+    catch {
       // 存储空间不足时清理过期条目
       await this.cleanup()
       try {

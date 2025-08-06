@@ -191,13 +191,13 @@ describe('useRequest', () => {
 
   it('should reset state', () => {
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { data, loading, error, finished, reset } = useRequest(mockClient, config, {
+    const { data, loading, error, finished, reset } = useRequest<{ test: boolean, changed?: boolean }>(mockClient, config, {
       immediate: false,
       initialData: { test: true },
     })
 
     // 模拟一些状态变化
-    data.value = { changed: true }
+    data.value = { test: false, changed: true }
     loading.value = true
     error.value = createMockError('Test error')
     finished.value = true

@@ -1,4 +1,4 @@
-import type { MaybeRef } from 'vue'
+import type { MaybeRef, Ref } from 'vue'
 import type {
   HttpClient,
   HttpError,
@@ -144,7 +144,7 @@ export function useRequest<T = any>(
   }
 
   return {
-    data,
+    data: data as Ref<T | null>,
     loading,
     error,
     finished,
@@ -160,7 +160,7 @@ export function useRequest<T = any>(
  * 简化的 useRequest Hook，用于单次请求
  */
 export function useAsyncRequest<T = any>(
-  client: HttpClient,
+  _client: HttpClient,
   requestFn: () => Promise<ResponseData<T>>,
   options: Omit<UseRequestOptions<T>, 'immediate'> = {},
 ): UseRequestReturn<T> {
@@ -241,7 +241,7 @@ export function useAsyncRequest<T = any>(
   }
 
   return {
-    data,
+    data: data as Ref<T | null>,
     loading,
     error,
     finished,

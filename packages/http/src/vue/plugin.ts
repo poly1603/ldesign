@@ -67,7 +67,7 @@ export const HttpProvider = {
 export function createHttpPlugin(options: HttpPluginOptions = {}): Plugin {
   return {
     install(app: App) {
-      HttpPlugin.install(app, options)
+      HttpPlugin.install?.(app, options)
     },
   }
 }
@@ -78,7 +78,7 @@ export function createHttpPlugin(options: HttpPluginOptions = {}): Plugin {
 export default HttpPlugin
 
 // 扩展 Vue 应用实例类型
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $http: HttpClient
   }

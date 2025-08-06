@@ -1,5 +1,5 @@
 import type { RequestInterceptor } from '@/types'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { InterceptorManagerImpl } from '@/interceptors/manager'
 
 describe('interceptorManagerImpl', () => {
@@ -60,9 +60,9 @@ describe('interceptorManagerImpl', () => {
       const interceptor2 = vi.fn(config => config)
       const interceptor3 = vi.fn(config => config)
 
-      const id1 = manager.use(interceptor1)
+      manager.use(interceptor1)
       const id2 = manager.use(interceptor2)
-      const id3 = manager.use(interceptor3)
+      manager.use(interceptor3)
 
       manager.eject(id2)
 

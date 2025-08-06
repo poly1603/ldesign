@@ -73,13 +73,18 @@ console.log(response.data)
 ## Vue 3 集成
 
 ```vue
-<script setup>
-import { useRequest } from '@ldesign/http/vue'
+<script setup lang="ts">
+import { createHttpClient, useQuery } from '@ldesign/http'
 
-const { data, loading, error } = useRequest({
-  url: '/api/users',
-  method: 'GET'
+const http = createHttpClient({
+  baseURL: 'https://api.example.com'
 })
+
+const { data, loading, error } = useQuery(
+  http,
+  () => http.get('/users'),
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -91,7 +96,9 @@ const { data, loading, error } = useRequest({
       错误: {{ error.message }}
     </div>
     <div v-else>
-      {{ data }}
+      <div v-for="user in data" :key="user.id">
+        {{ user.name }}
+      </div>
     </div>
   </div>
 </template>

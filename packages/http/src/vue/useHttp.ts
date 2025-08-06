@@ -213,7 +213,7 @@ export function usePagination<T = any>(
     page: number
     pageSize: number
   }>(queryKey, config, {
-    onSuccess: (data) => {
+    onSuccess: (data: { data: T[], total: number, page: number, pageSize: number }) => {
       total.value = data.total
     },
   })
@@ -246,10 +246,10 @@ export function usePagination<T = any>(
   }
 
   return {
-    // 响应式数据
-    data: query.data,
-    loading: query.loading,
-    error: query.error,
+    // 查询状态
+    ...query,
+
+    // 分页数据
     page,
     pageSize,
     total,
@@ -262,9 +262,5 @@ export function usePagination<T = any>(
     prevPage,
     goToPage,
     setPageSize,
-    refresh: query.refresh,
-
-    // 查询状态
-    ...query,
   }
 }

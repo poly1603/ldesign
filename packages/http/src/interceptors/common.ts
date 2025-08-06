@@ -4,6 +4,7 @@ import type { ErrorInterceptor, HttpError, RequestInterceptor, ResponseIntercept
  * 请求日志拦截器
  */
 export const requestLoggerInterceptor: RequestInterceptor = (config) => {
+  // eslint-disable-next-line no-console
   console.log(`[HTTP Request] ${config.method?.toUpperCase()} ${config.url}`, {
     headers: config.headers,
     data: config.data,
@@ -16,6 +17,7 @@ export const requestLoggerInterceptor: RequestInterceptor = (config) => {
  * 响应日志拦截器
  */
 export const responseLoggerInterceptor: ResponseInterceptor = (response) => {
+  // eslint-disable-next-line no-console
   console.log(`[HTTP Response] ${response.status} ${response.config.url}`, {
     data: response.data,
     headers: response.headers,
@@ -138,6 +140,7 @@ export function createResponseTimeInterceptor(): {
       if (requestId && startTimes.has(requestId)) {
         const startTime = startTimes.get(requestId)!
         const duration = Date.now() - startTime
+        // eslint-disable-next-line no-console
         console.log(`[HTTP Response Time] ${response.config.url}: ${duration}ms`)
         startTimes.delete(requestId)
       }
@@ -166,7 +169,7 @@ export function createDataTransformInterceptor<T, R>(
   return (response) => {
     return {
       ...response,
-      data: transform(response.data),
+      data: transform(response.data as unknown as T),
     }
   }
 }
@@ -202,7 +205,7 @@ export function createRetryInterceptor(
     }
 
     // 增加重试次数
-    ;(config as any).__retryCount = retryCount + 1
+    ; (config as any).__retryCount = retryCount + 1
 
     // 延迟重试
     await new Promise(resolve => setTimeout(resolve, retryDelay * 2 ** retryCount))

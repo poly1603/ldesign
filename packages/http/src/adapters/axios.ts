@@ -12,6 +12,7 @@ export class AxiosAdapter extends BaseAdapter {
     super()
     try {
       // 动态导入 axios
+      // eslint-disable-next-line ts/no-require-imports
       this.axios = require('axios')
     }
     catch {

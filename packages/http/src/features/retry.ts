@@ -43,7 +43,7 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxDelay: 30000,
   backoffMultiplier: 2,
   enableJitter: true,
-  shouldRetry: (error: any, attempt: number) => {
+  shouldRetry: (error: any, _attempt: number) => {
     // 默认重试条件：网络错误、超时、5xx错误
     if (error.code === 'NETWORK_ERROR' || error.code === 'TIMEOUT') {
       return true
@@ -170,7 +170,7 @@ export function createRetryExecutor(config?: Partial<RetryConfig>): RetryExecuto
  * 重试装饰器
  */
 export function retry(config?: Partial<RetryConfig>) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
     const executor = createRetryExecutor(config)
 

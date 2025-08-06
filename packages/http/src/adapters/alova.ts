@@ -16,6 +16,7 @@ export class AlovaAdapter extends BaseAdapter {
     if (!alovaInstance) {
       try {
         // 动态导入 alova
+        // eslint-disable-next-line ts/no-require-imports
         this.alova = require('alova')
       }
       catch {
@@ -74,8 +75,10 @@ export class AlovaAdapter extends BaseAdapter {
       let GlobalFetch: any
 
       try {
+        // eslint-disable-next-line ts/no-require-imports
         GlobalFetch = require('alova/GlobalFetch')
-      } catch {
+      }
+      catch {
         // 如果 GlobalFetch 不可用，使用原生 fetch
         GlobalFetch = () => fetch
       }
@@ -85,7 +88,8 @@ export class AlovaAdapter extends BaseAdapter {
         requestAdapter: GlobalFetch(),
         responded: (response: any) => response.json(),
       })
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to create Alova instance: ${error}`)
     }
   }

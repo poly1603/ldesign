@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import type {
   HttpClient,
   HttpError,
@@ -16,7 +17,7 @@ import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
  * 用于处理变更操作（POST、PUT、DELETE 等）
  */
 export function useMutation<T = any, V = any>(
-  client: HttpClient,
+  _client: HttpClient,
   mutationFn: (variables: V, config?: RequestConfig) => Promise<ResponseData<T>>,
   options: UseMutationOptions<T, V> = {},
 ): UseMutationReturn<T, V> {
@@ -113,7 +114,7 @@ export function useMutation<T = any, V = any>(
   })
 
   return {
-    data,
+    data: data as Ref<T | null>,
     loading,
     error,
     finished,

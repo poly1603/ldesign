@@ -8,6 +8,7 @@ declare class ConcurrencyManager {
     private activeRequests;
     private requestQueue;
     private requestCounter;
+    private processingQueue;
     constructor(config?: ConcurrencyConfig);
     /**
      * 执行请求（带并发控制）
@@ -18,7 +19,7 @@ declare class ConcurrencyManager {
      */
     private executeTask;
     /**
-     * 处理队列中的下一个任务
+     * 处理队列中的下一个任务（优化版）
      */
     private processQueue;
     /**

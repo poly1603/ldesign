@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 
-// 模拟 HTTP 客户端和 hooks
-// 在实际项目中应该导入：
-// import { useRequest, useMutation } from '@ldesign/http/vue'
-
 // 模拟数据和状态
 const loading = ref(false)
 const data = ref(null)
-const error = ref(null)
+const error = ref<Error | null>(null)
 
 const requestCount = ref(0)
 const successCount = ref(0)
@@ -16,8 +12,9 @@ const errorCount = ref(0)
 
 // 表单数据
 const form = reactive({
-  title: '',
-  body: '',
+  title: '新文章标题',
+  body: '这是文章内容',
+  userId: 1
 })
 
 // 模拟 HTTP 请求函数
@@ -94,281 +91,162 @@ async function sendErrorRequest() {
   }
 }
 
-// 模拟 useRequest hook
-const userRequest = {
-  data: ref(null),
-  loading: ref(false),
-  error: ref(null),
-  finished: ref(false),
-
-  execute: async () => {
-    try {
-      userRequest.loading.value = true
-      userRequest.error.value = null
-      const response = await mockRequest('/api/users/1')
-      userRequest.data.value = response.data
-      userRequest.finished.value = true
-    }
-    catch (err) {
-      userRequest.error.value = err as Error
-      userRequest.finished.value = true
-    }
-    finally {
-      userRequest.loading.value = false
-    }
-  },
-
-  refresh: async () => {
-    await userRequest.execute()
-  },
-
-  reset: () => {
-    userRequest.data.value = null
-    userRequest.loading.value = false
-    userRequest.error.value = null
-    userRequest.finished.value = false
-  },
-}
-
-// 模拟 useMutation hook
-const createPost = {
-  data: ref(null),
-  loading: ref(false),
-  error: ref(null),
-
-  mutate: async (postData: any) => {
-    try {
-      createPost.loading.value = true
-      createPost.error.value = null
-      const response = await mockRequest('/api/posts', {
-        method: 'POST',
-        data: postData,
-      })
-      createPost.data.value = response.data
-
-      // 重置表单
-      form.title = ''
-      form.body = ''
-    }
-    catch (err) {
-      createPost.error.value = err as Error
-    }
-    finally {
-      createPost.loading.value = false
-    }
-  },
-}
-
-function handleSubmit() {
-  createPost.mutate({
-    title: form.title,
-    body: form.body,
-    userId: 1,
-  })
+async function submitForm() {
+  try {
+    loading.value = true
+    error.value = null
+    const response = await mockRequest('/api/posts', {
+      method: 'POST',
+      data: form,
+    })
+    data.value = response.data
+  }
+  catch (err) {
+    error.value = err as Error
+  }
+  finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
   <div id="app">
-    <header class="header">
-      <h1>@ldesign/http - Vue 3 示例</h1>
-      <p>演示 HTTP 客户端在 Vue 3 中的使用</p>
-    </header>
+    <h1>@ldesign/http Vue 3 示例</h1>
+    
+    <!-- 统计信息 -->
+    <div class="stats">
+      <div class="stat-item">
+        <span class="label">请求总数:</span>
+        <span class="value">{{ requestCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">成功数:</span>
+        <span class="value">{{ successCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">错误数:</span>
+        <span class="value">{{ errorCount }}</span>
+      </div>
+    </div>
 
-    <main class="main">
-      <!-- 基础请求示例 -->
-      <section class="section">
-        <h2>🚀 基础请求示例</h2>
-        <div class="controls">
-          <button :disabled="loading" @click="sendGetRequest">
-            GET 请求
-          </button>
-          <button :disabled="loading" class="btn-success" @click="sendPostRequest">
-            POST 请求
-          </button>
-          <button :disabled="loading" class="btn-danger" @click="sendErrorRequest">
-            错误请求
-          </button>
+    <!-- 基础请求 -->
+    <section class="section">
+      <h2>基础 HTTP 请求</h2>
+      <div class="button-group">
+        <button @click="sendGetRequest" :disabled="loading">
+          {{ loading ? '请求中...' : 'GET 请求' }}
+        </button>
+        <button @click="sendPostRequest" :disabled="loading">
+          {{ loading ? '请求中...' : 'POST 请求' }}
+        </button>
+        <button @click="sendErrorRequest" :disabled="loading">
+          {{ loading ? '请求中...' : '错误请求' }}
+        </button>
+      </div>
+      
+      <div class="output">
+        <div v-if="loading" class="loading">
+          🔄 请求进行中...
         </div>
-
-        <div class="output">
-          <div v-if="loading" class="loading">
-            🔄 请求中...
-          </div>
-          <div v-else-if="error" class="error">
-            ❌ 错误: {{ error.message }}
-          </div>
-          <div v-else-if="data" class="success">
-            ✅ 成功: <pre>{{ JSON.stringify(data, null, 2) }}</pre>
-          </div>
-          <div v-else class="placeholder">
-            点击上方按钮发送请求...
-          </div>
+        <div v-else-if="error" class="error">
+          ❌ 错误: {{ error.message }}
         </div>
-      </section>
-
-      <!-- useRequest Hook 示例 -->
-      <section class="section">
-        <h2>🎣 useRequest Hook 示例</h2>
-        <div class="controls">
-          <button :disabled="userRequest.loading.value" @click="userRequest.execute">
-            获取用户信息
-          </button>
-          <button :disabled="userRequest.loading.value" @click="userRequest.refresh">
-            刷新
-          </button>
-          <button @click="userRequest.reset">
-            重置
-          </button>
+        <div v-else-if="data" class="success">
+          ✅ 成功: <pre>{{ JSON.stringify(data, null, 2) }}</pre>
         </div>
-
-        <div class="output">
-          <div v-if="userRequest.loading.value" class="loading">
-            🔄 加载中...
-          </div>
-          <div v-else-if="userRequest.error.value" class="error">
-            ❌ 错误: {{ userRequest.error.value.message }}
-          </div>
-          <div v-else-if="userRequest.data.value" class="success">
-            ✅ 用户信息: <pre>{{ JSON.stringify(userRequest.data.value, null, 2) }}</pre>
-          </div>
-          <div v-else class="placeholder">
-            点击上方按钮获取用户信息...
-          </div>
+        <div v-else class="placeholder">
+          点击按钮发送请求
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- useMutation Hook 示例 -->
-      <section class="section">
-        <h2>✏️ useMutation Hook 示例</h2>
-        <form class="form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label>标题:</label>
-            <input v-model="form.title" type="text" required>
-          </div>
-          <div class="form-group">
-            <label>内容:</label>
-            <textarea v-model="form.body" required />
-          </div>
-          <button type="submit" :disabled="createPost.loading.value" class="btn-success">
-            {{ createPost.loading.value ? '提交中...' : '创建文章' }}
-          </button>
-        </form>
-
-        <div class="output">
-          <div v-if="createPost.loading.value" class="loading">
-            🔄 创建中...
-          </div>
-          <div v-else-if="createPost.error.value" class="error">
-            ❌ 创建失败: {{ createPost.error.value.message }}
-          </div>
-          <div v-else-if="createPost.data.value" class="success">
-            ✅ 创建成功: <pre>{{ JSON.stringify(createPost.data.value, null, 2) }}</pre>
-          </div>
+    <!-- 表单提交 -->
+    <section class="section">
+      <h2>表单提交</h2>
+      <form @submit.prevent="submitForm" class="form">
+        <div class="form-group">
+          <label>标题:</label>
+          <input v-model="form.title" type="text" />
         </div>
-      </section>
-
-      <!-- 状态统计 -->
-      <section class="section">
-        <h2>📊 状态统计</h2>
-        <div class="stats">
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ requestCount }}
-            </div>
-            <div class="stat-label">
-              总请求数
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ successCount }}
-            </div>
-            <div class="stat-label">
-              成功请求
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ errorCount }}
-            </div>
-            <div class="stat-label">
-              失败请求
-            </div>
-          </div>
+        <div class="form-group">
+          <label>内容:</label>
+          <textarea v-model="form.body"></textarea>
         </div>
-      </section>
-    </main>
+        <button type="submit" :disabled="loading">
+          {{ loading ? '提交中...' : '提交表单' }}
+        </button>
+      </form>
+    </section>
   </div>
 </template>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
-
 #app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  background: #f5f5f5;
-  min-height: 100vh;
-}
-
-.header {
-  text-align: center;
-  padding: 40px 20px;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
-
-.header h1 {
-  color: #2c3e50;
-  margin-bottom: 10px;
-}
-
-.header p {
-  color: #7f8c8d;
-  font-size: 18px;
-}
-
-.main {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
-.section {
-  background: white;
-  margin: 20px 0;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.section h2 {
+h1 {
   color: #2c3e50;
-  margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h2 {
+  color: #34495e;
   border-bottom: 2px solid #3498db;
   padding-bottom: 10px;
 }
 
-.controls {
+.stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.label {
+  font-size: 14px;
+  color: #666;
+}
+
+.value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.section {
+  margin-bottom: 40px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.button-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
 }
 
 button {
-  padding: 12px 24px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
   background: #3498db;
   color: white;
-  border: none;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
   transition: background 0.3s;
 }
 
@@ -381,42 +259,28 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.btn-success {
-  background: #27ae60;
-}
-
-.btn-success:hover:not(:disabled) {
-  background: #229954;
-}
-
-.btn-danger {
-  background: #e74c3c;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #c0392b;
-}
-
 .output {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 20px;
-  margin-top: 20px;
+  padding: 15px;
+  border-radius: 4px;
   min-height: 100px;
 }
 
 .loading {
-  color: #3498db;
-  font-weight: bold;
-}
-
-.success {
-  color: #27ae60;
+  color: #f39c12;
 }
 
 .error {
   color: #e74c3c;
+  background: #fdf2f2;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.success {
+  color: #27ae60;
+  background: #f0f9f4;
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .placeholder {
@@ -425,55 +289,31 @@ button:disabled {
 }
 
 .form {
-  margin-bottom: 20px;
+  max-width: 400px;
 }
 
 .form-group {
   margin-bottom: 15px;
 }
 
-.form-group label {
+label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
+  color: #2c3e50;
 }
 
-.form-group input,
-.form-group textarea {
+input, textarea {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
 }
 
-.form-group textarea {
-  height: 100px;
+textarea {
+  height: 80px;
   resize: vertical;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.stat-card {
-  background: #ecf0f1;
-  padding: 20px;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-.stat-label {
-  color: #7f8c8d;
-  margin-top: 5px;
 }
 
 pre {

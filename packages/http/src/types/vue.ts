@@ -1,4 +1,4 @@
-import type { Ref, MaybeRef, ComputedRef } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
 import type { RequestConfig, ResponseData, HttpError, HttpClient } from './index'
 
 // 重新导出核心类型
@@ -132,7 +132,7 @@ export interface HttpPluginOptions {
 /**
  * Vue 应用实例扩展
  */
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $http: HttpClient
   }

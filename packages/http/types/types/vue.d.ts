@@ -123,7 +123,7 @@ interface HttpPluginOptions {
 /**
  * Vue 应用实例扩展
  */
-declare module '@vue/runtime-core' {
+declare module 'vue' {
     interface ComponentCustomProperties {
         $http: HttpClient;
     }

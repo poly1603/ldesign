@@ -1,177 +1,110 @@
-// 模拟 @ldesign/http 库
-// 在实际使用中，这里应该是: import { createHttpClient } from '@ldesign/http'
+// 导入 @ldesign/http 库
+import {
+  createHttpClient,
+  createAuthInterceptor,
+  createResponseTimeInterceptor,
+  requestLoggerInterceptor,
+  responseLoggerInterceptor,
+  createRetryInterceptor,
+  CacheManager,
+  createCacheManager
+} from '@ldesign/http'
 
-// 简化的 HTTP 客户端实现用于演示
-class MockHttpClient {
-  constructor(config = {}) {
-    this.config = config
-    this.interceptors = {
-      request: [],
-      response: [],
-      error: [],
-    }
-    this.activeRequests = 0
-    this.completedRequests = 0
-    this.cacheEnabled = false
-    this.cache = new Map()
+// 创建 HTTP 客户端实例
+const http = createHttpClient({
+  baseURL: 'https://jsonplaceholder.typicode.com',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  cache: {
+    enabled: false, // 默认禁用，通过按钮控制
+    ttl: 300000 // 5分钟
   }
+})
 
-  async request(config) {
-    this.activeRequests++
-    this.updateStats()
+// 统计信息
+let stats = {
+  activeRequests: 0,
+  completedRequests: 0,
+  cacheHits: 0,
+  errors: 0
+}
 
-    try {
-      // 应用请求拦截器
-      let processedConfig = { ...this.config, ...config }
-      for (const interceptor of this.interceptors.request) {
-        processedConfig = await interceptor(processedConfig)
-      }
+// 创建缓存管理器
+const cacheManager = createCacheManager({
+  enabled: false,
+  ttl: 300000
+})
 
-      // 检查缓存
-      const cacheKey = `${processedConfig.method || 'GET'}:${processedConfig.url}`
-      if (this.cacheEnabled && this.cache.has(cacheKey)) {
-        const cached = this.cache.get(cacheKey)
-        if (Date.now() - cached.timestamp < 300000) { // 5分钟缓存
-          this.activeRequests--
-          this.completedRequests++
-          this.updateStats()
-          return { ...cached.data, fromCache: true }
-        }
-      }
-
-      // 模拟网络延迟
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500))
-
-      // 模拟请求
-      const response = await this.mockFetch(processedConfig)
-
-      // 缓存响应
-      if (this.cacheEnabled && (processedConfig.method || 'GET') === 'GET') {
-        this.cache.set(cacheKey, {
-          data: response,
-          timestamp: Date.now(),
-        })
-      }
-
-      // 应用响应拦截器
-      let processedResponse = response
-      for (const interceptor of this.interceptors.response) {
-        processedResponse = await interceptor(processedResponse)
-      }
-
-      this.activeRequests--
-      this.completedRequests++
-      this.updateStats()
-
-      return processedResponse
-    }
-    catch (error) {
-      this.activeRequests--
-      this.updateStats()
-
-      // 应用错误拦截器
-      let processedError = error
-      for (const interceptor of this.interceptors.error) {
-        processedError = await interceptor(processedError)
-      }
-
-      throw processedError
+// 简化的统计跟踪（用于演示）
+class StatsTracker {
+  constructor() {
+    this.stats = {
+      activeRequests: 0,
+      completedRequests: 0,
+      cacheHits: 0,
+      errors: 0
     }
   }
 
-  async mockFetch(config) {
-    const { url, method = 'GET', data } = config
-
-    // 模拟不同的响应
-    if (url.includes('error')) {
-      throw new Error('模拟网络错误')
-    }
-
-    if (url.includes('timeout')) {
-      await new Promise(resolve => setTimeout(resolve, 10000))
-    }
-
-    if (url.includes('404')) {
-      const error = new Error('Not Found')
-      error.status = 404
-      throw error
-    }
-
-    // 模拟成功响应
-    return {
-      data: {
-        success: true,
-        method,
-        url,
-        data,
-        timestamp: new Date().toISOString(),
-        id: Math.random().toString(36).substr(2, 9),
-      },
-      status: method === 'POST' ? 201 : 200,
-      statusText: 'OK',
-      headers: {
-        'content-type': 'application/json',
-      },
-    }
+  incrementActive() {
+    this.stats.activeRequests++
+    this.updateDisplay()
   }
 
-  async get(url, config = {}) {
-    return this.request({ ...config, method: 'GET', url })
+  decrementActive() {
+    this.stats.activeRequests--
+    this.stats.completedRequests++
+    this.updateDisplay()
   }
 
-  async post(url, data, config = {}) {
-    return this.request({ ...config, method: 'POST', url, data })
+  incrementCacheHits() {
+    this.stats.cacheHits++
+    this.updateDisplay()
   }
 
-  async put(url, data, config = {}) {
-    return this.request({ ...config, method: 'PUT', url, data })
+  incrementErrors() {
+    this.stats.errors++
+    this.updateDisplay()
   }
 
-  async delete(url, config = {}) {
-    return this.request({ ...config, method: 'DELETE', url })
-  }
+  updateDisplay() {
+    const activeEl = document.getElementById('active-requests')
+    const completedEl = document.getElementById('completed-requests')
+    const cacheEl = document.getElementById('cache-hits')
+    const errorsEl = document.getElementById('errors')
 
-  addRequestInterceptor(interceptor) {
-    this.interceptors.request.push(interceptor)
-  }
-
-  addResponseInterceptor(interceptor) {
-    this.interceptors.response.push(interceptor)
-  }
-
-  addErrorInterceptor(interceptor) {
-    this.interceptors.error.push(interceptor)
-  }
-
-  clearInterceptors() {
-    this.interceptors.request = []
-    this.interceptors.response = []
-    this.interceptors.error = []
-  }
-
-  enableCache() {
-    this.cacheEnabled = true
-  }
-
-  disableCache() {
-    this.cacheEnabled = false
-  }
-
-  clearCache() {
-    this.cache.clear()
-  }
-
-  updateStats() {
-    document.getElementById('active-requests').textContent = this.activeRequests
-    document.getElementById('completed-requests').textContent = this.completedRequests
+    if (activeEl) activeEl.textContent = this.stats.activeRequests
+    if (completedEl) completedEl.textContent = this.stats.completedRequests
+    if (cacheEl) cacheEl.textContent = this.stats.cacheHits
+    if (errorsEl) errorsEl.textContent = this.stats.errors
   }
 }
 
-// 创建 HTTP 客户端实例
-const http = new MockHttpClient({
-  baseURL: 'https://jsonplaceholder.typicode.com',
-  timeout: 10000,
+// 创建统计跟踪器
+const statsTracker = new StatsTracker()
+
+// 添加请求/响应拦截器来跟踪统计信息
+http.interceptors.request.use((config) => {
+  statsTracker.incrementActive()
+  return config
 })
+
+http.interceptors.response.use(
+  (response) => {
+    statsTracker.decrementActive()
+    if (response.fromCache) {
+      statsTracker.incrementCacheHits()
+    }
+    return response
+  },
+  (error) => {
+    statsTracker.decrementActive()
+    statsTracker.incrementErrors()
+    throw error
+  }
+)
 
 // 工具函数
 function formatOutput(data, title = '') {
@@ -250,32 +183,72 @@ window.sendDeleteRequest = async function () {
 }
 
 // 拦截器示例
+let authInterceptorId = null
+let loggingInterceptorIds = []
+
 window.addAuthInterceptor = function () {
-  http.addRequestInterceptor((config) => {
+  // 移除之前的认证拦截器
+  if (authInterceptorId !== null) {
+    http.interceptors.request.eject(authInterceptorId)
+  }
+
+  // 添加新的认证拦截器
+  authInterceptorId = http.interceptors.request.use((config) => {
     config.headers = config.headers || {}
     config.headers.Authorization = 'Bearer fake-token-123'
     return config
   })
+
   updateOutput('interceptor-output', '✅ 已添加认证拦截器\n请求将自动添加 Authorization 头部')
 }
 
 window.addLoggingInterceptor = function () {
-  http.addRequestInterceptor((config) => {
+  // 清除之前的日志拦截器
+  loggingInterceptorIds.forEach(id => {
+    http.interceptors.request.eject(id)
+    http.interceptors.response.eject(id)
+  })
+  loggingInterceptorIds = []
+
+  // 添加请求日志拦截器
+  const requestId = http.interceptors.request.use((config) => {
     console.log('📤 发送请求:', config)
     return config
   })
 
-  http.addResponseInterceptor((response) => {
+  // 添加响应日志拦截器
+  const responseId = http.interceptors.response.use((response) => {
     console.log('📥 收到响应:', response)
     return response
   })
 
+  loggingInterceptorIds.push(requestId, responseId)
   updateOutput('interceptor-output', '✅ 已添加日志拦截器\n请求和响应将在控制台输出日志', true)
 }
 
+window.addResponseTimeInterceptor = function () {
+  // 添加响应时间拦截器
+  const timeInterceptor = createResponseTimeInterceptor()
+  http.interceptors.request.use(timeInterceptor.request)
+  http.interceptors.response.use(timeInterceptor.response)
+
+  updateOutput('interceptor-output', '✅ 已添加响应时间拦截器\n响应时间将在控制台显示', true)
+}
+
 window.clearInterceptors = function () {
-  http.clearInterceptors()
-  updateOutput('interceptor-output', '🗑️ 已清除所有拦截器')
+  // 清除所有自定义拦截器
+  if (authInterceptorId !== null) {
+    http.interceptors.request.eject(authInterceptorId)
+    authInterceptorId = null
+  }
+
+  loggingInterceptorIds.forEach(id => {
+    http.interceptors.request.eject(id)
+    http.interceptors.response.eject(id)
+  })
+  loggingInterceptorIds = []
+
+  updateOutput('interceptor-output', '🗑️ 已清除所有自定义拦截器')
 }
 
 window.testWithInterceptors = async function () {

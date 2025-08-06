@@ -19,6 +19,7 @@ export class ConcurrencyManager {
   private activeRequests = new Set<string>()
   private requestQueue: RequestTask[] = []
   private requestCounter = 0
+  private processingQueue = false // 防止重复处理队列
 
   constructor(config: ConcurrencyConfig = {}) {
     this.config = {
@@ -82,17 +83,30 @@ export class ConcurrencyManager {
   }
 
   /**
-   * 处理队列中的下一个任务
+   * 处理队列中的下一个任务（优化版）
    */
   private processQueue(): void {
-    if (
-      this.requestQueue.length > 0
-      && this.activeRequests.size < this.config.maxConcurrent
-    ) {
-      const nextTask = this.requestQueue.shift()
-      if (nextTask) {
-        this.executeTask(nextTask)
+    // 防止重复处理
+    if (this.processingQueue) {
+      return
+    }
+
+    this.processingQueue = true
+
+    try {
+      // 批量处理多个任务，直到达到并发限制
+      while (
+        this.requestQueue.length > 0
+        && this.activeRequests.size < this.config.maxConcurrent
+      ) {
+        const nextTask = this.requestQueue.shift()
+        if (nextTask) {
+          this.executeTask(nextTask)
+        }
       }
+    }
+    finally {
+      this.processingQueue = false
     }
   }
 

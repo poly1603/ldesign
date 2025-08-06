@@ -62,6 +62,8 @@ interface HttpError extends Error {
     isTimeoutError?: boolean;
     /** 是否为取消错误 */
     isCancelError?: boolean;
+    /** 原始错误 */
+    cause?: Error;
 }
 /**
  * 拦截器函数类型

@@ -1,10 +1,10 @@
-import { vi } from 'vitest'
+import { afterEach, vi } from 'vitest'
 
 // Mock fetch API
-global.fetch = vi.fn()
+globalThis.fetch = vi.fn()
 
 // Mock AbortController
-global.AbortController = vi.fn().mockImplementation(() => ({
+globalThis.AbortController = vi.fn().mockImplementation(() => ({
   signal: {
     aborted: false,
     addEventListener: vi.fn(),
@@ -14,7 +14,7 @@ global.AbortController = vi.fn().mockImplementation(() => ({
 })) as any
 
 // Mock console methods in tests
-global.console = {
+globalThis.console = {
   ...console,
   // 在测试中静默 console.log
   log: vi.fn(),

@@ -12,19 +12,20 @@ declare enum ErrorType {
     UNKNOWN = "UNKNOWN_ERROR"
 }
 /**
- * 错误处理器类
+ * 错误处理器类（优化版）
  */
 declare class ErrorHandler {
+    private static readonly ERROR_TEMPLATES;
     /**
-     * 创建网络错误
+     * 创建网络错误（优化版）
      */
     static createNetworkError(config: RequestConfig, originalError?: any): HttpError;
     /**
-     * 创建超时错误
+     * 创建超时错误（优化版）
      */
     static createTimeoutError(config: RequestConfig, timeout: number): HttpError;
     /**
-     * 创建取消错误
+     * 创建取消错误（优化版）
      */
     static createCancelError(config: RequestConfig): HttpError;
     /**
@@ -53,7 +54,7 @@ declare class RetryManager {
     /**
      * 执行带重试的请求
      */
-    executeWithRetry<T>(requestFn: () => Promise<T>, requestConfig?: RequestConfig): Promise<T>;
+    executeWithRetry<T>(requestFn: () => Promise<T>, _requestConfig?: RequestConfig): Promise<T>;
     /**
      * 默认重试延迟函数（指数退避）
      */

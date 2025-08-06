@@ -1,6 +1,6 @@
 // 适配器导出
 import type { HttpClientConfig } from './types'
-import { createAdapter } from './adapters'
+import { AdapterFactory, createAdapter } from './adapters'
 // 便利函数
 import { HttpClientImpl } from './client'
 

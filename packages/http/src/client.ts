@@ -13,11 +13,10 @@ import type {
 } from '@/types'
 import type { CancelManager } from '@/utils/cancel'
 import { InterceptorManagerImpl } from '@/interceptors/manager'
-import { mergeConfig } from '@/utils'
 import { CacheManager } from '@/utils/cache'
 import { globalCancelManager } from '@/utils/cancel'
 import { ConcurrencyManager } from '@/utils/concurrency'
-import { RetryManager, TimeoutManager } from '@/utils/error'
+import { RetryManager } from '@/utils/error'
 
 /**
  * HTTP 客户端实现
@@ -26,10 +25,11 @@ export class HttpClientImpl implements HttpClient {
   private config: HttpClientConfig
   private adapter: HttpAdapter
   private retryManager: RetryManager
-  private timeoutManager: TimeoutManager
+  // private timeoutManager: TimeoutManager
   private cancelManager: CancelManager
   private cacheManager: CacheManager
   private concurrencyManager: ConcurrencyManager
+  private isDestroyed = false
 
   public interceptors: {
     request: InterceptorManager<RequestInterceptor>
@@ -42,6 +42,7 @@ export class HttpClientImpl implements HttpClient {
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
+        ...config.headers,
       },
       ...config,
     }
@@ -53,7 +54,7 @@ export class HttpClientImpl implements HttpClient {
 
     // 初始化管理器
     this.retryManager = new RetryManager(config.retry)
-    this.timeoutManager = new TimeoutManager()
+    // this.timeoutManager = new TimeoutManager()
     this.cancelManager = globalCancelManager
     this.cacheManager = new CacheManager(config.cache)
     this.concurrencyManager = new ConcurrencyManager(config.concurrency)
@@ -67,14 +68,16 @@ export class HttpClientImpl implements HttpClient {
   }
 
   /**
-   * 发送请求
+   * 发送请求（优化版）
    */
   async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
-    // 合并配置
-    const mergedConfig = mergeConfig(this.config, config)
+    this.checkDestroyed()
+
+    // 合并配置（只在需要时进行深度合并）
+    const mergedConfig = this.optimizedMergeConfig(config)
 
     // 如果启用了重试，使用重试管理器
-    if (mergedConfig.retry && mergedConfig.retry.retries && mergedConfig.retry.retries > 0) {
+    if (mergedConfig.retry?.retries && mergedConfig.retry.retries > 0) {
       return this.retryManager.executeWithRetry(
         () => this.executeRequest<T>(mergedConfig),
         mergedConfig,
@@ -323,5 +326,73 @@ export class HttpClientImpl implements HttpClient {
     }
 
     return processedError
+  }
+
+  /**
+   * 优化的配置合并（避免不必要的深度合并）
+   */
+  private optimizedMergeConfig(config: RequestConfig): RequestConfig {
+    // 如果请求配置为空，直接返回默认配置
+    if (!config || Object.keys(config).length === 0) {
+      return this.config
+    }
+
+    // 浅合并，只在需要时进行深度合并
+    const merged: RequestConfig = {
+      ...this.config,
+      ...config,
+    }
+
+    // 只有在两者都有 headers 时才进行深度合并
+    if (this.config.headers && config.headers) {
+      merged.headers = {
+        ...this.config.headers,
+        ...config.headers,
+      }
+    }
+
+    // 只有在两者都有 params 时才进行深度合并
+    if (this.config.params && config.params) {
+      merged.params = {
+        ...this.config.params,
+        ...config.params,
+      }
+    }
+
+    return merged
+  }
+
+  /**
+   * 销毁客户端，清理资源
+   */
+  destroy(): void {
+    if (this.isDestroyed) {
+      return
+    }
+
+    this.isDestroyed = true
+
+    // 取消所有进行中的请求
+    this.cancelManager.cancelAll('Client destroyed')
+
+    // 清理缓存
+    this.cacheManager.clear()
+
+    // 清理并发队列
+    this.concurrencyManager.cancelQueue('Client destroyed')
+
+    // 清理拦截器
+    this.interceptors.request.clear()
+    this.interceptors.response.clear()
+    this.interceptors.error.clear()
+  }
+
+  /**
+   * 检查客户端是否已销毁
+   */
+  private checkDestroyed(): void {
+    if (this.isDestroyed) {
+      throw new Error('HttpClient has been destroyed')
+    }
   }
 }

@@ -7,10 +7,10 @@ declare class HttpClientImpl implements HttpClient {
     private config;
     private adapter;
     private retryManager;
-    private timeoutManager;
     private cancelManager;
     private cacheManager;
     private concurrencyManager;
+    private isDestroyed;
     interceptors: {
         request: InterceptorManager<RequestInterceptor>;
         response: InterceptorManager<ResponseInterceptor>;
@@ -18,7 +18,7 @@ declare class HttpClientImpl implements HttpClient {
     };
     constructor(config?: HttpClientConfig, adapter?: HttpAdapter);
     /**
-     * 发送请求
+     * 发送请求（优化版）
      */
     request<T = any>(config: RequestConfig): Promise<ResponseData<T>>;
     /**
@@ -102,6 +102,18 @@ declare class HttpClientImpl implements HttpClient {
      * 处理错误拦截器
      */
     private processErrorInterceptors;
+    /**
+     * 优化的配置合并（避免不必要的深度合并）
+     */
+    private optimizedMergeConfig;
+    /**
+     * 销毁客户端，清理资源
+     */
+    destroy(): void;
+    /**
+     * 检查客户端是否已销毁
+     */
+    private checkDestroyed;
 }
 
 export { HttpClientImpl };

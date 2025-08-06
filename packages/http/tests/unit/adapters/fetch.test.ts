@@ -4,10 +4,10 @@ import { FetchAdapter } from '@/adapters/fetch'
 
 // Mock fetch
 const mockFetch = vi.fn()
-global.fetch = mockFetch
+globalThis.fetch = mockFetch
 
 // Mock AbortController
-global.AbortController = vi.fn().mockImplementation(() => ({
+globalThis.AbortController = vi.fn().mockImplementation(() => ({
   signal: {
     aborted: false,
     addEventListener: vi.fn(),
