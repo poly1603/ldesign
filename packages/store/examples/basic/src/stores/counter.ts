@@ -10,6 +10,10 @@ export class CounterStore extends BaseStore {
   @State({ default: 1 })
   step: number = 1
 
+  constructor(id: string = 'counter') {
+    super(id)
+  }
+
   @Action()
   increment() {
     this.count += this.step

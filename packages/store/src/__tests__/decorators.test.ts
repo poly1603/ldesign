@@ -37,17 +37,10 @@ describe('decorators', () => {
 
     class ReadonlyStateTestStore extends BaseStore {
       @ReadonlyState({ value: 'readonly' })
-      readonlyState: string
+      readonlyState!: string
 
       constructor(id: string) {
         super(id)
-        // 在构造函数中设置只读值
-        Object.defineProperty(this, 'readonlyState', {
-          value: 'readonly',
-          writable: false,
-          enumerable: true,
-          configurable: false,
-        })
       }
     }
 

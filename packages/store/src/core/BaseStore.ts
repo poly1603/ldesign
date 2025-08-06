@@ -34,6 +34,12 @@ export abstract class BaseStore<
   /** 初始状态 */
   private _initialState?: TState
 
+  /** 缓存的装饰器元数据 */
+  private _cachedMetadata?: DecoratorMetadata[]
+
+  /** 清理函数列表 */
+  private _cleanupFunctions: (() => void)[] = []
+
   constructor(id: string, options?: Partial<StoreOptions<TState, TActions, TGetters>>) {
     this.$id = id
     this._initializeStore(options)
@@ -101,21 +107,26 @@ export abstract class BaseStore<
    * 部分更新状态
    */
   $patch(partialState: Partial<TState>): void {
-    this._store?.$patch(partialState as any)
+    if (this._store) {
+      // 使用函数形式的 $patch 来避免类型错误
+      this._store.$patch((state: any) => {
+        Object.assign(state, partialState)
+      })
+    }
   }
 
   /**
    * 订阅状态变化
    */
   $subscribe(callback: (mutation: any, state: TState) => void): () => void {
-    return this._store?.$subscribe(callback as any) || (() => {})
+    return this._store?.$subscribe(callback as any) || (() => { })
   }
 
   /**
    * 订阅 Action
    */
   $onAction(callback: (context: any) => void): () => void {
-    return this._store?.$onAction(callback) || (() => {})
+    return this._store?.$onAction(callback) || (() => { })
   }
 
   /**
@@ -130,6 +141,30 @@ export abstract class BaseStore<
    */
   getStoreDefinition(): StoreDefinition<string, TState, TGetters, TActions> | undefined {
     return this._storeDefinition
+  }
+
+  /**
+   * 销毁 Store，清理资源
+   */
+  $dispose(): void {
+    // 执行所有清理函数
+    this._cleanupFunctions.forEach(cleanup => cleanup())
+    this._cleanupFunctions.length = 0
+
+    // 清理缓存
+    this._cachedMetadata = undefined
+    this._initialState = undefined
+
+    // 清理 Pinia Store
+    this._store = undefined
+    this._storeDefinition = undefined
+  }
+
+  /**
+   * 添加清理函数
+   */
+  protected _addCleanup(cleanup: () => void): void {
+    this._cleanupFunctions.push(cleanup)
   }
 
   /**
@@ -232,9 +267,12 @@ export abstract class BaseStore<
   }
 
   /**
-   * 获取装饰器元数据
+   * 获取装饰器元数据（带缓存）
    */
   private _getDecoratorMetadata(): DecoratorMetadata[] {
-    return Reflect.getMetadata(DECORATOR_METADATA_KEY, this.constructor) || []
+    if (!this._cachedMetadata) {
+      this._cachedMetadata = Reflect.getMetadata(DECORATOR_METADATA_KEY, this.constructor) || []
+    }
+    return this._cachedMetadata!
   }
 }

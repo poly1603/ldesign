@@ -9,6 +9,24 @@ export { BaseStore } from './BaseStore'
 // 工具函数
 export * from './utils'
 
+// 性能监控
+export {
+  MonitorAction,
+  MonitorGetter,
+  PerformanceMonitor,
+  getOptimizationSuggestions,
+  usePerformanceMonitor,
+} from './performance'
+export type { PerformanceMetrics } from './performance'
+
+// Store 池管理
+export {
+  PooledStore,
+  StorePool,
+  useStorePool,
+} from './storePool'
+export type { StorePoolOptions } from './storePool'
+
 // 类型定义
 export type {
   ActionDefinition,

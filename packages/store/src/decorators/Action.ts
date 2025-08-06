@@ -57,6 +57,17 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
     let cache: Map<string, { result: any, timestamp: number }> | undefined
     if (options.cache) {
       cache = new Map()
+      // 定期清理过期缓存
+      if (options.cacheTime) {
+        setInterval(() => {
+          const now = Date.now()
+          for (const [key, entry] of cache!.entries()) {
+            if (now - entry.timestamp > options.cacheTime!) {
+              cache!.delete(key)
+            }
+          }
+        }, Math.max(options.cacheTime / 2, 60000)) // 至少每分钟清理一次
+      }
     }
 
     // 包装方法

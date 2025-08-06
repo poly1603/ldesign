@@ -16,9 +16,11 @@ export function useStoreHook<T extends Store>(store: T) {
   })
 
   // 清理函数
-  onUnmounted(() => {
+  const cleanup = () => {
     unsubscribe()
-  })
+  }
+
+  onUnmounted(cleanup)
 
   return {
     store,
@@ -28,6 +30,7 @@ export function useStoreHook<T extends Store>(store: T) {
     subscribe: (callback: (mutation: any, state: T['$state']) => void) =>
       store.$subscribe(callback),
     onAction: (callback: (context: any) => void) => store.$onAction(callback),
+    cleanup, // 手动清理函数
   }
 }
 
@@ -74,7 +77,13 @@ export function useStateWatch<T extends Store>(
  */
 export function useActionState<T extends (...args: any[]) => any>(
   action: T,
-) {
+): {
+  loading: Ref<boolean>
+  error: Ref<Error | null>
+  data: Ref<ReturnType<T> | null>
+  execute: (...args: Parameters<T>) => Promise<ReturnType<T>>
+  reset: () => void
+} {
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const data = ref<ReturnType<T> | null>(null)
@@ -160,11 +169,11 @@ export function useLocalStorage<T>(
   key: string,
   defaultValue: T,
 ): {
-    value: Ref<T>
-    save: () => void
-    load: () => void
-    remove: () => void
-  } {
+  value: Ref<T>
+  save: () => void
+  load: () => void
+  remove: () => void
+} {
   const value = ref(defaultValue) as Ref<T>
 
   const save = () => {
@@ -220,11 +229,11 @@ export function useSessionStorage<T>(
   key: string,
   defaultValue: T,
 ): {
-    value: Ref<T>
-    save: () => void
-    load: () => void
-    remove: () => void
-  } {
+  value: Ref<T>
+  save: () => void
+  load: () => void
+  remove: () => void
+} {
   const value = ref(defaultValue) as Ref<T>
 
   const save = () => {

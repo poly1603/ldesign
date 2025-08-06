@@ -14,6 +14,10 @@ export class TodoStore extends BaseStore {
   @State({ default: '' })
   filter: 'all' | 'active' | 'completed' = 'all'
 
+  constructor(id: string = 'todo') {
+    super(id)
+  }
+
   @Action()
   addTodo(text: string) {
     if (text.trim()) {

@@ -157,6 +157,10 @@ export function ReadonlyState(options: Omit<StateDecoratorOptions, 'default'> & 
           })
           return
         }
+        // 如果是初始值设置（从装饰器选项），允许设置
+        if (value === options.value) {
+          return
+        }
         throw new Error(`Cannot set readonly state property: ${propertyKey}`)
       },
       enumerable: true,
