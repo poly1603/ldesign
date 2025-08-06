@@ -108,6 +108,10 @@ declare class ErrorUtils {
      * 创建验证错误
      */
     static createValidationError(message: string): Error;
+    /**
+     * 处理错误
+     */
+    static handleError(error: unknown, context?: string): string;
 }
 /**
  * 常量定义

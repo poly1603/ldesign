@@ -213,6 +213,14 @@ export class ErrorUtils {
     error.name = 'ValidationError'
     return error
   }
+
+  /**
+   * 处理错误
+   */
+  static handleError(error: unknown, context?: string): string {
+    const message = error instanceof Error ? error.message : String(error)
+    return context ? `${context}: ${message}` : message
+  }
 }
 
 /**

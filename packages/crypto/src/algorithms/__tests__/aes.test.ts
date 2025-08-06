@@ -111,7 +111,7 @@ describe('aES Encryption', () => {
 
     it('should handle string input for decryption', () => {
       const encrypted = aes.encrypt(testData, testKey)
-      const decrypted = aes.decrypt(encrypted.data, testKey, { iv: encrypted.iv })
+      const decrypted = aes.decrypt(encrypted.data || '', testKey, { iv: encrypted.iv })
 
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)

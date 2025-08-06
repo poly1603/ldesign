@@ -1,6 +1,6 @@
-import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
-import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -13,6 +13,10 @@ export default createRollupConfig({
     'crypto': 'crypto',
     'crypto-js': 'CryptoJS',
     'node-forge': 'forge',
-    'vue': 'Vue'
-  }
+    'vue': 'Vue',
+  },
+  // 添加额外的入口文件
+  additionalInputs: {
+    vue: 'vue.ts',
+  },
 })

@@ -1,7 +1,7 @@
 /**
  * 加密算法类型
  */
-export type EncryptionAlgorithm = 'AES' | 'RSA'
+export type EncryptionAlgorithm = 'AES' | 'RSA' | 'DES' | '3DES' | 'Blowfish' | 'DES' | '3DES' | 'Blowfish'
 
 /**
  * AES 加密模式
@@ -61,6 +61,33 @@ export interface RSAOptions {
 }
 
 /**
+ * DES 加密选项
+ */
+export interface DESOptions {
+  mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB'
+  iv?: string
+  padding?: string
+}
+
+/**
+ * 3DES 加密选项
+ */
+export interface TripleDESOptions {
+  mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB'
+  iv?: string
+  padding?: string
+}
+
+/**
+ * Blowfish 加密选项
+ */
+export interface BlowfishOptions {
+  mode?: 'CBC' | 'ECB'
+  iv?: string
+  padding?: boolean
+}
+
+/**
  * 哈希选项
  */
 export interface HashOptions {
@@ -78,18 +105,24 @@ export interface HMACOptions {
  * 加密结果
  */
 export interface EncryptResult {
-  data: string
+  success: boolean
+  data?: string
   algorithm: string
+  mode?: string
   iv?: string
   salt?: string
+  keySize?: number
+  error?: string
 }
 
 /**
  * 解密结果
  */
 export interface DecryptResult {
-  data: string
   success: boolean
+  data?: string
+  algorithm: string
+  mode?: string
   error?: string
 }
 

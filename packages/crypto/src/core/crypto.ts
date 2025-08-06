@@ -1,14 +1,19 @@
 import type {
   AESOptions,
+  BlowfishOptions,
   DecryptResult,
+  DESOptions,
   EncodingType,
+  EncryptionAlgorithm,
   EncryptResult,
   HashAlgorithm,
   HashOptions,
   RSAKeyPair,
   RSAOptions,
+  TripleDESOptions,
 } from '../types'
-import { aes, encoding, hash, hmac, rsa } from '../algorithms'
+import { aes, blowfish, des, des3, encoding, hash, hmac, rsa, tripledes } from '../algorithms'
+import { Encoder } from '../algorithms/encoding'
 import { CONSTANTS, RandomUtils } from '../utils'
 
 /**
@@ -51,6 +56,59 @@ export class Encrypt {
   }
 
   /**
+   * DES 加密
+   */
+  des(data: string, key: string, options?: DESOptions): EncryptResult {
+    return des.encrypt(data, key, options)
+  }
+
+  /**
+   * 3DES 加密
+   */
+  des3(data: string, key: string, options?: TripleDESOptions): EncryptResult {
+    return des3.encrypt(data, key, options)
+  }
+
+  /**
+   * Triple DES 加密 (别名)
+   */
+  tripledes(data: string, key: string, options?: TripleDESOptions): EncryptResult {
+    return tripledes.encrypt(data, key, options)
+  }
+
+  /**
+   * Blowfish 加密
+   */
+  blowfish(data: string, key: string, options?: BlowfishOptions): EncryptResult {
+    return blowfish.encrypt(data, key, options)
+  }
+
+  /**
+   * 通用加密方法
+   * 根据算法类型自动选择合适的加密方法
+   */
+  encrypt(data: string, key: string, algorithm: EncryptionAlgorithm, options?: any): EncryptResult {
+    switch (algorithm.toUpperCase()) {
+      case 'AES':
+        return this.aes(data, key, options as AESOptions)
+      case 'RSA':
+        return this.rsa(data, key, options as RSAOptions)
+      case 'DES':
+        return this.des(data, key, options as DESOptions)
+      case '3DES':
+        return this.des3(data, key, options as TripleDESOptions)
+      case 'BLOWFISH':
+        return this.blowfish(data, key, options as BlowfishOptions)
+      default:
+        return {
+          success: false,
+          error: `Unsupported encryption algorithm: ${algorithm}`,
+          algorithm,
+        }
+    }
+  }
+
+  /**
    * Base64 编码
    */
   base64(data: string): string {
@@ -83,6 +141,7 @@ export class Encrypt {
  * 解密类
  */
 export class Decrypt {
+  private encoder = new Encoder()
   /**
    * AES 解密
    */
@@ -119,6 +178,73 @@ export class Decrypt {
   }
 
   /**
+   * DES 解密
+   */
+  des(encryptedData: string | EncryptResult, key: string, options?: DESOptions): DecryptResult {
+    return des.decrypt(encryptedData, key, options)
+  }
+
+  /**
+   * 3DES 解密
+   */
+  des3(encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions): DecryptResult {
+    return des3.decrypt(encryptedData, key, options)
+  }
+
+  /**
+   * Triple DES 解密 (别名)
+   */
+  tripledes(encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions): DecryptResult {
+    return tripledes.decrypt(encryptedData, key, options)
+  }
+
+  /**
+   * Blowfish 解密
+   */
+  blowfish(encryptedData: string | EncryptResult, key: string, options?: BlowfishOptions): DecryptResult {
+    return blowfish.decrypt(encryptedData, key, options)
+  }
+
+  /**
+   * 通用解密方法
+   * 根据算法类型自动选择合适的解密方法
+   */
+  decrypt(encryptedData: string | EncryptResult, key: string, algorithm?: EncryptionAlgorithm, options?: any): DecryptResult {
+    // 如果传入的是 EncryptResult 对象，尝试从中获取算法信息
+    let targetAlgorithm = algorithm
+    if (typeof encryptedData === 'object' && encryptedData.algorithm) {
+      targetAlgorithm = encryptedData.algorithm as EncryptionAlgorithm
+    }
+
+    if (!targetAlgorithm) {
+      return {
+        success: false,
+        error: 'Algorithm must be specified for decryption',
+        algorithm: 'Unknown',
+      }
+    }
+
+    switch (targetAlgorithm.toUpperCase()) {
+      case 'AES':
+        return this.aes(encryptedData, key, options as AESOptions)
+      case 'RSA':
+        return this.rsa(encryptedData, key, options as RSAOptions)
+      case 'DES':
+        return this.des(encryptedData, key, options as DESOptions)
+      case '3DES':
+        return this.des3(encryptedData, key, options as TripleDESOptions)
+      case 'BLOWFISH':
+        return this.blowfish(encryptedData, key, options as BlowfishOptions)
+      default:
+        return {
+          success: false,
+          error: `Unsupported decryption algorithm: ${targetAlgorithm}`,
+          algorithm: targetAlgorithm,
+        }
+    }
+  }
+
+  /**
    * Base64 解码
    */
   base64(encodedData: string): string {
@@ -143,7 +269,7 @@ export class Decrypt {
    * 通用解码
    */
   decode(encodedData: string, encoding: EncodingType): string {
-    return encoding.decode(encodedData, encoding)
+    return this.encoder.decode(encodedData, encoding)
   }
 }
 

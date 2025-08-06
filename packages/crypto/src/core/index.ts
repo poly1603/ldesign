@@ -1,10 +1,45 @@
-// 核心加密类
+/**
+ * 核心模块导出
+ *
+ * 提供统一的核心功能访问接口，包括：
+ * - 核心功能类和实例
+ * - 管理器和性能优化工具
+ * - 类型定义
+ */
+
+// === 核心功能类 ===
+export {
+  Encrypt,
+  Decrypt,
+  Hash,
+  HMAC,
+  KeyGenerator,
+  DigitalSignature,
+} from './crypto'
+
+// === 管理器和性能优化 ===
+export {
+  CryptoManager,
+  type CryptoConfig,
+} from './manager'
+
+export {
+  PerformanceOptimizer,
+} from './performance'
+
+export type {
+  BatchOperation,
+  BatchResult,
+  CacheStats,
+  PerformanceMetrics,
+  MemoryPoolConfig,
+} from './performance'
+
+// === 核心功能实例 ===
+// 创建单例实例，提供便捷的全局访问
 import { Decrypt, DigitalSignature, Encrypt, Hash, HMAC, KeyGenerator } from './crypto'
+import { CryptoManager } from './manager'
 
-// 导出类
-export { Decrypt, DigitalSignature, Encrypt, Hash, HMAC, KeyGenerator }
-
-// 创建实例
 export const encrypt = new Encrypt()
 export const decrypt = new Decrypt()
 export const hash = new Hash()
@@ -12,13 +47,38 @@ export const hmac = new HMAC()
 export const keyGenerator = new KeyGenerator()
 export const digitalSignature = new DigitalSignature()
 
-// 重新导出算法模块
-export { aes, base64, encoding, hex, rsa } from '../algorithms'
+// 创建默认管理器实例
+export const cryptoManager = new CryptoManager({
+  defaultAlgorithm: 'AES',
+  enableCache: true,
+  maxCacheSize: 1000,
+  enableParallel: true,
+  autoGenerateIV: true,
+  keyDerivation: false,
+  debug: false,
+  logLevel: 'error',
+})
+
+// === 重新导出算法模块 ===
+// 为了保持向后兼容性，重新导出算法实现
+export {
+  aes,
+  rsa,
+  des,
+  des3,
+  tripledes,
+  blowfish,
+  base64,
+  hex,
+  encoding,
+} from '../algorithms'
 
 // 重新导出类型
 export type {
   AESOptions,
+  BlowfishOptions,
   DecryptResult,
+  DESOptions,
   EncodingType,
   EncryptResult,
   HashAlgorithm,
@@ -28,4 +88,7 @@ export type {
   KeyGenerationOptions,
   RSAKeyPair,
   RSAOptions,
+  TripleDESOptions,
 } from '../types'
+
+

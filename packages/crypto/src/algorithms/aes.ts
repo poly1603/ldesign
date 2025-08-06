@@ -13,6 +13,10 @@ export class AESEncryptor implements IEncryptor {
     padding: 'Pkcs7',
   }
 
+  // 密钥缓存，避免重复的 PBKDF2 计算
+  private keyCache = new Map<string, CryptoJS.lib.WordArray>()
+  private maxKeyCacheSize = 100
+
   /**
    * AES 加密
    */
@@ -49,6 +53,7 @@ export class AESEncryptor implements IEncryptor {
       const encrypted = CryptoJS.AES.encrypt(data, keyWordArray, config)
 
       return {
+        success: true,
         data: encrypted.toString(),
         algorithm: `AES-${opts.keySize}-${opts.mode}`,
         iv,
@@ -66,12 +71,12 @@ export class AESEncryptor implements IEncryptor {
    * AES 解密
    */
   decrypt(encryptedData: string | EncryptResult, key: string, options: AESOptions = {}): DecryptResult {
+    const opts = { ...this.defaultOptions, ...options }
+
     try {
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createDecryptionError('Key cannot be empty', 'AES')
       }
-
-      const opts = { ...this.defaultOptions, ...options }
       let ciphertext: string
       let iv: string
 
@@ -84,7 +89,7 @@ export class AESEncryptor implements IEncryptor {
         }
       }
       else {
-        ciphertext = encryptedData.data
+        ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || opts.iv
         if (!iv) {
           throw ErrorUtils.createDecryptionError('IV not found in encrypted data', 'AES')
@@ -114,21 +119,25 @@ export class AESEncryptor implements IEncryptor {
       }
 
       return {
-        data: decryptedString,
         success: true,
+        data: decryptedString,
+        algorithm: `AES-${opts.keySize}-${opts.mode}`,
       }
     }
     catch (error) {
+      const algorithmName = `AES-${opts.keySize}-${opts.mode}`
       if (error instanceof Error) {
         return {
-          data: '',
           success: false,
+          data: '',
+          algorithm: algorithmName,
           error: error.message,
         }
       }
       return {
-        data: '',
         success: false,
+        data: '',
+        algorithm: algorithmName,
         error: 'Unknown decryption error',
       }
     }
@@ -138,21 +147,53 @@ export class AESEncryptor implements IEncryptor {
    * 准备密钥
    */
   private prepareKey(key: string, keySize: number): CryptoJS.lib.WordArray {
+    // 生成缓存键
+    const cacheKey = `${key}_${keySize}`
+
+    // 检查缓存
+    const cachedKey = this.keyCache.get(cacheKey)
+    if (cachedKey) {
+      return cachedKey
+    }
+
+    let keyWordArray: CryptoJS.lib.WordArray
+
     // 如果密钥是十六进制字符串，直接解析
     if (ValidationUtils.isValidHex(key)) {
-      const keyWordArray = CryptoJS.enc.Hex.parse(key)
+      keyWordArray = CryptoJS.enc.Hex.parse(key)
       // 确保密钥长度正确
       if (keyWordArray.sigBytes * 8 === keySize) {
+        this.cacheKey(cacheKey, keyWordArray)
         return keyWordArray
       }
     }
 
     // 否则，使用固定盐值的 PBKDF2 派生密钥，确保相同输入产生相同密钥
     const salt = CryptoJS.enc.Utf8.parse('ldesign-crypto-salt')
-    return CryptoJS.PBKDF2(key, salt, {
+    keyWordArray = CryptoJS.PBKDF2(key, salt, {
       keySize: keySize / 32,
       iterations: 1000,
-    })
+    }) as CryptoJS.lib.WordArray
+
+    // 缓存派生的密钥
+    this.cacheKey(cacheKey, keyWordArray)
+
+    return keyWordArray
+  }
+
+  /**
+   * 缓存密钥
+   */
+  private cacheKey(cacheKey: string, keyWordArray: CryptoJS.lib.WordArray): void {
+    // 如果缓存已满，删除最旧的条目
+    if (this.keyCache.size >= this.maxKeyCacheSize) {
+      const firstKey = this.keyCache.keys().next().value
+      if (firstKey) {
+        this.keyCache.delete(firstKey)
+      }
+    }
+
+    this.keyCache.set(cacheKey, keyWordArray)
   }
 
   /**

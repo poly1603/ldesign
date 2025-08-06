@@ -67,12 +67,9 @@ export class Encoder implements IEncoder {
    */
   private encodeBase64(data: string): string {
     try {
-      // 使用浏览器原生 API 或 Node.js Buffer
+      // 优先使用浏览器原生 API
       if (typeof btoa !== 'undefined') {
         return btoa(unescape(encodeURIComponent(data)))
-      }
-      else if (typeof Buffer !== 'undefined') {
-        return Buffer.from(data, 'utf8').toString('base64')
       }
       else {
         // 使用 CryptoJS 作为后备
@@ -94,12 +91,9 @@ export class Encoder implements IEncoder {
         throw ErrorUtils.createDecryptionError('Invalid Base64 format', 'Base64')
       }
 
-      // 使用浏览器原生 API 或 Node.js Buffer
+      // 优先使用浏览器原生 API
       if (typeof atob !== 'undefined') {
         return decodeURIComponent(escape(atob(encodedData)))
-      }
-      else if (typeof Buffer !== 'undefined') {
-        return Buffer.from(encodedData, 'base64').toString('utf8')
       }
       else {
         // 使用 CryptoJS 作为后备

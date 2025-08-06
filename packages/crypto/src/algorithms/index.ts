@@ -1,28 +1,87 @@
-// 重新导出类型
+/**
+ * 算法模块导出
+ *
+ * 提供所有加密算法的实现，包括：
+ * - 对称加密：AES、DES、3DES、Blowfish
+ * - 非对称加密：RSA
+ * - 哈希算法：MD5、SHA 系列、HMAC
+ * - 编码算法：Base64、Hex
+ */
+
+// === 类型定义 ===
 export type {
-  AESOptions,
-  DecryptResult,
-  EncodingType,
+  // 核心结果类型
   EncryptResult,
-  HashAlgorithm,
-  HashOptions,
+  DecryptResult,
   HashResult,
+
+  // 算法选项类型
+  AESOptions,
+  RSAOptions,
+  DESOptions,
+  TripleDESOptions,
+  BlowfishOptions,
+  HashOptions,
+
+  // 其他类型
+  HashAlgorithm,
   HMACAlgorithm,
-  IEncoder,
+  EncodingType,
+  RSAKeyPair,
+
+  // 接口类型
   IEncryptor,
   IHasher,
-  RSAKeyPair,
-  RSAOptions,
+  IEncoder,
 } from '../types'
 
-// AES 加密
-export { aes, AESEncryptor } from './aes'
+// === 对称加密算法 ===
+export {
+  // AES 算法
+  AESEncryptor,
+  aes,
+} from './aes'
 
-// 编码算法
-export { base64, Encoder, encoding, hex } from './encoding'
+export {
+  // DES 算法
+  DESEncryptor,
+  des,
+} from './des'
 
-// 哈希算法
-export { hash, Hasher, hmac, HMACHasher } from './hash'
+export {
+  // 3DES 算法
+  TripleDESEncryptor,
+  des3,
+  tripledes,
+} from './tripledes'
 
-// RSA 加密
-export { rsa, RSAEncryptor } from './rsa'
+export {
+  // Blowfish 算法
+  BlowfishEncryptor,
+  blowfish,
+} from './blowfish'
+
+// === 非对称加密算法 ===
+export {
+  // RSA 算法
+  RSAEncryptor,
+  rsa,
+} from './rsa'
+
+// === 哈希算法 ===
+export {
+  // 哈希和 HMAC
+  Hasher,
+  HMACHasher,
+  hash,
+  hmac,
+} from './hash'
+
+// === 编码算法 ===
+export {
+  // 编码器和便捷函数
+  Encoder,
+  encoding,
+  base64,
+  hex,
+} from './encoding'

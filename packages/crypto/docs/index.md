@@ -22,7 +22,7 @@ hero:
 features:
   - icon: 🔐
     title: 全面的加密算法
-    details: 支持 AES、RSA、MD5、SHA系列、Base64、HMAC 等所有主流加密算法
+    details: 支持 AES、DES、3DES、Blowfish、RSA、MD5、SHA系列、Base64、HMAC 等所有主流加密算法
   - icon: 🚀
     title: 高性能优化
     details: 优化的算法实现，适合生产环境使用，支持大数据量处理
@@ -51,11 +51,23 @@ features:
 ### 基础用法
 
 ```typescript
-import { decrypt, encrypt, hash } from '@ldesign/crypto'
+import { cryptoManager, decrypt, encrypt, hash } from '@ldesign/crypto'
 
 // AES 加密
 const encrypted = encrypt.aes('Hello World', 'secret-key')
 const decrypted = decrypt.aes(encrypted, 'secret-key')
+
+// DES 加密
+const desEncrypted = encrypt.des('Hello World', 'secret-key')
+const desDecrypted = decrypt.des(desEncrypted, 'secret-key')
+
+// 3DES 加密
+const tripleDesEncrypted = encrypt.des3('Hello World', 'secret-key-123456789012')
+const tripleDesDecrypted = decrypt.des3(tripleDesEncrypted, 'secret-key-123456789012')
+
+// 使用统一管理器
+const result = await cryptoManager.encryptData('Hello World', 'secret-key', 'AES')
+const decryptedResult = await cryptoManager.decryptData(result, 'secret-key')
 
 // 哈希计算
 const md5Hash = hash.md5('Hello World')
@@ -122,6 +134,9 @@ yarn add @ldesign/crypto
 | 类型       | 算法                               | 描述                       |
 | ---------- | ---------------------------------- | -------------------------- |
 | 对称加密   | AES-128/192/256                    | 高级加密标准，支持多种模式 |
+| 对称加密   | DES                                | 数据加密标准               |
+| 对称加密   | 3DES (Triple DES)                  | 三重数据加密标准           |
+| 对称加密   | Blowfish                           | 快速分组密码算法           |
 | 非对称加密 | RSA                                | 公钥加密算法，支持签名验证 |
 | 哈希算法   | MD5, SHA-1/224/256/384/512         | 消息摘要算法               |
 | 消息认证   | HMAC-MD5/SHA1/SHA256/SHA384/SHA512 | 基于哈希的消息认证码       |

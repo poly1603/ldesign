@@ -186,7 +186,7 @@ test.describe('Vue Integration E2E Tests', () => {
 
   test('should handle Vue plugin integration', async ({ page }) => {
     // Check if the plugin is properly installed
-    const pluginInstalled = await page.evaluate(() => {
+    const _pluginInstalled = await page.evaluate(() => {
       // Check if $crypto is available on Vue instance
       return typeof window.__VUE_APP__?.$crypto !== 'undefined'
     })
