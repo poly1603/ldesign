@@ -1,0 +1,120 @@
+// ============ 布局样式 ============
+
+// 容器
+.container {
+  width: 100%;
+  max-width: @container-max-width;
+  margin: 0 auto;
+  padding: 0 @spacing-md;
+}
+
+// 网格系统
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -@spacing-sm;
+}
+
+.col {
+  flex: 1;
+  padding: 0 @spacing-sm;
+}
+
+// 弹性布局
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-around {
+  justify-content: space-around;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.align-items-start {
+  align-items: flex-start;
+}
+
+.align-items-end {
+  align-items: flex-end;
+}
+
+// 文本对齐
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+// 显示/隐藏
+.d-none {
+  display: none;
+}
+
+.d-block {
+  display: block;
+}
+
+.d-inline {
+  display: inline;
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+// 位置
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.position-fixed {
+  position: fixed;
+}
+
+.position-sticky {
+  position: sticky;
+}
+
+// 浮动
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.clearfix::after {
+  content: '';
+  display: table;
+  clear: both;
+}

@@ -145,6 +145,11 @@ export function createRouter(options: RouterOptions): Router {
       // 注册全局组件
       app.component('RouterView', RouterView)
       app.component('RouterLink', RouterLink)
+
+      // 初始化当前路由
+      const location = options.history.location
+      const route = matcher.resolve({ path: location }, START_LOCATION)
+      currentRoute.value = route
     },
   }
 

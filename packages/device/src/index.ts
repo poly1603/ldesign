@@ -44,3 +44,6 @@ export {
   safeNavigatorAccess,
   throttle,
 } from './utils'
+
+// Vue集成
+export * from './vue'

@@ -8,6 +8,9 @@
  * - 类型安全的 API
  */
 
+// === Vue Composables ===
+export { useCrypto } from '../../vue/composables/useCrypto'
+
 // === 核心功能重新导出 ===
 // 为 Vue 环境提供便捷的核心功能访问
 export {

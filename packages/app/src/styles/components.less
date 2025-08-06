@@ -1,0 +1,250 @@
+// ============ 组件样式 ============
+
+// 登录视图样式
+.login-view {
+  min-height: 100vh;
+  position: relative;
+  
+  .template-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: @border-radius-lg;
+    padding: 12px 16px;
+    box-shadow: @shadow;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .switcher-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      label {
+        font-size: @font-size-sm;
+        font-weight: @font-weight-medium;
+        color: @text-primary;
+        white-space: nowrap;
+      }
+      
+      .template-select {
+        padding: 6px 12px;
+        border: 1px solid @border-color;
+        border-radius: @border-radius;
+        background: white;
+        font-size: @font-size-sm;
+        cursor: pointer;
+        min-width: 120px;
+        
+        &:focus {
+          outline: none;
+          border-color: @primary-color;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+      }
+    }
+  }
+  
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: @border-radius-lg;
+    box-shadow: @shadow-lg;
+    padding: 40px;
+    transition: @transition-base;
+    
+    // 不同模板的样式
+    &.template-classic {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      
+      .login-header,
+      .login-form {
+        background: white;
+        border-radius: @border-radius;
+        padding: 32px;
+        margin-bottom: 20px;
+      }
+    }
+    
+    &.template-modern {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    &.template-minimal {
+      box-shadow: none;
+      border: 1px solid @border-color;
+    }
+    
+    &.template-creative {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: white;
+      
+      .form-control {
+        background: rgba(255, 255, 255, 0.9);
+      }
+    }
+  }
+  
+  .login-header {
+    text-align: center;
+    margin-bottom: 32px;
+    
+    .logo {
+      margin-bottom: 16px;
+      
+      h1 {
+        font-size: @font-size-3xl;
+        font-weight: @font-weight-bold;
+        color: @primary-color;
+        margin: 0;
+      }
+    }
+    
+    .subtitle {
+      color: @text-secondary;
+      font-size: @font-size-base;
+      margin: 0;
+    }
+  }
+  
+  .login-form {
+    .form-group {
+      margin-bottom: 20px;
+      
+      .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid @border-color;
+        border-radius: @border-radius;
+        font-size: @font-size-base;
+        transition: @transition-base;
+        
+        &:focus {
+          outline: none;
+          border-color: @primary-color;
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+      }
+    }
+    
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: @font-size-sm;
+        color: @text-secondary;
+        cursor: pointer;
+        
+        input[type="checkbox"] {
+          display: none;
+        }
+        
+        .checkmark {
+          width: 16px;
+          height: 16px;
+          border: 1px solid @border-color;
+          border-radius: 3px;
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            opacity: 0;
+            transition: @transition-fast;
+          }
+        }
+        
+        input:checked + .checkmark {
+          background: @primary-color;
+          border-color: @primary-color;
+          
+          &::after {
+            opacity: 1;
+          }
+        }
+      }
+    }
+    
+    .btn-block {
+      width: 100%;
+      padding: 12px;
+      font-size: @font-size-base;
+      font-weight: @font-weight-medium;
+      
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// 响应式设计
+@media (max-width: @screen-md) {
+  .login-view {
+    .template-switcher {
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      
+      .switcher-content {
+        flex-direction: column;
+        gap: 8px;
+        
+        label {
+          font-size: @font-size-xs;
+        }
+        
+        .template-select {
+          font-size: @font-size-xs;
+          min-width: 100px;
+        }
+      }
+    }
+    
+    .login-container {
+      padding: 16px;
+    }
+    
+    .login-card {
+      padding: 24px;
+    }
+  }
+}

@@ -166,6 +166,16 @@ export function createRouterMatcher(
       }
     }
 
+    // 处理重定向
+    if (matcher.redirect) {
+      const redirectLocation = typeof matcher.redirect === 'string'
+        ? { path: matcher.redirect }
+        : matcher.redirect
+
+      // 递归解析重定向目标
+      return resolve(redirectLocation, currentLocation)
+    }
+
     // 构建完整路径
     const fullPath = stringifyURL({ path, query, hash })
 

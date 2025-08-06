@@ -8,6 +8,7 @@ import type {
 } from '../types'
 import {
   computed,
+  defineAsyncComponent,
   defineComponent,
   h,
   inject,
@@ -103,19 +104,8 @@ function resolveComponent(component: RouteComponent): Component | null {
     try {
       const result = (component as () => Promise<Component>)()
       if (result && typeof result.then === 'function') {
-        // 返回 Promise 的异步组件
-        return defineComponent({
-          async setup() {
-            try {
-              const resolved = await result
-              return () => h((resolved as any).default || resolved)
-            }
-            catch (error) {
-              warn(`Failed to load async component: ${error}`)
-              return () => null
-            }
-          },
-        })
+        // 使用Vue的defineAsyncComponent处理异步组件
+        return defineAsyncComponent(component as () => Promise<Component>)
       }
       return result as Component
     }

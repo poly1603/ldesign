@@ -115,6 +115,9 @@ export class EngineImpl implements Engine {
     // 安装全局属性
     app.config.globalProperties.$engine = this
 
+    // 提供引擎注入
+    app.provide('engine', this)
+
     // 注册全局指令
     const directives = this.directives.getAll()
     Object.entries(directives).forEach(([name, directive]) => {

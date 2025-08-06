@@ -281,3 +281,8 @@ export function install(app: any, options: CreateEngineOptions = {}) {
   engine.install(app)
   return engine
 }
+
+// Vue集成
+export * from './vue'
+
+// 为了支持 @ldesign/engine/vue 导入方式，我们需要在package.json中配置exports
