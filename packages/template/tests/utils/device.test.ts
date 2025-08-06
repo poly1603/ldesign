@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   checkDeviceSupport,
+  clearViewportCache,
   createDeviceWatcher,
   DEFAULT_BREAKPOINTS,
   DEFAULT_DEVICE_CONFIG,
@@ -48,9 +49,9 @@ describe('device utils', () => {
     })
 
     it('在 SSR 环境下应该返回默认值', () => {
-      const originalWindow = global.window
-      // @ts-ignore
-      delete global.window
+      const originalWindow = globalThis.window
+      // @ts-expect-error - Testing SSR environment
+      delete globalThis.window
 
       const width = getViewportWidth()
       const height = getViewportHeight()
@@ -58,7 +59,7 @@ describe('device utils', () => {
       expect(width).toBe(1920)
       expect(height).toBe(1080)
 
-      global.window = originalWindow
+      globalThis.window = originalWindow
     })
   })
 
@@ -93,16 +94,19 @@ describe('device utils', () => {
     it('应该能基于视口检测设备类型', () => {
       // 测试桌面端
       window.innerWidth = 1200
+      clearViewportCache()
       let device = detectDeviceByViewport()
       expect(device).toBe('desktop')
 
       // 测试平板端
       window.innerWidth = 800
+      clearViewportCache()
       device = detectDeviceByViewport()
       expect(device).toBe('tablet')
 
       // 测试移动端
       window.innerWidth = 600
+      clearViewportCache()
       device = detectDeviceByViewport()
       expect(device).toBe('mobile')
     })
@@ -167,6 +171,7 @@ describe('device utils', () => {
   describe('设备支持检查', () => {
     it('应该能检查最小宽度支持', () => {
       window.innerWidth = 1200
+      clearViewportCache()
 
       expect(checkDeviceSupport(1000)).toBe(true)
       expect(checkDeviceSupport(1500)).toBe(false)
@@ -174,6 +179,7 @@ describe('device utils', () => {
 
     it('应该能检查最大宽度支持', () => {
       window.innerWidth = 1200
+      clearViewportCache()
 
       expect(checkDeviceSupport(undefined, 1500)).toBe(true)
       expect(checkDeviceSupport(undefined, 1000)).toBe(false)
@@ -181,6 +187,7 @@ describe('device utils', () => {
 
     it('应该能检查宽度范围支持', () => {
       window.innerWidth = 1200
+      clearViewportCache()
 
       expect(checkDeviceSupport(1000, 1500)).toBe(true)
       expect(checkDeviceSupport(1300, 1500)).toBe(false)

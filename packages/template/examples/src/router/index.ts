@@ -6,7 +6,9 @@ import DeviceDemo from '../views/DeviceDemo.vue'
 // 导入页面组件
 import Home from '../views/Home.vue'
 import HookDemo from '../views/HookDemo.vue'
+import PerformanceDemo from '../views/PerformanceDemo.vue'
 import TemplateGallery from '../views/TemplateGallery.vue'
+import VirtualScrollDemo from '../views/VirtualScrollDemo.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -52,6 +54,24 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '模板画廊',
       description: '浏览所有可用的模板',
+    },
+  },
+  {
+    path: '/performance-demo',
+    name: 'PerformanceDemo',
+    component: PerformanceDemo,
+    meta: {
+      title: '性能优化演示',
+      description: '体验懒加载、预加载、性能监控等优化功能',
+    },
+  },
+  {
+    path: '/virtual-scroll-demo',
+    name: 'VirtualScrollDemo',
+    component: VirtualScrollDemo,
+    meta: {
+      title: '虚拟滚动演示',
+      description: '体验虚拟滚动技术，高效渲染大量数据',
     },
   },
   {

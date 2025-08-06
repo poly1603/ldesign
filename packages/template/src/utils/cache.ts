@@ -35,7 +35,8 @@ export class LRUCache<K, V> {
     // 如果已存在，更新值并移到末尾（LRU策略）
     if (this.cache.has(key)) {
       this.cache.delete(key)
-    } else if (this.cache.size >= this.maxSize) {
+    }
+    else if (this.cache.size >= this.maxSize) {
       // 删除最旧的项（Map的第一个项）
       const firstKey = this.cache.keys().next().value
       if (firstKey !== undefined) {
@@ -148,8 +149,6 @@ export class LRUCache<K, V> {
 
     return cleanedCount
   }
-
-
 }
 
 /**
@@ -284,11 +283,11 @@ export class TemplateCache {
   }
 
   // 为了兼容测试，添加基础缓存方法
-  set(key: string, value: any, ttl?: number): void {
+  set(key: string, value: unknown, ttl?: number): void {
     this.componentCache.set(key, value, ttl)
   }
 
-  get(key: string): any {
+  get(key: string): unknown {
     const result = this.componentCache.get(key)
     if (result !== undefined) {
       this.hits++

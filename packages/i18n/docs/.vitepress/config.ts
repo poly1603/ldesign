@@ -56,9 +56,9 @@ export default defineConfig({
         {
           text: '高级用法',
           items: [
-            { text: '自定义加载器', link: '/guide/custom-loaders' },
-            { text: '自定义存储', link: '/guide/custom-storage' },
-            { text: '插件开发', link: '/guide/plugin-development' },
+            { text: '高级用法指南', link: '/guide/advanced-usage' },
+            { text: '最佳实践', link: '/guide/best-practices' },
+            { text: '故障排除', link: '/guide/troubleshooting' },
           ],
         },
       ],

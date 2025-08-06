@@ -8,6 +8,8 @@ export { default as DefaultLoginTemplate } from '../templates/login/desktop/defa
 
 export { default as ModernLoginTemplate } from '../templates/login/desktop/modern/index'
 export { TemplateRenderer } from './components/TemplateRenderer'
+export { default as LazyTemplate } from './components/LazyTemplate'
+export { default as PerformanceMonitor } from './components/PerformanceMonitor'
 
 // 旧的系统（保持兼容性）
 export { useTemplate as useTemplateOld } from './composables/useTemplate'
@@ -20,6 +22,7 @@ export {
   type UseTemplateSwitchOptions,
   type UseTemplateSwitchReturn,
 } from './composables/useTemplateSystem'
+export { useVirtualScroll, useSimpleVirtualScroll } from './composables/useVirtualScroll'
 export { registerTemplateDirective, templateDirective } from './directives/template'
 
 export { getGlobalTemplateManager, TemplatePlugin } from './plugins'

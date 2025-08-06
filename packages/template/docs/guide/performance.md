@@ -2,6 +2,159 @@
 
 本指南介绍如何优化 LDesign Template 的性能，提升应用的加载速度和用户体验。
 
+## 🆕 新增性能优化功能
+
+### 智能预加载系统
+
+模板管理器现在支持智能预加载，可以显著提升用户体验：
+
+```typescript
+import { TemplateManager } from '@ldesign/template'
+
+const manager = new TemplateManager({
+  enableCache: true,
+  cacheLimit: 100,
+})
+
+// 预加载单个模板
+await manager.preloadTemplate('login', 'desktop', 'default')
+
+// 批量预加载常用模板
+await manager.preloadCommonTemplates()
+
+// 获取性能指标
+const metrics = manager.getPerformanceMetrics()
+console.log('缓存命中率:', metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses))
+console.log('平均加载时间:', metrics.averageLoadTime)
+```
+
+### 懒加载组件
+
+新的 `LazyTemplate` 组件支持 Intersection Observer API：
+
+```vue
+<template>
+  <LazyTemplate
+    category="login"
+    device="desktop"
+    template="default"
+    :lazy="true"
+    :placeholder-height="300"
+    root-margin="50px"
+    :threshold="0.1"
+    @load="onTemplateLoad"
+    @visible="onTemplateVisible"
+    @error="onTemplateError"
+  >
+    <template #loading>
+      <div class="loading-spinner">加载中...</div>
+    </template>
+
+    <template #error="{ error, retry }">
+      <div class="error-message">
+        <p>加载失败: {{ error.message }}</p>
+        <button @click="retry">重试</button>
+      </div>
+    </template>
+  </LazyTemplate>
+</template>
+```
+
+### 虚拟滚动优化
+
+对于大量模板列表，使用新的虚拟滚动 Hook：
+
+```vue
+<template>
+  <div
+    ref="containerRef"
+    class="virtual-scroll-container"
+    :style="{ height: '400px', overflow: 'auto' }"
+    @scroll="handleScroll"
+  >
+    <div :style="{ height: totalHeight + 'px', position: 'relative' }">
+      <div
+        v-for="item in visibleItems"
+        :key="item.id"
+        :style="{
+          position: 'absolute',
+          top: item.top + 'px',
+          height: '60px',
+          width: '100%'
+        }"
+      >
+        <TemplateCard :template="item" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useVirtualScroll } from '@ldesign/template/vue'
+
+const templates = ref([/* 大量模板数据 */])
+
+const {
+  containerRef,
+  visibleItems,
+  totalHeight,
+  handleScroll,
+  scrollToItem,
+} = useVirtualScroll(templates, {
+  containerHeight: 400,
+  itemHeight: 60,
+  buffer: 5,
+})
+</script>
+```
+
+### 实时性能监控
+
+新的 `PerformanceMonitor` 组件提供实时性能监控：
+
+```vue
+<template>
+  <div class="app">
+    <TemplateRenderer
+      category="login"
+      :enable-performance-monitor="true"
+      @performance-update="onPerformanceUpdate"
+      @load-start="onLoadStart"
+      @load-end="onLoadEnd"
+    />
+
+    <PerformanceMonitor
+      :detailed="true"
+      :update-interval="1000"
+      :auto-hide="false"
+      @update="onPerformanceUpdate"
+    />
+  </div>
+</template>
+
+<script setup>
+const onPerformanceUpdate = (data) => {
+  // 性能警告
+  if (data.rendering?.fps < 30) {
+    console.warn('FPS 过低:', data.rendering.fps)
+  }
+
+  if (data.memory?.percentage > 80) {
+    console.warn('内存使用率过高:', data.memory.percentage + '%')
+  }
+}
+
+const onLoadStart = () => {
+  console.log('模板开始加载')
+}
+
+const onLoadEnd = ({ renderTime }) => {
+  console.log('模板加载完成，耗时:', renderTime, 'ms')
+}
+</script>
+```
+
 ## 加载优化
 
 ### 1. 懒加载

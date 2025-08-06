@@ -50,6 +50,32 @@ class UserStore extends BaseStore {
 const userStore = new UserStore()
 ```
 
+### 实例方法
+
+#### $dispose()
+
+销毁 Store 实例，清理所有资源。
+
+```typescript
+$dispose(): void
+```
+
+**说明：**
+
+- 清理所有事件监听器
+- 清理定时器和异步操作
+- 清理缓存数据
+- 释放内存引用
+
+**示例：**
+
+```typescript
+// 组件卸载时清理 Store
+onUnmounted(() => {
+  userStore.$dispose()
+})
+```
+
 ### 状态管理方法
 
 #### $patch()
@@ -534,8 +560,192 @@ store.increment()
 store.$patch({ count: store.count + 1 })
 ```
 
+## 性能优化 API
+
+### StorePool
+
+Store 实例池管理器，用于复用 Store 实例，减少内存分配。
+
+#### useStorePool()
+
+获取 Store 池实例。
+
+```typescript
+function useStorePool(options?: StorePoolOptions): StorePool
+```
+
+**参数：**
+
+```typescript
+interface StorePoolOptions {
+  maxSize?: number      // 池的最大大小，默认 50
+  maxIdleTime?: number  // 最大空闲时间（毫秒），默认 300000（5分钟）
+  enableGC?: boolean    // 是否启用垃圾回收，默认 true
+}
+```
+
+**返回值：**
+
+```typescript
+interface StorePool {
+  getStore<T>(storeClass: new (...args: any[]) => T, id: string, ...args: any[]): T
+  returnStore<T>(instance: T): void
+  warmUp<T>(storeClass: new (...args: any[]) => T, count: number, ...args: any[]): void
+  getStats(): PoolStats
+  clear(): void
+  destroy(): void
+}
+```
+
+**示例：**
+
+```typescript
+import { useStorePool } from '@ldesign/store'
+
+const pool = useStorePool({
+  maxSize: 20,
+  maxIdleTime: 600000, // 10分钟
+  enableGC: true
+})
+
+// 获取池化的 Store 实例
+const store = pool.getStore(UserStore, 'user-1')
+
+// 使用完毕后归还
+pool.returnStore(store)
+
+// 预热池
+pool.warmUp(UserStore, 5)
+```
+
+#### @PooledStore
+
+Store 池化装饰器，自动管理 Store 实例的生命周期。
+
+```typescript
+function PooledStore(options?: StorePoolOptions): ClassDecorator
+```
+
+**示例：**
+
+```typescript
+import { PooledStore, BaseStore } from '@ldesign/store'
+
+@PooledStore({ maxSize: 10, maxIdleTime: 300000 })
+class OptimizedStore extends BaseStore {
+  // Store 实例会被自动池化管理
+}
+```
+
+### PerformanceMonitor
+
+性能监控系统，用于监控和分析 Store 的性能。
+
+#### usePerformanceMonitor()
+
+获取性能监控实例。
+
+```typescript
+function usePerformanceMonitor(): PerformanceMonitor
+```
+
+**返回值：**
+
+```typescript
+interface PerformanceMonitor {
+  recordActionTime(actionName: string, executionTime: number): void
+  recordGetterTime(getterName: string, computationTime: number): void
+  recordStateUpdate(stateName: string): void
+  updateMemoryUsage(storeCount: number, cacheSize: number): void
+  getPerformanceReport(): PerformanceReport
+  clearMetrics(): void
+}
+```
+
+**示例：**
+
+```typescript
+import { usePerformanceMonitor } from '@ldesign/store'
+
+const monitor = usePerformanceMonitor()
+
+// 获取性能报告
+const report = monitor.getPerformanceReport()
+console.log('慢速操作:', report.slowActions)
+console.log('频繁更新:', report.frequentUpdates)
+
+// 清理性能数据
+monitor.clearMetrics()
+```
+
+#### @MonitorAction
+
+Action 性能监控装饰器。
+
+```typescript
+function MonitorAction(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor
+```
+
+**示例：**
+
+```typescript
+import { MonitorAction, BaseStore } from '@ldesign/store'
+
+class MonitoredStore extends BaseStore {
+  @MonitorAction
+  @Action()
+  async heavyOperation() {
+    // 这个方法的执行时间会被自动监控
+  }
+}
+```
+
+#### @MonitorGetter
+
+Getter 性能监控装饰器。
+
+```typescript
+function MonitorGetter(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor
+```
+
+**示例：**
+
+```typescript
+class MonitoredStore extends BaseStore {
+  @MonitorGetter
+  @Getter({ deps: ['data'] })
+  get expensiveComputation() {
+    // 这个计算属性的执行时间会被监控
+    return this.data.map(/* 复杂计算 */)
+  }
+}
+```
+
+#### getOptimizationSuggestions()
+
+根据性能报告生成优化建议。
+
+```typescript
+function getOptimizationSuggestions(report: PerformanceReport): string[]
+```
+
+**示例：**
+
+```typescript
+import { usePerformanceMonitor, getOptimizationSuggestions } from '@ldesign/store'
+
+const monitor = usePerformanceMonitor()
+const report = monitor.getPerformanceReport()
+const suggestions = getOptimizationSuggestions(report)
+
+suggestions.forEach(suggestion => {
+  console.log('💡', suggestion)
+})
+```
+
 ## 下一步
 
 - 学习 [装饰器 API](/api/decorators) 了解装饰器的详细用法
 - 查看 [Hook API](/api/hooks) 了解函数式状态管理
 - 探索 [Vue 集成](/api/vue) 了解 Vue 特定功能
+- 阅读 [性能优化指南](/guide/performance) 了解性能优化最佳实践

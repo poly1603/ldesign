@@ -22,13 +22,20 @@ export const DEFAULT_DEVICE_CONFIG: DeviceDetectionConfig = {
 }
 
 // 缓存视口信息，避免重复计算
-let cachedViewport: { width: number; height: number; timestamp: number } | null = null
+let cachedViewport: { width: number, height: number, timestamp: number } | null = null
 const VIEWPORT_CACHE_TTL = 100 // 100ms缓存
+
+/**
+ * 清除视口缓存（主要用于测试）
+ */
+export function clearViewportCache(): void {
+  cachedViewport = null
+}
 
 /**
  * 获取当前视口信息（带缓存）
  */
-function getViewportInfo(): { width: number; height: number } {
+function getViewportInfo(): { width: number, height: number } {
   const now = Date.now()
 
   // 检查缓存是否有效
@@ -108,7 +115,7 @@ export function isTouchDevice(): boolean {
 
   return 'ontouchstart' in window
     || navigator.maxTouchPoints > 0
-    || (navigator as any).msMaxTouchPoints > 0
+    || (navigator as { msMaxTouchPoints?: number }).msMaxTouchPoints > 0
 }
 
 /**
@@ -140,7 +147,7 @@ export function detectDeviceByUserAgent(): DeviceType {
 }
 
 // 缓存设备检测结果
-let cachedDevice: { device: DeviceType; timestamp: number; configHash: string } | null = null
+let cachedDevice: { device: DeviceType, timestamp: number, configHash: string } | null = null
 const DEVICE_CACHE_TTL = 1000 // 1秒缓存
 
 /**
@@ -167,9 +174,9 @@ export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONF
   const configHash = getConfigHash(config)
 
   // 检查缓存是否有效
-  if (cachedDevice &&
-    (now - cachedDevice.timestamp) < DEVICE_CACHE_TTL &&
-    cachedDevice.configHash === configHash) {
+  if (cachedDevice
+    && (now - cachedDevice.timestamp) < DEVICE_CACHE_TTL
+    && cachedDevice.configHash === configHash) {
     return cachedDevice.device
   }
 

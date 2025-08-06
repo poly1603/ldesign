@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 /**
  * 测试 src 和 es 打包产物的功能一致性
@@ -113,11 +113,11 @@ async function testTemplateSwitching(page: Page) {
 
   // 测试在不同模板之间切换
   const templates = ['default', 'classic', 'modern']
-  
+
   for (const template of templates) {
     await page.selectOption('[data-testid="template-select"]', template)
     await page.waitForTimeout(1000)
-    
+
     // 验证模板切换成功
     await expect(page.locator(`[data-template="${template}"]`)).toBeVisible()
   }
@@ -145,7 +145,7 @@ async function testResponsiveFeatures(page: Page) {
     const detectedDevice = await page.evaluate(() => {
       return (window as any).__TEMPLATE_DEVICE_TYPE__
     })
-    
+
     expect(detectedDevice).toBe(viewport.device)
   }
 }
@@ -158,7 +158,7 @@ async function compareDOMStructure(devPage: Page, prodPage: Page, testCase: type
   for (const page of [devPage, prodPage]) {
     await page.goto('/')
     await waitForPageLoad(page)
-    
+
     await page.selectOption('[data-testid="category-select"]', testCase.category)
     await page.selectOption('[data-testid="device-select"]', testCase.device)
     await page.selectOption('[data-testid="template-select"]', testCase.template)
@@ -169,14 +169,14 @@ async function compareDOMStructure(devPage: Page, prodPage: Page, testCase: type
   for (const selector of testCase.expectedElements) {
     const devElement = await devPage.locator(selector).isVisible()
     const prodElement = await prodPage.locator(selector).isVisible()
-    
+
     expect(devElement).toBe(prodElement)
   }
 
   // 比较计算样式（可选）
   for (const selector of testCase.expectedElements) {
     if (await devPage.locator(selector).isVisible()) {
-      const devStyles = await devPage.locator(selector).evaluate(el => {
+      const devStyles = await devPage.locator(selector).evaluate((el) => {
         const computed = window.getComputedStyle(el)
         return {
           display: computed.display,
@@ -186,7 +186,7 @@ async function compareDOMStructure(devPage: Page, prodPage: Page, testCase: type
         }
       })
 
-      const prodStyles = await prodPage.locator(selector).evaluate(el => {
+      const prodStyles = await prodPage.locator(selector).evaluate((el) => {
         const computed = window.getComputedStyle(el)
         return {
           display: computed.display,
@@ -214,7 +214,7 @@ test.describe('Template Package - Src vs Es Consistency', () => {
   test.describe('Individual Environment Tests', () => {
     // 测试开发环境
     test.describe('Development Environment (src)', () => {
-      TEST_CASES.forEach(testCase => {
+      TEST_CASES.forEach((testCase) => {
         test(`should load ${testCase.name} correctly`, async ({ page }) => {
           await page.goto(`http://localhost:${TEST_CONFIG.dev.port}`)
           await testTemplateLoading(page, testCase)
@@ -234,7 +234,7 @@ test.describe('Template Package - Src vs Es Consistency', () => {
 
     // 测试生产环境
     test.describe('Production Environment (es)', () => {
-      TEST_CASES.forEach(testCase => {
+      TEST_CASES.forEach((testCase) => {
         test(`should load ${testCase.name} correctly`, async ({ page }) => {
           await page.goto(`http://localhost:${TEST_CONFIG.prod.port}`)
           await testTemplateLoading(page, testCase)
@@ -254,17 +254,18 @@ test.describe('Template Package - Src vs Es Consistency', () => {
   })
 
   test.describe('Cross-Environment Consistency', () => {
-    TEST_CASES.forEach(testCase => {
+    TEST_CASES.forEach((testCase) => {
       test(`${testCase.name} should behave identically in both environments`, async ({ browser }) => {
         const devContext = await browser.newContext()
         const prodContext = await browser.newContext()
-        
+
         const devPage = await devContext.newPage()
         const prodPage = await prodContext.newPage()
 
         try {
           await compareDOMStructure(devPage, prodPage, testCase)
-        } finally {
+        }
+        finally {
           await devContext.close()
           await prodContext.close()
         }
@@ -276,7 +277,7 @@ test.describe('Template Package - Src vs Es Consistency', () => {
     test('should have similar loading performance', async ({ browser }) => {
       const devContext = await browser.newContext()
       const prodContext = await browser.newContext()
-      
+
       const devPage = await devContext.newPage()
       const prodPage = await prodContext.newPage()
 
@@ -298,7 +299,8 @@ test.describe('Template Package - Src vs Es Consistency', () => {
 
         // 生产环境应该更快或相近（允许20%的差异）
         expect(prodLoadTime).toBeLessThanOrEqual(devLoadTime * 1.2)
-      } finally {
+      }
+      finally {
         await devContext.close()
         await prodContext.close()
       }

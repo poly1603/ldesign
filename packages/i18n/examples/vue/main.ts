@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import { createI18nWithBuiltinLocales } from '../../es/index.js'
-import { createI18n } from '../../es/vue/index.js'
+import { createI18nWithBuiltinLocales } from '../../src/index'
+import { createI18n } from '../../src/vue/index'
 import App from './App.vue'
 
 async function bootstrap() {
@@ -16,11 +16,11 @@ async function bootstrap() {
         enabled: true,
         maxSize: 1000,
       },
-      onLanguageChanged: (locale) => {
+      onLanguageChanged: (locale: string) => {
         console.log('Language changed to:', locale)
         document.documentElement.lang = locale
       },
-      onLoadError: (locale, error) => {
+      onLoadError: (locale: string, error: Error) => {
         console.error(`Failed to load language '${locale}':`, error)
       },
     })
@@ -37,7 +37,8 @@ async function bootstrap() {
       globalPropertyName: '$t',
     })
 
-    // 添加一些示例翻译键到语言包中
+    // 添加一些示例翻译键到语言包中（暂时注释掉未使用的代码）
+    /*
     const exampleTranslations = {
       examples: {
         basic: 'Basic Translation',
@@ -51,6 +52,7 @@ async function bootstrap() {
         status: 'Status',
       },
     }
+    */
 
     // 为每种语言添加示例翻译
     const languages = ['en', 'zh-CN', 'ja']
@@ -101,7 +103,7 @@ async function bootstrap() {
       if (i18nInstance.isLanguageLoaded(lang)) {
         const packageData = i18nInstance.loader?.getLoadedPackage?.(lang)
         if (packageData) {
-          Object.assign(packageData.translations, exampleTranslationsLocalized[lang])
+          Object.assign(packageData.translations, (exampleTranslationsLocalized as Record<string, unknown>)[lang])
         }
       }
     }
@@ -136,7 +138,7 @@ async function bootstrap() {
           text-align: left;
           color: #dc3545;
           overflow-x: auto;
-        ">${error.message}</pre>
+        ">${(error as Error).message}</pre>
         <p style="color: #666; margin-top: 20px;">
           Please check the console for more details.
         </p>

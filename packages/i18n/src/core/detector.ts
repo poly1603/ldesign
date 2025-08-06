@@ -29,19 +29,19 @@ export class BrowserDetector implements Detector {
     }
 
     // 3. 检查 navigator.userLanguage（IE）
-    const userLanguage = (navigator as any).userLanguage
+    const userLanguage = (navigator as unknown as Record<string, unknown>).userLanguage as string | undefined
     if (userLanguage && !languages.includes(userLanguage)) {
       languages.push(userLanguage)
     }
 
     // 4. 检查 navigator.browserLanguage（IE）
-    const browserLanguage = (navigator as any).browserLanguage
+    const browserLanguage = (navigator as unknown as Record<string, unknown>).browserLanguage as string | undefined
     if (browserLanguage && !languages.includes(browserLanguage)) {
       languages.push(browserLanguage)
     }
 
     // 5. 检查 navigator.systemLanguage（IE）
-    const systemLanguage = (navigator as any).systemLanguage
+    const systemLanguage = (navigator as unknown as Record<string, unknown>).systemLanguage as string | undefined
     if (systemLanguage && !languages.includes(systemLanguage)) {
       languages.push(systemLanguage)
     }
@@ -98,7 +98,7 @@ export class BrowserDetector implements Detector {
     normalized = normalized.replace(/_/g, '-')
 
     // 验证语言代码格式
-    if (!/^[a-z]{2,3}(-[a-z]{2,4})*$/i.test(normalized)) {
+    if (!/^[a-z]{2,3}(?:-[a-z]{2,4})*$/i.test(normalized)) {
       return ''
     }
 

@@ -309,9 +309,67 @@ manager.on('template:load', (event) => {
 })
 ```
 
+## 🆕 性能优化 API
+
+### LazyTemplate 组件
+
+懒加载模板组件，支持 Intersection Observer API 进行可视区域检测。
+
+```vue
+<LazyTemplate
+  category="login"
+  device="desktop"
+  template="default"
+  :lazy="true"
+  :placeholder-height="300"
+  @load="handleLoad"
+  @visible="handleVisible"
+>
+  <template #loading>
+    <div class="loading">加载中...</div>
+  </template>
+</LazyTemplate>
+```
+
+[查看详细文档 →](./vue-components.md#lazytemplate)
+
+### PerformanceMonitor 组件
+
+性能监控组件，提供实时性能指标显示。
+
+```vue
+<PerformanceMonitor
+  :detailed="true"
+  :update-interval="1000"
+  @update="handlePerformanceUpdate"
+/>
+```
+
+[查看详细文档 →](./vue-components.md#performancemonitor)
+
+### useVirtualScroll Composable
+
+虚拟滚动 Composable，用于优化大量数据的渲染性能。
+
+```typescript
+const {
+  containerRef,
+  visibleItems,
+  totalHeight,
+  handleScroll,
+} = useVirtualScroll(items, {
+  containerHeight: 400,
+  itemHeight: 60,
+})
+```
+
+[查看详细文档 →](./vue-composables.md#usevirtualscroll)
+
 ## 下一步
 
 - 查看具体的 [TemplateManager API](./template-manager.md)
 - 了解 [useTemplate Composable](./use-template.md)
 - 学习 [组件使用方法](./template-renderer.md)
 - 探索 [工具函数](./utilities.md)
+- 🆕 体验 [Vue 组件 API](./vue-components.md)
+- 🆕 使用 [Vue Composables API](./vue-composables.md)

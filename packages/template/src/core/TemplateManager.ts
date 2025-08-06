@@ -2,31 +2,24 @@ import type {
   DeviceType,
   TemplateChangeEvent,
   TemplateComponent,
+  TemplateConfig,
+  TemplateInfo,
   TemplateLoadResult,
   TemplateManagerConfig,
   TemplateMetadata,
   TemplateRenderOptions,
   TemplateScanResult,
-  TemplateConfig,
 } from '../types'
 import { type Component, defineAsyncComponent } from 'vue'
 import { TemplateLoadingState } from '../types'
+
+// 使用现有的模块
 import { TemplateCache } from '../utils/cache'
-import { createDeviceWatcher, detectDevice } from '../utils/device'
+import { detectDeviceType, watchDeviceChange } from './device'
 import { TemplateScanner } from '../utils/scanner'
 import { templateRegistry } from './template-registry'
 
-// 合并 template-manager.ts 的类型定义
-export interface TemplateInfo {
-  id: string
-  name: string
-  category: string
-  device: DeviceType
-  variant: string
-  isDefault: boolean
-  config: TemplateConfig
-  component: any
-}
+// TemplateInfo 现在从 types 模块导入
 
 export interface TemplateRegistry {
   [category: string]: {
@@ -39,20 +32,20 @@ export interface TemplateRegistry {
 /**
  * 事件发射器
  */
-class EventEmitter<T extends Record<string, any>> {
-  private listeners = new Map<keyof T, Set<Function>>()
+class EventEmitter<T extends Record<string, unknown>> {
+  private listeners = new Map<keyof T, Set<(data: unknown) => void>>()
 
   on<K extends keyof T>(event: K, listener: (data: T[K]) => void): () => void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
-    this.listeners.get(event)!.add(listener)
+    this.listeners.get(event)!.add(listener as (data: unknown) => void)
 
     return () => this.off(event, listener)
   }
 
   off<K extends keyof T>(event: K, listener: (data: T[K]) => void): void {
-    this.listeners.get(event)?.delete(listener)
+    this.listeners.get(event)?.delete(listener as (data: unknown) => void)
   }
 
   emit<K extends keyof T>(event: K, data: T[K]): void {
@@ -88,6 +81,14 @@ export class TemplateManager extends EventEmitter<{
   private deviceWatcherCleanup?: () => void
   private loadingPromises = new Map<string, Promise<TemplateLoadResult>>()
 
+  // 性能优化相关
+  private preloadQueue = new Set<string>()
+  private performanceMetrics = {
+    loadTimes: new Map<string, number>(),
+    cacheHits: 0,
+    cacheMisses: 0,
+  }
+
   constructor(config: TemplateManagerConfig = {}) {
     super()
 
@@ -110,7 +111,7 @@ export class TemplateManager extends EventEmitter<{
 
     this.scanner = new TemplateScanner(this.config.templateRoot)
     this.cache = new TemplateCache(this.config.cacheLimit)
-    this.currentDevice = detectDevice(this.config.deviceDetection)
+    this.currentDevice = detectDeviceType()
 
     this.initializeDeviceWatcher()
   }
@@ -122,18 +123,16 @@ export class TemplateManager extends EventEmitter<{
     if (typeof window === 'undefined')
       return
 
-    this.deviceWatcherCleanup = createDeviceWatcher(
-      (device) => {
-        const oldDevice = this.currentDevice
-        this.currentDevice = device
-        this.emit('device:change', device)
+    this.deviceWatcherCleanup = watchDeviceChange(
+      (newDevice, oldDevice) => {
+        this.currentDevice = newDevice
+        this.emit('device:change', newDevice)
 
         // 如果当前有模板且设备变化，尝试切换到对应设备的模板
-        if (this.currentTemplate && oldDevice !== device) {
-          this.autoSwitchDeviceTemplate(device)
+        if (this.currentTemplate && oldDevice !== newDevice) {
+          this.autoSwitchDeviceTemplate(newDevice)
         }
       },
-      this.config.deviceDetection,
     )
   }
 
@@ -224,6 +223,7 @@ export class TemplateManager extends EventEmitter<{
     if (this.config.enableCache) {
       const cached = this.cache.getComponent(category, device, template)
       if (cached) {
+        this.performanceMetrics.cacheHits++
         return {
           state: TemplateLoadingState.LOADED,
           component: cached,
@@ -231,6 +231,8 @@ export class TemplateManager extends EventEmitter<{
         }
       }
     }
+
+    this.performanceMetrics.cacheMisses++
 
     // 开始加载
     const loadPromise = this.performTemplateLoad(category, device, template)
@@ -279,6 +281,10 @@ export class TemplateManager extends EventEmitter<{
       }
 
       const duration = Date.now() - startTime
+      const cacheKey = this.getCacheKey(category, device, template)
+
+      // 记录加载时间
+      this.performanceMetrics.loadTimes.set(cacheKey, duration)
 
       return {
         state: TemplateLoadingState.LOADED,
@@ -361,7 +367,7 @@ export class TemplateManager extends EventEmitter<{
     }
 
     if (category && device) {
-      return this.scanner.getTemplatesByCategoryAndDevice(category, device)
+      return this.scanner.getAllTemplates().filter(t => t.category === category && t.device === device)
     }
     else if (category) {
       return this.scanner.getTemplatesByCategory(category)
@@ -385,7 +391,7 @@ export class TemplateManager extends EventEmitter<{
    * 检测当前设备类型
    */
   detectDevice(): DeviceType {
-    this.currentDevice = detectDevice(this.config.deviceDetection)
+    this.currentDevice = detectDeviceType()
     return this.currentDevice
   }
 
@@ -413,7 +419,13 @@ export class TemplateManager extends EventEmitter<{
     if (this.scanner.getAllTemplates().length === 0) {
       await this.scanTemplates()
     }
-    return this.scanner.getAvailableDevices(category)
+    if (category) {
+      return this.scanner.getAllTemplates()
+        .filter(t => t.category === category)
+        .map(t => t.device)
+        .filter((device, index, arr) => arr.indexOf(device) === index) as DeviceType[]
+    }
+    return this.scanner.getAvailableDevices()
   }
 
   /**
@@ -433,7 +445,7 @@ export class TemplateManager extends EventEmitter<{
     if (this.scanner.getAllTemplates().length === 0) {
       await this.scanTemplates()
     }
-    return this.scanner.findTemplate(category, device, template)
+    return this.scanner.findTemplate(category, device, template) || undefined
   }
 
   /**
@@ -455,7 +467,64 @@ export class TemplateManager extends EventEmitter<{
    * 清理过期缓存
    */
   cleanupCache() {
-    return this.cache.cleanup()
+    // TemplateCache 会自动处理过期项，这里只需要清空即可
+    this.cache.clear()
+  }
+
+  /**
+   * 预加载模板
+   */
+  async preloadTemplate(category: string, device: DeviceType, template: string): Promise<void> {
+    const key = `${category}/${device}/${template}`
+
+    if (this.preloadQueue.has(key)) {
+      return
+    }
+
+    this.preloadQueue.add(key)
+
+    try {
+      await this.loadTemplate(category, device, template)
+    } catch (error) {
+      console.warn(`预加载模板失败: ${key}`, error)
+    }
+  }
+
+  /**
+   * 批量预加载常用模板
+   */
+  async preloadCommonTemplates(): Promise<void> {
+    const commonTemplates = [
+      { category: 'login', device: this.currentDevice, template: 'default' },
+      { category: 'dashboard', device: this.currentDevice, template: 'admin' },
+    ]
+
+    const preloadPromises = commonTemplates.map(({ category, device, template }) =>
+      this.preloadTemplate(category, device as DeviceType, template)
+    )
+
+    await Promise.allSettled(preloadPromises)
+  }
+
+  /**
+   * 获取性能指标
+   */
+  getPerformanceMetrics() {
+    return {
+      ...this.performanceMetrics,
+      preloadQueueSize: this.preloadQueue.size,
+      loadingPromisesCount: this.loadingPromises.size,
+      averageLoadTime: this.calculateAverageLoadTime(),
+    }
+  }
+
+  /**
+   * 计算平均加载时间
+   */
+  private calculateAverageLoadTime(): number {
+    const times = Array.from(this.performanceMetrics.loadTimes.values())
+    if (times.length === 0) return 0
+    return times.reduce((sum, time) => sum + time, 0) / times.length
   }
 
   /**
@@ -474,6 +543,10 @@ export class TemplateManager extends EventEmitter<{
 
     // 清空扫描器缓存
     this.scanner.clearCache()
+
+    // 清空性能优化相关数据
+    this.preloadQueue.clear()
+    this.performanceMetrics.loadTimes.clear()
   }
 
   /**
@@ -516,7 +589,7 @@ export function registerTemplate(
   device: DeviceType,
   variant: string,
   config: TemplateConfig,
-  component: any,
+  component: unknown,
 ): void {
   if (!globalTemplateRegistry[category]) {
     globalTemplateRegistry[category] = {}
@@ -549,10 +622,12 @@ export function getTemplate(
   variant?: string,
 ): TemplateInfo | null {
   const categoryTemplates = globalTemplateRegistry[category]
-  if (!categoryTemplates) return null
+  if (!categoryTemplates)
+    return null
 
   const deviceTemplates = categoryTemplates[device]
-  if (!deviceTemplates) return null
+  if (!deviceTemplates)
+    return null
 
   if (variant) {
     return deviceTemplates[variant] || null
@@ -560,7 +635,8 @@ export function getTemplate(
 
   // 如果没有指定变体，返回默认模板
   const defaultTemplate = Object.values(deviceTemplates).find(t => t.isDefault)
-  if (defaultTemplate) return defaultTemplate
+  if (defaultTemplate)
+    return defaultTemplate
 
   // 如果没有默认模板，返回第一个
   const firstTemplate = Object.values(deviceTemplates)[0]
@@ -575,10 +651,12 @@ export function getTemplatesByDevice(
   device: DeviceType,
 ): TemplateInfo[] {
   const categoryTemplates = globalTemplateRegistry[category]
-  if (!categoryTemplates) return []
+  if (!categoryTemplates)
+    return []
 
   const deviceTemplates = categoryTemplates[device]
-  if (!deviceTemplates) return []
+  if (!deviceTemplates)
+    return []
 
   return Object.values(deviceTemplates)
 }
@@ -588,7 +666,8 @@ export function getTemplatesByDevice(
  */
 export function getTemplatesByCategory(category: string): TemplateInfo[] {
   const categoryTemplates = globalTemplateRegistry[category]
-  if (!categoryTemplates) return []
+  if (!categoryTemplates)
+    return []
 
   const allTemplates: TemplateInfo[] = []
   Object.values(categoryTemplates).forEach((deviceTemplates) => {
@@ -658,7 +737,7 @@ export function getTemplateComponent(
   category: string,
   device: DeviceType,
   variant: string,
-): any {
+): unknown {
   const template = getTemplate(category, device, variant)
   return template?.component || null
 }

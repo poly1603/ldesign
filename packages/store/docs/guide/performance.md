@@ -554,70 +554,183 @@ class PaginatedStore extends BaseStore {
 }
 ```
 
-## 性能监控
+## Store 池管理
 
-### 性能指标收集
+### 减少内存分配
+
+使用 Store 池来复用实例，减少垃圾回收压力：
 
 ```typescript
-class PerformanceStore extends BaseStore {
-  @State({ default: new Map() })
-  metrics: Map<string, PerformanceMetric> = new Map()
+import { PooledStore, useStorePool } from '@ldesign/store'
+
+// 使用装饰器自动池化管理
+@PooledStore({ maxSize: 10, maxIdleTime: 300000 })
+class OptimizedStore extends BaseStore {
+  @State({ default: [] })
+  data: any[] = []
 
   @Action()
-  startTiming(operation: string) {
-    this.metrics.set(operation, {
-      startTime: performance.now(),
-      endTime: null,
-      duration: null
-    })
+  processData(input: any[]) {
+    this.data = input.map(item => this.transform(item))
   }
 
-  @Action()
-  endTiming(operation: string) {
-    const metric = this.metrics.get(operation)
-    if (metric) {
-      metric.endTime = performance.now()
-      metric.duration = metric.endTime - metric.startTime
-    }
-  }
-
-  @Getter()
-  get slowOperations() {
-    return Array.from(this.metrics.entries())
-      .filter(([_, metric]) => metric.duration && metric.duration > 100)
-      .sort((a, b) => b[1].duration! - a[1].duration!)
-  }
-
-  @Action()
-  logPerformance() {
-    console.table(
-      Array.from(this.metrics.entries()).map(([name, metric]) => ({
-        操作: name,
-        耗时: metric.duration ? `${metric.duration.toFixed(2)}ms` : '进行中'
-      }))
-    )
+  private transform(item: any) {
+    // 复杂的数据转换逻辑
+    return { ...item, processed: true }
   }
 }
 
-// 使用装饰器自动监控性能
-function MonitorPerformance(operationName?: string) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value
-    const name = operationName || `${target.constructor.name}.${propertyKey}`
+// 手动使用 Store 池
+const pool = useStorePool({
+  maxSize: 20,
+  maxIdleTime: 600000, // 10分钟
+  enableGC: true
+})
 
-    descriptor.value = async function (...args: any[]) {
-      const perfStore = new PerformanceStore('performance')
-      perfStore.startTiming(name)
+// 获取池化的 Store 实例
+const store = pool.getStore(OptimizedStore, 'my-store')
 
-      try {
-        const result = await originalMethod.apply(this, args)
-        return result
-      }
-      finally {
-        perfStore.endTiming(name)
-      }
-    }
+// 使用完毕后归还到池中
+pool.returnStore(store)
+
+// 预热池，提前创建实例
+pool.warmUp(OptimizedStore, 5)
+
+// 获取池统计信息
+const stats = pool.getStats()
+console.log('池统计:', stats)
+```
+
+### 池配置选项
+
+```typescript
+interface StorePoolOptions {
+  maxSize?: number      // 池的最大大小，默认 50
+  maxIdleTime?: number  // 最大空闲时间（毫秒），默认 5分钟
+  enableGC?: boolean    // 是否启用垃圾回收，默认 true
+}
+
+// 自定义池配置
+const customPool = useStorePool({
+  maxSize: 100,
+  maxIdleTime: 1800000, // 30分钟
+  enableGC: true
+})
+```
+
+## 性能监控
+
+### 内置性能监控
+
+使用内置的性能监控系统：
+
+```typescript
+import {
+  MonitorAction,
+  MonitorGetter,
+  usePerformanceMonitor,
+  getOptimizationSuggestions
+} from '@ldesign/store'
+
+class MonitoredStore extends BaseStore {
+  @State({ default: [] })
+  largeDataset: any[] = []
+
+  // 自动监控 Action 执行时间
+  @MonitorAction
+  @Action()
+  async processLargeDataset(data: any[]) {
+    // 模拟耗时操作
+    await new Promise(resolve => setTimeout(resolve, 100))
+    this.largeDataset = data.map(item => this.expensiveTransform(item))
   }
+
+  // 自动监控 Getter 计算时间
+  @MonitorGetter
+  @Getter({ deps: ['largeDataset'] })
+  get processedData() {
+    // 模拟复杂计算
+    return this.largeDataset.reduce((acc, item) => {
+      return acc + this.complexCalculation(item)
+    }, 0)
+  }
+
+  private expensiveTransform(item: any) {
+    // 模拟复杂转换
+    let result = item
+    for (let i = 0; i < 1000; i++) {
+      result = { ...result, step: i }
+    }
+    return result
+  }
+
+  private complexCalculation(item: any) {
+    // 模拟复杂计算
+    return Math.sin(item.value) * Math.cos(item.timestamp)
+  }
+}
+
+// 在组件中使用性能监控
+export function useStorePerformance() {
+  const monitor = usePerformanceMonitor()
+
+  // 获取性能报告
+  const report = monitor.getPerformanceReport()
+
+  // 获取优化建议
+  const suggestions = getOptimizationSuggestions(report)
+
+  return {
+    report,
+    suggestions,
+    clearMetrics: () => monitor.clearMetrics()
+  }
+}
+```
+
+### 性能报告分析
+
+```typescript
+// 在开发环境中监控性能
+if (process.env.NODE_ENV === 'development') {
+  const monitor = usePerformanceMonitor()
+
+  // 定期输出性能报告
+  setInterval(() => {
+    const report = monitor.getPerformanceReport()
+
+    if (report.slowActions.length > 0) {
+      console.group('🐌 慢速 Actions')
+      report.slowActions.forEach(action => {
+        console.log(`${action.name}: 平均 ${action.avgTime.toFixed(2)}ms, 最大 ${action.maxTime.toFixed(2)}ms`)
+      })
+      console.groupEnd()
+    }
+
+    if (report.slowGetters.length > 0) {
+      console.group('🐌 慢速 Getters')
+      report.slowGetters.forEach(getter => {
+        console.log(`${getter.name}: 平均 ${getter.avgTime.toFixed(2)}ms, 最大 ${getter.maxTime.toFixed(2)}ms`)
+      })
+      console.groupEnd()
+    }
+
+    if (report.frequentUpdates.length > 0) {
+      console.group('🔄 频繁更新的状态')
+      report.frequentUpdates.forEach(update => {
+        console.log(`${update.name}: ${update.count} 次更新`)
+      })
+      console.groupEnd()
+    }
+
+    // 显示优化建议
+    const suggestions = getOptimizationSuggestions(report)
+    if (suggestions.length > 0) {
+      console.group('💡 优化建议')
+      suggestions.forEach(suggestion => console.log(suggestion))
+      console.groupEnd()
+    }
+  }, 30000) // 每30秒检查一次
 }
 ```
 

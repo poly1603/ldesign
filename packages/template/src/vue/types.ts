@@ -20,7 +20,7 @@ export interface TemplateRendererProps {
   category: string
   device?: DeviceType
   template: string
-  templateProps?: Record<string, any>
+  templateProps?: Record<string, unknown>
   cache?: boolean
   preload?: boolean
 }

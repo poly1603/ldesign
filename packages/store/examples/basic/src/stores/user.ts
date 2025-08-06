@@ -18,6 +18,10 @@ export class UserStore extends BaseStore {
   @State({ default: null })
   error: string | null = null
 
+  constructor(id: string = 'user') {
+    super(id)
+  }
+
   @Action()
   setUser(user: User) {
     this.user = user

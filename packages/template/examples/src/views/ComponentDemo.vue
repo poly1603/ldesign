@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { TemplateRenderer, LazyTemplate, PerformanceMonitor } from '@ldesign/template/vue'
 import { ref } from 'vue'
-import { TemplateRenderer } from '@ldesign/template/vue'
 
 // TemplateRenderer 组件演示页面加载
 
@@ -33,7 +33,7 @@ function addEvent(type: string, data: any) {
 // 事件处理函数
 function handleLogin(data: any) {
   addEvent('登录', data)
-  alert(`登录成功！\n用户名: ${data.username}`)
+  console.warn(`登录成功！\n用户名: ${data.username}`)
 }
 
 function handleRegister() {
@@ -219,6 +219,106 @@ const customConfig = {
           <button class="component-demo__clear-btn" @click="clearEvents">
             清空日志
           </button>
+        </div>
+
+        <!-- 性能优化组件演示 -->
+        <div class="component-demo__section">
+          <h2>🚀 性能优化组件</h2>
+          <p>体验新的性能优化组件，包括懒加载和性能监控：</p>
+
+          <div class="component-demo__example">
+            <h3>懒加载组件</h3>
+            <div class="component-demo__preview">
+              <LazyTemplate
+                category="login"
+                device="desktop"
+                template="modern"
+                :lazy="true"
+                :placeholder-height="300"
+                @load="(component) => addEvent('LazyTemplate Load', { component: 'loaded' })"
+                @visible="() => addEvent('LazyTemplate Visible', { status: 'entered viewport' })"
+                @error="(error) => addEvent('LazyTemplate Error', { error: error.message })"
+              >
+                <template #loading>
+                  <div class="lazy-loading">
+                    <div class="loading-spinner"></div>
+                    <p>正在加载模板...</p>
+                  </div>
+                </template>
+
+                <template #error="{ error, retry }">
+                  <div class="lazy-error">
+                    <p>❌ 加载失败: {{ error.message }}</p>
+                    <button @click="retry" class="retry-btn">重试</button>
+                  </div>
+                </template>
+              </LazyTemplate>
+            </div>
+
+            <div class="component-demo__code">
+              <pre><code>&lt;LazyTemplate
+  category="login"
+  device="desktop"
+  template="modern"
+  :lazy="true"
+  :placeholder-height="300"
+  @load="handleLoad"
+  @visible="handleVisible"
+&gt;
+  &lt;template #loading&gt;
+    &lt;div class="loading"&gt;加载中...&lt;/div&gt;
+  &lt;/template&gt;
+&lt;/LazyTemplate&gt;</code></pre>
+            </div>
+          </div>
+
+          <div class="component-demo__example">
+            <h3>性能监控组件</h3>
+            <div class="component-demo__preview">
+              <PerformanceMonitor
+                :detailed="true"
+                :update-interval="2000"
+                @update="(data) => addEvent('Performance Update', data)"
+              />
+            </div>
+
+            <div class="component-demo__code">
+              <pre><code>&lt;PerformanceMonitor
+  :detailed="true"
+  :update-interval="2000"
+  @update="handlePerformanceUpdate"
+/&gt;</code></pre>
+            </div>
+          </div>
+
+          <div class="component-demo__example">
+            <h3>启用性能监控的渲染器</h3>
+            <div class="component-demo__preview">
+              <TemplateRenderer
+                category="login"
+                template-id="default"
+                :lazy="true"
+                :preload="true"
+                :enable-performance-monitor="true"
+                @performance-update="(data) => addEvent('Renderer Performance', data)"
+                @load-start="() => addEvent('Load Start', { timestamp: Date.now() })"
+                @load-end="(data) => addEvent('Load End', data)"
+                @login="handleLogin"
+              />
+            </div>
+
+            <div class="component-demo__code">
+              <pre><code>&lt;TemplateRenderer
+  category="login"
+  :lazy="true"
+  :preload="true"
+  :enable-performance-monitor="true"
+  @performance-update="handlePerformanceUpdate"
+  @load-start="handleLoadStart"
+  @load-end="handleLoadEnd"
+/&gt;</code></pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -415,6 +515,49 @@ const customConfig = {
 
     &:hover {
       background: #c82333;
+    }
+  }
+
+  // 懒加载组件样式
+  .lazy-loading,
+  .lazy-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    background: #f8f9fa;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    color: #666;
+  }
+
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 12px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .retry-btn {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 8px;
+
+    &:hover {
+      background: #5a6fd8;
     }
   }
 }

@@ -36,7 +36,7 @@ export default defineComponent({
 
     const handleLogin = async () => {
       if (!form.username || !form.password) {
-        alert('请输入用户名和密码')
+        console.warn('请输入用户名和密码')
         return
       }
 

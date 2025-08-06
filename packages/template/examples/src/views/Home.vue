@@ -101,6 +101,28 @@ console.log('🏠 LDesign Template System - 首页加载')
               →
             </div>
           </router-link>
+
+          <router-link to="/performance-demo" class="home__demo-card">
+            <div class="home__demo-icon">
+              🚀
+            </div>
+            <h3>性能优化</h3>
+            <p>体验懒加载、预加载、性能监控等优化功能</p>
+            <div class="home__demo-arrow">
+              →
+            </div>
+          </router-link>
+
+          <router-link to="/virtual-scroll-demo" class="home__demo-card">
+            <div class="home__demo-icon">
+              📜
+            </div>
+            <h3>虚拟滚动</h3>
+            <p>体验虚拟滚动技术，高效渲染大量数据</p>
+            <div class="home__demo-arrow">
+              →
+            </div>
+          </router-link>
         </div>
       </div>
     </div>

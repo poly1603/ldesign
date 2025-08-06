@@ -44,7 +44,7 @@ export default defineComponent({
 
     const handleLogin = async () => {
       if (!form.username || !form.password) {
-        alert('请输入用户名和密码')
+        console.warn('请输入用户名和密码')
         return
       }
 
@@ -138,7 +138,7 @@ export default defineComponent({
                 <span>其他登录方式</span>
               </div>
               <div class="mobile-simple-login__third-party-buttons">
-                {props.thirdPartyProviders.map((provider) => (
+                {props.thirdPartyProviders.map(provider => (
                   <button
                     key={provider}
                     type="button"

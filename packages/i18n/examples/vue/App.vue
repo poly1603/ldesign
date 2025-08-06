@@ -5,7 +5,7 @@ import {
   useConditionalTranslation,
   useI18n,
   useLanguageSwitcher,
-} from '../../es/vue/index.js'
+} from '../../src/vue/index'
 
 // 使用 I18n 组合式 API
 const { t, i18n } = useI18n()
@@ -45,7 +45,7 @@ const conditionalStatus = useConditionalTranslation(
 )
 
 // 翻译键分类展开状态
-const expandedCategories = reactive({
+const expandedCategories = reactive<Record<string, boolean>>({
   common: true,
   menu: false,
   validation: false,
@@ -121,10 +121,41 @@ function getTranslationValue(key: string) {
     const translation = t(key)
     return translation === key ? '[Missing]' : translation
   }
-  catch (error) {
+  catch {
     return '[Error]'
   }
 }
+
+// 性能测试
+const performanceResults = ref('')
+function runPerformanceTest() {
+  const iterations = 10000
+  const keys = ['common.ok', 'common.cancel', 'common.loading', 'menu.file.new', 'validation.username.required']
+
+  const startTime = performance.now()
+  for (let i = 0; i < iterations; i++) {
+    const key = keys[i % keys.length]
+    t(key)
+  }
+  const endTime = performance.now()
+
+  const totalTime = endTime - startTime
+  const avgTime = totalTime / iterations
+
+  performanceResults.value = `
+Total iterations: ${iterations.toLocaleString()}
+Total time: ${totalTime.toFixed(2)}ms
+Average time per translation: ${avgTime.toFixed(4)}ms
+Translations per second: ${Math.round(1000 / avgTime).toLocaleString()}
+  `.trim()
+}
+
+// 存储状态
+const storageValue = computed(() => localStorage.getItem('i18n-locale') || 'null')
+
+// 错误处理示例
+const fallbackExample = computed(() => t('nonexistent.key'))
+const defaultValueExample = computed(() => t('nonexistent.key', {}, { defaultValue: 'Default Text' }))
 
 // 组件挂载时的初始化
 onMounted(() => {
@@ -399,6 +430,73 @@ onMounted(() => {
               </div>
               <div class="result-block">
                 <pre>{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Storage & Detection -->
+        <div class="example-section">
+          <div class="example-header">
+            Storage & Detection
+          </div>
+          <div class="example-content">
+            <div class="example-item">
+              <div class="code-block">
+                localStorage.getItem('i18n-locale')
+              </div>
+              <div class="result-block">
+                {{ storageValue }}
+              </div>
+            </div>
+            <div class="example-item">
+              <div class="code-block">
+                getCurrentLanguage()
+              </div>
+              <div class="result-block">
+                {{ locale }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Handling -->
+        <div class="example-section">
+          <div class="example-header">
+            Error Handling & Fallback
+          </div>
+          <div class="example-content">
+            <div class="example-item">
+              <div class="code-block">
+                t('nonexistent.key')
+              </div>
+              <div class="result-block">
+                {{ fallbackExample }}
+              </div>
+            </div>
+            <div class="example-item">
+              <div class="code-block">
+                t('nonexistent.key', {}, { defaultValue: 'Default Text' })
+              </div>
+              <div class="result-block">
+                {{ defaultValueExample }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Test -->
+        <div class="example-section">
+          <div class="example-header">
+            Performance & Caching
+          </div>
+          <div class="example-content">
+            <div class="example-item">
+              <button @click="runPerformanceTest" class="perf-btn">
+                Run Performance Test
+              </button>
+              <div v-if="performanceResults" class="result-block">
+                <pre>{{ performanceResults }}</pre>
               </div>
             </div>
           </div>
@@ -775,5 +873,23 @@ onMounted(() => {
 
 .category-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Performance Test Button */
+.perf-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.perf-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 </style>

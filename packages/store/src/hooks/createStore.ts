@@ -59,7 +59,7 @@ export function createStore<
     watch(
       () => store.$state,
       (newState) => {
-        state.value = newState
+        state.value = newState as TState
       },
       { deep: true, immediate: true },
     )
@@ -70,7 +70,11 @@ export function createStore<
       $actions: {} as TActions, // 从 store 中提取
       $getters: {} as TGetters, // 从 store 中提取
       $reset: () => store.$reset(),
-      $patch: partialState => store.$patch(partialState as any),
+      $patch: (partialState: Partial<TState>) => {
+        store.$patch((state: any) => {
+          Object.assign(state, partialState)
+        })
+      },
       $subscribe: callback => store.$subscribe(callback as any),
       $onAction: callback => store.$onAction(callback),
 

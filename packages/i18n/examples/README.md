@@ -1,6 +1,21 @@
 # @ldesign/i18n 示例项目
 
-本目录包含了 @ldesign/i18n 的使用示例，展示了如何在不同环境中集成和使用多语言功能。
+本目录包含了 @ldesign/i18n 的完整使用示例，展示了如何在不同环境中集成和使用多语言功能。每个示例都是一个完整的应用程序，演示了所有核心功能和最佳实践。
+
+## ✨ 功能特性
+
+两个示例都完整展示了以下功能：
+
+- 🌍 **多语言支持**：英语、中文、日语完整翻译
+- 🔄 **动态语言切换**：实时切换语言无需刷新页面
+- 📝 **字符串插值**：支持 `{{variable}}` 语法的动态参数
+- 🔢 **复数处理**：ICU 标准的复数规则支持
+- 🏗️ **嵌套键**：层级化的翻译键组织
+- ⚡ **批量翻译**：高效的多键翻译
+- 🎯 **条件翻译**：基于条件的动态翻译
+- 💾 **持久化存储**：语言偏好自动保存
+- 🚨 **错误处理**：优雅的错误处理和用户反馈
+- 📱 **响应式设计**：适配桌面和移动设备
 
 ## 📁 目录结构
 
@@ -46,15 +61,17 @@ pnpm install
 pnpm dev
 ```
 
-示例将在 http://localhost:3000 启动，展示以下功能：
+示例将在 http://localhost:5174 启动，展示以下功能：
 
-- 基础翻译
-- 字符串插值
-- 复数处理
-- 嵌套键访问
-- 批量翻译
-- 语言切换
-- 语言信息获取
+- ✅ **基础翻译**：`i18n.t('common.ok')` 简单键值翻译
+- ✅ **字符串插值**：`i18n.t('common.pageOf', { current: 1, total: 10 })` 动态参数
+- ✅ **复数处理**：`i18n.t('date.duration.minutes', { count: 5 })` ICU 复数规则
+- ✅ **嵌套键访问**：`i18n.t('menu.file.new')` 层级化键结构
+- ✅ **批量翻译**：`i18n.batchTranslate(['key1', 'key2'])` 高效批量处理
+- ✅ **语言切换**：`i18n.changeLanguage('zh-CN')` 动态语言切换
+- ✅ **语言信息获取**：`i18n.getCurrentLanguageInfo()` 语言元数据
+- ✅ **交互式翻译键浏览器**：可展开的分类翻译键展示
+- ✅ **实时示例演示**：所有功能的实时代码示例
 
 ### 运行 Vue 3 示例
 
@@ -69,36 +86,109 @@ pnpm install
 pnpm dev
 ```
 
-示例将在 http://localhost:3001 启动，展示以下功能：
+示例将在 http://localhost:5173 启动，展示以下功能：
 
-- Vue 组合式 API 使用
-- v-t 指令
-- 响应式语言切换
-- 条件翻译
-- 批量翻译
-- 语言切换器组件
+- ✅ **Vue 组合式 API**：`useI18n()` 钩子函数的完整使用
+- ✅ **v-t 指令**：`<div v-t="'common.save'"></div>` 模板指令翻译
+- ✅ **响应式语言切换**：`useLanguageSwitcher()` 响应式语言管理
+- ✅ **条件翻译**：`useConditionalTranslation()` 基于条件的动态翻译
+- ✅ **批量翻译**：`useBatchTranslation()` 响应式批量翻译
+- ✅ **语言切换器组件**：带加载状态的语言切换按钮
+- ✅ **全局属性**：模板中的 `$t` 函数使用
+- ✅ **TypeScript 支持**：完整的类型安全
+- ✅ **现代 Vue 3 特性**：Composition API + `<script setup>` 语法
 
-## 📚 示例功能说明
+## 📚 详细功能说明
 
-### Vanilla JavaScript 示例特性
+### 🟡 Vanilla JavaScript 示例
 
-1. **基础翻译**：展示简单的键值翻译
-2. **插值翻译**：展示带参数的字符串插值
-3. **复数处理**：展示不同数量下的复数形式
-4. **嵌套键**：展示点分隔的嵌套键访问
-5. **批量翻译**：展示一次性翻译多个键
-6. **语言信息**：展示当前语言和可用语言信息
-7. **动态切换**：展示运行时语言切换
+**核心特性：**
+- 纯 JavaScript ES6+ 模块化开发
+- 手动 DOM 操作和事件处理
+- 完整的错误处理和用户反馈
+- 现代化的 UI 设计和交互
 
-### Vue 3 示例特性
+**代码示例：**
+```javascript
+// 初始化 i18n
+import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 
-1. **组合式 API**：使用 `useI18n()` 钩子
-2. **模板指令**：使用 `v-t` 指令进行模板翻译
-3. **响应式切换**：语言切换时自动更新界面
-4. **语言切换器**：使用 `useLanguageSwitcher()` 钩子
-5. **条件翻译**：使用 `useConditionalTranslation()` 钩子
-6. **批量翻译**：使用 `useBatchTranslation()` 钩子
-7. **全局属性**：在模板中使用 `$t` 函数
+const i18n = await createI18nWithBuiltinLocales({
+  defaultLocale: 'en',
+  fallbackLocale: 'en',
+  storage: 'localStorage',
+  autoDetect: true,
+})
+
+// 基础翻译
+const okText = i18n.t('common.ok')
+
+// 插值翻译
+const pageText = i18n.t('common.pageOf', { current: 1, total: 10 })
+
+// 复数处理
+const minuteText = i18n.t('date.duration.minutes', { count: 5 })
+
+// 语言切换
+await i18n.changeLanguage('zh-CN')
+```
+
+### 🟢 Vue 3 示例
+
+**核心特性：**
+- Vue 3 Composition API + TypeScript
+- 响应式数据和自动更新
+- 组件化设计和可复用钩子
+- 现代 Vue 开发最佳实践
+
+**代码示例：**
+```vue
+<script setup lang="ts">
+import {
+  useI18n,
+  useLanguageSwitcher,
+  useBatchTranslation,
+  useConditionalTranslation
+} from '@ldesign/i18n/vue'
+
+// 基础翻译钩子
+const { t, i18n } = useI18n()
+
+// 语言切换钩子
+const { locale, switchLanguage, isChanging } = useLanguageSwitcher()
+
+// 批量翻译钩子
+const batchTranslations = useBatchTranslation([
+  'common.save',
+  'common.delete',
+  'common.edit'
+])
+
+// 条件翻译钩子
+const isOnline = ref(true)
+const statusText = useConditionalTranslation(
+  isOnline,
+  'common.online',
+  'common.offline'
+)
+</script>
+
+<template>
+  <!-- 基础翻译 -->
+  <h1>{{ t('common.title') }}</h1>
+
+  <!-- 指令翻译 -->
+  <div v-t="'common.save'"></div>
+
+  <!-- 插值翻译 -->
+  <p>{{ t('common.pageOf', { current: 1, total: 10 }) }}</p>
+
+  <!-- 语言切换 -->
+  <button @click="switchLanguage('zh-CN')" :disabled="isChanging">
+    中文
+  </button>
+</template>
+```
 
 ## 🔧 自定义配置
 

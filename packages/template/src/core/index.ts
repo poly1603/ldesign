@@ -1,21 +1,18 @@
-// 核心功能导出
-export * from './TemplateManager'
-export { templateRegistry } from './template-registry'
-export { templateLoader } from './template-loader'
-export type { TemplateCache } from './cache'
-export { detectDeviceType, watchDeviceChange, getDeviceInfo } from './device'
+// ============ 核心模块导出 ============
+// 注意：主要导出应该通过 src/index.ts，这里只导出核心内部使用的模块
 
-// 函数式 API (从 TemplateManager 导出)
-export {
-  registerTemplate,
-  getTemplate,
-  getTemplatesByDevice,
-  getTemplatesByCategory,
-  getAllTemplates,
-  getDefaultTemplate,
-  hasTemplate,
-  getTemplateConfig,
-  getTemplateComponent,
-  clearTemplateRegistry,
-  getTemplateStats,
-} from './TemplateManager'
+// 缓存模块
+export * from './cache'
+
+// 设备检测模块
+export * from './device'
+
+// 模板扫描模块
+export * from './scanner'
+
+// 模板管理器
+export * from './TemplateManager'
+
+// 模板加载器和注册表
+export { templateLoader } from './template-loader'
+export { templateRegistry } from './template-registry'

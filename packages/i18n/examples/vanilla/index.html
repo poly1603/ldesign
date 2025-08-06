@@ -361,6 +361,33 @@
       .category-content::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
       }
+
+      /* Performance Test Button */
+      .perf-btn {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .perf-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      #perf-results {
+        font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+        font-size: 13px;
+        background: #f8f9ff;
+        padding: 10px;
+        border-radius: 4px;
+        border-left: 4px solid #667eea;
+      }
     </style>
   </head>
   <body>
@@ -475,6 +502,56 @@
               </div>
             </div>
           </div>
+
+          <!-- Language Detection -->
+          <div class="example-section">
+            <div class="example-header">Language Detection & Storage</div>
+            <div class="example-content">
+              <div class="example-item">
+                <div class="code-block">i18n.getCurrentLanguage()</div>
+                <div class="result-block" id="example-current-lang">-</div>
+              </div>
+              <div class="example-item">
+                <div class="code-block">i18n.getCurrentLanguageInfo()</div>
+                <div class="result-block" id="example-lang-info">
+                  <pre>-</pre>
+                </div>
+              </div>
+              <div class="example-item">
+                <div class="code-block">localStorage.getItem('i18n-locale')</div>
+                <div class="result-block" id="example-storage">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Handling -->
+          <div class="example-section">
+            <div class="example-header">Error Handling & Fallback</div>
+            <div class="example-content">
+              <div class="example-item">
+                <div class="code-block">i18n.t('nonexistent.key')</div>
+                <div class="result-block" id="example-fallback">-</div>
+              </div>
+              <div class="example-item">
+                <div class="code-block">i18n.t('nonexistent.key', {}, { defaultValue: 'Default Text' })</div>
+                <div class="result-block" id="example-default">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Demo -->
+          <div class="example-section">
+            <div class="example-header">Performance & Caching</div>
+            <div class="example-content">
+              <div class="example-item">
+                <div class="code-block">// Translation performance test</div>
+                <div class="result-block" id="example-performance">
+                  <button onclick="runPerformanceTest()" class="perf-btn">Run Performance Test</button>
+                  <div id="perf-results">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -574,6 +651,16 @@
           // Batch translation
           const batchResult = i18n.batchTranslate(['common.save', 'common.delete', 'common.edit'])
           document.getElementById('example-batch').innerHTML = `<pre>${JSON.stringify(batchResult, null, 2)}</pre>`
+
+          // Language detection and storage
+          document.getElementById('example-current-lang').textContent = i18n.getCurrentLanguage()
+          const langInfo = i18n.getCurrentLanguageInfo()
+          document.getElementById('example-lang-info').innerHTML = `<pre>${JSON.stringify(langInfo, null, 2)}</pre>`
+          document.getElementById('example-storage').textContent = localStorage.getItem('i18n-locale') || 'null'
+
+          // Error handling and fallback
+          document.getElementById('example-fallback').textContent = i18n.t('nonexistent.key')
+          document.getElementById('example-default').textContent = i18n.t('nonexistent.key', {}, { defaultValue: 'Default Text' })
         } catch (error) {
           console.error('Error updating examples:', error)
           showError('Error updating examples: ' + error.message)
@@ -691,6 +778,33 @@
           console.error('Error updating translation keys:', error)
           showError('Error updating translation keys: ' + error.message)
         }
+      }
+
+      // Performance test function
+      window.runPerformanceTest = function() {
+        if (!i18n) return
+
+        const iterations = 10000
+        const keys = ['common.ok', 'common.cancel', 'common.loading', 'menu.file.new', 'validation.username.required']
+
+        // Test translation performance
+        const startTime = performance.now()
+        for (let i = 0; i < iterations; i++) {
+          const key = keys[i % keys.length]
+          i18n.t(key)
+        }
+        const endTime = performance.now()
+
+        const totalTime = endTime - startTime
+        const avgTime = totalTime / iterations
+
+        document.getElementById('perf-results').innerHTML = `
+          <strong>Performance Test Results:</strong><br>
+          Total iterations: ${iterations.toLocaleString()}<br>
+          Total time: ${totalTime.toFixed(2)}ms<br>
+          Average time per translation: ${avgTime.toFixed(4)}ms<br>
+          Translations per second: ${Math.round(1000 / avgTime).toLocaleString()}
+        `
       }
 
       // Change language function

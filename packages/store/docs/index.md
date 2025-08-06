@@ -22,7 +22,7 @@ features:
     details: 支持类式、Hook式、Provider式、装饰器式等多种使用方式，满足不同开发者的偏好和项目需求
   - icon: ⚡
     title: 性能优越
-    details: 基于Pinia构建，内置缓存、防抖、节流等性能优化功能，让你的应用更快更流畅
+    details: 基于Pinia构建，内置缓存、防抖、节流、Store池管理、性能监控等优化功能，让你的应用更快更流畅
   - icon: 🔒
     title: 类型安全
     details: 完整的TypeScript支持，提供强类型检查和智能提示，减少运行时错误
@@ -125,6 +125,8 @@ const store = new CounterStore('counter')
 
 - 智能缓存机制
 - 防抖和节流支持
+- Store 池管理，减少内存分配
+- 性能监控和优化建议
 - 懒加载和按需创建
 - Tree-shaking 友好
 

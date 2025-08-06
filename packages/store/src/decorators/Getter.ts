@@ -60,11 +60,11 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     // 创建缓存（如果需要）
     let cachedValue: any
     let isCached = false
-    let lastDepsValues: any[] = []
+    let lastDepsHash: string | undefined
 
     // 包装 getter
     descriptor.get = function (this: any) {
-      // 检查依赖是否变化
+      // 检查依赖是否变化（优化版本）
       if (options.deps && options.deps.length > 0) {
         const currentDepsValues = options.deps.map((dep) => {
           if (this._store) {
@@ -73,12 +73,13 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
           return (this as any)[dep]
         })
 
-        // 如果依赖发生变化，清除缓存
-        if (isCached && !arraysEqual(lastDepsValues, currentDepsValues)) {
+        // 使用哈希比较优化性能
+        const currentDepsHash = JSON.stringify(currentDepsValues)
+        if (isCached && lastDepsHash !== currentDepsHash) {
           isCached = false
         }
 
-        lastDepsValues = currentDepsValues
+        lastDepsHash = currentDepsHash
       }
 
       // 如果启用缓存且有缓存值，返回缓存值
@@ -149,17 +150,4 @@ export function MemoizedGetter(deps: string[]): MethodDecorator {
   })
 }
 
-/**
- * 工具函数：比较两个数组是否相等
- */
-function arraysEqual(a: any[], b: any[]): boolean {
-  if (a.length !== b.length)
-    return false
 
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i])
-      return false
-  }
-
-  return true
-}

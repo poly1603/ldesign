@@ -66,6 +66,8 @@ export default defineConfig({
             { text: '性能优化', link: '/guide/performance' },
             { text: '最佳实践', link: '/guide/best-practices' },
             { text: '迁移指南', link: '/guide/migration' },
+            { text: '故障排除', link: '/guide/troubleshooting' },
+            { text: '常见问题', link: '/guide/faq' },
           ],
         },
       ],

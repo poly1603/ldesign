@@ -24,7 +24,7 @@ export class TemplateScanner {
 
       // 更新本地缓存
       this.scannedTemplates.clear()
-      templates.forEach(template => {
+      templates.forEach((template) => {
         this.scannedTemplates.set(this.getTemplateKey(template), template)
       })
 
@@ -49,8 +49,6 @@ export class TemplateScanner {
       }
     }
   }
-
-
 
   /**
    * 生成模板唯一键

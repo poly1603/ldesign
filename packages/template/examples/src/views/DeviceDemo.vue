@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DeviceType } from '@ldesign/template'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useTemplate } from '@ldesign/template/vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 // 响应式设备切换演示页面加载
 

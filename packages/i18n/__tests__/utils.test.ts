@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { NestedObject } from '../src/core/types'
 import {
   extractInterpolationKeys,
   hasInterpolation,
@@ -21,7 +22,7 @@ import {
 } from '../src/utils/pluralization'
 
 describe('path Utils', () => {
-  const testObject = {
+  const createTestObject = () => ({
     level1: {
       level2: {
         value: 'nested value',
@@ -29,22 +30,25 @@ describe('path Utils', () => {
       simple: 'simple value',
     },
     root: 'root value',
-  }
+  })
 
   describe('getNestedValue', () => {
     it('应该获取嵌套值', () => {
+      const testObject = createTestObject()
       expect(getNestedValue(testObject, 'level1.level2.value')).toBe('nested value')
       expect(getNestedValue(testObject, 'level1.simple')).toBe('simple value')
       expect(getNestedValue(testObject, 'root')).toBe('root value')
     })
 
     it('应该处理不存在的路径', () => {
+      const testObject = createTestObject()
       expect(getNestedValue(testObject, 'nonexistent.path')).toBeUndefined()
       expect(getNestedValue(testObject, 'level1.nonexistent')).toBeUndefined()
     })
 
     it('应该处理空值', () => {
-      expect(getNestedValue(null as any, 'path')).toBeUndefined()
+      const testObject = createTestObject()
+      expect(getNestedValue(null as unknown as NestedObject, 'path')).toBeUndefined()
       expect(getNestedValue(testObject, '')).toBeUndefined()
     })
   })
@@ -57,7 +61,7 @@ describe('path Utils', () => {
     })
 
     it('应该覆盖现有值', () => {
-      const obj = { ...testObject }
+      const obj = createTestObject()
       setNestedValue(obj, 'level1.simple', 'updated value')
       expect(getNestedValue(obj, 'level1.simple')).toBe('updated value')
     })
@@ -65,6 +69,7 @@ describe('path Utils', () => {
 
   describe('hasNestedPath', () => {
     it('应该正确检查路径存在性', () => {
+      const testObject = createTestObject()
       expect(hasNestedPath(testObject, 'level1.level2.value')).toBe(true)
       expect(hasNestedPath(testObject, 'root')).toBe(true)
       expect(hasNestedPath(testObject, 'nonexistent.path')).toBe(false)
@@ -73,21 +78,22 @@ describe('path Utils', () => {
 
   describe('deepMerge', () => {
     it('应该深度合并对象', () => {
-      const obj1 = { a: { b: 1, c: 2 }, d: 3 }
-      const obj2 = { a: { b: 4, e: 5 }, f: 6 }
+      const obj1: NestedObject = { a: { b: '1', c: '2' }, d: '3' }
+      const obj2: NestedObject = { a: { b: '4', e: '5' }, f: '6' }
 
       const result = deepMerge(obj1, obj2)
 
       expect(result).toEqual({
-        a: { b: 4, c: 2, e: 5 },
-        d: 3,
-        f: 6,
+        a: { b: '4', c: '2', e: '5' },
+        d: '3',
+        f: '6',
       })
     })
   })
 
   describe('flattenObject', () => {
     it('应该扁平化对象', () => {
+      const testObject = createTestObject()
       const result = flattenObject(testObject)
 
       expect(result).toEqual({
@@ -107,8 +113,9 @@ describe('path Utils', () => {
       }
 
       const result = unflattenObject(flattened)
+      const expected = createTestObject()
 
-      expect(result).toEqual(testObject)
+      expect(result).toEqual(expected)
     })
   })
 })

@@ -1,5 +1,5 @@
 import type { DeviceType } from '../composables/useTemplateSystem'
-import { defineComponent, watch } from 'vue'
+import { defineComponent, watch, ref } from 'vue'
 import { useTemplate } from '../composables/useTemplateSystem'
 
 export interface TemplateRendererProps {
@@ -9,7 +9,17 @@ export interface TemplateRendererProps {
   showSelector?: boolean
   selectorPosition?: 'top' | 'bottom' | 'left' | 'right'
   autoDetectDevice?: boolean
-  config?: Record<string, any>
+  config?: Record<string, unknown>
+
+  // 性能优化相关
+  /** 是否启用懒加载 */
+  lazy?: boolean
+  /** 是否启用预加载 */
+  preload?: boolean
+  /** 占位符高度 */
+  placeholderHeight?: number
+  /** 是否启用性能监控 */
+  enablePerformanceMonitor?: boolean
 }
 
 /**
@@ -57,8 +67,24 @@ export const TemplateRenderer = defineComponent({
       type: Object,
       default: () => ({}),
     },
+    lazy: {
+      type: Boolean,
+      default: false,
+    },
+    preload: {
+      type: Boolean,
+      default: false,
+    },
+    placeholderHeight: {
+      type: Number,
+      default: 200,
+    },
+    enablePerformanceMonitor: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['template-change', 'device-change', 'render-error'],
+  emits: ['template-change', 'device-change', 'render-error', 'performance-update', 'load-start', 'load-end'],
   setup(props, { emit, attrs }) {
     const {
       // currentTemplate, // 暂时注释掉未使用的变量
@@ -76,6 +102,34 @@ export const TemplateRenderer = defineComponent({
       autoSwitch: props.autoDetectDevice,
     })
 
+    // 性能监控相关
+    const renderStartTime = ref<number>(0)
+    const isLoading = ref(false)
+    const performanceData = ref({
+      renderTime: 0,
+      componentSize: 0,
+      memoryUsage: 0,
+    })
+
+    // 开始加载计时
+    const startLoadTimer = () => {
+      renderStartTime.value = performance.now()
+      isLoading.value = true
+      emit('load-start')
+    }
+
+    // 结束加载计时
+    const endLoadTimer = () => {
+      const renderTime = performance.now() - renderStartTime.value
+      performanceData.value.renderTime = renderTime
+      isLoading.value = false
+      emit('load-end', { renderTime })
+
+      if (props.enablePerformanceMonitor) {
+        emit('performance-update', performanceData.value)
+      }
+    }
+
     // 监听模板变化
     watch(currentTemplateId, (newTemplateId) => {
       emit('template-change', newTemplateId)
@@ -85,6 +139,15 @@ export const TemplateRenderer = defineComponent({
     watch(deviceType, (newDevice) => {
       emit('device-change', newDevice)
     })
+
+    // 监听组件加载
+    watch(TemplateComponent, (newComponent) => {
+      if (newComponent) {
+        endLoadTimer()
+      } else {
+        startLoadTimer()
+      }
+    }, { immediate: true })
 
     // 渲染模板选择器
     const renderSelector = () => {
@@ -152,7 +215,7 @@ export const TemplateRenderer = defineComponent({
           )
         }
 
-        const DynamicComponent = Component as any
+        const DynamicComponent = Component as unknown
         return (
           <DynamicComponent
             {...finalConfig}
@@ -165,7 +228,9 @@ export const TemplateRenderer = defineComponent({
         const errorMessage = error instanceof Error ? error.message : String(error)
         return (
           <div class="template-renderer__error">
-            模板渲染失败: {errorMessage}
+            模板渲染失败:
+            {' '}
+            {errorMessage}
           </div>
         )
       }

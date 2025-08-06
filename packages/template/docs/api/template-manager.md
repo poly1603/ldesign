@@ -1,6 +1,6 @@
 # TemplateManager API
 
-TemplateManager 是 LDesign Template 系统的核心类，负责模板的管理、加载、缓存和渲染。
+TemplateManager 是 LDesign Template 系统的核心类，负责模板的管理、加载、缓存和渲染。现在包含了智能预加载、性能监控等高级功能。
 
 ## 构造函数
 
@@ -517,6 +517,57 @@ class ConfigurationError extends Error {
 }
 ```
 
+## 🆕 性能优化方法
+
+### `preloadTemplate(category, device, template)`
+
+预加载指定模板。
+
+**参数:**
+
+- `category`: `string` - 模板分类
+- `device`: `DeviceType` - 设备类型
+- `template`: `string` - 模板名称
+
+**返回值:** `Promise<void>`
+
+**示例:**
+
+```typescript
+// 预加载登录模板
+await manager.preloadTemplate('login', 'desktop', 'default')
+```
+
+### `preloadCommonTemplates()`
+
+批量预加载常用模板。
+
+**返回值:** `Promise<void>`
+
+**示例:**
+
+```typescript
+// 预加载常用模板
+await manager.preloadCommonTemplates()
+```
+
+### `getPerformanceMetrics()`
+
+获取性能指标。
+
+**返回值:** `PerformanceMetrics`
+
+**示例:**
+
+```typescript
+const metrics = manager.getPerformanceMetrics()
+console.log('性能指标:', {
+  cacheHitRate: metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses),
+  averageLoadTime: metrics.averageLoadTime,
+  preloadQueueSize: metrics.preloadQueueSize,
+})
+```
+
 ## 最佳实践
 
 1. **错误处理**: 始终为模板加载设置错误处理器
@@ -524,3 +575,5 @@ class ConfigurationError extends Error {
 3. **性能监控**: 监听加载事件，跟踪性能指标
 4. **内存管理**: 定期清理不需要的缓存
 5. **事件监听**: 及时移除不需要的事件监听器
+6. **🆕 智能预加载**: 根据用户行为预加载可能需要的模板
+7. **🆕 性能监控**: 使用 `getPerformanceMetrics()` 监控系统性能

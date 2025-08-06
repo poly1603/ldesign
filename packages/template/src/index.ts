@@ -1,11 +1,13 @@
-// 核心类
+// ============ 核心模块 ============
 export { TemplateManager } from './core/TemplateManager'
 
-// 类型定义
+// ============ 类型定义 ============
 export type * from './types'
 
+// ============ 缓存管理 ============
 export { LRUCache, TemplateCache } from './utils/cache'
-// 工具函数
+
+// ============ 设备检测 ============
 export {
   checkDeviceSupport,
   createDeviceWatcher,
@@ -21,6 +23,15 @@ export {
   isTabletDevice,
   isTouchDevice,
 } from './utils/device'
+
+// 新的设备检测模块导出
+export {
+  detectDeviceType,
+  getDeviceInfo as getDeviceInfoCore,
+  watchDeviceChange,
+} from './core/device'
+
+// ============ 模板扫描 ============
 export { TemplateScanner } from './utils/scanner'
 export { TemplateRenderer } from './vue/components/TemplateRenderer'
 
@@ -32,4 +43,3 @@ export { getGlobalTemplateManager, TemplatePlugin } from './vue/plugins'
 
 // 默认导出插件
 export { TemplatePlugin as default } from './vue/plugins'
-

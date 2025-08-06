@@ -223,6 +223,7 @@ const store = new CounterStore('counter')
     </script>
   </body>
 </html>
+
 ```
 
 ## 验证安装

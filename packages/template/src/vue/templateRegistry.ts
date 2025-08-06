@@ -83,7 +83,7 @@ export async function registerAllTemplates() {
     }
 
     // 创建异步组件
-    const component = defineAsyncComponent(moduleLoader as () => Promise<any>)
+    const component = defineAsyncComponent(moduleLoader as () => Promise<unknown>)
 
     // 注册模板
     registerTemplate({
@@ -107,7 +107,7 @@ for (const [path, moduleLoader] of Object.entries(templateModules)) {
   }
 
   // 创建异步组件
-  const component = defineAsyncComponent(moduleLoader as () => Promise<any>)
+  const component = defineAsyncComponent(moduleLoader as () => Promise<unknown>)
 
   // 注册模板
   registerTemplate({

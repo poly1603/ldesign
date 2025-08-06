@@ -1,12 +1,12 @@
 import type { DeviceType, TemplateConfig, TemplateMetadata } from '../types'
-import { defineAsyncComponent, type Component } from 'vue'
+import { type Component, defineAsyncComponent } from 'vue'
 
 /**
  * 模板加载器 - 使用 import.meta.glob 实现动态模板加载
  */
 export class TemplateLoader {
-  private configModules: Record<string, () => Promise<any>> = {}
-  private componentModules: Record<string, () => Promise<any>> = {}
+  private configModules: Record<string, () => Promise<unknown>> = {}
+  private componentModules: Record<string, () => Promise<unknown>> = {}
   private templates = new Map<string, TemplateMetadata>()
   private currentBasePath: string = '../templates'
   private isESEnvironment: boolean = false
@@ -27,17 +27,20 @@ export class TemplateLoader {
         this.currentBasePath = '../templates'
         this.isESEnvironment = true
         console.log('🔍 检测到 ES 环境，使用路径: ../templates')
-      } else if (currentPath.includes('/src/') || currentPath.includes('\\src\\')) {
+      }
+      else if (currentPath.includes('/src/') || currentPath.includes('\\src\\')) {
         this.currentBasePath = '../templates'
         this.isESEnvironment = false
         console.log('🔍 检测到 SRC 环境，使用路径: ../templates')
-      } else {
+      }
+      else {
         // 默认使用相对路径
         this.currentBasePath = '../templates'
         this.isESEnvironment = false
         console.log('🔍 使用默认路径: ../templates')
       }
-    } catch (error) {
+    }
+    catch {
       this.currentBasePath = '../templates'
       this.isESEnvironment = false
       console.log('🔍 路径检测失败，使用默认路径: ../templates')
@@ -65,7 +68,8 @@ export class TemplateLoader {
       // 如果没有找到模板，使用预定义的模板列表
       console.warn('⚠️ 未找到模板文件，使用预定义模板列表')
       this.initializeFallbackModules()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('模板扫描失败，使用预定义模板列表:', error)
       this.initializeFallbackModules()
     }
@@ -83,13 +87,13 @@ export class TemplateLoader {
       'login/mobile/card',
       'login/tablet/adaptive',
       'login/tablet/split',
-      'dashboard/desktop/admin'
+      'dashboard/desktop/admin',
     ]
 
     this.configModules = {}
     this.componentModules = {}
 
-    templatePaths.forEach(templatePath => {
+    templatePaths.forEach((templatePath) => {
       const configKey = `../templates/${templatePath}/config.ts`
       const componentKey = `../templates/${templatePath}/index.tsx`
 
@@ -99,7 +103,8 @@ export class TemplateLoader {
         try {
           const module = await import(/* @vite-ignore */ `${basePath}/${templatePath}/config${this.isESEnvironment ? '.js' : ''}`)
           return module
-        } catch (error) {
+        }
+        catch {
           console.warn(`无法加载配置: ${templatePath}`)
           throw new Error(`无法加载配置: ${templatePath}`)
         }
@@ -111,7 +116,8 @@ export class TemplateLoader {
         try {
           const module = await import(/* @vite-ignore */ `${basePath}/${templatePath}/index${this.isESEnvironment ? '.js' : ''}`)
           return module
-        } catch (error) {
+        }
+        catch {
           console.warn(`无法加载组件: ${templatePath}`)
           throw new Error(`无法加载组件: ${templatePath}`)
         }
@@ -134,7 +140,8 @@ export class TemplateLoader {
           templates.push(metadata)
           this.templates.set(this.getTemplateKey(metadata), metadata)
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to load template config from ${configPath}:`, error)
       }
     }
@@ -147,14 +154,15 @@ export class TemplateLoader {
    */
   private async parseTemplateFromPath(
     configPath: string,
-    configLoader: () => Promise<any>
+    configLoader: () => Promise<unknown>,
   ): Promise<TemplateMetadata | null> {
     try {
       // 解析路径: ../templates/category/device/template/config.*
       const pathParts = configPath.split('/')
       const configIndex = pathParts.findIndex(part => part.startsWith('config.'))
 
-      if (configIndex < 3) return null
+      if (configIndex < 3)
+        return null
 
       const template = pathParts[configIndex - 1]
       const device = pathParts[configIndex - 2] as DeviceType
@@ -187,7 +195,8 @@ export class TemplateLoader {
         componentPath,
         stylePath: `${basePath}/index.less`,
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to parse template from ${configPath}:`, error)
       return null
     }

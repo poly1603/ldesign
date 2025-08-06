@@ -77,6 +77,7 @@ export const common = {
   selected: 'Selected',
   available: 'Available',
   remaining: 'Remaining',
+  items: '{count, plural, =0{no items} =1{one item} other{# items}}',
 
   // 确认对话框
   confirmDelete: 'Are you sure you want to delete this item?',
