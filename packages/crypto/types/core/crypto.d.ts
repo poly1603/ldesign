@@ -1,4 +1,4 @@
-import { AESOptions, EncryptResult, RSAOptions, EncodingType, DecryptResult, HashOptions, HashAlgorithm, RSAKeyPair } from '../types/index.js';
+import { AESOptions, EncryptResult, RSAOptions, DESOptions, TripleDESOptions, BlowfishOptions, EncryptionAlgorithm, EncodingType, DecryptResult, HashOptions, HashAlgorithm, RSAKeyPair } from '../types/index.js';
 
 /**
  * 加密类
@@ -25,6 +25,27 @@ declare class Encrypt {
      */
     rsa(data: string, publicKey: string, options?: RSAOptions): EncryptResult;
     /**
+     * DES 加密
+     */
+    des(data: string, key: string, options?: DESOptions): EncryptResult;
+    /**
+     * 3DES 加密
+     */
+    des3(data: string, key: string, options?: TripleDESOptions): EncryptResult;
+    /**
+     * Triple DES 加密 (别名)
+     */
+    tripledes(data: string, key: string, options?: TripleDESOptions): EncryptResult;
+    /**
+     * Blowfish 加密
+     */
+    blowfish(data: string, key: string, options?: BlowfishOptions): EncryptResult;
+    /**
+     * 通用加密方法
+     * 根据算法类型自动选择合适的加密方法
+     */
+    encrypt(data: string, key: string, algorithm: EncryptionAlgorithm, options?: any): EncryptResult;
+    /**
      * Base64 编码
      */
     base64(data: string): string;
@@ -45,6 +66,7 @@ declare class Encrypt {
  * 解密类
  */
 declare class Decrypt {
+    private encoder;
     /**
      * AES 解密
      */
@@ -65,6 +87,27 @@ declare class Decrypt {
      * RSA 解密
      */
     rsa(encryptedData: string | EncryptResult, privateKey: string, options?: RSAOptions): DecryptResult;
+    /**
+     * DES 解密
+     */
+    des(encryptedData: string | EncryptResult, key: string, options?: DESOptions): DecryptResult;
+    /**
+     * 3DES 解密
+     */
+    des3(encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions): DecryptResult;
+    /**
+     * Triple DES 解密 (别名)
+     */
+    tripledes(encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions): DecryptResult;
+    /**
+     * Blowfish 解密
+     */
+    blowfish(encryptedData: string | EncryptResult, key: string, options?: BlowfishOptions): DecryptResult;
+    /**
+     * 通用解密方法
+     * 根据算法类型自动选择合适的解密方法
+     */
+    decrypt(encryptedData: string | EncryptResult, key: string, algorithm?: EncryptionAlgorithm, options?: any): DecryptResult;
     /**
      * Base64 解码
      */

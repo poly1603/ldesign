@@ -1,0 +1,263 @@
+import type {
+  DecryptResult,
+  EncryptionAlgorithm,
+  EncryptResult,
+  HashAlgorithm,
+  HashOptions,
+  RSAKeyPair,
+} from '../types'
+import { Decrypt, Encrypt, Hash, HMAC, KeyGenerator } from './crypto'
+import { type BatchOperation, type BatchResult, PerformanceOptimizer } from './performance'
+
+/**
+ * 加密配置选项
+ */
+export interface CryptoConfig {
+  // 默认算法
+  defaultAlgorithm?: EncryptionAlgorithm
+
+  // 性能优化选项
+  enableCache?: boolean
+  maxCacheSize?: number
+  enableParallel?: boolean
+
+  // 安全选项
+  autoGenerateIV?: boolean
+  keyDerivation?: boolean
+
+  // 调试选项
+  debug?: boolean
+  logLevel?: 'error' | 'warn' | 'info' | 'debug'
+}
+
+/**
+ * 统一的加解密管理器
+ * 提供简化的 API 和性能优化功能
+ */
+export class CryptoManager {
+  private encrypt: Encrypt
+  private decrypt: Decrypt
+  private hash: Hash
+  private hmac: HMAC
+  private keyGenerator: KeyGenerator
+  private optimizer: PerformanceOptimizer
+  private config: Required<CryptoConfig>
+
+  constructor(config: CryptoConfig = {}) {
+    this.config = {
+      defaultAlgorithm: 'AES',
+      enableCache: true,
+      maxCacheSize: 1000,
+      enableParallel: true,
+      autoGenerateIV: true,
+      keyDerivation: false,
+      debug: false,
+      logLevel: 'error',
+      ...config,
+    }
+
+    this.encrypt = new Encrypt()
+    this.decrypt = new Decrypt()
+    this.hash = new Hash()
+    this.hmac = new HMAC()
+    this.keyGenerator = new KeyGenerator()
+    this.optimizer = new PerformanceOptimizer()
+
+    this.log('info', 'CryptoManager initialized', this.config)
+  }
+
+  /**
+   * 简化的加密方法
+   */
+  async encryptData(
+    data: string,
+    key: string,
+    algorithm?: EncryptionAlgorithm,
+    options?: any,
+  ): Promise<EncryptResult> {
+    const targetAlgorithm = algorithm || this.config.defaultAlgorithm
+
+    try {
+      this.log('debug', `Encrypting data with ${targetAlgorithm}`)
+
+      const result = this.encrypt.encrypt(data, key, targetAlgorithm, options)
+
+      this.log('debug', `Encryption completed`, { algorithm: targetAlgorithm, success: result.success })
+
+      return result
+    }
+    catch (error) {
+      this.log('error', 'Encryption failed', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown encryption error',
+        algorithm: targetAlgorithm,
+      }
+    }
+  }
+
+  /**
+   * 简化的解密方法
+   */
+  async decryptData(
+    encryptedData: string | EncryptResult,
+    key: string,
+    algorithm?: EncryptionAlgorithm,
+    options?: any,
+  ): Promise<DecryptResult> {
+    try {
+      this.log('debug', `Decrypting data`)
+
+      const result = this.decrypt.decrypt(encryptedData, key, algorithm, options)
+
+      this.log('debug', `Decryption completed`, { success: result.success })
+
+      return result
+    }
+    catch (error) {
+      this.log('error', 'Decryption failed', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown decryption error',
+        algorithm: algorithm || 'Unknown',
+      }
+    }
+  }
+
+  /**
+   * 批量加密
+   */
+  async batchEncrypt(operations: BatchOperation[]): Promise<Array<{ id: string, result: EncryptResult }>> {
+    if (!this.config.enableParallel || operations.length <= 1) {
+      // 串行处理
+      const results = []
+      for (const op of operations) {
+        const result = await this.encryptData(op.data, op.key, op.algorithm, op.options)
+        results.push({ id: op.id, result })
+      }
+      return results
+    }
+
+    // 并行处理
+    return this.optimizer.batchEncrypt(operations)
+  }
+
+  /**
+   * 批量解密
+   */
+  async batchDecrypt(operations: BatchOperation[]): Promise<Array<{ id: string, result: DecryptResult }>> {
+    if (!this.config.enableParallel || operations.length <= 1) {
+      // 串行处理
+      const results = []
+      for (const op of operations) {
+        const result = await this.decryptData(op.data, op.key, op.algorithm, op.options)
+        results.push({ id: op.id, result })
+      }
+      return results
+    }
+
+    // 并行处理
+    return this.optimizer.batchDecrypt(operations)
+  }
+
+  /**
+   * 哈希计算
+   */
+  hashData(data: string, algorithm: HashAlgorithm = 'SHA256', options?: HashOptions): string {
+    return this.hash.hash(data, algorithm, options)
+  }
+
+  /**
+   * HMAC 计算
+   */
+  hmacData(data: string, key: string, algorithm: HashAlgorithm = 'SHA256'): string {
+    return this.hmac.hmac(data, key, `HMAC-${algorithm}` as any)
+  }
+
+  /**
+   * 生成密钥
+   */
+  generateKey(algorithm: EncryptionAlgorithm, keySize?: number): string | RSAKeyPair {
+    switch (algorithm.toUpperCase()) {
+      case 'AES':
+        return this.keyGenerator.generateKey((keySize || 256) / 8)
+      case 'RSA':
+        return this.keyGenerator.generateRSAKeyPair(keySize)
+      case 'DES':
+        return this.keyGenerator.generateRandomBytes(8)
+      case '3DES':
+        return this.keyGenerator.generateRandomBytes(24)
+      case 'BLOWFISH':
+        return this.keyGenerator.generateRandomBytes(keySize || 16)
+      default:
+        throw new Error(`Unsupported algorithm for key generation: ${algorithm}`)
+    }
+  }
+
+  /**
+   * 获取支持的算法列表
+   */
+  getSupportedAlgorithms(): EncryptionAlgorithm[] {
+    return ['AES', 'RSA', 'DES', '3DES', 'Blowfish']
+  }
+
+  /**
+   * 获取性能统计
+   */
+  getPerformanceStats(): import('./performance').CacheStats {
+    return this.optimizer.getCacheStats()
+  }
+
+  /**
+   * 清除缓存
+   */
+  clearCache(): void {
+    this.optimizer.clearCache()
+    this.log('info', 'Cache cleared')
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(newConfig: Partial<CryptoConfig>): void {
+    this.config = { ...this.config, ...newConfig }
+    this.log('info', 'Configuration updated', newConfig)
+  }
+
+  /**
+   * 获取当前配置
+   */
+  getConfig(): CryptoConfig {
+    return { ...this.config }
+  }
+
+  /**
+   * 日志记录
+   */
+  private log(level: 'error' | 'warn' | 'info' | 'debug', message: string, data?: any): void {
+    if (!this.config.debug)
+      return
+
+    const levels = ['error', 'warn', 'info', 'debug']
+    const currentLevelIndex = levels.indexOf(this.config.logLevel)
+    const messageLevelIndex = levels.indexOf(level)
+
+    if (messageLevelIndex <= currentLevelIndex) {
+      const timestamp = new Date().toISOString()
+      const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
+
+      if (data) {
+        console[level](logMessage, data)
+      }
+      else {
+        console[level](logMessage)
+      }
+    }
+  }
+}
+
+// 导出默认实例
+export const cryptoManager = new CryptoManager()
+
+// 重新导出类型
+export type { BatchOperation, BatchResult }

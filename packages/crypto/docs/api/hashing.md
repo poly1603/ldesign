@@ -301,10 +301,10 @@ console.log('派生密钥:', derivedKey)
 function scrypt(password: string, salt: string, options: ScryptOptions): string
 
 interface ScryptOptions {
-  N: number               // CPU/内存成本参数
-  r: number              // 块大小参数
-  p: number              // 并行化参数
-  keyLength: number      // 输出密钥长度
+  N: number // CPU/内存成本参数
+  r: number // 块大小参数
+  p: number // 并行化参数
+  keyLength: number // 输出密钥长度
 }
 ```
 

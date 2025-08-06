@@ -12,6 +12,12 @@ export class RSAEncryptor implements IEncryptor {
     padding: 'OAEP',
   }
 
+  // 密钥对缓存，避免重复解析
+  private keyPairCache = new Map<string, forge.pki.rsa.KeyPair>()
+  private publicKeyCache = new Map<string, forge.pki.rsa.PublicKey>()
+  private privateKeyCache = new Map<string, forge.pki.rsa.PrivateKey>()
+  private maxKeyCacheSize = 50
+
   /**
    * 生成 RSA 密钥对
    */
@@ -62,6 +68,7 @@ export class RSAEncryptor implements IEncryptor {
       const encryptedBase64 = forge.util.encode64(encrypted)
 
       return {
+        success: true,
         data: encryptedBase64,
         algorithm: `RSA-${opts.keySize}`,
       }
@@ -78,12 +85,12 @@ export class RSAEncryptor implements IEncryptor {
    * RSA 私钥解密
    */
   decrypt(encryptedData: string | EncryptResult, privateKey: string, options: RSAOptions = {}): DecryptResult {
+    const opts = { ...this.defaultOptions, ...options }
+
     try {
       if (ValidationUtils.isEmpty(privateKey)) {
         throw ErrorUtils.createDecryptionError('Private key cannot be empty', 'RSA')
       }
-
-      const opts = { ...this.defaultOptions, ...options }
       let ciphertext: string
 
       // 处理输入数据
@@ -91,7 +98,7 @@ export class RSAEncryptor implements IEncryptor {
         ciphertext = encryptedData
       }
       else {
-        ciphertext = encryptedData.data
+        ciphertext = encryptedData.data || ''
       }
 
       // 解析私钥
@@ -107,21 +114,25 @@ export class RSAEncryptor implements IEncryptor {
       const decrypted = privateKeyObj.decrypt(encryptedBytes, paddingScheme)
 
       return {
-        data: decrypted,
         success: true,
+        data: decrypted,
+        algorithm: `RSA-${opts.keySize}`,
       }
     }
     catch (error) {
+      const algorithmName = `RSA-${opts.keySize}`
       if (error instanceof Error) {
         return {
-          data: '',
           success: false,
+          data: '',
+          algorithm: algorithmName,
           error: error.message,
         }
       }
       return {
-        data: '',
         success: false,
+        data: '',
+        algorithm: algorithmName,
         error: 'Unknown decryption error',
       }
     }
@@ -173,7 +184,7 @@ export class RSAEncryptor implements IEncryptor {
       const publicKeyObj = this.parsePublicKey(publicKey)
 
       // 创建消息摘要
-      const md = forge.md[algorithm as keyof typeof forge.md].create()
+      const md = (forge.md as any)[algorithm].create()
       md.update(data, 'utf8')
 
       // 解码签名
@@ -228,7 +239,7 @@ export class RSAEncryptor implements IEncryptor {
   /**
    * 获取填充方案
    */
-  private getPaddingScheme(padding: string): string {
+  private getPaddingScheme(padding: string): any {
     switch (padding.toUpperCase()) {
       case 'OAEP':
         return 'RSA-OAEP'
@@ -237,6 +248,69 @@ export class RSAEncryptor implements IEncryptor {
       default:
         return 'RSA-OAEP'
     }
+  }
+
+  /**
+   * 缓存公钥
+   */
+  private cachePublicKey(keyString: string, publicKey: forge.pki.rsa.PublicKey): void {
+    if (this.publicKeyCache.size >= this.maxKeyCacheSize) {
+      const firstKey = this.publicKeyCache.keys().next().value
+      if (firstKey) {
+        this.publicKeyCache.delete(firstKey)
+      }
+    }
+    this.publicKeyCache.set(keyString, publicKey)
+  }
+
+  /**
+   * 缓存私钥
+   */
+  private cachePrivateKey(keyString: string, privateKey: forge.pki.rsa.PrivateKey): void {
+    if (this.privateKeyCache.size >= this.maxKeyCacheSize) {
+      const firstKey = this.privateKeyCache.keys().next().value
+      if (firstKey) {
+        this.privateKeyCache.delete(firstKey)
+      }
+    }
+    this.privateKeyCache.set(keyString, privateKey)
+  }
+
+  /**
+   * 获取缓存的公钥或解析新的公钥
+   */
+  private getPublicKey(keyString: string): forge.pki.rsa.PublicKey {
+    const cached = this.publicKeyCache.get(keyString)
+    if (cached) {
+      return cached
+    }
+
+    const publicKey = forge.pki.publicKeyFromPem(keyString)
+    this.cachePublicKey(keyString, publicKey)
+    return publicKey
+  }
+
+  /**
+   * 获取缓存的私钥或解析新的私钥
+   */
+  private getPrivateKey(keyString: string): forge.pki.rsa.PrivateKey {
+    const cached = this.privateKeyCache.get(keyString)
+    if (cached) {
+      return cached
+    }
+
+    const privateKey = forge.pki.privateKeyFromPem(keyString)
+    this.cachePrivateKey(keyString, privateKey)
+    return privateKey
+  }
+
+  /**
+   * 清除密钥缓存
+   */
+  clearKeyCache(): void {
+    this.keyPairCache.clear()
+    this.publicKeyCache.clear()
+    this.privateKeyCache.clear()
   }
 }
 

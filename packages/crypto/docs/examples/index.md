@@ -11,6 +11,27 @@
 - 自定义 IV 和密钥生成
 - 交互式加密/解密工具
 
+### [DES 对称加密](./des.md)
+
+- DES 基础加密演示
+- 不同加密模式（CBC、ECB、CFB、OFB）
+- 密钥处理和生成
+- 交互式 DES 工具
+
+### [3DES 对称加密](./tripledes.md)
+
+- Triple DES 加密演示
+- 24字节密钥处理
+- 批量加密功能
+- 交互式 3DES 工具
+
+### [Blowfish 对称加密](./blowfish.md)
+
+- Blowfish 加密演示（Web 兼容实现）
+- 可变长度密钥支持
+- Web 环境兼容性说明
+- 交互式 Blowfish 工具
+
 ### [RSA 非对称加密](./rsa.md)
 
 - RSA 密钥对生成
@@ -147,16 +168,19 @@ console.log('解密结果:', decrypted.data)
 ### 初学者路径
 
 1. 从 [AES 加密示例](./aes.md) 开始，了解基本的对称加密
-2. 学习 [哈希算法示例](./hash.md)，理解数据完整性验证
-3. 尝试 [Base64 编码示例](./encoding.md)，掌握数据编码转换
-4. 进入 [Vue 3 集成示例](./vue-composables.md)，学习框架集成
+2. 学习 [DES 加密示例](./des.md)，理解传统对称加密
+3. 学习 [哈希算法示例](./hash.md)，理解数据完整性验证
+4. 尝试 [Base64 编码示例](./encoding.md)，掌握数据编码转换
+5. 进入 [Vue 3 集成示例](./vue-composables.md)，学习框架集成
 
 ### 进阶路径
 
-1. 学习 [RSA 加密示例](./rsa.md)，理解非对称加密
-2. 掌握 [数字签名示例](./signature.md)，了解身份验证
-3. 研究 [实际应用示例](./authentication.md)，学习最佳实践
-4. 探索 [高级用法](./api-security.md)，掌握安全开发
+1. 学习 [3DES 加密示例](./tripledes.md)，了解增强的对称加密
+2. 尝试 [Blowfish 加密示例](./blowfish.md)，掌握快速分组密码
+3. 学习 [RSA 加密示例](./rsa.md)，理解非对称加密
+4. 掌握 [数字签名示例](./signature.md)，了解身份验证
+5. 研究 [实际应用示例](./authentication.md)，学习最佳实践
+6. 探索 [高级用法](./api-security.md)，掌握安全开发
 
 ### 专业路径
 

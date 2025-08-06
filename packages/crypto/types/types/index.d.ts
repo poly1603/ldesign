@@ -1,7 +1,7 @@
 /**
  * 加密算法类型
  */
-type EncryptionAlgorithm = 'AES' | 'RSA';
+type EncryptionAlgorithm = 'AES' | 'RSA' | 'DES' | '3DES' | 'Blowfish' | 'DES' | '3DES' | 'Blowfish';
 /**
  * AES 加密模式
  */
@@ -51,6 +51,30 @@ interface RSAOptions {
     padding?: string;
 }
 /**
+ * DES 加密选项
+ */
+interface DESOptions {
+    mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB';
+    iv?: string;
+    padding?: string;
+}
+/**
+ * 3DES 加密选项
+ */
+interface TripleDESOptions {
+    mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB';
+    iv?: string;
+    padding?: string;
+}
+/**
+ * Blowfish 加密选项
+ */
+interface BlowfishOptions {
+    mode?: 'CBC' | 'ECB';
+    iv?: string;
+    padding?: boolean;
+}
+/**
  * 哈希选项
  */
 interface HashOptions {
@@ -66,17 +90,23 @@ interface HMACOptions {
  * 加密结果
  */
 interface EncryptResult {
-    data: string;
+    success: boolean;
+    data?: string;
     algorithm: string;
+    mode?: string;
     iv?: string;
     salt?: string;
+    keySize?: number;
+    error?: string;
 }
 /**
  * 解密结果
  */
 interface DecryptResult {
-    data: string;
     success: boolean;
+    data?: string;
+    algorithm: string;
+    mode?: string;
     error?: string;
 }
 /**
@@ -133,4 +163,4 @@ interface IKeyGenerator {
     generateIV: (length?: number) => string;
 }
 
-export type { AESKeySize, AESMode, AESOptions, DecryptResult, EncodingType, EncryptResult, EncryptionAlgorithm, HMACAlgorithm, HMACOptions, HashAlgorithm, HashOptions, HashResult, IEncoder, IEncryptor, IHMACer, IHasher, IKeyGenerator, KeyGenerationOptions, RSAKeyFormat, RSAKeyPair, RSAOptions };
+export type { AESKeySize, AESMode, AESOptions, BlowfishOptions, DESOptions, DecryptResult, EncodingType, EncryptResult, EncryptionAlgorithm, HMACAlgorithm, HMACOptions, HashAlgorithm, HashOptions, HashResult, IEncoder, IEncryptor, IHMACer, IHasher, IKeyGenerator, KeyGenerationOptions, RSAKeyFormat, RSAKeyPair, RSAOptions, TripleDESOptions };

@@ -1,37 +1,69 @@
-import { AESOptions, EncryptResult, DecryptResult, RSAKeyPair, RSAOptions, EncodingType } from './types/index.js';
+import { AESOptions, EncryptResult, DecryptResult, RSAKeyPair, RSAOptions, DESOptions, TripleDESOptions, BlowfishOptions, EncodingType } from './types/index.js';
 export { AESKeySize, AESMode, EncryptionAlgorithm, HMACAlgorithm, HMACOptions, HashAlgorithm, HashOptions, HashResult, IEncoder, IEncryptor, IHMACer, IHasher, IKeyGenerator, KeyGenerationOptions, RSAKeyFormat } from './types/index.js';
+export { cryptoManager, decrypt, digitalSignature, encrypt, hash, hmac, keyGenerator } from './core/index.js';
 export { AESEncryptor, aes } from './algorithms/aes.js';
-export { Encoder, base64, encoding, hex } from './algorithms/encoding.js';
-export { HMACHasher, Hasher } from './algorithms/hash.js';
+export { DESEncryptor, des } from './algorithms/des.js';
+export { TripleDESEncryptor, des3, tripledes } from './algorithms/tripledes.js';
+export { BlowfishEncryptor, blowfish } from './algorithms/blowfish.js';
 export { RSAEncryptor, rsa } from './algorithms/rsa.js';
-export { decrypt, digitalSignature, encrypt, hash, hmac, keyGenerator } from './core/index.js';
+export { HMACHasher, Hasher } from './algorithms/hash.js';
+export { Encoder, base64, encoding, hex } from './algorithms/encoding.js';
 import { StringUtils, RandomUtils, ValidationUtils, ErrorUtils } from './utils/index.js';
 export { CONSTANTS } from './utils/index.js';
+import { CryptoManager } from './core/manager.js';
+export { CryptoConfig } from './core/manager.js';
+import { PerformanceOptimizer } from './core/performance.js';
+export { BatchOperation, BatchResult, CacheStats, MemoryPoolConfig, PerformanceMetrics } from './core/performance.js';
 import { Encrypt, Decrypt, Hash, HMAC, KeyGenerator, DigitalSignature } from './core/crypto.js';
 
-declare const cryptoDefault: {
+declare const LDesignCrypto: {
     encrypt: Encrypt;
     decrypt: Decrypt;
     hash: Hash;
     hmac: HMAC;
     keyGenerator: KeyGenerator;
     digitalSignature: DigitalSignature;
-    aes: {
-        encrypt: (data: string, key: string, options?: AESOptions) => EncryptResult;
-        decrypt: (encryptedData: string | EncryptResult, key: string, options?: AESOptions) => DecryptResult;
-        encrypt128: (data: string, key: string, options?: Omit<AESOptions, "keySize">) => EncryptResult;
-        encrypt192: (data: string, key: string, options?: Omit<AESOptions, "keySize">) => EncryptResult;
-        encrypt256: (data: string, key: string, options?: Omit<AESOptions, "keySize">) => EncryptResult;
-        decrypt128: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, "keySize">) => DecryptResult;
-        decrypt192: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, "keySize">) => DecryptResult;
-        decrypt256: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, "keySize">) => DecryptResult;
-    };
-    rsa: {
-        generateKeyPair: (keySize?: number) => RSAKeyPair;
-        encrypt: (data: string, publicKey: string, options?: RSAOptions) => EncryptResult;
-        decrypt: (encryptedData: string | EncryptResult, privateKey: string, options?: RSAOptions) => DecryptResult;
-        sign: (data: string, privateKey: string, algorithm?: string) => string;
-        verify: (data: string, signature: string, publicKey: string, algorithm?: string) => boolean;
+    manager: CryptoManager;
+    CryptoManager: typeof CryptoManager;
+    PerformanceOptimizer: typeof PerformanceOptimizer;
+    algorithms: {
+        aes: {
+            encrypt: (data: string, key: string, options?: AESOptions) => EncryptResult;
+            decrypt: (encryptedData: string | EncryptResult, key: string, options?: AESOptions) => DecryptResult;
+            encrypt128: (data: string, key: string, options?: Omit<AESOptions, "keySize">) => EncryptResult;
+            encrypt192: (data: string, key: string, options?: Omit<AESOptions, "keySize">) => EncryptResult;
+            encrypt256: (data: string, key: string, options?: Omit<AESOptions, "keySize">) => EncryptResult;
+            decrypt128: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, "keySize">) => DecryptResult;
+            decrypt192: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, "keySize">) => DecryptResult;
+            decrypt256: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, "keySize">) => DecryptResult;
+        };
+        rsa: {
+            generateKeyPair: (keySize?: number) => RSAKeyPair;
+            encrypt: (data: string, publicKey: string, options?: RSAOptions) => EncryptResult;
+            decrypt: (encryptedData: string | EncryptResult, privateKey: string, options?: RSAOptions) => DecryptResult;
+            sign: (data: string, privateKey: string, algorithm?: string) => string;
+            verify: (data: string, signature: string, publicKey: string, algorithm?: string) => boolean;
+        };
+        des: {
+            encrypt: (data: string, key: string, options?: DESOptions) => EncryptResult;
+            decrypt: (encryptedData: string | EncryptResult, key: string, options?: DESOptions) => DecryptResult;
+            generateKey: () => string;
+        };
+        des3: {
+            encrypt: (data: string, key: string, options?: TripleDESOptions) => EncryptResult;
+            decrypt: (encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions) => DecryptResult;
+            generateKey: () => string;
+        };
+        tripledes: {
+            encrypt: (data: string, key: string, options?: TripleDESOptions) => EncryptResult;
+            decrypt: (encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions) => DecryptResult;
+            generateKey: () => string;
+        };
+        blowfish: {
+            encrypt: (data: string, key: string, options?: BlowfishOptions) => EncryptResult;
+            decrypt: (encryptedData: string | EncryptResult, key: string, options?: BlowfishOptions) => DecryptResult;
+            generateKey: (length?: number) => string;
+        };
     };
     encoding: {
         base64: {
@@ -44,18 +76,20 @@ declare const cryptoDefault: {
             encode: (data: string) => string;
             decode: (encodedData: string) => string;
         };
-        encode: (data: string, encoding: EncodingType) => string;
-        decode: (encodedData: string, encoding: EncodingType) => string;
-    };
-    base64: {
-        encode: (data: string) => string;
-        decode: (encodedData: string) => string;
-        encodeUrl: (data: string) => string;
-        decodeUrl: (encodedData: string) => string;
-    };
-    hex: {
-        encode: (data: string) => string;
-        decode: (encodedData: string) => string;
+        encoding: {
+            base64: {
+                encode: (data: string) => string;
+                decode: (encodedData: string) => string;
+                encodeUrl: (data: string) => string;
+                decodeUrl: (encodedData: string) => string;
+            };
+            hex: {
+                encode: (data: string) => string;
+                decode: (encodedData: string) => string;
+            };
+            encode: (data: string, encoding: EncodingType) => string;
+            decode: (encodedData: string, encoding: EncodingType) => string;
+        };
     };
     utils: {
         StringUtils: typeof StringUtils;
@@ -86,6 +120,8 @@ declare const cryptoDefault: {
             readonly DEFAULT: "hex";
         };
     };
+    version: string;
+    name: string;
 };
 
-export { AESOptions, Decrypt, DecryptResult, DigitalSignature, EncodingType, Encrypt, EncryptResult, ErrorUtils, HMAC, Hash, KeyGenerator, RSAKeyPair, RSAOptions, RandomUtils, StringUtils, ValidationUtils, cryptoDefault as default };
+export { AESOptions, BlowfishOptions, CryptoManager, DESOptions, Decrypt, DecryptResult, DigitalSignature, EncodingType, Encrypt, EncryptResult, ErrorUtils, HMAC, Hash, KeyGenerator, PerformanceOptimizer, RSAKeyPair, RSAOptions, RandomUtils, StringUtils, TripleDESOptions, ValidationUtils, LDesignCrypto as default };

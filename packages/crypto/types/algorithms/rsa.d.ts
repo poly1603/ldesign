@@ -5,6 +5,10 @@ import { RSAKeyPair, RSAOptions, EncryptResult, DecryptResult, IEncryptor } from
  */
 declare class RSAEncryptor implements IEncryptor {
     private readonly defaultOptions;
+    private keyPairCache;
+    private publicKeyCache;
+    private privateKeyCache;
+    private maxKeyCacheSize;
     /**
      * 生成 RSA 密钥对
      */
@@ -37,6 +41,26 @@ declare class RSAEncryptor implements IEncryptor {
      * 获取填充方案
      */
     private getPaddingScheme;
+    /**
+     * 缓存公钥
+     */
+    private cachePublicKey;
+    /**
+     * 缓存私钥
+     */
+    private cachePrivateKey;
+    /**
+     * 获取缓存的公钥或解析新的公钥
+     */
+    private getPublicKey;
+    /**
+     * 获取缓存的私钥或解析新的私钥
+     */
+    private getPrivateKey;
+    /**
+     * 清除密钥缓存
+     */
+    clearKeyCache(): void;
 }
 /**
  * RSA 加密便捷函数

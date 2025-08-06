@@ -104,7 +104,7 @@ export const currentConfig = cryptoConfigs[env]
 ### 动态配置
 
 ```typescript
-import { getGlobalConfig, updateGlobalConfig, resetGlobalConfig } from '@ldesign/crypto'
+import { getGlobalConfig, resetGlobalConfig, updateGlobalConfig } from '@ldesign/crypto'
 
 // 获取当前配置
 const currentConfig = getGlobalConfig()

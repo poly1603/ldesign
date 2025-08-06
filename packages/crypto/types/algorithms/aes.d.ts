@@ -5,6 +5,8 @@ import { AESOptions, EncryptResult, DecryptResult, IEncryptor } from '../types/i
  */
 declare class AESEncryptor implements IEncryptor {
     private readonly defaultOptions;
+    private keyCache;
+    private maxKeyCacheSize;
     /**
      * AES 加密
      */
@@ -17,6 +19,10 @@ declare class AESEncryptor implements IEncryptor {
      * 准备密钥
      */
     private prepareKey;
+    /**
+     * 缓存密钥
+     */
+    private cacheKey;
     /**
      * 获取加密模式
      */
