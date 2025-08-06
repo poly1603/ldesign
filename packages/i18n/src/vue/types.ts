@@ -6,7 +6,7 @@ import type {
   TranslationFunction,
   TranslationOptions,
   TranslationParams,
-} from '@/core/types'
+} from '../core/types'
 
 /**
  * Vue I18n 插件选项
@@ -61,10 +61,10 @@ export interface I18nContext {
 /**
  * Vue 应用扩展
  */
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties extends I18nContext {}
+declare module 'vue' {
+  interface ComponentCustomProperties extends I18nContext { }
 
-  interface GlobalProperties extends I18nContext {}
+  interface GlobalProperties extends I18nContext { }
 }
 
 /**

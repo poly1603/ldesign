@@ -110,8 +110,8 @@ export function parsePluralExpression(
   params: TranslationParams,
   locale: string,
 ): string {
-  // 匹配复数表达式的正则
-  const pluralRegex = /\{(\w+),\s*plural,\s*(.+)\}/
+  // 匹配复数表达式的正则 - 需要处理嵌套的大括号
+  const pluralRegex = /\{(\w+),\s*plural,\s*(.*)\}/
   const match = expression.match(pluralRegex)
 
   if (!match) {
@@ -160,14 +160,56 @@ export function parsePluralExpression(
  */
 function parsePluralRules(rulesStr: string): Record<string, string> {
   const rules: Record<string, string> = {}
+  let i = 0
 
-  // 匹配规则的正则：=0{...} 或 other{...}
-  const ruleRegex = /(=\d+|zero|one|two|few|many|other)\{([^}]*)\}/g
-  let match: RegExpExecArray | null
+  while (i < rulesStr.length) {
+    // 跳过空白字符
+    while (i < rulesStr.length && /\s/.test(rulesStr[i])) {
+      i++
+    }
 
-  while ((match = ruleRegex.exec(rulesStr)) !== null) {
-    const [, key, value] = match
-    rules[key] = value
+    if (i >= rulesStr.length) break
+
+    // 匹配规则键（=0, =1, other, etc.）
+    const keyMatch = rulesStr.slice(i).match(/^(=\d+|zero|one|two|few|many|other)/)
+    if (!keyMatch) {
+      i++
+      continue
+    }
+
+    const key = keyMatch[1]
+    i += key.length
+
+    // 跳过空白字符
+    while (i < rulesStr.length && /\s/.test(rulesStr[i])) {
+      i++
+    }
+
+    // 期望找到开始的大括号
+    if (i >= rulesStr.length || rulesStr[i] !== '{') {
+      i++
+      continue
+    }
+
+    i++ // 跳过开始的大括号
+
+    // 找到匹配的结束大括号
+    let braceCount = 1
+    const valueStart = i
+
+    while (i < rulesStr.length && braceCount > 0) {
+      if (rulesStr[i] === '{') {
+        braceCount++
+      } else if (rulesStr[i] === '}') {
+        braceCount--
+      }
+      i++
+    }
+
+    if (braceCount === 0) {
+      const value = rulesStr.slice(valueStart, i - 1)
+      rules[key] = value
+    }
   }
 
   return rules
@@ -200,9 +242,10 @@ export function hasPluralExpression(str: string): boolean {
  */
 export function extractPluralKeys(expression: string): string[] {
   const keys: string[] = []
-  const pluralRegex = /\{(\w+),\s*plural,\s*(?:\S.*|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/g
+  const pluralRegex = /\{(\w+),\s*plural,[^}]+\}/g
   let match: RegExpExecArray | null
 
+  // eslint-disable-next-line no-cond-assign
   while ((match = pluralRegex.exec(expression)) !== null) {
     const countKey = match[1]
     if (!keys.includes(countKey)) {
@@ -246,8 +289,44 @@ export function processPluralization(
     return template
   }
 
-  // 替换所有复数表达式
-  return template.replace(/\{\w+,\s*plural,\s*(?:\S.*?|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/g, (match) => {
-    return parsePluralExpression(match, params, locale)
-  })
+  let result = template
+  let i = 0
+
+  while (i < result.length) {
+    // 查找复数表达式的开始
+    const startPattern = /\{(\w+),\s*plural,\s*/
+    const match = result.slice(i).match(startPattern)
+
+    if (!match) {
+      break
+    }
+
+    const matchStart = i + match.index!
+    // const countKey = match[1] // 暂时未使用
+    let pos = matchStart + match[0].length
+
+    // 找到匹配的结束大括号
+    let braceCount = 1
+    const expressionStart = matchStart
+
+    while (pos < result.length && braceCount > 0) {
+      if (result[pos] === '{') {
+        braceCount++
+      } else if (result[pos] === '}') {
+        braceCount--
+      }
+      pos++
+    }
+
+    if (braceCount === 0) {
+      const fullExpression = result.slice(expressionStart, pos)
+      const replacement = parsePluralExpression(fullExpression, params, locale)
+      result = result.slice(0, expressionStart) + replacement + result.slice(pos)
+      i = expressionStart + replacement.length
+    } else {
+      i = pos
+    }
+  }
+
+  return result
 }

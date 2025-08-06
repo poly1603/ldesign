@@ -31,11 +31,11 @@ export interface CacheOptions {
  */
 export interface I18nOptions {
   /** 默认语言 */
-  defaultLocale: string
+  defaultLocale?: string
   /** 降级语言 */
   fallbackLocale?: string
   /** 存储方式 */
-  storage?: 'localStorage' | 'sessionStorage' | 'none'
+  storage?: 'localStorage' | 'sessionStorage' | 'none' | 'memory'
   /** 存储键名 */
   storageKey?: string
   /** 是否自动检测浏览器语言 */
@@ -53,13 +53,13 @@ export interface I18nOptions {
 /**
  * 翻译参数类型
  */
-export type TranslationParams = Record<string, any>
+export type TranslationParams = Record<string, string | number | boolean | null | undefined | Record<string, unknown>>
 
 /**
  * 嵌套对象类型
  */
 export interface NestedObject {
-  [key: string]: string | NestedObject
+  [key: string]: string | NestedObject | string[] | number | boolean | null | undefined
 }
 
 /**
@@ -82,6 +82,8 @@ export interface Loader {
   preload: (locale: string) => Promise<void>
   /** 检查语言包是否已加载 */
   isLoaded: (locale: string) => boolean
+  /** 获取已加载的语言包 */
+  getLoadedPackage?: (locale: string) => LanguagePackage | undefined
 }
 
 /**
@@ -143,7 +145,7 @@ export interface TranslationOptions extends InterpolationOptions {
 /**
  * 缓存项接口
  */
-export interface CacheItem<T = any> {
+export interface CacheItem<T = unknown> {
   /** 缓存值 */
   value: T
   /** 创建时间 */
@@ -155,7 +157,7 @@ export interface CacheItem<T = any> {
 /**
  * LRU 缓存接口
  */
-export interface LRUCache<T = any> {
+export interface LRUCache<T = unknown> {
   /** 获取缓存项 */
   get: (key: string) => T | undefined
   /** 设置缓存项 */
@@ -176,7 +178,7 @@ export type I18nEventType = 'languageChanged' | 'loaded' | 'loadError'
 /**
  * 事件监听器
  */
-export type I18nEventListener = (...args: any[]) => void
+export type I18nEventListener = (...args: unknown[]) => void
 
 /**
  * 事件发射器接口
@@ -187,7 +189,7 @@ export interface EventEmitter {
   /** 移除事件监听器 */
   off: (event: I18nEventType, listener: I18nEventListener) => void
   /** 触发事件 */
-  emit: (event: I18nEventType, ...args: any[]) => void
+  emit: (event: I18nEventType, ...args: unknown[]) => void
 }
 
 /**
@@ -222,10 +224,18 @@ export interface I18nInstance extends EventEmitter {
   getAvailableLanguages: () => LanguageInfo[]
   /** 获取当前语言 */
   getCurrentLanguage: () => string
+  /** 获取当前语言信息 */
+  getCurrentLanguageInfo: () => LanguageInfo | undefined
   /** 预加载语言 */
   preloadLanguage: (locale: string) => Promise<void>
   /** 检查语言是否已加载 */
   isLanguageLoaded: (locale: string) => boolean
+  /** 检查翻译键是否存在 */
+  exists: (key: string, locale?: string) => boolean
+  /** 获取所有翻译键 */
+  getKeys: (locale?: string) => string[]
   /** 销毁实例 */
   destroy: () => void
+  /** 加载器实例（内部使用） */
+  loader?: Loader
 }

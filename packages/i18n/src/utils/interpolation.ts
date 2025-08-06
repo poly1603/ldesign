@@ -36,7 +36,7 @@ function escapeHtml(str: string): string {
  * @param escapeValue 是否转义 HTML
  * @returns 格式化后的字符串
  */
-function formatValue(value: any, escapeValue: boolean): string {
+function formatValue(value: string | number | boolean | null | undefined, escapeValue: boolean): string {
   if (value === null || value === undefined) {
     return ''
   }
@@ -51,21 +51,26 @@ function formatValue(value: any, escapeValue: boolean): string {
  * @param params 参数对象
  * @returns 解析后的值
  */
-function parseExpression(expression: string, params: TranslationParams): any {
+function parseExpression(expression: string, params: TranslationParams): string | number | boolean | null | undefined {
   const trimmed = expression.trim()
 
   // 支持点分隔的嵌套属性访问
   const keys = trimmed.split('.')
-  let value: any = params
+  let value: string | number | boolean | null | undefined | Record<string, unknown> = params
 
   for (const key of keys) {
     if (value === null || value === undefined) {
       return undefined
     }
-    value = value[key]
+    if (typeof value === 'object' && value !== null) {
+      value = (value as Record<string, unknown>)[key] as string | number | boolean | null | undefined | Record<string, unknown>
+    }
+    else {
+      return undefined
+    }
   }
 
-  return value
+  return typeof value === 'object' ? undefined : value
 }
 
 /**
@@ -80,13 +85,18 @@ export function interpolate(
   params: TranslationParams = {},
   options: InterpolationOptions = {},
 ): string {
+  // 快速路径：如果模板中没有插值标记，直接返回
+  if (!hasInterpolation(template)) {
+    return template
+  }
+
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const { prefix, suffix, escapeValue } = opts
 
   // 创建正则表达式来匹配插值标记
   const regex = new RegExp(`${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(suffix)}`, 'g')
 
-  return template.replace(regex, (match, expression) => {
+  return template.replace(regex, (_match, expression) => {
     const value = parseExpression(expression, params)
     return formatValue(value, escapeValue)
   })
@@ -135,6 +145,7 @@ export function extractInterpolationKeys(
   const keys: string[] = []
   let match: RegExpExecArray | null
 
+  // eslint-disable-next-line no-cond-assign
   while ((match = regex.exec(template)) !== null) {
     const expression = match[1].trim()
     if (expression && !keys.includes(expression)) {

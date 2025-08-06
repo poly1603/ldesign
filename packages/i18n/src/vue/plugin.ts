@@ -1,15 +1,25 @@
 import type { App } from 'vue'
 import type { I18nDirectiveBinding, VueI18nOptions, VueI18nPlugin } from './types'
-import type { I18nInstance } from '@/core/types'
-import { I18n } from '@/core/i18n'
+import type { I18nInstance } from '../core/types'
+import { I18n } from '../core/i18n'
 import { I18N_INJECTION_KEY } from './composables'
 
 /**
  * 默认插件选项
  */
-const DEFAULT_PLUGIN_OPTIONS: Required<Omit<VueI18nOptions, keyof I18nInstance>> = {
+const DEFAULT_PLUGIN_OPTIONS = {
   globalInjection: true,
   globalPropertyName: '$t',
+  defaultLocale: 'en',
+  fallbackLocale: 'en',
+  storage: 'localStorage' as const,
+  storageKey: 'i18n-locale',
+  autoDetect: true,
+  preload: [],
+  cache: {
+    enabled: true,
+    maxSize: 1000,
+  },
 }
 
 /**
@@ -22,7 +32,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 
   const plugin: VueI18nPlugin = {
     global,
-    install(app: App, options: VueI18nOptions = {}) {
+    install(app: App, options: Partial<VueI18nOptions> = {}) {
       const opts = { ...DEFAULT_PLUGIN_OPTIONS, ...options }
 
       // 提供 I18n 实例给子组件
@@ -96,16 +106,16 @@ function updateElementText(
 ) {
   try {
     let key: string
-    let params: any = {}
-    let options: any = {}
+    let params: Record<string, string | number | boolean | null | undefined> = {}
+    let options: Record<string, unknown> = {}
 
     if (typeof binding.value === 'string') {
       key = binding.value
     }
     else if (binding.value && typeof binding.value === 'object') {
       key = binding.value.key
-      params = binding.value.params || {}
-      options = binding.value.options || {}
+      params = (binding.value.params || {}) as Record<string, string | number | boolean | null | undefined>
+      options = (binding.value.options || {}) as Record<string, unknown>
     }
     else {
       console.warn('v-t directive expects a string or object value')
@@ -116,7 +126,7 @@ function updateElementText(
 
     // 更新元素文本内容
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      ;(el as HTMLInputElement).placeholder = translatedText
+      ; (el as HTMLInputElement).placeholder = translatedText
     }
     else {
       el.textContent = translatedText
@@ -158,8 +168,8 @@ export function installI18n(app: App, options?: VueI18nOptions) {
  * @param defaultOptions 默认选项
  * @returns 插件创建函数
  */
-export function createI18nPlugin(defaultOptions: VueI18nOptions = {}) {
-  return (options: VueI18nOptions = {}) => {
+export function createI18nPlugin(defaultOptions: Partial<VueI18nOptions> = {}) {
+  return (options: Partial<VueI18nOptions> = {}) => {
     const mergedOptions = { ...defaultOptions, ...options }
     return createI18nWithOptions(mergedOptions)
   }

@@ -91,7 +91,7 @@ export class DefaultLoader implements Loader {
   protected async loadLanguagePackage(locale: string): Promise<LanguagePackage> {
     try {
       // 使用预定义的语言包映射，避免动态导入问题
-      const localeMap: Record<string, () => Promise<any>> = {
+      const localeMap: Record<string, () => Promise<{ default: LanguagePackage }>> = {
         'en': () => import('../locales/en'),
         'zh-CN': () => import('../locales/zh-CN'),
         'ja': () => import('../locales/ja'),
@@ -195,14 +195,7 @@ export class StaticLoader implements Loader {
     await this.load(locale)
   }
 
-  /**
-   * 获取已加载的语言包
-   * @param locale 语言代码
-   * @returns 语言包或 undefined
-   */
-  getLoadedPackage(locale: string): LanguagePackage | undefined {
-    return this.loadedPackages.get(locale)
-  }
+
 
   /**
    * 检查语言包是否已加载
@@ -219,6 +212,15 @@ export class StaticLoader implements Loader {
    */
   getAvailableLocales(): string[] {
     return Array.from(this.packages.keys())
+  }
+
+  /**
+   * 获取已加载的语言包
+   * @param locale 语言代码
+   * @returns 语言包或 undefined
+   */
+  getLoadedPackage(locale: string): LanguagePackage | undefined {
+    return this.loadedPackages.get(locale)
   }
 }
 
@@ -327,16 +329,25 @@ export class HttpLoader implements Loader {
    * @param data 数据对象
    * @returns 是否为有效的语言包
    */
-  private isValidLanguagePackage(data: any): boolean {
+  private isValidLanguagePackage(data: unknown): data is LanguagePackage {
     return (
-      data
+      data !== null
       && typeof data === 'object'
-      && data.info
-      && typeof data.info === 'object'
-      && typeof data.info.name === 'string'
-      && typeof data.info.code === 'string'
-      && data.translations
-      && typeof data.translations === 'object'
+      && 'info' in data
+      && typeof (data as LanguagePackage).info === 'object'
+      && typeof (data as LanguagePackage).info.name === 'string'
+      && typeof (data as LanguagePackage).info.code === 'string'
+      && 'translations' in data
+      && typeof (data as LanguagePackage).translations === 'object'
     )
+  }
+
+  /**
+   * 获取已加载的语言包
+   * @param locale 语言代码
+   * @returns 语言包或 undefined
+   */
+  getLoadedPackage(locale: string): LanguagePackage | undefined {
+    return this.loadedPackages.get(locale)
   }
 }

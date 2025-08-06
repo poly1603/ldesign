@@ -1,10 +1,11 @@
-import type { CacheItem, LRUCache, Storage } from './types'
+import type { LRUCache, Storage } from './types'
 
 /**
- * LRU 缓存实现
+ * 高性能 LRU 缓存实现
+ * 使用 Map 的插入顺序特性来实现 LRU，避免频繁的删除和重新插入
  */
-export class LRUCacheImpl<T = any> implements LRUCache<T> {
-  private cache = new Map<string, CacheItem<T>>()
+export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
+  private cache = new Map<string, T>()
   private maxSize: number
 
   constructor(maxSize = 100) {
@@ -17,20 +18,15 @@ export class LRUCacheImpl<T = any> implements LRUCache<T> {
    * @returns 缓存值或 undefined
    */
   get(key: string): T | undefined {
-    const item = this.cache.get(key)
-    if (!item) {
+    const value = this.cache.get(key)
+    if (value === undefined) {
       return undefined
     }
 
-    // 更新访问信息
-    item.accessCount++
-    item.timestamp = Date.now()
+    // 将项目移到最后（最近使用）- 利用 Map 的插入顺序
+    this.cache.set(key, value)
 
-    // 将项目移到最后（最近使用）
-    this.cache.delete(key)
-    this.cache.set(key, item)
-
-    return item.value
+    return value
   }
 
   /**
@@ -43,18 +39,16 @@ export class LRUCacheImpl<T = any> implements LRUCache<T> {
     if (this.cache.has(key)) {
       this.cache.delete(key)
     }
-
-    // 如果缓存已满，删除最少使用的项
-    if (this.cache.size >= this.maxSize) {
-      this.evictLeastUsed()
+    // 如果缓存已满，删除最旧的项（Map 的第一个项）
+    else if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey)
+      }
     }
 
-    // 添加新项
-    this.cache.set(key, {
-      value,
-      timestamp: Date.now(),
-      accessCount: 1,
-    })
+    // 添加新项到末尾
+    this.cache.set(key, value)
   }
 
   /**
@@ -79,29 +73,6 @@ export class LRUCacheImpl<T = any> implements LRUCache<T> {
    */
   size(): number {
     return this.cache.size
-  }
-
-  /**
-   * 驱逐最少使用的项
-   */
-  private evictLeastUsed(): void {
-    let leastUsedKey: string | null = null
-    let leastUsedScore = Infinity
-
-    for (const [key, item] of this.cache) {
-      // 计算使用分数（访问次数 / 时间差）
-      const timeDiff = Date.now() - item.timestamp
-      const score = item.accessCount / (timeDiff + 1)
-
-      if (score < leastUsedScore) {
-        leastUsedScore = score
-        leastUsedKey = key
-      }
-    }
-
-    if (leastUsedKey) {
-      this.cache.delete(leastUsedKey)
-    }
   }
 }
 
@@ -267,9 +238,9 @@ export class NoStorage implements Storage {
 
   /**
    * 设置存储的语言（不执行任何操作）
-   * @param locale 语言代码
+   * @param _locale 语言代码
    */
-  setLanguage(locale: string): void {
+  setLanguage(_locale: string): void {
     // 不执行任何操作
   }
 

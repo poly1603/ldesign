@@ -1,5 +1,5 @@
 import type { UseI18nReturn } from './types'
-import type { I18nInstance } from '@/core/types'
+import type { I18nInstance } from '../core/types'
 import { computed, inject, onUnmounted, ref } from 'vue'
 
 /**
@@ -29,7 +29,8 @@ export function useI18n(): UseI18nReturn {
   const availableLanguages = computed(() => i18n.getAvailableLanguages())
 
   // 语言变更监听器
-  const handleLanguageChange = (newLocale: string) => {
+  const handleLanguageChange = (...args: unknown[]) => {
+    const newLocale = args[0] as string
     locale.value = newLocale
   }
 
@@ -80,7 +81,8 @@ export function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn {
   const availableLanguages = computed(() => i18nInstance.getAvailableLanguages())
 
   // 语言变更监听器
-  const handleLanguageChange = (newLocale: string) => {
+  const handleLanguageChange = (...args: unknown[]) => {
+    const newLocale = args[0] as string
     locale.value = newLocale
   }
 
@@ -184,7 +186,7 @@ export function useTranslation() {
  * @returns 翻译结果的计算属性
  */
 export function useBatchTranslation(keys: string[]) {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
 
   return computed(() => {
     const result: Record<string, string> = {}
@@ -207,7 +209,7 @@ export function useConditionalTranslation(
   trueKey: string,
   falseKey: string,
 ) {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
 
   return computed(() => {
     const isTrue = typeof condition === 'function' ? condition() : condition.value
