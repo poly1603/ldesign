@@ -1,214 +1,394 @@
-# @ldesign/engine
+# @ldesign/engine 🚀
 
-一个强大的 Vue3 应用引擎，提供插件系统、中间件支持和全局管理功能。
+一个现代化、功能丰富的 Vue 3 应用程序引擎，为企业级应用提供完整的基础设施支持。
 
-## 特性
+## ✨ 特性亮点
 
-- 🚀 **快速创建** - 通过 `createEngine` 方法快速创建 Vue3 应用
-- 🔌 **插件系统** - 完整的插件化架构，支持插件生命周期管理
-- 🛠️ **中间件支持** - 灵活的中间件系统，支持请求拦截和响应处理
-- 🌐 **全局管理** - 全局状态、事件、指令、错误管理
-- 📝 **美观日志** - 多级别日志系统，支持格式化输出
-- 🔔 **通知系统** - 全局通知管理，支持多种通知类型
-- ⚡ **响应式配置** - 基于 Vue3 响应式的配置系统
-- 🔗 **扩展接口** - 预留 Router、State、i18n、Theme 等模块接口
+### 🏗️ 核心架构
+- 🔌 **插件系统** - 模块化架构，支持动态加载和热插拔
+- ⚡ **中间件系统** - 灵活的管道处理机制，支持请求/响应拦截
+- 📡 **事件系统** - 强大的发布订阅模式，支持异步事件处理
+- 💾 **状态管理** - 响应式状态管理，支持持久化和时间旅行
+- 📝 **日志系统** - 多级别日志记录，支持多种输出格式和存储方式
+- 🔔 **通知系统** - 全局通知管理，支持多种通知类型和自定义样式
 
-## 安装
+### 🛡️ 安全与性能
+- 🔒 **安全管理** - 完整的安全防护体系，包括 XSS 防护、输入清理、URL 验证
+- ⚡ **性能监控** - 实时性能监控和优化建议，包括内存使用、响应时间等指标
+- 💾 **缓存管理** - 智能缓存系统，支持多种缓存策略和自动过期管理
+- 🎯 **指令系统** - 丰富的自定义指令，扩展 Vue 的指令功能
+- 🚨 **错误处理** - 全面的错误捕获和处理机制，包括错误恢复和智能上报
+
+### 🎨 开发体验
+- 📚 **完整文档** - 详细的 API 文档和使用指南
+- 🧪 **示例项目** - 丰富的演示页面，展示所有功能特性
+- 🔧 **TypeScript** - 完整的类型支持，提供优秀的开发体验
+- 🧪 **测试覆盖** - 全面的单元测试和集成测试
+- 📦 **模块化设计** - 可按需引入，支持 Tree Shaking
+
+## 🚀 快速开始
+
+### 安装
 
 ```bash
-npm install @ldesign/engine
-# 或
+# 使用 pnpm (推荐)
 pnpm add @ldesign/engine
-# 或
+
+# 使用 npm
+npm install @ldesign/engine
+
+# 使用 yarn
 yarn add @ldesign/engine
 ```
 
-## 快速开始
+### 基础使用
 
 ```typescript
-import { createEngine } from '@ldesign/engine'
 import { createApp } from 'vue'
+import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
-
-// 创建引擎实例
-const engine = createEngine({
-  // 全局配置
-  config: {
-    appName: 'My App',
-    version: '1.0.0'
-  },
-  // 插件配置
-  plugins: [
-    // 注册插件
-  ],
-  // 中间件配置
-  middleware: [
-    // 注册中间件
-  ]
-})
 
 // 创建 Vue 应用
 const app = createApp(App)
 
+// 创建引擎实例
+const engine = createEngine({
+  // 插件配置
+  plugins: {
+    // 启用内置插件
+    logger: true,
+    notifications: true,
+    cache: true,
+  },
+  
+  // 安全配置
+  security: {
+    sanitizeInput: true,
+    validateUrls: true,
+  },
+  
+  // 性能配置
+  performance: {
+    enabled: true,
+    autoOptimization: true,
+  }
+})
+
 // 安装引擎
-engine.install(app)
+app.use(engine)
 
 // 挂载应用
 app.mount('#app')
 ```
 
-## 核心概念
+### 在组件中使用
 
-### 引擎 (Engine)
+```vue
+<template>
+  <div class="my-component">
+    <h1>{{ title }}</h1>
+    <button @click="handleClick">点击我</button>
+    
+    <!-- 使用内置指令 -->
+    <input v-debounce="handleInput" placeholder="防抖输入" />
+    <div v-loading="isLoading">加载中...</div>
+  </div>
+</template>
 
-引擎是整个系统的核心，负责管理所有模块和提供统一的 API。
+<script setup lang="ts">
+import { inject, ref } from 'vue'
+import type { Engine } from '@ldesign/engine'
 
-### 插件系统 (Plugin System)
+// 注入引擎实例
+const engine = inject<Engine>('engine')!
 
-支持插件的注册、卸载和生命周期管理，提供插件间通信机制。
+const title = ref('Hello Engine!')
+const isLoading = ref(false)
 
-### 中间件 (Middleware)
+// 使用日志系统
+function handleClick() {
+  engine.logger.info('按钮被点击了')
+  
+  // 显示通知
+  engine.notifications.show({
+    type: 'success',
+    title: '操作成功',
+    message: '按钮点击事件已处理',
+    duration: 3000
+  })
+  
+  // 触发自定义事件
+  engine.events.emit('button:clicked', { timestamp: Date.now() })
+}
 
-提供请求拦截、响应处理和错误捕获功能。
+// 使用防抖处理
+function handleInput(value: string) {
+  engine.logger.debug('输入内容:', value)
+  
+  // 使用缓存
+  engine.cache.set('user-input', value, 60000) // 缓存1分钟
+}
 
-### 全局管理 (Global Management)
+// 监听事件
+engine.events.on('button:clicked', (data) => {
+  console.log('收到按钮点击事件:', data)
+})
+</script>
+```
 
-- **状态管理**: 基于 Vue3 响应式系统的全局状态管理
-- **事件管理**: 全局事件发布订阅系统
-- **指令管理**: 自定义指令的注册和管理
-- **错误管理**: 全局错误捕获和处理
+## 📚 核心功能
 
-## API 文档
+### 🔌 插件系统
 
-详细的 API 文档请查看 [文档站点](./docs)。
+```typescript
+// 创建自定义插件
+const myPlugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  
+  install(engine) {
+    // 插件安装逻辑
+    engine.logger.info('我的插件已安装')
+  },
+  
+  uninstall(engine) {
+    // 插件卸载逻辑
+    engine.logger.info('我的插件已卸载')
+  }
+}
 
-## 开发
+// 注册插件
+engine.plugins.register(myPlugin)
+
+// 启用插件
+engine.plugins.enable('my-plugin')
+```
+
+### 📡 事件系统
+
+```typescript
+// 监听事件
+engine.events.on('user:login', (user) => {
+  console.log('用户登录:', user)
+})
+
+// 触发事件
+engine.events.emit('user:login', { id: 1, name: 'Alice' })
+
+// 一次性监听
+engine.events.once('app:ready', () => {
+  console.log('应用已准备就绪')
+})
+
+// 移除监听器
+const unsubscribe = engine.events.on('data:update', handler)
+unsubscribe() // 移除监听
+```
+
+### 💾 状态管理
+
+```typescript
+// 设置状态
+engine.state.set('user.profile', {
+  name: 'Alice',
+  email: 'alice@example.com'
+})
+
+// 获取状态
+const profile = engine.state.get('user.profile')
+
+// 监听状态变化
+engine.state.watch('user.profile', (newValue, oldValue) => {
+  console.log('用户资料已更新:', newValue)
+})
+
+// 批量更新
+engine.state.batch(() => {
+  engine.state.set('user.name', 'Bob')
+  engine.state.set('user.age', 30)
+})
+```
+
+### 🔒 安全管理
+
+```typescript
+// 输入清理
+const cleanInput = engine.security.sanitizeInput('<script>alert("xss")</script>Hello')
+// 结果: 'Hello'
+
+// HTML 清理
+const cleanHtml = engine.security.sanitizeHtml('<div>Safe</div><script>alert("xss")</script>')
+// 结果: '<div>Safe</div>'
+
+// URL 验证
+const isValidUrl = engine.security.validateUrl('https://example.com')
+// 结果: true
+
+const isMaliciousUrl = engine.security.validateUrl('javascript:alert("xss")')
+// 结果: false
+```
+
+### ⚡ 性能监控
+
+```typescript
+// 开始性能监控
+engine.performance.startMonitoring()
+
+// 添加性能标记
+engine.performance.mark('operation-start')
+await someAsyncOperation()
+engine.performance.mark('operation-end')
+
+// 测量性能
+engine.performance.measure('operation-duration', 'operation-start', 'operation-end')
+
+// 获取性能数据
+const metrics = engine.performance.getMetrics()
+console.log('性能指标:', metrics)
+```
+
+## 🎯 高级功能
+
+### 缓存管理
+
+```typescript
+// 基础缓存
+engine.cache.set('user:123', userData, 3600000) // 缓存1小时
+const user = engine.cache.get('user:123')
+
+// 命名空间缓存
+const userCache = engine.cache.namespace('users')
+userCache.set('123', userData)
+
+// 缓存策略
+engine.cache.setStrategy('api-data', {
+  maxSize: 1000,
+  defaultTTL: 300000,
+  evictionPolicy: 'lru'
+})
+```
+
+### 指令系统
+
+```vue
+<template>
+  <!-- 防抖点击 -->
+  <button v-click.debounce="handleClick">防抖点击</button>
+  
+  <!-- 工具提示 -->
+  <span v-tooltip="'这是提示信息'">悬停查看</span>
+  
+  <!-- 加载状态 -->
+  <div v-loading="isLoading">内容区域</div>
+  
+  <!-- 拖拽功能 -->
+  <div v-drag="handleDrag">拖拽我</div>
+</template>
+```
+
+### 错误处理
+
+```typescript
+// 全局错误处理
+engine.errors.onError((error, context) => {
+  console.error('捕获到错误:', error)
+  
+  // 错误上报
+  engine.errors.reportError(error, context)
+})
+
+// 错误恢复策略
+engine.errors.setRecoveryStrategy('NetworkError', async (error, context) => {
+  if (context.retryCount < 3) {
+    return { retry: true }
+  }
+  return { retry: false, fallback: () => showOfflineMessage() }
+})
+```
+
+## 📖 文档与示例
+
+### 📚 完整文档
+- [快速开始](./docs/guide/quick-start.md)
+- [核心概念](./docs/guide/getting-started.md)
+- [API 参考](./docs/api/)
+- [最佳实践](./docs/examples/)
+
+### 🧪 在线演示
+运行示例项目查看所有功能的实际效果：
+
+```bash
+cd packages/engine/example
+pnpm install
+pnpm run dev
+```
+
+访问 `http://localhost:5173` 查看演示页面，包括：
+- 🏠 **主页** - 功能概览和快速导航
+- 🔌 **插件系统演示** - 插件的注册、启用、禁用
+- 📡 **事件系统演示** - 事件的发布、订阅、管理
+- 💾 **状态管理演示** - 状态的设置、获取、监听
+- ⚡ **中间件演示** - 中间件的注册和执行
+- 📝 **日志系统演示** - 不同级别的日志记录
+- 🔔 **通知系统演示** - 各种类型的通知展示
+- 🔒 **安全管理演示** - 输入清理和安全验证
+- ⚡ **性能监控演示** - 实时性能数据展示
+- 💾 **缓存管理演示** - 缓存的设置、获取、管理
+- 🎯 **指令系统演示** - 自定义指令的使用
+- 🚨 **错误处理演示** - 错误捕获和处理机制
+
+## 🛠️ 开发指南
+
+### 环境要求
+- Node.js >= 16
+- pnpm >= 7
+- Vue >= 3.3
+
+### 开发命令
 
 ```bash
 # 安装依赖
 pnpm install
 
-# 开发模式
-pnpm dev
+# 开发模式 (监听文件变化)
+pnpm run dev
 
-# 构建
-pnpm build
+# 构建生产版本
+pnpm run build
 
-# 测试
-pnpm test
+# 运行测试
+pnpm run test
+
+# 测试覆盖率
+pnpm run test:coverage
 
 # 代码检查
-pnpm lint
+pnpm run lint
+
+# 代码格式化
+pnpm run format
+
+# 文档开发服务器
+pnpm run docs:dev
+
+# 构建文档
+pnpm run docs:build
+
+# 示例项目开发
+cd example && pnpm run dev
 ```
 
-## 许可证
+## 📄 许可证
 
-MIT
+本项目采用 [MIT](./LICENSE) 许可证。
 
-## 🚀 Vue3 Engine 功能扩展建议
+## 🙏 致谢
 
-基于对当前引擎架构的深入分析，除了已规划的独立包（color、crypto、device、http、i18n、router、store、template）外，我建议在引擎核心中增加以下实用功能：
+感谢所有为这个项目做出贡献的开发者！
 
-### 🎯 核心功能增强 1. 性能监控管理器 (PerformanceManager)
+---
 
-- 内存使用监控 : 实时监控组件内存占用
-- 渲染性能分析 : 组件渲染时间统计
-- API调用追踪 : 请求响应时间和成功率
-- 用户行为分析 : 点击热力图、页面停留时间
-- 性能报告生成 : 自动生成性能优化建议 2. 缓存管理器 (CacheManager)
-- 多级缓存策略 : 内存缓存、本地存储、会话存储
-- 智能过期机制 : 基于时间、访问频率的自动清理
-- 缓存预热 : 预加载关键数据
-- 缓存同步 : 多标签页数据同步
-- 缓存压缩 : 自动压缩大数据对象 3. 安全管理器 (SecurityManager)
-- XSS防护 : 自动过滤危险脚本
-- CSRF令牌管理 : 自动处理跨站请求伪造
-- 内容安全策略 : CSP规则管理
-- 敏感数据加密 : 本地存储数据加密
-- 权限验证 : 细粒度权限控制 4. 表单管理器 (FormManager)
-- 表单验证引擎 : 复杂验证规则支持
-- 自动保存草稿 : 防止数据丢失
-- 表单状态管理 : 提交状态、错误处理
-- 动态表单生成 : 基于配置生成表单
-- 表单数据序列化 : 智能数据转换
-
-### 🛠 开发体验增强 5. 调试管理器 (DebugManager)
-
-- 组件树可视化 : 实时组件层级展示
-- 状态变更追踪 : 状态修改历史记录
-- 事件流监控 : 事件触发链路追踪
-- 性能瓶颈定位 : 自动识别性能问题
-- 开发工具集成 : 浏览器开发者工具扩展 6. 测试管理器 (TestManager)
-- 单元测试助手 : 自动生成测试用例
-- E2E测试支持 : 端到端测试集成
-- 模拟数据生成 : 智能Mock数据
-- 测试覆盖率统计 : 代码覆盖率分析
-- 自动化测试 : CI/CD集成
-
-### 🎨 用户体验增强 7. 动画管理器 (AnimationManager)
-
-- 过渡动画库 : 丰富的预设动画
-- 手势识别 : 触摸手势支持
-- 物理引擎 : 真实物理效果模拟
-- 动画序列编排 : 复杂动画组合
-- 性能优化 : GPU加速动画 8. 可访问性管理器 (AccessibilityManager)
-- 屏幕阅读器支持 : ARIA标签自动添加
-- 键盘导航 : 完整键盘操作支持
-- 高对比度模式 : 视觉障碍友好
-- 语音控制 : 语音命令识别
-- 无障碍检测 : 自动检测可访问性问题
-
-### 📱 现代化功能 9. PWA管理器 (PWAManager)
-
-- Service Worker管理 : 离线缓存策略
-- 推送通知 : Web Push支持
-- 应用更新 : 自动更新机制
-- 离线检测 : 网络状态监控
-- 安装提示 : 添加到主屏幕引导 10. 微前端管理器 (MicrofrontendManager)
-- 模块联邦 : 动态模块加载
-- 应用隔离 : 样式和状态隔离
-- 通信机制 : 跨应用数据共享
-- 生命周期管理 : 子应用加载卸载
-- 版本控制 : 模块版本管理
-
-### 🔧 工具类增强 11. 工具函数库扩展
-
-- 数据处理 : 深度克隆、数据转换、验证
-- 日期时间 : 国际化日期处理
-- 文件操作 : 上传、下载、预览
-- 图像处理 : 压缩、裁剪、滤镜
-- 算法工具 : 排序、搜索、加密 12. 指令系统扩展
-- 拖拽指令 : 元素拖拽排序
-- 虚拟滚动 : 大数据列表优化
-- 图片懒加载 : 智能图片加载
-- 无限滚动 : 分页数据加载
-- 水印指令 : 内容保护水印
-
-### 💡 创新功能 13. AI助手管理器 (AIManager)
-
-- 智能代码补全 : AI驱动的代码建议
-- 自动化测试生成 : AI生成测试用例
-- 性能优化建议 : 智能性能分析
-- 用户行为预测 : 基于AI的用户体验优化
-- 自然语言交互 : 语音/文本命令处理 14. 数据可视化管理器 (VisualizationManager)
-- 图表组件库 : 丰富的图表类型
-- 实时数据绑定 : 动态数据更新
-- 交互式图表 : 用户交互支持
-- 数据导出 : 多格式数据导出
-- 主题定制 : 图表样式定制
-
-### 🎯 实施建议
-
-优先级排序 :
-
-1. 1. 高优先级 : 性能监控、缓存管理、表单管理
-2. 2. 中优先级 : 安全管理、调试管理、动画管理
-3. 3. 低优先级 : AI助手、微前端、数据可视化
-      实施策略 :
-
-- 采用插件化架构，每个管理器都可独立使用
-- 保持向后兼容，渐进式增强
-- 提供丰富的配置选项和扩展点
-- 完善的文档和示例代码
-- 性能优先，避免过度设计
-  这些功能将使Vue3 Engine成为一个功能完备、性能优异的现代前端开发框架，大大提升开发效率和用户体验。
+<div align="center">
+  <p>如果这个项目对你有帮助，请给我们一个 ⭐️</p>
+  <p>Made with ❤️ by LDesign Team</p>
+</div>

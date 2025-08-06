@@ -30,6 +30,16 @@ features:
     details: 美观的日志系统，支持多级别日志、格式化输出和日志持久化
   - title: 🔔 通知管理
     details: 全局通知系统，支持多种通知类型和自定义样式
+  - title: 🔒 安全管理
+    details: 完整的安全防护体系，包括XSS防护、输入清理、URL验证等
+  - title: ⚡ 性能监控
+    details: 实时性能监控和优化建议，包括内存使用、响应时间等指标
+  - title: 💾 缓存管理
+    details: 智能缓存系统，支持多种缓存策略和自动过期管理
+  - title: 🎯 指令系统
+    details: 丰富的自定义指令，扩展Vue的指令功能，提供常用交互能力
+  - title: 🚨 错误处理
+    details: 全面的错误捕获和处理机制，包括错误恢复和智能上报
   - title: 🎨 扩展接口
     details: 预留Router、State、i18n、Theme等功能模块接口，方便扩展
 ---

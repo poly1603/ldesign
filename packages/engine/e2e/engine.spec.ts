@@ -36,7 +36,7 @@ test.describe('Engine E2E Tests', () => {
 
     // 检查插件管理器是否可用
     const pluginManagerAvailable = await page.evaluate(() => {
-      return typeof window.__VUE_APP__?.$engine?.pluginManager !== 'undefined'
+      return typeof window.__VUE_APP__?.$engine?.plugins !== 'undefined'
     })
     expect(pluginManagerAvailable).toBe(true)
   })

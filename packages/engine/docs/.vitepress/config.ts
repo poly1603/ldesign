@@ -33,6 +33,16 @@ export default defineConfig({
           ],
         },
         {
+          text: '高级功能',
+          items: [
+            { text: '安全管理', link: '/guide/security' },
+            { text: '性能管理', link: '/guide/performance' },
+            { text: '缓存管理', link: '/guide/cache' },
+            { text: '指令系统', link: '/guide/directives' },
+            { text: '错误处理', link: '/guide/error-handling' },
+          ],
+        },
+        {
           text: '部署',
           items: [
             { text: '部署指南', link: '/guide/deployment' },

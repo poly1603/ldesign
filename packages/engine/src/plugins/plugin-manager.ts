@@ -5,6 +5,11 @@ export class PluginManagerImpl implements PluginManager {
   private loadOrder: string[] = []
   private engine?: Engine
 
+  // 性能优化：缓存依赖图和验证结果
+  private dependencyGraphCache?: Record<string, string[]>
+  private validationCache?: { valid: boolean, errors: string[] }
+  private dependentsCache = new Map<string, string[]>()
+
   constructor(engine?: Engine) {
     this.engine = engine
   }
@@ -27,6 +32,9 @@ export class PluginManagerImpl implements PluginManager {
       // 注册插件
       this.plugins.set(plugin.name, plugin)
       this.loadOrder.push(plugin.name)
+
+      // 清除缓存
+      this.clearCaches()
 
       // 安装插件
       if (this.engine) {
@@ -122,8 +130,30 @@ export class PluginManagerImpl implements PluginManager {
     return this.plugins.has(name)
   }
 
-  // 获取插件的依赖者
+  has(name: string): boolean {
+    return this.plugins.has(name)
+  }
+
+  checkDependencies(plugin: Plugin): boolean {
+    if (!plugin.dependencies) {
+      return true
+    }
+
+    for (const dep of plugin.dependencies) {
+      if (!this.plugins.has(dep)) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  // 获取插件的依赖者（带缓存）
   private getDependents(pluginName: string): string[] {
+    if (this.dependentsCache.has(pluginName)) {
+      return this.dependentsCache.get(pluginName)!
+    }
+
     const dependents: string[] = []
 
     for (const [name, plugin] of this.plugins) {
@@ -132,6 +162,7 @@ export class PluginManagerImpl implements PluginManager {
       }
     }
 
+    this.dependentsCache.set(pluginName, dependents)
     return dependents
   }
 
@@ -140,19 +171,28 @@ export class PluginManagerImpl implements PluginManager {
     return [...this.loadOrder]
   }
 
-  // 获取插件依赖图
+  // 获取插件依赖图（带缓存）
   getDependencyGraph(): Record<string, string[]> {
+    if (this.dependencyGraphCache) {
+      return this.dependencyGraphCache
+    }
+
     const graph: Record<string, string[]> = {}
 
     for (const [name, plugin] of this.plugins) {
       graph[name] = plugin.dependencies || []
     }
 
+    this.dependencyGraphCache = graph
     return graph
   }
 
-  // 验证插件依赖
+  // 验证插件依赖（带缓存）
   validateDependencies(): { valid: boolean, errors: string[] } {
+    if (this.validationCache) {
+      return this.validationCache
+    }
+
     const errors: string[] = []
 
     for (const [name, plugin] of this.plugins) {
@@ -165,10 +205,13 @@ export class PluginManagerImpl implements PluginManager {
       }
     }
 
-    return {
+    const result = {
       valid: errors.length === 0,
       errors,
     }
+
+    this.validationCache = result
+    return result
   }
 
   // 获取插件统计信息
@@ -182,6 +225,13 @@ export class PluginManagerImpl implements PluginManager {
       loaded: this.getLoadOrder(),
       dependencies: this.getDependencyGraph(),
     }
+  }
+
+  // 清除所有缓存
+  private clearCaches(): void {
+    this.dependencyGraphCache = undefined
+    this.validationCache = undefined
+    this.dependentsCache.clear()
   }
 }
 

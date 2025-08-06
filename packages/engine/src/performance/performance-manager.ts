@@ -152,7 +152,7 @@ class FPSMonitor {
 
   start(callback: (fps: number) => void): void {
     this.callback = callback
-    this.lastTime = performance.now()
+    this.lastTime = globalThis.performance.now()
     this.frames = []
     this.tick()
   }
@@ -166,7 +166,7 @@ class FPSMonitor {
   }
 
   private tick = (): void => {
-    const now = performance.now()
+    const now = globalThis.performance.now()
     const delta = now - this.lastTime
     this.lastTime = now
 
@@ -258,7 +258,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
       id,
       type,
       name,
-      startTime: performance.now(),
+      startTime: globalThis.performance.now(),
       metadata,
     }
 
@@ -273,7 +273,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
       return
     }
 
-    const endTime = performance.now()
+    const endTime = globalThis.performance.now()
     const duration = endTime - event.startTime
 
     event.endTime = endTime
@@ -325,8 +325,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
 
     // 收集网络信息
-    if (typeof performance !== 'undefined' && performance.getEntriesByType) {
-      const networkEntries = performance.getEntriesByType('navigation')
+    if (typeof globalThis.performance !== 'undefined' && globalThis.performance.getEntriesByType) {
+      const networkEntries = globalThis.performance.getEntriesByType('navigation')
       if (networkEntries.length > 0) {
         const entry = networkEntries[0] as PerformanceNavigationTiming
         metrics.network = {
@@ -669,7 +669,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
   }
 
-  private getViolations(timeRange?: { start: number, end: number }): PerformanceViolation[] {
+  private getViolations(_timeRange?: { start: number, end: number }): PerformanceViolation[] {
     // 这里应该从存储中获取违规记录
     // 为简化实现，返回空数组
     return []
@@ -730,7 +730,7 @@ export function performance(name?: string) {
         return result
       }
       catch (error) {
-        manager.endEvent(eventId, { error: error.message })
+        manager.endEvent(eventId, { error: error instanceof Error ? error.message : String(error) })
         throw error
       }
     }

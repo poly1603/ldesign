@@ -287,9 +287,9 @@ declare global {
     _clickOutsideHandler?: (event: Event) => void
     _copyHandler?: () => void
     _lazyObserver?: IntersectionObserver
-    _debounceHandler?: (...args: any[]) => void
+    _debounceHandler?: (...args: unknown[]) => void
     _debounceTimer?: number
     _debounceDelay?: number
-    _throttleHandler?: (...args: any[]) => void
+    _throttleHandler?: (...args: unknown[]) => void
   }
 }

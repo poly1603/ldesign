@@ -5,7 +5,7 @@ export interface EngineConfig {
   appName?: string
   version?: string
   debug?: boolean
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // 插件相关类型
@@ -15,7 +15,7 @@ export interface Plugin {
   dependencies?: string[]
   install: (engine: Engine) => void | Promise<void>
   uninstall?: (engine: Engine) => void | Promise<void>
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface PluginManager {
@@ -24,6 +24,16 @@ export interface PluginManager {
   get: (name: string) => Plugin | undefined
   getAll: () => Plugin[]
   isRegistered: (name: string) => boolean
+  has: (name: string) => boolean
+  checkDependencies: (plugin: Plugin) => boolean
+  getLoadOrder: () => string[]
+  getDependencyGraph: () => Record<string, string[]>
+  validateDependencies: () => { valid: boolean, errors: string[] }
+  getStats: () => {
+    total: number
+    loaded: string[]
+    dependencies: Record<string, string[]>
+  }
 }
 
 // 中间件相关类型
@@ -50,7 +60,8 @@ export interface Middleware {
 export interface MiddlewareManager {
   use: (middleware: Middleware) => void
   remove: (name: string) => void
-  execute: (context: MiddlewareContext) => Promise<void>
+  execute(context: MiddlewareContext): Promise<void>
+  execute(name: string, context: MiddlewareContext): Promise<any>
 }
 
 // 事件相关类型
@@ -86,6 +97,9 @@ export interface DirectiveManager {
   unregister: (name: string) => void
   get: (name: string) => Directive | undefined
   getAll: () => Record<string, Directive>
+  registerBatch: (directives: Record<string, Directive>) => void
+  unregisterBatch: (names: string[]) => void
+  clear: () => void
 }
 
 // 错误管理相关类型
@@ -204,6 +218,12 @@ export interface Engine {
   use: (plugin: Plugin) => Promise<void>
   mount: (selector: string | Element) => void
   unmount: () => void
+
+  // 扩展方法
+  setRouter: (router: RouterAdapter) => void
+  setStore: (store: StateAdapter) => void
+  setI18n: (i18n: I18nAdapter) => void
+  setTheme: (theme: ThemeAdapter) => void
 }
 
 // 创建引擎的选项

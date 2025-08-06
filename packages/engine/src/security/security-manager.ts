@@ -168,7 +168,7 @@ class XSSProtector {
     }
 
     // 检测和移除data:协议（除了图片）
-    const dataProtocolRegex = /data\s*:(?!image\/)\w+/gi
+    const dataProtocolRegex = /data\s*:(?!image\/)\w+/giu
     if (dataProtocolRegex.test(html)) {
       threats.push('Suspicious data protocol detected')
       sanitized = sanitized.replace(dataProtocolRegex, '')
@@ -188,7 +188,7 @@ class XSSProtector {
   }
 
   private filterTags(html: string, threats: string[]): string {
-    const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/gi
+    const tagRegex = /<\/?([a-z]\w*)[^>]*>/giu
 
     return html.replace(tagRegex, (match, tagName) => {
       const tag = tagName.toLowerCase()
@@ -203,7 +203,7 @@ class XSSProtector {
   }
 
   private filterAttributes(html: string, threats: string[]): string {
-    const tagRegex = /<([a-z][a-z0-9]*)([^>]*)>/gi
+    const tagRegex = /<([a-z]\w*)([^>]*)>/giu
 
     return html.replace(tagRegex, (match, tagName, attributes) => {
       const tag = tagName.toLowerCase()
@@ -213,10 +213,11 @@ class XSSProtector {
         return match
       }
 
-      const attrRegex = /\s+([a-z][a-z0-9-]*)\s*=\s*["']([^"']*)["']/gi
+      const attrRegex = /\s+([a-z][a-z0-9-]*)\s*=\s*["']([^"']*)["']/giu
       let filteredAttributes = ''
       let attrMatch
 
+      // eslint-disable-next-line no-cond-assign
       while ((attrMatch = attrRegex.exec(attributes)) !== null) {
         const [, attrName, attrValue] = attrMatch
         const attr = attrName.toLowerCase()
@@ -422,6 +423,7 @@ export class SecurityManagerImpl implements SecurityManager {
         return this.sanitizeHTML(input).safe
       case 'url':
         try {
+          // eslint-disable-next-line no-new
           new URL(input)
           return !input.toLowerCase().startsWith('javascript:')
         }
@@ -483,7 +485,7 @@ export class SecurityManagerImpl implements SecurityManager {
       return ''
     }
 
-    const directives = Object.entries(this.config.csp.directives)
+    const directives = Object.entries(this.config.csp.directives || {})
       .map(([key, values]) => `${key} ${values.join(' ')}`)
       .join('; ')
 
@@ -535,14 +537,16 @@ export class SecurityManagerImpl implements SecurityManager {
     // HTTPS相关头
     if (this.config.https.enabled) {
       const { hsts } = this.config.https
-      let hstsValue = `max-age=${hsts.maxAge}`
-      if (hsts.includeSubDomains) {
-        hstsValue += '; includeSubDomains'
+      if (hsts) {
+        let hstsValue = `max-age=${hsts.maxAge}`
+        if (hsts.includeSubDomains) {
+          hstsValue += '; includeSubDomains'
+        }
+        if (hsts.preload) {
+          hstsValue += '; preload'
+        }
+        headers['Strict-Transport-Security'] = hstsValue
       }
-      if (hsts.preload) {
-        hstsValue += '; preload'
-      }
-      headers['Strict-Transport-Security'] = hstsValue
     }
 
     // 其他安全头

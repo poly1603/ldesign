@@ -109,8 +109,10 @@ class LRUCache<T = any> {
     // 如果超过最大容量，删除最久未使用的
     else if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
-      this.cache.delete(firstKey)
-      this.stats.evictions++
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey)
+        this.stats.evictions++
+      }
     }
 
     const item: CacheItem<T> = {
@@ -207,7 +209,7 @@ export class CacheManagerImpl implements CacheManager {
       defaultTTL: 0, // 0表示永不过期
       strategy: CacheStrategy.LRU,
       enableStats: true,
-      onEvict: () => {},
+      onEvict: () => { },
       ...config,
     }
 
@@ -265,7 +267,7 @@ export class CacheManagerImpl implements CacheManager {
 
   namespace(name: string): CacheManager {
     if (!this.namespaces.has(name)) {
-      this.namespaces.set(name, new NamespacedCacheManager(this, name))
+      this.namespaces.set(name, new NamespacedCacheManager(this, name) as CacheManager)
     }
     return this.namespaces.get(name)!
   }
@@ -275,11 +277,11 @@ export class CacheManagerImpl implements CacheManager {
 class NamespacedCacheManager implements CacheManager {
   constructor(
     private parent: CacheManager,
-    private namespace: string,
-  ) {}
+    private namespaceName: string,
+  ) { }
 
   private getKey(key: string): string {
-    return `${this.namespace}:${key}`
+    return `${this.namespaceName}:${key}`
   }
 
   get<T = any>(key: string): T | undefined {
@@ -299,18 +301,18 @@ class NamespacedCacheManager implements CacheManager {
   }
 
   clear(): void {
-    const prefix = `${this.namespace}:`
+    const prefix = `${this.namespaceName}:`
     const keys = this.parent.keys().filter(key => key.startsWith(prefix))
     keys.forEach(key => this.parent.delete(key))
   }
 
   size(): number {
-    const prefix = `${this.namespace}:`
+    const prefix = `${this.namespaceName}:`
     return this.parent.keys().filter(key => key.startsWith(prefix)).length
   }
 
   keys(): string[] {
-    const prefix = `${this.namespace}:`
+    const prefix = `${this.namespaceName}:`
     return this.parent.keys()
       .filter(key => key.startsWith(prefix))
       .map(key => key.slice(prefix.length))
@@ -335,7 +337,7 @@ class NamespacedCacheManager implements CacheManager {
   }
 
   namespace(name: string): CacheManager {
-    return this.parent.namespace(`${this.namespace}:${name}`)
+    return this.parent.namespace(`${this.namespaceName}:${name}`)
   }
 }
 

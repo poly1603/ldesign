@@ -6,9 +6,7 @@ import type {
   Plugin,
 } from './types'
 import { EngineImpl } from './core/engine'
-
 import { commonDirectives } from './directives/directive-manager'
-// 导入需要的模块
 import { createErrorManager } from './errors/error-manager'
 import { createLogger } from './logger/logger'
 import { commonMiddleware } from './middleware/middleware-manager'
@@ -152,7 +150,15 @@ export const utils = {
   isBrowser: () => typeof window !== 'undefined',
 
   // 检查是否为开发环境
-  isDev: () => process.env.NODE_ENV === 'development',
+  isDev: () => {
+    try {
+      // eslint-disable-next-line node/prefer-global/process
+      return typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+    }
+    catch {
+      return false
+    }
+  },
 
   // 生成唯一ID
   generateId: (prefix = 'engine') => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

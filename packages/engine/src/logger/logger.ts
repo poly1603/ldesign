@@ -209,7 +209,7 @@ export class LoggerImpl implements Logger {
       case 'json':
         return JSON.stringify(this.logs, null, 2)
 
-      case 'csv':
+      case 'csv': {
         const headers = ['timestamp', 'level', 'message', 'data']
         const rows = this.logs.map(log => [
           new Date(log.timestamp).toISOString(),
@@ -218,6 +218,7 @@ export class LoggerImpl implements Logger {
           log.data ? `"${JSON.stringify(log.data).replace(/"/g, '""')}"` : '',
         ])
         return [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
+      }
 
       case 'txt':
         return this.logs.map((log) => {
@@ -247,7 +248,7 @@ class ChildLogger implements Logger {
   constructor(
     private parent: Logger,
     private prefix: string,
-  ) {}
+  ) { }
 
   debug(message: string, data?: any): void {
     this.parent.debug(`${this.prefix} ${message}`, data)
@@ -279,6 +280,18 @@ class ChildLogger implements Logger {
 
   clearLogs(): void {
     this.parent.clearLogs()
+  }
+
+  clear(): void {
+    this.parent.clear()
+  }
+
+  setMaxLogs(max: number): void {
+    this.parent.setMaxLogs(max)
+  }
+
+  getMaxLogs(): number {
+    return this.parent.getMaxLogs()
   }
 }
 

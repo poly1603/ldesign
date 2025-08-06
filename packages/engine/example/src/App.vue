@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import type { Engine } from '@ldesign/engine'
 import { computed, inject, onMounted, ref } from 'vue'
+import CacheDemo from './pages/CacheDemo.vue'
+import DirectiveDemo from './pages/DirectiveDemo.vue'
+import ErrorDemo from './pages/ErrorDemo.vue'
 import EventDemo from './pages/EventDemo.vue'
 import Home from './pages/Home.vue'
 import LoggerDemo from './pages/LoggerDemo.vue'
 import MiddlewareDemo from './pages/MiddlewareDemo.vue'
 import NotificationDemo from './pages/NotificationDemo.vue'
+import PerformanceDemo from './pages/PerformanceDemo.vue'
 import PluginDemo from './pages/PluginDemo.vue'
+import SecurityDemo from './pages/SecurityDemo.vue'
 import StateDemo from './pages/StateDemo.vue'
 
 // 注入引擎实例
@@ -26,6 +31,11 @@ const pages = ref([
   { id: 'middleware', label: '中间件', icon: '⚡' },
   { id: 'logger', label: '日志系统', icon: '📝' },
   { id: 'notification', label: '通知系统', icon: '🔔' },
+  { id: 'security', label: '安全管理', icon: '🔒' },
+  { id: 'performance', label: '性能监控', icon: '⚡' },
+  { id: 'cache', label: '缓存管理', icon: '💾' },
+  { id: 'directive', label: '指令系统', icon: '🎯' },
+  { id: 'error', label: '错误处理', icon: '🚨' },
 ])
 
 // 计算属性
@@ -172,6 +182,21 @@ onMounted(() => {
 
         <!-- 通知演示页 -->
         <NotificationDemo v-else-if="currentPage === 'notification'" />
+
+        <!-- 安全演示页 -->
+        <SecurityDemo v-else-if="currentPage === 'security'" />
+
+        <!-- 性能演示页 -->
+        <PerformanceDemo v-else-if="currentPage === 'performance'" />
+
+        <!-- 缓存演示页 -->
+        <CacheDemo v-else-if="currentPage === 'cache'" />
+
+        <!-- 指令演示页 -->
+        <DirectiveDemo v-else-if="currentPage === 'directive'" />
+
+        <!-- 错误处理演示页 -->
+        <ErrorDemo v-else-if="currentPage === 'error'" />
 
         <!-- 404页面 -->
         <div v-else class="page-not-found">

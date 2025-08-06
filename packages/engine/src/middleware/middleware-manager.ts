@@ -40,26 +40,49 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
     }
   }
 
-  async execute(context: MiddlewareContext): Promise<void> {
-    let index = 0
+  async execute(contextOrName: MiddlewareContext | string, context?: MiddlewareContext): Promise<any> {
+    // 重载处理
+    if (typeof contextOrName === 'string') {
+      // 执行特定名称的中间件
+      const name = contextOrName
+      const ctx = context!
+      const middleware = this.middleware.find(m => m.name === name)
 
-    const next: MiddlewareNext = async () => {
-      if (index >= this.middleware.length) {
-        return
+      if (!middleware) {
+        throw new Error(`Middleware "${name}" not found`)
       }
 
-      const middleware = this.middleware[index++]
-      try {
-        await middleware.handler(context, next)
+      const result = { processed: false }
+      const next: MiddlewareNext = async () => {
+        result.processed = true
       }
-      catch (error) {
-        // 将错误添加到上下文中
-        context.error = error as Error
-        throw error
-      }
+
+      await middleware.handler(ctx, next)
+      return result
     }
+    else {
+      // 执行所有中间件
+      const ctx = contextOrName
+      let index = 0
 
-    await next()
+      const next: MiddlewareNext = async () => {
+        if (index >= this.middleware.length) {
+          return
+        }
+
+        const middleware = this.middleware[index++]
+        try {
+          await middleware.handler(ctx, next)
+        }
+        catch (error) {
+          // 将错误添加到上下文中
+          ctx.error = error as Error
+          throw error
+        }
+      }
+
+      await next()
+    }
   }
 
   // 获取所有中间件

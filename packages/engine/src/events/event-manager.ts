@@ -10,6 +10,9 @@ export class EventManagerImpl implements EventManager {
   private events = new Map<string, EventListener[]>()
   private maxListeners = 100
 
+  // 性能优化：缓存排序后的监听器
+  private sortedListenersCache = new Map<string, EventListener[]>()
+
   constructor(_logger?: Logger) {
     // logger参数保留用于未来扩展
   }
@@ -47,11 +50,12 @@ export class EventManagerImpl implements EventManager {
       return
     }
 
-    // 创建监听器副本，避免在执行过程中修改原数组
-    const listenersToExecute = [...listeners]
-
-    // 按优先级排序执行（数字越大优先级越高）
-    listenersToExecute.sort((a, b) => b.priority - a.priority)
+    // 使用缓存的排序后的监听器，提高性能
+    let listenersToExecute = this.sortedListenersCache.get(event)
+    if (!listenersToExecute) {
+      listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority)
+      this.sortedListenersCache.set(event, listenersToExecute)
+    }
 
     for (const listener of listenersToExecute) {
       try {
@@ -98,6 +102,9 @@ export class EventManagerImpl implements EventManager {
       once,
       priority,
     })
+
+    // 清除该事件的缓存
+    this.sortedListenersCache.delete(event)
   }
 
   // 获取事件的监听器数量
@@ -179,7 +186,7 @@ export class EventNamespace {
   constructor(
     private eventManager: EventManager,
     private namespace: string,
-  ) {}
+  ) { }
 
   private getEventName(event: string): string {
     return `${this.namespace}:${event}`
