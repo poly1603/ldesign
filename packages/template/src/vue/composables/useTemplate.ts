@@ -106,26 +106,6 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const cleanupFunctions: (() => void)[] = []
 
   /**
-   * 扫描模板
-   */
-  const scanTemplates = async (): Promise<void> => {
-    loading.value = true
-    error.value = null
-
-    try {
-      await manager.scanTemplates()
-      await updateAvailableData()
-    }
-    catch (err) {
-      error.value = err as Error
-      console.error('Failed to scan templates:', err)
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
-  /**
    * 更新可用数据
    */
   const updateAvailableData = async (): Promise<void> => {
@@ -142,6 +122,26 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     }
     catch (err) {
       console.warn('Failed to update available data:', err)
+    }
+  }
+
+  /**
+   * 扫描模板
+   */
+  const scanTemplates = async (): Promise<void> => {
+    loading.value = true
+    error.value = null
+
+    try {
+      await manager.scanTemplates()
+      await updateAvailableData()
+    }
+    catch (err) {
+      error.value = err as Error
+      console.error('Failed to scan templates:', err)
+    }
+    finally {
+      loading.value = false
     }
   }
 

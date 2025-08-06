@@ -1,5 +1,5 @@
+import type { Component } from 'vue'
 import type { DeviceType, TemplateMetadata } from '../types'
-import { type Component } from 'vue'
 import { templateLoader } from './template-loader'
 
 /**
@@ -21,12 +21,13 @@ export class TemplateRegistry {
 
       // 更新本地缓存
       this.templates.clear()
-      templates.forEach(template => {
+      templates.forEach((template) => {
         this.templates.set(this.getTemplateKey(template), template)
       })
 
       return templates
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to scan templates:', error)
       return []
     }

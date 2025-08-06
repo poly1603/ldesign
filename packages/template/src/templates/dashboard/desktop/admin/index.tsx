@@ -13,20 +13,20 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '管理后台'
+      default: '管理后台',
     },
     logo: {
       type: String,
-      default: ''
+      default: '',
     },
     showSidebar: {
       type: Boolean,
-      default: true
+      default: true,
     },
     sidebarCollapsed: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   setup(props) {
     const collapsed = ref(props.sidebarCollapsed)
@@ -37,7 +37,7 @@ export default defineComponent({
 
     return {
       collapsed,
-      toggleSidebar
+      toggleSidebar,
     }
   },
   render() {
@@ -104,7 +104,7 @@ export default defineComponent({
                 <h2>欢迎使用管理后台</h2>
                 <p>这是一个功能完整的管理后台模板</p>
               </div>
-              
+
               <div class="dashboard-cards">
                 <div class="card">
                   <div class="card-header">
@@ -115,7 +115,7 @@ export default defineComponent({
                     <div class="stat-label">总用户数</div>
                   </div>
                 </div>
-                
+
                 <div class="card">
                   <div class="card-header">
                     <h3>订单统计</h3>
@@ -125,7 +125,7 @@ export default defineComponent({
                     <div class="stat-label">总订单数</div>
                   </div>
                 </div>
-                
+
                 <div class="card">
                   <div class="card-header">
                     <h3>收入统计</h3>
@@ -141,5 +141,5 @@ export default defineComponent({
         </div>
       </div>
     )
-  }
+  },
 })

@@ -38,6 +38,7 @@ yarn add @ldesign/template
 
 <!-- 引入 LDesign Template -->
 <script src="https://unpkg.com/@ldesign/template/dist/index.umd.js"></script>
+
 ```
 
 ## 验证安装

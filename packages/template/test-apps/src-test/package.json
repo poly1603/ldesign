@@ -1,8 +1,8 @@
 {
   "name": "template-src-test",
-  "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite --port 3001",
     "build": "vue-tsc && vite build",

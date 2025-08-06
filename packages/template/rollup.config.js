@@ -3,6 +3,6 @@ import { createVueConfig } from '../../tools/configs/build/rollup.config.templat
 export default createVueConfig(import.meta.url, {
   globalName: 'LDesignTemplate',
   globals: {
-    'vue': 'Vue'
-  }
+    vue: 'Vue',
+  },
 })

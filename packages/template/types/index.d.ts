@@ -1,7 +1,8 @@
 export { TemplateManager } from './core/TemplateManager.js';
-export { DeviceDetectionConfig, DeviceType, ResponsiveBreakpoints, TemplateChangeEvent, TemplateComponent, TemplateConfig, TemplateDirectiveBinding, TemplateLoadResult, TemplateLoadingState, TemplateManagerConfig, TemplateManagerEvents, TemplateMetadata, TemplatePluginOptions, TemplateRenderOptions, TemplateRendererProps, TemplateScanResult, UseTemplateOptions, UseTemplateReturn } from './types/index.js';
+export { DeviceDetectionConfig, DeviceType, ResponsiveBreakpoints, TemplateChangeEvent, TemplateComponent, TemplateConfig, TemplateDirectiveBinding, TemplateInfo, TemplateLoadResult, TemplateLoadingState, TemplateManagerConfig, TemplateManagerEvents, TemplateMetadata, TemplatePluginOptions, TemplateRenderOptions, TemplateRendererProps, TemplateScanResult, UseTemplateOptions, UseTemplateReturn } from './types/index.js';
 export { LRUCache, TemplateCache } from './utils/cache.js';
 export { DEFAULT_BREAKPOINTS, DEFAULT_DEVICE_CONFIG, checkDeviceSupport, createDeviceWatcher, detectDevice, detectDeviceByUserAgent, detectDeviceByViewport, getDeviceInfo, getViewportHeight, getViewportWidth, isMobileDevice, isTabletDevice, isTouchDevice } from './utils/device.js';
+export { detectDeviceType, getDeviceInfo as getDeviceInfoCore, watchDeviceChange } from './core/device.js';
 export { TemplateScanner } from './utils/scanner.js';
 export { default as TemplateRenderer } from './vue/components/TemplateRenderer.js';
 export { createTemplateManager, useTemplate } from './vue/composables/useTemplate.js';

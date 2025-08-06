@@ -3,7 +3,7 @@ import { createApp } from 'vue'
 import { destroyGlobalTemplateManager, getGlobalTemplateManager, TemplatePlugin } from '@/vue/plugins'
 
 describe('templatePlugin', () => {
-  let app: any
+  let app: unknown
 
   beforeEach(() => {
     app = createApp({})

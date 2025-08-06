@@ -1,119 +1,7 @@
-<template>
-  <div id="app">
-    <header class="app-header">
-      <h1>Template Package Test App</h1>
-      <div class="env-indicator">
-        Environment: <strong>{{ environment }}</strong>
-      </div>
-    </header>
-
-    <main class="app-main">
-      <div class="controls">
-        <div class="control-group">
-          <label for="category-select">分类:</label>
-          <select 
-            id="category-select"
-            data-testid="category-select"
-            v-model="selectedCategory"
-            @change="onCategoryChange"
-          >
-            <option value="">请选择分类</option>
-            <option 
-              v-for="category in availableCategories" 
-              :key="category" 
-              :value="category"
-            >
-              {{ category }}
-            </option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="device-select">设备类型:</label>
-          <select 
-            id="device-select"
-            data-testid="device-select"
-            v-model="selectedDevice"
-            @change="onDeviceChange"
-          >
-            <option value="">请选择设备</option>
-            <option 
-              v-for="device in availableDevices" 
-              :key="device" 
-              :value="device"
-            >
-              {{ device }}
-            </option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="template-select">模板:</label>
-          <select 
-            id="template-select"
-            data-testid="template-select"
-            v-model="selectedTemplate"
-            @change="onTemplateChange"
-          >
-            <option value="">请选择模板</option>
-            <option 
-              v-for="template in availableTemplates" 
-              :key="template.template" 
-              :value="template.template"
-            >
-              {{ template.config.name }}
-            </option>
-          </select>
-        </div>
-
-        <button 
-          class="refresh-btn"
-          @click="refreshTemplates"
-          :disabled="loading"
-        >
-          {{ loading ? '加载中...' : '刷新模板' }}
-        </button>
-      </div>
-
-      <div class="template-container">
-        <div v-if="loading" class="loading">
-          加载模板中...
-        </div>
-        
-        <div v-else-if="error" class="error">
-          错误: {{ error }}
-        </div>
-        
-        <div 
-          v-else-if="currentTemplateComponent" 
-          class="template-wrapper"
-          :data-template="selectedTemplate"
-          :data-category="selectedCategory"
-          :data-device="selectedDevice"
-        >
-          <component 
-            :is="currentTemplateComponent"
-            v-bind="templateProps"
-          />
-        </div>
-        
-        <div v-else class="placeholder">
-          请选择一个模板进行预览
-        </div>
-      </div>
-
-      <div class="debug-info">
-        <h3>调试信息</h3>
-        <pre>{{ debugInfo }}</pre>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useTemplateSystem } from '@ldesign/template/vue'
 import type { DeviceType } from '@ldesign/template'
+import { useTemplateSystem } from '@ldesign/template/vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 // 环境信息
 const environment = ref(__TEMPLATE_ENV__ || 'unknown')
@@ -156,18 +44,18 @@ const debugInfo = computed(() => ({
 }))
 
 // 事件处理
-const onCategoryChange = () => {
+function onCategoryChange() {
   selectedDevice.value = ''
   selectedTemplate.value = ''
   currentTemplateComponent.value = null
 }
 
-const onDeviceChange = () => {
+function onDeviceChange() {
   selectedTemplate.value = ''
   currentTemplateComponent.value = null
 }
 
-const onTemplateChange = async () => {
+async function onTemplateChange() {
   if (!selectedCategory.value || !selectedDevice.value || !selectedTemplate.value) {
     currentTemplateComponent.value = null
     return
@@ -177,14 +65,15 @@ const onTemplateChange = async () => {
     const template = await switchTemplate(
       selectedCategory.value,
       selectedDevice.value as DeviceType,
-      selectedTemplate.value
+      selectedTemplate.value,
     )
-    
+
     if (template) {
       currentTemplateComponent.value = template.component
       templateProps.value = template.config || {}
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Failed to load template:', err)
   }
 }
@@ -200,21 +89,141 @@ watch(selectedDevice, (newDevice) => {
 // 初始化
 onMounted(async () => {
   await refreshTemplates()
-  
+
   // 自动检测设备类型
   const width = window.innerWidth
   if (width >= 1024) {
     selectedDevice.value = 'desktop'
-  } else if (width >= 768) {
+  }
+  else if (width >= 768) {
     selectedDevice.value = 'tablet'
-  } else {
+  }
+  else {
     selectedDevice.value = 'mobile'
   }
-  
+
   // 设置全局设备类型
   ;(window as any).__TEMPLATE_DEVICE_TYPE__ = selectedDevice.value
 })
 </script>
+
+<template>
+  <div id="app">
+    <header class="app-header">
+      <h1>Template Package Test App</h1>
+      <div class="env-indicator">
+        Environment: <strong>{{ environment }}</strong>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="controls">
+        <div class="control-group">
+          <label for="category-select">分类:</label>
+          <select
+            id="category-select"
+            v-model="selectedCategory"
+            data-testid="category-select"
+            @change="onCategoryChange"
+          >
+            <option value="">
+              请选择分类
+            </option>
+            <option
+              v-for="category in availableCategories"
+              :key="category"
+              :value="category"
+            >
+              {{ category }}
+            </option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="device-select">设备类型:</label>
+          <select
+            id="device-select"
+            v-model="selectedDevice"
+            data-testid="device-select"
+            @change="onDeviceChange"
+          >
+            <option value="">
+              请选择设备
+            </option>
+            <option
+              v-for="device in availableDevices"
+              :key="device"
+              :value="device"
+            >
+              {{ device }}
+            </option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="template-select">模板:</label>
+          <select
+            id="template-select"
+            v-model="selectedTemplate"
+            data-testid="template-select"
+            @change="onTemplateChange"
+          >
+            <option value="">
+              请选择模板
+            </option>
+            <option
+              v-for="template in availableTemplates"
+              :key="template.template"
+              :value="template.template"
+            >
+              {{ template.config.name }}
+            </option>
+          </select>
+        </div>
+
+        <button
+          class="refresh-btn"
+          :disabled="loading"
+          @click="refreshTemplates"
+        >
+          {{ loading ? '加载中...' : '刷新模板' }}
+        </button>
+      </div>
+
+      <div class="template-container">
+        <div v-if="loading" class="loading">
+          加载模板中...
+        </div>
+
+        <div v-else-if="error" class="error">
+          错误: {{ error }}
+        </div>
+
+        <div
+          v-else-if="currentTemplateComponent"
+          class="template-wrapper"
+          :data-template="selectedTemplate"
+          :data-category="selectedCategory"
+          :data-device="selectedDevice"
+        >
+          <component
+            :is="currentTemplateComponent"
+            v-bind="templateProps"
+          />
+        </div>
+
+        <div v-else class="placeholder">
+          请选择一个模板进行预览
+        </div>
+      </div>
+
+      <div class="debug-info">
+        <h3>调试信息</h3>
+        <pre>{{ debugInfo }}</pre>
+      </div>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .app-header {
@@ -289,7 +298,9 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
-.loading, .error, .placeholder {
+.loading,
+.error,
+.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,7 +346,7 @@ onMounted(async () => {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .control-group select {
     min-width: auto;
   }

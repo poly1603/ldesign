@@ -35,6 +35,15 @@ features:
   - icon: 🎪
     title: 多种用法
     details: 提供 Composable、组件、指令、插件等多种使用方式
+  - icon: 👁️
+    title: 智能懒加载
+    details: 基于 Intersection Observer 的智能懒加载，优化首屏加载性能
+  - icon: 📊
+    title: 性能监控
+    details: 实时监控 FPS、内存使用、缓存命中率等关键性能指标
+  - icon: 📜
+    title: 虚拟滚动
+    details: 高效渲染大量数据，支持搜索、过滤、跳转等功能
 ---
 
 ## 快速体验

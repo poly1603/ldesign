@@ -1,9 +1,43 @@
 import type { Component, DefineComponent } from 'vue'
 
+// ============ 基础类型定义 ============
+
 /**
  * 设备类型
  */
 export type DeviceType = 'desktop' | 'mobile' | 'tablet'
+
+/**
+ * 响应式断点配置
+ */
+export interface ResponsiveBreakpoints {
+  /** 超小屏幕断点 */
+  xs: number
+  /** 小屏幕断点 */
+  sm: number
+  /** 中等屏幕断点 */
+  md: number
+  /** 大屏幕断点 */
+  lg: number
+  /** 超大屏幕断点 */
+  xl: number
+  /** 超超大屏幕断点 */
+  xxl: number
+}
+
+/**
+ * 设备检测配置
+ */
+export interface DeviceDetectionConfig {
+  /** 移动设备断点 */
+  mobileBreakpoint: number
+  /** 平板设备断点 */
+  tabletBreakpoint: number
+  /** 桌面设备断点 */
+  desktopBreakpoint: number
+}
+
+// ============ 模板相关类型 ============
 
 /**
  * 模板配置接口
@@ -34,7 +68,7 @@ export interface TemplateConfig {
   /** 功能特性 */
   features?: string[]
   /** 模板属性配置 */
-  props?: Record<string, any>
+  props?: Record<string, unknown>
   /** 断点配置 */
   breakpoints?: {
     minWidth?: number | null
@@ -70,6 +104,20 @@ export interface TemplateMetadata {
   componentPath: string
   /** 样式文件路径 */
   stylePath?: string
+}
+
+/**
+ * 模板信息（用于注册表）
+ */
+export interface TemplateInfo {
+  id: string
+  name: string
+  category: string
+  device: DeviceType
+  variant: string
+  isDefault: boolean
+  config: TemplateConfig
+  component: unknown
 }
 
 /**
@@ -178,14 +226,14 @@ export interface TemplateLoadResult {
  * 模板扫描结果
  */
 export interface TemplateScanResult {
-  /** 扫描到的模板列表 */
+  /** 扫描到的模板数量 */
+  count: number
+  /** 模板列表 */
   templates: TemplateMetadata[]
-  /** 扫描耗时 */
+  /** 扫描耗时（毫秒） */
   duration: number
-  /** 扫描的目录数量 */
-  scannedDirectories: number
-  /** 错误列表 */
-  errors: Error[]
+  /** 扫描的路径 */
+  scannedPaths: string[]
 }
 
 /**

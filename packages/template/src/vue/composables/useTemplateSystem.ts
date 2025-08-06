@@ -1,12 +1,11 @@
-import type { Component, ComputedRef, Ref } from 'vue'
-import { computed, defineAsyncComponent, isRef, markRaw, onMounted, onUnmounted, reactive, readonly, ref, watch } from 'vue'
-
-// ============ 智能模板切换功能 ============
+import { computed, defineAsyncComponent, isRef, markRaw, onMounted, onUnmounted, reactive, readonly, ref, watch, type Component, type ComputedRef, type Ref } from 'vue'
 
 import { getCachedTemplate, setCachedTemplate } from '../../core/cache'
 import { type DeviceInfo, getDeviceInfo, watchDeviceChange } from '../../core/device'
 import { templateLoader } from '../../core/template-loader'
 import type { TemplateMetadata } from '../../types'
+
+// ============ 智能模板切换功能 ============
 
 // 设备类型
 export type DeviceType = 'desktop' | 'mobile' | 'tablet'
@@ -18,9 +17,9 @@ export interface TemplateInfo {
   description: string
   category: string
   deviceType: DeviceType
-  component: any // 使用any类型避免复杂的组件类型问题
+  component: unknown // 使用unknown类型避免复杂的组件类型问题
   preview?: string
-  config?: Record<string, any>
+  config?: Record<string, unknown>
 }
 
 // 模板注册表
@@ -38,7 +37,8 @@ export function registerTemplate(template: TemplateInfo) {
 
 // 扫描模板（使用新的 TemplateLoader 系统）
 async function scanTemplates() {
-  if (templatesScanned.value) return scannedTemplates.value
+  if (templatesScanned.value)
+    return scannedTemplates.value
 
   try {
     const templates = await templateLoader.scanAndRegisterTemplates()
@@ -46,7 +46,8 @@ async function scanTemplates() {
     templatesScanned.value = true
     console.log(`✅ 扫描到 ${templates.length} 个模板`)
     return templates
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('扫描模板失败:', error)
     return []
   }
@@ -62,7 +63,7 @@ function convertTemplateMetadata(metadata: TemplateMetadata): TemplateInfo {
     deviceType: metadata.device as DeviceType,
     component: markRaw(defineAsyncComponent(() => templateLoader.loadTemplateComponent(metadata))),
     preview: metadata.config.preview,
-    config: metadata.config
+    config: metadata.config,
   }
 }
 
@@ -107,7 +108,7 @@ export interface UseTemplateReturn {
   TemplateComponent: ComputedRef<Component | null>
 
   // 配置
-  templateConfig: ComputedRef<Record<string, any>>
+  templateConfig: ComputedRef<Record<string, unknown>>
 }
 
 /**
@@ -197,9 +198,9 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     if (currentTemplate.value) {
       // 查找对应的 TemplateMetadata
       const metadata = scannedTemplates.value.find(
-        m => m.category === category &&
-          m.device === deviceType.value &&
-          m.template === currentTemplateId.value
+        m => m.category === category
+          && m.device === deviceType.value
+          && m.template === currentTemplateId.value,
       )
 
       if (metadata) {
@@ -216,9 +217,9 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     // 如果当前设备类型没有模板，尝试fallback到桌面版本
     if (deviceType.value !== 'desktop') {
       const desktopMetadata = scannedTemplates.value.find(
-        m => m.category === category &&
-          m.device === 'desktop' &&
-          m.template === currentTemplateId.value
+        m => m.category === category
+          && m.device === 'desktop'
+          && m.template === currentTemplateId.value,
       )
 
       if (desktopMetadata) {
@@ -236,9 +237,9 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     const firstTemplate = availableTemplates.value[0]
     if (firstTemplate) {
       const metadata = scannedTemplates.value.find(
-        m => m.category === category &&
-          m.device === firstTemplate.deviceType &&
-          m.template === firstTemplate.id
+        m => m.category === category
+          && m.device === firstTemplate.deviceType
+          && m.template === firstTemplate.id,
       )
 
       if (metadata) {
@@ -407,7 +408,7 @@ export interface UseTemplateSwitchReturn {
   switchTemplate: (variant: string) => Promise<boolean>
   switchToDefault: () => Promise<boolean>
   refreshDevice: () => void
-  getTemplateComponent: () => any
+  getTemplateComponent: () => unknown
 
   // 工具方法
   isCurrentTemplate: (variant: string) => boolean
@@ -437,7 +438,7 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   // 计算属性
   const availableTemplates = computed(() => {
     return Array.from(templateRegistry.values()).filter((t: TemplateInfo) =>
-      t.category === category && t.deviceType === deviceInfo.value.type
+      t.category === category && t.deviceType === deviceInfo.value.type,
     )
   })
 
@@ -488,7 +489,7 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
 
       return true
     }
-    catch (error) {
+    catch {
       // 模板切换失败，静默处理
       return false
     }
@@ -512,7 +513,7 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   }
 
   // 获取模板组件
-  const getTemplateComponent = (): any => {
+  const getTemplateComponent = (): unknown => {
     return currentTemplate.value?.component || null
   }
 

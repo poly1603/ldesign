@@ -2,7 +2,7 @@
   "name": "@ldesign/template",
   "type": "module",
   "version": "0.1.0",
-  "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案",
+  "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案，支持智能预加载、懒加载、虚拟滚动等性能优化功能",
   "author": "ldesign",
   "license": "MIT",
   "homepage": "https://github.com/ldesign-org/template#readme",
@@ -21,7 +21,13 @@
     "dynamic-rendering",
     "responsive",
     "typescript",
-    "composition-api"
+    "composition-api",
+    "performance",
+    "lazy-loading",
+    "virtual-scroll",
+    "preload",
+    "performance-monitor",
+    "intersection-observer"
   ],
   "exports": {
     ".": {

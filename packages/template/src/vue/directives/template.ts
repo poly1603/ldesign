@@ -108,7 +108,7 @@ async function renderTemplate(
 /**
  * 模板指令实现
  */
-export const templateDirective: Directive<TemplateDirectiveElement, any> = {
+export const templateDirective: Directive<TemplateDirectiveElement, unknown> = {
   /**
    * 指令挂载时
    */
@@ -197,7 +197,7 @@ export const templateDirective: Directive<TemplateDirectiveElement, any> = {
 /**
  * 注册模板指令
  */
-export function registerTemplateDirective(app: any): void {
+export function registerTemplateDirective(app: unknown): void {
   app.directive('template', templateDirective)
 }
 

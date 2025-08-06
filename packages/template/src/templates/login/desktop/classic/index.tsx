@@ -48,7 +48,7 @@ export default defineComponent({
 
     const handleLogin = async () => {
       if (!form.username || !form.password) {
-        alert('请输入用户名和密码')
+        console.warn('请输入用户名和密码')
         return
       }
 
@@ -118,7 +118,10 @@ export default defineComponent({
                 <p>短账乐</p>
               </div>
 
-              <form class="classic-login__form" onSubmit={(e: Event) => { e.preventDefault(); handleLogin() }}>
+              <form class="classic-login__form" onSubmit={(e: Event) => {
+                e.preventDefault()
+                handleLogin()
+              }}>
                 <div class="classic-login__form-group">
                   <div class="classic-login__input-wrapper">
                     <span class="classic-login__input-icon">👤</span>
@@ -177,7 +180,7 @@ export default defineComponent({
                     <span>或</span>
                   </div>
                   <div class="classic-login__third-party-buttons">
-                    {props.thirdPartyProviders.map((provider) => (
+                    {props.thirdPartyProviders.map(provider => (
                       <button
                         key={provider}
                         type="button"

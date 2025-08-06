@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import { spawn, ChildProcess } from 'child_process'
-import { resolve } from 'path'
-import { existsSync } from 'fs'
+import type { ChildProcess } from 'node:child_process'
+import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 /**
  * 一键测试脚本 - 测试 src 和 es 打包产物的功能一致性
@@ -50,14 +51,14 @@ class TestRunner {
    */
   private async isPortAvailable(port: number): Promise<boolean> {
     return new Promise((resolve) => {
-      const net = require('net')
+      const net = require('node:net')
       const server = net.createServer()
-      
+
       server.listen(port, () => {
         server.once('close', () => resolve(true))
         server.close()
       })
-      
+
       server.on('error', () => resolve(false))
     })
   }
@@ -67,7 +68,7 @@ class TestRunner {
    */
   private async waitForPort(port: number, timeout = 30000): Promise<boolean> {
     const startTime = Date.now()
-    
+
     while (Date.now() - startTime < timeout) {
       const available = await this.isPortAvailable(port)
       if (!available) {
@@ -75,7 +76,7 @@ class TestRunner {
       }
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
-    
+
     return false
   }
 
@@ -84,7 +85,7 @@ class TestRunner {
    */
   private async installDependencies(config: TestConfig): Promise<void> {
     console.log(`📦 Installing dependencies for ${config.name}...`)
-    
+
     if (!existsSync(resolve(config.cwd, 'package.json'))) {
       throw new Error(`package.json not found in ${config.cwd}`)
     }
@@ -100,7 +101,8 @@ class TestRunner {
         if (code === 0) {
           console.log(`✅ Dependencies installed for ${config.name}`)
           resolve()
-        } else {
+        }
+        else {
           reject(new Error(`Failed to install dependencies for ${config.name}`))
         }
       })
@@ -136,11 +138,11 @@ class TestRunner {
       this.processes.set(config.name, process)
 
       let output = ''
-      
+
       process.stdout?.on('data', (data) => {
         const text = data.toString()
         output += text
-        
+
         // 检查服务是否启动成功
         if (text.includes('Local:') || text.includes(`localhost:${config.port}`)) {
           console.log(`✅ ${config.name} server started successfully`)
@@ -190,7 +192,8 @@ class TestRunner {
         if (code === 0) {
           console.log('✅ All tests passed!')
           resolve()
-        } else {
+        }
+        else {
           reject(new Error(`Tests failed with code ${code}`))
         }
       })
@@ -203,7 +206,8 @@ class TestRunner {
    * 关闭所有进程
    */
   private shutdown(): void {
-    if (this.isShuttingDown) return
+    if (this.isShuttingDown)
+      return
     this.isShuttingDown = true
 
     console.log('\n🛑 Shutting down test servers...')
@@ -243,7 +247,8 @@ class TestRunner {
           if (code === 0) {
             console.log('✅ Build completed successfully\n')
             resolve()
-          } else {
+          }
+          else {
             reject(new Error(`Build failed with code ${code}`))
           }
         })
@@ -279,11 +284,12 @@ class TestRunner {
       await this.runPlaywrightTests()
 
       console.log('\n🎉 All tests completed successfully!')
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('\n❌ Test failed:', error)
       process.exit(1)
-    } finally {
+    }
+    finally {
       this.shutdown()
     }
   }
