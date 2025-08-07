@@ -35,6 +35,11 @@ tools/
 │   ├── bundle-analyzer.ts       # 包分析器
 │   └── performance-monitor.ts    # 性能监控
 ├── scripts/                # 📜 脚本工具
+│   ├── build/                   # 构建产物校验工具
+│   │   ├── bundle-validator.js      # 构建产物校验器
+│   │   ├── bundle-analyzer.js       # 构建产物分析器
+│   │   ├── browser-tester.js        # 浏览器环境测试器
+│   │   └── validate-build.js        # 统一校验入口
 │   ├── deploy/                  # 部署脚本
 │   ├── docs/                    # 文档脚本
 │   ├── microfrontend/           # 微前端脚本
@@ -51,11 +56,13 @@ tools/
 ## 🚀 快速开始
 
 ### 安装依赖
+
 ```bash
 pnpm install
 ```
 
 ### 启动开发环境
+
 ```bash
 # 标准开发模式
 pnpm dev
@@ -68,6 +75,7 @@ pnpm dev:debug
 ```
 
 ### 运行测试
+
 ```bash
 # 运行所有测试
 pnpm test
@@ -77,6 +85,7 @@ pnpm test:coverage
 ```
 
 ### 构建项目
+
 ```bash
 # 构建所有包
 pnpm build
@@ -88,6 +97,7 @@ pnpm build:packages --filter @ldesign/color
 ## 🛠️ 开发工具
 
 ### 增强开发服务器
+
 ```bash
 # 启动增强开发服务器
 pnpm dev:enhanced
@@ -106,6 +116,7 @@ pnpm dev:enhanced --open
 ```
 
 **功能特性：**
+
 - 🔥 智能热重载
 - 🐛 增强错误提示
 - 📊 性能监控
@@ -113,6 +124,7 @@ pnpm dev:enhanced --open
 - 🎯 多包并行开发
 
 ### 代码质量检查
+
 ```bash
 # 运行 ESLint 检查
 pnpm lint
@@ -128,6 +140,7 @@ pnpm format
 ```
 
 ### 开发工具配置
+
 ```typescript
 // tools/configs/dev-tools.ts
 import { createDevToolsConfig } from './dev-tools'
@@ -136,13 +149,14 @@ const config = createDevToolsConfig({
   hmr: true,
   sourcemap: true,
   debug: true,
-  port: 3000
+  port: 3000,
 })
 ```
 
 ## 🧪 测试工具
 
 ### 自动化测试生成
+
 ```bash
 # 为特定包生成测试文件
 tsx tools/testing/test-generator.ts color
@@ -152,6 +166,7 @@ pnpm test:generate:all
 ```
 
 ### 测试运行和监控
+
 ```bash
 # 运行所有测试
 pnpm test
@@ -170,6 +185,7 @@ pnpm test:watch:all
 ```
 
 ### 测试覆盖率分析
+
 ```bash
 # 生成覆盖率报告
 tsx tools/testing/coverage-reporter.ts
@@ -179,6 +195,7 @@ open coverage/index.html
 ```
 
 **测试工具特性：**
+
 - 🤖 自动生成测试用例
 - 📊 详细覆盖率报告
 - 🔄 实时测试监听
@@ -186,7 +203,27 @@ open coverage/index.html
 
 ## ⚡ 性能工具
 
+### 构建产物校验
+
+```bash
+# 完整构建产物校验（推荐）
+node tools/scripts/build/validate-build.js
+
+# 基础校验（检查测试文件、导入、包大小等）
+node tools/scripts/build/bundle-validator.js
+
+# 详细分析（包大小、依赖关系、代码质量）
+node tools/scripts/build/bundle-analyzer.js
+
+# 浏览器环境测试（需要安装playwright）
+node tools/scripts/build/browser-tester.js
+
+# 为特定包运行校验
+node tools/scripts/build/validate-build.js --package-root ./packages/engine
+```
+
 ### 包大小分析
+
 ```bash
 # 分析包大小
 pnpm size
@@ -202,6 +239,7 @@ pnpm performance:analyze
 ```
 
 ### Bundle 分析
+
 ```bash
 # 运行 bundle 分析器
 tsx tools/performance/bundle-analyzer.ts
@@ -214,6 +252,7 @@ tsx tools/performance/bundle-analyzer.ts --report
 ```
 
 ### 性能监控
+
 ```bash
 # 启动性能监控
 tsx tools/performance/performance-monitor.ts
@@ -226,6 +265,9 @@ tsx tools/performance/performance-monitor.ts --report
 ```
 
 **性能工具特性：**
+
+- 🔍 构建产物完整校验
+- 🧪 浏览器环境兼容性测试
 - 📦 包大小监控
 - 🚀 性能基准测试
 - 📊 详细分析报告
@@ -234,6 +276,7 @@ tsx tools/performance/performance-monitor.ts --report
 ## 📚 文档工具
 
 ### 自动文档生成
+
 ```bash
 # 为特定包生成文档
 tsx tools/scripts/docs/documentation-generator.ts color
@@ -246,6 +289,7 @@ pnpm docs:validate:all
 ```
 
 ### 示例验证
+
 ```bash
 # 验证特定包的示例
 tsx tools/scripts/docs/example-validator.ts color
@@ -255,6 +299,7 @@ tsx tools/scripts/docs/validate-all-examples.ts
 ```
 
 ### 文档开发
+
 ```bash
 # 启动文档开发服务器
 pnpm docs:dev
@@ -267,6 +312,7 @@ pnpm docs:preview
 ```
 
 **文档工具特性：**
+
 - 📝 自动 API 文档生成
 - 🧪 示例代码验证
 - 🎮 交互式演示
@@ -275,6 +321,7 @@ pnpm docs:preview
 ## 🚀 部署工具
 
 ### 部署验证
+
 ```bash
 # 验证所有包的部署
 tsx tools/scripts/deploy/deployment-validator.ts
@@ -287,6 +334,7 @@ pnpm deploy:validate
 ```
 
 ### 发布流程
+
 ```bash
 # 发布到 staging
 pnpm deploy:staging
@@ -299,6 +347,7 @@ pnpm deploy:rollback
 ```
 
 **部署工具特性：**
+
 - ✅ 自动部署验证
 - 🔄 一键回滚
 - 📊 部署状态监控
@@ -307,6 +356,7 @@ pnpm deploy:rollback
 ## 🏗️ 微前端工具
 
 ### 微前端部署
+
 ```bash
 # 部署到开发环境
 pnpm microfrontend:deploy:dev
@@ -322,12 +372,14 @@ tsx tools/scripts/microfrontend/deployment-manager.ts production color,engine
 ```
 
 ### 模块联邦配置
+
 ```bash
 # 生成模块联邦配置
 tsx tools/configs/microfrontend/module-federation.config.ts
 ```
 
 **微前端特性：**
+
 - 🔗 模块联邦支持
 - 📦 独立包部署
 - 🔄 运行时动态加载
@@ -336,6 +388,7 @@ tsx tools/configs/microfrontend/module-federation.config.ts
 ## 🌟 生态系统工具
 
 ### 插件市场
+
 ```bash
 # 搜索插件
 pnpm ecosystem:plugin:search
@@ -351,6 +404,7 @@ pnpm ecosystem:plugin:scaffold my-plugin
 ```
 
 ### 社区贡献
+
 ```bash
 # 注册为贡献者
 pnpm ecosystem:community:register
@@ -360,6 +414,7 @@ pnpm ecosystem:community:contribute
 ```
 
 ### 插件开发
+
 ```bash
 # 创建新插件
 tsx tools/ecosystem/plugin-scaffold.ts my-awesome-plugin
@@ -369,6 +424,7 @@ tsx tools/ecosystem/plugin-scaffold.ts my-plugin --type ui-component --typescrip
 ```
 
 **生态系统特性：**
+
 - 🔌 插件市场
 - 👥 社区贡献机制
 - 🏆 贡献者奖励系统
@@ -377,6 +433,7 @@ tsx tools/ecosystem/plugin-scaffold.ts my-plugin --type ui-component --typescrip
 ## 🎯 高级功能工具
 
 ### 分析集成
+
 ```bash
 # 设置分析服务
 pnpm advanced:analytics:setup
@@ -386,6 +443,7 @@ tsx tools/advanced-features/analytics-integration.ts setup
 ```
 
 ### 高级缓存
+
 ```bash
 # 缓存基准测试
 pnpm advanced:cache:benchmark
@@ -395,6 +453,7 @@ tsx tools/advanced-features/advanced-cache-manager.ts benchmark
 ```
 
 ### 表单管理
+
 ```bash
 # 表单生成器
 pnpm advanced:form:generator
@@ -404,6 +463,7 @@ tsx tools/advanced-features/advanced-form-manager.ts generate
 ```
 
 **高级功能特性：**
+
 - 📊 多平台分析集成
 - 💾 智能多层缓存
 - 📝 动态表单系统
@@ -412,6 +472,7 @@ tsx tools/advanced-features/advanced-form-manager.ts generate
 ## ❓ 常见问题
 
 ### Q: 如何开始开发一个新包？
+
 ```bash
 # 1. 创建包目录结构
 mkdir packages/my-package
@@ -424,6 +485,7 @@ pnpm dev:enhanced --packages my-package
 ```
 
 ### Q: 如何运行特定包的测试？
+
 ```bash
 # 运行特定包测试
 pnpm test --filter @ldesign/color
@@ -436,18 +498,50 @@ pnpm test:watch --filter @ldesign/color
 ```
 
 ### Q: 如何优化包的性能？
+
 ```bash
-# 1. 分析包大小
-pnpm size:analyze
+# 1. 运行完整构建产物校验
+node tools/scripts/build/validate-build.js
 
-# 2. 运行性能监控
+# 2. 分析包大小和依赖
+node tools/scripts/build/bundle-analyzer.js
+
+# 3. 浏览器兼容性测试
+node tools/scripts/build/browser-tester.js
+
+# 4. 传统性能监控
 pnpm performance:monitor
+```
 
-# 3. 查看分析报告
-tsx tools/performance/bundle-analyzer.ts --package my-package
+### Q: 如何配置构建产物校验？
+
+```bash
+# 1. 创建配置文件
+node tools/scripts/build/validate-build.js --create-config ./build-validator.config.json
+
+# 2. 在package.json中配置
+{
+  "buildValidator": {
+    "steps": {
+      "validate": true,
+      "analyze": true,
+      "browserTest": false
+    },
+    "validator": {
+      "thresholds": {
+        "maxBundleSize": 2097152,
+        "maxWarningSize": 512000
+      }
+    }
+  }
+}
+
+# 3. 使用自定义配置运行
+node tools/scripts/build/validate-build.js --config ./build-validator.config.json
 ```
 
 ### Q: 如何发布一个插件？
+
 ```bash
 # 1. 创建插件
 pnpm ecosystem:plugin:scaffold my-plugin
@@ -460,6 +554,7 @@ pnpm ecosystem:plugin:publish
 ```
 
 ### Q: 如何贡献代码？
+
 ```bash
 # 1. 注册为贡献者
 pnpm ecosystem:community:register
@@ -481,6 +576,11 @@ pnpm dev:debug                       # 调试模式
 # 测试
 pnpm test:coverage:detail            # 详细测试覆盖率
 pnpm test:generate:all               # 生成所有测试
+
+# 构建产物校验
+node tools/scripts/build/validate-build.js    # 完整校验
+node tools/scripts/build/bundle-analyzer.js   # 包分析
+node tools/scripts/build/browser-tester.js    # 浏览器测试
 
 # 性能
 pnpm performance:analyze             # 性能分析
