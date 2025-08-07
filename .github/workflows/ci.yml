@@ -97,6 +97,26 @@ jobs:
       - name: Size check
         run: pnpm size-check
 
+      - name: Build validation
+        run: |
+          echo "🔍 运行构建产物校验..."
+          for package_dir in packages/*; do
+            if [ -d "$package_dir" ]; then
+              package_name=$(basename "$package_dir")
+
+              # 检查是否有构建产物和校验脚本
+              if [ -d "$package_dir/dist" ] || [ -d "$package_dir/es" ] || [ -d "$package_dir/lib" ]; then
+                if grep -q "build:check" "$package_dir/package.json" 2>/dev/null; then
+                  echo "校验包: $package_name"
+                  cd "$package_dir"
+                  pnpm run build:check || echo "⚠️ $package_name 校验失败"
+                  cd ../..
+                fi
+              fi
+            fi
+          done
+        continue-on-error: true
+
       - name: Performance check
         run: pnpm run analyze
         continue-on-error: true
