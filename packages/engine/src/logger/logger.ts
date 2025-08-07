@@ -15,23 +15,23 @@ export class LoggerImpl implements Logger {
     this.level = level
   }
 
-  debug(message: string, data?: any): void {
+  debug(message: string, data?: unknown): void {
     this.log('debug', message, data)
   }
 
-  info(message: string, data?: any): void {
+  info(message: string, data?: unknown): void {
     this.log('info', message, data)
   }
 
-  warn(message: string, data?: any): void {
+  warn(message: string, data?: unknown): void {
     this.log('warn', message, data)
   }
 
-  error(message: string, data?: any): void {
+  error(message: string, data?: unknown): void {
     this.log('error', message, data)
   }
 
-  private log(level: LogLevel, message: string, data?: any): void {
+  private log(level: LogLevel, message: string, data?: unknown): void {
     // 检查日志级别
     if (this.levels[level] < this.levels[this.level]) {
       return
@@ -70,13 +70,12 @@ export class LoggerImpl implements Logger {
       console.groupCollapsed(`%c${prefix} ${entry.message}`, styles.prefix)
       console.log('%cData:', styles.data, entry.data)
       console.groupEnd()
-    }
-    else {
+    } else {
       console.log(`%c${prefix} ${entry.message}`, styles.prefix)
     }
   }
 
-  private getConsoleStyles(level: LogLevel): { prefix: string, data: string } {
+  private getConsoleStyles(level: LogLevel): { prefix: string; data: string } {
     const baseStyle = 'font-weight: bold; padding: 2px 4px; border-radius: 2px;'
 
     switch (level) {
@@ -148,17 +147,19 @@ export class LoggerImpl implements Logger {
 
   // 按时间范围获取日志
   getLogsByTimeRange(startTime: number, endTime: number): LogEntry[] {
-    return this.logs.filter(log =>
-      log.timestamp >= startTime && log.timestamp <= endTime,
+    return this.logs.filter(
+      log => log.timestamp >= startTime && log.timestamp <= endTime
     )
   }
 
   // 搜索日志
   searchLogs(query: string): LogEntry[] {
     const lowerQuery = query.toLowerCase()
-    return this.logs.filter(log =>
-      log.message.toLowerCase().includes(lowerQuery)
-      || (log.data && JSON.stringify(log.data).toLowerCase().includes(lowerQuery)),
+    return this.logs.filter(
+      log =>
+        log.message.toLowerCase().includes(lowerQuery) ||
+        (log.data &&
+          JSON.stringify(log.data).toLowerCase().includes(lowerQuery))
     )
   }
 
@@ -221,11 +222,17 @@ export class LoggerImpl implements Logger {
       }
 
       case 'txt':
-        return this.logs.map((log) => {
-          const timestamp = new Date(log.timestamp).toISOString()
-          const dataStr = log.data ? ` | Data: ${JSON.stringify(log.data)}` : ''
-          return `[${timestamp}] [${log.level.toUpperCase()}] ${log.message}${dataStr}`
-        }).join('\n')
+        return this.logs
+          .map(log => {
+            const timestamp = new Date(log.timestamp).toISOString()
+            const dataStr = log.data
+              ? ` | Data: ${JSON.stringify(log.data)}`
+              : ''
+            return `[${timestamp}] [${log.level.toUpperCase()}] ${
+              log.message
+            }${dataStr}`
+          })
+          .join('\n')
 
       default:
         return ''
@@ -245,24 +252,21 @@ export class LoggerImpl implements Logger {
 
 // 子日志器类
 class ChildLogger implements Logger {
-  constructor(
-    private parent: Logger,
-    private prefix: string,
-  ) { }
+  constructor(private parent: Logger, private prefix: string) {}
 
-  debug(message: string, data?: any): void {
+  debug(message: string, data?: unknown): void {
     this.parent.debug(`${this.prefix} ${message}`, data)
   }
 
-  info(message: string, data?: any): void {
+  info(message: string, data?: unknown): void {
     this.parent.info(`${this.prefix} ${message}`, data)
   }
 
-  warn(message: string, data?: any): void {
+  warn(message: string, data?: unknown): void {
     this.parent.warn(`${this.prefix} ${message}`, data)
   }
 
-  error(message: string, data?: any): void {
+  error(message: string, data?: unknown): void {
     this.parent.error(`${this.prefix} ${message}`, data)
   }
 
@@ -311,7 +315,9 @@ export const logFormatters = {
   detailed: (entry: LogEntry): string => {
     const timestamp = new Date(entry.timestamp).toISOString()
     const dataStr = entry.data ? ` | Data: ${JSON.stringify(entry.data)}` : ''
-    return `[${timestamp}] [${entry.level.toUpperCase()}] ${entry.message}${dataStr}`
+    return `[${timestamp}] [${entry.level.toUpperCase()}] ${
+      entry.message
+    }${dataStr}`
   },
 
   // JSON格式化器
@@ -326,35 +332,45 @@ export const logFormatters = {
 // 日志传输器
 export const logTransports = {
   // 控制台传输器
-  console: (formatter = logFormatters.simple) => (entry: LogEntry) => {
-    const formatted = formatter(entry)
-    const method = entry.level === 'error'
-      ? 'error'
-      : entry.level === 'warn' ? 'warn' : 'log'
-    console[method](formatted)
-  },
+  console:
+    (formatter = logFormatters.simple) =>
+    (entry: LogEntry) => {
+      const formatted = formatter(entry)
+      const method =
+        entry.level === 'error'
+          ? 'error'
+          : entry.level === 'warn'
+          ? 'warn'
+          : 'log'
+      console[method](formatted)
+    },
 
   // 本地存储传输器
-  localStorage: (key = 'engine-logs', maxEntries = 100) => (entry: LogEntry) => {
-    try {
-      const stored = localStorage.getItem(key)
-      const logs = stored ? JSON.parse(stored) : []
+  localStorage:
+    (key = 'engine-logs', maxEntries = 100) =>
+    (entry: LogEntry) => {
+      try {
+        const stored = localStorage.getItem(key)
+        const logs = stored ? JSON.parse(stored) : []
 
-      logs.unshift(entry)
+        logs.unshift(entry)
 
-      if (logs.length > maxEntries) {
-        logs.splice(maxEntries)
+        if (logs.length > maxEntries) {
+          logs.splice(maxEntries)
+        }
+
+        localStorage.setItem(key, JSON.stringify(logs))
+      } catch (error) {
+        console.error('Failed to store log in localStorage:', error)
       }
-
-      localStorage.setItem(key, JSON.stringify(logs))
-    }
-    catch (error) {
-      console.error('Failed to store log in localStorage:', error)
-    }
-  },
+    },
 
   // 远程传输器
-  remote: (config: { endpoint: string, apiKey?: string, batchSize?: number }) => {
+  remote: (config: {
+    endpoint: string
+    apiKey?: string
+    batchSize?: number
+  }) => {
     const batch: LogEntry[] = []
     const batchSize = config.batchSize || 10
 
@@ -376,8 +392,7 @@ export const logTransports = {
             headers,
             body: JSON.stringify(batch.splice(0, batchSize)),
           })
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Failed to send logs to remote service:', error)
         }
       }

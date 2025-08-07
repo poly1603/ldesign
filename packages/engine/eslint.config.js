@@ -54,7 +54,6 @@ export default antfu(
       'vue/first-attribute-linebreak': 'off',
       'vue/comma-dangle': 'off',
       'vue/html-closing-bracket-newline': 'off',
-      'import/no-duplicates': 'off',
       'style/brace-style': 'off',
     },
   },
@@ -75,7 +74,13 @@ export default antfu(
   },
   // 测试文件特殊规则
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx', 'tests/**/*'],
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      'tests/**/*',
+    ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
@@ -93,5 +98,5 @@ export default antfu(
       '@typescript-eslint/no-explicit-any': 'off',
       'no-console': 'off',
     },
-  },
+  }
 )

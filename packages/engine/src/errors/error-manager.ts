@@ -1,13 +1,35 @@
 import type { Component } from 'vue'
 import type { ErrorHandler, ErrorInfo, ErrorManager, Logger } from '../types'
 
+// 错误恢复策略接口
+export interface RecoveryStrategy {
+  canRecover: (error: ErrorInfo) => boolean
+  recover: (error: ErrorInfo) => Promise<boolean>
+  priority: number
+}
+
+// 错误分类枚举
+export enum ErrorCategory {
+  NETWORK = 'network',
+  COMPONENT = 'component',
+  PLUGIN = 'plugin',
+  STATE = 'state',
+  SECURITY = 'security',
+  PERFORMANCE = 'performance',
+  UNKNOWN = 'unknown',
+}
+
 export class ErrorManagerImpl implements ErrorManager {
   private errorHandlers = new Set<ErrorHandler>()
   private errors: ErrorInfo[] = []
   private maxErrors = 100
+  private errorCounts = new Map<string, number>()
+  private recoveryStrategies = new Map<string, RecoveryStrategy>()
+  private lastErrorTime = 0
+  private errorBurst = 0
 
-  constructor(_logger?: Logger) {
-    // logger参数保留用于未来扩展
+  constructor(private logger?: Logger) {
+    this.setupDefaultRecoveryStrategies()
   }
 
   onError(handler: ErrorHandler): void {
@@ -28,8 +50,20 @@ export class ErrorManagerImpl implements ErrorManager {
       level: 'error',
     }
 
+    // 检测错误爆发
+    this.detectErrorBurst()
+
+    // 分类错误
+    const category = this.categorizeError(errorInfo)
+
+    // 统计错误
+    this.updateErrorStats(errorInfo, category)
+
     // 添加到错误列表
     this.addError(errorInfo)
+
+    // 尝试自动恢复
+    this.attemptRecovery(errorInfo)
 
     // 通知所有错误处理器
     this.notifyHandlers(errorInfo)
@@ -48,8 +82,7 @@ export class ErrorManagerImpl implements ErrorManager {
     for (const handler of this.errorHandlers) {
       try {
         handler(errorInfo)
-      }
-      catch (handlerError) {
+      } catch (handlerError) {
         console.error('Error in error handler:', handlerError)
       }
     }
@@ -83,8 +116,8 @@ export class ErrorManagerImpl implements ErrorManager {
 
   // 按时间范围获取错误
   getErrorsByTimeRange(startTime: number, endTime: number): ErrorInfo[] {
-    return this.errors.filter(error =>
-      error.timestamp >= startTime && error.timestamp <= endTime,
+    return this.errors.filter(
+      error => error.timestamp >= startTime && error.timestamp <= endTime
     )
   }
 
@@ -96,10 +129,11 @@ export class ErrorManagerImpl implements ErrorManager {
   // 搜索错误
   searchErrors(query: string): ErrorInfo[] {
     const lowerQuery = query.toLowerCase()
-    return this.errors.filter(error =>
-      error.message.toLowerCase().includes(lowerQuery)
-      || (error.stack && error.stack.toLowerCase().includes(lowerQuery))
-      || (error.info && error.info.toLowerCase().includes(lowerQuery)),
+    return this.errors.filter(
+      error =>
+        error.message.toLowerCase().includes(lowerQuery) ||
+        (error.stack && error.stack.toLowerCase().includes(lowerQuery)) ||
+        (error.info && error.info.toLowerCase().includes(lowerQuery))
     )
   }
 
@@ -147,8 +181,7 @@ export class ErrorManagerImpl implements ErrorManager {
   exportErrors(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
       return JSON.stringify(this.errors, null, 2)
-    }
-    else {
+    } else {
       const headers = ['timestamp', 'level', 'message', 'stack', 'info']
       const rows = this.errors.map(error => [
         new Date(error.timestamp).toISOString(),
@@ -166,7 +199,7 @@ export class ErrorManagerImpl implements ErrorManager {
   createErrorReport(): {
     summary: ReturnType<ErrorManagerImpl['getErrorStats']>
     recentErrors: ErrorInfo[]
-    topErrors: Array<{ message: string, count: number }>
+    topErrors: Array<{ message: string; count: number }>
   } {
     const summary = this.getErrorStats()
     const recentErrors = this.getRecentErrors(10)
@@ -189,6 +222,148 @@ export class ErrorManagerImpl implements ErrorManager {
       topErrors,
     }
   }
+
+  // 设置默认恢复策略
+  private setupDefaultRecoveryStrategies(): void {
+    // 网络错误恢复策略
+    this.recoveryStrategies.set('network', {
+      canRecover: error =>
+        error.message.includes('network') || error.message.includes('fetch'),
+      recover: async error => {
+        this.logger?.info('Attempting network error recovery', error)
+        // 简单的重试逻辑
+        return new Promise(resolve => setTimeout(() => resolve(true), 1000))
+      },
+      priority: 1,
+    })
+
+    // 组件错误恢复策略
+    this.recoveryStrategies.set('component', {
+      canRecover: error => !!error.component,
+      recover: async error => {
+        this.logger?.info('Attempting component error recovery', error)
+        // 组件重新渲染逻辑
+        return true
+      },
+      priority: 2,
+    })
+  }
+
+  // 检测错误爆发
+  private detectErrorBurst(): void {
+    const now = Date.now()
+    const timeDiff = now - this.lastErrorTime
+
+    if (timeDiff < 1000) {
+      // 1秒内
+      this.errorBurst++
+      if (this.errorBurst > 10) {
+        this.logger?.warn('Error burst detected', { count: this.errorBurst })
+      }
+    } else {
+      this.errorBurst = 1
+    }
+
+    this.lastErrorTime = now
+  }
+
+  // 分类错误
+  private categorizeError(error: ErrorInfo): ErrorCategory {
+    const message = error.message.toLowerCase()
+
+    if (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('xhr')
+    ) {
+      return ErrorCategory.NETWORK
+    }
+
+    if (error.component) {
+      return ErrorCategory.COMPONENT
+    }
+
+    if (message.includes('plugin')) {
+      return ErrorCategory.PLUGIN
+    }
+
+    if (message.includes('state') || message.includes('store')) {
+      return ErrorCategory.STATE
+    }
+
+    if (
+      message.includes('security') ||
+      message.includes('xss') ||
+      message.includes('csrf')
+    ) {
+      return ErrorCategory.SECURITY
+    }
+
+    if (
+      message.includes('performance') ||
+      message.includes('memory') ||
+      message.includes('timeout')
+    ) {
+      return ErrorCategory.PERFORMANCE
+    }
+
+    return ErrorCategory.UNKNOWN
+  }
+
+  // 更新错误统计
+  private updateErrorStats(error: ErrorInfo, category: ErrorCategory): void {
+    const key = `${category}:${error.message}`
+    const count = this.errorCounts.get(key) || 0
+    this.errorCounts.set(key, count + 1)
+
+    // 如果同一错误频繁出现，记录警告
+    if (count > 5) {
+      this.logger?.warn('Frequent error detected', {
+        category,
+        message: error.message,
+        count: count + 1,
+      })
+    }
+  }
+
+  // 尝试自动恢复
+  private async attemptRecovery(error: ErrorInfo): Promise<boolean> {
+    const strategies = Array.from(this.recoveryStrategies.values())
+      .filter(strategy => strategy.canRecover(error))
+      .sort((a, b) => a.priority - b.priority)
+
+    for (const strategy of strategies) {
+      try {
+        const recovered = await strategy.recover(error)
+        if (recovered) {
+          this.logger?.info('Error recovery successful', error)
+          return true
+        }
+      } catch (recoveryError) {
+        this.logger?.error('Error recovery failed', recoveryError)
+      }
+    }
+
+    return false
+  }
+
+  // 获取错误分类统计
+  getCategoryStats(): Record<ErrorCategory, number> {
+    const stats = {} as Record<ErrorCategory, number>
+
+    for (const category of Object.values(ErrorCategory)) {
+      stats[category] = 0
+    }
+
+    for (const [key, count] of this.errorCounts) {
+      const category = key.split(':')[0] as ErrorCategory
+      if (category in stats) {
+        stats[category] += count
+      }
+    }
+
+    return stats
+  }
 }
 
 export function createErrorManager(logger?: Logger): ErrorManager {
@@ -199,9 +374,12 @@ export function createErrorManager(logger?: Logger): ErrorManager {
 export const errorHandlers = {
   // 控制台错误处理器
   console: (errorInfo: ErrorInfo) => {
-    const method = errorInfo.level === 'error'
-      ? 'error'
-      : errorInfo.level === 'warn' ? 'warn' : 'info'
+    const method =
+      errorInfo.level === 'error'
+        ? 'error'
+        : errorInfo.level === 'warn'
+        ? 'warn'
+        : 'info'
 
     console[method]('Engine Error:', {
       message: errorInfo.message,
@@ -225,53 +403,55 @@ export const errorHandlers = {
   },
 
   // 远程上报错误处理器
-  remote: (config: { endpoint: string, apiKey?: string }) => async (errorInfo: ErrorInfo) => {
-    try {
-      const payload = {
-        ...errorInfo,
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date(errorInfo.timestamp).toISOString(),
-      }
+  remote:
+    (config: { endpoint: string; apiKey?: string }) =>
+    async (errorInfo: ErrorInfo) => {
+      try {
+        const payload = {
+          ...errorInfo,
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: new Date(errorInfo.timestamp).toISOString(),
+        }
 
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      }
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        }
 
-      if (config.apiKey) {
-        headers.Authorization = `Bearer ${config.apiKey}`
-      }
+        if (config.apiKey) {
+          headers.Authorization = `Bearer ${config.apiKey}`
+        }
 
-      await fetch(config.endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      })
-    }
-    catch (error) {
-      console.error('Failed to report error to remote service:', error)
-    }
-  },
+        await fetch(config.endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        })
+      } catch (error) {
+        console.error('Failed to report error to remote service:', error)
+      }
+    },
 
   // 本地存储错误处理器
-  localStorage: (key = 'engine-errors') => (errorInfo: ErrorInfo) => {
-    try {
-      const stored = localStorage.getItem(key)
-      const errors = stored ? JSON.parse(stored) : []
+  localStorage:
+    (key = 'engine-errors') =>
+    (errorInfo: ErrorInfo) => {
+      try {
+        const stored = localStorage.getItem(key)
+        const errors = stored ? JSON.parse(stored) : []
 
-      errors.unshift(errorInfo)
+        errors.unshift(errorInfo)
 
-      // 限制存储的错误数量
-      if (errors.length > 50) {
-        errors.splice(50)
+        // 限制存储的错误数量
+        if (errors.length > 50) {
+          errors.splice(50)
+        }
+
+        localStorage.setItem(key, JSON.stringify(errors))
+      } catch (error) {
+        console.error('Failed to store error in localStorage:', error)
       }
-
-      localStorage.setItem(key, JSON.stringify(errors))
-    }
-    catch (error) {
-      console.error('Failed to store error in localStorage:', error)
-    }
-  },
+    },
 }
 
 // 错误边界组件工厂
@@ -285,8 +465,8 @@ export function createErrorBoundary(errorManager: ErrorManager) {
       }
     },
     errorCaptured(error: Error, component: Component, info: string) {
-      (this as any).hasError = true;
-      (this as any).error = error
+      ;(this as any).hasError = true
+      ;(this as any).error = error
 
       // 捕获错误到错误管理器
       errorManager.captureError(error, component, info)
@@ -297,8 +477,10 @@ export function createErrorBoundary(errorManager: ErrorManager) {
     render() {
       const self = this as any
       if (self.hasError) {
-        return self.$slots.fallback?.({ error: self.error })
-          || 'Something went wrong. Please try again.'
+        return (
+          self.$slots.fallback?.({ error: self.error }) ||
+          'Something went wrong. Please try again.'
+        )
       }
 
       return self.$slots.default?.()

@@ -104,27 +104,29 @@ class XSSProtector {
   private stripIgnoreTag: boolean
 
   constructor(config: SecurityConfig['xss'] = {}) {
-    this.allowedTags = new Set(config.allowedTags || [
-      'p',
-      'br',
-      'strong',
-      'em',
-      'u',
-      'i',
-      'b',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'ul',
-      'ol',
-      'li',
-      'blockquote',
-      'code',
-      'pre',
-    ])
+    this.allowedTags = new Set(
+      config.allowedTags || [
+        'p',
+        'br',
+        'strong',
+        'em',
+        'u',
+        'i',
+        'b',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'ul',
+        'ol',
+        'li',
+        'blockquote',
+        'code',
+        'pre',
+      ]
+    )
 
     this.allowedAttributes = new Map()
     const attrs = config.allowedAttributes || {
@@ -188,14 +190,16 @@ class XSSProtector {
   }
 
   private filterTags(html: string, threats: string[]): string {
-    const tagRegex = /<\/?([a-z]\w*)[^>]*>/giu
+    const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/giu
 
     return html.replace(tagRegex, (match, tagName) => {
       const tag = tagName.toLowerCase()
 
       if (!this.allowedTags.has(tag)) {
         threats.push(`Disallowed tag: ${tag}`)
-        return this.stripIgnoreTag ? '' : match.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        return this.stripIgnoreTag
+          ? ''
+          : match.replace(/</g, '&lt;').replace(/>/g, '&gt;')
       }
 
       return match
@@ -203,7 +207,7 @@ class XSSProtector {
   }
 
   private filterAttributes(html: string, threats: string[]): string {
-    const tagRegex = /<([a-z]\w*)([^>]*)>/giu
+    const tagRegex = /<([a-z][a-z0-9]*)([^>]*)>/giu
 
     return html.replace(tagRegex, (match, tagName, attributes) => {
       const tag = tagName.toLowerCase()
@@ -226,12 +230,10 @@ class XSSProtector {
           // 验证属性值
           if (this.isValidAttributeValue(attr, attrValue)) {
             filteredAttributes += ` ${attrName}="${attrValue}"`
-          }
-          else {
+          } else {
             threats.push(`Invalid attribute value: ${attr}="${attrValue}"`)
           }
-        }
-        else {
+        } else {
           threats.push(`Disallowed attribute: ${attr}`)
         }
       }
@@ -307,15 +309,16 @@ class CSRFProtector {
     const array = new Uint8Array(32)
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       crypto.getRandomValues(array)
-    }
-    else {
+    } else {
       // Fallback for environments without crypto.getRandomValues
       for (let i = 0; i < array.length; i++) {
         array[i] = Math.floor(Math.random() * 256)
       }
     }
 
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join(
+      ''
+    )
   }
 
   private cleanupExpiredTokens(): void {
@@ -341,8 +344,8 @@ export class SecurityManagerImpl implements SecurityManager {
     this.config = {
       xss: {
         enabled: true,
-        allowedTags: [],
-        allowedAttributes: {},
+        allowedTags: config.xss?.allowedTags || undefined, // 让 XSSProtector 使用默认值
+        allowedAttributes: config.xss?.allowedAttributes || undefined, // 让 XSSProtector 使用默认值
         stripIgnoreTag: true,
         ...config.xss,
       },
@@ -357,13 +360,13 @@ export class SecurityManagerImpl implements SecurityManager {
       csp: {
         enabled: true,
         directives: {
-          'default-src': ['\'self\''],
-          'script-src': ['\'self\'', '\'unsafe-inline\''],
-          'style-src': ['\'self\'', '\'unsafe-inline\''],
-          'img-src': ['\'self\'', 'data:', 'https:'],
-          'font-src': ['\'self\''],
-          'connect-src': ['\'self\''],
-          'frame-ancestors': ['\'none\''],
+          'default-src': ["'self'"],
+          'script-src': ["'self'", "'unsafe-inline'"],
+          'style-src': ["'self'", "'unsafe-inline'"],
+          'img-src': ["'self'", 'data:', 'https:'],
+          'font-src': ["'self'"],
+          'connect-src': ["'self'"],
+          'frame-ancestors': ["'none'"],
         },
         reportOnly: false,
         reportUri: '/csp-report',
@@ -417,7 +420,10 @@ export class SecurityManagerImpl implements SecurityManager {
     return result
   }
 
-  validateInput(input: string, type: 'html' | 'text' | 'url' = 'text'): boolean {
+  validateInput(
+    input: string,
+    type: 'html' | 'text' | 'url' = 'text'
+  ): boolean {
     switch (type) {
       case 'html':
         return this.sanitizeHTML(input).safe
@@ -426,8 +432,7 @@ export class SecurityManagerImpl implements SecurityManager {
           // eslint-disable-next-line no-new
           new URL(input)
           return !input.toLowerCase().startsWith('javascript:')
-        }
-        catch {
+        } catch {
           return false
         }
       case 'text':
@@ -471,7 +476,9 @@ export class SecurityManagerImpl implements SecurityManager {
 
     // 尝试从cookie或meta标签获取
     if (typeof document !== 'undefined') {
-      const meta = document.querySelector(`meta[name="${this.config.csrf.tokenName}"]`)
+      const meta = document.querySelector(
+        `meta[name="${this.config.csrf.tokenName}"]`
+      )
       if (meta) {
         return meta.getAttribute('content')
       }
@@ -528,7 +535,9 @@ export class SecurityManagerImpl implements SecurityManager {
           break
         case 'allow-from':
           if (this.config.clickjacking.allowFrom) {
-            headers['X-Frame-Options'] = `ALLOW-FROM ${this.config.clickjacking.allowFrom}`
+            headers[
+              'X-Frame-Options'
+            ] = `ALLOW-FROM ${this.config.clickjacking.allowFrom}`
           }
           break
       }
@@ -568,11 +577,10 @@ export class SecurityManagerImpl implements SecurityManager {
     }
 
     // 触发事件回调
-    this.eventCallbacks.forEach((callback) => {
+    this.eventCallbacks.forEach(callback => {
       try {
         callback(event)
-      }
-      catch (error) {
+      } catch (error) {
         if (this.engine?.logger) {
           this.engine.logger.error('Error in security event callback', error)
         }
@@ -607,6 +615,9 @@ export class SecurityManagerImpl implements SecurityManager {
 }
 
 // 创建安全管理器
-export function createSecurityManager(config?: SecurityConfig, engine?: Engine): SecurityManager {
+export function createSecurityManager(
+  config?: SecurityConfig,
+  engine?: Engine
+): SecurityManager {
   return new SecurityManagerImpl(config, engine)
 }

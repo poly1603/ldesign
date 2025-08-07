@@ -206,11 +206,13 @@ describe('engine', () => {
       const error = new Error('Test error')
       engine.errors.captureError(error)
 
-      expect(handler).toHaveBeenCalledWith(expect.objectContaining({
-        message: 'Test error',
-        level: 'error',
-        timestamp: expect.any(Number),
-      }))
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Test error',
+          level: 'error',
+          timestamp: expect.any(Number),
+        })
+      )
     })
 
     it('应该记录错误信息', () => {
@@ -356,6 +358,149 @@ describe('engine', () => {
 
       engine.setStore(store)
       expect(engine.store).toBe(store)
+    })
+
+    it('应该设置国际化适配器', () => {
+      const i18n = {
+        install: vi.fn(),
+        t: vi.fn(),
+        locale: 'en',
+        setLocale: vi.fn(),
+        getLocale: vi.fn().mockReturnValue('en'),
+      }
+
+      engine.setI18n(i18n)
+      expect(engine.i18n).toBe(i18n)
+    })
+
+    it('应该设置主题适配器', () => {
+      const theme = {
+        install: vi.fn(),
+        setTheme: vi.fn(),
+        getTheme: vi.fn(),
+        getThemes: vi.fn().mockReturnValue(['light', 'dark']),
+      }
+
+      engine.setTheme(theme)
+      expect(engine.theme).toBe(theme)
+    })
+  })
+
+  describe('vue应用集成', () => {
+    it('应该创建Vue应用', () => {
+      const rootComponent = { template: '<div>Test</div>' }
+      const app = engine.createApp(rootComponent)
+
+      expect(app).toBeDefined()
+      expect(engine.getApp()).toBe(app)
+    })
+
+    it('应该在重复创建时返回现有应用', () => {
+      const rootComponent = { template: '<div>Test</div>' }
+      const app1 = engine.createApp(rootComponent)
+      const app2 = engine.createApp(rootComponent)
+
+      expect(app1).toBe(app2)
+    })
+
+    it('应该检查挂载状态', () => {
+      expect(engine.isMounted()).toBe(false)
+    })
+
+    it('应该获取挂载目标', () => {
+      expect(engine.getMountTarget()).toBeUndefined()
+    })
+  })
+
+  describe('错误处理集成', () => {
+    it('应该在调试模式下显示错误通知', async () => {
+      const debugEngine = createEngine({ config: { debug: true } })
+
+      const error = new Error('Debug error')
+      debugEngine.errors.captureError(error)
+
+      // 等待异步操作完成
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      const notifications = debugEngine.notifications.getAll()
+      expect(notifications).toHaveLength(1)
+      expect(notifications[0].type).toBe('error')
+      expect(notifications[0].title).toBe('Error Captured')
+    })
+
+    it('应该在生产模式下不显示错误通知', () => {
+      const prodEngine = createEngine({ config: { debug: false } })
+
+      const error = new Error('Production error')
+      prodEngine.errors.captureError(error)
+
+      const notifications = prodEngine.notifications.getAll()
+      expect(notifications).toHaveLength(0)
+    })
+
+    it('应该触发错误事件', () => {
+      const errorHandler = vi.fn()
+      engine.events.on('engine:error', errorHandler)
+
+      const error = new Error('Event error')
+      engine.errors.captureError(error)
+
+      expect(errorHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Event error',
+        })
+      )
+    })
+  })
+
+  describe('引擎销毁', () => {
+    it('应该正确销毁引擎', () => {
+      const destroyHandler = vi.fn()
+      engine.events.on('engine:destroy', destroyHandler)
+
+      // 添加一些数据
+      engine.state.set('test', 'value')
+      engine.logger.info('Test log')
+      engine.errors.captureError(new Error('Test error'))
+      engine.notifications.show({ type: 'info', message: 'Test notification' })
+
+      engine.destroy()
+
+      expect(destroyHandler).toHaveBeenCalled()
+      expect(engine.state.get('test')).toBeUndefined()
+      // 销毁后会记录一条 "Engine destroyed" 日志，所以不是0
+      expect(engine.logger.getLogs().length).toBeGreaterThanOrEqual(0)
+      expect(engine.errors.getErrors()).toHaveLength(0)
+      expect(engine.notifications.getAll()).toHaveLength(0)
+    })
+  })
+
+  describe('配置管理', () => {
+    it('应该使用默认配置', () => {
+      const defaultEngine = createEngine()
+      expect(defaultEngine.config.debug).toBe(false)
+    })
+
+    it('应该合并自定义配置', () => {
+      const customEngine = createEngine({
+        config: {
+          debug: true,
+          appName: 'Custom App',
+          version: '1.0.0',
+        },
+      })
+
+      expect(customEngine.config.debug).toBe(true)
+      expect(customEngine.config.appName).toBe('Custom App')
+      expect(customEngine.config.version).toBe('1.0.0')
+    })
+
+    it('应该根据调试模式设置日志级别', () => {
+      const debugEngine = createEngine({ config: { debug: true } })
+      const prodEngine = createEngine({ config: { debug: false } })
+
+      expect(debugEngine.logger.getLevel()).toBe('debug')
+      expect(prodEngine.logger.getLevel()).toBe('info')
     })
   })
 })

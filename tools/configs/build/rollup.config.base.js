@@ -51,12 +51,19 @@ export function createRollupConfig(options = {}) {
       'src/**/*.spec.tsx',
       'src/**/*.spec.vue',
       'src/**/*.d.ts', // 排除声明文件
-      ...excludePatterns // 添加自定义排除模式
+      ...excludePatterns, // 添加自定义排除模式
     ]
 
     // 如果没有启用 Vue 支持，排除 Vue 相关文件
     if (!vue) {
-      ignorePatterns.push('src/vue/**/*.ts', 'src/vue/**/*.tsx', 'src/vue/**/*.vue', 'src/adapt/vue/**/*.ts', 'src/adapt/vue/**/*.tsx', 'src/adapt/vue/**/*.vue')
+      ignorePatterns.push(
+        'src/vue/**/*.ts',
+        'src/vue/**/*.tsx',
+        'src/vue/**/*.vue',
+        'src/adapt/vue/**/*.ts',
+        'src/adapt/vue/**/*.tsx',
+        'src/adapt/vue/**/*.vue'
+      )
     }
 
     // 搜索所有支持的文件类型
@@ -75,7 +82,7 @@ export function createRollupConfig(options = {}) {
     })
 
     const input = {}
-    allFiles.forEach((file) => {
+    allFiles.forEach(file => {
       const name = path.relative('src', file).replace(/\.(ts|tsx|vue)$/, '')
       input[name] = path.resolve(packagePath, file)
     })
@@ -104,19 +111,23 @@ export function createRollupConfig(options = {}) {
 
     plugins.push(
       alias({
-        entries: [
-          { find: '@', replacement: path.resolve(packagePath, 'src') },
-        ],
+        entries: [{ find: '@', replacement: path.resolve(packagePath, 'src') }],
       }),
       nodeResolve({
         preferBuiltins: false,
         browser: format === 'umd',
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
       }),
-      commonjs(),
+      commonjs({
+        // 只在 UMD 格式时包含 node_modules
+        include: format === 'umd' ? /node_modules/ : [],
+      }),
       // 处理样式文件
       postcss({
-        extract: format === 'umd' ? path.resolve(packagePath, `dist/style.css`) : false,
+        extract:
+          format === 'umd'
+            ? path.resolve(packagePath, `dist/style.css`)
+            : false,
         inject: format !== 'umd',
         minimize: format === 'umd',
         sourceMap: true,
@@ -127,17 +138,19 @@ export function createRollupConfig(options = {}) {
           sass: {},
           stylus: {},
         },
-        plugins: [
-          autoprefixer(),
-        ],
+        plugins: [autoprefixer()],
       }),
       // 环境变量替换
       replace({
-        'process.env.NODE_ENV': JSON.stringify(format === 'umd' ? 'production' : 'development'),
+        'process.env.NODE_ENV': JSON.stringify(
+          format === 'umd' ? 'production' : 'development'
+        ),
         preventAssignment: true,
       }),
       typescript({
-        tsconfig: fs.existsSync(path.resolve(packagePath, 'tsconfig.build.json'))
+        tsconfig: fs.existsSync(
+          path.resolve(packagePath, 'tsconfig.build.json')
+        )
           ? path.resolve(packagePath, 'tsconfig.build.json')
           : path.resolve(packagePath, 'tsconfig.json'),
         declaration: false,
@@ -157,9 +170,7 @@ export function createRollupConfig(options = {}) {
         vuePlugin({
           include: /\.vue$/,
           style: {
-            postcssPlugins: [
-              autoprefixer(),
-            ],
+            postcssPlugins: [autoprefixer()],
           },
         }),
         // Vue JSX 支持
@@ -173,9 +184,7 @@ export function createRollupConfig(options = {}) {
         babel({
           babelHelpers: 'bundled',
           extensions: ['.js', '.jsx', '.ts', '.tsx'],
-          presets: [
-            ['@babel/preset-react', { runtime: 'automatic' }]
-          ],
+          presets: [['@babel/preset-react', { runtime: 'automatic' }]],
           exclude: ['node_modules/**', '**/*.d.ts'],
         })
       )
@@ -193,20 +202,21 @@ export function createRollupConfig(options = {}) {
             const trimmedCode = code.trim()
 
             // 检查是否为空chunk
-            const isEmpty = !trimmedCode ||
-                           trimmedCode === 'export {};' ||
-                           trimmedCode === 'export{};' ||
-                           // 只包含sourcemap注释的文件
-                           /^\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode) ||
-                           // 只包含空行和sourcemap注释
-                           /^\s*\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode)
+            const isEmpty =
+              !trimmedCode ||
+              trimmedCode === 'export {};' ||
+              trimmedCode === 'export{};' ||
+              // 只包含sourcemap注释的文件
+              /^\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode) ||
+              // 只包含空行和sourcemap注释
+              /^\s*\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode)
 
             if (isEmpty) {
               delete bundle[fileName]
             }
           }
         })
-      }
+      },
     })
 
     return plugins
@@ -298,8 +308,8 @@ export function createRollupConfig(options = {}) {
                 chunk.isDynamicEntry = false
               }
             })
-          }
-        }
+          },
+        },
       ],
     })
   }
@@ -309,7 +319,9 @@ export function createRollupConfig(options = {}) {
   const adaptVueEntryPath = path.resolve(packagePath, 'src/adapt/vue/index.ts')
   try {
     const fs = require('node:fs')
-    const actualVueEntryPath = fs.existsSync(vueEntryPath) ? vueEntryPath : adaptVueEntryPath
+    const actualVueEntryPath = fs.existsSync(vueEntryPath)
+      ? vueEntryPath
+      : adaptVueEntryPath
     if (vue && fs.existsSync(actualVueEntryPath)) {
       configs.push({
         input: actualVueEntryPath,
@@ -334,8 +346,7 @@ export function createRollupConfig(options = {}) {
         plugins: getPlugins('umd'),
       })
     }
-  }
-  catch (e) {
+  } catch (e) {
     // Vue 入口文件不存在，跳过
   }
 
@@ -358,14 +369,14 @@ export function createRollupConfig(options = {}) {
             return { id, external: true }
           }
           return null
-        }
+        },
       },
       dts({
         respectExternal: true,
         compilerOptions: {
           preserveSymlinks: false,
         },
-      })
+      }),
     ],
   })
 
@@ -386,14 +397,14 @@ export function createRollupConfig(options = {}) {
             return { id, external: true }
           }
           return null
-        }
+        },
       },
       dts({
         respectExternal: true,
         compilerOptions: {
           preserveSymlinks: false,
         },
-      })
+      }),
     ],
   })
 

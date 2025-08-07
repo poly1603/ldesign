@@ -1,4 +1,4 @@
-import type { App, Component, Directive } from 'vue'
+import type { App, Component, Directive } from '@vue/runtime-dom'
 
 // 基础类型定义
 export interface EngineConfig {
@@ -28,7 +28,7 @@ export interface PluginManager {
   checkDependencies: (plugin: Plugin) => boolean
   getLoadOrder: () => string[]
   getDependencyGraph: () => Record<string, string[]>
-  validateDependencies: () => { valid: boolean, errors: string[] }
+  validateDependencies: () => { valid: boolean; errors: string[] }
   getStats: () => {
     total: number
     loaded: string[]
@@ -85,8 +85,12 @@ export interface StateManager {
   get: <T = any>(key: string) => T | undefined
   set: <T = any>(key: string, value: T) => void
   remove: (key: string) => void
+  has: (key: string) => boolean
   clear: () => void
-  watch: <T = any>(key: string, callback: (newValue: T, oldValue: T) => void) => () => void
+  watch: <T = any>(
+    key: string,
+    callback: (newValue: T, oldValue: T) => void
+  ) => () => void
   keys: () => string[]
   namespace: (name: string) => StateManager
 }

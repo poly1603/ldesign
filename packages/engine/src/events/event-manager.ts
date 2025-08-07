@@ -44,7 +44,7 @@ export class EventManagerImpl implements EventManager {
     }
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     const listeners = this.events.get(event)
     if (!listeners || listeners.length === 0) {
       return
@@ -53,15 +53,16 @@ export class EventManagerImpl implements EventManager {
     // 使用缓存的排序后的监听器，提高性能
     let listenersToExecute = this.sortedListenersCache.get(event)
     if (!listenersToExecute) {
-      listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority)
+      listenersToExecute = [...listeners].sort(
+        (a, b) => b.priority - a.priority
+      )
       this.sortedListenersCache.set(event, listenersToExecute)
     }
 
     for (const listener of listenersToExecute) {
       try {
         listener.handler(...args)
-      }
-      catch (error) {
+      } catch (error) {
         console.error(`Error in event handler for "${event}":`, error)
       }
 
@@ -80,7 +81,7 @@ export class EventManagerImpl implements EventManager {
     event: string,
     handler: EventHandler,
     once: boolean,
-    priority: number,
+    priority: number
   ): void {
     if (!this.events.has(event)) {
       this.events.set(event, [])
@@ -91,9 +92,9 @@ export class EventManagerImpl implements EventManager {
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(
-        `MaxListenersExceededWarning: Possible EventManager memory leak detected. `
-        + `${listeners.length + 1} "${event}" listeners added. `
-        + `Use setMaxListeners() to increase limit.`,
+        `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
+          `${listeners.length + 1} "${event}" listeners added. ` +
+          `Use setMaxListeners() to increase limit.`
       )
     }
 
@@ -138,8 +139,7 @@ export class EventManagerImpl implements EventManager {
   removeAllListeners(event?: string): void {
     if (event) {
       this.events.delete(event)
-    }
-    else {
+    } else {
       this.events.clear()
     }
   }
@@ -150,7 +150,11 @@ export class EventManagerImpl implements EventManager {
   }
 
   // 在指定事件前添加一次性监听器
-  prependOnceListener(event: string, handler: EventHandler, priority = 1000): void {
+  prependOnceListener(
+    event: string,
+    handler: EventHandler,
+    priority = 1000
+  ): void {
     this.addEventListener(event, handler, true, priority)
   }
 
@@ -183,10 +187,7 @@ export class EventManagerImpl implements EventManager {
 
 // 事件命名空间类
 export class EventNamespace {
-  constructor(
-    private eventManager: EventManager,
-    private namespace: string,
-  ) { }
+  constructor(private eventManager: EventManager, private namespace: string) {}
 
   private getEventName(event: string): string {
     return `${this.namespace}:${event}`
@@ -200,7 +201,7 @@ export class EventNamespace {
     this.eventManager.off(this.getEventName(event), handler)
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     this.eventManager.emit(this.getEventName(event), ...args)
   }
 

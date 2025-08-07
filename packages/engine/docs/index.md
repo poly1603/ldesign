@@ -2,46 +2,51 @@
 layout: home
 
 hero:
-  name: "Vue3 Engine"
-  text: "强大的Vue3应用引擎"
-  tagline: 通过统一API集成Vue3核心操作，提供插件化架构和完整开发工具链
+  name: 'LDesign Engine'
+  text: '强大的Vue3应用引擎'
+  tagline: 提供插件化架构和完整的开发工具链，让Vue3应用开发更简单、更高效
+  image:
+    src: /logo.svg
+    alt: LDesign Engine
   actions:
     - theme: brand
       text: 快速开始
-      link: /guide/getting-started
+      link: /guide/quick-start
     - theme: alt
       text: 查看示例
       link: /examples/basic
+    - theme: alt
+      text: API 文档
+      link: /api/
+    - theme: alt
+      text: GitHub
+      link: https://github.com/ldesign/engine
 
 features:
-  - title: 🚀 快速创建
-    details: 通过 createEngine 方法，使用简单配置即可快速创建Vue3应用
   - title: 🔌 插件化架构
-    details: 完整的插件系统，支持插件注册、生命周期管理和插件间通信
-  - title: ⚡ 中间件支持
-    details: 强大的中间件系统，支持请求拦截、响应处理和错误捕获
-  - title: 📊 全局状态管理
-    details: 基于Vue3响应式系统的全局状态管理，支持模块化状态
-  - title: 🎯 事件管理
-    details: 全局事件发布订阅系统，支持事件命名空间和优先级
-  - title: 🛡️ 错误处理
-    details: 全局错误捕获、处理和上报，支持错误分类和恢复策略
-  - title: 📝 日志系统
-    details: 美观的日志系统，支持多级别日志、格式化输出和日志持久化
-  - title: 🔔 通知管理
-    details: 全局通知系统，支持多种通知类型和自定义样式
-  - title: 🔒 安全管理
-    details: 完整的安全防护体系，包括XSS防护、输入清理、URL验证等
+    details: 模块化的插件系统，支持插件注册、依赖管理、生命周期管理和热重载，让功能扩展变得简单
+  - title: ⚡ 中间件系统
+    details: 强大的中间件管道，支持请求/响应处理、权限验证、日志记录等横切关注点的统一处理
+  - title: 📡 事件系统
+    details: 基于发布订阅模式的事件系统，支持优先级、命名空间、一次性监听等高级功能
+  - title: 💾 状态管理
+    details: 响应式状态管理，支持模块化、持久化、历史记录、计算属性和状态事务
+  - title: 🛡️ 安全管理
+    details: 内置多层安全防护，包括XSS防护、CSRF防护、内容安全策略和输入验证
   - title: ⚡ 性能监控
-    details: 实时性能监控和优化建议，包括内存使用、响应时间等指标
+    details: 实时性能监控和分析，提供性能预算、自动优化建议和详细的性能报告
   - title: 💾 缓存管理
-    details: 智能缓存系统，支持多种缓存策略和自动过期管理
+    details: 智能缓存系统，支持LRU、LFU、FIFO等多种策略，提供缓存预热和穿透保护
   - title: 🎯 指令系统
-    details: 丰富的自定义指令，扩展Vue的指令功能，提供常用交互能力
-  - title: 🚨 错误处理
-    details: 全面的错误捕获和处理机制，包括错误恢复和智能上报
-  - title: 🎨 扩展接口
-    details: 预留Router、State、i18n、Theme等功能模块接口，方便扩展
+    details: 丰富的自定义Vue指令，包括防抖、节流、权限控制、懒加载等常用功能
+  - title: 📝 日志系统
+    details: 结构化日志记录，支持多级别、格式化输出、传输器和日志过滤
+  - title: 🔔 通知管理
+    details: 全局通知系统，支持多种通知类型、自动关闭、位置配置和自定义样式
+  - title: ❌ 错误处理
+    details: 全面的错误捕获和处理机制，支持错误分类、恢复策略和智能上报
+  - title: 🔧 开发工具
+    details: 完整的开发体验，包括调试工具、热重载、TypeScript支持和丰富的开发者工具
 ---
 
 ## 快速开始
@@ -67,8 +72,8 @@ import App from './App.vue'
 const engine = createEngine({
   config: {
     debug: true,
-    appName: 'My Vue3 App'
-  }
+    appName: 'My Vue3 App',
+  },
 })
 
 // 创建Vue应用
@@ -101,10 +106,10 @@ const engine = createEngine(presets.production())
 // 创建插件
 const myPlugin = {
   name: 'my-plugin',
-  install: (engine) => {
+  install: engine => {
     // 插件逻辑
     engine.logger.info('Plugin installed')
-  }
+  },
 }
 
 // 注册插件
@@ -121,7 +126,7 @@ const loggerMiddleware = {
     console.log('Request started')
     await next()
     console.log('Request completed')
-  }
+  },
 }
 
 // 注册中间件
@@ -147,7 +152,7 @@ engine.state.watch('user', (newValue, oldValue) => {
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', (user) => {
+engine.events.on('user:login', user => {
   console.log('User logged in:', user)
 })
 
@@ -157,11 +162,11 @@ engine.events.emit('user:login', { name: 'John' })
 
 ## 为什么选择 Vue3 Engine？
 
-- **🎯 专注开发体验**：提供统一的API和最佳实践，让开发者专注于业务逻辑
+- **🎯 专注开发体验**：提供统一的 API 和最佳实践，让开发者专注于业务逻辑
 - **🔧 开箱即用**：内置常用功能模块，无需重复造轮子
-- **🚀 高性能**：基于Vue3响应式系统，性能优异
+- **🚀 高性能**：基于 Vue3 响应式系统，性能优异
 - **📦 模块化设计**：插件化架构，按需加载，减少包体积
-- **🛡️ 类型安全**：完整的TypeScript支持，提供类型安全保障
+- **🛡️ 类型安全**：完整的 TypeScript 支持，提供类型安全保障
 - **📚 完善文档**：详细的文档和示例，快速上手
 
 ## 社区

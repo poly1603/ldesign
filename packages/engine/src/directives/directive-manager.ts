@@ -1,4 +1,4 @@
-import type { Directive } from 'vue'
+import type { Directive } from '@vue/runtime-dom'
 import type { DirectiveManager, Logger } from '../types'
 
 export class DirectiveManagerImpl implements DirectiveManager {
@@ -10,7 +10,9 @@ export class DirectiveManagerImpl implements DirectiveManager {
 
   register(name: string, directive: Directive): void {
     if (this.directives.has(name)) {
-      console.warn(`Directive "${name}" is already registered. It will be replaced.`)
+      console.warn(
+        `Directive "${name}" is already registered. It will be replaced.`
+      )
     }
 
     this.directives.set(name, directive)
@@ -100,7 +102,10 @@ export const commonDirectives = {
           await navigator.clipboard.writeText(text)
 
           // 触发成功回调
-          if (binding.arg === 'success' && typeof binding.modifiers.callback === 'function') {
+          if (
+            binding.arg === 'success' &&
+            typeof binding.modifiers.callback === 'function'
+          ) {
             binding.modifiers.callback(text)
           }
 
@@ -109,12 +114,14 @@ export const commonDirectives = {
           setTimeout(() => {
             el.classList.remove('copy-success')
           }, 1000)
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Failed to copy text:', error)
 
           // 触发错误回调
-          if (binding.arg === 'error' && typeof binding.modifiers.callback === 'function') {
+          if (
+            binding.arg === 'error' &&
+            typeof binding.modifiers.callback === 'function'
+          ) {
             binding.modifiers.callback(error)
           }
         }
@@ -140,14 +147,13 @@ export const commonDirectives = {
         ...binding.value?.options,
       }
 
-      el._lazyObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
+      el._lazyObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             // 执行懒加载回调
             if (typeof binding.value === 'function') {
               binding.value(el)
-            }
-            else if (typeof binding.value?.callback === 'function') {
+            } else if (typeof binding.value?.callback === 'function') {
               binding.value.callback(el)
             }
 
@@ -178,8 +184,7 @@ export const commonDirectives = {
         el._debounceTimer = window.setTimeout(() => {
           if (typeof binding.value === 'function') {
             binding.value(...args)
-          }
-          else if (typeof binding.value?.callback === 'function') {
+          } else if (typeof binding.value?.callback === 'function') {
             binding.value.callback(...args)
           }
         }, delay)
@@ -216,8 +221,7 @@ export const commonDirectives = {
           lastTime = now
           if (typeof binding.value === 'function') {
             binding.value(...args)
-          }
-          else if (typeof binding.value?.callback === 'function') {
+          } else if (typeof binding.value?.callback === 'function') {
             binding.value.callback(...args)
           }
         }
@@ -237,7 +241,9 @@ export const commonDirectives = {
   // 权限控制指令
   permission: {
     mounted(el: HTMLElement, binding: any) {
-      const permissions = Array.isArray(binding.value) ? binding.value : [binding.value]
+      const permissions = Array.isArray(binding.value)
+        ? binding.value
+        : [binding.value]
       const hasPermission = permissions.some((permission: string) => {
         // 这里应该调用实际的权限检查逻辑
         return checkPermission(permission)
@@ -246,13 +252,11 @@ export const commonDirectives = {
       if (!hasPermission) {
         if (binding.modifiers.hide) {
           el.style.display = 'none'
-        }
-        else if (binding.modifiers.disable) {
+        } else if (binding.modifiers.disable) {
           el.setAttribute('disabled', 'true')
           el.style.opacity = '0.5'
           el.style.pointerEvents = 'none'
-        }
-        else {
+        } else {
           el.remove()
         }
       }

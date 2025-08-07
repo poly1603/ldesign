@@ -17,12 +17,12 @@ export interface CacheItem<T = any> {
 }
 
 // 缓存配置接口
-export interface CacheConfig {
+export interface CacheConfig<T = unknown> {
   maxSize?: number
   defaultTTL?: number
   strategy?: CacheStrategy
   enableStats?: boolean
-  onEvict?: (key: string, value: any) => void
+  onEvict?: (key: string, value: T) => void
 }
 
 // 缓存统计信息
@@ -38,28 +38,30 @@ export interface CacheStats {
 
 // 缓存管理器接口
 export interface CacheManager {
-  get: <T = any>(key: string) => T | undefined
-  set: <T = any>(key: string, value: T, ttl?: number) => void
+  get: <T = unknown>(key: string) => T | undefined
+  set: <T = unknown>(key: string, value: T, ttl?: number) => void
   has: (key: string) => boolean
   delete: (key: string) => boolean
   clear: () => void
   size: () => number
   keys: () => string[]
-  values: () => any[]
-  entries: () => [string, any][]
+  values: () => unknown[]
+  entries: () => [string, unknown][]
   getStats: () => CacheStats
   resetStats: () => void
   namespace: (name: string) => CacheManager
 }
 
 // LRU缓存实现
-class LRUCache<T = any> {
+class LRUCache<T = unknown> {
   private cache = new Map<string, CacheItem<T>>()
   private maxSize: number
   private stats: CacheStats
+  private onEvict?: (key: string, value: T) => void
 
-  constructor(maxSize = 100) {
+  constructor(maxSize = 100, onEvict?: (key: string, value: T) => void) {
     this.maxSize = maxSize
+    this.onEvict = onEvict
     this.stats = {
       hits: 0,
       misses: 0,
@@ -110,8 +112,14 @@ class LRUCache<T = any> {
     else if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
       if (firstKey !== undefined) {
+        const evictedItem = this.cache.get(firstKey)
         this.cache.delete(firstKey)
         this.stats.evictions++
+
+        // 调用淘汰回调
+        if (evictedItem && this.onEvict) {
+          this.onEvict(firstKey, evictedItem.value)
+        }
       }
     }
 
@@ -131,8 +139,7 @@ class LRUCache<T = any> {
 
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item)
-      return false
+    if (!item) return false
 
     // 检查TTL
     if (item.ttl && Date.now() - item.timestamp > item.ttl) {
@@ -168,11 +175,25 @@ class LRUCache<T = any> {
   }
 
   values(): T[] {
-    return Array.from(this.cache.values()).map(item => item.value)
+    const values: T[] = []
+    for (const key of this.cache.keys()) {
+      const value = this.get(key)
+      if (value !== undefined) {
+        values.push(value)
+      }
+    }
+    return values
   }
 
   entries(): [string, T][] {
-    return Array.from(this.cache.entries()).map(([key, item]) => [key, item.value])
+    const entries: [string, T][] = []
+    for (const key of this.cache.keys()) {
+      const value = this.get(key)
+      if (value !== undefined) {
+        entries.push([key, value])
+      }
+    }
+    return entries
   }
 
   getStats(): CacheStats {
@@ -195,6 +216,76 @@ class LRUCache<T = any> {
     const total = this.stats.hits + this.stats.misses
     this.stats.hitRate = total > 0 ? this.stats.hits / total : 0
   }
+
+  // 清理过期项
+  cleanup(): void {
+    const now = Date.now()
+    const keysToDelete: string[] = []
+
+    for (const [key, item] of this.cache) {
+      if (item.ttl && now - item.timestamp > item.ttl) {
+        keysToDelete.push(key)
+      }
+    }
+
+    // 批量删除，避免在迭代过程中修改Map
+    for (const key of keysToDelete) {
+      this.cache.delete(key)
+      this.stats.evictions++
+    }
+
+    this.stats.size = this.cache.size
+  }
+
+  // 预热缓存
+  warmup(entries: Array<{ key: string; value: T; ttl?: number }>): void {
+    for (const entry of entries) {
+      this.set(entry.key, entry.value, entry.ttl)
+    }
+  }
+
+  // 获取缓存健康状态
+  getHealthStatus(): {
+    status: 'healthy' | 'warning' | 'critical'
+    hitRate: number
+    memoryUsage: number
+    recommendations: string[]
+  } {
+    const hitRate = this.stats.hitRate
+    const memoryUsage = this.cache.size / this.maxSize
+    const recommendations: string[] = []
+
+    let status: 'healthy' | 'warning' | 'critical' = 'healthy'
+
+    if (hitRate < 0.5) {
+      status = 'warning'
+      recommendations.push('缓存命中率较低，考虑调整缓存策略')
+    }
+
+    if (hitRate < 0.2) {
+      status = 'critical'
+      recommendations.push('缓存命中率过低，需要重新评估缓存配置')
+    }
+
+    if (memoryUsage > 0.9) {
+      status = 'critical'
+      recommendations.push('缓存使用率过高，考虑增加缓存大小或调整TTL')
+    } else if (memoryUsage > 0.7) {
+      status = 'warning'
+      recommendations.push('缓存使用率较高，建议监控内存使用情况')
+    }
+
+    if (this.stats.evictions > this.stats.sets * 0.3) {
+      recommendations.push('缓存淘汰率较高，考虑增加缓存大小')
+    }
+
+    return {
+      status,
+      hitRate,
+      memoryUsage,
+      recommendations,
+    }
+  }
 }
 
 // 缓存管理器实现
@@ -209,18 +300,18 @@ export class CacheManagerImpl implements CacheManager {
       defaultTTL: 0, // 0表示永不过期
       strategy: CacheStrategy.LRU,
       enableStats: true,
-      onEvict: () => { },
+      onEvict: () => {},
       ...config,
     }
 
-    this.cache = new LRUCache(this.config.maxSize)
+    this.cache = new LRUCache(this.config.maxSize, this.config.onEvict)
   }
 
-  get<T = any>(key: string): T | undefined {
-    return this.cache.get(key)
+  get<T = unknown>(key: string): T | undefined {
+    return this.cache.get(key) as T | undefined
   }
 
-  set<T = any>(key: string, value: T, ttl?: number): void {
+  set<T = unknown>(key: string, value: T, ttl?: number): void {
     const finalTTL = ttl ?? this.config.defaultTTL
     this.cache.set(key, value, finalTTL > 0 ? finalTTL : undefined)
   }
@@ -249,12 +340,26 @@ export class CacheManagerImpl implements CacheManager {
     return this.cache.keys()
   }
 
-  values(): any[] {
-    return this.cache.values()
+  values(): unknown[] {
+    const values: unknown[] = []
+    for (const key of this.cache.keys()) {
+      const value = this.cache.get(key)
+      if (value !== undefined) {
+        values.push(value)
+      }
+    }
+    return values
   }
 
-  entries(): [string, any][] {
-    return this.cache.entries()
+  entries(): [string, unknown][] {
+    const entries: [string, unknown][] = []
+    for (const key of this.cache.keys()) {
+      const value = this.cache.get(key)
+      if (value !== undefined) {
+        entries.push([key, value])
+      }
+    }
+    return entries
   }
 
   getStats(): CacheStats {
@@ -267,7 +372,10 @@ export class CacheManagerImpl implements CacheManager {
 
   namespace(name: string): CacheManager {
     if (!this.namespaces.has(name)) {
-      this.namespaces.set(name, new NamespacedCacheManager(this, name) as CacheManager)
+      this.namespaces.set(
+        name,
+        new NamespacedCacheManager(this, name) as CacheManager
+      )
     }
     return this.namespaces.get(name)!
   }
@@ -275,10 +383,7 @@ export class CacheManagerImpl implements CacheManager {
 
 // 命名空间缓存管理器
 class NamespacedCacheManager implements CacheManager {
-  constructor(
-    private parent: CacheManager,
-    private namespaceName: string,
-  ) { }
+  constructor(private parent: CacheManager, private namespaceName: string) {}
 
   private getKey(key: string): string {
     return `${this.namespaceName}:${key}`
@@ -313,16 +418,17 @@ class NamespacedCacheManager implements CacheManager {
 
   keys(): string[] {
     const prefix = `${this.namespaceName}:`
-    return this.parent.keys()
+    return this.parent
+      .keys()
       .filter(key => key.startsWith(prefix))
       .map(key => key.slice(prefix.length))
   }
 
-  values(): any[] {
+  values(): unknown[] {
     return this.keys().map(key => this.get(key))
   }
 
-  entries(): [string, any][] {
+  entries(): [string, unknown][] {
     return this.keys().map(key => [key, this.get(key)])
   }
 

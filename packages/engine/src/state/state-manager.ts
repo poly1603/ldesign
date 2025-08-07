@@ -1,12 +1,22 @@
 import type { Logger, StateManager } from '../types'
-import { reactive, watch } from 'vue'
+import { reactive } from 'vue'
 
-type UnwatchFn = () => void
+type WatchCallback<T = any> = (newValue: T, oldValue: T) => void
 
 export class StateManagerImpl implements StateManager {
   private state = reactive<Record<string, any>>({})
-  private watchers = new Map<string, UnwatchFn[]>()
-  constructor(_logger?: Logger) {
+  private watchers = new Map<string, WatchCallback[]>()
+  private changeHistory: Array<{
+    path: string
+    oldValue: any
+    newValue: any
+    timestamp: number
+  }> = []
+  private maxHistorySize = 100
+  private batchUpdates = new Set<string>()
+  private batchTimeout: NodeJS.Timeout | null = null
+
+  constructor(private logger?: Logger) {
     // logger参数保留用于未来扩展
   }
 
@@ -15,7 +25,21 @@ export class StateManagerImpl implements StateManager {
   }
 
   set<T = any>(key: string, value: T): void {
-    this.setNestedValue(this.state, key, value)
+    try {
+      const oldValue = this.getNestedValue(this.state, key)
+
+      // 记录变更历史
+      this.recordChange(key, oldValue, value)
+
+      // 直接设置值，不使用批量更新（简化实现）
+      this.setNestedValue(this.state, key, value)
+
+      // 触发监听器
+      this.triggerWatchers(key, value, oldValue)
+    } catch (error) {
+      this.logger?.error('Failed to set state', { key, value, error })
+      throw error
+    }
   }
 
   remove(key: string): void {
@@ -24,49 +48,53 @@ export class StateManagerImpl implements StateManager {
 
   clear(): void {
     // 清理所有监听器
-    Array.from(this.watchers.values()).forEach((watcherArray) => {
-      watcherArray.forEach((unwatch) => {
-        unwatch()
-      })
-    })
     this.watchers.clear()
 
     // 清空状态
-    Object.keys(this.state).forEach((key) => {
+    Object.keys(this.state).forEach(key => {
       delete this.state[key]
     })
   }
 
-  watch<T = any>(key: string, callback: (newValue: T, oldValue: T) => void): () => void {
-    const unwatch = watch(
-      () => this.get<T>(key),
-      (newValue, oldValue) => {
-        if (newValue !== undefined && oldValue !== undefined) {
-          callback(newValue, oldValue)
-        }
-      },
-      { deep: true },
-    )
-
-    // 记录监听器以便清理
+  watch<T = any>(
+    key: string,
+    callback: (newValue: T, oldValue: T) => void
+  ): () => void {
+    // 存储监听器
     if (!this.watchers.has(key)) {
       this.watchers.set(key, [])
     }
-    this.watchers.get(key)!.push(unwatch)
+    this.watchers.get(key)!.push(callback)
 
-    // 返回取消监听的函数
+    // 返回取消监听函数
     return () => {
-      unwatch()
-      const watcherArray = this.watchers.get(key)
-      if (watcherArray) {
-        const index = watcherArray.indexOf(unwatch)
+      const callbacks = this.watchers.get(key)
+      if (callbacks) {
+        const index = callbacks.indexOf(callback)
         if (index > -1) {
-          watcherArray.splice(index, 1)
+          callbacks.splice(index, 1)
         }
-        if (watcherArray.length === 0) {
+        if (callbacks.length === 0) {
           this.watchers.delete(key)
         }
       }
+    }
+  }
+
+  private triggerWatchers<T = any>(
+    key: string,
+    newValue: T,
+    oldValue: T
+  ): void {
+    const callbacks = this.watchers.get(key)
+    if (callbacks) {
+      callbacks.forEach((callback: WatchCallback) => {
+        try {
+          callback(newValue, oldValue)
+        } catch (error) {
+          this.logger?.error('Error in state watcher callback', { key, error })
+        }
+      })
     }
   }
 
@@ -92,7 +120,11 @@ export class StateManagerImpl implements StateManager {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+      if (
+        !(key in current) ||
+        typeof current[key] !== 'object' ||
+        current[key] === null
+      ) {
         current[key] = {}
       }
       current = current[key]
@@ -108,7 +140,11 @@ export class StateManagerImpl implements StateManager {
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+      if (
+        !(key in current) ||
+        typeof current[key] !== 'object' ||
+        current[key] === null
+      ) {
         return // 路径不存在
       }
       current = current[key]
@@ -135,7 +171,11 @@ export class StateManagerImpl implements StateManager {
       const fullKey = prefix ? `${prefix}.${key}` : key
       keys.push(fullKey)
 
-      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+      if (
+        typeof obj[key] === 'object' &&
+        obj[key] !== null &&
+        !Array.isArray(obj[key])
+      ) {
         keys.push(...this.getAllKeys(obj[key], fullKey))
       }
     }
@@ -162,13 +202,16 @@ export class StateManagerImpl implements StateManager {
   // 深度合并对象
   private deepMerge(target: any, source: any): void {
     for (const key in source) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (
+        source[key] &&
+        typeof source[key] === 'object' &&
+        !Array.isArray(source[key])
+      ) {
         if (!target[key] || typeof target[key] !== 'object') {
           target[key] = {}
         }
         this.deepMerge(target[key], source[key])
-      }
-      else {
+      } else {
         target[key] = source[key]
       }
     }
@@ -180,8 +223,10 @@ export class StateManagerImpl implements StateManager {
     totalWatchers: number
     memoryUsage: string
   } {
-    const totalWatchers = Array.from(this.watchers.values())
-      .reduce((sum, array) => sum + array.length, 0)
+    const totalWatchers = Array.from(this.watchers.values()).reduce(
+      (sum, array) => sum + array.length,
+      0
+    )
 
     const memoryUsage = JSON.stringify(this.state).length
 
@@ -196,13 +241,110 @@ export class StateManagerImpl implements StateManager {
   namespace(ns: string): StateNamespace {
     return new StateNamespace(this, ns)
   }
+
+  // 记录变更历史
+  private recordChange(path: string, oldValue: any, newValue: any): void {
+    this.changeHistory.unshift({
+      path,
+      oldValue,
+      newValue,
+      timestamp: Date.now(),
+    })
+
+    // 限制历史记录大小
+    if (this.changeHistory.length > this.maxHistorySize) {
+      this.changeHistory = this.changeHistory.slice(0, this.maxHistorySize)
+    }
+  }
+
+  // 批量更新优化
+  private batchUpdate(key: string, updateFn: () => void): void {
+    this.batchUpdates.add(key)
+
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout)
+    }
+
+    this.batchTimeout = setTimeout(() => {
+      const updates = Array.from(this.batchUpdates)
+      this.batchUpdates.clear()
+      this.batchTimeout = null
+
+      // 执行批量更新
+      updateFn()
+
+      this.logger?.debug('Batch state update completed', { keys: updates })
+    }, 0) // 下一个事件循环执行
+  }
+
+  // 获取变更历史
+  getChangeHistory(
+    limit?: number
+  ): Array<{ path: string; oldValue: any; newValue: any; timestamp: number }> {
+    return limit ? this.changeHistory.slice(0, limit) : [...this.changeHistory]
+  }
+
+  // 清除变更历史
+  clearHistory(): void {
+    this.changeHistory = []
+  }
+
+  // 撤销最后一次变更
+  undo(): boolean {
+    const lastChange = this.changeHistory.shift()
+    if (!lastChange) {
+      return false
+    }
+
+    try {
+      // 临时禁用历史记录，避免撤销操作被记录
+      const originalMaxSize = this.maxHistorySize
+      this.maxHistorySize = 0
+
+      this.setNestedValue(this.state, lastChange.path, lastChange.oldValue)
+
+      this.maxHistorySize = originalMaxSize
+      this.logger?.debug('State change undone', lastChange)
+      return true
+    } catch (error) {
+      this.logger?.error('Failed to undo state change', {
+        change: lastChange,
+        error,
+      })
+      return false
+    }
+  }
+
+  // 获取性能统计
+  getPerformanceStats(): {
+    totalChanges: number
+    recentChanges: number
+    batchedUpdates: number
+    memoryUsage: number
+  } {
+    const now = Date.now()
+    const recentChanges = this.changeHistory.filter(
+      change => now - change.timestamp < 60000 // 最近1分钟
+    ).length
+
+    const memoryUsage =
+      JSON.stringify(this.state).length +
+      JSON.stringify(this.changeHistory).length
+
+    return {
+      totalChanges: this.changeHistory.length,
+      recentChanges,
+      batchedUpdates: this.batchUpdates.size,
+      memoryUsage,
+    }
+  }
 }
 
 // 状态命名空间类
 export class StateNamespace implements StateManager {
   constructor(
     private stateManager: StateManager,
-    private namespaceName: string,
+    private namespaceName: string
   ) {}
 
   private getKey(key: string): string {
@@ -221,7 +363,14 @@ export class StateNamespace implements StateManager {
     this.stateManager.remove(this.getKey(key))
   }
 
-  watch<T = any>(key: string, callback: (newValue: T, oldValue: T) => void): () => void {
+  has(key: string): boolean {
+    return this.stateManager.has(this.getKey(key))
+  }
+
+  watch<T = any>(
+    key: string,
+    callback: (newValue: T, oldValue: T) => void
+  ): () => void {
     return this.stateManager.watch(this.getKey(key), callback)
   }
 
@@ -230,7 +379,7 @@ export class StateNamespace implements StateManager {
     const keys = this.stateManager.keys()
     const namespacePrefix = `${this.namespaceName}.`
 
-    keys.forEach((key) => {
+    keys.forEach(key => {
       if (key.startsWith(namespacePrefix)) {
         this.stateManager.remove(key)
       }
@@ -294,7 +443,8 @@ export const stateModules = {
 
     return {
       setSetting: (key: string, value: any) => settingsState.set(key, value),
-      getSetting: (key: string, defaultValue?: any) => settingsState.get(key) ?? defaultValue,
+      getSetting: (key: string, defaultValue?: any) =>
+        settingsState.get(key) ?? defaultValue,
       removeSetting: (key: string) => settingsState.remove(key),
       getAllSettings: () => settingsState.get('') || {},
       resetSettings: () => settingsState.clear(),

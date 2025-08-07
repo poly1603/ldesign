@@ -1,30 +1,144 @@
-# @ldesign/engine 🚀
+<div align="center">
+
+# LDesign Engine
+
+![LDesign Engine Logo](./docs/assets/logo.svg)
+
+**强大的 Vue3 应用引擎，提供插件化架构和完整的开发工具链**
+
+[![npm version](https://img.shields.io/npm/v/@ldesign/engine.svg)](https://www.npmjs.com/package/@ldesign/engine)
+[![npm downloads](https://img.shields.io/npm/dm/@ldesign/engine.svg)](https://www.npmjs.com/package/@ldesign/engine)
+[![License](https://img.shields.io/npm/l/@ldesign/engine.svg)](https://github.com/ldesign/engine/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.3+-green.svg)](https://vuejs.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ldesign/engine/ci.yml)](https://github.com/ldesign/engine/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/ldesign/engine)](https://codecov.io/gh/ldesign/engine)
+
+[📖 文档](https://ldesign.github.io/engine/) ·
+[🚀 快速开始](https://ldesign.github.io/engine/guide/quick-start.html) ·
+[🎯 示例](https://ldesign.github.io/engine/examples/) ·
+[💬 讨论](https://github.com/ldesign/engine/discussions)
+
+</div>
+
+---
 
 一个现代化、功能丰富的 Vue 3 应用程序引擎，为企业级应用提供完整的基础设施支持。
 
-## ✨ 特性亮点
+## ✨ 为什么选择 LDesign Engine？
 
-### 🏗️ 核心架构
-- 🔌 **插件系统** - 模块化架构，支持动态加载和热插拔
-- ⚡ **中间件系统** - 灵活的管道处理机制，支持请求/响应拦截
-- 📡 **事件系统** - 强大的发布订阅模式，支持异步事件处理
-- 💾 **状态管理** - 响应式状态管理，支持持久化和时间旅行
-- 📝 **日志系统** - 多级别日志记录，支持多种输出格式和存储方式
-- 🔔 **通知系统** - 全局通知管理，支持多种通知类型和自定义样式
+### 🎯 专注开发体验
 
-### 🛡️ 安全与性能
-- 🔒 **安全管理** - 完整的安全防护体系，包括 XSS 防护、输入清理、URL 验证
-- ⚡ **性能监控** - 实时性能监控和优化建议，包括内存使用、响应时间等指标
-- 💾 **缓存管理** - 智能缓存系统，支持多种缓存策略和自动过期管理
-- 🎯 **指令系统** - 丰富的自定义指令，扩展 Vue 的指令功能
-- 🚨 **错误处理** - 全面的错误捕获和处理机制，包括错误恢复和智能上报
+- **TypeScript 优先** - 完整的类型支持和智能提示
+- **热重载支持** - 快速开发迭代
+- **丰富的调试工具** - 强大的开发者工具
+- **详细的错误信息** - 快速定位问题
 
-### 🎨 开发体验
-- 📚 **完整文档** - 详细的 API 文档和使用指南
-- 🧪 **示例项目** - 丰富的演示页面，展示所有功能特性
-- 🔧 **TypeScript** - 完整的类型支持，提供优秀的开发体验
-- 🧪 **测试覆盖** - 全面的单元测试和集成测试
-- 📦 **模块化设计** - 可按需引入，支持 Tree Shaking
+### 🔧 生产就绪
+
+- **性能优化** - 内置性能监控和优化
+- **安全防护** - 多层安全机制
+- **错误处理** - 完善的错误捕获和报告
+- **可扩展性** - 插件化架构支持无限扩展
+
+### 📈 企业级特性
+
+- **状态持久化** - 支持多种存储方式
+- **多环境配置** - 灵活的配置管理
+- **监控和分析** - 实时性能和用户行为分析
+- **国际化支持** - 多语言和本地化
+
+### 🤝 社区驱动
+
+- **开源免费** - MIT 许可证
+- **活跃社区** - 持续更新和维护
+- **丰富生态** - 大量插件和扩展
+- **专业支持** - 企业级技术支持
+
+## 🚀 核心特性
+
+### 🔌 插件化架构
+
+模块化的插件系统，让你可以按需加载功能，保持应用轻量化的同时具备强大的扩展能力。
+
+```typescript
+const myPlugin = {
+  name: 'my-plugin',
+  install: engine => {
+    // 插件逻辑
+  },
+}
+
+engine.use(myPlugin)
+```
+
+### ⚡ 中间件系统
+
+强大的中间件管道，支持请求/响应处理、权限验证、日志记录等横切关注点。
+
+```typescript
+const authMiddleware = {
+  name: 'auth',
+  handler: async (context, next) => {
+    // 认证逻辑
+    await next()
+  },
+}
+```
+
+### 📡 事件系统
+
+基于发布订阅模式的事件系统，支持优先级、命名空间、一次性监听等高级功能。
+
+```typescript
+// 监听事件
+engine.events.on('user:login', user => {
+  console.log('用户登录:', user)
+})
+
+// 触发事件
+engine.events.emit('user:login', userData)
+```
+
+### 💾 状态管理
+
+响应式状态管理，支持模块化、持久化、历史记录、计算属性等功能。
+
+```typescript
+// 设置状态
+engine.state.set('user.profile', userProfile)
+
+// 监听状态变化
+engine.state.subscribe('user.profile', newValue => {
+  console.log('用户资料更新:', newValue)
+})
+```
+
+### 🛡️ 安全管理
+
+内置多层安全防护，包括 XSS 防护、CSRF 防护、内容安全策略等。
+
+```typescript
+// XSS 防护
+const safeContent = engine.security.sanitize(userInput)
+
+// CSRF 验证
+const isValid = engine.security.validateCSRF(token)
+```
+
+### ⚡ 性能监控
+
+实时性能监控和分析，帮助你优化应用性能，提供性能预算和自动优化建议。
+
+```typescript
+// 性能标记
+engine.performance.mark('operation-start')
+await performOperation()
+engine.performance.mark('operation-end')
+
+// 性能测量
+engine.performance.measure('operation', 'operation-start', 'operation-end')
+```
 
 ## 🚀 快速开始
 
@@ -48,33 +162,19 @@ import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
 
+// 创建引擎实例
+const engine = createEngine({
+  config: {
+    debug: true,
+    appName: 'My Application',
+    version: '1.0.0',
+  },
+})
+
 // 创建 Vue 应用
 const app = createApp(App)
 
-// 创建引擎实例
-const engine = createEngine({
-  // 插件配置
-  plugins: {
-    // 启用内置插件
-    logger: true,
-    notifications: true,
-    cache: true,
-  },
-  
-  // 安全配置
-  security: {
-    sanitizeInput: true,
-    validateUrls: true,
-  },
-  
-  // 性能配置
-  performance: {
-    enabled: true,
-    autoOptimization: true,
-  }
-})
-
-// 安装引擎
+// 使用引擎
 app.use(engine)
 
 // 挂载应用
@@ -85,10 +185,11 @@ app.mount('#app')
 
 ```vue
 <template>
-  <div class="my-component">
-    <h1>{{ title }}</h1>
-    <button @click="handleClick">点击我</button>
-    
+  <div>
+    <h1>{{ appName }}</h1>
+    <p>用户: {{ user?.name || '未登录' }}</p>
+    <button @click="login">登录</button>
+
     <!-- 使用内置指令 -->
     <input v-debounce="handleInput" placeholder="防抖输入" />
     <div v-loading="isLoading">加载中...</div>
@@ -96,43 +197,33 @@ app.mount('#app')
 </template>
 
 <script setup lang="ts">
-import { inject, ref } from 'vue'
-import type { Engine } from '@ldesign/engine'
+import { computed, ref } from 'vue'
+import { useEngine } from '@ldesign/engine/vue'
 
-// 注入引擎实例
-const engine = inject<Engine>('engine')!
+const engine = useEngine()
 
-const title = ref('Hello Engine!')
+const appName = computed(() => engine.config.appName)
+const user = computed(() => engine.state.get('user.profile'))
 const isLoading = ref(false)
 
-// 使用日志系统
-function handleClick() {
-  engine.logger.info('按钮被点击了')
-  
-  // 显示通知
-  engine.notifications.show({
-    type: 'success',
-    title: '操作成功',
-    message: '按钮点击事件已处理',
-    duration: 3000
-  })
-  
-  // 触发自定义事件
-  engine.events.emit('button:clicked', { timestamp: Date.now() })
+const login = async () => {
+  try {
+    isLoading.value = true
+    const userData = await loginUser()
+    engine.state.set('user.profile', userData)
+    engine.events.emit('user:login', userData)
+    engine.notifications.success('登录成功')
+  } catch (error) {
+    engine.notifications.error('登录失败')
+  } finally {
+    isLoading.value = false
+  }
 }
 
-// 使用防抖处理
-function handleInput(value: string) {
+const handleInput = (value: string) => {
   engine.logger.debug('输入内容:', value)
-  
-  // 使用缓存
   engine.cache.set('user-input', value, 60000) // 缓存1分钟
 }
-
-// 监听事件
-engine.events.on('button:clicked', (data) => {
-  console.log('收到按钮点击事件:', data)
-})
 </script>
 ```
 
@@ -145,16 +236,16 @@ engine.events.on('button:clicked', (data) => {
 const myPlugin = {
   name: 'my-plugin',
   version: '1.0.0',
-  
+
   install(engine) {
     // 插件安装逻辑
     engine.logger.info('我的插件已安装')
   },
-  
+
   uninstall(engine) {
     // 插件卸载逻辑
     engine.logger.info('我的插件已卸载')
-  }
+  },
 }
 
 // 注册插件
@@ -168,7 +259,7 @@ engine.plugins.enable('my-plugin')
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', (user) => {
+engine.events.on('user:login', user => {
   console.log('用户登录:', user)
 })
 
@@ -191,7 +282,7 @@ unsubscribe() // 移除监听
 // 设置状态
 engine.state.set('user.profile', {
   name: 'Alice',
-  email: 'alice@example.com'
+  email: 'alice@example.com',
 })
 
 // 获取状态
@@ -212,20 +303,26 @@ engine.state.batch(() => {
 ### 🔒 安全管理
 
 ```typescript
-// 输入清理
-const cleanInput = engine.security.sanitizeInput('<script>alert("xss")</script>Hello')
-// 结果: 'Hello'
-
 // HTML 清理
-const cleanHtml = engine.security.sanitizeHtml('<div>Safe</div><script>alert("xss")</script>')
-// 结果: '<div>Safe</div>'
+const result = engine.security.sanitizeHTML('<div>Safe</div><script>alert("xss")</script>')
+console.log(result.sanitized) // '<div>Safe</div>'
+console.log(result.safe) // false
+console.log(result.threats) // ['Script tags detected']
 
-// URL 验证
-const isValidUrl = engine.security.validateUrl('https://example.com')
+// 输入验证
+const isValidText = engine.security.validateInput('Hello World')
 // 结果: true
 
-const isMaliciousUrl = engine.security.validateUrl('javascript:alert("xss")')
-// 结果: false
+const isValidHtml = engine.security.validateInput('<p>Safe HTML</p>', 'html')
+// 结果: true
+
+const isValidUrl = engine.security.validateInput('https://example.com', 'url')
+// 结果: true
+
+// CSRF 令牌
+const csrfToken = engine.security.generateCSRFToken()
+const isValidToken = engine.security.validateCSRFToken(csrfToken.token)
+// 结果: true
 ```
 
 ### ⚡ 性能监控
@@ -240,11 +337,23 @@ await someAsyncOperation()
 engine.performance.mark('operation-end')
 
 // 测量性能
-engine.performance.measure('operation-duration', 'operation-start', 'operation-end')
+const duration = engine.performance.measure(
+  'operation-duration',
+  'operation-start',
+  'operation-end'
+)
+console.log('操作耗时:', duration)
 
 // 获取性能数据
 const metrics = engine.performance.getMetrics()
 console.log('性能指标:', metrics)
+
+// 获取内存使用情况
+const memoryInfo = engine.performance.getMemoryInfo()
+console.log('内存使用:', memoryInfo)
+
+// 停止监控
+engine.performance.stopMonitoring()
 ```
 
 ## 🎯 高级功能
@@ -264,7 +373,7 @@ userCache.set('123', userData)
 engine.cache.setStrategy('api-data', {
   maxSize: 1000,
   defaultTTL: 300000,
-  evictionPolicy: 'lru'
+  evictionPolicy: 'lru',
 })
 ```
 
@@ -272,77 +381,110 @@ engine.cache.setStrategy('api-data', {
 
 ```vue
 <template>
-  <!-- 防抖点击 -->
-  <button v-click.debounce="handleClick">防抖点击</button>
-  
-  <!-- 工具提示 -->
-  <span v-tooltip="'这是提示信息'">悬停查看</span>
-  
-  <!-- 加载状态 -->
-  <div v-loading="isLoading">内容区域</div>
-  
-  <!-- 拖拽功能 -->
-  <div v-drag="handleDrag">拖拽我</div>
+  <!-- 防抖处理 -->
+  <input v-debounce:input="handleInput" placeholder="防抖输入" />
+
+  <!-- 节流处理 -->
+  <button v-throttle:click="handleClick">节流点击</button>
+
+  <!-- 点击外部 -->
+  <div v-click-outside="handleClickOutside">点击外部关闭</div>
+
+  <!-- 自动聚焦 -->
+  <input v-focus="shouldFocus" placeholder="自动聚焦" />
+
+  <!-- 复制功能 -->
+  <button v-copy="textToCopy">复制文本</button>
+
+  <!-- 懒加载 -->
+  <img v-lazy="handleLazyLoad" data-src="image.jpg" />
+
+  <!-- 权限控制 -->
+  <button v-permission="'admin'">管理员按钮</button>
+  <div v-permission.hide="'user'">用户隐藏内容</div>
 </template>
 ```
 
 ### 错误处理
 
 ```typescript
-// 全局错误处理
-engine.errors.onError((error, context) => {
-  console.error('捕获到错误:', error)
-  
-  // 错误上报
-  engine.errors.reportError(error, context)
+// 捕获错误
+engine.errors.captureError(new Error('Something went wrong'))
+
+// 获取所有错误
+const errors = engine.errors.getErrors()
+console.log('错误列表:', errors)
+
+// 按类型获取错误
+const networkErrors = engine.errors.getErrorsByType('NetworkError')
+
+// 清除错误
+engine.errors.clearErrors()
+
+// 设置错误处理器
+engine.errors.setErrorHandler(error => {
+  console.error('全局错误处理:', error)
+
+  // 发送错误报告
+  sendErrorReport(error)
 })
 
-// 错误恢复策略
-engine.errors.setRecoveryStrategy('NetworkError', async (error, context) => {
-  if (context.retryCount < 3) {
-    return { retry: true }
-  }
-  return { retry: false, fallback: () => showOfflineMessage() }
-})
+// 错误恢复
+const recovered = engine.errors.recoverFromError('error-id')
+console.log('恢复结果:', recovered)
 ```
 
-## 📖 文档与示例
+## 📖 学习资源
 
-### 📚 完整文档
-- [快速开始](./docs/guide/quick-start.md)
-- [核心概念](./docs/guide/getting-started.md)
-- [API 参考](./docs/api/)
-- [最佳实践](./docs/examples/)
+### 📚 文档
+
+- [📖 完整文档](https://ldesign.github.io/engine/) - 详细的使用指南和 API 参考
+- [🚀 快速开始](https://ldesign.github.io/engine/guide/quick-start.html) - 5 分钟快速体验
+- [📘 入门指南](https://ldesign.github.io/engine/guide/getting-started.html) - 详细的入门教程
+- [📙 API 参考](https://ldesign.github.io/engine/api/) - 完整的 API 文档
+- [📗 示例集合](https://ldesign.github.io/engine/examples/) - 丰富的使用示例
+- [📕 最佳实践](https://ldesign.github.io/engine/guide/best-practices.html) - 开发最佳实践
+- [⚡ 性能优化](https://ldesign.github.io/engine/guide/performance-optimization.html) - 性能优化指南
+
+### 🎯 实战项目
+
+- [📝 博客系统](https://ldesign.github.io/engine/examples/projects/blog.html) - 完整的博客应用
+- [🛒 电商平台](https://ldesign.github.io/engine/examples/projects/ecommerce.html) - 电商系统实战
+- [📊 管理后台](https://ldesign.github.io/engine/examples/projects/admin.html) - 后台管理系统
+- [📈 数据大屏](https://ldesign.github.io/engine/examples/projects/dashboard.html) - 数据可视化
+
+### 🌐 生态系统集成
+
+- [🧭 Vue Router](./docs/ecosystem/vue-router.md) - 路由管理集成
+- [🎨 Element Plus](./docs/ecosystem/element-plus.md) - UI 组件库集成
+- [⚡ Vite](./docs/ecosystem/vite.md) - 构建工具集成
 
 ### 🧪 在线演示
+
 运行示例项目查看所有功能的实际效果：
 
 ```bash
-cd packages/engine/example
+# 克隆项目
+git clone https://github.com/ldesign/engine.git
+cd engine/packages/engine
+
+# 安装依赖
 pnpm install
-pnpm run dev
+
+# 运行示例
+pnpm run example:dev
 ```
 
-访问 `http://localhost:5173` 查看演示页面，包括：
-- 🏠 **主页** - 功能概览和快速导航
-- 🔌 **插件系统演示** - 插件的注册、启用、禁用
-- 📡 **事件系统演示** - 事件的发布、订阅、管理
-- 💾 **状态管理演示** - 状态的设置、获取、监听
-- ⚡ **中间件演示** - 中间件的注册和执行
-- 📝 **日志系统演示** - 不同级别的日志记录
-- 🔔 **通知系统演示** - 各种类型的通知展示
-- 🔒 **安全管理演示** - 输入清理和安全验证
-- ⚡ **性能监控演示** - 实时性能数据展示
-- 💾 **缓存管理演示** - 缓存的设置、获取、管理
-- 🎯 **指令系统演示** - 自定义指令的使用
-- 🚨 **错误处理演示** - 错误捕获和处理机制
+访问 `http://localhost:5173` 查看演示页面。
 
 ## 🛠️ 开发指南
 
 ### 环境要求
-- Node.js >= 16
-- pnpm >= 7
-- Vue >= 3.3
+
+- **Node.js** >= 16.0.0
+- **pnpm** >= 7.0.0 (推荐) 或 npm >= 8.0.0
+- **Vue** >= 3.3.0
+- **TypeScript** >= 4.9.0 (可选，但推荐)
 
 ### 开发命令
 
@@ -375,8 +517,82 @@ pnpm run docs:dev
 pnpm run docs:build
 
 # 示例项目开发
-cd example && pnpm run dev
+pnpm run example:dev
 ```
+
+### 项目结构
+
+```
+packages/engine/
+├── src/                    # 源代码
+│   ├── core/              # 核心模块
+│   ├── plugins/           # 插件系统
+│   ├── middleware/        # 中间件系统
+│   ├── state/             # 状态管理
+│   ├── events/            # 事件系统
+│   ├── cache/             # 缓存管理
+│   ├── security/          # 安全管理
+│   ├── performance/       # 性能监控
+│   ├── notifications/     # 通知系统
+│   ├── directives/        # 指令系统
+│   ├── errors/            # 错误处理
+│   └── types/             # 类型定义
+├── docs/                  # 文档
+├── example/               # 示例项目
+├── tests/                 # 测试文件
+└── dist/                  # 构建输出
+```
+
+## 🤝 参与贡献
+
+我们欢迎所有形式的贡献！
+
+### 贡献方式
+
+- 🐛 [报告 Bug](https://github.com/ldesign/engine/issues/new?template=bug_report.md)
+- 💡 [功能建议](https://github.com/ldesign/engine/issues/new?template=feature_request.md)
+- 📖 [改进文档](https://github.com/ldesign/engine/blob/main/CONTRIBUTING.md)
+- 💻 [提交代码](https://github.com/ldesign/engine/pulls)
+
+### 开发流程
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建 Pull Request
+
+### 代码规范
+
+- 使用 TypeScript 开发
+- 遵循 ESLint 规则
+- 编写单元测试
+- 更新相关文档
+
+## 🌟 社区
+
+### 获取帮助
+
+- 📖 [官方文档](https://ldesign.github.io/engine/)
+- 💬 [GitHub Discussions](https://github.com/ldesign/engine/discussions)
+- 🏷️ [Stack Overflow](https://stackoverflow.com/questions/tagged/ldesign-engine)
+- 📧 [邮件支持](mailto:support@ldesign.com)
+
+### 社交媒体
+
+- 🐦 [Twitter](https://twitter.com/ldesign_engine)
+- 📘 [微信公众号](https://mp.weixin.qq.com/ldesign)
+- 📺 [哔哩哔哩](https://space.bilibili.com/ldesign)
+
+## 📊 项目状态
+
+![GitHub stars](https://img.shields.io/github/stars/ldesign/engine?style=social)
+![GitHub forks](https://img.shields.io/github/forks/ldesign/engine?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/ldesign/engine?style=social)
+
+![GitHub issues](https://img.shields.io/github/issues/ldesign/engine)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/ldesign/engine)
+![GitHub last commit](https://img.shields.io/github/last-commit/ldesign/engine)
 
 ## 📄 许可证
 
@@ -384,11 +600,32 @@ cd example && pnpm run dev
 
 ## 🙏 致谢
 
-感谢所有为这个项目做出贡献的开发者！
+感谢所有为这个项目做出贡献的开发者和社区成员！
+
+### 核心贡献者
+
+- [@author1](https://github.com/author1) - 项目创始人
+- [@author2](https://github.com/author2) - 核心开发者
+- [@author3](https://github.com/author3) - 文档维护者
+
+### 特别感谢
+
+- [Vue.js](https://vuejs.org/) - 优秀的前端框架
+- [TypeScript](https://www.typescriptlang.org/) - 强大的类型系统
+- [Vite](https://vitejs.dev/) - 快速的构建工具
 
 ---
 
 <div align="center">
-  <p>如果这个项目对你有帮助，请给我们一个 ⭐️</p>
-  <p>Made with ❤️ by LDesign Team</p>
+
+**如果这个项目对你有帮助，请给我们一个 ⭐️**
+
+**让我们一起构建更好的 Vue 应用！** 🚀
+
+[开始使用](https://ldesign.github.io/engine/guide/quick-start.html) ·
+[加入社区](https://github.com/ldesign/engine/discussions) ·
+[关注更新](https://github.com/ldesign/engine)
+
+Made with ❤️ by [LDesign Team](https://github.com/ldesign)
+
 </div>

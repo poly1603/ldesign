@@ -1,5 +1,5 @@
-import { inject, getCurrentInstance } from 'vue'
 import type { Engine } from '../../types'
+import { getCurrentInstance, inject } from 'vue'
 
 /**
  * 获取引擎实例的组合式函数
@@ -10,19 +10,21 @@ export function useEngine(): Engine {
   if (injectedEngine) {
     return injectedEngine
   }
-  
+
   // 尝试从全局属性中获取
   const instance = getCurrentInstance()
   if (instance?.appContext.app.config.globalProperties.$engine) {
     return instance.appContext.app.config.globalProperties.$engine
   }
-  
+
   // 尝试从全局变量中获取（开发环境）
   if (typeof window !== 'undefined' && (window as any).__LDESIGN_ENGINE__) {
     return (window as any).__LDESIGN_ENGINE__
   }
-  
-  throw new Error('Engine instance not found. Make sure the engine is properly initialized.')
+
+  throw new Error(
+    'Engine instance not found. Make sure the engine is properly initialized.'
+  )
 }
 
 /**

@@ -1,10 +1,5 @@
 import type { Component } from 'vue'
-import type {
-  CreateEngineOptions,
-  Engine,
-  Middleware,
-  Plugin,
-} from './types'
+import type { CreateEngineOptions, Engine, Middleware, Plugin } from './types'
 import { EngineImpl } from './core/engine'
 import { commonDirectives } from './directives/directive-manager'
 import { createErrorManager } from './errors/error-manager'
@@ -13,48 +8,30 @@ import { commonMiddleware } from './middleware/middleware-manager'
 
 // import './styles/index.less' // 暂时注释掉，需要配置CSS处理插件
 
+// 导出常量
+export * from './constants'
+
 // 导出核心类
 export { EngineImpl } from './core/engine'
 
-export { commonDirectives, createDirectiveManager } from './directives/directive-manager'
-
+export {
+  commonDirectives,
+  createDirectiveManager,
+} from './directives/directive-manager'
 export { createErrorManager, errorHandlers } from './errors/error-manager'
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
 export { createLogger, logFormatters, logTransports } from './logger/logger'
-export { commonMiddleware, createMiddlewareManager } from './middleware/middleware-manager'
-export { createNotificationManager, notificationTypes } from './notifications/notification-manager'
+export {
+  commonMiddleware,
+  createMiddlewareManager,
+} from './middleware/middleware-manager'
+export {
+  createNotificationManager,
+  notificationTypes,
+} from './notifications/notification-manager'
 // 导出管理器
 export { createPluginManager } from './plugins/plugin-manager'
 export { createStateManager, stateModules } from './state/state-manager'
-// 导出主要类型
-export type {
-  CreateEngineOptions,
-  DirectiveManager,
-  Engine,
-  EngineConfig,
-  ErrorHandler,
-  ErrorInfo,
-  ErrorManager,
-  EventHandler,
-  EventManager,
-  I18nAdapter,
-  LogEntry,
-  Logger,
-  LogLevel,
-  Middleware,
-  MiddlewareContext,
-  MiddlewareManager,
-  MiddlewareNext,
-  NotificationManager,
-  NotificationOptions,
-  NotificationType,
-  Plugin,
-  PluginManager,
-  RouterAdapter,
-  StateAdapter,
-  StateManager,
-  ThemeAdapter,
-} from './types'
 
 /**
  * 创建Vue3应用引擎实例
@@ -93,14 +70,12 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   }
 
   // 注册中间件
-  middleware.forEach((m) => {
+  middleware.forEach(m => {
     engine.middleware.use(m)
   })
 
   // 注册插件（异步）
-  Promise.all(
-    plugins.map(plugin => engine.use(plugin)),
-  ).catch((error) => {
+  Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
     engine.logger.error('Failed to register plugins', error)
   })
 
@@ -113,7 +88,10 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
  * @param options 引擎配置选项
  * @returns 引擎实例
  */
-export function createApp(rootComponent: Component, options: CreateEngineOptions = {}): Engine {
+export function createApp(
+  rootComponent: Component,
+  options: CreateEngineOptions = {}
+): Engine {
   // 创建引擎实例
   const engine = createEngine(options)
 
@@ -132,12 +110,20 @@ export const version = '0.1.0'
 // 便捷创建器
 export const creators = {
   engine: createEngine,
-  plugin: (name: string, install: Plugin['install'], options?: Partial<Plugin>): Plugin => ({
+  plugin: (
+    name: string,
+    install: Plugin['install'],
+    options?: Partial<Plugin>
+  ): Plugin => ({
     name,
     install,
     ...options,
   }),
-  middleware: (name: string, handler: Middleware['handler'], priority?: number): Middleware => ({
+  middleware: (
+    name: string,
+    handler: Middleware['handler'],
+    priority?: number
+  ): Middleware => ({
     name,
     handler,
     priority,
@@ -153,25 +139,37 @@ export const utils = {
   isDev: () => {
     try {
       // eslint-disable-next-line node/prefer-global/process
-      return typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
-    }
-    catch {
+      return (
+        typeof process !== 'undefined' &&
+        process.env?.NODE_ENV === 'development'
+      )
+    } catch {
       return false
     }
   },
 
   // 生成唯一ID
-  generateId: (prefix = 'engine') => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  generateId: (prefix = 'engine') =>
+    `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 
   // 深度合并对象
-  deepMerge: <T extends Record<string, any>>(target: T, source: Partial<T>): T => {
+  deepMerge: <T extends Record<string, any>>(
+    target: T,
+    source: Partial<T>
+  ): T => {
     const result = { ...target }
 
     for (const key in source) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        result[key] = utils.deepMerge(result[key] || {} as any, source[key]!) as any
-      }
-      else {
+      if (
+        source[key] &&
+        typeof source[key] === 'object' &&
+        !Array.isArray(source[key])
+      ) {
+        result[key] = utils.deepMerge(
+          result[key] || ({} as any),
+          source[key]!
+        ) as any
+      } else {
         result[key] = source[key]!
       }
     }
@@ -182,7 +180,7 @@ export const utils = {
   // 防抖函数
   debounce: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number,
+    wait: number
   ): ((...args: Parameters<T>) => void) => {
     let timeout: NodeJS.Timeout
 
@@ -195,7 +193,7 @@ export const utils = {
   // 节流函数
   throttle: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number,
+    wait: number
   ): ((...args: Parameters<T>) => void) => {
     let lastTime = 0
 
@@ -262,9 +260,7 @@ export const presets = {
     config: {
       debug: false,
     },
-    middleware: [
-      commonMiddleware.errorHandler(createErrorManager()),
-    ],
+    middleware: [commonMiddleware.errorHandler(createErrorManager())],
   }),
 
   // 最小配置预设
@@ -281,6 +277,39 @@ export function install(app: any, options: CreateEngineOptions = {}) {
   engine.install(app)
   return engine
 }
+
+// 导出主要类型
+export type {
+  CreateEngineOptions,
+  DirectiveManager,
+  Engine,
+  EngineConfig,
+  ErrorHandler,
+  ErrorInfo,
+  ErrorManager,
+  EventHandler,
+  EventManager,
+  I18nAdapter,
+  LogEntry,
+  Logger,
+  LogLevel,
+  Middleware,
+  MiddlewareContext,
+  MiddlewareManager,
+  MiddlewareNext,
+  NotificationManager,
+  NotificationOptions,
+  NotificationType,
+  Plugin,
+  PluginManager,
+  RouterAdapter,
+  StateAdapter,
+  StateManager,
+  ThemeAdapter,
+} from './types'
+
+// 导出工具函数
+export * from './utils'
 
 // Vue集成
 export * from './vue'
