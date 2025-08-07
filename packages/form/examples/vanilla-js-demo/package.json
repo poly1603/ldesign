@@ -1,0 +1,25 @@
+{
+  "name": "@ldesign/form-vanilla-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "原生 JavaScript 演示项目 - @ldesign/form",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ldesign/form": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "form",
+    "vanilla-js",
+    "dynamic-form",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT"
+}

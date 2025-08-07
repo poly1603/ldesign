@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Composition API 使用示例 - @ldesign/form</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="../dist/index.umd.js"></script>
+  <link rel="stylesheet" href="../dist/index.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .example-section {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .example-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #262626;
+    }
+    .example-description {
+      color: #595959;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .form-controls {
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .form-controls button {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .form-controls button:hover {
+      border-color: #40a9ff;
+      color: #40a9ff;
+    }
+    .form-controls button.primary {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: white;
+    }
+    .form-controls button.primary:hover {
+      background: #40a9ff;
+      border-color: #40a9ff;
+    }
+    .form-status {
+      margin: 20px 0;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    .status-item {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-label {
+      font-weight: 600;
+      min-width: 80px;
+    }
+    .status-value {
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+    }
+    .status-true {
+      color: #52c41a;
+    }
+    .status-false {
+      color: #f5222d;
+    }
+    .form-data-display {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    .form-data-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #495057;
+    }
+    pre {
+      margin: 0;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+      color: #212529;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>Composition API 使用示例</h1>
+      <p>以下示例展示了如何使用 @ldesign/form 的 Composition API Hook。</p>
+
+      <!-- useForm Hook 示例 -->
+      <div class="example-section">
+        <h2 class="example-title">1. useForm Hook 基础用法</h2>
+        <p class="example-description">
+          使用 useForm Hook 创建表单，获得完整的表单控制能力。
+        </p>
+        
+        <!-- 表单渲染 -->
+        <component :is="basicForm.renderForm()" />
+        
+        <!-- 表单控制按钮 -->
+        <div class="form-controls">
+          <button class="primary" @click="basicForm.submit()">提交表单</button>
+          <button @click="basicForm.validate()">验证表单</button>
+          <button @click="basicForm.reset()">重置表单</button>
+          <button @click="basicForm.clear()">清空表单</button>
+          <button @click="fillSampleData">填充示例数据</button>
+        </div>
+        
+        <!-- 表单状态显示 -->
+        <div class="form-status">
+          <div class="form-data-title">表单状态：</div>
+          <div class="status-item">
+            <span class="status-label">有效:</span>
+            <span class="status-value" :class="basicForm.formState.valid ? 'status-true' : 'status-false'">
+              {{ basicForm.formState.valid }}
+            </span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">已修改:</span>
+            <span class="status-value" :class="basicForm.formState.dirty ? 'status-true' : 'status-false'">
+              {{ basicForm.formState.dirty }}
+            </span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">已访问:</span>
+            <span class="status-value" :class="basicForm.formState.touched ? 'status-true' : 'status-false'">
+              {{ basicForm.formState.touched }}
+            </span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">验证中:</span>
+            <span class="status-value" :class="basicForm.formState.validating ? 'status-true' : 'status-false'">
+              {{ basicForm.formState.validating }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- 表单数据显示 -->
+        <div class="form-data-display">
+          <div class="form-data-title">表单数据：</div>
+          <pre>{{ JSON.stringify(basicForm.formData, null, 2) }}</pre>
+        </div>
+        
+        <!-- 验证错误显示 -->
+        <div v-if="Object.keys(basicForm.formErrors).length > 0" class="form-data-display">
+          <div class="form-data-title">验证错误：</div>
+          <pre>{{ JSON.stringify(basicForm.formErrors, null, 2) }}</pre>
+        </div>
+      </div>
+
+      <!-- 动态表单示例 -->
+      <div class="example-section">
+        <h2 class="example-title">2. 动态表单管理</h2>
+        <p class="example-description">
+          演示如何动态添加、删除字段，以及实时更新表单配置。
+        </p>
+        
+        <!-- 表单渲染 -->
+        <component :is="dynamicForm.renderForm()" />
+        
+        <!-- 动态控制按钮 -->
+        <div class="form-controls">
+          <button @click="addField">添加字段</button>
+          <button @click="removeField">删除字段</button>
+          <button @click="toggleFieldVisibility">切换字段可见性</button>
+          <button @click="toggleFieldDisabled">切换字段禁用状态</button>
+          <button class="primary" @click="dynamicForm.submit()">提交表单</button>
+        </div>
+        
+        <!-- 字段列表 -->
+        <div class="form-status">
+          <div class="form-data-title">当前字段列表：</div>
+          <div v-for="field in dynamicFormFields" :key="field.name" class="status-item">
+            <span class="status-label">{{ field.name }}:</span>
+            <span class="status-value">{{ field.title }} ({{ field.component }})</span>
+          </div>
+        </div>
+        
+        <!-- 表单数据显示 -->
+        <div class="form-data-display">
+          <div class="form-data-title">表单数据：</div>
+          <pre>{{ JSON.stringify(dynamicForm.formData, null, 2) }}</pre>
+        </div>
+      </div>
+
+      <!-- 表单验证示例 -->
+      <div class="example-section">
+        <h2 class="example-title">3. 高级验证功能</h2>
+        <p class="example-description">
+          展示自定义验证、异步验证、条件验证等高级验证功能。
+        </p>
+        
+        <!-- 表单渲染 -->
+        <component :is="validationForm.renderForm()" />
+        
+        <!-- 验证控制按钮 -->
+        <div class="form-controls">
+          <button @click="validateUsername">验证用户名</button>
+          <button @click="validateEmail">验证邮箱</button>
+          <button @click="validatePassword">验证密码</button>
+          <button @click="validationForm.validateAll()">验证所有字段</button>
+          <button @click="validationForm.clearValidation()">清空验证</button>
+          <button class="primary" @click="validationForm.submit()">提交表单</button>
+        </div>
+        
+        <!-- 验证状态显示 -->
+        <div class="form-status">
+          <div class="form-data-title">字段验证状态：</div>
+          <div v-for="(state, fieldName) in validationForm.fieldStates" :key="fieldName" class="status-item">
+            <span class="status-label">{{ fieldName }}:</span>
+            <span class="status-value" :class="state.valid ? 'status-true' : 'status-false'">
+              {{ state.valid ? '有效' : '无效' }}
+              <span v-if="state.errors.length > 0"> - {{ state.errors[0] }}</span>
+            </span>
+          </div>
+        </div>
+        
+        <!-- 表单数据显示 -->
+        <div class="form-data-display">
+          <div class="form-data-title">表单数据：</div>
+          <pre>{{ JSON.stringify(validationForm.formData, null, 2) }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive } = Vue
+    const { useForm } = LDesignForm
+
+    createApp({
+      setup() {
+        // 基础表单
+        const basicForm = useForm({
+          fields: [
+            {
+              name: 'name',
+              title: '姓名',
+              component: 'FormInput',
+              required: true,
+              placeholder: '请输入姓名',
+              rules: [
+                { type: 'required', message: '姓名不能为空' }
+              ]
+            },
+            {
+              name: 'email',
+              title: '邮箱',
+              component: 'FormInput',
+              type: 'email',
+              placeholder: '请输入邮箱地址',
+              rules: [
+                { type: 'email', message: '请输入有效的邮箱地址' }
+              ]
+            },
+            {
+              name: 'phone',
+              title: '手机号',
+              component: 'FormInput',
+              type: 'tel',
+              placeholder: '请输入手机号码',
+              rules: [
+                { type: 'phone', message: '请输入有效的手机号码' }
+              ]
+            }
+          ]
+        })
+
+        // 监听表单事件
+        basicForm.on('submit', (data) => {
+          console.log('基础表单提交:', data)
+          alert('表单提交成功！请查看控制台输出。')
+        })
+
+        basicForm.on('change', (data, fieldName) => {
+          console.log('字段变化:', fieldName, data[fieldName])
+        })
+
+        // 动态表单
+        const dynamicFormFields = ref([
+          {
+            name: 'field1',
+            title: '字段1',
+            component: 'FormInput',
+            placeholder: '动态字段1'
+          },
+          {
+            name: 'field2',
+            title: '字段2',
+            component: 'FormInput',
+            placeholder: '动态字段2'
+          }
+        ])
+
+        const dynamicForm = useForm({
+          fields: dynamicFormFields.value
+        })
+
+        // 验证表单
+        const validationForm = useForm({
+          fields: [
+            {
+              name: 'username',
+              title: '用户名',
+              component: 'FormInput',
+              required: true,
+              placeholder: '请输入用户名',
+              rules: [
+                { type: 'required', message: '用户名不能为空' },
+                { type: 'minLength', params: 3, message: '用户名至少3个字符' },
+                {
+                  type: 'custom',
+                  validator: async (value) => {
+                    // 模拟异步验证
+                    await new Promise(resolve => setTimeout(resolve, 500))
+                    if (value === 'admin') {
+                      return '用户名不能是admin'
+                    }
+                    return true
+                  },
+                  message: '用户名验证失败'
+                }
+              ]
+            },
+            {
+              name: 'email',
+              title: '邮箱',
+              component: 'FormInput',
+              type: 'email',
+              placeholder: '请输入邮箱地址',
+              rules: [
+                { type: 'email', message: '请输入有效的邮箱地址' },
+                {
+                  type: 'custom',
+                  validator: async (value) => {
+                    // 模拟检查邮箱是否已存在
+                    await new Promise(resolve => setTimeout(resolve, 300))
+                    if (value === 'test@example.com') {
+                      return '该邮箱已被注册'
+                    }
+                    return true
+                  }
+                }
+              ]
+            },
+            {
+              name: 'password',
+              title: '密码',
+              component: 'FormInput',
+              type: 'password',
+              placeholder: '请输入密码',
+              rules: [
+                { type: 'required', message: '密码不能为空' },
+                { type: 'minLength', params: 6, message: '密码至少6个字符' },
+                {
+                  type: 'pattern',
+                  params: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                  message: '密码必须包含大小写字母和数字'
+                }
+              ]
+            },
+            {
+              name: 'confirmPassword',
+              title: '确认密码',
+              component: 'FormInput',
+              type: 'password',
+              placeholder: '请再次输入密码',
+              rules: [
+                { type: 'required', message: '请确认密码' },
+                {
+                  type: 'custom',
+                  validator: (value, formData) => {
+                    if (value !== formData.password) {
+                      return '两次密码输入不一致'
+                    }
+                    return true
+                  }
+                }
+              ]
+            }
+          ]
+        })
+
+        // 方法
+        const fillSampleData = () => {
+          basicForm.setFormData({
+            name: '张三',
+            email: 'zhangsan@example.com',
+            phone: '13800138000'
+          })
+        }
+
+        const addField = () => {
+          const fieldCount = dynamicFormFields.value.length + 1
+          const newField = {
+            name: `field${fieldCount}`,
+            title: `字段${fieldCount}`,
+            component: 'FormInput',
+            placeholder: `动态字段${fieldCount}`
+          }
+          dynamicFormFields.value.push(newField)
+          dynamicForm.addField(newField)
+        }
+
+        const removeField = () => {
+          if (dynamicFormFields.value.length > 1) {
+            const removedField = dynamicFormFields.value.pop()
+            dynamicForm.removeField(removedField.name)
+          }
+        }
+
+        const toggleFieldVisibility = () => {
+          const field = dynamicFormFields.value[0]
+          if (field) {
+            const isVisible = dynamicForm.isFieldVisible(field.name)
+            if (isVisible) {
+              dynamicForm.hideField(field.name)
+            } else {
+              dynamicForm.showField(field.name)
+            }
+          }
+        }
+
+        const toggleFieldDisabled = () => {
+          const field = dynamicFormFields.value[0]
+          if (field) {
+            const isDisabled = dynamicForm.isFieldDisabled(field.name)
+            if (isDisabled) {
+              dynamicForm.enableField(field.name)
+            } else {
+              dynamicForm.disableField(field.name)
+            }
+          }
+        }
+
+        const validateUsername = () => {
+          validationForm.validateField('username')
+        }
+
+        const validateEmail = () => {
+          validationForm.validateField('email')
+        }
+
+        const validatePassword = () => {
+          validationForm.validateField('password')
+        }
+
+        return {
+          basicForm,
+          dynamicForm,
+          dynamicFormFields,
+          validationForm,
+          fillSampleData,
+          addField,
+          removeField,
+          toggleFieldVisibility,
+          toggleFieldDisabled,
+          validateUsername,
+          validateEmail,
+          validatePassword
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>

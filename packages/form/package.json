@@ -13,8 +13,8 @@
   ],
   "author": "LDesign Team",
   "license": "MIT",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
@@ -23,15 +23,21 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./style.css": "./dist/style.css"
+    "./vanilla": {
+      "import": "./dist/vanilla.mjs",
+      "require": "./dist/vanilla.cjs",
+      "types": "./dist/vanilla.d.ts"
+    },
+    "./style.css": "./dist/index.css"
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/build.js",
+    "build:lib": "vite build",
     "build:check": "vue-tsc && vite build",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly",
     "preview": "vite preview",
@@ -40,7 +46,10 @@
     "test:coverage": "vitest --coverage",
     "lint": "eslint src --ext .ts,.vue",
     "lint:fix": "eslint src --ext .ts,.vue --fix",
-    "type-check": "vue-tsc --noEmit"
+    "format": "prettier --write src/**/*.{ts,vue,css,md}",
+    "type-check": "vue-tsc --noEmit",
+    "release": "npm run build && npm publish dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "vue": "^3.4.0"

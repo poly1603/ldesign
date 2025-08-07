@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原生 JavaScript 使用示例 - @ldesign/form</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="../dist/vanilla.umd.js"></script>
+  <link rel="stylesheet" href="../dist/index.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .example-section {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .example-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #262626;
+    }
+    .example-description {
+      color: #595959;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .form-container {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+    .form-controls {
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .form-controls button {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .form-controls button:hover {
+      border-color: #40a9ff;
+      color: #40a9ff;
+    }
+    .form-controls button.primary {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: white;
+    }
+    .form-controls button.primary:hover {
+      background: #40a9ff;
+      border-color: #40a9ff;
+    }
+    .form-status {
+      margin: 20px 0;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    .status-item {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-label {
+      font-weight: 600;
+      min-width: 100px;
+    }
+    .status-value {
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+    }
+    .status-true {
+      color: #52c41a;
+    }
+    .status-false {
+      color: #f5222d;
+    }
+    .form-data-display {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    .form-data-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #495057;
+    }
+    pre {
+      margin: 0;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+      color: #212529;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>原生 JavaScript 使用示例</h1>
+    <p>以下示例展示了如何在原生 JavaScript 环境中使用 @ldesign/form。</p>
+
+    <!-- 基础表单示例 -->
+    <div class="example-section">
+      <h2 class="example-title">1. 基础表单实例</h2>
+      <p class="example-description">
+        使用 createFormInstance 创建表单实例，并进行基本的表单操作。
+      </p>
+      
+      <div id="basic-form" class="form-container"></div>
+      
+      <div class="form-controls">
+        <button class="primary" onclick="submitBasicForm()">提交表单</button>
+        <button onclick="validateBasicForm()">验证表单</button>
+        <button onclick="resetBasicForm()">重置表单</button>
+        <button onclick="fillBasicFormData()">填充数据</button>
+        <button onclick="getBasicFormData()">获取数据</button>
+      </div>
+      
+      <div class="form-status">
+        <div class="form-data-title">表单状态：</div>
+        <div class="status-item">
+          <span class="status-label">有效:</span>
+          <span id="basic-valid" class="status-value">-</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">已修改:</span>
+          <span id="basic-dirty" class="status-value">-</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">已访问:</span>
+          <span id="basic-touched" class="status-value">-</span>
+        </div>
+      </div>
+      
+      <div class="form-data-display">
+        <div class="form-data-title">表单数据：</div>
+        <pre id="basic-data">{}</pre>
+      </div>
+    </div>
+
+    <!-- 动态表单示例 -->
+    <div class="example-section">
+      <h2 class="example-title">2. 动态表单管理</h2>
+      <p class="example-description">
+        演示动态添加、删除字段，以及字段状态控制。
+      </p>
+      
+      <div id="dynamic-form" class="form-container"></div>
+      
+      <div class="form-controls">
+        <button onclick="addDynamicField()">添加字段</button>
+        <button onclick="removeDynamicField()">删除字段</button>
+        <button onclick="toggleFieldVisibility()">切换可见性</button>
+        <button onclick="toggleFieldDisabled()">切换禁用状态</button>
+        <button class="primary" onclick="submitDynamicForm()">提交表单</button>
+      </div>
+      
+      <div class="form-data-display">
+        <div class="form-data-title">表单数据：</div>
+        <pre id="dynamic-data">{}</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 全局变量存储表单实例
+    let basicFormInstance = null
+    let dynamicFormInstance = null
+    let dynamicFieldCounter = 0
+
+    // 初始化所有表单
+    document.addEventListener('DOMContentLoaded', function() {
+      initBasicForm()
+      initDynamicForm()
+    })
+
+    // 基础表单
+    function initBasicForm() {
+      basicFormInstance = LDesignForm.createFormInstance({
+        container: '#basic-form',
+        options: {
+          fields: [
+            {
+              name: 'name',
+              title: '姓名',
+              component: 'FormInput',
+              required: true,
+              placeholder: '请输入姓名',
+              rules: [
+                { type: 'required', message: '姓名不能为空' }
+              ]
+            },
+            {
+              name: 'email',
+              title: '邮箱',
+              component: 'FormInput',
+              type: 'email',
+              placeholder: '请输入邮箱地址',
+              rules: [
+                { type: 'email', message: '请输入有效的邮箱地址' }
+              ]
+            },
+            {
+              name: 'age',
+              title: '年龄',
+              component: 'FormInput',
+              type: 'number',
+              placeholder: '请输入年龄',
+              rules: [
+                { type: 'min', params: 18, message: '年龄不能小于18岁' }
+              ]
+            }
+          ]
+        },
+        onChange: (data) => {
+          updateBasicFormStatus()
+          document.getElementById('basic-data').textContent = JSON.stringify(data, null, 2)
+        },
+        onSubmit: (data) => {
+          console.log('基础表单提交:', data)
+          alert('表单提交成功！请查看控制台输出。')
+        }
+      })
+      
+      updateBasicFormStatus()
+    }
+
+    function updateBasicFormStatus() {
+      const state = basicFormInstance.getFormState()
+      document.getElementById('basic-valid').textContent = state.valid
+      document.getElementById('basic-valid').className = `status-value ${state.valid ? 'status-true' : 'status-false'}`
+      
+      document.getElementById('basic-dirty').textContent = state.dirty
+      document.getElementById('basic-dirty').className = `status-value ${state.dirty ? 'status-true' : 'status-false'}`
+      
+      document.getElementById('basic-touched').textContent = state.touched
+      document.getElementById('basic-touched').className = `status-value ${state.touched ? 'status-true' : 'status-false'}`
+    }
+
+    function submitBasicForm() {
+      basicFormInstance.submit()
+    }
+
+    function validateBasicForm() {
+      basicFormInstance.validate().then(valid => {
+        alert(`表单验证${valid ? '通过' : '失败'}`)
+        updateBasicFormStatus()
+      })
+    }
+
+    function resetBasicForm() {
+      basicFormInstance.reset()
+      updateBasicFormStatus()
+      document.getElementById('basic-data').textContent = '{}'
+    }
+
+    function fillBasicFormData() {
+      basicFormInstance.setFormData({
+        name: '张三',
+        email: 'zhangsan@example.com',
+        age: 25
+      })
+      updateBasicFormStatus()
+    }
+
+    function getBasicFormData() {
+      const data = basicFormInstance.getFormData()
+      alert('表单数据：\n' + JSON.stringify(data, null, 2))
+    }
+
+    // 动态表单
+    function initDynamicForm() {
+      dynamicFormInstance = LDesignForm.createFormInstance({
+        container: '#dynamic-form',
+        options: {
+          fields: [
+            {
+              name: 'field1',
+              title: '字段1',
+              component: 'FormInput',
+              placeholder: '动态字段1'
+            },
+            {
+              name: 'field2',
+              title: '字段2',
+              component: 'FormInput',
+              placeholder: '动态字段2'
+            }
+          ]
+        },
+        onChange: (data) => {
+          document.getElementById('dynamic-data').textContent = JSON.stringify(data, null, 2)
+        },
+        onSubmit: (data) => {
+          console.log('动态表单提交:', data)
+          alert('动态表单提交成功！请查看控制台输出。')
+        }
+      })
+      
+      dynamicFieldCounter = 2
+    }
+
+    function addDynamicField() {
+      dynamicFieldCounter++
+      const newField = {
+        name: `field${dynamicFieldCounter}`,
+        title: `字段${dynamicFieldCounter}`,
+        component: 'FormInput',
+        placeholder: `动态字段${dynamicFieldCounter}`
+      }
+      
+      dynamicFormInstance.addField(newField)
+    }
+
+    function removeDynamicField() {
+      if (dynamicFieldCounter > 1) {
+        dynamicFormInstance.removeField(`field${dynamicFieldCounter}`)
+        dynamicFieldCounter--
+      }
+    }
+
+    function toggleFieldVisibility() {
+      const isVisible = dynamicFormInstance.isFieldVisible('field1')
+      if (isVisible) {
+        dynamicFormInstance.hideField('field1')
+      } else {
+        dynamicFormInstance.showField('field1')
+      }
+    }
+
+    function toggleFieldDisabled() {
+      const isDisabled = dynamicFormInstance.isFieldDisabled('field1')
+      if (isDisabled) {
+        dynamicFormInstance.enableField('field1')
+      } else {
+        dynamicFormInstance.disableField('field1')
+      }
+    }
+
+    function submitDynamicForm() {
+      dynamicFormInstance.submit()
+    }
+  </script>
+</body>
+</html>

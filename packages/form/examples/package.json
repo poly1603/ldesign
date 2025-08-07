@@ -1,0 +1,30 @@
+{
+  "name": "@ldesign/form-examples",
+  "version": "1.0.0",
+  "description": "@ldesign/form 演示项目集合",
+  "scripts": {
+    "dev:vanilla": "cd vanilla-js-demo && npm run dev",
+    "dev:vue": "cd vue-demo && npm run dev",
+    "dev:all": "concurrently \"npm run dev:vanilla\" \"npm run dev:vue\"",
+    "build:vanilla": "cd vanilla-js-demo && npm run build",
+    "build:vue": "cd vue-demo && npm run build",
+    "build:all": "npm run build:vanilla && npm run build:vue",
+    "install:all": "cd vanilla-js-demo && npm install && cd ../vue-demo && npm install",
+    "clean": "rm -rf vanilla-js-demo/node_modules vanilla-js-demo/dist vue-demo/node_modules vue-demo/dist",
+    "preview:vanilla": "cd vanilla-js-demo && npm run preview",
+    "preview:vue": "cd vue-demo && npm run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": [
+    "form",
+    "vue",
+    "javascript",
+    "demo",
+    "examples",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT"
+}
