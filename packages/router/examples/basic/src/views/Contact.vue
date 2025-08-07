@@ -18,23 +18,28 @@ const openFaq = ref<number | null>(null)
 const faqs = ref([
   {
     question: 'How do I get started with LDesign Router?',
-    answer: 'Simply install the package via npm and follow our getting started guide in the documentation.',
+    answer:
+      'Simply install the package via npm and follow our getting started guide in the documentation.',
   },
   {
     question: 'Is LDesign Router compatible with Vue 3?',
-    answer: 'Yes! LDesign Router is built specifically for Vue 3 and takes full advantage of the Composition API.',
+    answer:
+      'Yes! LDesign Router is built specifically for Vue 3 and takes full advantage of the Composition API.',
   },
   {
     question: 'Can I use TypeScript with LDesign Router?',
-    answer: 'Absolutely! LDesign Router is written in TypeScript and provides excellent type safety out of the box.',
+    answer:
+      'Absolutely! LDesign Router is written in TypeScript and provides excellent type safety out of the box.',
   },
   {
     question: 'How do I handle authentication with the router?',
-    answer: 'You can use navigation guards to implement authentication checks before allowing access to protected routes.',
+    answer:
+      'You can use navigation guards to implement authentication checks before allowing access to protected routes.',
   },
   {
     question: 'Does it support lazy loading?',
-    answer: 'Yes, you can use dynamic imports to lazy load your route components for better performance.',
+    answer:
+      'Yes, you can use dynamic imports to lazy load your route components for better performance.',
   },
 ])
 
@@ -51,7 +56,7 @@ function scrollToSection(sectionId: string) {
 
 function submitForm() {
   // 模拟表单提交
-  alert(`Thank you, ${form.value.name}! Your message has been sent.`)
+  console.warn(`Thank you, ${form.value.name}! Your message has been sent.`)
 
   // 重置表单
   form.value = {
@@ -91,8 +96,12 @@ onMounted(() => {
     <div class="contact-nav">
       <h3>Quick Navigation:</h3>
       <div class="nav-links">
-        <a href="#form" @click.prevent="scrollToSection('form')">Contact Form</a>
-        <a href="#info" @click.prevent="scrollToSection('info')">Contact Info</a>
+        <a href="#form" @click.prevent="scrollToSection('form')"
+          >Contact Form</a
+        >
+        <a href="#info" @click.prevent="scrollToSection('info')"
+          >Contact Info</a
+        >
         <a href="#map" @click.prevent="scrollToSection('map')">Location</a>
         <a href="#faq" @click.prevent="scrollToSection('faq')">FAQ</a>
       </div>
@@ -110,7 +119,7 @@ onMounted(() => {
               type="text"
               required
               placeholder="Your full name"
-            >
+            />
           </div>
 
           <div class="form-group">
@@ -121,27 +130,17 @@ onMounted(() => {
               type="email"
               required
               placeholder="your.email@example.com"
-            >
+            />
           </div>
 
           <div class="form-group">
             <label for="subject">Subject:</label>
             <select id="subject" v-model="form.subject" required>
-              <option value="">
-                Select a subject
-              </option>
-              <option value="general">
-                General Inquiry
-              </option>
-              <option value="support">
-                Technical Support
-              </option>
-              <option value="billing">
-                Billing Question
-              </option>
-              <option value="feature">
-                Feature Request
-              </option>
+              <option value="">Select a subject</option>
+              <option value="general">General Inquiry</option>
+              <option value="support">Technical Support</option>
+              <option value="billing">Billing Question</option>
+              <option value="feature">Feature Request</option>
             </select>
           </div>
 
@@ -156,9 +155,7 @@ onMounted(() => {
             />
           </div>
 
-          <button type="submit" class="submit-button">
-            Send Message
-          </button>
+          <button type="submit" class="submit-button">Send Message</button>
         </form>
       </div>
     </section>
@@ -167,36 +164,28 @@ onMounted(() => {
       <h3>📍 Contact Information</h3>
       <div class="info-grid">
         <div class="info-card">
-          <div class="info-icon">
-            📧
-          </div>
+          <div class="info-icon">📧</div>
           <h4>Email</h4>
           <p>support@ldesign.com</p>
           <p>sales@ldesign.com</p>
         </div>
 
         <div class="info-card">
-          <div class="info-icon">
-            📞
-          </div>
+          <div class="info-icon">📞</div>
           <h4>Phone</h4>
           <p>+1 (555) 123-4567</p>
           <p>+1 (555) 987-6543</p>
         </div>
 
         <div class="info-card">
-          <div class="info-icon">
-            🏢
-          </div>
+          <div class="info-icon">🏢</div>
           <h4>Office</h4>
           <p>123 Tech Street</p>
           <p>San Francisco, CA 94105</p>
         </div>
 
         <div class="info-card">
-          <div class="info-icon">
-            🕒
-          </div>
+          <div class="info-icon">🕒</div>
           <h4>Hours</h4>
           <p>Mon-Fri: 9:00 AM - 6:00 PM</p>
           <p>Sat-Sun: 10:00 AM - 4:00 PM</p>
@@ -208,14 +197,10 @@ onMounted(() => {
       <h3>🗺️ Our Location</h3>
       <div class="map-container">
         <div class="map-placeholder">
-          <div class="map-icon">
-            🗺️
-          </div>
+          <div class="map-icon">🗺️</div>
           <p>Interactive Map</p>
           <p>123 Tech Street, San Francisco, CA</p>
-          <button class="map-button" @click="openMaps">
-            Open in Maps
-          </button>
+          <button class="map-button" @click="openMaps">Open in Maps</button>
         </div>
       </div>
     </section>
@@ -244,7 +229,11 @@ onMounted(() => {
     <div class="hash-info">
       <h3>Current Hash:</h3>
       <p>{{ route.hash || 'No hash' }}</p>
-      <p><small>Try clicking the navigation links above to see hash changes</small></p>
+      <p>
+        <small
+          >Try clicking the navigation links above to see hash changes</small
+        >
+      </p>
     </div>
   </div>
 </template>

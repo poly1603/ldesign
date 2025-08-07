@@ -1,12 +1,12 @@
+import type { RouteLocationNormalized, RouteRecordRaw } from '../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from '../src'
+import { NavigationFailureType } from '../src/constants'
 import { GuardManager } from '../src/guards'
 import { createNavigationFailure, isNavigationFailure } from '../src/utils'
-import { NavigationFailureType } from '../src/constants'
-import type { RouteRecordRaw, RouteLocationNormalized } from '../src/types'
 
 describe('navigation guards', () => {
-  let router: any
+  let router: Router
 
   const routes: RouteRecordRaw[] = [
     {
@@ -49,7 +49,7 @@ describe('navigation guards', () => {
       expect(guard).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
         expect.objectContaining({ path: '/' }),
-        expect.any(Function),
+        expect.any(Function)
       )
     })
 
@@ -129,7 +129,7 @@ describe('navigation guards', () => {
 
       try {
         await router.push('/about')
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
 
@@ -161,7 +161,7 @@ describe('navigation guards', () => {
       expect(guard).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
         expect.objectContaining({ path: '/' }),
-        expect.any(Function),
+        expect.any(Function)
       )
     })
 
@@ -188,7 +188,7 @@ describe('navigation guards', () => {
 
       expect(hook).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
-        expect.objectContaining({ path: '/' }),
+        expect.objectContaining({ path: '/' })
       )
     })
 
@@ -199,7 +199,7 @@ describe('navigation guards', () => {
 
       try {
         await router.push('/about')
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
 
@@ -231,7 +231,7 @@ describe('navigation guards', () => {
   })
 })
 
-describe('GuardManager', () => {
+describe('guardManager', () => {
   let guardManager: GuardManager
   let mockRoute: RouteLocationNormalized
 
@@ -308,17 +308,29 @@ describe('GuardManager', () => {
 
   describe('navigation failure utilities', () => {
     it('should create navigation failure', () => {
-      const failure = createNavigationFailure(NavigationFailureType.cancelled, mockRoute, mockRoute)
+      const failure = createNavigationFailure(
+        NavigationFailureType.cancelled,
+        mockRoute,
+        mockRoute
+      )
       expect(failure.type).toBe(NavigationFailureType.cancelled)
       expect(failure.from).toBe(mockRoute)
       expect(failure.to).toBe(mockRoute)
     })
 
     it('should identify navigation failure', () => {
-      const failure = createNavigationFailure(NavigationFailureType.cancelled, mockRoute, mockRoute)
+      const failure = createNavigationFailure(
+        NavigationFailureType.cancelled,
+        mockRoute,
+        mockRoute
+      )
       expect(isNavigationFailure(failure)).toBe(true)
-      expect(isNavigationFailure(failure, NavigationFailureType.cancelled)).toBe(true)
-      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(false)
+      expect(
+        isNavigationFailure(failure, NavigationFailureType.cancelled)
+      ).toBe(true)
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(
+        false
+      )
       expect(isNavigationFailure({})).toBe(false)
     })
   })

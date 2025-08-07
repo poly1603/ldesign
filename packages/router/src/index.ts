@@ -1,3 +1,31 @@
+// 核心模块
+export * from './core'
+
+// 导航模块
+export * from './navigation'
+
+// 高级功能模块
+export * from './advanced'
+
+// 组件模块
+export * from './components'
+
+// 组合式 API 模块
+export * from './composables'
+
+// 工具模块
+export * from './utils'
+
+// 插件系统
+export * from './plugins'
+
+// 错误处理
+export * from './errors'
+
+// 配置管理
+export * from './config'
+
+// 向后兼容的导入
 import { RouterLink, RouterView } from './components'
 import {
   onBeforeRouteLeave,
@@ -12,9 +40,11 @@ import {
   isNavigationFailure,
   NavigationFailureType,
 } from './guards'
-import { createMemoryHistory, createWebHashHistory, createWebHistory } from './history'
-// 核心功能
-// 导入用于默认导出
+import {
+  createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory,
+} from './history'
 import { createRouter } from './router'
 
 // 组件
@@ -59,11 +89,20 @@ export {
   NavigationFailureType,
 } from './guards'
 
-export { createMemoryHistory, createWebHashHistory, createWebHistory } from './history'
+export {
+  createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory,
+} from './history'
 
 export { createRouterMatcher } from './matcher'
 
 export { createRouter } from './router'
+
+// 高级功能
+export { createRoutePreloader } from './preloader'
+export { createRouteCacheManager } from './cache'
+export { createPerformanceMonitor } from './performance'
 
 // 类型定义
 export type {
@@ -74,6 +113,8 @@ export type {
   NavigationGuardNext,
   NavigationGuardReturn,
   NavigationHookAfter,
+  PreloadStrategy,
+  RouteCacheConfig,
   RouteComponent,
   RouteLocation,
   RouteLocationNormalized,
@@ -86,6 +127,7 @@ export type {
   RouteRecordRaw,
   RouterHistory,
   RouterOptions,
+  RouteTransition,
   ScrollBehavior,
   ScrollPosition,
   UseRouteReturn,

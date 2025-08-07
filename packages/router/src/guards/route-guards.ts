@@ -12,7 +12,7 @@ export interface GuardContext {
   to: RouteLocationNormalized
   from: RouteLocationNormalized
   next: NavigationGuardNext
-  meta: Record<string, any>
+  meta: Record<string, unknown>
 }
 
 export interface GuardConfig {
@@ -111,7 +111,9 @@ export class RouteGuardManager {
     for (const guard of sortedGuards) {
       // 检查守卫条件
       if (guard.conditions) {
-        const conditionsMet = guard.conditions.every(condition => condition(context))
+        const conditionsMet = guard.conditions.every(condition =>
+          condition(context)
+        )
         if (!conditionsMet) {
           continue
         }
@@ -122,8 +124,7 @@ export class RouteGuardManager {
         if (result !== undefined && result !== true) {
           return result
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error(`Guard ${guard.name} failed:`, error)
         return error instanceof Error ? error : new Error(String(error))
       }
@@ -156,7 +157,7 @@ export function createAuthGuard(config: AuthGuardConfig): GuardConfig {
     name: 'auth-guard',
     priority: config.priority || 100,
     enabled: true,
-    handler: async (_context) => {
+    handler: async _context => {
       // 认证逻辑实现
       if (config.isAuthenticated && !config.isAuthenticated()) {
         return config.loginPath || '/login'

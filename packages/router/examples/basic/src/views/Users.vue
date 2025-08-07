@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from '@ldesign/router'
+import { useRoute, useRouter } from '@ldesign/router'
 import { ref } from 'vue'
 
 const router = useRouter()
@@ -75,15 +75,9 @@ function addNewUser() {
     <div class="actions">
       <h3>Quick Actions:</h3>
       <div class="button-group">
-        <button @click="goToRandomUser">
-          Random User
-        </button>
-        <button @click="goToUserWithQuery">
-          User with Query
-        </button>
-        <button @click="addNewUser">
-          Add New User
-        </button>
+        <button @click="goToRandomUser">Random User</button>
+        <button @click="goToUserWithQuery">User with Query</button>
+        <button @click="addNewUser">Add New User</button>
       </div>
     </div>
 

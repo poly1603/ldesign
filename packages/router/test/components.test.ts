@@ -10,7 +10,7 @@ import {
 } from '../src'
 
 describe('components', () => {
-  let router: any
+  let router: Router
 
   const HomeComponent = defineComponent({
     template: '<div class="home">Home Page</div>',
@@ -127,7 +127,8 @@ describe('components', () => {
           plugins: [router],
         },
         slots: {
-          default: ({ Component, route }) => h('div', { class: 'wrapper' }, Component ? [h(Component)] : []),
+          default: ({ Component }) =>
+            h('div', { class: 'wrapper' }, Component ? [h(Component)] : []),
         },
       })
 
@@ -292,7 +293,12 @@ describe('components', () => {
           plugins: [router],
         },
         slots: {
-          default: ({ href, navigate, isActive }) => h('button', { onClick: navigate, class: { active: isActive } }, 'Custom Link'),
+          default: ({ navigate, isActive }) =>
+            h(
+              'button',
+              { onClick: navigate, class: { active: isActive } },
+              'Custom Link'
+            ),
         },
       })
 

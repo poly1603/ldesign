@@ -1,5 +1,6 @@
 {
   "name": "@ldesign/router",
+  "type": "module",
   "version": "1.0.0",
   "description": "A powerful Vue router library for Vue applications",
   "author": "ldesign",
@@ -53,6 +54,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:performance": "node scripts/performance-test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "clean": "rimraf dist es lib types coverage .nyc_output",

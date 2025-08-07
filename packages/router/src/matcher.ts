@@ -18,7 +18,10 @@ export interface RouterMatcher {
   removeRoute: (name: string | symbol) => void
   hasRoute: (name: string | symbol) => boolean
   getRoutes: () => RouteRecordNormalized[]
-  resolve: (location: RouteLocationRaw, currentLocation: RouteLocationNormalized) => RouteLocationNormalized
+  resolve: (
+    location: RouteLocationRaw,
+    currentLocation: RouteLocationNormalized
+  ) => RouteLocationNormalized
 }
 
 /**
@@ -26,7 +29,7 @@ export interface RouterMatcher {
  */
 export function createRouterMatcher(
   routes: RouteRecordRaw[],
-  _options: RouterOptions,
+  _options: RouterOptions
 ): RouterMatcher {
   const matchers: RouteRecordNormalized[] = []
   const matcherMap = new Map<string | symbol, RouteRecordNormalized>()
@@ -39,7 +42,7 @@ export function createRouterMatcher(
 
   function addRoute(
     record: RouteRecordRaw,
-    parent?: string | symbol,
+    parent?: string | symbol
   ): () => void {
     const normalizedRecord = normalizeRouteRecord(record, parent)
 
@@ -53,8 +56,10 @@ export function createRouterMatcher(
 
     // 处理别名
     if (record.alias) {
-      const aliases = Array.isArray(record.alias) ? record.alias : [record.alias]
-      aliases.forEach((alias) => {
+      const aliases = Array.isArray(record.alias)
+        ? record.alias
+        : [record.alias]
+      aliases.forEach(alias => {
         const aliasRecord = { ...record, path: alias }
         const normalizedAlias = normalizeRouteRecord(aliasRecord, parent)
         normalizedAlias.aliasOf = normalizedRecord
@@ -64,7 +69,7 @@ export function createRouterMatcher(
 
     // 处理子路由
     if (record.children) {
-      record.children.forEach((child) => {
+      record.children.forEach(child => {
         addRoute(child, normalizedRecord.name)
       })
     }
@@ -95,12 +100,11 @@ export function createRouterMatcher(
 
   function resolve(
     location: RouteLocationRaw,
-    currentLocation: RouteLocationNormalized,
+    currentLocation: RouteLocationNormalized
   ): RouteLocationNormalized {
     // 创建缓存键
-    const cacheKey = typeof location === 'string'
-      ? location
-      : JSON.stringify(location)
+    const cacheKey =
+      typeof location === 'string' ? location : JSON.stringify(location)
 
     // 检查缓存
     if (resolveCache.has(cacheKey)) {
@@ -118,8 +122,7 @@ export function createRouterMatcher(
       path = parsed.path
       query = parsed.query
       hash = parsed.hash
-    }
-    else {
+    } else {
       name = location.name || undefined
       path = location.path || currentLocation.path
       params = location.params || {}
@@ -137,8 +140,7 @@ export function createRouterMatcher(
         matched = [matcher]
         path = buildPath(matcher.path, params)
       }
-    }
-    else {
+    } else {
       // 按路径匹配
       for (const m of matchers) {
         const match = matchPath(m.path, path)
@@ -168,9 +170,10 @@ export function createRouterMatcher(
 
     // 处理重定向
     if (matcher.redirect) {
-      const redirectLocation = typeof matcher.redirect === 'string'
-        ? { path: matcher.redirect }
-        : matcher.redirect
+      const redirectLocation =
+        typeof matcher.redirect === 'string'
+          ? { path: matcher.redirect }
+          : matcher.redirect
 
       // 递归解析重定向目标
       return resolve(redirectLocation, currentLocation)
@@ -181,7 +184,7 @@ export function createRouterMatcher(
 
     // 合并元信息
     const meta: RouteMeta = {}
-    matched.forEach((record) => {
+    matched.forEach(record => {
       Object.assign(meta, record.meta)
     })
 
@@ -224,7 +227,7 @@ export function createRouterMatcher(
  */
 function normalizeRouteRecord(
   record: RouteRecordRaw,
-  parent?: string | symbol,
+  parent?: string | symbol
 ): RouteRecordNormalized {
   const path = normalizePath(record.path, parent)
 
@@ -264,13 +267,10 @@ function normalizePath(path: string, parent?: string | symbol): string {
 /**
  * 标准化 props
  */
-function normalizeProps(props: any): Record<string, any> {
-  if (!props)
-    return {}
-  if (typeof props === 'boolean')
-    return { default: props }
-  if (typeof props === 'object')
-    return props
+function normalizeProps(props: unknown): Record<string, unknown> {
+  if (!props) return {}
+  if (typeof props === 'boolean') return { default: props }
+  if (typeof props === 'object') return props
   return { default: props }
 }
 
@@ -282,7 +282,10 @@ const pathMatchCache = new Map<string, { params: RouteParams } | null>()
 /**
  * 匹配路径（优化版本）
  */
-function matchPath(pattern: string, path: string): { params: RouteParams } | null {
+function matchPath(
+  pattern: string,
+  path: string
+): { params: RouteParams } | null {
   // 缓存键
   const cacheKey = `${pattern}:${path}`
 
@@ -296,8 +299,7 @@ function matchPath(pattern: string, path: string): { params: RouteParams } | nul
   // 快速路径：完全匹配
   if (pattern === path) {
     result = { params: {} }
-  }
-  else {
+  } else {
     // 处理动态参数
     const patternParts = pattern.split('/')
     const pathParts = path.split('/')
@@ -315,8 +317,7 @@ function matchPath(pattern: string, path: string): { params: RouteParams } | nul
           if (pathPart) {
             params[paramName] = decodeURIComponent(pathPart)
           }
-        }
-        else if (patternPart !== pathPart) {
+        } else if (patternPart !== pathPart) {
           isMatch = false
         }
       }
@@ -346,7 +347,7 @@ function matchPath(pattern: string, path: string): { params: RouteParams } | nul
 function buildPath(pattern: string, params: RouteParams): string {
   let path = pattern
 
-  Object.keys(params).forEach((key) => {
+  Object.keys(params).forEach(key => {
     const value = params[key]
     if (typeof value === 'string') {
       path = path.replace(`:${key}`, value)

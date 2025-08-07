@@ -1,6 +1,6 @@
+import type { RouteRecordRaw } from '../src/types'
 import { describe, expect, it } from 'vitest'
 import { createRouterMatcher } from '../src/matcher'
-import type { RouteRecordRaw } from '../src/types'
 
 describe('matcher', () => {
   const routes: RouteRecordRaw[] = [
@@ -43,7 +43,7 @@ describe('matcher', () => {
     href: '/',
     name: undefined,
     params: {},
-    redirectedFrom: undefined
+    redirectedFrom: undefined,
   }
 
   describe('addRoute', () => {
@@ -111,20 +111,26 @@ describe('matcher', () => {
       expect(resolved.params).toEqual({ id: '123' })
     })
 
-    it('should resolve path with params', () => {
+    it('should resolve path with category params', () => {
       const resolved = matcher.resolve('/products/electronics', currentLocation)
       expect(resolved.name).toBe('Products')
       expect(resolved.params).toEqual({ category: 'electronics' })
     })
 
     it('should resolve by name', () => {
-      const resolved = matcher.resolve({ name: 'User', params: { id: '456' } }, currentLocation)
+      const resolved = matcher.resolve(
+        { name: 'User', params: { id: '456' } },
+        currentLocation
+      )
       expect(resolved.path).toBe('/user/456')
       expect(resolved.params).toEqual({ id: '456' })
     })
 
     it('should resolve with query and hash', () => {
-      const resolved = matcher.resolve({ path: '/about', query: { tab: 'info' }, hash: 'section1' }, currentLocation)
+      const resolved = matcher.resolve(
+        { path: '/about', query: { tab: 'info' }, hash: 'section1' },
+        currentLocation
+      )
       expect(resolved.query).toEqual({ tab: 'info' })
       expect(resolved.hash).toBe('section1')
       expect(resolved.fullPath).toBe('/about?tab=info#section1')

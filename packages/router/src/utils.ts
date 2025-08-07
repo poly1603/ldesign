@@ -78,8 +78,7 @@ export function parseQuery(search: string): RouteQuery {
 
   for (let i = 0; i < searchParams.length; i++) {
     const searchParam = searchParams[i]?.replace(/\+/g, ' ')
-    if (!searchParam)
-      continue
+    if (!searchParam) continue
 
     const eqPos = searchParam.indexOf('=')
     const key = decode(eqPos < 0 ? searchParam : searchParam.slice(0, eqPos))
@@ -90,9 +89,8 @@ export function parseQuery(search: string): RouteQuery {
       if (!Array.isArray(currentValue)) {
         currentValue = query[key] = [currentValue as string]
       }
-      ; (currentValue as string[]).push(value as string)
-    }
-    else {
+      ;(currentValue as string[]).push(value as string)
+    } else {
       query[key] = value
     }
   }
@@ -114,13 +112,11 @@ export function stringifyQuery(query: RouteQuery): string {
       if (value !== undefined) {
         search += (search.length ? '&' : '') + key
       }
-    }
-    else if (Array.isArray(value)) {
-      value.forEach((v) => {
+    } else if (Array.isArray(value)) {
+      value.forEach(v => {
         search += `${(search.length ? '&' : '') + key}=${encode(v)}`
       })
-    }
-    else {
+    } else {
       search += `${(search.length ? '&' : '') + key}=${encode(value as string)}`
     }
   }
@@ -145,8 +141,7 @@ function encode(str: string): string {
 function decode(str: string): string {
   try {
     return decodeURIComponent(str)
-  }
-  catch {
+  } catch {
     return str
   }
 }
@@ -171,13 +166,13 @@ export function normalizeParams(params: RouteParams): RouteParams {
  * 判断是否为导航失败
  */
 export function isNavigationFailure(
-  error: any,
-  type?: NavigationFailureType,
+  error: unknown,
+  type?: NavigationFailureType
 ): error is NavigationFailure {
   return (
-    error instanceof Error
-    && 'type' in error
-    && (type == null || error.type === type)
+    error instanceof Error &&
+    'type' in error &&
+    (type == null || error.type === type)
   )
 }
 
@@ -186,8 +181,8 @@ export function isNavigationFailure(
  */
 export function createNavigationFailure(
   type: NavigationFailureType,
-  from: any,
-  to: any,
+  from: RouteLocationNormalized,
+  to: RouteLocationNormalized
 ): NavigationFailure {
   const error = new Error(`Navigation failed: ${type}`) as NavigationFailure
   error.type = type
@@ -228,7 +223,7 @@ export function deepClone<T>(obj: T): T {
 /**
  * 合并对象
  */
-export function merge<T extends Record<string, any>>(
+export function merge<T extends Record<string, unknown>>(
   target: T,
   ...sources: Partial<T>[]
 ): T {
@@ -249,8 +244,8 @@ export function merge<T extends Record<string, any>>(
  * 检查两个路由位置是否相同
  */
 export function isSameRouteLocation(
-  a: { path: string, query?: RouteQuery, hash?: string },
-  b: { path: string, query?: RouteQuery, hash?: string },
+  a: { path: string; query?: RouteQuery; hash?: string },
+  b: { path: string; query?: RouteQuery; hash?: string }
 ): boolean {
   if (a.path !== b.path || a.hash !== b.hash) {
     return false
@@ -279,7 +274,10 @@ export function isSameRouteLocation(
  */
 export function warn(msg: string): void {
   // eslint-disable-next-line node/prefer-global/process
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+  if (
+    typeof process !== 'undefined' &&
+    process.env?.NODE_ENV !== 'production'
+  ) {
     console.warn(`[LDesign Router warn]: ${msg}`)
   }
 }
@@ -294,7 +292,7 @@ export function throwError(msg: string): never {
 /**
  * 断言函数
  */
-export function assert(condition: any, msg: string): asserts condition {
+export function assert(condition: unknown, msg: string): asserts condition {
   if (!condition) {
     throwError(msg)
   }
@@ -303,9 +301,9 @@ export function assert(condition: any, msg: string): asserts condition {
 /**
  * 防抖函数
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  delay: number,
+  delay: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout>
 
@@ -318,9 +316,9 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * 节流函数
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  delay: number,
+  delay: number
 ): (...args: Parameters<T>) => void {
   let lastCall = 0
 

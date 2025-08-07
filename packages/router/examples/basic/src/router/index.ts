@@ -1,9 +1,9 @@
 import {
   createRouter,
   createWebHistory,
-  type RouteRecordRaw,
-  type RouteLocationNormalized,
   type NavigationGuardNext,
+  type RouteLocationNormalized,
+  type RouteRecordRaw,
   type ScrollPosition,
 } from '@ldesign/router'
 
@@ -94,7 +94,11 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to: RouteLocationNormalized, _from: RouteLocationNormalized, savedPosition: ScrollPosition | null) {
+  scrollBehavior(
+    to: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
+    savedPosition: ScrollPosition | null
+  ) {
     // 如果有保存的位置（浏览器前进/后退）
     if (savedPosition) {
       return savedPosition
@@ -103,7 +107,7 @@ const router = createRouter({
     if (to.hash) {
       return {
         left: 0,
-        top: 0
+        top: 0,
       }
     }
     // 默认滚动到顶部
@@ -112,43 +116,60 @@ const router = createRouter({
 })
 
 // 全局前置守卫
-router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  console.log('Navigation from', from.fullPath, 'to', to.fullPath)
+router.beforeEach(
+  (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    next: NavigationGuardNext
+  ) => {
+    console.log('Navigation from', from.fullPath, 'to', to.fullPath)
 
-  // 模拟身份验证检查
-  if (to.meta.requiresAuth) {
-    // 这里可以检查用户是否已登录
-    const isAuthenticated = true // 模拟已登录状态
+    // 模拟身份验证检查
+    if (to.meta.requiresAuth) {
+      // 这里可以检查用户是否已登录
+      const isAuthenticated = true // 模拟已登录状态
 
-    if (!isAuthenticated) {
-      console.log('Access denied: authentication required')
-      next('/') // 重定向到首页
-      return
+      if (!isAuthenticated) {
+        console.log('Access denied: authentication required')
+        next('/') // 重定向到首页
+        return
+      }
     }
-  }
 
-  // 设置页面标题
-  if (to.meta.title) {
-    document.title = `${to.meta.title} - LDesign Router Example`
-  }
+    // 设置页面标题
+    if (to.meta.title) {
+      document.title = `${to.meta.title} - LDesign Router Example`
+    }
 
-  next()
-})
+    next()
+  }
+)
 
 // 全局解析守卫
-router.beforeResolve((to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  console.log('Before resolve:', to.fullPath)
-  next()
-})
+router.beforeResolve(
+  (
+    to: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
+    next: NavigationGuardNext
+  ) => {
+    console.log('Before resolve:', to.fullPath)
+    next()
+  }
+)
 
 // 全局后置钩子
-router.afterEach((to: RouteLocationNormalized, _from: RouteLocationNormalized, failure?: any) => {
-  if (failure) {
-    console.error('Navigation failed:', failure)
+router.afterEach(
+  (
+    to: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
+    failure?: NavigationFailure | void
+  ) => {
+    if (failure) {
+      console.error('Navigation failed:', failure)
+    } else {
+      console.log('Navigation completed:', to.fullPath)
+    }
   }
-  else {
-    console.log('Navigation completed:', to.fullPath)
-  }
-})
+)
 
 export default router

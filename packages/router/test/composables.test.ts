@@ -1,11 +1,21 @@
+import type { RouteRecordRaw } from '../src/types'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createApp } from 'vue'
-import { createMemoryHistory, createRouter, useRoute, useRouter, useParams, useQuery, useHash, useMeta, useMatched } from '../src'
-import type { RouteRecordRaw } from '../src/types'
+import {
+  createMemoryHistory,
+  createRouter,
+  useHash,
+  useMatched,
+  useMeta,
+  useParams,
+  useQuery,
+  useRoute,
+  useRouter,
+} from '../src'
 
 describe('composables', () => {
-  let router: any
-  let app: any
+  let router: Router
+  let app: { use: (plugin: unknown) => void }
 
   const routes: RouteRecordRaw[] = [
     {

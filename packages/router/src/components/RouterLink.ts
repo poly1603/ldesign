@@ -1,18 +1,10 @@
-import type {
-  PropType,
-  Ref,
-} from 'vue'
+import type { PropType, Ref } from 'vue'
 import type {
   RouteLocationNormalized,
   RouteLocationRaw,
   Router,
 } from '../types'
-import {
-  computed,
-  defineComponent,
-  h,
-  inject,
-} from 'vue'
+import { computed, defineComponent, h, inject } from 'vue'
 import { isSameRouteLocation, warn } from '../utils'
 
 /**
@@ -73,8 +65,7 @@ export const RouterLink = defineComponent({
     const resolvedRoute = computed(() => {
       try {
         return router.resolve(props.to, currentRoute.value)
-      }
-      catch (error) {
+      } catch (error) {
         warn(`Failed to resolve route: ${error}`)
         return null
       }
@@ -91,8 +82,7 @@ export const RouterLink = defineComponent({
       const resolved = resolvedRoute.value
       const current = currentRoute.value
 
-      if (!resolved)
-        return false
+      if (!resolved) return false
 
       if (props.exact) {
         return isSameRouteLocation(resolved, current)
@@ -107,8 +97,7 @@ export const RouterLink = defineComponent({
       const resolved = resolvedRoute.value
       const current = currentRoute.value
 
-      if (!resolved)
-        return false
+      if (!resolved) return false
 
       return isSameRouteLocation(resolved, current)
     })
@@ -144,8 +133,7 @@ export const RouterLink = defineComponent({
 
           if (props.replace) {
             router.replace(locationRaw)
-          }
-          else {
+          } else {
             router.push(locationRaw)
           }
         }
@@ -167,27 +155,24 @@ export const RouterLink = defineComponent({
       }
 
       // 创建事件监听器
-      const eventListeners: Record<string, any> = {}
+      const eventListeners: Record<string, () => void> = {}
       const events = Array.isArray(props.event) ? props.event : [props.event]
 
-      events.forEach((event) => {
-        eventListeners[`on${event.charAt(0).toUpperCase() + event.slice(1)}`] = navigate
+      events.forEach(event => {
+        eventListeners[`on${event.charAt(0).toUpperCase() + event.slice(1)}`] =
+          navigate
       })
 
       // 创建元素属性
       const elementAttrs = {
         ...attrs,
         ...eventListeners,
-        'class': [...(attrs.class ? [attrs.class] : []), ...classes.value],
-        'href': props.tag === 'a' ? href.value : undefined,
+        class: [...(attrs.class ? [attrs.class] : []), ...classes.value],
+        href: props.tag === 'a' ? href.value : undefined,
         'aria-current': isExactActive.value ? 'page' : undefined,
       }
 
-      return h(
-        props.tag,
-        elementAttrs,
-        slots.default?.(),
-      )
+      return h(props.tag, elementAttrs, slots.default?.())
     }
   },
 })
@@ -197,12 +182,20 @@ export const RouterLink = defineComponent({
  */
 function guardEvent(e: Event): boolean {
   // 不要重定向带有修饰键的点击
-  if ((e as MouseEvent).metaKey || (e as MouseEvent).altKey || (e as MouseEvent).ctrlKey || (e as MouseEvent).shiftKey) {
+  if (
+    (e as MouseEvent).metaKey ||
+    (e as MouseEvent).altKey ||
+    (e as MouseEvent).ctrlKey ||
+    (e as MouseEvent).shiftKey
+  ) {
     return false
   }
 
   // 不要重定向右键点击
-  if ((e as MouseEvent).button !== undefined && (e as MouseEvent).button !== 0) {
+  if (
+    (e as MouseEvent).button !== undefined &&
+    (e as MouseEvent).button !== 0
+  ) {
     return false
   }
 

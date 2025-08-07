@@ -26,7 +26,12 @@ const activities = ref([
   { id: 1, icon: '🔐', description: 'Logged in', timestamp: '2 hours ago' },
   { id: 2, icon: '📝', description: 'Updated profile', timestamp: '1 day ago' },
   { id: 3, icon: '📧', description: 'Changed email', timestamp: '3 days ago' },
-  { id: 4, icon: '🔑', description: 'Changed password', timestamp: '1 week ago' },
+  {
+    id: 4,
+    icon: '🔑',
+    description: 'Changed password',
+    timestamp: '1 week ago',
+  },
 ])
 
 const tabs = [
@@ -57,7 +62,9 @@ function loadUserData(id: string) {
 
   userData.value = {
     ...user,
-    joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+    joinDate: new Date(
+      Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000
+    ).toLocaleDateString(),
   }
 }
 
@@ -75,7 +82,7 @@ function goBack() {
 }
 
 function saveSettings() {
-  alert('Settings saved successfully!')
+  console.warn('Settings saved successfully!')
 }
 
 // 生命周期
@@ -89,7 +96,7 @@ onMounted(() => {
 })
 
 // 监听路由参数变化
-watch(userId, (newId) => {
+watch(userId, newId => {
   loadUserData(newId)
 })
 </script>
@@ -97,9 +104,7 @@ watch(userId, (newId) => {
 <template>
   <div class="user">
     <div class="user-header">
-      <button class="back-button" @click="goBack">
-        ← Back to Users
-      </button>
+      <button class="back-button" @click="goBack">← Back to Users</button>
       <h2>👤 User Profile</h2>
     </div>
 
@@ -113,9 +118,7 @@ watch(userId, (newId) => {
           <p class="user-email">
             {{ userData.email }}
           </p>
-          <p class="user-id">
-            User ID: {{ userId }}
-          </p>
+          <p class="user-id">User ID: {{ userId }}</p>
         </div>
       </div>
 
@@ -123,7 +126,8 @@ watch(userId, (newId) => {
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          class="tab" :class="[{ active: activeTab === tab.id }]"
+          class="tab"
+          :class="[{ active: activeTab === tab.id }]"
           @click="setActiveTab(tab.id)"
         >
           {{ tab.label }}
@@ -162,34 +166,22 @@ watch(userId, (newId) => {
           <div class="settings-form">
             <div class="form-group">
               <label>Email Notifications:</label>
-              <input v-model="settings.emailNotifications" type="checkbox">
+              <input v-model="settings.emailNotifications" type="checkbox" />
             </div>
             <div class="form-group">
               <label>Theme:</label>
               <select v-model="settings.theme">
-                <option value="light">
-                  Light
-                </option>
-                <option value="dark">
-                  Dark
-                </option>
-                <option value="auto">
-                  Auto
-                </option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="auto">Auto</option>
               </select>
             </div>
             <div class="form-group">
               <label>Language:</label>
               <select v-model="settings.language">
-                <option value="en">
-                  English
-                </option>
-                <option value="es">
-                  Spanish
-                </option>
-                <option value="fr">
-                  French
-                </option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
               </select>
             </div>
             <button class="save-button" @click="saveSettings">
@@ -201,7 +193,11 @@ watch(userId, (newId) => {
         <div v-if="activeTab === 'activity'" class="tab-panel">
           <h4>Recent Activity</h4>
           <div class="activity-list">
-            <div v-for="activity in activities" :key="activity.id" class="activity-item">
+            <div
+              v-for="activity in activities"
+              :key="activity.id"
+              class="activity-item"
+            >
               <div class="activity-icon">
                 {{ activity.icon }}
               </div>
