@@ -62,7 +62,7 @@ export class GuardManager {
   async runGuards(
     guards: NavigationGuard[],
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    from: RouteLocationNormalized
   ): Promise<NavigationGuardReturn> {
     for (const guard of guards) {
       try {
@@ -70,14 +70,9 @@ export class GuardManager {
         if (result !== undefined) {
           return result
         }
-      }
-      catch (error) {
+      } catch (error) {
         warn(`Navigation guard error: ${error}`)
-        return createNavigationFailure(
-          NavigationFailureType.aborted,
-          from,
-          to,
-        )
+        return createNavigationFailure(NavigationFailureType.aborted, from, to)
       }
     }
     return undefined
@@ -89,7 +84,7 @@ export class GuardManager {
   private runSingleGuard(
     guard: NavigationGuard,
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    from: RouteLocationNormalized
   ): Promise<NavigationGuardReturn> {
     return new Promise((resolve, reject) => {
       let isResolved = false
@@ -108,20 +103,25 @@ export class GuardManager {
         const result = guard(to, from, next)
 
         // 如果守卫返回 Promise
-        if (result && typeof result === 'object' && 'then' in result && typeof result.then === 'function') {
-          (result as Promise<NavigationGuardReturn>).then(
+        if (
+          result &&
+          typeof result === 'object' &&
+          'then' in result &&
+          typeof result.then === 'function'
+        ) {
+          ;(result as Promise<NavigationGuardReturn>).then(
             (res: NavigationGuardReturn) => {
               if (!isResolved) {
                 isResolved = true
                 resolve(res)
               }
             },
-            (error: any) => {
+            (error: Error) => {
               if (!isResolved) {
                 isResolved = true
                 reject(error)
               }
-            },
+            }
           )
         }
         // 如果守卫直接返回结果
@@ -138,8 +138,7 @@ export class GuardManager {
             resolve(undefined)
           }
         }, 5000) // 5秒超时
-      }
-      catch (error) {
+      } catch (error) {
         if (!isResolved) {
           isResolved = true
           reject(error)
@@ -153,7 +152,7 @@ export class GuardManager {
    */
   async runBeforeGuards(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    from: RouteLocationNormalized
   ): Promise<NavigationGuardReturn> {
     return this.runGuards(this.beforeGuards, to, from)
   }
@@ -163,7 +162,7 @@ export class GuardManager {
    */
   async runBeforeResolveGuards(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    from: RouteLocationNormalized
   ): Promise<NavigationGuardReturn> {
     return this.runGuards(this.beforeResolveGuards, to, from)
   }
@@ -174,13 +173,12 @@ export class GuardManager {
   runAfterGuards(
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
-    failure?: NavigationFailure,
+    failure?: NavigationFailure
   ): void {
     for (const hook of this.afterGuards) {
       try {
         hook(to, from, failure)
-      }
-      catch (error) {
+      } catch (error) {
         warn(`After navigation hook error: ${error}`)
       }
     }
@@ -221,14 +219,9 @@ export function createGuardManager(): GuardManager {
 /**
  * 导出守卫相关工具函数
  */
-export {
-  NavigationFailureType,
-} from '../constants'
+export { NavigationFailureType } from '../constants'
 
-export {
-  createNavigationFailure,
-  isNavigationFailure,
-} from '../utils'
+export { createNavigationFailure, isNavigationFailure } from '../utils'
 
 // 默认导出
 export default {

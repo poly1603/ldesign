@@ -17,18 +17,114 @@ const itemsPerPage = 6
 
 // 模拟产品数据
 const products = ref([
-  { id: 1, name: 'Smartphone', category: 'electronics', price: 599, rating: 4, emoji: '📱', date: '2023-01-15' },
-  { id: 2, name: 'Laptop', category: 'electronics', price: 1299, rating: 5, emoji: '💻', date: '2023-02-20' },
-  { id: 3, name: 'T-Shirt', category: 'clothing', price: 29, rating: 3, emoji: '👕', date: '2023-03-10' },
-  { id: 4, name: 'Jeans', category: 'clothing', price: 79, rating: 4, emoji: '👖', date: '2023-03-15' },
-  { id: 5, name: 'Novel', category: 'books', price: 15, rating: 5, emoji: '📚', date: '2023-04-01' },
-  { id: 6, name: 'Cookbook', category: 'books', price: 25, rating: 4, emoji: '📖', date: '2023-04-05' },
-  { id: 7, name: 'Plant Pot', category: 'home', price: 35, rating: 4, emoji: '🪴', date: '2023-05-01' },
-  { id: 8, name: 'Lamp', category: 'home', price: 89, rating: 3, emoji: '💡', date: '2023-05-10' },
-  { id: 9, name: 'Headphones', category: 'electronics', price: 199, rating: 5, emoji: '🎧', date: '2023-06-01' },
-  { id: 10, name: 'Sneakers', category: 'clothing', price: 129, rating: 4, emoji: '👟', date: '2023-06-15' },
-  { id: 11, name: 'Tablet', category: 'electronics', price: 399, rating: 4, emoji: '📱', date: '2023-07-01' },
-  { id: 12, name: 'Cushion', category: 'home', price: 45, rating: 3, emoji: '🛏️', date: '2023-07-10' },
+  {
+    id: 1,
+    name: 'Smartphone',
+    category: 'electronics',
+    price: 599,
+    rating: 4,
+    emoji: '📱',
+    date: '2023-01-15',
+  },
+  {
+    id: 2,
+    name: 'Laptop',
+    category: 'electronics',
+    price: 1299,
+    rating: 5,
+    emoji: '💻',
+    date: '2023-02-20',
+  },
+  {
+    id: 3,
+    name: 'T-Shirt',
+    category: 'clothing',
+    price: 29,
+    rating: 3,
+    emoji: '👕',
+    date: '2023-03-10',
+  },
+  {
+    id: 4,
+    name: 'Jeans',
+    category: 'clothing',
+    price: 79,
+    rating: 4,
+    emoji: '👖',
+    date: '2023-03-15',
+  },
+  {
+    id: 5,
+    name: 'Novel',
+    category: 'books',
+    price: 15,
+    rating: 5,
+    emoji: '📚',
+    date: '2023-04-01',
+  },
+  {
+    id: 6,
+    name: 'Cookbook',
+    category: 'books',
+    price: 25,
+    rating: 4,
+    emoji: '📖',
+    date: '2023-04-05',
+  },
+  {
+    id: 7,
+    name: 'Plant Pot',
+    category: 'home',
+    price: 35,
+    rating: 4,
+    emoji: '🪴',
+    date: '2023-05-01',
+  },
+  {
+    id: 8,
+    name: 'Lamp',
+    category: 'home',
+    price: 89,
+    rating: 3,
+    emoji: '💡',
+    date: '2023-05-10',
+  },
+  {
+    id: 9,
+    name: 'Headphones',
+    category: 'electronics',
+    price: 199,
+    rating: 5,
+    emoji: '🎧',
+    date: '2023-06-01',
+  },
+  {
+    id: 10,
+    name: 'Sneakers',
+    category: 'clothing',
+    price: 129,
+    rating: 4,
+    emoji: '👟',
+    date: '2023-06-15',
+  },
+  {
+    id: 11,
+    name: 'Tablet',
+    category: 'electronics',
+    price: 399,
+    rating: 4,
+    emoji: '📱',
+    date: '2023-07-01',
+  },
+  {
+    id: 12,
+    name: 'Cushion',
+    category: 'home',
+    price: 45,
+    rating: 3,
+    emoji: '🛏️',
+    date: '2023-07-10',
+  },
 ])
 
 // 计算属性
@@ -90,14 +186,10 @@ function updateFilters() {
 
   const query: Record<string, string> = {}
 
-  if (filters.value.category)
-    query.category = filters.value.category
-  if (filters.value.sort !== 'name')
-    query.sort = filters.value.sort
-  if (filters.value.order !== 'asc')
-    query.order = filters.value.order
-  if (currentPage.value !== 1)
-    query.page = currentPage.value.toString()
+  if (filters.value.category) query.category = filters.value.category
+  if (filters.value.sort !== 'name') query.sort = filters.value.sort
+  if (filters.value.order !== 'asc') query.order = filters.value.order
+  if (currentPage.value !== 1) query.page = currentPage.value.toString()
 
   router.replace({ query })
 }
@@ -118,8 +210,7 @@ function goToPage(page: number) {
   const query = { ...route.value.query }
   if (page === 1) {
     delete query.page
-  }
-  else {
+  } else {
     query.page = page.toString()
   }
 
@@ -128,20 +219,16 @@ function goToPage(page: number) {
 
 function viewProduct(productId: number) {
   // 这里可以导航到产品详情页
-  alert(`Viewing product ${productId}`)
+  console.warn(`Viewing product ${productId}`)
 }
 
 function loadFromQuery() {
   const query = route.value.query
 
-  if (query.category)
-    filters.value.category = query.category as string
-  if (query.sort)
-    filters.value.sort = query.sort as string
-  if (query.order)
-    filters.value.order = query.order as string
-  if (query.page)
-    currentPage.value = Number.parseInt(query.page as string) || 1
+  if (query.category) filters.value.category = query.category as string
+  if (query.sort) filters.value.sort = query.sort as string
+  if (query.order) filters.value.order = query.order as string
+  if (query.page) currentPage.value = Number.parseInt(query.page as string) || 1
 }
 
 // 生命周期
@@ -150,9 +237,12 @@ onMounted(() => {
 })
 
 // 监听路由变化
-watch(() => route.value.query, () => {
-  loadFromQuery()
-})
+watch(
+  () => route.value.query,
+  () => {
+    loadFromQuery()
+  }
+)
 </script>
 
 <template>
@@ -213,11 +303,15 @@ watch(() => route.value.query, () => {
           <p class="product-category">
             {{ product.category }}
           </p>
-          <div class="product-price">
-            ${{ product.price }}
-          </div>
+          <div class="product-price">${{ product.price }}</div>
           <div class="product-rating">
-            <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= product.rating }">★</span>
+            <span
+              v-for="i in 5"
+              :key="i"
+              class="star"
+              :class="{ filled: i <= product.rating }"
+              >★</span
+            >
             <span class="rating-text">({{ product.rating }}/5)</span>
           </div>
         </div>
@@ -228,7 +322,8 @@ watch(() => route.value.query, () => {
       <button
         v-for="page in totalPages"
         :key="page"
-        class="page-button" :class="[{ active: currentPage === page }]"
+        class="page-button"
+        :class="[{ active: currentPage === page }]"
         @click="goToPage(page)"
       >
         {{ page }}

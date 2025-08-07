@@ -1,8 +1,5 @@
 import type { ComputedRef } from 'vue'
-import type {
-  RouteLocationNormalized,
-  Router,
-} from '../types'
+import type { RouteLocationNormalized, Router } from '../types'
 import { computed, inject } from 'vue'
 import { warn } from '../utils'
 
@@ -37,18 +34,14 @@ export function useRoute(): ComputedRef<RouteLocationNormalized> {
 /**
  * 获取路由链接信息
  */
-export function useLink(props: {
-  to: string | object
-  replace?: boolean
-}) {
+export function useLink(props: { to: string | object; replace?: boolean }) {
   const router = useRouter()
   const currentRoute = useRoute()
 
   const route = computed(() => {
     try {
       return router.resolve(props.to, currentRoute.value)
-    }
-    catch (error) {
+    } catch (error) {
       warn(`Failed to resolve route: ${error}`)
       return null
     }
@@ -77,8 +70,7 @@ export function useLink(props: {
 
       if (props.replace) {
         return router.replace(locationRaw)
-      }
-      else {
+      } else {
         return router.push(locationRaw)
       }
     }
@@ -96,7 +88,10 @@ export function useLink(props: {
  * 监听路由变化
  */
 export function onBeforeRouteUpdate(
-  updateGuard: (to: RouteLocationNormalized, from: RouteLocationNormalized) => any,
+  updateGuard: (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ) => NavigationGuardReturn
 ) {
   const router = useRouter()
 
@@ -105,11 +100,9 @@ export function onBeforeRouteUpdate(
     const result = updateGuard(to, from)
     if (result === false) {
       next(false)
-    }
-    else if (typeof result === 'string' || typeof result === 'object') {
+    } else if (typeof result === 'string' || typeof result === 'object') {
       next(result)
-    }
-    else {
+    } else {
       next()
     }
   })
@@ -119,7 +112,10 @@ export function onBeforeRouteUpdate(
  * 离开路由守卫
  */
 export function onBeforeRouteLeave(
-  leaveGuard: (to: RouteLocationNormalized, from: RouteLocationNormalized) => any,
+  leaveGuard: (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ) => NavigationGuardReturn
 ) {
   const router = useRouter()
 
@@ -128,11 +124,9 @@ export function onBeforeRouteLeave(
     const result = leaveGuard(to, from)
     if (result === false) {
       next(false)
-    }
-    else if (typeof result === 'string' || typeof result === 'object') {
+    } else if (typeof result === 'string' || typeof result === 'object') {
       next(result)
-    }
-    else {
+    } else {
       next()
     }
   })

@@ -13,7 +13,10 @@ export interface RouteRecordRaw {
   children?: RouteRecordRaw[]
   meta?: RouteMeta
   beforeEnter?: NavigationGuard | NavigationGuard[]
-  props?: boolean | Record<string, any> | ((route: RouteLocationNormalized) => Record<string, any>)
+  props?:
+    | boolean
+    | Record<string, unknown>
+    | ((route: RouteLocationNormalized) => Record<string, unknown>)
   sensitive?: boolean
   strict?: boolean
 }
@@ -32,6 +35,19 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   icon?: string
   hidden?: boolean
   roles?: string[]
+  transition?: RouteTransition
+  preload?: PreloadStrategy
+  cache?: boolean | RouteCacheConfig
+  keepAlive?: boolean
+  priority?: number
+  breadcrumb?: boolean
+  layout?: string
+  permissions?: string[]
+  analytics?: {
+    track?: boolean
+    category?: string
+    action?: string
+  }
 }
 
 /**
@@ -47,15 +63,17 @@ export type RouteQuery = Record<string, string | string[] | null | undefined>
 /**
  * 路由位置原始类型
  */
-export type RouteLocationRaw = string | {
-  name?: string | symbol | null | undefined
-  path?: string
-  params?: RouteParams
-  query?: RouteQuery
-  hash?: string
-  replace?: boolean
-  force?: boolean
-}
+export type RouteLocationRaw =
+  | string
+  | {
+      name?: string | symbol | null | undefined
+      path?: string
+      params?: RouteParams
+      query?: RouteQuery
+      hash?: string
+      replace?: boolean
+      force?: boolean
+    }
 
 /**
  * 路由位置
@@ -97,7 +115,12 @@ export interface RouteRecordNormalized {
   components: Record<string, RouteComponent> | null | undefined
   children: RouteRecordNormalized[]
   meta: RouteMeta
-  props: Record<string, boolean | Record<string, any> | ((route: RouteLocationNormalized) => Record<string, any>)>
+  props: Record<
+    string,
+    | boolean
+    | Record<string, unknown>
+    | ((route: RouteLocationNormalized) => Record<string, unknown>)
+  >
   beforeEnter: NavigationGuard | undefined
   aliasOf: RouteRecordNormalized | undefined
   redirect: RouteLocationRaw | undefined
@@ -137,7 +160,7 @@ export interface NavigationHookAfter {
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
     failure?: NavigationFailure | void
-  ): any
+  ): void
 }
 
 /**
@@ -188,15 +211,26 @@ export interface HistoryState {
   [x: string]: HistoryStateValue
 }
 
-export type HistoryStateValue = string | number | boolean | null | undefined | HistoryState | HistoryStateArray
+export type HistoryStateValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | HistoryState
+  | HistoryStateArray
 
-export interface HistoryStateArray extends Array<HistoryStateValue> { }
+export interface HistoryStateArray extends Array<HistoryStateValue> {}
 
 /**
  * 导航回调
  */
 export interface NavigationCallback {
-  (to: HistoryLocation, from: HistoryLocation, info: NavigationInformation): void
+  (
+    to: HistoryLocation,
+    from: HistoryLocation,
+    info: NavigationInformation
+  ): void
 }
 
 /**
@@ -245,6 +279,35 @@ export interface ScrollBehavior {
 }
 
 /**
+ * 路由过渡配置
+ */
+export interface RouteTransition {
+  name?: string
+  mode?: 'in-out' | 'out-in' | 'default'
+  appear?: boolean
+  duration?: number | { enter: number; leave: number }
+  enterActiveClass?: string
+  leaveActiveClass?: string
+  enterFromClass?: string
+  leaveToClass?: string
+}
+
+/**
+ * 路由预加载策略
+ */
+export type PreloadStrategy = 'hover' | 'visible' | 'immediate' | 'none'
+
+/**
+ * 路由缓存配置
+ */
+export interface RouteCacheConfig {
+  max?: number
+  ttl?: number
+  include?: string[]
+  exclude?: string[]
+}
+
+/**
  * 路由器选项
  */
 export interface RouterOptions {
@@ -257,6 +320,10 @@ export interface RouterOptions {
   scrollBehavior?: ScrollBehavior
   sensitive?: boolean
   strict?: boolean
+  transition?: RouteTransition
+  preloadStrategy?: PreloadStrategy
+  cache?: RouteCacheConfig
+  performance?: boolean
 }
 
 /**
@@ -266,14 +333,20 @@ export interface Router {
   readonly currentRoute: Ref<RouteLocationNormalized>
   readonly options: RouterOptions
 
-  addRoute: ((route: RouteRecordRaw) => () => void) & ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
+  addRoute: ((route: RouteRecordRaw) => () => void) &
+    ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
   removeRoute: (name: string | symbol) => void
   hasRoute: (name: string | symbol) => boolean
   getRoutes: () => RouteRecordNormalized[]
-  resolve: (to: RouteLocationRaw, currentLocation?: RouteLocationNormalized) => RouteLocation
+  resolve: (
+    to: RouteLocationRaw,
+    currentLocation?: RouteLocationNormalized
+  ) => RouteLocation
 
   push: (to: RouteLocationRaw) => Promise<NavigationFailure | void | undefined>
-  replace: (to: RouteLocationRaw) => Promise<NavigationFailure | void | undefined>
+  replace: (
+    to: RouteLocationRaw
+  ) => Promise<NavigationFailure | void | undefined>
   go: (delta: number) => void
   back: () => void
   forward: () => void
@@ -282,10 +355,23 @@ export interface Router {
   beforeResolve: (guard: NavigationGuard) => () => void
   afterEach: (guard: NavigationHookAfter) => () => void
 
-  onError: (handler: (error: Error, to: RouteLocationNormalized, from: RouteLocationNormalized) => any) => () => void
+  onError: (
+    handler: (
+      error: Error,
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized
+    ) => void
+  ) => () => void
 
   isReady: () => Promise<void>
-  install: (app: any) => void
+  install: (app: { use: (plugin: unknown) => void }) => void
+
+  // 高级功能 API
+  preloadRoute: (route: RouteRecordNormalized) => Promise<void>
+  clearPreloadCache: (routeKey?: string) => void
+  getPerformanceStats: () => unknown
+  getCacheStats: () => unknown
+  clearRouteCache: () => void
 }
 
 /**

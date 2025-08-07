@@ -18,6 +18,10 @@
 - 📱 **多种历史模式** - 支持 Hash、HTML5 History 和内存模式
 - 🔄 **动态路由** - 运行时添加、删除路由，灵活应对业务需求
 - 🎪 **嵌套路由** - 支持无限层级的嵌套路由结构
+- 🚀 **智能预加载** - 多种预加载策略，提前准备用户可能访问的页面
+- 📊 **性能监控** - 内置性能分析工具，实时监控路由性能
+- 🔌 **插件系统** - 可扩展的插件架构，满足各种定制需求
+- 🎭 **过渡动画** - 丰富的页面切换动画效果
 
 ## 🚀 快速开始
 
@@ -37,8 +41,8 @@ yarn add @ldesign/router
 ### 基础用法
 
 ```typescript
-import { createApp } from 'vue'
 import { createRouter, createWebHistory } from '@ldesign/router'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 1. 定义路由组件
@@ -66,29 +70,14 @@ app.mount('#app')
 ### 在组件中使用
 
 ```vue
-<template>
-  <div class="app">
-    <!-- 导航栏 -->
-    <nav class="navbar">
-      <router-link to="/" class="nav-link">🏠 首页</router-link>
-      <router-link to="/about" class="nav-link">📖 关于</router-link>
-    </nav>
-
-    <!-- 路由视图 -->
-    <main class="main-content">
-      <router-view />
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { useRouter, useRoute } from '@ldesign/router'
+import { useRoute, useRouter } from '@ldesign/router'
 
 const router = useRouter()
 const route = useRoute()
 
 // 编程式导航
-const goToAbout = () => {
+function goToAbout() {
   router.push('/about')
 }
 
@@ -97,6 +86,21 @@ console.log('当前路径:', route.value.path)
 console.log('路由参数:', route.value.params)
 console.log('查询参数:', route.value.query)
 </script>
+
+<template>
+  <div class="app">
+    <!-- 导航栏 -->
+    <nav class="navbar">
+      <router-link to="/" class="nav-link"> 🏠 首页 </router-link>
+      <router-link to="/about" class="nav-link"> 📖 关于 </router-link>
+    </nav>
+
+    <!-- 路由视图 -->
+    <main class="main-content">
+      <router-view />
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .navbar {
@@ -138,8 +142,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./views/Home.vue'),
     meta: {
       title: '🏠 首页',
-      description: '欢迎来到我们的应用！'
-    }
+      description: '欢迎来到我们的应用！',
+    },
   },
   {
     path: '/user/:id',
@@ -148,8 +152,8 @@ const routes: RouteRecordRaw[] = [
     props: true, // 将路由参数作为 props 传递给组件
     meta: {
       requiresAuth: true,
-      title: '👤 用户详情'
-    }
+      title: '👤 用户详情',
+    },
   },
   {
     path: '/admin',
@@ -160,16 +164,16 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboard',
         name: 'AdminDashboard',
         component: () => import('./views/admin/Dashboard.vue'),
-        meta: { title: '📊 管理面板' }
+        meta: { title: '📊 管理面板' },
       },
       {
         path: 'users',
         name: 'AdminUsers',
         component: () => import('./views/admin/Users.vue'),
-        meta: { title: '👥 用户管理' }
-      }
-    ]
-  }
+        meta: { title: '👥 用户管理' },
+      },
+    ],
+  },
 ]
 ```
 
@@ -182,7 +186,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated()) {
     next({
       path: '/login',
-      query: { redirect: to.fullPath } // 保存重定向路径
+      query: { redirect: to.fullPath }, // 保存重定向路径
     })
     return
   }
@@ -197,13 +201,13 @@ router.beforeEach((to, from, next) => {
 })
 
 // 全局后置钩子 - 更新页面标题
-router.afterEach((to) => {
+router.afterEach(to => {
   document.title = to.meta.title || 'LDesign App'
 
   // 发送页面浏览统计
   analytics.track('page_view', {
     path: to.path,
-    title: to.meta.title
+    title: to.meta.title,
   })
 })
 
@@ -218,21 +222,71 @@ const routes = [
       } else {
         next('/403')
       }
-    }
-  }
+    },
+  },
 ]
+```
+
+### 🚀 高级功能
+
+#### 智能预加载
+
+```typescript
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+  // 启用智能预加载
+  preloadStrategy: 'visible', // 'none' | 'immediate' | 'visible' | 'hover'
+  cache: {
+    max: 20,
+    ttl: 10 * 60 * 1000, // 10分钟
+    include: ['Home', 'Products'],
+    exclude: ['Login'],
+  },
+})
+
+// 手动预加载
+await router.preloadRoute(route)
+```
+
+#### 性能监控
+
+```typescript
+// 获取性能统计
+const stats = router.getPerformanceStats()
+console.log('平均导航时间:', stats.averageDuration)
+
+// 获取缓存统计
+const cacheStats = router.getCacheStats()
+console.log('缓存命中率:', cacheStats.hitRate)
+```
+
+#### 插件系统
+
+```typescript
+// 内置插件
+import { titlePlugin, analyticsPlugin } from '@ldesign/router'
+
+router.use(titlePlugin, { suffix: 'My App' })
+router.use(analyticsPlugin, {
+  trackPageView: route => {
+    gtag('config', 'GA_TRACKING_ID', {
+      page_path: route.path,
+    })
+  },
+})
 ```
 
 ### 🧩 组合式 API
 
 ```typescript
 import {
-  useRouter,
-  useRoute,
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
   useParams,
   useQuery,
-  onBeforeRouteUpdate,
-  onBeforeRouteLeave
+  useRoute,
+  useRouter,
 } from '@ldesign/router'
 
 export default defineComponent({
@@ -252,9 +306,7 @@ export default defineComponent({
     // 离开守卫 - 防止用户意外离开
     onBeforeRouteLeave((to, from) => {
       if (hasUnsavedChanges()) {
-        const answer = window.confirm(
-          '你有未保存的更改，确定要离开吗？'
-        )
+        const answer = window.confirm('你有未保存的更改，确定要离开吗？')
         if (!answer) return false
       }
     })
@@ -264,7 +316,7 @@ export default defineComponent({
       router.push({
         name: 'User',
         params: { id: userId },
-        query: { tab: 'profile' }
+        query: { tab: 'profile' },
       })
     }
 
@@ -285,9 +337,9 @@ export default defineComponent({
       params,
       query,
       navigateToUser,
-      navigateWithTransition
+      navigateWithTransition,
     }
-  }
+  },
 })
 ```
 
@@ -301,14 +353,14 @@ router.addRoute({
   path: '/dynamic/:id',
   name: 'Dynamic',
   component: () => import('./views/Dynamic.vue'),
-  meta: { title: '动态路由' }
+  meta: { title: '动态路由' },
 })
 
 // 添加嵌套路由
 router.addRoute('Parent', {
   path: 'child',
   name: 'Child',
-  component: () => import('./views/Child.vue')
+  component: () => import('./views/Child.vue'),
 })
 
 // 删除路由
@@ -328,24 +380,31 @@ console.log('所有路由:', allRoutes)
 
 ```typescript
 // HTML5 History 模式 (推荐)
-import { createWebHistory } from '@ldesign/router'
+import { createRouter, createWebHistory } from '@ldesign/router'
+
 const router = createRouter({
   history: createWebHistory('/app/'), // 可选的 base URL
-  routes
+  routes,
 })
+```
 
+```typescript
 // Hash 模式 (兼容性更好)
-import { createWebHashHistory } from '@ldesign/router'
+import { createRouter, createWebHashHistory } from '@ldesign/router'
+
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
 })
+```
 
+```typescript
 // 内存模式 (SSR/测试)
-import { createMemoryHistory } from '@ldesign/router'
+import { createMemoryHistory, createRouter } from '@ldesign/router'
+
 const router = createRouter({
   history: createMemoryHistory(),
-  routes
+  routes,
 })
 ```
 
@@ -365,13 +424,13 @@ const router = createRouter({
     if (to.hash) {
       return {
         el: to.hash,
-        behavior: 'smooth'
+        behavior: 'smooth',
       }
     }
 
     // 否则滚动到顶部
     return { top: 0 }
-  }
+  },
 })
 ```
 
@@ -386,16 +445,16 @@ const router = createRouter({
   history: createMemoryHistory(),
   routes: [
     { path: '/', component: Home },
-    { path: '/user/:id', component: User }
-  ]
+    { path: '/user/:id', component: User },
+  ],
 })
 
 // 在测试中使用
 test('should navigate to user page', async () => {
   const wrapper = mount(App, {
     global: {
-      plugins: [router]
-    }
+      plugins: [router],
+    },
   })
 
   await router.push('/user/123')
@@ -459,16 +518,17 @@ const routes = [
   {
     path: '/heavy-page',
     // 使用动态导入实现懒加载
-    component: () => import('./views/HeavyPage.vue')
+    component: () => import('./views/HeavyPage.vue'),
   },
   {
     path: '/admin',
     // 可以添加 webpackChunkName 注释
-    component: () => import(
-      /* webpackChunkName: "admin" */
-      './views/Admin.vue'
-    )
-  }
+    component: () =>
+      import(
+        /* webpackChunkName: "admin" */
+        './views/Admin.vue'
+      ),
+  },
 ]
 ```
 

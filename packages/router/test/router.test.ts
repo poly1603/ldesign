@@ -1,14 +1,10 @@
 import type { RouteRecordRaw } from '../src'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from 'vue'
-import {
-  createMemoryHistory,
-  createRouter,
-  createWebHistory,
-} from '../src'
+import { createMemoryHistory, createRouter, createWebHistory } from '../src'
 
 describe('router', () => {
-  let router: any
+  let router: Router
 
   const routes: RouteRecordRaw[] = [
     {
@@ -118,7 +114,7 @@ describe('router', () => {
       expect(guard).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
         expect.objectContaining({ path: '/' }),
-        expect.any(Function),
+        expect.any(Function)
       )
     })
 
@@ -126,8 +122,7 @@ describe('router', () => {
       router.beforeEach((to, from, next) => {
         if (to.path === '/about') {
           next(false)
-        }
-        else {
+        } else {
           next()
         }
       })
@@ -140,8 +135,7 @@ describe('router', () => {
       router.beforeEach((to, from, next) => {
         if (to.path === '/about') {
           next('/')
-        }
-        else {
+        } else {
           next()
         }
       })

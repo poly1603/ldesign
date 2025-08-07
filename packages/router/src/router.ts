@@ -1,7 +1,9 @@
 import type { App, Ref } from 'vue'
 import type {
+  HistoryState,
   NavigationFailure,
   NavigationGuard,
+  NavigationGuardReturn,
   NavigationHookAfter,
   RouteLocationNormalized,
   RouteLocationRaw,
@@ -14,6 +16,9 @@ import { RouterLink } from './components/RouterLink'
 import { RouterView } from './components/RouterView'
 import { NavigationFailureType, START_LOCATION } from './constants'
 import { createRouterMatcher } from './matcher'
+import { createRoutePreloader } from './preloader'
+import { createRouteCacheManager } from './cache'
+import { createPerformanceMonitor } from './performance'
 
 /**
  * 创建路由器实例
@@ -28,7 +33,18 @@ export function createRouter(options: RouterOptions): Router {
   const afterGuards = new Set<NavigationHookAfter>()
 
   // 错误处理
-  const errorHandlers: Array<(error: Error, to: RouteLocationNormalized, from: RouteLocationNormalized) => any> = []
+  const errorHandlers: Array<
+    (
+      error: Error,
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized
+    ) => void
+  > = []
+
+  // 高级功能模块
+  const preloader = createRoutePreloader(options.preloadStrategy)
+  const cacheManager = createRouteCacheManager(options.cache)
+  const performanceMonitor = createPerformanceMonitor(options.performance)
 
   let ready = false
   let readyPromise: Promise<void>
@@ -37,11 +53,16 @@ export function createRouter(options: RouterOptions): Router {
     currentRoute: currentRoute as Ref<RouteLocationNormalized>,
     options,
 
-    addRoute(parentOrRoute: string | symbol | RouteRecordRaw, route?: RouteRecordRaw) {
-      if (typeof parentOrRoute === 'string' || typeof parentOrRoute === 'symbol') {
+    addRoute(
+      parentOrRoute: string | symbol | RouteRecordRaw,
+      route?: RouteRecordRaw
+    ) {
+      if (
+        typeof parentOrRoute === 'string' ||
+        typeof parentOrRoute === 'symbol'
+      ) {
         return matcher.addRoute(route!, parentOrRoute)
-      }
-      else {
+      } else {
         return matcher.addRoute(parentOrRoute)
       }
     },
@@ -107,18 +128,15 @@ export function createRouter(options: RouterOptions): Router {
       errorHandlers.push(handler)
       return () => {
         const index = errorHandlers.indexOf(handler)
-        if (index > -1)
-          errorHandlers.splice(index, 1)
+        if (index > -1) errorHandlers.splice(index, 1)
       }
     },
 
     isReady() {
-      if (ready)
-        return Promise.resolve()
-      if (readyPromise)
-        return readyPromise
+      if (ready) return Promise.resolve()
+      if (readyPromise) return readyPromise
 
-      readyPromise = new Promise((resolve) => {
+      readyPromise = new Promise(resolve => {
         const removeListener = options.history.listen(() => {
           ready = true
           removeListener()
@@ -133,6 +151,13 @@ export function createRouter(options: RouterOptions): Router {
 
       return readyPromise
     },
+
+    // 高级功能 API
+    preloadRoute: preloader.preloadRoute.bind(preloader),
+    clearPreloadCache: preloader.clearCache.bind(preloader),
+    getPerformanceStats: performanceMonitor.getStats.bind(performanceMonitor),
+    getCacheStats: cacheManager.getStats.bind(cacheManager),
+    clearRouteCache: cacheManager.clear.bind(cacheManager),
 
     install(app: App) {
       app.config.globalProperties.$router = router
@@ -158,18 +183,32 @@ export function createRouter(options: RouterOptions): Router {
    */
   async function navigate(
     to: RouteLocationRaw,
-    type: 'push' | 'replace',
+    type: 'push' | 'replace'
   ): Promise<NavigationFailure | void | undefined> {
     const from = currentRoute.value
+
+    // 开始性能监控
+    performanceMonitor.startNavigation()
+
     const targetLocation = router.resolve(to, from)
+    performanceMonitor.markRouteResolution()
 
     try {
       // 执行导航守卫
       await runGuardQueue(beforeGuards, targetLocation, from)
       await runGuardQueue(beforeResolveGuards, targetLocation, from)
+      performanceMonitor.markGuardExecution()
+
+      // 预加载组件
+      const matchedRoute =
+        targetLocation.matched[targetLocation.matched.length - 1]
+      if (matchedRoute) {
+        await preloader.preloadRoute(matchedRoute)
+      }
+      performanceMonitor.markComponentLoad()
 
       // 更新历史记录
-      const historyState: any = {
+      const historyState: HistoryState = {
         path: targetLocation.path,
         query: targetLocation.query,
         hash: targetLocation.hash,
@@ -178,23 +217,35 @@ export function createRouter(options: RouterOptions): Router {
       }
       if (type === 'push') {
         options.history.push(targetLocation.fullPath, historyState)
-      }
-      else {
+      } else {
         options.history.replace(targetLocation.fullPath, historyState)
       }
 
       // 更新当前路由
       currentRoute.value = targetLocation
 
+      // 添加到缓存
+      cacheManager.set(targetLocation)
+
       // 执行后置钩子
       for (const guard of afterGuards) {
         guard(targetLocation, from)
       }
-    }
-    catch (err) {
+
+      // 结束性能监控
+      performanceMonitor.endNavigation(from, targetLocation)
+
+      // 根据策略预加载相关路由
+      if (options.preloadStrategy && options.preloadStrategy !== 'none') {
+        preloader.preloadByStrategy(targetLocation, matcher.getRoutes())
+      }
+    } catch (err) {
       if (err instanceof Error) {
         // 处理导航错误
         errorHandlers.forEach(handler => handler(err, targetLocation, from))
+
+        // 结束性能监控（失败情况）
+        performanceMonitor.endNavigation(from, targetLocation)
 
         // 返回导航失败
         return {
@@ -213,21 +264,21 @@ export function createRouter(options: RouterOptions): Router {
   async function runGuardQueue(
     guards: Set<NavigationGuard>,
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    from: RouteLocationNormalized
   ): Promise<void> {
     for (const guard of guards) {
       await new Promise<void>((resolve, reject) => {
-        const next = (result?: any) => {
+        const next = (result?: NavigationGuardReturn) => {
           if (result === false) {
             reject(new Error('Navigation cancelled'))
-          }
-          else if (result instanceof Error) {
+          } else if (result instanceof Error) {
             reject(result)
-          }
-          else if (typeof result === 'string' || (result && typeof result === 'object')) {
+          } else if (
+            typeof result === 'string' ||
+            (result && typeof result === 'object')
+          ) {
             reject(new Error('Navigation redirected'))
-          }
-          else {
+          } else {
             resolve()
           }
         }
@@ -241,7 +292,7 @@ export function createRouter(options: RouterOptions): Router {
   }
 
   // 监听历史变化
-  options.history.listen((to) => {
+  options.history.listen(to => {
     const route = matcher.resolve(to, currentRoute.value)
     currentRoute.value = route
   })
