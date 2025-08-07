@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import alias from '@rollup/plugin-alias'
 import babel from '@rollup/plugin-babel'
@@ -136,7 +137,9 @@ export function createRollupConfig(options = {}) {
         preventAssignment: true,
       }),
       typescript({
-        tsconfig: path.resolve(packagePath, 'tsconfig.build.json'),
+        tsconfig: fs.existsSync(path.resolve(packagePath, 'tsconfig.build.json'))
+          ? path.resolve(packagePath, 'tsconfig.build.json')
+          : path.resolve(packagePath, 'tsconfig.json'),
         declaration: false,
         declarationMap: false,
         sourceMap: true,

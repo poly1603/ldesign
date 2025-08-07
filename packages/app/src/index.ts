@@ -1,92 +1,64 @@
-// ============ 主要导出 ============
+/**
+ * LDesign App - 统一应用启动器
+ * 
+ * 提供简单易用的 API 来创建和启动 LDesign 应用
+ */
+
+// 导出核心创建函数
+export {
+  createLDesignApp,
+  quickCreateLDesignApp,
+  type LDesignApp,
+  type LDesignAppOptions
+} from './core/createLDesignApp'
+
+// 导出主要组件
 export { default as App } from './App.vue'
 
-// ============ 组件导出 ============
-export { default as LNotificationContainer } from './components/LNotificationContainer.vue'
-export { default as LGlobalLoading } from './components/LGlobalLoading.vue'
-export { default as LErrorBoundary } from './components/LErrorBoundary.vue'
+/**
+ * 快速启动函数 - 最简单的使用方式
+ * 
+ * @example
+ * ```typescript
+ * import { quickStart } from '@ldesign/app'
+ * 
+ * quickStart('#app')
+ * ```
+ */
+export function quickStart(selector: string = '#app') {
+  const { quickCreateLDesignApp } = require('./core/createLDesignApp')
+  const App = require('./App.vue').default
 
-// 重新导出LDesign水印组件
-export { Watermark } from '@ldesign/watermark/vue'
+  const app = quickCreateLDesignApp(App)
+  app.mount(selector)
 
-// ============ 视图导出 ============
-export { default as LoginView } from './views/LoginView.vue'
-export { default as RegisterView } from './views/RegisterView.vue'
-export { default as DashboardView } from './views/DashboardView.vue'
+  return app
+}
 
-// ============ 模板导出 ============
-export * from './templates'
+/**
+ * 自定义启动函数 - 支持完整配置
+ * 
+ * @example
+ * ```typescript
+ * import { createApp } from '@ldesign/app'
+ * import MyApp from './MyApp.vue'
+ * 
+ * const app = createApp(MyApp, {
+ *   appName: 'My Application',
+ *   modules: {
+ *     color: true,
+ *     crypto: true,
+ *     device: false
+ *   }
+ * })
+ * 
+ * app.mount('#app')
+ * ```
+ */
+export function createApp(rootComponent: any, options?: any) {
+  const { createLDesignApp } = require('./core/createLDesignApp')
+  return createLDesignApp(rootComponent, options)
+}
 
-// ============ 状态管理导出 ============
-export * from './stores'
-
-// ============ 工具函数导出 ============
-export * from './utils'
-
-// ============ Composables导出 ============
-export * from './composables'
-
-// ============ 路由导出 ============
-export * from './router'
-
-// ============ 国际化导出 ============
-export * from './i18n'
-
-// ============ LDesign包重新导出 ============
-// 重新导出LDesign包的组合式API，方便使用
-export {
-  useEngine,
-  useEngineConfig,
-  useEnginePlugins,
-  useEngineMiddleware,
-  useEngineEvents,
-  useEngineState,
-  useEngineLogger,
-  useEngineNotifications,
-  useEngineErrors
-} from '@ldesign/engine/vue'
-
-export {
-  useRouter,
-  useRoute
-} from '@ldesign/router'
-
-export {
-  useI18n,
-  useLocale
-} from '@ldesign/i18n/vue'
-
-export {
-  useTemplate,
-  useTemplateManager
-} from '@ldesign/template'
-
-export {
-  useWatermark,
-  useSimpleWatermark
-} from '@ldesign/watermark/vue'
-
-export {
-  useDevice,
-  useDeviceDetection
-} from '@ldesign/device/vue'
-
-export {
-  useCrypto
-} from '@ldesign/crypto/vue'
-
-export {
-  useHttp
-} from '@ldesign/http/vue'
-
-// ============ 类型导出 ============
-export * from './types'
-
-// ============ 配置导出 ============
-export * from './config'
-
-// ============ 创建应用函数 ============
-export { createLDesignApp } from './factory'
-
-// ============ 版本信息 ============
-export const version = '1.0.0'
+// 默认导出快速启动函数
+export default quickStart

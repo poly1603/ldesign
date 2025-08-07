@@ -1,7 +1,5 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
+import { Ref, ComputedRef } from 'vue';
 import { HttpClient, HttpError, RequestConfig, ResponseData } from './index.js';
-import { Ref, ComputedRef } from '../node_modules/.pnpm/@vue_reactivity@3.5.18/node_modules/@vue/reactivity/dist/reactivity.d.js';
-import '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
 
 /**
  * 请求状态接口

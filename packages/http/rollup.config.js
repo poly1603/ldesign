@@ -6,10 +6,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default createRollupConfig({
   packageDir: __dirname,
-  vue: false,
-  external: ['axios', 'alova'],
+  vue: true,
+  external: ['vue', 'axios', 'alova'],
   globalName: 'LDesignHttp',
   globals: {
+    vue: 'Vue',
     axios: 'axios',
     alova: 'alova',
   },

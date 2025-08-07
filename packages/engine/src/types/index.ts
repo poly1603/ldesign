@@ -218,6 +218,10 @@ export interface Engine {
   use: (plugin: Plugin) => Promise<void>
   mount: (selector: string | Element) => void
   unmount: () => void
+  getApp: () => App | undefined
+  isMounted: () => boolean
+  getMountTarget: () => string | Element | undefined
+  destroy: () => void
 
   // 扩展方法
   setRouter: (router: RouterAdapter) => void

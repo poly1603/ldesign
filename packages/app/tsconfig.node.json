@@ -6,12 +6,9 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "noEmit": true,
-    "types": ["node"]
+    "noEmit": true
   },
   "include": [
-    "vite.config.ts",
-    "rollup.config.js",
-    "vitest.config.ts"
+    "vite.config.ts"
   ]
 }

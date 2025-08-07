@@ -9,7 +9,7 @@
  */
 
 // === Vue Composables ===
-export { useCrypto } from '../../vue/composables/useCrypto'
+// useCrypto 在下面的 Composition API Hooks 部分导出
 
 // === 核心功能重新导出 ===
 // 为 Vue 环境提供便捷的核心功能访问

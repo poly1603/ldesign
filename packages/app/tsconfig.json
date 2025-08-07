@@ -1,10 +1,12 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "allowJs": false,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -20,47 +22,27 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Vue */
-    "allowJs": true,
-    "checkJs": false,
-
-    /* Decorators */
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@views/*": ["src/views/*"],
-      "@templates/*": ["src/templates/*"],
-      "@stores/*": ["src/stores/*"],
-      "@utils/*": ["src/utils/*"],
-      "@assets/*": ["src/assets/*"],
-      "@styles/*": ["src/styles/*"]
-    },
-
-    /* Type definitions */
-    "types": ["vite/client", "node", "@types/node"]
+      "@/components/*": ["src/components/*"],
+      "@/views/*": ["src/views/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/types/*": ["src/types/*"]
+    }
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/**/*.d.ts",
     "vite.config.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "es",
-    "lib",
-    "coverage"
+    "dist"
   ],
   "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
+    { "path": "./tsconfig.node.json" }
   ]
 }
