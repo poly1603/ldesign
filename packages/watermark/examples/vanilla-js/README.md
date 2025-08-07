@@ -1,6 +1,7 @@
 # 🌊 LDesign Watermark - 原生 JavaScript 示例
 
-这是一个使用 **Vite + 原生 JavaScript** 构建的 LDesign Watermark 水印组件完整示例项目。通过这个示例，你可以学习如何在原生 JavaScript 项目中使用水印组件的各种功能。
+这是一个使用 **Vite + 原生 JavaScript** 构建的 LDesign Watermark 水印组件完整示例项目。通过这个示例
+，你可以学习如何在原生 JavaScript 项目中使用水印组件的各种功能。
 
 ## ✨ 功能特性
 
@@ -62,8 +63,8 @@ const watermark = await createWatermark('#container', {
   style: {
     fontSize: 16,
     color: 'rgba(0, 0, 0, 0.15)',
-    opacity: 0.8
-  }
+    opacity: 0.8,
+  },
 })
 ```
 
@@ -78,28 +79,28 @@ const watermark = await createWatermark('#container', {
     fontFamily: 'Arial, sans-serif',
     color: '#333',
     opacity: 0.2,
-    rotate: -22
+    rotate: -22,
   },
   layout: {
     gapX: 100,
     gapY: 80,
     offsetX: 50,
-    offsetY: 30
+    offsetY: 30,
   },
   animation: {
     type: 'fade',
     duration: 2000,
-    iteration: 'infinite'
+    iteration: 'infinite',
   },
   security: {
     level: 'high',
     mutationObserver: true,
-    styleProtection: true
+    styleProtection: true,
   },
   responsive: {
     enabled: true,
-    autoResize: true
-  }
+    autoResize: true,
+  },
 })
 ```
 
@@ -112,12 +113,12 @@ const imageWatermark = await createWatermark('#container', {
     src: '/path/to/logo.png',
     width: 60,
     height: 30,
-    opacity: 0.3
+    opacity: 0.3,
   },
   layout: {
     gapX: 120,
-    gapY: 100
-  }
+    gapY: 100,
+  },
 })
 ```
 
@@ -130,8 +131,8 @@ const canvasWatermark = await createWatermark('#container', {
   renderMode: 'canvas',
   style: {
     fontSize: 16,
-    color: '#4CAF50'
-  }
+    color: '#4CAF50',
+  },
 })
 ```
 
@@ -179,21 +180,27 @@ vanilla-js/
 ## 🎨 示例展示
 
 ### 1. 基础文字水印
+
 展示最简单的文字水印用法，适合快速上手。
 
 ### 2. 图片水印
+
 演示如何使用图片作为水印，支持 PNG、JPG、SVG 等格式。
 
 ### 3. Canvas 水印
+
 使用 Canvas 渲染模式，提供更好的性能和更丰富的效果。
 
 ### 4. 动画水印
+
 展示各种动画效果，包括淡入淡出、旋转、缩放等。
 
 ### 5. 响应式水印
+
 演示水印如何根据容器大小自动调整布局和样式。
 
 ### 6. 安全防护水印
+
 展示安全防护功能，防止水印被恶意删除或修改。
 
 ## 🔍 调试技巧

@@ -3,19 +3,23 @@
  */
 
 import type {
+  EventConfig,
+  EventFilter,
+  EventListener,
+  EventMiddleware,
+  EventStats,
+  EventManager as IEventManager,
   WatermarkEvent,
   WatermarkEventType,
-  EventListener,
-  EventFilter,
-  EventManager as IEventManager,
-  EventConfig,
-  EventStats,
-  EventMiddleware
 } from '../types'
 
+import {
+  ErrorSeverity,
+  WatermarkError,
+  WatermarkErrorCode,
+} from '../types/error'
 import { DEFAULT_EVENT_CONFIG } from '../types/events'
-import { WatermarkError, WatermarkErrorCode, ErrorSeverity } from '../types/error'
-import { generateId } from '../utils/id-generator'
+// import { generateId } from '../utils/id-generator'
 
 /**
  * 事件管理器
@@ -28,13 +32,13 @@ export class EventManager implements IEventManager {
   private config: EventConfig
   private stats: EventStats = {
     totalEvents: 0,
-    eventsByType: new Map(),
-    listenersCount: 0,
-    filtersCount: 0,
-    middlewaresCount: 0,
+    eventCounts: {} as Record<WatermarkEventType, number>,
+    listenerCounts: {} as Record<WatermarkEventType, number>,
+    avgHandlingTime: 0,
+    errorCount: 0,
     lastEventTime: 0,
-    averageProcessingTime: 0
   }
+
   private eventHistory: WatermarkEvent[] = []
   private processingTimes: number[] = []
   private initialized = false
@@ -52,17 +56,15 @@ export class EventManager implements IEventManager {
     }
 
     // 设置默认中间件
-    if (this.config.enableLogging) {
+    if (this.config.logEvents) {
       this.addMiddleware(this.createLoggingMiddleware())
     }
 
-    if (this.config.enableErrorHandling) {
-      this.addMiddleware(this.createErrorHandlingMiddleware())
-    }
+    // 总是启用错误处理中间件
+    this.addMiddleware(this.createErrorHandlingMiddleware())
 
-    if (this.config.enablePerformanceTracking) {
-      this.addMiddleware(this.createPerformanceMiddleware())
-    }
+    // 总是启用性能跟踪中间件
+    this.addMiddleware(this.createPerformanceMiddleware())
 
     this.initialized = true
   }
@@ -73,19 +75,27 @@ export class EventManager implements IEventManager {
   on<T extends WatermarkEvent>(
     type: WatermarkEventType,
     listener: EventListener<T>
-  ): string {
+  ): void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set())
     }
 
     this.listeners.get(type)!.add(listener)
     this.updateStats()
+  }
 
-    // 返回监听器ID用于移除
-    const listenerId = generateId('listener')
-    ;(listener as any).__listenerId = listenerId
-    
-    return listenerId
+  /**
+   * 添加一次性事件监听器
+   */
+  once<T extends WatermarkEvent>(
+    type: WatermarkEventType,
+    listener: EventListener<T>
+  ): void {
+    const onceListener = async (event: T) => {
+      await listener(event)
+      this.off(type, onceListener)
+    }
+    this.on(type, onceListener)
   }
 
   /**
@@ -94,23 +104,22 @@ export class EventManager implements IEventManager {
   off<T extends WatermarkEvent>(
     type: WatermarkEventType,
     listener: EventListener<T>
-  ): boolean {
+  ): void {
     const listeners = this.listeners.get(type)
     if (!listeners) {
-      return false
+      return
     }
 
-    const removed = listeners.delete(listener)
+    listeners.delete(listener)
     if (listeners.size === 0) {
       this.listeners.delete(type)
     }
 
     this.updateStats()
-    return removed
   }
 
   /**
-   * 移除指定类型的所有监听器
+   * 移除所有监听器
    */
   removeAllListeners(type?: WatermarkEventType): void {
     if (type) {
@@ -119,6 +128,36 @@ export class EventManager implements IEventManager {
       this.listeners.clear()
     }
     this.updateStats()
+  }
+
+  /**
+   * 获取监听器数量
+   */
+  listenerCount(type: WatermarkEventType): number {
+    const listeners = this.listeners.get(type)
+    return listeners ? listeners.size : 0
+  }
+
+  /**
+   * 获取所有事件类型
+   */
+  eventNames(): WatermarkEventType[] {
+    return Array.from(this.listeners.keys())
+  }
+
+  /**
+   * 设置最大监听器数量
+   */
+  setMaxListeners(n: number): void {
+    // 实现最大监听器数量限制
+    this.config.maxListeners = n
+  }
+
+  /**
+   * 获取最大监听器数量
+   */
+  getMaxListeners(): number {
+    return this.config.maxListeners || 10
   }
 
   /**
@@ -134,20 +173,17 @@ export class EventManager implements IEventManager {
       }
 
       // 应用中间件
-      let processedEvent = event
+      const processedEvent = event
       for (const middleware of this.middlewares) {
         try {
-          const result = await middleware.process(processedEvent)
-          if (result === null) {
-            // 中间件阻止了事件传播
-            return
+          if (middleware.enabled !== false) {
+            await middleware.handle(processedEvent, async () => {
+              // 继续处理下一个中间件
+            })
           }
-          processedEvent = result
         } catch (error) {
           console.warn('Event middleware error:', error)
-          if (this.config.strictMode) {
-            throw error
-          }
+          // 继续处理其他中间件
         }
       }
 
@@ -159,10 +195,10 @@ export class EventManager implements IEventManager {
 
       // 并发或串行执行监听器
       const listenerArray = Array.from(listeners)
-      
-      if (this.config.asyncExecution) {
+
+      if (this.config.asyncHandling) {
         // 并发执行
-        const promises = listenerArray.map(listener => 
+        const promises = listenerArray.map(listener =>
           this.executeListener(listener, processedEvent)
         )
         await Promise.allSettled(promises)
@@ -175,24 +211,19 @@ export class EventManager implements IEventManager {
 
       // 更新统计
       this.updateEventStats(event, startTime)
-      
+
       // 保存到历史记录
-      if (this.config.maxHistorySize > 0) {
+      if (this.config.maxHistorySize && this.config.maxHistorySize > 0) {
         this.addToHistory(processedEvent)
       }
     } catch (error) {
       const watermarkError = new WatermarkError(
         'Failed to emit event',
         WatermarkErrorCode.EVENT_EMISSION_FAILED,
-        ErrorSeverity.MEDIUM,
-        { event, originalError: error as Error }
+        ErrorSeverity.MEDIUM
       )
-      
-      if (this.config.strictMode) {
-        throw watermarkError
-      } else {
-        console.error('Event emission error:', watermarkError)
-      }
+
+      console.error('Event emission error:', watermarkError)
     }
   }
 
@@ -229,7 +260,7 @@ export class EventManager implements IEventManager {
     if (index === -1) {
       return false
     }
-    
+
     this.middlewares.splice(index, 1)
     this.updateStats()
     return true
@@ -291,21 +322,21 @@ export class EventManager implements IEventManager {
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | undefined
-      
-      const listener: EventListener<T> = (event) => {
+
+      const listener: EventListener<T> = event => {
         if (filter && !filter(event)) {
           return
         }
-        
+
         this.off(type, listener)
         if (timeoutId) {
           clearTimeout(timeoutId)
         }
         resolve(event)
       }
-      
+
       this.on(type, listener)
-      
+
       if (timeout) {
         timeoutId = setTimeout(() => {
           this.off(type, listener)
@@ -319,7 +350,7 @@ export class EventManager implements IEventManager {
    * 批量触发事件
    */
   async emitBatch(events: WatermarkEvent[]): Promise<void> {
-    if (this.config.asyncExecution) {
+    if (this.config.asyncHandling) {
       const promises = events.map(event => this.emit(event))
       await Promise.allSettled(promises)
     } else {
@@ -361,51 +392,50 @@ export class EventManager implements IEventManager {
     } catch (error) {
       const watermarkError = new WatermarkError(
         'Event listener execution failed',
-        WatermarkErrorCode.EVENT_LISTENER_FAILED,
-        ErrorSeverity.LOW,
-        { event, originalError: error as Error }
+        WatermarkErrorCode.EVENT_LISTENER_ERROR,
+        ErrorSeverity.LOW
       )
-      
-      if (this.config.strictMode) {
-        throw watermarkError
-      } else {
-        console.error('Event listener error:', watermarkError)
-      }
+
+      console.error('Event listener error:', watermarkError)
     }
   }
 
   private updateEventStats(event: WatermarkEvent, startTime: number): void {
     const processingTime = performance.now() - startTime
-    
+
     this.stats.totalEvents++
     this.stats.lastEventTime = event.timestamp
-    
+
     // 更新按类型统计
-    const typeCount = this.stats.eventsByType.get(event.type) || 0
-    this.stats.eventsByType.set(event.type, typeCount + 1)
-    
+    const typeCount = this.stats.eventCounts[event.type] || 0
+    this.stats.eventCounts[event.type] = typeCount + 1
+
     // 更新平均处理时间
     this.processingTimes.push(processingTime)
     if (this.processingTimes.length > 100) {
       this.processingTimes.shift()
     }
-    
-    this.stats.averageProcessingTime = 
-      this.processingTimes.reduce((sum, time) => sum + time, 0) / this.processingTimes.length
+
+    this.stats.avgHandlingTime =
+      this.processingTimes.reduce((sum, time) => sum + time, 0) /
+      this.processingTimes.length
   }
 
   private updateStats(): void {
-    this.stats.listenersCount = Array.from(this.listeners.values())
-      .reduce((total, listeners) => total + listeners.size, 0)
-    this.stats.filtersCount = this.filters.size
-    this.stats.middlewaresCount = this.middlewares.length
+    // 更新监听器统计
+    for (const [eventType, listeners] of this.listeners.entries()) {
+      this.stats.listenerCounts[eventType] = listeners.size
+    }
   }
 
   private addToHistory(event: WatermarkEvent): void {
     this.eventHistory.push(event)
-    
+
     // 限制历史记录大小
-    if (this.eventHistory.length > this.config.maxHistorySize) {
+    if (
+      this.config.maxHistorySize &&
+      this.eventHistory.length > this.config.maxHistorySize
+    ) {
       this.eventHistory.shift()
     }
   }
@@ -413,38 +443,40 @@ export class EventManager implements IEventManager {
   private createLoggingMiddleware(): EventMiddleware {
     return {
       name: 'logging',
-      process: async (event) => {
+      handle: async (event, next) => {
         console.log(`[WatermarkEvent] ${event.type}:`, event)
-        return event
-      }
+        await next()
+      },
     }
   }
 
   private createErrorHandlingMiddleware(): EventMiddleware {
     return {
       name: 'error-handling',
-      process: async (event) => {
+      handle: async (_event, next) => {
         try {
-          return event
+          await next()
         } catch (error) {
           console.error('Event processing error:', error)
-          return null // 阻止事件传播
+          this.stats.errorCount++
         }
-      }
+      },
     }
   }
 
   private createPerformanceMiddleware(): EventMiddleware {
     return {
       name: 'performance',
-      process: async (event) => {
+      handle: async (event, next) => {
         const startTime = performance.now()
-        
-        // 在事件对象上添加性能标记
-        ;(event as any).__performanceStart = startTime
-        
-        return event
-      }
+
+        await next()
+
+        const endTime = performance.now()
+        console.debug(
+          `Event ${event.type} processing time: ${endTime - startTime}ms`
+        )
+      },
     }
   }
 }

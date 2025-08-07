@@ -2,23 +2,31 @@
   "name": "@ldesign/watermark",
   "type": "module",
   "version": "0.1.0",
-  "description": "LDesign watermark package",
+  "description": "强大的水印组件库，支持文字水印、图片水印、Canvas渲染、动画效果等多种功能",
   "author": "ldesign",
   "license": "MIT",
-  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/watermark#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/ldesign/ldesign.git",
-    "directory": "packages/{{PACKAGE_NAME}}"
+    "directory": "packages/watermark"
   },
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
   },
   "keywords": [
     "ldesign",
+    "watermark",
     "vue3",
     "typescript",
-    "watermark"
+    "canvas",
+    "dom",
+    "svg",
+    "animation",
+    "security",
+    "responsive",
+    "text-watermark",
+    "image-watermark"
   ],
   "sideEffects": false,
   "exports": {

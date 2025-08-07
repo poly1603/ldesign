@@ -2,7 +2,7 @@
  * Vue3 集成相关类型定义
  */
 
-import type { Ref, ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import type { WatermarkConfig, WatermarkInstance } from '../types'
 
 // useWatermark Hook 选项
@@ -76,9 +76,9 @@ export interface WatermarkProviderProps {
 }
 
 // v-watermark 指令值类型
-export type WatermarkDirectiveValue = 
-  | string 
-  | string[] 
+export type WatermarkDirectiveValue =
+  | string
+  | string[]
   | Partial<WatermarkConfig>
 
 // v-watermark 指令修饰符

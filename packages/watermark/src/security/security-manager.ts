@@ -3,20 +3,14 @@
  */
 
 import type {
-  WatermarkInstance,
-  SecurityConfig,
-  SecurityLevel,
+  SecurityCallback,
+  SecurityManagerState,
   SecurityViolation,
   SecurityViolationType,
   SecurityWatcher,
-  SecurityWatcherType,
-  SecurityCallback,
-  SecurityManagerState,
-  ObfuscationConfig,
-  CanvasProtectionConfig
+  WatermarkInstance,
 } from '../types'
 
-import { WatermarkError, WatermarkErrorCode, ErrorSeverity } from '../types/error'
 import { generateId } from '../utils/id-generator'
 
 /**
@@ -27,13 +21,15 @@ export class SecurityManager {
   private watchers = new Map<string, SecurityWatcher>()
   private violations = new Map<string, SecurityViolation[]>()
   private callbacks = new Map<string, SecurityCallback[]>()
-  private state: SecurityManagerState = {
-    enabled: false,
-    level: 'none',
-    activeWatchers: 0,
-    totalViolations: 0,
-    lastViolationTime: 0
+  public state: SecurityManagerState = {
+    initialized: false,
+    currentLevel: 'none',
+    activeWatchers: new Map(),
+    violationHistory: [],
+    recoveryCount: new Map(),
+    isRecovering: false,
   }
+
   private intervals = new Map<string, NodeJS.Timeout>()
   private observers = new Map<string, MutationObserver>()
   private initialized = false
@@ -48,7 +44,7 @@ export class SecurityManager {
 
     // 设置全局保护
     this.setupGlobalProtection()
-    
+
     this.initialized = true
   }
 
@@ -62,6 +58,7 @@ export class SecurityManager {
     }
 
     this.state.enabled = true
+    this.state.currentLevel = config.level
     this.state.level = config.level
 
     // 根据安全级别启用不同的保护措施
@@ -130,19 +127,21 @@ export class SecurityManager {
     config: Omit<SecurityWatcher, 'id' | 'instanceId' | 'active'>
   ): Promise<string> {
     const watcherId = generateId('watcher')
-    
+
     const watcher: SecurityWatcher = {
       id: watcherId,
       instanceId,
       type: config.type,
-      interval: config.interval || 1000,
+      observer: config.observer,
       callback: config.callback,
-      active: false
+      isActive: false,
+      active: false,
+      interval: config.interval || 1000,
     }
 
     this.watchers.set(watcherId, watcher)
     await this.startWatcher(watcherId)
-    
+
     this.updateState()
     return watcherId
   }
@@ -158,7 +157,7 @@ export class SecurityManager {
 
     await this.stopWatcher(watcherId)
     this.watchers.delete(watcherId)
-    
+
     this.updateState()
     return true
   }
@@ -204,12 +203,12 @@ export class SecurityManager {
     details: Record<string, any> = {}
   ): Promise<void> {
     const violation: SecurityViolation = {
-      id: generateId('violation'),
       instanceId,
       type,
       timestamp: Date.now(),
       details,
-      severity: this.getViolationSeverity(type)
+      severity: this.getViolationSeverity(type) as 'low' | 'medium' | 'high',
+      handled: false,
     }
 
     // 记录违规
@@ -219,8 +218,9 @@ export class SecurityManager {
     this.violations.get(instanceId)!.push(violation)
 
     // 更新状态
-    this.state.totalViolations++
+    this.state.totalViolations = (this.state.totalViolations || 0) + 1
     this.state.lastViolationTime = violation.timestamp
+    this.state.violationHistory.push(violation)
 
     // 执行回调
     const callbacks = this.callbacks.get(instanceId) || []
@@ -287,11 +287,16 @@ export class SecurityManager {
     this.observers.clear()
 
     this.state = {
+      initialized: false,
       enabled: false,
+      currentLevel: 'none',
       level: 'none',
-      activeWatchers: 0,
+      activeWatchers: new Map(),
+      violationHistory: [],
+      recoveryCount: new Map(),
+      isRecovering: false,
       totalViolations: 0,
-      lastViolationTime: 0
+      lastViolationTime: 0,
     }
 
     this.initialized = false
@@ -299,60 +304,84 @@ export class SecurityManager {
 
   // 私有方法
 
-  private async enableLowLevelProtection(instance: WatermarkInstance): Promise<void> {
+  private async enableLowLevelProtection(
+    instance: WatermarkInstance
+  ): Promise<void> {
     // 基础DOM监听
     await this.addWatcher(instance.id, {
       type: 'dom-mutation',
-      interval: 2000,
-      callback: async (violation) => {
+      observer: new MutationObserver(() => {}),
+      callback: async violation => {
         await this.reportViolation(instance.id, 'element-removed', violation)
-      }
+      },
+      isActive: true,
+      interval: 2000,
     })
   }
 
-  private async enableMediumLevelProtection(instance: WatermarkInstance): Promise<void> {
+  private async enableMediumLevelProtection(
+    instance: WatermarkInstance
+  ): Promise<void> {
     // 包含低级别保护
     await this.enableLowLevelProtection(instance)
 
     // 添加样式监听
     await this.addWatcher(instance.id, {
       type: 'style-change',
-      interval: 1000,
-      callback: async (violation) => {
+      observer: new MutationObserver(() => {}),
+      callback: async violation => {
         await this.reportViolation(instance.id, 'style-modified', violation)
-      }
+      },
+      isActive: true,
+      interval: 1000,
     })
 
     // 添加控制台监听
     await this.addWatcher(instance.id, {
       type: 'console-access',
+      observer: {} as any,
+      callback: async violation => {
+        await this.reportViolation(
+          instance.id,
+          'console-manipulation',
+          violation
+        )
+      },
+      isActive: true,
       interval: 5000,
-      callback: async (violation) => {
-        await this.reportViolation(instance.id, 'console-manipulation', violation)
-      }
     })
   }
 
-  private async enableHighLevelProtection(instance: WatermarkInstance): Promise<void> {
+  private async enableHighLevelProtection(
+    instance: WatermarkInstance
+  ): Promise<void> {
     // 包含中级别保护
     await this.enableMediumLevelProtection(instance)
 
     // 添加开发者工具检测
     await this.addWatcher(instance.id, {
       type: 'devtools-detection',
-      interval: 500,
-      callback: async (violation) => {
+      observer: {} as any,
+      callback: async violation => {
         await this.reportViolation(instance.id, 'devtools-opened', violation)
-      }
+      },
+      isActive: true,
+      interval: 500,
     })
 
     // 添加网络监听
     await this.addWatcher(instance.id, {
       type: 'network-monitoring',
+      observer: {} as any,
+      callback: async violation => {
+        await this.reportViolation(
+          instance.id,
+          'network-interception',
+          violation
+        )
+      },
+      isActive: true,
       interval: 3000,
-      callback: async (violation) => {
-        await this.reportViolation(instance.id, 'network-interception', violation)
-      }
     })
 
     // 启用代码混淆保护
@@ -413,15 +442,21 @@ export class SecurityManager {
   }
 
   private startDOMMutationWatcher(watcher: SecurityWatcher): void {
-    const observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
           for (const removedNode of mutation.removedNodes) {
             if (this.isWatermarkElement(removedNode as Element)) {
               watcher.callback({
+                instanceId: watcher.instanceId || '',
                 type: 'element-removed',
-                element: removedNode,
-                mutation
+                timestamp: Date.now(),
+                details: {
+                  element: removedNode,
+                  mutation,
+                },
+                severity: 'high',
+                handled: false,
               })
             }
           }
@@ -433,10 +468,10 @@ export class SecurityManager {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeOldValue: true
+      attributeOldValue: true,
     })
 
-    this.observers.set(watcher.id, observer)
+    this.observers.set(watcher.id || '', observer)
   }
 
   private startStyleChangeWatcher(watcher: SecurityWatcher): void {
@@ -446,37 +481,40 @@ export class SecurityManager {
       for (const element of watermarkElements) {
         if (this.hasStyleViolation(element)) {
           watcher.callback({
+            instanceId: watcher.instanceId || '',
             type: 'style-modified',
-            element,
-            computedStyle: window.getComputedStyle(element)
+            timestamp: Date.now(),
+            details: {
+              element,
+              computedStyle: window.getComputedStyle(element),
+            },
+            severity: 'medium',
+            handled: false,
           })
         }
       }
     }, watcher.interval)
 
-    this.intervals.set(watcher.id, interval)
+    this.intervals.set(watcher.id || '', interval)
   }
 
   private startConsoleAccessWatcher(watcher: SecurityWatcher): void {
     // 监听控制台访问
-    const originalConsole = { ...console }
-    
-    const consoleProxy = new Proxy(console, {
-      get(target, prop) {
-        if (typeof target[prop as keyof Console] === 'function') {
-          watcher.callback({
-            type: 'console-access',
-            method: prop as string,
-            timestamp: Date.now()
-          })
-        }
-        return target[prop as keyof Console]
-      }
-    })
-
-    // 替换全局console（注意：这可能影响正常的调试）
-    if (watcher.instanceId) {
-      // 仅在特定条件下启用
+    // 简化实现，避免破坏全局console
+    const originalLog = console.log
+    console.log = (...args: any[]) => {
+      watcher.callback({
+        instanceId: watcher.instanceId || '',
+        type: 'console-access',
+        timestamp: Date.now(),
+        details: {
+          method: 'log',
+          args,
+        },
+        severity: 'low',
+        handled: false,
+      })
+      return originalLog.apply(console, args)
     }
   }
 
@@ -484,31 +522,44 @@ export class SecurityManager {
     const interval = setInterval(() => {
       // 检测开发者工具是否打开
       const threshold = 160
-      
-      if (window.outerHeight - window.innerHeight > threshold ||
-          window.outerWidth - window.innerWidth > threshold) {
+
+      if (
+        window.outerHeight - window.innerHeight > threshold ||
+        window.outerWidth - window.innerWidth > threshold
+      ) {
         watcher.callback({
+          instanceId: watcher.instanceId || '',
           type: 'devtools-opened',
-          windowSize: {
-            outer: { width: window.outerWidth, height: window.outerHeight },
-            inner: { width: window.innerWidth, height: window.innerHeight }
-          }
+          timestamp: Date.now(),
+          details: {
+            windowSize: {
+              outer: { width: window.outerWidth, height: window.outerHeight },
+              inner: { width: window.innerWidth, height: window.innerHeight },
+            },
+          },
+          severity: 'high',
+          handled: false,
         })
       }
     }, watcher.interval)
 
-    this.intervals.set(watcher.id, interval)
+    this.intervals.set(watcher.id || '', interval)
   }
 
   private startNetworkMonitoringWatcher(watcher: SecurityWatcher): void {
     // 监听网络请求（简化实现）
     const originalFetch = window.fetch
-    
+
     window.fetch = async (...args) => {
       watcher.callback({
+        instanceId: watcher.instanceId || '',
         type: 'network-request',
-        url: args[0],
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        details: {
+          url: args[0],
+        },
+        severity: 'low',
+        handled: false,
       })
       return originalFetch.apply(window, args)
     }
@@ -518,20 +569,26 @@ export class SecurityManager {
     const interval = setInterval(() => {
       const performance = window.performance
       const memory = (performance as any).memory
-      
+
       if (memory) {
         watcher.callback({
+          instanceId: watcher.instanceId || '',
           type: 'performance-anomaly',
-          memory: {
-            used: memory.usedJSHeapSize,
-            total: memory.totalJSHeapSize,
-            limit: memory.jsHeapSizeLimit
-          }
+          timestamp: Date.now(),
+          details: {
+            memory: {
+              used: memory.usedJSHeapSize,
+              total: memory.totalJSHeapSize,
+              limit: memory.jsHeapSizeLimit,
+            },
+          },
+          severity: 'medium',
+          handled: false,
         })
       }
     }, watcher.interval)
 
-    this.intervals.set(watcher.id, interval)
+    this.intervals.set(watcher.id || '', interval)
   }
 
   private setupGlobalProtection(): void {
@@ -541,16 +598,18 @@ export class SecurityManager {
     }
 
     // 禁用右键菜单
-    document.addEventListener('contextmenu', (e) => {
+    document.addEventListener('contextmenu', e => {
       e.preventDefault()
     })
 
     // 禁用常见快捷键
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       // F12, Ctrl+Shift+I, Ctrl+U 等
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-          (e.ctrlKey && e.key === 'u')) {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.key === 'u')
+      ) {
         e.preventDefault()
       }
     })
@@ -559,11 +618,14 @@ export class SecurityManager {
   private enableObfuscationProtection(instance: WatermarkInstance): void {
     // 代码混淆保护（简化实现）
     const elements = instance.elements
-    
+
     elements.forEach(element => {
       // 添加随机属性
-      element.setAttribute('data-' + this.generateRandomString(), this.generateRandomString())
-      
+      element.setAttribute(
+        `data-${this.generateRandomString()}`,
+        this.generateRandomString()
+      )
+
       // 混淆类名
       if (element.className) {
         element.className = this.obfuscateClassName(element.className)
@@ -573,35 +635,47 @@ export class SecurityManager {
 
   private isWatermarkElement(element: Element): boolean {
     // 检查元素是否为水印元素
-    return element && (
-      element.hasAttribute('data-watermark') ||
-      element.classList.contains('watermark') ||
-      element.tagName === 'CANVAS' && element.hasAttribute('data-watermark-canvas')
+    return (
+      element &&
+      (element.hasAttribute('data-watermark') ||
+        element.classList.contains('watermark') ||
+        (element.tagName === 'CANVAS' &&
+          element.hasAttribute('data-watermark-canvas')))
     )
   }
 
   private findWatermarkElements(): Element[] {
-    return Array.from(document.querySelectorAll('[data-watermark], .watermark, canvas[data-watermark-canvas]'))
+    return Array.from(
+      document.querySelectorAll(
+        '[data-watermark], .watermark, canvas[data-watermark-canvas]'
+      )
+    )
   }
 
   private hasStyleViolation(element: Element): boolean {
     const style = window.getComputedStyle(element)
-    
+
     // 检查是否被隐藏
-    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+    if (
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      style.opacity === '0'
+    ) {
       return true
     }
-    
+
     // 检查是否被移出视口
     const rect = element.getBoundingClientRect()
     if (rect.left < -1000 || rect.top < -1000) {
       return true
     }
-    
+
     return false
   }
 
-  private getViolationSeverity(type: SecurityViolationType): 'low' | 'medium' | 'high' | 'critical' {
+  private getViolationSeverity(
+    type: SecurityViolationType
+  ): 'low' | 'medium' | 'high' | 'critical' {
     switch (type) {
       case 'element-removed':
       case 'style-modified':
@@ -617,12 +691,18 @@ export class SecurityManager {
   }
 
   private updateState(): void {
-    this.state.activeWatchers = Array.from(this.watchers.values())
-      .filter(watcher => watcher.active).length
+    const activeWatchers = new Map<string, SecurityWatcher>()
+    for (const [id, watcher] of this.watchers) {
+      if (watcher.active || watcher.isActive) {
+        activeWatchers.set(id, watcher)
+      }
+    }
+    this.state.activeWatchers = activeWatchers
   }
 
   private generateRandomString(length = 8): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -632,8 +712,9 @@ export class SecurityManager {
 
   private obfuscateClassName(className: string): string {
     // 简单的类名混淆
-    return className.split(' ').map(cls => 
-      'wm-' + this.generateRandomString(6)
-    ).join(' ')
+    return className
+      .split(' ')
+      .map(_cls => `wm-${this.generateRandomString(6)}`)
+      .join(' ')
   }
 }

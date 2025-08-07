@@ -1,11 +1,11 @@
-# 🚀 LDesign Vue引擎项目
+# 🚀 LDesign Vue 引擎项目
 
 [![CI](https://github.com/ldesign/ldesign/workflows/CI/badge.svg)](https://github.com/ldesign/ldesign/actions)
 [![codecov](https://codecov.io/gh/ldesign/ldesign/branch/main/graph/badge.svg)](https://codecov.io/gh/ldesign/ldesign)
 [![npm version](https://badge.fury.io/js/@ldesign%2Fengine.svg)](https://badge.fury.io/js/@ldesign%2Fengine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-基于Vue3的现代化前端开发引擎，提供完整的插件化架构和跨框架兼容性。
+基于 Vue3 的现代化前端开发引擎，提供完整的插件化架构和跨框架兼容性。
 
 ## ✨ 特性
 
@@ -15,23 +15,24 @@
 - 🌍 **跨框架** - 支持 Vue 3 及原生 JavaScript
 - 📦 **模块化** - 按需导入，减少包体积
 - 🛠️ **开发友好** - 完善的开发工具和文档
-- 🧪 **测试覆盖** - 高质量的单元测试和E2E测试
+- 🧪 **测试覆盖** - 高质量的单元测试和 E2E 测试
 - ⚙️ **标准化** - 统一的构建、测试和部署流程
 - 🔧 **工具链** - 完整的开发工具链支持
 
 ## 📦 核心包
 
-| 包名                                     | 版本                                                   | 描述                             | 文档                                |
-| ---------------------------------------- | ------------------------------------------------------ | -------------------------------- | ----------------------------------- |
-| [@ldesign/engine](./packages/engine)     | ![npm](https://img.shields.io/npm/v/@ldesign/engine)   | 核心引擎，提供插件系统和基础架构 | [📖](./packages/engine/README.md)   |
-| [@ldesign/color](./packages/color)       | ![npm](https://img.shields.io/npm/v/@ldesign/color)    | 颜色处理工具包                   | [📖](./packages/color/README.md)    |
-| [@ldesign/crypto](./packages/crypto)     | ![npm](https://img.shields.io/npm/v/@ldesign/crypto)   | 加密解密工具包                   | [📖](./packages/crypto/README.md)   |
-| [@ldesign/device](./packages/device)     | ![npm](https://img.shields.io/npm/v/@ldesign/device)   | 设备检测和适配工具包             | [📖](./packages/device/README.md)   |
-| [@ldesign/http](./packages/http)         | ![npm](https://img.shields.io/npm/v/@ldesign/http)     | HTTP请求处理工具包               | [📖](./packages/http/README.md)     |
-| [@ldesign/i18n](./packages/i18n)         | ![npm](https://img.shields.io/npm/v/@ldesign/i18n)     | 国际化工具包                     | [📖](./packages/i18n/README.md)     |
-| [@ldesign/router](./packages/router)     | ![npm](https://img.shields.io/npm/v/@ldesign/router)   | 路由管理工具包                   | [📖](./packages/router/README.md)   |
-| [@ldesign/store](./packages/store)       | ![npm](https://img.shields.io/npm/v/@ldesign/store)    | 状态管理工具包                   | [📖](./packages/store/README.md)    |
-| [@ldesign/template](./packages/template) | ![npm](https://img.shields.io/npm/v/@ldesign/template) | 模板引擎工具包                   | [📖](./packages/template/README.md) |
+| 包名                                       | 版本                                                    | 描述                             | 文档                                 |
+| ------------------------------------------ | ------------------------------------------------------- | -------------------------------- | ------------------------------------ |
+| [@ldesign/engine](./packages/engine)       | ![npm](https://img.shields.io/npm/v/@ldesign/engine)    | 核心引擎，提供插件系统和基础架构 | [📖](./packages/engine/README.md)    |
+| [@ldesign/color](./packages/color)         | ![npm](https://img.shields.io/npm/v/@ldesign/color)     | 颜色处理工具包                   | [📖](./packages/color/README.md)     |
+| [@ldesign/crypto](./packages/crypto)       | ![npm](https://img.shields.io/npm/v/@ldesign/crypto)    | 加密解密工具包                   | [📖](./packages/crypto/README.md)    |
+| [@ldesign/device](./packages/device)       | ![npm](https://img.shields.io/npm/v/@ldesign/device)    | 设备检测和适配工具包             | [📖](./packages/device/README.md)    |
+| [@ldesign/http](./packages/http)           | ![npm](https://img.shields.io/npm/v/@ldesign/http)      | HTTP 请求处理工具包              | [📖](./packages/http/README.md)      |
+| [@ldesign/i18n](./packages/i18n)           | ![npm](https://img.shields.io/npm/v/@ldesign/i18n)      | 国际化工具包                     | [📖](./packages/i18n/README.md)      |
+| [@ldesign/router](./packages/router)       | ![npm](https://img.shields.io/npm/v/@ldesign/router)    | 路由管理工具包                   | [📖](./packages/router/README.md)    |
+| [@ldesign/store](./packages/store)         | ![npm](https://img.shields.io/npm/v/@ldesign/store)     | 状态管理工具包                   | [📖](./packages/store/README.md)     |
+| [@ldesign/template](./packages/template)   | ![npm](https://img.shields.io/npm/v/@ldesign/template)  | 模板引擎工具包                   | [📖](./packages/template/README.md)  |
+| [@ldesign/watermark](./packages/watermark) | ![npm](https://img.shields.io/npm/v/@ldesign/watermark) | 水印组件工具包                   | [📖](./packages/watermark/README.md) |
 
 ## 🚀 快速开始
 
@@ -69,8 +70,8 @@ const app = createApp({})
 const engine = createEngine({
   config: {
     appName: 'My App',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 
 app.use(engine)
@@ -207,7 +208,7 @@ tsx tools/deploy/verify-deployment.ts
 
 - **构建配置**: 继承 `tools/build/rollup.config.base.js`
 - **测试配置**: 继承 `tools/test/vitest.config.base.js`
-- **E2E配置**: 继承 `tools/test/playwright.config.base.js`
+- **E2E 配置**: 继承 `tools/test/playwright.config.base.js`
 - **TypeScript**: 继承 `tools/build/tsconfig.base.json`
 - **代码检查**: 使用 `@antfu/eslint-config`
 
@@ -216,12 +217,14 @@ tsx tools/deploy/verify-deployment.ts
 LDesign 提供了完整的开发工具链，涵盖开发、测试、部署等各个环节：
 
 ### 📚 工具文档
+
 - **[完整工具指南](./tools/README.md)** - 详细的工具使用说明
 - **[工具索引](./tools/TOOL_INDEX.md)** - 快速查找工具
 - **[使用示例](./tools/EXAMPLES.md)** - 实际使用场景示例
-- **[快速入门](./QUICK_START.md)** - 5分钟快速上手
+- **[快速入门](./QUICK_START.md)** - 5 分钟快速上手
 
 ### 🚀 常用命令
+
 ```bash
 # 开发
 pnpm dev:enhanced              # 启动增强开发服务器
@@ -249,9 +252,10 @@ pnpm ecosystem:community:register # 注册贡献者
 ```
 
 ### 🎯 工具特色
+
 - **🤖 自动化测试生成** - 智能生成测试用例
 - **📊 性能监控** - 实时包大小和性能监控
-- **📝 文档自动化** - API文档和示例自动生成验证
+- **📝 文档自动化** - API 文档和示例自动生成验证
 - **🏗️ 微前端支持** - 模块联邦和独立部署
 - **🌟 插件生态** - 插件市场和开发脚手架
 - **🎯 高级功能** - 分析集成、缓存管理、表单系统
@@ -309,5 +313,6 @@ MIT © [LDesign Team](https://github.com/ldesign)
   <sub>Built with ❤️ by the LDesign team</sub>
 </div>
 
-
-@d:\User\Document\WorkSpace\ldesign/packages\engine/ 优化性能，优化代码结构，完善example目录中的示例项目，尽可能展示当前包所支持的所有功能，完善vitepress实用文档，尽可能完善，确保包没有任何ts类型错误和eslint格式错误，确保所有测试用例通过，确保能正常打包，没有任何提示或者报错信息。
+@d:\User\Document\WorkSpace\ldesign/packages\engine/ 优化性能，优化代码结构，完善 example 目录中的示
+例项目，尽可能展示当前包所支持的所有功能，完善 vitepress 实用文档，尽可能完善，确保包没有任何 ts 类
+型错误和 eslint 格式错误，确保所有测试用例通过，确保能正常打包，没有任何提示或者报错信息。

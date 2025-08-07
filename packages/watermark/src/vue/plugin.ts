@@ -3,19 +3,22 @@
  */
 
 import type { App } from 'vue'
-import { WatermarkCore, createWatermark, destroyWatermark } from '../index'
 import type { WatermarkConfig, WatermarkInstance } from '../types'
 import type { WatermarkPluginOptions } from './types'
+import { createWatermark, destroyWatermark, WatermarkCore } from '../index'
 
 // 组件
 import Watermark from './components/Watermark.vue'
 import WatermarkProvider from './components/WatermarkProvider.vue'
 
+// 组合式API
+import { useSimpleWatermark, useWatermark } from './composables/useWatermark'
+
 // 指令
 import { vWatermark } from './directives/watermark'
 
-// 组合式API
-import { useWatermark, useSimpleWatermark } from './composables/useWatermark'
+// 导出类型
+export type { WatermarkPluginOptions }
 
 /**
  * 默认插件选项
@@ -26,7 +29,7 @@ const defaultOptions: Required<WatermarkPluginOptions> = {
   directiveName: 'watermark',
   registerComponents: true,
   registerDirective: true,
-  registerGlobalMethods: true
+  registerGlobalMethods: true,
 }
 
 /**
@@ -39,7 +42,10 @@ export const WatermarkPlugin = {
     // 注册全局组件
     if (opts.registerComponents) {
       app.component(`${opts.componentPrefix}Watermark`, Watermark)
-      app.component(`${opts.componentPrefix}WatermarkProvider`, WatermarkProvider)
+      app.component(
+        `${opts.componentPrefix}WatermarkProvider`,
+        WatermarkProvider
+      )
     }
 
     // 注册指令
@@ -51,7 +57,7 @@ export const WatermarkPlugin = {
     if (opts.registerGlobalMethods) {
       // 全局配置
       app.config.globalProperties.$watermarkConfig = opts.globalConfig
-      
+
       // 全局方法
       app.config.globalProperties.$watermark = {
         // 创建水印
@@ -62,27 +68,27 @@ export const WatermarkPlugin = {
           const mergedConfig = { ...opts.globalConfig, ...config }
           return createWatermark(container, mergedConfig)
         },
-        
+
         // 销毁水印
         destroy: destroyWatermark,
-        
+
         // 创建核心实例
         createCore: () => new WatermarkCore(),
-        
+
         // 组合式API
         useWatermark,
-        useSimpleWatermark
+        useSimpleWatermark,
       }
     }
 
     // 提供全局配置
     app.provide('watermarkGlobalConfig', opts.globalConfig)
-    
+
     // 开发模式下的调试信息
     if (process.env.NODE_ENV === 'development') {
       console.log('[WatermarkPlugin] Installed with options:', opts)
     }
-  }
+  },
 }
 
 /**
@@ -92,7 +98,7 @@ export function createWatermarkPlugin(options: WatermarkPluginOptions = {}) {
   return {
     install(app: App) {
       WatermarkPlugin.install(app, options)
-    }
+    },
   }
 }
 
@@ -100,7 +106,7 @@ export function createWatermarkPlugin(options: WatermarkPluginOptions = {}) {
 export default WatermarkPlugin
 
 // 类型声明扩展
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $watermarkConfig: Partial<WatermarkConfig>
     $watermark: {

@@ -7,8 +7,8 @@
 ### 安装插件
 
 ```typescript
-import { createApp } from 'vue'
 import { WatermarkPlugin } from '@ldesign/watermark/vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -22,11 +22,11 @@ app.use(WatermarkPlugin, {
     style: {
       fontSize: 16,
       color: '#000000',
-      opacity: 0.1
-    }
+      opacity: 0.1,
+    },
   },
   componentPrefix: 'L',
-  directiveName: 'watermark'
+  directiveName: 'watermark',
 })
 
 app.mount('#app')
@@ -37,6 +37,26 @@ app.mount('#app')
 ### 1. 组合式 API (useWatermark)
 
 ```vue
+<script setup>
+import { useWatermark } from '@ldesign/watermark/vue'
+import { ref } from 'vue'
+
+const container = ref()
+
+const { instance, loading, error, isCreated, create, update, destroy } = useWatermark(container)
+
+function createWatermark() {
+  create({
+    content: '我的水印',
+    style: {
+      fontSize: 16,
+      color: '#1890ff',
+      opacity: 0.15,
+    },
+  })
+}
+</script>
+
 <template>
   <div ref="container" class="watermark-container">
     <p>内容区域</p>
@@ -45,41 +65,35 @@ app.mount('#app')
     <button @click="destroy">销毁水印</button>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useWatermark } from '@ldesign/watermark/vue'
-
-const container = ref()
-
-const {
-  instance,
-  loading,
-  error,
-  isCreated,
-  create,
-  update,
-  destroy
-} = useWatermark(container)
-
-const createWatermark = () => {
-  create({
-    content: '我的水印',
-    style: {
-      fontSize: 16,
-      color: '#1890ff',
-      opacity: 0.15
-    }
-  })
-}
-</script>
 ```
 
 ### 2. Watermark 组件
 
 ```vue
+<script setup>
+import { Watermark } from '@ldesign/watermark/vue'
+import { ref } from 'vue'
+
+const watermarkConfig = ref({
+  content: '版权所有',
+  style: {
+    fontSize: 14,
+    color: '#000000',
+    opacity: 0.1,
+  },
+})
+
+function onCreated(instance) {
+  console.log('水印创建成功', instance)
+}
+
+function onError(error) {
+  console.error('水印错误', error)
+}
+</script>
+
 <template>
-  <Watermark 
+  <Watermark
     :config="watermarkConfig"
     :security="true"
     :responsive="true"
@@ -91,91 +105,43 @@ const createWatermark = () => {
     </div>
   </Watermark>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { Watermark } from '@ldesign/watermark/vue'
-
-const watermarkConfig = ref({
-  content: '版权所有',
-  style: {
-    fontSize: 14,
-    color: '#000000',
-    opacity: 0.1
-  }
-})
-
-const onCreated = (instance) => {
-  console.log('水印创建成功', instance)
-}
-
-const onError = (error) => {
-  console.error('水印错误', error)
-}
-</script>
 ```
 
 ### 3. WatermarkProvider 组件
 
 ```vue
-<template>
-  <WatermarkProvider 
-    :config="globalConfig"
-    :global-security="true"
-    :global-responsive="true"
-  >
-    <!-- 子组件会继承全局配置 -->
-    <Watermark content="局部水印" />
-    
-    <div>
-      <Watermark :config="{ content: '另一个水印' }" />
-    </div>
-  </WatermarkProvider>
-</template>
-
 <script setup>
+import { Watermark, WatermarkProvider } from '@ldesign/watermark/vue'
 import { ref } from 'vue'
-import { WatermarkProvider, Watermark } from '@ldesign/watermark/vue'
 
 const globalConfig = ref({
   style: {
     fontSize: 16,
     color: '#1890ff',
-    opacity: 0.1
+    opacity: 0.1,
   },
   layout: {
     gapX: 100,
-    gapY: 100
-  }
+    gapY: 100,
+  },
 })
 </script>
+
+<template>
+  <WatermarkProvider :config="globalConfig" :global-security="true" :global-responsive="true">
+    <!-- 子组件会继承全局配置 -->
+    <Watermark content="局部水印" />
+
+    <div>
+      <Watermark :config="{ content: '另一个水印' }" />
+    </div>
+  </WatermarkProvider>
+</template>
 ```
 
 ### 4. v-watermark 指令
 
 ```vue
-<template>
-  <!-- 基础用法 -->
-  <div v-watermark="'简单水印'">
-    内容区域
-  </div>
-
-  <!-- 配置对象 -->
-  <div v-watermark="watermarkConfig">
-    内容区域
-  </div>
-
-  <!-- 使用修饰符 -->
-  <div v-watermark.secure.responsive="watermarkConfig">
-    安全且响应式的水印
-  </div>
-
-  <!-- 指定渲染器 -->
-  <div v-watermark.canvas="watermarkConfig">
-    使用 Canvas 渲染
-  </div>
-</template>
-
 <script setup>
 import { ref } from 'vue'
 
@@ -184,10 +150,24 @@ const watermarkConfig = ref({
   style: {
     fontSize: 14,
     color: '#52c41a',
-    opacity: 0.2
-  }
+    opacity: 0.2,
+  },
 })
 </script>
+
+<template>
+  <!-- 基础用法 -->
+  <div v-watermark="'简单水印'">内容区域</div>
+
+  <!-- 配置对象 -->
+  <div v-watermark="watermarkConfig">内容区域</div>
+
+  <!-- 使用修饰符 -->
+  <div v-watermark.secure.responsive="watermarkConfig">安全且响应式的水印</div>
+
+  <!-- 指定渲染器 -->
+  <div v-watermark.canvas="watermarkConfig">使用 Canvas 渲染</div>
+</template>
 ```
 
 ## API 参考
@@ -204,10 +184,12 @@ function useWatermark(
 ```
 
 **参数：**
+
 - `container`: 水印容器元素或 ref
 - `options`: 配置选项
 
 **返回值：**
+
 - `instance`: 水印实例
 - `loading`: 加载状态
 - `error`: 错误信息
@@ -221,12 +203,14 @@ function useWatermark(
 ### Watermark 组件
 
 **Props：**
+
 - `config`: 水印配置
 - `security`: 是否启用安全模式
 - `responsive`: 是否启用响应式
 - `renderer`: 渲染器类型
 
 **Events：**
+
 - `created`: 水印创建成功
 - `updated`: 水印更新成功
 - `destroyed`: 水印销毁成功
@@ -235,6 +219,7 @@ function useWatermark(
 ### WatermarkProvider 组件
 
 **Props：**
+
 - `config`: 全局水印配置
 - `globalSecurity`: 全局安全模式
 - `globalResponsive`: 全局响应式
@@ -242,10 +227,12 @@ function useWatermark(
 ### v-watermark 指令
 
 **指令值：**
+
 - `string`: 简单文本水印
 - `WatermarkConfig`: 完整配置对象
 
 **修饰符：**
+
 - `.secure`: 启用安全模式
 - `.responsive`: 启用响应式
 - `.canvas`: 使用 Canvas 渲染器
@@ -274,9 +261,9 @@ import type {
   UseWatermarkOptions,
   UseWatermarkReturn,
   WatermarkComponentProps,
-  WatermarkProviderProps,
   WatermarkDirectiveValue,
-  WatermarkPluginOptions
+  WatermarkPluginOptions,
+  WatermarkProviderProps,
 } from '@ldesign/watermark/vue'
 ```
 

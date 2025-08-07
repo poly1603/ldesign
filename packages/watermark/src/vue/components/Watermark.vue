@@ -1,30 +1,12 @@
-<template>
-  <div 
-    ref="containerRef" 
-    class="watermark-container"
-    :class="{
-      'watermark-loading': loading,
-      'watermark-error': !!error
-    }"
-  >
-    <slot />
-    
-    <!-- 错误提示 -->
-    <div 
-      v-if="error && showError" 
-      class="watermark-error-message"
-      @click="clearError"
-    >
-      {{ error.message }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, inject } from 'vue'
-import { useWatermark } from '../composables/useWatermark'
-import type { WatermarkComponentProps, WatermarkComponentEvents, WatermarkProviderContext } from '../types'
 import type { WatermarkConfig } from '../../types'
+import type {
+  WatermarkComponentEvents,
+  WatermarkComponentProps,
+  WatermarkProviderContext,
+} from '../types'
+import { computed, inject, onMounted, ref, watch } from 'vue'
+import { useWatermark } from '../composables/useWatermark'
 
 // 组件属性
 interface Props extends WatermarkComponentProps {
@@ -36,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
   immediate: true,
   security: true,
   responsive: true,
-  showError: true
+  showError: true,
 })
 
 // 组件事件
@@ -46,16 +28,22 @@ const emit = defineEmits<WatermarkComponentEvents>()
 const containerRef = ref<HTMLElement>()
 
 // 注入Provider上下文
-const providerContext = inject<WatermarkProviderContext>('watermarkProvider', null)
+const providerContext = inject<WatermarkProviderContext>(
+  'watermarkProvider',
+  {} as WatermarkProviderContext
+)
 
 // 合并配置
 const mergedConfig = computed((): Partial<WatermarkConfig> => {
   const baseConfig: Partial<WatermarkConfig> = {
-    content: props.content,
+    content:
+      typeof props.content === 'string'
+        ? props.content
+        : { text: props.content?.[0] },
     style: props.style,
     layout: props.layout,
     animation: props.animation,
-    ...props.config
+    ...props.config,
   }
 
   // 如果有Provider上下文，合并全局配置
@@ -93,15 +81,15 @@ const {
   destroy,
   pause,
   resume,
-  clearError: clearWatermarkError
+  clearError: clearWatermarkError,
 } = useWatermark(containerRef, {
   immediate: props.immediate,
   enableSecurity: securityEnabled.value,
-  enableResponsive: responsiveEnabled.value
+  enableResponsive: responsiveEnabled.value,
 })
 
 // 清除错误
-const clearError = () => {
+function clearError() {
   clearWatermarkError()
   emit('error', error.value!)
 }
@@ -109,7 +97,7 @@ const clearError = () => {
 // 监听配置变化
 watch(
   mergedConfig,
-  async (newConfig) => {
+  async newConfig => {
     if (!containerRef.value) return
 
     try {
@@ -132,26 +120,20 @@ watch(
 )
 
 // 监听实例变化
-watch(
-  instance,
-  (newInstance, oldInstance) => {
-    if (newInstance && !oldInstance) {
-      emit('created', newInstance)
-    } else if (!newInstance && oldInstance) {
-      emit('destroyed', oldInstance.id)
-    }
+watch(instance, (newInstance, oldInstance) => {
+  if (newInstance && !oldInstance) {
+    emit('created', newInstance)
+  } else if (!newInstance && oldInstance) {
+    emit('destroyed', oldInstance.id)
   }
-)
+})
 
 // 监听错误
-watch(
-  error,
-  (newError) => {
-    if (newError) {
-      emit('error', newError)
-    }
+watch(error, newError => {
+  if (newError) {
+    emit('error', newError)
   }
-)
+})
 
 // 组件挂载后创建水印
 onMounted(async () => {
@@ -175,9 +157,31 @@ defineExpose({
   destroy,
   pause,
   resume,
-  clearError
+  clearError,
 })
 </script>
+
+<template>
+  <div
+    ref="containerRef"
+    class="watermark-container"
+    :class="{
+      'watermark-loading': loading,
+      'watermark-error': !!error,
+    }"
+  >
+    <slot />
+
+    <!-- 错误提示 -->
+    <div
+      v-if="error && showError"
+      class="watermark-error-message"
+      @click="clearError"
+    >
+      {{ error.message }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .watermark-container {

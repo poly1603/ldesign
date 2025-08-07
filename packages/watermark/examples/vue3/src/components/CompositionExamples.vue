@@ -1,182 +1,6 @@
-<template>
-  <div class="composition-examples">
-    <h2 class="section-title">🔧 Composition API 示例</h2>
-    <p class="section-desc">展示如何使用 Composition API 管理水印状态和生命周期</p>
-
-    <div class="grid grid-2">
-      <!-- 响应式水印 -->
-      <div class="card glass">
-        <h3>响应式水印配置</h3>
-        <div class="form-group">
-          <label>水印文字</label>
-          <input v-model="reactiveConfig.text" type="text">
-        </div>
-        <div class="form-group">
-          <label>是否启用: {{ reactiveConfig.enabled ? '是' : '否' }}</label>
-          <input v-model="reactiveConfig.enabled" type="checkbox">
-        </div>
-        <div class="demo-container" ref="reactiveRef">
-          <div class="demo-content">
-            <p>响应式水印示例</p>
-            <p>修改上方配置会自动更新水印</p>
-          </div>
-        </div>
-        <div class="code-preview">
-          <details>
-            <summary>查看代码</summary>
-            <pre><code>{{ reactiveCode }}</code></pre>
-          </details>
-        </div>
-      </div>
-
-      <!-- 生命周期管理 -->
-      <div class="card glass">
-        <h3>生命周期管理</h3>
-        <div class="status-info">
-          <p>水印状态: <span :class="lifecycleStatus.class">{{ lifecycleStatus.text }}</span></p>
-          <p>创建时间: {{ lifecycleInfo.createdAt || '未创建' }}</p>
-          <p>更新次数: {{ lifecycleInfo.updateCount }}</p>
-        </div>
-        <div class="demo-container" ref="lifecycleRef">
-          <div class="demo-content">
-            <p>生命周期管理示例</p>
-            <p>展示水印的创建、更新、销毁过程</p>
-          </div>
-        </div>
-        <div class="controls">
-          <button class="btn btn-primary" @click="createLifecycleWatermark">创建</button>
-          <button class="btn btn-secondary" @click="updateLifecycleWatermark">更新</button>
-          <button class="btn btn-danger" @click="destroyLifecycleWatermark">销毁</button>
-        </div>
-        <div class="code-preview">
-          <details>
-            <summary>查看代码</summary>
-            <pre><code>{{ lifecycleCode }}</code></pre>
-          </details>
-        </div>
-      </div>
-
-      <!-- 条件渲染 -->
-      <div class="card glass">
-        <h3>条件渲染</h3>
-        <div class="form-group">
-          <label>显示条件</label>
-          <select v-model="conditionalConfig.condition">
-            <option value="always">始终显示</option>
-            <option value="hover">鼠标悬停</option>
-            <option value="focus">获得焦点</option>
-            <option value="never">从不显示</option>
-          </select>
-        </div>
-        <div 
-          class="demo-container" 
-          ref="conditionalRef"
-          @mouseenter="onMouseEnter"
-          @mouseleave="onMouseLeave"
-          @focusin="onFocusIn"
-          @focusout="onFocusOut"
-          tabindex="0"
-        >
-          <div class="demo-content">
-            <p>条件渲染示例</p>
-            <p>根据不同条件显示/隐藏水印</p>
-            <p v-if="conditionalConfig.condition === 'hover'">鼠标悬停显示水印</p>
-            <p v-if="conditionalConfig.condition === 'focus'">点击获得焦点显示水印</p>
-          </div>
-        </div>
-        <div class="code-preview">
-          <details>
-            <summary>查看代码</summary>
-            <pre><code>{{ conditionalCode }}</code></pre>
-          </details>
-        </div>
-      </div>
-
-      <!-- 动态内容 -->
-      <div class="card glass">
-        <h3>动态内容更新</h3>
-        <div class="form-group">
-          <label>内容类型</label>
-          <select v-model="dynamicConfig.type">
-            <option value="time">当前时间</option>
-            <option value="counter">计数器</option>
-            <option value="random">随机文字</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>自动更新: {{ dynamicConfig.autoUpdate ? '开启' : '关闭' }}</label>
-          <input v-model="dynamicConfig.autoUpdate" type="checkbox">
-        </div>
-        <div class="demo-container" ref="dynamicRef">
-          <div class="demo-content">
-            <p>动态内容示例</p>
-            <p>水印内容会根据选择自动更新</p>
-            <p>当前内容: {{ dynamicContent }}</p>
-          </div>
-        </div>
-        <div class="controls">
-          <button class="btn btn-primary" @click="updateDynamicContent">手动更新</button>
-        </div>
-        <div class="code-preview">
-          <details>
-            <summary>查看代码</summary>
-            <pre><code>{{ dynamicCode }}</code></pre>
-          </details>
-        </div>
-      </div>
-    </div>
-
-    <!-- 自定义 Hook 示例 -->
-    <div class="card glass mt-30">
-      <h3>🪝 自定义 Hook 示例</h3>
-      <p>使用自定义 Hook 封装水印逻辑，提高代码复用性</p>
-      
-      <div class="grid grid-2">
-        <div>
-          <h4>useWatermark Hook</h4>
-          <div class="demo-container" ref="hookRef1">
-            <div class="demo-content">
-              <p>使用 useWatermark Hook</p>
-              <p>状态: {{ hookWatermark1.isActive ? '活跃' : '未激活' }}</p>
-            </div>
-          </div>
-          <div class="controls">
-            <button class="btn btn-primary" @click="hookWatermark1.create('Hook 水印 1')">创建</button>
-            <button class="btn btn-secondary" @click="hookWatermark1.toggle">切换</button>
-            <button class="btn btn-danger" @click="hookWatermark1.destroy">销毁</button>
-          </div>
-        </div>
-        
-        <div>
-          <h4>useAdvancedWatermark Hook</h4>
-          <div class="demo-container" ref="hookRef2">
-            <div class="demo-content">
-              <p>使用 useAdvancedWatermark Hook</p>
-              <p>状态: {{ hookWatermark2.isActive ? '活跃' : '未激活' }}</p>
-              <p>错误: {{ hookWatermark2.error?.value?.message || '无' }}</p>
-            </div>
-          </div>
-          <div class="controls">
-            <button class="btn btn-primary" @click="() => hookWatermark2.create('Advanced Hook')">创建</button>
-            <button class="btn btn-secondary" @click="() => hookWatermark2.update({ style: { color: '#FF6B6B' } })">更新</button>
-            <button class="btn btn-danger" @click="() => hookWatermark2.destroy()">销毁</button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="code-preview">
-        <details>
-          <summary>查看 Hook 代码</summary>
-          <pre><code>{{ hookCode }}</code></pre>
-        </details>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useWatermark, useWatermarkManager } from '../composables/useWatermark'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useWatermark } from '../composables/useWatermark'
 
 // 模板引用
 const reactiveRef = ref<HTMLElement>()
@@ -189,14 +13,17 @@ const hookRef2 = ref<HTMLElement>()
 // 响应式配置
 const reactiveConfig = reactive({
   text: 'Reactive Watermark',
-  enabled: true
+  enabled: true,
 })
 
 // 生命周期信息
 const lifecycleInfo = reactive({
   createdAt: null as string | null,
-  updateCount: 0
+  updateCount: 0,
 })
+
+// 先创建 Hook 实例
+const lifecycleWatermark = useWatermark(lifecycleRef)
 
 const lifecycleStatus = computed(() => {
   if (!lifecycleWatermark.isActive.value) {
@@ -207,7 +34,7 @@ const lifecycleStatus = computed(() => {
 
 // 条件渲染配置
 const conditionalConfig = reactive({
-  condition: 'always' as 'always' | 'hover' | 'focus' | 'never'
+  condition: 'always' as 'always' | 'hover' | 'focus' | 'never',
 })
 
 const isHovered = ref(false)
@@ -216,7 +43,7 @@ const isFocused = ref(false)
 // 动态内容配置
 const dynamicConfig = reactive({
   type: 'time' as 'time' | 'counter' | 'random',
-  autoUpdate: true
+  autoUpdate: true,
 })
 const counter = ref(0)
 
@@ -235,7 +62,6 @@ const dynamicContent = computed(() => {
 
 // 为所有示例创建 Hook 实例
 const reactiveWatermark = useWatermark(reactiveRef)
-const lifecycleWatermark = useWatermark(lifecycleRef)
 const conditionalWatermark = useWatermark(conditionalRef)
 const dynamicWatermark = useWatermark(dynamicRef)
 
@@ -244,52 +70,56 @@ const hookWatermark1 = useWatermark(hookRef1)
 const hookWatermark2 = useWatermark(hookRef2)
 
 // 监听响应式配置变化
-watch(reactiveConfig, async () => {
-  if (reactiveConfig.enabled) {
-    await reactiveWatermark.create(reactiveConfig.text, {
-      style: {
-        fontSize: 16,
-        color: 'rgba(102, 126, 234, 0.2)'
-      }
-    })
-  } else {
-    await reactiveWatermark.destroy()
-  }
-}, { immediate: true })
+watch(
+  reactiveConfig,
+  async () => {
+    if (reactiveConfig.enabled) {
+      await reactiveWatermark.create(reactiveConfig.text, {
+        style: {
+          fontSize: 16,
+          color: 'rgba(102, 126, 234, 0.2)',
+        },
+      })
+    } else {
+      await reactiveWatermark.destroy()
+    }
+  },
+  { immediate: true }
+)
 
 // 生命周期管理方法
-const createLifecycleWatermark = async () => {
+async function createLifecycleWatermark() {
   await lifecycleWatermark.create('Lifecycle Watermark', {
     style: {
       fontSize: 14,
-      color: 'rgba(76, 175, 80, 0.2)'
-    }
+      color: 'rgba(76, 175, 80, 0.2)',
+    },
   })
 
   lifecycleInfo.createdAt = new Date().toLocaleTimeString()
   lifecycleInfo.updateCount = 0
 }
 
-const updateLifecycleWatermark = async () => {
+async function updateLifecycleWatermark() {
   await lifecycleWatermark.create(`Updated ${lifecycleInfo.updateCount + 1}`, {
     style: {
       fontSize: 16 + lifecycleInfo.updateCount * 2,
       color: `hsl(${120 + lifecycleInfo.updateCount * 30}, 70%, 50%)`,
-      opacity: 0.3
-    }
+      opacity: 0.3,
+    },
   })
 
   lifecycleInfo.updateCount++
 }
 
-const destroyLifecycleWatermark = async () => {
+async function destroyLifecycleWatermark() {
   await lifecycleWatermark.destroy()
   lifecycleInfo.createdAt = null
   lifecycleInfo.updateCount = 0
 }
 
 // 条件渲染方法
-const updateConditionalWatermark = async () => {
+async function updateConditionalWatermark() {
   const shouldShow =
     conditionalConfig.condition === 'always' ||
     (conditionalConfig.condition === 'hover' && isHovered.value) ||
@@ -299,30 +129,30 @@ const updateConditionalWatermark = async () => {
     await conditionalWatermark.create('Conditional Watermark', {
       style: {
         fontSize: 14,
-        color: 'rgba(156, 39, 176, 0.2)'
-      }
+        color: 'rgba(156, 39, 176, 0.2)',
+      },
     })
   } else {
     await conditionalWatermark.destroy()
   }
 }
 
-const onMouseEnter = () => {
+function onMouseEnter() {
   isHovered.value = true
   updateConditionalWatermark()
 }
 
-const onMouseLeave = () => {
+function onMouseLeave() {
   isHovered.value = false
   updateConditionalWatermark()
 }
 
-const onFocusIn = () => {
+function onFocusIn() {
   isFocused.value = true
   updateConditionalWatermark()
 }
 
-const onFocusOut = () => {
+function onFocusOut() {
   isFocused.value = false
   updateConditionalWatermark()
 }
@@ -331,16 +161,16 @@ const onFocusOut = () => {
 watch(() => conditionalConfig.condition, updateConditionalWatermark)
 
 // 动态内容方法
-const updateDynamicWatermark = async () => {
+async function updateDynamicWatermark() {
   await dynamicWatermark.create(dynamicContent.value, {
     style: {
       fontSize: 14,
-      color: 'rgba(244, 67, 54, 0.2)'
-    }
+      color: 'rgba(244, 67, 54, 0.2)',
+    },
   })
 }
 
-const updateDynamicContent = () => {
+function updateDynamicContent() {
   if (dynamicConfig.type === 'counter') {
     counter.value++
   }
@@ -370,7 +200,7 @@ onMounted(async () => {
   // 自动创建 Hook 示例水印
   await hookWatermark1.create('Hook 水印 1')
   await hookWatermark2.create('Advanced Hook', {
-    style: { color: '#FF6B6B', opacity: 0.3 }
+    style: { color: '#FF6B6B', opacity: 0.3 },
   })
 
   // 启动自动更新定时器
@@ -478,6 +308,229 @@ export function useWatermark(containerRef) {
 }`
 </script>
 
+<template>
+  <div class="composition-examples">
+    <h2 class="section-title">🔧 Composition API 示例</h2>
+    <p class="section-desc">
+      展示如何使用 Composition API 管理水印状态和生命周期
+    </p>
+
+    <div class="grid grid-2">
+      <!-- 响应式水印 -->
+      <div class="card glass">
+        <h3>响应式水印配置</h3>
+        <div class="form-group">
+          <label>水印文字</label>
+          <input v-model="reactiveConfig.text" type="text" />
+        </div>
+        <div class="form-group">
+          <label>是否启用: {{ reactiveConfig.enabled ? '是' : '否' }}</label>
+          <input v-model="reactiveConfig.enabled" type="checkbox" />
+        </div>
+        <div ref="reactiveRef" class="demo-container">
+          <div class="demo-content">
+            <p>响应式水印示例</p>
+            <p>修改上方配置会自动更新水印</p>
+          </div>
+        </div>
+        <div class="code-preview">
+          <details>
+            <summary>查看代码</summary>
+            <pre><code>{{ reactiveCode }}</code></pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- 生命周期管理 -->
+      <div class="card glass">
+        <h3>生命周期管理</h3>
+        <div class="status-info">
+          <p>
+            水印状态:
+            <span :class="lifecycleStatus.class">{{
+              lifecycleStatus.text
+            }}</span>
+          </p>
+          <p>创建时间: {{ lifecycleInfo.createdAt || '未创建' }}</p>
+          <p>更新次数: {{ lifecycleInfo.updateCount }}</p>
+        </div>
+        <div ref="lifecycleRef" class="demo-container">
+          <div class="demo-content">
+            <p>生命周期管理示例</p>
+            <p>展示水印的创建、更新、销毁过程</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary" @click="createLifecycleWatermark">
+            创建
+          </button>
+          <button class="btn btn-secondary" @click="updateLifecycleWatermark">
+            更新
+          </button>
+          <button class="btn btn-danger" @click="destroyLifecycleWatermark">
+            销毁
+          </button>
+        </div>
+        <div class="code-preview">
+          <details>
+            <summary>查看代码</summary>
+            <pre><code>{{ lifecycleCode }}</code></pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- 条件渲染 -->
+      <div class="card glass">
+        <h3>条件渲染</h3>
+        <div class="form-group">
+          <label>显示条件</label>
+          <select v-model="conditionalConfig.condition">
+            <option value="always">始终显示</option>
+            <option value="hover">鼠标悬停</option>
+            <option value="focus">获得焦点</option>
+            <option value="never">从不显示</option>
+          </select>
+        </div>
+        <div
+          ref="conditionalRef"
+          class="demo-container"
+          tabindex="0"
+          @mouseenter="onMouseEnter"
+          @mouseleave="onMouseLeave"
+          @focusin="onFocusIn"
+          @focusout="onFocusOut"
+        >
+          <div class="demo-content">
+            <p>条件渲染示例</p>
+            <p>根据不同条件显示/隐藏水印</p>
+            <p v-if="conditionalConfig.condition === 'hover'">
+              鼠标悬停显示水印
+            </p>
+            <p v-if="conditionalConfig.condition === 'focus'">
+              点击获得焦点显示水印
+            </p>
+          </div>
+        </div>
+        <div class="code-preview">
+          <details>
+            <summary>查看代码</summary>
+            <pre><code>{{ conditionalCode }}</code></pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- 动态内容 -->
+      <div class="card glass">
+        <h3>动态内容更新</h3>
+        <div class="form-group">
+          <label>内容类型</label>
+          <select v-model="dynamicConfig.type">
+            <option value="time">当前时间</option>
+            <option value="counter">计数器</option>
+            <option value="random">随机文字</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label
+            >自动更新: {{ dynamicConfig.autoUpdate ? '开启' : '关闭' }}</label
+          >
+          <input v-model="dynamicConfig.autoUpdate" type="checkbox" />
+        </div>
+        <div ref="dynamicRef" class="demo-container">
+          <div class="demo-content">
+            <p>动态内容示例</p>
+            <p>水印内容会根据选择自动更新</p>
+            <p>当前内容: {{ dynamicContent }}</p>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary" @click="updateDynamicContent">
+            手动更新
+          </button>
+        </div>
+        <div class="code-preview">
+          <details>
+            <summary>查看代码</summary>
+            <pre><code>{{ dynamicCode }}</code></pre>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- 自定义 Hook 示例 -->
+    <div class="card glass mt-30">
+      <h3>🪝 自定义 Hook 示例</h3>
+      <p>使用自定义 Hook 封装水印逻辑，提高代码复用性</p>
+
+      <div class="grid grid-2">
+        <div>
+          <h4>useWatermark Hook</h4>
+          <div ref="hookRef1" class="demo-container">
+            <div class="demo-content">
+              <p>使用 useWatermark Hook</p>
+              <p>状态: {{ hookWatermark1.isActive ? '活跃' : '未激活' }}</p>
+            </div>
+          </div>
+          <div class="controls">
+            <button
+              class="btn btn-primary"
+              @click="hookWatermark1.create('Hook 水印 1')"
+            >
+              创建
+            </button>
+            <button class="btn btn-secondary" @click="hookWatermark1.toggle">
+              切换
+            </button>
+            <button class="btn btn-danger" @click="hookWatermark1.destroy">
+              销毁
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h4>useAdvancedWatermark Hook</h4>
+          <div ref="hookRef2" class="demo-container">
+            <div class="demo-content">
+              <p>使用 useAdvancedWatermark Hook</p>
+              <p>状态: {{ hookWatermark2.isActive ? '活跃' : '未激活' }}</p>
+              <p>错误: {{ hookWatermark2.error?.value?.message || '无' }}</p>
+            </div>
+          </div>
+          <div class="controls">
+            <button
+              class="btn btn-primary"
+              @click="() => hookWatermark2.create('Advanced Hook')"
+            >
+              创建
+            </button>
+            <button
+              class="btn btn-secondary"
+              @click="
+                () => hookWatermark2.update({ style: { color: '#FF6B6B' } })
+              "
+            >
+              更新
+            </button>
+            <button
+              class="btn btn-danger"
+              @click="() => hookWatermark2.destroy()"
+            >
+              销毁
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-preview">
+        <details>
+          <summary>查看 Hook 代码</summary>
+          <pre><code>{{ hookCode }}</code></pre>
+        </details>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style lang="less" scoped>
 .composition-examples {
   .section-title {
@@ -486,7 +539,7 @@ export function useWatermark(containerRef) {
     margin-bottom: 10px;
     text-align: center;
   }
-  
+
   .section-desc {
     color: rgba(255, 255, 255, 0.8);
     text-align: center;
@@ -502,12 +555,12 @@ export function useWatermark(containerRef) {
   margin: 15px 0;
   overflow: hidden;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
   }
-  
+
   .demo-content {
     padding: 20px;
     text-align: center;
@@ -524,10 +577,10 @@ export function useWatermark(containerRef) {
   padding: 15px;
   border-radius: 6px;
   margin-bottom: 15px;
-  
+
   p {
     margin-bottom: 5px;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
@@ -554,7 +607,7 @@ export function useWatermark(containerRef) {
 
 .code-preview {
   margin-top: 15px;
-  
+
   details {
     summary {
       cursor: pointer;
@@ -563,14 +616,14 @@ export function useWatermark(containerRef) {
       border-radius: 4px;
       font-weight: 500;
     }
-    
+
     pre {
       margin-top: 10px;
       padding: 15px;
       background: #f8f9fa;
       border-radius: 6px;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Courier New', monospace;
         font-size: 13px;

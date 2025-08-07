@@ -6,15 +6,16 @@ import type { WatermarkConfig } from './config'
 import type { AnimationInstance } from './animation'
 import type { RenderContext, BaseRenderer } from './render'
 import type { ResponsiveManager } from './responsive'
+import type { SecurityManagerState } from './security'
 
 // 水印实例状态
-export type WatermarkInstanceState = 
-  | 'creating'   // 创建中
-  | 'active'     // 活跃状态
-  | 'paused'     // 暂停状态
-  | 'updating'   // 更新中
+export type WatermarkInstanceState =
+  | 'creating' // 创建中
+  | 'active' // 活跃状态
+  | 'paused' // 暂停状态
+  | 'updating' // 更新中
   | 'destroying' // 销毁中
-  | 'destroyed'  // 已销毁
+  | 'destroyed' // 已销毁
 
 // 水印实例接口
 export interface WatermarkInstance {
@@ -33,7 +34,7 @@ export interface WatermarkInstance {
   /** 渲染上下文 */
   renderContext: RenderContext
   /** 安全管理器 */
-  securityManager?: SecurityManager
+  securityManager?: SecurityManagerState
   /** 响应式管理器 */
   responsiveManager?: ResponsiveManager
   /** 动画实例列表 */
@@ -91,7 +92,10 @@ export interface InstanceEvents {
   /** 实例销毁完成 */
   destroyed: (instanceId: string) => void
   /** 实例状态变化 */
-  stateChanged: (instance: WatermarkInstance, oldState: WatermarkInstanceState) => void
+  stateChanged: (
+    instance: WatermarkInstance,
+    oldState: WatermarkInstanceState
+  ) => void
   /** 实例可见性变化 */
   visibilityChanged: (instance: WatermarkInstance, visible: boolean) => void
   /** 实例错误 */
@@ -183,6 +187,14 @@ export interface InstanceQuery {
   createdAfter?: number
   /** 创建时间范围 */
   createdBefore?: number
+  /** 排序字段 */
+  sortBy?: string
+  /** 排序顺序 */
+  sortOrder?: 'asc' | 'desc'
+  /** 限制数量 */
+  limit?: number
+  /** 偏移量 */
+  offset?: number
   /** 自定义过滤函数 */
   filter?: (instance: WatermarkInstance) => boolean
 }

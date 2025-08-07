@@ -10,9 +10,10 @@ let instanceCounter = 0
  * 创建水印实例
  */
 export async function createWatermark(container, config = {}) {
-  const containerElement = typeof container === 'string'
-    ? document.querySelector(container)
-    : container
+  const containerElement =
+    typeof container === 'string'
+      ? document.querySelector(container)
+      : container
 
   if (!containerElement) {
     throw new Error('Container element not found')
@@ -32,16 +33,16 @@ export async function createWatermark(container, config = {}) {
       color: 'rgba(0, 0, 0, 0.15)',
       opacity: 1,
       rotate: -22,
-      ...config.style
+      ...config.style,
     },
     layout: {
       gapX: 100,
       gapY: 80,
-      ...config.layout
+      ...config.layout,
     },
     renderMode: 'dom',
     zIndex: 1000,
-    ...config
+    ...config,
   }
 
   // 创建水印元素
@@ -57,8 +58,8 @@ export async function createWatermark(container, config = {}) {
     for (let col = 0; col < cols; col++) {
       const element = document.createElement('div')
       element.className = 'mock-watermark'
-      element.textContent = Array.isArray(finalConfig.content) 
-        ? finalConfig.content.join('\n') 
+      element.textContent = Array.isArray(finalConfig.content)
+        ? finalConfig.content.join('\n')
         : finalConfig.content
 
       // 设置样式
@@ -73,7 +74,7 @@ export async function createWatermark(container, config = {}) {
         pointerEvents: 'none',
         userSelect: 'none',
         zIndex: String(finalConfig.zIndex),
-        whiteSpace: 'pre-line'
+        whiteSpace: 'pre-line',
       })
 
       containerElement.appendChild(element)
@@ -88,7 +89,7 @@ export async function createWatermark(container, config = {}) {
     elements,
     visible: true,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   }
 
   instances.set(instanceId, instance)
@@ -150,14 +151,14 @@ export const DEFAULT_WATERMARK_CONFIG = {
     fontSize: 16,
     color: 'rgba(0, 0, 0, 0.15)',
     opacity: 1,
-    rotate: -22
+    rotate: -22,
   },
   layout: {
     gapX: 100,
-    gapY: 80
+    gapY: 80,
   },
   renderMode: 'dom',
-  zIndex: 1000
+  zIndex: 1000,
 }
 
 /**

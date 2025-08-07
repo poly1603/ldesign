@@ -14,6 +14,10 @@ export interface Breakpoint {
   maxWidth?: number
   /** 断点配置 */
   config: Partial<WatermarkConfig>
+  /** 媒体查询对象 */
+  mediaQuery?: MediaQueryList
+  /** 是否当前匹配 */
+  matches?: boolean
 }
 
 // 响应式配置
@@ -32,6 +36,8 @@ export interface ResponsiveConfig {
   watchContainer?: boolean
   /** 自定义媒体查询 */
   customQueries?: MediaQuery[]
+  /** 自适应配置 */
+  adaptive?: AdaptiveConfig
 }
 
 // 媒体查询定义
@@ -62,6 +68,10 @@ export interface DeviceInfo {
   isTouchDevice: boolean
   /** 用户代理 */
   userAgent: string
+  /** 浏览器信息 */
+  browser?: string
+  /** 操作系统 */
+  os?: string
 }
 
 // 容器信息
@@ -70,8 +80,15 @@ export interface ContainerInfo {
   width: number
   /** 容器高度 */
   height: number
+  /** 宽高比 */
+  aspectRatio?: number
   /** 容器位置 */
   rect: DOMRect
+  /** 容器位置信息 */
+  position?: {
+    x: number
+    y: number
+  }
   /** 可视区域 */
   viewport: {
     width: number
@@ -94,7 +111,7 @@ export interface ResponsiveManager {
   currentBreakpoint: string
   /** 是否已初始化 */
   initialized: boolean
-  
+
   /** 初始化 */
   init(container: HTMLElement, config: ResponsiveConfig): void
   /** 销毁 */
@@ -102,9 +119,18 @@ export interface ResponsiveManager {
   /** 获取当前配置 */
   getCurrentConfig(baseConfig: WatermarkConfig): WatermarkConfig
   /** 监听容器变化 */
-  observeContainer(container: HTMLElement, callback: (info: ContainerInfo) => void): void
+  observeContainer(
+    container: HTMLElement,
+    callback: (info: ContainerInfo) => void
+  ): void
+  /** 取消监听容器变化 */
+  unobserveContainer(instance: any): Promise<void>
   /** 监听断点变化 */
-  observeBreakpoints(callback: (breakpoint: string, config: Partial<WatermarkConfig>) => void): void
+  observeBreakpoints(
+    callback: (breakpoint: string, config: Partial<WatermarkConfig>) => void
+  ): void
+  /** 更新观察器 */
+  updateObserver(instance: any): Promise<void>
   /** 手动触发重新计算 */
   recalculate(): void
 }
@@ -112,7 +138,11 @@ export interface ResponsiveManager {
 // 响应式事件
 export interface ResponsiveEvents {
   /** 断点变化 */
-  breakpointChanged: (newBreakpoint: string, oldBreakpoint: string, config: Partial<WatermarkConfig>) => void
+  breakpointChanged: (
+    newBreakpoint: string,
+    oldBreakpoint: string,
+    config: Partial<WatermarkConfig>
+  ) => void
   /** 容器尺寸变化 */
   containerResized: (containerInfo: ContainerInfo) => void
   /** 设备方向变化 */
@@ -124,16 +154,30 @@ export interface ResponsiveEvents {
 }
 
 // 自适应策略
-export type AdaptiveStrategy = 
-  | 'scale'        // 等比缩放
-  | 'density'      // 调整密度
-  | 'size'         // 调整大小
-  | 'spacing'      // 调整间距
-  | 'content'      // 调整内容
-  | 'hybrid'       // 混合策略
+export type AdaptiveStrategy =
+  | 'scale' // 等比缩放
+  | 'density' // 调整密度
+  | 'size' // 调整大小
+  | 'spacing' // 调整间距
+  | 'content' // 调整内容
+  | 'hybrid' // 混合策略
+
+// 自适应策略接口
+export interface AdaptiveStrategyInterface {
+  /** 策略名称 */
+  name: string
+  /** 应用策略 */
+  apply(
+    instance: any,
+    containerInfo: ContainerInfo,
+    deviceInfo: DeviceInfo
+  ): Promise<void>
+}
 
 // 自适应配置
 export interface AdaptiveConfig {
+  /** 是否启用自适应 */
+  enabled?: boolean
   /** 自适应策略 */
   strategy: AdaptiveStrategy
   /** 最小缩放比例 */
@@ -147,7 +191,10 @@ export interface AdaptiveConfig {
   /** 是否保持宽高比 */
   maintainAspectRatio?: boolean
   /** 自定义计算函数 */
-  customCalculator?: (containerInfo: ContainerInfo, deviceInfo: DeviceInfo) => Partial<WatermarkConfig>
+  customCalculator?: (
+    containerInfo: ContainerInfo,
+    deviceInfo: DeviceInfo
+  ) => Partial<WatermarkConfig>
 }
 
 // 断点管理器
@@ -207,12 +254,23 @@ export const DEFAULT_BREAKPOINTS: Record<string, number> = {
   md: 768,
   lg: 992,
   xl: 1200,
-  xxl: 1400
+  xxl: 1400,
 }
 
 // 默认响应式配置
-export const DEFAULT_RESPONSIVE_CONFIG: Required<Omit<ResponsiveConfig, 'breakpoints' | 'customQueries'>> = {
+export const DEFAULT_RESPONSIVE_CONFIG: Required<
+  Omit<ResponsiveConfig, 'breakpoints' | 'customQueries'>
+> = {
   enabled: false,
   autoResize: true,
-  debounceTime: 300
+  debounceTime: 300,
+  watchOrientation: true,
+  watchContainer: true,
+  adaptive: {
+    enabled: false,
+    strategy: 'scale',
+    minScale: 0.5,
+    maxScale: 2.0,
+    maintainAspectRatio: true,
+  },
 }
