@@ -49,18 +49,13 @@ class PackageTemplate {
   // 生成 package.json
   private generatePackageJson(packageDir: string, options: PackageOptions) {
     const packageJson = {
-      name: `@ldesign/${options.name}`,
+      name: '@ldesign/' + options.name,
       type: 'module',
       version: '0.1.0',
       description: options.description,
       author: 'ldesign',
       license: 'MIT',
-      keywords: [
-        'ldesign',
-        'vue3',
-        'typescript',
-        ...(options.keywords || []),
-      ],
+      keywords: ['ldesign', 'vue3', 'typescript', ...(options.keywords || [])],
       exports: {
         '.': {
           types: './dist/index.d.ts',
@@ -73,19 +68,19 @@ class PackageTemplate {
       types: 'dist/index.d.ts',
       files: ['dist'],
       scripts: {
-        'build': 'rollup -c',
+        build: 'rollup -c',
         'build:watch': 'rollup -c -w',
-        'dev': 'rollup -c -w',
+        dev: 'rollup -c -w',
         'type-check': 'vue-tsc --noEmit',
-        'lint': 'eslint . --fix',
+        lint: 'eslint . --fix',
         'lint:check': 'eslint .',
-        'test': 'vitest',
+        test: 'vitest',
         'test:ui': 'vitest --ui',
         'test:run': 'vitest run',
         'test:coverage': 'vitest run --coverage',
-        'clean': 'rimraf dist es lib types coverage .nyc_output',
+        clean: 'rimraf dist es lib types coverage .nyc_output',
         'size-check': 'size-limit',
-        'prepublishOnly': 'pnpm run clean && pnpm run build && pnpm run test:run',
+        prepublishOnly: 'pnpm run clean && pnpm run build && pnpm run test:run',
       },
       peerDependencies: {
         vue: '^3.3.0',
@@ -94,10 +89,11 @@ class PackageTemplate {
           return acc
         }, {} as Record<string, string>) || {}),
       },
-      dependencies: options.dependencies?.reduce((acc, dep) => {
-        acc[dep] = '^1.0.0' // 默认版本，需要手动调整
-        return acc
-      }, {} as Record<string, string>) || {},
+      dependencies:
+        options.dependencies?.reduce((acc, dep) => {
+          acc[dep] = '^1.0.0' // 默认版本，需要手动调整
+          return acc
+        }, {} as Record<string, string>) || {},
       devDependencies: {
         '@rollup/plugin-commonjs': '^25.0.7',
         '@rollup/plugin-node-resolve': '^15.2.3',
@@ -106,21 +102,21 @@ class PackageTemplate {
         '@vitejs/plugin-vue': '^5.0.3',
         '@vitest/ui': '^2.0.0',
         '@vue/test-utils': '^2.4.4',
-        'eslint': '^9.0.0',
-        'jsdom': '^24.0.0',
-        'rollup': '^4.9.6',
+        eslint: '^9.0.0',
+        jsdom: '^24.0.0',
+        rollup: '^4.9.6',
         'rollup-plugin-dts': '^6.1.0',
-        'typescript': '^5.6.0',
-        'vite': '^5.0.12',
-        'vitest': '^2.0.0',
-        'vue': '^3.4.15',
+        typescript: '^5.6.0',
+        vite: '^5.0.12',
+        vitest: '^2.0.0',
+        vue: '^3.4.15',
         'vue-tsc': '^1.8.27',
       },
     }
 
     writeFileSync(
       join(packageDir, 'package.json'),
-      `${JSON.stringify(packageJson, null, 2)}\n`,
+      `${JSON.stringify(packageJson, null, 2)}\n`
     )
   }
 
@@ -134,16 +130,12 @@ class PackageTemplate {
           '@/*': ['src/*'],
         },
       },
-      include: [
-        'src/**/*',
-        '__tests__/**/*',
-        'examples/**/*',
-      ],
+      include: ['src/**/*', '__tests__/**/*', 'examples/**/*'],
     }
 
     writeFileSync(
       join(packageDir, 'tsconfig.json'),
-      `${JSON.stringify(tsConfig, null, 2)}\n`,
+      `${JSON.stringify(tsConfig, null, 2)}\n`
     )
   }
 
@@ -175,7 +167,9 @@ export { default } from './${packageName}'
     writeFileSync(join(packageDir, 'src', 'index.ts'), indexContent)
 
     // src/{packageName}.ts
-    const mainContent = `import type { ${capitalize(packageName)}Options } from './types'
+    const mainContent = `import type { ${capitalize(
+      packageName
+    )}Options } from './types'
 
 /**
  * ${capitalize(packageName)} 类
@@ -191,14 +185,34 @@ export class ${capitalize(packageName)} {
    * 初始化
    */
   init(): void {
-    // TODO: 实现初始化逻辑
+    console.log(this.name + ' initialized with version ' + this.version)
+    this.isInitialized = true
+    
+    // 触发初始化事件
+    if (this.config.onInit) {
+      this.config.onInit()
+    }
   }
 
   /**
    * 销毁
    */
   destroy(): void {
-    // TODO: 实现销毁逻辑
+    if (!this.isInitialized) {
+      console.warn(this.name + ' is not initialized')
+      return
+    }
+
+    console.log(this.name + ' destroyed')
+    this.isInitialized = false
+    
+    // 触发销毁事件
+    if (this.config.onDestroy) {
+      this.config.onDestroy()
+    }
+    
+    // 清理配置
+    this.config = {}
   }
 }
 
@@ -212,7 +226,11 @@ export default ${capitalize(packageName)}
  * ${capitalize(packageName)} 配置选项
  */
 export interface ${capitalize(packageName)}Options {
-  // TODO: 定义配置选项
+  debug?: boolean
+  version?: string
+  onInit?: () => void
+  onDestroy?: () => void
+  // 其他配置选项可在此添加
 }
 
 /**
@@ -266,7 +284,10 @@ describe('${capitalize(packageName)}', () => {
 })
 `
 
-    writeFileSync(join(packageDir, '__tests__', `${packageName}.test.ts`), testContent)
+    writeFileSync(
+      join(packageDir, '__tests__', `${packageName}.test.ts`),
+      testContent
+    )
   }
 
   // 生成示例文件
@@ -290,7 +311,9 @@ describe('${capitalize(packageName)}', () => {
     const instance = new ${capitalize(packageName)}()
     instance.init()
     
-    document.getElementById('demo').textContent = '${capitalize(packageName)} 已初始化'
+    document.getElementById('demo').textContent = '${capitalize(
+      packageName
+    )} 已初始化'
   </script>
 </body>
 </html>
@@ -300,7 +323,11 @@ describe('${capitalize(packageName)}', () => {
   }
 
   // 生成文档文件
-  private generateDocFiles(packageDir: string, packageName: string, description: string) {
+  private generateDocFiles(
+    packageDir: string,
+    packageName: string,
+    description: string
+  ) {
     const readmeContent = `# @ldesign/${packageName}
 
 ${description}
@@ -345,7 +372,7 @@ MIT
 
   // 创建包
   async createPackage(options: PackageOptions) {
-    console.log(`🚀 创建包: @ldesign/${options.name}`)
+    console.log('🚀 创建包: @ldesign/' + options.name)
 
     try {
       // 1. 创建目录结构
@@ -378,11 +405,10 @@ MIT
       console.log('📦 安装依赖...')
       execSync('pnpm install', { stdio: 'inherit' })
 
-      console.log(`🎉 包 @ldesign/${options.name} 创建完成!`)
-      console.log(`📁 位置: packages/${options.name}`)
-      console.log(`🔧 下一步: cd packages/${options.name} && pnpm dev`)
-    }
-    catch (error) {
+      console.log('🎉 包 @ldesign/' + options.name + ' 创建完成!')
+      console.log('📁 位置: packages/' + options.name)
+      console.log('🔧 下一步: cd packages/' + options.name + ' && pnpm dev')
+    } catch (error) {
       console.error('❌ 创建包失败:', error)
       throw error
     }
@@ -409,14 +435,26 @@ if (args.length < 2) {
   process.exit(1)
 }
 
-const [name, description, keywords = '', dependencies = '', peerDependencies = ''] = args
+const [
+  name,
+  description,
+  keywords = '',
+  dependencies = '',
+  peerDependencies = '',
+] = args
 
 const template = new PackageTemplate()
 
-template.createPackage({
-  name,
-  description,
-  keywords: keywords ? keywords.split(',').map(k => k.trim()) : [],
-  dependencies: dependencies ? dependencies.split(',').map(d => d.trim()) : [],
-  peerDependencies: peerDependencies ? peerDependencies.split(',').map(p => p.trim()) : [],
-}).catch(console.error)
+template
+  .createPackage({
+    name,
+    description,
+    keywords: keywords ? keywords.split(',').map(k => k.trim()) : [],
+    dependencies: dependencies
+      ? dependencies.split(',').map(d => d.trim())
+      : [],
+    peerDependencies: peerDependencies
+      ? peerDependencies.split(',').map(p => p.trim())
+      : [],
+  })
+  .catch(console.error)

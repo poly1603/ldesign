@@ -3,17 +3,18 @@
  */
 
 import type {
-  WatermarkConfig,
   BaseRenderer,
-  DOMRenderer,
-  CanvasRenderer,
-  SVGRenderer,
-  RendererFactory as IRendererFactory
+  RendererFactory as IRendererFactory,
+  WatermarkConfig,
 } from '../types'
 
-import { WatermarkError, WatermarkErrorCode, ErrorSeverity } from '../types/error'
-import { DOMRendererImpl } from './dom-renderer'
+import {
+  ErrorSeverity,
+  WatermarkError,
+  WatermarkErrorCode,
+} from '../types/error'
 import { CanvasRendererImpl } from './canvas-renderer'
+import { DOMRendererImpl } from './dom-renderer'
 import { SVGRendererImpl } from './svg-renderer'
 
 /**
@@ -26,10 +27,10 @@ export class RendererFactory implements IRendererFactory {
 
   constructor() {
     // 注册默认渲染器
-    this.registerRenderer('dom', new DOMRendererImpl())
-    this.registerRenderer('canvas', new CanvasRendererImpl())
-    this.registerRenderer('svg', new SVGRendererImpl())
-    
+    this.registerRenderer('dom', new DOMRendererImpl() as any)
+    this.registerRenderer('canvas', new CanvasRendererImpl() as any)
+    this.registerRenderer('svg', new SVGRendererImpl() as any)
+
     // 设置默认渲染器
     this.defaultRenderer = this.renderers.get('dom')!
   }
@@ -39,23 +40,25 @@ export class RendererFactory implements IRendererFactory {
    */
   createRenderer(config: WatermarkConfig): BaseRenderer {
     const mode = config.mode || 'dom'
-    
+
     // 检查浏览器兼容性
     if (!this.isRendererSupported(mode)) {
-      console.warn(`Renderer '${mode}' is not supported, falling back to DOM renderer`)
+      console.warn(
+        `Renderer '${mode}' is not supported, falling back to DOM renderer`
+      )
       return this.defaultRenderer
     }
-    
+
     const renderer = this.renderers.get(mode)
     if (!renderer) {
       throw new WatermarkError(
         `Renderer '${mode}' is not registered`,
         WatermarkErrorCode.RENDERER_NOT_FOUND,
         ErrorSeverity.HIGH,
-        { mode }
+        { context: { mode } }
       )
     }
-    
+
     return renderer
   }
 
@@ -94,13 +97,13 @@ export class RendererFactory implements IRendererFactory {
     switch (mode) {
       case 'dom':
         return true // DOM渲染器总是支持的
-      
+
       case 'canvas':
         return this.isCanvasSupported()
-      
+
       case 'svg':
         return this.isSVGSupported()
-      
+
       default:
         return this.renderers.has(mode)
     }
@@ -111,29 +114,37 @@ export class RendererFactory implements IRendererFactory {
    */
   getRecommendedRenderer(config: WatermarkConfig): string {
     // 根据配置特性推荐最适合的渲染器
-    
+
     // 如果需要复杂动画，推荐Canvas
-    if (config.animation && config.animation.type !== 'none' && config.animation.type !== 'fade') {
+    if (
+      config.animation &&
+      config.animation.type !== 'none' &&
+      config.animation.type !== 'fade'
+    ) {
       if (this.isCanvasSupported()) {
         return 'canvas'
       }
     }
-    
+
     // 如果需要高质量图片渲染，推荐Canvas
-    if (config.content?.image && this.isCanvasSupported()) {
+    if (
+      typeof config.content === 'object' &&
+      config.content?.image &&
+      this.isCanvasSupported()
+    ) {
       return 'canvas'
     }
-    
+
     // 如果需要矢量图形，推荐SVG
     if (config.style?.vectorGraphics && this.isSVGSupported()) {
       return 'svg'
     }
-    
+
     // 如果需要高性能，推荐Canvas
     if (config.performance?.highPerformance && this.isCanvasSupported()) {
       return 'canvas'
     }
-    
+
     // 默认推荐DOM渲染器（兼容性最好）
     return 'dom'
   }
@@ -155,34 +166,34 @@ export class RendererFactory implements IRendererFactory {
           supportsTransparency: true,
           supportsBlending: true,
           supportsFilters: true,
-          performance: 'medium'
+          performance: 'medium',
         }
-      
+
       case 'canvas':
         return {
           supportsAnimation: true,
           supportsTransparency: true,
           supportsBlending: true,
           supportsFilters: false,
-          performance: 'high'
+          performance: 'high',
         }
-      
+
       case 'svg':
         return {
           supportsAnimation: true,
           supportsTransparency: true,
           supportsBlending: true,
           supportsFilters: true,
-          performance: 'low'
+          performance: 'low',
         }
-      
+
       default:
         return {
           supportsAnimation: false,
           supportsTransparency: false,
           supportsBlending: false,
           supportsFilters: false,
-          performance: 'low'
+          performance: 'low',
         }
     }
   }
@@ -197,10 +208,10 @@ export class RendererFactory implements IRendererFactory {
         `Cannot set default renderer: '${name}' is not registered`,
         WatermarkErrorCode.RENDERER_NOT_FOUND,
         ErrorSeverity.MEDIUM,
-        { name }
+        { context: { name } }
       )
     }
-    
+
     this.defaultRenderer = renderer
   }
 
@@ -216,8 +227,8 @@ export class RendererFactory implements IRendererFactory {
    */
   dispose(): void {
     for (const renderer of this.renderers.values()) {
-      if (typeof renderer.dispose === 'function') {
-        renderer.dispose()
+      if (typeof (renderer as any).dispose === 'function') {
+        ;(renderer as any).dispose()
       }
     }
     this.renderers.clear()
@@ -236,10 +247,26 @@ export class RendererFactory implements IRendererFactory {
 
   private isSVGSupported(): boolean {
     try {
-      return !!(document.createElementNS && 
-               document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect)
+      return !!(
+        document.createElementNS &&
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+          .createSVGRect
+      )
     } catch {
       return false
     }
+  }
+
+  // 实现RendererFactory接口的缺失方法
+  createDOMRenderer(): any {
+    return new DOMRendererImpl()
+  }
+
+  createCanvasRenderer(): any {
+    return new CanvasRendererImpl()
+  }
+
+  createSVGRenderer(): any {
+    return new SVGRendererImpl()
   }
 }

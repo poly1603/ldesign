@@ -4,20 +4,20 @@ export default defineConfig({
   server: {
     port: 3001,
     open: true,
-    host: true
+    host: true,
   },
   build: {
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
       input: {
-        main: './index.html'
-      }
-    }
+        main: './index.html',
+      },
+    },
   },
   resolve: {
     alias: {
-      '@': new URL('./src', import.meta.url).pathname
-    }
-  }
+      '@': new URL('./src', import.meta.url).pathname,
+    },
+  },
 })

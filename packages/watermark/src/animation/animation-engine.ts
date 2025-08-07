@@ -2,14 +2,86 @@
  * 动画引擎
  */
 
-import type {
-  WatermarkInstance,
-  AnimationConfig,
-  AnimationType
-} from '../types'
+import type { AnimationConfig, AnimationType } from '../types'
 
-import { WatermarkError, WatermarkErrorCode, ErrorSeverity } from '../types/error'
+import {
+  ErrorSeverity,
+  WatermarkError,
+  WatermarkErrorCode,
+} from '../types/error'
 import { generateId } from '../utils/id-generator'
+
+/**
+ * 动画状态接口
+ */
+export interface AnimationState {
+  id: string
+  instanceId: string
+  type: AnimationType
+  status: 'idle' | 'running' | 'paused' | 'completed' | 'cancelled'
+  progress: number
+  currentTime: number
+  duration: number
+  iterations: number
+  currentIteration: number
+  direction: string
+  startTime: number
+  endTime: number
+}
+
+/**
+ * 动画时间轴接口
+ */
+export interface AnimationTimeline {
+  id: string
+  animations: string[]
+  duration: number
+  status: 'idle' | 'running' | 'paused' | 'completed'
+}
+
+/**
+ * 动画事件接口
+ */
+export interface AnimationEvent {
+  animationId: string
+  type: 'start' | 'pause' | 'resume' | 'stop' | 'finish' | 'cancel' | 'progress'
+  timestamp: number
+}
+
+/**
+ * 过渡配置接口
+ */
+export interface TransitionConfig {
+  duration?: number
+  easing?: string
+  delay?: number
+}
+
+/**
+ * 特效配置接口
+ */
+export interface EffectConfig {
+  type: string
+  duration?: number
+  intensity?: number
+  // eslint-disable-next-line ts/no-explicit-any
+  params?: Record<string, any>
+}
+
+/**
+ * 动画引擎接口
+ */
+export interface IAnimationEngine {
+  createAnimation: (
+    instanceId: string,
+    type: AnimationType,
+    config: Partial<AnimationConfig>
+  ) => Promise<string>
+  startAnimation: (animationId: string) => Promise<void>
+  pauseAnimation: (animationId: string) => Promise<void>
+  stopAnimation: (animationId: string) => Promise<void>
+  destroyAnimation: (animationId: string) => Promise<void>
+}
 
 /**
  * 动画引擎
@@ -20,22 +92,20 @@ export class AnimationEngine implements IAnimationEngine {
   private timelines = new Map<string, AnimationTimeline>()
   private states = new Map<string, AnimationState>()
   private callbacks = new Map<string, ((event: AnimationEvent) => void)[]>()
-  private rafId?: number
-  private isRunning = false
-  private startTime = 0
-  private pausedTime = 0
   private config: AnimationConfig
 
-  constructor(config: AnimationConfig = {}) {
+  constructor(config: Partial<AnimationConfig> = {}) {
     this.config = {
-      enabled: true,
+      type: 'none',
       duration: 1000,
       easing: 'ease-in-out',
       delay: 0,
-      iterations: 1,
+      iteration: 1,
       direction: 'normal',
       fillMode: 'forwards',
-      ...config
+      playState: 'running',
+      params: {},
+      ...config,
     }
   }
 
@@ -46,8 +116,8 @@ export class AnimationEngine implements IAnimationEngine {
     // 检查浏览器支持
     if (!this.checkSupport()) {
       throw new WatermarkError(
-        WatermarkErrorCode.BROWSER_NOT_SUPPORTED,
         'Animation not supported in this browser',
+        WatermarkErrorCode.BROWSER_NOT_SUPPORTED,
         ErrorSeverity.HIGH
       )
     }
@@ -73,11 +143,14 @@ export class AnimationEngine implements IAnimationEngine {
       progress: 0,
       currentTime: 0,
       duration: animationConfig.duration || 1000,
-      iterations: animationConfig.iterations || 1,
+      iterations:
+        typeof animationConfig.iteration === 'number'
+          ? animationConfig.iteration
+          : 1,
       currentIteration: 0,
       direction: animationConfig.direction || 'normal',
       startTime: 0,
-      endTime: 0
+      endTime: 0,
     }
 
     this.states.set(animationId, state)
@@ -89,8 +162,8 @@ export class AnimationEngine implements IAnimationEngine {
     const elements = this.getInstanceElements(instanceId)
     if (elements.length === 0) {
       throw new WatermarkError(
-        WatermarkErrorCode.ANIMATION_FAILED,
         'No elements found for animation',
+        WatermarkErrorCode.ANIMATION_FAILED,
         ErrorSeverity.MEDIUM
       )
     }
@@ -99,9 +172,14 @@ export class AnimationEngine implements IAnimationEngine {
       duration: animationConfig.duration,
       easing: this.convertEasing(animationConfig.easing),
       delay: animationConfig.delay,
-      iterations: animationConfig.iterations,
+      iterations:
+        typeof animationConfig.iteration === 'number'
+          ? animationConfig.iteration
+          : animationConfig.iteration === 'infinite'
+          ? Infinity
+          : 1,
       direction: animationConfig.direction,
-      fill: animationConfig.fillMode
+      fill: animationConfig.fillMode,
     })
 
     // 设置事件监听
@@ -113,17 +191,16 @@ export class AnimationEngine implements IAnimationEngine {
   }
 
   /**
-   * 播放动画
+   * 开始动画
    */
-  async playAnimation(animationId: string): Promise<void> {
+  async startAnimation(animationId: string): Promise<void> {
     const animation = this.animations.get(animationId)
     const state = this.states.get(animationId)
 
     if (!animation || !state) {
       throw new WatermarkError(
-        WatermarkErrorCode.ANIMATION_NOT_FOUND,
         `Animation ${animationId} not found`,
-        ErrorSeverity.MEDIUM
+        WatermarkErrorCode.ANIMATION_NOT_FOUND
       )
     }
 
@@ -132,7 +209,7 @@ export class AnimationEngine implements IAnimationEngine {
 
     animation.play()
 
-    this.emitEvent(animationId, 'start', { state })
+    this.emitEvent(animationId, 'start', {})
   }
 
   /**
@@ -147,11 +224,11 @@ export class AnimationEngine implements IAnimationEngine {
     }
 
     state.status = 'paused'
-    this.pausedTime = Date.now()
+    // this.pausedTime = Date.now()
 
     animation.pause()
 
-    this.emitEvent(animationId, 'pause', { state })
+    this.emitEvent(animationId, 'pause', {})
   }
 
   /**
@@ -165,13 +242,13 @@ export class AnimationEngine implements IAnimationEngine {
       return
     }
 
-    state.status = 'stopped'
+    state.status = 'cancelled'
     state.progress = 0
     state.currentTime = 0
 
     animation.cancel()
 
-    this.emitEvent(animationId, 'stop', { state })
+    this.emitEvent(animationId, 'stop', {})
   }
 
   /**
@@ -185,13 +262,32 @@ export class AnimationEngine implements IAnimationEngine {
       return
     }
 
-    state.status = 'finished'
+    state.status = 'completed'
     state.progress = 1
     state.endTime = Date.now()
 
     animation.finish()
 
-    this.emitEvent(animationId, 'finish', { state })
+    this.emitEvent(animationId, 'finish', {})
+  }
+
+  /**
+   * 销毁动画
+   */
+  async destroyAnimation(animationId: string): Promise<void> {
+    const animation = this.animations.get(animationId)
+    const state = this.states.get(animationId)
+
+    if (animation) {
+      animation.cancel()
+      this.animations.delete(animationId)
+    }
+
+    if (state) {
+      this.states.delete(animationId)
+    }
+
+    this.callbacks.delete(animationId)
   }
 
   /**
@@ -209,12 +305,9 @@ export class AnimationEngine implements IAnimationEngine {
 
     const timeline: AnimationTimeline = {
       id: timelineId,
-      instanceId,
       animations: [],
       duration: 0,
       status: 'idle',
-      progress: 0,
-      currentTime: 0
     }
 
     // 创建时间线中的动画
@@ -225,12 +318,13 @@ export class AnimationEngine implements IAnimationEngine {
         animConfig.type,
         {
           ...animConfig.config,
-          delay: totalDelay + (animConfig.delay || 0)
+          delay: totalDelay + (animConfig.delay || 0),
         }
       )
 
       timeline.animations.push(animationId)
-      totalDelay += (animConfig.config.duration || 1000) + (animConfig.delay || 0)
+      totalDelay +=
+        (animConfig.config.duration || 1000) + (animConfig.delay || 0)
     }
 
     timeline.duration = totalDelay
@@ -246,9 +340,8 @@ export class AnimationEngine implements IAnimationEngine {
     const timeline = this.timelines.get(timelineId)
     if (!timeline) {
       throw new WatermarkError(
-        WatermarkErrorCode.ANIMATION_NOT_FOUND,
         `Timeline ${timelineId} not found`,
-        ErrorSeverity.MEDIUM
+        WatermarkErrorCode.ANIMATION_NOT_FOUND
       )
     }
 
@@ -256,7 +349,7 @@ export class AnimationEngine implements IAnimationEngine {
 
     // 播放时间线中的所有动画
     for (const animationId of timeline.animations) {
-      await this.playAnimation(animationId)
+      await this.startAnimation(animationId)
     }
   }
 
@@ -265,7 +358,9 @@ export class AnimationEngine implements IAnimationEngine {
    */
   async applyTransition(
     instanceId: string,
+    // eslint-disable-next-line ts/no-explicit-any
     fromState: Record<string, any>,
+    // eslint-disable-next-line ts/no-explicit-any
     toState: Record<string, any>,
     config: TransitionConfig
   ): Promise<string> {
@@ -277,16 +372,15 @@ export class AnimationEngine implements IAnimationEngine {
     const elements = this.getInstanceElements(instanceId)
     if (elements.length === 0) {
       throw new WatermarkError(
-        WatermarkErrorCode.ANIMATION_FAILED,
         'No elements found for transition',
-        ErrorSeverity.MEDIUM
+        WatermarkErrorCode.ANIMATION_FAILED
       )
     }
 
     const animation = elements[0].animate(keyframes, {
       duration: config.duration || 300,
       easing: this.convertEasing(config.easing || 'ease'),
-      fill: 'forwards'
+      fill: 'forwards',
     })
 
     this.animations.set(transitionId, animation)
@@ -302,26 +396,29 @@ export class AnimationEngine implements IAnimationEngine {
     effectType: string,
     config: EffectConfig
   ): Promise<string> {
-    const effectId = generateId('effect')
+    const animationConfig: Partial<AnimationConfig> = {
+      type: effectType as AnimationType,
+      duration: config.duration,
+      params: config.params,
+    }
 
     switch (effectType) {
       case 'fade':
-        return this.createAnimation(instanceId, 'fade', config)
+        return this.createAnimation(instanceId, 'fade', animationConfig)
       case 'slide':
-        return this.createAnimation(instanceId, 'slide', config)
+        return this.createAnimation(instanceId, 'move', animationConfig)
       case 'scale':
-        return this.createAnimation(instanceId, 'scale', config)
+        return this.createAnimation(instanceId, 'scale', animationConfig)
       case 'rotate':
-        return this.createAnimation(instanceId, 'rotate', config)
+        return this.createAnimation(instanceId, 'rotate', animationConfig)
       case 'bounce':
-        return this.createAnimation(instanceId, 'bounce', config)
+        return this.createAnimation(instanceId, 'bounce', animationConfig)
       case 'pulse':
-        return this.createAnimation(instanceId, 'pulse', config)
+        return this.createAnimation(instanceId, 'pulse', animationConfig)
       default:
         throw new WatermarkError(
-          WatermarkErrorCode.ANIMATION_FAILED,
           `Unknown effect type: ${effectType}`,
-          ErrorSeverity.MEDIUM
+          WatermarkErrorCode.ANIMATION_FAILED
         )
     }
   }
@@ -379,20 +476,6 @@ export class AnimationEngine implements IAnimationEngine {
   }
 
   /**
-   * 销毁动画
-   */
-  async destroyAnimation(animationId: string): Promise<void> {
-    const animation = this.animations.get(animationId)
-    if (animation) {
-      animation.cancel()
-      this.animations.delete(animationId)
-    }
-
-    this.states.delete(animationId)
-    this.callbacks.delete(animationId)
-  }
-
-  /**
    * 销毁时间线
    */
   async destroyTimeline(timelineId: string): Promise<void> {
@@ -424,9 +507,9 @@ export class AnimationEngine implements IAnimationEngine {
     }
 
     // 取消RAF
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId)
-    }
+    // if (this.rafId) {
+    //   cancelAnimationFrame(this.rafId)
+    // }
 
     // 清理数据
     this.animations.clear()
@@ -434,7 +517,7 @@ export class AnimationEngine implements IAnimationEngine {
     this.states.clear()
     this.callbacks.clear()
 
-    this.isRunning = false
+    // this.isRunning = false
   }
 
   // 私有方法
@@ -446,14 +529,19 @@ export class AnimationEngine implements IAnimationEngine {
   private getInstanceElements(instanceId: string): Element[] {
     // 这里需要从实例管理器获取元素
     // 暂时返回空数组，实际实现时需要注入实例管理器
-    return Array.from(document.querySelectorAll(`[data-watermark-instance="${instanceId}"]`))
+    return Array.from(
+      document.querySelectorAll(`[data-watermark-instance="${instanceId}"]`)
+    )
   }
 
-  private createKeyframes(type: AnimationType, config: AnimationConfig): Keyframe[] {
+  private createKeyframes(
+    type: AnimationType,
+    config: AnimationConfig
+  ): Keyframe[] {
     switch (type) {
       case 'fade':
         return this.createFadeKeyframes(config)
-      case 'slide':
+      case 'move':
         return this.createSlideKeyframes(config)
       case 'scale':
         return this.createScaleKeyframes(config)
@@ -463,14 +551,8 @@ export class AnimationEngine implements IAnimationEngine {
         return this.createBounceKeyframes(config)
       case 'pulse':
         return this.createPulseKeyframes(config)
-      case 'shake':
+      case 'swing':
         return this.createShakeKeyframes(config)
-      case 'flip':
-        return this.createFlipKeyframes(config)
-      case 'zoom':
-        return this.createZoomKeyframes(config)
-      case 'custom':
-        return config.keyframes || []
       default:
         return []
     }
@@ -482,75 +564,81 @@ export class AnimationEngine implements IAnimationEngine {
     if (direction === 'in') {
       return [
         { opacity: 0, offset: 0 },
-        { opacity: 1, offset: 1 }
+        { opacity: 1, offset: 1 },
       ]
     } else {
       return [
         { opacity: 1, offset: 0 },
-        { opacity: 0, offset: 1 }
+        { opacity: 0, offset: 1 },
       ]
     }
   }
 
   private createSlideKeyframes(config: AnimationConfig): Keyframe[] {
-    const direction = config.slideDirection || 'left'
-    const distance = config.slideDistance || '100px'
+    const moveParams = config.params?.move
+    const direction = moveParams?.path || 'linear'
+    const distance = moveParams?.x || 100
 
     const transforms: Record<string, string> = {
-      left: `translateX(-${distance})`,
-      right: `translateX(${distance})`,
-      up: `translateY(-${distance})`,
-      down: `translateY(${distance})`
+      linear: `translateX(${distance}px)`,
+      left: `translateX(-${distance}px)`,
+      right: `translateX(${distance}px)`,
+      up: `translateY(-${distance}px)`,
+      down: `translateY(${distance}px)`,
     }
 
     return [
-      { transform: transforms[direction], offset: 0 },
-      { transform: 'translate(0, 0)', offset: 1 }
+      { transform: transforms[direction] || transforms.linear, offset: 0 },
+      { transform: 'translate(0, 0)', offset: 1 },
     ]
   }
 
   private createScaleKeyframes(config: AnimationConfig): Keyframe[] {
-    const fromScale = config.fromScale || 0
-    const toScale = config.toScale || 1
+    const scaleParams = config.params?.scale
+    const fromScale = scaleParams?.from || 0
+    const toScale = scaleParams?.to || 1
 
     return [
       { transform: `scale(${fromScale})`, offset: 0 },
-      { transform: `scale(${toScale})`, offset: 1 }
+      { transform: `scale(${toScale})`, offset: 1 },
     ]
   }
 
   private createRotateKeyframes(config: AnimationConfig): Keyframe[] {
-    const fromAngle = config.fromAngle || 0
-    const toAngle = config.toAngle || 360
+    const rotateParams = config.params?.rotate
+    const fromAngle = rotateParams?.from || 0
+    const toAngle = rotateParams?.to || 360
 
     return [
       { transform: `rotate(${fromAngle}deg)`, offset: 0 },
-      { transform: `rotate(${toAngle}deg)`, offset: 1 }
+      { transform: `rotate(${toAngle}deg)`, offset: 1 },
     ]
   }
 
-  private createBounceKeyframes(config: AnimationConfig): Keyframe[] {
+  private createBounceKeyframes(_config: AnimationConfig): Keyframe[] {
     return [
       { transform: 'translateY(0)', offset: 0 },
       { transform: 'translateY(-30px)', offset: 0.25 },
       { transform: 'translateY(0)', offset: 0.5 },
       { transform: 'translateY(-15px)', offset: 0.75 },
-      { transform: 'translateY(0)', offset: 1 }
+      { transform: 'translateY(0)', offset: 1 },
     ]
   }
 
   private createPulseKeyframes(config: AnimationConfig): Keyframe[] {
-    const scale = config.pulseScale || 1.1
+    const pulseParams = config.params?.pulse
+    const scale = pulseParams?.maxScale || 1.1
 
     return [
       { transform: 'scale(1)', offset: 0 },
       { transform: `scale(${scale})`, offset: 0.5 },
-      { transform: 'scale(1)', offset: 1 }
+      { transform: 'scale(1)', offset: 1 },
     ]
   }
 
   private createShakeKeyframes(config: AnimationConfig): Keyframe[] {
-    const intensity = config.shakeIntensity || 10
+    const swingParams = config.params?.swing
+    const intensity = swingParams?.angle || 10
 
     return [
       { transform: 'translateX(0)', offset: 0 },
@@ -563,52 +651,27 @@ export class AnimationEngine implements IAnimationEngine {
       { transform: `translateX(-${intensity}px)`, offset: 0.7 },
       { transform: `translateX(${intensity}px)`, offset: 0.8 },
       { transform: `translateX(-${intensity}px)`, offset: 0.9 },
-      { transform: 'translateX(0)', offset: 1 }
+      { transform: 'translateX(0)', offset: 1 },
     ]
   }
 
-  private createFlipKeyframes(config: AnimationConfig): Keyframe[] {
-    const axis = config.flipAxis || 'x'
-
-    if (axis === 'x') {
-      return [
-        { transform: 'rotateX(0deg)', offset: 0 },
-        { transform: 'rotateX(180deg)', offset: 1 }
-      ]
-    } else {
-      return [
-        { transform: 'rotateY(0deg)', offset: 0 },
-        { transform: 'rotateY(180deg)', offset: 1 }
-      ]
-    }
-  }
-
-  private createZoomKeyframes(config: AnimationConfig): Keyframe[] {
-    const direction = config.zoomDirection || 'in'
-
-    if (direction === 'in') {
-      return [
-        { transform: 'scale(0)', offset: 0 },
-        { transform: 'scale(1)', offset: 1 }
-      ]
-    } else {
-      return [
-        { transform: 'scale(1)', offset: 0 },
-        { transform: 'scale(0)', offset: 1 }
-      ]
-    }
-  }
-
   private createTransitionKeyframes(
+    // eslint-disable-next-line ts/no-explicit-any
     fromState: Record<string, any>,
+    // eslint-disable-next-line ts/no-explicit-any
     toState: Record<string, any>
   ): Keyframe[] {
     return [fromState, toState]
   }
 
-  private convertEasing(easing: AnimationEasing | string): string {
+  // eslint-disable-next-line ts/no-explicit-any
+  private convertEasing(easing: any): string {
     if (typeof easing === 'string') {
       return easing
+    }
+
+    if (typeof easing === 'function') {
+      return 'ease'
     }
 
     // 转换自定义缓动函数
@@ -624,30 +687,36 @@ export class AnimationEngine implements IAnimationEngine {
     }
   }
 
-  private setupAnimationListeners(animation: Animation, animationId: string): void {
+  private setupAnimationListeners(
+    animation: Animation,
+    animationId: string
+  ): void {
     const state = this.states.get(animationId)
     if (!state) {
       return
     }
 
     animation.addEventListener('finish', () => {
-      state.status = 'finished'
+      state.status = 'completed'
       state.progress = 1
       state.endTime = Date.now()
-      this.emitEvent(animationId, 'finish', { state })
+      this.emitEvent(animationId, 'finish', {})
     })
 
     animation.addEventListener('cancel', () => {
       state.status = 'cancelled'
-      this.emitEvent(animationId, 'cancel', { state })
+      this.emitEvent(animationId, 'cancel', {})
     })
 
     // 监听进度更新
     const updateProgress = () => {
       if (animation.currentTime !== null && state.duration > 0) {
-        state.progress = Math.min(animation.currentTime / state.duration, 1)
-        state.currentTime = animation.currentTime
-        this.emitEvent(animationId, 'progress', { state })
+        state.progress = Math.min(
+          (animation.currentTime as number) / state.duration,
+          1
+        )
+        state.currentTime = animation.currentTime as number
+        this.emitEvent(animationId, 'progress', {})
       }
 
       if (state.status === 'running') {
@@ -669,7 +738,7 @@ export class AnimationEngine implements IAnimationEngine {
       type,
       animationId,
       timestamp: Date.now(),
-      ...data
+      ...data,
     }
 
     const callbacks = this.callbacks.get(animationId) || []

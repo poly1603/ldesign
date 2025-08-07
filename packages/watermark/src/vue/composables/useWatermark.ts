@@ -2,11 +2,11 @@
  * useWatermark 组合式API
  */
 
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import type { Ref } from 'vue'
-import { WatermarkCore } from '../../core'
 import type { WatermarkConfig, WatermarkInstance } from '../../types'
 import type { UseWatermarkOptions, UseWatermarkReturn } from '../types'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { WatermarkCore } from '../../core'
 
 /**
  * 水印组合式API
@@ -15,11 +15,7 @@ export function useWatermark(
   container?: Ref<HTMLElement | undefined>,
   options: UseWatermarkOptions = {}
 ): UseWatermarkReturn {
-  const {
-    immediate = true,
-    enableSecurity = true,
-    enableResponsive = true
-  } = options
+  const { enableSecurity = true, enableResponsive = true } = options
 
   // 状态管理
   const instance = ref<WatermarkInstance | null>(null)
@@ -35,7 +31,7 @@ export function useWatermark(
    */
   const create = async (config: Partial<WatermarkConfig>): Promise<void> => {
     if (loading.value) return
-    
+
     try {
       loading.value = true
       error.value = null
@@ -55,14 +51,18 @@ export function useWatermark(
       }
 
       // 创建新实例
-      const newInstance = await core.create({
-        ...config,
-        container: containerElement
-      }, {
-        enableSecurity,
-        enableResponsive,
-        immediate: true
-      })
+      const newInstance = await core.create(
+        containerElement as HTMLElement,
+        {
+          ...config,
+          content: config.content || 'Watermark',
+        },
+        {
+          enableSecurity,
+          enableResponsive,
+          immediate: true,
+        }
+      )
 
       instance.value = newInstance
     } catch (err) {
@@ -192,7 +192,7 @@ export function useWatermark(
     destroy,
     pause,
     resume,
-    clearError
+    clearError,
   }
 }
 
@@ -210,7 +210,7 @@ export function useSimpleWatermark(
   // 监听配置变化
   watch(
     configRef,
-    async (newConfig) => {
+    async newConfig => {
       if (watermark.isCreated.value) {
         await watermark.update(newConfig)
       } else if (container?.value && options.immediate !== false) {

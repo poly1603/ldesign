@@ -1,4 +1,4 @@
-import { createPlaywrightConfig } from '../../tools/test/playwright.config.base'
+import { createPlaywrightConfig } from '../../tools/configs/test/playwright.config.base'
 
 export default createPlaywrightConfig({
   testDir: './e2e',

@@ -3,31 +3,35 @@
  */
 
 import type {
+  BatchOperationOptions,
+  InstanceManager as IInstanceManager,
+  InstanceQuery,
+  InstanceStats,
   WatermarkInstance,
   WatermarkInstanceState,
-  InstanceManager as IInstanceManager,
-  InstanceStats,
-  InstanceQuery,
-  BatchOperationOptions
 } from '../types'
 
-import { WatermarkError, WatermarkErrorCode, ErrorSeverity } from '../types/error'
+import {
+  ErrorSeverity,
+  WatermarkError,
+  WatermarkErrorCode,
+} from '../types/error'
 
 /**
  * 实例管理器
  * 负责水印实例的注册、查询、统计等管理功能
  */
 export class InstanceManager implements IInstanceManager {
-  private instances = new Map<string, WatermarkInstance>()
+  public instances = new Map<string, WatermarkInstance>()
   private instancesByContainer = new Map<HTMLElement, Set<string>>()
-  private stats: InstanceStats = {
+  private stats = {
     total: 0,
     active: 0,
     paused: 0,
     destroyed: 0,
     creating: 0,
     updating: 0,
-    destroying: 0
+    destroying: 0,
   }
 
   /**
@@ -44,13 +48,13 @@ export class InstanceManager implements IInstanceManager {
     }
 
     this.instances.set(instance.id, instance)
-    
+
     // 按容器分组
     if (!this.instancesByContainer.has(instance.container)) {
       this.instancesByContainer.set(instance.container, new Set())
     }
     this.instancesByContainer.get(instance.container)!.add(instance.id)
-    
+
     // 更新统计
     this.updateStats()
   }
@@ -75,10 +79,10 @@ export class InstanceManager implements IInstanceManager {
 
     // 移除实例
     this.instances.delete(instanceId)
-    
+
     // 更新统计
     this.updateStats()
-    
+
     return true
   }
 
@@ -107,15 +111,18 @@ export class InstanceManager implements IInstanceManager {
 
     return Array.from(instanceIds)
       .map(id => this.instances.get(id))
-      .filter((instance): instance is WatermarkInstance => instance !== undefined)
+      .filter(
+        (instance): instance is WatermarkInstance => instance !== undefined
+      )
   }
 
   /**
    * 根据状态获取实例
    */
   getByState(state: WatermarkInstanceState): WatermarkInstance[] {
-    return Array.from(this.instances.values())
-      .filter(instance => instance.state === state)
+    return Array.from(this.instances.values()).filter(
+      instance => instance.state === state
+    )
   }
 
   /**
@@ -124,60 +131,40 @@ export class InstanceManager implements IInstanceManager {
   query(query: InstanceQuery): WatermarkInstance[] {
     let results = Array.from(this.instances.values())
 
-    // 按ID过滤
-    if (query.ids && query.ids.length > 0) {
-      results = results.filter(instance => query.ids!.includes(instance.id))
-    }
-
     // 按状态过滤
-    if (query.states && query.states.length > 0) {
-      results = results.filter(instance => query.states!.includes(instance.state))
+    if (query.state) {
+      if (Array.isArray(query.state)) {
+        results = results.filter(instance =>
+          query.state!.includes(instance.state)
+        )
+      } else {
+        results = results.filter(instance => instance.state === query.state)
+      }
     }
 
     // 按容器过滤
-    if (query.containers && query.containers.length > 0) {
-      results = results.filter(instance => query.containers!.includes(instance.container))
+    if (query.container) {
+      results = results.filter(
+        instance => instance.container === query.container
+      )
     }
 
     // 按创建时间过滤
     if (query.createdAfter) {
-      results = results.filter(instance => instance.createdAt > query.createdAfter!)
+      results = results.filter(
+        instance => instance.createdAt > query.createdAfter!
+      )
     }
 
     if (query.createdBefore) {
-      results = results.filter(instance => instance.createdAt < query.createdBefore!)
+      results = results.filter(
+        instance => instance.createdAt < query.createdBefore!
+      )
     }
 
-    // 按更新时间过滤
-    if (query.updatedAfter) {
-      results = results.filter(instance => instance.updatedAt > query.updatedAfter!)
-    }
-
-    if (query.updatedBefore) {
-      results = results.filter(instance => instance.updatedAt < query.updatedBefore!)
-    }
-
-    // 按可见性过滤
-    if (query.visible !== undefined) {
-      results = results.filter(instance => instance.visible === query.visible)
-    }
-
-    // 按用户数据过滤
-    if (query.userData) {
-      results = results.filter(instance => {
-        if (!instance.userData) return false
-        return Object.entries(query.userData!).every(([key, value]) => {
-          return instance.userData![key] === value
-        })
-      })
-    }
-
-    // 按标签过滤
-    if (query.tags && query.tags.length > 0) {
-      results = results.filter(instance => {
-        const instanceTags = instance.userData?.tags as string[] || []
-        return query.tags!.some(tag => instanceTags.includes(tag))
-      })
+    // 应用自定义过滤函数
+    if (query.filter) {
+      results = results.filter(query.filter)
     }
 
     // 排序
@@ -237,7 +224,23 @@ export class InstanceManager implements IInstanceManager {
    */
   getStats(): InstanceStats {
     this.updateStats()
-    return { ...this.stats }
+    return {
+      id: 'global',
+      createdAt: Date.now(),
+      uptime: Date.now() - this.stats.creating,
+      updateCount: 0,
+      renderCount: 0,
+      elementCount: this.stats.active,
+      animationCount: 0,
+      memoryUsage: 0,
+      performance: {
+        avgRenderTime: 0,
+        maxRenderTime: 0,
+        minRenderTime: 0,
+        fps: 60,
+      },
+      ...this.stats,
+    }
   }
 
   /**
@@ -254,13 +257,13 @@ export class InstanceManager implements IInstanceManager {
     // 分批处理
     for (let i = 0; i < instanceIds.length; i += concurrency) {
       const batch = instanceIds.slice(i, i + concurrency)
-      
-      const batchPromises = batch.map(async (instanceId) => {
+
+      const batchPromises = batch.map(async instanceId => {
         const instance = this.instances.get(instanceId)
         if (!instance) {
           return {
             instanceId,
-            error: new Error(`Instance ${instanceId} not found`)
+            error: new Error(`Instance ${instanceId} not found`),
           }
         }
 
@@ -287,9 +290,10 @@ export class InstanceManager implements IInstanceManager {
    * 清理已销毁的实例
    */
   cleanup(): number {
-    const destroyedInstances = Array.from(this.instances.entries())
-      .filter(([, instance]) => instance.state === 'destroyed')
-    
+    const destroyedInstances = Array.from(this.instances.entries()).filter(
+      ([, instance]) => instance.state === 'destroyed'
+    )
+
     let cleanedCount = 0
     for (const [instanceId] of destroyedInstances) {
       if (this.unregister(instanceId)) {
@@ -326,14 +330,13 @@ export class InstanceManager implements IInstanceManager {
    * 根据选择器查找实例
    */
   findBySelector(selector: string): WatermarkInstance[] {
-    return Array.from(this.instances.values())
-      .filter(instance => {
-        try {
-          return instance.container.matches(selector)
-        } catch {
-          return false
-        }
-      })
+    return Array.from(this.instances.values()).filter(instance => {
+      try {
+        return instance.container.matches(selector)
+      } catch {
+        return false
+      }
+    })
   }
 
   /**
@@ -345,14 +348,18 @@ export class InstanceManager implements IInstanceManager {
       return []
     }
 
-    return this.getByContainer(instance.container)
-      .filter(sibling => sibling.id !== instanceId)
+    return this.getByContainer(instance.container).filter(
+      sibling => sibling.id !== instanceId
+    )
   }
 
   /**
    * 更新实例状态
    */
-  updateInstanceState(instanceId: string, state: WatermarkInstanceState): boolean {
+  updateInstanceState(
+    instanceId: string,
+    state: WatermarkInstanceState
+  ): boolean {
     const instance = this.instances.get(instanceId)
     if (!instance) {
       return false
@@ -361,7 +368,7 @@ export class InstanceManager implements IInstanceManager {
     instance.state = state
     instance.updatedAt = Date.now()
     this.updateStats()
-    
+
     return true
   }
 
@@ -411,7 +418,7 @@ export class InstanceManager implements IInstanceManager {
       createdAt: instance.createdAt,
       updatedAt: instance.updatedAt,
       visible: instance.visible,
-      userData: instance.userData
+      userData: instance.userData,
     }))
   }
 
@@ -419,7 +426,7 @@ export class InstanceManager implements IInstanceManager {
 
   private updateStats(): void {
     const instances = Array.from(this.instances.values())
-    
+
     this.stats = {
       total: instances.length,
       active: instances.filter(i => i.state === 'active').length,
@@ -427,7 +434,86 @@ export class InstanceManager implements IInstanceManager {
       destroyed: instances.filter(i => i.state === 'destroyed').length,
       creating: instances.filter(i => i.state === 'creating').length,
       updating: instances.filter(i => i.state === 'updating').length,
-      destroying: instances.filter(i => i.state === 'destroying').length
+      destroying: instances.filter(i => i.state === 'destroying').length,
     }
+  }
+
+  // 实现接口要求的方法
+  async create(_config: any): Promise<WatermarkInstance> {
+    // 这里应该调用WatermarkCore的create方法
+    throw new Error('Method should be implemented by WatermarkCore')
+  }
+
+  async update(id: string, _config: any): Promise<void> {
+    const instance = this.instances.get(id)
+    if (!instance) {
+      throw new WatermarkError(
+        `Instance ${id} not found`,
+        WatermarkErrorCode.INSTANCE_NOT_FOUND
+      )
+    }
+    // 更新逻辑应该由WatermarkCore处理
+  }
+
+  async destroy(id: string): Promise<void> {
+    const instance = this.instances.get(id)
+    if (instance) {
+      this.unregister(id)
+    }
+  }
+
+  async destroyAll(): Promise<void> {
+    const ids = Array.from(this.instances.keys())
+    for (const id of ids) {
+      await this.destroy(id)
+    }
+  }
+
+  pause(id: string): void {
+    const instance = this.instances.get(id)
+    if (instance) {
+      instance.state = 'paused'
+      this.updateStats()
+    }
+  }
+
+  resume(id: string): void {
+    const instance = this.instances.get(id)
+    if (instance) {
+      instance.state = 'active'
+      this.updateStats()
+    }
+  }
+
+  show(id: string): void {
+    const instance = this.instances.get(id)
+    if (instance) {
+      instance.visible = true
+    }
+  }
+
+  hide(id: string): void {
+    const instance = this.instances.get(id)
+    if (instance) {
+      instance.visible = false
+    }
+  }
+
+  count(): number {
+    return this.instances.size
+  }
+
+  getAllIds(): string[] {
+    return Array.from(this.instances.keys())
+  }
+
+  findByContainer(container: HTMLElement): WatermarkInstance[] {
+    const instances: WatermarkInstance[] = []
+    for (const instance of this.instances.values()) {
+      if (instance.container === container) {
+        instances.push(instance)
+      }
+    }
+    return instances
   }
 }

@@ -1,19 +1,13 @@
-<template>
-  <div class="watermark-provider">
-    <slot />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, provide } from 'vue'
-import type { WatermarkProviderProps, WatermarkProviderContext } from '../types'
 import type { WatermarkConfig } from '../../types'
+import type { WatermarkProviderContext, WatermarkProviderProps } from '../types'
+import { computed, provide } from 'vue'
 import { DEFAULT_WATERMARK_CONFIG } from '../../types/config'
 
 // 组件属性
 const props = withDefaults(defineProps<WatermarkProviderProps>(), {
   globalSecurity: true,
-  globalResponsive: true
+  globalResponsive: true,
 })
 
 // 全局配置
@@ -22,12 +16,12 @@ const globalConfig = computed((): Partial<WatermarkConfig> => {
     ...props.config,
     style: {
       ...props.config?.style,
-      ...props.globalStyle
+      ...props.globalStyle,
     },
     layout: {
       ...props.config?.layout,
-      ...props.globalLayout
-    }
+      ...props.globalLayout,
+    },
   }
 })
 
@@ -41,25 +35,27 @@ const globalResponsive = computed(() => props.globalResponsive)
  * 合并配置的方法
  * 将局部配置与全局配置合并
  */
-const mergeConfig = (localConfig: Partial<WatermarkConfig>): WatermarkConfig => {
-  const merged: WatermarkConfig = {
+function mergeConfig(localConfig: Partial<WatermarkConfig>): WatermarkConfig {
+  const merged = {
     // 默认配置
     ...DEFAULT_WATERMARK_CONFIG,
     // 全局配置
     ...globalConfig.value,
     // 局部配置
     ...localConfig,
+    // 确保有content属性
+    content: localConfig.content || globalConfig.value?.content || 'Watermark',
     // 样式合并
     style: {
       ...DEFAULT_WATERMARK_CONFIG.style,
       ...globalConfig.value.style,
-      ...localConfig.style
+      ...localConfig.style,
     },
     // 布局合并
     layout: {
       ...DEFAULT_WATERMARK_CONFIG.layout,
       ...globalConfig.value.layout,
-      ...localConfig.layout
+      ...localConfig.layout,
     },
     // 安全配置合并
     security: {
@@ -67,10 +63,13 @@ const mergeConfig = (localConfig: Partial<WatermarkConfig>): WatermarkConfig => 
       ...globalConfig.value.security,
       ...localConfig.security,
       // 如果全局启用安全，确保安全级别不为none
-      level: globalSecurity.value && 
-             (!localConfig.security?.level || localConfig.security.level === 'none') 
-             ? 'basic' 
-             : localConfig.security?.level || DEFAULT_WATERMARK_CONFIG.security?.level || 'none'
+      level:
+        globalSecurity.value &&
+        (!localConfig.security?.level || localConfig.security.level === 'none')
+          ? 'basic'
+          : localConfig.security?.level ||
+            DEFAULT_WATERMARK_CONFIG.security?.level ||
+            'none',
     },
     // 响应式配置合并
     responsive: {
@@ -78,18 +77,19 @@ const mergeConfig = (localConfig: Partial<WatermarkConfig>): WatermarkConfig => 
       ...globalConfig.value.responsive,
       ...localConfig.responsive,
       // 如果全局启用响应式，确保响应式功能开启
-      enabled: globalResponsive.value || 
-               localConfig.responsive?.enabled || 
-               DEFAULT_WATERMARK_CONFIG.responsive?.enabled || 
-               false
+      enabled:
+        globalResponsive.value ||
+        localConfig.responsive?.enabled ||
+        DEFAULT_WATERMARK_CONFIG.responsive?.enabled ||
+        false,
     },
     // 动画配置合并
     animation: {
       ...DEFAULT_WATERMARK_CONFIG.animation,
       ...globalConfig.value.animation,
-      ...localConfig.animation
-    }
-  }
+      ...localConfig.animation,
+    },
+  } as WatermarkConfig
 
   return merged
 }
@@ -99,7 +99,7 @@ const providerContext: WatermarkProviderContext = {
   globalConfig,
   mergeConfig,
   globalSecurity,
-  globalResponsive
+  globalResponsive,
 }
 
 provide('watermarkProvider', providerContext)
@@ -109,9 +109,15 @@ defineExpose({
   globalConfig,
   mergeConfig,
   globalSecurity,
-  globalResponsive
+  globalResponsive,
 })
 </script>
+
+<template>
+  <div class="watermark-provider">
+    <slot />
+  </div>
+</template>
 
 <style scoped>
 .watermark-provider {

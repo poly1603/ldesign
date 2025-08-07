@@ -3,16 +3,20 @@
  */
 
 import type {
-  WatermarkConfig,
-  WatermarkStyle,
-  WatermarkLayout,
-  SecurityConfig,
   AnimationConfig,
-  ResponsiveConfig
+  ResponsiveConfig,
+  SecurityConfig,
+  WatermarkConfig,
+  WatermarkLayout,
+  WatermarkStyle,
 } from '../types'
 
 import { DEFAULT_WATERMARK_CONFIG } from '../types/config'
-import { WatermarkError, WatermarkErrorCode, ErrorSeverity } from '../types/error'
+import {
+  ErrorSeverity,
+  WatermarkError,
+  WatermarkErrorCode,
+} from '../types/error'
 import { isValidInput } from '../utils'
 
 /**
@@ -20,7 +24,7 @@ import { isValidInput } from '../utils'
  * 负责配置的验证、合并、默认值处理等
  */
 export class ConfigManager {
-  private defaultConfig: WatermarkConfig
+  private defaultConfig: Partial<WatermarkConfig>
 
   constructor() {
     this.defaultConfig = { ...DEFAULT_WATERMARK_CONFIG }
@@ -33,17 +37,38 @@ export class ConfigManager {
     const errors: string[] = []
 
     // 验证基本配置
-    if (!config.content || (!config.content.text && !config.content.image)) {
-      errors.push('Content is required (text or image)')
+    if (!config.content) {
+      errors.push('Content is required')
     }
 
     // 验证文本内容
-    if (config.content?.text && !isValidInput(config.content.text)) {
+    if (typeof config.content === 'string' && !isValidInput(config.content)) {
       errors.push('Text content cannot be empty')
     }
 
+    // 验证数组内容
+    if (Array.isArray(config.content)) {
+      if (config.content.length === 0) {
+        errors.push('Content array cannot be empty')
+      } else {
+        for (const item of config.content) {
+          if (!isValidInput(item)) {
+            errors.push('All content items must be valid')
+            break
+          }
+        }
+      }
+    }
+
     // 验证图片内容
-    if (config.content?.image) {
+    if (config.content instanceof HTMLImageElement) {
+      await this.validateImageConfig(config.content, errors)
+    } else if (
+      typeof config.content === 'object' &&
+      config.content &&
+      'image' in config.content &&
+      config.content.image
+    ) {
       await this.validateImageConfig(config.content.image, errors)
     }
 
@@ -106,8 +131,7 @@ export class ConfigManager {
     return (
       this.hasContentChanges(oldConfig, newConfig) ||
       this.hasStyleChanges(oldConfig, newConfig) ||
-      this.hasLayoutChanges(oldConfig, newConfig) ||
-      oldConfig.mode !== newConfig.mode
+      this.hasLayoutChanges(oldConfig, newConfig)
     )
   }
 
@@ -145,7 +169,10 @@ export class ConfigManager {
    * 获取默认配置
    */
   getDefaultConfig(): WatermarkConfig {
-    return { ...this.defaultConfig }
+    return {
+      ...this.defaultConfig,
+      content: this.defaultConfig.content || 'Watermark',
+    } as WatermarkConfig
   }
 
   /**
@@ -199,12 +226,18 @@ export class ConfigManager {
     }
 
     // 验证透明度
-    if (style.opacity !== undefined && (style.opacity < 0 || style.opacity > 1)) {
+    if (
+      style.opacity !== undefined &&
+      (style.opacity < 0 || style.opacity > 1)
+    ) {
       errors.push('Opacity must be between 0 and 1')
     }
 
     // 验证旋转角度
-    if (style.rotate !== undefined && (style.rotate < -360 || style.rotate > 360)) {
+    if (
+      style.rotate !== undefined &&
+      (style.rotate < -360 || style.rotate > 360)
+    ) {
       errors.push('Rotation must be between -360 and 360 degrees')
     }
 
@@ -218,7 +251,10 @@ export class ConfigManager {
     }
   }
 
-  private validateLayoutConfig(layout: WatermarkLayout, errors: string[]): void {
+  private validateLayoutConfig(
+    layout: WatermarkLayout,
+    errors: string[]
+  ): void {
     // 验证间距
     if (layout.gapX !== undefined && layout.gapX < 0) {
       errors.push('Gap X must be non-negative')
@@ -242,34 +278,50 @@ export class ConfigManager {
       errors.push('Rows must be positive')
     }
 
-    if (layout.columns !== undefined && layout.columns <= 0) {
+    if (layout.cols !== undefined && layout.cols <= 0) {
       errors.push('Columns must be positive')
     }
   }
 
-  private validateSecurityConfig(security: SecurityConfig, errors: string[]): void {
+  private validateSecurityConfig(
+    security: SecurityConfig,
+    errors: string[]
+  ): void {
     // 验证安全级别
     const validLevels = ['none', 'low', 'medium', 'high']
     if (!validLevels.includes(security.level)) {
       errors.push('Invalid security level')
     }
 
-    // 验证监听器配置
-    if (security.watchers) {
-      security.watchers.forEach((watcher, index) => {
-        if (!watcher.type) {
-          errors.push(`Watcher ${index}: type is required`)
+    // 验证自定义规则配置
+    if (security.customRules) {
+      security.customRules.forEach((rule, index) => {
+        if (!rule.name) {
+          errors.push(`Rule ${index}: name is required`)
         }
-        if (watcher.interval !== undefined && watcher.interval < 100) {
-          errors.push(`Watcher ${index}: interval must be at least 100ms`)
+        if (!rule.check) {
+          errors.push(`Rule ${index}: check function is required`)
         }
       })
     }
   }
 
-  private validateAnimationConfig(animation: AnimationConfig, errors: string[]): void {
+  private validateAnimationConfig(
+    animation: AnimationConfig,
+    errors: string[]
+  ): void {
     // 验证动画类型
-    const validTypes = ['none', 'fade', 'slide', 'rotate', 'scale', 'bounce', 'pulse', 'swing', 'custom']
+    const validTypes = [
+      'none',
+      'fade',
+      'slide',
+      'rotate',
+      'scale',
+      'bounce',
+      'pulse',
+      'swing',
+      'custom',
+    ]
     if (!validTypes.includes(animation.type)) {
       errors.push('Invalid animation type')
     }
@@ -285,35 +337,37 @@ export class ConfigManager {
     }
 
     // 验证重复次数
-    if (animation.iterations !== undefined && animation.iterations < 0) {
-      errors.push('Animation iterations must be non-negative')
+    if (typeof animation.iteration === 'number' && animation.iteration < 0) {
+      errors.push('Animation iteration must be non-negative')
     }
   }
 
-  private validateResponsiveConfig(responsive: ResponsiveConfig, errors: string[]): void {
+  private validateResponsiveConfig(
+    responsive: ResponsiveConfig,
+    errors: string[]
+  ): void {
     // 验证断点配置
     if (responsive.breakpoints) {
       Object.entries(responsive.breakpoints).forEach(([name, breakpoint]) => {
-        if (breakpoint.minWidth !== undefined && breakpoint.minWidth < 0) {
-          errors.push(`Breakpoint ${name}: minWidth must be non-negative`)
-        }
-        if (breakpoint.maxWidth !== undefined && breakpoint.maxWidth < 0) {
-          errors.push(`Breakpoint ${name}: maxWidth must be non-negative`)
-        }
-        if (
-          breakpoint.minWidth !== undefined &&
-          breakpoint.maxWidth !== undefined &&
-          breakpoint.minWidth >= breakpoint.maxWidth
-        ) {
-          errors.push(`Breakpoint ${name}: minWidth must be less than maxWidth`)
+        // 验证断点配置是否为有效的水印配置
+        if (typeof breakpoint !== 'object' || breakpoint === null) {
+          errors.push(
+            `Breakpoint ${name}: must be a valid configuration object`
+          )
         }
       })
+    }
+
+    // 验证防抖时间
+    if (responsive.debounceTime !== undefined && responsive.debounceTime < 0) {
+      errors.push('Debounce time must be non-negative')
     }
   }
 
   private isValidColor(color: string): boolean {
     // 简单的颜色格式验证
-    const colorRegex = /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/
+    const colorRegex =
+      /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/
     return colorRegex.test(color)
   }
 
@@ -338,8 +392,8 @@ export class ConfigManager {
     return !this.deepEqual(oldConfig.layout, newConfig.layout)
   }
 
-  private mergeWithDefaults(config: WatermarkConfig): WatermarkConfig {
-    return this.deepMerge(this.defaultConfig, config)
+  private mergeWithDefaults(config: Partial<WatermarkConfig>): WatermarkConfig {
+    return this.deepMerge(this.defaultConfig, config) as WatermarkConfig
   }
 
   private deepMerge<T>(target: T, source: Partial<T>): T {
@@ -351,9 +405,14 @@ export class ConfigManager {
         const targetValue = result[key]
 
         if (this.isObject(sourceValue) && this.isObject(targetValue)) {
-          result[key] = this.deepMerge(targetValue, sourceValue)
+          result[key] = this.deepMerge(
+            targetValue,
+            sourceValue as Partial<
+              T[Extract<keyof T, string>] & Record<string, any>
+            >
+          ) as any
         } else if (sourceValue !== undefined) {
-          result[key] = sourceValue as T[Extract<keyof T, string>]
+          result[key] = sourceValue as any
         }
       }
     }

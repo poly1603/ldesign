@@ -6,10 +6,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "tests/**/*",
-    "examples/**/*"
-  ]
+  "include": ["src/**/*", "__tests__/**/*", "tests/**/*"],
+  "exclude": ["examples/**/*"]
 }

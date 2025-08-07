@@ -31,6 +31,8 @@ export interface LayoutResult {
   rows: number
   /** 列数 */
   cols: number
+  /** 列数（兼容性别名） */
+  columns: number
   /** 实际水印宽度 */
   itemWidth: number
   /** 实际水印高度 */
@@ -39,6 +41,14 @@ export interface LayoutResult {
   actualGapX: number
   /** 实际垂直间距 */
   actualGapY: number
+  /** 水平间距（兼容性别名） */
+  gapX: number
+  /** 垂直间距（兼容性别名） */
+  gapY: number
+  /** 水平偏移 */
+  offsetX: number
+  /** 垂直偏移 */
+  offsetY: number
   /** 总宽度 */
   totalWidth: number
   /** 总高度 */
@@ -74,11 +84,19 @@ export interface BaseRenderer {
   readonly supportsAnimation: boolean
   /** 是否支持透明度 */
   readonly supportsOpacity: boolean
-  
+
   /** 渲染水印 */
-  render(config: WatermarkConfig, context: RenderContext, options?: RenderOptions): Promise<HTMLElement[]>
+  render(
+    config: WatermarkConfig,
+    context: RenderContext,
+    options?: RenderOptions
+  ): Promise<HTMLElement[]>
   /** 更新水印 */
-  update(elements: HTMLElement[], config: WatermarkConfig, context: RenderContext): Promise<void>
+  update(
+    elements: HTMLElement[],
+    config: WatermarkConfig,
+    context: RenderContext
+  ): Promise<void>
   /** 销毁水印 */
   destroy(elements: HTMLElement[]): Promise<void>
   /** 计算布局 */
@@ -86,7 +104,10 @@ export interface BaseRenderer {
   /** 应用样式 */
   applyStyles(element: HTMLElement, config: WatermarkConfig): void
   /** 应用动画 */
-  applyAnimation(element: HTMLElement, animation: AnimationConfig): Promise<void>
+  applyAnimation(
+    element: HTMLElement,
+    animation: AnimationConfig
+  ): Promise<void>
   /** 清理资源 */
   cleanup(): void
 }
@@ -112,7 +133,13 @@ export interface CanvasRenderer extends BaseRenderer {
   /** 绘制文本 */
   drawText(text: string, x: number, y: number, config: WatermarkConfig): void
   /** 绘制图片 */
-  drawImage(image: HTMLImageElement, x: number, y: number, width: number, height: number): void
+  drawImage(
+    image: HTMLImageElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void
   /** 清空画布 */
   clear(): void
   /** 导出为DataURL */
@@ -125,9 +152,14 @@ export interface SVGRenderer extends BaseRenderer {
   /** SVG元素 */
   svg: SVGSVGElement
   /** 创建SVG元素 */
-  createSVGElement<K extends keyof SVGElementTagNameMap>(tagName: K): SVGElementTagNameMap[K]
+  createSVGElement<K extends keyof SVGElementTagNameMap>(
+    tagName: K
+  ): SVGElementTagNameMap[K]
   /** 创建图案定义 */
-  createPattern(config: WatermarkConfig, layout: LayoutResult): SVGPatternElement
+  createPattern(
+    config: WatermarkConfig,
+    layout: LayoutResult
+  ): SVGPatternElement
   /** 设置SVG属性 */
   setSVGAttribute(element: SVGElement, name: string, value: string): void
 }
@@ -183,7 +215,10 @@ export interface RenderEvents {
   /** 渲染开始 */
   renderStart: (config: WatermarkConfig, context: RenderContext) => void
   /** 渲染完成 */
-  renderComplete: (elements: HTMLElement[], performance: RenderPerformance) => void
+  renderComplete: (
+    elements: HTMLElement[],
+    performance: RenderPerformance
+  ) => void
   /** 渲染错误 */
   renderError: (error: Error, config: WatermarkConfig) => void
   /** 布局计算完成 */

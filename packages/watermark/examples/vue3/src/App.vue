@@ -1,3 +1,23 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import AdvancedExamples from './components/AdvancedExamples.vue'
+import BasicExamples from './components/BasicExamples.vue'
+import CompositionExamples from './components/CompositionExamples.vue'
+import OptionsExamples from './components/OptionsExamples.vue'
+
+// 标签页配置
+const tabs = [
+  { key: 'basic', label: '基础示例' },
+  { key: 'composition', label: 'Composition API' },
+  { key: 'options', label: 'Options API' },
+  { key: 'advanced', label: '高级功能' },
+  { key: 'component', label: '组件化' },
+]
+
+// 当前活跃标签
+const activeTab = ref('basic')
+</script>
+
 <template>
   <div class="app">
     <div class="container">
@@ -12,7 +32,8 @@
         <button
           v-for="tab in tabs"
           :key="tab.key"
-          :class="['nav-tab', { active: activeTab === tab.key }]"
+          class="nav-tab"
+          :class="[{ active: activeTab === tab.key }]"
           @click="activeTab = tab.key"
         >
           {{ tab.label }}
@@ -23,16 +44,16 @@
       <div class="tab-content">
         <!-- 基础示例 -->
         <BasicExamples v-if="activeTab === 'basic'" />
-        
+
         <!-- Composition API 示例 -->
         <CompositionExamples v-if="activeTab === 'composition'" />
-        
+
         <!-- Options API 示例 -->
         <OptionsExamples v-if="activeTab === 'options'" />
-        
+
         <!-- 高级功能 -->
         <AdvancedExamples v-if="activeTab === 'advanced'" />
-        
+
         <!-- 组件化示例 -->
         <div v-if="activeTab === 'component'" class="card glass">
           <h2>🧩 组件化示例</h2>
@@ -48,26 +69,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-import BasicExamples from './components/BasicExamples.vue'
-import CompositionExamples from './components/CompositionExamples.vue'
-import OptionsExamples from './components/OptionsExamples.vue'
-import AdvancedExamples from './components/AdvancedExamples.vue'
-
-// 标签页配置
-const tabs = [
-  { key: 'basic', label: '基础示例' },
-  { key: 'composition', label: 'Composition API' },
-  { key: 'options', label: 'Options API' },
-  { key: 'advanced', label: '高级功能' },
-  { key: 'component', label: '组件化' }
-]
-
-// 当前活跃标签
-const activeTab = ref('basic')
-</script>
-
 <style lang="less" scoped>
 .app {
   min-height: 100vh;
@@ -76,13 +77,13 @@ const activeTab = ref('basic')
 .header {
   color: white;
   margin-bottom: 40px;
-  
+
   h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   }
-  
+
   p {
     font-size: 1.2rem;
     opacity: 0.9;
@@ -94,7 +95,7 @@ const activeTab = ref('basic')
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
-  
+
   .nav-tab {
     padding: 12px 24px;
     border: none;
@@ -105,12 +106,12 @@ const activeTab = ref('basic')
     font-weight: 500;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.3);
       transform: translateY(-2px);
     }
-    
+
     &.active {
       background: white;
       color: var(--primary-color);
@@ -134,7 +135,7 @@ const activeTab = ref('basic')
   .header h1 {
     font-size: 2rem;
   }
-  
+
   .nav-tabs {
     .nav-tab {
       padding: 10px 16px;

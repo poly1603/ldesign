@@ -1,0 +1,6 @@
+{
+  "*.{js,jsx,ts,tsx,vue}": ["prettier --write"],
+  "*.{json,md,yml,yaml}": ["prettier --write"],
+  "*.css": ["prettier --write"],
+  "packages/**/*.ts": []
+}
