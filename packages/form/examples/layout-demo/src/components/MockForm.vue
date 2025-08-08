@@ -36,6 +36,9 @@
         <MockField
           :config="field"
           :model-value="modelValue[field.name]"
+          :label-position="props.options.layout?.labelPosition || 'top'"
+          :label-width="getLabelWidth(field)"
+          :label-align="props.options.layout?.labelAlign || 'left'"
           @update:model-value="updateField(field.name, $event)"
         />
       </div>
@@ -117,20 +120,23 @@ const fieldStyles = computed(() => {
     }
   }
 
-  if (layout?.gap) {
-    styles.gap = typeof layout.gap === 'number' ? `${layout.gap}px` : layout.gap
-  }
-
-  if (layout?.rowGap) {
+  // 优先使用分离的间距设置
+  if (layout?.rowGap !== undefined) {
     styles.rowGap =
       typeof layout.rowGap === 'number' ? `${layout.rowGap}px` : layout.rowGap
+  } else if (layout?.gap) {
+    styles.rowGap =
+      typeof layout.gap === 'number' ? `${layout.gap}px` : layout.gap
   }
 
-  if (layout?.columnGap) {
+  if (layout?.columnGap !== undefined) {
     styles.columnGap =
       typeof layout.columnGap === 'number'
         ? `${layout.columnGap}px`
         : layout.columnGap
+  } else if (layout?.gap) {
+    styles.columnGap =
+      typeof layout.gap === 'number' ? `${layout.gap}px` : layout.gap
   }
 
   return styles
@@ -183,6 +189,28 @@ const getFieldStyles = (field?: FieldConfig) => {
   }
 
   return styles
+}
+
+// 获取标签宽度
+const getLabelWidth = (field: FieldConfig) => {
+  const layout = props.options.layout
+
+  if (layout?.labelPosition === 'top') {
+    return 'auto'
+  }
+
+  if (layout?.autoLabelWidth && layout?.labelWidthByColumn) {
+    // 计算字段在第几列
+    const fieldIndex = props.options.fields.findIndex(
+      f => f.name === field.name
+    )
+    const columns = typeof layout.columns === 'number' ? layout.columns : 2
+    const columnIndex = fieldIndex % columns
+
+    return layout.labelWidthByColumn[columnIndex] || layout.labelWidth || 'auto'
+  }
+
+  return layout?.labelWidth || 'auto'
 }
 
 // 更新字段值

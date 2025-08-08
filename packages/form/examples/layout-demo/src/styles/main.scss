@@ -110,6 +110,12 @@ body {
         background: #4c63d2;
       }
     }
+
+    .info-text {
+      font-size: 0.85rem;
+      color: #666;
+      font-style: italic;
+    }
   }
 }
 
@@ -130,11 +136,76 @@ body {
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
 
   h2 {
     margin-bottom: 1.5rem;
     color: #333;
     font-size: 1.5rem;
+  }
+}
+
+// 悬浮框展开
+.expand-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .popup-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-width: 800px;
+    max-height: 80vh;
+    width: 90%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+
+    h3 {
+      margin: 0;
+      color: #333;
+      font-size: 1.2rem;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #666;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        color: #333;
+      }
+    }
+  }
+
+  .popup-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
   }
 }
 

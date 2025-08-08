@@ -8,13 +8,22 @@ export interface LayoutPreset {
 
 export interface LayoutConfig {
   columns?: number | Record<string, number>
+  autoColumns?: boolean
   gap?: number | string | Record<string, number | string>
   rowGap?: number | string
   columnGap?: number | string
+  unifiedSpacing?: boolean
   labelPosition?: 'top' | 'left' | 'right'
-  labelWidth?: number | string
+  labelWidth?: number | string | 'auto'
+  labelWidthByColumn?: Record<number, number>
+  autoLabelWidth?: boolean
+  labelWidthMode?: 'auto' | 'manual' // 标签宽度计算模式
   labelAlign?: 'left' | 'center' | 'right'
   className?: string
+  defaultRows?: number
+  expandMode?: 'inline' | 'popup'
+  showExpandButton?: boolean
+  buttonPosition?: 'follow-last-row' | 'separate-row'
 }
 
 export interface FormData {
@@ -63,4 +72,14 @@ export interface DemoConfig {
   showGroups: boolean
   showValidation: boolean
   theme: 'light' | 'dark'
+  isExpanded: boolean
+  expandMode: 'inline' | 'popup'
+}
+
+export interface FormState {
+  isExpanded: boolean
+  visibleFields: string[]
+  hiddenFields: string[]
+  calculatedColumns: number
+  calculatedLabelWidths: Record<number, number>
 }
