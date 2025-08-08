@@ -172,11 +172,32 @@ export interface NotificationManager {
 // 扩展接口类型
 export interface RouterAdapter {
   install: (engine: Engine) => void
-  push: (path: string) => void
-  replace: (path: string) => void
+  push: (path: string) => void | Promise<void>
+  replace: (path: string) => void | Promise<void>
   go: (delta: number) => void
   back: () => void
   forward: () => void
+
+  // 扩展方法
+  getCurrentRoute?: () => any
+  getRoutes?: () => any[]
+  addRoute?: (route: any) => void
+  removeRoute?: (name: string) => void
+  hasRoute?: (name: string) => boolean
+  resolve?: (to: any) => any
+
+  // 路由守卫
+  beforeEach?: (guard: any) => void
+  beforeResolve?: (guard: any) => void
+  afterEach?: (guard: any) => void
+
+  // 高级功能
+  preloadRoute?: (route: any) => Promise<void>
+  clearCache?: () => void
+
+  // 事件
+  onRouteChange?: (callback: (to: any, from: any) => void) => void
+  onError?: (callback: (error: Error) => void) => void
 }
 
 export interface StateAdapter {

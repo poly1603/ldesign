@@ -149,6 +149,9 @@ importers:
       "@ldesign/engine":
         specifier: workspace:*
         version: link:../engine
+      "@ldesign/router":
+        specifier: workspace:^
+        version: link:../router
       vue:
         specifier: ^3.5.18
         version: 3.5.18(typescript@5.8.3)

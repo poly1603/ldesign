@@ -100,6 +100,9 @@ export class EngineImpl implements Engine {
     // 自动安装引擎
     this.install(this._app)
 
+    // 触发应用创建事件，让适配器知道 Vue 应用已创建
+    this.events.emit('app:created', this._app)
+
     this.logger.info('Vue app created with engine')
     return this._app
   }

@@ -7,26 +7,39 @@ import type {
 
 import { warn } from '../utils'
 
-// Vue 兼容性导入
+// Vue 兼容性导入 - 延迟加载
 let vueComputed: any
 let vueInject: any
 
-try {
-  // 尝试导入真实的 Vue 函数
-  // eslint-disable-next-line ts/no-require-imports
-  const vue = require('vue')
-  vueComputed = vue.computed
-  vueInject = vue.inject
-} catch {
-  // 如果 Vue 不可用，使用模拟函数
-  vueComputed = (fn: () => any) => ({ value: fn() })
-  vueInject = (_key: any, defaultValue?: any): any => defaultValue
+function initVue() {
+  if (vueComputed && vueInject) return
+
+  try {
+    // 尝试从全局获取 Vue
+    const vue = (globalThis as any).Vue || (window as any).Vue
+    if (vue) {
+      vueComputed = vue.computed
+      vueInject = vue.inject
+      return
+    }
+
+    // 尝试 require 导入
+    // eslint-disable-next-line ts/no-require-imports
+    const vueModule = require('vue')
+    vueComputed = vueModule.computed
+    vueInject = vueModule.inject
+  } catch {
+    // 如果 Vue 不可用，使用模拟函数
+    vueComputed = (fn: () => any) => ({ value: fn() })
+    vueInject = (_key: any, defaultValue?: any): any => defaultValue
+  }
 }
 
 /**
  * 获取当前路由器实例
  */
 export function useRouter(): Router {
+  initVue()
   const router = vueInject('router') as Router
 
   if (!router) {
@@ -41,6 +54,7 @@ export function useRouter(): Router {
  * 获取当前路由信息
  */
 export function useRoute(): ComputedRef<RouteLocationNormalized> {
+  initVue()
   const route = vueInject('route') as ComputedRef<RouteLocationNormalized>
 
   if (!route) {
