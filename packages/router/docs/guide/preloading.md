@@ -103,7 +103,7 @@ import { useRouter } from '@ldesign/router'
 const router = useRouter()
 
 // 预加载特定路由
-const preloadRoute = async (routeName: string) => {
+async function preloadRoute(routeName: string) {
   const route = router.getRoutes().find(r => r.name === routeName)
   if (route) {
     await router.preloadRoute(route)
@@ -112,7 +112,7 @@ const preloadRoute = async (routeName: string) => {
 }
 
 // 预加载多个路由
-const preloadCriticalRoutes = async () => {
+async function preloadCriticalRoutes() {
   const criticalRoutes = ['Home', 'Dashboard', 'Profile']
   await Promise.all(criticalRoutes.map(name => preloadRoute(name)))
   console.log('关键路由预加载完成')
@@ -126,14 +126,14 @@ RouterLink 组件会根据配置的预加载策略自动处理预加载：
 ```vue
 <template>
   <!-- 这些链接会根据全局策略进行预加载 -->
-  <router-link to="/dashboard">仪表盘</router-link>
-  <router-link to="/profile">个人资料</router-link>
+  <router-link to="/dashboard"> 仪表盘 </router-link>
+  <router-link to="/profile"> 个人资料 </router-link>
 
   <!-- 强制预加载 -->
-  <router-link to="/settings" :preload="true">设置</router-link>
+  <router-link to="/settings" :preload="true"> 设置 </router-link>
 
   <!-- 禁用预加载 -->
-  <router-link to="/admin" :preload="false">管理</router-link>
+  <router-link to="/admin" :preload="false"> 管理 </router-link>
 </template>
 ```
 
@@ -243,7 +243,7 @@ console.log('预加载统计:', {
 
 ```typescript
 // 根据网络速度调整
-const adjustPreloadStrategy = () => {
+function adjustPreloadStrategy() {
   const connection = (navigator as any).connection
   if (connection && connection.downlink < 1) {
     // 网速较慢时禁用预加载

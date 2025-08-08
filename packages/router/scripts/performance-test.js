@@ -6,8 +6,8 @@
  * 测试路由匹配性能、内存使用情况和导航速度
  */
 
+import { performance } from 'node:perf_hooks'
 import { createRouterMatcher } from '../es/index.js'
-import { performance } from 'perf_hooks'
 
 // Mock window for Node.js environment
 global.window = {
@@ -25,14 +25,14 @@ global.window = {
 
 // 颜色输出工具
 const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
+  reset: '\x1B[0m',
+  bright: '\x1B[1m',
+  red: '\x1B[31m',
+  green: '\x1B[32m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
+  magenta: '\x1B[35m',
+  cyan: '\x1B[36m',
 }
 
 function colorLog(color, message) {

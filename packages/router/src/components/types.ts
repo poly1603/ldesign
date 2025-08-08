@@ -89,7 +89,7 @@ export interface RouterViewSlotProps {
   /**
    * 组件实例
    */
-  Component: Component | null
+  Component: any | null
   /**
    * 当前路由
    */

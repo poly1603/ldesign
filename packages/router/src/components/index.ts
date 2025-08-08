@@ -1,7 +1,16 @@
 // 组件安装函数
-import type { App } from 'vue'
+// Vue App 类型定义
 import { RouterLink } from './RouterLink'
 import { RouterView } from './RouterView'
+
+export interface App {
+  use: (plugin: any, ...options: any[]) => App
+  mount: (rootContainer: any) => any
+  config: any
+  component: (name: string, component: any) => App
+  provide: (key: any, value: any) => App
+  onUnmount?: (fn: () => void) => void
+}
 
 export { RouterLink, default as RouterLinkDefault } from './RouterLink'
 export { RouterView, default as RouterViewDefault } from './RouterView'

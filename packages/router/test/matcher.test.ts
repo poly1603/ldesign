@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from '../src/types'
 import { describe, expect, it } from 'vitest'
-import { createRouterMatcher } from '../src/matcher'
+import { createRouterMatcher } from '../src/core/matcher'
 
 describe('matcher', () => {
   const routes: RouteRecordRaw[] = [

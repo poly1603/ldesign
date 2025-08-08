@@ -1,4 +1,4 @@
-import type { RouteRecordRaw } from '../src'
+import type { Router, RouteRecordRaw } from '../src'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'

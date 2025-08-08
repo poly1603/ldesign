@@ -1,6 +1,6 @@
-import { createRouter, createWebHistory } from '@ldesign/router'
 import type { RouteRecordRaw } from '@ldesign/router'
-import { useUserStore } from '@/stores/user'
+import { createRouter, createWebHistory } from '@ldesign/router'
+import { useUserStore } from '../stores/user'
 
 // 路由配置
 const routes: RouteRecordRaw[] = [
@@ -218,7 +218,7 @@ const router = createRouter({
 })
 
 // 全局前置守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const userStore = useUserStore()
 
   // 设置页面标题

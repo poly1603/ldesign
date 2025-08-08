@@ -1,4 +1,4 @@
-import type { RouteLocationNormalized } from './types'
+import type { RouteLocationNormalized } from '../types'
 
 /**
  * 导航失败类型

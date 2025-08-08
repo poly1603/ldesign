@@ -6,7 +6,7 @@ import type {
   NavigationHookAfter,
   RouteLocationNormalized,
 } from '../types'
-import { NavigationFailureType } from '../constants'
+import { NavigationFailureType } from '../core/constants'
 import { createNavigationFailure, isNavigationFailure, warn } from '../utils'
 
 /**
@@ -219,7 +219,7 @@ export function createGuardManager(): GuardManager {
 /**
  * 导出守卫相关工具函数
  */
-export { NavigationFailureType } from '../constants'
+export { NavigationFailureType } from '../core/constants'
 
 export { createNavigationFailure, isNavigationFailure } from '../utils'
 

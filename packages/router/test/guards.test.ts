@@ -1,7 +1,7 @@
 import type { RouteLocationNormalized, RouteRecordRaw } from '../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from '../src'
-import { NavigationFailureType } from '../src/constants'
+import { NavigationFailureType } from '../src/core/constants'
 import { GuardManager } from '../src/guards'
 import { createNavigationFailure, isNavigationFailure } from '../src/utils'
 

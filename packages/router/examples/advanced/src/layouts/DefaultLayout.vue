@@ -1,3 +1,76 @@
+<script setup lang="ts">
+import { useRoute, useRouter } from '@ldesign/router'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+
+// 响应式状态
+const showUserMenu = ref(false)
+
+// 主导航项
+const mainNavItems = [
+  { name: 'Home', path: '/', title: '首页', icon: '🏠' },
+  { name: 'Dashboard', path: '/dashboard', title: '仪表盘', icon: '📊' },
+  { name: 'Products', path: '/products', title: '产品', icon: '📦' },
+  { name: 'Users', path: '/users', title: '用户', icon: '👥' },
+  { name: 'About', path: '/about', title: '关于', icon: 'ℹ️' },
+]
+
+// 计算属性
+const showBreadcrumb = computed(() => {
+  return route.meta.breadcrumb !== false && route.path !== '/'
+})
+
+const breadcrumbItems = computed(() => {
+  const items = []
+  const matched = route.matched.filter(record => record.meta?.title)
+
+  for (const record of matched) {
+    items.push({
+      title: record.meta.title,
+      icon: record.meta.icon,
+      path: record.path,
+    })
+  }
+
+  return items
+})
+
+// 方法
+function isActiveRoute(path: string) {
+  return route.path.startsWith(path) && path !== '/'
+}
+
+function toggleUserMenu() {
+  showUserMenu.value = !showUserMenu.value
+}
+
+async function handleLogout() {
+  userStore.logout()
+  showUserMenu.value = false
+  await router.push('/login')
+}
+
+// 点击外部关闭用户菜单
+function handleClickOutside(event: Event) {
+  const target = event.target as Element
+  if (!target.closest('.user-menu')) {
+    showUserMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
+
 <template>
   <div class="default-layout">
     <!-- 顶部导航栏 -->
@@ -47,7 +120,7 @@
                 <span class="dropdown-item__icon">⚙️</span>
                 <span class="dropdown-item__text">设置</span>
               </router-link>
-              <div class="dropdown-divider"></div>
+              <div class="dropdown-divider" />
               <button class="dropdown-item" @click="handleLogout">
                 <span class="dropdown-item__icon">🚪</span>
                 <span class="dropdown-item__text">退出登录</span>
@@ -119,8 +192,12 @@
           <div class="footer__section">
             <h4 class="footer__subtitle">快速链接</h4>
             <ul class="footer__links">
-              <li><router-link to="/about">关于我们</router-link></li>
-              <li><router-link to="/docs">文档</router-link></li>
+              <li>
+                <router-link to="/about"> 关于我们 </router-link>
+              </li>
+              <li>
+                <router-link to="/docs"> 文档 </router-link>
+              </li>
               <li><a href="https://github.com" target="_blank">GitHub</a></li>
             </ul>
           </div>
@@ -141,79 +218,6 @@
     </footer>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from '@ldesign/router'
-import { useUserStore } from '@/stores/user'
-
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-
-// 响应式状态
-const showUserMenu = ref(false)
-
-// 主导航项
-const mainNavItems = [
-  { name: 'Home', path: '/', title: '首页', icon: '🏠' },
-  { name: 'Dashboard', path: '/dashboard', title: '仪表盘', icon: '📊' },
-  { name: 'Products', path: '/products', title: '产品', icon: '📦' },
-  { name: 'Users', path: '/users', title: '用户', icon: '👥' },
-  { name: 'About', path: '/about', title: '关于', icon: 'ℹ️' },
-]
-
-// 计算属性
-const showBreadcrumb = computed(() => {
-  return route.meta.breadcrumb !== false && route.path !== '/'
-})
-
-const breadcrumbItems = computed(() => {
-  const items = []
-  const matched = route.matched.filter(record => record.meta?.title)
-
-  for (const record of matched) {
-    items.push({
-      title: record.meta.title,
-      icon: record.meta.icon,
-      path: record.path,
-    })
-  }
-
-  return items
-})
-
-// 方法
-const isActiveRoute = (path: string) => {
-  return route.path.startsWith(path) && path !== '/'
-}
-
-const toggleUserMenu = () => {
-  showUserMenu.value = !showUserMenu.value
-}
-
-const handleLogout = async () => {
-  userStore.logout()
-  showUserMenu.value = false
-  await router.push('/login')
-}
-
-// 点击外部关闭用户菜单
-const handleClickOutside = (event: Event) => {
-  const target = event.target as Element
-  if (!target.closest('.user-menu')) {
-    showUserMenu.value = false
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-</script>
 
 <style lang="less" scoped>
 @import '@/styles/variables.less';

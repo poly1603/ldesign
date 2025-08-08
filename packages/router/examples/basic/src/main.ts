@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp } from '../../vue-compat'
 import App from './App.vue'
 import router from './router'
 

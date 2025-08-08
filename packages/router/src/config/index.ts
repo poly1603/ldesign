@@ -5,9 +5,9 @@
  */
 
 import type {
-  RouterOptions,
   PreloadStrategy,
   RouteCacheConfig,
+  RouterOptions,
   RouteTransition,
 } from '../types'
 

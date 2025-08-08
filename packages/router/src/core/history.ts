@@ -5,7 +5,7 @@ import {
   NavigationDirection,
   NavigationType,
   type RouterHistory,
-} from './types'
+} from '../types'
 
 /**
  * 创建 Web History 模式
@@ -15,7 +15,8 @@ export function createWebHistory(base?: string): RouterHistory {
 
   return createHistory({
     base: normalizedBase,
-    location: () => window.location.pathname + window.location.search + window.location.hash,
+    location: () =>
+      window.location.pathname + window.location.search + window.location.hash,
     state: () => window.history.state,
     push: (to: HistoryLocation, data?: HistoryState) => {
       window.history.pushState(data, '', createHref(normalizedBase, to))
@@ -28,7 +29,10 @@ export function createWebHistory(base?: string): RouterHistory {
     },
     listen: (callback: NavigationCallback) => {
       const popstateHandler = (_event: PopStateEvent) => {
-        const to = window.location.pathname + window.location.search + window.location.hash
+        const to =
+          window.location.pathname +
+          window.location.search +
+          window.location.hash
         const from = getCurrentLocation()
         callback(to, from, {
           type: NavigationType.pop,
@@ -60,16 +64,15 @@ export function createWebHashHistory(base?: string): RouterHistory {
       window.location.hash = to
     },
     replace: (to: HistoryLocation, _data?: HistoryState) => {
-      const href = `${window.location.href.replace(/#.*$/, '')}#${to}`
-      window.location.replace(href)
+      window.location.replace(`${window.location.href.split('#')[0]}#${to}`)
     },
     go: (delta: number) => {
       window.history.go(delta)
     },
     listen: (callback: NavigationCallback) => {
-      const hashchangeHandler = (event: HashChangeEvent) => {
+      const hashchangeHandler = (_event: HashChangeEvent) => {
         const to = window.location.hash.slice(1) || '/'
-        const from = new URL(event.oldURL).hash.slice(1) || '/'
+        const from = getCurrentLocation()
         callback(to, from, {
           type: NavigationType.pop,
           direction: NavigationDirection.unknown,
@@ -87,137 +90,164 @@ export function createWebHashHistory(base?: string): RouterHistory {
 }
 
 /**
- * 创建内存 History 模式（用于 SSR 或测试）
+ * 创建内存 History 模式
  */
 export function createMemoryHistory(base?: string): RouterHistory {
   const normalizedBase = normalizeBase(base)
-  let location = '/'
-  let state: HistoryState = {}
-  const stack: Array<{ location: HistoryLocation, state: HistoryState }> = [{ location, state }]
+  let currentLocation = '/'
+  let currentState: HistoryState = {}
+  const stack: Array<{ location: string; state: HistoryState }> = [
+    { location: currentLocation, state: currentState },
+  ]
   let position = 0
   const listeners: NavigationCallback[] = []
 
+  function triggerListeners(to: string, from: string, info: any) {
+    listeners.forEach(callback => {
+      try {
+        callback(to, from, info)
+      } catch (error) {
+        console.error('Error in navigation listener:', error)
+      }
+    })
+  }
+
   return createHistory({
     base: normalizedBase,
-    location: () => location,
-    state: () => state,
+    location: () => currentLocation,
+    state: () => currentState,
     push: (to: HistoryLocation, data?: HistoryState) => {
-      position++
-      if (position < stack.length) {
-        stack.splice(position)
-      }
+      const from = currentLocation
+      // 移除当前位置之后的所有记录
+      stack.splice(position + 1)
       stack.push({ location: to, state: data || {} })
-      location = to
-      state = data || {}
-
-      listeners.forEach((listener) => {
-        listener(to, location, {
-          type: NavigationType.push,
-          direction: NavigationDirection.forward,
-          delta: 1,
-        })
-      })
+      position = stack.length - 1
+      currentLocation = to
+      currentState = data || {}
+      triggerListeners(to, from, { type: 'push' })
     },
     replace: (to: HistoryLocation, data?: HistoryState) => {
+      const from = currentLocation
       stack[position] = { location: to, state: data || {} }
-      location = to
-      state = data || {}
-
-      listeners.forEach((listener) => {
-        listener(to, location, {
-          type: NavigationType.push,
-          direction: NavigationDirection.unknown,
-          delta: 0,
-        })
-      })
+      currentLocation = to
+      currentState = data || {}
+      triggerListeners(to, from, { type: 'replace' })
     },
     go: (delta: number) => {
+      const from = currentLocation
       const newPosition = position + delta
-      if (newPosition < 0 || newPosition >= stack.length) {
-        return
+      if (newPosition >= 0 && newPosition < stack.length) {
+        position = newPosition
+        const entry = stack[position]
+        if (entry) {
+          currentLocation = entry.location
+          currentState = entry.state
+          triggerListeners(currentLocation, from, { type: 'go', delta })
+        }
       }
-
-      const from = location
-      position = newPosition
-      const entry = stack[position]
-      if (entry) {
-        location = entry.location
-        state = entry.state
+      // 如果超出范围，保持在边界
+      else if (newPosition < 0) {
+        position = 0
+        const entry = stack[0]
+        if (entry) {
+          currentLocation = entry.location
+          currentState = entry.state
+          triggerListeners(currentLocation, from, { type: 'go', delta })
+        }
+      } else if (newPosition >= stack.length) {
+        position = stack.length - 1
+        const entry = stack[position]
+        if (entry) {
+          currentLocation = entry.location
+          currentState = entry.state
+          triggerListeners(currentLocation, from, { type: 'go', delta })
+        }
       }
-
-      listeners.forEach((listener) => {
-        listener(location, from, {
-          type: NavigationType.pop,
-          direction: delta > 0 ? NavigationDirection.forward : NavigationDirection.back,
-          delta,
-        })
-      })
     },
     listen: (callback: NavigationCallback) => {
       listeners.push(callback)
       return () => {
         const index = listeners.indexOf(callback)
-        if (index > -1)
+        if (index > -1) {
           listeners.splice(index, 1)
+        }
       }
     },
   })
 }
 
 /**
- * 创建通用历史管理器
+ * 创建通用 History 实现
  */
 function createHistory(options: {
   base: string
-  location: () => HistoryLocation
+  location: () => string
   state: () => HistoryState
   push: (to: HistoryLocation, data?: HistoryState) => void
   replace: (to: HistoryLocation, data?: HistoryState) => void
   go: (delta: number) => void
   listen: (callback: NavigationCallback) => () => void
 }): RouterHistory {
-  const { base, location, state, push, replace, go, listen } = options
+  function getCurrentLocation(): string {
+    return options.location()
+  }
+
+  function push(to: HistoryLocation, data?: HistoryState): void {
+    options.push(to, data)
+  }
+
+  function replace(to: HistoryLocation, data?: HistoryState): void {
+    options.replace(to, data)
+  }
+
+  function go(delta: number): void {
+    options.go(delta)
+  }
+
+  function back(): void {
+    go(-1)
+  }
+
+  function forward(): void {
+    go(1)
+  }
+
+  function listen(callback: NavigationCallback): () => void {
+    return options.listen(callback)
+  }
 
   return {
-    base,
-    get location() {
-      return location()
-    },
-    get state() {
-      return state()
-    },
+    base: options.base,
+    location: getCurrentLocation,
+    state: options.state,
     push,
     replace,
     go,
-    back: (_triggerListeners = true) => go(-1),
-    forward: (_triggerListeners = true) => go(1),
+    back,
+    forward,
     listen,
-    createHref: (location: HistoryLocation) => createHref(base, location),
-    destroy: () => {
-      // 清理资源
-    },
   }
 }
 
 /**
- * 标准化 base 路径
+ * 规范化 base 路径
  */
 function normalizeBase(base?: string): string {
   if (!base) {
     if (typeof window !== 'undefined') {
       const baseEl = document.querySelector('base')
       base = (baseEl && baseEl.getAttribute('href')) || '/'
-      base = base.replace(/^\w+:\/\/[^/]+/, '')
-    }
-    else {
+    } else {
       base = '/'
     }
   }
 
-  if (base[0] !== '/') {
+  // 确保以 / 开头
+  if (!base.startsWith('/')) {
     base = `/${base}`
   }
 
+  // 移除尾部的 /
   return base.replace(/\/$/, '') || '/'
 }
 
@@ -231,9 +261,8 @@ function createHref(base: string, location: HistoryLocation): string {
 /**
  * 获取当前位置
  */
-function getCurrentLocation(): HistoryLocation {
-  if (typeof window !== 'undefined') {
-    return window.location.pathname + window.location.search + window.location.hash
-  }
-  return '/'
+function getCurrentLocation(): string {
+  return (
+    window.location.pathname + window.location.search + window.location.hash
+  )
 }

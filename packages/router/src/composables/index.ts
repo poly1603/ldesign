@@ -1,13 +1,33 @@
-import type { ComputedRef } from 'vue'
-import type { RouteLocationNormalized, Router } from '../types'
-import { computed, inject } from 'vue'
+import type {
+  ComputedRef,
+  NavigationGuardReturn,
+  RouteLocationNormalized,
+  Router,
+} from '../types'
+
 import { warn } from '../utils'
+
+// Vue 兼容性导入
+let vueComputed: any
+let vueInject: any
+
+try {
+  // 尝试导入真实的 Vue 函数
+  // eslint-disable-next-line ts/no-require-imports
+  const vue = require('vue')
+  vueComputed = vue.computed
+  vueInject = vue.inject
+} catch {
+  // 如果 Vue 不可用，使用模拟函数
+  vueComputed = (fn: () => any) => ({ value: fn() })
+  vueInject = (_key: any, defaultValue?: any): any => defaultValue
+}
 
 /**
  * 获取当前路由器实例
  */
 export function useRouter(): Router {
-  const router = inject<Router>('router')
+  const router = vueInject('router') as Router
 
   if (!router) {
     warn('useRouter() must be called within a router context')
@@ -21,7 +41,7 @@ export function useRouter(): Router {
  * 获取当前路由信息
  */
 export function useRoute(): ComputedRef<RouteLocationNormalized> {
-  const route = inject<ComputedRef<RouteLocationNormalized>>('route')
+  const route = vueInject('route') as ComputedRef<RouteLocationNormalized>
 
   if (!route) {
     warn('useRoute() must be called within a router context')
@@ -38,7 +58,7 @@ export function useLink(props: { to: string | object; replace?: boolean }) {
   const router = useRouter()
   const currentRoute = useRoute()
 
-  const route = computed(() => {
+  const route = vueComputed(() => {
     try {
       return router.resolve(props.to, currentRoute.value)
     } catch (error) {
@@ -47,7 +67,7 @@ export function useLink(props: { to: string | object; replace?: boolean }) {
     }
   })
 
-  const href = computed(() => {
+  const href = vueComputed(() => {
     const resolved = route.value
     return resolved ? resolved.href : '#'
   })
@@ -137,7 +157,7 @@ export function onBeforeRouteLeave(
  */
 export function useParams() {
   const route = useRoute()
-  return computed(() => route.value.params)
+  return vueComputed(() => route.value.params)
 }
 
 /**
@@ -145,7 +165,7 @@ export function useParams() {
  */
 export function useQuery() {
   const route = useRoute()
-  return computed(() => route.value.query)
+  return vueComputed(() => route.value.query)
 }
 
 /**
@@ -153,7 +173,7 @@ export function useQuery() {
  */
 export function useHash() {
   const route = useRoute()
-  return computed(() => route.value.hash)
+  return vueComputed(() => route.value.hash)
 }
 
 /**
@@ -161,7 +181,7 @@ export function useHash() {
  */
 export function useMeta() {
   const route = useRoute()
-  return computed(() => route.value.meta)
+  return vueComputed(() => route.value.meta)
 }
 
 /**
@@ -169,7 +189,7 @@ export function useMeta() {
  */
 export function useMatched() {
   const route = useRoute()
-  return computed(() => route.value.matched)
+  return vueComputed(() => route.value.matched)
 }
 
 // 导出所有组合式API

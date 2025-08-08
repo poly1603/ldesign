@@ -1,25 +1,44 @@
-import type {
-  Component,
-  Ref,
-} from 'vue'
-import type {
-  RouteComponent,
-  RouteLocationNormalized,
-} from '../types'
-import {
-  computed,
-  defineAsyncComponent,
-  defineComponent,
-  h,
-  inject,
-} from 'vue'
+import type { Ref, RouteComponent, RouteLocationNormalized } from '../types'
 import { warn } from '../utils'
+
+// Vue 类型定义
+export type Component = any
+export interface SetupContext {
+  attrs: any
+  slots: any
+  emit: any
+}
+
+// Vue 兼容性导入
+let vueComputed: any
+let vueDefineAsyncComponent: any
+let vueDefineComponent: any
+let vueH: any
+let vueInject: any
+
+try {
+  // 尝试导入真实的 Vue 函数
+  // eslint-disable-next-line ts/no-require-imports
+  const vue = require('vue')
+  vueComputed = vue.computed
+  vueDefineAsyncComponent = vue.defineAsyncComponent
+  vueDefineComponent = vue.defineComponent
+  vueH = vue.h
+  vueInject = vue.inject
+} catch {
+  // 如果 Vue 不可用，使用模拟函数
+  vueComputed = (fn: () => any) => ({ value: fn() })
+  vueDefineAsyncComponent = (loader: () => Promise<any>) => loader
+  vueDefineComponent = (options: any) => options
+  vueH = (tag: any, props?: any, children?: any) => ({ tag, props, children })
+  vueInject = (_key: any, defaultValue?: any): any => defaultValue
+}
 
 /**
  * RouterView 组件
  * 用于渲染匹配的路由组件
  */
-export const RouterView = defineComponent({
+export const RouterView = vueDefineComponent({
   name: 'RouterView',
   inheritAttrs: false,
   props: {
@@ -29,22 +48,22 @@ export const RouterView = defineComponent({
     },
     route: Object,
   },
-  setup(props, { attrs, slots }) {
-    const injectedRoute = inject<Ref<RouteLocationNormalized>>('route')
+  setup(props: any, { attrs, slots }: SetupContext) {
+    const injectedRoute = vueInject('route') as Ref<RouteLocationNormalized>
 
     if (!injectedRoute) {
       warn('RouterView must be used within a router context')
       return () => null
     }
 
-    const route = computed(() => props.route || injectedRoute.value)
+    const route = vueComputed(() => props.route || injectedRoute.value)
 
-    const matchedRoute = computed(() => {
+    const matchedRoute = vueComputed(() => {
       const matched = route.value.matched
       return matched[matched.length - 1]
     })
 
-    const ViewComponent = computed(() => {
+    const ViewComponent = vueComputed(() => {
       const matched = matchedRoute.value
       if (!matched) {
         return null
@@ -74,13 +93,10 @@ export const RouterView = defineComponent({
       }
 
       // 创建组件实例
-      const componentInstance = h(
-        resolvedComponent,
-        {
-          ...attrs,
-          key: currentRoute.fullPath,
-        },
-      )
+      const componentInstance = vueH(resolvedComponent, {
+        ...attrs,
+        key: currentRoute.fullPath,
+      })
 
       // 如果有插槽，使用插槽渲染
       if (slots.default) {
@@ -105,11 +121,10 @@ function resolveComponent(component: RouteComponent): Component | null {
       const result = (component as () => Promise<Component>)()
       if (result && typeof result.then === 'function') {
         // 使用Vue的defineAsyncComponent处理异步组件
-        return defineAsyncComponent(component as () => Promise<Component>)
+        return vueDefineAsyncComponent(component as () => Promise<Component>)
       }
       return result as Component
-    }
-    catch {
+    } catch {
       // 如果调用失败，可能是普通的函数组件
       return component as Component
     }

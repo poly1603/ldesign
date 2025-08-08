@@ -8,28 +8,55 @@
  * - 常量定义
  */
 
-export { createRouter } from '../router'
-export { createRouterMatcher } from '../matcher'
-export {
-  createMemoryHistory,
-  createWebHashHistory,
-  createWebHistory,
-} from '../history'
-export { START_LOCATION, NavigationFailureType, ErrorTypes } from '../constants'
-
 // 核心类型
 export type {
-  Router,
-  RouterOptions,
-  RouteRecordRaw,
-  RouteRecordNormalized,
+  HistoryLocation,
+  HistoryState,
+  NavigationCallback,
+  NavigationFailure,
+  NavigationGuard,
+  NavigationGuardNext,
+  NavigationGuardReturn,
+  NavigationHookAfter,
   RouteLocation,
   RouteLocationNormalized,
   RouteLocationRaw,
   RouteMeta,
   RouteParams,
   RouteQuery,
+  Router,
+  RouteRecordNormalized,
+  RouteRecordRaw,
   RouterHistory,
-  HistoryLocation,
-  HistoryState,
+  RouterOptions,
 } from '../types'
+export {
+  DEFAULT_LINK_ACTIVE_CLASS,
+  DEFAULT_LINK_EXACT_ACTIVE_CLASS,
+  DEFAULT_VIEW_NAME,
+  EMPTY_STRING,
+  ErrorTypes,
+  HASH_SEPARATOR,
+  NavigationFailureType,
+  OPTIONAL_PARAM_RE,
+  PARAM_RE,
+  PATH_SEPARATOR,
+  QUERY_ITEM_SEPARATOR,
+  QUERY_KV_SEPARATOR,
+  QUERY_SEPARATOR,
+  ROOT_PATH,
+  ROUTE_INJECTION_SYMBOL,
+  ROUTER_INJECTION_SYMBOL,
+  ROUTER_VIEW_LOCATION_SYMBOL,
+  START_LOCATION,
+  WILDCARD_RE,
+} from './constants'
+export {
+  createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory,
+} from './history'
+export { createRouterMatcher } from './matcher'
+export type { RouterMatcher } from './matcher'
+
+export { createRouter } from './router'

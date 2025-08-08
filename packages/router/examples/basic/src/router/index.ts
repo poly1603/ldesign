@@ -162,7 +162,7 @@ router.afterEach(
   (
     to: RouteLocationNormalized,
     _from: RouteLocationNormalized,
-    failure?: NavigationFailure | void
+    failure?: any | void
   ) => {
     if (failure) {
       console.error('Navigation failed:', failure)

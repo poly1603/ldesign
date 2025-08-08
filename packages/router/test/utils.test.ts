@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { NavigationFailureType } from '../src/constants'
+import { NavigationFailureType } from '../src/core/constants'
 import {
   assert,
   createNavigationFailure,
@@ -147,7 +147,10 @@ describe('utils', () => {
     })
 
     it('should handle URL encoding', () => {
-      const result = stringifyQuery({ name: 'john doe', message: 'hello world' })
+      const result = stringifyQuery({
+        name: 'john doe',
+        message: 'hello world',
+      })
       expect(result).toBe('name=john+doe&message=hello+world')
     })
   })
@@ -179,12 +182,16 @@ describe('utils', () => {
       const failure = createNavigationFailure(
         NavigationFailureType.aborted,
         { path: '/' },
-        { path: '/about' },
+        { path: '/about' }
       )
 
       expect(isNavigationFailure(failure)).toBe(true)
-      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
-      expect(isNavigationFailure(failure, NavigationFailureType.cancelled)).toBe(false)
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(
+        true
+      )
+      expect(
+        isNavigationFailure(failure, NavigationFailureType.cancelled)
+      ).toBe(false)
     })
 
     it('should not identify regular errors as navigation failure', () => {
@@ -200,7 +207,7 @@ describe('utils', () => {
       const failure = createNavigationFailure(
         NavigationFailureType.aborted,
         from,
-        to,
+        to
       )
 
       expect(failure).toBeInstanceOf(Error)
@@ -348,7 +355,9 @@ describe('utils', () => {
       process.env.NODE_ENV = 'development'
 
       warn('Test warning')
-      expect(consoleSpy).toHaveBeenCalledWith('[LDesign Router warn]: Test warning')
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[LDesign Router warn]: Test warning'
+      )
 
       process.env.NODE_ENV = originalEnv
       consoleSpy.mockRestore()
@@ -361,7 +370,9 @@ describe('utils', () => {
     })
 
     it('should throw when condition is false', () => {
-      expect(() => assert(false, 'Should throw')).toThrow('[LDesign Router error]: Should throw')
+      expect(() => assert(false, 'Should throw')).toThrow(
+        '[LDesign Router error]: Should throw'
+      )
     })
   })
 })

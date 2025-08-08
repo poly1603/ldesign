@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createMemoryHistory, createWebHistory } from '../src/history'
+import { createMemoryHistory, createWebHistory } from '../src/core/history'
 
 describe('history', () => {
   describe('createMemoryHistory', () => {
@@ -10,12 +10,12 @@ describe('history', () => {
     })
 
     it('should create memory history with initial location', () => {
-      expect(history.location).toBe('/')
+      expect(history.location()).toBe('/')
     })
 
     it('should create memory history with custom base', () => {
       const historyWithBase = createMemoryHistory('/app')
-      expect(historyWithBase.location).toBe('/')
+      expect(historyWithBase.location()).toBe('/')
     })
 
     it('should push new location', () => {
@@ -23,8 +23,12 @@ describe('history', () => {
       history.listen(listener)
 
       history.push('/about')
-      expect(history.location).toBe('/about')
-      expect(listener).toHaveBeenCalledWith('/about', '/about', expect.objectContaining({ type: 'push' }))
+      expect(history.location()).toBe('/about')
+      expect(listener).toHaveBeenCalledWith(
+        '/about',
+        '/',
+        expect.objectContaining({ type: 'push' })
+      )
     })
 
     it('should replace current location', () => {
@@ -34,7 +38,7 @@ describe('history', () => {
       history.push('/about')
       history.replace('/contact')
 
-      expect(history.location).toBe('/contact')
+      expect(history.location()).toBe('/contact')
     })
 
     it('should navigate with go', () => {
@@ -43,7 +47,7 @@ describe('history', () => {
       history.push('/page3')
 
       history.go(-2)
-      expect(history.location).toBe('/page1')
+      expect(history.location()).toBe('/page1')
     })
 
     it('should navigate back', () => {
@@ -51,7 +55,7 @@ describe('history', () => {
       history.push('/page2')
 
       history.back()
-      expect(history.location).toBe('/page1')
+      expect(history.location()).toBe('/page1')
     })
 
     it('should navigate forward', () => {
@@ -60,22 +64,22 @@ describe('history', () => {
       history.back()
 
       history.forward()
-      expect(history.location).toBe('/page2')
+      expect(history.location()).toBe('/page2')
     })
 
     it('should handle query parameters', () => {
       history.push('/search?q=test&page=1')
-      expect(history.location).toBe('/search?q=test&page=1')
+      expect(history.location()).toBe('/search?q=test&page=1')
     })
 
     it('should handle hash', () => {
       history.push('/page#section1')
-      expect(history.location).toBe('/page#section1')
+      expect(history.location()).toBe('/page#section1')
     })
 
     it('should handle complex URLs', () => {
       history.push('/search?q=test&page=1#results')
-      expect(history.location).toBe('/search?q=test&page=1#results')
+      expect(history.location()).toBe('/search?q=test&page=1#results')
     })
 
     it('should remove listener', () => {

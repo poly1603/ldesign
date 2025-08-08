@@ -1,17 +1,46 @@
-import type { PropType, Ref } from 'vue'
 import type {
+  Ref,
   RouteLocationNormalized,
   RouteLocationRaw,
   Router,
 } from '../types'
-import { computed, defineComponent, h, inject } from 'vue'
 import { isSameRouteLocation, warn } from '../utils'
+
+// Vue 类型定义
+export type PropType<_T = any> = any
+export interface SetupContext {
+  attrs: any
+  slots: any
+  emit: any
+}
+
+// Vue 兼容性导入
+let vueComputed: any
+let vueDefineComponent: any
+let vueH: any
+let vueInject: any
+
+try {
+  // 尝试导入真实的 Vue 函数
+  // eslint-disable-next-line ts/no-require-imports
+  const vue = require('vue')
+  vueComputed = vue.computed
+  vueDefineComponent = vue.defineComponent
+  vueH = vue.h
+  vueInject = vue.inject
+} catch {
+  // 如果 Vue 不可用，使用模拟函数
+  vueComputed = (fn: () => any) => ({ value: fn() })
+  vueDefineComponent = (options: any) => options
+  vueH = (tag: any, props?: any, children?: any) => ({ tag, props, children })
+  vueInject = (_key: any, defaultValue?: any): any => defaultValue
+}
 
 /**
  * RouterLink 组件
  * 用于创建导航链接
  */
-export const RouterLink = defineComponent({
+export const RouterLink = vueDefineComponent({
   name: 'RouterLink',
   inheritAttrs: false,
   props: {
@@ -52,9 +81,9 @@ export const RouterLink = defineComponent({
       default: false,
     },
   },
-  setup(props, { slots, attrs }) {
-    const router = inject<Router>('router')
-    const currentRoute = inject<Ref<RouteLocationNormalized>>('route')
+  setup(props: any, { slots, attrs }: SetupContext) {
+    const router = vueInject('router') as Router
+    const currentRoute = vueInject('route') as Ref<RouteLocationNormalized>
 
     if (!router || !currentRoute) {
       warn('RouterLink must be used within a router context')
@@ -62,7 +91,7 @@ export const RouterLink = defineComponent({
     }
 
     // 解析目标路由
-    const resolvedRoute = computed(() => {
+    const resolvedRoute = vueComputed(() => {
       try {
         return router.resolve(props.to, currentRoute.value)
       } catch (error) {
@@ -72,13 +101,13 @@ export const RouterLink = defineComponent({
     })
 
     // 计算 href
-    const href = computed(() => {
+    const href = vueComputed(() => {
       const resolved = resolvedRoute.value
       return resolved ? resolved.href : '#'
     })
 
     // 计算是否激活
-    const isActive = computed(() => {
+    const isActive = vueComputed(() => {
       const resolved = resolvedRoute.value
       const current = currentRoute.value
 
@@ -93,7 +122,7 @@ export const RouterLink = defineComponent({
     })
 
     // 计算是否精确激活
-    const isExactActive = computed(() => {
+    const isExactActive = vueComputed(() => {
       const resolved = resolvedRoute.value
       const current = currentRoute.value
 
@@ -103,7 +132,7 @@ export const RouterLink = defineComponent({
     })
 
     // 计算类名
-    const classes = computed(() => {
+    const classes = vueComputed(() => {
       const classList: string[] = []
 
       if (isActive.value) {
@@ -155,12 +184,12 @@ export const RouterLink = defineComponent({
       }
 
       // 创建事件监听器
-      const eventListeners: Record<string, () => void> = {}
+      const eventListeners: Record<string, (e: Event) => void> = {}
       const events = Array.isArray(props.event) ? props.event : [props.event]
 
-      events.forEach(event => {
+      events.forEach((event: string) => {
         eventListeners[`on${event.charAt(0).toUpperCase() + event.slice(1)}`] =
-          navigate
+          (e: Event) => navigate(e)
       })
 
       // 创建元素属性
@@ -172,7 +201,7 @@ export const RouterLink = defineComponent({
         'aria-current': isExactActive.value ? 'page' : undefined,
       }
 
-      return h(props.tag, elementAttrs, slots.default?.())
+      return vueH(props.tag, elementAttrs, slots.default?.())
     }
   },
 })

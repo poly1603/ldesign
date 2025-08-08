@@ -1,4 +1,16 @@
-import type { Component, ComputedRef, Ref } from 'vue'
+// Vue 类型定义（兼容性）
+export interface ComputedRef<T = any> {
+  readonly value: T
+}
+
+export interface Ref<T = any> {
+  value: T
+}
+
+// 兼容性类型定义
+export type VueComponent = any
+export type VueComputedRef<T> = ComputedRef<T>
+export type VueRef<T> = Ref<T>
 
 /**
  * 路由记录原始配置
@@ -24,7 +36,10 @@ export interface RouteRecordRaw {
 /**
  * 路由组件类型
  */
-export type RouteComponent = Component | (() => Promise<Component>)
+export type RouteComponent =
+  | VueComponent
+  | (() => Promise<VueComponent>)
+  | (() => Promise<{ default: VueComponent }>)
 
 /**
  * 路由元信息
@@ -186,16 +201,14 @@ export enum NavigationFailureType {
  */
 export interface RouterHistory {
   readonly base: string
-  readonly location: HistoryLocation
-  readonly state: HistoryState
+  location: () => HistoryLocation
+  state: () => HistoryState
   push: (to: HistoryLocation, data?: HistoryState) => void
   replace: (to: HistoryLocation, data?: HistoryState) => void
-  go: (delta: number, triggerListeners?: boolean) => void
-  back: (triggerListeners?: boolean) => void
-  forward: (triggerListeners?: boolean) => void
+  go: (delta: number) => void
+  back: () => void
+  forward: () => void
   listen: (callback: NavigationCallback) => () => void
-  createHref: (location: HistoryLocation) => string
-  destroy: () => void
 }
 
 /**
@@ -248,6 +261,7 @@ export interface NavigationInformation {
 export enum NavigationType {
   pop = 'pop',
   push = 'push',
+  replace = 'replace',
 }
 
 /**
@@ -295,7 +309,12 @@ export interface RouteTransition {
 /**
  * 路由预加载策略
  */
-export type PreloadStrategy = 'hover' | 'visible' | 'immediate' | 'none'
+export type PreloadStrategy =
+  | 'hover'
+  | 'visible'
+  | 'immediate'
+  | 'idle'
+  | 'none'
 
 /**
  * 路由缓存配置
@@ -303,8 +322,8 @@ export type PreloadStrategy = 'hover' | 'visible' | 'immediate' | 'none'
 export interface RouteCacheConfig {
   max?: number
   ttl?: number
-  include?: string[]
-  exclude?: string[]
+  include?: (string | RegExp)[]
+  exclude?: (string | RegExp)[]
 }
 
 /**
@@ -364,7 +383,7 @@ export interface Router {
   ) => () => void
 
   isReady: () => Promise<void>
-  install: (app: { use: (plugin: unknown) => void }) => void
+  install: (app: any) => void
 
   // 高级功能 API
   preloadRoute: (route: RouteRecordNormalized) => Promise<void>

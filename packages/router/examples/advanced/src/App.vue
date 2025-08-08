@@ -1,35 +1,13 @@
-<template>
-  <div id="app" class="app">
-    <!-- 默认布局 -->
-    <DefaultLayout v-if="currentLayout === 'default'" />
-
-    <!-- 认证布局 -->
-    <AuthLayout v-else-if="currentLayout === 'auth'" />
-
-    <!-- 侧边栏布局 -->
-    <SidebarLayout v-else-if="currentLayout === 'sidebar'" />
-
-    <!-- 最小布局 -->
-    <MinimalLayout v-else-if="currentLayout === 'minimal'" />
-
-    <!-- 全屏加载 -->
-    <FullScreenLoading v-if="isLoading" />
-
-    <!-- 性能监控面板（开发环境） -->
-    <PerformancePanel v-if="showPerformancePanel" />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
-import { useUserStore } from '@/stores/user'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import AuthLayout from '@/layouts/AuthLayout.vue'
-import SidebarLayout from '@/layouts/SidebarLayout.vue'
-import MinimalLayout from '@/layouts/MinimalLayout.vue'
+import { computed, onMounted, ref } from 'vue'
 import FullScreenLoading from '@/components/FullScreenLoading.vue'
 import PerformancePanel from '@/components/PerformancePanel.vue'
+import AuthLayout from '@/layouts/AuthLayout.vue'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import MinimalLayout from '@/layouts/MinimalLayout.vue'
+import SidebarLayout from '@/layouts/SidebarLayout.vue'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
@@ -107,6 +85,28 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <div id="app" class="app">
+    <!-- 默认布局 -->
+    <DefaultLayout v-if="currentLayout === 'default'" />
+
+    <!-- 认证布局 -->
+    <AuthLayout v-else-if="currentLayout === 'auth'" />
+
+    <!-- 侧边栏布局 -->
+    <SidebarLayout v-else-if="currentLayout === 'sidebar'" />
+
+    <!-- 最小布局 -->
+    <MinimalLayout v-else-if="currentLayout === 'minimal'" />
+
+    <!-- 全屏加载 -->
+    <FullScreenLoading v-if="isLoading" />
+
+    <!-- 性能监控面板（开发环境） -->
+    <PerformancePanel v-if="showPerformancePanel" />
+  </div>
+</template>
 
 <style lang="less">
 .app {

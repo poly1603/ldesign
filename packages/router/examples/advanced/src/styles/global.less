@@ -9,7 +9,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: @font-family-base;
   font-size: @font-size-base;
@@ -34,7 +35,7 @@ html, body {
 ::-webkit-scrollbar-thumb {
   background: @border-color;
   border-radius: 4px;
-  
+
   &:hover {
     background: @text-color-secondary;
   }
@@ -45,11 +46,11 @@ a {
   color: @primary-color;
   text-decoration: none;
   transition: color 0.3s ease;
-  
+
   &:hover {
     color: @primary-color-hover;
   }
-  
+
   &:active {
     color: @primary-color-active;
   }
@@ -70,47 +71,47 @@ a {
   cursor: pointer;
   transition: all 0.3s ease;
   user-select: none;
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
-  
+
   // 主要按钮
   &--primary {
     color: white;
     background-color: @primary-color;
     border-color: @primary-color;
-    
+
     &:hover:not(:disabled) {
       background-color: @primary-color-hover;
       border-color: @primary-color-hover;
     }
-    
+
     &:active:not(:disabled) {
       background-color: @primary-color-active;
       border-color: @primary-color-active;
     }
   }
-  
+
   // 次要按钮
   &--secondary {
     color: @text-color;
     background-color: transparent;
     border-color: @border-color;
-    
+
     &:hover:not(:disabled) {
       color: @primary-color;
       border-color: @primary-color;
     }
   }
-  
+
   // 危险按钮
   &--danger {
     color: white;
     background-color: @error-color;
     border-color: @error-color;
-    
+
     &:hover:not(:disabled) {
       background-color: @error-color-hover;
       border-color: @error-color-hover;
@@ -125,21 +126,21 @@ a {
   box-shadow: @box-shadow-base;
   overflow: hidden;
   transition: box-shadow 0.3s ease;
-  
+
   &:hover {
     box-shadow: @box-shadow-hover;
   }
-  
+
   &__header {
     padding: 16px 20px;
     border-bottom: 1px solid @border-color-light;
     background-color: @bg-color-light;
   }
-  
+
   &__body {
     padding: 20px;
   }
-  
+
   &__footer {
     padding: 12px 20px;
     border-top: 1px solid @border-color-light;
@@ -152,33 +153,35 @@ a {
   &__group {
     margin-bottom: 16px;
   }
-  
+
   &__label {
     display: block;
     margin-bottom: 4px;
     font-weight: 500;
     color: @text-color;
   }
-  
+
   &__input {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid @border-color;
     border-radius: @border-radius;
     font-size: @font-size-base;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+
     &:focus {
       outline: none;
       border-color: @primary-color;
       box-shadow: 0 0 0 2px fade(@primary-color, 20%);
     }
-    
+
     &::placeholder {
       color: @text-color-placeholder;
     }
   }
-  
+
   &__error {
     margin-top: 4px;
     font-size: @font-size-sm;
@@ -187,26 +190,64 @@ a {
 }
 
 // 工具类
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
+.text-center {
+  text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
 
-.mt-1 { margin-top: 8px; }
-.mt-2 { margin-top: 16px; }
-.mt-3 { margin-top: 24px; }
-.mt-4 { margin-top: 32px; }
+.mt-1 {
+  margin-top: 8px;
+}
+.mt-2 {
+  margin-top: 16px;
+}
+.mt-3 {
+  margin-top: 24px;
+}
+.mt-4 {
+  margin-top: 32px;
+}
 
-.mb-1 { margin-bottom: 8px; }
-.mb-2 { margin-bottom: 16px; }
-.mb-3 { margin-bottom: 24px; }
-.mb-4 { margin-bottom: 32px; }
+.mb-1 {
+  margin-bottom: 8px;
+}
+.mb-2 {
+  margin-bottom: 16px;
+}
+.mb-3 {
+  margin-bottom: 24px;
+}
+.mb-4 {
+  margin-bottom: 32px;
+}
 
-.ml-1 { margin-left: 8px; }
-.ml-2 { margin-left: 16px; }
-.ml-3 { margin-left: 24px; }
-.ml-4 { margin-left: 32px; }
+.ml-1 {
+  margin-left: 8px;
+}
+.ml-2 {
+  margin-left: 16px;
+}
+.ml-3 {
+  margin-left: 24px;
+}
+.ml-4 {
+  margin-left: 32px;
+}
 
-.mr-1 { margin-right: 8px; }
-.mr-2 { margin-right: 16px; }
-.mr-3 { margin-right: 24px; }
-.mr-4 { margin-right: 32px; }
+.mr-1 {
+  margin-right: 8px;
+}
+.mr-2 {
+  margin-right: 16px;
+}
+.mr-3 {
+  margin-right: 24px;
+}
+.mr-4 {
+  margin-right: 32px;
+}

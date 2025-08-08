@@ -265,7 +265,7 @@ console.log('缓存命中率:', cacheStats.hitRate)
 
 ```typescript
 // 内置插件
-import { titlePlugin, analyticsPlugin } from '@ldesign/router'
+import { analyticsPlugin, titlePlugin } from '@ldesign/router'
 
 router.use(titlePlugin, { suffix: 'My App' })
 router.use(analyticsPlugin, {

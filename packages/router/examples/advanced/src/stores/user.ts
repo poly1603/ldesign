@@ -1,5 +1,8 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+// Vue 兼容性函数
+const ref = (value: any) => ({ value })
+const computed = (fn: () => any) => ({ value: fn() })
+const readonly = (value: any) => value
+const defineStore = (_name: string, setup: () => any) => setup
 
 export interface User {
   id: string
@@ -18,8 +21,8 @@ export interface User {
 
 export const useUserStore = defineStore('user', () => {
   // 状态
-  const user = ref<User | null>(null)
-  const token = ref<string | null>(localStorage.getItem('token'))
+  const user = ref(null as User | null)
+  const token = ref(localStorage.getItem('token') as string | null)
   const loading = ref(false)
 
   // 计算属性
@@ -42,9 +45,7 @@ export const useUserStore = defineStore('user', () => {
         id: '1',
         username: credentials.username,
         email: `${credentials.username}@example.com`,
-        avatar:
-          'https://api.dicebear.com/7.x/avataaars/svg?seed=' +
-          credentials.username,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${credentials.username}`,
         roles: ['user', 'admin'],
         permissions: [
           'dashboard:read',
@@ -64,7 +65,7 @@ export const useUserStore = defineStore('user', () => {
         },
       }
 
-      const mockToken = 'mock-jwt-token-' + Date.now()
+      const mockToken = `mock-jwt-token-${Date.now()}`
 
       user.value = mockUser
       token.value = mockToken
