@@ -33,7 +33,41 @@ export interface LayoutConfig {
 
   /** 容器配置 */
   container?: ContainerConfig
+
+  /** 表单样式主题 */
+  theme?: FormTheme
+
+  /** 自定义CSS类名 */
+  className?: string
+
+  /** 是否自动计算列数 */
+  autoColumns?: boolean
+
+  /** 字段最小宽度（用于自动列数计算），默认200px */
+  fieldMinWidth?: number
+
+  /** 是否统一间距设置 */
+  unifiedSpacing?: boolean
+
+  /** 默认显示行数，0表示显示全部 */
+  defaultRows?: number
+
+  /** 展开模式 */
+  expandMode?: ExpandMode
+
+  /** 是否显示展开按钮 */
+  showExpandButton?: boolean
 }
+
+/**
+ * 表单样式主题
+ */
+export type FormTheme = 'default' | 'bordered'
+
+/**
+ * 展开模式
+ */
+export type ExpandMode = 'inline' | 'popup'
 
 /**
  * 标题配置
@@ -53,6 +87,18 @@ export interface LabelConfig {
 
   /** 标题换行方式 */
   wrap?: boolean
+
+  /** 标题与组件间距，范围0-20px，默认8px */
+  gap?: number
+
+  /** 是否自动计算标题宽度 */
+  autoWidth?: boolean
+
+  /** 标题宽度计算模式 */
+  widthMode?: 'auto' | 'manual'
+
+  /** 按列设置标题宽度 */
+  widthByColumn?: Record<number, number>
 }
 
 /**
@@ -90,7 +136,11 @@ export interface ButtonConfig {
 /**
  * 按钮位置
  */
-export type ButtonPosition = 'inline' | 'newline'
+export type ButtonPosition =
+  | 'inline'
+  | 'newline'
+  | 'follow-last-row'
+  | 'separate-row'
 
 /**
  * 按钮对齐方式
@@ -115,6 +165,35 @@ export interface ExpandConfig {
 
   /** 展开动画配置 */
   animation?: AnimationConfig
+
+  /** 悬浮框配置（当 mode 为 popup 时使用） */
+  popup?: PopupConfig
+}
+
+/**
+ * 悬浮框配置
+ */
+export interface PopupConfig {
+  /** 标题 */
+  title?: string
+
+  /** 宽度 */
+  width?: number | string
+
+  /** 高度 */
+  height?: number | string
+
+  /** 是否可关闭 */
+  closable?: boolean
+
+  /** 点击遮罩是否关闭 */
+  maskClosable?: boolean
+
+  /** 是否居中显示 */
+  centered?: boolean
+
+  /** 层级 */
+  zIndex?: number
 }
 
 /**

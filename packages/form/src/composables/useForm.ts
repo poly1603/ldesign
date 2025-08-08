@@ -1,8 +1,13 @@
 // useForm Composition API Hook
 
-import { ref, reactive, computed, h, type VNode } from 'vue'
+import { ref, reactive, computed, h, type VNode, type Ref } from 'vue'
 import type { FormOptions, FormData } from '../types/form'
+import type { FormItemConfig } from '../types/field'
 import DynamicForm from '../components/DynamicForm.vue'
+import {
+  useAdvancedLayout,
+  type UseAdvancedLayoutReturn,
+} from './useAdvancedLayout'
 
 // 简单的事件发射器
 class SimpleEventEmitter {
@@ -98,6 +103,9 @@ export interface UseFormReturn {
   isFieldDisabled: (name: string) => boolean
   addField: (field: any) => void
   removeField: (name: string) => void
+
+  /** 高级布局功能 */
+  layout: UseAdvancedLayoutReturn
 }
 
 /**
@@ -131,6 +139,18 @@ export function useForm(options: UseFormOptions): UseFormReturn {
       disabled: field.disabled || false,
       readonly: field.readonly || false,
     })
+  })
+
+  // 容器引用（用于高级布局计算）
+  const containerRef = ref<HTMLElement | null>(null)
+
+  // 集成高级布局功能
+  const layout = useAdvancedLayout({
+    fields: options.fields || [],
+    config: options.layout,
+    containerRef,
+    formData,
+    watchResize: true,
   })
 
   // 表单操作方法
@@ -268,11 +288,25 @@ export function useForm(options: UseFormOptions): UseFormReturn {
   const renderForm = (): VNode => {
     return h(DynamicForm, {
       modelValue: formData,
-      options,
+      options: {
+        ...options,
+        layout: {
+          ...options.layout,
+          // 传递计算后的布局配置
+          columns: layout.calculatedColumns.value,
+          label: {
+            ...options.layout?.label,
+            widthByColumn: layout.calculatedLabelWidths.value,
+          },
+        },
+      },
+      ref: containerRef,
+      isExpanded: layout.isExpanded.value,
       'onUpdate:modelValue': setFormData,
       onSubmit: (data: FormData) => emit('submit', data),
       onReset: () => emit('reset', formData),
       onFieldChange: (name: string, value: any) => setFieldValue(name, value),
+      onToggleExpand: layout.toggleExpand,
     })
   }
 
@@ -311,5 +345,8 @@ export function useForm(options: UseFormOptions): UseFormReturn {
     isFieldDisabled,
     addField,
     removeField,
+
+    // 高级布局功能
+    layout,
   }
 }

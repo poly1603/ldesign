@@ -50,6 +50,9 @@ export interface FormItemConfig {
   /** 条件渲染配置 */
   conditionalRender?: ConditionalRenderConfig
 
+  /** 简化的条件显示配置 */
+  showWhen?: SimpleConditionalConfig
+
   /** 字段分组 */
   group?: string
 
@@ -199,4 +202,24 @@ export interface FieldRenderer {
 
   /** 是否支持该字段配置 */
   supports(field: FormItemConfig): boolean
+}
+
+/**
+ * 简化的条件显示配置
+ */
+export interface SimpleConditionalConfig {
+  /** 依赖的字段名 */
+  field: string
+
+  /** 期望的值 */
+  value: any
+
+  /** 比较操作符，默认为equals */
+  operator?:
+    | 'equals'
+    | 'not-equals'
+    | 'includes'
+    | 'not-includes'
+    | 'greater'
+    | 'less'
 }

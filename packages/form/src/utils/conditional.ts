@@ -404,3 +404,54 @@ export function applyConditionalRenderToFields(
 ): FormItemConfig[] {
   return fields.map(field => applyConditionalRender(field, formData, fields))
 }
+
+/**
+ * 检查字段是否应该显示（基于简化的条件配置）
+ */
+export function shouldShowField(
+  field: FormItemConfig,
+  formData: Record<string, any>
+): boolean {
+  // 如果没有条件配置，默认显示
+  if (!field.showWhen) {
+    return true
+  }
+
+  const {
+    field: dependentField,
+    value: expectedValue,
+    operator = 'equals',
+  } = field.showWhen
+  const actualValue = formData[dependentField]
+
+  switch (operator) {
+    case 'equals':
+      return actualValue === expectedValue
+    case 'not-equals':
+      return actualValue !== expectedValue
+    case 'includes':
+      return Array.isArray(actualValue)
+        ? actualValue.includes(expectedValue)
+        : false
+    case 'not-includes':
+      return Array.isArray(actualValue)
+        ? !actualValue.includes(expectedValue)
+        : true
+    case 'greater':
+      return Number(actualValue) > Number(expectedValue)
+    case 'less':
+      return Number(actualValue) < Number(expectedValue)
+    default:
+      return true
+  }
+}
+
+/**
+ * 过滤可见字段（基于简化的条件显示）
+ */
+export function filterVisibleFields(
+  fields: FormItemConfig[],
+  formData: Record<string, any>
+): FormItemConfig[] {
+  return fields.filter(field => shouldShowField(field, formData))
+}
