@@ -94,7 +94,15 @@ import { ValidationEngine } from '../core/ValidationEngine'
 import { LayoutCalculator } from '../core/LayoutCalculator'
 import { ConditionalRenderer } from '../core/ConditionalRenderer'
 import FormInput from './FormInput.vue'
+import FormTextarea from './FormTextarea.vue'
 import FormSelect from './FormSelect.vue'
+import FormRadio from './FormRadio.vue'
+import FormCheckbox from './FormCheckbox.vue'
+import FormDatePicker from './FormDatePicker.vue'
+import FormTimePicker from './FormTimePicker.vue'
+import FormSwitch from './FormSwitch.vue'
+import FormSlider from './FormSlider.vue'
+import FormRate from './FormRate.vue'
 
 interface Props {
   modelValue?: FormData
@@ -137,14 +145,19 @@ const formData = computed({
   set: (value: FormData) => emit('update:modelValue', value),
 })
 
-const formClasses = computed(() => [
-  'dynamic-form',
-  `dynamic-form--${props.options.type || 'edit'}`,
-  {
-    'dynamic-form--disabled': props.options.disabled,
-    'dynamic-form--readonly': props.options.readonly,
-  },
-])
+const formClasses = computed(() => {
+  const labelPosition = props.options.layout?.label?.position || 'top'
+
+  return [
+    'dynamic-form',
+    `dynamic-form--${props.options.type || 'edit'}`,
+    `dynamic-form--label-${labelPosition}`,
+    {
+      'dynamic-form--disabled': props.options.disabled,
+      'dynamic-form--readonly': props.options.readonly,
+    },
+  ]
+})
 
 const visibleFields = computed(() => {
   if (!layout.value) return props.options.fields
@@ -191,8 +204,15 @@ const buttonClasses = computed(() => [
 const getFieldComponent = (field: FormItemConfig) => {
   const componentMap: Record<string, any> = {
     FormInput,
+    FormTextarea,
     FormSelect,
-    // 可以继续添加其他组件
+    FormRadio,
+    FormCheckbox,
+    FormDatePicker,
+    FormTimePicker,
+    FormSwitch,
+    FormSlider,
+    FormRate,
   }
 
   if (typeof field.component === 'string') {

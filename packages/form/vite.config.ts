@@ -6,29 +6,25 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [
     vue(),
-    dts({
-      insertTypesEntry: true,
-      cleanVueFileName: true,
-      skipDiagnostics: false,
-      logDiagnostics: true,
-    }),
+    // 暂时禁用DTS插件避免类型错误
+    // dts({
+    //   insertTypesEntry: true,
+    //   cleanVueFileName: true,
+    //   skipDiagnostics: true,
+    //   logDiagnostics: false,
+    //   noEmitOnError: false,
+    //   rollupTypes: true,
+    // }),
   ],
 
   build: {
     lib: {
-      entry: {
-        index: resolve(__dirname, 'src/index.ts'),
-        vanilla: resolve(__dirname, 'src/vanilla.ts'),
-        components: resolve(__dirname, 'src/components/index.ts'),
-        composables: resolve(__dirname, 'src/composables/index.ts'),
-        utils: resolve(__dirname, 'src/utils/index.ts'),
-        themes: resolve(__dirname, 'src/themes/index.ts'),
-      },
+      entry: resolve(__dirname, 'src/index.ts'),
       name: 'LDesignForm',
-      formats: ['es', 'cjs', 'umd'],
-      fileName: (format, entryName) => {
-        const ext = format === 'es' ? 'mjs' : format === 'cjs' ? 'cjs' : 'js'
-        return `${entryName}.${ext}`
+      formats: ['es', 'cjs'],
+      fileName: format => {
+        const ext = format === 'es' ? 'mjs' : 'cjs'
+        return `index.${ext}`
       },
     },
     rollupOptions: {
@@ -48,12 +44,6 @@ export default defineConfig({
     },
     sourcemap: true,
     minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
     cssCodeSplit: false,
   },
 

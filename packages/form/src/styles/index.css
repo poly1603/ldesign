@@ -122,6 +122,140 @@
   color: var(--form-text-primary);
 }
 
+/* DynamicForm 基础样式 */
+.dynamic-form {
+  width: 100%;
+  font-family: var(--form-font-family);
+  font-size: var(--form-font-size-base);
+  line-height: var(--form-line-height-normal);
+  color: var(--form-text-primary);
+}
+
+.dynamic-form__title {
+  font-size: var(--form-font-size-lg);
+  font-weight: var(--form-font-weight-medium);
+  color: var(--form-text-primary);
+  margin-bottom: var(--form-spacing-base);
+  line-height: var(--form-line-height-tight);
+}
+
+.dynamic-form__description {
+  font-size: var(--form-font-size-sm);
+  color: var(--form-text-secondary);
+  margin-bottom: var(--form-spacing-lg);
+  line-height: var(--form-line-height-normal);
+}
+
+.dynamic-form__fields {
+  display: grid;
+  width: 100%;
+  gap: var(--form-spacing-base);
+  margin-bottom: var(--form-spacing-lg);
+}
+
+.dynamic-form__field {
+  position: relative;
+  width: 100%;
+  min-width: 0; /* 防止网格项目溢出 */
+}
+
+.dynamic-form__expand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--form-spacing-sm) 0;
+}
+
+.dynamic-form__expand-button {
+  background: var(--form-bg-primary);
+  border: var(--form-border-width) var(--form-border-style)
+    var(--form-border-default);
+  border-radius: var(--form-border-radius-base);
+  color: var(--form-color-primary);
+  cursor: pointer;
+  font-size: var(--form-font-size-sm);
+  padding: var(--form-spacing-xs) var(--form-spacing-base);
+  transition: all var(--form-animation-duration-fast)
+    var(--form-animation-easing-ease-in-out);
+}
+
+.dynamic-form__expand-button:hover {
+  background: var(--form-bg-hover);
+  border-color: var(--form-border-hover);
+}
+
+.dynamic-form__expand-button:focus {
+  outline: none;
+  border-color: var(--form-border-active);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.dynamic-form__buttons {
+  display: flex;
+  gap: var(--form-spacing-sm);
+  margin-top: var(--form-spacing-lg);
+}
+
+.dynamic-form__buttons--left {
+  justify-content: flex-start;
+}
+
+.dynamic-form__buttons--center {
+  justify-content: center;
+}
+
+.dynamic-form__buttons--right {
+  justify-content: flex-end;
+}
+
+.dynamic-form__button {
+  background: var(--form-bg-primary);
+  border: var(--form-border-width) var(--form-border-style)
+    var(--form-border-default);
+  border-radius: var(--form-border-radius-base);
+  color: var(--form-text-primary);
+  cursor: pointer;
+  font-size: var(--form-font-size-base);
+  font-weight: var(--form-font-weight-normal);
+  padding: var(--form-spacing-sm) var(--form-spacing-lg);
+  transition: all var(--form-animation-duration-fast)
+    var(--form-animation-easing-ease-in-out);
+  min-width: 80px;
+}
+
+.dynamic-form__button:hover {
+  background: var(--form-bg-hover);
+  border-color: var(--form-border-hover);
+}
+
+.dynamic-form__button:focus {
+  outline: none;
+  border-color: var(--form-border-active);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.dynamic-form__button:disabled {
+  background: var(--form-bg-disabled);
+  border-color: var(--form-border-default);
+  color: var(--form-text-disabled);
+  cursor: not-allowed;
+}
+
+.dynamic-form__button--primary {
+  background: var(--form-color-primary);
+  border-color: var(--form-color-primary);
+  color: white;
+}
+
+.dynamic-form__button--primary:hover:not(:disabled) {
+  background: var(--form-border-hover);
+  border-color: var(--form-border-hover);
+}
+
+.dynamic-form__button--primary:focus {
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
 /* 表单类型样式 */
 .dynamic-form--query {
   --form-spacing-base: 12px;
@@ -163,6 +297,131 @@
   .dynamic-form__fields {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
   }
+}
+
+/* 表单组件布局样式 */
+.form-input,
+.form-textarea,
+.form-select,
+.form-radio,
+.form-checkbox,
+.form-date-picker,
+.form-time-picker,
+.form-switch,
+.form-slider,
+.form-rate {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* 标签位置：左侧 */
+.dynamic-form--label-left .form-input,
+.dynamic-form--label-left .form-textarea,
+.dynamic-form--label-left .form-select,
+.dynamic-form--label-left .form-radio,
+.dynamic-form--label-left .form-checkbox,
+.dynamic-form--label-left .form-date-picker,
+.dynamic-form--label-left .form-time-picker,
+.dynamic-form--label-left .form-switch,
+.dynamic-form--label-left .form-slider,
+.dynamic-form--label-left .form-rate {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.dynamic-form--label-left .form-input__label,
+.dynamic-form--label-left .form-textarea__label,
+.dynamic-form--label-left .form-select__label,
+.dynamic-form--label-left .form-radio__label,
+.dynamic-form--label-left .form-checkbox__label,
+.dynamic-form--label-left .form-date-picker__label,
+.dynamic-form--label-left .form-time-picker__label,
+.dynamic-form--label-left .form-switch__label,
+.dynamic-form--label-left .form-slider__label,
+.dynamic-form--label-left .form-rate__label {
+  flex: 0 0 auto;
+  width: 120px;
+  margin-right: var(--form-spacing-sm);
+  margin-bottom: 0;
+  padding-top: var(--form-spacing-xs);
+  text-align: right;
+}
+
+.dynamic-form--label-left .form-input__wrapper,
+.dynamic-form--label-left .form-textarea__wrapper,
+.dynamic-form--label-left .form-select__wrapper,
+.dynamic-form--label-left .form-radio__wrapper,
+.dynamic-form--label-left .form-checkbox__wrapper,
+.dynamic-form--label-left .form-date-picker__wrapper,
+.dynamic-form--label-left .form-time-picker__wrapper,
+.dynamic-form--label-left .form-switch__wrapper,
+.dynamic-form--label-left .form-slider__wrapper,
+.dynamic-form--label-left .form-rate__wrapper {
+  flex: 1;
+}
+
+/* 标签位置：右侧 */
+.dynamic-form--label-right .form-input,
+.dynamic-form--label-right .form-textarea,
+.dynamic-form--label-right .form-select,
+.dynamic-form--label-right .form-radio,
+.dynamic-form--label-right .form-checkbox,
+.dynamic-form--label-right .form-date-picker,
+.dynamic-form--label-right .form-time-picker,
+.dynamic-form--label-right .form-switch,
+.dynamic-form--label-right .form-slider,
+.dynamic-form--label-right .form-rate {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.dynamic-form--label-right .form-input__label,
+.dynamic-form--label-right .form-textarea__label,
+.dynamic-form--label-right .form-select__label,
+.dynamic-form--label-right .form-radio__label,
+.dynamic-form--label-right .form-checkbox__label,
+.dynamic-form--label-right .form-date-picker__label,
+.dynamic-form--label-right .form-time-picker__label,
+.dynamic-form--label-right .form-switch__label,
+.dynamic-form--label-right .form-slider__label,
+.dynamic-form--label-right .form-rate__label {
+  flex: 0 0 auto;
+  width: 120px;
+  margin-left: var(--form-spacing-sm);
+  margin-bottom: 0;
+  padding-top: var(--form-spacing-xs);
+  text-align: left;
+  order: 2;
+}
+
+.dynamic-form--label-right .form-input__wrapper,
+.dynamic-form--label-right .form-textarea__wrapper,
+.dynamic-form--label-right .form-select__wrapper,
+.dynamic-form--label-right .form-radio__wrapper,
+.dynamic-form--label-right .form-checkbox__wrapper,
+.dynamic-form--label-right .form-date-picker__wrapper,
+.dynamic-form--label-right .form-time-picker__wrapper,
+.dynamic-form--label-right .form-switch__wrapper,
+.dynamic-form--label-right .form-slider__wrapper,
+.dynamic-form--label-right .form-rate__wrapper {
+  flex: 1;
+  order: 1;
+}
+
+/* 标签位置：顶部（默认） */
+.dynamic-form--label-top .form-input__label,
+.dynamic-form--label-top .form-textarea__label,
+.dynamic-form--label-top .form-select__label,
+.dynamic-form--label-top .form-radio__label,
+.dynamic-form--label-top .form-checkbox__label,
+.dynamic-form--label-top .form-date-picker__label,
+.dynamic-form--label-top .form-time-picker__label,
+.dynamic-form--label-top .form-switch__label,
+.dynamic-form--label-top .form-slider__label,
+.dynamic-form--label-top .form-rate__label {
+  margin-bottom: var(--form-spacing-xs);
+  text-align: left;
 }
 
 /* 工具类 */

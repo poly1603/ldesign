@@ -47,6 +47,44 @@ export interface BaseFormComponentProps {
 export type ComponentSize = 'small' | 'medium' | 'large'
 
 /**
+ * 复选框组件属性
+ */
+export interface FormCheckboxProps extends BaseFormComponentProps {
+  /** 选项列表 */
+  options?: (string | number | FieldOption)[]
+
+  /** 是否必填 */
+  required?: boolean
+
+  /** 标签文本 */
+  label?: string
+
+  /** 提示信息 */
+  tooltip?: string
+
+  /** 描述文本 */
+  description?: string
+
+  /** 是否显示标签 */
+  showLabel?: boolean
+
+  /** 是否显示冒号 */
+  showColon?: boolean
+
+  /** 排列方向 */
+  direction?: 'horizontal' | 'vertical'
+
+  /** 最大选择数量 */
+  max?: number
+
+  /** 最小选择数量 */
+  min?: number
+
+  /** 错误信息 */
+  errors?: string[]
+}
+
+/**
  * 输入框组件属性
  */
 export interface FormInputProps extends BaseFormComponentProps {
