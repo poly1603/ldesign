@@ -668,33 +668,17 @@ importers:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.8.3)
 
+  packages/form/dist:
+    dependencies:
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.18(typescript@5.8.3)
+
   packages/form/docs:
-    devDependencies:
-      vitepress:
-        specifier: ^1.0.0
-        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@22.16.5)(@types/react@18.3.23)(async-validator@4.2.5)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.89.2)(search-insights@2.17.3)(stylus@0.64.0)(terser@5.43.1)(typescript@5.8.3)
-
-  packages/form/examples:
-    devDependencies:
-      concurrently:
-        specifier: ^8.2.0
-        version: 8.2.2
-
-  packages/form/examples/vanilla-js-demo:
     dependencies:
       "@ldesign/form":
         specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.19(@types/node@22.16.5)(less@4.4.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
-
-  packages/form/examples/vue-demo:
-    dependencies:
-      "@ldesign/form":
-        specifier: workspace:*
-        version: link:../..
+        version: link:../dist
       vue:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.8.3)
@@ -704,6 +688,28 @@ importers:
         version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
       typescript:
         specifier: ^5.0.0
+        version: 5.8.3
+      vitepress:
+        specifier: ^1.0.0
+        version: 1.6.3(@algolia/client-search@5.34.1)(@types/node@22.16.5)(@types/react@18.3.23)(async-validator@4.2.5)(axios@1.11.0)(less@4.4.0)(postcss@8.5.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.89.2)(search-insights@2.17.3)(stylus@0.64.0)(terser@5.43.1)(typescript@5.8.3)
+
+  packages/form/examples/layout-demo:
+    dependencies:
+      "@ldesign/form":
+        specifier: workspace:*
+        version: link:../../dist
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.18(typescript@5.8.3)
+    devDependencies:
+      "@vitejs/plugin-vue":
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.8.3))
+      "@vue/tsconfig":
+        specifier: ^0.5.0
+        version: 0.5.1
+      typescript:
+        specifier: ^5.3.0
         version: 5.8.3
       vite:
         specifier: ^5.0.0
@@ -13019,18 +13025,6 @@ snapshots:
     dependencies:
       source-map: 0.6.1
 
-  concurrently@8.2.2:
-    dependencies:
-      chalk: 4.1.2
-      date-fns: 2.30.0
-      lodash: 4.17.21
-      rxjs: 7.8.2
-      shell-quote: 1.8.3
-      spawn-command: 0.0.2
-      supports-color: 8.1.1
-      tree-kill: 1.2.2
-      yargs: 17.7.2
-
   confbox@0.1.8: {}
 
   confbox@0.2.2: {}
@@ -13157,10 +13151,6 @@ snapshots:
     dependencies:
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.2.0
-
-  date-fns@2.30.0:
-    dependencies:
-      "@babel/runtime": 7.28.2
 
   de-indent@1.0.2: {}
 
@@ -15652,10 +15642,6 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
-  rxjs@7.8.2:
-    dependencies:
-      tslib: 2.8.1
-
   safe-buffer@5.2.1: {}
 
   safe-identifier@0.4.2: {}
@@ -15736,8 +15722,6 @@ snapshots:
       shebang-regex: 3.0.0
 
   shebang-regex@3.0.0: {}
-
-  shell-quote@1.8.3: {}
 
   shiki@2.5.0:
     dependencies:
@@ -15838,8 +15822,6 @@ snapshots:
   source-map@0.7.6: {}
 
   space-separated-tokens@2.0.2: {}
-
-  spawn-command@0.0.2: {}
 
   spawndamnit@3.0.1:
     dependencies:
@@ -16054,8 +16036,6 @@ snapshots:
   tr46@5.1.1:
     dependencies:
       punycode: 2.3.1
-
-  tree-kill@1.2.2: {}
 
   trim-lines@3.0.1: {}
 

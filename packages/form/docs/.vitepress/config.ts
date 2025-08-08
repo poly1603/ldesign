@@ -1,23 +1,26 @@
 import { defineConfig } from 'vitepress'
+import { resolve } from 'path'
 
 export default defineConfig({
   title: '@ldesign/form',
   description:
-    '智能表单布局系统 - 支持自适应布局、展开收起、弹窗模式的多框架表单解决方案',
+    '现代化的 Vue 3 表单组件库 - 支持动态表单、验证、主题定制的完整解决方案',
+  lang: 'zh-CN',
 
-  base: '/form/',
+  base: '/',
+  cleanUrls: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/form/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#3c82f6' }],
+    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { name: 'theme-color', content: '#646cff' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:locale', content: 'zh-CN' }],
     [
       'meta',
-      { property: 'og:title', content: '@ldesign/form | 智能表单布局系统' },
+      { property: 'og:title', content: '@ldesign/form | Vue 3 表单组件库' },
     ],
     ['meta', { property: 'og:site_name', content: '@ldesign/form' }],
-    ['meta', { property: 'og:image', content: '/form/og-image.png' }],
+    ['meta', { property: 'og:image', content: '/og-image.png' }],
     [
       'meta',
       { property: 'og:url', content: 'https://ldesign.github.io/form/' },
@@ -26,15 +29,18 @@ export default defineConfig({
 
   themeConfig: {
     logo: '/logo.svg',
+    siteTitle: '@ldesign/form',
 
     nav: [
-      { text: '指南', link: '/guide/getting-started' },
-      { text: 'API', link: '/api/core' },
+      { text: '指南', link: '/guide/introduction' },
+      { text: 'API', link: '/api/components' },
       { text: '示例', link: '/examples/basic' },
-      { text: '更新日志', link: '/changelog' },
+      { text: '主题', link: '/theme/presets' },
       {
-        text: '相关链接',
+        text: '更多',
         items: [
+          { text: '更新日志', link: '/changelog' },
+          { text: '贡献指南', link: '/contributing' },
           { text: 'GitHub', link: 'https://github.com/ldesign/form' },
           { text: 'NPM', link: 'https://www.npmjs.com/package/@ldesign/form' },
           { text: 'Issues', link: 'https://github.com/ldesign/form/issues' },
@@ -48,36 +54,35 @@ export default defineConfig({
           text: '开始',
           items: [
             { text: '介绍', link: '/guide/introduction' },
-            { text: '快速开始', link: '/guide/getting-started' },
             { text: '安装', link: '/guide/installation' },
+            { text: '快速开始', link: '/guide/getting-started' },
+            { text: '基础概念', link: '/guide/concepts' },
           ],
         },
         {
-          text: '基础',
+          text: '使用方式',
           items: [
-            { text: '基本概念', link: '/guide/concepts' },
-            { text: '表单配置', link: '/guide/form-config' },
+            { text: 'Vue 组件', link: '/guide/vue-component' },
+            { text: 'Composition API', link: '/guide/composition-api' },
+            { text: '原生 JavaScript', link: '/guide/vanilla-js' },
+          ],
+        },
+        {
+          text: '核心功能',
+          items: [
+            { text: '表单验证', link: '/guide/validation' },
             { text: '布局系统', link: '/guide/layout' },
-            { text: '验证系统', link: '/guide/validation' },
+            { text: '事件系统', link: '/guide/events' },
+            { text: '状态管理', link: '/guide/state-management' },
           ],
         },
         {
-          text: '框架集成',
+          text: '高级功能',
           items: [
-            { text: '原生 JavaScript', link: '/guide/native' },
-            { text: 'Vue 3', link: '/guide/vue' },
-            { text: 'React', link: '/guide/react' },
-            { text: 'Angular', link: '/guide/angular' },
-            { text: 'Svelte', link: '/guide/svelte' },
-          ],
-        },
-        {
-          text: '高级',
-          items: [
+            { text: '条件渲染', link: '/guide/conditional-rendering' },
+            { text: '动态表单', link: '/guide/dynamic-forms' },
             { text: '自定义组件', link: '/guide/custom-components' },
-            { text: '主题定制', link: '/guide/theming' },
-            { text: '插件开发', link: '/guide/plugins' },
-            { text: '性能优化', link: '/guide/performance' },
+            { text: '国际化', link: '/guide/i18n' },
           ],
         },
       ],
@@ -85,30 +90,26 @@ export default defineConfig({
         {
           text: 'API 参考',
           items: [
-            { text: '核心 API', link: '/api/core' },
-            { text: '表单管理器', link: '/api/form-manager' },
-            { text: '布局计算器', link: '/api/layout-calculator' },
-            { text: '验证引擎', link: '/api/validation-engine' },
-            { text: '渲染器', link: '/api/renderer' },
+            { text: '组件', link: '/api/components' },
+            { text: 'Composables', link: '/api/composables' },
+            { text: '类型定义', link: '/api/types' },
+            { text: '工具函数', link: '/api/utils' },
           ],
         },
         {
-          text: '适配器',
+          text: '组件详情',
           items: [
-            { text: '原生适配器', link: '/api/native-adapter' },
-            { text: 'Vue 适配器', link: '/api/vue-adapter' },
-            { text: 'React 适配器', link: '/api/react-adapter' },
-            { text: 'Angular 适配器', link: '/api/angular-adapter' },
-            { text: 'Svelte 适配器', link: '/api/svelte-adapter' },
-          ],
-        },
-        {
-          text: '类型定义',
-          items: [
-            { text: '表单类型', link: '/api/types/form' },
-            { text: '布局类型', link: '/api/types/layout' },
-            { text: '验证类型', link: '/api/types/validation' },
-            { text: '事件类型', link: '/api/types/events' },
+            { text: 'DynamicForm', link: '/api/dynamic-form' },
+            { text: 'FormInput', link: '/api/form-input' },
+            { text: 'FormSelect', link: '/api/form-select' },
+            { text: 'FormCheckbox', link: '/api/form-checkbox' },
+            { text: 'FormRadio', link: '/api/form-radio' },
+            { text: 'FormDatePicker', link: '/api/form-date-picker' },
+            { text: 'FormTimePicker', link: '/api/form-time-picker' },
+            { text: 'FormTextarea', link: '/api/form-textarea' },
+            { text: 'FormSwitch', link: '/api/form-switch' },
+            { text: 'FormSlider', link: '/api/form-slider' },
+            { text: 'FormRate', link: '/api/form-rate' },
           ],
         },
       ],
@@ -116,28 +117,39 @@ export default defineConfig({
         {
           text: '基础示例',
           items: [
-            { text: '基本表单', link: '/examples/basic' },
-            { text: '响应式布局', link: '/examples/responsive' },
+            { text: '基础表单', link: '/examples/basic' },
             { text: '表单验证', link: '/examples/validation' },
-            { text: '动态表单', link: '/examples/dynamic' },
+            { text: '布局示例', link: '/examples/layout' },
+            { text: '字段类型', link: '/examples/field-types' },
           ],
         },
         {
           text: '高级示例',
           items: [
-            { text: '多步骤表单', link: '/examples/multi-step' },
-            { text: '弹窗表单', link: '/examples/modal' },
-            { text: '表单分组', link: '/examples/grouping' },
-            { text: '文件上传', link: '/examples/file-upload' },
+            { text: '动态表单', link: '/examples/dynamic' },
+            { text: '条件渲染', link: '/examples/conditional' },
+            { text: '嵌套表单', link: '/examples/nested' },
+            { text: '复杂场景', link: '/examples/complex' },
           ],
         },
         {
-          text: '框架示例',
+          text: '实际应用',
           items: [
-            { text: 'Vue 示例', link: '/examples/vue-examples' },
-            { text: 'React 示例', link: '/examples/react-examples' },
-            { text: 'Angular 示例', link: '/examples/angular-examples' },
-            { text: 'Svelte 示例', link: '/examples/svelte-examples' },
+            { text: '用户注册', link: '/examples/user-registration' },
+            { text: '商品配置', link: '/examples/product-config' },
+            { text: '调查问卷', link: '/examples/survey' },
+            { text: '设置面板', link: '/examples/settings' },
+          ],
+        },
+      ],
+      '/theme/': [
+        {
+          text: '主题系统',
+          items: [
+            { text: '预设主题', link: '/theme/presets' },
+            { text: '自定义主题', link: '/theme/custom' },
+            { text: '样式变量', link: '/theme/variables' },
+            { text: '主题切换', link: '/theme/switching' },
           ],
         },
       ],
@@ -183,7 +195,7 @@ export default defineConfig({
       provider: 'local',
       options: {
         locales: {
-          root: {
+          'zh-CN': {
             translations: {
               button: {
                 buttonText: '搜索文档',
@@ -217,8 +229,18 @@ export default defineConfig({
   },
 
   vite: {
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, '../'),
+        '@ldesign/form': resolve(__dirname, '../../src'),
+      },
+    },
     define: {
       __VUE_OPTIONS_API__: false,
+    },
+    server: {
+      port: 3000,
+      host: true,
     },
   },
 })

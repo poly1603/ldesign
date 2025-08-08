@@ -28,8 +28,11 @@ export { ValidationEngine } from './core/ValidationEngine'
 export { LayoutCalculator } from './core/LayoutCalculator'
 
 // 工具函数导出
-export { createFormInstance } from './vanilla'
-export type { FormInstance } from './vanilla'
+export { createFormInstance, FormInstance } from './vanilla'
+export type { VanillaFormInstanceConfig as FormInstanceConfig } from './vanilla'
+
+// 别名导出，兼容性
+export { FormInstance as FormManager } from './vanilla'
 
 // Vue 插件导出
 export { FormPlugin } from './composables/plugin'

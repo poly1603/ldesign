@@ -76,7 +76,7 @@ export interface FormInstanceConfig {
 /**
  * 原生 JavaScript 表单实例
  */
-export class FormInstance extends SimpleEventEmitter {
+class FormInstance extends SimpleEventEmitter {
   private app: App | null = null
   private container: HTMLElement
   private options: FormOptions
@@ -334,5 +334,6 @@ export function createFormInstance(config: FormInstanceConfig): FormInstance {
   return new FormInstance(config)
 }
 
-// 导出类型
-export type { FormInstance, FormInstanceConfig }
+// 导出类型和类
+export { FormInstance }
+export type { FormInstanceConfig as VanillaFormInstanceConfig }
