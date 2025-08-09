@@ -1,5 +1,5 @@
 <template>
-  <div class="dynamic-form" :class="formClasses">
+  <div class="dynamic-form" :class="formClasses" :style="formStyles">
     <form @submit.prevent="handleSubmit">
       <!-- 表单标题 -->
       <div v-if="options.title" class="dynamic-form__title">
@@ -31,31 +31,85 @@
             :placeholder="field.placeholder"
             :error-message="getFieldError(field.name)"
             :show-error="!!getFieldError(field.name)"
+            :label-position="labelPosition"
+            :label-width="getLabelWidth(field, index)"
+            :label-align="labelAlign"
+            :label-gap="labelGap"
+            :show-label-colon="showLabelColon"
             @change="handleFieldChange(field.name, $event)"
             @focus="handleFieldFocus(field.name, $event)"
             @blur="handleFieldBlur(field.name, $event)"
           />
         </div>
 
-        <!-- 展开按钮 -->
+        <!-- 按钮组跟随最后一行时显示 -->
         <div
-          v-if="needsExpandButton"
-          class="dynamic-form__expand"
-          :style="getExpandButtonStyle()"
+          v-if="shouldShowActionsInLastRow"
+          class="dynamic-form__field dynamic-form__actions-field"
+          :style="getActionsFieldStyle()"
         >
+          <div class="dynamic-form__actions">
+            <button
+              v-if="showQueryButton"
+              type="button"
+              class="dynamic-form__button dynamic-form__button--primary"
+              @click="handleQuery"
+            >
+              查询
+            </button>
+            <button
+              v-if="showResetButton"
+              type="button"
+              class="dynamic-form__button"
+              @click="handleReset"
+            >
+              重置
+            </button>
+            <button
+              v-if="needsExpandButton"
+              type="button"
+              class="dynamic-form__button dynamic-form__button--expand"
+              @click="handleToggleExpand"
+            >
+              {{ advancedLayout.isExpanded.value ? collapseText : expandText }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 按钮组单独占一行时显示 -->
+      <div v-if="shouldShowActionsSeparately" class="dynamic-form__actions-row">
+        <div class="dynamic-form__actions">
           <button
+            v-if="showQueryButton"
             type="button"
-            class="dynamic-form__expand-button"
+            class="dynamic-form__button dynamic-form__button--primary"
+            @click="handleQuery"
+          >
+            查询
+          </button>
+          <button
+            v-if="showResetButton"
+            type="button"
+            class="dynamic-form__button"
+            @click="handleReset"
+          >
+            重置
+          </button>
+          <button
+            v-if="needsExpandButton"
+            type="button"
+            class="dynamic-form__button dynamic-form__button--expand"
             @click="handleToggleExpand"
           >
-            {{ expanded ? collapseText : expandText }}
+            {{ advancedLayout.isExpanded.value ? collapseText : expandText }}
           </button>
         </div>
       </div>
 
-      <!-- 表单按钮 -->
+      <!-- 传统提交按钮（当没有设置默认行数时显示） -->
       <div
-        v-if="showButtons"
+        v-if="showTraditionalButtons"
         class="dynamic-form__buttons"
         :class="buttonClasses"
       >
@@ -93,6 +147,7 @@ import { FormStateManager } from '../core/FormStateManager'
 import { ValidationEngine } from '../core/ValidationEngine'
 import { LayoutCalculator } from '../core/LayoutCalculator'
 import { ConditionalRenderer } from '../core/ConditionalRenderer'
+import { useAdvancedLayout } from '../composables/useAdvancedLayout'
 import FormInput from './FormInput.vue'
 import FormTextarea from './FormTextarea.vue'
 import FormSelect from './FormSelect.vue'
@@ -135,9 +190,17 @@ const layoutCalculator = new LayoutCalculator(props.options.layout)
 const conditionalRenderer = new ConditionalRenderer()
 
 // 响应式数据
-const expanded = ref(false)
-const containerRef = ref<HTMLElement>()
+const containerRef = ref<HTMLElement | null>(null)
 const layout = ref<LayoutResult>()
+
+// 高级布局功能
+const advancedLayout = useAdvancedLayout({
+  fields: props.options.fields || [],
+  config: props.options.layout,
+  containerRef,
+  formData: props.modelValue,
+  watchResize: true,
+})
 
 // 计算属性
 const formData = computed({
@@ -147,33 +210,100 @@ const formData = computed({
 
 const formClasses = computed(() => {
   const labelPosition = props.options.layout?.label?.position || 'top'
+  const theme = props.options.layout?.theme || 'default'
 
   return [
     'dynamic-form',
     `dynamic-form--${props.options.type || 'edit'}`,
     `dynamic-form--label-${labelPosition}`,
+    `dynamic-form--theme-${theme}`,
     {
       'dynamic-form--disabled': props.options.disabled,
       'dynamic-form--readonly': props.options.readonly,
     },
+    props.options.layout?.className,
   ]
 })
 
-const visibleFields = computed(() => {
-  if (!layout.value) return props.options.fields
+const formStyles = computed(() => {
+  return {}
+})
 
-  return layout.value.fields
-    .filter(fieldLayout => expanded.value || fieldLayout.visible)
-    .map(
-      fieldLayout =>
-        props.options.fields.find(f => f.name === fieldLayout.name)!
-    )
-    .filter(Boolean)
+// 可见字段计算
+const visibleFields = computed(() => {
+  // 使用 advancedLayout 的计算逻辑
+  const allVisibleFields = advancedLayout.calculateVisibleFields(formData.value)
+
+  // 如果设置了默认行数且未展开，只显示前N行的字段
+  const defaultRows = props.options.layout?.defaultRows || 0
+  if (defaultRows > 0 && !advancedLayout.isExpanded.value) {
+    const columns = advancedLayout.calculatedColumns.value
+    const maxFields = defaultRows * columns
+    return allVisibleFields.slice(0, maxFields)
+  }
+
+  return allVisibleFields
+})
+
+// 字段样式计算
+const fieldsStyle = computed(() => {
+  const columns = advancedLayout.calculatedColumns.value
+  const { horizontalGap = 16, verticalGap = 16 } = props.options.layout || {}
+
+  return {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gap: `${verticalGap}px ${horizontalGap}px`,
+  }
+})
+
+// 标签相关计算属性
+const labelPosition = computed(
+  () => props.options.layout?.label?.position || 'top'
+)
+const labelAlign = computed(() => props.options.layout?.label?.align || 'left')
+const labelGap = computed(() => props.options.layout?.label?.gap || 8)
+const showLabelColon = computed(
+  () => props.options.layout?.label?.showColon || false
+)
+
+// 按钮相关计算属性
+const hasDefaultRows = computed(() => {
+  return (
+    props.options.layout?.defaultRows && props.options.layout.defaultRows > 0
+  )
+})
+
+const hasHiddenFields = computed(() => {
+  return advancedLayout.hasHiddenFields.value
 })
 
 const needsExpandButton = computed(() => {
-  return layout.value?.needsExpand && layout.value.hiddenFieldCount > 0
+  return advancedLayout.needsExpandButton.value
 })
+
+const shouldShowActionsInLastRow = computed(() => {
+  return (
+    hasDefaultRows.value &&
+    hasHiddenFields.value &&
+    props.options.layout?.button?.position === 'follow-last-row'
+  )
+})
+
+const shouldShowActionsSeparately = computed(() => {
+  return (
+    hasDefaultRows.value &&
+    hasHiddenFields.value &&
+    props.options.layout?.button?.position === 'separate-row'
+  )
+})
+
+const showTraditionalButtons = computed(() => {
+  return props.showButtons && (!hasDefaultRows.value || !hasHiddenFields.value)
+})
+
+const showQueryButton = computed(() => true)
+const showResetButton = computed(() => true)
 
 const expandText = computed(() => {
   return props.options.layout?.button?.expand?.expandText || '展开'
@@ -181,18 +311,6 @@ const expandText = computed(() => {
 
 const collapseText = computed(() => {
   return props.options.layout?.button?.expand?.collapseText || '收起'
-})
-
-const fieldsStyle = computed(() => {
-  if (!layout.value) return {}
-
-  const { horizontalGap = 16, verticalGap = 16 } = props.options.layout || {}
-
-  return {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${layout.value.columns}, 1fr)`,
-    gap: `${verticalGap}px ${horizontalGap}px`,
-  }
 })
 
 const buttonClasses = computed(() => [
@@ -237,14 +355,21 @@ const getFieldClasses = (field: FormItemConfig) => [
 ]
 
 const getFieldStyle = (field: FormItemConfig, index: number) => {
-  if (!layout.value) return {}
+  const styles: Record<string, any> = {}
 
-  const fieldLayout = layout.value.fields[index]
-  if (!fieldLayout) return {}
-
-  return {
-    gridColumn: `span ${fieldLayout.span}`,
+  if (field.span) {
+    if (field.span === 'full') {
+      styles.gridColumn = '1 / -1'
+    } else if (typeof field.span === 'number') {
+      styles.gridColumn = `span ${field.span}`
+    }
   }
+
+  if (field.style) {
+    Object.assign(styles, field.style)
+  }
+
+  return styles
 }
 
 const getExpandButtonStyle = () => {
@@ -259,6 +384,37 @@ const getExpandButtonStyle = () => {
 const getFieldError = (fieldName: string): string => {
   const errors = formStateManager.getFieldErrors(fieldName)
   return errors.length > 0 ? errors[0] : ''
+}
+
+// 获取标签宽度
+const getLabelWidth = (field: FormItemConfig, index: number) => {
+  return advancedLayout.getLabelWidth(field, index)
+}
+
+// 获取按钮组字段的样式
+const getActionsFieldStyle = () => {
+  const columns = props.options.layout?.columns || 2
+  const visibleFieldsCount = visibleFields.value.length
+  const lastRowFieldsCount = visibleFieldsCount % columns
+
+  // 如果最后一行没有填满，按钮组占据剩余的列
+  if (lastRowFieldsCount > 0) {
+    const remainingColumns = columns - lastRowFieldsCount
+    return {
+      gridColumn: `span ${remainingColumns}`,
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    }
+  } else {
+    // 如果最后一行已满，按钮组占据新的一行
+    return {
+      gridColumn: '1 / -1',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    }
+  }
 }
 
 const handleFieldChange = (fieldName: string, value: any) => {
@@ -303,6 +459,15 @@ const handleReset = () => {
   emit('reset', data)
 }
 
+const handleQuery = async () => {
+  // 查询功能同时具有提交表单的作用
+  const isValid = await handleValidate()
+  if (isValid) {
+    const data = formStateManager.getFormData()
+    emit('submit', data)
+  }
+}
+
 const handleValidate = async (): Promise<boolean> => {
   const data = formStateManager.getFormData()
   const results = await validationEngine.validateForm(data)
@@ -322,7 +487,7 @@ const handleValidate = async (): Promise<boolean> => {
 }
 
 const handleToggleExpand = () => {
-  expanded.value = !expanded.value
+  advancedLayout.toggleExpand()
 }
 
 const validateField = async (fieldName: string) => {
@@ -486,5 +651,115 @@ defineExpose({
 .dynamic-form--disabled {
   pointer-events: none;
   opacity: 0.6;
+}
+
+/* 主题样式 */
+.dynamic-form--theme-bordered {
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dynamic-form--theme-bordered .dynamic-form__fields {
+  display: grid;
+  gap: 0;
+}
+
+.dynamic-form--theme-bordered .dynamic-form__field {
+  background: white;
+  border: none;
+  border-bottom: 1px solid #e5e5e5;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: stretch;
+  min-height: 48px;
+}
+
+.dynamic-form--theme-bordered .dynamic-form__field:last-child {
+  border-bottom: none;
+}
+
+/* 按钮组样式 */
+.dynamic-form__actions-field {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.dynamic-form__actions-row {
+  margin-top: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.dynamic-form__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dynamic-form__button {
+  padding: 6px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.dynamic-form__button:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.dynamic-form__button--primary {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.dynamic-form__button--primary:hover {
+  background: #5a6fd8;
+  border-color: #5a6fd8;
+  color: white;
+}
+
+.dynamic-form__button--expand {
+  color: #1890ff;
+  border-color: #1890ff;
+}
+
+.dynamic-form__button--expand:hover {
+  background: #1890ff;
+  color: white;
+}
+
+/* 字段跨列样式 */
+.dynamic-form__field[style*='span'] {
+  grid-column: var(--field-span);
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+  .dynamic-form__actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dynamic-form__button {
+    flex: 1;
+    min-width: 60px;
+  }
 }
 </style>

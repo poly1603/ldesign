@@ -6,6 +6,7 @@ export { default as DynamicForm } from './components/DynamicForm.vue'
 
 // Composition API Hook 导出
 export { useForm } from './composables/useForm'
+export { useAdvancedLayout } from './composables/useAdvancedLayout'
 
 // 内置表单组件导出
 export { default as FormInput } from './components/FormInput.vue'
@@ -26,6 +27,10 @@ export type * from './types'
 export { FormStateManager } from './core/FormStateManager'
 export { ValidationEngine } from './core/ValidationEngine'
 export { LayoutCalculator } from './core/LayoutCalculator'
+export { ConditionalRenderer } from './core/ConditionalRenderer'
+
+// 条件显示工具函数导出
+export { shouldShowField, filterVisibleFields } from './utils/conditional'
 
 // 工具函数导出
 export { createFormInstance, FormInstance } from './vanilla'

@@ -228,6 +228,49 @@
               <option value="right">右对齐</option>
             </select>
           </div>
+
+          <div
+            class="control-item"
+            v-if="currentLayout.labelPosition !== 'top'"
+          >
+            <label>标签间距：</label>
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              :value="currentLayout.labelGap"
+              @input="updateLayout('labelGap', Number($event.target.value))"
+            />
+            <span>{{ currentLayout.labelGap }}px</span>
+          </div>
+
+          <div class="control-item">
+            <button
+              :class="{ active: currentLayout.showLabelColon }"
+              @click="
+                updateLayout('showLabelColon', !currentLayout.showLabelColon)
+              "
+            >
+              {{
+                currentLayout.showLabelColon ? '隐藏标签冒号' : '显示标签冒号'
+              }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 表单主题控制 -->
+        <div class="control-group">
+          <div class="control-item">
+            <label>表单主题：</label>
+            <select
+              :value="currentLayout.formTheme"
+              @change="updateLayout('formTheme', $event.target.value)"
+            >
+              <option value="default">默认样式</option>
+              <option value="bordered">边框样式</option>
+            </select>
+          </div>
         </div>
 
         <!-- 默认显示行数控制 -->
@@ -325,6 +368,20 @@
             <button @click="fillMockData">填充示例数据</button>
           </div>
         </div>
+
+        <!-- 条件显示演示 -->
+        <div class="control-group">
+          <h4>条件显示演示</h4>
+          <div class="control-item">
+            <span class="info-text"> 选择"中国"查看省/州和城市字段 </span>
+          </div>
+          <div class="control-item">
+            <span class="info-text"> 选择"互联网/IT"行业查看工作地点偏好 </span>
+          </div>
+          <div class="control-item">
+            <span class="info-text"> 选择"远程工作"查看远程工作经验字段 </span>
+          </div>
+        </div>
       </div>
 
       <!-- 主要内容 -->
@@ -337,8 +394,12 @@
               :key="formKey"
               v-model="formData"
               :options="formOptions"
+              :is-expanded="formState.isExpanded"
               @submit="handleSubmit"
               @validate="handleValidate"
+              @query="handleQuery"
+              @reset="handleReset"
+              @toggle-expand="toggleExpand"
             />
           </Transition>
 
@@ -444,6 +505,7 @@ const hiddenFieldsOptions = computed(() => {
     layout: {
       ...currentLayout,
       defaultRows: 0, // 隐藏字段不限制行数
+      buttonPosition: undefined, // 隐藏字段表单不显示按钮组
     },
   }
 })
@@ -485,6 +547,18 @@ const handleValidate = (valid: boolean, errors: any) => {
   if (!valid) {
     console.warn('表单验证失败:', errors)
   }
+}
+
+// 处理查询
+const handleQuery = () => {
+  console.log('执行查询:', formData)
+  alert('查询功能已触发！请查看控制台输出。')
+}
+
+// 处理重置
+const handleReset = () => {
+  console.log('重置表单')
+  resetForm()
 }
 
 // 点击外部关闭下拉框

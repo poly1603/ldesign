@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ldesign/form - 简单使用示例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 24px;
+    }
+    .example {
+      margin-bottom: 32px;
+      padding: 20px;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+    }
+    .example h2 {
+      margin-top: 0;
+      color: #667eea;
+    }
+    .code {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>@ldesign/form - 简单使用示例</h1>
+    
+    <div class="example">
+      <h2>🎯 基础表单</h2>
+      <p>最简单的表单配置，只需要定义字段即可：</p>
+      <div class="code">
+&lt;template&gt;
+  &lt;DynamicForm v-model="formData" :options="formOptions" /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref } from 'vue'
+import { DynamicForm } from '@ldesign/form'
+
+const formData = ref({})
+
+const formOptions = {
+  fields: [
+    { name: 'name', title: '姓名', component: 'FormInput', required: true },
+    { name: 'email', title: '邮箱', component: 'FormInput', props: { type: 'email' } },
+    { name: 'age', title: '年龄', component: 'FormInput', props: { type: 'number' } }
+  ]
+}
+&lt;/script&gt;
+      </div>
+      <div id="basic-form"></div>
+    </div>
+
+    <div class="example">
+      <h2>🎨 主题样式</h2>
+      <p>支持多种主题样式，只需要设置layout.theme：</p>
+      <div class="code">
+const formOptions = {
+  fields: [...],
+  layout: {
+    theme: 'bordered',  // 'default' | 'bordered'
+    columns: 2,         // 列数
+    label: {
+      position: 'left', // 标签位置
+      showColon: true,  // 显示冒号
+      gap: 12          // 标签间距
+    }
+  }
+}
+      </div>
+      <div id="themed-form"></div>
+    </div>
+
+    <div class="example">
+      <h2>🔄 条件显示</h2>
+      <p>使用showWhen配置实现字段的条件显示：</p>
+      <div class="code">
+const formOptions = {
+  fields: [
+    { name: 'country', title: '国家', component: 'FormSelect', 
+      props: { options: [
+        { label: '中国', value: 'china' },
+        { label: '美国', value: 'usa' }
+      ]}
+    },
+    { name: 'province', title: '省份', component: 'FormInput',
+      showWhen: { field: 'country', value: 'china' }  // 只有选择中国时才显示
+    }
+  ]
+}
+      </div>
+      <div id="conditional-form"></div>
+    </div>
+
+    <div class="example">
+      <h2>📱 响应式布局</h2>
+      <p>支持默认行数和展开/收起功能：</p>
+      <div class="code">
+const formOptions = {
+  fields: [...], // 很多字段
+  layout: {
+    defaultRows: 2,                    // 默认显示2行
+    button: {
+      position: 'follow-last-row',     // 按钮跟随最后一行
+      align: 'right'                   // 右对齐
+    }
+  }
+}
+      </div>
+      <div id="responsive-form"></div>
+    </div>
+
+    <div class="example">
+      <h2>🚀 完整示例</h2>
+      <p>一个包含所有功能的完整表单：</p>
+      <div id="complete-form"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 这里会加载实际的Vue应用
+    console.log('表单示例页面加载完成')
+  </script>
+</body>
+</html>
