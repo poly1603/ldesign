@@ -1,6 +1,6 @@
 # 🚀 LDesign Engine Router 集成演示
 
-> 展示 `@ldesign/router` 与 `@ldesign/engine` 完美集成的演示应用
+> 展示 `@ldesign/router` 与 `@ldesign/engine` **简化集成**的演示应用
 
 [![Vue 3](https://img.shields.io/badge/Vue-3.5+-4FC08D?style=flat-square&logo=vue.js)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6+-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -8,6 +8,13 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
 
 ## ✨ 功能特性
+
+### 🎯 简化集成（新特性）
+
+- **插件化路由**: 使用 `routerPlugin` 一键集成路由功能
+- **零配置适配器**: 无需手动创建复杂的适配器文件
+- **标准插件接口**: 使用 `engine.use()` 统一插件管理
+- **配置即用**: 路由配置通过插件参数直接传入
 
 ### 🛣️ 路由功能
 
@@ -80,19 +87,52 @@ pnpm preview
 - **通知系统**: 各种操作会显示相应通知
 - **日志记录**: 打开浏览器控制台查看详细日志
 
-## 🏗️ 项目结构
+## 🔄 简化集成对比
+
+### 新方式（简化）
+
+```typescript
+// main.ts
+import { createApp } from '@ldesign/engine'
+import { routerPlugin } from '@ldesign/router'
+import { routes } from './router/routes'
+
+const engine = createApp(App)
+
+// 一行代码集成路由
+await engine.use(
+  routerPlugin({
+    routes,
+    mode: 'history',
+    base: '/',
+  })
+)
+
+engine.mount('#app')
+```
+
+### 旧方式（复杂）
+
+```typescript
+// 需要创建适配器文件 router/adapter.ts
+import { createRouterAdapter } from './router/adapter'
+
+const routerAdapter = createRouterAdapter()
+const engine = createApp(App, {
+  router: routerAdapter, // 通过配置传入
+})
+```
+
+## 🏗️ 项目结构（简化后）
 
 ```
 src/
 ├── router/                 # 路由配置
-│   ├── adapter.ts         # RouterAdapter 实现
-│   ├── routes.ts          # 路由定义
-│   └── index.ts           # 路由配置入口
+│   └── routes.ts          # 路由定义（简化）
 ├── views/                 # 页面组件
 │   ├── Login.tsx          # 登录页面
 │   ├── Home.tsx           # 首页
-│   ├── Dashboard.tsx      # 仪表板
-│   └── NotFound.tsx       # 404页面
+│   └── ...                # 其他页面
 ├── components/            # 公共组件
 │   └── Navigation.tsx     # 导航组件
 ├── App.tsx                # 根组件

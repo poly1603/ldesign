@@ -5,42 +5,16 @@ import type {
   Router,
 } from '../types'
 
+// 直接导入 Vue 函数
+import { computed, inject } from 'vue'
+
 import { warn } from '../utils'
-
-// Vue 兼容性导入 - 延迟加载
-let vueComputed: any
-let vueInject: any
-
-function initVue() {
-  if (vueComputed && vueInject) return
-
-  try {
-    // 尝试从全局获取 Vue
-    const vue = (globalThis as any).Vue || (window as any).Vue
-    if (vue) {
-      vueComputed = vue.computed
-      vueInject = vue.inject
-      return
-    }
-
-    // 尝试 require 导入
-    // eslint-disable-next-line ts/no-require-imports
-    const vueModule = require('vue')
-    vueComputed = vueModule.computed
-    vueInject = vueModule.inject
-  } catch {
-    // 如果 Vue 不可用，使用模拟函数
-    vueComputed = (fn: () => any) => ({ value: fn() })
-    vueInject = (_key: any, defaultValue?: any): any => defaultValue
-  }
-}
 
 /**
  * 获取当前路由器实例
  */
 export function useRouter(): Router {
-  initVue()
-  const router = vueInject('router') as Router
+  const router = inject('router') as Router
 
   if (!router) {
     warn('useRouter() must be called within a router context')
@@ -54,8 +28,7 @@ export function useRouter(): Router {
  * 获取当前路由信息
  */
 export function useRoute(): ComputedRef<RouteLocationNormalized> {
-  initVue()
-  const route = vueInject('route') as ComputedRef<RouteLocationNormalized>
+  const route = inject('route') as ComputedRef<RouteLocationNormalized>
 
   if (!route) {
     warn('useRoute() must be called within a router context')
@@ -72,7 +45,7 @@ export function useLink(props: { to: string | object; replace?: boolean }) {
   const router = useRouter()
   const currentRoute = useRoute()
 
-  const route = vueComputed(() => {
+  const route = computed(() => {
     try {
       return router.resolve(props.to, currentRoute.value)
     } catch (error) {
@@ -81,7 +54,7 @@ export function useLink(props: { to: string | object; replace?: boolean }) {
     }
   })
 
-  const href = vueComputed(() => {
+  const href = computed(() => {
     const resolved = route.value
     return resolved ? resolved.href : '#'
   })
@@ -171,7 +144,7 @@ export function onBeforeRouteLeave(
  */
 export function useParams() {
   const route = useRoute()
-  return vueComputed(() => route.value.params)
+  return computed(() => route.value.params)
 }
 
 /**
@@ -179,7 +152,7 @@ export function useParams() {
  */
 export function useQuery() {
   const route = useRoute()
-  return vueComputed(() => route.value.query)
+  return computed(() => route.value.query)
 }
 
 /**
@@ -187,7 +160,7 @@ export function useQuery() {
  */
 export function useHash() {
   const route = useRoute()
-  return vueComputed(() => route.value.hash)
+  return computed(() => route.value.hash)
 }
 
 /**
@@ -195,7 +168,7 @@ export function useHash() {
  */
 export function useMeta() {
   const route = useRoute()
-  return vueComputed(() => route.value.meta)
+  return computed(() => route.value.meta)
 }
 
 /**
@@ -203,7 +176,7 @@ export function useMeta() {
  */
 export function useMatched() {
   const route = useRoute()
-  return vueComputed(() => route.value.matched)
+  return computed(() => route.value.matched)
 }
 
 // 导出所有组合式API

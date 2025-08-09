@@ -1,6 +1,5 @@
-import { defineComponent, computed, getCurrentInstance } from 'vue'
 import type { Engine } from '@ldesign/engine'
-import { routerUtils } from '../router'
+import { computed, defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({
   name: 'Navigation',
@@ -36,7 +35,8 @@ export default defineComponent({
 
     const handleNavigation = async (path: string) => {
       try {
-        await routerUtils.navigateTo(engine, path)
+        await engine.router?.push(path)
+        engine.logger.info(`导航到: ${path}`)
       } catch (error) {
         engine.logger.error('导航失败:', error)
       }
@@ -54,7 +54,7 @@ export default defineComponent({
           duration: 3000,
         })
 
-        await routerUtils.navigateTo(engine, '/login')
+        await engine.router?.push('/login')
       } catch (error) {
         engine.logger.error('退出登录失败:', error)
       }
@@ -109,7 +109,8 @@ export default defineComponent({
           </div>
         </div>
 
-        <style>{`
+        <style>
+          {`
           .navigation {
             background: white;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -281,7 +282,8 @@ export default defineComponent({
               padding: 4px 8px;
             }
           }
-        `}</style>
+        `}
+        </style>
       </nav>
     )
   },

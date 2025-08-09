@@ -242,13 +242,13 @@ export function merge<T extends Record<string, any>>(
 /**
  * 防抖函数
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
 
-  return function (this: any, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Parameters<T>) {
     if (timeout) {
       clearTimeout(timeout)
     }
@@ -262,13 +262,13 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * 节流函数
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 
-  return function (this: any, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Parameters<T>) {
     const now = Date.now()
 
     if (now - lastTime >= wait) {
@@ -281,7 +281,7 @@ export function throttle<T extends (...args: any[]) => any>(
 /**
  * 断言函数
  */
-export function assert(condition: any, message: string): asserts condition {
+export function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(`[LDesign Router error]: ${message}`)
   }
@@ -313,15 +313,15 @@ export function createNavigationFailure(
  * 检查是否为导航失败
  */
 export function isNavigationFailure(
-  error: any,
+  error: unknown,
   type?: NavigationFailureType
 ): error is NavigationFailure {
-  return (
+  return Boolean(
     error &&
-    typeof error === 'object' &&
-    'type' in error &&
-    'from' in error &&
-    'to' in error &&
-    (type === undefined || error.type === type)
+      typeof error === 'object' &&
+      'type' in error &&
+      'from' in error &&
+      'to' in error &&
+      (type === undefined || (error as any).type === type)
   )
 }

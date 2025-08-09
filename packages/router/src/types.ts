@@ -1,14 +1,15 @@
 // Vue 类型定义（兼容性）
-export interface ComputedRef<T = any> {
+// 兼容性类型定义
+import type { App, Component } from 'vue'
+
+export interface ComputedRef<T = unknown> {
   readonly value: T
 }
 
-export interface Ref<T = any> {
+export interface Ref<T = unknown> {
   value: T
 }
-
-// 兼容性类型定义
-export type VueComponent = any
+export type VueComponent = Component
 export type VueComputedRef<T> = ComputedRef<T>
 export type VueRef<T> = Ref<T>
 
@@ -50,9 +51,7 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   icon?: string
   hidden?: boolean
   roles?: string[]
-  transition?: RouteTransition
-  preload?: PreloadStrategy
-  cache?: boolean | RouteCacheConfig
+
   keepAlive?: boolean
   priority?: number
   breadcrumb?: boolean
@@ -293,40 +292,6 @@ export interface ScrollBehavior {
 }
 
 /**
- * 路由过渡配置
- */
-export interface RouteTransition {
-  name?: string
-  mode?: 'in-out' | 'out-in' | 'default'
-  appear?: boolean
-  duration?: number | { enter: number; leave: number }
-  enterActiveClass?: string
-  leaveActiveClass?: string
-  enterFromClass?: string
-  leaveToClass?: string
-}
-
-/**
- * 路由预加载策略
- */
-export type PreloadStrategy =
-  | 'hover'
-  | 'visible'
-  | 'immediate'
-  | 'idle'
-  | 'none'
-
-/**
- * 路由缓存配置
- */
-export interface RouteCacheConfig {
-  max?: number
-  ttl?: number
-  include?: (string | RegExp)[]
-  exclude?: (string | RegExp)[]
-}
-
-/**
  * 路由器选项
  */
 export interface RouterOptions {
@@ -339,10 +304,6 @@ export interface RouterOptions {
   scrollBehavior?: ScrollBehavior
   sensitive?: boolean
   strict?: boolean
-  transition?: RouteTransition
-  preloadStrategy?: PreloadStrategy
-  cache?: RouteCacheConfig
-  performance?: boolean
 }
 
 /**
@@ -361,6 +322,7 @@ export interface Router {
     to: RouteLocationRaw,
     currentLocation?: RouteLocationNormalized
   ) => RouteLocation
+  getCurrentRoute: () => Ref<RouteLocationNormalized>
 
   push: (to: RouteLocationRaw) => Promise<NavigationFailure | void | undefined>
   replace: (
@@ -383,14 +345,7 @@ export interface Router {
   ) => () => void
 
   isReady: () => Promise<void>
-  install: (app: any) => void
-
-  // 高级功能 API
-  preloadRoute: (route: RouteRecordNormalized) => Promise<void>
-  clearPreloadCache: (routeKey?: string) => void
-  getPerformanceStats: () => unknown
-  getCacheStats: () => unknown
-  clearRouteCache: () => void
+  install: (app: App) => void
 }
 
 /**
@@ -405,13 +360,4 @@ export interface UseRouterReturn {
  */
 export interface UseRouteReturn {
   route: ComputedRef<RouteLocationNormalized>
-}
-
-/**
- * 认证守卫配置
- */
-export interface AuthGuardConfig {
-  priority?: number
-  isAuthenticated?: () => boolean
-  loginPath?: string
 }

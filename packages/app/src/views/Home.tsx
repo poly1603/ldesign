@@ -1,6 +1,9 @@
+import type { EngineImpl } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/engine/es/index.js'
+import {
+  useRoute,
+  useRouter,
+} from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
 import { defineComponent, getCurrentInstance } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
-import type { Engine } from '@ldesign/engine'
 
 export default defineComponent({
   name: 'Home',
@@ -8,7 +11,7 @@ export default defineComponent({
     // 获取 Engine 实例
     const instance = getCurrentInstance()
     const engine = instance?.appContext.config.globalProperties
-      .$engine as Engine
+      .$engine as EngineImpl
 
     const router = useRouter()
     const route = useRoute()

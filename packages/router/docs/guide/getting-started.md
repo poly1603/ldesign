@@ -1,104 +1,142 @@
 # 快速开始
 
-5 分钟快速上手 LDesign Router，体验下一代路由的强大功能！
+本指南将帮助你快速上手 LDesign Router，从安装到创建第一个路由应用。
 
-## 🚀 安装
+## 安装
 
-```bash
-# 使用 pnpm（推荐）
-pnpm add @ldesign/router
+### 使用包管理器
 
-# 使用 npm
+::: code-group
+
+```bash [npm]
 npm install @ldesign/router
+```
 
-# 使用 yarn
+```bash [pnpm]
+pnpm add @ldesign/router
+```
+
+```bash [yarn]
 yarn add @ldesign/router
 ```
 
-## 🎯 基础配置
+:::
 
-### 1. 创建路由器
+### CDN
+
+```html
+<script src="https://unpkg.com/@ldesign/router@latest/dist/index.min.js"></script>
+```
+
+## 基础使用
+
+### 1. 创建路由配置
+
+首先，定义你的路由配置：
 
 ```typescript
-// src/router/index.ts
-import { createRouter, createWebHistory } from '@ldesign/router'
-import About from '../views/About.vue'
-import Home from '../views/Home.vue'
+// routes.ts
+import { RouteRecordRaw } from '@ldesign/router'
+import Home from './views/Home.vue'
+import About from './views/About.vue'
+import Products from './views/Products.vue'
 
-const routes = [
+export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
     component: Home,
+    meta: {
+      title: '首页',
+    },
   },
   {
     path: '/about',
     name: 'About',
     component: About,
+    meta: {
+      title: '关于我们',
+    },
   },
   {
-    path: '/user/:id',
-    name: 'User',
-    component: () => import('../views/User.vue'),
+    path: '/products',
+    name: 'Products',
+    component: Products,
+    meta: {
+      title: '产品列表',
+      requiresAuth: true,
+    },
   },
 ]
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-})
-
-export default router
 ```
 
-### 2. 安装路由器
+### 2. 配置应用
+
+使用 LDesign Engine 配置路由：
 
 ```typescript
-// src/main.ts
-import { createApp } from 'vue'
+// main.ts
+import { createApp } from '@ldesign/engine'
+import { routerPlugin } from '@ldesign/router'
+import { routes } from './routes'
 import App from './App.vue'
-import router from './router'
 
-const app = createApp(App)
+const engine = createApp(App)
 
-app.use(router)
-app.mount('#app')
+// 配置路由插件
+await engine.use(
+  routerPlugin({
+    routes,
+    mode: 'hash', // 或 'history'
+    base: '/',
+
+    // 启用增强组件（可选）
+    enhancedComponents: {
+      enabled: true,
+      options: {
+        enhancementConfig: {
+          // 自定义权限检查器
+          permissionChecker: permission => {
+            // 实现你的权限检查逻辑
+            return true
+          },
+        },
+      },
+    },
+  })
+)
+
+await engine.mount('#app')
 ```
 
-### 3. 添加路由视图
+### 3. 使用路由组件
+
+在你的 Vue 组件中使用路由：
 
 ```vue
-<!-- src/App.vue -->
+<!-- App.vue -->
 <template>
   <div id="app">
+    <!-- 导航菜单 -->
     <nav>
-      <RouterLink to="/"> 首页 </RouterLink>
-      <RouterLink to="/about"> 关于 </RouterLink>
-      <RouterLink to="/user/123"> 用户 </RouterLink>
+      <RouterLink to="/" variant="tab">首页</RouterLink>
+      <RouterLink to="/about" variant="tab">关于</RouterLink>
+      <RouterLink to="/products" variant="tab" permission="products.view"> 产品 </RouterLink>
     </nav>
 
+    <!-- 路由视图 -->
     <main>
-      <RouterView />
+      <RouterView transition="fade" keep-alive track-performance />
     </main>
   </div>
 </template>
 
-<style scoped>
+<style>
 nav {
+  display: flex;
+  gap: 1rem;
   padding: 1rem;
-  background: #f5f5f5;
-}
-
-nav a {
-  margin-right: 1rem;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  border-radius: 4px;
-}
-
-nav a.router-link-active {
-  background: #1890ff;
-  color: white;
+  border-bottom: 1px solid #eee;
 }
 
 main {
@@ -107,314 +145,175 @@ main {
 </style>
 ```
 
-## 🌟 启用超能力
+## 增强功能示例
 
-LDesign Router 的独特功能让你的应用性能飞跃：
-
-```typescript
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-
-  // 🚀 启用智能预加载
-  preloadStrategy: 'hover', // 悬停时预加载
-
-  // 💾 启用智能缓存
-  cache: {
-    max: 20, // 最大缓存20个页面
-    ttl: 5 * 60 * 1000, // 5分钟过期
-  },
-
-  // 📊 启用性能监控
-  performance: true,
-})
-```
-
-## 🎨 创建页面组件
-
-### 首页组件
+### 智能预加载
 
 ```vue
-<!-- src/views/Home.vue -->
 <template>
-  <div class="home">
-    <h1>🏠 欢迎来到首页</h1>
-    <p>这是使用 LDesign Router 构建的应用</p>
+  <!-- 鼠标悬停时预加载 -->
+  <RouterLink to="/heavy-page" preload="hover" preload-delay="300"> 重型页面 </RouterLink>
 
-    <div class="features">
-      <div class="feature">
-        <h3>⚡ 极速导航</h3>
-        <p>比传统路由快50%</p>
-      </div>
-      <div class="feature">
-        <h3>🎯 智能预加载</h3>
-        <p>悬停即预加载，体验如丝般顺滑</p>
-      </div>
-      <div class="feature">
-        <h3>💾 智能缓存</h3>
-        <p>85%缓存命中率，减少重复加载</p>
-      </div>
-    </div>
-  </div>
+  <!-- 组件可见时预加载 -->
+  <RouterLink to="/lazy-page" preload="visible"> 懒加载页面 </RouterLink>
 </template>
-
-<style scoped>
-.home {
-  text-align: center;
-  padding: 2rem;
-}
-
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.feature {
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fafafa;
-}
-
-.feature h3 {
-  margin: 0 0 1rem 0;
-  color: #1890ff;
-}
-</style>
 ```
 
-### 用户页面组件
+### 权限控制
 
 ```vue
-<!-- src/views/User.vue -->
-<script setup>
-import { useRoute } from '@ldesign/router'
-import { computed, ref, watch } from 'vue'
-
-const route = useRoute()
-const loading = ref(false)
-const user = ref(null)
-
-// 获取用户ID
-const userId = computed(() => route.params.id)
-
-// 模拟加载用户数据
-async function loadUser(id) {
-  loading.value = true
-
-  // 模拟API调用
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  user.value = {
-    id,
-    name: `用户${id}`,
-    email: `user${id}@example.com`,
-  }
-
-  loading.value = false
-}
-
-// 监听用户ID变化
-watch(userId, loadUser, { immediate: true })
-</script>
-
 <template>
-  <div class="user">
-    <h1>👤 用户资料</h1>
-    <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="user" class="user-info">
-      <h2>用户 {{ userId }}</h2>
-      <p>这是用户 {{ userId }} 的资料页面</p>
-      <p>当前路径：{{ route.path }}</p>
-      <p>查询参数：{{ JSON.stringify(route.query) }}</p>
-    </div>
-  </div>
+  <!-- 需要权限的链接 -->
+  <RouterLink to="/admin" permission="admin" fallback-to="/login" variant="button">
+    管理后台
+  </RouterLink>
+
+  <!-- 多权限检查 -->
+  <RouterLink to="/settings" :permission="['user', 'settings']"> 设置 </RouterLink>
 </template>
-
-<style scoped>
-.user {
-  padding: 2rem;
-}
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-}
-
-.user-info {
-  background: #f9f9f9;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-</style>
 ```
 
-## 🎯 智能预加载体验
-
-在导航链接上添加预加载功能：
+### 样式变体
 
 ```vue
 <template>
-  <nav>
-    <!-- 悬停时预加载 -->
-    <RouterLink to="/products" preload="hover"> 产品列表 </RouterLink>
+  <!-- 按钮样式 -->
+  <RouterLink to="/action" variant="button" size="large"> 执行操作 </RouterLink>
 
-    <!-- 可见时预加载 -->
-    <RouterLink to="/heavy-page" preload="visible"> 重型页面 </RouterLink>
+  <!-- 卡片样式 -->
+  <RouterLink to="/feature" variant="card" icon="icon-star"> 特色功能 </RouterLink>
 
-    <!-- 立即预加载重要页面 -->
-    <RouterLink to="/dashboard" preload="immediate"> 仪表板 </RouterLink>
+  <!-- 面包屑样式 -->
+  <nav class="breadcrumb">
+    <RouterLink to="/" variant="breadcrumb">首页</RouterLink>
+    <RouterLink to="/products" variant="breadcrumb">产品</RouterLink>
+    <RouterLink to="/products/123" variant="breadcrumb">产品详情</RouterLink>
   </nav>
 </template>
 ```
 
-## 🔧 编程式导航
-
-在组件中使用编程式导航：
+### 图标和徽章
 
 ```vue
-<script setup>
-import { useRouter } from '@ldesign/router'
-
-const router = useRouter()
-
-// 导航到用户页面
-function goToUser(userId) {
-  router.push({ name: 'User', params: { id: userId } })
-}
-
-// 带查询参数的导航
-function searchProducts(keyword) {
-  router.push({
-    path: '/products',
-    query: { search: keyword, page: 1 },
-  })
-}
-
-// 替换当前路由
-function replaceWithLogin() {
-  router.replace('/login')
-}
-</script>
-
 <template>
-  <div>
-    <button @click="goToUser('456')">查看用户456</button>
+  <!-- 带图标的链接 -->
+  <RouterLink to="/messages" icon="icon-message" icon-position="left"> 消息 </RouterLink>
 
-    <button @click="searchProducts('vue')">搜索Vue产品</button>
-
-    <button @click="replaceWithLogin">去登录</button>
-  </div>
+  <!-- 带徽章的链接 -->
+  <RouterLink to="/notifications" badge="5" badge-color="#ff4757" badge-variant="count">
+    通知
+  </RouterLink>
 </template>
 ```
 
-## 📊 性能监控
-
-查看应用的路由性能：
+### 过渡动画
 
 ```vue
+<template>
+  <!-- 自定义过渡动画 -->
+  <RouterView
+    :transition="{
+      name: 'slide',
+      mode: 'out-in',
+      duration: 300,
+    }"
+  />
+
+  <!-- 根据路由选择过渡 -->
+  <RouterView :transition="getTransition" />
+</template>
+
 <script setup>
-import { useRouter } from '@ldesign/router'
-import { onMounted } from 'vue'
+import { computed } from 'vue'
+import { useRoute } from '@ldesign/router'
 
-const router = useRouter()
+const route = useRoute()
 
-onMounted(() => {
-  // 获取性能统计
-  const stats = router.getPerformanceStats()
-  console.log('路由性能统计:', {
-    totalNavigations: stats.totalNavigations,
-    averageDuration: stats.averageDuration,
-    successRate: stats.successRate,
-  })
-
-  // 获取缓存统计
-  const cacheStats = router.getCacheStats()
-  console.log('缓存统计:', {
-    hitRate: cacheStats.hitRate,
-    size: cacheStats.size,
-  })
+const getTransition = computed(() => {
+  return route.meta.transition || 'fade'
 })
 </script>
 ```
 
-## 🎉 完整示例
+## 组合式 API
 
-这是一个完整的工作示例：
+LDesign Router 提供了丰富的组合式 API：
 
-```typescript
-import { createRouter, createWebHistory } from '@ldesign/router'
-// main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
+```vue
+<script setup>
+import { useRouter, useRoute, useRouteParams, useRouteQuery } from '@ldesign/router'
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      name: 'Home',
-      component: () => import('./views/Home.vue'),
-      meta: { title: '首页' },
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: () => import('./views/About.vue'),
-      meta: { title: '关于我们' },
-    },
-    {
-      path: '/user/:id',
-      name: 'User',
-      component: () => import('./views/User.vue'),
-      meta: { title: '用户资料' },
-    },
-  ],
+const router = useRouter()
+const route = useRoute()
+const params = useRouteParams()
+const query = useRouteQuery()
 
-  // 启用所有超能力
-  preloadStrategy: 'hover',
-  cache: { max: 20, ttl: 5 * 60 * 1000 },
-  performance: true,
+// 编程式导航
+const goToProducts = () => {
+  router.push('/products')
+}
+
+// 监听路由变化
+watch(route, newRoute => {
+  console.log('路由变化:', newRoute.path)
 })
-
-// 全局导航守卫
-router.beforeEach((to, from, next) => {
-  // 更新页面标题
-  if (to.meta.title) {
-    document.title = to.meta.title
-  }
-  next()
-})
-
-const app = createApp(App)
-app.use(router)
-app.mount('#app')
+</script>
 ```
 
-## 🎯 下一步
+## 性能监控
 
-恭喜！你已经成功创建了第一个 LDesign Router 应用。接下来可以：
+启用性能监控来优化你的应用：
 
-1. **[学习核心概念](/guide/concepts)** - 深入理解路由系统
-2. **[探索高级功能](/guide/preloading)** - 智能预加载和缓存
-3. **[查看完整示例](/examples/)** - 更多实际应用场景
-4. **[阅读 API 文档](/api/)** - 详细的 API 参考
+```vue
+<template>
+  <RouterView track-performance @performance="handlePerformance" />
+</template>
 
----
+<script setup>
+const handlePerformance = data => {
+  console.log('路由性能数据:', data)
+  // { route: '/home', duration: 150, component: 'Home' }
 
-<div style="text-align: center; margin: 2rem 0;">
-  <a href="/guide/concepts" style="display: inline-block; padding: 12px 24px; background: #1890ff; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 0 8px;">
-    📚 学习概念
-  </a>
-  <a href="/examples/" style="display: inline-block; padding: 12px 24px; border: 1px solid #1890ff; color: #1890ff; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 0 8px;">
-    🎨 查看示例
-  </a>
-</div>
+  // 发送到分析服务
+  analytics.track('route_performance', data)
+}
+</script>
+```
 
-<div style="text-align: center; color: #666; font-size: 14px; margin-top: 2rem;">
-  <p>💡 <strong>提示</strong>：LDesign Router 完全兼容 Vue Router 4 的 API，迁移非常简单！</p>
-</div>
+## 错误处理
+
+配置错误处理和回退：
+
+```vue
+<template>
+  <RouterView
+    :loading-component="LoadingSpinner"
+    :error-component="ErrorPage"
+    :empty-component="EmptyState"
+    error-boundary
+    @error="handleError"
+  />
+</template>
+
+<script setup>
+import LoadingSpinner from './components/LoadingSpinner.vue'
+import ErrorPage from './components/ErrorPage.vue'
+import EmptyState from './components/EmptyState.vue'
+
+const handleError = error => {
+  console.error('路由错误:', error)
+  // 错误上报
+  errorReporting.captureException(error)
+}
+</script>
+```
+
+## 下一步
+
+现在你已经了解了 LDesign Router 的基础用法，可以继续学习：
+
+- [路由配置](/guide/route-configuration) - 深入了解路由配置选项
+- [增强的 RouterLink](/guide/enhanced-router-link) - 探索 RouterLink 的所有功能
+- [增强的 RouterView](/guide/enhanced-router-view) - 了解 RouterView 的高级特性
+- [权限控制](/guide/permission-control) - 学习如何实现权限控制
+- [API 参考](/api/) - 查看完整的 API 文档

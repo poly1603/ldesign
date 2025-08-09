@@ -1,6 +1,6 @@
-import { defineComponent, ref, getCurrentInstance } from 'vue'
-import { useRouter } from '@ldesign/router'
-import type { Engine } from '@ldesign/engine'
+import type { EngineImpl } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/engine/es/index.js'
+import { useRouter } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
+import { defineComponent, getCurrentInstance, ref } from 'vue'
 
 export default defineComponent({
   name: 'Login',
@@ -8,7 +8,7 @@ export default defineComponent({
     // 获取 Engine 实例
     const instance = getCurrentInstance()
     const engine = instance?.appContext.config.globalProperties
-      .$engine as Engine
+      .$engine as EngineImpl
 
     const router = useRouter()
     const username = ref('')
@@ -82,7 +82,10 @@ export default defineComponent({
             </label>
             <input
               type='text'
-              v-model={username.value}
+              value={username.value}
+              onInput={e =>
+                (username.value = (e.target as HTMLInputElement).value)
+              }
               placeholder='请输入用户名 (admin)'
               disabled={loading.value}
               style={{
@@ -101,7 +104,10 @@ export default defineComponent({
             </label>
             <input
               type='password'
-              v-model={password.value}
+              value={password.value}
+              onInput={e =>
+                (password.value = (e.target as HTMLInputElement).value)
+              }
               placeholder='请输入密码 (admin)'
               disabled={loading.value}
               style={{

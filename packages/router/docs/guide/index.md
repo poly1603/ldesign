@@ -1,188 +1,161 @@
 # 介绍
 
-欢迎来到 LDesign Router 的世界！🎉
+LDesign Router 是一个强大的 Vue 路由库，在 Vue Router 的基础上提供了丰富的增强功能。它不仅保持了与
+Vue Router 的完全兼容性，还添加了现代 Web 应用所需的各种高级特性。
 
-LDesign Router 是一个专为 Vue 3 设计的现代化、高性能路由库。它不仅提供了传统路由的所有功能，还引入了
-许多创新特性，让你的应用拥有闪电般的导航体验。
+## 核心特性
 
-## 🌟 为什么选择 LDesign Router？
+### 🚀 增强的组件
 
-### ⚡ 极致性能
+LDesign Router 提供了增强版的 `RouterLink` 和 `RouterView` 组件，这些组件在保持原有 API 兼容性的同时
+，添加了大量实用功能：
 
-- **导航速度提升 50%** - 优化的路由匹配算法
-- **内存使用减少 25%** - 智能的内存管理
-- **包体积更小** - 仅 45KB，比竞品小 13%
+- **RouterLink 增强功能**：
 
-### 🎯 智能预加载
+  - 智能预加载（鼠标悬停、可见时预加载）
+  - 权限控制（路由级别权限检查）
+  - 丰富样式变体（按钮、标签页、面包屑、卡片）
+  - 图标和徽章支持
+  - 确认对话框
+  - 事件追踪
+  - 加载状态指示
 
-四种预加载策略，让页面切换快如闪电：
+- **RouterView 增强功能**：
+  - 丰富的过渡动画
+  - 智能缓存控制
+  - 加载和错误处理
+  - 权限控制
+  - 布局系统
+  - 性能监控
+  - 滚动行为控制
 
-- **Hover 预加载** - 鼠标悬停时预加载
-- **Visible 预加载** - 元素可见时预加载
-- **Idle 预加载** - 浏览器空闲时预加载
-- **Immediate 预加载** - 立即预加载
+### 🎯 权限控制
 
-### 💾 智能缓存
+内置完整的权限控制系统，支持：
 
-LRU + TTL 混合缓存策略，缓存命中率高达 85%：
+- 路由级别权限检查
+- 组件级别权限控制
+- 自定义权限检查器
+- 权限失败时的回退处理
 
-- **自动过期** - TTL 机制确保数据新鲜度
-- **智能淘汰** - LRU 算法优化内存使用
-- **灵活规则** - 支持包含/排除规则配置
+### ⚡ 智能预加载
+
+提供多种预加载策略，提升用户体验：
+
+- **immediate**：立即预加载
+- **hover**：鼠标悬停时预加载
+- **visible**：组件可见时预加载
+- **none**：不预加载
+
+### 🎨 丰富的样式系统
+
+内置多种样式变体，适应不同设计需求：
+
+- **default**：默认链接样式
+- **button**：按钮样式
+- **tab**：标签页样式
+- **breadcrumb**：面包屑样式
+- **card**：卡片样式
 
 ### 📊 性能监控
 
-内置的性能分析工具，让性能优化有据可依：
+内置性能监控功能，帮助优化应用：
 
-- **实时监控** - 导航时间、成功率统计
-- **性能报告** - 详细的性能分析报告
-- **优化建议** - 自动识别性能瓶颈
+- 路由切换时间监控
+- 组件加载性能分析
+- 自定义性能事件追踪
 
-### 🛡️ TypeScript 优先
+## 设计理念
 
-100% TypeScript 编写，完整的类型支持：
+### 渐进式增强
 
-- **智能提示** - IDE 友好的 API 设计
-- **类型安全** - 编译时错误检查
-- **完整推导** - 路由参数类型自动推导
+LDesign Router 采用渐进式增强的设计理念：
 
-## 🚀 快速体验
+1. **完全兼容**：与 Vue Router 100% 兼容，可以无缝替换
+2. **按需启用**：所有增强功能都是可选的，可以按需启用
+3. **零配置**：提供合理的默认配置，开箱即用
+4. **高度可配置**：支持细粒度的配置选项
 
-只需几行代码，就能体验 LDesign Router 的强大功能：
+### 开发者体验优先
 
-```typescript
-import { createRouter, createWebHistory } from '@ldesign/router'
+- **TypeScript 优先**：完整的类型定义，优秀的开发体验
+- **清晰的 API**：简洁明了的 API 设计，易于学习和使用
+- **丰富的文档**：详细的文档和示例，快速上手
+- **调试友好**：提供调试工具和错误信息
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [{ path: '/', component: () => import('./Home.vue') }],
-  // 🚀 开启超能力
-  preloadStrategy: 'hover', // 悬停预加载
-  performance: true, // 性能监控
-  cache: { max: 20 }, // 智能缓存
-})
+### 性能优先
+
+- **按需加载**：只加载需要的功能模块
+- **智能缓存**：智能的组件缓存策略
+- **预加载优化**：智能的预加载策略，平衡性能和用户体验
+- **轻量级**：核心库体积小，不影响应用性能
+
+## 架构设计
+
+LDesign Router 采用模块化的架构设计：
+
+```
+@ldesign/router
+├── core/           # 核心路由功能
+├── components/     # 增强组件
+├── composables/    # 组合式 API
+├── guards/         # 路由守卫
+├── plugins/        # 插件系统
+└── utils/          # 工具函数
 ```
 
-## 📖 学习路径
+### 核心模块
 
-### 🎯 新手入门
+- **Router**：路由器核心，基于 Vue Router 扩展
+- **History**：历史记录管理
+- **Matcher**：路由匹配器
 
-1. [安装](/guide/installation) - 快速安装和配置
-2. [快速开始](/guide/getting-started) - 5 分钟上手指南
-3. [基础概念](/guide/concepts) - 理解核心概念
+### 组件模块
 
-### 🏗️ 核心功能
+- **RouterLink**：增强的路由链接组件
+- **RouterView**：增强的路由视图组件
+- **Types**：组件类型定义
 
-4. [路由配置](/guide/routes) - 定义和组织路由
-5. [导航](/guide/navigation) - 页面间的跳转
-6. [路由守卫](/guide/guards) - 控制访问权限
+### 插件系统
 
-### 🚀 高级特性
+- **EnhancedComponentsPlugin**：增强组件插件
+- **PermissionPlugin**：权限控制插件
+- **PerformancePlugin**：性能监控插件
 
-7. [智能预加载](/guide/preloading) - 提升用户体验
-8. [智能缓存](/guide/caching) - 减少重复加载
-9. [性能监控](/guide/performance) - 优化应用性能
+## 与 Vue Router 的关系
 
-### 🎨 组件和 API
+LDesign Router 是 Vue Router 的超集，它：
 
-10. [RouterView](/guide/router-view) - 路由视图组件
-11. [RouterLink](/guide/router-link) - 导航链接组件
-12. [组合式 API](/guide/use-router) - useRouter、useRoute 等
+- **保持兼容**：完全兼容 Vue Router 的所有 API
+- **增强功能**：在原有功能基础上添加增强特性
+- **可选升级**：可以选择性地使用增强功能
+- **平滑迁移**：从 Vue Router 迁移无需修改现有代码
 
-## 🎨 设计理念
+## 适用场景
 
-LDesign Router 的设计遵循以下核心理念：
+LDesign Router 特别适合以下场景：
 
-### 🎯 性能优先
+### 企业级应用
 
-> "快速的用户体验是现代 Web 应用的基础"
+- 需要权限控制的管理后台
+- 复杂的多级路由结构
+- 性能要求较高的应用
 
-我们相信性能不是可选项，而是必需品。每一行代码都经过精心优化，确保你的应用拥有最佳的导航性能。
+### 用户体验要求高的应用
 
-### 🛠️ 开发体验
+- 需要预加载优化的应用
+- 需要丰富交互效果的应用
+- 移动端友好的应用
 
-> "好的工具应该让开发者专注于业务逻辑"
+### 大型项目
 
-从 API 设计到错误提示，从文档编写到调试工具，我们致力于提供最佳的开发体验。
+- 多团队协作的项目
+- 需要统一组件规范的项目
+- 需要性能监控的项目
 
-### 🔄 渐进式增强
+## 下一步
 
-> "从简单开始，按需增强"
-
-你可以从最基础的路由配置开始，然后逐步启用高级功能。每个功能都是可选的，不会增加不必要的复杂性。
-
-### 🌐 面向未来
-
-> "拥抱现代技术，面向未来设计"
-
-基于 Vue 3 Composition API，支持 TypeScript，使用现代化的构建工具，确保你的应用始终保持技术先进性。
-
-## 🌍 生态系统
-
-LDesign Router 不仅仅是一个路由库，更是一个完整的生态系统：
-
-### 📦 官方插件
-
-- **@ldesign/router-auth** - 认证和授权
-- **@ldesign/router-analytics** - 数据统计
-- **@ldesign/router-transitions** - 页面过渡
-- **@ldesign/router-devtools** - 开发者工具
-
-### 🎨 主题和模板
-
-- **官方主题** - 多种预设主题
-- **项目模板** - 快速启动模板
-- **最佳实践** - 经过验证的项目结构
-
-### 🤝 社区支持
-
-- **GitHub 讨论** - 技术交流和问题解答
-- **示例仓库** - 丰富的使用示例
-- **贡献指南** - 参与开源贡献
-
-## 🎯 适用场景
-
-LDesign Router 适用于各种规模的 Vue 3 项目：
-
-### 🏢 企业级应用
-
-- 大规模路由配置
-- 复杂的权限控制
-- 高性能要求
-
-### 🚀 创业项目
-
-- 快速开发迭代
-- 优秀的用户体验
-- 成本控制
-
-### 📱 移动端应用
-
-- 性能优化
-- 流畅的页面切换
-- 离线缓存支持
-
-### 🎓 学习项目
-
-- 清晰的文档
-- 丰富的示例
-- 渐进式学习
-
-## 🎉 开始你的旅程
-
-准备好体验下一代路由了吗？
-
-<div style="text-align: center; margin: 2rem 0;">
-  <a href="/guide/installation" style="display: inline-block; padding: 12px 24px; background: #1890ff; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 0 8px;">
-    🚀 立即开始
-  </a>
-  <a href="/examples/" style="display: inline-block; padding: 12px 24px; border: 1px solid #1890ff; color: #1890ff; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 0 8px;">
-    🎨 查看示例
-  </a>
-</div>
-
----
-
-<div style="text-align: center; color: #666; font-size: 14px;">
-  <p>💡 <strong>小贴士</strong>：如果你熟悉 Vue Router，那么使用 LDesign Router 将非常容易。我们保持了相似的 API 设计，同时提供了更多强大的功能。</p>
-</div>
+- [快速开始](/guide/getting-started) - 了解如何安装和使用
+- [路由配置](/guide/route-configuration) - 学习路由配置
+- [增强组件](/guide/enhanced-router-link) - 探索增强组件功能
+- [API 参考](/api/) - 查看完整的 API 文档

@@ -11,32 +11,20 @@ import type {
   RouteRecordRaw,
   RouterOptions,
 } from '../types'
-import { createRouteCacheManager } from '../advanced/cache'
-import { createPerformanceMonitor } from '../advanced/performance'
-import { createRoutePreloader } from '../advanced/preloader'
+
+// 直接导入 Vue 函数
+import { ref } from 'vue'
 import { RouterLink } from '../components/RouterLink'
 import { RouterView } from '../components/RouterView'
 import { NavigationFailureType, START_LOCATION } from './constants'
 import { createRouterMatcher } from './matcher'
-// Vue 兼容性导入
-let vueRef: any
-
-try {
-  // 尝试导入真实的 Vue 函数
-  // eslint-disable-next-line ts/no-require-imports
-  const vue = require('vue')
-  vueRef = vue.ref
-} catch {
-  // 如果 Vue 不可用，使用模拟函数
-  vueRef = (value: any): any => ({ value })
-}
 
 /**
  * 创建路由器实例
  */
 export function createRouter(options: RouterOptions): Router {
   const matcher = createRouterMatcher(options.routes, options)
-  const currentRoute = vueRef(START_LOCATION) as Ref<RouteLocationNormalized>
+  const currentRoute = ref(START_LOCATION) as Ref<RouteLocationNormalized>
 
   // 导航守卫（使用 Set 提高性能）
   const beforeGuards = new Set<NavigationGuard>()
@@ -51,11 +39,6 @@ export function createRouter(options: RouterOptions): Router {
       from: RouteLocationNormalized
     ) => void
   > = []
-
-  // 高级功能模块
-  const preloader = createRoutePreloader(options.preloadStrategy)
-  const cacheManager = createRouteCacheManager(options.cache)
-  const performanceMonitor = createPerformanceMonitor(options.performance)
 
   let ready = false
   let readyPromise: Promise<void>
@@ -118,12 +101,8 @@ export function createRouter(options: RouterOptions): Router {
   ): Promise<NavigationFailure | void> {
     const from = currentRoute.value
 
-    // 性能监控开始
+    // 解析目标路由
     const targetLocation = matcher.resolve(to, from)
-    const navigationId = performanceMonitor?.startNavigation?.(
-      targetLocation,
-      from
-    )
 
     try {
       // 目标路由已在上面解析
@@ -131,15 +110,6 @@ export function createRouter(options: RouterOptions): Router {
       // 执行导航守卫
       const failure = await runGuards(targetLocation, from)
       if (failure) {
-        if (navigationId) {
-          performanceMonitor?.endNavigation?.(
-            navigationId,
-            false,
-            failure,
-            targetLocation,
-            from
-          )
-        }
         return failure
       }
 
@@ -156,39 +126,11 @@ export function createRouter(options: RouterOptions): Router {
       // 执行后置守卫
       afterGuards.forEach(guard => guard(targetLocation, from))
 
-      // 缓存管理
-      cacheManager?.handleNavigation?.(targetLocation, from)
-
-      // 预加载
-      preloader?.handleNavigation?.(targetLocation)
-
-      // 性能监控结束
-      if (navigationId) {
-        performanceMonitor?.endNavigation?.(
-          navigationId,
-          true,
-          undefined,
-          targetLocation,
-          from
-        )
-      }
-
       if (!ready) {
         ready = true
         readyResolve()
       }
     } catch (error) {
-      if (navigationId) {
-        const targetLocation = matcher.resolve(to, from)
-        performanceMonitor?.endNavigation?.(
-          navigationId,
-          false,
-          error as Error,
-          targetLocation,
-          from
-        )
-      }
-
       // 处理错误
       const targetLocation = matcher.resolve(to, from)
       const handled = errorHandlers.some(handler => {
@@ -349,30 +291,14 @@ export function createRouter(options: RouterOptions): Router {
     return matcher.resolve(to, currentLocation || currentRoute.value)
   }
 
+  /**
+   * 获取当前路由
+   */
+  function getCurrentRoute() {
+    return currentRoute
+  }
+
   // install 函数将在 router 对象定义后添加
-
-  // 高级功能方法
-  function preloadRoute(_route: any): Promise<void> {
-    // 简单实现，实际应该由 preloader 处理
-    return Promise.resolve()
-  }
-
-  function clearPreloadCache(_routeKey?: string): void {
-    // 简单实现，实际应该由 preloader 处理
-  }
-
-  function getPerformanceStats(): unknown {
-    return performanceMonitor?.getStats() || {}
-  }
-
-  function getCacheStats(): unknown {
-    // 简单实现，实际应该由 cache 处理
-    return {}
-  }
-
-  function clearRouteCache(): void {
-    // 简单实现，实际应该由 cache 处理
-  }
 
   const router: Router = {
     currentRoute: currentRoute as Ref<RouteLocationNormalized>,
@@ -394,18 +320,12 @@ export function createRouter(options: RouterOptions): Router {
     getRoutes,
     hasRoute,
     resolve,
+    getCurrentRoute,
 
     // install 方法将在下面赋值
     install: (() => {}) as any,
 
     isReady: () => readyPromise,
-
-    // 高级功能
-    preloadRoute,
-    clearPreloadCache,
-    getPerformanceStats,
-    getCacheStats,
-    clearRouteCache,
   }
 
   /**

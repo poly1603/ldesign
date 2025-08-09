@@ -1,0 +1,358 @@
+/* 增强的 RouterView 组件样式 */
+
+.enhanced-router-view {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* 过渡动画样式 */
+
+/* 淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 滑动动画 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+/* 向上滑动 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+/* 向下滑动 */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+/* 缩放动画 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* 放大缩放 */
+.scale-up-enter-active,
+.scale-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-up-enter-from,
+.scale-up-leave-to {
+  opacity: 0;
+  transform: scale(1.1);
+}
+
+/* 旋转动画 */
+.rotate-enter-active,
+.rotate-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rotate-enter-from {
+  opacity: 0;
+  transform: rotate(-180deg) scale(0.8);
+}
+
+.rotate-leave-to {
+  opacity: 0;
+  transform: rotate(180deg) scale(0.8);
+}
+
+/* 翻转动画 */
+.flip-enter-active,
+.flip-leave-active {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flip-enter-from {
+  opacity: 0;
+  transform: rotateY(-90deg);
+}
+
+.flip-leave-to {
+  opacity: 0;
+  transform: rotateY(90deg);
+}
+
+/* 弹性动画 */
+.bounce-enter-active {
+  animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bounce-leave-active {
+  animation: bounce-out 0.3s ease-in;
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+/* 加载状态样式 */
+.enhanced-router-view__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--color-text-secondary, #6c757d);
+}
+
+.enhanced-router-view__loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-border, #dee2e6);
+  border-top-color: var(--color-primary, #007bff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.enhanced-router-view__loading-text {
+  margin-left: 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* 错误状态样式 */
+.enhanced-router-view__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-danger, #dc3545);
+}
+
+.enhanced-router-view__error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.enhanced-router-view__error-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.enhanced-router-view__error-message {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #6c757d);
+  margin-bottom: 1rem;
+}
+
+.enhanced-router-view__error-retry {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary, #007bff);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+}
+
+.enhanced-router-view__error-retry:hover {
+  background-color: var(--color-primary-dark, #0056b3);
+}
+
+/* 空状态样式 */
+.enhanced-router-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-muted, #adb5bd);
+}
+
+.enhanced-router-view__empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
+.enhanced-router-view__empty-text {
+  font-size: 0.875rem;
+}
+
+/* 进度条样式 */
+.enhanced-router-view__progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-primary, #007bff);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  z-index: 9999;
+}
+
+.enhanced-router-view__progress--loading {
+  animation: progress-loading 2s ease-in-out infinite;
+}
+
+@keyframes progress-loading {
+  0% {
+    transform: scaleX(0);
+  }
+  50% {
+    transform: scaleX(0.7);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* 动画关键帧 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .enhanced-router-view__loading,
+  .enhanced-router-view__error,
+  .enhanced-router-view__empty {
+    min-height: 150px;
+    padding: 1rem;
+  }
+
+  .enhanced-router-view__error-icon,
+  .enhanced-router-view__empty-icon {
+    font-size: 2rem;
+  }
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .enhanced-router-view__loading {
+    color: var(--color-text-secondary-dark, #a0aec0);
+  }
+
+  .enhanced-router-view__loading-spinner {
+    border-color: var(--color-border-dark, #4a5568);
+    border-top-color: var(--color-primary, #007bff);
+  }
+
+  .enhanced-router-view__error {
+    color: var(--color-danger-dark, #f56565);
+  }
+
+  .enhanced-router-view__empty {
+    color: var(--color-text-muted-dark, #718096);
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active,
+  .slide-enter-active,
+  .slide-leave-active,
+  .slide-up-enter-active,
+  .slide-up-leave-active,
+  .slide-down-enter-active,
+  .slide-down-leave-active,
+  .scale-enter-active,
+  .scale-leave-active,
+  .scale-up-enter-active,
+  .scale-up-leave-active,
+  .rotate-enter-active,
+  .rotate-leave-active,
+  .flip-enter-active,
+  .flip-leave-active {
+    transition: none;
+  }
+
+  .bounce-enter-active,
+  .bounce-leave-active {
+    animation: none;
+  }
+
+  .enhanced-router-view__loading-spinner {
+    animation: none;
+  }
+
+  .enhanced-router-view__progress--loading {
+    animation: none;
+  }
+}

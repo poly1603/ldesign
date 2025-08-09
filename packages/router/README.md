@@ -1,221 +1,215 @@
-# 🚀 LDesign Router
+# @ldesign/router
 
-> 一个现代化、高性能的 Vue 3 路由库，让你的单页应用导航如丝般顺滑！
+🚀 **简化的 Vue 路由解决方案** - 专为 LDesign Engine 设计的现代化路由系统
 
-[![npm version](https://img.shields.io/npm/v/@ldesign/router.svg)](https://www.npmjs.com/package/@ldesign/router)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![Vue 3](https://img.shields.io/badge/Vue-3.x-green.svg)](https://vuejs.org/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-72%25-green.svg)](https://github.com/ldesign/router)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## ✨ 核心特性
 
-## ✨ 特性亮点
+- 🎯 **插件化集成**: 一行代码集成到 LDesign Engine
+- 🛡️ **类型安全**: 完整的 TypeScript 支持
+- 🚀 **简洁 API**: 基于 Vue Router 4 的简化封装
+- 📱 **响应式**: 基于 Vue 3 Composition API
+- 🔄 **零配置**: 开箱即用，无需复杂配置
 
-- 🎯 **完全类型安全** - 基于 TypeScript 构建，提供完整的类型推导
-- ⚡ **极致性能** - 智能缓存机制，路由解析速度提升 300%
-- 🧩 **组合式 API** - 完美支持 Vue 3 Composition API
-- 🛡️ **强大的守卫系统** - 灵活的导航守卫，保护你的路由安全
-- 🎨 **开发者友好** - 详细的错误提示和调试信息
-- 📱 **多种历史模式** - 支持 Hash、HTML5 History 和内存模式
-- 🔄 **动态路由** - 运行时添加、删除路由，灵活应对业务需求
-- 🎪 **嵌套路由** - 支持无限层级的嵌套路由结构
-- 🚀 **智能预加载** - 多种预加载策略，提前准备用户可能访问的页面
-- 📊 **性能监控** - 内置性能分析工具，实时监控路由性能
-- 🔌 **插件系统** - 可扩展的插件架构，满足各种定制需求
-- 🎭 **过渡动画** - 丰富的页面切换动画效果
+## 📦 安装
+
+```bash
+pnpm add @ldesign/router
+```
 
 ## 🚀 快速开始
 
-### 安装
+### 推荐用法（插件方式）
 
-```bash
-# 使用 pnpm (推荐)
-pnpm add @ldesign/router
+```typescript
+import { createApp } from '@ldesign/engine'
+import { routerPlugin } from '@ldesign/router'
 
-# 使用 npm
-npm install @ldesign/router
+// 定义路由
+const routes = [
+  { path: '/', component: () => import('./views/Home.vue') },
+  { path: '/about', component: () => import('./views/About.vue') },
+]
 
-# 使用 yarn
-yarn add @ldesign/router
+// 创建应用
+const engine = createApp(App)
+
+// 一行代码集成路由
+await engine.use(
+  routerPlugin({
+    routes,
+    mode: 'history',
+  })
+)
+
+engine.mount('#app')
 ```
 
-### 基础用法
+### 传统用法（兼容）
 
 ```typescript
 import { createRouter, createWebHistory } from '@ldesign/router'
-import { createApp } from 'vue'
-import App from './App.vue'
 
-// 1. 定义路由组件
-const Home = { template: '<div>🏠 欢迎来到首页！</div>' }
-const About = { template: '<div>📖 关于我们的故事...</div>' }
-
-// 2. 定义路由配置
-const routes = [
-  { path: '/', component: Home, meta: { title: '首页' } },
-  { path: '/about', component: About, meta: { title: '关于我们' } },
-]
-
-// 3. 创建路由实例
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: [
+    { path: '/', component: Home },
+    { path: '/about', component: About },
+  ],
 })
 
-// 4. 创建并挂载应用
-const app = createApp(App)
 app.use(router)
-app.mount('#app')
 ```
 
-### 在组件中使用
+## 📖 API 文档
+
+### routerPlugin(options)
+
+创建路由插件，这是**推荐的集成方式**。
+
+#### 参数
+
+```typescript
+interface RouterPluginOptions {
+  routes: RouteRecordRaw[] // 路由配置
+  mode?: 'history' | 'hash' | 'memory' // 路由模式，默认 'history'
+  base?: string // 基础路径，默认 '/'
+  scrollBehavior?: ScrollBehavior // 滚动行为
+}
+```
+
+#### 示例
+
+```typescript
+const plugin = routerPlugin({
+  routes: [
+    { path: '/', name: 'Home', component: Home },
+    { path: '/about', name: 'About', component: About },
+  ],
+  mode: 'history',
+  base: '/app/',
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  },
+})
+
+await engine.use(plugin)
+```
+
+### 核心组件
+
+#### RouterView
+
+路由视图组件，用于渲染匹配的路由组件。
 
 ```vue
-<script setup lang="ts">
-import { useRoute, useRouter } from '@ldesign/router'
+<template>
+  <RouterView />
+</template>
+```
+
+#### RouterLink
+
+路由链接组件，用于创建导航链接。
+
+```vue
+<template>
+  <RouterLink to="/about"> 关于我们 </RouterLink>
+  <RouterLink :to="{ name: 'Home' }"> 首页 </RouterLink>
+</template>
+```
+
+### 组合式 API
+
+#### useRouter()
+
+获取路由器实例。
+
+```typescript
+import { useRouter } from '@ldesign/router'
 
 const router = useRouter()
-const route = useRoute()
 
 // 编程式导航
-function goToAbout() {
-  router.push('/about')
-}
-
-// 获取当前路由信息
-console.log('当前路径:', route.value.path)
-console.log('路由参数:', route.value.params)
-console.log('查询参数:', route.value.query)
-</script>
-
-<template>
-  <div class="app">
-    <!-- 导航栏 -->
-    <nav class="navbar">
-      <router-link to="/" class="nav-link"> 🏠 首页 </router-link>
-      <router-link to="/about" class="nav-link"> 📖 关于 </router-link>
-    </nav>
-
-    <!-- 路由视图 -->
-    <main class="main-content">
-      <router-view />
-    </main>
-  </div>
-</template>
-
-<style scoped>
-.navbar {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f5f5f5;
-}
-
-.nav-link {
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.nav-link:hover {
-  background-color: #e0e0e0;
-}
-
-.nav-link.router-link-active {
-  background-color: #007bff;
-  color: white;
-}
-</style>
+router.push('/about')
+router.replace('/home')
+router.go(-1)
+router.back()
+router.forward()
 ```
 
-## 📚 核心概念
+#### useRoute()
 
-### 🎯 路由配置
+获取当前路由信息。
 
 ```typescript
-import type { RouteRecordRaw } from '@ldesign/router'
+import { useRoute } from '@ldesign/router'
 
-const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    name: 'Home',
-    component: () => import('./views/Home.vue'),
-    meta: {
-      title: '🏠 首页',
-      description: '欢迎来到我们的应用！',
-    },
-  },
-  {
-    path: '/user/:id',
-    name: 'User',
-    component: () => import('./views/User.vue'),
-    props: true, // 将路由参数作为 props 传递给组件
-    meta: {
-      requiresAuth: true,
-      title: '👤 用户详情',
-    },
-  },
-  {
-    path: '/admin',
-    component: () => import('./layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] },
-    children: [
-      {
-        path: 'dashboard',
-        name: 'AdminDashboard',
-        component: () => import('./views/admin/Dashboard.vue'),
-        meta: { title: '📊 管理面板' },
-      },
-      {
-        path: 'users',
-        name: 'AdminUsers',
-        component: () => import('./views/admin/Users.vue'),
-        meta: { title: '👥 用户管理' },
-      },
-    ],
-  },
-]
+const route = useRoute()
+
+console.log(route.path) // 当前路径
+console.log(route.params) // 路由参数
+console.log(route.query) // 查询参数
+console.log(route.meta) // 路由元信息
 ```
 
-### 🛡️ 导航守卫
+#### 路由守卫钩子
 
 ```typescript
-// 全局前置守卫 - 身份验证
-router.beforeEach((to, from, next) => {
-  // 检查是否需要登录
-  if (to.meta.requiresAuth && !isAuthenticated()) {
-    next({
-      path: '/login',
-      query: { redirect: to.fullPath }, // 保存重定向路径
-    })
-    return
-  }
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from '@ldesign/router'
 
-  // 检查用户权限
-  if (to.meta.roles && !hasPermission(to.meta.roles)) {
-    next('/403') // 跳转到无权限页面
-    return
-  }
-
+// 路由更新时
+onBeforeRouteUpdate((to, from, next) => {
+  console.log('路由更新:', to.path)
   next()
 })
 
-// 全局后置钩子 - 更新页面标题
-router.afterEach(to => {
-  document.title = to.meta.title || 'LDesign App'
+// 离开路由时
+onBeforeRouteLeave((to, from, next) => {
+  if (hasUnsavedChanges()) {
+    if (confirm('有未保存的更改，确定要离开吗？')) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
+```
 
-  // 发送页面浏览统计
-  analytics.track('page_view', {
-    path: to.path,
-    title: to.meta.title,
-  })
+## 🛡️ 路由守卫
+
+### 全局守卫
+
+```typescript
+const router = useRouter()
+
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !isAuthenticated()) {
+    next('/login')
+  } else {
+    next()
+  }
 })
 
-// 路由独享守卫
+// 全局后置钩子
+router.afterEach((to, from) => {
+  document.title = to.meta.title || 'App'
+})
+```
+
+### 路由级守卫
+
+```typescript
 const routes = [
   {
     path: '/admin',
     component: AdminPanel,
+    meta: { requiresAuth: true },
     beforeEnter: (to, from, next) => {
       if (hasAdminPermission()) {
         next()
@@ -227,358 +221,293 @@ const routes = [
 ]
 ```
 
-### 🚀 高级功能
+## 🎯 路由配置
 
-#### 智能预加载
+### 基础路由
 
 ```typescript
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-  // 启用智能预加载
-  preloadStrategy: 'visible', // 'none' | 'immediate' | 'visible' | 'hover'
-  cache: {
-    max: 20,
-    ttl: 10 * 60 * 1000, // 10分钟
-    include: ['Home', 'Products'],
-    exclude: ['Login'],
+const routes = [
+  // 静态路由
+  { path: '/', component: Home },
+
+  // 动态路由
+  { path: '/user/:id', component: User },
+
+  // 嵌套路由
+  {
+    path: '/user',
+    component: UserLayout,
+    children: [
+      { path: 'profile', component: UserProfile },
+      { path: 'settings', component: UserSettings },
+    ],
   },
-})
 
-// 手动预加载
-await router.preloadRoute(route)
+  // 重定向
+  { path: '/home', redirect: '/' },
+
+  // 别名
+  { path: '/', alias: '/home' },
+
+  // 404 页面
+  { path: '/:pathMatch(.*)*', component: NotFound },
+]
 ```
 
-#### 性能监控
-
-```typescript
-// 获取性能统计
-const stats = router.getPerformanceStats()
-console.log('平均导航时间:', stats.averageDuration)
-
-// 获取缓存统计
-const cacheStats = router.getCacheStats()
-console.log('缓存命中率:', cacheStats.hitRate)
-```
-
-#### 插件系统
-
-```typescript
-// 内置插件
-import { analyticsPlugin, titlePlugin } from '@ldesign/router'
-
-router.use(titlePlugin, { suffix: 'My App' })
-router.use(analyticsPlugin, {
-  trackPageView: route => {
-    gtag('config', 'GA_TRACKING_ID', {
-      page_path: route.path,
-    })
-  },
-})
-```
-
-### 🧩 组合式 API
-
-```typescript
-import {
-  onBeforeRouteLeave,
-  onBeforeRouteUpdate,
-  useParams,
-  useQuery,
-  useRoute,
-  useRouter,
-} from '@ldesign/router'
-
-export default defineComponent({
-  setup() {
-    const router = useRouter()
-    const route = useRoute()
-    const params = useParams()
-    const query = useQuery()
-
-    // 监听路由变化
-    onBeforeRouteUpdate((to, from) => {
-      console.log(`路由从 ${from.path} 更新到 ${to.path}`)
-      // 可以在这里重新获取数据
-      fetchUserData(to.params.id)
-    })
-
-    // 离开守卫 - 防止用户意外离开
-    onBeforeRouteLeave((to, from) => {
-      if (hasUnsavedChanges()) {
-        const answer = window.confirm('你有未保存的更改，确定要离开吗？')
-        if (!answer) return false
-      }
-    })
-
-    // 编程式导航
-    const navigateToUser = (userId: string) => {
-      router.push({
-        name: 'User',
-        params: { id: userId },
-        query: { tab: 'profile' },
-      })
-    }
-
-    // 带动画的导航
-    const navigateWithTransition = async (path: string) => {
-      // 显示加载动画
-      showLoading()
-
-      try {
-        await router.push(path)
-      } finally {
-        hideLoading()
-      }
-    }
-
-    return {
-      route,
-      params,
-      query,
-      navigateToUser,
-      navigateWithTransition,
-    }
-  },
-})
-```
-
-## 🎯 高级功能
-
-### 🔄 动态路由
-
-```typescript
-// 动态添加路由
-router.addRoute({
-  path: '/dynamic/:id',
-  name: 'Dynamic',
-  component: () => import('./views/Dynamic.vue'),
-  meta: { title: '动态路由' },
-})
-
-// 添加嵌套路由
-router.addRoute('Parent', {
-  path: 'child',
-  name: 'Child',
-  component: () => import('./views/Child.vue'),
-})
-
-// 删除路由
-router.removeRoute('Dynamic')
-
-// 检查路由是否存在
-if (router.hasRoute('Dynamic')) {
-  console.log('路由存在！')
-}
-
-// 获取所有路由
-const allRoutes = router.getRoutes()
-console.log('所有路由:', allRoutes)
-```
-
-### 📱 多种历史模式
-
-```typescript
-// HTML5 History 模式 (推荐)
-import { createRouter, createWebHistory } from '@ldesign/router'
-
-const router = createRouter({
-  history: createWebHistory('/app/'), // 可选的 base URL
-  routes,
-})
-```
-
-```typescript
-// Hash 模式 (兼容性更好)
-import { createRouter, createWebHashHistory } from '@ldesign/router'
-
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes,
-})
-```
-
-```typescript
-// 内存模式 (SSR/测试)
-import { createMemoryHistory, createRouter } from '@ldesign/router'
-
-const router = createRouter({
-  history: createMemoryHistory(),
-  routes,
-})
-```
-
-### 🎨 滚动行为
-
-```typescript
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-  scrollBehavior(to, from, savedPosition) {
-    // 如果有保存的位置，恢复到该位置
-    if (savedPosition) {
-      return savedPosition
-    }
-
-    // 如果有锚点，滚动到锚点
-    if (to.hash) {
-      return {
-        el: to.hash,
-        behavior: 'smooth',
-      }
-    }
-
-    // 否则滚动到顶部
-    return { top: 0 }
-  },
-})
-```
-
-### 🧪 测试支持
-
-```typescript
-import { createMemoryHistory, createRouter } from '@ldesign/router'
-import { mount } from '@vue/test-utils'
-
-// 创建测试路由器
-const router = createRouter({
-  history: createMemoryHistory(),
-  routes: [
-    { path: '/', component: Home },
-    { path: '/user/:id', component: User },
-  ],
-})
-
-// 在测试中使用
-test('should navigate to user page', async () => {
-  const wrapper = mount(App, {
-    global: {
-      plugins: [router],
-    },
-  })
-
-  await router.push('/user/123')
-  expect(router.currentRoute.value.path).toBe('/user/123')
-  expect(router.currentRoute.value.params.id).toBe('123')
-})
-```
-
-## 🛠️ 开发指南
-
-### 本地开发
-
-```bash
-# 克隆项目
-git clone https://github.com/ldesign/ldesign.git
-cd ldesign/packages/router
-
-# 安装依赖
-pnpm install
-
-# 开发模式
-pnpm dev
-
-# 构建
-pnpm build
-
-# 运行测试
-pnpm test
-
-# 测试覆盖率
-pnpm test:coverage
-
-# 类型检查
-pnpm type-check
-
-# 代码格式化
-pnpm format
-
-# 代码检查
-pnpm lint
-```
-
-### 示例项目
-
-```bash
-# 运行基础示例
-cd examples/basic
-pnpm dev
-
-# 运行高级示例
-cd examples/advanced
-pnpm dev
-```
-
-## 📈 性能优化
-
-### 路由懒加载
+### 路由元信息
 
 ```typescript
 const routes = [
   {
-    path: '/heavy-page',
-    // 使用动态导入实现懒加载
-    component: () => import('./views/HeavyPage.vue'),
+    path: '/dashboard',
+    component: Dashboard,
+    meta: {
+      title: '仪表板',
+      requiresAuth: true,
+      roles: ['admin', 'user'],
+      icon: 'dashboard',
+    },
+  },
+]
+```
+
+### 懒加载
+
+```typescript
+const routes = [
+  {
+    path: '/about',
+    component: () => import('./views/About.vue'),
   },
   {
-    path: '/admin',
-    // 可以添加 webpackChunkName 注释
+    path: '/heavy-page',
     component: () =>
       import(
-        /* webpackChunkName: "admin" */
-        './views/Admin.vue'
+        /* webpackChunkName: "heavy-page" */
+        './views/HeavyPage.vue'
       ),
   },
 ]
 ```
 
-### 路由预加载
+## 🔧 高级用法
+
+### 编程式导航
 
 ```typescript
-// 预加载下一个可能访问的路由
-router.beforeEach((to, from, next) => {
-  // 预加载相关路由
-  if (to.name === 'Home') {
-    import('./views/About.vue') // 预加载关于页面
+const router = useRouter()
+
+// 字符串路径
+router.push('/about')
+
+// 对象形式
+router.push({ path: '/about' })
+
+// 命名路由
+router.push({ name: 'About' })
+
+// 带参数
+router.push({ name: 'User', params: { id: '123' } })
+
+// 带查询参数
+router.push({ path: '/search', query: { q: 'vue' } })
+
+// 带哈希
+router.push({ path: '/about', hash: '#team' })
+```
+
+### 导航错误处理
+
+```typescript
+router.push('/about').catch(err => {
+  if (isNavigationFailure(err, NavigationFailureType.cancelled)) {
+    console.log('导航被取消')
   }
-  next()
 })
 ```
 
-## 🤝 贡献指南
+## 🤝 与 LDesign Engine 集成
 
-我们欢迎所有形式的贡献！
+### 自动集成功能
 
-### 如何贡献
+使用 `routerPlugin` 时，路由会自动集成到 Engine 中：
 
-1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开一个 Pull Request
+```typescript
+// 路由器会自动注册到 engine.router
+await engine.use(routerPlugin({ routes }))
 
-### 开发规范
+// 可以通过 engine.router 访问路由功能
+engine.router.push('/about')
+engine.router.getCurrentRoute()
+```
 
-- 使用 TypeScript 编写代码
-- 遵循 ESLint 规则
-- 编写测试用例
-- 更新相关文档
+### 状态同步
+
+路由状态会自动同步到 Engine：
+
+```typescript
+// 当前路由信息会同步到 Engine 状态
+const currentRoute = engine.router.getCurrentRoute()
+console.log(currentRoute.value.path)
+```
+
+### 事件集成
+
+路由变化会触发 Engine 事件系统：
+
+```typescript
+// 路由操作会自动记录到 Engine 日志
+router.push('/about') // 自动记录导航日志
+```
+
+## 📝 类型定义
+
+### 核心类型
+
+```typescript
+// 路由记录
+interface RouteRecordRaw {
+  path: string
+  name?: string | symbol
+  component?: RouteComponent
+  children?: RouteRecordRaw[]
+  meta?: RouteMeta
+  beforeEnter?: NavigationGuard
+}
+
+// 路由位置
+interface RouteLocation {
+  path: string
+  name?: string | symbol
+  params: RouteParams
+  query: RouteQuery
+  hash: string
+  meta: RouteMeta
+}
+
+// 导航守卫
+interface NavigationGuard {
+  (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext):
+    | NavigationGuardReturn
+    | Promise<NavigationGuardReturn>
+}
+```
+
+## 📊 最佳实践
+
+### 1. 路由结构组织
+
+```typescript
+// 推荐的路由结构
+const routes = [
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
+    meta: { title: '首页' },
+  },
+  {
+    path: '/user',
+    component: () => import('@/layouts/UserLayout.vue'),
+    children: [
+      {
+        path: 'profile',
+        name: 'UserProfile',
+        component: () => import('@/views/user/Profile.vue'),
+        meta: { title: '个人资料', requiresAuth: true },
+      },
+    ],
+  },
+]
+```
+
+### 2. 错误处理
+
+```typescript
+// 全局错误处理
+router.onError((error, to, from) => {
+  console.error('路由错误:', error)
+
+  if (error.message.includes('Loading chunk')) {
+    // 处理代码分割加载失败
+    window.location.reload()
+  }
+})
+```
+
+### 3. 性能优化
+
+```typescript
+// 路由懒加载
+const routes = [
+  {
+    path: '/heavy',
+    component: () =>
+      import(
+        /* webpackChunkName: "heavy" */
+        /* webpackPrefetch: true */
+        './views/Heavy.vue'
+      ),
+  },
+]
+```
+
+## 🐛 故障排除
+
+### 常见问题
+
+1. **路由不匹配**
+
+   - 检查路由路径是否正确
+   - 确认组件是否正确导入
+
+2. **导航守卫不生效**
+
+   - 确保调用了 `next()` 函数
+   - 检查守卫的执行顺序
+
+3. **插件安装失败**
+   - 确保在 `engine.mount()` 之前安装插件
+   - 检查路由配置是否正确
+
+### 调试技巧
+
+```typescript
+// 在开发环境下查看路由信息
+if (process.env.NODE_ENV === 'development') {
+  const route = useRoute()
+  console.log('当前路由:', route)
+}
+```
+
+## 🔄 迁移指南
+
+### 从旧版本迁移
+
+如果你之前使用的是复杂的适配器方式，现在可以简化为：
+
+```typescript
+// 旧方式（复杂）
+import { createRouterAdapter } from '@ldesign/router'
+const adapter = createRouterAdapter({ routes })
+const engine = createApp(App, { router: adapter })
+
+// 新方式（简化）
+import { routerPlugin } from '@ldesign/router'
+const engine = createApp(App)
+await engine.use(routerPlugin({ routes }))
+```
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+MIT License
 
-## 🙏 致谢
+## 🤝 贡献
 
-感谢 Vue Router 团队的优秀工作，LDesign Router 在设计上参考了 Vue Router 的许多优秀理念。
+欢迎提交 Issue 和 Pull Request！
 
----
+## 🔗 相关链接
 
-<div align="center">
-  <p>用 ❤️ 制作 by LDesign Team</p>
-  <p>
-    <a href="https://github.com/ldesign/router">GitHub</a> •
-    <a href="https://ldesign.dev/router">文档</a> •
-    <a href="https://github.com/ldesign/router/issues">问题反馈</a>
-  </p>
-</div>
+- [LDesign Engine](../engine/README.md)
+- [Vue Router 官方文档](https://router.vuejs.org/)
+- [Vue 3 文档](https://vuejs.org/)

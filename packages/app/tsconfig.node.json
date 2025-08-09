@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "composite": true,
-    "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
+    "types": ["node"],
     "strict": true,
-    "types": ["node"]
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   },
   "include": ["vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
 }

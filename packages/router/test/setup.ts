@@ -31,7 +31,7 @@ Object.defineProperty(globalThis, 'performance', {
 })
 
 // 模拟 navigator API
-Object.defineProperty(global, 'navigator', {
+Object.defineProperty(globalThis, 'navigator', {
   value: {
     userAgent: 'Mozilla/5.0 (Test Environment)',
     connection: {

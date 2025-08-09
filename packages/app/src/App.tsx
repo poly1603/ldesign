@@ -1,21 +1,33 @@
+import type { EngineImpl } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/engine/es/index.js'
+import {
+  RouterView,
+  RouterLink,
+} from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
 import { defineComponent, getCurrentInstance } from 'vue'
-import type { Engine } from '@ldesign/engine'
 
 export default defineComponent({
   name: 'App',
   setup() {
+    // eslint-disable-next-line no-console
     console.log('App 组件 setup 执行')
 
     // 获取 Engine 实例
     const instance = getCurrentInstance()
     const engine = instance?.appContext.config.globalProperties
-      .$engine as Engine
+      .$engine as EngineImpl
+    // eslint-disable-next-line no-console
     console.log('获取到 Engine 实例:', engine)
 
     const navigateTo = (path: string) => {
-      // 使用 Engine 的路由器
-      engine?.router?.push(path)
-      engine?.logger.info(`导航到页面: ${path}`)
+      // 直接使用 engine 的路由器进行导航
+      if (engine?.router) {
+        engine.router.push(path)
+        engine.logger.info(`导航到页面: ${path}`)
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn('路由器尚未准备好')
+        window.location.hash = path
+      }
     }
 
     const showNotification = (
@@ -30,13 +42,14 @@ export default defineComponent({
     }
 
     return () => {
+      // eslint-disable-next-line no-console
       console.log('App 组件渲染函数执行')
       return (
-        <div id='app'>
+        <div class='app-container'>
           <h1>🚀 LDesign Engine + Router 演示</h1>
           <p>简化的 Engine 与 Router 集成演示</p>
 
-          {/* 简化的导航栏 */}
+          {/* 简单的导航栏 */}
           <nav
             style={{
               padding: '1rem',
@@ -45,45 +58,61 @@ export default defineComponent({
               marginBottom: '1rem',
               display: 'flex',
               gap: '0.5rem',
+              flexWrap: 'wrap',
             }}
           >
-            <button onClick={() => navigateTo('/')}>🏠 首页</button>
-            <button onClick={() => navigateTo('/login')}>🔑 登录</button>
+            <RouterLink to='/' variant='tab'>
+              🏠 首页
+            </RouterLink>
+            <RouterLink to='/login' variant='tab'>
+              🔑 登录
+            </RouterLink>
+            <RouterLink to='/dashboard' variant='tab'>
+              📊 仪表板
+            </RouterLink>
+            <RouterLink to='/help' variant='tab'>
+              ❓ 帮助
+            </RouterLink>
           </nav>
 
-          {/* 通知测试按钮 */}
+          {/* 简单的内容区域 */}
           <div
             style={{
-              display: 'flex',
-              gap: '0.5rem',
-              flexWrap: 'wrap',
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
               marginBottom: '1rem',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             }}
           >
-            <button
-              onClick={() => showNotification('success')}
-              style={{ background: '#28a745' }}
-            >
-              ✅ 成功通知
-            </button>
-            <button
-              onClick={() => showNotification('info')}
-              style={{ background: '#17a2b8' }}
-            >
-              ℹ️ 信息通知
-            </button>
-            <button
-              onClick={() => showNotification('warning')}
-              style={{ background: '#ffc107', color: '#000' }}
-            >
-              ⚠️ 警告通知
-            </button>
-            <button
-              onClick={() => showNotification('error')}
-              style={{ background: '#dc3545' }}
-            >
-              ❌ 错误通知
-            </button>
+            <h2>✅ 应用启动成功！</h2>
+            <p>LDesign Engine 已经成功启动，路由系统正在工作。</p>
+            <p>当前路径: {window.location.hash || '/'}</p>
+          </div>
+
+          {/* 通知测试区域 */}
+          <div
+            style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              marginBottom: '1rem',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}
+          >
+            <h3>🔔 通知测试</h3>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button onClick={() => showNotification('success')}>
+                成功通知
+              </button>
+              <button onClick={() => showNotification('info')}>信息通知</button>
+              <button onClick={() => showNotification('warning')}>
+                警告通知
+              </button>
+              <button onClick={() => showNotification('error')}>
+                错误通知
+              </button>
+            </div>
           </div>
 
           {/* 路由状态显示 */}
@@ -97,15 +126,39 @@ export default defineComponent({
             }}
           >
             <h3>📍 路由状态</h3>
-            <p>当前路径: {window.location.pathname}</p>
+            <p>
+              当前路径:
+              {window.location.pathname}
+            </p>
+            <p>
+              当前URL:
+              {window.location.href}
+            </p>
             <p>点击上方导航按钮测试路由功能</p>
           </div>
 
+          {/* 路由视图 */}
           <div
             style={{
-              background: '#e7f3ff',
+              background: 'white',
               padding: '1rem',
               borderRadius: '8px',
+              marginBottom: '1rem',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}
+          >
+            <h3>📄 路由内容</h3>
+            <RouterView />
+          </div>
+
+          {/* 基本功能展示 */}
+          <div
+            style={{
+              background: 'white',
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1rem',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             }}
           >
             <h3>✨ 基本功能</h3>
@@ -114,11 +167,13 @@ export default defineComponent({
               <li>✅ 基本路由导航</li>
               <li>✅ 通知系统</li>
               <li>✅ 日志记录</li>
+              <li>✅ RouterView 组件</li>
             </ul>
           </div>
 
-          <style>{`
-            #app {
+          <style>
+            {`
+            .app-container {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
               margin: 0;
               padding: 1rem;
@@ -167,7 +222,8 @@ export default defineComponent({
             li {
               margin-bottom: 0.5rem;
             }
-          `}</style>
+          `}
+          </style>
         </div>
       )
     }

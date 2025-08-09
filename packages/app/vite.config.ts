@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,6 +21,9 @@ export default defineConfig({
       '@/styles': resolve(__dirname, 'src/styles'),
       '@/plugins': resolve(__dirname, 'src/plugins'),
       '@/middleware': resolve(__dirname, 'src/middleware'),
+      // 配置本地包别名，指向ES模块构建文件
+      '@ldesign/engine': resolve(__dirname, '../engine/es/index.js'),
+      '@ldesign/router': resolve(__dirname, '../router/es/index.js'),
     },
   },
   css: {

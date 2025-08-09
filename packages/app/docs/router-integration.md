@@ -231,10 +231,10 @@ export interface AppRouteMeta {
 ```typescript
 // 扩展 RouterAdapter 接口
 interface ExtendedRouterAdapter extends RouterAdapter {
-  getCurrentRoute?(): any
-  getRoutes?(): any[]
-  preloadRoute?(route: any): Promise<void>
-  clearCache?(): void
+  getCurrentRoute?: () => any
+  getRoutes?: () => any[]
+  preloadRoute?: (route: any) => Promise<void>
+  clearCache?: () => void
 }
 ```
 

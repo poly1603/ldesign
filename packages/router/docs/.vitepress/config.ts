@@ -2,106 +2,60 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'LDesign Router',
-  description: '一个功能强大、易于使用的 Vue 路由器库',
+  description: '强大的 Vue 路由库，提供增强的组件和功能',
   base: '/router/',
-  lang: 'zh-CN',
-
-  head: [
-    ['link', { rel: 'icon', href: '/router/favicon.ico' }],
-    ['meta', { name: 'theme-color', content: '#1890ff' }],
-    ['meta', { name: 'og:type', content: 'website' }],
-    ['meta', { name: 'og:locale', content: 'zh-CN' }],
-    ['meta', { name: 'og:site_name', content: 'LDesign Router' }],
-    ['meta', { name: 'og:image', content: '/router/og-image.png' }],
-  ],
 
   themeConfig: {
-    logo: '/logo.svg',
-
     nav: [
       { text: '指南', link: '/guide/' },
-      { text: 'API 参考', link: '/api/' },
+      { text: 'API', link: '/api/' },
       { text: '示例', link: '/examples/' },
-      { text: '更新日志', link: '/changelog' },
-      {
-        text: '相关链接',
-        items: [
-          { text: 'GitHub', link: 'https://github.com/ldesign/ldesign' },
-          {
-            text: 'NPM',
-            link: 'https://www.npmjs.com/package/@ldesign/router',
-          },
-          {
-            text: '问题反馈',
-            link: 'https://github.com/ldesign/ldesign/issues',
-          },
-        ],
-      },
+      { text: 'GitHub', link: 'https://github.com/ldesign/ldesign' },
     ],
 
     sidebar: {
       '/guide/': [
         {
-          text: '开始使用',
+          text: '开始',
           items: [
             { text: '介绍', link: '/guide/' },
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '安装', link: '/guide/installation' },
-            { text: '基础概念', link: '/guide/concepts' },
           ],
         },
         {
-          text: '核心功能',
+          text: '基础',
           items: [
-            { text: '路由配置', link: '/guide/routes' },
+            { text: '路由配置', link: '/guide/route-configuration' },
             { text: '导航', link: '/guide/navigation' },
-            { text: '路由守卫', link: '/guide/guards' },
-            { text: '路由元信息', link: '/guide/meta' },
-            { text: '嵌套路由', link: '/guide/nested-routes' },
-            { text: '动态路由', link: '/guide/dynamic-routes' },
+            { text: '路由守卫', link: '/guide/route-guards' },
           ],
         },
         {
-          text: '高级功能',
+          text: '增强组件',
           items: [
-            { text: '懒加载', link: '/guide/lazy-loading' },
-            { text: '路由预加载', link: '/guide/preloading' },
-            { text: '路由缓存', link: '/guide/caching' },
-            { text: '性能监控', link: '/guide/performance' },
-            { text: '过渡动画', link: '/guide/transitions' },
-            { text: '滚动行为', link: '/guide/scroll-behavior' },
+            { text: '增强的 RouterLink', link: '/guide/enhanced-router-link' },
+            { text: '增强的 RouterView', link: '/guide/enhanced-router-view' },
+            { text: '组件配置', link: '/guide/component-configuration' },
           ],
         },
         {
-          text: '组件',
+          text: '高级',
           items: [
-            { text: 'RouterView', link: '/guide/router-view' },
-            { text: 'RouterLink', link: '/guide/router-link' },
+            { text: '权限控制', link: '/guide/permission-control' },
+            { text: '预加载策略', link: '/guide/preloading' },
+            { text: '性能监控', link: '/guide/performance-monitoring' },
+            { text: '自定义插件', link: '/guide/custom-plugins' },
           ],
         },
         {
-          text: '组合式 API',
+          text: '迁移',
           items: [
-            { text: 'useRouter', link: '/guide/use-router' },
-            { text: 'useRoute', link: '/guide/use-route' },
-            { text: 'useLink', link: '/guide/use-link' },
-            { text: '导航守卫', link: '/guide/composition-guards' },
-          ],
-        },
-        {
-          text: '插件系统',
-          items: [
-            { text: '插件开发', link: '/guide/plugins' },
-            { text: '内置插件', link: '/guide/built-in-plugins' },
-          ],
-        },
-        {
-          text: '最佳实践',
-          items: [
-            { text: '项目结构', link: '/guide/project-structure' },
-            { text: '性能优化', link: '/guide/performance-tips' },
-            { text: '错误处理', link: '/guide/error-handling' },
-            { text: '测试', link: '/guide/testing' },
+            {
+              text: '从 Vue Router 迁移',
+              link: '/guide/migration-from-vue-router',
+            },
+            { text: '版本升级', link: '/guide/version-upgrade' },
           ],
         },
       ],
@@ -109,24 +63,11 @@ export default defineConfig({
         {
           text: 'API 参考',
           items: [
-            { text: 'Router', link: '/api/router' },
-            { text: 'RouteLocation', link: '/api/route-location' },
-            { text: 'NavigationGuard', link: '/api/navigation-guard' },
-            { text: 'RouterHistory', link: '/api/router-history' },
-          ],
-        },
-        {
-          text: '组件',
-          items: [
-            { text: 'RouterView', link: '/api/router-view' },
-            { text: 'RouterLink', link: '/api/router-link' },
-          ],
-        },
-        {
-          text: 'Composables',
-          items: [
-            { text: 'useRouter', link: '/api/use-router' },
-            { text: 'useRoute', link: '/api/use-route' },
+            { text: '核心 API', link: '/api/' },
+            { text: 'RouterLink Props', link: '/api/router-link-props' },
+            { text: 'RouterView Props', link: '/api/router-view-props' },
+            { text: '组合式 API', link: '/api/composition-api' },
+            { text: '类型定义', link: '/api/type-definitions' },
           ],
         },
       ],
@@ -134,11 +75,11 @@ export default defineConfig({
         {
           text: '示例',
           items: [
-            { text: '基础示例', link: '/examples/basic' },
-            { text: '嵌套路由', link: '/examples/nested-routes' },
-            { text: '动态路由', link: '/examples/dynamic-routes' },
-            { text: '路由守卫', link: '/examples/navigation-guards' },
-            { text: '懒加载', link: '/examples/lazy-loading' },
+            { text: '基础示例', link: '/examples/' },
+            { text: '权限控制', link: '/examples/permission-control' },
+            { text: '预加载', link: '/examples/preloading' },
+            { text: '动画过渡', link: '/examples/transitions' },
+            { text: '性能监控', link: '/examples/performance' },
           ],
         },
       ],
@@ -150,25 +91,25 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 LDesign Team',
+      copyright: 'Copyright © 2024 LDesign',
+    },
+
+    search: {
+      provider: 'local',
     },
 
     editLink: {
       pattern:
         'https://github.com/ldesign/ldesign/edit/main/packages/router/docs/:path',
-      text: '在 GitHub 上编辑此页面',
+      text: '在 GitHub 上编辑此页',
     },
 
     lastUpdated: {
-      text: '最后更新于',
+      text: '最后更新',
       formatOptions: {
         dateStyle: 'short',
         timeStyle: 'medium',
       },
-    },
-
-    search: {
-      provider: 'local',
     },
   },
 
@@ -178,5 +119,12 @@ export default defineConfig({
       dark: 'github-dark',
     },
     lineNumbers: true,
+  },
+
+  vite: {
+    define: {
+      __VUE_OPTIONS_API__: false,
+      __VUE_PROD_DEVTOOLS__: false,
+    },
   },
 })

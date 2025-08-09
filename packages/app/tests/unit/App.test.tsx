@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { createEngine } from '@ldesign/engine'
+import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../../src/App'
 
 // Mock the engine
@@ -37,8 +37,8 @@ vi.mock('@ldesign/engine', () => ({
   },
 }))
 
-describe('App', () => {
-  let wrapper: any
+describe('app', () => {
+  let wrapper: ReturnType<typeof mount>
 
   beforeEach(() => {
     // Reset all mocks

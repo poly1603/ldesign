@@ -12,11 +12,34 @@ export interface App {
   onUnmount?: (fn: () => void) => void
 }
 
-export { RouterLink, default as RouterLinkDefault } from './RouterLink'
-export { RouterView, default as RouterViewDefault } from './RouterView'
+// 导出增强组件插件
+export {
+  createDefaultConfirmDialog,
+  createDefaultEventTracker,
+  createDefaultLayoutResolver,
+  createDefaultPermissionChecker,
+  createEnhancedComponentsPlugin,
+  createEnhancementConfig,
+  EnhancedComponentsPlugin,
+  setupEnhancedComponents,
+} from '../plugins/enhanced-components-plugin'
+export type { EnhancedComponentsPluginOptions } from '../plugins/enhanced-components-plugin'
 
+export { RouterLink, default as RouterLinkDefault } from './RouterLink'
+
+export { RouterView, default as RouterViewDefault } from './RouterView'
 // 导出组件类型
-export type { RouterLinkProps, RouterViewProps } from './types'
+export type {
+  ComponentEnhancementConfig,
+  ComponentSize,
+  EnhancedRouterLinkProps,
+  EnhancedRouterViewProps,
+  LinkVariant,
+  PreloadStrategy,
+  RouterLinkProps,
+  RouterViewProps,
+  TransitionConfig,
+} from './types'
 
 export function installComponents(app: App): void {
   app.component('RouterView', RouterView)
