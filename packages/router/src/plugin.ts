@@ -15,9 +15,9 @@ import {
 
 // 临时类型定义，直到engine包可用
 interface Engine {
-  getApp(): App | undefined
-  use(plugin: Plugin): Promise<void>
-  mount(selector: string): Promise<any>
+  getApp: () => App | undefined
+  use: (plugin: Plugin) => Promise<void>
+  mount: (selector: string) => Promise<any>
   router?: any
   logger?: any
   notifications?: any

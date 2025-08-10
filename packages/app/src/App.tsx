@@ -1,8 +1,5 @@
-import type { EngineImpl } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/engine/es/index.js'
-import {
-  RouterView,
-  RouterLink,
-} from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
+import type { EngineImpl } from '@ldesign/engine'
+import { RouterView, RouterLink } from '@ldesign/router'
 import { defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({

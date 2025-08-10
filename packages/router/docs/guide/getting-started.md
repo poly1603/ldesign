@@ -37,8 +37,8 @@ yarn add @ldesign/router
 ```typescript
 // routes.ts
 import { RouteRecordRaw } from '@ldesign/router'
-import Home from './views/Home.vue'
 import About from './views/About.vue'
+import Home from './views/Home.vue'
 import Products from './views/Products.vue'
 
 export const routes: RouteRecordRaw[] = [
@@ -78,8 +78,8 @@ export const routes: RouteRecordRaw[] = [
 // main.ts
 import { createApp } from '@ldesign/engine'
 import { routerPlugin } from '@ldesign/router'
-import { routes } from './routes'
 import App from './App.vue'
+import { routes } from './routes'
 
 const engine = createApp(App)
 
@@ -119,8 +119,8 @@ await engine.mount('#app')
   <div id="app">
     <!-- 导航菜单 -->
     <nav>
-      <RouterLink to="/" variant="tab">首页</RouterLink>
-      <RouterLink to="/about" variant="tab">关于</RouterLink>
+      <RouterLink to="/" variant="tab"> 首页 </RouterLink>
+      <RouterLink to="/about" variant="tab"> 关于 </RouterLink>
       <RouterLink to="/products" variant="tab" permission="products.view"> 产品 </RouterLink>
     </nav>
 
@@ -185,9 +185,9 @@ main {
 
   <!-- 面包屑样式 -->
   <nav class="breadcrumb">
-    <RouterLink to="/" variant="breadcrumb">首页</RouterLink>
-    <RouterLink to="/products" variant="breadcrumb">产品</RouterLink>
-    <RouterLink to="/products/123" variant="breadcrumb">产品详情</RouterLink>
+    <RouterLink to="/" variant="breadcrumb"> 首页 </RouterLink>
+    <RouterLink to="/products" variant="breadcrumb"> 产品 </RouterLink>
+    <RouterLink to="/products/123" variant="breadcrumb"> 产品详情 </RouterLink>
   </nav>
 </template>
 ```
@@ -209,6 +209,17 @@ main {
 ### 过渡动画
 
 ```vue
+<script setup>
+import { useRoute } from '@ldesign/router'
+import { computed } from 'vue'
+
+const route = useRoute()
+
+const getTransition = computed(() => {
+  return route.meta.transition || 'fade'
+})
+</script>
+
 <template>
   <!-- 自定义过渡动画 -->
   <RouterView
@@ -222,17 +233,6 @@ main {
   <!-- 根据路由选择过渡 -->
   <RouterView :transition="getTransition" />
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useRoute } from '@ldesign/router'
-
-const route = useRoute()
-
-const getTransition = computed(() => {
-  return route.meta.transition || 'fade'
-})
-</script>
 ```
 
 ## 组合式 API
@@ -241,7 +241,7 @@ LDesign Router 提供了丰富的组合式 API：
 
 ```vue
 <script setup>
-import { useRouter, useRoute, useRouteParams, useRouteQuery } from '@ldesign/router'
+import { useRoute, useRouteParams, useRouteQuery, useRouter } from '@ldesign/router'
 
 const router = useRouter()
 const route = useRoute()
@@ -249,7 +249,7 @@ const params = useRouteParams()
 const query = useRouteQuery()
 
 // 编程式导航
-const goToProducts = () => {
+function goToProducts() {
   router.push('/products')
 }
 
@@ -265,12 +265,8 @@ watch(route, newRoute => {
 启用性能监控来优化你的应用：
 
 ```vue
-<template>
-  <RouterView track-performance @performance="handlePerformance" />
-</template>
-
 <script setup>
-const handlePerformance = data => {
+function handlePerformance(data) {
   console.log('路由性能数据:', data)
   // { route: '/home', duration: 150, component: 'Home' }
 
@@ -278,6 +274,10 @@ const handlePerformance = data => {
   analytics.track('route_performance', data)
 }
 </script>
+
+<template>
+  <RouterView track-performance @performance="handlePerformance" />
+</template>
 ```
 
 ## 错误处理
@@ -285,6 +285,18 @@ const handlePerformance = data => {
 配置错误处理和回退：
 
 ```vue
+<script setup>
+import EmptyState from './components/EmptyState.vue'
+import ErrorPage from './components/ErrorPage.vue'
+import LoadingSpinner from './components/LoadingSpinner.vue'
+
+function handleError(error) {
+  console.error('路由错误:', error)
+  // 错误上报
+  errorReporting.captureException(error)
+}
+</script>
+
 <template>
   <RouterView
     :loading-component="LoadingSpinner"
@@ -294,18 +306,6 @@ const handlePerformance = data => {
     @error="handleError"
   />
 </template>
-
-<script setup>
-import LoadingSpinner from './components/LoadingSpinner.vue'
-import ErrorPage from './components/ErrorPage.vue'
-import EmptyState from './components/EmptyState.vue'
-
-const handleError = error => {
-  console.error('路由错误:', error)
-  // 错误上报
-  errorReporting.captureException(error)
-}
-</script>
 ```
 
 ## 下一步

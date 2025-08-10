@@ -124,10 +124,10 @@ export function createEnhancedComponentsPlugin(
 export function createDefaultPermissionChecker(): (
   permission: string | string[]
 ) => boolean {
-  return (permission: string | string[]) => {
+  return (_permission: string | string[]) => {
     // 这里可以实现实际的权限检查逻辑
     // 例如检查用户角色、权限等
-    // console.log('Checking permission:', permission)
+    // console.log('Checking permission:', _permission)
     return true // 默认允许所有权限
   }
 }
@@ -139,10 +139,10 @@ export function createDefaultEventTracker(): (
   event: string,
   data: Record<string, any>
 ) => void {
-  return (event: string, data: Record<string, any>) => {
+  return (_event: string, _data: Record<string, any>) => {
     // 这里可以集成实际的分析系统
     // 例如 Google Analytics, 百度统计等
-    // console.log('Track event:', event, data)
+    // console.log('Track event:', _event, _data)
   }
 }
 
@@ -156,6 +156,7 @@ export function createDefaultConfirmDialog(): (
   return async (message: string, title?: string) => {
     // 这里可以使用更美观的对话框组件
     // 例如 Element Plus, Ant Design Vue 等
+    // eslint-disable-next-line no-alert
     return window.confirm(title ? `${title}\n\n${message}` : message)
   }
 }
@@ -164,9 +165,9 @@ export function createDefaultConfirmDialog(): (
  * 默认布局解析器
  */
 export function createDefaultLayoutResolver(): (layout: string) => any {
-  return (layout: string) => {
+  return (_layout: string) => {
     // 这里可以实现布局组件的动态加载
-    // console.log('Resolving layout:', layout)
+    // console.log('Resolving layout:', _layout)
     return null
   }
 }

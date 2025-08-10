@@ -374,7 +374,9 @@ function resolveComponent(component: RouteComponent): Component | null {
       const result = (component as () => Promise<Component>)()
       if (result && typeof result.then === 'function') {
         // 使用Vue的defineAsyncComponent处理异步组件
-        return defineAsyncComponent(component as () => Promise<Component>)
+        return defineAsyncComponent(
+          component as () => Promise<Component>
+        ) as Component
       }
       return result as Component
     } catch {

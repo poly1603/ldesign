@@ -9,6 +9,11 @@
 - 🚀 **简洁 API**: 基于 Vue Router 4 的简化封装
 - 📱 **响应式**: 基于 Vue 3 Composition API
 - 🔄 **零配置**: 开箱即用，无需复杂配置
+- ⚡ **性能优化**: 内置路由缓存和预加载机制
+- 🔌 **插件系统**: 丰富的插件生态，支持性能监控、缓存管理等
+- 🎨 **增强组件**: 提供功能丰富的 RouterLink 和 RouterView 组件
+- 🛡️ **路由守卫**: 完整的导航守卫系统
+- 📊 **开发工具**: 内置性能监控和调试工具
 
 ## 📦 安装
 
@@ -58,6 +63,42 @@ const router = createRouter({
 })
 
 app.use(router)
+```
+
+### 🔌 插件增强
+
+使用内置插件增强路由功能：
+
+```typescript
+import { createApp } from '@ldesign/engine'
+import { routerPlugin, createPerformancePlugin, createCachePlugin } from '@ldesign/router'
+
+const engine = createApp(App)
+
+// 使用路由插件
+await engine.use(routerPlugin({ routes }))
+
+// 添加性能监控插件
+engine.use(
+  createPerformancePlugin({
+    enabled: true,
+    trackNavigation: true,
+    enablePreload: true,
+    preloadStrategy: 'hover',
+    onPerformanceData: data => {
+      console.log('路由性能数据:', data)
+    },
+  })
+)
+
+// 添加缓存插件
+engine.use(
+  createCachePlugin({
+    strategy: 'memory',
+    defaultTTL: 5 * 60 * 1000, // 5分钟
+    maxSize: 100,
+  })
+)
 ```
 
 ## 📖 API 文档
@@ -178,6 +219,32 @@ onBeforeRouteLeave((to, from, next) => {
     next()
   }
 })
+```
+
+#### 便利的组合式 API
+
+```typescript
+import { useParams, useQuery, useHash, useMeta, useMatched } from '@ldesign/router'
+
+// 获取路由参数
+const params = useParams()
+console.log(params.value.id) // 路由参数 id
+
+// 获取查询参数
+const query = useQuery()
+console.log(query.value.search) // 查询参数 search
+
+// 获取哈希值
+const hash = useHash()
+console.log(hash.value) // 当前哈希值
+
+// 获取路由元信息
+const meta = useMeta()
+console.log(meta.value.title) // 路由标题
+
+// 获取匹配的路由记录
+const matched = useMatched()
+console.log(matched.value) // 匹配的路由记录数组
 ```
 
 ## 🛡️ 路由守卫
@@ -393,6 +460,86 @@ interface NavigationGuard {
 }
 ```
 
+## 🔌 插件系统
+
+### 性能监控插件
+
+监控路由导航性能和组件加载时间：
+
+```typescript
+import { createPerformancePlugin } from '@ldesign/router'
+
+const performancePlugin = createPerformancePlugin({
+  enabled: true,
+  trackNavigation: true, // 跟踪导航时间
+  trackComponentLoading: true, // 跟踪组件加载时间
+  enablePreload: true, // 启用预加载
+  preloadStrategy: 'hover', // 预加载策略：hover | visible | idle
+  onPerformanceData: data => {
+    // 处理性能数据
+    console.log(`${data.type}: ${data.route} (${data.duration}ms)`)
+  },
+})
+
+app.use(performancePlugin)
+```
+
+### 缓存插件
+
+提供路由级别的数据缓存：
+
+```typescript
+import { createCachePlugin } from '@ldesign/router'
+
+const cachePlugin = createCachePlugin({
+  strategy: 'memory', // 缓存策略：memory | localStorage | sessionStorage
+  defaultTTL: 5 * 60 * 1000, // 默认缓存时间（毫秒）
+  maxSize: 100, // 最大缓存条目数
+  shouldCache: route => {
+    // 自定义缓存条件
+    return route.meta?.cache !== false
+  },
+})
+
+app.use(cachePlugin)
+
+// 在组件中使用缓存
+import { inject } from 'vue'
+
+const routerCache = inject('routerCache')
+
+// 设置缓存
+routerCache.set(route, data, 10 * 60 * 1000) // 缓存10分钟
+
+// 获取缓存
+const cachedData = routerCache.get(route)
+```
+
+### 增强组件插件
+
+提供功能丰富的路由组件：
+
+```typescript
+import { EnhancedComponentsPlugin } from '@ldesign/router'
+
+app.use(EnhancedComponentsPlugin, {
+  // 权限检查器
+  permissionChecker: permission => {
+    return checkUserPermission(permission)
+  },
+
+  // 事件追踪器
+  eventTracker: (event, data) => {
+    analytics.track(event, data)
+  },
+
+  // 确认对话框
+  confirmDialog: (message, title) => {
+    return showCustomDialog(message, title)
+  },
+})
+```
+
 ## 📊 最佳实践
 
 ### 1. 路由结构组织
@@ -490,12 +637,14 @@ if (process.env.NODE_ENV === 'development') {
 // 旧方式（复杂）
 import { createRouterAdapter } from '@ldesign/router'
 const adapter = createRouterAdapter({ routes })
-const engine = createApp(App, { router: adapter })
+const engine1 = createApp(App, { router: adapter })
+```
 
+```typescript
 // 新方式（简化）
 import { routerPlugin } from '@ldesign/router'
-const engine = createApp(App)
-await engine.use(routerPlugin({ routes }))
+const engine2 = createApp(App)
+await engine2.use(routerPlugin({ routes }))
 ```
 
 ## 📄 许可证

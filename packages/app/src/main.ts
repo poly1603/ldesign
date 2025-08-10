@@ -1,8 +1,5 @@
-import {
-  createApp,
-  presets,
-} from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/engine/es/index.js'
-import { routerPlugin } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
+import { createApp, presets } from '@ldesign/engine'
+import { routerPlugin } from '@ldesign/router'
 import App from './App.tsx'
 import { routes } from './router/routes.ts'
 

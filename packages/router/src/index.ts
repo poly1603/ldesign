@@ -13,7 +13,12 @@ import { RouterLink, RouterView } from './components'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
+  useHash,
   useLink,
+  useMatched,
+  useMeta,
+  useParams,
+  useQuery,
   useRoute,
   useRouter,
 } from './composables'
@@ -42,7 +47,12 @@ export type {
 export {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
+  useHash,
   useLink,
+  useMatched,
+  useMeta,
+  useParams,
+  useQuery,
   useRoute,
   useRouter,
 } from './composables'
@@ -63,6 +73,25 @@ export { isNavigationFailure, NavigationFailureType } from './guards'
 export { routerPlugin } from './plugin'
 
 export type { RouterPluginOptions } from './plugin'
+
+// ==================== 插件系统 ====================
+
+export {
+  EnhancedComponentsPlugin,
+  RouterPerformancePlugin,
+  RouterCachePlugin,
+  createPerformancePlugin,
+  createCachePlugin,
+  createEnhancementConfig,
+} from './plugins'
+
+export type {
+  ComponentEnhancementConfig,
+  PerformanceConfig,
+  PerformanceData,
+  CacheConfig,
+  CacheStrategy,
+} from './plugins'
 
 // ==================== 类型定义 ====================
 
@@ -129,6 +158,11 @@ export default {
   useRouter,
   useRoute,
   useLink,
+  useParams,
+  useQuery,
+  useHash,
+  useMeta,
+  useMatched,
   onBeforeRouteUpdate,
   onBeforeRouteLeave,
 

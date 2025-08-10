@@ -1,5 +1,5 @@
 import { defineComponent, ref } from 'vue'
-import { RouterLink } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
+import { RouterLink } from '@ldesign/router'
 
 export default defineComponent({
   name: 'Help',

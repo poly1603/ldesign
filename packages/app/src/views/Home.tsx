@@ -1,8 +1,5 @@
 import type { EngineImpl } from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/engine/es/index.js'
-import {
-  useRoute,
-  useRouter,
-} from '/@fs/D:/User/Document/WorkSpace/ldesign/packages/router/es/index.js'
+import { useRoute, useRouter } from '@ldesign/router'
 import { defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({

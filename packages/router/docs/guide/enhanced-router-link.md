@@ -10,7 +10,7 @@ LDesign Router 提供了功能强大的 RouterLink 组件，在保持与 Vue Rou
 ```vue
 <template>
   <!-- 基础链接 -->
-  <RouterLink to="/home">首页</RouterLink>
+  <RouterLink to="/home"> 首页 </RouterLink>
 
   <!-- 命名路由 -->
   <RouterLink :to="{ name: 'User', params: { id: 123 } }"> 用户详情 </RouterLink>
@@ -30,9 +30,9 @@ LDesign Router 提供了功能强大的 RouterLink 组件，在保持与 Vue Rou
   <RouterLink to="/action" variant="button"> 执行操作 </RouterLink>
 
   <!-- 不同尺寸 -->
-  <RouterLink to="/small" variant="button" size="small">小按钮</RouterLink>
-  <RouterLink to="/medium" variant="button" size="medium">中按钮</RouterLink>
-  <RouterLink to="/large" variant="button" size="large">大按钮</RouterLink>
+  <RouterLink to="/small" variant="button" size="small"> 小按钮 </RouterLink>
+  <RouterLink to="/medium" variant="button" size="medium"> 中按钮 </RouterLink>
+  <RouterLink to="/large" variant="button" size="large"> 大按钮 </RouterLink>
 </template>
 ```
 
@@ -41,9 +41,9 @@ LDesign Router 提供了功能强大的 RouterLink 组件，在保持与 Vue Rou
 ```vue
 <template>
   <nav class="tabs">
-    <RouterLink to="/overview" variant="tab">概览</RouterLink>
-    <RouterLink to="/details" variant="tab">详情</RouterLink>
-    <RouterLink to="/settings" variant="tab">设置</RouterLink>
+    <RouterLink to="/overview" variant="tab"> 概览 </RouterLink>
+    <RouterLink to="/details" variant="tab"> 详情 </RouterLink>
+    <RouterLink to="/settings" variant="tab"> 设置 </RouterLink>
   </nav>
 </template>
 
@@ -60,10 +60,10 @@ LDesign Router 提供了功能强大的 RouterLink 组件，在保持与 Vue Rou
 ```vue
 <template>
   <nav class="breadcrumb">
-    <RouterLink to="/" variant="breadcrumb">首页</RouterLink>
-    <RouterLink to="/products" variant="breadcrumb">产品</RouterLink>
-    <RouterLink to="/products/electronics" variant="breadcrumb">电子产品</RouterLink>
-    <RouterLink to="/products/electronics/phones" variant="breadcrumb">手机</RouterLink>
+    <RouterLink to="/" variant="breadcrumb"> 首页 </RouterLink>
+    <RouterLink to="/products" variant="breadcrumb"> 产品 </RouterLink>
+    <RouterLink to="/products/electronics" variant="breadcrumb"> 电子产品 </RouterLink>
+    <RouterLink to="/products/electronics/phones" variant="breadcrumb"> 手机 </RouterLink>
   </nav>
 </template>
 ```
@@ -173,6 +173,13 @@ LDesign Router 提供了功能强大的 RouterLink 组件，在保持与 Vue Rou
 ### 权限失败处理
 
 ```vue
+<script setup>
+function handlePermissionDenied(permission) {
+  console.log('权限不足:', permission)
+  // 显示升级提示等
+}
+</script>
+
 <template>
   <!-- 权限检查失败时的处理 -->
   <RouterLink
@@ -184,13 +191,6 @@ LDesign Router 提供了功能强大的 RouterLink 组件，在保持与 Vue Rou
     高级功能
   </RouterLink>
 </template>
-
-<script setup>
-const handlePermissionDenied = permission => {
-  console.log('权限不足:', permission)
-  // 显示升级提示等
-}
-</script>
 ```
 
 ## 确认对话框
@@ -214,14 +214,8 @@ const handlePermissionDenied = permission => {
 ### 自定义确认处理
 
 ```vue
-<template>
-  <RouterLink to="/delete-account" :confirm-handler="customConfirm" variant="button">
-    删除账户
-  </RouterLink>
-</template>
-
 <script setup>
-const customConfirm = async (message, title) => {
+async function customConfirm(message, title) {
   // 使用自定义对话框组件
   return await showCustomDialog({
     title,
@@ -232,6 +226,12 @@ const customConfirm = async (message, title) => {
   })
 }
 </script>
+
+<template>
+  <RouterLink to="/delete-account" :confirm-handler="customConfirm" variant="button">
+    删除账户
+  </RouterLink>
+</template>
 ```
 
 ## 外部链接
@@ -268,12 +268,8 @@ const customConfirm = async (message, title) => {
 ### 自定义事件处理
 
 ```vue
-<template>
-  <RouterLink to="/download" @track="handleTrack"> 下载文件 </RouterLink>
-</template>
-
 <script setup>
-const handleTrack = (event, data) => {
+function handleTrack(event, data) {
   // 发送到分析服务
   analytics.track(event, {
     ...data,
@@ -282,6 +278,10 @@ const handleTrack = (event, data) => {
   })
 }
 </script>
+
+<template>
+  <RouterLink to="/download" @track="handleTrack"> 下载文件 </RouterLink>
+</template>
 ```
 
 ## 加载状态
@@ -289,19 +289,12 @@ const handleTrack = (event, data) => {
 ### 显示加载状态
 
 ```vue
-<template>
-  <!-- 显示加载指示器 -->
-  <RouterLink to="/submit" :loading="isSubmitting" :disabled="isSubmitting" variant="button">
-    提交表单
-  </RouterLink>
-</template>
-
 <script setup>
 import { ref } from 'vue'
 
 const isSubmitting = ref(false)
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   isSubmitting.value = true
   try {
     await submitForm()
@@ -310,6 +303,13 @@ const handleSubmit = async () => {
   }
 }
 </script>
+
+<template>
+  <!-- 显示加载指示器 -->
+  <RouterLink to="/submit" :loading="isSubmitting" :disabled="isSubmitting" variant="button">
+    提交表单
+  </RouterLink>
+</template>
 ```
 
 ## 状态指示
@@ -335,16 +335,16 @@ const handleSubmit = async () => {
 ## 键盘快捷键
 
 ```vue
+<script setup>
+function handleShortcut() {
+  console.log('快捷键被触发')
+}
+</script>
+
 <template>
   <!-- 支持键盘快捷键 -->
   <RouterLink to="/search" shortcut="Ctrl+K" @shortcut="handleShortcut"> 搜索 </RouterLink>
 </template>
-
-<script setup>
-const handleShortcut = () => {
-  console.log('快捷键被触发')
-}
-</script>
 ```
 
 ## 自定义渲染
@@ -353,7 +353,7 @@ const handleShortcut = () => {
 
 ```vue
 <template>
-  <RouterLink to="/custom" custom v-slot="{ href, navigate, isActive }">
+  <RouterLink v-slot="{ navigate, isActive }" to="/custom" custom>
     <button :class="{ active: isActive }" @click="navigate">自定义按钮</button>
   </RouterLink>
 </template>
@@ -364,9 +364,9 @@ const handleShortcut = () => {
 ```vue
 <template>
   <RouterLink
+    v-slot="{ navigate, isActive, isExactActive, isLoading, hasPermission }"
     to="/advanced"
     custom
-    v-slot="{ href, navigate, isActive, isExactActive, isLoading, hasPermission }"
   >
     <div
       class="custom-link"

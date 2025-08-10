@@ -332,6 +332,7 @@ export const RouterLink = defineComponent({
       }
 
       // 默认确认对话框
+      // eslint-disable-next-line no-alert
       return window.confirm(props.confirmMessage)
     }
 
@@ -564,11 +565,19 @@ export const RouterLink = defineComponent({
           handleClick
       })
 
-      // 添加增强事件监听器
-      eventListeners.onMouseenter = handleMouseEnter
-      eventListeners.onMouseleave = handleMouseLeave
-      eventListeners.onFocus = handleFocus
-      eventListeners.onBlur = handleBlur
+      // 添加增强事件监听器（只有在不冲突的情况下）
+      if (!eventListeners.onMouseenter) {
+        eventListeners.onMouseenter = handleMouseEnter
+      }
+      if (!eventListeners.onMouseleave) {
+        eventListeners.onMouseleave = handleMouseLeave
+      }
+      if (!eventListeners.onFocus) {
+        eventListeners.onFocus = handleFocus
+      }
+      if (!eventListeners.onBlur) {
+        eventListeners.onBlur = handleBlur
+      }
 
       // 创建元素属性
       const elementAttrs = {

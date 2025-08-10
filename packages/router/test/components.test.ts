@@ -88,7 +88,10 @@ describe('components', () => {
         },
       })
 
-      expect(wrapper.html()).toBe('')
+      // RouterView会渲染transition包装器，但内容为空
+      expect(wrapper.html()).toContain('transition-stub')
+      expect(wrapper.find('.home').exists()).toBe(false)
+      expect(wrapper.find('.about').exists()).toBe(false)
     })
 
     it('should support named views', async () => {
@@ -280,6 +283,8 @@ describe('components', () => {
       })
 
       await wrapper.trigger('mouseenter')
+      await wrapper.vm.$nextTick()
+      await new Promise(resolve => setTimeout(resolve, 10)) // 等待异步导航
       expect(router.currentRoute.value.path).toBe('/about')
     })
 
