@@ -32,6 +32,11 @@
       "import": "./es/index.js",
       "require": "./lib/index.js"
     },
+    "./setup": {
+      "types": "./types/main.d.ts",
+      "import": "./es/main.js",
+      "require": "./lib/main.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

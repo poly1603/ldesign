@@ -7,7 +7,8 @@
   "description": "基于Vue3的现代化前端开发引擎 - 提供完整的插件化架构和跨框架兼容性",
   "workspaces": [
     "packages/**",
-    "docs"
+    "docs",
+    "template"
   ],
   "author": "LDesign Team",
   "license": "MIT",

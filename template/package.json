@@ -1,0 +1,22 @@
+{
+  "name": "template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@ldesign/app": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^7.1.1",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "^5.9.2",
+    "@types/node": "^24.2.1",
+    "less": "^4.4.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
