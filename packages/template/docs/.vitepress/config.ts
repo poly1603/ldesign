@@ -65,15 +65,14 @@ export default defineConfig({
             { text: '响应式模板', link: '/examples/responsive' },
             { text: '动态切换', link: '/examples/dynamic' },
             { text: '自定义组件', link: '/examples/custom' },
+            { text: '性能优化', link: '/examples/performance' },
             { text: '完整应用', link: '/examples/full-app' },
           ],
         },
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/template' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/template' }],
 
     footer: {
       message: 'Released under the MIT License.',

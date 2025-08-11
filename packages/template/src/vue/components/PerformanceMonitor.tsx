@@ -3,14 +3,7 @@
  * 用于显示模板系统的性能指标
  */
 
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  onUnmounted,
-  ref,
-  shallowRef,
-} from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref, shallowRef } from 'vue'
 
 export interface PerformanceData {
   /** 内存使用情况 */
@@ -87,9 +80,7 @@ export default defineComponent({
         return {
           used: Math.round(memory.usedJSHeapSize / 1024 / 1024),
           total: Math.round(memory.totalJSHeapSize / 1024 / 1024),
-          percentage: Math.round(
-            (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100
-          ),
+          percentage: Math.round((memory.usedJSHeapSize / memory.totalJSHeapSize) * 100),
         }
       }
       return undefined
@@ -155,10 +146,7 @@ export default defineComponent({
       if (!templates || templates.cacheHits + templates.cacheMisses === 0) {
         return 0
       }
-      return Math.round(
-        (templates.cacheHits / (templates.cacheHits + templates.cacheMisses)) *
-          100
-      )
+      return Math.round((templates.cacheHits / (templates.cacheHits + templates.cacheMisses)) * 100)
     })
 
     onMounted(() => {
@@ -166,10 +154,7 @@ export default defineComponent({
       calculateFPS()
 
       // 开始定期更新
-      updateTimer = window.setInterval(
-        updatePerformanceData,
-        props.updateInterval
-      )
+      updateTimer = window.setInterval(updatePerformanceData, props.updateInterval)
 
       // 立即更新一次
       updatePerformanceData()
@@ -201,36 +186,30 @@ export default defineComponent({
       const { memory, rendering, templates } = performanceData.value
 
       return (
-        <div class='performance-monitor'>
-          <div class='performance-header'>
+        <div class="performance-monitor">
+          <div class="performance-header">
             <h4>性能监控</h4>
-            <button
-              class='toggle-btn'
-              onClick={() => (isVisible.value = !isVisible.value)}
-            >
+            <button class="toggle-btn" onClick={() => (isVisible.value = !isVisible.value)}>
               {isVisible.value ? '隐藏' : '显示'}
             </button>
           </div>
 
           {isVisible.value && (
-            <div class='performance-content'>
+            <div class="performance-content">
               {/* 渲染性能 */}
               {rendering && (
-                <div class='performance-section'>
+                <div class="performance-section">
                   <h5>渲染性能</h5>
-                  <div class='metrics'>
-                    <div class='metric'>
-                      <span class='label'>FPS:</span>
-                      <span
-                        class='value'
-                        style={{ color: performanceColor.value }}
-                      >
+                  <div class="metrics">
+                    <div class="metric">
+                      <span class="label">FPS:</span>
+                      <span class="value" style={{ color: performanceColor.value }}>
                         {rendering.fps}
                       </span>
                     </div>
-                    <div class='metric'>
-                      <span class='label'>帧时间:</span>
-                      <span class='value'>
+                    <div class="metric">
+                      <span class="label">帧时间:</span>
+                      <span class="value">
                         {formatNumber(rendering.frameTime)}
                         ms
                       </span>
@@ -241,20 +220,20 @@ export default defineComponent({
 
               {/* 内存使用 */}
               {memory && (
-                <div class='performance-section'>
+                <div class="performance-section">
                   <h5>内存使用</h5>
-                  <div class='metrics'>
-                    <div class='metric'>
-                      <span class='label'>已用:</span>
-                      <span class='value'>{formatBytes(memory.used)}</span>
+                  <div class="metrics">
+                    <div class="metric">
+                      <span class="label">已用:</span>
+                      <span class="value">{formatBytes(memory.used)}</span>
                     </div>
-                    <div class='metric'>
-                      <span class='label'>总计:</span>
-                      <span class='value'>{formatBytes(memory.total)}</span>
+                    <div class="metric">
+                      <span class="label">总计:</span>
+                      <span class="value">{formatBytes(memory.total)}</span>
                     </div>
-                    <div class='metric'>
-                      <span class='label'>使用率:</span>
-                      <span class='value'>{memory.percentage}%</span>
+                    <div class="metric">
+                      <span class="label">使用率:</span>
+                      <span class="value">{memory.percentage}%</span>
                     </div>
                   </div>
                 </div>
@@ -262,35 +241,33 @@ export default defineComponent({
 
               {/* 模板性能 */}
               {templates && (
-                <div class='performance-section'>
+                <div class="performance-section">
                   <h5>模板性能</h5>
-                  <div class='metrics'>
-                    <div class='metric'>
-                      <span class='label'>缓存命中率:</span>
-                      <span class='value'>{cacheHitRate.value}%</span>
+                  <div class="metrics">
+                    <div class="metric">
+                      <span class="label">缓存命中率:</span>
+                      <span class="value">{cacheHitRate.value}%</span>
                     </div>
-                    <div class='metric'>
-                      <span class='label'>平均加载时间:</span>
-                      <span class='value'>
+                    <div class="metric">
+                      <span class="label">平均加载时间:</span>
+                      <span class="value">
                         {formatNumber(templates.averageLoadTime)}
                         ms
                       </span>
                     </div>
                     {props.detailed && (
                       <>
-                        <div class='metric'>
-                          <span class='label'>缓存命中:</span>
-                          <span class='value'>{templates.cacheHits}</span>
+                        <div class="metric">
+                          <span class="label">缓存命中:</span>
+                          <span class="value">{templates.cacheHits}</span>
                         </div>
-                        <div class='metric'>
-                          <span class='label'>缓存未命中:</span>
-                          <span class='value'>{templates.cacheMisses}</span>
+                        <div class="metric">
+                          <span class="label">缓存未命中:</span>
+                          <span class="value">{templates.cacheMisses}</span>
                         </div>
-                        <div class='metric'>
-                          <span class='label'>预加载队列:</span>
-                          <span class='value'>
-                            {templates.preloadQueueSize}
-                          </span>
+                        <div class="metric">
+                          <span class="label">预加载队列:</span>
+                          <span class="value">{templates.preloadQueueSize}</span>
                         </div>
                       </>
                     )}

@@ -1,0 +1,97 @@
+# 源代码（只发布构建后的文件）
+src/
+examples/
+docs/
+tests/
+__tests__/
+test/
+e2e/
+
+# 开发配置文件
+.eslintrc.*
+.prettierrc.*
+.editorconfig
+.gitignore
+.gitattributes
+tsconfig.json
+tsconfig.*.json
+vite.config.*
+vitest.config.*
+playwright.config.*
+rollup.config.*
+
+# 开发依赖和脚本
+.github/
+.vscode/
+.idea/
+scripts/
+tools/
+
+# 测试和覆盖率
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# 日志和临时文件
+*.log
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# 环境变量
+.env*
+
+# 构建缓存
+*.tsbuildinfo
+.rollup.cache
+
+# 文档构建
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# 示例应用
+examples/dist/
+examples/node_modules/
+
+# 开发工具配置
+.size-limit.json
+.commitlintrc.*
+.husky/
+.lintstagedrc.*
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 文件
+*.swp
+*.swo
+*~
+
+# 包管理器文件
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+.pnpm-store/
+
+# 调试文件
+*.tlog
+*.idb
+*.pdb
+
+# 性能分析
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot

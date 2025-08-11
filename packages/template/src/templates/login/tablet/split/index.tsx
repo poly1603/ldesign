@@ -52,11 +52,9 @@ export default defineComponent({
       try {
         await new Promise(resolve => setTimeout(resolve, 1000))
         emit('login', { ...form })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Login failed:', error)
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -114,7 +112,11 @@ export default defineComponent({
                 <div class="tablet-split-login__feature">
                   <div class="tablet-split-login__feature-icon">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" />
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      />
                     </svg>
                   </div>
                   <div class="tablet-split-login__feature-text">
@@ -140,12 +142,22 @@ export default defineComponent({
               <p>请输入您的登录凭据</p>
             </div>
 
-            <form class="tablet-split-login__form" onSubmit={(e: Event) => { e.preventDefault(); handleLogin() }}>
+            <form
+              class="tablet-split-login__form"
+              onSubmit={(e: Event) => {
+                e.preventDefault()
+                handleLogin()
+              }}
+            >
               <div class="tablet-split-login__form-group">
                 <label class="tablet-split-login__label">用户名或邮箱</label>
                 <div class="tablet-split-login__input-wrapper">
                   <svg class="tablet-split-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="2" />
+                    <path
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
                   </svg>
                   <input
                     type="text"
@@ -176,10 +188,7 @@ export default defineComponent({
               <div class="tablet-split-login__form-options">
                 {props.showRememberMe && (
                   <label class="tablet-split-login__checkbox">
-                    <input
-                      type="checkbox"
-                      v-model={form.remember}
-                    />
+                    <input type="checkbox" v-model={form.remember} />
                     <span class="tablet-split-login__checkbox-mark"></span>
                     记住我
                   </label>
@@ -196,12 +205,8 @@ export default defineComponent({
                 class={['tablet-split-login__submit', { 'tablet-split-login__submit--loading': loading.value }]}
                 disabled={loading.value}
               >
-                <span class="tablet-split-login__submit-text">
-                  {loading.value ? '登录中...' : '登录'}
-                </span>
-                {loading.value && (
-                  <div class="tablet-split-login__submit-spinner"></div>
-                )}
+                <span class="tablet-split-login__submit-text">{loading.value ? '登录中...' : '登录'}</span>
+                {loading.value && <div class="tablet-split-login__submit-spinner"></div>}
               </button>
             </form>
 
@@ -218,7 +223,9 @@ export default defineComponent({
                       class={`tablet-split-login__third-party-btn tablet-split-login__third-party-btn--${provider}`}
                       onClick={() => handleThirdPartyLogin(provider)}
                     >
-                      <span class={`tablet-split-login__third-party-icon tablet-split-login__third-party-icon--${provider}`}></span>
+                      <span
+                        class={`tablet-split-login__third-party-icon tablet-split-login__third-party-icon--${provider}`}
+                      ></span>
                       <span class="tablet-split-login__third-party-text">
                         {provider === 'github' && 'GitHub'}
                         {provider === 'google' && 'Google'}
@@ -233,7 +240,9 @@ export default defineComponent({
 
             <div class="tablet-split-login__footer">
               <span>还没有账号？</span>
-              <a href="#" onClick={handleRegister}>立即注册</a>
+              <a href="#" onClick={handleRegister}>
+                立即注册
+              </a>
             </div>
           </div>
         </div>

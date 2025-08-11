@@ -16,9 +16,7 @@ interface TemplateDirectiveElement extends HTMLElement {
 /**
  * 解析指令绑定值
  */
-function parseBinding(
-  binding: DirectiveBinding
-): TemplateDirectiveBinding | null {
+function parseBinding(binding: DirectiveBinding): TemplateDirectiveBinding | null {
   const { value } = binding
 
   if (!value) return null
@@ -51,10 +49,7 @@ function parseBinding(
 /**
  * 渲染模板到元素
  */
-async function renderTemplate(
-  el: TemplateDirectiveElement,
-  binding: TemplateDirectiveBinding
-): Promise<void> {
+async function renderTemplate(el: TemplateDirectiveElement, binding: TemplateDirectiveBinding): Promise<void> {
   const data = el.__templateDirective
   if (!data) return
 
@@ -77,10 +72,7 @@ async function renderTemplate(
 
     // 清空元素内容
     el.innerHTML = ''
-    el.classList.remove(
-      'template-directive-loading-state',
-      'template-directive-error-state'
-    )
+    el.classList.remove('template-directive-loading-state', 'template-directive-error-state')
     el.classList.add('template-directive-loaded-state')
 
     // 挂载组件
@@ -99,15 +91,10 @@ async function renderTemplate(
     el.innerHTML = `
       <div class="template-directive-error">
         <div class="template-directive-error__message">模板加载失败</div>
-        <div class="template-directive-error__detail">${
-          (error as Error).message
-        }</div>
+        <div class="template-directive-error__detail">${(error as Error).message}</div>
       </div>
     `
-    el.classList.remove(
-      'template-directive-loading-state',
-      'template-directive-loaded-state'
-    )
+    el.classList.remove('template-directive-loading-state', 'template-directive-loaded-state')
     el.classList.add('template-directive-error-state')
   }
 }

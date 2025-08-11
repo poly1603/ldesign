@@ -52,11 +52,9 @@ export default defineComponent({
       try {
         await new Promise(resolve => setTimeout(resolve, 1000))
         emit('login', { ...form })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Login failed:', error)
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -86,32 +84,25 @@ export default defineComponent({
         </div>
 
         <div class="mobile-simple-login__content">
-          <form class="mobile-simple-login__form" onSubmit={(e: Event) => { e.preventDefault(); handleLogin() }}>
+          <form
+            class="mobile-simple-login__form"
+            onSubmit={(e: Event) => {
+              e.preventDefault()
+              handleLogin()
+            }}
+          >
             <div class="mobile-simple-login__form-group">
-              <input
-                type="text"
-                placeholder="手机号/邮箱"
-                v-model={form.username}
-                class="mobile-simple-login__input"
-              />
+              <input type="text" placeholder="手机号/邮箱" v-model={form.username} class="mobile-simple-login__input" />
             </div>
 
             <div class="mobile-simple-login__form-group">
-              <input
-                type="password"
-                placeholder="密码"
-                v-model={form.password}
-                class="mobile-simple-login__input"
-              />
+              <input type="password" placeholder="密码" v-model={form.password} class="mobile-simple-login__input" />
             </div>
 
             <div class="mobile-simple-login__form-options">
               {props.showRememberMe && (
                 <label class="mobile-simple-login__checkbox">
-                  <input
-                    type="checkbox"
-                    v-model={form.remember}
-                  />
+                  <input type="checkbox" v-model={form.remember} />
                   <span class="mobile-simple-login__checkbox-mark"></span>
                   记住密码
                 </label>
@@ -145,7 +136,9 @@ export default defineComponent({
                     class={`mobile-simple-login__third-party-btn mobile-simple-login__third-party-btn--${provider}`}
                     onClick={() => handleThirdPartyLogin(provider)}
                   >
-                    <span class={`mobile-simple-login__third-party-icon mobile-simple-login__third-party-icon--${provider}`}></span>
+                    <span
+                      class={`mobile-simple-login__third-party-icon mobile-simple-login__third-party-icon--${provider}`}
+                    ></span>
                     <span class="mobile-simple-login__third-party-text">
                       {provider === 'wechat' && '微信'}
                       {provider === 'qq' && 'QQ'}
@@ -159,7 +152,9 @@ export default defineComponent({
 
           <div class="mobile-simple-login__footer">
             <span>还没有账号？</span>
-            <a href="#" onClick={handleRegister}>立即注册</a>
+            <a href="#" onClick={handleRegister}>
+              立即注册
+            </a>
           </div>
         </div>
       </div>

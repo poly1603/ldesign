@@ -84,14 +84,7 @@ export const TemplateRenderer = defineComponent({
       default: false,
     },
   },
-  emits: [
-    'template-change',
-    'device-change',
-    'render-error',
-    'performance-update',
-    'load-start',
-    'load-end',
-  ],
+  emits: ['template-change', 'device-change', 'render-error', 'performance-update', 'load-start', 'load-end'],
   setup(props, { emit, attrs }) {
     const {
       // currentTemplate, // 暂时注释掉未使用的变量
@@ -172,11 +165,11 @@ export const TemplateRenderer = defineComponent({
       if (!props.showSelector) return null
 
       return (
-        <div class='template-renderer__selector'>
-          <div class='template-renderer__selector-group'>
-            <label class='template-renderer__label'>模板:</label>
+        <div class="template-renderer__selector">
+          <div class="template-renderer__selector-group">
+            <label class="template-renderer__label">模板:</label>
             <select
-              class='template-renderer__select'
+              class="template-renderer__select"
               value={currentTemplateId.value}
               onChange={(e: Event) => {
                 const target = e.target as HTMLSelectElement
@@ -191,19 +184,19 @@ export const TemplateRenderer = defineComponent({
             </select>
           </div>
 
-          <div class='template-renderer__selector-group'>
-            <label class='template-renderer__label'>设备:</label>
+          <div class="template-renderer__selector-group">
+            <label class="template-renderer__label">设备:</label>
             <select
-              class='template-renderer__select'
+              class="template-renderer__select"
               value={deviceType.value}
               onChange={(e: Event) => {
                 const target = e.target as HTMLSelectElement
                 switchDevice(target.value as DeviceType)
               }}
             >
-              <option value='desktop'>桌面</option>
-              <option value='tablet'>平板</option>
-              <option value='mobile'>手机</option>
+              <option value="desktop">桌面</option>
+              <option value="tablet">平板</option>
+              <option value="mobile">手机</option>
             </select>
           </div>
         </div>
@@ -214,7 +207,7 @@ export const TemplateRenderer = defineComponent({
     const renderContent = () => {
       try {
         if (!TemplateComponent.value) {
-          return <div class='template-renderer__error'>未找到模板</div>
+          return <div class="template-renderer__error">未找到模板</div>
         }
 
         // 合并配置
@@ -225,20 +218,15 @@ export const TemplateRenderer = defineComponent({
 
         const Component = TemplateComponent.value
         if (!Component) {
-          return <div class='template-renderer__empty'>模板组件未找到</div>
+          return <div class="template-renderer__empty">模板组件未找到</div>
         }
 
         const DynamicComponent = Component as any
         return <DynamicComponent {...finalConfig} {...attrs} />
       } catch (error) {
         emit('render-error', error)
-        const errorMessage =
-          error instanceof Error ? error.message : String(error)
-        return (
-          <div class='template-renderer__error'>
-            模板渲染失败: {errorMessage}
-          </div>
-        )
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        return <div class="template-renderer__error">模板渲染失败: {errorMessage}</div>
       }
     }
 
@@ -257,13 +245,13 @@ export const TemplateRenderer = defineComponent({
         return (
           <div class={className}>
             {selector}
-            <div class='template-renderer__content'>{content}</div>
+            <div class="template-renderer__content">{content}</div>
           </div>
         )
       } else if (props.selectorPosition === 'bottom') {
         return (
           <div class={className}>
-            <div class='template-renderer__content'>{content}</div>
+            <div class="template-renderer__content">{content}</div>
             {selector}
           </div>
         )
@@ -271,13 +259,13 @@ export const TemplateRenderer = defineComponent({
         return (
           <div class={className}>
             {selector}
-            <div class='template-renderer__content'>{content}</div>
+            <div class="template-renderer__content">{content}</div>
           </div>
         )
       } else {
         return (
           <div class={className}>
-            <div class='template-renderer__content'>{content}</div>
+            <div class="template-renderer__content">{content}</div>
             {selector}
           </div>
         )

@@ -60,73 +60,53 @@ export default defineComponent({
     }
 
     return () => (
-      <div class='default-login'>
-        <div class='default-login__container'>
-          <div class='default-login__header'>
-            {props.logo && (
-              <img src={props.logo} alt='Logo' class='default-login__logo' />
-            )}
-            <h1 class='default-login__title'>{props.title}</h1>
-            <p class='default-login__subtitle'>{props.subtitle}</p>
+      <div class="default-login">
+        <div class="default-login__container">
+          <div class="default-login__header">
+            {props.logo && <img src={props.logo} alt="Logo" class="default-login__logo" />}
+            <h1 class="default-login__title">{props.title}</h1>
+            <p class="default-login__subtitle">{props.subtitle}</p>
           </div>
 
           <form
-            class='default-login__form'
+            class="default-login__form"
             onSubmit={(e: Event) => {
               e.preventDefault()
               handleLogin()
             }}
           >
-            <div class='default-login__form-group'>
-              <label class='default-login__label'>用户名</label>
-              <input
-                type='text'
-                placeholder='请输入用户名'
-                v-model={form.username}
-                class='default-login__input'
-              />
+            <div class="default-login__form-group">
+              <label class="default-login__label">用户名</label>
+              <input type="text" placeholder="请输入用户名" v-model={form.username} class="default-login__input" />
             </div>
 
-            <div class='default-login__form-group'>
-              <label class='default-login__label'>密码</label>
-              <input
-                type='password'
-                placeholder='请输入密码'
-                v-model={form.password}
-                class='default-login__input'
-              />
+            <div class="default-login__form-group">
+              <label class="default-login__label">密码</label>
+              <input type="password" placeholder="请输入密码" v-model={form.password} class="default-login__input" />
             </div>
 
-            <div class='default-login__form-options'>
+            <div class="default-login__form-options">
               {props.showRememberMe && (
-                <label class='default-login__checkbox'>
-                  <input type='checkbox' v-model={form.remember} />
+                <label class="default-login__checkbox">
+                  <input type="checkbox" v-model={form.remember} />
                   记住密码
                 </label>
               )}
               {props.showForgotPassword && (
-                <a
-                  href='#'
-                  onClick={handleForgotPassword}
-                  class='default-login__forgot'
-                >
+                <a href="#" onClick={handleForgotPassword} class="default-login__forgot">
                   忘记密码？
                 </a>
               )}
             </div>
 
-            <button
-              type='submit'
-              class='default-login__submit'
-              disabled={loading.value}
-            >
+            <button type="submit" class="default-login__submit" disabled={loading.value}>
               {loading.value ? '登录中...' : '登录'}
             </button>
           </form>
 
-          <div class='default-login__footer'>
+          <div class="default-login__footer">
             <span>没有账号？</span>
-            <a href='#' onClick={handleRegister}>
+            <a href="#" onClick={handleRegister}>
               立即注册
             </a>
           </div>

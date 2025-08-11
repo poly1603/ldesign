@@ -1,3 +1,6 @@
+export { LRUCache, TemplateCache } from './core/cache/index.js'
+export { detectDeviceType, getDeviceInfo as getDeviceInfoCore, watchDeviceChange } from './core/device.js'
+export { TemplateManager } from './core/TemplateManager.js'
 export {
   DeviceDetectionConfig,
   DeviceType,
@@ -19,13 +22,6 @@ export {
   UseTemplateOptions,
   UseTemplateReturn,
 } from './types/index.js'
-export { TemplateManager } from './core/TemplateManager.js'
-export { LRUCache, TemplateCache } from './core/cache/index.js'
-export {
-  detectDeviceType,
-  getDeviceInfo as getDeviceInfoCore,
-  watchDeviceChange,
-} from './core/device.js'
 export {
   DEFAULT_BREAKPOINTS,
   DEFAULT_DEVICE_CONFIG,
@@ -43,16 +39,6 @@ export {
 } from './utils/device.js'
 export { TemplateScanner } from './utils/scanner.js'
 export { default as TemplateRenderer } from './vue/components/TemplateRenderer.js'
-export {
-  createTemplateManager,
-  useTemplate,
-} from './vue/composables/useTemplate.js'
-export {
-  registerTemplateDirective,
-  default as templateDirective,
-} from './vue/directives/template.js'
-export {
-  default as TemplatePlugin,
-  default,
-  getGlobalTemplateManager,
-} from './vue/plugins/index.js'
+export { createTemplateManager, useTemplate } from './vue/composables/useTemplate.js'
+export { registerTemplateDirective, default as templateDirective } from './vue/directives/template.js'
+export { default as TemplatePlugin, default, getGlobalTemplateManager } from './vue/plugins/index.js'

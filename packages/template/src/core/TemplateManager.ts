@@ -15,8 +15,8 @@ import { TemplateLoadingState } from '../types'
 
 // 使用核心模块
 import { TemplateCache as CoreTemplateCache } from './cache/index'
-import { TemplateScanner } from './scanner'
 import { detectDeviceType, watchDeviceChange } from './device'
+import { TemplateScanner } from './scanner'
 import { templateRegistry } from './template-registry'
 
 // TemplateInfo 现在从 types 模块导入
@@ -145,20 +145,11 @@ export class TemplateManager extends EventEmitter<{
 
     try {
       // 查找相同分类和模板名称但不同设备的模板
-      const templates = await this.getAvailableTemplates(
-        this.currentTemplate.category,
-        device
-      )
-      const targetTemplate = templates.find(
-        t => t.template === this.currentTemplate!.template
-      )
+      const templates = await this.getAvailableTemplates(this.currentTemplate.category, device)
+      const targetTemplate = templates.find(t => t.template === this.currentTemplate!.template)
 
       if (targetTemplate) {
-        await this.switch(
-          targetTemplate.category,
-          device,
-          targetTemplate.template
-        )
+        await this.switch(targetTemplate.category, device, targetTemplate.template)
       }
     } catch (error) {
       console.warn('Failed to auto-switch device template:', error)
@@ -173,10 +164,7 @@ export class TemplateManager extends EventEmitter<{
       const result = await this.scanner.scanTemplates()
 
       // 预加载指定的模板
-      if (
-        this.config.enablePreload &&
-        this.config.preloadTemplates.length > 0
-      ) {
+      if (this.config.enablePreload && this.config.preloadTemplates.length > 0) {
         this.preloadTemplates(this.config.preloadTemplates)
       }
 
@@ -209,22 +197,14 @@ export class TemplateManager extends EventEmitter<{
   /**
    * 生成缓存键
    */
-  private getCacheKey(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): string {
+  private getCacheKey(category: string, device: DeviceType, template: string): string {
     return `${category}:${device}:${template}`
   }
 
   /**
    * 加载模板组件
    */
-  private async loadTemplate(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): Promise<TemplateLoadResult> {
+  private async loadTemplate(category: string, device: DeviceType, template: string): Promise<TemplateLoadResult> {
     const cacheKey = this.getCacheKey(category, device, template)
 
     // 检查是否正在加载
@@ -343,11 +323,7 @@ export class TemplateManager extends EventEmitter<{
   /**
    * 切换模板
    */
-  async switch(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): Promise<void> {
+  async switch(category: string, device: DeviceType, template: string): Promise<void> {
     const oldTemplate = this.currentTemplate
 
     try {
@@ -374,19 +350,14 @@ export class TemplateManager extends EventEmitter<{
   /**
    * 获取可用模板列表
    */
-  async getAvailableTemplates(
-    category?: string,
-    device?: DeviceType
-  ): Promise<TemplateMetadata[]> {
+  async getAvailableTemplates(category?: string, device?: DeviceType): Promise<TemplateMetadata[]> {
     // 确保已扫描模板
     if (this.scanner.getAllTemplates().length === 0) {
       await this.scanTemplates()
     }
 
     if (category && device) {
-      return this.scanner
-        .getAllTemplates()
-        .filter(t => t.category === category && t.device === device)
+      return this.scanner.getAllTemplates().filter(t => t.category === category && t.device === device)
     } else if (category) {
       return this.scanner.getTemplatesByCategory(category)
     } else if (device) {
@@ -440,9 +411,7 @@ export class TemplateManager extends EventEmitter<{
         .getAllTemplates()
         .filter(t => t.category === category)
         .map(t => t.device)
-        .filter(
-          (device, index, arr) => arr.indexOf(device) === index
-        ) as DeviceType[]
+        .filter((device, index, arr) => arr.indexOf(device) === index) as DeviceType[]
     }
     return this.scanner.getAvailableDevices()
   }
@@ -450,11 +419,7 @@ export class TemplateManager extends EventEmitter<{
   /**
    * 检查模板是否存在
    */
-  async hasTemplate(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): Promise<boolean> {
+  async hasTemplate(category: string, device: DeviceType, template: string): Promise<boolean> {
     if (this.scanner.getAllTemplates().length === 0) {
       await this.scanTemplates()
     }
@@ -501,11 +466,7 @@ export class TemplateManager extends EventEmitter<{
   /**
    * 预加载模板
    */
-  async preloadTemplate(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): Promise<void> {
+  async preloadTemplate(category: string, device: DeviceType, template: string): Promise<void> {
     const key = `${category}/${device}/${template}`
 
     if (this.preloadQueue.has(key)) {
@@ -530,9 +491,8 @@ export class TemplateManager extends EventEmitter<{
       { category: 'dashboard', device: this.currentDevice, template: 'admin' },
     ]
 
-    const preloadPromises = commonTemplates.map(
-      ({ category, device, template }) =>
-        this.preloadTemplate(category, device as DeviceType, template)
+    const preloadPromises = commonTemplates.map(({ category, device, template }) =>
+      this.preloadTemplate(category, device as DeviceType, template)
     )
 
     await Promise.allSettled(preloadPromises)
@@ -648,11 +608,7 @@ export function registerTemplate(
 /**
  * 获取模板
  */
-export function getTemplate(
-  category: string,
-  device: DeviceType,
-  variant?: string
-): TemplateInfo | null {
+export function getTemplate(category: string, device: DeviceType, variant?: string): TemplateInfo | null {
   const categoryTemplates = globalTemplateRegistry[category]
   if (!categoryTemplates) return null
 
@@ -675,10 +631,7 @@ export function getTemplate(
 /**
  * 获取设备类型的所有模板
  */
-export function getTemplatesByDevice(
-  category: string,
-  device: DeviceType
-): TemplateInfo[] {
+export function getTemplatesByDevice(category: string, device: DeviceType): TemplateInfo[] {
   const categoryTemplates = globalTemplateRegistry[category]
   if (!categoryTemplates) return []
 
@@ -725,10 +678,7 @@ export function getAllTemplates(): TemplateInfo[] {
 /**
  * 获取默认模板
  */
-export function getDefaultTemplate(
-  category: string,
-  device: DeviceType
-): TemplateInfo | null {
+export function getDefaultTemplate(category: string, device: DeviceType): TemplateInfo | null {
   const deviceTemplates = getTemplatesByDevice(category, device)
   return deviceTemplates.find(t => t.isDefault) || deviceTemplates[0] || null
 }
@@ -736,22 +686,14 @@ export function getDefaultTemplate(
 /**
  * 检查模板是否存在
  */
-export function hasTemplate(
-  category: string,
-  device: DeviceType,
-  variant: string
-): boolean {
+export function hasTemplate(category: string, device: DeviceType, variant: string): boolean {
   return getTemplate(category, device, variant) !== null
 }
 
 /**
  * 获取模板配置
  */
-export function getTemplateConfig(
-  category: string,
-  device: DeviceType,
-  variant: string
-): TemplateConfig | null {
+export function getTemplateConfig(category: string, device: DeviceType, variant: string): TemplateConfig | null {
   const template = getTemplate(category, device, variant)
   return template?.config || null
 }
@@ -759,11 +701,7 @@ export function getTemplateConfig(
 /**
  * 获取模板组件
  */
-export function getTemplateComponent(
-  category: string,
-  device: DeviceType,
-  variant: string
-): unknown {
+export function getTemplateComponent(category: string, device: DeviceType, variant: string): unknown {
   const template = getTemplate(category, device, variant)
   return template?.component || null
 }
@@ -798,8 +736,7 @@ export function getTemplateStats(): {
   allTemplates.forEach(template => {
     categories.add(template.category)
     deviceBreakdown[template.device]++
-    categoryBreakdown[template.category] =
-      (categoryBreakdown[template.category] || 0) + 1
+    categoryBreakdown[template.category] = (categoryBreakdown[template.category] || 0) + 1
   })
 
   return {

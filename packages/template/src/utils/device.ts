@@ -1,8 +1,4 @@
-import type {
-  DeviceDetectionConfig,
-  DeviceType,
-  ResponsiveBreakpoints,
-} from '../types'
+import type { DeviceDetectionConfig, DeviceType, ResponsiveBreakpoints } from '../types'
 
 /**
  * 默认响应式断点配置
@@ -58,14 +54,8 @@ function getViewportInfo(): { width: number; height: number } {
     return viewport
   }
 
-  const width =
-    window.innerWidth ||
-    document.documentElement.clientWidth ||
-    document.body.clientWidth
-  const height =
-    window.innerHeight ||
-    document.documentElement.clientHeight ||
-    document.body.clientHeight
+  const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+  const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
 
   cachedViewport = { width, height, timestamp: now }
   return { width, height }
@@ -134,9 +124,7 @@ export function isTouchDevice(): boolean {
 /**
  * 基于视口宽度检测设备类型
  */
-export function detectDeviceByViewport(
-  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG
-): DeviceType {
+export function detectDeviceByViewport(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG): DeviceType {
   const width = getViewportWidth()
 
   if (width < config.mobileBreakpoint) {
@@ -179,9 +167,7 @@ function getConfigHash(config: DeviceDetectionConfig): string {
 /**
  * 综合检测设备类型（带缓存）
  */
-export function detectDevice(
-  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG
-): DeviceType {
+export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG): DeviceType {
   // 优先使用自定义检测器
   if (config.customDetector) {
     return config.customDetector()
@@ -191,11 +177,7 @@ export function detectDevice(
   const configHash = getConfigHash(config)
 
   // 检查缓存是否有效
-  if (
-    cachedDevice &&
-    now - cachedDevice.timestamp < DEVICE_CACHE_TTL &&
-    cachedDevice.configHash === configHash
-  ) {
+  if (cachedDevice && now - cachedDevice.timestamp < DEVICE_CACHE_TTL && cachedDevice.configHash === configHash) {
     return cachedDevice.device
   }
 
@@ -304,10 +286,7 @@ export function getDeviceInfo() {
 /**
  * 检查设备是否支持指定的最小/最大宽度
  */
-export function checkDeviceSupport(
-  minWidth?: number,
-  maxWidth?: number
-): boolean {
+export function checkDeviceSupport(minWidth?: number, maxWidth?: number): boolean {
   const width = getViewportWidth()
 
   if (minWidth && width < minWidth) return false

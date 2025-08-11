@@ -1,0 +1,51 @@
+[
+  {
+    "name": "Core (ES Module)",
+    "path": "es/index.js",
+    "limit": "50 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Core (CommonJS)",
+    "path": "lib/index.js",
+    "limit": "55 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Vue Integration (ES Module)",
+    "path": "es/vue/index.js",
+    "limit": "30 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Vue Integration (CommonJS)",
+    "path": "lib/vue/index.js",
+    "limit": "35 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Template Components (ES Module)",
+    "path": "es/templates/**/*.js",
+    "limit": "20 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Utils Only (ES Module)",
+    "path": "es/utils/index.js",
+    "limit": "15 KB",
+    "gzip": true,
+    "running": false
+  },
+  {
+    "name": "Core Types",
+    "path": "types/index.d.ts",
+    "limit": "10 KB",
+    "gzip": false,
+    "running": false
+  }
+]

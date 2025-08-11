@@ -4,13 +4,7 @@
  */
 
 import type { DeviceType } from '../../types'
-import {
-  defineComponent,
-  onMounted,
-  onUnmounted,
-  type PropType,
-  ref,
-} from 'vue'
+import { defineComponent, onMounted, onUnmounted, type PropType, ref } from 'vue'
 
 export interface LazyTemplateProps {
   /** 模板分类 */
@@ -82,9 +76,7 @@ export default defineComponent({
       try {
         // 这里应该调用模板管理器的加载方法
         // 为了演示，我们使用动态导入
-        const module = await import(
-          `../../templates/${props.category}/${props.device}/${props.template}/index.tsx`
-        )
+        const module = await import(`../../templates/${props.category}/${props.device}/${props.template}/index.tsx`)
 
         templateComponent.value = module.default
         isLoaded.value = true
@@ -158,13 +150,9 @@ export default defineComponent({
       // 如果有错误，显示错误状态
       if (error.value) {
         return (
-          <div
-            ref={containerRef}
-            class='lazy-template-error'
-            style={{ minHeight: `${placeholderHeight}px` }}
-          >
+          <div ref={containerRef} class="lazy-template-error" style={{ minHeight: `${placeholderHeight}px` }}>
             {slots.error?.({ error: error.value, retry }) || (
-              <div class='error-content'>
+              <div class="error-content">
                 <p>模板加载失败</p>
                 <button onClick={retry}>重试</button>
               </div>
@@ -176,14 +164,10 @@ export default defineComponent({
       // 如果正在加载，显示加载状态
       if (isLoading.value) {
         return (
-          <div
-            ref={containerRef}
-            class='lazy-template-loading'
-            style={{ minHeight: `${placeholderHeight}px` }}
-          >
+          <div ref={containerRef} class="lazy-template-loading" style={{ minHeight: `${placeholderHeight}px` }}>
             {slots.loading?.() || (
-              <div class='loading-content'>
-                <div class='loading-spinner'></div>
+              <div class="loading-content">
+                <div class="loading-spinner"></div>
                 <p>正在加载模板...</p>
               </div>
             )}
@@ -193,14 +177,10 @@ export default defineComponent({
 
       // 默认占位符
       return (
-        <div
-          ref={containerRef}
-          class='lazy-template-placeholder'
-          style={{ minHeight: `${placeholderHeight}px` }}
-        >
+        <div ref={containerRef} class="lazy-template-placeholder" style={{ minHeight: `${placeholderHeight}px` }}>
           {slots.placeholder?.() || (
-            <div class='placeholder-content'>
-              <div class='placeholder-skeleton'></div>
+            <div class="placeholder-content">
+              <div class="placeholder-skeleton"></div>
             </div>
           )}
         </div>

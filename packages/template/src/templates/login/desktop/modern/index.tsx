@@ -52,11 +52,9 @@ export default defineComponent({
       try {
         await new Promise(resolve => setTimeout(resolve, 1000))
         emit('login', { ...form })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Login failed:', error)
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -95,19 +93,20 @@ export default defineComponent({
               <p class="modern-login__subtitle">{props.subtitle}</p>
             </div>
 
-            <form class="modern-login__form" onSubmit={(e: Event) => { e.preventDefault(); handleLogin() }}>
+            <form
+              class="modern-login__form"
+              onSubmit={(e: Event) => {
+                e.preventDefault()
+                handleLogin()
+              }}
+            >
               <div class="modern-login__form-group">
                 <div class="modern-login__input-wrapper">
                   <svg class="modern-login__input-icon" viewBox="0 0 24 24" fill="none">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" />
                     <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" />
                   </svg>
-                  <input
-                    type="text"
-                    placeholder="用户名或邮箱"
-                    v-model={form.username}
-                    class="modern-login__input"
-                  />
+                  <input type="text" placeholder="用户名或邮箱" v-model={form.username} class="modern-login__input" />
                 </div>
               </div>
 
@@ -118,22 +117,14 @@ export default defineComponent({
                     <circle cx="12" cy="16" r="1" fill="currentColor" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" />
                   </svg>
-                  <input
-                    type="password"
-                    placeholder="密码"
-                    v-model={form.password}
-                    class="modern-login__input"
-                  />
+                  <input type="password" placeholder="密码" v-model={form.password} class="modern-login__input" />
                 </div>
               </div>
 
               <div class="modern-login__form-options">
                 {props.showRememberMe && (
                   <label class="modern-login__checkbox">
-                    <input
-                      type="checkbox"
-                      v-model={form.remember}
-                    />
+                    <input type="checkbox" v-model={form.remember} />
                     <span class="modern-login__checkbox-mark"></span>
                     记住我
                   </label>
@@ -150,12 +141,8 @@ export default defineComponent({
                 class={['modern-login__submit', { 'modern-login__submit--loading': loading.value }]}
                 disabled={loading.value}
               >
-                <span class="modern-login__submit-text">
-                  {loading.value ? '登录中...' : '登录'}
-                </span>
-                {loading.value && (
-                  <div class="modern-login__submit-spinner"></div>
-                )}
+                <span class="modern-login__submit-text">{loading.value ? '登录中...' : '登录'}</span>
+                {loading.value && <div class="modern-login__submit-spinner"></div>}
               </button>
             </form>
 
@@ -181,7 +168,9 @@ export default defineComponent({
 
             <div class="modern-login__footer">
               <span>还没有账号？</span>
-              <a href="#" onClick={handleRegister}>立即注册</a>
+              <a href="#" onClick={handleRegister}>
+                立即注册
+              </a>
             </div>
           </div>
         </div>

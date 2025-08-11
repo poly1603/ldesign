@@ -22,10 +22,7 @@ export interface VirtualScrollItem {
 /**
  * 虚拟滚动 Hook
  */
-export function useVirtualScroll<T extends VirtualScrollItem>(
-  items: Ref<T[]>,
-  options: VirtualScrollOptions
-) {
+export function useVirtualScroll<T extends VirtualScrollItem>(items: Ref<T[]>, options: VirtualScrollOptions) {
   const { containerHeight, itemHeight, buffer = 5 } = options
 
   const scrollTop = ref(0)
@@ -35,10 +32,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
   const visibleRange = computed(() => {
     const visibleCount = Math.ceil(containerHeight / itemHeight)
     const startIndex = Math.floor(scrollTop.value / itemHeight)
-    const endIndex = Math.min(
-      startIndex + visibleCount + buffer * 2,
-      items.value.length
-    )
+    const endIndex = Math.min(startIndex + visibleCount + buffer * 2, items.value.length)
 
     return {
       start: Math.max(0, startIndex - buffer),
@@ -117,11 +111,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
  * 简化版虚拟滚动 Hook
  * 适用于简单的列表场景
  */
-export function useSimpleVirtualScroll<T>(
-  items: Ref<T[]>,
-  itemHeight: number,
-  containerHeight: number
-) {
+export function useSimpleVirtualScroll<T>(items: Ref<T[]>, itemHeight: number, containerHeight: number) {
   return useVirtualScroll(items as Ref<VirtualScrollItem[]>, {
     containerHeight,
     itemHeight,

@@ -5,9 +5,9 @@
 
 import type { DeviceType } from '../types'
 import {
+  createDeviceWatcher as utilsCreateDeviceWatcher,
   detectDevice as utilsDetectDevice,
   getDeviceInfo as utilsGetDeviceInfo,
-  createDeviceWatcher as utilsCreateDeviceWatcher,
 } from '../utils/device'
 
 // 重新导出DeviceType
@@ -15,7 +15,7 @@ export type { DeviceType }
 
 // 重新导出utils中的类型和常量
 export type { DeviceDetectionConfig } from '../types'
-export { DEFAULT_DEVICE_CONFIG, DEFAULT_BREAKPOINTS } from '../utils/device'
+export { DEFAULT_BREAKPOINTS, DEFAULT_DEVICE_CONFIG } from '../utils/device'
 
 export interface DeviceInfo {
   type: DeviceType
@@ -49,20 +49,12 @@ export function getDeviceInfo(): DeviceInfo {
 }
 
 // 重新导出utils中的设备检测功能
-export {
-  isMobileDevice,
-  isTabletDevice,
-  isTouchDevice,
-  getViewportWidth,
-  getViewportHeight,
-} from '../utils/device'
+export { getViewportHeight, getViewportWidth, isMobileDevice, isTabletDevice, isTouchDevice } from '../utils/device'
 
 /**
  * 监听设备变化 - 使用utils实现并适配接口
  */
-export function watchDeviceChange(
-  callback: (deviceInfo: DeviceInfo) => void
-): () => void {
+export function watchDeviceChange(callback: (deviceInfo: DeviceInfo) => void): () => void {
   return utilsCreateDeviceWatcher(_deviceType => {
     // 当设备类型变化时，获取完整的设备信息
     const deviceInfo = getDeviceInfo()

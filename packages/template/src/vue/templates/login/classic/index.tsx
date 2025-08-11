@@ -92,50 +92,48 @@ export const ClassicLoginTemplate = defineComponent({
     }
 
     return () => (
-      <div class='classic-login-template'>
-        <div class='login-container'>
-          <div class='login-card'>
+      <div class="classic-login-template">
+        <div class="login-container">
+          <div class="login-card">
             {/* Logo 和标题 */}
-            <div class='login-header'>
-              {props.logo && (
-                <img src={props.logo} alt='Logo' class='login-logo' />
-              )}
-              <h1 class='login-title'>{props.title}</h1>
-              {props.subtitle && <p class='login-subtitle'>{props.subtitle}</p>}
+            <div class="login-header">
+              {props.logo && <img src={props.logo} alt="Logo" class="login-logo" />}
+              <h1 class="login-title">{props.title}</h1>
+              {props.subtitle && <p class="login-subtitle">{props.subtitle}</p>}
             </div>
 
             {/* 登录表单 */}
             <form
-              class='login-form'
+              class="login-form"
               onSubmit={(e: Event) => {
                 e.preventDefault()
                 handleLogin()
               }}
             >
-              <div class='form-group'>
-                <label for='username' class='form-label'>
+              <div class="form-group">
+                <label for="username" class="form-label">
                   用户名
                 </label>
                 <input
-                  id='username'
-                  type='text'
-                  class='form-input'
-                  placeholder='请输入用户名'
+                  id="username"
+                  type="text"
+                  class="form-input"
+                  placeholder="请输入用户名"
                   v-model={username.value}
                   onKeypress={handleKeyPress}
                   disabled={isLoading.value}
                 />
               </div>
 
-              <div class='form-group'>
-                <label for='password' class='form-label'>
+              <div class="form-group">
+                <label for="password" class="form-label">
                   密码
                 </label>
                 <input
-                  id='password'
-                  type='password'
-                  class='form-input'
-                  placeholder='请输入密码'
+                  id="password"
+                  type="password"
+                  class="form-input"
+                  placeholder="请输入密码"
                   v-model={password.value}
                   onKeypress={handleKeyPress}
                   disabled={isLoading.value}
@@ -143,21 +141,17 @@ export const ClassicLoginTemplate = defineComponent({
               </div>
 
               {/* 记住我和忘记密码 */}
-              <div class='form-options'>
+              <div class="form-options">
                 {props.showRememberMe && (
-                  <label class='checkbox-label'>
-                    <input
-                      type='checkbox'
-                      v-model={rememberMe.value}
-                      disabled={isLoading.value}
-                    />
-                    <span class='checkbox-text'>记住我</span>
+                  <label class="checkbox-label">
+                    <input type="checkbox" v-model={rememberMe.value} disabled={isLoading.value} />
+                    <span class="checkbox-text">记住我</span>
                   </label>
                 )}
                 {props.showForgotPassword && (
                   <a
-                    href='#'
-                    class='forgot-password-link'
+                    href="#"
+                    class="forgot-password-link"
                     onClick={(e: Event) => {
                       e.preventDefault()
                       handleForgotPassword()
@@ -170,7 +164,7 @@ export const ClassicLoginTemplate = defineComponent({
 
               {/* 登录按钮 */}
               <button
-                type='submit'
+                type="submit"
                 class={['login-button', { loading: isLoading.value }]}
                 disabled={!isFormValid.value || isLoading.value}
               >
@@ -180,11 +174,11 @@ export const ClassicLoginTemplate = defineComponent({
 
             {/* 注册链接 */}
             {props.showRegisterLink && (
-              <div class='register-section'>
-                <span class='register-text'>还没有账户？</span>
+              <div class="register-section">
+                <span class="register-text">还没有账户？</span>
                 <a
-                  href='#'
-                  class='register-link'
+                  href="#"
+                  class="register-link"
                   onClick={(e: Event) => {
                     e.preventDefault()
                     handleRegister()
@@ -197,21 +191,15 @@ export const ClassicLoginTemplate = defineComponent({
 
             {/* 第三方登录 */}
             {props.allowThirdPartyLogin && (
-              <div class='third-party-section'>
-                <div class='divider'>
-                  <span class='divider-text'>或</span>
+              <div class="third-party-section">
+                <div class="divider">
+                  <span class="divider-text">或</span>
                 </div>
-                <div class='third-party-buttons'>
-                  <button
-                    class='third-party-button github'
-                    onClick={() => handleThirdPartyLogin('github')}
-                  >
+                <div class="third-party-buttons">
+                  <button class="third-party-button github" onClick={() => handleThirdPartyLogin('github')}>
                     GitHub
                   </button>
-                  <button
-                    class='third-party-button google'
-                    onClick={() => handleThirdPartyLogin('google')}
-                  >
+                  <button class="third-party-button google" onClick={() => handleThirdPartyLogin('google')}>
                     Google
                   </button>
                 </div>

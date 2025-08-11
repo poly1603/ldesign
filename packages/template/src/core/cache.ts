@@ -75,10 +75,7 @@ function setCacheData(templates: TemplateCacheData): void {
 /**
  * 获取用户选择的模板
  */
-export function getCachedTemplate(
-  category: string,
-  device: DeviceType
-): string | null {
+export function getCachedTemplate(category: string, device: DeviceType): string | null {
   const cacheData = getCacheData()
   if (!cacheData) return null
 
@@ -91,11 +88,7 @@ export function getCachedTemplate(
 /**
  * 缓存用户选择的模板
  */
-export function setCachedTemplate(
-  category: string,
-  device: DeviceType,
-  variant: string
-): void {
+export function setCachedTemplate(category: string, device: DeviceType, variant: string): void {
   const cacheData = getCacheData()
   const templates = cacheData?.templates || {}
 

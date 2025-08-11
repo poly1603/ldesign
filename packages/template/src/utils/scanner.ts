@@ -38,10 +38,7 @@ export class TemplateScanner {
   /**
    * 获取指定分类和设备的模板 - 委托给核心扫描器
    */
-  getTemplatesByCategoryAndDevice(
-    category: string,
-    device: DeviceType
-  ): TemplateMetadata[] {
+  getTemplatesByCategoryAndDevice(category: string, device: DeviceType): TemplateMetadata[] {
     const templates = this.coreScanner.getTemplatesByCategory(category)
     return templates.filter(t => t.device === device)
   }
@@ -49,11 +46,7 @@ export class TemplateScanner {
   /**
    * 查找特定模板 - 委托给核心扫描器
    */
-  findTemplate(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): TemplateMetadata | undefined {
+  findTemplate(category: string, device: DeviceType, template: string): TemplateMetadata | undefined {
     const result = this.coreScanner.findTemplate(category, device, template)
     return result ?? undefined
   }

@@ -1,15 +1,9 @@
 import type { DeviceType, TemplateConfig } from '../types'
 import { defineAsyncComponent } from 'vue'
-import {
-  registerTemplate,
-  templateConfigs,
-} from './composables/useTemplateSystem'
+import { registerTemplate, templateConfigs } from './composables/useTemplateSystem'
 
 // 使用 import.meta.glob 自动导入所有模板
-const templateModules = import.meta.glob(
-  '../templates/**/index.{ts,tsx,vue,js}',
-  { eager: false }
-)
+const templateModules = import.meta.glob('../templates/**/index.{ts,tsx,vue,js}', { eager: false })
 
 console.log(templateModules, 'templateRegistry')
 
@@ -21,9 +15,7 @@ interface ExtendedTemplateConfig extends TemplateConfig {
 // 根据路径解析模板信息
 function parseTemplatePath(path: string): ExtendedTemplateConfig | null {
   // 路径格式: ../templates/{category}/{deviceType}/{templateId}/index.{ext}
-  const match = path.match(
-    /\.\.\/templates\/([^/]+)\/([^/]+)\/([^/]+)\/index\.(ts|tsx|vue)$/
-  )
+  const match = path.match(/\.\.\/templates\/([^/]+)\/([^/]+)\/([^/]+)\/index\.(ts|tsx|vue)$/)
   if (!match) return null
 
   const [, category, deviceType, templateId] = match
@@ -32,10 +24,7 @@ function parseTemplatePath(path: string): ExtendedTemplateConfig | null {
   if (!['desktop', 'mobile', 'tablet'].includes(deviceType)) return null
 
   // 生成模板名称和描述
-  const templateNames: Record<
-    string,
-    Record<string, { name: string; description: string }>
-  > = {
+  const templateNames: Record<string, Record<string, { name: string; description: string }>> = {
     login: {
       classic: { name: '经典模板', description: '经典的双栏布局登录模板' },
       modern: {
@@ -65,18 +54,10 @@ function parseTemplatePath(path: string): ExtendedTemplateConfig | null {
 /**
  * 获取模板配置
  */
-function getTemplateConfig(
-  category: string,
-  deviceType: DeviceType,
-  templateId: string
-) {
+function getTemplateConfig(category: string, deviceType: DeviceType, templateId: string) {
   if (category === 'login') {
     if (deviceType === 'desktop') {
-      return (
-        templateConfigs.login[
-          templateId as keyof typeof templateConfigs.login
-        ] || templateConfigs.login.default
-      )
+      return templateConfigs.login[templateId as keyof typeof templateConfigs.login] || templateConfigs.login.default
     } else if (deviceType === 'tablet') {
       return templateConfigs.login.tablet
     } else {

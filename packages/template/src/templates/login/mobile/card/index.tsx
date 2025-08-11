@@ -52,11 +52,9 @@ export default defineComponent({
       try {
         await new Promise(resolve => setTimeout(resolve, 1000))
         emit('login', { ...form })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Login failed:', error)
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -93,7 +91,13 @@ export default defineComponent({
           </div>
 
           <div class="mobile-card-login__form-card">
-            <form class="mobile-card-login__form" onSubmit={(e: Event) => { e.preventDefault(); handleLogin() }}>
+            <form
+              class="mobile-card-login__form"
+              onSubmit={(e: Event) => {
+                e.preventDefault()
+                handleLogin()
+              }}
+            >
               <div class="mobile-card-login__form-group">
                 <label class="mobile-card-login__label">用户名</label>
                 <input
@@ -117,10 +121,7 @@ export default defineComponent({
               <div class="mobile-card-login__form-options">
                 {props.showRememberMe && (
                   <label class="mobile-card-login__checkbox">
-                    <input
-                      type="checkbox"
-                      v-model={form.remember}
-                    />
+                    <input type="checkbox" v-model={form.remember} />
                     <span class="mobile-card-login__checkbox-mark"></span>
                     记住密码
                   </label>
@@ -155,7 +156,9 @@ export default defineComponent({
                     class={`mobile-card-login__third-party-item mobile-card-login__third-party-item--${provider}`}
                     onClick={() => handleThirdPartyLogin(provider)}
                   >
-                    <div class={`mobile-card-login__third-party-icon mobile-card-login__third-party-icon--${provider}`}></div>
+                    <div
+                      class={`mobile-card-login__third-party-icon mobile-card-login__third-party-icon--${provider}`}
+                    ></div>
                     <span class="mobile-card-login__third-party-text">
                       {provider === 'wechat' && '微信'}
                       {provider === 'alipay' && '支付宝'}
@@ -169,7 +172,9 @@ export default defineComponent({
 
           <div class="mobile-card-login__footer-card">
             <span>还没有账号？</span>
-            <a href="#" onClick={handleRegister}>免费注册</a>
+            <a href="#" onClick={handleRegister}>
+              免费注册
+            </a>
           </div>
         </div>
       </div>

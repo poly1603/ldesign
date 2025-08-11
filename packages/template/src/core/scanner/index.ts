@@ -105,11 +105,7 @@ export function parseTemplatePath(path: string): TemplatePathInfo | null {
 /**
  * 构建模板路径
  */
-export function buildTemplatePath(
-  category: string,
-  device: DeviceType,
-  template: string
-): string {
+export function buildTemplatePath(category: string, device: DeviceType, template: string): string {
   return `${category}/${device}/${template}`
 }
 
@@ -207,10 +203,7 @@ export class TemplateScanner {
       const templates: TemplateMetadata[] = []
 
       // 在浏览器环境中，我们需要使用 import.meta.glob 来扫描模板
-      if (
-        typeof window !== 'undefined' &&
-        typeof import.meta.glob === 'function'
-      ) {
+      if (typeof window !== 'undefined' && typeof import.meta.glob === 'function') {
         // 直接使用固定的模板路径，必须以 ./ 开头
         const modules = import.meta.glob('./templates/**/config.{ts,js}', {
           eager: false,
@@ -272,12 +265,7 @@ export class TemplateScanner {
       }
 
       // 更新性能指标
-      this.updatePerformanceMetrics(
-        startTime,
-        false,
-        scannedPaths.length,
-        templates.length
-      )
+      this.updatePerformanceMetrics(startTime, false, scannedPaths.length, templates.length)
 
       const result: TemplateScanResult = {
         count: templates.length,
@@ -301,24 +289,13 @@ export class TemplateScanner {
   /**
    * 查找特定模板
    */
-  findTemplate(
-    category: string,
-    device: DeviceType,
-    template: string
-  ): TemplateMetadata | null {
+  findTemplate(category: string, device: DeviceType, template: string): TemplateMetadata | null {
     const cached = this.cache.get(this.config.templateRoot)
     if (!cached) {
       return null
     }
 
-    return (
-      cached.find(
-        t =>
-          t.category === category &&
-          t.device === device &&
-          t.template === template
-      ) || null
-    )
+    return cached.find(t => t.category === category && t.device === device && t.template === template) || null
   }
 
   /**
@@ -469,9 +446,7 @@ export class TemplateScanner {
   /**
    * 从模块路径提取路径信息
    */
-  private extractPathInfoFromModulePath(
-    modulePath: string
-  ): TemplatePathInfo | null {
+  private extractPathInfoFromModulePath(modulePath: string): TemplatePathInfo | null {
     // 从 /src/templates/login/desktop/classic/config.ts 提取 login/desktop/classic
     const match = modulePath.match(/\/templates\/(.+)\/config\.[tj]s$/)
     if (!match) {

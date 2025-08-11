@@ -52,11 +52,9 @@ export default defineComponent({
       try {
         await new Promise(resolve => setTimeout(resolve, 1000))
         emit('login', { ...form })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Login failed:', error)
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -102,7 +100,13 @@ export default defineComponent({
 
           <div class="tablet-adaptive-login__main">
             <div class="tablet-adaptive-login__form-container">
-              <form class="tablet-adaptive-login__form" onSubmit={(e: Event) => { e.preventDefault(); handleLogin() }}>
+              <form
+                class="tablet-adaptive-login__form"
+                onSubmit={(e: Event) => {
+                  e.preventDefault()
+                  handleLogin()
+                }}
+              >
                 <div class="tablet-adaptive-login__form-header">
                   <h2>登录您的账户</h2>
                   <p>输入您的凭据以访问您的账户</p>
@@ -144,10 +148,7 @@ export default defineComponent({
                 <div class="tablet-adaptive-login__form-options">
                   {props.showRememberMe && (
                     <label class="tablet-adaptive-login__checkbox">
-                      <input
-                        type="checkbox"
-                        v-model={form.remember}
-                      />
+                      <input type="checkbox" v-model={form.remember} />
                       <span class="tablet-adaptive-login__checkbox-mark"></span>
                       记住我
                     </label>
@@ -164,12 +165,8 @@ export default defineComponent({
                   class={['tablet-adaptive-login__submit', { 'tablet-adaptive-login__submit--loading': loading.value }]}
                   disabled={loading.value}
                 >
-                  <span class="tablet-adaptive-login__submit-text">
-                    {loading.value ? '登录中...' : '登录'}
-                  </span>
-                  {loading.value && (
-                    <div class="tablet-adaptive-login__submit-spinner"></div>
-                  )}
+                  <span class="tablet-adaptive-login__submit-text">{loading.value ? '登录中...' : '登录'}</span>
+                  {loading.value && <div class="tablet-adaptive-login__submit-spinner"></div>}
                 </button>
               </form>
 
@@ -186,7 +183,9 @@ export default defineComponent({
                         class={`tablet-adaptive-login__third-party-btn tablet-adaptive-login__third-party-btn--${provider}`}
                         onClick={() => handleThirdPartyLogin(provider)}
                       >
-                        <span class={`tablet-adaptive-login__third-party-icon tablet-adaptive-login__third-party-icon--${provider}`}></span>
+                        <span
+                          class={`tablet-adaptive-login__third-party-icon tablet-adaptive-login__third-party-icon--${provider}`}
+                        ></span>
                         <span class="tablet-adaptive-login__third-party-text">
                           {provider === 'github' && 'GitHub'}
                           {provider === 'google' && 'Google'}
@@ -201,7 +200,9 @@ export default defineComponent({
 
               <div class="tablet-adaptive-login__footer">
                 <span>还没有账号？</span>
-                <a href="#" onClick={handleRegister}>立即注册</a>
+                <a href="#" onClick={handleRegister}>
+                  立即注册
+                </a>
               </div>
             </div>
           </div>
