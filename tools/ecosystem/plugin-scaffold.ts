@@ -5,9 +5,9 @@
  * 快速创建插件项目模板
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, join } from 'node:path'
 import { execSync } from 'node:child_process'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 
@@ -40,7 +40,7 @@ export interface PluginScaffoldOptions {
   license: string
 }
 
-export type PluginType = 
+export type PluginType =
   | 'ui-component'
   | 'utility'
   | 'integration'
@@ -111,7 +111,7 @@ export class PluginScaffold {
    */
   private createProjectDirectory(targetDir: string): void {
     mkdirSync(targetDir, { recursive: true })
-    
+
     // 创建基础目录结构
     const dirs = [
       'src',
@@ -132,7 +132,9 @@ export class PluginScaffold {
   /**
    * 生成项目文件
    */
-  private async generateProjectFiles(options: PluginScaffoldOptions): Promise<void> {
+  private async generateProjectFiles(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     console.log(chalk.yellow('📝 生成项目文件...'))
 
     // 生成 package.json
@@ -175,7 +177,9 @@ export class PluginScaffold {
   /**
    * 生成 package.json
    */
-  private async generatePackageJson(options: PluginScaffoldOptions): Promise<void> {
+  private async generatePackageJson(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const packageJson = {
       name: `@ldesign/plugin-${options.name}`,
       version: '0.1.0',
@@ -185,8 +189,12 @@ export class PluginScaffold {
       types: options.typescript ? 'dist/index.d.ts' : undefined,
       files: ['dist', 'src', 'README.md', 'LICENSE'],
       scripts: {
-        build: options.typescript ? 'tsup src/index.ts --format cjs,esm --dts' : 'rollup -c',
-        dev: options.typescript ? 'tsup src/index.ts --format cjs,esm --dts --watch' : 'rollup -c --watch',
+        build: options.typescript
+          ? 'tsup src/index.ts --format cjs,esm --dts'
+          : 'rollup -c',
+        dev: options.typescript
+          ? 'tsup src/index.ts --format cjs,esm --dts --watch'
+          : 'rollup -c --watch',
         test: 'vitest',
         'test:coverage': 'vitest --coverage',
         lint: 'eslint src --ext .ts,.js,.vue',
@@ -222,20 +230,24 @@ export class PluginScaffold {
       devDependencies: {
         '@ldesign/engine': '^0.1.0',
         vue: '^3.3.0',
-        ...(options.typescript ? {
-          typescript: '^5.0.0',
-          tsup: '^7.0.0',
-          '@types/node': '^20.0.0',
-        } : {
-          rollup: '^3.0.0',
-          '@rollup/plugin-node-resolve': '^15.0.0',
-          '@rollup/plugin-commonjs': '^25.0.0',
-        }),
-        ...(options.includeTests ? {
-          vitest: '^0.34.0',
-          '@vue/test-utils': '^2.4.0',
-          jsdom: '^22.0.0',
-        } : {}),
+        ...(options.typescript
+          ? {
+              typescript: '^5.0.0',
+              tsup: '^7.0.0',
+              '@types/node': '^20.0.0',
+            }
+          : {
+              rollup: '^3.0.0',
+              '@rollup/plugin-node-resolve': '^15.0.0',
+              '@rollup/plugin-commonjs': '^25.0.0',
+            }),
+        ...(options.includeTests
+          ? {
+              vitest: '^0.34.0',
+              '@vue/test-utils': '^2.4.0',
+              jsdom: '^22.0.0',
+            }
+          : {}),
         eslint: '^8.0.0',
         '@typescript-eslint/eslint-plugin': '^6.0.0',
         '@typescript-eslint/parser': '^6.0.0',
@@ -262,14 +274,13 @@ export class PluginScaffold {
   /**
    * 生成主入口文件
    */
-  private async generateMainFile(options: PluginScaffoldOptions): Promise<void> {
+  private async generateMainFile(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const ext = options.typescript ? 'ts' : 'js'
     const template = this.getMainFileTemplate(options)
-    
-    writeFileSync(
-      join(options.targetDir, `src/index.${ext}`),
-      template
-    )
+
+    writeFileSync(join(options.targetDir, `src/index.${ext}`), template)
   }
 
   /**
@@ -300,7 +311,9 @@ export class PluginScaffold {
    * UI 组件插件模板
    */
   private getUIComponentTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''}
+    return `${
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
+    }
 import { defineComponent } from 'vue'
 
 // 组件定义
@@ -340,7 +353,9 @@ export default plugin
    * 工具类插件模板
    */
   private getUtilityTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''}
+    return `${
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
+    }
 
 // 工具函数
 export function myUtility(input${isTS ? ': any' : ''})${isTS ? ': any' : ''} {
@@ -371,7 +386,9 @@ export default plugin
    * 集成插件模板
    */
   private getIntegrationTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''}
+    return `${
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
+    }
 
 // 集成配置
 export interface IntegrationConfig {
@@ -401,7 +418,9 @@ export const plugin${isTS ? ': Plugin' : ''} = {
   name: '${options.name}',
   version: '0.1.0',
   
-  install(engine${isTS ? ': Engine' : ''}, options${isTS ? ': IntegrationConfig = {}' : ' = {}'}) {
+  install(engine${isTS ? ': Engine' : ''}, options${
+      isTS ? ': IntegrationConfig = {}' : ' = {}'
+    }) {
     // 创建集成实例
     const integration = new MyIntegration(options)
     
@@ -422,7 +441,11 @@ export default plugin
    * 中间件插件模板
    */
   private getMiddlewareTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine, MiddlewareContext } from '@ldesign/engine'" : ''}
+    return `${
+      isTS
+        ? "import type { Plugin, Engine, MiddlewareContext } from '@ldesign/engine'"
+        : ''
+    }
 
 // 中间件函数
 export async function myMiddleware(
@@ -470,7 +493,9 @@ export default plugin
    * 主题插件模板
    */
   private getThemeTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''}
+    return `${
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
+    }
 
 // 主题配置
 export const themeConfig = {
@@ -526,7 +551,9 @@ export default plugin
    * 开发工具插件模板
    */
   private getDevelopmentToolTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''}
+    return `${
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
+    }
 
 // 开发工具类
 export class DevelopmentTool {
@@ -587,7 +614,9 @@ export default plugin
    * 基础插件模板
    */
   private getBasicTemplate(isTS: boolean): string {
-    return `${isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''}
+    return `${
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
+    }
 
 // 插件定义
 export const plugin${isTS ? ': Plugin' : ''} = {
@@ -607,7 +636,9 @@ export default plugin
   /**
    * 生成 TypeScript 配置
    */
-  private async generateTsConfig(options: PluginScaffoldOptions): Promise<void> {
+  private async generateTsConfig(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const tsConfig = {
       compilerOptions: {
         target: 'ES2020',
@@ -637,7 +668,9 @@ export default plugin
   /**
    * 生成类型定义
    */
-  private async generateTypeDefinitions(options: PluginScaffoldOptions): Promise<void> {
+  private async generateTypeDefinitions(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const types = `// 插件类型定义
 export interface ${this.toPascalCase(options.name)}Options {
   // 插件选项
@@ -646,7 +679,9 @@ export interface ${this.toPascalCase(options.name)}Options {
 export interface ${this.toPascalCase(options.name)}Plugin {
   name: string
   version: string
-  install: (engine: any, options?: ${this.toPascalCase(options.name)}Options) => void
+  install: (engine: any, options?: ${this.toPascalCase(
+    options.name
+  )}Options) => void
 }
 
 // 扩展引擎类型
@@ -657,16 +692,15 @@ declare module '@ldesign/engine' {
 }
 `
 
-    writeFileSync(
-      join(options.targetDir, 'src/types/index.ts'),
-      types
-    )
+    writeFileSync(join(options.targetDir, 'src/types/index.ts'), types)
   }
 
   /**
    * 生成测试文件
    */
-  private async generateTestFiles(options: PluginScaffoldOptions): Promise<void> {
+  private async generateTestFiles(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const ext = options.typescript ? 'ts' : 'js'
     const testContent = `import { describe, it, expect } from 'vitest'
 import { plugin } from '../src/index${options.typescript ? '' : '.js'}'
@@ -710,16 +744,15 @@ export default defineConfig({
 })
 `
 
-    writeFileSync(
-      join(options.targetDir, 'vitest.config.ts'),
-      vitestConfig
-    )
+    writeFileSync(join(options.targetDir, 'vitest.config.ts'), vitestConfig)
   }
 
   /**
    * 生成文档
    */
-  private async generateDocumentation(options: PluginScaffoldOptions): Promise<void> {
+  private async generateDocumentation(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const docs = `# ${options.name}
 
 ${options.description}
@@ -734,7 +767,9 @@ pnpm add @ldesign/plugin-${options.name}
 
 \`\`\`typescript
 import { createEngine } from '@ldesign/engine'
-import ${this.toCamelCase(options.name)}Plugin from '@ldesign/plugin-${options.name}'
+import ${this.toCamelCase(options.name)}Plugin from '@ldesign/plugin-${
+      options.name
+    }'
 
 const engine = createEngine()
 engine.use(${this.toCamelCase(options.name)}Plugin)
@@ -753,16 +788,15 @@ engine.use(${this.toCamelCase(options.name)}Plugin)
 ${options.license}
 `
 
-    writeFileSync(
-      join(options.targetDir, 'docs/README.md'),
-      docs
-    )
+    writeFileSync(join(options.targetDir, 'docs/README.md'), docs)
   }
 
   /**
    * 生成示例
    */
-  private async generateExamples(options: PluginScaffoldOptions): Promise<void> {
+  private async generateExamples(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     const example = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -786,16 +820,15 @@ ${options.license}
 </html>
 `
 
-    writeFileSync(
-      join(options.targetDir, 'examples/basic.html'),
-      example
-    )
+    writeFileSync(join(options.targetDir, 'examples/basic.html'), example)
   }
 
   /**
    * 生成配置文件
    */
-  private async generateConfigFiles(options: PluginScaffoldOptions): Promise<void> {
+  private async generateConfigFiles(
+    options: PluginScaffoldOptions
+  ): Promise<void> {
     // ESLint 配置
     const eslintConfig = {
       extends: [
@@ -830,10 +863,7 @@ coverage/
 .env.*.local
 `
 
-    writeFileSync(
-      join(options.targetDir, '.gitignore'),
-      gitignore
-    )
+    writeFileSync(join(options.targetDir, '.gitignore'), gitignore)
   }
 
   /**
@@ -861,7 +891,9 @@ pnpm add @ldesign/plugin-${options.name}
 
 \`\`\`typescript
 import { createEngine } from '@ldesign/engine'
-import ${this.toCamelCase(options.name)}Plugin from '@ldesign/plugin-${options.name}'
+import ${this.toCamelCase(options.name)}Plugin from '@ldesign/plugin-${
+      options.name
+    }'
 
 const engine = createEngine()
 
@@ -907,10 +939,7 @@ pnpm lint
 ${options.license}
 `
 
-    writeFileSync(
-      join(options.targetDir, 'README.md'),
-      readme
-    )
+    writeFileSync(join(options.targetDir, 'README.md'), readme)
   }
 
   /**
@@ -944,15 +973,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.`
         break
       default:
-        licenseText = `Copyright (c) ${new Date().getFullYear()} ${options.author.name}
+        licenseText = `Copyright (c) ${new Date().getFullYear()} ${
+          options.author.name
+        }
 
 All rights reserved.`
     }
 
-    writeFileSync(
-      join(options.targetDir, 'LICENSE'),
-      licenseText
-    )
+    writeFileSync(join(options.targetDir, 'LICENSE'), licenseText)
   }
 
   /**
@@ -1025,10 +1053,10 @@ All rights reserved.`
   private getKeywordsByType(type: PluginType): string[] {
     const keywords = {
       'ui-component': ['ui', 'component', 'vue'],
-      'utility': ['utility', 'helper', 'tools'],
-      'integration': ['integration', 'api', 'service'],
-      'middleware': ['middleware', 'interceptor'],
-      'theme': ['theme', 'style', 'css'],
+      utility: ['utility', 'helper', 'tools'],
+      integration: ['integration', 'api', 'service'],
+      middleware: ['middleware', 'interceptor'],
+      theme: ['theme', 'style', 'css'],
       'development-tool': ['development', 'devtools', 'debug'],
     }
 
@@ -1057,7 +1085,7 @@ All rights reserved.`
 // CLI 处理
 async function main() {
   const args = process.argv.slice(2)
-  
+
   if (args.length === 0) {
     console.log(chalk.blue('LDesign 插件脚手架'))
     console.log()
@@ -1070,7 +1098,7 @@ async function main() {
   }
 
   const pluginName = args[0]
-  
+
   // 交互式配置（简化版）
   const options: PluginScaffoldOptions = {
     name: pluginName,
@@ -1089,7 +1117,7 @@ async function main() {
   }
 
   const scaffold = new PluginScaffold()
-  
+
   try {
     await scaffold.createPlugin(options)
   } catch (error) {

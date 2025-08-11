@@ -1,442 +1,442 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ldesign/form - 智能表单布局系统示例</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        .header h1 {
-            color: #1890ff;
-            margin-bottom: 8px;
-        }
-        .header p {
-            color: #666;
-            margin: 0;
-        }
-        .demo-section {
-            margin-bottom: 40px;
-        }
-        .demo-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #333;
-        }
-        .form-container {
-            border: 1px solid #e8e8e8;
-            border-radius: 6px;
-            padding: 20px;
-            background: #fafafa;
-        }
-        .controls {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 8px 16px;
-            border: 1px solid #d9d9d9;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        .btn:hover {
-            border-color: #1890ff;
-            color: #1890ff;
-        }
-        .btn.primary {
-            background: #1890ff;
-            border-color: #1890ff;
-            color: white;
-        }
-        .btn.primary:hover {
-            background: #40a9ff;
-        }
-        .status {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 4px;
-            background: #f6ffed;
-            border: 1px solid #b7eb8f;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      .header h1 {
+        color: #1890ff;
+        margin-bottom: 8px;
+      }
+      .header p {
+        color: #666;
+        margin: 0;
+      }
+      .demo-section {
+        margin-bottom: 40px;
+      }
+      .demo-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #333;
+      }
+      .form-container {
+        border: 1px solid #e8e8e8;
+        border-radius: 6px;
+        padding: 20px;
+        background: #fafafa;
+      }
+      .controls {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 8px 16px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        border-color: #1890ff;
+        color: #1890ff;
+      }
+      .btn.primary {
+        background: #1890ff;
+        border-color: #1890ff;
+        color: white;
+      }
+      .btn.primary:hover {
+        background: #40a9ff;
+      }
+      .status {
+        margin-top: 16px;
+        padding: 12px;
+        border-radius: 4px;
+        background: #f6ffed;
+        border: 1px solid #b7eb8f;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>@ldesign/form</h1>
-            <p>智能表单布局系统 - 支持响应式设计、智能布局计算、表单验证、状态管理</p>
-        </div>
+      <div class="header">
+        <h1>@ldesign/form</h1>
+        <p>智能表单布局系统 - 支持响应式设计、智能布局计算、表单验证、状态管理</p>
+      </div>
 
-        <div class="demo-section">
-            <div class="demo-title">基础表单示例</div>
-            <div class="controls">
-                <button class="btn primary" onclick="createBasicForm()">创建基础表单</button>
-                <button class="btn" onclick="toggleExpand()">展开/收起</button>
-                <button class="btn" onclick="validateForm()">验证表单</button>
-                <button class="btn" onclick="getFormData()">获取数据</button>
-                <button class="btn" onclick="resetForm()">重置表单</button>
-            </div>
-            <div id="basic-form" class="form-container"></div>
-            <div id="basic-status" class="status">等待创建表单...</div>
+      <div class="demo-section">
+        <div class="demo-title">基础表单示例</div>
+        <div class="controls">
+          <button class="btn primary" onclick="createBasicForm()">创建基础表单</button>
+          <button class="btn" onclick="toggleExpand()">展开/收起</button>
+          <button class="btn" onclick="validateForm()">验证表单</button>
+          <button class="btn" onclick="getFormData()">获取数据</button>
+          <button class="btn" onclick="resetForm()">重置表单</button>
         </div>
+        <div id="basic-form" class="form-container"></div>
+        <div id="basic-status" class="status">等待创建表单...</div>
+      </div>
 
-        <div class="demo-section">
-            <div class="demo-title">响应式表单示例</div>
-            <div class="controls">
-                <button class="btn primary" onclick="createResponsiveForm()">创建响应式表单</button>
-                <button class="btn" onclick="simulateResize()">模拟窗口变化</button>
-            </div>
-            <div id="responsive-form" class="form-container"></div>
-            <div id="responsive-status" class="status">等待创建表单...</div>
+      <div class="demo-section">
+        <div class="demo-title">响应式表单示例</div>
+        <div class="controls">
+          <button class="btn primary" onclick="createResponsiveForm()">创建响应式表单</button>
+          <button class="btn" onclick="simulateResize()">模拟窗口变化</button>
         </div>
+        <div id="responsive-form" class="form-container"></div>
+        <div id="responsive-status" class="status">等待创建表单...</div>
+      </div>
 
-        <div class="demo-section">
-            <div class="demo-title">表单构建器示例</div>
-            <div class="controls">
-                <button class="btn primary" onclick="createBuilderForm()">使用构建器创建</button>
-                <button class="btn" onclick="addDynamicField()">动态添加字段</button>
-            </div>
-            <div id="builder-form" class="form-container"></div>
-            <div id="builder-status" class="status">等待创建表单...</div>
+      <div class="demo-section">
+        <div class="demo-title">表单构建器示例</div>
+        <div class="controls">
+          <button class="btn primary" onclick="createBuilderForm()">使用构建器创建</button>
+          <button class="btn" onclick="addDynamicField()">动态添加字段</button>
         </div>
+        <div id="builder-form" class="form-container"></div>
+        <div id="builder-status" class="status">等待创建表单...</div>
+      </div>
     </div>
 
     <script type="module">
-        // 模拟导入 @ldesign/form
-        // 在实际使用中，您可以通过 npm install @ldesign/form 安装
-        // import { createFormBuilder, createNativeForm, form } from '@ldesign/form'
-        
-        // 这里我们创建一个模拟的表单系统来演示功能
-        class MockFormSystem {
-            constructor() {
-                this.forms = new Map()
-                this.setupMockData()
-            }
-            
-            setupMockData() {
-                // 模拟表单配置
-                this.basicConfig = {
-                    items: [
-                        { key: 'name', label: '姓名', type: 'input', required: true },
-                        { key: 'email', label: '邮箱', type: 'email', required: true },
-                        { key: 'phone', label: '电话', type: 'tel' },
-                        { key: 'gender', label: '性别', type: 'select', options: [
-                            { label: '男', value: 'male' },
-                            { label: '女', value: 'female' }
-                        ]},
-                        { key: 'birthday', label: '生日', type: 'date' },
-                        { key: 'address', label: '地址', type: 'textarea' },
-                        { key: 'newsletter', label: '订阅邮件', type: 'checkbox' },
-                        { key: 'terms', label: '同意条款', type: 'checkbox', required: true }
-                    ]
-                }
-                
-                this.responsiveConfig = {
-                    items: [
-                        { key: 'company', label: '公司名称', type: 'input', required: true },
-                        { key: 'position', label: '职位', type: 'input' },
-                        { key: 'experience', label: '工作经验', type: 'select', options: [
-                            { label: '1年以下', value: '0-1' },
-                            { label: '1-3年', value: '1-3' },
-                            { label: '3-5年', value: '3-5' },
-                            { label: '5年以上', value: '5+' }
-                        ]},
-                        { key: 'skills', label: '技能', type: 'textarea' },
-                        { key: 'salary', label: '期望薪资', type: 'number' },
-                        { key: 'remote', label: '接受远程工作', type: 'checkbox' }
-                    ]
-                }
-            }
-            
-            createForm(containerId, config) {
-                const container = document.getElementById(containerId)
-                if (!container) return null
-                
-                // 清空容器
-                container.innerHTML = ''
-                
-                // 创建表单元素
-                const form = document.createElement('form')
-                form.style.cssText = `
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: 16px;
-                    padding: 20px;
-                    background: white;
-                    border-radius: 6px;
-                `
-                
-                const formData = {}
-                const formElements = {}
-                
-                config.items.forEach(item => {
-                    const fieldContainer = document.createElement('div')
-                    fieldContainer.style.cssText = `
-                        display: flex;
-                        flex-direction: column;
-                        gap: 4px;
-                    `
-                    
-                    const label = document.createElement('label')
-                    label.textContent = item.label + (item.required ? ' *' : '')
-                    label.style.cssText = `
-                        font-weight: 500;
-                        color: #333;
-                        font-size: 14px;
-                    `
-                    
-                    let input
-                    switch (item.type) {
-                        case 'textarea':
-                            input = document.createElement('textarea')
-                            input.rows = 3
-                            break
-                        case 'select':
-                            input = document.createElement('select')
-                            if (item.options) {
-                                item.options.forEach(option => {
-                                    const opt = document.createElement('option')
-                                    opt.value = option.value
-                                    opt.textContent = option.label
-                                    input.appendChild(opt)
-                                })
-                            }
-                            break
-                        case 'checkbox':
-                            input = document.createElement('input')
-                            input.type = 'checkbox'
-                            break
-                        default:
-                            input = document.createElement('input')
-                            input.type = item.type || 'text'
-                    }
-                    
-                    input.name = item.key
-                    input.style.cssText = `
-                        padding: 8px 12px;
-                        border: 1px solid #d9d9d9;
-                        border-radius: 4px;
-                        font-size: 14px;
-                        transition: border-color 0.2s;
-                    `
-                    
-                    input.addEventListener('focus', () => {
-                        input.style.borderColor = '#1890ff'
-                    })
-                    
-                    input.addEventListener('blur', () => {
-                        input.style.borderColor = '#d9d9d9'
-                    })
-                    
-                    input.addEventListener('change', () => {
-                        formData[item.key] = input.type === 'checkbox' ? input.checked : input.value
-                    })
-                    
-                    formElements[item.key] = input
-                    
-                    fieldContainer.appendChild(label)
-                    fieldContainer.appendChild(input)
-                    form.appendChild(fieldContainer)
-                })
-                
-                container.appendChild(form)
-                
-                const formInstance = {
-                    container,
-                    form,
-                    data: formData,
-                    elements: formElements,
-                    config,
-                    expanded: true,
-                    
-                    getData() {
-                        const data = {}
-                        Object.keys(this.elements).forEach(key => {
-                            const element = this.elements[key]
-                            data[key] = element.type === 'checkbox' ? element.checked : element.value
-                        })
-                        return data
-                    },
-                    
-                    setData(data) {
-                        Object.keys(data).forEach(key => {
-                            const element = this.elements[key]
-                            if (element) {
-                                if (element.type === 'checkbox') {
-                                    element.checked = data[key]
-                                } else {
-                                    element.value = data[key]
-                                }
-                            }
-                        })
-                    },
-                    
-                    validate() {
-                        const errors = []
-                        this.config.items.forEach(item => {
-                            if (item.required) {
-                                const element = this.elements[item.key]
-                                const value = element.type === 'checkbox' ? element.checked : element.value
-                                if (!value || (typeof value === 'string' && !value.trim())) {
-                                    errors.push(`${item.label} 是必填项`)
-                                    element.style.borderColor = '#ff4d4f'
-                                } else {
-                                    element.style.borderColor = '#d9d9d9'
-                                }
-                            }
-                        })
-                        return { valid: errors.length === 0, errors }
-                    },
-                    
-                    reset() {
-                        Object.values(this.elements).forEach(element => {
-                            if (element.type === 'checkbox') {
-                                element.checked = false
-                            } else {
-                                element.value = ''
-                            }
-                            element.style.borderColor = '#d9d9d9'
-                        })
-                    },
-                    
-                    toggle() {
-                        this.expanded = !this.expanded
-                        this.form.style.display = this.expanded ? 'grid' : 'none'
-                        return this.expanded
-                    }
-                }
-                
-                this.forms.set(containerId, formInstance)
-                return formInstance
-            },
-            
-            getForm(containerId) {
-                return this.forms.get(containerId)
-            }
-        }
-        
-        // 创建全局表单系统实例
-        window.formSystem = new MockFormSystem()
-        
-        // 全局函数
-        window.createBasicForm = function() {
-            const form = window.formSystem.createForm('basic-form', window.formSystem.basicConfig)
-            updateStatus('basic-status', '基础表单已创建，包含 8 个字段')
-        }
-        
-        window.createResponsiveForm = function() {
-            const form = window.formSystem.createForm('responsive-form', window.formSystem.responsiveConfig)
-            updateStatus('responsive-status', '响应式表单已创建，请调整窗口大小查看效果')
-        }
-        
-        window.createBuilderForm = function() {
-            const config = {
-                items: [
-                    { key: 'title', label: '标题', type: 'input', required: true },
-                    { key: 'content', label: '内容', type: 'textarea' },
-                    { key: 'category', label: '分类', type: 'select', options: [
-                        { label: '技术', value: 'tech' },
-                        { label: '生活', value: 'life' },
-                        { label: '工作', value: 'work' }
-                    ]},
-                    { key: 'published', label: '发布', type: 'checkbox' }
-                ]
-            }
-            const form = window.formSystem.createForm('builder-form', config)
-            updateStatus('builder-status', '使用构建器创建的表单已生成')
-        }
-        
-        window.toggleExpand = function() {
-            const form = window.formSystem.getForm('basic-form')
-            if (form) {
-                const expanded = form.toggle()
-                updateStatus('basic-status', `表单已${expanded ? '展开' : '收起'}`)
-            }
-        }
-        
-        window.validateForm = function() {
-            const form = window.formSystem.getForm('basic-form')
-            if (form) {
-                const result = form.validate()
-                updateStatus('basic-status', `验证结果: ${result.valid ? '通过' : '失败'}\n${result.errors.join('\n')}`)
-            }
-        }
-        
-        window.getFormData = function() {
-            const form = window.formSystem.getForm('basic-form')
-            if (form) {
-                const data = form.getData()
-                updateStatus('basic-status', `表单数据:\n${JSON.stringify(data, null, 2)}`)
-            }
-        }
-        
-        window.resetForm = function() {
-            const form = window.formSystem.getForm('basic-form')
-            if (form) {
-                form.reset()
-                updateStatus('basic-status', '表单已重置')
-            }
-        }
-        
-        window.simulateResize = function() {
-            const container = document.getElementById('responsive-form')
-            if (container) {
-                const currentWidth = container.style.width || '100%'
-                container.style.width = currentWidth === '50%' ? '100%' : '50%'
-                updateStatus('responsive-status', `容器宽度已调整为: ${container.style.width}`)
-            }
-        }
-        
-        window.addDynamicField = function() {
-            const form = window.formSystem.getForm('builder-form')
-            if (form) {
-                const newField = {
-                    key: `dynamic_${Date.now()}`,
-                    label: '动态字段',
-                    type: 'input'
-                }
-                form.config.items.push(newField)
-                window.formSystem.createForm('builder-form', form.config)
-                updateStatus('builder-status', '已添加动态字段并重新渲染表单')
-            }
-        }
-        
-        function updateStatus(statusId, message) {
-            const status = document.getElementById(statusId)
-            if (status) {
-                status.textContent = `[${new Date().toLocaleTimeString()}] ${message}`
-            }
-        }
-        
-        // 初始化
-        updateStatus('basic-status', '点击"创建基础表单"开始体验')
-        updateStatus('responsive-status', '点击"创建响应式表单"开始体验')
-        updateStatus('builder-status', '点击"使用构建器创建"开始体验')
+      // 模拟导入 @ldesign/form
+      // 在实际使用中，您可以通过 npm install @ldesign/form 安装
+      // import { createFormBuilder, createNativeForm, form } from '@ldesign/form'
+
+      // 这里我们创建一个模拟的表单系统来演示功能
+      class MockFormSystem {
+          constructor() {
+              this.forms = new Map()
+              this.setupMockData()
+          }
+
+          setupMockData() {
+              // 模拟表单配置
+              this.basicConfig = {
+                  items: [
+                      { key: 'name', label: '姓名', type: 'input', required: true },
+                      { key: 'email', label: '邮箱', type: 'email', required: true },
+                      { key: 'phone', label: '电话', type: 'tel' },
+                      { key: 'gender', label: '性别', type: 'select', options: [
+                          { label: '男', value: 'male' },
+                          { label: '女', value: 'female' }
+                      ]},
+                      { key: 'birthday', label: '生日', type: 'date' },
+                      { key: 'address', label: '地址', type: 'textarea' },
+                      { key: 'newsletter', label: '订阅邮件', type: 'checkbox' },
+                      { key: 'terms', label: '同意条款', type: 'checkbox', required: true }
+                  ]
+              }
+
+              this.responsiveConfig = {
+                  items: [
+                      { key: 'company', label: '公司名称', type: 'input', required: true },
+                      { key: 'position', label: '职位', type: 'input' },
+                      { key: 'experience', label: '工作经验', type: 'select', options: [
+                          { label: '1年以下', value: '0-1' },
+                          { label: '1-3年', value: '1-3' },
+                          { label: '3-5年', value: '3-5' },
+                          { label: '5年以上', value: '5+' }
+                      ]},
+                      { key: 'skills', label: '技能', type: 'textarea' },
+                      { key: 'salary', label: '期望薪资', type: 'number' },
+                      { key: 'remote', label: '接受远程工作', type: 'checkbox' }
+                  ]
+              }
+          }
+
+          createForm(containerId, config) {
+              const container = document.getElementById(containerId)
+              if (!container) return null
+
+              // 清空容器
+              container.innerHTML = ''
+
+              // 创建表单元素
+              const form = document.createElement('form')
+              form.style.cssText = `
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                  gap: 16px;
+                  padding: 20px;
+                  background: white;
+                  border-radius: 6px;
+              `
+
+              const formData = {}
+              const formElements = {}
+
+              config.items.forEach(item => {
+                  const fieldContainer = document.createElement('div')
+                  fieldContainer.style.cssText = `
+                      display: flex;
+                      flex-direction: column;
+                      gap: 4px;
+                  `
+
+                  const label = document.createElement('label')
+                  label.textContent = item.label + (item.required ? ' *' : '')
+                  label.style.cssText = `
+                      font-weight: 500;
+                      color: #333;
+                      font-size: 14px;
+                  `
+
+                  let input
+                  switch (item.type) {
+                      case 'textarea':
+                          input = document.createElement('textarea')
+                          input.rows = 3
+                          break
+                      case 'select':
+                          input = document.createElement('select')
+                          if (item.options) {
+                              item.options.forEach(option => {
+                                  const opt = document.createElement('option')
+                                  opt.value = option.value
+                                  opt.textContent = option.label
+                                  input.appendChild(opt)
+                              })
+                          }
+                          break
+                      case 'checkbox':
+                          input = document.createElement('input')
+                          input.type = 'checkbox'
+                          break
+                      default:
+                          input = document.createElement('input')
+                          input.type = item.type || 'text'
+                  }
+
+                  input.name = item.key
+                  input.style.cssText = `
+                      padding: 8px 12px;
+                      border: 1px solid #d9d9d9;
+                      border-radius: 4px;
+                      font-size: 14px;
+                      transition: border-color 0.2s;
+                  `
+
+                  input.addEventListener('focus', () => {
+                      input.style.borderColor = '#1890ff'
+                  })
+
+                  input.addEventListener('blur', () => {
+                      input.style.borderColor = '#d9d9d9'
+                  })
+
+                  input.addEventListener('change', () => {
+                      formData[item.key] = input.type === 'checkbox' ? input.checked : input.value
+                  })
+
+                  formElements[item.key] = input
+
+                  fieldContainer.appendChild(label)
+                  fieldContainer.appendChild(input)
+                  form.appendChild(fieldContainer)
+              })
+
+              container.appendChild(form)
+
+              const formInstance = {
+                  container,
+                  form,
+                  data: formData,
+                  elements: formElements,
+                  config,
+                  expanded: true,
+
+                  getData() {
+                      const data = {}
+                      Object.keys(this.elements).forEach(key => {
+                          const element = this.elements[key]
+                          data[key] = element.type === 'checkbox' ? element.checked : element.value
+                      })
+                      return data
+                  },
+
+                  setData(data) {
+                      Object.keys(data).forEach(key => {
+                          const element = this.elements[key]
+                          if (element) {
+                              if (element.type === 'checkbox') {
+                                  element.checked = data[key]
+                              } else {
+                                  element.value = data[key]
+                              }
+                          }
+                      })
+                  },
+
+                  validate() {
+                      const errors = []
+                      this.config.items.forEach(item => {
+                          if (item.required) {
+                              const element = this.elements[item.key]
+                              const value = element.type === 'checkbox' ? element.checked : element.value
+                              if (!value || (typeof value === 'string' && !value.trim())) {
+                                  errors.push(`${item.label} 是必填项`)
+                                  element.style.borderColor = '#ff4d4f'
+                              } else {
+                                  element.style.borderColor = '#d9d9d9'
+                              }
+                          }
+                      })
+                      return { valid: errors.length === 0, errors }
+                  },
+
+                  reset() {
+                      Object.values(this.elements).forEach(element => {
+                          if (element.type === 'checkbox') {
+                              element.checked = false
+                          } else {
+                              element.value = ''
+                          }
+                          element.style.borderColor = '#d9d9d9'
+                      })
+                  },
+
+                  toggle() {
+                      this.expanded = !this.expanded
+                      this.form.style.display = this.expanded ? 'grid' : 'none'
+                      return this.expanded
+                  }
+              }
+
+              this.forms.set(containerId, formInstance)
+              return formInstance
+          },
+
+          getForm(containerId) {
+              return this.forms.get(containerId)
+          }
+      }
+
+      // 创建全局表单系统实例
+      window.formSystem = new MockFormSystem()
+
+      // 全局函数
+      window.createBasicForm = function() {
+          const form = window.formSystem.createForm('basic-form', window.formSystem.basicConfig)
+          updateStatus('basic-status', '基础表单已创建，包含 8 个字段')
+      }
+
+      window.createResponsiveForm = function() {
+          const form = window.formSystem.createForm('responsive-form', window.formSystem.responsiveConfig)
+          updateStatus('responsive-status', '响应式表单已创建，请调整窗口大小查看效果')
+      }
+
+      window.createBuilderForm = function() {
+          const config = {
+              items: [
+                  { key: 'title', label: '标题', type: 'input', required: true },
+                  { key: 'content', label: '内容', type: 'textarea' },
+                  { key: 'category', label: '分类', type: 'select', options: [
+                      { label: '技术', value: 'tech' },
+                      { label: '生活', value: 'life' },
+                      { label: '工作', value: 'work' }
+                  ]},
+                  { key: 'published', label: '发布', type: 'checkbox' }
+              ]
+          }
+          const form = window.formSystem.createForm('builder-form', config)
+          updateStatus('builder-status', '使用构建器创建的表单已生成')
+      }
+
+      window.toggleExpand = function() {
+          const form = window.formSystem.getForm('basic-form')
+          if (form) {
+              const expanded = form.toggle()
+              updateStatus('basic-status', `表单已${expanded ? '展开' : '收起'}`)
+          }
+      }
+
+      window.validateForm = function() {
+          const form = window.formSystem.getForm('basic-form')
+          if (form) {
+              const result = form.validate()
+              updateStatus('basic-status', `验证结果: ${result.valid ? '通过' : '失败'}\n${result.errors.join('\n')}`)
+          }
+      }
+
+      window.getFormData = function() {
+          const form = window.formSystem.getForm('basic-form')
+          if (form) {
+              const data = form.getData()
+              updateStatus('basic-status', `表单数据:\n${JSON.stringify(data, null, 2)}`)
+          }
+      }
+
+      window.resetForm = function() {
+          const form = window.formSystem.getForm('basic-form')
+          if (form) {
+              form.reset()
+              updateStatus('basic-status', '表单已重置')
+          }
+      }
+
+      window.simulateResize = function() {
+          const container = document.getElementById('responsive-form')
+          if (container) {
+              const currentWidth = container.style.width || '100%'
+              container.style.width = currentWidth === '50%' ? '100%' : '50%'
+              updateStatus('responsive-status', `容器宽度已调整为: ${container.style.width}`)
+          }
+      }
+
+      window.addDynamicField = function() {
+          const form = window.formSystem.getForm('builder-form')
+          if (form) {
+              const newField = {
+                  key: `dynamic_${Date.now()}`,
+                  label: '动态字段',
+                  type: 'input'
+              }
+              form.config.items.push(newField)
+              window.formSystem.createForm('builder-form', form.config)
+              updateStatus('builder-status', '已添加动态字段并重新渲染表单')
+          }
+      }
+
+      function updateStatus(statusId, message) {
+          const status = document.getElementById(statusId)
+          if (status) {
+              status.textContent = `[${new Date().toLocaleTimeString()}] ${message}`
+          }
+      }
+
+      // 初始化
+      updateStatus('basic-status', '点击"创建基础表单"开始体验')
+      updateStatus('responsive-status', '点击"创建响应式表单"开始体验')
+      updateStatus('builder-status', '点击"使用构建器创建"开始体验')
     </script>
-</body>
+  </body>
 </html>

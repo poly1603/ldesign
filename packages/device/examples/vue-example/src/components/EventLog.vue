@@ -1,6 +1,5 @@
 <script setup>
-import { useDevice } from '@ldesign/device/vue'
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 const logs = ref([])
 const logContainer = ref(null)
@@ -142,7 +141,11 @@ onUnmounted(() => {
         <button class="btn btn-secondary" @click="clearLogs">
           🗑️ 清空日志
         </button>
-        <button class="btn" :class="autoScroll ? 'btn-primary' : 'btn-secondary'" @click="toggleAutoScroll">
+        <button
+          class="btn"
+          :class="autoScroll ? 'btn-primary' : 'btn-secondary'"
+          @click="toggleAutoScroll"
+        >
           {{ autoScroll ? '🔄' : '⏸️' }} 自动滚动
         </button>
       </div>
@@ -152,9 +155,7 @@ onUnmounted(() => {
       <div v-if="logs.length === 0" class="empty-state">
         <span class="icon">📝</span>
         <p>暂无事件日志</p>
-        <p class="hint">
-          调整窗口大小、旋转设备或触发其他事件来查看日志
-        </p>
+        <p class="hint">调整窗口大小、旋转设备或触发其他事件来查看日志</p>
       </div>
 
       <div v-else class="log-list">

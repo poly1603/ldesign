@@ -3,8 +3,6 @@
  * 支持多层缓存、智能失效、压缩存储等高级功能
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, join } from 'node:path'
 import chalk from 'chalk'
 
 export interface CacheConfig {
@@ -26,17 +24,23 @@ export interface CacheConfig {
   enableMetrics: boolean
 }
 
-export type CacheStrategy = 
-  | 'lru'        // 最近最少使用
-  | 'lfu'        // 最少使用频率
-  | 'fifo'       // 先进先出
-  | 'lifo'       // 后进先出
-  | 'ttl'        // 基于时间
-  | 'adaptive'   // 自适应
+export type CacheStrategy =
+  | 'lru' // 最近最少使用
+  | 'lfu' // 最少使用频率
+  | 'fifo' // 先进先出
+  | 'lifo' // 后进先出
+  | 'ttl' // 基于时间
+  | 'adaptive' // 自适应
 
 export interface StorageAdapter {
   name: string
-  type: 'memory' | 'localStorage' | 'sessionStorage' | 'indexedDB' | 'redis' | 'custom'
+  type:
+    | 'memory'
+    | 'localStorage'
+    | 'sessionStorage'
+    | 'indexedDB'
+    | 'redis'
+    | 'custom'
   config: Record<string, any>
   priority: number
 }
@@ -127,7 +131,10 @@ export class AdvancedCacheManager {
         this.adapters.set(adapterConfig.name, adapter)
         console.log(chalk.green(`✅ ${adapterConfig.name} 适配器初始化成功`))
       } catch (error) {
-        console.error(chalk.red(`❌ ${adapterConfig.name} 适配器初始化失败:`), error)
+        console.error(
+          chalk.red(`❌ ${adapterConfig.name} 适配器初始化失败:`),
+          error
+        )
       }
     }
   }
@@ -163,7 +170,7 @@ export class AdvancedCacheManager {
     return {
       name: config.name,
       type: 'memory',
-      
+
       async get(key: string): Promise<CacheItem | null> {
         const item = storage.get(key)
         if (item && this.isExpired(item)) {
@@ -240,7 +247,9 @@ export class AdvancedCacheManager {
       },
 
       async clear(): Promise<void> {
-        const keys = Object.keys(localStorage).filter(key => key.startsWith(prefix))
+        const keys = Object.keys(localStorage).filter(key =>
+          key.startsWith(prefix)
+        )
         keys.forEach(key => localStorage.removeItem(key))
       },
 
@@ -251,7 +260,8 @@ export class AdvancedCacheManager {
       },
 
       async size(): Promise<number> {
-        return Object.keys(localStorage).filter(key => key.startsWith(prefix)).length
+        return Object.keys(localStorage).filter(key => key.startsWith(prefix))
+          .length
       },
     }
   }
@@ -267,10 +277,10 @@ export class AdvancedCacheManager {
     const openDB = (): Promise<IDBDatabase> => {
       return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, 1)
-        
+
         request.onerror = () => reject(request.error)
         request.onsuccess = () => resolve(request.result)
-        
+
         request.onupgradeneeded = () => {
           const db = request.result
           if (!db.objectStoreNames.contains(storeName)) {
@@ -290,7 +300,7 @@ export class AdvancedCacheManager {
 
       async get(key: string): Promise<CacheItem | null> {
         if (!db) await this.init()
-        
+
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readonly')
           const store = transaction.objectStore(storeName)
@@ -385,7 +395,7 @@ export class AdvancedCacheManager {
     return {
       name: config.name,
       type: 'redis',
-      
+
       async get(key: string): Promise<CacheItem | null> {
         // Redis 实现
         return null
@@ -420,16 +430,18 @@ export class AdvancedCacheManager {
    * 创建自定义适配器
    */
   private createCustomAdapter(config: StorageAdapter) {
-    return config.config.adapter || {
-      name: config.name,
-      type: 'custom',
-      get: async () => null,
-      set: async () => {},
-      delete: async () => false,
-      clear: async () => {},
-      keys: async () => [],
-      size: async () => 0,
-    }
+    return (
+      config.config.adapter || {
+        name: config.name,
+        type: 'custom',
+        get: async () => null,
+        set: async () => {},
+        delete: async () => false,
+        clear: async () => {},
+        keys: async () => [],
+        size: async () => 0,
+      }
+    )
   }
 
   /**
@@ -466,7 +478,7 @@ export class AdvancedCacheManager {
             }
           };
         `
-        
+
         const blob = new Blob([workerCode], { type: 'application/javascript' })
         this.compressionWorker = new Worker(URL.createObjectURL(blob))
       } catch (error) {
@@ -495,13 +507,18 @@ export class AdvancedCacheManager {
   /**
    * 获取缓存项
    */
-  async get<T = any>(key: string, options: { layer?: string } = {}): Promise<T | null> {
+  async get<T = any>(
+    key: string,
+    options: { layer?: string } = {}
+  ): Promise<T | null> {
     const startTime = performance.now()
 
     try {
-      const layers = options.layer 
+      const layers = options.layer
         ? [this.layers.get(options.layer)!]
-        : Array.from(this.layers.values()).sort((a, b) => a.name.localeCompare(b.name))
+        : Array.from(this.layers.values()).sort((a, b) =>
+            a.name.localeCompare(b.name)
+          )
 
       for (const layer of layers) {
         const adapter = this.adapters.get(layer.adapter)
@@ -544,8 +561,8 @@ export class AdvancedCacheManager {
    * 设置缓存项
    */
   async set<T = any>(
-    key: string, 
-    value: T, 
+    key: string,
+    value: T,
     options: {
       ttl?: number
       layer?: string
@@ -554,7 +571,7 @@ export class AdvancedCacheManager {
     } = {}
   ): Promise<void> {
     try {
-      const layer = options.layer 
+      const layer = options.layer
         ? this.layers.get(options.layer)!
         : Array.from(this.layers.values())[0]
 
@@ -581,7 +598,7 @@ export class AdvancedCacheManager {
 
       const now = Date.now()
       const ttl = options.ttl || layer.ttl || this.config.defaultTTL
-      
+
       const item: CacheItem<T> = {
         key,
         value: processedValue,
@@ -615,9 +632,12 @@ export class AdvancedCacheManager {
   /**
    * 删除缓存项
    */
-  async delete(key: string, options: { layer?: string } = {}): Promise<boolean> {
+  async delete(
+    key: string,
+    options: { layer?: string } = {}
+  ): Promise<boolean> {
     try {
-      const layers = options.layer 
+      const layers = options.layer
         ? [this.layers.get(options.layer)!]
         : Array.from(this.layers.values())
 
@@ -654,7 +674,7 @@ export class AdvancedCacheManager {
    */
   async clear(options: { layer?: string } = {}): Promise<void> {
     try {
-      const layers = options.layer 
+      const layers = options.layer
         ? [this.layers.get(options.layer)!]
         : Array.from(this.layers.values())
 
@@ -684,7 +704,7 @@ export class AdvancedCacheManager {
       if (!adapter) continue
 
       const keys = await adapter.keys()
-      
+
       for (const key of keys) {
         const item = await adapter.get(key)
         if (item && item.metadata.tags.includes(tag)) {
@@ -711,7 +731,7 @@ export class AdvancedCacheManager {
     if (this.compressionWorker) {
       return new Promise((resolve, reject) => {
         const id = Math.random().toString(36)
-        
+
         const handler = (e: MessageEvent) => {
           if (e.data.id === id) {
             this.compressionWorker!.removeEventListener('message', handler)
@@ -739,7 +759,7 @@ export class AdvancedCacheManager {
     if (this.compressionWorker) {
       return new Promise((resolve, reject) => {
         const id = Math.random().toString(36)
-        
+
         const handler = (e: MessageEvent) => {
           if (e.data.id === id) {
             this.compressionWorker!.removeEventListener('message', handler)
@@ -770,7 +790,7 @@ export class AdvancedCacheManager {
       const encoder = new TextEncoder()
       const dataString = JSON.stringify(data)
       const dataBuffer = encoder.encode(dataString)
-      
+
       const iv = crypto.getRandomValues(new Uint8Array(12))
       const encrypted = await crypto.subtle.encrypt(
         { name: 'AES-GCM', iv },
@@ -797,7 +817,7 @@ export class AdvancedCacheManager {
     try {
       const encrypted = new Uint8Array(encryptedData.encrypted)
       const iv = new Uint8Array(encryptedData.iv)
-      
+
       const decrypted = await crypto.subtle.decrypt(
         { name: 'AES-GCM', iv },
         this.encryptionKey,
@@ -879,15 +899,17 @@ export class AdvancedCacheManager {
    */
   private updateAverageAccessTime(accessTime: number): void {
     const totalAccesses = this.metrics.hits + this.metrics.misses
-    this.metrics.averageAccessTime = 
-      (this.metrics.averageAccessTime * (totalAccesses - 1) + accessTime) / totalAccesses
+    this.metrics.averageAccessTime =
+      (this.metrics.averageAccessTime * (totalAccesses - 1) + accessTime) /
+      totalAccesses
   }
 
   /**
    * 获取缓存指标
    */
   getMetrics(): CacheMetrics {
-    this.metrics.hitRate = this.metrics.hits / (this.metrics.hits + this.metrics.misses) || 0
+    this.metrics.hitRate =
+      this.metrics.hits / (this.metrics.hits + this.metrics.misses) || 0
     return { ...this.metrics }
   }
 
@@ -911,7 +933,9 @@ export class AdvancedCacheManager {
 /**
  * 创建高级缓存管理器
  */
-export function createAdvancedCacheManager(config: CacheConfig): AdvancedCacheManager {
+export function createAdvancedCacheManager(
+  config: CacheConfig
+): AdvancedCacheManager {
   return new AdvancedCacheManager(config)
 }
 
@@ -926,11 +950,30 @@ export const defaultCacheConfig: CacheConfig = {
   enableEncryption: false,
   storageAdapters: [
     { name: 'memory', type: 'memory', config: {}, priority: 1 },
-    { name: 'localStorage', type: 'localStorage', config: { prefix: 'ldesign_cache_' }, priority: 2 },
+    {
+      name: 'localStorage',
+      type: 'localStorage',
+      config: { prefix: 'ldesign_cache_' },
+      priority: 2,
+    },
   ],
   layers: [
-    { name: 'L1', adapter: 'memory', maxSize: 50, ttl: 30 * 60 * 1000, compression: false, encryption: false },
-    { name: 'L2', adapter: 'localStorage', maxSize: 100, ttl: 60 * 60 * 1000, compression: true, encryption: false },
+    {
+      name: 'L1',
+      adapter: 'memory',
+      maxSize: 50,
+      ttl: 30 * 60 * 1000,
+      compression: false,
+      encryption: false,
+    },
+    {
+      name: 'L2',
+      adapter: 'localStorage',
+      maxSize: 100,
+      ttl: 60 * 60 * 1000,
+      compression: true,
+      encryption: false,
+    },
   ],
   enableMetrics: true,
 }

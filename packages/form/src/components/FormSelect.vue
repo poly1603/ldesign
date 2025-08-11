@@ -1,104 +1,7 @@
-<template>
-  <div class="form-select" :class="selectClasses">
-    <div v-if="showLabel" class="form-select__label" :class="labelClasses">
-      <label :for="selectId" class="form-select__label-text">
-        {{ label }}
-        <span v-if="required" class="form-select__required">*</span>
-        <span v-if="showColon" class="form-select__colon">:</span>
-      </label>
-    </div>
-
-    <div
-      class="form-select__wrapper"
-      :class="wrapperClasses"
-      @click="handleToggle"
-    >
-      <div class="form-select__selection">
-        <div v-if="!hasSelection" class="form-select__placeholder">
-          {{ placeholder }}
-        </div>
-        <div v-else class="form-select__selected">
-          <template v-if="multiple">
-            <span
-              v-for="item in selectedItems"
-              :key="item.value"
-              class="form-select__tag"
-            >
-              {{ item.label }}
-              <button
-                type="button"
-                class="form-select__tag-close"
-                @click.stop="handleRemoveTag(item.value)"
-              >
-                ×
-              </button>
-            </span>
-          </template>
-          <template v-else>
-            {{ selectedLabel }}
-          </template>
-        </div>
-      </div>
-
-      <div
-        class="form-select__arrow"
-        :class="{ 'form-select__arrow--open': dropdownVisible }"
-      >
-        ▼
-      </div>
-    </div>
-
-    <div
-      v-if="dropdownVisible"
-      class="form-select__dropdown"
-      :class="dropdownClasses"
-    >
-      <div v-if="filterable" class="form-select__search">
-        <input
-          ref="searchRef"
-          v-model="searchQuery"
-          type="text"
-          class="form-select__search-input"
-          :placeholder="'搜索...'"
-          @input="handleSearch"
-        />
-      </div>
-
-      <div class="form-select__options">
-        <div
-          v-for="option in filteredOptions"
-          :key="option.value"
-          class="form-select__option"
-          :class="{
-            'form-select__option--selected': isSelected(option.value),
-            'form-select__option--disabled': option.disabled,
-          }"
-          @click="handleSelectOption(option)"
-        >
-          <span class="form-select__option-label">{{ option.label }}</span>
-          <span
-            v-if="isSelected(option.value)"
-            class="form-select__option-check"
-            >✓</span
-          >
-        </div>
-
-        <div v-if="filteredOptions.length === 0" class="form-select__empty">
-          {{ noDataText }}
-        </div>
-      </div>
-    </div>
-
-    <div v-if="showError && errorMessage" class="form-select__error">
-      {{ errorMessage }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { FormSelectProps } from '../types/components'
 import type { FieldOption } from '../types/field'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { generateId } from '../utils/common'
 
 interface Props extends FormSelectProps {
@@ -212,7 +115,7 @@ const dropdownClasses = computed(() => [
 ])
 
 // 方法
-const handleToggle = () => {
+function handleToggle() {
   if (props.disabled) return
 
   dropdownVisible.value = !dropdownVisible.value
@@ -224,7 +127,7 @@ const handleToggle = () => {
   }
 }
 
-const handleSelectOption = (option: FieldOption) => {
+function handleSelectOption(option: FieldOption) {
   if (option.disabled) return
 
   if (props.multiple) {
@@ -248,7 +151,7 @@ const handleSelectOption = (option: FieldOption) => {
   emit('change', selectValue.value)
 }
 
-const handleRemoveTag = (value: any) => {
+function handleRemoveTag(value: any) {
   if (props.disabled) return
 
   const values = Array.isArray(selectValue.value) ? [...selectValue.value] : []
@@ -261,11 +164,11 @@ const handleRemoveTag = (value: any) => {
   }
 }
 
-const handleSearch = () => {
+function handleSearch() {
   emit('search', searchQuery.value)
 }
 
-const isSelected = (value: any) => {
+function isSelected(value: any) {
   if (props.multiple) {
     const values = Array.isArray(selectValue.value) ? selectValue.value : []
     return values.includes(value)
@@ -273,7 +176,7 @@ const isSelected = (value: any) => {
   return selectValue.value === value
 }
 
-const handleClickOutside = (event: Event) => {
+function handleClickOutside(event: Event) {
   const target = event.target as Element
   if (!target.closest('.form-select')) {
     dropdownVisible.value = false
@@ -303,6 +206,103 @@ defineExpose({
   },
 })
 </script>
+
+<template>
+  <div class="form-select" :class="selectClasses">
+    <div v-if="showLabel" class="form-select__label" :class="labelClasses">
+      <label :for="selectId" class="form-select__label-text">
+        {{ label }}
+        <span v-if="required" class="form-select__required">*</span>
+        <span v-if="showColon" class="form-select__colon">:</span>
+      </label>
+    </div>
+
+    <div
+      class="form-select__wrapper"
+      :class="wrapperClasses"
+      @click="handleToggle"
+    >
+      <div class="form-select__selection">
+        <div v-if="!hasSelection" class="form-select__placeholder">
+          {{ placeholder }}
+        </div>
+        <div v-else class="form-select__selected">
+          <template v-if="multiple">
+            <span
+              v-for="item in selectedItems"
+              :key="item.value"
+              class="form-select__tag"
+            >
+              {{ item.label }}
+              <button
+                type="button"
+                class="form-select__tag-close"
+                @click.stop="handleRemoveTag(item.value)"
+              >
+                ×
+              </button>
+            </span>
+          </template>
+          <template v-else>
+            {{ selectedLabel }}
+          </template>
+        </div>
+      </div>
+
+      <div
+        class="form-select__arrow"
+        :class="{ 'form-select__arrow--open': dropdownVisible }"
+      >
+        ▼
+      </div>
+    </div>
+
+    <div
+      v-if="dropdownVisible"
+      class="form-select__dropdown"
+      :class="dropdownClasses"
+    >
+      <div v-if="filterable" class="form-select__search">
+        <input
+          ref="searchRef"
+          v-model="searchQuery"
+          type="text"
+          class="form-select__search-input"
+          placeholder="搜索..."
+          @input="handleSearch"
+        />
+      </div>
+
+      <div class="form-select__options">
+        <div
+          v-for="option in filteredOptions"
+          :key="option.value"
+          class="form-select__option"
+          :class="{
+            'form-select__option--selected': isSelected(option.value),
+            'form-select__option--disabled': option.disabled,
+          }"
+          @click="handleSelectOption(option)"
+        >
+          <span class="form-select__option-label">{{ option.label }}</span>
+          <span
+            v-if="isSelected(option.value)"
+            class="form-select__option-check"
+            >✓</span
+          >
+        </div>
+
+        <div v-if="filteredOptions.length === 0" class="form-select__empty">
+          {{ noDataText }}
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showError && errorMessage" class="form-select__error">
+      {{ errorMessage }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-select {

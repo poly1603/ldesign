@@ -1,62 +1,6 @@
-<template>
-  <div class="app">
-    <h1>@ldesign/form - 简单使用示例</h1>
-
-    <!-- 基础表单 -->
-    <section class="example">
-      <h2>🎯 基础表单</h2>
-      <p>最简单的表单配置，只需要定义字段即可：</p>
-      <DynamicForm v-model="basicFormData" :options="basicFormOptions" />
-      <div class="data-preview">
-        <strong>表单数据：</strong>
-        <pre>{{ JSON.stringify(basicFormData, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 主题样式 -->
-    <section class="example">
-      <h2>🎨 主题样式</h2>
-      <p>支持多种主题样式，只需要设置layout.theme：</p>
-      <DynamicForm v-model="themedFormData" :options="themedFormOptions" />
-      <div class="data-preview">
-        <strong>表单数据：</strong>
-        <pre>{{ JSON.stringify(themedFormData, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 条件显示 -->
-    <section class="example">
-      <h2>🔄 条件显示</h2>
-      <p>使用showWhen配置实现字段的条件显示：</p>
-      <DynamicForm
-        v-model="conditionalFormData"
-        :options="conditionalFormOptions"
-      />
-      <div class="data-preview">
-        <strong>表单数据：</strong>
-        <pre>{{ JSON.stringify(conditionalFormData, null, 2) }}</pre>
-      </div>
-    </section>
-
-    <!-- 响应式布局 -->
-    <section class="example">
-      <h2>📱 响应式布局</h2>
-      <p>支持默认行数和展开/收起功能：</p>
-      <DynamicForm
-        v-model="responsiveFormData"
-        :options="responsiveFormOptions"
-      />
-      <div class="data-preview">
-        <strong>表单数据：</strong>
-        <pre>{{ JSON.stringify(responsiveFormData, null, 2) }}</pre>
-      </div>
-    </section>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { DynamicForm } from '@ldesign/form'
+import { ref } from 'vue'
 
 // 基础表单
 const basicFormData = ref({})
@@ -208,6 +152,62 @@ const responsiveFormOptions = {
   },
 }
 </script>
+
+<template>
+  <div class="app">
+    <h1>@ldesign/form - 简单使用示例</h1>
+
+    <!-- 基础表单 -->
+    <section class="example">
+      <h2>🎯 基础表单</h2>
+      <p>最简单的表单配置，只需要定义字段即可：</p>
+      <DynamicForm v-model="basicFormData" :options="basicFormOptions" />
+      <div class="data-preview">
+        <strong>表单数据：</strong>
+        <pre>{{ JSON.stringify(basicFormData, null, 2) }}</pre>
+      </div>
+    </section>
+
+    <!-- 主题样式 -->
+    <section class="example">
+      <h2>🎨 主题样式</h2>
+      <p>支持多种主题样式，只需要设置layout.theme：</p>
+      <DynamicForm v-model="themedFormData" :options="themedFormOptions" />
+      <div class="data-preview">
+        <strong>表单数据：</strong>
+        <pre>{{ JSON.stringify(themedFormData, null, 2) }}</pre>
+      </div>
+    </section>
+
+    <!-- 条件显示 -->
+    <section class="example">
+      <h2>🔄 条件显示</h2>
+      <p>使用showWhen配置实现字段的条件显示：</p>
+      <DynamicForm
+        v-model="conditionalFormData"
+        :options="conditionalFormOptions"
+      />
+      <div class="data-preview">
+        <strong>表单数据：</strong>
+        <pre>{{ JSON.stringify(conditionalFormData, null, 2) }}</pre>
+      </div>
+    </section>
+
+    <!-- 响应式布局 -->
+    <section class="example">
+      <h2>📱 响应式布局</h2>
+      <p>支持默认行数和展开/收起功能：</p>
+      <DynamicForm
+        v-model="responsiveFormData"
+        :options="responsiveFormOptions"
+      />
+      <div class="data-preview">
+        <strong>表单数据：</strong>
+        <pre>{{ JSON.stringify(responsiveFormData, null, 2) }}</pre>
+      </div>
+    </section>
+  </div>
+</template>
 
 <style scoped>
 .app {

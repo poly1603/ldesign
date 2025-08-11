@@ -1,5 +1,5 @@
 import type { App } from 'vue'
-import type { Router, RouteLocationNormalized } from '../types'
+import type { RouteLocationNormalized, Router } from '../types'
 
 /**
  * 缓存策略
@@ -63,12 +63,12 @@ interface CacheEntry {
  * 缓存存储接口
  */
 interface CacheStorage {
-  get(key: string): CacheEntry | null
-  set(key: string, entry: CacheEntry): void
-  delete(key: string): boolean
-  clear(): void
-  keys(): string[]
-  size(): number
+  get: (key: string) => CacheEntry | null
+  set: (key: string, entry: CacheEntry) => void
+  delete: (key: string) => boolean
+  clear: () => void
+  keys: () => string[]
+  size: () => number
 }
 
 /**

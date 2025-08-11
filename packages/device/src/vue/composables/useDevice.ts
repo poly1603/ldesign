@@ -1,6 +1,6 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import type { DeviceInfo } from '../../types'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { DeviceDetector } from '../../core/DeviceDetector'
-import type { DeviceInfo, DeviceType, Orientation } from '../../types'
 
 /**
  * 设备检测组合式函数
@@ -14,7 +14,9 @@ export function useDevice() {
   const isTablet = computed(() => deviceInfo.value?.type === 'tablet')
   const isDesktop = computed(() => deviceInfo.value?.type === 'desktop')
   const isTouchDevice = computed(() => deviceInfo.value?.isTouchDevice || false)
-  const orientation = computed(() => deviceInfo.value?.orientation || 'portrait')
+  const orientation = computed(
+    () => deviceInfo.value?.orientation || 'portrait'
+  )
 
   // 检测设备信息
   const detect = () => {
@@ -43,7 +45,7 @@ export function useDevice() {
     isDesktop,
     isTouchDevice,
     orientation,
-    detect
+    detect,
   }
 }
 
@@ -51,13 +53,14 @@ export function useDevice() {
  * 设备检测组合式函数（简化版）
  */
 export function useDeviceDetection() {
-  const { deviceInfo, isMobile, isTablet, isDesktop, isTouchDevice } = useDevice()
-  
+  const { deviceInfo, isMobile, isTablet, isDesktop, isTouchDevice } =
+    useDevice()
+
   return {
     deviceInfo,
     isMobile,
     isTablet,
     isDesktop,
-    isTouchDevice
+    isTouchDevice,
   }
 }

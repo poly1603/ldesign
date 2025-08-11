@@ -1,8 +1,8 @@
+import type { AppConfig } from './types'
 import { createApp, presets } from '@ldesign/engine'
 import { routerPlugin } from '@ldesign/router'
 import App from './App.tsx'
 import { routes } from './router/routes.ts'
-import type { AppConfig } from './types'
 
 /**
  * 创建 LDesign 应用
@@ -157,7 +157,6 @@ export default async function createLDesignApp(config?: Partial<AppConfig>) {
           duration: 4000,
         })
       } catch (notificationError) {
-        // eslint-disable-next-line no-console
         console.warn('通知显示失败:', notificationError)
       }
 
@@ -165,7 +164,6 @@ export default async function createLDesignApp(config?: Partial<AppConfig>) {
       try {
         engine.logger?.info(`🚀 ${defaultConfig.name} 启动成功!`)
       } catch (logError) {
-        // eslint-disable-next-line no-console
         console.warn('日志记录失败:', logError)
       }
 
@@ -176,9 +174,8 @@ export default async function createLDesignApp(config?: Partial<AppConfig>) {
         config: defaultConfig,
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('❌ 应用启动失败:', error)
-      // eslint-disable-next-line no-console
+
       console.error(
         '错误堆栈:',
         error instanceof Error ? error.stack : 'No stack trace'
@@ -207,12 +204,10 @@ export default async function createLDesignApp(config?: Partial<AppConfig>) {
 
   // 全局错误处理
   window.addEventListener('error', event => {
-    // eslint-disable-next-line no-console
     console.error('全局错误:', event.error)
   })
 
   window.addEventListener('unhandledrejection', event => {
-    // eslint-disable-next-line no-console
     console.error('未处理的Promise拒绝:', event.reason)
   })
 
@@ -231,7 +226,6 @@ if (typeof window !== 'undefined' && document.querySelector('#app')) {
       console.log('✅ 应用启动完成:', app)
     })
     .catch(error => {
-      // eslint-disable-next-line no-console
       console.error('❌ 应用启动失败:', error)
     })
 }

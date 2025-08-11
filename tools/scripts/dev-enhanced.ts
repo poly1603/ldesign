@@ -5,9 +5,9 @@
  * 提供更好的开发体验和错误处理
  */
 
-import { spawn, execSync } from 'node:child_process'
+import { execSync, spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 
@@ -75,7 +75,6 @@ class EnhancedDevServer {
 
       console.log(chalk.green('\n✅ 开发环境启动完成!'))
       this.printStatus()
-
     } catch (error) {
       console.error(chalk.red('❌ 启动失败:'), error)
       process.exit(1)
@@ -91,9 +90,11 @@ class EnhancedDevServer {
     // 检查 Node.js 版本
     const nodeVersion = process.version
     const requiredVersion = '18.0.0'
-    
+
     if (!this.compareVersions(nodeVersion.slice(1), requiredVersion)) {
-      throw new Error(`需要 Node.js >= ${requiredVersion}，当前版本: ${nodeVersion}`)
+      throw new Error(
+        `需要 Node.js >= ${requiredVersion}，当前版本: ${nodeVersion}`
+      )
     }
 
     // 检查 pnpm
@@ -127,10 +128,10 @@ class EnhancedDevServer {
     console.log(chalk.yellow('🔧 运行代码检查...'))
 
     try {
-      execSync('pnpm lint:check', { 
-        stdio: 'pipe', 
+      execSync('pnpm lint:check', {
+        stdio: 'pipe',
         cwd: rootDir,
-        timeout: 30000 
+        timeout: 30000,
       })
       console.log(chalk.green('✅ 代码检查通过'))
     } catch (error) {
@@ -162,14 +163,16 @@ class EnhancedDevServer {
    */
   private async startPackageServer(packageName: string, port: number) {
     const packageDir = join(rootDir, 'packages', packageName)
-    
+
     if (!existsSync(packageDir)) {
       console.log(chalk.red(`❌ 包不存在: ${packageName}`))
       return
     }
 
-    const packageJson = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf-8'))
-    
+    const packageJson = JSON.parse(
+      readFileSync(join(packageDir, 'package.json'), 'utf-8')
+    )
+
     if (!packageJson.scripts?.dev) {
       console.log(chalk.yellow(`⚠️ 包 ${packageName} 没有 dev 脚本`))
       return
@@ -189,7 +192,7 @@ class EnhancedDevServer {
 
     this.processes.set(`package-${packageName}`, process)
 
-    process.on('error', (error) => {
+    process.on('error', error => {
       console.error(chalk.red(`❌ ${packageName} 启动失败:`), error)
     })
   }
@@ -211,7 +214,7 @@ class EnhancedDevServer {
 
     this.processes.set('main', process)
 
-    process.on('error', (error) => {
+    process.on('error', error => {
       console.error(chalk.red('❌ 主服务器启动失败:'), error)
     })
   }
@@ -229,7 +232,7 @@ class EnhancedDevServer {
 
     this.processes.set('test', process)
 
-    process.on('error', (error) => {
+    process.on('error', error => {
       console.error(chalk.red('❌ 测试监听启动失败:'), error)
     })
   }
@@ -240,12 +243,12 @@ class EnhancedDevServer {
   private setupProcessHandlers() {
     const cleanup = () => {
       console.log(chalk.yellow('\n🛑 正在关闭开发服务器...'))
-      
+
       for (const [name, process] of this.processes) {
         console.log(chalk.yellow(`关闭 ${name}...`))
         process.kill('SIGTERM')
       }
-      
+
       setTimeout(() => {
         console.log(chalk.green('✅ 开发服务器已关闭'))
         process.exit(0)
@@ -261,7 +264,7 @@ class EnhancedDevServer {
    */
   private printStatus() {
     console.log(chalk.blue('\n📊 开发服务器状态:'))
-    
+
     for (const [name] of this.processes) {
       console.log(chalk.green(`  ✅ ${name} - 运行中`))
     }
@@ -273,7 +276,9 @@ class EnhancedDevServer {
         console.log(chalk.cyan(`  📦 ${pkg}: http://localhost:${port}`))
       }
     } else {
-      console.log(chalk.cyan(`\n🌐 主服务器: http://localhost:${this.options.port}`))
+      console.log(
+        chalk.cyan(`\n🌐 主服务器: http://localhost:${this.options.port}`)
+      )
     }
 
     console.log(chalk.gray('\n💡 提示: 按 Ctrl+C 停止服务器'))
@@ -306,7 +311,7 @@ async function main() {
   // 解析命令行参数
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
-    
+
     switch (arg) {
       case '--packages':
         options.packages = args[++i]?.split(',') || []
@@ -324,7 +329,7 @@ async function main() {
         options.debug = true
         break
       case '--port':
-        options.port = parseInt(args[++i]) || 3000
+        options.port = Number.parseInt(args[++i]) || 3000
         break
       case '--open':
         options.open = true

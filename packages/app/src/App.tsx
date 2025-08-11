@@ -1,5 +1,5 @@
 import type { EngineImpl } from '@ldesign/engine'
-import { RouterView, RouterLink } from '@ldesign/router'
+import { RouterLink, RouterView } from '@ldesign/router'
 import { defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({
@@ -21,7 +21,6 @@ export default defineComponent({
         engine.router.push(path)
         engine.logger.info(`导航到页面: ${path}`)
       } else {
-        // eslint-disable-next-line no-console
         console.warn('路由器尚未准备好')
         window.location.hash = path
       }
@@ -84,7 +83,10 @@ export default defineComponent({
           >
             <h2>✅ 应用启动成功！</h2>
             <p>LDesign Engine 已经成功启动，路由系统正在工作。</p>
-            <p>当前路径: {window.location.hash || '/'}</p>
+            <p>
+              当前路径:
+              {window.location.hash || '/'}
+            </p>
           </div>
 
           {/* 通知测试区域 */}

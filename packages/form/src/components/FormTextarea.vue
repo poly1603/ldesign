@@ -1,47 +1,3 @@
-<template>
-  <div class="form-textarea" :class="textareaClasses">
-    <div v-if="showLabel" class="form-textarea__label" :class="labelClasses">
-      <label :for="textareaId" class="form-textarea__label-text">
-        {{ label }}
-        <span v-if="required" class="form-textarea__required">*</span>
-        <span v-if="showColon" class="form-textarea__colon">:</span>
-      </label>
-    </div>
-
-    <div class="form-textarea__wrapper" :class="wrapperClasses">
-      <textarea
-        :id="textareaId"
-        ref="textareaRef"
-        v-model="textareaValue"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :readonly="readonly"
-        :maxlength="maxlength"
-        :rows="rows"
-        :cols="cols"
-        :resize="resize"
-        class="form-textarea__textarea"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @input="handleInput"
-        @change="handleChange"
-      />
-
-      <div v-if="showCount && maxlength" class="form-textarea__count">
-        {{ currentLength }}/{{ maxlength }}
-      </div>
-    </div>
-
-    <div v-if="showError && errorMessage" class="form-textarea__error">
-      {{ errorMessage }}
-    </div>
-
-    <div v-if="description" class="form-textarea__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { generateId } from '../utils/common'
@@ -130,34 +86,34 @@ const wrapperClasses = computed(() => [
 ])
 
 // 事件处理
-const handleFocus = (event: FocusEvent) => {
+function handleFocus(event: FocusEvent) {
   focused.value = true
   emit('focus', event)
 }
 
-const handleBlur = (event: FocusEvent) => {
+function handleBlur(event: FocusEvent) {
   focused.value = false
   emit('blur', event)
 }
 
-const handleInput = (event: Event) => {
+function handleInput(event: Event) {
   emit('input', event)
 }
 
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   emit('change', event)
 }
 
 // 公开方法
-const focus = () => {
+function focus() {
   textareaRef.value?.focus()
 }
 
-const blur = () => {
+function blur() {
   textareaRef.value?.blur()
 }
 
-const select = () => {
+function select() {
   textareaRef.value?.select()
 }
 
@@ -168,6 +124,50 @@ defineExpose({
   textareaRef,
 })
 </script>
+
+<template>
+  <div class="form-textarea" :class="textareaClasses">
+    <div v-if="showLabel" class="form-textarea__label" :class="labelClasses">
+      <label :for="textareaId" class="form-textarea__label-text">
+        {{ label }}
+        <span v-if="required" class="form-textarea__required">*</span>
+        <span v-if="showColon" class="form-textarea__colon">:</span>
+      </label>
+    </div>
+
+    <div class="form-textarea__wrapper" :class="wrapperClasses">
+      <textarea
+        :id="textareaId"
+        ref="textareaRef"
+        v-model="textareaValue"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :readonly="readonly"
+        :maxlength="maxlength"
+        :rows="rows"
+        :cols="cols"
+        :resize="resize"
+        class="form-textarea__textarea"
+        @focus="handleFocus"
+        @blur="handleBlur"
+        @input="handleInput"
+        @change="handleChange"
+      />
+
+      <div v-if="showCount && maxlength" class="form-textarea__count">
+        {{ currentLength }}/{{ maxlength }}
+      </div>
+    </div>
+
+    <div v-if="showError && errorMessage" class="form-textarea__error">
+      {{ errorMessage }}
+    </div>
+
+    <div v-if="description" class="form-textarea__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-textarea {

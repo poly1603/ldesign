@@ -1,9 +1,9 @@
 // useAdvancedLayout 测试
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import type { FormItemConfig } from '../../types/field'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ref } from 'vue'
 import { useAdvancedLayout } from '../useAdvancedLayout'
-import type { FormItemConfig } from '../../types/field'
 
 describe('useAdvancedLayout', () => {
   let mockFields: FormItemConfig[]

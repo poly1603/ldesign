@@ -9,6 +9,6 @@ export default createRollupConfig({
   vue: true,
   external: ['vue'],
   globals: {
-    vue: 'Vue'
-  }
+    vue: 'Vue',
+  },
 })

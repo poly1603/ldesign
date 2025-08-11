@@ -1,4 +1,8 @@
-import type { DecryptResult, EncryptionAlgorithm, EncryptResult } from '../types'
+import type {
+  DecryptResult,
+  EncryptionAlgorithm,
+  EncryptResult,
+} from '../types'
 
 /**
  * 批量操作接口
@@ -68,7 +72,7 @@ export class PerformanceOptimizer {
   private memoryPoolConfig: MemoryPoolConfig = {
     maxSize: 10,
     chunkSize: 1024 * 1024, // 1MB chunks
-    preAllocate: true
+    preAllocate: true,
   }
 
   constructor() {
@@ -105,7 +109,9 @@ export class PerformanceOptimizer {
   /**
    * 批量加密
    */
-  async batchEncrypt(operations: BatchOperation[]): Promise<BatchResult<EncryptResult>[]> {
+  async batchEncrypt(
+    operations: BatchOperation[]
+  ): Promise<BatchResult<EncryptResult>[]> {
     const results: BatchResult<EncryptResult>[] = []
 
     // 使用 Web Workers 进行并行处理（如果可用）
@@ -135,7 +141,9 @@ export class PerformanceOptimizer {
   /**
    * 批量解密
    */
-  async batchDecrypt(operations: BatchOperation[]): Promise<BatchResult<DecryptResult>[]> {
+  async batchDecrypt(
+    operations: BatchOperation[]
+  ): Promise<BatchResult<DecryptResult>[]> {
     const results: BatchResult<DecryptResult>[] = []
 
     // 使用 Web Workers 进行并行处理（如果可用）
@@ -165,12 +173,18 @@ export class PerformanceOptimizer {
   /**
    * 并行加密（使用 Web Workers）
    */
-  private async parallelEncrypt(operations: BatchOperation[]): Promise<BatchResult<EncryptResult>[]> {
+  private async parallelEncrypt(
+    operations: BatchOperation[]
+  ): Promise<BatchResult<EncryptResult>[]> {
     // 将操作分组，每个 Worker 处理一组
-    const chunkSize = Math.ceil(operations.length / navigator.hardwareConcurrency || 4)
+    const chunkSize = Math.ceil(
+      operations.length / navigator.hardwareConcurrency || 4
+    )
     const chunks = this.chunkArray(operations, chunkSize)
 
-    const promises = chunks.map(chunk => this.processChunkWithWorker(chunk, 'encrypt'))
+    const promises = chunks.map(chunk =>
+      this.processChunkWithWorker(chunk, 'encrypt')
+    )
     const results = await Promise.all(promises)
 
     return results.flat()
@@ -179,12 +193,18 @@ export class PerformanceOptimizer {
   /**
    * 并行解密（使用 Web Workers）
    */
-  private async parallelDecrypt(operations: BatchOperation[]): Promise<BatchResult<DecryptResult>[]> {
+  private async parallelDecrypt(
+    operations: BatchOperation[]
+  ): Promise<BatchResult<DecryptResult>[]> {
     // 将操作分组，每个 Worker 处理一组
-    const chunkSize = Math.ceil(operations.length / navigator.hardwareConcurrency || 4)
+    const chunkSize = Math.ceil(
+      operations.length / navigator.hardwareConcurrency || 4
+    )
     const chunks = this.chunkArray(operations, chunkSize)
 
-    const promises = chunks.map(chunk => this.processChunkWithWorker(chunk, 'decrypt'))
+    const promises = chunks.map(chunk =>
+      this.processChunkWithWorker(chunk, 'decrypt')
+    )
     const results = await Promise.all(promises)
 
     return results.flat()
@@ -195,16 +215,17 @@ export class PerformanceOptimizer {
    */
   private async processChunkWithWorker(
     chunk: BatchOperation[],
-    operation: 'encrypt' | 'decrypt',
+    operation: 'encrypt' | 'decrypt'
   ): Promise<BatchResult<any>[]> {
     return new Promise((resolve, _reject) => {
       // 在实际实现中，这里会创建和使用 Web Worker
       // 目前使用同步处理作为后备方案
       const results = chunk.map(op => ({
         id: op.id,
-        result: operation === 'encrypt'
-          ? this.performEncryption(op)
-          : this.performDecryption(op),
+        result:
+          operation === 'encrypt'
+            ? this.performEncryption(op)
+            : this.performDecryption(op),
       }))
       resolve(results)
     })
@@ -237,7 +258,8 @@ export class PerformanceOptimizer {
         success: false,
         data: '',
         algorithm: operation.algorithm,
-        error: error instanceof Error ? error.message : 'Unknown encryption error'
+        error:
+          error instanceof Error ? error.message : 'Unknown encryption error',
       }
     }
   }
@@ -269,7 +291,8 @@ export class PerformanceOptimizer {
         success: false,
         data: '',
         algorithm: operation.algorithm,
-        error: error instanceof Error ? error.message : 'Unknown decryption error'
+        error:
+          error instanceof Error ? error.message : 'Unknown decryption error',
       }
     }
   }
@@ -290,7 +313,10 @@ export class PerformanceOptimizer {
    * 生成缓存键
    */
   private generateCacheKey(operation: string, data: BatchOperation): string {
-    return `${operation}_${data.algorithm}_${data.key}_${data.data}`.substring(0, 100)
+    return `${operation}_${data.algorithm}_${data.key}_${data.data}`.substring(
+      0,
+      100
+    )
   }
 
   /**
@@ -346,14 +372,15 @@ export class PerformanceOptimizer {
    * 获取缓存统计信息
    */
   getCacheStats(): CacheStats {
-    const hitRate = this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0
+    const hitRate =
+      this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0
 
     return {
       keyCache: this.keyCache.size,
       resultCache: this.resultCache.size,
       maxSize: this.maxCacheSize,
       hitRate,
-      totalRequests: this.totalRequests
+      totalRequests: this.totalRequests,
     }
   }
 
@@ -361,18 +388,21 @@ export class PerformanceOptimizer {
    * 获取性能指标
    */
   getPerformanceMetrics(): PerformanceMetrics {
-    const avgLatency = this.operationTimes.length > 0
-      ? this.operationTimes.reduce((sum, time) => sum + time, 0) / this.operationTimes.length
-      : 0
+    const avgLatency =
+      this.operationTimes.length > 0
+        ? this.operationTimes.reduce((sum, time) => sum + time, 0) /
+          this.operationTimes.length
+        : 0
 
     const opsPerSecond = avgLatency > 0 ? 1000 / avgLatency : 0
-    const hitRate = this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0
+    const hitRate =
+      this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0
 
     return {
       operationsPerSecond: opsPerSecond,
       averageLatency: avgLatency,
       memoryUsage: this.getMemoryUsage(),
-      cacheHitRate: hitRate
+      cacheHitRate: hitRate,
     }
   }
 
@@ -392,7 +422,8 @@ export class PerformanceOptimizer {
    * 优化缓存大小
    */
   optimizeCacheSize(): void {
-    const hitRate = this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0
+    const hitRate =
+      this.totalRequests > 0 ? this.cacheHits / this.totalRequests : 0
 
     // 如果命中率低于50%，减少缓存大小
     if (hitRate < 0.5 && this.maxCacheSize > 100) {

@@ -1,9 +1,9 @@
 // 验证工具函数
 
 import type {
-  ValidationRule,
-  ValidationResult,
   BuiltinValidationRules,
+  ValidationResult,
+  ValidationRule,
 } from '../types/validation'
 
 /**
@@ -14,7 +14,7 @@ export const builtinRules: BuiltinValidationRules = {
     message: '此字段为必填项',
   },
   email: {
-    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    pattern: /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/,
     message: '请输入有效的邮箱地址',
   },
   phone: {

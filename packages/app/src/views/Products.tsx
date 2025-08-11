@@ -1,5 +1,5 @@
-import { defineComponent, ref } from 'vue'
 import { RouterLink } from '@ldesign/router'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'Products',
@@ -147,7 +147,10 @@ export default defineComponent({
                   <p class='product-price'>¥{product.price.toLocaleString()}</p>
 
                   <div class='product-stock'>
-                    <span>库存: {product.stock}</span>
+                    <span>
+                      库存:
+                      {product.stock}
+                    </span>
                     <span
                       class='status-badge'
                       style={{ backgroundColor: statusBadge.color }}
@@ -210,7 +213,8 @@ export default defineComponent({
           </RouterLink>
         </div>
 
-        <style>{`
+        <style>
+          {`
           .products {
             padding: 2rem;
             max-width: 1200px;
@@ -343,7 +347,8 @@ export default defineComponent({
             padding-top: 2rem;
             border-top: 1px solid #e0e0e0;
           }
-        `}</style>
+        `}
+        </style>
       </div>
     )
   },

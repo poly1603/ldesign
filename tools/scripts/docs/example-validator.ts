@@ -5,11 +5,17 @@
  * 验证文档中的示例代码是否正确和可运行
  */
 
-import { execSync, spawn } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
-import { resolve, join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -143,7 +149,9 @@ class ExampleValidator {
     if (!existsSync(dir)) return files
 
     try {
-      const entries = execSync(`find "${dir}" -name "*.md"`, { encoding: 'utf-8' })
+      const entries = execSync(`find "${dir}" -name "*.md"`, {
+        encoding: 'utf-8',
+      })
         .trim()
         .split('\n')
         .filter(Boolean)
@@ -165,7 +173,11 @@ class ExampleValidator {
 
     for (let i = 0; i < examples.length; i++) {
       const example = examples[i]
-      console.log(chalk.gray(`  📝 验证示例 ${i + 1}/${examples.length} (${example.language})`))
+      console.log(
+        chalk.gray(
+          `  📝 验证示例 ${i + 1}/${examples.length} (${example.language})`
+        )
+      )
 
       try {
         const result = await this.validateExample(example, i)
@@ -174,7 +186,9 @@ class ExampleValidator {
         if (result.success) {
           console.log(chalk.green(`    ✅ 示例 ${i + 1} 验证通过`))
         } else {
-          console.log(chalk.red(`    ❌ 示例 ${i + 1} 验证失败: ${result.error}`))
+          console.log(
+            chalk.red(`    ❌ 示例 ${i + 1} 验证失败: ${result.error}`)
+          )
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
@@ -202,7 +216,9 @@ class ExampleValidator {
   /**
    * 提取代码块
    */
-  private extractCodeBlocks(content: string): Array<{ code: string; language: string }> {
+  private extractCodeBlocks(
+    content: string
+  ): Array<{ code: string; language: string }> {
     const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
     const blocks: Array<{ code: string; language: string }> = []
     let match
@@ -434,7 +450,7 @@ class ExampleValidator {
       /process\.exit/,
       /export\s+default/,
       /function\s+\w+\s*\(/,
-      /=>\s*{/,
+      /=>\s*\{/,
       /\.then\(/,
       /await\s+/,
     ]
@@ -460,7 +476,10 @@ class ExampleValidator {
 
     const totalFiles = this.results.length
     const successfulFiles = this.results.filter(r => r.success).length
-    const totalExamples = this.results.reduce((sum, r) => sum + r.examples.length, 0)
+    const totalExamples = this.results.reduce(
+      (sum, r) => sum + r.examples.length,
+      0
+    )
     const successfulExamples = this.results.reduce(
       (sum, r) => sum + r.examples.filter(e => e.success).length,
       0
@@ -468,7 +487,9 @@ class ExampleValidator {
 
     console.log(`文件: ${successfulFiles}/${totalFiles} 通过`)
     console.log(`示例: ${successfulExamples}/${totalExamples} 通过`)
-    console.log(`成功率: ${((successfulExamples / totalExamples) * 100).toFixed(1)}%`)
+    console.log(
+      `成功率: ${((successfulExamples / totalExamples) * 100).toFixed(1)}%`
+    )
 
     // 显示失败的文件
     const failedFiles = this.results.filter(r => !r.success)
@@ -516,7 +537,7 @@ async function main() {
   }
 
   const validator = new ExampleValidator(config)
-  
+
   try {
     const results = await validator.validateAll()
     const allSuccess = results.every(r => r.success)

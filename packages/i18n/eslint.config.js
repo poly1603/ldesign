@@ -1,13 +1,13 @@
 import js from '@eslint/js'
+import stylistic from '@stylistic/eslint-plugin'
 import ts from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
+import jsdoc from 'eslint-plugin-jsdoc'
+import perfectionist from 'eslint-plugin-perfectionist'
+import regexp from 'eslint-plugin-regexp'
+import unusedImports from 'eslint-plugin-unused-imports'
 import vue from 'eslint-plugin-vue'
 import vueParser from 'vue-eslint-parser'
-import stylistic from '@stylistic/eslint-plugin'
-import perfectionist from 'eslint-plugin-perfectionist'
-import unusedImports from 'eslint-plugin-unused-imports'
-import regexp from 'eslint-plugin-regexp'
-import jsdoc from 'eslint-plugin-jsdoc'
 
 export default [
   js.configs.recommended,
@@ -25,10 +25,10 @@ export default [
     plugins: {
       '@typescript-eslint': ts,
       '@stylistic': stylistic,
-      'perfectionist': perfectionist,
+      perfectionist: perfectionist,
       'unused-imports': unusedImports,
-      'regexp': regexp,
-      'jsdoc': jsdoc,
+      regexp: regexp,
+      jsdoc: jsdoc,
     },
     rules: {
       // TypeScript rules
@@ -41,27 +41,33 @@ export default [
       '@stylistic/quote-props': ['error', 'as-needed'],
 
       // Import sorting
-      'perfectionist/sort-imports': ['error', {
-        type: 'natural',
-        order: 'asc',
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          'parent',
-          'sibling',
-          'index',
-        ],
-      }],
+      'perfectionist/sort-imports': [
+        'error',
+        {
+          type: 'natural',
+          order: 'asc',
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+          ],
+        },
+      ],
 
       // Unused imports
       'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': ['error', {
-        vars: 'all',
-        varsIgnorePattern: '^_',
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-      }],
+      'unused-imports/no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+        },
+      ],
 
       // Regex rules
       'regexp/no-super-linear-backtracking': 'error',
@@ -77,9 +83,12 @@ export default [
       'no-cond-assign': ['error', 'except-parens'],
 
       // Vue rules
-      'vue/block-order': ['error', {
-        order: ['script', 'template', 'style'],
-      }],
+      'vue/block-order': [
+        'error',
+        {
+          order: ['script', 'template', 'style'],
+        },
+      ],
       'vue/no-v-text-v-html-on-component': 'error',
     },
   },

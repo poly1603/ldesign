@@ -14,7 +14,7 @@ const errorCount = ref(0)
 const form = reactive({
   title: '新文章标题',
   body: '这是文章内容',
-  userId: 1
+  userId: 1,
 })
 
 // 模拟 HTTP 请求函数
@@ -50,11 +50,9 @@ async function sendGetRequest() {
     error.value = null
     const response = await mockRequest('/api/posts/1')
     data.value = response.data
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -68,11 +66,9 @@ async function sendPostRequest() {
       data: { title: '新文章', body: '文章内容' },
     })
     data.value = response.data
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -82,11 +78,9 @@ async function sendErrorRequest() {
     loading.value = true
     error.value = null
     await mockRequest('/api/error')
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -100,11 +94,9 @@ async function submitForm() {
       data: form,
     })
     data.value = response.data
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -113,7 +105,7 @@ async function submitForm() {
 <template>
   <div id="app">
     <h1>@ldesign/http Vue 3 示例</h1>
-    
+
     <!-- 统计信息 -->
     <div class="stats">
       <div class="stat-item">
@@ -134,44 +126,39 @@ async function submitForm() {
     <section class="section">
       <h2>基础 HTTP 请求</h2>
       <div class="button-group">
-        <button @click="sendGetRequest" :disabled="loading">
+        <button :disabled="loading" @click="sendGetRequest">
           {{ loading ? '请求中...' : 'GET 请求' }}
         </button>
-        <button @click="sendPostRequest" :disabled="loading">
+        <button :disabled="loading" @click="sendPostRequest">
           {{ loading ? '请求中...' : 'POST 请求' }}
         </button>
-        <button @click="sendErrorRequest" :disabled="loading">
+        <button :disabled="loading" @click="sendErrorRequest">
           {{ loading ? '请求中...' : '错误请求' }}
         </button>
       </div>
-      
+
       <div class="output">
-        <div v-if="loading" class="loading">
-          🔄 请求进行中...
-        </div>
-        <div v-else-if="error" class="error">
-          ❌ 错误: {{ error.message }}
-        </div>
+        <div v-if="loading" class="loading">🔄 请求进行中...</div>
+        <div v-else-if="error" class="error">❌ 错误: {{ error.message }}</div>
         <div v-else-if="data" class="success">
-          ✅ 成功: <pre>{{ JSON.stringify(data, null, 2) }}</pre>
+          ✅ 成功:
+          <pre>{{ JSON.stringify(data, null, 2) }}</pre>
         </div>
-        <div v-else class="placeholder">
-          点击按钮发送请求
-        </div>
+        <div v-else class="placeholder">点击按钮发送请求</div>
       </div>
     </section>
 
     <!-- 表单提交 -->
     <section class="section">
       <h2>表单提交</h2>
-      <form @submit.prevent="submitForm" class="form">
+      <form class="form" @submit.prevent="submitForm">
         <div class="form-group">
           <label>标题:</label>
           <input v-model="form.title" type="text" />
         </div>
         <div class="form-group">
           <label>内容:</label>
-          <textarea v-model="form.body"></textarea>
+          <textarea v-model="form.body" />
         </div>
         <button type="submit" :disabled="loading">
           {{ loading ? '提交中...' : '提交表单' }}
@@ -303,7 +290,8 @@ label {
   color: #2c3e50;
 }
 
-input, textarea {
+input,
+textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;

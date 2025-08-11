@@ -3,9 +3,8 @@
  * 管理社区贡献、代码审查、奖励机制等
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, join } from 'node:path'
-import { execSync } from 'node:child_process'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import chalk from 'chalk'
 
 export interface Contributor {
@@ -71,7 +70,7 @@ export interface Badge {
   type: BadgeType
 }
 
-export type BadgeType = 
+export type BadgeType =
   | 'contribution'
   | 'milestone'
   | 'special'
@@ -79,7 +78,7 @@ export type BadgeType =
   | 'technical'
   | 'leadership'
 
-export type ContributorLevel = 
+export type ContributorLevel =
   | 'newcomer'
   | 'contributor'
   | 'regular'
@@ -117,7 +116,7 @@ export interface Contribution {
   points: number
 }
 
-export type ContributionType = 
+export type ContributionType =
   | 'code'
   | 'plugin'
   | 'documentation'
@@ -129,7 +128,7 @@ export type ContributionType =
   | 'community'
   | 'tutorial'
 
-export type ContributionStatus = 
+export type ContributionStatus =
   | 'draft'
   | 'submitted'
   | 'under-review'
@@ -138,11 +137,7 @@ export type ContributionStatus =
   | 'rejected'
   | 'closed'
 
-export type ContributionImpact = 
-  | 'minor'
-  | 'moderate'
-  | 'major'
-  | 'critical'
+export type ContributionImpact = 'minor' | 'moderate' | 'major' | 'critical'
 
 export interface ContributionReward {
   /** 奖励类型 */
@@ -160,11 +155,12 @@ export class CommunityContributionManager {
   private badgesFile: string
 
   constructor(options: { dataDir?: string } = {}) {
-    this.dataDir = options.dataDir || resolve(process.cwd(), '.ldesign/community')
+    this.dataDir =
+      options.dataDir || resolve(process.cwd(), '.ldesign/community')
     this.contributorsFile = join(this.dataDir, 'contributors.json')
     this.contributionsFile = join(this.dataDir, 'contributions.json')
     this.badgesFile = join(this.dataDir, 'badges.json')
-    
+
     this.ensureDirectories()
     this.initializeBadges()
   }
@@ -172,7 +168,9 @@ export class CommunityContributionManager {
   /**
    * 注册新贡献者
    */
-  async registerContributor(contributorData: Partial<Contributor>): Promise<Contributor> {
+  async registerContributor(
+    contributorData: Partial<Contributor>
+  ): Promise<Contributor> {
     console.log(chalk.blue(`👋 注册新贡献者: ${contributorData.username}`))
 
     const contributor: Contributor = {
@@ -212,7 +210,9 @@ export class CommunityContributionManager {
   /**
    * 提交贡献
    */
-  async submitContribution(contributionData: Partial<Contribution>): Promise<Contribution> {
+  async submitContribution(
+    contributionData: Partial<Contribution>
+  ): Promise<Contribution> {
     console.log(chalk.blue(`📝 提交贡献: ${contributionData.title}`))
 
     const contribution: Contribution = {
@@ -228,14 +228,20 @@ export class CommunityContributionManager {
       reviewers: [],
       tags: contributionData.tags || [],
       impact: contributionData.impact || 'minor',
-      points: this.calculatePoints(contributionData.type!, contributionData.impact || 'minor'),
+      points: this.calculatePoints(
+        contributionData.type!,
+        contributionData.impact || 'minor'
+      ),
     }
 
     // 保存贡献
     await this.saveContribution(contribution)
 
     // 更新贡献者统计
-    await this.updateContributorStats(contribution.contributorId, contribution.type)
+    await this.updateContributorStats(
+      contribution.contributorId,
+      contribution.type
+    )
 
     // 检查并颁发徽章
     await this.checkAndAwardBadges(contribution.contributorId)
@@ -263,7 +269,7 @@ export class CommunityContributionManager {
     // 更新贡献状态
     contribution.status = status
     contribution.updatedAt = new Date().toISOString()
-    
+
     if (!contribution.reviewers.includes(reviewerId)) {
       contribution.reviewers.push(reviewerId)
     }
@@ -286,7 +292,7 @@ export class CommunityContributionManager {
    */
   async getLeaderboard(limit = 10): Promise<Contributor[]> {
     const contributors = await this.loadContributors()
-    
+
     return Object.values(contributors)
       .sort((a, b) => b.stats.totalContributions - a.stats.totalContributions)
       .slice(0, limit)
@@ -309,7 +315,8 @@ export class CommunityContributionManager {
 
     Object.values(contributions).forEach(contribution => {
       // 按类型统计
-      contributionsByType[contribution.type] = (contributionsByType[contribution.type] || 0) + 1
+      contributionsByType[contribution.type] =
+        (contributionsByType[contribution.type] || 0) + 1
 
       // 按月份统计
       const month = contribution.createdAt.substring(0, 7) // YYYY-MM
@@ -319,7 +326,10 @@ export class CommunityContributionManager {
     return {
       totalContributors: Object.keys(contributors).length,
       totalContributions: Object.keys(contributions).length,
-      contributionsByType: contributionsByType as Record<ContributionType, number>,
+      contributionsByType: contributionsByType as Record<
+        ContributionType,
+        number
+      >,
       contributionsByMonth,
     }
   }
@@ -341,7 +351,11 @@ export class CommunityContributionManager {
 - **用户名**: ${contributor.username}
 - **等级**: ${contributor.level}
 - **加入时间**: ${new Date(contributor.joinedAt).toLocaleDateString('zh-CN')}
-- **GitHub**: ${contributor.github ? `[@${contributor.github}](https://github.com/${contributor.github})` : '未设置'}
+- **GitHub**: ${
+      contributor.github
+        ? `[@${contributor.github}](https://github.com/${contributor.github})`
+        : '未设置'
+    }
 
 ## 贡献统计
 - **总贡献数**: ${contributor.stats.totalContributions}
@@ -354,12 +368,20 @@ export class CommunityContributionManager {
 - **社区帮助**: ${contributor.stats.communityHelp}
 
 ## 获得徽章
-${contributor.badges.map(badge => `- 🏆 **${badge.name}**: ${badge.description}`).join('\n')}
+${contributor.badges
+  .map(badge => `- 🏆 **${badge.name}**: ${badge.description}`)
+  .join('\n')}
 
 ## 最近贡献
-${contributions.slice(0, 10).map(contribution => 
-  `- [${contribution.title}](${contribution.url || '#'}) (${contribution.type}) - ${new Date(contribution.createdAt).toLocaleDateString('zh-CN')}`
-).join('\n')}
+${contributions
+  .slice(0, 10)
+  .map(
+    contribution =>
+      `- [${contribution.title}](${contribution.url || '#'}) (${
+        contribution.type
+      }) - ${new Date(contribution.createdAt).toLocaleDateString('zh-CN')}`
+  )
+  .join('\n')}
 
 ---
 *报告生成时间: ${new Date().toLocaleString('zh-CN')}*
@@ -380,7 +402,7 @@ ${contributions.slice(0, 10).map(contribution =>
    */
   private initializeBadges(): void {
     const badgesPath = this.badgesFile
-    
+
     if (!existsSync(badgesPath)) {
       const defaultBadges = {
         newcomer: {
@@ -457,13 +479,19 @@ ${contributions.slice(0, 10).map(contribution =>
    * 生成 ID
    */
   private generateId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    return (
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    )
   }
 
   /**
    * 计算贡献积分
    */
-  private calculatePoints(type: ContributionType, impact: ContributionImpact): number {
+  private calculatePoints(
+    type: ContributionType,
+    impact: ContributionImpact
+  ): number {
     const basePoints = {
       code: 10,
       plugin: 20,
@@ -502,7 +530,10 @@ ${contributions.slice(0, 10).map(contribution =>
   private async saveContribution(contribution: Contribution): Promise<void> {
     const contributions = await this.loadContributions()
     contributions[contribution.id] = contribution
-    writeFileSync(this.contributionsFile, JSON.stringify(contributions, null, 2))
+    writeFileSync(
+      this.contributionsFile,
+      JSON.stringify(contributions, null, 2)
+    )
   }
 
   /**
@@ -554,17 +585,25 @@ ${contributions.slice(0, 10).map(contribution =>
   /**
    * 获取贡献者的贡献列表
    */
-  private async getContributorContributions(contributorId: string): Promise<Contribution[]> {
+  private async getContributorContributions(
+    contributorId: string
+  ): Promise<Contribution[]> {
     const contributions = await this.loadContributions()
     return Object.values(contributions)
       .filter(contribution => contribution.contributorId === contributorId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
   }
 
   /**
    * 更新贡献者统计
    */
-  private async updateContributorStats(contributorId: string, type: ContributionType): Promise<void> {
+  private async updateContributorStats(
+    contributorId: string,
+    type: ContributionType
+  ): Promise<void> {
     const contributor = await this.getContributor(contributorId)
     if (!contributor) return
 
@@ -624,7 +663,10 @@ ${contributions.slice(0, 10).map(contribution =>
   /**
    * 颁发徽章
    */
-  private async awardBadge(contributorId: string, badgeId: string): Promise<void> {
+  private async awardBadge(
+    contributorId: string,
+    badgeId: string
+  ): Promise<void> {
     const contributor = await this.getContributor(contributorId)
     if (!contributor) return
 
@@ -635,7 +677,7 @@ ${contributions.slice(0, 10).map(contribution =>
 
     const badgesData = JSON.parse(readFileSync(this.badgesFile, 'utf-8'))
     const badgeTemplate = badgesData[badgeId]
-    
+
     if (badgeTemplate) {
       const badge: Badge = {
         ...badgeTemplate,
@@ -645,7 +687,9 @@ ${contributions.slice(0, 10).map(contribution =>
       contributor.badges.push(badge)
       await this.saveContributor(contributor)
 
-      console.log(chalk.green(`🏆 ${contributor.username} 获得徽章: ${badge.name}`))
+      console.log(
+        chalk.green(`🏆 ${contributor.username} 获得徽章: ${badge.name}`)
+      )
     }
   }
 
@@ -701,7 +745,9 @@ ${contributions.slice(0, 10).map(contribution =>
 
     await this.saveContributor(contributor)
 
-    console.log(chalk.green(`⭐ ${contributor.username} 获得 ${contribution.points} 积分`))
+    console.log(
+      chalk.green(`⭐ ${contributor.username} 获得 ${contribution.points} 积分`)
+    )
   }
 }
 

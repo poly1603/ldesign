@@ -7,7 +7,7 @@ describe('哈希算法测试', () => {
   const largeData = 'A'.repeat(10000)
   const unicodeData = '🔐 Hello, 世界! 🌟'
 
-  describe('MD5 哈希测试', () => {
+  describe('mD5 哈希测试', () => {
     it('应该生成正确的 MD5 哈希', () => {
       const result = hash.md5(testData)
       expect(result).toBeTruthy()
@@ -40,7 +40,7 @@ describe('哈希算法测试', () => {
     })
   })
 
-  describe('SHA1 哈希测试', () => {
+  describe('sHA1 哈希测试', () => {
     it('应该生成正确的 SHA1 哈希', () => {
       const result = hash.sha1(testData)
       expect(result).toBeTruthy()
@@ -61,7 +61,7 @@ describe('哈希算法测试', () => {
     })
   })
 
-  describe('SHA224 哈希测试', () => {
+  describe('sHA224 哈希测试', () => {
     it('应该生成正确的 SHA224 哈希', () => {
       const result = hash.sha224(testData)
       expect(result).toBeTruthy()
@@ -76,7 +76,7 @@ describe('哈希算法测试', () => {
     })
   })
 
-  describe('SHA256 哈希测试', () => {
+  describe('sHA256 哈希测试', () => {
     it('应该生成正确的 SHA256 哈希', () => {
       const result = hash.sha256(testData)
       expect(result).toBeTruthy()
@@ -99,13 +99,14 @@ describe('哈希算法测试', () => {
     it('应该生成已知测试向量的正确哈希', () => {
       // 使用标准测试向量
       const testVector = 'abc'
-      const expectedHash = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+      const expectedHash =
+        'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
       const result = hash.sha256(testVector)
       expect(result.toLowerCase()).toBe(expectedHash)
     })
   })
 
-  describe('SHA384 哈希测试', () => {
+  describe('sHA384 哈希测试', () => {
     it('应该生成正确的 SHA384 哈希', () => {
       const result = hash.sha384(testData)
       expect(result).toBeTruthy()
@@ -120,7 +121,7 @@ describe('哈希算法测试', () => {
     })
   })
 
-  describe('SHA512 哈希测试', () => {
+  describe('sHA512 哈希测试', () => {
     it('应该生成正确的 SHA512 哈希', () => {
       const result = hash.sha512(testData)
       expect(result).toBeTruthy()
@@ -137,7 +138,8 @@ describe('哈希算法测试', () => {
     it('应该生成已知测试向量的正确哈希', () => {
       // 使用标准测试向量
       const testVector = 'abc'
-      const expectedHash = 'ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f'
+      const expectedHash =
+        'ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f'
       const result = hash.sha512(testVector)
       expect(result.toLowerCase()).toBe(expectedHash)
     })
@@ -147,7 +149,7 @@ describe('哈希算法测试', () => {
     it('应该正确验证 SHA256 哈希', () => {
       const data = 'test data'
       const expectedHash = hash.sha256(data)
-      
+
       const isValid = hash.verify(data, expectedHash, 'SHA256')
       expect(isValid).toBe(true)
     })
@@ -155,18 +157,18 @@ describe('哈希算法测试', () => {
     it('应该拒绝错误的哈希', () => {
       const data = 'test data'
       const wrongHash = 'wrong-hash-value'
-      
+
       const isValid = hash.verify(data, wrongHash, 'SHA256')
       expect(isValid).toBe(false)
     })
 
     it('应该支持不同的哈希算法验证', () => {
       const data = 'test data'
-      
+
       const md5Hash = hash.md5(data)
       const sha1Hash = hash.sha1(data)
       const sha256Hash = hash.sha256(data)
-      
+
       expect(hash.verify(data, md5Hash, 'MD5')).toBe(true)
       expect(hash.verify(data, sha1Hash, 'SHA1')).toBe(true)
       expect(hash.verify(data, sha256Hash, 'SHA256')).toBe(true)
@@ -198,13 +200,13 @@ describe('哈希算法测试', () => {
   })
 })
 
-describe('HMAC 测试', () => {
+describe('hMAC 测试', () => {
   const testData = 'Hello, HMAC!'
   const testKey = 'secret-key'
   const emptyKey = ''
   const longKey = 'this-is-a-very-long-secret-key-for-hmac-testing'
 
-  describe('HMAC-MD5 测试', () => {
+  describe('hMAC-MD5 测试', () => {
     it('应该生成正确的 HMAC-MD5', () => {
       const result = hmac.md5(testData, testKey)
       expect(result).toBeTruthy()
@@ -225,7 +227,7 @@ describe('HMAC 测试', () => {
     })
   })
 
-  describe('HMAC-SHA1 测试', () => {
+  describe('hMAC-SHA1 测试', () => {
     it('应该生成正确的 HMAC-SHA1', () => {
       const result = hmac.sha1(testData, testKey)
       expect(result).toBeTruthy()
@@ -234,7 +236,7 @@ describe('HMAC 测试', () => {
     })
   })
 
-  describe('HMAC-SHA256 测试', () => {
+  describe('hMAC-SHA256 测试', () => {
     it('应该生成正确的 HMAC-SHA256', () => {
       const result = hmac.sha256(testData, testKey)
       expect(result).toBeTruthy()
@@ -255,7 +257,7 @@ describe('HMAC 测试', () => {
     })
   })
 
-  describe('HMAC-SHA384 测试', () => {
+  describe('hMAC-SHA384 测试', () => {
     it('应该生成正确的 HMAC-SHA384', () => {
       const result = hmac.sha384(testData, testKey)
       expect(result).toBeTruthy()
@@ -264,7 +266,7 @@ describe('HMAC 测试', () => {
     })
   })
 
-  describe('HMAC-SHA512 测试', () => {
+  describe('hMAC-SHA512 测试', () => {
     it('应该生成正确的 HMAC-SHA512', () => {
       const result = hmac.sha512(testData, testKey)
       expect(result).toBeTruthy()
@@ -273,12 +275,12 @@ describe('HMAC 测试', () => {
     })
   })
 
-  describe('HMAC 验证测试', () => {
+  describe('hMAC 验证测试', () => {
     it('应该正确验证 HMAC-SHA256', () => {
       const data = 'test data'
       const key = 'test key'
       const expectedHmac = hmac.sha256(data, key)
-      
+
       const isValid = hmac.verify(data, key, expectedHmac, 'SHA256')
       expect(isValid).toBe(true)
     })
@@ -287,7 +289,7 @@ describe('HMAC 测试', () => {
       const data = 'test data'
       const key = 'test key'
       const wrongHmac = 'wrong-hmac-value'
-      
+
       const isValid = hmac.verify(data, key, wrongHmac, 'SHA256')
       expect(isValid).toBe(false)
     })
@@ -297,7 +299,7 @@ describe('HMAC 测试', () => {
       const correctKey = 'correct key'
       const wrongKey = 'wrong key'
       const expectedHmac = hmac.sha256(data, correctKey)
-      
+
       const isValid = hmac.verify(data, wrongKey, expectedHmac, 'SHA256')
       expect(isValid).toBe(false)
     })
@@ -305,46 +307,46 @@ describe('HMAC 测试', () => {
     it('应该支持不同的 HMAC 算法验证', () => {
       const data = 'test data'
       const key = 'test key'
-      
+
       const hmacMd5 = hmac.md5(data, key)
       const hmacSha1 = hmac.sha1(data, key)
       const hmacSha256 = hmac.sha256(data, key)
-      
+
       expect(hmac.verify(data, key, hmacMd5, 'MD5')).toBe(true)
       expect(hmac.verify(data, key, hmacSha1, 'SHA1')).toBe(true)
       expect(hmac.verify(data, key, hmacSha256, 'SHA256')).toBe(true)
     })
   })
 
-  describe('HMAC 安全性测试', () => {
+  describe('hMAC 安全性测试', () => {
     it('密钥顺序不应该影响结果', () => {
       const data = 'test data'
       const key = 'test key'
-      
+
       const hmac1 = hmac.sha256(data, key)
       const hmac2 = hmac.sha256(data, key)
-      
+
       expect(hmac1).toBe(hmac2)
     })
 
     it('数据和密钥交换应该产生不同结果', () => {
       const data = 'test data'
       const key = 'test key'
-      
+
       const hmac1 = hmac.sha256(data, key)
       const hmac2 = hmac.sha256(key, data) // 交换数据和密钥
-      
+
       expect(hmac1).not.toBe(hmac2)
     })
 
     it('应该抵抗长度扩展攻击', () => {
       const data = 'original data'
       const key = 'secret key'
-      const extendedData = data + 'extended'
-      
+      const extendedData = `${data}extended`
+
       const originalHmac = hmac.sha256(data, key)
       const extendedHmac = hmac.sha256(extendedData, key)
-      
+
       expect(originalHmac).not.toBe(extendedHmac)
     })
   })

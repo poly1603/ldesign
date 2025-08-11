@@ -1,69 +1,3 @@
-<template>
-  <div class="form-slider" :class="sliderClasses">
-    <div v-if="showLabel" class="form-slider__label" :class="labelClasses">
-      <label class="form-slider__label-text">
-        {{ label }}
-        <span v-if="required" class="form-slider__required">*</span>
-        <span v-if="showColon" class="form-slider__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-slider__tooltip" :title="tooltip">?</div>
-    </div>
-
-    <div class="form-slider__wrapper" :class="wrapperClasses">
-      <div v-if="showValue" class="form-slider__value">
-        {{ displayValue }}
-      </div>
-
-      <div class="form-slider__container">
-        <input
-          ref="inputRef"
-          type="range"
-          :value="inputValue"
-          :min="min"
-          :max="max"
-          :step="step"
-          :disabled="disabled"
-          class="form-slider__input"
-          :class="inputClasses"
-          @input="handleInput"
-          @change="handleChange"
-          @blur="handleBlur"
-          @focus="handleFocus"
-        />
-
-        <div v-if="showMarks && marks.length" class="form-slider__marks">
-          <div
-            v-for="mark in marks"
-            :key="mark.value"
-            class="form-slider__mark"
-            :style="getMarkStyle(mark.value)"
-          >
-            <div class="form-slider__mark-dot"></div>
-            <div v-if="mark.label" class="form-slider__mark-label">
-              {{ mark.label }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="showRange" class="form-slider__range">
-        <span class="form-slider__range-min">{{ min }}</span>
-        <span class="form-slider__range-max">{{ max }}</span>
-      </div>
-    </div>
-
-    <div v-if="hasError" class="form-slider__error">
-      <div v-for="error in errors" :key="error" class="form-slider__error-text">
-        {{ error }}
-      </div>
-    </div>
-
-    <div v-if="description" class="form-slider__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
@@ -161,7 +95,7 @@ const inputClasses = computed(() => [
 const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 获取标记样式
-const getMarkStyle = (value: number) => {
+function getMarkStyle(value: number) {
   const percentage = ((value - props.min) / (props.max - props.min)) * 100
   return {
     left: `${percentage}%`,
@@ -169,24 +103,24 @@ const getMarkStyle = (value: number) => {
 }
 
 // 事件处理
-const handleInput = (event: Event) => {
+function handleInput(event: Event) {
   const target = event.target as HTMLInputElement
   const value = Number(target.value)
   inputValue.value = value
   emit('update:modelValue', value)
 }
 
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   const target = event.target as HTMLInputElement
   const value = Number(target.value)
   emit('change', value, event)
 }
 
-const handleBlur = (event: FocusEvent) => {
+function handleBlur(event: FocusEvent) {
   emit('blur', event)
 }
 
-const handleFocus = (event: FocusEvent) => {
+function handleFocus(event: FocusEvent) {
   emit('focus', event)
 }
 
@@ -196,6 +130,72 @@ defineExpose({
   blur: () => inputRef.value?.blur(),
 })
 </script>
+
+<template>
+  <div class="form-slider" :class="sliderClasses">
+    <div v-if="showLabel" class="form-slider__label" :class="labelClasses">
+      <label class="form-slider__label-text">
+        {{ label }}
+        <span v-if="required" class="form-slider__required">*</span>
+        <span v-if="showColon" class="form-slider__colon">:</span>
+      </label>
+      <div v-if="tooltip" class="form-slider__tooltip" :title="tooltip">?</div>
+    </div>
+
+    <div class="form-slider__wrapper" :class="wrapperClasses">
+      <div v-if="showValue" class="form-slider__value">
+        {{ displayValue }}
+      </div>
+
+      <div class="form-slider__container">
+        <input
+          ref="inputRef"
+          type="range"
+          :value="inputValue"
+          :min="min"
+          :max="max"
+          :step="step"
+          :disabled="disabled"
+          class="form-slider__input"
+          :class="inputClasses"
+          @input="handleInput"
+          @change="handleChange"
+          @blur="handleBlur"
+          @focus="handleFocus"
+        />
+
+        <div v-if="showMarks && marks.length" class="form-slider__marks">
+          <div
+            v-for="mark in marks"
+            :key="mark.value"
+            class="form-slider__mark"
+            :style="getMarkStyle(mark.value)"
+          >
+            <div class="form-slider__mark-dot" />
+            <div v-if="mark.label" class="form-slider__mark-label">
+              {{ mark.label }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="showRange" class="form-slider__range">
+        <span class="form-slider__range-min">{{ min }}</span>
+        <span class="form-slider__range-max">{{ max }}</span>
+      </div>
+    </div>
+
+    <div v-if="hasError" class="form-slider__error">
+      <div v-for="error in errors" :key="error" class="form-slider__error-text">
+        {{ error }}
+      </div>
+    </div>
+
+    <div v-if="description" class="form-slider__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-slider {

@@ -41,7 +41,11 @@ export class DevLogger {
     return messageIndex >= currentIndex
   }
 
-  private formatMessage(level: LogLevel, message: string, options: LogOptions = {}): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    options: LogOptions = {}
+  ): string {
     let formatted = ''
 
     // 时间戳
@@ -67,7 +71,9 @@ export class DevLogger {
       success: '✅',
     }
 
-    formatted += levelColors[level](`${levelIcons[level]} [${level.toUpperCase()}]`)
+    formatted += levelColors[level](
+      `${levelIcons[level]} [${level.toUpperCase()}]`
+    )
 
     // 前缀
     if (options.prefix) {
@@ -104,7 +110,7 @@ export class DevLogger {
     if (this.shouldLog('error')) {
       const formatted = this.formatMessage('error', message, options)
       console.error(formatted)
-      
+
       if (error) {
         console.error(chalk.red('Stack trace:'))
         console.error(chalk.gray(error.stack))
@@ -139,14 +145,18 @@ export class DevLogger {
 
   progress(current: number, total: number, message: string) {
     const percentage = Math.round((current / total) * 100)
-    const progressBar = '█'.repeat(Math.round(percentage / 5)) + '░'.repeat(20 - Math.round(percentage / 5))
-    const formatted = `${chalk.cyan('📊')} ${message} [${progressBar}] ${percentage}% (${current}/${total})`
-    
+    const progressBar =
+      '█'.repeat(Math.round(percentage / 5)) +
+      '░'.repeat(20 - Math.round(percentage / 5))
+    const formatted = `${chalk.cyan(
+      '📊'
+    )} ${message} [${progressBar}] ${percentage}% (${current}/${total})`
+
     // 清除当前行并打印新的进度
     process.stdout.clearLine(0)
     process.stdout.cursorTo(0)
     process.stdout.write(formatted)
-    
+
     if (current === total) {
       process.stdout.write('\n')
     }
@@ -155,7 +165,7 @@ export class DevLogger {
   spinner(message: string, promise: Promise<any>): Promise<any> {
     const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
     let i = 0
-    
+
     const interval = setInterval(() => {
       process.stdout.clearLine(0)
       process.stdout.cursorTo(0)
@@ -164,14 +174,14 @@ export class DevLogger {
     }, 100)
 
     return promise
-      .then((result) => {
+      .then(result => {
         clearInterval(interval)
         process.stdout.clearLine(0)
         process.stdout.cursorTo(0)
         this.success(message)
         return result
       })
-      .catch((error) => {
+      .catch(error => {
         clearInterval(interval)
         process.stdout.clearLine(0)
         process.stdout.cursorTo(0)
@@ -183,14 +193,26 @@ export class DevLogger {
   banner(title: string, subtitle?: string) {
     const width = 60
     const border = '═'.repeat(width)
-    
+
     console.log(chalk.blue(`╔${border}╗`))
-    console.log(chalk.blue(`║${' '.repeat((width - title.length) / 2)}${chalk.bold.white(title)}${' '.repeat(Math.ceil((width - title.length) / 2))}║`))
-    
+    console.log(
+      chalk.blue(
+        `║${' '.repeat((width - title.length) / 2)}${chalk.bold.white(
+          title
+        )}${' '.repeat(Math.ceil((width - title.length) / 2))}║`
+      )
+    )
+
     if (subtitle) {
-      console.log(chalk.blue(`║${' '.repeat((width - subtitle.length) / 2)}${chalk.gray(subtitle)}${' '.repeat(Math.ceil((width - subtitle.length) / 2))}║`))
+      console.log(
+        chalk.blue(
+          `║${' '.repeat((width - subtitle.length) / 2)}${chalk.gray(
+            subtitle
+          )}${' '.repeat(Math.ceil((width - subtitle.length) / 2))}║`
+        )
+      )
     }
-    
+
     console.log(chalk.blue(`╚${border}╝`))
   }
 
@@ -198,7 +220,9 @@ export class DevLogger {
     const width = 60
     if (title) {
       const padding = Math.max(0, (width - title.length - 2) / 2)
-      const line = '─'.repeat(Math.floor(padding)) + ` ${title} ` + '─'.repeat(Math.ceil(padding))
+      const line = `${'─'.repeat(Math.floor(padding))} ${title} ${'─'.repeat(
+        Math.ceil(padding)
+      )}`
       console.log(chalk.gray(line))
     } else {
       console.log(chalk.gray('─'.repeat(width)))
@@ -235,19 +259,28 @@ export const logger = DevLogger.getInstance()
 
 // 便捷方法
 export const log = {
-  debug: (message: string, options?: LogOptions) => logger.debug(message, options),
-  info: (message: string, options?: LogOptions) => logger.info(message, options),
-  warn: (message: string, options?: LogOptions) => logger.warn(message, options),
-  error: (message: string, error?: Error, options?: LogOptions) => logger.error(message, error, options),
-  success: (message: string, options?: LogOptions) => logger.success(message, options),
-  group: (title: string, callback: () => void, options?: LogOptions) => logger.group(title, callback, options),
+  debug: (message: string, options?: LogOptions) =>
+    logger.debug(message, options),
+  info: (message: string, options?: LogOptions) =>
+    logger.info(message, options),
+  warn: (message: string, options?: LogOptions) =>
+    logger.warn(message, options),
+  error: (message: string, error?: Error, options?: LogOptions) =>
+    logger.error(message, error, options),
+  success: (message: string, options?: LogOptions) =>
+    logger.success(message, options),
+  group: (title: string, callback: () => void, options?: LogOptions) =>
+    logger.group(title, callback, options),
   table: (data: any[], title?: string) => logger.table(data, title),
-  progress: (current: number, total: number, message: string) => logger.progress(current, total, message),
-  spinner: (message: string, promise: Promise<any>) => logger.spinner(message, promise),
+  progress: (current: number, total: number, message: string) =>
+    logger.progress(current, total, message),
+  spinner: (message: string, promise: Promise<any>) =>
+    logger.spinner(message, promise),
   banner: (title: string, subtitle?: string) => logger.banner(title, subtitle),
   divider: (title?: string) => logger.divider(title),
   clear: () => logger.clear(),
-  package: (packageName: string, message: string, level?: LogLevel) => logger.package(packageName, message, level),
+  package: (packageName: string, message: string, level?: LogLevel) =>
+    logger.package(packageName, message, level),
   build: (message: string, level?: LogLevel) => logger.build(message, level),
   test: (message: string, level?: LogLevel) => logger.test(message, level),
   server: (message: string, level?: LogLevel) => logger.server(message, level),

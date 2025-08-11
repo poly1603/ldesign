@@ -4,9 +4,9 @@
  * 验证项目配置和构建的脚本
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 
 console.log('🔍 验证项目配置和构建...\n')
 
@@ -92,7 +92,7 @@ function runTypeCheck() {
       return true
     } catch (tscError) {
       console.log('  ❌ TypeScript 检查失败')
-      console.log('  错误信息:', tscError.message.slice(0, 200) + '...')
+      console.log('  错误信息:', `${tscError.message.slice(0, 200)}...`)
       return false
     }
   }
@@ -150,7 +150,7 @@ function runBuildTest() {
     return buildSuccess
   } catch (error) {
     console.log('  ❌ 构建失败')
-    console.log('  错误信息:', error.message.slice(0, 200) + '...')
+    console.log('  错误信息:', `${error.message.slice(0, 200)}...`)
     return false
   }
 }
@@ -205,7 +205,7 @@ async function main() {
     const buildPassed = runBuildTest()
 
     // 总结
-    console.log('\n' + '='.repeat(60))
+    console.log(`\n${'='.repeat(60)}`)
     console.log('📊 验证结果总结:')
     console.log('='.repeat(60))
 

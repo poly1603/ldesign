@@ -68,12 +68,15 @@ export class RealTimeStore extends BaseStore {
 
   @Action()
   connect(): void {
-    if (this.connectionStatus === 'connected' || this.connectionStatus === 'connecting') {
+    if (
+      this.connectionStatus === 'connected' ||
+      this.connectionStatus === 'connecting'
+    ) {
       return
     }
 
     this.connectionStatus = 'connecting'
-    
+
     // 模拟WebSocket连接
     setTimeout(() => {
       this.connectionStatus = 'connected'
@@ -88,7 +91,7 @@ export class RealTimeStore extends BaseStore {
     this.connectionStatus = 'disconnected'
     this.stopHeartbeat()
     this.addSystemMessage('已断开连接')
-    
+
     if (this.websocket) {
       this.websocket.close()
       this.websocket = null
@@ -109,7 +112,7 @@ export class RealTimeStore extends BaseStore {
       user: '我',
       content,
       timestamp: Date.now(),
-      isOwn: true
+      isOwn: true,
     }
 
     this.messages.push(message)
@@ -181,7 +184,7 @@ export class RealTimeStore extends BaseStore {
       id: `queue-${this.queueCounter}`,
       action,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     this.offlineQueue.push(item)
@@ -189,7 +192,10 @@ export class RealTimeStore extends BaseStore {
 
   @Action()
   processOfflineQueue(): void {
-    if (this.connectionStatus !== 'connected' || this.offlineQueue.length === 0) {
+    if (
+      this.connectionStatus !== 'connected' ||
+      this.offlineQueue.length === 0
+    ) {
       return
     }
 
@@ -225,7 +231,7 @@ export class RealTimeStore extends BaseStore {
   cleanup(): void {
     this.disconnect()
     this.stopHeartbeat()
-    
+
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
@@ -240,7 +246,7 @@ export class RealTimeStore extends BaseStore {
       user: '系统',
       content,
       timestamp: Date.now(),
-      isOwn: false
+      isOwn: false,
     }
 
     this.messages.push(message)
@@ -252,7 +258,7 @@ export class RealTimeStore extends BaseStore {
       '这是一个自动回复',
       `你说的"${originalContent}"很有趣`,
       '服务器正在处理你的请求...',
-      '感谢你的反馈！'
+      '感谢你的反馈！',
     ]
 
     this.messageCounter++
@@ -261,7 +267,7 @@ export class RealTimeStore extends BaseStore {
       user: '机器人',
       content: responses[Math.floor(Math.random() * responses.length)],
       timestamp: Date.now(),
-      isOwn: false
+      isOwn: false,
     }
 
     this.messages.push(message)
@@ -273,7 +279,7 @@ export class RealTimeStore extends BaseStore {
       { id: '2', name: '李四', status: '忙碌', online: true },
       { id: '3', name: '王五', status: '离开', online: false },
       { id: '4', name: '赵六', status: '在线', online: true },
-      { id: '5', name: '钱七', status: '离线', online: false }
+      { id: '5', name: '钱七', status: '离线', online: false },
     ]
   }
 
@@ -295,6 +301,6 @@ export class RealTimeStore extends BaseStore {
 }
 
 // 导出Hook式用法
-export const useRealTimeStore = () => {
+export function useRealTimeStore() {
   return new RealTimeStore()
 }

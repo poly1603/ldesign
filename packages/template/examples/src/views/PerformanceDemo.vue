@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { TemplateRenderer, PerformanceMonitor, LazyTemplate } from '@ldesign/template/vue'
+import { LazyTemplate, PerformanceMonitor, TemplateRenderer } from '@ldesign/template/vue'
+import { onMounted, ref } from 'vue'
 
 // 性能数据
 const performanceData = ref<any>({})
@@ -26,31 +26,31 @@ const metrics = ref({
 })
 
 // 处理性能更新
-const handlePerformanceUpdate = (data: any) => {
+function handlePerformanceUpdate(data: any) {
   performanceData.value = data
-  
+
   if (data.templates) {
     const total = data.templates.cacheHits + data.templates.cacheMisses
     metrics.value.cacheHitRate = total > 0 ? Math.round((data.templates.cacheHits / total) * 100) : 0
   }
-  
+
   if (data.memory) {
     metrics.value.memoryUsage = data.memory.percentage
   }
 }
 
 // 处理加载事件
-const handleLoadStart = () => {
+function handleLoadStart() {
   metrics.value.loadTime = performance.now()
 }
 
-const handleLoadEnd = (event: any) => {
+function handleLoadEnd(event: any) {
   metrics.value.renderTime = event.renderTime
   metrics.value.loadTime = performance.now() - metrics.value.loadTime
 }
 
 // 预加载演示
-const preloadTemplates = async () => {
+async function preloadTemplates() {
   console.log('开始预加载模板...')
   // 这里应该调用模板管理器的预加载方法
   // await manager.preloadCommonTemplates()
@@ -72,20 +72,14 @@ onMounted(() => {
     <div class="demo-section">
       <h2>📊 实时性能监控</h2>
       <div class="monitor-controls">
-        <button @click="isMonitorVisible = !isMonitorVisible" class="btn">
+        <button class="btn" @click="isMonitorVisible = !isMonitorVisible">
           {{ isMonitorVisible ? '隐藏' : '显示' }}监控面板
         </button>
-        <button @click="preloadTemplates" class="btn btn-primary">
-          预加载模板
-        </button>
+        <button class="btn btn-primary" @click="preloadTemplates">预加载模板</button>
       </div>
-      
+
       <div v-if="isMonitorVisible" class="monitor-panel">
-        <PerformanceMonitor
-          :detailed="true"
-          :update-interval="1000"
-          @update="handlePerformanceUpdate"
-        />
+        <PerformanceMonitor :detailed="true" :update-interval="1000" @update="handlePerformanceUpdate" />
       </div>
 
       <!-- 性能指标卡片 -->
@@ -117,7 +111,7 @@ onMounted(() => {
     <div class="demo-section">
       <h2>🔄 懒加载演示</h2>
       <p>滚动查看懒加载效果，模板只在进入可视区域时才会加载。</p>
-      
+
       <div class="lazy-demo-container">
         <div v-for="item in templateList.slice(0, 10)" :key="item.id" class="lazy-item">
           <h3>{{ item.name }}</h3>
@@ -133,23 +127,23 @@ onMounted(() => {
           >
             <template #loading>
               <div class="loading-placeholder">
-                <div class="loading-spinner"></div>
+                <div class="loading-spinner" />
                 <p>正在加载模板...</p>
               </div>
             </template>
-            
+
             <template #error="{ error, retry }">
               <div class="error-placeholder">
                 <p>❌ 加载失败: {{ error.message }}</p>
-                <button @click="retry" class="btn btn-small">重试</button>
+                <button class="btn btn-small" @click="retry">重试</button>
               </div>
             </template>
-            
+
             <template #placeholder>
               <div class="skeleton-placeholder">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
+                <div class="skeleton-line" />
+                <div class="skeleton-line" />
+                <div class="skeleton-line short" />
               </div>
             </template>
           </LazyTemplate>
@@ -171,7 +165,7 @@ onMounted(() => {
             @load-end="handleLoadEnd"
           />
         </div>
-        
+
         <div class="comparison-item">
           <h3>性能优化渲染</h3>
           <TemplateRenderer
@@ -225,13 +219,13 @@ onMounted(() => {
 .demo-header {
   text-align: center;
   margin-bottom: 40px;
-  
+
   h1 {
     font-size: 36px;
     color: #333;
     margin-bottom: 16px;
   }
-  
+
   p {
     font-size: 16px;
     color: #666;
@@ -241,7 +235,7 @@ onMounted(() => {
 
 .demo-section {
   margin-bottom: 60px;
-  
+
   h2 {
     font-size: 24px;
     color: #333;
@@ -264,21 +258,21 @@ onMounted(() => {
   background: white;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #f5f5f5;
   }
-  
+
   &.btn-primary {
     background: #667eea;
     color: white;
     border-color: #667eea;
-    
+
     &:hover {
       background: #5a6fd8;
     }
   }
-  
+
   &.btn-small {
     padding: 4px 8px;
     font-size: 12px;
@@ -305,19 +299,19 @@ onMounted(() => {
   padding: 20px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   .metric-icon {
     font-size: 32px;
     margin-bottom: 8px;
   }
-  
+
   .metric-value {
     font-size: 24px;
     font-weight: bold;
     color: #667eea;
     margin-bottom: 4px;
   }
-  
+
   .metric-label {
     font-size: 14px;
     color: #666;
@@ -334,7 +328,7 @@ onMounted(() => {
 
 .lazy-item {
   margin-bottom: 30px;
-  
+
   h3 {
     margin-bottom: 10px;
     color: #333;
@@ -365,8 +359,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .skeleton-line {
@@ -376,15 +374,20 @@ onMounted(() => {
   margin-bottom: 8px;
   width: 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
-  
+
   &.short {
     width: 60%;
   }
 }
 
 @keyframes skeleton-loading {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .comparison-grid {
@@ -397,7 +400,7 @@ onMounted(() => {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 20px;
-  
+
   h3 {
     margin-bottom: 16px;
     color: #333;
@@ -416,19 +419,19 @@ onMounted(() => {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   h4 {
     margin-bottom: 8px;
     color: #333;
   }
-  
+
   p {
     font-size: 14px;
     color: #666;
     line-height: 1.5;
     margin: 0;
   }
-  
+
   code {
     background: #f1f3f4;
     padding: 2px 4px;

@@ -1,3 +1,77 @@
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from 'vue'
+import { usePerformanceStore } from '../stores/performanceStore'
+
+const store = usePerformanceStore()
+
+// 响应式数据
+const searchQuery = ref('')
+const scrollPosition = ref(0)
+const searchApiCalls = ref(0)
+const scrollHandlerCalls = ref(0)
+const cacheHits = ref(0)
+const loading = ref(false)
+
+// 计算属性
+const performanceReport = computed(() => store.performanceReport)
+const suggestions = computed(() => store.optimizationSuggestions)
+const expensiveResult = computed(() => store.expensiveComputationResult)
+const userData = computed(() => store.userData)
+const apiCacheStatus = computed(() => store.apiCacheStatus)
+const searchResults = computed(() => store.searchResults)
+
+// 方法
+function triggerSlowAction() {
+  store.performSlowAction()
+}
+
+function triggerFastAction() {
+  store.performFastAction()
+}
+
+function clearMetrics() {
+  store.clearPerformanceMetrics()
+}
+
+function triggerExpensiveComputation() {
+  const result = store.performExpensiveComputation()
+  if (store.isCacheHit) {
+    cacheHits.value++
+  }
+}
+
+async function fetchUserData() {
+  loading.value = true
+  try {
+    await store.fetchUserData()
+  } finally {
+    loading.value = false
+  }
+}
+
+function clearApiCache() {
+  store.clearApiCache()
+}
+
+function handleScroll(event: Event) {
+  scrollHandlerCalls.value++
+  const target = event.target as HTMLElement
+  scrollPosition.value = target.scrollTop
+  store.updateScrollPosition(target.scrollTop)
+}
+
+// 监听搜索查询
+watch(searchQuery, newQuery => {
+  searchApiCalls.value++
+  store.performSearch(newQuery)
+})
+
+// 组件挂载时初始化
+onMounted(() => {
+  store.initializePerformanceMonitoring()
+})
+</script>
+
 <template>
   <div class="performance-demo">
     <div class="page-header">
@@ -12,27 +86,33 @@
           <h3>实时性能指标</h3>
           <div class="metrics">
             <div class="metric">
-              <div class="metric-value">{{ performanceReport.slowActions.length }}</div>
+              <div class="metric-value">
+                {{ performanceReport.slowActions.length }}
+              </div>
               <div class="metric-label">慢速 Actions</div>
             </div>
             <div class="metric">
-              <div class="metric-value">{{ performanceReport.slowGetters.length }}</div>
+              <div class="metric-value">
+                {{ performanceReport.slowGetters.length }}
+              </div>
               <div class="metric-label">慢速 Getters</div>
             </div>
             <div class="metric">
-              <div class="metric-value">{{ performanceReport.frequentUpdates.length }}</div>
+              <div class="metric-value">
+                {{ performanceReport.frequentUpdates.length }}
+              </div>
               <div class="metric-label">频繁更新</div>
             </div>
           </div>
-          
+
           <div class="actions">
-            <button @click="triggerSlowAction" class="btn btn-primary">
+            <button class="btn btn-primary" @click="triggerSlowAction">
               触发慢速操作
             </button>
-            <button @click="triggerFastAction" class="btn btn-secondary">
+            <button class="btn btn-secondary" @click="triggerFastAction">
               触发快速操作
             </button>
-            <button @click="clearMetrics" class="btn btn-danger">
+            <button class="btn btn-danger" @click="clearMetrics">
               清理指标
             </button>
           </div>
@@ -44,7 +124,11 @@
             🎉 当前性能表现良好，无需优化！
           </div>
           <div v-else>
-            <div v-for="suggestion in suggestions" :key="suggestion" class="alert alert-warning">
+            <div
+              v-for="suggestion in suggestions"
+              :key="suggestion"
+              class="alert alert-warning"
+            >
               💡 {{ suggestion }}
             </div>
           </div>
@@ -59,7 +143,7 @@
           <h3>计算缓存示例</h3>
           <p>计算结果：{{ expensiveResult }}</p>
           <p>缓存命中：{{ cacheHits }} 次</p>
-          <button @click="triggerExpensiveComputation" class="btn btn-primary">
+          <button class="btn btn-primary" @click="triggerExpensiveComputation">
             触发复杂计算
           </button>
         </div>
@@ -69,10 +153,14 @@
           <p>用户数据：{{ userData?.name || '未加载' }}</p>
           <p>缓存状态：{{ apiCacheStatus }}</p>
           <div class="actions">
-            <button @click="fetchUserData" class="btn btn-primary" :disabled="loading">
+            <button
+              class="btn btn-primary"
+              :disabled="loading"
+              @click="fetchUserData"
+            >
               {{ loading ? '加载中...' : '获取用户数据' }}
             </button>
-            <button @click="clearApiCache" class="btn btn-secondary">
+            <button class="btn btn-secondary" @click="clearApiCache">
               清理缓存
             </button>
           </div>
@@ -85,8 +173,8 @@
       <div class="grid grid-2">
         <div class="card">
           <h3>搜索防抖</h3>
-          <input 
-            v-model="searchQuery" 
+          <input
+            v-model="searchQuery"
             placeholder="输入搜索关键词..."
             class="search-input"
           />
@@ -112,7 +200,8 @@
       <div class="card">
         <h3>性能监控装饰器使用</h3>
         <div class="code-block">
-          <pre>import { MonitorAction, MonitorGetter } from '@ldesign/store'
+          <pre>
+import { MonitorAction, MonitorGetter } from '@ldesign/store'
 
 class PerformanceStore extends BaseStore {
   @MonitorAction
@@ -128,86 +217,13 @@ class PerformanceStore extends BaseStore {
     // 这个计算属性的执行时间会被监控
     return this.data.reduce((sum, item) => sum + item.value, 0)
   }
-}</pre>
+}</pre
+          >
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { usePerformanceStore } from '../stores/performanceStore'
-
-const store = usePerformanceStore()
-
-// 响应式数据
-const searchQuery = ref('')
-const scrollPosition = ref(0)
-const searchApiCalls = ref(0)
-const scrollHandlerCalls = ref(0)
-const cacheHits = ref(0)
-const loading = ref(false)
-
-// 计算属性
-const performanceReport = computed(() => store.performanceReport)
-const suggestions = computed(() => store.optimizationSuggestions)
-const expensiveResult = computed(() => store.expensiveComputationResult)
-const userData = computed(() => store.userData)
-const apiCacheStatus = computed(() => store.apiCacheStatus)
-const searchResults = computed(() => store.searchResults)
-
-// 方法
-const triggerSlowAction = () => {
-  store.performSlowAction()
-}
-
-const triggerFastAction = () => {
-  store.performFastAction()
-}
-
-const clearMetrics = () => {
-  store.clearPerformanceMetrics()
-}
-
-const triggerExpensiveComputation = () => {
-  const result = store.performExpensiveComputation()
-  if (store.isCacheHit) {
-    cacheHits.value++
-  }
-}
-
-const fetchUserData = async () => {
-  loading.value = true
-  try {
-    await store.fetchUserData()
-  } finally {
-    loading.value = false
-  }
-}
-
-const clearApiCache = () => {
-  store.clearApiCache()
-}
-
-const handleScroll = (event: Event) => {
-  scrollHandlerCalls.value++
-  const target = event.target as HTMLElement
-  scrollPosition.value = target.scrollTop
-  store.updateScrollPosition(target.scrollTop)
-}
-
-// 监听搜索查询
-watch(searchQuery, (newQuery) => {
-  searchApiCalls.value++
-  store.performSearch(newQuery)
-})
-
-// 组件挂载时初始化
-onMounted(() => {
-  store.initializePerformanceMonitoring()
-})
-</script>
 
 <style scoped>
 .performance-demo {

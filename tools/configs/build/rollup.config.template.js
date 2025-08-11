@@ -1,13 +1,13 @@
 /**
  * Rollup 配置模板
- * 
+ *
  * 这个文件提供了几种常见的 Rollup 配置模板，
  * packages 中的子包可以直接使用这些模板，保持配置简洁。
  */
 
-import { createRollupConfig } from './rollup.config.base.js'
-import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createRollupConfig } from './rollup.config.base.js'
 
 /**
  * 获取当前包目录
@@ -24,7 +24,7 @@ export function createBasicConfig(importMetaUrl, options = {}) {
   return createRollupConfig({
     packageDir: getPackageDir(importMetaUrl),
     formats: ['es', 'cjs'],
-    ...options
+    ...options,
   })
 }
 
@@ -38,7 +38,7 @@ export function createVueConfig(importMetaUrl, options = {}) {
     vue: true,
     external: ['vue'],
     formats: ['es', 'cjs'],
-    ...options
+    ...options,
   })
 }
 
@@ -50,7 +50,7 @@ export function createFullConfig(importMetaUrl, options = {}) {
   return createRollupConfig({
     packageDir: getPackageDir(importMetaUrl),
     formats: ['es', 'cjs', 'umd'],
-    ...options
+    ...options,
   })
 }
 
@@ -62,7 +62,7 @@ export function createModernConfig(importMetaUrl, options = {}) {
   return createRollupConfig({
     packageDir: getPackageDir(importMetaUrl),
     formats: ['es'],
-    ...options
+    ...options,
   })
 }
 
@@ -74,7 +74,7 @@ export function createNodeConfig(importMetaUrl, options = {}) {
   return createRollupConfig({
     packageDir: getPackageDir(importMetaUrl),
     formats: ['cjs'],
-    ...options
+    ...options,
   })
 }
 
@@ -85,7 +85,7 @@ export function createNodeConfig(importMetaUrl, options = {}) {
 export function createCustomConfig(importMetaUrl, options = {}) {
   return createRollupConfig({
     packageDir: getPackageDir(importMetaUrl),
-    ...options
+    ...options,
   })
 }
 

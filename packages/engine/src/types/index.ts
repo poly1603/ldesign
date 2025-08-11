@@ -153,12 +153,59 @@ export interface Logger {
 // 通知相关类型
 export type NotificationType = 'success' | 'error' | 'warning' | 'info'
 
+export type NotificationPosition =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right'
+
+export type NotificationAnimation =
+  | 'slide'
+  | 'fade'
+  | 'bounce'
+  | 'scale'
+  | 'flip'
+
+export type NotificationTheme = 'light' | 'dark' | 'auto'
+
+export interface NotificationAction {
+  label: string
+  action: () => void | Promise<void>
+  style?: 'primary' | 'secondary' | 'danger'
+  loading?: boolean
+}
+
+export interface NotificationProgress {
+  value: number // 0-100
+  showText?: boolean
+  color?: string
+}
+
 export interface NotificationOptions {
   title?: string
   message: string
   type?: NotificationType
   duration?: number
   closable?: boolean
+  position?: NotificationPosition
+  animation?: NotificationAnimation
+  theme?: NotificationTheme
+  icon?: string | HTMLElement
+  actions?: NotificationAction[]
+  progress?: NotificationProgress
+  persistent?: boolean
+  group?: string
+  priority?: number
+  className?: string
+  style?: Partial<CSSStyleDeclaration>
+  onClick?: () => void
+  onClose?: () => void
+  onShow?: () => void
+  allowHTML?: boolean
+  maxWidth?: number
+  zIndex?: number
   [key: string]: any
 }
 
@@ -167,6 +214,21 @@ export interface NotificationManager {
   hide: (id: string) => void
   hideAll: () => void
   getAll: () => NotificationOptions[]
+  setPosition: (position: NotificationPosition) => void
+  getPosition: () => NotificationPosition
+  setTheme: (theme: NotificationTheme) => void
+  getTheme: () => NotificationTheme
+  setMaxNotifications: (max: number) => void
+  getMaxNotifications: () => number
+  setDefaultDuration: (duration: number) => void
+  getDefaultDuration: () => number
+  getStats: () => {
+    total: number
+    visible: number
+    byType: Record<NotificationType, number>
+    byPosition: Record<NotificationPosition, number>
+  }
+  destroy: () => void
 }
 
 // 扩展接口类型

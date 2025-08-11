@@ -67,7 +67,7 @@ function getPackageSize(packagePath: string): number {
       encoding: 'utf-8',
     }).trim()
 
-    return parseInt(output.split('\t')[0], 10)
+    return Number.parseInt(output.split('\t')[0], 10)
   } catch {
     // Windows fallback
     const { readdirSync, statSync } = require('node:fs')
@@ -182,7 +182,7 @@ function formatSize(bytes: number): string {
 
   const units = ['B', 'KB', 'MB', 'GB']
   const index = Math.floor(Math.log(bytes) / Math.log(1024))
-  const size = (bytes / Math.pow(1024, index)).toFixed(2)
+  const size = (bytes / 1024 ** index).toFixed(2)
 
   return `${size} ${units[index]}`
 }

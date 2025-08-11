@@ -1,6 +1,6 @@
 import { config } from '@vue/test-utils'
-import { vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { vi } from 'vitest'
 import 'reflect-metadata'
 
 // 全局测试设置

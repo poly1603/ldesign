@@ -5,17 +5,18 @@ describe('编码算法测试', () => {
   const testData = 'Hello, Encoding!'
   const emptyData = ''
   const unicodeData = '🔐 Hello, 世界! 🌟'
-  const binaryData = '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
+  const binaryData =
+    '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
   const largeData = 'A'.repeat(10000)
 
-  describe('Base64 编码测试', () => {
+  describe('base64 编码测试', () => {
     it('应该正确编码基本字符串', () => {
       const encoded = base64.encode(testData)
       expect(encoded).toBeTruthy()
       expect(typeof encoded).toBe('string')
-      
+
       // Base64 编码应该只包含有效字符
-      expect(/^[A-Za-z0-9+/]*={0,2}$/.test(encoded)).toBe(true)
+      expect(/^[A-Z0-9+/]*={0,2}$/i.test(encoded)).toBe(true)
     })
 
     it('应该正确解码 Base64 字符串', () => {
@@ -27,7 +28,7 @@ describe('编码算法测试', () => {
     it('应该处理空字符串', () => {
       const encoded = base64.encode(emptyData)
       expect(encoded).toBe('')
-      
+
       const decoded = base64.decode(encoded)
       expect(decoded).toBe(emptyData)
     })
@@ -35,7 +36,7 @@ describe('编码算法测试', () => {
     it('应该处理 Unicode 字符', () => {
       const encoded = base64.encode(unicodeData)
       expect(encoded).toBeTruthy()
-      
+
       const decoded = base64.decode(encoded)
       expect(decoded).toBe(unicodeData)
     })
@@ -43,7 +44,7 @@ describe('编码算法测试', () => {
     it('应该处理二进制数据', () => {
       const encoded = base64.encode(binaryData)
       expect(encoded).toBeTruthy()
-      
+
       const decoded = base64.decode(encoded)
       expect(decoded).toBe(binaryData)
     })
@@ -51,7 +52,7 @@ describe('编码算法测试', () => {
     it('应该处理大数据', () => {
       const encoded = base64.encode(largeData)
       expect(encoded).toBeTruthy()
-      
+
       const decoded = base64.decode(encoded)
       expect(decoded).toBe(largeData)
     })
@@ -64,7 +65,7 @@ describe('编码算法测试', () => {
         'Hello!!!',
         '中文测试',
         '🔐🌟✨',
-        'Line1\nLine2\nLine3'
+        'Line1\nLine2\nLine3',
       ]
 
       testCases.forEach(testCase => {
@@ -103,7 +104,7 @@ describe('编码算法测试', () => {
     })
   })
 
-  describe('Base64 错误处理测试', () => {
+  describe('base64 错误处理测试', () => {
     it('应该处理无效的 Base64 字符串', () => {
       const invalidBase64 = 'Invalid@Base64#String!'
       expect(() => base64.decode(invalidBase64)).toThrow()
@@ -120,14 +121,14 @@ describe('编码算法测试', () => {
     })
   })
 
-  describe('Hex 编码测试', () => {
+  describe('hex 编码测试', () => {
     it('应该正确编码基本字符串', () => {
       const encoded = hex.encode(testData)
       expect(encoded).toBeTruthy()
       expect(typeof encoded).toBe('string')
-      
+
       // Hex 编码应该只包含十六进制字符
-      expect(/^[0-9a-fA-F]*$/.test(encoded)).toBe(true)
+      expect(/^[0-9a-f]*$/i.test(encoded)).toBe(true)
     })
 
     it('应该正确解码 Hex 字符串', () => {
@@ -139,7 +140,7 @@ describe('编码算法测试', () => {
     it('应该处理空字符串', () => {
       const encoded = hex.encode(emptyData)
       expect(encoded).toBe('')
-      
+
       const decoded = hex.decode(encoded)
       expect(decoded).toBe(emptyData)
     })
@@ -147,7 +148,7 @@ describe('编码算法测试', () => {
     it('应该处理 Unicode 字符', () => {
       const encoded = hex.encode(unicodeData)
       expect(encoded).toBeTruthy()
-      
+
       const decoded = hex.decode(encoded)
       expect(decoded).toBe(unicodeData)
     })
@@ -155,7 +156,7 @@ describe('编码算法测试', () => {
     it('应该处理二进制数据', () => {
       const encoded = hex.encode(binaryData)
       expect(encoded).toBeTruthy()
-      
+
       const decoded = hex.decode(encoded)
       expect(decoded).toBe(binaryData)
     })
@@ -163,7 +164,7 @@ describe('编码算法测试', () => {
     it('应该处理大数据', () => {
       const encoded = hex.encode(largeData)
       expect(encoded).toBeTruthy()
-      
+
       const decoded = hex.decode(encoded)
       expect(decoded).toBe(largeData)
     })
@@ -175,7 +176,7 @@ describe('编码算法测试', () => {
         '中文测试',
         '🔐🌟✨',
         'Line1\nLine2\nLine3',
-        '\x00\x01\x02\x03'
+        '\x00\x01\x02\x03',
       ]
 
       testCases.forEach(testCase => {
@@ -195,7 +196,7 @@ describe('编码算法测试', () => {
 
     it('编码长度应该是原始数据的两倍', () => {
       const testCases = ['A', 'AB', 'ABC', 'ABCD']
-      
+
       testCases.forEach(testCase => {
         const encoded = hex.encode(testCase)
         // 每个字节编码为2个十六进制字符
@@ -205,7 +206,7 @@ describe('编码算法测试', () => {
     })
   })
 
-  describe('Hex 错误处理测试', () => {
+  describe('hex 错误处理测试', () => {
     it('应该处理无效的 Hex 字符串', () => {
       const invalidHex = 'Invalid@Hex#String!'
       expect(() => hex.decode(invalidHex)).toThrow()
@@ -223,20 +224,20 @@ describe('编码算法测试', () => {
   })
 
   describe('编码算法对比测试', () => {
-    it('Base64 和 Hex 应该产生不同的编码结果', () => {
+    it('base64 和 Hex 应该产生不同的编码结果', () => {
       const base64Encoded = base64.encode(testData)
       const hexEncoded = hex.encode(testData)
-      
+
       expect(base64Encoded).not.toBe(hexEncoded)
     })
 
-    it('Base64 编码通常比 Hex 编码更紧凑', () => {
+    it('base64 编码通常比 Hex 编码更紧凑', () => {
       const testCases = ['Hello', 'Hello World!', largeData.substring(0, 1000)]
-      
+
       testCases.forEach(testCase => {
         const base64Encoded = base64.encode(testCase)
         const hexEncoded = hex.encode(testCase)
-        
+
         // Base64 通常比 Hex 更紧凑（除了很短的字符串）
         if (testCase.length > 10) {
           expect(base64Encoded.length).toBeLessThan(hexEncoded.length)
@@ -246,14 +247,14 @@ describe('编码算法测试', () => {
 
     it('两种编码都应该正确处理相同的数据', () => {
       const testCases = [testData, unicodeData, binaryData]
-      
+
       testCases.forEach(testCase => {
         const base64Encoded = base64.encode(testCase)
         const base64Decoded = base64.decode(base64Encoded)
-        
+
         const hexEncoded = hex.encode(testCase)
         const hexDecoded = hex.decode(hexEncoded)
-        
+
         expect(base64Decoded).toBe(testCase)
         expect(hexDecoded).toBe(testCase)
         expect(base64Decoded).toBe(hexDecoded)
@@ -264,21 +265,21 @@ describe('编码算法测试', () => {
   describe('性能和效率测试', () => {
     it('编码和解码应该在合理时间内完成', () => {
       const largeTestData = 'X'.repeat(50000) // 50KB
-      
+
       const start1 = performance.now()
       const base64Encoded = base64.encode(largeTestData)
       const base64Decoded = base64.decode(base64Encoded)
       const end1 = performance.now()
-      
+
       const start2 = performance.now()
       const hexEncoded = hex.encode(largeTestData)
       const hexDecoded = hex.decode(hexEncoded)
       const end2 = performance.now()
-      
+
       // 验证正确性
       expect(base64Decoded).toBe(largeTestData)
       expect(hexDecoded).toBe(largeTestData)
-      
+
       // 性能应该在合理范围内（1秒内）
       expect(end1 - start1).toBeLessThan(1000)
       expect(end2 - start2).toBeLessThan(1000)
@@ -288,7 +289,7 @@ describe('编码算法测试', () => {
       const iterations = 100
       const firstBase64 = base64.encode(testData)
       const firstHex = hex.encode(testData)
-      
+
       for (let i = 0; i < iterations; i++) {
         expect(base64.encode(testData)).toBe(firstBase64)
         expect(hex.encode(testData)).toBe(firstHex)
@@ -299,11 +300,11 @@ describe('编码算法测试', () => {
   describe('边界条件测试', () => {
     it('应该处理单字符输入', () => {
       const singleChar = 'A'
-      
+
       const base64Encoded = base64.encode(singleChar)
       const base64Decoded = base64.decode(base64Encoded)
       expect(base64Decoded).toBe(singleChar)
-      
+
       const hexEncoded = hex.encode(singleChar)
       const hexDecoded = hex.decode(hexEncoded)
       expect(hexDecoded).toBe(singleChar)
@@ -315,23 +316,24 @@ describe('编码算法测试', () => {
       for (let i = 32; i <= 126; i++) {
         allAscii += String.fromCharCode(i)
       }
-      
+
       const base64Encoded = base64.encode(allAscii)
       const base64Decoded = base64.decode(base64Encoded)
       expect(base64Decoded).toBe(allAscii)
-      
+
       const hexEncoded = hex.encode(allAscii)
       const hexDecoded = hex.decode(hexEncoded)
       expect(hexDecoded).toBe(allAscii)
     })
 
     it('应该处理控制字符', () => {
-      const controlChars = '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
-      
+      const controlChars =
+        '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
+
       const base64Encoded = base64.encode(controlChars)
       const base64Decoded = base64.decode(base64Encoded)
       expect(base64Decoded).toBe(controlChars)
-      
+
       const hexEncoded = hex.encode(controlChars)
       const hexDecoded = hex.decode(hexEncoded)
       expect(hexDecoded).toBe(controlChars)

@@ -185,6 +185,12 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "pnpm": {
+    "overrides": {
+      "esbuild": ">=0.25.0",
+      "happy-dom": ">=15.10.2"
+    }
+  },
   "lint-staged": {
     "*.{js,ts,vue}": [
       "eslint --fix"
@@ -234,11 +240,5 @@
       "path": "packages/store/dist/index.js",
       "limit": "85 KB"
     }
-  ],
-  "pnpm": {
-    "overrides": {
-      "happy-dom": ">=15.10.2",
-      "esbuild": ">=0.25.0"
-    }
-  }
+  ]
 }

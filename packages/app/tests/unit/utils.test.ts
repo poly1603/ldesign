@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
-  formatDate,
   debounce,
-  throttle,
   deepClone,
+  formatDate,
   generateId,
   isEmpty,
+  throttle,
 } from '../../src/utils'
 
 describe('工具函数测试', () => {

@@ -1,17 +1,17 @@
 // 验证引擎
 
-import type {
-  ValidationConfig,
-  ValidationRule,
-  ValidationResult,
-  Validator,
-  ValidationFunction,
-} from '../types/validation'
 import type { FormItemConfig } from '../types/field'
 import type { FormData } from '../types/form'
-import { validateField, executeRule } from '../utils/validation'
-import { debounce } from '../utils/throttle'
+import type {
+  ValidationConfig,
+  ValidationFunction,
+  ValidationResult,
+  ValidationRule,
+  Validator,
+} from '../types/validation'
 import { SimpleEventEmitter } from '../utils/event'
+import { debounce } from '../utils/throttle'
+import { validateField } from '../utils/validation'
 
 /**
  * 验证引擎
@@ -24,6 +24,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
     string,
     { result: ValidationResult; timestamp: number }
   > = new Map()
+
   private debouncedValidators: Map<string, Function> = new Map()
 
   constructor(config: ValidationConfig = {}) {

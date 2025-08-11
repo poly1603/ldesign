@@ -6,7 +6,7 @@ on:
     paths:
       - "packages/**"
       - "tools/scripts/build/**"
-      - ".github/workflows/build-validation.yml"
+      - .github/workflows/build-validation.yml
   pull_request:
     branches: [main, develop, master]
     paths:
@@ -15,11 +15,11 @@ on:
   workflow_dispatch:
     inputs:
       package:
-        description: "Specific package to validate (optional)"
+        description: Specific package to validate (optional)
         required: false
         type: string
       include_browser_tests:
-        description: "Include browser compatibility tests"
+        description: Include browser compatibility tests
         required: false
         type: boolean
         default: false
@@ -49,7 +49,7 @@ jobs:
           for package_dir in packages/*; do
             if [ -d "$package_dir" ]; then
               package_name=$(basename "$package_dir")
-              
+
               # 检查是否有构建产物目录
               if [ -d "$package_dir/dist" ] || [ -d "$package_dir/es" ] || [ -d "$package_dir/lib" ]; then
                 # 检查是否有构建校验脚本
@@ -300,19 +300,19 @@ jobs:
             basic_status="❌"
             analysis_status="❌"
             browser_status="⏭️"
-            
+
             if [ -d "./artifacts/validation-results-$package" ]; then
               basic_status="✅"
             fi
-            
+
             if [ -d "./artifacts/analysis-results-$package" ]; then
               analysis_status="✅"
             fi
-            
+
             if [ -d "./artifacts/browser-test-results-$package" ]; then
               browser_status="✅"
             fi
-            
+
             echo "| $package | $basic_status | $analysis_status | $browser_status |" >> validation-report.md
           done
 

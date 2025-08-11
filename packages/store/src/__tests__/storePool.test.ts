@@ -47,11 +47,15 @@ class PooledTestStore extends BaseStore {
   }
 }
 
-describe('StorePool', () => {
+describe('storePool', () => {
   let pool: StorePool
 
   beforeEach(() => {
-    pool = new (StorePool as any)({ maxSize: 3, maxIdleTime: 1000, enableGC: false })
+    pool = new (StorePool as any)({
+      maxSize: 3,
+      maxIdleTime: 1000,
+      enableGC: false,
+    })
   })
 
   afterEach(() => {
@@ -166,14 +170,14 @@ describe('垃圾回收功能', () => {
     const pool = new (StorePool as any)({
       maxSize: 10,
       maxIdleTime: 100, // 100ms 过期时间
-      enableGC: true
+      enableGC: true,
     })
 
     try {
       const store = pool.getStore(TestPoolStore, 'test-1')
       pool.returnStore(store)
 
-      let stats = pool.getStats()
+      const stats = pool.getStats()
       expect(stats.totalInstances).toBe(1)
 
       // 等待过期时间

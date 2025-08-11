@@ -1,50 +1,6 @@
-<template>
-  <div class="form-radio" :class="radioClasses">
-    <div v-if="showLabel" class="form-radio__label" :class="labelClasses">
-      <label class="form-radio__label-text">
-        {{ label }}
-        <span v-if="required" class="form-radio__required">*</span>
-        <span v-if="showColon" class="form-radio__colon">:</span>
-      </label>
-    </div>
-
-    <div class="form-radio__group" :class="groupClasses">
-      <label
-        v-for="option in options"
-        :key="option.value"
-        class="form-radio__option"
-        :class="{
-          'form-radio__option--disabled': option.disabled || disabled,
-          'form-radio__option--checked': isChecked(option.value),
-        }"
-      >
-        <input
-          :value="option.value"
-          :checked="isChecked(option.value)"
-          :disabled="option.disabled || disabled"
-          :name="radioName"
-          type="radio"
-          class="form-radio__input"
-          @change="handleChange"
-        />
-        <span class="form-radio__indicator"></span>
-        <span class="form-radio__text">{{ option.label }}</span>
-      </label>
-    </div>
-
-    <div v-if="showError && errorMessage" class="form-radio__error">
-      {{ errorMessage }}
-    </div>
-
-    <div v-if="description" class="form-radio__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import type { FieldOption } from '../types/field'
+import { computed, ref } from 'vue'
 import { generateId } from '../utils/common'
 
 interface Props {
@@ -105,11 +61,11 @@ const groupClasses = computed(() => [
 ])
 
 // 方法
-const isChecked = (value: any): boolean => {
+function isChecked(value: any): boolean {
   return props.modelValue === value
 }
 
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   const target = event.target as HTMLInputElement
   const value = target.value
 
@@ -123,6 +79,50 @@ const handleChange = (event: Event) => {
   emit('change', parsedValue)
 }
 </script>
+
+<template>
+  <div class="form-radio" :class="radioClasses">
+    <div v-if="showLabel" class="form-radio__label" :class="labelClasses">
+      <label class="form-radio__label-text">
+        {{ label }}
+        <span v-if="required" class="form-radio__required">*</span>
+        <span v-if="showColon" class="form-radio__colon">:</span>
+      </label>
+    </div>
+
+    <div class="form-radio__group" :class="groupClasses">
+      <label
+        v-for="option in options"
+        :key="option.value"
+        class="form-radio__option"
+        :class="{
+          'form-radio__option--disabled': option.disabled || disabled,
+          'form-radio__option--checked': isChecked(option.value),
+        }"
+      >
+        <input
+          :value="option.value"
+          :checked="isChecked(option.value)"
+          :disabled="option.disabled || disabled"
+          :name="radioName"
+          type="radio"
+          class="form-radio__input"
+          @change="handleChange"
+        />
+        <span class="form-radio__indicator" />
+        <span class="form-radio__text">{{ option.label }}</span>
+      </label>
+    </div>
+
+    <div v-if="showError && errorMessage" class="form-radio__error">
+      {{ errorMessage }}
+    </div>
+
+    <div v-if="description" class="form-radio__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-radio {

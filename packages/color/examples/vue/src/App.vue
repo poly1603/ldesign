@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { generateColorConfig, generateColorScales } from '@ldesign/color'
 import { useTheme, useThemeSelector } from '@ldesign/color/vue'
-import { generateColorScales, generateColorConfig } from '@ldesign/color'
+import { computed, onMounted, ref } from 'vue'
 import ColorPaletteCard from './components/ColorPaletteCard.vue'
 
-const { currentTheme, currentMode, availableThemes, setTheme, setMode, toggleMode } = useTheme()
+const {
+  currentTheme,
+  currentMode,
+  availableThemes,
+  setTheme,
+  setMode,
+  toggleMode,
+} = useTheme()
 const { themeConfigs } = useThemeSelector()
 
 // 获取当前主题配置
@@ -38,7 +45,7 @@ const currentColors = computed(() => {
 })
 
 // 获取主题的预览颜色（使用生成的完整颜色配置）
-const getThemePreviewColors = (themeName: string) => {
+function getThemePreviewColors(themeName: string) {
   const themeConfig = themeConfigs.value.find(t => t.name === themeName)
   if (!themeConfig) return null
 
@@ -75,10 +82,12 @@ const currentScales = computed(() => {
 })
 
 // 通知系统
-const notifications = ref<Array<{id: number, message: string, type: string}>>([])
+const notifications = ref<Array<{ id: number; message: string; type: string }>>(
+  []
+)
 let notificationId = 0
 
-const showNotification = (message: string, type: string = 'info') => {
+function showNotification(message: string, type: string = 'info') {
   const id = ++notificationId
   notifications.value.push({ id, message, type })
   setTimeout(() => {
@@ -90,7 +99,7 @@ const showNotification = (message: string, type: string = 'info') => {
 }
 
 // 复制颜色值
-const copyColor = async (color: string) => {
+async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制颜色值: ${color}`, 'success')
@@ -100,7 +109,7 @@ const copyColor = async (color: string) => {
 }
 
 // 获取颜色类型名称
-const getColorTypeName = (colorType: string) => {
+function getColorTypeName(colorType: string) {
   const nameMap: Record<string, string> = {
     primary: '主色调',
     success: '成功色',
@@ -135,15 +144,18 @@ onMounted(() => {
             <label>选择主题:</label>
             <select
               :value="currentTheme"
-              @change="setTheme(($event.target as HTMLSelectElement).value)"
               class="form-control"
+              @change="setTheme(($event.target as HTMLSelectElement).value)"
             >
               <option
                 v-for="themeName in availableThemes"
                 :key="themeName"
                 :value="themeName"
               >
-                {{ themeConfigs.find(t => t.name === themeName)?.displayName || themeName }}
+                {{
+                  themeConfigs.find(t => t.name === themeName)?.displayName ||
+                  themeName
+                }}
               </option>
             </select>
           </div>
@@ -152,8 +164,10 @@ onMounted(() => {
             <label>颜色模式:</label>
             <select
               :value="currentMode"
-              @change="setMode(($event.target as HTMLSelectElement).value as any)"
               class="form-control"
+              @change="
+                setMode(($event.target as HTMLSelectElement).value as any)
+              "
             >
               <option value="light">亮色模式</option>
               <option value="dark">暗色模式</option>
@@ -161,7 +175,9 @@ onMounted(() => {
           </div>
 
           <div class="control-group">
-            <button @click="toggleMode" class="btn btn-primary">切换模式</button>
+            <button class="btn btn-primary" @click="toggleMode">
+              切换模式
+            </button>
           </div>
 
           <div class="status-info">
@@ -179,23 +195,60 @@ onMounted(() => {
         <!-- 主题预览 -->
         <section class="card">
           <h2 class="card-title">🎨 主题预览</h2>
-          <p class="card-description">选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案</p>
+          <p class="card-description">
+            选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案
+          </p>
 
           <div class="theme-grid">
             <div
               v-for="themeName in availableThemes"
               :key="themeName"
-              :class="['theme-item', { active: currentTheme === themeName }]"
+              class="theme-item"
+              :class="[{ active: currentTheme === themeName }]"
               @click="setTheme(themeName)"
             >
               <div class="theme-preview">
-                <div class="theme-color" :style="{ backgroundColor: getThemePreviewColors(themeName)?.primary || '#1890ff' }"></div>
-                <div class="theme-color" :style="{ backgroundColor: getThemePreviewColors(themeName)?.success || '#52c41a' }"></div>
-                <div class="theme-color" :style="{ backgroundColor: getThemePreviewColors(themeName)?.warning || '#faad14' }"></div>
-                <div class="theme-color" :style="{ backgroundColor: getThemePreviewColors(themeName)?.danger || '#f5222d' }"></div>
+                <div
+                  class="theme-color"
+                  :style="{
+                    backgroundColor:
+                      getThemePreviewColors(themeName)?.primary || '#1890ff',
+                  }"
+                />
+                <div
+                  class="theme-color"
+                  :style="{
+                    backgroundColor:
+                      getThemePreviewColors(themeName)?.success || '#52c41a',
+                  }"
+                />
+                <div
+                  class="theme-color"
+                  :style="{
+                    backgroundColor:
+                      getThemePreviewColors(themeName)?.warning || '#faad14',
+                  }"
+                />
+                <div
+                  class="theme-color"
+                  :style="{
+                    backgroundColor:
+                      getThemePreviewColors(themeName)?.danger || '#f5222d',
+                  }"
+                />
               </div>
-              <div class="theme-name">{{ themeConfigs.find(t => t.name === themeName)?.displayName || themeName }}</div>
-              <div class="theme-description">{{ themeConfigs.find(t => t.name === themeName)?.description || '精美的主题配色方案' }}</div>
+              <div class="theme-name">
+                {{
+                  themeConfigs.find(t => t.name === themeName)?.displayName ||
+                  themeName
+                }}
+              </div>
+              <div class="theme-description">
+                {{
+                  themeConfigs.find(t => t.name === themeName)?.description ||
+                  '精美的主题配色方案'
+                }}
+              </div>
             </div>
           </div>
         </section>
@@ -203,7 +256,10 @@ onMounted(() => {
         <!-- 当前主题色阶展示 -->
         <section class="card">
           <h2 class="card-title">� 当前主题色阶</h2>
-          <p class="card-description">当前主题 "{{ currentThemeConfig?.displayName || currentTheme }}" 在 {{ currentMode === 'light' ? '亮色' : '暗色' }} 模式下的完整色阶体系</p>
+          <p class="card-description">
+            当前主题 "{{ currentThemeConfig?.displayName || currentTheme }}" 在
+            {{ currentMode === 'light' ? '亮色' : '暗色' }} 模式下的完整色阶体系
+          </p>
 
           <div v-if="currentScales" class="palette-showcase">
             <ColorPaletteCard
@@ -234,7 +290,8 @@ onMounted(() => {
     <div
       v-for="notification in notifications"
       :key="notification.id"
-      :class="['notification', notification.type]"
+      class="notification"
+      :class="[notification.type]"
     >
       {{ notification.message }}
     </div>

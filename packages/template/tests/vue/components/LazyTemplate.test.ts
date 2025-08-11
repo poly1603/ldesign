@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import LazyTemplate from '../../../src/vue/components/LazyTemplate'
 
 // Mock Intersection Observer
@@ -14,7 +14,7 @@ const mockIntersectionObserver = vi.fn(() => mockObserver)
 // @ts-ignore
 window.IntersectionObserver = mockIntersectionObserver
 
-describe('LazyTemplate', () => {
+describe('lazyTemplate', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -62,13 +62,10 @@ describe('LazyTemplate', () => {
       },
     })
 
-    expect(mockIntersectionObserver).toHaveBeenCalledWith(
-      expect.any(Function),
-      {
-        rootMargin: '50px',
-        threshold: 0.1,
-      }
-    )
+    expect(mockIntersectionObserver).toHaveBeenCalledWith(expect.any(Function), {
+      rootMargin: '50px',
+      threshold: 0.1,
+    })
   })
 
   it('应该支持自定义 rootMargin 和 threshold', () => {
@@ -83,13 +80,10 @@ describe('LazyTemplate', () => {
       },
     })
 
-    expect(mockIntersectionObserver).toHaveBeenCalledWith(
-      expect.any(Function),
-      {
-        rootMargin: '100px',
-        threshold: 0.5,
-      }
-    )
+    expect(mockIntersectionObserver).toHaveBeenCalledWith(expect.any(Function), {
+      rootMargin: '100px',
+      threshold: 0.5,
+    })
   })
 
   it('应该显示加载状态', async () => {

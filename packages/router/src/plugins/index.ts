@@ -4,16 +4,6 @@
  * 提供各种增强功能的插件
  */
 
-// 增强组件插件
-export {
-  EnhancedComponentsPlugin,
-  createDefaultConfirmDialog,
-  createDefaultEventTracker,
-  createDefaultLayoutResolver,
-  createDefaultPermissionChecker,
-  createEnhancementConfig,
-} from './enhanced-components-plugin'
-
 export type {
   ComponentEnhancementConfig,
   ComponentSize,
@@ -21,15 +11,25 @@ export type {
   PreloadStrategy,
 } from '../components/types'
 
+// 缓存插件
+export { createCachePlugin, RouterCachePlugin } from './cache-plugin'
+
+export type { CacheConfig, CacheStrategy } from './cache-plugin'
+
+// 增强组件插件
+export {
+  createDefaultConfirmDialog,
+  createDefaultEventTracker,
+  createDefaultLayoutResolver,
+  createDefaultPermissionChecker,
+  createEnhancementConfig,
+  EnhancedComponentsPlugin,
+} from './enhanced-components-plugin'
+
 // 性能监控插件
 export {
-  RouterPerformancePlugin,
   createPerformancePlugin,
+  RouterPerformancePlugin,
 } from './performance-plugin'
 
 export type { PerformanceConfig, PerformanceData } from './performance-plugin'
-
-// 缓存插件
-export { RouterCachePlugin, createCachePlugin } from './cache-plugin'
-
-export type { CacheConfig, CacheStrategy } from './cache-plugin'

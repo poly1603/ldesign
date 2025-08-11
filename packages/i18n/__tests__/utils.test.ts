@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import type { NestedObject } from '../src/core/types'
+import { describe, expect, it } from 'vitest'
 import {
   extractInterpolationKeys,
   hasInterpolation,
@@ -35,7 +35,9 @@ describe('path Utils', () => {
   describe('getNestedValue', () => {
     it('应该获取嵌套值', () => {
       const testObject = createTestObject()
-      expect(getNestedValue(testObject, 'level1.level2.value')).toBe('nested value')
+      expect(getNestedValue(testObject, 'level1.level2.value')).toBe(
+        'nested value'
+      )
       expect(getNestedValue(testObject, 'level1.simple')).toBe('simple value')
       expect(getNestedValue(testObject, 'root')).toBe('root value')
     })
@@ -48,7 +50,9 @@ describe('path Utils', () => {
 
     it('应该处理空值', () => {
       const testObject = createTestObject()
-      expect(getNestedValue(null as unknown as NestedObject, 'path')).toBeUndefined()
+      expect(
+        getNestedValue(null as unknown as NestedObject, 'path')
+      ).toBeUndefined()
       expect(getNestedValue(testObject, '')).toBeUndefined()
     })
   })
@@ -99,7 +103,7 @@ describe('path Utils', () => {
       expect(result).toEqual({
         'level1.level2.value': 'nested value',
         'level1.simple': 'simple value',
-        'root': 'root value',
+        root: 'root value',
       })
     })
   })
@@ -109,7 +113,7 @@ describe('path Utils', () => {
       const flattened = {
         'level1.level2.value': 'nested value',
         'level1.simple': 'simple value',
-        'root': 'root value',
+        root: 'root value',
       }
 
       const result = unflattenObject(flattened)
@@ -123,9 +127,12 @@ describe('path Utils', () => {
 describe('interpolation Utils', () => {
   describe('interpolate', () => {
     it('应该正确插值', () => {
-      expect(interpolate('Hello {{name}}!', { name: 'John' })).toBe('Hello John!')
-      expect(interpolate('{{greeting}} {{name}}!', { greeting: 'Hi', name: 'Jane' }))
-        .toBe('Hi Jane!')
+      expect(interpolate('Hello {{name}}!', { name: 'John' })).toBe(
+        'Hello John!'
+      )
+      expect(
+        interpolate('{{greeting}} {{name}}!', { greeting: 'Hi', name: 'Jane' })
+      ).toBe('Hi Jane!')
     })
 
     it('应该处理缺失的参数', () => {
@@ -133,18 +140,29 @@ describe('interpolation Utils', () => {
     })
 
     it('应该支持嵌套属性', () => {
-      expect(interpolate('Hello {{user.name}}!', { user: { name: 'John' } }))
-        .toBe('Hello John!')
+      expect(
+        interpolate('Hello {{user.name}}!', { user: { name: 'John' } })
+      ).toBe('Hello John!')
     })
 
     it('应该转义HTML', () => {
-      expect(interpolate('Content: {{content}}', { content: '<script>alert("xss")</script>' }))
-        .toBe('Content: &lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;')
+      expect(
+        interpolate('Content: {{content}}', {
+          content: '<script>alert("xss")</script>',
+        })
+      ).toBe(
+        'Content: &lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;'
+      )
     })
 
     it('应该支持禁用转义', () => {
-      expect(interpolate('Content: {{content}}', { content: '<strong>Bold</strong>' }, { escapeValue: false },
-      )).toBe('Content: <strong>Bold</strong>')
+      expect(
+        interpolate(
+          'Content: {{content}}',
+          { content: '<strong>Bold</strong>' },
+          { escapeValue: false }
+        )
+      ).toBe('Content: <strong>Bold</strong>')
     })
   })
 
@@ -159,15 +177,21 @@ describe('interpolation Utils', () => {
   describe('extractInterpolationKeys', () => {
     it('应该提取插值键', () => {
       expect(extractInterpolationKeys('Hello {{name}}!')).toEqual(['name'])
-      expect(extractInterpolationKeys('{{greeting}} {{name}}!')).toEqual(['greeting', 'name'])
-      expect(extractInterpolationKeys('{{user.name}} is {{user.age}} years old'))
-        .toEqual(['user.name', 'user.age'])
+      expect(extractInterpolationKeys('{{greeting}} {{name}}!')).toEqual([
+        'greeting',
+        'name',
+      ])
+      expect(
+        extractInterpolationKeys('{{user.name}} is {{user.age}} years old')
+      ).toEqual(['user.name', 'user.age'])
     })
   })
 
   describe('validateInterpolationParams', () => {
     it('应该验证插值参数', () => {
-      const result1 = validateInterpolationParams('Hello {{name}}!', { name: 'John' })
+      const result1 = validateInterpolationParams('Hello {{name}}!', {
+        name: 'John',
+      })
       expect(result1.valid).toBe(true)
       expect(result1.missingKeys).toEqual([])
 
@@ -193,7 +217,9 @@ describe('pluralization Utils', () => {
 
   describe('hasPluralExpression', () => {
     it('应该正确检测复数表达式', () => {
-      expect(hasPluralExpression('{count, plural, =0{no items} other{# items}}')).toBe(true)
+      expect(
+        hasPluralExpression('{count, plural, =0{no items} other{# items}}')
+      ).toBe(true)
       expect(hasPluralExpression('Simple text')).toBe(false)
       expect(hasPluralExpression('Hello {{name}}')).toBe(false)
     })
@@ -201,31 +227,46 @@ describe('pluralization Utils', () => {
 
   describe('parsePluralExpression', () => {
     it('应该解析复数表达式', () => {
-      const expression = '{count, plural, =0{no items} =1{one item} other{# items}}'
+      const expression =
+        '{count, plural, =0{no items} =1{one item} other{# items}}'
 
-      expect(parsePluralExpression(expression, { count: 0 }, 'en')).toBe('no items')
-      expect(parsePluralExpression(expression, { count: 1 }, 'en')).toBe('one item')
-      expect(parsePluralExpression(expression, { count: 5 }, 'en')).toBe('5 items')
+      expect(parsePluralExpression(expression, { count: 0 }, 'en')).toBe(
+        'no items'
+      )
+      expect(parsePluralExpression(expression, { count: 1 }, 'en')).toBe(
+        'one item'
+      )
+      expect(parsePluralExpression(expression, { count: 5 }, 'en')).toBe(
+        '5 items'
+      )
     })
 
     it('应该处理不同语言的复数规则', () => {
       const expression = '{count, plural, other{# items}}'
 
-      expect(parsePluralExpression(expression, { count: 1 }, 'zh-CN')).toBe('1 items')
-      expect(parsePluralExpression(expression, { count: 5 }, 'zh-CN')).toBe('5 items')
+      expect(parsePluralExpression(expression, { count: 1 }, 'zh-CN')).toBe(
+        '1 items'
+      )
+      expect(parsePluralExpression(expression, { count: 5 }, 'zh-CN')).toBe(
+        '5 items'
+      )
     })
   })
 
   describe('processPluralization', () => {
     it('应该处理包含复数的文本', () => {
-      const text = 'You have {count, plural, =0{no items} =1{one item} other{# items}} in your cart.'
+      const text =
+        'You have {count, plural, =0{no items} =1{one item} other{# items}} in your cart.'
 
-      expect(processPluralization(text, { count: 0 }, 'en'))
-        .toBe('You have no items in your cart.')
-      expect(processPluralization(text, { count: 1 }, 'en'))
-        .toBe('You have one item in your cart.')
-      expect(processPluralization(text, { count: 3 }, 'en'))
-        .toBe('You have 3 items in your cart.')
+      expect(processPluralization(text, { count: 0 }, 'en')).toBe(
+        'You have no items in your cart.'
+      )
+      expect(processPluralization(text, { count: 1 }, 'en')).toBe(
+        'You have one item in your cart.'
+      )
+      expect(processPluralization(text, { count: 3 }, 'en')).toBe(
+        'You have 3 items in your cart.'
+      )
     })
 
     it('应该处理没有复数的文本', () => {

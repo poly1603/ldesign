@@ -1,5 +1,5 @@
-import { defineComponent, ref } from 'vue'
 import { RouterLink } from '@ldesign/router'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'Settings',
@@ -174,7 +174,8 @@ export default defineComponent({
           </div>
         </div>
 
-        <style>{`
+        <style>
+          {`
           .settings {
             padding: 2rem;
             max-width: 800px;
@@ -297,7 +298,8 @@ export default defineComponent({
           .reset-btn:hover {
             background: #5a6268;
           }
-        `}</style>
+        `}
+        </style>
       </div>
     )
   },

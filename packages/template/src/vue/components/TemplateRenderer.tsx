@@ -226,7 +226,12 @@ export const TemplateRenderer = defineComponent({
       } catch (error) {
         emit('render-error', error)
         const errorMessage = error instanceof Error ? error.message : String(error)
-        return <div class="template-renderer__error">模板渲染失败: {errorMessage}</div>
+        return (
+          <div class="template-renderer__error">
+            模板渲染失败:
+            {errorMessage}
+          </div>
+        )
       }
     }
 

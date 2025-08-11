@@ -23,7 +23,7 @@ beforeAll(async () => {
   // 设置性能测试基准
   if (!globalThis.performance) {
     globalThis.performance = {
-      now: () => Date.now()
+      now: () => Date.now(),
     } as any
   }
 })
@@ -49,7 +49,8 @@ export const testUtils = {
 
   // 生成随机字符串
   generateRandomString: (length: number = 16): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -58,7 +59,10 @@ export const testUtils = {
   },
 
   // 测试性能
-  measurePerformance: async (fn: () => void | Promise<void>, iterations: number = 1): Promise<{
+  measurePerformance: async (
+    fn: () => void | Promise<void>,
+    iterations: number = 1
+  ): Promise<{
     totalTime: number
     averageTime: number
     opsPerSecond: number
@@ -77,7 +81,7 @@ export const testUtils = {
     return {
       totalTime,
       averageTime,
-      opsPerSecond
+      opsPerSecond,
     }
   },
 
@@ -93,7 +97,7 @@ export const testUtils = {
   // 创建 Unicode 测试数据
   createUnicodeData: (): string => {
     return '🔐 Hello, 世界! 🌟 ✨ 🚀 💎 🎯 🔥 ⚡ 🌈 🎨'
-  }
+  },
 }
 
 // 测试常量
@@ -109,7 +113,7 @@ export const testConstants = {
     MULTILINE: `Line 1
 Line 2
 Line 3
-With special chars: !@#$%^&*()`
+With special chars: !@#$%^&*()`,
   },
 
   // 标准测试密钥
@@ -119,7 +123,7 @@ With special chars: !@#$%^&*()`
     LONG: 'this-is-a-very-long-key-for-testing-purposes-256-bits',
     AES_128: 'aes-128-test-key',
     AES_192: 'aes-192-test-key-longer',
-    AES_256: 'aes-256-test-key-even-longer-32'
+    AES_256: 'aes-256-test-key-even-longer-32',
   },
 
   // 性能基准
@@ -127,22 +131,22 @@ With special chars: !@#$%^&*()`
     FAST_OPERATION: 10, // ms
     MEDIUM_OPERATION: 100, // ms
     SLOW_OPERATION: 1000, // ms
-    MIN_OPS_PER_SECOND: 10
+    MIN_OPS_PER_SECOND: 10,
   },
 
   // 已知测试向量
   TEST_VECTORS: {
     SHA256: {
-      'abc': 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
-      '': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+      abc: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+      '': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
     },
     SHA512: {
-      'abc': 'ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f'
+      abc: 'ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f',
     },
     BASE64: {
-      'Man': 'TWFu',
-      'Ma': 'TWE=',
-      'M': 'TQ=='
-    }
-  }
+      Man: 'TWFu',
+      Ma: 'TWE=',
+      M: 'TQ==',
+    },
+  },
 }

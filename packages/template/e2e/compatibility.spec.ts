@@ -1,4 +1,4 @@
-import { test, expect, devices } from '@playwright/test'
+import { devices, expect, test } from '@playwright/test'
 
 test.describe('兼容性测试', () => {
   // 测试不同浏览器
@@ -149,7 +149,7 @@ test.describe('兼容性测试', () => {
           return x === 1
         })(),
         let: (() => {
-          let x = 1
+          const x = 1
           return x === 1
         })(),
         destructuring: (() => {

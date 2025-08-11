@@ -1,3 +1,152 @@
+<script setup lang="ts">
+import type { FormData } from '@/types/form'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import MockForm from '@/components/MockForm.vue'
+import { useFormConfig } from '@/composables/useFormConfig'
+import { mockFormData } from '@/data/mockData'
+
+// 使用表单配置
+const {
+  currentLayout,
+  showGroups,
+  showValidation,
+  formState,
+  containerRef,
+  formOptions,
+  updateLayout,
+  toggleAutoColumns,
+  toggleUnifiedSpacing,
+  toggleAutoLabelWidth,
+  toggleExpand,
+  toggleButtonPosition,
+  toggleGroups,
+  toggleValidation,
+  toggleLabelWidthMode,
+  setManualLabelWidth,
+} = useFormConfig()
+
+// 下拉框引用
+const expandDropdownRef = ref<HTMLElement>()
+
+// 表单数据
+const formData = reactive<Partial<FormData>>({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  gender: '',
+  birthDate: '',
+  country: '',
+  province: '',
+  city: '',
+  address: '',
+  zipCode: '',
+  company: '',
+  position: '',
+  industry: '',
+  experience: '',
+  salary: undefined,
+  interests: [],
+  newsletter: false,
+  notifications: true,
+  language: 'zh',
+  bio: '',
+  website: '',
+  socialMedia: '',
+})
+
+// 表单重新渲染的 key
+const formKey = ref(0)
+
+// 隐藏字段的表单配置
+const hiddenFieldsOptions = computed(() => {
+  const hiddenFields = formOptions.value.fields.filter(field =>
+    formState.hiddenFields.includes(field.name)
+  )
+
+  return {
+    fields: hiddenFields,
+    layout: {
+      ...currentLayout,
+      defaultRows: 0, // 隐藏字段不限制行数
+      buttonPosition: undefined, // 隐藏字段表单不显示按钮组
+    },
+  }
+})
+
+// 重置表单
+function resetForm() {
+  Object.keys(formData).forEach(key => {
+    const typedKey = key as keyof FormData
+    if (typeof formData[typedKey] === 'boolean') {
+      ;(formData as any)[typedKey] = false
+    } else if (Array.isArray(formData[typedKey])) {
+      ;(formData as any)[typedKey] = []
+    } else if (typeof formData[typedKey] === 'number') {
+      ;(formData as any)[typedKey] = undefined
+    } else {
+      ;(formData as any)[typedKey] = ''
+    }
+  })
+
+  // 特殊处理一些默认值
+  formData.notifications = true
+  formData.language = 'zh'
+}
+
+// 填充示例数据
+function fillMockData() {
+  Object.assign(formData, mockFormData)
+}
+
+// 处理表单提交
+function handleSubmit(data: any) {
+  console.log('表单提交:', data)
+  alert('表单提交成功！请查看控制台输出。')
+}
+
+// 处理表单验证
+function handleValidate(valid: boolean, errors: any) {
+  console.log('表单验证:', { valid, errors })
+  if (!valid) {
+    console.warn('表单验证失败:', errors)
+  }
+}
+
+// 处理查询
+function handleQuery() {
+  console.log('执行查询:', formData)
+  alert('查询功能已触发！请查看控制台输出。')
+}
+
+// 处理重置
+function handleReset() {
+  console.log('重置表单')
+  resetForm()
+}
+
+// 点击外部关闭下拉框
+function handleClickOutside(event: MouseEvent) {
+  if (
+    currentLayout.expandMode === 'popup' &&
+    formState.isExpanded &&
+    expandDropdownRef.value &&
+    !expandDropdownRef.value.contains(event.target as Node)
+  ) {
+    toggleExpand()
+  }
+}
+
+// 监听点击外部事件
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
+
 <template>
   <div id="app">
     <!-- 头部 -->
@@ -24,7 +173,7 @@
             </button>
           </div>
 
-          <div class="control-item" v-if="!currentLayout.autoColumns">
+          <div v-if="!currentLayout.autoColumns" class="control-item">
             <label>列数：</label>
             <select
               :value="currentLayout.columns"
@@ -37,7 +186,7 @@
             </select>
           </div>
 
-          <div class="control-item" v-if="currentLayout.autoColumns">
+          <div v-if="currentLayout.autoColumns" class="control-item">
             <span class="info-text"
               >当前自动计算：{{ formState.calculatedColumns }}列</span
             >
@@ -57,7 +206,7 @@
             </button>
           </div>
 
-          <div class="control-item" v-if="currentLayout.unifiedSpacing">
+          <div v-if="currentLayout.unifiedSpacing" class="control-item">
             <label>统一间距：</label>
             <input
               type="range"
@@ -70,7 +219,7 @@
             <span>{{ currentLayout.gap }}px</span>
           </div>
 
-          <div class="control-item" v-if="!currentLayout.unifiedSpacing">
+          <div v-if="!currentLayout.unifiedSpacing" class="control-item">
             <label>横向间距：</label>
             <input
               type="range"
@@ -83,7 +232,7 @@
             <span>{{ currentLayout.columnGap }}px</span>
           </div>
 
-          <div class="control-item" v-if="!currentLayout.unifiedSpacing">
+          <div v-if="!currentLayout.unifiedSpacing" class="control-item">
             <label>纵向间距：</label>
             <input
               type="range"
@@ -112,8 +261,8 @@
           </div>
 
           <div
-            class="control-item"
             v-if="currentLayout.labelPosition !== 'top'"
+            class="control-item"
           >
             <button
               :class="{ active: currentLayout.autoLabelWidth }"
@@ -126,11 +275,11 @@
           </div>
 
           <div
-            class="control-item"
             v-if="
               currentLayout.labelPosition !== 'top' &&
               !currentLayout.autoLabelWidth
             "
+            class="control-item"
           >
             <label>标签宽度：</label>
             <input
@@ -144,11 +293,11 @@
           </div>
 
           <div
-            class="control-item"
             v-if="
               currentLayout.labelPosition !== 'top' &&
               currentLayout.autoLabelWidth
             "
+            class="control-item"
           >
             <label>标签宽度模式：</label>
             <select
@@ -170,34 +319,34 @@
             class="control-group"
           >
             <div
-              class="control-item"
               v-for="col in typeof currentLayout.columns === 'number'
                 ? currentLayout.columns
                 : 2"
               :key="col"
+              class="control-item"
             >
               <label>第{{ col }}列标签宽度：</label>
               <input
                 type="number"
                 :value="currentLayout.labelWidthByColumn?.[col - 1] || 120"
-                @input="
-                  setManualLabelWidth(col - 1, parseInt($event.target.value))
-                "
                 min="60"
                 max="300"
                 step="10"
                 style="width: 80px"
+                @input="
+                  setManualLabelWidth(col - 1, parseInt($event.target.value))
+                "
               />
               <span>px</span>
             </div>
           </div>
 
           <div
-            class="control-item"
             v-if="
               currentLayout.labelPosition !== 'top' &&
               currentLayout.autoLabelWidth
             "
+            class="control-item"
           >
             <span class="info-text">
               当前宽度：
@@ -215,8 +364,8 @@
           </div>
 
           <div
-            class="control-item"
             v-if="currentLayout.labelPosition !== 'top'"
+            class="control-item"
           >
             <label>标签对齐：</label>
             <select
@@ -230,8 +379,8 @@
           </div>
 
           <div
-            class="control-item"
             v-if="currentLayout.labelPosition !== 'top'"
+            class="control-item"
           >
             <label>标签间距：</label>
             <input
@@ -291,8 +440,8 @@
           </div>
 
           <div
-            class="control-item"
             v-if="currentLayout.defaultRows && currentLayout.defaultRows > 0"
+            class="control-item"
           >
             <label>展开方式：</label>
             <select
@@ -305,8 +454,8 @@
           </div>
 
           <div
-            class="control-item"
             v-if="currentLayout.defaultRows && currentLayout.defaultRows > 0"
+            class="control-item"
           >
             <span class="info-text">
               可见字段：{{ formState.visibleFields.length }}个， 隐藏字段：{{
@@ -318,8 +467,8 @@
 
         <!-- 按钮组位置控制 -->
         <div
-          class="control-group"
           v-if="currentLayout.defaultRows && currentLayout.defaultRows > 0"
+          class="control-group"
         >
           <div class="control-item">
             <label>按钮组位置：</label>
@@ -406,8 +555,8 @@
           <!-- 下拉式展开模式 -->
           <div
             v-if="currentLayout.expandMode === 'popup' && formState.isExpanded"
-            class="expand-dropdown"
             ref="expandDropdownRef"
+            class="expand-dropdown"
           >
             <div class="dropdown-content">
               <div class="dropdown-header">
@@ -433,155 +582,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import MockForm from '@/components/MockForm.vue'
-import { useFormConfig } from '@/composables/useFormConfig'
-import { mockFormData } from '@/data/mockData'
-import type { FormData } from '@/types/form'
-
-// 使用表单配置
-const {
-  currentLayout,
-  showGroups,
-  showValidation,
-  formState,
-  containerRef,
-  formOptions,
-  updateLayout,
-  toggleAutoColumns,
-  toggleUnifiedSpacing,
-  toggleAutoLabelWidth,
-  toggleExpand,
-  toggleButtonPosition,
-  toggleGroups,
-  toggleValidation,
-  toggleLabelWidthMode,
-  setManualLabelWidth,
-} = useFormConfig()
-
-// 下拉框引用
-const expandDropdownRef = ref<HTMLElement>()
-
-// 表单数据
-const formData = reactive<Partial<FormData>>({
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-  gender: '',
-  birthDate: '',
-  country: '',
-  province: '',
-  city: '',
-  address: '',
-  zipCode: '',
-  company: '',
-  position: '',
-  industry: '',
-  experience: '',
-  salary: undefined,
-  interests: [],
-  newsletter: false,
-  notifications: true,
-  language: 'zh',
-  bio: '',
-  website: '',
-  socialMedia: '',
-})
-
-// 表单重新渲染的 key
-const formKey = ref(0)
-
-// 隐藏字段的表单配置
-const hiddenFieldsOptions = computed(() => {
-  const hiddenFields = formOptions.value.fields.filter(field =>
-    formState.hiddenFields.includes(field.name)
-  )
-
-  return {
-    fields: hiddenFields,
-    layout: {
-      ...currentLayout,
-      defaultRows: 0, // 隐藏字段不限制行数
-      buttonPosition: undefined, // 隐藏字段表单不显示按钮组
-    },
-  }
-})
-
-// 重置表单
-const resetForm = () => {
-  Object.keys(formData).forEach(key => {
-    const typedKey = key as keyof FormData
-    if (typeof formData[typedKey] === 'boolean') {
-      ;(formData as any)[typedKey] = false
-    } else if (Array.isArray(formData[typedKey])) {
-      ;(formData as any)[typedKey] = []
-    } else if (typeof formData[typedKey] === 'number') {
-      ;(formData as any)[typedKey] = undefined
-    } else {
-      ;(formData as any)[typedKey] = ''
-    }
-  })
-
-  // 特殊处理一些默认值
-  formData.notifications = true
-  formData.language = 'zh'
-}
-
-// 填充示例数据
-const fillMockData = () => {
-  Object.assign(formData, mockFormData)
-}
-
-// 处理表单提交
-const handleSubmit = (data: any) => {
-  console.log('表单提交:', data)
-  alert('表单提交成功！请查看控制台输出。')
-}
-
-// 处理表单验证
-const handleValidate = (valid: boolean, errors: any) => {
-  console.log('表单验证:', { valid, errors })
-  if (!valid) {
-    console.warn('表单验证失败:', errors)
-  }
-}
-
-// 处理查询
-const handleQuery = () => {
-  console.log('执行查询:', formData)
-  alert('查询功能已触发！请查看控制台输出。')
-}
-
-// 处理重置
-const handleReset = () => {
-  console.log('重置表单')
-  resetForm()
-}
-
-// 点击外部关闭下拉框
-const handleClickOutside = (event: MouseEvent) => {
-  if (
-    currentLayout.expandMode === 'popup' &&
-    formState.isExpanded &&
-    expandDropdownRef.value &&
-    !expandDropdownRef.value.contains(event.target as Node)
-  ) {
-    toggleExpand()
-  }
-}
-
-// 监听点击外部事件
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-</script>
 
 <style scoped>
 /* 下拉式展开样式 */

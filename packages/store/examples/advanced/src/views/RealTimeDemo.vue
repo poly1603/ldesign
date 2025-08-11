@@ -1,3 +1,98 @@
+<script setup lang="ts">
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { useRealTimeStore } from '../stores/realTimeStore'
+
+const store = useRealTimeStore()
+
+// 响应式数据
+const newMessage = ref('')
+const messageList = ref<HTMLElement>()
+
+// 计算属性
+const connectionStatus = computed(() => store.connectionStatus)
+const messageCount = computed(() => store.messages.length)
+const onlineUsers = computed(() => store.userList.filter(u => u.online).length)
+const messages = computed(() => store.messages)
+const userList = computed(() => store.userList)
+const sharedCounter = computed(() => store.sharedCounter)
+const lastSyncTime = computed(() => store.lastSyncTime)
+const syncStatus = computed(() => store.syncStatus)
+const offlineQueue = computed(() => store.offlineQueue)
+
+const connectionStatusClass = computed(() => {
+  switch (connectionStatus.value) {
+    case 'connected':
+      return 'text-green'
+    case 'connecting':
+      return 'text-yellow'
+    case 'disconnected':
+      return 'text-red'
+    default:
+      return 'text-gray'
+  }
+})
+
+// 方法
+function connect() {
+  store.connect()
+}
+
+function disconnect() {
+  store.disconnect()
+}
+
+function clearMessages() {
+  store.clearMessages()
+}
+
+function sendMessage() {
+  if (newMessage.value.trim()) {
+    store.sendMessage(newMessage.value.trim())
+    newMessage.value = ''
+
+    // 滚动到底部
+    nextTick(() => {
+      if (messageList.value) {
+        messageList.value.scrollTop = messageList.value.scrollHeight
+      }
+    })
+  }
+}
+
+function incrementCounter() {
+  store.incrementSharedCounter()
+}
+
+function decrementCounter() {
+  store.decrementSharedCounter()
+}
+
+function resetCounter() {
+  store.resetSharedCounter()
+}
+
+function processOfflineQueue() {
+  store.processOfflineQueue()
+}
+
+function clearOfflineQueue() {
+  store.clearOfflineQueue()
+}
+
+function formatTime(timestamp: number) {
+  return new Date(timestamp).toLocaleTimeString()
+}
+
+// 生命周期
+onMounted(() => {
+  store.initialize()
+})
+
+onUnmounted(() => {
+  store.cleanup()
+})
+</script>
+
 <template>
   <div class="realtime-demo">
     <div class="page-header">
@@ -15,31 +110,35 @@
           <div class="metric-label">连接状态</div>
         </div>
         <div class="metric">
-          <div class="metric-value">{{ messageCount }}</div>
+          <div class="metric-value">
+            {{ messageCount }}
+          </div>
           <div class="metric-label">消息数量</div>
         </div>
         <div class="metric">
-          <div class="metric-value">{{ onlineUsers }}</div>
+          <div class="metric-value">
+            {{ onlineUsers }}
+          </div>
           <div class="metric-label">在线用户</div>
         </div>
       </div>
 
       <div class="connection-controls">
         <button
-          @click="connect"
           class="btn btn-primary"
           :disabled="connectionStatus === 'connected'"
+          @click="connect"
         >
           连接
         </button>
         <button
-          @click="disconnect"
           class="btn btn-danger"
           :disabled="connectionStatus === 'disconnected'"
+          @click="disconnect"
         >
           断开连接
         </button>
-        <button @click="clearMessages" class="btn btn-secondary">
+        <button class="btn btn-secondary" @click="clearMessages">
           清空消息
         </button>
       </div>
@@ -50,33 +149,37 @@
       <div class="grid grid-2">
         <div class="card">
           <h3>消息列表</h3>
-          <div class="message-list" ref="messageList">
-            <div 
-              v-for="message in messages" 
-              :key="message.id" 
+          <div ref="messageList" class="message-list">
+            <div
+              v-for="message in messages"
+              :key="message.id"
               class="message-item"
               :class="{ 'own-message': message.isOwn }"
             >
               <div class="message-header">
                 <span class="message-user">{{ message.user }}</span>
-                <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+                <span class="message-time">{{
+                  formatTime(message.timestamp)
+                }}</span>
               </div>
-              <div class="message-content">{{ message.content }}</div>
+              <div class="message-content">
+                {{ message.content }}
+              </div>
             </div>
           </div>
-          
+
           <div class="message-input">
-            <input 
-              v-model="newMessage" 
-              @keyup.enter="sendMessage"
+            <input
+              v-model="newMessage"
               placeholder="输入消息..."
               class="form-input"
               :disabled="connectionStatus !== 'connected'"
+              @keyup.enter="sendMessage"
             />
-            <button 
-              @click="sendMessage" 
+            <button
               class="btn btn-primary"
               :disabled="!newMessage.trim() || connectionStatus !== 'connected'"
+              @click="sendMessage"
             >
               发送
             </button>
@@ -87,12 +190,21 @@
           <h3>在线用户</h3>
           <div class="user-list">
             <div v-for="user in userList" :key="user.id" class="user-item">
-              <div class="user-avatar">{{ user.name.charAt(0) }}</div>
-              <div class="user-info">
-                <div class="user-name">{{ user.name }}</div>
-                <div class="user-status">{{ user.status }}</div>
+              <div class="user-avatar">
+                {{ user.name.charAt(0) }}
               </div>
-              <div class="user-indicator" :class="user.online ? 'online' : 'offline'"></div>
+              <div class="user-info">
+                <div class="user-name">
+                  {{ user.name }}
+                </div>
+                <div class="user-status">
+                  {{ user.status }}
+                </div>
+              </div>
+              <div
+                class="user-indicator"
+                :class="user.online ? 'online' : 'offline'"
+              />
             </div>
           </div>
         </div>
@@ -105,15 +217,23 @@
         <div class="card">
           <h3>共享计数器</h3>
           <div class="counter-display">
-            <div class="counter-value">{{ sharedCounter }}</div>
+            <div class="counter-value">
+              {{ sharedCounter }}
+            </div>
             <div class="counter-actions">
-              <button @click="incrementCounter" class="btn btn-primary">+1</button>
-              <button @click="decrementCounter" class="btn btn-secondary">-1</button>
-              <button @click="resetCounter" class="btn btn-danger">重置</button>
+              <button class="btn btn-primary" @click="incrementCounter">
+                +1
+              </button>
+              <button class="btn btn-secondary" @click="decrementCounter">
+                -1
+              </button>
+              <button class="btn btn-danger" @click="resetCounter">重置</button>
             </div>
           </div>
           <div class="sync-info">
-            <p>最后同步: {{ lastSyncTime ? formatTime(lastSyncTime) : '未同步' }}</p>
+            <p>
+              最后同步: {{ lastSyncTime ? formatTime(lastSyncTime) : '未同步' }}
+            </p>
             <p>同步状态: {{ syncStatus }}</p>
           </div>
         </div>
@@ -125,17 +245,23 @@
               暂无离线操作
             </div>
             <div v-for="item in offlineQueue" :key="item.id" class="queue-item">
-              <div class="queue-action">{{ item.action }}</div>
-              <div class="queue-data">{{ JSON.stringify(item.data) }}</div>
-              <div class="queue-time">{{ formatTime(item.timestamp) }}</div>
+              <div class="queue-action">
+                {{ item.action }}
+              </div>
+              <div class="queue-data">
+                {{ JSON.stringify(item.data) }}
+              </div>
+              <div class="queue-time">
+                {{ formatTime(item.timestamp) }}
+              </div>
             </div>
           </div>
-          
+
           <div class="queue-controls">
-            <button @click="processOfflineQueue" class="btn btn-primary">
+            <button class="btn btn-primary" @click="processOfflineQueue">
               处理队列 ({{ offlineQueue.length }})
             </button>
-            <button @click="clearOfflineQueue" class="btn btn-danger">
+            <button class="btn btn-danger" @click="clearOfflineQueue">
               清空队列
             </button>
           </div>
@@ -148,7 +274,8 @@
       <div class="card">
         <h3>WebSocket 集成</h3>
         <div class="code-block">
-          <pre>import { WebSocketStore } from '@ldesign/store'
+          <pre>
+import { WebSocketStore } from '@ldesign/store'
 
 class RealTimeStore extends WebSocketStore {
   @State({ default: [] })
@@ -175,103 +302,13 @@ class RealTimeStore extends WebSocketStore {
   sendMessage(content: string) {
     this.emit('send-message', { content, user: this.currentUser })
   }
-}</pre>
+}</pre
+          >
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
-import { useRealTimeStore } from '../stores/realTimeStore'
-
-const store = useRealTimeStore()
-
-// 响应式数据
-const newMessage = ref('')
-const messageList = ref<HTMLElement>()
-
-// 计算属性
-const connectionStatus = computed(() => store.connectionStatus)
-const messageCount = computed(() => store.messages.length)
-const onlineUsers = computed(() => store.userList.filter(u => u.online).length)
-const messages = computed(() => store.messages)
-const userList = computed(() => store.userList)
-const sharedCounter = computed(() => store.sharedCounter)
-const lastSyncTime = computed(() => store.lastSyncTime)
-const syncStatus = computed(() => store.syncStatus)
-const offlineQueue = computed(() => store.offlineQueue)
-
-const connectionStatusClass = computed(() => {
-  switch (connectionStatus.value) {
-    case 'connected': return 'text-green'
-    case 'connecting': return 'text-yellow'
-    case 'disconnected': return 'text-red'
-    default: return 'text-gray'
-  }
-})
-
-// 方法
-const connect = () => {
-  store.connect()
-}
-
-const disconnect = () => {
-  store.disconnect()
-}
-
-const clearMessages = () => {
-  store.clearMessages()
-}
-
-const sendMessage = () => {
-  if (newMessage.value.trim()) {
-    store.sendMessage(newMessage.value.trim())
-    newMessage.value = ''
-    
-    // 滚动到底部
-    nextTick(() => {
-      if (messageList.value) {
-        messageList.value.scrollTop = messageList.value.scrollHeight
-      }
-    })
-  }
-}
-
-const incrementCounter = () => {
-  store.incrementSharedCounter()
-}
-
-const decrementCounter = () => {
-  store.decrementSharedCounter()
-}
-
-const resetCounter = () => {
-  store.resetSharedCounter()
-}
-
-const processOfflineQueue = () => {
-  store.processOfflineQueue()
-}
-
-const clearOfflineQueue = () => {
-  store.clearOfflineQueue()
-}
-
-const formatTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleTimeString()
-}
-
-// 生命周期
-onMounted(() => {
-  store.initialize()
-})
-
-onUnmounted(() => {
-  store.cleanup()
-})
-</script>
 
 <style scoped>
 .realtime-demo {
@@ -308,10 +345,18 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
-.text-green { color: #38a169; }
-.text-yellow { color: #d69e2e; }
-.text-red { color: #e53e3e; }
-.text-gray { color: #718096; }
+.text-green {
+  color: #38a169;
+}
+.text-yellow {
+  color: #d69e2e;
+}
+.text-red {
+  color: #e53e3e;
+}
+.text-gray {
+  color: #718096;
+}
 
 .message-list {
   height: 300px;

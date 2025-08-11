@@ -3,10 +3,10 @@
  * 这是对核心库useWatermark的简化封装
  */
 
-import type { Ref } from 'vue'
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
-import { createWatermark, destroyWatermark } from '@ldesign/watermark'
 import type { WatermarkConfig, WatermarkInstance } from '@ldesign/watermark'
+import type { Ref } from 'vue'
+import { createWatermark, destroyWatermark } from '@ldesign/watermark'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 
 export interface UseWatermarkReturn {
   instance: Ref<WatermarkInstance | null>

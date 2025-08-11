@@ -1,7 +1,7 @@
 // 原生 JavaScript 支持模块
 
-import { createApp, type App } from 'vue'
-import type { FormOptions, FormData } from './types/form'
+import type { FormData, FormOptions } from './types/form'
+import { type App, createApp } from 'vue'
 import DynamicForm from './components/DynamicForm.vue'
 
 // 简单的事件发射器

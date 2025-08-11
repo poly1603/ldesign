@@ -6,8 +6,8 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, join, dirname } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 
@@ -121,7 +121,9 @@ class DocumentationGenerator {
         this.parseAPIData(apiData)
       }
 
-      console.log(chalk.green(`✅ 解析完成，发现 ${this.apiItems.length} 个 API 项`))
+      console.log(
+        chalk.green(`✅ 解析完成，发现 ${this.apiItems.length} 个 API 项`)
+      )
     } catch (error) {
       console.warn(chalk.yellow('⚠️ TypeScript 解析失败，使用备用方案'))
       await this.parseWithBackupMethod()
@@ -137,7 +139,7 @@ class DocumentationGenerator {
     if (!existsSync(indexPath)) return
 
     const content = readFileSync(indexPath, 'utf-8')
-    
+
     // 解析导出的函数
     const functionRegex = /export\s+(?:async\s+)?function\s+(\w+)\s*\([^)]*\)/g
     let match
@@ -216,7 +218,9 @@ class DocumentationGenerator {
    */
   private extractSignature(item: any): string {
     if (item.signatures?.[0]?.name) {
-      return `${item.signatures[0].name}(${this.extractParameterSignature(item.signatures[0])})`
+      return `${item.signatures[0].name}(${this.extractParameterSignature(
+        item.signatures[0]
+      )})`
     }
     return item.name
   }
@@ -226,7 +230,7 @@ class DocumentationGenerator {
    */
   private extractParameterSignature(signature: any): string {
     if (!signature.parameters) return ''
-    
+
     return signature.parameters
       .map((param: any) => {
         const optional = param.flags?.isOptional ? '?' : ''
@@ -241,7 +245,7 @@ class DocumentationGenerator {
    */
   private extractExamples(item: any): string[] {
     const examples: string[] = []
-    
+
     if (item.comment?.blockTags) {
       for (const tag of item.comment.blockTags) {
         if (tag.tag === '@example') {
@@ -262,7 +266,8 @@ class DocumentationGenerator {
     return signature.parameters.map((param: any) => ({
       name: param.name,
       type: param.type?.name || 'any',
-      description: param.comment?.summary?.map((s: any) => s.text).join('') || '',
+      description:
+        param.comment?.summary?.map((s: any) => s.text).join('') || '',
       optional: param.flags?.isOptional || false,
       defaultValue: param.defaultValue,
     }))
@@ -299,7 +304,9 @@ class DocumentationGenerator {
       writeFileSync(join(apiDir, `${item.name.toLowerCase()}.md`), content)
     }
 
-    console.log(chalk.green(`✅ 生成了 ${this.apiItems.length + 1} 个 API 文档页面`))
+    console.log(
+      chalk.green(`✅ 生成了 ${this.apiItems.length + 1} 个 API 文档页面`)
+    )
   }
 
   /**
@@ -312,21 +319,38 @@ class DocumentationGenerator {
 
 ${this.config.packageName} 提供了以下 API：
 
-${this.apiItems.map(item => `- [${item.name}](./${item.name.toLowerCase()}) - ${item.description}`).join('\n')}
+${this.apiItems
+  .map(
+    item =>
+      `- [${item.name}](./${item.name.toLowerCase()}) - ${item.description}`
+  )
+  .join('\n')}
 
 ## 快速索引
 
 ### 函数
-${this.apiItems.filter(item => item.type === 'function').map(item => `- [${item.name}](./${item.name.toLowerCase()})`).join('\n')}
+${this.apiItems
+  .filter(item => item.type === 'function')
+  .map(item => `- [${item.name}](./${item.name.toLowerCase()})`)
+  .join('\n')}
 
 ### 类
-${this.apiItems.filter(item => item.type === 'class').map(item => `- [${item.name}](./${item.name.toLowerCase()})`).join('\n')}
+${this.apiItems
+  .filter(item => item.type === 'class')
+  .map(item => `- [${item.name}](./${item.name.toLowerCase()})`)
+  .join('\n')}
 
 ### 接口
-${this.apiItems.filter(item => item.type === 'interface').map(item => `- [${item.name}](./${item.name.toLowerCase()})`).join('\n')}
+${this.apiItems
+  .filter(item => item.type === 'interface')
+  .map(item => `- [${item.name}](./${item.name.toLowerCase()})`)
+  .join('\n')}
 
 ### 类型
-${this.apiItems.filter(item => item.type === 'type').map(item => `- [${item.name}](./${item.name.toLowerCase()})`).join('\n')}
+${this.apiItems
+  .filter(item => item.type === 'type')
+  .map(item => `- [${item.name}](./${item.name.toLowerCase()})`)
+  .join('\n')}
 `
   }
 
@@ -351,9 +375,14 @@ ${item.signature}
 
 | 参数名 | 类型 | 必需 | 默认值 | 描述 |
 |--------|------|------|--------|------|
-${item.parameters.map(param => 
-  `| ${param.name} | \`${param.type}\` | ${param.optional ? '否' : '是'} | ${param.defaultValue || '-'} | ${param.description} |`
-).join('\n')}
+${item.parameters
+  .map(
+    param =>
+      `| ${param.name} | \`${param.type}\` | ${
+        param.optional ? '否' : '是'
+      } | ${param.defaultValue || '-'} | ${param.description} |`
+  )
+  .join('\n')}
 `
     }
 
@@ -369,13 +398,17 @@ ${item.parameters.map(param =>
       content += `
 ## 示例
 
-${item.examples.map((example, index) => `
+${item.examples
+  .map(
+    (example, index) => `
 ### 示例 ${index + 1}
 
 \`\`\`typescript
 ${example}
 \`\`\`
-`).join('\n')}
+`
+  )
+  .join('\n')}
 `
     }
 
@@ -454,7 +487,10 @@ const result = ${this.apiItems[0]?.name || 'main'}()
 ## 复杂配置
 
 \`\`\`typescript
-import { ${this.apiItems.slice(0, 3).map(item => item.name).join(', ')} } from '${this.config.packageName}'
+import { ${this.apiItems
+      .slice(0, 3)
+      .map(item => item.name)
+      .join(', ')} } from '${this.config.packageName}'
 
 // 高级配置示例
 const config = {
@@ -462,7 +498,10 @@ const config = {
 }
 
 // 使用配置
-${this.apiItems.slice(0, 3).map(item => `const ${item.name.toLowerCase()}Result = ${item.name}(config)`).join('\n')}
+${this.apiItems
+  .slice(0, 3)
+  .map(item => `const ${item.name.toLowerCase()}Result = ${item.name}(config)`)
+  .join('\n')}
 \`\`\`
 
 ## 最佳实践
@@ -610,7 +649,12 @@ pre {
 
 ## API 列表
 
-${this.apiItems.map(item => `- [${item.name}](./api/${item.name.toLowerCase()}) - ${item.description}`).join('\n')}
+${this.apiItems
+  .map(
+    item =>
+      `- [${item.name}](./api/${item.name.toLowerCase()}) - ${item.description}`
+  )
+  .join('\n')}
 `
 
     writeFileSync(join(this.config.outputDir, 'index.md'), navContent)
@@ -644,7 +688,7 @@ async function main() {
   }
 
   const generator = new DocumentationGenerator(config)
-  
+
   try {
     await generator.generateDocs()
     console.log(chalk.green('\n🎉 文档生成完成!'))

@@ -4,14 +4,14 @@
  * 最终检查脚本 - 确保项目完全没有错误
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 
 console.log('🎯 最终检查 - 确保项目完全没有错误\n')
 
 let totalErrors = 0
-let totalWarnings = 0
+const totalWarnings = 0
 
 // 运行命令并捕获输出
 function runCommand(command, description, options = {}) {
@@ -138,7 +138,7 @@ async function main() {
     process.exit(1)
   }
 
-  console.log('\n' + '='.repeat(60))
+  console.log(`\n${'='.repeat(60)}`)
   console.log('🔧 运行各项检查...')
   console.log('='.repeat(60))
 
@@ -228,7 +228,7 @@ async function main() {
   })
 
   // 最终报告
-  console.log('\n' + '='.repeat(60))
+  console.log(`\n${'='.repeat(60)}`)
   console.log('📊 最终检查报告')
   console.log('='.repeat(60))
 

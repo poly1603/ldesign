@@ -7,7 +7,7 @@
 
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import { DocumentationGenerator } from './documentation-generator.js'
@@ -138,7 +138,7 @@ class BatchDocumentationGenerator {
       // 生成包列表文档
       const packageListContent = this.generatePackageListDoc()
       const docsDir = join(rootDir, 'docs')
-      
+
       if (!existsSync(docsDir)) {
         execSync(`mkdir -p ${docsDir}`)
       }
@@ -161,8 +161,12 @@ class BatchDocumentationGenerator {
    * 生成包列表文档
    */
   private generatePackageListDoc(): string {
-    const successfulPackages = this.packages.filter(pkg => this.results.get(pkg.name))
-    const failedPackages = this.packages.filter(pkg => !this.results.get(pkg.name))
+    const successfulPackages = this.packages.filter(pkg =>
+      this.results.get(pkg.name)
+    )
+    const failedPackages = this.packages.filter(
+      pkg => !this.results.get(pkg.name)
+    )
 
     return `# LDesign 包列表
 
@@ -172,21 +176,22 @@ LDesign 是一个模块化的前端工具库，包含以下包：
 
 ## 可用包
 
-${successfulPackages.map(pkg => {
-  const packageJsonPath = join(pkg.path, 'package.json')
-  let description = ''
-  let version = ''
-  
-  try {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-    description = packageJson.description || '暂无描述'
-    version = packageJson.version || '0.0.0'
-  } catch {
-    description = '暂无描述'
-    version = '0.0.0'
-  }
+${successfulPackages
+  .map(pkg => {
+    const packageJsonPath = join(pkg.path, 'package.json')
+    let description = ''
+    let version = ''
 
-  return `### [@ldesign/${pkg.name}](./packages/${pkg.name}/) v${version}
+    try {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+      description = packageJson.description || '暂无描述'
+      version = packageJson.version || '0.0.0'
+    } catch {
+      description = '暂无描述'
+      version = '0.0.0'
+    }
+
+    return `### [@ldesign/${pkg.name}](./packages/${pkg.name}/) v${version}
 
 ${description}
 
@@ -194,7 +199,8 @@ ${description}
 - [示例代码](./packages/${pkg.name}/docs/examples/)
 - [在线演示](./packages/${pkg.name}/docs/playground/)
 `
-}).join('\n')}
+  })
+  .join('\n')}
 
 ## 安装
 
@@ -229,19 +235,25 @@ console.log(color) // { r: 255, g: 0, b: 0 }
 
 | 包名 | 状态 | 文档 | 测试覆盖率 |
 |------|------|------|------------|
-${this.packages.map(pkg => {
-  const status = this.results.get(pkg.name) ? '✅ 稳定' : '🚧 开发中'
-  const docs = pkg.hasExistingDocs ? '✅ 完整' : '📝 进行中'
-  return `| @ldesign/${pkg.name} | ${status} | ${docs} | - |`
-}).join('\n')}
+${this.packages
+  .map(pkg => {
+    const status = this.results.get(pkg.name) ? '✅ 稳定' : '🚧 开发中'
+    const docs = pkg.hasExistingDocs ? '✅ 完整' : '📝 进行中'
+    return `| @ldesign/${pkg.name} | ${status} | ${docs} | - |`
+  })
+  .join('\n')}
 
-${failedPackages.length > 0 ? `
+${
+  failedPackages.length > 0
+    ? `
 ## 待完善包
 
 以下包的文档生成失败，需要进一步完善：
 
 ${failedPackages.map(pkg => `- @ldesign/${pkg.name}`).join('\n')}
-` : ''}
+`
+    : ''
+}
 
 ## 贡献指南
 
@@ -261,12 +273,17 @@ MIT License
 
 ## 按包分类
 
-${this.packages.filter(pkg => this.results.get(pkg.name)).map(pkg => `
+${this.packages
+  .filter(pkg => this.results.get(pkg.name))
+  .map(
+    pkg => `
 ### @ldesign/${pkg.name}
 
 - [完整 API 文档](./packages/${pkg.name}/docs/api/)
 - [示例代码](./packages/${pkg.name}/docs/examples/)
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ## 按功能分类
 
@@ -319,13 +336,17 @@ ${this.packages.filter(pkg => this.results.get(pkg.name)).map(pkg => `
     console.log(chalk.blue('='.repeat(50)))
 
     const totalPackages = this.packages.length
-    const successfulPackages = Array.from(this.results.values()).filter(Boolean).length
+    const successfulPackages = Array.from(this.results.values()).filter(
+      Boolean
+    ).length
     const failedPackages = totalPackages - successfulPackages
 
     console.log(`总包数: ${totalPackages}`)
     console.log(`成功: ${successfulPackages}`)
     console.log(`失败: ${failedPackages}`)
-    console.log(`成功率: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%`)
+    console.log(
+      `成功率: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%`
+    )
 
     if (failedPackages > 0) {
       console.log(chalk.red('\n❌ 失败的包:'))
@@ -341,7 +362,7 @@ ${this.packages.filter(pkg => this.results.get(pkg.name)).map(pkg => `
 // CLI 处理
 async function main() {
   const generator = new BatchDocumentationGenerator()
-  
+
   try {
     await generator.generateAllDocs()
     process.exit(0)

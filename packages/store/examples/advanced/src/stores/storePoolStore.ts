@@ -3,7 +3,7 @@ import {
   BaseStore,
   PooledStore,
   State,
-  useStorePool
+  useStorePool,
 } from '@ldesign/store'
 
 // 测试用的池化Store
@@ -66,7 +66,7 @@ export class StorePoolDemoStore extends BaseStore {
   private pool = useStorePool({
     maxSize: 20,
     maxIdleTime: 600000, // 10分钟
-    enableGC: true
+    enableGC: true,
   })
 
   constructor() {
@@ -132,7 +132,9 @@ export class StorePoolDemoStore extends BaseStore {
   }
 
   @Action()
-  async testTraditionalCreation(count: number): Promise<{ time: number, memory: number }> {
+  async testTraditionalCreation(
+    count: number
+  ): Promise<{ time: number; memory: number }> {
     const startTime = performance.now()
     const startMemory = this.getMemoryUsage()
 
@@ -155,12 +157,14 @@ export class StorePoolDemoStore extends BaseStore {
 
     return {
       time: endTime - startTime,
-      memory: Math.max(0, endMemory - startMemory)
+      memory: Math.max(0, endMemory - startMemory),
     }
   }
 
   @Action()
-  async testPooledCreation(count: number): Promise<{ time: number, memory: number }> {
+  async testPooledCreation(
+    count: number
+  ): Promise<{ time: number; memory: number }> {
     const startTime = performance.now()
     const startMemory = this.getMemoryUsage()
 
@@ -186,7 +190,7 @@ export class StorePoolDemoStore extends BaseStore {
 
     return {
       time: endTime - startTime,
-      memory: Math.max(0, endMemory - startMemory)
+      memory: Math.max(0, endMemory - startMemory),
     }
   }
 
@@ -207,6 +211,6 @@ export class StorePoolDemoStore extends BaseStore {
 }
 
 // 导出Hook式用法
-export const useStorePoolDemo = () => {
+export function useStorePoolDemo() {
   return new StorePoolDemoStore()
 }

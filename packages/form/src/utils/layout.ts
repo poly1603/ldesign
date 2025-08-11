@@ -1,11 +1,7 @@
 // 布局工具函数
 
-import type {
-  LayoutConfig,
-  FieldLayout,
-  ResponsiveConfig,
-} from '../types/layout'
 import type { FormItemConfig } from '../types/field'
+import type { FieldLayout, LayoutConfig } from '../types/layout'
 
 /**
  * 断点定义
@@ -47,7 +43,7 @@ export function parseSpan(
   if (typeof span === 'string') {
     // 处理百分比
     if (span.endsWith('%')) {
-      const percentage = parseFloat(span) / 100
+      const percentage = Number.parseFloat(span) / 100
       return Math.max(1, Math.round(totalColumns * percentage))
     }
 
@@ -60,7 +56,7 @@ export function parseSpan(
     }
 
     // 处理数字字符串
-    const numSpan = parseInt(span, 10)
+    const numSpan = Number.parseInt(span, 10)
     if (!isNaN(numSpan)) {
       return Math.min(Math.max(1, numSpan), totalColumns)
     }

@@ -1,18 +1,3 @@
-<template>
-  <div class="form-time-picker">
-    <FormDatePicker
-      v-bind="$attrs"
-      :model-value="modelValue"
-      type="time"
-      @update:model-value="$emit('update:modelValue', $event)"
-      @change="$emit('change', $event)"
-      @blur="$emit('blur', $event)"
-      @focus="$emit('focus', $event)"
-      @clear="$emit('clear')"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import FormDatePicker from './FormDatePicker.vue'
 
@@ -30,6 +15,21 @@ defineEmits<{
   clear: []
 }>()
 </script>
+
+<template>
+  <div class="form-time-picker">
+    <FormDatePicker
+      v-bind="$attrs"
+      :model-value="modelValue"
+      type="time"
+      @update:model-value="$emit('update:modelValue', $event)"
+      @change="$emit('change', $event)"
+      @blur="$emit('blur', $event)"
+      @focus="$emit('focus', $event)"
+      @clear="$emit('clear')"
+    />
+  </div>
+</template>
 
 <style scoped>
 .form-time-picker {

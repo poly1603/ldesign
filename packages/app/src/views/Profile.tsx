@@ -1,5 +1,5 @@
-import { defineComponent, ref } from 'vue'
 import { RouterLink } from '@ldesign/router'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'Profile',
@@ -192,7 +192,8 @@ export default defineComponent({
           </div>
         </div>
 
-        <style>{`
+        <style>
+          {`
           .profile {
             padding: 2rem;
             max-width: 1000px;
@@ -358,7 +359,8 @@ export default defineComponent({
             padding-top: 2rem;
             border-top: 1px solid #e0e0e0;
           }
-        `}</style>
+        `}
+        </style>
       </div>
     )
   },

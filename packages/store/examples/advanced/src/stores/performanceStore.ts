@@ -5,13 +5,13 @@ import {
   CachedAction,
   CachedGetter,
   DebouncedAction,
+  getOptimizationSuggestions,
   Getter,
   MonitorAction,
   MonitorGetter,
   State,
   ThrottledAction,
-  getOptimizationSuggestions,
-  usePerformanceMonitor
+  usePerformanceMonitor,
 } from '@ldesign/store'
 
 interface UserData {
@@ -109,7 +109,7 @@ export class PerformanceStore extends BaseStore {
     const userData: UserData = {
       id: 1,
       name: '张三',
-      email: 'zhangsan@example.com'
+      email: 'zhangsan@example.com',
     }
 
     this.userData = userData
@@ -184,6 +184,6 @@ export class PerformanceStore extends BaseStore {
 }
 
 // 导出Hook式用法
-export const usePerformanceStore = () => {
+export function usePerformanceStore() {
   return new PerformanceStore()
 }

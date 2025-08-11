@@ -3,11 +3,16 @@
  * 确保所有 composables 在 Vue 环境中正常工作
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import {
+  useBattery,
+  useDevice,
+  useGeolocation,
+  useNetwork,
+} from '@ldesign/device/vue'
 import { mount } from '@vue/test-utils'
-import { useDevice, useNetwork, useBattery, useGeolocation } from '@ldesign/device/vue'
+import { describe, expect, it } from 'vitest'
 
-describe('Vue Composables', () => {
+describe('vue Composables', () => {
   describe('useDevice', () => {
     it('应该返回正确的设备信息', () => {
       const wrapper = mount({
@@ -15,11 +20,11 @@ describe('Vue Composables', () => {
           const deviceResult = useDevice()
           return { deviceResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { deviceResult } = wrapper.vm
-      
+
       // 检查返回的属性
       expect(deviceResult).toHaveProperty('deviceType')
       expect(deviceResult).toHaveProperty('orientation')
@@ -29,7 +34,7 @@ describe('Vue Composables', () => {
       expect(deviceResult).toHaveProperty('isDesktop')
       expect(deviceResult).toHaveProperty('isTouchDevice')
       expect(deviceResult).toHaveProperty('refresh')
-      
+
       // 检查函数类型
       expect(typeof deviceResult.refresh).toBe('function')
     })
@@ -42,11 +47,11 @@ describe('Vue Composables', () => {
           const networkResult = useNetwork()
           return { networkResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { networkResult } = wrapper.vm
-      
+
       // 检查返回的属性
       expect(networkResult).toHaveProperty('networkInfo')
       expect(networkResult).toHaveProperty('isOnline')
@@ -54,7 +59,7 @@ describe('Vue Composables', () => {
       expect(networkResult).toHaveProperty('isLoaded')
       expect(networkResult).toHaveProperty('loadModule')
       expect(networkResult).toHaveProperty('unloadModule')
-      
+
       // 检查函数类型
       expect(typeof networkResult.loadModule).toBe('function')
       expect(typeof networkResult.unloadModule).toBe('function')
@@ -66,11 +71,11 @@ describe('Vue Composables', () => {
           const networkResult = useNetwork()
           return { networkResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { networkResult } = wrapper.vm
-      
+
       // 测试 loadModule 调用
       await expect(networkResult.loadModule()).resolves.not.toThrow()
       expect(networkResult.isLoaded.value).toBe(true)
@@ -84,11 +89,11 @@ describe('Vue Composables', () => {
           const batteryResult = useBattery()
           return { batteryResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { batteryResult } = wrapper.vm
-      
+
       // 检查返回的属性
       expect(batteryResult).toHaveProperty('batteryInfo')
       expect(batteryResult).toHaveProperty('batteryLevel')
@@ -97,7 +102,7 @@ describe('Vue Composables', () => {
       expect(batteryResult).toHaveProperty('isLoaded')
       expect(batteryResult).toHaveProperty('loadModule')
       expect(batteryResult).toHaveProperty('unloadModule')
-      
+
       // 检查函数类型
       expect(typeof batteryResult.loadModule).toBe('function')
       expect(typeof batteryResult.unloadModule).toBe('function')
@@ -109,11 +114,11 @@ describe('Vue Composables', () => {
           const batteryResult = useBattery()
           return { batteryResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { batteryResult } = wrapper.vm
-      
+
       // 测试 loadModule 调用
       await expect(batteryResult.loadModule()).resolves.not.toThrow()
       expect(batteryResult.isLoaded.value).toBe(true)
@@ -127,11 +132,11 @@ describe('Vue Composables', () => {
           const geoResult = useGeolocation()
           return { geoResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { geoResult } = wrapper.vm
-      
+
       // 检查返回的属性
       expect(geoResult).toHaveProperty('position')
       expect(geoResult).toHaveProperty('latitude')
@@ -146,7 +151,7 @@ describe('Vue Composables', () => {
       expect(geoResult).toHaveProperty('getCurrentPosition')
       expect(geoResult).toHaveProperty('startWatching')
       expect(geoResult).toHaveProperty('stopWatching')
-      
+
       // 检查函数类型
       expect(typeof geoResult.loadModule).toBe('function')
       expect(typeof geoResult.unloadModule).toBe('function')
@@ -161,11 +166,11 @@ describe('Vue Composables', () => {
           const geoResult = useGeolocation()
           return { geoResult }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { geoResult } = wrapper.vm
-      
+
       // 测试 loadModule 调用
       await expect(geoResult.loadModule()).resolves.not.toThrow()
       expect(geoResult.isLoaded.value).toBe(true)
@@ -180,19 +185,19 @@ describe('Vue Composables', () => {
           const networkResult = useNetwork()
           const batteryResult = useBattery()
           const geoResult = useGeolocation()
-          
+
           return {
             deviceResult,
             networkResult,
             batteryResult,
-            geoResult
+            geoResult,
           }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { networkResult, batteryResult, geoResult } = wrapper.vm
-      
+
       // 检查所有 loadModule 都是函数
       expect(typeof networkResult.loadModule).toBe('function')
       expect(typeof batteryResult.loadModule).toBe('function')
@@ -205,18 +210,18 @@ describe('Vue Composables', () => {
           const networkResult = useNetwork()
           const batteryResult = useBattery()
           const geoResult = useGeolocation()
-          
+
           return {
             networkResult,
             batteryResult,
-            geoResult
+            geoResult,
           }
         },
-        template: '<div></div>'
+        template: '<div></div>',
       })
 
       const { networkResult, batteryResult, geoResult } = wrapper.vm
-      
+
       // 检查所有 unloadModule 都是函数
       expect(typeof networkResult.unloadModule).toBe('function')
       expect(typeof batteryResult.unloadModule).toBe('function')

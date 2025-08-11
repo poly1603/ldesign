@@ -314,7 +314,7 @@ export function batch<T, R>(
   batchSize: number = 10,
   delay: number = 100
 ): (item: T) => Promise<R> {
-  let batch: Array<{
+  const batch: Array<{
     item: T
     resolve: (value: R) => void
     reject: (error: any) => void

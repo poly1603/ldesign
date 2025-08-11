@@ -1,6 +1,6 @@
+import type { DecryptResult, EncryptResult, HashResult } from '../../types'
 import { ref } from 'vue'
-import { encrypt, decrypt, hash, hmac } from '../../core'
-import type { EncryptResult, DecryptResult, HashResult } from '../../types'
+import { decrypt, encrypt, hash } from '../../core'
 
 /**
  * 加密解密组合式函数
@@ -27,7 +27,10 @@ export function useCrypto() {
   }
 
   // AES加密
-  const encryptAES = async (data: string, key: string): Promise<EncryptResult | null> => {
+  const encryptAES = async (
+    data: string,
+    key: string
+  ): Promise<EncryptResult | null> => {
     try {
       isEncrypting.value = true
       lastError.value = null
@@ -43,7 +46,10 @@ export function useCrypto() {
   }
 
   // AES解密
-  const decryptAES = async (encryptedData: string, key: string): Promise<DecryptResult | null> => {
+  const decryptAES = async (
+    encryptedData: string,
+    key: string
+  ): Promise<DecryptResult | null> => {
     try {
       isDecrypting.value = true
       lastError.value = null
@@ -97,13 +103,13 @@ export function useCrypto() {
     isHashing,
     lastError,
     lastResult,
-    
+
     // 方法
     encryptAES,
     decryptAES,
     sha256,
     md5,
     clearError,
-    reset
+    reset,
   }
 }

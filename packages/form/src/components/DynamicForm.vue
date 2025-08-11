@@ -1,163 +1,23 @@
-<template>
-  <div class="dynamic-form" :class="formClasses" :style="formStyles">
-    <form @submit.prevent="handleSubmit">
-      <!-- 表单标题 -->
-      <div v-if="options.title" class="dynamic-form__title">
-        {{ options.title }}
-      </div>
-
-      <!-- 表单描述 -->
-      <div v-if="options.description" class="dynamic-form__description">
-        {{ options.description }}
-      </div>
-
-      <!-- 表单字段 -->
-      <div class="dynamic-form__fields" :style="fieldsStyle">
-        <div
-          v-for="(field, index) in visibleFields"
-          :key="field.name"
-          class="dynamic-form__field"
-          :class="getFieldClasses(field)"
-          :style="getFieldStyle(field, index)"
-        >
-          <component
-            :is="getFieldComponent(field)"
-            v-model="formData[field.name]"
-            v-bind="getFieldProps(field)"
-            :label="field.title"
-            :required="field.required"
-            :disabled="field.disabled || options.disabled"
-            :readonly="field.readonly || options.readonly"
-            :placeholder="field.placeholder"
-            :error-message="getFieldError(field.name)"
-            :show-error="!!getFieldError(field.name)"
-            :label-position="labelPosition"
-            :label-width="getLabelWidth(field, index)"
-            :label-align="labelAlign"
-            :label-gap="labelGap"
-            :show-label-colon="showLabelColon"
-            @change="handleFieldChange(field.name, $event)"
-            @focus="handleFieldFocus(field.name, $event)"
-            @blur="handleFieldBlur(field.name, $event)"
-          />
-        </div>
-
-        <!-- 按钮组跟随最后一行时显示 -->
-        <div
-          v-if="shouldShowActionsInLastRow"
-          class="dynamic-form__field dynamic-form__actions-field"
-          :style="getActionsFieldStyle()"
-        >
-          <div class="dynamic-form__actions">
-            <button
-              v-if="showQueryButton"
-              type="button"
-              class="dynamic-form__button dynamic-form__button--primary"
-              @click="handleQuery"
-            >
-              查询
-            </button>
-            <button
-              v-if="showResetButton"
-              type="button"
-              class="dynamic-form__button"
-              @click="handleReset"
-            >
-              重置
-            </button>
-            <button
-              v-if="needsExpandButton"
-              type="button"
-              class="dynamic-form__button dynamic-form__button--expand"
-              @click="handleToggleExpand"
-            >
-              {{ advancedLayout.isExpanded.value ? collapseText : expandText }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 按钮组单独占一行时显示 -->
-      <div v-if="shouldShowActionsSeparately" class="dynamic-form__actions-row">
-        <div class="dynamic-form__actions">
-          <button
-            v-if="showQueryButton"
-            type="button"
-            class="dynamic-form__button dynamic-form__button--primary"
-            @click="handleQuery"
-          >
-            查询
-          </button>
-          <button
-            v-if="showResetButton"
-            type="button"
-            class="dynamic-form__button"
-            @click="handleReset"
-          >
-            重置
-          </button>
-          <button
-            v-if="needsExpandButton"
-            type="button"
-            class="dynamic-form__button dynamic-form__button--expand"
-            @click="handleToggleExpand"
-          >
-            {{ advancedLayout.isExpanded.value ? collapseText : expandText }}
-          </button>
-        </div>
-      </div>
-
-      <!-- 传统提交按钮（当没有设置默认行数时显示） -->
-      <div
-        v-if="showTraditionalButtons"
-        class="dynamic-form__buttons"
-        :class="buttonClasses"
-      >
-        <slot
-          name="buttons"
-          :submit="handleSubmit"
-          :reset="handleReset"
-          :validate="handleValidate"
-        >
-          <button
-            type="submit"
-            class="dynamic-form__button dynamic-form__button--primary"
-          >
-            提交
-          </button>
-          <button
-            type="button"
-            class="dynamic-form__button"
-            @click="handleReset"
-          >
-            重置
-          </button>
-        </slot>
-      </div>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, provide } from 'vue'
-import type { FormOptions, FormData } from '../types/form'
 import type { FormItemConfig } from '../types/field'
+import type { FormData, FormOptions } from '../types/form'
 import type { LayoutResult } from '../types/layout'
-import { FormStateManager } from '../core/FormStateManager'
-import { ValidationEngine } from '../core/ValidationEngine'
-import { LayoutCalculator } from '../core/LayoutCalculator'
-import { ConditionalRenderer } from '../core/ConditionalRenderer'
+import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useAdvancedLayout } from '../composables/useAdvancedLayout'
-import FormInput from './FormInput.vue'
-import FormTextarea from './FormTextarea.vue'
-import FormSelect from './FormSelect.vue'
-import FormRadio from './FormRadio.vue'
+import { ConditionalRenderer } from '../core/ConditionalRenderer'
+import { FormStateManager } from '../core/FormStateManager'
+import { LayoutCalculator } from '../core/LayoutCalculator'
+import { ValidationEngine } from '../core/ValidationEngine'
 import FormCheckbox from './FormCheckbox.vue'
 import FormDatePicker from './FormDatePicker.vue'
-import FormTimePicker from './FormTimePicker.vue'
-import FormSwitch from './FormSwitch.vue'
-import FormSlider from './FormSlider.vue'
+import FormInput from './FormInput.vue'
+import FormRadio from './FormRadio.vue'
 import FormRate from './FormRate.vue'
+import FormSelect from './FormSelect.vue'
+import FormSlider from './FormSlider.vue'
+import FormSwitch from './FormSwitch.vue'
+import FormTextarea from './FormTextarea.vue'
+import FormTimePicker from './FormTimePicker.vue'
 
 interface Props {
   modelValue?: FormData
@@ -319,7 +179,7 @@ const buttonClasses = computed(() => [
 ])
 
 // 方法
-const getFieldComponent = (field: FormItemConfig) => {
+function getFieldComponent(field: FormItemConfig) {
   const componentMap: Record<string, any> = {
     FormInput,
     FormTextarea,
@@ -340,7 +200,7 @@ const getFieldComponent = (field: FormItemConfig) => {
   return field.component || FormInput
 }
 
-const getFieldProps = (field: FormItemConfig) => {
+function getFieldProps(field: FormItemConfig) {
   return {
     ...field.props,
     name: field.name,
@@ -348,13 +208,15 @@ const getFieldProps = (field: FormItemConfig) => {
   }
 }
 
-const getFieldClasses = (field: FormItemConfig) => [
-  'dynamic-form__field',
-  `dynamic-form__field--${field.name}`,
-  field.className,
-]
+function getFieldClasses(field: FormItemConfig) {
+  return [
+    'dynamic-form__field',
+    `dynamic-form__field--${field.name}`,
+    field.className,
+  ]
+}
 
-const getFieldStyle = (field: FormItemConfig, index: number) => {
+function getFieldStyle(field: FormItemConfig, index: number) {
   const styles: Record<string, any> = {}
 
   if (field.span) {
@@ -372,7 +234,7 @@ const getFieldStyle = (field: FormItemConfig, index: number) => {
   return styles
 }
 
-const getExpandButtonStyle = () => {
+function getExpandButtonStyle() {
   if (!layout.value) return {}
 
   const buttonSpan = props.options.layout?.button?.span || 1
@@ -381,18 +243,18 @@ const getExpandButtonStyle = () => {
   }
 }
 
-const getFieldError = (fieldName: string): string => {
+function getFieldError(fieldName: string): string {
   const errors = formStateManager.getFieldErrors(fieldName)
   return errors.length > 0 ? errors[0] : ''
 }
 
 // 获取标签宽度
-const getLabelWidth = (field: FormItemConfig, index: number) => {
+function getLabelWidth(field: FormItemConfig, index: number) {
   return advancedLayout.getLabelWidth(field, index)
 }
 
 // 获取按钮组字段的样式
-const getActionsFieldStyle = () => {
+function getActionsFieldStyle() {
   const columns = props.options.layout?.columns || 2
   const visibleFieldsCount = visibleFields.value.length
   const lastRowFieldsCount = visibleFieldsCount % columns
@@ -417,7 +279,7 @@ const getActionsFieldStyle = () => {
   }
 }
 
-const handleFieldChange = (fieldName: string, value: any) => {
+function handleFieldChange(fieldName: string, value: any) {
   formStateManager.setFieldValue(fieldName, value)
   const newData = formStateManager.getFormData()
   emit('update:modelValue', newData)
@@ -430,12 +292,12 @@ const handleFieldChange = (fieldName: string, value: any) => {
   }
 }
 
-const handleFieldFocus = (fieldName: string, event: FocusEvent) => {
+function handleFieldFocus(fieldName: string, event: FocusEvent) {
   formStateManager.touchField(fieldName)
   emit('fieldFocus', fieldName, event)
 }
 
-const handleFieldBlur = (fieldName: string, event: FocusEvent) => {
+function handleFieldBlur(fieldName: string, event: FocusEvent) {
   emit('fieldBlur', fieldName, event)
 
   // 触发验证
@@ -444,7 +306,7 @@ const handleFieldBlur = (fieldName: string, event: FocusEvent) => {
   }
 }
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   const isValid = await handleValidate()
   if (isValid) {
     const data = formStateManager.getFormData()
@@ -452,14 +314,14 @@ const handleSubmit = async () => {
   }
 }
 
-const handleReset = () => {
+function handleReset() {
   formStateManager.reset()
   const data = formStateManager.getFormData()
   emit('update:modelValue', data)
   emit('reset', data)
 }
 
-const handleQuery = async () => {
+async function handleQuery() {
   // 查询功能同时具有提交表单的作用
   const isValid = await handleValidate()
   if (isValid) {
@@ -468,7 +330,7 @@ const handleQuery = async () => {
   }
 }
 
-const handleValidate = async (): Promise<boolean> => {
+async function handleValidate(): Promise<boolean> {
   const data = formStateManager.getFormData()
   const results = await validationEngine.validateForm(data)
 
@@ -486,11 +348,11 @@ const handleValidate = async (): Promise<boolean> => {
   return isValid
 }
 
-const handleToggleExpand = () => {
+function handleToggleExpand() {
   advancedLayout.toggleExpand()
 }
 
-const validateField = async (fieldName: string) => {
+async function validateField(fieldName: string) {
   const value = formStateManager.getFieldValue(fieldName)
   const data = formStateManager.getFormData()
   const field = props.options.fields.find(f => f.name === fieldName)
@@ -506,7 +368,7 @@ const validateField = async (fieldName: string) => {
   }
 }
 
-const calculateLayout = () => {
+function calculateLayout() {
   if (containerRef.value) {
     const containerWidth = containerRef.value.offsetWidth
     layout.value = layoutCalculator.calculateLayout(
@@ -561,6 +423,146 @@ defineExpose({
     formStateManager.setFieldValue(name, value),
 })
 </script>
+
+<template>
+  <div class="dynamic-form" :class="formClasses" :style="formStyles">
+    <form @submit.prevent="handleSubmit">
+      <!-- 表单标题 -->
+      <div v-if="options.title" class="dynamic-form__title">
+        {{ options.title }}
+      </div>
+
+      <!-- 表单描述 -->
+      <div v-if="options.description" class="dynamic-form__description">
+        {{ options.description }}
+      </div>
+
+      <!-- 表单字段 -->
+      <div class="dynamic-form__fields" :style="fieldsStyle">
+        <div
+          v-for="(field, index) in visibleFields"
+          :key="field.name"
+          class="dynamic-form__field"
+          :class="getFieldClasses(field)"
+          :style="getFieldStyle(field, index)"
+        >
+          <component
+            :is="getFieldComponent(field)"
+            v-model="formData[field.name]"
+            v-bind="getFieldProps(field)"
+            :label="field.title"
+            :required="field.required"
+            :disabled="field.disabled || options.disabled"
+            :readonly="field.readonly || options.readonly"
+            :placeholder="field.placeholder"
+            :error-message="getFieldError(field.name)"
+            :show-error="!!getFieldError(field.name)"
+            :label-position="labelPosition"
+            :label-width="getLabelWidth(field, index)"
+            :label-align="labelAlign"
+            :label-gap="labelGap"
+            :show-label-colon="showLabelColon"
+            @change="handleFieldChange(field.name, $event)"
+            @focus="handleFieldFocus(field.name, $event)"
+            @blur="handleFieldBlur(field.name, $event)"
+          />
+        </div>
+
+        <!-- 按钮组跟随最后一行时显示 -->
+        <div
+          v-if="shouldShowActionsInLastRow"
+          class="dynamic-form__field dynamic-form__actions-field"
+          :style="getActionsFieldStyle()"
+        >
+          <div class="dynamic-form__actions">
+            <button
+              v-if="showQueryButton"
+              type="button"
+              class="dynamic-form__button dynamic-form__button--primary"
+              @click="handleQuery"
+            >
+              查询
+            </button>
+            <button
+              v-if="showResetButton"
+              type="button"
+              class="dynamic-form__button"
+              @click="handleReset"
+            >
+              重置
+            </button>
+            <button
+              v-if="needsExpandButton"
+              type="button"
+              class="dynamic-form__button dynamic-form__button--expand"
+              @click="handleToggleExpand"
+            >
+              {{ advancedLayout.isExpanded.value ? collapseText : expandText }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 按钮组单独占一行时显示 -->
+      <div v-if="shouldShowActionsSeparately" class="dynamic-form__actions-row">
+        <div class="dynamic-form__actions">
+          <button
+            v-if="showQueryButton"
+            type="button"
+            class="dynamic-form__button dynamic-form__button--primary"
+            @click="handleQuery"
+          >
+            查询
+          </button>
+          <button
+            v-if="showResetButton"
+            type="button"
+            class="dynamic-form__button"
+            @click="handleReset"
+          >
+            重置
+          </button>
+          <button
+            v-if="needsExpandButton"
+            type="button"
+            class="dynamic-form__button dynamic-form__button--expand"
+            @click="handleToggleExpand"
+          >
+            {{ advancedLayout.isExpanded.value ? collapseText : expandText }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 传统提交按钮（当没有设置默认行数时显示） -->
+      <div
+        v-if="showTraditionalButtons"
+        class="dynamic-form__buttons"
+        :class="buttonClasses"
+      >
+        <slot
+          name="buttons"
+          :submit="handleSubmit"
+          :reset="handleReset"
+          :validate="handleValidate"
+        >
+          <button
+            type="submit"
+            class="dynamic-form__button dynamic-form__button--primary"
+          >
+            提交
+          </button>
+          <button
+            type="button"
+            class="dynamic-form__button"
+            @click="handleReset"
+          >
+            重置
+          </button>
+        </slot>
+      </div>
+    </form>
+  </div>
+</template>
 
 <style scoped>
 .dynamic-form {

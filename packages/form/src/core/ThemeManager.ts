@@ -1,12 +1,12 @@
 // 主题管理器
 
 import type {
-  ThemeConfig,
   ThemeManager as IThemeManager,
+  ThemeConfig,
   ThemeType,
 } from '../types/theme'
-import { SimpleEventEmitter } from '../utils/event'
 import { deepClone, deepMerge } from '../utils/common'
+import { SimpleEventEmitter } from '../utils/event'
 
 /**
  * 默认主题配置

@@ -1,6 +1,11 @@
 <script setup>
-import { useNetwork, useDevice, useBattery, useGeolocation } from '@ldesign/device/vue'
-import { ref, onMounted } from 'vue'
+import {
+  useBattery,
+  useDevice,
+  useGeolocation,
+  useNetwork,
+} from '@ldesign/device/vue'
+import { onMounted, ref } from 'vue'
 
 const debugInfo = ref([])
 
@@ -24,7 +29,9 @@ onMounted(async () => {
   // 测试 useNetwork
   try {
     const networkResult = useNetwork()
-    addDebugInfo(`useNetwork 成功: ${JSON.stringify(Object.keys(networkResult))}`)
+    addDebugInfo(
+      `useNetwork 成功: ${JSON.stringify(Object.keys(networkResult))}`
+    )
     addDebugInfo(`loadModule 类型: ${typeof networkResult.loadModule}`)
 
     if (typeof networkResult.loadModule === 'function') {
@@ -32,7 +39,9 @@ onMounted(async () => {
       try {
         await networkResult.loadModule()
         addDebugInfo('网络模块 loadModule 调用成功')
-        addDebugInfo(`网络信息: ${JSON.stringify(networkResult.networkInfo.value)}`)
+        addDebugInfo(
+          `网络信息: ${JSON.stringify(networkResult.networkInfo.value)}`
+        )
         addDebugInfo(`是否在线: ${networkResult.isOnline.value}`)
       } catch (error) {
         addDebugInfo(`网络模块 loadModule 调用失败: ${error.message}`)
@@ -47,7 +56,9 @@ onMounted(async () => {
   // 测试 useBattery
   try {
     const batteryResult = useBattery()
-    addDebugInfo(`useBattery 成功: ${JSON.stringify(Object.keys(batteryResult))}`)
+    addDebugInfo(
+      `useBattery 成功: ${JSON.stringify(Object.keys(batteryResult))}`
+    )
     addDebugInfo(`loadModule 类型: ${typeof batteryResult.loadModule}`)
 
     if (typeof batteryResult.loadModule === 'function') {
@@ -55,7 +66,9 @@ onMounted(async () => {
       try {
         await batteryResult.loadModule()
         addDebugInfo('电池模块 loadModule 调用成功')
-        addDebugInfo(`电池信息: ${JSON.stringify(batteryResult.batteryInfo.value)}`)
+        addDebugInfo(
+          `电池信息: ${JSON.stringify(batteryResult.batteryInfo.value)}`
+        )
         addDebugInfo(`电池电量: ${batteryResult.batteryLevel.value}`)
       } catch (error) {
         addDebugInfo(`电池模块 loadModule 调用失败: ${error.message}`)
@@ -70,7 +83,9 @@ onMounted(async () => {
   // 测试 useGeolocation
   try {
     const geoResult = useGeolocation()
-    addDebugInfo(`useGeolocation 成功: ${JSON.stringify(Object.keys(geoResult))}`)
+    addDebugInfo(
+      `useGeolocation 成功: ${JSON.stringify(Object.keys(geoResult))}`
+    )
     addDebugInfo(`loadModule 类型: ${typeof geoResult.loadModule}`)
 
     if (typeof geoResult.loadModule === 'function') {
@@ -85,7 +100,9 @@ onMounted(async () => {
         if (geoResult.isSupported.value) {
           try {
             await geoResult.getCurrentPosition()
-            addDebugInfo(`位置信息: ${JSON.stringify(geoResult.position.value)}`)
+            addDebugInfo(
+              `位置信息: ${JSON.stringify(geoResult.position.value)}`
+            )
           } catch (posError) {
             addDebugInfo(`获取位置失败: ${posError.message}`)
           }

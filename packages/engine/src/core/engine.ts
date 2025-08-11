@@ -15,7 +15,7 @@ import type {
   StateManager,
   ThemeAdapter,
 } from '../types'
-import { createApp, type App, type Component } from 'vue'
+import { type App, type Component, createApp } from 'vue'
 import { createDirectiveManager } from '../directives/directive-manager'
 import { createErrorManager } from '../errors/error-manager'
 import { createEventManager } from '../events/event-manager'

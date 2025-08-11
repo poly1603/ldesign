@@ -3,7 +3,13 @@
  * 使用优化的HSL算法实现高质量的色阶生成，确保亮色和暗色模式都有正确的色阶效果
  */
 
-import type { ColorCategory, ColorMode, ColorScale, ColorValue, NeutralColors } from '../core/types'
+import type {
+  ColorCategory,
+  ColorMode,
+  ColorScale,
+  ColorValue,
+  NeutralColors,
+} from '../core/types'
 import { hexToHsl, hslToHex, isValidHex, normalizeHex } from './color-converter'
 
 /**
@@ -28,7 +34,7 @@ export class ColorScaleGenerator {
   generateScale(
     baseColor: string,
     category: ColorCategory,
-    mode: ColorMode = 'light',
+    mode: ColorMode = 'light'
   ): ColorScale {
     if (!isValidHex(baseColor)) {
       throw new Error(`Invalid hex color: ${baseColor}`)
@@ -41,8 +47,7 @@ export class ColorScaleGenerator {
 
     if (category === 'gray') {
       colors = this.generateGrayScale(normalizedColor, config.count, mode)
-    }
-    else {
+    } else {
       colors = this.generateColorScale(normalizedColor, config.count, mode)
     }
 
@@ -65,7 +70,11 @@ export class ColorScaleGenerator {
    * 直接拷贝自官方源码，不使用硬编码
    * 暗黑模式下色阶反转：1是最深的，10是最浅的
    */
-  private generateColorScale(baseColor: string, count: number, mode: ColorMode): string[] {
+  private generateColorScale(
+    baseColor: string,
+    count: number,
+    mode: ColorMode
+  ): string[] {
     const colors: string[] = []
 
     // 使用Arco Design的原始算法生成10级色阶
@@ -109,8 +118,8 @@ export class ColorScaleGenerator {
 
     const hsv = this.rgbToHsv(rgb.r, rgb.g, rgb.b)
     const h = hsv.h
-    const s = hsv.s  // 这里是HSV的饱和度，不是HSL的
-    const v = hsv.v  // 这里是HSV的明度，不是HSL的亮度
+    const s = hsv.s // 这里是HSV的饱和度，不是HSL的
+    const v = hsv.v // 这里是HSV的明度，不是HSL的亮度
 
     // Arco Design的固定参数
     const hueStep = 2
@@ -139,7 +148,8 @@ export class ColorScaleGenerator {
     function getNewSaturation(isLight: boolean, index: number): number {
       let newSaturation: number
       if (isLight) {
-        newSaturation = s <= minSaturationStep ? s : s - ((s - minSaturationStep) / 5) * index
+        newSaturation =
+          s <= minSaturationStep ? s : s - ((s - minSaturationStep) / 5) * index
       } else {
         newSaturation = s + ((maxSaturationStep - s) / 4) * index
       }
@@ -148,7 +158,11 @@ export class ColorScaleGenerator {
 
     // 明度调整函数 - 完全按照原始代码
     function getNewValue(isLight: boolean, index: number): number {
-      return isLight ? v + ((maxValue - v) / 5) * index : (v <= minValue ? v : v - ((v - minValue) / 4) * index)
+      return isLight
+        ? v + ((maxValue - v) / 5) * index
+        : v <= minValue
+        ? v
+        : v - ((v - minValue) / 4) * index
     }
 
     const isLight = i < 6
@@ -162,7 +176,7 @@ export class ColorScaleGenerator {
       resultHsv = {
         h: getNewHue(isLight, index),
         s: getNewSaturation(isLight, index),
-        v: getNewValue(isLight, index)
+        v: getNewValue(isLight, index),
       }
     }
 
@@ -174,7 +188,10 @@ export class ColorScaleGenerator {
   /**
    * 生成额外的浅色（用于扩展到12级或14级）
    */
-  private generateExtraLightColor(baseColor: string, extraIndex: number): string {
+  private generateExtraLightColor(
+    baseColor: string,
+    extraIndex: number
+  ): string {
     const baseHsl = hexToHsl(baseColor)
     if (!baseHsl) {
       throw new Error(`Failed to parse color: ${baseColor}`)
@@ -199,27 +216,35 @@ export class ColorScaleGenerator {
    */
   private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null
+    return result
+      ? {
+          r: Number.parseInt(result[1], 16),
+          g: Number.parseInt(result[2], 16),
+          b: Number.parseInt(result[3], 16),
+        }
+      : null
   }
 
   /**
    * RGB转Hex
    */
   private rgbToHex(r: number, g: number, b: number): string {
-    return '#' + [r, g, b].map(x => {
-      const hex = Math.round(x).toString(16)
-      return hex.length === 1 ? '0' + hex : hex
-    }).join('')
+    return `#${[r, g, b]
+      .map(x => {
+        const hex = Math.round(x).toString(16)
+        return hex.length === 1 ? `0${hex}` : hex
+      })
+      .join('')}`
   }
 
   /**
    * RGB转HSV - 完全按照Arco Design的算法
    */
-  private rgbToHsv(r: number, g: number, b: number): { h: number; s: number; v: number } {
+  private rgbToHsv(
+    r: number,
+    g: number,
+    b: number
+  ): { h: number; s: number; v: number } {
     r = r / 255
     g = g / 255
     b = b / 255
@@ -250,83 +275,122 @@ export class ColorScaleGenerator {
   /**
    * HSV转RGB - 完全按照Arco Design的算法
    */
-  private hsvToRgb(h: number, s: number, v: number): { r: number; g: number; b: number } {
+  private hsvToRgb(
+    h: number,
+    s: number,
+    v: number
+  ): { r: number; g: number; b: number } {
     s = s / 100
     v = v / 100
 
     const c = v * s
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
     const m = v - c
 
-    let r = 0, g = 0, b = 0
+    let r = 0
+    let g = 0
+    let b = 0
 
-    if (0 <= h && h < 60) {
-      r = c; g = x; b = 0
-    } else if (60 <= h && h < 120) {
-      r = x; g = c; b = 0
-    } else if (120 <= h && h < 180) {
-      r = 0; g = c; b = x
-    } else if (180 <= h && h < 240) {
-      r = 0; g = x; b = c
-    } else if (240 <= h && h < 300) {
-      r = x; g = 0; b = c
-    } else if (300 <= h && h < 360) {
-      r = c; g = 0; b = x
+    if (h >= 0 && h < 60) {
+      r = c
+      g = x
+      b = 0
+    } else if (h >= 60 && h < 120) {
+      r = x
+      g = c
+      b = 0
+    } else if (h >= 120 && h < 180) {
+      r = 0
+      g = c
+      b = x
+    } else if (h >= 180 && h < 240) {
+      r = 0
+      g = x
+      b = c
+    } else if (h >= 240 && h < 300) {
+      r = x
+      g = 0
+      b = c
+    } else if (h >= 300 && h < 360) {
+      r = c
+      g = 0
+      b = x
     }
 
     return {
       r: Math.round((r + m) * 255),
       g: Math.round((g + m) * 255),
-      b: Math.round((b + m) * 255)
+      b: Math.round((b + m) * 255),
     }
   }
 
   /**
    * 生成灰色色阶 - 直接使用Arco Design的预设灰色
    */
-  private generateGrayScale(baseColor: string, count: number, mode: ColorMode): string[] {
+  private generateGrayScale(
+    baseColor: string,
+    count: number,
+    mode: ColorMode
+  ): string[] {
     if (mode === 'dark') {
       // 优化的暗色模式中性灰色（从深到浅）
       const neutralGrayDark = [
-        '#1a1a1a', '#2d2d2d', '#404040', '#595959', '#737373',
-        '#8c8c8c', '#a6a6a6', '#bfbfbf', '#d9d9d9', '#f5f5f5'
+        '#1a1a1a',
+        '#2d2d2d',
+        '#404040',
+        '#595959',
+        '#737373',
+        '#8c8c8c',
+        '#a6a6a6',
+        '#bfbfbf',
+        '#d9d9d9',
+        '#f5f5f5',
       ]
       return neutralGrayDark.slice(0, count)
     } else {
       // 优化的亮色模式中性灰色（从浅到深）
       const neutralGrayLight = [
-        '#fafafa', '#f5f5f5', '#f0f0f0', '#d9d9d9', '#bfbfbf',
-        '#8c8c8c', '#737373', '#595959', '#404040', '#262626'
+        '#fafafa',
+        '#f5f5f5',
+        '#f0f0f0',
+        '#d9d9d9',
+        '#bfbfbf',
+        '#8c8c8c',
+        '#737373',
+        '#595959',
+        '#404040',
+        '#262626',
       ]
       return neutralGrayLight.slice(0, count)
     }
   }
-
-
-
-
-
-
-
-
 
   /**
    * 生成多个颜色类别的色阶
    */
   generateScales<T extends ColorCategory>(
     colors: Record<T, ColorValue>,
-    mode: ColorMode = 'light',
+    mode: ColorMode = 'light'
   ): Record<T, ColorScale> {
     const scales: Record<T, ColorScale> = {} as Record<T, ColorScale>
 
-    for (const [category, color] of Object.entries(colors) as [T, ColorValue][]) {
+    for (const [category, color] of Object.entries(colors) as [
+      T,
+      ColorValue
+    ][]) {
       try {
-        scales[category] = this.generateScale(color, category as ColorCategory, mode)
-      }
-      catch (error) {
+        scales[category] = this.generateScale(
+          color,
+          category as ColorCategory,
+          mode
+        )
+      } catch (error) {
         console.warn(`Failed to generate scale for ${category}:`, error)
         // 提供回退色阶
-        scales[category] = this.createFallbackScale(category as ColorCategory, mode)
+        scales[category] = this.createFallbackScale(
+          category as ColorCategory,
+          mode
+        )
       }
     }
 
@@ -336,14 +400,17 @@ export class ColorScaleGenerator {
   /**
    * 创建回退色阶
    */
-  private createFallbackScale(category: ColorCategory, _mode: ColorMode): ColorScale {
+  private createFallbackScale(
+    category: ColorCategory,
+    _mode: ColorMode
+  ): ColorScale {
     const config = SCALE_CONFIGS[category]
     const colors: string[] = []
 
     // 使用灰色作为回退
     for (let i = 0; i < config.count; i++) {
       const factor = i / (config.count - 1)
-      const lightness = 95 - (factor * 90)
+      const lightness = 95 - factor * 90
       colors.push(hslToHex(0, 0, lightness))
     }
 
@@ -382,7 +449,7 @@ export const colorScaleGenerator = new ColorScaleGenerator()
 // 导出便捷函数
 export function generateColorScales<T extends ColorCategory>(
   colors: Record<T, ColorValue>,
-  mode: ColorMode = 'light',
+  mode: ColorMode = 'light'
 ): Record<T, ColorScale> {
   return colorScaleGenerator.generateScales(colors, mode)
 }
@@ -390,7 +457,7 @@ export function generateColorScales<T extends ColorCategory>(
 export function generateColorScale(
   baseColor: string,
   category: ColorCategory,
-  mode: ColorMode = 'light',
+  mode: ColorMode = 'light'
 ): ColorScale {
   return colorScaleGenerator.generateScale(baseColor, category, mode)
 }

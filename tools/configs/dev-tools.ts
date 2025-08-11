@@ -3,8 +3,8 @@
  * 提供更好的开发体验和调试功能
  */
 
-import { resolve } from 'node:path'
 import type { UserConfig } from 'vite'
+import { resolve } from 'node:path'
 
 export interface DevToolsOptions {
   /** 是否启用热重载 */
@@ -24,7 +24,9 @@ export interface DevToolsOptions {
 /**
  * 创建开发工具配置
  */
-export function createDevToolsConfig(options: DevToolsOptions = {}): UserConfig {
+export function createDevToolsConfig(
+  options: DevToolsOptions = {}
+): UserConfig {
   const {
     hmr = true,
     sourcemap = true,
@@ -43,9 +45,11 @@ export function createDevToolsConfig(options: DevToolsOptions = {}): UserConfig 
     server: {
       port,
       open,
-      hmr: hmr ? {
-        overlay: errorOverlay,
-      } : false,
+      hmr: hmr
+        ? {
+            overlay: errorOverlay,
+          }
+        : false,
       cors: true,
       // 更好的错误处理
       middlewareMode: false,
@@ -106,12 +110,15 @@ export function createDevToolsConfig(options: DevToolsOptions = {}): UserConfig 
 /**
  * 创建包开发配置
  */
-export function createPackageDevConfig(packageName: string, options: DevToolsOptions = {}): UserConfig {
+export function createPackageDevConfig(
+  packageName: string,
+  options: DevToolsOptions = {}
+): UserConfig {
   const baseConfig = createDevToolsConfig(options)
-  
+
   return {
     ...baseConfig,
-    
+
     resolve: {
       alias: {
         [`@ldesign/${packageName}`]: resolve(process.cwd(), 'src'),
@@ -131,7 +138,7 @@ export function createPackageDevConfig(packageName: string, options: DevToolsOpt
 export function setupDevErrorHandling() {
   if (typeof window !== 'undefined') {
     // 全局错误处理
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       console.group('🚨 JavaScript Error')
       console.error('Message:', event.message)
       console.error('Source:', event.filename)
@@ -142,7 +149,7 @@ export function setupDevErrorHandling() {
     })
 
     // Promise 错误处理
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       console.group('🚨 Unhandled Promise Rejection')
       console.error('Reason:', event.reason)
       console.error('Promise:', event.promise)
@@ -151,7 +158,11 @@ export function setupDevErrorHandling() {
 
     // Vue 错误处理
     if (window.Vue) {
-      window.Vue.config.errorHandler = (err: Error, instance: any, info: string) => {
+      window.Vue.config.errorHandler = (
+        err: Error,
+        instance: any,
+        info: string
+      ) => {
         console.group('🚨 Vue Error')
         console.error('Error:', err)
         console.error('Instance:', instance)
@@ -172,24 +183,33 @@ export function setupDevPerformanceMonitoring() {
       setTimeout(() => {
         const perfData = window.performance.timing
         const loadTime = perfData.loadEventEnd - perfData.navigationStart
-        
+
         console.group('📊 Performance Metrics')
         console.log('Page Load Time:', `${loadTime}ms`)
-        console.log('DOM Ready Time:', `${perfData.domContentLoadedEventEnd - perfData.navigationStart}ms`)
-        console.log('First Paint:', `${perfData.responseStart - perfData.navigationStart}ms`)
+        console.log(
+          'DOM Ready Time:',
+          `${perfData.domContentLoadedEventEnd - perfData.navigationStart}ms`
+        )
+        console.log(
+          'First Paint:',
+          `${perfData.responseStart - perfData.navigationStart}ms`
+        )
         console.groupEnd()
       }, 0)
     })
 
     // 监控资源加载
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       for (const entry of list.getEntries()) {
-        if (entry.duration > 1000) { // 超过1秒的资源
-          console.warn(`⚠️ Slow Resource: ${entry.name} (${entry.duration.toFixed(2)}ms)`)
+        if (entry.duration > 1000) {
+          // 超过1秒的资源
+          console.warn(
+            `⚠️ Slow Resource: ${entry.name} (${entry.duration.toFixed(2)}ms)`
+          )
         }
       }
     })
-    
+
     observer.observe({ entryTypes: ['resource'] })
   }
 }
@@ -203,7 +223,7 @@ export function setupDevDebugTools() {
     ;(window as any).__LDESIGN_DEBUG__ = {
       // 包信息
       packages: {},
-      
+
       // 性能监控
       performance: {
         mark: (name: string) => performance.mark(name),
@@ -213,7 +233,7 @@ export function setupDevDebugTools() {
           console.log(`⏱️ ${name}: ${measure.duration.toFixed(2)}ms`)
         },
       },
-      
+
       // 组件调试
       component: {
         inspect: (component: any) => {
@@ -225,7 +245,7 @@ export function setupDevDebugTools() {
           console.groupEnd()
         },
       },
-      
+
       // 状态调试
       state: {
         log: (state: any, label = 'State') => {
@@ -236,6 +256,8 @@ export function setupDevDebugTools() {
       },
     }
 
-    console.log('🛠️ LDesign Debug Tools loaded. Access via window.__LDESIGN_DEBUG__')
+    console.log(
+      '🛠️ LDesign Debug Tools loaded. Access via window.__LDESIGN_DEBUG__'
+    )
   }
 }

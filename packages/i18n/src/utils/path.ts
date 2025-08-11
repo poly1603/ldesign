@@ -6,13 +6,22 @@ import type { NestedObject } from '@/core/types'
  * @param path 点分隔的路径，如 'menu.user.profile'
  * @returns 找到的值或 undefined
  */
-export function getNestedValue(obj: NestedObject, path: string): string | undefined {
+export function getNestedValue(
+  obj: NestedObject,
+  path: string
+): string | undefined {
   if (!obj || !path) {
     return undefined
   }
 
   const keys = path.split('.')
-  let current: Record<string, unknown> | string | number | boolean | null | undefined = obj
+  let current:
+    | Record<string, unknown>
+    | string
+    | number
+    | boolean
+    | null
+    | undefined = obj
 
   for (const key of keys) {
     if (current === null || current === undefined) {
@@ -23,7 +32,13 @@ export function getNestedValue(obj: NestedObject, path: string): string | undefi
       return undefined
     }
 
-    current = (current as Record<string, unknown>)[key] as string | number | boolean | Record<string, unknown> | null | undefined
+    current = (current as Record<string, unknown>)[key] as
+      | string
+      | number
+      | boolean
+      | Record<string, unknown>
+      | null
+      | undefined
   }
 
   return typeof current === 'string' ? current : undefined
@@ -35,7 +50,11 @@ export function getNestedValue(obj: NestedObject, path: string): string | undefi
  * @param path 点分隔的路径
  * @param value 要设置的值
  */
-export function setNestedValue(obj: NestedObject, path: string, value: string): void {
+export function setNestedValue(
+  obj: NestedObject,
+  path: string,
+  value: string
+): void {
   if (!obj || !path) {
     return
   }
@@ -46,7 +65,11 @@ export function setNestedValue(obj: NestedObject, path: string, value: string): 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i]
 
-    if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+    if (
+      !(key in current) ||
+      typeof current[key] !== 'object' ||
+      current[key] === null
+    ) {
       current[key] = {}
     }
 
@@ -81,9 +104,12 @@ export function getAllPaths(obj: NestedObject, prefix = ''): string[] {
 
     if (typeof value === 'string') {
       paths.push(currentPath)
-    }
-    else if (typeof value === 'object' && value !== null) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    } else if (typeof value === 'object' && value !== null) {
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
         paths.push(...getAllPaths(value as NestedObject, currentPath))
       }
     }
@@ -98,26 +124,37 @@ export function getAllPaths(obj: NestedObject, prefix = ''): string[] {
  * @param source 源对象
  * @returns 合并后的对象
  */
-export function deepMerge(target: NestedObject, source: NestedObject): NestedObject {
+export function deepMerge(
+  target: NestedObject,
+  source: NestedObject
+): NestedObject {
   const result = { ...target }
 
   for (const [key, value] of Object.entries(source)) {
     if (typeof value === 'string') {
       result[key] = value
-    }
-    else if (typeof value === 'object' && value !== null) {
-      if (typeof result[key] === 'object' && result[key] !== null && typeof result[key] !== 'string') {
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          result[key] = deepMerge(result[key] as NestedObject, value as NestedObject)
+    } else if (typeof value === 'object' && value !== null) {
+      if (
+        typeof result[key] === 'object' &&
+        result[key] !== null &&
+        typeof result[key] !== 'string'
+      ) {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
+          result[key] = deepMerge(
+            result[key] as NestedObject,
+            value as NestedObject
+          )
         } else {
           result[key] = value
         }
-      }
-      else {
+      } else {
         result[key] = { ...value }
       }
-    }
-    else {
+    } else {
       result[key] = value
     }
   }
@@ -131,7 +168,10 @@ export function deepMerge(target: NestedObject, source: NestedObject): NestedObj
  * @param prefix 路径前缀
  * @returns 扁平化的对象
  */
-export function flattenObject(obj: NestedObject, prefix = ''): Record<string, string> {
+export function flattenObject(
+  obj: NestedObject,
+  prefix = ''
+): Record<string, string> {
   const flattened: Record<string, string> = {}
 
   for (const [key, value] of Object.entries(obj)) {
@@ -139,10 +179,12 @@ export function flattenObject(obj: NestedObject, prefix = ''): Record<string, st
 
     if (typeof value === 'string') {
       flattened[currentPath] = value
-    }
-    else if (typeof value === 'object' && value !== null) {
+    } else if (typeof value === 'object' && value !== null) {
       if (!Array.isArray(value)) {
-        Object.assign(flattened, flattenObject(value as NestedObject, currentPath))
+        Object.assign(
+          flattened,
+          flattenObject(value as NestedObject, currentPath)
+        )
       }
     }
   }
@@ -155,7 +197,9 @@ export function flattenObject(obj: NestedObject, prefix = ''): Record<string, st
  * @param flattened 扁平化的对象
  * @returns 嵌套对象
  */
-export function unflattenObject(flattened: Record<string, string>): NestedObject {
+export function unflattenObject(
+  flattened: Record<string, string>
+): NestedObject {
   const result: NestedObject = {}
 
   for (const [path, value] of Object.entries(flattened)) {

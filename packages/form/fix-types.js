@@ -4,9 +4,9 @@
  * 修复TypeScript类型错误和ESLint错误的脚本
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 
 console.log('🔧 开始修复TypeScript类型错误和ESLint错误...\n')
 
@@ -22,7 +22,7 @@ function fixCommonTypeIssues() {
 
   componentFiles.forEach(file => {
     const filePath = path.join(componentsDir, file)
-    let content = fs.readFileSync(filePath, 'utf8')
+    const content = fs.readFileSync(filePath, 'utf8')
 
     // 检查是否缺少Vue类型导入
     if (
@@ -216,7 +216,7 @@ async function main() {
     // 7. 检查构建
     const buildPassed = checkBuild()
 
-    console.log('\n' + '='.repeat(50))
+    console.log(`\n${'='.repeat(50)}`)
 
     if (typeCheckPassed && buildPassed) {
       console.log('🎉 所有检查都通过了！')

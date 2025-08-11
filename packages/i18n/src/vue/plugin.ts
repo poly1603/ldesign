@@ -1,6 +1,10 @@
 import type { App } from 'vue'
-import type { I18nDirectiveBinding, VueI18nOptions, VueI18nPlugin } from './types'
 import type { I18nInstance } from '../core/types'
+import type {
+  I18nDirectiveBinding,
+  VueI18nOptions,
+  VueI18nPlugin,
+} from './types'
 import { I18n } from '../core/i18n'
 import { I18N_INJECTION_KEY } from './composables'
 
@@ -82,7 +86,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
           Object.assign(global, i18nOptions)
 
           // 如果还没有初始化，则初始化
-          global.init().catch((error) => {
+          global.init().catch(error => {
             console.error('Failed to initialize I18n:', error)
           })
         }
@@ -102,22 +106,24 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 function updateElementText(
   el: HTMLElement,
   binding: { value: I18nDirectiveBinding },
-  i18n: I18nInstance,
+  i18n: I18nInstance
 ) {
   try {
     let key: string
-    let params: Record<string, string | number | boolean | null | undefined> = {}
+    let params: Record<string, string | number | boolean | null | undefined> =
+      {}
     let options: Record<string, unknown> = {}
 
     if (typeof binding.value === 'string') {
       key = binding.value
-    }
-    else if (binding.value && typeof binding.value === 'object') {
+    } else if (binding.value && typeof binding.value === 'object') {
       key = binding.value.key
-      params = (binding.value.params || {}) as Record<string, string | number | boolean | null | undefined>
+      params = (binding.value.params || {}) as Record<
+        string,
+        string | number | boolean | null | undefined
+      >
       options = (binding.value.options || {}) as Record<string, unknown>
-    }
-    else {
+    } else {
       console.warn('v-t directive expects a string or object value')
       return
     }
@@ -126,13 +132,11 @@ function updateElementText(
 
     // 更新元素文本内容
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      ; (el as HTMLInputElement).placeholder = translatedText
-    }
-    else {
+      ;(el as HTMLInputElement).placeholder = translatedText
+    } else {
       el.textContent = translatedText
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Error in v-t directive:', error)
   }
 }

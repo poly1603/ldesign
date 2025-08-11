@@ -1,5 +1,5 @@
-import { defineComponent, ref } from 'vue'
 import { RouterLink } from '@ldesign/router'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'Help',
@@ -284,7 +284,8 @@ export default defineComponent({
           </div>
         </div>
 
-        <style>{`
+        <style>
+          {`
           .help {
             padding: 2rem;
             max-width: 1200px;
@@ -514,7 +515,8 @@ export default defineComponent({
               order: 1;
             }
           }
-        `}</style>
+        `}
+        </style>
       </div>
     )
   },

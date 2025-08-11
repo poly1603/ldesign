@@ -41,7 +41,7 @@
 }
 
 .color-value {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
@@ -85,7 +85,7 @@
 
 .base-hex {
   font-size: 14px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   opacity: 0.9;
 }
 
@@ -122,12 +122,12 @@
 .palette-colors .color-contrast {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.9);
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
 }
 
 .palette-colors .color-hex {
   font-size: 14px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
@@ -279,5 +279,3 @@
     justify-content: center;
   }
 }
-
-

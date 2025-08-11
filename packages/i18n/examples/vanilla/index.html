@@ -660,7 +660,11 @@
 
           // Error handling and fallback
           document.getElementById('example-fallback').textContent = i18n.t('nonexistent.key')
-          document.getElementById('example-default').textContent = i18n.t('nonexistent.key', {}, { defaultValue: 'Default Text' })
+          document.getElementById('example-default').textContent = i18n.t(
+            'nonexistent.key',
+            {},
+            { defaultValue: 'Default Text' },
+          )
         } catch (error) {
           console.error('Error updating examples:', error)
           showError('Error updating examples: ' + error.message)
@@ -781,7 +785,7 @@
       }
 
       // Performance test function
-      window.runPerformanceTest = function() {
+      window.runPerformanceTest = function () {
         if (!i18n) return
 
         const iterations = 10000

@@ -1,10 +1,10 @@
 // ValidationEngine 测试
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { ValidationEngine } from '../core/ValidationEngine'
 import type { ValidationConfig, ValidationRule } from '../types/validation'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { ValidationEngine } from '../core/ValidationEngine'
 
-describe('ValidationEngine', () => {
+describe('validationEngine', () => {
   let validationEngine: ValidationEngine
   let config: ValidationConfig
 
@@ -123,7 +123,7 @@ describe('ValidationEngine', () => {
 
     it('应该正确验证正则表达式', async () => {
       const rules: ValidationRule[] = [
-        { type: 'pattern', params: /^[a-zA-Z]+$/, message: '只能包含字母' },
+        { type: 'pattern', params: /^[a-z]+$/i, message: '只能包含字母' },
       ]
 
       // 测试不匹配

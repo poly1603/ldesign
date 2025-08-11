@@ -13,10 +13,13 @@ export interface StorePoolOptions {
 
 export class StorePool {
   private static instance: StorePool
-  private pools = new Map<string, {
-    instances: BaseStore[]
-    lastUsed: Map<BaseStore, number>
-  }>()
+  private pools = new Map<
+    string,
+    {
+      instances: BaseStore[]
+      lastUsed: Map<BaseStore, number>
+    }
+  >()
 
   private options: Required<StorePoolOptions> = {
     maxSize: 50,
@@ -58,8 +61,8 @@ export class StorePool {
       const instance = pool.instances.pop() as T
       pool.lastUsed.set(instance, Date.now())
 
-        // 重新初始化实例的ID（通过重新设置内部属性）
-        ; (instance as any).$id = id
+      // 重新初始化实例的ID（通过重新设置内部属性）
+      ;(instance as any).$id = id
 
       return instance
     }
@@ -168,15 +171,20 @@ export class StorePool {
       activeInstances: number
     }>
   } {
-    const poolDetails = Array.from(this.pools.entries()).map(([className, pool]) => ({
-      className,
-      poolSize: pool.instances.length,
-      activeInstances: pool.lastUsed.size - pool.instances.length,
-    }))
+    const poolDetails = Array.from(this.pools.entries()).map(
+      ([className, pool]) => ({
+        className,
+        poolSize: pool.instances.length,
+        activeInstances: pool.lastUsed.size - pool.instances.length,
+      })
+    )
 
     return {
       totalPools: this.pools.size,
-      totalInstances: poolDetails.reduce((sum, detail) => sum + detail.poolSize + detail.activeInstances, 0),
+      totalInstances: poolDetails.reduce(
+        (sum, detail) => sum + detail.poolSize + detail.activeInstances,
+        0
+      ),
       poolDetails,
     }
   }
@@ -261,7 +269,9 @@ export function useStorePool(options?: StorePoolOptions): StorePool {
  * 自动管理 Store 实例的生命周期
  */
 export function PooledStore(options?: StorePoolOptions) {
-  return function <T extends new (...args: any[]) => BaseStore>(constructor: T) {
+  return function <T extends new (...args: any[]) => BaseStore>(
+    constructor: T
+  ) {
     const pool = StorePool.getInstance(options)
 
     return class extends constructor {

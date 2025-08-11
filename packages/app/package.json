@@ -19,13 +19,6 @@
     "modern",
     "enterprise"
   ],
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "main": "./lib/index.js",
-  "module": "./es/index.js",
-  "types": "./types/index.d.ts",
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
@@ -39,14 +32,21 @@
     },
     "./package.json": "./package.json"
   },
+  "main": "./lib/index.js",
+  "module": "./es/index.js",
+  "types": "./types/index.d.ts",
   "files": [
+    "CHANGELOG.md",
+    "README.md",
+    "dist",
     "es",
     "lib",
-    "types",
-    "dist",
-    "README.md",
-    "CHANGELOG.md"
+    "types"
   ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "rollup -c",
@@ -69,6 +69,14 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": false
+    }
   },
   "dependencies": {
     "@ldesign/engine": "workspace:*",
@@ -106,13 +114,5 @@
     "vitepress": "^1.6.4",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.0.5"
-  },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": false
-    }
   }
 }

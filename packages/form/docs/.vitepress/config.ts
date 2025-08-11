@@ -1,5 +1,5 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vitepress'
-import { resolve } from 'path'
 
 export default defineConfig({
   title: '@ldesign/form',

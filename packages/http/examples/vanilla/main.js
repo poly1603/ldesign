@@ -1,13 +1,8 @@
 // 导入 @ldesign/http 库
 import {
+  createCacheManager,
   createHttpClient,
-  createAuthInterceptor,
   createResponseTimeInterceptor,
-  requestLoggerInterceptor,
-  responseLoggerInterceptor,
-  createRetryInterceptor,
-  CacheManager,
-  createCacheManager
 } from '@ldesign/http'
 
 // 创建 HTTP 客户端实例
@@ -15,26 +10,26 @@ const http = createHttpClient({
   baseURL: 'https://jsonplaceholder.typicode.com',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   },
   cache: {
     enabled: false, // 默认禁用，通过按钮控制
-    ttl: 300000 // 5分钟
-  }
+    ttl: 300000, // 5分钟
+  },
 })
 
 // 统计信息
-let stats = {
+const stats = {
   activeRequests: 0,
   completedRequests: 0,
   cacheHits: 0,
-  errors: 0
+  errors: 0,
 }
 
 // 创建缓存管理器
 const cacheManager = createCacheManager({
   enabled: false,
-  ttl: 300000
+  ttl: 300000,
 })
 
 // 简化的统计跟踪（用于演示）
@@ -44,7 +39,7 @@ class StatsTracker {
       activeRequests: 0,
       completedRequests: 0,
       cacheHits: 0,
-      errors: 0
+      errors: 0,
     }
   }
 
@@ -86,20 +81,20 @@ class StatsTracker {
 const statsTracker = new StatsTracker()
 
 // 添加请求/响应拦截器来跟踪统计信息
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   statsTracker.incrementActive()
   return config
 })
 
 http.interceptors.response.use(
-  (response) => {
+  response => {
     statsTracker.decrementActive()
     if (response.fromCache) {
       statsTracker.incrementCacheHits()
     }
     return response
   },
-  (error) => {
+  error => {
     statsTracker.decrementActive()
     statsTracker.incrementErrors()
     throw error
@@ -109,7 +104,9 @@ http.interceptors.response.use(
 // 工具函数
 function formatOutput(data, title = '') {
   const timestamp = new Date().toLocaleTimeString()
-  const header = title ? `[${timestamp}] ${title}\n${'='.repeat(50)}\n` : `[${timestamp}]\n`
+  const header = title
+    ? `[${timestamp}] ${title}\n${'='.repeat(50)}\n`
+    : `[${timestamp}]\n`
 
   if (data instanceof Error) {
     return `${header}❌ 错误: ${data.message}\n${data.stack || ''}`
@@ -122,8 +119,7 @@ function updateOutput(elementId, content, append = false) {
   const element = document.getElementById(elementId)
   if (append) {
     element.textContent += `\n\n${content}`
-  }
-  else {
+  } else {
     element.textContent = content
   }
   element.scrollTop = element.scrollHeight
@@ -135,8 +131,7 @@ window.sendGetRequest = async function () {
     updateOutput('basic-output', '🔄 发送 GET 请求...')
     const response = await http.get('/posts/1')
     updateOutput('basic-output', formatOutput(response, 'GET 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'GET 请求失败'))
   }
 }
@@ -150,8 +145,7 @@ window.sendPostRequest = async function () {
       userId: 1,
     })
     updateOutput('basic-output', formatOutput(response, 'POST 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'POST 请求失败'))
   }
 }
@@ -165,8 +159,7 @@ window.sendPutRequest = async function () {
       userId: 1,
     })
     updateOutput('basic-output', formatOutput(response, 'PUT 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'PUT 请求失败'))
   }
 }
@@ -176,8 +169,7 @@ window.sendDeleteRequest = async function () {
     updateOutput('basic-output', '🔄 发送 DELETE 请求...')
     const response = await http.delete('/posts/1')
     updateOutput('basic-output', formatOutput(response, 'DELETE 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'DELETE 请求失败'))
   }
 }
@@ -193,13 +185,16 @@ window.addAuthInterceptor = function () {
   }
 
   // 添加新的认证拦截器
-  authInterceptorId = http.interceptors.request.use((config) => {
+  authInterceptorId = http.interceptors.request.use(config => {
     config.headers = config.headers || {}
     config.headers.Authorization = 'Bearer fake-token-123'
     return config
   })
 
-  updateOutput('interceptor-output', '✅ 已添加认证拦截器\n请求将自动添加 Authorization 头部')
+  updateOutput(
+    'interceptor-output',
+    '✅ 已添加认证拦截器\n请求将自动添加 Authorization 头部'
+  )
 }
 
 window.addLoggingInterceptor = function () {
@@ -211,19 +206,23 @@ window.addLoggingInterceptor = function () {
   loggingInterceptorIds = []
 
   // 添加请求日志拦截器
-  const requestId = http.interceptors.request.use((config) => {
+  const requestId = http.interceptors.request.use(config => {
     console.log('📤 发送请求:', config)
     return config
   })
 
   // 添加响应日志拦截器
-  const responseId = http.interceptors.response.use((response) => {
+  const responseId = http.interceptors.response.use(response => {
     console.log('📥 收到响应:', response)
     return response
   })
 
   loggingInterceptorIds.push(requestId, responseId)
-  updateOutput('interceptor-output', '✅ 已添加日志拦截器\n请求和响应将在控制台输出日志', true)
+  updateOutput(
+    'interceptor-output',
+    '✅ 已添加日志拦截器\n请求和响应将在控制台输出日志',
+    true
+  )
 }
 
 window.addResponseTimeInterceptor = function () {
@@ -232,7 +231,11 @@ window.addResponseTimeInterceptor = function () {
   http.interceptors.request.use(timeInterceptor.request)
   http.interceptors.response.use(timeInterceptor.response)
 
-  updateOutput('interceptor-output', '✅ 已添加响应时间拦截器\n响应时间将在控制台显示', true)
+  updateOutput(
+    'interceptor-output',
+    '✅ 已添加响应时间拦截器\n响应时间将在控制台显示',
+    true
+  )
 }
 
 window.clearInterceptors = function () {
@@ -255,10 +258,17 @@ window.testWithInterceptors = async function () {
   try {
     updateOutput('interceptor-output', '🔄 测试拦截器...', true)
     const response = await http.get('/posts/1')
-    updateOutput('interceptor-output', formatOutput(response, '拦截器测试成功'), true)
-  }
-  catch (error) {
-    updateOutput('interceptor-output', formatOutput(error, '拦截器测试失败'), true)
+    updateOutput(
+      'interceptor-output',
+      formatOutput(response, '拦截器测试成功'),
+      true
+    )
+  } catch (error) {
+    updateOutput(
+      'interceptor-output',
+      formatOutput(error, '拦截器测试失败'),
+      true
+    )
   }
 }
 
@@ -267,8 +277,7 @@ window.testNetworkError = async function () {
   try {
     updateOutput('error-output', '🔄 测试网络错误...')
     await http.get('/error')
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('error-output', formatOutput(error, '网络错误测试'))
   }
 }
@@ -277,8 +286,7 @@ window.testTimeoutError = async function () {
   try {
     updateOutput('error-output', '🔄 测试超时错误...')
     await http.get('/timeout')
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('error-output', formatOutput(error, '超时错误测试'))
   }
 }
@@ -287,8 +295,7 @@ window.testHttpError = async function () {
   try {
     updateOutput('error-output', '🔄 测试 HTTP 错误...')
     await http.get('/404')
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('error-output', formatOutput(error, 'HTTP 错误测试'))
   }
 }
@@ -309,10 +316,13 @@ window.testRetry = async function () {
       }
 
       const response = await http.get('/posts/1')
-      updateOutput('error-output', formatOutput(response, `第 ${attempts} 次尝试成功`), true)
+      updateOutput(
+        'error-output',
+        formatOutput(response, `第 ${attempts} 次尝试成功`),
+        true
+      )
       break
-    }
-    catch (error) {
+    } catch (error) {
       updateOutput('error-output', `❌ ${error.message}`, true)
 
       if (attempts < maxAttempts) {
@@ -342,15 +352,26 @@ window.testCache = async function () {
     const start1 = Date.now()
     const response1 = await http.get('/posts/1')
     const time1 = Date.now() - start1
-    updateOutput('cache-output', `\n第一次请求 (${time1}ms): ${response1.fromCache ? '来自缓存' : '来自网络'}`, true)
+    updateOutput(
+      'cache-output',
+      `\n第一次请求 (${time1}ms): ${
+        response1.fromCache ? '来自缓存' : '来自网络'
+      }`,
+      true
+    )
 
     // 第二次请求
     const start2 = Date.now()
     const response2 = await http.get('/posts/1')
     const time2 = Date.now() - start2
-    updateOutput('cache-output', `第二次请求 (${time2}ms): ${response2.fromCache ? '来自缓存' : '来自网络'}`, true)
-  }
-  catch (error) {
+    updateOutput(
+      'cache-output',
+      `第二次请求 (${time2}ms): ${
+        response2.fromCache ? '来自缓存' : '来自网络'
+      }`,
+      true
+    )
+  } catch (error) {
     updateOutput('cache-output', formatOutput(error, '缓存测试失败'), true)
   }
 }
@@ -367,23 +388,25 @@ window.sendConcurrentRequests = async function () {
   const promises = []
   for (let i = 1; i <= 5; i++) {
     promises.push(
-      http.get(`/posts/${i}`).then(response => ({
-        id: i,
-        success: true,
-        data: response.data,
-      })).catch(error => ({
-        id: i,
-        success: false,
-        error: error.message,
-      })),
+      http
+        .get(`/posts/${i}`)
+        .then(response => ({
+          id: i,
+          success: true,
+          data: response.data,
+        }))
+        .catch(error => ({
+          id: i,
+          success: false,
+          error: error.message,
+        }))
     )
   }
 
   try {
     const results = await Promise.all(promises)
     updateOutput('concurrency-output', formatOutput(results, '并发请求结果'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('concurrency-output', formatOutput(error, '并发请求失败'))
   }
 }
@@ -397,7 +420,11 @@ window.testRequestQueue = async function () {
     requests.push(`请求 ${i}`)
   }
 
-  updateOutput('concurrency-output', `📋 队列中有 ${requests.length} 个请求`, true)
+  updateOutput(
+    'concurrency-output',
+    `📋 队列中有 ${requests.length} 个请求`,
+    true
+  )
 
   for (const request of requests) {
     updateOutput('concurrency-output', `⏳ 处理 ${request}...`, true)
@@ -432,20 +459,21 @@ window.sendCustomRequest = async function () {
     updateOutput('custom-output', `🔄 发送 ${method} 请求到 ${url}...`)
 
     const config = { url, headers }
-    if (data)
-      config.data = data
+    if (data) config.data = data
 
     const response = await http.request({ ...config, method })
     updateOutput('custom-output', formatOutput(response, '自定义请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('custom-output', formatOutput(error, '自定义请求失败'))
   }
 }
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
-  updateOutput('basic-output', '👋 欢迎使用 @ldesign/http!\n点击上方按钮开始体验各种功能...')
+  updateOutput(
+    'basic-output',
+    '👋 欢迎使用 @ldesign/http!\n点击上方按钮开始体验各种功能...'
+  )
   updateOutput('interceptor-output', '拦截器状态：无')
   updateOutput('error-output', '点击上方按钮测试错误处理...')
   updateOutput('cache-output', '缓存状态：禁用')

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { TemplateRenderer, LazyTemplate, PerformanceMonitor } from '@ldesign/template/vue'
+import { LazyTemplate, PerformanceMonitor, TemplateRenderer } from '@ldesign/template/vue'
 import { ref } from 'vue'
 
 // TemplateRenderer 组件演示页面加载
 
 // 事件日志
-const events = ref<Array<{ time: string, type: string, data: string }>>([])
+const events = ref<Array<{ time: string; type: string; data: string }>>([])
 
 // 自定义配置
 const customConfig = {
@@ -69,15 +69,9 @@ function clearEvents() {
   <div class="component-demo">
     <div class="component-demo__header">
       <div class="component-demo__container">
-        <router-link to="/" class="component-demo__back">
-          ← 返回首页
-        </router-link>
-        <h1 class="component-demo__title">
-          🧩 TemplateRenderer 组件演示
-        </h1>
-        <p class="component-demo__subtitle">
-          使用声明式组件快速渲染模板
-        </p>
+        <router-link to="/" class="component-demo__back"> ← 返回首页 </router-link>
+        <h1 class="component-demo__title">🧩 TemplateRenderer 组件演示</h1>
+        <p class="component-demo__subtitle">使用声明式组件快速渲染模板</p>
       </div>
     </div>
 
@@ -203,22 +197,14 @@ const customConfig = {
         <div class="component-demo__events">
           <h2>事件日志</h2>
           <div class="component-demo__event-log">
-            <div v-if="events.length === 0" class="component-demo__no-events">
-              暂无事件，请与模板进行交互
-            </div>
-            <div
-              v-for="(event, index) in events"
-              :key="index"
-              class="component-demo__event-item"
-            >
+            <div v-if="events.length === 0" class="component-demo__no-events">暂无事件，请与模板进行交互</div>
+            <div v-for="(event, index) in events" :key="index" class="component-demo__event-item">
               <span class="component-demo__event-time">{{ event.time }}</span>
               <span class="component-demo__event-type">{{ event.type }}</span>
               <span class="component-demo__event-data">{{ event.data }}</span>
             </div>
           </div>
-          <button class="component-demo__clear-btn" @click="clearEvents">
-            清空日志
-          </button>
+          <button class="component-demo__clear-btn" @click="clearEvents">清空日志</button>
         </div>
 
         <!-- 性能优化组件演示 -->
@@ -235,13 +221,13 @@ const customConfig = {
                 template="modern"
                 :lazy="true"
                 :placeholder-height="300"
-                @load="(component) => addEvent('LazyTemplate Load', { component: 'loaded' })"
+                @load="component => addEvent('LazyTemplate Load', { component: 'loaded' })"
                 @visible="() => addEvent('LazyTemplate Visible', { status: 'entered viewport' })"
-                @error="(error) => addEvent('LazyTemplate Error', { error: error.message })"
+                @error="error => addEvent('LazyTemplate Error', { error: error.message })"
               >
                 <template #loading>
                   <div class="lazy-loading">
-                    <div class="loading-spinner"></div>
+                    <div class="loading-spinner" />
                     <p>正在加载模板...</p>
                   </div>
                 </template>
@@ -249,7 +235,7 @@ const customConfig = {
                 <template #error="{ error, retry }">
                   <div class="lazy-error">
                     <p>❌ 加载失败: {{ error.message }}</p>
-                    <button @click="retry" class="retry-btn">重试</button>
+                    <button class="retry-btn" @click="retry">重试</button>
                   </div>
                 </template>
               </LazyTemplate>
@@ -278,7 +264,7 @@ const customConfig = {
               <PerformanceMonitor
                 :detailed="true"
                 :update-interval="2000"
-                @update="(data) => addEvent('Performance Update', data)"
+                @update="data => addEvent('Performance Update', data)"
               />
             </div>
 
@@ -300,9 +286,9 @@ const customConfig = {
                 :lazy="true"
                 :preload="true"
                 :enable-performance-monitor="true"
-                @performance-update="(data) => addEvent('Renderer Performance', data)"
+                @performance-update="data => addEvent('Renderer Performance', data)"
                 @load-start="() => addEvent('Load Start', { timestamp: Date.now() })"
-                @load-end="(data) => addEvent('Load End', data)"
+                @load-end="data => addEvent('Load End', data)"
                 @login="handleLogin"
               />
             </div>
@@ -543,8 +529,12 @@ const customConfig = {
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .retry-btn {

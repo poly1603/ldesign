@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-  cryptoManager,
-  type EncryptionAlgorithm,
-  hash,
-} from '@ldesign/crypto'
+import { cryptoManager, type EncryptionAlgorithm, hash } from '@ldesign/crypto'
 import { computed, onMounted, ref } from 'vue'
 
 // 当前选中的算法
@@ -53,23 +49,35 @@ const rsaKeyPair = ref<any>(null)
 // 计算属性
 const currentOptions = computed(() => {
   switch (selectedAlgorithm.value) {
-    case 'AES': return aesOptions.value
-    case 'DES': return desOptions.value
-    case '3DES': return tripleDesOptions.value
-    case 'Blowfish': return blowfishOptions.value
-    case 'RSA': return rsaOptions.value
-    default: return {}
+    case 'AES':
+      return aesOptions.value
+    case 'DES':
+      return desOptions.value
+    case '3DES':
+      return tripleDesOptions.value
+    case 'Blowfish':
+      return blowfishOptions.value
+    case 'RSA':
+      return rsaOptions.value
+    default:
+      return {}
   }
 })
 
 const keyPlaceholder = computed(() => {
   switch (selectedAlgorithm.value) {
-    case 'AES': return '输入 AES 密钥（任意长度）'
-    case 'DES': return '输入 DES 密钥（8字节）'
-    case '3DES': return '输入 3DES 密钥（24字节）'
-    case 'Blowfish': return '输入 Blowfish 密钥（4-56字节）'
-    case 'RSA': return 'RSA 使用密钥对，无需手动输入'
-    default: return '输入密钥'
+    case 'AES':
+      return '输入 AES 密钥（任意长度）'
+    case 'DES':
+      return '输入 DES 密钥（8字节）'
+    case '3DES':
+      return '输入 3DES 密钥（24字节）'
+    case 'Blowfish':
+      return '输入 Blowfish 密钥（4-56字节）'
+    case 'RSA':
+      return 'RSA 使用密钥对，无需手动输入'
+    default:
+      return '输入密钥'
   }
 })
 
@@ -80,22 +88,24 @@ async function generateRandomKey() {
   try {
     if (selectedAlgorithm.value === 'RSA') {
       isProcessing.value = true
-      const keyPair = await cryptoManager.generateKey('RSA', rsaOptions.value.keySize)
+      const keyPair = await cryptoManager.generateKey(
+        'RSA',
+        rsaOptions.value.keySize
+      )
       rsaKeyPair.value = keyPair
       success.value = 'RSA 密钥对生成成功'
-    }
-    else {
+    } else {
       const generatedKey = cryptoManager.generateKey(selectedAlgorithm.value)
       key.value = generatedKey as string
       success.value = `${selectedAlgorithm.value} 密钥生成成功`
     }
     error.value = ''
-  }
-  catch (err) {
-    error.value = `密钥生成失败: ${err instanceof Error ? err.message : '未知错误'}`
+  } catch (err) {
+    error.value = `密钥生成失败: ${
+      err instanceof Error ? err.message : '未知错误'
+    }`
     success.value = ''
-  }
-  finally {
+  } finally {
     isProcessing.value = false
   }
 }
@@ -126,30 +136,26 @@ async function encryptData() {
         plaintext.value,
         rsaKeyPair.value.publicKey,
         'RSA',
-        currentOptions.value,
+        currentOptions.value
       )
-    }
-    else {
+    } else {
       result = await cryptoManager.encryptData(
         plaintext.value,
         key.value,
         selectedAlgorithm.value,
-        currentOptions.value,
+        currentOptions.value
       )
     }
 
     if (result.success) {
       encrypted.value = JSON.stringify(result, null, 2)
       success.value = `${selectedAlgorithm.value} 加密成功`
-    }
-    else {
+    } else {
       error.value = result.error || '加密失败'
     }
-  }
-  catch (err) {
+  } catch (err) {
     error.value = `加密失败: ${err instanceof Error ? err.message : '未知错误'}`
-  }
-  finally {
+  } finally {
     isProcessing.value = false
   }
 }
@@ -171,28 +177,21 @@ async function decryptData() {
       result = await cryptoManager.decryptData(
         encryptedData,
         rsaKeyPair.value.privateKey,
-        'RSA',
+        'RSA'
       )
-    }
-    else {
-      result = await cryptoManager.decryptData(
-        encryptedData,
-        key.value,
-      )
+    } else {
+      result = await cryptoManager.decryptData(encryptedData, key.value)
     }
 
     if (result.success) {
       decrypted.value = result.data || ''
       success.value = `${selectedAlgorithm.value} 解密成功`
-    }
-    else {
+    } else {
       error.value = result.error || '解密失败'
     }
-  }
-  catch (err) {
+  } catch (err) {
     error.value = `解密失败: ${err instanceof Error ? err.message : '未知错误'}`
-  }
-  finally {
+  } finally {
     isProcessing.value = false
   }
 }
@@ -233,9 +232,10 @@ async function calculateHash() {
     hashResult.value = result
     success.value = `${hashAlgorithm.value} 哈希计算成功`
     error.value = ''
-  }
-  catch (err) {
-    error.value = `哈希计算失败: ${err instanceof Error ? err.message : '未知错误'}`
+  } catch (err) {
+    error.value = `哈希计算失败: ${
+      err instanceof Error ? err.message : '未知错误'
+    }`
   }
 }
 
@@ -261,8 +261,6 @@ async function copyToClipboard(text: string) {
     error.value = '复制失败，请手动复制'
   }
 }
-
-
 
 function onAlgorithmChange() {
   clearAll()
@@ -309,8 +307,12 @@ onMounted(() => {
           <button
             v-for="algorithm in algorithms"
             :key="algorithm"
-            class="tab" :class="[{ active: selectedAlgorithm === algorithm }]"
-            @click="selectedAlgorithm = algorithm; onAlgorithmChange()"
+            class="tab"
+            :class="[{ active: selectedAlgorithm === algorithm }]"
+            @click="
+              selectedAlgorithm = algorithm
+              onAlgorithmChange()
+            "
           >
             {{ algorithm }}
           </button>
@@ -341,12 +343,14 @@ onMounted(() => {
                     v-model="key"
                     :placeholder="keyPlaceholder"
                     type="text"
-                  >
+                  />
                   <button class="btn-small" @click="generateRandomKey">
                     生成
                   </button>
                 </div>
-                <small class="key-info">当前密钥长度: {{ key.length }} 字符</small>
+                <small class="key-info"
+                  >当前密钥长度: {{ key.length }} 字符</small
+                >
               </div>
 
               <!-- RSA 密钥对显示 -->
@@ -364,91 +368,61 @@ onMounted(() => {
                 <div class="options">
                   <div v-if="selectedAlgorithm === 'AES'" class="option-group">
                     <select v-model="aesOptions.mode">
-                      <option value="CBC">
-                        CBC
-                      </option>
-                      <option value="ECB">
-                        ECB
-                      </option>
-                      <option value="CFB">
-                        CFB
-                      </option>
-                      <option value="OFB">
-                        OFB
-                      </option>
+                      <option value="CBC">CBC</option>
+                      <option value="ECB">ECB</option>
+                      <option value="CFB">CFB</option>
+                      <option value="OFB">OFB</option>
                     </select>
                     <select v-model="aesOptions.keySize">
-                      <option :value="128">
-                        AES-128
-                      </option>
-                      <option :value="192">
-                        AES-192
-                      </option>
-                      <option :value="256">
-                        AES-256
-                      </option>
+                      <option :value="128">AES-128</option>
+                      <option :value="192">AES-192</option>
+                      <option :value="256">AES-256</option>
                     </select>
                   </div>
 
-                  <div v-else-if="selectedAlgorithm === 'DES'" class="option-group">
+                  <div
+                    v-else-if="selectedAlgorithm === 'DES'"
+                    class="option-group"
+                  >
                     <select v-model="desOptions.mode">
-                      <option value="CBC">
-                        CBC
-                      </option>
-                      <option value="ECB">
-                        ECB
-                      </option>
-                      <option value="CFB">
-                        CFB
-                      </option>
-                      <option value="OFB">
-                        OFB
-                      </option>
+                      <option value="CBC">CBC</option>
+                      <option value="ECB">ECB</option>
+                      <option value="CFB">CFB</option>
+                      <option value="OFB">OFB</option>
                     </select>
                   </div>
 
-                  <div v-else-if="selectedAlgorithm === '3DES'" class="option-group">
+                  <div
+                    v-else-if="selectedAlgorithm === '3DES'"
+                    class="option-group"
+                  >
                     <select v-model="tripleDesOptions.mode">
-                      <option value="CBC">
-                        CBC
-                      </option>
-                      <option value="ECB">
-                        ECB
-                      </option>
-                      <option value="CFB">
-                        CFB
-                      </option>
-                      <option value="OFB">
-                        OFB
-                      </option>
+                      <option value="CBC">CBC</option>
+                      <option value="ECB">ECB</option>
+                      <option value="CFB">CFB</option>
+                      <option value="OFB">OFB</option>
                     </select>
                   </div>
 
-                  <div v-else-if="selectedAlgorithm === 'Blowfish'" class="option-group">
+                  <div
+                    v-else-if="selectedAlgorithm === 'Blowfish'"
+                    class="option-group"
+                  >
                     <select v-model="blowfishOptions.mode">
-                      <option value="CBC">
-                        CBC
-                      </option>
-                      <option value="ECB">
-                        ECB
-                      </option>
+                      <option value="CBC">CBC</option>
+                      <option value="ECB">ECB</option>
                     </select>
                   </div>
 
-                  <div v-else-if="selectedAlgorithm === 'RSA'" class="option-group">
+                  <div
+                    v-else-if="selectedAlgorithm === 'RSA'"
+                    class="option-group"
+                  >
                     <select v-model="rsaOptions.keySize">
-                      <option :value="1024">
-                        1024 位
-                      </option>
-                      <option :value="2048">
-                        2048 位
-                      </option>
-                      <option :value="3072">
-                        3072 位
-                      </option>
-                      <option :value="4096">
-                        4096 位
-                      </option>
+                      <option :value="1024">1024 位</option>
+                      <option :value="2048">2048 位</option>
+                      <option :value="3072">3072 位</option>
+                      <option :value="4096">4096 位</option>
                     </select>
                   </div>
                 </div>
@@ -481,10 +455,7 @@ onMounted(() => {
                   {{ isProcessing ? '解密中...' : '🔓 解密' }}
                 </button>
 
-                <button
-                  class="btn btn-outline"
-                  @click="clearAll"
-                >
+                <button class="btn btn-outline" @click="clearAll">
                   🗑️ 清空
                 </button>
               </div>
@@ -493,13 +464,9 @@ onMounted(() => {
             <!-- 结果区域 -->
             <div class="result-area">
               <!-- 状态消息 -->
-              <div v-if="error" class="message error">
-                ❌ {{ error }}
-              </div>
+              <div v-if="error" class="message error">❌ {{ error }}</div>
 
-              <div v-if="success" class="message success">
-                ✅ {{ success }}
-              </div>
+              <div v-if="success" class="message success">✅ {{ success }}</div>
 
               <!-- 加密结果 -->
               <div v-if="encrypted" class="result-box">
@@ -547,7 +514,11 @@ onMounted(() => {
               <div class="form-group">
                 <label>哈希算法</label>
                 <select v-model="hashAlgorithm">
-                  <option v-for="algo in hashAlgorithms" :key="algo" :value="algo">
+                  <option
+                    v-for="algo in hashAlgorithms"
+                    :key="algo"
+                    :value="algo"
+                  >
                     {{ algo }}
                   </option>
                 </select>
@@ -581,27 +552,27 @@ onMounted(() => {
           <h3>📊 性能统计</h3>
           <div class="stats-grid">
             <div class="stat-item">
-              <div class="stat-label">
-                支持的算法
-              </div>
+              <div class="stat-label">支持的算法</div>
               <div class="stat-value">
                 {{ algorithms.length }}
               </div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">
-                当前算法
-              </div>
+              <div class="stat-label">当前算法</div>
               <div class="stat-value">
                 {{ selectedAlgorithm }}
               </div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">
-                密钥长度
-              </div>
+              <div class="stat-label">密钥长度</div>
               <div class="stat-value">
-                {{ isRSA ? (rsaKeyPair ? `${rsaOptions.keySize} 位` : '未生成') : `${key.length} 字符` }}
+                {{
+                  isRSA
+                    ? rsaKeyPair
+                      ? `${rsaOptions.keySize} 位`
+                      : '未生成'
+                    : `${key.length} 字符`
+                }}
               </div>
             </div>
           </div>
@@ -616,11 +587,7 @@ onMounted(() => {
 .app {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .header {

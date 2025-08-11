@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react'
-import { keyGenerator, digitalSignature, hash } from '@ldesign/crypto'
+import { digitalSignature, hash, keyGenerator } from '@ldesign/crypto'
+import React, { useCallback, useState } from 'react'
 
 interface SignedDocument {
   id: string
@@ -11,7 +11,10 @@ interface SignedDocument {
 }
 
 export const DigitalSignature: React.FC = () => {
-  const [keyPair, setKeyPair] = useState<{ publicKey: string; privateKey: string } | null>(null)
+  const [keyPair, setKeyPair] = useState<{
+    publicKey: string
+    privateKey: string
+  } | null>(null)
   const [documentContent, setDocumentContent] = useState('')
   const [signedDocuments, setSignedDocuments] = useState<SignedDocument[]>([])
   const [verificationContent, setVerificationContent] = useState('')
@@ -29,7 +32,7 @@ export const DigitalSignature: React.FC = () => {
       setKeyPair(newKeyPair)
       setVerificationResult(null)
     } catch (error) {
-      alert('密钥生成失败: ' + (error as Error).message)
+      alert(`密钥生成失败: ${(error as Error).message}`)
     }
   }, [])
 
@@ -48,9 +51,12 @@ export const DigitalSignature: React.FC = () => {
     try {
       // 计算文档哈希
       const documentHash = hash.sha256(documentContent)
-      
+
       // 创建数字签名
-      const signature = digitalSignature.sign(documentContent, keyPair.privateKey)
+      const signature = digitalSignature.sign(
+        documentContent,
+        keyPair.privateKey
+      )
 
       const signedDoc: SignedDocument = {
         id: Date.now().toString(),
@@ -58,19 +64,23 @@ export const DigitalSignature: React.FC = () => {
         signature,
         publicKey: keyPair.publicKey,
         timestamp: new Date(),
-        hash: documentHash
+        hash: documentHash,
       }
 
       setSignedDocuments(prev => [...prev, signedDoc])
       setDocumentContent('')
     } catch (error) {
-      alert('签名失败: ' + (error as Error).message)
+      alert(`签名失败: ${(error as Error).message}`)
     }
   }, [keyPair, documentContent])
 
   // 验证签名
   const verifySignature = useCallback(() => {
-    if (!verificationContent.trim() || !verificationSignature.trim() || !verificationPublicKey.trim()) {
+    if (
+      !verificationContent.trim() ||
+      !verificationSignature.trim() ||
+      !verificationPublicKey.trim()
+    ) {
       alert('请填写完整的验证信息')
       return
     }
@@ -84,14 +94,14 @@ export const DigitalSignature: React.FC = () => {
 
       setVerificationResult({
         isValid,
-        message: isValid 
+        message: isValid
           ? '✅ 签名验证成功！文档未被篡改，签名有效。'
-          : '❌ 签名验证失败！文档可能已被篡改或签名无效。'
+          : '❌ 签名验证失败！文档可能已被篡改或签名无效。',
       })
     } catch (error) {
       setVerificationResult({
         isValid: false,
-        message: '❌ 验证过程出错: ' + (error as Error).message
+        message: `❌ 验证过程出错: ${(error as Error).message}`,
       })
     }
   }, [verificationContent, verificationSignature, verificationPublicKey])
@@ -99,8 +109,12 @@ export const DigitalSignature: React.FC = () => {
   // 快速验证已签名文档
   const quickVerify = useCallback((doc: SignedDocument) => {
     try {
-      const isValid = digitalSignature.verify(doc.content, doc.signature, doc.publicKey)
-      
+      const isValid = digitalSignature.verify(
+        doc.content,
+        doc.signature,
+        doc.publicKey
+      )
+
       // 同时验证文档哈希
       const currentHash = hash.sha256(doc.content)
       const hashValid = currentHash === doc.hash
@@ -113,7 +127,7 @@ export const DigitalSignature: React.FC = () => {
         alert('❌ 签名验证失败！')
       }
     } catch (error) {
-      alert('验证失败: ' + (error as Error).message)
+      alert(`验证失败: ${(error as Error).message}`)
     }
   }, [])
 
@@ -123,19 +137,19 @@ export const DigitalSignature: React.FC = () => {
       document: {
         content: doc.content,
         hash: doc.hash,
-        timestamp: doc.timestamp.toISOString()
+        timestamp: doc.timestamp.toISOString(),
       },
       signature: doc.signature,
       publicKey: doc.publicKey,
       metadata: {
         version: '1.0',
         algorithm: 'RSA-SHA256',
-        exportedAt: new Date().toISOString()
-      }
+        exportedAt: new Date().toISOString(),
+      },
     }
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json'
+      type: 'application/json',
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -165,55 +179,55 @@ export const DigitalSignature: React.FC = () => {
   }, [])
 
   return (
-    <div className="digital-signature">
+    <div className='digital-signature'>
       <h2>✍️ 数字签名工具</h2>
 
       {/* 密钥管理部分 */}
-      <div className="key-management-section">
+      <div className='key-management-section'>
         <h3>密钥管理</h3>
         {!keyPair ? (
-          <div className="no-keys">
+          <div className='no-keys'>
             <p>还没有生成密钥对</p>
-            <button onClick={generateKeyPair} className="btn-primary">
+            <button onClick={generateKeyPair} className='btn-primary'>
               生成 RSA 密钥对 (2048位)
             </button>
           </div>
         ) : (
-          <div className="key-display">
-            <div className="key-item">
+          <div className='key-display'>
+            <div className='key-item'>
               <h4>公钥 (用于验证签名):</h4>
               <textarea
                 value={keyPair.publicKey}
                 readOnly
-                className="key-textarea"
+                className='key-textarea'
                 rows={4}
               />
               <button
                 onClick={() => copyToClipboard(keyPair.publicKey, '公钥')}
-                className="btn-copy"
+                className='btn-copy'
               >
                 📋 复制公钥
               </button>
             </div>
-            
-            <div className="key-item">
+
+            <div className='key-item'>
               <h4>私钥 (用于创建签名):</h4>
               <textarea
                 value={keyPair.privateKey}
                 readOnly
-                className="key-textarea private-key"
+                className='key-textarea private-key'
                 rows={4}
               />
               <button
                 onClick={() => copyToClipboard(keyPair.privateKey, '私钥')}
-                className="btn-copy"
+                className='btn-copy'
               >
                 📋 复制私钥
               </button>
-              <p className="warning">⚠️ 私钥非常重要，请妥善保管！</p>
+              <p className='warning'>⚠️ 私钥非常重要，请妥善保管！</p>
             </div>
 
-            <button onClick={generateKeyPair} className="btn-secondary">
+            <button onClick={generateKeyPair} className='btn-secondary'>
               重新生成密钥对
             </button>
           </div>
@@ -221,20 +235,20 @@ export const DigitalSignature: React.FC = () => {
       </div>
 
       {/* 文档签名部分 */}
-      <div className="document-signing-section">
+      <div className='document-signing-section'>
         <h3>文档签名</h3>
-        <div className="signing-form">
+        <div className='signing-form'>
           <textarea
-            placeholder="输入要签名的文档内容..."
+            placeholder='输入要签名的文档内容...'
             value={documentContent}
-            onChange={(e) => setDocumentContent(e.target.value)}
-            className="document-textarea"
+            onChange={e => setDocumentContent(e.target.value)}
+            className='document-textarea'
             rows={6}
           />
           <button
             onClick={signDocument}
             disabled={!keyPair || !documentContent.trim()}
-            className="btn-primary"
+            className='btn-primary'
           >
             🖊️ 创建数字签名
           </button>
@@ -242,52 +256,60 @@ export const DigitalSignature: React.FC = () => {
       </div>
 
       {/* 签名验证部分 */}
-      <div className="signature-verification-section">
+      <div className='signature-verification-section'>
         <h3>签名验证</h3>
-        <div className="verification-form">
-          <div className="form-group">
+        <div className='verification-form'>
+          <div className='form-group'>
             <label>文档内容:</label>
             <textarea
-              placeholder="输入要验证的文档内容..."
+              placeholder='输入要验证的文档内容...'
               value={verificationContent}
-              onChange={(e) => setVerificationContent(e.target.value)}
-              className="document-textarea"
+              onChange={e => setVerificationContent(e.target.value)}
+              className='document-textarea'
               rows={4}
             />
           </div>
-          
-          <div className="form-group">
+
+          <div className='form-group'>
             <label>数字签名:</label>
             <textarea
-              placeholder="输入数字签名..."
+              placeholder='输入数字签名...'
               value={verificationSignature}
-              onChange={(e) => setVerificationSignature(e.target.value)}
-              className="signature-textarea"
+              onChange={e => setVerificationSignature(e.target.value)}
+              className='signature-textarea'
               rows={3}
             />
           </div>
-          
-          <div className="form-group">
+
+          <div className='form-group'>
             <label>公钥:</label>
             <textarea
-              placeholder="输入用于验证的公钥..."
+              placeholder='输入用于验证的公钥...'
               value={verificationPublicKey}
-              onChange={(e) => setVerificationPublicKey(e.target.value)}
-              className="key-textarea"
+              onChange={e => setVerificationPublicKey(e.target.value)}
+              className='key-textarea'
               rows={3}
             />
           </div>
 
           <button
             onClick={verifySignature}
-            disabled={!verificationContent.trim() || !verificationSignature.trim() || !verificationPublicKey.trim()}
-            className="btn-verify"
+            disabled={
+              !verificationContent.trim() ||
+              !verificationSignature.trim() ||
+              !verificationPublicKey.trim()
+            }
+            className='btn-verify'
           >
             🔍 验证签名
           </button>
 
           {verificationResult && (
-            <div className={`verification-result ${verificationResult.isValid ? 'valid' : 'invalid'}`}>
+            <div
+              className={`verification-result ${
+                verificationResult.isValid ? 'valid' : 'invalid'
+              }`}
+            >
               <p>{verificationResult.message}</p>
             </div>
           )}
@@ -295,13 +317,13 @@ export const DigitalSignature: React.FC = () => {
       </div>
 
       {/* 已签名文档列表 */}
-      <div className="signed-documents-section">
+      <div className='signed-documents-section'>
         <h3>已签名文档 ({signedDocuments.length})</h3>
-        
+
         {signedDocuments.length === 0 ? (
-          <div className="empty-state">
+          <div className='empty-state'>
             <p>还没有签名任何文档</p>
-            <div className="info-box">
+            <div className='info-box'>
               <h4>数字签名的作用:</h4>
               <ul>
                 <li>验证文档的真实性和完整性</li>
@@ -312,51 +334,55 @@ export const DigitalSignature: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="documents-grid">
-            {signedDocuments.map((doc) => (
-              <div key={doc.id} className="document-card">
-                <div className="document-header">
+          <div className='documents-grid'>
+            {signedDocuments.map(doc => (
+              <div key={doc.id} className='document-card'>
+                <div className='document-header'>
                   <h4>📄 文档 #{doc.id}</h4>
                   <button
                     onClick={() => deleteSignedDocument(doc.id)}
-                    className="btn-delete"
-                    title="删除"
+                    className='btn-delete'
+                    title='删除'
                   >
                     🗑️
                   </button>
                 </div>
-                
-                <div className="document-content">
-                  <div className="content-preview">
+
+                <div className='document-content'>
+                  <div className='content-preview'>
                     <strong>内容预览:</strong>
-                    <p className="content-text">
-                      {doc.content.length > 100 
-                        ? doc.content.substring(0, 100) + '...'
-                        : doc.content
-                      }
+                    <p className='content-text'>
+                      {doc.content.length > 100
+                        ? `${doc.content.substring(0, 100)}...`
+                        : doc.content}
                     </p>
                   </div>
-                  
-                  <div className="document-info">
-                    <p><strong>签名时间:</strong> {doc.timestamp.toLocaleString()}</p>
-                    <p><strong>文档哈希:</strong> 
-                      <code className="hash-display">
-                        {doc.hash.substring(0, 16)}...
+
+                  <div className='document-info'>
+                    <p>
+                      <strong>签名时间:</strong>{' '}
+                      {doc.timestamp.toLocaleString()}
+                    </p>
+                    <p>
+                      <strong>文档哈希:</strong>
+                      <code className='hash-display'>
+                        {doc.hash.substring(0, 16)}
+                        ...
                       </code>
                     </p>
                   </div>
                 </div>
 
-                <div className="document-actions">
+                <div className='document-actions'>
                   <button
                     onClick={() => quickVerify(doc)}
-                    className="btn-verify-quick"
+                    className='btn-verify-quick'
                   >
                     ✅ 快速验证
                   </button>
                   <button
                     onClick={() => exportSignedDocument(doc)}
-                    className="btn-export"
+                    className='btn-export'
                   >
                     💾 导出
                   </button>
@@ -367,13 +393,21 @@ export const DigitalSignature: React.FC = () => {
         )}
       </div>
 
-      <div className="security-info">
+      <div className='security-info'>
         <h4>🔒 技术说明:</h4>
         <ul>
-          <li><strong>RSA-2048:</strong> 使用2048位RSA密钥，提供高强度安全保护</li>
-          <li><strong>SHA-256:</strong> 使用SHA-256哈希算法确保文档完整性</li>
-          <li><strong>数字签名:</strong> 基于公钥密码学的不可否认性保证</li>
-          <li><strong>完整性验证:</strong> 任何文档修改都会导致验证失败</li>
+          <li>
+            <strong>RSA-2048:</strong> 使用2048位RSA密钥，提供高强度安全保护
+          </li>
+          <li>
+            <strong>SHA-256:</strong> 使用SHA-256哈希算法确保文档完整性
+          </li>
+          <li>
+            <strong>数字签名:</strong> 基于公钥密码学的不可否认性保证
+          </li>
+          <li>
+            <strong>完整性验证:</strong> 任何文档修改都会导致验证失败
+          </li>
         </ul>
       </div>
     </div>

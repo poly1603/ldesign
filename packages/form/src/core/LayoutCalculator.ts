@@ -1,25 +1,21 @@
 // 布局计算器
 
+import type { FormItemConfig } from '../types/field'
 import type {
+  BreakpointConfig,
+  FieldLayout,
   LayoutConfig,
   LayoutResult,
-  FieldLayout,
-  ResponsiveConfig,
-  BreakpointConfig,
 } from '../types/layout'
-import type { FormItemConfig } from '../types/field'
+import { SimpleEventEmitter } from '../utils/event'
 import {
   calculateColumns,
   calculateColumnWidth,
-  calculateSpanWidth,
-  parseSpan,
-  calculateGridPosition,
-  getBreakpoint,
   calculateElementPosition,
   calculateElementSize,
-  clamp,
+  getBreakpoint,
+  parseSpan,
 } from '../utils/math'
-import { SimpleEventEmitter } from '../utils/event'
 
 /**
  * 布局计算器
@@ -30,6 +26,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
     width: 0,
     height: 0,
   }
+
   private currentBreakpoint: string = 'lg'
 
   constructor(config: LayoutConfig = {}) {
@@ -307,7 +304,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
           return field.span
         }
         if (typeof field.span === 'string' && field.span.endsWith('%')) {
-          const percentage = parseFloat(field.span) / 100
+          const percentage = Number.parseFloat(field.span) / 100
           return Math.ceil(12 * percentage) // 假设最大12列
         }
         return 1

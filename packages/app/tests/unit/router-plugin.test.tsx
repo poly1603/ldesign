@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createApp } from '@ldesign/engine'
 import { routerPlugin } from '@ldesign/router'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../../src/App'
 
 // Mock 路由配置
@@ -17,7 +17,7 @@ const mockRoutes = [
   },
 ]
 
-describe('Router Plugin Integration', () => {
+describe('router Plugin Integration', () => {
   let engine: any
 
   beforeEach(() => {

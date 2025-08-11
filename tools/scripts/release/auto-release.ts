@@ -332,7 +332,7 @@ async function interactiveRelease() {
     'major',
     'prerelease',
   ]
-  const type = types[parseInt(typeChoice) - 1]
+  const type = types[Number.parseInt(typeChoice) - 1]
 
   if (!type) {
     throw new Error('无效的选择')

@@ -6,7 +6,7 @@
 global.navigator = {
   ...global.navigator,
   geolocation: {
-    getCurrentPosition: vi.fn((success) => {
+    getCurrentPosition: vi.fn(success => {
       success({
         coords: {
           latitude: 30.4596106,
@@ -15,31 +15,33 @@ global.navigator = {
           altitude: null,
           altitudeAccuracy: null,
           heading: null,
-          speed: null
+          speed: null,
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }),
     watchPosition: vi.fn(() => 1),
-    clearWatch: vi.fn()
+    clearWatch: vi.fn(),
   },
-  getBattery: vi.fn(() => Promise.resolve({
-    level: 0.8,
-    charging: true,
-    chargingTime: null,
-    dischargingTime: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn()
-  })),
+  getBattery: vi.fn(() =>
+    Promise.resolve({
+      level: 0.8,
+      charging: true,
+      chargingTime: null,
+      dischargingTime: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })
+  ),
   connection: {
     effectiveType: '4g',
     downlink: 1.55,
     rtt: 300,
     saveData: false,
     addEventListener: vi.fn(),
-    removeEventListener: vi.fn()
+    removeEventListener: vi.fn(),
   },
-  onLine: true
+  onLine: true,
 }
 
 // 模拟 window 对象
@@ -52,15 +54,15 @@ global.window = {
     height: 1080,
     orientation: {
       type: 'landscape-primary',
-      angle: 0
-    }
+      angle: 0,
+    },
   },
   addEventListener: vi.fn(),
-  removeEventListener: vi.fn()
+  removeEventListener: vi.fn(),
 }
 
 // 模拟 matchMedia
-global.matchMedia = vi.fn((query) => ({
+global.matchMedia = vi.fn(query => ({
   matches: false,
   media: query,
   onchange: null,
@@ -68,5 +70,5 @@ global.matchMedia = vi.fn((query) => ({
   removeListener: vi.fn(),
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),
-  dispatchEvent: vi.fn()
+  dispatchEvent: vi.fn(),
 }))

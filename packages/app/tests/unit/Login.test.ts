@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from '../../src/views/Login'
 
 // Mock dependencies
@@ -41,7 +41,7 @@ vi.mock('vue', async () => {
   }
 })
 
-describe('Login 组件', () => {
+describe('login 组件', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

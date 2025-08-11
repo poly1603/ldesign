@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react'
 import { aes, hash } from '@ldesign/crypto'
+import React, { useCallback, useState } from 'react'
 import './styles.css'
 
 interface PasswordEntry {
@@ -18,13 +18,15 @@ export const PasswordManager: React.FC = () => {
   const [newEntry, setNewEntry] = useState({
     website: '',
     username: '',
-    password: ''
+    password: '',
   })
-  const [showPasswords, setShowPasswords] = useState<Record<string, string | boolean>>({})
+  const [showPasswords, setShowPasswords] = useState<
+    Record<string, string | boolean>
+  >({})
 
   // 生成主密钥（基于主密码的哈希）
   const generateMasterKey = useCallback((password: string) => {
-    return hash.sha256(password + 'salt_for_password_manager')
+    return hash.sha256(`${password}salt_for_password_manager`)
   }, [])
 
   // 解锁密码管理器
@@ -56,7 +58,7 @@ export const PasswordManager: React.FC = () => {
       const masterKey = generateMasterKey(masterPassword)
       const encrypted = aes.encrypt(newEntry.password, masterKey, {
         keySize: 256,
-        mode: 'CBC'
+        mode: 'CBC',
       })
 
       if (encrypted.success && encrypted.data) {
@@ -66,49 +68,56 @@ export const PasswordManager: React.FC = () => {
           username: newEntry.username,
           encryptedPassword: encrypted.data,
           iv: encrypted.iv || '',
-          createdAt: new Date()
+          createdAt: new Date(),
         }
 
         setPasswords(prev => [...prev, entry])
         setNewEntry({ website: '', username: '', password: '' })
       } else {
-        alert('加密失败: ' + encrypted.error)
+        alert(`加密失败: ${encrypted.error}`)
       }
     } catch (error) {
-      alert('添加密码失败: ' + (error as Error).message)
+      alert(`添加密码失败: ${(error as Error).message}`)
     }
   }, [newEntry, masterPassword, generateMasterKey])
 
   // 解密并显示密码
-  const togglePasswordVisibility = useCallback((entry: PasswordEntry) => {
-    const entryId = entry.id
-    
-    if (showPasswords[entryId]) {
-      // 隐藏密码
-      setShowPasswords(prev => ({ ...prev, [entryId]: false }))
-    } else {
-      // 显示密码
-      try {
-        const masterKey = generateMasterKey(masterPassword)
-        const decrypted = aes.decrypt(entry.encryptedPassword, masterKey, {
-          keySize: 256,
-          mode: 'CBC'
-        })
+  const togglePasswordVisibility = useCallback(
+    (entry: PasswordEntry) => {
+      const entryId = entry.id
 
-        if (decrypted.success && decrypted.data) {
-          setShowPasswords(prev => ({ ...prev, [entryId]: decrypted.data as string }))
-        } else {
-          alert('解密失败: ' + (decrypted.error || '未知错误'))
+      if (showPasswords[entryId]) {
+        // 隐藏密码
+        setShowPasswords(prev => ({ ...prev, [entryId]: false }))
+      } else {
+        // 显示密码
+        try {
+          const masterKey = generateMasterKey(masterPassword)
+          const decrypted = aes.decrypt(entry.encryptedPassword, masterKey, {
+            keySize: 256,
+            mode: 'CBC',
+          })
+
+          if (decrypted.success && decrypted.data) {
+            setShowPasswords(prev => ({
+              ...prev,
+              [entryId]: decrypted.data as string,
+            }))
+          } else {
+            alert(`解密失败: ${decrypted.error || '未知错误'}`)
+          }
+        } catch (error) {
+          alert(`解密错误: ${(error as Error).message}`)
         }
-      } catch (error) {
-        alert('解密错误: ' + (error as Error).message)
       }
-    }
-  }, [masterPassword, generateMasterKey, showPasswords])
+    },
+    [masterPassword, generateMasterKey, showPasswords]
+  )
 
   // 生成强密码
   const generateStrongPassword = useCallback(() => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
     let password = ''
     for (let i = 0; i < 16; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -130,23 +139,23 @@ export const PasswordManager: React.FC = () => {
 
   if (!isUnlocked) {
     return (
-      <div className="password-manager">
-        <div className="unlock-screen">
+      <div className='password-manager'>
+        <div className='unlock-screen'>
           <h2>🔐 密码管理器</h2>
           <p>请输入主密码来解锁您的密码库</p>
-          <div className="form-group">
+          <div className='form-group'>
             <input
-              type="password"
-              placeholder="主密码"
+              type='password'
+              placeholder='主密码'
               value={masterPassword}
-              onChange={(e) => setMasterPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && unlock()}
+              onChange={e => setMasterPassword(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && unlock()}
             />
           </div>
-          <button onClick={unlock} className="btn-primary">
+          <button onClick={unlock} className='btn-primary'>
             解锁
           </button>
-          <div className="security-note">
+          <div className='security-note'>
             <p>⚠️ 安全提示：</p>
             <ul>
               <li>主密码用于加密您的所有密码</li>
@@ -160,82 +169,89 @@ export const PasswordManager: React.FC = () => {
   }
 
   return (
-    <div className="password-manager">
-      <div className="header">
+    <div className='password-manager'>
+      <div className='header'>
         <h2>🔐 密码管理器</h2>
-        <button onClick={lock} className="btn-secondary">
+        <button onClick={lock} className='btn-secondary'>
           锁定
         </button>
       </div>
 
-      <div className="add-password-section">
+      <div className='add-password-section'>
         <h3>添加新密码</h3>
-        <div className="form-row">
+        <div className='form-row'>
           <input
-            type="text"
-            placeholder="网站/应用名称"
+            type='text'
+            placeholder='网站/应用名称'
             value={newEntry.website}
-            onChange={(e) => setNewEntry(prev => ({ ...prev, website: e.target.value }))}
+            onChange={e =>
+              setNewEntry(prev => ({ ...prev, website: e.target.value }))
+            }
           />
           <input
-            type="text"
-            placeholder="用户名/邮箱"
+            type='text'
+            placeholder='用户名/邮箱'
             value={newEntry.username}
-            onChange={(e) => setNewEntry(prev => ({ ...prev, username: e.target.value }))}
+            onChange={e =>
+              setNewEntry(prev => ({ ...prev, username: e.target.value }))
+            }
           />
         </div>
-        <div className="form-row">
+        <div className='form-row'>
           <input
-            type="text"
-            placeholder="密码"
+            type='text'
+            placeholder='密码'
             value={newEntry.password}
-            onChange={(e) => setNewEntry(prev => ({ ...prev, password: e.target.value }))}
+            onChange={e =>
+              setNewEntry(prev => ({ ...prev, password: e.target.value }))
+            }
           />
-          <button onClick={generateStrongPassword} className="btn-generate">
+          <button onClick={generateStrongPassword} className='btn-generate'>
             生成强密码
           </button>
         </div>
-        <button onClick={addPassword} className="btn-primary">
+        <button onClick={addPassword} className='btn-primary'>
           添加密码
         </button>
       </div>
 
-      <div className="passwords-list">
+      <div className='passwords-list'>
         <h3>已保存的密码 ({passwords.length})</h3>
         {passwords.length === 0 ? (
-          <p className="empty-state">还没有保存任何密码</p>
+          <p className='empty-state'>还没有保存任何密码</p>
         ) : (
-          <div className="passwords-grid">
-            {passwords.map((entry) => (
-              <div key={entry.id} className="password-card">
-                <div className="card-header">
+          <div className='passwords-grid'>
+            {passwords.map(entry => (
+              <div key={entry.id} className='password-card'>
+                <div className='card-header'>
                   <h4>{entry.website}</h4>
                   <button
                     onClick={() => deletePassword(entry.id)}
-                    className="btn-delete"
-                    title="删除"
+                    className='btn-delete'
+                    title='删除'
                   >
                     🗑️
                   </button>
                 </div>
-                <div className="card-content">
-                  <p><strong>用户名:</strong> {entry.username}</p>
-                  <div className="password-row">
+                <div className='card-content'>
+                  <p>
+                    <strong>用户名:</strong> {entry.username}
+                  </p>
+                  <div className='password-row'>
                     <strong>密码:</strong>
-                    <span className="password-display">
-                      {showPasswords[entry.id] 
-                        ? showPasswords[entry.id] 
-                        : '••••••••'
-                      }
+                    <span className='password-display'>
+                      {showPasswords[entry.id]
+                        ? showPasswords[entry.id]
+                        : '••••••••'}
                     </span>
                     <button
                       onClick={() => togglePasswordVisibility(entry)}
-                      className="btn-toggle"
+                      className='btn-toggle'
                     >
                       {showPasswords[entry.id] ? '🙈' : '👁️'}
                     </button>
                   </div>
-                  <p className="created-date">
+                  <p className='created-date'>
                     创建时间: {entry.createdAt.toLocaleString()}
                   </p>
                 </div>

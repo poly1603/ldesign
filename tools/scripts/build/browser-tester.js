@@ -5,9 +5,9 @@
  * 在真实浏览器环境中测试构建产物的兼容性和功能
  */
 
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // 动态导入playwright，如果不存在则跳过
 let chromium = null
@@ -23,15 +23,15 @@ const __dirname = path.dirname(__filename)
 
 // 颜色输出
 const colors = {
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-  gray: '\x1b[90m',
-  reset: '\x1b[0m',
+  red: '\x1B[31m',
+  green: '\x1B[32m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
+  magenta: '\x1B[35m',
+  cyan: '\x1B[36m',
+  white: '\x1B[37m',
+  gray: '\x1B[90m',
+  reset: '\x1B[0m',
 }
 
 function log(message, color = 'white') {

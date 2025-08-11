@@ -1,8 +1,8 @@
 // 条件渲染工具函数
 
-import type { FormData } from '../types/form'
-import type { FormItemConfig } from '../types/field'
 import type { ConditionalRenderConfig } from '../types/conditional'
+import type { FormItemConfig } from '../types/field'
+import type { FormData } from '../types/form'
 import { get } from './common'
 
 /**
@@ -48,7 +48,7 @@ export class ConditionParser {
         })
 
         // 使用 Function 构造器安全执行表达式
-        return new Function('return ' + processedExpression)()
+        return new Function(`return ${processedExpression}`)()
       } catch (error) {
         console.warn('条件表达式解析失败:', expression, error)
         return false

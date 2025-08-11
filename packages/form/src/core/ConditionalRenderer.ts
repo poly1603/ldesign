@@ -1,20 +1,18 @@
 // 条件渲染器
 
 import type {
-  ConditionalRenderConfig,
-  ConditionalEngine,
-  ConditionalRule,
-  ConditionalResult,
-  ConditionalContext,
-  ConditionalWatcher,
-  ConditionalWatchCallback,
   BuiltinConditionalFunctions,
+  ConditionalContext,
+  ConditionalEngine,
+  ConditionalResult,
+  ConditionalRule,
+  ConditionalWatchCallback,
+  ConditionalWatcher,
 } from '../types/conditional'
 import type { FormItemConfig } from '../types/field'
 import type { FormData } from '../types/form'
+import { get } from '../utils/common'
 import { SimpleEventEmitter } from '../utils/event'
-import { debounce, throttle } from '../utils/throttle'
-import { deepClone, get } from '../utils/common'
 
 /**
  * 内置条件函数
@@ -139,6 +137,7 @@ export class ConditionalRenderer
   private rules: Map<string, ConditionalRule> = new Map()
   private cache: Map<string, { result: ConditionalResult; timestamp: number }> =
     new Map()
+
   private watcher: ConditionalWatcher = new ConditionalWatcherImpl()
   private executionCounts: Map<string, number> = new Map()
 

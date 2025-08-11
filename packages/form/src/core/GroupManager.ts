@@ -1,15 +1,14 @@
 // 分组管理器
 
+import type { FormItemConfig } from '../types/field'
+import type { FormData } from '../types/form'
 import type {
   FormGroupConfig,
   GroupState,
   GroupManager as IGroupManager,
-  GroupEvents,
 } from '../types/group'
-import type { FormData } from '../types/form'
-import type { FormItemConfig } from '../types/field'
+import { deepClone } from '../utils/common'
 import { SimpleEventEmitter } from '../utils/event'
-import { deepClone, get, set } from '../utils/common'
 
 /**
  * 分组管理器实现
@@ -380,7 +379,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
     }
 
     if (!Array.isArray(group.fields)) {
-      throw new Error('分组字段必须是数组')
+      throw new TypeError('分组字段必须是数组')
     }
 
     // 检查字段名重复

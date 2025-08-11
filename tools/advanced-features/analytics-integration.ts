@@ -3,8 +3,6 @@
  * 支持多种分析服务和性能监控工具
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import chalk from 'chalk'
 
 export interface AnalyticsConfig {
@@ -33,7 +31,7 @@ export interface AnalyticsProvider {
   enabled: boolean
 }
 
-export type ProviderType = 
+export type ProviderType =
   | 'google-analytics'
   | 'baidu-analytics'
   | 'umami'
@@ -200,7 +198,12 @@ export class AnalyticsIntegration {
       name: 'Baidu Analytics',
       track: (event: UserEvent) => {
         if (typeof _hmt !== 'undefined') {
-          _hmt.push(['_trackEvent', event.type, event.name, event.properties.label])
+          _hmt.push([
+            '_trackEvent',
+            event.type,
+            event.name,
+            event.properties.label,
+          ])
         }
       },
       trackPageView: (path: string) => {
@@ -211,7 +214,13 @@ export class AnalyticsIntegration {
       trackPerformance: (metrics: PerformanceMetrics) => {
         // 百度统计的性能监控
         if (typeof _hmt !== 'undefined') {
-          _hmt.push(['_trackEvent', 'performance', 'page_load', '', metrics.pageLoadTime])
+          _hmt.push([
+            '_trackEvent',
+            'performance',
+            'page_load',
+            '',
+            metrics.pageLoadTime,
+          ])
         }
       },
     }
@@ -508,7 +517,9 @@ export class AnalyticsIntegration {
 /**
  * 创建分析集成实例
  */
-export function createAnalyticsIntegration(config: AnalyticsConfig): AnalyticsIntegration {
+export function createAnalyticsIntegration(
+  config: AnalyticsConfig
+): AnalyticsIntegration {
   return new AnalyticsIntegration(config)
 }
 

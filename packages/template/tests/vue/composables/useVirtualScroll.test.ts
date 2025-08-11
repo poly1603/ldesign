@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ref } from 'vue'
-import { useVirtualScroll, useSimpleVirtualScroll } from '../../../src/vue/composables/useVirtualScroll'
+import { useSimpleVirtualScroll, useVirtualScroll } from '../../../src/vue/composables/useVirtualScroll'
 
 describe('useVirtualScroll', () => {
   const generateItems = (count: number) => {

@@ -5,8 +5,8 @@
  * 用于启动 layout-demo 项目
  */
 
-const { spawn } = require('child_process')
-const path = require('path')
+const { spawn } = require('node:child_process')
+const path = require('node:path')
 
 console.log('🚀 启动 @ldesign/form 布局演示项目...\n')
 

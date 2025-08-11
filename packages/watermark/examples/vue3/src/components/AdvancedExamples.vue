@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import {
+  createWatermark,
+  destroyWatermark,
+  type WatermarkInstance,
+} from '@ldesign/watermark'
+import {
   computed,
   nextTick,
   onMounted,
@@ -9,11 +14,6 @@ import {
   watch,
 } from 'vue'
 import { useWatermark } from '../composables/useWatermark'
-import {
-  createWatermark,
-  destroyWatermark,
-  type WatermarkInstance,
-} from '@ldesign/watermark'
 
 // 模板引用
 const securityRef = ref<HTMLElement>()

@@ -4,14 +4,14 @@
 
 import { beforeEach, describe, expect, it } from 'vitest'
 import { BaseStore } from '../core/BaseStore'
-import { Action, Getter, State } from '../decorators'
 import {
+  getOptimizationSuggestions,
   MonitorAction,
   MonitorGetter,
   PerformanceMonitor,
-  getOptimizationSuggestions,
   usePerformanceMonitor,
 } from '../core/performance'
+import { Action, Getter, State } from '../decorators'
 
 // 测试用的 Store 类
 class TestPerformanceStore extends BaseStore {
@@ -57,7 +57,7 @@ class TestPerformanceStore extends BaseStore {
   }
 }
 
-describe('PerformanceMonitor', () => {
+describe('performanceMonitor', () => {
   let monitor: PerformanceMonitor
   let store: TestPerformanceStore
 
@@ -177,7 +177,9 @@ describe('getOptimizationSuggestions', () => {
     const report = monitor.getPerformanceReport()
     const suggestions = getOptimizationSuggestions(report)
 
-    expect(suggestions).toContain('发现 1 个慢速 Action，建议使用 @CachedAction 或 @DebouncedAction 优化')
+    expect(suggestions).toContain(
+      '发现 1 个慢速 Action，建议使用 @CachedAction 或 @DebouncedAction 优化'
+    )
   })
 
   it('应该为慢速 Getter 提供建议', () => {
@@ -186,7 +188,9 @@ describe('getOptimizationSuggestions', () => {
     const report = monitor.getPerformanceReport()
     const suggestions = getOptimizationSuggestions(report)
 
-    expect(suggestions).toContain('发现 1 个慢速 Getter，建议使用 @CachedGetter 或 @MemoizedGetter 优化')
+    expect(suggestions).toContain(
+      '发现 1 个慢速 Getter，建议使用 @CachedGetter 或 @MemoizedGetter 优化'
+    )
   })
 
   it('应该为频繁更新提供建议', () => {
@@ -197,7 +201,9 @@ describe('getOptimizationSuggestions', () => {
     const report = monitor.getPerformanceReport()
     const suggestions = getOptimizationSuggestions(report)
 
-    expect(suggestions).toContain('发现 1 个频繁更新的状态，建议使用 @ThrottledAction 限制更新频率')
+    expect(suggestions).toContain(
+      '发现 1 个频繁更新的状态，建议使用 @ThrottledAction 限制更新频率'
+    )
   })
 
   it('应该为大缓存提供建议', () => {
@@ -206,7 +212,9 @@ describe('getOptimizationSuggestions', () => {
     const report = monitor.getPerformanceReport()
     const suggestions = getOptimizationSuggestions(report)
 
-    expect(suggestions).toContain('缓存大小过大，建议设置缓存过期时间或限制缓存大小')
+    expect(suggestions).toContain(
+      '缓存大小过大，建议设置缓存过期时间或限制缓存大小'
+    )
   })
 
   it('应该为过多 Store 提供建议', () => {
@@ -215,7 +223,9 @@ describe('getOptimizationSuggestions', () => {
     const report = monitor.getPerformanceReport()
     const suggestions = getOptimizationSuggestions(report)
 
-    expect(suggestions).toContain('Store 实例过多，建议合并相关的 Store 或使用 Store 池管理')
+    expect(suggestions).toContain(
+      'Store 实例过多，建议合并相关的 Store 或使用 Store 池管理'
+    )
   })
 
   it('没有性能问题时不应该提供建议', () => {
@@ -256,7 +266,11 @@ describe('性能装饰器集成测试', () => {
     monitor.recordGetterTime('expensiveComputation', 10)
 
     const report2 = monitor.getPerformanceReport()
-    expect(report2.slowActions.some(action => action.name === 'slowAction')).toBe(true)
-    expect(report2.slowGetters.some(getter => getter.name === 'expensiveComputation')).toBe(true)
+    expect(
+      report2.slowActions.some(action => action.name === 'slowAction')
+    ).toBe(true)
+    expect(
+      report2.slowGetters.some(getter => getter.name === 'expensiveComputation')
+    ).toBe(true)
   })
 })

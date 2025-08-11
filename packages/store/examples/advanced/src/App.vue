@@ -5,11 +5,15 @@
         <h1>@ldesign/store 高级示例</h1>
       </div>
       <div class="nav-links">
-        <router-link to="/" class="nav-link">首页</router-link>
-        <router-link to="/performance" class="nav-link">性能优化</router-link>
-        <router-link to="/store-pool" class="nav-link">Store池管理</router-link>
-        <router-link to="/enterprise" class="nav-link">企业级功能</router-link>
-        <router-link to="/realtime" class="nav-link">实时同步</router-link>
+        <router-link to="/" class="nav-link"> 首页 </router-link>
+        <router-link to="/performance" class="nav-link"> 性能优化 </router-link>
+        <router-link to="/store-pool" class="nav-link">
+          Store池管理
+        </router-link>
+        <router-link to="/enterprise" class="nav-link">
+          企业级功能
+        </router-link>
+        <router-link to="/realtime" class="nav-link"> 实时同步 </router-link>
       </div>
     </nav>
 

@@ -1,111 +1,13 @@
-<template>
-  <div class="form-group" :class="groupClasses">
-    <!-- 分组标题 -->
-    <div
-      v-if="showHeader"
-      class="form-group__header"
-      :class="headerClasses"
-      @click="handleHeaderClick"
-    >
-      <div class="form-group__title">
-        <span class="form-group__title-text">{{ group.title }}</span>
-        <span v-if="group.description" class="form-group__description">{{
-          group.description
-        }}</span>
-      </div>
-
-      <div v-if="group.collapsible" class="form-group__toggle">
-        <span
-          class="form-group__toggle-icon"
-          :class="{ 'form-group__toggle-icon--expanded': expanded }"
-        >
-          ▼
-        </span>
-      </div>
-
-      <div v-if="showValidationStatus" class="form-group__status">
-        <span
-          v-if="groupState.validating"
-          class="form-group__status-icon form-group__status-icon--validating"
-        >
-          ⟳
-        </span>
-        <span
-          v-else-if="!groupState.valid"
-          class="form-group__status-icon form-group__status-icon--error"
-        >
-          ✕
-        </span>
-        <span
-          v-else-if="groupState.dirty"
-          class="form-group__status-icon form-group__status-icon--dirty"
-        >
-          ●
-        </span>
-        <span
-          v-else
-          class="form-group__status-icon form-group__status-icon--clean"
-        >
-          ✓
-        </span>
-      </div>
-    </div>
-
-    <!-- 分组内容 -->
-    <div v-if="expanded" class="form-group__content" :class="contentClasses">
-      <div class="form-group__fields" :style="fieldsStyle">
-        <div
-          v-for="(field, index) in group.fields"
-          :key="field.name"
-          class="form-group__field"
-          :class="getFieldClasses(field)"
-          :style="getFieldStyle(field, index)"
-        >
-          <component
-            :is="getFieldComponent(field)"
-            v-model="fieldValues[field.name]"
-            v-bind="getFieldProps(field)"
-            :label="field.title"
-            :required="field.required"
-            :disabled="field.disabled || disabled"
-            :readonly="field.readonly || readonly"
-            :placeholder="field.placeholder"
-            :error-message="getFieldError(field.name)"
-            :show-error="!!getFieldError(field.name)"
-            @change="handleFieldChange(field.name, $event)"
-            @focus="handleFieldFocus(field.name, $event)"
-            @blur="handleFieldBlur(field.name, $event)"
-          />
-        </div>
-      </div>
-
-      <!-- 分组错误信息 -->
-      <div
-        v-if="showGroupErrors && groupErrors.length > 0"
-        class="form-group__errors"
-      >
-        <div
-          v-for="error in groupErrors"
-          :key="error"
-          class="form-group__error"
-        >
-          {{ error }}
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, reactive, watch, inject } from 'vue'
-import type { FormGroupConfig, GroupState } from '../types/group'
+import type { GroupManager } from '../core/GroupManager'
 import type { FormItemConfig } from '../types/field'
 import type { FormData } from '../types/form'
-import type { GroupManager } from '../core/GroupManager'
+import type { FormGroupConfig, GroupState } from '../types/group'
+import { computed, inject, reactive, watch } from 'vue'
 import FormInput from './FormInput.vue'
+import FormRadio from './FormRadio.vue'
 import FormSelect from './FormSelect.vue'
 import FormTextarea from './FormTextarea.vue'
-import FormRadio from './FormRadio.vue'
 
 interface Props {
   group: FormGroupConfig
@@ -220,7 +122,7 @@ const groupErrors = computed(() => {
 })
 
 // 方法
-const getFieldComponent = (field: FormItemConfig) => {
+function getFieldComponent(field: FormItemConfig) {
   const componentMap: Record<string, any> = {
     FormInput,
     FormSelect,
@@ -235,7 +137,7 @@ const getFieldComponent = (field: FormItemConfig) => {
   return field.component || FormInput
 }
 
-const getFieldProps = (field: FormItemConfig) => {
+function getFieldProps(field: FormItemConfig) {
   return {
     ...field.props,
     name: field.name,
@@ -243,31 +145,33 @@ const getFieldProps = (field: FormItemConfig) => {
   }
 }
 
-const getFieldClasses = (field: FormItemConfig) => [
-  'form-group__field',
-  `form-group__field--${field.name}`,
-  field.className,
-]
+function getFieldClasses(field: FormItemConfig) {
+  return [
+    'form-group__field',
+    `form-group__field--${field.name}`,
+    field.className,
+  ]
+}
 
-const getFieldStyle = (field: FormItemConfig, index: number) => {
+function getFieldStyle(field: FormItemConfig, index: number) {
   const span = field.span || 1
   return {
     gridColumn: `span ${Math.min(span, props.layout.columns || 2)}`,
   }
 }
 
-const getFieldError = (fieldName: string): string => {
+function getFieldError(fieldName: string): string {
   const fieldState = groupState.fieldStates[fieldName]
   return fieldState?.errors?.[0] || ''
 }
 
-const handleHeaderClick = () => {
+function handleHeaderClick() {
   if (props.group.collapsible) {
     expanded.value = !expanded.value
   }
 }
 
-const handleFieldChange = (fieldName: string, value: any) => {
+function handleFieldChange(fieldName: string, value: any) {
   fieldValues[fieldName] = value
 
   // 更新字段状态
@@ -296,7 +200,7 @@ const handleFieldChange = (fieldName: string, value: any) => {
   emit('fieldChange', fieldName, value)
 }
 
-const handleFieldFocus = (fieldName: string, event: FocusEvent) => {
+function handleFieldFocus(fieldName: string, event: FocusEvent) {
   // 标记字段为已访问
   if (groupState.fieldStates[fieldName]) {
     groupState.fieldStates[fieldName].touched = true
@@ -305,7 +209,7 @@ const handleFieldFocus = (fieldName: string, event: FocusEvent) => {
   emit('fieldFocus', fieldName, event)
 }
 
-const handleFieldBlur = (fieldName: string, event: FocusEvent) => {
+function handleFieldBlur(fieldName: string, event: FocusEvent) {
   emit('fieldBlur', fieldName, event)
 }
 
@@ -339,6 +243,104 @@ if (groupManager) {
   }
 }
 </script>
+
+<template>
+  <div class="form-group" :class="groupClasses">
+    <!-- 分组标题 -->
+    <div
+      v-if="showHeader"
+      class="form-group__header"
+      :class="headerClasses"
+      @click="handleHeaderClick"
+    >
+      <div class="form-group__title">
+        <span class="form-group__title-text">{{ group.title }}</span>
+        <span v-if="group.description" class="form-group__description">{{
+          group.description
+        }}</span>
+      </div>
+
+      <div v-if="group.collapsible" class="form-group__toggle">
+        <span
+          class="form-group__toggle-icon"
+          :class="{ 'form-group__toggle-icon--expanded': expanded }"
+        >
+          ▼
+        </span>
+      </div>
+
+      <div v-if="showValidationStatus" class="form-group__status">
+        <span
+          v-if="groupState.validating"
+          class="form-group__status-icon form-group__status-icon--validating"
+        >
+          ⟳
+        </span>
+        <span
+          v-else-if="!groupState.valid"
+          class="form-group__status-icon form-group__status-icon--error"
+        >
+          ✕
+        </span>
+        <span
+          v-else-if="groupState.dirty"
+          class="form-group__status-icon form-group__status-icon--dirty"
+        >
+          ●
+        </span>
+        <span
+          v-else
+          class="form-group__status-icon form-group__status-icon--clean"
+        >
+          ✓
+        </span>
+      </div>
+    </div>
+
+    <!-- 分组内容 -->
+    <div v-if="expanded" class="form-group__content" :class="contentClasses">
+      <div class="form-group__fields" :style="fieldsStyle">
+        <div
+          v-for="(field, index) in group.fields"
+          :key="field.name"
+          class="form-group__field"
+          :class="getFieldClasses(field)"
+          :style="getFieldStyle(field, index)"
+        >
+          <component
+            :is="getFieldComponent(field)"
+            v-model="fieldValues[field.name]"
+            v-bind="getFieldProps(field)"
+            :label="field.title"
+            :required="field.required"
+            :disabled="field.disabled || disabled"
+            :readonly="field.readonly || readonly"
+            :placeholder="field.placeholder"
+            :error-message="getFieldError(field.name)"
+            :show-error="!!getFieldError(field.name)"
+            @change="handleFieldChange(field.name, $event)"
+            @focus="handleFieldFocus(field.name, $event)"
+            @blur="handleFieldBlur(field.name, $event)"
+          />
+        </div>
+      </div>
+
+      <!-- 分组错误信息 -->
+      <div
+        v-if="showGroupErrors && groupErrors.length > 0"
+        class="form-group__errors"
+      >
+        <div
+          v-for="error in groupErrors"
+          :key="error"
+          class="form-group__error"
+        >
+          {{ error }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-group {

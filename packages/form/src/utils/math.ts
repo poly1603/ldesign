@@ -45,11 +45,11 @@ export function parseSpan(span: number | string, totalColumns: number): number {
 
   if (typeof span === 'string') {
     if (span.endsWith('%')) {
-      const percentage = parseFloat(span) / 100
+      const percentage = Number.parseFloat(span) / 100
       return Math.max(Math.round(totalColumns * percentage), 1)
     }
 
-    const parsed = parseInt(span, 10)
+    const parsed = Number.parseInt(span, 10)
     if (!isNaN(parsed)) {
       return Math.min(Math.max(parsed, 1), totalColumns)
     }
@@ -174,7 +174,7 @@ export function percentage(value: number, total: number): number {
  * 四舍五入到指定小数位
  */
 export function round(value: number, decimals: number = 0): number {
-  const factor = Math.pow(10, decimals)
+  const factor = 10 ** decimals
   return Math.round(value * factor) / factor
 }
 
@@ -187,7 +187,7 @@ export function distance(
   x2: number,
   y2: number
 ): number {
-  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 }
 
 /**
@@ -292,7 +292,7 @@ export function parseCssSize(value: string | number): {
   const match = value.match(/^(\d+(?:\.\d+)?)(px|%|em|rem|vh|vw)?$/)
   if (match) {
     return {
-      value: parseFloat(match[1]),
+      value: Number.parseFloat(match[1]),
       unit: match[2] || 'px',
     }
   }

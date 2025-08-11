@@ -1,8 +1,8 @@
 // 分组工具函数
 
-import type { FormGroupConfig, GroupState } from '../types/group'
 import type { FormItemConfig } from '../types/field'
 import type { FormData } from '../types/form'
+import type { FormGroupConfig, GroupState } from '../types/group'
 import { deepClone } from './common'
 
 /**

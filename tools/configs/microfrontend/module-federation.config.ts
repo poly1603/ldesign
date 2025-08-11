@@ -3,7 +3,6 @@
  * 支持包的独立部署和运行时加载
  */
 
-import { resolve } from 'node:path'
 import type { ModuleFederationConfig } from '@module-federation/enhanced'
 
 export interface MicrofrontendConfig {
@@ -24,7 +23,9 @@ export interface MicrofrontendConfig {
 /**
  * 创建模块联邦配置
  */
-export function createModuleFederationConfig(config: MicrofrontendConfig): ModuleFederationConfig {
+export function createModuleFederationConfig(
+  config: MicrofrontendConfig
+): ModuleFederationConfig {
   const {
     name,
     exposes = {},
@@ -253,11 +254,13 @@ export function createDevRemotes(basePort = 3000): Record<string, string> {
 /**
  * 创建生产环境的远程配置
  */
-export function createProdRemotes(baseUrl = 'https://cdn.ldesign.com'): Record<string, string> {
+export function createProdRemotes(
+  baseUrl = 'https://cdn.ldesign.com'
+): Record<string, string> {
   const packages = Object.keys(packageConfigs)
   const remotes: Record<string, string> = {}
 
-  packages.forEach((pkg) => {
+  packages.forEach(pkg => {
     const config = packageConfigs[pkg]
     remotes[pkg] = `${config.name}@${baseUrl}/${pkg}/remoteEntry.js`
   })

@@ -77,20 +77,20 @@ export type { RouterPluginOptions } from './plugin'
 // ==================== 插件系统 ====================
 
 export {
-  EnhancedComponentsPlugin,
-  RouterPerformancePlugin,
-  RouterCachePlugin,
-  createPerformancePlugin,
   createCachePlugin,
   createEnhancementConfig,
+  createPerformancePlugin,
+  EnhancedComponentsPlugin,
+  RouterCachePlugin,
+  RouterPerformancePlugin,
 } from './plugins'
 
 export type {
+  CacheConfig,
+  CacheStrategy,
   ComponentEnhancementConfig,
   PerformanceConfig,
   PerformanceData,
-  CacheConfig,
-  CacheStrategy,
 } from './plugins'
 
 // ==================== 类型定义 ====================

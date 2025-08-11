@@ -1,9 +1,8 @@
 // 数据绑定管理器
 
 import type { FormData } from '../types/form'
-import type { FormItemConfig } from '../types/field'
+import { deepClone, get, has, set, unset } from '../utils/common'
 import { SimpleEventEmitter } from '../utils/event'
-import { get, set, has, unset, deepClone, isObject } from '../utils/common'
 import { debounce } from '../utils/throttle'
 
 /**
@@ -14,6 +13,7 @@ export class DataBinding extends SimpleEventEmitter {
   private watchers: Map<string, Set<Function>> = new Map()
   private computedCache: Map<string, { value: any; dependencies: string[] }> =
     new Map()
+
   private debouncedNotifiers: Map<string, Function> = new Map()
 
   constructor(initialData: FormData = {}) {

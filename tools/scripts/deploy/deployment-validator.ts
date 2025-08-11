@@ -7,7 +7,7 @@
 
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { join, resolve } from 'node:path'
 import chalk from 'chalk'
 
 interface ValidationResult {
@@ -44,11 +44,11 @@ class DeploymentValidator {
     for (const pkg of packages) {
       console.log(chalk.yellow(`验证包: ${pkg.name}`))
       const isValid = await this.validatePackage(pkg)
-      
+
       if (!isValid) {
         allValid = false
       }
-      
+
       console.log() // 空行分隔
     }
 
@@ -100,14 +100,20 @@ class DeploymentValidator {
   /**
    * 验证构建产物
    */
-  private async validateBuildArtifacts(pkg: PackageInfo): Promise<ValidationResult> {
-    const packageDir = join(this.rootDir, 'packages', pkg.name.replace('@ldesign/', ''))
+  private async validateBuildArtifacts(
+    pkg: PackageInfo
+  ): Promise<ValidationResult> {
+    const packageDir = join(
+      this.rootDir,
+      'packages',
+      pkg.name.replace('@ldesign/', '')
+    )
     const distDir = join(packageDir, 'dist')
 
     if (!existsSync(distDir)) {
       return {
         success: false,
-        message: '构建产物目录不存在'
+        message: '构建产物目录不存在',
       }
     }
 
@@ -121,42 +127,48 @@ class DeploymentValidator {
       if (!existsSync(filePath)) {
         return {
           success: false,
-          message: `缺少必需文件: ${file}`
+          message: `缺少必需文件: ${file}`,
         }
       }
     }
 
     return {
       success: true,
-      message: '构建产物验证通过'
+      message: '构建产物验证通过',
     }
   }
 
   /**
    * 验证包结构
    */
-  private async validatePackageStructure(pkg: PackageInfo): Promise<ValidationResult> {
-    const packageDir = join(this.rootDir, 'packages', pkg.name.replace('@ldesign/', ''))
+  private async validatePackageStructure(
+    pkg: PackageInfo
+  ): Promise<ValidationResult> {
+    const packageDir = join(
+      this.rootDir,
+      'packages',
+      pkg.name.replace('@ldesign/', '')
+    )
     const packageJsonPath = join(packageDir, 'package.json')
 
     if (!existsSync(packageJsonPath)) {
       return {
         success: false,
-        message: 'package.json 不存在'
+        message: 'package.json 不存在',
       }
     }
 
     try {
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-      
+
       // 检查必需字段
       const requiredFields = ['name', 'version', 'main', 'module', 'types']
       const missingFields = requiredFields.filter(field => !packageJson[field])
-      
+
       if (missingFields.length > 0) {
         return {
           success: false,
-          message: `缺少必需字段: ${missingFields.join(', ')}`
+          message: `缺少必需字段: ${missingFields.join(', ')}`,
         }
       }
 
@@ -166,19 +178,19 @@ class DeploymentValidator {
         if (file && !existsSync(join(packageDir, file))) {
           return {
             success: false,
-            message: `引用的文件不存在: ${file}`
+            message: `引用的文件不存在: ${file}`,
           }
         }
       }
 
       return {
         success: true,
-        message: '包结构验证通过'
+        message: '包结构验证通过',
       }
     } catch (error) {
       return {
         success: false,
-        message: `package.json 解析失败: ${error}`
+        message: `package.json 解析失败: ${error}`,
       }
     }
   }
@@ -186,43 +198,49 @@ class DeploymentValidator {
   /**
    * 验证类型定义
    */
-  private async validateTypeDefinitions(pkg: PackageInfo): Promise<ValidationResult> {
+  private async validateTypeDefinitions(
+    pkg: PackageInfo
+  ): Promise<ValidationResult> {
     if (!pkg.types) {
       return {
         success: true,
-        message: '无类型定义文件，跳过验证'
+        message: '无类型定义文件，跳过验证',
       }
     }
 
-    const packageDir = join(this.rootDir, 'packages', pkg.name.replace('@ldesign/', ''))
+    const packageDir = join(
+      this.rootDir,
+      'packages',
+      pkg.name.replace('@ldesign/', '')
+    )
     const typesPath = join(packageDir, pkg.types)
 
     if (!existsSync(typesPath)) {
       return {
         success: false,
-        message: '类型定义文件不存在'
+        message: '类型定义文件不存在',
       }
     }
 
     try {
       // 简单的类型定义语法检查
       const content = readFileSync(typesPath, 'utf-8')
-      
+
       if (!content.includes('export') && !content.includes('declare')) {
         return {
           success: false,
-          message: '类型定义文件似乎无效'
+          message: '类型定义文件似乎无效',
         }
       }
 
       return {
         success: true,
-        message: '类型定义验证通过'
+        message: '类型定义验证通过',
       }
     } catch (error) {
       return {
         success: false,
-        message: `类型定义验证失败: ${error}`
+        message: `类型定义验证失败: ${error}`,
       }
     }
   }
@@ -230,34 +248,40 @@ class DeploymentValidator {
   /**
    * 验证包可加载性
    */
-  private async validatePackageLoadability(pkg: PackageInfo): Promise<ValidationResult> {
-    const packageDir = join(this.rootDir, 'packages', pkg.name.replace('@ldesign/', ''))
-    
+  private async validatePackageLoadability(
+    pkg: PackageInfo
+  ): Promise<ValidationResult> {
+    const packageDir = join(
+      this.rootDir,
+      'packages',
+      pkg.name.replace('@ldesign/', '')
+    )
+
     try {
       // 尝试加载包
       const mainPath = join(packageDir, pkg.main || 'dist/index.js')
-      
+
       if (!existsSync(mainPath)) {
         return {
           success: false,
-          message: '主入口文件不存在'
+          message: '主入口文件不存在',
         }
       }
 
       // 在子进程中测试加载
-      execSync(`node -e "require('${mainPath}')"`, { 
+      execSync(`node -e "require('${mainPath}')"`, {
         stdio: 'pipe',
-        timeout: 10000 
+        timeout: 10000,
       })
 
       return {
         success: true,
-        message: '包加载验证通过'
+        message: '包加载验证通过',
       }
     } catch (error) {
       return {
         success: false,
-        message: `包加载失败: ${error}`
+        message: `包加载失败: ${error}`,
       }
     }
   }
@@ -265,29 +289,31 @@ class DeploymentValidator {
   /**
    * 验证 npm 发布状态
    */
-  private async validateNpmPublication(pkg: PackageInfo): Promise<ValidationResult> {
+  private async validateNpmPublication(
+    pkg: PackageInfo
+  ): Promise<ValidationResult> {
     try {
-      const result = execSync(`npm view ${pkg.name}@${pkg.version} version`, { 
+      const result = execSync(`npm view ${pkg.name}@${pkg.version} version`, {
         stdio: 'pipe',
         encoding: 'utf-8',
-        timeout: 10000 
+        timeout: 10000,
       })
 
       if (result.trim() === pkg.version) {
         return {
           success: true,
-          message: 'npm 发布验证通过'
+          message: 'npm 发布验证通过',
         }
       } else {
         return {
           success: false,
-          message: 'npm 上的版本不匹配'
+          message: 'npm 上的版本不匹配',
         }
       }
     } catch (error) {
       return {
         success: false,
-        message: `npm 发布验证失败: ${error}`
+        message: `npm 发布验证失败: ${error}`,
       }
     }
   }
@@ -295,10 +321,12 @@ class DeploymentValidator {
   /**
    * 验证 CDN 可用性
    */
-  private async validateCdnAvailability(pkg: PackageInfo): Promise<ValidationResult> {
+  private async validateCdnAvailability(
+    pkg: PackageInfo
+  ): Promise<ValidationResult> {
     const cdnUrls = [
       `https://cdn.jsdelivr.net/npm/${pkg.name}@${pkg.version}/dist/index.js`,
-      `https://unpkg.com/${pkg.name}@${pkg.version}/dist/index.js`
+      `https://unpkg.com/${pkg.name}@${pkg.version}/dist/index.js`,
     ]
 
     try {
@@ -307,19 +335,19 @@ class DeploymentValidator {
         if (!response.ok) {
           return {
             success: false,
-            message: `CDN 不可用: ${url}`
+            message: `CDN 不可用: ${url}`,
           }
         }
       }
 
       return {
         success: true,
-        message: 'CDN 可用性验证通过'
+        message: 'CDN 可用性验证通过',
       }
     } catch (error) {
       return {
         success: false,
-        message: `CDN 验证失败: ${error}`
+        message: `CDN 验证失败: ${error}`,
       }
     }
   }
@@ -338,16 +366,18 @@ class DeploymentValidator {
 
       for (const dir of dirs) {
         const packageJsonPath = join(packagesDir, dir, 'package.json')
-        
+
         if (existsSync(packageJsonPath)) {
           try {
-            const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+            const packageJson = JSON.parse(
+              readFileSync(packageJsonPath, 'utf-8')
+            )
             packages.push({
               name: packageJson.name,
               version: packageJson.version,
               main: packageJson.main,
               module: packageJson.module,
-              types: packageJson.types
+              types: packageJson.types,
             })
           } catch (error) {
             console.warn(chalk.yellow(`警告: 无法解析 ${dir}/package.json`))
@@ -376,16 +406,20 @@ class DeploymentValidator {
     for (const [packageName, results] of this.results) {
       totalPackages++
       totalChecks += results.length
-      
+
       const packageValid = results.every(r => r.success)
       if (packageValid) {
         validPackages++
       }
-      
+
       passedChecks += results.filter(r => r.success).length
 
       const icon = packageValid ? '✅' : '❌'
-      console.log(`${icon} ${packageName}: ${results.filter(r => r.success).length}/${results.length} 检查通过`)
+      console.log(
+        `${icon} ${packageName}: ${results.filter(r => r.success).length}/${
+          results.length
+        } 检查通过`
+      )
     }
 
     console.log(chalk.blue('\n总体统计:'))
@@ -410,9 +444,9 @@ async function main() {
 
   if (packageName && packageName !== 'all') {
     // 验证单个包
-    const packages = validator['getPackages']()
+    const packages = validator.getPackages()
     const pkg = packages.find(p => p.name.includes(packageName))
-    
+
     if (!pkg) {
       console.error(chalk.red(`❌ 包不存在: ${packageName}`))
       process.exit(1)

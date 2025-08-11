@@ -12,6 +12,7 @@ export class StateManagerImpl implements StateManager {
     newValue: any
     timestamp: number
   }> = []
+
   private maxHistorySize = 100
   private batchUpdates = new Set<string>()
   private batchTimeout: NodeJS.Timeout | null = null

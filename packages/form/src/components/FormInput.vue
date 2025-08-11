@@ -1,84 +1,6 @@
-<template>
-  <div class="form-input" :class="inputClasses">
-    <div v-if="showLabel" class="form-input__label" :class="labelClasses">
-      <label :for="inputId" class="form-input__label-text">
-        {{ label }}
-        <span v-if="required" class="form-input__required">*</span>
-        <span v-if="showColon" class="form-input__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-input__tooltip" :title="tooltip">?</div>
-    </div>
-
-    <div class="form-input__wrapper" :class="wrapperClasses">
-      <div v-if="prefix || prefixIcon" class="form-input__prefix">
-        <span
-          v-if="prefixIcon"
-          class="form-input__prefix-icon"
-          :class="prefixIcon"
-        ></span>
-        <span v-if="prefix" class="form-input__prefix-text">{{ prefix }}</span>
-      </div>
-
-      <input
-        :id="inputId"
-        ref="inputRef"
-        v-model="inputValue"
-        :type="type"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :readonly="readonly"
-        :maxlength="maxlength"
-        :minlength="minlength"
-        :autocomplete="autocomplete"
-        :autofocus="autofocus"
-        :tabindex="tabindex"
-        class="form-input__input"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @input="handleInput"
-        @change="handleChange"
-        @keydown="handleKeydown"
-        @keyup="handleKeyup"
-        @keypress="handleKeypress"
-      />
-
-      <div
-        v-if="suffix || suffixIcon || clearable || showCount"
-        class="form-input__suffix"
-      >
-        <span v-if="showCount" class="form-input__count">
-          {{ currentLength }}/{{ maxlength }}
-        </span>
-        <button
-          v-if="clearable && inputValue && !disabled && !readonly"
-          type="button"
-          class="form-input__clear"
-          @click="handleClear"
-        >
-          ×
-        </button>
-        <span
-          v-if="suffixIcon"
-          class="form-input__suffix-icon"
-          :class="suffixIcon"
-        ></span>
-        <span v-if="suffix" class="form-input__suffix-text">{{ suffix }}</span>
-      </div>
-    </div>
-
-    <div v-if="showError && errorMessage" class="form-input__error">
-      {{ errorMessage }}
-    </div>
-
-    <div v-if="description" class="form-input__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
 import type { FormInputProps } from '../types/components'
+import { computed, nextTick, ref } from 'vue'
 import { generateId } from '../utils/common'
 
 interface Props extends FormInputProps {
@@ -164,25 +86,25 @@ const wrapperClasses = computed(() => [
 ])
 
 // 事件处理
-const handleFocus = (event: FocusEvent) => {
+function handleFocus(event: FocusEvent) {
   focused.value = true
   emit('focus', event)
 }
 
-const handleBlur = (event: FocusEvent) => {
+function handleBlur(event: FocusEvent) {
   focused.value = false
   emit('blur', event)
 }
 
-const handleInput = (event: Event) => {
+function handleInput(event: Event) {
   emit('input', event)
 }
 
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   emit('change', event)
 }
 
-const handleClear = () => {
+function handleClear() {
   inputValue.value = ''
   emit('clear')
   nextTick(() => {
@@ -190,28 +112,28 @@ const handleClear = () => {
   })
 }
 
-const handleKeydown = (event: KeyboardEvent) => {
+function handleKeydown(event: KeyboardEvent) {
   emit('keydown', event)
 }
 
-const handleKeyup = (event: KeyboardEvent) => {
+function handleKeyup(event: KeyboardEvent) {
   emit('keyup', event)
 }
 
-const handleKeypress = (event: KeyboardEvent) => {
+function handleKeypress(event: KeyboardEvent) {
   emit('keypress', event)
 }
 
 // 公开方法
-const focus = () => {
+function focus() {
   inputRef.value?.focus()
 }
 
-const blur = () => {
+function blur() {
   inputRef.value?.blur()
 }
 
-const select = () => {
+function select() {
   inputRef.value?.select()
 }
 
@@ -222,6 +144,84 @@ defineExpose({
   inputRef,
 })
 </script>
+
+<template>
+  <div class="form-input" :class="inputClasses">
+    <div v-if="showLabel" class="form-input__label" :class="labelClasses">
+      <label :for="inputId" class="form-input__label-text">
+        {{ label }}
+        <span v-if="required" class="form-input__required">*</span>
+        <span v-if="showColon" class="form-input__colon">:</span>
+      </label>
+      <div v-if="tooltip" class="form-input__tooltip" :title="tooltip">?</div>
+    </div>
+
+    <div class="form-input__wrapper" :class="wrapperClasses">
+      <div v-if="prefix || prefixIcon" class="form-input__prefix">
+        <span
+          v-if="prefixIcon"
+          class="form-input__prefix-icon"
+          :class="prefixIcon"
+        />
+        <span v-if="prefix" class="form-input__prefix-text">{{ prefix }}</span>
+      </div>
+
+      <input
+        :id="inputId"
+        ref="inputRef"
+        v-model="inputValue"
+        :type="type"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :readonly="readonly"
+        :maxlength="maxlength"
+        :minlength="minlength"
+        :autocomplete="autocomplete"
+        :autofocus="autofocus"
+        :tabindex="tabindex"
+        class="form-input__input"
+        @focus="handleFocus"
+        @blur="handleBlur"
+        @input="handleInput"
+        @change="handleChange"
+        @keydown="handleKeydown"
+        @keyup="handleKeyup"
+        @keypress="handleKeypress"
+      />
+
+      <div
+        v-if="suffix || suffixIcon || clearable || showCount"
+        class="form-input__suffix"
+      >
+        <span v-if="showCount" class="form-input__count">
+          {{ currentLength }}/{{ maxlength }}
+        </span>
+        <button
+          v-if="clearable && inputValue && !disabled && !readonly"
+          type="button"
+          class="form-input__clear"
+          @click="handleClear"
+        >
+          ×
+        </button>
+        <span
+          v-if="suffixIcon"
+          class="form-input__suffix-icon"
+          :class="suffixIcon"
+        />
+        <span v-if="suffix" class="form-input__suffix-text">{{ suffix }}</span>
+      </div>
+    </div>
+
+    <div v-if="showError && errorMessage" class="form-input__error">
+      {{ errorMessage }}
+    </div>
+
+    <div v-if="description" class="form-input__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-input {

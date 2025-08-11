@@ -7,7 +7,7 @@ on:
     branches: [main]
   schedule:
     # 每天凌晨 2 点运行性能监控
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,10 +58,10 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            
+
             try {
               const analysis = fs.readFileSync('bundle-analysis.txt', 'utf8');
-              
+
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
@@ -102,7 +102,7 @@ jobs:
           cat > performance-test.js << 'EOF'
           const { performance } = require('perf_hooks');
           const fs = require('fs');
-          
+
           // 测试包加载性能
           const testPackageLoad = (packageName) => {
             const start = performance.now();
@@ -115,10 +115,10 @@ jobs:
               return { package: packageName, loadTime: end - start, success: false, error: error.message };
             }
           };
-          
+
           const packages = ['color', 'crypto', 'device', 'engine', 'http', 'i18n', 'router', 'store'];
           const results = packages.map(testPackageLoad);
-          
+
           console.log('Performance Benchmark Results:');
           console.log('================================');
           results.forEach(result => {
@@ -128,11 +128,11 @@ jobs:
               console.log(`   Error: ${result.error}`);
             }
           });
-          
+
           // 保存结果到文件
           fs.writeFileSync('performance-results.json', JSON.stringify(results, null, 2));
           EOF
-          
+
           node performance-test.js
 
       - name: Upload performance results
@@ -246,10 +246,10 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             try {
               const comparison = fs.readFileSync('size-comparison.md', 'utf8');
-              
+
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,

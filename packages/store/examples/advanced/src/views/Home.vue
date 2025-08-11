@@ -1,3 +1,7 @@
+<script setup lang="ts">
+// 这里可以添加一些统计逻辑
+</script>
+
 <template>
   <div class="home">
     <div class="hero">
@@ -47,8 +51,10 @@
 
     <div class="getting-started card">
       <h2>快速开始</h2>
-      <p>这些示例展示了 @ldesign/store 的高级用法，适合有一定基础的开发者学习。</p>
-      
+      <p>
+        这些示例展示了 @ldesign/store 的高级用法，适合有一定基础的开发者学习。
+      </p>
+
       <div class="code-example">
         <h4>安装依赖</h4>
         <div class="code-block">
@@ -59,19 +65,21 @@
       <div class="code-example">
         <h4>基本配置</h4>
         <div class="code-block">
-          <pre>import { createApp } from 'vue'
+          <pre>
+import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import 'reflect-metadata'
 
 const app = createApp(App)
 app.use(createPinia())
-app.mount('#app')</pre>
+app.mount('#app')</pre
+          >
         </div>
       </div>
 
       <div class="alert alert-info">
-        <strong>提示：</strong>这些示例需要对 Vue 3、TypeScript 和状态管理有基本了解。
-        如果你是初学者，建议先查看基础示例。
+        <strong>提示：</strong>这些示例需要对 Vue 3、TypeScript
+        和状态管理有基本了解。 如果你是初学者，建议先查看基础示例。
       </div>
     </div>
 
@@ -91,10 +99,6 @@ app.mount('#app')</pre>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-// 这里可以添加一些统计逻辑
-</script>
 
 <style scoped>
 .home {

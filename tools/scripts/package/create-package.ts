@@ -20,7 +20,10 @@ export interface CreatePackageOptions {
  * @param packageName 包名
  * @param options 选项
  */
-export function createPackage(packageName: string, options: CreatePackageOptions = {}): void {
+export function createPackage(
+  packageName: string,
+  options: CreatePackageOptions = {}
+): void {
   const {
     vue = false,
     // template = 'basic',
@@ -58,12 +61,15 @@ export function createPackage(packageName: string, options: CreatePackageOptions
     dirs.push('src/vue')
   }
 
-  dirs.forEach((dir) => {
+  dirs.forEach(dir => {
     fs.mkdirSync(path.resolve(packageDir, dir), { recursive: true })
   })
 
   // 读取模板文件
-  const templatePath = path.resolve(__dirname, '../../configs/templates/package-template.json')
+  const templatePath = path.resolve(
+    __dirname,
+    '../../configs/templates/package-template.json'
+  )
   const packageTemplate = JSON.parse(fs.readFileSync(templatePath, 'utf-8'))
 
   // 替换模板变量
@@ -80,15 +86,21 @@ export function createPackage(packageName: string, options: CreatePackageOptions
   // 更新部署脚本中的包名
   if (packageTemplate.scripts) {
     packageTemplate.scripts.deploy = `tsx ../../tools/deploy/package-deployer.ts ${packageName}`
-    packageTemplate.scripts['deploy:beta'] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --tag beta`
-    packageTemplate.scripts['deploy:alpha'] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --tag alpha`
-    packageTemplate.scripts['deploy:dry-run'] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --dry-run`
+    packageTemplate.scripts[
+      'deploy:beta'
+    ] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --tag beta`
+    packageTemplate.scripts[
+      'deploy:alpha'
+    ] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --tag alpha`
+    packageTemplate.scripts[
+      'deploy:dry-run'
+    ] = `tsx ../../tools/deploy/package-deployer.ts ${packageName} --dry-run`
   }
 
   // 写入 package.json
   fs.writeFileSync(
     path.resolve(packageDir, 'package.json'),
-    JSON.stringify(packageTemplate, null, 2),
+    JSON.stringify(packageTemplate, null, 2)
   )
 
   // 创建基础文件
@@ -105,7 +117,12 @@ export function createPackage(packageName: string, options: CreatePackageOptions
 /**
  * 创建基础文件
  */
-function createBasicFiles(packageDir: string, packageName: string, description: string, options: { vue?: boolean } = {}): void {
+function createBasicFiles(
+  packageDir: string,
+  packageName: string,
+  description: string,
+  options: { vue?: boolean } = {}
+): void {
   const { vue = false } = options
 
   // src/index.ts
@@ -132,10 +149,7 @@ export default {
 }
 `
 
-  fs.writeFileSync(
-    path.resolve(packageDir, 'src/index.ts'),
-    indexContent,
-  )
+  fs.writeFileSync(path.resolve(packageDir, 'src/index.ts'), indexContent)
 
   // src/types/index.ts
   fs.writeFileSync(
@@ -147,7 +161,7 @@ export default {
 export interface ${toPascalCase(packageName)}Instance {
   // 实例接口
 }
-`,
+`
   )
 
   // src/utils/index.ts
@@ -159,7 +173,7 @@ export interface ${toPascalCase(packageName)}Instance {
 export function isValidInput(input: unknown): boolean {
   return input != null
 }
-`,
+`
   )
 
   // src/core/index.ts (仅Vue包需要)
@@ -187,7 +201,7 @@ export class ${toPascalCase(packageName)} {
 
 // 默认导出
 export default ${toPascalCase(packageName)}
-`,
+`
     )
   }
 
@@ -198,7 +212,9 @@ export default ${toPascalCase(packageName)}
       `import type { App } from 'vue'
 import type { ${toPascalCase(packageName)}Options } from '../types'
 
-export function install(app: App, options?: ${toPascalCase(packageName)}Options) {
+export function install(app: App, options?: ${toPascalCase(
+        packageName
+      )}Options) {
   // Vue 插件安装逻辑
 }
 
@@ -208,14 +224,14 @@ export default {
 
 // 重新导出核心功能
 export * from '../index'
-`,
+`
     )
   }
 
   // README.md
   fs.writeFileSync(
     path.resolve(packageDir, 'README.md'),
-    createReadmeContent(packageName, description, vue),
+    createReadmeContent(packageName, description, vue)
   )
 
   // 配置文件
@@ -225,7 +241,11 @@ export * from '../index'
 /**
  * 创建配置文件
  */
-function createConfigFiles(packageDir: string, packageName: string, vue: boolean): void {
+function createConfigFiles(
+  packageDir: string,
+  packageName: string,
+  vue: boolean
+): void {
   // tsconfig.json
   fs.writeFileSync(
     path.resolve(packageDir, 'tsconfig.json'),
@@ -244,7 +264,7 @@ function createConfigFiles(packageDir: string, packageName: string, vue: boolean
     "e2e/**/*"
   ]
 }
-`,
+`
   )
 
   // rollup.config.js
@@ -267,10 +287,7 @@ export default createRollupConfig({
 })
 `
 
-  fs.writeFileSync(
-    path.resolve(packageDir, 'rollup.config.js'),
-    rollupConfig,
-  )
+  fs.writeFileSync(path.resolve(packageDir, 'rollup.config.js'), rollupConfig)
 
   // vitest.config.ts
   fs.writeFileSync(
@@ -280,7 +297,7 @@ export default createRollupConfig({
 export default createVitestConfig({
   vue: ${vue}
 })
-`,
+`
   )
 
   // playwright.config.ts
@@ -294,7 +311,7 @@ export default createPlaywrightConfig({
     port: 5173
   }
 })
-`,
+`
   )
 
   // eslint.config.js
@@ -314,14 +331,18 @@ export default antfu({
     '*.d.ts'
   ]
 })
-`,
+`
   )
 }
 
 /**
  * 创建 README 内容
  */
-function createReadmeContent(packageName: string, description: string, vue: boolean): string {
+function createReadmeContent(
+  packageName: string,
+  description: string,
+  vue: boolean
+): string {
   return `# @ldesign/${packageName}
 
 ${description}
@@ -354,8 +375,9 @@ import { ${toCamelCase(packageName)} } from '@ldesign/${packageName}'
 ${toCamelCase(packageName)}()
 \`\`\`
 
-${vue
-      ? `### Vue 3 集成
+${
+  vue
+    ? `### Vue 3 集成
 
 \`\`\`typescript
 import { createApp } from 'vue'
@@ -375,7 +397,8 @@ const ${toCamelCase(packageName)} = use${toPascalCase(packageName)}()
 </script>
 \`\`\`
 `
-      : ''}
+    : ''
+}
 
 ## API 文档
 
@@ -423,7 +446,9 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
 
   if (args.length < 1) {
-    console.log('用法: tsx tools/package/create-package.ts <package-name> [options]')
+    console.log(
+      '用法: tsx tools/package/create-package.ts <package-name> [options]'
+    )
     console.log('选项:')
     console.log('  --vue          创建 Vue 包')
     console.log('  --description  包描述')
@@ -433,7 +458,8 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const packageName = args[0]
   const vue = args.includes('--vue')
   const descriptionIndex = args.indexOf('--description')
-  const description = descriptionIndex !== -1 ? args[descriptionIndex + 1] : undefined
+  const description =
+    descriptionIndex !== -1 ? args[descriptionIndex + 1] : undefined
 
   createPackage(packageName, { vue, description })
 }

@@ -138,7 +138,6 @@ export const utils = {
   // 检查是否为开发环境
   isDev: () => {
     try {
-      // eslint-disable-next-line node/prefer-global/process
       return (
         typeof process !== 'undefined' &&
         process.env?.NODE_ENV === 'development'

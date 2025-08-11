@@ -49,7 +49,7 @@ class PackageTemplate {
   // 生成 package.json
   private generatePackageJson(packageDir: string, options: PackageOptions) {
     const packageJson = {
-      name: '@ldesign/' + options.name,
+      name: `@ldesign/${options.name}`,
       type: 'module',
       version: '0.1.0',
       description: options.description,
@@ -372,7 +372,7 @@ MIT
 
   // 创建包
   async createPackage(options: PackageOptions) {
-    console.log('🚀 创建包: @ldesign/' + options.name)
+    console.log(`🚀 创建包: @ldesign/${options.name}`)
 
     try {
       // 1. 创建目录结构
@@ -405,9 +405,9 @@ MIT
       console.log('📦 安装依赖...')
       execSync('pnpm install', { stdio: 'inherit' })
 
-      console.log('🎉 包 @ldesign/' + options.name + ' 创建完成!')
-      console.log('📁 位置: packages/' + options.name)
-      console.log('🔧 下一步: cd packages/' + options.name + ' && pnpm dev')
+      console.log(`🎉 包 @ldesign/${options.name} 创建完成!`)
+      console.log(`📁 位置: packages/${options.name}`)
+      console.log(`🔧 下一步: cd packages/${options.name} && pnpm dev`)
     } catch (error) {
       console.error('❌ 创建包失败:', error)
       throw error

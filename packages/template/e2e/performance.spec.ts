@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('性能测试', () => {
   test.beforeEach(async ({ page }) => {
@@ -197,7 +197,7 @@ test.describe('性能测试', () => {
 
     // 检查 FPS 是否在合理范围内
     const fpsText = await page.locator('[data-testid="fps-value"]').textContent()
-    const fps = parseInt(fpsText || '0')
+    const fps = Number.parseInt(fpsText || '0')
 
     // FPS 应该大于 30（流畅体验的最低要求）
     expect(fps).toBeGreaterThan(30)

@@ -1,11 +1,12 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { aes } from '../src/index'
 
-describe('AES 加密算法测试', () => {
+describe('aES 加密算法测试', () => {
   const testData = 'Hello, AES Encryption!'
   const testKey = 'my-secret-key-256-bits-long'
   const shortKey = 'short'
-  const longKey = 'this-is-a-very-long-key-that-exceeds-normal-length-requirements'
+  const longKey =
+    'this-is-a-very-long-key-that-exceeds-normal-length-requirements'
 
   describe('基础加密解密功能', () => {
     it('应该成功加密和解密数据', () => {
@@ -90,20 +91,23 @@ describe('AES 加密算法测试', () => {
         expect(encrypted.success).toBe(true)
         expect(encrypted.mode).toBe(mode)
 
-        const decrypted = aes.decrypt(encrypted.data!, testKey, { mode, keySize: 256 })
+        const decrypted = aes.decrypt(encrypted.data!, testKey, {
+          mode,
+          keySize: 256,
+        })
         expect(decrypted.success).toBe(true)
         expect(decrypted.data).toBe(testData)
       })
     })
 
-    it('CBC 模式应该使用 IV', () => {
+    it('cBC 模式应该使用 IV', () => {
       const encrypted = aes.encrypt(testData, testKey, { mode: 'CBC' })
       expect(encrypted.success).toBe(true)
       expect(encrypted.iv).toBeTruthy()
       expect(encrypted.iv!.length).toBeGreaterThan(0)
     })
 
-    it('ECB 模式不应该使用 IV', () => {
+    it('eCB 模式不应该使用 IV', () => {
       const encrypted = aes.encrypt(testData, testKey, { mode: 'ECB' })
       expect(encrypted.success).toBe(true)
       // ECB 模式可能不返回 IV 或返回空 IV
@@ -113,16 +117,16 @@ describe('AES 加密算法测试', () => {
   describe('自定义 IV 测试', () => {
     it('应该支持自定义 IV', () => {
       const customIV = '1234567890123456' // 16字节
-      const encrypted = aes.encrypt(testData, testKey, { 
-        mode: 'CBC', 
-        iv: customIV 
+      const encrypted = aes.encrypt(testData, testKey, {
+        mode: 'CBC',
+        iv: customIV,
       })
       expect(encrypted.success).toBe(true)
       expect(encrypted.iv).toBe(customIV)
 
-      const decrypted = aes.decrypt(encrypted.data!, testKey, { 
-        mode: 'CBC', 
-        iv: customIV 
+      const decrypted = aes.decrypt(encrypted.data!, testKey, {
+        mode: 'CBC',
+        iv: customIV,
       })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
@@ -177,9 +181,9 @@ describe('AES 加密算法测试', () => {
     })
 
     it('应该处理无效的 IV 长度', () => {
-      const result = aes.encrypt(testData, testKey, { 
-        mode: 'CBC', 
-        iv: 'short' // 太短的 IV
+      const result = aes.encrypt(testData, testKey, {
+        mode: 'CBC',
+        iv: 'short', // 太短的 IV
       })
       expect(result.success).toBe(false)
       expect(result.error).toBeTruthy()
@@ -203,7 +207,7 @@ Line 2
 Line 3
 With special chars: !@#$%^&*()
 And unicode: 🔐 🌟 ✨`
-      
+
       const encrypted = aes.encrypt(multilineData, testKey)
       expect(encrypted.success).toBe(true)
 

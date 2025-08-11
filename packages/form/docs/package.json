@@ -15,8 +15,8 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "vitepress": "^1.0.0",
     "@vitejs/plugin-vue": "^5.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitepress": "^1.0.0"
   }
 }

@@ -7,10 +7,10 @@
 /**
  * 格式化日期
  */
-export const formatDate = (
+export function formatDate(
   date: Date | string | number,
   format = 'YYYY-MM-DD HH:mm:ss'
-): string => {
+): string {
   const d = new Date(date)
   const year = d.getFullYear()
   const month = String(d.getMonth() + 1).padStart(2, '0')
@@ -31,10 +31,10 @@ export const formatDate = (
 /**
  * 防抖函数
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
-): ((...args: Parameters<T>) => void) => {
+): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
 
   return (...args: Parameters<T>) => {
@@ -46,10 +46,10 @@ export const debounce = <T extends (...args: any[]) => any>(
 /**
  * 节流函数
  */
-export const throttle = <T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
-): ((...args: Parameters<T>) => void) => {
+): (...args: Parameters<T>) => void {
   let inThrottle: boolean = false
 
   return (...args: Parameters<T>) => {
@@ -64,10 +64,10 @@ export const throttle = <T extends (...args: any[]) => any>(
 /**
  * 深拷贝
  */
-export const deepClone = <T>(obj: T): T => {
+export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') return obj
   if (obj instanceof Date) return new Date(obj.getTime()) as unknown as T
-  if (obj instanceof Array)
+  if (Array.isArray(obj))
     return obj.map(item => deepClone(item)) as unknown as T
   if (typeof obj === 'object') {
     const clonedObj = {} as T
@@ -84,14 +84,14 @@ export const deepClone = <T>(obj: T): T => {
 /**
  * 生成唯一ID
  */
-export const generateId = (prefix = 'id'): string => {
+export function generateId(prefix = 'id'): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
 /**
  * 检查是否为空值
  */
-export const isEmpty = (value: any): boolean => {
+export function isEmpty(value: any): boolean {
   if (value === null || value === undefined) return true
   if (typeof value === 'string') return value.trim() === ''
   if (Array.isArray(value)) return value.length === 0

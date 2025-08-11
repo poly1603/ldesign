@@ -1,16 +1,16 @@
 // useFormLayout Composition API Hook
 
+import type { FormItemConfig } from '../types/field'
+import type { FieldLayout, LayoutConfig, LayoutResult } from '../types/layout'
 import {
-  ref,
-  reactive,
   computed,
-  watch,
+  nextTick,
   onMounted,
   onUnmounted,
-  nextTick,
+  reactive,
+  ref,
+  watch,
 } from 'vue'
-import type { LayoutConfig, LayoutResult, FieldLayout } from '../types/layout'
-import type { FormItemConfig } from '../types/field'
 import { LayoutCalculator } from '../core/LayoutCalculator'
 import { throttle } from '../utils/throttle'
 

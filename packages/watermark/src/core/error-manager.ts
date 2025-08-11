@@ -85,6 +85,7 @@ export class ErrorManager implements IErrorManager {
     WatermarkErrorCode,
     ErrorRecoveryStrategy
   >()
+
   private config: ErrorConfig
   private stats: ErrorStats = {
     totalErrors: 0,

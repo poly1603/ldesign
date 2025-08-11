@@ -27,7 +27,9 @@ import { IdleProcessorImpl } from '../utils/idle-processor'
 /**
  * 默认主题管理器选项
  */
-const DEFAULT_OPTIONS: Required<Omit<ThemeManagerOptions, 'onThemeChanged' | 'onError' | 'themes'>> & {
+const DEFAULT_OPTIONS: Required<
+  Omit<ThemeManagerOptions, 'onThemeChanged' | 'onError' | 'themes'>
+> & {
   onThemeChanged?: (theme: string, mode: ColorMode) => void
   onError?: (error: Error) => void
   themes: ThemeConfig[]
@@ -49,7 +51,9 @@ const DEFAULT_OPTIONS: Required<Omit<ThemeManagerOptions, 'onThemeChanged' | 'on
  * 主题管理器实现
  */
 export class ThemeManager implements ThemeManagerInstance {
-  private options: Required<Omit<ThemeManagerOptions, 'onThemeChanged' | 'onError' | 'themes'>> & {
+  private options: Required<
+    Omit<ThemeManagerOptions, 'onThemeChanged' | 'onError' | 'themes'>
+  > & {
     onThemeChanged?: (theme: string, mode: ColorMode) => void
     onError?: (error: Error) => void
     themes: ThemeConfig[]
@@ -129,8 +133,7 @@ export class ThemeManager implements ThemeManagerInstance {
         theme: this.currentTheme,
         mode: this.currentMode,
       })
-    }
-    catch (error) {
+    } catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -190,8 +193,7 @@ export class ThemeManager implements ThemeManagerInstance {
       if (this.options.onThemeChanged) {
         this.options.onThemeChanged(this.currentTheme, this.currentMode)
       }
-    }
-    catch (error) {
+    } catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -217,13 +219,14 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   registerTheme(config: ThemeConfig): void {
     // 检查主题是否已存在
-    const existingIndex = this.options.themes.findIndex(t => t.name === config.name)
+    const existingIndex = this.options.themes.findIndex(
+      t => t.name === config.name
+    )
 
     if (existingIndex >= 0) {
       // 更新现有主题
       this.options.themes[existingIndex] = config
-    }
-    else {
+    } else {
       // 添加新主题
       this.options.themes.push(config)
     }
@@ -286,8 +289,7 @@ export class ThemeManager implements ThemeManagerInstance {
       this.cache.set(cacheKey, generatedTheme)
 
       this.eventEmitter.emit('theme-generated', { theme: name })
-    }
-    catch (error) {
+    } catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -297,15 +299,16 @@ export class ThemeManager implements ThemeManagerInstance {
    * 预生成所有主题
    */
   async preGenerateAllThemes(): Promise<void> {
-    const tasks = this.getThemeNames().map(name => () => this.preGenerateTheme(name))
+    const tasks = this.getThemeNames().map(
+      name => () => this.preGenerateTheme(name)
+    )
 
     if (this.options.idleProcessing) {
       // 使用闲时处理
       tasks.forEach((task, index) => {
         this.idleProcessor.addTask(task, index)
       })
-    }
-    else {
+    } else {
       // 直接执行
       await Promise.all(tasks.map(task => task()))
     }
@@ -366,9 +369,13 @@ export class ThemeManager implements ThemeManagerInstance {
 
     switch (this.options.storage) {
       case 'localStorage':
-        return typeof localStorage !== 'undefined' ? localStorage : this.createMemoryStorage()
+        return typeof localStorage !== 'undefined'
+          ? localStorage
+          : this.createMemoryStorage()
       case 'sessionStorage':
-        return typeof sessionStorage !== 'undefined' ? sessionStorage : this.createMemoryStorage()
+        return typeof sessionStorage !== 'undefined'
+          ? sessionStorage
+          : this.createMemoryStorage()
       case 'memory':
       default:
         return this.createMemoryStorage()
@@ -392,8 +399,11 @@ export class ThemeManager implements ThemeManagerInstance {
    * 创建缓存实例
    */
   private createCache(): LRUCache<GeneratedTheme> {
-    const cache = new Map<string, { value: GeneratedTheme, accessed: number }>()
-    const maxSize = typeof this.options.cache === 'object' ? this.options.cache.maxSize || 50 : 50
+    const cache = new Map<string, { value: GeneratedTheme; accessed: number }>()
+    const maxSize =
+      typeof this.options.cache === 'object'
+        ? this.options.cache.maxSize || 50
+        : 50
 
     return {
       get: (key: string) => {
@@ -452,11 +462,13 @@ export class ThemeManager implements ThemeManagerInstance {
     }
 
     // 监听系统主题变化
-    this.systemThemeWatcher = this.systemThemeDetector.watchSystemTheme((mode) => {
-      if (this.currentTheme === 'system') {
-        this.setMode(mode)
+    this.systemThemeWatcher = this.systemThemeDetector.watchSystemTheme(
+      mode => {
+        if (this.currentTheme === 'system') {
+          this.setMode(mode)
+        }
       }
-    })
+    )
   }
 
   /**
@@ -474,8 +486,7 @@ export class ThemeManager implements ThemeManagerInstance {
           this.currentMode = mode
         }
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('Failed to restore theme from storage:', error)
     }
 
@@ -495,8 +506,7 @@ export class ThemeManager implements ThemeManagerInstance {
         mode: this.currentMode,
       }
       this.storage.setItem(this.options.storageKey, JSON.stringify(data))
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('Failed to save theme to storage:', error)
     }
   }
@@ -515,7 +525,9 @@ export class ThemeManager implements ThemeManagerInstance {
   /**
    * 生成主题数据
    */
-  private async generateThemeData(config: ThemeConfig): Promise<GeneratedTheme> {
+  private async generateThemeData(
+    config: ThemeConfig
+  ): Promise<GeneratedTheme> {
     const lightColors = this.colorGenerator.generateColors(config.light.primary)
     const lightColorConfig = {
       primary: config.light.primary,
@@ -530,21 +542,29 @@ export class ThemeManager implements ThemeManagerInstance {
       : lightColors
     const darkColorConfig = config.dark
       ? {
-        primary: config.dark.primary,
-        success: darkColors.success || '#49aa19',
-        warning: darkColors.warning || '#d4b106',
-        danger: darkColors.danger || '#dc4446',
-        gray: darkColors.gray || '#8c8c8c',
-      }
+          primary: config.dark.primary,
+          success: darkColors.success || '#49aa19',
+          warning: darkColors.warning || '#d4b106',
+          danger: darkColors.danger || '#dc4446',
+          gray: darkColors.gray || '#8c8c8c',
+        }
       : lightColorConfig
 
     // 生成色阶
-    const lightScales = this.scaleGenerator.generateScales(lightColorConfig, 'light')
-    const darkScales = this.scaleGenerator.generateScales(darkColorConfig, 'dark')
+    const lightScales = this.scaleGenerator.generateScales(
+      lightColorConfig,
+      'light'
+    )
+    const darkScales = this.scaleGenerator.generateScales(
+      darkColorConfig,
+      'dark'
+    )
 
     // 生成 CSS 变量
-    const lightCSSVariables = this.cssVariableGenerator.generateSemanticVariables(lightScales)
-    const darkCSSVariables = this.cssVariableGenerator.generateSemanticVariables(darkScales)
+    const lightCSSVariables =
+      this.cssVariableGenerator.generateSemanticVariables(lightScales)
+    const darkCSSVariables =
+      this.cssVariableGenerator.generateSemanticVariables(darkScales)
 
     return {
       name: config.name,
@@ -581,11 +601,17 @@ export class ThemeManager implements ThemeManagerInstance {
   }
 
   // EventEmitter 方法代理
-  on<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  on<T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>
+  ): void {
     this.eventEmitter.on(event, listener)
   }
 
-  off<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  off<T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>
+  ): void {
     this.eventEmitter.off(event, listener)
   }
 
@@ -593,7 +619,10 @@ export class ThemeManager implements ThemeManagerInstance {
     this.eventEmitter.emit(event, data)
   }
 
-  once<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  once<T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>
+  ): void {
     this.eventEmitter.once(event, listener)
   }
 

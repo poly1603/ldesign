@@ -8,69 +8,30 @@
  */
 
 // === 核心功能类 ===
-export {
-  Encrypt,
+// === 核心功能实例 ===
+// 创建单例实例，提供便捷的全局访问
+import {
   Decrypt,
+  DigitalSignature,
+  Encrypt,
   Hash,
   HMAC,
   KeyGenerator,
-  DigitalSignature,
 } from './crypto'
-
-// === 管理器和性能优化 ===
-export {
-  CryptoManager,
-  type CryptoConfig,
-} from './manager'
-
-export {
-  PerformanceOptimizer,
-} from './performance'
-
-export type {
-  BatchOperation,
-  BatchResult,
-  CacheStats,
-  PerformanceMetrics,
-  MemoryPoolConfig,
-} from './performance'
-
-// === 核心功能实例 ===
-// 创建单例实例，提供便捷的全局访问
-import { Decrypt, DigitalSignature, Encrypt, Hash, HMAC, KeyGenerator } from './crypto'
 import { CryptoManager } from './manager'
-
-export const encrypt = new Encrypt()
-export const decrypt = new Decrypt()
-export const hash = new Hash()
-export const hmac = new HMAC()
-export const keyGenerator = new KeyGenerator()
-export const digitalSignature = new DigitalSignature()
-
-// 创建默认管理器实例
-export const cryptoManager = new CryptoManager({
-  defaultAlgorithm: 'AES',
-  enableCache: true,
-  maxCacheSize: 1000,
-  enableParallel: true,
-  autoGenerateIV: true,
-  keyDerivation: false,
-  debug: false,
-  logLevel: 'error',
-})
 
 // === 重新导出算法模块 ===
 // 为了保持向后兼容性，重新导出算法实现
 export {
   aes,
-  rsa,
+  base64,
+  blowfish,
   des,
   des3,
-  tripledes,
-  blowfish,
-  base64,
-  hex,
   encoding,
+  hex,
+  rsa,
+  tripledes,
 } from '../algorithms'
 
 // 重新导出类型
@@ -91,4 +52,43 @@ export type {
   TripleDESOptions,
 } from '../types'
 
+export {
+  Decrypt,
+  DigitalSignature,
+  Encrypt,
+  Hash,
+  HMAC,
+  KeyGenerator,
+} from './crypto'
 
+// === 管理器和性能优化 ===
+export { type CryptoConfig, CryptoManager } from './manager'
+
+export const encrypt = new Encrypt()
+export const decrypt = new Decrypt()
+export const hash = new Hash()
+export const hmac = new HMAC()
+export const keyGenerator = new KeyGenerator()
+export const digitalSignature = new DigitalSignature()
+
+// 创建默认管理器实例
+export const cryptoManager = new CryptoManager({
+  defaultAlgorithm: 'AES',
+  enableCache: true,
+  maxCacheSize: 1000,
+  enableParallel: true,
+  autoGenerateIV: true,
+  keyDerivation: false,
+  debug: false,
+  logLevel: 'error',
+})
+
+export { PerformanceOptimizer } from './performance'
+
+export type {
+  BatchOperation,
+  BatchResult,
+  CacheStats,
+  MemoryPoolConfig,
+  PerformanceMetrics,
+} from './performance'

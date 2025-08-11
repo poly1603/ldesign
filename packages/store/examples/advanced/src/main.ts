@@ -1,14 +1,14 @@
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import 'reflect-metadata'
-
 import App from './App.vue'
+
+import EnterpriseDemo from './views/EnterpriseDemo.vue'
 import Home from './views/Home.vue'
 import PerformanceDemo from './views/PerformanceDemo.vue'
-import StorePoolDemo from './views/StorePoolDemo.vue'
-import EnterpriseDemo from './views/EnterpriseDemo.vue'
 import RealTimeDemo from './views/RealTimeDemo.vue'
+import StorePoolDemo from './views/StorePoolDemo.vue'
+import 'reflect-metadata'
 
 const router = createRouter({
   history: createWebHistory(),

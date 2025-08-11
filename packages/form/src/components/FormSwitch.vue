@@ -1,48 +1,3 @@
-<template>
-  <div class="form-switch" :class="switchClasses">
-    <div v-if="showLabel" class="form-switch__label" :class="labelClasses">
-      <label :for="inputId" class="form-switch__label-text">
-        {{ label }}
-        <span v-if="required" class="form-switch__required">*</span>
-        <span v-if="showColon" class="form-switch__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-switch__tooltip" :title="tooltip">?</div>
-    </div>
-
-    <div class="form-switch__wrapper" :class="wrapperClasses">
-      <label class="form-switch__container">
-        <input
-          :id="inputId"
-          ref="inputRef"
-          type="checkbox"
-          :checked="isChecked"
-          :disabled="disabled"
-          class="form-switch__input"
-          @change="handleChange"
-          @blur="handleBlur"
-          @focus="handleFocus"
-        />
-        <span class="form-switch__slider" :class="sliderClasses">
-          <span class="form-switch__handle"></span>
-        </span>
-        <span v-if="checkedText || uncheckedText" class="form-switch__text">
-          {{ isChecked ? checkedText : uncheckedText }}
-        </span>
-      </label>
-    </div>
-
-    <div v-if="hasError" class="form-switch__error">
-      <div v-for="error in errors" :key="error" class="form-switch__error-text">
-        {{ error }}
-      </div>
-    </div>
-
-    <div v-if="description" class="form-switch__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
@@ -119,7 +74,7 @@ const sliderClasses = computed(() => [
 const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 事件处理
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   if (props.disabled) return
 
   const target = event.target as HTMLInputElement
@@ -129,11 +84,11 @@ const handleChange = (event: Event) => {
   emit('change', newValue, event)
 }
 
-const handleBlur = (event: FocusEvent) => {
+function handleBlur(event: FocusEvent) {
   emit('blur', event)
 }
 
-const handleFocus = (event: FocusEvent) => {
+function handleFocus(event: FocusEvent) {
   emit('focus', event)
 }
 
@@ -143,6 +98,51 @@ defineExpose({
   blur: () => inputRef.value?.blur(),
 })
 </script>
+
+<template>
+  <div class="form-switch" :class="switchClasses">
+    <div v-if="showLabel" class="form-switch__label" :class="labelClasses">
+      <label :for="inputId" class="form-switch__label-text">
+        {{ label }}
+        <span v-if="required" class="form-switch__required">*</span>
+        <span v-if="showColon" class="form-switch__colon">:</span>
+      </label>
+      <div v-if="tooltip" class="form-switch__tooltip" :title="tooltip">?</div>
+    </div>
+
+    <div class="form-switch__wrapper" :class="wrapperClasses">
+      <label class="form-switch__container">
+        <input
+          :id="inputId"
+          ref="inputRef"
+          type="checkbox"
+          :checked="isChecked"
+          :disabled="disabled"
+          class="form-switch__input"
+          @change="handleChange"
+          @blur="handleBlur"
+          @focus="handleFocus"
+        />
+        <span class="form-switch__slider" :class="sliderClasses">
+          <span class="form-switch__handle" />
+        </span>
+        <span v-if="checkedText || uncheckedText" class="form-switch__text">
+          {{ isChecked ? checkedText : uncheckedText }}
+        </span>
+      </label>
+    </div>
+
+    <div v-if="hasError" class="form-switch__error">
+      <div v-for="error in errors" :key="error" class="form-switch__error-text">
+        {{ error }}
+      </div>
+    </div>
+
+    <div v-if="description" class="form-switch__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-switch {

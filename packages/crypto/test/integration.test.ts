@@ -1,5 +1,13 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import { aes, hash, hmac, base64, hex, keyGenerator, cryptoManager } from '../src/index'
+import { beforeEach, describe, expect, it } from 'vitest'
+import {
+  aes,
+  base64,
+  cryptoManager,
+  hash,
+  hex,
+  hmac,
+  keyGenerator,
+} from '../src/index'
 
 describe('集成测试', () => {
   const testData = 'Hello, Integration Test!'
@@ -40,15 +48,21 @@ describe('集成测试', () => {
       expect(firstEncryption.success).toBe(true)
 
       // 第二层加密
-      const secondEncryption = aes.encrypt(firstEncryption.data!, key2, { keySize: 256 })
+      const secondEncryption = aes.encrypt(firstEncryption.data!, key2, {
+        keySize: 256,
+      })
       expect(secondEncryption.success).toBe(true)
 
       // 第二层解密
-      const firstDecryption = aes.decrypt(secondEncryption.data!, key2, { keySize: 256 })
+      const firstDecryption = aes.decrypt(secondEncryption.data!, key2, {
+        keySize: 256,
+      })
       expect(firstDecryption.success).toBe(true)
 
       // 第一层解密
-      const finalDecryption = aes.decrypt(firstDecryption.data!, key1, { keySize: 256 })
+      const finalDecryption = aes.decrypt(firstDecryption.data!, key1, {
+        keySize: 256,
+      })
       expect(finalDecryption.success).toBe(true)
       expect(finalDecryption.data).toBe(testData)
     })
@@ -84,7 +98,12 @@ describe('集成测试', () => {
       const messageHmac = hmac.sha256(encrypted.data!, authKey)
 
       // 3. 验证 HMAC
-      const isValid = hmac.verify(encrypted.data!, authKey, messageHmac, 'SHA256')
+      const isValid = hmac.verify(
+        encrypted.data!,
+        authKey,
+        messageHmac,
+        'SHA256'
+      )
       expect(isValid).toBe(true)
 
       // 4. 解密数据
@@ -106,7 +125,9 @@ describe('集成测试', () => {
       expect(encrypted.success).toBe(true)
 
       // 3. 使用相同密钥解密
-      const decrypted = aes.decrypt(encrypted.data!, generatedKey, { keySize: 256 })
+      const decrypted = aes.decrypt(encrypted.data!, generatedKey, {
+        keySize: 256,
+      })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -116,20 +137,27 @@ describe('集成测试', () => {
       const salt = 'unique-salt-value'
 
       // 1. 派生加密密钥
-      const encryptionKey = hash.sha256(masterKey + salt + 'encryption')
-      
+      const encryptionKey = hash.sha256(`${masterKey + salt}encryption`)
+
       // 2. 派生认证密钥
-      const authKey = hash.sha256(masterKey + salt + 'authentication')
+      const authKey = hash.sha256(`${masterKey + salt}authentication`)
 
       // 3. 使用派生的密钥
       const encrypted = aes.encrypt(testData, encryptionKey, { keySize: 256 })
       expect(encrypted.success).toBe(true)
 
       const messageHmac = hmac.sha256(encrypted.data!, authKey)
-      const isValid = hmac.verify(encrypted.data!, authKey, messageHmac, 'SHA256')
+      const isValid = hmac.verify(
+        encrypted.data!,
+        authKey,
+        messageHmac,
+        'SHA256'
+      )
       expect(isValid).toBe(true)
 
-      const decrypted = aes.decrypt(encrypted.data!, encryptionKey, { keySize: 256 })
+      const decrypted = aes.decrypt(encrypted.data!, encryptionKey, {
+        keySize: 256,
+      })
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)
     })
@@ -198,7 +226,10 @@ describe('集成测试', () => {
       expect(encrypted.success).toBe(true)
 
       // 2. 模拟数据损坏
-      const corruptedData = encrypted.data!.substring(0, encrypted.data!.length - 5) + 'XXXXX'
+      const corruptedData = `${encrypted.data!.substring(
+        0,
+        encrypted.data!.length - 5
+      )}XXXXX`
 
       // 3. 尝试解密损坏的数据
       const decrypted = aes.decrypt(corruptedData, testKey, { keySize: 256 })
@@ -214,7 +245,10 @@ describe('集成测试', () => {
       const originalHmac = hmac.sha256(encrypted.data!, authKey)
 
       // 2. 模拟数据篡改
-      const tamperedData = encrypted.data!.substring(0, encrypted.data!.length - 5) + 'XXXXX'
+      const tamperedData = `${encrypted.data!.substring(
+        0,
+        encrypted.data!.length - 5
+      )}XXXXX`
 
       // 3. 验证 HMAC（应该失败）
       const isValid = hmac.verify(tamperedData, authKey, originalHmac, 'SHA256')
@@ -227,7 +261,7 @@ describe('集成测试', () => {
       const encoded = base64.encode(encrypted.data!)
 
       // 2. 模拟编码损坏
-      const corruptedEncoded = encoded.substring(0, encoded.length - 2) + '@@'
+      const corruptedEncoded = `${encoded.substring(0, encoded.length - 2)}@@`
 
       // 3. 尝试解码（应该抛出错误）
       expect(() => base64.decode(corruptedEncoded)).toThrow()
@@ -271,8 +305,10 @@ describe('集成测试', () => {
       const end = performance.now()
       const totalTime = end - start
 
-      console.log(`完成 ${iterations} 次复杂操作耗时: ${totalTime.toFixed(2)}ms`)
-      
+      console.log(
+        `完成 ${iterations} 次复杂操作耗时: ${totalTime.toFixed(2)}ms`
+      )
+
       // 应该在合理时间内完成（10秒内）
       expect(totalTime).toBeLessThan(10000)
     })
@@ -281,7 +317,7 @@ describe('集成测试', () => {
       const concurrency = 5
       const testCases = Array.from({ length: concurrency }, (_, i) => ({
         data: `Test data ${i}`,
-        key: `test-key-${i}`
+        key: `test-key-${i}`,
       }))
 
       const start = performance.now()
@@ -310,8 +346,10 @@ describe('集成测试', () => {
         expect(result.decrypted).toBe(testCases[index].data)
       })
 
-      console.log(`并发操作 (${concurrency} 个) 耗时: ${(end - start).toFixed(2)}ms`)
-      
+      console.log(
+        `并发操作 (${concurrency} 个) 耗时: ${(end - start).toFixed(2)}ms`
+      )
+
       // 并发操作应该在合理时间内完成
       expect(end - start).toBeLessThan(5000)
     })
@@ -323,27 +361,33 @@ describe('集成测试', () => {
       const websites = [
         { url: 'example.com', username: 'user1', password: 'pass1' },
         { url: 'test.org', username: 'user2', password: 'pass2' },
-        { url: 'demo.net', username: 'user3', password: 'pass3' }
+        { url: 'demo.net', username: 'user3', password: 'pass3' },
       ]
 
       // 加密所有密码
       const encryptedPasswords = websites.map(site => {
-        const encrypted = aes.encrypt(site.password, masterPassword, { keySize: 256 })
+        const encrypted = aes.encrypt(site.password, masterPassword, {
+          keySize: 256,
+        })
         expect(encrypted.success).toBe(true)
-        
+
         return {
           ...site,
           encryptedPassword: encrypted.data!,
-          iv: encrypted.iv!
+          iv: encrypted.iv!,
         }
       })
 
       // 解密并验证所有密码
       encryptedPasswords.forEach((encryptedSite, index) => {
-        const decrypted = aes.decrypt(encryptedSite.encryptedPassword, masterPassword, {
-          keySize: 256,
-          iv: encryptedSite.iv
-        })
+        const decrypted = aes.decrypt(
+          encryptedSite.encryptedPassword,
+          masterPassword,
+          {
+            keySize: 256,
+            iv: encryptedSite.iv,
+          }
+        )
         expect(decrypted.success).toBe(true)
         expect(decrypted.data).toBe(websites[index].password)
       })
@@ -370,7 +414,7 @@ describe('集成测试', () => {
         originalHash,
         algorithm: 'AES-256-CBC',
         iv: encrypted.iv,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
 
       // 4. 编码加密数据和元数据
@@ -388,7 +432,7 @@ describe('集成测试', () => {
       // 7. 解密文件
       const decrypted = aes.decrypt(decodedData, filePassword, {
         keySize: 256,
-        iv: decodedMetadata.iv
+        iv: decodedMetadata.iv,
       })
       expect(decrypted.success).toBe(true)
 
@@ -404,7 +448,7 @@ describe('集成测试', () => {
         method: 'POST',
         url: '/api/users',
         body: JSON.stringify({ name: 'John', email: 'john@example.com' }),
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       // 1. 构建签名字符串
@@ -412,7 +456,7 @@ describe('集成测试', () => {
         requestData.method,
         requestData.url,
         requestData.body,
-        requestData.timestamp.toString()
+        requestData.timestamp.toString(),
       ].join('\n')
 
       // 2. 生成签名
@@ -424,7 +468,12 @@ describe('集成测试', () => {
 
       // 4. 测试篡改检测
       const tamperedString = signatureString.replace('John', 'Jane')
-      const isTamperedValid = hmac.verify(tamperedString, apiKey, signature, 'SHA256')
+      const isTamperedValid = hmac.verify(
+        tamperedString,
+        apiKey,
+        signature,
+        'SHA256'
+      )
       expect(isTamperedValid).toBe(false)
     })
   })

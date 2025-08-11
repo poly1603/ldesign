@@ -227,13 +227,16 @@ export default defineComponent({
             }}
           >
             <p style={{ margin: '0 0 0.5rem 0', color: '#4a5568' }}>
-              💡 <strong>演示账号：</strong>admin / admin
+              💡 <strong>演示账号：</strong>
+              admin / admin
             </p>
             <p style={{ margin: '0 0 0.5rem 0', color: '#4a5568' }}>
-              🎨 <strong>模板系统：</strong>集成 @ldesign/template
+              🎨 <strong>模板系统：</strong>
+              集成 @ldesign/template
             </p>
             <p style={{ margin: 0, color: '#4a5568' }}>
-              🔧 <strong>集成功能：</strong>Engine 通知、日志、路由跳转
+              🔧 <strong>集成功能：</strong>
+              Engine 通知、日志、路由跳转
             </p>
           </div>
         </div>

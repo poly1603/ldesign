@@ -1,5 +1,5 @@
-import type { UseI18nReturn } from './types'
 import type { I18nInstance } from '../core/types'
+import type { UseI18nReturn } from './types'
 import { computed, inject, onUnmounted, ref } from 'vue'
 
 /**
@@ -17,8 +17,8 @@ export function useI18n(): UseI18nReturn {
 
   if (!i18n) {
     throw new Error(
-      'useI18n() must be called within a component that has access to the I18n plugin. '
-      + 'Make sure you have installed the I18n plugin using app.use(i18nPlugin).',
+      'useI18n() must be called within a component that has access to the I18n plugin. ' +
+        'Make sure you have installed the I18n plugin using app.use(i18nPlugin).'
     )
   }
 
@@ -78,7 +78,9 @@ export function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn {
   const locale = ref(i18nInstance.getCurrentLanguage())
 
   // 创建响应式的可用语言列表
-  const availableLanguages = computed(() => i18nInstance.getAvailableLanguages())
+  const availableLanguages = computed(() =>
+    i18nInstance.getAvailableLanguages()
+  )
 
   // 语言变更监听器
   const handleLanguageChange = (...args: unknown[]) => {
@@ -157,8 +159,7 @@ export function useLanguageSwitcher() {
     try {
       isChanging.value = true
       await changeLanguage(newLocale)
-    }
-    finally {
+    } finally {
       isChanging.value = false
     }
   }
@@ -207,12 +208,13 @@ export function useBatchTranslation(keys: string[]) {
 export function useConditionalTranslation(
   condition: (() => boolean) | { value: boolean },
   trueKey: string,
-  falseKey: string,
+  falseKey: string
 ) {
   const { t } = useI18n()
 
   return computed(() => {
-    const isTrue = typeof condition === 'function' ? condition() : condition.value
+    const isTrue =
+      typeof condition === 'function' ? condition() : condition.value
     return t(isTrue ? trueKey : falseKey)
   })
 }

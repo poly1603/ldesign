@@ -2,6 +2,8 @@
   "name": "@ldesign/form",
   "version": "1.0.0",
   "description": "A modern Vue3 form library with TypeScript support",
+  "author": "LDesign Team",
+  "license": "MIT",
   "keywords": [
     "vue3",
     "form",
@@ -11,22 +13,23 @@
     "responsive",
     "modular"
   ],
-  "author": "LDesign Team",
-  "license": "MIT",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src",
-    "README.md"
-  ],
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./style.css": "./dist/index.css"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
   },
   "scripts": {
     "dev": "vite",
@@ -48,6 +51,9 @@
     "release": "npm run build && npm publish dist",
     "prepublishOnly": "npm run build"
   },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
   "dependencies": {
     "vue": "^3.4.0"
   },
@@ -66,11 +72,5 @@
     "vite-plugin-dts": "^3.0.0",
     "vitest": "^1.0.0",
     "vue-tsc": "^2.0.0"
-  },
-  "peerDependencies": {
-    "vue": "^3.4.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }

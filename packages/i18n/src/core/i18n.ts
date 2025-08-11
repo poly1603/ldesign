@@ -15,7 +15,10 @@ import type {
 } from './types'
 import { hasInterpolation, interpolate } from '../utils/interpolation'
 import { getNestedValue } from '../utils/path'
-import { hasPluralExpression, processPluralization } from '../utils/pluralization'
+import {
+  hasPluralExpression,
+  processPluralization,
+} from '../utils/pluralization'
 import { createDetector } from './detector'
 import { DefaultLoader } from './loader'
 import { createStorage, LRUCacheImpl } from './storage'
@@ -23,7 +26,9 @@ import { createStorage, LRUCacheImpl } from './storage'
 /**
  * 默认配置选项
  */
-const DEFAULT_OPTIONS: Required<Omit<I18nOptions, 'onLanguageChanged' | 'onLoadError'>> = {
+const DEFAULT_OPTIONS: Required<
+  Omit<I18nOptions, 'onLanguageChanged' | 'onLoadError'>
+> = {
   defaultLocale: 'en',
   fallbackLocale: 'en',
   storage: 'localStorage',
@@ -40,7 +45,9 @@ const DEFAULT_OPTIONS: Required<Omit<I18nOptions, 'onLanguageChanged' | 'onLoadE
  * I18n 主类实现
  */
 export class I18n implements I18nInstance {
-  private options: Required<Omit<I18nOptions, 'onLanguageChanged' | 'onLoadError'>> & {
+  private options: Required<
+    Omit<I18nOptions, 'onLanguageChanged' | 'onLoadError'>
+  > & {
     onLanguageChanged?: (locale: string) => void
     onLoadError?: (locale: string, error: Error) => void
   }
@@ -94,7 +101,10 @@ export class I18n implements I18nInstance {
       // 2. 自动检测浏览器语言
       if (this.options.autoDetect && !this.storage.getLanguage()) {
         const detectedLanguages = this.detector.detect()
-        const availableLocales = (this.loader as Loader & { getAvailableLocales?: () => string[] }).getAvailableLocales?.() || []
+        const availableLocales =
+          (
+            this.loader as Loader & { getAvailableLocales?: () => string[] }
+          ).getAvailableLocales?.() || []
 
         for (const detected of detectedLanguages) {
           if (availableLocales.includes(detected)) {
@@ -104,7 +114,9 @@ export class I18n implements I18nInstance {
 
           // 尝试匹配主语言
           const mainLang = detected.split('-')[0]
-          const match = availableLocales.find(locale => locale.startsWith(mainLang))
+          const match = availableLocales.find(locale =>
+            locale.startsWith(mainLang)
+          )
           if (match) {
             initialLocale = match
             break
@@ -116,10 +128,10 @@ export class I18n implements I18nInstance {
       if (this.options.preload.length > 0) {
         await Promise.all(
           this.options.preload.map(locale =>
-            this.loader.preload(locale).catch((error) => {
+            this.loader.preload(locale).catch(error => {
               console.warn(`Failed to preload language '${locale}':`, error)
-            }),
-          ),
+            })
+          )
         )
       }
 
@@ -127,8 +139,7 @@ export class I18n implements I18nInstance {
       await this.forceChangeLanguage(initialLocale)
 
       this.isInitialized = true
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to initialize I18n:', error)
       throw error
     }
@@ -175,8 +186,7 @@ export class I18n implements I18nInstance {
       if (this.options.onLanguageChanged) {
         this.options.onLanguageChanged(locale)
       }
-    }
-    catch (error) {
+    } catch (error) {
       // 触发错误事件
       this.emit('loadError', locale, error)
 
@@ -199,7 +209,7 @@ export class I18n implements I18nInstance {
   t<T = string>(
     key: string,
     params: TranslationParams = this.emptyParams,
-    options: TranslationOptions = this.emptyOptions,
+    options: TranslationOptions = this.emptyOptions
   ): T {
     // 快速路径：如果没有参数且没有特殊选项，直接查找简单翻译
     const hasParams = Object.keys(params).length > 0
@@ -215,14 +225,23 @@ export class I18n implements I18nInstance {
 
       // 快速翻译查找
       const text = this.getTranslationText(key, this.currentLocale)
-      if (text !== undefined && !hasInterpolation(text) && !hasPluralExpression(text)) {
+      if (
+        text !== undefined &&
+        !hasInterpolation(text) &&
+        !hasPluralExpression(text)
+      ) {
         this.cache.set(simpleCacheKey, text)
         return text as T
       }
     }
 
     // 标准路径：生成完整缓存键
-    const cacheKey = this.generateCacheKey(key, params, options, this.currentLocale)
+    const cacheKey = this.generateCacheKey(
+      key,
+      params,
+      options,
+      this.currentLocale
+    )
 
     // 尝试从缓存获取
     if (this.options.cache.enabled) {
@@ -249,7 +268,10 @@ export class I18n implements I18nInstance {
    * @param params 插值参数
    * @returns 翻译结果对象
    */
-  batchTranslate(keys: string[], params: TranslationParams = {}): BatchTranslationResult {
+  batchTranslate(
+    keys: string[],
+    params: TranslationParams = {}
+  ): BatchTranslationResult {
     const result: BatchTranslationResult = {}
 
     for (const key of keys) {
@@ -353,8 +375,7 @@ export class I18n implements I18nInstance {
       for (const listener of listeners) {
         try {
           listener(...args)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Error in event listener for '${event}':`, error)
         }
       }
@@ -371,13 +392,17 @@ export class I18n implements I18nInstance {
   private performTranslation(
     key: string,
     params: TranslationParams,
-    options: TranslationOptions,
+    options: TranslationOptions
   ): string {
     // 获取翻译文本
     let text = this.getTranslationText(key, this.currentLocale)
 
     // 如果没有找到，尝试降级语言
-    if (text === undefined && this.options.fallbackLocale && this.options.fallbackLocale !== this.currentLocale) {
+    if (
+      text === undefined &&
+      this.options.fallbackLocale &&
+      this.options.fallbackLocale !== this.currentLocale
+    ) {
       text = this.getTranslationText(key, this.options.fallbackLocale)
     }
 
@@ -408,7 +433,13 @@ export class I18n implements I18nInstance {
    * @returns 翻译文本或 undefined
    */
   private getTranslationText(key: string, locale: string): string | undefined {
-    const packageData = (this.loader as Loader & { getLoadedPackage?: (locale: string) => { translations: Record<string, unknown> } | undefined }).getLoadedPackage?.(locale)
+    const packageData = (
+      this.loader as Loader & {
+        getLoadedPackage?: (
+          locale: string
+        ) => { translations: Record<string, unknown> } | undefined
+      }
+    ).getLoadedPackage?.(locale)
     if (!packageData) {
       return undefined
     }
@@ -428,7 +459,7 @@ export class I18n implements I18nInstance {
     key: string,
     params: TranslationParams,
     options: TranslationOptions,
-    locale: string,
+    locale: string
   ): string {
     // 优化：避免JSON.stringify的开销，使用更快的字符串拼接
     let cacheKey = `${locale}:${key}`
@@ -488,7 +519,13 @@ export class I18n implements I18nInstance {
    * @returns 语言信息或 undefined
    */
   getCurrentLanguageInfo(): LanguageInfo | undefined {
-    const packageData = (this.loader as Loader & { getLoadedPackage?: (locale: string) => { info: LanguageInfo } | undefined }).getLoadedPackage?.(this.currentLocale)
+    const packageData = (
+      this.loader as Loader & {
+        getLoadedPackage?: (
+          locale: string
+        ) => { info: LanguageInfo } | undefined
+      }
+    ).getLoadedPackage?.(this.currentLocale)
     return packageData?.info
   }
 
@@ -511,7 +548,13 @@ export class I18n implements I18nInstance {
    */
   getKeys(locale?: string): string[] {
     const targetLocale = locale || this.currentLocale
-    const packageData = (this.loader as Loader & { getLoadedPackage?: (locale: string) => { translations: Record<string, unknown> } | undefined }).getLoadedPackage?.(targetLocale)
+    const packageData = (
+      this.loader as Loader & {
+        getLoadedPackage?: (
+          locale: string
+        ) => { translations: Record<string, unknown> } | undefined
+      }
+    ).getLoadedPackage?.(targetLocale)
     if (!packageData) {
       return []
     }
@@ -525,7 +568,10 @@ export class I18n implements I18nInstance {
    * @param prefix 键前缀
    * @returns 键数组
    */
-  private getAllKeysFromObject(obj: Record<string, unknown>, prefix = ''): string[] {
+  private getAllKeysFromObject(
+    obj: Record<string, unknown>,
+    prefix = ''
+  ): string[] {
     const keys: string[] = []
 
     for (const [key, value] of Object.entries(obj)) {
@@ -533,9 +579,13 @@ export class I18n implements I18nInstance {
 
       if (typeof value === 'string') {
         keys.push(fullKey)
-      }
-      else if (typeof value === 'object' && value !== null) {
-        keys.push(...this.getAllKeysFromObject(value as Record<string, unknown>, fullKey))
+      } else if (typeof value === 'object' && value !== null) {
+        keys.push(
+          ...this.getAllKeysFromObject(
+            value as Record<string, unknown>,
+            fullKey
+          )
+        )
       }
     }
 

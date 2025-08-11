@@ -4,19 +4,28 @@
  * 全面验证 ldesign 项目包构建一致性和完整性
  */
 
-import { existsSync, readdirSync, statSync, readFileSync } from 'fs'
-import { join } from 'path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 
 const packages = [
-  'color', 'crypto', 'device', 'engine', 'form',
-  'http', 'i18n', 'router', 'store', 'template', 'watermark'
+  'color',
+  'crypto',
+  'device',
+  'engine',
+  'form',
+  'http',
+  'i18n',
+  'router',
+  'store',
+  'template',
+  'watermark',
 ]
 
 const expectedStructure = {
   dist: ['index.js', 'index.min.js', 'index.d.ts'],
   es: ['index.js'],
   lib: ['index.js'],
-  types: ['index.d.ts']
+  types: ['index.d.ts'],
 }
 
 console.log('🔍 LDesign 包构建一致性和完整性验证报告')
@@ -29,8 +38,8 @@ const results = {
     complete: 0,
     partial: 0,
     failed: 0,
-    issues: []
-  }
+    issues: [],
+  },
 }
 
 // 验证单个包的结构
@@ -41,7 +50,7 @@ function validatePackageStructure(packageName) {
     status: 'unknown',
     structure: {},
     issues: [],
-    score: 0
+    score: 0,
   }
 
   // 检查每个目录
@@ -51,12 +60,12 @@ function validatePackageStructure(packageName) {
       exists: existsSync(dirPath),
       files: [],
       missing: [],
-      extra: []
+      extra: [],
     }
 
     if (result.structure[dir].exists) {
       try {
-        const actualFiles = readdirSync(dirPath).filter(f => 
+        const actualFiles = readdirSync(dirPath).filter(f =>
           statSync(join(dirPath, f)).isFile()
         )
         result.structure[dir].files = actualFiles
@@ -70,7 +79,10 @@ function validatePackageStructure(packageName) {
 
         // 检查额外的文件
         for (const actualFile of actualFiles) {
-          if (!expectedFiles.includes(actualFile) && !actualFile.endsWith('.map')) {
+          if (
+            !expectedFiles.includes(actualFile) &&
+            !actualFile.endsWith('.map')
+          ) {
             result.structure[dir].extra.push(actualFile)
           }
         }
@@ -85,7 +97,7 @@ function validatePackageStructure(packageName) {
   // 计算得分
   let totalExpected = 0
   let totalFound = 0
-  
+
   for (const [dir, info] of Object.entries(result.structure)) {
     const expected = expectedStructure[dir].length
     const found = expected - info.missing.length
@@ -122,19 +134,21 @@ function validatePackageJson(packageName) {
 
   try {
     const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-    
+
     // 检查关键字段
     const expectedFields = {
       main: 'dist/index.js',
       module: 'es/index.js',
-      types: 'dist/index.d.ts'
+      types: 'dist/index.d.ts',
     }
 
     for (const [field, expectedValue] of Object.entries(expectedFields)) {
       if (!pkg[field]) {
         issues.push(`缺少 ${field} 字段`)
       } else if (pkg[field] !== expectedValue) {
-        issues.push(`${field} 字段值不正确: 期望 "${expectedValue}", 实际 "${pkg[field]}"`)
+        issues.push(
+          `${field} 字段值不正确: 期望 "${expectedValue}", 实际 "${pkg[field]}"`
+        )
       }
     }
   } catch (error) {
@@ -150,7 +164,7 @@ console.log('\n📦 验证各包构建结构...\n')
 for (const packageName of packages) {
   const result = validatePackageStructure(packageName)
   const packageJsonIssues = validatePackageJson(packageName)
-  
+
   result.packageJsonIssues = packageJsonIssues
   results.packages[packageName] = result
 
@@ -158,11 +172,11 @@ for (const packageName of packages) {
   const statusIcon = {
     complete: '✅',
     partial: '⚠️',
-    failed: '❌'
+    failed: '❌',
   }[result.status]
 
   console.log(`${statusIcon} ${packageName} (${result.score}%)`)
-  
+
   // 显示详细信息
   for (const [dir, info] of Object.entries(result.structure)) {
     if (!info.exists) {
@@ -195,7 +209,11 @@ console.log(`✅ 完整成功: ${results.summary.complete} 个包`)
 console.log(`⚠️ 部分成功: ${results.summary.partial} 个包`)
 console.log(`❌ 构建失败: ${results.summary.failed} 个包`)
 
-const successRate = Math.round(((results.summary.complete + results.summary.partial) / results.summary.total) * 100)
+const successRate = Math.round(
+  ((results.summary.complete + results.summary.partial) /
+    results.summary.total) *
+    100
+)
 console.log(`📈 总体成功率: ${successRate}%`)
 
 // 一致性检查
@@ -207,13 +225,13 @@ for (const dir of Object.keys(expectedStructure)) {
   const structures = Object.values(results.packages)
     .filter(p => p.structure[dir].exists)
     .map(p => p.structure[dir].files.sort().join(','))
-  
+
   const unique = [...new Set(structures)]
   structureConsistency[dir] = {
     consistent: unique.length <= 1,
-    variations: unique.length
+    variations: unique.length,
   }
-  
+
   if (structureConsistency[dir].consistent) {
     console.log(`✅ ${dir} 目录结构一致`)
   } else {

@@ -1,6 +1,6 @@
 // 表单工厂函数
 
-import type { FormField, FormRule, FormLayout, FormGroup } from '../types/form'
+import type { FormField, FormGroup, FormLayout, FormRule } from '../types/form'
 
 /**
  * 创建表单字段

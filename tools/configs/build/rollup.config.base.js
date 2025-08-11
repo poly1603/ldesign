@@ -7,13 +7,13 @@ import { nodeResolve } from '@rollup/plugin-node-resolve'
 import replace from '@rollup/plugin-replace'
 import terser from '@rollup/plugin-terser'
 import typescript from '@rollup/plugin-typescript'
-import { glob } from 'glob'
-import dts from 'rollup-plugin-dts'
-import del from 'rollup-plugin-delete'
-import postcss from 'rollup-plugin-postcss'
 import vuePlugin from '@vitejs/plugin-vue'
 import vueJsxPlugin from '@vitejs/plugin-vue-jsx'
 import autoprefixer from 'autoprefixer'
+import { glob } from 'glob'
+import del from 'rollup-plugin-delete'
+import dts from 'rollup-plugin-dts'
+import postcss from 'rollup-plugin-postcss'
 
 /**
  * 创建基础的 Rollup 配置

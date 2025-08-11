@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 interface PackageInfo {
@@ -56,7 +56,7 @@ function formatSize(bytes: number): string {
 
   const units = ['B', 'KB', 'MB', 'GB']
   const index = Math.floor(Math.log(bytes) / Math.log(1024))
-  const size = (bytes / Math.pow(1024, index)).toFixed(2)
+  const size = (bytes / 1024 ** index).toFixed(2)
 
   return `${size} ${units[index]}`
 }

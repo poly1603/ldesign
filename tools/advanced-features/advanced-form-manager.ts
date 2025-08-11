@@ -3,8 +3,8 @@
  * 支持动态表单、复杂验证、自动保存、多步骤表单等高级功能
  */
 
-import { ref, reactive, computed, watch, type Ref } from 'vue'
 import chalk from 'chalk'
+import { reactive, watch } from 'vue'
 
 export interface FormConfig {
   /** 表单字段定义 */
@@ -50,7 +50,7 @@ export interface FormField {
   placeholder?: string
 }
 
-export type FieldType = 
+export type FieldType =
   | 'text'
   | 'email'
   | 'password'
@@ -90,7 +90,7 @@ export interface FieldValidation {
   debounce?: number
 }
 
-export type ValidationType = 
+export type ValidationType =
   | 'required'
   | 'min'
   | 'max'
@@ -108,7 +108,15 @@ export type ValidationType =
 
 export interface FieldCondition {
   field: string
-  operator: 'equals' | 'not-equals' | 'contains' | 'not-contains' | 'greater' | 'less' | 'in' | 'not-in'
+  operator:
+    | 'equals'
+    | 'not-equals'
+    | 'contains'
+    | 'not-contains'
+    | 'greater'
+    | 'less'
+    | 'in'
+    | 'not-in'
   value: any
 }
 
@@ -124,7 +132,11 @@ export interface ValidationConfig {
 }
 
 export interface CustomValidator {
-  validate: (value: any, field: FormField, formData: any) => boolean | string | Promise<boolean | string>
+  validate: (
+    value: any,
+    field: FormField,
+    formData: any
+  ) => boolean | string | Promise<boolean | string>
   message?: string
 }
 
@@ -320,7 +332,7 @@ export class AdvancedFormManager {
     for (const rule of this.config.conditionalDisplay.rules) {
       const { target, condition, action } = rule
       const fieldState = this.state.fieldStates[target]
-      
+
       if (!fieldState) continue
 
       const conditionMet = this.evaluateCondition(condition)
@@ -414,7 +426,7 @@ export class AdvancedFormManager {
     }
 
     // 设置防抖验证
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const timer = window.setTimeout(async () => {
         fieldState.validating = true
         const errors: string[] = []
@@ -453,43 +465,51 @@ export class AdvancedFormManager {
   /**
    * 验证规则
    */
-  private async validateRule(value: any, rule: FieldValidation, field: FormField): Promise<string | null> {
+  private async validateRule(
+    value: any,
+    rule: FieldValidation,
+    field: FormField
+  ): Promise<string | null> {
     const { type, value: ruleValue, message } = rule
 
     switch (type) {
       case 'required':
-        return this.isEmpty(value) ? (message || this.getMessage('required', field)) : null
+        return this.isEmpty(value)
+          ? message || this.getMessage('required', field)
+          : null
 
       case 'min':
-        return Number(value) < Number(ruleValue) 
-          ? (message || this.getMessage('min', field, { min: ruleValue })) 
+        return Number(value) < Number(ruleValue)
+          ? message || this.getMessage('min', field, { min: ruleValue })
           : null
 
       case 'max':
-        return Number(value) > Number(ruleValue) 
-          ? (message || this.getMessage('max', field, { max: ruleValue })) 
+        return Number(value) > Number(ruleValue)
+          ? message || this.getMessage('max', field, { max: ruleValue })
           : null
 
       case 'minLength':
-        return String(value).length < Number(ruleValue) 
-          ? (message || this.getMessage('minLength', field, { minLength: ruleValue })) 
+        return String(value).length < Number(ruleValue)
+          ? message ||
+              this.getMessage('minLength', field, { minLength: ruleValue })
           : null
 
       case 'maxLength':
-        return String(value).length > Number(ruleValue) 
-          ? (message || this.getMessage('maxLength', field, { maxLength: ruleValue })) 
+        return String(value).length > Number(ruleValue)
+          ? message ||
+              this.getMessage('maxLength', field, { maxLength: ruleValue })
           : null
 
       case 'pattern':
         const regex = new RegExp(ruleValue)
-        return !regex.test(String(value)) 
-          ? (message || this.getMessage('pattern', field)) 
+        return !regex.test(String(value))
+          ? message || this.getMessage('pattern', field)
           : null
 
       case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return !emailRegex.test(String(value)) 
-          ? (message || this.getMessage('email', field)) 
+        const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
+        return !emailRegex.test(String(value))
+          ? message || this.getMessage('email', field)
           : null
 
       case 'url':
@@ -504,10 +524,12 @@ export class AdvancedFormManager {
         if (this.config.validation.customValidators?.[ruleValue]) {
           const validator = this.config.validation.customValidators[ruleValue]
           const result = await validator.validate(value, field, this.state.data)
-          
+
           if (result === true) return null
           if (typeof result === 'string') return result
-          return message || validator.message || this.getMessage('custom', field)
+          return (
+            message || validator.message || this.getMessage('custom', field)
+          )
         }
         return null
 
@@ -524,8 +546,12 @@ export class AdvancedFormManager {
    * 检查值是否为空
    */
   private isEmpty(value: any): boolean {
-    return value === null || value === undefined || value === '' || 
-           (Array.isArray(value) && value.length === 0)
+    return (
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+    )
   }
 
   /**
@@ -533,7 +559,7 @@ export class AdvancedFormManager {
    */
   private getMessage(type: string, field: FormField, params?: any): string {
     const { i18n } = this.config
-    
+
     if (i18n) {
       const key = `${i18n.messagePrefix || 'form.validation'}.${type}`
       return i18n.t(key, { field: field.label, ...params })
@@ -624,7 +650,8 @@ export class AdvancedFormManager {
   nextStep(): boolean {
     if (!this.config.multiStep?.enabled) return false
 
-    const currentStepConfig = this.config.multiStep.steps[this.state.currentStep - 1]
+    const currentStepConfig =
+      this.config.multiStep.steps[this.state.currentStep - 1]
     if (!currentStepConfig) return false
 
     // 验证当前步骤
@@ -659,11 +686,12 @@ export class AdvancedFormManager {
   private async validateCurrentStep(): Promise<boolean> {
     if (!this.config.multiStep?.enabled) return true
 
-    const currentStepConfig = this.config.multiStep.steps[this.state.currentStep - 1]
+    const currentStepConfig =
+      this.config.multiStep.steps[this.state.currentStep - 1]
     if (!currentStepConfig) return true
 
     // 验证步骤字段
-    const validationPromises = currentStepConfig.fields.map(fieldName => 
+    const validationPromises = currentStepConfig.fields.map(fieldName =>
       this.validateField(fieldName)
     )
 
@@ -784,17 +812,19 @@ export class AdvancedFormManager {
    */
   getCurrentStepFields(): FormField[] {
     if (!this.config.multiStep?.enabled) {
-      return this.config.fields.filter(field => 
-        this.state.fieldStates[field.name].visible
+      return this.config.fields.filter(
+        field => this.state.fieldStates[field.name].visible
       )
     }
 
-    const currentStepConfig = this.config.multiStep.steps[this.state.currentStep - 1]
+    const currentStepConfig =
+      this.config.multiStep.steps[this.state.currentStep - 1]
     if (!currentStepConfig) return []
 
-    return this.config.fields.filter(field => 
-      currentStepConfig.fields.includes(field.name) &&
-      this.state.fieldStates[field.name].visible
+    return this.config.fields.filter(
+      field =>
+        currentStepConfig.fields.includes(field.name) &&
+        this.state.fieldStates[field.name].visible
     )
   }
 
@@ -816,6 +846,8 @@ export class AdvancedFormManager {
 /**
  * 创建高级表单管理器
  */
-export function createAdvancedFormManager(config: FormConfig): AdvancedFormManager {
+export function createAdvancedFormManager(
+  config: FormConfig
+): AdvancedFormManager {
   return new AdvancedFormManager(config)
 }

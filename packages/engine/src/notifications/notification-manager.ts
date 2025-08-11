@@ -1,44 +1,110 @@
 import type {
   Logger,
+  NotificationAction,
+  NotificationAnimation,
   NotificationManager,
   NotificationOptions,
+  NotificationPosition,
+  NotificationProgress,
+  NotificationTheme,
   NotificationType,
 } from '../types'
+import type { NotificationStyleManager } from './style-manager'
+import { createStyleManager } from './style-manager'
 
 interface NotificationItem extends NotificationOptions {
   id: string
   createdAt: number
   visible: boolean
+  element?: HTMLElement
+  timeoutId?: number
+  animating?: boolean
 }
 
 export class NotificationManagerImpl implements NotificationManager {
   private notifications = new Map<string, NotificationItem>()
+  private containers = new Map<NotificationPosition, HTMLElement>()
   private maxNotifications = 5
   private defaultDuration = 4000
-  private container?: HTMLElement
+  private defaultPosition: NotificationPosition = 'top-right'
+  private defaultAnimation: NotificationAnimation = 'slide'
+  private defaultTheme: NotificationTheme = 'light'
   private idCounter = 0
+  private styleManager: NotificationStyleManager
+  private logger?: Logger
 
-  constructor(_logger?: Logger) {
-    // logger参数保留用于未来扩展
-    this.createContainer()
+  constructor(logger?: Logger) {
+    this.logger = logger
+    this.styleManager = createStyleManager()
+    this.initializeContainers()
+    this.setupThemeWatcher()
+    this.injectStyles()
   }
 
-  private createContainer(): void {
+  /**
+   * 初始化所有位置的容器
+   */
+  private initializeContainers(): void {
     if (typeof document === 'undefined') {
       return // SSR环境
     }
 
-    this.container = document.createElement('div')
-    this.container.id = 'engine-notifications'
-    this.container.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      pointer-events: none;
-      max-width: 400px;
-    `
-    document.body.appendChild(this.container)
+    const positions: NotificationPosition[] = [
+      'top-left',
+      'top-center',
+      'top-right',
+      'bottom-left',
+      'bottom-center',
+      'bottom-right',
+    ]
+
+    positions.forEach(position => {
+      this.createContainer(position)
+    })
+  }
+
+  /**
+   * 创建指定位置的容器
+   */
+  private createContainer(position: NotificationPosition): HTMLElement {
+    if (this.containers.has(position)) {
+      return this.containers.get(position)!
+    }
+
+    const container = document.createElement('div')
+    container.id = `engine-notifications-${position}`
+    container.className = 'engine-notifications-container'
+
+    const styles = this.styleManager.getContainerStyles(position)
+    this.styleManager.applyStyles(container, styles)
+
+    document.body.appendChild(container)
+    this.containers.set(position, container)
+
+    return container
+  }
+
+  /**
+   * 设置主题监听器
+   */
+  private setupThemeWatcher(): void {
+    if (this.defaultTheme === 'auto') {
+      this.styleManager.watchSystemTheme(systemTheme => {
+        this.styleManager.setTheme(systemTheme)
+        this.updateAllNotificationStyles()
+      })
+    }
+  }
+
+  /**
+   * 更新所有通知的样式
+   */
+  private updateAllNotificationStyles(): void {
+    this.notifications.forEach(notification => {
+      if (notification.element && notification.visible) {
+        this.updateNotificationStyles(notification)
+      }
+    })
   }
 
   show(options: NotificationOptions): string {
@@ -50,11 +116,15 @@ export class NotificationManagerImpl implements NotificationManager {
       type: options.type || 'info',
       duration: options.duration ?? this.defaultDuration,
       closable: options.closable ?? true,
+      position: options.position || this.defaultPosition,
+      animation: options.animation || this.defaultAnimation,
+      theme: options.theme || this.defaultTheme,
+      priority: options.priority || 0,
       ...options,
     }
 
     // 检查通知数量限制
-    this.enforceMaxNotifications()
+    this.enforceMaxNotifications(notification.position!)
 
     // 添加通知
     this.notifications.set(id, notification)
@@ -63,185 +133,685 @@ export class NotificationManagerImpl implements NotificationManager {
     this.renderNotification(notification)
 
     // 设置自动关闭
-    if (notification.duration && notification.duration > 0) {
-      setTimeout(() => {
+    if (
+      notification.duration &&
+      notification.duration > 0 &&
+      !notification.persistent
+    ) {
+      notification.timeoutId = window.setTimeout(() => {
         this.hide(id)
       }, notification.duration)
     }
 
+    // 触发显示回调
+    if (notification.onShow) {
+      try {
+        notification.onShow()
+      } catch (error) {
+        this.logger?.error('Error in notification onShow callback', error)
+      }
+    }
+
+    this.logger?.debug('Notification shown', { id, options })
     return id
   }
 
-  hide(id: string): void {
+  async hide(id: string): Promise<void> {
     const notification = this.notifications.get(id)
-    if (!notification) {
+    if (!notification || !notification.visible || notification.animating) {
       return
     }
 
+    notification.animating = true
     notification.visible = false
-    this.removeNotificationElement(id)
+
+    // 清除自动关闭定时器
+    if (notification.timeoutId) {
+      clearTimeout(notification.timeoutId)
+      notification.timeoutId = undefined
+    }
+
+    // 触发关闭回调
+    if (notification.onClose) {
+      try {
+        notification.onClose()
+      } catch (error) {
+        this.logger?.error('Error in notification onClose callback', error)
+      }
+    }
+
+    // 执行退出动画并移除元素
+    await this.removeNotificationElement(notification)
     this.notifications.delete(id)
+
+    this.logger?.debug('Notification hidden', { id })
   }
 
-  hideAll(): void {
-    for (const id of this.notifications.keys()) {
+  async hideAll(): Promise<void> {
+    const hidePromises = Array.from(this.notifications.keys()).map(id =>
       this.hide(id)
-    }
+    )
+    await Promise.all(hidePromises)
   }
 
   getAll(): NotificationOptions[] {
     return Array.from(this.notifications.values())
       .filter(n => n.visible)
-      .map(n => ({
-        title: n.title,
-        message: n.message,
-        type: n.type,
-        duration: n.duration,
-        closable: n.closable,
-      }))
+      .sort((a, b) => {
+        // 按优先级和创建时间排序
+        if (a.priority !== b.priority) {
+          return (b.priority || 0) - (a.priority || 0)
+        }
+        return b.createdAt - a.createdAt
+      })
+      .map(n => {
+        const {
+          id,
+          createdAt,
+          visible,
+          element,
+          timeoutId,
+          animating,
+          ...options
+        } = n
+        return options
+      })
   }
 
   private generateId(): string {
     return `notification-${++this.idCounter}-${Date.now()}`
   }
 
-  private enforceMaxNotifications(): void {
+  private enforceMaxNotifications(position: NotificationPosition): void {
     const visibleNotifications = Array.from(this.notifications.values())
-      .filter(n => n.visible)
-      .sort((a, b) => a.createdAt - b.createdAt)
+      .filter(n => n.visible && n.position === position)
+      .sort((a, b) => {
+        // 优先移除低优先级的通知
+        if (a.priority !== b.priority) {
+          return (a.priority || 0) - (b.priority || 0)
+        }
+        return a.createdAt - b.createdAt
+      })
 
     while (visibleNotifications.length >= this.maxNotifications) {
-      const oldest = visibleNotifications.shift()
-      if (oldest) {
-        this.hide(oldest.id)
+      const toRemove = visibleNotifications.shift()
+      if (toRemove) {
+        this.hide(toRemove.id)
       }
     }
   }
 
-  private renderNotification(notification: NotificationItem): void {
-    if (!this.container) {
+  private async renderNotification(
+    notification: NotificationItem
+  ): Promise<void> {
+    const container = this.createContainer(notification.position!)
+    if (!container) {
       return
     }
 
     const element = this.createNotificationElement(notification)
-    this.container.appendChild(element)
+    notification.element = element
 
-    // 添加进入动画
-    requestAnimationFrame(() => {
-      element.style.transform = 'translateX(0)'
-      element.style.opacity = '1'
+    // 添加CSS类用于动画
+    element.classList.add('notification-enter')
+
+    // 根据位置添加对应的类
+    if (notification.position?.includes('left')) {
+      element.classList.add('notification-position-left')
+    } else if (notification.position?.includes('center')) {
+      element.classList.add('notification-position-center')
+    }
+
+    // 根据位置决定插入位置
+    if (notification.position?.startsWith('bottom')) {
+      container.insertBefore(element, container.firstChild)
+    } else {
+      container.appendChild(element)
+    }
+
+    // 强制重排，然后触发进入动画
+    element.offsetHeight // 强制重排
+
+    return new Promise(resolve => {
+      // 添加进入动画类
+      element.classList.add('notification-enter-active')
+      element.classList.remove('notification-enter')
+
+      // 监听动画结束
+      const handleTransitionEnd = () => {
+        element.removeEventListener('transitionend', handleTransitionEnd)
+        element.classList.remove('notification-enter-active')
+        resolve()
+      }
+
+      element.addEventListener('transitionend', handleTransitionEnd)
+
+      // 备用超时，防止动画卡住
+      setTimeout(() => {
+        element.removeEventListener('transitionend', handleTransitionEnd)
+        element.classList.remove('notification-enter-active')
+        resolve()
+      }, 500)
     })
   }
 
-  private createNotificationElement(notification: NotificationItem): HTMLElement {
+  private createNotificationElement(
+    notification: NotificationItem
+  ): HTMLElement {
     const element = document.createElement('div')
     element.id = `notification-${notification.id}`
-    element.style.cssText = `
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      margin-bottom: 12px;
-      padding: 16px;
-      pointer-events: auto;
-      transform: translateX(100%);
-      opacity: 0;
-      transition: all 0.3s ease;
-      border-left: 4px solid ${this.getTypeColor(notification.type)};
-      max-width: 100%;
-      word-wrap: break-word;
-    `
+    element.className = 'engine-notification'
 
-    // 创建内容
-    const content = document.createElement('div')
-    content.style.cssText = `
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    `
+    // 应用样式
+    const styles = this.styleManager.getNotificationStyles(
+      notification.type,
+      notification.theme
+    )
+    this.styleManager.applyStyles(element, styles.notification)
 
-    // 图标
-    const icon = document.createElement('div')
-    icon.innerHTML = this.getTypeIcon(notification.type)
-    icon.style.cssText = `
-      flex-shrink: 0;
-      width: 20px;
-      height: 20px;
-      color: ${this.getTypeColor(notification.type)};
-    `
-
-    // 文本内容
-    const textContent = document.createElement('div')
-    textContent.style.cssText = 'flex: 1; min-width: 0;'
-
-    if (notification.title) {
-      const title = document.createElement('div')
-      title.textContent = notification.title
-      title.style.cssText = `
-        font-weight: 600;
-        font-size: 14px;
-        color: #1f2937;
-        margin-bottom: 4px;
-      `
-      textContent.appendChild(title)
+    // 应用自定义样式
+    if (notification.style) {
+      this.styleManager.applyStyles(element, notification.style)
     }
 
-    const message = document.createElement('div')
-    message.textContent = notification.message
-    message.style.cssText = `
-      font-size: 13px;
-      color: #6b7280;
-      line-height: 1.4;
-    `
-    textContent.appendChild(message)
+    // 应用自定义类名
+    if (notification.className) {
+      element.className += ` ${notification.className}`
+    }
 
-    content.appendChild(icon)
+    // 设置最大宽度
+    if (notification.maxWidth) {
+      element.style.maxWidth = `${notification.maxWidth}px`
+    }
+
+    // 设置 z-index
+    if (notification.zIndex) {
+      element.style.zIndex = notification.zIndex.toString()
+    }
+
+    // 创建主要内容容器
+    const content = document.createElement('div')
+    const contentStyles = this.styleManager.getNotificationStyles(
+      notification.type,
+      notification.theme
+    )
+    this.styleManager.applyStyles(content, contentStyles.content)
+
+    // 创建图标
+    const iconContainer = this.createIconElement(notification)
+    if (iconContainer) {
+      content.appendChild(iconContainer)
+    }
+
+    // 创建文本内容
+    const textContent = document.createElement('div')
+    textContent.style.flex = '1'
+    textContent.style.minWidth = '0'
+
+    // 标题
+    if (notification.title) {
+      const titleElement = document.createElement('div')
+      titleElement.className = 'engine-notification-title'
+
+      if (notification.allowHTML) {
+        titleElement.innerHTML = notification.title
+      } else {
+        titleElement.textContent = notification.title
+      }
+
+      this.styleManager.applyStyles(titleElement, contentStyles.title)
+      textContent.appendChild(titleElement)
+    }
+
+    // 消息内容
+    const messageElement = document.createElement('div')
+    messageElement.className = 'engine-notification-message'
+
+    if (notification.allowHTML) {
+      messageElement.innerHTML = notification.message
+    } else {
+      messageElement.textContent = notification.message
+    }
+
+    this.styleManager.applyStyles(messageElement, contentStyles.message)
+    textContent.appendChild(messageElement)
+
     content.appendChild(textContent)
+
+    // 添加进度条
+    if (notification.progress) {
+      const progressContainer = this.createProgressElement(
+        notification.progress,
+        notification.theme
+      )
+      textContent.appendChild(progressContainer)
+    }
+
+    // 添加操作按钮
+    if (notification.actions && notification.actions.length > 0) {
+      const actionsContainer = this.createActionsElement(
+        notification.actions,
+        notification
+      )
+      textContent.appendChild(actionsContainer)
+    }
 
     // 关闭按钮
     if (notification.closable) {
-      const closeButton = document.createElement('button')
-      closeButton.innerHTML = '×'
-      closeButton.style.cssText = `
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        color: #9ca3af;
-        cursor: pointer;
-        padding: 0;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `
-      closeButton.addEventListener('click', () => {
-        this.hide(notification.id)
-      })
+      const closeButton = this.createCloseButton(notification)
       element.appendChild(closeButton)
+    }
+
+    // 添加点击事件
+    if (notification.onClick) {
+      element.style.cursor = 'pointer'
+      element.addEventListener('click', e => {
+        // 避免关闭按钮和操作按钮触发
+        if (
+          (e.target as HTMLElement).closest(
+            '.engine-notification-close, .engine-notification-actions'
+          )
+        ) {
+          return
+        }
+        try {
+          notification.onClick!()
+        } catch (error) {
+          this.logger?.error('Error in notification onClick callback', error)
+        }
+      })
     }
 
     element.appendChild(content)
     return element
   }
 
-  private removeNotificationElement(id: string): void {
-    const element = document.getElementById(`notification-${id}`)
-    if (element) {
-      element.style.transform = 'translateX(100%)'
-      element.style.opacity = '0'
+  /**
+   * 创建图标元素
+   */
+  private createIconElement(
+    notification: NotificationItem
+  ): HTMLElement | null {
+    const iconContainer = document.createElement('div')
+    iconContainer.className = 'engine-notification-icon'
 
-      setTimeout(() => {
-        element.remove()
-      }, 300)
+    const styles = this.styleManager.getNotificationStyles(
+      notification.type,
+      notification.theme
+    )
+    this.styleManager.applyStyles(iconContainer, styles.icon)
+
+    if (notification.icon) {
+      if (typeof notification.icon === 'string') {
+        iconContainer.innerHTML = notification.icon
+      } else {
+        iconContainer.appendChild(notification.icon)
+      }
+    } else {
+      iconContainer.innerHTML = this.getTypeIcon(notification.type)
+    }
+
+    return iconContainer
+  }
+
+  /**
+   * 创建进度条元素
+   */
+  private createProgressElement(
+    progress: NotificationProgress,
+    theme?: NotificationTheme
+  ): HTMLElement {
+    const container = document.createElement('div')
+    container.className = 'engine-notification-progress'
+
+    const styles = this.styleManager.getNotificationStyles('info', theme)
+    this.styleManager.applyStyles(container, styles.progress)
+
+    const bar = document.createElement('div')
+    bar.className = 'engine-notification-progress-bar'
+
+    const barStyles = this.styleManager.getProgressBarStyles(
+      progress.value,
+      progress.color,
+      theme
+    )
+    this.styleManager.applyStyles(bar, barStyles)
+
+    container.appendChild(bar)
+
+    if (progress.showText) {
+      const text = document.createElement('div')
+      text.className = 'engine-notification-progress-text'
+      text.textContent = `${Math.round(progress.value)}%`
+      text.style.fontSize = '11px'
+      text.style.marginTop = '4px'
+      text.style.textAlign = 'center'
+      container.appendChild(text)
+    }
+
+    return container
+  }
+
+  /**
+   * 创建操作按钮容器
+   */
+  private createActionsElement(
+    actions: NotificationAction[],
+    notification: NotificationItem
+  ): HTMLElement {
+    const container = document.createElement('div')
+    container.className = 'engine-notification-actions'
+
+    const styles = this.styleManager.getNotificationStyles(
+      notification.type,
+      notification.theme
+    )
+    this.styleManager.applyStyles(container, styles.actions)
+
+    actions.forEach(action => {
+      const button = document.createElement('button')
+      button.className = 'engine-notification-action'
+      button.textContent = action.label
+
+      const buttonStyles = this.styleManager.getActionButtonStyles(
+        action.style,
+        notification.theme
+      )
+      this.styleManager.applyStyles(button, buttonStyles)
+
+      if (action.loading) {
+        button.disabled = true
+        button.textContent = '...'
+      }
+
+      button.addEventListener('click', async e => {
+        e.stopPropagation()
+
+        try {
+          button.disabled = true
+          button.textContent = '...'
+
+          await action.action()
+
+          // 执行完操作后可能需要关闭通知
+          this.hide(notification.id)
+        } catch (error) {
+          this.logger?.error('Error in notification action', error)
+        } finally {
+          button.disabled = false
+          button.textContent = action.label
+        }
+      })
+
+      container.appendChild(button)
+    })
+
+    return container
+  }
+
+  /**
+   * 创建关闭按钮
+   */
+  private createCloseButton(notification: NotificationItem): HTMLElement {
+    const button = document.createElement('button')
+    button.className = 'engine-notification-close'
+    button.innerHTML = '×'
+    button.setAttribute('aria-label', 'Close notification')
+
+    const styles = this.styleManager.getNotificationStyles(
+      notification.type,
+      notification.theme
+    )
+    this.styleManager.applyStyles(button, styles.closeButton)
+
+    button.addEventListener('click', e => {
+      e.stopPropagation()
+      this.hide(notification.id)
+    })
+
+    // 悬停效果
+    button.addEventListener('mouseenter', () => {
+      button.style.opacity = '0.8'
+    })
+
+    button.addEventListener('mouseleave', () => {
+      button.style.opacity = '0.5'
+    })
+
+    return button
+  }
+
+  /**
+   * 更新通知样式
+   */
+  private updateNotificationStyles(notification: NotificationItem): void {
+    if (!notification.element) return
+
+    const styles = this.styleManager.getNotificationStyles(
+      notification.type,
+      notification.theme
+    )
+    this.styleManager.applyStyles(notification.element, styles.notification)
+  }
+
+  /**
+   * 注入CSS样式
+   */
+  private injectStyles(): void {
+    if (typeof document === 'undefined') return
+
+    const styleId = 'notification-animations'
+    if (document.getElementById(styleId)) return
+
+    const style = document.createElement('style')
+    style.id = styleId
+    style.textContent = `
+      .notification-enter {
+        height: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        transform: translateX(100%) !important;
+      }
+
+      .notification-enter.notification-position-left {
+        transform: translateX(-100%) !important;
+      }
+
+      .notification-enter.notification-position-center {
+        transform: translateY(-100%) !important;
+      }
+
+      .notification-enter-active {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        height: auto !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+        margin-bottom: 12px !important;
+        padding-top: 16px !important;
+        padding-bottom: 16px !important;
+        transform: translateX(0) translateY(0) !important;
+      }
+
+      .notification-leave {
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+
+      .notification-leave-active {
+        height: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        transform: translateX(100%) !important;
+      }
+
+      .notification-leave-active.notification-position-left {
+        transform: translateX(-100%) !important;
+      }
+
+      .notification-leave-active.notification-position-center {
+        transform: translateY(-100%) !important;
+      }
+    `
+
+    document.head.appendChild(style)
+  }
+
+  /**
+   * 移除通知元素（带动画）
+   */
+  private async removeNotificationElement(
+    notification: NotificationItem
+  ): Promise<void> {
+    if (!notification.element) return
+
+    const container = this.containers.get(notification.position!)
+    if (!container) return
+
+    try {
+      const elementToRemove = notification.element
+      const allElements = Array.from(container.children) as HTMLElement[]
+      const elementIndex = allElements.indexOf(elementToRemove)
+
+      if (elementIndex === -1) return
+
+      // 获取要移除元素的高度（包括margin）
+      const elementHeight = this.getElementTotalHeight(elementToRemove)
+
+      // 获取需要移动的其他元素
+      const elementsToMove = this.getElementsToMove(
+        allElements,
+        elementIndex,
+        notification.position!
+      )
+
+      // 立即开始其他元素的移动动画
+      if (elementsToMove.length > 0) {
+        this.startOtherElementsAnimation(
+          elementsToMove,
+          elementHeight,
+          notification.position!
+        )
+      }
+
+      // 添加退出动画类
+      elementToRemove.classList.add('notification-leave')
+
+      // 根据位置添加对应的类
+      if (notification.position?.includes('left')) {
+        elementToRemove.classList.add('notification-position-left')
+      } else if (notification.position?.includes('center')) {
+        elementToRemove.classList.add('notification-position-center')
+      }
+
+      return new Promise(resolve => {
+        // 添加退出动画激活类
+        elementToRemove.classList.add('notification-leave-active')
+
+        // 监听动画结束
+        const handleTransitionEnd = () => {
+          elementToRemove.removeEventListener(
+            'transitionend',
+            handleTransitionEnd
+          )
+          elementToRemove.remove()
+          notification.element = undefined
+          resolve()
+        }
+
+        elementToRemove.addEventListener('transitionend', handleTransitionEnd)
+
+        // 备用超时
+        setTimeout(() => {
+          elementToRemove.removeEventListener(
+            'transitionend',
+            handleTransitionEnd
+          )
+          if (elementToRemove.parentNode) {
+            elementToRemove.remove()
+          }
+          notification.element = undefined
+          resolve()
+        }, 400) // 与CSS动画时长一致
+      })
+    } catch (error) {
+      this.logger?.error('Error in notification exit animation', error)
+      // 即使动画失败也要移除元素
+      if (notification.element) {
+        notification.element.remove()
+        notification.element = undefined
+      }
     }
   }
 
+  /**
+   * 获取元素的总高度（包括margin）
+   */
+  private getElementTotalHeight(element: HTMLElement): number {
+    const computedStyle = window.getComputedStyle(element)
+    const height = element.offsetHeight
+    const marginTop = parseInt(computedStyle.marginTop) || 0
+    const marginBottom = parseInt(computedStyle.marginBottom) || 0
+    return height + marginTop + marginBottom
+  }
+
+  /**
+   * 获取需要移动的元素
+   */
+  private getElementsToMove(
+    allElements: HTMLElement[],
+    removedIndex: number,
+    position: NotificationPosition
+  ): HTMLElement[] {
+    const isBottomPosition = position.startsWith('bottom')
+
+    if (isBottomPosition) {
+      // 底部位置：移除元素上方的元素需要向下移动
+      return allElements.slice(0, removedIndex)
+    } else {
+      // 顶部位置：移除元素下方的元素需要向上移动
+      return allElements.slice(removedIndex + 1)
+    }
+  }
+
+  /**
+   * 立即开始其他元素的移动动画
+   */
+  private startOtherElementsAnimation(
+    elements: HTMLElement[],
+    moveDistance: number,
+    position: NotificationPosition
+  ): void {
+    const isBottomPosition = position.startsWith('bottom')
+    const direction = isBottomPosition ? moveDistance : -moveDistance
+
+    elements.forEach(element => {
+      // 设置transition
+      element.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+
+      // 立即开始移动
+      element.style.transform = `translateY(${direction}px)`
+
+      // 动画结束后清理
+      const cleanup = () => {
+        element.style.transition = ''
+        element.style.transform = ''
+        element.removeEventListener('transitionend', cleanup)
+      }
+
+      element.addEventListener('transitionend', cleanup)
+
+      // 备用清理
+      setTimeout(cleanup, 400)
+    })
+  }
+
   private getTypeColor(type: NotificationType | undefined): string {
-    if (!type)
-      type = 'info'
+    if (!type) type = 'info'
     switch (type) {
       case 'success':
         return '#10b981'
@@ -256,8 +826,7 @@ export class NotificationManagerImpl implements NotificationManager {
   }
 
   private getTypeIcon(type: NotificationType | undefined): string {
-    if (!type)
-      type = 'info'
+    if (!type) type = 'info'
     switch (type) {
       case 'success':
         return `<svg viewBox="0 0 20 20" fill="currentColor">
@@ -279,10 +848,45 @@ export class NotificationManagerImpl implements NotificationManager {
     }
   }
 
+  // 设置默认位置
+  setPosition(position: NotificationPosition): void {
+    this.defaultPosition = position
+  }
+
+  // 获取默认位置
+  getPosition(): NotificationPosition {
+    return this.defaultPosition
+  }
+
+  // 设置主题
+  setTheme(theme: NotificationTheme): void {
+    this.defaultTheme = theme
+    this.styleManager.setTheme(
+      theme === 'auto' ? this.styleManager.detectSystemTheme() : theme
+    )
+    this.updateAllNotificationStyles()
+  }
+
+  // 获取主题
+  getTheme(): NotificationTheme {
+    return this.defaultTheme
+  }
+
   // 设置最大通知数量
   setMaxNotifications(max: number): void {
     this.maxNotifications = max
-    this.enforceMaxNotifications()
+    // 对所有位置执行限制检查
+    const positions: NotificationPosition[] = [
+      'top-left',
+      'top-center',
+      'top-right',
+      'bottom-left',
+      'bottom-center',
+      'bottom-right',
+    ]
+    positions.forEach(position => {
+      this.enforceMaxNotifications(position)
+    })
   }
 
   // 获取最大通知数量
@@ -305,6 +909,7 @@ export class NotificationManagerImpl implements NotificationManager {
     total: number
     visible: number
     byType: Record<NotificationType, number>
+    byPosition: Record<NotificationPosition, number>
   } {
     const byType: Record<NotificationType, number> = {
       success: 0,
@@ -313,47 +918,81 @@ export class NotificationManagerImpl implements NotificationManager {
       info: 0,
     }
 
+    const byPosition: Record<NotificationPosition, number> = {
+      'top-left': 0,
+      'top-center': 0,
+      'top-right': 0,
+      'bottom-left': 0,
+      'bottom-center': 0,
+      'bottom-right': 0,
+    }
+
     let visible = 0
 
     for (const notification of this.notifications.values()) {
       if (notification.visible) {
         visible++
       }
+
       const type = notification.type || 'info'
       byType[type]++
+
+      const position = notification.position || 'top-right'
+      byPosition[position]++
     }
 
     return {
       total: this.notifications.size,
       visible,
       byType,
+      byPosition,
     }
   }
 
   // 销毁通知管理器
-  destroy(): void {
-    this.hideAll()
-    if (this.container) {
-      this.container.remove()
-      this.container = undefined
-    }
+  async destroy(): Promise<void> {
+    await this.hideAll()
+
+    // 清理所有容器
+    this.containers.forEach(container => {
+      container.remove()
+    })
+    this.containers.clear()
+
+    // 清理所有定时器
+    this.notifications.forEach(notification => {
+      if (notification.timeoutId) {
+        clearTimeout(notification.timeoutId)
+      }
+    })
+    this.notifications.clear()
   }
 }
 
-export function createNotificationManager(logger?: Logger): NotificationManager {
+export function createNotificationManager(
+  logger?: Logger
+): NotificationManager {
   return new NotificationManagerImpl(logger)
 }
 
 // 预定义的通知类型
 export const notificationTypes = {
-  success: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
+  success: (
+    message: string,
+    title?: string,
+    options?: Partial<NotificationOptions>
+  ) => ({
     type: 'success' as const,
     message,
     title,
     ...options,
   }),
 
-  error: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
+  error: (
+    message: string,
+    title?: string,
+    options?: Partial<NotificationOptions>
+  ) => ({
     type: 'error' as const,
     message,
     title,
@@ -361,14 +1000,22 @@ export const notificationTypes = {
     ...options,
   }),
 
-  warning: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
+  warning: (
+    message: string,
+    title?: string,
+    options?: Partial<NotificationOptions>
+  ) => ({
     type: 'warning' as const,
     message,
     title,
     ...options,
   }),
 
-  info: (message: string, title?: string, options?: Partial<NotificationOptions>) => ({
+  info: (
+    message: string,
+    title?: string,
+    options?: Partial<NotificationOptions>
+  ) => ({
     type: 'info' as const,
     message,
     title,
@@ -379,19 +1026,35 @@ export const notificationTypes = {
 // 通知管理器的便捷方法
 export function createNotificationHelpers(manager: NotificationManager) {
   return {
-    success: (message: string, title?: string, options?: Partial<NotificationOptions>) => {
+    success: (
+      message: string,
+      title?: string,
+      options?: Partial<NotificationOptions>
+    ) => {
       return manager.show(notificationTypes.success(message, title, options))
     },
 
-    error: (message: string, title?: string, options?: Partial<NotificationOptions>) => {
+    error: (
+      message: string,
+      title?: string,
+      options?: Partial<NotificationOptions>
+    ) => {
       return manager.show(notificationTypes.error(message, title, options))
     },
 
-    warning: (message: string, title?: string, options?: Partial<NotificationOptions>) => {
+    warning: (
+      message: string,
+      title?: string,
+      options?: Partial<NotificationOptions>
+    ) => {
       return manager.show(notificationTypes.warning(message, title, options))
     },
 
-    info: (message: string, title?: string, options?: Partial<NotificationOptions>) => {
+    info: (
+      message: string,
+      title?: string,
+      options?: Partial<NotificationOptions>
+    ) => {
       return manager.show(notificationTypes.info(message, title, options))
     },
 
@@ -400,23 +1063,147 @@ export function createNotificationHelpers(manager: NotificationManager) {
       return notifications.map(notification => manager.show(notification))
     },
 
+    // 进度通知
+    progress: (
+      message: string,
+      initialValue: number = 0,
+      options?: Partial<NotificationOptions>
+    ) => {
+      const id = manager.show({
+        type: 'info',
+        message,
+        duration: 0,
+        closable: false,
+        progress: {
+          value: initialValue,
+          showText: true,
+        },
+        ...options,
+      })
+
+      return {
+        id,
+        update: (value: number, newMessage?: string) => {
+          // 这里需要实现进度更新逻辑
+          // 实际实现中需要找到对应的通知并更新进度条
+        },
+        complete: (successMessage?: string) => {
+          manager.hide(id)
+          if (successMessage) {
+            manager.show({
+              type: 'success',
+              message: successMessage,
+              duration: 3000,
+            })
+          }
+        },
+        error: (errorMessage?: string) => {
+          manager.hide(id)
+          if (errorMessage) {
+            manager.show({
+              type: 'error',
+              message: errorMessage,
+              duration: 0,
+            })
+          }
+        },
+      }
+    },
+
     // 确认通知
-    confirm: (message: string, title?: string) => {
-      return new Promise<boolean>((resolve) => {
+    confirm: (
+      message: string,
+      title?: string,
+      options?: Partial<NotificationOptions>
+    ) => {
+      return new Promise<boolean>(resolve => {
         const id = manager.show({
           type: 'warning',
           message,
           title,
           duration: 0,
           closable: false,
-          // 这里可以添加自定义按钮逻辑
+          actions: [
+            {
+              label: '确认',
+              style: 'primary',
+              action: () => {
+                resolve(true)
+              },
+            },
+            {
+              label: '取消',
+              style: 'secondary',
+              action: () => {
+                resolve(false)
+              },
+            },
+          ],
+          ...options,
         })
+      })
+    },
 
-        // 简化版本，实际应该添加确认/取消按钮
-        setTimeout(() => {
+    // 加载通知
+    loading: (message: string, options?: Partial<NotificationOptions>) => {
+      const id = manager.show({
+        type: 'info',
+        message,
+        duration: 0,
+        closable: false,
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+            <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+            <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+          </circle>
+        </svg>`,
+        ...options,
+      })
+
+      return {
+        id,
+        update: (newMessage: string) => {
+          // 更新加载消息
+        },
+        success: (successMessage: string) => {
           manager.hide(id)
-          resolve(true)
-        }, 3000)
+          manager.show({
+            type: 'success',
+            message: successMessage,
+            duration: 3000,
+          })
+        },
+        error: (errorMessage: string) => {
+          manager.hide(id)
+          manager.show({
+            type: 'error',
+            message: errorMessage,
+            duration: 0,
+          })
+        },
+        hide: () => {
+          manager.hide(id)
+        },
+      }
+    },
+
+    // 分组通知
+    group: (groupId: string, notifications: NotificationOptions[]) => {
+      return notifications.map(notification =>
+        manager.show({
+          ...notification,
+          group: groupId,
+        })
+      )
+    },
+
+    // 清除分组
+    clearGroup: (groupId: string) => {
+      const allNotifications = manager.getAll()
+      allNotifications.forEach(notification => {
+        if ((notification as any).group === groupId) {
+          // 需要通过某种方式获取通知ID来隐藏
+        }
       })
     },
   }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useVirtualScroll, useSimpleVirtualScroll } from '@ldesign/template/vue'
+import { useSimpleVirtualScroll, useVirtualScroll } from '@ldesign/template/vue'
+import { computed, ref } from 'vue'
 
 // 生成大量模板数据
-const generateTemplates = (count: number) => {
+function generateTemplates(count: number) {
   return Array.from({ length: count }, (_, i) => ({
     id: i + 1,
     name: `模板 ${i + 1}`,
@@ -27,13 +27,14 @@ const selectedCategory = ref('all')
 const selectedDevice = ref('all')
 
 // 过滤模板
-const filterTemplates = () => {
+function filterTemplates() {
   let result = allTemplates.value
 
   if (searchQuery.value) {
-    result = result.filter(t => 
-      t.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+    result = result.filter(
+      t =>
+        t.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
@@ -89,23 +90,23 @@ const performanceStats = computed(() => ({
 
 // 跳转到指定项目
 const jumpToIndex = ref(0)
-const jumpToItem = () => {
+function jumpToItem() {
   const index = Math.max(0, Math.min(jumpToIndex.value - 1, filteredTemplates.value.length - 1))
   scrollToItem(index)
 }
 
 // 监听搜索和过滤变化
-const handleSearch = () => {
+function handleSearch() {
   filterTemplates()
   scrollToTop()
 }
 
-const handleCategoryChange = () => {
+function handleCategoryChange() {
   filterTemplates()
   scrollToTop()
 }
 
-const handleDeviceChange = () => {
+function handleDeviceChange() {
   filterTemplates()
   scrollToTop()
 }
@@ -142,17 +143,12 @@ const handleDeviceChange = () => {
     <div class="controls-panel">
       <div class="control-group">
         <label>搜索:</label>
-        <input
-          v-model="searchQuery"
-          @input="handleSearch"
-          placeholder="搜索模板..."
-          class="search-input"
-        />
+        <input v-model="searchQuery" placeholder="搜索模板..." class="search-input" @input="handleSearch" />
       </div>
 
       <div class="control-group">
         <label>分类:</label>
-        <select v-model="selectedCategory" @change="handleCategoryChange" class="select">
+        <select v-model="selectedCategory" class="select" @change="handleCategoryChange">
           <option value="all">全部</option>
           <option value="login">登录</option>
           <option value="dashboard">仪表板</option>
@@ -162,7 +158,7 @@ const handleDeviceChange = () => {
 
       <div class="control-group">
         <label>设备:</label>
-        <select v-model="selectedDevice" @change="handleDeviceChange" class="select">
+        <select v-model="selectedDevice" class="select" @change="handleDeviceChange">
           <option value="all">全部</option>
           <option value="desktop">桌面</option>
           <option value="tablet">平板</option>
@@ -172,19 +168,13 @@ const handleDeviceChange = () => {
 
       <div class="control-group">
         <label>跳转到:</label>
-        <input
-          v-model.number="jumpToIndex"
-          type="number"
-          min="1"
-          :max="filteredTemplates.length"
-          class="jump-input"
-        />
-        <button @click="jumpToItem" class="btn">跳转</button>
+        <input v-model.number="jumpToIndex" type="number" min="1" :max="filteredTemplates.length" class="jump-input" />
+        <button class="btn" @click="jumpToItem">跳转</button>
       </div>
 
       <div class="control-group">
-        <button @click="scrollToTop" class="btn">顶部</button>
-        <button @click="scrollToBottom" class="btn">底部</button>
+        <button class="btn" @click="scrollToTop">顶部</button>
+        <button class="btn" @click="scrollToBottom">底部</button>
       </div>
     </div>
 
@@ -192,38 +182,39 @@ const handleDeviceChange = () => {
     <div class="demo-section">
       <h2>🎯 高级虚拟滚动</h2>
       <p>支持搜索、过滤、跳转等功能的虚拟滚动列表。</p>
-      
+
       <div
         ref="containerRef"
         class="virtual-container"
-        :style="{ height: containerHeight + 'px' }"
+        :style="{ height: `${containerHeight}px` }"
         @scroll="handleScroll"
       >
-        <div
-          class="virtual-content"
-          :style="{ height: totalHeight + 'px', position: 'relative' }"
-        >
+        <div class="virtual-content" :style="{ height: `${totalHeight}px`, position: 'relative' }">
           <div
             v-for="item in visibleItems"
             :key="item.id"
             class="template-item"
             :style="{
               position: 'absolute',
-              top: item.top + 'px',
-              height: itemHeight + 'px',
+              top: `${item.top}px`,
+              height: `${itemHeight}px`,
               width: '100%',
               left: 0,
             }"
           >
             <div class="template-card">
               <div class="template-header">
-                <h3 class="template-name">{{ item.name }}</h3>
+                <h3 class="template-name">
+                  {{ item.name }}
+                </h3>
                 <div class="template-meta">
                   <span class="template-category">{{ item.category }}</span>
                   <span class="template-device">{{ item.device }}</span>
                 </div>
               </div>
-              <p class="template-description">{{ item.description }}</p>
+              <p class="template-description">
+                {{ item.description }}
+              </p>
               <div class="template-footer">
                 <span class="template-tag">{{ item.tags }}</span>
                 <div class="template-stats">
@@ -241,24 +232,21 @@ const handleDeviceChange = () => {
     <div class="demo-section">
       <h2>⚡ 简单虚拟滚动</h2>
       <p>轻量级虚拟滚动实现，适用于简单列表场景。</p>
-      
+
       <div
         ref="simpleContainerRef"
         class="simple-virtual-container"
         :style="{ height: '400px' }"
         @scroll="simpleHandleScroll"
       >
-        <div
-          class="virtual-content"
-          :style="{ height: simpleTotalHeight + 'px', position: 'relative' }"
-        >
+        <div class="virtual-content" :style="{ height: `${simpleTotalHeight}px`, position: 'relative' }">
           <div
             v-for="item in simpleVisibleItems"
             :key="item.id"
             class="simple-item"
             :style="{
               position: 'absolute',
-              top: item.top + 'px',
+              top: `${item.top}px`,
               height: '80px',
               width: '100%',
               left: 0,
@@ -321,13 +309,13 @@ const {
 .demo-header {
   text-align: center;
   margin-bottom: 30px;
-  
+
   h1 {
     font-size: 36px;
     color: #333;
     margin-bottom: 16px;
   }
-  
+
   p {
     font-size: 16px;
     color: #666;
@@ -349,13 +337,13 @@ const {
   display: flex;
   flex-direction: column;
   align-items: center;
-  
+
   .stat-label {
     font-size: 12px;
     color: #666;
     margin-bottom: 4px;
   }
-  
+
   .stat-value {
     font-size: 18px;
     font-weight: bold;
@@ -379,7 +367,7 @@ const {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  
+
   label {
     font-size: 12px;
     color: #666;
@@ -394,7 +382,7 @@ const {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-  
+
   &:focus {
     outline: none;
     border-color: #667eea;
@@ -417,7 +405,7 @@ const {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #f5f5f5;
     border-color: #667eea;
@@ -426,13 +414,13 @@ const {
 
 .demo-section {
   margin-bottom: 40px;
-  
+
   h2 {
     font-size: 24px;
     color: #333;
     margin-bottom: 8px;
   }
-  
+
   p {
     color: #666;
     margin-bottom: 20px;
@@ -460,7 +448,7 @@ const {
   display: flex;
   flex-direction: column;
   transition: all 0.2s;
-  
+
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-color: #667eea;
@@ -538,7 +526,7 @@ const {
   border-radius: 6px;
   height: 100%;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #f8f9fa;
     border-color: #667eea;
@@ -553,13 +541,13 @@ const {
 
 .simple-content {
   flex: 1;
-  
+
   h4 {
     font-size: 14px;
     margin: 0 0 4px 0;
     color: #333;
   }
-  
+
   p {
     font-size: 12px;
     color: #666;
@@ -576,12 +564,12 @@ const {
   background: #f8f9fa;
   border-radius: 8px;
   padding: 20px;
-  
+
   h3 {
     margin-bottom: 12px;
     color: #333;
   }
-  
+
   pre {
     background: #2d3748;
     color: #e2e8f0;
@@ -589,7 +577,7 @@ const {
     border-radius: 6px;
     overflow-x: auto;
     margin-bottom: 20px;
-    
+
     code {
       font-family: 'Monaco', 'Consolas', monospace;
       font-size: 14px;

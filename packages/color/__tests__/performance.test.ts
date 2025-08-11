@@ -2,10 +2,10 @@
  * 性能测试
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ThemeManager } from '../src/core/theme-manager'
-import { ColorGeneratorImpl } from '../src/utils/color-generator'
 import { presetThemes } from '../src/themes/presets'
+import { ColorGeneratorImpl } from '../src/utils/color-generator'
 
 describe('性能测试', () => {
   let themeManager: ThemeManager
@@ -84,7 +84,11 @@ describe('性能测试', () => {
   })
 
   it('内存使用测试', async () => {
-    if (typeof window !== 'undefined' && 'performance' in window && 'memory' in (window.performance as any)) {
+    if (
+      typeof window !== 'undefined' &&
+      'performance' in window &&
+      'memory' in (window.performance as any)
+    ) {
       const memory = (window.performance as any).memory
       const initialMemory = memory.usedJSHeapSize
 

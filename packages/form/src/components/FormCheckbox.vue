@@ -1,57 +1,3 @@
-<template>
-  <div class="form-checkbox" :class="checkboxClasses">
-    <div v-if="showLabel" class="form-checkbox__label" :class="labelClasses">
-      <label class="form-checkbox__label-text">
-        {{ label }}
-        <span v-if="required" class="form-checkbox__required">*</span>
-        <span v-if="showColon" class="form-checkbox__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-checkbox__tooltip" :title="tooltip">
-        ?
-      </div>
-    </div>
-
-    <div class="form-checkbox__wrapper" :class="wrapperClasses">
-      <div class="form-checkbox__group">
-        <label
-          v-for="option in normalizedOptions"
-          :key="option.value"
-          class="form-checkbox__item"
-          :class="getItemClasses(option)"
-        >
-          <input
-            type="checkbox"
-            :value="option.value"
-            :checked="isChecked(option.value)"
-            :disabled="disabled || option.disabled"
-            class="form-checkbox__input"
-            @change="handleChange($event, option.value)"
-          />
-          <span class="form-checkbox__checkmark"></span>
-          <span class="form-checkbox__text">{{ option.label }}</span>
-          <span v-if="option.description" class="form-checkbox__description">
-            {{ option.description }}
-          </span>
-        </label>
-      </div>
-    </div>
-
-    <div v-if="hasError" class="form-checkbox__error">
-      <div
-        v-for="error in errors"
-        :key="error"
-        class="form-checkbox__error-text"
-      >
-        {{ error }}
-      </div>
-    </div>
-
-    <div v-if="description" class="form-checkbox__description-text">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
@@ -156,20 +102,22 @@ const wrapperClasses = computed(() => [
 const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 检查是否选中
-const isChecked = (value: any): boolean => {
+function isChecked(value: any): boolean {
   return inputValue.value.includes(value)
 }
 
 // 获取选项样式类
-const getItemClasses = (option: CheckboxOption) => [
-  {
-    'form-checkbox__item--disabled': props.disabled || option.disabled,
-    'form-checkbox__item--checked': isChecked(option.value),
-  },
-]
+function getItemClasses(option: CheckboxOption) {
+  return [
+    {
+      'form-checkbox__item--disabled': props.disabled || option.disabled,
+      'form-checkbox__item--checked': isChecked(option.value),
+    },
+  ]
+}
 
 // 处理变化
-const handleChange = (event: Event, value: any) => {
+function handleChange(event: Event, value: any) {
   if (props.disabled || props.readonly) return
 
   const target = event.target as HTMLInputElement
@@ -208,6 +156,60 @@ const handleChange = (event: Event, value: any) => {
   }
 }
 </script>
+
+<template>
+  <div class="form-checkbox" :class="checkboxClasses">
+    <div v-if="showLabel" class="form-checkbox__label" :class="labelClasses">
+      <label class="form-checkbox__label-text">
+        {{ label }}
+        <span v-if="required" class="form-checkbox__required">*</span>
+        <span v-if="showColon" class="form-checkbox__colon">:</span>
+      </label>
+      <div v-if="tooltip" class="form-checkbox__tooltip" :title="tooltip">
+        ?
+      </div>
+    </div>
+
+    <div class="form-checkbox__wrapper" :class="wrapperClasses">
+      <div class="form-checkbox__group">
+        <label
+          v-for="option in normalizedOptions"
+          :key="option.value"
+          class="form-checkbox__item"
+          :class="getItemClasses(option)"
+        >
+          <input
+            type="checkbox"
+            :value="option.value"
+            :checked="isChecked(option.value)"
+            :disabled="disabled || option.disabled"
+            class="form-checkbox__input"
+            @change="handleChange($event, option.value)"
+          />
+          <span class="form-checkbox__checkmark" />
+          <span class="form-checkbox__text">{{ option.label }}</span>
+          <span v-if="option.description" class="form-checkbox__description">
+            {{ option.description }}
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div v-if="hasError" class="form-checkbox__error">
+      <div
+        v-for="error in errors"
+        :key="error"
+        class="form-checkbox__error-text"
+      >
+        {{ error }}
+      </div>
+    </div>
+
+    <div v-if="description" class="form-checkbox__description-text">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-checkbox {

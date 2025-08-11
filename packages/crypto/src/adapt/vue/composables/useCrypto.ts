@@ -5,7 +5,7 @@ import type {
   RSAKeyPair,
   RSAOptions,
 } from '../../../types'
-import { computed, type Ref, ref } from 'vue'
+import { type Ref, ref } from 'vue'
 import { decrypt, encrypt, keyGenerator } from '../../../core'
 
 /**
@@ -23,12 +23,28 @@ export interface CryptoState {
  */
 export interface CryptoActions {
   // AES 加密
-  encryptAES: (data: string, key: string, options?: AESOptions) => Promise<EncryptResult>
-  decryptAES: (encryptedData: string | EncryptResult, key: string, options?: AESOptions) => Promise<DecryptResult>
+  encryptAES: (
+    data: string,
+    key: string,
+    options?: AESOptions
+  ) => Promise<EncryptResult>
+  decryptAES: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: AESOptions
+  ) => Promise<DecryptResult>
 
   // RSA 加密
-  encryptRSA: (data: string, publicKey: string, options?: RSAOptions) => Promise<EncryptResult>
-  decryptRSA: (encryptedData: string | EncryptResult, privateKey: string, options?: RSAOptions) => Promise<DecryptResult>
+  encryptRSA: (
+    data: string,
+    publicKey: string,
+    options?: RSAOptions
+  ) => Promise<EncryptResult>
+  decryptRSA: (
+    encryptedData: string | EncryptResult,
+    privateKey: string,
+    options?: RSAOptions
+  ) => Promise<DecryptResult>
 
   // Base64 编码
   encodeBase64: (data: string) => Promise<string>
@@ -76,7 +92,8 @@ export function useCrypto(): UseCryptoReturn {
 
   // 错误处理辅助函数
   const handleError = (error: unknown): never => {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     lastError.value = errorMessage
     throw new Error(errorMessage)
   }
@@ -84,7 +101,7 @@ export function useCrypto(): UseCryptoReturn {
   // 异步操作包装器
   const wrapAsync = async <T>(
     operation: () => T,
-    loadingRef: Ref<boolean>,
+    loadingRef: Ref<boolean>
   ): Promise<T> => {
     try {
       loadingRef.value = true
@@ -92,12 +109,10 @@ export function useCrypto(): UseCryptoReturn {
       const result = operation()
       lastResult.value = result as any
       return result
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error)
       throw error // 这行永远不会执行，但满足类型要求
-    }
-    finally {
+    } finally {
       loadingRef.value = false
     }
   }
@@ -106,7 +121,7 @@ export function useCrypto(): UseCryptoReturn {
   const encryptAES = async (
     data: string,
     key: string,
-    options?: AESOptions,
+    options?: AESOptions
   ): Promise<EncryptResult> => {
     return wrapAsync(() => encrypt.aes(data, key, options), isEncrypting)
   }
@@ -115,16 +130,19 @@ export function useCrypto(): UseCryptoReturn {
   const decryptAES = async (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: AESOptions,
+    options?: AESOptions
   ): Promise<DecryptResult> => {
-    return wrapAsync(() => decrypt.aes(encryptedData, key, options), isDecrypting)
+    return wrapAsync(
+      () => decrypt.aes(encryptedData, key, options),
+      isDecrypting
+    )
   }
 
   // RSA 加密
   const encryptRSA = async (
     data: string,
     publicKey: string,
-    options?: RSAOptions,
+    options?: RSAOptions
   ): Promise<EncryptResult> => {
     return wrapAsync(() => encrypt.rsa(data, publicKey, options), isEncrypting)
   }
@@ -133,9 +151,12 @@ export function useCrypto(): UseCryptoReturn {
   const decryptRSA = async (
     encryptedData: string | EncryptResult,
     privateKey: string,
-    options?: RSAOptions,
+    options?: RSAOptions
   ): Promise<DecryptResult> => {
-    return wrapAsync(() => decrypt.rsa(encryptedData, privateKey, options), isDecrypting)
+    return wrapAsync(
+      () => decrypt.rsa(encryptedData, privateKey, options),
+      isDecrypting
+    )
   }
 
   // Base64 编码
@@ -160,7 +181,10 @@ export function useCrypto(): UseCryptoReturn {
 
   // 生成 RSA 密钥对
   const generateRSAKeyPair = async (keySize?: number): Promise<RSAKeyPair> => {
-    return wrapAsync(() => keyGenerator.generateRSAKeyPair(keySize), isEncrypting)
+    return wrapAsync(
+      () => keyGenerator.generateRSAKeyPair(keySize),
+      isEncrypting
+    )
   }
 
   // 生成密钥

@@ -1,63 +1,5 @@
-<template>
-  <div class="form-date-picker" :class="datePickerClasses">
-    <div v-if="showLabel" class="form-date-picker__label" :class="labelClasses">
-      <label :for="inputId" class="form-date-picker__label-text">
-        {{ label }}
-        <span v-if="required" class="form-date-picker__required">*</span>
-        <span v-if="showColon" class="form-date-picker__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-date-picker__tooltip" :title="tooltip">
-        ?
-      </div>
-    </div>
-
-    <div class="form-date-picker__wrapper" :class="wrapperClasses">
-      <input
-        :id="inputId"
-        ref="inputRef"
-        v-model="inputValue"
-        :type="inputType"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :readonly="readonly"
-        :min="min"
-        :max="max"
-        :step="step"
-        class="form-date-picker__input"
-        :class="inputClasses"
-        @input="handleInput"
-        @change="handleChange"
-        @blur="handleBlur"
-        @focus="handleFocus"
-      />
-
-      <div
-        v-if="clearable && inputValue && !disabled && !readonly"
-        class="form-date-picker__clear"
-        @click="handleClear"
-      >
-        ×
-      </div>
-    </div>
-
-    <div v-if="hasError" class="form-date-picker__error">
-      <div
-        v-for="error in errors"
-        :key="error"
-        class="form-date-picker__error-text"
-      >
-        {{ error }}
-      </div>
-    </div>
-
-    <div v-if="description" class="form-date-picker__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 interface FormDatePickerProps {
   modelValue?: string | Date | null
@@ -135,7 +77,7 @@ watch(
 )
 
 // 格式化日期为输入框格式
-const formatDateForInput = (date: Date): string => {
+function formatDateForInput(date: Date): string {
   if (!date || !(date instanceof Date)) return ''
 
   const year = date.getFullYear()
@@ -162,7 +104,7 @@ const formatDateForInput = (date: Date): string => {
 }
 
 // 获取周数
-const getWeekNumber = (date: Date): number => {
+function getWeekNumber(date: Date): number {
   const d = new Date(
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
   )
@@ -201,7 +143,7 @@ const inputClasses = computed(() => [
 const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 事件处理
-const handleInput = (event: Event) => {
+function handleInput(event: Event) {
   const target = event.target as HTMLInputElement
   inputValue.value = target.value
 
@@ -219,7 +161,7 @@ const handleInput = (event: Event) => {
   emit('update:modelValue', emitValue)
 }
 
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   const target = event.target as HTMLInputElement
   let emitValue: string | Date | null = target.value || null
 
@@ -234,15 +176,15 @@ const handleChange = (event: Event) => {
   emit('change', emitValue, event)
 }
 
-const handleBlur = (event: FocusEvent) => {
+function handleBlur(event: FocusEvent) {
   emit('blur', event)
 }
 
-const handleFocus = (event: FocusEvent) => {
+function handleFocus(event: FocusEvent) {
   emit('focus', event)
 }
 
-const handleClear = () => {
+function handleClear() {
   inputValue.value = ''
   emit('update:modelValue', null)
   emit('clear')
@@ -258,6 +200,64 @@ defineExpose({
   clear: handleClear,
 })
 </script>
+
+<template>
+  <div class="form-date-picker" :class="datePickerClasses">
+    <div v-if="showLabel" class="form-date-picker__label" :class="labelClasses">
+      <label :for="inputId" class="form-date-picker__label-text">
+        {{ label }}
+        <span v-if="required" class="form-date-picker__required">*</span>
+        <span v-if="showColon" class="form-date-picker__colon">:</span>
+      </label>
+      <div v-if="tooltip" class="form-date-picker__tooltip" :title="tooltip">
+        ?
+      </div>
+    </div>
+
+    <div class="form-date-picker__wrapper" :class="wrapperClasses">
+      <input
+        :id="inputId"
+        ref="inputRef"
+        v-model="inputValue"
+        :type="inputType"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :readonly="readonly"
+        :min="min"
+        :max="max"
+        :step="step"
+        class="form-date-picker__input"
+        :class="inputClasses"
+        @input="handleInput"
+        @change="handleChange"
+        @blur="handleBlur"
+        @focus="handleFocus"
+      />
+
+      <div
+        v-if="clearable && inputValue && !disabled && !readonly"
+        class="form-date-picker__clear"
+        @click="handleClear"
+      >
+        ×
+      </div>
+    </div>
+
+    <div v-if="hasError" class="form-date-picker__error">
+      <div
+        v-for="error in errors"
+        :key="error"
+        class="form-date-picker__error-text"
+      >
+        {{ error }}
+      </div>
+    </div>
+
+    <div v-if="description" class="form-date-picker__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-date-picker {

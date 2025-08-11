@@ -1,12 +1,12 @@
 // DynamicForm 组件测试
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import type { FormOptions } from '../types/form'
 import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import DynamicForm from '../components/DynamicForm.vue'
-import type { FormOptions } from '../types/form'
 
-describe('DynamicForm', () => {
+describe('dynamicForm', () => {
   let formOptions: FormOptions
 
   beforeEach(() => {

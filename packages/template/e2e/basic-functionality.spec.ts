@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('基础功能测试', () => {
   test.beforeEach(async ({ page }) => {
@@ -130,7 +130,7 @@ test.describe('基础功能测试', () => {
 
     // 检查指标数值是否合理
     const fpsText = await page.locator('[data-testid="fps-metric"]').textContent()
-    const fps = parseInt(fpsText?.match(/\d+/)?.[0] || '0')
+    const fps = Number.parseInt(fpsText?.match(/\d+/)?.[0] || '0')
     expect(fps).toBeGreaterThan(0)
     expect(fps).toBeLessThanOrEqual(60)
   })

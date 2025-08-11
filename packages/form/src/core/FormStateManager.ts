@@ -1,14 +1,13 @@
 // 表单状态管理器
 
 import type {
-  FormData,
-  FormState,
   FieldState,
+  FormData,
   FormOptions,
+  FormState,
 } from '../types/form'
-import type { FormEvents } from '../types/events'
+import { deepClone, get, has, set } from '../utils/common'
 import { SimpleEventEmitter } from '../utils/event'
-import { deepClone, get, set, has } from '../utils/common'
 
 /**
  * 表单状态管理器

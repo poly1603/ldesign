@@ -1,50 +1,3 @@
-<template>
-  <div class="form-rate" :class="rateClasses">
-    <div v-if="showLabel" class="form-rate__label" :class="labelClasses">
-      <label class="form-rate__label-text">
-        {{ label }}
-        <span v-if="required" class="form-rate__required">*</span>
-        <span v-if="showColon" class="form-rate__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-rate__tooltip" :title="tooltip">?</div>
-    </div>
-
-    <div class="form-rate__wrapper" :class="wrapperClasses">
-      <div class="form-rate__stars">
-        <span
-          v-for="(star, index) in stars"
-          :key="index"
-          class="form-rate__star"
-          :class="getStarClasses(index)"
-          @click="handleClick(index)"
-          @mouseenter="handleMouseEnter(index)"
-          @mouseleave="handleMouseLeave"
-        >
-          {{ getStarIcon(index) }}
-        </span>
-      </div>
-
-      <div v-if="showText && rateText" class="form-rate__text">
-        {{ rateText }}
-      </div>
-
-      <div v-if="showValue" class="form-rate__value">
-        {{ displayValue }}
-      </div>
-    </div>
-
-    <div v-if="hasError" class="form-rate__error">
-      <div v-for="error in errors" :key="error" class="form-rate__error-text">
-        {{ error }}
-      </div>
-    </div>
-
-    <div v-if="description" class="form-rate__description">
-      {{ description }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
@@ -140,7 +93,7 @@ const wrapperClasses = computed(() => [`form-rate__wrapper--${props.size}`])
 const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 获取星星样式类
-const getStarClasses = (index: number) => {
+function getStarClasses(index: number) {
   const currentValue =
     hoverValue.value >= 0 ? hoverValue.value : inputValue.value
   const isActive = index < currentValue
@@ -157,7 +110,7 @@ const getStarClasses = (index: number) => {
 }
 
 // 获取星星图标
-const getStarIcon = (index: number) => {
+function getStarIcon(index: number) {
   const currentValue =
     hoverValue.value >= 0 ? hoverValue.value : inputValue.value
 
@@ -169,7 +122,7 @@ const getStarIcon = (index: number) => {
 }
 
 // 事件处理
-const handleClick = (index: number) => {
+function handleClick(index: number) {
   if (props.disabled || props.readonly) return
 
   let newValue = index + 1
@@ -184,20 +137,67 @@ const handleClick = (index: number) => {
   emit('change', newValue)
 }
 
-const handleMouseEnter = (index: number) => {
+function handleMouseEnter(index: number) {
   if (props.disabled || props.readonly) return
 
   hoverValue.value = index + 1
   emit('hoverChange', hoverValue.value)
 }
 
-const handleMouseLeave = () => {
+function handleMouseLeave() {
   if (props.disabled || props.readonly) return
 
   hoverValue.value = -1
   emit('hoverChange', inputValue.value)
 }
 </script>
+
+<template>
+  <div class="form-rate" :class="rateClasses">
+    <div v-if="showLabel" class="form-rate__label" :class="labelClasses">
+      <label class="form-rate__label-text">
+        {{ label }}
+        <span v-if="required" class="form-rate__required">*</span>
+        <span v-if="showColon" class="form-rate__colon">:</span>
+      </label>
+      <div v-if="tooltip" class="form-rate__tooltip" :title="tooltip">?</div>
+    </div>
+
+    <div class="form-rate__wrapper" :class="wrapperClasses">
+      <div class="form-rate__stars">
+        <span
+          v-for="(star, index) in stars"
+          :key="index"
+          class="form-rate__star"
+          :class="getStarClasses(index)"
+          @click="handleClick(index)"
+          @mouseenter="handleMouseEnter(index)"
+          @mouseleave="handleMouseLeave"
+        >
+          {{ getStarIcon(index) }}
+        </span>
+      </div>
+
+      <div v-if="showText && rateText" class="form-rate__text">
+        {{ rateText }}
+      </div>
+
+      <div v-if="showValue" class="form-rate__value">
+        {{ displayValue }}
+      </div>
+    </div>
+
+    <div v-if="hasError" class="form-rate__error">
+      <div v-for="error in errors" :key="error" class="form-rate__error-text">
+        {{ error }}
+      </div>
+    </div>
+
+    <div v-if="description" class="form-rate__description">
+      {{ description }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .form-rate {

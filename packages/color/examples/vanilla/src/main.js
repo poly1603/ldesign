@@ -5,9 +5,8 @@
 
 import {
   createThemeManagerWithPresets,
-  generateColorScales,
   generateColorConfig,
-  injectThemeVariables,
+  generateColorScales,
 } from '@ldesign/color'
 import { ColorPaletteCard } from './components/index.js'
 
@@ -41,8 +40,7 @@ class ColorDemo {
       this.displayCurrentThemeScales()
 
       console.log('🎨 Color Demo 初始化完成')
-    }
-    catch (error) {
+    } catch (error) {
       console.error('初始化失败:', error)
       this.showError(`初始化失败: ${error.message}`)
     }
@@ -57,7 +55,9 @@ class ColorDemo {
       currentMode: document.getElementById('current-mode'),
       systemTheme: document.getElementById('system-theme'),
       themesContainer: document.getElementById('themes-container'),
-      currentScalesContainer: document.getElementById('current-scales-container'),
+      currentScalesContainer: document.getElementById(
+        'current-scales-container'
+      ),
     }
   }
 
@@ -70,7 +70,7 @@ class ColorDemo {
         this.updateUI()
         this.displayCurrentThemeScales()
       },
-      onError: (error) => {
+      onError: error => {
         console.error('主题管理器错误:', error)
         this.showError(`主题错误: ${error.message}`)
       },
@@ -84,7 +84,7 @@ class ColorDemo {
     const themes = this.themeManager.getThemeNames()
     this.elements.themeSelect.innerHTML = ''
 
-    themes.forEach((themeName) => {
+    themes.forEach(themeName => {
       const option = document.createElement('option')
       option.value = themeName
       option.textContent = this.getThemeDisplayName(themeName)
@@ -101,7 +101,7 @@ class ColorDemo {
     const themes = this.themeManager.getThemeNames()
     this.elements.themesContainer.innerHTML = ''
 
-    themes.forEach((themeName) => {
+    themes.forEach(themeName => {
       const themeCard = this.createThemeCard(themeName)
       this.elements.themesContainer.appendChild(themeCard)
     })
@@ -110,10 +110,10 @@ class ColorDemo {
   createThemeCard(themeName) {
     const themeConfig = this.themeManager.getThemeConfig(themeName)
     const currentTheme = this.themeManager.getCurrentTheme()
-    
+
     const card = document.createElement('div')
     card.className = `theme-item ${currentTheme === themeName ? 'active' : ''}`
-    
+
     // 主题预览颜色
     const preview = document.createElement('div')
     preview.className = 'theme-preview'
@@ -121,7 +121,9 @@ class ColorDemo {
     // 生成完整的颜色配置
     let previewColors
     try {
-      const generatedColors = generateColorConfig(themeConfig?.light?.primary || '#1890ff')
+      const generatedColors = generateColorConfig(
+        themeConfig?.light?.primary || '#1890ff'
+      )
       previewColors = {
         primary: themeConfig?.light?.primary || '#1890ff',
         success: generatedColors.success || '#52c41a',
@@ -139,37 +141,37 @@ class ColorDemo {
     }
 
     const colorTypes = ['primary', 'success', 'warning', 'danger']
-    colorTypes.forEach((type) => {
+    colorTypes.forEach(type => {
       const colorDiv = document.createElement('div')
       colorDiv.className = 'theme-color'
       colorDiv.style.backgroundColor = previewColors[type]
       preview.appendChild(colorDiv)
     })
-    
+
     // 主题信息
     const info = document.createElement('div')
     info.className = 'theme-info'
-    
+
     const name = document.createElement('div')
     name.className = 'theme-name'
     name.textContent = themeConfig?.displayName || themeName
-    
+
     const description = document.createElement('div')
     description.className = 'theme-description'
     description.textContent = themeConfig?.description || '精美的主题配色方案'
-    
+
     info.appendChild(name)
     info.appendChild(description)
-    
+
     card.appendChild(preview)
     card.appendChild(info)
-    
+
     // 点击切换主题
     card.addEventListener('click', () => {
       this.themeManager.setTheme(themeName)
       this.displayThemes() // 重新渲染以更新active状态
     })
-    
+
     return card
   }
 
@@ -177,18 +179,21 @@ class ColorDemo {
     const currentTheme = this.themeManager.getCurrentTheme()
     const currentMode = this.themeManager.getCurrentMode()
     const themeConfig = this.themeManager.getThemeConfig(currentTheme)
-    
+
     if (!themeConfig) {
-      this.elements.currentScalesContainer.innerHTML = '<p>无法获取当前主题配置</p>'
+      this.elements.currentScalesContainer.innerHTML =
+        '<p>无法获取当前主题配置</p>'
       return
     }
-    
-    const modeColors = currentMode === 'light' ? themeConfig.light : themeConfig.dark
+
+    const modeColors =
+      currentMode === 'light' ? themeConfig.light : themeConfig.dark
     if (!modeColors) {
-      this.elements.currentScalesContainer.innerHTML = '<p>当前模式下无颜色配置</p>'
+      this.elements.currentScalesContainer.innerHTML =
+        '<p>当前模式下无颜色配置</p>'
       return
     }
-    
+
     // 准备颜色配置
     // 如果主题配置中没有定义完整的颜色，使用生成的颜色配置
     let generatedColors = null
@@ -205,7 +210,7 @@ class ColorDemo {
       danger: modeColors.danger || generatedColors?.danger || '#f5222d',
       gray: modeColors.gray || generatedColors?.gray || '#8c8c8c',
     }
-    
+
     try {
       const scales = generateColorScales(colors, currentMode)
       this.renderScales(scales)
@@ -236,8 +241,8 @@ class ColorDemo {
         subtitle: colorType,
         baseName: `${colorType}-6`,
         colorName: colorType,
-        baseColor: baseColor,
-        colors: colors
+        baseColor,
+        colors,
       })
 
       this.elements.currentScalesContainer.appendChild(paletteCard.render())
@@ -246,12 +251,12 @@ class ColorDemo {
 
   bindEvents() {
     // 主题选择器
-    this.elements.themeSelect.addEventListener('change', (e) => {
+    this.elements.themeSelect.addEventListener('change', e => {
       this.themeManager.setTheme(e.target.value)
     })
 
     // 模式选择器
-    this.elements.modeSelect.addEventListener('change', (e) => {
+    this.elements.modeSelect.addEventListener('change', e => {
       this.themeManager.setMode(e.target.value)
       // 强制刷新色阶显示
       setTimeout(() => {
@@ -273,9 +278,12 @@ class ColorDemo {
     const currentTheme = this.themeManager.getCurrentTheme()
     const currentMode = this.themeManager.getCurrentMode()
 
-    this.elements.currentTheme.textContent = this.getThemeDisplayName(currentTheme)
-    this.elements.currentMode.textContent = currentMode === 'light' ? '亮色' : '暗色'
-    this.elements.systemTheme.textContent = currentMode === 'light' ? '亮色' : '暗色'
+    this.elements.currentTheme.textContent =
+      this.getThemeDisplayName(currentTheme)
+    this.elements.currentMode.textContent =
+      currentMode === 'light' ? '亮色' : '暗色'
+    this.elements.systemTheme.textContent =
+      currentMode === 'light' ? '亮色' : '暗色'
 
     this.elements.themeSelect.value = currentTheme
     this.elements.modeSelect.value = currentMode
@@ -302,7 +310,7 @@ class ColorDemo {
     notification.className = `notification ${type}`
     notification.textContent = message
     document.body.appendChild(notification)
-    
+
     setTimeout(() => {
       document.body.removeChild(notification)
     }, 3000)

@@ -2,7 +2,11 @@
  * 主题管理组合式 API
  */
 
-import type { ColorMode, ThemeManagerInstance, ThemeConfig } from '../../../core/types'
+import type {
+  ColorMode,
+  ThemeConfig,
+  ThemeManagerInstance,
+} from '../../../core/types'
 import type { UseThemeReturn } from '../types'
 import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { THEME_MANAGER_KEY } from '../types'
@@ -18,7 +22,9 @@ export function useTheme(manager?: ThemeManagerInstance): UseThemeReturn {
   const themeManager = manager || injectedManager
 
   if (!themeManager) {
-    throw new Error('Theme manager not found. Please provide a manager or install the Vue plugin.')
+    throw new Error(
+      'Theme manager not found. Please provide a manager or install the Vue plugin.'
+    )
   }
 
   // 响应式状态
@@ -29,7 +35,9 @@ export function useTheme(manager?: ThemeManagerInstance): UseThemeReturn {
   // 计算属性
   const isDark = computed(() => currentMode.value === 'dark')
   const isLight = computed(() => currentMode.value === 'light')
-  const currentThemeConfig = computed(() => themeManager.getThemeConfig(currentTheme.value))
+  const currentThemeConfig = computed(() =>
+    themeManager.getThemeConfig(currentTheme.value)
+  )
 
   // 状态更新函数
   const updateState = () => {
@@ -52,12 +60,13 @@ export function useTheme(manager?: ThemeManagerInstance): UseThemeReturn {
       themeManager.on('theme-registered', updateState)
 
       // 简化清理逻辑
-      unsubscribeCallbacks = [() => {
-        // 这里应该有具体的取消订阅逻辑
-        // 暂时使用空函数
-      }]
-    }
-    else {
+      unsubscribeCallbacks = [
+        () => {
+          // 这里应该有具体的取消订阅逻辑
+          // 暂时使用空函数
+        },
+      ]
+    } else {
       // 如果没有事件系统，使用轮询（降级方案）
       const interval = setInterval(updateState, 1000)
       unsubscribeCallbacks = [() => clearInterval(interval)]

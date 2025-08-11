@@ -5,9 +5,9 @@
  * 支持包的独立部署和版本管理
  */
 
-import { execSync, spawn } from 'node:child_process'
+import { execSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import { packageConfigs } from '../configs/microfrontend/module-federation.config.js'
@@ -183,7 +183,7 @@ class MicrofrontendDeploymentManager {
    */
   private async buildSinglePackage(packageName: string) {
     const packageDir = join(rootDir, 'packages', packageName)
-    
+
     execSync('pnpm build', {
       stdio: 'inherit',
       cwd: packageDir,
@@ -217,7 +217,12 @@ class MicrofrontendDeploymentManager {
   private generateVersion(packageName: string): string {
     switch (this.config.versionStrategy) {
       case 'auto': {
-        const packageJsonPath = join(rootDir, 'packages', packageName, 'package.json')
+        const packageJsonPath = join(
+          rootDir,
+          'packages',
+          packageName,
+          'package.json'
+        )
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
         return packageJson.version
       }
@@ -233,7 +238,10 @@ class MicrofrontendDeploymentManager {
   /**
    * 上传包文件
    */
-  private async uploadPackage(packageName: string, version: string): Promise<string> {
+  private async uploadPackage(
+    packageName: string,
+    version: string
+  ): Promise<string> {
     const packageDir = join(rootDir, 'packages', packageName)
     const distDir = join(packageDir, 'dist')
 
@@ -252,14 +260,24 @@ class MicrofrontendDeploymentManager {
   /**
    * 上传到 CDN
    */
-  private async uploadToCDN(packageName: string, version: string, distDir: string): Promise<string> {
+  private async uploadToCDN(
+    packageName: string,
+    version: string,
+    distDir: string
+  ): Promise<string> {
     const { provider, bucket, region } = this.config.cdn!
 
     switch (provider) {
       case 'aws':
         return this.uploadToAWS(packageName, version, distDir, bucket, region)
       case 'aliyun':
-        return this.uploadToAliyun(packageName, version, distDir, bucket, region)
+        return this.uploadToAliyun(
+          packageName,
+          version,
+          distDir,
+          bucket,
+          region
+        )
       case 'custom':
         return this.uploadToCustomCDN(packageName, version, distDir)
       default:
@@ -270,10 +288,14 @@ class MicrofrontendDeploymentManager {
   /**
    * 上传到服务器
    */
-  private async uploadToServer(packageName: string, version: string, distDir: string): Promise<string> {
+  private async uploadToServer(
+    packageName: string,
+    version: string,
+    distDir: string
+  ): Promise<string> {
     // 简单的文件复制示例（实际应该使用 rsync 或其他工具）
     const targetDir = join('/var/www/microfrontend', packageName, version)
-    
+
     execSync(`mkdir -p ${targetDir}`, { stdio: 'pipe' })
     execSync(`cp -r ${distDir}/* ${targetDir}/`, { stdio: 'pipe' })
 
@@ -283,12 +305,21 @@ class MicrofrontendDeploymentManager {
   /**
    * 上传到 AWS S3
    */
-  private async uploadToAWS(packageName: string, version: string, distDir: string, bucket: string, region?: string): Promise<string> {
+  private async uploadToAWS(
+    packageName: string,
+    version: string,
+    distDir: string,
+    bucket: string,
+    region?: string
+  ): Promise<string> {
     const s3Path = `s3://${bucket}/${packageName}/${version}/`
-    
-    execSync(`aws s3 sync ${distDir} ${s3Path} --region ${region || 'us-east-1'}`, {
-      stdio: 'inherit',
-    })
+
+    execSync(
+      `aws s3 sync ${distDir} ${s3Path} --region ${region || 'us-east-1'}`,
+      {
+        stdio: 'inherit',
+      }
+    )
 
     return `https://${bucket}.s3.amazonaws.com/${packageName}/${version}/remoteEntry.js`
   }
@@ -296,23 +327,35 @@ class MicrofrontendDeploymentManager {
   /**
    * 上传到阿里云 OSS
    */
-  private async uploadToAliyun(packageName: string, version: string, distDir: string, bucket: string, region?: string): Promise<string> {
+  private async uploadToAliyun(
+    packageName: string,
+    version: string,
+    distDir: string,
+    bucket: string,
+    region?: string
+  ): Promise<string> {
     const ossPath = `oss://${bucket}/${packageName}/${version}/`
-    
+
     execSync(`ossutil cp -r ${distDir} ${ossPath}`, {
       stdio: 'inherit',
     })
 
-    return `https://${bucket}.${region || 'oss-cn-hangzhou'}.aliyuncs.com/${packageName}/${version}/remoteEntry.js`
+    return `https://${bucket}.${
+      region || 'oss-cn-hangzhou'
+    }.aliyuncs.com/${packageName}/${version}/remoteEntry.js`
   }
 
   /**
    * 上传到自定义 CDN
    */
-  private async uploadToCustomCDN(packageName: string, version: string, distDir: string): Promise<string> {
+  private async uploadToCustomCDN(
+    packageName: string,
+    version: string,
+    distDir: string
+  ): Promise<string> {
     // 自定义上传逻辑
     console.log(chalk.yellow(`上传 ${packageName} 到自定义 CDN...`))
-    
+
     // 这里应该实现具体的上传逻辑
     return `${this.config.baseUrl}/${packageName}/${version}/remoteEntry.js`
   }
@@ -320,9 +363,13 @@ class MicrofrontendDeploymentManager {
   /**
    * 更新包注册表
    */
-  private async updatePackageRegistry(packageName: string, version: string, url: string) {
+  private async updatePackageRegistry(
+    packageName: string,
+    version: string,
+    url: string
+  ) {
     const registryPath = join(rootDir, 'microfrontend-registry.json')
-    
+
     let registry: Record<string, any> = {}
     if (existsSync(registryPath)) {
       registry = JSON.parse(readFileSync(registryPath, 'utf-8'))
@@ -360,11 +407,13 @@ class MicrofrontendDeploymentManager {
 
     registry.environment = this.config.environment
     registry.lastDeployment = new Date().toISOString()
-    registry.deployedPackages = this.results.filter(r => r.success).map(r => ({
-      name: r.package,
-      version: r.version,
-      url: r.url,
-    }))
+    registry.deployedPackages = this.results
+      .filter(r => r.success)
+      .map(r => ({
+        name: r.package,
+        version: r.version,
+        url: r.url,
+      }))
 
     writeFileSync(registryPath, JSON.stringify(registry, null, 2))
     console.log(chalk.green('✅ 注册表更新完成'))
@@ -382,7 +431,9 @@ class MicrofrontendDeploymentManager {
           // 简单的 HTTP 检查
           const response = await fetch(result.url, { method: 'HEAD' })
           if (!response.ok) {
-            console.warn(chalk.yellow(`⚠️ ${result.package} URL 不可访问: ${result.url}`))
+            console.warn(
+              chalk.yellow(`⚠️ ${result.package} URL 不可访问: ${result.url}`)
+            )
           }
         } catch (error) {
           console.warn(chalk.yellow(`⚠️ ${result.package} 验证失败:`, error))
@@ -432,15 +483,16 @@ async function main() {
   const config: DeploymentConfig = {
     environment,
     packages,
-    baseUrl: environment === 'production' 
-      ? 'https://cdn.ldesign.com' 
-      : 'http://localhost:8080',
+    baseUrl:
+      environment === 'production'
+        ? 'https://cdn.ldesign.com'
+        : 'http://localhost:8080',
     versionStrategy: 'auto',
     parallel: environment !== 'production',
   }
 
   const manager = new MicrofrontendDeploymentManager(config)
-  
+
   try {
     await manager.deployAll()
     process.exit(0)

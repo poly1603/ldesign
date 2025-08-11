@@ -66,24 +66,24 @@ jobs:
           for package_dir in packages/*; do
             if [ -d "$package_dir" ]; then
               package_name=$(basename "$package_dir")
-              
+
               # 检查是否有构建产物
               if [ -d "$package_dir/dist" ] || [ -d "$package_dir/es" ] || [ -d "$package_dir/lib" ]; then
                 echo "分析包: $package_name"
                 cd "$package_dir"
-                
+
                 # 运行包分析
                 if grep -q "build:analyze" "package.json" 2>/dev/null; then
                   pnpm run build:analyze > /dev/null 2>&1 || true
                 fi
-                
+
                 # 计算各种格式的大小
                 umd_size="N/A"
                 es_size="N/A"
                 cjs_size="N/A"
                 types_size="N/A"
                 status="✅"
-                
+
                 # UMD压缩版大小
                 if [ -f "dist/index.min.js" ]; then
                   umd_bytes=$(stat -f%z "dist/index.min.js" 2>/dev/null || stat -c%s "dist/index.min.js" 2>/dev/null || echo "0")
@@ -99,19 +99,19 @@ jobs:
                   umd_size="${umd_bytes} bytes"
                   total_size=$((total_size + umd_bytes))
                 fi
-                
+
                 # ES模块大小
                 if [ -f "es/index.js" ]; then
                   es_bytes=$(stat -f%z "es/index.js" 2>/dev/null || stat -c%s "es/index.js" 2>/dev/null || echo "0")
                   es_size="${es_bytes} bytes"
                 fi
-                
+
                 # CommonJS大小
                 if [ -f "lib/index.js" ]; then
                   cjs_bytes=$(stat -f%z "lib/index.js" 2>/dev/null || stat -c%s "lib/index.js" 2>/dev/null || echo "0")
                   cjs_size="${cjs_bytes} bytes"
                 fi
-                
+
                 # 类型定义大小
                 if [ -f "types/index.d.ts" ]; then
                   types_bytes=$(stat -f%z "types/index.d.ts" 2>/dev/null || stat -c%s "types/index.d.ts" 2>/dev/null || echo "0")
@@ -120,10 +120,10 @@ jobs:
                   types_bytes=$(stat -f%z "dist/index.d.ts" 2>/dev/null || stat -c%s "dist/index.d.ts" 2>/dev/null || echo "0")
                   types_size="${types_bytes} bytes"
                 fi
-                
+
                 echo "| $package_name | $umd_size | $es_size | $cjs_size | $types_size | $status |" >> ../../bundle-size-report.md
                 package_count=$((package_count + 1))
-                
+
                 cd ../..
               fi
             fi
@@ -189,27 +189,27 @@ jobs:
             elif [ -f "packages/$package_name/dist/index.js" ]; then
               current_size=$(stat -f%z "packages/$package_name/dist/index.js" 2>/dev/null || stat -c%s "packages/$package_name/dist/index.js" 2>/dev/null || echo "0")
             fi
-            
+
             diff=$((current_size - base_size))
             percent_change=0
             if [ "$base_size" -gt 0 ]; then
               percent_change=$((diff * 100 / base_size))
             fi
-            
+
             status="✅"
             if [ "$diff" -gt 51200 ]; then  # 50KB增长
               status="⚠️"
             elif [ "$diff" -gt 102400 ]; then  # 100KB增长
               status="❌"
             fi
-            
+
             change_text="无变化"
             if [ "$diff" -gt 0 ]; then
               change_text="+${diff} bytes (+${percent_change}%)"
             elif [ "$diff" -lt 0 ]; then
               change_text="${diff} bytes (${percent_change}%)"
             fi
-            
+
             echo "| $package_name | ${base_size} bytes | ${current_size} bytes | $change_text | $status |" >> size-diff-report.md
           done < base-sizes.txt
 
@@ -304,11 +304,11 @@ jobs:
           for commit in $commits; do
             echo "分析提交: $commit"
             git checkout $commit
-            
+
             if pnpm install --frozen-lockfile && pnpm build; then
               echo "### 提交 $commit" >> size-trend-report.md
               echo "" >> size-trend-report.md
-              
+
               for package_dir in packages/*; do
                 if [ -d "$package_dir" ]; then
                   package_name=$(basename "$package_dir")

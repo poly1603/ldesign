@@ -1,3 +1,91 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useStorePoolDemo } from '../stores/storePoolStore'
+
+const store = useStorePoolDemo()
+
+// 响应式数据
+const instances = ref<Array<{ id: string; count: number }>>([])
+const traditionalTime = ref(0)
+const pooledTime = ref(0)
+const traditionalMemory = ref(0)
+const pooledMemory = ref(0)
+
+// 计算属性
+const poolStats = computed(() => store.poolStats)
+const activeInstances = computed(() => {
+  return poolStats.value.poolDetails.reduce(
+    (sum, pool) => sum + pool.activeInstances,
+    0
+  )
+})
+
+const timeImprovement = computed(() => {
+  if (traditionalTime.value === 0 || pooledTime.value === 0) return 0
+  return (
+    ((traditionalTime.value - pooledTime.value) / traditionalTime.value) * 100
+  )
+})
+
+const memoryImprovement = computed(() => {
+  if (traditionalMemory.value === 0 || pooledMemory.value === 0) return 0
+  return (
+    ((traditionalMemory.value - pooledMemory.value) / traditionalMemory.value) *
+    100
+  )
+})
+
+// 方法
+function createInstance() {
+  const instance = store.createPooledInstance()
+  instances.value.push({
+    id: instance.$id,
+    count: instance.count,
+  })
+}
+
+function returnInstance() {
+  if (instances.value.length > 0) {
+    const instance = instances.value.pop()
+    if (instance) {
+      store.returnInstanceToPool(instance.id)
+    }
+  }
+}
+
+function incrementInstance(index: number) {
+  const instanceData = instances.value[index]
+  store.incrementInstance(instanceData.id)
+  instanceData.count++
+}
+
+function warmUpPool() {
+  store.warmUpPool(5)
+}
+
+function clearPool() {
+  store.clearPool()
+  instances.value = []
+}
+
+async function testTraditionalCreation() {
+  const result = await store.testTraditionalCreation(100)
+  traditionalTime.value = result.time
+  traditionalMemory.value = result.memory
+}
+
+async function testPooledCreation() {
+  const result = await store.testPooledCreation(100)
+  pooledTime.value = result.time
+  pooledMemory.value = result.memory
+}
+
+// 组件挂载时初始化
+onMounted(() => {
+  store.initializePool()
+})
+</script>
+
 <template>
   <div class="store-pool-demo">
     <div class="page-header">
@@ -9,15 +97,21 @@
       <h2>池统计信息</h2>
       <div class="grid grid-3">
         <div class="metric">
-          <div class="metric-value">{{ poolStats.totalPools }}</div>
+          <div class="metric-value">
+            {{ poolStats.totalPools }}
+          </div>
           <div class="metric-label">总池数</div>
         </div>
         <div class="metric">
-          <div class="metric-value">{{ poolStats.totalInstances }}</div>
+          <div class="metric-value">
+            {{ poolStats.totalInstances }}
+          </div>
           <div class="metric-label">总实例数</div>
         </div>
         <div class="metric">
-          <div class="metric-value">{{ activeInstances }}</div>
+          <div class="metric-value">
+            {{ activeInstances }}
+          </div>
           <div class="metric-label">活跃实例</div>
         </div>
       </div>
@@ -29,25 +123,34 @@
         <div class="card">
           <h3>创建和管理实例</h3>
           <div class="actions">
-            <button @click="createInstance" class="btn btn-primary">
+            <button class="btn btn-primary" @click="createInstance">
               创建实例
             </button>
-            <button @click="returnInstance" class="btn btn-secondary" :disabled="instances.length === 0">
+            <button
+              class="btn btn-secondary"
+              :disabled="instances.length === 0"
+              @click="returnInstance"
+            >
               归还实例
             </button>
-            <button @click="warmUpPool" class="btn btn-secondary">
+            <button class="btn btn-secondary" @click="warmUpPool">
               预热池 (5个实例)
             </button>
-            <button @click="clearPool" class="btn btn-danger">
-              清空池
-            </button>
+            <button class="btn btn-danger" @click="clearPool">清空池</button>
           </div>
-          
+
           <div class="instance-list">
             <h4>当前实例 ({{ instances.length }})</h4>
-            <div v-for="(instance, index) in instances" :key="instance.id" class="instance-item">
+            <div
+              v-for="(instance, index) in instances"
+              :key="instance.id"
+              class="instance-item"
+            >
               <span>实例 {{ instance.id }} - 计数: {{ instance.count }}</span>
-              <button @click="incrementInstance(index)" class="btn btn-secondary btn-sm">
+              <button
+                class="btn btn-secondary btn-sm"
+                @click="incrementInstance(index)"
+              >
                 +1
               </button>
             </div>
@@ -56,7 +159,11 @@
 
         <div class="card">
           <h3>池详细信息</h3>
-          <div v-for="pool in poolStats.poolDetails" :key="pool.className" class="pool-detail">
+          <div
+            v-for="pool in poolStats.poolDetails"
+            :key="pool.className"
+            class="pool-detail"
+          >
             <h4>{{ pool.className }}</h4>
             <div class="pool-metrics">
               <div class="pool-metric">
@@ -84,7 +191,7 @@
           <h3>传统方式 (直接创建)</h3>
           <p>创建时间: {{ traditionalTime }}ms</p>
           <p>内存使用: {{ traditionalMemory }}MB</p>
-          <button @click="testTraditionalCreation" class="btn btn-primary">
+          <button class="btn btn-primary" @click="testTraditionalCreation">
             测试传统创建 (100次)
           </button>
         </div>
@@ -93,7 +200,7 @@
           <h3>池化方式</h3>
           <p>创建时间: {{ pooledTime }}ms</p>
           <p>内存使用: {{ pooledMemory }}MB</p>
-          <button @click="testPooledCreation" class="btn btn-primary">
+          <button class="btn btn-primary" @click="testPooledCreation">
             测试池化创建 (100次)
           </button>
         </div>
@@ -101,17 +208,22 @@
 
       <div class="card">
         <h3>性能提升</h3>
-        <div v-if="traditionalTime > 0 && pooledTime > 0" class="performance-comparison">
+        <div
+          v-if="traditionalTime > 0 && pooledTime > 0"
+          class="performance-comparison"
+        >
           <div class="comparison-metric">
             <span class="label">时间提升:</span>
-            <span class="value" :class="{ 'positive': timeImprovement > 0 }">
-              {{ timeImprovement > 0 ? '+' : '' }}{{ timeImprovement.toFixed(1) }}%
+            <span class="value" :class="{ positive: timeImprovement > 0 }">
+              {{ timeImprovement > 0 ? '+' : ''
+              }}{{ timeImprovement.toFixed(1) }}%
             </span>
           </div>
           <div class="comparison-metric">
             <span class="label">内存节省:</span>
-            <span class="value" :class="{ 'positive': memoryImprovement > 0 }">
-              {{ memoryImprovement > 0 ? '+' : '' }}{{ memoryImprovement.toFixed(1) }}%
+            <span class="value" :class="{ positive: memoryImprovement > 0 }">
+              {{ memoryImprovement > 0 ? '+' : ''
+              }}{{ memoryImprovement.toFixed(1) }}%
             </span>
           </div>
         </div>
@@ -126,7 +238,8 @@
       <div class="card">
         <h3>使用 @PooledStore 装饰器</h3>
         <div class="code-block">
-          <pre>import { PooledStore, BaseStore } from '@ldesign/store'
+          <pre>
+import { PooledStore, BaseStore } from '@ldesign/store'
 
 @PooledStore({ maxSize: 10, maxIdleTime: 300000 })
 class OptimizedStore extends BaseStore {
@@ -140,12 +253,14 @@ class OptimizedStore extends BaseStore {
 }
 
 // 实例会被自动池化管理
-const store = new OptimizedStore('my-store')</pre>
+const store = new OptimizedStore('my-store')</pre
+          >
         </div>
 
         <h3>手动使用Store池</h3>
         <div class="code-block">
-          <pre>import { useStorePool } from '@ldesign/store'
+          <pre>
+import { useStorePool } from '@ldesign/store'
 
 const pool = useStorePool({
   maxSize: 20,
@@ -160,92 +275,13 @@ const store = pool.getStore(MyStore, 'store-id')
 pool.returnStore(store)
 
 // 预热池
-pool.warmUp(MyStore, 5)</pre>
+pool.warmUp(MyStore, 5)</pre
+          >
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useStorePoolDemo } from '../stores/storePoolStore'
-
-const store = useStorePoolDemo()
-
-// 响应式数据
-const instances = ref<Array<{ id: string, count: number }>>([])
-const traditionalTime = ref(0)
-const pooledTime = ref(0)
-const traditionalMemory = ref(0)
-const pooledMemory = ref(0)
-
-// 计算属性
-const poolStats = computed(() => store.poolStats)
-const activeInstances = computed(() => {
-  return poolStats.value.poolDetails.reduce((sum, pool) => sum + pool.activeInstances, 0)
-})
-
-const timeImprovement = computed(() => {
-  if (traditionalTime.value === 0 || pooledTime.value === 0) return 0
-  return ((traditionalTime.value - pooledTime.value) / traditionalTime.value) * 100
-})
-
-const memoryImprovement = computed(() => {
-  if (traditionalMemory.value === 0 || pooledMemory.value === 0) return 0
-  return ((traditionalMemory.value - pooledMemory.value) / traditionalMemory.value) * 100
-})
-
-// 方法
-const createInstance = () => {
-  const instance = store.createPooledInstance()
-  instances.value.push({
-    id: instance.$id,
-    count: instance.count
-  })
-}
-
-const returnInstance = () => {
-  if (instances.value.length > 0) {
-    const instance = instances.value.pop()
-    if (instance) {
-      store.returnInstanceToPool(instance.id)
-    }
-  }
-}
-
-const incrementInstance = (index: number) => {
-  const instanceData = instances.value[index]
-  store.incrementInstance(instanceData.id)
-  instanceData.count++
-}
-
-const warmUpPool = () => {
-  store.warmUpPool(5)
-}
-
-const clearPool = () => {
-  store.clearPool()
-  instances.value = []
-}
-
-const testTraditionalCreation = async () => {
-  const result = await store.testTraditionalCreation(100)
-  traditionalTime.value = result.time
-  traditionalMemory.value = result.memory
-}
-
-const testPooledCreation = async () => {
-  const result = await store.testPooledCreation(100)
-  pooledTime.value = result.time
-  pooledMemory.value = result.memory
-}
-
-// 组件挂载时初始化
-onMounted(() => {
-  store.initializePool()
-})
-</script>
 
 <style scoped>
 .store-pool-demo {

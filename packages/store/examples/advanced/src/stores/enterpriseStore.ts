@@ -48,12 +48,12 @@ export class EnterpriseStore extends BaseStore {
   @Action()
   login(role: 'admin' | 'user'): void {
     const permissions = this.getPermissionsByRole(role)
-    
+
     this.currentUser = {
       id: `user-${Date.now()}`,
       username: role === 'admin' ? '管理员' : '普通用户',
       role,
-      permissions
+      permissions,
     }
   }
 
@@ -122,7 +122,7 @@ export class EnterpriseStore extends BaseStore {
     // 邮箱验证
     if (!data.email) {
       errors.email = '邮箱不能为空'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    } else if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(data.email)) {
       errors.email = '邮箱格式不正确'
     }
 
@@ -147,13 +147,13 @@ export class EnterpriseStore extends BaseStore {
   @Action()
   logError(type: string, message: string, details?: string): void {
     this.errorCounter++
-    
+
     const error: ErrorLogEntry = {
       id: `error-${this.errorCounter}`,
       type,
       message,
       details,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     this.errorLog.unshift(error)
@@ -172,22 +172,38 @@ export class EnterpriseStore extends BaseStore {
   // 错误模拟方法
   @Action()
   simulateNetworkError(): void {
-    this.logError('NETWORK_ERROR', '网络连接失败', '无法连接到服务器，请检查网络连接')
+    this.logError(
+      'NETWORK_ERROR',
+      '网络连接失败',
+      '无法连接到服务器，请检查网络连接'
+    )
   }
 
   @Action()
   simulateValidationError(): void {
-    this.logError('VALIDATION_ERROR', '数据验证失败', '提交的数据不符合业务规则')
+    this.logError(
+      'VALIDATION_ERROR',
+      '数据验证失败',
+      '提交的数据不符合业务规则'
+    )
   }
 
   @Action()
   simulatePermissionError(): void {
-    this.logError('PERMISSION_ERROR', '权限不足', '当前用户没有执行此操作的权限')
+    this.logError(
+      'PERMISSION_ERROR',
+      '权限不足',
+      '当前用户没有执行此操作的权限'
+    )
   }
 
   @Action()
   simulateUnknownError(): void {
-    this.logError('UNKNOWN_ERROR', '未知错误', '系统发生了未预期的错误，请联系管理员')
+    this.logError(
+      'UNKNOWN_ERROR',
+      '未知错误',
+      '系统发生了未预期的错误，请联系管理员'
+    )
   }
 
   // 辅助方法
@@ -200,12 +216,9 @@ export class EnterpriseStore extends BaseStore {
         'users:delete',
         'system:admin',
         'reports:view',
-        'settings:manage'
+        'settings:manage',
       ],
-      user: [
-        'users:read',
-        'reports:view'
-      ]
+      user: ['users:read', 'reports:view'],
     }
 
     return permissions[role] || []
@@ -213,6 +226,6 @@ export class EnterpriseStore extends BaseStore {
 }
 
 // 导出Hook式用法
-export const useEnterpriseStore = () => {
+export function useEnterpriseStore() {
   return new EnterpriseStore()
 }

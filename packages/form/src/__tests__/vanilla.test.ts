@@ -1,10 +1,10 @@
 // 原生 JavaScript API 测试
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { createFormInstance, FormInstance } from '../vanilla'
 import type { FormOptions } from '../types/form'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createFormInstance, FormInstance } from '../vanilla'
 
-describe('Vanilla JavaScript API', () => {
+describe('vanilla JavaScript API', () => {
   let container: HTMLElement
   let formOptions: FormOptions
 
@@ -90,7 +90,7 @@ describe('Vanilla JavaScript API', () => {
     })
   })
 
-  describe('FormInstance', () => {
+  describe('formInstance', () => {
     let instance: FormInstance
 
     beforeEach(() => {

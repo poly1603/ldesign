@@ -1,9 +1,8 @@
 // useForm Hook 测试
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { nextTick } from 'vue'
-import { useForm } from '../composables/useForm'
 import type { FormOptions } from '../types/form'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useForm } from '../composables/useForm'
 
 describe('useForm', () => {
   let formOptions: FormOptions

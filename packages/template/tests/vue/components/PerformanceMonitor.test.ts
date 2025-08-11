@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PerformanceMonitor from '../../../src/vue/components/PerformanceMonitor'
 
 // Mock performance API
@@ -12,7 +12,7 @@ const mockPerformance = {
 }
 
 // Mock requestAnimationFrame
-const mockRequestAnimationFrame = vi.fn((callback) => {
+const mockRequestAnimationFrame = vi.fn(callback => {
   setTimeout(callback, 16) // 60fps
   return 1
 })
@@ -26,7 +26,7 @@ global.requestAnimationFrame = mockRequestAnimationFrame
 // @ts-ignore
 global.cancelAnimationFrame = mockCancelAnimationFrame
 
-describe('PerformanceMonitor', () => {
+describe('performanceMonitor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()

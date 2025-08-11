@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue'
+import type { HttpClientConfig } from '../../types'
+import { computed, ref } from 'vue'
 import { createHttpClient } from '../../index'
-import type { HttpClientConfig, HttpResponse } from '../../types'
 
 /**
  * HTTP客户端组合式函数
@@ -44,7 +44,11 @@ export function useHttp(config?: HttpClientConfig) {
   }
 
   // POST请求
-  const post = async <T = any>(url: string, data?: any, config?: any): Promise<T | null> => {
+  const post = async <T = any>(
+    url: string,
+    data?: any,
+    config?: any
+  ): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null
@@ -60,7 +64,11 @@ export function useHttp(config?: HttpClientConfig) {
   }
 
   // PUT请求
-  const put = async <T = any>(url: string, data?: any, config?: any): Promise<T | null> => {
+  const put = async <T = any>(
+    url: string,
+    data?: any,
+    config?: any
+  ): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null
@@ -97,7 +105,7 @@ export function useHttp(config?: HttpClientConfig) {
     error,
     data,
     hasError,
-    
+
     // 方法
     get,
     post,
@@ -105,8 +113,8 @@ export function useHttp(config?: HttpClientConfig) {
     delete: del,
     clearError,
     reset,
-    
+
     // 客户端实例
-    client
+    client,
   }
 }

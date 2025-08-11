@@ -25,7 +25,7 @@ export class PerformanceMonitor {
     },
   }
 
-  private constructor() { }
+  private constructor() {}
 
   static getInstance(): PerformanceMonitor {
     if (!PerformanceMonitor.instance) {
@@ -86,9 +86,9 @@ export class PerformanceMonitor {
    * 获取性能报告
    */
   getPerformanceReport(): {
-    slowActions: Array<{ name: string, avgTime: number, maxTime: number }>
-    slowGetters: Array<{ name: string, avgTime: number, maxTime: number }>
-    frequentUpdates: Array<{ name: string, count: number }>
+    slowActions: Array<{ name: string; avgTime: number; maxTime: number }>
+    slowGetters: Array<{ name: string; avgTime: number; maxTime: number }>
+    frequentUpdates: Array<{ name: string; count: number }>
     memoryUsage: PerformanceMetrics['memoryUsage']
   } {
     const slowActions = Array.from(this.metrics.actionExecutionTime.entries())
@@ -139,7 +139,11 @@ export class PerformanceMonitor {
    * 创建性能装饰器
    */
   createPerformanceDecorator(type: 'action' | 'getter') {
-    return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function (
+      _target: any,
+      propertyKey: string,
+      descriptor: PropertyDescriptor
+    ) {
       const originalMethod = descriptor.value || descriptor.get
       const monitor = PerformanceMonitor.getInstance()
 
@@ -178,8 +182,10 @@ export class PerformanceMonitor {
 /**
  * 性能监控装饰器
  */
-export const MonitorAction = PerformanceMonitor.getInstance().createPerformanceDecorator('action')
-export const MonitorGetter = PerformanceMonitor.getInstance().createPerformanceDecorator('getter')
+export const MonitorAction =
+  PerformanceMonitor.getInstance().createPerformanceDecorator('action')
+export const MonitorGetter =
+  PerformanceMonitor.getInstance().createPerformanceDecorator('getter')
 
 /**
  * 获取性能监控实例
@@ -191,19 +197,27 @@ export function usePerformanceMonitor() {
 /**
  * 性能优化建议
  */
-export function getOptimizationSuggestions(report: ReturnType<PerformanceMonitor['getPerformanceReport']>): string[] {
+export function getOptimizationSuggestions(
+  report: ReturnType<PerformanceMonitor['getPerformanceReport']>
+): string[] {
   const suggestions: string[] = []
 
   if (report.slowActions.length > 0) {
-    suggestions.push(`发现 ${report.slowActions.length} 个慢速 Action，建议使用 @CachedAction 或 @DebouncedAction 优化`)
+    suggestions.push(
+      `发现 ${report.slowActions.length} 个慢速 Action，建议使用 @CachedAction 或 @DebouncedAction 优化`
+    )
   }
 
   if (report.slowGetters.length > 0) {
-    suggestions.push(`发现 ${report.slowGetters.length} 个慢速 Getter，建议使用 @CachedGetter 或 @MemoizedGetter 优化`)
+    suggestions.push(
+      `发现 ${report.slowGetters.length} 个慢速 Getter，建议使用 @CachedGetter 或 @MemoizedGetter 优化`
+    )
   }
 
   if (report.frequentUpdates.length > 0) {
-    suggestions.push(`发现 ${report.frequentUpdates.length} 个频繁更新的状态，建议使用 @ThrottledAction 限制更新频率`)
+    suggestions.push(
+      `发现 ${report.frequentUpdates.length} 个频繁更新的状态，建议使用 @ThrottledAction 限制更新频率`
+    )
   }
 
   if (report.memoryUsage.cacheSize > 1000) {

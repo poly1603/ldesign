@@ -535,7 +535,7 @@ export class FormInstance extends EventEmitter {
       case 'maxLength':
         return String(value).length <= rule.params
       case 'email':
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))
+        return /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(String(value))
       case 'pattern':
         return rule.params.test(String(value))
       case 'min':

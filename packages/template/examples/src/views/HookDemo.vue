@@ -1,21 +1,15 @@
 <script setup lang="ts">
 import { useTemplate } from '@ldesign/template/vue'
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 // useTemplate Hook 演示页面加载
 
 // 使用 useTemplate Hook
-const {
-  currentTemplateId,
-  availableTemplates,
-  deviceType,
-  TemplateComponent,
-  templateConfig,
-  currentTemplate,
-} = useTemplate({
-  category: 'login',
-  autoSwitch: true, // 启用自动设备切换以响应窗口大小变化
-})
+const { currentTemplateId, availableTemplates, deviceType, TemplateComponent, templateConfig, currentTemplate } =
+  useTemplate({
+    category: 'login',
+    autoSwitch: true, // 启用自动设备切换以响应窗口大小变化
+  })
 
 // 事件处理函数
 function handleLogin(data: any) {
@@ -45,18 +39,18 @@ const performanceMetrics = ref({
 const loadStartTime = ref(0)
 
 // 性能监控函数
-const startPerformanceMonitoring = () => {
+function startPerformanceMonitoring() {
   loadStartTime.value = performance.now()
 }
 
-const endPerformanceMonitoring = () => {
+function endPerformanceMonitoring() {
   const loadTime = performance.now() - loadStartTime.value
   performanceMetrics.value.loadTime = loadTime
   console.log(`模板加载耗时: ${loadTime.toFixed(2)}ms`)
 }
 
 // 模拟缓存统计
-const updateCacheStats = () => {
+function updateCacheStats() {
   // 这里应该从模板管理器获取真实的缓存统计
   performanceMetrics.value.cacheHits = Math.floor(Math.random() * 50) + 20
   performanceMetrics.value.cacheMisses = Math.floor(Math.random() * 10) + 5
@@ -73,7 +67,8 @@ onMounted(() => {
 })
 
 // 代码示例
-const codeExample = computed(() => `import { useTemplate } from '@ldesign/template'
+const codeExample = computed(
+  () => `import { useTemplate } from '@ldesign/template'
 
 // 使用 useTemplate Hook
 const {
@@ -94,22 +89,17 @@ const {
   v-bind="templateConfig"
   @login="handleLogin"
   @register="handleRegister"
-/>`)
+/>`
+)
 </script>
 
 <template>
   <div class="hook-demo">
     <div class="hook-demo__header">
       <div class="hook-demo__container">
-        <router-link to="/" class="hook-demo__back">
-          ← 返回首页
-        </router-link>
-        <h1 class="hook-demo__title">
-          🪝 useTemplate Hook 演示
-        </h1>
-        <p class="hook-demo__subtitle">
-          使用 Composition API 风格的 Hook 进行模板管理
-        </p>
+        <router-link to="/" class="hook-demo__back"> ← 返回首页 </router-link>
+        <h1 class="hook-demo__title">🪝 useTemplate Hook 演示</h1>
+        <p class="hook-demo__subtitle">使用 Composition API 风格的 Hook 进行模板管理</p>
       </div>
     </div>
 
@@ -128,15 +118,9 @@ const {
           <div class="hook-demo__control-group">
             <label class="hook-demo__label">设备类型:</label>
             <select v-model="deviceType" class="hook-demo__select">
-              <option value="desktop">
-                🖥️ 桌面
-              </option>
-              <option value="tablet">
-                📱 平板
-              </option>
-              <option value="mobile">
-                📱 手机
-              </option>
+              <option value="desktop">🖥️ 桌面</option>
+              <option value="tablet">📱 平板</option>
+              <option value="mobile">📱 手机</option>
             </select>
           </div>
 
@@ -174,7 +158,12 @@ const {
               <div class="hook-demo__performance-item">
                 <span class="hook-demo__performance-label">命中率:</span>
                 <span class="hook-demo__performance-value">
-                  {{ ((performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) * 100).toFixed(1) }}%
+                  {{
+                    (
+                      (performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) *
+                      100
+                    ).toFixed(1)
+                  }}%
                 </span>
               </div>
             </div>
@@ -201,9 +190,7 @@ const {
               @third-party-login="handleThirdPartyLogin"
             />
             <div v-else class="hook-demo__no-template">
-              <div class="hook-demo__no-template-icon">
-                🚫
-              </div>
+              <div class="hook-demo__no-template-icon">🚫</div>
               <h4>当前设备类型暂无可用模板</h4>
               <p>请尝试切换到其他设备类型或选择其他模板</p>
             </div>

@@ -26,30 +26,53 @@ module.exports = {
         // 禁用存储清理（加快测试速度）
         disableStorageReset: true,
         // 跳过某些审计以加快速度
-        skipAudits: process.env.CI ? [
-          'uses-http2',
-          'uses-long-cache-ttl',
-          'uses-text-compression',
-          'render-blocking-resources',
-        ] : [],
+        skipAudits: process.env.CI
+          ? [
+              'uses-http2',
+              'uses-long-cache-ttl',
+              'uses-text-compression',
+              'render-blocking-resources',
+            ]
+          : [],
       },
     },
     assert: {
       // 性能断言
       assertions: {
         // 基本分数要求
-        'categories:performance': ['warn', { minScore: process.env.CI ? 0.7 : 0.8 }],
+        'categories:performance': [
+          'warn',
+          { minScore: process.env.CI ? 0.7 : 0.8 },
+        ],
         'categories:accessibility': ['error', { minScore: 0.9 }],
         'categories:best-practices': ['warn', { minScore: 0.8 }],
         'categories:seo': ['warn', { minScore: 0.8 }],
 
         // 性能指标
-        'first-contentful-paint': ['error', { maxNumericValue: process.env.CI ? 3000 : 2000 }],
-        'largest-contentful-paint': ['error', { maxNumericValue: process.env.CI ? 4000 : 2500 }],
-        'speed-index': ['error', { maxNumericValue: process.env.CI ? 4000 : 3000 }],
-        'interactive': ['error', { maxNumericValue: process.env.CI ? 5000 : 3000 }],
-        'cumulative-layout-shift': ['error', { maxNumericValue: process.env.CI ? 0.15 : 0.1 }],
-        'total-blocking-time': ['error', { maxNumericValue: process.env.CI ? 500 : 300 }],
+        'first-contentful-paint': [
+          'error',
+          { maxNumericValue: process.env.CI ? 3000 : 2000 },
+        ],
+        'largest-contentful-paint': [
+          'error',
+          { maxNumericValue: process.env.CI ? 4000 : 2500 },
+        ],
+        'speed-index': [
+          'error',
+          { maxNumericValue: process.env.CI ? 4000 : 3000 },
+        ],
+        interactive: [
+          'error',
+          { maxNumericValue: process.env.CI ? 5000 : 3000 },
+        ],
+        'cumulative-layout-shift': [
+          'error',
+          { maxNumericValue: process.env.CI ? 0.15 : 0.1 },
+        ],
+        'total-blocking-time': [
+          'error',
+          { maxNumericValue: process.env.CI ? 500 : 300 },
+        ],
       },
     },
     upload: {

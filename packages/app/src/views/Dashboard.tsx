@@ -1,5 +1,5 @@
-import { defineComponent } from 'vue'
 import { RouterLink } from '@ldesign/router'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'Dashboard',
@@ -158,7 +158,8 @@ export default defineComponent({
           </div>
         </div>
 
-        <style>{`
+        <style>
+          {`
           .dashboard {
             padding: 2rem;
             max-width: 1200px;
@@ -259,7 +260,8 @@ export default defineComponent({
             gap: 0.5rem;
             flex-wrap: wrap;
           }
-        `}</style>
+        `}
+        </style>
       </div>
     )
   },

@@ -1,7 +1,4 @@
-import type {
-  DecoratorMetadata,
-  GetterDecoratorOptions,
-} from '@/types'
+import type { DecoratorMetadata, GetterDecoratorOptions } from '@/types'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 import 'reflect-metadata'
 
@@ -31,14 +28,18 @@ import 'reflect-metadata'
  * ```
  */
 export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
-  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
+  ) {
     if (typeof propertyKey === 'symbol') {
       throw new TypeError('Getter decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[]
-      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[] =
+      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -48,13 +49,19 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     }
 
     existingMetadata.push(newMetadata)
-    Reflect.defineMetadata(DECORATOR_METADATA_KEY, existingMetadata, target.constructor)
+    Reflect.defineMetadata(
+      DECORATOR_METADATA_KEY,
+      existingMetadata,
+      target.constructor
+    )
 
     // 保存原始 getter
     const originalGetter = descriptor.get
 
     if (typeof originalGetter !== 'function') {
-      throw new TypeError(`Getter decorator can only be applied to getter methods`)
+      throw new TypeError(
+        `Getter decorator can only be applied to getter methods`
+      )
     }
 
     // 创建缓存（如果需要）
@@ -66,7 +73,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     descriptor.get = function (this: any) {
       // 检查依赖是否变化（优化版本）
       if (options.deps && options.deps.length > 0) {
-        const currentDepsValues = options.deps.map((dep) => {
+        const currentDepsValues = options.deps.map(dep => {
           if (this._store) {
             return this._store.$state[dep]
           }
@@ -101,7 +108,9 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
 
     // 添加清除缓存的方法
     if (options.cache) {
-      const clearCacheMethodName = `clear${propertyKey.charAt(0).toUpperCase() + propertyKey.slice(1)}Cache`
+      const clearCacheMethodName = `clear${
+        propertyKey.charAt(0).toUpperCase() + propertyKey.slice(1)
+      }Cache`
 
       Object.defineProperty(target, clearCacheMethodName, {
         value(this: any) {
@@ -149,5 +158,3 @@ export function MemoizedGetter(deps: string[]): MethodDecorator {
     deps,
   })
 }
-
-
