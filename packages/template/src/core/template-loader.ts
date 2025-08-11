@@ -2,13 +2,28 @@ import type { DeviceType, TemplateConfig, TemplateMetadata } from '../types'
 import { type Component, defineAsyncComponent } from 'vue'
 
 /**
- * 模板加载器 - 使用 import.meta.glob 实现动态模板加载
+ * 模板加载器
+ *
+ * 负责动态加载模板组件和配置文件，支持：
+ * - 基于 import.meta.glob 的动态导入
+ * - 模板配置和组件的分离加载
+ * - 环境自适应（开发/生产环境）
+ * - 缓存机制优化性能
  */
 export class TemplateLoader {
+  /** 配置文件模块映射 */
   private configModules: Record<string, () => Promise<unknown>> = {}
+
+  /** 组件文件模块映射 */
   private componentModules: Record<string, () => Promise<unknown>> = {}
+
+  /** 已加载的模板元数据缓存 */
   private templates = new Map<string, TemplateMetadata>()
+
+  /** 当前模板基础路径 */
   private currentBasePath: string = '../templates'
+
+  /** 是否为 ES 模块环境 */
   private isESEnvironment: boolean = false
 
   constructor() {
@@ -27,20 +42,20 @@ export class TemplateLoader {
         this.currentBasePath = '../templates'
         this.isESEnvironment = true
         console.log('🔍 检测到 ES 环境，使用路径: ../templates')
-      }
-      else if (currentPath.includes('/src/') || currentPath.includes('\\src\\')) {
+      } else if (
+        currentPath.includes('/src/') ||
+        currentPath.includes('\\src\\')
+      ) {
         this.currentBasePath = '../templates'
         this.isESEnvironment = false
         console.log('🔍 检测到 SRC 环境，使用路径: ../templates')
-      }
-      else {
+      } else {
         // 默认使用相对路径
         this.currentBasePath = '../templates'
         this.isESEnvironment = false
         console.log('🔍 使用默认路径: ../templates')
       }
-    }
-    catch {
+    } catch {
       this.currentBasePath = '../templates'
       this.isESEnvironment = false
       console.log('🔍 路径检测失败，使用默认路径: ../templates')
@@ -55,8 +70,13 @@ export class TemplateLoader {
 
     try {
       // 尝试主要路径
-      const configModules = import.meta.glob('../templates/**/config.{ts,js}', { eager: false })
-      const componentModules = import.meta.glob('../templates/**/index.{ts,tsx,vue,js}', { eager: false })
+      const configModules = import.meta.glob('../templates/**/config.{ts,js}', {
+        eager: false,
+      })
+      const componentModules = import.meta.glob(
+        '../templates/**/index.{ts,tsx,vue,js}',
+        { eager: false }
+      )
 
       if (Object.keys(configModules).length > 0) {
         this.configModules = configModules
@@ -68,8 +88,7 @@ export class TemplateLoader {
       // 如果没有找到模板，使用预定义的模板列表
       console.warn('⚠️ 未找到模板文件，使用预定义模板列表')
       this.initializeFallbackModules()
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('模板扫描失败，使用预定义模板列表:', error)
       this.initializeFallbackModules()
     }
@@ -93,7 +112,7 @@ export class TemplateLoader {
     this.configModules = {}
     this.componentModules = {}
 
-    templatePaths.forEach((templatePath) => {
+    templatePaths.forEach(templatePath => {
       const configKey = `../templates/${templatePath}/config.ts`
       const componentKey = `../templates/${templatePath}/index.tsx`
 
@@ -101,10 +120,13 @@ export class TemplateLoader {
       this.configModules[configKey] = async () => {
         const basePath = this.isESEnvironment ? './templates' : '../templates'
         try {
-          const module = await import(/* @vite-ignore */ `${basePath}/${templatePath}/config${this.isESEnvironment ? '.js' : ''}`)
+          const module = await import(
+            /* @vite-ignore */ `${basePath}/${templatePath}/config${
+              this.isESEnvironment ? '.js' : ''
+            }`
+          )
           return module
-        }
-        catch {
+        } catch {
           console.warn(`无法加载配置: ${templatePath}`)
           throw new Error(`无法加载配置: ${templatePath}`)
         }
@@ -114,10 +136,13 @@ export class TemplateLoader {
       this.componentModules[componentKey] = async () => {
         const basePath = this.isESEnvironment ? './templates' : '../templates'
         try {
-          const module = await import(/* @vite-ignore */ `${basePath}/${templatePath}/index${this.isESEnvironment ? '.js' : ''}`)
+          const module = await import(
+            /* @vite-ignore */ `${basePath}/${templatePath}/index${
+              this.isESEnvironment ? '.js' : ''
+            }`
+          )
           return module
-        }
-        catch {
+        } catch {
           console.warn(`无法加载组件: ${templatePath}`)
           throw new Error(`无法加载组件: ${templatePath}`)
         }
@@ -133,16 +158,23 @@ export class TemplateLoader {
   async scanAndRegisterTemplates(): Promise<TemplateMetadata[]> {
     const templates: TemplateMetadata[] = []
 
-    for (const [configPath, configLoader] of Object.entries(this.configModules)) {
+    for (const [configPath, configLoader] of Object.entries(
+      this.configModules
+    )) {
       try {
-        const metadata = await this.parseTemplateFromPath(configPath, configLoader)
+        const metadata = await this.parseTemplateFromPath(
+          configPath,
+          configLoader
+        )
         if (metadata) {
           templates.push(metadata)
           this.templates.set(this.getTemplateKey(metadata), metadata)
         }
-      }
-      catch (error) {
-        console.warn(`Failed to load template config from ${configPath}:`, error)
+      } catch (error) {
+        console.warn(
+          `Failed to load template config from ${configPath}:`,
+          error
+        )
       }
     }
 
@@ -154,15 +186,16 @@ export class TemplateLoader {
    */
   private async parseTemplateFromPath(
     configPath: string,
-    configLoader: () => Promise<unknown>,
+    configLoader: () => Promise<unknown>
   ): Promise<TemplateMetadata | null> {
     try {
       // 解析路径: ../templates/category/device/template/config.*
       const pathParts = configPath.split('/')
-      const configIndex = pathParts.findIndex(part => part.startsWith('config.'))
+      const configIndex = pathParts.findIndex(part =>
+        part.startsWith('config.')
+      )
 
-      if (configIndex < 3)
-        return null
+      if (configIndex < 3) return null
 
       const template = pathParts[configIndex - 1]
       const device = pathParts[configIndex - 2] as DeviceType
@@ -170,7 +203,8 @@ export class TemplateLoader {
 
       // 加载配置
       const configModule = await configLoader()
-      const config: TemplateConfig = configModule.default || configModule
+      const config: TemplateConfig =
+        (configModule as any).default || (configModule as TemplateConfig)
 
       // 查找实际的组件路径
       const basePath = pathParts.slice(0, configIndex).join('/')
@@ -195,8 +229,7 @@ export class TemplateLoader {
         componentPath,
         stylePath: `${basePath}/index.less`,
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`Failed to parse template from ${configPath}:`, error)
       return null
     }
@@ -209,13 +242,15 @@ export class TemplateLoader {
     const componentLoader = this.componentModules[metadata.componentPath]
 
     if (!componentLoader) {
-      throw new Error(`Component not found for template: ${metadata.componentPath}`)
+      throw new Error(
+        `Component not found for template: ${metadata.componentPath}`
+      )
     }
 
     return defineAsyncComponent({
       loader: async () => {
         const module = await componentLoader()
-        return module.default || module
+        return (module as any).default || module
       },
       loadingComponent: undefined,
       errorComponent: undefined,
@@ -255,14 +290,23 @@ export class TemplateLoader {
   /**
    * 根据分类和设备获取模板
    */
-  getTemplatesByCategoryAndDevice(category: string, device: DeviceType): TemplateMetadata[] {
-    return this.getAllTemplates().filter(t => t.category === category && t.device === device)
+  getTemplatesByCategoryAndDevice(
+    category: string,
+    device: DeviceType
+  ): TemplateMetadata[] {
+    return this.getAllTemplates().filter(
+      t => t.category === category && t.device === device
+    )
   }
 
   /**
    * 查找特定模板
    */
-  findTemplate(category: string, device: DeviceType, template: string): TemplateMetadata | undefined {
+  findTemplate(
+    category: string,
+    device: DeviceType,
+    template: string
+  ): TemplateMetadata | undefined {
     const key = `${category}:${device}:${template}`
     return this.templates.get(key)
   }

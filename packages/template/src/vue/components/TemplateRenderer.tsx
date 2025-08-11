@@ -1,5 +1,5 @@
 import type { DeviceType } from '../composables/useTemplateSystem'
-import { defineComponent, watch, ref } from 'vue'
+import { defineComponent, ref, shallowRef, watch } from 'vue'
 import { useTemplate } from '../composables/useTemplateSystem'
 
 export interface TemplateRendererProps {
@@ -84,7 +84,14 @@ export const TemplateRenderer = defineComponent({
       default: false,
     },
   },
-  emits: ['template-change', 'device-change', 'render-error', 'performance-update', 'load-start', 'load-end'],
+  emits: [
+    'template-change',
+    'device-change',
+    'render-error',
+    'performance-update',
+    'load-start',
+    'load-end',
+  ],
   setup(props, { emit, attrs }) {
     const {
       // currentTemplate, // 暂时注释掉未使用的变量
@@ -102,10 +109,17 @@ export const TemplateRenderer = defineComponent({
       autoSwitch: props.autoDetectDevice,
     })
 
-    // 性能监控相关
+    // ============ 性能监控系统 ============
+    // 使用 shallowRef 优化性能，避免深度响应式监听
+
+    /** 渲染开始时间戳 */
     const renderStartTime = ref<number>(0)
+
+    /** 加载状态标识 */
     const isLoading = ref(false)
-    const performanceData = ref({
+
+    /** 性能数据（使用 shallowRef 优化） */
+    const performanceData = shallowRef({
       renderTime: 0,
       componentSize: 0,
       memoryUsage: 0,
@@ -131,35 +145,38 @@ export const TemplateRenderer = defineComponent({
     }
 
     // 监听模板变化
-    watch(currentTemplateId, (newTemplateId) => {
+    watch(currentTemplateId, newTemplateId => {
       emit('template-change', newTemplateId)
     })
 
     // 监听设备变化
-    watch(deviceType, (newDevice) => {
+    watch(deviceType, newDevice => {
       emit('device-change', newDevice)
     })
 
     // 监听组件加载
-    watch(TemplateComponent, (newComponent) => {
-      if (newComponent) {
-        endLoadTimer()
-      } else {
-        startLoadTimer()
-      }
-    }, { immediate: true })
+    watch(
+      TemplateComponent,
+      newComponent => {
+        if (newComponent) {
+          endLoadTimer()
+        } else {
+          startLoadTimer()
+        }
+      },
+      { immediate: true }
+    )
 
     // 渲染模板选择器
     const renderSelector = () => {
-      if (!props.showSelector)
-        return null
+      if (!props.showSelector) return null
 
       return (
-        <div class="template-renderer__selector">
-          <div class="template-renderer__selector-group">
-            <label class="template-renderer__label">模板:</label>
+        <div class='template-renderer__selector'>
+          <div class='template-renderer__selector-group'>
+            <label class='template-renderer__label'>模板:</label>
             <select
-              class="template-renderer__select"
+              class='template-renderer__select'
               value={currentTemplateId.value}
               onChange={(e: Event) => {
                 const target = e.target as HTMLSelectElement
@@ -174,19 +191,19 @@ export const TemplateRenderer = defineComponent({
             </select>
           </div>
 
-          <div class="template-renderer__selector-group">
-            <label class="template-renderer__label">设备:</label>
+          <div class='template-renderer__selector-group'>
+            <label class='template-renderer__label'>设备:</label>
             <select
-              class="template-renderer__select"
+              class='template-renderer__select'
               value={deviceType.value}
               onChange={(e: Event) => {
                 const target = e.target as HTMLSelectElement
                 switchDevice(target.value as DeviceType)
               }}
             >
-              <option value="desktop">桌面</option>
-              <option value="tablet">平板</option>
-              <option value="mobile">手机</option>
+              <option value='desktop'>桌面</option>
+              <option value='tablet'>平板</option>
+              <option value='mobile'>手机</option>
             </select>
           </div>
         </div>
@@ -197,7 +214,7 @@ export const TemplateRenderer = defineComponent({
     const renderContent = () => {
       try {
         if (!TemplateComponent.value) {
-          return <div class="template-renderer__error">未找到模板</div>
+          return <div class='template-renderer__error'>未找到模板</div>
         }
 
         // 合并配置
@@ -208,29 +225,18 @@ export const TemplateRenderer = defineComponent({
 
         const Component = TemplateComponent.value
         if (!Component) {
-          return (
-            <div class="template-renderer__empty">
-              模板组件未找到
-            </div>
-          )
+          return <div class='template-renderer__empty'>模板组件未找到</div>
         }
 
-        const DynamicComponent = Component as unknown
-        return (
-          <DynamicComponent
-            {...finalConfig}
-            {...attrs}
-          />
-        )
-      }
-      catch (error) {
+        const DynamicComponent = Component as any
+        return <DynamicComponent {...finalConfig} {...attrs} />
+      } catch (error) {
         emit('render-error', error)
-        const errorMessage = error instanceof Error ? error.message : String(error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
         return (
-          <div class="template-renderer__error">
-            模板渲染失败:
-            {' '}
-            {errorMessage}
+          <div class='template-renderer__error'>
+            模板渲染失败: {errorMessage}
           </div>
         )
       }
@@ -251,38 +257,27 @@ export const TemplateRenderer = defineComponent({
         return (
           <div class={className}>
             {selector}
-            <div class="template-renderer__content">
-              {content}
-            </div>
+            <div class='template-renderer__content'>{content}</div>
           </div>
         )
-      }
-      else if (props.selectorPosition === 'bottom') {
+      } else if (props.selectorPosition === 'bottom') {
         return (
           <div class={className}>
-            <div class="template-renderer__content">
-              {content}
-            </div>
+            <div class='template-renderer__content'>{content}</div>
             {selector}
           </div>
         )
-      }
-      else if (props.selectorPosition === 'left') {
+      } else if (props.selectorPosition === 'left') {
         return (
           <div class={className}>
             {selector}
-            <div class="template-renderer__content">
-              {content}
-            </div>
+            <div class='template-renderer__content'>{content}</div>
           </div>
         )
-      }
-      else {
+      } else {
         return (
           <div class={className}>
-            <div class="template-renderer__content">
-              {content}
-            </div>
+            <div class='template-renderer__content'>{content}</div>
             {selector}
           </div>
         )

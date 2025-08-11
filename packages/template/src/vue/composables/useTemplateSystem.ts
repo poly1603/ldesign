@@ -1,9 +1,27 @@
-import { computed, defineAsyncComponent, isRef, markRaw, onMounted, onUnmounted, reactive, readonly, ref, watch, type Component, type ComputedRef, type Ref } from 'vue'
-
-import { getCachedTemplate, setCachedTemplate } from '../../core/cache'
-import { type DeviceInfo, getDeviceInfo, watchDeviceChange } from '../../core/device'
-import { templateLoader } from '../../core/template-loader'
 import type { TemplateMetadata } from '../../types'
+
+import {
+  type Component,
+  computed,
+  type ComputedRef,
+  defineAsyncComponent,
+  isRef,
+  markRaw,
+  onMounted,
+  onUnmounted,
+  reactive,
+  readonly,
+  ref,
+  type Ref,
+  watch,
+} from 'vue'
+import { getCachedTemplate, setCachedTemplate } from '../../core/cache'
+import {
+  type DeviceInfo,
+  getDeviceInfo,
+  watchDeviceChange,
+} from '../../core/device'
+import { templateLoader } from '../../core/template-loader'
 
 // ============ 智能模板切换功能 ============
 
@@ -18,7 +36,7 @@ export interface TemplateInfo {
   category: string
   deviceType: DeviceType
   component: unknown // 使用unknown类型避免复杂的组件类型问题
-  preview?: string
+  preview?: string | { thumbnail?: string; description?: string }
   config?: Record<string, unknown>
 }
 
@@ -37,8 +55,7 @@ export function registerTemplate(template: TemplateInfo) {
 
 // 扫描模板（使用新的 TemplateLoader 系统）
 async function scanTemplates() {
-  if (templatesScanned.value)
-    return scannedTemplates.value
+  if (templatesScanned.value) return scannedTemplates.value
 
   try {
     const templates = await templateLoader.scanAndRegisterTemplates()
@@ -46,8 +63,7 @@ async function scanTemplates() {
     templatesScanned.value = true
     console.log(`✅ 扫描到 ${templates.length} 个模板`)
     return templates
-  }
-  catch (error) {
+  } catch (error) {
     console.warn('扫描模板失败:', error)
     return []
   }
@@ -61,22 +77,21 @@ function convertTemplateMetadata(metadata: TemplateMetadata): TemplateInfo {
     description: metadata.config.description || '',
     category: metadata.category,
     deviceType: metadata.device as DeviceType,
-    component: markRaw(defineAsyncComponent(() => templateLoader.loadTemplateComponent(metadata))),
+    component: markRaw(
+      defineAsyncComponent(() => templateLoader.loadTemplateComponent(metadata))
+    ),
     preview: metadata.config.preview,
-    config: metadata.config,
+    config: metadata.config as unknown as Record<string, unknown>,
   }
 }
 
 // 获取设备类型
 function getDeviceType(): DeviceType {
-  if (typeof window === 'undefined')
-    return 'desktop'
+  if (typeof window === 'undefined') return 'desktop'
 
   const width = window.innerWidth
-  if (width <= 768)
-    return 'mobile'
-  if (width <= 1024)
-    return 'tablet'
+  if (width <= 768) return 'mobile'
+  if (width <= 1024) return 'tablet'
   return 'desktop'
 }
 
@@ -109,12 +124,22 @@ export interface UseTemplateReturn {
 
   // 配置
   templateConfig: ComputedRef<Record<string, unknown>>
+
+  // 性能优化方法
+  clearComponentCache: () => void
 }
 
 /**
- * 模板系统 Hook
+ * 模板系统组合式函数
  *
- * @example
+ * 提供完整的模板管理功能，包括：
+ * - 🎨 响应式模板切换
+ * - 📱 自动设备检测和适配
+ * - 🚀 智能组件缓存
+ * - 🔧 灵活的配置管理
+ * - 📊 性能优化支持
+ *
+ * @example 基础用法
  * ```vue
  * <template>
  *   <div>
@@ -147,12 +172,17 @@ export interface UseTemplateReturn {
  * }
  * </script>
  * ```
+ *
+ * @param options - 模板系统配置选项
+ * @returns 模板系统的响应式状态和方法
  */
 export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   const { category } = options
 
   // 处理响应式的autoSwitch参数
-  const autoSwitchRef = isRef(options.autoSwitch) ? options.autoSwitch : ref(options.autoSwitch ?? true)
+  const autoSwitchRef = isRef(options.autoSwitch)
+    ? options.autoSwitch
+    : ref(options.autoSwitch ?? true)
 
   // 响应式状态
   const deviceType = ref<DeviceType>(options.deviceType || getDeviceType())
@@ -164,19 +194,25 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
     // 首先从新的扫描系统获取模板
     for (const metadata of scannedTemplates.value) {
-      if (metadata.category === category && metadata.device === deviceType.value) {
+      if (
+        metadata.category === category &&
+        metadata.device === deviceType.value
+      ) {
         templates.push(convertTemplateMetadata(metadata))
       }
     }
 
     // 然后从旧的注册系统获取模板（向后兼容）
     for (const [, template] of templateRegistry) {
-      if (template.category === category && template.deviceType === deviceType.value) {
+      if (
+        template.category === category &&
+        template.deviceType === deviceType.value
+      ) {
         // 避免重复添加
         if (!templates.find(t => t.id === template.id)) {
           templates.push({
             ...template,
-            component: markRaw(template.component),
+            component: markRaw(template.component as object),
           })
         }
       }
@@ -187,47 +223,76 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
 
   // 当前模板
   const currentTemplate = computed(() => {
-    if (!currentTemplateId.value)
-      return null
-    return availableTemplates.value.find(t => t.id === currentTemplateId.value) || null
+    if (!currentTemplateId.value) return null
+    return (
+      availableTemplates.value.find(t => t.id === currentTemplateId.value) ||
+      null
+    )
   })
 
-  // 当前模板组件（带fallback机制）
+  // 缓存已创建的组件，避免重复创建
+  const componentCache = new Map<string, Component>()
+
+  // 当前模板组件（带fallback机制和缓存优化）
   const TemplateComponent = computed(() => {
     // 如果当前模板存在，返回异步组件
     if (currentTemplate.value) {
+      // 生成缓存键
+      const cacheKey = `${category}:${deviceType.value}:${currentTemplateId.value}`
+
+      // 检查缓存
+      if (componentCache.has(cacheKey)) {
+        return componentCache.get(cacheKey)!
+      }
+
       // 查找对应的 TemplateMetadata
       const metadata = scannedTemplates.value.find(
-        m => m.category === category
-          && m.device === deviceType.value
-          && m.template === currentTemplateId.value,
+        m =>
+          m.category === category &&
+          m.device === deviceType.value &&
+          m.template === currentTemplateId.value
       )
 
       if (metadata) {
         // 使用新的模板加载器创建异步组件
-        return markRaw(defineAsyncComponent(() => templateLoader.loadTemplateComponent(metadata)))
+        const component = markRaw(
+          defineAsyncComponent(() =>
+            templateLoader.loadTemplateComponent(metadata)
+          )
+        )
+        componentCache.set(cacheKey, component)
+        return component
       }
 
       // 回退到旧系统
       if (currentTemplate.value.component) {
-        return markRaw(currentTemplate.value.component)
+        const component = markRaw(currentTemplate.value.component)
+        componentCache.set(cacheKey, component)
+        return component
       }
     }
 
     // 如果当前设备类型没有模板，尝试fallback到桌面版本
     if (deviceType.value !== 'desktop') {
       const desktopMetadata = scannedTemplates.value.find(
-        m => m.category === category
-          && m.device === 'desktop'
-          && m.template === currentTemplateId.value,
+        m =>
+          m.category === category &&
+          m.device === 'desktop' &&
+          m.template === currentTemplateId.value
       )
 
       if (desktopMetadata) {
-        return markRaw(defineAsyncComponent(() => templateLoader.loadTemplateComponent(desktopMetadata)))
+        return markRaw(
+          defineAsyncComponent(() =>
+            templateLoader.loadTemplateComponent(desktopMetadata)
+          )
+        )
       }
 
       // 回退到旧系统
-      const desktopTemplate = templateRegistry.get(`${category}-desktop-${currentTemplateId.value}`)
+      const desktopTemplate = templateRegistry.get(
+        `${category}-desktop-${currentTemplateId.value}`
+      )
       if (desktopTemplate?.component) {
         return markRaw(desktopTemplate.component)
       }
@@ -236,18 +301,34 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     // 最后的fallback：获取第一个可用模板
     const firstTemplate = availableTemplates.value[0]
     if (firstTemplate) {
+      const fallbackCacheKey = `fallback:${category}:${firstTemplate.deviceType}:${firstTemplate.id}`
+
+      // 检查fallback缓存
+      if (componentCache.has(fallbackCacheKey)) {
+        return componentCache.get(fallbackCacheKey)!
+      }
+
       const metadata = scannedTemplates.value.find(
-        m => m.category === category
-          && m.device === firstTemplate.deviceType
-          && m.template === firstTemplate.id,
+        m =>
+          m.category === category &&
+          m.device === firstTemplate.deviceType &&
+          m.template === firstTemplate.id
       )
 
       if (metadata) {
-        return markRaw(defineAsyncComponent(() => templateLoader.loadTemplateComponent(metadata)))
+        const component = markRaw(
+          defineAsyncComponent(() =>
+            templateLoader.loadTemplateComponent(metadata)
+          )
+        )
+        componentCache.set(fallbackCacheKey, component)
+        return component
       }
 
       if (firstTemplate.component) {
-        return markRaw(firstTemplate.component)
+        const component = markRaw(firstTemplate.component)
+        componentCache.set(fallbackCacheKey, component)
+        return component
       }
     }
 
@@ -273,7 +354,9 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     deviceType.value = device
 
     // 如果当前模板在新设备上不可用，切换到第一个可用模板
-    const currentTemplateExists = availableTemplates.value.some(t => t.id === currentTemplateId.value)
+    const currentTemplateExists = availableTemplates.value.some(
+      t => t.id === currentTemplateId.value
+    )
     if (!currentTemplateExists && availableTemplates.value.length > 0) {
       const newTemplateId = availableTemplates.value[0].id
       currentTemplateId.value = newTemplateId
@@ -284,8 +367,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   let resizeCleanup: (() => void) | null = null
 
   const setupResizeListener = () => {
-    if (typeof window === 'undefined')
-      return
+    if (typeof window === 'undefined') return
 
     const handleResize = () => {
       const newDeviceType = getDeviceType()
@@ -308,15 +390,25 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
   }
 
   // 监听 autoSwitch 变化，动态管理事件监听器
-  watch(autoSwitchRef, (newAutoSwitch) => {
-    cleanupResizeListener()
-    if (newAutoSwitch) {
-      resizeCleanup = setupResizeListener() || null
-    }
-  }, { immediate: true })
+  watch(
+    autoSwitchRef,
+    newAutoSwitch => {
+      cleanupResizeListener()
+      if (newAutoSwitch) {
+        resizeCleanup = setupResizeListener() || null
+      }
+    },
+    { immediate: true }
+  )
+
+  // 清理缓存的方法
+  const clearComponentCache = () => {
+    componentCache.clear()
+  }
 
   onUnmounted(() => {
     cleanupResizeListener()
+    clearComponentCache() // 清理组件缓存
   })
 
   // 初始化默认模板
@@ -339,6 +431,7 @@ export function useTemplate(options: UseTemplateOptions): UseTemplateReturn {
     switchDevice,
     TemplateComponent: computed(() => TemplateComponent.value),
     templateConfig: computed(() => templateConfig.value),
+    clearComponentCache, // 暴露清理方法
   }
 }
 
@@ -419,7 +512,9 @@ export interface UseTemplateSwitchReturn {
 /**
  * 智能模板切换组合式API
  */
-export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplateSwitchReturn {
+export function useTemplateSwitch(
+  options: UseTemplateSwitchOptions
+): UseTemplateSwitchReturn {
   const {
     category,
     initialVariant = '',
@@ -437,15 +532,19 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
 
   // 计算属性
   const availableTemplates = computed(() => {
-    return Array.from(templateRegistry.values()).filter((t: TemplateInfo) =>
-      t.category === category && t.deviceType === deviceInfo.value.type,
+    return Array.from(templateRegistry.values()).filter(
+      (t: TemplateInfo) =>
+        t.category === category && t.deviceType === deviceInfo.value.type
     )
   })
 
   const currentTemplate = computed(() => {
-    if (!currentVariant.value)
-      return null
-    return availableTemplates.value.find((t: TemplateInfo) => t.id === currentVariant.value) || null
+    if (!currentVariant.value) return null
+    return (
+      availableTemplates.value.find(
+        (t: TemplateInfo) => t.id === currentVariant.value
+      ) || null
+    )
   })
 
   // 获取默认模板变体
@@ -453,7 +552,10 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
     // 1. 如果启用缓存，优先从缓存获取
     if (cacheEnabled) {
       const cached = getCachedTemplate(category, deviceInfo.value.type)
-      if (cached && availableTemplates.value.some((t: TemplateInfo) => t.id === cached)) {
+      if (
+        cached &&
+        availableTemplates.value.some((t: TemplateInfo) => t.id === cached)
+      ) {
         return cached
       }
     }
@@ -464,10 +566,11 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
 
   // 切换模板
   const switchTemplate = async (variant: string): Promise<boolean> => {
-    if (isLoading.value)
-      return false
+    if (isLoading.value) return false
 
-    const template = availableTemplates.value.find((t: TemplateInfo) => t.id === variant)
+    const template = availableTemplates.value.find(
+      (t: TemplateInfo) => t.id === variant
+    )
     if (!template) {
       // 模板未找到，静默返回false
       return false
@@ -488,12 +591,10 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
       onTemplateChange?.(template)
 
       return true
-    }
-    catch {
+    } catch {
       // 模板切换失败，静默处理
       return false
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -501,8 +602,7 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   // 切换到默认模板
   const switchToDefault = async (): Promise<boolean> => {
     const defaultVariant = getDefaultVariant()
-    if (!defaultVariant)
-      return false
+    if (!defaultVariant) return false
 
     return await switchTemplate(defaultVariant)
   }
@@ -527,11 +627,16 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   }
 
   const getTemplateInfo = (variant: string): TemplateInfo | null => {
-    return availableTemplates.value.find((t: TemplateInfo) => t.id === variant) || null
+    return (
+      availableTemplates.value.find((t: TemplateInfo) => t.id === variant) ||
+      null
+    )
   }
 
   // 处理设备变化
-  const handleDeviceChange = async (newDeviceInfo: DeviceInfo): Promise<void> => {
+  const handleDeviceChange = async (
+    newDeviceInfo: DeviceInfo
+  ): Promise<void> => {
     const oldDevice = deviceInfo.value.type
     deviceInfo.value = newDeviceInfo
 
@@ -550,7 +655,7 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   }
 
   // 监听当前变体变化
-  watch(currentTemplate, (newTemplate) => {
+  watch(currentTemplate, newTemplate => {
     onTemplateChange?.(newTemplate)
   })
 
@@ -578,9 +683,13 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
   return {
     // 状态
     deviceInfo: readonly(deviceInfo),
-    currentTemplate: readonly(currentTemplate) as Readonly<Ref<TemplateInfo | null>>,
+    currentTemplate: readonly(currentTemplate) as Readonly<
+      Ref<TemplateInfo | null>
+    >,
     currentVariant: readonly(currentVariant),
-    availableTemplates: readonly(availableTemplates) as Readonly<Ref<TemplateInfo[]>>,
+    availableTemplates: readonly(availableTemplates) as Readonly<
+      Ref<TemplateInfo[]>
+    >,
     isLoading: readonly(isLoading),
 
     // 方法

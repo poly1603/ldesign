@@ -1,150 +1,73 @@
 /**
- * 设备类型检测和管理
+ * 设备类型检测和管理 - 核心模块入口
+ * 重新导出utils/device中的功能，保持API一致性
  */
 
 import type { DeviceType } from '../types'
+import {
+  detectDevice as utilsDetectDevice,
+  getDeviceInfo as utilsGetDeviceInfo,
+  createDeviceWatcher as utilsCreateDeviceWatcher,
+} from '../utils/device'
 
 // 重新导出DeviceType
 export type { DeviceType }
+
+// 重新导出utils中的类型和常量
+export type { DeviceDetectionConfig } from '../types'
+export { DEFAULT_DEVICE_CONFIG, DEFAULT_BREAKPOINTS } from '../utils/device'
 
 export interface DeviceInfo {
   type: DeviceType
   width: number
   height: number
-  orientation: 'portrait' | 'landscape'
+  isTouch: boolean
   userAgent: string
+  timestamp: number
 }
 
 /**
- * 设备断点配置
+ * 检测当前设备类型 - 委托给utils实现
  */
-export const DEVICE_BREAKPOINTS = {
-  mobile: {
-    min: 0,
-    max: 767,
-  },
-  tablet: {
-    min: 768,
-    max: 1023,
-  },
-  desktop: {
-    min: 1024,
-    max: Infinity,
-  },
-} as const
-
-/**
- * 检测当前设备类型
- */
-export function detectDeviceType(width?: number): DeviceType {
-  const screenWidth = width ?? (typeof window !== 'undefined' ? window.innerWidth : 1024)
-
-  if (screenWidth <= DEVICE_BREAKPOINTS.mobile.max) {
-    return 'mobile'
-  }
-  else if (screenWidth <= DEVICE_BREAKPOINTS.tablet.max) {
-    return 'tablet'
-  }
-  else {
-    return 'desktop'
-  }
+export function detectDeviceType(): DeviceType {
+  return utilsDetectDevice()
 }
 
 /**
- * 获取设备信息
+ * 获取设备信息 - 委托给utils实现并适配接口
  */
 export function getDeviceInfo(): DeviceInfo {
-  if (typeof window === 'undefined') {
-    return {
-      type: 'desktop',
-      width: 1024,
-      height: 768,
-      orientation: 'landscape',
-      userAgent: '',
-    }
-  }
-
-  const width = window.innerWidth
-  const height = window.innerHeight
-  const type = detectDeviceType(width)
-  const orientation = width > height ? 'landscape' : 'portrait'
-  const userAgent = navigator.userAgent
-
+  const utilsInfo = utilsGetDeviceInfo()
   return {
-    type,
-    width,
-    height,
-    orientation,
-    userAgent,
+    type: utilsInfo.device,
+    width: utilsInfo.width,
+    height: utilsInfo.height,
+    isTouch: utilsInfo.isTouch,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    timestamp: Date.now(),
   }
 }
 
-/**
- * 检测是否为移动设备
- */
-export function isMobileDevice(): boolean {
-  if (typeof window === 'undefined')
-    return false
-
-  const userAgent = navigator.userAgent.toLowerCase()
-  const mobileKeywords = [
-    'android',
-    'webos',
-    'iphone',
-    'ipad',
-    'ipod',
-    'blackberry',
-    'windows phone',
-    'mobile',
-  ]
-
-  return mobileKeywords.some(keyword => userAgent.includes(keyword))
-}
+// 重新导出utils中的设备检测功能
+export {
+  isMobileDevice,
+  isTabletDevice,
+  isTouchDevice,
+  getViewportWidth,
+  getViewportHeight,
+} from '../utils/device'
 
 /**
- * 检测是否为平板设备
+ * 监听设备变化 - 使用utils实现并适配接口
  */
-export function isTabletDevice(): boolean {
-  if (typeof window === 'undefined')
-    return false
-
-  const userAgent = navigator.userAgent.toLowerCase()
-  const tabletKeywords = ['ipad', 'tablet', 'kindle']
-  const width = window.innerWidth
-
-  // 基于用户代理和屏幕尺寸判断
-  const hasTabletUA = tabletKeywords.some(keyword => userAgent.includes(keyword))
-  const hasTabletSize = width >= DEVICE_BREAKPOINTS.tablet.min && width <= DEVICE_BREAKPOINTS.tablet.max
-
-  return hasTabletUA || hasTabletSize
-}
-
-/**
- * 监听设备变化
- */
-export function watchDeviceChange(callback: (deviceInfo: DeviceInfo) => void): () => void {
-  if (typeof window === 'undefined') {
-    return () => { }
-  }
-
-  const handleResize = () => {
-    callback(getDeviceInfo())
-  }
-
-  const handleOrientationChange = () => {
-    // 延迟执行，等待屏幕旋转完成
-    setTimeout(() => {
-      callback(getDeviceInfo())
-    }, 100)
-  }
-
-  window.addEventListener('resize', handleResize)
-  window.addEventListener('orientationchange', handleOrientationChange)
-
-  return () => {
-    window.removeEventListener('resize', handleResize)
-    window.removeEventListener('orientationchange', handleOrientationChange)
-  }
+export function watchDeviceChange(
+  callback: (deviceInfo: DeviceInfo) => void
+): () => void {
+  return utilsCreateDeviceWatcher(_deviceType => {
+    // 当设备类型变化时，获取完整的设备信息
+    const deviceInfo = getDeviceInfo()
+    callback(deviceInfo)
+  })
 }
 
 /**
@@ -156,23 +79,10 @@ export function getDeviceClassName(deviceType?: DeviceType): string {
 }
 
 /**
- * 判断是否为触摸设备
- */
-export function isTouchDevice(): boolean {
-  if (typeof window === 'undefined')
-    return false
-
-  return 'ontouchstart' in window
-    || navigator.maxTouchPoints > 0
-    || (navigator as { msMaxTouchPoints?: number }).msMaxTouchPoints > 0
-}
-
-/**
  * 获取设备像素比
  */
 export function getDevicePixelRatio(): number {
-  if (typeof window === 'undefined')
-    return 1
+  if (typeof window === 'undefined') return 1
   return window.devicePixelRatio || 1
 }
 

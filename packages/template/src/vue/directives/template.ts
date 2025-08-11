@@ -16,11 +16,12 @@ interface TemplateDirectiveElement extends HTMLElement {
 /**
  * 解析指令绑定值
  */
-function parseBinding(binding: DirectiveBinding): TemplateDirectiveBinding | null {
+function parseBinding(
+  binding: DirectiveBinding
+): TemplateDirectiveBinding | null {
   const { value } = binding
 
-  if (!value)
-    return null
+  if (!value) return null
 
   // 支持字符串格式: "category:device:template"
   if (typeof value === 'string') {
@@ -52,11 +53,10 @@ function parseBinding(binding: DirectiveBinding): TemplateDirectiveBinding | nul
  */
 async function renderTemplate(
   el: TemplateDirectiveElement,
-  binding: TemplateDirectiveBinding,
+  binding: TemplateDirectiveBinding
 ): Promise<void> {
   const data = el.__templateDirective
-  if (!data)
-    return
+  if (!data) return
 
   try {
     // 显示加载状态
@@ -77,7 +77,10 @@ async function renderTemplate(
 
     // 清空元素内容
     el.innerHTML = ''
-    el.classList.remove('template-directive-loading-state', 'template-directive-error-state')
+    el.classList.remove(
+      'template-directive-loading-state',
+      'template-directive-error-state'
+    )
     el.classList.add('template-directive-loaded-state')
 
     // 挂载组件
@@ -89,18 +92,22 @@ async function renderTemplate(
     }
 
     data.currentTemplate = `${binding.category}:${binding.device}:${binding.template}`
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Template directive render error:', error)
 
     // 显示错误状态
     el.innerHTML = `
       <div class="template-directive-error">
         <div class="template-directive-error__message">模板加载失败</div>
-        <div class="template-directive-error__detail">${(error as Error).message}</div>
+        <div class="template-directive-error__detail">${
+          (error as Error).message
+        }</div>
       </div>
     `
-    el.classList.remove('template-directive-loading-state', 'template-directive-loaded-state')
+    el.classList.remove(
+      'template-directive-loading-state',
+      'template-directive-loaded-state'
+    )
     el.classList.add('template-directive-error-state')
   }
 }
@@ -144,8 +151,7 @@ export const templateDirective: Directive<TemplateDirectiveElement, unknown> = {
     }
 
     const data = el.__templateDirective
-    if (!data)
-      return
+    if (!data) return
 
     const newTemplate = `${parsedBinding.category}:${parsedBinding.device}:${parsedBinding.template}`
 
@@ -170,8 +176,7 @@ export const templateDirective: Directive<TemplateDirectiveElement, unknown> = {
    */
   unmounted(el) {
     const data = el.__templateDirective
-    if (!data)
-      return
+    if (!data) return
 
     // 清理组件
     if (data.cleanup) {
@@ -189,7 +194,7 @@ export const templateDirective: Directive<TemplateDirectiveElement, unknown> = {
       'template-directive',
       'template-directive-loading-state',
       'template-directive-loaded-state',
-      'template-directive-error-state',
+      'template-directive-error-state'
     )
   },
 }
@@ -197,7 +202,7 @@ export const templateDirective: Directive<TemplateDirectiveElement, unknown> = {
 /**
  * 注册模板指令
  */
-export function registerTemplateDirective(app: unknown): void {
+export function registerTemplateDirective(app: any): void {
   app.directive('template', templateDirective)
 }
 

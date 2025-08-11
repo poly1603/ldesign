@@ -3,12 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "vue": ["node_modules/vue"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "src/**/*.test.ts",
     "src/**/*.test.tsx",

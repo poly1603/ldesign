@@ -1,4 +1,8 @@
-import type { DeviceDetectionConfig, DeviceType, ResponsiveBreakpoints } from '../types'
+import type {
+  DeviceDetectionConfig,
+  DeviceType,
+  ResponsiveBreakpoints,
+} from '../types'
 
 /**
  * 默认响应式断点配置
@@ -22,7 +26,11 @@ export const DEFAULT_DEVICE_CONFIG: DeviceDetectionConfig = {
 }
 
 // 缓存视口信息，避免重复计算
-let cachedViewport: { width: number, height: number, timestamp: number } | null = null
+let cachedViewport: {
+  width: number
+  height: number
+  timestamp: number
+} | null = null
 const VIEWPORT_CACHE_TTL = 100 // 100ms缓存
 
 /**
@@ -35,11 +43,11 @@ export function clearViewportCache(): void {
 /**
  * 获取当前视口信息（带缓存）
  */
-function getViewportInfo(): { width: number, height: number } {
+function getViewportInfo(): { width: number; height: number } {
   const now = Date.now()
 
   // 检查缓存是否有效
-  if (cachedViewport && (now - cachedViewport.timestamp) < VIEWPORT_CACHE_TTL) {
+  if (cachedViewport && now - cachedViewport.timestamp < VIEWPORT_CACHE_TTL) {
     return { width: cachedViewport.width, height: cachedViewport.height }
   }
 
@@ -50,8 +58,14 @@ function getViewportInfo(): { width: number, height: number } {
     return viewport
   }
 
-  const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
-  const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+  const width =
+    window.innerWidth ||
+    document.documentElement.clientWidth ||
+    document.body.clientWidth
+  const height =
+    window.innerHeight ||
+    document.documentElement.clientHeight ||
+    document.body.clientHeight
 
   cachedViewport = { width, height, timestamp: now }
   return { width, height }
@@ -75,8 +89,7 @@ export function getViewportHeight(): number {
  * 检测是否为移动设备
  */
 export function isMobileDevice(): boolean {
-  if (typeof navigator === 'undefined')
-    return false
+  if (typeof navigator === 'undefined') return false
 
   const userAgent = navigator.userAgent.toLowerCase()
   const mobileKeywords = [
@@ -97,8 +110,7 @@ export function isMobileDevice(): boolean {
  * 检测是否为平板设备
  */
 export function isTabletDevice(): boolean {
-  if (typeof navigator === 'undefined')
-    return false
+  if (typeof navigator === 'undefined') return false
 
   const userAgent = navigator.userAgent.toLowerCase()
   const tabletKeywords = ['ipad', 'tablet', 'kindle', 'playbook', 'silk']
@@ -110,27 +122,28 @@ export function isTabletDevice(): boolean {
  * 检测是否为触摸设备
  */
 export function isTouchDevice(): boolean {
-  if (typeof window === 'undefined')
-    return false
+  if (typeof window === 'undefined') return false
 
-  return 'ontouchstart' in window
-    || navigator.maxTouchPoints > 0
-    || (navigator as { msMaxTouchPoints?: number }).msMaxTouchPoints > 0
+  return (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    ((navigator as { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0
+  )
 }
 
 /**
  * 基于视口宽度检测设备类型
  */
-export function detectDeviceByViewport(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG): DeviceType {
+export function detectDeviceByViewport(
+  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG
+): DeviceType {
   const width = getViewportWidth()
 
   if (width < config.mobileBreakpoint) {
     return 'mobile'
-  }
-  else if (width < config.tabletBreakpoint) {
+  } else if (width < config.tabletBreakpoint) {
     return 'tablet'
-  }
-  else {
+  } else {
     return 'desktop'
   }
 }
@@ -139,15 +152,17 @@ export function detectDeviceByViewport(config: DeviceDetectionConfig = DEFAULT_D
  * 基于用户代理检测设备类型
  */
 export function detectDeviceByUserAgent(): DeviceType {
-  if (isMobileDevice())
-    return 'mobile'
-  if (isTabletDevice())
-    return 'tablet'
+  if (isMobileDevice()) return 'mobile'
+  if (isTabletDevice()) return 'tablet'
   return 'desktop'
 }
 
 // 缓存设备检测结果
-let cachedDevice: { device: DeviceType, timestamp: number, configHash: string } | null = null
+let cachedDevice: {
+  device: DeviceType
+  timestamp: number
+  configHash: string
+} | null = null
 const DEVICE_CACHE_TTL = 1000 // 1秒缓存
 
 /**
@@ -164,7 +179,9 @@ function getConfigHash(config: DeviceDetectionConfig): string {
 /**
  * 综合检测设备类型（带缓存）
  */
-export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG): DeviceType {
+export function detectDevice(
+  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG
+): DeviceType {
   // 优先使用自定义检测器
   if (config.customDetector) {
     return config.customDetector()
@@ -174,9 +191,11 @@ export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONF
   const configHash = getConfigHash(config)
 
   // 检查缓存是否有效
-  if (cachedDevice
-    && (now - cachedDevice.timestamp) < DEVICE_CACHE_TTL
-    && cachedDevice.configHash === configHash) {
+  if (
+    cachedDevice &&
+    now - cachedDevice.timestamp < DEVICE_CACHE_TTL &&
+    cachedDevice.configHash === configHash
+  ) {
     return cachedDevice.device
   }
 
@@ -210,20 +229,29 @@ export function detectDevice(config: DeviceDetectionConfig = DEFAULT_DEVICE_CONF
  */
 export function createDeviceWatcher(
   callback: (device: DeviceType) => void,
-  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG,
+  config: DeviceDetectionConfig = DEFAULT_DEVICE_CONFIG
 ): () => void {
   if (typeof window === 'undefined') {
-    return () => { }
+    return () => {}
   }
 
   let currentDevice = detectDevice(config)
+  let timeoutId: number | null = null
 
+  // 防抖处理，避免频繁触发
   const handleResize = () => {
-    const newDevice = detectDevice(config)
-    if (newDevice !== currentDevice) {
-      currentDevice = newDevice
-      callback(newDevice)
+    if (timeoutId) {
+      clearTimeout(timeoutId)
     }
+
+    timeoutId = window.setTimeout(() => {
+      const newDevice = detectDevice(config)
+      if (newDevice !== currentDevice) {
+        currentDevice = newDevice
+        callback(newDevice)
+      }
+      timeoutId = null
+    }, 150) // 150ms 防抖延迟
   }
 
   // 监听窗口大小变化
@@ -236,6 +264,12 @@ export function createDeviceWatcher(
 
   // 返回清理函数
   return () => {
+    // 清理定时器
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      timeoutId = null
+    }
+
     window.removeEventListener('resize', handleResize)
     if ('orientation' in window) {
       window.removeEventListener('orientationchange', handleResize)
@@ -270,13 +304,14 @@ export function getDeviceInfo() {
 /**
  * 检查设备是否支持指定的最小/最大宽度
  */
-export function checkDeviceSupport(minWidth?: number, maxWidth?: number): boolean {
+export function checkDeviceSupport(
+  minWidth?: number,
+  maxWidth?: number
+): boolean {
   const width = getViewportWidth()
 
-  if (minWidth && width < minWidth)
-    return false
-  if (maxWidth && width > maxWidth)
-    return false
+  if (minWidth && width < minWidth) return false
+  if (maxWidth && width > maxWidth) return false
 
   return true
 }

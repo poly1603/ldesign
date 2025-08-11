@@ -3,7 +3,7 @@
  * 用于优化大量模板列表的渲染性能
  */
 
-import { computed, ref, type Ref } from 'vue'
+import { computed, onUnmounted, ref, type Ref } from 'vue'
 
 export interface VirtualScrollOptions {
   /** 容器高度 */
@@ -24,10 +24,10 @@ export interface VirtualScrollItem {
  */
 export function useVirtualScroll<T extends VirtualScrollItem>(
   items: Ref<T[]>,
-  options: VirtualScrollOptions,
+  options: VirtualScrollOptions
 ) {
   const { containerHeight, itemHeight, buffer = 5 } = options
-  
+
   const scrollTop = ref(0)
   const containerRef = ref<HTMLElement>()
 
@@ -88,6 +88,16 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     scrollToItem(items.value.length - 1)
   }
 
+  // 清理函数
+  const cleanup = () => {
+    if (containerRef.value) {
+      containerRef.value.removeEventListener('scroll', handleScroll)
+    }
+  }
+
+  // 组件卸载时清理
+  onUnmounted(cleanup)
+
   return {
     containerRef,
     visibleItems,
@@ -99,6 +109,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     scrollToItem,
     scrollToTop,
     scrollToBottom,
+    cleanup, // 暴露清理方法
   }
 }
 
@@ -109,14 +120,11 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
 export function useSimpleVirtualScroll<T>(
   items: Ref<T[]>,
   itemHeight: number,
-  containerHeight: number,
+  containerHeight: number
 ) {
-  return useVirtualScroll(
-    items as Ref<VirtualScrollItem[]>,
-    {
-      containerHeight,
-      itemHeight,
-      buffer: 3,
-    }
-  )
+  return useVirtualScroll(items as Ref<VirtualScrollItem[]>, {
+    containerHeight,
+    itemHeight,
+    buffer: 3,
+  })
 }

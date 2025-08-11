@@ -1,4 +1,4 @@
-import type { TemplateConfig } from '../../../types'
+import type { TemplateConfig } from '../../../../types'
 
 export const config: TemplateConfig = {
   id: 'classic',
@@ -10,12 +10,12 @@ export const config: TemplateConfig = {
   version: '1.0.0',
   author: 'LDesign Team',
   tags: ['login', 'classic', 'enterprise'],
-  
+
   // 模板配置
   config: {
     // 支持的设备类型
     supportedDevices: ['desktop', 'tablet', 'mobile'],
-    
+
     // 默认配置
     defaultProps: {
       title: 'LDesign 登录',
@@ -24,29 +24,30 @@ export const config: TemplateConfig = {
       showRememberMe: true,
       showForgotPassword: true,
       showRegisterLink: true,
-      allowThirdPartyLogin: false
+      allowThirdPartyLogin: false,
     },
-    
+
     // 样式配置
     styles: {
       primaryColor: '#007bff',
       backgroundColor: '#f8f9fa',
       cardBackground: '#ffffff',
       borderRadius: '8px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-    }
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    },
   },
-  
+
   // 预览信息
   preview: {
     thumbnail: '/templates/login/classic/preview.png',
-    description: '经典的登录界面设计，包含用户名密码输入、记住我选项和忘记密码链接'
+    description:
+      '经典的登录界面设计，包含用户名密码输入、记住我选项和忘记密码链接',
   },
-  
+
   // 依赖信息
   dependencies: {
-    vue: '^3.0.0'
-  }
+    vue: '^3.0.0',
+  },
 }
 
 export default config

@@ -55,14 +55,21 @@ export interface TemplateConfig {
   category?: string
   /** 设备类型 */
   device?: DeviceType
+  /** 设备类型（别名） */
+  deviceType?: DeviceType
   /** 模板变体 */
   variant?: string
   /** 版本号 */
   version?: string
   /** 作者 */
   author?: string
-  /** 预览图路径 */
-  preview?: string
+  /** 预览图路径或预览配置 */
+  preview?:
+    | string
+    | {
+        thumbnail?: string
+        description?: string
+      }
   /** 标签 */
   tags?: string[]
   /** 功能特性 */
@@ -86,6 +93,10 @@ export interface TemplateConfig {
   createdAt?: string
   /** 更新时间 */
   updatedAt?: string
+  /** 嵌套配置 */
+  config?: Record<string, any>
+  /** 依赖信息 */
+  dependencies?: Record<string, string>
 }
 
 /**
@@ -337,11 +348,22 @@ export interface UseTemplateReturn {
   /** 渲染模板 */
   render: (options: TemplateRenderOptions) => Promise<any>
   /** 切换模板 */
-  switchTemplate: (category: string, device: DeviceType, template: string) => Promise<void>
+  switchTemplate: (
+    category: string,
+    device: DeviceType,
+    template: string
+  ) => Promise<void>
   /** 获取模板列表 */
-  getTemplates: (category?: string, device?: DeviceType) => Promise<TemplateMetadata[]>
+  getTemplates: (
+    category?: string,
+    device?: DeviceType
+  ) => Promise<TemplateMetadata[]>
   /** 检查模板是否存在 */
-  hasTemplate: (category: string, device: DeviceType, template: string) => Promise<boolean>
+  hasTemplate: (
+    category: string,
+    device: DeviceType,
+    template: string
+  ) => Promise<boolean>
   /** 清空缓存 */
   clearCache: () => void
   /** 刷新模板列表 */
