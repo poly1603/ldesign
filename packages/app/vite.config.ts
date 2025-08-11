@@ -24,6 +24,7 @@ export default defineConfig({
       // 配置本地包别名，指向ES模块构建文件
       '@ldesign/engine': resolve(__dirname, '../engine/es/index.js'),
       '@ldesign/router': resolve(__dirname, '../router/es/index.js'),
+      '@ldesign/template': resolve(__dirname, '../template/es/index.js'),
     },
   },
   css: {

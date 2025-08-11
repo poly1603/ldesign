@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from '@ldesign/router'
+import Login from '../views/Login.tsx'
 
 /**
  * 路由配置 - 展示增强功能
@@ -17,7 +18,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.tsx'),
+    component: Login,
     meta: {
       title: '登录',
       icon: 'icon-user',

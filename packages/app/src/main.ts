@@ -2,169 +2,192 @@ import { createApp, presets } from '@ldesign/engine'
 import { routerPlugin } from '@ldesign/router'
 import App from './App.tsx'
 import { routes } from './router/routes.ts'
+import type { AppConfig } from './types'
 
-// 创建 Vue 应用
-async function bootstrap() {
-  try {
-    // eslint-disable-next-line no-console
-    console.log('🚀 开始启动 LDesign Engine 应用...')
+/**
+ * 创建 LDesign 应用
+ * @param config 应用配置
+ * @returns 应用实例
+ */
+export default async function createLDesignApp(config?: Partial<AppConfig>) {
+  const defaultConfig: AppConfig = {
+    name: 'LDesign App',
+    version: '0.1.0',
+    debug: true,
+    ...config,
+  }
 
-    // 检查依赖是否正确加载
-    // eslint-disable-next-line no-console
-    console.log('📦 检查依赖:', {
-      createApp: typeof createApp,
-      presets: typeof presets,
-      routerPlugin: typeof routerPlugin,
-      App: typeof App,
-      routes: Array.isArray(routes) ? `${routes.length} routes` : typeof routes,
-    })
+  // 创建 Vue 应用
+  async function bootstrap() {
+    try {
+      // eslint-disable-next-line no-console
+      console.log('🚀 开始启动 LDesign Engine 应用...')
 
-    // 使用 Engine 的 createApp 快速创建应用
-    // eslint-disable-next-line no-console
-    console.log('⚙️ 创建 Engine 应用...')
-    const engine = createApp(App, {
-      ...presets.development(),
-      config: {
-        debug: true,
-        appName: 'LDesign Engine + Router Demo',
-        version: '0.1.0',
-      },
-    })
+      // 检查依赖是否正确加载
+      // eslint-disable-next-line no-console
+      console.log('📦 检查依赖:', {
+        createApp: typeof createApp,
+        presets: typeof presets,
+        routerPlugin: typeof routerPlugin,
+        App: typeof App,
+        routes: Array.isArray(routes)
+          ? `${routes.length} routes`
+          : typeof routes,
+      })
 
-    // eslint-disable-next-line no-console
-    console.log('✅ Engine 创建成功:', engine)
-    // eslint-disable-next-line no-console
-    console.log('Engine 属性:', Object.keys(engine))
-    // eslint-disable-next-line no-console
-    console.log('Engine.getApp():', engine.getApp())
-    // eslint-disable-next-line no-console
-    console.log('Engine.getApp() 类型:', typeof engine.getApp())
+      // 使用 Engine 的 createApp 快速创建应用
+      // eslint-disable-next-line no-console
+      console.log('⚙️ 创建 Engine 应用...')
+      const engine = createApp(App, {
+        ...presets.development(),
+        config: {
+          debug: defaultConfig.debug,
+          appName: defaultConfig.name,
+          version: defaultConfig.version,
+        },
+      })
 
-    if (!engine || typeof engine.use !== 'function') {
-      throw new Error('Engine 对象无效或缺少 use 方法')
-    }
+      // eslint-disable-next-line no-console
+      console.log('✅ Engine 创建成功:', engine)
+      // eslint-disable-next-line no-console
+      console.log('Engine 属性:', Object.keys(engine))
+      // eslint-disable-next-line no-console
+      console.log('Engine.getApp():', engine.getApp())
+      // eslint-disable-next-line no-console
+      console.log('Engine.getApp() 类型:', typeof engine.getApp())
 
-    // 保存engine引用到局部变量
-    const engineRef = engine
-    // eslint-disable-next-line no-console
-    console.log('📍 准备安装路由插件...')
+      if (!engine || typeof engine.use !== 'function') {
+        throw new Error('Engine 对象无效或缺少 use 方法')
+      }
 
-    // 安装路由插件
-    // eslint-disable-next-line no-console
-    console.log('📍 安装路由插件...')
-    // eslint-disable-next-line no-console
-    console.log('路由配置:', routes)
+      // 保存engine引用到局部变量
+      const engineRef = engine
+      // eslint-disable-next-line no-console
+      console.log('📍 准备安装路由插件...')
 
-    await engineRef.use(
-      routerPlugin({
-        routes,
-        mode: 'hash',
-        base: '/',
+      // 安装路由插件
+      // eslint-disable-next-line no-console
+      console.log('📍 安装路由插件...')
+      // eslint-disable-next-line no-console
+      console.log('路由配置:', routes)
 
-        // 启用增强组件
-        enhancedComponents: {
-          enabled: true,
-          options: {
-            replaceRouterLink: true,
-            replaceRouterView: true,
-            keepOriginal: false,
-            enhancementConfig: {
-              // 自定义权限检查器
-              permissionChecker: permission => {
-                // 模拟权限检查
-                const userPermissions = [
-                  'products.view',
-                  'admin',
-                  'settings',
-                  'authenticated',
-                ]
+      await engineRef.use(
+        routerPlugin({
+          routes,
+          mode: 'hash',
+          base: '/',
 
-                if (Array.isArray(permission)) {
-                  return permission.some(p => userPermissions.includes(p))
-                }
+          // 启用增强组件
+          enhancedComponents: {
+            enabled: true,
+            options: {
+              replaceRouterLink: true,
+              replaceRouterView: true,
+              keepOriginal: false,
+              enhancementConfig: {
+                // 自定义权限检查器
+                permissionChecker: permission => {
+                  // 模拟权限检查
+                  const userPermissions = [
+                    'products.view',
+                    'admin',
+                    'settings',
+                    'authenticated',
+                  ]
 
-                return userPermissions.includes(permission)
-              },
+                  if (Array.isArray(permission)) {
+                    return permission.some(p => userPermissions.includes(p))
+                  }
 
-              // 自定义事件追踪器
-              eventTracker: (event, data) => {
-                // eslint-disable-next-line no-console
-                console.log('📊 事件追踪:', event, data)
-              },
+                  return userPermissions.includes(permission)
+                },
 
-              // 自定义确认对话框
-              confirmDialog: async (message, title = '确认') => {
-                return window.confirm(
-                  title ? `${title}\n\n${message}` : message
-                )
+                // 自定义事件追踪器
+                eventTracker: (event, data) => {
+                  // eslint-disable-next-line no-console
+                  console.log('📊 事件追踪:', event, data)
+                },
+
+                // 自定义确认对话框
+                confirmDialog: async (message, title = '确认') => {
+                  return window.confirm(
+                    title ? `${title}\n\n${message}` : message
+                  )
+                },
               },
             },
           },
-        },
-      })
-    )
+        })
+      )
 
-    // eslint-disable-next-line no-console
-    console.log('✅ 路由插件安装成功')
-
-    // 挂载应用
-    // eslint-disable-next-line no-console
-    console.log('🎯 挂载应用到 DOM...')
-
-    // 确保DOM元素存在
-    const appElement = document.querySelector('#app')
-    if (!appElement) {
-      throw new Error('找不到 #app 元素')
-    }
-
-    // 获取Vue应用实例并注入Engine
-    const vueApp = engine.getApp()
-    if (vueApp) {
-      vueApp.config.globalProperties.$engine = engine
       // eslint-disable-next-line no-console
-      console.log('✅ Engine 实例已注入到 Vue 应用')
-    }
+      console.log('✅ 路由插件安装成功')
 
-    const mountedApp = await engine.mount('#app')
-
-    // eslint-disable-next-line no-console
-    console.log('✅ 应用挂载成功:', mountedApp)
-    // eslint-disable-next-line no-console
-    console.log('🎉 LDesign Engine Demo 启动成功!')
-
-    // 显示启动成功通知
-    try {
-      engine.notifications?.show({
-        type: 'success',
-        title: '应用启动成功',
-        message: 'LDesign Engine 与 Router 集成完成！',
-        duration: 4000,
-      })
-    } catch (notificationError) {
+      // 挂载应用
       // eslint-disable-next-line no-console
-      console.warn('通知显示失败:', notificationError)
-    }
+      console.log('🎯 挂载应用到 DOM...')
 
-    // 记录启动信息
-    try {
-      engine.logger?.info('🚀 LDesign Engine + Router Demo 启动成功!')
-    } catch (logError) {
+      // 确保DOM元素存在
+      const appElement = document.querySelector('#app')
+      if (!appElement) {
+        throw new Error('找不到 #app 元素')
+      }
+
+      // 获取Vue应用实例并注入Engine
+      const vueApp = engine.getApp()
+      if (vueApp) {
+        vueApp.config.globalProperties.$engine = engine
+        // eslint-disable-next-line no-console
+        console.log('✅ Engine 实例已注入到 Vue 应用')
+      }
+
+      const mountedApp = await engine.mount('#app')
+
       // eslint-disable-next-line no-console
-      console.warn('日志记录失败:', logError)
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('❌ 应用启动失败:', error)
-    // eslint-disable-next-line no-console
-    console.error(
-      '错误堆栈:',
-      error instanceof Error ? error.stack : 'No stack trace'
-    )
+      console.log('✅ 应用挂载成功:', mountedApp)
+      // eslint-disable-next-line no-console
+      console.log('🎉 LDesign Engine Demo 启动成功!')
 
-    // 在页面上显示错误信息
-    const appElement = document.querySelector('#app')
-    if (appElement) {
-      appElement.innerHTML = `
+      // 显示启动成功通知
+      try {
+        engine.notifications?.show({
+          type: 'success',
+          title: '应用启动成功',
+          message: 'LDesign Engine 与 Router 集成完成！',
+          duration: 4000,
+        })
+      } catch (notificationError) {
+        // eslint-disable-next-line no-console
+        console.warn('通知显示失败:', notificationError)
+      }
+
+      // 记录启动信息
+      try {
+        engine.logger?.info(`🚀 ${defaultConfig.name} 启动成功!`)
+      } catch (logError) {
+        // eslint-disable-next-line no-console
+        console.warn('日志记录失败:', logError)
+      }
+
+      // 返回应用实例
+      return {
+        engine,
+        router: engine.router,
+        config: defaultConfig,
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('❌ 应用启动失败:', error)
+      // eslint-disable-next-line no-console
+      console.error(
+        '错误堆栈:',
+        error instanceof Error ? error.stack : 'No stack trace'
+      )
+
+      // 在页面上显示错误信息
+      const appElement = document.querySelector('#app')
+      if (appElement) {
+        appElement.innerHTML = `
         <div style="padding: 2rem; color: red; font-family: monospace;">
           <h2>❌ 应用启动失败</h2>
           <p><strong>错误信息:</strong> ${
@@ -178,31 +201,37 @@ async function bootstrap() {
           </details>
         </div>
       `
+      }
     }
   }
+
+  // 全局错误处理
+  window.addEventListener('error', event => {
+    // eslint-disable-next-line no-console
+    console.error('全局错误:', event.error)
+  })
+
+  window.addEventListener('unhandledrejection', event => {
+    // eslint-disable-next-line no-console
+    console.error('未处理的Promise拒绝:', event.reason)
+  })
+
+  // 启动应用并返回实例
+  // eslint-disable-next-line no-console
+  console.log('🔄 开始执行bootstrap函数...')
+
+  return bootstrap()
 }
 
-// 全局错误处理
-window.addEventListener('error', event => {
-  // eslint-disable-next-line no-console
-  console.error('全局错误:', event.error)
-})
-
-window.addEventListener('unhandledrejection', event => {
-  // eslint-disable-next-line no-console
-  console.error('未处理的Promise拒绝:', event.reason)
-})
-
-// 启动应用
-// eslint-disable-next-line no-console
-console.log('🔄 开始执行bootstrap函数...')
-
-bootstrap()
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log('✅ bootstrap函数执行完成')
-  })
-  .catch(error => {
-    // eslint-disable-next-line no-console
-    console.error('❌ bootstrap函数执行失败:', error)
-  })
+// 如果是直接运行（非导入），则自动启动应用
+if (typeof window !== 'undefined' && document.querySelector('#app')) {
+  createLDesignApp()
+    .then(app => {
+      // eslint-disable-next-line no-console
+      console.log('✅ 应用启动完成:', app)
+    })
+    .catch(error => {
+      // eslint-disable-next-line no-console
+      console.error('❌ 应用启动失败:', error)
+    })
+}
