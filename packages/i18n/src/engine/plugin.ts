@@ -7,7 +7,7 @@ type Plugin = {
   uninstall?(engine: any): Promise<void>
   [key: string]: any
 }
-import type { I18nOptions } from '../core/types'
+import type { I18nOptions, I18nInstance } from '../core/types'
 import { installI18nPlugin } from '../vue/plugin'
 
 /**
@@ -22,6 +22,8 @@ export interface I18nEnginePluginOptions extends I18nOptions {
   globalInjection?: boolean
   /** 全局属性名称 */
   globalPropertyName?: string
+  /** 自定义 i18n 创建函数 */
+  createI18n?: (options?: I18nOptions) => Promise<I18nInstance>
 }
 
 /**
@@ -53,6 +55,7 @@ export function createI18nEnginePlugin(
     version = '1.0.0',
     globalInjection = true,
     globalPropertyName = '$t',
+    createI18n: customCreateI18n,
     ...i18nOptions
   } = options
 
@@ -82,6 +85,7 @@ export function createI18nEnginePlugin(
           ...i18nOptions,
           globalInjection,
           globalPropertyName,
+          createI18n: customCreateI18n,
         } as any)
 
         // 将 i18n 实例注册到引擎中，便于其他插件访问

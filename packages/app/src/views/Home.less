@@ -302,4 +302,60 @@
     padding: 6px 10px;
     font-size: 13px;
   }
+
+  .template-section {
+    margin-top: 20px;
+
+    .template-demos {
+      grid-template-columns: 1fr;
+      gap: 16px;
+
+      .demo-item {
+        padding: 16px;
+      }
+    }
+  }
+}
+
+/* 模板选择器样式 */
+.template-section {
+  margin-top: 40px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+
+  h3 {
+    margin: 0 0 20px 0;
+    color: #495057;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .template-demos {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .demo-item {
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+      h4 {
+        margin: 0 0 16px 0;
+        color: #6c757d;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
 }

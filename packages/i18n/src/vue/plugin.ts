@@ -202,20 +202,35 @@ export async function installI18nPlugin(
   options?: I18nOptions & {
     globalInjection?: boolean
     globalPropertyName?: string
+    createI18n?: (options?: I18nOptions) => Promise<I18nInstance>
   }
 ): Promise<I18nInstance> {
-  // 动态导入 createI18nWithBuiltinLocales 函数
-  const { createI18nWithBuiltinLocales } = await import('../index')
-
   // 提取 Vue 插件选项
   const {
     globalInjection = true,
     globalPropertyName = '$t',
+    createI18n: customCreateI18n,
     ...i18nOptions
   } = options || {}
 
-  // 创建带有内置语言包的 I18n 实例
-  const i18nInstance = await createI18nWithBuiltinLocales(i18nOptions)
+  console.log('🔧 installI18nPlugin 选项:', {
+    globalInjection,
+    globalPropertyName,
+    hasCustomCreateI18n: !!customCreateI18n,
+    i18nOptions,
+  })
+
+  // 创建 I18n 实例 - 使用自定义创建函数或默认函数
+  let i18nInstance: I18nInstance
+  if (customCreateI18n) {
+    console.log('✨ 使用自定义 i18n 创建函数')
+    i18nInstance = await customCreateI18n(i18nOptions)
+  } else {
+    console.log('📦 使用默认内置语言包')
+    // 动态导入默认的 createI18nWithBuiltinLocales 函数
+    const { createI18nWithBuiltinLocales } = await import('../index')
+    i18nInstance = await createI18nWithBuiltinLocales(i18nOptions)
+  }
 
   // 创建 Vue 插件
   const plugin = createI18n(i18nInstance)

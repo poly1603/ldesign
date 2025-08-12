@@ -51,6 +51,9 @@ export { TemplateScanner } from './utils/scanner'
 /** 模板渲染器组件 - Vue 组件，用于渲染动态模板 */
 export { TemplateRenderer } from './vue/components/TemplateRenderer'
 
+/** 模板选择器组件 - Vue 组件，用于便捷的模板切换 */
+export { default as TemplateSelector } from './components/TemplateSelector'
+
 // ============ Vue 集成 ============
 /** Vue 组合式函数 - 提供响应式的模板管理功能 */
 export { createTemplateManager, useTemplate } from './vue/composables/useTemplate'

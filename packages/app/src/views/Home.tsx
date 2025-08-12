@@ -1,6 +1,7 @@
 import type { EngineImpl } from '@ldesign/engine'
 import { useRoute, useRouter } from '@ldesign/router'
 import { useDevice } from '@ldesign/device'
+import { TemplateSelector } from '@ldesign/template'
 
 import {
   computed,
@@ -22,41 +23,20 @@ export default defineComponent({
     const router = useRouter()
     const route = useRoute()
 
-    // 使用 i18n - 使用全局属性作为备选方案
+    // 使用 i18n - 直接使用全局属性
     const $t = instance?.appContext.config.globalProperties.$t
     const $i18n = instance?.appContext.config.globalProperties.$i18n
 
-    let t: (key: string) => string
-    let locale: any
-    let availableLanguages: any
-    let switchLanguage: any
+    if (!$t || !$i18n) {
+      throw new Error('i18n 未正确初始化，请检查插件配置')
+    }
 
-    if ($t && $i18n) {
-      // 使用全局属性
-      t = $t
-      locale = ref($i18n.getCurrentLanguage())
-      availableLanguages = ref($i18n.getAvailableLanguages())
-      switchLanguage = async (lang: string) => {
-        await $i18n.changeLanguage(lang)
-        locale.value = $i18n.getCurrentLanguage()
-      }
-    } else {
-      // 降级处理
-      t = (key: string) => {
-        const translations: Record<string, string> = {
-          'common.home': '首页',
-          'common.logout': '退出登录',
-          'common.loginSuccess': '登录成功',
-          'common.currentLanguage': '当前语言',
-          'common.welcome': '欢迎',
-        }
-        return translations[key] || key
-      }
-      locale = ref('zh-CN')
-      availableLanguages = ref([
-        { code: 'zh-CN', name: '中文', nativeName: '中文' },
-      ])
-      switchLanguage = async () => {}
+    const t = $t
+    const locale = ref($i18n.getCurrentLanguage())
+    const availableLanguages = ref($i18n.getAvailableLanguages())
+    const switchLanguage = async (lang: string) => {
+      await $i18n.changeLanguage(lang)
+      locale.value = $i18n.getCurrentLanguage()
     }
 
     // 设备检测
@@ -108,7 +88,7 @@ export default defineComponent({
       <div class='home-page'>
         <header class='home-header'>
           <div class='home-header__content'>
-            <h1 class='home-title'>🏠 {t('common.home')}</h1>
+            <h1 class='home-title'>🏠 {t('pages.home.title')}</h1>
             <div class='header-actions'>
               <select
                 class='language-selector'
@@ -132,7 +112,7 @@ export default defineComponent({
 
         <main class='home-main'>
           <div class='welcome-card'>
-            <h2>{t('common.welcome')}</h2>
+            <h2>{t('pages.home.welcome')}</h2>
             <p>{t('common.loginSuccess')}</p>
             <p>
               {t('common.currentLanguage')}: {locale.value}
@@ -141,29 +121,29 @@ export default defineComponent({
 
           <div class='info-grid'>
             <div class='info-card'>
-              <h3>👤 用户信息</h3>
+              <h3>👤 {t('pages.home.userInfo')}</h3>
               <div class='info-item'>
-                <span class='label'>用户名:</span>
+                <span class='label'>{t('pages.home.username')}:</span>
                 <span class='value'>{userInfo.value.username}</span>
               </div>
               <div class='info-item'>
-                <span class='label'>登录时间:</span>
+                <span class='label'>{t('pages.home.loginTime')}:</span>
                 <span class='value'>{userInfo.value.loginTime}</span>
               </div>
               <div class='info-item'>
-                <span class='label'>设备信息:</span>
+                <span class='label'>{t('pages.home.deviceInfo')}:</span>
                 <span class='value'>{userInfo.value.deviceInfo}</span>
               </div>
             </div>
 
             <div class='info-card'>
-              <h3>📍 路由信息</h3>
+              <h3>📍 {t('pages.home.routeInfo')}</h3>
               <div class='info-item'>
-                <span class='label'>当前路径:</span>
+                <span class='label'>{t('pages.home.currentPath')}:</span>
                 <span class='value'>{route.value.path}</span>
               </div>
               <div class='info-item'>
-                <span class='label'>路由名称:</span>
+                <span class='label'>{t('pages.home.routeName')}:</span>
                 <span class='value'>{route.value.name}</span>
               </div>
               <div class='info-item'>
@@ -206,13 +186,13 @@ export default defineComponent({
 
           <div class='action-section'>
             <button class='action-btn primary' onClick={handleGoToLogin}>
-              🔑 返回登录页
+              🔑 {t('pages.home.goToLogin')}
             </button>
             <button
               class='action-btn secondary'
               onClick={() => window.location.reload()}
             >
-              🔄 刷新页面
+              🔄 {t('pages.home.refreshPage')}
             </button>
           </div>
         </main>

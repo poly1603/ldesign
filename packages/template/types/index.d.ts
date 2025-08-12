@@ -39,6 +39,7 @@ export {
 } from './utils/device.js'
 export { TemplateScanner } from './utils/scanner.js'
 export { default as TemplateRenderer } from './vue/components/TemplateRenderer.js'
+export { default as TemplateSelector } from './components/TemplateSelector.js'
 export { createTemplateManager, useTemplate } from './vue/composables/useTemplate.js'
 export { registerTemplateDirective, default as templateDirective } from './vue/directives/template.js'
 export { default as TemplatePlugin, default, getGlobalTemplateManager } from './vue/plugins/index.js'

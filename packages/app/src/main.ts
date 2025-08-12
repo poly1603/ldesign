@@ -5,7 +5,7 @@ import { createI18nEnginePlugin } from '@ldesign/i18n'
 import { createTemplateEnginePlugin } from '@ldesign/template'
 import App from './App'
 import { routes } from './router/routes'
-import { appI18nConfig } from './i18n'
+import { appI18nConfig, createAppI18n } from './i18n'
 
 /**
  * 创建 LDesign 应用
@@ -49,6 +49,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         ...appI18nConfig,
         name: 'i18n',
         version: '1.0.0',
+        createI18n: createAppI18n,
       })
     )
 

@@ -1,0 +1,183 @@
+/**
+ * 中文 - 组件翻译
+ */
+
+export default {
+  // 导航组件
+  navigation: {
+    home: '首页',
+    dashboard: '仪表板',
+    products: '产品',
+    services: '服务',
+    about: '关于我们',
+    contact: '联系我们',
+    menu: '菜单',
+    toggleMenu: '切换菜单',
+  },
+
+  // 表单组件
+  form: {
+    required: '必填',
+    optional: '选填',
+    placeholder: '请输入...',
+    select: '请选择...',
+    upload: '上传文件',
+    uploadSuccess: '上传成功',
+    uploadFailed: '上传失败',
+    fileTooBig: '文件过大',
+    invalidFileType: '文件类型不支持',
+    maxFiles: '最多上传 {count} 个文件',
+    dragToUpload: '拖拽文件到此处上传',
+    clickToUpload: '点击上传',
+    removeFile: '移除文件',
+    previewFile: '预览文件',
+    downloadFile: '下载文件',
+  },
+
+  // 表格组件
+  table: {
+    noData: '暂无数据',
+    loading: '加载中...',
+    total: '共 {total} 条',
+    page: '第 {current} 页，共 {total} 页',
+    pageSize: '每页显示',
+    items: '条',
+    goToPage: '跳转到',
+    firstPage: '首页',
+    lastPage: '末页',
+    previousPage: '上一页',
+    nextPage: '下一页',
+    refresh: '刷新',
+    export: '导出',
+    import: '导入',
+    filter: '筛选',
+    sort: '排序',
+    ascending: '升序',
+    descending: '降序',
+    selectAll: '全选',
+    selectNone: '取消全选',
+    selectedItems: '已选择 {count} 项',
+    batchDelete: '批量删除',
+    batchEdit: '批量编辑',
+  },
+
+  // 对话框组件
+  dialog: {
+    confirm: '确认',
+    cancel: '取消',
+    ok: '确定',
+    close: '关闭',
+    save: '保存',
+    delete: '删除',
+    edit: '编辑',
+    view: '查看',
+    add: '添加',
+    create: '创建',
+    update: '更新',
+    submit: '提交',
+    reset: '重置',
+    clear: '清空',
+    apply: '应用',
+    discard: '放弃',
+    retry: '重试',
+  },
+
+  // 消息提示组件
+  message: {
+    success: '操作成功',
+    error: '操作失败',
+    warning: '警告',
+    info: '提示',
+    loading: '处理中...',
+    copied: '已复制到剪贴板',
+    saved: '已保存',
+    deleted: '已删除',
+    updated: '已更新',
+    created: '已创建',
+    uploaded: '已上传',
+    downloaded: '已下载',
+    sent: '已发送',
+    received: '已接收',
+  },
+
+  // 搜索组件
+  search: {
+    placeholder: '搜索...',
+    noResults: '未找到相关结果',
+    searching: '搜索中...',
+    searchHistory: '搜索历史',
+    clearHistory: '清空历史',
+    hotSearches: '热门搜索',
+    suggestions: '搜索建议',
+    advanced: '高级搜索',
+    filters: '筛选条件',
+    sortBy: '排序方式',
+    relevance: '相关性',
+    date: '日期',
+    popularity: '热度',
+  },
+
+  // 分页组件
+  pagination: {
+    total: '共 {total} 条记录',
+    current: '第 {current} 页',
+    pageSize: '每页 {size} 条',
+    goTo: '跳转至',
+    page: '页',
+    prev: '上一页',
+    next: '下一页',
+    first: '首页',
+    last: '末页',
+    showTotal: '显示第 {start} 到第 {end} 条记录，共 {total} 条',
+  },
+
+  // 日期选择器
+  datePicker: {
+    selectDate: '选择日期',
+    selectTime: '选择时间',
+    selectDateTime: '选择日期时间',
+    today: '今天',
+    yesterday: '昨天',
+    tomorrow: '明天',
+    thisWeek: '本周',
+    lastWeek: '上周',
+    nextWeek: '下周',
+    thisMonth: '本月',
+    lastMonth: '上月',
+    nextMonth: '下月',
+    thisYear: '今年',
+    lastYear: '去年',
+    nextYear: '明年',
+    clear: '清除',
+    confirm: '确定',
+    cancel: '取消',
+    startDate: '开始日期',
+    endDate: '结束日期',
+    startTime: '开始时间',
+    endTime: '结束时间',
+  },
+
+  // 语言切换器
+  languageSwitcher: {
+    title: '选择语言',
+    current: '当前语言',
+    available: '可用语言',
+    switchTo: '切换到 {language}',
+    switchSuccess: '语言已切换到 {language}',
+    switchFailed: '语言切换失败',
+  },
+
+  // 模板选择器
+  templateSelector: {
+    title: '选择模板',
+    current: '当前模板',
+    available: '可用模板',
+    preview: '预览',
+    apply: '应用',
+    switchTo: '切换到 {template}',
+    switchSuccess: '模板已切换到 {template}',
+    switchFailed: '模板切换失败',
+    loading: '加载模板中...',
+    noTemplates: '暂无可用模板',
+  },
+}
