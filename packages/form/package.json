@@ -32,12 +32,10 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "dev": "vite",
     "build": "node scripts/build.js",
     "build:lib": "vite build",
     "build:check": "vue-tsc && vite build",
     "build:types": "vue-tsc --declaration --emitDeclarationOnly",
-    "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

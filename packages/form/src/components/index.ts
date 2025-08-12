@@ -2,9 +2,11 @@
 
 export { default as DynamicForm } from './DynamicForm.vue'
 export { default as FormCheckbox } from './FormCheckbox.vue'
+export { default as FormContainer } from './FormContainer.vue'
 export { default as FormDatePicker } from './FormDatePicker.vue'
 export { default as FormGroup } from './FormGroup.vue'
 export { default as FormInput } from './FormInput.vue'
+export { default as FormLabel } from './FormLabel.vue'
 export { default as FormRadio } from './FormRadio.vue'
 export { default as FormRate } from './FormRate.vue'
 export { default as FormSelect } from './FormSelect.vue'

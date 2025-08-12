@@ -338,9 +338,9 @@ export function parseDependencies(
 }
 
 /**
- * 检查字段是否应该显示
+ * 检查字段是否应该显示（基于完整的条件渲染配置）
  */
-export function shouldShowField(
+export function shouldShowFieldAdvanced(
   field: FormItemConfig,
   formData: FormData,
   allFields: FormItemConfig[]
@@ -385,7 +385,7 @@ export function applyConditionalRender(
   formData: FormData,
   allFields: FormItemConfig[]
 ): FormItemConfig {
-  const shouldShow = shouldShowField(field, formData, allFields)
+  const shouldShow = shouldShowFieldAdvanced(field, formData, allFields)
   const dynamicConfig = getFieldDynamicConfig(field, formData, allFields)
 
   return {

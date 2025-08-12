@@ -39,6 +39,21 @@ export interface BaseFormComponentProps {
 
   /** Tab索引 */
   tabindex?: number
+
+  /** 标签位置 */
+  labelPosition?: 'left' | 'right' | 'top' | 'none'
+
+  /** 标签宽度 */
+  labelWidth?: string | number
+
+  /** 标签对齐方式 */
+  labelAlign?: 'left' | 'center' | 'right'
+
+  /** 标签与组件间距 */
+  labelGap?: number
+
+  /** 是否显示标签后的冒号 */
+  showLabelColon?: boolean
 }
 
 /**

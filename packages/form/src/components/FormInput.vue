@@ -2,6 +2,7 @@
 import type { FormInputProps } from '../types/components'
 import { computed, nextTick, ref } from 'vue'
 import { generateId } from '../utils/common'
+import FormContainer from './FormContainer.vue'
 
 interface Props extends FormInputProps {
   label?: string
@@ -36,6 +37,10 @@ const props = withDefaults(defineProps<Props>(), {
   clearable: false,
   showCount: false,
   autocomplete: 'off',
+  labelPosition: 'top',
+  labelAlign: 'left',
+  labelGap: 8,
+  showLabelColon: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -146,16 +151,21 @@ defineExpose({
 </script>
 
 <template>
-  <div class="form-input" :class="inputClasses">
-    <div v-if="showLabel" class="form-input__label" :class="labelClasses">
-      <label :for="inputId" class="form-input__label-text">
-        {{ label }}
-        <span v-if="required" class="form-input__required">*</span>
-        <span v-if="showColon" class="form-input__colon">:</span>
-      </label>
-      <div v-if="tooltip" class="form-input__tooltip" :title="tooltip">?</div>
-    </div>
-
+  <FormContainer
+    :label="label"
+    :required="required"
+    :show-colon="showColon || showLabelColon"
+    :label-position="labelPosition"
+    :label-width="labelWidth"
+    :label-align="labelAlign"
+    :label-gap="labelGap"
+    :for="inputId"
+    :tooltip="tooltip"
+    :error-message="errorMessage"
+    :show-error="showError"
+    :description="description"
+    :show-label="showLabel"
+  >
     <div class="form-input__wrapper" :class="wrapperClasses">
       <div v-if="prefix || prefixIcon" class="form-input__prefix">
         <span
@@ -212,30 +222,10 @@ defineExpose({
         <span v-if="suffix" class="form-input__suffix-text">{{ suffix }}</span>
       </div>
     </div>
-
-    <div v-if="showError && errorMessage" class="form-input__error">
-      {{ errorMessage }}
-    </div>
-
-    <div v-if="description" class="form-input__description">
-      {{ description }}
-    </div>
-  </div>
+  </FormContainer>
 </template>
 
 <style scoped>
-.form-input {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.form-input__label {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--form-spacing-xs, 4px);
-}
-
 .form-input__label-text {
   font-size: var(--form-font-size-sm, 14px);
   color: var(--form-text-primary, #262626);

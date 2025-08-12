@@ -100,7 +100,7 @@ export class SimpleEventEmitter implements EventEmitter {
     return regularCount + onceCount
   }
 
-  listeners<K extends keyof any>(event: K): any[] {
+  getListeners<K extends keyof any>(event: K): any[] {
     const eventName = String(event)
     const regular = Array.from(this.listeners.get(eventName) || [])
     const once = Array.from(this.onceListeners.get(eventName) || [])
