@@ -42,3 +42,8 @@ export { default as TemplateRenderer } from './vue/components/TemplateRenderer.j
 export { createTemplateManager, useTemplate } from './vue/composables/useTemplate.js'
 export { registerTemplateDirective, default as templateDirective } from './vue/directives/template.js'
 export { default as TemplatePlugin, default, getGlobalTemplateManager } from './vue/plugins/index.js'
+export {
+  TemplateEnginePluginOptions,
+  createTemplateEnginePlugin,
+  defaultTemplateEnginePlugin,
+} from './engine/plugin.js'

@@ -172,6 +172,9 @@ export async function createSimpleI18n(
  */
 export const version = '0.1.0'
 
+// 导出 Engine 插件
+export * from './engine/plugin'
+
 /**
  * 默认导出（主要的 I18n 类）
  */

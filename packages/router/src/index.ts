@@ -31,6 +31,11 @@ import {
 import { createRouter } from './core/router'
 import { isNavigationFailure, NavigationFailureType } from './guards'
 import { routerPlugin } from './router-plugin'
+// Engine 插件（新的标准化方式）
+import {
+  createRouterEnginePlugin,
+  createDefaultRouterEnginePlugin,
+} from './engine/plugin'
 
 // Vue组件
 export { RouterLink, RouterView } from './components'
@@ -70,9 +75,16 @@ export { createRouter } from './core/router'
 // 导航守卫
 export { isNavigationFailure, NavigationFailureType } from './guards'
 
+// 路由插件（向后兼容）
 export { routerPlugin } from './router-plugin'
-
 export type { RouterPluginOptions } from './router-plugin'
+
+// Engine 插件（推荐的新方式）
+export {
+  createRouterEnginePlugin,
+  createDefaultRouterEnginePlugin,
+} from './engine/plugin'
+export type { RouterEnginePluginOptions } from './engine/plugin'
 
 // ==================== 插件系统 ====================
 
@@ -141,7 +153,11 @@ export {
 } from './utils'
 
 export default {
-  // 推荐API
+  // 推荐API（Engine 插件）
+  createRouterEnginePlugin,
+  createDefaultRouterEnginePlugin,
+
+  // 向后兼容API
   routerPlugin,
 
   // 核心API

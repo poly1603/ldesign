@@ -61,6 +61,10 @@ export { registerTemplateDirective, templateDirective } from './vue/directives/t
 /** Vue 插件 - 全局模板管理器和插件系统 */
 export { getGlobalTemplateManager, TemplatePlugin } from './vue/plugins'
 
+// ============ Engine 插件 ============
+/** Engine 插件 - 支持 engine.use() 方式安装 */
+export * from './engine/plugin'
+
 // ============ 默认导出 ============
 /** 默认导出 Vue 插件，支持 app.use() 方式安装 */
 export { TemplatePlugin as default } from './vue/plugins'

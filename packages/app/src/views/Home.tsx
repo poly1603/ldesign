@@ -1,7 +1,7 @@
 import type { EngineImpl } from '@ldesign/engine'
 import { useRoute, useRouter } from '@ldesign/router'
 import { useDevice } from '@ldesign/device'
-import { LanguageSwitcher } from '../../../i18n/es/vue/index.js'
+
 import {
   computed,
   defineComponent,
@@ -22,10 +22,42 @@ export default defineComponent({
     const router = useRouter()
     const route = useRoute()
 
-    // i18n 国际化 - 使用全局 $t 函数
+    // 使用 i18n - 使用全局属性作为备选方案
     const $t = instance?.appContext.config.globalProperties.$t
-    const t = $t || ((key: string) => key) // 降级处理
-    const locale = ref('zh-CN') // 临时硬编码
+    const $i18n = instance?.appContext.config.globalProperties.$i18n
+
+    let t: (key: string) => string
+    let locale: any
+    let availableLanguages: any
+    let switchLanguage: any
+
+    if ($t && $i18n) {
+      // 使用全局属性
+      t = $t
+      locale = ref($i18n.getCurrentLanguage())
+      availableLanguages = ref($i18n.getAvailableLanguages())
+      switchLanguage = async (lang: string) => {
+        await $i18n.changeLanguage(lang)
+        locale.value = $i18n.getCurrentLanguage()
+      }
+    } else {
+      // 降级处理
+      t = (key: string) => {
+        const translations: Record<string, string> = {
+          'common.home': '首页',
+          'common.logout': '退出登录',
+          'common.loginSuccess': '登录成功',
+          'common.currentLanguage': '当前语言',
+          'common.welcome': '欢迎',
+        }
+        return translations[key] || key
+      }
+      locale = ref('zh-CN')
+      availableLanguages = ref([
+        { code: 'zh-CN', name: '中文', nativeName: '中文' },
+      ])
+      switchLanguage = async () => {}
+    }
 
     // 设备检测
     const { deviceInfo, isMobile, isTablet, isDesktop } = useDevice()
@@ -61,13 +93,36 @@ export default defineComponent({
       engine?.logger.info('导航到登录页')
     }
 
+    // 语言切换处理
+    const handleLanguageChange = async (lang: string) => {
+      try {
+        await switchLanguage(lang)
+        engine?.logger.info('语言切换成功', { language: lang })
+      } catch (error) {
+        console.error('语言切换失败:', error)
+        engine?.logger.error('语言切换失败', { language: lang, error })
+      }
+    }
+
     return () => (
       <div class='home-page'>
         <header class='home-header'>
           <div class='home-header__content'>
             <h1 class='home-title'>🏠 {t('common.home')}</h1>
             <div class='header-actions'>
-              <LanguageSwitcher />
+              <select
+                class='language-selector'
+                value={locale.value}
+                onChange={e =>
+                  handleLanguageChange((e.target as HTMLSelectElement).value)
+                }
+              >
+                {availableLanguages.value.map(lang => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.nativeName}
+                  </option>
+                ))}
+              </select>
               <button class='logout-btn' onClick={handleLogout}>
                 {t('common.logout')}
               </button>

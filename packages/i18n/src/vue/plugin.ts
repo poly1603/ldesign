@@ -199,21 +199,31 @@ export function getGlobalI18n(): I18nInstance {
  */
 export async function installI18nPlugin(
   app: App,
-  options?: I18nOptions
+  options?: I18nOptions & {
+    globalInjection?: boolean
+    globalPropertyName?: string
+  }
 ): Promise<I18nInstance> {
   // 动态导入 createI18nWithBuiltinLocales 函数
   const { createI18nWithBuiltinLocales } = await import('../index')
 
+  // 提取 Vue 插件选项
+  const {
+    globalInjection = true,
+    globalPropertyName = '$t',
+    ...i18nOptions
+  } = options || {}
+
   // 创建带有内置语言包的 I18n 实例
-  const i18nInstance = await createI18nWithBuiltinLocales(options)
+  const i18nInstance = await createI18nWithBuiltinLocales(i18nOptions)
 
   // 创建 Vue 插件
   const plugin = createI18n(i18nInstance)
 
-  // 安装插件
+  // 安装插件，使用传入的选项
   app.use(plugin, {
-    globalInjection: true,
-    globalPropertyName: '$t',
+    globalInjection,
+    globalPropertyName,
   })
 
   console.log('✅ i18n Vue 插件安装成功')

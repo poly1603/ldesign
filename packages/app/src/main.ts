@@ -1,8 +1,8 @@
 import type { AppConfig } from './types'
 import { createApp, presets } from '@ldesign/engine'
-import { routerPlugin } from '@ldesign/router'
-import TemplatePlugin from '@ldesign/template'
-import { installI18nPlugin } from '../../i18n/es/vue/index.js'
+import { createRouterEnginePlugin } from '@ldesign/router'
+import { createI18nEnginePlugin } from '@ldesign/i18n'
+import { createTemplateEnginePlugin } from '@ldesign/template'
 import App from './App'
 import { routes } from './router/routes'
 import { appI18nConfig } from './i18n'
@@ -34,28 +34,41 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
 
     // 集成路由插件
     await engine.use(
-      routerPlugin({
+      createRouterEnginePlugin({
         routes,
         mode: 'hash',
         base: '/',
       })
     )
 
-    // 获取Vue应用实例并集成插件
-    const vueApp = engine.getApp()
-    if (vueApp) {
-      // 集成 i18n 插件
-      await installI18nPlugin(vueApp, appI18nConfig)
+    // 统一使用 engine.use() 方式集成插件
 
-      // 集成 Template 插件
-      vueApp.use(TemplatePlugin, {
-        defaultDevice: 'desktop',
-        autoScan: false, // 关闭自动扫描，使用内置模板
-        autoDetectDevice: true,
+    // 集成 i18n 插件
+    await engine.use(
+      createI18nEnginePlugin({
+        ...appI18nConfig,
+        name: 'i18n',
+        version: '1.0.0',
       })
-    }
+    )
+
+    // 集成 Template 插件
+    await engine.use(
+      createTemplateEnginePlugin({
+        name: 'template',
+        version: '1.0.0',
+        defaultDevice: 'desktop',
+        enableCache: true,
+        cacheLimit: 50,
+        componentPrefix: 'L',
+        registerComponents: true,
+        registerDirectives: true,
+        provideGlobalProperties: true,
+      })
+    )
 
     // 注入Engine到全局属性
+    const vueApp = engine.getApp()
     if (vueApp) {
       vueApp.config.globalProperties.$engine = engine
     }
