@@ -102,7 +102,7 @@ export function parsePluralExpression(
   locale: string
 ): string {
   // 匹配复数表达式的正则 - 需要处理嵌套的大括号
-  const pluralRegex = /\{(\w+),\s*plural,\s*(.*)\}/
+  const pluralRegex = /\{(\w+),plural,([^}]+)\}/
   const match = expression.match(pluralRegex)
 
   if (!match) {

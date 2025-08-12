@@ -56,7 +56,7 @@ export default defineComponent({
     },
   },
   emits: ['load', 'error', 'visible'],
-  setup(props, { emit, slots }) {
+  setup(props, { emit, slots, expose }) {
     const containerRef = ref<HTMLElement>()
     const isVisible = ref(false)
     const isLoaded = ref(false)
@@ -136,6 +136,18 @@ export default defineComponent({
       // 清理模板组件引用，防止内存泄漏
       templateComponent.value = null
       error.value = null
+    })
+
+    // 暴露状态供测试使用
+    expose({
+      isVisible,
+      isLoaded,
+      isLoading,
+      error,
+      templateComponent,
+      loadTemplate,
+      retry,
+      containerRef,
     })
 
     return () => {

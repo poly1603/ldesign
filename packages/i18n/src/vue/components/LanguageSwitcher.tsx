@@ -16,12 +16,14 @@ export default defineComponent({
 
     // 当前语言信息
     const currentLanguage = computed(() => {
-      return availableLanguages.value.find(lang => lang.code === locale.value)
+      return availableLanguages.value.find(
+        (lang: any) => lang.code === locale.value
+      )
     })
 
     // 语言选项
     const languageOptions = computed(() => {
-      return availableLanguages.value.map(lang => ({
+      return availableLanguages.value.map((lang: any) => ({
         code: lang.code,
         name: lang.name,
         nativeName: lang.nativeName,
@@ -76,7 +78,7 @@ export default defineComponent({
 
         {isOpen.value && (
           <div class='language-switcher__dropdown'>
-            {languageOptions.value.map(option => (
+            {languageOptions.value.map((option: any) => (
               <button
                 key={option.code}
                 class={[

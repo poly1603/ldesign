@@ -70,14 +70,14 @@
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
   },
   "peerDependencies": {
-    "vue": "^3.3.0",
-    "@ldesign/engine": "^1.0.0"
+    "@ldesign/engine": "^1.0.0",
+    "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
-    "vue": {
+    "@ldesign/engine": {
       "optional": true
     },
-    "@ldesign/engine": {
+    "vue": {
       "optional": true
     }
   },

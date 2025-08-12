@@ -1,14 +1,15 @@
+import type { TemplatePluginOptions } from '../vue/plugins'
 // 临时使用 any 类型，避免循环依赖
-type Plugin = {
+import TemplatePlugin from '../vue/plugins'
+
+interface Plugin {
   name: string
   version: string
   dependencies?: string[]
-  install(engine: any): Promise<void>
-  uninstall?(engine: any): Promise<void>
+  install: (engine: any) => Promise<void>
+  uninstall?: (engine: any) => Promise<void>
   [key: string]: any
 }
-import TemplatePlugin from '../vue/plugins'
-import type { TemplatePluginOptions } from '../vue/plugins'
 
 /**
  * Template Engine 插件选项

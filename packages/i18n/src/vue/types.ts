@@ -1,12 +1,12 @@
-import type { App } from '@vue/runtime-core'
+import type { App } from 'vue'
 
-// 临时类型定义，避免Vue导入问题
-type ComputedRef<T = any> = {
-  readonly value: T
-}
-
+// 手动定义类型以避免导入问题
 type Ref<T = any> = {
   value: T
+}
+
+type ComputedRef<T = any> = {
+  readonly value: T
 }
 
 import type {

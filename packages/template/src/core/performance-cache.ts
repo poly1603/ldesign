@@ -395,7 +395,6 @@ export class PerformanceCache<T = any> {
   }
 
   private cleanup(): void {
-    const now = Date.now()
     const expiredKeys: string[] = []
 
     for (const [key, entry] of this.cache.entries()) {

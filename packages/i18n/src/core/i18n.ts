@@ -67,7 +67,7 @@ export class I18n implements I18nInstance {
 
   constructor(options: I18nOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
-    this.currentLocale = this.options.defaultLocale!
+    this.currentLocale = this.options.defaultLocale || 'en'
 
     // 初始化组件
     this.loader = new DefaultLoader()

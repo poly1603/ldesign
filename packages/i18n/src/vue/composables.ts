@@ -1,5 +1,10 @@
 import { computed, inject, onUnmounted, ref } from 'vue'
 
+// 手动定义Ref类型
+type Ref<T = any> = {
+  value: T
+}
+
 import type { I18nInstance } from '../core/types'
 
 import type { UseI18nReturn } from './types'
@@ -25,7 +30,7 @@ export function useI18n(): UseI18nReturn {
   }
 
   // 创建响应式的当前语言
-  const locale = ref(i18n.getCurrentLanguage())
+  const locale = ref(i18n.getCurrentLanguage() || 'en') as Ref<string>
 
   // 创建响应式的可用语言列表
   const availableLanguages = computed(() => i18n.getAvailableLanguages())
@@ -77,7 +82,7 @@ export function useI18n(): UseI18nReturn {
  */
 export function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn {
   // 创建响应式的当前语言
-  const locale = ref(i18nInstance.getCurrentLanguage())
+  const locale = ref(i18nInstance.getCurrentLanguage() || 'en') as Ref<string>
 
   // 创建响应式的可用语言列表
   const availableLanguages = computed(() =>

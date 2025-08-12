@@ -3,8 +3,8 @@ type Plugin = {
   name: string
   version: string
   dependencies?: string[]
-  install(engine: any): Promise<void>
-  uninstall?(engine: any): Promise<void>
+  install: (engine: any) => Promise<void>
+  uninstall?: (engine: any) => Promise<void>
   [key: string]: any
 }
 import type { I18nOptions, I18nInstance } from '../core/types'

@@ -1,4 +1,4 @@
-import type { App } from '@vue/runtime-core'
+import type { App } from 'vue'
 
 import { I18n } from '../core/i18n'
 import type { I18nInstance, I18nOptions } from '../core/types'
@@ -47,9 +47,9 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
       // 注入全局属性
       if (opts.globalInjection) {
         // 注入翻译函数，确保正确绑定 this 上下文
-        app.config.globalProperties[opts.globalPropertyName] =
+        ;(app.config.globalProperties as any)[opts.globalPropertyName] =
           global.t.bind(global)
-        app.config.globalProperties.$i18n = global
+        ;(app.config.globalProperties as any).$i18n = global
 
         // 为了类型安全，也在 app.config.globalProperties 上设置
         Object.defineProperty(app.config.globalProperties, '$t', {
@@ -74,7 +74,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
       // 监听语言变更，更新所有使用 v-t 指令的元素
       global.on('languageChanged', () => {
         // 触发 Vue 的响应式更新
-        app._instance?.proxy?.$forceUpdate?.()
+        ;(app as any)._instance?.proxy?.$forceUpdate?.()
       })
 
       // 如果提供了初始化选项，初始化 I18n

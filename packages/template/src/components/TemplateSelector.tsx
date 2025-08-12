@@ -4,8 +4,11 @@
  * 提供便捷的模板切换功能，可以灵活放置在任意位置
  */
 
-import { defineComponent, ref, computed, onMounted } from 'vue'
-import type { TemplateInfo } from '../core/types'
+import type { TemplateInfo } from '../types'
+import { computed, defineComponent, onMounted, type PropType, ref } from 'vue'
+// 导入 getCurrentInstance
+import { getCurrentInstance } from 'vue'
+
 import './TemplateSelector.less'
 
 export interface TemplateSelectorProps {
@@ -47,7 +50,7 @@ export default defineComponent({
       default: '',
     },
     onTemplateChange: {
-      type: Function as () => (templateId: string) => void,
+      type: Function as PropType<(templateId: string) => void>,
       default: undefined,
     },
   },
@@ -86,7 +89,7 @@ export default defineComponent({
 
     // 当前模板信息
     const currentTemplateInfo = computed(() => {
-      return availableTemplates.value.find(t => t.id === selectedTemplate.value)
+      return availableTemplates.value.find((t: TemplateInfo) => t.id === selectedTemplate.value)
     })
 
     // 切换模板
@@ -114,7 +117,7 @@ export default defineComponent({
 
     // 获取模板预览图
     const getTemplatePreview = (template: TemplateInfo) => {
-      return template.preview || '/placeholder-template.png'
+      return template.config.preview || '/placeholder-template.png'
     }
 
     // 获取设备图标
@@ -157,7 +160,7 @@ export default defineComponent({
               <div class="template-selector__loading">加载中...</div>
             ) : (
               <div class="template-selector__list">
-                {availableTemplates.value.map(template => (
+                {availableTemplates.value.map((template: TemplateInfo) => (
                   <div
                     key={template.id}
                     class={['template-selector__item', { 'is-active': template.id === selectedTemplate.value }]}
@@ -166,7 +169,7 @@ export default defineComponent({
                     <span class="template-selector__item-icon">{getDeviceIcon(template.device)}</span>
                     <div class="template-selector__item-content">
                       <div class="template-selector__item-name">{template.name}</div>
-                      {props.showInfo && <div class="template-selector__item-desc">{template.description}</div>}
+                      {props.showInfo && <div class="template-selector__item-desc">{template.config.description}</div>}
                     </div>
                     {template.id === selectedTemplate.value && <span class="template-selector__item-check">✓</span>}
                   </div>
@@ -188,7 +191,7 @@ export default defineComponent({
           <div class="template-selector__loading">加载中...</div>
         ) : (
           <div class="template-selector__grid">
-            {availableTemplates.value.map(template => (
+            {availableTemplates.value.map((template: TemplateInfo) => (
               <div
                 key={template.id}
                 class={['template-selector__card', { 'is-active': template.id === selectedTemplate.value }]}
@@ -204,7 +207,7 @@ export default defineComponent({
                     <span class="template-selector__card-icon">{getDeviceIcon(template.device)}</span>
                     <span class="template-selector__card-name">{template.name}</span>
                   </div>
-                  {props.showInfo && <div class="template-selector__card-desc">{template.description}</div>}
+                  {props.showInfo && <div class="template-selector__card-desc">{template.config.description}</div>}
                 </div>
                 {template.id === selectedTemplate.value && <div class="template-selector__card-check">✓</div>}
               </div>
@@ -224,7 +227,7 @@ export default defineComponent({
           <div class="template-selector__loading">加载中...</div>
         ) : (
           <div class="template-selector__list">
-            {availableTemplates.value.map(template => (
+            {availableTemplates.value.map((template: TemplateInfo) => (
               <div
                 key={template.id}
                 class={['template-selector__list-item', { 'is-active': template.id === selectedTemplate.value }]}
@@ -233,9 +236,9 @@ export default defineComponent({
                 <div class="template-selector__list-icon">{getDeviceIcon(template.device)}</div>
                 <div class="template-selector__list-content">
                   <div class="template-selector__list-name">{template.name}</div>
-                  {props.showInfo && <div class="template-selector__list-desc">{template.description}</div>}
+                  {props.showInfo && <div class="template-selector__list-desc">{template.config.description}</div>}
                   <div class="template-selector__list-meta">
-                    设备: {template.device} | 版本: {template.version}
+                    设备: {template.device} | 版本: {template.config.version || '1.0.0'}
                   </div>
                 </div>
                 <div class="template-selector__list-actions">
@@ -264,6 +267,3 @@ export default defineComponent({
     }
   },
 })
-
-// 导入 getCurrentInstance
-import { getCurrentInstance } from 'vue'

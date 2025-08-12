@@ -2,7 +2,7 @@
  * JSX 类型声明
  */
 
-declare namespace JSX {
+declare namespace _JSX {
   interface IntrinsicElements {
     [elemName: string]: unknown
   }
@@ -11,8 +11,16 @@ declare namespace JSX {
 // Vue JSX 类型声明
 declare global {
   namespace JSX {
-    interface Element extends VNode {}
-    interface ElementClass extends ComponentRenderProxy {}
+    interface Element {
+      // Vue VNode properties
+      type: any
+      props: any
+      children: any
+    }
+    interface ElementClass {
+      // Vue Component properties
+      $props: any
+    }
     interface ElementAttributesProperty {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       $props: any

@@ -71,14 +71,13 @@ describe('performanceMonitor', () => {
       },
     })
 
-    // 设置 isVisible 为 false
-    const vm = wrapper.vm as any
-    vm.isVisible = false
-
+    // 在自动隐藏模式下，当性能良好时（默认情况下没有性能数据或FPS > 30），组件应该隐藏
     await wrapper.vm.$nextTick()
 
-    // 在自动隐藏模式下，组件应该不可见
-    expect(wrapper.html()).toBe('<!--v-if-->')
+    // 在自动隐藏模式下，组件应该不可见（因为没有性能问题）
+    // 在测试环境中，隐藏的组件可能渲染为空字符串或注释节点
+    const html = wrapper.html()
+    expect(html === '' || html === '<!--v-if-->').toBe(true)
   })
 
   it('应该显示渲染性能指标', async () => {

@@ -29,13 +29,13 @@ import {
   createWebHistory,
 } from './core/history'
 import { createRouter } from './core/router'
-import { isNavigationFailure, NavigationFailureType } from './guards'
-import { routerPlugin } from './router-plugin'
 // Engine 插件（新的标准化方式）
 import {
-  createRouterEnginePlugin,
   createDefaultRouterEnginePlugin,
+  createRouterEnginePlugin,
 } from './engine/plugin'
+import { isNavigationFailure, NavigationFailureType } from './guards'
+import { routerPlugin } from './router-plugin'
 
 // Vue组件
 export { RouterLink, RouterView } from './components'
@@ -72,21 +72,15 @@ export {
 // 路由器创建
 export { createRouter } from './core/router'
 
-// 导航守卫
-export { isNavigationFailure, NavigationFailureType } from './guards'
-
-// 路由插件（向后兼容）
-export { routerPlugin } from './router-plugin'
-export type { RouterPluginOptions } from './router-plugin'
-
 // Engine 插件（推荐的新方式）
 export {
-  createRouterEnginePlugin,
   createDefaultRouterEnginePlugin,
+  createRouterEnginePlugin,
 } from './engine/plugin'
-export type { RouterEnginePluginOptions } from './engine/plugin'
 
-// ==================== 插件系统 ====================
+export type { RouterEnginePluginOptions } from './engine/plugin'
+// 导航守卫
+export { isNavigationFailure, NavigationFailureType } from './guards'
 
 export {
   createCachePlugin,
@@ -96,7 +90,6 @@ export {
   RouterCachePlugin,
   RouterPerformancePlugin,
 } from './plugins'
-
 export type {
   CacheConfig,
   CacheStrategy,
@@ -104,6 +97,13 @@ export type {
   PerformanceConfig,
   PerformanceData,
 } from './plugins'
+
+// ==================== 插件系统 ====================
+
+// 路由插件（向后兼容）
+export { routerPlugin } from './router-plugin'
+
+export type { RouterPluginOptions } from './router-plugin'
 
 // ==================== 类型定义 ====================
 

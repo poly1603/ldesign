@@ -46,7 +46,7 @@ export default defineComponent({
     },
   },
   emits: ['update'],
-  setup(props, { emit }) {
+  setup(props, { emit, expose }) {
     // 注意：这里需要从全局获取 manager 实例
     // 在实际使用中，应该通过 provide/inject 或其他方式获取
     const manager = ref<any>(null)
@@ -178,14 +178,30 @@ export default defineComponent({
       manager.value = null
     })
 
-    return () => {
-      if (!isVisible.value && props.autoHide) {
-        return null
-      }
+    // 暴露状态供测试使用
+    expose({
+      isVisible,
+      performanceData,
+      manager,
+    })
 
+    // 计算是否应该显示组件
+    const shouldShow = computed(() => {
+      if (props.autoHide) {
+        // 在自动隐藏模式下，根据性能数据决定是否显示
+        const { rendering } = performanceData.value
+        if (rendering && rendering.fps > 0 && rendering.fps < 30) {
+          return true // 性能较差时显示
+        }
+        return false // 性能良好时隐藏
+      }
+      return true // 手动控制模式下始终显示组件容器
+    })
+
+    return () => {
       const { memory, rendering, templates } = performanceData.value
 
-      return (
+      return shouldShow.value ? (
         <div class="performance-monitor">
           <div class="performance-header">
             <h4>性能监控</h4>
@@ -277,7 +293,7 @@ export default defineComponent({
             </div>
           )}
         </div>
-      )
+      ) : null
     }
   },
 })

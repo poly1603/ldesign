@@ -84,7 +84,10 @@ export class EnhancedComponentsPlugin {
         app.component('RouterLink', LinkComponent)
       } else {
         // 如果组件已存在，记录调试信息但不覆盖
-        if (process.env.NODE_ENV === 'development') {
+        if (
+          typeof process !== 'undefined' &&
+          process.env?.NODE_ENV === 'development'
+        ) {
           console.debug(
             '[Enhanced Components Plugin] RouterLink already exists, using enhanced version as alias'
           )
@@ -103,7 +106,10 @@ export class EnhancedComponentsPlugin {
         app.component('RouterView', ViewComponent)
       } else {
         // 如果组件已存在，记录调试信息但不覆盖
-        if (process.env.NODE_ENV === 'development') {
+        if (
+          typeof process !== 'undefined' &&
+          process.env?.NODE_ENV === 'development'
+        ) {
           console.debug(
             '[Enhanced Components Plugin] RouterView already exists, using enhanced version as alias'
           )
