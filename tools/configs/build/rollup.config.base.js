@@ -37,6 +37,7 @@ export function createRollupConfig(options = {}) {
     includeUmd = true,
     formats = ['es', 'cjs', 'umd'],
     excludePatterns = [],
+    lessOptions = {},
   } = options
 
   const packagePath = path.resolve(packageDir)
@@ -134,6 +135,7 @@ export function createRollupConfig(options = {}) {
         use: {
           less: {
             javascriptEnabled: true,
+            ...lessOptions,
           },
           sass: {},
           stylus: {},

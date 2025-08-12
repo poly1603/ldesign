@@ -1,4 +1,4 @@
-// import type { Engine, Plugin } from '@ldesign/engine'
+import type { Engine, Plugin } from '@ldesign/engine'
 import type { App } from 'vue'
 import type { Router, RouteRecordRaw, RouterOptions } from './types'
 import {
@@ -11,23 +11,7 @@ import {
   createEnhancementConfig,
   EnhancedComponentsPlugin,
   type EnhancedComponentsPluginOptions,
-} from './plugins/enhanced-components-plugin'
-
-// 临时类型定义，直到engine包可用
-interface Engine {
-  getApp: () => App | undefined
-  use: (plugin: Plugin) => Promise<void>
-  mount: (selector: string) => Promise<any>
-  router?: any
-  logger?: any
-  notifications?: any
-}
-
-interface Plugin {
-  name: string
-  version: string
-  install: (engine: Engine) => Promise<void>
-}
+} from './plugins/components'
 
 /**
  * 路由插件配置选项
@@ -69,10 +53,20 @@ class RouterPlugin implements Plugin {
     this.options = options
   }
 
+  // 索引签名以满足 Plugin 接口要求
+  [key: string]: unknown
+
   /**
    * 安装插件到 Engine
    */
-  async install(engine: Engine): Promise<void> {
+  install(engine: Engine): Promise<void> {
+    return this.installAsync(engine)
+  }
+
+  /**
+   * 异步安装插件到 Engine
+   */
+  private async installAsync(engine: Engine): Promise<void> {
     if (this.installed) {
       throw new Error('Router plugin is already installed')
     }
@@ -95,13 +89,27 @@ class RouterPlugin implements Plugin {
 
       // 将路由器注册到 Engine
       engine.router = {
-        push: (to: any) => this.router!.push(to),
-        replace: (to: any) => this.router!.replace(to),
+        install: (_engine: Engine) => {
+          // 安装逻辑已在上面处理
+        },
+        push: async (to: any) => {
+          await this.router!.push(to)
+        },
+        replace: async (to: any) => {
+          await this.router!.replace(to)
+        },
         back: () => this.router!.back(),
         forward: () => this.router!.forward(),
         go: (delta: number) => this.router!.go(delta),
         getCurrentRoute: () => this.router!.currentRoute,
-        getRouter: () => this.router!,
+        getRoutes: () => this.router!.getRoutes(),
+        addRoute: (route: any) => this.router!.addRoute(route),
+        removeRoute: (name: string) => this.router!.removeRoute(name),
+        hasRoute: (name: string) => this.router!.hasRoute(name),
+        resolve: (to: any) => this.router!.resolve(to),
+        beforeEach: (guard: any) => this.router!.beforeEach(guard),
+        beforeResolve: (guard: any) => this.router!.beforeResolve(guard),
+        afterEach: (guard: any) => this.router!.afterEach(guard),
       }
 
       this.installed = true

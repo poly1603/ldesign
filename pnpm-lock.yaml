@@ -146,6 +146,9 @@ importers:
 
   packages/app:
     dependencies:
+      "@ldesign/device":
+        specifier: workspace:*
+        version: link:../device
       "@ldesign/engine":
         specifier: workspace:*
         version: link:../engine
@@ -944,6 +947,9 @@ importers:
 
   packages/router:
     devDependencies:
+      "@ldesign/engine":
+        specifier: workspace:*
+        version: link:../engine
       "@rollup/plugin-commonjs":
         specifier: ^25.0.7
         version: 25.0.8(rollup@4.46.1)

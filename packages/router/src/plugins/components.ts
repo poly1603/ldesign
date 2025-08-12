@@ -61,33 +61,60 @@ export class EnhancedComponentsPlugin {
       app.provide('routerEnhancementConfig', enhancementConfig)
     }
 
+    // 检查现有组件
+    const existingRouterLink = app.component('RouterLink')
+    const existingRouterView = app.component('RouterView')
+
     // 保留原始组件
     if (keepOriginal) {
-      const originalRouterLink = app.component('RouterLink')
-      const originalRouterView = app.component('RouterView')
-
-      if (originalRouterLink) {
-        app.component(`${prefix}OriginalRouterLink`, originalRouterLink)
+      if (existingRouterLink) {
+        app.component(`${prefix}OriginalRouterLink`, existingRouterLink)
       }
-      if (originalRouterView) {
-        app.component(`${prefix}OriginalRouterView`, originalRouterView)
+      if (existingRouterView) {
+        app.component(`${prefix}OriginalRouterView`, existingRouterView)
       }
     }
 
-    // 注册增强组件
+    // 注册增强组件 - 避免覆盖已存在的组件
     if (replaceRouterLink) {
       const LinkComponent = componentMap.RouterLink || RouterLink
-      app.component('RouterLink', LinkComponent)
+
+      // 只有在组件不存在时才注册，避免覆盖 Vue Router 的默认组件
+      if (!existingRouterLink) {
+        app.component('RouterLink', LinkComponent)
+      } else {
+        // 如果组件已存在，记录调试信息但不覆盖
+        if (process.env.NODE_ENV === 'development') {
+          console.debug(
+            '[Enhanced Components Plugin] RouterLink already exists, using enhanced version as alias'
+          )
+        }
+      }
+
+      // 始终注册增强版本的别名
       app.component(`${prefix}EnhancedRouterLink`, LinkComponent)
     }
 
     if (replaceRouterView) {
       const ViewComponent = componentMap.RouterView || RouterView
-      app.component('RouterView', ViewComponent)
+
+      // 只有在组件不存在时才注册，避免覆盖 Vue Router 的默认组件
+      if (!existingRouterView) {
+        app.component('RouterView', ViewComponent)
+      } else {
+        // 如果组件已存在，记录调试信息但不覆盖
+        if (process.env.NODE_ENV === 'development') {
+          console.debug(
+            '[Enhanced Components Plugin] RouterView already exists, using enhanced version as alias'
+          )
+        }
+      }
+
+      // 始终注册增强版本的别名
       app.component(`${prefix}EnhancedRouterView`, ViewComponent)
     }
 
-    // 注册别名组件
+    // 注册别名组件（使用不同的名称避免冲突）
     app.component(`${prefix}Link`, RouterLink)
     app.component(`${prefix}View`, RouterView)
 

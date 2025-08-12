@@ -72,8 +72,8 @@ describe('login 组件', () => {
     await usernameInput.setValue('testuser')
     await passwordInput.setValue('testpass')
 
-    expect(usernameInput.element.value).toBe('testuser')
-    expect(passwordInput.element.value).toBe('testpass')
+    expect((usernameInput.element as HTMLInputElement).value).toBe('testuser')
+    expect((passwordInput.element as HTMLInputElement).value).toBe('testpass')
   })
 
   it('应该在表单提交时调用登录处理函数', async () => {

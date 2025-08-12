@@ -6,13 +6,25 @@ import { defineConfig } from 'vite'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          // 启用运行时模板编译
+          isCustomElement: (_tag: string) => false,
+        },
+      },
+    }),
     vueJsx({
       // 配置 JSX 选项
       transformOn: true,
       mergeProps: true,
     }),
   ],
+  define: {
+    // 启用Vue运行时编译器
+    __VUE_OPTIONS_API__: true,
+    __VUE_PROD_DEVTOOLS__: false,
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -25,6 +37,12 @@ export default defineConfig({
       '@ldesign/engine': resolve(__dirname, '../engine/es/index.js'),
       '@ldesign/router': resolve(__dirname, '../router/es/index.js'),
       '@ldesign/template': resolve(__dirname, '../template/es/index.js'),
+      '@ldesign/template/vue': resolve(
+        __dirname,
+        '../template/es/vue/index.js'
+      ),
+      // 使用包含编译器的Vue版本
+      vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
   css: {

@@ -30,7 +30,7 @@ import {
 } from './core/history'
 import { createRouter } from './core/router'
 import { isNavigationFailure, NavigationFailureType } from './guards'
-import { routerPlugin } from './plugin'
+import { routerPlugin } from './router-plugin'
 
 // Vue组件
 export { RouterLink, RouterView } from './components'
@@ -70,9 +70,9 @@ export { createRouter } from './core/router'
 // 导航守卫
 export { isNavigationFailure, NavigationFailureType } from './guards'
 
-export { routerPlugin } from './plugin'
+export { routerPlugin } from './router-plugin'
 
-export type { RouterPluginOptions } from './plugin'
+export type { RouterPluginOptions } from './router-plugin'
 
 // ==================== 插件系统 ====================
 

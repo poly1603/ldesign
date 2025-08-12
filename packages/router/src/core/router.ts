@@ -342,6 +342,11 @@ export function createRouter(options: RouterOptions): Router {
     app.component('RouterView', RouterView)
     app.component('RouterLink', RouterLink)
 
+    // 解析并设置初始路由
+    const initialLocation = options.history.location()
+    const initialRoute = matcher.resolve(initialLocation, currentRoute.value)
+    currentRoute.value = initialRoute
+
     // 监听历史变化
     const removeHistoryListener = options.history.listen((to, _from, _info) => {
       const targetLocation = matcher.resolve(to, currentRoute.value)

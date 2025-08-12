@@ -24,7 +24,7 @@ export {
   createDefaultPermissionChecker,
   createEnhancementConfig,
   EnhancedComponentsPlugin,
-} from './enhanced-components-plugin'
+} from './components'
 
 // 性能监控插件
 export {

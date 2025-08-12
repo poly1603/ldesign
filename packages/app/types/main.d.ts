@@ -6,13 +6,10 @@ import { AppConfig } from './types/index.js'
  * @param config 应用配置
  * @returns 应用实例
  */
-declare function createLDesignApp(config?: Partial<AppConfig>): Promise<
-  | {
-      engine: _ldesign_engine.Engine
-      router: _ldesign_engine.RouterAdapter | undefined
-      config: AppConfig
-    }
-  | undefined
->
+declare function createLDesignApp(config?: Partial<AppConfig>): Promise<{
+  engine: _ldesign_engine.Engine
+  router: _ldesign_engine.RouterAdapter | undefined
+  config: AppConfig
+}>
 
 export { createLDesignApp as default }

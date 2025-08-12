@@ -79,6 +79,7 @@
     }
   },
   "dependencies": {
+    "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",
     "@ldesign/router": "workspace:^",
     "@ldesign/template": "workspace:*",

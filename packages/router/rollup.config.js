@@ -7,10 +7,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default createRollupConfig({
   packageDir: __dirname,
   vue: true,
-  external: ['vue'],
+  external: ['vue', '@ldesign/engine'],
   globalName: 'LDesignRouter',
   globals: {
     vue: 'Vue',
+    '@ldesign/engine': 'LDesignEngine',
   },
   // 排除 examples 目录
   excludePatterns: ['examples/**/*', 'test/**/*', '**/*.test.*', '**/*.spec.*'],

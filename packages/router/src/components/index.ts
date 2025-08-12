@@ -22,8 +22,8 @@ export {
   createEnhancementConfig,
   EnhancedComponentsPlugin,
   setupEnhancedComponents,
-} from '../plugins/enhanced-components-plugin'
-export type { EnhancedComponentsPluginOptions } from '../plugins/enhanced-components-plugin'
+} from '../plugins/components'
+export type { EnhancedComponentsPluginOptions } from '../plugins/components'
 
 export { RouterLink, default as RouterLinkDefault } from './RouterLink'
 

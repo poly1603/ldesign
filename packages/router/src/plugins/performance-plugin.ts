@@ -228,7 +228,7 @@ export class RouterPerformancePlugin {
 
       // 预加载组件
       if (route.matched.length > 0) {
-        const components = route.matched[0].components
+        const components = route.matched[0]?.components
         if (
           components &&
           components.default &&
@@ -273,7 +273,11 @@ export class RouterPerformancePlugin {
     this.config.onPerformanceData(data)
 
     // 在开发环境下输出到控制台
-    if (process.env.NODE_ENV === 'development') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env?.NODE_ENV === 'development'
+    ) {
+      // eslint-disable-next-line no-console
       console.log(
         `[Router Performance] ${data.type}: ${
           data.route

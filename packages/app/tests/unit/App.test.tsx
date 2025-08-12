@@ -1,3 +1,4 @@
+import { DeviceDetector } from '@ldesign/device'
 import { createEngine } from '@ldesign/engine'
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -47,12 +48,14 @@ describe('app', () => {
 
   it('should render without crashing', () => {
     const mockEngine = createEngine()
+    const mockDevice = new DeviceDetector()
 
     wrapper = mount(App, {
       global: {
         config: {
           globalProperties: {
             $engine: mockEngine,
+            $device: mockDevice,
           },
         },
       },
@@ -63,12 +66,14 @@ describe('app', () => {
 
   it('should show loading state initially', async () => {
     const mockEngine = createEngine()
+    const mockDevice = new DeviceDetector()
 
     wrapper = mount(App, {
       global: {
         config: {
           globalProperties: {
             $engine: mockEngine,
+            $device: mockDevice,
           },
         },
       },
@@ -79,11 +84,14 @@ describe('app', () => {
   })
 
   it('should handle engine initialization error', async () => {
+    const mockDevice = new DeviceDetector()
+
     wrapper = mount(App, {
       global: {
         config: {
           globalProperties: {
             $engine: null, // No engine provided
+            $device: mockDevice,
           },
         },
       },
@@ -100,12 +108,14 @@ describe('app', () => {
 
   it('should emit app:ready event when initialized', async () => {
     const mockEngine = createEngine()
+    const mockDevice = new DeviceDetector()
 
     wrapper = mount(App, {
       global: {
         config: {
           globalProperties: {
             $engine: mockEngine,
+            $device: mockDevice,
           },
         },
       },

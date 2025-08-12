@@ -71,7 +71,7 @@ app.use(router)
 
 ```typescript
 import { createApp } from '@ldesign/engine'
-import { routerPlugin, createPerformancePlugin, createCachePlugin } from '@ldesign/router'
+import { createCachePlugin, createPerformancePlugin, routerPlugin } from '@ldesign/router'
 
 const engine = createApp(App)
 
@@ -224,7 +224,7 @@ onBeforeRouteLeave((to, from, next) => {
 #### 便利的组合式 API
 
 ```typescript
-import { useParams, useQuery, useHash, useMeta, useMatched } from '@ldesign/router'
+import { useHash, useMatched, useMeta, useParams, useQuery } from '@ldesign/router'
 
 // 获取路由参数
 const params = useParams()
@@ -491,6 +491,9 @@ app.use(performancePlugin)
 ```typescript
 import { createCachePlugin } from '@ldesign/router'
 
+// 在组件中使用缓存
+import { inject } from 'vue'
+
 const cachePlugin = createCachePlugin({
   strategy: 'memory', // 缓存策略：memory | localStorage | sessionStorage
   defaultTTL: 5 * 60 * 1000, // 默认缓存时间（毫秒）
@@ -502,9 +505,6 @@ const cachePlugin = createCachePlugin({
 })
 
 app.use(cachePlugin)
-
-// 在组件中使用缓存
-import { inject } from 'vue'
 
 const routerCache = inject('routerCache')
 
