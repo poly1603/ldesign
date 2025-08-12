@@ -13,9 +13,9 @@
  * @author ldesign
  */
 
-import type { I18nInstance, I18nOptions } from './core/types'
 // 导入核心类
 import { I18n } from './core/i18n'
+import type { I18nInstance, I18nOptions } from './core/types'
 
 // 导出检测器
 export {
@@ -29,11 +29,7 @@ export {
 export { I18n } from './core/i18n'
 
 // 导出加载器
-export {
-  DefaultLoader,
-  HttpLoader,
-  StaticLoader,
-} from './core/loader'
+export { DefaultLoader, HttpLoader, StaticLoader } from './core/loader'
 
 // 导出存储实现
 export {
@@ -52,14 +48,12 @@ export type {
   CacheItem,
   CacheOptions,
   Detector,
-
   EventEmitter,
   I18nEventListener,
   // 事件相关
   I18nEventType,
   // 主要接口
   I18nInstance,
-
   I18nOptions,
   InterpolationOptions,
   LanguageInfo,
@@ -117,6 +111,9 @@ export {
   registerPluralRule,
 } from './utils/pluralization'
 
+// 导出 Vue 集成（可选，需要单独导入）
+export * as vue from './vue'
+
 // 便捷的创建函数
 export function createI18n(options?: I18nOptions): I18nInstance {
   return new I18n(options)
@@ -127,7 +124,9 @@ export function createI18n(options?: I18nOptions): I18nInstance {
  * @param options I18n 配置选项
  * @returns I18n 实例
  */
-export async function createI18nWithBuiltinLocales(options?: I18nOptions): Promise<I18nInstance> {
+export async function createI18nWithBuiltinLocales(
+  options?: I18nOptions
+): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
   const enPkg = await import('./locales/en')
   const zhCNPkg = await import('./locales/zh-CN')
@@ -135,9 +134,9 @@ export async function createI18nWithBuiltinLocales(options?: I18nOptions): Promi
 
   const loader = new StaticLoader()
   loader.registerPackages({
-    'en': enPkg.default,
+    en: enPkg.default,
     'zh-CN': zhCNPkg.default,
-    'ja': jaPkg.default,
+    ja: jaPkg.default,
   })
 
   const i18n = new I18n(options)
@@ -152,7 +151,9 @@ export async function createI18nWithBuiltinLocales(options?: I18nOptions): Promi
  * @param options I18n 配置选项
  * @returns I18n 实例
  */
-export async function createSimpleI18n(options?: I18nOptions): Promise<I18nInstance> {
+export async function createSimpleI18n(
+  options?: I18nOptions
+): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
   const enPkg = await import('./locales/en')
 

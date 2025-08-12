@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+
 import {
   useBatchTranslation,
   useConditionalTranslation,
@@ -233,7 +234,7 @@ onMounted(() => {
             class="key-category"
           >
             <div class="category-header" @click="toggleCategory(category)">
-              {{ category.toUpperCase() }} ({{ keys.length }} keys)
+              {{ String(category).toUpperCase() }} ({{ keys.length }} keys)
               <span>{{ expandedCategories[category] ? '▼' : '▶' }}</span>
             </div>
             <div v-show="expandedCategories[category]" class="category-content">

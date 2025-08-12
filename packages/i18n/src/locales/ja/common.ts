@@ -60,6 +60,12 @@ export const common = {
   refresh: '更新',
   reload: '再読み込み',
 
+  // ユーザー関連
+  welcome: 'ようこそ',
+  logout: 'ログアウト',
+  loginSuccess: 'ログイン成功',
+  currentLanguage: '現在の言語',
+
   // 時間
   today: '今日',
   yesterday: '昨日',
@@ -81,7 +87,8 @@ export const common = {
   // 確認対話框
   confirmDelete: 'この項目を削除してもよろしいですか？',
   confirmCancel: 'キャンセルしてもよろしいですか？未保存の変更は失われます。',
-  confirmLeave: 'このページを離れてもよろしいですか？未保存の変更は失われます。',
+  confirmLeave:
+    'このページを離れてもよろしいですか？未保存の変更は失われます。',
   confirmReset: 'リセットしてもよろしいですか？すべての変更が失われます。',
 
   // 通用消息

@@ -1,15 +1,18 @@
 {
   "extends": "../../tools/configs/tsconfig.base.json",
   "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["node", "vite/client"],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "tests/**/*",
-    "examples/**/*"
-  ]
+  "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "examples/**/*"],
+  "exclude": ["node_modules", "dist", "es", "lib", "types", "examples/**/*"]
 }

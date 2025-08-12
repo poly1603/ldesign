@@ -81,6 +81,7 @@
   "dependencies": {
     "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",
+    "@ldesign/i18n": "workspace:*",
     "@ldesign/router": "workspace:^",
     "@ldesign/template": "workspace:*",
     "vue": "^3.5.18"

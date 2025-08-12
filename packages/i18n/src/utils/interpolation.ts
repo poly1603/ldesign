@@ -17,7 +17,7 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
   '<': '&lt;',
   '>': '&gt;',
   '"': '&quot;',
-  '\'': '&#x27;',
+  "'": '&#x27;',
   '/': '&#x2F;',
 }
 
@@ -36,7 +36,10 @@ function escapeHtml(str: string): string {
  * @param escapeValue 是否转义 HTML
  * @returns 格式化后的字符串
  */
-function formatValue(value: string | number | boolean | null | undefined, escapeValue: boolean): string {
+function formatValue(
+  value: string | number | boolean | null | undefined,
+  escapeValue: boolean
+): string {
   if (value === null || value === undefined) {
     return ''
   }
@@ -51,21 +54,35 @@ function formatValue(value: string | number | boolean | null | undefined, escape
  * @param params 参数对象
  * @returns 解析后的值
  */
-function parseExpression(expression: string, params: TranslationParams): string | number | boolean | null | undefined {
+function parseExpression(
+  expression: string,
+  params: TranslationParams
+): string | number | boolean | null | undefined {
   const trimmed = expression.trim()
 
   // 支持点分隔的嵌套属性访问
   const keys = trimmed.split('.')
-  let value: string | number | boolean | null | undefined | Record<string, unknown> = params
+  let value:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Record<string, unknown> = params
 
   for (const key of keys) {
     if (value === null || value === undefined) {
       return undefined
     }
     if (typeof value === 'object' && value !== null) {
-      value = (value as Record<string, unknown>)[key] as string | number | boolean | null | undefined | Record<string, unknown>
-    }
-    else {
+      value = (value as Record<string, unknown>)[key] as
+        | string
+        | number
+        | boolean
+        | null
+        | undefined
+        | Record<string, unknown>
+    } else {
       return undefined
     }
   }
@@ -83,7 +100,7 @@ function parseExpression(expression: string, params: TranslationParams): string 
 export function interpolate(
   template: string,
   params: TranslationParams = {},
-  options: InterpolationOptions = {},
+  options: InterpolationOptions = {}
 ): string {
   // 快速路径：如果模板中没有插值标记，直接返回
   if (!hasInterpolation(template)) {
@@ -94,7 +111,12 @@ export function interpolate(
   const { prefix, suffix, escapeValue } = opts
 
   // 创建正则表达式来匹配插值标记
-  const regex = new RegExp(`${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(suffix)}`, 'g')
+  const regex = new RegExp(
+    `${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(
+      suffix
+    )}`,
+    'g'
+  )
 
   return template.replace(regex, (_match, expression) => {
     const value = parseExpression(expression, params)
@@ -119,12 +141,16 @@ function escapeRegExp(str: string): string {
  */
 export function hasInterpolation(
   template: string,
-  options: InterpolationOptions = {},
+  options: InterpolationOptions = {}
 ): boolean {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const { prefix, suffix } = opts
 
-  const regex = new RegExp(`${escapeRegExp(prefix)}\\s*[^${escapeRegExp(suffix)}]+\\s*${escapeRegExp(suffix)}`)
+  const regex = new RegExp(
+    `${escapeRegExp(prefix)}\\s*[^${escapeRegExp(suffix)}]+\\s*${escapeRegExp(
+      suffix
+    )}`
+  )
   return regex.test(template)
 }
 
@@ -136,16 +162,20 @@ export function hasInterpolation(
  */
 export function extractInterpolationKeys(
   template: string,
-  options: InterpolationOptions = {},
+  options: InterpolationOptions = {}
 ): string[] {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   const { prefix, suffix } = opts
 
-  const regex = new RegExp(`${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(suffix)}`, 'g')
+  const regex = new RegExp(
+    `${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(
+      suffix
+    )}`,
+    'g'
+  )
   const keys: string[] = []
   let match: RegExpExecArray | null
 
-  // eslint-disable-next-line no-cond-assign
   while ((match = regex.exec(template)) !== null) {
     const expression = match[1].trim()
     if (expression && !keys.includes(expression)) {
@@ -166,8 +196,8 @@ export function extractInterpolationKeys(
 export function validateInterpolationParams(
   template: string,
   params: TranslationParams,
-  options: InterpolationOptions = {},
-): { valid: boolean, missingKeys: string[] } {
+  options: InterpolationOptions = {}
+): { valid: boolean; missingKeys: string[] } {
   const requiredKeys = extractInterpolationKeys(template, options)
   const missingKeys: string[] = []
 
@@ -194,7 +224,7 @@ export function validateInterpolationParams(
 export function batchInterpolate(
   templates: string[],
   params: TranslationParams = {},
-  options: InterpolationOptions = {},
+  options: InterpolationOptions = {}
 ): string[] {
   return templates.map(template => interpolate(template, params, options))
 }

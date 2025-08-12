@@ -235,15 +235,15 @@ export class HttpLoader implements Loader {
   private loadedPackages = new Map<string, LanguagePackage>()
   private loadingPromises = new Map<string, Promise<LanguagePackage>>()
   private baseUrl: string
-  private fetchOptions: RequestInit
+  private fetchOptions: Record<string, unknown>
 
-  constructor(baseUrl: string, fetchOptions: RequestInit = {}) {
+  constructor(baseUrl: string, fetchOptions: Record<string, unknown> = {}) {
     this.baseUrl = baseUrl.replace(/\/$/, '') // 移除末尾的斜杠
     this.fetchOptions = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...fetchOptions.headers,
+        ...((fetchOptions.headers as Record<string, string>) || {}),
       },
       ...fetchOptions,
     }

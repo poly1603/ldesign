@@ -1,4 +1,14 @@
-import type { App, ComputedRef, Ref } from 'vue'
+import type { App } from '@vue/runtime-core'
+
+// 临时类型定义，避免Vue导入问题
+type ComputedRef<T = any> = {
+  readonly value: T
+}
+
+type Ref<T = any> = {
+  value: T
+}
+
 import type {
   I18nInstance,
   I18nOptions,
@@ -29,11 +39,11 @@ export interface UseI18nReturn {
   /** 可用语言列表（响应式） */
   availableLanguages: ComputedRef<LanguageInfo[]>
   /** 切换语言 */
-  changeLanguage: (locale: string) => Promise<void>
+  changeLanguage: (_locale: string) => Promise<void>
   /** 检查翻译键是否存在 */
-  exists: (key: string, locale?: string) => boolean
+  exists: (_key: string, _locale?: string) => boolean
   /** 获取所有翻译键 */
-  getKeys: (locale?: string) => string[]
+  getKeys: (_locale?: string) => string[]
   /** I18n 实例 */
   i18n: I18nInstance
 }
@@ -45,7 +55,7 @@ export interface VueI18nPlugin {
   /** I18n 实例 */
   global: I18nInstance
   /** 安装插件 */
-  install: (app: App, options?: VueI18nOptions) => void
+  install: (_app: App, _options?: VueI18nOptions) => void
 }
 
 /**
@@ -61,11 +71,12 @@ export interface I18nContext {
 /**
  * Vue 应用扩展
  */
-declare module 'vue' {
-  interface ComponentCustomProperties extends I18nContext { }
-
-  interface GlobalProperties extends I18nContext { }
-}
+// Vue模块扩展暂时注释掉，避免模块解析问题
+// declare module 'vue' {
+//   interface ComponentCustomProperties extends I18nContext { }
+//
+//   interface GlobalProperties extends I18nContext { }
+// }
 
 /**
  * Vue I18n 指令选项

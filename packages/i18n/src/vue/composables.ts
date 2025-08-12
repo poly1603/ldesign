@@ -1,6 +1,8 @@
-import type { I18nInstance } from '../core/types'
-import type { UseI18nReturn } from './types'
 import { computed, inject, onUnmounted, ref } from 'vue'
+
+import type { I18nInstance } from '../core/types'
+
+import type { UseI18nReturn } from './types'
 
 /**
  * I18n 注入键
@@ -13,7 +15,7 @@ export const I18N_INJECTION_KEY = Symbol('i18n')
  */
 export function useI18n(): UseI18nReturn {
   // 从 Vue 应用中注入 I18n 实例
-  const i18n = inject<I18nInstance>(I18N_INJECTION_KEY)
+  const i18n = inject(I18N_INJECTION_KEY) as I18nInstance
 
   if (!i18n) {
     throw new Error(
@@ -58,7 +60,7 @@ export function useI18n(): UseI18nReturn {
   }
 
   return {
-    t: i18n.t,
+    t: i18n.t.bind(i18n),
     locale,
     availableLanguages,
     changeLanguage,
@@ -112,7 +114,7 @@ export function useI18nWithInstance(i18nInstance: I18nInstance): UseI18nReturn {
   }
 
   return {
-    t: i18nInstance.t,
+    t: i18nInstance.t.bind(i18nInstance),
     locale,
     availableLanguages,
     changeLanguage,

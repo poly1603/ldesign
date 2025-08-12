@@ -152,6 +152,9 @@ importers:
       "@ldesign/engine":
         specifier: workspace:*
         version: link:../engine
+      "@ldesign/i18n":
+        specifier: workspace:*
+        version: link:../i18n
       "@ldesign/router":
         specifier: workspace:^
         version: link:../router
@@ -704,17 +707,11 @@ importers:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.8.3)
 
-  packages/form/dist:
-    dependencies:
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.18(typescript@5.9.2)
-
   packages/form/docs:
     dependencies:
       "@ldesign/form":
         specifier: workspace:*
-        version: link:../dist
+        version: link:..
       vue:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.8.3)
@@ -733,7 +730,7 @@ importers:
     dependencies:
       "@ldesign/form":
         specifier: workspace:*
-        version: link:../dist
+        version: link:..
       vue:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.9.2)
@@ -879,6 +876,9 @@ importers:
       "@vitest/ui":
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
+      "@vue/runtime-core":
+        specifier: ^3.5.18
+        version: 3.5.18
       "@vue/test-utils":
         specifier: ^2.4.4
         version: 2.4.6

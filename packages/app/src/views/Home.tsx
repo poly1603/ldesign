@@ -1,6 +1,7 @@
 import type { EngineImpl } from '@ldesign/engine'
 import { useRoute, useRouter } from '@ldesign/router'
 import { useDevice } from '@ldesign/device'
+import { LanguageSwitcher } from '../../../i18n/es/vue/index.js'
 import {
   computed,
   defineComponent,
@@ -21,10 +22,17 @@ export default defineComponent({
     const router = useRouter()
     const route = useRoute()
 
+    // i18n 国际化 - 使用全局 $t 函数
+    const $t = instance?.appContext.config.globalProperties.$t
+    const t = $t || ((key: string) => key) // 降级处理
+    const locale = ref('zh-CN') // 临时硬编码
+
     // 设备检测
-    const { deviceInfo, orientation, isMobile, isTablet, isDesktop } =
-      useDevice()
+    const { deviceInfo, isMobile, isTablet, isDesktop } = useDevice()
     const deviceType = computed(() => deviceInfo.value?.type || 'unknown')
+    const orientation = computed(
+      () => deviceInfo.value?.orientation || 'portrait'
+    )
 
     // 用户信息（模拟）
     const userInfo = ref({
@@ -43,13 +51,13 @@ export default defineComponent({
 
     const handleLogout = () => {
       if (confirm('确定要退出登录吗？')) {
-        router.push('/')
+        router.replace('/login')
         engine?.logger.info('用户退出登录')
       }
     }
 
     const handleGoToLogin = () => {
-      router.push('/')
+      router.push('/login')
       engine?.logger.info('导航到登录页')
     }
 
@@ -57,17 +65,23 @@ export default defineComponent({
       <div class='home-page'>
         <header class='home-header'>
           <div class='home-header__content'>
-            <h1 class='home-title'>🏠 LDesign 应用首页</h1>
-            <button class='logout-btn' onClick={handleLogout}>
-              退出登录
-            </button>
+            <h1 class='home-title'>🏠 {t('common.home')}</h1>
+            <div class='header-actions'>
+              <LanguageSwitcher />
+              <button class='logout-btn' onClick={handleLogout}>
+                {t('common.logout')}
+              </button>
+            </div>
           </div>
         </header>
 
         <main class='home-main'>
           <div class='welcome-card'>
-            <h2>欢迎回来！</h2>
-            <p>您已成功登录 LDesign 演示应用</p>
+            <h2>{t('common.welcome')}</h2>
+            <p>{t('common.loginSuccess')}</p>
+            <p>
+              {t('common.currentLanguage')}: {locale.value}
+            </p>
           </div>
 
           <div class='info-grid'>

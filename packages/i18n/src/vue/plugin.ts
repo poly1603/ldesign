@@ -1,12 +1,14 @@
-import type { App } from 'vue'
-import type { I18nInstance } from '../core/types'
+import type { App } from '@vue/runtime-core'
+
+import { I18n } from '../core/i18n'
+import type { I18nInstance, I18nOptions } from '../core/types'
+
+import { I18N_INJECTION_KEY } from './composables'
 import type {
   I18nDirectiveBinding,
   VueI18nOptions,
   VueI18nPlugin,
 } from './types'
-import { I18n } from '../core/i18n'
-import { I18N_INJECTION_KEY } from './composables'
 
 /**
  * 默认插件选项
@@ -44,14 +46,15 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 
       // 注入全局属性
       if (opts.globalInjection) {
-        // 注入翻译函数
-        app.config.globalProperties[opts.globalPropertyName] = global.t
+        // 注入翻译函数，确保正确绑定 this 上下文
+        app.config.globalProperties[opts.globalPropertyName] =
+          global.t.bind(global)
         app.config.globalProperties.$i18n = global
 
         // 为了类型安全，也在 app.config.globalProperties 上设置
         Object.defineProperty(app.config.globalProperties, '$t', {
           get() {
-            return global.t
+            return global.t.bind(global)
           },
         })
       }
@@ -59,11 +62,11 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
       // 注册 v-t 指令
       app.directive('t', {
         // 元素挂载时
-        mounted(el, binding) {
+        mounted(el: HTMLElement, binding: any) {
           updateElementText(el, binding, global)
         },
         // 绑定值更新时
-        updated(el, binding) {
+        updated(el: HTMLElement, binding: any) {
           updateElementText(el, binding, global)
         },
       })
@@ -101,6 +104,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
  * 更新元素文本内容
  * @param el DOM 元素
  * @param binding 指令绑定
+ * @param binding.value 指令值
  * @param i18n I18n 实例
  */
 function updateElementText(
@@ -185,6 +189,35 @@ export function createI18nPlugin(defaultOptions: Partial<VueI18nOptions> = {}) {
  */
 export function getGlobalI18n(): I18nInstance {
   return vueI18n.global
+}
+
+/**
+ * 安装带有内置语言包的 I18n 插件
+ * @param app Vue 应用实例
+ * @param options I18n 配置选项
+ * @returns Promise<I18nInstance> I18n 实例
+ */
+export async function installI18nPlugin(
+  app: App,
+  options?: I18nOptions
+): Promise<I18nInstance> {
+  // 动态导入 createI18nWithBuiltinLocales 函数
+  const { createI18nWithBuiltinLocales } = await import('../index')
+
+  // 创建带有内置语言包的 I18n 实例
+  const i18nInstance = await createI18nWithBuiltinLocales(options)
+
+  // 创建 Vue 插件
+  const plugin = createI18n(i18nInstance)
+
+  // 安装插件
+  app.use(plugin, {
+    globalInjection: true,
+    globalPropertyName: '$t',
+  })
+
+  console.log('✅ i18n Vue 插件安装成功')
+  return i18nInstance
 }
 
 // 导出类型

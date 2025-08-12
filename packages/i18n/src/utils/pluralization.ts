@@ -239,7 +239,6 @@ export function extractPluralKeys(expression: string): string[] {
   const pluralRegex = /\{(\w+),\s*plural,[^}]+\}/g
   let match: RegExpExecArray | null
 
-  // eslint-disable-next-line no-cond-assign
   while ((match = pluralRegex.exec(expression)) !== null) {
     const countKey = match[1]
     if (!keys.includes(countKey)) {

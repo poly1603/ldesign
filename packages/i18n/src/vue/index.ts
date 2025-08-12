@@ -28,8 +28,12 @@ export {
   createI18nWithOptions,
   getGlobalI18n,
   installI18n,
+  installI18nPlugin,
   vueI18n,
 } from './plugin'
+
+// 导出组件
+export { LanguageSwitcher } from './components'
 
 // 导出类型定义
 export type {
@@ -50,4 +54,4 @@ export type {
   TranslationFunction,
   TranslationOptions,
   TranslationParams,
-} from '@/core/types'
+} from '../core/types'

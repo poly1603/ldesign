@@ -1,9 +1,10 @@
-import type { LanguagePackage } from '../src/core/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { ManualDetector } from '../src/core/detector'
 import { I18n } from '../src/core/i18n'
 import { StaticLoader } from '../src/core/loader'
 import { MemoryStorage } from '../src/core/storage'
+import type { LanguagePackage } from '../src/core/types'
 
 // 测试用的语言包
 const enPackage: LanguagePackage = {
@@ -62,7 +63,7 @@ describe('i18n', () => {
     // 创建测试用的组件
     loader = new StaticLoader()
     loader.registerPackages({
-      'en': enPackage,
+      en: enPackage,
       'zh-CN': zhPackage,
     })
 
@@ -128,7 +129,9 @@ describe('i18n', () => {
     })
 
     it('应该支持默认值', () => {
-      expect(i18n.t('nonexistent.key', {}, { defaultValue: 'Default' })).toBe('Default')
+      expect(i18n.t('nonexistent.key', {}, { defaultValue: 'Default' })).toBe(
+        'Default'
+      )
     })
   })
 
@@ -280,9 +283,9 @@ describe('i18n', () => {
       // 创建新的loader并注册所有语言包
       const testLoader = new StaticLoader()
       testLoader.registerPackages({
-        'en': enPackage,
+        en: enPackage,
         'zh-CN': zhPackage,
-        'partial': partialPackage,
+        partial: partialPackage,
       })
 
       i18n = new I18n({

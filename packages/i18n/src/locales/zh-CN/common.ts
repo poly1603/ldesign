@@ -60,6 +60,12 @@ export const common = {
   refresh: '刷新',
   reload: '重新加载',
 
+  // 用户相关
+  welcome: '欢迎',
+  logout: '退出登录',
+  loginSuccess: '登录成功',
+  currentLanguage: '当前语言',
+
   // 时间
   today: '今天',
   yesterday: '昨天',

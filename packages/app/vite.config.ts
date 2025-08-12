@@ -41,6 +41,8 @@ export default defineConfig({
         __dirname,
         '../template/es/vue/index.js'
       ),
+      '@ldesign/i18n': resolve(__dirname, '../i18n/es/index.js'),
+      '@ldesign/i18n/vue': resolve(__dirname, '../i18n/es/vue/index.js'),
       // 使用包含编译器的Vue版本
       vue: 'vue/dist/vue.esm-bundler.js',
     },
@@ -73,6 +75,12 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['vue', '@ldesign/engine', 'monaco-editor', 'prismjs'],
+    include: [
+      'vue',
+      '@ldesign/engine',
+      '@ldesign/i18n',
+      'monaco-editor',
+      'prismjs',
+    ],
   },
 })

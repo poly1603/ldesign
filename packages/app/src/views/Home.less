@@ -28,6 +28,12 @@
   color: @text-color;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: @spacing-md;
+}
+
 .logout-btn {
   background: @error-color;
   color: @background-color;
@@ -213,6 +219,11 @@
     flex-direction: column;
     gap: 15px;
     text-align: center;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    gap: 10px;
   }
 
   .home-title {

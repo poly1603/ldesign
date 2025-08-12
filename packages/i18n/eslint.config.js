@@ -13,6 +13,20 @@ export default [
   js.configs.recommended,
   ...vue.configs['flat/recommended'],
   {
+    ignores: [
+      'dist/**/*',
+      'lib/**/*',
+      'es/**/*',
+      'types/**/*',
+      'node_modules/**/*',
+      'coverage/**/*',
+      '.nyc_output/**/*',
+      'docs/.vitepress/cache/**/*',
+      'docs/.vitepress/dist/**/*',
+      '**/*.md',
+    ],
+  },
+  {
     files: ['**/*.{js,mjs,cjs,ts,vue}'],
     languageOptions: {
       parser: vueParser,
@@ -66,8 +80,12 @@ export default [
           varsIgnorePattern: '^_',
           args: 'after-used',
           argsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
         },
       ],
+
+      // Disable no-unused-vars for interface/type definitions
+      'no-unused-vars': 'off',
 
       // Regex rules
       'regexp/no-super-linear-backtracking': 'error',

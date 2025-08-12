@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
+
 import { createI18nWithBuiltinLocales } from '../../src/index'
 import { createI18n } from '../../src/vue/index'
+
 import App from './App.vue'
 
 async function bootstrap() {
@@ -57,7 +59,7 @@ async function bootstrap() {
     // 为每种语言添加示例翻译
     const languages = ['en', 'zh-CN', 'ja']
     const exampleTranslationsLocalized = {
-      'en': {
+      en: {
         examples: {
           basic: 'Basic Translation',
           interpolation: 'Interpolation',
@@ -83,7 +85,7 @@ async function bootstrap() {
           status: '状态',
         },
       },
-      'ja': {
+      ja: {
         examples: {
           basic: '基本翻訳',
           interpolation: '補間翻訳',
@@ -103,7 +105,10 @@ async function bootstrap() {
       if (i18nInstance.isLanguageLoaded(lang)) {
         const packageData = i18nInstance.loader?.getLoadedPackage?.(lang)
         if (packageData) {
-          Object.assign(packageData.translations, (exampleTranslationsLocalized as Record<string, unknown>)[lang])
+          Object.assign(
+            packageData.translations,
+            (exampleTranslationsLocalized as Record<string, unknown>)[lang]
+          )
         }
       }
     }
@@ -114,8 +119,7 @@ async function bootstrap() {
     console.log('Vue I18n example app started successfully')
     console.log('Current language:', i18nInstance.getCurrentLanguage())
     console.log('Available languages:', i18nInstance.getAvailableLanguages())
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
 
     // 显示错误信息

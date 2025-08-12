@@ -1,3 +1,13 @@
+import { hasInterpolation, interpolate } from '../utils/interpolation'
+import { getNestedValue } from '../utils/path'
+import {
+  hasPluralExpression,
+  processPluralization,
+} from '../utils/pluralization'
+
+import { createDetector } from './detector'
+import { DefaultLoader } from './loader'
+import { createStorage, LRUCacheImpl } from './storage'
 import type {
   BatchTranslationResult,
   Detector,
@@ -13,15 +23,6 @@ import type {
   TranslationOptions,
   TranslationParams,
 } from './types'
-import { hasInterpolation, interpolate } from '../utils/interpolation'
-import { getNestedValue } from '../utils/path'
-import {
-  hasPluralExpression,
-  processPluralization,
-} from '../utils/pluralization'
-import { createDetector } from './detector'
-import { DefaultLoader } from './loader'
-import { createStorage, LRUCacheImpl } from './storage'
 
 /**
  * 默认配置选项
@@ -48,8 +49,8 @@ export class I18n implements I18nInstance {
   private options: Required<
     Omit<I18nOptions, 'onLanguageChanged' | 'onLoadError'>
   > & {
-    onLanguageChanged?: (locale: string) => void
-    onLoadError?: (locale: string, error: Error) => void
+    onLanguageChanged?: (_locale: string) => void
+    onLoadError?: (_locale: string, _error: Error) => void
   }
 
   private currentLocale: string
@@ -288,7 +289,7 @@ export class I18n implements I18nInstance {
   getAvailableLanguages(): LanguageInfo[] {
     const loaderWithMethods = this.loader as Loader & {
       getAvailableLocales?: () => string[]
-      getLoadedPackage?: (locale: string) => { info: LanguageInfo } | undefined
+      getLoadedPackage?: (_locale: string) => { info: LanguageInfo } | undefined
     }
     const availableLocales = loaderWithMethods.getAvailableLocales?.() || []
     const languages: LanguageInfo[] = []
@@ -436,7 +437,7 @@ export class I18n implements I18nInstance {
     const packageData = (
       this.loader as Loader & {
         getLoadedPackage?: (
-          locale: string
+          _locale: string
         ) => { translations: Record<string, unknown> } | undefined
       }
     ).getLoadedPackage?.(locale)
@@ -522,7 +523,7 @@ export class I18n implements I18nInstance {
     const packageData = (
       this.loader as Loader & {
         getLoadedPackage?: (
-          locale: string
+          _locale: string
         ) => { info: LanguageInfo } | undefined
       }
     ).getLoadedPackage?.(this.currentLocale)
@@ -551,7 +552,7 @@ export class I18n implements I18nInstance {
     const packageData = (
       this.loader as Loader & {
         getLoadedPackage?: (
-          locale: string
+          _locale: string
         ) => { translations: Record<string, unknown> } | undefined
       }
     ).getLoadedPackage?.(targetLocale)

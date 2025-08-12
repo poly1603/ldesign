@@ -60,6 +60,12 @@ export const common = {
   refresh: 'Refresh',
   reload: 'Reload',
 
+  // 用户相关
+  welcome: 'Welcome',
+  logout: 'Logout',
+  loginSuccess: 'Login successful',
+  currentLanguage: 'Current language',
+
   // 时间
   today: 'Today',
   yesterday: 'Yesterday',
@@ -81,7 +87,8 @@ export const common = {
 
   // 确认对话框
   confirmDelete: 'Are you sure you want to delete this item?',
-  confirmCancel: 'Are you sure you want to cancel? Unsaved changes will be lost.',
+  confirmCancel:
+    'Are you sure you want to cancel? Unsaved changes will be lost.',
   confirmLeave: 'Are you sure you want to leave? Unsaved changes will be lost.',
   confirmReset: 'Are you sure you want to reset? All changes will be lost.',
 

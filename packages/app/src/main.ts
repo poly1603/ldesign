@@ -2,8 +2,10 @@ import type { AppConfig } from './types'
 import { createApp, presets } from '@ldesign/engine'
 import { routerPlugin } from '@ldesign/router'
 import TemplatePlugin from '@ldesign/template'
+import { installI18nPlugin } from '../../i18n/es/vue/index.js'
 import App from './App'
 import { routes } from './router/routes'
+import { appI18nConfig } from './i18n'
 
 /**
  * 创建 LDesign 应用
@@ -39,9 +41,13 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
       })
     )
 
-    // 获取Vue应用实例并集成Template插件
+    // 获取Vue应用实例并集成插件
     const vueApp = engine.getApp()
     if (vueApp) {
+      // 集成 i18n 插件
+      await installI18nPlugin(vueApp, appI18nConfig)
+
+      // 集成 Template 插件
       vueApp.use(TemplatePlugin, {
         defaultDevice: 'desktop',
         autoScan: false, // 关闭自动扫描，使用内置模板

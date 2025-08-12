@@ -1,87 +1,17 @@
-import commonjs from '@rollup/plugin-commonjs'
-import resolve from '@rollup/plugin-node-resolve'
-import typescript from '@rollup/plugin-typescript'
-import dts from 'rollup-plugin-dts'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
 
-const external = ['vue', 'tslib']
-const globals = {
-  vue: 'Vue',
-  tslib: 'tslib',
-}
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export default [
-  // ES Module build
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'es/index.js',
-      format: 'es',
-      sourcemap: true,
-    },
-    external,
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false,
-        outDir: 'es',
-      }),
-    ],
+export default createRollupConfig({
+  packageDir: __dirname,
+  vue: true, // 启用 Vue 支持，因为包含 Vue 集成
+  external: ['vue'],
+  globalName: 'LDesignI18n',
+  globals: {
+    vue: 'Vue',
   },
-  // CommonJS build
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'lib/index.js',
-      format: 'cjs',
-      sourcemap: true,
-      exports: 'named',
-    },
-    external,
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false,
-        outDir: 'lib',
-      }),
-    ],
-  },
-  // UMD build
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.js',
-      format: 'umd',
-      name: 'LDesignI18n',
-      globals,
-      sourcemap: true,
-      exports: 'named',
-    },
-    external,
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false,
-        outDir: 'dist',
-      }),
-    ],
-  },
-  // Type definitions
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'es',
-    },
-    external,
-    plugins: [dts()],
-  },
-]
+  // 只构建 ES 和 CJS 格式，避免 UMD 的复杂性
+  formats: ['es', 'cjs'],
+})

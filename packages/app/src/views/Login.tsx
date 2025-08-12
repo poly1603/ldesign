@@ -40,13 +40,7 @@ export default defineComponent({
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         }}
       >
-        <TemplateRenderer
-          category='login'
-          templateProps={{
-            title: '欢迎登录',
-            onLogin: handleLogin,
-          }}
-        />
+        <TemplateRenderer category='login' />
       </div>
     )
   },
