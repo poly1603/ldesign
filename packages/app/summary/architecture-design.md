@@ -124,26 +124,54 @@ graph TB
 
 ### 组件模块化
 
+#### 新的组件化架构 (2025 年 8 月重构)
+
 ```
 src/
-├── components/
+├── components/                 # 通用组件
 │   ├── Layout.tsx              # 布局组件
 │   ├── Header.tsx              # 头部组件
-│   ├── Sidebar.tsx             # 侧边栏组件
-│   ├── MainContent.tsx         # 主内容组件
-│   └── demos/                  # 演示组件
-│       ├── OverviewDemo.tsx    # 概览演示
-│       ├── PluginDemo.tsx      # 插件演示
-│       ├── MiddlewareDemo.tsx  # 中间件演示
-│       ├── StateDemo.tsx       # 状态管理演示
-│       ├── EventDemo.tsx       # 事件系统演示
-│       ├── LoggerDemo.tsx      # 日志系统演示
-│       ├── NotificationDemo.tsx # 通知系统演示
-│       ├── DirectiveDemo.tsx   # 指令管理演示
-│       ├── CacheDemo.tsx       # 缓存管理演示
-│       ├── PerformanceDemo.tsx # 性能监控演示
-│       └── SecurityDemo.tsx    # 安全管理演示
+│   └── ...                     # 其他通用组件
+├── views/                      # 页面组件
+│   ├── Login/                  # 登录页面
+│   │   ├── Login.tsx
+│   │   └── Login.less
+│   ├── Home/                   # 首页（组件化重构）
+│   │   ├── Home.tsx            # 页面主组件
+│   │   ├── Home.less           # 页面样式
+│   │   └── components/         # 页面专用组件
+│   │       ├── UserCard/       # 用户卡片组件
+│   │       │   ├── UserCard.tsx
+│   │       │   ├── UserCard.less
+│   │       │   └── index.ts
+│   │       ├── PostCard/       # 文章卡片组件
+│   │       │   ├── PostCard.tsx
+│   │       │   ├── PostCard.less
+│   │       │   └── index.ts
+│   │       ├── HttpPanel/      # HTTP 操作面板
+│   │       │   ├── HttpPanel.tsx
+│   │       │   ├── HttpPanel.less
+│   │       │   └── index.ts
+│   │       ├── CreatePost/     # 创建文章组件
+│   │       │   ├── CreatePost.tsx
+│   │       │   ├── CreatePost.less
+│   │       │   └── index.ts
+│   │       └── StatusPanel/    # 状态统计面板
+│   │           ├── StatusPanel.tsx
+│   │           ├── StatusPanel.less
+│   │           └── index.ts
+│   └── Dashboard/              # 仪表板页面
+│       ├── Dashboard.tsx
+│       └── Dashboard.less
 ```
+
+#### 组件化设计优势
+
+1. **独立开发**: 每个组件可以独立开发和测试
+2. **样式隔离**: 每个组件有独立的样式文件
+3. **类型安全**: 完整的 TypeScript 类型定义
+4. **可复用性**: 组件可以在不同页面间复用
+5. **可维护性**: 清晰的目录结构和职责分离
 
 ### 样式模块化
 
@@ -207,9 +235,16 @@ graph TB
    - 间距级别：xs(4px), sm(8px), md(16px), lg(24px), xl(32px), xxl(48px)
 
 4. **组件规范**
+
    - 按钮：多种尺寸和状态
    - 卡片：统一的阴影和圆角
    - 表单：一致的输入框样式
+
+5. **动画系统**
+   - 页面加载动画：渐入、滑入效果
+   - 交互动画：悬停、点击反馈
+   - 背景动画：渐变色彩流动
+   - 错开动画：组件依次出现
 
 ### 响应式设计
 

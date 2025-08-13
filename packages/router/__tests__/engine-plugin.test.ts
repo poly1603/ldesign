@@ -1,0 +1,243 @@
+/**
+ * Router Engine 插件集成测试
+ */
+
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import {
+  createRouterEnginePlugin,
+  routerPlugin,
+  createDefaultRouterEnginePlugin,
+} from '../src/engine/plugin'
+import type { RouteRecordRaw } from '../src/types'
+
+// Mock Vue 应用
+const mockVueApp = {
+  use: vi.fn(),
+}
+
+// Mock Engine
+const mockEngine = {
+  getApp: vi.fn(() => mockVueApp),
+  setRouter: vi.fn(),
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+  state: {
+    set: vi.fn(),
+    delete: vi.fn(),
+  },
+  events: {
+    emit: vi.fn(),
+  },
+  router: null,
+}
+
+// Mock 路由配置
+const mockRoutes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'Home',
+    component: { template: '<div>Home</div>' },
+    meta: { title: '首页' },
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: { template: '<div>About</div>' },
+    meta: { title: '关于' },
+  },
+]
+
+describe('Router Engine Plugin', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockEngine.router = null
+  })
+
+  describe('createRouterEnginePlugin', () => {
+    it('should create a valid engine plugin', () => {
+      const plugin = createRouterEnginePlugin({
+        routes: mockRoutes,
+        mode: 'hash',
+        base: '/',
+      })
+
+      expect(plugin).toHaveProperty('name', 'router')
+      expect(plugin).toHaveProperty('version', '1.0.0')
+      expect(plugin).toHaveProperty('install')
+      expect(plugin).toHaveProperty('uninstall')
+      expect(typeof plugin.install).toBe('function')
+      expect(typeof plugin.uninstall).toBe('function')
+    })
+
+    it('should allow custom plugin name and version', () => {
+      const plugin = createRouterEnginePlugin({
+        name: 'custom-router',
+        version: '2.0.0',
+        routes: mockRoutes,
+      })
+
+      expect(plugin.name).toBe('custom-router')
+      expect(plugin.version).toBe('2.0.0')
+    })
+
+    it('should install router to engine successfully', async () => {
+      const plugin = createRouterEnginePlugin({
+        routes: mockRoutes,
+        mode: 'hash',
+        base: '/',
+      })
+
+      await plugin.install(mockEngine)
+
+      // 验证 Vue 应用安装了路由器
+      expect(mockVueApp.use).toHaveBeenCalled()
+
+      // 验证路由器被设置到 engine
+      expect(mockEngine.setRouter).toHaveBeenCalled()
+
+      // 验证状态管理
+      expect(mockEngine.state.set).toHaveBeenCalledWith('router:mode', 'hash')
+      expect(mockEngine.state.set).toHaveBeenCalledWith('router:base', '/')
+
+      // 验证日志记录
+      expect(mockEngine.logger.info).toHaveBeenCalledWith(
+        'Installing router plugin...',
+        expect.objectContaining({
+          version: '1.0.0',
+          mode: 'hash',
+          base: '/',
+          routesCount: 2,
+        })
+      )
+    })
+
+    it('should handle different router modes', async () => {
+      const modes = ['history', 'hash', 'memory'] as const
+
+      for (const mode of modes) {
+        const plugin = createRouterEnginePlugin({
+          routes: mockRoutes,
+          mode,
+        })
+
+        await plugin.install(mockEngine)
+
+        expect(mockEngine.state.set).toHaveBeenCalledWith('router:mode', mode)
+        vi.clearAllMocks()
+      }
+    })
+
+    it('should throw error if Vue app is not found', async () => {
+      const plugin = createRouterEnginePlugin({
+        routes: mockRoutes,
+      })
+
+      const engineWithoutApp = {
+        ...mockEngine,
+        getApp: vi.fn(() => null),
+      }
+
+      await expect(plugin.install(engineWithoutApp)).rejects.toThrow(
+        'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
+      )
+    })
+
+    it('should uninstall plugin correctly', async () => {
+      const plugin = createRouterEnginePlugin({
+        routes: mockRoutes,
+      })
+
+      await plugin.uninstall!(mockEngine)
+
+      // 验证状态清理
+      expect(mockEngine.state.delete).toHaveBeenCalledWith(
+        'router:currentRoute'
+      )
+      expect(mockEngine.state.delete).toHaveBeenCalledWith('router:mode')
+      expect(mockEngine.state.delete).toHaveBeenCalledWith('router:base')
+
+      // 验证事件触发
+      expect(mockEngine.events.emit).toHaveBeenCalledWith(
+        'plugin:router:uninstalled'
+      )
+    })
+  })
+
+  describe('routerPlugin', () => {
+    it('should be an alias for createRouterEnginePlugin', () => {
+      const options = {
+        routes: mockRoutes,
+        mode: 'hash' as const,
+      }
+
+      const plugin1 = createRouterEnginePlugin(options)
+      const plugin2 = routerPlugin(options)
+
+      expect(plugin1.name).toBe(plugin2.name)
+      expect(plugin1.version).toBe(plugin2.version)
+      expect(typeof plugin1.install).toBe(typeof plugin2.install)
+    })
+  })
+
+  describe('createDefaultRouterEnginePlugin', () => {
+    it('should create plugin with default options', () => {
+      const plugin = createDefaultRouterEnginePlugin(mockRoutes)
+
+      expect(plugin.name).toBe('router')
+      expect(plugin.version).toBe('1.0.0')
+      expect(typeof plugin.install).toBe('function')
+    })
+
+    it('should use history mode and base path by default', async () => {
+      const plugin = createDefaultRouterEnginePlugin(mockRoutes)
+
+      await plugin.install(mockEngine)
+
+      expect(mockEngine.state.set).toHaveBeenCalledWith(
+        'router:mode',
+        'history'
+      )
+      expect(mockEngine.state.set).toHaveBeenCalledWith('router:base', '/')
+    })
+  })
+
+  describe('Plugin Integration', () => {
+    it('should handle router options correctly', async () => {
+      const plugin = createRouterEnginePlugin({
+        routes: mockRoutes,
+        mode: 'history',
+        base: '/app',
+        linkActiveClass: 'active',
+        linkExactActiveClass: 'exact-active',
+        scrollBehavior: () => ({ top: 0 }),
+      })
+
+      await plugin.install(mockEngine)
+
+      expect(mockEngine.state.set).toHaveBeenCalledWith(
+        'router:mode',
+        'history'
+      )
+      expect(mockEngine.state.set).toHaveBeenCalledWith('router:base', '/app')
+    })
+
+    it('should handle engine without optional features', async () => {
+      const minimalEngine = {
+        getApp: vi.fn(() => mockVueApp),
+        logger: {
+          info: vi.fn(),
+          error: vi.fn(),
+        },
+      }
+
+      const plugin = createRouterEnginePlugin({
+        routes: mockRoutes,
+      })
+
+      // 应该不会抛出错误
+      await expect(plugin.install(minimalEngine)).resolves.not.toThrow()
+    })
+  })
+})

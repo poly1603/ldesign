@@ -1,19 +1,23 @@
 # @ldesign/router
 
-🚀 **简化的 Vue 路由解决方案** - 专为 LDesign Engine 设计的现代化路由系统
+🚀 一个现代化、高性能、类型安全的 Vue 路由库
 
-## ✨ 核心特性
+[![npm version](https://badge.fury.io/js/@ldesign%2Frouter.svg)](https://badge.fury.io/js/@ldesign%2Frouter)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.x-green.svg)](https://vuejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- 🎯 **插件化集成**: 一行代码集成到 LDesign Engine
-- 🛡️ **类型安全**: 完整的 TypeScript 支持
-- 🚀 **简洁 API**: 基于 Vue Router 4 的简化封装
-- 📱 **响应式**: 基于 Vue 3 Composition API
-- 🔄 **零配置**: 开箱即用，无需复杂配置
-- ⚡ **性能优化**: 内置路由缓存和预加载机制
-- 🔌 **插件系统**: 丰富的插件生态，支持性能监控、缓存管理等
-- 🎨 **增强组件**: 提供功能丰富的 RouterLink 和 RouterView 组件
-- 🛡️ **路由守卫**: 完整的导航守卫系统
-- 📊 **开发工具**: 内置性能监控和调试工具
+## ✨ 特性亮点
+
+- 🎯 **完全独立** - 不依赖 vue-router，避免版本冲突
+- ⚡ **极致性能** - 基于 Trie 树的高效路由匹配算法
+- 🛡️ **类型安全** - 完整的 TypeScript 支持，智能类型推导
+- 🎨 **丰富动画** - 内置多种过渡动画效果
+- 💾 **智能缓存** - 多种缓存策略，提升用户体验
+- 🔄 **预加载优化** - hover、visible、idle 三种预加载策略
+- 📊 **性能监控** - 实时监控路由导航和组件加载性能
+- 🔧 **插件化架构** - 模块化设计，按需加载功能
+- 🎪 **一行集成** - 零配置快速启动
 
 ## 📦 安装
 
@@ -23,30 +27,85 @@ pnpm add @ldesign/router
 
 ## 🚀 快速开始
 
-### 推荐用法（插件方式）
+### 🎯 Engine 集成（推荐）
+
+使用 LDesign Engine 的最简单方式：
 
 ```typescript
 import { createApp } from '@ldesign/engine'
-import { routerPlugin } from '@ldesign/router'
+import { createRouterEnginePlugin } from '@ldesign/router'
 
-// 定义路由
-const routes = [
-  { path: '/', component: () => import('./views/Home.vue') },
-  { path: '/about', component: () => import('./views/About.vue') },
-]
-
-// 创建应用
 const engine = createApp(App)
 
-// 一行代码集成路由
 await engine.use(
-  routerPlugin({
-    routes,
-    mode: 'history',
+  createRouterEnginePlugin({
+    routes: [
+      { path: '/', component: Home },
+      { path: '/about', component: About },
+    ],
+    mode: 'hash',
+    base: '/',
   })
 )
 
-engine.mount('#app')
+// 路由器会自动注册到 engine.router
+engine.router.push('/about')
+```
+
+### 基础用法
+
+```typescript
+import { createApp } from 'vue'
+import { createRouter, createWebHistory, RouterView, RouterLink } from '@ldesign/router'
+
+// 定义路由
+const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: () => import('./views/Home.vue'),
+    meta: { title: '首页' },
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('./views/About.vue'),
+    meta: { title: '关于我们', transition: 'slide' },
+  },
+  {
+    path: '/user/:id',
+    name: 'user',
+    component: () => import('./views/User.vue'),
+    meta: { requiresAuth: true },
+  },
+]
+
+// 创建路由器
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+})
+
+// 创建应用
+const app = createApp({
+  template: `
+    <div id="app">
+      <nav>
+        <RouterLink to="/" preload="hover">首页</RouterLink>
+        <RouterLink to="/about" animation="slide">关于</RouterLink>
+        <RouterLink :to="{ name: 'user', params: { id: '123' } }">用户</RouterLink>
+      </nav>
+      <RouterView
+        animation="fade"
+        :keep-alive="true"
+        :max-cache="5"
+      />
+    </div>
+  `,
+})
+
+app.use(router)
+app.mount('#app')
 ```
 
 ### 传统用法（兼容）
@@ -102,6 +161,60 @@ engine.use(
 ```
 
 ## 📖 API 文档
+
+### Engine 插件 API
+
+#### createRouterEnginePlugin(options)
+
+创建路由器 Engine 插件，这是**推荐的集成方式**。
+
+**参数：**
+
+- `options.routes` - 路由配置数组
+- `options.mode` - 路由模式：`'history'` | `'hash'` | `'memory'`，默认 `'history'`
+- `options.base` - 基础路径，默认 `'/'`
+- `options.name` - 插件名称，默认 `'router'`
+- `options.version` - 插件版本，默认 `'1.0.0'`
+- `options.scrollBehavior` - 滚动行为函数
+- `options.linkActiveClass` - 活跃链接类名
+- `options.linkExactActiveClass` - 精确活跃链接类名
+
+**返回值：** Engine 插件实例
+
+**示例：**
+
+```typescript
+import { createRouterEnginePlugin } from '@ldesign/router'
+
+const routerPlugin = createRouterEnginePlugin({
+  routes: [
+    { path: '/', component: Home },
+    { path: '/about', component: About },
+  ],
+  mode: 'hash',
+  base: '/app',
+})
+
+await engine.use(routerPlugin)
+```
+
+#### routerPlugin(options)
+
+`createRouterEnginePlugin` 的别名，用于向后兼容。
+
+#### createDefaultRouterEnginePlugin(routes)
+
+使用默认配置创建路由器插件。
+
+**参数：**
+
+- `routes` - 路由配置数组
+
+**示例：**
+
+```typescript
+const plugin = createDefaultRouterEnginePlugin([{ path: '/', component: Home }])
+```
 
 ### routerPlugin(options)
 

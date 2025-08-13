@@ -1,0 +1,217 @@
+@import '../../../../styles/variables.less';
+
+.user-card {
+  display: flex;
+  align-items: flex-start;
+  gap: @spacing-md;
+  padding: @spacing-lg;
+  background: @background-color;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-lg;
+  transition: all @transition-duration ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  // 悬停效果
+  &:hover {
+    box-shadow: @shadow-lg;
+    transform: translateY(-4px);
+    border-color: @primary-color;
+
+    .user-avatar {
+      transform: scale(1.05) rotate(5deg);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .user-info .user-name {
+      color: @primary-color;
+    }
+  }
+
+  // 点击效果
+  &:active {
+    transform: translateY(-2px);
+  }
+
+  // 加载状态
+  &.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  // 背景装饰
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, @primary-color, lighten(@primary-color, 20%));
+    opacity: 0;
+    transition: opacity @transition-duration ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+.user-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, @primary-color, lighten(@primary-color, 20%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform @transition-duration ease;
+  box-shadow: @shadow-sm;
+
+  .avatar-text {
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-xs;
+  min-width: 0; // 防止文本溢出
+
+  .user-name {
+    color: @text-color;
+    font-size: @font-size-lg;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .user-email {
+    color: @primary-color;
+    font-size: @font-size-sm;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color @transition-duration ease;
+
+    &:hover {
+      color: darken(@primary-color, 10%);
+      text-decoration: underline;
+    }
+  }
+
+  .user-username {
+    color: @text-color-secondary;
+    font-size: @font-size-xs;
+    font-weight: 500;
+    background: @background-color-light;
+    padding: 2px 6px;
+    border-radius: @border-radius-sm;
+    align-self: flex-start;
+  }
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-xs;
+  margin-top: @spacing-sm;
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: @spacing-xs;
+    font-size: @font-size-xs;
+
+    .detail-icon {
+      font-size: 12px;
+      width: 16px;
+      text-align: center;
+    }
+
+    .detail-text {
+      color: @text-color-secondary;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .detail-link {
+      color: @primary-color;
+      text-decoration: none;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color @transition-duration ease;
+
+      &:hover {
+        color: darken(@primary-color, 10%);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.user-actions {
+  margin-top: @spacing-md;
+  display: flex;
+  gap: @spacing-xs;
+
+  .btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .user-card {
+    flex-direction: column;
+    text-align: center;
+    gap: @spacing-sm;
+    padding: @spacing-md;
+
+    .user-avatar {
+      align-self: center;
+    }
+
+    .user-details {
+      .detail-item {
+        justify-content: center;
+      }
+    }
+
+    .user-actions {
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .user-card {
+    padding: @spacing-sm;
+    
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      
+      .avatar-text {
+        font-size: 18px;
+      }
+    }
+    
+    .user-info {
+      .user-name {
+        font-size: @font-size-base;
+      }
+    }
+  }
+}

@@ -4,12 +4,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "jsx": "preserve",
+    "jsxImportSource": "vue"
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "tests/**/*",
-    "examples/**/*"
-  ]
+  "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "examples/**/*"]
 }

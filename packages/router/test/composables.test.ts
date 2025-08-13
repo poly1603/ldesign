@@ -1,37 +1,51 @@
-import type { RouteRecordRaw } from '../src/types'
-import { beforeEach, describe, expect, it } from 'vitest'
-import { createApp } from 'vue'
+/**
+ * @ldesign/router 组合式 API 测试
+ */
+
+import { describe, it, expect, beforeEach } from 'vitest'
+import { createApp, nextTick } from 'vue'
 import {
-  createMemoryHistory,
   createRouter,
-  useHash,
-  useMatched,
-  useMeta,
+  createMemoryHistory,
+  useRouter,
+  useRoute,
   useParams,
   useQuery,
-  useRoute,
-  useRouter,
+  useHash,
+  useMeta,
+  useMatched,
+  useNavigation,
+  useLink,
 } from '../src'
+import type { RouteRecordRaw } from '../src'
 
-describe('composables', () => {
-  let router: Router
-  let app: { use: (plugin: unknown) => void }
+describe('Composables', () => {
+  let app: any
+  let router: any
 
   const routes: RouteRecordRaw[] = [
     {
       path: '/',
-      name: 'Home',
-      component: { template: '<div>Home</div>' },
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: { template: '<div>About</div>' },
+      name: 'home',
+      component: () => Promise.resolve({ name: 'Home' }),
     },
     {
       path: '/user/:id',
-      name: 'User',
-      component: { template: '<div>User</div>' },
+      name: 'user',
+      component: () => Promise.resolve({ name: 'User' }),
+      meta: { title: 'User Profile', requiresAuth: true },
+    },
+    {
+      path: '/posts',
+      name: 'posts',
+      component: () => Promise.resolve({ name: 'Posts' }),
+      children: [
+        {
+          path: ':id',
+          name: 'post',
+          component: () => Promise.resolve({ name: 'Post' }),
+        },
+      ],
     },
   ]
 
@@ -47,166 +61,372 @@ describe('composables', () => {
 
   describe('useRouter', () => {
     it('should return router instance', () => {
-      // 模拟在组件内部调用
-      app.runWithContext(() => {
-        const routerInstance = useRouter()
-        expect(routerInstance).toBe(router)
-        expect(typeof routerInstance.push).toBe('function')
-        expect(typeof routerInstance.replace).toBe('function')
-        expect(typeof routerInstance.go).toBe('function')
-      })
+      let routerInstance: any
+
+      const TestComponent = {
+        setup() {
+          routerInstance = useRouter()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      const wrapper = app.mount(document.createElement('div'))
+
+      expect(routerInstance).toBe(router)
     })
 
-    it('should throw error when called outside of setup', () => {
+    it('should throw error when used outside router context', () => {
       expect(() => {
         useRouter()
-      }).toThrow('useRouter() must be called within a router context')
+      }).toThrow(
+        'useRouter() can only be used inside a component that has a router instance'
+      )
     })
   })
 
   describe('useRoute', () => {
     it('should return current route', async () => {
-      await router.push('/about')
+      let currentRoute: any
 
-      app.runWithContext(() => {
-        const route = useRoute()
-        expect(route.value.path).toBe('/about')
-        expect(route.value.name).toBe('About')
-      })
+      const TestComponent = {
+        setup() {
+          currentRoute = useRoute()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/user/123?tab=info#section1')
+      await nextTick()
+
+      expect(currentRoute.value.path).toBe('/user/123')
+      expect(currentRoute.value.params.id).toBe('123')
+      expect(currentRoute.value.query.tab).toBe('info')
+      expect(currentRoute.value.hash).toBe('#section1')
     })
 
     it('should be reactive to route changes', async () => {
-      app.runWithContext(() => {
-        const route = useRoute()
+      let currentRoute: any
+      const paths: string[] = []
 
-        // 初始路由
-        expect(route.value.path).toBe('/')
+      const TestComponent = {
+        setup() {
+          currentRoute = useRoute()
+          return {}
+        },
+        watch: {
+          'currentRoute.path'(newPath: string) {
+            paths.push(newPath)
+          },
+        },
+        template: '<div></div>',
+      }
 
-        // 导航到新路由
-        router.push('/about').then(() => {
-          expect(route.value.path).toBe('/about')
-        })
-      })
-    })
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
 
-    it('should include route params', async () => {
       await router.push('/user/123')
+      await nextTick()
 
-      app.runWithContext(() => {
-        const route = useRoute()
-        expect(route.value.params.id).toBe('123')
-      })
-    })
+      await router.push('/posts')
+      await nextTick()
 
-    it('should include route query', async () => {
-      await router.push('/about?tab=info&page=1')
-
-      app.runWithContext(() => {
-        const route = useRoute()
-        expect(route.value.query.tab).toBe('info')
-        expect(route.value.query.page).toBe('1')
-      })
-    })
-
-    it('should include route hash', async () => {
-      await router.push('/about#section1')
-
-      app.runWithContext(() => {
-        const route = useRoute()
-        expect(route.value.hash).toBe('section1')
-      })
-    })
-
-    it('should throw error when called outside of setup', () => {
-      expect(() => {
-        useRoute()
-      }).toThrow('useRoute() must be called within a router context')
+      expect(paths).toContain('/user/123')
+      expect(paths).toContain('/posts')
     })
   })
 
   describe('useParams', () => {
-    it('should return route params', async () => {
-      await router.push('/user/123')
+    it('should return route parameters', async () => {
+      let params: any
 
-      app.runWithContext(() => {
-        const params = useParams()
-        expect(params.value).toEqual({ id: '123' })
-      })
+      const TestComponent = {
+        setup() {
+          params = useParams()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/user/123')
+      await nextTick()
+
+      expect(params.value.id).toBe('123')
+    })
+
+    it('should be reactive to parameter changes', async () => {
+      let params: any
+      const ids: string[] = []
+
+      const TestComponent = {
+        setup() {
+          params = useParams()
+          return {}
+        },
+        watch: {
+          'params.id'(newId: string) {
+            if (newId) ids.push(newId)
+          },
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/user/123')
+      await nextTick()
+
+      await router.push('/user/456')
+      await nextTick()
+
+      expect(ids).toContain('123')
+      expect(ids).toContain('456')
     })
   })
 
   describe('useQuery', () => {
-    it('should return route query', async () => {
-      await router.push('/about?name=test&age=25')
+    it('should return query parameters', async () => {
+      let query: any
 
-      app.runWithContext(() => {
-        const query = useQuery()
-        expect(query.value).toEqual({ name: 'test', age: '25' })
-      })
+      const TestComponent = {
+        setup() {
+          query = useQuery()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/user/123?tab=info&sort=name')
+      await nextTick()
+
+      expect(query.value.tab).toBe('info')
+      expect(query.value.sort).toBe('name')
     })
   })
 
   describe('useHash', () => {
-    it('should return route hash', async () => {
-      await router.push('/about#section1')
+    it('should return hash value', async () => {
+      let hash: any
 
-      app.runWithContext(() => {
-        const hash = useHash()
-        expect(hash.value).toBe('section1')
-      })
+      const TestComponent = {
+        setup() {
+          hash = useHash()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/user/123#section1')
+      await nextTick()
+
+      expect(hash.value).toBe('#section1')
     })
   })
 
   describe('useMeta', () => {
-    it('should return route meta', async () => {
-      await router.push('/about')
+    it('should return route meta information', async () => {
+      let meta: any
 
-      app.runWithContext(() => {
-        const meta = useMeta()
-        expect(meta.value).toEqual({})
-      })
+      const TestComponent = {
+        setup() {
+          meta = useMeta()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/user/123')
+      await nextTick()
+
+      expect(meta.value.title).toBe('User Profile')
+      expect(meta.value.requiresAuth).toBe(true)
     })
   })
 
   describe('useMatched', () => {
-    it('should return matched routes', async () => {
-      await router.push('/about')
+    it('should return matched route records', async () => {
+      let matched: any
 
-      app.runWithContext(() => {
-        const matched = useMatched()
-        expect(matched.value).toHaveLength(1)
-        expect(matched.value[0].name).toBe('About')
-      })
+      const TestComponent = {
+        setup() {
+          matched = useMatched()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/posts/123')
+      await nextTick()
+
+      expect(matched.value).toHaveLength(2) // posts and post routes
+      expect(matched.value[0].name).toBe('posts')
+      expect(matched.value[1].name).toBe('post')
     })
   })
 
-  describe('integration', () => {
-    it('should work together in component setup', async () => {
-      await router.push('/user/456')
+  describe('useNavigation', () => {
+    it('should provide navigation methods', () => {
+      let navigation: any
 
-      app.runWithContext(() => {
-        const routerInstance = useRouter()
-        const route = useRoute()
+      const TestComponent = {
+        setup() {
+          navigation = useNavigation()
+          return {}
+        },
+        template: '<div></div>',
+      }
 
-        expect(routerInstance).toBe(router)
-        expect(route.value.path).toBe('/user/456')
-        expect(route.value.params.id).toBe('456')
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
 
-        // 测试导航
-        routerInstance.push('/about').then(() => {
-          expect(route.value.path).toBe('/about')
-        })
-      })
+      expect(navigation.push).toBeDefined()
+      expect(navigation.replace).toBeDefined()
+      expect(navigation.go).toBeDefined()
+      expect(navigation.back).toBeDefined()
+      expect(navigation.forward).toBeDefined()
     })
 
-    it('should maintain reactivity across multiple components', async () => {
-      app.runWithContext(() => {
-        const route1 = useRoute()
-        const route2 = useRoute()
+    it('should navigate using navigation methods', async () => {
+      let navigation: any
 
-        // 两个组件应该获得相同的响应式对象
-        expect(route1).toBe(route2)
-      })
+      const TestComponent = {
+        setup() {
+          navigation = useNavigation()
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await navigation.push('/user/123')
+      expect(router.currentRoute.value.path).toBe('/user/123')
+
+      await navigation.replace('/posts')
+      expect(router.currentRoute.value.path).toBe('/posts')
+    })
+  })
+
+  describe('useLink', () => {
+    it('should provide link functionality', () => {
+      let link: any
+
+      const TestComponent = {
+        setup() {
+          link = useLink({ to: '/user/123' })
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      expect(link.href).toBeDefined()
+      expect(link.route).toBeDefined()
+      expect(link.isActive).toBeDefined()
+      expect(link.isExactActive).toBeDefined()
+      expect(link.navigate).toBeDefined()
+    })
+
+    it('should generate correct href', () => {
+      let link: any
+
+      const TestComponent = {
+        setup() {
+          link = useLink({ to: '/user/123?tab=info#section1' })
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      expect(link.href.value).toBe('/user/123?tab=info#section1')
+    })
+
+    it('should detect active state', async () => {
+      let link: any
+
+      const TestComponent = {
+        setup() {
+          link = useLink({ to: '/user/123' })
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      expect(link.isActive.value).toBe(false)
+      expect(link.isExactActive.value).toBe(false)
+
+      await router.push('/user/123')
+      await nextTick()
+
+      expect(link.isExactActive.value).toBe(true)
+    })
+
+    it('should navigate when navigate method is called', async () => {
+      let link: any
+
+      const TestComponent = {
+        setup() {
+          link = useLink({ to: '/user/123' })
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await link.navigate()
+      expect(router.currentRoute.value.path).toBe('/user/123')
+    })
+
+    it('should support replace navigation', async () => {
+      let link: any
+
+      const TestComponent = {
+        setup() {
+          link = useLink({ to: '/user/123', replace: true })
+          return {}
+        },
+        template: '<div></div>',
+      }
+
+      app.component('TestComponent', TestComponent)
+      app.mount(document.createElement('div'))
+
+      await router.push('/posts')
+      await link.navigate()
+
+      expect(router.currentRoute.value.path).toBe('/user/123')
     })
   })
 })

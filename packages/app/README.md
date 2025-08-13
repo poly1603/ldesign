@@ -21,12 +21,15 @@
 
 ### 🛣️ 路由系统
 
+- **Engine 集成**: 通过 `createRouterEnginePlugin` 一键集成到 LDesign Engine
 - **编程式导航**: 支持 `push`、`replace`、`go`、`back`、`forward`
 - **声明式导航**: 使用 `RouterLink` 组件进行导航
 - **路由守卫**: 全局前置守卫、后置守卫、错误处理
 - **懒加载**: 路由级别的代码分割和懒加载
 - **预加载**: 智能路由预加载，提升用户体验
 - **缓存管理**: 路由组件缓存控制
+- **状态同步**: 自动同步路由状态到 Engine 状态管理
+- **事件集成**: 集成 Engine 事件系统，支持路由变化监听
 
 ### 🔧 Engine 集成
 
@@ -42,6 +45,9 @@
 - **主题定制**: 灵活的主题配置和样式定制
 - **组件库**: 丰富的可复用组件和工具函数
 - **设计系统**: 统一的设计语言和视觉规范
+- **组件化架构**: 高度模块化的组件设计，易于维护和扩展
+- **动画效果**: 流畅的页面加载和交互动画
+- **实时状态管理**: 智能的加载状态和错误处理
 
 ### 📄 示例页面
 
@@ -191,8 +197,18 @@ packages/app/
 │   ├── types/            # TypeScript 类型定义
 │   ├── utils/            # 工具函数
 │   ├── views/            # 页面组件
-│   │   ├── Login.tsx     # 登录页面
-│   │   ├── Home.tsx      # 首页
+│   │   ├── Login/        # 登录页面
+│   │   │   ├── Login.tsx
+│   │   │   └── Login.less
+│   │   ├── Home/         # 首页（组件化重构）
+│   │   │   ├── Home.tsx
+│   │   │   ├── Home.less
+│   │   │   └── components/
+│   │   │       ├── UserCard/      # 用户卡片组件
+│   │   │       ├── PostCard/      # 文章卡片组件
+│   │   │       ├── HttpPanel/     # HTTP 操作面板
+│   │   │       ├── CreatePost/    # 创建文章组件
+│   │   │       └── StatusPanel/   # 状态统计面板
 │   │   ├── Dashboard.tsx # 仪表板
 │   │   └── ...           # 其他页面
 │   ├── App.tsx           # 根组件
@@ -335,5 +351,6 @@ pnpm docs:preview
 - [LDesign Engine](../engine) - 应用引擎和状态管理
 - [LDesign Router](../router) - 高性能 Vue 路由器
 - [LDesign Template](../template) - 多设备模板系统
+- [路由器集成指南](./docs/router-integration-guide.md) - 详细的路由器集成文档
 - [文档站点](./docs) - 完整的使用文档
 - [示例项目](./examples) - 更多使用示例

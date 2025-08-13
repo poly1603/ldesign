@@ -1,19 +1,34 @@
-import type { Engine, Plugin } from '@ldesign/engine'
-import type { Router, RouteRecordRaw, RouterOptions } from '../types'
+/**
+ * @ldesign/router Engine 插件
+ *
+ * 将路由器集成到 LDesign Engine 中的插件实现
+ */
+
+import type { RouteRecordRaw, ScrollBehavior } from '../types'
+import { createRouter } from '../core/router'
 import {
-  createMemoryHistory,
-  createRouter,
-  createWebHashHistory,
   createWebHistory,
-} from '../core'
+  createWebHashHistory,
+  createMemoryHistory,
+} from '../core/history'
 import {
-  createEnhancementConfig,
-  EnhancedComponentsPlugin,
-  type EnhancedComponentsPluginOptions,
-} from '../plugins/components'
+  ROUTER_INJECTION_SYMBOL,
+  ROUTE_INJECTION_SYMBOL,
+} from '../core/constants'
+import { RouterView, RouterLink } from '../components'
+
+// 临时使用 any 类型，避免循环依赖
+interface Plugin {
+  name: string
+  version: string
+  dependencies?: string[]
+  install: (engine: any) => Promise<void>
+  uninstall?: (engine: any) => Promise<void>
+  [key: string]: any
+}
 
 /**
- * 路由 Engine 插件配置选项
+ * 路由器 Engine 插件选项
  */
 export interface RouterEnginePluginOptions {
   /** 插件名称 */
@@ -27,212 +42,20 @@ export interface RouterEnginePluginOptions {
   /** 基础路径 */
   base?: string
   /** 滚动行为 */
-  scrollBehavior?: RouterOptions['scrollBehavior']
-
-  /** 增强组件选项 */
-  enhancedComponents?: {
-    /** 是否启用增强组件 */
-    enabled?: boolean
-    /** 增强组件配置 */
-    options?: EnhancedComponentsPluginOptions
-  }
-
-  /** 其他路由选项 */
-  [key: string]: any
+  scrollBehavior?: ScrollBehavior
+  /** 活跃链接类名 */
+  linkActiveClass?: string
+  /** 精确活跃链接类名 */
+  linkExactActiveClass?: string
 }
 
 /**
- * 路由 Engine 插件实现
- * 提供简化的路由集成方式，作为标准的 Engine 插件
- */
-class RouterEnginePlugin implements Plugin {
-  [key: string]: any
-  public name: string
-  public version: string
-  public dependencies: string[] = []
-  private router?: Router
-  private options: RouterEnginePluginOptions
-  private installed = false
-
-  constructor(options: RouterEnginePluginOptions) {
-    this.name = options.name || 'router'
-    this.version = options.version || '1.0.0'
-    this.options = options
-  }
-
-  async install(engine: Engine): Promise<void> {
-    if (this.installed) {
-      engine.logger.warn('Router plugin is already installed')
-      return
-    }
-
-    try {
-      // 记录插件安装开始
-      engine.logger.info(`Installing ${this.name} plugin...`, {
-        version: this.version,
-        options: {
-          mode: this.options.mode,
-          base: this.options.base,
-          routesCount: this.options.routes.length,
-        },
-      })
-
-      // 创建路由实例
-      this.router = this.createRouter()
-
-      // 获取 Vue 应用实例
-      const app = engine.getApp()
-      if (!app) {
-        throw new Error(
-          'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
-        )
-      }
-
-      // 安装路由到 Vue 应用
-      app.use(this.router)
-
-      // 安装增强组件插件
-      if (this.options.enhancedComponents?.enabled !== false) {
-        const enhancementConfig = createEnhancementConfig(
-          (this.options.enhancedComponents?.options as any) || {}
-        )
-        app.use(new EnhancedComponentsPlugin(), enhancementConfig)
-      }
-
-      // 将路由实例注册到引擎
-      ;(engine as any).router = this.router
-
-      // 注册全局状态
-      engine.state.set('router:currentRoute', this.router.currentRoute.value)
-      engine.state.set('router:isReady', false)
-
-      // 监听路由变化，更新全局状态
-      this.router.afterEach((to, from) => {
-        engine.state.set('router:currentRoute', to)
-        engine.events.emit('router:routeChanged', {
-          to,
-          from,
-          timestamp: Date.now(),
-        })
-      })
-
-      // 等待路由准备就绪
-      // 暂时注释掉，可能导致卡住
-      // await this.router.isReady()
-      engine.state.set('router:isReady', true)
-
-      this.installed = true
-
-      // 记录插件安装成功
-      engine.logger.info(`${this.name} plugin installed successfully`, {
-        currentRoute: this.router.currentRoute.value.path,
-        routesCount: this.router.getRoutes().length,
-      })
-
-      // 触发插件安装完成事件
-      engine.events.emit('plugin:router:installed', {
-        router: this.router,
-        options: this.options,
-      })
-    } catch (error) {
-      // 记录安装失败
-      engine.logger.error(`Failed to install ${this.name} plugin`, error)
-
-      // 触发插件安装失败事件
-      engine.events.emit('plugin:router:installFailed', {
-        error,
-        options: this.options,
-      })
-
-      throw error
-    }
-  }
-
-  async uninstall(engine: Engine): Promise<void> {
-    if (!this.installed) {
-      engine.logger.warn('Router plugin is not installed')
-      return
-    }
-
-    try {
-      engine.logger.info(`Uninstalling ${this.name} plugin...`)
-
-      // 清理全局状态
-      ;(engine.state as any).delete('router:currentRoute')
-      ;(engine.state as any).delete('router:isReady')
-
-      // 清理引擎上的路由实例
-      delete engine.router
-
-      this.installed = false
-      this.router = undefined
-
-      // 触发插件卸载完成事件
-      engine.events.emit('plugin:router:uninstalled', {
-        timestamp: Date.now(),
-      })
-
-      engine.logger.info(`${this.name} plugin uninstalled successfully`)
-    } catch (error) {
-      engine.logger.error(`Failed to uninstall ${this.name} plugin`, error)
-      throw error
-    }
-  }
-
-  /**
-   * 获取路由实例
-   */
-  getRouter(): Router | undefined {
-    return this.router
-  }
-
-  /**
-   * 创建路由实例
-   */
-  private createRouter(): Router {
-    const {
-      routes,
-      mode = 'hash',
-      base = '/',
-      scrollBehavior,
-      ...otherOptions
-    } = this.options
-
-    // 创建历史记录实例
-    let history
-    switch (mode) {
-      case 'history':
-        history = createWebHistory(base)
-        break
-      case 'memory':
-        history = createMemoryHistory(base)
-        break
-      case 'hash':
-      default:
-        history = createWebHashHistory(base)
-        break
-    }
-
-    // 创建路由器实例
-    const routerOptions: any = {
-      history,
-      routes,
-      ...otherOptions,
-    }
-
-    if (scrollBehavior) {
-      routerOptions.scrollBehavior = scrollBehavior
-    }
-
-    return createRouter(routerOptions)
-  }
-}
-
-/**
- * 创建路由 Engine 插件
+ * 创建路由器 Engine 插件
  *
- * @param options 路由配置选项
- * @returns 路由 Engine 插件实例
+ * 将路由器集成到 LDesign Engine 中，提供统一的路由管理体验
+ *
+ * @param options 路由器配置选项
+ * @returns Engine 插件实例
  *
  * @example
  * ```typescript
@@ -243,7 +66,8 @@ class RouterEnginePlugin implements Plugin {
  *     { path: '/', component: Home },
  *     { path: '/about', component: About }
  *   ],
- *   mode: 'history'
+ *   mode: 'hash',
+ *   base: '/'
  * })
  *
  * await engine.use(routerPlugin)
@@ -251,60 +75,212 @@ class RouterEnginePlugin implements Plugin {
  */
 export function createRouterEnginePlugin(
   options: RouterEnginePluginOptions
-): RouterEnginePlugin {
-  return new RouterEnginePlugin(options)
+): Plugin {
+  const {
+    name = 'router',
+    version = '1.0.0',
+    routes,
+    mode = 'history',
+    base = '/',
+    scrollBehavior,
+    linkActiveClass,
+    linkExactActiveClass,
+  } = options
+
+  return {
+    name,
+    version,
+    dependencies: [], // 路由器插件通常不依赖其他插件
+
+    async install(engine) {
+      try {
+        // 获取 Vue 应用实例
+        const vueApp = engine.getApp()
+        if (!vueApp) {
+          throw new Error(
+            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
+          )
+        }
+
+        // 记录插件安装开始
+        engine.logger.info(`Installing ${name} plugin...`, {
+          version,
+          mode,
+          base,
+          routesCount: routes.length,
+        })
+
+        // 创建历史管理器
+        let history
+        switch (mode) {
+          case 'hash':
+            history = createWebHashHistory(base)
+            break
+          case 'memory':
+            history = createMemoryHistory(base)
+            break
+          case 'history':
+          default:
+            history = createWebHistory(base)
+            break
+        }
+
+        // 创建路由器实例
+        const router = createRouter({
+          history,
+          routes,
+          scrollBehavior,
+          linkActiveClass,
+          linkExactActiveClass,
+        })
+
+        // 手动安装路由器到 Vue 应用（避免调用 router.install）
+        // 提供路由器注入
+        vueApp.provide(ROUTER_INJECTION_SYMBOL, router)
+        vueApp.provide(ROUTE_INJECTION_SYMBOL, router.currentRoute)
+
+        // 注册路由器组件
+        vueApp.component('RouterView', RouterView)
+        vueApp.component('RouterLink', RouterLink)
+
+        // 设置全局属性
+        if (vueApp.config && vueApp.config.globalProperties) {
+          vueApp.config.globalProperties.$router = router
+          vueApp.config.globalProperties.$route = router.currentRoute
+        }
+
+        // 将路由器注册到 engine 上，使其可以通过 engine.router 访问
+        // 直接设置属性，避免调用 setRouter 方法（它会调用 router.install）
+        engine.router = router
+
+        // 注册路由状态到 engine 状态管理
+        if (engine.state) {
+          // 同步当前路由信息
+          engine.state.set('router:currentRoute', router.currentRoute)
+          engine.state.set('router:mode', mode)
+          engine.state.set('router:base', base)
+
+          // 监听路由变化，更新状态
+          router.afterEach((to, from) => {
+            engine.state.set('router:currentRoute', to)
+
+            // 触发路由变化事件
+            if (engine.events) {
+              engine.events.emit('router:navigated', { to, from })
+            }
+          })
+        }
+
+        // 监听路由错误
+        router.onError(error => {
+          engine.logger.error('Router navigation error:', error)
+          if (engine.events) {
+            engine.events.emit('router:error', error)
+          }
+        })
+
+        // 等待路由器准备就绪（在测试环境中跳过）
+        if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+          engine.logger.info('Waiting for router to be ready...')
+          await router.isReady()
+          engine.logger.info('Router is ready!')
+        }
+
+        // 记录插件安装完成
+        engine.logger.info(`${name} plugin installed successfully`, {
+          currentRoute: router.currentRoute.value?.path || '/',
+        })
+
+        // 触发插件安装完成事件
+        if (engine.events) {
+          engine.events.emit(`plugin:${name}:installed`, {
+            router,
+            mode,
+            base,
+            routesCount: routes.length,
+          })
+        }
+      } catch (error) {
+        engine.logger.error(`Failed to install ${name} plugin:`, error)
+        throw error
+      }
+    },
+
+    async uninstall(engine) {
+      try {
+        engine.logger.info(`Uninstalling ${name} plugin...`)
+
+        // 清理路由器引用
+        if (engine.router) {
+          engine.router = null
+        }
+
+        // 清理状态
+        if (engine.state) {
+          engine.state.delete('router:currentRoute')
+          engine.state.delete('router:mode')
+          engine.state.delete('router:base')
+        }
+
+        // 触发插件卸载事件
+        if (engine.events) {
+          engine.events.emit(`plugin:${name}:uninstalled`)
+        }
+
+        engine.logger.info(`${name} plugin uninstalled successfully`)
+      } catch (error) {
+        engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
+        throw error
+      }
+    },
+  }
 }
 
 /**
- * 路由插件工厂函数（向后兼容）
+ * 路由器插件工厂函数（向后兼容）
  *
- * @param options 路由配置选项
- * @returns 路由 Engine 插件实例
+ * @param options 路由器配置选项
+ * @returns 路由器 Engine 插件实例
  *
  * @example
  * ```typescript
  * import { routerPlugin } from '@ldesign/router'
  *
  * await engine.use(routerPlugin({
- *   routes: [...],
- *   mode: 'history'
+ *   routes: [
+ *     { path: '/', component: Home },
+ *     { path: '/about', component: About }
+ *   ],
+ *   mode: 'hash'
  * }))
  * ```
  */
-export function routerPlugin(
-  options: RouterEnginePluginOptions
-): RouterEnginePlugin {
+export function routerPlugin(options: RouterEnginePluginOptions): Plugin {
   return createRouterEnginePlugin(options)
 }
 
 /**
- * 默认路由 Engine 插件实例
+ * 默认路由器 Engine 插件实例
  *
- * 使用默认配置创建的路由插件，需要提供路由配置
+ * 使用默认配置创建的路由器插件，需要提供路由配置
  *
  * @example
  * ```typescript
  * import { createDefaultRouterEnginePlugin } from '@ldesign/router'
  *
- * const defaultRouter = createDefaultRouterEnginePlugin([
+ * const defaultRouterPlugin = createDefaultRouterEnginePlugin([
  *   { path: '/', component: Home }
  * ])
  *
- * await engine.use(defaultRouter)
+ * await engine.use(defaultRouterPlugin)
  * ```
  */
 export function createDefaultRouterEnginePlugin(
   routes: RouteRecordRaw[]
-): RouterEnginePlugin {
+): Plugin {
   return createRouterEnginePlugin({
     routes,
-    mode: 'hash',
+    mode: 'history',
     base: '/',
-    enhancedComponents: {
-      enabled: true,
-    },
   })
 }
-
-// 导出类型和类
-export { RouterEnginePlugin }

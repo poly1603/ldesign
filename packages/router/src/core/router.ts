@@ -1,363 +1,481 @@
-import type { App } from '../components'
-import type {
-  NavigationFailure,
-  NavigationGuard,
-  NavigationGuardReturn,
-  NavigationHookAfter,
-  Ref,
-  RouteLocationNormalized,
-  RouteLocationRaw,
-  Router,
-  RouteRecordRaw,
-  RouterOptions,
-} from '../types'
+/**
+ * @ldesign/router 路由器核心类
+ *
+ * 路由器的主要实现，负责路由管理、导航控制和生命周期管理
+ */
 
-// 直接导入 Vue 函数
-import { ref } from 'vue'
-import { RouterLink } from '../components/RouterLink'
-import { RouterView } from '../components/RouterView'
-import { NavigationFailureType, START_LOCATION } from './constants'
-import { createRouterMatcher } from './matcher'
+import { ref, reactive, computed, nextTick } from 'vue'
+import type { Ref, App } from 'vue'
+import type {
+  Router,
+  RouterOptions,
+  RouteRecordRaw,
+  RouteRecordNormalized,
+  RouteLocationRaw,
+  RouteLocationNormalized,
+  NavigationGuard,
+  NavigationHookAfter,
+  NavigationFailure,
+  HistoryLocation,
+  NavigationInformation,
+} from '../types'
+import { NavigationFailureType } from './constants'
+import { RouteMatcher } from './matcher'
+import {
+  START_LOCATION,
+  ROUTER_INJECTION_SYMBOL,
+  ROUTE_INJECTION_SYMBOL,
+} from './constants'
+
+// ==================== 路由器实现 ====================
+
+/**
+ * 路由器类
+ */
+export class RouterImpl implements Router {
+  private matcher: RouteMatcher
+  private beforeGuards: NavigationGuard[] = []
+  private beforeResolveGuards: NavigationGuard[] = []
+  private afterHooks: NavigationHookAfter[] = []
+  private errorHandlers: Array<(error: Error) => void> = []
+  private isReadyPromise?: Promise<void>
+  private isReadyResolve?: () => void
+  private pendingLocation?: RouteLocationNormalized
+
+  public readonly currentRoute: Ref<RouteLocationNormalized>
+  public readonly options: RouterOptions
+
+  constructor(options: RouterOptions) {
+    this.options = options
+    this.matcher = new RouteMatcher()
+    this.currentRoute = ref(START_LOCATION)
+
+    // 创建 isReady Promise
+    this.isReadyPromise = new Promise(resolve => {
+      this.isReadyResolve = resolve
+    })
+
+    // 添加初始路由
+    for (const route of options.routes) {
+      this.addRoute(route)
+    }
+
+    // 设置历史监听
+    this.setupHistoryListener()
+
+    // 初始化当前路由
+    this.initializeCurrentRoute()
+  }
+
+  // ==================== 路由管理 ====================
+
+  addRoute(route: RouteRecordRaw): () => void
+  addRoute(parentName: string | symbol, route: RouteRecordRaw): () => void
+  addRoute(
+    parentNameOrRoute: string | symbol | RouteRecordRaw,
+    route?: RouteRecordRaw
+  ): () => void {
+    let normalizedRecord: RouteRecordNormalized
+
+    if (typeof parentNameOrRoute === 'object') {
+      // addRoute(route)
+      normalizedRecord = this.matcher.addRoute(parentNameOrRoute)
+    } else {
+      // addRoute(parentName, route)
+      const parent = this.matcher.matchByName(parentNameOrRoute)
+      if (!parent) {
+        throw new Error(`Parent route "${String(parentNameOrRoute)}" not found`)
+      }
+      normalizedRecord = this.matcher.addRoute(route!, parent)
+    }
+
+    return () => {
+      if (normalizedRecord.name) {
+        this.removeRoute(normalizedRecord.name)
+      }
+    }
+  }
+
+  removeRoute(name: string | symbol): void {
+    this.matcher.removeRoute(name)
+  }
+
+  getRoutes(): RouteRecordNormalized[] {
+    return this.matcher.getRoutes()
+  }
+
+  hasRoute(name: string | symbol): boolean {
+    return this.matcher.hasRoute(name)
+  }
+
+  resolve(
+    to: RouteLocationRaw,
+    currentLocation?: RouteLocationNormalized
+  ): RouteLocationNormalized {
+    return this.matcher.resolve(to, currentLocation || this.currentRoute.value)
+  }
+
+  // ==================== 导航控制 ====================
+
+  async push(
+    to: RouteLocationRaw
+  ): Promise<NavigationFailure | void | undefined> {
+    return this.pushWithRedirect(to, false)
+  }
+
+  async replace(
+    to: RouteLocationRaw
+  ): Promise<NavigationFailure | void | undefined> {
+    return this.pushWithRedirect(to, true)
+  }
+
+  go(delta: number): void {
+    this.options.history.go(delta)
+  }
+
+  back(): void {
+    this.go(-1)
+  }
+
+  forward(): void {
+    this.go(1)
+  }
+
+  // ==================== 导航守卫 ====================
+
+  beforeEach(guard: NavigationGuard): () => void {
+    this.beforeGuards.push(guard)
+    return () => {
+      const index = this.beforeGuards.indexOf(guard)
+      if (index >= 0) {
+        this.beforeGuards.splice(index, 1)
+      }
+    }
+  }
+
+  beforeResolve(guard: NavigationGuard): () => void {
+    this.beforeResolveGuards.push(guard)
+    return () => {
+      const index = this.beforeResolveGuards.indexOf(guard)
+      if (index >= 0) {
+        this.beforeResolveGuards.splice(index, 1)
+      }
+    }
+  }
+
+  afterEach(hook: NavigationHookAfter): () => void {
+    this.afterHooks.push(hook)
+    return () => {
+      const index = this.afterHooks.indexOf(hook)
+      if (index >= 0) {
+        this.afterHooks.splice(index, 1)
+      }
+    }
+  }
+
+  onError(handler: (error: Error) => void): () => void {
+    this.errorHandlers.push(handler)
+    return () => {
+      const index = this.errorHandlers.indexOf(handler)
+      if (index >= 0) {
+        this.errorHandlers.splice(index, 1)
+      }
+    }
+  }
+
+  // ==================== 生命周期 ====================
+
+  async isReady(): Promise<void> {
+    return this.isReadyPromise!
+  }
+
+  install(app: App): void {
+    app.provide(ROUTER_INJECTION_SYMBOL, this)
+    app.provide(ROUTE_INJECTION_SYMBOL, this.currentRoute)
+
+    // 全局属性
+    app.config.globalProperties.$router = this
+    app.config.globalProperties.$route = this.currentRoute
+
+    // 注册全局组件
+    // 这里会在组件实现后添加
+  }
+
+  // ==================== 私有方法 ====================
+
+  private async pushWithRedirect(
+    to: RouteLocationRaw,
+    replace: boolean
+  ): Promise<NavigationFailure | void | undefined> {
+    const targetLocation = this.resolve(to)
+    const from = this.currentRoute.value
+
+    // 检查是否重复导航
+    if (this.isSameRouteLocation(targetLocation, from)) {
+      return this.createNavigationFailure(
+        NavigationFailureType.duplicated,
+        from,
+        targetLocation
+      )
+    }
+
+    try {
+      // 执行导航守卫
+      await this.runNavigationGuards(targetLocation, from)
+
+      // 更新历史记录
+      const historyLocation =
+        this.routeLocationToHistoryLocation(targetLocation)
+      if (replace) {
+        this.options.history.replace(historyLocation, { ...targetLocation })
+      } else {
+        this.options.history.push(historyLocation, { ...targetLocation })
+      }
+
+      // 更新当前路由
+      this.updateCurrentRoute(targetLocation, from)
+
+      // 执行后置钩子
+      this.runAfterHooks(targetLocation, from)
+    } catch (error) {
+      if (error instanceof Error) {
+        this.handleError(error)
+        return this.createNavigationFailure(
+          NavigationFailureType.aborted,
+          from,
+          targetLocation
+        )
+      }
+      throw error
+    }
+  }
+
+  private async runNavigationGuards(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ): Promise<void> {
+    // 执行全局前置守卫
+    for (const guard of this.beforeGuards) {
+      const result = await this.runGuard(guard, to, from)
+      if (result !== undefined) {
+        throw new Error('Navigation aborted by guard')
+      }
+    }
+
+    // 执行路由级守卫
+    for (const record of to.matched) {
+      if (record.beforeEnter) {
+        const result = await this.runGuard(record.beforeEnter, to, from)
+        if (result !== undefined) {
+          throw new Error('Navigation aborted by route guard')
+        }
+      }
+    }
+
+    // 执行全局解析守卫
+    for (const guard of this.beforeResolveGuards) {
+      const result = await this.runGuard(guard, to, from)
+      if (result !== undefined) {
+        throw new Error('Navigation aborted by resolve guard')
+      }
+    }
+  }
+
+  private async runGuard(
+    guard: NavigationGuard,
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const next = (result?: any) => {
+        if (result === false) {
+          reject(new Error('Navigation cancelled'))
+        } else if (result instanceof Error) {
+          reject(result)
+        } else if (result && typeof result === 'object') {
+          // 重定向
+          reject(new Error('Navigation redirected'))
+        } else {
+          resolve(result)
+        }
+      }
+
+      const guardResult = guard(to, from, next)
+      if (guardResult && typeof guardResult.then === 'function') {
+        guardResult.then(resolve, reject)
+      }
+    })
+  }
+
+  private runAfterHooks(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ): void {
+    for (const hook of this.afterHooks) {
+      try {
+        hook(to, from)
+      } catch (error) {
+        this.handleError(error as Error)
+      }
+    }
+  }
+
+  private updateCurrentRoute(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ): void {
+    this.currentRoute.value = to
+    this.pendingLocation = undefined
+
+    // 触发准备就绪
+    if (this.isReadyResolve) {
+      this.isReadyResolve()
+      this.isReadyResolve = undefined
+    }
+  }
+
+  private setupHistoryListener(): void {
+    this.options.history.listen((to, from, info) => {
+      this.handleHistoryChange(to, from, info)
+    })
+  }
+
+  private async handleHistoryChange(
+    to: HistoryLocation,
+    from: HistoryLocation,
+    info: NavigationInformation
+  ): Promise<void> {
+    const targetLocation = this.historyLocationToRouteLocation(to)
+    const fromLocation = this.currentRoute.value
+
+    try {
+      await this.runNavigationGuards(targetLocation, fromLocation)
+      this.updateCurrentRoute(targetLocation, fromLocation)
+      this.runAfterHooks(targetLocation, fromLocation)
+    } catch (error) {
+      this.handleError(error as Error)
+    }
+  }
+
+  private initializeCurrentRoute(): void {
+    const location = this.options.history.location
+    const routeLocation = this.historyLocationToRouteLocation(location)
+    this.currentRoute.value = routeLocation
+
+    // 直接解析 isReady Promise，因为这是初始化，不需要运行导航守卫
+    if (this.isReadyResolve) {
+      this.isReadyResolve()
+      this.isReadyResolve = undefined
+    }
+  }
+
+  private routeLocationToHistoryLocation(
+    location: RouteLocationNormalized
+  ): HistoryLocation {
+    return {
+      pathname: location.path,
+      search: this.stringifyQuery(location.query),
+      hash: location.hash,
+    }
+  }
+
+  private historyLocationToRouteLocation(
+    location: HistoryLocation
+  ): RouteLocationNormalized {
+    const path = location.pathname
+    const query = this.parseQuery(location.search)
+    const hash = location.hash
+
+    try {
+      return this.matcher.resolve({ path, query, hash })
+    } catch {
+      // 如果匹配失败，返回 404 路由或默认路由
+      return {
+        ...START_LOCATION,
+        path,
+        query,
+        hash,
+        fullPath: path + location.search + location.hash,
+      }
+    }
+  }
+
+  private parseQuery(search: string): Record<string, any> {
+    if (this.options.parseQuery) {
+      return this.options.parseQuery(search.slice(1))
+    }
+
+    const query: Record<string, any> = {}
+    const params = new URLSearchParams(search)
+
+    for (const [key, value] of params) {
+      query[key] = value
+    }
+
+    return query
+  }
+
+  private stringifyQuery(query: Record<string, any>): string {
+    if (this.options.stringifyQuery) {
+      const result = this.options.stringifyQuery(query)
+      return result ? '?' + result : ''
+    }
+
+    const params = new URLSearchParams()
+
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== null && value !== undefined) {
+        params.append(key, String(value))
+      }
+    }
+
+    const result = params.toString()
+    return result ? '?' + result : ''
+  }
+
+  private isSameRouteLocation(
+    a: RouteLocationNormalized,
+    b: RouteLocationNormalized
+  ): boolean {
+    return (
+      a.path === b.path &&
+      JSON.stringify(a.query) === JSON.stringify(b.query) &&
+      a.hash === b.hash
+    )
+  }
+
+  private createNavigationFailure(
+    type: NavigationFailureType,
+    from: RouteLocationNormalized,
+    to: RouteLocationNormalized
+  ): NavigationFailure {
+    const error = new Error(`Navigation failed`) as NavigationFailure
+    error.type = type
+    error.from = from
+    error.to = to
+    return error
+  }
+
+  private handleError(error: Error): void {
+    for (const handler of this.errorHandlers) {
+      try {
+        handler(error)
+      } catch (handlerError) {
+        console.error('Error in error handler:', handlerError)
+      }
+    }
+
+    if (this.errorHandlers.length === 0) {
+      console.error('Unhandled router error:', error)
+    }
+  }
+}
+
+// ==================== 工厂函数 ====================
 
 /**
  * 创建路由器实例
  */
 export function createRouter(options: RouterOptions): Router {
-  const matcher = createRouterMatcher(options.routes, options)
-  const currentRoute = ref(START_LOCATION) as Ref<RouteLocationNormalized>
-
-  // 导航守卫（使用 Set 提高性能）
-  const beforeGuards = new Set<NavigationGuard>()
-  const beforeResolveGuards = new Set<NavigationGuard>()
-  const afterGuards = new Set<NavigationHookAfter>()
-
-  // 错误处理
-  const errorHandlers: Array<
-    (
-      error: Error,
-      to: RouteLocationNormalized,
-      from: RouteLocationNormalized
-    ) => void
-  > = []
-
-  let ready = false
-  let readyPromise: Promise<void>
-  let readyResolve: () => void
-  let readyReject: (error: Error) => void
-
-  // 初始化 ready Promise
-  function initReadyPromise() {
-    readyPromise = new Promise<void>((resolve, reject) => {
-      readyResolve = resolve
-      readyReject = reject
-    })
-  }
-
-  initReadyPromise()
-
-  /**
-   * 导航到指定路由
-   */
-  async function push(to: RouteLocationRaw): Promise<NavigationFailure | void> {
-    return navigate(to, 'push')
-  }
-
-  /**
-   * 替换当前路由
-   */
-  async function replace(
-    to: RouteLocationRaw
-  ): Promise<NavigationFailure | void> {
-    return navigate(to, 'replace')
-  }
-
-  /**
-   * 前进或后退指定步数
-   */
-  function go(delta: number): void {
-    options.history.go(delta)
-  }
-
-  /**
-   * 后退一步
-   */
-  function back(): void {
-    go(-1)
-  }
-
-  /**
-   * 前进一步
-   */
-  function forward(): void {
-    go(1)
-  }
-
-  /**
-   * 核心导航函数
-   */
-  async function navigate(
-    to: RouteLocationRaw,
-    type: 'push' | 'replace' = 'push'
-  ): Promise<NavigationFailure | void> {
-    const from = currentRoute.value
-
-    // 解析目标路由
-    const targetLocation = matcher.resolve(to, from)
-
-    try {
-      // 目标路由已在上面解析
-
-      // 执行导航守卫
-      const failure = await runGuards(targetLocation, from)
-      if (failure) {
-        return failure
-      }
-
-      // 更新历史记录
-      if (type === 'push') {
-        options.history.push(targetLocation.fullPath)
-      } else {
-        options.history.replace(targetLocation.fullPath)
-      }
-
-      // 更新当前路由
-      currentRoute.value = targetLocation
-
-      // 执行后置守卫
-      afterGuards.forEach(guard => guard(targetLocation, from))
-
-      if (!ready) {
-        ready = true
-        readyResolve()
-      }
-    } catch (error) {
-      // 处理错误
-      const targetLocation = matcher.resolve(to, from)
-      const handled = errorHandlers.some(handler => {
-        try {
-          handler(error as Error, targetLocation, from)
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      if (!handled) {
-        if (!ready) {
-          readyReject(error as Error)
-        }
-        throw error
-      }
-    }
-  }
-
-  /**
-   * 运行导航守卫
-   */
-  async function runGuards(
-    to: RouteLocationNormalized,
-    from: RouteLocationNormalized
-  ): Promise<NavigationFailure | void> {
-    // 运行 beforeEach 守卫
-    for (const guard of beforeGuards) {
-      const result = await new Promise<NavigationGuardReturn>(resolve => {
-        const next = (result?: NavigationGuardReturn) => resolve(result)
-        const guardResult = guard(to, from, next)
-        if (guardResult !== undefined) {
-          resolve(guardResult)
-        }
-      })
-      if (result !== true && result !== undefined) {
-        return createNavigationFailure(to, from, result)
-      }
-    }
-
-    // 运行 beforeResolve 守卫
-    for (const guard of beforeResolveGuards) {
-      const result = await new Promise<NavigationGuardReturn>(resolve => {
-        const next = (result?: NavigationGuardReturn) => resolve(result)
-        const guardResult = guard(to, from, next)
-        if (guardResult !== undefined) {
-          resolve(guardResult)
-        }
-      })
-      if (result !== true && result !== undefined) {
-        return createNavigationFailure(to, from, result)
-      }
-    }
-  }
-
-  /**
-   * 创建导航失败对象
-   */
-  function createNavigationFailure(
-    to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
-    result: NavigationGuardReturn
-  ): NavigationFailure {
-    return {
-      type: NavigationFailureType.aborted,
-      from,
-      to,
-      message: typeof result === 'string' ? result : 'Navigation aborted',
-    } as NavigationFailure
-  }
-
-  /**
-   * 添加导航守卫
-   */
-  function beforeEach(guard: NavigationGuard): () => void {
-    beforeGuards.add(guard)
-    return () => beforeGuards.delete(guard)
-  }
-
-  function beforeResolve(guard: NavigationGuard): () => void {
-    beforeResolveGuards.add(guard)
-    return () => beforeResolveGuards.delete(guard)
-  }
-
-  function afterEach(guard: NavigationHookAfter): () => void {
-    afterGuards.add(guard)
-    return () => afterGuards.delete(guard)
-  }
-
-  /**
-   * 错误处理
-   */
-  function onError(
-    handler: (
-      error: Error,
-      to: RouteLocationNormalized,
-      from: RouteLocationNormalized
-    ) => void
-  ): () => void {
-    errorHandlers.push(handler)
-    return () => {
-      const index = errorHandlers.indexOf(handler)
-      if (index > -1) errorHandlers.splice(index, 1)
-    }
-  }
-
-  /**
-   * 添加路由
-   */
-  function addRoute(route: RouteRecordRaw): () => void
-  function addRoute(
-    parentName: string | symbol,
-    route: RouteRecordRaw
-  ): () => void
-  function addRoute(
-    parentOrRoute: string | symbol | RouteRecordRaw,
-    route?: RouteRecordRaw
-  ): () => void {
-    if (
-      typeof parentOrRoute === 'string' ||
-      typeof parentOrRoute === 'symbol'
-    ) {
-      return matcher.addRoute(route!, parentOrRoute)
-    } else {
-      return matcher.addRoute(parentOrRoute)
-    }
-  }
-
-  /**
-   * 移除路由
-   */
-  function removeRoute(name: string | symbol): void {
-    matcher.removeRoute(name)
-  }
-
-  /**
-   * 获取所有路由记录
-   */
-  function getRoutes() {
-    return matcher.getRoutes()
-  }
-
-  /**
-   * 检查路由是否存在
-   */
-  function hasRoute(name: string | symbol): boolean {
-    return matcher.hasRoute(name)
-  }
-
-  /**
-   * 解析路由
-   */
-  function resolve(
-    to: RouteLocationRaw,
-    currentLocation?: RouteLocationNormalized
-  ) {
-    return matcher.resolve(to, currentLocation || currentRoute.value)
-  }
-
-  /**
-   * 获取当前路由
-   */
-  function getCurrentRoute() {
-    return currentRoute
-  }
-
-  // install 函数将在 router 对象定义后添加
-
-  const router: Router = {
-    currentRoute: currentRoute as Ref<RouteLocationNormalized>,
-    options,
-
-    push,
-    replace,
-    go,
-    back,
-    forward,
-
-    beforeEach,
-    beforeResolve,
-    afterEach,
-    onError,
-
-    addRoute,
-    removeRoute,
-    getRoutes,
-    hasRoute,
-    resolve,
-    getCurrentRoute,
-
-    // install 方法将在下面赋值
-    install: (() => {}) as any,
-
-    isReady: () => readyPromise,
-  }
-
-  /**
-   * 安装路由器到 Vue 应用
-   */
-  router.install = function install(app: App) {
-    app.config.globalProperties.$router = router
-    app.config.globalProperties.$route = currentRoute
-
-    app.provide('router', router)
-    app.provide('route', currentRoute)
-
-    // 注册组件
-    app.component('RouterView', RouterView)
-    app.component('RouterLink', RouterLink)
-
-    // 解析并设置初始路由
-    const initialLocation = options.history.location()
-    const initialRoute = matcher.resolve(initialLocation, currentRoute.value)
-    currentRoute.value = initialRoute
-
-    // 监听历史变化
-    const removeHistoryListener = options.history.listen((to, _from, _info) => {
-      const targetLocation = matcher.resolve(to, currentRoute.value)
-      currentRoute.value = targetLocation
-    })
-
-    // 应用卸载时清理
-    app.onUnmount?.(() => {
-      removeHistoryListener()
-    })
-  }
-
-  return router
+  return new RouterImpl(options)
 }

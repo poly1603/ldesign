@@ -1,0 +1,773 @@
+import type { EngineImpl } from '@ldesign/engine'
+import { useRoute, useRouter } from '@ldesign/router'
+import { useDevice } from '@ldesign/device'
+import { useHttp } from '@ldesign/http'
+
+import {
+  computed,
+  defineComponent,
+  getCurrentInstance,
+  onMounted,
+  ref,
+} from 'vue'
+import './Home.less'
+
+export default defineComponent({
+  name: 'Home',
+  setup() {
+    // 获取 Engine 实例
+    const instance = getCurrentInstance()
+    const engine = instance?.appContext.config.globalProperties
+      .$engine as EngineImpl
+
+    const router = useRouter()
+    const route = useRoute()
+
+    // 使用 i18n - 直接使用全局属性
+    const $t = instance?.appContext.config.globalProperties.$t
+    const $i18n = instance?.appContext.config.globalProperties.$i18n
+
+    if (!$t || !$i18n) {
+      throw new Error('i18n 未正确初始化，请检查插件配置')
+    }
+
+    const t = $t
+    const locale = ref($i18n.getCurrentLanguage())
+    const availableLanguages = ref($i18n.getAvailableLanguages())
+    const switchLanguage = async (lang: string) => {
+      await $i18n.changeLanguage(lang)
+      locale.value = $i18n.getCurrentLanguage()
+    }
+
+    // 设备检测
+    const { deviceInfo, isMobile, isTablet, isDesktop } = useDevice()
+    const deviceType = computed(() => deviceInfo.value?.type || 'unknown')
+    const orientation = computed(
+      () => deviceInfo.value?.orientation || 'portrait'
+    )
+
+    // HTTP 功能演示 - 使用免费的 JSONPlaceholder API，配置高级功能
+    const {
+      get,
+      post,
+      delete: del,
+      loading,
+      error,
+      client,
+    } = useHttp({
+      baseURL: 'https://jsonplaceholder.typicode.com',
+      timeout: 15000,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      // 启用缓存
+      cache: {
+        enabled: true,
+        ttl: 300000, // 5分钟缓存
+      },
+      // 重试机制
+      retry: {
+        retries: 3,
+        retryDelay: 1000,
+        retryCondition: (error: any) => {
+          // 重试网络错误和 5xx 错误
+          return error.code === 'NETWORK_ERROR' ||
+                 error.code === 'TIMEOUT' ||
+                 (error.response?.status >= 500)
+        }
+      },
+      // 并发控制
+      concurrency: {
+        maxConcurrent: 3,
+        maxQueueSize: 10,
+      },
+    })
+
+    const users = ref<any[]>([])
+    const posts = ref<any[]>([])
+    const newPost = ref({ title: '', body: '' })
+
+    // HTTP 状态管理
+    const requestStats = ref({
+      totalRequests: 0,
+      successfulRequests: 0,
+      failedRequests: 0,
+      cacheHits: 0,
+      activeRequests: 0,
+    })
+
+    // 请求取消控制
+    const abortControllers = ref<Map<string, AbortController>>(new Map())
+
+    // 创建取消控制器
+    const createAbortController = (key: string) => {
+      // 取消之前的同类请求
+      const existingController = abortControllers.value.get(key)
+      if (existingController) {
+        existingController.abort('新请求取消了之前的请求')
+      }
+
+      const controller = new AbortController()
+      abortControllers.value.set(key, controller)
+      return controller
+    }
+
+    // 清理取消控制器
+    const cleanupController = (key: string) => {
+      abortControllers.value.delete(key)
+    }
+
+    // 取消所有请求
+    const cancelAllRequests = () => {
+      abortControllers.value.forEach((controller, key) => {
+        controller.abort('用户取消了所有请求')
+        engine?.logger.info('取消请求', { requestKey: key })
+      })
+      abortControllers.value.clear()
+      requestStats.value.activeRequests = 0
+    }
+
+    // 清除缓存
+    const clearCache = () => {
+      try {
+        client.clearCache()
+        engine?.logger.info('缓存已清除')
+        alert('缓存已清除！下次请求将从网络获取最新数据。')
+      } catch (err) {
+        console.error('清除缓存失败:', err)
+      }
+    }
+
+    // 批量获取数据
+    const fetchAllData = async () => {
+      try {
+        await Promise.all([
+          fetchUsers(),
+          fetchPosts(10) // 获取更多文章
+        ])
+        engine?.logger.info('批量数据获取完成')
+      } catch (err) {
+        console.error('批量获取数据失败:', err)
+      }
+    }
+
+    // 获取详细用户信息
+    const fetchUserDetails = async (userId: number) => {
+      const controller = createAbortController(`userDetails-${userId}`)
+      requestStats.value.totalRequests += 2 // 两个并发请求
+      requestStats.value.activeRequests++
+
+      try {
+        const startTime = Date.now()
+        const [userResponse, postsResponse] = await Promise.all([
+          get(`/users/${userId}`, { signal: controller.signal }),
+          get(`/posts?userId=${userId}`, { signal: controller.signal })
+        ])
+
+        const duration = Date.now() - startTime
+        requestStats.value.successfulRequests += 2 // 两个请求都成功
+
+        const userDetails = {
+          ...userResponse,
+          posts: postsResponse || []
+        }
+
+        engine?.logger.info('获取用户详情成功', {
+          userId,
+          postsCount: userDetails.posts.length,
+          duration: `${duration}ms`
+        })
+
+        alert(`用户详情：\n姓名：${userDetails.name}\n邮箱：${userDetails.email}\n电话：${userDetails.phone}\n网站：${userDetails.website}\n公司：${userDetails.company?.name}\n地址：${userDetails.address?.city}, ${userDetails.address?.street}\n文章数：${userDetails.posts.length}`)
+
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          requestStats.value.failedRequests += 2 // 两个请求都失败
+          console.error('获取用户详情失败:', err)
+          engine?.logger.error('获取用户详情失败', {
+            userId,
+            error: err.message
+          })
+          alert(`获取用户详情失败: ${err.message}`)
+        }
+      } finally {
+        requestStats.value.activeRequests--
+        cleanupController(`userDetails-${userId}`)
+      }
+    }
+
+    // 获取用户列表（优化版）
+    const fetchUsers = async () => {
+      const controller = createAbortController('fetchUsers')
+      requestStats.value.totalRequests++
+      requestStats.value.activeRequests++
+
+      try {
+        const startTime = Date.now()
+        const response = await get('/users', {
+          signal: controller.signal,
+          metadata: { requestType: 'fetchUsers' }
+        })
+
+        const duration = Date.now() - startTime
+        users.value = Array.isArray(response) ? response : []
+        requestStats.value.successfulRequests++
+
+        engine?.logger.info('获取用户列表成功', {
+          count: users.value.length,
+          duration: `${duration}ms`,
+          cached: duration < 100 // 快速响应可能来自缓存
+        })
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          requestStats.value.failedRequests++
+          console.error('获取用户列表失败:', err)
+          engine?.logger.error('获取用户列表失败', {
+            error: err.message,
+            code: err.code,
+            status: err.response?.status
+          })
+        }
+      } finally {
+        requestStats.value.activeRequests--
+        cleanupController('fetchUsers')
+      }
+    }
+
+    // 获取文章列表（优化版）
+    const fetchPosts = async (limit: number = 5) => {
+      const controller = createAbortController('fetchPosts')
+      requestStats.value.totalRequests++
+      requestStats.value.activeRequests++
+
+      try {
+        const startTime = Date.now()
+        const response = await get(`/posts?_limit=${limit}`, {
+          signal: controller.signal,
+          metadata: { requestType: 'fetchPosts', limit }
+        })
+
+        const duration = Date.now() - startTime
+        posts.value = Array.isArray(response) ? response : []
+        requestStats.value.successfulRequests++
+
+        engine?.logger.info('获取文章列表成功', {
+          count: posts.value.length,
+          limit,
+          duration: `${duration}ms`,
+          cached: duration < 100
+        })
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          requestStats.value.failedRequests++
+          console.error('获取文章列表失败:', err)
+          engine?.logger.error('获取文章列表失败', {
+            error: err.message,
+            code: err.code,
+            status: err.response?.status,
+            limit
+          })
+        }
+      } finally {
+        requestStats.value.activeRequests--
+        cleanupController('fetchPosts')
+      }
+    }
+
+    // 创建文章（优化版）
+    const createPost = async () => {
+      if (!newPost.value.title.trim() || !newPost.value.body.trim()) {
+        alert('请填写标题和内容')
+        return
+      }
+
+      const controller = createAbortController('createPost')
+      requestStats.value.totalRequests++
+      requestStats.value.activeRequests++
+
+      try {
+        const startTime = Date.now()
+        const postData = {
+          title: newPost.value.title.trim(),
+          body: newPost.value.body.trim(),
+          userId: 1,
+        }
+
+        const response = await post('/posts', postData, {
+          signal: controller.signal,
+          metadata: { requestType: 'createPost' }
+        })
+
+        const duration = Date.now() - startTime
+        requestStats.value.successfulRequests++
+
+        console.log('创建文章成功:', response)
+        newPost.value = { title: '', body: '' }
+
+        engine?.logger.info('创建文章成功', {
+          postId: response?.id,
+          duration: `${duration}ms`,
+          title: postData.title
+        })
+
+        alert(`文章创建成功！\nID: ${response?.id}\n标题: ${postData.title}`)
+
+        // 自动刷新文章列表
+        await fetchPosts(5)
+
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          requestStats.value.failedRequests++
+          console.error('创建文章失败:', err)
+          engine?.logger.error('创建文章失败', {
+            error: err.message,
+            code: err.code,
+            status: err.response?.status,
+            title: newPost.value.title
+          })
+          alert(`创建文章失败: ${err.message}`)
+        }
+      } finally {
+        requestStats.value.activeRequests--
+        cleanupController('createPost')
+      }
+    }
+
+    // 删除文章（优化版）
+    const deletePost = async (id: number, title: string) => {
+      if (!confirm(`确定要删除文章 "${title}" 吗？`)) return
+
+      const controller = createAbortController(`deletePost-${id}`)
+      requestStats.value.totalRequests++
+      requestStats.value.activeRequests++
+
+      try {
+        const startTime = Date.now()
+        await del(`/posts/${id}`, {
+          signal: controller.signal,
+          metadata: { requestType: 'deletePost', postId: id }
+        })
+
+        const duration = Date.now() - startTime
+        requestStats.value.successfulRequests++
+
+        // 从本地列表中移除
+        posts.value = posts.value.filter(post => post.id !== id)
+
+        engine?.logger.info('删除文章成功', {
+          postId: id,
+          title,
+          duration: `${duration}ms`
+        })
+
+        alert(`文章删除成功！\n标题: ${title}`)
+
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          requestStats.value.failedRequests++
+          console.error('删除文章失败:', err)
+          engine?.logger.error('删除文章失败', {
+            postId: id,
+            title,
+            error: err.message,
+            code: err.code,
+            status: err.response?.status
+          })
+          alert(`删除文章失败: ${err.message}`)
+        }
+      } finally {
+        requestStats.value.activeRequests--
+        cleanupController(`deletePost-${id}`)
+      }
+    }
+
+    // 用户信息（模拟）
+    const userInfo = ref({
+      username: 'admin',
+      loginTime: new Date().toLocaleString(),
+      deviceInfo: '',
+    })
+
+    onMounted(() => {
+      userInfo.value.deviceInfo = `${deviceType.value} (${orientation.value})`
+      engine?.logger.info('首页加载完成', {
+        device: deviceType.value,
+        orientation: orientation.value,
+      })
+      // 初始化用户数据
+      fetchUsers()
+    })
+
+    const handleLogout = () => {
+      if (confirm('确定要退出登录吗？')) {
+        router.replace('/login')
+        engine?.logger.info('用户退出登录')
+      }
+    }
+
+    const handleGoToLogin = () => {
+      router.push('/login')
+      engine?.logger.info('导航到登录页')
+    }
+
+    // 语言切换处理
+    const handleLanguageChange = async (lang: string) => {
+      try {
+        await switchLanguage(lang)
+        engine?.logger.info('语言切换成功', { language: lang })
+      } catch (error) {
+        console.error('语言切换失败:', error)
+        engine?.logger.error('语言切换失败', { language: lang, error })
+      }
+    }
+
+    return () => (
+      <div class='home-page'>
+        <header class='home-header'>
+          <div class='home-header__content'>
+            <h1 class='home-title'>🏠 {t('pages.home.title')}</h1>
+            <div class='header-actions'>
+              <select
+                class='language-selector'
+                value={locale.value}
+                onChange={e =>
+                  handleLanguageChange((e.target as HTMLSelectElement).value)
+                }
+              >
+                {availableLanguages.value.map((lang: any) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.nativeName}
+                  </option>
+                ))}
+              </select>
+              <button class='logout-btn' onClick={handleLogout}>
+                {t('common.logout')}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class='home-main'>
+          <div class='welcome-card'>
+            <h2>{t('pages.home.welcome')}</h2>
+            <p>{t('common.loginSuccess')}</p>
+            <p>
+              {t('common.currentLanguage')}: {locale.value}
+            </p>
+          </div>
+
+          <div class='info-grid'>
+            <div class='info-card'>
+              <h3>👤 {t('pages.home.userInfo')}</h3>
+              <div class='info-item'>
+                <span class='label'>{t('pages.home.username')}:</span>
+                <span class='value'>{userInfo.value.username}</span>
+              </div>
+              <div class='info-item'>
+                <span class='label'>{t('pages.home.loginTime')}:</span>
+                <span class='value'>{userInfo.value.loginTime}</span>
+              </div>
+              <div class='info-item'>
+                <span class='label'>{t('pages.home.deviceInfo')}:</span>
+                <span class='value'>{userInfo.value.deviceInfo}</span>
+              </div>
+            </div>
+
+            <div class='info-card'>
+              <h3>📍 {t('pages.home.routeInfo')}</h3>
+              <div class='info-item'>
+                <span class='label'>{t('pages.home.currentPath')}:</span>
+                <span class='value'>{route.value.path}</span>
+              </div>
+              <div class='info-item'>
+                <span class='label'>{t('pages.home.routeName')}:</span>
+                <span class='value'>{route.value.name}</span>
+              </div>
+              <div class='info-item'>
+                <span class='label'>页面标题:</span>
+                <span class='value'>{route.value.meta?.title}</span>
+              </div>
+            </div>
+
+            <div class='info-card'>
+              <h3>📱 设备检测</h3>
+              <div class='device-status'>
+                <div class={['device-indicator', { active: isMobile.value }]}>
+                  📱 移动设备
+                </div>
+                <div class={['device-indicator', { active: isTablet.value }]}>
+                  📟 平板设备
+                </div>
+                <div class={['device-indicator', { active: isDesktop.value }]}>
+                  🖥️ 桌面设备
+                </div>
+              </div>
+              <div class='info-item'>
+                <span class='label'>屏幕方向:</span>
+                <span class='value'>{orientation.value}</span>
+              </div>
+            </div>
+
+            <div class='info-card'>
+              <h3>✨ 功能特性</h3>
+              <ul class='feature-list'>
+                <li>🛣️ 智能路由系统</li>
+                <li>🌐 HTTP 请求管理</li>
+                <li>🎨 多设备模板适配</li>
+                <li>⚙️ 应用引擎集成</li>
+                <li>📱 设备类型检测</li>
+                <li>🔔 通知系统</li>
+                <li>📝 日志记录</li>
+              </ul>
+            </div>
+
+            <div class='info-card http-demo'>
+              <h3>🌐 HTTP 功能演示</h3>
+              <div class='http-demo__content'>
+                <div class='demo-actions'>
+                  <div class='action-group'>
+                    <button
+                      class='btn btn-primary'
+                      onClick={fetchUsers}
+                      disabled={loading.value}
+                    >
+                      {loading.value ? '加载中...' : '👥 获取用户列表'}
+                    </button>
+                    <button
+                      class='btn btn-secondary'
+                      onClick={() => fetchPosts(5)}
+                      disabled={loading.value}
+                    >
+                      {loading.value ? '加载中...' : '📝 获取文章列表'}
+                    </button>
+                    <button
+                      class='btn btn-info'
+                      onClick={() => fetchPosts(10)}
+                      disabled={loading.value}
+                    >
+                      📚 获取更多文章
+                    </button>
+                  </div>
+
+                  <div class='action-group'>
+                    <button
+                      class='btn btn-success'
+                      onClick={fetchAllData}
+                      disabled={loading.value}
+                    >
+                      🚀 批量获取数据
+                    </button>
+                    <button
+                      class='btn btn-warning'
+                      onClick={cancelAllRequests}
+                      disabled={requestStats.value.activeRequests === 0}
+                    >
+                      ❌ 取消所有请求
+                    </button>
+                    <button
+                      class='btn btn-outline'
+                      onClick={clearCache}
+                    >
+                      🗑️ 清除缓存
+                    </button>
+                  </div>
+                </div>
+
+                <div class='post-form'>
+                  <h4>创建文章（模拟）</h4>
+                  <div class='form-group'>
+                    <input
+                      type='text'
+                      placeholder='文章标题'
+                      value={newPost.value.title}
+                      onInput={e =>
+                        (newPost.value.title = (
+                          e.target as HTMLInputElement
+                        ).value)
+                      }
+                    />
+                    <textarea
+                      placeholder='文章内容'
+                      value={newPost.value.body}
+                      onInput={e =>
+                        (newPost.value.body = (
+                          e.target as HTMLTextAreaElement
+                        ).value)
+                      }
+                    />
+                    <button
+                      class='btn btn-primary'
+                      onClick={createPost}
+                      disabled={loading.value}
+                    >
+                      {loading.value ? '创建中...' : '创建文章'}
+                    </button>
+                  </div>
+                </div>
+
+                {error.value && (
+                  <div class='error-message'>错误: {error.value.message}</div>
+                )}
+
+                <div class='data-display'>
+                  {/* 用户列表展示 */}
+                  <div class='users-section'>
+                    <h4>👥 用户列表 ({users.value.length} 个用户)</h4>
+                    {users.value.length > 0 ? (
+                      <div class='users-grid'>
+                        {users.value.slice(0, 6).map((user: any) => (
+                          <div key={user.id} class='user-card'>
+                            <div class='user-avatar'>
+                              <span class='avatar-text'>
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div class='user-info'>
+                              <strong class='user-name'>{user.name}</strong>
+                              <span class='user-email'>{user.email}</span>
+                              <small class='user-username'>
+                                @{user.username}
+                              </small>
+                              <div class='user-details'>
+                                <span>📞 {user.phone}</span>
+                                <span>🌐 {user.website}</span>
+                                <span>🏢 {user.company?.name}</span>
+                              </div>
+                              <div class='user-actions'>
+                                <button
+                                  class='btn btn-info btn-xs'
+                                  onClick={() => fetchUserDetails(user.id)}
+                                  disabled={loading.value}
+                                >
+                                  📋 查看详情
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div class='empty-state'>
+                        <span class='empty-icon'>👥</span>
+                        <p>暂无用户数据，点击"获取用户列表"按钮加载数据</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 文章列表展示 */}
+                  <div class='posts-section'>
+                    <h4>📝 文章列表 ({posts.value.length} 篇文章)</h4>
+                    {posts.value.length > 0 ? (
+                      <div class='posts-grid'>
+                        {posts.value.map((post: any) => (
+                          <div key={post.id} class='post-card'>
+                            <div class='post-header'>
+                              <span class='post-id'>#{post.id}</span>
+                              <span class='post-user'>用户 {post.userId}</span>
+                            </div>
+                            <div class='post-content'>
+                              <h5 class='post-title'>{post.title}</h5>
+                              <p class='post-body'>
+                                {post.body.length > 100
+                                  ? `${post.body.substring(0, 100)}...`
+                                  : post.body}
+                              </p>
+                            </div>
+                            <div class='post-actions'>
+                              <button
+                                class='btn btn-danger btn-sm'
+                                onClick={() => deletePost(post.id, post.title)}
+                                disabled={loading.value}
+                              >
+                                🗑️ 删除
+                              </button>
+                              <button
+                                class='btn btn-info btn-sm'
+                                onClick={() =>
+                                  alert(
+                                    `文章详情：\n标题：${post.title}\n内容：${post.body}`
+                                  )
+                                }
+                              >
+                                👁️ 查看
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div class='empty-state'>
+                        <span class='empty-icon'>📝</span>
+                        <p>暂无文章数据，点击"获取文章列表"按钮加载数据</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class='info-card'>
+              <h3>📊 HTTP 状态与统计</h3>
+              <div class='status-grid'>
+                <div class='status-item'>
+                  <span class='label'>请求状态:</span>
+                  <span class={`value ${loading.value ? 'loading' : 'idle'}`}>
+                    {loading.value ? '请求中' : '空闲'}
+                  </span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>活跃请求:</span>
+                  <span class='value'>{requestStats.value.activeRequests}</span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>总请求数:</span>
+                  <span class='value'>{requestStats.value.totalRequests}</span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>成功请求:</span>
+                  <span class='value success'>{requestStats.value.successfulRequests}</span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>失败请求:</span>
+                  <span class='value error'>{requestStats.value.failedRequests}</span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>成功率:</span>
+                  <span class='value'>
+                    {requestStats.value.totalRequests > 0
+                      ? `${Math.round((requestStats.value.successfulRequests / requestStats.value.totalRequests) * 100)}%`
+                      : '0%'
+                    }
+                  </span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>错误状态:</span>
+                  <span class={`value ${error.value ? 'error' : 'normal'}`}>
+                    {error.value ? `错误: ${error.value.message}` : '正常'}
+                  </span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>API 地址:</span>
+                  <span class='value'>jsonplaceholder.typicode.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class='action-section'>
+            <button class='action-btn primary' onClick={handleGoToLogin}>
+              🔑 {t('pages.home.goToLogin')}
+            </button>
+            <button
+              class='action-btn secondary'
+              onClick={() => window.location.reload()}
+            >
+              🔄 {t('pages.home.refreshPage')}
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  },
+})

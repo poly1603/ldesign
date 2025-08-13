@@ -2,7 +2,7 @@
   "name": "@ldesign/router",
   "type": "module",
   "version": "1.0.0",
-  "description": "A powerful Vue router library for Vue applications",
+  "description": "A modern, high-performance Vue router library with TypeScript support, independent of vue-router",
   "author": "ldesign",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/router#readme",
@@ -17,18 +17,15 @@
   "keywords": [
     "vue",
     "router",
-    "vue-router",
     "navigation",
     "spa",
-    "typescript"
+    "typescript",
+    "performance",
+    "modern",
+    "independent"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
-    },
-    "./vue": {
       "types": "./dist/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.js"
@@ -40,8 +37,7 @@
   "files": [
     "dist",
     "es",
-    "lib",
-    "types"
+    "lib"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -57,7 +53,7 @@
     "test:performance": "node scripts/performance-test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf dist es lib coverage .nyc_output",
     "size-check": "size-limit",
     "analyze": "rollup -c --bundleConfigAsCjs --environment ANALYZE",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
@@ -81,6 +77,7 @@
       "optional": true
     }
   },
+  "dependencies": {},
   "devDependencies": {
     "@ldesign/engine": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",

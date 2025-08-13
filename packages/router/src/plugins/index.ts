@@ -1,35 +1,55 @@
 /**
- * 路由插件系统
- *
- * 提供各种增强功能的插件
+ * @ldesign/router 插件模块导出
  */
 
-export type {
-  ComponentEnhancementConfig,
-  ComponentSize,
-  LinkVariant,
-  PreloadStrategy,
-} from '../components/types'
+// 动画插件
+export {
+  createAnimationPlugin,
+  AnimationManager,
+  ANIMATION_PRESETS,
+  createAnimationConfig,
+  supportsAnimations,
+  getAnimationDuration,
+} from './animation'
+export type { AnimationPluginOptions } from './animation'
 
 // 缓存插件
-export { createCachePlugin, RouterCachePlugin } from './cache-plugin'
-
-export type { CacheConfig, CacheStrategy } from './cache-plugin'
-
-// 增强组件插件
 export {
-  createDefaultConfirmDialog,
-  createDefaultEventTracker,
-  createDefaultLayoutResolver,
-  createDefaultPermissionChecker,
-  createEnhancementConfig,
-  EnhancedComponentsPlugin,
-} from './components'
+  createCachePlugin,
+  CacheManager,
+  createCacheConfig,
+  supportsCaching,
+} from './cache'
+export type { CachePluginOptions } from './cache'
+
+// 预加载插件
+export {
+  createPreloadPlugin,
+  PreloadManager,
+  HoverPreloadStrategy,
+  VisibilityPreloadStrategy,
+  IdlePreloadStrategy,
+  createPreloadConfig,
+  supportsPreload,
+} from './preload'
+export type { PreloadPluginOptions } from './preload'
 
 // 性能监控插件
 export {
   createPerformancePlugin,
-  RouterPerformancePlugin,
-} from './performance-plugin'
+  PerformanceManager,
+  PerformanceEventType,
+  withPerformanceMonitoring,
+  createPerformanceConfig,
+  supportsPerformanceAPI,
+  getPagePerformance,
+} from './performance'
+export type { PerformancePluginOptions } from './performance'
 
-export type { PerformanceConfig, PerformanceData } from './performance-plugin'
+// 默认导出
+export default {
+  animation: { createAnimationPlugin },
+  cache: { createCachePlugin },
+  preload: { createPreloadPlugin },
+  performance: { createPerformancePlugin },
+}

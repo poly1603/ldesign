@@ -59,6 +59,18 @@ features:
   - icon: 🔒
     title: 安全管理
     details: 输入验证、XSS 防护等安全功能，保障应用安全
+
+  - icon: 🧩
+    title: 组件化架构
+    details: 高度模块化的组件设计，支持独立开发、测试和维护
+
+  - icon: ✨
+    title: 动画效果
+    details: 流畅的页面加载和交互动画，提升用户体验
+
+  - icon: 📱
+    title: 响应式设计
+    details: 完美适配移动端、平板、桌面设备，智能设备检测
 ---
 
 ## 🚀 为什么选择 LDesign Engine？

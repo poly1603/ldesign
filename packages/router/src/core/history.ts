@@ -1,268 +1,467 @@
-import {
-  type HistoryLocation,
-  type HistoryState,
-  type NavigationCallback,
-  NavigationDirection,
+/**
+ * @ldesign/router 历史管理器
+ *
+ * 提供多种历史模式的实现：HTML5 History、Hash、Memory
+ */
+
+import type {
+  RouterHistory,
+  HistoryLocation,
+  HistoryState,
+  NavigationCallback,
+  NavigationInformation,
   NavigationType,
-  type RouterHistory,
+  NavigationDirection,
 } from '../types'
+import { SUPPORTS_HISTORY } from './constants'
+
+// ==================== 基础历史管理器 ====================
 
 /**
- * 创建 Web History 模式
+ * 基础历史管理器抽象类
  */
-export function createWebHistory(base?: string): RouterHistory {
-  const normalizedBase = normalizeBase(base)
+abstract class BaseHistory implements RouterHistory {
+  protected listeners: NavigationCallback[] = []
+  protected _base: string
+  protected _location: HistoryLocation
+  protected _state: HistoryState
 
-  return createHistory({
-    base: normalizedBase,
-    location: () =>
-      window.location.pathname + window.location.search + window.location.hash,
-    state: () => window.history.state,
-    push: (to: HistoryLocation, data?: HistoryState) => {
-      window.history.pushState(data, '', createHref(normalizedBase, to))
-    },
-    replace: (to: HistoryLocation, data?: HistoryState) => {
-      window.history.replaceState(data, '', createHref(normalizedBase, to))
-    },
-    go: (delta: number) => {
-      window.history.go(delta)
-    },
-    listen: (callback: NavigationCallback) => {
-      const popstateHandler = (_event: PopStateEvent) => {
-        const to =
-          window.location.pathname +
-          window.location.search +
-          window.location.hash
-        const from = getCurrentLocation()
-        callback(to, from, {
-          type: NavigationType.pop,
-          direction: NavigationDirection.unknown,
-          delta: 0,
-        })
+  constructor(base: string = '') {
+    this._base = this.normalizeBase(base)
+    this._location = this.getCurrentLocation()
+    this._state = this.getCurrentState()
+  }
+
+  get base(): string {
+    return this._base
+  }
+
+  get location(): HistoryLocation {
+    return this._location
+  }
+
+  get state(): HistoryState {
+    return this._state
+  }
+
+  abstract push(to: HistoryLocation, data?: HistoryState): void
+  abstract replace(to: HistoryLocation, data?: HistoryState): void
+  abstract go(delta: number, triggerListeners?: boolean): void
+
+  back(): void {
+    this.go(-1)
+  }
+
+  forward(): void {
+    this.go(1)
+  }
+
+  listen(callback: NavigationCallback): () => void {
+    this.listeners.push(callback)
+    return () => {
+      const index = this.listeners.indexOf(callback)
+      if (index >= 0) {
+        this.listeners.splice(index, 1)
       }
-
-      window.addEventListener('popstate', popstateHandler)
-
-      return () => {
-        window.removeEventListener('popstate', popstateHandler)
-      }
-    },
-  })
-}
-
-/**
- * 创建 Hash History 模式
- */
-export function createWebHashHistory(base?: string): RouterHistory {
-  const normalizedBase = normalizeBase(base)
-
-  return createHistory({
-    base: normalizedBase,
-    location: () => window.location.hash.slice(1) || '/',
-    state: () => window.history.state,
-    push: (to: HistoryLocation, _data?: HistoryState) => {
-      window.location.hash = to
-    },
-    replace: (to: HistoryLocation, _data?: HistoryState) => {
-      window.location.replace(`${window.location.href.split('#')[0]}#${to}`)
-    },
-    go: (delta: number) => {
-      window.history.go(delta)
-    },
-    listen: (callback: NavigationCallback) => {
-      const hashchangeHandler = (_event: HashChangeEvent) => {
-        const to = window.location.hash.slice(1) || '/'
-        const from = getCurrentLocation()
-        callback(to, from, {
-          type: NavigationType.pop,
-          direction: NavigationDirection.unknown,
-          delta: 0,
-        })
-      }
-
-      window.addEventListener('hashchange', hashchangeHandler)
-
-      return () => {
-        window.removeEventListener('hashchange', hashchangeHandler)
-      }
-    },
-  })
-}
-
-/**
- * 创建内存 History 模式
- */
-export function createMemoryHistory(base?: string): RouterHistory {
-  const normalizedBase = normalizeBase(base)
-  let currentLocation = '/'
-  let currentState: HistoryState = {}
-  const stack: Array<{ location: string; state: HistoryState }> = [
-    { location: currentLocation, state: currentState },
-  ]
-  let position = 0
-  const listeners: NavigationCallback[] = []
-
-  function triggerListeners(to: string, from: string, info: any) {
-    listeners.forEach(callback => {
-      try {
-        callback(to, from, info)
-      } catch (error) {
-        console.error('Error in navigation listener:', error)
-      }
-    })
-  }
-
-  return createHistory({
-    base: normalizedBase,
-    location: () => currentLocation,
-    state: () => currentState,
-    push: (to: HistoryLocation, data?: HistoryState) => {
-      const from = currentLocation
-      // 移除当前位置之后的所有记录
-      stack.splice(position + 1)
-      stack.push({ location: to, state: data || {} })
-      position = stack.length - 1
-      currentLocation = to
-      currentState = data || {}
-      triggerListeners(to, from, { type: 'push' })
-    },
-    replace: (to: HistoryLocation, data?: HistoryState) => {
-      const from = currentLocation
-      stack[position] = { location: to, state: data || {} }
-      currentLocation = to
-      currentState = data || {}
-      triggerListeners(to, from, { type: 'replace' })
-    },
-    go: (delta: number) => {
-      const from = currentLocation
-      const newPosition = position + delta
-      if (newPosition >= 0 && newPosition < stack.length) {
-        position = newPosition
-        const entry = stack[position]
-        if (entry) {
-          currentLocation = entry.location
-          currentState = entry.state
-          triggerListeners(currentLocation, from, { type: 'go', delta })
-        }
-      }
-      // 如果超出范围，保持在边界
-      else if (newPosition < 0) {
-        position = 0
-        const entry = stack[0]
-        if (entry) {
-          currentLocation = entry.location
-          currentState = entry.state
-          triggerListeners(currentLocation, from, { type: 'go', delta })
-        }
-      } else if (newPosition >= stack.length) {
-        position = stack.length - 1
-        const entry = stack[position]
-        if (entry) {
-          currentLocation = entry.location
-          currentState = entry.state
-          triggerListeners(currentLocation, from, { type: 'go', delta })
-        }
-      }
-    },
-    listen: (callback: NavigationCallback) => {
-      listeners.push(callback)
-      return () => {
-        const index = listeners.indexOf(callback)
-        if (index > -1) {
-          listeners.splice(index, 1)
-        }
-      }
-    },
-  })
-}
-
-/**
- * 创建通用 History 实现
- */
-function createHistory(options: {
-  base: string
-  location: () => string
-  state: () => HistoryState
-  push: (to: HistoryLocation, data?: HistoryState) => void
-  replace: (to: HistoryLocation, data?: HistoryState) => void
-  go: (delta: number) => void
-  listen: (callback: NavigationCallback) => () => void
-}): RouterHistory {
-  function getCurrentLocation(): string {
-    return options.location()
-  }
-
-  function push(to: HistoryLocation, data?: HistoryState): void {
-    options.push(to, data)
-  }
-
-  function replace(to: HistoryLocation, data?: HistoryState): void {
-    options.replace(to, data)
-  }
-
-  function go(delta: number): void {
-    options.go(delta)
-  }
-
-  function back(): void {
-    go(-1)
-  }
-
-  function forward(): void {
-    go(1)
-  }
-
-  function listen(callback: NavigationCallback): () => void {
-    return options.listen(callback)
-  }
-
-  return {
-    base: options.base,
-    location: getCurrentLocation,
-    state: options.state,
-    push,
-    replace,
-    go,
-    back,
-    forward,
-    listen,
-  }
-}
-
-/**
- * 规范化 base 路径
- */
-function normalizeBase(base?: string): string {
-  if (!base) {
-    if (typeof window !== 'undefined') {
-      const baseEl = document.querySelector('base')
-      base = (baseEl && baseEl.getAttribute('href')) || '/'
-    } else {
-      base = '/'
     }
   }
 
-  // 确保以 / 开头
-  if (!base.startsWith('/')) {
-    base = `/${base}`
+  destroy(): void {
+    this.listeners = []
   }
 
-  // 移除尾部的 /
-  return base.replace(/\/$/, '') || '/'
+  protected normalizeBase(base: string): string {
+    if (!base) return ''
+    base = base.replace(/^\/+/, '/').replace(/\/+$/, '')
+    return base === '/' ? '' : base
+  }
+
+  protected abstract getCurrentLocation(): HistoryLocation
+  protected abstract getCurrentState(): HistoryState
+
+  protected triggerListeners(
+    to: HistoryLocation,
+    from: HistoryLocation,
+    info: NavigationInformation
+  ): void {
+    for (const listener of this.listeners) {
+      listener(to, from, info)
+    }
+  }
+
+  protected createNavigationInfo(
+    type: NavigationType,
+    delta: number = 0
+  ): NavigationInformation {
+    return {
+      type,
+      direction: this.getNavigationDirection(delta),
+      delta,
+    }
+  }
+
+  protected getNavigationDirection(delta: number): NavigationDirection {
+    if (delta > 0) return 'forward'
+    if (delta < 0) return 'backward'
+    return 'unknown'
+  }
+
+  /**
+   * 清理状态数据，确保只包含可序列化的内容
+   */
+  protected sanitizeStateData(data: HistoryState): HistoryState {
+    const sanitized: HistoryState = {}
+
+    for (const [key, value] of Object.entries(data)) {
+      // 只保留基本类型和简单对象
+      if (value === null || value === undefined) {
+        sanitized[key] = value
+      } else if (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean'
+      ) {
+        sanitized[key] = value
+      } else if (Array.isArray(value)) {
+        // 递归处理数组
+        sanitized[key] = value
+          .map(item =>
+            typeof item === 'object' && item !== null
+              ? this.sanitizeStateData(item)
+              : item
+          )
+          .filter(item => item !== undefined && typeof item !== 'function')
+      } else if (typeof value === 'object' && value.constructor === Object) {
+        // 递归处理普通对象
+        sanitized[key] = this.sanitizeStateData(value as HistoryState)
+      }
+      // 忽略函数、Symbol、复杂对象等不可序列化的内容
+    }
+
+    return sanitized
+  }
+}
+
+// ==================== HTML5 History 实现 ====================
+
+/**
+ * HTML5 History 模式
+ */
+class HTML5History extends BaseHistory {
+  private popstateListener?: (event: PopStateEvent) => void
+
+  constructor(base?: string) {
+    super(base)
+    this.setupPopstateListener()
+  }
+
+  push(to: HistoryLocation, data?: HistoryState): void {
+    const from = { ...this._location }
+    const url = this.buildURL(to)
+
+    // 确保只传递可序列化的数据到 History API
+    const serializableData = this.sanitizeStateData(data || {})
+    history.pushState(serializableData, '', url)
+
+    this._location = to
+    this._state = data || {}
+
+    this.triggerListeners(to, from, this.createNavigationInfo('push'))
+  }
+
+  replace(to: HistoryLocation, data?: HistoryState): void {
+    const from = { ...this._location }
+    const url = this.buildURL(to)
+
+    // 确保只传递可序列化的数据到 History API
+    const serializableData = this.sanitizeStateData(data || {})
+    history.replaceState(serializableData, '', url)
+
+    this._location = to
+    this._state = data || {}
+
+    this.triggerListeners(to, from, this.createNavigationInfo('replace'))
+  }
+
+  go(delta: number, triggerListeners: boolean = true): void {
+    history.go(delta)
+    // popstate 事件会触发监听器
+  }
+
+  destroy(): void {
+    super.destroy()
+    if (this.popstateListener) {
+      window.removeEventListener('popstate', this.popstateListener)
+    }
+  }
+
+  protected getCurrentLocation(): HistoryLocation {
+    const { pathname, search, hash } = window.location
+    return {
+      pathname: this.stripBase(pathname),
+      search,
+      hash,
+    }
+  }
+
+  protected getCurrentState(): HistoryState {
+    return history.state || {}
+  }
+
+  private setupPopstateListener(): void {
+    this.popstateListener = (event: PopStateEvent) => {
+      const from = { ...this._location }
+      const to = this.getCurrentLocation()
+
+      this._location = to
+      this._state = event.state || {}
+
+      this.triggerListeners(to, from, this.createNavigationInfo('pop'))
+    }
+
+    window.addEventListener('popstate', this.popstateListener)
+  }
+
+  private buildURL(location: HistoryLocation): string {
+    const { pathname, search, hash } = location
+    return this._base + pathname + search + hash
+  }
+
+  private stripBase(pathname: string): string {
+    if (!this._base) return pathname
+    if (pathname.startsWith(this._base)) {
+      return pathname.slice(this._base.length) || '/'
+    }
+    return pathname
+  }
+}
+
+// ==================== Hash History 实现 ====================
+
+/**
+ * Hash History 模式
+ */
+class HashHistory extends BaseHistory {
+  private hashchangeListener?: (event: HashChangeEvent) => void
+
+  constructor(base?: string) {
+    super(base)
+    this.setupHashchangeListener()
+  }
+
+  push(to: HistoryLocation, data?: HistoryState): void {
+    const from = { ...this._location }
+    const url = this.buildHashURL(to)
+
+    // 使用 pushState 存储状态（如果支持）
+    if (SUPPORTS_HISTORY) {
+      const serializableData = this.sanitizeStateData(data || {})
+      history.pushState(serializableData, '', url)
+    } else {
+      window.location.hash = this.buildHash(to)
+    }
+
+    this._location = to
+    this._state = data || {}
+
+    this.triggerListeners(to, from, this.createNavigationInfo('push'))
+  }
+
+  replace(to: HistoryLocation, data?: HistoryState): void {
+    const from = { ...this._location }
+    const url = this.buildHashURL(to)
+
+    if (SUPPORTS_HISTORY) {
+      const serializableData = this.sanitizeStateData(data || {})
+      history.replaceState(serializableData, '', url)
+    } else {
+      window.location.replace(url)
+    }
+
+    this._location = to
+    this._state = data || {}
+
+    this.triggerListeners(to, from, this.createNavigationInfo('replace'))
+  }
+
+  go(delta: number, triggerListeners: boolean = true): void {
+    history.go(delta)
+  }
+
+  destroy(): void {
+    super.destroy()
+    if (this.hashchangeListener) {
+      window.removeEventListener('hashchange', this.hashchangeListener)
+    }
+  }
+
+  protected getCurrentLocation(): HistoryLocation {
+    const hash = window.location.hash.slice(1)
+    const [pathname, search] = hash.split('?')
+
+    return {
+      pathname: pathname || '/',
+      search: search ? '?' + search : '',
+      hash: '',
+    }
+  }
+
+  protected getCurrentState(): HistoryState {
+    return SUPPORTS_HISTORY ? history.state || {} : {}
+  }
+
+  private setupHashchangeListener(): void {
+    this.hashchangeListener = () => {
+      const from = { ...this._location }
+      const to = this.getCurrentLocation()
+
+      this._location = to
+      this._state = this.getCurrentState()
+
+      this.triggerListeners(to, from, this.createNavigationInfo('pop'))
+    }
+
+    window.addEventListener('hashchange', this.hashchangeListener)
+  }
+
+  private buildHashURL(location: HistoryLocation): string {
+    const hash = this.buildHash(location)
+    return (
+      window.location.protocol +
+      '//' +
+      window.location.host +
+      window.location.pathname +
+      window.location.search +
+      '#' +
+      hash
+    )
+  }
+
+  private buildHash(location: HistoryLocation): string {
+    const { pathname, search } = location
+    return pathname + search
+  }
+}
+
+// ==================== Memory History 实现 ====================
+
+/**
+ * Memory History 模式（用于 SSR 或测试）
+ */
+class MemoryHistory extends BaseHistory {
+  private stack: Array<{ location: HistoryLocation; state: HistoryState }> = []
+  private index: number = -1
+
+  constructor(base?: string, initialLocation?: HistoryLocation) {
+    super(base)
+
+    const location = initialLocation || { pathname: '/', search: '', hash: '' }
+    this.stack.push({ location, state: {} })
+    this.index = 0
+    this._location = location
+  }
+
+  push(to: HistoryLocation, data?: HistoryState): void {
+    const from = { ...this._location }
+
+    // 移除当前位置之后的所有历史记录
+    this.stack = this.stack.slice(0, this.index + 1)
+
+    // 添加新记录
+    this.stack.push({ location: to, state: data || {} })
+    this.index++
+
+    this._location = to
+    this._state = data || {}
+
+    this.triggerListeners(to, from, this.createNavigationInfo('push'))
+  }
+
+  replace(to: HistoryLocation, data?: HistoryState): void {
+    const from = { ...this._location }
+
+    // 替换当前记录
+    this.stack[this.index] = { location: to, state: data || {} }
+
+    this._location = to
+    this._state = data || {}
+
+    this.triggerListeners(to, from, this.createNavigationInfo('replace'))
+  }
+
+  go(delta: number, triggerListeners: boolean = true): void {
+    const newIndex = this.index + delta
+
+    if (newIndex < 0 || newIndex >= this.stack.length) {
+      return // 无法导航
+    }
+
+    const from = { ...this._location }
+    const { location, state } = this.stack[newIndex]
+
+    this.index = newIndex
+    this._location = location
+    this._state = state
+
+    if (triggerListeners) {
+      this.triggerListeners(
+        location,
+        from,
+        this.createNavigationInfo('pop', delta)
+      )
+    }
+  }
+
+  protected getCurrentLocation(): HistoryLocation {
+    return this._location
+  }
+
+  protected getCurrentState(): HistoryState {
+    return this._state
+  }
+}
+
+// ==================== 工厂函数 ====================
+
+/**
+ * 创建 HTML5 History
+ */
+export function createWebHistory(base?: string): RouterHistory {
+  if (typeof window === 'undefined') {
+    throw new Error(
+      'createWebHistory() can only be used in browser environment'
+    )
+  }
+
+  if (!SUPPORTS_HISTORY) {
+    console.warn(
+      'HTML5 History API is not supported, falling back to hash mode'
+    )
+    return createWebHashHistory(base)
+  }
+
+  return new HTML5History(base)
 }
 
 /**
- * 创建完整的 href
+ * 创建 Hash History
  */
-function createHref(base: string, location: HistoryLocation): string {
-  return base + location
+export function createWebHashHistory(base?: string): RouterHistory {
+  if (typeof window === 'undefined') {
+    throw new Error(
+      'createWebHashHistory() can only be used in browser environment'
+    )
+  }
+
+  return new HashHistory(base)
 }
 
 /**
- * 获取当前位置
+ * 创建 Memory History
  */
-function getCurrentLocation(): string {
-  return (
-    window.location.pathname + window.location.search + window.location.hash
-  )
+export function createMemoryHistory(
+  base?: string,
+  initialLocation?: HistoryLocation
+): RouterHistory {
+  return new MemoryHistory(base, initialLocation)
 }

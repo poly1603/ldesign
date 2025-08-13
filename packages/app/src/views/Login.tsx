@@ -28,8 +28,8 @@ export default defineComponent({
   },
 
   render() {
-    const { TemplateRenderer } = this
+    const { TemplateRenderer, handleLogin } = this
 
-    return <TemplateRenderer category='login' />
+    return <TemplateRenderer category='login' onLogin={handleLogin} />
   },
 })
