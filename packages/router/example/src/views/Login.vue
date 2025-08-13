@@ -1,3 +1,69 @@
+<script setup lang="ts">
+import { RouterLink, useRoute, useRouter } from '@ldesign/router'
+import { ref } from 'vue'
+
+const router = useRouter()
+const route = useRoute()
+
+const form = ref({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+
+async function handleLogin() {
+  loading.value = true
+
+  try {
+    // 模拟登录请求
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // 验证凭据
+    const validCredentials = [
+      { username: 'admin', password: 'admin123', role: 'admin' },
+      { username: 'user', password: 'user123', role: 'user' },
+      { username: 'guest', password: 'guest123', role: 'guest' },
+    ]
+
+    const user = validCredentials.find(
+      cred =>
+        cred.username === form.value.username &&
+        cred.password === form.value.password
+    )
+
+    if (user) {
+      // 设置登录状态
+      localStorage.setItem('token', 'mock-jwt-token')
+      localStorage.setItem('user', JSON.stringify(user))
+
+      // 显示成功消息
+      alert(
+        `登录成功！欢迎 ${
+          user.role === 'admin'
+            ? '管理员'
+            : user.role === 'user'
+            ? '用户'
+            : '访客'
+        } ${user.username}`
+      )
+
+      // 重定向到目标页面或首页
+      const redirect = (route.query.redirect as string) || '/'
+      router.push(redirect)
+    } else {
+      alert('用户名或密码错误，请检查后重试')
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    alert('登录失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
 <template>
   <div class="login">
     <div class="login-container">
@@ -6,7 +72,7 @@
         <p>请输入您的凭据以访问受保护的页面</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="login-form">
+      <form class="login-form" @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="username">用户名</label>
           <input
@@ -60,72 +126,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { RouterLink, useRouter, useRoute } from '@ldesign/router'
-
-const router = useRouter()
-const route = useRoute()
-
-const form = ref({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-const handleLogin = async () => {
-  loading.value = true
-
-  try {
-    // 模拟登录请求
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // 验证凭据
-    const validCredentials = [
-      { username: 'admin', password: 'admin123', role: 'admin' },
-      { username: 'user', password: 'user123', role: 'user' },
-      { username: 'guest', password: 'guest123', role: 'guest' },
-    ]
-
-    const user = validCredentials.find(
-      cred =>
-        cred.username === form.value.username &&
-        cred.password === form.value.password
-    )
-
-    if (user) {
-      // 设置登录状态
-      localStorage.setItem('token', 'mock-jwt-token')
-      localStorage.setItem('user', JSON.stringify(user))
-
-      // 显示成功消息
-      alert(
-        `登录成功！欢迎 ${
-          user.role === 'admin'
-            ? '管理员'
-            : user.role === 'user'
-            ? '用户'
-            : '访客'
-        } ${user.username}`
-      )
-
-      // 重定向到目标页面或首页
-      const redirect = (route.query.redirect as string) || '/'
-      router.push(redirect)
-    } else {
-      alert('用户名或密码错误，请检查后重试')
-    }
-  } catch (error) {
-    console.error('Login error:', error)
-    alert('登录失败，请稍后重试')
-  } finally {
-    loading.value = false
-  }
-}
-</script>
 
 <style lang="less" scoped>
 .login {

@@ -1,153 +1,6 @@
-<template>
-  <div class="nested-child2">
-    <div class="header-section">
-      <h3>🚀 子路由 2</h3>
-      <p>这是第二个子路由组件，展示更复杂的嵌套路由功能。</p>
-    </div>
-
-    <div class="state-section" v-if="fromChild1">
-      <div class="alert alert-info">
-        <h4>📨 来自子路由 1 的数据</h4>
-        <div class="received-data">
-          <div class="data-item">
-            <strong>计数器值:</strong> {{ receivedCounter }}
-          </div>
-          <div class="data-item">
-            <strong>输入内容:</strong> {{ receivedInput || '无' }}
-          </div>
-          <div class="data-item">
-            <strong>传递时间:</strong> {{ receivedTimestamp }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="feature-showcase">
-      <h4>功能展示</h4>
-      <div class="showcase-grid">
-        <div class="showcase-card">
-          <h5>📊 数据图表</h5>
-          <div class="chart-container">
-            <div
-              class="chart-bar"
-              v-for="(value, index) in chartData"
-              :key="index"
-            >
-              <div
-                class="bar"
-                :style="{
-                  height: `${value}%`,
-                  backgroundColor: getBarColor(index),
-                }"
-              ></div>
-              <span class="bar-label">{{ value }}%</span>
-            </div>
-          </div>
-          <button @click="refreshChart" class="btn btn-sm btn-primary">
-            刷新数据
-          </button>
-        </div>
-
-        <div class="showcase-card">
-          <h5>⏱️ 实时时钟</h5>
-          <div class="clock-display">
-            <div class="time">{{ currentTime }}</div>
-            <div class="date">{{ currentDate }}</div>
-          </div>
-          <div class="clock-controls">
-            <button @click="toggleClock" class="btn btn-sm btn-secondary">
-              {{ clockRunning ? '暂停' : '启动' }}
-            </button>
-          </div>
-        </div>
-
-        <div class="showcase-card">
-          <h5>🎨 主题切换</h5>
-          <div class="theme-selector">
-            <div class="theme-options">
-              <button
-                v-for="theme in themes"
-                :key="theme.name"
-                @click="selectTheme(theme)"
-                class="theme-option"
-                :class="{ active: selectedTheme.name === theme.name }"
-                :style="{ backgroundColor: theme.primary }"
-              >
-                {{ theme.name }}
-              </button>
-            </div>
-            <div class="theme-preview" :style="themeStyles">
-              <div class="preview-header">预览</div>
-              <div class="preview-content">当前主题效果</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="interaction-section">
-      <h4>交互测试</h4>
-      <div class="interaction-demos">
-        <div class="demo-item">
-          <label>拖拽排序:</label>
-          <div class="sortable-list">
-            <div
-              v-for="item in sortableItems"
-              :key="item.id"
-              class="sortable-item"
-              draggable="true"
-              @dragstart="handleDragStart($event, item)"
-              @dragover.prevent
-              @drop="handleDrop($event, item)"
-            >
-              {{ item.text }}
-            </div>
-          </div>
-        </div>
-
-        <div class="demo-item">
-          <label>进度条:</label>
-          <div class="progress-demo">
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{ width: `${progress}%` }"
-              ></div>
-            </div>
-            <div class="progress-controls">
-              <button @click="startProgress" class="btn btn-sm btn-success">
-                开始
-              </button>
-              <button @click="resetProgress" class="btn btn-sm btn-warning">
-                重置
-              </button>
-            </div>
-            <span class="progress-text">{{ progress }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="navigation-section">
-      <h4>导航操作</h4>
-      <div class="nav-actions">
-        <RouterLink to="/nested" class="btn btn-primary">
-          返回默认页面
-        </RouterLink>
-        <RouterLink to="/nested/child1" class="btn btn-secondary">
-          前往子路由 1
-        </RouterLink>
-        <button @click="navigateToParent" class="btn btn-info">
-          返回父路由
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRouter, useRoute } from '@ldesign/router'
+import { RouterLink, useRoute, useRouter } from '@ldesign/router'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 interface Props {
   routeInfo?: {
@@ -171,7 +24,7 @@ const receivedInput = computed(() => route.value?.query?.input || '')
 const receivedTimestamp = computed(() => {
   const timestamp = route.value?.query?.timestamp
   return timestamp
-    ? new Date(parseInt(timestamp as string)).toLocaleString()
+    ? new Date(Number.parseInt(timestamp as string)).toLocaleString()
     : ''
 })
 
@@ -213,7 +66,7 @@ const themeStyles = computed(() => ({
 }))
 
 // 方法
-const getBarColor = (index: number) => {
+function getBarColor(index: number) {
   const colors = [
     '#4299e1',
     '#48bb78',
@@ -226,17 +79,17 @@ const getBarColor = (index: number) => {
   return colors[index % colors.length]
 }
 
-const refreshChart = () => {
+function refreshChart() {
   chartData.value = chartData.value.map(() => Math.floor(Math.random() * 100))
 }
 
-const updateClock = () => {
+function updateClock() {
   const now = new Date()
   currentTime.value = now.toLocaleTimeString()
   currentDate.value = now.toLocaleDateString()
 }
 
-const toggleClock = () => {
+function toggleClock() {
   clockRunning.value = !clockRunning.value
   if (clockRunning.value) {
     clockInterval = window.setInterval(updateClock, 1000)
@@ -248,15 +101,15 @@ const toggleClock = () => {
   }
 }
 
-const selectTheme = (theme: (typeof themes)[0]) => {
+function selectTheme(theme: (typeof themes)[0]) {
   selectedTheme.value = theme
 }
 
-const handleDragStart = (event: DragEvent, item: any) => {
+function handleDragStart(event: DragEvent, item: any) {
   draggedItem = item
 }
 
-const handleDrop = (event: DragEvent, targetItem: any) => {
+function handleDrop(event: DragEvent, targetItem: any) {
   if (draggedItem && draggedItem.id !== targetItem.id) {
     const draggedIndex = sortableItems.value.findIndex(
       item => item.id === draggedItem.id
@@ -273,7 +126,7 @@ const handleDrop = (event: DragEvent, targetItem: any) => {
   draggedItem = null
 }
 
-const startProgress = () => {
+function startProgress() {
   if (progressInterval) return
 
   progress.value = 0
@@ -288,7 +141,7 @@ const startProgress = () => {
   }, 100)
 }
 
-const resetProgress = () => {
+function resetProgress() {
   if (progressInterval) {
     clearInterval(progressInterval)
     progressInterval = null
@@ -296,7 +149,7 @@ const resetProgress = () => {
   progress.value = 0
 }
 
-const navigateToParent = () => {
+function navigateToParent() {
   router.push('/nested')
 }
 
@@ -317,6 +170,154 @@ onUnmounted(() => {
   console.log('Child2 组件已卸载')
 })
 </script>
+
+<template>
+  <div class="nested-child2">
+    <div class="header-section">
+      <h3>🚀 子路由 2</h3>
+      <p>这是第二个子路由组件，展示更复杂的嵌套路由功能。</p>
+    </div>
+
+    <div v-if="fromChild1" class="state-section">
+      <div class="alert alert-info">
+        <h4>📨 来自子路由 1 的数据</h4>
+        <div class="received-data">
+          <div class="data-item">
+            <strong>计数器值:</strong> {{ receivedCounter }}
+          </div>
+          <div class="data-item">
+            <strong>输入内容:</strong> {{ receivedInput || '无' }}
+          </div>
+          <div class="data-item">
+            <strong>传递时间:</strong> {{ receivedTimestamp }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-showcase">
+      <h4>功能展示</h4>
+      <div class="showcase-grid">
+        <div class="showcase-card">
+          <h5>📊 数据图表</h5>
+          <div class="chart-container">
+            <div
+              v-for="(value, index) in chartData"
+              :key="index"
+              class="chart-bar"
+            >
+              <div
+                class="bar"
+                :style="{
+                  height: `${value}%`,
+                  backgroundColor: getBarColor(index),
+                }"
+              />
+              <span class="bar-label">{{ value }}%</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-primary" @click="refreshChart">
+            刷新数据
+          </button>
+        </div>
+
+        <div class="showcase-card">
+          <h5>⏱️ 实时时钟</h5>
+          <div class="clock-display">
+            <div class="time">
+              {{ currentTime }}
+            </div>
+            <div class="date">
+              {{ currentDate }}
+            </div>
+          </div>
+          <div class="clock-controls">
+            <button class="btn btn-sm btn-secondary" @click="toggleClock">
+              {{ clockRunning ? '暂停' : '启动' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="showcase-card">
+          <h5>🎨 主题切换</h5>
+          <div class="theme-selector">
+            <div class="theme-options">
+              <button
+                v-for="theme in themes"
+                :key="theme.name"
+                class="theme-option"
+                :class="{ active: selectedTheme.name === theme.name }"
+                :style="{ backgroundColor: theme.primary }"
+                @click="selectTheme(theme)"
+              >
+                {{ theme.name }}
+              </button>
+            </div>
+            <div class="theme-preview" :style="themeStyles">
+              <div class="preview-header">预览</div>
+              <div class="preview-content">当前主题效果</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-section">
+      <h4>交互测试</h4>
+      <div class="interaction-demos">
+        <div class="demo-item">
+          <label>拖拽排序:</label>
+          <div class="sortable-list">
+            <div
+              v-for="item in sortableItems"
+              :key="item.id"
+              class="sortable-item"
+              draggable="true"
+              @dragstart="handleDragStart($event, item)"
+              @dragover.prevent
+              @drop="handleDrop($event, item)"
+            >
+              {{ item.text }}
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-item">
+          <label>进度条:</label>
+          <div class="progress-demo">
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: `${progress}%` }" />
+            </div>
+            <div class="progress-controls">
+              <button class="btn btn-sm btn-success" @click="startProgress">
+                开始
+              </button>
+              <button class="btn btn-sm btn-warning" @click="resetProgress">
+                重置
+              </button>
+            </div>
+            <span class="progress-text">{{ progress }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="navigation-section">
+      <h4>导航操作</h4>
+      <div class="nav-actions">
+        <RouterLink to="/nested" class="btn btn-primary">
+          返回默认页面
+        </RouterLink>
+        <RouterLink to="/nested/child1" class="btn btn-secondary">
+          前往子路由 1
+        </RouterLink>
+        <button class="btn btn-info" @click="navigateToParent">
+          返回父路由
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .nested-child2 {

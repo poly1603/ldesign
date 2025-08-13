@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process')
-const path = require('path')
+const { spawn } = require('node:child_process')
+const path = require('node:path')
 
 // 直接启动vite，绕过可能的脚本拦截
 const vitePath = path.join(__dirname, 'node_modules', '.bin', 'vite')

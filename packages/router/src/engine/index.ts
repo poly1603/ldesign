@@ -3,9 +3,9 @@
  */
 
 export {
+  createDefaultRouterEnginePlugin,
   createRouterEnginePlugin,
   routerPlugin,
-  createDefaultRouterEnginePlugin,
 } from './plugin'
 
 export type { RouterEnginePluginOptions } from './plugin'

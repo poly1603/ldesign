@@ -1,7 +1,7 @@
 import type { HttpClientConfig } from '../../types'
 import { computed, ref } from 'vue'
-import { HttpClientImpl } from '../../client'
 import { createAdapter } from '../../adapters'
+import { HttpClientImpl } from '../../client'
 
 /**
  * HTTP客户端组合式函数

@@ -91,7 +91,7 @@ export function restoreConsole() {
 }
 
 // Mock localStorage and sessionStorage
-const createStorageMock = () => {
+function createStorageMock() {
   let store: Record<string, string> = {}
 
   return {
@@ -214,8 +214,8 @@ global.URL = class URL {
     this.hostname = 'localhost'
     this.port = '3000'
     this.pathname = pathname
-    this.search = search ? '?' + search : ''
-    this.hash = hash ? '#' + hash : ''
+    this.search = search ? `?${search}` : ''
+    this.hash = hash ? `#${hash}` : ''
   }
 }
 

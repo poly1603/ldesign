@@ -2,24 +2,24 @@
  * @ldesign/router 组合式 API 测试
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import type { RouteRecordRaw } from '../src'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createApp, nextTick } from 'vue'
 import {
-  createRouter,
   createMemoryHistory,
-  useRouter,
-  useRoute,
+  createRouter,
+  useHash,
+  useLink,
+  useMatched,
+  useMeta,
+  useNavigation,
   useParams,
   useQuery,
-  useHash,
-  useMeta,
-  useMatched,
-  useNavigation,
-  useLink,
+  useRoute,
+  useRouter,
 } from '../src'
-import type { RouteRecordRaw } from '../src'
 
-describe('Composables', () => {
+describe('composables', () => {
   let app: any
   let router: any
 
@@ -120,7 +120,7 @@ describe('Composables', () => {
           return {}
         },
         watch: {
-          'currentRoute.path'(newPath: string) {
+          'currentRoute.path': function (newPath: string) {
             paths.push(newPath)
           },
         },
@@ -172,7 +172,7 @@ describe('Composables', () => {
           return {}
         },
         watch: {
-          'params.id'(newId: string) {
+          'params.id': function (newId: string) {
             if (newId) ids.push(newId)
           },
         },

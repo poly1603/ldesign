@@ -4,14 +4,14 @@
  * 测试 Router、i18n、Template 三个插件的完整集成
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
-import { createRouterEnginePlugin } from '@ldesign/router'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
+import { createRouterEnginePlugin } from '@ldesign/router'
 import { createTemplateEnginePlugin } from '@ldesign/template'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createApp } from 'vue'
 
-describe('Complete Plugin Integration', () => {
+describe('complete Plugin Integration', () => {
   let engine: any
   let app: any
 

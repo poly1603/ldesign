@@ -1,8 +1,8 @@
-const http = require('http')
-const url = require('url')
+const http = require('node:http')
+const url = require('node:url')
 
 // 模拟用户数据
-let users = [
+const users = [
   { id: '1', name: '张三', email: 'zhangsan@example.com' },
   { id: '2', name: '李四', email: 'lisi@example.com' },
   { id: '3', name: '王五', email: 'wangwu@example.com' },

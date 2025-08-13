@@ -5,17 +5,17 @@
  */
 
 import type { RouteRecordRaw, ScrollBehavior } from '../types'
-import { createRouter } from '../core/router'
+import { RouterLink, RouterView } from '../components'
 import {
-  createWebHistory,
-  createWebHashHistory,
-  createMemoryHistory,
-} from '../core/history'
-import {
-  ROUTER_INJECTION_SYMBOL,
   ROUTE_INJECTION_SYMBOL,
+  ROUTER_INJECTION_SYMBOL,
 } from '../core/constants'
-import { RouterView, RouterLink } from '../components'
+import {
+  createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory,
+} from '../core/history'
+import { createRouter } from '../core/router'
 
 // 临时使用 any 类型，避免循环依赖
 interface Plugin {

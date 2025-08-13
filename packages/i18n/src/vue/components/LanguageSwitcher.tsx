@@ -4,7 +4,7 @@
  * 提供语言切换功能的下拉选择组件
  */
 
-import { defineComponent, ref, computed } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import { useLanguageSwitcher } from '../composables'
 import './LanguageSwitcher.less'
 

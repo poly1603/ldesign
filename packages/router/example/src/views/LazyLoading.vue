@@ -1,60 +1,5 @@
-<template>
-  <div class="lazy-loading">
-    <div class="card">
-      <h1>懒加载演示</h1>
-      <p>这个页面演示了组件懒加载功能，可以优化应用的首屏加载速度。</p>
-    </div>
-
-    <div class="card">
-      <h2>懒加载组件</h2>
-      <div class="lazy-components">
-        <div
-          class="component-item"
-          v-for="(comp, index) in lazyComponents"
-          :key="index"
-        >
-          <h3>{{ comp.name }}</h3>
-          <p>{{ comp.description }}</p>
-          <button
-            @click="loadComponent(comp)"
-            :disabled="comp.loading"
-            class="btn btn-primary"
-          >
-            {{
-              comp.loading ? '加载中...' : comp.loaded ? '重新加载' : '加载组件'
-            }}
-          </button>
-          <div v-if="comp.loaded" class="component-content">
-            <component :is="comp.component" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>加载统计</h2>
-      <div class="stats">
-        <div class="stat-item">
-          <span class="stat-label">已加载组件:</span>
-          <span class="stat-value"
-            >{{ loadedCount }} / {{ lazyComponents.length }}</span
-          >
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">总加载时间:</span>
-          <span class="stat-value">{{ totalLoadTime }}ms</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">平均加载时间:</span>
-          <span class="stat-value">{{ averageLoadTime }}ms</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, markRaw, h } from 'vue'
+import { computed, defineAsyncComponent, h, markRaw, ref } from 'vue'
 
 interface LazyComponent {
   name: string
@@ -144,7 +89,7 @@ function createMockComponent(name: string, delay: number) {
   })
 }
 
-const loadComponent = async (comp: LazyComponent) => {
+async function loadComponent(comp: LazyComponent) {
   if (comp.loading) return
 
   comp.loading = true
@@ -162,6 +107,61 @@ const loadComponent = async (comp: LazyComponent) => {
   }
 }
 </script>
+
+<template>
+  <div class="lazy-loading">
+    <div class="card">
+      <h1>懒加载演示</h1>
+      <p>这个页面演示了组件懒加载功能，可以优化应用的首屏加载速度。</p>
+    </div>
+
+    <div class="card">
+      <h2>懒加载组件</h2>
+      <div class="lazy-components">
+        <div
+          v-for="(comp, index) in lazyComponents"
+          :key="index"
+          class="component-item"
+        >
+          <h3>{{ comp.name }}</h3>
+          <p>{{ comp.description }}</p>
+          <button
+            :disabled="comp.loading"
+            class="btn btn-primary"
+            @click="loadComponent(comp)"
+          >
+            {{
+              comp.loading ? '加载中...' : comp.loaded ? '重新加载' : '加载组件'
+            }}
+          </button>
+          <div v-if="comp.loaded" class="component-content">
+            <component :is="comp.component" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>加载统计</h2>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">已加载组件:</span>
+          <span class="stat-value"
+            >{{ loadedCount }} / {{ lazyComponents.length }}</span
+          >
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">总加载时间:</span>
+          <span class="stat-value">{{ totalLoadTime }}ms</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">平均加载时间:</span>
+          <span class="stat-value">{{ averageLoadTime }}ms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .lazy-loading {

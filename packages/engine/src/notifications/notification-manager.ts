@@ -754,8 +754,8 @@ export class NotificationManagerImpl implements NotificationManager {
   private getElementTotalHeight(element: HTMLElement): number {
     const computedStyle = window.getComputedStyle(element)
     const height = element.offsetHeight
-    const marginTop = parseInt(computedStyle.marginTop) || 0
-    const marginBottom = parseInt(computedStyle.marginBottom) || 0
+    const marginTop = Number.parseInt(computedStyle.marginTop) || 0
+    const marginBottom = Number.parseInt(computedStyle.marginBottom) || 0
     return height + marginTop + marginBottom
   }
 

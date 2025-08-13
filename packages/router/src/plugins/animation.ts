@@ -5,8 +5,8 @@
  */
 
 import type { App } from 'vue'
-import type { Router, RouteLocationNormalized } from '../types'
-import type { AnimationType, AnimationConfig } from '../components/types'
+import type { AnimationConfig, AnimationType } from '../components/types'
+import type { RouteLocationNormalized, Router } from '../types'
 
 // ==================== 动画配置 ====================
 
@@ -396,7 +396,7 @@ export function getAnimationDuration(element: Element): number {
   const match = duration.match(/^([\d.]+)(s|ms)$/)
   if (!match) return 0
 
-  const value = parseFloat(match[1])
+  const value = Number.parseFloat(match[1])
   const unit = match[2]
 
   return unit === 's' ? value * 1000 : value

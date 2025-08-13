@@ -4,8 +4,7 @@
  * 测试 i18n 功能在主应用中的集成情况
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { defineComponent } from 'vue'
 import { createAppI18n, getI18nInstance } from '../../src/i18n'
 

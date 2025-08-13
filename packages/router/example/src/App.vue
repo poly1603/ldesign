@@ -1,3 +1,25 @@
+<script setup lang="ts">
+import { RouterLink, RouterView, useRouter } from '@ldesign/router'
+import { onMounted, ref } from 'vue'
+
+const showPerformance = ref(false)
+const performanceMetrics = ref({
+  navigationTime: 0,
+  componentLoadTime: 0,
+})
+
+const router = useRouter()
+
+onMounted(() => {
+  // 监听性能事件
+  router.afterEach((to, from) => {
+    // 模拟性能数据收集
+    performanceMetrics.value.navigationTime = Math.random() * 100
+    performanceMetrics.value.componentLoadTime = Math.random() * 50
+  })
+})
+</script>
+
 <template>
   <div id="app">
     <!-- 导航栏 -->
@@ -6,13 +28,13 @@
         <h1>@ldesign/router 示例</h1>
       </div>
       <div class="navbar-nav">
-        <RouterLink to="/" class="nav-link">首页</RouterLink>
-        <RouterLink to="/basic" class="nav-link">基础路由</RouterLink>
-        <RouterLink to="/nested" class="nav-link">嵌套路由</RouterLink>
-        <RouterLink to="/dynamic/123" class="nav-link">动态路由</RouterLink>
-        <RouterLink to="/guards" class="nav-link">路由守卫</RouterLink>
-        <RouterLink to="/lazy" class="nav-link">懒加载</RouterLink>
-        <RouterLink to="/plugins" class="nav-link">插件演示</RouterLink>
+        <RouterLink to="/" class="nav-link"> 首页 </RouterLink>
+        <RouterLink to="/basic" class="nav-link"> 基础路由 </RouterLink>
+        <RouterLink to="/nested" class="nav-link"> 嵌套路由 </RouterLink>
+        <RouterLink to="/dynamic/123" class="nav-link"> 动态路由 </RouterLink>
+        <RouterLink to="/guards" class="nav-link"> 路由守卫 </RouterLink>
+        <RouterLink to="/lazy" class="nav-link"> 懒加载 </RouterLink>
+        <RouterLink to="/plugins" class="nav-link"> 插件演示 </RouterLink>
       </div>
     </nav>
 
@@ -22,7 +44,7 @@
     </main>
 
     <!-- 性能监控面板 -->
-    <div class="performance-panel" v-if="showPerformance">
+    <div v-if="showPerformance" class="performance-panel">
       <h3>性能监控</h3>
       <div class="metrics">
         <div class="metric">
@@ -46,28 +68,6 @@
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { RouterLink, RouterView, useRouter } from '@ldesign/router'
-
-const showPerformance = ref(false)
-const performanceMetrics = ref({
-  navigationTime: 0,
-  componentLoadTime: 0,
-})
-
-const router = useRouter()
-
-onMounted(() => {
-  // 监听性能事件
-  router.afterEach((to, from) => {
-    // 模拟性能数据收集
-    performanceMetrics.value.navigationTime = Math.random() * 100
-    performanceMetrics.value.componentLoadTime = Math.random() * 50
-  })
-})
-</script>
 
 <style lang="less">
 #app {

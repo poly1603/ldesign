@@ -1,8 +1,8 @@
 import js from '@eslint/js'
-import pluginVue from 'eslint-plugin-vue'
-import * as parserVue from 'vue-eslint-parser'
 import configTypescript from '@typescript-eslint/eslint-plugin'
 import parserTypescript from '@typescript-eslint/parser'
+import pluginVue from 'eslint-plugin-vue'
+import * as parserVue from 'vue-eslint-parser'
 
 export default [
   {

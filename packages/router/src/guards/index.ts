@@ -6,7 +6,6 @@
 
 import type {
   NavigationGuard,
-  NavigationGuardNext,
   RouteLocationNormalized,
   RouteLocationRaw,
 } from '../types'

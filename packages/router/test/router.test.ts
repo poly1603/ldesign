@@ -2,11 +2,11 @@
  * @ldesign/router 路由器核心测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createRouter, createMemoryHistory } from '../src'
 import type { RouteRecordRaw } from '../src'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMemoryHistory, createRouter } from '../src'
 
-describe('Router Core', () => {
+describe('router Core', () => {
   let router: any
   let history: any
 
@@ -49,7 +49,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Router Creation', () => {
+  describe('router Creation', () => {
     it('should create router instance', () => {
       expect(router).toBeDefined()
       expect(router.currentRoute).toBeDefined()
@@ -68,7 +68,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Route Management', () => {
+  describe('route Management', () => {
     it('should add route dynamically', () => {
       const removeRoute = router.addRoute({
         path: '/dynamic',
@@ -98,7 +98,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Route Resolution', () => {
+  describe('route Resolution', () => {
     it('should resolve route by path', () => {
       const resolved = router.resolve('/about')
       expect(resolved.path).toBe('/about')
@@ -123,7 +123,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Navigation', () => {
+  describe('navigation', () => {
     it('should navigate to route by path', async () => {
       await router.push('/about')
       expect(router.currentRoute.value.path).toBe('/about')
@@ -154,7 +154,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Navigation Guards', () => {
+  describe('navigation Guards', () => {
     it('should execute beforeEach guard', async () => {
       const guard = vi.fn((to, from, next) => next())
       const removeGuard = router.beforeEach(guard)
@@ -220,7 +220,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Error Handling', () => {
+  describe('error Handling', () => {
     it('should handle navigation errors', async () => {
       const errorHandler = vi.fn()
       const removeHandler = router.onError(errorHandler)
@@ -236,7 +236,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('History Integration', () => {
+  describe('history Integration', () => {
     it('should update history on navigation', async () => {
       await router.push('/about')
       expect(history.location.pathname).toBe('/about')
@@ -263,7 +263,7 @@ describe('Router Core', () => {
     })
   })
 
-  describe('Ready State', () => {
+  describe('ready State', () => {
     it('should resolve isReady promise', async () => {
       await expect(router.isReady()).resolves.toBeUndefined()
     })

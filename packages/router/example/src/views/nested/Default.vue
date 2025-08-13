@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import { RouterLink } from '@ldesign/router'
+
+interface Props {
+  routeInfo?: {
+    path: string
+    name?: string
+    query: Record<string, any>
+  }
+}
+
+defineProps<Props>()
+</script>
+
 <template>
   <div class="nested-default">
     <div class="welcome-section">
@@ -45,20 +59,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { RouterLink } from '@ldesign/router'
-
-interface Props {
-  routeInfo?: {
-    path: string
-    name?: string
-    query: Record<string, any>
-  }
-}
-
-defineProps<Props>()
-</script>
 
 <style lang="less" scoped>
 .nested-default {

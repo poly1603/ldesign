@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/router-example",
-  "private": true,
-  "version": "1.0.0",
   "type": "module",
+  "version": "1.0.0",
+  "private": true,
   "description": "Complete example application demonstrating @ldesign/router features",
   "scripts": {
     "dev": "vite",

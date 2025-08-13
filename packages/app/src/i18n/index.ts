@@ -10,8 +10,8 @@ import type {
   I18nOptions,
 } from '@ldesign/i18n'
 import { I18n, StaticLoader } from '@ldesign/i18n'
-import zhCN from './zh-CN'
 import en from './en'
+import zhCN from './zh-CN'
 
 /**
  * 创建带有应用语言包的 I18n 实例

@@ -1,5 +1,5 @@
-import { defineComponent, type PropType } from 'vue'
 import type { Post } from '../../types'
+import { defineComponent, type PropType } from 'vue'
 import './PostCard.less'
 
 export interface PostCardProps {
@@ -45,7 +45,7 @@ export default defineComponent({
     // 截取文章内容预览
     const getContentPreview = (content: string, maxLength: number = 120) => {
       if (content.length <= maxLength) return content
-      return content.substring(0, maxLength) + '...'
+      return `${content.substring(0, maxLength)}...`
     }
 
     return () => (
@@ -53,7 +53,10 @@ export default defineComponent({
         <div class='post-header'>
           <div class='post-meta'>
             <span class='post-id'>#{props.post.id}</span>
-            <span class='post-author'>用户 {props.post.userId}</span>
+            <span class='post-author'>
+              用户
+              {props.post.userId}
+            </span>
           </div>
           <div class='post-actions'>
             {props.onDelete && (
@@ -94,7 +97,10 @@ export default defineComponent({
             </span>
             <span class='stat-item'>
               <span class='stat-icon'>👤</span>
-              <span class='stat-text'>作者 {props.post.userId}</span>
+              <span class='stat-text'>
+                作者
+                {props.post.userId}
+              </span>
             </span>
           </div>
         </div>

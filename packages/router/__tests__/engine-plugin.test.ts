@@ -2,13 +2,13 @@
  * Router Engine 插件集成测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { RouteRecordRaw } from '../src/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  createDefaultRouterEnginePlugin,
   createRouterEnginePlugin,
   routerPlugin,
-  createDefaultRouterEnginePlugin,
 } from '../src/engine/plugin'
-import type { RouteRecordRaw } from '../src/types'
 
 // Mock Vue 应用
 const mockVueApp = {
@@ -49,7 +49,7 @@ const mockRoutes: RouteRecordRaw[] = [
   },
 ]
 
-describe('Router Engine Plugin', () => {
+describe('router Engine Plugin', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockEngine.router = null
@@ -203,7 +203,7 @@ describe('Router Engine Plugin', () => {
     })
   })
 
-  describe('Plugin Integration', () => {
+  describe('plugin Integration', () => {
     it('should handle router options correctly', async () => {
       const plugin = createRouterEnginePlugin({
         routes: mockRoutes,

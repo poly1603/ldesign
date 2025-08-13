@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
 import Home from '../../src/views/Home.vue'
 
-describe('Home.vue', () => {
+describe('home.vue', () => {
   it('renders properly', () => {
     const wrapper = mount(Home, {
       global: {

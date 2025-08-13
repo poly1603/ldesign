@@ -83,9 +83,9 @@ export default defineConfig({
       'vue',
       '@ldesign/engine',
       '@ldesign/i18n',
-      '@ldesign/http',
       'monaco-editor',
       'prismjs',
     ],
+    exclude: ['@ldesign/http', 'axios', 'alova'],
   },
 })

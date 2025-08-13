@@ -5,12 +5,8 @@
  */
 
 import type { App } from 'vue'
-import type {
-  Router,
-  RouteLocationNormalized,
-  RouteRecordNormalized,
-} from '../types'
-import type { PreloadStrategy, PreloadConfig } from '../components/types'
+import type { PreloadConfig, PreloadStrategy } from '../components/types'
+import type { RouteLocationNormalized, Router } from '../types'
 
 // ==================== 预加载管理器 ====================
 
@@ -232,7 +228,7 @@ export class HoverPreloadStrategy {
    * 处理鼠标悬停
    */
   onMouseEnter(route: RouteLocationNormalized, delay: number = 200): void {
-    const key = this.manager['generateKey'](route)
+    const key = this.manager.generateKey(route)
 
     // 清除之前的定时器
     const existingTimer = this.timers.get(key)
@@ -253,7 +249,7 @@ export class HoverPreloadStrategy {
    * 处理鼠标离开
    */
   onMouseLeave(route: RouteLocationNormalized): void {
-    const key = this.manager['generateKey'](route)
+    const key = this.manager.generateKey(route)
     const timer = this.timers.get(key)
 
     if (timer) {

@@ -1,5 +1,5 @@
-import { defineComponent, type PropType, computed } from 'vue'
 import type { RequestStats } from '../../types'
+import { computed, defineComponent, type PropType } from 'vue'
 import './HttpStatsPanel.less'
 
 export interface HttpStatsPanelProps {
@@ -142,7 +142,10 @@ export default defineComponent({
             <div class='error-content'>
               <div class='error-message'>{props.error.message}</div>
               {props.error.code && (
-                <div class='error-code'>错误代码: {props.error.code}</div>
+                <div class='error-code'>
+                  错误代码:
+                  {props.error.code}
+                </div>
               )}
               {props.error.response?.status && (
                 <div class='error-status'>

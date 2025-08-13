@@ -143,4 +143,4 @@ const DeviceIndicator = defineComponent({
 })
 
 export default InfoPanel
-export { InfoPanel, InfoItem, DeviceIndicator }
+export { DeviceIndicator, InfoItem, InfoPanel }

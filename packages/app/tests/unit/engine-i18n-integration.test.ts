@@ -4,10 +4,10 @@
  * 测试 i18n 插件在 Engine 中的集成和功能
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createApp } from 'vue'
 
 describe('i18n Engine Plugin Integration', () => {
   let engine: any

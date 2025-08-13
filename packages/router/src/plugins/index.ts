@@ -4,47 +4,47 @@
 
 // 动画插件
 export {
-  createAnimationPlugin,
-  AnimationManager,
   ANIMATION_PRESETS,
+  AnimationManager,
   createAnimationConfig,
-  supportsAnimations,
+  createAnimationPlugin,
   getAnimationDuration,
+  supportsAnimations,
 } from './animation'
 export type { AnimationPluginOptions } from './animation'
 
 // 缓存插件
 export {
-  createCachePlugin,
   CacheManager,
   createCacheConfig,
+  createCachePlugin,
   supportsCaching,
 } from './cache'
 export type { CachePluginOptions } from './cache'
 
-// 预加载插件
-export {
-  createPreloadPlugin,
-  PreloadManager,
-  HoverPreloadStrategy,
-  VisibilityPreloadStrategy,
-  IdlePreloadStrategy,
-  createPreloadConfig,
-  supportsPreload,
-} from './preload'
-export type { PreloadPluginOptions } from './preload'
-
 // 性能监控插件
 export {
-  createPerformancePlugin,
-  PerformanceManager,
-  PerformanceEventType,
-  withPerformanceMonitoring,
   createPerformanceConfig,
-  supportsPerformanceAPI,
+  createPerformancePlugin,
   getPagePerformance,
+  PerformanceEventType,
+  PerformanceManager,
+  supportsPerformanceAPI,
+  withPerformanceMonitoring,
 } from './performance'
 export type { PerformancePluginOptions } from './performance'
+
+// 预加载插件
+export {
+  createPreloadConfig,
+  createPreloadPlugin,
+  HoverPreloadStrategy,
+  IdlePreloadStrategy,
+  PreloadManager,
+  supportsPreload,
+  VisibilityPreloadStrategy,
+} from './preload'
+export type { PreloadPluginOptions } from './preload'
 
 // 默认导出
 export default {

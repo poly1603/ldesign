@@ -1,12 +1,13 @@
 import type { AppConfig } from './types'
 import { createApp, presets } from '@ldesign/engine'
-import { createRouterEnginePlugin } from '@ldesign/router'
-import { createI18nEnginePlugin } from '@ldesign/i18n'
-import { createTemplateEnginePlugin } from '@ldesign/template'
 import { createHttpEnginePlugin } from '@ldesign/http'
+import { createI18nEnginePlugin } from '@ldesign/i18n'
+import { createRouterEnginePlugin } from '@ldesign/router'
+import { createTemplateEnginePlugin } from '@ldesign/template'
 import App from './App'
-import { routes } from './router/routes'
 import { appI18nConfig, createAppI18n } from './i18n'
+import { routes } from './router/routes'
+import { createApiEnginePlugin } from './services/api-engine-plugin'
 
 /**
  * 创建 LDesign 应用
@@ -83,6 +84,16 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         },
         globalInjection: true,
         globalPropertyName: '$http',
+      })
+    )
+
+    // 集成 API 引擎插件
+    await engine.use(
+      createApiEnginePlugin({
+        name: 'api',
+        version: '1.0.0',
+        globalPropertyName: '$api',
+        enableSystemApis: true,
       })
     )
 

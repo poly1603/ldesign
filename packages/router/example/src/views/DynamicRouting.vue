@@ -1,3 +1,198 @@
+<script setup lang="ts">
+import {
+  useHash,
+  useParams,
+  useQuery,
+  useRoute,
+  useRouter,
+} from '@ldesign/router'
+import { computed, onMounted, ref, watch } from 'vue'
+
+interface Props {
+  id?: string
+}
+
+const props = defineProps<Props>()
+
+const route = useRoute()
+const router = useRouter()
+const params = useParams()
+const query = useQuery()
+const hash = useHash()
+
+// 响应式数据
+const customId = ref('')
+const customQuery = ref('')
+const paramHistory = ref<
+  Array<{
+    time: string
+    from: string
+    to: string
+    type: string
+  }>
+>([])
+
+// 测试数据
+const numericIds = [1, 42, 123, 999, 2024]
+const stringIds = ['user', 'admin', 'guest', 'test-user', 'demo']
+
+// 计算属性
+const routeId = computed(() => props.id || route.value?.params?.id || '')
+
+const paramType = computed(() => {
+  const id = routeId.value
+  if (!id) return '无'
+  if (/^\d+$/.test(id)) return '数字'
+  if (/^[a-z][\w-]*$/i.test(id)) return '标识符'
+  return '其他'
+})
+
+const isNumericId = computed(() => /^\d+$/.test(routeId.value))
+
+const routeInfo = computed(() => ({
+  path: route.value?.path || '',
+  name: route.value?.name || '',
+  params: route.value?.params || {},
+  query: route.value?.query || {},
+  hash: route.value?.hash || '',
+  fullPath: route.value?.fullPath || '',
+}))
+
+// 验证计算属性
+const idValidation = computed(() => {
+  const id = routeId.value
+  if (!id) {
+    return { message: 'ID 不能为空', class: 'error' }
+  }
+  if (/^\d+$/.test(id)) {
+    const numId = Number.parseInt(id)
+    if (numId < 1 || numId > 9999) {
+      return { message: 'ID 超出有效范围 (1-9999)', class: 'warning' }
+    }
+    return { message: '数字 ID 格式正确', class: 'success' }
+  }
+  if (/^[a-z][\w-]*$/i.test(id)) {
+    return { message: '标识符格式正确', class: 'success' }
+  }
+  return { message: 'ID 格式不符合规范', class: 'error' }
+})
+
+const completenessValidation = computed(() => {
+  const hasId = !!routeId.value
+  const hasValidPath = (route.value?.path || '').includes('/dynamic/')
+
+  if (hasId && hasValidPath) {
+    return { message: '参数完整', class: 'success' }
+  }
+  return { message: '参数不完整', class: 'error' }
+})
+
+const queryValidation = computed(() => {
+  const queryKeys = Object.keys(route.value?.query || {})
+  if (queryKeys.length === 0) {
+    return { message: '无查询参数', class: 'info' }
+  }
+
+  const hasInvalidKeys = queryKeys.some(key => !/^[a-z]\w*$/i.test(key))
+  if (hasInvalidKeys) {
+    return { message: '查询参数键名不规范', class: 'warning' }
+  }
+
+  return { message: `查询参数正常 (${queryKeys.length} 个)`, class: 'success' }
+})
+
+// 组合式 API 信息
+const paramsInfo = computed(() => ({
+  'params.value': params.value,
+  'route.params': route.value?.params || {},
+}))
+
+const queryInfo = computed(() => ({
+  'query.value': query.value,
+  'route.query': route.value?.query || {},
+}))
+
+const hashInfo = computed(() => ({
+  'hash.value': hash.value,
+  'route.hash': route.value?.hash || '',
+}))
+
+// 方法
+function navigateToId(id: string | number) {
+  router.push(`/dynamic/${id}`)
+}
+
+function navigateCustom() {
+  if (!customId.value) return
+
+  const queryParams: Record<string, string> = {}
+  if (customQuery.value) {
+    customQuery.value.split('&').forEach(pair => {
+      const [key, value] = pair.split('=')
+      if (key && value) {
+        queryParams[key] = decodeURIComponent(value)
+      }
+    })
+  }
+
+  router.push({
+    path: `/dynamic/${customId.value}`,
+    query: queryParams,
+  })
+}
+
+function clearHistory() {
+  paramHistory.value = []
+}
+
+// 监听参数变化
+watch(
+  () => routeId.value,
+  (newId, oldId) => {
+    if (oldId !== undefined) {
+      paramHistory.value.unshift({
+        time: new Date().toLocaleTimeString(),
+        from: oldId || '无',
+        to: newId || '无',
+        type: 'ID 参数',
+      })
+
+      // 只保留最近 10 条记录
+      if (paramHistory.value.length > 10) {
+        paramHistory.value = paramHistory.value.slice(0, 10)
+      }
+    }
+  }
+)
+
+watch(
+  () => route.value?.query || {},
+  (newQuery, oldQuery) => {
+    if (oldQuery && JSON.stringify(newQuery) !== JSON.stringify(oldQuery)) {
+      paramHistory.value.unshift({
+        time: new Date().toLocaleTimeString(),
+        from: JSON.stringify(oldQuery),
+        to: JSON.stringify(newQuery),
+        type: '查询参数',
+      })
+
+      if (paramHistory.value.length > 10) {
+        paramHistory.value = paramHistory.value.slice(0, 10)
+      }
+    }
+  },
+  { deep: true }
+)
+
+onMounted(() => {
+  console.log('DynamicRouting 组件已挂载')
+  console.log('当前参数:', {
+    id: routeId.value,
+    query: route.value?.query || {},
+  })
+})
+</script>
+
 <template>
   <div class="dynamic-routing">
     <div class="card">
@@ -47,9 +242,9 @@
             <button
               v-for="id in numericIds"
               :key="id"
-              @click="navigateToId(id)"
               class="btn btn-primary"
               :class="{ active: routeId === id.toString() }"
+              @click="navigateToId(id)"
             >
               ID: {{ id }}
             </button>
@@ -62,9 +257,9 @@
             <button
               v-for="id in stringIds"
               :key="id"
-              @click="navigateToId(id)"
               class="btn btn-secondary"
               :class="{ active: routeId === id }"
+              @click="navigateToId(id)"
             >
               ID: {{ id }}
             </button>
@@ -86,7 +281,7 @@
                 placeholder="key1=value1&key2=value2"
               />
             </div>
-            <button @click="navigateCustom" class="btn btn-info">导航</button>
+            <button class="btn btn-info" @click="navigateCustom">导航</button>
           </div>
         </div>
       </div>
@@ -109,7 +304,7 @@
             <span class="history-type">{{ change.type }}</span>
           </div>
         </div>
-        <button @click="clearHistory" class="btn btn-warning btn-sm">
+        <button class="btn btn-warning btn-sm" @click="clearHistory">
           清空历史
         </button>
       </div>
@@ -175,203 +370,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import {
-  useRoute,
-  useRouter,
-  useParams,
-  useQuery,
-  useHash,
-} from '@ldesign/router'
-
-interface Props {
-  id?: string
-}
-
-const props = defineProps<Props>()
-
-const route = useRoute()
-const router = useRouter()
-const params = useParams()
-const query = useQuery()
-const hash = useHash()
-
-// 响应式数据
-const customId = ref('')
-const customQuery = ref('')
-const paramHistory = ref<
-  Array<{
-    time: string
-    from: string
-    to: string
-    type: string
-  }>
->([])
-
-// 测试数据
-const numericIds = [1, 42, 123, 999, 2024]
-const stringIds = ['user', 'admin', 'guest', 'test-user', 'demo']
-
-// 计算属性
-const routeId = computed(() => props.id || route.value?.params?.id || '')
-
-const paramType = computed(() => {
-  const id = routeId.value
-  if (!id) return '无'
-  if (/^\d+$/.test(id)) return '数字'
-  if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(id)) return '标识符'
-  return '其他'
-})
-
-const isNumericId = computed(() => /^\d+$/.test(routeId.value))
-
-const routeInfo = computed(() => ({
-  path: route.value?.path || '',
-  name: route.value?.name || '',
-  params: route.value?.params || {},
-  query: route.value?.query || {},
-  hash: route.value?.hash || '',
-  fullPath: route.value?.fullPath || '',
-}))
-
-// 验证计算属性
-const idValidation = computed(() => {
-  const id = routeId.value
-  if (!id) {
-    return { message: 'ID 不能为空', class: 'error' }
-  }
-  if (/^\d+$/.test(id)) {
-    const numId = parseInt(id)
-    if (numId < 1 || numId > 9999) {
-      return { message: 'ID 超出有效范围 (1-9999)', class: 'warning' }
-    }
-    return { message: '数字 ID 格式正确', class: 'success' }
-  }
-  if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(id)) {
-    return { message: '标识符格式正确', class: 'success' }
-  }
-  return { message: 'ID 格式不符合规范', class: 'error' }
-})
-
-const completenessValidation = computed(() => {
-  const hasId = !!routeId.value
-  const hasValidPath = (route.value?.path || '').includes('/dynamic/')
-
-  if (hasId && hasValidPath) {
-    return { message: '参数完整', class: 'success' }
-  }
-  return { message: '参数不完整', class: 'error' }
-})
-
-const queryValidation = computed(() => {
-  const queryKeys = Object.keys(route.value?.query || {})
-  if (queryKeys.length === 0) {
-    return { message: '无查询参数', class: 'info' }
-  }
-
-  const hasInvalidKeys = queryKeys.some(
-    key => !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)
-  )
-  if (hasInvalidKeys) {
-    return { message: '查询参数键名不规范', class: 'warning' }
-  }
-
-  return { message: `查询参数正常 (${queryKeys.length} 个)`, class: 'success' }
-})
-
-// 组合式 API 信息
-const paramsInfo = computed(() => ({
-  'params.value': params.value,
-  'route.params': route.value?.params || {},
-}))
-
-const queryInfo = computed(() => ({
-  'query.value': query.value,
-  'route.query': route.value?.query || {},
-}))
-
-const hashInfo = computed(() => ({
-  'hash.value': hash.value,
-  'route.hash': route.value?.hash || '',
-}))
-
-// 方法
-const navigateToId = (id: string | number) => {
-  router.push(`/dynamic/${id}`)
-}
-
-const navigateCustom = () => {
-  if (!customId.value) return
-
-  const queryParams: Record<string, string> = {}
-  if (customQuery.value) {
-    customQuery.value.split('&').forEach(pair => {
-      const [key, value] = pair.split('=')
-      if (key && value) {
-        queryParams[key] = decodeURIComponent(value)
-      }
-    })
-  }
-
-  router.push({
-    path: `/dynamic/${customId.value}`,
-    query: queryParams,
-  })
-}
-
-const clearHistory = () => {
-  paramHistory.value = []
-}
-
-// 监听参数变化
-watch(
-  () => routeId.value,
-  (newId, oldId) => {
-    if (oldId !== undefined) {
-      paramHistory.value.unshift({
-        time: new Date().toLocaleTimeString(),
-        from: oldId || '无',
-        to: newId || '无',
-        type: 'ID 参数',
-      })
-
-      // 只保留最近 10 条记录
-      if (paramHistory.value.length > 10) {
-        paramHistory.value = paramHistory.value.slice(0, 10)
-      }
-    }
-  }
-)
-
-watch(
-  () => route.value?.query || {},
-  (newQuery, oldQuery) => {
-    if (oldQuery && JSON.stringify(newQuery) !== JSON.stringify(oldQuery)) {
-      paramHistory.value.unshift({
-        time: new Date().toLocaleTimeString(),
-        from: JSON.stringify(oldQuery),
-        to: JSON.stringify(newQuery),
-        type: '查询参数',
-      })
-
-      if (paramHistory.value.length > 10) {
-        paramHistory.value = paramHistory.value.slice(0, 10)
-      }
-    }
-  },
-  { deep: true }
-)
-
-onMounted(() => {
-  console.log('DynamicRouting 组件已挂载')
-  console.log('当前参数:', {
-    id: routeId.value,
-    query: route.value?.query || {},
-  })
-})
-</script>
 
 <style lang="less" scoped>
 .dynamic-routing {

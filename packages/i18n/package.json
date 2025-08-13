@@ -30,9 +30,9 @@
   "types": "types/index.d.ts",
   "browser": "es/index.js",
   "files": [
-    "types",
     "es",
     "lib",
+    "types",
     "types"
   ],
   "scripts": {

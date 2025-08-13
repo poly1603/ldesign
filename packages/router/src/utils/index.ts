@@ -4,14 +4,14 @@
  * 提供路由相关的实用工具函数
  */
 
+import type { NavigationFailureType } from '../core/constants'
 import type {
+  NavigationFailure,
   RouteLocationNormalized,
   RouteLocationRaw,
   RouteParams,
   RouteQuery,
-  NavigationFailure,
 } from '../types'
-import { NavigationFailureType } from '../core/constants'
 
 // ==================== 路径处理工具 ====================
 
@@ -24,7 +24,7 @@ export function normalizePath(path: string): string {
 
   // 确保以斜杠开头
   if (!path.startsWith('/')) {
-    path = '/' + path
+    path = `/${path}`
   }
 
   // 移除末尾斜杠（除了根路径）
@@ -143,7 +143,7 @@ export function stringifyQuery(query: RouteQuery): string {
     }
   }
 
-  return pairs.length > 0 ? '?' + pairs.join('&') : ''
+  return pairs.length > 0 ? `?${pairs.join('&')}` : ''
 }
 
 /**
@@ -169,7 +169,7 @@ export function parseURL(url: string): {
   return {
     path: normalizePath(path),
     query: parseQuery(search),
-    hash: hash ? '#' + hash : '',
+    hash: hash ? `#${hash}` : '',
   }
 }
 
@@ -188,7 +188,7 @@ export function stringifyURL(
   }
 
   if (hash) {
-    url += hash.startsWith('#') ? hash : '#' + hash
+    url += hash.startsWith('#') ? hash : `#${hash}`
   }
 
   return url
@@ -373,7 +373,7 @@ export function isChildRoute(parent: string, child: string): boolean {
   const parentPath = normalizePath(parent)
   const childPath = normalizePath(child)
 
-  return childPath.startsWith(parentPath + '/') || childPath === parentPath
+  return childPath.startsWith(`${parentPath}/`) || childPath === parentPath
 }
 
 // ==================== 默认导出 ====================

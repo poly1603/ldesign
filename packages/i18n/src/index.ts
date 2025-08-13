@@ -13,9 +13,9 @@
  * @author ldesign
  */
 
+import type { I18nInstance, I18nOptions } from './core/types'
 // 导入核心类
 import { I18n } from './core/i18n'
-import type { I18nInstance, I18nOptions } from './core/types'
 
 // 导出检测器
 export {
@@ -74,13 +74,15 @@ export type {
   TranslationParams,
 } from './core/types'
 
+// 导出 Engine 插件
+export * from './engine/plugin'
+
 // 导出内置语言包
 export { default as enLanguagePackage } from './locales/en'
 
 export { default as jaLanguagePackage } from './locales/ja'
 
 export { default as zhCNLanguagePackage } from './locales/zh-CN'
-
 export {
   batchInterpolate,
   extractInterpolationKeys,
@@ -100,6 +102,7 @@ export {
   setNestedValue,
   unflattenObject,
 } from './utils/path'
+
 export {
   extractPluralKeys,
   // 复数工具
@@ -110,9 +113,6 @@ export {
   processPluralization,
   registerPluralRule,
 } from './utils/pluralization'
-
-// 导出 Vue 集成（可选，需要单独导入）
-export * as vue from './vue'
 
 // 便捷的创建函数
 export function createI18n(options?: I18nOptions): I18nInstance {
@@ -172,8 +172,8 @@ export async function createSimpleI18n(
  */
 export const version = '0.1.0'
 
-// 导出 Engine 插件
-export * from './engine/plugin'
+// 导出 Vue 集成（可选，需要单独导入）
+export * as vue from './vue'
 
 /**
  * 默认导出（主要的 I18n 类）

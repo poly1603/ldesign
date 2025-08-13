@@ -4,30 +4,30 @@
  * 提供便捷的 Vue 3 Composition API 钩子函数
  */
 
-import {
-  inject,
-  computed,
-  ref,
-  onBeforeUnmount,
-  onActivated,
-  onDeactivated,
-} from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import type {
-  Router,
+  NavigationGuard,
   RouteLocationNormalized,
   RouteLocationRaw,
-  UseRouteReturn,
-  UseRouterReturn,
-  NavigationGuard,
+  RouteMeta,
   RouteParams,
   RouteQuery,
-  RouteMeta,
+  Router,
   RouteRecordNormalized,
+  UseRouteReturn,
+  UseRouterReturn,
 } from '../types'
 import {
-  ROUTER_INJECTION_SYMBOL,
+  computed,
+  inject,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  ref,
+} from 'vue'
+import {
   ROUTE_INJECTION_SYMBOL,
+  ROUTER_INJECTION_SYMBOL,
 } from '../core/constants'
 
 // ==================== 核心组合式 API ====================
@@ -167,10 +167,7 @@ export function onBeforeRouteUpdate(guard: NavigationGuard): void {
     removeGuard = router.beforeEach((to, from, next) => {
       // 只在当前组件的路由更新时触发
       if (
-        to.matched.some(
-          record =>
-            record === route.value.matched[route.value.matched.length - 1]
-        )
+        to.matched.includes(route.value.matched[route.value.matched.length - 1])
       ) {
         guard(to, from, next)
       } else {
@@ -212,13 +209,11 @@ export function onBeforeRouteLeave(guard: NavigationGuard): void {
     removeGuard = router.beforeEach((to, from, next) => {
       // 只在离开当前组件的路由时触发
       if (
-        from.matched.some(
-          record =>
-            record === route.value.matched[route.value.matched.length - 1]
+        from.matched.includes(
+          route.value.matched[route.value.matched.length - 1]
         ) &&
-        !to.matched.some(
-          record =>
-            record === route.value.matched[route.value.matched.length - 1]
+        !to.matched.includes(
+          route.value.matched[route.value.matched.length - 1]
         )
       ) {
         guard(to, from, next)

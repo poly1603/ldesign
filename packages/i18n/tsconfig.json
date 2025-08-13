@@ -4,14 +4,14 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "baseUrl": ".",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },
     "types": ["node", "vite/client"],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "examples/**/*"],
   "exclude": ["node_modules", "dist", "es", "lib", "types", "examples/**/*"]

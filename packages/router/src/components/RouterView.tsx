@@ -4,29 +4,29 @@
  * 增强的路由视图组件，支持动画、缓存、错误边界等功能
  */
 
-import {
-  defineComponent,
-  computed,
-  ref,
-  watch,
-  onMounted,
-  onUnmounted,
-  Suspense,
-  KeepAlive,
-  Transition,
-  markRaw,
-  h,
-  type PropType,
-  type Component,
-  type VNode,
-} from 'vue'
 import type { RouteLocationNormalized } from '../types'
 import type {
-  RouterViewSlotProps,
   AnimationType,
-  CacheStrategy,
   CacheItem,
+  CacheStrategy,
+  RouterViewSlotProps,
 } from './types'
+import {
+  type Component,
+  computed,
+  defineComponent,
+  h,
+  KeepAlive,
+  markRaw,
+  onMounted,
+  onUnmounted,
+  type PropType,
+  ref,
+  Suspense,
+  Transition,
+  type VNode,
+  watch,
+} from 'vue'
 import { useRoute, useRouter } from '../composables'
 import { DEFAULT_VIEW_NAME } from '../core/constants'
 
@@ -431,7 +431,10 @@ export const RouterView = defineComponent({
         }
         return (
           <div class='router-view__error'>
-            <p>加载失败: {error.value.message}</p>
+            <p>
+              加载失败:
+              {error.value.message}
+            </p>
             <button onClick={retry}>重试</button>
           </div>
         )

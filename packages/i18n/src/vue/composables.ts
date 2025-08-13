@@ -1,13 +1,13 @@
-import { computed, inject, onUnmounted, ref } from 'vue'
-
-// 手动定义Ref类型
-type Ref<T = any> = {
-  value: T
-}
-
 import type { I18nInstance } from '../core/types'
 
 import type { UseI18nReturn } from './types'
+
+import { computed, inject, onUnmounted, ref } from 'vue'
+
+// 手动定义Ref类型
+interface Ref<T = any> {
+  value: T
+}
 
 /**
  * I18n 注入键

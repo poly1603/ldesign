@@ -1,3 +1,92 @@
+<script setup lang="ts">
+import { RouterLink } from '@ldesign/router'
+import { onMounted, onUnmounted, ref } from 'vue'
+
+// 动画相关
+const selectedAnimation = ref('fade')
+const animationKey = ref(0)
+
+// 缓存相关
+const cacheCount = ref(3)
+const cacheItems = ref([
+  { id: 1, name: 'Home组件', timestamp: '2024-01-15 10:30:00' },
+  { id: 2, name: 'Basic组件', timestamp: '2024-01-15 10:32:15' },
+  { id: 3, name: 'Nested组件', timestamp: '2024-01-15 10:35:20' },
+])
+
+// 预加载相关
+const preloadLinks = ref([
+  { path: '/', name: '首页', preloaded: false },
+  { path: '/basic', name: '基础路由', preloaded: false },
+  { path: '/nested', name: '嵌套路由', preloaded: false },
+  { path: '/dynamic/123', name: '动态路由', preloaded: false },
+])
+
+// 性能监控相关
+const performanceMetrics = ref({
+  navigationTime: 45,
+  componentLoadTime: 23,
+  memoryUsage: 12.5,
+  fps: 60,
+})
+
+const performanceHistory = ref([65, 45, 80, 30, 95, 40, 75, 60, 85, 50])
+
+let performanceInterval: number | null = null
+
+// 方法
+function triggerAnimation() {
+  animationKey.value++
+}
+
+function addToCache() {
+  const newItem = {
+    id: Date.now(),
+    name: `组件${cacheCount.value + 1}`,
+    timestamp: new Date().toLocaleString(),
+  }
+  cacheItems.value.push(newItem)
+  cacheCount.value++
+}
+
+function clearCache() {
+  cacheItems.value = []
+  cacheCount.value = 0
+}
+
+function handlePreload(link: any) {
+  if (!link.preloaded) {
+    setTimeout(() => {
+      link.preloaded = true
+    }, 500)
+  }
+}
+
+function updatePerformanceMetrics() {
+  performanceMetrics.value = {
+    navigationTime: Math.floor(Math.random() * 100) + 20,
+    componentLoadTime: Math.floor(Math.random() * 50) + 10,
+    memoryUsage: Math.round((Math.random() * 20 + 10) * 10) / 10,
+    fps: Math.floor(Math.random() * 10) + 55,
+  }
+
+  performanceHistory.value.push(Math.floor(Math.random() * 100))
+  if (performanceHistory.value.length > 10) {
+    performanceHistory.value.shift()
+  }
+}
+
+onMounted(() => {
+  performanceInterval = window.setInterval(updatePerformanceMetrics, 3000)
+})
+
+onUnmounted(() => {
+  if (performanceInterval) {
+    clearInterval(performanceInterval)
+  }
+})
+</script>
+
 <template>
   <div class="plugin-demo">
     <div class="card">
@@ -19,7 +108,7 @@
             <option value="zoom">缩放</option>
             <option value="bounce">弹跳</option>
           </select>
-          <button @click="triggerAnimation" class="btn btn-primary">
+          <button class="btn btn-primary" @click="triggerAnimation">
             触发动画
           </button>
         </div>
@@ -47,10 +136,10 @@
           </div>
         </div>
         <div class="cache-actions">
-          <button @click="addToCache" class="btn btn-success">
+          <button class="btn btn-success" @click="addToCache">
             添加到缓存
           </button>
-          <button @click="clearCache" class="btn btn-warning">清空缓存</button>
+          <button class="btn btn-warning" @click="clearCache">清空缓存</button>
         </div>
         <div class="cache-list">
           <h4>缓存列表:</h4>
@@ -125,102 +214,13 @@
               :key="index"
               class="chart-bar"
               :style="{ height: `${value}%` }"
-            ></div>
+            />
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from '@ldesign/router'
-
-// 动画相关
-const selectedAnimation = ref('fade')
-const animationKey = ref(0)
-
-// 缓存相关
-const cacheCount = ref(3)
-const cacheItems = ref([
-  { id: 1, name: 'Home组件', timestamp: '2024-01-15 10:30:00' },
-  { id: 2, name: 'Basic组件', timestamp: '2024-01-15 10:32:15' },
-  { id: 3, name: 'Nested组件', timestamp: '2024-01-15 10:35:20' },
-])
-
-// 预加载相关
-const preloadLinks = ref([
-  { path: '/', name: '首页', preloaded: false },
-  { path: '/basic', name: '基础路由', preloaded: false },
-  { path: '/nested', name: '嵌套路由', preloaded: false },
-  { path: '/dynamic/123', name: '动态路由', preloaded: false },
-])
-
-// 性能监控相关
-const performanceMetrics = ref({
-  navigationTime: 45,
-  componentLoadTime: 23,
-  memoryUsage: 12.5,
-  fps: 60,
-})
-
-const performanceHistory = ref([65, 45, 80, 30, 95, 40, 75, 60, 85, 50])
-
-let performanceInterval: number | null = null
-
-// 方法
-const triggerAnimation = () => {
-  animationKey.value++
-}
-
-const addToCache = () => {
-  const newItem = {
-    id: Date.now(),
-    name: `组件${cacheCount.value + 1}`,
-    timestamp: new Date().toLocaleString(),
-  }
-  cacheItems.value.push(newItem)
-  cacheCount.value++
-}
-
-const clearCache = () => {
-  cacheItems.value = []
-  cacheCount.value = 0
-}
-
-const handlePreload = (link: any) => {
-  if (!link.preloaded) {
-    setTimeout(() => {
-      link.preloaded = true
-    }, 500)
-  }
-}
-
-const updatePerformanceMetrics = () => {
-  performanceMetrics.value = {
-    navigationTime: Math.floor(Math.random() * 100) + 20,
-    componentLoadTime: Math.floor(Math.random() * 50) + 10,
-    memoryUsage: Math.round((Math.random() * 20 + 10) * 10) / 10,
-    fps: Math.floor(Math.random() * 10) + 55,
-  }
-
-  performanceHistory.value.push(Math.floor(Math.random() * 100))
-  if (performanceHistory.value.length > 10) {
-    performanceHistory.value.shift()
-  }
-}
-
-onMounted(() => {
-  performanceInterval = window.setInterval(updatePerformanceMetrics, 3000)
-})
-
-onUnmounted(() => {
-  if (performanceInterval) {
-    clearInterval(performanceInterval)
-  }
-})
-</script>
 
 <style lang="less" scoped>
 .plugin-demo {

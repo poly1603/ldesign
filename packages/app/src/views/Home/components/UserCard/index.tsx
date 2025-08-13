@@ -1,5 +1,5 @@
-import { defineComponent, type PropType } from 'vue'
 import type { User } from '../../types'
+import { defineComponent, type PropType } from 'vue'
 import './UserCard.less'
 
 export interface UserCardProps {
@@ -76,7 +76,7 @@ export default defineComponent({
               <div class='detail-item'>
                 <span class='detail-icon'>📍</span>
                 <span class='detail-text'>
-                  {props.user.address.city}, {props.user.address.street}
+                  {props.user.address.city},{props.user.address.street}
                 </span>
               </div>
             )}

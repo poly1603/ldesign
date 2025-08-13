@@ -1,5 +1,5 @@
-import { defineComponent, type PropType, ref, computed } from 'vue'
 import type { NewPost } from '../../types'
+import { computed, defineComponent, type PropType, ref } from 'vue'
 import './CreatePostForm.less'
 
 export interface CreatePostFormProps {
@@ -98,7 +98,10 @@ export default defineComponent({
             <label class='form-label' for='post-title'>
               <span class='label-icon'>📝</span>
               文章标题
-              <span class='char-count'>{titleLength.value}/100</span>
+              <span class='char-count'>
+                {titleLength.value}
+                /100
+              </span>
             </label>
             <input
               ref={titleRef}
@@ -118,7 +121,10 @@ export default defineComponent({
             <label class='form-label' for='post-body'>
               <span class='label-icon'>📄</span>
               文章内容
-              <span class='char-count'>{bodyLength.value}/500</span>
+              <span class='char-count'>
+                {bodyLength.value}
+                /500
+              </span>
             </label>
             <textarea
               ref={bodyRef}

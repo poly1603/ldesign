@@ -2,8 +2,8 @@
  * @ldesign/router 组件类型定义
  */
 
-import type { Component, VNode } from 'vue'
-import type { RouteLocationRaw, RouteLocationNormalized } from '../types'
+import type { Component } from 'vue'
+import type { RouteLocationNormalized, RouteLocationRaw } from '../types'
 
 // ==================== 通用类型 ====================
 

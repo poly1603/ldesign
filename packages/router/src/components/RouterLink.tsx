@@ -4,24 +4,24 @@
  * 增强的路由链接组件，支持预加载、权限控制、事件追踪等功能
  */
 
-import {
-  defineComponent,
-  computed,
-  ref,
-  onMounted,
-  onUnmounted,
-  nextTick,
-  h,
-  type PropType,
-  type VNode,
-} from 'vue'
 import type { RouteLocationRaw } from '../types'
 import type {
-  RouterLinkSlotProps,
-  LinkVariant,
   ComponentSize,
+  LinkVariant,
   PreloadStrategy,
+  RouterLinkSlotProps,
 } from './types'
+import {
+  computed,
+  defineComponent,
+  h,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  type PropType,
+  ref,
+  type VNode,
+} from 'vue'
 import { useLink, useRouter } from '../composables'
 import {
   DEFAULT_LINK_ACTIVE_CLASS,

@@ -3,8 +3,8 @@
  */
 
 import common from './common'
-import pages from './pages'
 import components from './components'
+import pages from './pages'
 
 export default {
   common,

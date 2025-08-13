@@ -5,13 +5,13 @@
  */
 
 import type {
-  RouterHistory,
   HistoryLocation,
   HistoryState,
   NavigationCallback,
+  NavigationDirection,
   NavigationInformation,
   NavigationType,
-  NavigationDirection,
+  RouterHistory,
 } from '../types'
 import { SUPPORTS_HISTORY } from './constants'
 
@@ -301,7 +301,7 @@ class HashHistory extends BaseHistory {
 
     return {
       pathname: pathname || '/',
-      search: search ? '?' + search : '',
+      search: search ? `?${search}` : '',
       hash: '',
     }
   }
@@ -326,15 +326,7 @@ class HashHistory extends BaseHistory {
 
   private buildHashURL(location: HistoryLocation): string {
     const hash = this.buildHash(location)
-    return (
-      window.location.protocol +
-      '//' +
-      window.location.host +
-      window.location.pathname +
-      window.location.search +
-      '#' +
-      hash
-    )
+    return `${window.location.protocol}//${window.location.host}${window.location.pathname}${window.location.search}#${hash}`
   }
 
   private buildHash(location: HistoryLocation): string {
@@ -428,7 +420,7 @@ class MemoryHistory extends BaseHistory {
  */
 export function createWebHistory(base?: string): RouterHistory {
   if (typeof window === 'undefined') {
-    throw new Error(
+    throw new TypeError(
       'createWebHistory() can only be used in browser environment'
     )
   }
@@ -448,7 +440,7 @@ export function createWebHistory(base?: string): RouterHistory {
  */
 export function createWebHashHistory(base?: string): RouterHistory {
   if (typeof window === 'undefined') {
-    throw new Error(
+    throw new TypeError(
       'createWebHashHistory() can only be used in browser environment'
     )
   }

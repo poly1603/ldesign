@@ -5,8 +5,8 @@
  */
 
 import type { App } from 'vue'
-import type { Router, RouteLocationNormalized } from '../types'
-import type { PerformanceMetrics, PerformanceConfig } from '../components/types'
+import type { PerformanceConfig, PerformanceMetrics } from '../components/types'
+import type { RouteLocationNormalized, Router } from '../types'
 
 // ==================== 性能监控管理器 ====================
 

@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { LanguagePackage } from '../src/core/types'
 
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ManualDetector } from '../src/core/detector'
 import { I18n } from '../src/core/i18n'
 import { StaticLoader } from '../src/core/loader'
 import { MemoryStorage } from '../src/core/storage'
-import type { LanguagePackage } from '../src/core/types'
 
 // 测试用的语言包
 const enPackage: LanguagePackage = {

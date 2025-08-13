@@ -49,7 +49,7 @@
     &.status-loading {
       background: lighten(@primary-color, 45%);
       color: @primary-color;
-      
+
       .indicator-dot {
         background: @primary-color;
       }
@@ -58,7 +58,7 @@
     &.status-normal {
       background: lighten(#28a745, 45%);
       color: #28a745;
-      
+
       .indicator-dot {
         background: #28a745;
         animation: none;
@@ -68,7 +68,7 @@
     &.status-error {
       background: lighten(@error-color, 45%);
       color: @error-color;
-      
+
       .indicator-dot {
         background: @error-color;
       }
@@ -119,7 +119,7 @@
       font-weight: 700;
       color: @text-color;
       line-height: 1.2;
-      
+
       &.api-url {
         font-size: @font-size-xs;
         font-weight: 500;
@@ -141,7 +141,7 @@
   &.primary {
     background: linear-gradient(135deg, lighten(@primary-color, 45%), lighten(@primary-color, 50%));
     border-color: lighten(@primary-color, 30%);
-    
+
     .stat-icon {
       background: @primary-color;
       color: white;
@@ -151,7 +151,7 @@
   &.success {
     background: linear-gradient(135deg, lighten(#28a745, 45%), lighten(#28a745, 50%));
     border-color: lighten(#28a745, 30%);
-    
+
     .stat-icon {
       background: #28a745;
       color: white;
@@ -161,7 +161,7 @@
   &.error {
     background: linear-gradient(135deg, lighten(@error-color, 45%), lighten(@error-color, 50%));
     border-color: lighten(@error-color, 30%);
-    
+
     .stat-icon {
       background: @error-color;
       color: white;
@@ -171,7 +171,7 @@
   &.warning {
     background: linear-gradient(135deg, lighten(#ffc107, 45%), lighten(#ffc107, 50%));
     border-color: lighten(#ffc107, 30%);
-    
+
     .stat-icon {
       background: #ffc107;
       color: white;
@@ -181,7 +181,7 @@
   &.info {
     background: linear-gradient(135deg, lighten(#17a2b8, 45%), lighten(#17a2b8, 50%));
     border-color: lighten(#17a2b8, 30%);
-    
+
     .stat-icon {
       background: #17a2b8;
       color: white;
@@ -192,11 +192,11 @@
     &.success {
       background: linear-gradient(135deg, lighten(#28a745, 45%), lighten(#28a745, 50%));
     }
-    
+
     &.warning {
       background: linear-gradient(135deg, lighten(#ffc107, 45%), lighten(#ffc107, 50%));
     }
-    
+
     &.error {
       background: linear-gradient(135deg, lighten(@error-color, 45%), lighten(@error-color, 50%));
     }
@@ -242,7 +242,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

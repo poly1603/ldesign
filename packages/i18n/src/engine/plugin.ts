@@ -1,5 +1,8 @@
 // 临时使用 any 类型，避免循环依赖
-type Plugin = {
+import type { I18nInstance, I18nOptions } from '../core/types'
+import { installI18nPlugin } from '../vue/plugin'
+
+interface Plugin {
   name: string
   version: string
   dependencies?: string[]
@@ -7,8 +10,6 @@ type Plugin = {
   uninstall?: (engine: any) => Promise<void>
   [key: string]: any
 }
-import type { I18nOptions, I18nInstance } from '../core/types'
-import { installI18nPlugin } from '../vue/plugin'
 
 /**
  * i18n Engine 插件选项

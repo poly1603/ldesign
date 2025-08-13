@@ -1,3 +1,24 @@
+<script setup lang="ts">
+import { useRouter } from '@ldesign/router'
+
+const router = useRouter()
+
+function logout() {
+  localStorage.removeItem('token')
+  alert('已退出登录，下次访问将被重定向到登录页面')
+  router.push('/login')
+}
+
+function clearPermissions() {
+  // 模拟清除权限
+  alert('权限已清除，下次访问受保护页面将被拒绝')
+}
+
+function goToProtected() {
+  router.push('/guards')
+}
+</script>
+
 <template>
   <div class="route-guards">
     <div class="card">
@@ -37,38 +58,17 @@
     <div class="card">
       <h2>模拟操作</h2>
       <div class="actions">
-        <button @click="logout" class="btn btn-warning">退出登录</button>
-        <button @click="clearPermissions" class="btn btn-error">
+        <button class="btn btn-warning" @click="logout">退出登录</button>
+        <button class="btn btn-error" @click="clearPermissions">
           清除权限
         </button>
-        <button @click="goToProtected" class="btn btn-info">
+        <button class="btn btn-info" @click="goToProtected">
           访问其他受保护页面
         </button>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useRouter } from '@ldesign/router'
-
-const router = useRouter()
-
-const logout = () => {
-  localStorage.removeItem('token')
-  alert('已退出登录，下次访问将被重定向到登录页面')
-  router.push('/login')
-}
-
-const clearPermissions = () => {
-  // 模拟清除权限
-  alert('权限已清除，下次访问受保护页面将被拒绝')
-}
-
-const goToProtected = () => {
-  router.push('/guards')
-}
-</script>
 
 <style lang="less" scoped>
 .route-guards {

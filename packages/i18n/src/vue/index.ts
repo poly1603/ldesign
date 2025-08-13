@@ -8,6 +8,20 @@
  * - TypeScript 类型定义
  */
 
+// 重新导出核心类型，方便使用
+export type {
+  I18nInstance,
+  I18nOptions,
+  LanguageInfo,
+  LanguagePackage,
+  TranslationFunction,
+  TranslationOptions,
+  TranslationParams,
+} from '../core/types'
+
+// 导出组件
+export { LanguageSwitcher } from './components'
+
 // 导出组合式 API
 export {
   I18N_INJECTION_KEY,
@@ -32,9 +46,6 @@ export {
   vueI18n,
 } from './plugin'
 
-// 导出组件
-export { LanguageSwitcher } from './components'
-
 // 导出类型定义
 export type {
   I18nContext,
@@ -44,14 +55,3 @@ export type {
   VueI18nOptions,
   VueI18nPlugin,
 } from './types'
-
-// 重新导出核心类型，方便使用
-export type {
-  I18nInstance,
-  I18nOptions,
-  LanguageInfo,
-  LanguagePackage,
-  TranslationFunction,
-  TranslationOptions,
-  TranslationParams,
-} from '../core/types'

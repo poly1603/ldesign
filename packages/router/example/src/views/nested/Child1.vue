@@ -1,3 +1,78 @@
+<script setup lang="ts">
+import { RouterLink, useRouter } from '@ldesign/router'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+
+interface Props {
+  routeInfo?: {
+    path: string
+    name?: string
+    params: Record<string, any>
+    query: Record<string, any>
+    hash: string
+  }
+}
+
+defineProps<Props>()
+
+const router = useRouter()
+
+// 组件状态
+const mountTime = ref('')
+const visitCount = ref(0)
+const componentId = ref('')
+const counter = ref(0)
+const inputValue = ref('')
+const selectedOption = ref('')
+
+// 计算属性
+const componentData = computed(() => ({
+  counter: counter.value,
+  inputValue: inputValue.value,
+  selectedOption: selectedOption.value,
+  mountTime: mountTime.value,
+  visitCount: visitCount.value,
+  componentId: componentId.value,
+}))
+
+// 方法
+function incrementCounter() {
+  counter.value++
+}
+
+function decrementCounter() {
+  counter.value--
+}
+
+function navigateWithState() {
+  router.push({
+    path: '/nested/child2',
+    query: {
+      fromChild1: 'true',
+      counter: counter.value.toString(),
+      input: inputValue.value,
+      timestamp: Date.now().toString(),
+    },
+  })
+}
+
+// 生命周期
+onMounted(() => {
+  mountTime.value = new Date().toLocaleString()
+  componentId.value = Math.random().toString(36).substr(2, 9)
+
+  // 从 sessionStorage 获取访问次数
+  const stored = sessionStorage.getItem('child1-visit-count')
+  visitCount.value = stored ? Number.parseInt(stored) + 1 : 1
+  sessionStorage.setItem('child1-visit-count', visitCount.value.toString())
+
+  console.log('Child1 组件已挂载')
+})
+
+onUnmounted(() => {
+  console.log('Child1 组件已卸载')
+})
+</script>
+
 <template>
   <div class="nested-child1">
     <div class="header-section">
@@ -45,11 +120,11 @@
         <div class="control-group">
           <label>计数器:</label>
           <div class="counter">
-            <button @click="decrementCounter" class="btn btn-sm btn-secondary">
+            <button class="btn btn-sm btn-secondary" @click="decrementCounter">
               -
             </button>
             <span class="counter-value">{{ counter }}</span>
-            <button @click="incrementCounter" class="btn btn-sm btn-secondary">
+            <button class="btn btn-sm btn-secondary" @click="incrementCounter">
               +
             </button>
           </div>
@@ -90,88 +165,13 @@
         <RouterLink to="/nested/child2" class="btn btn-secondary">
           前往子路由 2
         </RouterLink>
-        <button @click="navigateWithState" class="btn btn-info">
+        <button class="btn btn-info" @click="navigateWithState">
           带状态导航
         </button>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRouter } from '@ldesign/router'
-
-interface Props {
-  routeInfo?: {
-    path: string
-    name?: string
-    params: Record<string, any>
-    query: Record<string, any>
-    hash: string
-  }
-}
-
-defineProps<Props>()
-
-const router = useRouter()
-
-// 组件状态
-const mountTime = ref('')
-const visitCount = ref(0)
-const componentId = ref('')
-const counter = ref(0)
-const inputValue = ref('')
-const selectedOption = ref('')
-
-// 计算属性
-const componentData = computed(() => ({
-  counter: counter.value,
-  inputValue: inputValue.value,
-  selectedOption: selectedOption.value,
-  mountTime: mountTime.value,
-  visitCount: visitCount.value,
-  componentId: componentId.value,
-}))
-
-// 方法
-const incrementCounter = () => {
-  counter.value++
-}
-
-const decrementCounter = () => {
-  counter.value--
-}
-
-const navigateWithState = () => {
-  router.push({
-    path: '/nested/child2',
-    query: {
-      fromChild1: 'true',
-      counter: counter.value.toString(),
-      input: inputValue.value,
-      timestamp: Date.now().toString(),
-    },
-  })
-}
-
-// 生命周期
-onMounted(() => {
-  mountTime.value = new Date().toLocaleString()
-  componentId.value = Math.random().toString(36).substr(2, 9)
-
-  // 从 sessionStorage 获取访问次数
-  const stored = sessionStorage.getItem('child1-visit-count')
-  visitCount.value = stored ? parseInt(stored) + 1 : 1
-  sessionStorage.setItem('child1-visit-count', visitCount.value.toString())
-
-  console.log('Child1 组件已挂载')
-})
-
-onUnmounted(() => {
-  console.log('Child1 组件已卸载')
-})
-</script>
 
 <style lang="less" scoped>
 .nested-child1 {

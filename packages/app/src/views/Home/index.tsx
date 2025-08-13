@@ -1,6 +1,9 @@
 import type { EngineImpl } from '@ldesign/engine'
-import { useRoute, useRouter } from '@ldesign/router'
+// 导入类型
+import type { DeviceInfo, Post, RouteInfo, User, UserInfo } from './types'
 import { useDevice } from '@ldesign/device'
+
+import { useRoute, useRouter } from '@ldesign/router'
 
 import {
   computed,
@@ -9,20 +12,17 @@ import {
   onMounted,
   ref,
 } from 'vue'
+import CreatePostForm from './components/CreatePostForm'
+import HttpActionsPanel from './components/HttpActionsPanel'
+import HttpStatsPanel from './components/HttpStatsPanel'
+import { DeviceIndicator, InfoItem, InfoPanel } from './components/InfoPanel'
+import PostCard from './components/PostCard'
 
 // 导入子组件
 import UserCard from './components/UserCard'
-import PostCard from './components/PostCard'
-import HttpStatsPanel from './components/HttpStatsPanel'
-import { InfoPanel, InfoItem, DeviceIndicator } from './components/InfoPanel'
-import HttpActionsPanel from './components/HttpActionsPanel'
-import CreatePostForm from './components/CreatePostForm'
 
 // 导入自定义 Hook
 import { useHttpDemo } from './hooks/useHttpDemo'
-
-// 导入类型
-import type { User, Post, DeviceInfo, RouteInfo, UserInfo } from './types'
 
 // 导入样式
 import './Home.less'
@@ -108,6 +108,10 @@ export default defineComponent({
       router.push('/login')
     }
 
+    const handleGoToApiDemo = () => {
+      router.push('/api-demo')
+    }
+
     const handleRefreshPage = () => {
       window.location.reload()
     }
@@ -172,7 +176,10 @@ export default defineComponent({
             <div class='welcome-content'>
               <h2 class='welcome-title'>欢迎使用 LDesign Engine</h2>
               <p class='welcome-message'>登录成功</p>
-              <p class='welcome-info'>当前语言: {locale.value}</p>
+              <p class='welcome-info'>
+                当前语言:
+                {locale.value}
+              </p>
             </div>
           </section>
 
@@ -273,6 +280,10 @@ export default defineComponent({
                   <li class='feature-item'>
                     <span class='feature-icon'>📝</span>
                     <span class='feature-text'>日志记录</span>
+                  </li>
+                  <li class='feature-item'>
+                    <span class='feature-icon'>🚀</span>
+                    <span class='feature-text'>API 管理系统</span>
                   </li>
                 </ul>
               </InfoPanel>
@@ -385,6 +396,10 @@ export default defineComponent({
         {/* 页面底部操作 */}
         <footer class='page-footer'>
           <div class='footer-actions'>
+            <button class='footer-btn primary' onClick={handleGoToApiDemo}>
+              <span class='btn-icon'>🚀</span>
+              <span class='btn-text'>API 演示</span>
+            </button>
             <button class='footer-btn primary' onClick={handleGoToLogin}>
               <span class='btn-icon'>🔑</span>
               <span class='btn-text'>{t('pages.home.goToLogin')}</span>

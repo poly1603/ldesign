@@ -1,7 +1,7 @@
-const http = require('http')
-const fs = require('fs')
-const path = require('path')
-const url = require('url')
+const fs = require('node:fs')
+const http = require('node:http')
+const path = require('node:path')
+const url = require('node:url')
 
 const PORT = 3001
 

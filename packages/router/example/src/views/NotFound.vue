@@ -1,89 +1,6 @@
-<template>
-  <div class="not-found">
-    <div class="not-found-container">
-      <div class="error-illustration">
-        <div class="error-code">404</div>
-        <div class="error-icon">🔍</div>
-      </div>
-
-      <div class="error-content">
-        <h1>页面未找到</h1>
-        <p>抱歉，您访问的页面不存在或已被移动。</p>
-
-        <div class="error-details">
-          <div class="detail-item">
-            <strong>请求路径:</strong> {{ route.path }}
-          </div>
-          <div class="detail-item">
-            <strong>错误时间:</strong> {{ errorTime }}
-          </div>
-          <div class="detail-item">
-            <strong>来源页面:</strong> {{ referrer || '直接访问' }}
-          </div>
-        </div>
-
-        <div class="error-actions">
-          <button @click="goHome" class="btn btn-primary btn-lg">
-            返回首页
-          </button>
-          <button @click="goBack" class="btn btn-secondary btn-lg">
-            返回上页
-          </button>
-          <button @click="refresh" class="btn btn-info btn-lg">刷新页面</button>
-        </div>
-
-        <div class="suggestions">
-          <h3>您可能在寻找:</h3>
-          <div class="suggestion-links">
-            <RouterLink
-              v-for="suggestion in suggestions"
-              :key="suggestion.path"
-              :to="suggestion.path"
-              class="suggestion-link"
-            >
-              <span class="suggestion-icon">{{ suggestion.icon }}</span>
-              <div class="suggestion-content">
-                <div class="suggestion-title">{{ suggestion.title }}</div>
-                <div class="suggestion-desc">{{ suggestion.description }}</div>
-              </div>
-            </RouterLink>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <h3>需要帮助？</h3>
-          <div class="help-options">
-            <div class="help-item">
-              <span class="help-icon">📧</span>
-              <div class="help-content">
-                <strong>联系支持</strong>
-                <p>发送邮件至 support@ldesign.com</p>
-              </div>
-            </div>
-            <div class="help-item">
-              <span class="help-icon">📚</span>
-              <div class="help-content">
-                <strong>查看文档</strong>
-                <p>访问我们的在线文档获取帮助</p>
-              </div>
-            </div>
-            <div class="help-item">
-              <span class="help-icon">🐛</span>
-              <div class="help-content">
-                <strong>报告问题</strong>
-                <p>在 GitHub 上提交 issue</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { RouterLink, useRouter, useRoute } from '@ldesign/router'
+import { RouterLink, useRoute, useRouter } from '@ldesign/router'
+import { onMounted, ref } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -130,11 +47,11 @@ const suggestions = [
   },
 ]
 
-const goHome = () => {
+function goHome() {
   router.push('/')
 }
 
-const goBack = () => {
+function goBack() {
   if (window.history.length > 1) {
     router.back()
   } else {
@@ -142,7 +59,7 @@ const goBack = () => {
   }
 }
 
-const refresh = () => {
+function refresh() {
   window.location.reload()
 }
 
@@ -154,6 +71,93 @@ onMounted(() => {
   console.warn(`404 Error: Page not found - ${route.path}`)
 })
 </script>
+
+<template>
+  <div class="not-found">
+    <div class="not-found-container">
+      <div class="error-illustration">
+        <div class="error-code">404</div>
+        <div class="error-icon">🔍</div>
+      </div>
+
+      <div class="error-content">
+        <h1>页面未找到</h1>
+        <p>抱歉，您访问的页面不存在或已被移动。</p>
+
+        <div class="error-details">
+          <div class="detail-item">
+            <strong>请求路径:</strong> {{ route.path }}
+          </div>
+          <div class="detail-item">
+            <strong>错误时间:</strong> {{ errorTime }}
+          </div>
+          <div class="detail-item">
+            <strong>来源页面:</strong> {{ referrer || '直接访问' }}
+          </div>
+        </div>
+
+        <div class="error-actions">
+          <button class="btn btn-primary btn-lg" @click="goHome">
+            返回首页
+          </button>
+          <button class="btn btn-secondary btn-lg" @click="goBack">
+            返回上页
+          </button>
+          <button class="btn btn-info btn-lg" @click="refresh">刷新页面</button>
+        </div>
+
+        <div class="suggestions">
+          <h3>您可能在寻找:</h3>
+          <div class="suggestion-links">
+            <RouterLink
+              v-for="suggestion in suggestions"
+              :key="suggestion.path"
+              :to="suggestion.path"
+              class="suggestion-link"
+            >
+              <span class="suggestion-icon">{{ suggestion.icon }}</span>
+              <div class="suggestion-content">
+                <div class="suggestion-title">
+                  {{ suggestion.title }}
+                </div>
+                <div class="suggestion-desc">
+                  {{ suggestion.description }}
+                </div>
+              </div>
+            </RouterLink>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h3>需要帮助？</h3>
+          <div class="help-options">
+            <div class="help-item">
+              <span class="help-icon">📧</span>
+              <div class="help-content">
+                <strong>联系支持</strong>
+                <p>发送邮件至 support@ldesign.com</p>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-icon">📚</span>
+              <div class="help-content">
+                <strong>查看文档</strong>
+                <p>访问我们的在线文档获取帮助</p>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-icon">🐛</span>
+              <div class="help-content">
+                <strong>报告问题</strong>
+                <p>在 GitHub 上提交 issue</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .not-found {

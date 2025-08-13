@@ -1,3 +1,72 @@
+<script setup lang="ts">
+import {
+  RouterLink,
+  RouterView,
+  useMatched,
+  useRoute,
+  useRouter,
+} from '@ldesign/router'
+import { computed, ref } from 'vue'
+
+const route = useRoute()
+const router = useRouter()
+const matched = useMatched()
+
+const paramValue = ref('')
+
+// 匹配的路由
+const matchedRoutes = computed(() => matched.value)
+
+// 路由深度
+const routeDepth = computed(() => {
+  return route.path.split('/').filter(Boolean).length
+})
+
+// 面包屑导航
+const breadcrumbs = computed(() => {
+  const crumbs = []
+  const pathSegments = route.path.split('/').filter(Boolean)
+
+  crumbs.push({ name: '首页', path: '/' })
+
+  let currentPath = ''
+  pathSegments.forEach((segment, index) => {
+    currentPath += `/${segment}`
+
+    if (index === 0) {
+      crumbs.push({ name: '嵌套路由', path: currentPath })
+    } else {
+      crumbs.push({
+        name: `子路由 ${index}`,
+        path: currentPath,
+      })
+    }
+  })
+
+  return crumbs
+})
+
+// 导航方法
+function navigateToChild1() {
+  router.push('/nested/child1')
+}
+
+function navigateToChild2() {
+  router.push('/nested/child2')
+}
+
+function navigateToDefault() {
+  router.push('/nested')
+}
+
+function navigateWithParams() {
+  router.push({
+    path: '/nested/child1',
+    query: { param: paramValue.value, timestamp: Date.now() },
+  })
+}
+</script>
+
 <template>
   <div class="nested-routing">
     <div class="card">
@@ -104,13 +173,13 @@
       <div class="nested-actions">
         <div class="action-group">
           <h3>编程式导航</h3>
-          <button @click="navigateToChild1" class="btn btn-primary">
+          <button class="btn btn-primary" @click="navigateToChild1">
             导航到子路由 1
           </button>
-          <button @click="navigateToChild2" class="btn btn-secondary">
+          <button class="btn btn-secondary" @click="navigateToChild2">
             导航到子路由 2
           </button>
-          <button @click="navigateToDefault" class="btn btn-success">
+          <button class="btn btn-success" @click="navigateToDefault">
             返回默认页面
           </button>
         </div>
@@ -125,7 +194,7 @@
               placeholder="输入参数值"
             />
           </div>
-          <button @click="navigateWithParams" class="btn btn-info">
+          <button class="btn btn-info" @click="navigateWithParams">
             带参数导航
           </button>
         </div>
@@ -133,75 +202,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import {
-  RouterLink,
-  RouterView,
-  useRoute,
-  useRouter,
-  useMatched,
-} from '@ldesign/router'
-
-const route = useRoute()
-const router = useRouter()
-const matched = useMatched()
-
-const paramValue = ref('')
-
-// 匹配的路由
-const matchedRoutes = computed(() => matched.value)
-
-// 路由深度
-const routeDepth = computed(() => {
-  return route.path.split('/').filter(Boolean).length
-})
-
-// 面包屑导航
-const breadcrumbs = computed(() => {
-  const crumbs = []
-  const pathSegments = route.path.split('/').filter(Boolean)
-
-  crumbs.push({ name: '首页', path: '/' })
-
-  let currentPath = ''
-  pathSegments.forEach((segment, index) => {
-    currentPath += `/${segment}`
-
-    if (index === 0) {
-      crumbs.push({ name: '嵌套路由', path: currentPath })
-    } else {
-      crumbs.push({
-        name: `子路由 ${index}`,
-        path: currentPath,
-      })
-    }
-  })
-
-  return crumbs
-})
-
-// 导航方法
-const navigateToChild1 = () => {
-  router.push('/nested/child1')
-}
-
-const navigateToChild2 = () => {
-  router.push('/nested/child2')
-}
-
-const navigateToDefault = () => {
-  router.push('/nested')
-}
-
-const navigateWithParams = () => {
-  router.push({
-    path: '/nested/child1',
-    query: { param: paramValue.value, timestamp: Date.now() },
-  })
-}
-</script>
 
 <style lang="less" scoped>
 .nested-routing {

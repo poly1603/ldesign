@@ -1,14 +1,5 @@
 import type { App } from 'vue'
 
-// 手动定义类型以避免导入问题
-type Ref<T = any> = {
-  value: T
-}
-
-type ComputedRef<T = any> = {
-  readonly value: T
-}
-
 import type {
   I18nInstance,
   I18nOptions,
@@ -17,6 +8,15 @@ import type {
   TranslationOptions,
   TranslationParams,
 } from '../core/types'
+
+// 手动定义类型以避免导入问题
+interface Ref<T = any> {
+  value: T
+}
+
+interface ComputedRef<T = any> {
+  readonly value: T
+}
 
 /**
  * Vue I18n 插件选项

@@ -2,8 +2,8 @@ import type { App, Plugin } from 'vue'
 import type { HttpClient, RequestConfig } from '@/types'
 import type { HttpPluginOptions } from '@/types/vue'
 import { provide, ref } from 'vue'
-import { HttpClientImpl } from '@/client'
 import { createAdapter } from '@/adapters'
+import { HttpClientImpl } from '@/client'
 import { HTTP_CLIENT_KEY, HTTP_CONFIG_KEY } from './useHttp'
 
 /**

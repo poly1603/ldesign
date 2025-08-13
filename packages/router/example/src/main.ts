@@ -1,6 +1,6 @@
+import { createRouter, createWebHistory } from '@ldesign/router'
 import { createApp } from 'vue'
 import App from './App.vue'
-import { createRouter, createWebHistory } from '@ldesign/router'
 import { routes } from './router/routes'
 
 // 导入样式

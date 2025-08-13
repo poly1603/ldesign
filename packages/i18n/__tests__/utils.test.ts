@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
-
 import type { NestedObject } from '../src/core/types'
+
+import { describe, expect, it } from 'vitest'
 import {
   extractInterpolationKeys,
   hasInterpolation,

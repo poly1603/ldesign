@@ -242,9 +242,9 @@ function App() {
       </nav>
 
       <main className='app-main'>
-        {error && <div className='alert alert-error'>❌ {error}</div>}
+        {error && <div className='alert alert-error'>❌{error}</div>}
 
-        {success && <div className='alert alert-success'>✅ {success}</div>}
+        {success && <div className='alert alert-success'>✅{success}</div>}
 
         <div className='tab-content'>{renderTabContent()}</div>
       </main>

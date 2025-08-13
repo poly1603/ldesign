@@ -1,13 +1,3 @@
-import { hasInterpolation, interpolate } from '../utils/interpolation'
-import { getNestedValue } from '../utils/path'
-import {
-  hasPluralExpression,
-  processPluralization,
-} from '../utils/pluralization'
-
-import { createDetector } from './detector'
-import { DefaultLoader } from './loader'
-import { createStorage, LRUCacheImpl } from './storage'
 import type {
   BatchTranslationResult,
   Detector,
@@ -23,6 +13,16 @@ import type {
   TranslationOptions,
   TranslationParams,
 } from './types'
+import { hasInterpolation, interpolate } from '../utils/interpolation'
+import { getNestedValue } from '../utils/path'
+
+import {
+  hasPluralExpression,
+  processPluralization,
+} from '../utils/pluralization'
+import { createDetector } from './detector'
+import { DefaultLoader } from './loader'
+import { createStorage, LRUCacheImpl } from './storage'
 
 /**
  * 默认配置选项

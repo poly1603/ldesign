@@ -1,14 +1,14 @@
 import type { App } from 'vue'
 
-import { I18n } from '../core/i18n'
 import type { I18nInstance, I18nOptions } from '../core/types'
-
-import { I18N_INJECTION_KEY } from './composables'
 import type {
   I18nDirectiveBinding,
   VueI18nOptions,
   VueI18nPlugin,
 } from './types'
+
+import { I18n } from '../core/i18n'
+import { I18N_INJECTION_KEY } from './composables'
 
 /**
  * 默认插件选项

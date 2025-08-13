@@ -1,257 +1,248 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form 组件测试</title>
-  <script type="importmap">
-    {
-      "imports": {
-        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
-        "@ldesign/form": "../dist/index.mjs"
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form 组件测试</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+          "@ldesign/form": "../dist/index.mjs"
+        }
       }
-    }
-  </script>
-  <link rel="stylesheet" href="../dist/index.css">
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    .content {
-      display: flex;
-      min-height: 600px;
-    }
-    .config-panel {
-      width: 350px;
-      background: #fafafa;
-      border-right: 1px solid #e8e8e8;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .form-panel {
-      flex: 1;
-      padding: 20px;
-    }
-    .config-section {
-      margin-bottom: 24px;
-    }
-    .config-section h3 {
-      margin: 0 0 12px 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: #262626;
-    }
-    .config-item {
-      margin-bottom: 12px;
-    }
-    .config-item label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      color: #666;
-    }
-    .config-item input, .config-item select {
-      width: 100%;
-      padding: 6px 8px;
-      border: 1px solid #d9d9d9;
-      border-radius: 4px;
-      font-size: 12px;
-    }
-    .config-item input[type="checkbox"] {
-      width: auto;
-      margin-right: 6px;
-    }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <div class="container">
-      <div class="header">
-        <h1>LDesign Form 组件演示</h1>
-        <p>实时配置表单组件的各种属性</p>
-      </div>
-      <div class="content">
-        <div class="config-panel">
-          <div class="config-section">
-            <h3>布局设置</h3>
-            <div class="config-item">
-              <label>
-                <input type="checkbox" v-model="config.autoColumns"> 自动计算列数
-              </label>
-            </div>
-            <div class="config-item" v-if="!config.autoColumns">
-              <label>固定列数</label>
-              <input type="number" v-model.number="config.columns" min="1" max="6">
-            </div>
-            <div class="config-item">
-              <label>最小列宽 (px)</label>
-              <input type="number" v-model.number="config.minColumnWidth" min="200" max="600">
-            </div>
-            <div class="config-item">
-              <label>水平间距 (px)</label>
-              <input type="number" v-model.number="config.horizontalGap" min="0" max="50">
-            </div>
-            <div class="config-item">
-              <label>垂直间距 (px)</label>
-              <input type="number" v-model.number="config.verticalGap" min="0" max="50">
-            </div>
-          </div>
-
-          <div class="config-section">
-            <h3>标签设置</h3>
-            <div class="config-item">
-              <label>标签位置</label>
-              <select v-model="config.labelPosition">
-                <option value="top">顶部</option>
-                <option value="left">左侧</option>
-                <option value="right">右侧</option>
-              </select>
-            </div>
-            <div class="config-item">
-              <label>标签对齐</label>
-              <select v-model="config.labelAlign">
-                <option value="left">左对齐</option>
-                <option value="center">居中</option>
-                <option value="right">右对齐</option>
-              </select>
-            </div>
-            <div class="config-item">
-              <label>
-                <input type="checkbox" v-model="config.autoLabelWidth"> 自动标签宽度
-              </label>
-            </div>
-            <div class="config-item" v-if="!config.autoLabelWidth">
-              <label>标签宽度 (px)</label>
-              <input type="number" v-model.number="config.labelWidth" min="60" max="200">
-            </div>
-            <div class="config-item">
-              <label>
-                <input type="checkbox" v-model="config.showColon"> 显示冒号
-              </label>
-            </div>
-          </div>
-
-          <div class="config-section">
-            <h3>表单设置</h3>
-            <div class="config-item">
-              <label>表单大小</label>
-              <select v-model="config.size">
-                <option value="small">小</option>
-                <option value="medium">中</option>
-                <option value="large">大</option>
-              </select>
-            </div>
-            <div class="config-item">
-              <label>
-                <input type="checkbox" v-model="config.disabled"> 禁用状态
-              </label>
-            </div>
-            <div class="config-item">
-              <label>
-                <input type="checkbox" v-model="config.readonly"> 只读状态
-              </label>
-            </div>
-          </div>
+    </script>
+    <link rel="stylesheet" href="../dist/index.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      .content {
+        display: flex;
+        min-height: 600px;
+      }
+      .config-panel {
+        width: 350px;
+        background: #fafafa;
+        border-right: 1px solid #e8e8e8;
+        padding: 20px;
+        overflow-y: auto;
+      }
+      .form-panel {
+        flex: 1;
+        padding: 20px;
+      }
+      .config-section {
+        margin-bottom: 24px;
+      }
+      .config-section h3 {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #262626;
+      }
+      .config-item {
+        margin-bottom: 12px;
+      }
+      .config-item label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 12px;
+        color: #666;
+      }
+      .config-item input,
+      .config-item select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      .config-item input[type='checkbox'] {
+        width: auto;
+        margin-right: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="container">
+        <div class="header">
+          <h1>LDesign Form 组件演示</h1>
+          <p>实时配置表单组件的各种属性</p>
         </div>
+        <div class="content">
+          <div class="config-panel">
+            <div class="config-section">
+              <h3>布局设置</h3>
+              <div class="config-item">
+                <label> <input type="checkbox" v-model="config.autoColumns" /> 自动计算列数 </label>
+              </div>
+              <div class="config-item" v-if="!config.autoColumns">
+                <label>固定列数</label>
+                <input type="number" v-model.number="config.columns" min="1" max="6" />
+              </div>
+              <div class="config-item">
+                <label>最小列宽 (px)</label>
+                <input type="number" v-model.number="config.minColumnWidth" min="200" max="600" />
+              </div>
+              <div class="config-item">
+                <label>水平间距 (px)</label>
+                <input type="number" v-model.number="config.horizontalGap" min="0" max="50" />
+              </div>
+              <div class="config-item">
+                <label>垂直间距 (px)</label>
+                <input type="number" v-model.number="config.verticalGap" min="0" max="50" />
+              </div>
+            </div>
 
-        <div class="form-panel">
-          <form-input
-            v-for="field in formFields"
-            :key="field.name"
-            v-model="formData[field.name]"
-            :label="field.label"
-            :placeholder="field.placeholder"
-            :required="field.required"
-            :type="field.type"
-            :label-position="config.labelPosition"
-            :label-align="config.labelAlign"
-            :label-width="config.autoLabelWidth ? undefined : config.labelWidth"
-            :show-colon="config.showColon"
-            :size="config.size"
-            :disabled="config.disabled"
-            :readonly="config.readonly"
-            :style="fieldStyle"
-          />
+            <div class="config-section">
+              <h3>标签设置</h3>
+              <div class="config-item">
+                <label>标签位置</label>
+                <select v-model="config.labelPosition">
+                  <option value="top">顶部</option>
+                  <option value="left">左侧</option>
+                  <option value="right">右侧</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <label>标签对齐</label>
+                <select v-model="config.labelAlign">
+                  <option value="left">左对齐</option>
+                  <option value="center">居中</option>
+                  <option value="right">右对齐</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <label> <input type="checkbox" v-model="config.autoLabelWidth" /> 自动标签宽度 </label>
+              </div>
+              <div class="config-item" v-if="!config.autoLabelWidth">
+                <label>标签宽度 (px)</label>
+                <input type="number" v-model.number="config.labelWidth" min="60" max="200" />
+              </div>
+              <div class="config-item">
+                <label> <input type="checkbox" v-model="config.showColon" /> 显示冒号 </label>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <h3>表单设置</h3>
+              <div class="config-item">
+                <label>表单大小</label>
+                <select v-model="config.size">
+                  <option value="small">小</option>
+                  <option value="medium">中</option>
+                  <option value="large">大</option>
+                </select>
+              </div>
+              <div class="config-item">
+                <label> <input type="checkbox" v-model="config.disabled" /> 禁用状态 </label>
+              </div>
+              <div class="config-item">
+                <label> <input type="checkbox" v-model="config.readonly" /> 只读状态 </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-panel">
+            <form-input
+              v-for="field in formFields"
+              :key="field.name"
+              v-model="formData[field.name]"
+              :label="field.label"
+              :placeholder="field.placeholder"
+              :required="field.required"
+              :type="field.type"
+              :label-position="config.labelPosition"
+              :label-align="config.labelAlign"
+              :label-width="config.autoLabelWidth ? undefined : config.labelWidth"
+              :show-colon="config.showColon"
+              :size="config.size"
+              :disabled="config.disabled"
+              :readonly="config.readonly"
+              :style="fieldStyle"
+            />
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script type="module">
-    import { createApp, ref, computed } from 'vue'
-    import { FormInput } from '@ldesign/form'
+    <script type="module">
+      import { createApp, ref, computed } from 'vue'
+      import { FormInput } from '@ldesign/form'
 
-    const app = createApp({
-      components: {
-        FormInput
-      },
-      setup() {
-        const config = ref({
-          autoColumns: true,
-          columns: 2,
-          minColumnWidth: 300,
-          horizontalGap: 16,
-          verticalGap: 16,
-          labelPosition: 'top',
-          labelAlign: 'left',
-          autoLabelWidth: true,
-          labelWidth: 100,
-          showColon: false,
-          size: 'medium',
-          disabled: false,
-          readonly: false
-        })
+      const app = createApp({
+        components: {
+          FormInput,
+        },
+        setup() {
+          const config = ref({
+            autoColumns: true,
+            columns: 2,
+            minColumnWidth: 300,
+            horizontalGap: 16,
+            verticalGap: 16,
+            labelPosition: 'top',
+            labelAlign: 'left',
+            autoLabelWidth: true,
+            labelWidth: 100,
+            showColon: false,
+            size: 'medium',
+            disabled: false,
+            readonly: false,
+          })
 
-        const formData = ref({
-          name: '',
-          email: '',
-          phone: '',
-          address: '',
-          company: '',
-          position: ''
-        })
+          const formData = ref({
+            name: '',
+            email: '',
+            phone: '',
+            address: '',
+            company: '',
+            position: '',
+          })
 
-        const formFields = [
-          { name: 'name', label: '姓名', placeholder: '请输入姓名', required: true, type: 'text' },
-          { name: 'email', label: '邮箱', placeholder: '请输入邮箱', required: true, type: 'email' },
-          { name: 'phone', label: '电话', placeholder: '请输入电话', required: false, type: 'tel' },
-          { name: 'address', label: '地址', placeholder: '请输入地址', required: false, type: 'text' },
-          { name: 'company', label: '公司', placeholder: '请输入公司名称', required: false, type: 'text' },
-          { name: 'position', label: '职位', placeholder: '请输入职位', required: false, type: 'text' }
-        ]
+          const formFields = [
+            { name: 'name', label: '姓名', placeholder: '请输入姓名', required: true, type: 'text' },
+            { name: 'email', label: '邮箱', placeholder: '请输入邮箱', required: true, type: 'email' },
+            { name: 'phone', label: '电话', placeholder: '请输入电话', required: false, type: 'tel' },
+            { name: 'address', label: '地址', placeholder: '请输入地址', required: false, type: 'text' },
+            { name: 'company', label: '公司', placeholder: '请输入公司名称', required: false, type: 'text' },
+            { name: 'position', label: '职位', placeholder: '请输入职位', required: false, type: 'text' },
+          ]
 
-        const fieldStyle = computed(() => ({
-          marginBottom: `${config.value.verticalGap}px`,
-          marginRight: `${config.value.horizontalGap}px`
-        }))
+          const fieldStyle = computed(() => ({
+            marginBottom: `${config.value.verticalGap}px`,
+            marginRight: `${config.value.horizontalGap}px`,
+          }))
 
-        return {
-          config,
-          formData,
-          formFields,
-          fieldStyle
-        }
-      }
-    })
+          return {
+            config,
+            formData,
+            formFields,
+            fieldStyle,
+          }
+        },
+      })
 
-    app.mount('#app')
-  </script>
-</body>
+      app.mount('#app')
+    </script>
+  </body>
 </html>

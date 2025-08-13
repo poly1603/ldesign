@@ -2,30 +2,30 @@
  * @ldesign/router 工具函数测试
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { NavigationFailureType } from '../src'
 import {
-  normalizePath,
-  joinPaths,
-  parsePathParams,
   buildPath,
-  parseQuery,
-  stringifyQuery,
-  mergeQuery,
-  parseURL,
-  stringifyURL,
-  normalizeParams,
-  isSameRouteLocation,
-  isNavigationFailure,
   createNavigationFailure,
-  matchPath,
   extractParams,
   getRouteDepth,
   isChildRoute,
+  isNavigationFailure,
+  isSameRouteLocation,
+  joinPaths,
+  matchPath,
+  mergeQuery,
+  normalizeParams,
+  normalizePath,
+  parsePathParams,
+  parseQuery,
+  parseURL,
+  stringifyQuery,
+  stringifyURL,
 } from '../src/utils'
-import { NavigationFailureType } from '../src'
 
-describe('Utils', () => {
-  describe('Path Processing', () => {
+describe('utils', () => {
+  describe('path Processing', () => {
     describe('normalizePath', () => {
       it('should normalize path correctly', () => {
         expect(normalizePath('/')).toBe('/')
@@ -97,7 +97,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('Query Processing', () => {
+  describe('query Processing', () => {
     describe('parseQuery', () => {
       it('should parse query string', () => {
         expect(parseQuery('?name=john&age=30')).toEqual({
@@ -162,7 +162,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('URL Processing', () => {
+  describe('uRL Processing', () => {
     describe('parseURL', () => {
       it('should parse URL correctly', () => {
         expect(parseURL('/path?name=john&age=30#section1')).toEqual({
@@ -205,7 +205,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('Route Location Processing', () => {
+  describe('route Location Processing', () => {
     describe('normalizeParams', () => {
       it('should normalize route parameters', () => {
         expect(normalizeParams({ id: 123, name: 'john' })).toEqual({
@@ -250,7 +250,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('Navigation Failure', () => {
+  describe('navigation Failure', () => {
     describe('createNavigationFailure', () => {
       it('should create navigation failure object', () => {
         const from = { path: '/from' } as any
@@ -292,7 +292,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('Route Matching', () => {
+  describe('route Matching', () => {
     describe('matchPath', () => {
       it('should match static paths', () => {
         expect(matchPath('/user', '/user')).toBe(true)
@@ -331,7 +331,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('Route Utilities', () => {
+  describe('route Utilities', () => {
     describe('getRouteDepth', () => {
       it('should calculate route depth', () => {
         expect(getRouteDepth({ path: '/' } as any)).toBe(0)

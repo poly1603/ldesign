@@ -5,19 +5,13 @@
  */
 
 import type {
-  RouteRecordRaw,
-  RouteRecordNormalized,
-  RouteLocationRaw,
   RouteLocationNormalized,
+  RouteLocationRaw,
   RouteParams,
-  RouteMeta,
+  RouteRecordNormalized,
+  RouteRecordRaw,
 } from '../types'
-import {
-  PARAM_RE,
-  OPTIONAL_PARAM_RE,
-  WILDCARD_RE,
-  ROOT_PATH,
-} from './constants'
+import { OPTIONAL_PARAM_RE, PARAM_RE } from './constants'
 
 // ==================== 匹配器节点类型 ====================
 
@@ -196,10 +190,10 @@ export class RouteMatcher {
     }
 
     if (!parentPath) {
-      return '/' + path
+      return `/${path}`
     }
 
-    return parentPath.replace(/\/$/, '') + '/' + path
+    return `${parentPath.replace(/\/$/, '')}/${path}`
   }
 
   /**
@@ -457,11 +451,11 @@ export class RouteMatcher {
 
     if (query && Object.keys(query).length > 0) {
       const queryString = new URLSearchParams(query).toString()
-      fullPath += '?' + queryString
+      fullPath += `?${queryString}`
     }
 
     if (hash) {
-      fullPath += '#' + hash.replace(/^#/, '')
+      fullPath += `#${hash.replace(/^#/, '')}`
     }
 
     return fullPath

@@ -17,6 +17,16 @@ export {
 // 核心类导出
 export { HttpClientImpl as HttpClient } from './client'
 
+// Engine 插件导出
+export {
+  createHttpEnginePlugin,
+  defaultHttpEnginePlugin,
+  httpPlugin,
+} from './engine'
+
+// Engine 插件类型导出
+export type { HttpEnginePluginOptions } from './engine'
+
 // 拦截器导出
 export {
   contentTypeInterceptor,
@@ -91,16 +101,6 @@ export {
   RetryManager,
   TimeoutManager,
 } from './utils/error'
-
-// Engine 插件导出
-export {
-  createHttpEnginePlugin,
-  defaultHttpEnginePlugin,
-  httpPlugin,
-} from './engine'
-
-// Engine 插件类型导出
-export type { HttpEnginePluginOptions } from './engine'
 
 // Vue 相关导出
 export * from './vue'

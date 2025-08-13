@@ -5,8 +5,8 @@
  */
 
 import type { App, Component } from 'vue'
-import type { Router, RouteLocationNormalized } from '../types'
-import type { CacheStrategy, CacheItem, CacheConfig } from '../components/types'
+import type { CacheConfig, CacheItem, CacheStrategy } from '../components/types'
+import type { RouteLocationNormalized, Router } from '../types'
 
 // ==================== 缓存存储接口 ====================
 
@@ -14,13 +14,13 @@ import type { CacheStrategy, CacheItem, CacheConfig } from '../components/types'
  * 缓存存储接口
  */
 interface CacheStorage {
-  get(key: string): CacheItem | null
-  set(key: string, item: CacheItem): void
-  has(key: string): boolean
-  delete(key: string): boolean
-  clear(): void
-  size(): number
-  keys(): string[]
+  get: (key: string) => CacheItem | null
+  set: (key: string, item: CacheItem) => void
+  has: (key: string) => boolean
+  delete: (key: string) => boolean
+  clear: () => void
+  size: () => number
+  keys: () => string[]
 }
 
 // ==================== 内存缓存存储 ====================

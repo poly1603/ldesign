@@ -4,28 +4,28 @@
  * 路由器的主要实现，负责路由管理、导航控制和生命周期管理
  */
 
-import { ref, reactive, computed, nextTick } from 'vue'
-import type { Ref, App } from 'vue'
+import type { App, Ref } from 'vue'
 import type {
-  Router,
-  RouterOptions,
-  RouteRecordRaw,
-  RouteRecordNormalized,
-  RouteLocationRaw,
-  RouteLocationNormalized,
+  HistoryLocation,
+  NavigationFailure,
   NavigationGuard,
   NavigationHookAfter,
-  NavigationFailure,
-  HistoryLocation,
   NavigationInformation,
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  Router,
+  RouteRecordNormalized,
+  RouteRecordRaw,
+  RouterOptions,
 } from '../types'
-import { NavigationFailureType } from './constants'
-import { RouteMatcher } from './matcher'
+import { ref } from 'vue'
 import {
-  START_LOCATION,
-  ROUTER_INJECTION_SYMBOL,
+  NavigationFailureType,
   ROUTE_INJECTION_SYMBOL,
+  ROUTER_INJECTION_SYMBOL,
+  START_LOCATION,
 } from './constants'
+import { RouteMatcher } from './matcher'
 
 // ==================== 路由器实现 ====================
 
@@ -418,7 +418,7 @@ export class RouterImpl implements Router {
   private stringifyQuery(query: Record<string, any>): string {
     if (this.options.stringifyQuery) {
       const result = this.options.stringifyQuery(query)
-      return result ? '?' + result : ''
+      return result ? `?${result}` : ''
     }
 
     const params = new URLSearchParams()
@@ -430,7 +430,7 @@ export class RouterImpl implements Router {
     }
 
     const result = params.toString()
-    return result ? '?' + result : ''
+    return result ? `?${result}` : ''
   }
 
   private isSameRouteLocation(

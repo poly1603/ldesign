@@ -1,77 +1,3 @@
-<template>
-  <div class="home">
-    <div class="hero">
-      <h1 class="hero-title">@ldesign/router</h1>
-      <p class="hero-subtitle">现代化、高性能、类型安全的 Vue 路由库</p>
-      <div class="hero-actions">
-        <RouterLink to="/basic" class="btn btn-primary btn-lg"
-          >开始体验</RouterLink
-        >
-        <a
-          href="https://github.com/ldesign/ldesign"
-          class="btn btn-secondary btn-lg"
-          target="_blank"
-        >
-          查看源码
-        </a>
-      </div>
-    </div>
-
-    <div class="features">
-      <h2 class="section-title">核心特性</h2>
-      <div class="feature-grid">
-        <div
-          class="feature-card"
-          v-for="feature in features"
-          :key="feature.title"
-        >
-          <div class="feature-icon">{{ feature.icon }}</div>
-          <h3 class="feature-title">{{ feature.title }}</h3>
-          <p class="feature-description">{{ feature.description }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-links">
-      <h2 class="section-title">功能演示</h2>
-      <div class="demo-grid">
-        <RouterLink
-          v-for="demo in demos"
-          :key="demo.path"
-          :to="demo.path"
-          class="demo-card"
-        >
-          <div class="demo-icon">{{ demo.icon }}</div>
-          <h3 class="demo-title">{{ demo.title }}</h3>
-          <p class="demo-description">{{ demo.description }}</p>
-        </RouterLink>
-      </div>
-    </div>
-
-    <div class="stats">
-      <h2 class="section-title">性能统计</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-number">{{ stats.bundleSize }}</div>
-          <div class="stat-label">打包大小</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ stats.loadTime }}</div>
-          <div class="stat-label">加载时间</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ stats.features }}</div>
-          <div class="stat-label">功能特性</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ stats.coverage }}</div>
-          <div class="stat-label">测试覆盖率</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { RouterLink } from '@ldesign/router'
 
@@ -154,6 +80,100 @@ const stats = {
   coverage: '100%',
 }
 </script>
+
+<template>
+  <div class="home">
+    <div class="hero">
+      <h1 class="hero-title">@ldesign/router</h1>
+      <p class="hero-subtitle">现代化、高性能、类型安全的 Vue 路由库</p>
+      <div class="hero-actions">
+        <RouterLink to="/basic" class="btn btn-primary btn-lg">
+          开始体验
+        </RouterLink>
+        <a
+          href="https://github.com/ldesign/ldesign"
+          class="btn btn-secondary btn-lg"
+          target="_blank"
+        >
+          查看源码
+        </a>
+      </div>
+    </div>
+
+    <div class="features">
+      <h2 class="section-title">核心特性</h2>
+      <div class="feature-grid">
+        <div
+          v-for="feature in features"
+          :key="feature.title"
+          class="feature-card"
+        >
+          <div class="feature-icon">
+            {{ feature.icon }}
+          </div>
+          <h3 class="feature-title">
+            {{ feature.title }}
+          </h3>
+          <p class="feature-description">
+            {{ feature.description }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-links">
+      <h2 class="section-title">功能演示</h2>
+      <div class="demo-grid">
+        <RouterLink
+          v-for="demo in demos"
+          :key="demo.path"
+          :to="demo.path"
+          class="demo-card"
+        >
+          <div class="demo-icon">
+            {{ demo.icon }}
+          </div>
+          <h3 class="demo-title">
+            {{ demo.title }}
+          </h3>
+          <p class="demo-description">
+            {{ demo.description }}
+          </p>
+        </RouterLink>
+      </div>
+    </div>
+
+    <div class="stats">
+      <h2 class="section-title">性能统计</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">
+            {{ stats.bundleSize }}
+          </div>
+          <div class="stat-label">打包大小</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">
+            {{ stats.loadTime }}
+          </div>
+          <div class="stat-label">加载时间</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">
+            {{ stats.features }}
+          </div>
+          <div class="stat-label">功能特性</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">
+            {{ stats.coverage }}
+          </div>
+          <div class="stat-label">测试覆盖率</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .home {

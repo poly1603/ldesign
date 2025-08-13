@@ -1,3 +1,100 @@
+<script setup lang="ts">
+import { useNavigation, useRoute, useRouter } from '@ldesign/router'
+import { computed, onMounted, ref, watch } from 'vue'
+
+const route = useRoute()
+const router = useRouter()
+const navigation = useNavigation()
+
+// 响应式数据
+const queryParam = ref('')
+const navigationHistory = ref<
+  Array<{
+    time: string
+    from: string
+    to: string
+  }>
+>([])
+
+// 导航状态
+const navigationState = computed(() => ({
+  isNavigating: navigation.isNavigating.value,
+  direction: navigation.direction.value,
+  lastNavigationTime: navigation.lastNavigationTime.value,
+}))
+
+// 路由组合式 API 信息
+const routeComposableInfo = computed(() => ({
+  'route.path': route.path,
+  'route.name': route.name,
+  'route.params': route.params,
+  'route.query': route.query,
+  'route.meta': route.meta,
+  'router.currentRoute': router.currentRoute.value.path,
+}))
+
+// 导航方法
+function goHome() {
+  router.push('/')
+}
+
+function goToNested() {
+  router.push('/nested')
+}
+
+function goToDynamic() {
+  const id = Math.floor(Math.random() * 1000)
+  router.push(`/dynamic/${id}`)
+}
+
+function navigateWithQuery() {
+  router.push({
+    path: '/basic',
+    query: { param: queryParam.value, timestamp: Date.now() },
+  })
+}
+
+function goBack() {
+  router.back()
+}
+
+function goForward() {
+  router.forward()
+}
+
+function replace() {
+  router.replace({
+    path: '/basic',
+    query: { replaced: 'true', timestamp: Date.now() },
+  })
+}
+
+// 监听路由变化
+watch(
+  () => route.path,
+  (to, from) => {
+    if (from) {
+      navigationHistory.value.unshift({
+        time: new Date().toLocaleTimeString(),
+        from,
+        to,
+      })
+
+      // 只保留最近 5 条记录
+      if (navigationHistory.value.length > 5) {
+        navigationHistory.value = navigationHistory.value.slice(0, 5)
+      }
+    }
+  }
+)
+
+onMounted(() => {
+  console.log('BasicRouting 组件已挂载')
+  console.log('当前路由:', route)
+  console.log('路由器实例:', router)
+})
+</script>
+
 <template>
   <div class="basic-routing">
     <div class="card">
@@ -27,11 +124,11 @@
       <div class="navigation-demo">
         <div class="nav-group">
           <h3>基础导航</h3>
-          <button @click="goHome" class="btn btn-primary">返回首页</button>
-          <button @click="goToNested" class="btn btn-secondary">
+          <button class="btn btn-primary" @click="goHome">返回首页</button>
+          <button class="btn btn-secondary" @click="goToNested">
             前往嵌套路由
           </button>
-          <button @click="goToDynamic" class="btn btn-success">
+          <button class="btn btn-success" @click="goToDynamic">
             前往动态路由
           </button>
         </div>
@@ -46,16 +143,16 @@
               placeholder="输入查询参数"
             />
           </div>
-          <button @click="navigateWithQuery" class="btn btn-info">
+          <button class="btn btn-info" @click="navigateWithQuery">
             带查询参数导航
           </button>
         </div>
 
         <div class="nav-group">
           <h3>历史操作</h3>
-          <button @click="goBack" class="btn btn-warning">后退</button>
-          <button @click="goForward" class="btn btn-warning">前进</button>
-          <button @click="replace" class="btn btn-error">替换当前路由</button>
+          <button class="btn btn-warning" @click="goBack">后退</button>
+          <button class="btn btn-warning" @click="goForward">前进</button>
+          <button class="btn btn-error" @click="replace">替换当前路由</button>
         </div>
       </div>
     </div>
@@ -106,103 +203,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter, useNavigation } from '@ldesign/router'
-
-const route = useRoute()
-const router = useRouter()
-const navigation = useNavigation()
-
-// 响应式数据
-const queryParam = ref('')
-const navigationHistory = ref<
-  Array<{
-    time: string
-    from: string
-    to: string
-  }>
->([])
-
-// 导航状态
-const navigationState = computed(() => ({
-  isNavigating: navigation.isNavigating.value,
-  direction: navigation.direction.value,
-  lastNavigationTime: navigation.lastNavigationTime.value,
-}))
-
-// 路由组合式 API 信息
-const routeComposableInfo = computed(() => ({
-  'route.path': route.path,
-  'route.name': route.name,
-  'route.params': route.params,
-  'route.query': route.query,
-  'route.meta': route.meta,
-  'router.currentRoute': router.currentRoute.value.path,
-}))
-
-// 导航方法
-const goHome = () => {
-  router.push('/')
-}
-
-const goToNested = () => {
-  router.push('/nested')
-}
-
-const goToDynamic = () => {
-  const id = Math.floor(Math.random() * 1000)
-  router.push(`/dynamic/${id}`)
-}
-
-const navigateWithQuery = () => {
-  router.push({
-    path: '/basic',
-    query: { param: queryParam.value, timestamp: Date.now() },
-  })
-}
-
-const goBack = () => {
-  router.back()
-}
-
-const goForward = () => {
-  router.forward()
-}
-
-const replace = () => {
-  router.replace({
-    path: '/basic',
-    query: { replaced: 'true', timestamp: Date.now() },
-  })
-}
-
-// 监听路由变化
-watch(
-  () => route.path,
-  (to, from) => {
-    if (from) {
-      navigationHistory.value.unshift({
-        time: new Date().toLocaleTimeString(),
-        from: from,
-        to: to,
-      })
-
-      // 只保留最近 5 条记录
-      if (navigationHistory.value.length > 5) {
-        navigationHistory.value = navigationHistory.value.slice(0, 5)
-      }
-    }
-  }
-)
-
-onMounted(() => {
-  console.log('BasicRouting 组件已挂载')
-  console.log('当前路由:', route)
-  console.log('路由器实例:', router)
-})
-</script>
 
 <style lang="less" scoped>
 .basic-routing {

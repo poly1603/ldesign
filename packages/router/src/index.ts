@@ -7,227 +7,224 @@
 
 // ==================== 核心功能导出 ====================
 
-// 路由器核心
-export { createRouter } from './core/router'
-export type { RouterImpl } from './core/router'
+// Vue 组件
+export { RouterLink, RouterView } from './components'
+// 组件类型
+export type {
+  AnimationConfig,
+  CacheConfig,
+  AnimationType as ComponentAnimationType,
+  CacheStrategy as ComponentCacheStrategy,
+  PreloadStrategy as ComponentPreloadStrategy,
+  ComponentSize,
+  LinkVariant,
+  PerformanceConfig,
+  PerformanceMetrics,
+  PreloadConfig,
+  RouterLinkProps,
+  RouterLinkSlotProps,
+  RouterViewProps,
+  RouterViewSlotProps,
+} from './components/types'
+
+// 核心 Hooks
+export { useLink, useNavigation, useRoute, useRouter } from './composables'
+
+// 参数 Hooks
+export {
+  useHash,
+  useMatched,
+  useMeta,
+  useParams,
+  useQuery,
+} from './composables'
+
+// 守卫 Hooks
+export { onBeforeRouteLeave, onBeforeRouteUpdate } from './composables'
+
+// ==================== 类型定义导出 ====================
+
+// 工具 Hooks
+export { hasRoute, hasRouter } from './composables'
+
+// ==================== 组件导出 ====================
+
+// 组合式 API 类型
+export type { UseLinkOptions, UseLinkReturn } from './composables'
+
+// 常量
+export {
+  AnimationType,
+  CacheStrategy,
+  DEFAULT_LINK_ACTIVE_CLASS,
+  DEFAULT_LINK_EXACT_ACTIVE_CLASS,
+  DEFAULT_VIEW_NAME,
+  ErrorTypes,
+  NavigationFailureType,
+  PreloadStrategy,
+  START_LOCATION,
+} from './core/constants'
+
+// ==================== 组合式 API 导出 ====================
 
 // 历史管理
 export {
-  createWebHistory,
-  createWebHashHistory,
   createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory,
 } from './core/history'
 
 // 路由匹配
 export { RouteMatcher } from './core/matcher'
 
-// 常量
-export {
-  START_LOCATION,
-  DEFAULT_LINK_ACTIVE_CLASS,
-  DEFAULT_LINK_EXACT_ACTIVE_CLASS,
-  DEFAULT_VIEW_NAME,
-  NavigationFailureType,
-  ErrorTypes,
-  AnimationType,
-  PreloadStrategy,
-  CacheStrategy,
-} from './core/constants'
+// 路由器核心
+export { createRouter } from './core/router'
 
-// ==================== 类型定义导出 ====================
+export type { RouterImpl } from './core/router'
+
+// Engine 插件
+export {
+  createDefaultRouterEnginePlugin,
+  createRouterEnginePlugin,
+  routerPlugin,
+} from './engine'
+
+// ==================== 插件系统导出 ====================
+
+export type { RouterEnginePluginOptions } from './engine'
+export {
+  combineGuards,
+  createAuthGuard,
+  createLoadingGuard,
+  createPermissionGuard,
+  createProgressGuard,
+  createScrollGuard,
+  createTitleGuard,
+} from './guards'
+
+export type {
+  AuthChecker,
+  AuthGuardOptions,
+  LoadingGuardOptions,
+  PermissionChecker,
+  PermissionGuardOptions,
+  ProgressGuardOptions,
+  ScrollGuardOptions,
+  TitleGuardOptions,
+} from './guards'
+// 动画插件
+export {
+  ANIMATION_PRESETS,
+  AnimationManager,
+  createAnimationConfig,
+  createAnimationPlugin,
+  getAnimationDuration,
+  supportsAnimations,
+} from './plugins/animation'
+
+export type { AnimationPluginOptions } from './plugins/animation'
+// 缓存插件
+export {
+  CacheManager,
+  createCacheConfig,
+  createCachePlugin,
+  supportsCaching,
+} from './plugins/cache'
+
+export type { CachePluginOptions } from './plugins/cache'
+// 性能监控插件
+export {
+  createPerformanceConfig,
+  createPerformancePlugin,
+  getPagePerformance,
+  PerformanceEventType,
+  PerformanceManager,
+  supportsPerformanceAPI,
+  withPerformanceMonitoring,
+} from './plugins/performance'
+
+// ==================== 路由守卫导出 ====================
+
+export type { PerformancePluginOptions } from './plugins/performance'
+
+// 预加载插件
+export {
+  createPreloadConfig,
+  createPreloadPlugin,
+  HoverPreloadStrategy,
+  IdlePreloadStrategy,
+  PreloadManager,
+  supportsPreload,
+  VisibilityPreloadStrategy,
+} from './plugins/preload'
+
+// ==================== 工具函数导出 ====================
+
+export type { PreloadPluginOptions } from './plugins/preload'
+
+// ==================== Engine 集成导出 ====================
 
 // 核心类型
 export type {
-  Router,
-  RouterOptions,
-  RouterHistory,
-  RouteRecordRaw,
-  RouteRecordNormalized,
-  RouteLocationRaw,
-  RouteLocationNormalized,
-  RouteLocationBase,
-  RouteParams,
-  RouteQuery,
-  RouteMeta,
-  RouteComponent,
+  HistoryLocation,
+  HistoryState,
+  NavigationCallback,
+  NavigationDirection,
+  NavigationFailure,
   NavigationGuard,
   NavigationGuardNext,
   NavigationGuardReturn,
   NavigationHookAfter,
-  NavigationFailure,
-  NavigationCallback,
   NavigationInformation,
   NavigationType,
-  NavigationDirection,
-  HistoryLocation,
-  HistoryState,
+  RouteComponent,
+  RouteLocationBase,
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  RouteMeta,
+  RouteParams,
+  RouteQuery,
+  Router,
+  RouteRecordNormalized,
+  RouteRecordRaw,
+  RouterHistory,
+  RouterOptions,
   ScrollBehavior,
   ScrollPosition,
   UseRouteReturn,
   UseRouterReturn,
 } from './types'
-
-// ==================== 组件导出 ====================
-
-// Vue 组件
-export { RouterLink, RouterView } from './components'
-
-// 组件类型
-export type {
-  RouterLinkProps,
-  RouterLinkSlotProps,
-  RouterViewProps,
-  RouterViewSlotProps,
-  ComponentSize,
-  LinkVariant,
-  PreloadStrategy as ComponentPreloadStrategy,
-  AnimationType as ComponentAnimationType,
-  CacheStrategy as ComponentCacheStrategy,
-  AnimationConfig,
-  CacheConfig,
-  PreloadConfig,
-  PerformanceConfig,
-  PerformanceMetrics,
-} from './components/types'
-
-// ==================== 组合式 API 导出 ====================
-
-// 核心 Hooks
-export { useRouter, useRoute, useNavigation, useLink } from './composables'
-
-// 参数 Hooks
 export {
-  useParams,
-  useQuery,
-  useHash,
-  useMeta,
-  useMatched,
-} from './composables'
-
-// 守卫 Hooks
-export { onBeforeRouteUpdate, onBeforeRouteLeave } from './composables'
-
-// 工具 Hooks
-export { hasRouter, hasRoute } from './composables'
-
-// 组合式 API 类型
-export type { UseLinkOptions, UseLinkReturn } from './composables'
-
-// ==================== 插件系统导出 ====================
-
-// 动画插件
-export {
-  createAnimationPlugin,
-  AnimationManager,
-  ANIMATION_PRESETS,
-  createAnimationConfig,
-  supportsAnimations,
-  getAnimationDuration,
-} from './plugins/animation'
-export type { AnimationPluginOptions } from './plugins/animation'
-
-// 缓存插件
-export {
-  createCachePlugin,
-  CacheManager,
-  createCacheConfig,
-  supportsCaching,
-} from './plugins/cache'
-export type { CachePluginOptions } from './plugins/cache'
-
-// 预加载插件
-export {
-  createPreloadPlugin,
-  PreloadManager,
-  HoverPreloadStrategy,
-  VisibilityPreloadStrategy,
-  IdlePreloadStrategy,
-  createPreloadConfig,
-  supportsPreload,
-} from './plugins/preload'
-export type { PreloadPluginOptions } from './plugins/preload'
-
-// 性能监控插件
-export {
-  createPerformancePlugin,
-  PerformanceManager,
-  PerformanceEventType,
-  withPerformanceMonitoring,
-  createPerformanceConfig,
-  supportsPerformanceAPI,
-  getPagePerformance,
-} from './plugins/performance'
-export type { PerformancePluginOptions } from './plugins/performance'
-
-// ==================== 路由守卫导出 ====================
-
-export {
-  createPermissionGuard,
-  createAuthGuard,
-  createLoadingGuard,
-  createTitleGuard,
-  createScrollGuard,
-  createProgressGuard,
-  combineGuards,
-} from './guards'
-
-export type {
-  PermissionChecker,
-  PermissionGuardOptions,
-  AuthChecker,
-  AuthGuardOptions,
-  LoadingGuardOptions,
-  TitleGuardOptions,
-  ScrollGuardOptions,
-  ProgressGuardOptions,
-} from './guards'
-
-// ==================== 工具函数导出 ====================
-
-export {
-  // 路径处理
-  normalizePath,
-  joinPaths,
-  parsePathParams,
   buildPath,
-
-  // 查询参数处理
-  parseQuery,
-  stringifyQuery,
-  mergeQuery,
-
-  // URL 处理
-  parseURL,
-  stringifyURL,
-
-  // 路由位置处理
-  normalizeParams,
-  isSameRouteLocation,
-  resolveRouteLocation,
-
+  // 工具函数
+  cloneRouteLocation,
   // 导航失败处理
   createNavigationFailure,
+  extractParams,
+  getRouteDepth,
+  isChildRoute,
   isNavigationFailure,
+  isSameRouteLocation,
+  joinPaths,
 
   // 路由匹配
   matchPath,
-  extractParams,
+  mergeQuery,
+  // 路由位置处理
+  normalizeParams,
 
-  // 工具函数
-  cloneRouteLocation,
-  getRouteDepth,
-  isChildRoute,
+  // 路径处理
+  normalizePath,
+  parsePathParams,
+
+  // 查询参数处理
+  parseQuery,
+  // URL 处理
+  parseURL,
+  resolveRouteLocation,
+  stringifyQuery,
+  stringifyURL,
 } from './utils'
-
-// ==================== Engine 集成导出 ====================
-
-// Engine 插件
-export {
-  createRouterEnginePlugin,
-  routerPlugin,
-  createDefaultRouterEnginePlugin,
-} from './engine'
-export type { RouterEnginePluginOptions } from './engine'
 
 // ==================== 便捷创建函数 ====================
 
