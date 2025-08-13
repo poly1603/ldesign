@@ -249,6 +249,9 @@ importers:
       "@ldesign/template":
         specifier: workspace:*
         version: link:../template
+      alova:
+        specifier: ^3.3.4
+        version: 3.3.4
       vue:
         specifier: ^3.5.18
         version: 3.5.18(typescript@5.8.3)
@@ -1707,6 +1710,12 @@ packages:
         integrity: sha512-o0mqRYbS82Rt4DE02Od7RL6pNtV7oSxScPuIw8LW4aqO2V5eCF05Pry/SnUgcI/Vb2QCYC66hytBCqzyC/toZA==,
       }
     engines: { node: ">= 14.0.0" }
+
+  "@alova/shared@1.3.1":
+    resolution:
+      {
+        integrity: sha512-ijSOaFLUFcVzMKSY3avoEE5C03/p9atjMDPBwvNkwnzaCrhv6/m4A121NdadF8YlHCRuifyYfz90IyEdMXTsJg==,
+      }
 
   "@ampproject/remapping@2.3.0":
     resolution:
@@ -4725,6 +4734,13 @@ packages:
       {
         integrity: sha512-P3TxJSe31bUHBiblg59oU1PpaWPtmxF9GhJ/cB7OkgJ0qN/ifFSKUI25/v8ZhsT+lIG6ac8DpTOplXxORX6F3Q==,
       }
+
+  alova@3.3.4:
+    resolution:
+      {
+        integrity: sha512-UKKqXdvf8aQ4C7m3brO77YWe5CDz8N59PdAUz7M8gowKUUXTutbk0Vk5DRBrCe0hMUyyNMUhdCZ38llGxCViyQ==,
+      }
+    engines: { node: ">= 18.0.0" }
 
   ansi-colors@4.1.3:
     resolution:
@@ -8954,6 +8970,12 @@ packages:
       }
     engines: { node: ">= 0.6" }
 
+  rate-limiter-flexible@5.0.5:
+    resolution:
+      {
+        integrity: sha512-+/dSQfo+3FYwYygUs/V2BBdwGa9nFtakDwKt4l0bnvNB53TNT++QSFewwHX9qXrZJuMe9j+TUaU21lm5ARgqdQ==,
+      }
+
   raw-body@2.5.2:
     resolution:
       {
@@ -10936,6 +10958,8 @@ snapshots:
   "@algolia/requester-node-http@5.34.1":
     dependencies:
       "@algolia/client-common": 5.34.1
+
+  "@alova/shared@1.3.1": {}
 
   "@ampproject/remapping@2.3.0":
     dependencies:
@@ -13419,6 +13443,11 @@ snapshots:
   alien-signals@1.0.13: {}
 
   alien-signals@2.0.6: {}
+
+  alova@3.3.4:
+    dependencies:
+      "@alova/shared": 1.3.1
+      rate-limiter-flexible: 5.0.5
 
   ansi-colors@4.1.3: {}
 
@@ -16170,6 +16199,8 @@ snapshots:
       safe-buffer: 5.2.1
 
   range-parser@1.2.1: {}
+
+  rate-limiter-flexible@5.0.5: {}
 
   raw-body@2.5.2:
     dependencies:

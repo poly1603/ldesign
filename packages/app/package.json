@@ -85,6 +85,7 @@
     "@ldesign/i18n": "workspace:*",
     "@ldesign/router": "workspace:^",
     "@ldesign/template": "workspace:*",
+    "alova": "^3.3.4",
     "vue": "^3.5.18"
   },
   "devDependencies": {
