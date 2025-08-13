@@ -47,7 +47,19 @@ export default defineComponent({
     )
 
     // HTTP 功能演示 - 使用免费的 JSONPlaceholder API
-    const { get, post, delete: del, loading, error } = useHttp()
+    const {
+      get,
+      post,
+      delete: del,
+      loading,
+      error,
+    } = useHttp({
+      baseURL: 'https://jsonplaceholder.typicode.com',
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
 
     const users = ref<any[]>([])
     const posts = ref<any[]>([])
@@ -309,45 +321,89 @@ export default defineComponent({
                 )}
 
                 <div class='data-display'>
-                  {users.value.length > 0 && (
-                    <div class='users-section'>
-                      <h4>用户列表 ({users.value.length} 个用户)</h4>
+                  {/* 用户列表展示 */}
+                  <div class='users-section'>
+                    <h4>👥 用户列表 ({users.value.length} 个用户)</h4>
+                    {users.value.length > 0 ? (
                       <div class='users-grid'>
                         {users.value.slice(0, 6).map((user: any) => (
                           <div key={user.id} class='user-card'>
+                            <div class='user-avatar'>
+                              <span class='avatar-text'>
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
                             <div class='user-info'>
-                              <strong>{user.name}</strong>
-                              <span>{user.email}</span>
-                              <small>@{user.username}</small>
+                              <strong class='user-name'>{user.name}</strong>
+                              <span class='user-email'>{user.email}</span>
+                              <small class='user-username'>
+                                @{user.username}
+                              </small>
+                              <div class='user-details'>
+                                <span>📞 {user.phone}</span>
+                                <span>🌐 {user.website}</span>
+                                <span>🏢 {user.company?.name}</span>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div class='empty-state'>
+                        <span class='empty-icon'>👥</span>
+                        <p>暂无用户数据，点击"获取用户列表"按钮加载数据</p>
+                      </div>
+                    )}
+                  </div>
 
-                  {posts.value.length > 0 && (
-                    <div class='posts-section'>
-                      <h4>文章列表 ({posts.value.length} 篇文章)</h4>
+                  {/* 文章列表展示 */}
+                  <div class='posts-section'>
+                    <h4>📝 文章列表 ({posts.value.length} 篇文章)</h4>
+                    {posts.value.length > 0 ? (
                       <div class='posts-grid'>
                         {posts.value.map((post: any) => (
                           <div key={post.id} class='post-card'>
-                            <div class='post-info'>
-                              <strong>{post.title}</strong>
-                              <p>{post.body.substring(0, 100)}...</p>
+                            <div class='post-header'>
+                              <span class='post-id'>#{post.id}</span>
+                              <span class='post-user'>用户 {post.userId}</span>
                             </div>
-                            <button
-                              class='btn btn-danger btn-sm'
-                              onClick={() => deletePost(post.id)}
-                              disabled={loading.value}
-                            >
-                              删除
-                            </button>
+                            <div class='post-content'>
+                              <h5 class='post-title'>{post.title}</h5>
+                              <p class='post-body'>
+                                {post.body.length > 100
+                                  ? `${post.body.substring(0, 100)}...`
+                                  : post.body}
+                              </p>
+                            </div>
+                            <div class='post-actions'>
+                              <button
+                                class='btn btn-danger btn-sm'
+                                onClick={() => deletePost(post.id)}
+                                disabled={loading.value}
+                              >
+                                🗑️ 删除
+                              </button>
+                              <button
+                                class='btn btn-info btn-sm'
+                                onClick={() =>
+                                  alert(
+                                    `文章详情：\n标题：${post.title}\n内容：${post.body}`
+                                  )
+                                }
+                              >
+                                👁️ 查看
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div class='empty-state'>
+                        <span class='empty-icon'>📝</span>
+                        <p>暂无文章数据，点击"获取文章列表"按钮加载数据</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
