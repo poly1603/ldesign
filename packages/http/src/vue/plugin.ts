@@ -1,23 +1,31 @@
 import type { App, Plugin } from 'vue'
 import type { HttpClient, RequestConfig } from '@/types'
 import type { HttpPluginOptions } from '@/types/vue'
-import { createHttpClient } from '@/index'
-import { provideHttpClient } from './useHttp'
+import { provide, ref } from 'vue'
+import { HttpClientImpl } from '@/client'
+import { createAdapter } from '@/adapters'
+import { HTTP_CLIENT_KEY, HTTP_CONFIG_KEY } from './useHttp'
 
 /**
  * Vue 3 HTTP 插件
  */
 export const HttpPlugin: Plugin = {
-  install(app: App, options: HttpPluginOptions = {}) {
+  install(app: App, options: unknown = {}) {
+    const httpOptions = options as HttpPluginOptions
     // 创建或使用提供的 HTTP 客户端
-    const client: HttpClient = options.client || createHttpClient(options.globalConfig)
+    const client: HttpClient =
+      httpOptions.client ||
+      new HttpClientImpl(httpOptions.globalConfig || {}, createAdapter())
 
     // 提供 HTTP 客户端到应用上下文
-    provideHttpClient(client, options.globalConfig)
+    app.provide(HTTP_CLIENT_KEY, client)
+    if (httpOptions.globalConfig) {
+      app.provide(HTTP_CONFIG_KEY, ref(httpOptions.globalConfig))
+    }
 
     // 注册全局属性
-    const globalProperty = options.globalProperty || '$http'
-    app.config.globalProperties[globalProperty] = client
+    const globalProperty = httpOptions.globalProperty || '$http'
+    ;(app.config.globalProperties as any)[globalProperty] = client
 
     // 提供全局方法
     app.provide('httpClient', client)
@@ -50,12 +58,19 @@ export const HttpProvider = {
       required: false,
     },
   },
-  setup(props: { client?: HttpClient, config?: RequestConfig }, { slots }: any) {
+  setup(
+    props: { client?: HttpClient; config?: RequestConfig },
+    { slots }: any
+  ) {
     // 使用提供的客户端或创建新的客户端
-    const client = props.client || createHttpClient(props.config)
+    const client =
+      props.client || new HttpClientImpl(props.config || {}, createAdapter())
 
     // 提供客户端到子组件
-    provideHttpClient(client, props.config)
+    provide(HTTP_CLIENT_KEY, client)
+    if (props.config) {
+      provide(HTTP_CONFIG_KEY, ref(props.config))
+    }
 
     return () => slots.default?.()
   },

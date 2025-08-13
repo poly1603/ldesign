@@ -359,3 +359,167 @@
     }
   }
 }
+
+// HTTP 演示样式
+.http-demo {
+  grid-column: 1 / -1; // 占满整行
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: @spacing-lg;
+    margin-top: @spacing-md;
+  }
+}
+
+.user-form {
+  h4 {
+    margin: 0 0 @spacing-md 0;
+    color: @text-color;
+    font-size: @font-size-lg;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-sm;
+
+  input {
+    padding: @spacing-sm @spacing-md;
+    border: 1px solid @border-color;
+    border-radius: @border-radius-base;
+    font-size: @font-size-base;
+    transition: @transition-base;
+
+    &:focus {
+      outline: none;
+      border-color: @primary-color;
+      box-shadow: 0 0 0 2px fade(@primary-color, 20%);
+    }
+
+    &::placeholder {
+      color: @text-color-secondary;
+    }
+  }
+}
+
+.user-list {
+  h4 {
+    margin: 0 0 @spacing-md 0;
+    color: @text-color;
+    font-size: @font-size-lg;
+  }
+}
+
+.error-message {
+  background: fade(@error-color, 10%);
+  color: @error-color;
+  padding: @spacing-sm @spacing-md;
+  border-radius: @border-radius-base;
+  border: 1px solid fade(@error-color, 30%);
+  margin-bottom: @spacing-md;
+  font-size: @font-size-sm;
+}
+
+.users-grid {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-sm;
+  margin-bottom: @spacing-md;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: @spacing-md;
+  background: @background-color;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-base;
+  transition: @transition-base;
+
+  &:hover {
+    box-shadow: @shadow-base;
+    transform: translateY(-1px);
+  }
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: @spacing-xs;
+
+  strong {
+    color: @text-color;
+    font-size: @font-size-base;
+  }
+
+  span {
+    color: @text-color-secondary;
+    font-size: @font-size-sm;
+  }
+}
+
+.btn {
+  padding: @spacing-sm @spacing-md;
+  border: none;
+  border-radius: @border-radius-base;
+  font-size: @font-size-sm;
+  font-weight: 500;
+  cursor: pointer;
+  transition: @transition-base;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background: @primary-color;
+    color: @background-color;
+
+    &:hover:not(:disabled) {
+      background: darken(@primary-color, 10%);
+    }
+  }
+
+  &.btn-secondary {
+    background: @background-color-light;
+    color: @text-color;
+    border: 1px solid @border-color;
+
+    &:hover:not(:disabled) {
+      background: darken(@background-color-light, 5%);
+    }
+  }
+
+  &.btn-danger {
+    background: @error-color;
+    color: @background-color;
+
+    &:hover:not(:disabled) {
+      background: darken(@error-color, 10%);
+    }
+  }
+
+  &.btn-sm {
+    padding: @spacing-xs @spacing-sm;
+    font-size: @font-size-xs;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .http-demo {
+    &__content {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .users-grid {
+    max-height: 200px;
+  }
+}

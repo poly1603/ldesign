@@ -1,12 +1,14 @@
 import type { HttpClientConfig } from '../../types'
 import { computed, ref } from 'vue'
-import { createHttpClient } from '../../index'
+import { HttpClientImpl } from '../../client'
+import { createAdapter } from '../../adapters'
 
 /**
  * HTTP客户端组合式函数
  */
 export function useHttp(config?: HttpClientConfig) {
-  const client = createHttpClient(config)
+  const adapter = createAdapter(config?.adapter)
+  const client = new HttpClientImpl(config || {}, adapter)
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const data = ref<any>(null)

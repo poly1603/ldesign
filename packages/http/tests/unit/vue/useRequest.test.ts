@@ -45,9 +45,13 @@ describe('useRequest', () => {
 
   it('should initialize with correct default state', () => {
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { data, loading, error, finished } = useRequest(mockClient, config, {
-      immediate: false,
-    })
+    const { data, loading, error, finished } = useRequest(
+      mockClient,
+      ref(config),
+      {
+        immediate: false,
+      }
+    )
 
     expect(data.value).toBeNull()
     expect(loading.value).toBe(false)
@@ -58,7 +62,7 @@ describe('useRequest', () => {
   it('should initialize with initial data', () => {
     const initialData = { id: 1, name: 'Test' }
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { data } = useRequest(mockClient, config, {
+    const { data } = useRequest(mockClient, ref(config), {
       immediate: false,
       initialData,
     })
@@ -71,9 +75,13 @@ describe('useRequest', () => {
     vi.mocked(mockClient.request).mockResolvedValue(mockResponse)
 
     const config: RequestConfig = { url: '/users/1', method: 'GET' }
-    const { data, loading, error, finished, execute } = useRequest(mockClient, config, {
-      immediate: false,
-    })
+    const { data, loading, error, finished, execute } = useRequest(
+      mockClient,
+      ref(config),
+      {
+        immediate: false,
+      }
+    )
 
     const promise = execute()
 
@@ -96,9 +104,13 @@ describe('useRequest', () => {
     vi.mocked(mockClient.request).mockRejectedValue(mockError)
 
     const config: RequestConfig = { url: '/users/1', method: 'GET' }
-    const { data, loading, error, finished, execute } = useRequest(mockClient, config, {
-      immediate: false,
-    })
+    const { data, loading, error, finished, execute } = useRequest(
+      mockClient,
+      ref(config),
+      {
+        immediate: false,
+      }
+    )
 
     await expect(execute()).rejects.toThrow('Request failed')
 
@@ -114,7 +126,7 @@ describe('useRequest', () => {
 
     const onSuccess = vi.fn()
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { execute } = useRequest(mockClient, config, {
+    const { execute } = useRequest(mockClient, ref(config), {
       immediate: false,
       onSuccess,
     })
@@ -130,7 +142,7 @@ describe('useRequest', () => {
 
     const onError = vi.fn()
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { execute } = useRequest(mockClient, config, {
+    const { execute } = useRequest(mockClient, ref(config), {
       immediate: false,
       onError,
     })
@@ -146,7 +158,7 @@ describe('useRequest', () => {
 
     const onFinally = vi.fn()
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { execute } = useRequest(mockClient, config, {
+    const { execute } = useRequest(mockClient, ref(config), {
       immediate: false,
       onFinally,
     })
@@ -160,9 +172,12 @@ describe('useRequest', () => {
     const mockResponse = createMockResponse({ name: 'john' })
     vi.mocked(mockClient.request).mockResolvedValue(mockResponse)
 
-    const transform = vi.fn(data => ({ ...data, name: data.name.toUpperCase() }))
+    const transform = vi.fn(data => ({
+      ...data,
+      name: data.name.toUpperCase(),
+    }))
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { data, execute } = useRequest(mockClient, config, {
+    const { data, execute } = useRequest(mockClient, ref(config), {
       immediate: false,
       transform,
     })
@@ -178,20 +193,23 @@ describe('useRequest', () => {
     vi.mocked(mockClient.request).mockResolvedValue(mockResponse)
 
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { refresh } = useRequest(mockClient, config, {
+    const { refresh } = useRequest(mockClient, ref(config), {
       immediate: false,
     })
 
     await refresh()
 
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining(config),
+      expect.objectContaining(config)
     )
   })
 
   it('should reset state', () => {
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { data, loading, error, finished, reset } = useRequest<{ test: boolean, changed?: boolean }>(mockClient, config, {
+    const { data, loading, error, finished, reset } = useRequest<{
+      test: boolean
+      changed?: boolean
+    }>(mockClient, ref(config), {
       immediate: false,
       initialData: { test: true },
     })
@@ -216,7 +234,7 @@ describe('useRequest', () => {
 
     const config: RequestConfig = { url: '/test', method: 'GET' }
 
-    useRequest(mockClient, config)
+    useRequest(mockClient, ref(config))
 
     // 等待下一个 tick 让 watch 执行
     await nextTick()
@@ -234,7 +252,7 @@ describe('useRequest', () => {
 
     await nextTick()
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({ url: '/test1' }),
+      expect.objectContaining({ url: '/test1' })
     )
 
     // 更改配置
@@ -242,18 +260,18 @@ describe('useRequest', () => {
     await nextTick()
 
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({ url: '/test2' }),
+      expect.objectContaining({ url: '/test2' })
     )
   })
 
   it('should handle cancellation', async () => {
     // 模拟长时间运行的请求
-    vi.mocked(mockClient.request).mockImplementation(() =>
-      new Promise(resolve => setTimeout(resolve, 1000)),
+    vi.mocked(mockClient.request).mockImplementation(
+      () => new Promise(resolve => setTimeout(resolve, 1000))
     )
 
     const config: RequestConfig = { url: '/test', method: 'GET' }
-    const { execute, cancel, canCancel } = useRequest(mockClient, config, {
+    const { execute, cancel, canCancel } = useRequest(mockClient, ref(config), {
       immediate: false,
     })
 

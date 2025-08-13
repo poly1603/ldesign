@@ -1,7 +1,7 @@
 import type { EngineImpl } from '@ldesign/engine'
 import { useRoute, useRouter } from '@ldesign/router'
 import { useDevice } from '@ldesign/device'
-import { TemplateSelector } from '@ldesign/template'
+import { useHttp } from '@ldesign/http'
 
 import {
   computed,
@@ -46,6 +46,72 @@ export default defineComponent({
       () => deviceInfo.value?.orientation || 'portrait'
     )
 
+    // HTTP 功能演示 - 使用免费的 JSONPlaceholder API
+    const { get, post, delete: del, loading, error } = useHttp()
+
+    const users = ref<any[]>([])
+    const posts = ref<any[]>([])
+    const newPost = ref({ title: '', body: '' })
+
+    // 获取用户列表
+    const fetchUsers = async () => {
+      try {
+        const response = await get('/users')
+        users.value = Array.isArray(response) ? response : []
+        engine?.logger.info('获取用户列表成功', { count: users.value.length })
+      } catch (err) {
+        console.error('获取用户列表失败:', err)
+        engine?.logger.error('获取用户列表失败', { error: err })
+      }
+    }
+
+    // 获取文章列表
+    const fetchPosts = async () => {
+      try {
+        const response = await get('/posts?_limit=5')
+        posts.value = Array.isArray(response) ? response : []
+        engine?.logger.info('获取文章列表成功', { count: posts.value.length })
+      } catch (err) {
+        console.error('获取文章列表失败:', err)
+        engine?.logger.error('获取文章列表失败', { error: err })
+      }
+    }
+
+    // 创建文章（模拟）
+    const createPost = async () => {
+      if (!newPost.value.title || !newPost.value.body) {
+        alert('请填写标题和内容')
+        return
+      }
+      try {
+        const response = await post('/posts', {
+          title: newPost.value.title,
+          body: newPost.value.body,
+          userId: 1,
+        })
+        console.log('创建文章成功:', response)
+        newPost.value = { title: '', body: '' }
+        engine?.logger.info('创建文章成功')
+        alert('文章创建成功！（这是一个模拟请求）')
+      } catch (err) {
+        console.error('创建文章失败:', err)
+        engine?.logger.error('创建文章失败', { error: err })
+      }
+    }
+
+    // 删除文章（模拟）
+    const deletePost = async (id: number) => {
+      if (!confirm('确定要删除这篇文章吗？')) return
+      try {
+        await del(`/posts/${id}`)
+        engine?.logger.info('删除文章成功', { postId: id })
+        alert('文章删除成功！（这是一个模拟请求）')
+      } catch (err) {
+        console.error('删除文章失败:', err)
+        engine?.logger.error('删除文章失败', { postId: id, error: err })
+      }
+    }
+
     // 用户信息（模拟）
     const userInfo = ref({
       username: 'admin',
@@ -59,6 +125,8 @@ export default defineComponent({
         device: deviceType.value,
         orientation: orientation.value,
       })
+      // 初始化用户数据
+      fetchUsers()
     })
 
     const handleLogout = () => {
@@ -97,7 +165,7 @@ export default defineComponent({
                   handleLanguageChange((e.target as HTMLSelectElement).value)
                 }
               >
-                {availableLanguages.value.map(lang => (
+                {availableLanguages.value.map((lang: any) => (
                   <option key={lang.code} value={lang.code}>
                     {lang.nativeName}
                   </option>
@@ -175,12 +243,135 @@ export default defineComponent({
               <h3>✨ 功能特性</h3>
               <ul class='feature-list'>
                 <li>🛣️ 智能路由系统</li>
+                <li>🌐 HTTP 请求管理</li>
                 <li>🎨 多设备模板适配</li>
                 <li>⚙️ 应用引擎集成</li>
                 <li>📱 设备类型检测</li>
                 <li>🔔 通知系统</li>
                 <li>📝 日志记录</li>
               </ul>
+            </div>
+
+            <div class='info-card http-demo'>
+              <h3>🌐 HTTP 功能演示</h3>
+              <div class='http-demo__content'>
+                <div class='demo-actions'>
+                  <button
+                    class='btn btn-primary'
+                    onClick={fetchUsers}
+                    disabled={loading.value}
+                  >
+                    {loading.value ? '加载中...' : '获取用户列表'}
+                  </button>
+                  <button
+                    class='btn btn-secondary'
+                    onClick={fetchPosts}
+                    disabled={loading.value}
+                  >
+                    {loading.value ? '加载中...' : '获取文章列表'}
+                  </button>
+                </div>
+
+                <div class='post-form'>
+                  <h4>创建文章（模拟）</h4>
+                  <div class='form-group'>
+                    <input
+                      type='text'
+                      placeholder='文章标题'
+                      value={newPost.value.title}
+                      onInput={e =>
+                        (newPost.value.title = (
+                          e.target as HTMLInputElement
+                        ).value)
+                      }
+                    />
+                    <textarea
+                      placeholder='文章内容'
+                      value={newPost.value.body}
+                      onInput={e =>
+                        (newPost.value.body = (
+                          e.target as HTMLTextAreaElement
+                        ).value)
+                      }
+                    />
+                    <button
+                      class='btn btn-primary'
+                      onClick={createPost}
+                      disabled={loading.value}
+                    >
+                      {loading.value ? '创建中...' : '创建文章'}
+                    </button>
+                  </div>
+                </div>
+
+                {error.value && (
+                  <div class='error-message'>错误: {error.value.message}</div>
+                )}
+
+                <div class='data-display'>
+                  {users.value.length > 0 && (
+                    <div class='users-section'>
+                      <h4>用户列表 ({users.value.length} 个用户)</h4>
+                      <div class='users-grid'>
+                        {users.value.slice(0, 6).map((user: any) => (
+                          <div key={user.id} class='user-card'>
+                            <div class='user-info'>
+                              <strong>{user.name}</strong>
+                              <span>{user.email}</span>
+                              <small>@{user.username}</small>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {posts.value.length > 0 && (
+                    <div class='posts-section'>
+                      <h4>文章列表 ({posts.value.length} 篇文章)</h4>
+                      <div class='posts-grid'>
+                        {posts.value.map((post: any) => (
+                          <div key={post.id} class='post-card'>
+                            <div class='post-info'>
+                              <strong>{post.title}</strong>
+                              <p>{post.body.substring(0, 100)}...</p>
+                            </div>
+                            <button
+                              class='btn btn-danger btn-sm'
+                              onClick={() => deletePost(post.id)}
+                              disabled={loading.value}
+                            >
+                              删除
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div class='info-card'>
+              <h3>📊 HTTP 状态</h3>
+              <div class='status-grid'>
+                <div class='status-item'>
+                  <span class='label'>请求状态:</span>
+                  <span class={`value ${loading.value ? 'loading' : 'idle'}`}>
+                    {loading.value ? '请求中' : '空闲'}
+                  </span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>错误状态:</span>
+                  <span class={`value ${error.value ? 'error' : 'normal'}`}>
+                    {error.value ? '有错误' : '正常'}
+                  </span>
+                </div>
+                <div class='status-item'>
+                  <span class='label'>API 地址:</span>
+                  <span class='value'>jsonplaceholder.typicode.com</span>
+                </div>
+              </div>
             </div>
           </div>
 

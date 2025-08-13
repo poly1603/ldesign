@@ -1,0 +1,165 @@
+/**
+ * English - Components translations
+ */
+declare const _default: {
+  navigation: {
+    home: string
+    dashboard: string
+    products: string
+    services: string
+    about: string
+    contact: string
+    menu: string
+    toggleMenu: string
+  }
+  form: {
+    required: string
+    optional: string
+    placeholder: string
+    select: string
+    upload: string
+    uploadSuccess: string
+    uploadFailed: string
+    fileTooBig: string
+    invalidFileType: string
+    maxFiles: string
+    dragToUpload: string
+    clickToUpload: string
+    removeFile: string
+    previewFile: string
+    downloadFile: string
+  }
+  table: {
+    noData: string
+    loading: string
+    total: string
+    page: string
+    pageSize: string
+    items: string
+    goToPage: string
+    firstPage: string
+    lastPage: string
+    previousPage: string
+    nextPage: string
+    refresh: string
+    export: string
+    import: string
+    filter: string
+    sort: string
+    ascending: string
+    descending: string
+    selectAll: string
+    selectNone: string
+    selectedItems: string
+    batchDelete: string
+    batchEdit: string
+  }
+  dialog: {
+    confirm: string
+    cancel: string
+    ok: string
+    close: string
+    save: string
+    delete: string
+    edit: string
+    view: string
+    add: string
+    create: string
+    update: string
+    submit: string
+    reset: string
+    clear: string
+    apply: string
+    discard: string
+    retry: string
+  }
+  message: {
+    success: string
+    error: string
+    warning: string
+    info: string
+    loading: string
+    copied: string
+    saved: string
+    deleted: string
+    updated: string
+    created: string
+    uploaded: string
+    downloaded: string
+    sent: string
+    received: string
+  }
+  search: {
+    placeholder: string
+    noResults: string
+    searching: string
+    searchHistory: string
+    clearHistory: string
+    hotSearches: string
+    suggestions: string
+    advanced: string
+    filters: string
+    sortBy: string
+    relevance: string
+    date: string
+    popularity: string
+  }
+  pagination: {
+    total: string
+    current: string
+    pageSize: string
+    goTo: string
+    page: string
+    prev: string
+    next: string
+    first: string
+    last: string
+    showTotal: string
+  }
+  datePicker: {
+    selectDate: string
+    selectTime: string
+    selectDateTime: string
+    today: string
+    yesterday: string
+    tomorrow: string
+    thisWeek: string
+    lastWeek: string
+    nextWeek: string
+    thisMonth: string
+    lastMonth: string
+    nextMonth: string
+    thisYear: string
+    lastYear: string
+    nextYear: string
+    clear: string
+    confirm: string
+    cancel: string
+    startDate: string
+    endDate: string
+    startTime: string
+    endTime: string
+  }
+  languageSwitcher: {
+    title: string
+    current: string
+    available: string
+    switchTo: string
+    switchSuccess: string
+    switchFailed: string
+  }
+  templateSelector: {
+    title: string
+    current: string
+    available: string
+    preview: string
+    apply: string
+    switchTo: string
+    switchSuccess: string
+    switchFailed: string
+    loading: string
+    noTemplates: string
+  }
+}
+
+export { _default as default }

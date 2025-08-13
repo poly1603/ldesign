@@ -6,15 +6,24 @@ export {
   injectHttpClient,
   injectHttpConfig,
   provideHttpClient,
-  useHttp,
+  useHttp as useHttpWithInjection,
   usePagination,
   useResource,
 } from './useHttp'
-export { useDelete, useMutation, usePatch, usePost, usePut } from './useMutation'
+export {
+  useDelete,
+  useMutation,
+  usePatch,
+  usePost,
+  usePut,
+} from './useMutation'
 export { useQuery } from './useQuery'
 
 // Vue Composition API Hooks
 export { useAsyncRequest, useRequest } from './useRequest'
+
+// HTTP Composable (独立版本，不需要依赖注入)
+export { useHttp } from './composables/useHttp'
 
 // Vue Types
 export type * from '@/types/vue'

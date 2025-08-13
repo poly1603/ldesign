@@ -5,10 +5,7 @@ import type {
   RequestConfig,
   ResponseData,
 } from '@/types'
-import type {
-  UseRequestOptions,
-  UseRequestReturn,
-} from '@/types/vue'
+import type { UseRequestOptions, UseRequestReturn } from '@/types/vue'
 import { computed, onUnmounted, ref, unref, watch } from 'vue'
 import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
 
@@ -19,13 +16,13 @@ import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
 export function useRequest<T = any>(
   client: HttpClient,
   config: MaybeRef<RequestConfig>,
-  options: UseRequestOptions<T> = {},
+  options: UseRequestOptions<T> = {}
 ): UseRequestReturn<T> {
   // 响应式状态
   const data = ref<T | null>(options.initialData ?? null)
-  const loading = ref(false)
+  const loading = ref<boolean>(false)
   const error = ref<HttpError | null>(null)
-  const finished = ref(false)
+  const finished = ref<boolean>(false)
 
   // 取消控制
   let cancelTokenSource = createCancelTokenSource()
@@ -36,7 +33,9 @@ export function useRequest<T = any>(
   /**
    * 执行请求
    */
-  const execute = async (overrideConfig?: RequestConfig): Promise<ResponseData<T>> => {
+  const execute = async (
+    overrideConfig?: RequestConfig
+  ): Promise<ResponseData<T>> => {
     // 重置状态
     loading.value = true
     error.value = null
@@ -72,8 +71,7 @@ export function useRequest<T = any>(
       }
 
       return response
-    }
-    catch (err) {
+    } catch (err) {
       const httpError = err as HttpError
 
       // 如果不是取消错误，更新错误状态
@@ -88,8 +86,7 @@ export function useRequest<T = any>(
       }
 
       throw httpError
-    }
-    finally {
+    } finally {
       loading.value = false
 
       // 调用完成回调
@@ -132,7 +129,7 @@ export function useRequest<T = any>(
       () => {
         execute()
       },
-      { immediate: true, deep: true },
+      { immediate: true, deep: true }
     )
   }
 
@@ -162,12 +159,12 @@ export function useRequest<T = any>(
 export function useAsyncRequest<T = any>(
   _client: HttpClient,
   requestFn: () => Promise<ResponseData<T>>,
-  options: Omit<UseRequestOptions<T>, 'immediate'> = {},
+  options: Omit<UseRequestOptions<T>, 'immediate'> = {}
 ): UseRequestReturn<T> {
   const data = ref<T | null>(options.initialData ?? null)
-  const loading = ref(false)
+  const loading = ref<boolean>(false)
   const error = ref<HttpError | null>(null)
-  const finished = ref(false)
+  const finished = ref<boolean>(false)
 
   let cancelTokenSource = createCancelTokenSource()
 
@@ -196,8 +193,7 @@ export function useAsyncRequest<T = any>(
       }
 
       return response
-    }
-    catch (err) {
+    } catch (err) {
       const httpError = err as HttpError
 
       if (!isCancelError(httpError)) {
@@ -210,8 +206,7 @@ export function useAsyncRequest<T = any>(
       }
 
       throw httpError
-    }
-    finally {
+    } finally {
       loading.value = false
 
       if (options.onFinally) {

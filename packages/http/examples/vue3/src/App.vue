@@ -6,9 +6,9 @@ const loading = ref(false)
 const data = ref(null)
 const error = ref<Error | null>(null)
 
-const requestCount = ref(0)
-const successCount = ref(0)
-const errorCount = ref(0)
+const requestCount = ref<number>(0)
+const successCount = ref<number>(0)
+const errorCount = ref<number>(0)
 
 // 表单数据
 const form = reactive({

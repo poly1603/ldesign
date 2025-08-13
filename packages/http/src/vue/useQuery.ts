@@ -5,10 +5,7 @@ import type {
   RequestConfig,
   ResponseData,
 } from '@/types'
-import type {
-  UseQueryOptions,
-  UseQueryReturn,
-} from '@/types/vue'
+import type { UseQueryOptions, UseQueryReturn } from '@/types/vue'
 import { computed, onUnmounted, ref, unref, watch } from 'vue'
 import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
 
@@ -16,16 +13,18 @@ import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
  * 查询缓存管理器
  */
 class QueryCache {
-  private cache = new Map<string, {
-    data: any
-    timestamp: number
-    staleTime: number
-  }>()
+  private cache = new Map<
+    string,
+    {
+      data: any
+      timestamp: number
+      staleTime: number
+    }
+  >()
 
   get(key: string, staleTime: number): any {
     const item = this.cache.get(key)
-    if (!item)
-      return null
+    if (!item) return null
 
     const isStale = Date.now() - item.timestamp > staleTime
     return isStale ? null : item.data
@@ -58,17 +57,17 @@ export function useQuery<T = any>(
   client: HttpClient,
   queryKey: MaybeRef<string | (() => string)>,
   config: MaybeRef<RequestConfig>,
-  options: UseQueryOptions<T> = {},
+  options: UseQueryOptions<T> = {}
 ): UseQueryReturn<T> {
   // 响应式状态
   const data = ref<T | null>(options.initialData ?? null)
-  const loading = ref(false)
+  const loading = ref<boolean>(false)
   const error = ref<HttpError | null>(null)
-  const finished = ref(false)
-  const isStale = ref(false)
-  const isFetching = ref(false)
-  const dataUpdatedAt = ref(0)
-  const failureCount = ref(0)
+  const finished = ref<boolean>(false)
+  const isStale = ref<boolean>(false)
+  const isFetching = ref<boolean>(false)
+  const dataUpdatedAt = ref<number>(0)
+  const failureCount = ref<number>(0)
 
   // 配置选项
   const staleTime = options.staleTime ?? 300000 // 5 分钟
@@ -91,13 +90,15 @@ export function useQuery<T = any>(
    */
   const getQueryKey = (): string => {
     const key = unref(queryKey)
-    return typeof key === 'function' ? key() : key
+    return typeof key === 'function' ? (key as () => string)() : (key as string)
   }
 
   /**
    * 执行查询
    */
-  const execute = async (overrideConfig?: RequestConfig): Promise<ResponseData<T>> => {
+  const execute = async (
+    overrideConfig?: RequestConfig
+  ): Promise<ResponseData<T>> => {
     if (!enabled.value) {
       throw new Error('Query is disabled')
     }
@@ -116,8 +117,7 @@ export function useQuery<T = any>(
     // 设置加载状态
     if (!data.value) {
       loading.value = true
-    }
-    else {
+    } else {
       isFetching.value = true
       isStale.value = true
     }
@@ -129,7 +129,8 @@ export function useQuery<T = any>(
     cancelTokenSource = createCancelTokenSource()
 
     let currentRetry = 0
-    const maxRetries = typeof retry === 'number' ? retry : (retry === true ? 3 : 0)
+    const maxRetries =
+      typeof retry === 'number' ? retry : retry === true ? 3 : 0
 
     while (currentRetry <= maxRetries) {
       try {
@@ -165,8 +166,7 @@ export function useQuery<T = any>(
         }
 
         return response
-      }
-      catch (err) {
+      } catch (err) {
         const httpError = err as HttpError
 
         // 如果是取消错误，直接抛出
@@ -179,14 +179,14 @@ export function useQuery<T = any>(
 
         // 如果还有重试次数，等待后重试
         if (currentRetry <= maxRetries) {
-          const shouldRetry = typeof retry === 'function'
-            ? retry(currentRetry, httpError)
-            : true
+          const shouldRetry =
+            typeof retry === 'function' ? retry(currentRetry, httpError) : true
 
           if (shouldRetry) {
-            const delay = typeof retryDelay === 'function'
-              ? retryDelay(currentRetry)
-              : retryDelay * 2 ** (currentRetry - 1)
+            const delay =
+              typeof retryDelay === 'function'
+                ? retryDelay(currentRetry)
+                : retryDelay * 2 ** (currentRetry - 1)
 
             await new Promise(resolve => setTimeout(resolve, delay))
             continue
@@ -203,8 +203,7 @@ export function useQuery<T = any>(
         }
 
         throw httpError
-      }
-      finally {
+      } finally {
         loading.value = false
         isFetching.value = false
 
@@ -261,11 +260,11 @@ export function useQuery<T = any>(
   watch(
     [() => getQueryKey(), () => unref(config), enabled],
     () => {
-      if (enabled.value && (options.immediate !== false)) {
+      if (enabled.value && options.immediate !== false) {
         execute()
       }
     },
-    { immediate: options.immediate !== false, deep: true },
+    { immediate: options.immediate !== false, deep: true }
   )
 
   // 窗口焦点重新获取

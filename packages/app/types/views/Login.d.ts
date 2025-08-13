@@ -73,15 +73,15 @@ declare const _default: vue.DefineComponent<
       _vue_runtime_core.PublicProps,
       any,
       {
+        placeholderHeight: number
+        lazy: boolean
         templateId: string
         deviceType: string
         showSelector: boolean
         selectorPosition: string
         autoDetectDevice: boolean
         config: Record<string, any>
-        lazy: boolean
         preload: boolean
-        placeholderHeight: number
         enablePerformanceMonitor: boolean
       },
       {},

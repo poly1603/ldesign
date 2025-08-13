@@ -92,10 +92,25 @@ export {
   TimeoutManager,
 } from './utils/error'
 
+// Engine 插件导出
+export {
+  createHttpEnginePlugin,
+  defaultHttpEnginePlugin,
+  httpPlugin,
+} from './engine'
+
+// Engine 插件类型导出
+export type { HttpEnginePluginOptions } from './engine'
+
+// Vue 相关导出
+export * from './vue'
+
 /**
  * 创建 HTTP 客户端实例
  */
-export function createHttpClient(config: HttpClientConfig = {}): HttpClientImpl {
+export function createHttpClient(
+  config: HttpClientConfig = {}
+): HttpClientImpl {
   const adapter = createAdapter(config.adapter)
   return new HttpClientImpl(config, adapter)
 }

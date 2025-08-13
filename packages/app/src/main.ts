@@ -3,6 +3,7 @@ import { createApp, presets } from '@ldesign/engine'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
 import { createTemplateEnginePlugin } from '@ldesign/template'
+import { createHttpEnginePlugin } from '@ldesign/http'
 import App from './App'
 import { routes } from './router/routes'
 import { appI18nConfig, createAppI18n } from './i18n'
@@ -65,6 +66,23 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         registerComponents: true,
         registerDirectives: true,
         provideGlobalProperties: true,
+      })
+    )
+
+    // 集成 HTTP 插件
+    await engine.use(
+      createHttpEnginePlugin({
+        name: 'http',
+        version: '1.0.0',
+        clientConfig: {
+          baseURL: 'https://jsonplaceholder.typicode.com',
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        globalInjection: true,
+        globalPropertyName: '$http',
       })
     )
 

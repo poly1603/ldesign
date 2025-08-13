@@ -80,7 +80,7 @@ describe('httpPlugin', () => {
       app.use(HttpPlugin, { client: mockClient })
 
       // 检查全局属性是否注册
-      expect(app.config.globalProperties.$http).toBe(mockClient)
+      expect((app.config.globalProperties as any).$http).toBe(mockClient)
     })
 
     it('should register custom global property name', () => {
@@ -89,7 +89,7 @@ describe('httpPlugin', () => {
         globalProperty: '$api',
       })
 
-      expect(app.config.globalProperties.$api).toBe(mockClient)
+      expect((app.config.globalProperties as any).$api).toBe(mockClient)
     })
   })
 })
@@ -114,7 +114,7 @@ describe('httpProvider', () => {
 
     const setupResult = HttpProvider.setup(
       { client: createMockClient() },
-      { slots: mockSlots },
+      { slots: mockSlots }
     )
 
     // 调用渲染函数

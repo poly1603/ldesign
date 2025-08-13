@@ -1,7 +1,13 @@
 import type { InjectionKey, Ref } from 'vue'
 import type { HttpClient, RequestConfig } from '@/types'
 import { computed, inject, provide, ref } from 'vue'
-import { useDelete, useMutation, usePatch, usePost, usePut } from './useMutation'
+import {
+  useDelete,
+  useMutation,
+  usePatch,
+  usePost,
+  usePut,
+} from './useMutation'
 import { useQuery } from './useQuery'
 import { useRequest } from './useRequest'
 
@@ -13,12 +19,16 @@ export const HTTP_CLIENT_KEY: InjectionKey<HttpClient> = Symbol('http-client')
 /**
  * 全局配置注入键
  */
-export const HTTP_CONFIG_KEY: InjectionKey<Ref<RequestConfig>> = Symbol('http-config')
+export const HTTP_CONFIG_KEY: InjectionKey<Ref<RequestConfig>> =
+  Symbol('http-config')
 
 /**
  * 提供 HTTP 客户端
  */
-export function provideHttpClient(client: HttpClient, globalConfig?: RequestConfig): void {
+export function provideHttpClient(
+  client: HttpClient,
+  globalConfig?: RequestConfig
+): void {
   provide(HTTP_CLIENT_KEY, client)
   if (globalConfig) {
     provide(HTTP_CONFIG_KEY, ref(globalConfig))
@@ -31,16 +41,18 @@ export function provideHttpClient(client: HttpClient, globalConfig?: RequestConf
 export function injectHttpClient(): HttpClient {
   const client = inject(HTTP_CLIENT_KEY)
   if (!client) {
-    throw new Error('HTTP client not provided. Please use provideHttpClient() in a parent component.')
+    throw new Error(
+      'HTTP client not provided. Please use provideHttpClient() in a parent component.'
+    )
   }
-  return client
+  return client as HttpClient
 }
 
 /**
  * 注入全局配置
  */
 export function injectHttpConfig(): Ref<RequestConfig> {
-  return inject(HTTP_CONFIG_KEY, ref({}))
+  return inject(HTTP_CONFIG_KEY, ref({})) as Ref<RequestConfig>
 }
 
 /**
@@ -96,10 +108,10 @@ export function useHttp() {
 
     // Composition API hooks
     useRequest: <T = any>(config: RequestConfig, options?: any) =>
-      useRequest<T>(client, mergeConfig(config), options),
+      useRequest<T>(client, ref(mergeConfig(config)), options),
 
     useQuery: <T = any>(queryKey: any, config: RequestConfig, options?: any) =>
-      useQuery<T>(client, queryKey, mergeConfig(config), options),
+      useQuery<T>(client, queryKey, ref(mergeConfig(config)), options),
 
     useMutation: <T = any, V = any>(mutationFn: any, options?: any) =>
       useMutation<T, V>(client, mutationFn, options),
@@ -129,7 +141,15 @@ export function useHttp() {
  * 用于 RESTful API 操作
  */
 export function useResource<T = any>(baseUrl: string) {
-  const { get, post, put, patch, delete: del, useQuery, useMutation } = useHttp()
+  const {
+    get,
+    post,
+    put,
+    patch,
+    delete: del,
+    useQuery,
+    useMutation,
+  } = useHttp()
 
   return {
     // 查询操作
@@ -137,49 +157,45 @@ export function useResource<T = any>(baseUrl: string) {
       useQuery(
         ['resource-list', baseUrl, params],
         { url: baseUrl, params },
-        options,
+        options
       ),
 
     useDetail: (id: string | number, options?: any) =>
       useQuery(
         ['resource-detail', baseUrl, id],
         { url: `${baseUrl}/${id}` },
-        options,
+        options
       ),
 
     // 变更操作
     useCreate: (options?: any) =>
-      useMutation(
-        (data: T) => post<T>(`${baseUrl}`, data),
-        options,
-      ),
+      useMutation((data: T) => post<T>(`${baseUrl}`, data), options),
 
     useUpdate: (options?: any) =>
       useMutation(
-        ({ id, data }: { id: string | number, data: Partial<T> }) =>
+        ({ id, data }: { id: string | number; data: Partial<T> }) =>
           put<T>(`${baseUrl}/${id}`, data),
-        options,
+        options
       ),
 
     usePatch: (options?: any) =>
       useMutation(
-        ({ id, data }: { id: string | number, data: Partial<T> }) =>
+        ({ id, data }: { id: string | number; data: Partial<T> }) =>
           patch<T>(`${baseUrl}/${id}`, data),
-        options,
+        options
       ),
 
     useDelete: (options?: any) =>
-      useMutation(
-        (id: string | number) => del(`${baseUrl}/${id}`),
-        options,
-      ),
+      useMutation((id: string | number) => del(`${baseUrl}/${id}`), options),
 
     // 直接调用方法
     list: (params?: Record<string, any>) => get<T[]>(baseUrl, { params }),
     detail: (id: string | number) => get<T>(`${baseUrl}/${id}`),
     create: (data: T) => post<T>(baseUrl, data),
-    update: (id: string | number, data: Partial<T>) => put<T>(`${baseUrl}/${id}`, data),
-    patch: (id: string | number, data: Partial<T>) => patch<T>(`${baseUrl}/${id}`, data),
+    update: (id: string | number, data: Partial<T>) =>
+      put<T>(`${baseUrl}/${id}`, data),
+    patch: (id: string | number, data: Partial<T>) =>
+      patch<T>(`${baseUrl}/${id}`, data),
     remove: (id: string | number) => del(`${baseUrl}/${id}`),
   }
 }
@@ -190,15 +206,20 @@ export function useResource<T = any>(baseUrl: string) {
 export function usePagination<T = any>(
   baseUrl: string,
   initialPage = 1,
-  initialPageSize = 10,
+  initialPageSize = 10
 ) {
-  const page = ref(initialPage)
-  const pageSize = ref(initialPageSize)
-  const total = ref(0)
+  const page = ref<number>(initialPage)
+  const pageSize = ref<number>(initialPageSize)
+  const total = ref<number>(0)
 
   const { useQuery } = useHttp()
 
-  const queryKey = computed(() => ['pagination', baseUrl, page.value, pageSize.value])
+  const queryKey = computed(() => [
+    'pagination',
+    baseUrl,
+    page.value,
+    pageSize.value,
+  ])
   const config = computed(() => ({
     url: baseUrl,
     params: {
@@ -213,7 +234,12 @@ export function usePagination<T = any>(
     page: number
     pageSize: number
   }>(queryKey, config, {
-    onSuccess: (data: { data: T[], total: number, page: number, pageSize: number }) => {
+    onSuccess: (data: {
+      data: T[]
+      total: number
+      page: number
+      pageSize: number
+    }) => {
       total.value = data.total
     },
   })

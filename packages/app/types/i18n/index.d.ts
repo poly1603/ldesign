@@ -1,5 +1,8 @@
-import { I18nOptions } from '../packages/i18n/types/core/types.d.js'
-import '../packages/i18n/types/node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.d.js'
+import {
+  I18nOptions,
+  I18nInstance,
+} from '../packages/i18n/types/core/types.d.js'
+import { I18nEnginePluginOptions } from '../packages/i18n/types/engine/plugin.d.js'
 
 /**
  * 应用 i18n 配置
@@ -8,8 +11,12 @@ import '../packages/i18n/types/node_modules/.pnpm/@vue_runtime-core@3.5.18/node_
  */
 
 /**
+ * 创建带有应用语言包的 I18n 实例
+ */
+declare function createAppI18n(options?: I18nOptions): Promise<I18nInstance>
+/**
  * 应用 i18n 配置选项
  */
-declare const appI18nConfig: I18nOptions
+declare const appI18nConfig: I18nEnginePluginOptions
 
-export { appI18nConfig }
+export { appI18nConfig, createAppI18n }

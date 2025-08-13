@@ -28,20 +28,8 @@ export default defineComponent({
   },
 
   render() {
-    const { TemplateRenderer, handleLogin } = this
+    const { TemplateRenderer } = this
 
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        }}
-      >
-        <TemplateRenderer category='login' />
-      </div>
-    )
+    return <TemplateRenderer category='login' />
   },
 })

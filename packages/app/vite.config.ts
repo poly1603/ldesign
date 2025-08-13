@@ -43,6 +43,8 @@ export default defineConfig({
       ),
       '@ldesign/i18n': resolve(__dirname, '../i18n/es/index.js'),
       '@ldesign/i18n/vue': resolve(__dirname, '../i18n/es/vue/index.js'),
+      '@ldesign/http': resolve(__dirname, '../http/es/index.js'),
+      '@ldesign/http/vue': resolve(__dirname, '../http/es/vue/index.js'),
       // 使用包含编译器的Vue版本
       vue: 'vue/dist/vue.esm-bundler.js',
     },
@@ -56,10 +58,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 3001,
+    host: '0.0.0.0',
     open: true,
     cors: true,
   },
+  logLevel: 'info',
   build: {
     target: 'es2020',
     outDir: 'dist',
@@ -79,6 +83,7 @@ export default defineConfig({
       'vue',
       '@ldesign/engine',
       '@ldesign/i18n',
+      '@ldesign/http',
       'monaco-editor',
       'prismjs',
     ],

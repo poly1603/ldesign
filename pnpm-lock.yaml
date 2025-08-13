@@ -152,6 +152,9 @@ importers:
       "@ldesign/engine":
         specifier: workspace:*
         version: link:../engine
+      "@ldesign/http":
+        specifier: workspace:*
+        version: link:../http
       "@ldesign/i18n":
         specifier: workspace:*
         version: link:../i18n
