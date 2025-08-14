@@ -1,4 +1,3 @@
-import type { AppConfig } from './types'
 import { createApp, presets } from '@ldesign/engine'
 import { createHttpEnginePlugin } from '@ldesign/http'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
@@ -7,24 +6,22 @@ import { createTemplateEnginePlugin } from '@ldesign/template'
 import App from './App'
 import { appI18nConfig, createAppI18n } from './i18n'
 import { routes } from './router/routes'
-import { createApiEnginePlugin } from './services/api-engine-plugin'
+import type { AppConfig } from './types'
 
 /**
- * 创建 LDesign 应用
- * @param config 应用配置
- * @returns 应用实例
+ * 创建简化的 LDesign 应用
  */
 async function createLDesignApp(config?: Partial<AppConfig>) {
   const defaultConfig: AppConfig = {
-    name: 'LDesign App',
+    name: 'LDesign App Demo',
     version: '0.1.0',
     debug: true,
     ...config,
   }
 
   try {
-    // eslint-disable-next-line no-console
-    console.log('🚀 开始启动 LDesign Engine 应用...')
+    console.log('🚀 启动 LDesign Engine 应用...')
+
     const engine = createApp(App, {
       ...presets.development(),
       config: {
@@ -43,8 +40,6 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
       })
     )
 
-    // 统一使用 engine.use() 方式集成插件
-
     // 集成 i18n 插件
     await engine.use(
       createI18nEnginePlugin({
@@ -61,12 +56,6 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         name: 'template',
         version: '1.0.0',
         defaultDevice: 'desktop',
-        enableCache: true,
-        cacheLimit: 50,
-        componentPrefix: 'L',
-        registerComponents: true,
-        registerDirectives: true,
-        provideGlobalProperties: true,
       })
     )
 
@@ -78,22 +67,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         clientConfig: {
           baseURL: 'https://jsonplaceholder.typicode.com',
           timeout: 10000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
         },
-        globalInjection: true,
-        globalPropertyName: '$http',
-      })
-    )
-
-    // 集成 API 引擎插件
-    await engine.use(
-      createApiEnginePlugin({
-        name: 'api',
-        version: '1.0.0',
-        globalPropertyName: '$api',
-        enableSystemApis: true,
       })
     )
 
@@ -105,12 +79,8 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
 
     engine.mount('#app')
 
-    // 返回应用实例
-    return {
-      engine,
-      router: engine.router,
-      config: defaultConfig,
-    }
+    console.log('✅ LDesign 应用启动成功!')
+    return { engine, config: defaultConfig }
   } catch (error) {
     console.error('❌ 应用启动失败:', error)
     throw error
@@ -118,13 +88,8 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
 }
 
 // 启动应用
-createLDesignApp()
-  .then(app => {
-    // eslint-disable-next-line no-console
-    console.log('✅ LDesign 应用启动成功!', app)
-  })
-  .catch(error => {
-    console.error('❌ 应用启动失败:', error)
-  })
+createLDesignApp().catch(error => {
+  console.error('❌ 应用启动失败:', error)
+})
 
 export default createLDesignApp
