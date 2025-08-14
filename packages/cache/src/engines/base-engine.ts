@@ -1,0 +1,141 @@
+import type { IStorageEngine, StorageEngine } from '../types'
+
+/**
+ * 存储引擎基类
+ */
+export abstract class BaseStorageEngine implements IStorageEngine {
+  abstract readonly name: StorageEngine
+  abstract readonly available: boolean
+  abstract readonly maxSize: number
+
+  protected _usedSize: number = 0
+
+  get usedSize(): number {
+    return this._usedSize
+  }
+
+  /**
+   * 设置缓存项
+   */
+  abstract setItem(key: string, value: string, ttl?: number): Promise<void>
+
+  /**
+   * 获取缓存项
+   */
+  abstract getItem(key: string): Promise<string | null>
+
+  /**
+   * 删除缓存项
+   */
+  abstract removeItem(key: string): Promise<void>
+
+  /**
+   * 清空所有缓存项
+   */
+  abstract clear(): Promise<void>
+
+  /**
+   * 获取所有键名
+   */
+  abstract keys(): Promise<string[]>
+
+  /**
+   * 检查键是否存在
+   */
+  async hasItem(key: string): Promise<boolean> {
+    const value = await this.getItem(key)
+    return value !== null
+  }
+
+  /**
+   * 获取缓存项数量
+   */
+  abstract length(): Promise<number>
+
+  /**
+   * 清理过期项
+   */
+  async cleanup(): Promise<void> {
+    const keys = await this.keys()
+    const now = Date.now()
+
+    for (const key of keys) {
+      try {
+        const itemData = await this.getItem(key)
+        if (itemData) {
+          const parsed = JSON.parse(itemData)
+          if (parsed.metadata?.expiresAt && now > parsed.metadata.expiresAt) {
+            await this.removeItem(key)
+          }
+        }
+      } catch (error) {
+        // 如果解析失败，可能是旧格式数据，跳过
+        console.warn(`Failed to parse cache item ${key}:`, error)
+      }
+    }
+  }
+
+  /**
+   * 计算字符串大小（字节）
+   */
+  protected calculateSize(data: string): number {
+    return new Blob([data]).size
+  }
+
+  /**
+   * 更新使用大小
+   */
+  protected async updateUsedSize(): Promise<void> {
+    const keys = await this.keys()
+    let totalSize = 0
+
+    for (const key of keys) {
+      try {
+        const value = await this.getItem(key)
+        if (value) {
+          totalSize += this.calculateSize(key) + this.calculateSize(value)
+        }
+      } catch (error) {
+        console.warn(`Error calculating size for key ${key}:`, error)
+      }
+    }
+
+    this._usedSize = totalSize
+  }
+
+  /**
+   * 检查存储空间是否足够
+   */
+  protected checkStorageSpace(dataSize: number): boolean {
+    return this._usedSize + dataSize <= this.maxSize
+  }
+
+  /**
+   * 生成带TTL的数据
+   */
+  protected createTTLData(value: string, ttl?: number): string {
+    if (!ttl) return value
+
+    const expiresAt = Date.now() + ttl
+    return JSON.stringify({
+      value,
+      expiresAt,
+    })
+  }
+
+  /**
+   * 解析带TTL的数据
+   */
+  protected parseTTLData(data: string): { value: string; expired: boolean } {
+    try {
+      const parsed = JSON.parse(data)
+      if (parsed.expiresAt) {
+        const expired = Date.now() > parsed.expiresAt
+        return { value: parsed.value, expired }
+      }
+      return { value: data, expired: false }
+    } catch {
+      return { value: data, expired: false }
+    }
+  }
+}
