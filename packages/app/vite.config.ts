@@ -34,19 +34,19 @@ export default defineConfig({
       '@/plugins': resolve(__dirname, 'src/plugins'),
       '@/middleware': resolve(__dirname, 'src/middleware'),
       // 配置本地包别名，指向ES模块构建文件
-      '@ldesign/engine': resolve(__dirname, '../engine/es/index.js'),
-      '@ldesign/router': resolve(__dirname, '../router/es/index.js'),
-      '@ldesign/template': resolve(__dirname, '../template/es/index.js'),
-      '@ldesign/template/vue': resolve(
-        __dirname,
-        '../template/es/vue/index.js'
-      ),
-      '@ldesign/i18n': resolve(__dirname, '../i18n/es/index.js'),
-      '@ldesign/i18n/vue': resolve(__dirname, '../i18n/es/vue/index.js'),
-      '@ldesign/http': resolve(__dirname, '../http/es/index.js'),
-      '@ldesign/http/vue': resolve(__dirname, '../http/es/vue/index.js'),
-      // 使用包含编译器的Vue版本
-      vue: 'vue/dist/vue.esm-bundler.js',
+      // '@ldesign/engine': resolve(__dirname, '../engine/es/index.js'),
+      // '@ldesign/router': resolve(__dirname, '../router/es/index.js'),
+      // '@ldesign/template': resolve(__dirname, '../template/es/index.js'),
+      // '@ldesign/template/vue': resolve(
+      //   __dirname,
+      //   '../template/es/vue/index.js'
+      // ),
+      // '@ldesign/i18n': resolve(__dirname, '../i18n/es/index.js'),
+      // '@ldesign/i18n/vue': resolve(__dirname, '../i18n/es/vue/index.js'),
+      // '@ldesign/http': resolve(__dirname, '../http/es/index.js'),
+      // '@ldesign/http/vue': resolve(__dirname, '../http/es/vue/index.js'),
+      // // 使用包含编译器的Vue版本
+      // vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
   css: {
