@@ -371,4 +371,151 @@
       color: #94a3b8;
     }
   }
+
+  // ============ 按钮模式样式 ============
+  &--buttons {
+    .template-selector__buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .template-selector__button {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 16px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+
+      &:hover:not(:disabled) {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &--active {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      }
+
+      &-name {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+      }
+
+      &-desc {
+        display: block;
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  // ============ 网格模式样式 ============
+  &--grid {
+    .template-selector__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .template-selector__grid-item {
+      padding: 16px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &--active {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      }
+
+      &-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 8px;
+      }
+
+      &-desc {
+        font-size: 14px;
+        color: #64748b;
+        line-height: 1.5;
+        margin: 0;
+      }
+    }
+  }
+
+  // ============ 尺寸变体 ============
+  &--small {
+    .template-selector__button {
+      padding: 8px 12px;
+      min-width: 100px;
+
+      &-name {
+        font-size: 13px;
+      }
+
+      &-desc {
+        font-size: 11px;
+      }
+    }
+
+    .template-selector__grid-item {
+      padding: 12px;
+
+      &-name {
+        font-size: 14px;
+      }
+
+      &-desc {
+        font-size: 12px;
+      }
+    }
+  }
+
+  &--large {
+    .template-selector__button {
+      padding: 16px 20px;
+      min-width: 150px;
+
+      &-name {
+        font-size: 16px;
+      }
+
+      &-desc {
+        font-size: 14px;
+      }
+    }
+
+    .template-selector__grid-item {
+      padding: 20px;
+
+      &-name {
+        font-size: 18px;
+      }
+
+      &-desc {
+        font-size: 16px;
+      }
+    }
+  }
 }

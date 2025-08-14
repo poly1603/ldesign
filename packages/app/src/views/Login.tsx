@@ -100,7 +100,10 @@ export default defineComponent({
       <TemplateRenderer
         category='login'
         showSelector={true}
+        selectorMode='buttons'
+        selectorSize='medium'
         selectorPosition='top'
+        showDeviceInfo={true}
         config={{
           // 将 LoginPanel 组件传递给模板
           loginPanel: createLoginPanel(),

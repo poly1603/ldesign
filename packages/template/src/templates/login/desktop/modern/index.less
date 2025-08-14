@@ -97,6 +97,24 @@
   }
 }
 
+// ============ 模板选择器包装器样式 ============
+.modern-login__template-selector {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  .template-selector {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+}
+
 // ============ LoginPanel 包装器样式 ============
 .login-panel-wrapper {
   width: 100%;

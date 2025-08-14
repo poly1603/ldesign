@@ -1,4 +1,4 @@
-export { default as TemplateSelector } from './components/TemplateSelector.js'
+export { default as TemplateSelector } from './vue/components/TemplateSelector.js'
 export { LRUCache, TemplateCache } from './core/cache/index.js'
 export { detectDeviceType, getDeviceInfo as getDeviceInfoCore, watchDeviceChange } from './core/device.js'
 export { TemplateManager } from './core/TemplateManager.js'

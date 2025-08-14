@@ -14,6 +14,7 @@ import { glob } from 'glob'
 import del from 'rollup-plugin-delete'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
+import postcssLess from 'postcss-less'
 
 /**
  * 创建基础的 Rollup 配置
@@ -141,6 +142,8 @@ export function createRollupConfig(options = {}) {
           stylus: {},
         },
         plugins: [autoprefixer()],
+        parser: postcssLess,
+        stringifier: postcssLess,
       }),
       // 环境变量替换
       replace({

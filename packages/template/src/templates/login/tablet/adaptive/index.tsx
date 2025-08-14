@@ -1,4 +1,4 @@
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 import './index.less'
 
 export default defineComponent({
@@ -37,47 +37,18 @@ export default defineComponent({
       type: Object,
       default: null,
     },
+    // 新增：模板选择器组件
+    templateSelector: {
+      type: Object,
+      default: null,
+    },
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
-  setup(props, { emit }) {
-    // 当前选中的模板
-    const currentTemplate = ref('adaptive')
-
-    // 可用的模板列表
-    const availableTemplates = [
-      { id: 'adaptive', name: '自适应模板', description: '平板端自适应登录界面' },
-      { id: 'split', name: '分屏模板', description: '平板端分屏登录界面' },
-    ]
-
-    // 模板切换处理
-    const handleTemplateChange = (templateId: string) => {
-      currentTemplate.value = templateId
-      emit('template-change', templateId)
-    }
-
+  setup(props) {
     return () => (
       <div class="tablet-adaptive-login">
-        {/* 模板切换器 */}
-        <div class="template-selector">
-          <div class="template-selector__header">
-            <span class="template-selector__title">选择模板</span>
-          </div>
-          <div class="template-selector__options">
-            {availableTemplates.map(template => (
-              <button
-                key={template.id}
-                class={[
-                  'template-selector__option',
-                  currentTemplate.value === template.id && 'template-selector__option--active',
-                ]}
-                onClick={() => handleTemplateChange(template.id)}
-              >
-                <div class="template-selector__option-name">{template.name}</div>
-                <div class="template-selector__option-desc">{template.description}</div>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* 使用传递进来的模板选择器 */}
+        {props.templateSelector && <div class="tablet-adaptive-login__selector">{props.templateSelector}</div>}
 
         <div class="tablet-adaptive-login__background">
           <div class="tablet-adaptive-login__pattern"></div>

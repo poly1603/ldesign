@@ -1,4 +1,4 @@
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 import './index.less'
 
 export default defineComponent({
@@ -37,51 +37,32 @@ export default defineComponent({
       type: Object,
       default: null,
     },
+    // 新增：模板选择器组件
+    templateSelector: {
+      type: Object,
+      default: null,
+    },
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
-  setup(props, { emit }) {
-    // 当前选中的模板
-    const currentTemplate = ref('simple')
-
-    // 可用的模板列表
-    const availableTemplates = [
-      { id: 'card', name: '卡片模板', description: '移动端卡片式登录界面' },
-      { id: 'simple', name: '简洁模板', description: '移动端简洁登录界面' },
-    ]
-
-    // 模板切换处理
-    const handleTemplateChange = (templateId: string) => {
-      currentTemplate.value = templateId
-      emit('template-change', templateId)
-    }
-
+  setup(props) {
     return () => (
       <div class="mobile-simple-login">
-        {/* 模板切换器 */}
-        <div class="template-selector">
-          <div class="template-selector__header">
-            <span class="template-selector__title">选择模板</span>
-          </div>
-          <div class="template-selector__options">
-            {availableTemplates.map(template => (
-              <button
-                key={template.id}
-                class={[
-                  'template-selector__option',
-                  currentTemplate.value === template.id && 'template-selector__option--active',
-                ]}
-                onClick={() => handleTemplateChange(template.id)}
-              >
-                <div class="template-selector__option-name">{template.name}</div>
-                <div class="template-selector__option-desc">{template.description}</div>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* 使用传递进来的模板选择器 */}
+        {props.templateSelector && <div class="mobile-simple-login__selector">{props.templateSelector}</div>}
 
         <div class="mobile-simple-login__container">
+          <div class="mobile-simple-login__header">
+            {props.logo && (
+              <div class="mobile-simple-login__logo">
+                <img src={props.logo} alt="Logo" />
+              </div>
+            )}
+            <h1 class="mobile-simple-login__title">{props.title}</h1>
+            <p class="mobile-simple-login__subtitle">{props.subtitle}</p>
+          </div>
+
           {/* 使用传递进来的 LoginPanel 组件 */}
-          <div class="login-panel-wrapper">{props.loginPanel}</div>
+          <div class="mobile-simple-login__panel">{props.loginPanel}</div>
         </div>
       </div>
     )

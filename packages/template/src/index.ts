@@ -12,7 +12,7 @@
  */
 
 /** 模板选择器组件 - Vue 组件，用于便捷的模板切换 */
-export { default as TemplateSelector } from './components/TemplateSelector'
+export { default as TemplateSelector } from './vue/components/TemplateSelector'
 
 // ============ 缓存管理 ============
 /** 缓存系统 - 提供 LRU 缓存和模板专用缓存功能 */

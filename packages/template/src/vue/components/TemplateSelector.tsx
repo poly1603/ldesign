@@ -4,12 +4,39 @@ import { getDeviceInfo, watchDeviceChange } from '../../core/device'
 import { getDefaultTemplate, getTemplatesByDevice } from '../../core/TemplateManager'
 import './TemplateSelector.less'
 
+// 定义外部模板类型
+interface ExternalTemplate {
+  id: string
+  name: string
+  description?: string
+}
+
+// 统一的模板类型
+interface UnifiedTemplate {
+  id: string
+  name: string
+  description?: string
+  variant: string
+  config?: {
+    description?: string
+    tags?: string[]
+    preview?: string | { thumbnail?: string; description?: string }
+  }
+  isDefault?: boolean
+}
+
 export interface TemplateSelectorProps {
   category: string
   value?: string
+  deviceType?: string
+  availableTemplates?: ExternalTemplate[]
   showDeviceInfo?: boolean
   showPreview?: boolean
   disabled?: boolean
+  mode?: 'dropdown' | 'grid' | 'buttons'
+  size?: 'small' | 'medium' | 'large'
+  onTemplateChange?: (templateId: string) => void
+  onDeviceChange?: (deviceType: string) => void
 }
 
 export default defineComponent({
@@ -23,6 +50,14 @@ export default defineComponent({
       type: String,
       default: '',
     },
+    deviceType: {
+      type: String,
+      default: '',
+    },
+    availableTemplates: {
+      type: Array as () => ExternalTemplate[],
+      default: () => [],
+    },
     showDeviceInfo: {
       type: Boolean,
       default: true,
@@ -35,22 +70,66 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    mode: {
+      type: String as () => 'dropdown' | 'grid' | 'buttons',
+      default: 'dropdown',
+    },
+    size: {
+      type: String as () => 'small' | 'medium' | 'large',
+      default: 'medium',
+    },
+    onTemplateChange: {
+      type: Function,
+      default: null,
+    },
+    onDeviceChange: {
+      type: Function,
+      default: null,
+    },
   },
-  emits: ['update:value', 'change', 'deviceChange'],
+  emits: ['update:value', 'change', 'deviceChange', 'template-change'],
   setup(props, { emit }) {
     const deviceInfo = ref(getDeviceInfo())
     const selectedTemplate = ref<string>(props.value)
     const isOpen = ref(false)
     const unwatchDevice = ref<(() => void) | null>(null)
 
-    // 获取当前设备类型的可用模板
-    const availableTemplates = computed(() => {
-      return getTemplatesByDevice(props.category, deviceInfo.value.type)
+    // 获取可用模板列表（优先使用外部传入的，否则从系统获取）
+    const availableTemplates = computed((): UnifiedTemplate[] => {
+      if (props.availableTemplates && props.availableTemplates.length > 0) {
+        return props.availableTemplates.map(t => ({
+          id: t.id,
+          name: t.name,
+          description: t.description || '',
+          variant: t.id,
+          config: {
+            description: t.description || '',
+            tags: [],
+            preview: undefined,
+          },
+          isDefault: false,
+        }))
+      }
+      // 系统模板已经是正确的格式，但需要确保类型兼容
+      const systemTemplates = getTemplatesByDevice(props.category, deviceInfo.value.type)
+      return systemTemplates.map(t => ({
+        id: t.id,
+        name: t.name,
+        description: t.config?.description || '',
+        variant: t.variant || t.id,
+        config: t.config,
+        isDefault: t.isDefault,
+      }))
     })
 
     // 获取当前选中的模板信息
-    const currentTemplate = computed(() => {
-      return availableTemplates.value.find(t => t.variant === selectedTemplate.value) || null
+    const currentTemplate = computed((): UnifiedTemplate | null => {
+      return (
+        availableTemplates.value.find(t => {
+          const templateId = t.variant || t.id
+          return templateId === selectedTemplate.value
+        }) || null
+      )
     })
 
     // 获取默认模板
@@ -73,8 +152,7 @@ export default defineComponent({
 
     // 切换模板
     const selectTemplate = (variant: string) => {
-      if (props.disabled)
-        return
+      if (props.disabled) return
 
       selectedTemplate.value = variant
       isOpen.value = false
@@ -89,6 +167,12 @@ export default defineComponent({
         template: currentTemplate.value,
         device: deviceInfo.value.type,
       })
+      emit('template-change', variant)
+
+      // 调用外部回调
+      if (props.onTemplateChange) {
+        props.onTemplateChange(variant)
+      }
     }
 
     // 处理设备变化
@@ -113,8 +197,7 @@ export default defineComponent({
 
     // 切换下拉菜单
     const toggleDropdown = () => {
-      if (props.disabled)
-        return
+      if (props.disabled) return
       isOpen.value = !isOpen.value
     }
 
@@ -132,11 +215,14 @@ export default defineComponent({
     }
 
     // 监听props.value变化
-    watch(() => props.value, (newValue) => {
-      if (newValue !== selectedTemplate.value) {
-        selectedTemplate.value = newValue || getDefaultVariant()
+    watch(
+      () => props.value,
+      newValue => {
+        if (newValue !== selectedTemplate.value) {
+          selectedTemplate.value = newValue || getDefaultVariant()
+        }
       }
-    })
+    )
 
     onMounted(() => {
       // 初始化选中的模板
@@ -160,11 +246,65 @@ export default defineComponent({
       document.removeEventListener('click', handleClickOutside)
     })
 
+    // 渲染按钮模式
+    const renderButtonsMode = () => (
+      <div class="template-selector__buttons">
+        {availableTemplates.value.map(template => {
+          const templateId = template.variant || template.id
+          return (
+            <button
+              key={templateId}
+              type="button"
+              class={[
+                'template-selector__button',
+                { 'template-selector__button--active': templateId === selectedTemplate.value },
+              ]}
+              onClick={() => selectTemplate(templateId)}
+              disabled={props.disabled}
+            >
+              <span class="template-selector__button-name">{template.name}</span>
+              {template.description && <span class="template-selector__button-desc">{template.description}</span>}
+            </button>
+          )
+        })}
+      </div>
+    )
+
+    // 渲染网格模式
+    const renderGridMode = () => (
+      <div class="template-selector__grid">
+        {availableTemplates.value.map(template => {
+          const templateId = template.variant || template.id
+          return (
+            <div
+              key={templateId}
+              class={[
+                'template-selector__grid-item',
+                { 'template-selector__grid-item--active': templateId === selectedTemplate.value },
+              ]}
+              onClick={() => selectTemplate(templateId)}
+            >
+              <div class="template-selector__grid-content">
+                <h4 class="template-selector__grid-name">{template.name}</h4>
+                {template.description && <p class="template-selector__grid-desc">{template.description}</p>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+
     return () => (
-      <div class={['template-selector', {
-        'template-selector--open': isOpen.value,
-        'template-selector--disabled': props.disabled,
-      }]}
+      <div
+        class={[
+          'template-selector',
+          `template-selector--${props.mode}`,
+          `template-selector--${props.size}`,
+          {
+            'template-selector--open': isOpen.value,
+            'template-selector--disabled': props.disabled,
+          },
+        ]}
       >
         {props.showDeviceInfo && (
           <div class="template-selector__device-info">
@@ -174,74 +314,77 @@ export default defineComponent({
               {deviceInfo.value.type === 'mobile' && '📱 移动端'}
             </span>
             <span class="template-selector__device-size">
-              {deviceInfo.value.width}
-              {' '}
-              ×
-              {deviceInfo.value.height}
+              {deviceInfo.value.width} ×{deviceInfo.value.height}
             </span>
           </div>
         )}
 
-        <div class="template-selector__dropdown">
-          <button
-            type="button"
-            class="template-selector__trigger"
-            onClick={toggleDropdown}
-            disabled={props.disabled}
-          >
-            <div class="template-selector__current">
-              <span class="template-selector__current-name">
-                {currentTemplate.value?.name || '选择模板'}
-              </span>
-              {currentTemplate.value?.isDefault && (
-                <span class="template-selector__default-badge">默认</span>
-              )}
-            </div>
-            <svg class="template-selector__arrow" viewBox="0 0 24 24" fill="none">
-              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" />
-            </svg>
-          </button>
+        {/* 根据模式渲染不同的界面 */}
+        {props.mode === 'buttons' && renderButtonsMode()}
+        {props.mode === 'grid' && renderGridMode()}
+        {props.mode === 'dropdown' && (
+          <div class="template-selector__dropdown">
+            <button type="button" class="template-selector__trigger" onClick={toggleDropdown} disabled={props.disabled}>
+              <div class="template-selector__current">
+                <span class="template-selector__current-name">{currentTemplate.value?.name || '选择模板'}</span>
+                {currentTemplate.value?.isDefault && <span class="template-selector__default-badge">默认</span>}
+              </div>
+              <svg class="template-selector__arrow" viewBox="0 0 24 24" fill="none">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </button>
 
-          {isOpen.value && (
-            <div class="template-selector__menu">
-              {availableTemplates.value.map(template => (
-                <button
-                  key={template.variant}
-                  type="button"
-                  class={[
-                    'template-selector__option',
-                    { 'template-selector__option--selected': template.variant === selectedTemplate.value },
-                  ]}
-                  onClick={() => selectTemplate(template.variant)}
-                >
-                  <div class="template-selector__option-content">
-                    <div class="template-selector__option-header">
-                      <span class="template-selector__option-name">{template.name}</span>
-                      {template.isDefault && (
-                        <span class="template-selector__default-badge">默认</span>
-                      )}
-                    </div>
-                    <p class="template-selector__option-description">
-                      {template.config.description}
-                    </p>
-                    {template.config.tags && (
-                      <div class="template-selector__option-tags">
-                        {template.config.tags.map(tag => (
-                          <span key={tag} class="template-selector__tag">{tag}</span>
-                        ))}
+            {isOpen.value && (
+              <div class="template-selector__menu">
+                {availableTemplates.value.map(template => {
+                  const templateId = template.variant || template.id
+                  return (
+                    <button
+                      key={templateId}
+                      type="button"
+                      class={[
+                        'template-selector__option',
+                        { 'template-selector__option--selected': templateId === selectedTemplate.value },
+                      ]}
+                      onClick={() => selectTemplate(templateId)}
+                    >
+                      <div class="template-selector__option-content">
+                        <div class="template-selector__option-header">
+                          <span class="template-selector__option-name">{template.name}</span>
+                          {template.isDefault && <span class="template-selector__default-badge">默认</span>}
+                        </div>
+                        <p class="template-selector__option-description">
+                          {template.description || template.config?.description}
+                        </p>
+                        {template.config?.tags && (
+                          <div class="template-selector__option-tags">
+                            {template.config.tags.map((tag: string) => (
+                              <span key={tag} class="template-selector__tag">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {props.showPreview && template.config.preview && (
-                    <div class="template-selector__option-preview">
-                      <img src={template.config.preview} alt={template.name} />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                      {props.showPreview && template.config?.preview && (
+                        <div class="template-selector__option-preview">
+                          <img
+                            src={
+                              typeof template.config.preview === 'string'
+                                ? template.config.preview
+                                : template.config.preview.thumbnail
+                            }
+                            alt={template.name}
+                          />
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {availableTemplates.value.length === 0 && (
           <div class="template-selector__empty">

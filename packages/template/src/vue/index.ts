@@ -21,6 +21,7 @@ export { default as ModernLoginTemplate } from '../templates/login/desktop/moder
 export { default as LazyTemplate } from './components/LazyTemplate'
 export { default as PerformanceMonitor } from './components/PerformanceMonitor'
 export { TemplateRenderer } from './components/TemplateRenderer'
+export { default as TemplateSelector } from './components/TemplateSelector'
 
 // ============ 向后兼容性支持 ============
 // 保留旧版本的 useTemplate Hook（已废弃，建议使用新版本）
@@ -37,16 +38,10 @@ export {
 } from './composables/useTemplateSystem'
 
 // 虚拟滚动组合式函数
-export {
-  useSimpleVirtualScroll,
-  useVirtualScroll,
-} from './composables/useVirtualScroll'
+export { useSimpleVirtualScroll, useVirtualScroll } from './composables/useVirtualScroll'
 
 // ============ 指令导出 ============
-export {
-  registerTemplateDirective,
-  templateDirective,
-} from './directives/template'
+export { registerTemplateDirective, templateDirective } from './directives/template'
 
 // ============ 插件导出 ============
 export { getGlobalTemplateManager, TemplatePlugin } from './plugins'

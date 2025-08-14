@@ -1,15 +1,26 @@
 import type { DeviceType } from '../composables/useTemplateSystem'
-import { defineComponent, ref, shallowRef, watch } from 'vue'
+import { computed, defineComponent, h, ref, shallowRef, watch } from 'vue'
 import { useTemplate } from '../composables/useTemplateSystem'
+import TemplateSelector from './TemplateSelector'
 
 export interface TemplateRendererProps {
   category: string
   templateId?: string
   deviceType?: DeviceType
-  showSelector?: boolean
-  selectorPosition?: 'top' | 'bottom' | 'left' | 'right'
   autoDetectDevice?: boolean
   config?: Record<string, unknown>
+
+  // 模板选择器相关
+  /** 是否显示模板选择器 */
+  showSelector?: boolean
+  /** 选择器显示模式 */
+  selectorMode?: 'dropdown' | 'grid' | 'buttons'
+  /** 选择器大小 */
+  selectorSize?: 'small' | 'medium' | 'large'
+  /** 选择器位置 */
+  selectorPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 是否显示设备信息 */
+  showDeviceInfo?: boolean
 
   // 性能优化相关
   /** 是否启用懒加载 */
@@ -51,14 +62,6 @@ export const TemplateRenderer = defineComponent({
       type: String,
       default: undefined,
     },
-    showSelector: {
-      type: Boolean,
-      default: false,
-    },
-    selectorPosition: {
-      type: String,
-      default: 'top',
-    },
     autoDetectDevice: {
       type: Boolean,
       default: true,
@@ -66,6 +69,26 @@ export const TemplateRenderer = defineComponent({
     config: {
       type: Object,
       default: () => ({}),
+    },
+    showSelector: {
+      type: Boolean,
+      default: true,
+    },
+    selectorMode: {
+      type: String as () => 'dropdown' | 'grid' | 'buttons',
+      default: 'buttons',
+    },
+    selectorSize: {
+      type: String as () => 'small' | 'medium' | 'large',
+      default: 'medium',
+    },
+    selectorPosition: {
+      type: String as () => 'top' | 'bottom' | 'left' | 'right',
+      default: 'top',
+    },
+    showDeviceInfo: {
+      type: Boolean,
+      default: true,
     },
     lazy: {
       type: Boolean,
@@ -160,48 +183,51 @@ export const TemplateRenderer = defineComponent({
       { immediate: true }
     )
 
-    // 渲染模板选择器
-    const renderSelector = () => {
-      if (!props.showSelector) return null
+    // 自动创建 TemplateSelector 组件
+    const createTemplateSelector = () => {
+      // 如果用户手动传递了 templateSelector，优先使用
+      if (props.config?.templateSelector) {
+        return props.config.templateSelector
+      }
 
-      return (
-        <div class="template-renderer__selector">
-          <div class="template-renderer__selector-group">
-            <label class="template-renderer__label">模板:</label>
-            <select
-              class="template-renderer__select"
-              value={currentTemplateId.value}
-              onChange={(e: Event) => {
-                const target = e.target as HTMLSelectElement
-                switchTemplate(target.value)
-              }}
-            >
-              {availableTemplates.value.map(template => (
-                <option key={template.id} value={template.id}>
-                  {template.name}
-                </option>
-              ))}
-            </select>
-          </div>
+      // 如果不显示选择器，返回 null
+      if (!props.showSelector) {
+        return null
+      }
 
-          <div class="template-renderer__selector-group">
-            <label class="template-renderer__label">设备:</label>
-            <select
-              class="template-renderer__select"
-              value={deviceType.value}
-              onChange={(e: Event) => {
-                const target = e.target as HTMLSelectElement
-                switchDevice(target.value as DeviceType)
-              }}
-            >
-              <option value="desktop">桌面</option>
-              <option value="tablet">平板</option>
-              <option value="mobile">手机</option>
-            </select>
-          </div>
-        </div>
-      )
+      // 如果没有可用模板或只有一个模板，不显示选择器
+      if (!availableTemplates.value || availableTemplates.value.length <= 1) {
+        return null
+      }
+
+      // 自动创建 TemplateSelector
+      return h(TemplateSelector, {
+        category: props.category,
+        value: currentTemplateId.value,
+        deviceType: deviceType.value,
+        availableTemplates: availableTemplates.value.map(t => ({
+          id: t.id,
+          name: t.name,
+          description: t.description || '',
+        })),
+        mode: props.selectorMode,
+        size: props.selectorSize,
+        showDeviceInfo: props.showDeviceInfo,
+        disabled: false,
+        onTemplateChange: switchTemplate,
+        onDeviceChange: switchDevice,
+      })
     }
+
+    // 暴露模板切换方法给外部使用
+    const templateSelectorProps = computed(() => ({
+      category: props.category,
+      value: currentTemplateId.value,
+      deviceType: deviceType.value,
+      availableTemplates: availableTemplates.value,
+      onTemplateChange: switchTemplate,
+      onDeviceChange: switchDevice,
+    }))
 
     // 渲染模板内容
     const renderContent = () => {
@@ -210,10 +236,11 @@ export const TemplateRenderer = defineComponent({
           return <div class="template-renderer__error">未找到模板</div>
         }
 
-        // 合并配置
+        // 合并配置，包括模板选择器
         const finalConfig = {
           ...templateConfig.value,
           ...props.config,
+          templateSelector: createTemplateSelector(), // 将创建的模板选择器传递给模板
         }
 
         const Component = TemplateComponent.value
@@ -235,46 +262,27 @@ export const TemplateRenderer = defineComponent({
       }
     }
 
+    // 暴露给外部的方法和数据（供调试使用）
+    if (process.env.NODE_ENV === 'development') {
+      ;(window as any).__templateRenderer = {
+        switchTemplate,
+        switchDevice,
+        currentTemplateId,
+        deviceType,
+        availableTemplates,
+        templateSelectorProps,
+      }
+    }
+
     return () => {
-      const selector = renderSelector()
       const content = renderContent()
 
-      const className = [
-        'template-renderer',
-        props.selectorPosition === 'left' || props.selectorPosition === 'right'
-          ? 'template-renderer--horizontal'
-          : 'template-renderer--vertical',
-      ].join(' ')
-
-      if (props.selectorPosition === 'top') {
-        return (
-          <div class={className}>
-            {selector}
-            <div class="template-renderer__content">{content}</div>
-          </div>
-        )
-      } else if (props.selectorPosition === 'bottom') {
-        return (
-          <div class={className}>
-            <div class="template-renderer__content">{content}</div>
-            {selector}
-          </div>
-        )
-      } else if (props.selectorPosition === 'left') {
-        return (
-          <div class={className}>
-            {selector}
-            <div class="template-renderer__content">{content}</div>
-          </div>
-        )
-      } else {
-        return (
-          <div class={className}>
-            <div class="template-renderer__content">{content}</div>
-            {selector}
-          </div>
-        )
-      }
+      // 直接返回内容，模板选择器由模板内部处理
+      return (
+        <div class="template-renderer">
+          <div class="template-renderer__content">{content}</div>
+        </div>
+      )
     }
   },
 })
