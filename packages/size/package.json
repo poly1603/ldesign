@@ -1,0 +1,132 @@
+{
+  "name": "@ldesign/size",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "页面尺寸缩放功能包 - 支持动态切换页面整体尺寸，提供完整的Vue生态支持",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/{{PACKAGE_NAME}}#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/ldesign.git",
+    "directory": "packages/{{PACKAGE_NAME}}"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/ldesign/issues"
+  },
+  "keywords": [
+    "ldesign",
+    "vue3",
+    "typescript",
+    "size",
+    "scale",
+    "responsive",
+    "css-variables",
+    "theme",
+    "ui-scale"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.js"
+    },
+    "./vue": {
+      "types": "./types/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.js"
+    },
+    "./es": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js"
+    },
+    "./lib": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js"
+    },
+    "./dist": {
+      "types": "./types/index.d.ts",
+      "browser": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "types": "types/index.d.ts",
+  "browser": "dist/index.js",
+  "files": [
+    "CHANGELOG.md",
+    "README.md",
+    "dist",
+    "es",
+    "lib",
+    "types"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "dev": "rollup -c -w",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "size-check": "size-limit",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
+    "deploy": "tsx ../../tools/deploy/package-deployer.ts size",
+    "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts size --tag beta",
+    "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts size --tag alpha",
+    "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts size --dry-run"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^3.0.0",
+    "@playwright/test": "^1.40.1",
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^22.0.0",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitest/coverage-v8": "^2.0.0",
+    "@vitest/ui": "^2.0.0",
+    "@vue/test-utils": "^2.4.4",
+    "eslint": "^9.0.0",
+    "glob": "^10.3.10",
+    "jsdom": "^24.0.0",
+    "playwright": "^1.40.1",
+    "rimraf": "^5.0.0",
+    "rollup": "^4.9.6",
+    "rollup-plugin-dts": "^6.1.0",
+    "size-limit": "^11.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.0.12",
+    "vitepress": "^1.0.0",
+    "vitest": "^2.0.0",
+    "vue": "^3.4.15",
+    "vue-tsc": "^1.8.27"
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "50 KB"
+    }
+  ]
+}
