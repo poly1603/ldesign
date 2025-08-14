@@ -1,4 +1,4 @@
-import type { LanguagePackage } from '@/core/types'
+import type { LanguagePackage } from '../../core/types'
 
 import common from './common'
 import date from './date'

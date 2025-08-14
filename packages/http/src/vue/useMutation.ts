@@ -4,10 +4,10 @@ import type {
   HttpError,
   RequestConfig,
   ResponseData,
-} from '@/types'
-import type { UseMutationOptions, UseMutationReturn } from '@/types/vue'
+} from '../types'
+import type { UseMutationOptions, UseMutationReturn } from '../types/vue'
 import { onUnmounted, ref } from 'vue'
-import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
+import { createCancelTokenSource, isCancelError } from '../utils/cancel'
 
 /**
  * useMutation Hook

@@ -1,9 +1,9 @@
 import type { App, Plugin } from 'vue'
-import type { HttpClient, RequestConfig } from '@/types'
-import type { HttpPluginOptions } from '@/types/vue'
+import type { HttpClient, RequestConfig } from '../types'
+import type { HttpPluginOptions } from '../types/vue'
 import { provide, ref } from 'vue'
-import { createAdapter } from '@/adapters'
-import { HttpClientImpl } from '@/client'
+import { createAdapter } from '../adapters'
+import { HttpClientImpl } from '../client'
 import { HTTP_CLIENT_KEY, HTTP_CONFIG_KEY } from './useHttp'
 
 /**
@@ -25,7 +25,7 @@ export const HttpPlugin: Plugin = {
 
     // 注册全局属性
     const globalProperty = httpOptions.globalProperty || '$http'
-    ;(app.config.globalProperties as any)[globalProperty] = client
+      ; (app.config.globalProperties as any)[globalProperty] = client
 
     // 提供全局方法
     app.provide('httpClient', client)

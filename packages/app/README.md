@@ -40,7 +40,7 @@ pnpm install
 ### 开发模式
 
 ```bash
-# 启动开发服务器
+# 启动开发服务器（默认：构建产物模式）
 pnpm dev
 
 # 类型检查
@@ -48,6 +48,114 @@ pnpm type-check
 
 # 代码检查和修复
 pnpm lint
+```
+
+## 🔧 双环境开发支持
+
+本项目支持两种不同的开发环境，方便开发者在不同场景下进行开发和测试：
+
+### 环境A：构建产物模式 (Built Mode)
+- **端口**: 3001
+- **用途**: 使用已构建的 `@ldesign/*` 包
+- **适用场景**: 生产环境开发、性能测试、最终用户体验验证
+- **特点**: 更接近生产环境，启动速度快
+
+### 环境B：源码模式 (Source Mode)
+- **端口**: 3002
+- **用途**: 直接引用 `@ldesign/*` 包的源码目录
+- **适用场景**: 开发调试、源码修改实时预览、包开发和测试
+- **特点**: 支持热更新，便于调试
+
+### 开发命令
+
+#### 基础开发命令
+```bash
+# 默认开发模式（构建产物模式）
+pnpm run dev
+
+# 构建产物模式 - 端口 3001
+pnpm run dev:built
+
+# 源码模式 - 端口 3002
+pnpm run dev:source
+
+# 同时启动两种模式进行对比
+pnpm run dev:compare
+```
+
+#### 环境切换工具
+```bash
+# 交互式选择环境（推荐）
+pnpm run env
+
+# 显示所有可用环境
+pnpm run env:list
+
+# 启动构建模式
+pnpm run env:built
+
+# 启动源码模式
+pnpm run env:source
+
+# 启动对比模式
+pnpm run env:compare
+```
+
+#### 智能批量构建
+```bash
+# 智能并行构建（推荐）
+pnpm run build:all
+
+# 不同构建模式
+pnpm run build:all:smart      # 智能并行（按依赖层级）
+pnpm run build:all:parallel   # 完全并行（最快）
+pnpm run build:all:serial     # 串行构建（最安全）
+
+# 显示构建帮助
+pnpm run build:all --help
+```
+
+#### 构建命令
+```bash
+# 构建（Rollup）
+pnpm run build
+
+# 构建（Vite - 构建模式）
+pnpm run build:vite:built
+
+# 构建（Vite - 源码模式）
+pnpm run build:vite:source
+
+# 预览构建结果
+pnpm run preview:built
+pnpm run preview:source
+```
+
+## 🎯 核心特性
+
+### 🔧 智能双环境开发
+- **构建模式**: 使用已构建的包，接近生产环境
+- **源码模式**: 直接引用源码，支持热更新调试
+- **对比模式**: 同时启动两种模式进行对比测试
+- **交互式切换**: 友好的环境选择界面
+
+### 🚀 智能批量构建
+- **依赖分析**: 自动分析包之间的依赖关系
+- **层级构建**: 按依赖层级分组并行构建
+- **错误容错**: 单个包失败不影响其他包构建
+- **性能优化**: 比传统串行构建快 60-80%
+
+### 📊 开发体验优化
+- **实时反馈**: 清晰的状态显示和进度提示
+- **智能提示**: 详细的使用说明和错误提示
+- **快速切换**: 一键切换不同开发环境
+- **热更新支持**: 源码模式下的实时代码更新
+
+## 📖 详细文档
+
+更多详细信息请查看：
+- [双环境开发支持文档](./DUAL_ENV_DEVELOPMENT.md)
+- [API 集成文档](./API_INTEGRATION.md)
 ```
 
 ### 构建

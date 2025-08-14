@@ -1,4 +1,4 @@
-import type { App } from 'vue'
+import type { App, Ref, ComputedRef } from 'vue'
 
 import type {
   I18nInstance,
@@ -9,14 +9,7 @@ import type {
   TranslationParams,
 } from '../core/types'
 
-// 手动定义类型以避免导入问题
-interface Ref<T = any> {
-  value: T
-}
-
-interface ComputedRef<T = any> {
-  readonly value: T
-}
+// Vue 类型已从 'vue' 导入，移除重复定义
 
 /**
  * Vue I18n 插件选项

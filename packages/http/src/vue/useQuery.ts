@@ -4,10 +4,10 @@ import type {
   HttpError,
   RequestConfig,
   ResponseData,
-} from '@/types'
-import type { UseQueryOptions, UseQueryReturn } from '@/types/vue'
+} from '../types'
+import type { UseQueryOptions, UseQueryReturn } from '../types/vue'
 import { computed, onUnmounted, ref, unref, watch } from 'vue'
-import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
+import { createCancelTokenSource, isCancelError } from '../utils/cancel'
 
 /**
  * 查询缓存管理器

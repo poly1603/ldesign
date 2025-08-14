@@ -10,13 +10,13 @@ import type {
   ResponseData,
   ResponseInterceptor,
   RetryConfig,
-} from '@/types'
-import type { CancelManager } from '@/utils/cancel'
-import { InterceptorManagerImpl } from '@/interceptors/manager'
-import { CacheManager } from '@/utils/cache'
-import { globalCancelManager } from '@/utils/cancel'
-import { ConcurrencyManager } from '@/utils/concurrency'
-import { RetryManager } from '@/utils/error'
+} from './types'
+import type { CancelManager } from './utils/cancel'
+import { InterceptorManagerImpl } from './interceptors/manager'
+import { CacheManager } from './utils/cache'
+import { globalCancelManager } from './utils/cancel'
+import { ConcurrencyManager } from './utils/concurrency'
+import { RetryManager } from './utils/error'
 
 /**
  * HTTP 客户端实现

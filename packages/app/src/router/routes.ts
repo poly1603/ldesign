@@ -7,7 +7,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home/index.tsx'),
+    component: () => import('../views/Home/index'),
     meta: {
       title: '首页',
     },
