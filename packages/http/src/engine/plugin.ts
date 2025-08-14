@@ -1,8 +1,8 @@
-import type { HttpClient, HttpClientConfig } from '@/types'
-import type { HttpPluginOptions } from '@/types/vue'
-import { createAdapter } from '@/adapters'
-import { HttpClientImpl } from '@/client'
-import { HttpPlugin } from '@/vue/plugin'
+import type { HttpClient, HttpClientConfig } from '../types'
+import type { HttpPluginOptions } from '../types/vue'
+import { createAdapter } from '../adapters'
+import { HttpClientImpl } from '../client'
+import { HttpPlugin } from '../vue/plugin'
 
 // 临时使用 any 类型，避免循环依赖
 interface Plugin {

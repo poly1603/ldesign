@@ -55,12 +55,14 @@ const defaultTheme: ThemeConfig = {
 /** 生成随机验证码图片 URL */
 function generateCaptchaUrl(): string {
   const timestamp = Date.now()
+  const randomCode = Math.random().toString(36).substr(2, 4).toUpperCase()
   return `data:image/svg+xml;base64,${btoa(`
     <svg width="80" height="36" xmlns="http://www.w3.org/2000/svg">
       <rect width="80" height="36" fill="#f3f4f6"/>
       <text x="40" y="22" text-anchor="middle" font-family="Arial" font-size="14" fill="#374151">
-        ${Math.random().toString(36).substr(2, 4).toUpperCase()}
+        ${randomCode}
       </text>
+      <!-- timestamp: ${timestamp} -->
     </svg>
   `)}`
 }
@@ -271,17 +273,7 @@ export const LoginPanel = defineComponent({
       emit('mode-change', { from, to: mode })
     }
 
-    /** 切换主题模式 */
-    const switchTheme = (mode: ThemeMode) => {
-      currentTheme.mode = mode
-      emit('theme-change', { mode, effect: currentTheme.effect })
-    }
-
-    /** 切换主题效果 */
-    const switchEffect = (effect: ThemeEffect) => {
-      currentTheme.effect = effect
-      emit('theme-change', { mode: currentTheme.mode, effect })
-    }
+    // 主题切换功能已移除，通过 props 控制主题
 
     /** 刷新验证码 */
     const refreshCaptcha = () => {

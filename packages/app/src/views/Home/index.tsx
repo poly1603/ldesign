@@ -13,7 +13,7 @@ export default defineComponent({
     const { deviceInfo } = useDevice()
 
     // 使用 i18n
-    const $t = instance?.appContext.config.globalProperties.$t
+    // const $t = instance?.appContext.config.globalProperties.$t
     const $i18n = instance?.appContext.config.globalProperties.$i18n
 
     // 基本操作

@@ -98,56 +98,30 @@ export default defineComponent({
     }
 
     return () => (
-      <div
-        style={{ minHeight: '100vh', background: '#f5f5f5', padding: '20px' }}
-      >
-        {/* 模板选择器按钮 */}
-        <div
-          style={{
-            position: 'fixed',
-            top: '20px',
-            left: '20px',
-            zIndex: 1001,
-          }}
-        >
-          <div
-            style={{
-              marginBottom: '8px',
-              fontSize: '12px',
-              color: '#666',
-              fontWeight: '500',
-            }}
-          >
-            模板选择器:
-          </div>
-        </div>
-
-        {/* 模板渲染器 */}
-        <TemplateRenderer
-          category='login'
-          selectorMode={selectorMode.value}
-          showSelector={true}
-          selectorSize='medium'
-          showDeviceInfo={true}
-          config={{
-            // 将 LoginPanel 组件传递给模板
-            loginPanel: createLoginPanel(),
-            // 其他配置
-            title: 'LDesign 登录',
-            subtitle: '欢迎回来',
-            logo: '/logo.png',
-            showRememberMe: true,
-            showForgotPassword: true,
-            showRegisterLink: true,
-            allowThirdPartyLogin: true,
-            loading: loading.value,
-          }}
-          onLogin={handleLogin}
-          onRegister={handleRegister}
-          onForgotPassword={handleForgotPassword}
-          onThirdPartyLogin={handleThirdPartyLogin}
-        />
-      </div>
+      <TemplateRenderer
+        category='login'
+        selectorMode={selectorMode.value}
+        showSelector={true}
+        selectorSize='medium'
+        showDeviceInfo={true}
+        config={{
+          // 将 LoginPanel 组件传递给模板
+          loginPanel: createLoginPanel(),
+          // 其他配置
+          title: 'LDesign 登录',
+          subtitle: '欢迎回来',
+          logo: '/logo.png',
+          showRememberMe: true,
+          showForgotPassword: true,
+          showRegisterLink: true,
+          allowThirdPartyLogin: true,
+          loading: loading.value,
+        }}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onForgotPassword={handleForgotPassword}
+        onThirdPartyLogin={handleThirdPartyLogin}
+      />
     )
   },
 })

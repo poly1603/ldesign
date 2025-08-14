@@ -1,4 +1,4 @@
-import type { NestedObject } from '@/core/types'
+import type { NestedObject } from '../core/types'
 
 /**
  * 通过点分隔的路径获取嵌套对象的值

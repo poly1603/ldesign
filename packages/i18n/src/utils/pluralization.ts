@@ -1,4 +1,4 @@
-import type { PluralRule, PluralRules, TranslationParams } from '@/core/types'
+import type { PluralRule, PluralRules, TranslationParams } from '../core/types'
 
 /**
  * 默认复数规则（英语规则）

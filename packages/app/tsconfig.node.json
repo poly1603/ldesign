@@ -2,11 +2,13 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "types": ["node"],
-    "strict": true,
+    "strict": false,
     "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
+  "include": ["vite.config.ts", "vite.config.*.ts", "vitest.config.ts", "playwright.config.ts"]
 }

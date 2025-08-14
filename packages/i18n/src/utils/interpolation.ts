@@ -1,4 +1,4 @@
-import type { InterpolationOptions, TranslationParams } from '@/core/types'
+import type { InterpolationOptions, TranslationParams } from '../core/types'
 
 /**
  * 默认插值选项

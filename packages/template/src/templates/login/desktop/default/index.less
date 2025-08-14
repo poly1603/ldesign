@@ -1,4 +1,4 @@
-// ============ 模板切换器样式 ============
+/* ============ 模板切换器样式 ============ */
 .template-selector {
   position: fixed;
   top: 20px;
@@ -67,7 +67,7 @@
   }
 }
 
-// ============ LoginPanel 包装器样式 ============
+/* ============ LoginPanel 包装器样式 ============ */
 .login-panel-wrapper {
   width: 100%;
   display: flex;
@@ -88,39 +88,86 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+
+  /* 添加动态背景效果 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: backgroundMove 20s linear infinite;
+    opacity: 0.3;
+  }
 
   &__container {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    padding: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.2),
+      0 8px 24px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    padding: 48px;
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.25),
+        0 12px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
   }
 
   &__header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
   }
 
   &__logo {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 20px;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   &__title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
   }
 
   &__subtitle {
-    font-size: 14px;
-    color: #666;
+    font-size: 16px;
+    color: #64748b;
     margin: 0;
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   &__form {
@@ -128,34 +175,48 @@
   }
 
   &__form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
   &__label {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+    letter-spacing: -0.025em;
   }
 
   &__input {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
+    padding: 16px 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    font-weight: 500;
+
+    &:hover {
+      border-color: #d1d5db;
+      background: rgba(255, 255, 255, 0.9);
+    }
 
     &:focus {
       outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      border-color: #667eea;
+      box-shadow:
+        0 0 0 4px rgba(102, 126, 234, 0.2),
+        0 4px 12px rgba(102, 126, 234, 0.3);
+      background: white;
+      transform: translateY(-2px);
     }
 
     &::placeholder {
-      color: #999;
+      color: #9ca3af;
+      font-weight: 400;
     }
   }
 
@@ -190,23 +251,56 @@
 
   &__submit {
     width: 100%;
-    padding: 12px;
-    background: #4a90e2;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 500;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    letter-spacing: 0.5px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
 
     &:hover:not(:disabled) {
-      background: #357abd;
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+      transition: all 0.1s ease;
     }
 
     &:disabled {
-      background: #ccc;
+      background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+      color: #9ca3af;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+
+      &::before {
+        display: none;
+      }
     }
   }
 
@@ -228,13 +322,90 @@
   }
 }
 
+/* 动画关键帧 */
+@keyframes backgroundMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-50px, -50px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* 为容器添加入场动画 */
+.default-login__container {
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.default-login__logo {
+  animation: pulse 2s ease-in-out infinite;
+}
+
 /* 响应式设计 */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .default-login {
     padding: 20px;
 
     &__container {
-      padding: 30px 20px;
+      padding: 32px 24px;
+      max-width: 100%;
+      margin: 0 16px;
+    }
+
+    &__title {
+      font-size: 28px;
+    }
+
+    &__subtitle {
+      font-size: 15px;
+    }
+
+    &__input {
+      padding: 14px 18px;
+      font-size: 16px; /* 防止 iOS 缩放 */
+    }
+
+    &__submit {
+      padding: 16px 20px;
+      font-size: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .default-login {
+    &__container {
+      padding: 24px 20px;
+      border-radius: 20px;
+    }
+
+    &__title {
+      font-size: 24px;
+    }
+
+    &__logo {
+      width: 64px;
+      height: 64px;
     }
   }
 }

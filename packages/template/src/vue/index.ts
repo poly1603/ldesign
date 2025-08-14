@@ -33,6 +33,7 @@ export {
   type TemplateInfo,
   useTemplate,
   useTemplateSwitch,
+  useTemplateSystem,
   type UseTemplateSwitchOptions,
   type UseTemplateSwitchReturn,
 } from './composables/useTemplateSystem'

@@ -4,10 +4,10 @@ import type {
   HttpError,
   RequestConfig,
   ResponseData,
-} from '@/types'
-import type { UseRequestOptions, UseRequestReturn } from '@/types/vue'
+} from '../types'
+import type { UseRequestOptions, UseRequestReturn } from '../types/vue'
 import { computed, onUnmounted, ref, unref, watch } from 'vue'
-import { createCancelTokenSource, isCancelError } from '@/utils/cancel'
+import { createCancelTokenSource, isCancelError } from '../utils/cancel'
 
 /**
  * useRequest Hook

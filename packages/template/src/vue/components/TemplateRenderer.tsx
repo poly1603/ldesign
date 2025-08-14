@@ -2,6 +2,7 @@ import type { DeviceType } from '../composables/useTemplateSystem'
 import { computed, defineComponent, h, ref, shallowRef, watch } from 'vue'
 import { useTemplate } from '../composables/useTemplateSystem'
 import TemplateSelector from './TemplateSelector'
+import './TemplateRenderer.less'
 
 export interface TemplateRendererProps {
   category: string

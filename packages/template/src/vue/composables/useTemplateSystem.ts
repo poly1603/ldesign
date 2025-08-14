@@ -641,3 +641,96 @@ export function useTemplateSwitch(options: UseTemplateSwitchOptions): UseTemplat
     getTemplateInfo,
   }
 }
+
+/**
+ * 模板系统管理组合式API（用于测试应用）
+ * 提供全局模板管理功能
+ */
+export function useTemplateSystem() {
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const currentTemplate = ref<TemplateInfo | null>(null)
+
+  // 获取所有可用分类
+  const availableCategories = computed(() => {
+    const categories = new Set<string>()
+    for (const template of templateRegistry.values()) {
+      categories.add(template.category)
+    }
+    return Array.from(categories)
+  })
+
+  // 获取所有可用设备类型
+  const availableDevices = computed(() => {
+    const devices = new Set<DeviceType>()
+    for (const template of templateRegistry.values()) {
+      devices.add(template.deviceType)
+    }
+    return Array.from(devices)
+  })
+
+  // 获取所有可用模板
+  const availableTemplates = computed(() => {
+    return Array.from(templateRegistry.values()).map(template => ({
+      template: template.id,
+      config: {
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        deviceType: template.deviceType,
+      },
+    }))
+  })
+
+  // 切换模板
+  async function switchTemplate(category: string, deviceType: DeviceType, templateId: string) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const key = `${category}-${deviceType}-${templateId}`
+      const template = templateRegistry.get(key)
+
+      if (!template) {
+        throw new Error(`Template not found: ${key}`)
+      }
+
+      currentTemplate.value = template
+      return template
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 刷新模板列表
+  async function refreshTemplates() {
+    loading.value = true
+    error.value = null
+
+    try {
+      // 扫描并注册模板
+      await scanTemplates()
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    // 状态
+    availableCategories,
+    availableDevices,
+    availableTemplates,
+    currentTemplate,
+    loading,
+    error,
+
+    // 方法
+    switchTemplate,
+    refreshTemplates,
+  }
+}
