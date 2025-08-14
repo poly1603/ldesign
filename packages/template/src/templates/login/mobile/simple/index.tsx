@@ -1,4 +1,4 @@
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import './index.less'
 
 export default defineComponent({
@@ -32,130 +32,56 @@ export default defineComponent({
       type: Array as () => string[],
       default: () => ['wechat', 'qq', 'weibo'],
     },
+    // 新增：LoginPanel 组件实例
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
   },
-  emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin'],
+  emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props, { emit }) {
-    const loading = ref(false)
-    const form = reactive({
-      username: '',
-      password: '',
-      remember: false,
-    })
+    // 当前选中的模板
+    const currentTemplate = ref('simple')
 
-    const handleLogin = async () => {
-      if (!form.username || !form.password) {
-        console.warn('请输入用户名和密码')
-        return
-      }
+    // 可用的模板列表
+    const availableTemplates = [
+      { id: 'card', name: '卡片模板', description: '移动端卡片式登录界面' },
+      { id: 'simple', name: '简洁模板', description: '移动端简洁登录界面' },
+    ]
 
-      loading.value = true
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        emit('login', { ...form })
-      } catch (error) {
-        console.error('Login failed:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const handleRegister = () => {
-      emit('register')
-    }
-
-    const handleForgotPassword = () => {
-      emit('forgotPassword', { username: form.username })
-    }
-
-    const handleThirdPartyLogin = (provider: string) => {
-      emit('thirdPartyLogin', { provider })
+    // 模板切换处理
+    const handleTemplateChange = (templateId: string) => {
+      currentTemplate.value = templateId
+      emit('template-change', templateId)
     }
 
     return () => (
       <div class="mobile-simple-login">
-        <div class="mobile-simple-login__header">
-          {props.logo && (
-            <div class="mobile-simple-login__logo">
-              <img src={props.logo} alt="Logo" />
-            </div>
-          )}
-          <h1 class="mobile-simple-login__title">{props.title}</h1>
-          <p class="mobile-simple-login__subtitle">{props.subtitle}</p>
+        {/* 模板切换器 */}
+        <div class="template-selector">
+          <div class="template-selector__header">
+            <span class="template-selector__title">选择模板</span>
+          </div>
+          <div class="template-selector__options">
+            {availableTemplates.map(template => (
+              <button
+                key={template.id}
+                class={[
+                  'template-selector__option',
+                  currentTemplate.value === template.id && 'template-selector__option--active',
+                ]}
+                onClick={() => handleTemplateChange(template.id)}
+              >
+                <div class="template-selector__option-name">{template.name}</div>
+                <div class="template-selector__option-desc">{template.description}</div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div class="mobile-simple-login__content">
-          <form
-            class="mobile-simple-login__form"
-            onSubmit={(e: Event) => {
-              e.preventDefault()
-              handleLogin()
-            }}
-          >
-            <div class="mobile-simple-login__form-group">
-              <input type="text" placeholder="手机号/邮箱" v-model={form.username} class="mobile-simple-login__input" />
-            </div>
-
-            <div class="mobile-simple-login__form-group">
-              <input type="password" placeholder="密码" v-model={form.password} class="mobile-simple-login__input" />
-            </div>
-
-            <div class="mobile-simple-login__form-options">
-              {props.showRememberMe && (
-                <label class="mobile-simple-login__checkbox">
-                  <input type="checkbox" v-model={form.remember} />
-                  <span class="mobile-simple-login__checkbox-mark"></span>
-                  记住密码
-                </label>
-              )}
-              {props.showForgotPassword && (
-                <a href="#" onClick={handleForgotPassword} class="mobile-simple-login__forgot">
-                  忘记密码？
-                </a>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              class={['mobile-simple-login__submit', { 'mobile-simple-login__submit--loading': loading.value }]}
-              disabled={loading.value}
-            >
-              {loading.value ? '登录中...' : '登录'}
-            </button>
-          </form>
-
-          {props.showThirdPartyLogin && (
-            <div class="mobile-simple-login__third-party">
-              <div class="mobile-simple-login__divider">
-                <span>其他登录方式</span>
-              </div>
-              <div class="mobile-simple-login__third-party-buttons">
-                {props.thirdPartyProviders.map(provider => (
-                  <button
-                    key={provider}
-                    type="button"
-                    class={`mobile-simple-login__third-party-btn mobile-simple-login__third-party-btn--${provider}`}
-                    onClick={() => handleThirdPartyLogin(provider)}
-                  >
-                    <span
-                      class={`mobile-simple-login__third-party-icon mobile-simple-login__third-party-icon--${provider}`}
-                    ></span>
-                    <span class="mobile-simple-login__third-party-text">
-                      {provider === 'wechat' && '微信'}
-                      {provider === 'qq' && 'QQ'}
-                      {provider === 'weibo' && '微博'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div class="mobile-simple-login__footer">
-            <span>还没有账号？</span>
-            <a href="#" onClick={handleRegister}>
-              立即注册
-            </a>
-          </div>
+        <div class="mobile-simple-login__container">
+          {/* 使用传递进来的 LoginPanel 组件 */}
+          <div class="login-panel-wrapper">{props.loginPanel}</div>
         </div>
       </div>
     )

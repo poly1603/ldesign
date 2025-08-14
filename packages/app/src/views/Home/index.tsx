@@ -1,6 +1,6 @@
-import { defineComponent, getCurrentInstance } from 'vue'
 import { useDevice } from '@ldesign/device'
 import { useRouter } from '@ldesign/router'
+import { defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({
   name: 'Home',
@@ -27,8 +27,16 @@ export default defineComponent({
 
         <div style={{ margin: '20px 0' }}>
           <p>欢迎使用 LDesign Engine 生态系统</p>
-          <p>当前设备类型: {deviceInfo.value?.type || 'unknown'}</p>
-          {$i18n && <p>当前语言: {$i18n.getCurrentLanguage()}</p>}
+          <p>
+            当前设备类型:
+            {deviceInfo.value?.type || 'unknown'}
+          </p>
+          {$i18n && (
+            <p>
+              当前语言:
+              {$i18n.getCurrentLanguage()}
+            </p>
+          )}
         </div>
 
         <div style={{ margin: '20px 0' }}>

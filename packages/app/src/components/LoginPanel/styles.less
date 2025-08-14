@@ -1,0 +1,463 @@
+/**
+ * LoginPanel 组件样式
+ *
+ * 使用 CSS 变量系统支持主题切换和毛玻璃效果
+ */
+
+// ============ CSS 变量定义 ============
+
+.login-panel {
+  // 颜色变量
+  --lp-primary: #6366f1;
+  --lp-secondary: #8b5cf6;
+  --lp-success: #10b981;
+  --lp-warning: #f59e0b;
+  --lp-error: #ef4444;
+  --lp-background: #ffffff;
+  --lp-surface: #f8fafc;
+  --lp-text: #1f2937;
+  --lp-text-secondary: #6b7280;
+  --lp-border: #e5e7eb;
+
+  // 尺寸变量
+  --lp-border-radius: 12px;
+  --lp-border-radius-sm: 8px;
+  --lp-border-radius-lg: 16px;
+
+  // 间距变量
+  --lp-spacing-xs: 4px;
+  --lp-spacing-sm: 8px;
+  --lp-spacing-md: 16px;
+  --lp-spacing-lg: 24px;
+  --lp-spacing-xl: 32px;
+
+  // 阴影变量
+  --lp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --lp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --lp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --lp-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  // 过渡变量
+  --lp-transition-fast: 150ms ease-in-out;
+  --lp-transition-normal: 250ms ease-in-out;
+  --lp-transition-slow: 350ms ease-in-out;
+
+  // 毛玻璃效果变量
+  --lp-glass-backdrop: blur(10px);
+  --lp-glass-opacity: 0.8;
+  --lp-glass-border: rgba(255, 255, 255, 0.2);
+
+  // 暗色主题变量
+  &[data-theme='dark'] {
+    --lp-primary: #818cf8;
+    --lp-secondary: #a78bfa;
+    --lp-success: #34d399;
+    --lp-warning: #fbbf24;
+    --lp-error: #f87171;
+    --lp-background: #111827;
+    --lp-surface: #1f2937;
+    --lp-text: #f9fafb;
+    --lp-text-secondary: #d1d5db;
+    --lp-border: #374151;
+    --lp-glass-border: rgba(255, 255, 255, 0.1);
+  }
+
+  // 毛玻璃效果
+  &[data-effect='glass'] {
+    background: rgba(255, 255, 255, var(--lp-glass-opacity));
+    backdrop-filter: var(--lp-glass-backdrop);
+    border: 1px solid var(--lp-glass-border);
+
+    &[data-theme='dark'] {
+      background: rgba(17, 24, 39, var(--lp-glass-opacity));
+    }
+  }
+}
+
+// ============ 组件主体样式 ============
+
+.login-panel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: var(--lp-background);
+  border-radius: var(--lp-border-radius-lg);
+  box-shadow: var(--lp-shadow-xl);
+  overflow: hidden;
+  transition: all var(--lp-transition-normal);
+
+  // ============ 头部样式 ============
+  &__header {
+    padding: var(--lp-spacing-xl) var(--lp-spacing-lg) var(--lp-spacing-lg);
+    text-align: center;
+    background: var(--lp-surface);
+    border-bottom: 1px solid var(--lp-border);
+  }
+
+  &__logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--lp-spacing-md);
+    border-radius: var(--lp-border-radius);
+  }
+
+  &__title {
+    margin: 0 0 var(--lp-spacing-sm);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--lp-text);
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: var(--lp-text-secondary);
+    line-height: 1.4;
+  }
+
+  // ============ Tab 切换样式 ============
+  &__tabs {
+    display: flex;
+    background: var(--lp-surface);
+    border-bottom: 1px solid var(--lp-border);
+    position: relative;
+  }
+
+  &__tab {
+    flex: 1;
+    padding: var(--lp-spacing-md) var(--lp-spacing-lg);
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--lp-text-secondary);
+    cursor: pointer;
+    transition: all var(--lp-transition-fast);
+    position: relative;
+    z-index: 1;
+
+    &:hover {
+      color: var(--lp-primary);
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    &--active {
+      color: var(--lp-primary);
+      background: var(--lp-background);
+    }
+  }
+
+  &__tab-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--lp-primary);
+    transition: all var(--lp-transition-normal);
+    border-radius: 1px;
+  }
+
+  // ============ 表单容器样式 ============
+  &__content {
+    padding: var(--lp-spacing-lg);
+    background: var(--lp-background);
+  }
+
+  &__form {
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__form-panel {
+    transition:
+      transform var(--lp-transition-normal),
+      opacity var(--lp-transition-normal);
+
+    &--hidden {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(20px);
+    }
+  }
+
+  // ============ 表单字段样式 ============
+  &__field {
+    margin-bottom: var(--lp-spacing-md);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: var(--lp-spacing-xs);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--lp-text);
+    line-height: 1.4;
+  }
+
+  &__input {
+    width: 100%;
+    padding: var(--lp-spacing-sm) var(--lp-spacing-md);
+    font-size: 14px;
+    color: var(--lp-text);
+    background: var(--lp-background);
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-border-radius-sm);
+    transition: all var(--lp-transition-fast);
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: var(--lp-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &--error {
+      border-color: var(--lp-error);
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+    }
+
+    &::placeholder {
+      color: var(--lp-text-secondary);
+    }
+  }
+
+  // ============ 验证码相关样式 ============
+  &__captcha-group {
+    display: flex;
+    gap: var(--lp-spacing-sm);
+    align-items: flex-end;
+  }
+
+  &__captcha-input {
+    flex: 1;
+  }
+
+  &__captcha-image {
+    width: 80px;
+    height: 36px;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-border-radius-sm);
+    cursor: pointer;
+    transition: all var(--lp-transition-fast);
+
+    &:hover {
+      border-color: var(--lp-primary);
+    }
+  }
+
+  &__sms-group {
+    display: flex;
+    gap: var(--lp-spacing-sm);
+    align-items: flex-end;
+  }
+
+  &__sms-input {
+    flex: 1;
+  }
+
+  &__sms-button {
+    padding: var(--lp-spacing-sm) var(--lp-spacing-md);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--lp-primary);
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid var(--lp-primary);
+    border-radius: var(--lp-border-radius-sm);
+    cursor: pointer;
+    transition: all var(--lp-transition-fast);
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      background: var(--lp-primary);
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  // ============ 错误信息样式 ============
+  &__error {
+    margin-top: var(--lp-spacing-xs);
+    font-size: 12px;
+    color: var(--lp-error);
+    line-height: 1.4;
+  }
+
+  // ============ 选项样式 ============
+  &__options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: var(--lp-spacing-md) 0;
+  }
+
+  &__checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--lp-spacing-xs);
+    font-size: 14px;
+    color: var(--lp-text);
+    cursor: pointer;
+
+    input[type='checkbox'] {
+      margin: 0;
+    }
+  }
+
+  &__link {
+    font-size: 14px;
+    color: var(--lp-primary);
+    text-decoration: none;
+    transition: all var(--lp-transition-fast);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // ============ 按钮样式 ============
+  &__button {
+    width: 100%;
+    padding: var(--lp-spacing-md);
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: var(--lp-primary);
+    border: none;
+    border-radius: var(--lp-border-radius-sm);
+    cursor: pointer;
+    transition: all var(--lp-transition-fast);
+    position: relative;
+    overflow: hidden;
+
+    &:hover:not(:disabled) {
+      background: var(--lp-secondary);
+      transform: translateY(-1px);
+      box-shadow: var(--lp-shadow-lg);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    &--loading {
+      color: transparent;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: lp-spin 1s linear infinite;
+      }
+    }
+  }
+
+  // ============ 第三方登录样式 ============
+  &__divider {
+    display: flex;
+    align-items: center;
+    margin: var(--lp-spacing-lg) 0;
+    font-size: 14px;
+    color: var(--lp-text-secondary);
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--lp-border);
+    }
+
+    &::before {
+      margin-right: var(--lp-spacing-md);
+    }
+
+    &::after {
+      margin-left: var(--lp-spacing-md);
+    }
+  }
+
+  &__third-party {
+    display: flex;
+    gap: var(--lp-spacing-sm);
+    justify-content: center;
+  }
+
+  &__third-party-button {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--lp-border);
+    border-radius: var(--lp-border-radius);
+    background: var(--lp-background);
+    cursor: pointer;
+    transition: all var(--lp-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      border-color: var(--lp-primary);
+      transform: translateY(-1px);
+      box-shadow: var(--lp-shadow-md);
+    }
+  }
+}
+
+// ============ 动画定义 ============
+
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============ 响应式设计 ============
+
+@media (max-width: 480px) {
+  .login-panel {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+
+    &__header {
+      padding: var(--lp-spacing-lg);
+    }
+
+    &__content {
+      padding: var(--lp-spacing-md);
+    }
+  }
+}

@@ -1,6 +1,8 @@
-import { defineComponent, ref } from 'vue'
+import type { LoginEvent } from '../components/LoginPanel/types'
 import { useRouter } from '@ldesign/router'
 import { TemplateRenderer } from '@ldesign/template'
+import { defineComponent, h, ref } from 'vue'
+import LoginPanel from '../components/LoginPanel'
 
 export default defineComponent({
   name: 'Login',
@@ -8,51 +10,115 @@ export default defineComponent({
     const router = useRouter()
     const loading = ref(false)
 
-    // 简单的登录处理
-    const handleLogin = async (data: any) => {
+    // 登录处理函数
+    const handleLogin = async (event: LoginEvent) => {
       loading.value = true
 
-      // 模拟登录过程
-      setTimeout(() => {
-        console.log('登录数据:', data)
-        loading.value = false
-        // 直接跳转到首页
+      try {
+        console.log('登录事件:', event)
+        const { mode, data } = event
+
+        // 模拟登录过程
+        await new Promise(resolve => setTimeout(resolve, 1500))
+
+        if (mode === 'username') {
+          console.log('用户名登录:', data)
+        } else {
+          console.log('手机号登录:', data)
+        }
+
+        // 登录成功，跳转到首页
         router.push('/')
-      }, 1000)
+      } catch (error) {
+        console.error('登录失败:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+
+    // 注册处理函数
+    const handleRegister = () => {
+      console.log('跳转到注册页面')
+      // 这里可以跳转到注册页面
+    }
+
+    // 忘记密码处理函数
+    const handleForgotPassword = () => {
+      console.log('跳转到忘记密码页面')
+      // 这里可以跳转到忘记密码页面
+    }
+
+    // 第三方登录处理函数
+    const handleThirdPartyLogin = (provider: string) => {
+      console.log('第三方登录:', provider)
+      // 这里可以处理第三方登录逻辑
+    }
+
+    // 验证码刷新处理函数
+    const handleCaptchaRefresh = () => {
+      console.log('刷新验证码')
+    }
+
+    // 短信验证码发送处理函数
+    const handleSmsCodeSend = (phone: string) => {
+      console.log('发送短信验证码到:', phone)
+      // 这里可以调用短信验证码发送接口
+    }
+
+    // 创建 LoginPanel 组件实例
+    const createLoginPanel = () => {
+      return h(LoginPanel, {
+        title: 'LDesign 登录',
+        subtitle: '欢迎回来，请登录您的账户',
+        logo: '/logo.png',
+        loading: loading.value,
+        showRememberMe: true,
+        showForgotPassword: true,
+        showRegisterLink: true,
+        thirdPartyLogin: {
+          enabled: true,
+          providers: [
+            { name: 'wechat', icon: '🔗', color: '#07c160' },
+            { name: 'qq', icon: '🔗', color: '#12b7f5' },
+            { name: 'weibo', icon: '🔗', color: '#e6162d' },
+          ],
+        },
+        theme: {
+          mode: 'light',
+          effect: 'normal',
+        },
+        onLogin: handleLogin,
+        onRegister: handleRegister,
+        'onForgot-password': handleForgotPassword,
+        'onThird-party-login': handleThirdPartyLogin,
+        'onCaptcha-refresh': handleCaptchaRefresh,
+        'onSms-send': handleSmsCodeSend,
+      })
     }
 
     return () => (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h1>🔑 登录页面</h1>
-
-        <div style={{ margin: '20px 0' }}>
-          <p>这是一个简化的登录页面演示</p>
-          <p>展示了 @ldesign/template 模板系统的集成</p>
-        </div>
-
-        <TemplateRenderer
-          category='login'
-          onLogin={handleLogin}
-          loading={loading.value}
-        />
-
-        <div style={{ marginTop: '20px' }}>
-          <button
-            onClick={() => router.push('/')}
-            style={{
-              padding: '10px 20px',
-              fontSize: '16px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            🏠 返回首页
-          </button>
-        </div>
-      </div>
+      <TemplateRenderer
+        category='login'
+        showSelector={true}
+        selectorPosition='top'
+        config={{
+          // 将 LoginPanel 组件传递给模板
+          loginPanel: createLoginPanel(),
+          // 其他配置
+          title: 'LDesign 登录',
+          subtitle: '欢迎回来',
+          logo: '/logo.png',
+          showRememberMe: true,
+          showForgotPassword: true,
+          showRegisterLink: true,
+          allowThirdPartyLogin: true,
+          loading: loading.value,
+        }}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onForgotPassword={handleForgotPassword}
+        onThirdPartyLogin={handleThirdPartyLogin}
+      />
     )
   },
 })

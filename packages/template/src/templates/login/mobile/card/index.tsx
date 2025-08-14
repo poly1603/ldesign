@@ -1,4 +1,4 @@
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import './index.less'
 
 export default defineComponent({
@@ -32,47 +32,53 @@ export default defineComponent({
       type: Array as () => string[],
       default: () => ['wechat', 'alipay', 'qq'],
     },
+    // 新增：LoginPanel 组件实例
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
   },
-  emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin'],
+  emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props, { emit }) {
-    const loading = ref(false)
-    const form = reactive({
-      username: '',
-      password: '',
-      remember: false,
-    })
+    // 当前选中的模板
+    const currentTemplate = ref('card')
 
-    const handleLogin = async () => {
-      if (!form.username || !form.password) {
-        console.warn('请输入用户名和密码')
-        return
-      }
+    // 可用的模板列表
+    const availableTemplates = [
+      { id: 'card', name: '卡片模板', description: '移动端卡片式登录界面' },
+      { id: 'simple', name: '简洁模板', description: '移动端简洁登录界面' },
+    ]
 
-      loading.value = true
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        emit('login', { ...form })
-      } catch (error) {
-        console.error('Login failed:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const handleRegister = () => {
-      emit('register')
-    }
-
-    const handleForgotPassword = () => {
-      emit('forgotPassword', { username: form.username })
-    }
-
-    const handleThirdPartyLogin = (provider: string) => {
-      emit('thirdPartyLogin', { provider })
+    // 模板切换处理
+    const handleTemplateChange = (templateId: string) => {
+      currentTemplate.value = templateId
+      emit('template-change', templateId)
     }
 
     return () => (
       <div class="mobile-card-login">
+        {/* 模板切换器 */}
+        <div class="template-selector">
+          <div class="template-selector__header">
+            <span class="template-selector__title">选择模板</span>
+          </div>
+          <div class="template-selector__options">
+            {availableTemplates.map(template => (
+              <button
+                key={template.id}
+                class={[
+                  'template-selector__option',
+                  currentTemplate.value === template.id && 'template-selector__option--active',
+                ]}
+                onClick={() => handleTemplateChange(template.id)}
+              >
+                <div class="template-selector__option-name">{template.name}</div>
+                <div class="template-selector__option-desc">{template.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div class="mobile-card-login__background">
           <div class="mobile-card-login__wave mobile-card-login__wave--1"></div>
           <div class="mobile-card-login__wave mobile-card-login__wave--2"></div>
@@ -80,102 +86,8 @@ export default defineComponent({
         </div>
 
         <div class="mobile-card-login__container">
-          <div class="mobile-card-login__header-card">
-            {props.logo && (
-              <div class="mobile-card-login__logo">
-                <img src={props.logo} alt="Logo" />
-              </div>
-            )}
-            <h1 class="mobile-card-login__title">{props.title}</h1>
-            <p class="mobile-card-login__subtitle">{props.subtitle}</p>
-          </div>
-
-          <div class="mobile-card-login__form-card">
-            <form
-              class="mobile-card-login__form"
-              onSubmit={(e: Event) => {
-                e.preventDefault()
-                handleLogin()
-              }}
-            >
-              <div class="mobile-card-login__form-group">
-                <label class="mobile-card-login__label">用户名</label>
-                <input
-                  type="text"
-                  placeholder="请输入手机号或邮箱"
-                  v-model={form.username}
-                  class="mobile-card-login__input"
-                />
-              </div>
-
-              <div class="mobile-card-login__form-group">
-                <label class="mobile-card-login__label">密码</label>
-                <input
-                  type="password"
-                  placeholder="请输入密码"
-                  v-model={form.password}
-                  class="mobile-card-login__input"
-                />
-              </div>
-
-              <div class="mobile-card-login__form-options">
-                {props.showRememberMe && (
-                  <label class="mobile-card-login__checkbox">
-                    <input type="checkbox" v-model={form.remember} />
-                    <span class="mobile-card-login__checkbox-mark"></span>
-                    记住密码
-                  </label>
-                )}
-                {props.showForgotPassword && (
-                  <a href="#" onClick={handleForgotPassword} class="mobile-card-login__forgot">
-                    忘记密码？
-                  </a>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                class={['mobile-card-login__submit', { 'mobile-card-login__submit--loading': loading.value }]}
-                disabled={loading.value}
-              >
-                {loading.value ? '登录中...' : '立即登录'}
-              </button>
-            </form>
-          </div>
-
-          {props.showThirdPartyLogin && (
-            <div class="mobile-card-login__third-party-card">
-              <div class="mobile-card-login__divider">
-                <span>快捷登录</span>
-              </div>
-              <div class="mobile-card-login__third-party-grid">
-                {props.thirdPartyProviders.map(provider => (
-                  <button
-                    key={provider}
-                    type="button"
-                    class={`mobile-card-login__third-party-item mobile-card-login__third-party-item--${provider}`}
-                    onClick={() => handleThirdPartyLogin(provider)}
-                  >
-                    <div
-                      class={`mobile-card-login__third-party-icon mobile-card-login__third-party-icon--${provider}`}
-                    ></div>
-                    <span class="mobile-card-login__third-party-text">
-                      {provider === 'wechat' && '微信'}
-                      {provider === 'alipay' && '支付宝'}
-                      {provider === 'qq' && 'QQ'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div class="mobile-card-login__footer-card">
-            <span>还没有账号？</span>
-            <a href="#" onClick={handleRegister}>
-              免费注册
-            </a>
-          </div>
+          {/* 使用传递进来的 LoginPanel 组件 */}
+          <div class="login-panel-wrapper">{props.loginPanel}</div>
         </div>
       </div>
     )

@@ -1,4 +1,4 @@
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import './index.less'
 
 export default defineComponent({
@@ -24,92 +24,57 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
+    // 新增：LoginPanel 组件实例
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
   },
-  emits: ['login', 'register', 'forgotPassword'],
+  emits: ['login', 'register', 'forgotPassword', 'template-change'],
   setup(props: any, { emit }: any) {
-    const loading = ref(false)
-    const form = reactive({
-      username: '',
-      password: '',
-      remember: false,
-    })
+    // 当前选中的模板
+    const currentTemplate = ref('default')
 
-    const handleLogin = async () => {
-      if (!form.username || !form.password) {
-        console.warn('请输入用户名和密码')
-        return
-      }
+    // 可用的模板列表
+    const availableTemplates = [
+      { id: 'classic', name: '经典模板', description: '简洁优雅的经典登录界面' },
+      { id: 'default', name: '默认模板', description: '标准的登录界面设计' },
+      { id: 'modern', name: '现代模板', description: '现代化的登录界面设计' },
+    ]
 
-      loading.value = true
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        emit('login', { ...form })
-      } catch (error) {
-        console.error('Login failed:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const handleRegister = () => {
-      emit('register')
-    }
-
-    const handleForgotPassword = () => {
-      emit('forgotPassword', { username: form.username })
+    // 模板切换处理
+    const handleTemplateChange = (templateId: string) => {
+      currentTemplate.value = templateId
+      emit('template-change', templateId)
     }
 
     return () => (
       <div class="default-login">
+        {/* 模板切换器 */}
+        <div class="template-selector">
+          <div class="template-selector__header">
+            <span class="template-selector__title">选择模板</span>
+          </div>
+          <div class="template-selector__options">
+            {availableTemplates.map(template => (
+              <button
+                key={template.id}
+                class={[
+                  'template-selector__option',
+                  currentTemplate.value === template.id && 'template-selector__option--active',
+                ]}
+                onClick={() => handleTemplateChange(template.id)}
+              >
+                <div class="template-selector__option-name">{template.name}</div>
+                <div class="template-selector__option-desc">{template.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div class="default-login__container">
-          <div class="default-login__header">
-            {props.logo && <img src={props.logo} alt="Logo" class="default-login__logo" />}
-            <h1 class="default-login__title">{props.title}</h1>
-            <p class="default-login__subtitle">{props.subtitle}</p>
-          </div>
-
-          <form
-            class="default-login__form"
-            onSubmit={(e: Event) => {
-              e.preventDefault()
-              handleLogin()
-            }}
-          >
-            <div class="default-login__form-group">
-              <label class="default-login__label">用户名</label>
-              <input type="text" placeholder="请输入用户名" v-model={form.username} class="default-login__input" />
-            </div>
-
-            <div class="default-login__form-group">
-              <label class="default-login__label">密码</label>
-              <input type="password" placeholder="请输入密码" v-model={form.password} class="default-login__input" />
-            </div>
-
-            <div class="default-login__form-options">
-              {props.showRememberMe && (
-                <label class="default-login__checkbox">
-                  <input type="checkbox" v-model={form.remember} />
-                  记住密码
-                </label>
-              )}
-              {props.showForgotPassword && (
-                <a href="#" onClick={handleForgotPassword} class="default-login__forgot">
-                  忘记密码？
-                </a>
-              )}
-            </div>
-
-            <button type="submit" class="default-login__submit" disabled={loading.value}>
-              {loading.value ? '登录中...' : '登录'}
-            </button>
-          </form>
-
-          <div class="default-login__footer">
-            <span>没有账号？</span>
-            <a href="#" onClick={handleRegister}>
-              立即注册
-            </a>
-          </div>
+          {/* 使用传递进来的 LoginPanel 组件 */}
+          <div class="login-panel-wrapper">{props.loginPanel}</div>
         </div>
       </div>
     )

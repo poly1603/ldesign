@@ -1,4 +1,4 @@
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import './index.less'
 
 export default defineComponent({
@@ -32,47 +32,53 @@ export default defineComponent({
       type: Array as () => string[],
       default: () => ['github', 'google', 'microsoft', 'apple'],
     },
+    // 新增：LoginPanel 组件实例
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
   },
-  emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin'],
+  emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props, { emit }) {
-    const loading = ref(false)
-    const form = reactive({
-      username: '',
-      password: '',
-      remember: false,
-    })
+    // 当前选中的模板
+    const currentTemplate = ref('split')
 
-    const handleLogin = async () => {
-      if (!form.username || !form.password) {
-        console.warn('请输入用户名和密码')
-        return
-      }
+    // 可用的模板列表
+    const availableTemplates = [
+      { id: 'adaptive', name: '自适应模板', description: '平板端自适应登录界面' },
+      { id: 'split', name: '分屏模板', description: '平板端分屏登录界面' },
+    ]
 
-      loading.value = true
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        emit('login', { ...form })
-      } catch (error) {
-        console.error('Login failed:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const handleRegister = () => {
-      emit('register')
-    }
-
-    const handleForgotPassword = () => {
-      emit('forgotPassword', { username: form.username })
-    }
-
-    const handleThirdPartyLogin = (provider: string) => {
-      emit('thirdPartyLogin', { provider })
+    // 模板切换处理
+    const handleTemplateChange = (templateId: string) => {
+      currentTemplate.value = templateId
+      emit('template-change', templateId)
     }
 
     return () => (
       <div class="tablet-split-login">
+        {/* 模板切换器 */}
+        <div class="template-selector">
+          <div class="template-selector__header">
+            <span class="template-selector__title">选择模板</span>
+          </div>
+          <div class="template-selector__options">
+            {availableTemplates.map(template => (
+              <button
+                key={template.id}
+                class={[
+                  'template-selector__option',
+                  currentTemplate.value === template.id && 'template-selector__option--active',
+                ]}
+                onClick={() => handleTemplateChange(template.id)}
+              >
+                <div class="template-selector__option-name">{template.name}</div>
+                <div class="template-selector__option-desc">{template.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div class="tablet-split-login__left">
           <div class="tablet-split-login__brand-section">
             <div class="tablet-split-login__brand-content">
@@ -136,115 +142,8 @@ export default defineComponent({
         </div>
 
         <div class="tablet-split-login__right">
-          <div class="tablet-split-login__form-section">
-            <div class="tablet-split-login__form-header">
-              <h2>登录您的账户</h2>
-              <p>请输入您的登录凭据</p>
-            </div>
-
-            <form
-              class="tablet-split-login__form"
-              onSubmit={(e: Event) => {
-                e.preventDefault()
-                handleLogin()
-              }}
-            >
-              <div class="tablet-split-login__form-group">
-                <label class="tablet-split-login__label">用户名或邮箱</label>
-                <div class="tablet-split-login__input-wrapper">
-                  <svg class="tablet-split-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="请输入用户名或邮箱"
-                    v-model={form.username}
-                    class="tablet-split-login__input"
-                  />
-                </div>
-              </div>
-
-              <div class="tablet-split-login__form-group">
-                <label class="tablet-split-login__label">密码</label>
-                <div class="tablet-split-login__input-wrapper">
-                  <svg class="tablet-split-login__input-icon" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
-                    <circle cx="12" cy="16" r="1" fill="currentColor" />
-                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2" />
-                  </svg>
-                  <input
-                    type="password"
-                    placeholder="请输入密码"
-                    v-model={form.password}
-                    class="tablet-split-login__input"
-                  />
-                </div>
-              </div>
-
-              <div class="tablet-split-login__form-options">
-                {props.showRememberMe && (
-                  <label class="tablet-split-login__checkbox">
-                    <input type="checkbox" v-model={form.remember} />
-                    <span class="tablet-split-login__checkbox-mark"></span>
-                    记住我
-                  </label>
-                )}
-                {props.showForgotPassword && (
-                  <a href="#" onClick={handleForgotPassword} class="tablet-split-login__forgot">
-                    忘记密码？
-                  </a>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                class={['tablet-split-login__submit', { 'tablet-split-login__submit--loading': loading.value }]}
-                disabled={loading.value}
-              >
-                <span class="tablet-split-login__submit-text">{loading.value ? '登录中...' : '登录'}</span>
-                {loading.value && <div class="tablet-split-login__submit-spinner"></div>}
-              </button>
-            </form>
-
-            {props.showThirdPartyLogin && (
-              <div class="tablet-split-login__third-party">
-                <div class="tablet-split-login__divider">
-                  <span>或使用以下方式登录</span>
-                </div>
-                <div class="tablet-split-login__third-party-grid">
-                  {props.thirdPartyProviders.map(provider => (
-                    <button
-                      key={provider}
-                      type="button"
-                      class={`tablet-split-login__third-party-btn tablet-split-login__third-party-btn--${provider}`}
-                      onClick={() => handleThirdPartyLogin(provider)}
-                    >
-                      <span
-                        class={`tablet-split-login__third-party-icon tablet-split-login__third-party-icon--${provider}`}
-                      ></span>
-                      <span class="tablet-split-login__third-party-text">
-                        {provider === 'github' && 'GitHub'}
-                        {provider === 'google' && 'Google'}
-                        {provider === 'microsoft' && 'Microsoft'}
-                        {provider === 'apple' && 'Apple'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div class="tablet-split-login__footer">
-              <span>还没有账号？</span>
-              <a href="#" onClick={handleRegister}>
-                立即注册
-              </a>
-            </div>
-          </div>
+          {/* 使用传递进来的 LoginPanel 组件 */}
+          <div class="login-panel-wrapper">{props.loginPanel}</div>
         </div>
       </div>
     )

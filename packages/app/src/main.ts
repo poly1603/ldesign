@@ -1,3 +1,4 @@
+import type { AppConfig } from './types'
 import { createApp, presets } from '@ldesign/engine'
 import { createHttpEnginePlugin } from '@ldesign/http'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
@@ -6,7 +7,6 @@ import { createTemplateEnginePlugin } from '@ldesign/template'
 import App from './App'
 import { appI18nConfig, createAppI18n } from './i18n'
 import { routes } from './router/routes'
-import type { AppConfig } from './types'
 
 /**
  * 创建简化的 LDesign 应用

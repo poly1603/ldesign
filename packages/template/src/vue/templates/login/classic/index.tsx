@@ -1,4 +1,4 @@
-import { computed, defineComponent, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 
 export interface LoginTemplateProps {
   title?: string
@@ -9,6 +9,7 @@ export interface LoginTemplateProps {
   showRegisterLink?: boolean
   allowThirdPartyLogin?: boolean
   loading?: boolean
+  loginPanel?: any // LoginPanel 组件实例
 }
 
 export const ClassicLoginTemplate = defineComponent({
@@ -46,161 +47,82 @@ export const ClassicLoginTemplate = defineComponent({
       type: Boolean,
       default: false,
     },
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
   },
-  emits: ['login', 'register', 'forgot-password', 'third-party-login'],
+  emits: ['login', 'register', 'forgot-password', 'third-party-login', 'template-change'],
   setup(props, { emit }) {
-    const username = ref('')
-    const password = ref('')
-    const rememberMe = ref(false)
-    const isLoading = ref(false)
+    // 当前选中的模板
+    const currentTemplate = ref('classic')
 
-    const isFormValid = computed(() => {
-      return username.value.trim() !== '' && password.value.trim() !== ''
-    })
+    // 可用的模板列表
+    const availableTemplates = [
+      { id: 'classic', name: '经典模板', description: '简洁优雅的经典登录界面' },
+      { id: 'modern', name: '现代模板', description: '现代化的登录界面设计' },
+    ]
 
-    const handleLogin = async () => {
-      if (!isFormValid.value || isLoading.value) return
-
-      isLoading.value = true
-      try {
-        emit('login', {
-          username: username.value,
-          password: password.value,
-          rememberMe: rememberMe.value,
-        })
-      } finally {
-        isLoading.value = false
-      }
-    }
-
-    const handleRegister = () => {
-      emit('register')
-    }
-
-    const handleForgotPassword = () => {
-      emit('forgot-password')
-    }
-
-    const handleThirdPartyLogin = (provider: string) => {
-      emit('third-party-login', provider)
-    }
-
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && isFormValid.value) {
-        handleLogin()
-      }
+    // 模板切换处理
+    const handleTemplateChange = (templateId: string) => {
+      currentTemplate.value = templateId
+      emit('template-change', templateId)
     }
 
     return () => (
       <div class="classic-login-template">
+        {/* 模板切换器 */}
+        <div class="template-selector">
+          <div class="template-selector__header">
+            <span class="template-selector__title">选择模板</span>
+          </div>
+          <div class="template-selector__options">
+            {availableTemplates.map(template => (
+              <button
+                key={template.id}
+                class={[
+                  'template-selector__option',
+                  currentTemplate.value === template.id && 'template-selector__option--active',
+                ]}
+                onClick={() => handleTemplateChange(template.id)}
+              >
+                <div class="template-selector__option-name">{template.name}</div>
+                <div class="template-selector__option-desc">{template.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 登录容器 */}
         <div class="login-container">
           <div class="login-card">
-            {/* Logo 和标题 */}
-            <div class="login-header">
-              {props.logo && <img src={props.logo} alt="Logo" class="login-logo" />}
-              <h1 class="login-title">{props.title}</h1>
-              {props.subtitle && <p class="login-subtitle">{props.subtitle}</p>}
-            </div>
-
-            {/* 登录表单 */}
-            <form
-              class="login-form"
-              onSubmit={(e: Event) => {
-                e.preventDefault()
-                handleLogin()
-              }}
-            >
-              <div class="form-group">
-                <label for="username" class="form-label">
-                  用户名
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  class="form-input"
-                  placeholder="请输入用户名"
-                  v-model={username.value}
-                  onKeypress={handleKeyPress}
-                  disabled={isLoading.value}
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="password" class="form-label">
-                  密码
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  class="form-input"
-                  placeholder="请输入密码"
-                  v-model={password.value}
-                  onKeypress={handleKeyPress}
-                  disabled={isLoading.value}
-                />
-              </div>
-
-              {/* 记住我和忘记密码 */}
-              <div class="form-options">
-                {props.showRememberMe && (
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model={rememberMe.value} disabled={isLoading.value} />
-                    <span class="checkbox-text">记住我</span>
-                  </label>
-                )}
-                {props.showForgotPassword && (
-                  <a
-                    href="#"
-                    class="forgot-password-link"
-                    onClick={(e: Event) => {
-                      e.preventDefault()
-                      handleForgotPassword()
-                    }}
-                  >
-                    忘记密码？
-                  </a>
-                )}
-              </div>
-
-              {/* 登录按钮 */}
-              <button
-                type="submit"
-                class={['login-button', { loading: isLoading.value }]}
-                disabled={!isFormValid.value || isLoading.value}
-              >
-                {isLoading.value ? '登录中...' : '登录'}
-              </button>
-            </form>
-
-            {/* 注册链接 */}
-            {props.showRegisterLink && (
-              <div class="register-section">
-                <span class="register-text">还没有账户？</span>
-                <a
-                  href="#"
-                  class="register-link"
-                  onClick={(e: Event) => {
-                    e.preventDefault()
-                    handleRegister()
-                  }}
-                >
-                  立即注册
-                </a>
-              </div>
-            )}
-
-            {/* 第三方登录 */}
-            {props.allowThirdPartyLogin && (
-              <div class="third-party-section">
-                <div class="divider">
-                  <span class="divider-text">或</span>
+            {/* 如果有传递 LoginPanel 组件，则使用它 */}
+            {props.loginPanel ? (
+              <div class="login-panel-wrapper">{props.loginPanel}</div>
+            ) : (
+              /* 否则显示默认的简单登录表单 */
+              <div class="fallback-login">
+                <div class="login-header">
+                  {props.logo && <img src={props.logo} alt="Logo" class="login-logo" />}
+                  <h1 class="login-title">{props.title}</h1>
+                  {props.subtitle && <p class="login-subtitle">{props.subtitle}</p>}
                 </div>
-                <div class="third-party-buttons">
-                  <button class="third-party-button github" onClick={() => handleThirdPartyLogin('github')}>
-                    GitHub
-                  </button>
-                  <button class="third-party-button google" onClick={() => handleThirdPartyLogin('google')}>
-                    Google
+
+                <div class="login-form">
+                  <div class="form-group">
+                    <input type="text" class="form-input" placeholder="用户名" />
+                  </div>
+
+                  <div class="form-group">
+                    <input type="password" class="form-input" placeholder="密码" />
+                  </div>
+
+                  <button
+                    type="button"
+                    class="login-button"
+                    onClick={() => emit('login', { username: 'demo', password: 'demo' })}
+                  >
+                    登录
                   </button>
                 </div>
               </div>
