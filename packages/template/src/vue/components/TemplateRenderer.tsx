@@ -14,7 +14,7 @@ export interface TemplateRendererProps {
   /** 是否显示模板选择器 */
   showSelector?: boolean
   /** 选择器显示模式 */
-  selectorMode?: 'dropdown' | 'grid' | 'buttons'
+  selectorMode?: 'modal' | 'dropdown' | 'grid' | 'buttons'
   /** 选择器大小 */
   selectorSize?: 'small' | 'medium' | 'large'
   /** 选择器位置 */
@@ -75,8 +75,8 @@ export const TemplateRenderer = defineComponent({
       default: true,
     },
     selectorMode: {
-      type: String as () => 'dropdown' | 'grid' | 'buttons',
-      default: 'buttons',
+      type: String as () => 'modal' | 'dropdown' | 'grid' | 'buttons',
+      default: 'modal',
     },
     selectorSize: {
       type: String as () => 'small' | 'medium' | 'large',
