@@ -201,9 +201,9 @@ export class PluginManager {
   /**
    * 日志输出
    */
-  private log(message: string, data?: any): void {
+  private log(message: string, data?: unknown): void {
     if (this.engine.config.debug) {
-      console.log(`[Plugin Manager] ${message}`, data || '')
+      console.warn(`[Plugin Manager] ${message}`, data || '')
     }
   }
 }

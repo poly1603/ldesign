@@ -36,7 +36,7 @@ describe('utils', () => {
   describe('deepMerge', () => {
     it('应该深度合并对象', () => {
       const target = { a: 1, b: { c: 2 } }
-      const source = { b: { d: 3 }, e: 4 }
+      const source = { b: { d: 3 }, e: 4 } as unknown as Partial<typeof target>
 
       const result = deepMerge(target, source)
 
@@ -49,8 +49,8 @@ describe('utils', () => {
 
     it('应该处理多个源对象', () => {
       const target = { a: 1 }
-      const source1 = { b: 2 }
-      const source2 = { c: 3 }
+      const source1 = { b: 2 } as Partial<typeof target>
+      const source2 = { c: 3 } as Partial<typeof target>
 
       const result = deepMerge(target, source1, source2)
 

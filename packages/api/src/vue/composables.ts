@@ -4,7 +4,7 @@ import { useApi } from './index'
 /**
  * API 调用状态
  */
-export interface ApiCallState<T = any> {
+export interface ApiCallState<T = unknown> {
   /** 响应数据 */
   data: Ref<T | null>
   /** 加载状态 */
@@ -28,9 +28,9 @@ export interface UseApiCallOptions {
   /** 是否立即执行 */
   immediate?: boolean
   /** 默认参数 */
-  defaultParams?: any
+  defaultParams?: unknown
   /** 成功回调 */
-  onSuccess?: (data: any) => void
+  onSuccess?: (data: unknown) => void
   /** 错误回调 */
   onError?: (error: Error) => void
   /** 完成回调 */
@@ -40,10 +40,10 @@ export interface UseApiCallOptions {
 /**
  * 使用 API 调用的组合式函数
  */
-export function useApiCall<T = any, P = any>(
-  methodName: string,
-  options: UseApiCallOptions = {}
-): ApiCallState<T> {
+export function useApiCall<
+  T = unknown,
+  P extends Record<string, unknown> | undefined = Record<string, unknown>
+>(methodName: string, options: UseApiCallOptions = {}): ApiCallState<T> {
   const {
     immediate = false,
     defaultParams,
@@ -126,7 +126,7 @@ export function useApiCall<T = any, P = any>(
 
   // 立即执行
   if (immediate) {
-    execute(defaultParams)
+    execute(defaultParams as P)
   }
 
   // 组件卸载时取消请求
@@ -135,7 +135,7 @@ export function useApiCall<T = any, P = any>(
   })
 
   return {
-    data,
+    data: data as Ref<T | null>,
     loading,
     error,
     finished,
@@ -211,9 +211,9 @@ export function useApiStats() {
 /**
  * 批量 API 调用的组合式函数
  */
-export function useBatchApiCall<T = any>(
+export function useBatchApiCall<T = unknown>(
   methodNames: string[],
-  options: UseApiCallOptions = {}
+  _options: UseApiCallOptions = {}
 ) {
   const apiEngine = useApi()
 

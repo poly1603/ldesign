@@ -3,7 +3,7 @@ import type { DeduplicationConfig } from '../types'
 /**
  * 去重任务
  */
-interface DeduplicationTask<T = any> {
+interface DeduplicationTask<T = unknown> {
   /** 任务 Promise */
   promise: Promise<T>
   /** 创建时间 */
@@ -40,7 +40,7 @@ export class DeduplicationManager {
   /**
    * 执行去重任务
    */
-  async execute<T = any>(key: string, task: () => Promise<T>): Promise<T> {
+  async execute<T = unknown>(key: string, task: () => Promise<T>): Promise<T> {
     if (!this.config.enabled) {
       return await task()
     }
@@ -54,7 +54,7 @@ export class DeduplicationManager {
       this.stats.totalSaved++
 
       // 返回现有任务的结果
-      return await existingTask.promise
+      return (await existingTask.promise) as T
     }
 
     // 创建新任务
@@ -187,15 +187,15 @@ export class DeduplicationManager {
   /**
    * 等待指定任务完成
    */
-  async waitFor<T = any>(key: string): Promise<T | null> {
+  async waitFor<T = unknown>(key: string): Promise<T | null> {
     const task = this.runningTasks.get(key)
     if (!task) {
       return null
     }
 
     try {
-      return await task.promise
-    } catch (error) {
+      return (await task.promise) as T | null
+    } catch {
       return null
     }
   }

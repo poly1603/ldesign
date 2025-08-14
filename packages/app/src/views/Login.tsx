@@ -1,6 +1,6 @@
 import { useRouter } from '@ldesign/router'
 import { TemplateRenderer } from '@ldesign/template'
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 
 export default defineComponent({

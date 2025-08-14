@@ -39,11 +39,11 @@ describe('apiEngine', () => {
       const methods = {
         method1: {
           name: 'method1',
-          config: { method: 'GET', url: '/method1' },
+          config: { method: 'GET' as const, url: '/method1' },
         },
         method2: {
           name: 'method2',
-          config: { method: 'POST', url: '/method2' },
+          config: { method: 'POST' as const, url: '/method2' },
         },
       }
 
@@ -57,11 +57,11 @@ describe('apiEngine', () => {
       const methods = {
         method1: {
           name: 'method1',
-          config: { method: 'GET', url: '/method1' },
+          config: { method: 'GET' as const, url: '/method1' },
         },
         method2: {
           name: 'method2',
-          config: { method: 'POST', url: '/method2' },
+          config: { method: 'POST' as const, url: '/method2' },
         },
       }
 

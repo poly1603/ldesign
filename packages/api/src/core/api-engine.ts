@@ -1,4 +1,10 @@
-import type { ApiEngine, ApiEngineConfig, ApiMethod, ApiPlugin } from '../types'
+import type {
+  ApiEngine,
+  ApiEngineConfig,
+  ApiMethod,
+  ApiPlugin,
+  RequestConfig,
+} from '../types'
 import { createHttpClient, type HttpClient } from '@ldesign/http'
 import { CacheManager } from './cache-manager'
 import { DebounceManager } from './debounce-manager'
@@ -103,7 +109,10 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 调用 API 方法
    */
-  async call<T = any, P = any>(name: string, params?: P): Promise<T> {
+  async call<
+    T = unknown,
+    P extends Record<string, unknown> | undefined = Record<string, unknown>
+  >(name: string, params?: P): Promise<T> {
     this.checkDestroyed()
 
     const method = this.apiMethods.get(name)
@@ -212,8 +221,8 @@ export class ApiEngineImpl implements ApiEngine {
    */
   private async executeRequest<T>(
     method: ApiMethod,
-    requestConfig: any,
-    params?: any
+    requestConfig: Record<string, unknown>,
+    params?: Record<string, unknown>
   ): Promise<T> {
     // 发送 HTTP 请求
     const response = await this.httpClient.request(requestConfig)
@@ -242,7 +251,10 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 生成缓存键
    */
-  private generateCacheKey(methodName: string, params?: any): string {
+  private generateCacheKey(
+    methodName: string,
+    params?: Record<string, unknown>
+  ): string {
     const prefix = this.config.cache?.prefix ?? 'api_cache_'
     const paramsStr = params ? JSON.stringify(params) : ''
     return `${prefix}${methodName}_${this.hashCode(paramsStr)}`
@@ -251,7 +263,10 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 生成防抖键
    */
-  private generateDebounceKey(methodName: string, params?: any): string {
+  private generateDebounceKey(
+    methodName: string,
+    params?: Record<string, unknown>
+  ): string {
     const paramsStr = params ? JSON.stringify(params) : ''
     return `${methodName}_${this.hashCode(paramsStr)}`
   }
@@ -259,13 +274,22 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 生成请求去重键
    */
-  private generateDeduplicationKey(methodName: string, params?: any): string {
+  private generateDeduplicationKey(
+    methodName: string,
+    params?: Record<string, unknown>
+  ): string {
     if (this.config.deduplication?.keyGenerator) {
       const requestConfig =
         typeof this.apiMethods.get(methodName)?.config === 'function'
-          ? (this.apiMethods.get(methodName)!.config as Function)(params)
+          ? (
+              this.apiMethods.get(methodName)!.config as (
+                params?: Record<string, unknown>
+              ) => unknown
+            )(params)
           : this.apiMethods.get(methodName)?.config
-      return this.config.deduplication.keyGenerator(requestConfig)
+      return this.config.deduplication.keyGenerator(
+        requestConfig as RequestConfig
+      )
     }
 
     const paramsStr = params ? JSON.stringify(params) : ''
@@ -298,9 +322,9 @@ export class ApiEngineImpl implements ApiEngine {
   /**
    * 日志输出
    */
-  private log(message: string, data?: any): void {
+  private log(message: string, data?: unknown): void {
     if (this.config.debug) {
-      console.log(`[API Engine] ${message}`, data || '')
+      console.warn(`[API Engine] ${message}`, data || '')
     }
   }
 }

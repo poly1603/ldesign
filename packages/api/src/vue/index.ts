@@ -35,7 +35,9 @@ export const apiVuePlugin = {
     app.provide(injectionKey, apiEngine)
 
     // 添加全局属性
-    app.config.globalProperties[globalPropertyName] = apiEngine
+    ;(app.config.globalProperties as Record<string, unknown>)[
+      globalPropertyName
+    ] = apiEngine
 
     // 在应用卸载时清理资源
     const originalUnmount = app.unmount
@@ -50,9 +52,9 @@ export const apiVuePlugin = {
  * 使用 API 引擎的组合式函数
  */
 export function useApi(
-  injectionKey: string | symbol = API_ENGINE_KEY
+  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY
 ): ApiEngine {
-  const apiEngine = inject(injectionKey)
+  const apiEngine = inject(injectionKey as InjectionKey<ApiEngine>)
   if (!apiEngine) {
     throw new Error(
       'API Engine not found. Make sure you have installed the apiVuePlugin.'
@@ -66,13 +68,13 @@ export function useApi(
  */
 export function createApiProvider(
   config?: ApiEngineConfig,
-  injectionKey: string | symbol = API_ENGINE_KEY
+  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY
 ) {
   const apiEngine = createApiEngine(config)
 
   return {
     apiEngine,
-    provide: () => provide(injectionKey, apiEngine),
+    provide: () => provide(injectionKey as InjectionKey<ApiEngine>, apiEngine),
     use: () => useApi(injectionKey),
   }
 }

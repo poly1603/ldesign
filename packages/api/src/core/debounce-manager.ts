@@ -3,7 +3,7 @@ import type { DebounceConfig } from '../types'
 /**
  * 防抖任务
  */
-interface DebounceTask<T = any> {
+interface DebounceTask<T = unknown> {
   /** 任务函数 */
   task: () => Promise<T>
   /** 延迟时间 */
@@ -13,7 +13,7 @@ interface DebounceTask<T = any> {
   /** Promise resolve */
   resolve: (value: T) => void
   /** Promise reject */
-  reject: (error: any) => void
+  reject: (error: unknown) => void
   /** 创建时间 */
   createdAt: number
 }
@@ -46,7 +46,7 @@ export class DebounceManager {
   /**
    * 执行防抖任务
    */
-  async execute<T = any>(
+  async execute<T = unknown>(
     key: string,
     task: () => Promise<T>,
     delay?: number
@@ -91,7 +91,7 @@ export class DebounceManager {
         }
       }, actualDelay)
 
-      this.tasks.set(key, newTask)
+      this.tasks.set(key, newTask as DebounceTask<unknown>)
     })
   }
 
@@ -119,7 +119,7 @@ export class DebounceManager {
    * 取消所有防抖任务
    */
   cancelAll(): void {
-    this.tasks.forEach((task, key) => {
+    this.tasks.forEach((_task, key) => {
       this.cancel(key)
     })
   }
@@ -172,7 +172,7 @@ export class DebounceManager {
   /**
    * 立即执行指定任务（跳过防抖）
    */
-  async flush<T = any>(key: string): Promise<T | null> {
+  async flush<T = unknown>(key: string): Promise<T | null> {
     const task = this.tasks.get(key)
     if (!task) {
       return null
@@ -188,7 +188,7 @@ export class DebounceManager {
       const result = await task.task()
       task.resolve(result)
       this.stats.executions++
-      return result
+      return result as T | null
     } catch (error) {
       task.reject(error)
       throw error

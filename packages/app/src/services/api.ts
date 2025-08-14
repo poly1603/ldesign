@@ -79,7 +79,7 @@ export class ApiService {
     switch (method) {
       case 'login':
         return {
-          token: 'mock-jwt-token-' + Date.now(),
+          token: `mock-jwt-token-${Date.now()}`,
           user: {
             id: 1,
             username: inputData?.username || 'admin',
@@ -148,12 +148,12 @@ export class ApiService {
         return {
           image:
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-          key: 'captcha-key-' + Date.now(),
+          key: `captcha-key-${Date.now()}`,
         }
 
       case 'getSession':
         return {
-          sessionId: 'session-' + Date.now(),
+          sessionId: `session-${Date.now()}`,
           userId: 1,
           loginTime: new Date().toISOString(),
           lastActivity: new Date().toISOString(),
@@ -161,7 +161,7 @@ export class ApiService {
 
       case 'refreshToken':
         return {
-          token: 'refreshed-jwt-token-' + Date.now(),
+          token: `refreshed-jwt-token-${Date.now()}`,
           expiresIn: 3600,
         }
 

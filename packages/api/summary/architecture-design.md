@@ -573,11 +573,11 @@ class MiddlewareManager {
 
 ```typescript
 interface PluginRegistry {
-  search(query: string): Promise<PluginInfo[]>
-  install(name: string, version?: string): Promise<ApiPlugin>
-  uninstall(name: string): Promise<void>
-  update(name: string, version?: string): Promise<ApiPlugin>
-  list(): Promise<PluginInfo[]>
+  search: (query: string) => Promise<PluginInfo[]>
+  install: (name: string, version?: string) => Promise<ApiPlugin>
+  uninstall: (name: string) => Promise<void>
+  update: (name: string, version?: string) => Promise<ApiPlugin>
+  list: () => Promise<PluginInfo[]>
 }
 ```
 

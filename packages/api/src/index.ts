@@ -21,6 +21,7 @@ export * from './utils'
 
 // 便捷创建函数
 export function createApi(config?: import('./types').ApiEngineConfig) {
+  // eslint-disable-next-line ts/no-require-imports
   const { createApiEngine } = require('./core/api-engine')
   return createApiEngine(config)
 }

@@ -17,11 +17,22 @@ export function createVitestConfig(options: VitestConfigOptions = {}) {
     setupFiles = [],
   } = options
   return defineConfig({
-    plugins: enableVue ? [vue()] : [],
-    esbuild: {
-      jsx: 'automatic',
-      jsxImportSource: 'vue',
-    },
+    plugins: enableVue
+      ? [
+          vue({
+            jsx: true,
+          }),
+        ]
+      : [],
+    esbuild: enableVue
+      ? {
+          jsx: 'transform',
+          jsxFactory: 'h',
+          jsxFragment: 'Fragment',
+        }
+      : {
+          jsx: 'automatic',
+        },
     test: {
       globals: true,
       environment,

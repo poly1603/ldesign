@@ -102,6 +102,9 @@ export interface UseFormReturn {
   isFieldDisabled: (name: string) => boolean
   addField: (field: any) => void
   removeField: (name: string) => void
+  resetField: (name: string) => void
+  clearValidation: () => void
+  destroy: () => void
 
   /** 高级布局功能 */
   layout: UseAdvancedLayoutReturn
@@ -180,21 +183,122 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 
   const validate = async (): Promise<boolean> => {
     formState.validating = true
-    // 简化的验证实现
-    formState.valid = true
-    formState.validating = false
-    eventEmitter.emit('validate', true, {})
-    return true
+
+    try {
+      const fieldNames = options.fields?.map(f => f.name) || []
+      const validationResults = await Promise.all(
+        fieldNames.map(name => validateField(name))
+      )
+
+      const isValid = validationResults.every(result => result)
+      formState.valid = isValid
+
+      eventEmitter.emit('validate', isValid, formErrors)
+      return isValid
+    } finally {
+      formState.validating = false
+    }
   }
 
   const validateField = async (name: string): Promise<boolean> => {
-    // 简化的字段验证实现
+    const field = options.fields?.find(f => f.name === name)
+    if (!field || !fieldStates[name]) {
+      return true
+    }
+
+    const value = formData[name]
+    const errors: string[] = []
+
+    // 必填验证
+    if (field.required && (!value || value === '')) {
+      errors.push(`${field.title || field.label || name}不能为空`)
+    }
+
+    // 规则验证
+    if (field.rules && field.rules.length > 0) {
+      for (const rule of field.rules) {
+        switch (rule.type) {
+          case 'required':
+            if (!value || value === '') {
+              errors.push(
+                rule.message || `${field.title || field.label || name}不能为空`
+              )
+            }
+            break
+          case 'email':
+            if (value && !/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(value)) {
+              errors.push(rule.message || '请输入有效的邮箱地址')
+            }
+            break
+          case 'number':
+            if (value && isNaN(Number(value))) {
+              errors.push(
+                rule.message ||
+                  `${field.title || field.label || name}必须是数字`
+              )
+            }
+            break
+          case 'min':
+            if (
+              value &&
+              !isNaN(Number(value)) &&
+              Number(value) < (rule.params || 0)
+            ) {
+              errors.push(
+                rule.message ||
+                  `${field.title || field.label || name}不能小于${rule.params}`
+              )
+            }
+            break
+          case 'minLength':
+            if (value && value.length < (rule.params || 0)) {
+              errors.push(
+                rule.message ||
+                  `${field.title || field.label || name}至少${
+                    rule.params
+                  }个字符`
+              )
+            }
+            break
+        }
+      }
+    }
+
+    // 类型验证（向后兼容）
+    if (value && field.type) {
+      switch (field.type) {
+        case 'email':
+          if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(value)) {
+            errors.push('请输入有效的邮箱地址')
+          }
+          break
+        case 'number':
+          if (isNaN(Number(value))) {
+            errors.push(`${field.title || field.label || name}必须是数字`)
+          } else if (field.min !== undefined && Number(value) < field.min) {
+            errors.push(
+              `${field.title || field.label || name}不能小于${field.min}`
+            )
+          }
+          break
+      }
+    }
+
+    // 更新字段状态
+    fieldStates[name].errors = errors
+    fieldStates[name].valid = errors.length === 0
+
+    return errors.length === 0
   }
 
   const reset = (): void => {
+    // 清空当前数据
     Object.keys(formData).forEach(key => {
       delete formData[key]
     })
+
+    // 重置为初始数据
+    Object.assign(formData, { ...options.initialData })
 
     // 重置字段状态
     Object.values(fieldStates).forEach(state => {
@@ -268,6 +372,35 @@ export function useForm(options: UseFormOptions): UseFormReturn {
   const removeField = (name: string): void => {
     delete fieldStates[name]
     delete formData[name]
+  }
+
+  const resetField = (name: string): void => {
+    if (fieldStates[name]) {
+      // 重置为初始数据中的值，如果没有则为空字符串
+      const defaultValue = options.initialData?.[name] || ''
+      formData[name] = defaultValue
+      fieldStates[name].value = defaultValue
+      fieldStates[name].dirty = false
+      fieldStates[name].touched = false
+      fieldStates[name].valid = true
+      fieldStates[name].errors = []
+    }
+  }
+
+  const clearValidation = (): void => {
+    Object.values(fieldStates).forEach(state => {
+      state.errors = []
+      state.valid = true
+    })
+    formState.valid = true
+  }
+
+  const destroy = (): void => {
+    // 清理事件监听器
+    eventEmitter.events = {}
+    // 清理状态
+    Object.keys(fieldStates).forEach(key => delete fieldStates[key])
+    Object.keys(formData).forEach(key => delete formData[key])
   }
 
   // 事件方法
@@ -344,6 +477,9 @@ export function useForm(options: UseFormOptions): UseFormReturn {
     isFieldDisabled,
     addField,
     removeField,
+    resetField,
+    clearValidation,
+    destroy,
 
     // 高级布局功能
     layout,

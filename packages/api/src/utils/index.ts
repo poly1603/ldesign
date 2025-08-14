@@ -12,7 +12,7 @@ export function isValidInput(input: unknown): boolean {
 /**
  * 深度合并对象
  */
-export function deepMerge<T extends Record<string, any>>(
+export function deepMerge<T extends Record<string, unknown>>(
   target: T,
   ...sources: Partial<T>[]
 ): T {
@@ -23,7 +23,10 @@ export function deepMerge<T extends Record<string, any>>(
     for (const key in source) {
       if (isObject(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} })
-        deepMerge(target[key], source[key])
+        deepMerge(
+          target[key] as Record<string, unknown>,
+          source[key] as Record<string, unknown>
+        )
       } else {
         Object.assign(target, { [key]: source[key] })
       }
@@ -36,7 +39,7 @@ export function deepMerge<T extends Record<string, any>>(
 /**
  * 检查是否为对象
  */
-export function isObject(item: any): item is Record<string, any> {
+export function isObject(item: unknown): item is Record<string, unknown> {
   return item !== null && typeof item === 'object' && !Array.isArray(item)
 }
 
@@ -50,7 +53,7 @@ export function generateId(prefix = 'id'): string {
 /**
  * 防抖函数
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -64,7 +67,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * 节流函数
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -86,7 +89,7 @@ export async function retry<T>(
   maxAttempts: number = 3,
   delay: number = 1000
 ): Promise<T> {
-  let lastError: Error
+  let lastError: Error | undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -104,7 +107,7 @@ export async function retry<T>(
     }
   }
 
-  throw lastError!
+  throw new Error(lastError?.message || 'All retry attempts failed')
 }
 
 /**
@@ -117,7 +120,7 @@ export function sleep(ms: number): Promise<void> {
 /**
  * 格式化错误信息
  */
-export function formatError(error: any): string {
+export function formatError(error: unknown): string {
   if (error instanceof Error) {
     return error.message
   }
@@ -127,7 +130,12 @@ export function formatError(error: any): string {
   }
 
   if (error && typeof error === 'object') {
-    return error.message || error.msg || JSON.stringify(error)
+    const errorObj = error as Record<string, unknown>
+    return (
+      (errorObj.message as string) ||
+      (errorObj.msg as string) ||
+      JSON.stringify(error)
+    )
   }
 
   return String(error)
@@ -136,7 +144,7 @@ export function formatError(error: any): string {
 /**
  * 检查是否为空值
  */
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   if (value == null) return true
   if (typeof value === 'string') return value.trim() === ''
   if (Array.isArray(value)) return value.length === 0
@@ -147,7 +155,7 @@ export function isEmpty(value: any): boolean {
 /**
  * 安全的 JSON 解析
  */
-export function safeJsonParse<T = any>(str: string, defaultValue: T): T {
+export function safeJsonParse<T = unknown>(str: string, defaultValue: T): T {
   try {
     return JSON.parse(str)
   } catch {
@@ -158,7 +166,7 @@ export function safeJsonParse<T = any>(str: string, defaultValue: T): T {
 /**
  * 安全的 JSON 字符串化
  */
-export function safeJsonStringify(obj: any, defaultValue = '{}'): string {
+export function safeJsonStringify(obj: unknown, defaultValue = '{}'): string {
   try {
     return JSON.stringify(obj)
   } catch {
@@ -169,15 +177,19 @@ export function safeJsonStringify(obj: any, defaultValue = '{}'): string {
 /**
  * 获取嵌套对象属性值
  */
-export function get(obj: any, path: string, defaultValue?: any): any {
+export function get(
+  obj: Record<string, unknown>,
+  path: string,
+  defaultValue?: unknown
+): unknown {
   const keys = path.split('.')
-  let result = obj
+  let result: unknown = obj
 
   for (const key of keys) {
     if (result == null || typeof result !== 'object') {
       return defaultValue
     }
-    result = result[key]
+    result = (result as Record<string, unknown>)[key]
   }
 
   return result !== undefined ? result : defaultValue
@@ -186,7 +198,11 @@ export function get(obj: any, path: string, defaultValue?: any): any {
 /**
  * 设置嵌套对象属性值
  */
-export function set(obj: any, path: string, value: any): void {
+export function set(
+  obj: Record<string, unknown>,
+  path: string,
+  value: unknown
+): void {
   const keys = path.split('.')
   const lastKey = keys.pop()!
   let current = obj
@@ -195,7 +211,7 @@ export function set(obj: any, path: string, value: any): void {
     if (!(key in current) || typeof current[key] !== 'object') {
       current[key] = {}
     }
-    current = current[key]
+    current = current[key] as Record<string, unknown>
   }
 
   current[lastKey] = value

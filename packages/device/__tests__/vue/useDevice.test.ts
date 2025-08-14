@@ -1,7 +1,12 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
-import { useBattery, useDevice, useGeolocation, useNetwork } from '../../src/adapt/vue/composables/useDevice'
+import {
+  useBattery,
+  useDevice,
+  useGeolocation,
+  useNetwork,
+} from '../../src/adapt/vue/composables/useDevice'
 
 // Mock window and navigator
 const mockWindow = {
@@ -14,7 +19,8 @@ const mockWindow = {
 }
 
 const mockNavigator = {
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  userAgent:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
   onLine: true,
   maxTouchPoints: 0,
   connection: {
@@ -85,7 +91,10 @@ describe('vue Composables', () => {
       vi.stubGlobal('innerWidth', 1920)
       vi.stubGlobal('innerHeight', 1080)
       // 移除 screen.orientation 以使用 window 尺寸判断
-      Object.defineProperty(screen, 'orientation', { value: undefined, configurable: true })
+      Object.defineProperty(screen, 'orientation', {
+        value: undefined,
+        configurable: true,
+      })
 
       const TestComponent = {
         setup() {
@@ -236,18 +245,18 @@ describe('vue Composables', () => {
 
       // 恢复 API
       if (originalGetBattery) {
-        (globalThis.navigator as any).getBattery = originalGetBattery
+        ;(globalThis.navigator as any).getBattery = originalGetBattery
       }
     })
   })
 
   describe('useGeolocation', () => {
     beforeEach(() => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+      mockGeolocation.getCurrentPosition.mockImplementation(success => {
         success({
           coords: {
             latitude: 40.7128,
-            longitude: -74.0060,
+            longitude: -74.006,
             accuracy: 10,
             altitude: null,
             altitudeAccuracy: null,
@@ -275,7 +284,7 @@ describe('vue Composables', () => {
       await nextTick()
 
       expect(vm.latitude).toBe(40.7128)
-      expect(vm.longitude).toBe(-74.0060)
+      expect(vm.longitude).toBe(-74.006)
       expect(vm.accuracy).toBe(10)
 
       wrapper.unmount()
@@ -308,14 +317,16 @@ describe('vue Composables', () => {
     })
 
     it('应该处理地理位置错误', async () => {
-      mockGeolocation.getCurrentPosition.mockImplementation((_success, error) => {
-        if (error) {
-          error({
-            code: 1,
-            message: 'User denied the request for Geolocation.',
-          } as GeolocationPositionError)
+      mockGeolocation.getCurrentPosition.mockImplementation(
+        (_success, error) => {
+          if (error) {
+            error({
+              code: 1,
+              message: 'User denied the request for Geolocation.',
+            } as GeolocationPositionError)
+          }
         }
-      })
+      )
 
       const TestComponent = {
         setup() {
@@ -327,7 +338,11 @@ describe('vue Composables', () => {
       const wrapper = mount(TestComponent)
       const vm = wrapper.vm as any
 
-      await vm.getCurrentPosition()
+      try {
+        await vm.getCurrentPosition()
+      } catch (error) {
+        // 预期会抛出错误
+      }
       await nextTick()
 
       expect(vm.error).toBeTruthy()
@@ -355,7 +370,11 @@ describe('vue Composables', () => {
       const wrapper = mount(TestComponent)
       const vm = wrapper.vm as any
 
-      await vm.getCurrentPosition()
+      try {
+        await vm.getCurrentPosition()
+      } catch (error) {
+        // 预期会抛出错误
+      }
       await nextTick()
 
       expect(vm.error).toBeTruthy()

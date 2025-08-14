@@ -225,7 +225,7 @@ export function createSystemApiPlugin(config: SystemApiConfig = {}): ApiPlugin {
     install: engine => {
       // 插件安装时的逻辑
       if (engine.config.debug) {
-        console.log(
+        console.warn(
           '[System APIs Plugin] Installed with endpoints:',
           finalEndpoints
         )
@@ -234,7 +234,7 @@ export function createSystemApiPlugin(config: SystemApiConfig = {}): ApiPlugin {
     uninstall: engine => {
       // 插件卸载时的逻辑
       if (engine.config.debug) {
-        console.log('[System APIs Plugin] Uninstalled')
+        console.warn('[System APIs Plugin] Uninstalled')
       }
     },
   }

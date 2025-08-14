@@ -1,13 +1,13 @@
-import type {
+import {
   HttpClientConfig,
   RequestConfig,
-  ResponseData,
-} from '@ldesign/http'
+} from '../packages/http/dist/index.d.js'
+export { ResponseData } from '../packages/http/dist/index.d.js'
 
 /**
  * API 引擎配置
  */
-export interface ApiEngineConfig {
+interface ApiEngineConfig {
   /** 应用名称 */
   appName?: string
   /** 版本号 */
@@ -25,11 +25,10 @@ export interface ApiEngineConfig {
   /** 自定义配置 */
   [key: string]: any
 }
-
 /**
  * 缓存配置
  */
-export interface CacheConfig {
+interface CacheConfig {
   /** 是否启用缓存 */
   enabled?: boolean
   /** 默认缓存时间（毫秒） */
@@ -41,31 +40,28 @@ export interface CacheConfig {
   /** 缓存键前缀 */
   prefix?: string
 }
-
 /**
  * 防抖配置
  */
-export interface DebounceConfig {
+interface DebounceConfig {
   /** 是否启用防抖 */
   enabled?: boolean
   /** 默认防抖延迟（毫秒） */
   delay?: number
 }
-
 /**
  * 请求去重配置
  */
-export interface DeduplicationConfig {
+interface DeduplicationConfig {
   /** 是否启用请求去重 */
   enabled?: boolean
   /** 去重键生成函数 */
   keyGenerator?: (config: RequestConfig) => string
 }
-
 /**
  * API 方法定义
  */
-export interface ApiMethod<T = any, P = any> {
+interface ApiMethod<T = any, P = any> {
   /** 方法名称 */
   name: string
   /** 请求配置 */
@@ -83,11 +79,10 @@ export interface ApiMethod<T = any, P = any> {
   /** 错误处理函数 */
   onError?: (error: any) => void
 }
-
 /**
  * API 插件接口
  */
-export interface ApiPlugin {
+interface ApiPlugin {
   /** 插件名称 */
   name: string
   /** 插件版本 */
@@ -101,11 +96,10 @@ export interface ApiPlugin {
   /** 插件提供的 API 方法 */
   apis?: Record<string, ApiMethod>
 }
-
 /**
  * API 引擎接口
  */
-export interface ApiEngine {
+interface ApiEngine {
   /** 配置 */
   config: ApiEngineConfig
   /** 使用插件 */
@@ -129,11 +123,10 @@ export interface ApiEngine {
   /** 销毁引擎 */
   destroy: () => void
 }
-
 /**
  * 系统 API 响应数据结构
  */
-export interface SystemApiResponse<T = any> {
+interface SystemApiResponse<T = any> {
   /** 状态码 */
   code: number
   /** 响应消息 */
@@ -145,11 +138,10 @@ export interface SystemApiResponse<T = any> {
   /** 请求ID */
   requestId?: string
 }
-
 /**
  * 用户信息
  */
-export interface UserInfo {
+interface UserInfo {
   /** 用户ID */
   id: string | number
   /** 用户名 */
@@ -169,11 +161,10 @@ export interface UserInfo {
   /** 扩展信息 */
   [key: string]: any
 }
-
 /**
  * 菜单项
  */
-export interface MenuItem {
+interface MenuItem {
   /** 菜单ID */
   id: string | number
   /** 菜单名称 */
@@ -197,11 +188,10 @@ export interface MenuItem {
   /** 扩展信息 */
   [key: string]: any
 }
-
 /**
  * 会话信息
  */
-export interface SessionInfo {
+interface SessionInfo {
   /** 会话ID */
   sessionId: string
   /** 用户ID */
@@ -217,11 +207,10 @@ export interface SessionInfo {
   /** 扩展信息 */
   [key: string]: any
 }
-
 /**
  * 验证码信息
  */
-export interface CaptchaInfo {
+interface CaptchaInfo {
   /** 验证码ID */
   captchaId: string
   /** 验证码图片（base64） */
@@ -229,11 +218,10 @@ export interface CaptchaInfo {
   /** 过期时间 */
   expiresAt: number
 }
-
 /**
  * 登录参数
  */
-export interface LoginParams {
+interface LoginParams {
   /** 用户名 */
   username: string
   /** 密码 */
@@ -247,11 +235,10 @@ export interface LoginParams {
   /** 扩展参数 */
   [key: string]: any
 }
-
 /**
  * 登录响应
  */
-export interface LoginResponse {
+interface LoginResponse {
   /** 访问令牌 */
   accessToken: string
   /** 刷新令牌 */
@@ -262,5 +249,20 @@ export interface LoginResponse {
   userInfo: UserInfo
 }
 
-// 导出所有类型
-export type { HttpClientConfig, RequestConfig, ResponseData }
+export { HttpClientConfig, RequestConfig }
+export type {
+  ApiEngine,
+  ApiEngineConfig,
+  ApiMethod,
+  ApiPlugin,
+  CacheConfig,
+  CaptchaInfo,
+  DebounceConfig,
+  DeduplicationConfig,
+  LoginParams,
+  LoginResponse,
+  MenuItem,
+  SessionInfo,
+  SystemApiResponse,
+  UserInfo,
+}

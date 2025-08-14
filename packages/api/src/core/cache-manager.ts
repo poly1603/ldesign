@@ -3,7 +3,7 @@ import type { CacheConfig } from '../types'
 /**
  * 缓存项
  */
-interface CacheItem<T = any> {
+interface CacheItem<T = unknown> {
   /** 缓存值 */
   value: T
   /** 过期时间 */
@@ -48,7 +48,7 @@ export class CacheManager {
   /**
    * 获取缓存
    */
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T = unknown>(key: string): Promise<T | null> {
     if (!this.config.enabled) {
       return null
     }
@@ -83,7 +83,7 @@ export class CacheManager {
   /**
    * 设置缓存
    */
-  async set<T = any>(key: string, value: T, ttl?: number): Promise<void> {
+  async set<T = unknown>(key: string, value: T, ttl?: number): Promise<void> {
     if (!this.config.enabled) {
       return
     }
@@ -186,21 +186,23 @@ export class CacheManager {
 
     switch (this.config.storage) {
       case 'memory':
-        return this.memoryCache.get(fullKey) || null
+        return (this.memoryCache.get(fullKey) as CacheItem<T>) || null
 
-      case 'localStorage':
+      case 'localStorage': {
         if (typeof localStorage === 'undefined') {
           return null
         }
         const localItem = localStorage.getItem(fullKey)
         return localItem ? JSON.parse(localItem) : null
+      }
 
-      case 'sessionStorage':
+      case 'sessionStorage': {
         if (typeof sessionStorage === 'undefined') {
           return null
         }
         const sessionItem = sessionStorage.getItem(fullKey)
         return sessionItem ? JSON.parse(sessionItem) : null
+      }
 
       default:
         return null
@@ -337,7 +339,7 @@ export class CacheManager {
     })
 
     if (expiredKeys.length > 0) {
-      console.log(
+      console.warn(
         `[Cache Manager] Cleaned up ${expiredKeys.length} expired cache items`
       )
     }

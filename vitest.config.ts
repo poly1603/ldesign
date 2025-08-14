@@ -4,7 +4,16 @@ import { defineConfig } from 'vitest/config'
 import { createDevAliases } from './tools/configs/vite-alias'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      jsx: true,
+    }),
+  ],
+  esbuild: {
+    jsx: 'transform',
+    jsxFactory: 'h',
+    jsxFragment: 'Fragment',
+  },
   test: {
     globals: true,
     environment: 'jsdom',

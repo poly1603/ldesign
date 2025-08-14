@@ -139,7 +139,7 @@ export const testConfig: ApiEngineConfig = {
 }
 
 // 根据环境选择配置
-export const getApiConfig = (): ApiEngineConfig => {
+export function getApiConfig(): ApiEngineConfig {
   const env = process.env.NODE_ENV || 'development'
 
   switch (env) {

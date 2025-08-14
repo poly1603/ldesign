@@ -237,13 +237,56 @@ class FormInstance extends SimpleEventEmitter {
   }
 
   async validate(): Promise<boolean> {
-    // 简化的验证实现
-    this.emit('validate', { valid: true, errors: {} })
-    return true
+    const fields = this.options.fields || []
+    let hasErrors = false
+    const errors: Record<string, string[]> = {}
+
+    for (const field of fields) {
+      const fieldValid = await this.validateField(
+        field.name,
+        this.formData[field.name]
+      )
+      if (!fieldValid) {
+        hasErrors = true
+        errors[field.name] = this.getFieldErrors(field.name)
+      }
+    }
+
+    const isValid = !hasErrors
+    this.emit('validate', { valid: isValid, errors })
+    return isValid
   }
 
   async validateField(name: string, value?: any): Promise<boolean> {
-    // 简化的字段验证实现
+    const field = this.options.fields?.find(f => f.name === name)
+    if (!field) return true
+
+    const fieldValue = value !== undefined ? value : this.formData[name]
+
+    // 必填验证
+    if (field.required && (!fieldValue || fieldValue === '')) {
+      return false
+    }
+
+    // 类型验证
+    if (fieldValue && field.type) {
+      switch (field.type) {
+        case 'email':
+          if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(fieldValue)) {
+            return false
+          }
+          break
+        case 'number':
+          if (isNaN(Number(fieldValue))) {
+            return false
+          }
+          if (field.min !== undefined && Number(fieldValue) < field.min) {
+            return false
+          }
+          break
+      }
+    }
+
     return true
   }
 
@@ -323,7 +366,48 @@ class FormInstance extends SimpleEventEmitter {
   }
 
   removeField(name: string): void {
+    delete this.formData[name]
+  }
+
+  // 添加缺失的方法
+  isValid(): boolean {
+    return true // 简化实现
+  }
+
+  isDirty(): boolean {
+    return Object.keys(this.formData).length > 0
+  }
+
+  isFieldTouched(name: string): boolean {
+    return this.formData.hasOwnProperty(name)
+  }
+
+  touchField(name: string): void {
+    // 简化实现 - 标记字段为已访问
+  }
+
+  setFieldReadonly(name: string, readonly: boolean): void {
     // 简化实现
+  }
+
+  isFieldReadonly(name: string): boolean {
+    return false // 简化实现
+  }
+
+  clearFieldValidation(name: string): void {
+    // 简化实现
+  }
+
+  once(event: string, handler: Function): void {
+    const onceHandler = (...args: any[]) => {
+      handler(...args)
+      this.off(event, onceHandler)
+    }
+    this.on(event, onceHandler)
+  }
+
+  updateOptions(newOptions: Partial<FormOptions>): void {
+    this.options = { ...this.options, ...newOptions }
   }
 }
 

@@ -101,19 +101,18 @@ export function parsePluralExpression(
   params: TranslationParams,
   locale: string
 ): string {
-  // 匹配复数表达式的正则 - 需要处理嵌套的大括号
-  const pluralRegex = /\{(\w+),plural,([^}]+)\}/
-  const match = expression.match(pluralRegex)
+  // 使用更强大的解析方法来处理嵌套大括号
+  const match = expression.match(/\{(\w+),\s*plural,\s*(.+)\}/)
 
   if (!match) {
     return expression
   }
 
-  const [, countKey, rules] = match
+  const [, countKey, rulesStr] = match
   const count = Number(params[countKey]) || 0
 
   // 解析规则部分
-  const ruleMap = parsePluralRules(rules)
+  const ruleMap = parsePluralRules(rulesStr)
 
   // 获取复数规则函数
   const pluralRule = getPluralRule(locale)

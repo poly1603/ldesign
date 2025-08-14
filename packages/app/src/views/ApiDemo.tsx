@@ -1,4 +1,4 @@
-import { defineComponent, ref, reactive, onMounted } from 'vue'
+import { defineComponent, onMounted, reactive, ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useApiService } from '../services/api'
 import './ApiDemo.less'
@@ -333,7 +333,10 @@ export default defineComponent({
           <div class='result-display'>
             {demoState.loading && <div class='loading'>🔄 API 调用中...</div>}
             {demoState.error && (
-              <div class='error'>❌ 错误: {demoState.error}</div>
+              <div class='error'>
+                ❌ 错误:
+                {demoState.error}
+              </div>
             )}
             {demoState.result && (
               <div class='result'>
@@ -349,7 +352,7 @@ export default defineComponent({
           <h2>📝 调用历史</h2>
           <div class='history-controls'>
             <button onClick={clearHistory}>🗑️ 清空历史</button>
-            <span>共 {apiHistory.length} 条记录</span>
+            <span>共{apiHistory.length} 条记录</span>
           </div>
           <div class='history-list'>
             {apiHistory.map((item, index) => (
@@ -357,7 +360,10 @@ export default defineComponent({
                 <div class='history-header'>
                   <span class='method'>{item.method}</span>
                   <span class='timestamp'>{item.timestamp}</span>
-                  <span class='duration'>{item.duration}ms</span>
+                  <span class='duration'>
+                    {item.duration}
+                    ms
+                  </span>
                 </div>
                 {item.params && (
                   <div class='history-params'>

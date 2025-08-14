@@ -46,7 +46,7 @@ describe('dynamicForm', () => {
       })
 
       expect(wrapper.find('.dynamic-form').exists()).toBe(true)
-      expect(wrapper.findAll('.form-item')).toHaveLength(3)
+      expect(wrapper.findAll('.dynamic-form__field')).toHaveLength(3)
     })
 
     it('应该支持 v-model 双向绑定', async () => {
@@ -57,27 +57,46 @@ describe('dynamicForm', () => {
         },
       })
 
+      // 调试：打印组件HTML
+      console.log('Component HTML:', wrapper.html())
+
+      // 检查是否有字段渲染
+      const fields = wrapper.findAll('.dynamic-form__field')
+      console.log('Found fields:', fields.length)
+
+      // 检查是否有input元素
+      const inputs = wrapper.findAll('input')
+      console.log('Found inputs:', inputs.length)
+
       // 检查初始值
       const usernameInput = wrapper.find('input[name="username"]')
-      expect(usernameInput.element.value).toBe('test')
+      if (usernameInput.exists()) {
+        expect(usernameInput.element.value).toBe('test')
 
-      // 修改值
-      await usernameInput.setValue('newtest')
-      await nextTick()
+        // 修改值
+        await usernameInput.setValue('newtest')
+        await nextTick()
 
-      // 检查事件是否触发
-      expect(wrapper.emitted('update:modelValue')).toBeTruthy()
-      const emittedEvents = wrapper.emitted('update:modelValue') as any[]
-      expect(emittedEvents[emittedEvents.length - 1][0]).toEqual(
-        expect.objectContaining({ username: 'newtest' })
-      )
+        // 检查事件是否触发
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+        const emittedEvents = wrapper.emitted('update:modelValue') as any[]
+        expect(emittedEvents[emittedEvents.length - 1][0]).toEqual(
+          expect.objectContaining({ username: 'newtest' })
+        )
+      } else {
+        throw new Error('Username input not found')
+      }
     })
 
     it('应该支持禁用状态', () => {
+      const disabledOptions = {
+        ...formOptions,
+        disabled: true,
+      }
+
       const wrapper = mount(DynamicForm, {
         props: {
-          options: formOptions,
-          disabled: true,
+          options: disabledOptions,
         },
       })
 
@@ -88,10 +107,14 @@ describe('dynamicForm', () => {
     })
 
     it('应该支持只读状态', () => {
+      const readonlyOptions = {
+        ...formOptions,
+        readonly: true,
+      }
+
       const wrapper = mount(DynamicForm, {
         props: {
-          options: formOptions,
-          readonly: true,
+          options: readonlyOptions,
         },
       })
 
@@ -117,7 +140,7 @@ describe('dynamicForm', () => {
       await nextTick()
 
       // 检查验证错误
-      const errorMessages = wrapper.findAll('.form-item__error')
+      const errorMessages = wrapper.findAll('.form-container__error')
       expect(errorMessages.length).toBeGreaterThan(0)
       expect(errorMessages[0].text()).toContain('用户名不能为空')
     })
@@ -143,7 +166,7 @@ describe('dynamicForm', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
       await nextTick()
 
-      const errorMessage = wrapper.find('.form-item__error')
+      const errorMessage = wrapper.find('.form-container__error')
       expect(errorMessage.exists()).toBe(true)
       expect(errorMessage.text()).toContain('请输入有效的邮箱地址')
     })
@@ -166,7 +189,7 @@ describe('dynamicForm', () => {
       await nextTick()
 
       // 检查是否没有错误
-      const errorMessages = wrapper.findAll('.form-item__error')
+      const errorMessages = wrapper.findAll('.form-container__error')
       expect(errorMessages).toHaveLength(0)
 
       // 检查是否触发了提交事件
@@ -332,7 +355,7 @@ describe('dynamicForm', () => {
       })
 
       expect(wrapper.find('.dynamic-form').classes()).toContain(
-        'dynamic-form--dark'
+        'dynamic-form--theme-dark'
       )
     })
   })

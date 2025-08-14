@@ -39,7 +39,11 @@ describe('systemApiPlugin', () => {
       expect(plugin.apis).toBeDefined()
 
       // login 方法的 config 是一个函数，需要调用后检查
-      const loginConfig = (plugin.apis!.login.config as Function)({
+      const loginConfig = (
+        plugin.apis!.login.config as (
+          params: Record<string, unknown>
+        ) => Record<string, unknown>
+      )({
         username: 'test',
         password: 'test',
       })
@@ -105,7 +109,11 @@ describe('systemApiPlugin', () => {
       await apiEngine.use(plugin)
 
       const loginMethod = apiEngine.getMethod(SYSTEM_API_METHODS.LOGIN)
-      const loginConfig = (loginMethod!.config as Function)({
+      const loginConfig = (
+        loginMethod!.config as (
+          params: Record<string, unknown>
+        ) => Record<string, unknown>
+      )({
         username: 'test',
         password: 'test',
       })
@@ -124,7 +132,11 @@ describe('systemApiPlugin', () => {
       await apiEngine.use(plugin)
 
       const loginMethod = apiEngine.getMethod(SYSTEM_API_METHODS.LOGIN)
-      const loginConfig = (loginMethod!.config as Function)({
+      const loginConfig = (
+        loginMethod!.config as (
+          params: Record<string, unknown>
+        ) => Record<string, unknown>
+      )({
         username: 'test',
         password: 'test',
       })

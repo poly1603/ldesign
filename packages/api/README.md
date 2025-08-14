@@ -197,7 +197,7 @@ const newProduct = await apiEngine.call('createProduct', {
 包含常用的系统接口方法：
 
 ```typescript
-import { systemApiPlugin, SYSTEM_API_METHODS } from '@ldesign/api'
+import { SYSTEM_API_METHODS, systemApiPlugin } from '@ldesign/api'
 
 // 使用系统接口插件
 await apiEngine.use(systemApiPlugin)
@@ -300,9 +300,9 @@ const [result1, result2, result3] = await Promise.all([
 ### 安装插件
 
 ```typescript
+import { apiVuePlugin, systemApiPlugin } from '@ldesign/api/vue'
 // main.ts
 import { createApp } from 'vue'
-import { apiVuePlugin, systemApiPlugin } from '@ldesign/api/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -678,9 +678,9 @@ export const userApisPlugin: ApiPlugin = {
 ### 4. 组合式函数封装
 
 ```typescript
-// composables/useAuth.ts
-import { ref, computed } from 'vue'
 import { useSystemApi } from '@ldesign/api/vue'
+// composables/useAuth.ts
+import { computed, ref } from 'vue'
 
 export function useAuth() {
   const systemApi = useSystemApi()

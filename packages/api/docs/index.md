@@ -107,9 +107,9 @@ const userInfo = await apiEngine.call('getUserInfo')
 ### 3. Vue 3 集成
 
 ```typescript
+import { apiVuePlugin } from '@ldesign/api/vue'
 // main.ts
 import { createApp } from 'vue'
-import { apiVuePlugin } from '@ldesign/api/vue'
 
 const app = createApp(App)
 app.use(apiVuePlugin, {

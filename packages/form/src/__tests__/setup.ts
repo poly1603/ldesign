@@ -1,12 +1,11 @@
-import { vi } from 'vitest'
+/**
+ * 测试环境设置文件
+ * 配置全局测试环境和工具
+ */
 
-// 为Vue TSX设置全局React变量（兼容性）
-globalThis.React = {
-  createElement: () => null,
-  Fragment: 'Fragment',
-}
+import { beforeEach, vi } from 'vitest'
 
-// Mock window object for SSR compatibility
+// 模拟浏览器环境
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
@@ -21,21 +20,21 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock ResizeObserver
-globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
+// 模拟 ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
-// Mock IntersectionObserver
-globalThis.IntersectionObserver = vi.fn().mockImplementation(() => ({
+// 模拟 IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
-// Mock import.meta.glob
-vi.mock('import.meta', () => ({
-  glob: vi.fn(() => ({})),
-}))
+// 每个测试前清理模拟
+beforeEach(() => {
+  vi.clearAllMocks()
+})
