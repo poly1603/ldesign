@@ -69,7 +69,7 @@ async function handleLogin() {
     <div class="login-container">
       <div class="login-header">
         <h1>用户登录</h1>
-        <p>请输入您的凭据以访问受保护的页面</p>
+        <p data-testid="redirect-message">请输入您的凭据以访问受保护的页面</p>
       </div>
 
       <form class="login-form" @submit.prevent="handleLogin">

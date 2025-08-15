@@ -147,6 +147,20 @@ Object.defineProperty(document, 'createElement', {
       innerHTML: '',
       id: '',
       className: '',
+      parentNode: null,
+      childNodes: [],
+      children: [],
+      firstChild: null,
+      lastChild: null,
+      nextSibling: null,
+      previousSibling: null,
+      insertBefore: vi.fn((newNode, referenceNode) => {
+        return newNode
+      }),
+      replaceChild: vi.fn((newChild, oldChild) => {
+        return oldChild
+      }),
+      cloneNode: vi.fn(() => element),
     }
     return element
   }),

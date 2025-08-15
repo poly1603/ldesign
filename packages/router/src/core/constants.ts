@@ -6,6 +6,11 @@
 
 import type { RouteLocationNormalized } from '../types'
 
+// ==================== 开发模式常量 ====================
+
+/** 是否为开发模式 */
+export const __DEV__ = typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+
 // ==================== 路径相关常量 ====================
 
 /** 根路径 */
@@ -97,8 +102,7 @@ export const START_LOCATION: RouteLocationNormalized = {
   fullPath: '/',
   matched: [],
   meta: {},
-  redirectedFrom: undefined,
-}
+} as RouteLocationNormalized
 
 // ==================== 动画相关常量 ====================
 
@@ -167,29 +171,26 @@ export enum HttpStatusCode {
 // ==================== 浏览器兼容性常量 ====================
 
 /** 是否支持 History API */
-export const SUPPORTS_HISTORY =
-  typeof window !== 'undefined' &&
-  'history' in window &&
-  'pushState' in window.history
+export const SUPPORTS_HISTORY
+  = typeof window !== 'undefined'
+  && 'history' in window
+  && 'pushState' in window.history
 
 /** 是否支持 IntersectionObserver */
-export const SUPPORTS_INTERSECTION_OBSERVER =
-  typeof window !== 'undefined' && 'IntersectionObserver' in window
+export const SUPPORTS_INTERSECTION_OBSERVER
+  = typeof window !== 'undefined' && 'IntersectionObserver' in window
 
 /** 是否支持 requestIdleCallback */
-export const SUPPORTS_REQUEST_IDLE_CALLBACK =
-  typeof window !== 'undefined' && 'requestIdleCallback' in window
+export const SUPPORTS_REQUEST_IDLE_CALLBACK
+  = typeof window !== 'undefined' && 'requestIdleCallback' in window
 
-// ==================== 开发模式常量 ====================
-
-/** 是否为开发模式 */
-export const IS_DEV = process.env.NODE_ENV === 'development'
+export const IS_DEV = typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
 
 /** 是否为生产模式 */
-export const IS_PROD = process.env.NODE_ENV === 'production'
+export const IS_PROD = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production'
 
 /** 是否为测试模式 */
-export const IS_TEST = process.env.NODE_ENV === 'test'
+export const IS_TEST = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
 
 // ==================== 版本信息常量 ====================
 

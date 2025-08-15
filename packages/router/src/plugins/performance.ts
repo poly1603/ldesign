@@ -68,7 +68,7 @@ export class PerformanceManager {
    */
   startNavigation(
     from: RouteLocationNormalized,
-    to: RouteLocationNormalized
+    to: RouteLocationNormalized,
   ): string {
     const id = this.generateNavigationId(from, to)
     const startTime = performance.now()
@@ -98,7 +98,8 @@ export class PerformanceManager {
    */
   endNavigation(id: string): PerformanceMetrics | null {
     const navigation = this.navigations.get(id)
-    if (!navigation) return null
+    if (!navigation)
+      return null
 
     const endTime = performance.now()
     navigation.endTime = endTime
@@ -124,7 +125,7 @@ export class PerformanceManager {
 
     // 清理当前导航
     if (this.currentNavigation?.id === id) {
-      this.currentNavigation = undefined
+      this.currentNavigation = undefined as any
     }
 
     return metrics
@@ -134,7 +135,8 @@ export class PerformanceManager {
    * 记录事件
    */
   recordEvent(type: PerformanceEventType, data?: any): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
 
     const event: PerformanceEvent = {
       type,
@@ -156,7 +158,7 @@ export class PerformanceManager {
    */
   addEventListener(
     type: PerformanceEventType,
-    listener: (event: PerformanceEvent) => void
+    listener: (event: PerformanceEvent) => void,
   ): () => void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, [])
@@ -198,14 +200,14 @@ export class PerformanceManager {
 
     const totalTime = completedNavigations.reduce(
       (sum, n) => sum + n.metrics!.totalTime,
-      0
+      0,
     )
     const averageTime = totalTime / completedNavigations.length
     const slowNavigations = completedNavigations.filter(
-      n => n.metrics!.totalTime > this.config.warningThreshold
+      n => n.metrics!.totalTime > this.config.warningThreshold,
     ).length
     const fastNavigations = completedNavigations.filter(
-      n => n.metrics!.totalTime < this.config.warningThreshold / 2
+      n => n.metrics!.totalTime < this.config.warningThreshold / 2,
     ).length
 
     return {
@@ -221,7 +223,7 @@ export class PerformanceManager {
    */
   clear(): void {
     this.navigations.clear()
-    this.currentNavigation = undefined
+    this.currentNavigation = undefined as any
   }
 
   /**
@@ -229,7 +231,7 @@ export class PerformanceManager {
    */
   private generateNavigationId(
     from: RouteLocationNormalized,
-    to: RouteLocationNormalized
+    to: RouteLocationNormalized,
   ): string {
     return `${from.path}->${to.path}-${Date.now()}`
   }
@@ -238,7 +240,7 @@ export class PerformanceManager {
    * 计算性能指标
    */
   private calculateMetrics(
-    navigation: NavigationPerformance
+    navigation: NavigationPerformance,
   ): PerformanceMetrics {
     const events = navigation.events
     const startTime = navigation.startTime
@@ -246,22 +248,22 @@ export class PerformanceManager {
 
     // 查找关键事件
     const componentLoadStart = events.find(
-      e => e.type === PerformanceEventType.COMPONENT_LOAD_START
+      e => e.type === PerformanceEventType.COMPONENT_LOAD_START,
     )
     const componentLoadEnd = events.find(
-      e => e.type === PerformanceEventType.COMPONENT_LOAD_END
+      e => e.type === PerformanceEventType.COMPONENT_LOAD_END,
     )
     const routeMatchStart = events.find(
-      e => e.type === PerformanceEventType.ROUTE_MATCH_START
+      e => e.type === PerformanceEventType.ROUTE_MATCH_START,
     )
     const routeMatchEnd = events.find(
-      e => e.type === PerformanceEventType.ROUTE_MATCH_END
+      e => e.type === PerformanceEventType.ROUTE_MATCH_END,
     )
     const guardStart = events.find(
-      e => e.type === PerformanceEventType.GUARD_EXECUTION_START
+      e => e.type === PerformanceEventType.GUARD_EXECUTION_START,
     )
     const guardEnd = events.find(
-      e => e.type === PerformanceEventType.GUARD_EXECUTION_END
+      e => e.type === PerformanceEventType.GUARD_EXECUTION_END,
     )
 
     return {
@@ -285,15 +287,14 @@ export class PerformanceManager {
   private checkThresholds(metrics: PerformanceMetrics): void {
     if (metrics.totalTime > this.config.errorThreshold) {
       console.error(
-        `路由导航性能严重超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${
-          this.config.errorThreshold
-        }ms)`
+        `路由导航性能严重超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config.errorThreshold
+        }ms)`,
       )
-    } else if (metrics.totalTime > this.config.warningThreshold) {
+    }
+    else if (metrics.totalTime > this.config.warningThreshold) {
       console.warn(
-        `路由导航性能超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${
-          this.config.warningThreshold
-        }ms)`
+        `路由导航性能超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config.warningThreshold
+        }ms)`,
       )
     }
   }
@@ -304,10 +305,11 @@ export class PerformanceManager {
   private emitEvent(event: PerformanceEvent): void {
     const listeners = this.eventListeners.get(event.type)
     if (listeners) {
-      listeners.forEach(listener => {
+      listeners.forEach((listener) => {
         try {
           listener(event)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('性能监控事件监听器错误:', error)
         }
       })
@@ -323,7 +325,7 @@ export class PerformanceManager {
 export function withPerformanceMonitoring<T extends (...args: any[]) => any>(
   fn: T,
   name: string,
-  manager: PerformanceManager
+  manager: PerformanceManager,
 ): T {
   return ((...args: any[]) => {
     const startTime = performance.now()
@@ -350,12 +352,13 @@ export function withPerformanceMonitoring<T extends (...args: any[]) => any>(
       })
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const endTime = performance.now()
       manager.recordEvent(PerformanceEventType.COMPONENT_LOAD_END, {
         name,
         duration: endTime - startTime,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -378,7 +381,7 @@ export interface PerformancePluginOptions extends Partial<PerformanceConfig> {
  * 创建性能监控插件
  */
 export function createPerformancePlugin(
-  options: PerformancePluginOptions = {}
+  options: PerformancePluginOptions = {},
 ) {
   const {
     enabled = true,
@@ -454,7 +457,7 @@ export function createPerformancePlugin(
               const metrics = manager.endNavigation(navigationId)
 
               if (consoleOutput && metrics) {
-                console.log(`路由导航性能: ${from.path} -> ${to.path}`, {
+                console.warn(`路由导航性能: ${from.path} -> ${to.path}`, {
                   总耗时: `${metrics.totalTime.toFixed(2)}ms`,
                   路由匹配: `${metrics.routeMatchTime.toFixed(2)}ms`,
                   守卫执行: `${metrics.guardExecutionTime.toFixed(2)}ms`,
@@ -478,7 +481,7 @@ export function createPerformancePlugin(
  * 创建性能配置
  */
 export function createPerformanceConfig(
-  config: Partial<PerformanceConfig>
+  config: Partial<PerformanceConfig>,
 ): PerformanceConfig {
   return {
     enabled: true,
@@ -500,18 +503,20 @@ export function supportsPerformanceAPI(): boolean {
  * 获取页面性能信息
  */
 export function getPagePerformance() {
-  if (!supportsPerformanceAPI()) return null
+  if (!supportsPerformanceAPI())
+    return null
 
   const navigation = performance.getEntriesByType(
-    'navigation'
+    'navigation',
   )[0] as PerformanceNavigationTiming
 
-  if (!navigation) return null
+  if (!navigation)
+    return null
 
   return {
     domContentLoaded:
-      navigation.domContentLoadedEventEnd -
-      navigation.domContentLoadedEventStart,
+      navigation.domContentLoadedEventEnd
+      - navigation.domContentLoadedEventStart,
     loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
     firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
     firstContentfulPaint:

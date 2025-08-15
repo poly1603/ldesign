@@ -5,6 +5,10 @@
  */
 
 import type { Component, ComputedRef, Ref } from 'vue'
+import type { DeviceType } from '@ldesign/device'
+
+// 重新导出设备相关类型
+export type { DeviceType } from '@ldesign/device'
 
 // ==================== 基础类型 ====================
 
@@ -34,6 +38,18 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   preload?: boolean | 'hover' | 'visible' | 'idle'
   /** 动画类型 */
   transition?: string
+
+  // ==================== 设备适配相关 ====================
+  /** 支持的设备类型，默认支持所有设备 */
+  supportedDevices?: DeviceType[]
+  /** 不支持设备时的提示信息 */
+  unsupportedMessage?: string
+  /** 不支持设备时的重定向路由 */
+  unsupportedRedirect?: string
+  /** 模板名称，用于直接配置模板 */
+  template?: string
+  /** 模板分类，配合模板名称使用 */
+  templateCategory?: string
 }
 
 // ==================== 路由位置类型 ====================
@@ -128,13 +144,25 @@ export interface RouteRecordRaw {
   beforeEnter?: NavigationGuard | NavigationGuard[]
   /** 属性传递 */
   props?:
-    | boolean
-    | Record<string, unknown>
-    | ((route: RouteLocationNormalized) => Record<string, unknown>)
+  | boolean
+  | Record<string, unknown>
+  | ((route: RouteLocationNormalized) => Record<string, unknown>)
   /** 路径匹配是否大小写敏感 */
   sensitive?: boolean
   /** 路径匹配是否严格模式 */
   strict?: boolean
+
+  // ==================== 设备适配相关 ====================
+  /** 设备特定组件配置 */
+  deviceComponents?: {
+    mobile?: RouteComponent
+    tablet?: RouteComponent
+    desktop?: RouteComponent
+  }
+  /** 模板名称，用于直接配置模板 */
+  template?: string
+  /** 模板分类，配合模板名称使用 */
+  templateCategory?: string
 }
 
 /**
@@ -392,9 +420,84 @@ export interface Router {
 /**
  * useRoute 返回类型
  */
-export interface UseRouteReturn extends ComputedRef<RouteLocationNormalized> {}
+export interface UseRouteReturn extends ComputedRef<RouteLocationNormalized> { }
 
 /**
  * useRouter 返回类型
  */
-export interface UseRouterReturn extends Router {}
+export interface UseRouterReturn extends Router { }
+
+// ==================== 设备适配类型 ====================
+
+/**
+ * 设备路由配置
+ */
+export interface DeviceRouteConfig {
+  /** 默认支持的设备类型 */
+  defaultSupportedDevices?: DeviceType[]
+  /** 设备不支持时的默认提示信息 */
+  defaultUnsupportedMessage?: string
+  /** 设备不支持时的默认重定向路由 */
+  defaultUnsupportedRedirect?: string
+  /** 是否启用设备检测 */
+  enableDeviceDetection?: boolean
+  /** 是否启用设备访问控制 */
+  enableDeviceGuard?: boolean
+  /** 是否启用模板路由支持 */
+  enableTemplateRoutes?: boolean
+}
+
+/**
+ * 设备组件解析结果
+ */
+export interface DeviceComponentResolution {
+  /** 解析到的组件 */
+  component: RouteComponent
+  /** 使用的设备类型 */
+  deviceType: DeviceType
+  /** 是否为回退组件 */
+  isFallback: boolean
+  /** 解析来源 */
+  source: 'deviceComponents' | 'component' | 'template'
+}
+
+/**
+ * 设备路由守卫选项
+ */
+export interface DeviceGuardOptions {
+  /** 支持的设备类型检查函数 */
+  checkSupportedDevices?: (
+    supportedDevices: DeviceType[],
+    currentDevice: DeviceType,
+    route: RouteLocationNormalized
+  ) => boolean
+  /** 不支持设备时的处理函数 */
+  onUnsupportedDevice?: (
+    currentDevice: DeviceType,
+    route: RouteLocationNormalized
+  ) => RouteLocationRaw | void
+}
+
+/**
+ * 模板路由配置
+ */
+export interface TemplateRouteConfig {
+  /** 默认模板分类 */
+  defaultCategory?: string
+  /** 模板根目录 */
+  templateRoot?: string
+  /** 是否启用模板缓存 */
+  enableCache?: boolean
+  /** 模板加载超时时间 */
+  timeout?: number
+}
+
+/**
+ * 设备路由插件选项
+ */
+export interface DeviceRouterPluginOptions extends DeviceRouteConfig {
+  /** 设备路由守卫选项 */
+  guardOptions?: DeviceGuardOptions
+  /** 模板路由配置 */
+  templateConfig?: TemplateRouteConfig
+}

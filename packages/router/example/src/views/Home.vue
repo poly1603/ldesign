@@ -100,6 +100,21 @@ const stats = {
       </div>
     </div>
 
+    <!-- E2E 测试导航区域 -->
+    <div class="test-navigation">
+      <h2>测试导航</h2>
+      <nav class="test-nav">
+        <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/user/123">User 123</RouterLink>
+        <RouterLink to="/posts">Posts</RouterLink>
+        <RouterLink to="/search?q=test&category=all">Search</RouterLink>
+        <RouterLink to="/docs#section1">Docs</RouterLink>
+        <RouterLink to="/profile">Profile</RouterLink>
+        <RouterLink to="/cached-page">Cached Page</RouterLink>
+        <RouterLink to="/admin">Admin</RouterLink>
+      </nav>
+    </div>
+
     <div class="features">
       <h2 class="section-title">核心特性</h2>
       <div class="feature-grid">
@@ -334,6 +349,45 @@ const stats = {
   .stat-label {
     font-size: @font-size-base;
     opacity: 0.9;
+  }
+}
+
+.test-navigation {
+  padding: @spacing-xl @spacing-md;
+  background: @gray-50;
+  text-align: center;
+
+  h2 {
+    color: @gray-800;
+    margin-bottom: @spacing-lg;
+    font-size: @font-size-xl;
+  }
+
+  .test-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: @spacing-md;
+
+    a {
+      padding: @spacing-sm @spacing-md;
+      background: white;
+      color: @primary-color;
+      text-decoration: none;
+      border-radius: @border-radius-md;
+      border: 1px solid @primary-color;
+      transition: all @transition-base;
+
+      &:hover {
+        background: @primary-color;
+        color: white;
+      }
+
+      &.router-link-active {
+        background: @primary-color;
+        color: white;
+      }
+    }
   }
 }
 

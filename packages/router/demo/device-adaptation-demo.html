@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDesign Router 设备适配演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            margin: 0 0 10px 0;
+        }
+
+        .header p {
+            color: #718096;
+            margin: 0;
+        }
+
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .demo-section h3 {
+            color: #2d3748;
+            margin: 0 0 15px 0;
+        }
+
+        .device-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .info-card .label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-card .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .device-simulator {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .device-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #4299e1;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .device-button:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .device-button.active {
+            background: #38a169;
+        }
+
+        .route-tests {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .route-test {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .route-test .route-path {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .route-test .support-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .status-icon.supported {
+            background: #38a169;
+        }
+
+        .status-icon.unsupported {
+            background: #e53e3e;
+        }
+
+        .component-demo {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .component-demo h4 {
+            margin: 0 0 15px 0;
+            color: #2d3748;
+        }
+
+        .component-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .component-info .tag {
+            padding: 4px 8px;
+            background: #4299e1;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .component-info .tag.fallback {
+            background: #ed8936;
+        }
+
+        .log-section {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.info {
+            color: #63b3ed;
+        }
+
+        .log-entry.warning {
+            color: #f6ad55;
+        }
+
+        .log-entry.error {
+            color: #fc8181;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .device-info {
+                grid-template-columns: 1fr;
+            }
+
+            .route-tests {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 LDesign Router 设备适配演示</h1>
+            <p>体验强大的设备适配功能，包括设备检测、组件解析和访问控制</p>
+        </div>
+
+        <div class="demo-section">
+            <h3>📱 设备信息</h3>
+            <div class="device-info">
+                <div class="info-card">
+                    <div class="label">当前设备</div>
+                    <div class="value" id="current-device">检测中...</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">视口尺寸</div>
+                    <div class="value" id="viewport-size">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">用户代理</div>
+                    <div class="value" id="user-agent">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">触摸支持</div>
+                    <div class="value" id="touch-support">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎮 设备模拟器</h3>
+            <p>点击按钮模拟不同设备类型（调整窗口大小）：</p>
+            <div class="device-simulator">
+                <button class="device-button" onclick="simulateDevice('mobile')">📱 移动端 (375px)</button>
+                <button class="device-button" onclick="simulateDevice('tablet')">📱 平板端 (768px)</button>
+                <button class="device-button" onclick="simulateDevice('desktop')">🖥️ 桌面端 (1200px)</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🛡️ 路由访问控制测试</h3>
+            <p>以下路由配置了不同的设备访问限制：</p>
+            <div class="route-tests">
+                <div class="route-test">
+                    <div class="route-path">/admin</div>
+                    <div class="support-status">
+                        <div class="status-icon" id="admin-status"></div>
+                        <span id="admin-text">仅桌面端</span>
+                    </div>
+                </div>
+                <div class="route-test">
+                    <div class="route-path">/mobile-app</div>
+                    <div class="support-status">
+                        <div class="status-icon" id="mobile-app-status"></div>
+                        <span id="mobile-app-text">仅移动端</span>
+                    </div>
+                </div>
+                <div class="route-test">
+                    <div class="route-path">/responsive</div>
+                    <div class="support-status">
+                        <div class="status-icon" id="responsive-status"></div>
+                        <span id="responsive-text">所有设备</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🧩 组件解析演示</h3>
+            <div class="component-demo">
+                <h4>当前页面组件</h4>
+                <div class="component-info">
+                    <span class="tag" id="component-source">来源: component</span>
+                    <span class="tag" id="component-device">设备: desktop</span>
+                    <span class="tag" id="component-fallback" style="display: none;">回退组件</span>
+                </div>
+                <p id="component-description">根据当前设备类型，系统会自动选择最合适的组件进行渲染。</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>📊 实时日志</h3>
+            <div class="log-section" id="log-container">
+                <div class="log-entry info">[INFO] 设备适配演示已启动</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟设备检测功能
+        let currentDeviceType = 'desktop';
+        
+        // 设备检测配置
+        const deviceConfig = {
+            mobile: { maxWidth: 767, name: '移动设备' },
+            tablet: { maxWidth: 1023, name: '平板设备' },
+            desktop: { maxWidth: Infinity, name: '桌面设备' }
+        };
+
+        // 路由配置
+        const routeConfig = {
+            '/admin': { supportedDevices: ['desktop'] },
+            '/mobile-app': { supportedDevices: ['mobile'] },
+            '/responsive': { supportedDevices: ['mobile', 'tablet', 'desktop'] }
+        };
+
+        // 检测设备类型
+        function detectDevice() {
+            const width = window.innerWidth;
+            
+            if (width <= deviceConfig.mobile.maxWidth) {
+                return 'mobile';
+            } else if (width <= deviceConfig.tablet.maxWidth) {
+                return 'tablet';
+            } else {
+                return 'desktop';
+            }
+        }
+
+        // 更新设备信息显示
+        function updateDeviceInfo() {
+            currentDeviceType = detectDevice();
+            
+            document.getElementById('current-device').textContent = deviceConfig[currentDeviceType].name;
+            document.getElementById('viewport-size').textContent = `${window.innerWidth} × ${window.innerHeight}`;
+            document.getElementById('user-agent').textContent = navigator.userAgent.substring(0, 50) + '...';
+            document.getElementById('touch-support').textContent = 'ontouchstart' in window ? '支持' : '不支持';
+            
+            logMessage('info', `设备类型变更为: ${deviceConfig[currentDeviceType].name} (${window.innerWidth}px)`);
+        }
+
+        // 更新路由访问状态
+        function updateRouteStatus() {
+            Object.entries(routeConfig).forEach(([route, config]) => {
+                const routeName = route.replace('/', '').replace('-', '-');
+                const statusElement = document.getElementById(`${routeName}-status`);
+                const textElement = document.getElementById(`${routeName}-text`);
+                
+                const isSupported = config.supportedDevices.includes(currentDeviceType);
+                
+                if (statusElement) {
+                    statusElement.className = `status-icon ${isSupported ? 'supported' : 'unsupported'}`;
+                }
+                
+                if (textElement) {
+                    const deviceNames = config.supportedDevices.map(d => deviceConfig[d].name).join('、');
+                    textElement.textContent = `${deviceNames} ${isSupported ? '✅' : '❌'}`;
+                }
+            });
+        }
+
+        // 更新组件信息
+        function updateComponentInfo() {
+            const sourceElement = document.getElementById('component-source');
+            const deviceElement = document.getElementById('component-device');
+            const fallbackElement = document.getElementById('component-fallback');
+            const descriptionElement = document.getElementById('component-description');
+            
+            // 模拟组件解析逻辑
+            let source = 'deviceComponents';
+            let isFallback = false;
+            
+            // 模拟某些设备没有专用组件的情况
+            if (currentDeviceType === 'tablet') {
+                source = 'component';
+                isFallback = true;
+            }
+            
+            sourceElement.textContent = `来源: ${source}`;
+            deviceElement.textContent = `设备: ${currentDeviceType}`;
+            fallbackElement.style.display = isFallback ? 'inline' : 'none';
+            
+            const descriptions = {
+                mobile: '移动端优化组件：简化界面，触摸友好',
+                tablet: '平板端适配组件：平衡功能与易用性',
+                desktop: '桌面端完整组件：功能丰富，操作精确'
+            };
+            
+            descriptionElement.textContent = descriptions[currentDeviceType] || '通用组件';
+        }
+
+        // 模拟设备切换
+        function simulateDevice(deviceType) {
+            const widths = {
+                mobile: 375,
+                tablet: 768,
+                desktop: 1200
+            };
+            
+            // 更新按钮状态
+            document.querySelectorAll('.device-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 模拟窗口大小变化
+            const width = widths[deviceType];
+            logMessage('info', `模拟设备切换到: ${deviceConfig[deviceType].name} (${width}px)`);
+            
+            // 这里实际上无法改变窗口大小，但可以模拟检测结果
+            currentDeviceType = deviceType;
+            updateDeviceInfo();
+            updateRouteStatus();
+            updateComponentInfo();
+            
+            logMessage('warning', '注意: 实际项目中设备检测基于真实的窗口大小和用户代理');
+        }
+
+        // 添加日志消息
+        function logMessage(type, message) {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // 限制日志条数
+            const entries = logContainer.querySelectorAll('.log-entry');
+            if (entries.length > 50) {
+                entries[0].remove();
+            }
+        }
+
+        // 初始化
+        function init() {
+            updateDeviceInfo();
+            updateRouteStatus();
+            updateComponentInfo();
+            
+            // 监听窗口大小变化
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    updateDeviceInfo();
+                    updateRouteStatus();
+                    updateComponentInfo();
+                }, 100);
+            });
+            
+            logMessage('info', 'LDesign Router 设备适配演示初始化完成');
+            logMessage('info', '尝试调整浏览器窗口大小来体验响应式设备检测');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

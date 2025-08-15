@@ -6,6 +6,8 @@
     "rootDir": "src",
     "module": "ESNext",
     "moduleResolution": "node",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "paths": {
       "@/*": ["src/*"],
       "@ldesign/router": ["src/index.ts"]

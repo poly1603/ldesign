@@ -93,6 +93,90 @@ export const routes = [
     },
   },
   {
+    path: '/about',
+    name: 'About',
+    component: () => import('../views/About.vue'),
+    meta: {
+      title: '关于',
+      description: '关于页面',
+    },
+  },
+  {
+    path: '/user/:id',
+    name: 'User',
+    component: () => import('../views/User.vue'),
+    meta: {
+      title: '用户',
+      description: '用户页面',
+    },
+    props: true,
+  },
+  {
+    path: '/posts',
+    name: 'Posts',
+    component: () => import('../views/Posts.vue'),
+    meta: {
+      title: '文章',
+      description: '文章列表',
+    },
+    children: [
+      {
+        path: ':id',
+        name: 'Post',
+        component: () => import('../views/Post.vue'),
+        props: true,
+      },
+    ],
+  },
+  {
+    path: '/search',
+    name: 'Search',
+    component: () => import('../views/Search.vue'),
+    meta: {
+      title: '搜索',
+      description: '搜索页面',
+    },
+  },
+  {
+    path: '/docs',
+    name: 'Docs',
+    component: () => import('../views/Docs.vue'),
+    meta: {
+      title: '文档',
+      description: '文档页面',
+    },
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('../views/Profile.vue'),
+    meta: {
+      title: 'Profile',
+      description: '用户资料',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/cached-page',
+    name: 'CachedPage',
+    component: () => import('../views/CachedPage.vue'),
+    meta: {
+      title: '缓存页面',
+      description: '缓存测试页面',
+      cache: true,
+    },
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('../views/Admin.vue'),
+    meta: {
+      title: '管理员',
+      description: '管理员页面',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),

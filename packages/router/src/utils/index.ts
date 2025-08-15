@@ -69,10 +69,11 @@ export function parsePathParams(pattern: string, path: string): RouteParams {
  * 构建路径
  */
 export function buildPath(pattern: string, params: RouteParams = {}): string {
-  return pattern.replace(/:([^/?]+)(\?)?/g, (match, paramName, optional) => {
+  return pattern.replace(/:([^/?]+)(\?)?/g, (_match, paramName, optional) => {
     const value = params[paramName]
     if (value === undefined || value === null) {
-      if (optional) return ''
+      if (optional)
+        return ''
       throw new Error(`Missing required parameter: ${paramName}`)
     }
     return encodeURIComponent(String(value))
@@ -106,12 +107,14 @@ export function parseQuery(search: string): RouteQuery {
     if (key) {
       if (query[key] === undefined) {
         query[key] = value || ''
-      } else {
+      }
+      else {
         // 处理多个相同键的情况
         const existing = query[key]
         if (Array.isArray(existing)) {
           existing.push(value || '')
-        } else {
+        }
+        else {
           query[key] = [existing as string, value || '']
         }
       }
@@ -138,7 +141,8 @@ export function stringifyQuery(query: RouteQuery): string {
       for (const item of value) {
         pairs.push(`${encodedKey}=${encodeURIComponent(String(item))}`)
       }
-    } else {
+    }
+    else {
       pairs.push(`${encodedKey}=${encodeURIComponent(String(value))}`)
     }
   }
@@ -179,7 +183,7 @@ export function parseURL(url: string): {
 export function stringifyURL(
   path: string,
   query?: RouteQuery,
-  hash?: string
+  hash?: string,
 ): string {
   let url = normalizePath(path)
 
@@ -216,13 +220,13 @@ export function normalizeParams(params: RouteParams): RouteParams {
  */
 export function isSameRouteLocation(
   a: RouteLocationNormalized,
-  b: RouteLocationNormalized
+  b: RouteLocationNormalized,
 ): boolean {
   return (
-    a.path === b.path &&
-    a.hash === b.hash &&
-    JSON.stringify(a.query) === JSON.stringify(b.query) &&
-    JSON.stringify(a.params) === JSON.stringify(b.params)
+    a.path === b.path
+    && a.hash === b.hash
+    && JSON.stringify(a.query) === JSON.stringify(b.query)
+    && JSON.stringify(a.params) === JSON.stringify(b.params)
   )
 }
 
@@ -231,7 +235,7 @@ export function isSameRouteLocation(
  */
 export function resolveRouteLocation(
   raw: RouteLocationRaw,
-  currentLocation?: RouteLocationNormalized
+  // currentLocation?: RouteLocationNormalized,
 ): Partial<RouteLocationNormalized> {
   if (typeof raw === 'string') {
     const { path, query, hash } = parseURL(raw)
@@ -267,7 +271,7 @@ export function createNavigationFailure(
   type: NavigationFailureType,
   from: RouteLocationNormalized,
   to: RouteLocationNormalized,
-  message?: string
+  message?: string,
 ): NavigationFailure {
   const error = new Error(message || 'Navigation failed') as NavigationFailure
   error.type = type
@@ -281,15 +285,15 @@ export function createNavigationFailure(
  */
 export function isNavigationFailure(
   error: any,
-  type?: NavigationFailureType
+  type?: NavigationFailureType,
 ): error is NavigationFailure {
   return (
-    error &&
-    typeof error === 'object' &&
-    'type' in error &&
-    'from' in error &&
-    'to' in error &&
-    (type === undefined || error.type === type)
+    error
+    && typeof error === 'object'
+    && 'type' in error
+    && 'from' in error
+    && 'to' in error
+    && (type === undefined || error.type === type)
   )
 }
 
@@ -299,8 +303,26 @@ export function isNavigationFailure(
  * 检查路径是否匹配模式
  */
 export function matchPath(pattern: string, path: string): boolean {
+  // 特殊处理可选参数的情况
+  if (pattern.includes('?')) {
+    // 对于 /user/:id? 这样的模式，需要同时匹配 /user/123 和 /user/
+    const basePattern = pattern.replace(/:[^/]+\?/g, '') // 移除可选参数部分
+    const fullPattern = pattern.replace(/\?/g, '') // 移除问号，保留参数
+
+    // 检查是否匹配基础模式（不包含可选参数）
+    if (matchPathSimple(basePattern, path)) {
+      return true
+    }
+
+    // 检查是否匹配完整模式（包含可选参数）
+    return matchPathSimple(fullPattern, path)
+  }
+
+  return matchPathSimple(pattern, path)
+}
+
+function matchPathSimple(pattern: string, path: string): boolean {
   const patternRegex = pattern
-    .replace(/:[^/]+\?/g, '([^/]*)') // 可选参数
     .replace(/:[^/]+/g, '([^/]+)') // 必需参数
     .replace(/\*/g, '(.*)') // 通配符
 
@@ -315,17 +337,26 @@ export function extractParams(pattern: string, path: string): RouteParams {
   const params: RouteParams = {}
   const paramNames: string[] = []
 
-  // 提取参数名
-  pattern.replace(/:([^/]+)(\?)?/g, (match, name) => {
+  // 提取参数名和可选标记
+  const optionalParams: Set<string> = new Set()
+  pattern.replace(/:([^/?]+)(\?)?/g, (match, name, optional) => {
     paramNames.push(name)
+    if (optional) {
+      optionalParams.add(name)
+    }
     return match
   })
 
   // 创建匹配正则
-  const patternRegex = pattern
+  let patternRegex = pattern
     .replace(/:[^/]+\?/g, '([^/]*)')
     .replace(/:[^/]+/g, '([^/]+)')
     .replace(/\*/g, '(.*)')
+
+  // 处理可选参数后的尾部斜杠
+  if (pattern.includes('?')) {
+    patternRegex = patternRegex.replace(/\/\(\[.*?\]\*\)$/, '/?([^/]*)')
+  }
 
   const regex = new RegExp(`^${patternRegex}$`)
   const matches = path.match(regex)
@@ -333,8 +364,11 @@ export function extractParams(pattern: string, path: string): RouteParams {
   if (matches) {
     paramNames.forEach((name, index) => {
       const value = matches[index + 1]
-      if (value !== undefined) {
+      if (value !== undefined && value !== '') {
         params[name] = decodeURIComponent(value)
+      } else if (optionalParams.has(name)) {
+        // 可选参数为空时设为 undefined
+        params[name] = undefined as any
       }
     })
   }
@@ -348,7 +382,7 @@ export function extractParams(pattern: string, path: string): RouteParams {
  * 深度克隆路由位置
  */
 export function cloneRouteLocation(
-  location: RouteLocationNormalized
+  location: RouteLocationNormalized,
 ): RouteLocationNormalized {
   return {
     ...location,

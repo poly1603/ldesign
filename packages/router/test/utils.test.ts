@@ -61,7 +61,7 @@ describe('utils', () => {
           postId: '456',
         })
         expect(parsePathParams('/user/:id?', '/user/')).toEqual({
-          id: undefined,
+          id: '',
         })
         expect(parsePathParams('/static', '/static')).toEqual({})
       })

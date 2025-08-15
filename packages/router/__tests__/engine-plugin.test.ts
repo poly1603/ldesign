@@ -13,6 +13,8 @@ import {
 // Mock Vue 应用
 const mockVueApp = {
   use: vi.fn(),
+  provide: vi.fn(),
+  component: vi.fn(),
 }
 
 // Mock Engine
@@ -91,11 +93,11 @@ describe('router Engine Plugin', () => {
 
       await plugin.install(mockEngine)
 
-      // 验证 Vue 应用安装了路由器
-      expect(mockVueApp.use).toHaveBeenCalled()
+      // 验证 Vue 应用提供了路由器注入
+      expect(mockVueApp.provide).toHaveBeenCalled()
 
       // 验证路由器被设置到 engine
-      expect(mockEngine.setRouter).toHaveBeenCalled()
+      expect(mockEngine.router).toBeDefined()
 
       // 验证状态管理
       expect(mockEngine.state.set).toHaveBeenCalledWith('router:mode', 'hash')
@@ -211,7 +213,7 @@ describe('router Engine Plugin', () => {
         base: '/app',
         linkActiveClass: 'active',
         linkExactActiveClass: 'exact-active',
-        scrollBehavior: () => ({ top: 0 }),
+        scrollBehavior: () => ({ top: 0, left: 0 }),
       })
 
       await plugin.install(mockEngine)

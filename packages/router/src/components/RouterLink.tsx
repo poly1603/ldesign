@@ -169,18 +169,24 @@ export const RouterLink = defineComponent({
       classes.push(`router-link--${props.size}`)
 
       // 状态样式
-      if (props.disabled) classes.push('router-link--disabled')
-      if (props.loading) classes.push('router-link--loading')
-      if (isActive.value) classes.push(props.activeClass)
-      if (isExactActive.value) classes.push(props.exactActiveClass)
-      if (isPreloading.value) classes.push('router-link--preloading')
+      if (props.disabled)
+        classes.push('router-link--disabled')
+      if (props.loading)
+        classes.push('router-link--loading')
+      if (isActive.value)
+        classes.push(props.activeClass)
+      if (isExactActive.value)
+        classes.push(props.exactActiveClass)
+      if (isPreloading.value)
+        classes.push('router-link--preloading')
 
       return classes
     })
 
     // 权限检查
     const hasPermission = computed(() => {
-      if (!props.permission) return true
+      if (!props.permission)
+        return true
 
       // 这里应该集成权限系统
       // 暂时返回 true，实际使用时需要实现权限检查逻辑
@@ -194,7 +200,8 @@ export const RouterLink = defineComponent({
 
     // 预加载功能
     const preloadComponent = async () => {
-      if (isPreloading.value || !props.preload) return
+      if (isPreloading.value || !props.preload)
+        return
 
       try {
         isPreloading.value = true
@@ -208,16 +215,19 @@ export const RouterLink = defineComponent({
               if (typeof component === 'function') {
                 try {
                   await (component as () => Promise<any>)()
-                } catch (error) {
+                }
+                catch (error) {
                   console.warn('预加载组件失败:', error)
                 }
               }
             }
           }
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('预加载失败:', error)
-      } finally {
+      }
+      finally {
         isPreloading.value = false
       }
     }
@@ -231,7 +241,8 @@ export const RouterLink = defineComponent({
 
       // 确认导航
       if (props.confirmBeforeNavigate) {
-        const confirmed = confirm(props.confirmMessage)
+        // eslint-disable-next-line no-alert
+        const confirmed = window.confirm(props.confirmMessage)
         if (!confirmed) {
           e?.preventDefault()
           return
@@ -241,6 +252,7 @@ export const RouterLink = defineComponent({
       // 追踪点击事件
       if (props.trackClick) {
         // 这里应该集成分析系统
+        // eslint-disable-next-line no-console
         console.log('路由点击追踪:', {
           to: props.to,
           from: router.currentRoute.value,
@@ -252,7 +264,8 @@ export const RouterLink = defineComponent({
 
       try {
         await originalNavigate(e)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('导航失败:', error)
       }
     }
@@ -303,18 +316,19 @@ export const RouterLink = defineComponent({
     let intersectionObserver: IntersectionObserver | undefined
 
     const setupVisibilityPreload = () => {
-      if (props.preload !== 'visible' || !linkRef.value) return
+      if (props.preload !== 'visible' || !linkRef.value)
+        return
 
       if ('IntersectionObserver' in window) {
         intersectionObserver = new IntersectionObserver(
-          entries => {
-            entries.forEach(entry => {
+          (entries) => {
+            entries.forEach((entry) => {
               if (entry.isIntersecting) {
                 preloadComponent()
               }
             })
           },
-          { threshold: 0.1 }
+          { threshold: 0.1 },
         )
 
         intersectionObserver.observe(linkRef.value)
@@ -323,13 +337,15 @@ export const RouterLink = defineComponent({
 
     // 空闲预加载
     const setupIdlePreload = () => {
-      if (props.preload !== 'idle') return
+      if (props.preload !== 'idle')
+        return
 
       if ('requestIdleCallback' in window) {
         requestIdleCallback(() => {
           preloadComponent()
         })
-      } else {
+      }
+      else {
         setTimeout(() => {
           preloadComponent()
         }, 1000)
@@ -374,41 +390,33 @@ export const RouterLink = defineComponent({
 
       // 外部链接
       if (props.external) {
-        return (
-          <a
-            ref={linkRef}
-            href={typeof props.to === 'string' ? props.to : href.value}
-            target={props.target}
-            rel={props.rel}
-            class={linkClasses.value}
-            onClick={handleClick}
-            onMouseenter={handleMouseEnter}
-            onMouseleave={handleMouseLeave}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            {...attrs}
-          >
-            {renderContent()}
-          </a>
-        )
+        return h('a', {
+          ref: linkRef,
+          href: typeof props.to === 'string' ? props.to : href.value,
+          target: props.target || undefined,
+          rel: props.rel || undefined,
+          class: linkClasses.value,
+          onClick: handleClick,
+          onMouseenter: handleMouseEnter,
+          onMouseleave: handleMouseLeave,
+          onFocus: handleFocus,
+          onBlur: handleBlur,
+          ...attrs,
+        }, renderContent())
       }
 
       // 内部链接
-      return (
-        <a
-          ref={linkRef}
-          href={href.value}
-          class={linkClasses.value}
-          onClick={handleClick}
-          onMouseenter={handleMouseEnter}
-          onMouseleave={handleMouseLeave}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          {...attrs}
-        >
-          {renderContent()}
-        </a>
-      )
+      return h('a', {
+        ref: linkRef,
+        href: href.value,
+        class: linkClasses.value,
+        onClick: handleClick,
+        onMouseenter: handleMouseEnter,
+        onMouseleave: handleMouseLeave,
+        onFocus: handleFocus,
+        onBlur: handleBlur,
+        ...attrs,
+      }, renderContent())
     }
 
     // 渲染内容
@@ -418,40 +426,36 @@ export const RouterLink = defineComponent({
       // 左侧图标
       if (props.icon && props.iconPosition === 'left') {
         content.push(
-          <span class='router-link__icon router-link__icon--left'>
-            {typeof props.icon === 'string' ? (
-              <i class={props.icon} />
-            ) : (
-              h(props.icon as any)
-            )}
-          </span>
+          h('span', { class: 'router-link__icon router-link__icon--left' }, [
+            typeof props.icon === 'string'
+              ? h('i', { class: props.icon })
+              : h(props.icon as any),
+          ]),
         )
       }
 
       // 主要内容
       content.push(
-        <span class='router-link__content'>{slots.default?.(slotProps)}</span>
+        h('span', { class: 'router-link__content' }, slots.default?.(slotProps)),
       )
 
       // 右侧图标
       if (props.icon && props.iconPosition === 'right') {
         content.push(
-          <span class='router-link__icon router-link__icon--right'>
-            {typeof props.icon === 'string' ? (
-              <i class={props.icon} />
-            ) : (
-              h(props.icon as any)
-            )}
-          </span>
+          h('span', { class: 'router-link__icon router-link__icon--right' }, [
+            typeof props.icon === 'string'
+              ? h('i', { class: props.icon })
+              : h(props.icon as any),
+          ]),
         )
       }
 
       // 加载指示器
       if (props.loading) {
         content.push(
-          <span class='router-link__loading'>
-            <i class='router-link__spinner' />
-          </span>
+          <span class="router-link__loading">
+            <i class="router-link__spinner" />
+          </span>,
         )
       }
 

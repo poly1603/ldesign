@@ -202,6 +202,8 @@ export interface CacheItem {
   lastAccessedAt: number
   /** 访问次数 */
   accessCount: number
+  /** 过期时间（毫秒） */
+  ttl?: number
 }
 
 /**

@@ -40,7 +40,7 @@ export function useRouter(): UseRouterReturn {
 
   if (!router) {
     throw new Error(
-      'useRouter() can only be used inside a component that has a router instance'
+      'useRouter() can only be used inside a component that has a router instance',
     )
   }
 
@@ -55,7 +55,7 @@ export function useRoute(): UseRouteReturn {
 
   if (!route) {
     throw new Error(
-      'useRoute() can only be used inside a component that has a router instance'
+      'useRoute() can only be used inside a component that has a router instance',
     )
   }
 
@@ -170,7 +170,8 @@ export function onBeforeRouteUpdate(guard: NavigationGuard): void {
         to.matched.includes(route.value.matched[route.value.matched.length - 1])
       ) {
         guard(to, from, next)
-      } else {
+      }
+      else {
         next()
       }
     })
@@ -210,14 +211,15 @@ export function onBeforeRouteLeave(guard: NavigationGuard): void {
       // 只在离开当前组件的路由时触发
       if (
         from.matched.includes(
-          route.value.matched[route.value.matched.length - 1]
-        ) &&
-        !to.matched.includes(
-          route.value.matched[route.value.matched.length - 1]
+          route.value.matched[route.value.matched.length - 1],
+        )
+        && !to.matched.includes(
+          route.value.matched[route.value.matched.length - 1],
         )
       ) {
         guard(to, from, next)
-      } else {
+      }
+      else {
         next()
       }
     })
@@ -274,10 +276,12 @@ export function useLink(options: UseLinkOptions): UseLinkReturn {
   const to = computed(() => {
     if (typeof options.to === 'string') {
       return options.to
-    } else if (typeof options.to === 'object' && 'value' in options.to) {
+    }
+    else if (typeof options.to === 'object' && 'value' in options.to) {
       // ComputedRef<RouteLocationRaw>
       return options.to.value
-    } else {
+    }
+    else {
       // RouteLocationRaw (object)
       return options.to
     }
@@ -297,10 +301,10 @@ export function useLink(options: UseLinkOptions): UseLinkReturn {
 
   const isExactActive = computed(() => {
     return (
-      currentRoute.value.path === route.value.path &&
-      JSON.stringify(currentRoute.value.query) ===
-        JSON.stringify(route.value.query) &&
-      currentRoute.value.hash === route.value.hash
+      currentRoute.value.path === route.value.path
+      && JSON.stringify(currentRoute.value.query)
+      === JSON.stringify(route.value.query)
+      && currentRoute.value.hash === route.value.hash
     )
   })
 
@@ -311,7 +315,8 @@ export function useLink(options: UseLinkOptions): UseLinkReturn {
 
     if (options.replace) {
       await router.replace(to.value)
-    } else {
+    }
+    else {
       await router.push(to.value)
     }
   }
@@ -334,7 +339,8 @@ export function hasRouter(): boolean {
   try {
     inject<Router>(ROUTER_INJECTION_SYMBOL)
     return true
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -346,7 +352,8 @@ export function hasRoute(): boolean {
   try {
     inject<Ref<RouteLocationNormalized>>(ROUTE_INJECTION_SYMBOL)
     return true
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -368,3 +375,13 @@ export default {
   hasRouter,
   hasRoute,
 }
+
+// ==================== 设备适配 Composables ====================
+
+// 设备组件解析功能
+export { useDeviceComponent } from './useDeviceComponent'
+export type { UseDeviceComponentOptions, UseDeviceComponentReturn } from './useDeviceComponent'
+
+// 设备路由功能
+export { useDeviceRoute } from './useDeviceRoute'
+export type { UseDeviceRouteOptions, UseDeviceRouteReturn } from './useDeviceRoute'

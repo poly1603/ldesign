@@ -74,7 +74,7 @@ export interface RouterEnginePluginOptions {
  * ```
  */
 export function createRouterEnginePlugin(
-  options: RouterEnginePluginOptions
+  options: RouterEnginePluginOptions,
 ): Plugin {
   const {
     name = 'router',
@@ -98,7 +98,7 @@ export function createRouterEnginePlugin(
         const vueApp = engine.getApp()
         if (!vueApp) {
           throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
+            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
           )
         }
 
@@ -150,8 +150,30 @@ export function createRouterEnginePlugin(
         }
 
         // 将路由器注册到 engine 上，使其可以通过 engine.router 访问
-        // 直接设置属性，避免调用 setRouter 方法（它会调用 router.install）
-        engine.router = router
+        // 创建路由器适配器
+        const routerAdapter = {
+          install: (_engine: any) => {
+            // 已经安装，无需重复安装
+          },
+          push: router.push.bind(router),
+          replace: router.replace.bind(router),
+          go: router.go.bind(router),
+          back: router.back.bind(router),
+          forward: router.forward.bind(router),
+          getCurrentRoute: () => router.currentRoute,
+          getRoutes: router.getRoutes.bind(router),
+          addRoute: router.addRoute.bind(router),
+          removeRoute: router.removeRoute.bind(router),
+          hasRoute: router.hasRoute.bind(router),
+          resolve: router.resolve.bind(router),
+          beforeEach: router.beforeEach.bind(router),
+          beforeResolve: router.beforeResolve.bind(router),
+          afterEach: router.afterEach.bind(router),
+          onError: router.onError.bind(router),
+          getRouter: () => router, // 返回原始路由器实例
+        }
+
+        engine.router = routerAdapter
 
         // 注册路由状态到 engine 状态管理
         if (engine.state) {
@@ -172,7 +194,7 @@ export function createRouterEnginePlugin(
         }
 
         // 监听路由错误
-        router.onError(error => {
+        router.onError((error) => {
           engine.logger.error('Router navigation error:', error)
           if (engine.events) {
             engine.events.emit('router:error', error)
@@ -180,7 +202,8 @@ export function createRouterEnginePlugin(
         })
 
         // 等待路由器准备就绪（在测试环境中跳过）
-        if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+        const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+        if (!isTestEnv) {
           engine.logger.info('Waiting for router to be ready...')
           await router.isReady()
           engine.logger.info('Router is ready!')
@@ -200,7 +223,8 @@ export function createRouterEnginePlugin(
             routesCount: routes.length,
           })
         }
-      } catch (error) {
+      }
+      catch (error) {
         engine.logger.error(`Failed to install ${name} plugin:`, error)
         throw error
       }
@@ -228,7 +252,8 @@ export function createRouterEnginePlugin(
         }
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      } catch (error) {
+      }
+      catch (error) {
         engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
         throw error
       }
@@ -276,7 +301,7 @@ export function routerPlugin(options: RouterEnginePluginOptions): Plugin {
  * ```
  */
 export function createDefaultRouterEnginePlugin(
-  routes: RouteRecordRaw[]
+  routes: RouteRecordRaw[],
 ): Plugin {
   return createRouterEnginePlugin({
     routes,

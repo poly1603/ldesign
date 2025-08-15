@@ -51,6 +51,9 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:performance": "node scripts/performance-test.js",
+    "benchmark": "node scripts/performance-benchmark.js",
+    "benchmark:regression": "node scripts/performance-regression.js",
+    "benchmark:baseline": "node scripts/performance-regression.js --create-baseline",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "clean": "rimraf dist es lib coverage .nyc_output",
@@ -63,23 +66,44 @@
     "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
     "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
+    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "validate": "pnpm run type-check && pnpm run lint:check && pnpm run test:run && pnpm run build",
+    "validate:quick": "pnpm run type-check && pnpm run lint:check",
+    "commit": "git-cz",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "commit-msg": "commitlint --edit",
+    "commit:interactive": "node scripts/commit.js",
+    "validate:full": "node scripts/validate.js",
+    "validate:e2e": "node scripts/validate.js --e2e"
   },
   "peerDependencies": {
+    "@ldesign/device": "^1.0.0",
     "@ldesign/engine": "^1.0.0",
+    "@ldesign/template": "^1.0.0",
     "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
+    "@ldesign/device": {
+      "optional": false
+    },
     "@ldesign/engine": {
+      "optional": true
+    },
+    "@ldesign/template": {
       "optional": true
     },
     "vue": {
       "optional": true
     }
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ldesign/device": "workspace:*"
+  },
   "devDependencies": {
     "@ldesign/engine": "workspace:*",
+    "@ldesign/template": "workspace:*",
+    "@playwright/test": "^1.54.2",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",

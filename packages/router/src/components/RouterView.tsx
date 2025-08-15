@@ -27,7 +27,7 @@ import {
   type VNode,
   watch,
 } from 'vue'
-import { useRoute, useRouter } from '../composables'
+import { useRoute } from '../composables'
 import { DEFAULT_VIEW_NAME } from '../core/constants'
 
 // ==================== 缓存管理器 ====================
@@ -35,11 +35,12 @@ import { DEFAULT_VIEW_NAME } from '../core/constants'
 class ComponentCache {
   private cache = new Map<string, CacheItem>()
   private maxSize: number
-  private strategy: CacheStrategy
+  // @ts-ignore - 缓存策略，用于后续扩展
+  private _strategy: CacheStrategy
 
   constructor(maxSize: number = 10, strategy: CacheStrategy = 'memory') {
     this.maxSize = maxSize
-    this.strategy = strategy
+    this._strategy = strategy
   }
 
   get(key: string): CacheItem | undefined {
@@ -192,7 +193,7 @@ export const RouterView = defineComponent({
   ],
 
   setup(props, { slots, attrs, emit }) {
-    const router = useRouter()
+    // const router = useRouter()
     const currentRoute = useRoute()
 
     // 状态管理
@@ -200,7 +201,7 @@ export const RouterView = defineComponent({
     const error = ref<Error | null>(null)
     const componentCache = new ComponentCache(
       props.maxCache,
-      props.cacheStrategy
+      props.cacheStrategy,
     )
     const loadingTimer = ref<number>()
 
@@ -211,19 +212,20 @@ export const RouterView = defineComponent({
     // 缓存键生成
     const getCacheKey = (route: RouteLocationNormalized): string => {
       return `${route.path}-${JSON.stringify(route.params)}-${JSON.stringify(
-        route.query
+        route.query,
       )}`
     }
 
     // 检查是否应该缓存
     const shouldCache = (componentName: string): boolean => {
-      if (!props.keepAlive) return false
+      if (!props.keepAlive)
+        return false
 
       if (props.include) {
         const include = Array.isArray(props.include)
           ? props.include
           : [props.include]
-        return include.some(pattern => {
+        return include.some((pattern) => {
           if (typeof pattern === 'string') {
             return componentName === pattern
           }
@@ -235,7 +237,7 @@ export const RouterView = defineComponent({
         const exclude = Array.isArray(props.exclude)
           ? props.exclude
           : [props.exclude]
-        return !exclude.some(pattern => {
+        return !exclude.some((pattern) => {
           if (typeof pattern === 'string') {
             return componentName === pattern
           }
@@ -248,7 +250,7 @@ export const RouterView = defineComponent({
 
     // 加载组件
     const loadComponent = async (
-      route: RouteLocationNormalized
+      route: RouteLocationNormalized,
     ): Promise<Component | null> => {
       const cacheKey = getCacheKey(route)
 
@@ -277,21 +279,23 @@ export const RouterView = defineComponent({
           // 检查是否是模块对象（动态导入的结果）
           if (result && typeof result === 'object' && 'default' in result) {
             resolvedComponent = result.default
-          } else {
+          }
+          else {
             resolvedComponent = result
           }
-        } else {
+        }
+        else {
           resolvedComponent = component
         }
 
         // 验证组件是否有效
         if (
-          !resolvedComponent ||
-          (typeof resolvedComponent !== 'function' &&
-            typeof resolvedComponent !== 'object')
+          !resolvedComponent
+          || (typeof resolvedComponent !== 'function'
+            && typeof resolvedComponent !== 'object')
         ) {
           throw new Error(
-            'Invalid component: component must be a function or object'
+            'Invalid component: component must be a function or object',
           )
         }
 
@@ -304,21 +308,16 @@ export const RouterView = defineComponent({
         }
 
         return rawComponent
-      } catch (err) {
+      }
+      catch (err) {
         throw new Error(`Failed to load component: ${err}`)
       }
     }
 
-    // 重试加载
-    const retry = async () => {
-      error.value = null
-      await loadCurrentComponent()
-      emit('retry')
-    }
-
     // 加载当前组件
     const loadCurrentComponent = async () => {
-      if (isLoading.value) return
+      if (isLoading.value)
+        return
 
       try {
         isLoading.value = true
@@ -336,16 +335,18 @@ export const RouterView = defineComponent({
           new Promise<never>((_, reject) => {
             setTimeout(
               () => reject(new Error('Component load timeout')),
-              props.timeout
+              props.timeout,
             )
           }),
         ])
 
         currentComponent.value = component
-      } catch (err) {
+      }
+      catch (err) {
         error.value = err as Error
         emit('error', err)
-      } finally {
+      }
+      finally {
         isLoading.value = false
         if (loadingTimer.value) {
           clearTimeout(loadingTimer.value)
@@ -354,19 +355,26 @@ export const RouterView = defineComponent({
       }
     }
 
+    // 重试加载
+    const retry = async () => {
+      error.value = null
+      await loadCurrentComponent()
+      emit('retry')
+    }
+
     // 监听路由变化
     watch(
       () => route.value,
       (newRoute, oldRoute) => {
         if (
-          !newRoute ||
-          (oldRoute && getCacheKey(newRoute) === getCacheKey(oldRoute))
+          !newRoute
+          || (oldRoute && getCacheKey(newRoute) === getCacheKey(oldRoute))
         ) {
           return
         }
         loadCurrentComponent()
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     // 动画事件处理
@@ -430,7 +438,7 @@ export const RouterView = defineComponent({
           return h(props.error as any, { error: error.value, retry })
         }
         return (
-          <div class='router-view__error'>
+          <div class="router-view__error">
             <p>
               加载失败:
               {error.value.message}
@@ -445,12 +453,10 @@ export const RouterView = defineComponent({
         if (props.loading) {
           return h(props.loading as any)
         }
-        return (
-          <div class='router-view__loading'>
-            <div class='router-view__spinner' />
-            <p>加载中...</p>
-          </div>
-        )
+        return h('div', { class: 'router-view__loading' }, [
+          h('div', { class: 'router-view__spinner' }),
+          h('p', '加载中...'),
+        ])
       }
 
       // 空状态
@@ -458,11 +464,9 @@ export const RouterView = defineComponent({
         if (props.empty) {
           return h(props.empty as any)
         }
-        return (
-          <div class='router-view__empty'>
-            <p>没有找到匹配的组件</p>
-          </div>
-        )
+        return h('div', { class: 'router-view__empty' }, [
+          h('p', '没有找到匹配的组件'),
+        ])
       }
 
       // 渲染组件
@@ -473,55 +477,43 @@ export const RouterView = defineComponent({
 
       // 包装缓存
       const wrapWithKeepAlive = (content: VNode) => {
-        if (!props.keepAlive) return content
+        if (!props.keepAlive)
+          return content
 
-        return (
-          <KeepAlive
-            include={props.include}
-            exclude={props.exclude}
-            max={props.maxCache}
-          >
-            {content}
-          </KeepAlive>
-        )
+        return h(KeepAlive, {
+          include: props.include || undefined,
+          exclude: props.exclude || undefined,
+          max: props.maxCache,
+        }, () => content)
       }
 
       // 包装动画
       const wrapWithTransition = (content: VNode) => {
-        if (props.animation === 'none') return content
+        if (props.animation === 'none')
+          return content
 
-        return (
-          <Transition
-            name={`router-view-${props.animation}`}
-            mode='out-in'
-            duration={props.animationDuration}
-            onBeforeEnter={handleBeforeEnter}
-            onEnter={handleEnter}
-            onAfterEnter={handleAfterEnter}
-            onBeforeLeave={handleBeforeLeave}
-            onLeave={handleLeave}
-            onAfterLeave={handleAfterLeave}
-          >
-            {content}
-          </Transition>
-        )
+        return h(Transition, {
+          name: `router-view-${props.animation}`,
+          mode: 'out-in',
+          duration: props.animationDuration,
+          onBeforeEnter: handleBeforeEnter,
+          onEnter: handleEnter,
+          onAfterEnter: handleAfterEnter,
+          onBeforeLeave: handleBeforeLeave,
+          onLeave: handleLeave,
+          onAfterLeave: handleAfterLeave,
+        }, () => content)
       }
 
       // 包装 Suspense
       const wrapWithSuspense = (content: VNode) => {
-        return (
-          <Suspense>
-            {{
-              default: () => content,
-              fallback: () =>
-                props.loading ? (
-                  h(props.loading as any)
-                ) : (
-                  <div class='router-view__loading'>加载中...</div>
-                ),
-            }}
-          </Suspense>
-        )
+        return h(Suspense, {}, {
+          default: () => content,
+          fallback: () =>
+            props.loading
+              ? h(props.loading as any)
+              : h('div', { class: 'router-view__loading' }, '加载中...'),
+        })
       }
 
       let content = renderComponent()

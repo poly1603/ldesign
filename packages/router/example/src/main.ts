@@ -21,6 +21,37 @@ const router = createRouter({
   },
 })
 
+// 添加路由守卫
+router.beforeEach((to, from, next) => {
+  // 更新页面标题
+  if (to.meta.title) {
+    document.title = `${to.meta.title} - Router Test App`
+  } else {
+    document.title = 'Router Test App'
+  }
+
+  // 检查是否需要认证
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      // 重定向到登录页面
+      next('/login')
+      return
+    }
+  }
+
+  // 特殊处理 admin 路由
+  if (to.path === '/admin') {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      next('/login')
+      return
+    }
+  }
+
+  next()
+})
+
 const app = createApp(App)
 
 // 安装路由器

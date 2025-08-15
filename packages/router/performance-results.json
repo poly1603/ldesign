@@ -1,0 +1,169 @@
+{
+  "timestamp": "2025-08-15T05:25:55.393Z",
+  "config": {
+    "routeMatching": {
+      "iterations": 10000,
+      "routes": [
+        "/",
+        "/about",
+        "/user/123",
+        "/user/456/profile",
+        "/posts/789/comments/101",
+        "/admin/dashboard",
+        "/api/v1/users/123",
+        "/complex/nested/route/with/many/segments"
+      ]
+    },
+    "navigation": {
+      "iterations": 1000,
+      "routes": [
+        "/",
+        "/about",
+        "/user/123",
+        "/posts/456",
+        "/admin",
+        "/profile"
+      ]
+    },
+    "massRoutes": {
+      "routeCount": 1000,
+      "testIterations": 100
+    }
+  },
+  "results": {
+    "routeMatching": [
+      {
+        "route": "/",
+        "totalTime": "2.42",
+        "avgTime": "0.0002",
+        "opsPerSecond": 4137532
+      },
+      {
+        "route": "/about",
+        "totalTime": "1.98",
+        "avgTime": "0.0002",
+        "opsPerSecond": 5049740
+      },
+      {
+        "route": "/user/123",
+        "totalTime": "84.46",
+        "avgTime": "0.0084",
+        "opsPerSecond": 118401
+      },
+      {
+        "route": "/user/456/profile",
+        "totalTime": "83.19",
+        "avgTime": "0.0083",
+        "opsPerSecond": 120209
+      },
+      {
+        "route": "/posts/789/comments/101",
+        "totalTime": "84.28",
+        "avgTime": "0.0084",
+        "opsPerSecond": 118658
+      },
+      {
+        "route": "/admin/dashboard",
+        "totalTime": "84.38",
+        "avgTime": "0.0084",
+        "opsPerSecond": 118518
+      },
+      {
+        "route": "/api/v1/users/123",
+        "totalTime": "79.89",
+        "avgTime": "0.0080",
+        "opsPerSecond": 125177
+      },
+      {
+        "route": "/complex/nested/route/with/many/segments",
+        "totalTime": "99.18",
+        "avgTime": "0.0099",
+        "opsPerSecond": 100830
+      }
+    ],
+    "navigation": [
+      {
+        "route": "/",
+        "avgTime": "0.0051",
+        "minTime": "0.0029",
+        "maxTime": "0.5075",
+        "opsPerSecond": 196159
+      },
+      {
+        "route": "/about",
+        "avgTime": "0.0047",
+        "minTime": "0.0029",
+        "maxTime": "0.2926",
+        "opsPerSecond": 210548
+      },
+      {
+        "route": "/user/123",
+        "avgTime": "0.0087",
+        "minTime": "0.0074",
+        "maxTime": "0.4041",
+        "opsPerSecond": 115032
+      },
+      {
+        "route": "/posts/456",
+        "avgTime": "0.0076",
+        "minTime": "0.0071",
+        "maxTime": "0.0319",
+        "opsPerSecond": 131211
+      },
+      {
+        "route": "/admin",
+        "avgTime": "0.0087",
+        "minTime": "0.0070",
+        "maxTime": "0.2366",
+        "opsPerSecond": 115409
+      },
+      {
+        "route": "/profile",
+        "avgTime": "0.0111",
+        "minTime": "0.0092",
+        "maxTime": "0.1625",
+        "opsPerSecond": 90018
+      }
+    ],
+    "massRoutes": {
+      "routeCount": 1000,
+      "createTime": "3.93",
+      "resolveResults": [
+        {
+          "route": "/",
+          "avgTime": "0.0007",
+          "opsPerSecond": 1455604
+        },
+        {
+          "route": "/about",
+          "avgTime": "0.0002",
+          "opsPerSecond": 4081633
+        },
+        {
+          "route": "/user/700",
+          "avgTime": "0.0004",
+          "opsPerSecond": 2403846
+        },
+        {
+          "route": "/post/359/test-slug",
+          "avgTime": "0.0003",
+          "opsPerSecond": 2898551
+        },
+        {
+          "route": "/category/452/subcategory/123",
+          "avgTime": "0.0002",
+          "opsPerSecond": 4115226
+        }
+      ]
+    },
+    "memoryUsage": {
+      "routersCreated": 100,
+      "memoryDiff": {
+        "heapUsed": "2.65",
+        "heapTotal": "8.25",
+        "external": "0.00"
+      },
+      "avgMemoryPerRouter": "0.0265"
+    }
+  }
+}

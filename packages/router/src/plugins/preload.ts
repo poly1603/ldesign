@@ -54,7 +54,7 @@ export class PreloadManager {
   /**
    * 生成预加载键
    */
-  private generateKey(route: RouteLocationNormalized): string {
+  generateKey(route: RouteLocationNormalized): string {
     return `${route.path}-${JSON.stringify(route.params)}`
   }
 
@@ -64,7 +64,7 @@ export class PreloadManager {
   async preload(
     route: RouteLocationNormalized,
     strategy: PreloadStrategy = this.config.strategy,
-    priority: number = 0
+    priority: number = 0,
   ): Promise<void> {
     const key = this.generateKey(route)
 
@@ -105,8 +105,9 @@ export class PreloadManager {
       this.stats.success++
       this.updateAverageTime(Date.now() - startTime)
 
-      console.log(`预加载成功: ${route.path} (${strategy})`)
-    } catch (error) {
+      console.warn(`预加载成功: ${route.path} (${strategy})`)
+    }
+    catch (error) {
       this.preloadQueue.delete(key)
       this.stats.failed++
       console.warn(`预加载失败: ${route.path}`, error)
@@ -118,7 +119,7 @@ export class PreloadManager {
    */
   async preloadBatch(
     routes: RouteLocationNormalized[],
-    strategy: PreloadStrategy
+    strategy: PreloadStrategy,
   ): Promise<void> {
     const promises = routes.map(route => this.preload(route, strategy))
     await Promise.allSettled(promises)
@@ -167,7 +168,7 @@ export class PreloadManager {
    * 加载路由组件
    */
   private async loadRouteComponents(
-    route: RouteLocationNormalized
+    route: RouteLocationNormalized,
   ): Promise<any> {
     const components: Record<string, any> = {}
 
@@ -175,8 +176,9 @@ export class PreloadManager {
       if (record.components) {
         for (const [name, component] of Object.entries(record.components)) {
           if (typeof component === 'function') {
-            components[name] = await component()
-          } else {
+            components[name] = typeof component === 'function' && 'then' in component ? await (component as () => Promise<any>)() : component
+          }
+          else {
             components[name] = component
           }
         }
@@ -190,11 +192,11 @@ export class PreloadManager {
    * 查找相关路由
    */
   private findRelatedRoutes(
-    currentRoute: RouteLocationNormalized
+    _currentRoute: RouteLocationNormalized,
   ): RouteLocationNormalized[] {
     // 简化实现：返回同级路由
-    const pathSegments = currentRoute.path.split('/').filter(Boolean)
-    const parentPath = pathSegments.slice(0, -1).join('/')
+    // const pathSegments = currentRoute.path.split('/').filter(Boolean)
+    // const parentPath = pathSegments.slice(0, -1).join('/')
 
     // 这里应该从路由器获取所有路由，然后筛选相关的
     // 暂时返回空数组
@@ -206,8 +208,8 @@ export class PreloadManager {
    */
   private updateAverageTime(time: number): void {
     const total = this.stats.success + this.stats.failed
-    this.stats.averageTime =
-      (this.stats.averageTime * (total - 1) + time) / total
+    this.stats.averageTime
+      = (this.stats.averageTime * (total - 1) + time) / total
   }
 }
 
@@ -286,11 +288,12 @@ export class VisibilityPreloadStrategy {
    * 设置交叉观察器
    */
   private setupObserver(): void {
-    if (typeof IntersectionObserver === 'undefined') return
+    if (typeof IntersectionObserver === 'undefined')
+      return
 
     this.observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const route = this.observedElements.get(entry.target)
             if (route) {
@@ -302,7 +305,7 @@ export class VisibilityPreloadStrategy {
       {
         threshold: 0.1,
         rootMargin: '50px',
-      }
+      },
     )
   }
 
@@ -310,7 +313,8 @@ export class VisibilityPreloadStrategy {
    * 观察元素
    */
   observe(element: Element, route: RouteLocationNormalized): void {
-    if (!this.observer) return
+    if (!this.observer)
+      return
 
     this.observer.observe(element)
     this.observedElements.set(element, route)
@@ -320,7 +324,8 @@ export class VisibilityPreloadStrategy {
    * 停止观察元素
    */
   unobserve(element: Element): void {
-    if (!this.observer) return
+    if (!this.observer)
+      return
 
     this.observer.unobserve(element)
     this.observedElements.delete(element)
@@ -363,7 +368,8 @@ export class IdlePreloadStrategy {
    */
   private scheduleIdlePreload(): void {
     const processQueue = () => {
-      if (this.pendingRoutes.length === 0) return
+      if (this.pendingRoutes.length === 0)
+        return
 
       const route = this.pendingRoutes.shift()!
       this.manager.preload(route, 'idle', 3)
@@ -376,7 +382,8 @@ export class IdlePreloadStrategy {
 
     if ('requestIdleCallback' in window) {
       requestIdleCallback(processQueue, { timeout: 5000 })
-    } else {
+    }
+    else {
       setTimeout(processQueue, 1000)
     }
   }
@@ -387,7 +394,8 @@ export class IdlePreloadStrategy {
   private scheduleNext(): void {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => this.scheduleIdlePreload(), { timeout: 5000 })
-    } else {
+    }
+    else {
       setTimeout(() => this.scheduleIdlePreload(), 1000)
     }
   }
@@ -460,7 +468,7 @@ export function createPreloadPlugin(options: PreloadPluginOptions = {}) {
 
       // 路由守卫：自动预加载相关路由
       if (autoPreloadRelated) {
-        router.afterEach(to => {
+        router.afterEach((to) => {
           manager.preloadRelated(to)
         })
       }
@@ -480,7 +488,7 @@ export function createPreloadPlugin(options: PreloadPluginOptions = {}) {
  * 创建预加载配置
  */
 export function createPreloadConfig(
-  config: Partial<PreloadConfig>
+  config: Partial<PreloadConfig>,
 ): PreloadConfig {
   return {
     strategy: 'hover',
