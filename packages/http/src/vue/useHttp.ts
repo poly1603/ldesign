@@ -1,5 +1,5 @@
 import type { InjectionKey, Ref } from 'vue'
-import type { HttpClient, RequestConfig } from '@/types'
+import type { HttpClient, RequestConfig } from '../types'
 import { computed, inject, provide, ref } from 'vue'
 import {
   useDelete,

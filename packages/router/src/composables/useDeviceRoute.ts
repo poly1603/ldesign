@@ -6,9 +6,43 @@
 
 import type { DeviceType } from '@ldesign/device'
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import type { RouteLocationNormalized, Router } from '../types'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { checkDeviceSupport, getDeviceFriendlyName } from '../device/utils'
-import { useRoute, useRouter } from './index'
+import {
+  ROUTE_INJECTION_SYMBOL,
+  ROUTER_INJECTION_SYMBOL,
+} from '../core/constants'
+
+/**
+ * 本地 useRoute 实现，避免循环依赖
+ */
+function useRoute(): Ref<RouteLocationNormalized> {
+  const route = inject<Ref<RouteLocationNormalized>>(ROUTE_INJECTION_SYMBOL)
+
+  if (!route) {
+    throw new Error(
+      'useRoute() can only be used inside a component that has a router instance'
+    )
+  }
+
+  return route
+}
+
+/**
+ * 本地 useRouter 实现，避免循环依赖
+ */
+function useRouter(): Router {
+  const router = inject<Router>(ROUTER_INJECTION_SYMBOL)
+
+  if (!router) {
+    throw new Error(
+      'useRouter() can only be used inside a component that has a router instance'
+    )
+  }
+
+  return router
+}
 
 export interface UseDeviceRouteOptions {
   /** 是否自动检测设备变化 */
@@ -41,7 +75,9 @@ export interface UseDeviceRouteReturn {
 /**
  * 使用设备路由功能
  */
-export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRouteReturn {
+export function useDeviceRoute(
+  options: UseDeviceRouteOptions = {}
+): UseDeviceRouteReturn {
   const { autoDetect = true, autoRecheck = true } = options
 
   const router = useRouter()
@@ -50,7 +86,9 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
   // 获取设备路由插件实例
   const devicePlugin = (router as any).devicePlugin
   if (!devicePlugin) {
-    console.warn('DeviceRouterPlugin not found. Please install the plugin first.')
+    console.warn(
+      'DeviceRouterPlugin not found. Please install the plugin first.'
+    )
   }
 
   // 当前设备类型
@@ -80,7 +118,10 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
 
     // 检查匹配的路由记录
     for (const record of route.value.matched) {
-      if (record.meta.supportedDevices && Array.isArray(record.meta.supportedDevices)) {
+      if (
+        record.meta.supportedDevices &&
+        Array.isArray(record.meta.supportedDevices)
+      ) {
         return record.meta.supportedDevices
       }
     }
@@ -91,13 +132,15 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
 
   // 检查指定路由是否支持当前设备
   const isRouteSupported = (path: string): boolean => {
-    if (!devicePlugin)
-      return true
+    if (!devicePlugin) return true
     return devicePlugin.isRouteSupported(path)
   }
 
   // 检查指定路由是否支持指定设备
-  const isRouteSupportedOnDevice = (path: string, device: DeviceType): boolean => {
+  const isRouteSupportedOnDevice = (
+    path: string,
+    device: DeviceType
+  ): boolean => {
     try {
       const resolved = router.resolve(path)
       const supportedDevices = resolved.meta.supportedDevices
@@ -107,8 +150,7 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
       }
 
       return supportedDevices.includes(device)
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -122,9 +164,11 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
   }
 
   // 监听设备变化
-  const onDeviceChange = (callback: (device: DeviceType) => void): (() => void) => {
+  const onDeviceChange = (
+    callback: (device: DeviceType) => void
+  ): (() => void) => {
     if (!devicePlugin) {
-      return () => { }
+      return () => {}
     }
 
     return devicePlugin.onDeviceChange((device: DeviceType) => {
@@ -152,7 +196,7 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
 
   // 设备变化时自动重新检查路由支持
   if (autoRecheck) {
-    watch(currentDevice, (newDevice) => {
+    watch(currentDevice, newDevice => {
       if (!isCurrentRouteSupported.value) {
         console.warn(`Current route is not supported on ${newDevice}`)
       }
@@ -164,7 +208,7 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}): UseDeviceRo
 
   onMounted(() => {
     if (devicePlugin && autoDetect) {
-      unwatch = onDeviceChange((device) => {
+      unwatch = onDeviceChange(device => {
         console.warn(`Device changed to: ${device}`)
       })
     }

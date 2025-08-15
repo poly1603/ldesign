@@ -26,4 +26,4 @@ export { useQuery } from './useQuery'
 export { useAsyncRequest, useRequest } from './useRequest'
 
 // Vue Types
-export type * from '@/types/vue'
+export type * from '../types/vue'

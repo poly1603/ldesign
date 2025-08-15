@@ -87,6 +87,10 @@
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
   },
+  "dependencies": {
+    "@ldesign/cache": "workspace:*",
+    "@ldesign/device": "workspace:*"
+  },
   "peerDependencies": {
     "vue": "^3.3.0"
   },

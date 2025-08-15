@@ -1,9 +1,14 @@
-import type { ErrorInterceptor, HttpError, RequestInterceptor, ResponseInterceptor } from '@/types'
+import type {
+  ErrorInterceptor,
+  HttpError,
+  RequestInterceptor,
+  ResponseInterceptor,
+} from '../types'
 
 /**
  * 请求日志拦截器
  */
-export const requestLoggerInterceptor: RequestInterceptor = (config) => {
+export const requestLoggerInterceptor: RequestInterceptor = config => {
   // eslint-disable-next-line no-console
   console.log(`[HTTP Request] ${config.method?.toUpperCase()} ${config.url}`, {
     headers: config.headers,
@@ -16,7 +21,7 @@ export const requestLoggerInterceptor: RequestInterceptor = (config) => {
 /**
  * 响应日志拦截器
  */
-export const responseLoggerInterceptor: ResponseInterceptor = (response) => {
+export const responseLoggerInterceptor: ResponseInterceptor = response => {
   // eslint-disable-next-line no-console
   console.log(`[HTTP Response] ${response.status} ${response.config.url}`, {
     data: response.data,
@@ -28,7 +33,7 @@ export const responseLoggerInterceptor: ResponseInterceptor = (response) => {
 /**
  * 错误日志拦截器
  */
-export const errorLoggerInterceptor: ErrorInterceptor = (error) => {
+export const errorLoggerInterceptor: ErrorInterceptor = error => {
   console.error(`[HTTP Error] ${error.config?.url}`, {
     message: error.message,
     code: error.code,
@@ -41,8 +46,10 @@ export const errorLoggerInterceptor: ErrorInterceptor = (error) => {
 /**
  * 认证拦截器工厂
  */
-export function createAuthInterceptor(getToken: () => string | null): RequestInterceptor {
-  return (config) => {
+export function createAuthInterceptor(
+  getToken: () => string | null
+): RequestInterceptor {
+  return config => {
     const token = getToken()
     if (token) {
       config.headers = {
@@ -58,7 +65,7 @@ export function createAuthInterceptor(getToken: () => string | null): RequestInt
  * 基础 URL 拦截器工厂
  */
 export function createBaseURLInterceptor(baseURL: string): RequestInterceptor {
-  return (config) => {
+  return config => {
     if (!config.baseURL && !config.url?.startsWith('http')) {
       config.baseURL = baseURL
     }
@@ -69,7 +76,7 @@ export function createBaseURLInterceptor(baseURL: string): RequestInterceptor {
 /**
  * 请求 ID 拦截器
  */
-export const requestIdInterceptor: RequestInterceptor = (config) => {
+export const requestIdInterceptor: RequestInterceptor = config => {
   const requestId = Math.random().toString(36).substring(2, 15)
   config.headers = {
     ...config.headers,
@@ -81,7 +88,7 @@ export const requestIdInterceptor: RequestInterceptor = (config) => {
 /**
  * 时间戳拦截器
  */
-export const timestampInterceptor: RequestInterceptor = (config) => {
+export const timestampInterceptor: RequestInterceptor = config => {
   const timestamp = Date.now()
 
   // 为 GET 请求添加时间戳参数防止缓存
@@ -104,8 +111,12 @@ export const timestampInterceptor: RequestInterceptor = (config) => {
 /**
  * 内容类型拦截器
  */
-export const contentTypeInterceptor: RequestInterceptor = (config) => {
-  if (config.data && !config.headers?.['Content-Type'] && !config.headers?.['content-type']) {
+export const contentTypeInterceptor: RequestInterceptor = config => {
+  if (
+    config.data &&
+    !config.headers?.['Content-Type'] &&
+    !config.headers?.['content-type']
+  ) {
     if (typeof config.data === 'object' && !(config.data instanceof FormData)) {
       config.headers = {
         ...config.headers,
@@ -126,8 +137,9 @@ export function createResponseTimeInterceptor(): {
   const startTimes = new Map<string, number>()
 
   return {
-    request: (config) => {
-      const requestId = config.headers?.['X-Request-ID'] || Math.random().toString(36)
+    request: config => {
+      const requestId =
+        config.headers?.['X-Request-ID'] || Math.random().toString(36)
       startTimes.set(requestId, Date.now())
       config.headers = {
         ...config.headers,
@@ -135,13 +147,15 @@ export function createResponseTimeInterceptor(): {
       }
       return config
     },
-    response: (response) => {
+    response: response => {
       const requestId = response.config.headers?.['X-Request-ID']
       if (requestId && startTimes.has(requestId)) {
         const startTime = startTimes.get(requestId)!
         const duration = Date.now() - startTime
         // eslint-disable-next-line no-console
-        console.log(`[HTTP Response Time] ${response.config.url}: ${duration}ms`)
+        console.log(
+          `[HTTP Response Time] ${response.config.url}: ${duration}ms`
+        )
         startTimes.delete(requestId)
       }
       return response
@@ -152,7 +166,7 @@ export function createResponseTimeInterceptor(): {
 /**
  * 状态码处理拦截器
  */
-export const statusCodeInterceptor: ResponseInterceptor = (response) => {
+export const statusCodeInterceptor: ResponseInterceptor = response => {
   // 可以在这里处理特定的状态码
   if (response.status >= 400) {
     throw new Error(`HTTP Error: ${response.status} ${response.statusText}`)
@@ -164,9 +178,9 @@ export const statusCodeInterceptor: ResponseInterceptor = (response) => {
  * 数据转换拦截器工厂
  */
 export function createDataTransformInterceptor<T, R>(
-  transform: (data: T) => R,
+  transform: (data: T) => R
 ): ResponseInterceptor<R> {
-  return (response) => {
+  return response => {
     return {
       ...response,
       data: transform(response.data as unknown as T),
@@ -180,9 +194,9 @@ export function createDataTransformInterceptor<T, R>(
 export function createRetryInterceptor(
   maxRetries: number = 3,
   retryDelay: number = 1000,
-  retryCondition?: (error: HttpError) => boolean,
+  retryCondition?: (error: HttpError) => boolean
 ): ErrorInterceptor {
-  return async (error) => {
+  return async error => {
     const config = error.config
     if (!config) {
       return error
@@ -205,10 +219,12 @@ export function createRetryInterceptor(
     }
 
     // 增加重试次数
-    ; (config as any).__retryCount = retryCount + 1
+    ;(config as any).__retryCount = retryCount + 1
 
     // 延迟重试
-    await new Promise(resolve => setTimeout(resolve, retryDelay * 2 ** retryCount))
+    await new Promise(resolve =>
+      setTimeout(resolve, retryDelay * 2 ** retryCount)
+    )
 
     // 这里需要重新发送请求，但由于拦截器的限制，我们只能返回错误
     // 实际的重试逻辑应该在 HttpClient 中实现

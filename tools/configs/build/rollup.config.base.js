@@ -278,8 +278,10 @@ export function createRollupConfig(options = {}) {
 
   // UMD 格式 - dist/ 目录（仅主入口文件，不使用代码分割）
   if (formats.includes('umd') && includeUmd) {
+    // 支持自定义 UMD 入口文件
+    const umdInputFile = options.umdEntry || 'src/index.ts'
     configs.push({
-      input: path.resolve(packagePath, 'src/index.ts'),
+      input: path.resolve(packagePath, umdInputFile),
       output: [
         {
           file: path.resolve(packagePath, 'dist/index.js'),

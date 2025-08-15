@@ -12,6 +12,7 @@
         <div class="demo-container">
           <TemplateRenderer
             category="login"
+            template="default"
             :show-selector="true"
             selector-mode="modal"
             :show-device-info="true"
@@ -27,17 +28,35 @@
         <div class="demo-grid">
           <div class="demo-item">
             <h3>下拉模式</h3>
-            <TemplateRenderer category="login" :show-selector="true" selector-mode="dropdown" selector-size="small" />
+            <TemplateRenderer
+              category="login"
+              template="default"
+              :show-selector="true"
+              selector-mode="dropdown"
+              selector-size="small"
+            />
           </div>
 
           <div class="demo-item">
             <h3>按钮模式</h3>
-            <TemplateRenderer category="login" :show-selector="true" selector-mode="buttons" selector-size="medium" />
+            <TemplateRenderer
+              category="login"
+              template="classic"
+              :show-selector="true"
+              selector-mode="buttons"
+              selector-size="medium"
+            />
           </div>
 
           <div class="demo-item">
             <h3>网格模式</h3>
-            <TemplateRenderer category="login" :show-selector="true" selector-mode="grid" selector-size="large" />
+            <TemplateRenderer
+              category="login"
+              template="modern"
+              :show-selector="true"
+              selector-mode="grid"
+              selector-size="large"
+            />
           </div>
         </div>
       </section>

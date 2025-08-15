@@ -1,4 +1,4 @@
-import type { ErrorInterceptor, InterceptorManager } from '@/types'
+import type { ErrorInterceptor, InterceptorManager } from '../types'
 
 /**
  * 拦截器项
@@ -50,7 +50,7 @@ export class InterceptorManagerImpl<T> implements InterceptorManager<T> {
    * @param fn 遍历函数
    */
   forEach(fn: (interceptor: InterceptorItem<T>) => void): void {
-    this.interceptors.forEach((interceptor) => {
+    this.interceptors.forEach(interceptor => {
       if (interceptor !== null) {
         fn(interceptor)
       }
@@ -61,8 +61,8 @@ export class InterceptorManagerImpl<T> implements InterceptorManager<T> {
    * 获取所有有效的拦截器
    */
   getInterceptors(): Array<InterceptorItem<T>> {
-    return this.interceptors.filter((interceptor): interceptor is InterceptorItem<T> =>
-      interceptor !== null,
+    return this.interceptors.filter(
+      (interceptor): interceptor is InterceptorItem<T> => interceptor !== null
     )
   }
 }

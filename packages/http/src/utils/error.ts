@@ -3,7 +3,7 @@ import type {
   RequestConfig,
   ResponseData,
   RetryConfig,
-} from '@/types'
+} from '../types'
 import { createHttpError, delay } from './index'
 
 /**

@@ -86,18 +86,16 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: [
-      'vue',
+    include: ['vue', 'monaco-editor', 'prismjs'],
+    exclude: [
       '@ldesign/engine',
       '@ldesign/router',
       '@ldesign/template',
       '@ldesign/i18n',
       '@ldesign/http',
       '@ldesign/device',
-      'monaco-editor',
-      'prismjs',
+      'alova',
     ],
-    exclude: ['alova'],
   },
   // 添加环境信息到开发工具
   esbuild: {

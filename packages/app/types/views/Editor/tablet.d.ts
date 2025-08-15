@@ -1,5 +1,5 @@
 import * as vue from 'vue'
-import { JSX } from '../../node_modules/.pnpm/vue@3.5.18_typescript@5.9.2/node_modules/vue/jsx-runtime/index.d.js'
+import { JSX } from '../../node_modules/.pnpm/vue@3.5.18_typescript@5.8.3/node_modules/vue/jsx-runtime/index.d.js'
 
 declare const _default: vue.DefineComponent<
   {},

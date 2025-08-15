@@ -13,6 +13,6 @@ export default createRollupConfig({
   globals: {
     vue: 'Vue',
   },
-  // 只构建 ES 和 CJS 格式，避免 UMD 的复杂性
-  formats: ['es', 'cjs'],
+  // 构建所有格式，包含 UMD
+  formats: ['es', 'cjs', 'umd'],
 })

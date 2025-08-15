@@ -1,73 +1,115 @@
 /**
- * LDesign Template System
+ * LDesign Template System - 重构版本
  *
- * 一个功能强大的 Vue 3 模板管理系统，提供：
+ * 一个简洁高效的 Vue 3 模板管理系统，提供：
  * - 🎨 多设备响应式模板支持
- * - 🚀 智能缓存和性能优化
- * - 📱 自动设备检测和适配
+ * - 🚀 智能缓存和性能优化（基于 @ldesign/cache）
+ * - 📱 自动设备检测和适配（基于 @ldesign/device）
  * - 🔧 灵活的模板扫描和加载
  * - 🎪 丰富的 Vue 组件和组合式函数
  *
  * @packageDocumentation
  */
 
-/** 模板选择器组件 - Vue 组件，用于便捷的模板切换 */
-export { default as TemplateSelector } from './vue/components/TemplateSelector'
-
-// ============ 缓存管理 ============
-/** 缓存系统 - 提供 LRU 缓存和模板专用缓存功能 */
-export { LRUCache, TemplateCache } from './core/cache/index'
-
-// ============ 核心设备检测 ============
-/** 核心设备检测功能 - 基础的设备类型识别 */
-export { detectDeviceType, getDeviceInfo as getDeviceInfoCore, watchDeviceChange } from './core/device'
-
 // ============ 核心模块 ============
 /** 模板管理器 - 核心管理类，提供模板的加载、缓存、切换等功能 */
-export { TemplateManager } from './core/TemplateManager'
+export { TemplateManager } from './core/manager'
 
-// ============ Engine 插件 ============
-/** Engine 插件 - 支持 engine.use() 方式安装 */
-export * from './engine/plugin'
+/** 模板扫描器 - 自动发现和解析项目中的模板文件 */
+export { TemplateScanner } from './core/scanner'
+
+/** 模板加载器 - 动态加载模板组件 */
+export { TemplateLoader } from './core/loader'
+
+// ============ 工具函数 ============
+/** 模板路径解析和处理工具 */
+export {
+  parseTemplatePath,
+  buildTemplatePath,
+  validateTemplatePath,
+  extractTemplatePathFromModulePath,
+  normalizeTemplatePath,
+  isTemplateConfigPath,
+  isTemplateComponentPath,
+  getComponentPathFromConfigPath,
+  getConfigPathFromComponentPath,
+  getStylePathFromConfigPath,
+} from './utils/path'
 
 // ============ 类型定义 ============
 export type * from './types'
 
-// ============ 扩展设备检测工具 ============
-/** 扩展设备检测功能 - 提供更多设备检测工具和配置选项 */
-export {
-  checkDeviceSupport,
-  createDeviceWatcher,
-  DEFAULT_BREAKPOINTS,
-  DEFAULT_DEVICE_CONFIG,
-  detectDevice,
-  detectDeviceByUserAgent,
-  detectDeviceByViewport,
-  getDeviceInfo,
-  getViewportHeight,
-  getViewportWidth,
-  isMobileDevice,
-  isTabletDevice,
-  isTouchDevice,
-} from './utils/device'
-
-// ============ 模板扫描和渲染 ============
-/** 模板扫描器 - 自动发现和注册项目中的模板文件 */
-export { TemplateScanner } from './utils/scanner'
-
-/** 模板渲染器组件 - Vue 组件，用于渲染动态模板 */
-export { TemplateRenderer } from './vue/components/TemplateRenderer'
+// ============ Engine 插件支持 ============
+/** Engine 插件创建函数 */
+export { createTemplateEnginePlugin, createDefaultTemplateEnginePlugin } from './engine/plugin'
 
 // ============ Vue 集成 ============
-/** Vue 组合式函数 - 提供响应式的模板管理功能 */
-export { createTemplateManager, useTemplate } from './vue/composables/useTemplate'
+/** Vue 组件 */
+export { TemplateRenderer } from './vue/components/TemplateRenderer'
 
-/** Vue 指令 - 提供模板相关的自定义指令 */
-export { registerTemplateDirective, templateDirective } from './vue/directives/template'
+/** Vue 插件 */
+export {
+  TemplatePlugin,
+  createTemplatePlugin,
+  getGlobalTemplateManager,
+  destroyGlobalTemplateManager,
+  useTemplateManager,
+} from './vue/plugin'
 
-/** Vue 插件 - 全局模板管理器和插件系统 */
-export { getGlobalTemplateManager, TemplatePlugin } from './vue/plugins'
+/** Vue 组合式函数 */
+export { useTemplate } from './vue/composables/useTemplate'
+
+// ============ 外部依赖重新导出 ============
+// TODO: 稍后启用这些导出
+// export { DeviceDetector } from '@ldesign/device'
+// export { createCache } from '@ldesign/cache'
+
+// ============ 便捷函数 ============
+
+/**
+ * 创建模板管理器实例
+ */
+export function createTemplateManager(config?: import('./types').TemplateManagerConfig) {
+  return new TemplateManager(config)
+}
+
+/**
+ * 创建模板扫描器实例
+ */
+export function createTemplateScanner() {
+  return new TemplateScanner()
+}
+
+/**
+ * 创建模板加载器实例
+ */
+export function createTemplateLoader() {
+  return new TemplateLoader()
+}
 
 // ============ 默认导出 ============
-/** 默认导出 Vue 插件，支持 app.use() 方式安装 */
-export { TemplatePlugin as default } from './vue/plugins'
+import { TemplateManager } from './core/manager'
+import { TemplateScanner } from './core/scanner'
+import { TemplateLoader } from './core/loader'
+import { TemplateRenderer } from './vue/components/TemplateRenderer'
+import { TemplatePlugin } from './vue/plugin'
+import { useTemplate } from './vue/composables/useTemplate'
+import { createTemplateEnginePlugin } from './engine/plugin'
+
+export default {
+  TemplateManager,
+  TemplateScanner,
+  TemplateLoader,
+  createTemplateManager,
+  createTemplateScanner,
+  createTemplateLoader,
+  // Vue 支持
+  TemplateRenderer,
+  TemplatePlugin,
+  useTemplate,
+  // Engine 支持
+  createTemplateEnginePlugin,
+}
+
+// ============ 版本信息 ============
+export const version = '0.1.0'

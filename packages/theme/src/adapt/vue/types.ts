@@ -14,6 +14,16 @@ import type {
   ThemeEventType,
 } from '../../core/types'
 
+// 重新导出核心类型以供组件使用
+export type {
+  ThemeConfig,
+  ThemeManagerInstance,
+  DecorationConfig,
+  AnimationConfig,
+  ThemeEventListener,
+  ThemeEventType,
+} from '../../core/types'
+
 /**
  * Vue 主题提供者属性
  */

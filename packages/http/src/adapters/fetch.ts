@@ -1,5 +1,5 @@
-import type { RequestConfig, ResponseData } from '@/types'
-import { isArrayBuffer, isBlob, isFormData, isURLSearchParams } from '@/utils'
+import type { RequestConfig, ResponseData } from '../types'
+import { isArrayBuffer, isBlob, isFormData, isURLSearchParams } from '../utils'
 import { BaseAdapter } from './base'
 
 /**
@@ -12,7 +12,9 @@ export class FetchAdapter extends BaseAdapter {
    * 检查是否支持 fetch API
    */
   isSupported(): boolean {
-    return typeof fetch !== 'undefined' && typeof AbortController !== 'undefined'
+    return (
+      typeof fetch !== 'undefined' && typeof AbortController !== 'undefined'
+    )
   }
 
   /**
@@ -23,7 +25,9 @@ export class FetchAdapter extends BaseAdapter {
 
     try {
       // 创建超时控制器
-      const timeoutController = this.createTimeoutController(processedConfig.timeout)
+      const timeoutController = this.createTimeoutController(
+        processedConfig.timeout
+      )
 
       // 合并 AbortSignal
       const signal = this.mergeAbortSignals([
@@ -36,12 +40,21 @@ export class FetchAdapter extends BaseAdapter {
         method: processedConfig.method,
         headers: this.buildHeaders(processedConfig),
         signal,
-        credentials: processedConfig.withCredentials ? 'include' : 'same-origin',
+        credentials: processedConfig.withCredentials
+          ? 'include'
+          : 'same-origin',
       }
 
       // 处理请求体
-      if (processedConfig.data && processedConfig.method !== 'GET' && processedConfig.method !== 'HEAD') {
-        fetchOptions.body = this.buildBody(processedConfig.data, processedConfig.headers)
+      if (
+        processedConfig.data &&
+        processedConfig.method !== 'GET' &&
+        processedConfig.method !== 'HEAD'
+      ) {
+        fetchOptions.body = this.buildBody(
+          processedConfig.data,
+          processedConfig.headers
+        )
       }
 
       // 发送请求
@@ -52,8 +65,7 @@ export class FetchAdapter extends BaseAdapter {
 
       // 处理响应
       return await this.handleResponse<T>(response, processedConfig)
-    }
-    catch (error) {
+    } catch (error) {
       throw this.processError(error, processedConfig)
     }
   }
@@ -68,15 +80,12 @@ export class FetchAdapter extends BaseAdapter {
     if (config.data && !headers['content-type'] && !headers['Content-Type']) {
       if (typeof config.data === 'string') {
         headers['Content-Type'] = 'text/plain'
-      }
-      else if (isFormData(config.data)) {
+      } else if (isFormData(config.data)) {
         // FormData 会自动设置 Content-Type，包括 boundary
         delete headers['Content-Type']
-      }
-      else if (isURLSearchParams(config.data)) {
+      } else if (isURLSearchParams(config.data)) {
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
-      }
-      else if (typeof config.data === 'object') {
+      } else if (typeof config.data === 'object') {
         headers['Content-Type'] = 'application/json'
       }
     }
@@ -94,22 +103,23 @@ export class FetchAdapter extends BaseAdapter {
 
     // 直接支持的类型
     if (
-      typeof data === 'string'
-      || isFormData(data)
-      || isBlob(data)
-      || isArrayBuffer(data)
-      || isURLSearchParams(data)
-      || data instanceof ReadableStream
+      typeof data === 'string' ||
+      isFormData(data) ||
+      isBlob(data) ||
+      isArrayBuffer(data) ||
+      isURLSearchParams(data) ||
+      data instanceof ReadableStream
     ) {
       return data
     }
 
     // 对象类型，根据 Content-Type 处理
-    const contentType = headers?.['content-type'] || headers?.['Content-Type'] || ''
+    const contentType =
+      headers?.['content-type'] || headers?.['Content-Type'] || ''
 
     if (contentType.includes('application/x-www-form-urlencoded')) {
       const params = new URLSearchParams()
-      Object.keys(data).forEach((key) => {
+      Object.keys(data).forEach(key => {
         const value = data[key]
         if (value !== null && value !== undefined) {
           params.append(key, String(value))
@@ -127,7 +137,7 @@ export class FetchAdapter extends BaseAdapter {
    */
   private async handleResponse<T>(
     response: Response,
-    config: RequestConfig,
+    config: RequestConfig
   ): Promise<ResponseData<T>> {
     const headers = this.parseHeaders(response.headers)
 
@@ -139,7 +149,14 @@ export class FetchAdapter extends BaseAdapter {
       const error = this.processError(
         new Error(`Request failed with status ${response.status}`),
         config,
-        this.processResponse(data, response.status, response.statusText, headers, config, response),
+        this.processResponse(
+          data,
+          response.status,
+          response.statusText,
+          headers,
+          config,
+          response
+        )
       )
       throw error
     }
@@ -150,7 +167,7 @@ export class FetchAdapter extends BaseAdapter {
       response.statusText,
       headers,
       config,
-      response,
+      response
     )
   }
 
@@ -159,7 +176,7 @@ export class FetchAdapter extends BaseAdapter {
    */
   private async parseResponseData<T>(
     response: Response,
-    responseType?: string,
+    responseType?: string
   ): Promise<T> {
     if (!response.body) {
       return null as T
@@ -181,24 +198,20 @@ export class FetchAdapter extends BaseAdapter {
           const contentType = response.headers.get('content-type') || ''
           if (contentType.includes('application/json')) {
             return await response.json()
-          }
-          else if (contentType.includes('text/')) {
+          } else if (contentType.includes('text/')) {
             return (await response.text()) as T
-          }
-          else {
+          } else {
             // 尝试解析为 JSON，失败则返回文本
             const text = await response.text()
             try {
               return JSON.parse(text)
-            }
-            catch {
+            } catch {
               return text as T
             }
           }
         }
       }
-    }
-    catch {
+    } catch {
       // 解析失败，返回空值
       return null as T
     }

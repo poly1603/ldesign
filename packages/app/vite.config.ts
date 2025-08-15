@@ -124,13 +124,16 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: [
-      'vue',
+    include: ['vue', 'monaco-editor', 'prismjs'],
+    exclude: [
       '@ldesign/engine',
+      '@ldesign/router',
+      '@ldesign/template',
       '@ldesign/i18n',
-      'monaco-editor',
-      'prismjs',
+      '@ldesign/http',
+      '@ldesign/device',
+      'axios',
+      'alova',
     ],
-    exclude: ['@ldesign/http', 'axios', 'alova'],
   },
 })

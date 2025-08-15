@@ -100,11 +100,8 @@ export default defineComponent({
     return () => (
       <TemplateRenderer
         category='login'
-        selectorMode={selectorMode.value}
-        showSelector={true}
-        selectorSize='medium'
-        showDeviceInfo={true}
-        config={{
+        template='default'
+        templateProps={{
           // 将 LoginPanel 组件传递给模板
           loginPanel: createLoginPanel(),
           // 其他配置
@@ -116,6 +113,10 @@ export default defineComponent({
           showRegisterLink: true,
           allowThirdPartyLogin: true,
           loading: loading.value,
+          selectorMode: selectorMode.value,
+          showSelector: true,
+          selectorSize: 'medium',
+          showDeviceInfo: true,
         }}
         onLogin={handleLogin}
         onRegister={handleRegister}
