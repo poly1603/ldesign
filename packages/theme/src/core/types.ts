@@ -1,7 +1,8 @@
 /**
  * @ldesign/theme - 核心类型定义
  *
- * 定义主题系统的所有核心接口和类型
+ * 定义节日主题系统的所有核心接口和类型
+ * 基于@ldesign/color的颜色系统，专注于节日装饰和动画
  */
 
 import type { ThemeConfig as ColorThemeConfig, ColorMode } from '@ldesign/color'
@@ -64,7 +65,13 @@ export interface TimeRange {
 export interface DecorationPosition {
   type: 'absolute' | 'relative' | 'fixed' | 'sticky'
   position: Position
-  anchor?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
+  anchor?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-right'
+    | 'center'
   offset?: Position
 }
 
@@ -83,19 +90,49 @@ export interface DecorationStyle {
 }
 
 /**
- * 装饰元素配置
+ * 装饰挂件配置
+ * 可附加到任何元素的小装饰组件
  */
-export interface DecorationConfig {
-  id: string
-  name: string
-  type: DecorationType
-  src: string // 资源路径
-  position: DecorationPosition
-  style: DecorationStyle
-  animation?: string // 动画名称
-  interactive?: boolean
-  responsive?: boolean
-  conditions?: DecorationCondition[]
+export interface DecorationWidget {
+  id: string // 挂件唯一标识
+  name: string // 挂件名称
+  type: 'svg' | 'component' // 挂件类型
+  content: string // SVG内容或组件内容
+  category: 'corner' | 'edge' | 'overlay' | 'background' // 挂件类别
+  size: 'small' | 'medium' | 'large' // 挂件大小
+  animation?: DecorationAnimation // 动画配置
+  interactive?: boolean // 是否可交互
+  festival: FestivalType // 所属节日
+  description?: string // 描述
+}
+
+/**
+ * 装饰动画配置
+ */
+export interface DecorationAnimation {
+  name: string // 动画名称
+  duration: number // 持续时间(ms)
+  timing: string // 时间函数
+  iteration: 'infinite' | number // 迭代次数
+  direction?: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse'
+  delay?: number // 延迟时间(ms)
+}
+
+/**
+ * 装饰挂件附加配置
+ */
+export interface DecorationAttachment {
+  widget: string // 挂件ID
+  position?:
+    | 'top-left'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-right'
+    | 'center'
+  offset?: { x: number; y: number } // 偏移量
+  scale?: number // 缩放比例
+  opacity?: number // 透明度
+  zIndex?: number // 层级
 }
 
 /**
@@ -158,28 +195,28 @@ export interface ResourceConfig {
 }
 
 /**
- * 主题配置
+ * 节日主题配置
+ * 基于@ldesign/color的颜色系统，专注于装饰和动画
  */
-export interface ThemeConfig {
+export interface FestivalThemeConfig {
   name: string
   displayName: string
   description?: string
-  category: ThemeCategory
-  festival?: FestivalType
+  festival: FestivalType
   version: string
   author?: string
 
-  // 颜色配置（集成 @ldesign/color）
-  colors: ColorThemeConfig
+  // 使用@ldesign/color的主题配置
+  colorTheme: ColorThemeConfig
 
-  // 装饰元素配置
-  decorations: DecorationConfig[]
+  // 节日特色装饰挂件
+  widgets: DecorationWidget[]
 
-  // 动画配置
+  // 节日动画效果
   animations: AnimationConfig[]
 
   // 资源配置
-  resources: ResourceConfig
+  resources?: ResourceConfig
 
   // 自动激活时间范围
   timeRange?: TimeRange
@@ -246,6 +283,8 @@ export type ThemeEventType =
   | 'theme-error'
   | 'decoration-added'
   | 'decoration-removed'
+  | 'decoration-clicked'
+  | 'decoration-hover'
   | 'animation-started'
   | 'animation-ended'
   | 'resource-loaded'

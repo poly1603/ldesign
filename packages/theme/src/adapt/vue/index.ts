@@ -39,6 +39,10 @@ export {
 
 // 指令
 export { vThemeDecoration, vThemeAnimation } from './directives'
+export {
+  vElementDecoration,
+  updateTheme,
+} from './directives/element-decoration'
 
 // 指令工具函数
 export {
@@ -56,6 +60,22 @@ export {
   resumeElementAnimation,
   clearAllAnimations,
 } from './directives/theme-animation'
+
+// 简化API - 临时注释掉
+// export {
+//   SimpleThemeAPI,
+//   simpleTheme,
+//   setTheme,
+//   setFestivalTheme,
+//   randomTheme,
+//   resetTheme,
+//   toggleMode,
+//   setIntensity,
+//   setAnimation,
+//   onThemeChange,
+// } from './simple-api'
+
+// export type { ThemeOptions } from './simple-api'
 
 // 类型
 export type * from './types'

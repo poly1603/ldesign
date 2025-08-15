@@ -35,26 +35,26 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
 
   // 更新装饰列表
   const updateDecorations = () => {
-    if (themeContext.themeManager.value) {
-      decorations.value = themeContext.themeManager.value.getDecorations()
+    if (themeContext.themeManager) {
+      decorations.value = themeContext.themeManager.getDecorations()
     }
   }
 
   // 监听装饰变化事件
-  if (themeContext.themeManager.value) {
-    themeContext.themeManager.value.on('decoration-added', updateDecorations)
-    themeContext.themeManager.value.on('decoration-removed', updateDecorations)
+  if (themeContext.themeManager) {
+    themeContext.themeManager.on('decoration-added', updateDecorations)
+    themeContext.themeManager.on('decoration-removed', updateDecorations)
   }
 
   /**
    * 添加装饰元素
    */
   const addDecoration = (decoration: DecorationConfig): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       throw new Error('Theme manager is not initialized')
     }
 
-    themeContext.themeManager.value.addDecoration(decoration)
+    themeContext.themeManager.addDecoration(decoration)
     updateDecorations()
   }
 
@@ -62,11 +62,11 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    * 移除装饰元素
    */
   const removeDecoration = (id: string): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       return
     }
 
-    themeContext.themeManager.value.removeDecoration(id)
+    themeContext.themeManager.removeDecoration(id)
     updateDecorations()
   }
 
@@ -77,11 +77,11 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
     id: string,
     updates: Partial<DecorationConfig>
   ): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       return
     }
 
-    themeContext.themeManager.value.updateDecoration(id, updates)
+    themeContext.themeManager.updateDecoration(id, updates)
     updateDecorations()
   }
 
@@ -89,13 +89,13 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    * 清空所有装饰元素
    */
   const clearDecorations = (): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       return
     }
 
     const currentDecorations = decorations.value
     currentDecorations.forEach(decoration => {
-      themeContext.themeManager.value!.removeDecoration(decoration.id)
+      themeContext.themeManager!.removeDecoration(decoration.id)
     })
 
     updateDecorations()
@@ -126,12 +126,9 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
 
   // 清理事件监听器
   onUnmounted(() => {
-    if (themeContext.themeManager.value) {
-      themeContext.themeManager.value.off('decoration-added', updateDecorations)
-      themeContext.themeManager.value.off(
-        'decoration-removed',
-        updateDecorations
-      )
+    if (themeContext.themeManager) {
+      themeContext.themeManager.off('decoration-added', updateDecorations)
+      themeContext.themeManager.off('decoration-removed', updateDecorations)
     }
   })
 

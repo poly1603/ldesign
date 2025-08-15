@@ -24,6 +24,7 @@ export interface EventEmitter {
   removeAllListeners(event?: ThemeEventType): void
   listenerCount(event: ThemeEventType): number
   listeners(event: ThemeEventType): ThemeEventListener[]
+  destroy(): void
 }
 
 /**

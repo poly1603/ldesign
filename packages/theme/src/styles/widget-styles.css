@@ -1,0 +1,335 @@
+/**
+ * @ldesign/theme - 挂件样式系统
+ * 
+ * 定义所有挂件的基础样式、尺寸、动画等
+ */
+
+/* ===== 基础挂件样式 ===== */
+.ldesign-widget-decoration {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: var(--widget-z-index, 1000);
+  opacity: var(--widget-opacity, 1);
+  transition: all var(--transition-normal, 0.3s ease);
+}
+
+.ldesign-widget-svg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ===== 挂件尺寸定义 ===== */
+:root {
+  --widget-size-xs: 16px;
+  --widget-size-sm: 24px;
+  --widget-size-md: 32px;
+  --widget-size-lg: 48px;
+  --widget-size-xl: 64px;
+}
+
+/* ===== 挂件类型样式 ===== */
+
+/* 按钮挂件 */
+.ldesign-widget-button {
+  position: relative;
+  overflow: visible;
+}
+
+.ldesign-widget-button .ldesign-widget-decoration {
+  transform: translate(8px, -8px);
+}
+
+/* 头部挂件 */
+.ldesign-widget-header {
+  position: relative;
+  overflow: visible;
+}
+
+.ldesign-widget-header .ldesign-widget-decoration {
+  transform: translate(-4px, 4px);
+}
+
+/* 卡片挂件 */
+.ldesign-widget-card {
+  position: relative;
+  overflow: visible;
+}
+
+.ldesign-widget-card .ldesign-widget-decoration {
+  transform: translate(-8px, 8px);
+}
+
+/* 面板挂件 */
+.ldesign-widget-panel {
+  position: relative;
+  overflow: visible;
+}
+
+/* 背景挂件 */
+.ldesign-widget-background {
+  position: relative;
+}
+
+.ldesign-widget-background .ldesign-widget-decoration {
+  z-index: 1;
+  opacity: var(--widget-opacity, 0.1);
+}
+
+/* 侧边栏挂件 */
+.ldesign-widget-sidebar {
+  position: relative;
+  overflow: visible;
+}
+
+/* 输入框挂件 */
+.ldesign-widget-input {
+  position: relative;
+  overflow: visible;
+}
+
+.ldesign-widget-input .ldesign-widget-decoration {
+  transform: translate(-4px, -4px);
+}
+
+/* 导航挂件 */
+.ldesign-widget-navigation {
+  position: relative;
+  overflow: visible;
+}
+
+/* 页脚挂件 */
+.ldesign-widget-footer {
+  position: relative;
+  overflow: visible;
+}
+
+/* 模态框挂件 */
+.ldesign-widget-modal {
+  position: relative;
+  overflow: visible;
+}
+
+/* ===== 挂件动画定义 ===== */
+
+/* 浮动动画 */
+@keyframes ldesign-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 弹跳动画 */
+@keyframes ldesign-bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* 摆动动画 */
+@keyframes ldesign-swing {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+/* 发光动画 */
+@keyframes ldesign-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
+}
+
+/* 闪烁动画 */
+@keyframes ldesign-sparkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* 旋转动画 */
+@keyframes ldesign-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 脉冲动画 */
+@keyframes ldesign-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 震动动画 */
+@keyframes ldesign-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* ===== 响应式样式 ===== */
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  :root {
+    --widget-size-xs: 12px;
+    --widget-size-sm: 18px;
+    --widget-size-md: 24px;
+    --widget-size-lg: 32px;
+    --widget-size-xl: 48px;
+  }
+
+  .ldesign-widget-decoration[data-widget-responsive="hideOnMobile"] {
+    display: none;
+  }
+
+  /* 移动端动画性能优化 */
+  .ldesign-widget-decoration {
+    animation-duration: 1.5s !important;
+  }
+}
+
+/* 平板端适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --widget-size-xs: 14px;
+    --widget-size-sm: 20px;
+    --widget-size-md: 28px;
+    --widget-size-lg: 40px;
+    --widget-size-xl: 56px;
+  }
+}
+
+/* 大屏幕适配 */
+@media (min-width: 1200px) {
+  :root {
+    --widget-size-xs: 18px;
+    --widget-size-sm: 26px;
+    --widget-size-md: 36px;
+    --widget-size-lg: 52px;
+    --widget-size-xl: 72px;
+  }
+}
+
+/* ===== 主题特定样式 ===== */
+
+/* 春节主题 */
+[data-theme="spring-festival"] .ldesign-widget-decoration {
+  filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.2));
+}
+
+/* 圣诞主题 */
+[data-theme="christmas"] .ldesign-widget-decoration {
+  filter: drop-shadow(0 2px 4px rgba(22, 163, 74, 0.2));
+}
+
+/* 默认主题 */
+[data-theme="default"] .ldesign-widget-decoration {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* ===== 性能优化 ===== */
+
+/* 减少重绘和回流 */
+.ldesign-widget-decoration {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* GPU加速 */
+.ldesign-widget-decoration[data-widget-animation]:not(
+    [data-widget-animation="none"]
+  ) {
+  transform: translateZ(0);
+}
+
+/* 减少动画在低性能设备上的影响 */
+@media (prefers-reduced-motion: reduce) {
+  .ldesign-widget-decoration {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ===== 调试样式 ===== */
+.ldesign-widget-debug .ldesign-widget-decoration {
+  border: 1px dashed rgba(255, 0, 0, 0.5);
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.ldesign-widget-debug .ldesign-widget-decoration::before {
+  content: attr(data-widget-type);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  font-size: 10px;
+  color: red;
+  background: white;
+  padding: 2px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+}

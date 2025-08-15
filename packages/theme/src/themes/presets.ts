@@ -8,6 +8,8 @@ import type { ThemeConfig, ThemeCategory, FestivalType } from '../core/types'
 import { christmasTheme } from './festivals/christmas'
 import { springFestivalTheme } from './festivals/spring-festival'
 import { halloweenTheme } from './festivals/halloween'
+import { valentineTheme } from './festivals/valentine'
+import { midAutumnTheme } from './festivals/mid-autumn'
 
 /**
  * 所有预设主题
@@ -16,6 +18,8 @@ export const presetThemes: ThemeConfig[] = [
   christmasTheme,
   springFestivalTheme,
   halloweenTheme,
+  valentineTheme,
+  midAutumnTheme,
 ]
 
 /**
@@ -25,16 +29,22 @@ export const festivalThemes: Record<FestivalType, ThemeConfig> = {
   christmas: christmasTheme,
   'spring-festival': springFestivalTheme,
   halloween: halloweenTheme,
-  valentine: christmasTheme, // 暂时使用圣诞节主题
+  valentine: valentineTheme,
   easter: springFestivalTheme, // 暂时使用春节主题
-  thanksgiving: halloweenTheme, // 暂时使用万圣节主题
+  thanksgiving: midAutumnTheme, // 使用中秋节主题
 }
 
 /**
  * 按类别分组的主题
  */
 export const themesByCategory: Record<ThemeCategory, ThemeConfig[]> = {
-  festival: [christmasTheme, springFestivalTheme, halloweenTheme],
+  festival: [
+    christmasTheme,
+    springFestivalTheme,
+    halloweenTheme,
+    valentineTheme,
+    midAutumnTheme,
+  ],
   seasonal: [],
   custom: [],
   business: [],

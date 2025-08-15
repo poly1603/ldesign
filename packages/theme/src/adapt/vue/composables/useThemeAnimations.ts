@@ -35,9 +35,9 @@ export function useThemeAnimations(): UseThemeAnimationsReturn {
 
   // 更新动画列表
   const updateAnimations = () => {
-    if (themeContext.themeManager.value) {
+    if (themeContext.themeManager) {
       // 这里需要从主题管理器获取动画列表
-      // animations.value = themeContext.themeManager.value.getAnimations()
+      // animations.value = themeContext.themeManager.getAnimations()
     }
   }
 
@@ -45,44 +45,44 @@ export function useThemeAnimations(): UseThemeAnimationsReturn {
    * 开始动画
    */
   const startAnimation = (name: string): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       throw new Error('Theme manager is not initialized')
     }
 
-    themeContext.themeManager.value.startAnimation(name)
+    themeContext.themeManager.startAnimation(name)
   }
 
   /**
    * 停止动画
    */
   const stopAnimation = (name: string): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       return
     }
 
-    themeContext.themeManager.value.stopAnimation(name)
+    themeContext.themeManager.stopAnimation(name)
   }
 
   /**
    * 暂停动画
    */
   const pauseAnimation = (name: string): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       return
     }
 
-    themeContext.themeManager.value.pauseAnimation(name)
+    themeContext.themeManager.pauseAnimation(name)
   }
 
   /**
    * 恢复动画
    */
   const resumeAnimation = (name: string): void => {
-    if (!themeContext.themeManager.value) {
+    if (!themeContext.themeManager) {
       return
     }
 
-    themeContext.themeManager.value.resumeAnimation(name)
+    themeContext.themeManager.resumeAnimation(name)
   }
 
   /**
@@ -91,7 +91,7 @@ export function useThemeAnimations(): UseThemeAnimationsReturn {
   const isAnimationRunning = (name: string): ComputedRef<boolean> => {
     return computed(() => {
       // 这里需要从动画管理器获取状态
-      // return themeContext.themeManager.value?.isAnimationRunning(name) || false
+      // return themeContext.themeManager?.isAnimationRunning(name) || false
       return false
     })
   }

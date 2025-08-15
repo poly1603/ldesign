@@ -14,6 +14,15 @@ import type {
   ThemeEventType,
 } from '../../core/types'
 
+// 重新导出核心类型供Vue组件使用
+export type {
+  ThemeConfig,
+  DecorationConfig,
+  AnimationConfig,
+  ThemeEventListener,
+  ThemeEventType,
+}
+
 /**
  * Vue 主题提供者属性
  */
@@ -275,7 +284,7 @@ export interface VueThemeGlobalProperties {
 /**
  * Vue 组件实例类型扩展
  */
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties extends VueThemeGlobalProperties {}
 }
 
