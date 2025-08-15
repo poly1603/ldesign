@@ -1,18 +1,18 @@
 import type { TemplateConfig } from '../../../../types'
 
 export const config: TemplateConfig = {
-  id: 'login-mobile-simple',
-  name: '简洁登录',
-  description: '专为移动端优化的简洁登录页面，操作便捷，体验流畅',
+  id: 'login-mobile-default',
+  name: '默认移动登录',
+  description: '移动端默认登录模板，简洁易用',
   category: 'login',
   device: 'mobile',
-  variant: 'simple',
-  isDefault: false, // 不再是默认模板
+  variant: 'default',
+  isDefault: true, // 设为移动端默认模板
   version: '1.0.0',
   author: 'LDesign Team',
-  tags: ['简洁', '移动端', '触摸友好', '流畅'],
-  preview: '/previews/login-mobile-simple.png',
-  features: ['全屏设计', '大按钮操作', '简化表单', '快速登录', '触摸友好'],
+  tags: ['默认', '移动端', '简洁', '易用'],
+  preview: '/previews/login-mobile-default.png',
+  features: ['移动端优化', '简洁设计', '触摸友好', '快速登录', '响应式布局'],
   props: {
     title: {
       type: 'string',
@@ -27,12 +27,12 @@ export const config: TemplateConfig = {
     logo: {
       type: 'string',
       default: '',
-      description: '公司或产品Logo',
+      description: '登录页面logo',
     },
     showRememberMe: {
       type: 'boolean',
       default: false,
-      description: '是否显示记住密码选项',
+      description: '是否显示记住我选项',
     },
     showForgotPassword: {
       type: 'boolean',
@@ -44,13 +44,17 @@ export const config: TemplateConfig = {
       default: true,
       description: '是否显示第三方登录',
     },
+    thirdPartyProviders: {
+      type: 'array',
+      default: ['wechat', 'qq', 'weibo'],
+      description: '第三方登录提供商',
+    },
   },
-  breakpoints: {
-    minWidth: null,
-    maxWidth: 768,
+  dependencies: [],
+  compatibility: {
+    vue: '^3.0.0',
+    typescript: '^4.0.0',
   },
-  createdAt: '2024-01-01',
-  updatedAt: '2024-01-15',
 }
 
 export default config

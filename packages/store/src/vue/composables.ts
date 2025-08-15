@@ -10,14 +10,14 @@ import type {
   UseStoreOptions,
 } from '@/types'
 import { computed, inject, onUnmounted, ref, watch } from 'vue'
-import { STORE_PROVIDER_KEY } from '@/types/provider'
+import { STORE_PROVIDER_KEY } from '../types/provider'
 
 /**
  * 使用 Store 的组合式函数
  */
 export function useStore<T extends Store = Store>(
   storeId: string,
-  options: UseStoreOptions = {},
+  options: UseStoreOptions = {}
 ): StoreHookReturn<T> {
   const context = inject(STORE_PROVIDER_KEY)
 
@@ -66,25 +66,24 @@ export function useStore<T extends Store = Store>(
 export function useState<T = any>(
   storeId: string,
   stateKey: string,
-  defaultValue?: T,
+  defaultValue?: T
 ): StateHookReturn<T> {
   const { store, state } = useStore(storeId)
 
   // 创建计算属性
   const value = computed({
     get: () => (state.value as any)[stateKey] ?? defaultValue,
-    set: (newValue) => {
+    set: newValue => {
       store.$patch({ [stateKey]: newValue } as any)
     },
   })
 
   return {
     value,
-    setValue: (newValue) => {
+    setValue: newValue => {
       if (typeof newValue === 'function') {
         value.value = (newValue as Function)(value.value)
-      }
-      else {
+      } else {
         value.value = newValue
       }
     },
@@ -101,7 +100,7 @@ export function useState<T = any>(
  */
 export function useAction<T extends (...args: any[]) => any>(
   storeId: string,
-  actionName: string,
+  actionName: string
 ): ActionHookReturn<T> {
   const { store } = useStore(storeId)
 
@@ -116,18 +115,18 @@ export function useAction<T extends (...args: any[]) => any>(
     try {
       const action = (store as any)[actionName]
       if (typeof action !== 'function') {
-        throw new TypeError(`Action "${actionName}" not found in store "${storeId}"`)
+        throw new TypeError(
+          `Action "${actionName}" not found in store "${storeId}"`
+        )
       }
 
       const result = await action(...args)
       data.value = result
       return result
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -152,7 +151,7 @@ export function useAction<T extends (...args: any[]) => any>(
  */
 export function useGetter<T = any>(
   storeId: string,
-  getterName: string,
+  getterName: string
 ): GetterHookReturn<T> {
   const { store } = useStore(storeId)
 
@@ -166,8 +165,7 @@ export function useGetter<T = any>(
         return getter()
       }
       return getter
-    }
-    finally {
+    } finally {
       computing.value = false
     }
   })
@@ -211,8 +209,7 @@ export function useBatch(storeId: string): BatchHookReturn {
   store.$patch = (partialState: any) => {
     if (isBatching.value) {
       Object.assign(batchedUpdates, partialState)
-    }
-    else {
+    } else {
       originalPatch.call(store, partialState)
     }
   }
@@ -230,7 +227,7 @@ export function useBatch(storeId: string): BatchHookReturn {
 export function usePersist(
   storeId: string,
   key?: string,
-  storage: Storage = localStorage,
+  storage: Storage = localStorage
 ): PersistHookReturn {
   const { store, state } = useStore(storeId)
 
@@ -242,8 +239,7 @@ export function usePersist(
       const serialized = JSON.stringify(state.value)
       storage.setItem(storageKey, serialized)
       isPersisted.value = true
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to save store state:', error)
       isPersisted.value = false
     }
@@ -257,8 +253,7 @@ export function usePersist(
         store.$patch(parsed)
         isPersisted.value = true
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to load store state:', error)
       isPersisted.value = false
     }
@@ -268,8 +263,7 @@ export function usePersist(
     try {
       storage.removeItem(storageKey)
       isPersisted.value = false
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to clear store state:', error)
     }
   }
@@ -280,7 +274,7 @@ export function usePersist(
     () => {
       save()
     },
-    { deep: true },
+    { deep: true }
   )
 
   // 初始加载

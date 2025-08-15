@@ -13,6 +13,8 @@ import { defineConfig } from 'vite'
  * - 包开发和测试
  */
 export default defineConfig({
+  root: __dirname,
+  publicDir: 'public',
   plugins: [
     vue({
       template: {
@@ -45,26 +47,41 @@ export default defineConfig({
       '@/middleware': resolve(__dirname, 'src/middleware'),
 
       // 直接映射到源码目录 - 用于开发调试
-      '@ldesign/engine': resolve(__dirname, '../engine/src/index.ts'),
-      '@ldesign/engine/vue': resolve(__dirname, '../engine/src/vue/index.ts'),
+      '@ldesign/engine': resolve(__dirname, '../engine/src'),
+      '@ldesign/engine/vue': resolve(__dirname, '../engine/src/vue'),
 
-      '@ldesign/router': resolve(__dirname, '../router/src/index.ts'),
-      '@ldesign/router/vue': resolve(__dirname, '../router/src/vue/index.ts'),
+      '@ldesign/router': resolve(__dirname, '../router/src'),
+      '@ldesign/router/vue': resolve(__dirname, '../router/src/vue'),
 
-      '@ldesign/template': resolve(__dirname, '../template/src/index.ts'),
-      '@ldesign/template/vue': resolve(
+      '@ldesign/template': resolve(__dirname, '../template/src'),
+      '@ldesign/template/vue': resolve(__dirname, '../template/src/vue'),
+
+      '@ldesign/i18n': resolve(__dirname, '../i18n/src'),
+      '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue'),
+
+      '@ldesign/http': resolve(__dirname, '../http/src'),
+      '@ldesign/http/vue': resolve(__dirname, '../http/src/vue'),
+
+      '@ldesign/device': resolve(__dirname, '../device/src'),
+      '@ldesign/device/vue': resolve(__dirname, '../device/src/vue'),
+
+      // 新集成的包
+      '@ldesign/cache': resolve(__dirname, '../cache/src'),
+      '@ldesign/color': resolve(__dirname, '../color/src'),
+      '@ldesign/color/vue': resolve(__dirname, '../color/src/adapt/vue'),
+      '@ldesign/crypto': resolve(__dirname, '../crypto/src'),
+      '@ldesign/crypto/vue': resolve(__dirname, '../crypto/src/adapt/vue'),
+      '@ldesign/size': resolve(__dirname, '../size/src'),
+      '@ldesign/size/vue': resolve(__dirname, '../size/src/vue'),
+      '@ldesign/store': resolve(__dirname, '../store/src'),
+      '@ldesign/store/vue': resolve(__dirname, '../store/src/vue'),
+
+      // Store 包内部的类型路径别名
+      '@/types/decorators': resolve(
         __dirname,
-        '../template/src/vue/index.ts'
+        '../store/src/types/decorators.ts'
       ),
-
-      '@ldesign/i18n': resolve(__dirname, '../i18n/src/index.ts'),
-      '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue/index.ts'),
-
-      '@ldesign/http': resolve(__dirname, '../http/src/index.ts'),
-      '@ldesign/http/vue': resolve(__dirname, '../http/src/vue/index.ts'),
-
-      '@ldesign/device': resolve(__dirname, '../device/src/index.ts'),
-      '@ldesign/device/vue': resolve(__dirname, '../device/src/vue/index.ts'),
+      '@/types/provider': resolve(__dirname, '../store/src/types/provider.ts'),
 
       // 使用包含编译器的Vue版本
       vue: 'vue/dist/vue.esm-bundler.js',
@@ -81,7 +98,6 @@ export default defineConfig({
   server: {
     port: 3002,
     host: '0.0.0.0',
-    open: true,
     cors: true,
     // 源码模式需要更长的 HMR 超时
     hmr: {
@@ -113,6 +129,11 @@ export default defineConfig({
       '@ldesign/i18n',
       '@ldesign/http',
       '@ldesign/device',
+      '@ldesign/cache',
+      '@ldesign/color',
+      '@ldesign/crypto',
+      '@ldesign/size',
+      '@ldesign/store',
       'alova',
     ],
   },

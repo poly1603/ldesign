@@ -102,3 +102,8 @@ export const appI18nConfig: I18nEnginePluginOptions = {
 
 // 导出应用自定义语言包（如果有的话）
 // export { appLocales } from './locales'
+
+/**
+ * 为 source 模式创建自定义 i18n 实例
+ */
+export const createCustomI18n = createAppI18n

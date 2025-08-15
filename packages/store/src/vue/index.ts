@@ -39,7 +39,7 @@ export type {
   StoreProviderContext,
   StoreProviderOptions,
   StoreRegistration,
-} from '@/types/provider'
+} from '../types/provider'
 
 // 常量
-export { STORE_PROVIDER_KEY } from '@/types/provider'
+export { STORE_PROVIDER_KEY } from '../types/provider'

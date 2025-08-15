@@ -1,0 +1,141 @@
+.tablet-default-login {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  &__container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+  }
+
+  &__header {
+    text-align: center;
+    padding: 48px 40px 32px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+  }
+
+  &__logo {
+    margin-bottom: 24px;
+
+    img {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      object-fit: cover;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  &__subtitle {
+    font-size: 18px;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  &__panel {
+    flex: 1;
+    padding: 40px;
+  }
+
+  &__selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+  }
+
+  // 横屏适配
+  @media (orientation: landscape) {
+    &__content {
+      flex-direction: row;
+      min-height: 400px;
+    }
+
+    &__header {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 32px;
+    }
+
+    &__panel {
+      flex: 1;
+      padding: 40px 32px;
+    }
+
+    &__title {
+      font-size: 32px;
+    }
+
+    &__subtitle {
+      font-size: 16px;
+    }
+  }
+
+  // 小平板适配
+  @media (max-width: 900px) {
+    padding: 16px;
+
+    &__container {
+      max-width: 500px;
+    }
+
+    &__header {
+      padding: 40px 32px 24px;
+    }
+
+    &__title {
+      font-size: 32px;
+    }
+
+    &__subtitle {
+      font-size: 16px;
+    }
+
+    &__panel {
+      padding: 32px;
+    }
+  }
+
+  // 竖屏小平板
+  @media (max-width: 600px) and (orientation: portrait) {
+    &__container {
+      max-width: 400px;
+    }
+
+    &__header {
+      padding: 32px 24px 20px;
+    }
+
+    &__title {
+      font-size: 28px;
+    }
+
+    &__panel {
+      padding: 24px;
+    }
+  }
+}

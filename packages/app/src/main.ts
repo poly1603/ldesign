@@ -4,6 +4,12 @@ import { createHttpEnginePlugin } from '@ldesign/http'
 import { createI18nEnginePlugin } from '@ldesign/i18n'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createTemplateEnginePlugin } from '@ldesign/template'
+import { ThemePlugin } from '../../color/src/adapt/vue'
+import { VueSizePlugin } from '../../size/src/vue'
+import { createCache } from '@ldesign/cache'
+import { CryptoPlugin } from '../../crypto/src/adapt/vue'
+import { createPinia } from 'pinia'
+import { createStoreProviderPlugin } from '../../store/src/vue'
 import App from './App'
 import { appI18nConfig, createAppI18n } from './i18n'
 import { routes } from './router/routes'
@@ -75,6 +81,52 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
     const vueApp = engine.getApp()
     if (vueApp) {
       vueApp.config.globalProperties.$engine = engine
+
+      // 安装颜色主题插件
+      vueApp.use(ThemePlugin, {
+        defaultTheme: 'default',
+        autoDetect: true,
+        idleProcessing: true,
+        registerComponents: true,
+        registerDirectives: true,
+        componentPrefix: 'L',
+      })
+
+      // 安装尺寸缩放插件
+      vueApp.use(VueSizePlugin, {
+        defaultSize: 'medium',
+        enableResponsive: true,
+        enableWatcher: true,
+        componentPrefix: 'L',
+      })
+
+      // 创建全局缓存实例
+      const globalCache = createCache({
+        defaultTTL: 5 * 60 * 1000, // 5分钟
+        maxItems: 100,
+        defaultEngine: 'localStorage',
+      })
+      vueApp.config.globalProperties.$cache = globalCache
+      vueApp.provide('cache', globalCache)
+
+      // 安装加密插件
+      vueApp.use(CryptoPlugin, {
+        globalPropertyName: '$crypto',
+        enablePerformanceOptimization: true,
+        enableCaching: true,
+      })
+
+      // 安装Pinia状态管理
+      const pinia = createPinia()
+      vueApp.use(pinia)
+
+      // 安装Store Provider插件
+      vueApp.use(
+        createStoreProviderPlugin({
+          enableDevtools: defaultConfig.debug,
+          enablePersistence: true,
+        })
+      )
     }
 
     engine.mount('#app')

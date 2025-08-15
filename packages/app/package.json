@@ -91,13 +91,19 @@
     }
   },
   "dependencies": {
+    "@ldesign/cache": "workspace:*",
+    "@ldesign/color": "workspace:*",
+    "@ldesign/crypto": "workspace:*",
     "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",
     "@ldesign/http": "workspace:*",
     "@ldesign/i18n": "workspace:*",
     "@ldesign/router": "workspace:^",
+    "@ldesign/size": "workspace:*",
+    "@ldesign/store": "workspace:*",
     "@ldesign/template": "workspace:*",
     "alova": "^3.3.4",
+    "pinia": "^2.1.0",
     "vue": "^3.5.18"
   },
   "devDependencies": {

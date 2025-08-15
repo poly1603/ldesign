@@ -4,10 +4,18 @@ import type {
   StoreProviderContext,
   StoreProviderOptions,
   StoreRegistration,
-} from '@/types'
+} from '../types'
 import { createPinia } from 'pinia'
-import { defineComponent, h, inject, onUnmounted, provide, reactive, ref } from 'vue'
-import { STORE_PROVIDER_KEY } from '@/types/provider'
+import {
+  defineComponent,
+  h,
+  inject,
+  onUnmounted,
+  provide,
+  reactive,
+  ref,
+} from 'vue'
+import { STORE_PROVIDER_KEY } from '../types/provider'
 
 /**
  * Store Provider 组件
@@ -102,8 +110,7 @@ export const StoreProvider = defineComponent({
           }
 
           return store
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Failed to create store "${id}":`, error)
           return undefined
         }
@@ -212,8 +219,7 @@ export function createStoreProviderPlugin(options: StoreProviderOptions = {}) {
               instances.set(id, store)
             }
             return store
-          }
-          catch (error) {
+          } catch (error) {
             console.error(`Failed to create store "${id}":`, error)
             return undefined
           }

@@ -19,3 +19,42 @@ export interface UserInfo {
   loginTime: string
   device: string
 }
+
+// 导出集成包的类型定义
+export type {
+  CacheManager,
+  CacheOptions,
+  StorageEngine,
+  CacheItem,
+} from '@ldesign/cache'
+
+export type {
+  ThemeManager,
+  ThemeConfig,
+  ColorConfig,
+  ThemeType,
+  ColorMode,
+} from '@ldesign/color'
+
+export type {
+  CryptoManager,
+  EncryptionAlgorithm,
+  HashAlgorithm,
+  EncryptResult,
+  DecryptResult,
+  HashResult,
+} from '@ldesign/crypto'
+
+export type {
+  SizeManager,
+  SizeConfig,
+  SizeMode,
+  SizeManagerOptions,
+} from '@ldesign/size'
+
+export type {
+  StoreDefinition,
+  StoreFactory,
+  UseStoreOptions,
+  StoreHookReturn,
+} from '@ldesign/store'
