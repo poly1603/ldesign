@@ -5,17 +5,17 @@
  * 应用配置接口
  */
 interface AppConfig {
-    name: string;
-    version: string;
-    debug: boolean;
+  name: string
+  version: string
+  debug: boolean
 }
 /**
  * 用户信息接口
  */
 interface UserInfo {
-    username: string;
-    loginTime: string;
-    device: string;
+  username: string
+  loginTime: string
+  device: string
 }
 
-export type { AppConfig, UserInfo };
+export type { AppConfig, UserInfo }

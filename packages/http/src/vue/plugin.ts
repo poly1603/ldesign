@@ -25,7 +25,7 @@ export const HttpPlugin: Plugin = {
 
     // 注册全局属性
     const globalProperty = httpOptions.globalProperty || '$http'
-      ; (app.config.globalProperties as any)[globalProperty] = client
+    ;(app.config.globalProperties as any)[globalProperty] = client
 
     // 提供全局方法
     app.provide('httpClient', client)

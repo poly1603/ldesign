@@ -45,10 +45,13 @@ class BatchBuilder {
     try {
       const packagesDir = resolve(rootDir, 'packages')
       // 使用跨平台的方式获取目录列表
-      const packageDirs = execSync(process.platform === 'win32' ? 'dir /b /ad' : 'ls -d */', {
-        cwd: packagesDir,
-        encoding: 'utf-8'
-      })
+      const packageDirs = execSync(
+        process.platform === 'win32' ? 'dir /b /ad' : 'ls -d */',
+        {
+          cwd: packagesDir,
+          encoding: 'utf-8',
+        }
+      )
         .trim()
         .split(/\r?\n/)
         .filter(Boolean)
@@ -60,7 +63,9 @@ class BatchBuilder {
 
         if (existsSync(packageJsonPath)) {
           try {
-            const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+            const packageJson = JSON.parse(
+              readFileSync(packageJsonPath, 'utf-8')
+            )
             const hasScript = packageJson.scripts && packageJson.scripts.build
 
             const allDeps = {
@@ -69,7 +74,9 @@ class BatchBuilder {
               ...packageJson.peerDependencies,
             }
             const dependencies = Object.keys(allDeps || {})
-            const workspaceDependencies = dependencies.filter(dep => dep.startsWith('@ldesign/'))
+            const workspaceDependencies = dependencies.filter(dep =>
+              dep.startsWith('@ldesign/')
+            )
 
             this.packages.push({
               name: packageJson.name || dir,
@@ -173,7 +180,7 @@ class BatchBuilder {
       }
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const child = spawn('pnpm', ['run', 'build'], {
         cwd: pkg.path,
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -183,15 +190,15 @@ class BatchBuilder {
       let stdout = ''
       let stderr = ''
 
-      child.stdout?.on('data', (data) => {
+      child.stdout?.on('data', data => {
         stdout += data.toString()
       })
 
-      child.stderr?.on('data', (data) => {
+      child.stderr?.on('data', data => {
         stderr += data.toString()
       })
 
-      child.on('close', (code) => {
+      child.on('close', code => {
         const duration = Date.now() - startTime
         const success = code === 0
 
@@ -210,7 +217,7 @@ class BatchBuilder {
         })
       })
 
-      child.on('error', (error) => {
+      child.on('error', error => {
         const duration = Date.now() - startTime
         console.log(`❌ ${pkg.name} 构建失败 (${duration}ms)`)
         console.log(`错误: ${error.message}`)
@@ -228,8 +235,18 @@ class BatchBuilder {
   /**
    * 智能并行构建所有包
    */
-  async buildAll(mode: 'serial' | 'parallel' | 'smart' = 'smart'): Promise<void> {
-    console.log(`🚀 开始批量构建 (${mode === 'smart' ? '智能并行' : mode === 'parallel' ? '完全并行' : '串行'} 模式)`)
+  async buildAll(
+    mode: 'serial' | 'parallel' | 'smart' = 'smart'
+  ): Promise<void> {
+    console.log(
+      `🚀 开始批量构建 (${
+        mode === 'smart'
+          ? '智能并行'
+          : mode === 'parallel'
+          ? '完全并行'
+          : '串行'
+      } 模式)`
+    )
     console.log('='.repeat(60))
 
     switch (mode) {
@@ -295,7 +312,9 @@ class BatchBuilder {
       // 检查是否有失败的包
       const failed = results.filter(r => !r.success)
       if (failed.length > 0) {
-        console.log(`❌ 层级 ${level} 中有 ${failed.length} 个包构建失败，停止后续构建`)
+        console.log(
+          `❌ 层级 ${level} 中有 ${failed.length} 个包构建失败，停止后续构建`
+        )
         break
       }
     }

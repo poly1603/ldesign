@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 
 /**
  * Vite 配置 - 源码模式
- * 
+ *
  * 此配置直接引用 @ldesign/* 包的源码目录
  * 适用于：
  * - 开发调试
@@ -52,7 +52,10 @@ export default defineConfig({
       '@ldesign/router/vue': resolve(__dirname, '../router/src/vue/index.ts'),
 
       '@ldesign/template': resolve(__dirname, '../template/src/index.ts'),
-      '@ldesign/template/vue': resolve(__dirname, '../template/src/vue/index.ts'),
+      '@ldesign/template/vue': resolve(
+        __dirname,
+        '../template/src/vue/index.ts'
+      ),
 
       '@ldesign/i18n': resolve(__dirname, '../i18n/src/index.ts'),
       '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue/index.ts'),
@@ -101,11 +104,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: [
-      'vue',
-      'monaco-editor',
-      'prismjs',
-    ],
+    include: ['vue', 'monaco-editor', 'prismjs'],
     // 排除源码包，让它们保持源码状态
     exclude: [
       '@ldesign/engine',
@@ -114,7 +113,7 @@ export default defineConfig({
       '@ldesign/i18n',
       '@ldesign/http',
       '@ldesign/device',
-      'alova'
+      'alova',
     ],
   },
   // 添加环境信息到开发工具

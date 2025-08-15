@@ -477,7 +477,7 @@ export const LoginPanel = defineComponent({
               class={[
                 'login-panel__form-panel',
                 currentMode.value !== 'username' &&
-                'login-panel__form-panel--hidden',
+                  'login-panel__form-panel--hidden',
               ]}
             >
               {/* 用户名输入 */}
@@ -579,7 +579,7 @@ export const LoginPanel = defineComponent({
               class={[
                 'login-panel__form-panel',
                 currentMode.value !== 'phone' &&
-                'login-panel__form-panel--hidden',
+                  'login-panel__form-panel--hidden',
               ]}
             >
               {/* 手机号输入 */}
@@ -674,7 +674,7 @@ export const LoginPanel = defineComponent({
               class={[
                 'login-panel__button',
                 (submitting.value || props.loading) &&
-                'login-panel__button--loading',
+                  'login-panel__button--loading',
               ]}
               onClick={handleLogin}
               disabled={

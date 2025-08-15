@@ -6,7 +6,7 @@ import { resolve } from 'node:path'
 
 /**
  * 开发环境切换工具
- * 
+ *
  * 提供便捷的方式在不同开发模式之间切换
  */
 
@@ -119,11 +119,11 @@ class DevEnvironmentSwitcher {
       },
     })
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       console.error(`❌ 启动失败:`, error)
     })
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       if (code !== 0) {
         console.error(`❌ 进程退出，代码: ${code}`)
       }
@@ -155,11 +155,11 @@ class DevEnvironmentSwitcher {
       cwd: process.cwd(),
     })
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       console.error(`❌ 启动失败:`, error)
     })
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       if (code !== 0) {
         console.error(`❌ 进程退出，代码: ${code}`)
       }
@@ -206,8 +206,8 @@ class DevEnvironmentSwitcher {
     process.stdin.resume()
     process.stdin.setEncoding('utf8')
 
-    return new Promise((resolve) => {
-      process.stdin.on('data', async (key) => {
+    return new Promise(resolve => {
+      process.stdin.on('data', async key => {
         const input = key.toString().trim()
 
         if (input === '1') {
@@ -222,7 +222,8 @@ class DevEnvironmentSwitcher {
           console.log('\n🚀 启动对比模式...')
           await this.startComparison()
           resolve()
-        } else if (input === '\u0003') { // Ctrl+C
+        } else if (input === '\u0003') {
+          // Ctrl+C
           console.log('\n👋 已取消')
           process.exit(0)
         } else {

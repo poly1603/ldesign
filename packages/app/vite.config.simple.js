@@ -9,7 +9,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (_tag) => false,
+          isCustomElement: _tag => false,
         },
       },
     }),
@@ -54,11 +54,7 @@ export default defineConfig({
     sourcemap: true,
   },
   optimizeDeps: {
-    include: [
-      'vue',
-      'monaco-editor',
-      'prismjs',
-    ],
+    include: ['vue', 'monaco-editor', 'prismjs'],
     exclude: ['alova'],
   },
 })

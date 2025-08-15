@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 
 /**
  * Vite 配置 - 构建产物模式
- * 
+ *
  * 此配置使用已构建的 @ldesign/* 包（从 node_modules 或构建产物）
  * 适用于：
  * - 生产环境开发
@@ -74,11 +74,11 @@ export default defineConfig({
           vendor: ['vue'],
           ldesign: [
             '@ldesign/engine',
-            '@ldesign/router', 
+            '@ldesign/router',
             '@ldesign/template',
             '@ldesign/i18n',
             '@ldesign/http',
-            '@ldesign/device'
+            '@ldesign/device',
           ],
           monaco: ['monaco-editor'],
         },

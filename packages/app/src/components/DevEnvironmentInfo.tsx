@@ -27,9 +27,13 @@ export default defineComponent({
           return {
             ...defaultInfo,
             mode: __DEV_MODE__,
-            description: __DEV_MODE__ === 'source' ? '使用源码模式' : '使用构建产物模式',
+            description:
+              __DEV_MODE__ === 'source' ? '使用源码模式' : '使用构建产物模式',
             port: __DEV_MODE__ === 'source' ? 3002 : 3001,
-            packages: __DEV_MODE__ === 'source' ? 'source files' : 'node_modules (built)',
+            packages:
+              __DEV_MODE__ === 'source'
+                ? 'source files'
+                : 'node_modules (built)',
           }
         }
       } catch (error) {
@@ -53,41 +57,46 @@ export default defineComponent({
 
     return () => (
       <div class={['dev-env-info', `dev-env-info--${envInfo.value.mode}`]}>
-        <div class="dev-env-info__header">
-          <h3 class="dev-env-info__title">🔧 开发环境信息</h3>
-          <span class={['dev-env-info__badge', `dev-env-info__badge--${envInfo.value.mode}`]}>
+        <div class='dev-env-info__header'>
+          <h3 class='dev-env-info__title'>🔧 开发环境信息</h3>
+          <span
+            class={[
+              'dev-env-info__badge',
+              `dev-env-info__badge--${envInfo.value.mode}`,
+            ]}
+          >
             {envInfo.value.mode.toUpperCase()}
           </span>
         </div>
 
-        <div class="dev-env-info__content">
-          <div class="dev-env-info__item">
-            <span class="dev-env-info__label">模式:</span>
-            <span class="dev-env-info__value">{envInfo.value.description}</span>
+        <div class='dev-env-info__content'>
+          <div class='dev-env-info__item'>
+            <span class='dev-env-info__label'>模式:</span>
+            <span class='dev-env-info__value'>{envInfo.value.description}</span>
           </div>
 
-          <div class="dev-env-info__item">
-            <span class="dev-env-info__label">端口:</span>
-            <span class="dev-env-info__value">{envInfo.value.port}</span>
+          <div class='dev-env-info__item'>
+            <span class='dev-env-info__label'>端口:</span>
+            <span class='dev-env-info__value'>{envInfo.value.port}</span>
           </div>
 
-          <div class="dev-env-info__item">
-            <span class="dev-env-info__label">包来源:</span>
-            <span class="dev-env-info__value">{envInfo.value.packages}</span>
+          <div class='dev-env-info__item'>
+            <span class='dev-env-info__label'>包来源:</span>
+            <span class='dev-env-info__value'>{envInfo.value.packages}</span>
           </div>
         </div>
 
-        <div class="dev-env-info__actions">
+        <div class='dev-env-info__actions'>
           {envInfo.value.mode === 'built' ? (
             <button
-              class="dev-env-info__button dev-env-info__button--source"
+              class='dev-env-info__button dev-env-info__button--source'
               onClick={switchToSource}
             >
               🔧 切换到源码模式
             </button>
           ) : (
             <button
-              class="dev-env-info__button dev-env-info__button--built"
+              class='dev-env-info__button dev-env-info__button--built'
               onClick={switchToBuilt}
             >
               🏗️ 切换到构建模式
@@ -95,7 +104,7 @@ export default defineComponent({
           )}
         </div>
 
-        <div class="dev-env-info__tips">
+        <div class='dev-env-info__tips'>
           <p>💡 提示:</p>
           <ul>
             <li>构建模式: 使用已构建的包，更接近生产环境</li>

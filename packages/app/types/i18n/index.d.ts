@@ -1,5 +1,8 @@
-import { I18nOptions, I18nInstance } from '../packages/i18n/types/core/types.d.js';
-import { I18nEnginePluginOptions } from '../packages/i18n/types/engine/plugin.d.js';
+import {
+  I18nOptions,
+  I18nInstance,
+} from '../packages/i18n/types/core/types.d.js'
+import { I18nEnginePluginOptions } from '../packages/i18n/types/engine/plugin.d.js'
 
 /**
  * 应用 i18n 配置
@@ -10,10 +13,10 @@ import { I18nEnginePluginOptions } from '../packages/i18n/types/engine/plugin.d.
 /**
  * 创建带有应用语言包的 I18n 实例
  */
-declare function createAppI18n(options?: I18nOptions): Promise<I18nInstance>;
+declare function createAppI18n(options?: I18nOptions): Promise<I18nInstance>
 /**
  * 应用 i18n 配置选项
  */
-declare const appI18nConfig: I18nEnginePluginOptions;
+declare const appI18nConfig: I18nEnginePluginOptions
 
-export { appI18nConfig, createAppI18n };
+export { appI18nConfig, createAppI18n }

@@ -121,7 +121,7 @@ export function createHttpEnginePlugin(
           engine.http.setInstance(httpClient)
         } else {
           // 否则直接挂载到引擎上
-          ; (engine as any).httpClient = httpClient
+          ;(engine as any).httpClient = httpClient
         }
 
         // 记录插件安装成功
