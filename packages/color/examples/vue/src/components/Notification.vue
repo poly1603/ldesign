@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { NotificationItem } from '@/composables/useNotification'
-import { useNotification } from '@/composables/useNotification'
+import type { NotificationItem } from '@ldesign/color'
+import { useNotification } from '@ldesign/color'
 
 const { notifications, removeNotification } = useNotification()
 
@@ -22,9 +22,8 @@ function getIcon(type: NotificationItem['type']) {
         <div
           v-for="notification in notifications"
           :key="notification.id"
-          class="notification" :class="[
-            `notification-${notification.type}`,
-          ]"
+          class="notification"
+          :class="[`notification-${notification.type}`]"
         >
           <div class="notification-content">
             <span class="notification-icon">

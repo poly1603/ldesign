@@ -84,7 +84,7 @@ export class ThemeManager implements ThemeManagerInstance {
     this.scaleGenerator = new ColorScaleGenerator()
     this.cssInjector = new CSSInjectorImpl({
       prefix: this.options.cssPrefix,
-      styleId: 'ldesign-theme-variables',
+      styleId: 'ldesign-color-variables',
     })
     this.cssVariableGenerator = new CSSVariableGenerator(this.options.cssPrefix)
     this.idleProcessor = new IdleProcessorImpl({
@@ -324,7 +324,24 @@ export class ThemeManager implements ThemeManagerInstance {
     }
 
     const modeData = generatedTheme[mode]
-    this.cssInjector.injectVariables(modeData.cssVariables)
+    const themeConfig = this.getThemeConfig(name)
+
+    // 获取主色调
+    const primaryColor =
+      themeConfig?.light?.primary || themeConfig?.dark?.primary || '#1890ff'
+
+    // 传递主题信息到CSS注入器
+    const themeInfo = {
+      name: themeConfig?.displayName || name,
+      mode: mode,
+      primaryColor: primaryColor,
+    }
+
+    this.cssInjector.injectVariables(
+      modeData.cssVariables,
+      undefined,
+      themeInfo
+    )
   }
 
   /**
@@ -560,11 +577,21 @@ export class ThemeManager implements ThemeManagerInstance {
       'dark'
     )
 
-    // 生成 CSS 变量
-    const lightCSSVariables =
+    // 生成完整的 CSS 变量（色阶变量 + 语义化变量）
+    const lightScaleVariables =
+      this.cssVariableGenerator.generateFromScales(lightScales)
+    const lightSemanticVariables =
       this.cssVariableGenerator.generateSemanticVariables(lightScales)
-    const darkCSSVariables =
+    const lightCSSVariables = {
+      ...lightScaleVariables,
+      ...lightSemanticVariables,
+    }
+
+    const darkScaleVariables =
+      this.cssVariableGenerator.generateFromScales(darkScales)
+    const darkSemanticVariables =
       this.cssVariableGenerator.generateSemanticVariables(darkScales)
+    const darkCSSVariables = { ...darkScaleVariables, ...darkSemanticVariables }
 
     return {
       name: config.name,

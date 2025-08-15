@@ -20,12 +20,22 @@ export type ThemeType = 'system' | 'light' | 'dark' | 'custom'
 /**
  * 颜色类别
  */
-export type ColorCategory = 'primary' | 'success' | 'warning' | 'danger' | 'gray'
+export type ColorCategory =
+  | 'primary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'gray'
 
 /**
  * 中性色类别
  */
-export type NeutralColorCategory = 'border' | 'background' | 'text' | 'white' | 'shadow'
+export type NeutralColorCategory =
+  | 'border'
+  | 'background'
+  | 'text'
+  | 'white'
+  | 'shadow'
 
 /**
  * 颜色配置接口
@@ -268,16 +278,25 @@ export type ThemeEventListener<T = unknown> = (data: T) => void
  */
 export interface EventEmitter {
   /** 添加事件监听器 */
-  on: <T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>) => void
+  on: <T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>
+  ) => void
 
   /** 移除事件监听器 */
-  off: <T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>) => void
+  off: <T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>
+  ) => void
 
   /** 触发事件 */
   emit: <T = unknown>(event: ThemeEventType, data?: T) => void
 
   /** 添加一次性事件监听器 */
-  once: <T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>) => void
+  once: <T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>
+  ) => void
 
   /** 移除所有监听器 */
   removeAllListeners: (event?: ThemeEventType) => void
@@ -315,7 +334,9 @@ export interface ColorGenerator {
   getCurrentMode: () => ColorMode
 
   /** 根据当前模式生成颜色 */
-  generateColorsForCurrentMode: (primary: ColorValue) => Omit<ColorConfig, 'primary'>
+  generateColorsForCurrentMode: (
+    primary: ColorValue
+  ) => Omit<ColorConfig, 'primary'>
 }
 
 /**
@@ -351,7 +372,11 @@ export interface IdleProcessor {
  */
 export interface CSSInjector {
   /** 注入 CSS 变量 */
-  injectVariables: (variables: Record<string, ColorValue>, id?: string) => void
+  injectVariables: (
+    variables: Record<string, ColorValue>,
+    id?: string,
+    themeInfo?: { name?: string; mode?: string; primaryColor?: string }
+  ) => void
 
   /** 移除 CSS 变量 */
   removeVariables: (id?: string) => void

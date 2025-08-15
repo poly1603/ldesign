@@ -25,7 +25,7 @@ describe('性能测试', () => {
     const start = performance.now()
 
     for (let i = 0; i < iterations; i++) {
-      await themeManager.setTheme('blue')
+      await themeManager.setTheme('default')
       await themeManager.setTheme('green')
       await themeManager.setMode('dark')
       await themeManager.setMode('light')
@@ -95,7 +95,7 @@ describe('性能测试', () => {
       // 执行一些操作
       await themeManager.init()
       for (let i = 0; i < 50; i++) {
-        await themeManager.setTheme('blue')
+        await themeManager.setTheme('default')
         await themeManager.setTheme('green')
         colorGenerator.generateColors('#ff0000')
       }
@@ -118,7 +118,7 @@ describe('性能测试', () => {
     // 并发执行多个操作
     const promises = []
     for (let i = 0; i < 20; i++) {
-      promises.push(themeManager.setTheme('blue'))
+      promises.push(themeManager.setTheme('default'))
       promises.push(themeManager.setMode('dark'))
       promises.push(Promise.resolve(colorGenerator.generateColors('#ff0000')))
     }

@@ -328,7 +328,7 @@ export class ColorScaleGenerator {
    * 生成灰色色阶 - 直接使用Arco Design的预设灰色
    */
   private generateGrayScale(
-    baseColor: string,
+    _baseColor: string,
     count: number,
     mode: ColorMode
   ): string[] {
