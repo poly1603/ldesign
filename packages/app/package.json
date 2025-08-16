@@ -52,7 +52,7 @@
     "dev:built": "vite --config vite.config.built.ts --force",
     "dev:source": "cross-env VITE_DEV_MODE=source vite --config vite.config.source.ts --force",
     "dev:source-simple": "vite index.simple.html --config vite.config.simple-source.ts --force --port 3003",
-    "dev:compare": "concurrently \"pnpm run dev:built\" \"pnpm run dev:source\"",
+    "dev:compare": "concurrently \"pnpm run dev:built\" \"pnpm run dev:source-simple\"",
     "dev:no-check": "vite --force --port 3001",
     "dev:built:no-check": "vite --config vite.config.built.ts --force --port 3001",
     "dev:source:no-check": "cross-env VITE_DEV_MODE=source vite --config vite.config.source.ts --force --port 3002",

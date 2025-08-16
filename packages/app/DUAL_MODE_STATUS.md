@@ -21,24 +21,31 @@ LDesign 项目现在支持两种开发模式：
 
 ### 3. **端口冲突处理**
 - **问题**: 两种模式可能使用相同端口
-- **解决方案**: 
-  - Built 模式: 端口 3001
+- **解决方案**:
+  - Built 模式: 端口 3004（自动分配）
   - Source 模式: 端口 3002
   - 简化 Source 模式: 端口 3003
 - **状态**: ✅ 已解决
+
+### 4. **双模式对比功能**
+- **问题**: 需要同时启动两种模式进行对比
+- **解决方案**: 创建 `dev:compare` 命令，使用 concurrently 同时启动
+- **状态**: ✅ 已解决，正常运行
 
 ## 🚀 当前可用的启动命令
 
 ```bash
 # Built 模式 (使用构建产物)
-pnpm dev:built                    # 端口 3001
+pnpm dev:built                    # 端口自动分配（通常 3004）
 
 # Source 模式 (使用源码)
 pnpm dev:source                   # 端口 3002 (有类型错误)
 pnpm dev:source-simple           # 端口 3003 (简化版，可正常启动)
 
-# 比较模式
-pnpm dev:compare                 # 同时启动两种模式
+# 双模式对比 ⭐ 推荐
+pnpm dev:compare                 # 同时启动 built 和 source-simple 模式
+                                 # Built: http://localhost:3004/
+                                 # Source: http://localhost:3003/
 
 # 测试脚本
 pnpm test:modes                  # 自动测试两种模式启动
@@ -48,15 +55,23 @@ pnpm test:modes                  # 自动测试两种模式启动
 
 ### Built 模式
 - ✅ 启动成功
-- ✅ 端口: 3001
+- ✅ 端口: 3004（自动分配）
 - ✅ 使用构建产物
 - ✅ 性能良好
+- ✅ 访问地址: http://localhost:3004/
 
 ### Source 模式 (简化版)
-- ✅ 启动成功  
+- ✅ 启动成功
 - ✅ 端口: 3003
 - ✅ 使用源码
 - ✅ 开发友好
+- ✅ 访问地址: http://localhost:3003/
+
+### 双模式对比 (dev:compare)
+- ✅ 同时启动成功
+- ✅ Built 模式: http://localhost:3004/
+- ✅ Source 模式: http://localhost:3003/
+- ✅ 可以实时对比两种模式的功能差异
 
 ### Source 模式 (完整版)
 - ⚠️ 有 TypeScript 类型错误
