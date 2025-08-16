@@ -8,6 +8,8 @@ import { defineConfig } from 'vite'
  * 跳过类型检查，专注于功能验证
  */
 export default defineConfig({
+  root: __dirname,
+  publicDir: 'public',
   plugins: [
     vue({
       template: {
@@ -81,7 +83,7 @@ export default defineConfig({
   logLevel: 'info',
   esbuild: {
     // 完全跳过类型检查
-    logOverride: { 
+    logOverride: {
       'this-is-undefined-in-esm': 'silent',
       'direct-eval': 'silent'
     },
