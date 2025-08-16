@@ -1,16 +1,11 @@
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
-  packageDir: __dirname,
-  vue: true,
   external: ['vue', 'pinia'],
   globalName: 'LDesignStore',
   globals: {
     vue: 'Vue',
     pinia: 'Pinia',
   },
+  vue: true,
 })

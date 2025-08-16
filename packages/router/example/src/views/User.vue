@@ -1,12 +1,3 @@
-<template>
-  <div data-testid="page-content">
-    <h1>User Profile</h1>
-    <p data-testid="user-id">User ID: {{ id }}</p>
-    <p>This is the user profile page</p>
-    <router-link to="/">Back to Home</router-link>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   id: string
@@ -14,6 +5,19 @@ interface Props {
 
 defineProps<Props>()
 </script>
+
+<template>
+  <div data-testid="page-content">
+    <h1>User Profile</h1>
+    <p data-testid="user-id">
+      User ID: {{ id }}
+    </p>
+    <p>This is the user profile page</p>
+    <router-link to="/">
+      Back to Home
+    </router-link>
+  </div>
+</template>
 
 <style scoped>
 h1 {

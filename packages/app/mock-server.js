@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader(
     'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS'
+    'GET, POST, PUT, DELETE, OPTIONS',
   )
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
@@ -41,21 +41,24 @@ const server = http.createServer((req, res) => {
       // 获取用户列表
       res.writeHead(200)
       res.end(JSON.stringify(users))
-    } else if (path.startsWith('/api/users/') && method === 'GET') {
+    }
+    else if (path.startsWith('/api/users/') && method === 'GET') {
       // 获取单个用户
       const id = path.split('/')[3]
       const user = users.find(u => u.id === id)
       if (user) {
         res.writeHead(200)
         res.end(JSON.stringify(user))
-      } else {
+      }
+      else {
         res.writeHead(404)
         res.end(JSON.stringify({ error: 'User not found' }))
       }
-    } else if (path === '/api/users' && method === 'POST') {
+    }
+    else if (path === '/api/users' && method === 'POST') {
       // 创建用户
       let body = ''
-      req.on('data', chunk => {
+      req.on('data', (chunk) => {
         body += chunk.toString()
       })
       req.on('end', () => {
@@ -69,16 +72,18 @@ const server = http.createServer((req, res) => {
           users.push(newUser)
           res.writeHead(201)
           res.end(JSON.stringify(newUser))
-        } catch (error) {
+        }
+        catch (error) {
           res.writeHead(400)
           res.end(JSON.stringify({ error: 'Invalid JSON' }))
         }
       })
-    } else if (path.startsWith('/api/users/') && method === 'PUT') {
+    }
+    else if (path.startsWith('/api/users/') && method === 'PUT') {
       // 更新用户
       const id = path.split('/')[3]
       let body = ''
-      req.on('data', chunk => {
+      req.on('data', (chunk) => {
         body += chunk.toString()
       })
       req.on('end', () => {
@@ -89,16 +94,19 @@ const server = http.createServer((req, res) => {
             users[userIndex] = { ...users[userIndex], ...userData }
             res.writeHead(200)
             res.end(JSON.stringify(users[userIndex]))
-          } else {
+          }
+          else {
             res.writeHead(404)
             res.end(JSON.stringify({ error: 'User not found' }))
           }
-        } catch (error) {
+        }
+        catch (error) {
           res.writeHead(400)
           res.end(JSON.stringify({ error: 'Invalid JSON' }))
         }
       })
-    } else if (path.startsWith('/api/users/') && method === 'DELETE') {
+    }
+    else if (path.startsWith('/api/users/') && method === 'DELETE') {
       // 删除用户
       const id = path.split('/')[3]
       const userIndex = users.findIndex(u => u.id === id)
@@ -106,16 +114,19 @@ const server = http.createServer((req, res) => {
         const deletedUser = users.splice(userIndex, 1)[0]
         res.writeHead(200)
         res.end(JSON.stringify(deletedUser))
-      } else {
+      }
+      else {
         res.writeHead(404)
         res.end(JSON.stringify({ error: 'User not found' }))
       }
-    } else {
+    }
+    else {
       // 404
       res.writeHead(404)
       res.end(JSON.stringify({ error: 'Not found' }))
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Server error:', error)
     res.writeHead(500)
     res.end(JSON.stringify({ error: 'Internal server error' }))

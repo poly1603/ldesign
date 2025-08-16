@@ -1,9 +1,10 @@
-import { createVueConfig } from '../../tools/configs/build/rollup.config.template.js'
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
-export default createVueConfig(import.meta.url, {
+export default createRollupConfig({
+  external: ['vue'],
   globalName: 'LDesignTemplate',
-  formats: ['es', 'cjs', 'umd'], // 包含UMD格式
   globals: {
     vue: 'Vue',
   },
+  vue: true,
 })

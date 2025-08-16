@@ -3,22 +3,21 @@
  */
 
 import {
-  createSizeManager,
-  globalSizeManager,
-  isValidSizeMode,
+  calculateSizeScale,
+  compareSizeModes,
+  formatCSSValue,
   getNextSizeMode,
   getPreviousSizeMode,
-  compareSizeModes,
   getSizeModeDisplayName,
-  parseSizeMode,
-  calculateSizeScale,
-  formatCSSValue,
+  globalSizeManager,
+  isValidSizeMode,
   parseCSSValue,
+  parseSizeMode,
   type SizeMode,
 } from '../../../src'
 
 // 全局状态
-let currentManager = globalSizeManager
+const currentManager = globalSizeManager
 let currentMode: SizeMode = 'medium'
 
 // DOM元素引用
@@ -64,7 +63,7 @@ function initApp() {
  */
 function bindEventListeners() {
   // 尺寸切换按钮
-  elements.sizeBtns.forEach(btn => {
+  elements.sizeBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
       const mode = btn.dataset.mode as SizeMode
       if (isValidSizeMode(mode)) {
@@ -135,7 +134,7 @@ function updateUI() {
   }
 
   // 更新按钮状态
-  elements.sizeBtns.forEach(btn => {
+  elements.sizeBtns.forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.mode === currentMode)
   })
 
@@ -251,8 +250,10 @@ function demoCompareMode() {
   const results = comparisons.map(([mode1, mode2]) => {
     const result = compareSizeModes(mode1 as SizeMode, mode2 as SizeMode)
     let comparison = '='
-    if (result < 0) comparison = '<'
-    if (result > 0) comparison = '>'
+    if (result < 0)
+      comparison = '<'
+    if (result > 0)
+      comparison = '>'
 
     return `${mode1} ${comparison} ${mode2}`
   })
@@ -307,7 +308,7 @@ function demoFormatValue() {
  */
 function demoParseValue() {
   const testValues = ['16px', '1.5rem', '100%', '0', '-10px']
-  const results = testValues.map(value => {
+  const results = testValues.map((value) => {
     const parsed = parseCSSValue(value)
     return `"${value}" → {number: ${parsed.number}, unit: "${parsed.unit}"}`
   })

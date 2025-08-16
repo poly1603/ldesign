@@ -1,1 +1,15 @@
-export { default } from '../../tools/configs/eslint.base.config.js'
+import antfu from '@antfu/eslint-config'
+
+export default antfu({
+  typescript: true,
+  vue: true,
+  ignores: [
+    'dist',
+    'es',
+    'lib',
+    'types',
+    'node_modules',
+    'coverage',
+    '*.d.ts',
+  ],
+})

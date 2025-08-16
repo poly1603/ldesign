@@ -117,7 +117,8 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
         }
 
         console.log(`✅ Template 插件安装成功: ${name} v${version}`)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`❌ Template 插件安装失败: ${name}`, error)
         if (engine.logger) {
           engine.logger.error(`Failed to install template plugin ${name}`, error)
@@ -166,7 +167,8 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
         }
 
         console.log(`✅ Template 插件卸载成功: ${name}`)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`❌ Template 插件卸载失败: ${name}`, error)
         if (engine.logger) {
           engine.logger.error(`Failed to uninstall template plugin ${name}`, error)

@@ -17,7 +17,7 @@ import zhCN from './zh-CN'
  * 创建带有应用语言包的 I18n 实例
  */
 export async function createAppI18n(
-  options?: I18nOptions
+  options?: I18nOptions,
 ): Promise<I18nInstance> {
   console.log('🔧 创建自定义 i18n 实例...')
   console.log('📦 加载应用语言包:', { zhCN, en })
@@ -36,7 +36,7 @@ export async function createAppI18n(
       },
       translations: zhCN,
     },
-    en: {
+    'en': {
       info: {
         name: 'English',
         nativeName: 'English',

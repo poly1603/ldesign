@@ -2,14 +2,15 @@
  * @ldesign/theme - ThemeProvider 组件单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mount, VueWrapper } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
+import type { ThemeConfig } from '@/core/types'
+import { cleanup, createMockThemeConfig } from '@tests/setup'
+import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { ThemeProvider } from '@/adapt/vue/components/ThemeProvider'
-import { createMockThemeConfig, cleanup } from '@tests/setup'
-import type { ThemeConfig } from '@/core/types'
 
-describe('ThemeProvider', () => {
+describe('themeProvider', () => {
   let wrapper: VueWrapper
   let mockThemes: ThemeConfig[]
 

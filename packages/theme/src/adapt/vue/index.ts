@@ -4,58 +4,58 @@
  * 统一导出所有 Vue 集成相关的功能
  */
 
-// 插件
-export {
-  VueThemePlugin,
-  createThemeApp,
-  installTheme,
-  default as ThemePlugin,
-} from './plugin'
-
 // 组件
-export { ThemeProvider, ThemeButton, ThemeSelector } from './components'
+export { ThemeButton, ThemeProvider, ThemeSelector } from './components'
 
 // 组合式函数
 export {
-  useTheme,
   useCurrentTheme,
+  useTheme,
+  useThemePreload,
   useThemeState,
   useThemeToggle,
-  useThemePreload,
 } from './composables/useTheme'
 
 export {
-  useThemeDecorations,
-  useDecorationFilter,
-  useDecorationBatch,
-} from './composables/useThemeDecorations'
-
-export {
-  useThemeAnimations,
   useAnimationControl,
-  useAnimationSequence,
   useAnimationPerformance,
+  useAnimationSequence,
+  useThemeAnimations,
 } from './composables/useThemeAnimations'
 
+export {
+  useDecorationBatch,
+  useDecorationFilter,
+  useThemeDecorations,
+} from './composables/useThemeDecorations'
+
 // 指令
-export { vThemeDecoration, vThemeAnimation } from './directives'
+export { vThemeAnimation, vThemeDecoration } from './directives'
+
+export {
+  clearAllAnimations,
+  getElementAnimation,
+  hasElementAnimation,
+  pauseElementAnimation,
+  resumeElementAnimation,
+  stopElementAnimation,
+  triggerElementAnimation,
+} from './directives/theme-animation'
 
 // 指令工具函数
 export {
+  clearAllDecorations,
   getElementDecoration,
   hasElementDecoration,
-  clearAllDecorations,
 } from './directives/theme-decoration'
 
+// 插件
 export {
-  getElementAnimation,
-  hasElementAnimation,
-  triggerElementAnimation,
-  stopElementAnimation,
-  pauseElementAnimation,
-  resumeElementAnimation,
-  clearAllAnimations,
-} from './directives/theme-animation'
+  createThemeApp,
+  installTheme,
+  default as ThemePlugin,
+  VueThemePlugin,
+} from './plugin'
 
 // 类型
 export type * from './types'

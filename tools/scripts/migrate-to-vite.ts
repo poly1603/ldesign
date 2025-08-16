@@ -5,9 +5,9 @@
  * 自动将所有包从Rollup构建迁移到Vite构建
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
-import { resolve, join } from 'node:path'
-import { readdirSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+
+import { join, resolve } from 'node:path'
 
 interface PackageInfo {
   name: string
@@ -28,11 +28,11 @@ function getAllPackages(): PackageInfo[] {
     return packages
   }
 
-  const dirs = readdirSync(packagesDir).filter(name => {
+  const dirs = readdirSync(packagesDir).filter((name) => {
     const packagePath = join(packagesDir, name)
     return (
-      statSync(packagePath).isDirectory() &&
-      existsSync(join(packagePath, 'package.json'))
+      statSync(packagePath).isDirectory()
+      && existsSync(join(packagePath, 'package.json'))
     )
   })
 
@@ -45,11 +45,11 @@ function getAllPackages(): PackageInfo[] {
       const hasVue = !!(
         packageJson.peerDependencies?.vue || packageJson.dependencies?.vue
       )
-      const hasJsx =
-        existsSync(join(packagePath, 'src')) &&
-        readdirSync(join(packagePath, 'src'), { recursive: true }).some(
-          (file: any) => typeof file === 'string' && file.endsWith('.tsx')
-        )
+      const hasJsx
+        = existsSync(join(packagePath, 'src'))
+          && readdirSync(join(packagePath, 'src'), { recursive: true }).some(
+            (file: any) => typeof file === 'string' && file.endsWith('.tsx'),
+          )
 
       packages.push({
         name: dir,
@@ -57,7 +57,8 @@ function getAllPackages(): PackageInfo[] {
         hasVue,
         hasJsx,
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`⚠️  无法读取包 ${dir} 的package.json:`, error)
     }
   }
@@ -78,7 +79,8 @@ export default createVuePackageConfig('${name}', {
   jsx: ${hasJsx},
 })
 `
-  } else {
+  }
+  else {
     return `import { createUtilsPackageConfig } from '../../tools/configs/build/vite.config.template'
 
 export default createUtilsPackageConfig('${name}')
@@ -110,20 +112,20 @@ function updatePackageScripts(packagePath: string) {
 
       // 添加新的脚本
       packageJson.scripts['build:analyze'] = 'vite build --analyze'
-      packageJson.scripts['preview'] = 'vite preview'
+      packageJson.scripts.preview = 'vite preview'
     }
 
     // 更新依赖
     if (packageJson.devDependencies) {
       // 移除rollup相关依赖
-      delete packageJson.devDependencies['rollup']
+      delete packageJson.devDependencies.rollup
       delete packageJson.devDependencies['rollup-plugin-dts']
       delete packageJson.devDependencies['@rollup/plugin-commonjs']
       delete packageJson.devDependencies['@rollup/plugin-node-resolve']
       delete packageJson.devDependencies['@rollup/plugin-typescript']
 
       // 添加vite相关依赖
-      packageJson.devDependencies['vite'] = '^6.0.0'
+      packageJson.devDependencies.vite = '^6.0.0'
       packageJson.devDependencies['vite-plugin-dts'] = '^4.0.0'
 
       if (packageJson.peerDependencies?.vue) {
@@ -132,9 +134,10 @@ function updatePackageScripts(packagePath: string) {
       }
     }
 
-    writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n')
+    writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
     console.log(`✅ 更新 ${packageJson.name} 的package.json`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`❌ 更新package.json失败:`, error)
   }
 }
@@ -184,7 +187,8 @@ function validateMigration(packages: PackageInfo[]) {
     // 检查vite配置是否存在
     if (existsSync(viteConfigPath)) {
       console.log(`  ✅ vite.config.ts 存在`)
-    } else {
+    }
+    else {
       console.log(`  ❌ vite.config.ts 不存在`)
       allValid = false
     }
@@ -192,7 +196,8 @@ function validateMigration(packages: PackageInfo[]) {
     // 检查rollup配置是否已删除
     if (!existsSync(rollupConfigPath)) {
       console.log(`  ✅ rollup.config.js 已删除`)
-    } else {
+    }
+    else {
       console.log(`  ⚠️  rollup.config.js 仍然存在`)
     }
 
@@ -203,11 +208,13 @@ function validateMigration(packages: PackageInfo[]) {
 
       if (packageJson.scripts?.build === 'vite build') {
         console.log(`  ✅ 构建脚本已更新`)
-      } else {
+      }
+      else {
         console.log(`  ❌ 构建脚本未更新`)
         allValid = false
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.log(`  ❌ 无法验证package.json`)
       allValid = false
     }
@@ -233,11 +240,11 @@ async function main() {
   }
 
   console.log(`📦 找到 ${packages.length} 个包:\n`)
-  packages.forEach(pkg => {
+  packages.forEach((pkg) => {
     console.log(
       `  - ${pkg.name} (Vue: ${pkg.hasVue ? '✅' : '❌'}, JSX: ${
         pkg.hasJsx ? '✅' : '❌'
-      })`
+      })`,
     )
   })
   console.log()
@@ -257,7 +264,8 @@ async function main() {
     console.log('  2. 运行 pnpm build 测试构建')
     console.log('  3. 运行 pnpm dev 测试开发模式')
     console.log('  4. 运行 pnpm test:run 确保测试通过')
-  } else {
+  }
+  else {
     console.log('❌ 迁移过程中出现问题，请检查上述错误')
     process.exit(1)
   }

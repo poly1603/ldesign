@@ -8,7 +8,7 @@ import type { NestedObject } from '../core/types'
  */
 export function getNestedValue(
   obj: NestedObject,
-  path: string
+  path: string,
 ): string | undefined {
   if (!obj || !path) {
     return undefined
@@ -33,12 +33,12 @@ export function getNestedValue(
     }
 
     current = (current as Record<string, unknown>)[key] as
-      | string
-      | number
-      | boolean
-      | Record<string, unknown>
-      | null
-      | undefined
+    | string
+    | number
+    | boolean
+    | Record<string, unknown>
+    | null
+    | undefined
   }
 
   return typeof current === 'string' ? current : undefined
@@ -53,7 +53,7 @@ export function getNestedValue(
 export function setNestedValue(
   obj: NestedObject,
   path: string,
-  value: string
+  value: string,
 ): void {
   if (!obj || !path) {
     return
@@ -66,9 +66,9 @@ export function setNestedValue(
     const key = keys[i]
 
     if (
-      !(key in current) ||
-      typeof current[key] !== 'object' ||
-      current[key] === null
+      !(key in current)
+      || typeof current[key] !== 'object'
+      || current[key] === null
     ) {
       current[key] = {}
     }
@@ -104,11 +104,12 @@ export function getAllPaths(obj: NestedObject, prefix = ''): string[] {
 
     if (typeof value === 'string') {
       paths.push(currentPath)
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       if (
-        typeof value === 'object' &&
-        value !== null &&
-        !Array.isArray(value)
+        typeof value === 'object'
+        && value !== null
+        && !Array.isArray(value)
       ) {
         paths.push(...getAllPaths(value as NestedObject, currentPath))
       }
@@ -126,35 +127,39 @@ export function getAllPaths(obj: NestedObject, prefix = ''): string[] {
  */
 export function deepMerge(
   target: NestedObject,
-  source: NestedObject
+  source: NestedObject,
 ): NestedObject {
   const result = { ...target }
 
   for (const [key, value] of Object.entries(source)) {
     if (typeof value === 'string') {
       result[key] = value
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       if (
-        typeof result[key] === 'object' &&
-        result[key] !== null &&
-        typeof result[key] !== 'string'
+        typeof result[key] === 'object'
+        && result[key] !== null
+        && typeof result[key] !== 'string'
       ) {
         if (
-          typeof value === 'object' &&
-          value !== null &&
-          !Array.isArray(value)
+          typeof value === 'object'
+          && value !== null
+          && !Array.isArray(value)
         ) {
           result[key] = deepMerge(
             result[key] as NestedObject,
-            value as NestedObject
+            value as NestedObject,
           )
-        } else {
+        }
+        else {
           result[key] = value
         }
-      } else {
+      }
+      else {
         result[key] = { ...value }
       }
-    } else {
+    }
+    else {
       result[key] = value
     }
   }
@@ -170,7 +175,7 @@ export function deepMerge(
  */
 export function flattenObject(
   obj: NestedObject,
-  prefix = ''
+  prefix = '',
 ): Record<string, string> {
   const flattened: Record<string, string> = {}
 
@@ -179,11 +184,12 @@ export function flattenObject(
 
     if (typeof value === 'string') {
       flattened[currentPath] = value
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       if (!Array.isArray(value)) {
         Object.assign(
           flattened,
-          flattenObject(value as NestedObject, currentPath)
+          flattenObject(value as NestedObject, currentPath),
         )
       }
     }
@@ -198,7 +204,7 @@ export function flattenObject(
  * @returns 嵌套对象
  */
 export function unflattenObject(
-  flattened: Record<string, string>
+  flattened: Record<string, string>,
 ): NestedObject {
   const result: NestedObject = {}
 

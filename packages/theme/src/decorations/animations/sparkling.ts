@@ -39,7 +39,8 @@ export class SparklingAnimation extends BaseAnimation {
   protected createAnimation(): void {
     if (this.config.type === 'css') {
       this.createCSSAnimation()
-    } else {
+    }
+    else {
       this.createJSAnimation()
     }
   }
@@ -91,12 +92,12 @@ export class SparklingAnimation extends BaseAnimation {
    * 初始化闪烁元素
    */
   private initializeSparklers(): void {
-    this.sparklers = this.elements.map(element => {
+    this.sparklers = this.elements.map((element) => {
       const sparklePoints = this.createSparklePoints(element)
 
       return {
         element,
-        baseOpacity: parseFloat(getComputedStyle(element).opacity) || 1,
+        baseOpacity: Number.parseFloat(getComputedStyle(element).opacity) || 1,
         currentOpacity: 1,
         phase: Math.random() * Math.PI * 2,
         frequency: 0.002 + Math.random() * 0.003,
@@ -167,16 +168,16 @@ export class SparklingAnimation extends BaseAnimation {
    * 更新闪烁元素状态
    */
   private updateSparklers(currentTime: number): void {
-    this.sparklers.forEach(sparkler => {
+    this.sparklers.forEach((sparkler) => {
       // 更新主要透明度
       const opacityWave = Math.sin(
-        currentTime * sparkler.frequency + sparkler.phase
+        currentTime * sparkler.frequency + sparkler.phase,
       )
-      sparkler.currentOpacity =
-        sparkler.baseOpacity * (0.5 + 0.5 * opacityWave * sparkler.intensity)
+      sparkler.currentOpacity
+        = sparkler.baseOpacity * (0.5 + 0.5 * opacityWave * sparkler.intensity)
 
       // 更新闪烁点
-      sparkler.sparklePoints.forEach(point => {
+      sparkler.sparklePoints.forEach((point) => {
         const pointWave = Math.sin(currentTime * 0.005 + point.phase)
         point.opacity = Math.max(0, pointWave * 0.8)
       })
@@ -187,7 +188,7 @@ export class SparklingAnimation extends BaseAnimation {
    * 渲染闪烁元素
    */
   private renderSparklers(): void {
-    this.sparklers.forEach(sparkler => {
+    this.sparklers.forEach((sparkler) => {
       const { element, currentOpacity, glowColor, sparklePoints } = sparkler
 
       // 设置主元素透明度和发光效果
@@ -210,7 +211,7 @@ export class SparklingAnimation extends BaseAnimation {
     oldPoints.forEach(point => point.remove())
 
     // 添加新的闪烁点
-    points.forEach(point => {
+    points.forEach((point) => {
       if (point.opacity > 0.1) {
         const sparkleElement = document.createElement('div')
         sparkleElement.className = 'sparkle-point'
@@ -244,16 +245,16 @@ export class SparklingAnimation extends BaseAnimation {
     }
 
     // 清理闪烁点
-    this.elements.forEach(element => {
+    this.elements.forEach((element) => {
       const sparklePoints = element.querySelectorAll('.sparkle-point')
       sparklePoints.forEach(point => point.remove())
     })
 
     // 清理CSS动画
     const styles = document.querySelectorAll(
-      `style:contains("${this.config.name}")`
+      `style:contains("${this.config.name}")`,
     )
-    styles.forEach(style => {
+    styles.forEach((style) => {
       if (style.textContent?.includes(this.config.name)) {
         style.remove()
       }
@@ -269,7 +270,7 @@ export class SparklingAnimation extends BaseAnimation {
       intensity?: 'subtle' | 'moderate' | 'intense'
       color?: string
       frequency?: number
-    } = {}
+    } = {},
   ): SparklingAnimation {
     const {
       intensity = 'moderate',
@@ -335,7 +336,7 @@ export class SparklingAnimation extends BaseAnimation {
       color?: string
       flickerRate?: number
       glowIntensity?: number
-    } = {}
+    } = {},
   ): SparklingAnimation {
     const { color = '#00FFFF', flickerRate = 0.1, glowIntensity = 15 } = options
 
@@ -398,7 +399,7 @@ export class SparklingAnimation extends BaseAnimation {
       colors?: string[]
       particleCount?: number
       duration?: number
-    } = {}
+    } = {},
   ): SparklingAnimation {
     const {
       colors = ['#FFD700', '#FF69B4', '#00FFFF', '#98FB98'],
@@ -476,7 +477,7 @@ export class SparklingAnimation extends BaseAnimation {
       minOpacity?: number
       maxOpacity?: number
       duration?: number
-    } = {}
+    } = {},
   ): SparklingAnimation {
     const {
       color = '#FFFFFF',
@@ -527,7 +528,7 @@ export class SparklingAnimation extends BaseAnimation {
  */
 export function createSparklingAnimation(
   config: AnimationConfig,
-  elements: HTMLElement[]
+  elements: HTMLElement[],
 ): SparklingAnimation {
   const animation = new SparklingAnimation(config)
   animation.setElements(elements)

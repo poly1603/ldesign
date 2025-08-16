@@ -1,3 +1,5 @@
+// Vue Types
+export type * from '../types/vue'
 // HTTP Composable (独立版本，不需要依赖注入)
 export { useHttp } from './composables/useHttp'
 // Vue Plugin
@@ -12,6 +14,7 @@ export {
   usePagination,
   useResource,
 } from './useHttp'
+
 export {
   useDelete,
   useMutation,
@@ -24,6 +27,3 @@ export { useQuery } from './useQuery'
 
 // Vue Composition API Hooks
 export { useAsyncRequest, useRequest } from './useRequest'
-
-// Vue Types
-export type * from '../types/vue'

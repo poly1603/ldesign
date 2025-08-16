@@ -41,9 +41,12 @@ const routeId = computed(() => props.id || route.value?.params?.id || '')
 
 const paramType = computed(() => {
   const id = routeId.value
-  if (!id) return '无'
-  if (/^\d+$/.test(id)) return '数字'
-  if (/^[a-z][\w-]*$/i.test(id)) return '标识符'
+  if (!id)
+    return '无'
+  if (/^\d+$/.test(id))
+    return '数字'
+  if (/^[a-z][\w-]*$/i.test(id))
+    return '标识符'
   return '其他'
 })
 
@@ -123,11 +126,12 @@ function navigateToId(id: string | number) {
 }
 
 function navigateCustom() {
-  if (!customId.value) return
+  if (!customId.value)
+    return
 
   const queryParams: Record<string, string> = {}
   if (customQuery.value) {
-    customQuery.value.split('&').forEach(pair => {
+    customQuery.value.split('&').forEach((pair) => {
       const [key, value] = pair.split('=')
       if (key && value) {
         queryParams[key] = decodeURIComponent(value)
@@ -162,7 +166,7 @@ watch(
         paramHistory.value = paramHistory.value.slice(0, 10)
       }
     }
-  }
+  },
 )
 
 watch(
@@ -181,7 +185,7 @@ watch(
       }
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 onMounted(() => {
@@ -209,8 +213,12 @@ onMounted(() => {
         <div class="param-section">
           <h3>路径参数 (Path Params)</h3>
           <div class="param-grid">
-            <div class="param-item"><strong>ID:</strong> {{ routeId }}</div>
-            <div class="param-item"><strong>类型:</strong> {{ paramType }}</div>
+            <div class="param-item">
+              <strong>ID:</strong> {{ routeId }}
+            </div>
+            <div class="param-item">
+              <strong>类型:</strong> {{ paramType }}
+            </div>
             <div class="param-item">
               <strong>是否为数字:</strong> {{ isNumericId ? '是' : '否' }}
             </div>
@@ -271,7 +279,7 @@ onMounted(() => {
           <div class="custom-nav">
             <div class="form-group">
               <label>自定义 ID:</label>
-              <input v-model="customId" class="input" placeholder="输入 ID" />
+              <input v-model="customId" class="input" placeholder="输入 ID">
             </div>
             <div class="form-group">
               <label>查询参数:</label>
@@ -279,9 +287,11 @@ onMounted(() => {
                 v-model="customQuery"
                 class="input"
                 placeholder="key1=value1&key2=value2"
-              />
+              >
             </div>
-            <button class="btn btn-info" @click="navigateCustom">导航</button>
+            <button class="btn btn-info" @click="navigateCustom">
+              导航
+            </button>
           </div>
         </div>
       </div>

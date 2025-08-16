@@ -51,7 +51,8 @@ export class KeyObfuscator {
       this.reverseKeyMap.set(finalKey, key)
 
       return finalKey
-    } else {
+    }
+    else {
       // 使用内置混淆算法
       switch (this.config.algorithm) {
         case 'hash':
@@ -114,9 +115,9 @@ export class KeyObfuscator {
    */
   private async hashObfuscate(key: string): Promise<string> {
     if (
-      typeof window !== 'undefined' &&
-      window.crypto &&
-      window.crypto.subtle
+      typeof window !== 'undefined'
+      && window.crypto
+      && window.crypto.subtle
     ) {
       try {
         const encoder = new TextEncoder()
@@ -129,10 +130,11 @@ export class KeyObfuscator {
           .map(b => b.toString(16).padStart(2, '0'))
           .join('')
           .slice(0, 16) // 取前16位
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(
           'Web Crypto API hash failed, falling back to simple hash:',
-          error
+          error,
         )
       }
     }
@@ -150,10 +152,10 @@ export class KeyObfuscator {
       const encoder = new TextEncoder()
       const data = encoder.encode(key)
       const binary = Array.from(data, byte => String.fromCharCode(byte)).join(
-        ''
+        '',
       )
 
-      return btoa(binary).replace(/[+/=]/g, match => {
+      return btoa(binary).replace(/[+/=]/g, (match) => {
         switch (match) {
           case '+':
             return '-'
@@ -165,7 +167,8 @@ export class KeyObfuscator {
             return match
         }
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Base64 obfuscation failed:', error)
       return key
     }
@@ -176,7 +179,8 @@ export class KeyObfuscator {
    */
   private simpleHash(str: string): string {
     let hash = 0
-    if (str.length === 0) return hash.toString()
+    if (str.length === 0)
+      return hash.toString()
 
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)

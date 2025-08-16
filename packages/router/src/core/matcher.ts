@@ -450,7 +450,8 @@ export class RouteMatcher {
       // 安全地处理 URLSearchParams
       if (url.searchParams && typeof url.searchParams.entries === 'function') {
         urlQuery = Object.fromEntries(url.searchParams.entries())
-      } else {
+      }
+      else {
         // 手动解析查询参数
         const searchString = url.search.slice(1)
         if (searchString) {
@@ -463,7 +464,8 @@ export class RouteMatcher {
           }
         }
       }
-    } catch {
+    }
+    catch {
       // 如果 URL 解析失败，手动解析
       const [pathPart, ...rest] = path.split('?')
       cleanPath = pathPart

@@ -9,7 +9,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (_tag) => false,
+          isCustomElement: _tag => false,
         },
       },
     }),
@@ -32,14 +32,16 @@ export default defineConfig({
       '@/plugins': resolve(process.cwd(), 'src/plugins'),
       '@/middleware': resolve(process.cwd(), 'src/middleware'),
       // 根据环境动态设置包别名
-      ...(process.env.VITE_DEV_MODE === 'source' ? {
-        '@ldesign/device': resolve(process.cwd(), '../device/src'),
-        '@ldesign/engine': resolve(process.cwd(), '../engine/src'),
-        '@ldesign/http': resolve(process.cwd(), '../http/src'),
-        '@ldesign/i18n': resolve(process.cwd(), '../i18n/src'),
-        '@ldesign/router': resolve(process.cwd(), '../router/src'),
-        '@ldesign/template': resolve(process.cwd(), '../template/src'),
-      } : {}),
+      ...(process.env.VITE_DEV_MODE === 'source'
+        ? {
+            '@ldesign/device': resolve(process.cwd(), '../device/src'),
+            '@ldesign/engine': resolve(process.cwd(), '../engine/src'),
+            '@ldesign/http': resolve(process.cwd(), '../http/src'),
+            '@ldesign/i18n': resolve(process.cwd(), '../i18n/src'),
+            '@ldesign/router': resolve(process.cwd(), '../router/src'),
+            '@ldesign/template': resolve(process.cwd(), '../template/src'),
+          }
+        : {}),
     },
   },
   css: {

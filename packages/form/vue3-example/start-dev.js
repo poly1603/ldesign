@@ -11,12 +11,12 @@ const viteProcess = spawn(vitePath, ['--port', '3001'], {
   shell: true,
 })
 
-viteProcess.on('error', error => {
+viteProcess.on('error', (error) => {
   console.error('启动失败:', error)
   process.exit(1)
 })
 
-viteProcess.on('close', code => {
+viteProcess.on('close', (code) => {
   console.log(`开发服务器退出，代码: ${code}`)
   process.exit(code)
 })

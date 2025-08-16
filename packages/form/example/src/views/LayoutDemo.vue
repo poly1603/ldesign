@@ -1,78 +1,7 @@
-<template>
-  <div class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">布局演示</h1>
-      <p class="text-gray-600">展示不同的表单布局方式</p>
-    </div>
-
-    <!-- 布局切换 -->
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">布局类型</h2>
-      <div class="flex flex-wrap gap-4">
-        <button
-          v-for="layout in layoutTypes"
-          :key="layout.key"
-          @click="currentLayout = layout.key"
-          :class="[
-            'px-4 py-2 rounded transition-colors',
-            currentLayout === layout.key
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
-          ]"
-        >
-          {{ layout.name }}
-        </button>
-      </div>
-    </div>
-
-    <!-- 表单展示 -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-      <!-- 表单区域 -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">{{ getCurrentLayoutName() }}</h2>
-
-        <DynamicForm
-          v-model="formData"
-          :options="currentFormConfig"
-          @submit="handleSubmit"
-          @change="handleChange"
-        />
-      </div>
-
-      <!-- 配置信息区域 -->
-      <div class="space-y-6">
-        <!-- 布局说明 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">布局说明</h3>
-          <div class="text-sm text-gray-600">
-            <p>{{ getCurrentLayoutDescription() }}</p>
-          </div>
-        </div>
-
-        <!-- 表单数据 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
-          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
-            JSON.stringify(formData, null, 2)
-          }}</pre>
-        </div>
-
-        <!-- 当前配置 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">当前配置</h3>
-          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
-            JSON.stringify(currentFormConfig.layout, null, 2)
-          }}</pre>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { DynamicForm } from '@ldesign/form'
 import type { FormOptions } from '@ldesign/form'
+import { DynamicForm } from '@ldesign/form'
+import { computed, ref } from 'vue'
 
 // 表单数据
 const formData = ref({
@@ -235,7 +164,7 @@ const layoutConfigs = {
   mixed: {
     columns: 24,
     gutter: 16,
-    fields: baseFields.map(field => {
+    fields: baseFields.map((field) => {
       const spanMap: Record<string, number> = {
         firstName: 8,
         lastName: 8,
@@ -269,8 +198,8 @@ const layoutConfigs = {
 
 // 当前表单配置
 const currentFormConfig = computed((): FormOptions => {
-  const config =
-    layoutConfigs[currentLayout.value as keyof typeof layoutConfigs]
+  const config
+    = layoutConfigs[currentLayout.value as keyof typeof layoutConfigs]
   return {
     fields: config.fields,
     layout: {
@@ -281,24 +210,108 @@ const currentFormConfig = computed((): FormOptions => {
 })
 
 // 获取当前布局名称
-const getCurrentLayoutName = () => {
+function getCurrentLayoutName() {
   const layout = layoutTypes.find(l => l.key === currentLayout.value)
   return layout?.name || '未知布局'
 }
 
 // 获取当前布局描述
-const getCurrentLayoutDescription = () => {
+function getCurrentLayoutDescription() {
   const layout = layoutTypes.find(l => l.key === currentLayout.value)
   return layout?.description || ''
 }
 
 // 事件处理
-const handleSubmit = (data: any) => {
+function handleSubmit(data: any) {
   console.log('布局演示表单提交:', data)
   alert('表单提交成功！')
 }
 
-const handleChange = (name: string, value: any) => {
+function handleChange(name: string, value: any) {
   console.log('字段变化:', name, value)
 }
 </script>
+
+<template>
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        布局演示
+      </h1>
+      <p class="text-gray-600">
+        展示不同的表单布局方式
+      </p>
+    </div>
+
+    <!-- 布局切换 -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">
+        布局类型
+      </h2>
+      <div class="flex flex-wrap gap-4">
+        <button
+          v-for="layout in layoutTypes"
+          :key="layout.key"
+          class="px-4 py-2 rounded transition-colors" :class="[
+            currentLayout === layout.key
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
+          ]"
+          @click="currentLayout = layout.key"
+        >
+          {{ layout.name }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 表单展示 -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <!-- 表单区域 -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">
+          {{ getCurrentLayoutName() }}
+        </h2>
+
+        <DynamicForm
+          v-model="formData"
+          :options="currentFormConfig"
+          @submit="handleSubmit"
+          @change="handleChange"
+        />
+      </div>
+
+      <!-- 配置信息区域 -->
+      <div class="space-y-6">
+        <!-- 布局说明 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            布局说明
+          </h3>
+          <div class="text-sm text-gray-600">
+            <p>{{ getCurrentLayoutDescription() }}</p>
+          </div>
+        </div>
+
+        <!-- 表单数据 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            表单数据
+          </h3>
+          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
+            JSON.stringify(formData, null, 2)
+          }}</pre>
+        </div>
+
+        <!-- 当前配置 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            当前配置
+          </h3>
+          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
+            JSON.stringify(currentFormConfig.layout, null, 2)
+          }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

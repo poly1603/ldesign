@@ -4,14 +4,14 @@ on:
   push:
     branches: [main, develop, master]
     paths:
-      - "packages/**"
-      - "tools/scripts/build/**"
+      - 'packages/**'
+      - 'tools/scripts/build/**'
       - .github/workflows/build-validation.yml
   pull_request:
     branches: [main, develop, master]
     paths:
-      - "packages/**"
-      - "tools/scripts/build/**"
+      - 'packages/**'
+      - 'tools/scripts/build/**'
   workflow_dispatch:
     inputs:
       package:

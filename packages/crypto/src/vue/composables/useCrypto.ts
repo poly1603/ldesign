@@ -29,7 +29,7 @@ export function useCrypto() {
   // AES加密
   const encryptAES = async (
     data: string,
-    key: string
+    key: string,
   ): Promise<EncryptResult | null> => {
     try {
       isEncrypting.value = true
@@ -37,10 +37,12 @@ export function useCrypto() {
       const result = await encrypt.aes(data, key)
       lastResult.value = result
       return result
-    } catch (error) {
+    }
+    catch (error) {
       lastError.value = error as Error
       return null
-    } finally {
+    }
+    finally {
       isEncrypting.value = false
     }
   }
@@ -48,7 +50,7 @@ export function useCrypto() {
   // AES解密
   const decryptAES = async (
     encryptedData: string,
-    key: string
+    key: string,
   ): Promise<DecryptResult | null> => {
     try {
       isDecrypting.value = true
@@ -56,10 +58,12 @@ export function useCrypto() {
       const result = await decrypt.aes(encryptedData, key)
       lastResult.value = result
       return result
-    } catch (error) {
+    }
+    catch (error) {
       lastError.value = error as Error
       return null
-    } finally {
+    }
+    finally {
       isDecrypting.value = false
     }
   }
@@ -72,10 +76,12 @@ export function useCrypto() {
       const result = await hash.sha256(data)
       lastResult.value = result
       return result
-    } catch (error) {
+    }
+    catch (error) {
       lastError.value = error as Error
       return null
-    } finally {
+    }
+    finally {
       isHashing.value = false
     }
   }
@@ -88,10 +94,12 @@ export function useCrypto() {
       const result = await hash.md5(data)
       lastResult.value = result
       return result
-    } catch (error) {
+    }
+    catch (error) {
       lastError.value = error as Error
       return null
-    } finally {
+    }
+    finally {
       isHashing.value = false
     }
   }

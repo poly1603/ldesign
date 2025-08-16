@@ -36,7 +36,8 @@ export class DefaultLoader implements Loader {
       const languagePackage = await loadingPromise
       this.loadedPackages.set(locale, languagePackage)
       return languagePackage
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(locale)
     }
   }
@@ -75,7 +76,8 @@ export class DefaultLoader implements Loader {
     if (locale) {
       this.loadedPackages.delete(locale)
       this.loadingPromises.delete(locale)
-    } else {
+    }
+    else {
       this.loadedPackages.clear()
       this.loadingPromises.clear()
     }
@@ -87,7 +89,7 @@ export class DefaultLoader implements Loader {
    * @returns 语言包
    */
   protected async loadLanguagePackage(
-    locale: string
+    locale: string,
   ): Promise<LanguagePackage> {
     try {
       // 使用预定义的语言包映射，避免动态导入问题
@@ -95,9 +97,9 @@ export class DefaultLoader implements Loader {
         string,
         () => Promise<{ default: LanguagePackage }>
       > = {
-        en: () => import('../locales/en'),
+        'en': () => import('../locales/en'),
         'zh-CN': () => import('../locales/zh-CN'),
-        ja: () => import('../locales/ja'),
+        'ja': () => import('../locales/ja'),
       }
 
       const loader = localeMap[locale]
@@ -109,14 +111,15 @@ export class DefaultLoader implements Loader {
 
       if (!localeModule.default) {
         throw new Error(
-          `Language package for '${locale}' does not have a default export`
+          `Language package for '${locale}' does not have a default export`,
         )
       }
 
       return localeModule.default as LanguagePackage
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(
-        `Failed to load language package for '${locale}': ${error}`
+        `Failed to load language package for '${locale}': ${error}`,
       )
     }
   }
@@ -273,7 +276,8 @@ export class HttpLoader implements Loader {
       const languagePackage = await loadingPromise
       this.loadedPackages.set(locale, languagePackage)
       return languagePackage
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(locale)
     }
   }
@@ -318,9 +322,10 @@ export class HttpLoader implements Loader {
       }
 
       return data as LanguagePackage
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(
-        `Failed to fetch language package for '${locale}' from '${url}': ${error}`
+        `Failed to fetch language package for '${locale}' from '${url}': ${error}`,
       )
     }
   }
@@ -332,14 +337,14 @@ export class HttpLoader implements Loader {
    */
   private isValidLanguagePackage(data: unknown): data is LanguagePackage {
     return (
-      data !== null &&
-      typeof data === 'object' &&
-      'info' in data &&
-      typeof (data as LanguagePackage).info === 'object' &&
-      typeof (data as LanguagePackage).info.name === 'string' &&
-      typeof (data as LanguagePackage).info.code === 'string' &&
-      'translations' in data &&
-      typeof (data as LanguagePackage).translations === 'object'
+      data !== null
+      && typeof data === 'object'
+      && 'info' in data
+      && typeof (data as LanguagePackage).info === 'object'
+      && typeof (data as LanguagePackage).info.name === 'string'
+      && typeof (data as LanguagePackage).info.code === 'string'
+      && 'translations' in data
+      && typeof (data as LanguagePackage).translations === 'object'
     )
   }
 

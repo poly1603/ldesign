@@ -1,21 +1,3 @@
-<template>
-  <div class="custom-card">
-    <div v-if="title || $slots.header" class="custom-card__header">
-      <slot name="header">
-        <h3 class="custom-card__title">{{ title }}</h3>
-      </slot>
-    </div>
-    
-    <div class="custom-card__body">
-      <slot />
-    </div>
-    
-    <div v-if="$slots.footer" class="custom-card__footer">
-      <slot name="footer" />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSize } from '../../../../src/vue'
@@ -44,6 +26,26 @@ const cardBorderRadius = computed(() => {
 })
 </script>
 
+<template>
+  <div class="custom-card">
+    <div v-if="title || $slots.header" class="custom-card__header">
+      <slot name="header">
+        <h3 class="custom-card__title">
+          {{ title }}
+        </h3>
+      </slot>
+    </div>
+
+    <div class="custom-card__body">
+      <slot />
+    </div>
+
+    <div v-if="$slots.footer" class="custom-card__footer">
+      <slot name="footer" />
+    </div>
+  </div>
+</template>
+
 <style scoped>
 .custom-card {
   background: var(--ls-bg-primary, #ffffff);
@@ -56,7 +58,7 @@ const cardBorderRadius = computed(() => {
   box-shadow: v-bind(cardShadow);
 }
 
-.custom-card[data-bordered="true"] {
+.custom-card[data-bordered='true'] {
   border: 1px solid var(--ls-border-light, #f0f0f0);
 }
 
@@ -110,11 +112,11 @@ const cardBorderRadius = computed(() => {
     padding-left: var(--ls-spacing-base, 16px);
     padding-right: var(--ls-spacing-base, 16px);
   }
-  
+
   .custom-card__header {
     padding-bottom: 0;
   }
-  
+
   .custom-card__footer {
     padding-top: 0;
     flex-direction: column;

@@ -1,21 +1,21 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  EventEmitter,
-  isValidInput,
-  isBrowser,
-  isNode,
-  safeJsonParse,
-  safeJsonStringify,
-  deepClone,
   debounce,
-  throttle,
+  deepClone,
+  delay,
+  EventEmitter,
   formatBytes,
   generateId,
-  delay,
+  isBrowser,
+  isNode,
+  isValidInput,
+  safeJsonParse,
+  safeJsonStringify,
+  throttle,
 } from '../../src/utils/index'
 
-describe('Utils', () => {
-  describe('EventEmitter', () => {
+describe('utils', () => {
+  describe('eventEmitter', () => {
     it('should be exported', () => {
       expect(EventEmitter).toBeDefined()
       expect(typeof EventEmitter).toBe('function')

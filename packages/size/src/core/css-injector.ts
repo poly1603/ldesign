@@ -174,7 +174,8 @@ export function removeGlobalVariables(styleId?: string): void {
   if (styleId) {
     const injector = new CSSInjector({ styleId })
     injector.removeCSS()
-  } else {
+  }
+  else {
     globalCSSInjector.removeCSS()
   }
 }

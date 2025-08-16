@@ -2,11 +2,11 @@
  * 设备组件解析器测试
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { DeviceType, RouteRecordNormalized, RouteComponent } from '../../src/types'
+import type { DeviceType, RouteComponent, RouteRecordNormalized } from '../../src/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeviceComponentResolver } from '../../src/device/resolver'
 
-describe('DeviceComponentResolver', () => {
+describe('deviceComponentResolver', () => {
   let getCurrentDevice: () => DeviceType
   let resolver: DeviceComponentResolver
 
@@ -35,8 +35,8 @@ describe('DeviceComponentResolver', () => {
         deviceComponents: {
           mobile: mockMobileComponent,
           tablet: mockTabletComponent,
-          desktop: mockDesktopComponent
-        }
+          desktop: mockDesktopComponent,
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -45,7 +45,7 @@ describe('DeviceComponentResolver', () => {
         component: mockMobileComponent,
         deviceType: 'mobile',
         isFallback: false,
-        source: 'deviceComponents'
+        source: 'deviceComponents',
       })
     })
 
@@ -56,9 +56,9 @@ describe('DeviceComponentResolver', () => {
       const record = createMockRecord({
         deviceComponents: {
           desktop: mockDesktopComponent,
-          tablet: mockTabletComponent
+          tablet: mockTabletComponent,
           // 没有 mobile 组件
-        }
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -67,7 +67,7 @@ describe('DeviceComponentResolver', () => {
         component: mockDesktopComponent,
         deviceType: 'desktop',
         isFallback: true,
-        source: 'deviceComponents'
+        source: 'deviceComponents',
       })
     })
 
@@ -78,8 +78,8 @@ describe('DeviceComponentResolver', () => {
       // 只有 tablet 组件
       const record1 = createMockRecord({
         deviceComponents: {
-          tablet: mockTabletComponent
-        }
+          tablet: mockTabletComponent,
+        },
       })
 
       const result1 = resolver.resolveComponent(record1)
@@ -89,8 +89,8 @@ describe('DeviceComponentResolver', () => {
       const record2 = createMockRecord({
         deviceComponents: {
           desktop: mockDesktopComponent,
-          tablet: mockTabletComponent
-        }
+          tablet: mockTabletComponent,
+        },
       })
 
       const result2 = resolver.resolveComponent(record2)
@@ -102,8 +102,8 @@ describe('DeviceComponentResolver', () => {
     it('应该解析常规组件', () => {
       const record = createMockRecord({
         components: {
-          default: mockDefaultComponent
-        }
+          default: mockDefaultComponent,
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -112,7 +112,7 @@ describe('DeviceComponentResolver', () => {
         component: mockDefaultComponent,
         deviceType: 'desktop',
         isFallback: false,
-        source: 'component'
+        source: 'component',
       })
     })
 
@@ -121,8 +121,8 @@ describe('DeviceComponentResolver', () => {
       const record = createMockRecord({
         components: {
           default: mockDefaultComponent,
-          sidebar: namedComponent
-        }
+          sidebar: namedComponent,
+        },
       })
 
       const result = resolver.resolveComponent(record, 'sidebar')
@@ -136,8 +136,8 @@ describe('DeviceComponentResolver', () => {
       const record = createMockRecord({
         meta: {
           template: 'login',
-          templateCategory: 'auth'
-        }
+          templateCategory: 'auth',
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -146,15 +146,15 @@ describe('DeviceComponentResolver', () => {
         component: expect.any(Function),
         deviceType: 'desktop',
         isFallback: false,
-        source: 'template'
+        source: 'template',
       })
     })
 
     it('应该使用默认模板分类', () => {
       const record = createMockRecord({
         meta: {
-          template: 'dashboard'
-        }
+          template: 'dashboard',
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -168,11 +168,11 @@ describe('DeviceComponentResolver', () => {
     it('设备特定组件应该优先于常规组件', () => {
       const record = createMockRecord({
         deviceComponents: {
-          desktop: mockDesktopComponent
+          desktop: mockDesktopComponent,
         },
         components: {
-          default: mockDefaultComponent
-        }
+          default: mockDefaultComponent,
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -184,11 +184,11 @@ describe('DeviceComponentResolver', () => {
     it('常规组件应该优先于模板', () => {
       const record = createMockRecord({
         components: {
-          default: mockDefaultComponent
+          default: mockDefaultComponent,
         },
         meta: {
-          template: 'login'
-        }
+          template: 'login',
+        },
       })
 
       const result = resolver.resolveComponent(record)
@@ -203,8 +203,8 @@ describe('DeviceComponentResolver', () => {
       const record = createMockRecord({
         deviceComponents: {
           desktop: mockDesktopComponent,
-          tablet: mockTabletComponent
-        }
+          tablet: mockTabletComponent,
+        },
       })
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(true)
@@ -221,8 +221,8 @@ describe('DeviceComponentResolver', () => {
     it('有常规组件时应该支持所有设备', () => {
       const record = createMockRecord({
         components: {
-          default: mockDefaultComponent
-        }
+          default: mockDefaultComponent,
+        },
       })
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(true)
@@ -233,8 +233,8 @@ describe('DeviceComponentResolver', () => {
     it('有模板配置时应该支持所有设备', () => {
       const record = createMockRecord({
         meta: {
-          template: 'login'
-        }
+          template: 'login',
+        },
       })
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(true)
@@ -266,6 +266,6 @@ function createMockRecord(overrides: any = {}): RouteRecordNormalized {
     beforeEnter: undefined,
     aliasOf: undefined,
     redirect: undefined,
-    ...overrides
+    ...overrides,
   } as RouteRecordNormalized
 }

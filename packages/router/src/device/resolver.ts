@@ -102,7 +102,7 @@ export class DeviceComponentResolver {
   private resolveDeviceSpecificComponentWithFallback(
     record: RouteRecordNormalized,
     device: DeviceType,
-  ): { component: RouteComponent; deviceType: DeviceType; isFallback: boolean } | null {
+  ): { component: RouteComponent, deviceType: DeviceType, isFallback: boolean } | null {
     const deviceComponents = (record as any).deviceComponents
     if (!deviceComponents || typeof deviceComponents !== 'object') {
       return null

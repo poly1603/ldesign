@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/vue-demo",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "vite --host --port 3000",
     "build": "vite build",

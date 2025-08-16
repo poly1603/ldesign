@@ -111,7 +111,7 @@ describe('router Engine Plugin', () => {
           mode: 'hash',
           base: '/',
           routesCount: 2,
-        })
+        }),
       )
     })
 
@@ -142,7 +142,7 @@ describe('router Engine Plugin', () => {
       }
 
       await expect(plugin.install(engineWithoutApp)).rejects.toThrow(
-        'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
+        'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
       )
     })
 
@@ -155,14 +155,14 @@ describe('router Engine Plugin', () => {
 
       // 验证状态清理
       expect(mockEngine.state.delete).toHaveBeenCalledWith(
-        'router:currentRoute'
+        'router:currentRoute',
       )
       expect(mockEngine.state.delete).toHaveBeenCalledWith('router:mode')
       expect(mockEngine.state.delete).toHaveBeenCalledWith('router:base')
 
       // 验证事件触发
       expect(mockEngine.events.emit).toHaveBeenCalledWith(
-        'plugin:router:uninstalled'
+        'plugin:router:uninstalled',
       )
     })
   })
@@ -199,7 +199,7 @@ describe('router Engine Plugin', () => {
 
       expect(mockEngine.state.set).toHaveBeenCalledWith(
         'router:mode',
-        'history'
+        'history',
       )
       expect(mockEngine.state.set).toHaveBeenCalledWith('router:base', '/')
     })
@@ -220,7 +220,7 @@ describe('router Engine Plugin', () => {
 
       expect(mockEngine.state.set).toHaveBeenCalledWith(
         'router:mode',
-        'history'
+        'history',
       )
       expect(mockEngine.state.set).toHaveBeenCalledWith('router:base', '/app')
     })

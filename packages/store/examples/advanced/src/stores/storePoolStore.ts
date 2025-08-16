@@ -133,8 +133,8 @@ export class StorePoolDemoStore extends BaseStore {
 
   @Action()
   async testTraditionalCreation(
-    count: number
-  ): Promise<{ time: number; memory: number }> {
+    count: number,
+  ): Promise<{ time: number, memory: number }> {
     const startTime = performance.now()
     const startMemory = this.getMemoryUsage()
 
@@ -163,8 +163,8 @@ export class StorePoolDemoStore extends BaseStore {
 
   @Action()
   async testPooledCreation(
-    count: number
-  ): Promise<{ time: number; memory: number }> {
+    count: number,
+  ): Promise<{ time: number, memory: number }> {
     const startTime = performance.now()
     const startMemory = this.getMemoryUsage()
 
@@ -180,7 +180,7 @@ export class StorePoolDemoStore extends BaseStore {
     await new Promise(resolve => setTimeout(resolve, 10))
 
     // 归还实例到池
-    instances.forEach(instance => {
+    instances.forEach((instance) => {
       instance.reset()
       this.pool.returnStore(instance)
     })

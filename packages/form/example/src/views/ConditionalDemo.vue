@@ -1,77 +1,6 @@
-<template>
-  <div class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">条件渲染演示</h1>
-      <p class="text-gray-600">展示基于条件的字段显示隐藏功能</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- 表单区域 -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">动态表单</h2>
-
-        <FormBuilder
-          v-model="formData"
-          :config="formConfig"
-          @submit="handleSubmit"
-          @change="handleChange"
-        />
-      </div>
-
-      <!-- 信息展示区域 -->
-      <div class="space-y-6">
-        <!-- 当前显示的字段 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">当前显示的字段</h3>
-          <div class="space-y-2">
-            <div
-              v-for="field in visibleFields"
-              :key="field.key"
-              class="flex items-center space-x-2"
-            >
-              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span class="text-sm">{{ field.label }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 条件规则说明 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">条件规则说明</h3>
-          <div class="space-y-3 text-sm">
-            <div><strong>用户类型:</strong> 选择不同类型显示不同字段组</div>
-            <div>
-              <strong>个人用户:</strong> 显示姓名、身份证、生日等个人信息
-            </div>
-            <div>
-              <strong>企业用户:</strong>
-              显示公司名称、统一社会信用代码、法人代表等企业信息
-            </div>
-            <div><strong>学生用户:</strong> 显示学校、专业、学号等学生信息</div>
-            <div><strong>启用通知:</strong> 勾选后显示通知方式选择</div>
-            <div>
-              <strong>通知方式:</strong>
-              选择邮件时显示邮箱，选择短信时显示手机号
-            </div>
-          </div>
-        </div>
-
-        <!-- 表单数据 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
-          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
-            JSON.stringify(formData, null, 2)
-          }}</pre>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { FormBuilder } from '../../../src/index'
-import { createFormConfig, createField, createRule } from '../../../src/index'
+import { computed, ref } from 'vue'
+import { createField, createFormConfig, createRule, FormBuilder } from '../../../src/index'
 
 // 表单数据
 const formData = ref({
@@ -142,7 +71,7 @@ const formConfig = createFormConfig({
         createRule('required', '请输入身份证号'),
         createRule('pattern', '请输入有效的身份证号', {
           pattern:
-            /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/,
+            /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9X]$/i,
         }),
       ],
       props: {
@@ -332,19 +261,20 @@ const formConfig = createFormConfig({
 
 // 当前显示的字段
 const visibleFields = computed(() => {
-  return formConfig.fields.filter(field => {
-    if (!field.condition) return true
+  return formConfig.fields.filter((field) => {
+    if (!field.condition)
+      return true
     return field.condition(formData.value)
   })
 })
 
 // 事件处理
-const handleSubmit = (data: any) => {
+function handleSubmit(data: any) {
   console.log('条件渲染演示表单提交:', data)
   alert('表单提交成功！请查看控制台输出')
 }
 
-const handleChange = (key: string, value: any) => {
+function handleChange(key: string, value: any) {
   console.log('字段变化:', key, value)
 
   // 当用户类型改变时，清空相关字段
@@ -387,3 +317,85 @@ const handleChange = (key: string, value: any) => {
   }
 }
 </script>
+
+<template>
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        条件渲染演示
+      </h1>
+      <p class="text-gray-600">
+        展示基于条件的字段显示隐藏功能
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 表单区域 -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">
+          动态表单
+        </h2>
+
+        <FormBuilder
+          v-model="formData"
+          :config="formConfig"
+          @submit="handleSubmit"
+          @change="handleChange"
+        />
+      </div>
+
+      <!-- 信息展示区域 -->
+      <div class="space-y-6">
+        <!-- 当前显示的字段 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            当前显示的字段
+          </h3>
+          <div class="space-y-2">
+            <div
+              v-for="field in visibleFields"
+              :key="field.key"
+              class="flex items-center space-x-2"
+            >
+              <div class="w-2 h-2 bg-green-500 rounded-full" />
+              <span class="text-sm">{{ field.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条件规则说明 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            条件规则说明
+          </h3>
+          <div class="space-y-3 text-sm">
+            <div><strong>用户类型:</strong> 选择不同类型显示不同字段组</div>
+            <div>
+              <strong>个人用户:</strong> 显示姓名、身份证、生日等个人信息
+            </div>
+            <div>
+              <strong>企业用户:</strong>
+              显示公司名称、统一社会信用代码、法人代表等企业信息
+            </div>
+            <div><strong>学生用户:</strong> 显示学校、专业、学号等学生信息</div>
+            <div><strong>启用通知:</strong> 勾选后显示通知方式选择</div>
+            <div>
+              <strong>通知方式:</strong>
+              选择邮件时显示邮箱，选择短信时显示手机号
+            </div>
+          </div>
+        </div>
+
+        <!-- 表单数据 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            表单数据
+          </h3>
+          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
+            JSON.stringify(formData, null, 2)
+          }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

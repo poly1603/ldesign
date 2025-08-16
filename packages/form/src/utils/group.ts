@@ -11,7 +11,7 @@ import { deepClone } from './common'
 export function createDefaultGroup(
   name: string,
   title: string,
-  fields: FormItemConfig[]
+  fields: FormItemConfig[],
 ): FormGroupConfig {
   return {
     name,
@@ -31,7 +31,7 @@ export function createDefaultGroupState(group: FormGroupConfig): GroupState {
   const fieldStates: Record<string, any> = {}
   const data: Record<string, any> = {}
 
-  group.fields.forEach(field => {
+  group.fields.forEach((field) => {
     const value = field.defaultValue
     data[field.name] = value
     fieldStates[field.name] = {
@@ -72,18 +72,21 @@ export function validateGroupConfig(group: FormGroupConfig): string[] {
 
   if (!Array.isArray(group.fields)) {
     errors.push('分组字段必须是数组')
-  } else if (group.fields.length === 0) {
+  }
+  else if (group.fields.length === 0) {
     errors.push('分组至少需要包含一个字段')
   }
 
   // 检查字段名重复
   const fieldNames = new Set<string>()
-  group.fields.forEach(field => {
+  group.fields.forEach((field) => {
     if (!field.name) {
       errors.push('字段名称不能为空')
-    } else if (fieldNames.has(field.name)) {
+    }
+    else if (fieldNames.has(field.name)) {
       errors.push(`分组中存在重复的字段名: ${field.name}`)
-    } else {
+    }
+    else {
       fieldNames.add(field.name)
     }
   })
@@ -96,7 +99,7 @@ export function validateGroupConfig(group: FormGroupConfig): string[] {
  */
 export function mergeGroupConfig(
   base: FormGroupConfig,
-  override: Partial<FormGroupConfig>
+  override: Partial<FormGroupConfig>,
 ): FormGroupConfig {
   return {
     ...base,
@@ -114,7 +117,7 @@ export function mergeGroupConfig(
  */
 export function createGroupsFromFields(
   fields: FormItemConfig[],
-  groupSize: number = 5
+  groupSize: number = 5,
 ): FormGroupConfig[] {
   const groups: FormGroupConfig[] = []
 
@@ -140,11 +143,11 @@ export function createGroupsFromFields(
  * 按字段类型分组
  */
 export function groupFieldsByType(
-  fields: FormItemConfig[]
+  fields: FormItemConfig[],
 ): Record<string, FormItemConfig[]> {
   const groups: Record<string, FormItemConfig[]> = {}
 
-  fields.forEach(field => {
+  fields.forEach((field) => {
     const type = field.component || 'unknown'
     if (!groups[type]) {
       groups[type] = []
@@ -160,11 +163,11 @@ export function groupFieldsByType(
  */
 export function groupFieldsByPrefix(
   fields: FormItemConfig[],
-  separator: string = '.'
+  separator: string = '.',
 ): FormGroupConfig[] {
   const prefixGroups: Record<string, FormItemConfig[]> = {}
 
-  fields.forEach(field => {
+  fields.forEach((field) => {
     const title = field.title || field.name
     const parts = title.split(separator)
 
@@ -177,7 +180,8 @@ export function groupFieldsByPrefix(
         ...field,
         title: parts.slice(1).join(separator), // 移除前缀
       })
-    } else {
+    }
+    else {
       // 没有前缀的字段放到默认分组
       if (!prefixGroups['其他']) {
         prefixGroups['其他'] = []
@@ -216,7 +220,7 @@ export function sortGroups(groups: FormGroupConfig[]): FormGroupConfig[] {
  * 过滤可见分组
  */
 export function filterVisibleGroups(
-  groups: FormGroupConfig[]
+  groups: FormGroupConfig[],
 ): FormGroupConfig[] {
   return groups.filter(group => group.visible !== false)
 }
@@ -233,7 +237,7 @@ export function getGroupFieldNames(group: FormGroupConfig): string[] {
  */
 export function getAllGroupFieldNames(groups: FormGroupConfig[]): string[] {
   const fieldNames: string[] = []
-  groups.forEach(group => {
+  groups.forEach((group) => {
     fieldNames.push(...getGroupFieldNames(group))
   })
   return fieldNames
@@ -244,7 +248,7 @@ export function getAllGroupFieldNames(groups: FormGroupConfig[]): string[] {
  */
 export function isFieldInGroup(
   fieldName: string,
-  group: FormGroupConfig
+  group: FormGroupConfig,
 ): boolean {
   return group.fields.some(field => field.name === fieldName)
 }
@@ -254,7 +258,7 @@ export function isFieldInGroup(
  */
 export function findFieldGroup(
   fieldName: string,
-  groups: FormGroupConfig[]
+  groups: FormGroupConfig[],
 ): FormGroupConfig | undefined {
   return groups.find(group => isFieldInGroup(fieldName, group))
 }
@@ -264,11 +268,11 @@ export function findFieldGroup(
  */
 export function extractGroupData(
   group: FormGroupConfig,
-  formData: FormData
+  formData: FormData,
 ): Record<string, any> {
   const groupData: Record<string, any> = {}
 
-  group.fields.forEach(field => {
+  group.fields.forEach((field) => {
     if (field.name in formData) {
       groupData[field.name] = formData[field.name]
     }
@@ -282,7 +286,7 @@ export function extractGroupData(
  */
 export function mergeGroupDataToForm(
   groupData: Record<string, any>,
-  formData: FormData
+  formData: FormData,
 ): FormData {
   return {
     ...formData,
@@ -304,7 +308,7 @@ export function calculateGroupStats(groups: FormGroupConfig[]): {
   const collapsibleGroups = groups.filter(group => group.collapsible)
   const totalFields = groups.reduce(
     (sum, group) => sum + group.fields.length,
-    0
+    0,
   )
 
   return {
@@ -337,7 +341,7 @@ export class GroupBuilder {
     name: string,
     title: string,
     fields: FormItemConfig[],
-    options: Partial<FormGroupConfig> = {}
+    options: Partial<FormGroupConfig> = {},
   ): this {
     const group: FormGroupConfig = {
       name,

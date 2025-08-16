@@ -1,4 +1,4 @@
-import type { App, Ref, ComputedRef } from 'vue'
+import type { App, ComputedRef, Ref } from 'vue'
 
 import type {
   I18nInstance,

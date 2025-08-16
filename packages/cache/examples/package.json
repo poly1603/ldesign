@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/cache-examples",
-  "private": true,
-  "version": "0.1.0",
   "type": "module",
+  "version": "0.1.0",
+  "private": true,
   "description": "@ldesign/cache 示例项目",
   "scripts": {
     "dev": "vite",

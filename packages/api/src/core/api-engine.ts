@@ -67,7 +67,7 @@ export class ApiEngineImpl implements ApiEngine {
     this.cacheManager = new CacheManager(this.config.cache!)
     this.debounceManager = new DebounceManager(this.config.debounce!)
     this.deduplicationManager = new DeduplicationManager(
-      this.config.deduplication!
+      this.config.deduplication!,
     )
 
     this.log('API Engine initialized', { config: this.config })
@@ -111,8 +111,10 @@ export class ApiEngineImpl implements ApiEngine {
    */
   async call<
     T = unknown,
-    P extends Record<string, unknown> | undefined = Record<string, unknown>
-  >(name: string, params?: P): Promise<T> {
+    P extends Record<string, unknown> | undefined = Record<string, unknown>,
+  >(name: string,
+    params?: P,
+  ): Promise<T> {
     this.checkDestroyed()
 
     const method = this.apiMethods.get(name)
@@ -124,8 +126,8 @@ export class ApiEngineImpl implements ApiEngine {
 
     try {
       // 生成请求配置
-      const requestConfig =
-        typeof method.config === 'function'
+      const requestConfig
+        = typeof method.config === 'function'
           ? method.config(params)
           : method.config
 
@@ -141,13 +143,13 @@ export class ApiEngineImpl implements ApiEngine {
 
       // 请求去重
       if (
-        method.deduplication !== false &&
-        this.config.deduplication?.enabled
+        method.deduplication !== false
+        && this.config.deduplication?.enabled
       ) {
         const deduplicationKey = this.generateDeduplicationKey(name, params)
         const result = await this.deduplicationManager.execute<T>(
           deduplicationKey,
-          () => this.executeRequest<T>(method, requestConfig, params)
+          () => this.executeRequest<T>(method, requestConfig, params),
         )
         return result
       }
@@ -155,19 +157,20 @@ export class ApiEngineImpl implements ApiEngine {
       // 防抖处理
       if (method.debounce?.enabled !== false && this.config.debounce?.enabled) {
         const debounceKey = this.generateDebounceKey(name, params)
-        const delay =
-          method.debounce?.delay ?? this.config.debounce?.delay ?? 300
+        const delay
+          = method.debounce?.delay ?? this.config.debounce?.delay ?? 300
         const result = await this.debounceManager.execute<T>(
           debounceKey,
           () => this.executeRequest<T>(method, requestConfig, params),
-          delay
+          delay,
         )
         return result
       }
 
       // 直接执行请求
       return await this.executeRequest<T>(method, requestConfig, params)
-    } catch (error) {
+    }
+    catch (error) {
       this.log(`API method "${name}" failed`, { error })
 
       // 调用错误处理函数
@@ -222,7 +225,7 @@ export class ApiEngineImpl implements ApiEngine {
   private async executeRequest<T>(
     method: ApiMethod,
     requestConfig: Record<string, unknown>,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): Promise<T> {
     // 发送 HTTP 请求
     const response = await this.httpClient.request(requestConfig)
@@ -253,7 +256,7 @@ export class ApiEngineImpl implements ApiEngine {
    */
   private generateCacheKey(
     methodName: string,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): string {
     const prefix = this.config.cache?.prefix ?? 'api_cache_'
     const paramsStr = params ? JSON.stringify(params) : ''
@@ -265,7 +268,7 @@ export class ApiEngineImpl implements ApiEngine {
    */
   private generateDebounceKey(
     methodName: string,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): string {
     const paramsStr = params ? JSON.stringify(params) : ''
     return `${methodName}_${this.hashCode(paramsStr)}`
@@ -276,11 +279,11 @@ export class ApiEngineImpl implements ApiEngine {
    */
   private generateDeduplicationKey(
     methodName: string,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): string {
     if (this.config.deduplication?.keyGenerator) {
-      const requestConfig =
-        typeof this.apiMethods.get(methodName)?.config === 'function'
+      const requestConfig
+        = typeof this.apiMethods.get(methodName)?.config === 'function'
           ? (
               this.apiMethods.get(methodName)!.config as (
                 params?: Record<string, unknown>
@@ -288,7 +291,7 @@ export class ApiEngineImpl implements ApiEngine {
             )(params)
           : this.apiMethods.get(methodName)?.config
       return this.config.deduplication.keyGenerator(
-        requestConfig as RequestConfig
+        requestConfig as RequestConfig,
       )
     }
 
@@ -301,7 +304,8 @@ export class ApiEngineImpl implements ApiEngine {
    */
   private hashCode(str: string): number {
     let hash = 0
-    if (str.length === 0) return hash
+    if (str.length === 0)
+      return hash
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
       hash = (hash << 5) - hash + char

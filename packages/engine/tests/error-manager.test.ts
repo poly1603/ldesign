@@ -54,7 +54,7 @@ describe('errorManager', () => {
         expect.objectContaining({
           message: 'Test error',
           level: 'error',
-        })
+        }),
       )
     })
 
@@ -96,7 +96,7 @@ describe('errorManager', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error in error handler:',
-        expect.any(Error)
+        expect.any(Error),
       )
 
       consoleSpy.mockRestore()
@@ -281,7 +281,7 @@ describe('errorManager', () => {
 
       expect(logger.warn).toHaveBeenCalledWith(
         'Error burst detected',
-        expect.objectContaining({ count: expect.any(Number) })
+        expect.objectContaining({ count: expect.any(Number) }),
       )
     })
   })

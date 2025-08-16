@@ -8,12 +8,13 @@
 html,
 body {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
   color: var(--theme-text, #333);
   background-color: var(--theme-background, #fff);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 #app {
@@ -717,25 +718,25 @@ body {
 
 /* 圣诞节装饰 */
 .theme-christmas .btn::before {
-  content: "🎄";
+  content: '🎄';
   margin-right: 0.5rem;
   animation: christmas-sparkle 2s ease-in-out infinite;
 }
 
 .theme-christmas .btn-primary::before {
-  content: "🎅";
+  content: '🎅';
 }
 
 .theme-christmas .btn-secondary::before {
-  content: "❄️";
+  content: '❄️';
 }
 
 .theme-christmas .btn-outline::before {
-  content: "⭐";
+  content: '⭐';
 }
 
 .theme-christmas .feature-card::after {
-  content: "❄️";
+  content: '❄️';
   position: absolute;
   top: 10px;
   right: 10px;
@@ -745,7 +746,7 @@ body {
 }
 
 .theme-christmas .app-header::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -758,25 +759,25 @@ body {
 
 /* 春节装饰 */
 .theme-spring-festival .btn::before {
-  content: "🧧";
+  content: '🧧';
   margin-right: 0.5rem;
   animation: spring-festival-glow 2s ease-in-out infinite;
 }
 
 .theme-spring-festival .btn-primary::before {
-  content: "🐉";
+  content: '🐉';
 }
 
 .theme-spring-festival .btn-secondary::before {
-  content: "🏮";
+  content: '🏮';
 }
 
 .theme-spring-festival .btn-outline::before {
-  content: "💰";
+  content: '💰';
 }
 
 .theme-spring-festival .feature-card::after {
-  content: "🏮";
+  content: '🏮';
   position: absolute;
   top: 10px;
   right: 10px;
@@ -786,7 +787,7 @@ body {
 }
 
 .theme-spring-festival .app-header::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -799,25 +800,25 @@ body {
 
 /* 万圣节装饰 */
 .theme-halloween .btn::before {
-  content: "🎃";
+  content: '🎃';
   margin-right: 0.5rem;
   animation: halloween-flicker 1.5s ease-in-out infinite;
 }
 
 .theme-halloween .btn-primary::before {
-  content: "👻";
+  content: '👻';
 }
 
 .theme-halloween .btn-secondary::before {
-  content: "🦇";
+  content: '🦇';
 }
 
 .theme-halloween .btn-outline::before {
-  content: "🕷️";
+  content: '🕷️';
 }
 
 .theme-halloween .feature-card::after {
-  content: "🕸️";
+  content: '🕸️';
   position: absolute;
   top: 10px;
   right: 10px;
@@ -827,7 +828,7 @@ body {
 }
 
 .theme-halloween .app-header::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;

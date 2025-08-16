@@ -4,7 +4,7 @@
 
 import type { RouteRecordRaw } from '../src'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApp, nextTick, h, watch } from 'vue'
+import { createApp, h, nextTick, watch } from 'vue'
 import {
   createMemoryHistory,
   createRouter,
@@ -81,7 +81,7 @@ describe('composables', () => {
       expect(() => {
         useRouter()
       }).toThrow(
-        'useRouter() can only be used inside a component that has a router instance'
+        'useRouter() can only be used inside a component that has a router instance',
       )
     })
   })

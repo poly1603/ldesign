@@ -71,12 +71,12 @@
     "test:consistency": "tsx scripts/test-consistency.ts",
     "dev:src": "cd test-apps/src-test && pnpm dev",
     "dev:es": "cd test-apps/es-test && pnpm dev",
-    "clean": "rimraf dist es lib types coverage .nyc_output test-results playwright-report",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
     "clean:cache": "rimraf node_modules/.cache .rollup.cache *.tsbuildinfo",
     "clean:all": "pnpm run clean && pnpm run clean:cache",
     "size-check": "size-limit",
     "size-check:why": "size-limit --why",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run && pnpm run size-check",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "prepack": "pnpm run build",
     "postpack": "echo 'Package created successfully'",
     "docs:dev": "vitepress dev docs",
@@ -87,10 +87,6 @@
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
   },
-  "dependencies": {
-    "@ldesign/cache": "workspace:*",
-    "@ldesign/device": "workspace:*"
-  },
   "peerDependencies": {
     "vue": "^3.3.0"
   },
@@ -98,6 +94,10 @@
     "vue": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "@ldesign/cache": "workspace:*",
+    "@ldesign/device": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.1",

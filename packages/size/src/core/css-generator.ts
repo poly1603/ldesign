@@ -2,7 +2,7 @@
  * CSS变量生成器
  */
 
-import type { SizeConfig, SizeMode } from '../types'
+import type { SizeConfig } from '../types'
 
 /**
  * CSS变量生成器类

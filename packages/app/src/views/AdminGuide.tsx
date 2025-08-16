@@ -1,4 +1,4 @@
-import { useRouter, useDeviceRoute } from '@ldesign/router'
+import { useDeviceRoute, useRouter } from '@ldesign/router'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -96,7 +96,8 @@ export default defineComponent({
                 lineHeight: '1.6',
               }}
             >
-              当前设备：<strong>{currentDeviceName}</strong>
+              当前设备：
+              <strong>{currentDeviceName}</strong>
               <br />
               管理后台包含复杂的数据表格、图表和管理功能，需要较大的屏幕空间和精确的鼠标操作，因此仅支持桌面设备访问。
             </p>

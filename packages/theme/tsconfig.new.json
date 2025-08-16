@@ -1,13 +1,13 @@
 {
   "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "jsx": "preserve",
     "jsxImportSource": "vue",
-    "types": ["node", "vue/jsx"],
+    "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["node", "vue/jsx"]
   },
   "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "e2e/**/*"],
   "exclude": ["node_modules", "dist", "es", "lib", "types", "coverage"]

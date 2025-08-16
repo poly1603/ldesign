@@ -34,7 +34,7 @@ export class PluginManager {
       for (const dep of plugin.dependencies) {
         if (!this.plugins.has(dep)) {
           throw new Error(
-            `Plugin "${plugin.name}" depends on "${dep}" which is not registered`
+            `Plugin "${plugin.name}" depends on "${dep}" which is not registered`,
           )
         }
       }
@@ -58,7 +58,8 @@ export class PluginManager {
         dependencies: plugin.dependencies,
         apis: plugin.apis ? Object.keys(plugin.apis) : [],
       })
-    } catch (error) {
+    }
+    catch (error) {
       // 注册失败时清理
       this.plugins.delete(plugin.name)
       const index = this.loadOrder.indexOf(plugin.name)
@@ -85,8 +86,8 @@ export class PluginManager {
     if (dependents.length > 0) {
       throw new Error(
         `Cannot unregister plugin "${name}" because it is required by: ${dependents.join(
-          ', '
-        )}`
+          ', ',
+        )}`,
       )
     }
 
@@ -104,7 +105,8 @@ export class PluginManager {
       }
 
       this.log(`Plugin "${name}" unregistered successfully`)
-    } catch (error) {
+    }
+    catch (error) {
       this.log(`Failed to unregister plugin "${name}"`, error)
       throw error
     }

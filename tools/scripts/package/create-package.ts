@@ -22,7 +22,7 @@ export interface CreatePackageOptions {
  */
 export function createPackage(
   packageName: string,
-  options: CreatePackageOptions = {}
+  options: CreatePackageOptions = {},
 ): void {
   const {
     vue = false,
@@ -61,14 +61,14 @@ export function createPackage(
     dirs.push('src/vue')
   }
 
-  dirs.forEach(dir => {
+  dirs.forEach((dir) => {
     fs.mkdirSync(path.resolve(packageDir, dir), { recursive: true })
   })
 
   // 读取模板文件
   const templatePath = path.resolve(
     __dirname,
-    '../../configs/templates/package-template.json'
+    '../../configs/templates/package-template.json',
   )
   const packageTemplate = JSON.parse(fs.readFileSync(templatePath, 'utf-8'))
 
@@ -100,7 +100,7 @@ export function createPackage(
   // 写入 package.json
   fs.writeFileSync(
     path.resolve(packageDir, 'package.json'),
-    JSON.stringify(packageTemplate, null, 2)
+    JSON.stringify(packageTemplate, null, 2),
   )
 
   // 创建基础文件
@@ -121,7 +121,7 @@ function createBasicFiles(
   packageDir: string,
   packageName: string,
   description: string,
-  options: { vue?: boolean } = {}
+  options: { vue?: boolean } = {},
 ): void {
   const { vue = false } = options
 
@@ -161,7 +161,7 @@ export default {
 export interface ${toPascalCase(packageName)}Instance {
   // 实例接口
 }
-`
+`,
   )
 
   // src/utils/index.ts
@@ -173,7 +173,7 @@ export interface ${toPascalCase(packageName)}Instance {
 export function isValidInput(input: unknown): boolean {
   return input != null
 }
-`
+`,
   )
 
   // src/core/index.ts (仅Vue包需要)
@@ -201,7 +201,7 @@ export class ${toPascalCase(packageName)} {
 
 // 默认导出
 export default ${toPascalCase(packageName)}
-`
+`,
     )
   }
 
@@ -213,8 +213,8 @@ export default ${toPascalCase(packageName)}
 import type { ${toPascalCase(packageName)}Options } from '../types'
 
 export function install(app: App, options?: ${toPascalCase(
-        packageName
-      )}Options) {
+  packageName,
+)}Options) {
   // Vue 插件安装逻辑
 }
 
@@ -224,14 +224,14 @@ export default {
 
 // 重新导出核心功能
 export * from '../index'
-`
+`,
     )
   }
 
   // README.md
   fs.writeFileSync(
     path.resolve(packageDir, 'README.md'),
-    createReadmeContent(packageName, description, vue)
+    createReadmeContent(packageName, description, vue),
   )
 
   // 配置文件
@@ -244,7 +244,7 @@ export * from '../index'
 function createConfigFiles(
   packageDir: string,
   packageName: string,
-  vue: boolean
+  vue: boolean,
 ): void {
   // tsconfig.json
   fs.writeFileSync(
@@ -264,7 +264,7 @@ function createConfigFiles(
     "e2e/**/*"
   ]
 }
-`
+`,
   )
 
   // rollup.config.js
@@ -297,7 +297,7 @@ export default createRollupConfig({
 export default createVitestConfig({
   vue: ${vue}
 })
-`
+`,
   )
 
   // playwright.config.ts
@@ -311,7 +311,7 @@ export default createPlaywrightConfig({
     port: 5173
   }
 })
-`
+`,
   )
 
   // eslint.config.js
@@ -331,7 +331,7 @@ export default antfu({
     '*.d.ts'
   ]
 })
-`
+`,
   )
 }
 
@@ -341,7 +341,7 @@ export default antfu({
 function createReadmeContent(
   packageName: string,
   description: string,
-  vue: boolean
+  vue: boolean,
 ): string {
   return `# @ldesign/${packageName}
 
@@ -447,7 +447,7 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
 
   if (args.length < 1) {
     console.log(
-      '用法: tsx tools/package/create-package.ts <package-name> [options]'
+      '用法: tsx tools/package/create-package.ts <package-name> [options]',
     )
     console.log('选项:')
     console.log('  --vue          创建 Vue 包')
@@ -458,8 +458,8 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const packageName = args[0]
   const vue = args.includes('--vue')
   const descriptionIndex = args.indexOf('--description')
-  const description =
-    descriptionIndex !== -1 ? args[descriptionIndex + 1] : undefined
+  const description
+    = descriptionIndex !== -1 ? args[descriptionIndex + 1] : undefined
 
   createPackage(packageName, { vue, description })
 }

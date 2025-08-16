@@ -44,7 +44,8 @@ async function fetchUserData() {
   loading.value = true
   try {
     await store.fetchUserData()
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -61,7 +62,7 @@ function handleScroll(event: Event) {
 }
 
 // 监听搜索查询
-watch(searchQuery, newQuery => {
+watch(searchQuery, (newQuery) => {
   searchApiCalls.value++
   store.performSearch(newQuery)
 })
@@ -89,19 +90,25 @@ onMounted(() => {
               <div class="metric-value">
                 {{ performanceReport.slowActions.length }}
               </div>
-              <div class="metric-label">慢速 Actions</div>
+              <div class="metric-label">
+                慢速 Actions
+              </div>
             </div>
             <div class="metric">
               <div class="metric-value">
                 {{ performanceReport.slowGetters.length }}
               </div>
-              <div class="metric-label">慢速 Getters</div>
+              <div class="metric-label">
+                慢速 Getters
+              </div>
             </div>
             <div class="metric">
               <div class="metric-value">
                 {{ performanceReport.frequentUpdates.length }}
               </div>
-              <div class="metric-label">频繁更新</div>
+              <div class="metric-label">
+                频繁更新
+              </div>
             </div>
           </div>
 
@@ -177,7 +184,7 @@ onMounted(() => {
             v-model="searchQuery"
             placeholder="输入搜索关键词..."
             class="search-input"
-          />
+          >
           <p>搜索结果数量：{{ searchResults.length }}</p>
           <p>API 调用次数：{{ searchApiCalls }}</p>
         </div>
@@ -186,7 +193,9 @@ onMounted(() => {
           <h3>滚动节流</h3>
           <div class="scroll-container" @scroll="handleScroll">
             <div class="scroll-content">
-              <p v-for="i in 50" :key="i">滚动内容 {{ i }}</p>
+              <p v-for="i in 50" :key="i">
+                滚动内容 {{ i }}
+              </p>
             </div>
           </div>
           <p>滚动位置：{{ scrollPosition }}px</p>
@@ -217,8 +226,7 @@ class PerformanceStore extends BaseStore {
     // 这个计算属性的执行时间会被监控
     return this.data.reduce((sum, item) => sum + item.value, 0)
   }
-}</pre
-          >
+}</pre>
         </div>
       </div>
     </div>

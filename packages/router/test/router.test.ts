@@ -167,7 +167,7 @@ describe('router Core', () => {
       expect(guard).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
         expect.objectContaining({ path: '/' }),
-        expect.any(Function)
+        expect.any(Function),
       )
 
       removeGuard()
@@ -192,7 +192,7 @@ describe('router Core', () => {
       expect(hook).toHaveBeenCalledTimes(2) // 初始导航 + 测试导航
       expect(hook).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
-        expect.objectContaining({ path: '/' })
+        expect.objectContaining({ path: '/' }),
       )
 
       removeHook()
@@ -211,7 +211,8 @@ describe('router Core', () => {
       router.beforeEach((to, from, next) => {
         if (to.path === '/about') {
           next('/user/123')
-        } else {
+        }
+        else {
           next()
         }
       })

@@ -5,19 +5,19 @@
  */
 
 import type {
+  DecorationConfig,
+  ThemeConfig,
+  ThemeEventData,
+  ThemeEventListener,
+  ThemeEventType,
   ThemeManagerInstance,
   ThemeManagerOptions,
-  ThemeConfig,
-  DecorationConfig,
-  ThemeEventType,
-  ThemeEventListener,
-  ThemeEventData,
 } from './types'
 import { createThemeManager as createColorThemeManager } from '@ldesign/color'
 import { createEventEmitter } from '../utils/event-emitter'
-import { createResourceManager } from './resource-manager'
-import { createDecorationManager } from './decoration-manager'
 import { createAnimationManager } from './animation-manager'
+import { createDecorationManager } from './decoration-manager'
+import { createResourceManager } from './resource-manager'
 
 /**
  * 主题管理器实现
@@ -86,19 +86,19 @@ export class ThemeManager implements ThemeManagerInstance {
       this.decorationManager = createDecorationManager(
         this.container,
         this.eventEmitter,
-        this.resourceManager
+        this.resourceManager,
       )
 
       // 初始化动画管理器
       this.animationManager = createAnimationManager(
         this.container,
-        this.eventEmitter
+        this.eventEmitter,
       )
 
       // 设置默认主题
       if (
-        this.options.defaultTheme &&
-        this.themes.has(this.options.defaultTheme)
+        this.options.defaultTheme
+        && this.themes.has(this.options.defaultTheme)
       ) {
         await this.setTheme(this.options.defaultTheme)
       }
@@ -110,7 +110,8 @@ export class ThemeManager implements ThemeManagerInstance {
 
       this.initialized = true
       this.eventEmitter.emit('theme-loaded', {})
-    } catch (error) {
+    }
+    catch (error) {
       this.eventEmitter.emit('theme-error', { error: error as Error })
       throw error
     }
@@ -142,17 +143,17 @@ export class ThemeManager implements ThemeManagerInstance {
       }
 
       // 应用装饰元素
-      theme.decorations.forEach(decoration => {
+      theme.decorations.forEach((decoration) => {
         this.decorationManager.add(decoration)
       })
 
       // 注册动画
-      theme.animations.forEach(animation => {
+      theme.animations.forEach((animation) => {
         this.animationManager.register(animation)
       })
 
       // 自动开始动画
-      theme.animations.forEach(animation => {
+      theme.animations.forEach((animation) => {
         if (animation.playState !== 'paused') {
           this.animationManager.start(animation.name)
         }
@@ -161,7 +162,8 @@ export class ThemeManager implements ThemeManagerInstance {
       this.currentTheme = name
       this.saveCurrentTheme()
       this.eventEmitter.emit('theme-changed', { theme: name })
-    } catch (error) {
+    }
+    catch (error) {
       this.eventEmitter.emit('theme-error', {
         theme: name,
         error: error as Error,
@@ -290,11 +292,12 @@ export class ThemeManager implements ThemeManagerInstance {
       const themeConfig = this.themes.get(theme)
       if (themeConfig) {
         const pattern = `(${Object.values(themeConfig.resources.images).join(
-          '|'
+          '|',
         )}|${Object.values(themeConfig.resources.icons).join('|')})`
         this.resourceManager.clear(pattern)
       }
-    } else {
+    }
+    else {
       this.resourceManager.clear()
     }
   }
@@ -318,7 +321,7 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   emit(
     event: ThemeEventType,
-    data: Omit<ThemeEventData, 'type' | 'timestamp'>
+    data: Omit<ThemeEventData, 'type' | 'timestamp'>,
   ): void {
     this.eventEmitter.emit(event, data)
   }
@@ -371,7 +374,7 @@ export class ThemeManager implements ThemeManagerInstance {
         if (theme.festival && theme.timeRange) {
           if (this.isInTimeRange(now, theme.timeRange)) {
             if (this.currentTheme !== name) {
-              this.setTheme(name).catch(error => {
+              this.setTheme(name).catch((error) => {
                 console.error(`Failed to auto-activate theme "${name}":`, error)
               })
             }
@@ -413,7 +416,8 @@ export class ThemeManager implements ThemeManagerInstance {
         : JSON.stringify(this.currentTheme)
 
       storage.setItem(key, data)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to save current theme:', error)
     }
   }
@@ -436,7 +440,7 @@ export class ThemeManager implements ThemeManagerInstance {
  * 创建主题管理器实例
  */
 export function createThemeManager(
-  options?: ThemeManagerOptions
+  options?: ThemeManagerOptions,
 ): ThemeManagerInstance {
   return new ThemeManager(options)
 }

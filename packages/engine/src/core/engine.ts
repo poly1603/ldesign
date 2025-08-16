@@ -70,7 +70,7 @@ export class EngineImpl implements Engine {
 
   private setupErrorHandling(): void {
     // 监听全局错误
-    this.errors.onError(errorInfo => {
+    this.errors.onError((errorInfo) => {
       this.logger.error('Global error captured', errorInfo)
 
       // 发送错误事件
@@ -157,7 +157,7 @@ export class EngineImpl implements Engine {
   mount(selector: string | Element): void {
     if (!this._app) {
       throw new Error(
-        'Engine must have a Vue app before mounting. Use createApp() first.'
+        'Engine must have a Vue app before mounting. Use createApp() first.',
       )
     }
 

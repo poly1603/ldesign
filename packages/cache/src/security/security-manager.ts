@@ -40,7 +40,8 @@ export class SecurityManager {
 
     try {
       return await this.encryption.encrypt(data)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Encryption failed:', error)
       throw new Error('Failed to encrypt data')
     }
@@ -56,7 +57,8 @@ export class SecurityManager {
 
     try {
       return await this.encryption.decrypt(data)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Decryption failed:', error)
       throw new Error('Failed to decrypt data')
     }
@@ -72,7 +74,8 @@ export class SecurityManager {
 
     try {
       return await this.obfuscation.obfuscate(key)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Key obfuscation failed:', error)
       throw new Error('Failed to obfuscate key')
     }
@@ -88,7 +91,8 @@ export class SecurityManager {
 
     try {
       return await this.obfuscation.deobfuscate(key)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Key deobfuscation failed:', error)
       throw new Error('Failed to deobfuscate key')
     }
@@ -120,14 +124,14 @@ export class SecurityManager {
    * 生成安全的随机键
    */
   generateSecureKey(length: number = 32): string {
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const chars
+      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
 
     if (
-      typeof window !== 'undefined' &&
-      window.crypto &&
-      window.crypto.getRandomValues
+      typeof window !== 'undefined'
+      && window.crypto
+      && window.crypto.getRandomValues
     ) {
       const array = new Uint8Array(length)
       window.crypto.getRandomValues(array)
@@ -135,7 +139,8 @@ export class SecurityManager {
       for (let i = 0; i < length; i++) {
         result += chars[array[i] % chars.length]
       }
-    } else {
+    }
+    else {
       // 回退到 Math.random
       for (let i = 0; i < length; i++) {
         result += chars[Math.floor(Math.random() * chars.length)]
@@ -150,7 +155,7 @@ export class SecurityManager {
    */
   async verifyIntegrity(
     originalData: string,
-    storedData: string
+    storedData: string,
   ): Promise<boolean> {
     try {
       if (this.config.encryption.enabled) {
@@ -159,7 +164,8 @@ export class SecurityManager {
       }
 
       return storedData === originalData
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -205,9 +211,9 @@ export class SecurityManager {
       encryption: this.encryption.isAvailable(),
       obfuscation: this.obfuscation.isAvailable(),
       webCrypto:
-        typeof window !== 'undefined' &&
-        'crypto' in window &&
-        'subtle' in window.crypto,
+        typeof window !== 'undefined'
+        && 'crypto' in window
+        && 'subtle' in window.crypto,
     }
   }
 }

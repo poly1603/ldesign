@@ -10,23 +10,23 @@ export * from './setup'
 // 测试辅助工具
 export * from './utils/test-helpers'
 
+export {
+  flushPromises,
+  mount,
+  type MountingOptions,
+  shallowMount,
+  type VueWrapper,
+} from '@vue/test-utils'
+
 // 重新导出常用的测试函数
 export {
-  describe,
-  it,
-  test,
-  expect,
-  beforeEach,
+  afterAll,
   afterEach,
   beforeAll,
-  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
   vi,
 } from 'vitest'
-
-export {
-  mount,
-  shallowMount,
-  flushPromises,
-  type VueWrapper,
-  type MountingOptions,
-} from '@vue/test-utils'

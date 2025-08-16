@@ -265,7 +265,8 @@ export class RouterImpl implements Router {
       const result = await this.runGuard(guard, currentTo, from)
       if (result === false) {
         throw new Error('Navigation aborted by guard')
-      } else if (result && (typeof result === 'string' || typeof result === 'object')) {
+      }
+      else if (result && (typeof result === 'string' || typeof result === 'object')) {
         // 重定向
         currentTo = this.resolve(result)
       }
@@ -277,7 +278,8 @@ export class RouterImpl implements Router {
         const result = await this.runGuard(record.beforeEnter, currentTo, from)
         if (result === false) {
           throw new Error('Navigation aborted by route guard')
-        } else if (result && (typeof result === 'string' || typeof result === 'object')) {
+        }
+        else if (result && (typeof result === 'string' || typeof result === 'object')) {
           // 重定向
           currentTo = this.resolve(result)
         }
@@ -289,7 +291,8 @@ export class RouterImpl implements Router {
       const result = await this.runGuard(guard, currentTo, from)
       if (result === false) {
         throw new Error('Navigation aborted by resolve guard')
-      } else if (result && (typeof result === 'string' || typeof result === 'object')) {
+      }
+      else if (result && (typeof result === 'string' || typeof result === 'object')) {
         // 重定向
         currentTo = this.resolve(result)
       }

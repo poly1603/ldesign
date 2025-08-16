@@ -5,7 +5,7 @@
  */
 
 // ============ 插件支持 ============
-export { createTemplateEnginePlugin, createDefaultTemplateEnginePlugin } from './plugin'
+export { createDefaultTemplateEnginePlugin, createTemplateEnginePlugin } from './plugin'
 
 // ============ 类型定义 ============
-export type { TemplateEnginePluginConfig, EnginePlugin } from './plugin'
+export type { EnginePlugin, TemplateEnginePluginConfig } from './plugin'

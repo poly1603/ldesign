@@ -5,37 +5,37 @@
  */
 
 import type { App } from 'vue'
-import type { VueThemePluginOptions, ThemeConfig } from './types'
+import type { ThemeConfig, VueThemePluginOptions } from './types'
 import { createThemeManager } from '../../core/theme-manager'
 
+import { ThemeButton } from './components/ThemeButton'
 // 组件
 import { ThemeProvider } from './components/ThemeProvider'
-import { ThemeButton } from './components/ThemeButton'
 import { ThemeSelector } from './components/ThemeSelector'
-
-// 指令
-import { vThemeDecoration } from './directives/theme-decoration'
-import { vThemeAnimation } from './directives/theme-animation'
 
 // 组合式函数
 import {
-  useTheme,
   useCurrentTheme,
+  useTheme,
+  useThemePreload,
   useThemeState,
   useThemeToggle,
-  useThemePreload,
 } from './composables/useTheme'
 import {
-  useThemeDecorations,
-  useDecorationFilter,
-  useDecorationBatch,
-} from './composables/useThemeDecorations'
-import {
-  useThemeAnimations,
   useAnimationControl,
-  useAnimationSequence,
   useAnimationPerformance,
+  useAnimationSequence,
+  useThemeAnimations,
 } from './composables/useThemeAnimations'
+
+import {
+  useDecorationBatch,
+  useDecorationFilter,
+  useThemeDecorations,
+} from './composables/useThemeDecorations'
+import { vThemeAnimation } from './directives/theme-animation'
+// 指令
+import { vThemeDecoration } from './directives/theme-decoration'
 
 /**
  * Vue 主题插件
@@ -88,11 +88,11 @@ export const VueThemePlugin = {
     app.provide('themeManager', themeManager)
 
     // 初始化主题管理器
-    themeManager.init().catch(error => {
+    themeManager.init().catch((error) => {
       if (debug) {
         console.error(
           '[VueThemePlugin] Failed to initialize theme manager:',
-          error
+          error,
         )
       }
     })
@@ -117,7 +117,7 @@ export function createThemeApp(app: App, options: VueThemePluginOptions = {}) {
 export function installTheme(
   app: App,
   themes: ThemeConfig[],
-  options: Omit<VueThemePluginOptions, 'themes'> = {}
+  options: Omit<VueThemePluginOptions, 'themes'> = {},
 ) {
   return app.use(VueThemePlugin, {
     themes,
@@ -126,25 +126,25 @@ export function installTheme(
 }
 
 // 导出所有组件
-export { ThemeProvider, ThemeButton, ThemeSelector }
+export { ThemeButton, ThemeProvider, ThemeSelector }
 
 // 导出所有指令
-export { vThemeDecoration, vThemeAnimation }
+export { vThemeAnimation, vThemeDecoration }
 
 // 导出所有组合式函数
 export {
-  useTheme,
+  useAnimationControl,
+  useAnimationPerformance,
+  useAnimationSequence,
   useCurrentTheme,
+  useDecorationBatch,
+  useDecorationFilter,
+  useTheme,
+  useThemeAnimations,
+  useThemeDecorations,
+  useThemePreload,
   useThemeState,
   useThemeToggle,
-  useThemePreload,
-  useThemeDecorations,
-  useDecorationFilter,
-  useDecorationBatch,
-  useThemeAnimations,
-  useAnimationControl,
-  useAnimationSequence,
-  useAnimationPerformance,
 }
 
 // 导出类型

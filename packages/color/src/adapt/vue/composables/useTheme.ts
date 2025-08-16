@@ -23,7 +23,7 @@ export function useTheme(manager?: ThemeManagerInstance): UseThemeReturn {
 
   if (!themeManager) {
     throw new Error(
-      'Theme manager not found. Please provide a manager or install the Vue plugin.'
+      'Theme manager not found. Please provide a manager or install the Vue plugin.',
     )
   }
 
@@ -36,7 +36,7 @@ export function useTheme(manager?: ThemeManagerInstance): UseThemeReturn {
   const isDark = computed(() => currentMode.value === 'dark')
   const isLight = computed(() => currentMode.value === 'light')
   const currentThemeConfig = computed(() =>
-    themeManager.getThemeConfig(currentTheme.value)
+    themeManager.getThemeConfig(currentTheme.value),
   )
 
   // 状态更新函数
@@ -66,7 +66,8 @@ export function useTheme(manager?: ThemeManagerInstance): UseThemeReturn {
           // 暂时使用空函数
         },
       ]
-    } else {
+    }
+    else {
       // 如果没有事件系统，使用轮询（降级方案）
       const interval = setInterval(updateState, 1000)
       unsubscribeCallbacks = [() => clearInterval(interval)]

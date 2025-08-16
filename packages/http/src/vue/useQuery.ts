@@ -24,7 +24,8 @@ class QueryCache {
 
   get(key: string, staleTime: number): any {
     const item = this.cache.get(key)
-    if (!item) return null
+    if (!item)
+      return null
 
     const isStale = Date.now() - item.timestamp > staleTime
     return isStale ? null : item.data
@@ -57,7 +58,7 @@ export function useQuery<T = any>(
   client: HttpClient,
   queryKey: MaybeRef<string | (() => string)>,
   config: MaybeRef<RequestConfig>,
-  options: UseQueryOptions<T> = {}
+  options: UseQueryOptions<T> = {},
 ): UseQueryReturn<T> {
   // 响应式状态
   const data = ref<T | null>(options.initialData ?? null)
@@ -97,7 +98,7 @@ export function useQuery<T = any>(
    * 执行查询
    */
   const execute = async (
-    overrideConfig?: RequestConfig
+    overrideConfig?: RequestConfig,
   ): Promise<ResponseData<T>> => {
     if (!enabled.value) {
       throw new Error('Query is disabled')
@@ -117,7 +118,8 @@ export function useQuery<T = any>(
     // 设置加载状态
     if (!data.value) {
       loading.value = true
-    } else {
+    }
+    else {
       isFetching.value = true
       isStale.value = true
     }
@@ -129,8 +131,8 @@ export function useQuery<T = any>(
     cancelTokenSource = createCancelTokenSource()
 
     let currentRetry = 0
-    const maxRetries =
-      typeof retry === 'number' ? retry : retry === true ? 3 : 0
+    const maxRetries
+      = typeof retry === 'number' ? retry : retry === true ? 3 : 0
 
     while (currentRetry <= maxRetries) {
       try {
@@ -166,7 +168,8 @@ export function useQuery<T = any>(
         }
 
         return response
-      } catch (err) {
+      }
+      catch (err) {
         const httpError = err as HttpError
 
         // 如果是取消错误，直接抛出
@@ -179,12 +182,12 @@ export function useQuery<T = any>(
 
         // 如果还有重试次数，等待后重试
         if (currentRetry <= maxRetries) {
-          const shouldRetry =
-            typeof retry === 'function' ? retry(currentRetry, httpError) : true
+          const shouldRetry
+            = typeof retry === 'function' ? retry(currentRetry, httpError) : true
 
           if (shouldRetry) {
-            const delay =
-              typeof retryDelay === 'function'
+            const delay
+              = typeof retryDelay === 'function'
                 ? retryDelay(currentRetry)
                 : retryDelay * 2 ** (currentRetry - 1)
 
@@ -203,7 +206,8 @@ export function useQuery<T = any>(
         }
 
         throw httpError
-      } finally {
+      }
+      finally {
         loading.value = false
         isFetching.value = false
 
@@ -264,7 +268,7 @@ export function useQuery<T = any>(
         execute()
       }
     },
-    { immediate: options.immediate !== false, deep: true }
+    { immediate: options.immediate !== false, deep: true },
   )
 
   // 窗口焦点重新获取

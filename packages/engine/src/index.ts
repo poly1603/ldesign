@@ -70,12 +70,12 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   }
 
   // 注册中间件
-  middleware.forEach(m => {
+  middleware.forEach((m) => {
     engine.middleware.use(m)
   })
 
   // 注册插件（异步）
-  Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
+  Promise.all(plugins.map(plugin => engine.use(plugin))).catch((error) => {
     engine.logger.error('Failed to register plugins', error)
   })
 
@@ -90,7 +90,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
  */
 export function createApp(
   rootComponent: Component,
-  options: CreateEngineOptions = {}
+  options: CreateEngineOptions = {},
 ): Engine {
   // 创建引擎实例
   const engine = createEngine(options)
@@ -113,7 +113,7 @@ export const creators = {
   plugin: (
     name: string,
     install: Plugin['install'],
-    options?: Partial<Plugin>
+    options?: Partial<Plugin>,
   ): Plugin => ({
     name,
     install,
@@ -122,7 +122,7 @@ export const creators = {
   middleware: (
     name: string,
     handler: Middleware['handler'],
-    priority?: number
+    priority?: number,
   ): Middleware => ({
     name,
     handler,
@@ -139,10 +139,11 @@ export const utils = {
   isDev: () => {
     try {
       return (
-        typeof process !== 'undefined' &&
-        process.env?.NODE_ENV === 'development'
+        typeof process !== 'undefined'
+        && process.env?.NODE_ENV === 'development'
       )
-    } catch {
+    }
+    catch {
       return false
     }
   },
@@ -154,21 +155,22 @@ export const utils = {
   // 深度合并对象
   deepMerge: <T extends Record<string, any>>(
     target: T,
-    source: Partial<T>
+    source: Partial<T>,
   ): T => {
     const result = { ...target }
 
     for (const key in source) {
       if (
-        source[key] &&
-        typeof source[key] === 'object' &&
-        !Array.isArray(source[key])
+        source[key]
+        && typeof source[key] === 'object'
+        && !Array.isArray(source[key])
       ) {
         result[key] = utils.deepMerge(
           result[key] || ({} as any),
-          source[key]!
+          source[key]!,
         ) as any
-      } else {
+      }
+      else {
         result[key] = source[key]!
       }
     }
@@ -179,7 +181,7 @@ export const utils = {
   // 防抖函数
   debounce: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): ((...args: Parameters<T>) => void) => {
     let timeout: NodeJS.Timeout
 
@@ -192,7 +194,7 @@ export const utils = {
   // 节流函数
   throttle: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): ((...args: Parameters<T>) => void) => {
     let lastTime = 0
 

@@ -29,8 +29,8 @@ async function handleLogin() {
 
     const user = validCredentials.find(
       cred =>
-        cred.username === form.value.username &&
-        cred.password === form.value.password
+        cred.username === form.value.username
+        && cred.password === form.value.password,
     )
 
     if (user) {
@@ -44,21 +44,24 @@ async function handleLogin() {
           user.role === 'admin'
             ? '管理员'
             : user.role === 'user'
-            ? '用户'
-            : '访客'
-        } ${user.username}`
+              ? '用户'
+              : '访客'
+        } ${user.username}`,
       )
 
       // 重定向到目标页面或首页
       const redirect = (route.query.redirect as string) || '/'
       router.push(redirect)
-    } else {
+    }
+    else {
       alert('用户名或密码错误，请检查后重试')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Login error:', error)
     alert('登录失败，请稍后重试')
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -69,7 +72,9 @@ async function handleLogin() {
     <div class="login-container">
       <div class="login-header">
         <h1>用户登录</h1>
-        <p data-testid="redirect-message">请输入您的凭据以访问受保护的页面</p>
+        <p data-testid="redirect-message">
+          请输入您的凭据以访问受保护的页面
+        </p>
       </div>
 
       <form class="login-form" @submit.prevent="handleLogin">
@@ -82,7 +87,7 @@ async function handleLogin() {
             class="input"
             placeholder="请输入用户名"
             required
-          />
+          >
         </div>
 
         <div class="form-group">
@@ -94,12 +99,12 @@ async function handleLogin() {
             class="input"
             placeholder="请输入密码"
             required
-          />
+          >
         </div>
 
         <div class="form-group">
           <label class="checkbox-label">
-            <input v-model="form.remember" type="checkbox" class="checkbox" />
+            <input v-model="form.remember" type="checkbox" class="checkbox">
             记住我
           </label>
         </div>
@@ -115,13 +120,21 @@ async function handleLogin() {
 
       <div class="login-tips">
         <h3>演示账户</h3>
-        <div class="tip-item"><strong>管理员:</strong> admin / admin123</div>
-        <div class="tip-item"><strong>普通用户:</strong> user / user123</div>
-        <div class="tip-item"><strong>访客:</strong> guest / guest123</div>
+        <div class="tip-item">
+          <strong>管理员:</strong> admin / admin123
+        </div>
+        <div class="tip-item">
+          <strong>普通用户:</strong> user / user123
+        </div>
+        <div class="tip-item">
+          <strong>访客:</strong> guest / guest123
+        </div>
       </div>
 
       <div class="login-actions">
-        <RouterLink to="/" class="back-link"> ← 返回首页 </RouterLink>
+        <RouterLink to="/" class="back-link">
+          ← 返回首页
+        </RouterLink>
       </div>
     </div>
   </div>

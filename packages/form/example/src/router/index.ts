@@ -1,10 +1,10 @@
 import type { RouteRecordRaw } from 'vue-router'
 
+import DynamicDemo from '../views/DynamicDemo.vue'
 // 导入页面组件
 import Home from '../views/Home.vue'
-import ValidationDemo from '../views/ValidationDemo.vue'
-import DynamicDemo from '../views/DynamicDemo.vue'
 import LayoutDemo from '../views/LayoutDemo.vue'
+import ValidationDemo from '../views/ValidationDemo.vue'
 
 // 路由配置
 export const routes: RouteRecordRaw[] = [

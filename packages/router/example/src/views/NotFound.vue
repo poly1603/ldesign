@@ -54,7 +54,8 @@ function goHome() {
 function goBack() {
   if (window.history.length > 1) {
     router.back()
-  } else {
+  }
+  else {
     router.push('/')
   }
 }
@@ -76,8 +77,12 @@ onMounted(() => {
   <div class="not-found">
     <div class="not-found-container">
       <div class="error-illustration">
-        <div class="error-code">404</div>
-        <div class="error-icon">🔍</div>
+        <div class="error-code">
+          404
+        </div>
+        <div class="error-icon">
+          🔍
+        </div>
       </div>
 
       <div class="error-content">
@@ -103,7 +108,9 @@ onMounted(() => {
           <button class="btn btn-secondary btn-lg" @click="goBack">
             返回上页
           </button>
-          <button class="btn btn-info btn-lg" @click="refresh">刷新页面</button>
+          <button class="btn btn-info btn-lg" @click="refresh">
+            刷新页面
+          </button>
         </div>
 
         <div class="suggestions">

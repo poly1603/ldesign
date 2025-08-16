@@ -18,7 +18,7 @@
         background: white;
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       }
       .header {
         text-align: center;
@@ -149,13 +149,13 @@
         </div>
       </div>
 
-      <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+      <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center">
         <h3>📋 构建信息</h3>
         <p><strong>构建时间:</strong> 约 2 分钟</p>
         <p><strong>输出格式:</strong> ES Modules, CommonJS, TypeScript 声明文件</p>
         <p><strong>状态:</strong> <span class="success">✅ 所有包成功集成</span></p>
-        <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
-          注意：由于 PowerShell 钩子问题，服务器启动受到影响，但构建过程完全成功。<br>
+        <p style="margin-top: 15px; color: #666; font-size: 0.9em">
+          注意：由于 PowerShell 钩子问题，服务器启动受到影响，但构建过程完全成功。<br />
           所有功能已正确集成，可以通过构建输出文件验证。
         </p>
       </div>
@@ -163,23 +163,23 @@
 
     <script>
       // 简单的页面交互
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('🎉 LDesign App 测试页面加载完成');
-        console.log('✅ 5个包已成功集成到应用中');
-        console.log('📦 包列表: cache, color, crypto, size, store');
-        
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('🎉 LDesign App 测试页面加载完成')
+        console.log('✅ 5个包已成功集成到应用中')
+        console.log('📦 包列表: cache, color, crypto, size, store')
+
         // 添加一些动画效果
-        const items = document.querySelectorAll('.status-item, .feature-item');
+        const items = document.querySelectorAll('.status-item, .feature-item')
         items.forEach((item, index) => {
-          item.style.opacity = '0';
-          item.style.transform = 'translateY(20px)';
+          item.style.opacity = '0'
+          item.style.transform = 'translateY(20px)'
           setTimeout(() => {
-            item.style.transition = 'all 0.5s ease';
-            item.style.opacity = '1';
-            item.style.transform = 'translateY(0)';
-          }, index * 100);
-        });
-      });
+            item.style.transition = 'all 0.5s ease'
+            item.style.opacity = '1'
+            item.style.transform = 'translateY(0)'
+          }, index * 100)
+        })
+      })
     </script>
   </body>
 </html>

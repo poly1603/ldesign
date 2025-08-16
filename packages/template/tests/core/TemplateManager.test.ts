@@ -66,7 +66,7 @@ describe('templateManager', () => {
       await manager.scanTemplates()
       const templates = await manager.getAvailableTemplates('login')
       expect(templates).toBeInstanceOf(Array)
-      templates.forEach(template => {
+      templates.forEach((template) => {
         expect(template.category).toBe('login')
       })
     })
@@ -75,7 +75,7 @@ describe('templateManager', () => {
       await manager.scanTemplates()
       const templates = await manager.getAvailableTemplates(undefined, 'desktop')
       expect(templates).toBeInstanceOf(Array)
-      templates.forEach(template => {
+      templates.forEach((template) => {
         expect(template.device).toBe('desktop')
       })
     })
@@ -109,7 +109,7 @@ describe('templateManager', () => {
     it('应该能获取可用设备类型', async () => {
       const devices = await manager.getAvailableDevices()
       expect(devices).toBeInstanceOf(Array)
-      devices.forEach(device => {
+      devices.forEach((device) => {
         expect(['desktop', 'mobile', 'tablet']).toContain(device)
       })
     })

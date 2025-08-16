@@ -2,12 +2,12 @@
  * @ldesign/theme - 主题管理器单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { ThemeConfig, ThemeManagerInstance } from '@/core/types'
+import { cleanup, createMockThemeConfig } from '@tests/setup'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createThemeManager } from '@/core/theme-manager'
-import { createMockThemeConfig, cleanup } from '@tests/setup'
-import type { ThemeManagerInstance, ThemeConfig } from '@/core/types'
 
-describe('ThemeManager', () => {
+describe('themeManager', () => {
   let themeManager: ThemeManagerInstance
   let mockTheme1: ThemeConfig
   let mockTheme2: ThemeConfig
@@ -123,7 +123,7 @@ describe('ThemeManager', () => {
         expect.objectContaining({
           type: 'theme-changed',
           theme: 'theme2',
-        })
+        }),
       )
     })
 
@@ -143,7 +143,8 @@ describe('ThemeManager', () => {
 
       try {
         await themeManager.setTheme('nonexistent')
-      } catch {
+      }
+      catch {
         // 忽略错误
       }
 
@@ -151,7 +152,7 @@ describe('ThemeManager', () => {
         expect.objectContaining({
           type: 'theme-error',
           error: expect.any(Error),
-        })
+        }),
       )
     })
   })
@@ -255,7 +256,7 @@ describe('ThemeManager', () => {
       })
 
       await expect(
-        themeManager.preloadResources('theme1')
+        themeManager.preloadResources('theme1'),
       ).resolves.not.toThrow()
     })
 

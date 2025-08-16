@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import {
+  SizeIndicator,
+  SizeSwitcher,
+} from '../../../../src/vue'
+import CustomButton from './CustomButton.vue'
+import CustomCard from './CustomCard.vue'
+</script>
+
 <template>
   <div class="real-world-demo">
     <!-- 模拟的管理后台界面 -->
@@ -8,7 +17,7 @@
           <h2>管理后台</h2>
           <SizeIndicator class="sidebar-size-indicator" />
         </div>
-        
+
         <nav class="sidebar-nav">
           <a href="#" class="nav-item active">
             <span class="nav-icon">📊</span>
@@ -41,9 +50,9 @@
             <h1>仪表盘</h1>
             <span class="breadcrumb">首页 / 仪表盘</span>
           </div>
-          
+
           <div class="toolbar-right">
-            <SizeSwitcher 
+            <SizeSwitcher
               switcher-style="select"
               class="toolbar-size-switcher"
             />
@@ -57,34 +66,58 @@
         <section class="stats-section">
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-icon">👥</div>
+              <div class="stat-icon">
+                👥
+              </div>
               <div class="stat-content">
-                <div class="stat-number">1,234</div>
-                <div class="stat-label">总用户数</div>
+                <div class="stat-number">
+                  1,234
+                </div>
+                <div class="stat-label">
+                  总用户数
+                </div>
               </div>
             </div>
-            
+
             <div class="stat-card">
-              <div class="stat-icon">📦</div>
+              <div class="stat-icon">
+                📦
+              </div>
               <div class="stat-content">
-                <div class="stat-number">567</div>
-                <div class="stat-label">产品数量</div>
+                <div class="stat-number">
+                  567
+                </div>
+                <div class="stat-label">
+                  产品数量
+                </div>
               </div>
             </div>
-            
+
             <div class="stat-card">
-              <div class="stat-icon">💰</div>
+              <div class="stat-icon">
+                💰
+              </div>
               <div class="stat-content">
-                <div class="stat-number">¥89,012</div>
-                <div class="stat-label">总收入</div>
+                <div class="stat-number">
+                  ¥89,012
+                </div>
+                <div class="stat-label">
+                  总收入
+                </div>
               </div>
             </div>
-            
+
             <div class="stat-card">
-              <div class="stat-icon">📈</div>
+              <div class="stat-icon">
+                📈
+              </div>
               <div class="stat-content">
-                <div class="stat-number">+12.5%</div>
-                <div class="stat-label">增长率</div>
+                <div class="stat-number">
+                  +12.5%
+                </div>
+                <div class="stat-label">
+                  增长率
+                </div>
               </div>
             </div>
           </div>
@@ -96,14 +129,14 @@
             <!-- 图表卡片 -->
             <CustomCard title="销售趋势" class="chart-card">
               <div class="chart-placeholder">
-                <div class="chart-bar" style="height: 60%"></div>
-                <div class="chart-bar" style="height: 80%"></div>
-                <div class="chart-bar" style="height: 45%"></div>
-                <div class="chart-bar" style="height: 90%"></div>
-                <div class="chart-bar" style="height: 70%"></div>
-                <div class="chart-bar" style="height: 85%"></div>
+                <div class="chart-bar" style="height: 60%" />
+                <div class="chart-bar" style="height: 80%" />
+                <div class="chart-bar" style="height: 45%" />
+                <div class="chart-bar" style="height: 90%" />
+                <div class="chart-bar" style="height: 70%" />
+                <div class="chart-bar" style="height: 85%" />
               </div>
-              
+
               <template #footer>
                 <CustomButton size="small" variant="outline">
                   查看详情
@@ -145,7 +178,7 @@
                   </tbody>
                 </table>
               </div>
-              
+
               <template #footer>
                 <CustomButton size="small" variant="outline">
                   查看全部
@@ -158,15 +191,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import {
-  SizeSwitcher,
-  SizeIndicator
-} from '../../../../src/vue'
-import CustomButton from './CustomButton.vue'
-import CustomCard from './CustomCard.vue'
-</script>
 
 <style scoped>
 .real-world-demo {
@@ -414,33 +438,33 @@ import CustomCard from './CustomCard.vue'
   .admin-layout {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     height: auto;
   }
-  
+
   .sidebar-nav {
     display: flex;
     overflow-x: auto;
     padding: var(--ls-spacing-sm, 8px);
   }
-  
+
   .nav-item {
     white-space: nowrap;
     border-right: none;
     border-bottom: 3px solid transparent;
   }
-  
+
   .nav-item.active {
     border-right: none;
     border-bottom: 3px solid #667eea;
   }
-  
+
   .content-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -452,11 +476,11 @@ import CustomCard from './CustomCard.vue'
     gap: var(--ls-spacing-base, 16px);
     align-items: stretch;
   }
-  
+
   .toolbar-right {
     justify-content: space-between;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

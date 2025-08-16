@@ -2,11 +2,11 @@
  * 设备路由守卫测试
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DeviceType, RouteLocationNormalized } from '../../src/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeviceRouteGuard } from '../../src/device/guard'
 
-describe('DeviceRouteGuard', () => {
+describe('deviceRouteGuard', () => {
   let getCurrentDevice: () => DeviceType
   let guard: DeviceRouteGuard
 
@@ -32,7 +32,7 @@ describe('DeviceRouteGuard', () => {
       const next = vi.fn()
 
       const to = createMockRoute({
-        meta: {}
+        meta: {},
       })
       const from = createMockRoute()
 
@@ -50,8 +50,8 @@ describe('DeviceRouteGuard', () => {
 
       const to = createMockRoute({
         meta: {
-          supportedDevices: ['desktop', 'tablet']
-        }
+          supportedDevices: ['desktop', 'tablet'],
+        },
       })
       const from = createMockRoute()
 
@@ -71,8 +71,8 @@ describe('DeviceRouteGuard', () => {
         path: '/admin',
         fullPath: '/admin',
         meta: {
-          supportedDevices: ['desktop']
-        }
+          supportedDevices: ['desktop'],
+        },
       })
       const from = createMockRoute()
 
@@ -83,8 +83,8 @@ describe('DeviceRouteGuard', () => {
         query: {
           from: '/admin',
           device: 'mobile',
-          message: '当前系统不支持在此设备上查看'
-        }
+          message: '当前系统不支持在此设备上查看',
+        },
       })
     })
 
@@ -100,8 +100,8 @@ describe('DeviceRouteGuard', () => {
         fullPath: '/admin',
         meta: {
           supportedDevices: ['desktop'],
-          unsupportedRedirect: '/custom-unsupported'
-        }
+          unsupportedRedirect: '/custom-unsupported',
+        },
       })
       const from = createMockRoute()
 
@@ -112,8 +112,8 @@ describe('DeviceRouteGuard', () => {
         query: {
           from: '/admin',
           device: 'mobile',
-          reason: 'unsupported_device'
-        }
+          reason: 'unsupported_device',
+        },
       })
     })
   })
@@ -122,7 +122,7 @@ describe('DeviceRouteGuard', () => {
     it('应该使用自定义设备检查函数', async () => {
       const customChecker = vi.fn(() => true)
       guard = new DeviceRouteGuard(getCurrentDevice, {
-        checkSupportedDevices: customChecker
+        checkSupportedDevices: customChecker,
       })
 
       const guardFn = guard.createGuard()
@@ -130,8 +130,8 @@ describe('DeviceRouteGuard', () => {
 
       const to = createMockRoute({
         meta: {
-          supportedDevices: ['desktop']
-        }
+          supportedDevices: ['desktop'],
+        },
       })
       const from = createMockRoute()
 
@@ -144,7 +144,7 @@ describe('DeviceRouteGuard', () => {
     it('应该使用自定义不支持设备处理函数', async () => {
       const customHandler = vi.fn(() => '/custom-redirect')
       guard = new DeviceRouteGuard(getCurrentDevice, {
-        onUnsupportedDevice: customHandler
+        onUnsupportedDevice: customHandler,
       })
 
       const guardFn = guard.createGuard()
@@ -152,8 +152,8 @@ describe('DeviceRouteGuard', () => {
 
       const to = createMockRoute({
         meta: {
-          supportedDevices: ['tablet']
-        }
+          supportedDevices: ['tablet'],
+        },
       })
       const from = createMockRoute()
 
@@ -174,10 +174,10 @@ describe('DeviceRouteGuard', () => {
         matched: [
           {
             meta: {
-              supportedDevices: ['desktop']
-            }
-          } as any
-        ]
+              supportedDevices: ['desktop'],
+            },
+          } as any,
+        ],
       })
       const from = createMockRoute()
 
@@ -200,6 +200,6 @@ function createMockRoute(overrides: Partial<RouteLocationNormalized> = {}): Rout
     meta: {},
     matched: [],
     redirectedFrom: undefined,
-    ...overrides
+    ...overrides,
   } as RouteLocationNormalized
 }

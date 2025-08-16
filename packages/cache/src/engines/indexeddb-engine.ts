@@ -24,7 +24,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
    * 创建 IndexedDB 引擎实例
    */
   static async create(
-    config?: StorageEngineConfig['indexedDB']
+    config?: StorageEngineConfig['indexedDB'],
   ): Promise<IndexedDBEngine> {
     const engine = new IndexedDBEngine(config)
     await engine.initialize()
@@ -33,10 +33,10 @@ export class IndexedDBEngine extends BaseStorageEngine {
 
   get available(): boolean {
     return (
-      typeof window !== 'undefined' &&
-      'indexedDB' in window &&
-      window.indexedDB !== null &&
-      this.db !== null
+      typeof window !== 'undefined'
+      && 'indexedDB' in window
+      && window.indexedDB !== null
+      && this.db !== null
     )
   }
 
@@ -62,7 +62,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
           .catch(console.error)
       }
 
-      request.onupgradeneeded = event => {
+      request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
 
         // 创建对象存储
@@ -79,7 +79,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
    * 获取事务
    */
   private getTransaction(
-    mode: IDBTransactionMode = 'readonly'
+    mode: IDBTransactionMode = 'readonly',
   ): IDBTransaction {
     if (!this.db) {
       throw new Error('IndexedDB is not initialized')
@@ -150,7 +150,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
       }
 
       return item.value
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error getting item from IndexedDB:`, error)
       return null
     }
@@ -168,7 +169,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
       const store = this.getStore('readwrite')
       await this.executeRequest(store.delete(key))
       await this.updateUsedSize()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error removing item from IndexedDB:`, error)
     }
   }
@@ -185,7 +187,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
       const store = this.getStore('readwrite')
       await this.executeRequest(store.clear())
       this._usedSize = 0
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error clearing IndexedDB:`, error)
     }
   }
@@ -202,7 +205,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
       const store = this.getStore('readonly')
       const keys = await this.executeRequest(store.getAllKeys())
       return keys.map(key => String(key))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error getting keys from IndexedDB:`, error)
       return []
     }
@@ -219,7 +223,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
     try {
       const store = this.getStore('readonly')
       return await this.executeRequest(store.count())
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error getting count from IndexedDB:`, error)
       return 0
     }
@@ -249,7 +254,7 @@ export class IndexedDBEngine extends BaseStorageEngine {
           const cursor = (event.target as IDBRequest).result
           if (cursor) {
             deletePromises.push(
-              this.executeRequest(store.delete(cursor.primaryKey))
+              this.executeRequest(store.delete(cursor.primaryKey)),
             )
             cursor.continue()
           }
@@ -258,7 +263,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
 
       await Promise.all(deletePromises)
       await this.updateUsedSize()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error cleaning up IndexedDB:`, error)
     }
   }
@@ -282,7 +288,8 @@ export class IndexedDBEngine extends BaseStorageEngine {
       }
 
       return totalSize
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Error calculating IndexedDB size:`, error)
       return 0
     }

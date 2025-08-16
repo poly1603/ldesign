@@ -1,125 +1,7 @@
-<template>
-  <div class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">动态表单</h1>
-      <p class="text-gray-600">展示动态添加/删除字段功能</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- 表单区域 -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">动态表单</h2>
-
-        <DynamicForm
-          v-model="formData"
-          :options="currentFormConfig"
-          @submit="handleSubmit"
-          @change="handleChange"
-        />
-
-        <!-- 动态操作按钮 -->
-        <div class="mt-6 space-y-4">
-          <div class="flex flex-wrap gap-2">
-            <button
-              @click="addField('input')"
-              class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-            >
-              添加输入框
-            </button>
-            <button
-              @click="addField('select')"
-              class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-            >
-              添加选择框
-            </button>
-            <button
-              @click="addField('radio')"
-              class="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
-            >
-              添加单选框
-            </button>
-            <button
-              @click="addField('checkbox')"
-              class="px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
-            >
-              添加复选框
-            </button>
-          </div>
-
-          <div class="flex gap-2">
-            <button
-              @click="removeLastField"
-              class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
-            >
-              删除最后一个字段
-            </button>
-            <button
-              @click="resetForm"
-              class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-            >
-              重置表单
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 配置信息区域 -->
-      <div class="space-y-6">
-        <!-- 当前字段列表 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">当前字段列表</h3>
-          <div class="space-y-2">
-            <div
-              v-for="(field, index) in currentFormConfig.fields"
-              :key="field.name"
-              class="flex items-center justify-between p-2 bg-gray-50 rounded"
-            >
-              <div class="flex items-center space-x-2">
-                <span class="text-sm font-medium">{{ field.title }}</span>
-                <span class="text-xs text-gray-500"
-                  >({{ field.component }})</span
-                >
-              </div>
-              <button
-                @click="removeField(index)"
-                class="text-red-500 hover:text-red-700 text-sm"
-              >
-                删除
-              </button>
-            </div>
-            <div
-              v-if="currentFormConfig.fields.length === 0"
-              class="text-gray-500 text-sm text-center py-4"
-            >
-              暂无字段
-            </div>
-          </div>
-        </div>
-
-        <!-- 表单数据 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
-          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
-            JSON.stringify(formData, null, 2)
-          }}</pre>
-        </div>
-
-        <!-- 表单配置 -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单配置</h3>
-          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
-            JSON.stringify(currentFormConfig, null, 2)
-          }}</pre>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import type { FormField, FormOptions } from '@ldesign/form'
 import { DynamicForm } from '@ldesign/form'
-import type { FormOptions, FormField } from '@ldesign/form'
+import { reactive, ref } from 'vue'
 
 // 表单数据
 const formData = ref<Record<string, any>>({})
@@ -205,7 +87,7 @@ const fieldTemplates = {
 }
 
 // 添加字段
-const addField = (type: keyof typeof fieldTemplates) => {
+function addField(type: keyof typeof fieldTemplates) {
   fieldCounter++
   const template = fieldTemplates[type]
 
@@ -222,13 +104,14 @@ const addField = (type: keyof typeof fieldTemplates) => {
   // 初始化字段值
   if (type === 'checkbox') {
     formData.value[newField.name] = []
-  } else {
+  }
+  else {
     formData.value[newField.name] = ''
   }
 }
 
 // 删除字段
-const removeField = (index: number) => {
+function removeField(index: number) {
   const field = currentFormConfig.fields[index]
   if (field) {
     delete formData.value[field.name]
@@ -237,21 +120,21 @@ const removeField = (index: number) => {
 }
 
 // 删除最后一个字段
-const removeLastField = () => {
+function removeLastField() {
   if (currentFormConfig.fields.length > 0) {
     removeField(currentFormConfig.fields.length - 1)
   }
 }
 
 // 重置表单
-const resetForm = () => {
+function resetForm() {
   currentFormConfig.fields = [...baseFormConfig.fields]
   formData.value = {}
   fieldCounter = 0
 }
 
 // 获取字段类型名称
-const getFieldTypeName = (type: string) => {
+function getFieldTypeName(type: string) {
   const names: Record<string, string> = {
     input: '输入框',
     select: '选择框',
@@ -262,17 +145,145 @@ const getFieldTypeName = (type: string) => {
 }
 
 // 事件处理
-const handleSubmit = (data: any) => {
+function handleSubmit(data: any) {
   console.log('动态表单提交:', data)
   alert('动态表单提交成功！')
 }
 
-const handleChange = (name: string, value: any) => {
+function handleChange(name: string, value: any) {
   console.log('字段变化:', name, value)
 }
 
 // 初始化表单数据
-baseFormConfig.fields.forEach(field => {
+baseFormConfig.fields.forEach((field) => {
   formData.value[field.name] = ''
 })
 </script>
+
+<template>
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        动态表单
+      </h1>
+      <p class="text-gray-600">
+        展示动态添加/删除字段功能
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 表单区域 -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">
+          动态表单
+        </h2>
+
+        <DynamicForm
+          v-model="formData"
+          :options="currentFormConfig"
+          @submit="handleSubmit"
+          @change="handleChange"
+        />
+
+        <!-- 动态操作按钮 -->
+        <div class="mt-6 space-y-4">
+          <div class="flex flex-wrap gap-2">
+            <button
+              class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+              @click="addField('input')"
+            >
+              添加输入框
+            </button>
+            <button
+              class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+              @click="addField('select')"
+            >
+              添加选择框
+            </button>
+            <button
+              class="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+              @click="addField('radio')"
+            >
+              添加单选框
+            </button>
+            <button
+              class="px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
+              @click="addField('checkbox')"
+            >
+              添加复选框
+            </button>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+              @click="removeLastField"
+            >
+              删除最后一个字段
+            </button>
+            <button
+              class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+              @click="resetForm"
+            >
+              重置表单
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 配置信息区域 -->
+      <div class="space-y-6">
+        <!-- 当前字段列表 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            当前字段列表
+          </h3>
+          <div class="space-y-2">
+            <div
+              v-for="(field, index) in currentFormConfig.fields"
+              :key="field.name"
+              class="flex items-center justify-between p-2 bg-gray-50 rounded"
+            >
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium">{{ field.title }}</span>
+                <span class="text-xs text-gray-500">({{ field.component }})</span>
+              </div>
+              <button
+                class="text-red-500 hover:text-red-700 text-sm"
+                @click="removeField(index)"
+              >
+                删除
+              </button>
+            </div>
+            <div
+              v-if="currentFormConfig.fields.length === 0"
+              class="text-gray-500 text-sm text-center py-4"
+            >
+              暂无字段
+            </div>
+          </div>
+        </div>
+
+        <!-- 表单数据 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            表单数据
+          </h3>
+          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
+            JSON.stringify(formData, null, 2)
+          }}</pre>
+        </div>
+
+        <!-- 表单配置 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">
+            表单配置
+          </h3>
+          <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
+            JSON.stringify(currentFormConfig, null, 2)
+          }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

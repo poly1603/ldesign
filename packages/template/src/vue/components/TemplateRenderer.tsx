@@ -4,9 +4,9 @@
  * 声明式的模板渲染组件
  */
 
-import { defineComponent, ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type { PropType } from 'vue'
-import type { DeviceType, TemplateRendererProps } from '../../types'
+import type { DeviceType } from '../../types'
+import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { TemplateManager } from '../../core/manager'
 
 /**
@@ -67,10 +67,10 @@ export const TemplateRenderer = defineComponent({
 
   emits: {
     /** 加载完成事件 */
-    load: (result: any) => true,
+    'load': (result: any) => true,
 
     /** 加载错误事件 */
-    error: (error: Error) => true,
+    'error': (error: Error) => true,
 
     /** 加载前事件 */
     'before-load': () => true,
@@ -107,7 +107,8 @@ export const TemplateRenderer = defineComponent({
         // 扫描模板
         try {
           await manager.value.scanTemplates()
-        } catch (err) {
+        }
+        catch (err) {
           console.warn('Template scanning failed:', err)
         }
       }
@@ -140,12 +141,14 @@ export const TemplateRenderer = defineComponent({
         currentComponent.value = result.component
         emit('load', result)
         emit('template-change', result.metadata)
-      } catch (err) {
+      }
+      catch (err) {
         const loadError = err as Error
         error.value = loadError
         emit('error', loadError)
         console.error('Template loading failed:', loadError)
-      } finally {
+      }
+      finally {
         isLoading.value = false
       }
     }
@@ -161,7 +164,7 @@ export const TemplateRenderer = defineComponent({
       () => {
         loadTemplate()
       },
-      { immediate: false }
+      { immediate: false },
     )
 
     // 监听模板属性变化
@@ -173,7 +176,7 @@ export const TemplateRenderer = defineComponent({
           // 这里可以触发组件重新渲染
         }
       },
-      { deep: true }
+      { deep: true },
     )
 
     // 生命周期
@@ -183,7 +186,7 @@ export const TemplateRenderer = defineComponent({
       // 预加载
       if (props.preload && manager.value) {
         const templates = manager.value.getTemplates(props.category, targetDevice.value)
-        manager.value.preloadTemplates(templates).catch(err => {
+        manager.value.preloadTemplates(templates).catch((err) => {
           console.warn('Template preloading failed:', err)
         })
       }

@@ -14,7 +14,8 @@ export class AxiosAdapter extends BaseAdapter {
       // 动态导入 axios
       // eslint-disable-next-line ts/no-require-imports
       this.axios = require('axios')
-    } catch {
+    }
+    catch {
       // axios 未安装
       this.axios = null
     }
@@ -33,7 +34,7 @@ export class AxiosAdapter extends BaseAdapter {
   async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
     if (!this.isSupported()) {
       throw new Error(
-        'Axios is not available. Please install axios: npm install axios'
+        'Axios is not available. Please install axios: npm install axios',
       )
     }
 
@@ -48,7 +49,8 @@ export class AxiosAdapter extends BaseAdapter {
 
       // 转换响应为标准格式
       return this.convertFromAxiosResponse<T>(response, processedConfig)
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleAxiosError(error, processedConfig)
     }
   }
@@ -97,7 +99,7 @@ export class AxiosAdapter extends BaseAdapter {
     }
 
     // 移除 undefined 值
-    Object.keys(axiosConfig).forEach(key => {
+    Object.keys(axiosConfig).forEach((key) => {
       if (axiosConfig[key] === undefined) {
         delete axiosConfig[key]
       }
@@ -111,7 +113,7 @@ export class AxiosAdapter extends BaseAdapter {
    */
   private convertFromAxiosResponse<T>(
     axiosResponse: any,
-    config: RequestConfig
+    config: RequestConfig,
   ): ResponseData<T> {
     return this.processResponse<T>(
       axiosResponse.data,
@@ -119,7 +121,7 @@ export class AxiosAdapter extends BaseAdapter {
       axiosResponse.statusText,
       axiosResponse.headers || {},
       config,
-      axiosResponse
+      axiosResponse,
     )
   }
 
@@ -131,12 +133,14 @@ export class AxiosAdapter extends BaseAdapter {
       // 服务器响应了错误状态码
       const response = this.convertFromAxiosResponse(error.response, config)
       return this.processError(error, config, response)
-    } else if (error.request) {
+    }
+    else if (error.request) {
       // 请求已发送但没有收到响应
       const httpError = this.processError(error, config)
       httpError.isNetworkError = true
       return httpError
-    } else {
+    }
+    else {
       // 其他错误
       return this.processError(error, config)
     }

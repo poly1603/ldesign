@@ -211,7 +211,7 @@ describe('engine', () => {
           message: 'Test error',
           level: 'error',
           timestamp: expect.any(Number),
-        })
+        }),
       )
     })
 
@@ -448,7 +448,7 @@ describe('engine', () => {
       expect(errorHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Event error',
-        })
+        }),
       )
     })
   })

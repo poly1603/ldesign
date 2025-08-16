@@ -1,13 +1,13 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@ldesign/size": ["../../src"]
-    },
-    "jsx": "preserve",
-    "jsxImportSource": "vue"
+    }
   },
   "include": [
     "src/**/*",

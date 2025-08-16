@@ -42,27 +42,27 @@ const props = withDefaults(defineProps<FormCheckboxProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: any[]]
-  change: [value: any[], option: CheckboxOption]
-  blur: [event: FocusEvent]
-  focus: [event: FocusEvent]
+  'change': [value: any[], option: CheckboxOption]
+  'blur': [event: FocusEvent]
+  'focus': [event: FocusEvent]
 }>()
 
 const inputValue = ref<any[]>(
-  Array.isArray(props.modelValue) ? [...props.modelValue] : []
+  Array.isArray(props.modelValue) ? [...props.modelValue] : [],
 )
 
 // 监听外部值变化
 watch(
   () => props.modelValue,
-  newValue => {
+  (newValue) => {
     inputValue.value = Array.isArray(newValue) ? [...newValue] : []
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // 标准化选项
 const normalizedOptions = computed(() => {
-  return props.options.map(option => {
+  return props.options.map((option) => {
     if (typeof option === 'string' || typeof option === 'number') {
       return {
         label: String(option),
@@ -118,7 +118,8 @@ function getItemClasses(option: CheckboxOption) {
 
 // 处理变化
 function handleChange(event: Event, value: any) {
-  if (props.disabled || props.readonly) return
+  if (props.disabled || props.readonly)
+    return
 
   const target = event.target as HTMLInputElement
   const newValue = [...inputValue.value]
@@ -130,7 +131,8 @@ function handleChange(event: Event, value: any) {
       return
     }
     newValue.push(value)
-  } else {
+  }
+  else {
     const index = newValue.indexOf(value)
     if (index > -1) {
       newValue.splice(index, 1)
@@ -139,9 +141,9 @@ function handleChange(event: Event, value: any) {
 
   // 检查最小选择数量
   if (
-    props.min &&
-    newValue.length < props.min &&
-    newValue.length < inputValue.value.length
+    props.min
+    && newValue.length < props.min
+    && newValue.length < inputValue.value.length
   ) {
     target.checked = true
     return
@@ -185,7 +187,7 @@ function handleChange(event: Event, value: any) {
             :disabled="disabled || option.disabled"
             class="form-checkbox__input"
             @change="handleChange($event, option.value)"
-          />
+          >
           <span class="form-checkbox__checkmark" />
           <span class="form-checkbox__text">{{ option.label }}</span>
           <span v-if="option.description" class="form-checkbox__description">

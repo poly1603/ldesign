@@ -2,26 +2,26 @@
  * Vue 模块导出
  */
 
-// 插件
-export { VueSizePlugin, createVueSizePlugin, VueSizeSymbol } from './plugin'
-
 // Composition API
 export {
-  useSize,
   useGlobalSize,
-  useSizeSwitcher,
-  useSizeResponsive,
-  useSizeWatcher,
+  useSize,
   type UseSizeOptions,
+  useSizeResponsive,
   type UseSizeReturn,
+  useSizeSwitcher,
+  useSizeWatcher,
 } from './composables'
 
-// 组件
-export {
-  SizeSwitcher,
-  SizeIndicator,
-  SizeControlPanel,
-} from './SizeSwitcher'
+// 插件
+export { createVueSizePlugin, VueSizePlugin, VueSizeSymbol } from './plugin'
 
 // 默认导出插件
 export { VueSizePlugin as default } from './plugin'
+
+// 组件
+export {
+  SizeControlPanel,
+  SizeIndicator,
+  SizeSwitcher,
+} from './SizeSwitcher'

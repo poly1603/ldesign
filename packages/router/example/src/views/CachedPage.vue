@@ -1,22 +1,24 @@
-<template>
-  <div data-testid="page-content">
-    <h1>Cached Page</h1>
-    <p>This page tests caching functionality</p>
-    <input 
-      data-testid="input-field" 
-      v-model="inputValue" 
-      placeholder="Type something to test caching"
-    />
-    <p>Input value: {{ inputValue }}</p>
-    <router-link to="/">Back to Home</router-link>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 
 const inputValue = ref('')
 </script>
+
+<template>
+  <div data-testid="page-content">
+    <h1>Cached Page</h1>
+    <p>This page tests caching functionality</p>
+    <input
+      v-model="inputValue"
+      data-testid="input-field"
+      placeholder="Type something to test caching"
+    >
+    <p>Input value: {{ inputValue }}</p>
+    <router-link to="/">
+      Back to Home
+    </router-link>
+  </div>
+</template>
 
 <style scoped>
 h1 {

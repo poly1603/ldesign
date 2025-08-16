@@ -43,24 +43,24 @@ const lazyComponents = ref<LazyComponent[]>([
 ])
 
 const loadedCount = computed(
-  () => lazyComponents.value.filter(comp => comp.loaded).length
+  () => lazyComponents.value.filter(comp => comp.loaded).length,
 )
 
 const totalLoadTime = computed(() =>
   lazyComponents.value
     .filter(comp => comp.loadTime)
-    .reduce((total, comp) => total + (comp.loadTime || 0), 0)
+    .reduce((total, comp) => total + (comp.loadTime || 0), 0),
 )
 
 const averageLoadTime = computed(() =>
   loadedCount.value > 0
     ? Math.round(totalLoadTime.value / loadedCount.value)
-    : 0
+    : 0,
 )
 
 // 创建模拟组件
 function createMockComponent(name: string, delay: number) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
         default: defineAsyncComponent(() =>
@@ -76,13 +76,13 @@ function createMockComponent(name: string, delay: number) {
                     'div',
                     { class: 'mock-content' },
                     items.map(i =>
-                      h('div', { class: 'mock-item', key: i }, `模拟内容 ${i}`)
-                    )
+                      h('div', { class: 'mock-item', key: i }, `模拟内容 ${i}`),
+                    ),
                   ),
                 ])
               }
             },
-          })
+          }),
         ),
       })
     }, delay)
@@ -90,7 +90,8 @@ function createMockComponent(name: string, delay: number) {
 }
 
 async function loadComponent(comp: LazyComponent) {
-  if (comp.loading) return
+  if (comp.loading)
+    return
 
   comp.loading = true
   const startTime = Date.now()
@@ -100,9 +101,11 @@ async function loadComponent(comp: LazyComponent) {
     comp.component = markRaw(module.default)
     comp.loaded = true
     comp.loadTime = Date.now() - startTime
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Failed to load component ${comp.name}:`, error)
-  } finally {
+  }
+  finally {
     comp.loading = false
   }
 }
@@ -146,9 +149,7 @@ async function loadComponent(comp: LazyComponent) {
       <div class="stats">
         <div class="stat-item">
           <span class="stat-label">已加载组件:</span>
-          <span class="stat-value"
-            >{{ loadedCount }} / {{ lazyComponents.length }}</span
-          >
+          <span class="stat-value">{{ loadedCount }} / {{ lazyComponents.length }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">总加载时间:</span>

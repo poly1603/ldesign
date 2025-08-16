@@ -1,3 +1,88 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+
+// 当前主题
+const currentTheme = ref('christmas')
+
+// 主题类名
+const themeClass = computed(() => {
+  return currentTheme.value ? `theme-${currentTheme.value}` : ''
+})
+
+// 演示卡片
+const demoCards = [
+  { icon: '🎨', title: '主题系统', description: '强大的主题管理功能' },
+  { icon: '🎭', title: '装饰元素', description: '丰富的装饰效果' },
+  { icon: '🎬', title: '动画效果', description: '流畅的动画体验' },
+]
+
+// 当前主题信息
+const currentThemeInfo = computed(() => {
+  const themeMap = {
+    'christmas': {
+      displayName: '圣诞节主题',
+      description: '温馨的红绿配色，营造浓厚的圣诞节日氛围',
+      colors: {
+        primary: '#dc2626',
+        secondary: '#16a34a',
+        accent: '#fbbf24',
+        background: '#fef7f0',
+      },
+    },
+    'spring-festival': {
+      displayName: '春节主题',
+      description: '喜庆的红金配色，展现中国传统节日的热闹氛围',
+      colors: {
+        primary: '#dc2626',
+        secondary: '#fbbf24',
+        accent: '#f59e0b',
+        background: '#fef3c7',
+      },
+    },
+    'halloween': {
+      displayName: '万圣节主题',
+      description: '神秘的橙黑配色，营造恐怖而有趣的万圣节氛围',
+      colors: {
+        primary: '#ea580c',
+        secondary: '#1f2937',
+        accent: '#fbbf24',
+        background: '#1f2937',
+      },
+    },
+  }
+  return themeMap[currentTheme.value as keyof typeof themeMap]
+})
+
+// 主题切换
+function onThemeChange() {
+  console.log('主题切换到:', currentTheme.value)
+  // 这里应该调用实际的主题切换逻辑
+  // await setTheme(currentTheme.value)
+}
+
+// 添加装饰
+function addDecoration() {
+  console.log('添加装饰效果')
+  // 这里应该调用实际的装饰添加逻辑
+}
+
+// 开始动画
+function startAnimation() {
+  console.log('开始动画效果')
+  // 这里应该调用实际的动画开始逻辑
+}
+
+// 清空所有效果
+function clearAll() {
+  console.log('清空所有效果')
+  // 这里应该调用实际的清空逻辑
+}
+
+onMounted(() => {
+  console.log('LDesign Theme Demo 已加载')
+})
+</script>
+
 <template>
   <div id="app" :class="themeClass">
     <!-- 简单的头部 -->
@@ -6,9 +91,15 @@
         <h1>🎨 LDesign Theme Demo</h1>
         <div class="theme-controls">
           <select v-model="currentTheme" @change="onThemeChange">
-            <option value="christmas">🎄 圣诞节</option>
-            <option value="spring-festival">🧧 春节</option>
-            <option value="halloween">🎃 万圣节</option>
+            <option value="christmas">
+              🎄 圣诞节
+            </option>
+            <option value="spring-festival">
+              🧧 春节
+            </option>
+            <option value="halloween">
+              🎃 万圣节
+            </option>
           </select>
         </div>
       </div>
@@ -53,7 +144,9 @@
               class="demo-card"
               :style="{ animationDelay: `${index * 0.1}s` }"
             >
-              <div class="card-icon">{{ card.icon }}</div>
+              <div class="card-icon">
+                {{ card.icon }}
+              </div>
               <h3>{{ card.title }}</h3>
               <p>{{ card.description }}</p>
             </div>
@@ -73,7 +166,7 @@
               <div
                 class="color-swatch"
                 :style="{ backgroundColor: color }"
-              ></div>
+              />
               <span>{{ name }}</span>
             </div>
           </div>
@@ -89,91 +182,6 @@
     </footer>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-
-// 当前主题
-const currentTheme = ref('christmas')
-
-// 主题类名
-const themeClass = computed(() => {
-  return currentTheme.value ? `theme-${currentTheme.value}` : ''
-})
-
-// 演示卡片
-const demoCards = [
-  { icon: '🎨', title: '主题系统', description: '强大的主题管理功能' },
-  { icon: '🎭', title: '装饰元素', description: '丰富的装饰效果' },
-  { icon: '🎬', title: '动画效果', description: '流畅的动画体验' },
-]
-
-// 当前主题信息
-const currentThemeInfo = computed(() => {
-  const themeMap = {
-    christmas: {
-      displayName: '圣诞节主题',
-      description: '温馨的红绿配色，营造浓厚的圣诞节日氛围',
-      colors: {
-        primary: '#dc2626',
-        secondary: '#16a34a',
-        accent: '#fbbf24',
-        background: '#fef7f0',
-      },
-    },
-    'spring-festival': {
-      displayName: '春节主题',
-      description: '喜庆的红金配色，展现中国传统节日的热闹氛围',
-      colors: {
-        primary: '#dc2626',
-        secondary: '#fbbf24',
-        accent: '#f59e0b',
-        background: '#fef3c7',
-      },
-    },
-    halloween: {
-      displayName: '万圣节主题',
-      description: '神秘的橙黑配色，营造恐怖而有趣的万圣节氛围',
-      colors: {
-        primary: '#ea580c',
-        secondary: '#1f2937',
-        accent: '#fbbf24',
-        background: '#1f2937',
-      },
-    },
-  }
-  return themeMap[currentTheme.value as keyof typeof themeMap]
-})
-
-// 主题切换
-const onThemeChange = () => {
-  console.log('主题切换到:', currentTheme.value)
-  // 这里应该调用实际的主题切换逻辑
-  // await setTheme(currentTheme.value)
-}
-
-// 添加装饰
-const addDecoration = () => {
-  console.log('添加装饰效果')
-  // 这里应该调用实际的装饰添加逻辑
-}
-
-// 开始动画
-const startAnimation = () => {
-  console.log('开始动画效果')
-  // 这里应该调用实际的动画开始逻辑
-}
-
-// 清空所有效果
-const clearAll = () => {
-  console.log('清空所有效果')
-  // 这里应该调用实际的清空逻辑
-}
-
-onMounted(() => {
-  console.log('LDesign Theme Demo 已加载')
-})
-</script>
 
 <style scoped>
 #app {

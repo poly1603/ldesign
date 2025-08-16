@@ -5,14 +5,22 @@
       <div class="demo-card">
         <h3>响应式布局</h3>
         <p>根据尺寸模式调整布局</p>
-        
-        <div :class="['responsive-layout', `layout-${currentMode}`]">
-          <div class="layout-item">项目 1</div>
-          <div class="layout-item">项目 2</div>
-          <div class="layout-item">项目 3</div>
-          <div class="layout-item">项目 4</div>
+
+        <div class="responsive-layout" :class="[`layout-${currentMode}`]">
+          <div class="layout-item">
+            项目 1
+          </div>
+          <div class="layout-item">
+            项目 2
+          </div>
+          <div class="layout-item">
+            项目 3
+          </div>
+          <div class="layout-item">
+            项目 4
+          </div>
         </div>
-        
+
         <div class="layout-info">
           <p>当前布局: {{ getLayoutDescription() }}</p>
         </div>
@@ -22,12 +30,20 @@
       <div class="demo-card">
         <h3>响应式字体</h3>
         <p>字体大小随尺寸模式变化</p>
-        
+
         <div class="font-examples">
-          <h1 class="responsive-h1">标题 1 (H1)</h1>
-          <h2 class="responsive-h2">标题 2 (H2)</h2>
-          <h3 class="responsive-h3">标题 3 (H3)</h3>
-          <p class="responsive-text">正文文本 (Base)</p>
+          <h1 class="responsive-h1">
+            标题 1 (H1)
+          </h1>
+          <h2 class="responsive-h2">
+            标题 2 (H2)
+          </h2>
+          <h3 class="responsive-h3">
+            标题 3 (H3)
+          </h3>
+          <p class="responsive-text">
+            正文文本 (Base)
+          </p>
           <small class="responsive-small">小号文本 (Small)</small>
         </div>
       </div>
@@ -36,7 +52,7 @@
       <div class="demo-card">
         <h3>响应式间距</h3>
         <p>间距随尺寸模式调整</p>
-        
+
         <div class="spacing-examples">
           <div class="spacing-item spacing-xs">XS 间距</div>
           <div class="spacing-item spacing-sm">SM 间距</div>
@@ -50,26 +66,26 @@
       <div class="demo-card">
         <h3>条件渲染</h3>
         <p>根据尺寸模式显示不同内容</p>
-        
+
         <div class="conditional-content">
           <div v-if="isSmall" class="size-content small-content">
             <h4>小尺寸模式</h4>
             <p>显示简化的内容和布局</p>
             <CustomButton size="small">小按钮</CustomButton>
           </div>
-          
+
           <div v-else-if="isMedium" class="size-content medium-content">
             <h4>中等尺寸模式</h4>
             <p>显示标准的内容和布局</p>
             <CustomButton size="medium">中等按钮</CustomButton>
           </div>
-          
+
           <div v-else-if="isLarge" class="size-content large-content">
             <h4>大尺寸模式</h4>
             <p>显示丰富的内容和布局，包含更多细节</p>
             <CustomButton size="large">大按钮</CustomButton>
           </div>
-          
+
           <div v-else class="size-content xl-content">
             <h4>超大尺寸模式</h4>
             <p>显示最丰富的内容和布局，包含所有功能和细节信息</p>
@@ -273,7 +289,7 @@ const getLayoutDescription = () => {
   .layout-extra-large {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .button-group {
     flex-direction: column;
   }

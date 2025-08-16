@@ -59,7 +59,7 @@ async function bootstrap() {
     // 为每种语言添加示例翻译
     const languages = ['en', 'zh-CN', 'ja']
     const exampleTranslationsLocalized = {
-      en: {
+      'en': {
         examples: {
           basic: 'Basic Translation',
           interpolation: 'Interpolation',
@@ -85,7 +85,7 @@ async function bootstrap() {
           status: '状态',
         },
       },
-      ja: {
+      'ja': {
         examples: {
           basic: '基本翻訳',
           interpolation: '補間翻訳',
@@ -107,7 +107,7 @@ async function bootstrap() {
         if (packageData) {
           Object.assign(
             packageData.translations,
-            (exampleTranslationsLocalized as Record<string, unknown>)[lang]
+            (exampleTranslationsLocalized as Record<string, unknown>)[lang],
           )
         }
       }
@@ -119,7 +119,8 @@ async function bootstrap() {
     console.log('Vue I18n example app started successfully')
     console.log('Current language:', i18nInstance.getCurrentLanguage())
     console.log('Available languages:', i18nInstance.getAvailableLanguages())
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
 
     // 显示错误信息

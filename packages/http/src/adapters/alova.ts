@@ -18,7 +18,8 @@ export class AlovaAdapter extends BaseAdapter {
         // 动态导入 alova
         // eslint-disable-next-line ts/no-require-imports
         this.alova = require('alova')
-      } catch {
+      }
+      catch {
         // alova 未安装
         this.alova = null
       }
@@ -38,7 +39,7 @@ export class AlovaAdapter extends BaseAdapter {
   async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
     if (!this.isSupported()) {
       throw new Error(
-        'Alova is not available. Please install alova: npm install alova'
+        'Alova is not available. Please install alova: npm install alova',
       )
     }
 
@@ -46,8 +47,8 @@ export class AlovaAdapter extends BaseAdapter {
 
     try {
       // 如果没有 alova 实例，创建一个默认的
-      const alovaInstance =
-        this.alovaInstance || this.createDefaultAlovaInstance()
+      const alovaInstance
+        = this.alovaInstance || this.createDefaultAlovaInstance()
 
       // 创建 alova 方法
       const method = this.createAlovaMethod(alovaInstance, processedConfig)
@@ -57,7 +58,8 @@ export class AlovaAdapter extends BaseAdapter {
 
       // 转换响应为标准格式
       return this.convertFromAlovaResponse<T>(response, processedConfig)
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleAlovaError(error, processedConfig)
     }
   }
@@ -78,7 +80,8 @@ export class AlovaAdapter extends BaseAdapter {
       try {
         // eslint-disable-next-line ts/no-require-imports
         GlobalFetch = require('alova/GlobalFetch')
-      } catch {
+      }
+      catch {
         // 如果 GlobalFetch 不可用，使用原生 fetch
         GlobalFetch = () => fetch
       }
@@ -88,7 +91,8 @@ export class AlovaAdapter extends BaseAdapter {
         requestAdapter: GlobalFetch(),
         responded: (response: any) => response.json(),
       })
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to create Alova instance: ${error}`)
     }
   }
@@ -166,7 +170,7 @@ export class AlovaAdapter extends BaseAdapter {
    */
   private convertFromAlovaResponse<T>(
     alovaResponse: any,
-    config: RequestConfig
+    config: RequestConfig,
   ): ResponseData<T> {
     // alova 的响应格式可能因配置而异
     // 这里假设响应已经被 responded 函数处理过
@@ -177,7 +181,7 @@ export class AlovaAdapter extends BaseAdapter {
       'OK',
       {}, // alova 可能不直接暴露响应头
       config,
-      alovaResponse
+      alovaResponse,
     )
   }
 

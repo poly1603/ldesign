@@ -12,8 +12,8 @@ import type {
   RouteLocationNormalized,
 } from '../types'
 import { computed, inject, ref, watch } from 'vue'
-import { useDeviceRoute } from './useDeviceRoute'
 import { ROUTE_INJECTION_SYMBOL } from '../core/constants'
+import { useDeviceRoute } from './useDeviceRoute'
 
 /**
  * 本地 useRoute 实现，避免循环依赖
@@ -23,7 +23,7 @@ function useRoute(): Ref<RouteLocationNormalized> {
 
   if (!route) {
     throw new Error(
-      'useRoute() can only be used inside a component that has a router instance'
+      'useRoute() can only be used inside a component that has a router instance',
     )
   }
 
@@ -60,7 +60,7 @@ export interface UseDeviceComponentReturn {
  * 使用设备组件解析功能
  */
 export function useDeviceComponent(
-  options: UseDeviceComponentOptions = {}
+  options: UseDeviceComponentOptions = {},
 ): UseDeviceComponentReturn {
   const {
     viewName = 'default',
@@ -77,7 +77,8 @@ export function useDeviceComponent(
   // 获取设备特定组件
   const getDeviceComponent = (device: DeviceType): RouteComponent | null => {
     const currentRecord = route.value.matched[route.value.matched.length - 1]
-    if (!currentRecord) return null
+    if (!currentRecord)
+      return null
 
     const deviceComponents = (currentRecord as any).deviceComponents
     return deviceComponents?.[device] || null
@@ -93,9 +94,10 @@ export function useDeviceComponent(
         return await templateResolver.resolveTemplate(
           record.meta.templateCategory || 'default',
           record.meta.template!,
-          currentDevice.value
+          currentDevice.value,
         )
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Failed to resolve template component:', error)
         throw error
       }
@@ -105,7 +107,8 @@ export function useDeviceComponent(
   // 组件解析结果
   const resolution = computed<DeviceComponentResolution | null>(() => {
     const currentRecord = route.value.matched[route.value.matched.length - 1]
-    if (!currentRecord) return null
+    if (!currentRecord)
+      return null
 
     try {
       // 检查设备特定组件
@@ -159,7 +162,8 @@ export function useDeviceComponent(
       }
 
       return null
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
     }
@@ -185,22 +189,25 @@ export function useDeviceComponent(
 
     try {
       const comp = resolvedComponent.value
-      if (!comp) return null
+      if (!comp)
+        return null
 
       // 如果是异步组件，等待加载
       if (typeof comp === 'function') {
-        const loadedComp =
-          typeof comp === 'function' && 'then' in comp
+        const loadedComp
+          = typeof comp === 'function' && 'then' in comp
             ? await (comp as () => Promise<any>)()
             : comp
         return loadedComp
       }
 
       return comp
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -208,7 +215,8 @@ export function useDeviceComponent(
   // 检查是否有设备特定组件
   const hasDeviceComponent = (device: DeviceType): boolean => {
     const currentRecord = route.value.matched[route.value.matched.length - 1]
-    if (!currentRecord) return false
+    if (!currentRecord)
+      return false
 
     const deviceComponents = (currentRecord as any).deviceComponents
     return !!(deviceComponents && deviceComponents[device])
@@ -223,7 +231,7 @@ export function useDeviceComponent(
           resolveComponent()
         }
       },
-      { immediate: true }
+      { immediate: true },
     )
   }
 

@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
-import './style.css'
-
 // 导入路由配置
 import { routes } from './router'
+
+import './style.css'
 
 // 创建路由实例
 const router = createRouter({

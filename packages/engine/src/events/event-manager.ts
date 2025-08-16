@@ -54,7 +54,7 @@ export class EventManagerImpl implements EventManager {
     let listenersToExecute = this.sortedListenersCache.get(event)
     if (!listenersToExecute) {
       listenersToExecute = [...listeners].sort(
-        (a, b) => b.priority - a.priority
+        (a, b) => b.priority - a.priority,
       )
       this.sortedListenersCache.set(event, listenersToExecute)
     }
@@ -62,7 +62,8 @@ export class EventManagerImpl implements EventManager {
     for (const listener of listenersToExecute) {
       try {
         listener.handler(...args)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Error in event handler for "${event}":`, error)
       }
 
@@ -81,7 +82,7 @@ export class EventManagerImpl implements EventManager {
     event: string,
     handler: EventHandler,
     once: boolean,
-    priority: number
+    priority: number,
   ): void {
     if (!this.events.has(event)) {
       this.events.set(event, [])
@@ -92,9 +93,9 @@ export class EventManagerImpl implements EventManager {
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(
-        `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
-          `${listeners.length + 1} "${event}" listeners added. ` +
-          `Use setMaxListeners() to increase limit.`
+        `MaxListenersExceededWarning: Possible EventManager memory leak detected. `
+        + `${listeners.length + 1} "${event}" listeners added. `
+        + `Use setMaxListeners() to increase limit.`,
       )
     }
 
@@ -139,7 +140,8 @@ export class EventManagerImpl implements EventManager {
   removeAllListeners(event?: string): void {
     if (event) {
       this.events.delete(event)
-    } else {
+    }
+    else {
       this.events.clear()
     }
   }
@@ -153,7 +155,7 @@ export class EventManagerImpl implements EventManager {
   prependOnceListener(
     event: string,
     handler: EventHandler,
-    priority = 1000
+    priority = 1000,
   ): void {
     this.addEventListener(event, handler, true, priority)
   }

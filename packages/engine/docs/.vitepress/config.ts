@@ -298,7 +298,7 @@ export default defineConfig({
       dark: 'github-dark',
     },
     lineNumbers: true,
-    config: md => {
+    config: (md) => {
       // 添加自定义markdown插件
     },
   },

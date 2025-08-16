@@ -1,3 +1,22 @@
+<script setup lang="ts">
+import type { SizeMode } from '../../../../src/types'
+import {
+  SizeControlPanel,
+  SizeIndicator,
+  SizeSwitcher,
+} from '../../../../src/vue'
+import CustomButton from './CustomButton.vue'
+import CustomCard from './CustomCard.vue'
+
+function handleSwitcherChange(mode: SizeMode) {
+  console.log('切换器变化:', mode)
+}
+
+function handlePanelChange(mode: SizeMode) {
+  console.log('面板变化:', mode)
+}
+</script>
+
 <template>
   <div class="component-demo">
     <div class="demo-grid">
@@ -5,27 +24,27 @@
       <div class="demo-card">
         <h3>SizeSwitcher 组件</h3>
         <p>不同样式的尺寸切换器</p>
-        
+
         <div class="switcher-examples">
           <div class="example-item">
             <h4>按钮样式</h4>
-            <SizeSwitcher 
+            <SizeSwitcher
               switcher-style="button"
               @change="handleSwitcherChange"
             />
           </div>
-          
+
           <div class="example-item">
             <h4>下拉选择样式</h4>
-            <SizeSwitcher 
+            <SizeSwitcher
               switcher-style="select"
               @change="handleSwitcherChange"
             />
           </div>
-          
+
           <div class="example-item">
             <h4>单选框样式</h4>
-            <SizeSwitcher 
+            <SizeSwitcher
               switcher-style="radio"
               @change="handleSwitcherChange"
             />
@@ -37,21 +56,21 @@
       <div class="demo-card">
         <h3>SizeIndicator 组件</h3>
         <p>显示当前尺寸状态</p>
-        
+
         <div class="indicator-examples">
           <div class="example-item">
             <h4>基础指示器</h4>
             <SizeIndicator />
           </div>
-          
+
           <div class="example-item">
             <h4>显示缩放信息</h4>
             <SizeIndicator :show-scale="true" />
           </div>
-          
+
           <div class="example-item">
             <h4>自定义样式</h4>
-            <SizeIndicator 
+            <SizeIndicator
               class="custom-indicator"
               :show-mode="true"
               :show-scale="true"
@@ -64,30 +83,30 @@
       <div class="demo-card">
         <h3>SizeControlPanel 组件</h3>
         <p>完整的尺寸控制面板</p>
-        
+
         <div class="panel-examples">
           <div class="example-item">
             <h4>完整面板</h4>
-            <SizeControlPanel 
+            <SizeControlPanel
               :show-switcher="true"
               :show-indicator="true"
               switcher-style="button"
               @change="handlePanelChange"
             />
           </div>
-          
+
           <div class="example-item">
             <h4>仅切换器</h4>
-            <SizeControlPanel 
+            <SizeControlPanel
               :show-switcher="true"
               :show-indicator="false"
               switcher-style="select"
             />
           </div>
-          
+
           <div class="example-item">
             <h4>仅指示器</h4>
-            <SizeControlPanel 
+            <SizeControlPanel
               :show-switcher="false"
               :show-indicator="true"
             />
@@ -99,38 +118,23 @@
       <div class="demo-card">
         <h3>自定义组件</h3>
         <p>基于尺寸系统的自定义组件</p>
-        
+
         <div class="custom-components">
           <CustomButton>自定义按钮</CustomButton>
           <CustomCard title="自定义卡片">
             <p>这是一个响应尺寸变化的自定义卡片组件</p>
-            <CustomButton size="small">小按钮</CustomButton>
-            <CustomButton size="large">大按钮</CustomButton>
+            <CustomButton size="small">
+              小按钮
+            </CustomButton>
+            <CustomButton size="large">
+              大按钮
+            </CustomButton>
           </CustomCard>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import {
-  SizeSwitcher,
-  SizeIndicator,
-  SizeControlPanel
-} from '../../../../src/vue'
-import CustomButton from './CustomButton.vue'
-import CustomCard from './CustomCard.vue'
-import type { SizeMode } from '../../../../src/types'
-
-const handleSwitcherChange = (mode: SizeMode) => {
-  console.log('切换器变化:', mode)
-}
-
-const handlePanelChange = (mode: SizeMode) => {
-  console.log('面板变化:', mode)
-}
-</script>
 
 <style scoped>
 .component-demo {

@@ -45,9 +45,9 @@ const props = withDefaults(defineProps<FormSliderProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: number]
-  change: [value: number, event: Event]
-  blur: [event: FocusEvent]
-  focus: [event: FocusEvent]
+  'change': [value: number, event: Event]
+  'blur': [event: FocusEvent]
+  'focus': [event: FocusEvent]
 }>()
 
 const inputRef = ref<HTMLInputElement>()
@@ -56,10 +56,10 @@ const inputValue = ref<number>(props.modelValue)
 // 监听外部值变化
 watch(
   () => props.modelValue,
-  newValue => {
+  (newValue) => {
     inputValue.value = newValue
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // 显示值
@@ -139,7 +139,9 @@ defineExpose({
         <span v-if="required" class="form-slider__required">*</span>
         <span v-if="showColon" class="form-slider__colon">:</span>
       </label>
-      <div v-if="tooltip" class="form-slider__tooltip" :title="tooltip">?</div>
+      <div v-if="tooltip" class="form-slider__tooltip" :title="tooltip">
+        ?
+      </div>
     </div>
 
     <div class="form-slider__wrapper" :class="wrapperClasses">
@@ -162,7 +164,7 @@ defineExpose({
           @change="handleChange"
           @blur="handleBlur"
           @focus="handleFocus"
-        />
+        >
 
         <div v-if="showMarks && marks.length" class="form-slider__marks">
           <div

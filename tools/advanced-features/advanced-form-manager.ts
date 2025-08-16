@@ -289,7 +289,8 @@ export class AdvancedFormManager {
    * 设置自动保存
    */
   private setupAutoSave(): void {
-    if (!this.config.autoSave?.enabled) return
+    if (!this.config.autoSave?.enabled)
+      return
 
     const { interval } = this.config.autoSave
 
@@ -303,7 +304,7 @@ export class AdvancedFormManager {
       () => {
         this.state.isDirty = true
       },
-      { deep: true }
+      { deep: true },
     )
   }
 
@@ -311,7 +312,8 @@ export class AdvancedFormManager {
    * 设置条件显示
    */
   private setupConditionalDisplay(): void {
-    if (!this.config.conditionalDisplay) return
+    if (!this.config.conditionalDisplay)
+      return
 
     // 监听数据变化，更新字段可见性
     watch(
@@ -319,7 +321,7 @@ export class AdvancedFormManager {
       () => {
         this.updateConditionalDisplay()
       },
-      { deep: true, immediate: true }
+      { deep: true, immediate: true },
     )
   }
 
@@ -327,13 +329,15 @@ export class AdvancedFormManager {
    * 更新条件显示
    */
   private updateConditionalDisplay(): void {
-    if (!this.config.conditionalDisplay) return
+    if (!this.config.conditionalDisplay)
+      return
 
     for (const rule of this.config.conditionalDisplay.rules) {
       const { target, condition, action } = rule
       const fieldState = this.state.fieldStates[target]
 
-      if (!fieldState) continue
+      if (!fieldState)
+        continue
 
       const conditionMet = this.evaluateCondition(condition)
 
@@ -414,7 +418,8 @@ export class AdvancedFormManager {
    */
   async validateField(fieldName: string): Promise<boolean> {
     const field = this.config.fields.find(f => f.name === fieldName)
-    if (!field) return true
+    if (!field)
+      return true
 
     const fieldState = this.state.fieldStates[fieldName]
     const value = this.state.data[fieldName]
@@ -426,7 +431,7 @@ export class AdvancedFormManager {
     }
 
     // 设置防抖验证
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const timer = window.setTimeout(async () => {
         fieldState.validating = true
         const errors: string[] = []
@@ -451,7 +456,8 @@ export class AdvancedFormManager {
           fieldState.validating = false
 
           resolve(errors.length === 0)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(chalk.red(`❌ 字段验证失败: ${fieldName}`), error)
           fieldState.validating = false
           resolve(false)
@@ -468,7 +474,7 @@ export class AdvancedFormManager {
   private async validateRule(
     value: any,
     rule: FieldValidation,
-    field: FormField
+    field: FormField,
   ): Promise<string | null> {
     const { type, value: ruleValue, message } = rule
 
@@ -490,14 +496,14 @@ export class AdvancedFormManager {
 
       case 'minLength':
         return String(value).length < Number(ruleValue)
-          ? message ||
-              this.getMessage('minLength', field, { minLength: ruleValue })
+          ? message
+          || this.getMessage('minLength', field, { minLength: ruleValue })
           : null
 
       case 'maxLength':
         return String(value).length > Number(ruleValue)
-          ? message ||
-              this.getMessage('maxLength', field, { maxLength: ruleValue })
+          ? message
+          || this.getMessage('maxLength', field, { maxLength: ruleValue })
           : null
 
       case 'pattern':
@@ -516,7 +522,8 @@ export class AdvancedFormManager {
         try {
           new URL(String(value))
           return null
-        } catch {
+        }
+        catch {
           return message || this.getMessage('url', field)
         }
 
@@ -525,8 +532,10 @@ export class AdvancedFormManager {
           const validator = this.config.validation.customValidators[ruleValue]
           const result = await validator.validate(value, field, this.state.data)
 
-          if (result === true) return null
-          if (typeof result === 'string') return result
+          if (result === true)
+            return null
+          if (typeof result === 'string')
+            return result
           return (
             message || validator.message || this.getMessage('custom', field)
           )
@@ -547,10 +556,10 @@ export class AdvancedFormManager {
    */
   private isEmpty(value: any): boolean {
     return (
-      value === null ||
-      value === undefined ||
-      value === '' ||
-      (Array.isArray(value) && value.length === 0)
+      value === null
+      || value === undefined
+      || value === ''
+      || (Array.isArray(value) && value.length === 0)
     )
   }
 
@@ -617,7 +626,8 @@ export class AdvancedFormManager {
       this.clearAutoSavedData()
 
       return this.state.data
-    } finally {
+    }
+    finally {
       this.state.isSubmitting = false
     }
   }
@@ -648,15 +658,18 @@ export class AdvancedFormManager {
    * 下一步
    */
   nextStep(): boolean {
-    if (!this.config.multiStep?.enabled) return false
+    if (!this.config.multiStep?.enabled)
+      return false
 
-    const currentStepConfig =
-      this.config.multiStep.steps[this.state.currentStep - 1]
-    if (!currentStepConfig) return false
+    const currentStepConfig
+      = this.config.multiStep.steps[this.state.currentStep - 1]
+    if (!currentStepConfig)
+      return false
 
     // 验证当前步骤
     const currentStepValid = this.validateCurrentStep()
-    if (!currentStepValid) return false
+    if (!currentStepValid)
+      return false
 
     if (this.state.currentStep < this.config.multiStep.steps.length) {
       this.state.currentStep++
@@ -670,7 +683,8 @@ export class AdvancedFormManager {
    * 上一步
    */
   previousStep(): boolean {
-    if (!this.config.multiStep?.enabled) return false
+    if (!this.config.multiStep?.enabled)
+      return false
 
     if (this.state.currentStep > 1) {
       this.state.currentStep--
@@ -684,15 +698,17 @@ export class AdvancedFormManager {
    * 验证当前步骤
    */
   private async validateCurrentStep(): Promise<boolean> {
-    if (!this.config.multiStep?.enabled) return true
+    if (!this.config.multiStep?.enabled)
+      return true
 
-    const currentStepConfig =
-      this.config.multiStep.steps[this.state.currentStep - 1]
-    if (!currentStepConfig) return true
+    const currentStepConfig
+      = this.config.multiStep.steps[this.state.currentStep - 1]
+    if (!currentStepConfig)
+      return true
 
     // 验证步骤字段
     const validationPromises = currentStepConfig.fields.map(fieldName =>
-      this.validateField(fieldName)
+      this.validateField(fieldName),
     )
 
     const results = await Promise.all(validationPromises)
@@ -711,14 +727,16 @@ export class AdvancedFormManager {
    * 自动保存
    */
   private async autoSave(): Promise<void> {
-    if (!this.config.autoSave?.enabled || !this.state.isDirty) return
+    if (!this.config.autoSave?.enabled || !this.state.isDirty)
+      return
 
     try {
       const { storageType, storageKey, customSave } = this.config.autoSave
 
       if (customSave) {
         await customSave(this.state.data)
-      } else {
+      }
+      else {
         switch (storageType) {
           case 'localStorage':
             localStorage.setItem(storageKey, JSON.stringify(this.state.data))
@@ -733,7 +751,8 @@ export class AdvancedFormManager {
       }
 
       console.log(chalk.green('✅ 表单数据自动保存成功'))
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 表单数据自动保存失败:'), error)
     }
   }
@@ -742,7 +761,8 @@ export class AdvancedFormManager {
    * 加载自动保存的数据
    */
   private async loadAutoSavedData(): Promise<void> {
-    if (!this.config.autoSave?.enabled) return
+    if (!this.config.autoSave?.enabled)
+      return
 
     try {
       const { storageType, storageKey, customLoad } = this.config.autoSave
@@ -750,7 +770,8 @@ export class AdvancedFormManager {
 
       if (customLoad) {
         savedData = await customLoad()
-      } else {
+      }
+      else {
         switch (storageType) {
           case 'localStorage':
             const localData = localStorage.getItem(storageKey)
@@ -770,7 +791,8 @@ export class AdvancedFormManager {
         Object.assign(this.state.data, savedData)
         console.log(chalk.green('✅ 自动保存的表单数据已恢复'))
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 加载自动保存数据失败:'), error)
     }
   }
@@ -779,7 +801,8 @@ export class AdvancedFormManager {
    * 清除自动保存的数据
    */
   private clearAutoSavedData(): void {
-    if (!this.config.autoSave?.enabled) return
+    if (!this.config.autoSave?.enabled)
+      return
 
     const { storageType, storageKey } = this.config.autoSave
 
@@ -795,7 +818,8 @@ export class AdvancedFormManager {
           // IndexedDB 实现
           break
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 清除自动保存数据失败:'), error)
     }
   }
@@ -813,18 +837,19 @@ export class AdvancedFormManager {
   getCurrentStepFields(): FormField[] {
     if (!this.config.multiStep?.enabled) {
       return this.config.fields.filter(
-        field => this.state.fieldStates[field.name].visible
+        field => this.state.fieldStates[field.name].visible,
       )
     }
 
-    const currentStepConfig =
-      this.config.multiStep.steps[this.state.currentStep - 1]
-    if (!currentStepConfig) return []
+    const currentStepConfig
+      = this.config.multiStep.steps[this.state.currentStep - 1]
+    if (!currentStepConfig)
+      return []
 
     return this.config.fields.filter(
       field =>
-        currentStepConfig.fields.includes(field.name) &&
-        this.state.fieldStates[field.name].visible
+        currentStepConfig.fields.includes(field.name)
+        && this.state.fieldStates[field.name].visible,
     )
   }
 
@@ -847,7 +872,7 @@ export class AdvancedFormManager {
  * 创建高级表单管理器
  */
 export function createAdvancedFormManager(
-  config: FormConfig
+  config: FormConfig,
 ): AdvancedFormManager {
   return new AdvancedFormManager(config)
 }

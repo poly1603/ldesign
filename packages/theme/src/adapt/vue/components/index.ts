@@ -4,6 +4,6 @@
  * 统一导出所有 Vue 组件
  */
 
-export { ThemeProvider, default as Provider } from './ThemeProvider'
-export { ThemeButton, default as Button } from './ThemeButton'
-export { ThemeSelector, default as Selector } from './ThemeSelector'
+export { default as Button, ThemeButton } from './ThemeButton'
+export { default as Provider, ThemeProvider } from './ThemeProvider'
+export { default as Selector, ThemeSelector } from './ThemeSelector'

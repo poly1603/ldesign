@@ -1,3 +1,7 @@
+<script setup lang="ts">
+// Posts container component
+</script>
+
 <template>
   <div data-testid="posts-container">
     <h1>Posts</h1>
@@ -5,10 +9,6 @@
     <router-view />
   </div>
 </template>
-
-<script setup lang="ts">
-// Posts container component
-</script>
 
 <style scoped>
 h1 {

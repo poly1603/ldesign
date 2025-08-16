@@ -1,9 +1,9 @@
 import type {
+  DataType,
+  SetOptions,
+  StorageEngine,
   StorageStrategyConfig,
   StorageStrategyResult,
-  StorageEngine,
-  SetOptions,
-  DataType,
 } from '../types'
 
 /**
@@ -43,7 +43,7 @@ export class StorageStrategy {
   async selectEngine(
     key: string,
     value: any,
-    options?: SetOptions
+    options?: SetOptions,
   ): Promise<StorageStrategyResult> {
     if (!this.config.enabled) {
       return {
@@ -94,11 +94,14 @@ export class StorageStrategy {
 
     if (size <= sizeThresholds.small) {
       return 'localStorage' // 小数据优先使用 localStorage
-    } else if (size <= sizeThresholds.medium) {
+    }
+    else if (size <= sizeThresholds.medium) {
       return 'sessionStorage' // 中等数据使用 sessionStorage
-    } else if (size <= sizeThresholds.large) {
+    }
+    else if (size <= sizeThresholds.large) {
       return 'indexedDB' // 大数据使用 IndexedDB
-    } else {
+    }
+    else {
       return 'indexedDB' // 超大数据也使用 IndexedDB
     }
   }
@@ -115,9 +118,11 @@ export class StorageStrategy {
 
     if (ttl <= ttlThresholds.short) {
       return 'memory' // 短期缓存使用内存
-    } else if (ttl <= ttlThresholds.medium) {
+    }
+    else if (ttl <= ttlThresholds.medium) {
       return 'sessionStorage' // 中期缓存使用 sessionStorage
-    } else {
+    }
+    else {
       return 'localStorage' // 长期缓存使用 localStorage
     }
   }
@@ -174,9 +179,9 @@ export class StorageStrategy {
 
     // 引擎优先级权重 (5%)
     this.config.enginePriority.forEach((engine, index) => {
-      const priorityScore =
-        (this.config.enginePriority.length - index) /
-        this.config.enginePriority.length
+      const priorityScore
+        = (this.config.enginePriority.length - index)
+          / this.config.enginePriority.length
       scores[engine] += 0.05 * priorityScore
     })
 
@@ -195,7 +200,7 @@ export class StorageStrategy {
       dataSize: number
       ttl?: number
       dataType: DataType
-    }
+    },
   ): void {
     // Cookie 大小限制严格
     if (factors.dataSize > 4 * 1024) {
@@ -244,7 +249,7 @@ export class StorageStrategy {
 
     for (const [engine, score] of Object.entries(scores) as [
       StorageEngine,
-      number
+      number,
     ][]) {
       if (score > bestScore) {
         bestScore = score
@@ -263,29 +268,29 @@ export class StorageStrategy {
    */
   private generateReason(
     engine: StorageEngine,
-    scores: Record<StorageEngine, number>
+    scores: Record<StorageEngine, number>,
   ): string {
     const score = scores[engine]
 
     switch (engine) {
       case 'localStorage':
         return `选择 localStorage：适合持久化存储中小型数据 (得分: ${score.toFixed(
-          2
+          2,
         )})`
 
       case 'sessionStorage':
         return `选择 sessionStorage：适合会话级存储中等大小数据 (得分: ${score.toFixed(
-          2
+          2,
         )})`
 
       case 'cookie':
         return `选择 Cookie：适合需要服务器交互的小数据 (得分: ${score.toFixed(
-          2
+          2,
         )})`
 
       case 'indexedDB':
         return `选择 IndexedDB：适合大量结构化数据存储 (得分: ${score.toFixed(
-          2
+          2,
         )})`
 
       case 'memory':
@@ -300,11 +305,16 @@ export class StorageStrategy {
    * 获取数据类型
    */
   private getDataType(value: any): DataType {
-    if (value === null || value === undefined) return 'string'
-    if (typeof value === 'string') return 'string'
-    if (typeof value === 'number') return 'number'
-    if (typeof value === 'boolean') return 'boolean'
-    if (Array.isArray(value)) return 'array'
+    if (value === null || value === undefined)
+      return 'string'
+    if (typeof value === 'string')
+      return 'string'
+    if (typeof value === 'number')
+      return 'number'
+    if (typeof value === 'boolean')
+      return 'boolean'
+    if (Array.isArray(value))
+      return 'array'
     if (value instanceof ArrayBuffer || value instanceof Uint8Array)
       return 'binary'
     return 'object'
@@ -317,7 +327,8 @@ export class StorageStrategy {
     try {
       const serialized = JSON.stringify(value)
       return new Blob([serialized]).size
-    } catch {
+    }
+    catch {
       return 0
     }
   }

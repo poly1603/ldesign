@@ -5,7 +5,7 @@
  */
 
 import type { App, Plugin } from 'vue'
-import type { TemplateManagerConfig, DeviceType } from '../types'
+import type { DeviceType, TemplateManagerConfig } from '../types'
 import { TemplateManager } from '../core/manager'
 import { TemplateRenderer } from './components/TemplateRenderer'
 
@@ -74,13 +74,13 @@ function createTemplateDirective() {
           template,
           props,
         })
-        .then(result => {
+        .then((result) => {
           // 简单的组件渲染到元素
           if (result.component && el) {
             el.innerHTML = '<div>Template rendered via directive</div>'
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Template directive render failed:', error)
           el.innerHTML = '<div>Template render failed</div>'
         })
@@ -103,7 +103,7 @@ function createTemplateDirective() {
           template,
           props,
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Template directive update failed:', error)
         })
     },
@@ -168,10 +168,10 @@ export const TemplatePlugin: Plugin = {
       // 扫描模板（异步）
       globalTemplateManager
         .scanTemplates()
-        .then(result => {
+        .then((result) => {
           console.log(`✅ 模板扫描完成，发现 ${result.count} 个模板`)
         })
-        .catch(error => {
+        .catch((error) => {
           console.warn('⚠️ 模板扫描失败:', error)
         })
 
@@ -183,7 +183,8 @@ export const TemplatePlugin: Plugin = {
       }
 
       console.log('✅ LDesign Template Vue 插件安装成功')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ LDesign Template Vue 插件安装失败:', error)
       throw error
     }

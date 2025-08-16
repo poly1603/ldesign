@@ -4,7 +4,7 @@
  * 提供路由性能优化相关的工具函数
  */
 
-import type { RouteRecordRaw, RouteRecordNormalized } from '../types'
+import type { RouteRecordNormalized, RouteRecordRaw } from '../types'
 
 // ==================== 路由预编译 ====================
 
@@ -69,7 +69,7 @@ export function compilePattern(path: string): CompiledPattern {
     regexPattern += '$'
   }
   if (!regexPattern.startsWith('^')) {
-    regexPattern = '^' + regexPattern
+    regexPattern = `^${regexPattern}`
   }
 
   const compiled: CompiledPattern = {
@@ -176,7 +176,8 @@ export function buildOptimizedRouteTree(routes: RouteRecordRaw[]): OptimizedRout
           })
         }
         currentNode = currentNode.children.get(paramKey)!
-      } else if (segment === '*') {
+      }
+      else if (segment === '*') {
         // 通配符段
         if (!currentNode.wildcardChild) {
           currentNode.wildcardChild = {
@@ -187,7 +188,8 @@ export function buildOptimizedRouteTree(routes: RouteRecordRaw[]): OptimizedRout
           }
         }
         currentNode = currentNode.wildcardChild
-      } else {
+      }
+      else {
         // 静态段
         if (!currentNode.children.has(segment)) {
           currentNode.children.set(segment, {
@@ -224,7 +226,7 @@ export function buildOptimizedRouteTree(routes: RouteRecordRaw[]): OptimizedRout
 export function findInOptimizedTree(
   tree: OptimizedRouteNode,
   path: string,
-): { record: RouteRecordNormalized; params: Record<string, string> } | null {
+): { record: RouteRecordNormalized, params: Record<string, string> } | null {
   const segments = path.split('/').filter(Boolean)
   const params: Record<string, string> = {}
 
@@ -240,7 +242,8 @@ export function findInOptimizedTree(
     const staticChild = node.children.get(segment)
     if (staticChild) {
       const result = traverse(staticChild, segmentIndex + 1)
-      if (result) return result
+      if (result)
+        return result
     }
 
     // 尝试参数匹配
@@ -248,7 +251,8 @@ export function findInOptimizedTree(
       if (child.isParam && key.startsWith(':')) {
         params[child.paramName!] = decodeURIComponent(segment)
         const result = traverse(child, segmentIndex + 1)
-        if (result) return result
+        if (result)
+          return result
         delete params[child.paramName!] // 回溯
       }
     }
@@ -305,7 +309,7 @@ export interface RoutePerformanceStats {
   /** 缓存命中率 */
   cacheHitRate: number
   /** 最常访问的路由 */
-  mostVisitedRoutes: Array<{ path: string; count: number }>
+  mostVisitedRoutes: Array<{ path: string, count: number }>
 }
 
 /**

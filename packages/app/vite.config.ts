@@ -54,17 +54,17 @@ export default defineConfig({
             '@ldesign/engine': resolve(__dirname, '../engine/src/index.ts'),
             '@ldesign/engine/vue': resolve(
               __dirname,
-              '../engine/src/vue/index.ts'
+              '../engine/src/vue/index.ts',
             ),
             '@ldesign/router': resolve(__dirname, '../router/src/index.ts'),
             '@ldesign/router/vue': resolve(
               __dirname,
-              '../router/src/vue/index.ts'
+              '../router/src/vue/index.ts',
             ),
             '@ldesign/template': resolve(__dirname, '../template/src/index.ts'),
             '@ldesign/template/vue': resolve(
               __dirname,
-              '../template/src/vue/index.ts'
+              '../template/src/vue/index.ts',
             ),
             '@ldesign/i18n': resolve(__dirname, '../i18n/src/index.ts'),
             '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue/index.ts'),
@@ -73,10 +73,10 @@ export default defineConfig({
             '@ldesign/device': resolve(__dirname, '../device/src/index.ts'),
             '@ldesign/device/vue': resolve(
               __dirname,
-              '../device/src/vue/index.ts'
+              '../device/src/vue/index.ts',
             ),
             // 使用包含编译器的Vue版本
-            vue: 'vue/dist/vue.esm-bundler.js',
+            'vue': 'vue/dist/vue.esm-bundler.js',
           }
         : {
             // 构建模式：使用构建产物（从 node_modules）

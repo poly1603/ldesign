@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createRouter, createMemoryHistory } from '../src'
 import type { RouteRecordRaw } from '../src'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createMemoryHistory, createRouter } from '../src'
 
 describe('集成测试', () => {
   let router: any
@@ -79,7 +79,8 @@ describe('集成测试', () => {
       router.beforeEach((to: any, from: any, next: any) => {
         if (to.path === '/about') {
           next('/')
-        } else {
+        }
+        else {
           next()
         }
       })

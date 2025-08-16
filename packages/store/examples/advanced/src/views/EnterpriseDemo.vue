@@ -11,8 +11,8 @@ const formData = ref({
   age: 0,
 })
 
-const actionResult = ref<{ type: 'success' | 'error'; message: string } | null>(
-  null
+const actionResult = ref<{ type: 'success' | 'error', message: string } | null>(
+  null,
 )
 
 // 计算属性
@@ -68,7 +68,8 @@ function viewUsers() {
   try {
     store.viewUsers()
     actionResult.value = { type: 'success', message: '用户列表加载成功' }
-  } catch (error) {
+  }
+  catch (error) {
     actionResult.value = { type: 'error', message: (error as Error).message }
   }
   setTimeout(() => {
@@ -80,7 +81,8 @@ function createUser() {
   try {
     store.createUser()
     actionResult.value = { type: 'success', message: '用户创建成功' }
-  } catch (error) {
+  }
+  catch (error) {
     actionResult.value = { type: 'error', message: (error as Error).message }
   }
   setTimeout(() => {
@@ -92,7 +94,8 @@ function deleteUser() {
   try {
     store.deleteUser()
     actionResult.value = { type: 'success', message: '用户删除成功' }
-  } catch (error) {
+  }
+  catch (error) {
     actionResult.value = { type: 'error', message: (error as Error).message }
   }
   setTimeout(() => {
@@ -104,7 +107,8 @@ function viewSystemSettings() {
   try {
     store.viewSystemSettings()
     actionResult.value = { type: 'success', message: '系统设置加载成功' }
-  } catch (error) {
+  }
+  catch (error) {
     actionResult.value = { type: 'error', message: (error as Error).message }
   }
   setTimeout(() => {
@@ -172,7 +176,9 @@ function formatTime(timestamp: number) {
               </li>
             </ul>
           </div>
-          <div v-else class="alert alert-warning">请先登录</div>
+          <div v-else class="alert alert-warning">
+            请先登录
+          </div>
 
           <div class="actions">
             <button
@@ -257,7 +263,7 @@ function formatTime(timestamp: number) {
                 type="text"
                 class="form-input"
                 :class="{ error: validationErrors.username }"
-              />
+              >
               <div v-if="validationErrors.username" class="error-message">
                 {{ validationErrors.username }}
               </div>
@@ -270,7 +276,7 @@ function formatTime(timestamp: number) {
                 type="email"
                 class="form-input"
                 :class="{ error: validationErrors.email }"
-              />
+              >
               <div v-if="validationErrors.email" class="error-message">
                 {{ validationErrors.email }}
               </div>
@@ -283,7 +289,7 @@ function formatTime(timestamp: number) {
                 type="number"
                 class="form-input"
                 :class="{ error: validationErrors.age }"
-              />
+              >
               <div v-if="validationErrors.age" class="error-message">
                 {{ validationErrors.age }}
               </div>
@@ -407,8 +413,7 @@ class UserManagementStore extends BaseStore {
     // 只有管理员角色才能执行
     return await userApi.deleteUser(userId)
   }
-}</pre
-          >
+}</pre>
         </div>
 
         <h3>数据验证装饰器</h3>
@@ -427,8 +432,7 @@ class FormStore extends BaseStore {
     // 数据会自动验证，验证失败会抛出错误
     return this.saveUser(data)
   }
-}</pre
-          >
+}</pre>
         </div>
       </div>
     </div>

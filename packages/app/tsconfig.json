@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
 
@@ -28,12 +30,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noEmit": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "jsx": "preserve",
-    "jsxImportSource": "vue"
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.tsx"],
   "exclude": ["node_modules", "dist", "docs/.vitepress/dist"]

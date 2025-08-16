@@ -5,15 +5,15 @@
  * 不依赖外部包，纯 Node.js 实现
  */
 
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
 
 const colors = {
-  reset: '\x1b[0m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m',
+  reset: '\x1B[0m',
+  red: '\x1B[31m',
+  green: '\x1B[32m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
+  cyan: '\x1B[36m',
 }
 
 function log(message, color = colors.reset) {
@@ -37,9 +37,22 @@ const commitTypes = {
 
 // 影响范围定义
 const validScopes = [
-  'core', 'router', 'matcher', 'history', 'components', 'composables',
-  'plugins', 'device', 'engine', 'guards', 'utils', 'types',
-  'docs', 'test', 'build', 'ci'
+  'core',
+  'router',
+  'matcher',
+  'history',
+  'components',
+  'composables',
+  'plugins',
+  'device',
+  'engine',
+  'guards',
+  'utils',
+  'types',
+  'docs',
+  'test',
+  'build',
+  'ci',
 ]
 
 function validateCommitMessage(message) {
@@ -48,7 +61,7 @@ function validateCommitMessage(message) {
 
   // 基本格式检查: <type>(<scope>): <subject>
   const commitRegex = /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+/
-  
+
   if (!commitRegex.test(message)) {
     errors.push('提交信息格式不正确')
     return { valid: false, errors, warnings }
@@ -94,16 +107,16 @@ function validateCommitMessage(message) {
     valid: errors.length === 0,
     errors,
     warnings,
-    parsed: { type, scope, subject }
+    parsed: { type, scope, subject },
   }
 }
 
 function printValidationResult(result, message) {
   log('\n🔍 提交信息验证结果:', colors.cyan)
-  log('=' .repeat(50))
-  
+  log('='.repeat(50))
+
   log(`📝 提交信息: ${message}`)
-  
+
   if (result.parsed) {
     const { type, scope, subject } = result.parsed
     log(`🏷️  类型: ${type} (${commitTypes[type] || '未知'})`)
@@ -115,23 +128,24 @@ function printValidationResult(result, message) {
 
   if (result.errors.length > 0) {
     log('\n❌ 错误:', colors.red)
-    result.errors.forEach(error => {
+    result.errors.forEach((error) => {
       log(`  • ${error}`, colors.red)
     })
   }
 
   if (result.warnings.length > 0) {
     log('\n⚠️  警告:', colors.yellow)
-    result.warnings.forEach(warning => {
+    result.warnings.forEach((warning) => {
       log(`  • ${warning}`, colors.yellow)
     })
   }
 
   if (result.valid) {
     log('\n✅ 提交信息格式正确', colors.green)
-  } else {
+  }
+  else {
     log('\n❌ 提交信息格式不正确', colors.red)
-    
+
     log('\n💡 正确格式:', colors.blue)
     log('  <type>(<scope>): <subject>')
     log('')
@@ -146,12 +160,12 @@ function printValidationResult(result, message) {
     })
   }
 
-  log('=' .repeat(50))
+  log('='.repeat(50))
 }
 
 function main() {
   const args = process.argv.slice(2)
-  
+
   if (args.length === 0) {
     log('❌ 请提供提交信息文件路径', colors.red)
     log('用法: node validate-commit-msg.js <commit-msg-file>')
@@ -159,10 +173,10 @@ function main() {
   }
 
   const commitMsgFile = args[0]
-  
+
   try {
     const message = readFileSync(commitMsgFile, 'utf8').trim()
-    
+
     if (!message) {
       log('❌ 提交信息为空', colors.red)
       process.exit(1)
@@ -176,8 +190,8 @@ function main() {
     }
 
     log('🎉 提交信息验证通过！', colors.green)
-    
-  } catch (error) {
+  }
+  catch (error) {
     log(`❌ 读取提交信息文件失败: ${error.message}`, colors.red)
     process.exit(1)
   }

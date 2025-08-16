@@ -5,8 +5,8 @@ describe('aES 加密算法测试', () => {
   const testData = 'Hello, AES Encryption!'
   const testKey = 'my-secret-key-256-bits-long'
   const shortKey = 'short'
-  const longKey =
-    'this-is-a-very-long-key-that-exceeds-normal-length-requirements'
+  const longKey
+    = 'this-is-a-very-long-key-that-exceeds-normal-length-requirements'
 
   describe('基础加密解密功能', () => {
     it('应该成功加密和解密数据', () => {
@@ -85,7 +85,7 @@ describe('aES 加密算法测试', () => {
   describe('加密模式测试', () => {
     const modes = ['CBC', 'ECB', 'CFB', 'OFB'] as const
 
-    modes.forEach(mode => {
+    modes.forEach((mode) => {
       it(`应该支持 ${mode} 模式`, () => {
         const encrypted = aes.encrypt(testData, testKey, { mode, keySize: 256 })
         expect(encrypted.success).toBe(true)

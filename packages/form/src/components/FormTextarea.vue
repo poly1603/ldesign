@@ -199,8 +199,7 @@ defineExpose({
 
 .form-textarea__wrapper {
   position: relative;
-  border: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9);
+  border: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9);
   border-radius: var(--form-border-radius-base, 4px);
   background: var(--form-bg-primary, #ffffff);
   transition: all var(--form-animation-duration-normal, 300ms)

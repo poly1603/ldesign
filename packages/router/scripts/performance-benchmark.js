@@ -3,10 +3,10 @@
  * 测试路由匹配、导航、组件加载等性能指标
  */
 
-import { performance } from 'perf_hooks'
-import { createRouter, createMemoryHistory } from '../es/index.js'
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
+import { performance } from 'node:perf_hooks'
+import { createMemoryHistory, createRouter } from '../es/index.js'
 
 // 性能测试配置
 const BENCHMARK_CONFIG = {
@@ -22,9 +22,9 @@ const BENCHMARK_CONFIG = {
       '/admin/dashboard',
       '/api/v1/users/123',
       '/complex/nested/route/with/many/segments',
-    ]
+    ],
   },
-  
+
   // 路由导航测试
   navigation: {
     iterations: 1000,
@@ -35,14 +35,14 @@ const BENCHMARK_CONFIG = {
       '/posts/456',
       '/admin',
       '/profile',
-    ]
+    ],
   },
-  
+
   // 大量路由测试
   massRoutes: {
     routeCount: 1000,
     testIterations: 100,
-  }
+  },
 }
 
 // 创建测试路由配置
@@ -58,19 +58,19 @@ function createTestRoutes(count = 100) {
     routes.push({
       path: `/user/${i}`,
       name: `user-${i}`,
-      component: () => Promise.resolve({ default: {} })
+      component: () => Promise.resolve({ default: {} }),
     })
-    
+
     routes.push({
       path: `/post/${i}/:slug`,
       name: `post-${i}`,
-      component: () => Promise.resolve({ default: {} })
+      component: () => Promise.resolve({ default: {} }),
     })
-    
+
     routes.push({
       path: `/category/${i}/subcategory/:id`,
       name: `category-${i}`,
-      component: () => Promise.resolve({ default: {} })
+      component: () => Promise.resolve({ default: {} }),
     })
   }
 
@@ -86,11 +86,11 @@ class PerformanceBenchmark {
   // 测试路由匹配性能
   async testRouteMatching() {
     console.log('🔍 测试路由匹配性能...')
-    
+
     const routes = createTestRoutes(100)
     const router = createRouter({
       history: createMemoryHistory(),
-      routes
+      routes,
     })
 
     const { iterations, routes: testRoutes } = BENCHMARK_CONFIG.routeMatching
@@ -98,24 +98,25 @@ class PerformanceBenchmark {
 
     for (const route of testRoutes) {
       const startTime = performance.now()
-      
+
       for (let i = 0; i < iterations; i++) {
         try {
           router.resolve(route)
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略解析错误，专注于性能
         }
       }
-      
+
       const endTime = performance.now()
       const totalTime = endTime - startTime
       const avgTime = totalTime / iterations
-      
+
       results.push({
         route,
         totalTime: totalTime.toFixed(2),
         avgTime: avgTime.toFixed(4),
-        opsPerSecond: Math.round(1000 / avgTime)
+        opsPerSecond: Math.round(1000 / avgTime),
       })
     }
 
@@ -126,11 +127,11 @@ class PerformanceBenchmark {
   // 测试路由导航性能
   async testNavigation() {
     console.log('🧭 测试路由导航性能...')
-    
+
     const routes = createTestRoutes(50)
     const router = createRouter({
       history: createMemoryHistory(),
-      routes
+      routes,
     })
 
     const { iterations, routes: testRoutes } = BENCHMARK_CONFIG.navigation
@@ -138,30 +139,31 @@ class PerformanceBenchmark {
 
     for (const route of testRoutes) {
       const times = []
-      
+
       for (let i = 0; i < iterations; i++) {
         const startTime = performance.now()
-        
+
         try {
           await router.push(route)
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略导航错误
         }
-        
+
         const endTime = performance.now()
         times.push(endTime - startTime)
       }
-      
+
       const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length
       const minTime = Math.min(...times)
       const maxTime = Math.max(...times)
-      
+
       results.push({
         route,
         avgTime: avgTime.toFixed(4),
         minTime: minTime.toFixed(4),
         maxTime: maxTime.toFixed(4),
-        opsPerSecond: Math.round(1000 / avgTime)
+        opsPerSecond: Math.round(1000 / avgTime),
       })
     }
 
@@ -172,15 +174,15 @@ class PerformanceBenchmark {
   // 测试大量路由性能
   async testMassRoutes() {
     console.log('📊 测试大量路由性能...')
-    
+
     const { routeCount, testIterations } = BENCHMARK_CONFIG.massRoutes
     const routes = createTestRoutes(routeCount)
-    
+
     // 测试路由器创建时间
     const createStartTime = performance.now()
     const router = createRouter({
       history: createMemoryHistory(),
-      routes
+      routes,
     })
     const createEndTime = performance.now()
     const createTime = createEndTime - createStartTime
@@ -197,30 +199,31 @@ class PerformanceBenchmark {
     const resolveResults = []
     for (const route of testRoutes) {
       const times = []
-      
+
       for (let i = 0; i < testIterations; i++) {
         const startTime = performance.now()
         try {
           router.resolve(route)
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略解析错误
         }
         const endTime = performance.now()
         times.push(endTime - startTime)
       }
-      
+
       const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length
       resolveResults.push({
         route,
         avgTime: avgTime.toFixed(4),
-        opsPerSecond: Math.round(1000 / avgTime)
+        opsPerSecond: Math.round(1000 / avgTime),
       })
     }
 
     const result = {
       routeCount,
       createTime: createTime.toFixed(2),
-      resolveResults
+      resolveResults,
     }
 
     this.results.massRoutes = result
@@ -230,22 +233,22 @@ class PerformanceBenchmark {
   // 测试内存使用情况
   testMemoryUsage() {
     console.log('💾 测试内存使用情况...')
-    
+
     const initialMemory = process.memoryUsage()
-    
+
     // 创建大量路由器实例
     const routers = []
     for (let i = 0; i < 100; i++) {
       const routes = createTestRoutes(10)
       const router = createRouter({
         history: createMemoryHistory(),
-        routes
+        routes,
       })
       routers.push(router)
     }
 
     const finalMemory = process.memoryUsage()
-    
+
     const memoryDiff = {
       heapUsed: ((finalMemory.heapUsed - initialMemory.heapUsed) / 1024 / 1024).toFixed(2),
       heapTotal: ((finalMemory.heapTotal - initialMemory.heapTotal) / 1024 / 1024).toFixed(2),
@@ -255,7 +258,7 @@ class PerformanceBenchmark {
     this.results.memoryUsage = {
       routersCreated: routers.length,
       memoryDiff,
-      avgMemoryPerRouter: (memoryDiff.heapUsed / routers.length).toFixed(4)
+      avgMemoryPerRouter: (memoryDiff.heapUsed / routers.length).toFixed(4),
     }
 
     return this.results.memoryUsage
@@ -264,12 +267,12 @@ class PerformanceBenchmark {
   // 生成性能报告
   generateReport() {
     console.log('\n📋 性能基准测试报告')
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
 
     // 路由匹配报告
     if (this.results.routeMatching) {
       console.log('\n🔍 路由匹配性能:')
-      this.results.routeMatching.forEach(result => {
+      this.results.routeMatching.forEach((result) => {
         console.log(`  ${result.route.padEnd(30)} ${result.avgTime}ms (${result.opsPerSecond} ops/s)`)
       })
     }
@@ -277,7 +280,7 @@ class PerformanceBenchmark {
     // 路由导航报告
     if (this.results.navigation) {
       console.log('\n🧭 路由导航性能:')
-      this.results.navigation.forEach(result => {
+      this.results.navigation.forEach((result) => {
         console.log(`  ${result.route.padEnd(20)} 平均: ${result.avgTime}ms, 最小: ${result.minTime}ms, 最大: ${result.maxTime}ms`)
       })
     }
@@ -288,7 +291,7 @@ class PerformanceBenchmark {
       console.log(`  路由数量: ${this.results.massRoutes.routeCount}`)
       console.log(`  创建时间: ${this.results.massRoutes.createTime}ms`)
       console.log('  解析性能:')
-      this.results.massRoutes.resolveResults.forEach(result => {
+      this.results.massRoutes.resolveResults.forEach((result) => {
         console.log(`    ${result.route.padEnd(30)} ${result.avgTime}ms (${result.opsPerSecond} ops/s)`)
       })
     }
@@ -309,7 +312,7 @@ class PerformanceBenchmark {
     const resultsWithTimestamp = {
       timestamp: new Date().toISOString(),
       config: BENCHMARK_CONFIG,
-      results: this.results
+      results: this.results,
     }
 
     const filePath = path.join(process.cwd(), filename)
@@ -321,19 +324,19 @@ class PerformanceBenchmark {
 // 运行性能测试
 async function runBenchmark() {
   console.log('🚀 开始路由性能基准测试...\n')
-  
+
   const benchmark = new PerformanceBenchmark()
-  
+
   try {
     await benchmark.testRouteMatching()
     await benchmark.testNavigation()
     await benchmark.testMassRoutes()
     benchmark.testMemoryUsage()
-    
+
     benchmark.generateReport()
     benchmark.saveResults()
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 性能测试失败:', error)
     process.exit(1)
   }

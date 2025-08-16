@@ -4,7 +4,7 @@
  * 提供动画效果的基础功能和通用方法
  */
 
-import type { AnimationConfig, AnimationKeyframe } from '../../core/types'
+import type { AnimationConfig } from '../../core/types'
 
 /**
  * 动画效果基础类
@@ -208,7 +208,7 @@ export abstract class BaseAnimation {
    * 重置元素状态
    */
   protected resetElements(): void {
-    this.elements.forEach(element => {
+    this.elements.forEach((element) => {
       // 移除动画相关的样式
       element.style.animation = ''
       element.style.transform = ''
@@ -229,7 +229,7 @@ export abstract class BaseAnimation {
     }
 
     const keyframeRules = this.config.keyframes
-      .map(keyframe => {
+      .map((keyframe) => {
         const percentage = Math.round(keyframe.offset * 100)
         const properties = Object.entries(keyframe.properties)
           .map(([prop, value]) => `${this.camelToKebab(prop)}: ${value}`)
@@ -284,7 +284,7 @@ export abstract class BaseAnimation {
 
     const { performance } = this.config
 
-    this.elements.forEach(element => {
+    this.elements.forEach((element) => {
       if (performance.useGPU) {
         element.style.transform = element.style.transform || 'translateZ(0)'
       }
@@ -303,7 +303,7 @@ export abstract class BaseAnimation {
    * 清理性能优化
    */
   protected cleanupPerformanceOptimizations(): void {
-    this.elements.forEach(element => {
+    this.elements.forEach((element) => {
       element.style.willChange = ''
       element.style.backfaceVisibility = ''
     })
@@ -334,7 +334,7 @@ export abstract class BaseAnimation {
   protected interpolateColor(
     from: string,
     to: string,
-    progress: number
+    progress: number,
   ): string {
     const fromRgb = this.hexToRgb(from)
     const toRgb = this.hexToRgb(to)
@@ -353,13 +353,13 @@ export abstract class BaseAnimation {
   /**
    * 十六进制颜色转RGB
    */
-  protected hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  protected hexToRgb(hex: string): { r: number, g: number, b: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
       ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
+          r: Number.parseInt(result[1], 16),
+          g: Number.parseInt(result[2], 16),
+          b: Number.parseInt(result[3], 16),
         }
       : null
   }

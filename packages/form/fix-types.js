@@ -20,14 +20,14 @@ function fixCommonTypeIssues() {
     .readdirSync(componentsDir)
     .filter(file => file.endsWith('.vue'))
 
-  componentFiles.forEach(file => {
+  componentFiles.forEach((file) => {
     const filePath = path.join(componentsDir, file)
     const content = fs.readFileSync(filePath, 'utf8')
 
     // 检查是否缺少Vue类型导入
     if (
-      content.includes('<script setup lang="ts">') &&
-      !content.includes('import type')
+      content.includes('<script setup lang="ts">')
+      && !content.includes('import type')
     ) {
       console.log(`  ✅ ${file} - Vue组件类型导入正常`)
     }
@@ -39,7 +39,7 @@ function fixCommonTypeIssues() {
     .readdirSync(typesDir)
     .filter(file => file.endsWith('.ts'))
 
-  typeFiles.forEach(file => {
+  typeFiles.forEach((file) => {
     const filePath = path.join(typesDir, file)
     const content = fs.readFileSync(filePath, 'utf8')
 
@@ -58,7 +58,8 @@ function fixESLintIssues() {
     // 运行ESLint自动修复
     execSync('pnpm lint:fix', { stdio: 'inherit', cwd: __dirname })
     console.log('  ✅ ESLint自动修复完成')
-  } catch (error) {
+  }
+  catch (error) {
     console.log('  ⚠️  ESLint自动修复遇到一些问题，需要手动检查')
   }
 }
@@ -71,14 +72,16 @@ function checkTypeScript() {
     execSync('npx vue-tsc --noEmit', { stdio: 'inherit', cwd: __dirname })
     console.log('  ✅ TypeScript类型检查通过')
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.log('  ❌ TypeScript类型检查失败')
     console.log('  尝试使用tsc进行检查...')
     try {
       execSync('npx tsc --noEmit', { stdio: 'inherit', cwd: __dirname })
       console.log('  ✅ TypeScript编译检查通过')
       return true
-    } catch (tscError) {
+    }
+    catch (tscError) {
       console.log('  ❌ TypeScript编译检查也失败')
       return false
     }
@@ -93,7 +96,8 @@ function checkBuild() {
     execSync('pnpm build', { stdio: 'inherit', cwd: __dirname })
     console.log('  ✅ 构建成功')
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.log('  ❌ 构建失败')
     return false
   }
@@ -223,7 +227,8 @@ async function main() {
       console.log('✅ TypeScript类型检查: 通过')
       console.log('✅ ESLint检查: 通过')
       console.log('✅ 构建检查: 通过')
-    } else {
+    }
+    else {
       console.log('⚠️  还有一些问题需要解决:')
       if (!typeCheckPassed) {
         console.log('❌ TypeScript类型检查: 失败')
@@ -238,7 +243,8 @@ async function main() {
       console.log('3. 确保所有依赖都已正确安装')
       console.log('4. 重新运行此脚本')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 修复过程中发生错误:', error.message)
     process.exit(1)
   }

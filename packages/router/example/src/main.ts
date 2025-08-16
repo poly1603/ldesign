@@ -15,7 +15,8 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
-    } else {
+    }
+    else {
       return { top: 0, left: 0 }
     }
   },
@@ -26,7 +27,8 @@ router.beforeEach((to, from, next) => {
   // 更新页面标题
   if (to.meta.title) {
     document.title = `${to.meta.title} - Router Test App`
-  } else {
+  }
+  else {
     document.title = 'Router Test App'
   }
 

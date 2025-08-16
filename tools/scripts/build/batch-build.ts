@@ -1,12 +1,13 @@
 #!/usr/bin/env tsx
 
 // 设置Node.js内存和垃圾回收选项
-process.env.NODE_OPTIONS = '--expose-gc --max-old-space-size=8192'
-
-import { execSync, spawn, ChildProcess } from 'node:child_process'
+import type { ChildProcess } from 'node:child_process'
+import { execSync, spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+process.env.NODE_OPTIONS = '--expose-gc --max-old-space-size=8192'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const rootDir = resolve(__dirname, '../../../')
@@ -51,7 +52,7 @@ class BatchBuilder {
     // 监听进程退出信号，确保清理所有子进程
     const cleanup = () => {
       console.log('\n🧹 清理进程中...')
-      this.activeProcesses.forEach(process => {
+      this.activeProcesses.forEach((process) => {
         if (!process.killed) {
           process.kill('SIGTERM')
         }
@@ -95,11 +96,11 @@ class BatchBuilder {
   private getMemoryUsage(): string {
     const usage = process.memoryUsage()
     const formatBytes = (bytes: number) => {
-      return (bytes / 1024 / 1024).toFixed(2) + ' MB'
+      return `${(bytes / 1024 / 1024).toFixed(2)} MB`
     }
 
     return `RSS: ${formatBytes(usage.rss)}, Heap: ${formatBytes(
-      usage.heapUsed
+      usage.heapUsed,
     )}/${formatBytes(usage.heapTotal)}`
   }
 
@@ -118,7 +119,7 @@ class BatchBuilder {
         {
           cwd: packagesDir,
           encoding: 'utf-8',
-        }
+        },
       )
         .trim()
         .split(/\r?\n/)
@@ -133,7 +134,7 @@ class BatchBuilder {
         if (existsSync(packageJsonPath)) {
           try {
             const packageJson = JSON.parse(
-              readFileSync(packageJsonPath, 'utf-8')
+              readFileSync(packageJsonPath, 'utf-8'),
             )
             const hasScript = packageJson.scripts && packageJson.scripts.build
 
@@ -144,7 +145,7 @@ class BatchBuilder {
             }
             const dependencies = Object.keys(allDeps || {})
             const workspaceDependencies = dependencies.filter(dep =>
-              dep.startsWith('@ldesign/')
+              dep.startsWith('@ldesign/'),
             )
 
             this.packages.push({
@@ -155,7 +156,8 @@ class BatchBuilder {
               workspaceDependencies,
               level: 0, // 将在 calculateDependencyLevels 中计算
             })
-          } catch (error) {
+          }
+          catch (error) {
             console.warn(`⚠️  无法解析 ${packageJsonPath}:`, error)
           }
         }
@@ -165,7 +167,8 @@ class BatchBuilder {
       if (excludePackages.length > 0) {
         console.log(`⏭️  已排除: ${excludePackages.join(', ')}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 扫描包失败:', error)
       process.exit(1)
     }
@@ -221,7 +224,7 @@ class BatchBuilder {
 
     console.log(`📊 依赖层级分析:`)
     const levelGroups = new Map<number, string[]>()
-    this.packages.forEach(pkg => {
+    this.packages.forEach((pkg) => {
       if (!levelGroups.has(pkg.level)) {
         levelGroups.set(pkg.level, [])
       }
@@ -252,7 +255,7 @@ class BatchBuilder {
       }
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const child = spawn('pnpm', ['run', 'build'], {
         cwd: pkg.path,
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -270,15 +273,15 @@ class BatchBuilder {
       let stdout = ''
       let stderr = ''
 
-      child.stdout?.on('data', data => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString()
       })
 
-      child.stderr?.on('data', data => {
+      child.stderr?.on('data', (data) => {
         stderr += data.toString()
       })
 
-      child.on('close', code => {
+      child.on('close', (code) => {
         const duration = Date.now() - startTime
         const success = code === 0
 
@@ -286,9 +289,10 @@ class BatchBuilder {
           console.log(
             `✅ ${
               pkg.name
-            } 构建成功 (${duration}ms) [内存: ${this.getMemoryUsage()}]`
+            } 构建成功 (${duration}ms) [内存: ${this.getMemoryUsage()}]`,
           )
-        } else {
+        }
+        else {
           console.log(`❌ ${pkg.name} 构建失败 (${duration}ms)`)
           console.log(`错误输出: ${stderr}`)
         }
@@ -304,7 +308,7 @@ class BatchBuilder {
         })
       })
 
-      child.on('error', error => {
+      child.on('error', (error) => {
         const duration = Date.now() - startTime
         console.log(`❌ ${pkg.name} 构建失败 (${duration}ms)`)
         console.log(`错误: ${error.message}`)
@@ -336,16 +340,16 @@ class BatchBuilder {
    * 智能并行构建所有包
    */
   async buildAll(
-    mode: 'serial' | 'parallel' | 'smart' = 'smart'
+    mode: 'serial' | 'parallel' | 'smart' = 'smart',
   ): Promise<void> {
     console.log(
       `🚀 开始批量构建 (${
         mode === 'smart'
           ? '智能并行'
           : mode === 'parallel'
-          ? '完全并行'
-          : '串行'
-      } 模式)`
+            ? '完全并行'
+            : '串行'
+      } 模式)`,
     )
     console.log('='.repeat(60))
 
@@ -390,7 +394,7 @@ class BatchBuilder {
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i]
       console.log(
-        `\n🔄 处理第 ${i + 1}/${batches.length} 批次 (${batch.length} 个包)`
+        `\n🔄 处理第 ${i + 1}/${batches.length} 批次 (${batch.length} 个包)`,
       )
 
       const promises = batch.map(pkg => this.buildPackage(pkg))
@@ -417,7 +421,7 @@ class BatchBuilder {
     const levelGroups = new Map<number, PackageInfo[]>()
 
     // 按层级分组
-    this.packages.forEach(pkg => {
+    this.packages.forEach((pkg) => {
       if (!levelGroups.has(pkg.level)) {
         levelGroups.set(pkg.level, [])
       }
@@ -432,7 +436,7 @@ class BatchBuilder {
       console.log(
         `\n🔨 构建层级 ${level} (${
           packages.length
-        } 个包) [内存: ${this.getMemoryUsage()}]`
+        } 个包) [内存: ${this.getMemoryUsage()}]`,
       )
 
       // 同层级内限制并发构建
@@ -441,7 +445,8 @@ class BatchBuilder {
         const promises = packages.map(pkg => this.buildPackage(pkg))
         const results = await Promise.all(promises)
         this.results.push(...results)
-      } else {
+      }
+      else {
         // 包数量多，分批处理
         const batches: PackageInfo[][] = []
         for (let i = 0; i < packages.length; i += this.maxConcurrentBuilds) {
@@ -451,7 +456,7 @@ class BatchBuilder {
         for (let i = 0; i < batches.length; i++) {
           const batch = batches[i]
           console.log(
-            `  📦 处理第 ${i + 1}/${batches.length} 批次 (${batch.length} 个包)`
+            `  📦 处理第 ${i + 1}/${batches.length} 批次 (${batch.length} 个包)`,
           )
 
           const promises = batch.map(pkg => this.buildPackage(pkg))
@@ -461,7 +466,8 @@ class BatchBuilder {
           // 批次间稍作停顿
           if (i < batches.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 500))
-            if (global.gc) global.gc()
+            if (global.gc)
+              global.gc()
           }
         }
       }
@@ -471,7 +477,7 @@ class BatchBuilder {
       const failed = levelResults.filter(r => !r.success)
       if (failed.length > 0) {
         console.log(
-          `❌ 层级 ${level} 中有 ${failed.length} 个包构建失败，停止后续构建`
+          `❌ 层级 ${level} 中有 ${failed.length} 个包构建失败，停止后续构建`,
         )
         break
       }
@@ -480,7 +486,8 @@ class BatchBuilder {
       if (level < Math.max(...sortedLevels)) {
         console.log('⏳ 等待内存回收...')
         await new Promise(resolve => setTimeout(resolve, 1000))
-        if (global.gc) global.gc()
+        if (global.gc)
+          global.gc()
       }
     }
   }
@@ -493,7 +500,7 @@ class BatchBuilder {
     const successful = this.results.filter(r => r.success)
     const failed = this.results.filter(r => !r.success)
 
-    console.log('\n' + '='.repeat(60))
+    console.log(`\n${'='.repeat(60)}`)
     console.log('📊 构建摘要')
     console.log('='.repeat(60))
     console.log(`⏱️  总耗时: ${totalDuration}ms`)
@@ -503,14 +510,14 @@ class BatchBuilder {
 
     if (successful.length > 0) {
       console.log('\n🎉 构建成功的包:')
-      successful.forEach(result => {
+      successful.forEach((result) => {
         console.log(`  ✅ ${result.package} (${result.duration}ms)`)
       })
     }
 
     if (failed.length > 0) {
       console.log('\n💥 构建失败的包:')
-      failed.forEach(result => {
+      failed.forEach((result) => {
         console.log(`  ❌ ${result.package} (${result.duration}ms)`)
         if (result.error) {
           console.log(`     错误: ${result.error.split('\n')[0]}`)
@@ -518,7 +525,7 @@ class BatchBuilder {
       })
     }
 
-    console.log('\n' + '='.repeat(60))
+    console.log(`\n${'='.repeat(60)}`)
 
     // 如果有失败的包，退出码为 1
     if (failed.length > 0) {
@@ -536,9 +543,11 @@ async function main() {
   let mode: 'serial' | 'parallel' | 'smart' = 'smart'
   if (args.includes('--serial') || args.includes('-s')) {
     mode = 'serial'
-  } else if (args.includes('--parallel') || args.includes('-p')) {
+  }
+  else if (args.includes('--parallel') || args.includes('-p')) {
     mode = 'parallel'
-  } else if (args.includes('--smart') || args.includes('--intelligent')) {
+  }
+  else if (args.includes('--smart') || args.includes('--intelligent')) {
     mode = 'smart'
   }
 

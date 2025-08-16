@@ -1,122 +1,9 @@
-<template>
-  <div class="demo-card">
-    <h3>🔒 安全功能演示</h3>
-    <p>演示数据加密和键名混淆功能</p>
-
-    <div class="demo-section">
-      <h4>数据加密</h4>
-      <textarea
-        v-model="sensitiveData"
-        placeholder="输入敏感数据..."
-        rows="3"
-        style="
-          width: 100%;
-          margin-bottom: 10px;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          resize: vertical;
-        "
-      ></textarea>
-      <div>
-        <button @click="setEncryptedData" class="btn">加密存储</button>
-        <button @click="getEncryptedData" class="btn secondary">
-          获取解密
-        </button>
-        <button @click="viewRawData" class="btn secondary">查看原始存储</button>
-      </div>
-
-      <div v-if="encryptionResult" class="code">
-        <div><strong>解密结果:</strong> {{ encryptionResult }}</div>
-      </div>
-
-      <div v-if="rawStorageData" class="code">
-        <div><strong>原始存储数据:</strong></div>
-        <div style="word-break: break-all; font-size: 11px">
-          {{ rawStorageData }}
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>键名混淆</h4>
-      <input
-        v-model="keyToObfuscate"
-        placeholder="输入键名"
-        style="
-          margin-right: 10px;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-        "
-      />
-      <button @click="testKeyObfuscation" class="btn">测试混淆</button>
-
-      <div v-if="obfuscationResult" class="code">
-        <div><strong>原始键名:</strong> {{ obfuscationResult.original }}</div>
-        <div><strong>混淆键名:</strong> {{ obfuscationResult.obfuscated }}</div>
-        <div>
-          <strong>反混淆结果:</strong> {{ obfuscationResult.deobfuscated }}
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>自定义加密算法</h4>
-      <button @click="testCustomEncryption" class="btn">自定义加密演示</button>
-
-      <div v-if="customEncryptionResult" class="code">
-        <div>
-          <strong>原始数据:</strong> {{ customEncryptionResult.original }}
-        </div>
-        <div>
-          <strong>自定义加密:</strong> {{ customEncryptionResult.encrypted }}
-        </div>
-        <div>
-          <strong>解密结果:</strong> {{ customEncryptionResult.decrypted }}
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>安全配置</h4>
-      <div class="security-config">
-        <label>
-          <input
-            type="checkbox"
-            v-model="securityConfig.encryption"
-            @change="updateSecurityConfig"
-          />
-          启用数据加密
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            v-model="securityConfig.obfuscation"
-            @change="updateSecurityConfig"
-          />
-          启用键名混淆
-        </label>
-      </div>
-
-      <div class="status info">
-        当前配置: 加密 {{ securityConfig.encryption ? '✅' : '❌' }}, 混淆
-        {{ securityConfig.obfuscation ? '✅' : '❌' }}
-      </div>
-    </div>
-
-    <div v-if="loading" class="status info">处理中...</div>
-
-    <div v-if="error" class="status error">错误: {{ error.message }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 // import { createCache } from '@ldesign/cache'
 
 // 临时模拟 createCache 功能
-const createCache = (options: any = {}) => {
+function createCache(options: any = {}) {
   return {
     set: async (key: string, value: any, opts?: any) => {
       let finalValue = value
@@ -139,7 +26,8 @@ const createCache = (options: any = {}) => {
         if (options.security?.encryption?.enabled) {
           try {
             value = JSON.parse(atob(value))
-          } catch {
+          }
+          catch {
             // 如果不是加密数据，直接返回
           }
         }
@@ -150,7 +38,7 @@ const createCache = (options: any = {}) => {
     },
     clear: async () => {
       const keysToRemove = Object.keys(localStorage).filter(key =>
-        key.startsWith('secure_')
+        key.startsWith('secure_'),
       )
       keysToRemove.forEach(key => localStorage.removeItem(key))
     },
@@ -197,7 +85,7 @@ const customEncryptionResult = ref<{
 } | null>(null)
 
 // 更新安全配置
-const updateSecurityConfig = () => {
+function updateSecurityConfig() {
   secureCache = createCache({
     security: {
       encryption: {
@@ -214,7 +102,7 @@ const updateSecurityConfig = () => {
 }
 
 // 加密存储数据
-const setEncryptedData = async () => {
+async function setEncryptedData() {
   loading.value = true
   error.value = null
 
@@ -224,44 +112,49 @@ const setEncryptedData = async () => {
     })
 
     encryptionResult.value = '数据已加密存储'
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 获取解密数据
-const getEncryptedData = async () => {
+async function getEncryptedData() {
   loading.value = true
   error.value = null
 
   try {
     const result = await secureCache.get('sensitive-data')
     encryptionResult.value = result || '数据不存在'
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 查看原始存储数据
-const viewRawData = async () => {
+async function viewRawData() {
   try {
     // 直接从 localStorage 读取原始数据
-    const rawData =
-      localStorage.getItem('secure_sensitive-data') ||
-      localStorage.getItem('ldesign_cache_sensitive-data') ||
-      '未找到原始数据'
+    const rawData
+      = localStorage.getItem('secure_sensitive-data')
+        || localStorage.getItem('ldesign_cache_sensitive-data')
+        || '未找到原始数据'
     rawStorageData.value = rawData
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
   }
 }
 
 // 测试键名混淆
-const testKeyObfuscation = async () => {
+async function testKeyObfuscation() {
   loading.value = true
   error.value = null
 
@@ -277,15 +170,17 @@ const testKeyObfuscation = async () => {
       obfuscated: `secure_${btoa(keyToObfuscate.value).replace(/[+/=]/g, '')}`,
       deobfuscated: keyToObfuscate.value,
     }
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 测试自定义加密
-const testCustomEncryption = async () => {
+async function testCustomEncryption() {
   loading.value = true
   error.value = null
 
@@ -319,13 +214,140 @@ const testCustomEncryption = async () => {
       encrypted: btoa(originalData.split('').reverse().join('')),
       decrypted: decryptedData || '解密失败',
     }
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 </script>
+
+<template>
+  <div class="demo-card">
+    <h3>🔒 安全功能演示</h3>
+    <p>演示数据加密和键名混淆功能</p>
+
+    <div class="demo-section">
+      <h4>数据加密</h4>
+      <textarea
+        v-model="sensitiveData"
+        placeholder="输入敏感数据..."
+        rows="3"
+        style="
+          width: 100%;
+          margin-bottom: 10px;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          resize: vertical;
+        "
+      />
+      <div>
+        <button class="btn" @click="setEncryptedData">
+          加密存储
+        </button>
+        <button class="btn secondary" @click="getEncryptedData">
+          获取解密
+        </button>
+        <button class="btn secondary" @click="viewRawData">
+          查看原始存储
+        </button>
+      </div>
+
+      <div v-if="encryptionResult" class="code">
+        <div><strong>解密结果:</strong> {{ encryptionResult }}</div>
+      </div>
+
+      <div v-if="rawStorageData" class="code">
+        <div><strong>原始存储数据:</strong></div>
+        <div style="word-break: break-all; font-size: 11px">
+          {{ rawStorageData }}
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>键名混淆</h4>
+      <input
+        v-model="keyToObfuscate"
+        placeholder="输入键名"
+        style="
+          margin-right: 10px;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        "
+      >
+      <button class="btn" @click="testKeyObfuscation">
+        测试混淆
+      </button>
+
+      <div v-if="obfuscationResult" class="code">
+        <div><strong>原始键名:</strong> {{ obfuscationResult.original }}</div>
+        <div><strong>混淆键名:</strong> {{ obfuscationResult.obfuscated }}</div>
+        <div>
+          <strong>反混淆结果:</strong> {{ obfuscationResult.deobfuscated }}
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>自定义加密算法</h4>
+      <button class="btn" @click="testCustomEncryption">
+        自定义加密演示
+      </button>
+
+      <div v-if="customEncryptionResult" class="code">
+        <div>
+          <strong>原始数据:</strong> {{ customEncryptionResult.original }}
+        </div>
+        <div>
+          <strong>自定义加密:</strong> {{ customEncryptionResult.encrypted }}
+        </div>
+        <div>
+          <strong>解密结果:</strong> {{ customEncryptionResult.decrypted }}
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>安全配置</h4>
+      <div class="security-config">
+        <label>
+          <input
+            v-model="securityConfig.encryption"
+            type="checkbox"
+            @change="updateSecurityConfig"
+          >
+          启用数据加密
+        </label>
+        <label>
+          <input
+            v-model="securityConfig.obfuscation"
+            type="checkbox"
+            @change="updateSecurityConfig"
+          >
+          启用键名混淆
+        </label>
+      </div>
+
+      <div class="status info">
+        当前配置: 加密 {{ securityConfig.encryption ? '✅' : '❌' }}, 混淆
+        {{ securityConfig.obfuscation ? '✅' : '❌' }}
+      </div>
+    </div>
+
+    <div v-if="loading" class="status info">
+      处理中...
+    </div>
+
+    <div v-if="error" class="status error">
+      错误: {{ error.message }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .security-config {

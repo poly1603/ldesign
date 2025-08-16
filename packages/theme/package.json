@@ -63,11 +63,11 @@
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "assets",
     "dist",
     "es",
     "lib",
-    "types",
-    "assets"
+    "types"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -93,10 +93,6 @@
     "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts theme --tag alpha",
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts theme --dry-run"
   },
-  "dependencies": {
-    "@ldesign/color": "workspace:*",
-    "tslib": "^2.6.2"
-  },
   "peerDependencies": {
     "vue": "^3.3.0"
   },
@@ -104,6 +100,10 @@
     "vue": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "@ldesign/color": "workspace:*",
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",

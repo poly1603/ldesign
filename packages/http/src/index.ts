@@ -109,7 +109,7 @@ export * from './vue'
  * 创建 HTTP 客户端实例
  */
 export function createHttpClient(
-  config: HttpClientConfig = {}
+  config: HttpClientConfig = {},
 ): HttpClientImpl {
   const adapter = createAdapter(config.adapter)
   return new HttpClientImpl(config, adapter)

@@ -11,53 +11,62 @@
  * @packageDocumentation
  */
 
+import { TemplateLoader } from './core/loader'
 // ============ 核心模块 ============
 /** 模板管理器 - 核心管理类，提供模板的加载、缓存、切换等功能 */
+// ============ 默认导出 ============
+import { TemplateManager } from './core/manager'
+import { TemplateScanner } from './core/scanner'
+import { createTemplateEnginePlugin } from './engine/plugin'
+import { TemplateRenderer } from './vue/components/TemplateRenderer'
+import { useTemplate } from './vue/composables/useTemplate'
+import { TemplatePlugin } from './vue/plugin'
+
+/** 模板加载器 - 动态加载模板组件 */
+export { TemplateLoader } from './core/loader'
+
 export { TemplateManager } from './core/manager'
 
 /** 模板扫描器 - 自动发现和解析项目中的模板文件 */
 export { TemplateScanner } from './core/scanner'
 
-/** 模板加载器 - 动态加载模板组件 */
-export { TemplateLoader } from './core/loader'
-
-// ============ 工具函数 ============
-/** 模板路径解析和处理工具 */
-export {
-  parseTemplatePath,
-  buildTemplatePath,
-  validateTemplatePath,
-  extractTemplatePathFromModulePath,
-  normalizeTemplatePath,
-  isTemplateConfigPath,
-  isTemplateComponentPath,
-  getComponentPathFromConfigPath,
-  getConfigPathFromComponentPath,
-  getStylePathFromConfigPath,
-} from './utils/path'
+// ============ Engine 插件支持 ============
+/** Engine 插件创建函数 */
+export { createDefaultTemplateEnginePlugin, createTemplateEnginePlugin } from './engine/plugin'
 
 // ============ 类型定义 ============
 export type * from './types'
 
-// ============ Engine 插件支持 ============
-/** Engine 插件创建函数 */
-export { createTemplateEnginePlugin, createDefaultTemplateEnginePlugin } from './engine/plugin'
+// ============ 工具函数 ============
+/** 模板路径解析和处理工具 */
+export {
+  buildTemplatePath,
+  extractTemplatePathFromModulePath,
+  getComponentPathFromConfigPath,
+  getConfigPathFromComponentPath,
+  getStylePathFromConfigPath,
+  isTemplateComponentPath,
+  isTemplateConfigPath,
+  normalizeTemplatePath,
+  parseTemplatePath,
+  validateTemplatePath,
+} from './utils/path'
 
 // ============ Vue 集成 ============
 /** Vue 组件 */
 export { TemplateRenderer } from './vue/components/TemplateRenderer'
 
-/** Vue 插件 */
-export {
-  TemplatePlugin,
-  createTemplatePlugin,
-  getGlobalTemplateManager,
-  destroyGlobalTemplateManager,
-  useTemplateManager,
-} from './vue/plugin'
-
 /** Vue 组合式函数 */
 export { useTemplate } from './vue/composables/useTemplate'
+
+/** Vue 插件 */
+export {
+  createTemplatePlugin,
+  destroyGlobalTemplateManager,
+  getGlobalTemplateManager,
+  TemplatePlugin,
+  useTemplateManager,
+} from './vue/plugin'
 
 // ============ 外部依赖重新导出 ============
 // TODO: 稍后启用这些导出
@@ -86,15 +95,6 @@ export function createTemplateScanner() {
 export function createTemplateLoader() {
   return new TemplateLoader()
 }
-
-// ============ 默认导出 ============
-import { TemplateManager } from './core/manager'
-import { TemplateScanner } from './core/scanner'
-import { TemplateLoader } from './core/loader'
-import { TemplateRenderer } from './vue/components/TemplateRenderer'
-import { TemplatePlugin } from './vue/plugin'
-import { useTemplate } from './vue/composables/useTemplate'
-import { createTemplateEnginePlugin } from './engine/plugin'
 
 export default {
   TemplateManager,

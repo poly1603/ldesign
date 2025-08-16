@@ -19,11 +19,16 @@ export const breakpoints = {
  * 获取当前断点
  */
 export function getCurrentBreakpoint(width: number): keyof typeof breakpoints {
-  if (width >= breakpoints.xxl) return 'xxl'
-  if (width >= breakpoints.xl) return 'xl'
-  if (width >= breakpoints.lg) return 'lg'
-  if (width >= breakpoints.md) return 'md'
-  if (width >= breakpoints.sm) return 'sm'
+  if (width >= breakpoints.xxl)
+    return 'xxl'
+  if (width >= breakpoints.xl)
+    return 'xl'
+  if (width >= breakpoints.lg)
+    return 'lg'
+  if (width >= breakpoints.md)
+    return 'md'
+  if (width >= breakpoints.sm)
+    return 'sm'
   return 'xs'
 }
 
@@ -32,9 +37,10 @@ export function getCurrentBreakpoint(width: number): keyof typeof breakpoints {
  */
 export function parseSpan(
   span: number | string | undefined,
-  totalColumns: number
+  totalColumns: number,
 ): number {
-  if (!span) return 1
+  if (!span)
+    return 1
 
   if (typeof span === 'number') {
     return Math.min(Math.max(1, span), totalColumns)
@@ -74,8 +80,8 @@ export function calculateFieldPosition(
   columnWidth: number,
   rowHeight: number,
   horizontalGap: number = 0,
-  verticalGap: number = 0
-): { x: number; y: number } {
+  verticalGap: number = 0,
+): { x: number, y: number } {
   return {
     x: column * (columnWidth + horizontalGap),
     y: row * (rowHeight + verticalGap),
@@ -89,8 +95,8 @@ export function calculateFieldSize(
   span: number,
   columnWidth: number,
   rowHeight: number,
-  horizontalGap: number = 0
-): { width: number; height: number } {
+  horizontalGap: number = 0,
+): { width: number, height: number } {
   return {
     width: span * columnWidth + (span - 1) * horizontalGap,
     height: rowHeight,
@@ -106,7 +112,7 @@ export function calculateGridLayout(
   columnWidth: number,
   rowHeight: number = 60,
   horizontalGap: number = 16,
-  verticalGap: number = 16
+  verticalGap: number = 16,
 ): FieldLayout[] {
   const layouts: FieldLayout[] = []
   let currentRow = 0
@@ -128,7 +134,7 @@ export function calculateGridLayout(
       columnWidth,
       rowHeight,
       horizontalGap,
-      verticalGap
+      verticalGap,
     )
 
     const size = calculateFieldSize(span, columnWidth, rowHeight, horizontalGap)
@@ -165,7 +171,7 @@ export function calculateGridLayout(
  */
 export function calculateResponsiveColumns(
   width: number,
-  config: LayoutConfig
+  config: LayoutConfig,
 ): number {
   const breakpoint = getCurrentBreakpoint(width)
 
@@ -191,7 +197,7 @@ export function calculateResponsiveColumns(
  */
 export function getResponsiveConfig(
   width: number,
-  config: LayoutConfig
+  config: LayoutConfig,
 ): Partial<LayoutConfig> {
   const breakpoint = getCurrentBreakpoint(width)
   return config.breakpoints?.[breakpoint] || {}
@@ -225,7 +231,7 @@ export function createDefaultLayoutConfig(): LayoutConfig {
  */
 export function mergeLayoutConfig(
   base: LayoutConfig,
-  override: Partial<LayoutConfig>
+  override: Partial<LayoutConfig>,
 ): LayoutConfig {
   return {
     ...base,
@@ -283,14 +289,14 @@ export function validateLayoutConfig(config: LayoutConfig): string[] {
  */
 export function calculateMinContainerWidth(
   fields: FormItemConfig[],
-  config: LayoutConfig
+  config: LayoutConfig,
 ): number {
   const minColumnWidth = config.minColumnWidth || 300
   const horizontalGap = config.horizontalGap || 0
 
   // 找到最大跨列数
   const maxSpan = Math.max(
-    ...fields.map(field => parseSpan(field.span, config.columns || 12))
+    ...fields.map(field => parseSpan(field.span, config.columns || 12)),
   )
 
   return maxSpan * minColumnWidth + (maxSpan - 1) * horizontalGap
@@ -302,9 +308,10 @@ export function calculateMinContainerWidth(
 export function calculateRecommendedHeight(
   layouts: FieldLayout[],
   rowHeight: number = 60,
-  verticalGap: number = 16
+  verticalGap: number = 16,
 ): number {
-  if (layouts.length === 0) return 0
+  if (layouts.length === 0)
+    return 0
 
   const maxRow = Math.max(...layouts.map(layout => layout.row))
   return (maxRow + 1) * rowHeight + maxRow * verticalGap
@@ -319,7 +326,7 @@ export class LayoutOptimizer {
    */
   static optimizeFieldOrder(
     fields: FormItemConfig[],
-    columns: number
+    columns: number,
   ): FormItemConfig[] {
     // 按跨列数排序，大的在前
     const sortedFields = [...fields].sort((a, b) => {
@@ -335,7 +342,8 @@ export class LayoutOptimizer {
    * 计算布局利用率
    */
   static calculateUtilization(layouts: FieldLayout[], columns: number): number {
-    if (layouts.length === 0) return 0
+    if (layouts.length === 0)
+      return 0
 
     const totalRows = Math.max(...layouts.map(layout => layout.row)) + 1
     const totalCells = totalRows * columns
@@ -350,7 +358,7 @@ export class LayoutOptimizer {
   static suggestOptimalColumns(
     fields: FormItemConfig[],
     containerWidth: number,
-    minColumnWidth: number = 300
+    minColumnWidth: number = 300,
   ): number {
     const maxColumns = Math.floor(containerWidth / minColumnWidth)
     const fieldSpans = fields.map(field => parseSpan(field.span, 12))

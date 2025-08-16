@@ -56,7 +56,7 @@
     "benchmark:baseline": "node scripts/performance-regression.js --create-baseline",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib coverage .nyc_output",
+    "clean": "rimraf dist es lib types coverage .nyc_output",
     "size-check": "size-limit",
     "analyze": "rollup -c --bundleConfigAsCjs --environment ANALYZE",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",

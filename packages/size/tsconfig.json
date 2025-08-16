@@ -1,9 +1,9 @@
 {
   "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "jsx": "preserve",
     "jsxImportSource": "vue",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }

@@ -2,15 +2,13 @@
  * CSS注入器测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  CSSInjector,
   createCSSInjector,
-  globalCSSInjector,
-  injectGlobalVariables,
-  removeGlobalVariables,
-  isVariablesInjected,
+  CSSInjector,
   getCSSVariableValue,
+  injectGlobalVariables,
+  isVariablesInjected,
   setCSSVariableValue,
 } from '../../core/css-injector'
 
@@ -43,7 +41,7 @@ Object.defineProperty(global, 'window', {
   writable: true,
 })
 
-describe('CSSInjector', () => {
+describe('cSSInjector', () => {
   let injector: CSSInjector
   let mockStyleElement: any
 

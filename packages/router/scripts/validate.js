@@ -2,7 +2,7 @@
 
 /**
  * 完整的代码验证脚本
- * 
+ *
  * 在提交前运行所有必要的检查：
  * 1. TypeScript 类型检查
  * 2. ESLint 代码质量检查
@@ -11,17 +11,17 @@
  * 5. E2E 测试（可选）
  */
 
-import { execSync } from 'child_process'
-import { performance } from 'perf_hooks'
+import { execSync } from 'node:child_process'
+import { performance } from 'node:perf_hooks'
 
 const colors = {
-  reset: '\x1b[0m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
+  reset: '\x1B[0m',
+  red: '\x1B[31m',
+  green: '\x1B[32m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
+  magenta: '\x1B[35m',
+  cyan: '\x1B[36m',
 }
 
 function log(message, color = colors.reset) {
@@ -46,30 +46,31 @@ function logWarning(message) {
 
 function runCommand(command, description) {
   const startTime = performance.now()
-  
+
   try {
     logStep('RUNNING', description)
     execSync(command, { stdio: 'inherit' })
-    
+
     const duration = ((performance.now() - startTime) / 1000).toFixed(2)
     logSuccess(`${description} completed in ${duration}s`)
-    
+
     return true
-  } catch (error) {
+  }
+  catch (error) {
     const duration = ((performance.now() - startTime) / 1000).toFixed(2)
     logError(`${description} failed after ${duration}s`)
     logError(`Command: ${command}`)
     logError(`Error: ${error.message}`)
-    
+
     return false
   }
 }
 
 async function main() {
   const startTime = performance.now()
-  
+
   log(`${colors.cyan}🚀 开始代码验证流程...${colors.reset}`)
-  
+
   const steps = [
     {
       command: 'pnpm type-check',
@@ -92,7 +93,7 @@ async function main() {
       required: true,
     },
   ]
-  
+
   // 检查是否需要运行 E2E 测试
   const runE2E = process.argv.includes('--e2e')
   if (runE2E) {
@@ -102,51 +103,52 @@ async function main() {
       required: false,
     })
   }
-  
+
   let allPassed = true
   const results = []
-  
+
   for (const step of steps) {
     const success = runCommand(step.command, step.description)
-    
+
     results.push({
       ...step,
       success,
     })
-    
+
     if (!success && step.required) {
       allPassed = false
       break
     }
   }
-  
+
   // 输出总结
   const totalTime = ((performance.now() - startTime) / 1000).toFixed(2)
-  
+
   log(`\n${colors.cyan}📊 验证结果总结:${colors.reset}`)
-  log('=' .repeat(50))
-  
-  results.forEach(result => {
+  log('='.repeat(50))
+
+  results.forEach((result) => {
     const icon = result.success ? '✅' : '❌'
     const status = result.success ? '通过' : '失败'
     const required = result.required ? '(必需)' : '(可选)'
-    
+
     log(`${icon} ${result.description}: ${status} ${required}`)
   })
-  
-  log('=' .repeat(50))
+
+  log('='.repeat(50))
   log(`总耗时: ${totalTime}s`)
-  
+
   if (allPassed) {
     logSuccess('🎉 所有验证步骤都通过了！代码可以安全提交。')
     process.exit(0)
-  } else {
+  }
+  else {
     logError('💥 验证失败！请修复问题后重试。')
-    
+
     // 提供修复建议
     log(`\n${colors.yellow}💡 修复建议:${colors.reset}`)
-    
-    results.forEach(result => {
+
+    results.forEach((result) => {
       if (!result.success) {
         switch (result.description) {
           case 'TypeScript 类型检查':
@@ -172,7 +174,7 @@ async function main() {
         }
       }
     })
-    
+
     process.exit(1)
   }
 }

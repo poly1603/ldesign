@@ -4,10 +4,10 @@
  * 简单的 HTTP 服务器，用于测试 Vue Demo 项目
  */
 
-const http = require('http')
-const fs = require('fs')
-const path = require('path')
-const url = require('url')
+const fs = require('node:fs')
+const http = require('node:http')
+const path = require('node:path')
+const url = require('node:url')
 
 const PORT = 3000
 
@@ -58,7 +58,7 @@ const server = http.createServer((req, res) => {
   const filePath = path.join(__dirname, pathname)
 
   // 检查文件是否存在
-  fs.access(filePath, fs.constants.F_OK, err => {
+  fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
       res.writeHead(404, { 'Content-Type': 'text/plain' })
       res.end('404 Not Found')
@@ -77,10 +77,11 @@ server.listen(PORT, () => {
   console.log('-'.repeat(50))
 })
 
-server.on('error', err => {
+server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.log(`❌ 端口 ${PORT} 已被占用，请尝试其他端口`)
-  } else {
+  }
+  else {
     console.log(`❌ 启动服务器时出错: ${err.message}`)
   }
   process.exit(1)

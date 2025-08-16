@@ -48,13 +48,15 @@ const selectValue = computed({
 })
 
 const selectedItems = computed(() => {
-  if (!props.multiple) return []
+  if (!props.multiple)
+    return []
   const values = Array.isArray(selectValue.value) ? selectValue.value : []
   return props.options.filter(option => values.includes(option.value))
 })
 
 const selectedLabel = computed(() => {
-  if (props.multiple) return ''
+  if (props.multiple)
+    return ''
   const option = props.options.find(opt => opt.value === selectValue.value)
   return option?.label || ''
 })
@@ -64,9 +66,9 @@ const hasSelection = computed(() => {
     return Array.isArray(selectValue.value) && selectValue.value.length > 0
   }
   return (
-    selectValue.value !== undefined &&
-    selectValue.value !== null &&
-    selectValue.value !== ''
+    selectValue.value !== undefined
+    && selectValue.value !== null
+    && selectValue.value !== ''
   )
 })
 
@@ -77,7 +79,7 @@ const filteredOptions = computed(() => {
 
   const query = searchQuery.value.toLowerCase()
   return props.options.filter(option =>
-    option.label.toLowerCase().includes(query)
+    option.label.toLowerCase().includes(query),
   )
 })
 
@@ -116,7 +118,8 @@ const dropdownClasses = computed(() => [
 
 // 方法
 function handleToggle() {
-  if (props.disabled) return
+  if (props.disabled)
+    return
 
   dropdownVisible.value = !dropdownVisible.value
 
@@ -128,7 +131,8 @@ function handleToggle() {
 }
 
 function handleSelectOption(option: FieldOption) {
-  if (option.disabled) return
+  if (option.disabled)
+    return
 
   if (props.multiple) {
     const values = Array.isArray(selectValue.value)
@@ -138,12 +142,14 @@ function handleSelectOption(option: FieldOption) {
 
     if (index > -1) {
       values.splice(index, 1)
-    } else {
+    }
+    else {
       values.push(option.value)
     }
 
     selectValue.value = values
-  } else {
+  }
+  else {
     selectValue.value = option.value
     dropdownVisible.value = false
   }
@@ -152,7 +158,8 @@ function handleSelectOption(option: FieldOption) {
 }
 
 function handleRemoveTag(value: any) {
-  if (props.disabled) return
+  if (props.disabled)
+    return
 
   const values = Array.isArray(selectValue.value) ? [...selectValue.value] : []
   const index = values.indexOf(value)
@@ -193,7 +200,7 @@ onUnmounted(() => {
 })
 
 // 监听
-watch(dropdownVisible, visible => {
+watch(dropdownVisible, (visible) => {
   if (!visible) {
     searchQuery.value = ''
   }
@@ -270,7 +277,7 @@ defineExpose({
           class="form-select__search-input"
           placeholder="搜索..."
           @input="handleSearch"
-        />
+        >
       </div>
 
       <div class="form-select__options">
@@ -288,8 +295,7 @@ defineExpose({
           <span
             v-if="isSelected(option.value)"
             class="form-select__option-check"
-            >✓</span
-          >
+          >✓</span>
         </div>
 
         <div v-if="filteredOptions.length === 0" class="form-select__empty">
@@ -333,8 +339,7 @@ defineExpose({
   position: relative;
   display: flex;
   align-items: center;
-  border: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9);
+  border: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9);
   border-radius: var(--form-border-radius-base, 4px);
   background: var(--form-bg-primary, #ffffff);
   cursor: pointer;
@@ -401,8 +406,7 @@ defineExpose({
   right: 0;
   z-index: 1000;
   background: var(--form-bg-primary, #ffffff);
-  border: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9);
+  border: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9);
   border-radius: var(--form-border-radius-base, 4px);
   box-shadow: var(--form-shadow-lg, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
   max-height: 200px;

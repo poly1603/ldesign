@@ -366,7 +366,8 @@ export function extractParams(pattern: string, path: string): RouteParams {
       const value = matches[index + 1]
       if (value !== undefined && value !== '') {
         params[name] = decodeURIComponent(value)
-      } else if (optionalParams.has(name)) {
+      }
+      else if (optionalParams.has(name)) {
         // 可选参数为空时设为 undefined
         params[name] = undefined as any
       }

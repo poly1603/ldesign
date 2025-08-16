@@ -8,11 +8,11 @@ import type { DeviceType } from '@ldesign/device'
 import type { ComputedRef, Ref } from 'vue'
 import type { RouteLocationNormalized, Router } from '../types'
 import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
-import { checkDeviceSupport, getDeviceFriendlyName } from '../device/utils'
 import {
   ROUTE_INJECTION_SYMBOL,
   ROUTER_INJECTION_SYMBOL,
 } from '../core/constants'
+import { checkDeviceSupport, getDeviceFriendlyName } from '../device/utils'
 
 /**
  * 本地 useRoute 实现，避免循环依赖
@@ -22,7 +22,7 @@ function useRoute(): Ref<RouteLocationNormalized> {
 
   if (!route) {
     throw new Error(
-      'useRoute() can only be used inside a component that has a router instance'
+      'useRoute() can only be used inside a component that has a router instance',
     )
   }
 
@@ -37,7 +37,7 @@ function useRouter(): Router {
 
   if (!router) {
     throw new Error(
-      'useRouter() can only be used inside a component that has a router instance'
+      'useRouter() can only be used inside a component that has a router instance',
     )
   }
 
@@ -76,7 +76,7 @@ export interface UseDeviceRouteReturn {
  * 使用设备路由功能
  */
 export function useDeviceRoute(
-  options: UseDeviceRouteOptions = {}
+  options: UseDeviceRouteOptions = {},
 ): UseDeviceRouteReturn {
   const { autoDetect = true, autoRecheck = true } = options
 
@@ -87,7 +87,7 @@ export function useDeviceRoute(
   const devicePlugin = (router as any).devicePlugin
   if (!devicePlugin) {
     console.warn(
-      'DeviceRouterPlugin not found. Please install the plugin first.'
+      'DeviceRouterPlugin not found. Please install the plugin first.',
     )
   }
 
@@ -119,8 +119,8 @@ export function useDeviceRoute(
     // 检查匹配的路由记录
     for (const record of route.value.matched) {
       if (
-        record.meta.supportedDevices &&
-        Array.isArray(record.meta.supportedDevices)
+        record.meta.supportedDevices
+        && Array.isArray(record.meta.supportedDevices)
       ) {
         return record.meta.supportedDevices
       }
@@ -132,14 +132,15 @@ export function useDeviceRoute(
 
   // 检查指定路由是否支持当前设备
   const isRouteSupported = (path: string): boolean => {
-    if (!devicePlugin) return true
+    if (!devicePlugin)
+      return true
     return devicePlugin.isRouteSupported(path)
   }
 
   // 检查指定路由是否支持指定设备
   const isRouteSupportedOnDevice = (
     path: string,
-    device: DeviceType
+    device: DeviceType,
   ): boolean => {
     try {
       const resolved = router.resolve(path)
@@ -150,7 +151,8 @@ export function useDeviceRoute(
       }
 
       return supportedDevices.includes(device)
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -165,7 +167,7 @@ export function useDeviceRoute(
 
   // 监听设备变化
   const onDeviceChange = (
-    callback: (device: DeviceType) => void
+    callback: (device: DeviceType) => void,
   ): (() => void) => {
     if (!devicePlugin) {
       return () => {}
@@ -196,7 +198,7 @@ export function useDeviceRoute(
 
   // 设备变化时自动重新检查路由支持
   if (autoRecheck) {
-    watch(currentDevice, newDevice => {
+    watch(currentDevice, (newDevice) => {
       if (!isCurrentRouteSupported.value) {
         console.warn(`Current route is not supported on ${newDevice}`)
       }
@@ -208,7 +210,7 @@ export function useDeviceRoute(
 
   onMounted(() => {
     if (devicePlugin && autoDetect) {
-      unwatch = onDeviceChange(device => {
+      unwatch = onDeviceChange((device) => {
         console.warn(`Device changed to: ${device}`)
       })
     }

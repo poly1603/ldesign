@@ -9,6 +9,7 @@ export default antfu({
     'lib',
     'types',
     'node_modules',
-    '*.d.ts'
-  ]
+    'coverage',
+    '*.d.ts',
+  ],
 })

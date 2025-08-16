@@ -1,3 +1,7 @@
+<script setup lang="ts">
+// 简单的首页组件
+</script>
+
 <template>
   <div class="home-page">
     <h1>🏠 首页</h1>
@@ -21,10 +25,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-// 简单的首页组件
-</script>
 
 <style scoped>
 .home-page {

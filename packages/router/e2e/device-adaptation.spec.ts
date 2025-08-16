@@ -2,7 +2,7 @@
  * 设备适配功能 E2E 测试
  */
 
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('设备适配功能', () => {
   test.beforeEach(async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('设备适配功能', () => {
     test('应该在桌面端正确检测设备类型', async ({ page }) => {
       // 设置桌面端视口
       await page.setViewportSize({ width: 1200, height: 800 })
-      
+
       // 检查设备类型显示
       const deviceType = await page.locator('[data-testid="current-device"]').textContent()
       expect(deviceType).toContain('桌面设备')
@@ -23,10 +23,10 @@ test.describe('设备适配功能', () => {
     test('应该在移动端正确检测设备类型', async ({ page }) => {
       // 设置移动端视口
       await page.setViewportSize({ width: 375, height: 667 })
-      
+
       // 等待设备检测更新
       await page.waitForTimeout(100)
-      
+
       const deviceType = await page.locator('[data-testid="current-device"]').textContent()
       expect(deviceType).toContain('移动设备')
     })
@@ -34,9 +34,9 @@ test.describe('设备适配功能', () => {
     test('应该在平板端正确检测设备类型', async ({ page }) => {
       // 设置平板端视口
       await page.setViewportSize({ width: 768, height: 1024 })
-      
+
       await page.waitForTimeout(100)
-      
+
       const deviceType = await page.locator('[data-testid="current-device"]').textContent()
       expect(deviceType).toContain('平板设备')
     })
@@ -50,14 +50,14 @@ test.describe('设备适配功能', () => {
       // 桌面端
       await page.setViewportSize({ width: 1200, height: 800 })
       await page.waitForTimeout(100)
-      
+
       let componentName = await page.locator('[data-testid="component-name"]').textContent()
       expect(componentName).toContain('Desktop')
 
       // 移动端
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
-      
+
       componentName = await page.locator('[data-testid="component-name"]').textContent()
       expect(componentName).toContain('Mobile')
     })
@@ -69,10 +69,10 @@ test.describe('设备适配功能', () => {
       // 在移动端访问，应该回退到桌面端组件
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
-      
+
       const componentName = await page.locator('[data-testid="component-name"]').textContent()
       expect(componentName).toContain('Desktop')
-      
+
       // 应该显示回退提示
       const fallbackIndicator = await page.locator('[data-testid="fallback-indicator"]')
       await expect(fallbackIndicator).toBeVisible()
@@ -87,11 +87,11 @@ test.describe('设备适配功能', () => {
 
       // 应该被重定向到设备不支持页面
       await expect(page).toHaveURL(/device-unsupported/)
-      
+
       // 检查提示信息
       const message = await page.locator('[data-testid="unsupported-message"]').textContent()
       expect(message).toContain('不支持')
-      
+
       // 检查设备信息
       const deviceInfo = await page.locator('[data-testid="current-device-info"]').textContent()
       expect(deviceInfo).toContain('移动设备')
@@ -104,7 +104,7 @@ test.describe('设备适配功能', () => {
 
       // 应该正常访问
       await expect(page.locator('[data-testid="page-content"]')).toBeVisible()
-      
+
       // 不应该显示不支持提示
       await expect(page.locator('[data-testid="unsupported-message"]')).not.toBeVisible()
     })
@@ -126,7 +126,7 @@ test.describe('设备适配功能', () => {
       // 检查模板组件是否正确渲染
       const templateContent = await page.locator('[data-testid="template-content"]')
       await expect(templateContent).toBeVisible()
-      
+
       const templateName = await page.locator('[data-testid="template-name"]').textContent()
       expect(templateName).toContain('login')
     })
@@ -137,14 +137,14 @@ test.describe('设备适配功能', () => {
       // 桌面端模板
       await page.setViewportSize({ width: 1200, height: 800 })
       await page.waitForTimeout(100)
-      
+
       let templateVariant = await page.locator('[data-testid="template-variant"]').textContent()
       expect(templateVariant).toContain('desktop')
 
       // 移动端模板
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
-      
+
       templateVariant = await page.locator('[data-testid="template-variant"]').textContent()
       expect(templateVariant).toContain('mobile')
     })
@@ -158,7 +158,7 @@ test.describe('设备适配功能', () => {
       // 检查当前设备显示
       const currentDevice = await page.locator('[data-testid="current-device"]').textContent()
       expect(currentDevice).toContain('移动设备')
-      
+
       // 检查来源页面
       const fromPage = await page.locator('[data-testid="from-page"]').textContent()
       expect(fromPage).toContain('/admin')
@@ -201,14 +201,14 @@ test.describe('设备适配功能', () => {
       // 开始时是桌面端
       await page.setViewportSize({ width: 1200, height: 800 })
       await page.waitForTimeout(100)
-      
+
       let deviceType = await page.locator('[data-testid="current-device"]').textContent()
       expect(deviceType).toContain('桌面设备')
 
       // 调整到移动端大小
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
-      
+
       deviceType = await page.locator('[data-testid="current-device"]').textContent()
       expect(deviceType).toContain('移动设备')
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { spawn } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 /**
@@ -51,12 +51,13 @@ class DevEnvironmentSwitcher {
   private detectCurrentEnv(): void {
     try {
       const packageJson = JSON.parse(
-        readFileSync(resolve(process.cwd(), 'package.json'), 'utf-8')
+        readFileSync(resolve(process.cwd(), 'package.json'), 'utf-8'),
       )
 
       // 检查是否有环境标记
       this.currentEnv = process.env.VITE_DEV_MODE || 'built'
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('无法检测当前环境:', error)
     }
   }
@@ -119,11 +120,11 @@ class DevEnvironmentSwitcher {
       },
     })
 
-    child.on('error', error => {
+    child.on('error', (error) => {
       console.error(`❌ 启动失败:`, error)
     })
 
-    child.on('close', code => {
+    child.on('close', (code) => {
       if (code !== 0) {
         console.error(`❌ 进程退出，代码: ${code}`)
       }
@@ -155,11 +156,11 @@ class DevEnvironmentSwitcher {
       cwd: process.cwd(),
     })
 
-    child.on('error', error => {
+    child.on('error', (error) => {
       console.error(`❌ 启动失败:`, error)
     })
 
-    child.on('close', code => {
+    child.on('close', (code) => {
       if (code !== 0) {
         console.error(`❌ 进程退出，代码: ${code}`)
       }
@@ -206,27 +207,31 @@ class DevEnvironmentSwitcher {
     process.stdin.resume()
     process.stdin.setEncoding('utf8')
 
-    return new Promise(resolve => {
-      process.stdin.on('data', async key => {
+    return new Promise((resolve) => {
+      process.stdin.on('data', async (key) => {
         const input = key.toString().trim()
 
         if (input === '1') {
           console.log('\n🚀 启动构建模式...')
           await this.startEnvironment('built')
           resolve()
-        } else if (input === '2') {
+        }
+        else if (input === '2') {
           console.log('\n🚀 启动源码模式...')
           await this.startEnvironment('source')
           resolve()
-        } else if (input === '3') {
+        }
+        else if (input === '3') {
           console.log('\n🚀 启动对比模式...')
           await this.startComparison()
           resolve()
-        } else if (input === '\u0003') {
+        }
+        else if (input === '\u0003') {
           // Ctrl+C
           console.log('\n👋 已取消')
           process.exit(0)
-        } else {
+        }
+        else {
           console.log(`❌ 无效选项: ${input}，请输入 1-3`)
         }
       })
@@ -317,7 +322,8 @@ async function main() {
       // 如果没有参数，启动交互式选择
       if (args.length === 0) {
         await switcher.interactiveSelect()
-      } else {
+      }
+      else {
         switcher.showHelp()
       }
       break

@@ -4,20 +4,20 @@
  * 提供 Vue 3 的组合式函数、组件和插件
  */
 
-// ============ 组合式函数 ============
-export { createTemplateManager, useTemplate, useTemplate as useTemplateSystem } from './composables/useTemplate'
+// ============ 类型定义 ============
+export type { TemplatePluginOptions, UseTemplateOptions, UseTemplateReturn } from '../types'
 
 // ============ 组件 ============
 export { TemplateRenderer } from './components/TemplateRenderer'
 
+// ============ 组合式函数 ============
+export { createTemplateManager, useTemplate, useTemplate as useTemplateSystem } from './composables/useTemplate'
+
 // ============ 插件 ============
 export {
-  TemplatePlugin,
   createTemplatePlugin,
-  getGlobalTemplateManager,
   destroyGlobalTemplateManager,
+  getGlobalTemplateManager,
+  TemplatePlugin,
   useTemplateManager,
 } from './plugin'
-
-// ============ 类型定义 ============
-export type { UseTemplateOptions, UseTemplateReturn, TemplatePluginOptions } from '../types'

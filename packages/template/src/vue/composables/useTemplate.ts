@@ -4,16 +4,16 @@
  * 提供响应式的模板管理功能
  */
 
-import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type {
   DeviceType,
+  TemplateLoadResult,
   TemplateMetadata,
   TemplateRenderOptions,
-  TemplateLoadResult,
   TemplateScanResult,
   UseTemplateOptions,
   UseTemplateReturn,
 } from '../../types'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { TemplateManager } from '../../core/manager'
 
 /**
@@ -49,10 +49,12 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const result = await manager.scanTemplates()
       templates.value = result.templates
       return result
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -66,10 +68,12 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const result = await manager.render(options)
       currentTemplate.value = result.metadata
       return result
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }

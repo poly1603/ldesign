@@ -69,7 +69,7 @@ describe('directiveManager', () => {
       directiveManager.register('test', directive2)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Directive "test" is already registered. It will be replaced.'
+        'Directive "test" is already registered. It will be replaced.',
       )
       expect(directiveManager.get('test')).toBe(directive2)
 
@@ -197,7 +197,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       // 模拟点击外部
@@ -205,10 +205,9 @@ describe('预定义指令功能测试', () => {
       mockElement.contains = vi.fn().mockReturnValue(false)
 
       // 获取注册的事件处理器并调用
-      const addEventListenerCalls = (document.addEventListener as any).mock
-        .calls
+      const addEventListenerCalls = (document.addEventListener as any).mock.calls
       const clickHandler = addEventListenerCalls.find(
-        (call: any) => call[0] === 'click'
+        (call: any) => call[0] === 'click',
       )?.[1]
 
       if (clickHandler) {
@@ -225,18 +224,18 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
       ;(commonDirectives.clickOutside as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(document.removeEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
@@ -249,7 +248,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.focus).toHaveBeenCalled()
@@ -262,7 +261,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.focus).not.toHaveBeenCalled()
@@ -275,7 +274,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.focus).toHaveBeenCalled()
@@ -291,12 +290,12 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -308,18 +307,18 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
       commonDirectives.debounce.unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
@@ -333,12 +332,12 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -350,18 +349,18 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
       commonDirectives.throttle.unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
@@ -375,7 +374,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(IntersectionObserver).toHaveBeenCalled()
@@ -397,7 +396,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockObserver.disconnect).toHaveBeenCalled()
@@ -412,7 +411,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       // 由于 checkPermission 总是返回 true，元素不应该被隐藏
@@ -428,7 +427,7 @@ describe('预定义指令功能测试', () => {
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       // 由于 checkPermission 总是返回 true，元素不应该被移除
@@ -447,7 +446,7 @@ describe('预定义指令功能测试', () => {
           mockElement,
           binding as any,
           {} as any,
-          {} as any
+          {} as any,
         )
       }).not.toThrow()
     })

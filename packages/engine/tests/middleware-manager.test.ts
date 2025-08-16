@@ -219,7 +219,7 @@ describe('middlewareManager', () => {
       const context: MiddlewareContext = { data: 'test' }
 
       await expect(
-        middlewareManager.execute('nonexistent', context)
+        middlewareManager.execute('nonexistent', context),
       ).rejects.toThrow('Middleware "nonexistent" not found')
     })
 
@@ -237,7 +237,7 @@ describe('middlewareManager', () => {
       const context: MiddlewareContext = { data: 'test' }
 
       await expect(middlewareManager.execute(context)).rejects.toThrow(
-        'Test error'
+        'Test error',
       )
       expect(context.error).toBe(error)
     })
@@ -409,7 +409,7 @@ describe('预定义中间件功能测试', () => {
       expect(mockLogger.info).toHaveBeenNthCalledWith(
         1,
         'Middleware execution started',
-        { context }
+        { context },
       )
       expect(mockLogger.info).toHaveBeenNthCalledWith(
         2,
@@ -417,7 +417,7 @@ describe('预定义中间件功能测试', () => {
         expect.objectContaining({
           duration: expect.any(Number),
           context,
-        })
+        }),
       )
     })
 
@@ -456,8 +456,8 @@ describe('预定义中间件功能测试', () => {
         captureError: vi.fn(),
       }
 
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const errorMiddleware: Middleware = {
         name: 'error-thrower',
         handler: async () => {
@@ -473,7 +473,7 @@ describe('预定义中间件功能测试', () => {
       await middlewareManager.execute(context)
 
       expect(mockErrorManager.captureError).toHaveBeenCalledWith(
-        expect.any(Error)
+        expect.any(Error),
       )
       expect(context.error).toBeInstanceOf(Error)
       expect(context.error?.message).toBe('Test error')
@@ -484,8 +484,8 @@ describe('预定义中间件功能测试', () => {
         captureError: vi.fn(),
       }
 
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const errorMiddleware: Middleware = {
         name: 'error-thrower',
         handler: async () => {
@@ -561,7 +561,7 @@ describe('预定义中间件功能测试', () => {
         expect.objectContaining({
           duration: 150,
           context,
-        })
+        }),
       )
 
       // Restore original performance.now
@@ -585,8 +585,8 @@ describe('预定义中间件功能测试', () => {
       }
 
       const loggerMiddleware = commonMiddleware.logger(mockLogger)
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const performanceMiddleware = commonMiddleware.performance(mockLogger)
 
       middlewareManager.use(loggerMiddleware)
@@ -617,8 +617,8 @@ describe('预定义中间件功能测试', () => {
       }
 
       const loggerMiddleware = commonMiddleware.logger(mockLogger)
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const errorMiddleware: Middleware = {
         name: 'error-thrower',
         handler: async () => {

@@ -1,7 +1,7 @@
 /* @ldesign/form 样式文件 */
 
 /* 导入工具类 */
-@import "./utilities.css";
+@import './utilities.css';
 
 /* CSS 变量定义 */
 :root {
@@ -34,8 +34,7 @@
   --form-border-success: #52c41a;
 
   /* 字体 */
-  --form-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  --form-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --form-font-size-xs: 12px;
   --form-font-size-sm: 14px;
   --form-font-size-base: 16px;
@@ -74,12 +73,9 @@
   /* 阴影 */
   --form-shadow-none: none;
   --form-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --form-shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --form-shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --form-shadow-xl: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --form-shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --form-shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --form-shadow-xl: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   /* 动画 */
   --form-animation-duration-fast: 150ms;
@@ -92,7 +88,7 @@
 }
 
 /* 暗色主题 */
-[data-theme="dark"] {
+[data-theme='dark'] {
   --form-text-primary: #ffffff;
   --form-text-secondary: #a6a6a6;
   --form-text-disabled: #595959;
@@ -168,15 +164,13 @@
 
 .dynamic-form__expand-button {
   background: var(--form-bg-primary);
-  border: var(--form-border-width) var(--form-border-style)
-    var(--form-border-default);
+  border: var(--form-border-width) var(--form-border-style) var(--form-border-default);
   border-radius: var(--form-border-radius-base);
   color: var(--form-color-primary);
   cursor: pointer;
   font-size: var(--form-font-size-sm);
   padding: var(--form-spacing-xs) var(--form-spacing-base);
-  transition: all var(--form-animation-duration-fast)
-    var(--form-animation-easing-ease-in-out);
+  transition: all var(--form-animation-duration-fast) var(--form-animation-easing-ease-in-out);
 }
 
 .dynamic-form__expand-button:hover {
@@ -210,16 +204,14 @@
 
 .dynamic-form__button {
   background: var(--form-bg-primary);
-  border: var(--form-border-width) var(--form-border-style)
-    var(--form-border-default);
+  border: var(--form-border-width) var(--form-border-style) var(--form-border-default);
   border-radius: var(--form-border-radius-base);
   color: var(--form-text-primary);
   cursor: pointer;
   font-size: var(--form-font-size-base);
   font-weight: var(--form-font-weight-normal);
   padding: var(--form-spacing-sm) var(--form-spacing-lg);
-  transition: all var(--form-animation-duration-fast)
-    var(--form-animation-easing-ease-in-out);
+  transition: all var(--form-animation-duration-fast) var(--form-animation-easing-ease-in-out);
   min-width: 80px;
 }
 
@@ -439,7 +431,7 @@
 }
 
 .form-required::after {
-  content: "*";
+  content: '*';
   color: var(--form-color-error);
   margin-left: 2px;
 }
@@ -476,13 +468,11 @@
 }
 
 .form-fade-enter-active {
-  animation: form-fade-in var(--form-animation-duration-normal)
-    var(--form-animation-easing-ease-out);
+  animation: form-fade-in var(--form-animation-duration-normal) var(--form-animation-easing-ease-out);
 }
 
 .form-fade-leave-active {
-  animation: form-fade-out var(--form-animation-duration-normal)
-    var(--form-animation-easing-ease-in);
+  animation: form-fade-out var(--form-animation-duration-normal) var(--form-animation-easing-ease-in);
 }
 
 /* 滚动条样式 */

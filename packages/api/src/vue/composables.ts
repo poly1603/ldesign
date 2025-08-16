@@ -42,7 +42,7 @@ export interface UseApiCallOptions {
  */
 export function useApiCall<
   T = unknown,
-  P extends Record<string, unknown> | undefined = Record<string, unknown>
+  P extends Record<string, unknown> | undefined = Record<string, unknown>,
 >(methodName: string, options: UseApiCallOptions = {}): ApiCallState<T> {
   const {
     immediate = false,
@@ -86,7 +86,8 @@ export function useApiCall<
       }
 
       return result
-    } catch (err) {
+    }
+    catch (err) {
       if (cancelFlag) {
         return data.value as T
       }
@@ -100,7 +101,8 @@ export function useApiCall<
       }
 
       throw apiError
-    } finally {
+    }
+    finally {
       if (!cancelFlag) {
         loading.value = false
 
@@ -190,8 +192,8 @@ export function useApiStats() {
   const stats = computed(() => {
     const cacheStats = apiEngine.cacheManager?.getStats?.() || {}
     const debounceStats = apiEngine.debounceManager?.getStats?.() || {}
-    const deduplicationStats =
-      apiEngine.deduplicationManager?.getStats?.() || {}
+    const deduplicationStats
+      = apiEngine.deduplicationManager?.getStats?.() || {}
 
     return {
       cache: cacheStats,
@@ -213,7 +215,7 @@ export function useApiStats() {
  */
 export function useBatchApiCall<T = unknown>(
   methodNames: string[],
-  _options: UseApiCallOptions = {}
+  _options: UseApiCallOptions = {},
 ) {
   const apiEngine = useApi()
 
@@ -228,14 +230,15 @@ export function useBatchApiCall<T = unknown>(
     finished.value = false
 
     try {
-      const promises = methodNames.map(async methodName => {
+      const promises = methodNames.map(async (methodName) => {
         try {
           const result = await apiEngine.call<T>(
             methodName,
-            params?.[methodName]
+            params?.[methodName],
           )
           return { methodName, result, error: null }
-        } catch (error) {
+        }
+        catch (error) {
           return { methodName, result: null, error: error as Error }
         }
       })
@@ -248,7 +251,8 @@ export function useBatchApiCall<T = unknown>(
       results.forEach(({ methodName, result, error }) => {
         if (error) {
           newErrors[methodName] = error
-        } else if (result !== null) {
+        }
+        else if (result !== null) {
           newData[methodName] = result
         }
       })
@@ -258,10 +262,12 @@ export function useBatchApiCall<T = unknown>(
       finished.value = true
 
       return newData
-    } catch (error) {
+    }
+    catch (error) {
       finished.value = true
       throw error
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }

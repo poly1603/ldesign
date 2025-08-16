@@ -49,7 +49,7 @@ export interface I18nEnginePluginOptions extends I18nOptions {
  * ```
  */
 export function createI18nEnginePlugin(
-  options: I18nEnginePluginOptions = {}
+  options: I18nEnginePluginOptions = {},
 ): Plugin {
   const {
     name = 'i18n',
@@ -71,7 +71,7 @@ export function createI18nEnginePlugin(
         const vueApp = engine.getApp()
         if (!vueApp) {
           throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing i18n plugin.'
+            'Vue app not found. Make sure the engine has created a Vue app before installing i18n plugin.',
           )
         }
 
@@ -93,7 +93,8 @@ export function createI18nEnginePlugin(
         if (engine.i18n) {
           // 如果引擎支持 i18n 适配器，设置适配器
           engine.i18n.setInstance(i18nInstance)
-        } else {
+        }
+        else {
           // 否则直接挂载到引擎上
           ;(engine as any).i18nInstance = i18nInstance
         }
@@ -111,11 +112,11 @@ export function createI18nEnginePlugin(
         // 注册全局状态
         engine.state.set(
           'i18n:currentLanguage',
-          i18nInstance.getCurrentLanguage()
+          i18nInstance.getCurrentLanguage(),
         )
         engine.state.set(
           'i18n:availableLanguages',
-          i18nInstance.getAvailableLanguages()
+          i18nInstance.getAvailableLanguages(),
         )
 
         // 监听语言变更，更新全局状态
@@ -135,7 +136,8 @@ export function createI18nEnginePlugin(
           instance: i18nInstance,
           options: i18nOptions,
         })
-      } catch (error) {
+      }
+      catch (error) {
         // 记录安装失败
         engine.logger.error(`Failed to install ${name} plugin`, error)
 
@@ -160,7 +162,8 @@ export function createI18nEnginePlugin(
         // 清理引擎上的 i18n 实例
         if (engine.i18n) {
           engine.i18n.setInstance(null)
-        } else {
+        }
+        else {
           delete (engine as any).i18nInstance
         }
 
@@ -170,7 +173,8 @@ export function createI18nEnginePlugin(
         })
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      } catch (error) {
+      }
+      catch (error) {
         engine.logger.error(`Failed to uninstall ${name} plugin`, error)
         throw error
       }

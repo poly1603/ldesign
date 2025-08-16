@@ -1,5 +1,5 @@
 import { useDevice } from '@ldesign/device'
-import { useRouter, useDeviceRoute } from '@ldesign/router'
+import { useDeviceRoute, useRouter } from '@ldesign/router'
 import { defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({
@@ -108,13 +108,20 @@ export default defineComponent({
                 设备信息
               </h3>
               <div style={{ fontSize: '14px', opacity: 0.9 }}>
-                <p style={{ margin: '8px 0' }}>类型: {currentDeviceName}</p>
                 <p style={{ margin: '8px 0' }}>
-                  分辨率: {deviceInfo.value?.screenSize || '未知'}
+                  类型:
+                  {currentDeviceName}
+                </p>
+                <p style={{ margin: '8px 0' }}>
+                  分辨率:
+                  {' '}
+                  {deviceInfo.value?.screenSize || '未知'}
                 </p>
                 {$i18n && (
                   <p style={{ margin: '8px 0' }}>
-                    语言: {$i18n.getCurrentLanguage()}
+                    语言:
+                    {' '}
+                    {$i18n.getCurrentLanguage()}
                   </p>
                 )}
               </div>
@@ -212,7 +219,9 @@ export default defineComponent({
                   fontWeight: '600',
                 }}
               >
-                🔑 <span>用户登录</span>
+                🔑
+                {' '}
+                <span>用户登录</span>
               </button>
 
               {isRouteSupported('/admin') && (
@@ -234,7 +243,9 @@ export default defineComponent({
                     fontWeight: '600',
                   }}
                 >
-                  ⚙️ <span>管理后台</span>
+                  ⚙️
+                  {' '}
+                  <span>管理后台</span>
                 </button>
               )}
 
@@ -257,7 +268,9 @@ export default defineComponent({
                     fontWeight: '600',
                   }}
                 >
-                  ✏️ <span>内容编辑器</span>
+                  ✏️
+                  {' '}
+                  <span>内容编辑器</span>
                 </button>
               )}
 
@@ -284,7 +297,9 @@ export default defineComponent({
                 }}
                 disabled={!isRouteSupported('/mobile-app')}
               >
-                📱 <span>移动应用</span>
+                📱
+                {' '}
+                <span>移动应用</span>
                 {!isRouteSupported('/mobile-app') && (
                   <span style={{ fontSize: '14px', opacity: 0.8 }}>
                     (仅移动端)

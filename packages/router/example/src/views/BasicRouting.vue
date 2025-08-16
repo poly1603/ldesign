@@ -85,7 +85,7 @@ watch(
         navigationHistory.value = navigationHistory.value.slice(0, 5)
       }
     }
-  }
+  },
 )
 
 onMounted(() => {
@@ -108,8 +108,12 @@ onMounted(() => {
     <div class="card">
       <h2>路由信息</h2>
       <div class="route-info">
-        <div class="info-item"><strong>当前路径:</strong> {{ route.path }}</div>
-        <div class="info-item"><strong>路由名称:</strong> {{ route.name }}</div>
+        <div class="info-item">
+          <strong>当前路径:</strong> {{ route.path }}
+        </div>
+        <div class="info-item">
+          <strong>路由名称:</strong> {{ route.name }}
+        </div>
         <div class="info-item">
           <strong>查询参数:</strong> {{ JSON.stringify(route.query) }}
         </div>
@@ -124,7 +128,9 @@ onMounted(() => {
       <div class="navigation-demo">
         <div class="nav-group">
           <h3>基础导航</h3>
-          <button class="btn btn-primary" @click="goHome">返回首页</button>
+          <button class="btn btn-primary" @click="goHome">
+            返回首页
+          </button>
           <button class="btn btn-secondary" @click="goToNested">
             前往嵌套路由
           </button>
@@ -141,7 +147,7 @@ onMounted(() => {
               v-model="queryParam"
               class="input"
               placeholder="输入查询参数"
-            />
+            >
           </div>
           <button class="btn btn-info" @click="navigateWithQuery">
             带查询参数导航
@@ -150,9 +156,15 @@ onMounted(() => {
 
         <div class="nav-group">
           <h3>历史操作</h3>
-          <button class="btn btn-warning" @click="goBack">后退</button>
-          <button class="btn btn-warning" @click="goForward">前进</button>
-          <button class="btn btn-error" @click="replace">替换当前路由</button>
+          <button class="btn btn-warning" @click="goBack">
+            后退
+          </button>
+          <button class="btn btn-warning" @click="goForward">
+            前进
+          </button>
+          <button class="btn btn-error" @click="replace">
+            替换当前路由
+          </button>
         </div>
       </div>
     </div>

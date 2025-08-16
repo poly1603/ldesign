@@ -24,15 +24,18 @@ export default defineComponent({
 
         if (mode === 'username') {
           console.log('用户名登录:', data)
-        } else {
+        }
+        else {
           console.log('手机号登录:', data)
         }
 
         // 登录成功，跳转到首页
         router.push('/')
-      } catch (error) {
+      }
+      catch (error) {
         console.error('登录失败:', error)
-      } finally {
+      }
+      finally {
         loading.value = false
       }
     }
@@ -69,14 +72,14 @@ export default defineComponent({
     // 创建 LoginPanel 组件实例
     const createLoginPanel = () => {
       return h(LoginPanel, {
-        title: 'LDesign 登录',
-        subtitle: '欢迎回来，请登录您的账户',
-        logo: '/logo.png',
-        loading: loading.value,
-        showRememberMe: true,
-        showForgotPassword: true,
-        showRegisterLink: true,
-        thirdPartyLogin: {
+        'title': 'LDesign 登录',
+        'subtitle': '欢迎回来，请登录您的账户',
+        'logo': '/logo.png',
+        'loading': loading.value,
+        'showRememberMe': true,
+        'showForgotPassword': true,
+        'showRegisterLink': true,
+        'thirdPartyLogin': {
           enabled: true,
           providers: [
             { name: 'wechat', icon: '🔗', color: '#07c160' },
@@ -84,12 +87,12 @@ export default defineComponent({
             { name: 'weibo', icon: '🔗', color: '#e6162d' },
           ],
         },
-        theme: {
+        'theme': {
           mode: 'light',
           effect: 'normal',
         },
-        onLogin: handleLogin,
-        onRegister: handleRegister,
+        'onLogin': handleLogin,
+        'onRegister': handleRegister,
         'onForgot-password': handleForgotPassword,
         'onThird-party-login': handleThirdPartyLogin,
         'onCaptcha-refresh': handleCaptchaRefresh,
@@ -99,8 +102,8 @@ export default defineComponent({
 
     return () => (
       <TemplateRenderer
-        category='login'
-        template='default'
+        category="login"
+        template="default"
         templateProps={{
           // 将 LoginPanel 组件传递给模板
           loginPanel: createLoginPanel(),

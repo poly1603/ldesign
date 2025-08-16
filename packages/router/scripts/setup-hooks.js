@@ -2,21 +2,21 @@
 
 /**
  * Git Hooks 安装脚本
- * 
+ *
  * 自动设置 Git hooks 和相关配置
  */
 
-import { execSync } from 'child_process'
-import { existsSync, chmodSync } from 'fs'
-import path from 'path'
+import { execSync } from 'node:child_process'
+import { chmodSync, existsSync } from 'node:fs'
+import path from 'node:path'
 
 const colors = {
-  reset: '\x1b[0m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m',
+  reset: '\x1B[0m',
+  red: '\x1B[31m',
+  green: '\x1B[32m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
+  cyan: '\x1B[36m',
 }
 
 function log(message, color = colors.reset) {
@@ -45,7 +45,8 @@ function runCommand(command, description) {
     execSync(command, { stdio: 'inherit' })
     logSuccess(`${description} 完成`)
     return true
-  } catch (error) {
+  }
+  catch (error) {
     logError(`${description} 失败: ${error.message}`)
     return false
   }
@@ -57,11 +58,13 @@ function makeExecutable(filePath) {
       chmodSync(filePath, 0o755)
       logSuccess(`设置 ${filePath} 为可执行`)
       return true
-    } else {
+    }
+    else {
       logWarning(`文件不存在: ${filePath}`)
       return false
     }
-  } catch (error) {
+  }
+  catch (error) {
     logError(`设置文件权限失败: ${error.message}`)
     return false
   }
@@ -69,45 +72,47 @@ function makeExecutable(filePath) {
 
 async function main() {
   log(`${colors.cyan}🚀 开始设置 Git Hooks...${colors.reset}`)
-  
+
   // 1. 检查 Git 仓库
   try {
     execSync('git rev-parse --git-dir', { stdio: 'pipe' })
     logSuccess('Git 仓库检查通过')
-  } catch (error) {
+  }
+  catch (error) {
     logError('当前目录不是 Git 仓库')
     process.exit(1)
   }
-  
+
   // 2. 安装 Husky
   if (!runCommand('npx husky install', '安装 Husky')) {
     process.exit(1)
   }
-  
+
   // 3. 设置 hooks 文件权限
   const hooksDir = '.husky'
   const hooks = ['pre-commit', 'commit-msg']
-  
-  hooks.forEach(hook => {
+
+  hooks.forEach((hook) => {
     const hookPath = path.join(hooksDir, hook)
     makeExecutable(hookPath)
   })
-  
+
   // 4. 设置 Git 配置
   const gitConfigs = [
     ['core.hooksPath', '.husky'],
     ['commit.template', '.gitmessage'],
   ]
-  
+
   gitConfigs.forEach(([key, value]) => {
     try {
       execSync(`git config ${key} ${value}`, { stdio: 'pipe' })
       logSuccess(`设置 Git 配置: ${key} = ${value}`)
-    } catch (error) {
+    }
+    catch (error) {
       logWarning(`设置 Git 配置失败: ${key}`)
     }
   })
-  
+
   // 5. 创建提交信息模板
   const commitTemplate = `# 提交信息格式: <type>(<scope>): <subject>
 #
@@ -139,18 +144,19 @@ async function main() {
 #   fix(cache): resolve memory leak issue
 #   docs(readme): update installation guide
 `
-  
+
   try {
-    const fs = await import('fs')
+    const fs = await import('node:fs')
     fs.writeFileSync('.gitmessage', commitTemplate)
     logSuccess('创建提交信息模板')
-  } catch (error) {
+  }
+  catch (error) {
     logWarning('创建提交信息模板失败')
   }
-  
+
   // 6. 验证安装
   logStep('验证 Hooks 安装')
-  
+
   const validations = [
     {
       command: 'npx husky --version',
@@ -165,23 +171,24 @@ async function main() {
       description: 'Lint-staged 版本检查',
     },
   ]
-  
+
   let allValid = true
-  
+
   validations.forEach(({ command, description }) => {
     try {
       execSync(command, { stdio: 'pipe' })
       logSuccess(description)
-    } catch (error) {
+    }
+    catch (error) {
       logError(`${description} 失败`)
       allValid = false
     }
   })
-  
+
   // 7. 输出使用说明
   log(`\n${colors.cyan}📋 使用说明:${colors.reset}`)
-  log('=' .repeat(50))
-  
+  log('='.repeat(50))
+
   log(`${colors.green}✨ Git Hooks 已成功安装！${colors.reset}`)
   log('')
   log('现在你可以使用以下命令:')
@@ -201,15 +208,16 @@ async function main() {
   log('  示例: feat(router): add new navigation method')
   log('  查看: cat .gitmessage')
   log('')
-  
+
   if (allValid) {
     log(`${colors.green}🎉 所有工具都已正确安装和配置！${colors.reset}`)
-  } else {
+  }
+  else {
     log(`${colors.yellow}⚠️  部分工具可能需要手动安装依赖${colors.reset}`)
     log('请运行: pnpm install')
   }
-  
-  log('=' .repeat(50))
+
+  log('='.repeat(50))
 }
 
 // 处理未捕获的异常

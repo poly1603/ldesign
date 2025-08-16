@@ -173,8 +173,8 @@ export enum HttpStatusCode {
 /** 是否支持 History API */
 export const SUPPORTS_HISTORY
   = typeof window !== 'undefined'
-  && 'history' in window
-  && 'pushState' in window.history
+    && 'history' in window
+    && 'pushState' in window.history
 
 /** 是否支持 IntersectionObserver */
 export const SUPPORTS_INTERSECTION_OBSERVER

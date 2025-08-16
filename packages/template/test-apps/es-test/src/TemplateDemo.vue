@@ -1,3 +1,32 @@
+<script setup lang="ts">
+import { TemplateRenderer } from '@ldesign/template/vue'
+import { ref } from 'vue'
+
+// 事件日志
+const eventLog = ref<Array<{ time: string, type: string, data: string }>>([])
+
+function addEvent(type: string, data: any) {
+  eventLog.value.unshift({
+    time: new Date().toLocaleTimeString(),
+    type,
+    data: JSON.stringify(data),
+  })
+
+  // 限制日志数量
+  if (eventLog.value.length > 10) {
+    eventLog.value = eventLog.value.slice(0, 10)
+  }
+}
+
+function onTemplateChange(templateId: string) {
+  addEvent('template-change', { templateId })
+}
+
+function onDeviceChange(deviceType: string) {
+  addEvent('device-change', { deviceType })
+}
+</script>
+
 <template>
   <div id="app">
     <header class="demo-header">
@@ -75,35 +104,6 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { TemplateRenderer } from '@ldesign/template/vue'
-
-// 事件日志
-const eventLog = ref<Array<{ time: string; type: string; data: string }>>([])
-
-function addEvent(type: string, data: any) {
-  eventLog.value.unshift({
-    time: new Date().toLocaleTimeString(),
-    type,
-    data: JSON.stringify(data),
-  })
-
-  // 限制日志数量
-  if (eventLog.value.length > 10) {
-    eventLog.value = eventLog.value.slice(0, 10)
-  }
-}
-
-function onTemplateChange(templateId: string) {
-  addEvent('template-change', { templateId })
-}
-
-function onDeviceChange(deviceType: string) {
-  addEvent('device-change', { deviceType })
-}
-</script>
 
 <style scoped>
 .demo-header {

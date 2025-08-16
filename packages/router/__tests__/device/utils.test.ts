@@ -2,26 +2,26 @@
  * 设备路由工具函数测试
  */
 
-import { describe, it, expect } from 'vitest'
-import type { DeviceType, RouteLocationNormalized, RouteComponent } from '../../src/types'
+import type { DeviceType, RouteComponent, RouteLocationNormalized } from '../../src/types'
+import { describe, expect, it } from 'vitest'
 import {
   checkDeviceSupport,
-  getSupportedDevicesFromRoute,
-  resolveDeviceComponent,
-  createUnsupportedDeviceRoute,
-  hasDeviceSpecificConfig,
-  getDeviceFriendlyName,
   createDeviceInfo,
-  isValidDeviceType,
+  createUnsupportedDeviceRoute,
+  getDeviceFriendlyName,
   getDevicePriority,
-  sortDevicesByPriority
+  getSupportedDevicesFromRoute,
+  hasDeviceSpecificConfig,
+  isValidDeviceType,
+  resolveDeviceComponent,
+  sortDevicesByPriority,
 } from '../../src/device/utils'
 
 describe('设备路由工具函数', () => {
   describe('checkDeviceSupport', () => {
     it('没有设备限制时应该支持所有设备', () => {
       const route = createMockRoute({
-        meta: {}
+        meta: {},
       })
 
       expect(checkDeviceSupport(route, 'mobile')).toBe(true)
@@ -32,8 +32,8 @@ describe('设备路由工具函数', () => {
     it('应该检查路由元信息中的设备支持', () => {
       const route = createMockRoute({
         meta: {
-          supportedDevices: ['desktop', 'tablet']
-        }
+          supportedDevices: ['desktop', 'tablet'],
+        },
       })
 
       expect(checkDeviceSupport(route, 'desktop')).toBe(true)
@@ -47,10 +47,10 @@ describe('设备路由工具函数', () => {
         matched: [
           {
             meta: {
-              supportedDevices: ['mobile']
-            }
-          } as any
-        ]
+              supportedDevices: ['mobile'],
+            },
+          } as any,
+        ],
       })
 
       expect(checkDeviceSupport(route, 'mobile')).toBe(true)
@@ -62,8 +62,8 @@ describe('设备路由工具函数', () => {
     it('应该从路由元信息获取支持的设备', () => {
       const route = createMockRoute({
         meta: {
-          supportedDevices: ['desktop']
-        }
+          supportedDevices: ['desktop'],
+        },
       })
 
       expect(getSupportedDevicesFromRoute(route)).toEqual(['desktop'])
@@ -75,10 +75,10 @@ describe('设备路由工具函数', () => {
         matched: [
           {
             meta: {
-              supportedDevices: ['mobile', 'tablet']
-            }
-          } as any
-        ]
+              supportedDevices: ['mobile', 'tablet'],
+            },
+          } as any,
+        ],
       })
 
       expect(getSupportedDevicesFromRoute(route)).toEqual(['mobile', 'tablet'])
@@ -86,7 +86,7 @@ describe('设备路由工具函数', () => {
 
     it('没有设备限制时应该返回 undefined', () => {
       const route = createMockRoute({
-        meta: {}
+        meta: {},
       })
 
       expect(getSupportedDevicesFromRoute(route)).toBeUndefined()
@@ -97,7 +97,7 @@ describe('设备路由工具函数', () => {
     const mockComponents = {
       mobile: { name: 'MobileComponent' } as RouteComponent,
       tablet: { name: 'TabletComponent' } as RouteComponent,
-      desktop: { name: 'DesktopComponent' } as RouteComponent
+      desktop: { name: 'DesktopComponent' } as RouteComponent,
     }
 
     it('应该解析当前设备的组件', () => {
@@ -107,13 +107,13 @@ describe('设备路由工具函数', () => {
         component: mockComponents.mobile,
         deviceType: 'mobile',
         isFallback: false,
-        source: 'deviceComponents'
+        source: 'deviceComponents',
       })
     })
 
     it('应该回退到其他设备组件', () => {
       const components = {
-        desktop: mockComponents.desktop
+        desktop: mockComponents.desktop,
       }
 
       const result = resolveDeviceComponent(components as Record<DeviceType, RouteComponent>, 'mobile')
@@ -122,7 +122,7 @@ describe('设备路由工具函数', () => {
         component: mockComponents.desktop,
         deviceType: 'desktop',
         isFallback: true,
-        source: 'deviceComponents'
+        source: 'deviceComponents',
       })
     })
 
@@ -136,7 +136,7 @@ describe('设备路由工具函数', () => {
   describe('createUnsupportedDeviceRoute', () => {
     it('应该创建默认的不支持设备路由', () => {
       const route = createMockRoute({
-        fullPath: '/admin'
+        fullPath: '/admin',
       })
 
       const result = createUnsupportedDeviceRoute(route, 'mobile')
@@ -146,8 +146,8 @@ describe('设备路由工具函数', () => {
         query: {
           from: '/admin',
           device: 'mobile',
-          message: '当前系统不支持在此设备上查看'
-        }
+          message: '当前系统不支持在此设备上查看',
+        },
       })
     })
 
@@ -155,8 +155,8 @@ describe('设备路由工具函数', () => {
       const route = createMockRoute({
         fullPath: '/admin',
         meta: {
-          unsupportedRedirect: '/custom-unsupported'
-        }
+          unsupportedRedirect: '/custom-unsupported',
+        },
       })
 
       const result = createUnsupportedDeviceRoute(route, 'mobile')
@@ -166,8 +166,8 @@ describe('设备路由工具函数', () => {
         query: {
           from: '/admin',
           device: 'mobile',
-          reason: 'unsupported_device'
-        }
+          reason: 'unsupported_device',
+        },
       })
     })
 
@@ -175,8 +175,8 @@ describe('设备路由工具函数', () => {
       const route = createMockRoute({
         fullPath: '/admin',
         meta: {
-          unsupportedMessage: '自定义提示信息'
-        }
+          unsupportedMessage: '自定义提示信息',
+        },
       })
 
       const result = createUnsupportedDeviceRoute(route, 'mobile')
@@ -189,8 +189,8 @@ describe('设备路由工具函数', () => {
     it('有设备限制时应该返回 true', () => {
       const route = createMockRoute({
         meta: {
-          supportedDevices: ['desktop']
-        }
+          supportedDevices: ['desktop'],
+        },
       })
 
       expect(hasDeviceSpecificConfig(route)).toBe(true)
@@ -202,10 +202,10 @@ describe('设备路由工具函数', () => {
         matched: [
           {
             meta: {
-              supportedDevices: ['mobile']
-            }
-          } as any
-        ]
+              supportedDevices: ['mobile'],
+            },
+          } as any,
+        ],
       })
 
       expect(hasDeviceSpecificConfig(route)).toBe(true)
@@ -213,7 +213,7 @@ describe('设备路由工具函数', () => {
 
     it('没有设备特定配置时应该返回 false', () => {
       const route = createMockRoute({
-        meta: {}
+        meta: {},
       })
 
       expect(hasDeviceSpecificConfig(route)).toBe(false)
@@ -237,7 +237,7 @@ describe('设备路由工具函数', () => {
         name: '移动设备',
         isMobile: true,
         isTablet: false,
-        isDesktop: false
+        isDesktop: false,
       })
     })
   })
@@ -290,6 +290,6 @@ function createMockRoute(overrides: Partial<RouteLocationNormalized> = {}): Rout
     meta: {},
     matched: [],
     redirectedFrom: undefined,
-    ...overrides
+    ...overrides,
   } as RouteLocationNormalized
 }

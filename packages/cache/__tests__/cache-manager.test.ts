@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { CacheManager } from '../src/core/cache-manager'
 import type { CacheOptions } from '../src/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CacheManager } from '../src/core/cache-manager'
 
 // Mock DOM APIs
 Object.defineProperty(window, 'localStorage', {
@@ -32,7 +32,7 @@ Object.defineProperty(document, 'cookie', {
   writable: true,
 })
 
-describe('CacheManager', () => {
+describe('cacheManager', () => {
   let cacheManager: CacheManager
 
   beforeEach(async () => {
@@ -123,7 +123,7 @@ describe('CacheManager', () => {
     })
   })
 
-  describe('TTL 功能', () => {
+  describe('tTL 功能', () => {
     it('应该支持过期时间', async () => {
       const key = 'test-ttl'
       const value = 'expires-soon'
@@ -155,7 +155,7 @@ describe('CacheManager', () => {
   describe('错误处理', () => {
     it('应该处理无效的存储引擎', async () => {
       await expect(
-        cacheManager.set('test', 'value', { engine: 'invalid' as any })
+        cacheManager.set('test', 'value', { engine: 'invalid' as any }),
       ).rejects.toThrow()
     })
 

@@ -5,20 +5,20 @@
  * 检查项目文件是否正确创建
  */
 
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // 颜色输出
 const colors = {
-  reset: '\x1b[0m',
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
+  reset: '\x1B[0m',
+  green: '\x1B[32m',
+  red: '\x1B[31m',
+  yellow: '\x1B[33m',
+  blue: '\x1B[34m',
 }
 
 function log(message, color = 'reset') {
@@ -30,7 +30,8 @@ function checkFile(filePath, description) {
   if (fs.existsSync(fullPath)) {
     log(`✅ ${description}`, 'green')
     return true
-  } else {
+  }
+  else {
     log(`❌ ${description}`, 'red')
     return false
   }
@@ -70,7 +71,8 @@ function main() {
     log('1. cd packages/theme/examples/vue-demo', 'reset')
     log('2. pnpm install', 'reset')
     log('3. pnpm dev', 'reset')
-  } else {
+  }
+  else {
     log('❌ 部分文件缺失，请检查项目创建过程', 'red')
   }
 }

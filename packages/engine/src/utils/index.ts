@@ -36,7 +36,7 @@ export function deepClone<T>(obj: T): T {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
 
@@ -53,7 +53,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 
@@ -100,7 +100,8 @@ export function isEmpty(value: unknown): boolean {
  * 格式化文件大小
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0)
+    return '0 Bytes'
 
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
@@ -137,7 +138,8 @@ export function formatTime(ms: number): string {
 export function safeJsonParse<T = unknown>(str: string, defaultValue: T): T {
   try {
     return JSON.parse(str) as T
-  } catch {
+  }
+  catch {
     return defaultValue
   }
 }
@@ -148,7 +150,8 @@ export function safeJsonParse<T = unknown>(str: string, defaultValue: T): T {
 export function safeJsonStringify(obj: unknown, space?: number): string {
   try {
     return JSON.stringify(obj, null, space)
-  } catch {
+  }
+  catch {
     return '{}'
   }
 }
@@ -159,16 +162,16 @@ export function safeJsonStringify(obj: unknown, space?: number): string {
 export function getNestedValue(
   obj: any,
   path: string,
-  defaultValue?: unknown
+  defaultValue?: unknown,
 ): unknown {
   const keys = path.split('.')
   let current = obj
 
   for (const key of keys) {
     if (
-      current === null ||
-      current === undefined ||
-      typeof current !== 'object'
+      current === null
+      || current === undefined
+      || typeof current !== 'object'
     ) {
       return defaultValue
     }
@@ -215,8 +218,8 @@ export function isObject(value: unknown): value is Record<string, unknown> {
  */
 export function isPromise(value: unknown): value is Promise<unknown> {
   return (
-    value instanceof Promise ||
-    (isObject(value) && isFunction((value as any).then))
+    value instanceof Promise
+    || (isObject(value) && isFunction((value as any).then))
   )
 }
 
@@ -233,14 +236,15 @@ export function delay(ms: number): Promise<void> {
 export async function retry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
-  delayMs = 1000
+  delayMs = 1000,
 ): Promise<T> {
   let lastError: Error
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn()
-    } catch (error) {
+    }
+    catch (error) {
       lastError = error as Error
       if (attempt < maxAttempts) {
         await delay(delayMs * attempt)
@@ -263,7 +267,7 @@ export function unique<T>(array: T[]): T[] {
  */
 export function groupBy<T, K extends string | number | symbol>(
   array: T[],
-  keyFn: (item: T) => K
+  keyFn: (item: T) => K,
 ): Record<K, T[]> {
   return array.reduce((groups, item) => {
     const key = keyFn(item)

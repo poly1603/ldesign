@@ -53,11 +53,11 @@ global.IntersectionObserver = vi.fn().mockImplementation(callback => ({
 }))
 
 // Mock requestIdleCallback
-global.requestIdleCallback = vi.fn(callback => {
+global.requestIdleCallback = vi.fn((callback) => {
   return setTimeout(callback, 0)
 })
 
-global.cancelIdleCallback = vi.fn(id => {
+global.cancelIdleCallback = vi.fn((id) => {
   clearTimeout(id)
 })
 
@@ -240,9 +240,11 @@ global.URLSearchParams = class URLSearchParams {
   constructor(init?: string | URLSearchParams | Record<string, string>) {
     if (typeof init === 'string') {
       this.parseString(init)
-    } else if (init instanceof URLSearchParams) {
+    }
+    else if (init instanceof URLSearchParams) {
       this.params = new Map(init.params)
-    } else if (init && typeof init === 'object') {
+    }
+    else if (init && typeof init === 'object') {
       for (const [key, value] of Object.entries(init)) {
         this.params.set(key, [value])
       }
@@ -254,7 +256,8 @@ global.URLSearchParams = class URLSearchParams {
       str = str.slice(1)
     }
 
-    if (!str) return
+    if (!str)
+      return
 
     const pairs = str.split('&')
     for (const pair of pairs) {

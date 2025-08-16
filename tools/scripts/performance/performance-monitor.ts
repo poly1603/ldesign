@@ -45,7 +45,8 @@ function measureCommand(command: string, cwd?: string): number {
       stdio: 'pipe',
       encoding: 'utf-8',
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Command failed: ${command}`)
   }
 
@@ -68,7 +69,8 @@ function getPackageSize(packagePath: string): number {
     }).trim()
 
     return Number.parseInt(output.split('\t')[0], 10)
-  } catch {
+  }
+  catch {
     // Windows fallback
     const { readdirSync, statSync } = require('node:fs')
 
@@ -82,7 +84,8 @@ function getPackageSize(packagePath: string): number {
         if (stats.isFile()) {
           size += stats.size
         }
-      } catch {
+      }
+      catch {
         // Ignore errors
       }
     }
@@ -129,7 +132,8 @@ async function collectMetrics(): Promise<PerformanceMetrics> {
       cwd: rootDir,
       stdio: 'pipe',
     })
-  } catch {
+  }
+  catch {
     console.warn('构建失败，继续其他测量...')
   }
 
@@ -139,7 +143,7 @@ async function collectMetrics(): Promise<PerformanceMetrics> {
   // 测量各个包的大小
   console.log('\n📦 测量包大小...')
   const { readdirSync, statSync } = require('node:fs')
-  const packages = readdirSync(packagesDir).filter(name => {
+  const packages = readdirSync(packagesDir).filter((name) => {
     const path = join(packagesDir, name)
     return statSync(path).isDirectory()
   })
@@ -178,7 +182,8 @@ async function collectMetrics(): Promise<PerformanceMetrics> {
  * 格式化文件大小
  */
 function formatSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
+  if (bytes === 0)
+    return '0 B'
 
   const units = ['B', 'KB', 'MB', 'GB']
   const index = Math.floor(Math.log(bytes) / Math.log(1024))
@@ -206,7 +211,8 @@ function saveMetricsHistory(metrics: PerformanceMetrics) {
   if (existsSync(historyFile)) {
     try {
       history = JSON.parse(readFileSync(historyFile, 'utf-8'))
-    } catch {
+    }
+    catch {
       console.warn('无法读取历史记录，创建新的')
     }
   }
@@ -272,7 +278,7 @@ ${generateOptimizationSuggestions(metrics).join('\n')}
  * 生成优化建议
  */
 function generateOptimizationSuggestions(
-  metrics: PerformanceMetrics
+  metrics: PerformanceMetrics,
 ): string[] {
   const suggestions: string[] = []
 
@@ -284,14 +290,14 @@ function generateOptimizationSuggestions(
 
   // 包大小建议
   const largePackages = Object.entries(metrics.bundleSize.packages).filter(
-    ([_, size]) => size > 500 * 1024
+    ([_, size]) => size > 500 * 1024,
   ) // 超过500KB
 
   if (largePackages.length > 0) {
     suggestions.push(
       `- ⚠️ 以下包体积较大，需要优化: ${largePackages
         .map(([name]) => name)
-        .join(', ')}`
+        .join(', ')}`,
     )
   }
 
@@ -327,7 +333,7 @@ function compareWithHistory(current: PerformanceMetrics) {
 
   try {
     const history: PerformanceHistory = JSON.parse(
-      readFileSync(historyFile, 'utf-8')
+      readFileSync(historyFile, 'utf-8'),
     )
 
     if (history.metrics.length < 2) {
@@ -341,39 +347,40 @@ function compareWithHistory(current: PerformanceMetrics) {
     // 构建时间对比
     const buildTimeDiff = current.buildTime.total - previous.buildTime.total
     const buildTimePercent = (
-      (buildTimeDiff / previous.buildTime.total) *
-      100
+      (buildTimeDiff / previous.buildTime.total)
+      * 100
     ).toFixed(1)
     console.log(
       `   构建时间: ${buildTimeDiff > 0 ? '↑' : '↓'} ${Math.abs(
-        buildTimeDiff / 1000
-      ).toFixed(2)}s (${buildTimePercent}%)`
+        buildTimeDiff / 1000,
+      ).toFixed(2)}s (${buildTimePercent}%)`,
     )
 
     // 包大小对比
     const bundleSizeDiff = current.bundleSize.total - previous.bundleSize.total
     const bundleSizePercent = (
-      (bundleSizeDiff / previous.bundleSize.total) *
-      100
+      (bundleSizeDiff / previous.bundleSize.total)
+      * 100
     ).toFixed(1)
     console.log(
       `   包大小: ${bundleSizeDiff > 0 ? '↑' : '↓'} ${formatSize(
-        Math.abs(bundleSizeDiff)
-      )} (${bundleSizePercent}%)`
+        Math.abs(bundleSizeDiff),
+      )} (${bundleSizePercent}%)`,
     )
 
     // 测试时间对比
     const testTimeDiff = current.testTime.total - previous.testTime.total
     const testTimePercent = (
-      (testTimeDiff / previous.testTime.total) *
-      100
+      (testTimeDiff / previous.testTime.total)
+      * 100
     ).toFixed(1)
     console.log(
       `   测试时间: ${testTimeDiff > 0 ? '↑' : '↓'} ${Math.abs(
-        testTimeDiff / 1000
-      ).toFixed(2)}s (${testTimePercent}%)`
+        testTimeDiff / 1000,
+      ).toFixed(2)}s (${testTimePercent}%)`,
     )
-  } catch (error) {
+  }
+  catch (error) {
     console.error('无法比较历史数据:', error)
   }
 }
@@ -398,7 +405,8 @@ async function main() {
     compareWithHistory(metrics)
 
     console.log('\n✨ 性能监控完成!')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 性能监控失败:', error)
     process.exit(1)
   }

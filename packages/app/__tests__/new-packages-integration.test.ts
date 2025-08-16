@@ -4,16 +4,16 @@
  * 测试 Cache、Color、Crypto、Size、Store 五个新集成包的功能
  */
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
-
 // 导入新集成的包
 import { createCache } from '@ldesign/cache'
 import { ThemePlugin } from '@ldesign/color/vue'
 import { CryptoPlugin } from '@ldesign/crypto/vue'
+
 import { VueSizePlugin } from '@ldesign/size/vue'
 import { createStoreProviderPlugin } from '@ldesign/store/vue'
+import { createPinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createApp } from 'vue'
 
 describe('新集成包功能测试', () => {
   let app: any
@@ -24,7 +24,7 @@ describe('新集成包功能测试', () => {
     })
   })
 
-  describe('Cache 缓存管理', () => {
+  describe('cache 缓存管理', () => {
     it('应该能够创建缓存实例', () => {
       const cache = createCache({
         defaultTTL: 5000,
@@ -49,7 +49,7 @@ describe('新集成包功能测试', () => {
     })
   })
 
-  describe('Color 颜色主题', () => {
+  describe('color 颜色主题', () => {
     it('应该能够安装主题插件', () => {
       expect(() => {
         app.use(ThemePlugin, {
@@ -60,7 +60,7 @@ describe('新集成包功能测试', () => {
     })
   })
 
-  describe('Crypto 加密功能', () => {
+  describe('crypto 加密功能', () => {
     it('应该能够安装加密插件', () => {
       expect(() => {
         app.use(CryptoPlugin, {
@@ -70,7 +70,7 @@ describe('新集成包功能测试', () => {
     })
   })
 
-  describe('Size 尺寸缩放', () => {
+  describe('size 尺寸缩放', () => {
     it('应该能够安装尺寸插件', () => {
       expect(() => {
         app.use(VueSizePlugin, {
@@ -80,7 +80,7 @@ describe('新集成包功能测试', () => {
     })
   })
 
-  describe('Store 状态管理', () => {
+  describe('store 状态管理', () => {
     it('应该能够安装 Pinia 和 Store 插件', () => {
       const pinia = createPinia()
 
@@ -89,7 +89,7 @@ describe('新集成包功能测试', () => {
         app.use(
           createStoreProviderPlugin({
             enableDevtools: false,
-          })
+          }),
         )
       }).not.toThrow()
     })

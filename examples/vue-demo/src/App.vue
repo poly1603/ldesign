@@ -1,151 +1,3 @@
-<template>
-  <div id="app" :class="themeClass">
-    <!-- 头部导航 -->
-    <header class="app-header">
-      <div class="container">
-        <div class="header-content">
-          <h1 class="logo">🎨 LDesign Theme Demo</h1>
-          <div class="theme-selector">
-            <select v-model="currentTheme" @change="onThemeChange">
-              <option value="">默认主题</option>
-              <option value="christmas">🎄 圣诞节</option>
-              <option value="spring-festival">🧧 春节</option>
-              <option value="halloween">🎃 万圣节</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- 主要内容 -->
-    <main class="main-content">
-      <div class="container">
-        <!-- 英雄区域 -->
-        <section class="hero-section">
-          <h2 class="hero-title">欢迎使用 LDesign Theme</h2>
-          <p class="hero-description">
-            功能强大的主题系统，为你的 Vue 应用带来节日的魅力
-          </p>
-
-          <!-- 功能按钮 -->
-          <div class="action-buttons">
-            <button class="btn btn-primary" @click="handleAction('decoration')">
-              ✨ 添加装饰
-            </button>
-            <button
-              class="btn btn-secondary"
-              @click="handleAction('animation')"
-            >
-              🎬 开始动画
-            </button>
-            <button class="btn btn-outline" @click="handleAction('clear')">
-              🗑️ 清空效果
-            </button>
-          </div>
-
-          <!-- 状态信息 -->
-          <div class="status-panel">
-            <div class="status-item">
-              <span class="status-label">当前主题:</span>
-              <span class="status-value">{{
-                currentThemeInfo?.displayName || '默认主题'
-              }}</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">项目状态:</span>
-              <span class="status-value success">✅ 运行正常</span>
-            </div>
-            <div class="status-item" v-if="lastAction">
-              <span class="status-label">最后操作:</span>
-              <span class="status-value">{{ lastAction }}</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- 功能展示 -->
-        <section class="features-section">
-          <h3 class="section-title">核心功能</h3>
-          <div class="features-grid">
-            <div
-              v-for="(feature, index) in features"
-              :key="index"
-              class="feature-card"
-              :style="{ animationDelay: index * 0.1 + 's' }"
-            >
-              <div class="feature-icon">{{ feature.icon }}</div>
-              <h4 class="feature-title">{{ feature.title }}</h4>
-              <p class="feature-description">{{ feature.description }}</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- 主题信息 -->
-        <section class="theme-info-section" v-if="currentThemeInfo">
-          <h3 class="section-title">主题详情</h3>
-          <div class="theme-info-card">
-            <div class="theme-header">
-              <span class="theme-icon">{{ getThemeIcon(currentTheme) }}</span>
-              <div class="theme-details">
-                <h4>{{ currentThemeInfo.displayName }}</h4>
-                <p>{{ currentThemeInfo.description }}</p>
-                <div class="theme-meta">
-                  <span class="meta-item">
-                    <strong>氛围:</strong> {{ currentThemeInfo.atmosphere }}
-                  </span>
-                  <span class="meta-item">
-                    <strong>季节:</strong> {{ currentThemeInfo.season }}
-                  </span>
-                  <span class="meta-item">
-                    <strong>时间:</strong> {{ currentThemeInfo.timeRange }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 装饰元素展示 -->
-            <div class="theme-decorations" v-if="currentThemeInfo.decorations">
-              <h5>装饰元素</h5>
-              <div class="decoration-list">
-                <span
-                  v-for="decoration in currentThemeInfo.decorations"
-                  :key="decoration"
-                  class="decoration-item"
-                >
-                  {{ decoration }}
-                </span>
-              </div>
-            </div>
-
-            <div class="theme-colors">
-              <h5>配色方案</h5>
-              <div class="color-palette">
-                <div
-                  v-for="(color, name) in currentThemeInfo.colors"
-                  :key="name"
-                  class="color-item"
-                >
-                  <div
-                    class="color-swatch"
-                    :style="{ backgroundColor: color }"
-                  ></div>
-                  <span class="color-name">{{ name }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="app-footer">
-      <div class="container">
-        <p>&copy; 2024 LDesign Team. All rights reserved.</p>
-      </div>
-    </footer>
-  </div>
-</template>
-
 <script>
 export default {
   name: 'App',
@@ -193,7 +45,7 @@ export default {
     },
     currentThemeInfo() {
       const themeMap = {
-        christmas: {
+        'christmas': {
           displayName: '圣诞节主题',
           description:
             '温馨的红绿配色，营造浓厚的圣诞节日氛围。包含雪花飘落、圣诞树闪烁等动态装饰效果',
@@ -235,7 +87,7 @@ export default {
           season: '春季',
           timeRange: '1月-2月',
         },
-        halloween: {
+        'halloween': {
           displayName: '万圣节主题',
           description:
             '神秘的橙黑配色，营造恐怖而有趣的万圣节氛围。包含南瓜灯闪烁、幽灵飘浮、蝙蝠飞行等诡异装饰',
@@ -260,6 +112,10 @@ export default {
       return themeMap[this.currentTheme]
     },
   },
+  mounted() {
+    console.log('🎨 LDesign Theme Demo 已加载')
+    this.lastAction = '页面加载完成'
+  },
   methods: {
     onThemeChange() {
       this.lastAction = `切换到${
@@ -281,19 +137,185 @@ export default {
     },
     getThemeIcon(theme) {
       const iconMap = {
-        christmas: '🎄',
+        'christmas': '🎄',
         'spring-festival': '🧧',
-        halloween: '🎃',
+        'halloween': '🎃',
       }
       return iconMap[theme] || '🎨'
     },
   },
-  mounted() {
-    console.log('🎨 LDesign Theme Demo 已加载')
-    this.lastAction = '页面加载完成'
-  },
 }
 </script>
+
+<template>
+  <div id="app" :class="themeClass">
+    <!-- 头部导航 -->
+    <header class="app-header">
+      <div class="container">
+        <div class="header-content">
+          <h1 class="logo">
+            🎨 LDesign Theme Demo
+          </h1>
+          <div class="theme-selector">
+            <select v-model="currentTheme" @change="onThemeChange">
+              <option value="">
+                默认主题
+              </option>
+              <option value="christmas">
+                🎄 圣诞节
+              </option>
+              <option value="spring-festival">
+                🧧 春节
+              </option>
+              <option value="halloween">
+                🎃 万圣节
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+      <div class="container">
+        <!-- 英雄区域 -->
+        <section class="hero-section">
+          <h2 class="hero-title">
+            欢迎使用 LDesign Theme
+          </h2>
+          <p class="hero-description">
+            功能强大的主题系统，为你的 Vue 应用带来节日的魅力
+          </p>
+
+          <!-- 功能按钮 -->
+          <div class="action-buttons">
+            <button class="btn btn-primary" @click="handleAction('decoration')">
+              ✨ 添加装饰
+            </button>
+            <button
+              class="btn btn-secondary"
+              @click="handleAction('animation')"
+            >
+              🎬 开始动画
+            </button>
+            <button class="btn btn-outline" @click="handleAction('clear')">
+              🗑️ 清空效果
+            </button>
+          </div>
+
+          <!-- 状态信息 -->
+          <div class="status-panel">
+            <div class="status-item">
+              <span class="status-label">当前主题:</span>
+              <span class="status-value">{{
+                currentThemeInfo?.displayName || '默认主题'
+              }}</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">项目状态:</span>
+              <span class="status-value success">✅ 运行正常</span>
+            </div>
+            <div v-if="lastAction" class="status-item">
+              <span class="status-label">最后操作:</span>
+              <span class="status-value">{{ lastAction }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 功能展示 -->
+        <section class="features-section">
+          <h3 class="section-title">
+            核心功能
+          </h3>
+          <div class="features-grid">
+            <div
+              v-for="(feature, index) in features"
+              :key="index"
+              class="feature-card"
+              :style="{ animationDelay: `${index * 0.1}s` }"
+            >
+              <div class="feature-icon">
+                {{ feature.icon }}
+              </div>
+              <h4 class="feature-title">
+                {{ feature.title }}
+              </h4>
+              <p class="feature-description">
+                {{ feature.description }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 主题信息 -->
+        <section v-if="currentThemeInfo" class="theme-info-section">
+          <h3 class="section-title">
+            主题详情
+          </h3>
+          <div class="theme-info-card">
+            <div class="theme-header">
+              <span class="theme-icon">{{ getThemeIcon(currentTheme) }}</span>
+              <div class="theme-details">
+                <h4>{{ currentThemeInfo.displayName }}</h4>
+                <p>{{ currentThemeInfo.description }}</p>
+                <div class="theme-meta">
+                  <span class="meta-item">
+                    <strong>氛围:</strong> {{ currentThemeInfo.atmosphere }}
+                  </span>
+                  <span class="meta-item">
+                    <strong>季节:</strong> {{ currentThemeInfo.season }}
+                  </span>
+                  <span class="meta-item">
+                    <strong>时间:</strong> {{ currentThemeInfo.timeRange }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 装饰元素展示 -->
+            <div v-if="currentThemeInfo.decorations" class="theme-decorations">
+              <h5>装饰元素</h5>
+              <div class="decoration-list">
+                <span
+                  v-for="decoration in currentThemeInfo.decorations"
+                  :key="decoration"
+                  class="decoration-item"
+                >
+                  {{ decoration }}
+                </span>
+              </div>
+            </div>
+
+            <div class="theme-colors">
+              <h5>配色方案</h5>
+              <div class="color-palette">
+                <div
+                  v-for="(color, name) in currentThemeInfo.colors"
+                  :key="name"
+                  class="color-item"
+                >
+                  <div
+                    class="color-swatch"
+                    :style="{ backgroundColor: color }"
+                  />
+                  <span class="color-name">{{ name }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="app-footer">
+      <div class="container">
+        <p>&copy; 2024 LDesign Team. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+</template>
 
 <style scoped>
 /* 组件样式在 style.css 中定义 */

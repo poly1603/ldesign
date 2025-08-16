@@ -1,4 +1,4 @@
-import { useRouter, useDeviceRoute } from '@ldesign/router'
+import { useDeviceRoute, useRouter } from '@ldesign/router'
 import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
@@ -7,7 +7,7 @@ export default defineComponent({
     const router = useRouter()
     const { currentDeviceName } = useDeviceRoute()
     const content = ref(
-      '# 平板端编辑器\n\n专为平板设备优化的编辑体验。\n\n## 特性\n- 触摸友好的界面\n- 简化的工具栏\n- 快速预览切换'
+      '# 平板端编辑器\n\n专为平板设备优化的编辑体验。\n\n## 特性\n- 触摸友好的界面\n- 简化的工具栏\n- 快速预览切换',
     )
     const showPreview = ref(false)
 
@@ -154,8 +154,7 @@ export default defineComponent({
               <textarea
                 value={content.value}
                 onInput={e =>
-                  (content.value = (e.target as HTMLTextAreaElement).value)
-                }
+                  (content.value = (e.target as HTMLTextAreaElement).value)}
                 style={{
                   flex: 1,
                   background: '#2d3748',
@@ -169,7 +168,7 @@ export default defineComponent({
                   outline: 'none',
                   lineHeight: '1.6',
                 }}
-                placeholder='在此输入 Markdown 内容...'
+                placeholder="在此输入 Markdown 内容..."
               />
             </div>
           ) : (
@@ -210,15 +209,15 @@ export default defineComponent({
                     __html: content.value
                       .replace(
                         /^# (.*$)/gm,
-                        '<h1 style="color: #63b3ed; margin: 20px 0 12px 0; font-size: 28px;">$1</h1>'
+                        '<h1 style="color: #63b3ed; margin: 20px 0 12px 0; font-size: 28px;">$1</h1>',
                       )
                       .replace(
                         /^## (.*$)/gm,
-                        '<h2 style="color: #68d391; margin: 16px 0 8px 0; font-size: 22px;">$1</h2>'
+                        '<h2 style="color: #68d391; margin: 16px 0 8px 0; font-size: 22px;">$1</h2>',
                       )
                       .replace(
                         /^- (.*$)/gm,
-                        '<li style="margin: 8px 0; font-size: 16px;">$1</li>'
+                        '<li style="margin: 8px 0; font-size: 16px;">$1</li>',
                       )
                       .replace(/\n/g, '<br>'),
                   }}
@@ -242,10 +241,19 @@ export default defineComponent({
           }}
         >
           <div>
-            字符: {content.value.length} | 行:{' '}
+            字符:
+            {' '}
+            {content.value.length}
+            {' '}
+            | 行:
+            {' '}
             {content.value.split('\n').length}
           </div>
-          <div>{showPreview.value ? '预览模式' : '编辑模式'} - 平板优化</div>
+          <div>
+            {showPreview.value ? '预览模式' : '编辑模式'}
+            {' '}
+            - 平板优化
+          </div>
         </div>
 
         {/* 平板端提示 */}

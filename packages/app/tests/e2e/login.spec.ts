@@ -82,7 +82,7 @@ test.describe('登录功能 E2E 测试', () => {
 
     // 检查按钮文本变化（加载状态）
     await expect(page.locator('button[type="submit"]')).toContainText(
-      '登录中...'
+      '登录中...',
     )
 
     // 等待加载完成

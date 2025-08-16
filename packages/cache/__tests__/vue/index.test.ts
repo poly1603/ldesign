@@ -1,4 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import {
+  CacheProvider,
+  provideCacheManager,
+  useCache,
+  useCacheManager,
+  useCacheStats,
+} from '../../src/vue/index'
 
 // Mock all Vue exports
 vi.mock('../../src/vue/use-cache', () => ({
@@ -17,15 +25,7 @@ vi.mock('../../src/vue/provider', () => ({
   },
 }))
 
-import {
-  useCache,
-  useCacheStats,
-  useCacheManager,
-  provideCacheManager,
-  CacheProvider,
-} from '../../src/vue/index'
-
-describe('Vue Index Exports', () => {
+describe('vue Index Exports', () => {
   it('should export useCache function', () => {
     expect(typeof useCache).toBe('function')
   })
