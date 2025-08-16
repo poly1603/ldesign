@@ -136,15 +136,14 @@ describe('memoryEngine', () => {
         // 尝试添加大数据，应该触发清理
         await smallEngine.setItem(
           'key3',
-          'this-is-a-much-larger-value-that-should-trigger-cleanup-of-old-items',
+          'this-is-a-much-larger-value-that-should-trigger-cleanup-of-old-items'
         )
 
         // 验证有项被清理（总数应该减少）
         const finalKeys = await smallEngine.keys()
         expect(finalKeys.length).toBeLessThan(3) // 不是所有3个项都能存储
         expect(finalKeys).toContain('key3') // 新项应该存在
-      }
-      finally {
+      } finally {
         await smallEngine.destroy()
       }
     })
@@ -170,10 +169,10 @@ describe('memoryEngine', () => {
 
       // 测试特殊字符键名
       await expect(
-        engine.setItem('key with spaces', 'value'),
+        engine.setItem('key with spaces', 'value')
       ).resolves.not.toThrow()
       await expect(
-        engine.setItem('key/with/slashes', 'value'),
+        engine.setItem('key/with/slashes', 'value')
       ).resolves.not.toThrow()
     })
 
@@ -181,7 +180,7 @@ describe('memoryEngine', () => {
       const largeValue = 'x'.repeat(10000) // 10KB 数据
 
       await expect(
-        engine.setItem('large-key', largeValue),
+        engine.setItem('large-key', largeValue)
       ).resolves.not.toThrow()
 
       const result = await engine.getItem('large-key')

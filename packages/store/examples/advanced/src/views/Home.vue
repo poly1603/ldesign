@@ -13,9 +13,7 @@
 
     <div class="features grid grid-2">
       <div class="feature-card card">
-        <div class="feature-icon">
-          ⚡
-        </div>
+        <div class="feature-icon">⚡</div>
         <h3>性能优化</h3>
         <p>学习如何使用缓存、防抖、节流、性能监控等技术优化应用性能</p>
         <router-link to="/performance" class="btn btn-primary">
@@ -24,9 +22,7 @@
       </div>
 
       <div class="feature-card card">
-        <div class="feature-icon">
-          🏊‍♂️
-        </div>
+        <div class="feature-icon">🏊‍♂️</div>
         <h3>Store 池管理</h3>
         <p>了解如何使用Store池减少内存分配，提高应用性能和资源利用率</p>
         <router-link to="/store-pool" class="btn btn-primary">
@@ -35,9 +31,7 @@
       </div>
 
       <div class="feature-card card">
-        <div class="feature-icon">
-          🏢
-        </div>
+        <div class="feature-icon">🏢</div>
         <h3>企业级功能</h3>
         <p>探索权限管理、数据验证、错误处理等企业级应用必备功能</p>
         <router-link to="/enterprise" class="btn btn-primary">
@@ -46,9 +40,7 @@
       </div>
 
       <div class="feature-card card">
-        <div class="feature-icon">
-          🔄
-        </div>
+        <div class="feature-icon">🔄</div>
         <h3>实时同步</h3>
         <p>实现WebSocket连接、数据同步、离线处理等实时应用功能</p>
         <router-link to="/realtime" class="btn btn-primary">
@@ -80,7 +72,8 @@ import 'reflect-metadata'
 
 const app = createApp(App)
 app.use(createPinia())
-app.mount('#app')</pre>
+app.mount('#app')</pre
+          >
         </div>
       </div>
 
@@ -92,28 +85,16 @@ app.mount('#app')</pre>
 
     <div class="stats grid grid-3">
       <div class="metric">
-        <div class="metric-value">
-          4
-        </div>
-        <div class="metric-label">
-          高级示例
-        </div>
+        <div class="metric-value">4</div>
+        <div class="metric-label">高级示例</div>
       </div>
       <div class="metric">
-        <div class="metric-value">
-          15+
-        </div>
-        <div class="metric-label">
-          核心功能
-        </div>
+        <div class="metric-value">15+</div>
+        <div class="metric-label">核心功能</div>
       </div>
       <div class="metric">
-        <div class="metric-value">
-          100%
-        </div>
-        <div class="metric-label">
-          TypeScript
-        </div>
+        <div class="metric-value">100%</div>
+        <div class="metric-label">TypeScript</div>
       </div>
     </div>
   </div>

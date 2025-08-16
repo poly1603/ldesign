@@ -1,6 +1,7 @@
 # 电商系统完整状态管理
 
-本示例展示了如何使用 @ldesign/store 构建一个完整的电商系统状态管理解决方案，涵盖用户认证、商品管理、购物车、订单处理等核心功能。
+本示例展示了如何使用 @ldesign/store 构建一个完整的电商系统状态管理解决方案，涵盖用户认证、商品管理、
+购物车、订单处理等核心功能。
 
 ## 系统架构
 
@@ -71,8 +72,7 @@ export class AuthStore extends BaseStore {
       await this.initializeUserData()
 
       return response.user
-    }
-    catch (error) {
+    } catch (error) {
       this.error = error instanceof Error ? error.message : '登录失败'
       throw error
     }
@@ -84,8 +84,7 @@ export class AuthStore extends BaseStore {
       if (this.token) {
         await authApi.logout(this.token)
       }
-    }
-    finally {
+    } finally {
       this.currentUser = null
       this.token = null
       this.clearUserData()
@@ -94,16 +93,14 @@ export class AuthStore extends BaseStore {
 
   @AsyncAction()
   async refreshToken() {
-    if (!this.token)
-      return false
+    if (!this.token) return false
 
     try {
       const response = await authApi.refreshToken(this.token)
       this.token = response.token
       this.updateLastActivity()
       return true
-    }
-    catch (error) {
+    } catch (error) {
       await this.logout()
       return false
     }
@@ -121,7 +118,7 @@ export class AuthStore extends BaseStore {
 
     await Promise.all([
       cartStore.loadUserCart(this.currentUser!.id),
-      orderStore.loadUserOrders(this.currentUser!.id)
+      orderStore.loadUserOrders(this.currentUser!.id),
     ])
   }
 
@@ -150,8 +147,7 @@ export class AuthStore extends BaseStore {
 
   @Getter()
   get isSessionExpired() {
-    if (!this.lastActivity)
-      return true
+    if (!this.lastActivity) return true
     const thirtyMinutes = 30 * 60 * 1000
     return Date.now() - this.lastActivity.getTime() > thirtyMinutes
   }
@@ -162,7 +158,14 @@ export class AuthStore extends BaseStore {
 
 ```typescript
 // stores/product.ts
-import { AsyncAction, BaseStore, CachedAction, DebouncedAction, Getter, State } from '@ldesign/store'
+import {
+  AsyncAction,
+  BaseStore,
+  CachedAction,
+  DebouncedAction,
+  Getter,
+  State,
+} from '@ldesign/store'
 
 interface Product {
   id: string
@@ -228,8 +231,7 @@ export class ProductStore extends BaseStore {
 
   @AsyncAction()
   async fetchProducts(refresh = false) {
-    if (!refresh && this.products.length > 0)
-      return
+    if (!refresh && this.products.length > 0) return
 
     try {
       const response = await productApi.getProducts({
@@ -238,13 +240,12 @@ export class ProductStore extends BaseStore {
         search: this.searchQuery,
         filters: this.filters,
         sortBy: this.sortBy,
-        sortOrder: this.sortOrder
+        sortOrder: this.sortOrder,
       })
 
       this.products = response.products
       this.totalCount = response.total
-    }
-    catch (error) {
+    } catch (error) {
       console.error('获取商品失败:', error)
       throw error
     }
@@ -270,8 +271,7 @@ export class ProductStore extends BaseStore {
       }
 
       return product
-    }
-    catch (error) {
+    } catch (error) {
       console.error('获取商品详情失败:', error)
       throw error
     }
@@ -316,10 +316,11 @@ export class ProductStore extends BaseStore {
     // 应用搜索
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase()
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(query)
-        || product.description.toLowerCase().includes(query)
-        || product.tags.some(tag => tag.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        product =>
+          product.name.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query) ||
+          product.tags.some(tag => tag.toLowerCase().includes(query))
       )
     }
 
@@ -357,8 +358,7 @@ export class ProductStore extends BaseStore {
 
       if (this.sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1
-      }
-      else {
+      } else {
         return aValue < bValue ? 1 : -1
       }
     })
@@ -399,8 +399,7 @@ export class ProductStore extends BaseStore {
 
   @Getter()
   get priceRange() {
-    if (this.products.length === 0)
-      return [0, 0]
+    if (this.products.length === 0) return [0, 0]
 
     const prices = this.products.map(p => p.price)
     return [Math.min(...prices), Math.max(...prices)]
@@ -452,15 +451,15 @@ export class CartStore extends BaseStore {
 
   @Action()
   addItem(product: Product, quantity: number = 1, attributes: Record<string, any> = {}) {
-    const existingItem = this.items.find(item =>
-      item.productId === product.id
-      && JSON.stringify(item.selectedAttributes) === JSON.stringify(attributes)
+    const existingItem = this.items.find(
+      item =>
+        item.productId === product.id &&
+        JSON.stringify(item.selectedAttributes) === JSON.stringify(attributes)
     )
 
     if (existingItem) {
       existingItem.quantity += quantity
-    }
-    else {
+    } else {
       this.items.push({
         id: generateId(),
         productId: product.id,
@@ -469,7 +468,7 @@ export class CartStore extends BaseStore {
         image: product.images[0],
         quantity,
         selectedAttributes: attributes,
-        addedAt: new Date()
+        addedAt: new Date(),
       })
     }
 
@@ -491,8 +490,7 @@ export class CartStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeItem(itemId)
-      }
-      else {
+      } else {
         item.quantity = quantity
         this.calculateShippingAndTax()
       }
@@ -513,8 +511,7 @@ export class CartStore extends BaseStore {
       const coupon = await couponApi.validateCoupon(couponCode, this.subtotal)
       this.appliedCoupon = coupon
       return coupon
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('优惠券无效或已过期')
     }
   }
@@ -531,8 +528,7 @@ export class CartStore extends BaseStore {
       this.items = cartData.items
       this.appliedCoupon = cartData.coupon
       this.calculateShippingAndTax()
-    }
-    catch (error) {
+    } catch (error) {
       console.error('加载购物车失败:', error)
     }
   }
@@ -540,16 +536,14 @@ export class CartStore extends BaseStore {
   @AsyncAction()
   async syncToServer() {
     const authStore = new AuthStore('auth')
-    if (!authStore.isLoggedIn)
-      return
+    if (!authStore.isLoggedIn) return
 
     try {
       await cartApi.syncCart(authStore.currentUser!.id, {
         items: this.items,
-        coupon: this.appliedCoupon
+        coupon: this.appliedCoupon,
       })
-    }
-    catch (error) {
+    } catch (error) {
       console.error('同步购物车失败:', error)
     }
   }
@@ -558,8 +552,7 @@ export class CartStore extends BaseStore {
     // 计算运费
     if (this.subtotal >= 99) {
       this.shippingFee = 0 // 满99免运费
-    }
-    else {
+    } else {
       this.shippingFee = 10
     }
 
@@ -579,14 +572,12 @@ export class CartStore extends BaseStore {
 
   @Getter()
   get discountAmount() {
-    if (!this.appliedCoupon)
-      return 0
+    if (!this.appliedCoupon) return 0
 
     let discount = 0
     if (this.appliedCoupon.type === 'percentage') {
       discount = this.subtotal * (this.appliedCoupon.value / 100)
-    }
-    else {
+    } else {
       discount = this.appliedCoupon.value
     }
 
@@ -747,8 +738,7 @@ export class ApiStore extends BaseStore {
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await apiCall()
-      }
-      catch (error) {
+      } catch (error) {
         lastError = error as Error
 
         if (i < maxRetries - 1) {

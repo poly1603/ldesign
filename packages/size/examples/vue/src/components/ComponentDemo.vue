@@ -106,10 +106,7 @@ function handlePanelChange(mode: SizeMode) {
 
           <div class="example-item">
             <h4>仅指示器</h4>
-            <SizeControlPanel
-              :show-switcher="false"
-              :show-indicator="true"
-            />
+            <SizeControlPanel :show-switcher="false" :show-indicator="true" />
           </div>
         </div>
       </div>
@@ -123,12 +120,8 @@ function handlePanelChange(mode: SizeMode) {
           <CustomButton>自定义按钮</CustomButton>
           <CustomCard title="自定义卡片">
             <p>这是一个响应尺寸变化的自定义卡片组件</p>
-            <CustomButton size="small">
-              小按钮
-            </CustomButton>
-            <CustomButton size="large">
-              大按钮
-            </CustomButton>
+            <CustomButton size="small"> 小按钮 </CustomButton>
+            <CustomButton size="large"> 大按钮 </CustomButton>
           </CustomCard>
         </div>
       </div>

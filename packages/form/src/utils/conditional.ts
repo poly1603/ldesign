@@ -19,7 +19,7 @@ export class ConditionParser {
     return (values: FormData) => {
       try {
         // 替换字段名为实际值
-        const processedExpression = expression.replace(/(\w+)/g, (match) => {
+        const processedExpression = expression.replace(/(\w+)/g, match => {
           // 如果是操作符或关键字，不替换
           if (
             [
@@ -49,8 +49,7 @@ export class ConditionParser {
 
         // 使用 Function 构造器安全执行表达式
         return new Function(`return ${processedExpression}`)()
-      }
-      catch (error) {
+      } catch (error) {
         console.warn('条件表达式解析失败:', expression, error)
         return false
       }
@@ -98,11 +97,11 @@ export const builtinConditions = {
   isEmpty: (fieldName: string) => (values: FormData) => {
     const value = get(values, fieldName)
     return (
-      value === null
-      || value === undefined
-      || value === ''
-      || (Array.isArray(value) && value.length === 0)
-      || (typeof value === 'object' && Object.keys(value).length === 0)
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0) ||
+      (typeof value === 'object' && Object.keys(value).length === 0)
     )
   },
 
@@ -175,18 +174,18 @@ export const builtinConditions = {
    */
   and:
     (...conditions: Array<(values: FormData) => boolean>) =>
-      (values: FormData) => {
-        return conditions.every(condition => condition(values))
-      },
+    (values: FormData) => {
+      return conditions.every(condition => condition(values))
+    },
 
   /**
    * 多个条件的 OR 组合
    */
   or:
     (...conditions: Array<(values: FormData) => boolean>) =>
-      (values: FormData) => {
-        return conditions.some(condition => condition(values))
-      },
+    (values: FormData) => {
+      return conditions.some(condition => condition(values))
+    },
 
   /**
    * 条件取反
@@ -327,7 +326,7 @@ export function createCondition(): ConditionBuilder {
  * 解析依赖字段
  */
 export function parseDependencies(
-  condition: ConditionalRenderConfig,
+  condition: ConditionalRenderConfig
 ): string[] {
   if (typeof condition.dependsOn === 'string') {
     return [condition.dependsOn]
@@ -344,7 +343,7 @@ export function parseDependencies(
 export function shouldShowFieldAdvanced(
   field: FormItemConfig,
   formData: FormData,
-  allFields: FormItemConfig[],
+  allFields: FormItemConfig[]
 ): boolean {
   if (!field.conditionalRender) {
     return !field.hidden
@@ -352,8 +351,7 @@ export function shouldShowFieldAdvanced(
 
   try {
     return field.conditionalRender.condition(formData, field, allFields)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn(`字段 ${field.name} 条件渲染检查失败:`, error)
     return !field.hidden
   }
@@ -365,7 +363,7 @@ export function shouldShowFieldAdvanced(
 export function getFieldDynamicConfig(
   field: FormItemConfig,
   formData: FormData,
-  allFields: FormItemConfig[],
+  allFields: FormItemConfig[]
 ): Partial<FormItemConfig> | undefined {
   if (!field.conditionalRender?.render) {
     return undefined
@@ -373,8 +371,7 @@ export function getFieldDynamicConfig(
 
   try {
     return field.conditionalRender.render(formData, field, allFields)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn(`字段 ${field.name} 动态配置获取失败:`, error)
     return undefined
   }
@@ -386,7 +383,7 @@ export function getFieldDynamicConfig(
 export function applyConditionalRender(
   field: FormItemConfig,
   formData: FormData,
-  allFields: FormItemConfig[],
+  allFields: FormItemConfig[]
 ): FormItemConfig {
   const shouldShow = shouldShowFieldAdvanced(field, formData, allFields)
   const dynamicConfig = getFieldDynamicConfig(field, formData, allFields)
@@ -403,7 +400,7 @@ export function applyConditionalRender(
  */
 export function applyConditionalRenderToFields(
   fields: FormItemConfig[],
-  formData: FormData,
+  formData: FormData
 ): FormItemConfig[] {
   return fields.map(field => applyConditionalRender(field, formData, fields))
 }
@@ -413,7 +410,7 @@ export function applyConditionalRenderToFields(
  */
 export function shouldShowField(
   field: FormItemConfig,
-  formData: Record<string, any>,
+  formData: Record<string, any>
 ): boolean {
   // 如果没有条件配置，默认显示
   if (!field.showWhen) {
@@ -454,7 +451,7 @@ export function shouldShowField(
  */
 export function filterVisibleFields(
   fields: FormItemConfig[],
-  formData: Record<string, any>,
+  formData: Record<string, any>
 ): FormItemConfig[] {
   return fields.filter(field => shouldShowField(field, formData))
 }

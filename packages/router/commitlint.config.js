@@ -36,7 +36,11 @@ module.exports = {
     // 主题不能以句号结尾
     'subject-full-stop': [2, 'never', '.'],
     // 主题格式
-    'subject-case': [2, 'never', ['sentence-case', 'start-case', 'pascal-case', 'upper-case']],
+    'subject-case': [
+      2,
+      'never',
+      ['sentence-case', 'start-case', 'pascal-case', 'upper-case'],
+    ],
     // 类型不能为空
     'type-empty': [2, 'never'],
     // 类型格式

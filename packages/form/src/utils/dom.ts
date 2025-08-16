@@ -6,7 +6,7 @@
 export function createElement(
   tag: string,
   props?: Record<string, any>,
-  children?: (Node | string)[],
+  children?: (Node | string)[]
 ): HTMLElement {
   const element = document.createElement(tag)
 
@@ -14,26 +14,22 @@ export function createElement(
     Object.entries(props).forEach(([key, value]) => {
       if (key === 'className') {
         element.className = value
-      }
-      else if (key === 'style' && typeof value === 'object') {
+      } else if (key === 'style' && typeof value === 'object') {
         Object.assign(element.style, value)
-      }
-      else if (key.startsWith('on') && typeof value === 'function') {
+      } else if (key.startsWith('on') && typeof value === 'function') {
         const eventName = key.slice(2).toLowerCase()
         element.addEventListener(eventName, value)
-      }
-      else {
+      } else {
         element.setAttribute(key, String(value))
       }
     })
   }
 
   if (children) {
-    children.forEach((child) => {
+    children.forEach(child => {
       if (typeof child === 'string') {
         element.appendChild(document.createTextNode(child))
-      }
-      else {
+      } else {
         element.appendChild(child)
       }
     })
@@ -47,7 +43,7 @@ export function createElement(
  */
 export function querySelector(
   selector: string,
-  context?: Element | Document,
+  context?: Element | Document
 ): Element | null {
   return (context || document).querySelector(selector)
 }
@@ -57,7 +53,7 @@ export function querySelector(
  */
 export function querySelectorAll(
   selector: string,
-  context?: Element | Document,
+  context?: Element | Document
 ): NodeListOf<Element> {
   return (context || document).querySelectorAll(selector)
 }
@@ -82,7 +78,7 @@ export function removeClass(element: Element, className: string): void {
 export function toggleClass(
   element: Element,
   className: string,
-  force?: boolean,
+  force?: boolean
 ): boolean {
   return element.classList.toggle(className, force)
 }
@@ -99,7 +95,7 @@ export function hasClass(element: Element, className: string): boolean {
  */
 export function setStyle(
   element: HTMLElement,
-  styles: Record<string, string | number>,
+  styles: Record<string, string | number>
 ): void {
   Object.entries(styles).forEach(([property, value]) => {
     element.style.setProperty(property, String(value))
@@ -130,7 +126,7 @@ export function getElementSize(element: Element): {
 /**
  * 获取元素位置
  */
-export function getElementPosition(element: Element): { x: number, y: number } {
+export function getElementPosition(element: Element): { x: number; y: number } {
   const rect = element.getBoundingClientRect()
   return {
     x: rect.left + window.scrollX,
@@ -143,8 +139,8 @@ export function getElementPosition(element: Element): { x: number, y: number } {
  */
 export function getRelativePosition(
   element: Element,
-  parent: Element,
-): { x: number, y: number } {
+  parent: Element
+): { x: number; y: number } {
   const elementRect = element.getBoundingClientRect()
   const parentRect = parent.getBoundingClientRect()
   return {
@@ -159,11 +155,11 @@ export function getRelativePosition(
 export function isElementInViewport(element: Element): boolean {
   const rect = element.getBoundingClientRect()
   return (
-    rect.top >= 0
-    && rect.left >= 0
-    && rect.bottom
-    <= (window.innerHeight || document.documentElement.clientHeight)
-    && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <=
+      (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
   )
 }
 
@@ -172,7 +168,7 @@ export function isElementInViewport(element: Element): boolean {
  */
 export function scrollToElement(
   element: Element,
-  options?: ScrollIntoViewOptions,
+  options?: ScrollIntoViewOptions
 ): void {
   element.scrollIntoView({
     behavior: 'smooth',
@@ -209,7 +205,7 @@ export function getParent(element: Element, selector?: string): Element | null {
  */
 export function getSiblings(element: Element, selector?: string): Element[] {
   const siblings = Array.from(element.parentElement?.children || []).filter(
-    sibling => sibling !== element,
+    sibling => sibling !== element
   )
   return selector
     ? siblings.filter(sibling => sibling.matches(selector))
@@ -222,7 +218,7 @@ export function getSiblings(element: Element, selector?: string): Element[] {
 export function insertElement(
   element: Element,
   target: Element,
-  position: 'before' | 'after' | 'prepend' | 'append',
+  position: 'before' | 'after' | 'prepend' | 'append'
 ): void {
   switch (position) {
     case 'before':
@@ -309,7 +305,7 @@ export function getAttribute(element: Element, name: string): string | null {
 export function setAttribute(
   element: Element,
   name: string,
-  value: string,
+  value: string
 ): void {
   element.setAttribute(name, value)
 }

@@ -6,7 +6,7 @@
 
 ### 🎨 主题管理
 
-- 预设主题切换（10个内置主题）
+- 预设主题切换（10 个内置主题）
 - 亮色/暗色模式切换
 - 随机主题选择
 - 系统主题检测和同步
@@ -119,7 +119,7 @@ import { getSystemTheme, watchSystemTheme } from '@ldesign/color'
 const systemTheme = getSystemTheme() // 'light' | 'dark'
 
 // 监听系统主题变化
-const unwatch = watchSystemTheme((mode) => {
+const unwatch = watchSystemTheme(mode => {
   console.log('系统主题变化:', mode)
   themeManager.setMode(mode)
 })
@@ -134,7 +134,7 @@ import { createCustomTheme } from '@ldesign/color'
 const customTheme = createCustomTheme('my-theme', '#ff6b35', {
   displayName: '我的主题',
   description: '自定义橙色主题',
-  darkPrimaryColor: '#e55a2b'
+  darkPrimaryColor: '#e55a2b',
 })
 
 // 注册主题
@@ -183,7 +183,7 @@ await themeManager.setTheme('my-theme')
 
 ```javascript
 const themeManager = await createThemeManagerWithPresets({
-  idleProcessing: true // 启用闲时处理
+  idleProcessing: true, // 启用闲时处理
 })
 
 // 预生成所有主题
@@ -196,8 +196,8 @@ await themeManager.preGenerateAllThemes()
 const themeManager = await createThemeManagerWithPresets({
   cache: {
     maxSize: 50, // 最大缓存数量
-    defaultTTL: 3600000 // 缓存过期时间
-  }
+    defaultTTL: 3600000, // 缓存过期时间
+  },
 })
 ```
 
@@ -220,7 +220,7 @@ const themeManager = await createThemeManagerWithPresets({
 2. **监听主题变化**：
 
    ```javascript
-   themeManager.on('theme-changed', (data) => {
+   themeManager.on('theme-changed', data => {
      console.log('主题变化:', data)
    })
    ```
@@ -243,7 +243,7 @@ A: 在创建主题管理器时设置 `cssPrefix` 选项：
 
 ```javascript
 const themeManager = await createThemeManagerWithPresets({
-  cssPrefix: '--my-app-color'
+  cssPrefix: '--my-app-color',
 })
 ```
 

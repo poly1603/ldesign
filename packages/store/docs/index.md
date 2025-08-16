@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "@ldesign/store"
-  text: "Vue3 状态管理库"
-  tagline: "支持类、Hook、Provider、装饰器等多种使用方式的现代状态管理解决方案"
+  name: '@ldesign/store'
+  text: 'Vue3 状态管理库'
+  tagline: '支持类、Hook、Provider、装饰器等多种使用方式的现代状态管理解决方案'
   actions:
     - theme: brand
       text: 快速开始
@@ -82,7 +82,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count },
     actions: { increment },
-    getters: { displayText }
+    getters: { displayText },
   }
 })
 ```
@@ -99,9 +99,7 @@ const store = new CounterStore('counter')
 <template>
   <div>
     <p>{{ store.displayText }}</p>
-    <button @click="store.increment">
-      +1
-    </button>
+    <button @click="store.increment">+1</button>
   </div>
 </template>
 ```
@@ -117,8 +115,8 @@ const store = new CounterStore('counter')
 四种使用方式任你选择：
 
 - **类式** - 面向对象，装饰器加持
-- **Hook式** - 函数式编程，React 开发者友好
-- **Provider式** - 依赖注入，架构清晰
+- **Hook 式** - 函数式编程，React 开发者友好
+- **Provider 式** - 依赖注入，架构清晰
 - **组合式** - Vue3 原生体验
 
 ### ⚡ 性能卓越

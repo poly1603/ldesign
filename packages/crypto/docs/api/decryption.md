@@ -38,8 +38,7 @@ const decrypted = decrypt.aes(encrypted, key)
 
 if (decrypted.success) {
   console.log('解密成功:', decrypted.data)
-}
-else {
+} else {
   console.error('解密失败:', decrypted.error)
 }
 ```
@@ -225,8 +224,7 @@ try {
   }
 
   console.log('解密成功:', decrypted.data)
-}
-catch (error) {
+} catch (error) {
   if (error instanceof DecryptionError) {
     console.error('解密异常:', error.message)
     console.error('算法:', error.algorithm)
@@ -247,7 +245,7 @@ function batchDecrypt(encryptedList: EncryptResult[], key: string): DecryptResul
 const encryptedList = [
   encrypt.aes('data1', 'key'),
   encrypt.aes('data2', 'key'),
-  encrypt.aes('data3', 'key')
+  encrypt.aes('data3', 'key'),
 ]
 
 const decryptedList = batchDecrypt(encryptedList, 'key')
@@ -256,8 +254,7 @@ const decryptedList = batchDecrypt(encryptedList, 'key')
 decryptedList.forEach((result, index) => {
   if (result.success) {
     console.log(`数据 ${index + 1} 解密成功:`, result.data)
-  }
-  else {
+  } else {
     console.error(`数据 ${index + 1} 解密失败:`, result.error)
   }
 })
@@ -335,8 +332,7 @@ class SecureDecryptor {
           console.warn(`解密尝试 ${attempt} 失败，${this.retryDelay}ms 后重试`)
           await this.delay(this.retryDelay)
         }
-      }
-      catch (error) {
+      } catch (error) {
         lastError = error instanceof Error ? error.message : '解密异常'
 
         if (attempt < this.maxRetries) {
@@ -348,7 +344,7 @@ class SecureDecryptor {
     return {
       success: false,
       data: '',
-      error: `解密失败，已重试 ${this.maxRetries} 次。最后错误: ${lastError}`
+      error: `解密失败，已重试 ${this.maxRetries} 次。最后错误: ${lastError}`,
     }
   }
 
@@ -396,7 +392,7 @@ function safeDecrypt(encryptedData: any, key: string): DecryptResult {
     return {
       success: false,
       data: '',
-      error: '无效的加密数据格式'
+      error: '无效的加密数据格式',
     }
   }
 
@@ -418,8 +414,7 @@ function validateDecryptedData(data: string, expectedFormat?: string): boolean {
       try {
         JSON.parse(data)
         return true
-      }
-      catch {
+      } catch {
         return false
       }
 
@@ -435,14 +430,18 @@ function validateDecryptedData(data: string, expectedFormat?: string): boolean {
 }
 
 // 带验证的解密
-function decryptWithValidation(encryptedData: EncryptResult, key: string, expectedFormat?: string): DecryptResult {
+function decryptWithValidation(
+  encryptedData: EncryptResult,
+  key: string,
+  expectedFormat?: string
+): DecryptResult {
   const result = decrypt.aes(encryptedData, key)
 
   if (result.success && !validateDecryptedData(result.data, expectedFormat)) {
     return {
       success: false,
       data: '',
-      error: '解密数据格式验证失败'
+      error: '解密数据格式验证失败',
     }
   }
 
@@ -474,7 +473,7 @@ class DecryptionCache {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash
     }
     return hash.toString(36)
@@ -512,7 +511,7 @@ class DecryptionCache {
   getCacheStats() {
     return {
       size: this.cache.size,
-      maxSize: this.maxSize
+      maxSize: this.maxSize,
     }
   }
 }

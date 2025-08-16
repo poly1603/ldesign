@@ -1,6 +1,7 @@
 # 入门指南
 
-欢迎使用 Vue3 Engine！这是一个强大的 Vue3 应用引擎，提供了插件系统、中间件、状态管理、事件系统、日志记录、通知管理等丰富功能。
+欢迎使用 Vue3 Engine！这是一个强大的 Vue3 应用引擎，提供了插件系统、中间件、状态管理、事件系统、日志
+记录、通知管理等丰富功能。
 
 ## 安装
 
@@ -30,9 +31,9 @@ yarn add @ldesign/engine
 
 ## 快速开始
 
-### 简化API（推荐）
+### 简化 API（推荐）
 
-使用新的简化API，无需手动创建Vue应用：
+使用新的简化 API，无需手动创建 Vue 应用：
 
 ```typescript
 import { createApp, presets } from '@ldesign/engine'
@@ -45,8 +46,8 @@ const engine = createApp(App, {
   config: {
     debug: true,
     appName: 'My First Engine App',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 
 // 挂载应用
@@ -56,7 +57,7 @@ engine.mount('#app')
 export { engine }
 ```
 
-### 传统API
+### 传统 API
 
 如果你需要更多控制，也可以使用传统方式：
 
@@ -71,8 +72,8 @@ const engine = createEngine({
   config: {
     debug: true,
     appName: 'My First Engine App',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 
 // 创建 Vue 应用
@@ -100,16 +101,16 @@ import App from './App.vue'
 const engine = createApp(App, {
   ...presets.development(),
   config: {
-    appName: 'My App'
-  }
+    appName: 'My App',
+  },
 })
 
 // 使用简化API + 生产环境预设
 const engine = createApp(App, {
   ...presets.production(),
   config: {
-    appName: 'My App'
-  }
+    appName: 'My App',
+  },
 })
 
 // 传统API方式
@@ -137,7 +138,7 @@ function showNotification() {
   engine.notifications.show({
     type: 'success',
     title: '操作成功',
-    message: '这是一个成功通知！'
+    message: '这是一个成功通知！',
   })
 }
 
@@ -145,7 +146,7 @@ function showNotification() {
 function logMessage() {
   engine.logger.info('用户点击了日志按钮', {
     timestamp: new Date().toISOString(),
-    userAgent: navigator.userAgent
+    userAgent: navigator.userAgent,
   })
 }
 
@@ -154,19 +155,19 @@ function updateState() {
   engine.state.set('user', {
     name: 'John Doe',
     email: 'john@example.com',
-    loginTime: new Date().toISOString()
+    loginTime: new Date().toISOString(),
   })
 }
 
 // 监听事件
 onMounted(() => {
   // 监听用户登录事件
-  engine.events.on('user:login', (userData) => {
+  engine.events.on('user:login', userData => {
     engine.logger.info('用户登录', userData)
     engine.notifications.show({
       type: 'info',
       title: '欢迎回来',
-      message: `欢迎 ${userData.name}！`
+      message: `欢迎 ${userData.name}！`,
     })
   })
 
@@ -182,15 +183,9 @@ onMounted(() => {
 <template>
   <div class="app">
     <h1>{{ appName }}</h1>
-    <button @click="showNotification">
-      显示通知
-    </button>
-    <button @click="logMessage">
-      记录日志
-    </button>
-    <button @click="updateState">
-      更新状态
-    </button>
+    <button @click="showNotification">显示通知</button>
+    <button @click="logMessage">记录日志</button>
+    <button @click="updateState">更新状态</button>
     <p>当前用户: {{ user?.name || '未登录' }}</p>
   </div>
 </template>
@@ -229,10 +224,14 @@ button:hover {
 const engine = createEngine({
   config: {
     debug: true,
-    appName: 'My App'
+    appName: 'My App',
   },
-  plugins: [/* 插件列表 */],
-  middleware: [/* 中间件列表 */]
+  plugins: [
+    /* 插件列表 */
+  ],
+  middleware: [
+    /* 中间件列表 */
+  ],
 })
 
 // 访问各个管理器
@@ -260,7 +259,7 @@ engine.config.set('language', 'zh-CN')
 const theme = engine.config.get('theme')
 
 // 监听配置变化
-engine.config.watch('theme', (newTheme) => {
+engine.config.watch('theme', newTheme => {
   document.body.className = `theme-${newTheme}`
 })
 ```
@@ -292,7 +291,7 @@ const user = computed(() => engine.state.get('user'))
 
 ```typescript
 // 监听事件
-engine.events.on('data:loaded', (data) => {
+engine.events.on('data:loaded', data => {
   console.log('数据加载完成:', data)
 })
 
@@ -322,7 +321,8 @@ unsubscribe() // 取消监听
 
 ### Q: 如何在现有 Vue3 项目中集成 Engine？
 
-A: 只需要安装 `@ldesign/engine` 包，然后在 `main.ts` 中创建引擎实例并安装到 Vue 应用即可。Engine 不会影响现有代码。
+A: 只需要安装 `@ldesign/engine` 包，然后在 `main.ts` 中创建引擎实例并安装到 Vue 应用即可。Engine 不
+会影响现有代码。
 
 ### Q: Engine 会增加多少包体积？
 

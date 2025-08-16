@@ -23,20 +23,20 @@ const {
 
 ### 参数
 
-| 参数 | 类型 | 默认值 | 描述 |
-|------|------|--------|------|
-| `options` | `UseTemplateOptions` | `{}` | 配置选项 |
+| 参数      | 类型                 | 默认值 | 描述     |
+| --------- | -------------------- | ------ | -------- |
+| `options` | `UseTemplateOptions` | `{}`   | 配置选项 |
 
 ### 返回值
 
-| 属性 | 类型 | 描述 |
-|------|------|------|
-| `currentTemplate` | `Ref<TemplateMetadata \| null>` | 当前模板 |
-| `isLoading` | `Ref<boolean>` | 是否正在加载 |
-| `error` | `Ref<Error \| null>` | 错误信息 |
-| `loadTemplate` | `Function` | 加载模板函数 |
-| `switchTemplate` | `Function` | 切换模板函数 |
-| `clearCache` | `Function` | 清空缓存函数 |
+| 属性              | 类型                            | 描述         |
+| ----------------- | ------------------------------- | ------------ |
+| `currentTemplate` | `Ref<TemplateMetadata \| null>` | 当前模板     |
+| `isLoading`       | `Ref<boolean>`                  | 是否正在加载 |
+| `error`           | `Ref<Error \| null>`            | 错误信息     |
+| `loadTemplate`    | `Function`                      | 加载模板函数 |
+| `switchTemplate`  | `Function`                      | 切换模板函数 |
+| `clearCache`      | `Function`                      | 清空缓存函数 |
 
 ### 示例
 
@@ -44,17 +44,12 @@ const {
 <script setup>
 import { useTemplate } from '@ldesign/template/vue'
 
-const {
-  currentTemplate,
-  isLoading,
-  error,
-  loadTemplate,
-  switchTemplate,
-} = useTemplate({
-  category: 'login',
-  device: 'desktop',
-  enableCache: true,
-})
+const { currentTemplate, isLoading, error, loadTemplate, switchTemplate } =
+  useTemplate({
+    category: 'login',
+    device: 'desktop',
+    enableCache: true,
+  })
 
 // 加载模板
 const handleLoadTemplate = async () => {
@@ -66,7 +61,7 @@ const handleLoadTemplate = async () => {
 }
 
 // 切换模板
-const handleSwitchTemplate = async (templateId) => {
+const handleSwitchTemplate = async templateId => {
   await switchTemplate(templateId)
 }
 </script>
@@ -75,9 +70,7 @@ const handleSwitchTemplate = async (templateId) => {
   <div>
     <div v-if="isLoading">加载中...</div>
     <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else-if="currentTemplate">
-      当前模板: {{ currentTemplate.name }}
-    </div>
+    <div v-else-if="currentTemplate">当前模板: {{ currentTemplate.name }}</div>
   </div>
 </template>
 ```
@@ -107,33 +100,33 @@ const {
 
 ### 参数
 
-| 参数 | 类型 | 描述 |
-|------|------|------|
-| `items` | `Ref<VirtualScrollItem[]>` | 数据列表 |
-| `options` | `VirtualScrollOptions` | 配置选项 |
+| 参数      | 类型                       | 描述     |
+| --------- | -------------------------- | -------- |
+| `items`   | `Ref<VirtualScrollItem[]>` | 数据列表 |
+| `options` | `VirtualScrollOptions`     | 配置选项 |
 
 ### VirtualScrollOptions
 
-| 属性 | 类型 | 描述 |
-|------|------|------|
-| `containerHeight` | `number` | 容器高度 |
-| `itemHeight` | `number` | 每项高度 |
-| `buffer` | `number` | 缓冲区大小（可选，默认5） |
+| 属性              | 类型     | 描述                       |
+| ----------------- | -------- | -------------------------- |
+| `containerHeight` | `number` | 容器高度                   |
+| `itemHeight`      | `number` | 每项高度                   |
+| `buffer`          | `number` | 缓冲区大小（可选，默认 5） |
 
 ### 返回值
 
-| 属性 | 类型 | 描述 |
-|------|------|------|
-| `containerRef` | `Ref<HTMLElement>` | 容器引用 |
-| `visibleItems` | `ComputedRef<VirtualScrollItem[]>` | 可见项目 |
-| `visibleRange` | `ComputedRef<{start: number, end: number}>` | 可见范围 |
-| `totalHeight` | `ComputedRef<number>` | 总高度 |
-| `offsetY` | `ComputedRef<number>` | Y轴偏移量 |
-| `scrollTop` | `Ref<number>` | 滚动位置 |
-| `handleScroll` | `Function` | 滚动处理函数 |
-| `scrollToItem` | `Function` | 滚动到指定项目 |
-| `scrollToTop` | `Function` | 滚动到顶部 |
-| `scrollToBottom` | `Function` | 滚动到底部 |
+| 属性             | 类型                                        | 描述           |
+| ---------------- | ------------------------------------------- | -------------- |
+| `containerRef`   | `Ref<HTMLElement>`                          | 容器引用       |
+| `visibleItems`   | `ComputedRef<VirtualScrollItem[]>`          | 可见项目       |
+| `visibleRange`   | `ComputedRef<{start: number, end: number}>` | 可见范围       |
+| `totalHeight`    | `ComputedRef<number>`                       | 总高度         |
+| `offsetY`        | `ComputedRef<number>`                       | Y 轴偏移量     |
+| `scrollTop`      | `Ref<number>`                               | 滚动位置       |
+| `handleScroll`   | `Function`                                  | 滚动处理函数   |
+| `scrollToItem`   | `Function`                                  | 滚动到指定项目 |
+| `scrollToTop`    | `Function`                                  | 滚动到顶部     |
+| `scrollToBottom` | `Function`                                  | 滚动到底部     |
 
 ### 示例
 
@@ -148,19 +141,14 @@ const items = ref([
   // ... 更多数据
 ])
 
-const {
-  containerRef,
-  visibleItems,
-  totalHeight,
-  handleScroll,
-  scrollToItem,
-} = useVirtualScroll(items, {
-  containerHeight: 400,
-  itemHeight: 60,
-  buffer: 5,
-})
+const { containerRef, visibleItems, totalHeight, handleScroll, scrollToItem } =
+  useVirtualScroll(items, {
+    containerHeight: 400,
+    itemHeight: 60,
+    buffer: 5,
+  })
 
-const jumpToItem = (index) => {
+const jumpToItem = index => {
   scrollToItem(index)
 }
 </script>
@@ -168,7 +156,7 @@ const jumpToItem = (index) => {
 <template>
   <div>
     <button @click="jumpToItem(50)">跳转到第50项</button>
-    
+
     <div
       ref="containerRef"
       class="virtual-container"
@@ -207,21 +195,17 @@ const jumpToItem = (index) => {
 ```typescript
 import { useSimpleVirtualScroll } from '@ldesign/template/vue'
 
-const {
-  containerRef,
-  visibleItems,
-  totalHeight,
-  handleScroll,
-} = useSimpleVirtualScroll(items, itemHeight, containerHeight)
+const { containerRef, visibleItems, totalHeight, handleScroll } =
+  useSimpleVirtualScroll(items, itemHeight, containerHeight)
 ```
 
 ### 参数
 
-| 参数 | 类型 | 描述 |
-|------|------|------|
-| `items` | `Ref<any[]>` | 数据列表 |
-| `itemHeight` | `number` | 每项高度 |
-| `containerHeight` | `number` | 容器高度 |
+| 参数              | 类型         | 描述     |
+| ----------------- | ------------ | -------- |
+| `items`           | `Ref<any[]>` | 数据列表 |
+| `itemHeight`      | `number`     | 每项高度 |
+| `containerHeight` | `number`     | 容器高度 |
 
 ### 示例
 
@@ -230,17 +214,15 @@ const {
 import { ref } from 'vue'
 import { useSimpleVirtualScroll } from '@ldesign/template/vue'
 
-const items = ref(Array.from({ length: 1000 }, (_, i) => ({
-  id: i + 1,
-  name: `Item ${i + 1}`,
-})))
+const items = ref(
+  Array.from({ length: 1000 }, (_, i) => ({
+    id: i + 1,
+    name: `Item ${i + 1}`,
+  }))
+)
 
-const {
-  containerRef,
-  visibleItems,
-  totalHeight,
-  handleScroll,
-} = useSimpleVirtualScroll(items, 50, 300)
+const { containerRef, visibleItems, totalHeight, handleScroll } =
+  useSimpleVirtualScroll(items, 50, 300)
 </script>
 
 <template>

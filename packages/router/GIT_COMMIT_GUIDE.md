@@ -28,19 +28,19 @@ git commit -m "feat(router): add new navigation method"
 
 ### 类型 (type)
 
-| 类型 | 描述 | 示例 |
-|------|------|------|
-| `feat` | 新功能 | `feat(router): add lazy loading` |
-| `fix` | 修复bug | `fix(cache): resolve memory leak` |
-| `docs` | 文档更新 | `docs(readme): update guide` |
-| `style` | 代码格式 | `style: fix indentation` |
-| `refactor` | 重构 | `refactor(core): simplify logic` |
-| `perf` | 性能优化 | `perf(matcher): optimize algorithm` |
-| `test` | 测试相关 | `test(guards): add unit tests` |
-| `chore` | 构建/工具 | `chore(deps): update packages` |
-| `ci` | CI配置 | `ci: add workflow` |
-| `build` | 构建系统 | `build: optimize bundle` |
-| `revert` | 回滚 | `revert: feat(router): add feature` |
+| 类型       | 描述      | 示例                                |
+| ---------- | --------- | ----------------------------------- |
+| `feat`     | 新功能    | `feat(router): add lazy loading`    |
+| `fix`      | 修复 bug  | `fix(cache): resolve memory leak`   |
+| `docs`     | 文档更新  | `docs(readme): update guide`        |
+| `style`    | 代码格式  | `style: fix indentation`            |
+| `refactor` | 重构      | `refactor(core): simplify logic`    |
+| `perf`     | 性能优化  | `perf(matcher): optimize algorithm` |
+| `test`     | 测试相关  | `test(guards): add unit tests`      |
+| `chore`    | 构建/工具 | `chore(deps): update packages`      |
+| `ci`       | CI 配置   | `ci: add workflow`                  |
+| `build`    | 构建系统  | `build: optimize bundle`            |
+| `revert`   | 回滚      | `revert: feat(router): add feature` |
 
 ### 范围 (scope)
 

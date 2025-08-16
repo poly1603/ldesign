@@ -15,7 +15,12 @@ export type Orientation = 'portrait' | 'landscape'
 /**
  * 网络连接类型
  */
-export type NetworkType = 'wifi' | 'cellular' | 'ethernet' | 'bluetooth' | 'unknown'
+export type NetworkType =
+  | 'wifi'
+  | 'cellular'
+  | 'ethernet'
+  | 'bluetooth'
+  | 'unknown'
 
 /**
  * 网络连接状态
@@ -130,7 +135,7 @@ export type EventListener<T = any> = (data: T) => void
 export interface DeviceDetectorEvents extends Record<string, unknown> {
   deviceChange: DeviceInfo
   orientationChange: Orientation
-  resize: { width: number, height: number }
+  resize: { width: number; height: number }
   networkChange: NetworkInfo
   batteryChange: BatteryInfo
 }
@@ -216,10 +221,13 @@ export interface UseDeviceReturn {
 /**
  * Vue3 指令绑定值类型
  */
-export type DeviceDirectiveValue = DeviceType | DeviceType[] | {
-  type: DeviceType | DeviceType[]
-  inverse?: boolean
-}
+export type DeviceDirectiveValue =
+  | DeviceType
+  | DeviceType[]
+  | {
+      type: DeviceType | DeviceType[]
+      inverse?: boolean
+    }
 
 /**
  * Vue3 插件选项

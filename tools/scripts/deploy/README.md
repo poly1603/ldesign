@@ -1,15 +1,15 @@
 # 🚀 LDesign 包部署工具
 
-一个强大的自动化工具，用于安全、可靠地部署LDesign包到npm注册表。
+一个强大的自动化工具，用于安全、可靠地部署 LDesign 包到 npm 注册表。
 
 ## 🎯 功能特性
 
 - ✅ **全面验证** - 构建产物、测试覆盖率、包大小检查
 - ✅ **安全部署** - 干运行模式、版本冲突检测
 - ✅ **批量操作** - 支持单包和全量部署
-- ✅ **多环境支持** - latest、beta、alpha标签
-- ✅ **CDN链接生成** - 自动生成jsdelivr和unpkg链接
-- ✅ **Git集成** - 自动创建版本标签
+- ✅ **多环境支持** - latest、beta、alpha 标签
+- ✅ **CDN 链接生成** - 自动生成 jsdelivr 和 unpkg 链接
+- ✅ **Git 集成** - 自动创建版本标签
 
 ## 🚀 快速开始
 
@@ -31,12 +31,12 @@ npx tsx tools/deploy/package-deployer.ts all
 
 ### 命令行选项
 
-| 选项                  | 描述                         | 默认值             |
-| --------------------- | ---------------------------- | ------------------ |
-| `--tag <tag>`         | 发布标签 (latest/beta/alpha) | `latest`           |
-| `--version <version>` | 指定版本号                   | 从package.json读取 |
-| `--dry-run`           | 干运行模式，不实际发布       | `false`            |
-| `--skip-validation`   | 跳过验证步骤                 | `false`            |
+| 选项                  | 描述                         | 默认值               |
+| --------------------- | ---------------------------- | -------------------- |
+| `--tag <tag>`         | 发布标签 (latest/beta/alpha) | `latest`             |
+| `--version <version>` | 指定版本号                   | 从 package.json 读取 |
+| `--dry-run`           | 干运行模式，不实际发布       | `false`              |
+| `--skip-validation`   | 跳过验证步骤                 | `false`              |
 
 ## 📋 部署流程
 
@@ -127,21 +127,21 @@ npx tsx tools/deploy/package-deployer.ts all --tag beta
 - **目录结构** - dist/, es/, lib/, types/
 - **入口文件** - index.js, index.d.ts
 - **配置文件** - package.json, README.md
-- **导出配置** - main, module, types, exports字段
+- **导出配置** - main, module, types, exports 字段
 
 ### 质量验证
 
 - **测试覆盖率** - 运行完整测试套件
-- **包大小限制** - 检查bundle大小
-- **代码质量** - ESLint检查通过
-- **类型检查** - TypeScript编译无错误
+- **包大小限制** - 检查 bundle 大小
+- **代码质量** - ESLint 检查通过
+- **类型检查** - TypeScript 编译无错误
 
 ### 发布验证
 
-- **npm登录状态** - 确保有发布权限
+- **npm 登录状态** - 确保有发布权限
 - **版本冲突检测** - 避免重复发布
 - **标签管理** - 正确设置发布标签
-- **Git状态** - 确保代码已提交
+- **Git 状态** - 确保代码已提交
 
 ## 📊 部署报告
 
@@ -172,7 +172,7 @@ npx tsx tools/deploy/package-deployer.ts all --tag beta
 
 ### 自定义验证
 
-可以在包的package.json中配置自定义验证：
+可以在包的 package.json 中配置自定义验证：
 
 ```json
 {
@@ -207,7 +207,7 @@ SKIP_SIZE_CHECK=true
 
 ### 权限检查
 
-- **npm登录验证** - 确保有发布权限
+- **npm 登录验证** - 确保有发布权限
 - **包所有权验证** - 检查是否有权限发布到@ldesign scope
 - **版本权限检查** - 防止覆盖已发布版本
 
@@ -287,21 +287,21 @@ npx tsx tools/deploy/package-deployer.ts your-package --dry-run
 
 1. **开发完成** - 确保功能完整，测试通过
 2. **版本更新** - 使用语义化版本号
-3. **干运行测试** - 先用--dry-run测试
-4. **beta发布** - 先发布到beta环境测试
-5. **正式发布** - 发布到latest环境
+3. **干运行测试** - 先用--dry-run 测试
+4. **beta 发布** - 先发布到 beta 环境测试
+5. **正式发布** - 发布到 latest 环境
 
 ### 版本管理
 
 - **主版本** - 破坏性变更
 - **次版本** - 新功能，向后兼容
-- **修订版本** - Bug修复
+- **修订版本** - Bug 修复
 
 ### 质量保证
 
 - **100%测试覆盖率** - 确保代码质量
 - **包大小控制** - 保持合理的包大小
-- **文档完善** - 更新README和API文档
+- **文档完善** - 更新 README 和 API 文档
 
 ---
 

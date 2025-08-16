@@ -42,7 +42,7 @@ export function createRollupConfig(options: RollupConfigOptions = []) {
     })
 
     const input: Record<string, string> = {}
-    files.forEach((file) => {
+    files.forEach(file => {
       const name = path.relative('src', file).replace(/\.ts$/, '')
       input[name] = path.resolve(packagePath, file)
     })
@@ -54,9 +54,7 @@ export function createRollupConfig(options: RollupConfigOptions = []) {
   function getPlugins(format = 'es') {
     const plugins = [
       alias({
-        entries: [
-          { find: '@', replacement: path.resolve(packagePath, 'src') },
-        ],
+        entries: [{ find: '@', replacement: path.resolve(packagePath, 'src') }],
       }),
       nodeResolve({
         preferBuiltins: false,
@@ -76,8 +74,7 @@ export function createRollupConfig(options: RollupConfigOptions = []) {
       try {
         const vuePlugin = require('@vitejs/plugin-vue')
         plugins.unshift(vuePlugin.default())
-      }
-      catch (e) {
+      } catch (e) {
         console.warn('Vue plugin not found, skipping...')
       }
     }
@@ -168,8 +165,7 @@ export function createRollupConfig(options: RollupConfigOptions = []) {
         plugins: getPlugins('umd'),
       })
     }
-  }
-  catch (e) {
+  } catch (e) {
     // Vue 入口文件不存在，跳过
   }
 

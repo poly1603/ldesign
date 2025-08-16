@@ -23,7 +23,7 @@ const App = {
     // 当前主题信息
     const currentThemeInfo = computed(() => {
       const themeMap = {
-        'christmas': {
+        christmas: {
           displayName: '圣诞节主题',
           description: '温馨的红绿配色，营造浓厚的圣诞节日氛围',
           colors: {
@@ -43,7 +43,7 @@ const App = {
             background: '#fef3c7',
           },
         },
-        'halloween': {
+        halloween: {
           displayName: '万圣节主题',
           description: '神秘的橙黑配色，营造恐怖而有趣的万圣节氛围',
           colors: {
@@ -58,7 +58,7 @@ const App = {
     })
 
     // 主题切换
-    const onThemeChange = (event) => {
+    const onThemeChange = event => {
       currentTheme.value = event.target.value
       console.log('主题切换到:', currentTheme.value)
     }

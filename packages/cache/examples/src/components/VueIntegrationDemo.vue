@@ -11,13 +11,11 @@ function useCache(options: any = {}) {
     try {
       localStorage.setItem(
         `demo_${key}`,
-        JSON.stringify({ value, timestamp: Date.now(), ...opts }),
+        JSON.stringify({ value, timestamp: Date.now(), ...opts })
       )
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err as Error
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -30,8 +28,7 @@ function useCache(options: any = {}) {
         return parsed.value
       }
       return null
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err as Error
       return null
     }
@@ -43,7 +40,7 @@ function useCache(options: any = {}) {
 
   const clear = async () => {
     const keys = Object.keys(localStorage).filter(key =>
-      key.startsWith('demo_'),
+      key.startsWith('demo_')
     )
     keys.forEach(key => localStorage.removeItem(key))
   }
@@ -67,12 +64,12 @@ function useCacheStats() {
 
   const refresh = async () => {
     const keys = Object.keys(localStorage).filter(key =>
-      key.startsWith('demo_'),
+      key.startsWith('demo_')
     )
     stats.value.totalItems = keys.length
 
     let totalSize = 0
-    keys.forEach((key) => {
+    keys.forEach(key => {
       totalSize += localStorage.getItem(key)?.length || 0
     })
 
@@ -96,9 +93,9 @@ const reactiveKey = ref('user-preference')
 const reactiveValue = ref({ value: '' })
 const autoSaveEnabled = ref(true)
 const autoSaveContent = ref('')
-const autoSaveStatus = ref<{ type: string, message: string } | null>(null)
+const autoSaveStatus = ref<{ type: string; message: string } | null>(null)
 const tempCacheItems = ref<
-  Array<{ key: string, value: any, remainingTime: number }>
+  Array<{ key: string; value: any; remainingTime: number }>
 >([])
 
 // 更新响应式缓存
@@ -109,7 +106,7 @@ async function updateReactiveCache() {
 
 // 监听自动保存内容变化（手动防抖）
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
-watch(autoSaveContent, async (newContent) => {
+watch(autoSaveContent, async newContent => {
   if (autoSaveEnabled.value && newContent) {
     if (autoSaveTimer) {
       clearTimeout(autoSaveTimer)
@@ -141,7 +138,7 @@ async function createTempCache() {
       item.remainingTime--
       if (item.remainingTime <= 0) {
         tempCacheItems.value = tempCacheItems.value.filter(
-          i => i.key !== tempKey,
+          i => i.key !== tempKey
         )
         clearInterval(countdown)
       }
@@ -152,15 +149,14 @@ async function createTempCache() {
 // 清理过期项
 async function cleanupExpired() {
   tempCacheItems.value = tempCacheItems.value.filter(
-    item => item.remainingTime > 0,
+    item => item.remainingTime > 0
   )
   autoSaveStatus.value = { type: 'success', message: '过期项已清理' }
 }
 
 // 工具函数
 function formatBytes(bytes: number): string {
-  if (bytes === 0)
-    return '0 B'
+  if (bytes === 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -205,7 +201,7 @@ onUnmounted(() => {
           border: 1px solid #ddd;
           border-radius: 4px;
         "
-      >
+      />
       <input
         v-model="reactiveValue.value"
         placeholder="缓存值"
@@ -215,10 +211,8 @@ onUnmounted(() => {
           border: 1px solid #ddd;
           border-radius: 4px;
         "
-      >
-      <button class="btn" @click="updateReactiveCache">
-        更新缓存
-      </button>
+      />
+      <button class="btn" @click="updateReactiveCache">更新缓存</button>
 
       <div v-if="reactiveValue.value" class="status success">
         当前缓存值: {{ reactiveValue.value }}
@@ -228,7 +222,7 @@ onUnmounted(() => {
     <div class="demo-section">
       <h4>自动保存</h4>
       <label>
-        <input v-model="autoSaveEnabled" type="checkbox">
+        <input v-model="autoSaveEnabled" type="checkbox" />
         启用自动保存
       </label>
 
@@ -258,41 +252,27 @@ onUnmounted(() => {
           <div class="stat-value">
             {{ cacheStats.totalItems || 0 }}
           </div>
-          <div class="stat-label">
-            总缓存项
-          </div>
+          <div class="stat-label">总缓存项</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">
             {{ cacheStats.totalSizeFormatted || '0 B' }}
           </div>
-          <div class="stat-label">
-            总大小
-          </div>
+          <div class="stat-label">总大小</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">
-            {{ cacheStats.hitRatePercentage || 0 }}%
-          </div>
-          <div class="stat-label">
-            命中率
-          </div>
+          <div class="stat-value">{{ cacheStats.hitRatePercentage || 0 }}%</div>
+          <div class="stat-label">命中率</div>
         </div>
       </div>
 
-      <button class="btn secondary" @click="refreshStats">
-        刷新统计
-      </button>
+      <button class="btn secondary" @click="refreshStats">刷新统计</button>
     </div>
 
     <div class="demo-section">
       <h4>生命周期管理</h4>
-      <button class="btn" @click="createTempCache">
-        创建临时缓存
-      </button>
-      <button class="btn secondary" @click="cleanupExpired">
-        清理过期项
-      </button>
+      <button class="btn" @click="createTempCache">创建临时缓存</button>
+      <button class="btn secondary" @click="cleanupExpired">清理过期项</button>
 
       <div v-if="tempCacheItems.length > 0" class="temp-cache-list">
         <h5>临时缓存项:</h5>
@@ -307,13 +287,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div v-if="loading" class="status info">
-      处理中...
-    </div>
+    <div v-if="loading" class="status info">处理中...</div>
 
-    <div v-if="error" class="status error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="error" class="status error">错误: {{ error.message }}</div>
   </div>
 </template>
 

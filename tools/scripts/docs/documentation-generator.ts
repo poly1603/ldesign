@@ -80,8 +80,7 @@ class DocumentationGenerator {
       await this.generateNavigation()
 
       console.log(chalk.green(`✅ ${this.config.packageName} 文档生成完成`))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red(`❌ 文档生成失败:`), error)
       throw error
     }
@@ -123,10 +122,9 @@ class DocumentationGenerator {
       }
 
       console.log(
-        chalk.green(`✅ 解析完成，发现 ${this.apiItems.length} 个 API 项`),
+        chalk.green(`✅ 解析完成，发现 ${this.apiItems.length} 个 API 项`)
       )
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(chalk.yellow('⚠️ TypeScript 解析失败，使用备用方案'))
       await this.parseWithBackupMethod()
     }
@@ -138,8 +136,7 @@ class DocumentationGenerator {
   private async parseWithBackupMethod(): Promise<void> {
     // 简单的正则表达式解析
     const indexPath = join(this.config.sourceDir, 'index.ts')
-    if (!existsSync(indexPath))
-      return
+    if (!existsSync(indexPath)) return
 
     const content = readFileSync(indexPath, 'utf-8')
 
@@ -173,8 +170,7 @@ class DocumentationGenerator {
    * 解析 API 数据
    */
   private parseAPIData(data: any): void {
-    if (!data.children)
-      return
+    if (!data.children) return
 
     for (const child of data.children) {
       if (child.flags?.isExported) {
@@ -200,14 +196,10 @@ class DocumentationGenerator {
    * 获取 API 类型
    */
   private getAPIType(item: any): APIItem['type'] {
-    if (item.kind === 64)
-      return 'function'
-    if (item.kind === 128)
-      return 'class'
-    if (item.kind === 256)
-      return 'interface'
-    if (item.kind === 4194304)
-      return 'type'
+    if (item.kind === 64) return 'function'
+    if (item.kind === 128) return 'class'
+    if (item.kind === 256) return 'interface'
+    if (item.kind === 4194304) return 'type'
     return 'variable'
   }
 
@@ -227,7 +219,7 @@ class DocumentationGenerator {
   private extractSignature(item: any): string {
     if (item.signatures?.[0]?.name) {
       return `${item.signatures[0].name}(${this.extractParameterSignature(
-        item.signatures[0],
+        item.signatures[0]
       )})`
     }
     return item.name
@@ -237,8 +229,7 @@ class DocumentationGenerator {
    * 提取参数签名
    */
   private extractParameterSignature(signature: any): string {
-    if (!signature.parameters)
-      return ''
+    if (!signature.parameters) return ''
 
     return signature.parameters
       .map((param: any) => {
@@ -270,8 +261,7 @@ class DocumentationGenerator {
    * 提取参数
    */
   private extractParameters(signature: any): Parameter[] {
-    if (!signature.parameters)
-      return []
+    if (!signature.parameters) return []
 
     return signature.parameters.map((param: any) => ({
       name: param.name,
@@ -315,7 +305,7 @@ class DocumentationGenerator {
     }
 
     console.log(
-      chalk.green(`✅ 生成了 ${this.apiItems.length + 1} 个 API 文档页面`),
+      chalk.green(`✅ 生成了 ${this.apiItems.length + 1} 个 API 文档页面`)
     )
   }
 
@@ -332,7 +322,7 @@ ${this.config.packageName} 提供了以下 API：
 ${this.apiItems
   .map(
     item =>
-      `- [${item.name}](./${item.name.toLowerCase()}) - ${item.description}`,
+      `- [${item.name}](./${item.name.toLowerCase()}) - ${item.description}`
   )
   .join('\n')}
 
@@ -390,7 +380,7 @@ ${item.parameters
     param =>
       `| ${param.name} | \`${param.type}\` | ${
         param.optional ? '否' : '是'
-      } | ${param.defaultValue || '-'} | ${param.description} |`,
+      } | ${param.defaultValue || '-'} | ${param.description} |`
   )
   .join('\n')}
 `
@@ -416,7 +406,7 @@ ${item.examples
 \`\`\`typescript
 ${example}
 \`\`\`
-`,
+`
   )
   .join('\n')}
 `
@@ -498,9 +488,9 @@ const result = ${this.apiItems[0]?.name || 'main'}()
 
 \`\`\`typescript
 import { ${this.apiItems
-  .slice(0, 3)
-  .map(item => item.name)
-  .join(', ')} } from '${this.config.packageName}'
+      .slice(0, 3)
+      .map(item => item.name)
+      .join(', ')} } from '${this.config.packageName}'
 
 // 高级配置示例
 const config = {
@@ -662,7 +652,7 @@ pre {
 ${this.apiItems
   .map(
     item =>
-      `- [${item.name}](./api/${item.name.toLowerCase()}) - ${item.description}`,
+      `- [${item.name}](./api/${item.name.toLowerCase()}) - ${item.description}`
   )
   .join('\n')}
 `
@@ -702,8 +692,7 @@ async function main() {
   try {
     await generator.generateDocs()
     console.log(chalk.green('\n🎉 文档生成完成!'))
-  }
-  catch (error) {
+  } catch (error) {
     console.error(chalk.red('文档生成失败:'), error)
     process.exit(1)
   }

@@ -38,7 +38,10 @@ class PublishManager {
     console.log(`${prefix} [${timestamp}] ${message}`)
   }
 
-  private async executeCommand(command: string, cwd?: string): Promise<{ success: boolean, output: string, error?: string }> {
+  private async executeCommand(
+    command: string,
+    cwd?: string
+  ): Promise<{ success: boolean; output: string; error?: string }> {
     try {
       const output = execSync(command, {
         cwd: cwd || process.cwd(),
@@ -46,8 +49,7 @@ class PublishManager {
         stdio: 'pipe',
       })
       return { success: true, output }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       return {
         success: false,
         output: '',
@@ -113,7 +115,7 @@ class PublishManager {
   private async publishPackage(
     packageName: string,
     registry: string,
-    options: PublishOptions,
+    options: PublishOptions
   ): Promise<PublishResult> {
     const packageConfig = this.config.packages[packageName]
     const registryConfig = this.config.registries[registry]
@@ -170,13 +172,14 @@ class PublishManager {
           success: true,
           publishTime: new Date().toISOString(),
         }
-      }
-      else {
+      } else {
         throw new Error(result.error)
       }
-    }
-    catch (error: any) {
-      this.log(`❌ ${packageName}@${version} 发布失败: ${error.message}`, 'error')
+    } catch (error: any) {
+      this.log(
+        `❌ ${packageName}@${version} 发布失败: ${error.message}`,
+        'error'
+      )
       return {
         package: packageName,
         registry,
@@ -200,8 +203,7 @@ class PublishManager {
 
         await this.executeCommand(`git tag v${version}`)
         this.log(`Git 标签 v${version} 创建成功`)
-      }
-      catch (error: any) {
+      } catch (error: any) {
         this.log(`Git 标签创建失败: ${error.message}`, 'warn')
       }
     }
@@ -211,8 +213,7 @@ class PublishManager {
       try {
         await this.executeCommand('git push --tags')
         this.log('推送成功')
-      }
-      catch (error: any) {
+      } catch (error: any) {
         this.log(`推送失败: ${error.message}`, 'warn')
       }
     }
@@ -252,7 +253,8 @@ class PublishManager {
     }
 
     // 确定要发布的包
-    const packagesToPublish = options.packages || Object.keys(this.config.packages)
+    const packagesToPublish =
+      options.packages || Object.keys(this.config.packages)
 
     // 确定目标仓库
     const targetRegistry = options.registry || 'npm'
@@ -280,7 +282,11 @@ class PublishManager {
         continue
       }
 
-      const result = await this.publishPackage(packageName, targetRegistry, options)
+      const result = await this.publishPackage(
+        packageName,
+        targetRegistry,
+        options
+      )
       this.results.push(result)
     }
 
@@ -307,8 +313,7 @@ class PublishManager {
     try {
       // 检查是否已安装 verdaccio
       await this.executeCommand('verdaccio --version')
-    }
-    catch {
+    } catch {
       this.log('安装 Verdaccio...')
       await this.executeCommand('npm install -g verdaccio')
     }
@@ -326,16 +331,11 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
 
   // 解析命令行参数
   args.forEach((arg, index) => {
-    if (arg === '--dry-run')
-      options.dryRun = true
-    if (arg === '--skip-checks')
-      options.skipChecks = true
-    if (arg.startsWith('--registry='))
-      options.registry = arg.split('=')[1]
-    if (arg.startsWith('--tag='))
-      options.tag = arg.split('=')[1]
-    if (arg.startsWith('--access='))
-      options.access = arg.split('=')[1] as any
+    if (arg === '--dry-run') options.dryRun = true
+    if (arg === '--skip-checks') options.skipChecks = true
+    if (arg.startsWith('--registry=')) options.registry = arg.split('=')[1]
+    if (arg.startsWith('--tag=')) options.tag = arg.split('=')[1]
+    if (arg.startsWith('--access=')) options.access = arg.split('=')[1] as any
     if (arg.startsWith('--packages=')) {
       options.packages = arg.split('=')[1].split(',')
     }
@@ -346,14 +346,14 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
 
   switch (command) {
     case 'setup-local':
-      publishManager.setupLocalRegistry().catch((error) => {
+      publishManager.setupLocalRegistry().catch(error => {
         console.error('设置本地仓库失败:', error)
         process.exit(1)
       })
       break
 
     default:
-      publishManager.publish(options).catch((error) => {
+      publishManager.publish(options).catch(error => {
         console.error('发布失败:', error)
         process.exit(1)
       })

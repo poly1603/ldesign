@@ -39,7 +39,7 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
   fallbackLocale: 'en',
-  autoDetect: true
+  autoDetect: true,
 })
 
 // 基础翻译
@@ -67,7 +67,7 @@ async function bootstrap() {
   // 创建 I18n 实例
   const i18nInstance = await createI18nWithBuiltinLocales({
     defaultLocale: 'en',
-    fallbackLocale: 'en'
+    fallbackLocale: 'en',
   })
 
   // 创建 Vue 插件
@@ -100,11 +100,7 @@ const { t, availableLanguages, changeLanguage } = useI18n()
 
     <!-- 语言切换 -->
     <select @change="changeLanguage($event.target.value)">
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>
@@ -160,7 +156,8 @@ interface I18nOptions {
   storageKey?: string // 存储键名
   autoDetect?: boolean // 自动检测浏览器语言
   preload?: string[] // 预加载的语言列表
-  cache?: { // 缓存配置
+  cache?: {
+    // 缓存配置
     enabled: boolean
     maxSize: number
   }
@@ -253,7 +250,7 @@ import { CookieStorage } from '@ldesign/i18n'
 const cookieStorage = new CookieStorage('my-locale', {
   expires: 30, // 30天
   path: '/',
-  secure: true
+  secure: true,
 })
 
 const i18n = new I18n()
@@ -265,15 +262,15 @@ i18n.setStorage(cookieStorage)
 ```typescript
 // 支持 ICU 复数语法
 i18n.t('items', {
-  count: 0
+  count: 0,
 }) // "no items"
 
 i18n.t('items', {
-  count: 1
+  count: 1,
 }) // "1 item"
 
 i18n.t('items', {
-  count: 5
+  count: 5,
 }) // "5 items"
 ```
 
@@ -282,15 +279,19 @@ i18n.t('items', {
 ```typescript
 // HTML 转义（默认开启）
 i18n.t('message', {
-  content: '<script>alert("xss")</script>'
+  content: '<script>alert("xss")</script>',
 })
 
 // 禁用转义
-i18n.t('message', {
-  content: '<strong>Bold</strong>'
-}, {
-  escapeValue: false
-})
+i18n.t(
+  'message',
+  {
+    content: '<strong>Bold</strong>',
+  },
+  {
+    escapeValue: false,
+  }
+)
 ```
 
 ## 🧪 测试

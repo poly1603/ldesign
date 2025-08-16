@@ -68,8 +68,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
             await this.removeItem(key)
           }
         }
-      }
-      catch (error) {
+      } catch (error) {
         // 如果解析失败，可能是旧格式数据，跳过
         console.warn(`Failed to parse cache item ${key}:`, error)
       }
@@ -96,8 +95,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
         if (value) {
           totalSize += this.calculateSize(key) + this.calculateSize(value)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.warn(`Error calculating size for key ${key}:`, error)
       }
     }
@@ -116,8 +114,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
    * 生成带TTL的数据
    */
   protected createTTLData(value: string, ttl?: number): string {
-    if (!ttl)
-      return value
+    if (!ttl) return value
 
     const expiresAt = Date.now() + ttl
     return JSON.stringify({
@@ -129,7 +126,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
   /**
    * 解析带TTL的数据
    */
-  protected parseTTLData(data: string): { value: string, expired: boolean } {
+  protected parseTTLData(data: string): { value: string; expired: boolean } {
     try {
       const parsed = JSON.parse(data)
       if (parsed.expiresAt) {
@@ -137,8 +134,7 @@ export abstract class BaseStorageEngine implements IStorageEngine {
         return { value: parsed.value, expired }
       }
       return { value: data, expired: false }
-    }
-    catch {
+    } catch {
       return { value: data, expired: false }
     }
   }

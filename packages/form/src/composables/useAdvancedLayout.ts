@@ -18,7 +18,7 @@ import {
  */
 function throttle<T extends (...args: any[]) => any>(
   func: T,
-  delay: number,
+  delay: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let lastExecTime = 0
@@ -29,8 +29,7 @@ function throttle<T extends (...args: any[]) => any>(
     if (currentTime - lastExecTime > delay) {
       func(...args)
       lastExecTime = currentTime
-    }
-    else {
+    } else {
       if (timeoutId) {
         clearTimeout(timeoutId)
       }
@@ -73,7 +72,7 @@ export interface UseAdvancedLayoutReturn {
   calculatedColumns: Ref<number>
   calculatedLabelWidths: Ref<Record<number, number>>
   isExpanded: Ref<boolean>
-  containerSize: { width: number, height: number }
+  containerSize: { width: number; height: number }
 
   // 计算方法
   calculateOptimalColumns: () => void
@@ -116,7 +115,7 @@ const textWidthCache = new Map<string, number>()
  */
 function measureTextWidth(
   text: string,
-  font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
 ): number {
   const cacheKey = `${text}-${font}`
 
@@ -138,7 +137,7 @@ function measureTextWidth(
  * useAdvancedLayout Hook
  */
 export function useAdvancedLayout(
-  options: UseAdvancedLayoutOptions,
+  options: UseAdvancedLayoutOptions
 ): UseAdvancedLayoutReturn {
   const {
     fields,
@@ -186,8 +185,7 @@ export function useAdvancedLayout(
   // 计算属性
   const hasHiddenFields = computed(() => {
     const defaultRows = currentLayout.defaultRows || 0
-    if (defaultRows <= 0)
-      return false
+    if (defaultRows <= 0) return false
 
     const allVisibleFields = calculateVisibleFields(formData)
     const columns = calculatedColumns.value
@@ -219,8 +217,7 @@ export function useAdvancedLayout(
 
   // 检查字段是否应该显示（基于条件配置）
   const shouldShowField = (field: FormItemConfig, data = formData): boolean => {
-    if (!field.showWhen)
-      return true
+    if (!field.showWhen) return true
 
     const {
       field: dependentField,
@@ -258,20 +255,18 @@ export function useAdvancedLayout(
 
   // 计算最佳列数
   const calculateOptimalColumns = (): void => {
-    if (!currentLayout.autoColumns)
-      return
+    if (!currentLayout.autoColumns) return
 
-    const container
-      = typeof containerRef === 'function' ? containerRef() : containerRef?.value
-    if (!container)
-      return
+    const container =
+      typeof containerRef === 'function' ? containerRef() : containerRef?.value
+    if (!container) return
 
     const containerWidth = container.offsetWidth || container.clientWidth
     const availableWidth = containerWidth - 32 // 减去容器内边距
     const fieldMinWidth = currentLayout.fieldMinWidth || 200
     const optimalColumns = Math.max(
       1,
-      Math.min(4, Math.floor(availableWidth / fieldMinWidth)),
+      Math.min(4, Math.floor(availableWidth / fieldMinWidth))
     )
 
     calculatedColumns.value = optimalColumns
@@ -283,8 +278,8 @@ export function useAdvancedLayout(
   // 计算标签宽度
   const calculateLabelWidths = (data = formData): void => {
     if (
-      !currentLayout.label?.autoWidth
-      || currentLayout.label?.position === 'top'
+      !currentLayout.label?.autoWidth ||
+      currentLayout.label?.position === 'top'
     ) {
       return
     }
@@ -298,34 +293,33 @@ export function useAdvancedLayout(
       for (let col = 0; col < columns; col++) {
         let maxWidth = 0
         const fieldsInColumn = visibleFields.filter(
-          (_, index) => index % columns === col,
+          (_, index) => index % columns === col
         )
 
-        fieldsInColumn.forEach((field) => {
+        fieldsInColumn.forEach(field => {
           const labelText = field.title || ''
           if (labelText) {
             // 使用Canvas精确测量文本宽度
             const textWidth = measureTextWidth(labelText)
             // 加上必要的空间：必填星号(8px) + 冒号(8px) + 余量(16px)
-            const totalWidth
-              = textWidth
-                + (field.required ? 8 : 0)
-                + (currentLayout.label?.showColon ? 8 : 0)
-                + 16
+            const totalWidth =
+              textWidth +
+              (field.required ? 8 : 0) +
+              (currentLayout.label?.showColon ? 8 : 0) +
+              16
             maxWidth = Math.max(maxWidth, totalWidth)
           }
         })
 
         labelWidths[col] = Math.max(80, Math.min(300, maxWidth))
       }
-    }
-    else {
+    } else {
       // 手动设置模式：使用配置的宽度
       for (let col = 0; col < columns; col++) {
-        labelWidths[col]
-          = currentLayout.label?.widthByColumn?.[col]
-            || currentLayout.label?.width
-            || 100
+        labelWidths[col] =
+          currentLayout.label?.widthByColumn?.[col] ||
+          currentLayout.label?.width ||
+          100
       }
     }
 
@@ -345,7 +339,7 @@ export function useAdvancedLayout(
   // 获取标签宽度
   const getLabelWidth = (
     field: FormItemConfig,
-    index: number,
+    index: number
   ): string | number => {
     const labelConfig = currentLayout.label
 
@@ -367,17 +361,17 @@ export function useAdvancedLayout(
   // 节流的计算函数
   const throttledCalculateColumns = throttle(
     calculateOptimalColumns,
-    calculateDelay,
+    calculateDelay
   )
   const throttledCalculateLabelWidths = throttle(
     () => calculateLabelWidths(),
-    calculateDelay,
+    calculateDelay
   )
 
   // 更新容器尺寸
   const updateContainerSize = () => {
-    const container
-      = typeof containerRef === 'function' ? containerRef() : containerRef?.value
+    const container =
+      typeof containerRef === 'function' ? containerRef() : containerRef?.value
     if (container) {
       containerSize.width = container.offsetWidth || container.clientWidth
       containerSize.height = container.offsetHeight || container.clientHeight
@@ -424,7 +418,7 @@ export function useAdvancedLayout(
         throttledCalculateLabelWidths()
       }
     },
-    { deep: true },
+    { deep: true }
   )
 
   // 监听字段变化，重新计算
@@ -438,7 +432,7 @@ export function useAdvancedLayout(
         throttledCalculateLabelWidths()
       }
     },
-    { deep: true },
+    { deep: true }
   )
 
   return {
@@ -475,8 +469,8 @@ export function useAdvancedLayout(
       }
     },
     toggleExpandMode: () => {
-      currentLayout.expandMode
-        = currentLayout.expandMode === 'inline' ? 'popup' : 'inline'
+      currentLayout.expandMode =
+        currentLayout.expandMode === 'inline' ? 'popup' : 'inline'
     },
     toggleExpand: () => {
       isExpanded.value = !isExpanded.value

@@ -37,7 +37,8 @@ function handleClick(event: MouseEvent) {
 
 <template>
   <button
-    class="custom-button" :class="[
+    class="custom-button"
+    :class="[
       `custom-button--${size}`,
       `custom-button--${variant}`,
       { 'custom-button--loading': loading },

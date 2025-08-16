@@ -36,7 +36,8 @@ const base64Hash = hash.md5(data, { encoding: 'base64' })
 console.log('MD5 (Base64):', base64Hash)
 ```
 
-**⚠️ 安全警告：** MD5 已被证明存在安全漏洞，不应用于安全相关的应用。仅建议用于非安全场景的校验和计算。
+**⚠️ 安全警告：** MD5 已被证明存在安全漏洞，不应用于安全相关的应用。仅建议用于非安全场景的校验和计算
+。
 
 ### hash.sha1()
 
@@ -107,7 +108,12 @@ console.log('SHA512:', sha512Hash)
 验证哈希值。
 
 ```typescript
-function verify(data: string, expectedHash: string, algorithm: HashAlgorithm, options?: HashOptions): boolean
+function verify(
+  data: string,
+  expectedHash: string,
+  algorithm: HashAlgorithm,
+  options?: HashOptions
+): boolean
 ```
 
 **参数：**
@@ -209,7 +215,13 @@ function sha512(data: string, key: string, options?: HashOptions): string
 验证 HMAC 值。
 
 ```typescript
-function verify(data: string, key: string, expectedHmac: string, algorithm: HashAlgorithm, options?: HashOptions): boolean
+function verify(
+  data: string,
+  key: string,
+  expectedHmac: string,
+  algorithm: HashAlgorithm,
+  options?: HashOptions
+): boolean
 ```
 
 **参数：**
@@ -288,7 +300,7 @@ const salt = keyGenerator.generateSalt(16)
 const derivedKey = hash.pbkdf2(password, salt, {
   iterations: 100000, // 10万次迭代
   keyLength: 32, // 256位密钥
-  hashAlgorithm: 'SHA256'
+  hashAlgorithm: 'SHA256',
 })
 
 console.log('派生密钥:', derivedKey)
@@ -315,7 +327,7 @@ const scryptKey = hash.scrypt(password, salt, {
   N: 16384, // 2^14
   r: 8,
   p: 1,
-  keyLength: 32
+  keyLength: 32,
 })
 ```
 
@@ -334,7 +346,7 @@ class PasswordHasher {
     const hashedPassword = hash.pbkdf2(password, salt, {
       iterations: this.ITERATIONS,
       keyLength: 32,
-      hashAlgorithm: 'SHA256'
+      hashAlgorithm: 'SHA256',
     })
 
     // 返回盐值和哈希值的组合
@@ -348,20 +360,18 @@ class PasswordHasher {
       const computedHash = hash.pbkdf2(password, salt, {
         iterations: this.ITERATIONS,
         keyLength: 32,
-        hashAlgorithm: 'SHA256'
+        hashAlgorithm: 'SHA256',
       })
 
       // 使用常数时间比较防止时间攻击
       return this.constantTimeEquals(computedHash, expectedHash)
-    }
-    catch {
+    } catch {
       return false
     }
   }
 
   private static constantTimeEquals(a: string, b: string): boolean {
-    if (a.length !== b.length)
-      return false
+    if (a.length !== b.length) return false
 
     let result = 0
     for (let i = 0; i < a.length; i++) {
@@ -385,12 +395,18 @@ class FileIntegrityChecker {
   // 计算文件哈希
   static calculateFileHash(fileContent: string, algorithm: HashAlgorithm = 'SHA256'): string {
     switch (algorithm) {
-      case 'MD5': return hash.md5(fileContent)
-      case 'SHA1': return hash.sha1(fileContent)
-      case 'SHA256': return hash.sha256(fileContent)
-      case 'SHA384': return hash.sha384(fileContent)
-      case 'SHA512': return hash.sha512(fileContent)
-      default: return hash.sha256(fileContent)
+      case 'MD5':
+        return hash.md5(fileContent)
+      case 'SHA1':
+        return hash.sha1(fileContent)
+      case 'SHA256':
+        return hash.sha256(fileContent)
+      case 'SHA384':
+        return hash.sha384(fileContent)
+      case 'SHA512':
+        return hash.sha512(fileContent)
+      default:
+        return hash.sha256(fileContent)
     }
   }
 
@@ -405,7 +421,7 @@ class FileIntegrityChecker {
       md5: hash.md5(fileContent),
       sha1: hash.sha1(fileContent),
       sha256: hash.sha256(fileContent),
-      sha512: hash.sha512(fileContent)
+      sha512: hash.sha512(fileContent),
     }
   }
 
@@ -420,11 +436,13 @@ class FileIntegrityChecker {
   }
 
   // 批量验证文件
-  static verifyMultipleFiles(files: Array<{
-    content: string
-    expectedHash: string
-    algorithm?: HashAlgorithm
-  }>): Array<{ index: number, valid: boolean, actualHash: string }> {
+  static verifyMultipleFiles(
+    files: Array<{
+      content: string
+      expectedHash: string
+      algorithm?: HashAlgorithm
+    }>
+  ): Array<{ index: number; valid: boolean; actualHash: string }> {
     return files.map((file, index) => {
       const algorithm = file.algorithm || 'SHA256'
       const actualHash = this.calculateFileHash(file.content, algorithm)
@@ -440,11 +458,7 @@ const fileContent = 'File content here...'
 const checksum = FileIntegrityChecker.generateChecksum(fileContent)
 console.log('文件校验和:', checksum)
 
-const isValid = FileIntegrityChecker.verifyFileIntegrity(
-  fileContent,
-  checksum.sha256,
-  'SHA256'
-)
+const isValid = FileIntegrityChecker.verifyFileIntegrity(fileContent, checksum.sha256, 'SHA256')
 console.log('文件完整性:', isValid ? '✅ 完整' : '❌ 已损坏')
 ```
 
@@ -459,7 +473,12 @@ class APIRequestSigner {
   }
 
   // 生成请求签名
-  signRequest(method: string, url: string, body: string, timestamp?: number): {
+  signRequest(
+    method: string,
+    url: string,
+    body: string,
+    timestamp?: number
+  ): {
     signature: string
     timestamp: number
   } {
@@ -469,7 +488,7 @@ class APIRequestSigner {
 
     return {
       signature,
-      timestamp: requestTimestamp
+      timestamp: requestTimestamp,
     }
   }
 
@@ -481,14 +500,15 @@ class APIRequestSigner {
     timestamp: number,
     signature: string,
     maxAge: number = 300000 // 5分钟
-  ): { valid: boolean, reason?: string } {
+  ): { valid: boolean; reason?: string } {
     // 检查时间戳
     const now = Date.now()
     if (now - timestamp > maxAge) {
       return { valid: false, reason: '请求已过期' }
     }
 
-    if (timestamp > now + 60000) { // 允许1分钟的时钟偏差
+    if (timestamp > now + 60000) {
+      // 允许1分钟的时钟偏差
       return { valid: false, reason: '请求时间戳无效' }
     }
 
@@ -503,7 +523,12 @@ class APIRequestSigner {
     return { valid: true }
   }
 
-  private createSignatureMessage(method: string, url: string, body: string, timestamp: number): string {
+  private createSignatureMessage(
+    method: string,
+    url: string,
+    body: string,
+    timestamp: number
+  ): string {
     return `${method}\n${url}\n${body}\n${timestamp}`
   }
 }
@@ -536,12 +561,12 @@ console.log('请求验证:', verification.valid ? '✅ 有效' : `❌ ${verifica
 
 | 算法    | 相对速度 | 输出长度 | 安全性 | 推荐用途   |
 | ------- | -------- | -------- | ------ | ---------- |
-| MD5     | 最快     | 128位    | 低     | 仅校验和   |
-| SHA-1   | 快       | 160位    | 低     | 已弃用     |
-| SHA-224 | 中等     | 224位    | 中     | 一般用途   |
-| SHA-256 | 中等     | 256位    | 高     | **推荐**   |
-| SHA-384 | 慢       | 384位    | 高     | 高安全要求 |
-| SHA-512 | 慢       | 512位    | 高     | 高安全要求 |
+| MD5     | 最快     | 128 位   | 低     | 仅校验和   |
+| SHA-1   | 快       | 160 位   | 低     | 已弃用     |
+| SHA-224 | 中等     | 224 位   | 中     | 一般用途   |
+| SHA-256 | 中等     | 256 位   | 高     | **推荐**   |
+| SHA-384 | 慢       | 384 位   | 高     | 高安全要求 |
+| SHA-512 | 慢       | 512 位   | 高     | 高安全要求 |
 
 ### 批量哈希优化
 
@@ -584,8 +609,7 @@ async function batchHashAsync(dataList: string[], algorithm: HashAlgorithm = 'SH
 ```typescript
 // 安全的哈希比较
 function secureHashCompare(hash1: string, hash2: string): boolean {
-  if (hash1.length !== hash2.length)
-    return false
+  if (hash1.length !== hash2.length) return false
 
   let result = 0
   for (let i = 0; i < hash1.length; i++) {

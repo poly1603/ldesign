@@ -15,7 +15,7 @@ describe('performanceManager', () => {
     it('应该开始和结束性能事件', () => {
       const eventId = performanceManager.startEvent(
         PerformanceEventType.CUSTOM,
-        'test-event',
+        'test-event'
       )
       expect(eventId).toBeDefined()
 
@@ -33,7 +33,7 @@ describe('performanceManager', () => {
       const eventId = performanceManager.startEvent(
         PerformanceEventType.USER_INTERACTION,
         'button-click',
-        metadata,
+        metadata
       )
       performanceManager.endEvent(eventId)
 
@@ -44,7 +44,7 @@ describe('performanceManager', () => {
     it('应该处理事件结束时的错误信息', () => {
       const eventId = performanceManager.startEvent(
         PerformanceEventType.API_CALL,
-        'api-request',
+        'api-request'
       )
       performanceManager.endEvent(eventId, { error: 'Request failed' })
 
@@ -255,7 +255,7 @@ describe('performanceManager', () => {
       performanceManager.mark('start')
 
       // 模拟一些工作
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         setTimeout(() => {
           performanceManager.mark('end')
           performanceManager.measure('operation', 'start', 'end')

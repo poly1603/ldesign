@@ -111,15 +111,13 @@ export class AnalyticsIntegration {
     console.log(chalk.blue('📊 初始化分析服务...'))
 
     for (const provider of this.config.providers) {
-      if (!provider.enabled)
-        continue
+      if (!provider.enabled) continue
 
       try {
         const instance = await this.createProvider(provider)
         this.providers.set(provider.name, instance)
         console.log(chalk.green(`✅ ${provider.name} 初始化成功`))
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${provider.name} 初始化失败:`), error)
       }
     }
@@ -360,8 +358,7 @@ export class AnalyticsIntegration {
    * 追踪用户事件
    */
   track(event: Partial<UserEvent>): void {
-    if (!this.shouldTrack())
-      return
+    if (!this.shouldTrack()) return
 
     const fullEvent: UserEvent = {
       name: event.name!,
@@ -376,8 +373,7 @@ export class AnalyticsIntegration {
     for (const [name, provider] of this.providers) {
       try {
         provider.track(fullEvent)
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${name} 追踪失败:`), error)
       }
     }
@@ -387,16 +383,14 @@ export class AnalyticsIntegration {
    * 追踪页面浏览
    */
   trackPageView(path: string): void {
-    if (!this.shouldTrack())
-      return
+    if (!this.shouldTrack()) return
 
     for (const [name, provider] of this.providers) {
       try {
         if (provider.trackPageView) {
           provider.trackPageView(path)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${name} 页面追踪失败:`), error)
       }
     }
@@ -406,16 +400,14 @@ export class AnalyticsIntegration {
    * 追踪性能指标
    */
   trackPerformance(metrics: PerformanceMetrics): void {
-    if (!this.config.enablePerformanceMonitoring || !this.shouldTrack())
-      return
+    if (!this.config.enablePerformanceMonitoring || !this.shouldTrack()) return
 
     for (const [name, provider] of this.providers) {
       try {
         if (provider.trackPerformance) {
           provider.trackPerformance(metrics)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${name} 性能追踪失败:`), error)
       }
     }
@@ -425,16 +417,14 @@ export class AnalyticsIntegration {
    * 追踪错误
    */
   trackError(error: Error, context?: any): void {
-    if (!this.config.enableErrorTracking || !this.shouldTrack())
-      return
+    if (!this.config.enableErrorTracking || !this.shouldTrack()) return
 
     for (const [name, provider] of this.providers) {
       try {
         if (provider.trackError) {
           provider.trackError(error, context)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${name} 错误追踪失败:`), error)
       }
     }
@@ -451,8 +441,7 @@ export class AnalyticsIntegration {
         if (provider.setUserId) {
           provider.setUserId(userId)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${name} 设置用户ID失败:`), error)
       }
     }
@@ -467,8 +456,7 @@ export class AnalyticsIntegration {
         if (provider.setUserProperties) {
           provider.setUserProperties(properties)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error(chalk.red(`❌ ${name} 设置用户属性失败:`), error)
       }
     }
@@ -530,7 +518,7 @@ export class AnalyticsIntegration {
  * 创建分析集成实例
  */
 export function createAnalyticsIntegration(
-  config: AnalyticsConfig,
+  config: AnalyticsConfig
 ): AnalyticsIntegration {
   return new AnalyticsIntegration(config)
 }

@@ -15,14 +15,14 @@ import { computed, reactive, ref, watch } from 'vue'
 export function createStore<
   TState extends StateDefinition = StateDefinition,
   TActions extends ActionDefinition = ActionDefinition,
-  TGetters extends GetterDefinition = GetterDefinition,
+  TGetters extends GetterDefinition = GetterDefinition
 >(
   id: string,
   setup: () => {
     state: TState
     actions: TActions
     getters: TGetters
-  },
+  }
 ): () => UseStoreReturn<TState, TActions, TGetters> {
   // 创建 Pinia Store 定义
   const storeDefinition = defineStore(id, () => {
@@ -36,7 +36,7 @@ export function createStore<
     Object.entries(getters).forEach(([key, getter]) => {
       if (typeof getter === 'function') {
         computedGetters[key as keyof TGetters] = computed(() =>
-          getter(reactiveState),
+          getter(reactiveState)
         ) as any
       }
     })
@@ -49,7 +49,11 @@ export function createStore<
   })
 
   // 返回 Hook 函数
-  return function useCreatedStore(): UseStoreReturn<TState, TActions, TGetters> {
+  return function useCreatedStore(): UseStoreReturn<
+    TState,
+    TActions,
+    TGetters
+  > {
     const store = storeDefinition()
 
     // 创建响应式状态引用
@@ -58,10 +62,10 @@ export function createStore<
     // 监听状态变化
     watch(
       () => store.$state,
-      (newState) => {
+      newState => {
         state.value = newState as TState
       },
-      { deep: true, immediate: true },
+      { deep: true, immediate: true }
     )
 
     return {
@@ -89,21 +93,18 @@ export function createStore<
 /**
  * 创建简单状态的 Hook
  */
-export function createState<T>(
-  initialValue: T,
-): () => {
-    value: Ref<T>
-    setValue: (newValue: T | ((oldValue: T) => T)) => void
-    reset: () => void
-  } {
+export function createState<T>(initialValue: T): () => {
+  value: Ref<T>
+  setValue: (newValue: T | ((oldValue: T) => T)) => void
+  reset: () => void
+} {
   return function useState() {
     const value = ref(initialValue) as Ref<T>
 
     const setValue = (newValue: T | ((oldValue: T) => T)) => {
       if (typeof newValue === 'function') {
         value.value = (newValue as Function)(value.value)
-      }
-      else {
+      } else {
         value.value = newValue
       }
     }
@@ -123,12 +124,10 @@ export function createState<T>(
 /**
  * 创建计算属性的 Hook
  */
-export function createComputed<T>(
-  getter: () => T,
-): () => {
-    value: ComputedRef<T>
-    refresh: () => void
-  } {
+export function createComputed<T>(getter: () => T): () => {
+  value: ComputedRef<T>
+  refresh: () => void
+} {
   return function useComputed() {
     const value = computed(getter)
 
@@ -148,20 +147,22 @@ export function createComputed<T>(
  * 创建异步 Action 的 Hook
  */
 export function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
-  action: T,
+  action: T
 ): () => {
-    execute: T
-    loading: Ref<boolean>
-    error: Ref<Error | null>
-    data: Ref<Awaited<ReturnType<T>> | null>
-    reset: () => void
-  } {
+  execute: T
+  loading: Ref<boolean>
+  error: Ref<Error | null>
+  data: Ref<Awaited<ReturnType<T>> | null>
+  reset: () => void
+} {
   return function useAsyncAction() {
     const loading = ref(false)
     const error = ref<Error | null>(null)
     const data = ref<Awaited<ReturnType<T>> | null>(null)
 
-    const execute = async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+    const execute = async (
+      ...args: Parameters<T>
+    ): Promise<Awaited<ReturnType<T>>> => {
       loading.value = true
       error.value = null
 
@@ -169,12 +170,10 @@ export function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
         const result = await action(...args)
         data.value = result
         return result
-      }
-      catch (err) {
+      } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err))
         throw err
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -201,15 +200,15 @@ export function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
 export function createPersistedState<T>(
   key: string,
   initialValue: T,
-  storage: Storage = localStorage,
+  storage: Storage = localStorage
 ): () => {
-    value: Ref<T>
-    setValue: (newValue: T | ((oldValue: T) => T)) => void
-    reset: () => void
-    save: () => void
-    load: () => void
-    clear: () => void
-  } {
+  value: Ref<T>
+  setValue: (newValue: T | ((oldValue: T) => T)) => void
+  reset: () => void
+  save: () => void
+  load: () => void
+  clear: () => void
+} {
   return function usePersistedState() {
     const value = ref(initialValue) as Ref<T>
 
@@ -220,8 +219,7 @@ export function createPersistedState<T>(
         if (stored !== null) {
           value.value = JSON.parse(stored)
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to load persisted state:', error)
       }
     }
@@ -230,8 +228,7 @@ export function createPersistedState<T>(
     const save = () => {
       try {
         storage.setItem(key, JSON.stringify(value.value))
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to save persisted state:', error)
       }
     }
@@ -241,8 +238,7 @@ export function createPersistedState<T>(
       try {
         storage.removeItem(key)
         value.value = initialValue
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to clear persisted state:', error)
       }
     }
@@ -250,8 +246,7 @@ export function createPersistedState<T>(
     const setValue = (newValue: T | ((oldValue: T) => T)) => {
       if (typeof newValue === 'function') {
         value.value = (newValue as Function)(value.value)
-      }
-      else {
+      } else {
         value.value = newValue
       }
       save() // 自动保存

@@ -38,8 +38,7 @@ function setLoading(buttonId, loading) {
   if (loading) {
     button.dataset.originalText = button.textContent
     button.textContent = '处理中...'
-  }
-  else {
+  } else {
     button.textContent = button.dataset.originalText || button.textContent
   }
 }
@@ -58,7 +57,9 @@ function initAESHandlers() {
 
       const data = document.getElementById('aes-data').value
       const key = document.getElementById('aes-key').value
-      const keySize = Number.parseInt(document.getElementById('aes-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('aes-key-size').value
+      )
       const mode = document.getElementById('aes-mode').value
 
       if (!data.trim()) {
@@ -75,11 +76,9 @@ function initAESHandlers() {
       document.getElementById('aes-algorithm').textContent = result.algorithm
       document.getElementById('aes-iv').textContent = result.iv
       showElement('aes-encrypted-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('aes-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('aes-encrypt-btn', false)
     }
   })
@@ -89,9 +88,12 @@ function initAESHandlers() {
       setLoading('aes-decrypt-btn', true)
       hideError('aes-error')
 
-      const encryptedData = document.getElementById('aes-encrypted-data').textContent
+      const encryptedData =
+        document.getElementById('aes-encrypted-data').textContent
       const key = document.getElementById('aes-key').value
-      const keySize = Number.parseInt(document.getElementById('aes-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('aes-key-size').value
+      )
       const mode = document.getElementById('aes-mode').value
       const iv = document.getElementById('aes-iv').textContent
 
@@ -111,11 +113,9 @@ function initAESHandlers() {
 
       document.getElementById('aes-decrypted-data').textContent = result.data
       showElement('aes-decrypted-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('aes-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('aes-decrypt-btn', false)
     }
   })
@@ -124,16 +124,16 @@ function initAESHandlers() {
     try {
       setLoading('aes-generate-key-btn', true)
 
-      const keySize = Number.parseInt(document.getElementById('aes-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('aes-key-size').value
+      )
       const keyLength = keySize / 8 // 转换为字节
       const generatedKey = keyGenerator.generateKey(keyLength)
 
       document.getElementById('aes-key').value = generatedKey
-    }
-    catch (error) {
+    } catch (error) {
       showError('aes-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('aes-generate-key-btn', false)
     }
   })
@@ -152,11 +152,15 @@ function initRSAHandlers() {
       setLoading('rsa-generate-keypair-btn', true)
       hideError('rsa-error')
 
-      const keySize = Number.parseInt(document.getElementById('rsa-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('rsa-key-size').value
+      )
       currentRSAKeyPair = rsa.generateKeyPair(keySize)
 
-      document.getElementById('rsa-public-key').value = currentRSAKeyPair.publicKey
-      document.getElementById('rsa-private-key').value = currentRSAKeyPair.privateKey
+      document.getElementById('rsa-public-key').value =
+        currentRSAKeyPair.publicKey
+      document.getElementById('rsa-private-key').value =
+        currentRSAKeyPair.privateKey
       showElement('rsa-keypair-result')
 
       // 启用其他按钮
@@ -164,11 +168,9 @@ function initRSAHandlers() {
       decryptBtn.disabled = false
       signBtn.disabled = false
       verifyBtn.disabled = false
-    }
-    catch (error) {
+    } catch (error) {
       showError('rsa-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('rsa-generate-keypair-btn', false)
     }
   })
@@ -190,11 +192,9 @@ function initRSAHandlers() {
       const result = encrypt.rsa(data, currentRSAKeyPair.publicKey)
       document.getElementById('rsa-encrypted-data').textContent = result.data
       showElement('rsa-encrypted-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('rsa-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('rsa-encrypt-btn', false)
     }
   })
@@ -204,7 +204,8 @@ function initRSAHandlers() {
       setLoading('rsa-decrypt-btn', true)
       hideError('rsa-error')
 
-      const encryptedData = document.getElementById('rsa-encrypted-data').textContent
+      const encryptedData =
+        document.getElementById('rsa-encrypted-data').textContent
       if (!encryptedData) {
         throw new Error('请先进行RSA加密操作')
       }
@@ -219,11 +220,9 @@ function initRSAHandlers() {
 
       document.getElementById('rsa-decrypted-data').textContent = result.data
       showElement('rsa-decrypted-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('rsa-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('rsa-decrypt-btn', false)
     }
   })
@@ -241,14 +240,15 @@ function initRSAHandlers() {
         throw new Error('请先生成RSA密钥对')
       }
 
-      const signature = digitalSignature.sign(data, currentRSAKeyPair.privateKey)
+      const signature = digitalSignature.sign(
+        data,
+        currentRSAKeyPair.privateKey
+      )
       document.getElementById('rsa-signature-data').textContent = signature
       showElement('rsa-signature-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('rsa-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('rsa-sign-btn', false)
     }
   })
@@ -259,7 +259,8 @@ function initRSAHandlers() {
       hideError('rsa-error')
 
       const data = document.getElementById('rsa-data').value
-      const signature = document.getElementById('rsa-signature-data').textContent
+      const signature =
+        document.getElementById('rsa-signature-data').textContent
 
       if (!data.trim()) {
         throw new Error('请输入要验证的数据')
@@ -271,14 +272,18 @@ function initRSAHandlers() {
         throw new Error('请先生成RSA密钥对')
       }
 
-      const isValid = digitalSignature.verify(data, signature, currentRSAKeyPair.publicKey)
-      document.getElementById('rsa-verify-data').textContent = isValid ? '✅ 签名验证成功' : '❌ 签名验证失败'
+      const isValid = digitalSignature.verify(
+        data,
+        signature,
+        currentRSAKeyPair.publicKey
+      )
+      document.getElementById('rsa-verify-data').textContent = isValid
+        ? '✅ 签名验证成功'
+        : '❌ 签名验证失败'
       showElement('rsa-verify-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('rsa-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('rsa-verify-btn', false)
     }
   })
@@ -333,11 +338,9 @@ function initHashHandlers() {
       document.getElementById('hash-algorithm-used').textContent = algorithm
       document.getElementById('hash-encoding-used').textContent = encoding
       showElement('hash-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('hash-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('hash-btn', false)
     }
   })
@@ -386,11 +389,9 @@ function initHashHandlers() {
 
       document.getElementById('hash-all-values').innerHTML = results.join('')
       showElement('hash-all-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('hash-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('hash-all-btn', false)
     }
   })
@@ -442,13 +443,13 @@ function initHMACHandlers() {
 
       currentHMACValue = result
       document.getElementById('hmac-value').textContent = result
-      document.getElementById('hmac-algorithm-used').textContent = `HMAC-${algorithm}`
+      document.getElementById(
+        'hmac-algorithm-used'
+      ).textContent = `HMAC-${algorithm}`
       showElement('hmac-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('hmac-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('hmac-btn', false)
     }
   })
@@ -493,13 +494,13 @@ function initHMACHandlers() {
           throw new Error('不支持的HMAC算法')
       }
 
-      document.getElementById('hmac-verify-value').textContent = isValid ? '✅ HMAC验证成功' : '❌ HMAC验证失败'
+      document.getElementById('hmac-verify-value').textContent = isValid
+        ? '✅ HMAC验证成功'
+        : '❌ HMAC验证失败'
       showElement('hmac-verify-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('hmac-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('hmac-verify-btn', false)
     }
   })
@@ -510,11 +511,9 @@ function initHMACHandlers() {
 
       const generatedKey = keyGenerator.generateKey(32)
       document.getElementById('hmac-key').value = generatedKey
-    }
-    catch (error) {
+    } catch (error) {
       showError('hmac-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('hmac-generate-key-btn', false)
     }
   })
@@ -541,11 +540,9 @@ function initBase64Handlers() {
       const result = base64.encode(data)
       document.getElementById('base64-encoded-data').textContent = result
       showElement('base64-encoded-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('base64-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('base64-encode-btn', false)
     }
   })
@@ -555,7 +552,9 @@ function initBase64Handlers() {
       setLoading('base64-decode-btn', true)
       hideError('base64-error')
 
-      const encodedData = document.getElementById('base64-encoded-data').textContent
+      const encodedData = document.getElementById(
+        'base64-encoded-data'
+      ).textContent
       if (!encodedData) {
         throw new Error('请先进行Base64编码操作')
       }
@@ -563,11 +562,9 @@ function initBase64Handlers() {
       const result = base64.decode(encodedData)
       document.getElementById('base64-decoded-data').textContent = result
       showElement('base64-decoded-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('base64-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('base64-decode-btn', false)
     }
   })
@@ -586,11 +583,9 @@ function initBase64Handlers() {
       const result = base64.encodeUrl(data)
       document.getElementById('base64-encoded-data').textContent = result
       showElement('base64-encoded-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('base64-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('base64-url-encode-btn', false)
     }
   })
@@ -600,7 +595,9 @@ function initBase64Handlers() {
       setLoading('base64-url-decode-btn', true)
       hideError('base64-error')
 
-      const encodedData = document.getElementById('base64-encoded-data').textContent
+      const encodedData = document.getElementById(
+        'base64-encoded-data'
+      ).textContent
       if (!encodedData) {
         throw new Error('请先进行Base64编码操作')
       }
@@ -608,11 +605,9 @@ function initBase64Handlers() {
       const result = base64.decodeUrl(encodedData)
       document.getElementById('base64-decoded-data').textContent = result
       showElement('base64-decoded-result')
-    }
-    catch (error) {
+    } catch (error) {
       showError('base64-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('base64-url-decode-btn', false)
     }
   })
@@ -630,7 +625,9 @@ function initKeyGenerationHandlers() {
       setLoading('generate-key-btn', true)
       hideError('key-gen-error')
 
-      const length = Number.parseInt(document.getElementById('key-length').value)
+      const length = Number.parseInt(
+        document.getElementById('key-length').value
+      )
       if (length < 1 || length > 128) {
         throw new Error('密钥长度必须在1-128字节之间')
       }
@@ -638,11 +635,9 @@ function initKeyGenerationHandlers() {
       const key = keyGenerator.generateKey(length)
       document.getElementById('key-value').textContent = key
       showElement('generated-key')
-    }
-    catch (error) {
+    } catch (error) {
       showError('key-gen-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('generate-key-btn', false)
     }
   })
@@ -652,7 +647,9 @@ function initKeyGenerationHandlers() {
       setLoading('generate-salt-btn', true)
       hideError('key-gen-error')
 
-      const length = Number.parseInt(document.getElementById('salt-length').value)
+      const length = Number.parseInt(
+        document.getElementById('salt-length').value
+      )
       if (length < 1 || length > 64) {
         throw new Error('盐值长度必须在1-64字节之间')
       }
@@ -660,11 +657,9 @@ function initKeyGenerationHandlers() {
       const salt = keyGenerator.generateSalt(length)
       document.getElementById('salt-value').textContent = salt
       showElement('generated-salt')
-    }
-    catch (error) {
+    } catch (error) {
       showError('key-gen-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('generate-salt-btn', false)
     }
   })
@@ -682,11 +677,9 @@ function initKeyGenerationHandlers() {
       const iv = keyGenerator.generateIV(length)
       document.getElementById('iv-value').textContent = iv
       showElement('generated-iv')
-    }
-    catch (error) {
+    } catch (error) {
       showError('key-gen-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('generate-iv-btn', false)
     }
   })
@@ -696,9 +689,15 @@ function initKeyGenerationHandlers() {
       setLoading('generate-all-btn', true)
       hideError('key-gen-error')
 
-      const keyLength = Number.parseInt(document.getElementById('key-length').value)
-      const saltLength = Number.parseInt(document.getElementById('salt-length').value)
-      const ivLength = Number.parseInt(document.getElementById('iv-length').value)
+      const keyLength = Number.parseInt(
+        document.getElementById('key-length').value
+      )
+      const saltLength = Number.parseInt(
+        document.getElementById('salt-length').value
+      )
+      const ivLength = Number.parseInt(
+        document.getElementById('iv-length').value
+      )
 
       if (keyLength < 1 || keyLength > 128) {
         throw new Error('密钥长度必须在1-128字节之间')
@@ -721,11 +720,9 @@ function initKeyGenerationHandlers() {
       showElement('generated-key')
       showElement('generated-salt')
       showElement('generated-iv')
-    }
-    catch (error) {
+    } catch (error) {
       showError('key-gen-error', error.message)
-    }
-    finally {
+    } finally {
       setLoading('generate-all-btn', false)
     }
   })

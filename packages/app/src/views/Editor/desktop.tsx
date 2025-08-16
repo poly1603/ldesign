@@ -7,7 +7,7 @@ export default defineComponent({
     const router = useRouter()
     const { currentDeviceName } = useDeviceRoute()
     const content = ref(
-      '# 欢迎使用桌面端编辑器\n\n这是一个功能完整的编辑器，专为桌面设备优化。\n\n## 特性\n- 完整的键盘快捷键支持\n- 多窗口编辑\n- 高级语法高亮\n- 实时预览',
+      '# 欢迎使用桌面端编辑器\n\n这是一个功能完整的编辑器，专为桌面设备优化。\n\n## 特性\n- 完整的键盘快捷键支持\n- 多窗口编辑\n- 高级语法高亮\n- 实时预览'
     )
 
     const handleGoBack = () => {
@@ -66,9 +66,7 @@ export default defineComponent({
                 opacity: 0.7,
               }}
             >
-              设备:
-              {' '}
-              {currentDeviceName}
+              设备: {currentDeviceName}
             </span>
           </div>
 
@@ -149,7 +147,8 @@ export default defineComponent({
             <textarea
               value={content.value}
               onInput={e =>
-                (content.value = (e.target as HTMLTextAreaElement).value)}
+                (content.value = (e.target as HTMLTextAreaElement).value)
+              }
               style={{
                 flex: 1,
                 background: '#1a202c',
@@ -162,7 +161,7 @@ export default defineComponent({
                 resize: 'none',
                 outline: 'none',
               }}
-              placeholder="在此输入 Markdown 内容..."
+              placeholder='在此输入 Markdown 内容...'
             />
           </div>
 
@@ -204,11 +203,11 @@ export default defineComponent({
                   __html: content.value
                     .replace(
                       /^# (.*$)/gm,
-                      '<h1 style="color: #63b3ed; margin: 16px 0 8px 0;">$1</h1>',
+                      '<h1 style="color: #63b3ed; margin: 16px 0 8px 0;">$1</h1>'
                     )
                     .replace(
                       /^## (.*$)/gm,
-                      '<h2 style="color: #68d391; margin: 12px 0 6px 0;">$1</h2>',
+                      '<h2 style="color: #68d391; margin: 12px 0 6px 0;">$1</h2>'
                     )
                     .replace(/^- (.*$)/gm, '<li style="margin: 4px 0;">$1</li>')
                     .replace(/\n/g, '<br>'),
@@ -232,12 +231,7 @@ export default defineComponent({
           }}
         >
           <div>
-            字符数:
-            {' '}
-            {content.value.length}
-            {' '}
-            | 行数:
-            {' '}
+            字符数: {content.value.length} | 行数:{' '}
             {content.value.split('\n').length}
           </div>
           <div>桌面端编辑器 - 支持完整功能</div>

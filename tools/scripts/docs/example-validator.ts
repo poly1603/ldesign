@@ -88,8 +88,7 @@ class ExampleValidator {
       this.printSummary()
 
       return this.results
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('❌ 验证失败:'), error)
       this.cleanup()
       throw error
@@ -111,15 +110,15 @@ class ExampleValidator {
       type: 'module',
       dependencies: {
         [this.config.packageName]: 'workspace:*',
-        'vue': '^3.3.0',
-        'typescript': '^5.0.0',
+        vue: '^3.3.0',
+        typescript: '^5.0.0',
         '@types/node': '^20.0.0',
       },
     }
 
     writeFileSync(
       join(this.tempDir, 'package.json'),
-      JSON.stringify(packageJson, null, 2),
+      JSON.stringify(packageJson, null, 2)
     )
 
     // 创建 TypeScript 配置
@@ -137,7 +136,7 @@ class ExampleValidator {
 
     writeFileSync(
       join(this.tempDir, 'tsconfig.json'),
-      JSON.stringify(tsConfig, null, 2),
+      JSON.stringify(tsConfig, null, 2)
     )
   }
 
@@ -147,8 +146,7 @@ class ExampleValidator {
   private findMarkdownFiles(dir: string): string[] {
     const files: string[] = []
 
-    if (!existsSync(dir))
-      return files
+    if (!existsSync(dir)) return files
 
     try {
       const entries = execSync(`find "${dir}" -name "*.md"`, {
@@ -159,8 +157,7 @@ class ExampleValidator {
         .filter(Boolean)
 
       return entries
-    }
-    catch {
+    } catch {
       return []
     }
   }
@@ -178,8 +175,8 @@ class ExampleValidator {
       const example = examples[i]
       console.log(
         chalk.gray(
-          `  📝 验证示例 ${i + 1}/${examples.length} (${example.language})`,
-        ),
+          `  📝 验证示例 ${i + 1}/${examples.length} (${example.language})`
+        )
       )
 
       try {
@@ -188,14 +185,12 @@ class ExampleValidator {
 
         if (result.success) {
           console.log(chalk.green(`    ✅ 示例 ${i + 1} 验证通过`))
-        }
-        else {
+        } else {
           console.log(
-            chalk.red(`    ❌ 示例 ${i + 1} 验证失败: ${result.error}`),
+            chalk.red(`    ❌ 示例 ${i + 1} 验证失败: ${result.error}`)
           )
         }
-      }
-      catch (error) {
+      } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
         errors.push(`示例 ${i + 1}: ${errorMsg}`)
         results.push({
@@ -222,10 +217,10 @@ class ExampleValidator {
    * 提取代码块
    */
   private extractCodeBlocks(
-    content: string,
-  ): Array<{ code: string, language: string }> {
+    content: string
+  ): Array<{ code: string; language: string }> {
     const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
-    const blocks: Array<{ code: string, language: string }> = []
+    const blocks: Array<{ code: string; language: string }> = []
     let match
 
     while ((match = codeBlockRegex.exec(content)) !== null) {
@@ -245,8 +240,8 @@ class ExampleValidator {
    * 验证单个示例
    */
   private async validateExample(
-    example: { code: string, language: string },
-    index: number,
+    example: { code: string; language: string },
+    index: number
   ): Promise<ExampleResult> {
     const startTime = Date.now()
 
@@ -276,8 +271,7 @@ class ExampleValidator {
 
       result.executionTime = Date.now() - startTime
       return result
-    }
-    catch (error) {
+    } catch (error) {
       return {
         index,
         code: example.code,
@@ -293,8 +287,8 @@ class ExampleValidator {
    * 验证 TypeScript 示例
    */
   private async validateTypeScriptExample(
-    example: { code: string, language: string },
-    index: number,
+    example: { code: string; language: string },
+    index: number
   ): Promise<ExampleResult> {
     if (!this.config.runTypeScriptExamples) {
       return {
@@ -344,8 +338,7 @@ class ExampleValidator {
         success: true,
         output: 'Type check passed',
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         index,
         code: example.code,
@@ -360,8 +353,8 @@ class ExampleValidator {
    * 验证 JavaScript 示例
    */
   private async validateJavaScriptExample(
-    example: { code: string, language: string },
-    index: number,
+    example: { code: string; language: string },
+    index: number
   ): Promise<ExampleResult> {
     const fileName = `example-${index}.js`
     const filePath = join(this.tempDir, fileName)
@@ -393,8 +386,7 @@ class ExampleValidator {
         success: true,
         output: 'Syntax check passed',
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         index,
         code: example.code,
@@ -409,8 +401,8 @@ class ExampleValidator {
    * 验证 Vue 示例
    */
   private async validateVueExample(
-    example: { code: string, language: string },
-    index: number,
+    example: { code: string; language: string },
+    index: number
   ): Promise<ExampleResult> {
     if (!this.config.runVueExamples) {
       return {
@@ -486,26 +478,26 @@ class ExampleValidator {
     const successfulFiles = this.results.filter(r => r.success).length
     const totalExamples = this.results.reduce(
       (sum, r) => sum + r.examples.length,
-      0,
+      0
     )
     const successfulExamples = this.results.reduce(
       (sum, r) => sum + r.examples.filter(e => e.success).length,
-      0,
+      0
     )
 
     console.log(`文件: ${successfulFiles}/${totalFiles} 通过`)
     console.log(`示例: ${successfulExamples}/${totalExamples} 通过`)
     console.log(
-      `成功率: ${((successfulExamples / totalExamples) * 100).toFixed(1)}%`,
+      `成功率: ${((successfulExamples / totalExamples) * 100).toFixed(1)}%`
     )
 
     // 显示失败的文件
     const failedFiles = this.results.filter(r => !r.success)
     if (failedFiles.length > 0) {
       console.log(chalk.red('\n❌ 失败的文件:'))
-      failedFiles.forEach((file) => {
+      failedFiles.forEach(file => {
         console.log(chalk.red(`  ${file.file}`))
-        file.errors.forEach((error) => {
+        file.errors.forEach(error => {
           console.log(chalk.red(`    - ${error}`))
         })
       })
@@ -513,8 +505,7 @@ class ExampleValidator {
 
     if (successfulFiles === totalFiles) {
       console.log(chalk.green('\n🎉 所有示例验证通过！'))
-    }
-    else {
+    } else {
       console.log(chalk.yellow('\n⚠️ 部分示例验证失败，请检查上述错误'))
     }
   }
@@ -551,8 +542,7 @@ async function main() {
     const results = await validator.validateAll()
     const allSuccess = results.every(r => r.success)
     process.exit(allSuccess ? 0 : 1)
-  }
-  catch (error) {
+  } catch (error) {
     console.error(chalk.red('验证失败:'), error)
     process.exit(1)
   }

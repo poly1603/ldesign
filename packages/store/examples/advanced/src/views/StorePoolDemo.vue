@@ -5,7 +5,7 @@ import { useStorePoolDemo } from '../stores/storePoolStore'
 const store = useStorePoolDemo()
 
 // 响应式数据
-const instances = ref<Array<{ id: string, count: number }>>([])
+const instances = ref<Array<{ id: string; count: number }>>([])
 const traditionalTime = ref(0)
 const pooledTime = ref(0)
 const traditionalMemory = ref(0)
@@ -16,24 +16,22 @@ const poolStats = computed(() => store.poolStats)
 const activeInstances = computed(() => {
   return poolStats.value.poolDetails.reduce(
     (sum, pool) => sum + pool.activeInstances,
-    0,
+    0
   )
 })
 
 const timeImprovement = computed(() => {
-  if (traditionalTime.value === 0 || pooledTime.value === 0)
-    return 0
+  if (traditionalTime.value === 0 || pooledTime.value === 0) return 0
   return (
     ((traditionalTime.value - pooledTime.value) / traditionalTime.value) * 100
   )
 })
 
 const memoryImprovement = computed(() => {
-  if (traditionalMemory.value === 0 || pooledMemory.value === 0)
-    return 0
+  if (traditionalMemory.value === 0 || pooledMemory.value === 0) return 0
   return (
-    ((traditionalMemory.value - pooledMemory.value) / traditionalMemory.value)
-    * 100
+    ((traditionalMemory.value - pooledMemory.value) / traditionalMemory.value) *
+    100
   )
 })
 
@@ -102,25 +100,19 @@ onMounted(() => {
           <div class="metric-value">
             {{ poolStats.totalPools }}
           </div>
-          <div class="metric-label">
-            总池数
-          </div>
+          <div class="metric-label">总池数</div>
         </div>
         <div class="metric">
           <div class="metric-value">
             {{ poolStats.totalInstances }}
           </div>
-          <div class="metric-label">
-            总实例数
-          </div>
+          <div class="metric-label">总实例数</div>
         </div>
         <div class="metric">
           <div class="metric-value">
             {{ activeInstances }}
           </div>
-          <div class="metric-label">
-            活跃实例
-          </div>
+          <div class="metric-label">活跃实例</div>
         </div>
       </div>
     </div>
@@ -144,9 +136,7 @@ onMounted(() => {
             <button class="btn btn-secondary" @click="warmUpPool">
               预热池 (5个实例)
             </button>
-            <button class="btn btn-danger" @click="clearPool">
-              清空池
-            </button>
+            <button class="btn btn-danger" @click="clearPool">清空池</button>
           </div>
 
           <div class="instance-list">
@@ -263,7 +253,8 @@ class OptimizedStore extends BaseStore {
 }
 
 // 实例会被自动池化管理
-const store = new OptimizedStore('my-store')</pre>
+const store = new OptimizedStore('my-store')</pre
+          >
         </div>
 
         <h3>手动使用Store池</h3>
@@ -284,7 +275,8 @@ const store = pool.getStore(MyStore, 'store-id')
 pool.returnStore(store)
 
 // 预热池
-pool.warmUp(MyStore, 5)</pre>
+pool.warmUp(MyStore, 5)</pre
+          >
         </div>
       </div>
     </div>

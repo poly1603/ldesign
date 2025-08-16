@@ -21,7 +21,10 @@ export default defineConfig({
         text: '相关链接',
         items: [
           { text: 'GitHub', link: 'https://github.com/ldesign-org/device' },
-          { text: 'NPM', link: 'https://www.npmjs.com/package/@ldesign/device' },
+          {
+            text: 'NPM',
+            link: 'https://www.npmjs.com/package/@ldesign/device',
+          },
         ],
       },
     ],

@@ -41,7 +41,7 @@ watch(
       await generateColorsRealtime()
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 // 监听预设变化，重新生成颜色
@@ -73,8 +73,8 @@ async function generateColorsRealtime() {
     error.value = ''
 
     // 生成基础颜色配置
-    const preset
-      = COLOR_GENERATION_PRESETS[
+    const preset =
+      COLOR_GENERATION_PRESETS[
         selectedPreset.value as keyof typeof COLOR_GENERATION_PRESETS
       ]
     const colors = generateColorConfig(primaryColor.value, preset)
@@ -83,21 +83,18 @@ async function generateColorsRealtime() {
     // 等待DOM更新后生成色阶
     await nextTick()
     await generateScalesRealtime()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err instanceof Error ? err.message : '颜色生成失败'
     generatedColors.value = null
     generatedScales.value = null
-  }
-  finally {
+  } finally {
     isGenerating.value = false
   }
 }
 
 // 实时生成色阶
 async function generateScalesRealtime() {
-  if (!generatedColors.value)
-    return
+  if (!generatedColors.value) return
 
   try {
     // 确保所有颜色值都存在
@@ -110,8 +107,7 @@ async function generateScalesRealtime() {
     }
     const scales = generateColorScales(colors, currentMode.value)
     generatedScales.value = scales
-  }
-  catch (err) {
+  } catch (err) {
     console.warn('Failed to generate color scales:', err)
     generatedScales.value = null
   }
@@ -130,8 +126,7 @@ async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制 ${color}`, 'success')
-  }
-  catch {
+  } catch {
     showNotification('复制失败', 'error')
   }
 }
@@ -148,8 +143,7 @@ async function applyAsTheme(category: string, color: string) {
     await setTheme(themeName)
 
     showNotification(`已应用 ${getCategoryName(category)} 主题`, 'success')
-  }
-  catch {
+  } catch {
     showNotification('应用主题失败', 'error')
   }
 }
@@ -157,9 +151,7 @@ async function applyAsTheme(category: string, color: string) {
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🎨 颜色生成器
-    </h2>
+    <h2 class="card-title">🎨 颜色生成器</h2>
 
     <div class="generator-controls">
       <div class="form-group">
@@ -170,14 +162,14 @@ async function applyAsTheme(category: string, color: string) {
             type="color"
             class="color-picker"
             @input="generateColors"
-          >
+          />
           <input
             v-model="primaryColor"
             type="text"
             class="form-control"
             placeholder="#1890ff"
             @input="generateColors"
-          >
+          />
         </div>
       </div>
 
@@ -188,18 +180,10 @@ async function applyAsTheme(category: string, color: string) {
           class="form-control"
           @change="generateColors"
         >
-          <option value="default">
-            默认
-          </option>
-          <option value="soft">
-            柔和
-          </option>
-          <option value="vibrant">
-            鲜艳
-          </option>
-          <option value="monochrome">
-            单色
-          </option>
+          <option value="default">默认</option>
+          <option value="soft">柔和</option>
+          <option value="vibrant">鲜艳</option>
+          <option value="monochrome">单色</option>
         </select>
       </div>
 
@@ -262,9 +246,7 @@ async function applyAsTheme(category: string, color: string) {
 
     <!-- 色阶预览 -->
     <div v-if="generatedScales && !isGenerating" class="color-scales-preview">
-      <h3 class="scales-title">
-        色阶预览
-      </h3>
+      <h3 class="scales-title">色阶预览</h3>
       <div class="scales-container">
         <div
           v-for="(scale, category) in generatedScales"
@@ -370,7 +352,8 @@ async function applyAsTheme(category: string, color: string) {
 }
 
 .color-value {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
   font-size: 0.875rem;
   color: var(--color-text-secondary, #666);
   margin-bottom: 0.5rem;

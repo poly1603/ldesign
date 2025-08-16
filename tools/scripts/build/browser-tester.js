@@ -14,8 +14,7 @@ let chromium = null
 try {
   const playwright = await import('playwright')
   chromium = playwright.chromium
-}
-catch (err) {
+} catch (err) {
   // playwright未安装，将在运行时检查
 }
 
@@ -68,8 +67,7 @@ class BrowserTester {
       try {
         const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
         return { ...defaultConfig, ...userConfig }
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  配置文件加载失败，使用默认配置: ${err.message}`, 'yellow')
       }
     }
@@ -83,8 +81,7 @@ class BrowserTester {
     if (fs.existsSync(packageJsonPath)) {
       try {
         return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  package.json加载失败: ${err.message}`, 'yellow')
       }
     }
@@ -110,29 +107,26 @@ class BrowserTester {
       })
 
       // 监听控制台消息
-      this.page.on('console', (msg) => {
+      this.page.on('console', msg => {
         const type = msg.type()
         const text = msg.text()
 
         if (type === 'error') {
           log(`❌ 浏览器错误: ${text}`, 'red')
-        }
-        else if (type === 'warning') {
+        } else if (type === 'warning') {
           log(`⚠️  浏览器警告: ${text}`, 'yellow')
-        }
-        else if (this.config.verbose) {
+        } else if (this.config.verbose) {
           log(`📝 浏览器日志: ${text}`, 'gray')
         }
       })
 
       // 监听页面错误
-      this.page.on('pageerror', (error) => {
+      this.page.on('pageerror', error => {
         log(`❌ 页面错误: ${error.message}`, 'red')
       })
 
       return true
-    }
-    catch (err) {
+    } catch (err) {
       log(`❌ 启动浏览器失败: ${err.message}`, 'red')
       return false
     }
@@ -177,8 +171,7 @@ class BrowserTester {
           console.warn('未找到预期的导出函数');
         }
       `
-    }
-    else if (format === 'es') {
+    } else if (format === 'es') {
       scriptTag = `<script type="module" src="${bundlePath}"></script>`
       testScript = `
         // 测试ES模块格式
@@ -270,10 +263,10 @@ class BrowserTester {
     log(`🧪 测试 ${format.toUpperCase()} 格式...`, 'cyan')
 
     const formatPaths = {
-      'umd': 'dist/index.js',
+      umd: 'dist/index.js',
       'umd-min': 'dist/index.min.js',
-      'es': 'es/index.js',
-      'cjs': 'lib/index.js',
+      es: 'es/index.js',
+      cjs: 'lib/index.js',
     }
 
     const bundlePath = path.join(this.packageRoot, formatPaths[format])
@@ -310,18 +303,16 @@ class BrowserTester {
       if (result.passed) {
         log(`✅ ${format.toUpperCase()} 格式测试通过`, 'green')
         return { passed: true }
-      }
-      else {
+      } else {
         log(
           `❌ ${format.toUpperCase()} 格式测试失败 (错误数: ${
             result.errorCount
           })`,
-          'red',
+          'red'
         )
         return { passed: false, reason: `${result.errorCount} 个错误` }
       }
-    }
-    catch (err) {
+    } catch (err) {
       log(`❌ ${format.toUpperCase()} 格式测试异常: ${err.message}`, 'red')
       return { passed: false, reason: err.message }
     }
@@ -329,8 +320,7 @@ class BrowserTester {
 
   // 测试外部依赖兼容性
   async testExternalDependencies() {
-    if (!this.config.tests.externalDependencies)
-      return true
+    if (!this.config.tests.externalDependencies) return true
 
     log('🔗 测试外部依赖兼容性...', 'cyan')
 
@@ -389,7 +379,7 @@ class BrowserTester {
 
       if (failedTests.length > 0) {
         log('\n失败详情:', 'red')
-        failedTests.forEach((test) => {
+        failedTests.forEach(test => {
           log(`  - ${test.format}: ${test.reason}`, 'red')
         })
       }
@@ -398,14 +388,12 @@ class BrowserTester {
 
       if (allPassed) {
         log('\n🎉 所有浏览器测试通过！', 'green')
-      }
-      else {
+      } else {
         log('\n❌ 部分浏览器测试失败', 'red')
       }
 
       return allPassed
-    }
-    finally {
+    } finally {
       await this.closeBrowser()
     }
   }
@@ -423,18 +411,14 @@ async function main() {
     if (arg === '--config' && args[i + 1]) {
       options.config = args[i + 1]
       i++
-    }
-    else if (arg === '--package-root' && args[i + 1]) {
+    } else if (arg === '--package-root' && args[i + 1]) {
       options.packageRoot = args[i + 1]
       i++
-    }
-    else if (arg === '--headless') {
+    } else if (arg === '--headless') {
       options.headless = true
-    }
-    else if (arg === '--no-headless') {
+    } else if (arg === '--no-headless') {
       options.headless = false
-    }
-    else if (arg === '--help') {
+    } else if (arg === '--help') {
       console.log(`
 使用方法: node browser-tester.js [选项]
 
@@ -458,8 +442,7 @@ async function main() {
     const tester = new BrowserTester(options)
     const success = await tester.runTests()
     process.exit(success ? 0 : 1)
-  }
-  catch (err) {
+  } catch (err) {
     log(`❌ 测试过程出错: ${err.message}`, 'red')
     console.error(err.stack)
     process.exit(1)

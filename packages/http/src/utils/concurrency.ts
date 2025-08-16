@@ -33,7 +33,7 @@ export class ConcurrencyManager {
    */
   async execute<T = any>(
     requestFn: () => Promise<ResponseData<T>>,
-    config: RequestConfig,
+    config: RequestConfig
   ): Promise<ResponseData<T>> {
     return new Promise<ResponseData<T>>((resolve, reject) => {
       const taskId = this.generateTaskId()
@@ -55,8 +55,7 @@ export class ConcurrencyManager {
       // 如果当前并发数未达到限制，直接执行
       if (this.activeRequests.size < this.config.maxConcurrent) {
         this.executeTask(task)
-      }
-      else {
+      } else {
         // 否则加入队列
         this.requestQueue.push(task)
       }
@@ -72,11 +71,9 @@ export class ConcurrencyManager {
     try {
       const result = await task.execute()
       task.resolve(result)
-    }
-    catch (error) {
+    } catch (error) {
       task.reject(error)
-    }
-    finally {
+    } finally {
       this.activeRequests.delete(task.id)
       this.processQueue()
     }
@@ -96,16 +93,15 @@ export class ConcurrencyManager {
     try {
       // 批量处理多个任务，直到达到并发限制
       while (
-        this.requestQueue.length > 0
-        && this.activeRequests.size < this.config.maxConcurrent
+        this.requestQueue.length > 0 &&
+        this.activeRequests.size < this.config.maxConcurrent
       ) {
         const nextTask = this.requestQueue.shift()
         if (nextTask) {
           this.executeTask(nextTask)
         }
       }
-    }
-    finally {
+    } finally {
       this.processingQueue = false
     }
   }
@@ -115,7 +111,7 @@ export class ConcurrencyManager {
    */
   cancelQueue(reason = 'Queue cancelled'): void {
     const queuedTasks = this.requestQueue.splice(0)
-    queuedTasks.forEach((task) => {
+    queuedTasks.forEach(task => {
       task.reject(new Error(reason))
     })
   }
@@ -173,7 +169,7 @@ export class DeduplicationManager {
    */
   async execute<T = any>(
     key: string,
-    requestFn: () => Promise<ResponseData<T>>,
+    requestFn: () => Promise<ResponseData<T>>
   ): Promise<ResponseData<T>> {
     // 检查是否有相同的请求正在进行
     const existingRequest = this.pendingRequests.get(key)
@@ -241,7 +237,7 @@ export class RateLimitManager {
 
     // 清理过期的请求记录
     this.requests = this.requests.filter(
-      timestamp => now - timestamp < this.timeWindow,
+      timestamp => now - timestamp < this.timeWindow
     )
 
     return this.requests.length < this.maxRequests
@@ -305,7 +301,7 @@ export class RateLimitManager {
  * 创建并发管理器
  */
 export function createConcurrencyManager(
-  config?: ConcurrencyConfig,
+  config?: ConcurrencyConfig
 ): ConcurrencyManager {
   return new ConcurrencyManager(config)
 }
@@ -322,7 +318,7 @@ export function createDeduplicationManager(): DeduplicationManager {
  */
 export function createRateLimitManager(
   maxRequests?: number,
-  timeWindow?: number,
+  timeWindow?: number
 ): RateLimitManager {
   return new RateLimitManager(maxRequests, timeWindow)
 }

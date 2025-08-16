@@ -26,14 +26,8 @@ const {
 } = useSizeSwitcher({ global: true })
 
 // useSizeResponsive Hook
-const {
-  isSmall,
-  isMedium,
-  isLarge,
-  isExtraLarge,
-  isAtLeast,
-  isAtMost,
-} = useSizeResponsive()
+const { isSmall, isMedium, isLarge, isExtraLarge, isAtLeast, isAtMost } =
+  useSizeResponsive()
 
 // 自定义管理器
 const {
@@ -58,7 +52,9 @@ const {
         <div class="info-list">
           <div class="info-item">
             <span class="label">当前模式:</span>
-            <span class="value">{{ currentMode }} ({{ currentModeDisplayName }})</span>
+            <span class="value"
+              >{{ currentMode }} ({{ currentModeDisplayName }})</span
+            >
           </div>
           <div class="info-item">
             <span class="label">基础字体:</span>
@@ -74,9 +70,7 @@ const {
           <button class="btn btn-secondary" @click="previousMode">
             上一个
           </button>
-          <button class="btn btn-secondary" @click="nextMode">
-            下一个
-          </button>
+          <button class="btn btn-secondary" @click="nextMode">下一个</button>
         </div>
       </div>
 
@@ -90,7 +84,8 @@ const {
             <button
               v-for="mode in availableModes"
               :key="mode"
-              class="mode-btn" :class="[{ active: switcherCurrentMode === mode }]"
+              class="mode-btn"
+              :class="[{ active: switcherCurrentMode === mode }]"
               @click="switchToMode(mode)"
             >
               {{ getModeDisplayName(mode) }}
@@ -99,7 +94,10 @@ const {
 
           <div class="current-info">
             <p>当前: {{ switcherCurrentModeDisplayName }}</p>
-            <p>按钮高度: {{ switcherCurrentConfig.component.buttonHeight.medium }}</p>
+            <p>
+              按钮高度:
+              {{ switcherCurrentConfig.component.buttonHeight.medium }}
+            </p>
           </div>
         </div>
       </div>
@@ -142,7 +140,11 @@ const {
         <div class="custom-manager">
           <div class="info-item">
             <span class="label">独立模式:</span>
-            <span class="value">{{ customCurrentMode }} ({{ customCurrentModeDisplayName }})</span>
+            <span class="value"
+              >{{ customCurrentMode }} ({{
+                customCurrentModeDisplayName
+              }})</span
+            >
           </div>
 
           <div class="demo-actions">
@@ -157,9 +159,7 @@ const {
             </button>
           </div>
 
-          <p class="note">
-            注意：这个管理器独立于全局管理器
-          </p>
+          <p class="note">注意：这个管理器独立于全局管理器</p>
         </div>
       </div>
     </div>

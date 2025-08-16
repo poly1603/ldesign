@@ -60,7 +60,8 @@ function validateCommitMessage(message) {
   const warnings = []
 
   // 基本格式检查: <type>(<scope>): <subject>
-  const commitRegex = /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+/
+  const commitRegex =
+    /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+/
 
   if (!commitRegex.test(message)) {
     errors.push('提交信息格式不正确')
@@ -128,22 +129,21 @@ function printValidationResult(result, message) {
 
   if (result.errors.length > 0) {
     log('\n❌ 错误:', colors.red)
-    result.errors.forEach((error) => {
+    result.errors.forEach(error => {
       log(`  • ${error}`, colors.red)
     })
   }
 
   if (result.warnings.length > 0) {
     log('\n⚠️  警告:', colors.yellow)
-    result.warnings.forEach((warning) => {
+    result.warnings.forEach(warning => {
       log(`  • ${warning}`, colors.yellow)
     })
   }
 
   if (result.valid) {
     log('\n✅ 提交信息格式正确', colors.green)
-  }
-  else {
+  } else {
     log('\n❌ 提交信息格式不正确', colors.red)
 
     log('\n💡 正确格式:', colors.blue)
@@ -190,8 +190,7 @@ function main() {
     }
 
     log('🎉 提交信息验证通过！', colors.green)
-  }
-  catch (error) {
+  } catch (error) {
     log(`❌ 读取提交信息文件失败: ${error.message}`, colors.red)
     process.exit(1)
   }

@@ -38,8 +38,7 @@ async function createSimpleText() {
         color: 'rgba(0, 0, 0, 0.1)',
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建简单水印失败:', error)
   }
 }
@@ -67,8 +66,7 @@ async function createCustomStyle() {
         gapY: 80,
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建自定义样式水印失败:', error)
   }
 }
@@ -87,8 +85,7 @@ async function createImageWatermark() {
         gapY: 100,
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建图片水印失败:', error)
   }
 }
@@ -112,8 +109,7 @@ async function createMultiLine() {
         gapY: 120,
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建多行水印失败:', error)
   }
 }
@@ -134,8 +130,7 @@ async function applyLiveConfig() {
         rotate: config.rotate,
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('应用实时配置失败:', error)
   }
 }
@@ -158,7 +153,7 @@ watch(
       applyLiveConfig()
     }
   },
-  { deep: true },
+  { deep: true }
 )
 
 // 组件挂载时自动创建所有示例水印
@@ -231,12 +226,8 @@ const multiLineCode = `const watermark = await createWatermark(container, {
 
 <template>
   <div class="basic-examples">
-    <h2 class="section-title">
-      🎯 基础示例
-    </h2>
-    <p class="section-desc">
-      展示水印组件的基本用法和核心功能
-    </p>
+    <h2 class="section-title">🎯 基础示例</h2>
+    <p class="section-desc">展示水印组件的基本用法和核心功能</p>
 
     <div class="grid grid-2">
       <!-- 简单文字水印 -->
@@ -351,11 +342,11 @@ const multiLineCode = `const watermark = await createWatermark(container, {
               v-model="config.content"
               type="text"
               placeholder="输入水印文字"
-            >
+            />
           </div>
           <div class="form-group">
             <label>字体大小: {{ config.fontSize }}px</label>
-            <input v-model="config.fontSize" type="range" min="12" max="48">
+            <input v-model="config.fontSize" type="range" min="12" max="48" />
           </div>
           <div class="form-group">
             <label>透明度: {{ config.opacity }}</label>
@@ -365,28 +356,22 @@ const multiLineCode = `const watermark = await createWatermark(container, {
               min="0"
               max="1"
               step="0.1"
-            >
+            />
           </div>
           <div class="form-group">
             <label>旋转角度: {{ config.rotate }}°</label>
-            <input v-model="config.rotate" type="range" min="-90" max="90">
+            <input v-model="config.rotate" type="range" min="-90" max="90" />
           </div>
           <div class="form-group">
             <label>文字颜色</label>
-            <input v-model="config.color" type="color">
+            <input v-model="config.color" type="color" />
           </div>
           <div class="form-group">
             <label>渲染模式</label>
             <select v-model="config.renderMode">
-              <option value="dom">
-                DOM
-              </option>
-              <option value="canvas">
-                Canvas
-              </option>
-              <option value="svg">
-                SVG
-              </option>
+              <option value="dom">DOM</option>
+              <option value="canvas">Canvas</option>
+              <option value="svg">SVG</option>
             </select>
           </div>
         </div>

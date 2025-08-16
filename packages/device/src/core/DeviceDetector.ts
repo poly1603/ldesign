@@ -31,8 +31,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
   // 性能优化：缓存计算结果
   private cachedUserAgent?: string
-  private cachedOS?: { name: string, version: string }
-  private cachedBrowser?: { name: string, version: string }
+  private cachedOS?: { name: string; version: string }
+  private cachedBrowser?: { name: string; version: string }
   private lastDetectionTime = 0
   private readonly minDetectionInterval = 16 // 约60fps
 
@@ -118,7 +118,9 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   /**
    * 动态加载扩展模块
    */
-  async loadModule<T extends DeviceModule = DeviceModule>(name: string): Promise<T> {
+  async loadModule<T extends DeviceModule = DeviceModule>(
+    name: string
+  ): Promise<T> {
     if (this.isDestroyed) {
       throw new Error('DeviceDetector has been destroyed')
     }
@@ -150,8 +152,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * 销毁检测器，清理资源
    */
   async destroy(): Promise<void> {
-    if (this.isDestroyed)
-      return
+    if (this.isDestroyed) return
 
     this.isDestroyed = true
 
@@ -227,8 +228,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * 设置事件监听器
    */
   private setupEventListeners(): void {
-    if (typeof window === 'undefined')
-      return
+    if (typeof window === 'undefined') return
 
     // 窗口缩放监听
     if (this.options.enableResize) {
@@ -250,11 +250,15 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       }, this.options.debounceDelay)
 
       // 监听 orientationchange 事件
-      window.addEventListener('orientationchange', this.orientationHandler, { passive: true })
+      window.addEventListener('orientationchange', this.orientationHandler, {
+        passive: true,
+      })
 
       // 同时监听 resize 事件作为备选方案
       if (!this.options.enableResize) {
-        window.addEventListener('resize', this.orientationHandler, { passive: true })
+        window.addEventListener('resize', this.orientationHandler, {
+          passive: true,
+        })
       }
     }
   }
@@ -281,8 +285,14 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       }
 
       // 检查尺寸是否发生变化
-      if (oldDeviceInfo.width !== newDeviceInfo.width || oldDeviceInfo.height !== newDeviceInfo.height) {
-        this.emit('resize', { width: newDeviceInfo.width, height: newDeviceInfo.height })
+      if (
+        oldDeviceInfo.width !== newDeviceInfo.width ||
+        oldDeviceInfo.height !== newDeviceInfo.height
+      ) {
+        this.emit('resize', {
+          width: newDeviceInfo.width,
+          height: newDeviceInfo.height,
+        })
       }
     }
   }
@@ -290,13 +300,16 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   /**
    * 检查设备信息是否发生变化
    */
-  private hasDeviceInfoChanged(oldInfo: DeviceInfo, newInfo: DeviceInfo): boolean {
+  private hasDeviceInfoChanged(
+    oldInfo: DeviceInfo,
+    newInfo: DeviceInfo
+  ): boolean {
     return (
-      oldInfo.type !== newInfo.type
-      || oldInfo.orientation !== newInfo.orientation
-      || oldInfo.width !== newInfo.width
-      || oldInfo.height !== newInfo.height
-      || oldInfo.pixelRatio !== newInfo.pixelRatio
+      oldInfo.type !== newInfo.type ||
+      oldInfo.orientation !== newInfo.orientation ||
+      oldInfo.width !== newInfo.width ||
+      oldInfo.height !== newInfo.height ||
+      oldInfo.pixelRatio !== newInfo.pixelRatio
     )
   }
 
@@ -304,8 +317,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * 移除事件监听器
    */
   private removeEventListeners(): void {
-    if (typeof window === 'undefined')
-      return
+    if (typeof window === 'undefined') return
 
     if (this.resizeHandler) {
       window.removeEventListener('resize', this.resizeHandler)

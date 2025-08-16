@@ -87,17 +87,17 @@ class SettingsStore extends BaseStore {
       language: 'zh-CN',
       notifications: {
         email: true,
-        push: false
-      }
-    }
+        push: false,
+      },
+    },
   })
   preferences: UserPreferences = {
     theme: 'light',
     language: 'zh-CN',
     notifications: {
       email: true,
-      push: false
-    }
+      push: false,
+    },
   }
 }
 ```
@@ -141,14 +141,14 @@ class AppStore extends BaseStore {
   // 自定义存储键
   @PersistentState({
     default: [],
-    key: 'user_favorites_v2'
+    key: 'user_favorites_v2',
   })
   favorites: string[] = []
 
   // 使用 sessionStorage
   @PersistentState({
     default: null,
-    storage: 'sessionStorage'
+    storage: 'sessionStorage',
   })
   currentSession: Session | null = null
 
@@ -156,14 +156,14 @@ class AppStore extends BaseStore {
   @PersistentState({
     default: new Date(),
     serialize: (date: Date) => date.toISOString(),
-    deserialize: (str: string) => new Date(str)
+    deserialize: (str: string) => new Date(str),
   })
   lastVisit: Date = new Date()
 
   // 条件持久化
   @PersistentState({
     default: [],
-    condition: () => this.isLoggedIn
+    condition: () => this.isLoggedIn,
   })
   userSpecificData: any[] = []
 }
@@ -199,8 +199,8 @@ class ConfigStore extends BaseStore {
   @ReadonlyState({
     value: {
       apiUrl: 'https://api.example.com',
-      timeout: 5000
-    }
+      timeout: 5000,
+    },
   })
   readonly apiConfig: ApiConfig
 }
@@ -293,7 +293,7 @@ class UserStore extends BaseStore {
   @AsyncAction({
     loadingState: 'saving',
     errorState: 'saveError',
-    timeout: 10000
+    timeout: 10000,
   })
   async saveUser(userData: Partial<User>) {
     const response = await userApi.updateUser(this.user!.id, userData)
@@ -348,7 +348,7 @@ class DataStore extends BaseStore {
   // 自定义缓存键
   @CachedAction(60000, {
     key: args => `user-${args[0]}-profile`,
-    maxSize: 100
+    maxSize: 100,
   })
   async fetchUserProfile(userId: string) {
     return await userApi.getProfile(userId)
@@ -551,7 +551,7 @@ class AnalyticsStore extends BaseStore {
     return this.rawData.map(point => ({
       ...point,
       processed: true,
-      timestamp: new Date(point.timestamp)
+      timestamp: new Date(point.timestamp),
     }))
   }
 
@@ -593,25 +593,24 @@ class ProductStore extends BaseStore {
   @MemoizedGetter({ maxSize: 10, ttl: 60000 })
   getFilteredProducts(category: string, priceRange: [number, number]) {
     console.log(`过滤产品: ${category}, ${priceRange}`)
-    return this.products.filter(product =>
-      product.category === category
-      && product.price >= priceRange[0]
-      && product.price <= priceRange[1]
+    return this.products.filter(
+      product =>
+        product.category === category &&
+        product.price >= priceRange[0] &&
+        product.price <= priceRange[1]
     )
   }
 
   // 自定义键生成器
   @MemoizedGetter({
     maxSize: 20,
-    keyGenerator: (query, filters) => `${query}-${JSON.stringify(filters)}`
+    keyGenerator: (query, filters) => `${query}-${JSON.stringify(filters)}`,
   })
   searchProducts(query: string, filters: any = {}) {
     console.log(`搜索产品: ${query}`)
-    return this.products.filter((product) => {
+    return this.products.filter(product => {
       const matchesQuery = product.name.toLowerCase().includes(query.toLowerCase())
-      const matchesFilters = Object.entries(filters).every(([key, value]) =>
-        product[key] === value
-      )
+      const matchesFilters = Object.entries(filters).every(([key, value]) => product[key] === value)
       return matchesQuery && matchesFilters
     })
   }
@@ -654,7 +653,7 @@ class UserProfileStore extends BaseStore {
     return {
       name: this.fullName,
       avatar: this.avatar || this.generateAvatar(this.fullName),
-      initials: this.getInitials(this.fullName)
+      initials: this.getInitials(this.fullName),
     }
   }
 
@@ -663,7 +662,11 @@ class UserProfileStore extends BaseStore {
   }
 
   private getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase()
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
   }
 }
 ```

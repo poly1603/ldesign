@@ -113,15 +113,11 @@ export default defineComponent({
                   {currentDeviceName}
                 </p>
                 <p style={{ margin: '8px 0' }}>
-                  分辨率:
-                  {' '}
-                  {deviceInfo.value?.screenSize || '未知'}
+                  分辨率: {deviceInfo.value?.screenSize || '未知'}
                 </p>
                 {$i18n && (
                   <p style={{ margin: '8px 0' }}>
-                    语言:
-                    {' '}
-                    {$i18n.getCurrentLanguage()}
+                    语言: {$i18n.getCurrentLanguage()}
                   </p>
                 )}
               </div>
@@ -219,9 +215,7 @@ export default defineComponent({
                   fontWeight: '600',
                 }}
               >
-                🔑
-                {' '}
-                <span>用户登录</span>
+                🔑 <span>用户登录</span>
               </button>
 
               {isRouteSupported('/admin') && (
@@ -243,9 +237,7 @@ export default defineComponent({
                     fontWeight: '600',
                   }}
                 >
-                  ⚙️
-                  {' '}
-                  <span>管理后台</span>
+                  ⚙️ <span>管理后台</span>
                 </button>
               )}
 
@@ -268,9 +260,7 @@ export default defineComponent({
                     fontWeight: '600',
                   }}
                 >
-                  ✏️
-                  {' '}
-                  <span>内容编辑器</span>
+                  ✏️ <span>内容编辑器</span>
                 </button>
               )}
 
@@ -297,9 +287,7 @@ export default defineComponent({
                 }}
                 disabled={!isRouteSupported('/mobile-app')}
               >
-                📱
-                {' '}
-                <span>移动应用</span>
+                📱 <span>移动应用</span>
                 {!isRouteSupported('/mobile-app') && (
                   <span style={{ fontSize: '14px', opacity: 0.8 }}>
                     (仅移动端)

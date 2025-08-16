@@ -54,8 +54,16 @@ declare module 'crypto-js' {
   }
 
   export interface Cipher {
-    encrypt(message: string | WordArray, key: string | WordArray, cfg?: object): CipherParams
-    decrypt(ciphertext: string | CipherParams, key: string | WordArray, cfg?: object): WordArray
+    encrypt(
+      message: string | WordArray,
+      key: string | WordArray,
+      cfg?: object
+    ): CipherParams
+    decrypt(
+      ciphertext: string | CipherParams,
+      key: string | WordArray,
+      cfg?: object
+    ): WordArray
   }
 
   export const AES: Cipher
@@ -96,10 +104,22 @@ declare module 'crypto-js' {
   export function SHA512(message: string | WordArray): WordArray
   export function MD5(message: string | WordArray): WordArray
 
-  export function HmacSHA256(message: string | WordArray, key: string | WordArray): WordArray
-  export function HmacSHA1(message: string | WordArray, key: string | WordArray): WordArray
-  export function HmacSHA512(message: string | WordArray, key: string | WordArray): WordArray
-  export function HmacMD5(message: string | WordArray, key: string | WordArray): WordArray
+  export function HmacSHA256(
+    message: string | WordArray,
+    key: string | WordArray
+  ): WordArray
+  export function HmacSHA1(
+    message: string | WordArray,
+    key: string | WordArray
+  ): WordArray
+  export function HmacSHA512(
+    message: string | WordArray,
+    key: string | WordArray
+  ): WordArray
+  export function HmacMD5(
+    message: string | WordArray,
+    key: string | WordArray
+  ): WordArray
 }
 
 /**

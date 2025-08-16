@@ -2,7 +2,8 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: '@ldesign/http',
-  description: '一个功能强大的通用 HTTP 请求库，支持多种适配器、拦截器、缓存、重试等高级功能，完美集成 Vue 3',
+  description:
+    '一个功能强大的通用 HTTP 请求库，支持多种适配器、拦截器、缓存、重试等高级功能，完美集成 Vue 3',
 
   base: '/http/',
 
@@ -107,9 +108,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/http' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/http' }],
 
     footer: {
       message: 'Released under the MIT License.',

@@ -37,29 +37,29 @@ export const cryptoConfig = {
     defaultAESKeySize: 128, // 开发环境使用较小密钥提高性能
     defaultRSAKeySize: 1024,
     enableDebugLogs: true,
-    strictValidation: false
+    strictValidation: false,
   },
 
   production: {
     defaultAESKeySize: 256, // 生产环境使用更强加密
     defaultRSAKeySize: 4096,
     enableDebugLogs: false,
-    strictValidation: true
+    strictValidation: true,
   },
 
   test: {
     defaultAESKeySize: 128, // 测试环境优化性能
     defaultRSAKeySize: 1024,
     enableDebugLogs: false,
-    strictValidation: true
-  }
+    strictValidation: true,
+  },
 }
 
 const app = createApp(App)
 
 const env = process.env.NODE_ENV || 'development'
 app.use(CryptoPlugin, {
-  config: cryptoConfig[env]
+  config: cryptoConfig[env],
 })
 ```
 
@@ -99,7 +99,7 @@ export function useSecureCrypto() {
         timestamp: Date.now(),
         algorithm: result.algorithm,
         dataLength: data.length,
-        success: true
+        success: true,
       })
 
       // 限制历史记录大小
@@ -108,12 +108,11 @@ export function useSecureCrypto() {
       }
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       encryptionHistory.value.unshift({
         timestamp: Date.now(),
         error: error.message,
-        success: false
+        success: false,
       })
       throw error
     }
@@ -127,8 +126,9 @@ export function useSecureCrypto() {
   // 统计信息
   const stats = computed(() => ({
     totalOperations: encryptionHistory.value.length,
-    successRate: encryptionHistory.value.filter(h => h.success).length / encryptionHistory.value.length,
-    lastOperation: encryptionHistory.value[0]
+    successRate:
+      encryptionHistory.value.filter(h => h.success).length / encryptionHistory.value.length,
+    lastOperation: encryptionHistory.value[0],
   }))
 
   return {
@@ -136,7 +136,7 @@ export function useSecureCrypto() {
     secureEncrypt,
     encryptionHistory: readonly(encryptionHistory),
     stats,
-    clearHistory
+    clearHistory,
   }
 }
 ```
@@ -158,7 +158,7 @@ export function useCryptoState() {
     decryptedData: '',
     isProcessing: false,
     lastOperation: null,
-    operationCount: 0
+    operationCount: 0,
   })
 
   // 监听加密状态变化
@@ -167,32 +167,32 @@ export function useCryptoState() {
   })
 
   // 监听操作结果
-  watch(crypto.lastResult, (result) => {
+  watch(crypto.lastResult, result => {
     if (result) {
       state.lastOperation = {
         type: result.algorithm ? 'encrypt' : 'decrypt',
         timestamp: Date.now(),
-        success: true
+        success: true,
       }
       state.operationCount++
     }
   })
 
   // 监听错误
-  watch(crypto.lastError, (error) => {
+  watch(crypto.lastError, error => {
     if (error) {
       state.lastOperation = {
         type: 'error',
         timestamp: Date.now(),
         success: false,
-        error
+        error,
       }
     }
   })
 
   return {
     ...crypto,
-    state: readonly(state)
+    state: readonly(state),
   }
 }
 ```
@@ -223,12 +223,10 @@ export function useSecureStorage(storageKey: string, userKey: string) {
 
       localStorage.setItem(storageKey, JSON.stringify(encrypted))
       data.value = value
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err.message
       throw err
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -255,13 +253,11 @@ export function useSecureStorage(storageKey: string, userKey: string) {
       const value = JSON.parse(decrypted.data)
       data.value = value
       return value
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err.message
       data.value = null
       return null
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -274,11 +270,15 @@ export function useSecureStorage(storageKey: string, userKey: string) {
 
   // 自动保存
   const enableAutoSave = () => {
-    watch(data, (newValue) => {
-      if (newValue !== null) {
-        save(newValue)
-      }
-    }, { deep: true })
+    watch(
+      data,
+      newValue => {
+        if (newValue !== null) {
+          save(newValue)
+        }
+      },
+      { deep: true }
+    )
   }
 
   return {
@@ -288,7 +288,7 @@ export function useSecureStorage(storageKey: string, userKey: string) {
     save,
     load,
     remove,
-    enableAutoSave
+    enableAutoSave,
   }
 }
 ```
@@ -309,17 +309,18 @@ const { secureEncrypt, isEncrypting, lastError, clearError } = useSecureCrypto()
 
 const formData = ref({
   sensitiveData: '',
-  encryptionKey: ''
+  encryptionKey: '',
 })
 
 const result = ref(null)
 const error = computed(() => lastError.value)
 const isProcessing = computed(() => isEncrypting.value)
 
-const canSubmit = computed(() =>
-  formData.value.sensitiveData.trim()
-  && formData.value.encryptionKey.trim()
-  && !isProcessing.value
+const canSubmit = computed(
+  () =>
+    formData.value.sensitiveData.trim() &&
+    formData.value.encryptionKey.trim() &&
+    !isProcessing.value
 )
 
 async function handleSubmit() {
@@ -338,8 +339,7 @@ async function handleSubmit() {
     // 清除敏感数据
     formData.value.sensitiveData = ''
     formData.value.encryptionKey = ''
-  }
-  catch (err) {
+  } catch (err) {
     emit('error', err)
   }
 }
@@ -370,25 +370,15 @@ function clearForm() {
         type="password"
         :disabled="isProcessing"
         placeholder="输入加密密钥"
-      >
+      />
     </div>
 
     <div class="form-actions">
-      <button
-        type="submit"
-        :disabled="!canSubmit"
-        :class="{ loading: isProcessing }"
-      >
+      <button type="submit" :disabled="!canSubmit" :class="{ loading: isProcessing }">
         {{ isProcessing ? '处理中...' : '加密提交' }}
       </button>
 
-      <button
-        type="button"
-        :disabled="isProcessing"
-        @click="clearForm"
-      >
-        清除
-      </button>
+      <button type="button" :disabled="isProcessing" @click="clearForm">清除</button>
     </div>
 
     <div v-if="result" class="result">
@@ -396,9 +386,7 @@ function clearForm() {
       <pre>{{ result }}</pre>
     </div>
 
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
+    <div v-if="error" class="error">错误: {{ error }}</div>
   </form>
 </template>
 
@@ -519,8 +507,7 @@ export function useLazyCrypto() {
   const error = ref(null)
 
   const loadCrypto = async () => {
-    if (cryptoModule.value)
-      return cryptoModule.value
+    if (cryptoModule.value) return cryptoModule.value
 
     try {
       isLoading.value = true
@@ -530,12 +517,10 @@ export function useLazyCrypto() {
       cryptoModule.value = module.useCrypto()
 
       return cryptoModule.value
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err.message
       throw err
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -544,7 +529,7 @@ export function useLazyCrypto() {
     cryptoModule: readonly(cryptoModule),
     isLoading: readonly(isLoading),
     error: readonly(error),
-    loadCrypto
+    loadCrypto,
   }
 }
 ```
@@ -590,14 +575,14 @@ export function useCryptoCache(maxCacheSize = 100) {
   const cacheStats = computed(() => ({
     size: cache.value.size,
     maxSize: maxCacheSize,
-    usage: (cache.value.size / maxCacheSize) * 100
+    usage: (cache.value.size / maxCacheSize) * 100,
   }))
 
   return {
     ...crypto,
     cachedEncrypt,
     clearCache,
-    cacheStats
+    cacheStats,
   }
 }
 ```
@@ -626,7 +611,7 @@ export default {
         // showNotification('加密操作失败，请重试')
       }
     }
-  }
+  },
 }
 ```
 
@@ -640,7 +625,7 @@ import { onErrorCaptured, ref } from 'vue'
 const hasError = ref(false)
 const errorMessage = ref('')
 
-onErrorCaptured((error) => {
+onErrorCaptured(error => {
   if (error.name === 'CryptoError' || error.message.includes('crypto')) {
     hasError.value = true
     errorMessage.value = error.message
@@ -666,12 +651,8 @@ function reset() {
     <div v-else class="error-boundary">
       <h3>🔒 加密功能暂时不可用</h3>
       <p>{{ errorMessage }}</p>
-      <button @click="retry">
-        重试
-      </button>
-      <button @click="reset">
-        重置
-      </button>
+      <button @click="retry">重试</button>
+      <button @click="reset">重置</button>
     </div>
   </div>
 </template>
@@ -707,8 +688,7 @@ describe('useCrypto', () => {
 
     try {
       await encryptAES('', '') // 无效输入
-    }
-    catch (error) {
+    } catch (error) {
       expect(lastError.value).toBeTruthy()
     }
   })
@@ -735,7 +715,7 @@ export const cryptoEnv = {
     if (missing.length > 0) {
       throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
     }
-  }
+  },
 }
 ```
 

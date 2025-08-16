@@ -113,7 +113,7 @@ const {
     description: '',
     agree: false,
   },
-  onSubmit: async (data) => {
+  onSubmit: async data => {
     console.log('Hook 表单提交:', data)
     // 模拟异步提交
     await new Promise(resolve => setTimeout(resolve, 2000))
@@ -133,17 +133,13 @@ function handleSubmit() {
       <h1 class="text-3xl font-bold text-gray-900 mb-2">
         useFormBuilder Hook 演示
       </h1>
-      <p class="text-gray-600">
-        展示 useFormBuilder Hook 的使用方式和状态管理
-      </p>
+      <p class="text-gray-600">展示 useFormBuilder Hook 的使用方式和状态管理</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- 表单区域 -->
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">
-          表单
-        </h2>
+        <h2 class="text-xl font-semibold mb-4">表单</h2>
 
         <form class="space-y-4" @submit.prevent="handleSubmit">
           <div
@@ -167,11 +163,11 @@ function handleSubmit() {
               @input="
                 setFieldValue(
                   field.key,
-                  ($event.target as HTMLInputElement).value,
+                  ($event.target as HTMLInputElement).value
                 )
               "
               @blur="handleFieldBlur(field.key)"
-            >
+            />
 
             <!-- 数字输入框 -->
             <input
@@ -184,11 +180,11 @@ function handleSubmit() {
               @input="
                 setFieldValue(
                   field.key,
-                  Number(($event.target as HTMLInputElement).value),
+                  Number(($event.target as HTMLInputElement).value)
                 )
               "
               @blur="handleFieldBlur(field.key)"
-            >
+            />
 
             <!-- 选择框 -->
             <select
@@ -199,7 +195,7 @@ function handleSubmit() {
               @change="
                 setFieldValue(
                   field.key,
-                  ($event.target as HTMLSelectElement).value,
+                  ($event.target as HTMLSelectElement).value
                 )
               "
               @blur="handleFieldBlur(field.key)"
@@ -227,7 +223,7 @@ function handleSubmit() {
               @input="
                 setFieldValue(
                   field.key,
-                  ($event.target as HTMLTextAreaElement).value,
+                  ($event.target as HTMLTextAreaElement).value
                 )
               "
               @blur="handleFieldBlur(field.key)"
@@ -245,11 +241,11 @@ function handleSubmit() {
                 @change="
                   setFieldValue(
                     field.key,
-                    ($event.target as HTMLInputElement).checked,
+                    ($event.target as HTMLInputElement).checked
                   )
                 "
                 @blur="handleFieldBlur(field.key)"
-              >
+              />
               <span class="text-sm text-gray-700">{{
                 field.props?.label
               }}</span>
@@ -285,9 +281,7 @@ function handleSubmit() {
       <div class="space-y-6">
         <!-- 表单状态 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            表单状态
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">表单状态</h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
               <span>是否有效:</span>
@@ -324,9 +318,7 @@ function handleSubmit() {
 
         <!-- 表单数据 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            表单数据
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(values, null, 2)
           }}</pre>
@@ -334,9 +326,7 @@ function handleSubmit() {
 
         <!-- 错误信息 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            错误信息
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">错误信息</h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(errors, null, 2)
           }}</pre>

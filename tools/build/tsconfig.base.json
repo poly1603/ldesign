@@ -29,17 +29,6 @@
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false
   },
-  "include": [
-    "src/**/*",
-    "tests/**/*",
-    "__tests__/**/*",
-    "*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "lib",
-    "es",
-    "types"
-  ]
+  "include": ["src/**/*", "tests/**/*", "__tests__/**/*", "*.d.ts"],
+  "exclude": ["node_modules", "dist", "lib", "es", "types"]
 }

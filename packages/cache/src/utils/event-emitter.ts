@@ -47,8 +47,7 @@ export class EventEmitter<T = any> {
       for (const listener of eventListeners) {
         try {
           listener(data)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Error in event listener for ${event}:`, error)
         }
       }
@@ -61,8 +60,7 @@ export class EventEmitter<T = any> {
   removeAllListeners(event?: string): void {
     if (event) {
       this.listeners.delete(event)
-    }
-    else {
+    } else {
       this.listeners.clear()
     }
   }

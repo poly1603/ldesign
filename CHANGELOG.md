@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 ### Added
+
 - Initial project setup with monorepo architecture
 - Core engine package with plugin system
 - Color management system with theme support
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation and contribution guidelines
 
 ### Changed
+
 - Project renamed from "scaffold" to "ldesign"
 - Updated package structure and naming conventions
 - Enhanced build configuration with Rollup
@@ -32,12 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated ESLint rules and code standards
 
 ### Fixed
-- Path aliases updated to use @ldesign/* namespace
+
+- Path aliases updated to use @ldesign/\* namespace
 - Build configuration standardized across packages
 - Test coverage thresholds increased to 90%
 - Security audit integration in CI pipeline
 
 ### Security
+
 - Added security audit checks in CI/CD
 - Implemented dependency vulnerability scanning
 - Added license compliance checking
@@ -45,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-01-XX
 
 ### Added
+
 - Initial release of LDesign Vue Engine
 - Core packages: engine, color, router, http, i18n, device, crypto, template
 - Development tools and build configuration
@@ -57,7 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Version 0.1.0
 
-This is the initial release of LDesign Vue Engine, a modern frontend development engine based on Vue 3 with monorepo architecture.
+This is the initial release of LDesign Vue Engine, a modern frontend development engine based on Vue
+3 with monorepo architecture.
 
 #### Key Features
 
@@ -107,7 +113,8 @@ This is the initial release, so there are no breaking changes from previous vers
 
 #### Migration Guide
 
-For users migrating from other Vue frameworks or libraries, please refer to our [Migration Guide](./docs/migration.md).
+For users migrating from other Vue frameworks or libraries, please refer to our
+[Migration Guide](./docs/migration.md).
 
 #### Known Issues
 

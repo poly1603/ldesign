@@ -99,8 +99,8 @@ describe('哈希算法测试', () => {
     it('应该生成已知测试向量的正确哈希', () => {
       // 使用标准测试向量
       const testVector = 'abc'
-      const expectedHash
-        = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+      const expectedHash =
+        'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
       const result = hash.sha256(testVector)
       expect(result.toLowerCase()).toBe(expectedHash)
     })
@@ -138,8 +138,8 @@ describe('哈希算法测试', () => {
     it('应该生成已知测试向量的正确哈希', () => {
       // 使用标准测试向量
       const testVector = 'abc'
-      const expectedHash
-        = 'ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f'
+      const expectedHash =
+        'ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f'
       const result = hash.sha512(testVector)
       expect(result.toLowerCase()).toBe(expectedHash)
     })

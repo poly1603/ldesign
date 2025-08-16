@@ -57,24 +57,21 @@ class EventEmitter {
   }
 
   off(event: string, handler?: Function): void {
-    if (!this.events[event])
-      return
+    if (!this.events[event]) return
 
     if (handler) {
       this.events[event] = this.events[event].filter(h => h !== handler)
-    }
-    else {
+    } else {
       this.events[event] = []
     }
   }
 
   emit(event: string, ...args: any[]): void {
     if (this.events[event]) {
-      this.events[event].forEach((handler) => {
+      this.events[event].forEach(handler => {
         try {
           handler(...args)
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Event handler error:', error)
         }
       })
@@ -136,21 +133,15 @@ export class FormInstance extends EventEmitter {
   }
 
   private bindEventCallbacks(config: FormInstanceConfig): void {
-    if (config.onSubmit)
-      this.on('submit', config.onSubmit)
-    if (config.onChange)
-      this.on('change', config.onChange)
-    if (config.onFieldChange)
-      this.on('fieldChange', config.onFieldChange)
-    if (config.onValidate)
-      this.on('validate', config.onValidate)
-    if (config.onError)
-      this.on('error', config.onError)
+    if (config.onSubmit) this.on('submit', config.onSubmit)
+    if (config.onChange) this.on('change', config.onChange)
+    if (config.onFieldChange) this.on('fieldChange', config.onFieldChange)
+    if (config.onValidate) this.on('validate', config.onValidate)
+    if (config.onError) this.on('error', config.onError)
   }
 
   private render(): void {
-    if (this.mounted)
-      return
+    if (this.mounted) return
 
     // 清空容器
     this.container.innerHTML = ''
@@ -175,7 +166,7 @@ export class FormInstance extends EventEmitter {
     this.applyLayoutStyles(fieldsContainer)
 
     // 渲染字段
-    this.options.fields.forEach((field) => {
+    this.options.fields.forEach(field => {
       if (!field.hidden) {
         const fieldElement = this.renderField(field)
         fieldsContainer.appendChild(fieldElement)
@@ -193,7 +184,7 @@ export class FormInstance extends EventEmitter {
     form.appendChild(submitButton)
 
     // 绑定表单提交事件
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', e => {
       e.preventDefault()
       this.handleSubmit()
     })
@@ -234,8 +225,7 @@ export class FormInstance extends EventEmitter {
     // 设置初始值
     if (this.formData[field.name] !== undefined) {
       this.setElementValue(inputElement, this.formData[field.name])
-    }
-    else if (field.defaultValue !== undefined) {
+    } else if (field.defaultValue !== undefined) {
       this.setElementValue(inputElement, field.defaultValue)
       this.formData[field.name] = field.defaultValue
     }
@@ -309,14 +299,12 @@ export class FormInstance extends EventEmitter {
     if (element instanceof HTMLInputElement) {
       if (element.type === 'checkbox') {
         element.checked = Boolean(value)
-      }
-      else {
+      } else {
         element.value = String(value || '')
       }
-    }
-    else if (
-      element instanceof HTMLTextAreaElement
-      || element instanceof HTMLSelectElement
+    } else if (
+      element instanceof HTMLTextAreaElement ||
+      element instanceof HTMLSelectElement
     ) {
       element.value = String(value || '')
     }
@@ -326,17 +314,14 @@ export class FormInstance extends EventEmitter {
     if (element instanceof HTMLInputElement) {
       if (element.type === 'checkbox') {
         return element.checked
-      }
-      else if (element.type === 'number') {
+      } else if (element.type === 'number') {
         return element.value ? Number(element.value) : undefined
-      }
-      else {
+      } else {
         return element.value
       }
-    }
-    else if (
-      element instanceof HTMLTextAreaElement
-      || element instanceof HTMLSelectElement
+    } else if (
+      element instanceof HTMLTextAreaElement ||
+      element instanceof HTMLSelectElement
     ) {
       return element.value
     }
@@ -365,15 +350,13 @@ export class FormInstance extends EventEmitter {
       if (isValid) {
         this.emit('submit', { ...this.formData })
       }
-    }
-    catch (error) {
+    } catch (error) {
       this.emit('error', error)
     }
   }
 
   private applyBaseStyles(): void {
-    if (document.getElementById('ldesign-form-styles'))
-      return
+    if (document.getElementById('ldesign-form-styles')) return
 
     const style = document.createElement('style')
     style.id = 'ldesign-form-styles'
@@ -465,7 +448,7 @@ export class FormInstance extends EventEmitter {
     this.formData = { ...data }
 
     // 更新DOM元素的值
-    Object.keys(data).forEach((fieldName) => {
+    Object.keys(data).forEach(fieldName => {
       const element = this.fieldElements
         .get(fieldName)
         ?.querySelector('input, textarea, select') as HTMLElement
@@ -505,8 +488,8 @@ export class FormInstance extends EventEmitter {
 
       // 必填验证
       if (
-        field.required
-        && (value === undefined || value === null || value === '')
+        field.required &&
+        (value === undefined || value === null || value === '')
       ) {
         fieldErrors.push(`${field.title}不能为空`)
         isValid = false
@@ -514,10 +497,10 @@ export class FormInstance extends EventEmitter {
 
       // 其他验证规则
       if (
-        field.rules
-        && value !== undefined
-        && value !== null
-        && value !== ''
+        field.rules &&
+        value !== undefined &&
+        value !== null &&
+        value !== ''
       ) {
         for (const rule of field.rules) {
           const result = await this.validateRule(rule, value, this.formData)
@@ -540,7 +523,7 @@ export class FormInstance extends EventEmitter {
   private async validateRule(
     rule: ValidationRule,
     value: any,
-    formData: FormData,
+    formData: FormData
   ): Promise<boolean | string> {
     if (rule.validator) {
       return await rule.validator(value, formData)
@@ -571,7 +554,7 @@ export class FormInstance extends EventEmitter {
     // 重置DOM元素
     this.fieldElements.forEach((fieldElement, fieldName) => {
       const element = fieldElement.querySelector(
-        'input, textarea, select',
+        'input, textarea, select'
       ) as HTMLElement
       if (element) {
         const field = this.options.fields.find(f => f.name === fieldName)
@@ -650,7 +633,7 @@ export class FormInstance extends EventEmitter {
         const select = fieldElement.querySelector('select') as HTMLSelectElement
         if (select) {
           select.innerHTML = ''
-          options.forEach((option) => {
+          options.forEach(option => {
             const optionElement = document.createElement('option')
             optionElement.value = option.value
             optionElement.textContent = option.label

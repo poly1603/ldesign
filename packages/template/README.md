@@ -45,7 +45,7 @@ const app = createApp(App)
 app.use(TemplatePlugin, {
   templateRoot: 'src/templates',
   enableCache: true,
-  enablePreload: true
+  enablePreload: true,
 })
 
 app.mount('#app')
@@ -57,11 +57,7 @@ app.mount('#app')
 <script setup lang="ts">
 import { TemplateRenderer, useTemplate } from '@ldesign/template'
 
-const {
-  currentDevice,
-  switchTemplate,
-  availableTemplates
-} = useTemplate()
+const { currentDevice, switchTemplate, availableTemplates } = useTemplate()
 
 const selectedTemplate = ref(null)
 
@@ -69,16 +65,14 @@ async function switchToLogin() {
   await switchTemplate('login', currentDevice.value, 'classic')
   selectedTemplate.value = {
     category: 'login',
-    template: 'classic'
+    template: 'classic',
   }
 }
 </script>
 
 <template>
   <div>
-    <button @click="switchToLogin">
-      切换到登录页
-    </button>
+    <button @click="switchToLogin">切换到登录页</button>
     <TemplateRenderer
       v-if="selectedTemplate"
       :category="selectedTemplate.category"
@@ -94,11 +88,7 @@ async function switchToLogin() {
 ```vue
 <template>
   <!-- 基础用法 -->
-  <LTemplateRenderer
-    category="login"
-    device="desktop"
-    template="classic"
-  />
+  <LTemplateRenderer category="login" device="desktop" template="classic" />
 
   <!-- 带属性传递 -->
   <LTemplateRenderer
@@ -116,17 +106,13 @@ async function switchToLogin() {
     @error="onTemplateError"
   >
     <template #loading>
-      <div class="custom-loading">
-        加载中...
-      </div>
+      <div class="custom-loading">加载中...</div>
     </template>
 
     <template #error="{ error, retry }">
       <div class="custom-error">
         <p>{{ error.message }}</p>
-        <button @click="retry">
-          重试
-        </button>
+        <button @click="retry">重试</button>
       </div>
     </template>
   </LTemplateRenderer>
@@ -200,7 +186,7 @@ export default {
   minWidth: 1200,
   maxWidth: undefined,
   createdAt: '2024-01-01',
-  updatedAt: '2024-01-15'
+  updatedAt: '2024-01-15',
 } as TemplateConfig
 ```
 
@@ -216,17 +202,17 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '系统登录'
+      default: '系统登录',
     },
     onLogin: {
       type: Function,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   setup(props) {
     const form = ref({
       username: '',
-      password: ''
+      password: '',
     })
 
     const handleLogin = () => {
@@ -237,10 +223,7 @@ export default defineComponent({
       <div class="classic-login">
         <h1>{props.title}</h1>
         <form onSubmit={handleLogin}>
-          <input
-            v-model={form.value.username}
-            placeholder="用户名"
-          />
+          <input v-model={form.value.username} placeholder="用户名" />
           <input
             v-model={form.value.password}
             type="password"
@@ -250,7 +233,7 @@ export default defineComponent({
         </form>
       </div>
     )
-  }
+  },
 })
 ```
 
@@ -274,7 +257,7 @@ app.use(TemplatePlugin, {
     customDetector: () => {
       // 自定义设备检测逻辑
       return 'desktop'
-    }
+    },
   },
 
   // 缓存配置
@@ -283,10 +266,7 @@ app.use(TemplatePlugin, {
 
   // 预加载配置
   enablePreload: true,
-  preloadTemplates: [
-    'login:desktop:classic',
-    'login:mobile:simple'
-  ],
+  preloadTemplates: ['login:desktop:classic', 'login:mobile:simple'],
 
   // 默认设备类型
   defaultDevice: 'desktop',
@@ -295,7 +275,7 @@ app.use(TemplatePlugin, {
   componentPrefix: 'L',
   registerComponents: true,
   registerDirectives: true,
-  provideGlobalProperties: true
+  provideGlobalProperties: true,
 })
 ```
 
@@ -309,7 +289,7 @@ import { useTemplate } from '@ldesign/template'
 const { currentDevice, switchTemplate } = useTemplate()
 
 // 监听设备变化
-watch(currentDevice, (newDevice) => {
+watch(currentDevice, newDevice => {
   console.log('设备类型变化:', newDevice)
   // 自动切换到对应设备的模板
 })
@@ -338,7 +318,7 @@ const {
   getTemplates, // 获取模板列表
   hasTemplate, // 检查模板是否存在
   clearCache, // 清空缓存
-  refresh // 刷新模板列表
+  refresh, // 刷新模板列表
 } = useTemplate(options)
 ```
 

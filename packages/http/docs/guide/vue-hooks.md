@@ -1,6 +1,7 @@
 # Vue Hooks 详细指南
 
-@ldesign/http 为 Vue 3 提供了一套完整的 Composition API hooks，让你能够以声明式的方式处理 HTTP 请求。
+@ldesign/http 为 Vue 3 提供了一套完整的 Composition API hooks，让你能够以声明式的方式处理 HTTP 请求
+。
 
 ## 核心 Hooks
 
@@ -14,28 +15,25 @@
 <script setup lang="ts">
 import { useRequest } from '@ldesign/http/vue'
 
-const { data, loading, error, execute } = useRequest({
-  url: '/api/users',
-  method: 'GET'
-}, {
-  immediate: true // 立即执行
-})
+const { data, loading, error, execute } = useRequest(
+  {
+    url: '/api/users',
+    method: 'GET',
+  },
+  {
+    immediate: true, // 立即执行
+  }
+)
 </script>
 
 <template>
   <div>
-    <div v-if="loading">
-      加载中...
-    </div>
-    <div v-else-if="error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">错误: {{ error.message }}</div>
     <div v-else-if="data">
       {{ data }}
     </div>
-    <button @click="execute">
-      重新请求
-    </button>
+    <button @click="execute">重新请求</button>
   </div>
 </template>
 ```
@@ -89,23 +87,23 @@ const userId = ref(1)
 const { data, loading, error, execute } = useRequest<User[]>(
   computed(() => ({
     url: `/api/users/${userId.value}`,
-    method: 'GET'
+    method: 'GET',
   })),
   {
     immediate: false,
-    transform: (rawData) => {
+    transform: rawData => {
       // 数据转换
       return rawData.map(user => ({
         ...user,
-        displayName: `${user.name} (${user.email})`
+        displayName: `${user.name} (${user.email})`,
       }))
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       console.log('请求成功:', data)
     },
-    onError: (error) => {
+    onError: error => {
       console.error('请求失败:', error)
-    }
+    },
   }
 )
 
@@ -151,7 +149,7 @@ const { data, loading } = useQuery(
   computed(() => ['users', page.value, pageSize.value]), // 动态查询键
   computed(() => ({
     url: '/api/users',
-    params: { page: page.value, pageSize: pageSize.value }
+    params: { page: page.value, pageSize: pageSize.value },
   })),
   {
     staleTime: 300000,
@@ -190,21 +188,21 @@ import { reactive } from 'vue'
 
 const form = reactive({
   name: '',
-  email: ''
+  email: '',
 })
 
 const { mutate, loading, error, data } = useMutation(
   userData => http.post('/api/users', userData),
   {
-    onSuccess: (data) => {
+    onSuccess: data => {
       console.log('创建成功:', data)
       // 重置表单
       form.name = ''
       form.email = ''
     },
-    onError: (error) => {
+    onError: error => {
       console.error('创建失败:', error)
-    }
+    },
   }
 )
 
@@ -215,20 +213,16 @@ function handleSubmit() {
 
 <template>
   <form @submit.prevent="handleSubmit">
-    <input v-model="form.name" placeholder="姓名" required>
-    <input v-model="form.email" type="email" placeholder="邮箱" required>
+    <input v-model="form.name" placeholder="姓名" required />
+    <input v-model="form.email" type="email" placeholder="邮箱" required />
     <button type="submit" :disabled="loading">
       {{ loading ? '提交中...' : '提交' }}
     </button>
   </form>
 
-  <div v-if="error" class="error">
-    错误: {{ error.message }}
-  </div>
+  <div v-if="error" class="error">错误: {{ error.message }}</div>
 
-  <div v-if="data" class="success">
-    创建成功: {{ data.name }}
-  </div>
+  <div v-if="data" class="success">创建成功: {{ data.name }}</div>
 </template>
 ```
 
@@ -240,38 +234,35 @@ import { useMutation, useQuery } from '@ldesign/http/vue'
 
 const { data: users, invalidate } = useQuery('users', { url: '/api/users' })
 
-const { mutate: updateUser } = useMutation(
-  ({ id, data }) => http.put(`/api/users/${id}`, data),
-  {
-    onMutate: async ({ id, data }) => {
-      // 取消正在进行的查询
-      await queryClient.cancelQueries('users')
+const { mutate: updateUser } = useMutation(({ id, data }) => http.put(`/api/users/${id}`, data), {
+  onMutate: async ({ id, data }) => {
+    // 取消正在进行的查询
+    await queryClient.cancelQueries('users')
 
-      // 保存当前数据快照
-      const previousUsers = users.value
+    // 保存当前数据快照
+    const previousUsers = users.value
 
-      // 乐观更新
-      if (users.value) {
-        const index = users.value.findIndex(user => user.id === id)
-        if (index !== -1) {
-          users.value[index] = { ...users.value[index], ...data }
-        }
+    // 乐观更新
+    if (users.value) {
+      const index = users.value.findIndex(user => user.id === id)
+      if (index !== -1) {
+        users.value[index] = { ...users.value[index], ...data }
       }
-
-      return { previousUsers }
-    },
-    onError: (error, variables, context) => {
-      // 回滚乐观更新
-      if (context?.previousUsers) {
-        users.value = context.previousUsers
-      }
-    },
-    onSettled: () => {
-      // 重新获取数据
-      invalidate()
     }
-  }
-)
+
+    return { previousUsers }
+  },
+  onError: (error, variables, context) => {
+    // 回滚乐观更新
+    if (context?.previousUsers) {
+      users.value = context.previousUsers
+    }
+  },
+  onSettled: () => {
+    // 重新获取数据
+    invalidate()
+  },
+})
 </script>
 ```
 
@@ -290,7 +281,7 @@ const userResource = useResource('/api/users')
 // 获取列表
 const { data: users, loading: listLoading } = userResource.useList({
   page: 1,
-  limit: 10
+  limit: 10,
 })
 
 // 获取详情
@@ -300,21 +291,21 @@ const { data: user, loading: detailLoading } = userResource.useDetail(1)
 const { mutate: createUser, loading: createLoading } = userResource.useCreate({
   onSuccess: () => {
     // 自动刷新列表
-  }
+  },
 })
 
 // 更新
 const { mutate: updateUser } = userResource.useUpdate({
   onSuccess: () => {
     // 自动刷新相关数据
-  }
+  },
 })
 
 // 删除
 const { mutate: deleteUser } = userResource.useDelete({
   onSuccess: () => {
     // 自动刷新列表
-  }
+  },
 })
 </script>
 ```
@@ -341,19 +332,15 @@ const {
   prevPage,
   goToPage,
   setPageSize,
-  refresh
+  refresh,
 } = usePagination('/api/users', 1, 10)
 </script>
 
 <template>
   <div>
     <!-- 数据列表 -->
-    <div v-if="loading">
-      加载中...
-    </div>
-    <div v-else-if="error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">错误: {{ error.message }}</div>
     <div v-else>
       <div v-for="item in data?.data" :key="item.id">
         {{ item.name }}
@@ -362,24 +349,14 @@ const {
 
     <!-- 分页控件 -->
     <div class="pagination">
-      <button :disabled="!hasPrevPage" @click="prevPage">
-        上一页
-      </button>
+      <button :disabled="!hasPrevPage" @click="prevPage">上一页</button>
       <span>第 {{ page }} 页，共 {{ totalPages }} 页</span>
-      <button :disabled="!hasNextPage" @click="nextPage">
-        下一页
-      </button>
+      <button :disabled="!hasNextPage" @click="nextPage">下一页</button>
 
       <select v-model="pageSize" @change="setPageSize">
-        <option value="10">
-          10 条/页
-        </option>
-        <option value="20">
-          20 条/页
-        </option>
-        <option value="50">
-          50 条/页
-        </option>
+        <option value="10">10 条/页</option>
+        <option value="20">20 条/页</option>
+        <option value="50">50 条/页</option>
       </select>
     </div>
   </div>
@@ -402,11 +379,11 @@ const { data, loading } = useQuery(
   computed(() => ['search', searchTerm.value]),
   computed(() => ({
     url: '/api/search',
-    params: { q: searchTerm.value }
+    params: { q: searchTerm.value },
   })),
   {
     enabled, // 只有当搜索词长度 > 2 时才执行查询
-    staleTime: 300000
+    staleTime: 300000,
   }
 )
 </script>
@@ -425,10 +402,10 @@ const { data: user } = useQuery('user', { url: '/api/user/profile' })
 const { data: permissions } = useQuery(
   computed(() => ['permissions', user.value?.id]),
   computed(() => ({
-    url: `/api/users/${user.value?.id}/permissions`
+    url: `/api/users/${user.value?.id}/permissions`,
   })),
   {
-    enabled: computed(() => !!user.value?.id) // 只有当用户信息存在时才查询权限
+    enabled: computed(() => !!user.value?.id), // 只有当用户信息存在时才查询权限
   }
 )
 </script>
@@ -440,23 +417,16 @@ const { data: permissions } = useQuery(
 <script setup lang="ts">
 import { useInfiniteQuery } from '@ldesign/http/vue'
 
-const {
-  data,
-  loading,
-  error,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage
-} = useInfiniteQuery(
+const { data, loading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery(
   'infinite-users',
   ({ pageParam = 1 }) => ({
     url: '/api/users',
-    params: { page: pageParam, limit: 10 }
+    params: { page: pageParam, limit: 10 },
   }),
   {
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       return lastPage.hasMore ? lastPage.page + 1 : undefined
-    }
+    },
   }
 )
 </script>
@@ -469,10 +439,7 @@ const {
       </div>
     </div>
 
-    <button
-      :disabled="!hasNextPage || isFetchingNextPage"
-      @click="fetchNextPage"
-    >
+    <button :disabled="!hasNextPage || isFetchingNextPage" @click="fetchNextPage">
       {{ isFetchingNextPage ? '加载中...' : '加载更多' }}
     </button>
   </div>
@@ -492,16 +459,15 @@ const app = createApp({})
 
 app.use(HttpPlugin, {
   client: httpClient,
-  globalErrorHandler: (error) => {
+  globalErrorHandler: error => {
     if (error.response?.status === 401) {
       // 处理未授权错误
       router.push('/login')
-    }
-    else if (error.response?.status >= 500) {
+    } else if (error.response?.status >= 500) {
       // 处理服务器错误
       showErrorNotification('服务器错误，请稍后重试')
     }
-  }
+  },
 })
 ```
 
@@ -514,17 +480,15 @@ import { useRequest } from '@ldesign/http/vue'
 const { data, loading, error, execute } = useRequest(
   { url: '/api/users' },
   {
-    onError: (error) => {
+    onError: error => {
       if (error.isNetworkError) {
         showNotification('网络连接失败', 'error')
-      }
-      else if (error.response?.status === 404) {
+      } else if (error.response?.status === 404) {
         showNotification('数据不存在', 'warning')
-      }
-      else {
+      } else {
         showNotification('请求失败', 'error')
       }
-    }
+    },
   }
 )
 </script>
@@ -546,17 +510,25 @@ const queryKey = `users-${page}-${limit}-${search}`
 
 ```typescript
 // 静态数据：长时间缓存
-const { data: config } = useQuery('app-config', { url: '/api/config' }, {
-  staleTime: 3600000, // 1小时
-  cacheTime: 86400000 // 24小时
-})
+const { data: config } = useQuery(
+  'app-config',
+  { url: '/api/config' },
+  {
+    staleTime: 3600000, // 1小时
+    cacheTime: 86400000, // 24小时
+  }
+)
 
 // 动态数据：短时间缓存
-const { data: notifications } = useQuery('notifications', { url: '/api/notifications' }, {
-  staleTime: 30000, // 30秒
-  cacheTime: 300000, // 5分钟
-  refetchInterval: 60000 // 每分钟刷新
-})
+const { data: notifications } = useQuery(
+  'notifications',
+  { url: '/api/notifications' },
+  {
+    staleTime: 30000, // 30秒
+    cacheTime: 300000, // 5分钟
+    refetchInterval: 60000, // 每分钟刷新
+  }
+)
 ```
 
 ### 3. 组合多个 hooks
@@ -574,4 +546,5 @@ const { data: posts } = useQuery(
 </script>
 ```
 
-Vue hooks 让 HTTP 请求变得简单而强大，通过合理使用这些 hooks，你可以构建出响应迅速、用户体验优秀的应用。
+Vue hooks 让 HTTP 请求变得简单而强大，通过合理使用这些 hooks，你可以构建出响应迅速、用户体验优秀的应
+用。

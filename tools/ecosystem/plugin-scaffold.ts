@@ -79,8 +79,7 @@ export class PluginScaffold {
 
       console.log(chalk.green(`✅ 插件项目 ${options.name} 创建成功!`))
       this.printNextSteps(options)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('❌ 创建插件项目失败:'), error)
       throw error
     }
@@ -125,7 +124,7 @@ export class PluginScaffold {
       'dist',
     ]
 
-    dirs.forEach((dir) => {
+    dirs.forEach(dir => {
       mkdirSync(join(targetDir, dir), { recursive: true })
     })
   }
@@ -134,7 +133,7 @@ export class PluginScaffold {
    * 生成项目文件
    */
   private async generateProjectFiles(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     console.log(chalk.yellow('📝 生成项目文件...'))
 
@@ -179,7 +178,7 @@ export class PluginScaffold {
    * 生成 package.json
    */
   private async generatePackageJson(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const packageJson = {
       name: `@ldesign/plugin-${options.name}`,
@@ -190,19 +189,19 @@ export class PluginScaffold {
       types: options.typescript ? 'dist/index.d.ts' : undefined,
       files: ['dist', 'src', 'README.md', 'LICENSE'],
       scripts: {
-        'build': options.typescript
+        build: options.typescript
           ? 'tsup src/index.ts --format cjs,esm --dts'
           : 'rollup -c',
-        'dev': options.typescript
+        dev: options.typescript
           ? 'tsup src/index.ts --format cjs,esm --dts --watch'
           : 'rollup -c --watch',
-        'test': 'vitest',
+        test: 'vitest',
         'test:coverage': 'vitest --coverage',
-        'lint': 'eslint src --ext .ts,.js,.vue',
+        lint: 'eslint src --ext .ts,.js,.vue',
         'lint:fix': 'eslint src --ext .ts,.js,.vue --fix',
         'type-check': options.typescript ? 'tsc --noEmit' : undefined,
-        'docs': 'typedoc src/index.ts',
-        'prepublishOnly': 'pnpm build',
+        docs: 'typedoc src/index.ts',
+        prepublishOnly: 'pnpm build',
       },
       keywords: [
         'ldesign',
@@ -226,33 +225,33 @@ export class PluginScaffold {
       homepage: `https://github.com/${options.author.name}/${options.name}#readme`,
       peerDependencies: {
         '@ldesign/engine': '^0.1.0',
-        'vue': '^3.3.0',
+        vue: '^3.3.0',
       },
       devDependencies: {
         '@ldesign/engine': '^0.1.0',
-        'vue': '^3.3.0',
+        vue: '^3.3.0',
         ...(options.typescript
           ? {
-              'typescript': '^5.0.0',
-              'tsup': '^7.0.0',
+              typescript: '^5.0.0',
+              tsup: '^7.0.0',
               '@types/node': '^20.0.0',
             }
           : {
-              'rollup': '^3.0.0',
+              rollup: '^3.0.0',
               '@rollup/plugin-node-resolve': '^15.0.0',
               '@rollup/plugin-commonjs': '^25.0.0',
             }),
         ...(options.includeTests
           ? {
-              'vitest': '^0.34.0',
+              vitest: '^0.34.0',
               '@vue/test-utils': '^2.4.0',
-              'jsdom': '^22.0.0',
+              jsdom: '^22.0.0',
             }
           : {}),
-        'eslint': '^8.0.0',
+        eslint: '^8.0.0',
         '@typescript-eslint/eslint-plugin': '^6.0.0',
         '@typescript-eslint/parser': '^6.0.0',
-        'typedoc': '^0.25.0',
+        typedoc: '^0.25.0',
       },
       ldesign: {
         category: options.type,
@@ -268,7 +267,7 @@ export class PluginScaffold {
 
     writeFileSync(
       join(options.targetDir, 'package.json'),
-      JSON.stringify(cleanPackageJson, null, 2),
+      JSON.stringify(cleanPackageJson, null, 2)
     )
   }
 
@@ -276,7 +275,7 @@ export class PluginScaffold {
    * 生成主入口文件
    */
   private async generateMainFile(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const ext = options.typescript ? 'ts' : 'js'
     const template = this.getMainFileTemplate(options)
@@ -313,7 +312,7 @@ export class PluginScaffold {
    */
   private getUIComponentTemplate(isTS: boolean): string {
     return `${
-      isTS ? 'import type { Plugin, Engine } from \'@ldesign/engine\'' : ''
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
     }
 import { defineComponent } from 'vue'
 
@@ -355,7 +354,7 @@ export default plugin
    */
   private getUtilityTemplate(isTS: boolean): string {
     return `${
-      isTS ? 'import type { Plugin, Engine } from \'@ldesign/engine\'' : ''
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
     }
 
 // 工具函数
@@ -388,7 +387,7 @@ export default plugin
    */
   private getIntegrationTemplate(isTS: boolean): string {
     return `${
-      isTS ? 'import type { Plugin, Engine } from \'@ldesign/engine\'' : ''
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
     }
 
 // 集成配置
@@ -420,8 +419,8 @@ export const plugin${isTS ? ': Plugin' : ''} = {
   version: '0.1.0',
   
   install(engine${isTS ? ': Engine' : ''}, options${
-    isTS ? ': IntegrationConfig = {}' : ' = {}'
-  }) {
+      isTS ? ': IntegrationConfig = {}' : ' = {}'
+    }) {
     // 创建集成实例
     const integration = new MyIntegration(options)
     
@@ -444,7 +443,7 @@ export default plugin
   private getMiddlewareTemplate(isTS: boolean): string {
     return `${
       isTS
-        ? 'import type { Plugin, Engine, MiddlewareContext } from \'@ldesign/engine\''
+        ? "import type { Plugin, Engine, MiddlewareContext } from '@ldesign/engine'"
         : ''
     }
 
@@ -495,7 +494,7 @@ export default plugin
    */
   private getThemeTemplate(isTS: boolean): string {
     return `${
-      isTS ? 'import type { Plugin, Engine } from \'@ldesign/engine\'' : ''
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
     }
 
 // 主题配置
@@ -553,7 +552,7 @@ export default plugin
    */
   private getDevelopmentToolTemplate(isTS: boolean): string {
     return `${
-      isTS ? 'import type { Plugin, Engine } from \'@ldesign/engine\'' : ''
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
     }
 
 // 开发工具类
@@ -616,7 +615,7 @@ export default plugin
    */
   private getBasicTemplate(isTS: boolean): string {
     return `${
-      isTS ? 'import type { Plugin, Engine } from \'@ldesign/engine\'' : ''
+      isTS ? "import type { Plugin, Engine } from '@ldesign/engine'" : ''
     }
 
 // 插件定义
@@ -638,7 +637,7 @@ export default plugin
    * 生成 TypeScript 配置
    */
   private async generateTsConfig(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const tsConfig = {
       compilerOptions: {
@@ -662,7 +661,7 @@ export default plugin
 
     writeFileSync(
       join(options.targetDir, 'tsconfig.json'),
-      JSON.stringify(tsConfig, null, 2),
+      JSON.stringify(tsConfig, null, 2)
     )
   }
 
@@ -670,7 +669,7 @@ export default plugin
    * 生成类型定义
    */
   private async generateTypeDefinitions(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const types = `// 插件类型定义
 export interface ${this.toPascalCase(options.name)}Options {
@@ -681,7 +680,7 @@ export interface ${this.toPascalCase(options.name)}Plugin {
   name: string
   version: string
   install: (engine: any, options?: ${this.toPascalCase(
-    options.name,
+    options.name
   )}Options) => void
 }
 
@@ -700,7 +699,7 @@ declare module '@ldesign/engine' {
    * 生成测试文件
    */
   private async generateTestFiles(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const ext = options.typescript ? 'ts' : 'js'
     const testContent = `import { describe, it, expect } from 'vitest'
@@ -729,7 +728,7 @@ describe('${options.name} plugin', () => {
 
     writeFileSync(
       join(options.targetDir, `tests/index.test.${ext}`),
-      testContent,
+      testContent
     )
 
     // 生成 Vitest 配置
@@ -752,7 +751,7 @@ export default defineConfig({
    * 生成文档
    */
   private async generateDocumentation(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const docs = `# ${options.name}
 
@@ -769,8 +768,8 @@ pnpm add @ldesign/plugin-${options.name}
 \`\`\`typescript
 import { createEngine } from '@ldesign/engine'
 import ${this.toCamelCase(options.name)}Plugin from '@ldesign/plugin-${
-  options.name
-}'
+      options.name
+    }'
 
 const engine = createEngine()
 engine.use(${this.toCamelCase(options.name)}Plugin)
@@ -796,7 +795,7 @@ ${options.license}
    * 生成示例
    */
   private async generateExamples(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     const example = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -828,7 +827,7 @@ ${options.license}
    * 生成配置文件
    */
   private async generateConfigFiles(
-    options: PluginScaffoldOptions,
+    options: PluginScaffoldOptions
   ): Promise<void> {
     // ESLint 配置
     const eslintConfig = {
@@ -850,7 +849,7 @@ ${options.license}
 
     writeFileSync(
       join(options.targetDir, '.eslintrc.json'),
-      JSON.stringify(eslintConfig, null, 2),
+      JSON.stringify(eslintConfig, null, 2)
     )
 
     // .gitignore
@@ -893,8 +892,8 @@ pnpm add @ldesign/plugin-${options.name}
 \`\`\`typescript
 import { createEngine } from '@ldesign/engine'
 import ${this.toCamelCase(options.name)}Plugin from '@ldesign/plugin-${
-  options.name
-}'
+      options.name
+    }'
 
 const engine = createEngine()
 
@@ -997,8 +996,7 @@ All rights reserved.`
       })
 
       console.log(chalk.green('✅ 依赖安装完成'))
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(chalk.yellow('⚠️ 依赖安装失败，请手动运行 pnpm install'))
     }
   }
@@ -1024,8 +1022,7 @@ All rights reserved.`
       })
 
       console.log(chalk.green('✅ Git 仓库初始化完成'))
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(chalk.yellow('⚠️ Git 初始化失败'))
     }
   }
@@ -1056,10 +1053,10 @@ All rights reserved.`
   private getKeywordsByType(type: PluginType): string[] {
     const keywords = {
       'ui-component': ['ui', 'component', 'vue'],
-      'utility': ['utility', 'helper', 'tools'],
-      'integration': ['integration', 'api', 'service'],
-      'middleware': ['middleware', 'interceptor'],
-      'theme': ['theme', 'style', 'css'],
+      utility: ['utility', 'helper', 'tools'],
+      integration: ['integration', 'api', 'service'],
+      middleware: ['middleware', 'interceptor'],
+      theme: ['theme', 'style', 'css'],
       'development-tool': ['development', 'devtools', 'debug'],
     }
 
@@ -1123,8 +1120,7 @@ async function main() {
 
   try {
     await scaffold.createPlugin(options)
-  }
-  catch (error) {
+  } catch (error) {
     console.error(chalk.red('创建插件失败:'), error)
     process.exit(1)
   }

@@ -1,6 +1,7 @@
 # 介绍
 
-@ldesign/crypto 是一个全面的加解密库，专为现代 JavaScript 应用程序设计。它不仅支持所有主流的加密算法，还为 Vue 3 生态系统提供了深度集成。
+@ldesign/crypto 是一个全面的加解密库，专为现代 JavaScript 应用程序设计。它不仅支持所有主流的加密算法
+，还为 Vue 3 生态系统提供了深度集成。
 
 ## 特性
 
@@ -10,7 +11,7 @@
 - **非对称加密**: RSA 加密和数字签名
 - **哈希算法**: MD5、SHA-1、SHA-224、SHA-256、SHA-384、SHA-512
 - **消息认证码**: HMAC-MD5、HMAC-SHA1、HMAC-SHA256、HMAC-SHA384、HMAC-SHA512
-- **编码算法**: Base64、Hex、URL安全Base64
+- **编码算法**: Base64、Hex、URL 安全 Base64
 
 ### 🚀 高性能设计
 
@@ -107,6 +108,6 @@ import { useCrypto } from '@ldesign/crypto/vue'
 ## 下一步
 
 - [安装指南](./installation) - 了解如何安装和配置
-- [快速开始](./quick-start) - 5分钟上手使用
+- [快速开始](./quick-start) - 5 分钟上手使用
 - [API 文档](../api/) - 详细的 API 参考
 - [示例代码](../examples/) - 实际使用示例

@@ -37,7 +37,7 @@ const encrypted = encrypt.aes(data, key)
 const encrypted = encrypt.aes(data, key, {
   keySize: 256,
   mode: 'CBC',
-  iv: 'custom-iv'
+  iv: 'custom-iv',
 })
 ```
 
@@ -226,8 +226,7 @@ class EncryptionError extends Error {
 ```typescript
 try {
   const encrypted = encrypt.aes('data', 'key')
-}
-catch (error) {
+} catch (error) {
   if (error instanceof EncryptionError) {
     console.error('加密错误:', error.message)
     console.error('算法:', error.algorithm)
@@ -246,7 +245,7 @@ import { keyGenerator } from '@ldesign/crypto'
 const customIV = keyGenerator.generateIV(16)
 
 const encrypted = encrypt.aes('data', 'key', {
-  iv: customIV
+  iv: customIV,
 })
 ```
 

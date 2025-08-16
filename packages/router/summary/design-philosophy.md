@@ -43,7 +43,7 @@ const plugin = createDeviceRouterPlugin()
 const plugin = createDeviceRouterPlugin({
   enableDeviceDetection: true,
   enableDeviceGuard: true,
-  defaultSupportedDevices: ['mobile', 'tablet', 'desktop']
+  defaultSupportedDevices: ['mobile', 'tablet', 'desktop'],
 })
 ```
 
@@ -94,8 +94,8 @@ const plugin = createDeviceRouterPlugin({
     checkSupportedDevices: (supported, current, route) => {
       // 自定义检查逻辑
       return customDeviceCheck(supported, current, route)
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -106,17 +106,11 @@ const plugin = createDeviceRouterPlugin({
 ```typescript
 // 设备检测器通过依赖注入传入
 class DeviceRouteGuard {
-  constructor(
-    private getCurrentDevice: () => DeviceType,
-    private options: DeviceGuardOptions
-  ) {}
+  constructor(private getCurrentDevice: () => DeviceType, private options: DeviceGuardOptions) {}
 }
 
 // 支持不同的设备检测实现
-const guard = new DeviceRouteGuard(
-  () => deviceDetector.getDeviceType(),
-  options
-)
+const guard = new DeviceRouteGuard(() => deviceDetector.getDeviceType(), options)
 ```
 
 ## 🔧 技术架构决策
@@ -148,7 +142,7 @@ class DeviceRouterPlugin {
   private deviceGuard: DeviceRouteGuard
   private componentResolver: DeviceComponentResolver
   private templateResolver: TemplateRouteResolver
-  
+
   constructor() {
     this.deviceGuard = new DeviceRouteGuard(...)
     this.componentResolver = new DeviceComponentResolver(...)
@@ -208,7 +202,7 @@ const { currentDevice, isCurrentRouteSupported } = useDeviceRoute()
 ```typescript
 // 友好的错误组件
 <DeviceUnsupported
-  message="当前系统不支持在此设备上查看"
+  message='当前系统不支持在此设备上查看'
   supportedDevices={['desktop']}
   showBackButton={true}
 />
@@ -310,4 +304,5 @@ interface DeviceRouterPluginOptions {
 4. **性能**: 优化的实现，最小化性能影响
 5. **可维护性**: 清晰的架构，便于维护和扩展
 
-通过这些设计理念和架构决策，我们创建了一个既强大又易用的设备适配系统，为 LDesign Router 带来了出色的多设备支持能力。
+通过这些设计理念和架构决策，我们创建了一个既强大又易用的设备适配系统，为 LDesign Router 带来了出色的
+多设备支持能力。

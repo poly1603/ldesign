@@ -167,7 +167,7 @@ describe('router Core', () => {
       expect(guard).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
         expect.objectContaining({ path: '/' }),
-        expect.any(Function),
+        expect.any(Function)
       )
 
       removeGuard()
@@ -192,7 +192,7 @@ describe('router Core', () => {
       expect(hook).toHaveBeenCalledTimes(2) // 初始导航 + 测试导航
       expect(hook).toHaveBeenCalledWith(
         expect.objectContaining({ path: '/about' }),
-        expect.objectContaining({ path: '/' }),
+        expect.objectContaining({ path: '/' })
       )
 
       removeHook()
@@ -211,8 +211,7 @@ describe('router Core', () => {
       router.beforeEach((to, from, next) => {
         if (to.path === '/about') {
           next('/user/123')
-        }
-        else {
+        } else {
           next()
         }
       })
@@ -257,7 +256,9 @@ describe('router Core', () => {
       await new Promise(resolve => setTimeout(resolve, 50)) // 增加等待时间
       // 检查实际路径，可能是模式路径而不是具体路径
       const currentPath = router.currentRoute.value.path
-      expect(currentPath === '/user/123' || currentPath === '/user/:id').toBe(true)
+      expect(currentPath === '/user/123' || currentPath === '/user/:id').toBe(
+        true
+      )
     })
 
     it('should handle go navigation', async () => {

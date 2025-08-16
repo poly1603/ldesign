@@ -123,7 +123,7 @@ describe('themeManager', () => {
         expect.objectContaining({
           type: 'theme-changed',
           theme: 'theme2',
-        }),
+        })
       )
     })
 
@@ -143,8 +143,7 @@ describe('themeManager', () => {
 
       try {
         await themeManager.setTheme('nonexistent')
-      }
-      catch {
+      } catch {
         // 忽略错误
       }
 
@@ -152,7 +151,7 @@ describe('themeManager', () => {
         expect.objectContaining({
           type: 'theme-error',
           error: expect.any(Error),
-        }),
+        })
       )
     })
   })
@@ -256,7 +255,7 @@ describe('themeManager', () => {
       })
 
       await expect(
-        themeManager.preloadResources('theme1'),
+        themeManager.preloadResources('theme1')
       ).resolves.not.toThrow()
     })
 

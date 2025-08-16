@@ -85,9 +85,7 @@ export default defineConfig({
     },
 
     // 社交链接
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-org/ldesign' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/your-org/ldesign' }],
 
     // 页脚
     footer: {
@@ -120,7 +118,7 @@ export default defineConfig({
   markdown: {
     theme: 'github-dark',
     lineNumbers: true,
-    config: (md) => {
+    config: md => {
       // 添加自定义 markdown 插件
     },
   },

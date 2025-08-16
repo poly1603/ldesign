@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { createField, createFormConfig, createRule, FormBuilder } from '../../../src/index'
+import {
+  createField,
+  createFormConfig,
+  createRule,
+  FormBuilder,
+} from '../../../src/index'
 
 // 表单数据
 const formData = ref({
@@ -138,15 +143,11 @@ function handleChange(key: string, value: any) {
       <h1 class="text-3xl font-bold text-gray-900 mb-2">
         FormBuilder 组件演示
       </h1>
-      <p class="text-gray-600">
-        展示 FormBuilder 组件的基本用法和功能
-      </p>
+      <p class="text-gray-600">展示 FormBuilder 组件的基本用法和功能</p>
     </div>
 
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        基础表单
-      </h2>
+      <h2 class="text-xl font-semibold mb-4">基础表单</h2>
 
       <FormBuilder
         v-model="formData"
@@ -157,9 +158,7 @@ function handleChange(key: string, value: any) {
     </div>
 
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        表单数据
-      </h2>
+      <h2 class="text-xl font-semibold mb-4">表单数据</h2>
       <pre class="bg-gray-100 p-4 rounded text-sm overflow-auto">{{
         JSON.stringify(formData, null, 2)
       }}</pre>

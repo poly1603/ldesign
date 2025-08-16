@@ -29,7 +29,7 @@ const {
   isDesktop, // 是否桌面设备
   isTouchDevice, // 是否触摸设备
   refresh, // 刷新设备信息
-  detector // 检测器实例
+  detector, // 检测器实例
 } = useDevice()
 </script>
 
@@ -38,9 +38,7 @@ const {
     <p>设备类型: {{ deviceType }}</p>
     <p>屏幕方向: {{ orientation }}</p>
     <p>屏幕尺寸: {{ deviceInfo.width }} × {{ deviceInfo.height }}</p>
-    <button @click="refresh">
-      刷新信息
-    </button>
+    <button @click="refresh">刷新信息</button>
   </div>
 </template>
 ```
@@ -59,7 +57,7 @@ const {
   connectionType, // 连接类型
   downlink, // 下载速度
   rtt, // 往返时间
-  saveData // 数据节省模式
+  saveData, // 数据节省模式
 } = useNetwork()
 </script>
 
@@ -87,7 +85,7 @@ const {
   isCharging, // 是否充电
   chargingTime, // 充电时间
   dischargingTime, // 放电时间
-  batteryStatus // 电池状态
+  batteryStatus, // 电池状态
 } = useBattery()
 </script>
 
@@ -96,10 +94,7 @@ const {
     <p>电池电量: {{ Math.round(level * 100) }}%</p>
     <p>充电状态: {{ isCharging ? '充电中' : '未充电' }}</p>
     <div class="battery-bar">
-      <div
-        class="battery-level"
-        :style="{ width: `${level * 100}%` }"
-      />
+      <div class="battery-level" :style="{ width: `${level * 100}%` }" />
     </div>
   </div>
 </template>
@@ -123,32 +118,20 @@ const {
   getCurrentPosition, // 获取当前位置
   startWatching, // 开始监听
   stopWatching, // 停止监听
-  isWatching // 是否正在监听
+  isWatching, // 是否正在监听
 } = useGeolocation()
 </script>
 
 <template>
   <div>
     <div v-if="isSupported">
-      <p v-if="position">
-        位置: {{ latitude.toFixed(6) }}, {{ longitude.toFixed(6) }}
-      </p>
-      <p v-if="position">
-        精度: {{ accuracy }}米
-      </p>
-      <button @click="getCurrentPosition">
-        获取位置
-      </button>
-      <button :disabled="isWatching" @click="startWatching">
-        开始监听
-      </button>
-      <button :disabled="!isWatching" @click="stopWatching">
-        停止监听
-      </button>
+      <p v-if="position">位置: {{ latitude.toFixed(6) }}, {{ longitude.toFixed(6) }}</p>
+      <p v-if="position">精度: {{ accuracy }}米</p>
+      <button @click="getCurrentPosition">获取位置</button>
+      <button :disabled="isWatching" @click="startWatching">开始监听</button>
+      <button :disabled="!isWatching" @click="stopWatching">停止监听</button>
     </div>
-    <p v-else>
-      不支持地理位置功能
-    </p>
+    <p v-else>不支持地理位置功能</p>
     <p v-if="error" class="error">
       {{ error }}
     </p>
@@ -171,7 +154,7 @@ const app = createApp(App)
 app.use(DevicePlugin, {
   enableResize: true,
   enableOrientation: true,
-  debounceDelay: 300
+  debounceDelay: 300,
 })
 
 app.mount('#app')
@@ -203,29 +186,19 @@ const device = inject('device')
 ```vue
 <template>
   <!-- 只在移动设备显示 -->
-  <div v-device-mobile>
-    移动设备专用内容
-  </div>
+  <div v-device-mobile>移动设备专用内容</div>
 
   <!-- 只在平板设备显示 -->
-  <div v-device-tablet>
-    平板设备专用内容
-  </div>
+  <div v-device-tablet>平板设备专用内容</div>
 
   <!-- 只在桌面设备显示 -->
-  <div v-device-desktop>
-    桌面设备专用内容
-  </div>
+  <div v-device-desktop>桌面设备专用内容</div>
 
   <!-- 只在触摸设备显示 -->
-  <div v-device-touch>
-    触摸设备专用内容
-  </div>
+  <div v-device-touch>触摸设备专用内容</div>
 
   <!-- 只在非触摸设备显示 -->
-  <div v-device-no-touch>
-    非触摸设备专用内容
-  </div>
+  <div v-device-no-touch>非触摸设备专用内容</div>
 </template>
 ```
 
@@ -236,14 +209,10 @@ const device = inject('device')
 ```vue
 <template>
   <!-- 只在竖屏显示 -->
-  <div v-orientation-portrait>
-    竖屏专用内容
-  </div>
+  <div v-orientation-portrait>竖屏专用内容</div>
 
   <!-- 只在横屏显示 -->
-  <div v-orientation-landscape>
-    横屏专用内容
-  </div>
+  <div v-orientation-landscape>横屏专用内容</div>
 </template>
 ```
 
@@ -252,14 +221,10 @@ const device = inject('device')
 ```vue
 <template>
   <!-- 使用对象配置 -->
-  <div v-device="{ type: 'mobile', orientation: 'portrait' }">
-    移动设备竖屏时显示
-  </div>
+  <div v-device="{ type: 'mobile', orientation: 'portrait' }">移动设备竖屏时显示</div>
 
   <!-- 使用数组配置 -->
-  <div v-device="['mobile', 'tablet']">
-    移动设备或平板设备时显示
-  </div>
+  <div v-device="['mobile', 'tablet']">移动设备或平板设备时显示</div>
 </template>
 ```
 
@@ -303,8 +268,8 @@ const { detector } = useDevice({
   breakpoints: {
     mobile: 480,
     tablet: 1024,
-    desktop: 1200
-  }
+    desktop: 1200,
+  },
 })
 </script>
 ```
@@ -358,8 +323,7 @@ onMounted(async () => {
     // 加载电池模块
     const batteryModule = await detector.loadModule('battery')
     batteryInfo.value = batteryModule.getData()
-  }
-  catch (error) {
+  } catch (error) {
     console.error('模块加载失败:', error)
   }
 })
@@ -377,7 +341,7 @@ import type {
   DevicePluginOptions,
   GeolocationInfo,
   NetworkInfo,
-  UseDeviceReturn
+  UseDeviceReturn,
 } from '@ldesign/device/vue'
 
 // 类型安全的 composable 使用
@@ -441,8 +405,7 @@ const { getCurrentPosition, error } = useGeolocation()
 async function getLocation() {
   try {
     await getCurrentPosition()
-  }
-  catch (err) {
+  } catch (err) {
     console.error('获取位置失败:', err)
   }
 }

@@ -83,8 +83,7 @@ export class TemplateLoader {
         fromCache: false,
         loadTime: Date.now() - startTime,
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`❌ 模板加载失败: ${cacheKey}`, error)
       throw new Error(`Failed to load template: ${cacheKey}`)
     }
@@ -104,8 +103,7 @@ export class TemplateLoader {
     try {
       console.log(`🚀 预加载模板: ${cacheKey}`)
       await this.loadTemplate(metadata)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`⚠️ 预加载失败: ${cacheKey}`, error)
     }
   }
@@ -117,9 +115,9 @@ export class TemplateLoader {
     console.log(`🚀 批量预加载 ${templates.length} 个模板`)
 
     const promises = templates.map(template =>
-      this.preloadTemplate(template).catch((error) => {
+      this.preloadTemplate(template).catch(error => {
         console.warn(`预加载失败: ${this.generateCacheKey(template)}`, error)
-      }),
+      })
     )
 
     await Promise.all(promises)
@@ -151,8 +149,7 @@ export class TemplateLoader {
             console.log(`✅ 组件导入成功: ${path}`)
             return this.wrapComponent(component, path)
           }
-        }
-        catch (error) {
+        } catch (error) {
           console.warn(`⚠️ 组件导入失败: ${path}`, error)
           lastError = error as Error
           continue
@@ -160,8 +157,7 @@ export class TemplateLoader {
       }
 
       throw lastError || new Error(`No valid component found for ${componentPath}`)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Failed to load component: ${componentPath}`, error)
       throw error
     }

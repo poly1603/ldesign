@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -363,7 +363,7 @@
           }
 
           if (textElement) {
-            const deviceNames = config.supportedDevices.map((d) => deviceConfig[d].name).join('、')
+            const deviceNames = config.supportedDevices.map(d => deviceConfig[d].name).join('、')
             textElement.textContent = `${deviceNames} ${isSupported ? '✅' : '❌'}`
           }
         })
@@ -408,7 +408,7 @@
         }
 
         // 更新按钮状态
-        document.querySelectorAll('.device-button').forEach((btn) => {
+        document.querySelectorAll('.device-button').forEach(btn => {
           btn.classList.remove('active')
         })
         event.target.classList.add('active')

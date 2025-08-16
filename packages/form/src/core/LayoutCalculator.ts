@@ -22,7 +22,7 @@ import {
  */
 export class LayoutCalculator extends SimpleEventEmitter {
   private config: LayoutConfig
-  private containerSize: { width: number, height: number } = {
+  private containerSize: { width: number; height: number } = {
     width: 0,
     height: 0,
   }
@@ -47,7 +47,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
   calculateLayout(
     fields: FormItemConfig[],
     containerWidth: number,
-    containerHeight: number = 0,
+    containerHeight: number = 0
   ): LayoutResult {
     this.containerSize = { width: containerWidth, height: containerHeight }
     this.currentBreakpoint = getBreakpoint(containerWidth)
@@ -59,14 +59,14 @@ export class LayoutCalculator extends SimpleEventEmitter {
     // 计算列数
     const columns = this.calculateEffectiveColumns(
       containerWidth,
-      effectiveConfig,
+      effectiveConfig
     )
 
     // 计算列宽
     const columnWidth = calculateColumnWidth(
       containerWidth,
       columns,
-      effectiveConfig.horizontalGap || 0,
+      effectiveConfig.horizontalGap || 0
     )
 
     // 过滤可见字段
@@ -77,13 +77,13 @@ export class LayoutCalculator extends SimpleEventEmitter {
       visibleFields,
       columns,
       columnWidth,
-      effectiveConfig,
+      effectiveConfig
     )
 
     // 计算是否需要展开按钮
     const needsExpand = this.shouldShowExpandButton(
       fieldLayouts,
-      effectiveConfig,
+      effectiveConfig
     )
 
     const result: LayoutResult = {
@@ -105,7 +105,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
    */
   private calculateEffectiveColumns(
     containerWidth: number,
-    config: LayoutConfig,
+    config: LayoutConfig
   ): number {
     if (config.columns && !config.autoCalculate) {
       return config.columns
@@ -126,8 +126,8 @@ export class LayoutCalculator extends SimpleEventEmitter {
       return {}
     }
 
-    const currentConfig
-      = breakpoints[this.currentBreakpoint as keyof BreakpointConfig]
+    const currentConfig =
+      breakpoints[this.currentBreakpoint as keyof BreakpointConfig]
     if (!currentConfig) {
       return {}
     }
@@ -147,7 +147,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
     fields: FormItemConfig[],
     columns: number,
     columnWidth: number,
-    config: LayoutConfig,
+    config: LayoutConfig
   ): FieldLayout[] {
     const layouts: FieldLayout[] = []
     const spans = fields.map(field => parseSpan(field.span || 1, columns))
@@ -171,14 +171,14 @@ export class LayoutCalculator extends SimpleEventEmitter {
         columnWidth,
         this.getRowHeight(),
         config.horizontalGap || 0,
-        config.verticalGap || 0,
+        config.verticalGap || 0
       )
 
       const size = calculateElementSize(
         span,
         columnWidth,
         this.getRowHeight(),
-        config.horizontalGap || 0,
+        config.horizontalGap || 0
       )
 
       // 判断是否可见（基于默认行数）
@@ -224,7 +224,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
    */
   private shouldShowExpandButton(
     layouts: FieldLayout[],
-    config: LayoutConfig,
+    config: LayoutConfig
   ): boolean {
     const defaultRows = config.defaultRows || 3
     const maxRow = Math.max(...layouts.map(layout => layout.row), -1)
@@ -237,7 +237,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
   recalculateField(
     fieldName: string,
     fields: FormItemConfig[],
-    containerWidth: number,
+    containerWidth: number
   ): FieldLayout | null {
     const fieldIndex = fields.findIndex(field => field.name === fieldName)
     if (fieldIndex === -1) {
@@ -254,7 +254,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
   getFieldLayoutAtBreakpoint(
     field: FormItemConfig,
     breakpoint: string,
-    containerWidth: number,
+    containerWidth: number
   ): Partial<FieldLayout> {
     const oldBreakpoint = this.currentBreakpoint
     this.currentBreakpoint = breakpoint
@@ -264,12 +264,12 @@ export class LayoutCalculator extends SimpleEventEmitter {
 
     const columns = this.calculateEffectiveColumns(
       containerWidth,
-      effectiveConfig,
+      effectiveConfig
     )
     const columnWidth = calculateColumnWidth(
       containerWidth,
       columns,
-      effectiveConfig.horizontalGap || 0,
+      effectiveConfig.horizontalGap || 0
     )
 
     const span = parseSpan(field.span || 1, columns)
@@ -277,7 +277,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
       span,
       columnWidth,
       this.getRowHeight(),
-      effectiveConfig.horizontalGap || 0,
+      effectiveConfig.horizontalGap || 0
     )
 
     this.currentBreakpoint = oldBreakpoint
@@ -299,7 +299,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
 
     // 找到最大跨列数
     const maxSpan = Math.max(
-      ...fields.map((field) => {
+      ...fields.map(field => {
         if (typeof field.span === 'number') {
           return field.span
         }
@@ -308,7 +308,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
           return Math.ceil(12 * percentage) // 假设最大12列
         }
         return 1
-      }),
+      })
     )
 
     return maxSpan * minColumnWidth + (maxSpan - 1) * horizontalGap
@@ -340,20 +340,20 @@ export class LayoutCalculator extends SimpleEventEmitter {
     utilization: number
   } {
     const totalRows = Math.max(...layout.fields.map(field => field.row), -1) + 1
-    const visibleRows
-      = Math.max(
+    const visibleRows =
+      Math.max(
         ...layout.fields.filter(field => field.visible).map(field => field.row),
-        -1,
+        -1
       ) + 1
     const hiddenRows = totalRows - visibleRows
 
     const totalSpan = layout.fields.reduce((sum, field) => sum + field.span, 0)
-    const averageSpan
-      = layout.fields.length > 0 ? totalSpan / layout.fields.length : 0
+    const averageSpan =
+      layout.fields.length > 0 ? totalSpan / layout.fields.length : 0
 
     const maxPossibleSpan = totalRows * layout.columns
-    const utilization
-      = maxPossibleSpan > 0 ? (totalSpan / maxPossibleSpan) * 100 : 0
+    const utilization =
+      maxPossibleSpan > 0 ? (totalSpan / maxPossibleSpan) * 100 : 0
 
     return {
       totalRows,
@@ -389,7 +389,7 @@ export class LayoutCalculator extends SimpleEventEmitter {
   /**
    * 获取容器尺寸
    */
-  getContainerSize(): { width: number, height: number } {
+  getContainerSize(): { width: number; height: number } {
     return { ...this.containerSize }
   }
 

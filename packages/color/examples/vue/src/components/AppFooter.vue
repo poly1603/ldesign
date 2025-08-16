@@ -16,7 +16,8 @@ const buildTime = computed(() => {
         <div class="footer-info">
           <p>&copy; 2024 ldesign. 基于 MIT 许可证开源。</p>
           <p class="footer-description">
-            这是一个 @ldesign/color 的 Vue 3 集成示例，展示了完整的主题管理功能。
+            这是一个 @ldesign/color 的 Vue 3
+            集成示例，展示了完整的主题管理功能。
           </p>
         </div>
 
@@ -35,11 +36,7 @@ const buildTime = computed(() => {
           >
             📦 NPM
           </a>
-          <a
-            href="/color/docs/"
-            target="_blank"
-            class="footer-link"
-          >
+          <a href="/color/docs/" target="_blank" class="footer-link">
             📖 文档
           </a>
         </div>
@@ -138,7 +135,8 @@ const buildTime = computed(() => {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text, #333);
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
 }
 
 @media (max-width: 768px) {

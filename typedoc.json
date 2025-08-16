@@ -19,14 +19,7 @@
   "excludeInternal": false,
   "categorizeByGroup": true,
   "defaultCategory": "Other",
-  "categoryOrder": [
-    "Classes",
-    "Interfaces",
-    "Types",
-    "Functions",
-    "Variables",
-    "Other"
-  ],
+  "categoryOrder": ["Classes", "Interfaces", "Types", "Functions", "Variables", "Other"],
   "sort": ["source-order"],
   "kindSortOrder": [
     "Document",
@@ -89,13 +82,7 @@
     "@sealed",
     "@virtual"
   ],
-  "inlineTags": [
-    "@inheritDoc",
-    "@label",
-    "@link",
-    "@linkcode",
-    "@linkplain"
-  ],
+  "inlineTags": ["@inheritDoc", "@label", "@link", "@linkcode", "@linkplain"],
   "modifierTags": [
     "@alpha",
     "@beta",

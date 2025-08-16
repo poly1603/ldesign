@@ -76,30 +76,38 @@ const ldesign = createLDesign({
 })
 
 // Add plugins
-ldesign.use(createColorManager({
-  theme: 'light',
-  primaryColor: '#4F46E5'
-}))
+ldesign.use(
+  createColorManager({
+    theme: 'light',
+    primaryColor: '#4F46E5',
+  })
+)
 
-ldesign.use(createRouter({
-  routes: [
-    { path: '/', component: Home },
-    { path: '/about', component: About }
-  ]
-}))
+ldesign.use(
+  createRouter({
+    routes: [
+      { path: '/', component: Home },
+      { path: '/about', component: About },
+    ],
+  })
+)
 
-ldesign.use(createHttpClient({
-  baseURL: '/api',
-  timeout: 5000
-}))
+ldesign.use(
+  createHttpClient({
+    baseURL: '/api',
+    timeout: 5000,
+  })
+)
 
-ldesign.use(createI18n({
-  locale: 'en-US',
-  messages: {
-    'zh-CN': { hello: '你好' },
-    'en-US': { hello: 'Hello' }
-  }
-}))
+ldesign.use(
+  createI18n({
+    locale: 'en-US',
+    messages: {
+      'zh-CN': { hello: '你好' },
+      'en-US': { hello: 'Hello' },
+    },
+  })
+)
 
 // Install to Vue app
 app.use(ldesign)
@@ -147,15 +155,9 @@ function toggleLocale() {
 <template>
   <div>
     <h1>{{ t('hello') }}</h1>
-    <button @click="toggleTheme">
-      Toggle Theme
-    </button>
-    <button @click="fetchData">
-      Fetch Data
-    </button>
-    <button @click="toggleLocale">
-      Toggle Language
-    </button>
+    <button @click="toggleTheme">Toggle Theme</button>
+    <button @click="fetchData">Fetch Data</button>
+    <button @click="toggleLocale">Toggle Language</button>
   </div>
 </template>
 ```
@@ -272,14 +274,15 @@ export default defineConfig({
       '@ldesign/engine': resolve(__dirname, 'packages/engine/src'),
       '@ldesign/color': resolve(__dirname, 'packages/color/src'),
       // ... other packages
-    }
-  }
+    },
+  },
 })
 ```
 
 ## 🤝 Contributing
 
-We welcome all forms of contributions! Please read the [Contributing Guide](./CONTRIBUTING.md) for details.
+We welcome all forms of contributions! Please read the [Contributing Guide](./CONTRIBUTING.md) for
+details.
 
 ### Contributors
 

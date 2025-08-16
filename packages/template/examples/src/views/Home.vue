@@ -7,121 +7,79 @@ console.log('🏠 LDesign Template System - 首页加载')
   <div class="home">
     <div class="home__hero">
       <div class="home__hero-content">
-        <h1 class="home__title">
-          🎨 LDesign 模板系统
-        </h1>
-        <p class="home__subtitle">
-          新一代模板系统 - 简洁、强大、易用
-        </p>
-        <p class="home__description">
-          支持多设备响应式设计，提供丰富的模板选择，让您的应用界面更加美观和专业。
-        </p>
+        <h1 class="home__title">🎨 LDesign 模板系统</h1>
+        <p class="home__subtitle">新一代模板系统 - 简洁、强大、易用</p>
+        <p class="home__description">支持多设备响应式设计，提供丰富的模板选择，让您的应用界面更加美观和专业。</p>
 
         <div class="home__features">
           <div class="home__feature">
-            <div class="home__feature-icon">
-              📱
-            </div>
+            <div class="home__feature-icon">📱</div>
             <h3>响应式设计</h3>
             <p>自动适配桌面、平板、手机等不同设备</p>
           </div>
           <div class="home__feature">
-            <div class="home__feature-icon">
-              🎯
-            </div>
+            <div class="home__feature-icon">🎯</div>
             <h3>易于使用</h3>
             <p>简洁的API设计，快速上手</p>
           </div>
           <div class="home__feature">
-            <div class="home__feature-icon">
-              🔧
-            </div>
+            <div class="home__feature-icon">🔧</div>
             <h3>高度可定制</h3>
             <p>丰富的配置选项，满足各种需求</p>
           </div>
         </div>
 
         <div class="home__actions">
-          <router-link to="/hook-demo" class="home__btn home__btn--primary">
-            开始体验
-          </router-link>
-          <router-link to="/template-gallery" class="home__btn home__btn--secondary">
-            浏览模板
-          </router-link>
+          <router-link to="/hook-demo" class="home__btn home__btn--primary"> 开始体验 </router-link>
+          <router-link to="/template-gallery" class="home__btn home__btn--secondary"> 浏览模板 </router-link>
         </div>
       </div>
     </div>
 
     <div class="home__demos">
       <div class="home__container">
-        <h2 class="home__section-title">
-          演示功能
-        </h2>
+        <h2 class="home__section-title">演示功能</h2>
         <div class="home__demo-grid">
           <router-link to="/hook-demo" class="home__demo-card">
-            <div class="home__demo-icon">
-              🪝
-            </div>
+            <div class="home__demo-icon">🪝</div>
             <h3>useTemplate Hook</h3>
             <p>使用 Composition API 风格的 Hook 进行模板管理</p>
-            <div class="home__demo-arrow">
-              →
-            </div>
+            <div class="home__demo-arrow">→</div>
           </router-link>
 
           <router-link to="/component-demo" class="home__demo-card">
-            <div class="home__demo-icon">
-              🧩
-            </div>
+            <div class="home__demo-icon">🧩</div>
             <h3>TemplateRenderer 组件</h3>
             <p>使用声明式组件快速渲染模板</p>
-            <div class="home__demo-arrow">
-              →
-            </div>
+            <div class="home__demo-arrow">→</div>
           </router-link>
 
           <router-link to="/device-demo" class="home__demo-card">
-            <div class="home__demo-icon">
-              📱
-            </div>
+            <div class="home__demo-icon">📱</div>
             <h3>响应式设备切换</h3>
             <p>体验自动设备检测和模板切换功能</p>
-            <div class="home__demo-arrow">
-              →
-            </div>
+            <div class="home__demo-arrow">→</div>
           </router-link>
 
           <router-link to="/template-gallery" class="home__demo-card">
-            <div class="home__demo-icon">
-              🎨
-            </div>
+            <div class="home__demo-icon">🎨</div>
             <h3>模板画廊</h3>
             <p>浏览所有可用的精美模板</p>
-            <div class="home__demo-arrow">
-              →
-            </div>
+            <div class="home__demo-arrow">→</div>
           </router-link>
 
           <router-link to="/performance-demo" class="home__demo-card">
-            <div class="home__demo-icon">
-              🚀
-            </div>
+            <div class="home__demo-icon">🚀</div>
             <h3>性能优化</h3>
             <p>体验懒加载、预加载、性能监控等优化功能</p>
-            <div class="home__demo-arrow">
-              →
-            </div>
+            <div class="home__demo-arrow">→</div>
           </router-link>
 
           <router-link to="/virtual-scroll-demo" class="home__demo-card">
-            <div class="home__demo-icon">
-              📜
-            </div>
+            <div class="home__demo-icon">📜</div>
             <h3>虚拟滚动</h3>
             <p>体验虚拟滚动技术，高效渲染大量数据</p>
-            <div class="home__demo-arrow">
-              →
-            </div>
+            <div class="home__demo-arrow">→</div>
           </router-link>
         </div>
       </div>

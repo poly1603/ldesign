@@ -5,25 +5,23 @@ import type { HttpError, RequestConfig } from '../types'
  */
 export function mergeConfig(
   defaultConfig: RequestConfig,
-  customConfig: RequestConfig = {},
+  customConfig: RequestConfig = {}
 ): RequestConfig {
   const merged: RequestConfig = { ...defaultConfig }
 
   // 合并基础属性
-  Object.keys(customConfig).forEach((key) => {
+  Object.keys(customConfig).forEach(key => {
     const value = customConfig[key as keyof RequestConfig]
     if (value !== undefined) {
       if (key === 'headers' && typeof value === 'object' && value !== null) {
         merged.headers = { ...merged.headers, ...value }
-      }
-      else if (
-        key === 'params'
-        && typeof value === 'object'
-        && value !== null
+      } else if (
+        key === 'params' &&
+        typeof value === 'object' &&
+        value !== null
       ) {
         merged.params = { ...merged.params, ...value }
-      }
-      else {
+      } else {
         ;(merged as any)[key] = value
       }
     }
@@ -38,15 +36,14 @@ export function mergeConfig(
 export function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams()
 
-  Object.keys(params).forEach((key) => {
+  Object.keys(params).forEach(key => {
     const value = params[key]
     if (value !== null && value !== undefined) {
       if (Array.isArray(value)) {
-        value.forEach((item) => {
+        value.forEach(item => {
           searchParams.append(key, String(item))
         })
-      }
-      else {
+      } else {
         searchParams.append(key, String(value))
       }
     }
@@ -61,7 +58,7 @@ export function buildQueryString(params: Record<string, any>): string {
 export function buildURL(
   url: string,
   baseURL?: string,
-  params?: Record<string, any>,
+  params?: Record<string, any>
 ): string {
   let fullURL = url
 
@@ -105,7 +102,7 @@ export function createHttpError(
   message: string,
   config?: RequestConfig,
   code?: string,
-  response?: any,
+  response?: any
 ): HttpError {
   const error = new Error(message) as HttpError
   error.config = config
@@ -118,11 +115,9 @@ export function createHttpError(
   // 判断错误类型
   if (code === 'ECONNABORTED' || message.includes('timeout')) {
     error.isTimeoutError = true
-  }
-  else if (code === 'NETWORK_ERROR' || message.includes('Network Error')) {
+  } else if (code === 'NETWORK_ERROR' || message.includes('Network Error')) {
     error.isNetworkError = true
-  }
-  else if (code === 'CANCELED' || message.includes('canceled')) {
+  } else if (code === 'CANCELED' || message.includes('canceled')) {
     error.isCancelError = true
   }
 
@@ -141,8 +136,8 @@ export function delay(ms: number): Promise<void> {
  */
 export function generateId(): string {
   return (
+    Math.random().toString(36).substring(2, 15) +
     Math.random().toString(36).substring(2, 15)
-    + Math.random().toString(36).substring(2, 15)
   )
 }
 
@@ -164,7 +159,7 @@ export function deepClone<T>(obj: T): T {
 
   if (typeof obj === 'object') {
     const cloned = {} as T
-    Object.keys(obj).forEach((key) => {
+    Object.keys(obj).forEach(key => {
       ;(cloned as any)[key] = deepClone((obj as any)[key])
     })
     return cloned

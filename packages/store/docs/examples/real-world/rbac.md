@@ -1,6 +1,7 @@
 # 多用户权限管理系统 (RBAC)
 
-本示例展示了如何使用 @ldesign/store 实现基于角色的访问控制（Role-Based Access Control, RBAC）系统，支持用户、角色、权限的三级管理和动态权限验证。
+本示例展示了如何使用 @ldesign/store 实现基于角色的访问控制（Role-Based Access Control, RBAC）系统，
+支持用户、角色、权限的三级管理和动态权限验证。
 
 ## 系统架构
 
@@ -131,13 +132,12 @@ export class UserManagementStore extends BaseStore {
         page: this.currentPage,
         pageSize: this.pageSize,
         search: this.searchQuery,
-        filters: this.filters
+        filters: this.filters,
       })
 
       this.users = response.users
       this.totalCount = response.total
-    }
-    catch (error) {
+    } catch (error) {
       console.error('获取用户列表失败:', error)
       throw error
     }
@@ -150,8 +150,7 @@ export class UserManagementStore extends BaseStore {
       this.users.push(user)
       this.totalCount++
       return user
-    }
-    catch (error) {
+    } catch (error) {
       console.error('创建用户失败:', error)
       throw error
     }
@@ -166,8 +165,7 @@ export class UserManagementStore extends BaseStore {
         this.users[index] = updatedUser
       }
       return updatedUser
-    }
-    catch (error) {
+    } catch (error) {
       console.error('更新用户失败:', error)
       throw error
     }
@@ -182,8 +180,7 @@ export class UserManagementStore extends BaseStore {
         this.users.splice(index, 1)
         this.totalCount--
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('删除用户失败:', error)
       throw error
     }
@@ -198,8 +195,7 @@ export class UserManagementStore extends BaseStore {
         this.users[index] = user
       }
       return user
-    }
-    catch (error) {
+    } catch (error) {
       console.error('分配角色失败:', error)
       throw error
     }
@@ -210,8 +206,7 @@ export class UserManagementStore extends BaseStore {
     try {
       await userApi.lockUser(userId, reason)
       await this.updateUser(userId, { status: 'locked' })
-    }
-    catch (error) {
+    } catch (error) {
       console.error('锁定用户失败:', error)
       throw error
     }
@@ -222,8 +217,7 @@ export class UserManagementStore extends BaseStore {
     try {
       await userApi.unlockUser(userId)
       await this.updateUser(userId, { status: 'active' })
-    }
-    catch (error) {
+    } catch (error) {
       console.error('解锁用户失败:', error)
       throw error
     }
@@ -243,7 +237,7 @@ export class UserManagementStore extends BaseStore {
   @CachedGetter(['users'])
   get usersByRole() {
     return this.users.reduce((acc, user) => {
-      user.roles.forEach((role) => {
+      user.roles.forEach(role => {
         if (!acc[role.id]) {
           acc[role.id] = []
         }
@@ -303,8 +297,8 @@ export class AuthorizationStore extends BaseStore {
   private extractUserPermissions() {
     const permissionSet = new Set<Permission>()
 
-    this.userRoles.forEach((role) => {
-      role.permissions.forEach((permission) => {
+    this.userRoles.forEach(role => {
+      role.permissions.forEach(permission => {
         permissionSet.add(permission)
       })
     })
@@ -401,10 +395,10 @@ export class AuthorizationStore extends BaseStore {
       admin: 800,
       manager: 600,
       user: 400,
-      guest: 200
+      guest: 200,
     }
 
-    this.userRoles.forEach((role) => {
+    this.userRoles.forEach(role => {
       const weight = roleWeights[role.code] || 0
       hierarchy.set(role.code, weight)
     })
@@ -417,7 +411,7 @@ export class AuthorizationStore extends BaseStore {
     let highestWeight = 0
     let highestRole: Role | null = null
 
-    this.userRoles.forEach((role) => {
+    this.userRoles.forEach(role => {
       const weight = this.roleHierarchy.get(role.code) || 0
       if (weight > highestWeight) {
         highestWeight = weight
@@ -467,13 +461,13 @@ export class MenuStore extends BaseStore {
   }
 
   private filterMenusByPermissions(menus: MenuItem[], authStore: AuthorizationStore): MenuItem[] {
-    return menus.filter((menu) => {
+    return menus.filter(menu => {
       // 检查菜单权限
-      const hasPermission = menu.permissions.length === 0
-        || menu.permissions.some(permission => authStore.hasPermission(permission))
+      const hasPermission =
+        menu.permissions.length === 0 ||
+        menu.permissions.some(permission => authStore.hasPermission(permission))
 
-      if (!hasPermission)
-        return false
+      if (!hasPermission) return false
 
       // 递归过滤子菜单
       if (menu.children) {
@@ -485,7 +479,11 @@ export class MenuStore extends BaseStore {
   }
 
   private generateBreadcrumbs(menuId: string) {
-    const findMenuPath = (menus: MenuItem[], targetId: string, path: MenuItem[] = []): MenuItem[] | null => {
+    const findMenuPath = (
+      menus: MenuItem[],
+      targetId: string,
+      path: MenuItem[] = []
+    ): MenuItem[] | null => {
       for (const menu of menus) {
         const currentPath = [...path, menu]
 
@@ -495,8 +493,7 @@ export class MenuStore extends BaseStore {
 
         if (menu.children) {
           const result = findMenuPath(menu.children, targetId, currentPath)
-          if (result)
-            return result
+          if (result) return result
         }
       }
       return null
@@ -510,7 +507,7 @@ export class MenuStore extends BaseStore {
     const buildTree = (menus: MenuItem[]): any[] => {
       return menus.map(menu => ({
         ...menu,
-        children: menu.children ? buildTree(menu.children) : undefined
+        children: menu.children ? buildTree(menu.children) : undefined,
       }))
     }
 
@@ -522,7 +519,7 @@ export class MenuStore extends BaseStore {
     const flatten = (menus: MenuItem[]): MenuItem[] => {
       let result: MenuItem[] = []
 
-      menus.forEach((menu) => {
+      menus.forEach(menu => {
         result.push(menu)
         if (menu.children) {
           result = result.concat(flatten(menu.children))
@@ -545,8 +542,8 @@ export class MenuStore extends BaseStore {
         title: menu.name,
         icon: menu.icon,
         permissions: menu.permissions,
-        ...menu.meta
-      }
+        ...menu.meta,
+      },
     }))
   }
 
@@ -671,12 +668,11 @@ export const vPermission: Directive = {
     if (value !== oldValue) {
       if (value && !authStore.hasPermission(value)) {
         el.style.display = 'none'
-      }
-      else {
+      } else {
         el.style.display = ''
       }
     }
-  }
+  },
 }
 
 export const vRole: Directive = {
@@ -687,7 +683,7 @@ export const vRole: Directive = {
     if (value && !authStore.hasRole(value)) {
       el.parentNode?.removeChild(el)
     }
-  }
+  },
 }
 ```
 
@@ -708,7 +704,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showFallback: true
+  showFallback: true,
 })
 
 const authStore = new AuthorizationStore('auth')
@@ -740,9 +736,7 @@ const hasAccess = computed(() => {
     <slot name="fallback">
       <div class="text-center p-4">
         <Icon name="lock" class="text-4xl text-gray-400 mb-2" />
-        <p class="text-gray-600">
-          您没有访问此内容的权限
-        </p>
+        <p class="text-gray-600">您没有访问此内容的权限</p>
       </div>
     </slot>
   </div>
@@ -767,10 +761,9 @@ async function createUser() {
       name: 'New User',
       status: 'active',
       tenantId: 'tenant1',
-      roles: []
+      roles: [],
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建用户失败:', error)
   }
 }
@@ -783,9 +776,7 @@ function requestAccess() {
 <template>
   <div class="admin-panel">
     <!-- 使用权限指令 -->
-    <button v-permission="'user:create'" @click="createUser">
-      创建用户
-    </button>
+    <button v-permission="'user:create'" @click="createUser">创建用户</button>
 
     <!-- 使用权限组件 -->
     <PermissionGuard permission="user:list">
@@ -803,9 +794,7 @@ function requestAccess() {
       <template #fallback>
         <div class="upgrade-prompt">
           <p>此功能需要管理员权限</p>
-          <button @click="requestAccess">
-            申请权限
-          </button>
+          <button @click="requestAccess">申请权限</button>
         </div>
       </template>
     </PermissionGuard>
@@ -836,7 +825,7 @@ const PERMISSIONS = {
   // 系统管理
   SYSTEM_CONFIG: 'system:config',
   SYSTEM_MONITOR: 'system:monitor',
-  SYSTEM_BACKUP: 'system:backup'
+  SYSTEM_BACKUP: 'system:backup',
 }
 ```
 
@@ -845,21 +834,20 @@ const PERMISSIONS = {
 ```typescript
 export class PermissionCacheStore extends BaseStore {
   @State({ default: new Map() })
-  cache: Map<string, { result: boolean, expiry: number }> = new Map()
+  cache: Map<string, { result: boolean; expiry: number }> = new Map()
 
   @Action()
   cachePermission(permission: string, result: boolean, ttl: number = 300000) {
     this.cache.set(permission, {
       result,
-      expiry: Date.now() + ttl
+      expiry: Date.now() + ttl,
     })
   }
 
   @Action()
   getCachedPermission(permission: string): boolean | null {
     const cached = this.cache.get(permission)
-    if (!cached)
-      return null
+    if (!cached) return null
 
     if (Date.now() > cached.expiry) {
       this.cache.delete(permission)
@@ -894,8 +882,7 @@ export class TenantAwareStore extends BaseStore {
   @Action()
   filterByTenant<T extends { tenantId: string }>(items: T[]): T[] {
     const tenantId = this.currentTenantId
-    if (!tenantId)
-      return []
+    if (!tenantId) return []
 
     return items.filter(item => item.tenantId === tenantId)
   }

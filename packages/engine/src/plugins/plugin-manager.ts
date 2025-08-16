@@ -7,7 +7,7 @@ export class PluginManagerImpl implements PluginManager {
 
   // 性能优化：缓存依赖图和验证结果
   private dependencyGraphCache?: Record<string, string[]>
-  private validationCache?: { valid: boolean, errors: string[] }
+  private validationCache?: { valid: boolean; errors: string[] }
   private dependentsCache = new Map<string, string[]>()
 
   constructor(engine?: Engine) {
@@ -23,7 +23,9 @@ export class PluginManagerImpl implements PluginManager {
     if (plugin.dependencies) {
       for (const dep of plugin.dependencies) {
         if (!this.plugins.has(dep)) {
-          throw new Error(`Plugin "${plugin.name}" depends on "${dep}" which is not registered`)
+          throw new Error(
+            `Plugin "${plugin.name}" depends on "${dep}" which is not registered`
+          )
         }
       }
     }
@@ -42,10 +44,13 @@ export class PluginManagerImpl implements PluginManager {
       }
 
       if (this.engine?.logger) {
-        this.engine.logger.info(`Plugin "${plugin.name}" registered successfully`, {
-          version: plugin.version,
-          dependencies: plugin.dependencies,
-        })
+        this.engine.logger.info(
+          `Plugin "${plugin.name}" registered successfully`,
+          {
+            version: plugin.version,
+            dependencies: plugin.dependencies,
+          }
+        )
       }
 
       // 发送插件注册事件
@@ -55,8 +60,7 @@ export class PluginManagerImpl implements PluginManager {
           plugin,
         })
       }
-    }
-    catch (error) {
+    } catch (error) {
       // 注册失败时清理
       this.plugins.delete(plugin.name)
       const index = this.loadOrder.indexOf(plugin.name)
@@ -65,7 +69,10 @@ export class PluginManagerImpl implements PluginManager {
       }
 
       if (this.engine?.logger) {
-        this.engine.logger.error(`Failed to register plugin "${plugin.name}"`, error)
+        this.engine.logger.error(
+          `Failed to register plugin "${plugin.name}"`,
+          error
+        )
       }
       throw error
     }
@@ -81,7 +88,9 @@ export class PluginManagerImpl implements PluginManager {
     const dependents = this.getDependents(name)
     if (dependents.length > 0) {
       throw new Error(
-        `Cannot unregister plugin "${name}" because it is required by: ${dependents.join(', ')}`,
+        `Cannot unregister plugin "${name}" because it is required by: ${dependents.join(
+          ', '
+        )}`
       )
     }
 
@@ -109,8 +118,7 @@ export class PluginManagerImpl implements PluginManager {
           plugin,
         })
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (this.engine?.logger) {
         this.engine.logger.error(`Failed to unregister plugin "${name}"`, error)
       }
@@ -188,7 +196,7 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   // 验证插件依赖（带缓存）
-  validateDependencies(): { valid: boolean, errors: string[] } {
+  validateDependencies(): { valid: boolean; errors: string[] } {
     if (this.validationCache) {
       return this.validationCache
     }

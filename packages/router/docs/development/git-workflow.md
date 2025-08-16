@@ -29,6 +29,7 @@ pnpm commit:interactive
 ```
 
 这个命令会引导你：
+
 1. 选择提交类型
 2. 选择影响范围
 3. 输入提交描述
@@ -58,40 +59,40 @@ git commit -m "feat(router): add new navigation method"
 
 ### 提交类型 (type)
 
-| 类型 | 描述 | 示例 |
-|------|------|------|
-| `feat` | 新功能 | `feat(router): add lazy loading support` |
-| `fix` | 修复bug | `fix(matcher): resolve route matching issue` |
-| `docs` | 文档更新 | `docs(readme): update installation guide` |
-| `style` | 代码格式 | `style(components): fix indentation` |
-| `refactor` | 重构 | `refactor(core): simplify router creation` |
-| `perf` | 性能优化 | `perf(matcher): optimize route matching algorithm` |
-| `test` | 测试相关 | `test(guards): add navigation guard tests` |
-| `chore` | 构建/工具 | `chore(deps): update dependencies` |
-| `ci` | CI配置 | `ci(github): add performance testing workflow` |
-| `build` | 构建系统 | `build(rollup): optimize bundle size` |
-| `revert` | 回滚 | `revert: feat(router): add lazy loading support` |
+| 类型       | 描述      | 示例                                               |
+| ---------- | --------- | -------------------------------------------------- |
+| `feat`     | 新功能    | `feat(router): add lazy loading support`           |
+| `fix`      | 修复 bug  | `fix(matcher): resolve route matching issue`       |
+| `docs`     | 文档更新  | `docs(readme): update installation guide`          |
+| `style`    | 代码格式  | `style(components): fix indentation`               |
+| `refactor` | 重构      | `refactor(core): simplify router creation`         |
+| `perf`     | 性能优化  | `perf(matcher): optimize route matching algorithm` |
+| `test`     | 测试相关  | `test(guards): add navigation guard tests`         |
+| `chore`    | 构建/工具 | `chore(deps): update dependencies`                 |
+| `ci`       | CI 配置   | `ci(github): add performance testing workflow`     |
+| `build`    | 构建系统  | `build(rollup): optimize bundle size`              |
+| `revert`   | 回滚      | `revert: feat(router): add lazy loading support`   |
 
 ### 影响范围 (scope)
 
-| 范围 | 描述 |
-|------|------|
-| `core` | 核心路由功能 |
-| `router` | 路由器主类 |
-| `matcher` | 路由匹配器 |
-| `history` | 历史管理 |
-| `components` | Vue 组件 |
-| `composables` | 组合式 API |
-| `plugins` | 插件系统 |
-| `device` | 设备适配 |
-| `engine` | Engine 集成 |
-| `guards` | 路由守卫 |
-| `utils` | 工具函数 |
-| `types` | 类型定义 |
-| `docs` | 文档 |
-| `test` | 测试 |
-| `build` | 构建配置 |
-| `ci` | CI/CD |
+| 范围          | 描述         |
+| ------------- | ------------ |
+| `core`        | 核心路由功能 |
+| `router`      | 路由器主类   |
+| `matcher`     | 路由匹配器   |
+| `history`     | 历史管理     |
+| `components`  | Vue 组件     |
+| `composables` | 组合式 API   |
+| `plugins`     | 插件系统     |
+| `device`      | 设备适配     |
+| `engine`      | Engine 集成  |
+| `guards`      | 路由守卫     |
+| `utils`       | 工具函数     |
+| `types`       | 类型定义     |
+| `docs`        | 文档         |
+| `test`        | 测试         |
+| `build`       | 构建配置     |
+| `ci`          | CI/CD        |
 
 ### 提交描述 (subject)
 

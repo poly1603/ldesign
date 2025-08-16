@@ -65,7 +65,7 @@ export function createViteConfig(options: ViteBuildOptions): UserConfig {
         insertTypesEntry: true,
         rollupTypes: true,
         copyDtsFiles: true,
-      }),
+      })
     )
   }
 
@@ -77,7 +77,7 @@ export function createViteConfig(options: ViteBuildOptions): UserConfig {
         open: true,
         gzipSize: true,
         brotliSize: true,
-      }),
+      })
     )
   }
 
@@ -99,7 +99,7 @@ export function createViteConfig(options: ViteBuildOptions): UserConfig {
           packageName.charAt(0).toUpperCase() + packageName.slice(1)
         }`,
         formats: ['es', 'cjs', 'umd'],
-        fileName: (format) => {
+        fileName: format => {
           switch (format) {
             case 'es':
               return 'es/index.js'
@@ -178,7 +178,7 @@ export function createViteConfig(options: ViteBuildOptions): UserConfig {
  */
 export function createVuePackageConfig(
   packageName: string,
-  options: Partial<ViteBuildOptions> = {},
+  options: Partial<ViteBuildOptions> = {}
 ) {
   return createViteConfig({
     packageName,
@@ -193,7 +193,7 @@ export function createVuePackageConfig(
  */
 export function createUtilsPackageConfig(
   packageName: string,
-  options: Partial<ViteBuildOptions> = {},
+  options: Partial<ViteBuildOptions> = {}
 ) {
   return createViteConfig({
     packageName,
@@ -210,7 +210,7 @@ export function createUtilsPackageConfig(
  */
 export function createAppConfig(
   appName: string,
-  options: Partial<ViteBuildOptions> = {},
+  options: Partial<ViteBuildOptions> = {}
 ) {
   return defineConfig({
     plugins: [vue(), vueJsx()],

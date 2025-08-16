@@ -50,38 +50,38 @@ export default defineConfig({
       // 根据模式动态配置别名
       ...(isSourceMode
         ? {
-            // 源码模式：直接映射到源码目录
-            '@ldesign/engine': resolve(__dirname, '../engine/src/index.ts'),
-            '@ldesign/engine/vue': resolve(
-              __dirname,
-              '../engine/src/vue/index.ts',
-            ),
-            '@ldesign/router': resolve(__dirname, '../router/src/index.ts'),
-            '@ldesign/router/vue': resolve(
-              __dirname,
-              '../router/src/vue/index.ts',
-            ),
-            '@ldesign/template': resolve(__dirname, '../template/src/index.ts'),
-            '@ldesign/template/vue': resolve(
-              __dirname,
-              '../template/src/vue/index.ts',
-            ),
-            '@ldesign/i18n': resolve(__dirname, '../i18n/src/index.ts'),
-            '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue/index.ts'),
-            '@ldesign/http': resolve(__dirname, '../http/src/index.ts'),
-            '@ldesign/http/vue': resolve(__dirname, '../http/src/vue/index.ts'),
-            '@ldesign/device': resolve(__dirname, '../device/src/index.ts'),
-            '@ldesign/device/vue': resolve(
-              __dirname,
-              '../device/src/vue/index.ts',
-            ),
-            // 使用包含编译器的Vue版本
-            'vue': 'vue/dist/vue.esm-bundler.js',
-          }
+          // 源码模式：直接映射到源码目录
+          '@ldesign/engine': resolve(__dirname, '../engine/src/index.ts'),
+          '@ldesign/engine/vue': resolve(
+            __dirname,
+            '../engine/src/vue/index.ts'
+          ),
+          '@ldesign/router': resolve(__dirname, '../router/src/index.ts'),
+          '@ldesign/router/vue': resolve(
+            __dirname,
+            '../router/src/vue/index.ts'
+          ),
+          '@ldesign/template': resolve(__dirname, '../template/src/index.ts'),
+          '@ldesign/template/vue': resolve(
+            __dirname,
+            '../template/src/vue/index.ts'
+          ),
+          '@ldesign/i18n': resolve(__dirname, '../i18n/src/index.ts'),
+          '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue/index.ts'),
+          '@ldesign/http': resolve(__dirname, '../http/src/index.ts'),
+          '@ldesign/http/vue': resolve(__dirname, '../http/src/vue/index.ts'),
+          '@ldesign/device': resolve(__dirname, '../device/src/index.ts'),
+          '@ldesign/device/vue': resolve(
+            __dirname,
+            '../device/src/vue/index.ts'
+          ),
+          // 使用包含编译器的Vue版本
+          vue: 'vue/dist/vue.esm-bundler.js',
+        }
         : {
-            // 构建模式：使用构建产物（从 node_modules）
-            // 不需要特殊别名，让 Vite 自动解析
-          }),
+          // 构建模式：使用构建产物（从 node_modules）
+          // 不需要特殊别名，让 Vite 自动解析
+        }),
     },
   },
   css: {
@@ -108,6 +108,9 @@ export default defineConfig({
   esbuild: {
     // 忽略 TypeScript 错误以允许 Vite 启动
     logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    // 跳过类型检查以加快启动速度
+    target: 'es2020',
+    keepNames: true,
   },
   build: {
     target: 'es2020',

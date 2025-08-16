@@ -1,4 +1,9 @@
-import type { DecryptResult, DESOptions, EncryptResult, IEncryptor } from '../types'
+import type {
+  DecryptResult,
+  DESOptions,
+  EncryptResult,
+  IEncryptor,
+} from '../types'
 import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
@@ -55,8 +60,7 @@ export class DESEncryptor implements IEncryptor {
         iv,
         keySize: 64, // DES 密钥大小为 64 位
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'DES encryption'),
@@ -68,7 +72,11 @@ export class DESEncryptor implements IEncryptor {
   /**
    * DES 解密
    */
-  decrypt(encryptedData: string | EncryptResult, key: string, options: DESOptions = {}): DecryptResult {
+  decrypt(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options: DESOptions = {}
+  ): DecryptResult {
     try {
       // 处理输入数据
       let ciphertext: string
@@ -77,14 +85,16 @@ export class DESEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
 
       if (ValidationUtils.isEmpty(ciphertext)) {
-        throw ErrorUtils.createDecryptionError('Encrypted data cannot be empty', 'DES')
+        throw ErrorUtils.createDecryptionError(
+          'Encrypted data cannot be empty',
+          'DES'
+        )
       }
 
       if (ValidationUtils.isEmpty(key)) {
@@ -98,7 +108,10 @@ export class DESEncryptor implements IEncryptor {
 
       // 准备 IV
       if (!opts.iv) {
-        throw ErrorUtils.createDecryptionError('IV is required for decryption', 'DES')
+        throw ErrorUtils.createDecryptionError(
+          'IV is required for decryption',
+          'DES'
+        )
       }
       const ivWordArray = CryptoJS.enc.Hex.parse(opts.iv)
 
@@ -117,7 +130,10 @@ export class DESEncryptor implements IEncryptor {
       const decryptedText = decrypted.toString(CryptoJS.enc.Utf8)
 
       if (!decryptedText) {
-        throw ErrorUtils.createDecryptionError('Failed to decrypt data - invalid key or corrupted data', 'DES')
+        throw ErrorUtils.createDecryptionError(
+          'Failed to decrypt data - invalid key or corrupted data',
+          'DES'
+        )
       }
 
       return {
@@ -126,8 +142,7 @@ export class DESEncryptor implements IEncryptor {
         algorithm: 'DES',
         mode: opts.mode,
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'DES decryption'),
@@ -144,8 +159,7 @@ export class DESEncryptor implements IEncryptor {
     if (key.length < 8) {
       // 如果密钥太短，用零填充
       key = key.padEnd(8, '0')
-    }
-    else if (key.length > 8) {
+    } else if (key.length > 8) {
       // 如果密钥太长，截取前 8 字节
       key = key.substring(0, 8)
     }
@@ -187,7 +201,11 @@ export const des = {
   /**
    * 解密
    */
-  decrypt: (encryptedData: string | EncryptResult, key: string, options?: DESOptions): DecryptResult => {
+  decrypt: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: DESOptions
+  ): DecryptResult => {
     const encryptor = new DESEncryptor()
     return encryptor.decrypt(encryptedData, key, options)
   },

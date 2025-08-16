@@ -106,13 +106,13 @@ console.log('解密结果:', decrypted.data) // "Hello, AES!"
 // 使用 AES-128-ECB 模式
 const encrypted128 = encrypt.aes(data, key, {
   keySize: 128,
-  mode: 'ECB'
+  mode: 'ECB',
 })
 
 // 使用 AES-256-CTR 模式
 const encrypted256 = encrypt.aes(data, key, {
   keySize: 256,
-  mode: 'CTR'
+  mode: 'CTR',
 })
 ```
 
@@ -125,12 +125,12 @@ import { keyGenerator } from '@ldesign/crypto'
 const customIV = keyGenerator.generateIV(16)
 
 const encrypted = encrypt.aes(data, key, {
-  iv: customIV
+  iv: customIV,
 })
 
 // 解密时使用相同的 IV
 const decrypted = decrypt.aes(encrypted, key, {
-  iv: customIV
+  iv: customIV,
 })
 ```
 
@@ -178,8 +178,8 @@ async function handleDecrypt() {
 
 <template>
   <div>
-    <input v-model="data" placeholder="输入数据">
-    <input v-model="key" placeholder="输入密钥">
+    <input v-model="data" placeholder="输入数据" />
+    <input v-model="key" placeholder="输入密钥" />
     <button :disabled="isEncrypting" @click="handleEncrypt">
       {{ isEncrypting ? '加密中...' : '加密' }}
     </button>
@@ -223,19 +223,16 @@ class SecureStorage {
   // 解密读取
   getItem(key: string): any {
     const stored = localStorage.getItem(key)
-    if (!stored)
-      return null
+    if (!stored) return null
 
     try {
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, this.key)
 
-      if (!decrypted.success)
-        return null
+      if (!decrypted.success) return null
 
       return JSON.parse(decrypted.data)
-    }
-    catch {
+    } catch {
       return null
     }
   }
@@ -270,12 +267,10 @@ class ConfigManager {
       const encrypted = JSON.parse(encryptedConfig)
       const decrypted = decrypt.aes256(encrypted, this.CONFIG_KEY)
 
-      if (!decrypted.success)
-        return null
+      if (!decrypted.success) return null
 
       return JSON.parse(decrypted.data)
-    }
-    catch {
+    } catch {
       return null
     }
   }
@@ -304,8 +299,7 @@ class FormEncryption {
       const encrypted = JSON.parse(encryptedData)
       const decrypted = decrypt.aes(encrypted, key)
 
-      if (!decrypted.success)
-        return null
+      if (!decrypted.success) return null
 
       const data = JSON.parse(decrypted.data)
       const formData = new FormData()
@@ -315,8 +309,7 @@ class FormEncryption {
       }
 
       return formData
-    }
-    catch {
+    } catch {
       return null
     }
   }
@@ -359,7 +352,7 @@ function modePerformanceTest() {
   const key = 'test-key'
   const modes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR']
 
-  modes.forEach((mode) => {
+  modes.forEach(mode => {
     console.time(`AES-256-${mode}`)
 
     const encrypted = encrypt.aes(data, key, { mode })
@@ -380,7 +373,7 @@ function modePerformanceTest() {
 const BAD_KEY = 'hardcoded-key'
 
 // ✅ 正确：从安全来源获取密钥
-const key = process.env.ENCRYPTION_KEY || await getKeyFromSecureStorage()
+const key = process.env.ENCRYPTION_KEY || (await getKeyFromSecureStorage())
 
 // ✅ 正确：生成强随机密钥
 const strongKey = keyGenerator.generateKey(32) // 256 位密钥
@@ -410,8 +403,7 @@ function safeDecrypt(encryptedData: any, key: string) {
     }
 
     return result.data
-  }
-  catch (error) {
+  } catch (error) {
     console.error('解密异常:', error.message)
     return null
   }

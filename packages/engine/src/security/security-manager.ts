@@ -125,7 +125,7 @@ class XSSProtector {
         'blockquote',
         'code',
         'pre',
-      ],
+      ]
     )
 
     this.allowedAttributes = new Map()
@@ -230,12 +230,10 @@ class XSSProtector {
           // 验证属性值
           if (this.isValidAttributeValue(attr, attrValue)) {
             filteredAttributes += ` ${attrName}="${attrValue}"`
-          }
-          else {
+          } else {
             threats.push(`Invalid attribute value: ${attr}="${attrValue}"`)
           }
-        }
-        else {
+        } else {
           threats.push(`Disallowed attribute: ${attr}`)
         }
       }
@@ -311,8 +309,7 @@ class CSRFProtector {
     const array = new Uint8Array(32)
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       crypto.getRandomValues(array)
-    }
-    else {
+    } else {
       // Fallback for environments without crypto.getRandomValues
       for (let i = 0; i < array.length; i++) {
         array[i] = Math.floor(Math.random() * 256)
@@ -320,7 +317,7 @@ class CSRFProtector {
     }
 
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join(
-      '',
+      ''
     )
   }
 
@@ -363,13 +360,13 @@ export class SecurityManagerImpl implements SecurityManager {
       csp: {
         enabled: true,
         directives: {
-          'default-src': ['\'self\''],
-          'script-src': ['\'self\'', '\'unsafe-inline\''],
-          'style-src': ['\'self\'', '\'unsafe-inline\''],
-          'img-src': ['\'self\'', 'data:', 'https:'],
-          'font-src': ['\'self\''],
-          'connect-src': ['\'self\''],
-          'frame-ancestors': ['\'none\''],
+          'default-src': ["'self'"],
+          'script-src': ["'self'", "'unsafe-inline'"],
+          'style-src': ["'self'", "'unsafe-inline'"],
+          'img-src': ["'self'", 'data:', 'https:'],
+          'font-src': ["'self'"],
+          'connect-src': ["'self'"],
+          'frame-ancestors': ["'none'"],
         },
         reportOnly: false,
         reportUri: '/csp-report',
@@ -425,7 +422,7 @@ export class SecurityManagerImpl implements SecurityManager {
 
   validateInput(
     input: string,
-    type: 'html' | 'text' | 'url' = 'text',
+    type: 'html' | 'text' | 'url' = 'text'
   ): boolean {
     switch (type) {
       case 'html':
@@ -435,8 +432,7 @@ export class SecurityManagerImpl implements SecurityManager {
           // eslint-disable-next-line no-new
           new URL(input)
           return !input.toLowerCase().startsWith('javascript:')
-        }
-        catch {
+        } catch {
           return false
         }
       case 'text':
@@ -481,7 +477,7 @@ export class SecurityManagerImpl implements SecurityManager {
     // 尝试从cookie或meta标签获取
     if (typeof document !== 'undefined') {
       const meta = document.querySelector(
-        `meta[name="${this.config.csrf.tokenName}"]`,
+        `meta[name="${this.config.csrf.tokenName}"]`
       )
       if (meta) {
         return meta.getAttribute('content')
@@ -581,11 +577,10 @@ export class SecurityManagerImpl implements SecurityManager {
     }
 
     // 触发事件回调
-    this.eventCallbacks.forEach((callback) => {
+    this.eventCallbacks.forEach(callback => {
       try {
         callback(event)
-      }
-      catch (error) {
+      } catch (error) {
         if (this.engine?.logger) {
           this.engine.logger.error('Error in security event callback', error)
         }
@@ -622,7 +617,7 @@ export class SecurityManagerImpl implements SecurityManager {
 // 创建安全管理器
 export function createSecurityManager(
   config?: SecurityConfig,
-  engine?: Engine,
+  engine?: Engine
 ): SecurityManager {
   return new SecurityManagerImpl(config, engine)
 }

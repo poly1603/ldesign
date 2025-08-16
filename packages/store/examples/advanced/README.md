@@ -5,24 +5,28 @@
 ## 功能展示
 
 ### 1. 性能优化示例
+
 - **Store 池管理**: 使用 `@PooledStore` 装饰器优化内存使用
 - **性能监控**: 使用 `@MonitorAction` 和 `@MonitorGetter` 监控性能
 - **缓存策略**: 展示不同的缓存策略和优化技巧
 - **内存管理**: 演示正确的资源清理和内存管理
 
 ### 2. 复杂状态管理
+
 - **嵌套状态**: 管理复杂的嵌套数据结构
 - **状态组合**: 多个 Store 之间的协作和通信
 - **事务处理**: 批量状态更新和回滚机制
 - **状态快照**: 状态的保存和恢复功能
 
 ### 3. 高级装饰器使用
+
 - **自定义装饰器**: 创建业务特定的装饰器
 - **装饰器组合**: 多个装饰器的组合使用
 - **条件装饰器**: 根据条件应用不同的装饰器
 - **装饰器继承**: 装饰器在继承中的行为
 
 ### 4. 企业级功能
+
 - **权限管理**: 基于角色的访问控制
 - **审计日志**: 状态变更的审计和追踪
 - **数据验证**: 状态更新的验证机制
@@ -31,17 +35,20 @@
 ## 运行示例
 
 ### 安装依赖
+
 ```bash
 cd packages/store/examples/advanced
 pnpm install
 ```
 
 ### 启动开发服务器
+
 ```bash
 pnpm dev
 ```
 
 ### 构建生产版本
+
 ```bash
 pnpm build
 ```
@@ -131,14 +138,14 @@ export class ComplexStore extends BaseStore {
 export function ValidatedAction(validator: (args: any[]) => boolean) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
-    
+
     descriptor.value = function (...args: any[]) {
       if (!validator(args)) {
         throw new Error(`Invalid arguments for ${propertyKey}`)
       }
       return originalMethod.apply(this, args)
     }
-    
+
     return descriptor
   }
 }
@@ -175,24 +182,28 @@ export class SecureStore extends BaseStore {
 ## 最佳实践
 
 ### 1. 性能优化
+
 - 使用 Store 池减少内存分配
 - 监控关键操作的性能
 - 合理使用缓存策略
 - 避免不必要的重新计算
 
 ### 2. 状态设计
+
 - 保持状态结构扁平化
 - 使用不可变更新模式
 - 合理划分 Store 边界
 - 避免循环依赖
 
 ### 3. 错误处理
+
 - 实现全局错误边界
 - 提供状态恢复机制
 - 记录详细的错误信息
 - 优雅降级处理
 
 ### 4. 测试策略
+
 - 单元测试 Store 逻辑
 - 集成测试 Store 协作
 - 性能测试关键路径

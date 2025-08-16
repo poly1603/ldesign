@@ -1,5 +1,10 @@
 import type { Ref, ComputedRef } from 'vue'
-import type { RequestConfig, ResponseData, HttpError, HttpClient } from './index'
+import type {
+  RequestConfig,
+  ResponseData,
+  HttpError,
+  HttpClient,
+} from './index'
 
 // 重新导出核心类型
 export type { RequestConfig, ResponseData, HttpError, HttpClient }
@@ -71,7 +76,10 @@ export interface UseQueryOptions<T = any> extends UseRequestOptions<T> {
   refetchOnReconnect?: boolean
   refetchInterval?: number
   /** 重试配置 */
-  retry?: boolean | number | ((failureCount: number, error: HttpError) => boolean)
+  retry?:
+    | boolean
+    | number
+    | ((failureCount: number, error: HttpError) => boolean)
   retryDelay?: number | ((retryAttempt: number) => number)
 }
 
@@ -102,7 +110,11 @@ export interface UseMutationOptions<T = any, V = any> {
   /** 开始回调 */
   onMutate?: (variables: V) => void
   /** 完成回调 */
-  onSettled?: (data: T | undefined, error: HttpError | null, variables: V) => void
+  onSettled?: (
+    data: T | undefined,
+    error: HttpError | null,
+    variables: V
+  ) => void
 }
 
 /**
@@ -112,7 +124,10 @@ export interface UseMutationReturn<T = any, V = any> extends RequestState<T> {
   /** 执行变更 */
   mutate: (variables: V, config?: RequestConfig) => Promise<ResponseData<T>>
   /** 异步执行变更 */
-  mutateAsync: (variables: V, config?: RequestConfig) => Promise<ResponseData<T>>
+  mutateAsync: (
+    variables: V,
+    config?: RequestConfig
+  ) => Promise<ResponseData<T>>
   /** 重置状态 */
   reset: () => void
 }

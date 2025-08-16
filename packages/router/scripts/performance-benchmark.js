@@ -28,14 +28,7 @@ const BENCHMARK_CONFIG = {
   // 路由导航测试
   navigation: {
     iterations: 1000,
-    routes: [
-      '/',
-      '/about',
-      '/user/123',
-      '/posts/456',
-      '/admin',
-      '/profile',
-    ],
+    routes: ['/', '/about', '/user/123', '/posts/456', '/admin', '/profile'],
   },
 
   // 大量路由测试
@@ -48,9 +41,21 @@ const BENCHMARK_CONFIG = {
 // 创建测试路由配置
 function createTestRoutes(count = 100) {
   const routes = [
-    { path: '/', name: 'home', component: () => Promise.resolve({ default: {} }) },
-    { path: '/about', name: 'about', component: () => Promise.resolve({ default: {} }) },
-    { path: '/contact', name: 'contact', component: () => Promise.resolve({ default: {} }) },
+    {
+      path: '/',
+      name: 'home',
+      component: () => Promise.resolve({ default: {} }),
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: () => Promise.resolve({ default: {} }),
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => Promise.resolve({ default: {} }),
+    },
   ]
 
   // 添加动态路由
@@ -102,8 +107,7 @@ class PerformanceBenchmark {
       for (let i = 0; i < iterations; i++) {
         try {
           router.resolve(route)
-        }
-        catch (error) {
+        } catch (error) {
           // 忽略解析错误，专注于性能
         }
       }
@@ -145,8 +149,7 @@ class PerformanceBenchmark {
 
         try {
           await router.push(route)
-        }
-        catch (error) {
+        } catch (error) {
           // 忽略导航错误
         }
 
@@ -204,8 +207,7 @@ class PerformanceBenchmark {
         const startTime = performance.now()
         try {
           router.resolve(route)
-        }
-        catch (error) {
+        } catch (error) {
           // 忽略解析错误
         }
         const endTime = performance.now()
@@ -250,9 +252,21 @@ class PerformanceBenchmark {
     const finalMemory = process.memoryUsage()
 
     const memoryDiff = {
-      heapUsed: ((finalMemory.heapUsed - initialMemory.heapUsed) / 1024 / 1024).toFixed(2),
-      heapTotal: ((finalMemory.heapTotal - initialMemory.heapTotal) / 1024 / 1024).toFixed(2),
-      external: ((finalMemory.external - initialMemory.external) / 1024 / 1024).toFixed(2),
+      heapUsed: (
+        (finalMemory.heapUsed - initialMemory.heapUsed) /
+        1024 /
+        1024
+      ).toFixed(2),
+      heapTotal: (
+        (finalMemory.heapTotal - initialMemory.heapTotal) /
+        1024 /
+        1024
+      ).toFixed(2),
+      external: (
+        (finalMemory.external - initialMemory.external) /
+        1024 /
+        1024
+      ).toFixed(2),
     }
 
     this.results.memoryUsage = {
@@ -272,16 +286,24 @@ class PerformanceBenchmark {
     // 路由匹配报告
     if (this.results.routeMatching) {
       console.log('\n🔍 路由匹配性能:')
-      this.results.routeMatching.forEach((result) => {
-        console.log(`  ${result.route.padEnd(30)} ${result.avgTime}ms (${result.opsPerSecond} ops/s)`)
+      this.results.routeMatching.forEach(result => {
+        console.log(
+          `  ${result.route.padEnd(30)} ${result.avgTime}ms (${
+            result.opsPerSecond
+          } ops/s)`
+        )
       })
     }
 
     // 路由导航报告
     if (this.results.navigation) {
       console.log('\n🧭 路由导航性能:')
-      this.results.navigation.forEach((result) => {
-        console.log(`  ${result.route.padEnd(20)} 平均: ${result.avgTime}ms, 最小: ${result.minTime}ms, 最大: ${result.maxTime}ms`)
+      this.results.navigation.forEach(result => {
+        console.log(
+          `  ${result.route.padEnd(20)} 平均: ${result.avgTime}ms, 最小: ${
+            result.minTime
+          }ms, 最大: ${result.maxTime}ms`
+        )
       })
     }
 
@@ -291,17 +313,27 @@ class PerformanceBenchmark {
       console.log(`  路由数量: ${this.results.massRoutes.routeCount}`)
       console.log(`  创建时间: ${this.results.massRoutes.createTime}ms`)
       console.log('  解析性能:')
-      this.results.massRoutes.resolveResults.forEach((result) => {
-        console.log(`    ${result.route.padEnd(30)} ${result.avgTime}ms (${result.opsPerSecond} ops/s)`)
+      this.results.massRoutes.resolveResults.forEach(result => {
+        console.log(
+          `    ${result.route.padEnd(30)} ${result.avgTime}ms (${
+            result.opsPerSecond
+          } ops/s)`
+        )
       })
     }
 
     // 内存使用报告
     if (this.results.memoryUsage) {
       console.log('\n💾 内存使用情况:')
-      console.log(`  创建路由器数量: ${this.results.memoryUsage.routersCreated}`)
-      console.log(`  堆内存增加: ${this.results.memoryUsage.memoryDiff.heapUsed}MB`)
-      console.log(`  平均每个路由器: ${this.results.memoryUsage.avgMemoryPerRouter}MB`)
+      console.log(
+        `  创建路由器数量: ${this.results.memoryUsage.routersCreated}`
+      )
+      console.log(
+        `  堆内存增加: ${this.results.memoryUsage.memoryDiff.heapUsed}MB`
+      )
+      console.log(
+        `  平均每个路由器: ${this.results.memoryUsage.avgMemoryPerRouter}MB`
+      )
     }
 
     console.log('\n✅ 性能测试完成!')
@@ -335,8 +367,7 @@ async function runBenchmark() {
 
     benchmark.generateReport()
     benchmark.saveResults()
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 性能测试失败:', error)
     process.exit(1)
   }

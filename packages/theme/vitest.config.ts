@@ -13,7 +13,7 @@ export default defineConfig({
     include: [
       'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-      '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+      '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
     coverage: {
       provider: 'v8',
@@ -26,13 +26,13 @@ export default defineConfig({
           statements: 80,
         },
       },
-    }
+    },
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
       '@tests': resolve(__dirname, 'tests'),
-      '@/__tests__': resolve(__dirname, '__tests__')
-    }
-  }
+      '@/__tests__': resolve(__dirname, '__tests__'),
+    },
+  },
 })

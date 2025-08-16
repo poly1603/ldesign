@@ -42,7 +42,7 @@ app.use(pinia)
 // 路由
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 app.use(router)
 
@@ -53,7 +53,7 @@ app.use(TemplatePlugin, {
   cacheEnabled: true,
   cacheSize: 50,
   cacheTTL: 10 * 60 * 1000, // 10分钟
-  preloadEnabled: true
+  preloadEnabled: true,
 })
 
 app.mount('#app')
@@ -77,8 +77,7 @@ const templateStore = useTemplateStore()
 const user = computed(() => userStore.currentUser)
 
 const layoutTemplate = computed(() => {
-  if (!user.value)
-    return 'public'
+  if (!user.value) return 'public'
   return user.value.role === 'admin' ? 'admin' : 'user'
 })
 
@@ -86,7 +85,7 @@ const layoutProps = computed(() => ({
   title: 'LDesign Template 示例应用',
   user: user.value,
   menuItems: getMenuItems(),
-  onMenuClick: handleMenuClick
+  onMenuClick: handleMenuClick,
 }))
 
 // 方法
@@ -94,13 +93,13 @@ function getMenuItems() {
   if (!user.value) {
     return [
       { id: 'home', title: '首页', path: '/' },
-      { id: 'about', title: '关于', path: '/about' }
+      { id: 'about', title: '关于', path: '/about' },
     ]
   }
 
   const baseItems = [
     { id: 'dashboard', title: '仪表板', path: '/dashboard' },
-    { id: 'profile', title: '个人资料', path: '/profile' }
+    { id: 'profile', title: '个人资料', path: '/profile' },
   ]
 
   if (user.value.role === 'admin') {
@@ -144,12 +143,8 @@ function goToLogin() {
       <template #user-info>
         <div class="user-info">
           <span>{{ user?.name || '游客' }}</span>
-          <button v-if="user" @click="logout">
-            退出
-          </button>
-          <button v-else @click="goToLogin">
-            登录
-          </button>
+          <button v-if="user" @click="logout">退出</button>
+          <button v-else @click="goToLogin">登录</button>
         </div>
       </template>
     </LTemplateRenderer>
@@ -198,7 +193,7 @@ export const useUserStore = defineStore('user', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  async function login(credentials: { email: string, password: string }) {
+  async function login(credentials: { email: string; password: string }) {
     isLoading.value = true
     error.value = null
 
@@ -212,12 +207,10 @@ export const useUserStore = defineStore('user', () => {
       localStorage.setItem('token', response.token)
 
       return response
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : '登录失败'
       throw err
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -241,35 +234,41 @@ export const useUserStore = defineStore('user', () => {
     error,
     login,
     logout,
-    initializeFromStorage
+    initializeFromStorage,
   }
 })
 
 // 模拟登录API
-async function mockLogin(credentials: { email: string, password: string }) {
+async function mockLogin(credentials: { email: string; password: string }) {
   await new Promise(resolve => setTimeout(resolve, 1000))
 
-  if (credentials.email === 'admin@example.com' && credentials.password === 'admin') {
+  if (
+    credentials.email === 'admin@example.com' &&
+    credentials.password === 'admin'
+  ) {
     return {
       user: {
         id: '1',
         name: '管理员',
         email: 'admin@example.com',
-        role: 'admin' as const
+        role: 'admin' as const,
       },
-      token: 'mock-admin-token'
+      token: 'mock-admin-token',
     }
   }
 
-  if (credentials.email === 'user@example.com' && credentials.password === 'user') {
+  if (
+    credentials.email === 'user@example.com' &&
+    credentials.password === 'user'
+  ) {
     return {
       user: {
         id: '2',
         name: '普通用户',
         email: 'user@example.com',
-        role: 'user' as const
+        role: 'user' as const,
       },
-      token: 'mock-user-token'
+      token: 'mock-user-token',
     }
   }
 
@@ -295,7 +294,7 @@ export const useTemplateStore = defineStore('template', () => {
     // 预加载新主题的模板
     await preload([
       { category: 'layout', template: theme },
-      { category: 'dashboard', template: theme }
+      { category: 'dashboard', template: theme },
     ])
   }
 
@@ -312,7 +311,7 @@ export const useTemplateStore = defineStore('template', () => {
     deviceOverride,
     setTheme,
     setDeviceOverride,
-    clearTemplateCache
+    clearTemplateCache,
   }
 })
 ```
@@ -327,24 +326,24 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Home.vue'),
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue')
+    component: () => import('../views/Login.vue'),
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/profile',
     name: 'Profile',
     component: () => import('../views/Profile.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/admin',
@@ -353,16 +352,16 @@ const routes: RouteRecordRaw[] = [
         path: 'users',
         name: 'AdminUsers',
         component: () => import('../views/admin/Users.vue'),
-        meta: { requiresAuth: true, requiresAdmin: true }
+        meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
         path: 'settings',
         name: 'AdminSettings',
         component: () => import('../views/admin/Settings.vue'),
-        meta: { requiresAuth: true, requiresAdmin: true }
-      }
-    ]
-  }
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+    ],
+  },
 ]
 
 export default routes
@@ -384,15 +383,14 @@ const loginProps = ref({
   title: '用户登录',
   loading: userStore.isLoading,
   error: userStore.error,
-  onLogin: handleLogin
+  onLogin: handleLogin,
 })
 
-async function handleLogin(credentials: { email: string, password: string }) {
+async function handleLogin(credentials: { email: string; password: string }) {
   try {
     await userStore.login(credentials)
     router.push('/dashboard')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('登录失败:', error)
   }
 }
@@ -439,28 +437,28 @@ const stats = ref([
     title: '总用户数',
     value: '1,234',
     change: '+12%',
-    changeType: 'positive'
+    changeType: 'positive',
   },
   {
     id: 2,
     title: '活跃用户',
     value: '856',
     change: '+5%',
-    changeType: 'positive'
+    changeType: 'positive',
   },
   {
     id: 3,
     title: '收入',
     value: '¥12,345',
     change: '-2%',
-    changeType: 'negative'
-  }
+    changeType: 'negative',
+  },
 ])
 
 const dashboardProps = computed(() => ({
   title: '仪表板',
   user: userStore.currentUser,
-  stats: stats.value
+  stats: stats.value,
 }))
 </script>
 
@@ -489,9 +487,7 @@ const dashboardProps = computed(() => ({
           <div class="charts-section">
             <h2>数据图表</h2>
             <!-- 这里可以放置图表组件 -->
-            <div class="chart-placeholder">
-              图表区域
-            </div>
+            <div class="chart-placeholder">图表区域</div>
           </div>
         </div>
       </template>
@@ -585,7 +581,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   title: '管理后台',
-  menuItems: () => []
+  menuItems: () => [],
 })
 </script>
 

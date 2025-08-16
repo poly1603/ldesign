@@ -74,7 +74,7 @@ export interface RouterEnginePluginOptions {
  * ```
  */
 export function createRouterEnginePlugin(
-  options: RouterEnginePluginOptions,
+  options: RouterEnginePluginOptions
 ): Plugin {
   const {
     name = 'router',
@@ -98,7 +98,7 @@ export function createRouterEnginePlugin(
         const vueApp = engine.getApp()
         if (!vueApp) {
           throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
+            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
           )
         }
 
@@ -194,7 +194,7 @@ export function createRouterEnginePlugin(
         }
 
         // 监听路由错误
-        router.onError((error) => {
+        router.onError(error => {
           engine.logger.error('Router navigation error:', error)
           if (engine.events) {
             engine.events.emit('router:error', error)
@@ -202,7 +202,8 @@ export function createRouterEnginePlugin(
         })
 
         // 等待路由器准备就绪（在测试环境中跳过）
-        const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+        const isTestEnv =
+          typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
         if (!isTestEnv) {
           engine.logger.info('Waiting for router to be ready...')
           await router.isReady()
@@ -223,8 +224,7 @@ export function createRouterEnginePlugin(
             routesCount: routes.length,
           })
         }
-      }
-      catch (error) {
+      } catch (error) {
         engine.logger.error(`Failed to install ${name} plugin:`, error)
         throw error
       }
@@ -252,8 +252,7 @@ export function createRouterEnginePlugin(
         }
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      }
-      catch (error) {
+      } catch (error) {
         engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
         throw error
       }
@@ -301,7 +300,7 @@ export function routerPlugin(options: RouterEnginePluginOptions): Plugin {
  * ```
  */
 export function createDefaultRouterEnginePlugin(
-  routes: RouteRecordRaw[],
+  routes: RouteRecordRaw[]
 ): Plugin {
   return createRouterEnginePlugin({
     routes,

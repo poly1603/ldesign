@@ -13,7 +13,7 @@ import { WatermarkCore } from '../../core'
  */
 export function useWatermark(
   container?: Ref<HTMLElement | undefined>,
-  options: UseWatermarkOptions = {},
+  options: UseWatermarkOptions = {}
 ): UseWatermarkReturn {
   const { enableSecurity = true, enableResponsive = true } = options
 
@@ -30,8 +30,7 @@ export function useWatermark(
    * 创建水印
    */
   const create = async (config: Partial<WatermarkConfig>): Promise<void> => {
-    if (loading.value)
-      return
+    if (loading.value) return
 
     try {
       loading.value = true
@@ -62,16 +61,14 @@ export function useWatermark(
           enableSecurity,
           enableResponsive,
           immediate: true,
-        },
+        }
       )
 
       instance.value = newInstance
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -80,20 +77,17 @@ export function useWatermark(
    * 更新水印
    */
   const update = async (config: Partial<WatermarkConfig>): Promise<void> => {
-    if (!instance.value || loading.value)
-      return
+    if (!instance.value || loading.value) return
 
     try {
       loading.value = true
       error.value = null
 
       await core.update(instance.value.id, config)
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -102,8 +96,7 @@ export function useWatermark(
    * 销毁水印
    */
   const destroy = async (): Promise<void> => {
-    if (!instance.value || loading.value)
-      return
+    if (!instance.value || loading.value) return
 
     try {
       loading.value = true
@@ -111,12 +104,10 @@ export function useWatermark(
 
       await core.destroy(instance.value.id)
       instance.value = null
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -125,20 +116,17 @@ export function useWatermark(
    * 暂停水印
    */
   const pause = async (): Promise<void> => {
-    if (!instance.value || loading.value)
-      return
+    if (!instance.value || loading.value) return
 
     try {
       loading.value = true
       error.value = null
 
       await core.pause(instance.value.id)
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -147,20 +135,17 @@ export function useWatermark(
    * 恢复水印
    */
   const resume = async (): Promise<void> => {
-    if (!instance.value || loading.value)
-      return
+    if (!instance.value || loading.value) return
 
     try {
       loading.value = true
       error.value = null
 
       await core.resume(instance.value.id)
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -186,7 +171,7 @@ export function useWatermark(
           }
         }
       },
-      { flush: 'post' },
+      { flush: 'post' }
     )
   }
 
@@ -217,7 +202,7 @@ export function useWatermark(
 export function useSimpleWatermark(
   config: Ref<Partial<WatermarkConfig>> | Partial<WatermarkConfig>,
   container?: Ref<HTMLElement | undefined>,
-  options: UseWatermarkOptions = {},
+  options: UseWatermarkOptions = {}
 ): UseWatermarkReturn {
   const watermark = useWatermark(container, options)
   const configRef = ref(config)
@@ -225,15 +210,14 @@ export function useSimpleWatermark(
   // 监听配置变化
   watch(
     configRef,
-    async (newConfig) => {
+    async newConfig => {
       if (watermark.isCreated.value) {
         await watermark.update(newConfig)
-      }
-      else if (container?.value && options.immediate !== false) {
+      } else if (container?.value && options.immediate !== false) {
         await watermark.create(newConfig)
       }
     },
-    { deep: true, immediate: options.immediate !== false },
+    { deep: true, immediate: options.immediate !== false }
   )
 
   return watermark

@@ -61,8 +61,7 @@ const containerStyle = computed(() => {
     if (props.labelPosition === 'right') {
       style.flexDirection = 'row-reverse'
     }
-  }
-  else {
+  } else {
     style.display = 'flex'
     style.flexDirection = 'column'
   }

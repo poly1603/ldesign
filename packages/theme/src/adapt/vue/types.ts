@@ -48,8 +48,8 @@ export interface VueThemeContext {
 /**
  * Vue 主题上下文注入键
  */
-export const VueThemeContextKey: InjectionKey<VueThemeContext>
-  = Symbol('vue-theme-context')
+export const VueThemeContextKey: InjectionKey<VueThemeContext> =
+  Symbol('vue-theme-context')
 
 /**
  * useTheme 组合式函数返回类型

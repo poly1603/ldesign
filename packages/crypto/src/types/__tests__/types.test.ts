@@ -61,7 +61,9 @@ import {
 describe('类型定义测试', () => {
   describe('基础类型', () => {
     it('EncryptionAlgorithm 应该包含所有支持的算法', () => {
-      expectTypeOf<EncryptionAlgorithm>().toEqualTypeOf<'AES' | 'RSA' | 'DES' | '3DES' | 'Blowfish'>()
+      expectTypeOf<EncryptionAlgorithm>().toEqualTypeOf<
+        'AES' | 'RSA' | 'DES' | '3DES' | 'Blowfish'
+      >()
     })
 
     it('EncryptResult 应该有正确的结构', () => {
@@ -119,7 +121,11 @@ describe('类型定义测试', () => {
     it('IEncryptor 应该有正确的方法签名', () => {
       expectTypeOf<IEncryptor>().toMatchTypeOf<{
         encrypt: (data: string, key: string, options?: any) => EncryptResult
-        decrypt: (encryptedData: string | EncryptResult, key: string, options?: any) => DecryptResult
+        decrypt: (
+          encryptedData: string | EncryptResult,
+          key: string,
+          options?: any
+        ) => DecryptResult
       }>()
     })
 

@@ -107,7 +107,7 @@ interface DeviceRouterPluginOptions extends DeviceRouteConfig {
 ```typescript
 interface RouteMeta {
   // 原有字段...
-  
+
   /** 支持的设备类型，默认支持所有设备 */
   supportedDevices?: DeviceType[]
   /** 不支持设备时的提示信息 */
@@ -126,7 +126,7 @@ interface RouteMeta {
 ```typescript
 interface RouteRecordRaw {
   // 原有字段...
-  
+
   /** 设备特定组件配置 */
   deviceComponents?: {
     mobile?: RouteComponent
@@ -156,6 +156,7 @@ constructor(
 ```
 
 **参数：**
+
 - `getCurrentDevice`: 获取当前设备类型的函数
 - `options`: 守卫选项
 
@@ -182,6 +183,7 @@ constructor(getCurrentDevice: () => DeviceType)
 ```
 
 **参数：**
+
 - `getCurrentDevice`: 获取当前设备类型的函数
 
 #### 方法
@@ -198,6 +200,7 @@ resolveComponent(
 解析路由记录的组件。
 
 **参数：**
+
 - `record`: 路由记录
 - `viewName`: 视图名称，默认为 'default'
 
@@ -255,9 +258,7 @@ async hasTemplate(
 ### createDeviceRouterPlugin()
 
 ```typescript
-function createDeviceRouterPlugin(
-  options?: DeviceRouterPluginOptions
-): {
+function createDeviceRouterPlugin(options?: DeviceRouterPluginOptions): {
   install(router: Router): DeviceRouterPlugin
 }
 ```
@@ -265,6 +266,7 @@ function createDeviceRouterPlugin(
 创建设备路由插件。
 
 **参数：**
+
 - `options`: 插件配置选项
 
 **返回值：** 插件对象，包含 `install` 方法
@@ -274,9 +276,7 @@ function createDeviceRouterPlugin(
 ### useDeviceRoute()
 
 ```typescript
-function useDeviceRoute(
-  options?: UseDeviceRouteOptions
-): UseDeviceRouteReturn
+function useDeviceRoute(options?: UseDeviceRouteOptions): UseDeviceRouteReturn
 ```
 
 使用设备路由功能的组合式函数。
@@ -320,9 +320,7 @@ interface UseDeviceRouteReturn {
 ### useDeviceComponent()
 
 ```typescript
-function useDeviceComponent(
-  options?: UseDeviceComponentOptions
-): UseDeviceComponentReturn
+function useDeviceComponent(options?: UseDeviceComponentOptions): UseDeviceComponentReturn
 ```
 
 使用设备组件解析功能的组合式函数。
@@ -393,10 +391,7 @@ interface DeviceUnsupportedProps {
 ### checkDeviceSupport()
 
 ```typescript
-function checkDeviceSupport(
-  route: RouteLocationNormalized,
-  currentDevice: DeviceType
-): boolean
+function checkDeviceSupport(route: RouteLocationNormalized, currentDevice: DeviceType): boolean
 ```
 
 检查设备是否被路由支持。

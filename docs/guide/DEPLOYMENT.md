@@ -65,9 +65,8 @@ pnpm deploy:package engine --dry-run
 
 ### npm 包管理器
 
-**目标**: 发布包到 npm registry
-**命令**: `pnpm deploy:npm`
-**配置**: `deploy.config.json` 中的 `npm` 部分
+**目标**: 发布包到 npm registry **命令**: `pnpm deploy:npm` **配置**: `deploy.config.json` 中的
+`npm` 部分
 
 **特性**:
 
@@ -78,9 +77,8 @@ pnpm deploy:package engine --dry-run
 
 ### CDN 分发网络
 
-**目标**: 通过 CDN 提供包文件
-**命令**: `pnpm deploy:cdn`
-**支持的 CDN**: jsDelivr、unpkg、自定义 CDN
+**目标**: 通过 CDN 提供包文件 **命令**: `pnpm deploy:cdn` **支持的 CDN**: jsDelivr、unpkg、自定义
+CDN
 
 **特性**:
 
@@ -91,9 +89,8 @@ pnpm deploy:package engine --dry-run
 
 ### 文档站点
 
-**目标**: 部署文档到 GitHub Pages
-**命令**: `pnpm deploy:docs`
-**支持平台**: GitHub Pages、Vercel、Netlify
+**目标**: 部署文档到 GitHub Pages **命令**: `pnpm deploy:docs` **支持平台**: GitHub
+Pages、Vercel、Netlify
 
 **特性**:
 
@@ -106,8 +103,7 @@ pnpm deploy:package engine --dry-run
 
 ### 主部署管理器
 
-**文件**: `tools/deploy/deploy-manager.ts`
-**功能**: 统一管理所有部署目标
+**文件**: `tools/deploy/deploy-manager.ts` **功能**: 统一管理所有部署目标
 
 ```bash
 # 基本用法
@@ -129,8 +125,7 @@ tsx tools/deploy/deploy-manager.ts docs development --skip-validation
 
 ### 包部署器
 
-**文件**: `tools/deploy/package-deployer.ts`
-**功能**: 部署单个或所有包
+**文件**: `tools/deploy/package-deployer.ts` **功能**: 部署单个或所有包
 
 ```bash
 # 部署单个包
@@ -154,8 +149,7 @@ tsx tools/deploy/package-deployer.ts color --tag beta --dry-run
 
 ### 部署验证器
 
-**文件**: `tools/deploy/verify-deployment.ts`
-**功能**: 验证部署状态
+**文件**: `tools/deploy/verify-deployment.ts` **功能**: 验证部署状态
 
 ```bash
 # 验证所有包
@@ -298,8 +292,7 @@ tsx tools/deploy/deploy-manager.ts rollback npm 1.0.0
 
 #### 1. npm 发布失败
 
-**错误**: `403 Forbidden`
-**解决**: 检查 NPM_TOKEN 是否正确设置
+**错误**: `403 Forbidden` **解决**: 检查 NPM_TOKEN 是否正确设置
 
 ```bash
 # 检查 npm 登录状态
@@ -311,13 +304,11 @@ npm login
 
 #### 2. CDN 链接不可用
 
-**错误**: CDN 返回 404
-**解决**: CDN 同步需要时间，等待 5-10 分钟后重试
+**错误**: CDN 返回 404 **解决**: CDN 同步需要时间，等待 5-10 分钟后重试
 
 #### 3. 文档部署失败
 
-**错误**: GitHub Pages 部署失败
-**解决**: 检查 GitHub Pages 设置和权限
+**错误**: GitHub Pages 部署失败 **解决**: 检查 GitHub Pages 设置和权限
 
 ```bash
 # 手动构建文档
@@ -329,8 +320,7 @@ ls -la docs/.vitepress/dist
 
 #### 4. 包大小超限
 
-**警告**: 包体积超出限制
-**解决**: 优化代码或调整 size-limit 配置
+**警告**: 包体积超出限制 **解决**: 优化代码或调整 size-limit 配置
 
 ```bash
 # 分析包大小

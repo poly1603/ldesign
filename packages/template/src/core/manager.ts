@@ -37,14 +37,11 @@ class SimpleDeviceDetector {
   }
 
   detectDevice(): DeviceType {
-    if (typeof window === 'undefined')
-      return 'desktop'
+    if (typeof window === 'undefined') return 'desktop'
 
     const width = window.innerWidth
-    if (width < 768)
-      return 'mobile'
-    if (width < 1024)
-      return 'tablet'
+    if (width < 768) return 'mobile'
+    if (width < 1024) return 'tablet'
     return 'desktop'
   }
 
@@ -59,8 +56,7 @@ class SimpleDeviceDetector {
   }
 
   private setupListener(): void {
-    if (typeof window === 'undefined')
-      return
+    if (typeof window === 'undefined') return
 
     const handleResize = () => {
       const newDevice = this.detectDevice()
@@ -91,11 +87,10 @@ class SimpleEventEmitter {
   emit(event: string, ...args: any[]): void {
     const callbacks = this.events.get(event)
     if (callbacks) {
-      callbacks.forEach((callback) => {
+      callbacks.forEach(callback => {
         try {
           callback(...args)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Event callback error for ${event}:`, error)
         }
       })
@@ -165,8 +160,7 @@ export class TemplateManager extends SimpleEventEmitter {
       }
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 模板扫描失败:', error)
       throw error
     }
@@ -206,8 +200,7 @@ export class TemplateManager extends SimpleEventEmitter {
       }
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 模板渲染失败:', error)
       throw error
     }
@@ -311,8 +304,7 @@ export class TemplateManager extends SimpleEventEmitter {
    * 设置设备监听器
    */
   private setupDeviceListener(): void {
-    if (!this.config.autoDetectDevice)
-      return
+    if (!this.config.autoDetectDevice) return
 
     this.deviceDetector.on('deviceChange', (newDevice: DeviceType) => {
       const oldDevice = this.getCurrentDevice()

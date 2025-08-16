@@ -61,7 +61,7 @@ const server = http.createServer((req, res) => {
   const filePath = path.join(__dirname, pathname)
 
   // 检查文件是否存在
-  fs.access(filePath, fs.constants.F_OK, (err) => {
+  fs.access(filePath, fs.constants.F_OK, err => {
     if (err) {
       // 如果是 SPA 路由，返回 index.html
       if (!path.extname(pathname)) {
@@ -86,11 +86,10 @@ server.listen(PORT, () => {
   console.log('-'.repeat(50))
 })
 
-server.on('error', (err) => {
+server.on('error', err => {
   if (err.code === 'EADDRINUSE') {
     console.log(`❌ 端口 ${PORT} 已被占用，请尝试其他端口`)
-  }
-  else {
+  } else {
     console.log(`❌ 启动服务器时出错: ${err.message}`)
   }
   process.exit(1)

@@ -29,8 +29,8 @@ export default defineComponent({
   } as const,
   emits: ['change'],
   setup(props, { emit }) {
-    const { currentTheme, availableThemes, themeConfigs, selectTheme }
-      = useThemeSelector()
+    const { currentTheme, availableThemes, themeConfigs, selectTheme } =
+      useThemeSelector()
 
     const handleThemeChange = async (themeName: string) => {
       await selectTheme(themeName)
@@ -42,26 +42,25 @@ export default defineComponent({
     }))
 
     const renderThemePreview = (theme: ThemeConfig) => {
-      if (!props.showPreview || !theme.light)
-        return null
+      if (!props.showPreview || !theme.light) return null
 
       return (
-        <div class="l-theme-selector__preview">
-          <div class="l-theme-selector__preview-colors">
+        <div class='l-theme-selector__preview'>
+          <div class='l-theme-selector__preview-colors'>
             <div
-              class="l-theme-selector__preview-color"
+              class='l-theme-selector__preview-color'
               style={{ backgroundColor: theme.light.primary }}
             />
             <div
-              class="l-theme-selector__preview-color"
+              class='l-theme-selector__preview-color'
               style={{ backgroundColor: theme.light.success }}
             />
             <div
-              class="l-theme-selector__preview-color"
+              class='l-theme-selector__preview-color'
               style={{ backgroundColor: theme.light.warning }}
             />
             <div
-              class="l-theme-selector__preview-color"
+              class='l-theme-selector__preview-color'
               style={{ backgroundColor: theme.light.danger }}
             />
           </div>
@@ -81,12 +80,12 @@ export default defineComponent({
         onClick={() => handleThemeChange(theme.name)}
       >
         {renderThemePreview(theme)}
-        <div class="l-theme-selector__info">
-          <div class="l-theme-selector__name">
+        <div class='l-theme-selector__info'>
+          <div class='l-theme-selector__name'>
             {theme.displayName || theme.name}
           </div>
           {props.showDescription && theme.description && (
-            <div class="l-theme-selector__description">{theme.description}</div>
+            <div class='l-theme-selector__description'>{theme.description}</div>
           )}
         </div>
       </div>
@@ -102,12 +101,13 @@ export default defineComponent({
         return (
           <div class={containerClass}>
             <select
-              class="l-theme-selector__select"
+              class='l-theme-selector__select'
               value={currentTheme.value}
               onChange={(e: Event) =>
-                handleThemeChange((e.target as HTMLSelectElement).value)}
+                handleThemeChange((e.target as HTMLSelectElement).value)
+              }
             >
-              {availableThemes.value.map((themeName) => {
+              {availableThemes.value.map(themeName => {
                 const theme = themeConfigs.value.find(t => t.name === themeName)
                 return (
                   <option key={themeName} value={themeName}>
@@ -123,7 +123,7 @@ export default defineComponent({
       if (props.mode === 'grid') {
         return (
           <div class={containerClass}>
-            <div class="l-theme-selector__grid" style={gridStyle.value}>
+            <div class='l-theme-selector__grid' style={gridStyle.value}>
               {themeConfigs.value.map(renderThemeItem)}
             </div>
           </div>
@@ -133,7 +133,7 @@ export default defineComponent({
       // list mode
       return (
         <div class={containerClass}>
-          <div class="l-theme-selector__list">
+          <div class='l-theme-selector__list'>
             {themeConfigs.value.map(renderThemeItem)}
           </div>
         </div>

@@ -63,7 +63,7 @@ const manager = new TemplateManager({
   defaultDevice: 'desktop',
   autoScan: true,
   autoDetectDevice: true,
-  cacheEnabled: true
+  cacheEnabled: true,
 })
 ```
 
@@ -163,15 +163,15 @@ export const config: TemplateConfig = {
     title: {
       type: 'string',
       default: '用户登录',
-      description: '页面标题'
-    }
+      description: '页面标题',
+    },
   },
 
   // 兼容性
   compatibility: {
     vue: '>=3.2.0',
-    browsers: ['Chrome >= 88']
-  }
+    browsers: ['Chrome >= 88'],
+  },
 }
 ```
 
@@ -199,15 +199,15 @@ interface TemplateManagerConfig {
 
 ```typescript
 // 监听模板事件
-manager.on('template:load', (event) => {
+manager.on('template:load', event => {
   console.log('模板加载:', event.template)
 })
 
-manager.on('template:error', (event) => {
+manager.on('template:error', event => {
   console.error('模板错误:', event.error)
 })
 
-manager.on('template:switch', (event) => {
+manager.on('template:switch', event => {
   console.log('模板切换:', event.from, '->', event.to)
 })
 ```
@@ -216,7 +216,7 @@ manager.on('template:switch', (event) => {
 
 ```typescript
 // 监听设备变化
-manager.on('device:change', (event) => {
+manager.on('device:change', event => {
   console.log('设备变化:', event.oldDevice, '->', event.newDevice)
 })
 ```
@@ -244,7 +244,7 @@ const myPlugin = {
     manager.addFeature('customFeature', () => {
       // 自定义功能实现
     })
-  }
+  },
 }
 
 // 使用插件

@@ -17,11 +17,10 @@ engine.errors.onError((error, context) => {
 try {
   // 可能出错的代码
   riskyOperation()
-}
-catch (error) {
+} catch (error) {
   engine.errors.reportError(error, {
     component: 'UserProfile',
-    action: 'updateProfile'
+    action: 'updateProfile',
   })
 }
 ```
@@ -67,7 +66,7 @@ engine.errors.setRecoveryStrategy('NetworkError', async (error, context) => {
 
   return {
     retry: false,
-    fallback: () => showOfflineMessage()
+    fallback: () => showOfflineMessage(),
   }
 })
 
@@ -75,7 +74,7 @@ engine.errors.setRecoveryStrategy('NetworkError', async (error, context) => {
 engine.errors.setRecoveryStrategy('ComponentError', (error, context) => {
   return {
     retry: false,
-    fallback: () => renderErrorBoundary(error, context)
+    fallback: () => renderErrorBoundary(error, context),
   }
 })
 ```
@@ -101,7 +100,7 @@ const ErrorBoundary = defineComponent({
       // 报告错误
       engine.errors.reportError(err, {
         component: instance?.type?.name,
-        errorInfo: info
+        errorInfo: info,
       })
 
       // 阻止错误继续传播
@@ -113,18 +112,22 @@ const ErrorBoundary = defineComponent({
         return h('div', { class: 'error-boundary' }, [
           h('h3', '出现了错误'),
           h('p', error.value?.message),
-          h('button', {
-            onClick: () => {
-              hasError.value = false
-              error.value = null
-            }
-          }, '重试')
+          h(
+            'button',
+            {
+              onClick: () => {
+                hasError.value = false
+                error.value = null
+              },
+            },
+            '重试'
+          ),
         ])
       }
 
       return slots.default?.()
     }
-  }
+  },
 })
 ```
 
@@ -139,7 +142,7 @@ engine.errors.configureReporting({
   // 上报频率限制
   rateLimit: {
     maxErrors: 10,
-    timeWindow: 60000 // 1分钟
+    timeWindow: 60000, // 1分钟
   },
 
   // 错误过滤
@@ -164,9 +167,9 @@ engine.errors.configureReporting({
       userAgent: navigator.userAgent,
       url: window.location.href,
       timestamp: Date.now(),
-      userId: engine.auth.getCurrentUser()?.id
+      userId: engine.auth.getCurrentUser()?.id,
     }
-  }
+  },
 })
 ```
 
@@ -196,10 +199,10 @@ class ErrorMonitor {
       error: {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       },
       context,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // 保持历史记录在合理范围内
@@ -217,7 +220,7 @@ class ErrorMonitor {
       engine.events.emit('error:high-frequency', {
         errorKey,
         count,
-        recentErrors: this.getRecentErrors(errorKey)
+        recentErrors: this.getRecentErrors(errorKey),
       })
     }
   }
@@ -227,9 +230,9 @@ class ErrorMonitor {
       totalErrors: this.errorHistory.length,
       uniqueErrors: this.errorCounts.size,
       topErrors: Array.from(this.errorCounts.entries())
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 10),
-      recentErrors: this.errorHistory.slice(-10)
+      recentErrors: this.errorHistory.slice(-10),
     }
   }
 }
@@ -253,7 +256,7 @@ class ValidationError extends BusinessError {
   constructor(field: string, message: string, value?: any) {
     super(`验证失败: ${field} - ${message}`, 'VALIDATION_ERROR', {
       field,
-      value
+      value,
     })
     this.name = 'ValidationError'
   }
@@ -261,11 +264,7 @@ class ValidationError extends BusinessError {
 
 // 网络错误
 class NetworkError extends Error {
-  constructor(
-    message: string,
-    public status?: number,
-    public response?: any
-  ) {
+  constructor(message: string, public status?: number, public response?: any) {
     super(message)
     this.name = 'NetworkError'
   }
@@ -290,7 +289,7 @@ engine.errors.addHandler('ValidationError', (error: ValidationError, context) =>
     type: 'error',
     title: '输入错误',
     message: error.message,
-    duration: 5000
+    duration: 5000,
   })
 
   // 高亮错误字段
@@ -304,14 +303,13 @@ engine.errors.addHandler('NetworkError', (error: NetworkError, context) => {
     // 处理认证失败
     engine.auth.logout()
     engine.router.push('/login')
-  }
-  else if (error.status >= 500) {
+  } else if (error.status >= 500) {
     // 服务器错误
     engine.notifications.show({
       type: 'error',
       title: '服务器错误',
       message: '服务暂时不可用，请稍后重试',
-      duration: 5000
+      duration: 5000,
     })
   }
 })
@@ -321,7 +319,7 @@ engine.errors.addHandler('PermissionError', (error: PermissionError, context) =>
     type: 'warning',
     title: '权限不足',
     message: error.message,
-    duration: 3000
+    duration: 3000,
   })
 })
 ```
@@ -345,8 +343,8 @@ const engine = createEngine({
       // 批量上报
       batch: {
         size: 10,
-        timeout: 5000
-      }
+        timeout: 5000,
+      },
     },
 
     // 错误恢复配置
@@ -357,7 +355,7 @@ const engine = createEngine({
       retryDelay: 1000,
 
       // 降级策略
-      fallback: true
+      fallback: true,
     },
 
     // 错误过滤
@@ -366,7 +364,7 @@ const engine = createEngine({
       error => !error.message.includes('Script error'),
 
       // 过滤网络错误
-      error => error.name !== 'NetworkError' || error.status !== 0
+      error => error.name !== 'NetworkError' || error.status !== 0,
     ],
 
     // 开发模式配置
@@ -378,9 +376,9 @@ const engine = createEngine({
       console: true,
 
       // 显示错误覆盖层
-      overlay: true
-    }
-  }
+      overlay: true,
+    },
+  },
 })
 ```
 
@@ -392,16 +390,25 @@ const engine = createEngine({
 // 在关键组件周围使用错误边界
 const App = defineComponent({
   setup() {
-    return () => h(ErrorBoundary, {}, {
-      default: () => [
-        h(Header),
-        h(ErrorBoundary, {}, {
-          default: () => h(MainContent)
-        }),
-        h(Footer)
-      ]
-    })
-  }
+    return () =>
+      h(
+        ErrorBoundary,
+        {},
+        {
+          default: () => [
+            h(Header),
+            h(
+              ErrorBoundary,
+              {},
+              {
+                default: () => h(MainContent),
+              }
+            ),
+            h(Footer),
+          ],
+        }
+      )
+  },
 })
 ```
 
@@ -430,7 +437,7 @@ class ErrorHandler {
     const handlers = {
       'User not found': () => this.redirectToLogin(),
       'Network timeout': () => this.showRetryDialog(),
-      'Invalid token': () => this.refreshToken()
+      'Invalid token': () => this.refreshToken(),
     }
 
     const handler = handlers[error.message]
@@ -454,13 +461,13 @@ function collectErrorContext(error: Error, additionalContext?: any) {
     error: {
       name: error.name,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     },
 
     // 用户信息
     user: {
       id: engine.auth.getCurrentUser()?.id,
-      role: engine.auth.getCurrentUser()?.role
+      role: engine.auth.getCurrentUser()?.role,
     },
 
     // 环境信息
@@ -470,25 +477,25 @@ function collectErrorContext(error: Error, additionalContext?: any) {
       timestamp: Date.now(),
       viewport: {
         width: window.innerWidth,
-        height: window.innerHeight
-      }
+        height: window.innerHeight,
+      },
     },
 
     // 应用状态
     application: {
       version: engine.config.version,
       route: engine.router.currentRoute.value.path,
-      state: engine.state.getSnapshot()
+      state: engine.state.getSnapshot(),
     },
 
     // 性能信息
     performance: {
       memory: (performance as any).memory?.usedJSHeapSize,
-      timing: performance.now()
+      timing: performance.now(),
     },
 
     // 额外上下文
-    ...additionalContext
+    ...additionalContext,
   }
 }
 ```
@@ -500,24 +507,19 @@ function collectErrorContext(error: Error, additionalContext?: any) {
 function validateInput(data: any, schema: any) {
   try {
     return schema.parse(data)
-  }
-  catch (error) {
+  } catch (error) {
     throw new ValidationError('输入验证失败', 'INVALID_INPUT', {
       errors: error.errors,
-      input: data
+      input: data,
     })
   }
 }
 
 // 安全的异步操作
-async function safeAsyncOperation<T>(
-  operation: () => Promise<T>,
-  fallback?: T
-): Promise<T> {
+async function safeAsyncOperation<T>(operation: () => Promise<T>, fallback?: T): Promise<T> {
   try {
     return await operation()
-  }
-  catch (error) {
+  } catch (error) {
     engine.errors.reportError(error)
 
     if (fallback !== undefined) {
@@ -532,8 +534,7 @@ async function safeAsyncOperation<T>(
 function safeAccess(obj: any, path: string, defaultValue?: any) {
   try {
     return path.split('.').reduce((current, key) => current?.[key], obj) ?? defaultValue
-  }
-  catch (error) {
+  } catch (error) {
     engine.logger.warn(`安全访问失败: ${path}`, error)
     return defaultValue
   }
@@ -561,8 +562,7 @@ class ErrorDebugger {
 
   // 检查是否应该断点
   shouldBreak(error: Error): boolean {
-    return this.errorBreakpoints.has(error.name)
-      || this.errorBreakpoints.has(error.message)
+    return this.errorBreakpoints.has(error.name) || this.errorBreakpoints.has(error.message)
   }
 }
 
@@ -588,7 +588,7 @@ class ErrorReproducer {
   recordAction(action: any) {
     this.actions.push({
       ...action,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // 只保留最近的操作
@@ -599,9 +599,8 @@ class ErrorReproducer {
 
   // 获取错误前的操作序列
   getActionsBeforeError(errorTime: number, windowMs = 30000) {
-    return this.actions.filter(action =>
-      action.timestamp >= errorTime - windowMs
-      && action.timestamp <= errorTime
+    return this.actions.filter(
+      action => action.timestamp >= errorTime - windowMs && action.timestamp <= errorTime
     )
   }
 
@@ -612,11 +611,11 @@ class ErrorReproducer {
     return {
       error: {
         name: error.name,
-        message: error.message
+        message: error.message,
       },
       context,
       reproductionSteps: actions,
-      environment: collectErrorContext(error)
+      environment: collectErrorContext(error),
     }
   }
 }
@@ -633,10 +632,10 @@ engine.errors.onError((error, context) => {
     error: {
       name: error.name,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     },
     context,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 })
 ```
@@ -658,17 +657,16 @@ engine.errors.onError((error, context) => {
       actions: [
         {
           text: '刷新页面',
-          action: () => window.location.reload()
-        }
-      ]
+          action: () => window.location.reload(),
+        },
+      ],
     })
-  }
-  else if (severity === 'warning') {
+  } else if (severity === 'warning') {
     engine.notifications.show({
       type: 'warning',
       title: '操作失败',
       message: error.message,
-      duration: 5000
+      duration: 5000,
     })
   }
 })

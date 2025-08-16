@@ -20,9 +20,9 @@ export function isBrowser(): boolean {
  */
 export function isNode(): boolean {
   return (
-    typeof process !== 'undefined'
-    && process.versions
-    && !!process.versions.node
+    typeof process !== 'undefined' &&
+    process.versions &&
+    !!process.versions.node
   )
 }
 
@@ -32,8 +32,7 @@ export function isNode(): boolean {
 export function safeJsonParse<T = any>(json: string, defaultValue: T): T {
   try {
     return JSON.parse(json)
-  }
-  catch {
+  } catch {
     return defaultValue
   }
 }
@@ -44,8 +43,7 @@ export function safeJsonParse<T = any>(json: string, defaultValue: T): T {
 export function safeJsonStringify(value: any): string {
   try {
     return JSON.stringify(value)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn('JSON stringify failed:', error)
     return String(value)
   }
@@ -85,7 +83,7 @@ export function deepClone<T>(obj: T): T {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: number | undefined
 
@@ -107,7 +105,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number,
+  limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean
 
@@ -124,8 +122,7 @@ export function throttle<T extends (...args: any[]) => any>(
  * 格式化字节大小
  */
 export function formatBytes(bytes: number, decimals: number = 2): string {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals

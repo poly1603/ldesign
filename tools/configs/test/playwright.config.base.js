@@ -58,7 +58,7 @@ export function createPlaywrightConfig(options = {}) {
       {
         name: 'Mobile Safari',
         use: { ...devices['iPhone 12'] },
-      },
+      }
     )
   }
 

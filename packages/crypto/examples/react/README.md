@@ -1,6 +1,7 @@
 # @ldesign/crypto React 示例
 
-这是一个完整的 React 应用示例，展示了如何在 React 项目中使用 `@ldesign/crypto` 加密库的所有核心功能。
+这是一个完整的 React 应用示例，展示了如何在 React 项目中使用 `@ldesign/crypto` 加密库的所有核心功能
+。
 
 ## 🚀 快速开始
 
@@ -33,16 +34,19 @@ pnpm preview
 ## 📋 功能特性
 
 ### 🔐 对称加密算法
+
 - **AES**: 支持 128/192/256 位密钥，CBC/ECB/CFB/OFB 模式
 - **DES**: 经典 DES 加密算法
 - **3DES**: 三重 DES 加密，更高安全性
 - **Blowfish**: 快速的块加密算法
 
 ### 🔑 非对称加密算法
+
 - **RSA**: 支持密钥对生成、公钥加密、私钥解密
 - **数字签名**: RSA 数字签名和验证
 
 ### 🔍 哈希算法
+
 - **MD5**: 快速哈希（不推荐用于安全场景）
 - **SHA-1**: 标准哈希算法
 - **SHA-256**: 推荐的安全哈希算法
@@ -50,6 +54,7 @@ pnpm preview
 - **HMAC**: 基于哈希的消息认证码
 
 ### 📝 编码算法
+
 - **Base64**: 标准 Base64 编码/解码
 - **Hex**: 十六进制编码/解码
 
@@ -63,13 +68,13 @@ import { aes } from '@ldesign/crypto'
 // AES 加密
 const encrypted = aes.encrypt('Hello, World!', 'my-secret-key', {
   keySize: 256,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 // AES 解密
 const decrypted = aes.decrypt(encrypted, 'my-secret-key', {
   keySize: 256,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 console.log(decrypted.data) // "Hello, World!"
@@ -134,20 +139,22 @@ src/
 ### 加密算法选项
 
 #### AES 选项
+
 ```typescript
 interface AESOptions {
-  mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB'  // 加密模式
-  keySize?: 128 | 192 | 256             // 密钥长度
-  iv?: string                           // 初始化向量
+  mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB' // 加密模式
+  keySize?: 128 | 192 | 256 // 密钥长度
+  iv?: string // 初始化向量
 }
 ```
 
 #### RSA 选项
+
 ```typescript
 interface RSAOptions {
-  keyFormat?: 'pkcs1' | 'pkcs8'         // 密钥格式
-  keySize?: 1024 | 2048 | 4096          // 密钥长度
-  padding?: 'OAEP' | 'PKCS1'            // 填充方式
+  keyFormat?: 'pkcs1' | 'pkcs8' // 密钥格式
+  keySize?: 1024 | 2048 | 4096 // 密钥长度
+  padding?: 'OAEP' | 'PKCS1' // 填充方式
 }
 ```
 
@@ -190,14 +197,11 @@ interface DecryptResult {
 
 ### 常见问题
 
-**Q: 加密失败，提示密钥错误**
-A: 检查密钥长度是否符合算法要求，AES-256 需要 32 字节密钥
+**Q: 加密失败，提示密钥错误** A: 检查密钥长度是否符合算法要求，AES-256 需要 32 字节密钥
 
-**Q: RSA 加密失败**
-A: 确保使用正确格式的 PEM 密钥，并检查密钥长度
+**Q: RSA 加密失败** A: 确保使用正确格式的 PEM 密钥，并检查密钥长度
 
-**Q: 解密结果为空**
-A: 验证加密和解密使用相同的算法参数和密钥
+**Q: 解密结果为空** A: 验证加密和解密使用相同的算法参数和密钥
 
 ## 📝 许可证
 

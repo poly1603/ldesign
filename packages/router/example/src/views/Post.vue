@@ -10,9 +10,7 @@ defineProps<Props>()
   <div data-testid="post-content">
     <h2>Post {{ id }}</h2>
     <p>This is the content for post {{ id }}</p>
-    <router-link to="/posts">
-      Back to Posts
-    </router-link>
+    <router-link to="/posts"> Back to Posts </router-link>
   </div>
 </template>
 

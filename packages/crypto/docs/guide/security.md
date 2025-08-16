@@ -29,7 +29,7 @@ function deriveKeyFromPassword(password: string, salt: string): string {
   return hash.pbkdf2(password, salt, {
     iterations: 100000, // 足够的迭代次数
     keyLength: 32, // 256位密钥
-    hashAlgorithm: 'SHA256'
+    hashAlgorithm: 'SHA256',
   })
 }
 
@@ -62,18 +62,15 @@ class SecureKeyStorage {
   private static getAllKeys(masterKey: string): Record<string, string> {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (!stored)
-        return {}
+      if (!stored) return {}
 
       const encrypted = JSON.parse(stored)
       const decrypted = decrypt.aes(encrypted, masterKey)
 
-      if (!decrypted.success)
-        return {}
+      if (!decrypted.success) return {}
 
       return JSON.parse(decrypted.data)
-    }
-    catch {
+    } catch {
       return {}
     }
   }
@@ -100,7 +97,8 @@ class KeyRotationManager {
   private keys: Map<string, string> = new Map()
   private rotationInterval: number
 
-  constructor(rotationInterval = 24 * 60 * 60 * 1000) { // 24小时
+  constructor(rotationInterval = 24 * 60 * 60 * 1000) {
+    // 24小时
     this.rotationInterval = rotationInterval
     this.scheduleRotation()
   }
@@ -135,7 +133,7 @@ class KeyRotationManager {
     // 在加密结果中包含密钥版本
     return {
       ...encrypted,
-      keyVersion: this.currentKeyId
+      keyVersion: this.currentKeyId,
     }
   }
 
@@ -169,7 +167,7 @@ class KeyRotationManager {
       }
     }
 
-    keysToDelete.forEach((keyId) => {
+    keysToDelete.forEach(keyId => {
       this.keys.delete(keyId)
       console.log(`已清理密钥版本 ${keyId}`)
     })
@@ -188,37 +186,37 @@ const secureConfig = {
   aes: {
     keySize: 256, // 使用 AES-256
     mode: 'GCM', // 使用认证加密模式
-    tagLength: 128 // 128位认证标签
+    tagLength: 128, // 128位认证标签
   },
 
   // RSA 配置
   rsa: {
     keySize: 4096, // 使用 4096位密钥
     padding: 'OAEP', // 使用 OAEP 填充
-    hashAlgorithm: 'SHA256'
+    hashAlgorithm: 'SHA256',
   },
 
   // 哈希配置
   hash: {
     algorithm: 'SHA256', // 避免使用 MD5 和 SHA1
-    iterations: 100000 // PBKDF2 使用足够的迭代次数
-  }
+    iterations: 100000, // PBKDF2 使用足够的迭代次数
+  },
 }
 
 // ❌ 不安全的配置
 const insecureConfig = {
   aes: {
     keySize: 128, // 密钥长度不足
-    mode: 'ECB' // 不安全的加密模式
+    mode: 'ECB', // 不安全的加密模式
   },
   rsa: {
     keySize: 1024, // 密钥长度不足
-    padding: 'PKCS1' // 较弱的填充方式
+    padding: 'PKCS1', // 较弱的填充方式
   },
   hash: {
     algorithm: 'MD5', // 已被破解的算法
-    iterations: 1000 // 迭代次数不足
-  }
+    iterations: 1000, // 迭代次数不足
+  },
 }
 ```
 
@@ -242,13 +240,11 @@ class SecureRandom {
       const array = new Uint8Array(length)
       crypto.getRandomValues(array)
       return array
-    }
-    else if (typeof require !== 'undefined') {
+    } else if (typeof require !== 'undefined') {
       // Node.js 环境
       const crypto = require('node:crypto')
       return new Uint8Array(crypto.randomBytes(length))
-    }
-    else {
+    } else {
       throw new TypeError('无法获取安全随机数生成器')
     }
   }
@@ -418,7 +414,12 @@ class SecureComparison {
   }
 
   // 安全的 HMAC 验证
-  static verifyHMAC(data: string, key: string, expectedHmac: string, algorithm = 'SHA256'): boolean {
+  static verifyHMAC(
+    data: string,
+    key: string,
+    expectedHmac: string,
+    algorithm = 'SHA256'
+  ): boolean {
     const computedHmac = hmac[algorithm.toLowerCase()](data, key)
     return this.constantTimeEquals(computedHmac, expectedHmac)
   }
@@ -450,8 +451,7 @@ class CacheTimingProtection {
       dummy += Math.random()
     }
     // 确保操作不被优化掉
-    if (dummy < 0)
-      console.log(dummy)
+    if (dummy < 0) console.log(dummy)
   }
 
   // 安全的密钥验证
@@ -502,13 +502,7 @@ class SecureErrorHandler {
     }
 
     // 过滤可能包含敏感信息的错误消息
-    const sensitivePatterns = [
-      /key/i,
-      /password/i,
-      /secret/i,
-      /token/i,
-      /credential/i
-    ]
+    const sensitivePatterns = [/key/i, /password/i, /secret/i, /token/i, /credential/i]
 
     const message = error.message
     for (const pattern of sensitivePatterns) {
@@ -524,12 +518,11 @@ class SecureErrorHandler {
   static async secureOperation<T>(
     operation: () => Promise<T>,
     context: string
-  ): Promise<{ success: boolean, data?: T, error?: string }> {
+  ): Promise<{ success: boolean; data?: T; error?: string }> {
     try {
       const data = await operation()
       return { success: true, data }
-    }
-    catch (error) {
+    } catch (error) {
       const safeError = this.handleCryptoError(error as Error, context)
       return { success: false, error: safeError.message }
     }
@@ -537,10 +530,7 @@ class SecureErrorHandler {
 }
 
 // 使用示例
-const result = await SecureErrorHandler.secureOperation(
-  () => encrypt.aes('data', 'key'),
-  'AES加密'
-)
+const result = await SecureErrorHandler.secureOperation(() => encrypt.aes('data', 'key'), 'AES加密')
 
 if (!result.success) {
   console.error('加密失败:', result.error)
@@ -575,7 +565,7 @@ class SecurityAuditLogger {
     const logEntry = {
       ...event,
       timestamp: event.timestamp || Date.now(),
-      id: this.generateLogId()
+      id: this.generateLogId(),
     }
 
     this.logs.push(logEntry)
@@ -621,7 +611,7 @@ class SecurityAuditLogger {
       successfulOperations: recentLogs.filter(log => log.success).length,
       failedOperations: recentLogs.filter(log => !log.success).length,
       algorithmUsage: this.getAlgorithmStats(recentLogs),
-      timeRange
+      timeRange,
     }
   }
 
@@ -641,8 +631,7 @@ class SecurityAuditLogger {
   exportLogs(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
       return JSON.stringify(this.logs, null, 2)
-    }
-    else {
+    } else {
       // CSV 格式
       const headers = ['id', 'type', 'success', 'algorithm', 'timestamp']
       const csvLines = [headers.join(',')]
@@ -669,16 +658,15 @@ function auditedEncrypt(data: string, key: string) {
       type: 'encryption',
       success: true,
       algorithm: 'AES-256',
-      keySize: 256
+      keySize: 256,
     })
 
     return result
-  }
-  catch (error) {
+  } catch (error) {
     securityAudit.logSecurityEvent({
       type: 'encryption',
       success: false,
-      algorithm: 'AES-256'
+      algorithm: 'AES-256',
     })
 
     throw error

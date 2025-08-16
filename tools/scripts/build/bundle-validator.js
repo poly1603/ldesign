@@ -62,8 +62,7 @@ class BundleValidator {
       try {
         const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
         return { ...defaultConfig, ...userConfig }
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  配置文件加载失败，使用默认配置: ${err.message}`, 'yellow')
       }
     }
@@ -73,13 +72,12 @@ class BundleValidator {
     if (fs.existsSync(packageConfigPath)) {
       try {
         const packageJson = JSON.parse(
-          fs.readFileSync(packageConfigPath, 'utf8'),
+          fs.readFileSync(packageConfigPath, 'utf8')
         )
         if (packageJson.bundleValidator) {
           return { ...defaultConfig, ...packageJson.bundleValidator }
         }
-      }
-      catch (err) {
+      } catch (err) {
         // 忽略错误
       }
     }
@@ -93,8 +91,7 @@ class BundleValidator {
     if (fs.existsSync(packageJsonPath)) {
       try {
         return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  package.json加载失败: ${err.message}`, 'yellow')
       }
     }
@@ -103,8 +100,7 @@ class BundleValidator {
 
   // 检查测试文件
   checkTestFiles() {
-    if (!this.config.checks.testFiles)
-      return true
+    if (!this.config.checks.testFiles) return true
 
     log('🔍 检查是否包含测试文件...', 'cyan')
 
@@ -112,8 +108,7 @@ class BundleValidator {
 
     for (const dir of this.config.buildDirs) {
       const dirPath = path.join(this.packageRoot, dir)
-      if (!fs.existsSync(dirPath))
-        continue
+      if (!fs.existsSync(dirPath)) continue
 
       const files = this.getAllFiles(dirPath)
 
@@ -138,8 +133,7 @@ class BundleValidator {
 
   // 检查模块导入
   async checkImports() {
-    if (!this.config.checks.imports)
-      return true
+    if (!this.config.checks.imports) return true
 
     log('🔍 检查模块导入...', 'cyan')
 
@@ -162,8 +156,8 @@ class BundleValidator {
 
             for (const exportName of expectedExports) {
               if (
-                typeof module[exportName] === 'function'
-                || module[exportName]
+                typeof module[exportName] === 'function' ||
+                module[exportName]
               ) {
                 log(`✅ ES模块 导入成功，找到导出: ${exportName}`, 'green')
                 foundExport = true
@@ -174,25 +168,23 @@ class BundleValidator {
             if (!foundExport) {
               // 检查是否有任何导出
               const exports = Object.keys(module).filter(
-                key => key !== '__esModule',
+                key => key !== '__esModule'
               )
               if (exports.length > 0) {
                 log(
                   `✅ ES模块 导入成功，找到导出: ${exports
                     .slice(0, 3)
                     .join(', ')}${exports.length > 3 ? '...' : ''}`,
-                  'green',
+                  'green'
                 )
                 foundExport = true
-              }
-              else {
+              } else {
                 log(`❌ ES模块 没有找到任何导出`, 'red')
               }
             }
 
             results.push(foundExport)
-          }
-          catch (err) {
+          } catch (err) {
             log(`❌ ES模块 导入失败: ${err.message}`, 'red')
             results.push(false)
           }
@@ -204,14 +196,13 @@ class BundleValidator {
         const typesPath = path.join(this.packageRoot, 'types/index.d.ts')
         if (fs.existsSync(typesPath)) {
           const content = fs.readFileSync(typesPath, 'utf8')
-          const hasExports
-            = content.includes('export') || content.includes('declare')
+          const hasExports =
+            content.includes('export') || content.includes('declare')
 
           if (hasExports) {
             log('✅ 类型定义包含导出声明', 'green')
             results.push(true)
-          }
-          else {
+          } else {
             log('❌ 类型定义缺少导出声明', 'red')
             results.push(false)
           }
@@ -219,8 +210,7 @@ class BundleValidator {
       }
 
       return results.length === 0 || results.every(r => r)
-    }
-    catch (err) {
+    } catch (err) {
       log(`❌ 导入检查失败: ${err.message}`, 'red')
       return false
     }
@@ -228,8 +218,7 @@ class BundleValidator {
 
   // 检查包大小
   checkBundleSize() {
-    if (!this.config.checks.bundleSize)
-      return true
+    if (!this.config.checks.bundleSize) return true
 
     log('🔍 检查包大小...', 'cyan')
 
@@ -256,8 +245,7 @@ class BundleValidator {
           color = 'red'
           status = '❌'
           allSizesOk = false
-        }
-        else if (stats.size > this.config.thresholds.maxWarningSize) {
+        } else if (stats.size > this.config.thresholds.maxWarningSize) {
           color = 'yellow'
           status = '⚠️ '
         }
@@ -271,8 +259,7 @@ class BundleValidator {
 
   // 检查源码映射
   checkSourceMaps() {
-    if (!this.config.checks.sourceMaps)
-      return true
+    if (!this.config.checks.sourceMaps) return true
 
     log('🔍 检查源码映射...', 'cyan')
 
@@ -294,8 +281,7 @@ class BundleValidator {
             log(`✅ 找到有效的源码映射: ${mapFile}`, 'green')
             hasSourceMaps = true
           }
-        }
-        catch (err) {
+        } catch (err) {
           log(`❌ 源码映射文件损坏: ${mapFile}`, 'red')
         }
       }
@@ -322,13 +308,11 @@ class BundleValidator {
 
           if (stat.isDirectory()) {
             traverse(itemPath)
-          }
-          else {
+          } else {
             files.push(itemPath)
           }
         }
-      }
-      catch (err) {
+      } catch (err) {
         // 忽略无法访问的目录
       }
     }
@@ -359,8 +343,7 @@ class BundleValidator {
     if (allPassed) {
       log('✅ 所有检查通过！', 'green')
       return true
-    }
-    else {
+    } else {
       log('❌ 部分检查失败，请修复问题后重新构建', 'red')
       return false
     }
@@ -379,12 +362,10 @@ async function main() {
     if (arg === '--config' && args[i + 1]) {
       options.config = args[i + 1]
       i++
-    }
-    else if (arg === '--package-root' && args[i + 1]) {
+    } else if (arg === '--package-root' && args[i + 1]) {
       options.packageRoot = args[i + 1]
       i++
-    }
-    else if (arg === '--help') {
+    } else if (arg === '--help') {
       console.log(`
 使用方法: node bundle-validator.js [选项]
 
@@ -406,8 +387,7 @@ async function main() {
     const validator = new BundleValidator(options)
     const success = await validator.validate()
     process.exit(success ? 0 : 1)
-  }
-  catch (err) {
+  } catch (err) {
     log(`❌ 校验过程出错: ${err.message}`, 'red')
     console.error(err.stack)
     process.exit(1)

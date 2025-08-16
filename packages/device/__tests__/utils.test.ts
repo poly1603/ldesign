@@ -77,13 +77,16 @@ describe('工具函数测试', () => {
 
   describe('isMobileDevice', () => {
     it('应该正确识别移动设备 User Agent', () => {
-      const mobileUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15'
+      const mobileUA =
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15'
       expect(isMobileDevice(mobileUA)).toBe(true)
 
-      const androidUA = 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
+      const androidUA =
+        'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
       expect(isMobileDevice(androidUA)).toBe(true)
 
-      const desktopUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      const desktopUA =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       expect(isMobileDevice(desktopUA)).toBe(false)
     })
   })
@@ -130,22 +133,26 @@ describe('工具函数测试', () => {
 
   describe('parseOS', () => {
     it('应该正确解析操作系统信息', () => {
-      const windowsUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      const windowsUA =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       const windowsOS = parseOS(windowsUA)
       expect(windowsOS.name).toBe('Windows')
       expect(windowsOS.version).toBe('10')
 
-      const macUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+      const macUA =
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
       const macOS = parseOS(macUA)
       expect(macOS.name).toBe('macOS')
       expect(macOS.version).toBe('10.15.7')
 
-      const iosUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15'
+      const iosUA =
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15'
       const ios = parseOS(iosUA)
       expect(ios.name).toBe('macOS')
       expect(ios.version).toBe('unknown')
 
-      const androidUA = 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
+      const androidUA =
+        'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36'
       const android = parseOS(androidUA)
       expect(android.name).toBe('Android')
       expect(android.version).toBe('unknown')
@@ -154,17 +161,20 @@ describe('工具函数测试', () => {
 
   describe('parseBrowser', () => {
     it('应该正确解析浏览器信息', () => {
-      const chromeUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      const chromeUA =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       const chrome = parseBrowser(chromeUA)
       expect(chrome.name).toBe('Chrome')
       expect(chrome.version).toBe('91')
 
-      const firefoxUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
+      const firefoxUA =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
       const firefox = parseBrowser(firefoxUA)
       expect(firefox.name).toBe('Firefox')
       expect(firefox.version).toBe('89')
 
-      const safariUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15'
+      const safariUA =
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15'
       const safari = parseBrowser(safariUA)
       expect(safari.name).toBe('Safari')
       expect(safari.version).toBe('14')
@@ -212,7 +222,9 @@ describe('工具函数测试', () => {
       })
       expect(safeNavigatorAccess('onLine')).toBe(true)
 
-      expect(safeNavigatorAccess('nonExistentProperty' as keyof Navigator)).toBeUndefined()
+      expect(
+        safeNavigatorAccess('nonExistentProperty' as keyof Navigator)
+      ).toBeUndefined()
     })
   })
 

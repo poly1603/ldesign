@@ -1,6 +1,7 @@
 # 实时数据同步系统
 
-本示例展示了如何使用 @ldesign/store 构建一个完整的实时数据同步系统，包括 WebSocket 连接管理、消息处理、数据冲突解决和离线同步等功能。
+本示例展示了如何使用 @ldesign/store 构建一个完整的实时数据同步系统，包括 WebSocket 连接管理、消息处
+理、数据冲突解决和离线同步等功能。
 
 ## 系统架构
 
@@ -137,13 +138,12 @@ export class WebSocketStore extends BaseStore {
           resolve(void 0)
         }
 
-        this.connection!.onerror = (error) => {
+        this.connection!.onerror = error => {
           this.lastError = '连接失败'
           reject(error)
         }
       })
-    }
-    catch (error) {
+    } catch (error) {
       this.connectionState = 'disconnected'
       this.lastError = error instanceof Error ? error.message : '连接失败'
       throw error
@@ -172,28 +172,25 @@ export class WebSocketStore extends BaseStore {
 
     try {
       this.connection.send(JSON.stringify(message))
-    }
-    catch (error) {
+    } catch (error) {
       console.error('发送消息失败:', error)
       throw error
     }
   }
 
   private setupEventHandlers() {
-    if (!this.connection)
-      return
+    if (!this.connection) return
 
-    this.connection.onmessage = (event) => {
+    this.connection.onmessage = event => {
       try {
         const message: WebSocketMessage = JSON.parse(event.data)
         this.handleMessage(message)
-      }
-      catch (error) {
+      } catch (error) {
         console.error('解析消息失败:', error)
       }
     }
 
-    this.connection.onclose = (event) => {
+    this.connection.onclose = event => {
       this.connectionState = 'disconnected'
       this.stopHeartbeat()
 
@@ -202,7 +199,7 @@ export class WebSocketStore extends BaseStore {
       }
     }
 
-    this.connection.onerror = (error) => {
+    this.connection.onerror = error => {
       this.lastError = '连接错误'
       console.error('WebSocket 错误:', error)
     }
@@ -250,7 +247,7 @@ export class WebSocketStore extends BaseStore {
           type: 'heartbeat',
           action: 'ping',
           payload: {},
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
     }, this.heartbeatInterval)
@@ -273,8 +270,7 @@ export class WebSocketStore extends BaseStore {
     this.reconnectTimer = setTimeout(async () => {
       try {
         await this.connect(this.connection?.url || '')
-      }
-      catch (error) {
+      } catch (error) {
         console.error('重连失败:', error)
       }
     }, delay)
@@ -303,7 +299,7 @@ export class WebSocketStore extends BaseStore {
       state: this.connectionState,
       reconnectAttempts: this.reconnectAttempts,
       lastError: this.lastError,
-      lastHeartbeat: this.lastHeartbeat
+      lastHeartbeat: this.lastHeartbeat,
     }
   }
 }
@@ -353,7 +349,7 @@ export class SyncStore extends BaseStore {
       version: this.getNextVersion(resourceId),
       timestamp: Date.now(),
       userId: this.getCurrentUserId(),
-      clientId: this.getClientId()
+      clientId: this.getClientId(),
     }
 
     this.localOperations.set(operation.id, operation)
@@ -377,8 +373,7 @@ export class SyncStore extends BaseStore {
     if (conflict) {
       this.conflictedOperations.push(operation)
       this.resolveConflict(operation, conflict)
-    }
-    else {
+    } else {
       this.applyRemoteOperation(operation)
     }
   }
@@ -400,7 +395,7 @@ export class SyncStore extends BaseStore {
         type: 'sync',
         action: 'operation',
         payload: operation,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       // 从待同步队列中移除
@@ -408,8 +403,7 @@ export class SyncStore extends BaseStore {
       if (index > -1) {
         this.pendingOperations.splice(index, 1)
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('同步操作失败:', error)
 
       // 添加到离线队列
@@ -420,8 +414,7 @@ export class SyncStore extends BaseStore {
 
   @AsyncAction()
   async syncPendingOperations() {
-    if (this.syncing || this.pendingOperations.length === 0)
-      return
+    if (this.syncing || this.pendingOperations.length === 0) return
 
     this.syncing = true
 
@@ -430,11 +423,9 @@ export class SyncStore extends BaseStore {
         await this.syncToServer(operation)
       }
       this.lastSyncTime = new Date()
-    }
-    catch (error) {
+    } catch (error) {
       console.error('批量同步失败:', error)
-    }
-    finally {
+    } finally {
       this.syncing = false
     }
   }
@@ -482,9 +473,9 @@ export class SyncStore extends BaseStore {
     // 查找同一资源的本地操作
     for (const [_, localOperation] of this.localOperations) {
       if (
-        localOperation.resourceId === remoteOperation.resourceId
-        && localOperation.timestamp > remoteOperation.timestamp
-        && !this.isOperationSynced(localOperation)
+        localOperation.resourceId === remoteOperation.resourceId &&
+        localOperation.timestamp > remoteOperation.timestamp &&
+        !this.isOperationSynced(localOperation)
       ) {
         return localOperation
       }
@@ -498,7 +489,7 @@ export class SyncStore extends BaseStore {
     const resolution = await conflictResolver.resolveConflict({
       remote: remoteOperation,
       local: localOperation,
-      strategy: 'merge' // 默认合并策略
+      strategy: 'merge', // 默认合并策略
     })
 
     // 应用解决方案
@@ -514,9 +505,7 @@ export class SyncStore extends BaseStore {
     }
 
     // 从冲突列表中移除
-    const index = this.conflictedOperations.findIndex(
-      op => op.id === resolution.operationId
-    )
+    const index = this.conflictedOperations.findIndex(op => op.id === resolution.operationId)
     if (index > -1) {
       this.conflictedOperations.splice(index, 1)
     }
@@ -552,7 +541,7 @@ export class SyncStore extends BaseStore {
     const storeMap = {
       user: () => new UserStore('user'),
       product: () => new ProductStore('product'),
-      order: () => new OrderStore('order')
+      order: () => new OrderStore('order'),
     }
 
     const storeFactory = storeMap[resource]
@@ -569,7 +558,7 @@ export class SyncStore extends BaseStore {
       syncing: this.syncing,
       pendingCount: this.pendingOperations.length,
       conflictCount: this.conflictedOperations.length,
-      lastSyncTime: this.lastSyncTime
+      lastSyncTime: this.lastSyncTime,
     }
   }
 
@@ -640,14 +629,14 @@ export class ConflictResolverStore extends BaseStore {
       operationId: context.local.id,
       strategy: context.strategy,
       resolvedData,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     this.resolutionHistory.push(resolution)
 
     // 从活跃冲突中移除
-    const index = this.activeConflicts.findIndex(c =>
-      c.local.id === context.local.id && c.remote.id === context.remote.id
+    const index = this.activeConflicts.findIndex(
+      c => c.local.id === context.local.id && c.remote.id === context.remote.id
     )
     if (index > -1) {
       this.activeConflicts.splice(index, 1)
@@ -677,8 +666,7 @@ export class ConflictResolverStore extends BaseStore {
       if (remote[key] !== base[key]) {
         if (merged[key] === base[key]) {
           merged[key] = remote[key]
-        }
-        else {
+        } else {
           // 冲突：本地和远程都修改了同一字段
           merged[key] = this.resolveFieldConflict(key, local[key], remote[key])
         }
@@ -714,8 +702,7 @@ export class ConflictResolverStore extends BaseStore {
     try {
       const response = await api.getResourceVersion(resourceId)
       return response.data
-    }
-    catch (error) {
+    } catch (error) {
       console.error('获取基础版本失败:', error)
       return {}
     }
@@ -723,10 +710,10 @@ export class ConflictResolverStore extends BaseStore {
 
   private async requestManualResolution(context: ConflictContext): Promise<any> {
     // 触发手动解决界面
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       // 这里可以触发一个模态框或页面让用户手动解决冲突
       const event = new CustomEvent('conflict-resolution-required', {
-        detail: { context, resolve }
+        detail: { context, resolve },
       })
       window.dispatchEvent(event)
     })
@@ -752,12 +739,11 @@ export class ConflictResolverStore extends BaseStore {
   get resolutionStats() {
     const stats = {
       total: this.resolutionHistory.length,
-      byStrategy: {} as Record<string, number>
+      byStrategy: {} as Record<string, number>,
     }
 
-    this.resolutionHistory.forEach((resolution) => {
-      stats.byStrategy[resolution.strategy]
-        = (stats.byStrategy[resolution.strategy] || 0) + 1
+    this.resolutionHistory.forEach(resolution => {
+      stats.byStrategy[resolution.strategy] = (stats.byStrategy[resolution.strategy] || 0) + 1
     })
 
     return stats
@@ -783,36 +769,31 @@ const statusClass = computed(() => ({
   'status-connected': wsStore.isConnected,
   'status-connecting': wsStore.isConnecting,
   'status-disconnected': !wsStore.isConnected && !wsStore.isConnecting,
-  'has-conflicts': syncStore.hasConflicts
+  'has-conflicts': syncStore.hasConflicts,
 }))
 
 const statusIcon = computed(() => {
-  if (wsStore.isConnected)
-    return 'check-circle'
-  if (wsStore.isConnecting)
-    return 'loading'
+  if (wsStore.isConnected) return 'check-circle'
+  if (wsStore.isConnecting) return 'loading'
   return 'x-circle'
 })
 
 const iconClass = computed(() => ({
   'text-green-500': wsStore.isConnected,
   'text-yellow-500 animate-spin': wsStore.isConnecting,
-  'text-red-500': !wsStore.isConnected && !wsStore.isConnecting
+  'text-red-500': !wsStore.isConnected && !wsStore.isConnecting,
 }))
 
 const statusText = computed(() => {
-  if (wsStore.isConnected)
-    return '已连接'
-  if (wsStore.isConnecting)
-    return '连接中...'
+  if (wsStore.isConnected) return '已连接'
+  if (wsStore.isConnecting) return '连接中...'
   return '已断开'
 })
 
 async function reconnect() {
   try {
     await wsStore.connect(process.env.VUE_APP_WS_URL)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('重连失败:', error)
   }
 }
@@ -836,13 +817,7 @@ async function reconnect() {
       <span class="conflict-text">冲突</span>
     </div>
 
-    <button
-      v-if="!wsStore.isConnected"
-      class="reconnect-btn"
-      @click="reconnect"
-    >
-      重新连接
-    </button>
+    <button v-if="!wsStore.isConnected" class="reconnect-btn" @click="reconnect">重新连接</button>
   </div>
 </template>
 
@@ -895,7 +870,7 @@ function getResourceName(resource: string) {
   const nameMap = {
     user: '用户',
     product: '商品',
-    order: '订单'
+    order: '订单',
   }
   return nameMap[resource] || resource
 }
@@ -908,10 +883,9 @@ async function resolveConflict(conflict: any, strategy: string) {
   try {
     await conflictStore.resolveConflict({
       ...conflict,
-      strategy
+      strategy,
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('解决冲突失败:', error)
   }
 }
@@ -933,40 +907,30 @@ async function resolveConflict(conflict: any, strategy: string) {
       >
         <div class="conflict-info">
           <h4>{{ getResourceName(conflict.local.resource) }}</h4>
-          <p class="text-sm text-gray-600">
-            ID: {{ conflict.local.resourceId }}
-          </p>
+          <p class="text-sm text-gray-600">ID: {{ conflict.local.resourceId }}</p>
         </div>
 
         <div class="conflict-options">
           <div class="option-group">
             <h5>本地版本</h5>
             <pre class="data-preview">{{ formatData(conflict.local.data) }}</pre>
-            <button @click="resolveConflict(conflict, 'client_wins')">
-              使用本地版本
-            </button>
+            <button @click="resolveConflict(conflict, 'client_wins')">使用本地版本</button>
           </div>
 
           <div class="option-group">
             <h5>服务器版本</h5>
             <pre class="data-preview">{{ formatData(conflict.remote.data) }}</pre>
-            <button @click="resolveConflict(conflict, 'server_wins')">
-              使用服务器版本
-            </button>
+            <button @click="resolveConflict(conflict, 'server_wins')">使用服务器版本</button>
           </div>
 
           <div class="option-group">
             <h5>自动合并</h5>
-            <button @click="resolveConflict(conflict, 'merge')">
-              尝试自动合并
-            </button>
+            <button @click="resolveConflict(conflict, 'merge')">尝试自动合并</button>
           </div>
 
           <div class="option-group">
             <h5>手动解决</h5>
-            <button @click="resolveConflict(conflict, 'manual')">
-              手动编辑
-            </button>
+            <button @click="resolveConflict(conflict, 'manual')">手动编辑</button>
           </div>
         </div>
       </div>
@@ -1077,16 +1041,14 @@ export class BatchOperationManager {
   }
 
   private async processBatch() {
-    if (this.operations.length === 0)
-      return
+    if (this.operations.length === 0) return
 
     const batch = this.operations.splice(0, this.batchSize)
     const syncStore = new SyncStore('sync')
 
     try {
       await syncStore.syncBatchOperations(batch)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('批量同步失败:', error)
       // 重新加入队列
       this.operations.unshift(...batch)

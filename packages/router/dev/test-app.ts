@@ -6,32 +6,34 @@ import { createRouter, createWebHistory, RouterLink, RouterView } from '../src'
 const Home = defineComponent({
   name: 'Home',
   setup() {
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'Router Test App'),
-      h('p', 'Welcome to the router test application'),
-      h('nav', [
-        h(RouterLink, { to: '/about' }, () => 'About'),
-        ' | ',
-        h(RouterLink, { to: '/user/123' }, () => 'User 123'),
-        ' | ',
-        h(RouterLink, { to: '/posts' }, () => 'Posts'),
-        ' | ',
-        h(RouterLink, { to: '/search?q=test&category=all' }, () => 'Search'),
-        ' | ',
-        h(RouterLink, { to: '/docs#section1' }, () => 'Docs'),
-      ]),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'Router Test App'),
+        h('p', 'Welcome to the router test application'),
+        h('nav', [
+          h(RouterLink, { to: '/about' }, () => 'About'),
+          ' | ',
+          h(RouterLink, { to: '/user/123' }, () => 'User 123'),
+          ' | ',
+          h(RouterLink, { to: '/posts' }, () => 'Posts'),
+          ' | ',
+          h(RouterLink, { to: '/search?q=test&category=all' }, () => 'Search'),
+          ' | ',
+          h(RouterLink, { to: '/docs#section1' }, () => 'Docs'),
+        ]),
+      ])
   },
 })
 
 const About = defineComponent({
   name: 'About',
   setup() {
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'About'),
-      h('p', 'This is the about page'),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'About'),
+        h('p', 'This is the about page'),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
@@ -39,22 +41,24 @@ const User = defineComponent({
   name: 'User',
   props: ['id'],
   setup(props) {
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'User Profile'),
-      h('p', { 'data-testid': 'user-id' }, `User ID: ${props.id}`),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'User Profile'),
+        h('p', { 'data-testid': 'user-id' }, `User ID: ${props.id}`),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
 const Posts = defineComponent({
   name: 'Posts',
   setup() {
-    return () => h('div', { 'data-testid': 'posts-container' }, [
-      h('h1', 'Posts'),
-      h('p', 'Posts list'),
-      h(RouterView),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'posts-container' }, [
+        h('h1', 'Posts'),
+        h('p', 'Posts list'),
+        h(RouterView),
+      ])
   },
 })
 
@@ -62,10 +66,11 @@ const Post = defineComponent({
   name: 'Post',
   props: ['id'],
   setup(props) {
-    return () => h('div', { 'data-testid': 'post-content' }, [
-      h('h2', `Post ${props.id}`),
-      h('p', 'Post content here'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'post-content' }, [
+        h('h2', `Post ${props.id}`),
+        h('p', 'Post content here'),
+      ])
   },
 })
 
@@ -73,65 +78,78 @@ const Search = defineComponent({
   name: 'Search',
   setup() {
     const route = useRoute()
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'Search'),
-      h('p', { 'data-testid': 'search-query' }, `Query: ${route.query.q || ''}`),
-      h('p', { 'data-testid': 'search-category' }, `Category: ${route.query.category || ''}`),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'Search'),
+        h(
+          'p',
+          { 'data-testid': 'search-query' },
+          `Query: ${route.query.q || ''}`
+        ),
+        h(
+          'p',
+          { 'data-testid': 'search-category' },
+          `Category: ${route.query.category || ''}`
+        ),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
 const Docs = defineComponent({
   name: 'Docs',
   setup() {
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'Documentation'),
-      h('div', { id: 'section1' }, [
-        h('h2', 'Section 1'),
-        h('p', 'This is section 1 content'),
-      ]),
-      h('div', { id: 'section2' }, [
-        h('h2', 'Section 2'),
-        h('p', 'This is section 2 content'),
-      ]),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'Documentation'),
+        h('div', { id: 'section1' }, [
+          h('h2', 'Section 1'),
+          h('p', 'This is section 1 content'),
+        ]),
+        h('div', { id: 'section2' }, [
+          h('h2', 'Section 2'),
+          h('p', 'This is section 2 content'),
+        ]),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
 const NotFound = defineComponent({
   name: 'NotFound',
   setup() {
-    return () => h('div', { 'data-testid': 'not-found' }, [
-      h('h1', '404 - Page Not Found'),
-      h('p', 'The page you are looking for does not exist'),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'not-found' }, [
+        h('h1', '404 - Page Not Found'),
+        h('p', 'The page you are looking for does not exist'),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
 const Login = defineComponent({
   name: 'Login',
   setup() {
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'Login'),
-      h('p', { 'data-testid': 'redirect-message' }, '请先登录'),
-      h('button', { onClick: () => alert('Login clicked') }, 'Login'),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'Login'),
+        h('p', { 'data-testid': 'redirect-message' }, '请先登录'),
+        h('button', { onClick: () => alert('Login clicked') }, 'Login'),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
 const Profile = defineComponent({
   name: 'Profile',
   setup() {
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('nav', { 'data-testid': 'breadcrumb' }, 'Home > Profile'),
-      h('h1', 'Profile'),
-      h('p', 'User profile page'),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('nav', { 'data-testid': 'breadcrumb' }, 'Home > Profile'),
+        h('h1', 'Profile'),
+        h('p', 'User profile page'),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
@@ -139,15 +157,16 @@ const CachedPage = defineComponent({
   name: 'CachedPage',
   setup() {
     const inputValue = ref('')
-    return () => h('div', { 'data-testid': 'page-content' }, [
-      h('h1', 'Cached Page'),
-      h('input', {
-        'data-testid': 'input-field',
-        'value': inputValue.value,
-        'onInput': (e: any) => inputValue.value = e.target.value,
-      }),
-      h(RouterLink, { to: '/' }, () => 'Back to Home'),
-    ])
+    return () =>
+      h('div', { 'data-testid': 'page-content' }, [
+        h('h1', 'Cached Page'),
+        h('input', {
+          'data-testid': 'input-field',
+          value: inputValue.value,
+          onInput: (e: any) => (inputValue.value = e.target.value),
+        }),
+        h(RouterLink, { to: '/' }, () => 'Back to Home'),
+      ])
   },
 })
 
@@ -198,16 +217,14 @@ router.beforeEach((to, from, next) => {
   // 更新页面标题
   if (to.meta.title) {
     document.title = `${to.meta.title} - Router Test App`
-  }
-  else {
+  } else {
     document.title = 'Router Test App'
   }
 
   // 简单的认证检查
   if (to.path === '/admin') {
     next('/login')
-  }
-  else {
+  } else {
     next()
   }
 })
@@ -215,9 +232,7 @@ router.beforeEach((to, from, next) => {
 // 创建应用
 const app = createApp({
   setup() {
-    return () => h('div', { id: 'app' }, [
-      h(RouterView),
-    ])
+    return () => h('div', { id: 'app' }, [h(RouterView)])
   },
 })
 

@@ -69,10 +69,10 @@ describe('vanilla JavaScript API', () => {
       const instance = createFormInstance({
         container,
         options: formOptions,
-        onSubmit: (data) => {
+        onSubmit: data => {
           submitData = data
         },
-        onChange: (data) => {
+        onChange: data => {
           changeData = data
         },
       })
@@ -235,7 +235,7 @@ describe('vanilla JavaScript API', () => {
         let eventTriggered = false
         let eventData: any = null
 
-        instance.on('fieldChange', (data) => {
+        instance.on('fieldChange', data => {
           eventTriggered = true
           eventData = data
         })
@@ -283,7 +283,7 @@ describe('vanilla JavaScript API', () => {
       it('应该提交表单', async () => {
         let submitData: any = null
 
-        instance.on('submit', (data) => {
+        instance.on('submit', data => {
           submitData = data
         })
 

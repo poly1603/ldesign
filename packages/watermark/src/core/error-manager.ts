@@ -39,8 +39,7 @@ export class ErrorManager implements IErrorManager {
         this.updateStats()
       }
       return recovered
-    }
-    catch (recoveryError) {
+    } catch (recoveryError) {
       console.error('Recovery failed:', recoveryError)
       return false
     }
@@ -66,8 +65,7 @@ export class ErrorManager implements IErrorManager {
         },
         body: JSON.stringify(report),
       })
-    }
-    catch (reportError) {
+    } catch (reportError) {
       console.error('Failed to report error:', reportError)
     }
   }
@@ -161,8 +159,7 @@ export class ErrorManager implements IErrorManager {
         this.recoveredErrors++
         const recoveryTime = performance.now() - startTime
         this.updateRecoveryTime(recoveryTime)
-      }
-      else {
+      } else {
         this.unrecoveredErrors++
       }
 
@@ -170,8 +167,7 @@ export class ErrorManager implements IErrorManager {
       if (this.config.reportErrors && this.shouldReport(error)) {
         await this.sendErrorReport(report)
       }
-    }
-    catch (handlingError) {
+    } catch (handlingError) {
       // 错误处理本身出错
       console.error('Error handling failed:', handlingError)
 
@@ -225,7 +221,7 @@ export class ErrorManager implements IErrorManager {
    */
   registerRecoveryStrategy(
     errorCode: WatermarkErrorCode,
-    strategy: ErrorRecoveryStrategy,
+    strategy: ErrorRecoveryStrategy
   ): void {
     this.recoveryStrategies.set(errorCode, strategy)
   }
@@ -364,15 +360,15 @@ export class ErrorManager implements IErrorManager {
       }
 
       // 计算错误率和恢复率
-      this.stats.errorRate
-        = this.stats.totalErrors / Math.max(1, Date.now() - this.lastErrorTime)
-      this.stats.recoveryRate
-        = this.recoveredErrors / Math.max(1, this.stats.totalErrors)
+      this.stats.errorRate =
+        this.stats.totalErrors / Math.max(1, Date.now() - this.lastErrorTime)
+      this.stats.recoveryRate =
+        this.recoveredErrors / Math.max(1, this.stats.totalErrors)
     }
 
     // 总是更新恢复率
-    this.stats.recoveryRate
-      = this.recoveredErrors / Math.max(1, this.stats.totalErrors)
+    this.stats.recoveryRate =
+      this.recoveredErrors / Math.max(1, this.stats.totalErrors)
   }
 
   private updateRecoveryTime(recoveryTime: number): void {
@@ -393,8 +389,8 @@ export class ErrorManager implements IErrorManager {
 
     // 限制历史记录大小
     if (
-      this.config.maxErrorHistory
-      && this.errorHistory.length > this.config.maxErrorHistory
+      this.config.maxErrorHistory &&
+      this.errorHistory.length > this.config.maxErrorHistory
     ) {
       this.errorHistory.shift()
     }
@@ -441,8 +437,7 @@ export class ErrorManager implements IErrorManager {
         if (handler.canHandle(error)) {
           await handler.handle(error)
         }
-      }
-      catch (handlerError) {
+      } catch (handlerError) {
         console.error('Error handler failed:', handlerError)
         // 继续执行其他处理器
       }
@@ -460,8 +455,7 @@ export class ErrorManager implements IErrorManager {
         return await strategy.recover(error)
       }
       return false
-    }
-    catch (recoveryError) {
+    } catch (recoveryError) {
       console.error('Error recovery failed:', recoveryError)
       return false
     }
@@ -476,8 +470,8 @@ export class ErrorManager implements IErrorManager {
     // 避免重复报告相同错误
     const recentSimilarErrors = this.errorHistory.filter(
       report =>
-        report.error.code === error.code
-        && Date.now() - report.timestamp < 60000, // 1分钟内
+        report.error.code === error.code &&
+        Date.now() - report.timestamp < 60000 // 1分钟内
     )
 
     return recentSimilarErrors.length < 3
@@ -496,15 +490,14 @@ export class ErrorManager implements IErrorManager {
         },
         body: JSON.stringify(report),
       })
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to send error report:', error)
     }
   }
 
   private fallbackErrorHandling(
     originalError: WatermarkError,
-    handlingError: Error,
+    handlingError: Error
   ): void {
     // 最基本的错误处理
     console.error('Fallback error handling:', {
@@ -522,8 +515,7 @@ export class ErrorManager implements IErrorManager {
 
     if (error.severity === 'critical' || error.severity === 'high') {
       alert(`水印系统错误: ${message}`)
-    }
-    else {
+    } else {
       console.warn(`水印系统警告: ${message}`)
     }
   }
@@ -531,7 +523,7 @@ export class ErrorManager implements IErrorManager {
   private registerDefaultHandlers(): void {
     // 配置错误处理器
     this.registerHandler(ErrorCategory.CONFIG, {
-      handle: async (error) => {
+      handle: async error => {
         console.warn('Configuration error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.CONFIG,
@@ -540,7 +532,7 @@ export class ErrorManager implements IErrorManager {
 
     // 渲染错误处理器
     this.registerHandler(ErrorCategory.RENDER, {
-      handle: async (error) => {
+      handle: async error => {
         console.error('Rendering error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.RENDER,
@@ -549,7 +541,7 @@ export class ErrorManager implements IErrorManager {
 
     // 实例错误处理器
     this.registerHandler(ErrorCategory.INSTANCE, {
-      handle: async (error) => {
+      handle: async error => {
         console.warn('Instance error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.INSTANCE,
@@ -558,7 +550,7 @@ export class ErrorManager implements IErrorManager {
 
     // 安全错误处理器
     this.registerHandler(ErrorCategory.SECURITY, {
-      handle: async (error) => {
+      handle: async error => {
         console.error('Security error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.SECURITY,
@@ -567,7 +559,7 @@ export class ErrorManager implements IErrorManager {
 
     // 动画错误处理器
     this.registerHandler(ErrorCategory.ANIMATION, {
-      handle: async (error) => {
+      handle: async error => {
         console.warn('Animation error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.ANIMATION,
@@ -576,7 +568,7 @@ export class ErrorManager implements IErrorManager {
 
     // 响应式错误处理器
     this.registerHandler(ErrorCategory.RESPONSIVE, {
-      handle: async (error) => {
+      handle: async error => {
         console.warn('Responsive error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.RESPONSIVE,
@@ -585,7 +577,7 @@ export class ErrorManager implements IErrorManager {
 
     // 事件错误处理器
     this.registerHandler(ErrorCategory.EVENT, {
-      handle: async (error) => {
+      handle: async error => {
         console.warn('Event error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.EVENT,
@@ -594,7 +586,7 @@ export class ErrorManager implements IErrorManager {
 
     // 性能错误处理器
     this.registerHandler(ErrorCategory.PERFORMANCE, {
-      handle: async (error) => {
+      handle: async error => {
         console.warn('Performance error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.PERFORMANCE,
@@ -603,7 +595,7 @@ export class ErrorManager implements IErrorManager {
 
     // 兼容性错误处理器
     this.registerHandler(ErrorCategory.COMPATIBILITY, {
-      handle: async (error) => {
+      handle: async error => {
         console.error('Compatibility error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.COMPATIBILITY,
@@ -612,7 +604,7 @@ export class ErrorManager implements IErrorManager {
 
     // 网络错误处理器
     this.registerHandler(ErrorCategory.NETWORK, {
-      handle: async (error) => {
+      handle: async error => {
         console.error('Network error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.NETWORK,
@@ -621,7 +613,7 @@ export class ErrorManager implements IErrorManager {
 
     // 未知错误处理器
     this.registerHandler(ErrorCategory.UNKNOWN, {
-      handle: async (error) => {
+      handle: async error => {
         console.error('Unknown error detected:', error.message)
       },
       canHandle: error => error.category === ErrorCategory.UNKNOWN,
@@ -634,7 +626,7 @@ export class ErrorManager implements IErrorManager {
     this.registerRecoveryStrategy(WatermarkErrorCode.INVALID_CONFIG, {
       name: 'config-recovery',
       canRecover: error => error.code === WatermarkErrorCode.INVALID_CONFIG,
-      recover: async (_error) => {
+      recover: async _error => {
         console.log('Attempting to recover from invalid config...')
         // 尝试使用默认配置
         return true
@@ -645,7 +637,7 @@ export class ErrorManager implements IErrorManager {
     this.registerRecoveryStrategy(WatermarkErrorCode.RENDER_FAILED, {
       name: 'render-recovery',
       canRecover: error => error.code === WatermarkErrorCode.RENDER_FAILED,
-      recover: async (_error) => {
+      recover: async _error => {
         console.log('Attempting to recover from render failure...')
         // 尝试重新渲染
         return false // 需要具体实现
@@ -657,7 +649,7 @@ export class ErrorManager implements IErrorManager {
       name: 'instance-recovery',
       canRecover: error =>
         error.code === WatermarkErrorCode.INSTANCE_CREATION_FAILED,
-      recover: async (_error) => {
+      recover: async _error => {
         console.log('Attempting to recover from instance creation failure...')
         // 尝试清理并重新创建
         return false // 需要具体实现

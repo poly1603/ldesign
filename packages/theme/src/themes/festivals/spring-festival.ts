@@ -450,7 +450,7 @@ export const springFestivalTheme: ThemeConfig = {
     images: {},
     icons: {
       'red-lantern': '/assets/spring-festival/red-lantern.svg',
-      'firework': '/assets/spring-festival/firework.svg',
+      firework: '/assets/spring-festival/firework.svg',
       'gold-coin': '/assets/spring-festival/gold-coin.svg',
       'fu-character': '/assets/spring-festival/fu-character.svg',
     },

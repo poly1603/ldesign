@@ -22,8 +22,7 @@ async function syncWithSystem() {
   try {
     await syncFn()
     showNotification('已同步系统主题', 'success')
-  }
-  catch {
+  } catch {
     showNotification('同步失败', 'error')
   }
 }
@@ -39,8 +38,7 @@ function toggleAutoSync() {
       }
     }, 2000)
     showNotification('已开启自动同步', 'info')
-  }
-  else {
+  } else {
     // 关闭自动同步
     if (syncInterval) {
       clearInterval(syncInterval)
@@ -66,9 +64,7 @@ onUnmounted(() => {
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🌙 系统主题同步
-    </h2>
+    <h2 class="card-title">🌙 系统主题同步</h2>
 
     <div class="sync-info">
       <div class="info-item">
@@ -91,17 +87,11 @@ onUnmounted(() => {
     </div>
 
     <div class="sync-actions">
-      <button
-        class="btn btn-primary btn-sm"
-        @click="syncWithSystem"
-      >
+      <button class="btn btn-primary btn-sm" @click="syncWithSystem">
         🔄 同步系统主题
       </button>
 
-      <button
-        class="btn btn-secondary btn-sm"
-        @click="toggleAutoSync"
-      >
+      <button class="btn btn-secondary btn-sm" @click="toggleAutoSync">
         {{ autoSync ? '🔓 关闭自动同步' : '🔒 开启自动同步' }}
       </button>
     </div>
@@ -139,7 +129,8 @@ onUnmounted(() => {
 }
 
 .info-value {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
   background: var(--color-background, #ffffff);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;

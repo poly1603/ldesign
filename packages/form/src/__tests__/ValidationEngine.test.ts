@@ -45,7 +45,7 @@ describe('validationEngine', () => {
         'invalid-email',
         rules,
         {},
-        'email',
+        'email'
       )
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('请输入有效的邮箱地址')
@@ -55,7 +55,7 @@ describe('validationEngine', () => {
         'test@example.com',
         rules,
         {},
-        'email',
+        'email'
       )
       expect(result.valid).toBe(true)
       expect(result.errors).toHaveLength(0)
@@ -90,7 +90,7 @@ describe('validationEngine', () => {
         'abcdef',
         rules,
         {},
-        'test',
+        'test'
       )
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('最多5个字符')
@@ -131,7 +131,7 @@ describe('validationEngine', () => {
         'abc123',
         rules,
         {},
-        'test',
+        'test'
       )
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('只能包含字母')
@@ -147,7 +147,7 @@ describe('validationEngine', () => {
       const rules: ValidationRule[] = [
         {
           type: 'custom',
-          validator: (value) => {
+          validator: value => {
             if (value === 'admin') {
               return '用户名不能是admin'
             }
@@ -162,7 +162,7 @@ describe('validationEngine', () => {
         'admin',
         rules,
         {},
-        'username',
+        'username'
       )
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('用户名不能是admin')
@@ -172,7 +172,7 @@ describe('validationEngine', () => {
         'user',
         rules,
         {},
-        'username',
+        'username'
       )
       expect(result.valid).toBe(true)
     })
@@ -181,7 +181,7 @@ describe('validationEngine', () => {
       const rules: ValidationRule[] = [
         {
           type: 'custom',
-          validator: async (value) => {
+          validator: async value => {
             // 模拟异步验证（如检查用户名是否已存在）
             await new Promise(resolve => setTimeout(resolve, 10))
 
@@ -199,7 +199,7 @@ describe('validationEngine', () => {
         'existing-user',
         rules,
         {},
-        'username',
+        'username'
       )
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('用户名已存在')
@@ -209,7 +209,7 @@ describe('validationEngine', () => {
         'new-user',
         rules,
         {},
-        'username',
+        'username'
       )
       expect(result.valid).toBe(true)
     })
@@ -260,7 +260,7 @@ describe('validationEngine', () => {
         '',
         rules,
         { password: '' },
-        'confirmPassword',
+        'confirmPassword'
       )
       expect(result.valid).toBe(true)
 
@@ -269,7 +269,7 @@ describe('validationEngine', () => {
         '',
         rules,
         { password: '123456' },
-        'confirmPassword',
+        'confirmPassword'
       )
       expect(result.valid).toBe(false)
       expect(result.errors).toContain('确认密码不能为空')
@@ -344,7 +344,7 @@ describe('validationEngine', () => {
         'test',
         rules,
         {},
-        'field1',
+        'field1'
       )
       expect(result.valid).toBe(true)
     })
@@ -386,12 +386,12 @@ describe('validationEngine', () => {
         'test',
         rules,
         {},
-        'field',
+        'field'
       )
 
       expect(result.valid).toBe(false)
       expect(result.errors.some(error => error.includes('验证器错误'))).toBe(
-        true,
+        true
       )
     })
   })

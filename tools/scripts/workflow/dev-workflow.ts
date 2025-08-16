@@ -52,8 +52,7 @@ class DevWorkflow {
     console.log('📦 检查依赖...')
     try {
       execSync('pnpm install --frozen-lockfile', { stdio: 'inherit' })
-    }
-    catch {
+    } catch {
       console.log('📦 安装依赖...')
       execSync('pnpm install', { stdio: 'inherit' })
     }
@@ -64,8 +63,7 @@ class DevWorkflow {
     console.log('🔍 代码检查...')
     try {
       execSync('pnpm lint', { stdio: 'inherit' })
-    }
-    catch {
+    } catch {
       console.warn('⚠️ 代码检查发现问题，尝试自动修复...')
       execSync('pnpm lint:fix', { stdio: 'inherit' })
     }
@@ -76,8 +74,7 @@ class DevWorkflow {
     console.log('🔧 类型检查...')
     try {
       execSync('pnpm type-check', { stdio: 'inherit' })
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 类型检查失败')
       throw error
     }
@@ -89,7 +86,7 @@ class DevWorkflow {
 
     if (packages && packages.length > 0) {
       // 监听指定包
-      packages.forEach((pkg) => {
+      packages.forEach(pkg => {
         const packagePath = resolve(this.rootDir, 'packages', pkg)
         if (existsSync(packagePath)) {
           spawn('pnpm', ['run', 'build:watch'], {
@@ -98,8 +95,7 @@ class DevWorkflow {
           })
         }
       })
-    }
-    else {
+    } else {
       // 监听所有包
       spawn('pnpm', ['build:watch'], {
         stdio: 'inherit',
@@ -156,12 +152,16 @@ const workflow = new DevWorkflow()
 
 switch (command) {
   case 'dev':
-    workflow.startDev({
-      packages: args.includes('--packages') ? args[args.indexOf('--packages') + 1]?.split(',') : undefined,
-      watch: !args.includes('--no-watch'),
-      test: args.includes('--test'),
-      lint: !args.includes('--no-lint'),
-    }).catch(console.error)
+    workflow
+      .startDev({
+        packages: args.includes('--packages')
+          ? args[args.indexOf('--packages') + 1]?.split(',')
+          : undefined,
+        watch: !args.includes('--no-watch'),
+        test: args.includes('--test'),
+        lint: !args.includes('--no-lint'),
+      })
+      .catch(console.error)
     break
 
   case 'build':

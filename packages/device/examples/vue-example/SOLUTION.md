@@ -5,10 +5,12 @@
 ### 发现的问题
 
 1. **useNetwork loadModule 问题**
+
    - 问题：Vue 3 示例中 `useNetwork` 的 `loadModule` 函数无法正常工作
    - 原因：实现正确，但可能存在构建缓存问题
 
 2. **useGeolocation 缺失方法**
+
    - 问题：`useGeolocation` composable 缺少 `loadModule` 和 `unloadModule` 方法
    - 原因：实现不完整，没有按照其他 composables 的模式实现
 
@@ -23,6 +25,7 @@
 **修改文件**: `packages/device/src/adapt/vue/composables/useDevice.ts`
 
 **主要修改**:
+
 - 添加 `isLoaded` 状态管理
 - 实现 `loadModule` 方法
 - 实现 `unloadModule` 方法
@@ -30,6 +33,7 @@
 - 更新返回值包含新方法
 
 **关键代码**:
+
 ```typescript
 export function useGeolocation() {
   const isLoaded = ref(false)
@@ -80,27 +84,29 @@ export function useGeolocation() {
 **修改文件**: `packages/device/src/types/index.ts`
 
 **修改内容**:
+
 ```typescript
 export interface GeolocationModule extends DeviceModule {
   getData: () => GeolocationInfo | null
   isSupported: () => boolean
   getCurrentPosition: () => Promise<GeolocationInfo>
   startWatching: (callback?: (position: GeolocationInfo) => void) => void
-  stopWatching: () => void  // 移除 watchId 参数
+  stopWatching: () => void // 移除 watchId 参数
 }
 ```
 
 **修改文件**: `packages/device/types/adapt/vue/composables/useDevice.d.ts`
 
 **添加内容**:
+
 ```typescript
 declare function useGeolocation(): {
   // ... 现有属性
-  isLoaded: Readonly<Ref<boolean, boolean>>;
-  loadModule: () => Promise<void>;
-  unloadModule: () => Promise<void>;
+  isLoaded: Readonly<Ref<boolean, boolean>>
+  loadModule: () => Promise<void>
+  unloadModule: () => Promise<void>
   // ... 其他方法
-};
+}
 ```
 
 ### 3. 重新构建库
@@ -115,6 +121,7 @@ pnpm build
 **创建文件**: `packages/device/examples/vue-example/src/tests/composables.test.js`
 
 **测试内容**:
+
 - 所有 composables 的基本功能测试
 - loadModule 和 unloadModule 方法测试
 - 框架一致性验证
@@ -174,4 +181,5 @@ Tests  9 passed (9)
 
 ## 📚 总结
 
-通过系统性的问题分析和修复，Vue 3 示例现在完全正常工作，并且与原生 JavaScript 示例保持了功能一致性。所有的 composables 都经过了充分测试，确保在 Vue 环境中的稳定性和可靠性。
+通过系统性的问题分析和修复，Vue 3 示例现在完全正常工作，并且与原生 JavaScript 示例保持了功能一致性。
+所有的 composables 都经过了充分测试，确保在 Vue 环境中的稳定性和可靠性。

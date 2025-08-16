@@ -22,9 +22,8 @@ function getIcon(type: NotificationItem['type']) {
         <div
           v-for="notification in notifications"
           :key="notification.id"
-          class="notification" :class="[
-            `notification-${notification.type}`,
-          ]"
+          class="notification"
+          :class="[`notification-${notification.type}`]"
         >
           <div class="notification-content">
             <span class="notification-icon">

@@ -10,7 +10,7 @@ export default createRollupConfig({
   globalName: 'LDesignApp',
   external: ['vue', '@ldesign/engine', '@ldesign/router', '@ldesign/template'],
   globals: {
-    'vue': 'Vue',
+    vue: 'Vue',
     '@ldesign/engine': 'LDesignEngine',
     '@ldesign/router': 'LDesignRouter',
     '@ldesign/template': 'LDesignTemplate',
@@ -22,7 +22,7 @@ export default createRollupConfig({
     javascriptEnabled: true,
     additionalData: `@import "${resolve(
       __dirname,
-      'src/styles/variables.less',
+      'src/styles/variables.less'
     )}";`,
   },
 })

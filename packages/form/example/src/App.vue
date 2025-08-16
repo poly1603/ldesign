@@ -20,9 +20,7 @@ const navigation = computed(() => [
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
-            <h1 class="text-xl font-bold text-gray-900">
-              LDesign Form
-            </h1>
+            <h1 class="text-xl font-bold text-gray-900">LDesign Form</h1>
           </div>
           <div class="flex items-center space-x-8">
             <router-link
@@ -50,12 +48,7 @@ const navigation = computed(() => [
 
 <style>
 #app {
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

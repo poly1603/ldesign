@@ -35,8 +35,7 @@ const breadcrumbs = computed(() => {
 
     if (index === 0) {
       crumbs.push({ name: '嵌套路由', path: currentPath })
-    }
-    else {
+    } else {
       crumbs.push({
         name: `子路由 ${index}`,
         path: currentPath,
@@ -148,7 +147,8 @@ function navigateWithParams() {
               <span
                 v-if="index < breadcrumbs.length - 1"
                 class="breadcrumb-separator"
-              >/</span>
+                >/</span
+              >
             </span>
           </div>
         </div>
@@ -192,7 +192,7 @@ function navigateWithParams() {
               v-model="paramValue"
               class="input"
               placeholder="输入参数值"
-            >
+            />
           </div>
           <button class="btn btn-info" @click="navigateWithParams">
             带参数导航

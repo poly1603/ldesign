@@ -89,9 +89,7 @@ export default defineComponent({
                 opacity: 0.8,
               }}
             >
-              当前设备:
-              {' '}
-              {currentDeviceName}
+              当前设备: {currentDeviceName}
             </p>
             <p
               style={{
@@ -100,13 +98,7 @@ export default defineComponent({
                 opacity: 0.8,
               }}
             >
-              屏幕尺寸:
-              {' '}
-              {window.innerWidth}
-              {' '}
-              ×
-              {' '}
-              {window.innerHeight}
+              屏幕尺寸: {window.innerWidth} × {window.innerHeight}
             </p>
           </div>
 

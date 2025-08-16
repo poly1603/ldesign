@@ -1,4 +1,9 @@
-import type { AESOptions, DecryptResult, EncryptResult, IEncryptor } from '../types'
+import type {
+  AESOptions,
+  DecryptResult,
+  EncryptResult,
+  IEncryptor,
+} from '../types'
 import CryptoJS from 'crypto-js'
 import { CONSTANTS, ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
@@ -58,8 +63,7 @@ export class AESEncryptor implements IEncryptor {
         algorithm: `AES-${opts.keySize}-${opts.mode}`,
         iv,
       }
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -70,7 +74,11 @@ export class AESEncryptor implements IEncryptor {
   /**
    * AES 解密
    */
-  decrypt(encryptedData: string | EncryptResult, key: string, options: AESOptions = {}): DecryptResult {
+  decrypt(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options: AESOptions = {}
+  ): DecryptResult {
     const opts = { ...this.defaultOptions, ...options }
 
     try {
@@ -85,14 +93,19 @@ export class AESEncryptor implements IEncryptor {
         ciphertext = encryptedData
         iv = opts.iv
         if (!iv) {
-          throw ErrorUtils.createDecryptionError('IV is required for decryption', 'AES')
+          throw ErrorUtils.createDecryptionError(
+            'IV is required for decryption',
+            'AES'
+          )
         }
-      }
-      else {
+      } else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || opts.iv
         if (!iv) {
-          throw ErrorUtils.createDecryptionError('IV not found in encrypted data', 'AES')
+          throw ErrorUtils.createDecryptionError(
+            'IV not found in encrypted data',
+            'AES'
+          )
         }
       }
 
@@ -115,7 +128,10 @@ export class AESEncryptor implements IEncryptor {
       const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
 
       if (!decryptedString) {
-        throw ErrorUtils.createDecryptionError('Failed to decrypt data - invalid key or corrupted data', 'AES')
+        throw ErrorUtils.createDecryptionError(
+          'Failed to decrypt data - invalid key or corrupted data',
+          'AES'
+        )
       }
 
       return {
@@ -123,8 +139,7 @@ export class AESEncryptor implements IEncryptor {
         data: decryptedString,
         algorithm: `AES-${opts.keySize}-${opts.mode}`,
       }
-    }
-    catch (error) {
+    } catch (error) {
       const algorithmName = `AES-${opts.keySize}-${opts.mode}`
       if (error instanceof Error) {
         return {
@@ -184,7 +199,10 @@ export class AESEncryptor implements IEncryptor {
   /**
    * 缓存密钥
    */
-  private cacheKey(cacheKey: string, keyWordArray: CryptoJS.lib.WordArray): void {
+  private cacheKey(
+    cacheKey: string,
+    keyWordArray: CryptoJS.lib.WordArray
+  ): void {
     // 如果缓存已满，删除最旧的条目
     if (this.keyCache.size >= this.maxKeyCacheSize) {
       const firstKey = this.keyCache.keys().next().value
@@ -232,7 +250,11 @@ export const aes = {
   /**
    * AES 解密
    */
-  decrypt: (encryptedData: string | EncryptResult, key: string, options?: AESOptions): DecryptResult => {
+  decrypt: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: AESOptions
+  ): DecryptResult => {
     const encryptor = new AESEncryptor()
     return encryptor.decrypt(encryptedData, key, options)
   },
@@ -240,42 +262,66 @@ export const aes = {
   /**
    * AES-128 加密
    */
-  encrypt128: (data: string, key: string, options?: Omit<AESOptions, 'keySize'>): EncryptResult => {
+  encrypt128: (
+    data: string,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): EncryptResult => {
     return aes.encrypt(data, key, { ...options, keySize: 128 })
   },
 
   /**
    * AES-192 加密
    */
-  encrypt192: (data: string, key: string, options?: Omit<AESOptions, 'keySize'>): EncryptResult => {
+  encrypt192: (
+    data: string,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): EncryptResult => {
     return aes.encrypt(data, key, { ...options, keySize: 192 })
   },
 
   /**
    * AES-256 加密
    */
-  encrypt256: (data: string, key: string, options?: Omit<AESOptions, 'keySize'>): EncryptResult => {
+  encrypt256: (
+    data: string,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): EncryptResult => {
     return aes.encrypt(data, key, { ...options, keySize: 256 })
   },
 
   /**
    * AES-128 解密
    */
-  decrypt128: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, 'keySize'>): DecryptResult => {
+  decrypt128: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): DecryptResult => {
     return aes.decrypt(encryptedData, key, { ...options, keySize: 128 })
   },
 
   /**
    * AES-192 解密
    */
-  decrypt192: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, 'keySize'>): DecryptResult => {
+  decrypt192: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): DecryptResult => {
     return aes.decrypt(encryptedData, key, { ...options, keySize: 192 })
   },
 
   /**
    * AES-256 解密
    */
-  decrypt256: (encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, 'keySize'>): DecryptResult => {
+  decrypt256: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): DecryptResult => {
     return aes.decrypt(encryptedData, key, { ...options, keySize: 256 })
   },
 }

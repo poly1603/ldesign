@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { useTheme } from '@ldesign/color/vue'
 
-const {
-  currentTheme,
-  currentMode,
-  isDark,
-  availableThemes,
-  toggleMode,
-} = useTheme()
+const { currentTheme, currentMode, isDark, availableThemes, toggleMode } =
+  useTheme()
 </script>
 
 <template>
@@ -15,12 +10,8 @@ const {
     <div class="container">
       <div class="header-content">
         <div class="logo-section">
-          <h1 class="title">
-            @ldesign/color
-          </h1>
-          <p class="subtitle">
-            Vue 3 集成示例
-          </p>
+          <h1 class="title">@ldesign/color</h1>
+          <p class="subtitle">Vue 3 集成示例</p>
         </div>
 
         <div class="header-actions">
@@ -143,7 +134,8 @@ const {
 }
 
 .value {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
   background: rgba(255, 255, 255, 0.15);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;

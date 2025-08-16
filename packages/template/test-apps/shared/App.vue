@@ -65,21 +65,20 @@ async function onTemplateChange() {
     const template = await switchTemplate(
       selectedCategory.value,
       selectedDevice.value as DeviceType,
-      selectedTemplate.value,
+      selectedTemplate.value
     )
 
     if (template) {
       currentTemplateComponent.value = template.component
       templateProps.value = template.config || {}
     }
-  }
-  catch (err) {
+  } catch (err) {
     console.error('Failed to load template:', err)
   }
 }
 
 // 监听设备类型变化
-watch(selectedDevice, (newDevice) => {
+watch(selectedDevice, newDevice => {
   if (newDevice) {
     // 设置全局设备类型用于测试
     ;(window as any).__TEMPLATE_DEVICE_TYPE__ = newDevice
@@ -94,11 +93,9 @@ onMounted(async () => {
   const width = window.innerWidth
   if (width >= 1024) {
     selectedDevice.value = 'desktop'
-  }
-  else if (width >= 768) {
+  } else if (width >= 768) {
     selectedDevice.value = 'tablet'
-  }
-  else {
+  } else {
     selectedDevice.value = 'mobile'
   }
 
@@ -126,14 +123,8 @@ onMounted(async () => {
             data-testid="category-select"
             @change="onCategoryChange"
           >
-            <option value="">
-              请选择分类
-            </option>
-            <option
-              v-for="category in availableCategories"
-              :key="category"
-              :value="category"
-            >
+            <option value="">请选择分类</option>
+            <option v-for="category in availableCategories" :key="category" :value="category">
               {{ category }}
             </option>
           </select>
@@ -141,20 +132,9 @@ onMounted(async () => {
 
         <div class="control-group">
           <label for="device-select">设备类型:</label>
-          <select
-            id="device-select"
-            v-model="selectedDevice"
-            data-testid="device-select"
-            @change="onDeviceChange"
-          >
-            <option value="">
-              请选择设备
-            </option>
-            <option
-              v-for="device in availableDevices"
-              :key="device"
-              :value="device"
-            >
+          <select id="device-select" v-model="selectedDevice" data-testid="device-select" @change="onDeviceChange">
+            <option value="">请选择设备</option>
+            <option v-for="device in availableDevices" :key="device" :value="device">
               {{ device }}
             </option>
           </select>
@@ -168,36 +148,22 @@ onMounted(async () => {
             data-testid="template-select"
             @change="onTemplateChange"
           >
-            <option value="">
-              请选择模板
-            </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.template"
-              :value="template.template"
-            >
+            <option value="">请选择模板</option>
+            <option v-for="template in availableTemplates" :key="template.template" :value="template.template">
               {{ template.config.name }}
             </option>
           </select>
         </div>
 
-        <button
-          class="refresh-btn"
-          :disabled="loading"
-          @click="refreshTemplates"
-        >
+        <button class="refresh-btn" :disabled="loading" @click="refreshTemplates">
           {{ loading ? '加载中...' : '刷新模板' }}
         </button>
       </div>
 
       <div class="template-container">
-        <div v-if="loading" class="loading">
-          加载模板中...
-        </div>
+        <div v-if="loading" class="loading">加载模板中...</div>
 
-        <div v-else-if="error" class="error">
-          错误: {{ error }}
-        </div>
+        <div v-else-if="error" class="error">错误: {{ error }}</div>
 
         <div
           v-else-if="currentTemplateComponent"
@@ -206,15 +172,10 @@ onMounted(async () => {
           :data-category="selectedCategory"
           :data-device="selectedDevice"
         >
-          <component
-            :is="currentTemplateComponent"
-            v-bind="templateProps"
-          />
+          <component :is="currentTemplateComponent" v-bind="templateProps" />
         </div>
 
-        <div v-else class="placeholder">
-          请选择一个模板进行预览
-        </div>
+        <div v-else class="placeholder">请选择一个模板进行预览</div>
       </div>
 
       <div class="debug-info">

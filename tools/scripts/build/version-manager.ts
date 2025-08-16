@@ -28,28 +28,29 @@ class VersionManager {
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
 
-    this.packages = packageDirs.map((dir) => {
-      const packagePath = join(this.packagesDir, dir)
-      const packageJsonPath = join(packagePath, 'package.json')
+    this.packages = packageDirs
+      .map(dir => {
+        const packagePath = join(this.packagesDir, dir)
+        const packageJsonPath = join(packagePath, 'package.json')
 
-      try {
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-        return {
-          name: packageJson.name,
-          version: packageJson.version,
-          path: packagePath,
-          dependencies: packageJson.dependencies,
-          devDependencies: packageJson.devDependencies,
+        try {
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+          return {
+            name: packageJson.name,
+            version: packageJson.version,
+            path: packagePath,
+            dependencies: packageJson.dependencies,
+            devDependencies: packageJson.devDependencies,
+          }
+        } catch (error) {
+          console.warn(`无法读取包配置: ${packageJsonPath}`)
+          return null
         }
-      }
-      catch (error) {
-        console.warn(`无法读取包配置: ${packageJsonPath}`)
-        return null
-      }
-    }).filter(Boolean) as PackageInfo[]
+      })
+      .filter(Boolean) as PackageInfo[]
 
     console.log(`发现 ${this.packages.length} 个包:`)
-    this.packages.forEach((pkg) => {
+    this.packages.forEach(pkg => {
       console.log(`  - ${pkg.name}@${pkg.version}`)
     })
   }
@@ -71,8 +72,7 @@ class VersionManager {
         if (prereleaseMatch) {
           const [, baseVersion, tag, num] = prereleaseMatch
           return `${baseVersion}-${tag}.${Number(num) + 1}`
-        }
-        else {
+        } else {
           return `${major}.${minor}.${patch + 1}-beta.0`
         }
       default:
@@ -80,25 +80,30 @@ class VersionManager {
     }
   }
 
-  private updatePackageJson(packageInfo: PackageInfo, newVersion: string): void {
+  private updatePackageJson(
+    packageInfo: PackageInfo,
+    newVersion: string
+  ): void {
     const packageJsonPath = join(packageInfo.path, 'package.json')
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
     packageJson.version = newVersion
 
     writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
-    console.log(`更新 ${packageInfo.name}: ${packageInfo.version} -> ${newVersion}`)
+    console.log(
+      `更新 ${packageInfo.name}: ${packageInfo.version} -> ${newVersion}`
+    )
   }
 
   private updateInternalDependencies(newVersions: Map<string, string>): void {
-    this.packages.forEach((pkg) => {
+    this.packages.forEach(pkg => {
       const packageJsonPath = join(pkg.path, 'package.json')
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
       let updated = false
 
       // 更新 dependencies
       if (packageJson.dependencies) {
-        Object.keys(packageJson.dependencies).forEach((depName) => {
+        Object.keys(packageJson.dependencies).forEach(depName => {
           if (newVersions.has(depName)) {
             packageJson.dependencies[depName] = `^${newVersions.get(depName)}`
             updated = true
@@ -108,16 +113,21 @@ class VersionManager {
 
       // 更新 devDependencies
       if (packageJson.devDependencies) {
-        Object.keys(packageJson.devDependencies).forEach((depName) => {
+        Object.keys(packageJson.devDependencies).forEach(depName => {
           if (newVersions.has(depName)) {
-            packageJson.devDependencies[depName] = `^${newVersions.get(depName)}`
+            packageJson.devDependencies[depName] = `^${newVersions.get(
+              depName
+            )}`
             updated = true
           }
         })
       }
 
       if (updated) {
-        writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+        writeFileSync(
+          packageJsonPath,
+          `${JSON.stringify(packageJson, null, 2)}\n`
+        )
         console.log(`更新 ${pkg.name} 的内部依赖`)
       }
     })
@@ -126,16 +136,21 @@ class VersionManager {
   private commitChanges(version: string, type: VersionType): void {
     try {
       execSync('git add .', { stdio: 'inherit' })
-      execSync(`git commit -m "chore: bump version to ${version} (${type})"`, { stdio: 'inherit' })
+      execSync(`git commit -m "chore: bump version to ${version} (${type})"`, {
+        stdio: 'inherit',
+      })
       execSync(`git tag v${version}`, { stdio: 'inherit' })
       console.log(`已提交版本更新并创建标签 v${version}`)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('Git 操作失败，请手动提交更改')
     }
   }
 
-  async bumpVersion(type: VersionType, packageName?: string, commit: boolean = true): Promise<void> {
+  async bumpVersion(
+    type: VersionType,
+    packageName?: string,
+    commit: boolean = true
+  ): Promise<void> {
     console.log(`开始更新版本 (${type})...`)
 
     if (packageName) {
@@ -151,19 +166,18 @@ class VersionManager {
       if (commit) {
         this.commitChanges(newVersion, type)
       }
-    }
-    else {
+    } else {
       // 更新所有包
       const newVersions = new Map<string, string>()
 
       // 计算新版本号
-      this.packages.forEach((pkg) => {
+      this.packages.forEach(pkg => {
         const newVersion = this.incrementVersion(pkg.version, type)
         newVersions.set(pkg.name, newVersion)
       })
 
       // 更新所有包的版本号
-      this.packages.forEach((pkg) => {
+      this.packages.forEach(pkg => {
         const newVersion = newVersions.get(pkg.name)!
         this.updatePackageJson(pkg, newVersion)
       })
@@ -183,7 +197,7 @@ class VersionManager {
 
   listPackages(): void {
     console.log('\n当前包版本:')
-    this.packages.forEach((pkg) => {
+    this.packages.forEach(pkg => {
       console.log(`  ${pkg.name}: ${pkg.version}`)
     })
   }
@@ -200,7 +214,7 @@ class VersionManager {
     console.log(`同步到版本: ${highestVersion}`)
 
     // 更新所有包到最高版本
-    this.packages.forEach((pkg) => {
+    this.packages.forEach(pkg => {
       if (pkg.version !== highestVersion) {
         this.updatePackageJson(pkg, highestVersion)
       }
@@ -217,10 +231,8 @@ class VersionManager {
       const aPart = aParts[i] || 0
       const bPart = bParts[i] || 0
 
-      if (aPart > bPart)
-        return 1
-      if (aPart < bPart)
-        return -1
+      if (aPart > bPart) return 1
+      if (aPart < bPart) return -1
     }
 
     return 0
@@ -237,14 +249,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   switch (command) {
     case 'bump':
       const type = (args[1] || 'patch') as VersionType
-      const packageName = args.includes('--package') ? args[args.indexOf('--package') + 1] : undefined
+      const packageName = args.includes('--package')
+        ? args[args.indexOf('--package') + 1]
+        : undefined
       const noCommit = args.includes('--no-commit')
 
-      versionManager.bumpVersion(type, packageName, !noCommit)
-        .catch((error) => {
-          console.error('版本更新失败:', error.message)
-          process.exit(1)
-        })
+      versionManager.bumpVersion(type, packageName, !noCommit).catch(error => {
+        console.error('版本更新失败:', error.message)
+        process.exit(1)
+      })
       break
 
     case 'list':
@@ -252,11 +265,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       break
 
     case 'sync':
-      versionManager.syncVersions()
-        .catch((error) => {
-          console.error('版本同步失败:', error.message)
-          process.exit(1)
-        })
+      versionManager.syncVersions().catch(error => {
+        console.error('版本同步失败:', error.message)
+        process.exit(1)
+      })
       break
 
     default:

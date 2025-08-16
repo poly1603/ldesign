@@ -21,7 +21,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'LDesignForm',
       formats: ['es', 'cjs'],
-      fileName: (format) => {
+      fileName: format => {
         const ext = format === 'es' ? 'mjs' : 'cjs'
         return `index.${ext}`
       },
@@ -33,7 +33,7 @@ export default defineConfig({
           vue: 'Vue',
         },
         exports: 'named',
-        assetFileNames: (assetInfo) => {
+        assetFileNames: assetInfo => {
           if (assetInfo.name === 'style.css') {
             return 'index.css'
           }

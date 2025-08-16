@@ -199,7 +199,7 @@ import { createBuildConfig } from '../../tools/build-config.js'
 
 export default createBuildConfig({
   packageName: 'package-name',
-  vue: false // 如果支持 Vue 则设为 true
+  vue: false, // 如果支持 Vue 则设为 true
 })
 ```
 
@@ -234,7 +234,8 @@ export class UserManager {
     this.options = options
   }
 
-  public getName() { // 缺少返回类型
+  public getName() {
+    // 缺少返回类型
     return this.options.name
   }
 }
@@ -254,7 +255,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  disabled: false
+  disabled: false,
 })
 
 const emit = defineEmits<{
@@ -478,8 +479,7 @@ export class UserManager {
         throw new UserNotFoundError(`User with id ${id} not found`)
       }
       return user
-    }
-    catch (error) {
+    } catch (error) {
       this.logger.error('Failed to get user', { id, error })
       throw error
     }

@@ -38,7 +38,6 @@ yarn add @ldesign/template
 
 <!-- 引入 LDesign Template -->
 <script src="https://unpkg.com/@ldesign/template/dist/index.umd.js"></script>
-
 ```
 
 ## 验证安装
@@ -66,8 +65,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [vue()],
   optimizeDeps: {
-    include: ['@ldesign/template']
-  }
+    include: ['@ldesign/template'],
+  },
 })
 ```
 
@@ -79,9 +78,9 @@ export default defineConfig({
 module.exports = {
   resolve: {
     alias: {
-      '@ldesign/template': '@ldesign/template/es'
-    }
-  }
+      '@ldesign/template': '@ldesign/template/es',
+    },
+  },
 }
 ```
 

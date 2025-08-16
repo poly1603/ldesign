@@ -3,7 +3,11 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createCSSVariableGenerator, CSSVariableGenerator, defaultCSSVariableGenerator } from '../../core/css-generator'
+import {
+  createCSSVariableGenerator,
+  CSSVariableGenerator,
+  defaultCSSVariableGenerator,
+} from '../../core/css-generator'
 import { mediumSizeConfig } from '../../core/presets'
 
 describe('cSSVariableGenerator', () => {
@@ -81,10 +85,18 @@ describe('cSSVariableGenerator', () => {
     it('应该使用正确的值', () => {
       const variables = generator.generateVariables(mediumSizeConfig)
 
-      expect(variables['--test-font-size-base']).toBe(mediumSizeConfig.fontSize.base)
-      expect(variables['--test-spacing-base']).toBe(mediumSizeConfig.spacing.base)
-      expect(variables['--test-button-height-medium']).toBe(mediumSizeConfig.component.buttonHeight.medium)
-      expect(variables['--test-border-radius-base']).toBe(mediumSizeConfig.borderRadius.base)
+      expect(variables['--test-font-size-base']).toBe(
+        mediumSizeConfig.fontSize.base
+      )
+      expect(variables['--test-spacing-base']).toBe(
+        mediumSizeConfig.spacing.base
+      )
+      expect(variables['--test-button-height-medium']).toBe(
+        mediumSizeConfig.component.buttonHeight.medium
+      )
+      expect(variables['--test-border-radius-base']).toBe(
+        mediumSizeConfig.borderRadius.base
+      )
       expect(variables['--test-shadow-base']).toBe(mediumSizeConfig.shadow.base)
     })
   })
@@ -106,7 +118,10 @@ describe('cSSVariableGenerator', () => {
 
     it('应该支持自定义选择器', () => {
       const variables = { '--test-var': 'value' }
-      const cssString = generator.generateCSSString(variables, '.custom-selector')
+      const cssString = generator.generateCSSString(
+        variables,
+        '.custom-selector'
+      )
 
       expect(cssString).toContain('.custom-selector {')
       expect(cssString).toContain('--test-var: value;')

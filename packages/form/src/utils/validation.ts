@@ -100,8 +100,7 @@ export function validateRequired(value: any): boolean {
  * 验证邮箱格式
  */
 export function validateEmail(value: string): boolean {
-  if (isEmpty(value))
-    return true // 空值由 required 规则处理
+  if (isEmpty(value)) return true // 空值由 required 规则处理
   return builtinRules.email.pattern.test(value)
 }
 
@@ -109,8 +108,7 @@ export function validateEmail(value: string): boolean {
  * 验证手机号格式
  */
 export function validatePhone(value: string): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return builtinRules.phone.pattern.test(value)
 }
 
@@ -118,8 +116,7 @@ export function validatePhone(value: string): boolean {
  * 验证URL格式
  */
 export function validateUrl(value: string): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return builtinRules.url.pattern.test(value)
 }
 
@@ -127,8 +124,7 @@ export function validateUrl(value: string): boolean {
  * 验证数字格式
  */
 export function validateNumber(value: any): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return !isNaN(Number(value)) && isFinite(Number(value))
 }
 
@@ -136,8 +132,7 @@ export function validateNumber(value: any): boolean {
  * 验证整数格式
  */
 export function validateInteger(value: any): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return Number.isInteger(Number(value))
 }
 
@@ -145,8 +140,7 @@ export function validateInteger(value: any): boolean {
  * 验证最小值
  */
 export function validateMin(value: any, min: number): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return Number(value) >= min
 }
 
@@ -154,8 +148,7 @@ export function validateMin(value: any, min: number): boolean {
  * 验证最大值
  */
 export function validateMax(value: any, max: number): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return Number(value) <= max
 }
 
@@ -164,10 +157,9 @@ export function validateMax(value: any, max: number): boolean {
  */
 export function validateMinLength(
   value: string | any[],
-  minLength: number,
+  minLength: number
 ): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   const length = typeof value === 'string' ? value.length : value.length
   return length >= minLength
 }
@@ -177,10 +169,9 @@ export function validateMinLength(
  */
 export function validateMaxLength(
   value: string | any[],
-  maxLength: number,
+  maxLength: number
 ): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   const length = typeof value === 'string' ? value.length : value.length
   return length <= maxLength
 }
@@ -189,8 +180,7 @@ export function validateMaxLength(
  * 验证正则表达式
  */
 export function validatePattern(value: string, pattern: RegExp): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return pattern.test(value)
 }
 
@@ -198,8 +188,7 @@ export function validatePattern(value: string, pattern: RegExp): boolean {
  * 验证日期格式
  */
 export function validateDate(value: string): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
 
   if (!builtinRules.date.pattern.test(value)) {
     return false
@@ -213,8 +202,7 @@ export function validateDate(value: string): boolean {
  * 验证时间格式
  */
 export function validateTime(value: string): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return builtinRules.time.pattern.test(value)
 }
 
@@ -222,8 +210,7 @@ export function validateTime(value: string): boolean {
  * 验证日期时间格式
  */
 export function validateDateTime(value: string): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
 
   if (!builtinRules.datetime.pattern.test(value)) {
     return false
@@ -251,8 +238,7 @@ export function validateObject(value: any): boolean {
  * 验证枚举值
  */
 export function validateEnum(value: any, enumValues: any[]): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   return enumValues.includes(value)
 }
 
@@ -262,10 +248,9 @@ export function validateEnum(value: any, enumValues: any[]): boolean {
 export function validateRange(
   value: number,
   min: number,
-  max: number,
+  max: number
 ): boolean {
-  if (isEmpty(value))
-    return true
+  if (isEmpty(value)) return true
   const num = Number(value)
   return num >= min && num <= max
 }
@@ -275,7 +260,7 @@ export function validateRange(
  */
 export function formatMessage(
   template: string,
-  params: Record<string, any>,
+  params: Record<string, any>
 ): string {
   return template.replace(/\{(\w+)\}/g, (match, key) => {
     return params[key] !== undefined ? String(params[key]) : match
@@ -289,7 +274,7 @@ export async function executeRule(
   value: any,
   rule: ValidationRule,
   formData: Record<string, any>,
-  field: string,
+  field: string
 ): Promise<ValidationResult> {
   try {
     // 检查条件
@@ -305,13 +290,11 @@ export async function executeRule(
       const result = await rule.validator(value, formData, field)
       if (typeof result === 'boolean') {
         valid = result
-      }
-      else {
+      } else {
         valid = false
         message = result
       }
-    }
-    else {
+    } else {
       // 内置验证规则
       switch (rule.type) {
         case 'required':
@@ -346,34 +329,34 @@ export async function executeRule(
 
         case 'min':
           valid = validateMin(value, rule.params)
-          message
-            = message
-              || formatMessage(builtinRules.min.message, { min: rule.params })
+          message =
+            message ||
+            formatMessage(builtinRules.min.message, { min: rule.params })
           break
 
         case 'max':
           valid = validateMax(value, rule.params)
-          message
-            = message
-              || formatMessage(builtinRules.max.message, { max: rule.params })
+          message =
+            message ||
+            formatMessage(builtinRules.max.message, { max: rule.params })
           break
 
         case 'minLength':
           valid = validateMinLength(value, rule.params)
-          message
-            = message
-              || formatMessage(builtinRules.minLength.message, {
-                minLength: rule.params,
-              })
+          message =
+            message ||
+            formatMessage(builtinRules.minLength.message, {
+              minLength: rule.params,
+            })
           break
 
         case 'maxLength':
           valid = validateMaxLength(value, rule.params)
-          message
-            = message
-              || formatMessage(builtinRules.maxLength.message, {
-                maxLength: rule.params,
-              })
+          message =
+            message ||
+            formatMessage(builtinRules.maxLength.message, {
+              maxLength: rule.params,
+            })
           break
 
         case 'pattern':
@@ -413,8 +396,8 @@ export async function executeRule(
 
         case 'range':
           valid = validateRange(value, rule.params.min, rule.params.max)
-          message
-            = message || `值必须在 ${rule.params.min} 到 ${rule.params.max} 之间`
+          message =
+            message || `值必须在 ${rule.params.min} 到 ${rule.params.max} 之间`
           break
 
         default:
@@ -428,8 +411,7 @@ export async function executeRule(
       field,
       rule,
     }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       valid: false,
       errors: [`验证过程中发生错误: ${error.message}`],
@@ -446,7 +428,7 @@ export async function validateField(
   value: any,
   rules: ValidationRule[],
   formData: Record<string, any>,
-  field: string,
+  field: string
 ): Promise<ValidationResult> {
   const errors: string[] = []
 
@@ -476,7 +458,7 @@ export function createRule(
   type: ValidationRule['type'],
   params?: any,
   message?: string,
-  options?: Partial<ValidationRule>,
+  options?: Partial<ValidationRule>
 ): ValidationRule {
   return {
     type,
@@ -553,7 +535,7 @@ export function custom(
     formData: Record<string, any>,
     field: string
   ) => boolean | string | Promise<boolean | string>,
-  message?: string,
+  message?: string
 ): ValidationRule {
   return createRule('custom', undefined, message, { validator })
 }
@@ -567,7 +549,7 @@ export function asyncCustom(
     formData: Record<string, any>,
     field: string
   ) => Promise<boolean | string>,
-  message?: string,
+  message?: string
 ): ValidationRule {
   return createRule('custom', undefined, message, { validator, async: true })
 }
@@ -577,7 +559,7 @@ export function asyncCustom(
  */
 export function when(
   condition: (value: any, formData: Record<string, any>) => boolean,
-  rule: ValidationRule,
+  rule: ValidationRule
 ): ValidationRule {
   return {
     ...rule,
@@ -591,7 +573,7 @@ export function when(
 export function compareWith(
   targetField: string,
   operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' = 'eq',
-  message?: string,
+  message?: string
 ): ValidationRule {
   const validator = (value: any, formData: Record<string, any>) => {
     const targetValue = formData[targetField]
@@ -624,7 +606,7 @@ export function confirm(targetField: string, message?: string): ValidationRule {
   return compareWith(
     targetField,
     'eq',
-    message || `必须与${targetField}字段值相同`,
+    message || `必须与${targetField}字段值相同`
   )
 }
 
@@ -634,16 +616,13 @@ export function confirm(targetField: string, message?: string): ValidationRule {
 export function arrayLength(
   min?: number,
   max?: number,
-  message?: string,
+  message?: string
 ): ValidationRule {
   const validator = (value: any) => {
-    if (!Array.isArray(value))
-      return false
+    if (!Array.isArray(value)) return false
 
-    if (min !== undefined && value.length < min)
-      return false
-    if (max !== undefined && value.length > max)
-      return false
+    if (min !== undefined && value.length < min) return false
+    if (max !== undefined && value.length > max) return false
 
     return true
   }
@@ -656,15 +635,14 @@ export function arrayLength(
  */
 export function fileType(
   allowedTypes: string[],
-  message?: string,
+  message?: string
 ): ValidationRule {
   const validator = (value: any) => {
-    if (!value)
-      return true
+    if (!value) return true
 
     // 处理 File 对象
     if (value instanceof File) {
-      return allowedTypes.some((type) => {
+      return allowedTypes.some(type => {
         if (type.startsWith('.')) {
           return value.name.toLowerCase().endsWith(type.toLowerCase())
         }
@@ -674,7 +652,7 @@ export function fileType(
 
     // 处理文件名字符串
     if (typeof value === 'string') {
-      return allowedTypes.some((type) => {
+      return allowedTypes.some(type => {
         if (type.startsWith('.')) {
           return value.toLowerCase().endsWith(type.toLowerCase())
         }
@@ -693,8 +671,7 @@ export function fileType(
  */
 export function fileSize(maxSize: number, message?: string): ValidationRule {
   const validator = (value: any) => {
-    if (!value)
-      return true
+    if (!value) return true
 
     if (value instanceof File) {
       return value.size <= maxSize
@@ -785,7 +762,7 @@ export class RuleBuilder {
       formData: Record<string, any>,
       field: string
     ) => boolean | string | Promise<boolean | string>,
-    message?: string,
+    message?: string
   ): this {
     this.rules.push(custom(validator, message))
     return this
@@ -796,7 +773,7 @@ export class RuleBuilder {
    */
   when(
     condition: (value: any, formData: Record<string, any>) => boolean,
-    rule: ValidationRule,
+    rule: ValidationRule
   ): this {
     this.rules.push(when(condition, rule))
     return this

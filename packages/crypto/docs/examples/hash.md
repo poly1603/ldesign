@@ -256,8 +256,7 @@ async function calculateHash() {
         hashResult.value = await sha512(data.value)
         break
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('哈希计算失败:', error)
   }
 }
@@ -270,21 +269,11 @@ async function calculateHash() {
     <div>
       <textarea v-model="data" placeholder="输入要哈希的数据" />
       <select v-model="algorithm">
-        <option value="MD5">
-          MD5
-        </option>
-        <option value="SHA1">
-          SHA1
-        </option>
-        <option value="SHA256">
-          SHA256
-        </option>
-        <option value="SHA384">
-          SHA384
-        </option>
-        <option value="SHA512">
-          SHA512
-        </option>
+        <option value="MD5">MD5</option>
+        <option value="SHA1">SHA1</option>
+        <option value="SHA256">SHA256</option>
+        <option value="SHA384">SHA384</option>
+        <option value="SHA512">SHA512</option>
       </select>
       <button :disabled="isHashing" @click="calculateHash">
         {{ isHashing ? '计算中...' : '计算哈希' }}
@@ -353,7 +342,7 @@ class FileIntegrityChecker {
     return {
       md5: hash.md5(fileContent),
       sha1: hash.sha1(fileContent),
-      sha256: hash.sha256(fileContent)
+      sha256: hash.sha256(fileContent),
     }
   }
 }
@@ -381,7 +370,13 @@ class APIRequestSigner {
   }
 
   // 验证请求签名
-  verifyRequest(method: string, url: string, body: string, timestamp: number, signature: string): boolean {
+  verifyRequest(
+    method: string,
+    url: string,
+    body: string,
+    timestamp: number,
+    signature: string
+  ): boolean {
     const expectedSignature = this.signRequest(method, url, body, timestamp)
     return expectedSignature === signature
   }

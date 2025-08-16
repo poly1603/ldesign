@@ -12,7 +12,8 @@ const mockWindow = {
 }
 
 const mockNavigator = {
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  userAgent:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
   onLine: true,
   maxTouchPoints: 0,
 }
@@ -71,7 +72,10 @@ describe('deviceDetector', () => {
       vi.stubGlobal('innerWidth', 1920)
       vi.stubGlobal('innerHeight', 1080)
       // 移除 screen.orientation 以使用 window 尺寸判断
-      Object.defineProperty(screen, 'orientation', { value: undefined, configurable: true })
+      Object.defineProperty(screen, 'orientation', {
+        value: undefined,
+        configurable: true,
+      })
 
       detector = new DeviceDetector()
       expect(detector.getOrientation()).toBe('landscape')
@@ -90,7 +94,10 @@ describe('deviceDetector', () => {
       vi.stubGlobal('innerWidth', 1920)
       vi.stubGlobal('innerHeight', 1080)
       // 移除 screen.orientation 以使用 window 尺寸判断
-      Object.defineProperty(screen, 'orientation', { value: undefined, configurable: true })
+      Object.defineProperty(screen, 'orientation', {
+        value: undefined,
+        configurable: true,
+      })
 
       detector = new DeviceDetector()
       const deviceInfo = detector.getDeviceInfo()
@@ -119,7 +126,8 @@ describe('deviceDetector', () => {
     beforeEach(() => {
       mockWindow.innerWidth = 375
       mockWindow.innerHeight = 667
-      mockNavigator.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
+      mockNavigator.userAgent =
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
       mockNavigator.maxTouchPoints = 5
     })
 
@@ -140,7 +148,8 @@ describe('deviceDetector', () => {
     beforeEach(() => {
       mockWindow.innerWidth = 768
       mockWindow.innerHeight = 1024
-      mockNavigator.userAgent = 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
+      mockNavigator.userAgent =
+        'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
       mockNavigator.maxTouchPoints = 5
     })
 

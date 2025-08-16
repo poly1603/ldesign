@@ -38,8 +38,7 @@ export class FloatingAnimation extends BaseAnimation {
   protected createAnimation(): void {
     if (this.config.type === 'css') {
       this.createCSSAnimation()
-    }
-    else {
+    } else {
       this.createJSAnimation()
     }
   }
@@ -91,7 +90,7 @@ export class FloatingAnimation extends BaseAnimation {
    * 初始化漂浮元素
    */
   private initializeFloaters(): void {
-    this.floaters = this.elements.map((element) => {
+    this.floaters = this.elements.map(element => {
       const rect = element.getBoundingClientRect()
 
       return {
@@ -136,19 +135,19 @@ export class FloatingAnimation extends BaseAnimation {
    * 更新漂浮元素状态
    */
   private updateFloaters(currentTime: number): void {
-    this.floaters.forEach((floater) => {
+    this.floaters.forEach(floater => {
       // 计算正弦波漂浮
-      floater.offsetX
-        = Math.sin(currentTime * floater.frequencyX + floater.phaseX)
-          * floater.amplitudeX
-      floater.offsetY
-        = Math.sin(currentTime * floater.frequencyY + floater.phaseY)
-          * floater.amplitudeY
+      floater.offsetX =
+        Math.sin(currentTime * floater.frequencyX + floater.phaseX) *
+        floater.amplitudeX
+      floater.offsetY =
+        Math.sin(currentTime * floater.frequencyY + floater.phaseY) *
+        floater.amplitudeY
 
       // 计算透明度变化
-      floater.opacity
-        = floater.baseOpacity
-          + Math.sin(currentTime * 0.001 + floater.phaseX) * 0.2
+      floater.opacity =
+        floater.baseOpacity +
+        Math.sin(currentTime * 0.001 + floater.phaseX) * 0.2
       floater.opacity = Math.max(0.3, Math.min(1, floater.opacity))
     })
   }
@@ -157,7 +156,7 @@ export class FloatingAnimation extends BaseAnimation {
    * 渲染漂浮元素
    */
   private renderFloaters(): void {
-    this.floaters.forEach((floater) => {
+    this.floaters.forEach(floater => {
       const { element, baseX, baseY, offsetX, offsetY, opacity } = floater
 
       element.style.transform = `translate(${offsetX}px, ${offsetY}px)`
@@ -178,9 +177,9 @@ export class FloatingAnimation extends BaseAnimation {
 
     // 清理CSS动画
     const styles = document.querySelectorAll(
-      `style:contains("${this.config.name}")`,
+      `style:contains("${this.config.name}")`
     )
-    styles.forEach((style) => {
+    styles.forEach(style => {
       if (style.textContent?.includes(this.config.name)) {
         style.remove()
       }
@@ -196,7 +195,7 @@ export class FloatingAnimation extends BaseAnimation {
       amplitude?: number
       frequency?: number
       opacity?: boolean
-    } = {},
+    } = {}
   ): FloatingAnimation {
     const { amplitude = 15, frequency = 0.002, opacity = true } = options
 
@@ -270,7 +269,7 @@ export class FloatingAnimation extends BaseAnimation {
       rise?: boolean
       sway?: boolean
       speed?: number
-    } = {},
+    } = {}
   ): FloatingAnimation {
     const { rise = true, sway = true, speed = 1 } = options
 
@@ -339,7 +338,7 @@ export class FloatingAnimation extends BaseAnimation {
       speed?: number
       direction?: 'left' | 'right'
       vertical?: boolean
-    } = {},
+    } = {}
   ): FloatingAnimation {
     const { speed = 1, direction = 'right', vertical = true } = options
 
@@ -398,7 +397,7 @@ export class FloatingAnimation extends BaseAnimation {
     options: {
       intensity?: 'gentle' | 'moderate' | 'strong'
       bubbles?: boolean
-    } = {},
+    } = {}
   ): FloatingAnimation {
     const { intensity = 'moderate', bubbles = false } = options
 
@@ -486,7 +485,7 @@ export class FloatingAnimation extends BaseAnimation {
  */
 export function createFloatingAnimation(
   config: AnimationConfig,
-  elements: HTMLElement[],
+  elements: HTMLElement[]
 ): FloatingAnimation {
   const animation = new FloatingAnimation(config)
   animation.setElements(elements)

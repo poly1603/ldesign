@@ -6,7 +6,8 @@
 
 ### Store (存储)
 
-Store 是状态管理的核心单元，包含应用的状态、操作和计算属性。在 @ldesign/store 中，Store 可以通过多种方式定义：
+Store 是状态管理的核心单元，包含应用的状态、操作和计算属性。在 @ldesign/store 中，Store 可以通过多种
+方式定义：
 
 ```typescript
 // 类式定义
@@ -57,7 +58,7 @@ class TodoStore extends BaseStore {
     this.todos.push({
       id: Date.now(),
       text,
-      completed: false
+      completed: false,
     })
   }
 
@@ -218,8 +219,7 @@ class UserManagementStore extends BaseStore {
     this.loading = true
     try {
       this.currentUser = await authApi.login(credentials)
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -240,9 +240,9 @@ export const useCounter = createStore('counter', () => {
   const count = ref(0)
   const step = ref(1)
 
-  const increment = () => count.value += step.value
-  const decrement = () => count.value -= step.value
-  const reset = () => count.value = 0
+  const increment = () => (count.value += step.value)
+  const decrement = () => (count.value -= step.value)
+  const reset = () => (count.value = 0)
 
   const displayText = computed(() => `Count: ${count.value}`)
   const isPositive = computed(() => count.value > 0)
@@ -250,7 +250,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count, step },
     actions: { increment, decrement, reset },
-    getters: { displayText, isPositive }
+    getters: { displayText, isPositive },
   }
 })
 ```
@@ -267,7 +267,7 @@ import { CartStore, SettingsStore, UserStore } from '@/stores'
 const stores = {
   user: UserStore,
   cart: CartStore,
-  settings: SettingsStore
+  settings: SettingsStore,
 }
 </script>
 
@@ -308,12 +308,12 @@ class SettingsStore extends BaseStore {
   @ReactiveState({
     default: {
       theme: { mode: 'dark', color: 'blue' },
-      layout: { sidebar: true, header: true }
-    }
+      layout: { sidebar: true, header: true },
+    },
   })
   config: AppConfig = {
     theme: { mode: 'dark', color: 'blue' },
-    layout: { sidebar: true, header: true }
+    layout: { sidebar: true, header: true },
   }
 
   @Action()
@@ -337,9 +337,7 @@ class DataAnalysisStore extends BaseStore {
   @Getter()
   get filteredData() {
     // 自动依赖 rawData 和 filter
-    return this.rawData.filter(item =>
-      this.filter === 'all' || item.category === this.filter
-    )
+    return this.rawData.filter(item => this.filter === 'all' || item.category === this.filter)
   }
 
   @Getter()
@@ -347,7 +345,8 @@ class DataAnalysisStore extends BaseStore {
     // 自动依赖 filteredData
     return {
       count: this.filteredData.length,
-      average: this.filteredData.reduce((sum, item) => sum + item.value, 0) / this.filteredData.length
+      average:
+        this.filteredData.reduce((sum, item) => sum + item.value, 0) / this.filteredData.length,
     }
   }
 }
@@ -392,8 +391,7 @@ class SearchStore extends BaseStore {
     this.query = query
     if (query.trim()) {
       this.results = await searchApi.search(query)
-    }
-    else {
+    } else {
       this.results = []
     }
   }

@@ -20,7 +20,10 @@ class SetupVerifier {
     })
   }
 
-  private log(message: string, level: 'info' | 'success' | 'error' = 'info'): void {
+  private log(
+    message: string,
+    level: 'info' | 'success' | 'error' = 'info'
+  ): void {
     const prefix = level === 'success' ? '✅' : level === 'error' ? '❌' : 'ℹ️'
     console.log(`${prefix} ${message}`)
   }
@@ -42,11 +45,11 @@ class SetupVerifier {
       '.dockerignore',
     ]
 
-    rootFiles.forEach((file) => {
+    rootFiles.forEach(file => {
       this.test(
         `根目录文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`
       )
     })
 
@@ -60,11 +63,11 @@ class SetupVerifier {
       'docker',
     ]
 
-    directories.forEach((dir) => {
+    directories.forEach(dir => {
       this.test(
         `目录: ${dir}`,
         existsSync(dir),
-        `${dir} ${existsSync(dir) ? '存在' : '不存在'}`,
+        `${dir} ${existsSync(dir) ? '存在' : '不存在'}`
       )
     })
   }
@@ -80,11 +83,11 @@ class SetupVerifier {
       'tools/configs/publish.config.ts',
     ]
 
-    toolsFiles.forEach((file) => {
+    toolsFiles.forEach(file => {
       this.test(
         `工具文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`
       )
     })
 
@@ -97,11 +100,11 @@ class SetupVerifier {
       'tools/release',
     ]
 
-    oldFiles.forEach((file) => {
+    oldFiles.forEach(file => {
       this.test(
         `旧文件已移动: ${file}`,
         !existsSync(file),
-        `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`,
+        `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`
       )
     })
   }
@@ -117,11 +120,11 @@ class SetupVerifier {
       'docs/guide/DEPLOYMENT.md',
     ]
 
-    docsFiles.forEach((file) => {
+    docsFiles.forEach(file => {
       this.test(
         `文档文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`
       )
     })
 
@@ -134,11 +137,13 @@ class SetupVerifier {
       'README.en.md',
     ]
 
-    rootDocsFiles.forEach((file) => {
+    rootDocsFiles.forEach(file => {
       this.test(
         `根目录文档已移动: ${file}`,
         !existsSync(file),
-        `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`,
+        `${file} ${
+          existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'
+        }`
       )
     })
   }
@@ -161,11 +166,11 @@ class SetupVerifier {
         'docker:build',
       ]
 
-      expectedScripts.forEach((script) => {
+      expectedScripts.forEach(script => {
         this.test(
           `脚本: ${script}`,
           !!packageJson.scripts[script],
-          `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`,
+          `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`
         )
       })
 
@@ -181,16 +186,15 @@ class SetupVerifier {
         this.test(
           `脚本路径: ${script}`,
           actualScript && actualScript.includes(expectedPath),
-          `${script} 路径 ${actualScript && actualScript.includes(expectedPath) ? '正确' : '需要更新'}`,
+          `${script} 路径 ${
+            actualScript && actualScript.includes(expectedPath)
+              ? '正确'
+              : '需要更新'
+          }`
         )
       })
-    }
-    catch (error) {
-      this.test(
-        'package.json 解析',
-        false,
-        `无法解析 package.json: ${error}`,
-      )
+    } catch (error) {
+      this.test('package.json 解析', false, `无法解析 package.json: ${error}`)
     }
   }
 
@@ -207,11 +211,11 @@ class SetupVerifier {
       'docs/docker/nginx.conf',
     ]
 
-    dockerFiles.forEach((file) => {
+    dockerFiles.forEach(file => {
       this.test(
         `Docker文件: ${file}`,
         existsSync(file),
-        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`
       )
     })
   }
@@ -231,20 +235,22 @@ class SetupVerifier {
     const passed = this.results.filter(r => r.passed).length
     const total = this.results.length
 
-    this.results.forEach((result) => {
+    this.results.forEach(result => {
       this.log(
         `${result.name}: ${result.message}`,
-        result.passed ? 'success' : 'error',
+        result.passed ? 'success' : 'error'
       )
     })
 
-    this.log(`\n总计: ${passed}/${total} 项检查通过`, passed === total ? 'success' : 'error')
+    this.log(
+      `\n总计: ${passed}/${total} 项检查通过`,
+      passed === total ? 'success' : 'error'
+    )
 
     if (passed < total) {
       this.log('存在问题需要修复', 'error')
       process.exit(1)
-    }
-    else {
+    } else {
       this.log('所有检查都通过了！', 'success')
     }
   }
@@ -253,7 +259,7 @@ class SetupVerifier {
 // CLI 接口
 if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const verifier = new SetupVerifier()
-  verifier.runVerification().catch((error) => {
+  verifier.runVerification().catch(error => {
     console.error('验证失败:', error)
     process.exit(1)
   })

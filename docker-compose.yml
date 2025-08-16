@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # 主项目开发环境
@@ -8,8 +8,8 @@ services:
       dockerfile: Dockerfile
       target: development
     ports:
-      - '3000:3000'
-      - '5173:5173'
+      - "3000:3000"
+      - "5173:5173"
     volumes:
       - .:/app
       - /app/node_modules
@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
       target: production
     ports:
-      - '8080:80'
+      - "8080:80"
     environment:
       - NODE_ENV=production
     networks:
@@ -41,7 +41,7 @@ services:
       dockerfile: docs/Dockerfile
       target: development
     ports:
-      - '5173:5173'
+      - "5173:5173"
     volumes:
       - ./docs:/app/docs
       - ./packages:/app/packages
@@ -58,7 +58,7 @@ services:
       dockerfile: docs/Dockerfile
       target: production
     ports:
-      - '8081:80'
+      - "8081:80"
     environment:
       - NODE_ENV=production
     networks:
@@ -72,7 +72,7 @@ services:
       context: .
       dockerfile: examples/Dockerfile
     ports:
-      - '8082:80'
+      - "8082:80"
     environment:
       - NODE_ENV=production
     networks:
@@ -85,8 +85,8 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - '80:80'
-      - '443:443'
+      - "80:80"
+      - "443:443"
     volumes:
       - ./docker/nginx-proxy.conf:/etc/nginx/nginx.conf:ro
       - ./docker/ssl:/etc/nginx/ssl:ro
@@ -103,7 +103,7 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - redis-data:/data
     networks:

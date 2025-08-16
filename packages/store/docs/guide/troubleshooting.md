@@ -11,11 +11,13 @@
 **解决方案：**
 
 1. **确保安装了 reflect-metadata**
+
    ```bash
    pnpm add reflect-metadata
    ```
 
 2. **在入口文件导入**
+
    ```typescript
    // main.ts
    import 'reflect-metadata' // 必须在最顶部
@@ -24,6 +26,7 @@
    ```
 
 3. **配置 TypeScript**
+
    ```json
    // tsconfig.json
    {
@@ -35,14 +38,15 @@
    ```
 
 4. **配置 Vite**
+
    ```typescript
    // vite.config.ts
    import { defineConfig } from 'vite'
-   
+
    export default defineConfig({
      esbuild: {
-       target: 'es2020' // 确保支持装饰器
-     }
+       target: 'es2020', // 确保支持装饰器
+     },
    })
    ```
 
@@ -53,6 +57,7 @@
 **解决方案：**
 
 1. **确保 TypeScript 版本 >= 4.5**
+
    ```bash
    pnpm add -D typescript@latest
    ```
@@ -80,6 +85,7 @@
 **可能原因和解决方案：**
 
 1. **忘记使用 @Action 装饰器**
+
    ```typescript
    // ❌ 错误
    class MyStore extends BaseStore {
@@ -87,7 +93,7 @@
        this.data = data // 不会触发响应式更新
      }
    }
-   
+
    // ✅ 正确
    class MyStore extends BaseStore {
      @Action()
@@ -98,13 +104,14 @@
    ```
 
 2. **直接修改嵌套对象**
+
    ```typescript
    // ❌ 错误
    @Action()
    updateUser() {
      this.user.name = 'new name' // 可能不会触发更新
    }
-   
+
    // ✅ 正确
    @Action()
    updateUser() {
@@ -113,6 +120,7 @@
    ```
 
 3. **异步操作未使用 @AsyncAction**
+
    ```typescript
    // ❌ 错误
    @Action()
@@ -120,7 +128,7 @@
      const data = await api.getData()
      this.data = data // 可能不会正确更新
    }
-   
+
    // ✅ 正确
    @AsyncAction()
    async fetchData() {
@@ -136,25 +144,27 @@
 **诊断和解决：**
 
 1. **启用性能监控**
+
    ```typescript
    import { usePerformanceMonitor, getOptimizationSuggestions } from '@ldesign/store'
-   
+
    const monitor = usePerformanceMonitor()
    const report = monitor.getPerformanceReport()
    const suggestions = getOptimizationSuggestions(report)
-   
+
    console.log('性能报告:', report)
    console.log('优化建议:', suggestions)
    ```
 
 2. **使用缓存装饰器**
+
    ```typescript
    class MyStore extends BaseStore {
      @CachedGetter(['data']) // 缓存计算结果
      get expensiveComputation() {
        return this.data.map(/* 复杂计算 */)
      }
-   
+
      @CachedAction(60000) // 缓存1分钟
      async fetchData() {
        return await api.getData()
@@ -177,6 +187,7 @@
 **解决方案：**
 
 1. **正确清理 Store**
+
    ```typescript
    // 组件卸载时清理
    onUnmounted(() => {
@@ -185,9 +196,10 @@
    ```
 
 2. **使用 Store 池**
+
    ```typescript
    const pool = useStorePool()
-   
+
    // 使用完毕后归还
    const store = pool.getStore(MyStore, 'id')
    // ... 使用 store
@@ -195,19 +207,20 @@
    ```
 
 3. **清理事件监听器**
+
    ```typescript
    class MyStore extends BaseStore {
      private cleanup: (() => void)[] = []
-   
+
      constructor(id: string) {
        super(id)
-       
+
        // 注册清理函数
        this.cleanup.push(() => {
          // 清理逻辑
        })
      }
-   
+
      $dispose() {
        this.cleanup.forEach(fn => fn())
        super.$dispose()
@@ -224,16 +237,18 @@
 **解决方案：**
 
 1. **检查 Vite 配置**
+
    ```typescript
    // vite.config.ts
    export default defineConfig({
      server: {
-       hmr: true // 确保启用热重载
-     }
+       hmr: true, // 确保启用热重载
+     },
    })
    ```
 
 2. **避免在 Store 构造函数中执行副作用**
+
    ```typescript
    // ❌ 避免
    class MyStore extends BaseStore {
@@ -242,7 +257,7 @@
        this.fetchData() // 可能导致热重载问题
      }
    }
-   
+
    // ✅ 推荐
    class MyStore extends BaseStore {
      @Action()
@@ -259,11 +274,12 @@
 **解决方案：**
 
 1. **配置测试环境**
+
    ```typescript
    // test/setup.ts
    import 'reflect-metadata'
    import { createPinia, setActivePinia } from 'pinia'
-   
+
    beforeEach(() => {
      const pinia = createPinia()
      setActivePinia(pinia)
@@ -275,12 +291,12 @@
    // 测试异步 Action
    it('should fetch data', async () => {
      const store = new MyStore('test')
-     
+
      // 模拟 API
      vi.spyOn(api, 'getData').mockResolvedValue({ data: 'test' })
-     
+
      await store.fetchData()
-     
+
      expect(store.data).toBe('test')
    })
    ```
@@ -294,22 +310,24 @@
 **解决方案：**
 
 1. **启用 Tree Shaking**
+
    ```typescript
    // vite.config.ts
    export default defineConfig({
      build: {
        rollupOptions: {
-         treeshake: true
-       }
-     }
+         treeshake: true,
+       },
+     },
    })
    ```
 
 2. **按需导入**
+
    ```typescript
    // ❌ 全量导入
    import * as Store from '@ldesign/store'
-   
+
    // ✅ 按需导入
    import { BaseStore, Action, State } from '@ldesign/store'
    ```
@@ -321,6 +339,7 @@
 **解决方案：**
 
 1. **检查浏览器支持**
+
    - 确保目标浏览器支持 ES2020
    - 使用 Babel 转译如果需要支持旧浏览器
 
@@ -344,7 +363,7 @@
 if (process.env.NODE_ENV === 'development') {
   // 启用性能监控
   const monitor = usePerformanceMonitor()
-  
+
   // 定期输出性能报告
   setInterval(() => {
     console.log('性能报告:', monitor.getPerformanceReport())
@@ -388,10 +407,10 @@ report.slowGetters.forEach(getter => {
 
 ## 常见错误代码
 
-| 错误代码 | 描述 | 解决方案 |
-|---------|------|----------|
-| `DECORATOR_ERROR` | 装饰器配置错误 | 检查 TypeScript 和 reflect-metadata 配置 |
-| `STORE_NOT_FOUND` | Store 未找到 | 确保 Store 已正确注册 |
-| `ASYNC_ACTION_ERROR` | 异步 Action 错误 | 使用 @AsyncAction 装饰器 |
-| `CACHE_ERROR` | 缓存错误 | 检查缓存配置和依赖 |
-| `POOL_ERROR` | Store 池错误 | 检查池配置和使用方式 |
+| 错误代码             | 描述             | 解决方案                                 |
+| -------------------- | ---------------- | ---------------------------------------- |
+| `DECORATOR_ERROR`    | 装饰器配置错误   | 检查 TypeScript 和 reflect-metadata 配置 |
+| `STORE_NOT_FOUND`    | Store 未找到     | 确保 Store 已正确注册                    |
+| `ASYNC_ACTION_ERROR` | 异步 Action 错误 | 使用 @AsyncAction 装饰器                 |
+| `CACHE_ERROR`        | 缓存错误         | 检查缓存配置和依赖                       |
+| `POOL_ERROR`         | Store 池错误     | 检查池配置和使用方式                     |

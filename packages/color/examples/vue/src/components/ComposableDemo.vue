@@ -7,19 +7,10 @@ import {
 } from '@ldesign/color/vue'
 
 // useTheme 演示
-const {
-  currentTheme,
-  currentMode,
-  isDark,
-  availableThemes,
-} = useTheme()
+const { currentTheme, currentMode, isDark, availableThemes } = useTheme()
 
 // useThemeToggle 演示
-const {
-  currentMode: toggleCurrentMode,
-  toggle,
-  isLight,
-} = useThemeToggle()
+const { currentMode: toggleCurrentMode, toggle, isLight } = useThemeToggle()
 
 // useThemeSelector 演示
 const {
@@ -29,25 +20,17 @@ const {
 } = useThemeSelector()
 
 // useSystemThemeSync 演示
-const {
-  systemTheme,
-  isSystemDark,
-  syncWithSystem,
-} = useSystemThemeSync()
+const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
 </script>
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🔧 组合式 API 演示
-    </h2>
+    <h2 class="card-title">🔧 组合式 API 演示</h2>
 
     <div class="demo-sections">
       <!-- useTheme 演示 -->
       <div class="demo-section">
-        <h3 class="demo-title">
-          useTheme
-        </h3>
+        <h3 class="demo-title">useTheme</h3>
         <div class="demo-content">
           <p><strong>当前主题:</strong> {{ currentTheme }}</p>
           <p><strong>当前模式:</strong> {{ currentMode }}</p>
@@ -58,9 +41,7 @@ const {
 
       <!-- useThemeToggle 演示 -->
       <div class="demo-section">
-        <h3 class="demo-title">
-          useThemeToggle
-        </h3>
+        <h3 class="demo-title">useThemeToggle</h3>
         <div class="demo-content">
           <p><strong>当前模式:</strong> {{ toggleCurrentMode }}</p>
           <div class="demo-actions">
@@ -76,9 +57,7 @@ const {
 
       <!-- useThemeSelector 演示 -->
       <div class="demo-section">
-        <h3 class="demo-title">
-          useThemeSelector
-        </h3>
+        <h3 class="demo-title">useThemeSelector</h3>
         <div class="demo-content">
           <select
             :value="selectorCurrentTheme"
@@ -98,9 +77,7 @@ const {
 
       <!-- useSystemThemeSync 演示 -->
       <div class="demo-section">
-        <h3 class="demo-title">
-          useSystemThemeSync
-        </h3>
+        <h3 class="demo-title">useSystemThemeSync</h3>
         <div class="demo-content">
           <p><strong>系统主题:</strong> {{ systemTheme }}</p>
           <p><strong>是否系统暗色:</strong> {{ isSystemDark ? '是' : '否' }}</p>
@@ -132,7 +109,8 @@ const {
   font-weight: 600;
   color: var(--color-primary, #1890ff);
   margin-bottom: 0.75rem;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
 }
 
 .demo-content p {

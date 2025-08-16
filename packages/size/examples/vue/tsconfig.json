@@ -9,12 +9,6 @@
       "@ldesign/size": ["../../src"]
     }
   },
-  "include": [
-    "src/**/*",
-    "*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*", "*.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -3,7 +3,12 @@
  * 用于将生成的颜色注入到CSS自定义属性中
  */
 
-import type { ColorConfig, ColorMode, ColorScale, NeutralColors } from '../core/types'
+import type {
+  ColorConfig,
+  ColorMode,
+  ColorScale,
+  NeutralColors,
+} from '../core/types'
 
 /**
  * CSS变量注入器
@@ -20,8 +25,7 @@ export class CSSVariableInjector {
    * 创建样式元素
    */
   private createStyleElement(): void {
-    if (typeof document === 'undefined')
-      return
+    if (typeof document === 'undefined') return
 
     this.styleElement = document.createElement('style')
     this.styleElement.id = 'ldesign-color-variables'
@@ -32,8 +36,7 @@ export class CSSVariableInjector {
    * 注入CSS变量
    */
   injectVariables(variables: Record<string, string>): void {
-    if (!this.styleElement)
-      return
+    if (!this.styleElement) return
 
     this.currentVariables = { ...variables }
 
@@ -118,20 +121,16 @@ export function injectThemeVariables(
   scales: Record<string, ColorScale>,
   neutralColors?: NeutralColors,
   mode: ColorMode = 'light',
-  prefix = '--color',
+  prefix = '--color'
 ): void {
   const variables: Record<string, string> = {}
 
   // 基础颜色
   variables[`${prefix}-primary`] = colors.primary
-  if (colors.success)
-    variables[`${prefix}-success`] = colors.success
-  if (colors.warning)
-    variables[`${prefix}-warning`] = colors.warning
-  if (colors.danger)
-    variables[`${prefix}-danger`] = colors.danger
-  if (colors.gray)
-    variables[`${prefix}-gray`] = colors.gray
+  if (colors.success) variables[`${prefix}-success`] = colors.success
+  if (colors.warning) variables[`${prefix}-warning`] = colors.warning
+  if (colors.danger) variables[`${prefix}-danger`] = colors.danger
+  if (colors.gray) variables[`${prefix}-gray`] = colors.gray
 
   // 色阶
   for (const [category, scale] of Object.entries(scales)) {
@@ -165,7 +164,7 @@ export function injectThemeVariables(
 function addSemanticVariables(
   variables: Record<string, string>,
   mode: ColorMode,
-  prefix: string,
+  prefix: string
 ): void {
   if (mode === 'light') {
     // 亮色模式
@@ -180,8 +179,7 @@ function addSemanticVariables(
     variables[`${prefix}-shadow-sm`] = 'rgba(0, 0, 0, 0.05)'
     variables[`${prefix}-shadow-md`] = 'rgba(0, 0, 0, 0.1)'
     variables[`${prefix}-shadow-lg`] = 'rgba(0, 0, 0, 0.15)'
-  }
-  else {
+  } else {
     // 暗色模式
     variables[`${prefix}-bg-primary`] = '#1a1a1a'
     variables[`${prefix}-bg-secondary`] = '#2d2d2d'
@@ -205,7 +203,7 @@ export function toggleThemeMode(
   scales: Record<string, ColorScale>,
   neutralColors?: NeutralColors,
   currentMode: ColorMode = 'light',
-  prefix = '--color',
+  prefix = '--color'
 ): ColorMode {
   const newMode = currentMode === 'light' ? 'dark' : 'light'
   injectThemeVariables(colors, scales, neutralColors, newMode, prefix)
@@ -216,16 +214,16 @@ export function toggleThemeMode(
  * 便捷函数：获取CSS变量值
  */
 export function getCSSVariableValue(name: string): string {
-  if (typeof document === 'undefined')
-    return ''
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  if (typeof document === 'undefined') return ''
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim()
 }
 
 /**
  * 便捷函数：设置CSS变量值
  */
 export function setCSSVariableValue(name: string, value: string): void {
-  if (typeof document === 'undefined')
-    return
+  if (typeof document === 'undefined') return
   document.documentElement.style.setProperty(name, value)
 }

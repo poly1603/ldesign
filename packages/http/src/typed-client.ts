@@ -12,7 +12,9 @@ import type {
 /**
  * 类型安全的 HTTP 客户端包装器
  */
-export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpClient<TBaseResponse> {
+export class TypedHttpClientWrapper<TBaseResponse = any>
+  implements TypedHttpClient<TBaseResponse>
+{
   constructor(private client: HttpClient) {}
 
   // 代理所有基础方法
@@ -20,18 +22,23 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
     return this.client.interceptors
   }
 
-  async request<T = TBaseResponse>(config: RequestConfig): Promise<ResponseData<T>> {
+  async request<T = TBaseResponse>(
+    config: RequestConfig
+  ): Promise<ResponseData<T>> {
     return this.client.request<T>(config)
   }
 
-  async get<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async get<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>> {
     return this.client.get<T>(url, config)
   }
 
   async post<T = TBaseResponse, D = any>(
     url: string,
     data?: D,
-    config?: RequestConfig,
+    config?: RequestConfig
   ): Promise<ResponseData<T>> {
     return this.client.post<T>(url, data, config)
   }
@@ -39,28 +46,37 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
   async put<T = TBaseResponse, D = any>(
     url: string,
     data?: D,
-    config?: RequestConfig,
+    config?: RequestConfig
   ): Promise<ResponseData<T>> {
     return this.client.put<T>(url, data, config)
   }
 
-  async delete<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async delete<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>> {
     return this.client.delete<T>(url, config)
   }
 
   async patch<T = TBaseResponse, D = any>(
     url: string,
     data?: D,
-    config?: RequestConfig,
+    config?: RequestConfig
   ): Promise<ResponseData<T>> {
     return this.client.patch<T>(url, data, config)
   }
 
-  async head<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async head<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>> {
     return this.client.head<T>(url, config)
   }
 
-  async options<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async options<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>> {
     return this.client.options<T>(url, config)
   }
 
@@ -98,7 +114,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
   async callEndpoint<TResponse = TBaseResponse, TRequest = any>(
     endpoint: ApiEndpoint<TResponse, TRequest>,
     data?: TRequest,
-    config?: TypedRequestConfig<TRequest>,
+    config?: TypedRequestConfig<TRequest>
   ): Promise<TypedResponseData<TResponse>> {
     const requestConfig: RequestConfig = {
       ...config,
@@ -129,11 +145,9 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
   /**
    * 批量请求
    */
-  async batch<T extends Record<string, any>>(
-    requests: {
-      [K in keyof T]: () => Promise<ResponseData<T[K]>>
-    },
-  ): Promise<{ [K in keyof T]: ResponseData<T[K]> }> {
+  async batch<T extends Record<string, any>>(requests: {
+    [K in keyof T]: () => Promise<ResponseData<T[K]>>
+  }): Promise<{ [K in keyof T]: ResponseData<T[K]> }> {
     const keys = Object.keys(requests) as Array<keyof T>
     const promises = keys.map(key => requests[key]())
 
@@ -152,9 +166,10 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
    */
   async conditionalRequest<T = TBaseResponse>(
     condition: boolean | (() => boolean),
-    config: RequestConfig,
+    config: RequestConfig
   ): Promise<ResponseData<T> | null> {
-    const shouldExecute = typeof condition === 'function' ? condition() : condition
+    const shouldExecute =
+      typeof condition === 'function' ? condition() : condition
 
     if (!shouldExecute) {
       return null
@@ -169,15 +184,14 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
   async retryUntilSuccess<T = TBaseResponse>(
     config: RequestConfig,
     maxAttempts = 5,
-    delay = 1000,
+    delay = 1000
   ): Promise<ResponseData<T>> {
     let lastError: Error
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await this.client.request<T>(config)
-      }
-      catch (error) {
+      } catch (error) {
         lastError = error as Error
 
         if (attempt === maxAttempts) {
@@ -200,7 +214,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
       interval: number
       maxAttempts?: number
       condition?: (response: ResponseData<T>) => boolean
-    },
+    }
   ): Promise<ResponseData<T>> {
     const { interval, maxAttempts = Infinity, condition } = options
     let attempts = 0
@@ -224,7 +238,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
  * 创建类型安全的 HTTP 客户端
  */
 export function createTypedHttpClient<TBaseResponse = any>(
-  client: HttpClient,
+  client: HttpClient
 ): TypedHttpClient<TBaseResponse> {
   return new TypedHttpClientWrapper<TBaseResponse>(client)
 }
@@ -267,6 +281,9 @@ export class ApiEndpointBuilder<TResponse = any, TRequest = any> {
 /**
  * 创建 API 端点构建器
  */
-export function createEndpoint<TResponse = any, TRequest = any>(): ApiEndpointBuilder<TResponse, TRequest> {
+export function createEndpoint<
+  TResponse = any,
+  TRequest = any
+>(): ApiEndpointBuilder<TResponse, TRequest> {
   return new ApiEndpointBuilder<TResponse, TRequest>()
 }

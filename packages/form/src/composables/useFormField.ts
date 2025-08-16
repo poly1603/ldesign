@@ -144,10 +144,9 @@ export function useFormField(options: UseFormFieldOptions): UseFormFieldReturn {
           value.value,
           field.rules,
           formData,
-          field.name,
+          field.name
         )
-      }
-      else {
+      } else {
         // 本地验证
         const { validateField } = await import('../utils/validation')
         result = await validateField(value.value, field.rules, {}, field.name)
@@ -162,13 +161,11 @@ export function useFormField(options: UseFormFieldOptions): UseFormFieldReturn {
       }
 
       return result.valid
-    }
-    catch (error) {
+    } catch (error) {
       valid.value = false
       errors.value = [`验证过程中发生错误: ${error.message}`]
       return false
-    }
-    finally {
+    } finally {
       validating.value = false
     }
   }
@@ -253,8 +250,7 @@ export function useFormField(options: UseFormFieldOptions): UseFormFieldReturn {
     const existingValue = stateManager.getFieldValue(field.name)
     if (existingValue !== undefined) {
       value.value = existingValue
-    }
-    else {
+    } else {
       stateManager.setFieldValue(field.name, value.value)
     }
 
@@ -267,20 +263,13 @@ export function useFormField(options: UseFormFieldOptions): UseFormFieldReturn {
 
     stateManager.on('fieldStateChange', (fieldName: string, state: any) => {
       if (fieldName === field.name) {
-        if (state.dirty !== undefined)
-          dirty.value = state.dirty
-        if (state.touched !== undefined)
-          touched.value = state.touched
-        if (state.valid !== undefined)
-          valid.value = state.valid
-        if (state.errors !== undefined)
-          errors.value = state.errors
-        if (state.visible !== undefined)
-          visible.value = state.visible
-        if (state.disabled !== undefined)
-          disabled.value = state.disabled
-        if (state.readonly !== undefined)
-          readonly.value = state.readonly
+        if (state.dirty !== undefined) dirty.value = state.dirty
+        if (state.touched !== undefined) touched.value = state.touched
+        if (state.valid !== undefined) valid.value = state.valid
+        if (state.errors !== undefined) errors.value = state.errors
+        if (state.visible !== undefined) visible.value = state.visible
+        if (state.disabled !== undefined) disabled.value = state.disabled
+        if (state.readonly !== undefined) readonly.value = state.readonly
       }
     })
   }

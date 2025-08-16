@@ -14,42 +14,42 @@ export enum WatermarkEventType {
   INSTANCE_UPDATED = 'instance:updated',
   INSTANCE_DESTROYED = 'instance:destroyed',
   INSTANCE_STATE_CHANGED = 'instance:stateChanged',
-  
+
   // 渲染事件
   RENDER_START = 'render:start',
   RENDER_COMPLETE = 'render:complete',
   RENDER_ERROR = 'render:error',
-  
+
   // 安全事件
   SECURITY_VIOLATION = 'security:violation',
   SECURITY_RECOVERED = 'security:recovered',
-  
+
   // 动画事件
   ANIMATION_START = 'animation:start',
   ANIMATION_PAUSE = 'animation:pause',
   ANIMATION_RESUME = 'animation:resume',
   ANIMATION_STOP = 'animation:stop',
   ANIMATION_COMPLETE = 'animation:complete',
-  
+
   // 响应式事件
   BREAKPOINT_CHANGED = 'responsive:breakpointChanged',
   CONTAINER_RESIZED = 'responsive:containerResized',
   ORIENTATION_CHANGED = 'responsive:orientationChanged',
-  
+
   // 可见性事件
   VISIBILITY_CHANGED = 'visibility:changed',
   INTERSECTION_CHANGED = 'intersection:changed',
-  
+
   // 性能事件
   PERFORMANCE_WARNING = 'performance:warning',
   MEMORY_LEAK_DETECTED = 'performance:memoryLeak',
-  
+
   // 错误事件
   ERROR = 'error',
   WARNING = 'warning',
-  
+
   // 自定义事件
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 // 基础事件接口
@@ -72,13 +72,20 @@ export interface BaseEvent {
 
 // 实例事件
 export interface InstanceEvent extends BaseEvent {
-  type: WatermarkEventType.INSTANCE_CREATED | WatermarkEventType.INSTANCE_UPDATED | WatermarkEventType.INSTANCE_DESTROYED | WatermarkEventType.INSTANCE_STATE_CHANGED
+  type:
+    | WatermarkEventType.INSTANCE_CREATED
+    | WatermarkEventType.INSTANCE_UPDATED
+    | WatermarkEventType.INSTANCE_DESTROYED
+    | WatermarkEventType.INSTANCE_STATE_CHANGED
   instance: WatermarkInstance
 }
 
 // 渲染事件
 export interface RenderEvent extends BaseEvent {
-  type: WatermarkEventType.RENDER_START | WatermarkEventType.RENDER_COMPLETE | WatermarkEventType.RENDER_ERROR
+  type:
+    | WatermarkEventType.RENDER_START
+    | WatermarkEventType.RENDER_COMPLETE
+    | WatermarkEventType.RENDER_ERROR
   instanceId: string
   performance?: RenderPerformance
   error?: Error
@@ -86,21 +93,31 @@ export interface RenderEvent extends BaseEvent {
 
 // 安全事件
 export interface SecurityEvent extends BaseEvent {
-  type: WatermarkEventType.SECURITY_VIOLATION | WatermarkEventType.SECURITY_RECOVERED
+  type:
+    | WatermarkEventType.SECURITY_VIOLATION
+    | WatermarkEventType.SECURITY_RECOVERED
   instanceId: string
   violation: SecurityViolation
 }
 
 // 动画事件
 export interface AnimationEvent extends BaseEvent {
-  type: WatermarkEventType.ANIMATION_START | WatermarkEventType.ANIMATION_PAUSE | WatermarkEventType.ANIMATION_RESUME | WatermarkEventType.ANIMATION_STOP | WatermarkEventType.ANIMATION_COMPLETE
+  type:
+    | WatermarkEventType.ANIMATION_START
+    | WatermarkEventType.ANIMATION_PAUSE
+    | WatermarkEventType.ANIMATION_RESUME
+    | WatermarkEventType.ANIMATION_STOP
+    | WatermarkEventType.ANIMATION_COMPLETE
   instanceId: string
   animation: AnimationInstance
 }
 
 // 响应式事件
 export interface ResponsiveEvent extends BaseEvent {
-  type: WatermarkEventType.BREAKPOINT_CHANGED | WatermarkEventType.CONTAINER_RESIZED | WatermarkEventType.ORIENTATION_CHANGED
+  type:
+    | WatermarkEventType.BREAKPOINT_CHANGED
+    | WatermarkEventType.CONTAINER_RESIZED
+    | WatermarkEventType.ORIENTATION_CHANGED
   instanceId: string
   oldValue?: any
   newValue: any
@@ -108,7 +125,9 @@ export interface ResponsiveEvent extends BaseEvent {
 
 // 可见性事件
 export interface VisibilityEvent extends BaseEvent {
-  type: WatermarkEventType.VISIBILITY_CHANGED | WatermarkEventType.INTERSECTION_CHANGED
+  type:
+    | WatermarkEventType.VISIBILITY_CHANGED
+    | WatermarkEventType.INTERSECTION_CHANGED
   instanceId: string
   visible: boolean
   intersectionRatio?: number
@@ -116,7 +135,9 @@ export interface VisibilityEvent extends BaseEvent {
 
 // 性能事件
 export interface PerformanceEvent extends BaseEvent {
-  type: WatermarkEventType.PERFORMANCE_WARNING | WatermarkEventType.MEMORY_LEAK_DETECTED
+  type:
+    | WatermarkEventType.PERFORMANCE_WARNING
+    | WatermarkEventType.MEMORY_LEAK_DETECTED
   instanceId?: string
   metric: string
   value: number
@@ -140,7 +161,7 @@ export interface CustomEvent extends BaseEvent {
 }
 
 // 联合事件类型
-export type WatermarkEvent = 
+export type WatermarkEvent =
   | InstanceEvent
   | RenderEvent
   | SecurityEvent
@@ -152,7 +173,9 @@ export type WatermarkEvent =
   | CustomEvent
 
 // 事件监听器类型
-export type EventListener<T extends WatermarkEvent = WatermarkEvent> = (event: T) => void | Promise<void>
+export type EventListener<T extends WatermarkEvent = WatermarkEvent> = (
+  event: T
+) => void | Promise<void>
 
 // 事件过滤器
 export type EventFilter = (event: WatermarkEvent) => boolean
@@ -160,11 +183,20 @@ export type EventFilter = (event: WatermarkEvent) => boolean
 // 事件管理器接口
 export interface EventManager {
   /** 添加事件监听器 */
-  on<T extends WatermarkEvent>(type: WatermarkEventType, listener: EventListener<T>): void
+  on<T extends WatermarkEvent>(
+    type: WatermarkEventType,
+    listener: EventListener<T>
+  ): void
   /** 添加一次性事件监听器 */
-  once<T extends WatermarkEvent>(type: WatermarkEventType, listener: EventListener<T>): void
+  once<T extends WatermarkEvent>(
+    type: WatermarkEventType,
+    listener: EventListener<T>
+  ): void
   /** 移除事件监听器 */
-  off<T extends WatermarkEvent>(type: WatermarkEventType, listener: EventListener<T>): void
+  off<T extends WatermarkEvent>(
+    type: WatermarkEventType,
+    listener: EventListener<T>
+  ): void
   /** 移除所有监听器 */
   removeAllListeners(type?: WatermarkEventType): void
   /** 触发事件 */
@@ -254,5 +286,5 @@ export const DEFAULT_EVENT_CONFIG: Required<EventConfig> = {
   asyncHandling: true,
   handlerTimeout: 5000,
   logEvents: false,
-  logLevel: 'info'
+  logLevel: 'info',
 }

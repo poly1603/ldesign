@@ -119,12 +119,12 @@ const fieldsStyle = computed(() => {
 
 // 标签相关计算属性
 const labelPosition = computed(
-  () => props.options.layout?.label?.position || 'top',
+  () => props.options.layout?.label?.position || 'top'
 )
 const labelAlign = computed(() => props.options.layout?.label?.align || 'left')
 const labelGap = computed(() => props.options.layout?.label?.gap || 8)
 const showLabelColon = computed(
-  () => props.options.layout?.label?.showColon || false,
+  () => props.options.layout?.label?.showColon || false
 )
 
 // 按钮相关计算属性
@@ -144,17 +144,17 @@ const needsExpandButton = computed(() => {
 
 const shouldShowActionsInLastRow = computed(() => {
   return (
-    hasDefaultRows.value
-    && hasHiddenFields.value
-    && props.options.layout?.button?.position === 'follow-last-row'
+    hasDefaultRows.value &&
+    hasHiddenFields.value &&
+    props.options.layout?.button?.position === 'follow-last-row'
   )
 })
 
 const shouldShowActionsSeparately = computed(() => {
   return (
-    hasDefaultRows.value
-    && hasHiddenFields.value
-    && props.options.layout?.button?.position === 'separate-row'
+    hasDefaultRows.value &&
+    hasHiddenFields.value &&
+    props.options.layout?.button?.position === 'separate-row'
   )
 })
 
@@ -222,8 +222,7 @@ function getFieldStyle(field: FormItemConfig, index: number) {
   if (field.span) {
     if (field.span === 'full') {
       styles.gridColumn = '1 / -1'
-    }
-    else if (typeof field.span === 'number') {
+    } else if (typeof field.span === 'number') {
       styles.gridColumn = `span ${field.span}`
     }
   }
@@ -236,8 +235,7 @@ function getFieldStyle(field: FormItemConfig, index: number) {
 }
 
 function getExpandButtonStyle() {
-  if (!layout.value)
-    return {}
+  if (!layout.value) return {}
 
   const buttonSpan = props.options.layout?.button?.span || 1
   return {
@@ -270,8 +268,7 @@ function getActionsFieldStyle() {
       justifyContent: 'flex-end',
       alignItems: 'center',
     }
-  }
-  else {
+  } else {
     // 如果最后一行已满，按钮组占据新的一行
     return {
       gridColumn: '1 / -1',
@@ -344,7 +341,7 @@ async function handleValidate(): Promise<boolean> {
 
   const isValid = Object.values(results).every(result => result.valid)
   const errors = Object.fromEntries(
-    Object.entries(results).map(([name, result]) => [name, result.errors]),
+    Object.entries(results).map(([name, result]) => [name, result.errors])
   )
 
   emit('validate', isValid, errors)
@@ -365,7 +362,7 @@ async function validateField(fieldName: string) {
       value,
       field.rules,
       data,
-      fieldName,
+      fieldName
     )
     formStateManager.setFieldErrors(fieldName, result.errors)
   }
@@ -376,7 +373,7 @@ function calculateLayout() {
     const containerWidth = containerRef.value.offsetWidth
     layout.value = layoutCalculator.calculateLayout(
       props.options.fields,
-      containerWidth,
+      containerWidth
     )
   }
 }
@@ -396,19 +393,19 @@ onMounted(() => {
 // 监听器
 watch(
   () => props.modelValue,
-  (newValue) => {
+  newValue => {
     formStateManager.setFormData(newValue)
   },
-  { deep: true },
+  { deep: true }
 )
 
 watch(
   () => props.options,
-  (newOptions) => {
+  newOptions => {
     validationEngine.setRulesFromFields(newOptions.fields)
     calculateLayout()
   },
-  { deep: true },
+  { deep: true }
 )
 
 // 提供给子组件的上下文

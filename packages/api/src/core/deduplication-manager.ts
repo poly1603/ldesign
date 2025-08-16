@@ -71,8 +71,7 @@ export class DeduplicationManager {
     try {
       const result = await promise
       return result
-    }
-    finally {
+    } finally {
       // 任务完成后清理
       this.runningTasks.delete(key)
     }
@@ -85,8 +84,7 @@ export class DeduplicationManager {
     try {
       const result = await task()
       return result
-    }
-    catch (error) {
+    } catch (error) {
       // 任务失败时也要清理
       this.runningTasks.delete(key)
       throw error
@@ -143,8 +141,8 @@ export class DeduplicationManager {
       runningTasks: this.runningTasks.size,
       deduplicationRate:
         this.stats.executions > 0
-          ? this.stats.duplications
-          / (this.stats.executions + this.stats.duplications)
+          ? this.stats.duplications /
+            (this.stats.executions + this.stats.duplications)
           : 0,
       savedRequests: this.stats.totalSaved,
     }
@@ -182,7 +180,7 @@ export class DeduplicationManager {
    */
   getAllTaskInfo() {
     return Array.from(this.runningTasks.keys()).map(
-      key => this.getTaskInfo(key)!,
+      key => this.getTaskInfo(key)!
     )
   }
 
@@ -197,8 +195,7 @@ export class DeduplicationManager {
 
     try {
       return (await task.promise) as T | null
-    }
-    catch {
+    } catch {
       return null
     }
   }
@@ -208,7 +205,7 @@ export class DeduplicationManager {
    */
   async waitForAll(): Promise<void> {
     const promises = Array.from(this.runningTasks.values()).map(
-      task => task.promise.catch(() => {}), // 忽略错误，只等待完成
+      task => task.promise.catch(() => {}) // 忽略错误，只等待完成
     )
 
     await Promise.all(promises)

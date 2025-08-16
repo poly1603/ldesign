@@ -18,8 +18,7 @@ const watermarkMixin = {
       try {
         this.watermarkInstance = await createWatermark(container, config)
         this.watermarkStatus = 'active'
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to create watermark:', error)
         this.watermarkStatus = 'error'
       }
@@ -31,8 +30,7 @@ const watermarkMixin = {
           await destroyWatermark(this.watermarkInstance)
           this.watermarkInstance = null
           this.watermarkStatus = 'inactive'
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Failed to destroy watermark:', error)
         }
       }
@@ -322,8 +320,7 @@ export default {
   methods: {
     // 基础水印方法
     async createBasicWatermark() {
-      if (!this.$refs.basicContainer)
-        return
+      if (!this.$refs.basicContainer) return
 
       if (this.basicInstance) {
         await destroyWatermark(this.basicInstance)
@@ -337,8 +334,7 @@ export default {
             color: 'rgba(102, 126, 234, 0.2)',
           },
         })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to create basic watermark:', error)
       }
     },
@@ -352,8 +348,7 @@ export default {
 
     // 生命周期水印方法
     async createLifecycleWatermark() {
-      if (!this.$refs.lifecycleContainer)
-        return
+      if (!this.$refs.lifecycleContainer) return
 
       try {
         this.lifecycleInstance = await createWatermark(
@@ -364,11 +359,10 @@ export default {
               fontSize: 14,
               color: 'rgba(76, 175, 80, 0.2)',
             },
-          },
+          }
         )
         this.watermarkStatus = 'active'
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to create lifecycle watermark:', error)
         this.watermarkStatus = 'error'
       }
@@ -376,8 +370,7 @@ export default {
 
     // 计算属性水印方法
     async updateComputedWatermark() {
-      if (!this.$refs.computedContainer)
-        return
+      if (!this.$refs.computedContainer) return
 
       if (this.computedInstance) {
         await destroyWatermark(this.computedInstance)
@@ -392,18 +385,16 @@ export default {
               fontSize: 16,
               color: 'rgba(255, 152, 0, 0.2)',
             },
-          },
+          }
         )
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to update computed watermark:', error)
       }
     },
 
     // 主题水印方法
     async updateThemeWatermark() {
-      if (!this.$refs.watchContainer)
-        return
+      if (!this.$refs.watchContainer) return
 
       if (this.watchInstance) {
         await destroyWatermark(this.watchInstance)
@@ -414,16 +405,14 @@ export default {
           content: `${this.themeConfig.color} ${this.themeConfig.mode}`,
           style: this.themeWatermarkStyle,
         })
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to update theme watermark:', error)
       }
     },
 
     // 混入水印方法
     async createMixinWatermarkA() {
-      if (!this.$refs.mixinContainerA)
-        return
+      if (!this.$refs.mixinContainerA) return
 
       if (this.mixinInstanceA) {
         await destroyWatermark(this.mixinInstanceA)
@@ -438,10 +427,9 @@ export default {
               fontSize: 14,
               color: 'rgba(233, 30, 99, 0.2)',
             },
-          },
+          }
         )
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to create mixin watermark A:', error)
       }
     },
@@ -454,8 +442,7 @@ export default {
     },
 
     async createMixinWatermarkB() {
-      if (!this.$refs.mixinContainerB)
-        return
+      if (!this.$refs.mixinContainerB) return
 
       if (this.mixinInstanceB) {
         await destroyWatermark(this.mixinInstanceB)
@@ -470,10 +457,9 @@ export default {
               fontSize: 14,
               color: 'rgba(63, 81, 181, 0.2)',
             },
-          },
+          }
         )
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to create mixin watermark B:', error)
       }
     },
@@ -500,8 +486,7 @@ export default {
         if (instance) {
           try {
             await destroyWatermark(instance)
-          }
-          catch (error) {
+          } catch (error) {
             console.error('Failed to destroy watermark:', error)
           }
         }
@@ -513,12 +498,8 @@ export default {
 
 <template>
   <div class="options-examples">
-    <h2 class="section-title">
-      ⚙️ Options API 示例
-    </h2>
-    <p class="section-desc">
-      展示如何使用传统的 Options API 管理水印
-    </p>
+    <h2 class="section-title">⚙️ Options API 示例</h2>
+    <p class="section-desc">展示如何使用传统的 Options API 管理水印</p>
 
     <div class="grid grid-2">
       <!-- 基础 Options API -->
@@ -526,7 +507,7 @@ export default {
         <h3>基础 Options API 用法</h3>
         <div class="form-group">
           <label>水印文字</label>
-          <input v-model="basicConfig.text" type="text">
+          <input v-model="basicConfig.text" type="text" />
         </div>
         <div class="form-group">
           <label>字体大小: {{ basicConfig.fontSize }}px</label>
@@ -535,7 +516,7 @@ export default {
             type="range"
             min="12"
             max="32"
-          >
+          />
         </div>
         <div ref="basicContainer" class="demo-container">
           <div class="demo-content">
@@ -587,7 +568,7 @@ export default {
         <h3>计算属性</h3>
         <div class="form-group">
           <label>用户名</label>
-          <input v-model="userInfo.name" type="text" placeholder="输入用户名">
+          <input v-model="userInfo.name" type="text" placeholder="输入用户名" />
         </div>
         <div class="form-group">
           <label>部门</label>
@@ -595,7 +576,7 @@ export default {
             v-model="userInfo.department"
             type="text"
             placeholder="输入部门"
-          >
+          />
         </div>
         <div class="info-display">
           <p>计算的水印内容: {{ computedWatermarkText }}</p>
@@ -625,29 +606,17 @@ export default {
         <div class="form-group">
           <label>主题色</label>
           <select v-model="themeConfig.color">
-            <option value="blue">
-              蓝色
-            </option>
-            <option value="green">
-              绿色
-            </option>
-            <option value="red">
-              红色
-            </option>
-            <option value="purple">
-              紫色
-            </option>
+            <option value="blue">蓝色</option>
+            <option value="green">绿色</option>
+            <option value="red">红色</option>
+            <option value="purple">紫色</option>
           </select>
         </div>
         <div class="form-group">
           <label>模式</label>
           <select v-model="themeConfig.mode">
-            <option value="light">
-              浅色
-            </option>
-            <option value="dark">
-              深色
-            </option>
+            <option value="light">浅色</option>
+            <option value="dark">深色</option>
           </select>
         </div>
         <div ref="watchContainer" class="demo-container">

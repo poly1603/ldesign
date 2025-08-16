@@ -104,9 +104,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   resolve: {
     alias: {
-      '@ldesign/http': '@ldesign/http/es'
-    }
-  }
+      '@ldesign/http': '@ldesign/http/es',
+    },
+  },
 })
 ```
 
@@ -118,9 +118,9 @@ export default defineConfig({
 module.exports = {
   resolve: {
     alias: {
-      '@ldesign/http': '@ldesign/http/es'
-    }
-  }
+      '@ldesign/http': '@ldesign/http/es',
+    },
+  },
 }
 ```
 
@@ -133,15 +133,14 @@ module.exports = {
 import { createHttpClient } from '@ldesign/http'
 
 const http = createHttpClient({
-  baseURL: 'https://jsonplaceholder.typicode.com'
+  baseURL: 'https://jsonplaceholder.typicode.com',
 })
 
 async function test() {
   try {
     const response = await http.get('/posts/1')
     console.log('安装成功！', response.data)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('安装验证失败：', error)
   }
 }

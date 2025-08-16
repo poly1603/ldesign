@@ -56,7 +56,7 @@ export default defineConfig({
         '**/types/**',
       ],
       thresholds: {
-        'global': {
+        global: {
           branches: 80,
           functions: 80,
           lines: 80,

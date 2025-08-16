@@ -37,13 +37,15 @@ class CounterStore extends BaseStore {
 export const useCounterStore = createStore('counter', {
   state: () => ({ count: 0 }),
   actions: {
-    increment() { this.count++ }
-  }
+    increment() {
+      this.count++
+    },
+  },
 })
 
 // 3. Provider 方式
 const CounterProvider = createStoreProvider({
-  stores: { counter: CounterStore }
+  stores: { counter: CounterStore },
 })
 ```
 
@@ -60,6 +62,7 @@ A: 学习成本相对较低：
 ### Q: 支持哪些 Vue 版本？
 
 A: 目前只支持 Vue 3.0+，因为依赖于：
+
 - Composition API
 - Pinia (Vue 3 专用)
 - 现代 JavaScript 特性
@@ -67,6 +70,7 @@ A: 目前只支持 Vue 3.0+，因为依赖于：
 ### Q: 是否支持服务端渲染 (SSR)？
 
 A: 完全支持，包括：
+
 - **Nuxt.js**：提供专门的 Nuxt 模块
 - **Vite SSR**：开箱即用
 - **自定义 SSR**：兼容所有 Vue 3 SSR 方案
@@ -74,7 +78,7 @@ A: 完全支持，包括：
 ```typescript
 // Nuxt 配置
 export default defineNuxtConfig({
-  modules: ['@ldesign/store/nuxt']
+  modules: ['@ldesign/store/nuxt'],
 })
 ```
 
@@ -154,9 +158,9 @@ A: 使用 @PersistentState 装饰器：
 
 ```typescript
 class SettingsStore extends BaseStore {
-  @PersistentState({ 
+  @PersistentState({
     key: 'user-settings',
-    storage: localStorage 
+    storage: localStorage,
   })
   settings: UserSettings = defaultSettings
 }
@@ -170,7 +174,7 @@ A: 多种方式：
 // 1. 直接引用
 class OrderStore extends BaseStore {
   private userStore = new UserStore('user')
-  
+
   @Action()
   createOrder() {
     if (!this.userStore.isLoggedIn) {
@@ -201,7 +205,7 @@ A: 可以创建自定义装饰器：
 import { createDecorator } from '@ldesign/store'
 
 // 创建自定义装饰器
-export const Validate = createDecorator('validate', (options) => {
+export const Validate = createDecorator('validate', options => {
   return (target, propertyKey, descriptor) => {
     // 装饰器逻辑
   }
@@ -226,7 +230,7 @@ class AdminStore extends BaseStore {
   deleteUser(id: string) {
     // 只有有权限的用户才能执行
   }
-  
+
   @RequireRole('admin')
   @Action()
   systemSettings() {
@@ -240,18 +244,21 @@ class AdminStore extends BaseStore {
 A: 多种优化策略：
 
 1. **使用 Store 池**
+
    ```typescript
    @PooledStore({ maxSize: 20 })
    class FrequentStore extends BaseStore {}
    ```
 
 2. **启用缓存**
+
    ```typescript
    @CachedGetter(['data'])
    get expensiveComputation() {}
    ```
 
 3. **性能监控**
+
    ```typescript
    @MonitorAction
    @Action()

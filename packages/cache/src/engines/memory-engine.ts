@@ -34,8 +34,8 @@ export class MemoryEngine extends BaseStorageEngine {
    * 启动清理定时器
    */
   private startCleanupTimer(interval: number): void {
-    const setIntervalFn
-      = typeof window !== 'undefined' ? window.setInterval : global.setInterval
+    const setIntervalFn =
+      typeof window !== 'undefined' ? window.setInterval : global.setInterval
     this.cleanupTimer = setIntervalFn(() => {
       this.cleanup().catch(console.error)
     }, interval) as unknown as number
@@ -155,7 +155,7 @@ export class MemoryEngine extends BaseStorageEngine {
   private async evictOldestItems(requiredSpace: number): Promise<void> {
     // 按创建时间排序，删除最旧的项
     const items = Array.from(this.storage.entries()).sort(
-      ([, a], [, b]) => a.createdAt - b.createdAt,
+      ([, a], [, b]) => a.createdAt - b.createdAt
     )
 
     let freedSpace = 0
@@ -230,8 +230,8 @@ export class MemoryEngine extends BaseStorageEngine {
     totalItems: number
     totalSize: number
     expiredItems: number
-    oldestItem?: { key: string, age: number }
-    newestItem?: { key: string, age: number }
+    oldestItem?: { key: string; age: number }
+    newestItem?: { key: string; age: number }
   }> {
     const now = Date.now()
     let expiredItems = 0
@@ -274,8 +274,8 @@ export class MemoryEngine extends BaseStorageEngine {
    */
   async destroy(): Promise<void> {
     if (this.cleanupTimer) {
-      const clearIntervalFn
-        = typeof window !== 'undefined'
+      const clearIntervalFn =
+        typeof window !== 'undefined'
           ? window.clearInterval
           : global.clearInterval
       clearIntervalFn(this.cleanupTimer)

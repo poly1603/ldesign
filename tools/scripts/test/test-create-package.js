@@ -22,10 +22,13 @@ if (fs.existsSync(testPackageDir)) {
 try {
   // 测试创建包
   console.log('📦 创建测试包...')
-  execSync(`npx tsx tools/package/create-package.ts ${testPackageName} --vue --description "测试包"`, {
-    cwd: path.resolve(__dirname, '..'),
-    stdio: 'inherit',
-  })
+  execSync(
+    `npx tsx tools/package/create-package.ts ${testPackageName} --vue --description "测试包"`,
+    {
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'inherit',
+    }
+  )
 
   // 验证包是否创建成功
   if (fs.existsSync(testPackageDir)) {
@@ -60,8 +63,7 @@ try {
       const dirPath = path.join(testPackageDir, dir)
       if (fs.existsSync(dirPath)) {
         console.log(`  ✅ ${dir}/`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${dir}/ - 缺失`)
       }
     }
@@ -71,8 +73,7 @@ try {
       const filePath = path.join(testPackageDir, file)
       if (fs.existsSync(filePath)) {
         console.log(`  ✅ ${file}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${file} - 缺失`)
       }
     }
@@ -84,19 +85,36 @@ try {
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
       const checks = [
-        { key: 'name', expected: '@ldesign/test-package', actual: packageJson.name },
-        { key: 'description', expected: '测试包', actual: packageJson.description },
+        {
+          key: 'name',
+          expected: '@ldesign/test-package',
+          actual: packageJson.name,
+        },
+        {
+          key: 'description',
+          expected: '测试包',
+          actual: packageJson.description,
+        },
         { key: 'type', expected: 'module', actual: packageJson.type },
-        { key: 'scripts.build', expected: 'rollup -c', actual: packageJson.scripts?.build },
-        { key: 'scripts.test', expected: 'vitest', actual: packageJson.scripts?.test },
+        {
+          key: 'scripts.build',
+          expected: 'rollup -c',
+          actual: packageJson.scripts?.build,
+        },
+        {
+          key: 'scripts.test',
+          expected: 'vitest',
+          actual: packageJson.scripts?.test,
+        },
       ]
 
       for (const check of checks) {
         if (check.actual === check.expected) {
           console.log(`  ✅ ${check.key}: ${check.actual}`)
-        }
-        else {
-          console.log(`  ❌ ${check.key}: 期望 "${check.expected}", 实际 "${check.actual}"`)
+        } else {
+          console.log(
+            `  ❌ ${check.key}: 期望 "${check.expected}", 实际 "${check.actual}"`
+          )
         }
       }
     }
@@ -117,8 +135,7 @@ try {
         const dirPath = path.join(testPackageDir, dir)
         if (fs.existsSync(dirPath)) {
           console.log(`  ✅ ${dir}/ 生成成功`)
-        }
-        else {
+        } else {
           console.log(`  ❌ ${dir}/ 生成失败`)
           buildSuccess = false
         }
@@ -126,23 +143,18 @@ try {
 
       if (buildSuccess) {
         console.log('  ✅ 构建测试通过')
-      }
-      else {
+      } else {
         console.log('  ❌ 构建测试失败')
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log('  ❌ 构建失败:', error.message.split('\n')[0])
     }
-  }
-  else {
+  } else {
     console.log('❌ 测试包创建失败')
   }
-}
-catch (error) {
+} catch (error) {
   console.error('❌ 测试失败:', error.message)
-}
-finally {
+} finally {
   // 清理测试包
   if (fs.existsSync(testPackageDir)) {
     console.log('\n🧹 清理测试包...')

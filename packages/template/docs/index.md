@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "LDesign Template"
-  text: "多模板管理系统"
-  tagline: "为 Vue 3 而生的智能模板管理及动态渲染解决方案"
+  name: 'LDesign Template'
+  text: '多模板管理系统'
+  tagline: '为 Vue 3 而生的智能模板管理及动态渲染解决方案'
   image:
     src: /logo.svg
     alt: LDesign Template
@@ -80,11 +80,7 @@ app.use(TemplatePlugin)
 
 ```vue
 <template>
-  <LTemplateRenderer
-    category="login"
-    device="desktop"
-    template="classic"
-  />
+  <LTemplateRenderer category="login" device="desktop" template="classic" />
 </template>
 ```
 

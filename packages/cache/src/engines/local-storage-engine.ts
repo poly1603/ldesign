@@ -29,8 +29,7 @@ export class LocalStorageEngine extends BaseStorageEngine {
       window.localStorage.setItem(testKey, 'test')
       window.localStorage.removeItem(testKey)
       return true
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -77,11 +76,10 @@ export class LocalStorageEngine extends BaseStorageEngine {
     try {
       window.localStorage.setItem(fullKey, data)
       await this.updateUsedSize()
-    }
-    catch (error) {
+    } catch (error) {
       if (
-        error instanceof DOMException
-        && error.name === 'QuotaExceededError'
+        error instanceof DOMException &&
+        error.name === 'QuotaExceededError'
       ) {
         throw new Error('localStorage quota exceeded')
       }
@@ -113,8 +111,7 @@ export class LocalStorageEngine extends BaseStorageEngine {
       }
 
       return value
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`Error getting item from localStorage:`, error)
       return null
     }

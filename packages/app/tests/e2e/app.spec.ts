@@ -41,7 +41,7 @@ test.describe('LDesign Engine Demo App', () => {
 
     // Check if sidebar is collapsed
     await expect(page.locator('.layout')).toHaveClass(
-      /layout-sidebar-collapsed/,
+      /layout-sidebar-collapsed/
     )
 
     // Click again to expand
@@ -49,7 +49,7 @@ test.describe('LDesign Engine Demo App', () => {
 
     // Check if sidebar is expanded
     await expect(page.locator('.layout')).not.toHaveClass(
-      /layout-sidebar-collapsed/,
+      /layout-sidebar-collapsed/
     )
   })
 
@@ -124,7 +124,7 @@ test.describe('LDesign Engine Demo App', () => {
   test('should handle errors gracefully', async ({ page }) => {
     // Listen for console errors
     const errors: string[] = []
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(msg.text())
       }
@@ -141,9 +141,9 @@ test.describe('LDesign Engine Demo App', () => {
     // Check that no critical errors occurred
     const criticalErrors = errors.filter(
       error =>
-        error.includes('TypeError')
-        || error.includes('ReferenceError')
-        || error.includes('Cannot read property'),
+        error.includes('TypeError') ||
+        error.includes('ReferenceError') ||
+        error.includes('Cannot read property')
     )
 
     expect(criticalErrors).toHaveLength(0)

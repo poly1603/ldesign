@@ -17,7 +17,7 @@ const selectedTheme = ref(currentTheme.value)
 const systemTheme = ref(getSystemTheme())
 
 // 监听当前主题变化，同步选择器
-watch(currentTheme, (newTheme) => {
+watch(currentTheme, newTheme => {
   selectedTheme.value = newTheme
 })
 
@@ -73,9 +73,7 @@ async function _resetToDefault() {
 
 <template>
   <div class="card">
-    <h2 class="card-title">
-      🎛️ 主题控制
-    </h2>
+    <h2 class="card-title">🎛️ 主题控制</h2>
 
     <div class="control-group">
       <label for="theme-select">选择主题:</label>
@@ -85,11 +83,7 @@ async function _resetToDefault() {
         class="theme-select"
         @change="handleThemeChange"
       >
-        <option
-          v-for="theme in availableThemes"
-          :key="theme"
-          :value="theme"
-        >
+        <option v-for="theme in availableThemes" :key="theme" :value="theme">
           {{ getThemeDisplayName(theme) }}
         </option>
       </select>
@@ -103,32 +97,19 @@ async function _resetToDefault() {
         class="mode-select"
         @change="setMode(($event.target as HTMLSelectElement).value as any)"
       >
-        <option value="light">
-          亮色模式
-        </option>
-        <option value="dark">
-          暗色模式
-        </option>
+        <option value="light">亮色模式</option>
+        <option value="dark">暗色模式</option>
       </select>
     </div>
 
     <div class="control-group">
-      <button
-        class="btn btn-primary"
-        @click="toggleMode"
-      >
+      <button class="btn btn-primary" @click="toggleMode">
         切换到{{ currentMode === 'light' ? '暗色' : '亮色' }}模式
       </button>
-      <button
-        class="btn btn-secondary"
-        @click="handleRandomTheme"
-      >
+      <button class="btn btn-secondary" @click="handleRandomTheme">
         随机主题
       </button>
-      <button
-        class="btn btn-secondary"
-        @click="syncSystemTheme"
-      >
+      <button class="btn btn-secondary" @click="syncSystemTheme">
         同步系统主题
       </button>
     </div>
@@ -140,7 +121,9 @@ async function _resetToDefault() {
       </div>
       <div class="status-item">
         <span class="label">当前模式:</span>
-        <span class="value">{{ currentMode === 'light' ? '亮色模式' : '暗色模式' }}</span>
+        <span class="value">{{
+          currentMode === 'light' ? '亮色模式' : '暗色模式'
+        }}</span>
       </div>
       <div class="status-item">
         <span class="label">系统主题:</span>

@@ -95,8 +95,7 @@ class BuildValidator {
         try {
           const userConfig = JSON.parse(fs.readFileSync(configFile, 'utf8'))
           return this.mergeConfig(defaultConfig, userConfig)
-        }
-        catch (err) {
+        } catch (err) {
           log(`⚠️  配置文件加载失败: ${configFile} - ${err.message}`, 'yellow')
         }
       }
@@ -110,8 +109,7 @@ class BuildValidator {
         if (packageJson.buildValidator) {
           return this.mergeConfig(defaultConfig, packageJson.buildValidator)
         }
-      }
-      catch (err) {
+      } catch (err) {
         // 忽略错误
       }
     }
@@ -125,12 +123,11 @@ class BuildValidator {
 
     for (const key in userConfig) {
       if (
-        typeof userConfig[key] === 'object'
-        && !Array.isArray(userConfig[key])
+        typeof userConfig[key] === 'object' &&
+        !Array.isArray(userConfig[key])
       ) {
         merged[key] = { ...defaultConfig[key], ...userConfig[key] }
-      }
-      else {
+      } else {
         merged[key] = userConfig[key]
       }
     }
@@ -183,8 +180,7 @@ class BuildValidator {
     // 检查是否安装了playwright
     try {
       await import('playwright')
-    }
-    catch (err) {
+    } catch (err) {
       log('⚠️  未安装playwright，跳过浏览器测试', 'yellow')
       log('   安装命令: npm install -D playwright', 'gray')
       return true
@@ -234,8 +230,7 @@ class BuildValidator {
 
     if (allPassed) {
       log('🎉 所有校验通过！构建产物质量良好', 'green')
-    }
-    else {
+    } else {
       log('❌ 部分校验失败，请查看上述详细信息', 'red')
     }
 
@@ -271,8 +266,7 @@ class BuildValidator {
       const success = this.generateReport(results)
 
       return success
-    }
-    catch (err) {
+    } catch (err) {
       log(`❌ 校验过程出错: ${err.message}`, 'red')
       if (this.options.verbose) {
         console.error(err.stack)
@@ -287,8 +281,7 @@ class BuildValidator {
     if (fs.existsSync(packageJsonPath)) {
       try {
         return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  package.json加载失败: ${err.message}`, 'yellow')
       }
     }
@@ -373,19 +366,15 @@ async function main() {
     if (arg === '--config' && args[i + 1]) {
       options.config = args[i + 1]
       i++
-    }
-    else if (arg === '--package-root' && args[i + 1]) {
+    } else if (arg === '--package-root' && args[i + 1]) {
       options.packageRoot = args[i + 1]
       i++
-    }
-    else if (arg === '--verbose') {
+    } else if (arg === '--verbose') {
       options.verbose = true
-    }
-    else if (arg === '--create-config' && args[i + 1]) {
+    } else if (arg === '--create-config' && args[i + 1]) {
       BuildValidator.createConfigTemplate(args[i + 1])
       process.exit(0)
-    }
-    else if (arg === '--help') {
+    } else if (arg === '--help') {
       console.log(`
 使用方法: node validate-build.js [选项]
 
@@ -410,8 +399,7 @@ async function main() {
     const validator = new BuildValidator(options)
     const success = await validator.validate()
     process.exit(success ? 0 : 1)
-  }
-  catch (err) {
+  } catch (err) {
     log(`❌ 校验过程出错: ${err.message}`, 'red')
     if (options.verbose) {
       console.error(err.stack)

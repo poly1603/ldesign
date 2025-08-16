@@ -1,6 +1,7 @@
 # 3DES (Triple DES) 加密示例
 
-3DES (Triple Data Encryption Standard) 是 DES 的增强版本，使用三次 DES 加密来提高安全性，密钥长度为 192 位（24 字节）。
+3DES (Triple Data Encryption Standard) 是 DES 的增强版本，使用三次 DES 加密来提高安全性，密钥长度为
+192 位（24 字节）。
 
 ## 基础用法
 
@@ -18,14 +19,14 @@ console.log('加密结果:', encrypted)
 
 // 解密
 const decrypted = tripledes.decrypt(encrypted.data!, key, {
-  iv: encrypted.iv
+  iv: encrypted.iv,
 })
 console.log('解密结果:', decrypted.data)
 
 // 使用 des3 别名（功能相同）
 const encrypted2 = des3.encrypt(data, key)
 const decrypted2 = des3.decrypt(encrypted2.data!, key, {
-  iv: encrypted2.iv
+  iv: encrypted2.iv,
 })
 ```
 
@@ -39,22 +40,22 @@ const key = 'secret123456789012345678'
 
 // CBC 模式（默认）
 const cbcEncrypted = tripledes.encrypt(data, key, {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 // ECB 模式
 const ecbEncrypted = tripledes.encrypt(data, key, {
-  mode: 'ECB'
+  mode: 'ECB',
 })
 
 // CFB 模式
 const cfbEncrypted = tripledes.encrypt(data, key, {
-  mode: 'CFB'
+  mode: 'CFB',
 })
 
 // OFB 模式
 const ofbEncrypted = tripledes.encrypt(data, key, {
-  mode: 'OFB'
+  mode: 'OFB',
 })
 ```
 
@@ -72,13 +73,13 @@ const customIV = RandomUtils.generateIV(8) // 3DES IV 长度为 8 字节
 // 使用自定义 IV 加密
 const encrypted = tripledes.encrypt(data, key, {
   iv: customIV,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 // 解密时使用相同的 IV
 const decrypted = tripledes.decrypt(encrypted.data!, key, {
   iv: customIV,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 ```
 
@@ -93,7 +94,7 @@ const key = 'secret123456789012345678'
 
 // 加密
 const encrypted = tripleDesEncryptor.encrypt(data, key, {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 if (encrypted.success) {
@@ -104,17 +105,15 @@ if (encrypted.success) {
   // 解密
   const decrypted = tripleDesEncryptor.decrypt(encrypted.data!, key, {
     iv: encrypted.iv,
-    mode: 'CBC'
+    mode: 'CBC',
   })
 
   if (decrypted.success) {
     console.log('解密成功:', decrypted.data)
-  }
-  else {
+  } else {
     console.error('解密失败:', decrypted.error)
   }
-}
-else {
+} else {
   console.error('加密失败:', encrypted.error)
 }
 ```
@@ -133,7 +132,7 @@ console.log('密钥长度:', randomKey.length)
 const data = 'Hello, World!'
 const encrypted = tripledes.encrypt(data, randomKey)
 const decrypted = tripledes.decrypt(encrypted.data!, randomKey, {
-  iv: encrypted.iv
+  iv: encrypted.iv,
 })
 
 // 密钥长度处理
@@ -152,7 +151,7 @@ import { cryptoManager } from '@ldesign/crypto'
 const data = [
   { id: '1', text: 'First message' },
   { id: '2', text: 'Second message' },
-  { id: '3', text: 'Third message' }
+  { id: '3', text: 'Third message' },
 ]
 
 const key = 'secret123456789012345678'
@@ -163,7 +162,7 @@ const batchOperations = data.map(item => ({
   data: item.text,
   key,
   algorithm: '3DES' as const,
-  options: { mode: 'CBC' }
+  options: { mode: 'CBC' },
 }))
 
 const encryptedResults = await cryptoManager.batchEncrypt(batchOperations)
@@ -178,8 +177,8 @@ const decryptOperations = encryptedResults.map(result => ({
   algorithm: '3DES' as const,
   options: {
     mode: 'CBC',
-    iv: result.result.iv
-  }
+    iv: result.result.iv,
+  },
 }))
 
 const decryptedResults = await cryptoManager.batchDecrypt(decryptOperations)
@@ -297,27 +296,17 @@ function clearAll() {
           {{ isValidKey ? '✓' : '✗' }}
         </span>
       </label>
-      <input v-model="key" placeholder="输入密钥（建议24字符）">
-      <button class="btn-small" @click="generateRandomKey">
-        生成随机密钥
-      </button>
+      <input v-model="key" placeholder="输入密钥（建议24字符）" />
+      <button class="btn-small" @click="generateRandomKey">生成随机密钥</button>
     </div>
 
     <div class="form-group">
       <label>加密模式:</label>
       <select v-model="mode">
-        <option value="CBC">
-          CBC
-        </option>
-        <option value="ECB">
-          ECB
-        </option>
-        <option value="CFB">
-          CFB
-        </option>
-        <option value="OFB">
-          OFB
-        </option>
+        <option value="CBC">CBC</option>
+        <option value="ECB">ECB</option>
+        <option value="CFB">CFB</option>
+        <option value="OFB">OFB</option>
       </select>
     </div>
 
@@ -328,14 +317,10 @@ function clearAll() {
       <button :disabled="isProcessing || !encrypted" @click="handleDecrypt">
         {{ isProcessing ? '处理中...' : '解密' }}
       </button>
-      <button class="btn-secondary" @click="clearAll">
-        清空
-      </button>
+      <button class="btn-secondary" @click="clearAll">清空</button>
     </div>
 
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
+    <div v-if="error" class="error">错误: {{ error }}</div>
 
     <div v-if="encrypted" class="result">
       <h4>加密结果:</h4>

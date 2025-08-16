@@ -91,20 +91,15 @@ export default defineComponent({
               </h3>
               <div style={{ fontSize: '14px', color: '#4a5568' }}>
                 <p style={{ margin: '8px 0' }}>
-                  <strong>设备类型:</strong>
-                  {' '}
-                  {currentDeviceName}
+                  <strong>设备类型:</strong> {currentDeviceName}
                 </p>
                 <p style={{ margin: '8px 0' }}>
-                  <strong>屏幕尺寸:</strong>
-                  {' '}
+                  <strong>屏幕尺寸:</strong>{' '}
                   {deviceInfo.value?.screenSize || '未知'}
                 </p>
                 {$i18n && (
                   <p style={{ margin: '8px 0' }}>
-                    <strong>语言:</strong>
-                    {' '}
-                    {$i18n.getCurrentLanguage()}
+                    <strong>语言:</strong> {$i18n.getCurrentLanguage()}
                   </p>
                 )}
               </div>
@@ -179,9 +174,7 @@ export default defineComponent({
                   gap: '8px',
                 }}
               >
-                🔑
-                {' '}
-                <span>登录系统</span>
+                🔑 <span>登录系统</span>
               </button>
 
               {isRouteSupported('/editor') && (
@@ -202,9 +195,7 @@ export default defineComponent({
                     gap: '8px',
                   }}
                 >
-                  ✏️
-                  {' '}
-                  <span>编辑器</span>
+                  ✏️ <span>编辑器</span>
                 </button>
               )}
 
@@ -230,9 +221,7 @@ export default defineComponent({
                 }}
                 disabled={!isRouteSupported('/admin')}
               >
-                ⚙️
-                {' '}
-                <span>管理后台</span>
+                ⚙️ <span>管理后台</span>
                 {!isRouteSupported('/admin') && (
                   <span style={{ fontSize: '12px' }}>(仅桌面端)</span>
                 )}

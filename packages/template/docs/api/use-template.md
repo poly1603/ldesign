@@ -7,13 +7,7 @@
 ```typescript
 import { useTemplate } from '@ldesign/template'
 
-const {
-  currentTemplate,
-  loading,
-  error,
-  render,
-  clearCache
-} = useTemplate()
+const { currentTemplate, loading, error, render, clearCache } = useTemplate()
 ```
 
 ## 返回值
@@ -58,8 +52,8 @@ await render({
   device: 'desktop',
   template: 'login',
   props: {
-    title: '用户登录'
-  }
+    title: '用户登录',
+  },
 })
 ```
 
@@ -78,7 +72,7 @@ await render({
 ```typescript
 await preload([
   { category: 'auth', device: 'desktop', template: 'login' },
-  { category: 'dashboard', device: 'desktop', template: 'admin' }
+  { category: 'dashboard', device: 'desktop', template: 'admin' },
 ])
 ```
 
@@ -109,17 +103,11 @@ clearCache('auth', 'desktop', 'login')
 import { useTemplate } from '@ldesign/template'
 import { ref } from 'vue'
 
-const {
-  currentTemplate,
-  loading,
-  error,
-  render,
-  clearCache
-} = useTemplate()
+const { currentTemplate, loading, error, render, clearCache } = useTemplate()
 
 const templateProps = ref({
   title: '示例应用',
-  onLogin: handleLogin
+  onLogin: handleLogin,
 })
 
 const lastRenderOptions = ref(null)
@@ -128,7 +116,7 @@ async function loadLogin() {
   const options = {
     category: 'auth',
     device: 'desktop',
-    template: 'login'
+    template: 'login',
   }
 
   lastRenderOptions.value = options
@@ -139,7 +127,7 @@ async function loadDashboard() {
   const options = {
     category: 'dashboard',
     device: 'desktop',
-    template: 'admin'
+    template: 'admin',
   }
 
   lastRenderOptions.value = options
@@ -165,27 +153,17 @@ function handleLogin(credentials) {
 <template>
   <div class="template-container">
     <div class="controls">
-      <button @click="loadLogin">
-        加载登录页
-      </button>
-      <button @click="loadDashboard">
-        加载仪表板
-      </button>
-      <button @click="clearAll">
-        清空缓存
-      </button>
+      <button @click="loadLogin">加载登录页</button>
+      <button @click="loadDashboard">加载仪表板</button>
+      <button @click="clearAll">清空缓存</button>
     </div>
 
     <div class="template-display">
-      <div v-if="loading" class="loading">
-        正在加载模板...
-      </div>
+      <div v-if="loading" class="loading">正在加载模板...</div>
 
       <div v-else-if="error" class="error">
         加载失败: {{ error.message }}
-        <button @click="retry">
-          重试
-        </button>
+        <button @click="retry">重试</button>
       </div>
 
       <component
@@ -195,9 +173,7 @@ function handleLogin(credentials) {
         @login="handleLogin"
       />
 
-      <div v-else class="empty">
-        请选择一个模板
-      </div>
+      <div v-else class="empty">请选择一个模板</div>
     </div>
   </div>
 </template>
@@ -219,17 +195,17 @@ const templateToLoad = computed(() => {
   const templateMap = {
     admin: 'admin-dashboard',
     user: 'user-dashboard',
-    guest: 'guest-dashboard'
+    guest: 'guest-dashboard',
   }
   return templateMap[userRole.value]
 })
 
 // 监听角色变化，自动加载对应模板
-watch(userRole, async (newRole) => {
+watch(userRole, async newRole => {
   await render({
     category: 'dashboard',
     device: 'desktop',
-    template: templateToLoad.value
+    template: templateToLoad.value,
   })
 })
 ```
@@ -244,10 +220,9 @@ async function loadTemplateWithErrorHandling() {
     await render({
       category: 'auth',
       device: 'desktop',
-      template: 'login'
+      template: 'login',
     })
-  }
-  catch (err) {
+  } catch (err) {
     console.error('模板加载失败:', err)
 
     // 尝试加载备用模板
@@ -255,10 +230,9 @@ async function loadTemplateWithErrorHandling() {
       await render({
         category: 'auth',
         device: 'desktop',
-        template: 'simple-login'
+        template: 'simple-login',
       })
-    }
-    catch (fallbackErr) {
+    } catch (fallbackErr) {
       console.error('备用模板也加载失败:', fallbackErr)
     }
   }
@@ -278,7 +252,7 @@ onMounted(async () => {
   await preload([
     { category: 'layout', device: 'desktop', template: 'header' },
     { category: 'layout', device: 'desktop', template: 'footer' },
-    { category: 'auth', device: 'desktop', template: 'login' }
+    { category: 'auth', device: 'desktop', template: 'login' },
   ])
 })
 ```

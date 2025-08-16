@@ -646,7 +646,11 @@ class UserStore extends BaseStore implements UserState, UserActions, UserGetters
 
   @Getter()
   get initials(): string {
-    return this.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    return this.name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
   }
 
   @Getter()
@@ -675,25 +679,26 @@ interface CounterGetters {
   isPositive: boolean
 }
 
-export const useCounter = createStore<
-  CounterState & CounterActions & CounterGetters
->('counter', () => {
-  const count = ref(0)
-  const step = ref(1)
+export const useCounter = createStore<CounterState & CounterActions & CounterGetters>(
+  'counter',
+  () => {
+    const count = ref(0)
+    const step = ref(1)
 
-  const increment = () => count.value += step.value
-  const decrement = () => count.value -= step.value
-  const reset = () => count.value = 0
+    const increment = () => (count.value += step.value)
+    const decrement = () => (count.value -= step.value)
+    const reset = () => (count.value = 0)
 
-  const doubleCount = computed(() => count.value * 2)
-  const isPositive = computed(() => count.value > 0)
+    const doubleCount = computed(() => count.value * 2)
+    const isPositive = computed(() => count.value > 0)
 
-  return {
-    state: { count, step },
-    actions: { increment, decrement, reset },
-    getters: { doubleCount, isPositive }
+    return {
+      state: { count, step },
+      actions: { increment, decrement, reset },
+      getters: { doubleCount, isPositive },
+    }
   }
-})
+)
 ```
 
 ## 常见问题

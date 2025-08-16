@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -79,7 +79,7 @@
       // 模拟 HTTP 客户端
       class MockHttpClient {
         async request(config) {
-          await new Promise((resolve) => setTimeout(resolve, 500)) // 模拟延迟
+          await new Promise(resolve => setTimeout(resolve, 500)) // 模拟延迟
 
           if (config.url.includes('error')) {
             throw new Error('Mock error response')

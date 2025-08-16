@@ -71,12 +71,9 @@ function handleChange(event: Event) {
 
   // 尝试转换为原始类型
   let parsedValue = value
-  if (value === 'true')
-    parsedValue = true
-  else if (value === 'false')
-    parsedValue = false
-  else if (!isNaN(Number(value)) && value !== '')
-    parsedValue = Number(value)
+  if (value === 'true') parsedValue = true
+  else if (value === 'false') parsedValue = false
+  else if (!isNaN(Number(value)) && value !== '') parsedValue = Number(value)
 
   emit('update:modelValue', parsedValue)
   emit('change', parsedValue)
@@ -111,7 +108,7 @@ function handleChange(event: Event) {
           type="radio"
           class="form-radio__input"
           @change="handleChange"
-        >
+        />
         <span class="form-radio__indicator" />
         <span class="form-radio__text">{{ option.label }}</span>
       </label>
@@ -232,7 +229,8 @@ function handleChange(event: Event) {
   border-color: var(--form-border-default, #d9d9d9);
 }
 
-.form-radio__option--disabled.form-radio__option--checked .form-radio__indicator::after {
+.form-radio__option--disabled.form-radio__option--checked
+  .form-radio__indicator::after {
   background: var(--form-text-disabled, #bfbfbf);
 }
 

@@ -1,5 +1,9 @@
 import type { ColorMode } from '@ldesign/color'
-import { generateColorConfig, generateColorScales, injectThemeVariables } from '@ldesign/color'
+import {
+  generateColorConfig,
+  generateColorScales,
+  injectThemeVariables,
+} from '@ldesign/color'
 import { ThemePlugin } from '@ldesign/color/vue'
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -22,12 +26,11 @@ app.use(ThemePlugin, {
       const colorConfig = generateColorConfig(primaryColor)
       // 过滤掉undefined的颜色
       const validColors = Object.fromEntries(
-        Object.entries(colorConfig).filter(([_, value]) => value !== undefined),
+        Object.entries(colorConfig).filter(([_, value]) => value !== undefined)
       ) as Record<string, string>
       const scales = generateColorScales(validColors, mode)
       injectThemeVariables(colorConfig, scales, undefined, mode)
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('CSS变量注入失败:', error)
     }
   },

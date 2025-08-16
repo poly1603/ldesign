@@ -40,7 +40,7 @@ export function useStoreHook<T extends Store>(store: T) {
  */
 export function useSelector<T extends Store, R>(
   store: T,
-  selector: (state: T['$state']) => R,
+  selector: (state: T['$state']) => R
 ): ComputedRef<R> {
   return computed(() => selector(store.$state))
 }
@@ -54,7 +54,7 @@ export function useStateWatch<T extends Store>(
   options?: {
     deep?: boolean
     immediate?: boolean
-  },
+  }
 ) {
   const stopWatcher = watch(() => store.$state, callback as any, {
     deep: options?.deep ?? true,
@@ -72,14 +72,14 @@ export function useStateWatch<T extends Store>(
  * Action 执行状态 Hook
  */
 export function useActionState<T extends (...args: any[]) => any>(
-  action: T,
+  action: T
 ): {
-    loading: Ref<boolean>
-    error: Ref<Error | null>
-    data: Ref<ReturnType<T> | null>
-    execute: (...args: Parameters<T>) => Promise<ReturnType<T>>
-    reset: () => void
-  } {
+  loading: Ref<boolean>
+  error: Ref<Error | null>
+  data: Ref<ReturnType<T> | null>
+  execute: (...args: Parameters<T>) => Promise<ReturnType<T>>
+  reset: () => void
+} {
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const data = ref<ReturnType<T> | null>(null)
@@ -92,12 +92,10 @@ export function useActionState<T extends (...args: any[]) => any>(
       const result = await action(...args)
       data.value = result
       return result
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -123,7 +121,7 @@ export function useActionState<T extends (...args: any[]) => any>(
 export function useDebounce<T>(value: Ref<T>, delay: number): ComputedRef<T> {
   const debouncedValue = ref(value.value) as Ref<T>
 
-  watch(value, (newValue) => {
+  watch(value, newValue => {
     const timer = setTimeout(() => {
       debouncedValue.value = newValue
     }, delay)
@@ -139,12 +137,12 @@ export function useDebounce<T>(value: Ref<T>, delay: number): ComputedRef<T> {
  */
 export function useThrottle<T>(
   value: Ref<T>,
-  interval: number,
+  interval: number
 ): ComputedRef<T> {
   const throttledValue = ref(value.value) as Ref<T>
   let lastUpdate = 0
 
-  watch(value, (newValue) => {
+  watch(value, newValue => {
     const now = Date.now()
     if (now - lastUpdate >= interval) {
       throttledValue.value = newValue
@@ -160,20 +158,19 @@ export function useThrottle<T>(
  */
 export function useLocalStorage<T>(
   key: string,
-  defaultValue: T,
+  defaultValue: T
 ): {
-    value: Ref<T>
-    save: () => void
-    load: () => void
-    remove: () => void
-  } {
+  value: Ref<T>
+  save: () => void
+  load: () => void
+  remove: () => void
+} {
   const value = ref(defaultValue) as Ref<T>
 
   const save = () => {
     try {
       localStorage.setItem(key, JSON.stringify(value.value))
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to save to localStorage:', error)
     }
   }
@@ -184,8 +181,7 @@ export function useLocalStorage<T>(
       if (stored !== null) {
         value.value = JSON.parse(stored)
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to load from localStorage:', error)
       value.value = defaultValue
     }
@@ -195,8 +191,7 @@ export function useLocalStorage<T>(
     try {
       localStorage.removeItem(key)
       value.value = defaultValue
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to remove from localStorage:', error)
     }
   }
@@ -220,20 +215,19 @@ export function useLocalStorage<T>(
  */
 export function useSessionStorage<T>(
   key: string,
-  defaultValue: T,
+  defaultValue: T
 ): {
-    value: Ref<T>
-    save: () => void
-    load: () => void
-    remove: () => void
-  } {
+  value: Ref<T>
+  save: () => void
+  load: () => void
+  remove: () => void
+} {
   const value = ref(defaultValue) as Ref<T>
 
   const save = () => {
     try {
       sessionStorage.setItem(key, JSON.stringify(value.value))
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to save to sessionStorage:', error)
     }
   }
@@ -244,8 +238,7 @@ export function useSessionStorage<T>(
       if (stored !== null) {
         value.value = JSON.parse(stored)
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to load from sessionStorage:', error)
       value.value = defaultValue
     }
@@ -255,8 +248,7 @@ export function useSessionStorage<T>(
     try {
       sessionStorage.removeItem(key)
       value.value = defaultValue
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to remove from sessionStorage:', error)
     }
   }

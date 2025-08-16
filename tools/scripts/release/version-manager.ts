@@ -90,8 +90,7 @@ function sizeCheck(): void {
   try {
     execSync('pnpm size-check', { stdio: 'inherit' })
     console.log('✅ 包大小检查通过\n')
-  }
-  catch {
+  } catch {
     console.warn('⚠️  包大小检查失败，但继续发布\n')
   }
 }
@@ -101,9 +100,9 @@ function sizeCheck(): void {
  */
 function checkChangesets(): boolean {
   console.log('📝 检查变更集...')
-  const changesetFiles = fs.readdirSync('.changeset').filter(file =>
-    file.endsWith('.md') && file !== 'README.md',
-  )
+  const changesetFiles = fs
+    .readdirSync('.changeset')
+    .filter(file => file.endsWith('.md') && file !== 'README.md')
 
   if (changesetFiles.length === 0) {
     console.log('ℹ️  没有待处理的变更集')
@@ -139,7 +138,9 @@ function commitVersions(): void {
  */
 function publishToNpm(tag?: string): void {
   console.log('📤 发布到 npm...')
-  const command = tag ? `pnpm changeset publish --tag ${tag}` : 'pnpm changeset publish'
+  const command = tag
+    ? `pnpm changeset publish --tag ${tag}`
+    : 'pnpm changeset publish'
   execSync(command, { stdio: 'inherit' })
   console.log('✅ 发布完成\n')
 }
@@ -231,8 +232,7 @@ export async function release(options: ReleaseOptions = {}): Promise<void> {
     pushToRemote()
 
     console.log('🎉 发布流程完成！')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 发布失败:', (error as Error).message)
     process.exit(1)
   }
@@ -241,7 +241,10 @@ export async function release(options: ReleaseOptions = {}): Promise<void> {
 /**
  * 预发布
  */
-export async function prerelease(tag: string = 'beta', options: ReleaseOptions = {}): Promise<void> {
+export async function prerelease(
+  tag: string = 'beta',
+  options: ReleaseOptions = {}
+): Promise<void> {
   const { skipTests = false, skipBuild = false, dryRun = false } = options
 
   console.log(`🚀 开始预发布流程 (${tag})...\n`)
@@ -274,8 +277,7 @@ export async function prerelease(tag: string = 'beta', options: ReleaseOptions =
     publishToNpm(tag)
 
     console.log(`🎉 ${tag} 版本发布完成！`)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 预发布失败:', (error as Error).message)
     process.exit(1)
   }

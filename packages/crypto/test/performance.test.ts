@@ -31,8 +31,8 @@ function benchmark(name: string, fn: () => void, iterations = 1000) {
 
   console.log(
     `${name}: ${totalTime.toFixed(2)}ms total, ${avgTime.toFixed(
-      4,
-    )}ms avg (${iterations} iterations)`,
+      4
+    )}ms avg (${iterations} iterations)`
   )
 
   return {
@@ -51,7 +51,7 @@ describe('aES 性能基准测试', () => {
         () => {
           aes.encrypt(testData.small, testKey, { keySize: 256, mode: 'CBC' })
         },
-        1000,
+        1000
       ),
 
       medium: benchmark(
@@ -59,7 +59,7 @@ describe('aES 性能基准测试', () => {
         () => {
           aes.encrypt(testData.medium, testKey, { keySize: 256, mode: 'CBC' })
         },
-        100,
+        100
       ),
 
       large: benchmark(
@@ -67,7 +67,7 @@ describe('aES 性能基准测试', () => {
         () => {
           aes.encrypt(testData.large, testKey, { keySize: 256, mode: 'CBC' })
         },
-        10,
+        10
       ),
     }
 
@@ -84,7 +84,7 @@ describe('aES 性能基准测试', () => {
       () => {
         aes.encrypt(data, testKey, { keySize: 128, mode: 'CBC' })
       },
-      100,
+      100
     )
 
     const aes256 = benchmark(
@@ -92,7 +92,7 @@ describe('aES 性能基准测试', () => {
       () => {
         aes.encrypt(data, testKey, { keySize: 256, mode: 'CBC' })
       },
-      100,
+      100
     )
 
     // AES-128 应该是最快的
@@ -109,7 +109,7 @@ describe('aES 性能基准测试', () => {
       () => {
         aes.encrypt(data, key, { keySize: 256, mode: 'CBC' })
       },
-      100,
+      100
     )
 
     // 第二次加密（有缓存）
@@ -118,7 +118,7 @@ describe('aES 性能基准测试', () => {
       () => {
         aes.encrypt(data, key, { keySize: 256, mode: 'CBC' })
       },
-      100,
+      100
     )
 
     // 缓存应该提高性能（或至少不降低太多）
@@ -138,7 +138,7 @@ describe('哈希算法性能基准测试', () => {
         () => {
           hash.sha256(data) // 使用具体的哈希方法
         },
-        100,
+        100
       ),
     }))
 
@@ -162,7 +162,7 @@ describe('编码算法性能基准测试', () => {
       () => {
         encoding.base64.encode(data)
       },
-      1000,
+      1000
     )
 
     const encoded = encoding.base64.encode(data)
@@ -171,7 +171,7 @@ describe('编码算法性能基准测试', () => {
       () => {
         encoding.base64.decode(encoded)
       },
-      1000,
+      1000
     )
 
     expect(encodeResult.opsPerSecond).toBeGreaterThan(500)
@@ -186,7 +186,7 @@ describe('编码算法性能基准测试', () => {
       () => {
         encoding.hex.encode(data)
       },
-      1000,
+      1000
     )
 
     const encoded = encoding.hex.encode(data)
@@ -195,7 +195,7 @@ describe('编码算法性能基准测试', () => {
       () => {
         encoding.hex.decode(encoded)
       },
-      1000,
+      1000
     )
 
     expect(encodeResult.opsPerSecond).toBeGreaterThan(500)
@@ -222,7 +222,7 @@ describe('内存使用优化测试', () => {
     expect(decrypted.data).toBe(largeData)
 
     console.log(
-      `Processed ${(largeData.length / 1024).toFixed(2)}KB data successfully`,
+      `Processed ${(largeData.length / 1024).toFixed(2)}KB data successfully`
     )
   })
 })
@@ -236,7 +236,8 @@ describe('并发性能测试', () => {
 
     // 并发执行加密操作
     const promises = Array.from({ length: concurrency }, () =>
-      Promise.resolve(aes.encrypt(data, testKey, { keySize: 256, mode: 'CBC' })))
+      Promise.resolve(aes.encrypt(data, testKey, { keySize: 256, mode: 'CBC' }))
+    )
 
     const results = await Promise.all(promises)
 
@@ -244,12 +245,12 @@ describe('并发性能测试', () => {
     const totalTime = end - start
 
     // 验证所有操作都成功
-    results.forEach((result) => {
+    results.forEach(result => {
       expect(result.success).toBe(true)
     })
 
     console.log(
-      `Concurrent encryption (${concurrency} ops): ${totalTime.toFixed(2)}ms`,
+      `Concurrent encryption (${concurrency} ops): ${totalTime.toFixed(2)}ms`
     )
 
     // 并发操作应该在合理时间内完成

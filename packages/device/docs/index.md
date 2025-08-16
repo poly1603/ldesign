@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "@ldesign/device"
-  text: "现代化设备检测库"
-  tagline: "轻量、高效、类型安全的设备检测解决方案，完美支持 Vue 3"
+  name: '@ldesign/device'
+  text: '现代化设备检测库'
+  tagline: '轻量、高效、类型安全的设备检测解决方案，完美支持 Vue 3'
   image:
     src: /logo.svg
     alt: LDesign Device
@@ -73,7 +73,7 @@ if (detector.isMobile()) {
 }
 
 // 监听设备变化
-detector.on('deviceChange', (info) => {
+detector.on('deviceChange', info => {
   console.log('设备信息已更新:', info)
 })
 ```
@@ -84,13 +84,7 @@ detector.on('deviceChange', (info) => {
 <script setup>
 import { useDevice } from '@ldesign/device/vue'
 
-const {
-  deviceType,
-  orientation,
-  isMobile,
-  isTablet,
-  isDesktop
-} = useDevice()
+const { deviceType, orientation, isMobile, isTablet, isDesktop } = useDevice()
 </script>
 
 <template>
@@ -100,12 +94,8 @@ const {
     <p>是否移动设备: {{ isMobile }}</p>
 
     <!-- 使用指令 -->
-    <div v-device-mobile>
-      移动设备专用内容
-    </div>
-    <div v-device-desktop>
-      桌面设备专用内容
-    </div>
+    <div v-device-mobile>移动设备专用内容</div>
+    <div v-device-desktop>桌面设备专用内容</div>
   </div>
 </template>
 ```

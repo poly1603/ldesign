@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { createField, createFormConfig, createRule, FormBuilder } from '../../../src/index'
+import {
+  createField,
+  createFormConfig,
+  createRule,
+  FormBuilder,
+} from '../../../src/index'
 
 // 表单数据
 const formData = ref({
@@ -197,8 +202,7 @@ function applyCustomTheme() {
   const existingIndex = themes.findIndex(theme => theme.name === 'custom')
   if (existingIndex >= 0) {
     themes[existingIndex] = customThemeConfig
-  }
-  else {
+  } else {
     themes.push(customThemeConfig)
   }
 
@@ -210,7 +214,7 @@ function applyCustomTheme() {
   root.style.setProperty('--primary-color', customTheme.value.primaryColor)
   root.style.setProperty(
     '--border-radius',
-    `${customTheme.value.borderRadius}px`,
+    `${customTheme.value.borderRadius}px`
   )
   root.style.setProperty('--font-size', customTheme.value.fontSize)
 
@@ -221,7 +225,7 @@ function applyCustomTheme() {
 function handleSubmit(data: any) {
   console.log('主题演示表单提交:', data)
   alert(
-    `表单提交成功！\n当前主题: ${currentThemeConfig.value.label}\n请查看控制台输出`,
+    `表单提交成功！\n当前主题: ${currentThemeConfig.value.label}\n请查看控制台输出`
   )
 }
 
@@ -233,19 +237,13 @@ function handleChange(key: string, value: any) {
 <template>
   <div class="space-y-8">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">
-        主题演示
-      </h1>
-      <p class="text-gray-600">
-        展示不同主题样式和自定义主题功能
-      </p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">主题演示</h1>
+      <p class="text-gray-600">展示不同主题样式和自定义主题功能</p>
     </div>
 
     <!-- 主题切换器 -->
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">
-        主题切换
-      </h2>
+      <h2 class="text-xl font-semibold mb-4">主题切换</h2>
       <div class="flex flex-wrap gap-4">
         <button
           v-for="theme in themes"
@@ -284,9 +282,7 @@ function handleChange(key: string, value: any) {
       <div class="space-y-6">
         <!-- 当前主题信息 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            当前主题信息
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">当前主题信息</h3>
           <div class="space-y-3">
             <div>
               <span class="font-medium">主题名称:</span>
@@ -311,9 +307,7 @@ function handleChange(key: string, value: any) {
 
         <!-- 主题特性 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            主题特性
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">主题特性</h3>
           <div class="space-y-2">
             <div
               v-for="feature in currentThemeConfig.features"
@@ -328,9 +322,7 @@ function handleChange(key: string, value: any) {
 
         <!-- 自定义主题配置 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            自定义主题配置
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">自定义主题配置</h3>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-2">主色调</label>
@@ -339,7 +331,7 @@ function handleChange(key: string, value: any) {
                 type="color"
                 class="w-full h-10 rounded border"
                 @change="updateCustomTheme"
-              >
+              />
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">圆角大小</label>
@@ -350,8 +342,10 @@ function handleChange(key: string, value: any) {
                 max="20"
                 class="w-full"
                 @input="updateCustomTheme"
+              />
+              <span class="text-xs text-gray-500"
+                >{{ customTheme.borderRadius }}px</span
               >
-              <span class="text-xs text-gray-500">{{ customTheme.borderRadius }}px</span>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">字体大小</label>
@@ -360,18 +354,10 @@ function handleChange(key: string, value: any) {
                 class="w-full p-2 border rounded"
                 @change="updateCustomTheme"
               >
-                <option value="12px">
-                  小号 (12px)
-                </option>
-                <option value="14px">
-                  默认 (14px)
-                </option>
-                <option value="16px">
-                  大号 (16px)
-                </option>
-                <option value="18px">
-                  特大 (18px)
-                </option>
+                <option value="12px">小号 (12px)</option>
+                <option value="14px">默认 (14px)</option>
+                <option value="16px">大号 (16px)</option>
+                <option value="18px">特大 (18px)</option>
               </select>
             </div>
             <button
@@ -385,9 +371,7 @@ function handleChange(key: string, value: any) {
 
         <!-- 表单数据 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            表单数据
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-32">{{
             JSON.stringify(formData, null, 2)
           }}</pre>

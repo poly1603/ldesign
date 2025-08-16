@@ -16,12 +16,12 @@ export const http = createHttpClient({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 
 // 添加全局拦截器
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -30,8 +30,8 @@ http.interceptors.request.use((config) => {
 })
 
 http.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     if (error.response?.status === 401) {
       // 处理认证失败
       localStorage.removeItem('token')
@@ -79,7 +79,7 @@ export const userService = {
 
   async deleteUser(id: number): Promise<void> {
     await http.delete(`/users/${id}`)
-  }
+  },
 }
 ```
 
@@ -124,7 +124,7 @@ const response = await http.get<ApiResponse<User[]>>('/users')
 // response.data 的类型是 ApiResponse<User[]>
 
 // 避免使用 any
-const response = await http.get('/users') as any // ❌ 不推荐
+const response = (await http.get('/users')) as any // ❌ 不推荐
 ```
 
 ## 🔧 拦截器使用
@@ -133,7 +133,7 @@ const response = await http.get('/users') as any // ❌ 不推荐
 
 ```typescript
 // 认证拦截器
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   const token = getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -142,13 +142,13 @@ http.interceptors.request.use((config) => {
 })
 
 // 请求 ID 拦截器
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   config.headers['X-Request-ID'] = generateRequestId()
   return config
 })
 
 // 语言设置拦截器
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   config.headers['Accept-Language'] = getCurrentLanguage()
   return config
 })
@@ -158,13 +158,13 @@ http.interceptors.request.use((config) => {
 
 ```typescript
 // 数据提取拦截器
-http.interceptors.response.use((response) => {
+http.interceptors.response.use(response => {
   // 如果 API 总是返回 { data: T, message: string } 格式
   // 可以自动提取 data 字段
   if (response.data && typeof response.data === 'object' && 'data' in response.data) {
     return {
       ...response,
-      data: response.data.data
+      data: response.data.data,
     }
   }
   return response
@@ -172,12 +172,12 @@ http.interceptors.response.use((response) => {
 
 // 错误处理拦截器
 http.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     // 统一错误处理
     if (error.response) {
       const { status, data } = error.response
-      
+
       switch (status) {
         case 401:
           handleAuthError()
@@ -196,7 +196,7 @@ http.interceptors.response.use(
     } else if (error.isTimeoutError) {
       handleTimeoutError()
     }
-    
+
     throw error
   }
 )
@@ -212,16 +212,16 @@ const staticDataHttp = createHttpClient({
   baseURL: '/api',
   cache: {
     enabled: true,
-    ttl: 600000 // 10分钟
-  }
+    ttl: 600000, // 10分钟
+  },
 })
 
 // 为实时数据禁用缓存
 const realtimeHttp = createHttpClient({
   baseURL: '/api',
   cache: {
-    enabled: false
-  }
+    enabled: false,
+  },
 })
 ```
 
@@ -231,11 +231,11 @@ const realtimeHttp = createHttpClient({
 const http = createHttpClient({
   cache: {
     enabled: true,
-    keyGenerator: (config) => {
+    keyGenerator: config => {
       // 自定义缓存键生成
       const { method, url, params, data } = config
       const key = `${method}:${url}`
-      
+
       if (params) {
         const sortedParams = Object.keys(params)
           .sort()
@@ -243,10 +243,10 @@ const http = createHttpClient({
           .join('&')
         return `${key}?${sortedParams}`
       }
-      
+
       return key
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -257,16 +257,16 @@ const http = createHttpClient({
 ```typescript
 // 全局错误处理（拦截器层）
 http.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     // 记录错误日志
     console.error('HTTP Error:', error)
-    
+
     // 显示全局错误提示
     if (error.isNetworkError) {
       showNotification('网络连接失败，请检查网络设置', 'error')
     }
-    
+
     throw error
   }
 )
@@ -286,16 +286,12 @@ export async function getUserWithErrorHandling(id: number): Promise<User | null>
 }
 
 // 组件层错误处理
-const { data, error } = useQuery(
-  http,
-  () => getUserWithErrorHandling(userId.value),
-  {
-    onError: (error) => {
-      // 组件特定的错误处理
-      showErrorMessage(`获取用户信息失败: ${error.message}`)
-    }
-  }
-)
+const { data, error } = useQuery(http, () => getUserWithErrorHandling(userId.value), {
+  onError: error => {
+    // 组件特定的错误处理
+    showErrorMessage(`获取用户信息失败: ${error.message}`)
+  },
+})
 ```
 
 ### 2. 重试策略
@@ -304,13 +300,12 @@ const { data, error } = useQuery(
 const http = createHttpClient({
   retry: {
     retries: 3,
-    retryDelay: (retryCount) => Math.pow(2, retryCount) * 1000, // 指数退避
-    retryCondition: (error) => {
+    retryDelay: retryCount => Math.pow(2, retryCount) * 1000, // 指数退避
+    retryCondition: error => {
       // 只重试网络错误和 5xx 错误
-      return error.isNetworkError || 
-             (error.response?.status >= 500 && error.response?.status < 600)
-    }
-  }
+      return error.isNetworkError || (error.response?.status >= 500 && error.response?.status < 600)
+    },
+  },
 })
 ```
 
@@ -323,11 +318,12 @@ const http = createHttpClient({
 ```typescript
 // composables/useUsers.ts
 export function useUsers() {
-  const { data: users, loading, error, refresh } = useQuery(
-    http,
-    () => userService.getUsers(),
-    { immediate: true }
-  )
+  const {
+    data: users,
+    loading,
+    error,
+    refresh,
+  } = useQuery(http, () => userService.getUsers(), { immediate: true })
 
   const { mutate: createUser, loading: creating } = useMutation(
     http,
@@ -336,7 +332,7 @@ export function useUsers() {
       onSuccess: () => {
         refresh() // 刷新用户列表
         showNotification('用户创建成功', 'success')
-      }
+      },
     }
   )
 
@@ -346,7 +342,7 @@ export function useUsers() {
     error,
     refresh,
     createUser,
-    creating
+    creating,
   }
 }
 ```
@@ -356,17 +352,13 @@ export function useUsers() {
 ```typescript
 const userId = ref<number | null>(null)
 
-const { data: user } = useQuery(
-  http,
-  () => userService.getUser(userId.value!),
-  {
-    immediate: false,
-    enabled: computed(() => userId.value !== null)
-  }
-)
+const { data: user } = useQuery(http, () => userService.getUser(userId.value!), {
+  immediate: false,
+  enabled: computed(() => userId.value !== null),
+})
 
 // 当 userId 变化时自动重新请求
-watch(userId, (newId) => {
+watch(userId, newId => {
   if (newId) {
     // 请求会自动触发，因为 enabled 变为 true
   }
@@ -381,8 +373,8 @@ watch(userId, (newId) => {
 const http = createHttpClient({
   concurrency: {
     maxConcurrent: 6, // 限制并发数
-    deduplication: true // 启用请求去重
-  }
+    deduplication: true, // 启用请求去重
+  },
 })
 ```
 
@@ -393,7 +385,7 @@ const http = createHttpClient({
 export function preloadCriticalData() {
   // 预加载用户信息
   userService.getUsers()
-  
+
   // 预加载配置信息
   configService.getConfig()
 }
@@ -431,8 +423,8 @@ await http.get(`/users?token=${sensitiveToken}`)
 // ✅ 安全
 await http.get('/users', {
   headers: {
-    Authorization: `Bearer ${sensitiveToken}`
-  }
+    Authorization: `Bearer ${sensitiveToken}`,
+  },
 })
 ```
 
@@ -440,7 +432,7 @@ await http.get('/users', {
 
 ```typescript
 // 添加 CSRF 令牌
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
   if (csrfToken) {
     config.headers['X-CSRF-Token'] = csrfToken
@@ -455,17 +447,17 @@ http.interceptors.request.use((config) => {
 
 ```typescript
 if (import.meta.env.DEV) {
-  http.interceptors.request.use((config) => {
+  http.interceptors.request.use(config => {
     console.log('🚀 Request:', config)
     return config
   })
 
   http.interceptors.response.use(
-    (response) => {
+    response => {
       console.log('✅ Response:', response)
       return response
     },
-    (error) => {
+    error => {
       console.error('❌ Error:', error)
       throw error
     }
@@ -476,12 +468,12 @@ if (import.meta.env.DEV) {
 ### 2. 性能监控
 
 ```typescript
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   config.metadata = { startTime: Date.now() }
   return config
 })
 
-http.interceptors.response.use((response) => {
+http.interceptors.response.use(response => {
   const duration = Date.now() - response.config.metadata.startTime
   console.log(`Request to ${response.config.url} took ${duration}ms`)
   return response

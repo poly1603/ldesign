@@ -114,7 +114,7 @@ describe('httpProvider', () => {
 
     const setupResult = HttpProvider.setup(
       { client: createMockClient() },
-      { slots: mockSlots },
+      { slots: mockSlots }
     )
 
     // 调用渲染函数

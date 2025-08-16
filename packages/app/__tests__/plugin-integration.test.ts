@@ -84,7 +84,7 @@ describe('complete Plugin Integration', () => {
         name: 'router',
         version: '1.0.0',
         routes: [],
-      }),
+      })
     )
 
     await engine.use(
@@ -92,14 +92,14 @@ describe('complete Plugin Integration', () => {
         name: 'i18n',
         version: '1.0.0',
         globalInjection: true,
-      }),
+      })
     )
 
     await engine.use(
       createTemplateEnginePlugin({
         name: 'template',
         version: '1.0.0',
-      }),
+      })
     )
 
     // 验证全局属性
@@ -140,7 +140,7 @@ describe('complete Plugin Integration', () => {
         name: 'router',
         version: '1.0.0',
         routes: [{ path: '/', component: { template: '<div>Home</div>' } }],
-      }),
+      })
     )
 
     await engine.use(
@@ -148,7 +148,7 @@ describe('complete Plugin Integration', () => {
         name: 'i18n',
         version: '1.0.0',
         defaultLocale: 'zh-CN',
-      }),
+      })
     )
 
     await engine.use(
@@ -156,7 +156,7 @@ describe('complete Plugin Integration', () => {
         name: 'template',
         version: '1.0.0',
         defaultDevice: 'mobile',
-      }),
+      })
     )
 
     // 验证状态管理集成
@@ -170,19 +170,22 @@ describe('complete Plugin Integration', () => {
 
     // 监听所有插件事件
     engine.events.on('plugin:router:installed', () =>
-      events.push('router:installed'))
+      events.push('router:installed')
+    )
     engine.events.on('plugin:i18n:installed', () =>
-      events.push('i18n:installed'))
+      events.push('i18n:installed')
+    )
     engine.events.on('plugin:template:installed', () =>
-      events.push('template:installed'))
+      events.push('template:installed')
+    )
 
     // 安装插件
     await engine.use(
-      createRouterEnginePlugin({ name: 'router', version: '1.0.0', routes: [] }),
+      createRouterEnginePlugin({ name: 'router', version: '1.0.0', routes: [] })
     )
     await engine.use(createI18nEnginePlugin({ name: 'i18n', version: '1.0.0' }))
     await engine.use(
-      createTemplateEnginePlugin({ name: 'template', version: '1.0.0' }),
+      createTemplateEnginePlugin({ name: 'template', version: '1.0.0' })
     )
 
     // 验证事件顺序
@@ -196,11 +199,11 @@ describe('complete Plugin Integration', () => {
   it('should uninstall all plugins correctly', async () => {
     // 安装所有插件
     await engine.use(
-      createRouterEnginePlugin({ name: 'router', version: '1.0.0', routes: [] }),
+      createRouterEnginePlugin({ name: 'router', version: '1.0.0', routes: [] })
     )
     await engine.use(createI18nEnginePlugin({ name: 'i18n', version: '1.0.0' }))
     await engine.use(
-      createTemplateEnginePlugin({ name: 'template', version: '1.0.0' }),
+      createTemplateEnginePlugin({ name: 'template', version: '1.0.0' })
     )
 
     // 验证插件已安装
@@ -218,7 +221,7 @@ describe('complete Plugin Integration', () => {
   it('should handle plugin installation errors gracefully', async () => {
     // 安装正常插件
     await engine.use(
-      createRouterEnginePlugin({ name: 'router', version: '1.0.0', routes: [] }),
+      createRouterEnginePlugin({ name: 'router', version: '1.0.0', routes: [] })
     )
 
     // 尝试安装有问题的插件
@@ -233,7 +236,7 @@ describe('complete Plugin Integration', () => {
 
     // 验证错误处理
     await expect(engine.use(problematicPlugin)).rejects.toThrow(
-      'Installation failed',
+      'Installation failed'
     )
 
     // 验证其他插件仍然正常工作

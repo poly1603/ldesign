@@ -1,7 +1,14 @@
 /**
  * HTTP 请求方法类型
  */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
+export type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS'
 
 /**
  * 请求配置接口
@@ -185,22 +192,37 @@ export interface HttpClient {
   get<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
 
   /** POST 请求 */
-  post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<ResponseData<T>>
+  post<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
 
   /** PUT 请求 */
-  put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<ResponseData<T>>
+  put<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
 
   /** DELETE 请求 */
   delete<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
 
   /** PATCH 请求 */
-  patch<T = any>(url: string, data?: any, config?: RequestConfig): Promise<ResponseData<T>>
+  patch<T = any>(
+    url: string,
+    data?: any,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
 
   /** HEAD 请求 */
   head<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
 
   /** OPTIONS 请求 */
-  options<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
+  options<T = any>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
 
   /** 取消所有请求 */
   cancelAll(reason?: string): void
@@ -234,13 +256,37 @@ export interface HttpClient {
  */
 export interface TypedHttpClient<TBaseResponse = any> extends HttpClient {
   request<T = TBaseResponse>(config: RequestConfig): Promise<ResponseData<T>>
-  get<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
-  post<T = TBaseResponse, D = any>(url: string, data?: D, config?: RequestConfig): Promise<ResponseData<T>>
-  put<T = TBaseResponse, D = any>(url: string, data?: D, config?: RequestConfig): Promise<ResponseData<T>>
-  delete<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
-  patch<T = TBaseResponse, D = any>(url: string, data?: D, config?: RequestConfig): Promise<ResponseData<T>>
-  head<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
-  options<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
+  get<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
+  post<T = TBaseResponse, D = any>(
+    url: string,
+    data?: D,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
+  put<T = TBaseResponse, D = any>(
+    url: string,
+    data?: D,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
+  delete<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
+  patch<T = TBaseResponse, D = any>(
+    url: string,
+    data?: D,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
+  head<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
+  options<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ): Promise<ResponseData<T>>
 }
 
 /**
@@ -256,14 +302,16 @@ export interface ApiEndpoint<TResponse = any, TRequest = any> {
 /**
  * 类型化的请求配置
  */
-export interface TypedRequestConfig<TData = any> extends Omit<RequestConfig, 'data'> {
+export interface TypedRequestConfig<TData = any>
+  extends Omit<RequestConfig, 'data'> {
   data?: TData
 }
 
 /**
  * 类型化的响应数据
  */
-export interface TypedResponseData<TData = any> extends Omit<ResponseData, 'data'> {
+export interface TypedResponseData<TData = any>
+  extends Omit<ResponseData, 'data'> {
   data: TData
 }
 
@@ -271,9 +319,21 @@ export interface TypedResponseData<TData = any> extends Omit<ResponseData, 'data
  * 状态码类型
  */
 export type HttpStatusCode =
-  | 200 | 201 | 202 | 204 // 成功
-  | 400 | 401 | 403 | 404 | 409 | 422 | 429 // 客户端错误
-  | 500 | 502 | 503 | 504 // 服务器错误
+  | 200
+  | 201
+  | 202
+  | 204 // 成功
+  | 400
+  | 401
+  | 403
+  | 404
+  | 409
+  | 422
+  | 429 // 客户端错误
+  | 500
+  | 502
+  | 503
+  | 504 // 服务器错误
 
 /**
  * 内容类型枚举

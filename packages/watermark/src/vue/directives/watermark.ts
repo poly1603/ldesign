@@ -25,18 +25,16 @@ const instanceMap = new WeakMap<
  */
 function parseDirectiveValue(
   value: WatermarkDirectiveValue,
-  modifiers: WatermarkDirectiveModifiers,
+  modifiers: WatermarkDirectiveModifiers
 ): Partial<WatermarkConfig> {
   let config: Partial<WatermarkConfig> = {}
 
   // 处理不同类型的值
   if (typeof value === 'string') {
     config.content = value
-  }
-  else if (Array.isArray(value)) {
+  } else if (Array.isArray(value)) {
     config.content = { text: value[0] }
-  }
-  else if (typeof value === 'object' && value !== null) {
+  } else if (typeof value === 'object' && value !== null) {
     config = { ...value }
   }
 
@@ -70,12 +68,11 @@ function parseDirectiveValue(
  */
 async function createWatermarkInstance(
   el: HTMLElement,
-  binding: DirectiveBinding<WatermarkDirectiveValue>,
+  binding: DirectiveBinding<WatermarkDirectiveValue>
 ): Promise<void> {
   const { value, modifiers } = binding
 
-  if (!value)
-    return
+  if (!value) return
 
   try {
     // 解析配置
@@ -95,7 +92,7 @@ async function createWatermarkInstance(
         enableSecurity: modifiers.secure !== false,
         enableResponsive: modifiers.responsive !== false,
         immediate: modifiers.immediate !== false,
-      },
+      }
     )
 
     // 存储实例信息
@@ -109,8 +106,7 @@ async function createWatermarkInstance(
     if (process.env.NODE_ENV === 'development') {
       console.log('[v-watermark] Created watermark instance:', instance.id)
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[v-watermark] Failed to create watermark:', error)
   }
 }
@@ -120,7 +116,7 @@ async function createWatermarkInstance(
  */
 async function updateWatermarkInstance(
   el: HTMLElement,
-  binding: DirectiveBinding<WatermarkDirectiveValue>,
+  binding: DirectiveBinding<WatermarkDirectiveValue>
 ): Promise<void> {
   const { value, modifiers } = binding
   const instanceData = instanceMap.get(el)
@@ -151,11 +147,10 @@ async function updateWatermarkInstance(
     if (process.env.NODE_ENV === 'development') {
       console.log(
         '[v-watermark] Updated watermark instance:',
-        instanceData.instance.id,
+        instanceData.instance.id
       )
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[v-watermark] Failed to update watermark:', error)
   }
 }
@@ -166,8 +161,7 @@ async function updateWatermarkInstance(
 async function destroyWatermarkInstance(el: HTMLElement): Promise<void> {
   const instanceData = instanceMap.get(el)
 
-  if (!instanceData || !instanceData.instance)
-    return
+  if (!instanceData || !instanceData.instance) return
 
   try {
     await instanceData.core.destroy(instanceData.instance.id)
@@ -177,11 +171,10 @@ async function destroyWatermarkInstance(el: HTMLElement): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
       console.log(
         '[v-watermark] Destroyed watermark instance:',
-        instanceData.instance.id,
+        instanceData.instance.id
       )
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[v-watermark] Failed to destroy watermark:', error)
   }
 }
@@ -216,7 +209,7 @@ export default vWatermark
  * 获取元素的水印实例（用于调试）
  */
 export function getWatermarkInstance(
-  el: HTMLElement,
+  el: HTMLElement
 ): WatermarkInstance | null {
   const instanceData = instanceMap.get(el)
   return instanceData?.instance || null

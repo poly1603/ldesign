@@ -28,7 +28,7 @@ export class SVGRendererImpl implements SVGRenderer {
    */
   async render(
     config: WatermarkConfig,
-    context: RenderContext,
+    context: RenderContext
   ): Promise<HTMLElement[]> {
     try {
       // 创建SVG元素
@@ -47,12 +47,11 @@ export class SVGRendererImpl implements SVGRenderer {
       this.applySVGStyles(svg, config)
 
       return [svg as unknown as HTMLElement]
-    }
-    catch (error) {
+    } catch (error) {
       throw new WatermarkError(
         'SVG rendering failed',
         WatermarkErrorCode.RENDER_FAILED,
-        ErrorSeverity.HIGH,
+        ErrorSeverity.HIGH
       )
     }
   }
@@ -63,7 +62,7 @@ export class SVGRendererImpl implements SVGRenderer {
   async update(
     elements: HTMLElement[],
     config: WatermarkConfig,
-    context: RenderContext,
+    context: RenderContext
   ): Promise<void> {
     if (elements.length === 0) {
       await this.render(config, context)
@@ -98,7 +97,7 @@ export class SVGRendererImpl implements SVGRenderer {
    * 销毁水印元素
    */
   async destroy(elements: HTMLElement[]): Promise<void> {
-    elements.forEach((element) => {
+    elements.forEach(element => {
       if (element.parentNode) {
         element.parentNode.removeChild(element)
       }
@@ -118,12 +117,11 @@ export class SVGRendererImpl implements SVGRenderer {
   isSupported(): boolean {
     try {
       return !!(
-        document.createElementNS
-        && document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        document.createElementNS &&
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg')
           .createSVGRect
       )
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -171,7 +169,7 @@ export class SVGRendererImpl implements SVGRenderer {
 
   calculateLayout(
     config: WatermarkConfig,
-    containerRect: DOMRect,
+    containerRect: DOMRect
   ): LayoutResult {
     // const containerRect = context.containerRect
     const layout = config.layout || {}
@@ -190,8 +188,7 @@ export class SVGRendererImpl implements SVGRenderer {
     if (layout.rows && layout.cols) {
       rows = layout.rows
       columns = layout.cols
-    }
-    else {
+    } else {
       // 自动计算行列数
       columns = Math.ceil(containerRect.width / gapX) + 1
       rows = Math.ceil(containerRect.height / gapY) + 1
@@ -217,7 +214,7 @@ export class SVGRendererImpl implements SVGRenderer {
 
   private createDefs(
     svg: SVGSVGElement,
-    config: WatermarkConfig,
+    config: WatermarkConfig
   ): SVGDefsElement {
     let defs = svg.querySelector('defs') as SVGDefsElement
     if (!defs) {
@@ -250,13 +247,13 @@ export class SVGRendererImpl implements SVGRenderer {
     if (style.textShadow || style.boxShadow) {
       const filter = document.createElementNS(
         'http://www.w3.org/2000/svg',
-        'filter',
+        'filter'
       )
       filter.setAttribute('id', 'watermark-shadow')
 
       const feDropShadow = document.createElementNS(
         'http://www.w3.org/2000/svg',
-        'feDropShadow',
+        'feDropShadow'
       )
       feDropShadow.setAttribute('dx', '2')
       feDropShadow.setAttribute('dy', '2')
@@ -271,13 +268,13 @@ export class SVGRendererImpl implements SVGRenderer {
     if (style.blur) {
       const filter = document.createElementNS(
         'http://www.w3.org/2000/svg',
-        'filter',
+        'filter'
       )
       filter.setAttribute('id', 'watermark-blur')
 
       const feGaussianBlur = document.createElementNS(
         'http://www.w3.org/2000/svg',
-        'feGaussianBlur',
+        'feGaussianBlur'
       )
       feGaussianBlur.setAttribute('stdDeviation', style.blur.toString())
 
@@ -290,7 +287,7 @@ export class SVGRendererImpl implements SVGRenderer {
     // 创建线性渐变
     const gradient = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'linearGradient',
+      'linearGradient'
     )
     gradient.setAttribute('id', 'watermark-gradient')
     gradient.setAttribute('x1', '0%')
@@ -316,7 +313,7 @@ export class SVGRendererImpl implements SVGRenderer {
     // 创建图案
     const pattern = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'pattern',
+      'pattern'
     )
     pattern.setAttribute('id', 'watermark-pattern')
     pattern.setAttribute('patternUnits', 'userSpaceOnUse')
@@ -330,7 +327,7 @@ export class SVGRendererImpl implements SVGRenderer {
   private async renderWatermarks(
     svg: SVGSVGElement,
     config: WatermarkConfig,
-    layout: LayoutResult,
+    layout: LayoutResult
   ): Promise<void> {
     for (let row = 0; row < layout.rows; row++) {
       for (let col = 0; col < layout.columns; col++) {
@@ -346,7 +343,7 @@ export class SVGRendererImpl implements SVGRenderer {
     svg: SVGSVGElement,
     config: WatermarkConfig,
     x: number,
-    y: number,
+    y: number
   ): Promise<void> {
     // 创建组元素
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
@@ -374,8 +371,7 @@ export class SVGRendererImpl implements SVGRenderer {
         ...config,
         content: { text: config.content },
       })
-    }
-    else if (typeof config.content === 'object' && config.content) {
+    } else if (typeof config.content === 'object' && config.content) {
       if (config.content.text) {
         await this.renderText(group, config)
       }
@@ -389,7 +385,7 @@ export class SVGRendererImpl implements SVGRenderer {
 
   private async renderBackground(
     group: SVGGElement,
-    config: WatermarkConfig,
+    config: WatermarkConfig
   ): Promise<void> {
     const style = config.style!
     const padding = style.padding || 0
@@ -401,30 +397,29 @@ export class SVGRendererImpl implements SVGRenderer {
     if (typeof config.content === 'string') {
       // 估算文本尺寸
       const fontSize = style.fontSize || 16
-      width
-        = config.content.length * fontSize * 0.6
-          + (typeof padding === 'number' ? padding * 2 : 0)
+      width =
+        config.content.length * fontSize * 0.6 +
+        (typeof padding === 'number' ? padding * 2 : 0)
       height = fontSize + (typeof padding === 'number' ? padding * 2 : 0)
-    }
-    else if (typeof config.content === 'object' && config.content) {
+    } else if (typeof config.content === 'object' && config.content) {
       if (config.content.text) {
         // 估算文本尺寸
         const fontSize = style.fontSize || 16
-        width
-          = config.content.text.length * fontSize * 0.6
-            + (typeof padding === 'number' ? padding * 2 : 0)
+        width =
+          config.content.text.length * fontSize * 0.6 +
+          (typeof padding === 'number' ? padding * 2 : 0)
         height = fontSize + (typeof padding === 'number' ? padding * 2 : 0)
       }
       if (config.content.image) {
         width = Math.max(
           width,
-          (config.content.image.width || 100)
-          + (typeof padding === 'number' ? padding * 2 : 0),
+          (config.content.image.width || 100) +
+            (typeof padding === 'number' ? padding * 2 : 0)
         )
         height = Math.max(
           height,
-          (config.content.image.height || 100)
-          + (typeof padding === 'number' ? padding * 2 : 0),
+          (config.content.image.height || 100) +
+            (typeof padding === 'number' ? padding * 2 : 0)
         )
       }
     }
@@ -454,20 +449,20 @@ export class SVGRendererImpl implements SVGRenderer {
 
   private async renderText(
     group: SVGGElement,
-    config: WatermarkConfig,
+    config: WatermarkConfig
   ): Promise<void> {
-    const text
-      = typeof config.content === 'string'
+    const text =
+      typeof config.content === 'string'
         ? config.content
         : typeof config.content === 'object' && config.content?.text
-          ? config.content.text
-          : ''
+        ? config.content.text
+        : ''
     const style = config.style || {}
 
     // 创建文本元素
     const textElement = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'text',
+      'text'
     )
     textElement.textContent = text
 
@@ -489,7 +484,7 @@ export class SVGRendererImpl implements SVGRenderer {
     if (style.fontWeight) {
       textElement.setAttribute(
         'font-weight',
-        style.fontWeight?.toString() || 'normal',
+        style.fontWeight?.toString() || 'normal'
       )
     }
 
@@ -528,19 +523,18 @@ export class SVGRendererImpl implements SVGRenderer {
 
   private async renderImage(
     group: SVGGElement,
-    config: WatermarkConfig,
+    config: WatermarkConfig
   ): Promise<void> {
-    const imageConfig
-      = typeof config.content === 'object' && config.content?.image
+    const imageConfig =
+      typeof config.content === 'object' && config.content?.image
         ? config.content.image
         : null
-    if (!imageConfig)
-      return
+    if (!imageConfig) return
 
     // 创建图片元素
     const image = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'image',
+      'image'
     )
 
     const width = imageConfig.width || 100
@@ -556,7 +550,7 @@ export class SVGRendererImpl implements SVGRenderer {
     image.setAttributeNS(
       'http://www.w3.org/1999/xlink',
       'href',
-      imageConfig.src,
+      imageConfig.src
     )
 
     // 设置保持宽高比
@@ -591,13 +585,13 @@ export class SVGRendererImpl implements SVGRenderer {
     ;(style as any).msUserDrag = 'none'
 
     // 防止右键菜单
-    svg.addEventListener('contextmenu', (e) => {
+    svg.addEventListener('contextmenu', e => {
       e.preventDefault()
       return false
     })
 
     // 防止选择
-    svg.addEventListener('selectstart', (e) => {
+    svg.addEventListener('selectstart', e => {
       e.preventDefault()
       return false
     })
@@ -608,14 +602,14 @@ export class SVGRendererImpl implements SVGRenderer {
   svg!: SVGSVGElement
 
   createSVGElement<K extends keyof SVGElementTagNameMap>(
-    tagName: K,
+    tagName: K
   ): SVGElementTagNameMap[K] {
     return document.createElementNS('http://www.w3.org/2000/svg', tagName)
   }
 
   createPattern(
     _config: WatermarkConfig,
-    layout: LayoutResult,
+    layout: LayoutResult
   ): SVGPatternElement {
     const pattern = this.createSVGElement('pattern')
     pattern.id = `watermark-pattern-${Date.now()}`
@@ -632,8 +626,7 @@ export class SVGRendererImpl implements SVGRenderer {
   setElementContent(element: HTMLElement, content: string | string[]): void {
     if (typeof content === 'string') {
       element.textContent = content
-    }
-    else {
+    } else {
       element.textContent = content.join(' ')
     }
   }

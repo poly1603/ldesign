@@ -79,12 +79,12 @@ export default defineConfig({
       // Store 包内部的类型路径别名
       '@/types/decorators': resolve(
         __dirname,
-        '../store/src/types/decorators.ts',
+        '../store/src/types/decorators.ts'
       ),
       '@/types/provider': resolve(__dirname, '../store/src/types/provider.ts'),
 
       // 使用包含编译器的Vue版本
-      'vue': 'vue/dist/vue.esm-bundler.js',
+      vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
   css: {

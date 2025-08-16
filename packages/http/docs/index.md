@@ -2,8 +2,8 @@
 layout: home
 
 hero:
-  name: "@ldesign/http"
-  text: "现代化 HTTP 请求库"
+  name: '@ldesign/http'
+  text: '现代化 HTTP 请求库'
   tagline: 功能强大、类型安全、Vue 3 完美集成
   image:
     src: /logo.svg
@@ -62,7 +62,7 @@ import { createHttpClient } from '@ldesign/http'
 // 创建客户端
 const http = createHttpClient({
   baseURL: 'https://api.example.com',
-  timeout: 10000
+  timeout: 10000,
 })
 
 // 发送请求
@@ -77,24 +77,16 @@ console.log(response.data)
 import { createHttpClient, useQuery } from '@ldesign/http'
 
 const http = createHttpClient({
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 
-const { data, loading, error } = useQuery(
-  http,
-  () => http.get('/users'),
-  { immediate: true }
-)
+const { data, loading, error } = useQuery(http, () => http.get('/users'), { immediate: true })
 </script>
 
 <template>
   <div>
-    <div v-if="loading">
-      加载中...
-    </div>
-    <div v-else-if="error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">错误: {{ error.message }}</div>
     <div v-else>
       <div v-for="user in data" :key="user.id">
         {{ user.name }}
@@ -127,13 +119,13 @@ const response = await http.get<User[]>('/users')
 
 ```typescript
 // 请求拦截器
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 // 响应拦截器
-http.interceptors.response.use((response) => {
+http.interceptors.response.use(response => {
   return response.data
 })
 ```
@@ -147,7 +139,7 @@ const http = createHttpClient({
   cache: {
     enabled: true,
     ttl: 300000, // 5 分钟
-  }
+  },
 })
 
 // 第二次请求会从缓存返回
@@ -164,8 +156,8 @@ const http = createHttpClient({
   retry: {
     retries: 3,
     retryDelay: 1000,
-    retryCondition: error => error.isNetworkError
-  }
+    retryCondition: error => error.isNetworkError,
+  },
 })
 ```
 

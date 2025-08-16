@@ -13,26 +13,29 @@ export function createRollupConfig(options = {}) {
     packageName,
     external = [],
     plugins = [],
-    formats = ['es', 'cjs', 'umd']
+    formats = ['es', 'cjs', 'umd'],
   } = options
 
   // 读取 package.json 获取包信息
-  const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf-8'))
-  const name = packageName || pkg.name?.replace('@ldesign/', '') || 'LDesignPackage'
+  const pkg = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'package.json'), 'utf-8')
+  )
+  const name =
+    packageName || pkg.name?.replace('@ldesign/', '') || 'LDesignPackage'
 
   const basePlugins = [
     nodeResolve({
       preferBuiltins: false,
-      browser: true
+      browser: true,
     }),
     commonjs(),
     typescript({
       tsconfig: './tsconfig.json',
       declaration: true,
       declarationDir: outputDir,
-      rootDir: 'src'
+      rootDir: 'src',
     }),
-    ...plugins
+    ...plugins,
   ]
 
   const outputs = []
@@ -41,7 +44,7 @@ export function createRollupConfig(options = {}) {
     outputs.push({
       file: `${outputDir}/index.js`,
       format: 'es',
-      sourcemap: true
+      sourcemap: true,
     })
   }
 
@@ -50,7 +53,7 @@ export function createRollupConfig(options = {}) {
       file: `lib/index.js`,
       format: 'cjs',
       sourcemap: true,
-      exports: 'auto'
+      exports: 'auto',
     })
   }
 
@@ -60,20 +63,15 @@ export function createRollupConfig(options = {}) {
       format: 'umd',
       name,
       sourcemap: true,
-      plugins: [terser()]
+      plugins: [terser()],
     })
   }
 
   return defineConfig({
     input,
     output: outputs,
-    external: [
-      'vue',
-      '@vue/runtime-core',
-      '@vue/runtime-dom',
-      ...external
-    ],
-    plugins: basePlugins
+    external: ['vue', '@vue/runtime-core', '@vue/runtime-dom', ...external],
+    plugins: basePlugins,
   })
 }
 

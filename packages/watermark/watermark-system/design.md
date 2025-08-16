@@ -2,7 +2,8 @@
 
 ## 概述
 
-本设计文档描述了一个跨框架的水印系统架构，该系统提供文本水印、图片水印、动态水印等功能，具备安全防护能力，并深度集成Vue3生态系统。系统采用模块化设计，支持多种使用方式和部署场景。
+本设计文档描述了一个跨框架的水印系统架构，该系统提供文本水印、图片水印、动态水印等功能，具备安全防护
+能力，并深度集成 Vue3 生态系统。系统采用模块化设计，支持多种使用方式和部署场景。
 
 ## 架构
 
@@ -227,16 +228,16 @@ class SecurityManager {
   }
 
   private enableDOMProtection(instance: WatermarkInstance) {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
         if (mutation.type === 'childList') {
-          mutation.removedNodes.forEach((node) => {
+          mutation.removedNodes.forEach(node => {
             if (this.isWatermarkElement(node, instance)) {
               this.handleViolation({
                 type: 'dom_removal',
                 target: node as HTMLElement,
                 timestamp: Date.now(),
-                details: { mutation }
+                details: { mutation },
               })
               this.recoverWatermark(instance)
             }
@@ -247,21 +248,21 @@ class SecurityManager {
 
     observer.observe(instance.container, {
       childList: true,
-      subtree: true
+      subtree: true,
     })
 
     this.watchers.set(`dom_${instance.id}`, {
       type: 'mutation',
       observer,
       callback: this.handleViolation.bind(this),
-      isActive: true
+      isActive: true,
     })
   }
 
   private enableStyleProtection(instance: WatermarkInstance) {
     // 监听样式表变化
-    const styleObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
+    const styleObserver = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
           const target = mutation.target as HTMLElement
           if (this.isWatermarkElement(target, instance)) {
@@ -271,10 +272,10 @@ class SecurityManager {
       })
     })
 
-    instance.elements.forEach((element) => {
+    instance.elements.forEach(element => {
       styleObserver.observe(element, {
         attributes: true,
-        attributeFilter: ['style', 'class']
+        attributeFilter: ['style', 'class'],
       })
     })
   }
@@ -295,7 +296,7 @@ class SecurityManager {
 
   private enableObfuscation(instance: WatermarkInstance) {
     // DOM 结构混淆
-    instance.elements.forEach((element) => {
+    instance.elements.forEach(element => {
       // 随机化类名和ID
       element.className = this.generateObfuscatedClassName()
       element.id = this.generateObfuscatedId()
@@ -348,8 +349,7 @@ class DOMRenderer extends BaseRenderer {
     // 设置内容
     if (typeof config.content === 'string') {
       element.textContent = config.content
-    }
-    else if (Array.isArray(config.content)) {
+    } else if (Array.isArray(config.content)) {
       element.innerHTML = config.content.join('<br>')
     }
 
@@ -437,11 +437,7 @@ class SVGRenderer extends BaseRenderer {
 class AnimationEngine {
   private animations: Map<string, AnimationInstance> = new Map()
 
-  createAnimation(
-    element: HTMLElement,
-    config: AnimationConfig,
-    onComplete?: () => void
-  ): string {
+  createAnimation(element: HTMLElement, config: AnimationConfig, onComplete?: () => void): string {
     const id = this.generateAnimationId()
     const animation = new AnimationInstance(element, config, onComplete)
 
@@ -490,8 +486,7 @@ class AnimationInstance {
   }
 
   private animate = () => {
-    if (!this.isPlaying)
-      return
+    if (!this.isPlaying) return
 
     const currentTime = performance.now()
     const elapsed = currentTime - this.startTime - this.pausedTime
@@ -501,8 +496,7 @@ class AnimationInstance {
 
     if (progress < 1) {
       this.animationFrame = requestAnimationFrame(this.animate)
-    }
-    else {
+    } else {
       this.complete()
     }
   }
@@ -548,7 +542,7 @@ class ResponsiveManager {
     ['md', 768],
     ['lg', 992],
     ['xl', 1200],
-    ['xxl', 1400]
+    ['xxl', 1400],
   ])
 
   private observers: Map<string, ResizeObserver> = new Map()
@@ -559,7 +553,7 @@ class ResponsiveManager {
     instance: WatermarkInstance,
     callback: (breakpoint: string) => void
   ) {
-    const observer = new ResizeObserver((entries) => {
+    const observer = new ResizeObserver(entries => {
       for (const entry of entries) {
         const { width } = entry.contentRect
         const newBreakpoint = this.getBreakpoint(width)
@@ -594,7 +588,7 @@ class ResponsiveManager {
     // 根据新的容器尺寸重新计算水印布局
     const newContext = {
       ...instance.renderContext,
-      containerRect: rect
+      containerRect: rect,
     }
 
     // 更新渲染上下文
@@ -609,16 +603,16 @@ class ResponsiveManager {
 这个设计文档涵盖了：
 
 1. **整体架构**：分层设计，模块化架构
-2. **核心组件**：WatermarkCore类、配置接口、渲染引擎
-3. **Vue3集成**：Provider、Hook、Component、Directive、Plugin
+2. **核心组件**：WatermarkCore 类、配置接口、渲染引擎
+3. **Vue3 集成**：Provider、Hook、Component、Directive、Plugin
 4. **数据模型**：实例模型、渲染上下文、安全监控
 5. **错误处理**：错误类型、处理策略
-6. **测试策略**：单元测试、集成测试、E2E测试、性能测试
+6. **测试策略**：单元测试、集成测试、E2E 测试、性能测试
 7. **安全设计**：多层防护机制、安全策略实现
-8. **渲染引擎**：DOM、Canvas、SVG多种渲染器
+8. **渲染引擎**：DOM、Canvas、SVG 多种渲染器
 9. **动画系统**：动画引擎、动画实例管理
 10. **响应式系统**：断点管理、自适应布局
 
-<function_calls>
-<invoke name="userInput">
-<parameter name="question">**设计文档是否符合你的期望？这个设计涵盖了所有需求中的功能点，包括跨框架支持、Vue3深度集成、安全防护、动画系统等。如果满意，我们可以继续创建实现任务列表。**
+<function_calls> <invoke name="userInput"> <parameter name="question">**设计文档是否符合你的期望？这
+个设计涵盖了所有需求中的功能点，包括跨框架支持、Vue3 深度集成、安全防护、动画系统等。如果满意，我们
+可以继续创建实现任务列表。**

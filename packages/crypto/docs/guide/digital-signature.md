@@ -85,7 +85,7 @@ class DocumentSigner {
       signature,
       signerPublicKey: this.keyPair.publicKey,
       timestamp,
-      algorithm: 'RSA-SHA256'
+      algorithm: 'RSA-SHA256',
     }
   }
 
@@ -141,7 +141,7 @@ const request: APIRequest = {
   method: 'POST',
   url: '/api/transfer',
   body: JSON.stringify({ amount: 1000, to: 'user123' }),
-  timestamp: Date.now()
+  timestamp: Date.now(),
 }
 
 const requestSignature = apiSigner.signRequest(request)
@@ -172,7 +172,7 @@ class PackagePublisher {
       version,
       content,
       signature,
-      publisherPublicKey: this.keyPair.publicKey
+      publisherPublicKey: this.keyPair.publicKey,
     }
   }
 
@@ -180,12 +180,7 @@ class PackagePublisher {
     const packageInfo = `${pkg.name}@${pkg.version}`
     const dataToVerify = `${packageInfo}\n${pkg.content}`
 
-    return digitalSignature.verify(
-      dataToVerify,
-      pkg.signature,
-      pkg.publisherPublicKey,
-      'sha256'
-    )
+    return digitalSignature.verify(dataToVerify, pkg.signature, pkg.publisherPublicKey, 'sha256')
   }
 }
 
@@ -221,19 +216,14 @@ class EmailSigner {
       subject,
       body,
       signature,
-      timestamp
+      timestamp,
     }
   }
 
   static verifyEmail(signedEmail: SignedEmail, senderPublicKey: string): boolean {
     const emailData = `From: ${signedEmail.from}\nTo: ${signedEmail.to}\nSubject: ${signedEmail.subject}\nTimestamp: ${signedEmail.timestamp}\n\n${signedEmail.body}`
 
-    return digitalSignature.verify(
-      emailData,
-      signedEmail.signature,
-      senderPublicKey,
-      'sha256'
-    )
+    return digitalSignature.verify(emailData, signedEmail.signature, senderPublicKey, 'sha256')
   }
 }
 ```
@@ -244,15 +234,15 @@ class EmailSigner {
 class BatchSigner {
   constructor(private privateKey: string) {}
 
-  signMultiple(dataList: string[]): Array<{ data: string, signature: string }> {
+  signMultiple(dataList: string[]): Array<{ data: string; signature: string }> {
     return dataList.map(data => ({
       data,
-      signature: digitalSignature.sign(data, this.privateKey, 'sha256')
+      signature: digitalSignature.sign(data, this.privateKey, 'sha256'),
     }))
   }
 
   static verifyMultiple(
-    signedDataList: Array<{ data: string, signature: string }>,
+    signedDataList: Array<{ data: string; signature: string }>,
     publicKey: string
   ): boolean[] {
     return signedDataList.map(item =>
@@ -291,17 +281,20 @@ class SecureKeyManager {
     return decrypted.data
   }
 
-  static saveKeyPair(keyPair: any, password: string): { publicKey: string, encryptedPrivateKey: string } {
+  static saveKeyPair(
+    keyPair: any,
+    password: string
+  ): { publicKey: string; encryptedPrivateKey: string } {
     return {
       publicKey: keyPair.publicKey,
-      encryptedPrivateKey: this.encryptPrivateKey(keyPair.privateKey, password)
+      encryptedPrivateKey: this.encryptPrivateKey(keyPair.privateKey, password),
     }
   }
 
   static loadKeyPair(publicKey: string, encryptedPrivateKey: string, password: string): any {
     return {
       publicKey,
-      privateKey: this.decryptPrivateKey(encryptedPrivateKey, password)
+      privateKey: this.decryptPrivateKey(encryptedPrivateKey, password),
     }
   }
 }
@@ -313,7 +306,10 @@ class SecureKeyManager {
 class TimestampedSigner {
   private static readonly MAX_AGE = 5 * 60 * 1000 // 5 分钟
 
-  static signWithTimestamp(data: string, privateKey: string): { signature: string, timestamp: number } {
+  static signWithTimestamp(
+    data: string,
+    privateKey: string
+  ): { signature: string; timestamp: number } {
     const timestamp = Date.now()
     const dataWithTimestamp = `${data}|${timestamp}`
     const signature = digitalSignature.sign(dataWithTimestamp, privateKey, 'sha256')
@@ -326,7 +322,7 @@ class TimestampedSigner {
     signature: string,
     timestamp: number,
     publicKey: string
-  ): { valid: boolean, expired: boolean } {
+  ): { valid: boolean; expired: boolean } {
     const dataWithTimestamp = `${data}|${timestamp}`
     const valid = digitalSignature.verify(dataWithTimestamp, signature, publicKey, 'sha256')
     const expired = Date.now() - timestamp > this.MAX_AGE
@@ -368,9 +364,9 @@ class MultiSigner {
           signature,
           signerPublicKey,
           signerName,
-          timestamp
-        }
-      ]
+          timestamp,
+        },
+      ],
     }
   }
 

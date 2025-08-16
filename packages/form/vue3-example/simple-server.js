@@ -73,7 +73,7 @@ const server = http.createServer((req, res) => {
   const filePath = path.join(__dirname, pathname)
 
   // 检查文件是否存在
-  fs.access(filePath, fs.constants.F_OK, (err) => {
+  fs.access(filePath, fs.constants.F_OK, err => {
     if (err) {
       res.writeHead(404, { 'Content-Type': 'text/plain' })
       res.end('File not found')

@@ -70,7 +70,7 @@ export class EventEmitterImpl implements EventEmitter {
    */
   emit(
     event: ThemeEventType,
-    data: Omit<ThemeEventData, 'type' | 'timestamp'>,
+    data: Omit<ThemeEventData, 'type' | 'timestamp'>
   ): void {
     const eventData: ThemeEventData = {
       type: event,
@@ -81,11 +81,10 @@ export class EventEmitterImpl implements EventEmitter {
     // 触发普通监听器
     const listeners = this.events.get(event)
     if (listeners) {
-      listeners.forEach((listener) => {
+      listeners.forEach(listener => {
         try {
           listener(eventData)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Error in event listener for ${event}:`, error)
         }
       })
@@ -98,11 +97,10 @@ export class EventEmitterImpl implements EventEmitter {
       onceListeners.clear()
       this.onceEvents.delete(event)
 
-      listenersArray.forEach((listener) => {
+      listenersArray.forEach(listener => {
         try {
           listener(eventData)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Error in once event listener for ${event}:`, error)
         }
       })
@@ -126,8 +124,7 @@ export class EventEmitterImpl implements EventEmitter {
     if (event) {
       this.events.delete(event)
       this.onceEvents.delete(event)
-    }
-    else {
+    } else {
       this.events.clear()
       this.onceEvents.clear()
     }

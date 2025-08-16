@@ -22,8 +22,7 @@ onMounted(async () => {
     addDebugInfo(`useDevice 成功: ${JSON.stringify(Object.keys(deviceResult))}`)
     addDebugInfo(`设备类型: ${deviceResult.deviceType.value}`)
     addDebugInfo(`是否移动设备: ${deviceResult.isMobile.value}`)
-  }
-  catch (error) {
+  } catch (error) {
     addDebugInfo(`useDevice 错误: ${error.message}`)
   }
 
@@ -31,7 +30,7 @@ onMounted(async () => {
   try {
     const networkResult = useNetwork()
     addDebugInfo(
-      `useNetwork 成功: ${JSON.stringify(Object.keys(networkResult))}`,
+      `useNetwork 成功: ${JSON.stringify(Object.keys(networkResult))}`
     )
     addDebugInfo(`loadModule 类型: ${typeof networkResult.loadModule}`)
 
@@ -41,19 +40,16 @@ onMounted(async () => {
         await networkResult.loadModule()
         addDebugInfo('网络模块 loadModule 调用成功')
         addDebugInfo(
-          `网络信息: ${JSON.stringify(networkResult.networkInfo.value)}`,
+          `网络信息: ${JSON.stringify(networkResult.networkInfo.value)}`
         )
         addDebugInfo(`是否在线: ${networkResult.isOnline.value}`)
-      }
-      catch (error) {
+      } catch (error) {
         addDebugInfo(`网络模块 loadModule 调用失败: ${error.message}`)
       }
-    }
-    else {
+    } else {
       addDebugInfo('网络模块 loadModule 不是函数！')
     }
-  }
-  catch (error) {
+  } catch (error) {
     addDebugInfo(`useNetwork 错误: ${error.message}`)
   }
 
@@ -61,7 +57,7 @@ onMounted(async () => {
   try {
     const batteryResult = useBattery()
     addDebugInfo(
-      `useBattery 成功: ${JSON.stringify(Object.keys(batteryResult))}`,
+      `useBattery 成功: ${JSON.stringify(Object.keys(batteryResult))}`
     )
     addDebugInfo(`loadModule 类型: ${typeof batteryResult.loadModule}`)
 
@@ -71,19 +67,16 @@ onMounted(async () => {
         await batteryResult.loadModule()
         addDebugInfo('电池模块 loadModule 调用成功')
         addDebugInfo(
-          `电池信息: ${JSON.stringify(batteryResult.batteryInfo.value)}`,
+          `电池信息: ${JSON.stringify(batteryResult.batteryInfo.value)}`
         )
         addDebugInfo(`电池电量: ${batteryResult.batteryLevel.value}`)
-      }
-      catch (error) {
+      } catch (error) {
         addDebugInfo(`电池模块 loadModule 调用失败: ${error.message}`)
       }
-    }
-    else {
+    } else {
       addDebugInfo('电池模块 loadModule 不是函数！')
     }
-  }
-  catch (error) {
+  } catch (error) {
     addDebugInfo(`useBattery 错误: ${error.message}`)
   }
 
@@ -91,7 +84,7 @@ onMounted(async () => {
   try {
     const geoResult = useGeolocation()
     addDebugInfo(
-      `useGeolocation 成功: ${JSON.stringify(Object.keys(geoResult))}`,
+      `useGeolocation 成功: ${JSON.stringify(Object.keys(geoResult))}`
     )
     addDebugInfo(`loadModule 类型: ${typeof geoResult.loadModule}`)
 
@@ -108,23 +101,19 @@ onMounted(async () => {
           try {
             await geoResult.getCurrentPosition()
             addDebugInfo(
-              `位置信息: ${JSON.stringify(geoResult.position.value)}`,
+              `位置信息: ${JSON.stringify(geoResult.position.value)}`
             )
-          }
-          catch (posError) {
+          } catch (posError) {
             addDebugInfo(`获取位置失败: ${posError.message}`)
           }
         }
-      }
-      catch (error) {
+      } catch (error) {
         addDebugInfo(`地理位置模块 loadModule 调用失败: ${error.message}`)
       }
-    }
-    else {
+    } else {
       addDebugInfo('地理位置模块 loadModule 不是函数！')
     }
-  }
-  catch (error) {
+  } catch (error) {
     addDebugInfo(`useGeolocation 错误: ${error.message}`)
   }
 })

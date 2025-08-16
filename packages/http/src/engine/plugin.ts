@@ -55,7 +55,7 @@ export interface HttpEnginePluginOptions extends HttpPluginOptions {
  * ```
  */
 export function createHttpEnginePlugin(
-  options: HttpEnginePluginOptions = {},
+  options: HttpEnginePluginOptions = {}
 ): Plugin {
   const {
     name = 'http',
@@ -79,7 +79,7 @@ export function createHttpEnginePlugin(
         const vueApp = engine.getApp()
         if (!vueApp) {
           throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing HTTP plugin.',
+            'Vue app not found. Make sure the engine has created a Vue app before installing HTTP plugin.'
           )
         }
 
@@ -94,18 +94,18 @@ export function createHttpEnginePlugin(
         })
 
         // 创建或使用提供的 HTTP 客户端
-        const httpClient
-          = providedClient
-            || (() => {
-              const adapter = createAdapter(clientConfig.adapter)
-              return new HttpClientImpl(
-                {
-                  ...clientConfig,
-                  ...globalConfig,
-                },
-                adapter,
-              )
-            })()
+        const httpClient =
+          providedClient ||
+          (() => {
+            const adapter = createAdapter(clientConfig.adapter)
+            return new HttpClientImpl(
+              {
+                ...clientConfig,
+                ...globalConfig,
+              },
+              adapter
+            )
+          })()
 
         // 安装 HTTP Vue 插件
         vueApp.use(HttpPlugin, {
@@ -119,8 +119,7 @@ export function createHttpEnginePlugin(
         if (engine.http) {
           // 如果引擎支持 HTTP 适配器，设置适配器
           engine.http.setInstance(httpClient)
-        }
-        else {
+        } else {
           // 否则直接挂载到引擎上
           ;(engine as any).httpClient = httpClient
         }
@@ -130,8 +129,7 @@ export function createHttpEnginePlugin(
           version,
           clientType: httpClient.constructor.name,
         })
-      }
-      catch (error) {
+      } catch (error) {
         engine.logger.error(`Failed to install ${name} plugin:`, error)
         throw error
       }
@@ -151,8 +149,7 @@ export function createHttpEnginePlugin(
         }
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      }
-      catch (error) {
+      } catch (error) {
         engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
         throw error
       }

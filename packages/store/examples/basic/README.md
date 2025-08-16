@@ -5,20 +5,23 @@
 ## 功能展示
 
 ### 1. 计数器示例 (CounterExample)
+
 展示基本的状态管理和装饰器使用：
 
 - **@State 装饰器**: 定义响应式状态
 - **@Getter 装饰器**: 定义计算属性
 - **@Action 装饰器**: 定义状态修改方法
-- **响应式更新**: 状态变化自动更新UI
+- **响应式更新**: 状态变化自动更新 UI
 
 **核心特性**:
+
 - 基本的增减操作
 - 可配置的步长
 - 计算属性（绝对值、正负状态）
 - 状态重置功能
 
 ### 2. 待办事项示例 (TodoExample)
+
 展示列表管理和过滤功能：
 
 - **复杂状态管理**: 管理待办事项列表
@@ -27,6 +30,7 @@
 - **列表操作**: 添加、删除、切换状态
 
 **核心特性**:
+
 - 添加新的待办事项
 - 标记完成/未完成
 - 按状态过滤（全部/活跃/已完成）
@@ -34,6 +38,7 @@
 - 实时统计
 
 ### 3. 用户管理示例 (UserExample)
+
 展示异步操作和持久化存储：
 
 - **@AsyncAction 装饰器**: 处理异步操作
@@ -42,6 +47,7 @@
 - **加载状态**: 异步操作的加载状态
 
 **核心特性**:
+
 - 用户登录/登出
 - 用户信息持久化
 - 异步操作状态管理
@@ -51,17 +57,20 @@
 ## 运行示例
 
 ### 安装依赖
+
 ```bash
 cd packages/store/examples/basic
 pnpm install
 ```
 
 ### 启动开发服务器
+
 ```bash
 pnpm dev
 ```
 
 ### 构建生产版本
+
 ```bash
 pnpm build
 ```
@@ -112,7 +121,7 @@ export class UserStore extends BaseStore {
   async login(email: string, password: string): Promise<void> {
     this.loading = true
     this.error = null
-    
+
     try {
       // 模拟 API 调用
       const user = await mockLoginAPI(email, password)
@@ -132,7 +141,7 @@ export class UserStore extends BaseStore {
 export class UserStore extends BaseStore {
   @PersistentState({ default: null })
   user: User | null = null
-  
+
   // 用户信息会自动保存到 localStorage
   // 页面刷新后会自动恢复
 }

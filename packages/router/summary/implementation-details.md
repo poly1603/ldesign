@@ -5,14 +5,15 @@
 ### 1. 设备检测集成
 
 #### 技术方案
+
 集成 `@ldesign/device` 包，提供统一的设备检测接口：
 
 ```typescript
 // 设备检测器初始化
 const deviceDetector = new DeviceDetector({
-  enableResize: true,        // 监听窗口大小变化
-  enableOrientation: true,   // 监听设备方向变化
-  debounceDelay: 100        // 防抖延迟
+  enableResize: true, // 监听窗口大小变化
+  enableOrientation: true, // 监听设备方向变化
+  debounceDelay: 100, // 防抖延迟
 })
 
 // 获取当前设备类型
@@ -20,6 +21,7 @@ const currentDevice = deviceDetector.getDeviceType()
 ```
 
 #### 实现细节
+
 - **响应式检测**: 实时监听窗口大小和设备方向变化
 - **防抖机制**: 避免频繁触发设备变化事件
 - **缓存优化**: 缓存检测结果，减少重复计算
@@ -27,6 +29,7 @@ const currentDevice = deviceDetector.getDeviceType()
 ### 2. 路由类型扩展
 
 #### 扩展策略
+
 通过模块声明合并扩展现有的路由类型：
 
 ```typescript
@@ -54,6 +57,7 @@ interface RouteRecordRaw {
 ```
 
 #### 类型安全保证
+
 - **严格类型检查**: 所有新增字段都有完整的类型定义
 - **可选字段**: 新增字段都是可选的，保证向后兼容
 - **泛型支持**: 支持泛型参数，提供更好的类型推断
@@ -61,6 +65,7 @@ interface RouteRecordRaw {
 ### 3. 设备访问控制守卫
 
 #### 实现架构
+
 ```typescript
 class DeviceRouteGuard {
   private getCurrentDevice: () => DeviceType
@@ -70,7 +75,7 @@ class DeviceRouteGuard {
     return async (to, from, next) => {
       const currentDevice = this.getCurrentDevice()
       const supportedDevices = this.getSupportedDevices(to)
-      
+
       if (this.isDeviceSupported(supportedDevices, currentDevice, to)) {
         next()
       } else {
@@ -83,11 +88,13 @@ class DeviceRouteGuard {
 ```
 
 #### 核心逻辑
+
 1. **设备检查**: 获取当前设备类型和路由支持的设备列表
 2. **权限验证**: 检查当前设备是否在支持列表中
 3. **处理重定向**: 不支持时执行自定义处理逻辑或默认重定向
 
 #### 配置灵活性
+
 ```typescript
 // 自定义设备检查逻辑
 guardOptions: {
@@ -105,6 +112,7 @@ guardOptions: {
 ### 4. 设备组件解析器
 
 #### 解析策略
+
 ```typescript
 class DeviceComponentResolver {
   resolveComponent(record: RouteRecordNormalized): DeviceComponentResolution | null {
@@ -126,16 +134,17 @@ class DeviceComponentResolver {
 ```
 
 #### 回退机制
+
 ```typescript
 // 智能回退顺序：desktop → tablet → mobile
 private resolveDeviceSpecificComponent(record, device) {
   const deviceComponents = record.deviceComponents
-  
+
   // 优先使用当前设备组件
   if (deviceComponents[device]) {
     return { component: deviceComponents[device], isFallback: false }
   }
-  
+
   // 按优先级回退
   const fallbackOrder = ['desktop', 'tablet', 'mobile']
   for (const fallbackDevice of fallbackOrder) {
@@ -143,7 +152,7 @@ private resolveDeviceSpecificComponent(record, device) {
       return { component: deviceComponents[fallbackDevice], isFallback: true }
     }
   }
-  
+
   return null
 }
 ```
@@ -151,6 +160,7 @@ private resolveDeviceSpecificComponent(record, device) {
 ### 5. 模板路由解析器
 
 #### 集成方案
+
 ```typescript
 class TemplateRouteResolver {
   private templateManager: any = null
@@ -158,14 +168,14 @@ class TemplateRouteResolver {
   async resolveTemplate(category: string, templateName: string, deviceType: DeviceType) {
     // 懒加载模板管理器
     const manager = await this.initTemplateManager()
-    
+
     try {
       // 使用模板管理器渲染组件
       return await manager.render({
         category,
         template: templateName,
         device: deviceType,
-        timeout: this.config.timeout
+        timeout: this.config.timeout,
       })
     } catch (error) {
       // 尝试回退到默认设备
@@ -179,6 +189,7 @@ class TemplateRouteResolver {
 ```
 
 #### 错误处理
+
 - **优雅降级**: 模板加载失败时自动回退到其他设备模板
 - **错误组件**: 提供友好的错误提示组件
 - **超时处理**: 设置合理的加载超时时间
@@ -186,6 +197,7 @@ class TemplateRouteResolver {
 ### 6. 插件系统实现
 
 #### 插件架构
+
 ```typescript
 class DeviceRouterPlugin {
   private router: Router
@@ -207,10 +219,10 @@ class DeviceRouterPlugin {
   private extendRouter(): void {
     // 扩展 resolve 方法以支持设备组件解析
     const originalResolve = this.router.resolve.bind(this.router)
-    
+
     this.router.resolve = (to, currentLocation) => {
       const resolved = originalResolve(to, currentLocation)
-      
+
       // 为每个匹配的路由记录解析设备组件
       resolved.matched = resolved.matched.map(record => {
         const resolution = this.componentResolver.resolveComponent(record)
@@ -227,6 +239,7 @@ class DeviceRouterPlugin {
 ```
 
 #### 生命周期管理
+
 - **安装**: 注册守卫、扩展路由器功能
 - **卸载**: 清理资源、移除监听器
 - **配置**: 支持运行时配置更新
@@ -236,13 +249,14 @@ class DeviceRouterPlugin {
 ### 1. DeviceUnsupported 组件
 
 #### 组件架构
+
 ```typescript
 export default defineComponent({
   name: 'DeviceUnsupported',
   props: {
     device: { type: String as () => DeviceType, default: 'desktop' },
     message: { type: String, default: '当前系统不支持在此设备上查看' },
-    supportedDevices: { type: Array as () => DeviceType[], default: () => ['desktop'] }
+    supportedDevices: { type: Array as () => DeviceType[], default: () => ['desktop'] },
   },
   setup(props) {
     // 响应式数据和计算属性
@@ -260,11 +274,12 @@ export default defineComponent({
     }
 
     return { deviceNames, goBack }
-  }
+  },
 })
 ```
 
 #### 样式设计
+
 - **响应式布局**: 适配不同屏幕尺寸
 - **友好界面**: 清晰的视觉层次和交互反馈
 - **无障碍支持**: 符合 WCAG 标准的无障碍设计
@@ -272,6 +287,7 @@ export default defineComponent({
 ### 2. Composition API 实现
 
 #### useDeviceRoute 实现
+
 ```typescript
 export function useDeviceRoute(options: UseDeviceRouteOptions = {}) {
   const router = useRouter()
@@ -280,7 +296,7 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}) {
 
   // 响应式状态
   const currentDevice = ref<DeviceType>('desktop')
-  
+
   // 计算属性
   const isCurrentRouteSupported = computed(() => {
     return checkDeviceSupport(route.value, currentDevice.value)
@@ -295,12 +311,12 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}) {
   onMounted(() => {
     if (devicePlugin && options.autoDetect) {
       currentDevice.value = devicePlugin.getCurrentDevice()
-      
+
       // 监听设备变化
       const unwatch = devicePlugin.onDeviceChange((device: DeviceType) => {
         currentDevice.value = device
       })
-      
+
       onUnmounted(unwatch)
     }
   })
@@ -308,7 +324,7 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}) {
   return {
     currentDevice,
     isCurrentRouteSupported,
-    isRouteSupported
+    isRouteSupported,
   }
 }
 ```
@@ -316,6 +332,7 @@ export function useDeviceRoute(options: UseDeviceRouteOptions = {}) {
 ## 🧪 测试实现策略
 
 ### 1. 单元测试
+
 ```typescript
 describe('DeviceRouteGuard', () => {
   let guard: DeviceRouteGuard
@@ -329,19 +346,20 @@ describe('DeviceRouteGuard', () => {
   it('应该允许支持的设备访问', async () => {
     const guardFn = guard.createGuard()
     const next = vi.fn()
-    
+
     const to = createMockRoute({
-      meta: { supportedDevices: ['desktop'] }
+      meta: { supportedDevices: ['desktop'] },
     })
 
     await guardFn(to, createMockRoute(), next)
-    
+
     expect(next).toHaveBeenCalledWith()
   })
 })
 ```
 
 ### 2. E2E 测试
+
 ```typescript
 test('应该在不同设备上显示不同的组件', async ({ page }) => {
   // 桌面端
@@ -359,6 +377,7 @@ test('应该在不同设备上显示不同的组件', async ({ page }) => {
 ## 🚀 性能优化实现
 
 ### 1. 懒加载机制
+
 ```typescript
 // 设备组件懒加载
 deviceComponents: {
@@ -374,26 +393,28 @@ const templateComponent = async () => {
 ```
 
 ### 2. 缓存策略
+
 ```typescript
 class DeviceComponentResolver {
   private cache = new Map<string, DeviceComponentResolution>()
 
   resolveComponent(record: RouteRecordNormalized) {
     const cacheKey = this.generateCacheKey(record)
-    
+
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey)
     }
 
     const resolution = this.doResolveComponent(record)
     this.cache.set(cacheKey, resolution)
-    
+
     return resolution
   }
 }
 ```
 
 ### 3. 防抖处理
+
 ```typescript
 // 设备变化防抖
 const debouncedDeviceChange = debounce((device: DeviceType) => {
@@ -406,13 +427,14 @@ deviceDetector.on('deviceChange', debouncedDeviceChange)
 ## 🔧 工具函数实现
 
 ### 1. 设备支持检查
+
 ```typescript
 export function checkDeviceSupport(
   route: RouteLocationNormalized,
   currentDevice: DeviceType
 ): boolean {
   const supportedDevices = getSupportedDevicesFromRoute(route)
-  
+
   // 没有限制时支持所有设备
   if (!supportedDevices || supportedDevices.length === 0) {
     return true
@@ -423,6 +445,7 @@ export function checkDeviceSupport(
 ```
 
 ### 2. 组件解析工具
+
 ```typescript
 export function resolveDeviceComponent(
   deviceComponents: Record<DeviceType, RouteComponent>,
@@ -434,7 +457,7 @@ export function resolveDeviceComponent(
       component: deviceComponents[currentDevice],
       deviceType: currentDevice,
       isFallback: false,
-      source: 'deviceComponents'
+      source: 'deviceComponents',
     }
   }
 
@@ -446,7 +469,7 @@ export function resolveDeviceComponent(
         component: deviceComponents[fallbackDevice],
         deviceType: fallbackDevice,
         isFallback: true,
-        source: 'deviceComponents'
+        source: 'deviceComponents',
       }
     }
   }
@@ -455,4 +478,5 @@ export function resolveDeviceComponent(
 }
 ```
 
-这些实现细节展示了设备适配功能的完整技术方案，从底层的设备检测到上层的用户接口，每个环节都经过精心设计和优化，确保功能的稳定性、性能和易用性。
+这些实现细节展示了设备适配功能的完整技术方案，从底层的设备检测到上层的用户接口，每个环节都经过精心设
+计和优化，确保功能的稳定性、性能和易用性。

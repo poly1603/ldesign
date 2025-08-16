@@ -28,7 +28,7 @@ const manager = new CryptoManager()
 const manager = new CryptoManager({
   defaultAlgorithm: 'AES',
   enableCache: true,
-  debug: true
+  debug: true,
 })
 ```
 
@@ -98,7 +98,7 @@ const result2 = await manager.encryptData('Hello World', 'secret-key', 'DES')
 // 带选项
 const result3 = await manager.encryptData('Hello World', 'secret-key', 'AES', {
   mode: 'CBC',
-  keySize: 256
+  keySize: 256,
 })
 ```
 
@@ -167,7 +167,7 @@ const manager = new CryptoManager()
 const operations = [
   { id: '1', data: 'Message 1', key: 'key1', algorithm: 'AES' as const },
   { id: '2', data: 'Message 2', key: 'key2', algorithm: 'DES' as const },
-  { id: '3', data: 'Message 3', key: 'key3', algorithm: '3DES' as const }
+  { id: '3', data: 'Message 3', key: 'key3', algorithm: '3DES' as const },
 ]
 
 const results = await manager.batchEncrypt(operations)
@@ -352,18 +352,16 @@ const manager = new CryptoManager({
   defaultAlgorithm: 'AES',
   enableCache: true,
   debug: true,
-  logLevel: 'info'
+  logLevel: 'info',
 })
 
 async function example() {
   try {
     // 加密数据
-    const encrypted = await manager.encryptData(
-      'Sensitive information',
-      'my-secret-key',
-      'AES',
-      { mode: 'CBC', keySize: 256 }
-    )
+    const encrypted = await manager.encryptData('Sensitive information', 'my-secret-key', 'AES', {
+      mode: 'CBC',
+      keySize: 256,
+    })
 
     console.log('加密成功:', encrypted)
 
@@ -383,8 +381,7 @@ async function example() {
     // 获取性能统计
     const stats = manager.getPerformanceStats()
     console.log('性能统计:', stats)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('操作失败:', error)
   }
 }

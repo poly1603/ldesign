@@ -34,15 +34,15 @@ function handleSizeChange(mode: SizeMode) {
       <div class="container">
         <!-- Plugin 使用示例 -->
         <section class="section">
-          <h2 class="section-title">
-            1. Vue Plugin 使用
-          </h2>
+          <h2 class="section-title">1. Vue Plugin 使用</h2>
           <p>通过全局插件访问尺寸管理功能</p>
 
           <div class="demo-card">
             <h3>全局属性访问</h3>
             <p>当前模式: {{ $getSizeMode() }}</p>
-            <p>当前配置: {{ JSON.stringify($getSizeConfig().fontSize, null, 2) }}</p>
+            <p>
+              当前配置: {{ JSON.stringify($getSizeConfig().fontSize, null, 2) }}
+            </p>
 
             <div class="demo-actions">
               <button class="btn btn-primary" @click="$setSize('small')">
@@ -57,33 +57,25 @@ function handleSizeChange(mode: SizeMode) {
 
         <!-- Composition API 使用示例 -->
         <section class="section">
-          <h2 class="section-title">
-            2. Composition API 使用
-          </h2>
+          <h2 class="section-title">2. Composition API 使用</h2>
           <CompositionApiDemo />
         </section>
 
         <!-- 组件使用示例 -->
         <section class="section">
-          <h2 class="section-title">
-            3. 组件使用示例
-          </h2>
+          <h2 class="section-title">3. 组件使用示例</h2>
           <ComponentDemo />
         </section>
 
         <!-- 响应式示例 -->
         <section class="section">
-          <h2 class="section-title">
-            4. 响应式使用示例
-          </h2>
+          <h2 class="section-title">4. 响应式使用示例</h2>
           <ResponsiveDemo />
         </section>
 
         <!-- 实际应用示例 -->
         <section class="section">
-          <h2 class="section-title">
-            5. 实际应用示例
-          </h2>
+          <h2 class="section-title">5. 实际应用示例</h2>
           <RealWorldDemo />
         </section>
       </div>

@@ -2,7 +2,8 @@
 
 ## 📋 项目概述
 
-@ldesign/http 是 LDesign 生态系统中的 HTTP 请求库，提供了现代化、类型安全的网络请求解决方案，支持多种请求方式和高级功能。
+@ldesign/http 是 LDesign 生态系统中的 HTTP 请求库，提供了现代化、类型安全的网络请求解决方案，支持多
+种请求方式和高级功能。
 
 ### 🎯 核心功能
 
@@ -17,16 +18,19 @@
 ## 🏗️ 设计理念
 
 ### 1. 统一接口
+
 - 抽象不同 HTTP 库的差异
 - 提供一致的 API 体验
 - 支持无缝切换底层实现
 
 ### 2. 类型安全
+
 - 端到端的类型推导
 - 请求和响应类型约束
 - 编译时错误检测
 
 ### 3. 高性能
+
 - 智能缓存机制
 - 请求去重和合并
 - 连接池管理
@@ -67,16 +71,19 @@
 ## 🔧 实现细节
 
 ### HTTP 客户端引擎
+
 - 适配器模式统一不同 HTTP 库
 - 自动内容类型检测和转换
 - 请求和响应数据验证
 
 ### 缓存系统
+
 - 多级缓存策略（内存、本地存储、IndexedDB）
 - 基于 ETag 和 Last-Modified 的缓存验证
 - 智能缓存失效和更新
 
 ### 错误处理
+
 - 分层错误处理机制
 - 自动重试和指数退避
 - 错误恢复和降级策略
@@ -92,7 +99,7 @@ import { createHttpClient, HttpClient } from '@ldesign/http'
 const client = createHttpClient({
   baseURL: 'https://api.example.com',
   timeout: 5000,
-  adapter: 'axios' // 'axios' | 'alova' | 'fetch'
+  adapter: 'axios', // 'axios' | 'alova' | 'fetch'
 })
 
 // 发送请求
@@ -102,7 +109,7 @@ const user = response.data
 // POST 请求
 const newUser = await client.post<User>('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 ```
 
@@ -110,15 +117,15 @@ const newUser = await client.post<User>('/users', {
 
 ```typescript
 // 请求拦截器
-client.interceptors.request.use((config) => {
+client.interceptors.request.use(config => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 // 响应拦截器
 client.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     if (error.status === 401) {
       // 处理认证错误
       redirectToLogin()
@@ -132,8 +139,8 @@ const cachedResponse = await client.get('/data', {
   cache: {
     ttl: 300000, // 5分钟缓存
     key: 'user-data',
-    strategy: 'stale-while-revalidate'
-  }
+    strategy: 'stale-while-revalidate',
+  },
 })
 ```
 
@@ -176,16 +183,19 @@ const createUser = async (userData) => {
 ## 🚀 扩展性设计
 
 ### 适配器系统
+
 - 自定义 HTTP 适配器
 - 第三方库集成
 - 适配器性能基准测试
 
 ### 插件系统
+
 - 请求/响应转换插件
 - 认证插件
 - 监控和日志插件
 
 ### 配置系统
+
 - 全局和实例级配置
 - 环境变量支持
 - 动态配置更新
@@ -193,6 +203,7 @@ const createUser = async (userData) => {
 ## 📊 项目总结
 
 ### ✅ 已完成功能
+
 - [x] 多 HTTP 库适配器支持
 - [x] 完整的类型安全
 - [x] 智能缓存系统
@@ -203,18 +214,21 @@ const createUser = async (userData) => {
 - [x] 文档和示例
 
 ### 🔄 持续改进
+
 - 更多 HTTP 库支持
 - GraphQL 集成
 - WebSocket 支持
 - 更好的性能优化
 
 ### 📈 性能指标
+
 - 包大小: < 80KB (gzipped)
 - 请求性能: < 100ms 延迟
 - 缓存命中率: > 80%
 - 测试覆盖率: > 95%
 
 ### 🌐 网络特性
+
 - 支持 HTTP/1.1 和 HTTP/2
 - 自动压缩和解压缩
 - 连接复用和管理

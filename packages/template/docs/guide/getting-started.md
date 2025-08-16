@@ -18,7 +18,7 @@ app.use(TemplatePlugin, {
   // 可选配置
   defaultDevice: 'desktop',
   autoScan: true,
-  autoDetectDevice: true
+  autoDetectDevice: true,
 })
 
 app.mount('#app')
@@ -56,11 +56,11 @@ import { ref } from 'vue'
 // 接收外部传入的属性
 interface Props {
   title?: string
-  onLogin?: (data: { username: string, password: string }) => void
+  onLogin?: (data: { username: string; password: string }) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '用户登录'
+  title: '用户登录',
 })
 
 const username = ref('')
@@ -69,7 +69,7 @@ const password = ref('')
 function handleLogin() {
   const loginData = {
     username: username.value,
-    password: password.value
+    password: password.value,
   }
 
   props.onLogin?.(loginData)
@@ -82,12 +82,7 @@ function handleLogin() {
       <h2>{{ title || '用户登录' }}</h2>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <input
-            v-model="username"
-            type="text"
-            placeholder="用户名"
-            required
-          >
+          <input v-model="username" type="text" placeholder="用户名" required />
         </div>
         <div class="form-group">
           <input
@@ -95,11 +90,9 @@ function handleLogin() {
             type="password"
             placeholder="密码"
             required
-          >
+          />
         </div>
-        <button type="submit" class="login-btn">
-          登录
-        </button>
+        <button type="submit" class="login-btn">登录</button>
       </form>
     </div>
   </div>
@@ -176,12 +169,12 @@ export const config: TemplateConfig = {
     title: {
       type: 'string',
       default: '用户登录',
-      description: '登录页标题'
+      description: '登录页标题',
     },
     onLogin: {
       type: 'function',
-      description: '登录回调函数'
-    }
+      description: '登录回调函数',
+    },
   },
 
   // 依赖的其他模板或组件
@@ -190,8 +183,8 @@ export const config: TemplateConfig = {
   // 兼容性信息
   compatibility: {
     vue: '>=3.2.0',
-    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14']
-  }
+    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14'],
+  },
 }
 ```
 
@@ -203,7 +196,7 @@ export const config: TemplateConfig = {
 
 ```vue
 <script setup lang="ts">
-function handleLogin(data: { username: string, password: string }) {
+function handleLogin(data: { username: string; password: string }) {
   console.log('登录数据:', data)
   // 处理登录逻辑
 }
@@ -241,33 +234,24 @@ function onTemplateError(error: Error) {
 <script setup lang="ts">
 import { useTemplate } from '@ldesign/template'
 
-const {
-  currentTemplate,
-  loading,
-  error,
-  render
-} = useTemplate()
+const { currentTemplate, loading, error, render } = useTemplate()
 
 // 渲染指定模板
 render({
   category: 'login',
   device: 'desktop',
-  template: 'classic'
+  template: 'classic',
 })
 
-function handleLogin(data: { username: string, password: string }) {
+function handleLogin(data: { username: string; password: string }) {
   console.log('登录数据:', data)
 }
 </script>
 
 <template>
   <div>
-    <div v-if="loading">
-      加载中...
-    </div>
-    <div v-else-if="error">
-      加载失败: {{ error.message }}
-    </div>
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">加载失败: {{ error.message }}</div>
     <component
       :is="currentTemplate"
       v-else-if="currentTemplate"
@@ -282,7 +266,7 @@ function handleLogin(data: { username: string, password: string }) {
 
 ```vue
 <script setup lang="ts">
-function handleLogin(data: { username: string, password: string }) {
+function handleLogin(data: { username: string; password: string }) {
   console.log('登录数据:', data)
 }
 </script>

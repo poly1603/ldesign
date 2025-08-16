@@ -189,7 +189,9 @@ describe('deviceRouteGuard', () => {
 })
 
 // 辅助函数
-function createMockRoute(overrides: Partial<RouteLocationNormalized> = {}): RouteLocationNormalized {
+function createMockRoute(
+  overrides: Partial<RouteLocationNormalized> = {}
+): RouteLocationNormalized {
   return {
     path: '/',
     name: undefined,

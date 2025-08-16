@@ -53,7 +53,7 @@ export class ResourceManager implements ResourceManagerInstance {
 
   constructor(
     eventEmitter: EventEmitter,
-    options: { maxCacheSize?: number } = {},
+    options: { maxCacheSize?: number } = {}
   ) {
     this.eventEmitter = eventEmitter
     this.maxCacheSize = options.maxCacheSize || 50 * 1024 * 1024 // 50MB
@@ -90,8 +90,7 @@ export class ResourceManager implements ResourceManagerInstance {
 
       this.eventEmitter.emit('resource-loaded', { resource: src })
       return data
-    }
-    catch (error) {
+    } catch (error) {
       this.loading.delete(src)
       this.eventEmitter.emit('resource-error', {
         resource: src,
@@ -106,10 +105,10 @@ export class ResourceManager implements ResourceManagerInstance {
    */
   async preload(resources: string[]): Promise<void> {
     const promises = resources.map(src =>
-      this.load(src).catch((error) => {
+      this.load(src).catch(error => {
         console.warn(`Failed to preload resource: ${src}`, error)
         return null
-      }),
+      })
     )
 
     await Promise.all(promises)
@@ -140,8 +139,7 @@ export class ResourceManager implements ResourceManagerInstance {
           this.cache.delete(src)
         }
       }
-    }
-    else {
+    } else {
       this.cache.clear()
       this.currentCacheSize = 0
     }
@@ -361,9 +359,9 @@ export class ResourceManager implements ResourceManagerInstance {
     switch (type) {
       case 'image':
         return (
-          (data as HTMLImageElement).naturalWidth
-          * (data as HTMLImageElement).naturalHeight
-          * 4
+          (data as HTMLImageElement).naturalWidth *
+          (data as HTMLImageElement).naturalHeight *
+          4
         ) // RGBA
       case 'sound':
         return 1024 * 1024 // 估算 1MB
@@ -399,7 +397,7 @@ export class ResourceManager implements ResourceManagerInstance {
  */
 export function createResourceManager(
   eventEmitter: EventEmitter,
-  options?: { maxCacheSize?: number },
+  options?: { maxCacheSize?: number }
 ): ResourceManagerInstance {
   return new ResourceManager(eventEmitter, options)
 }

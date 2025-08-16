@@ -14,8 +14,8 @@ const translations = {
   common: {
     ok: 'OK',
     cancel: 'Cancel',
-    save: 'Save'
-  }
+    save: 'Save',
+  },
 }
 
 // 使用翻译
@@ -37,11 +37,11 @@ const translations = {
         fields: {
           name: 'Full Name',
           email: 'Email Address',
-          phone: 'Phone Number'
-        }
-      }
-    }
-  }
+          phone: 'Phone Number',
+        },
+      },
+    },
+  },
 }
 
 // 访问深层嵌套的键
@@ -56,7 +56,7 @@ i18n.t('pages.user.profile.fields.email') // "Email Address"
 
 ```typescript
 const translations = {
-  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
 }
 
 i18n.t('weekdays.0') // "Sunday"
@@ -72,7 +72,7 @@ i18n.t('weekdays.1') // "Monday"
 ```typescript
 const translations = {
   greeting: 'Hello {{name}}!',
-  welcome: 'Welcome back, {{user}}. You have {{count}} new messages.'
+  welcome: 'Welcome back, {{user}}. You have {{count}} new messages.',
 }
 
 i18n.t('greeting', { name: 'John' })
@@ -88,7 +88,7 @@ i18n.t('welcome', { user: 'Alice', count: 5 })
 
 ```typescript
 const translations = {
-  userInfo: 'Name: {{user.name}}, Age: {{user.age}}, City: {{user.address.city}}'
+  userInfo: 'Name: {{user.name}}, Age: {{user.age}}, City: {{user.address.city}}',
 }
 
 i18n.t('userInfo', {
@@ -96,9 +96,9 @@ i18n.t('userInfo', {
     name: 'John Doe',
     age: 30,
     address: {
-      city: 'New York'
-    }
-  }
+      city: 'New York',
+    },
+  },
 })
 // "Name: John Doe, Age: 30, City: New York"
 ```
@@ -110,14 +110,14 @@ i18n.t('userInfo', {
 ```typescript
 const translations = {
   price: 'Price: {{amount, currency}}',
-  date: 'Date: {{timestamp, date}}'
+  date: 'Date: {{timestamp, date}}',
 }
 
 // 注册格式化函数
 i18n.addFormatter('currency', (value, locale) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(value)
 })
 
@@ -141,7 +141,7 @@ i18n.t('date', { timestamp: Date.now() })
 ```typescript
 const translations = {
   items: '{count, plural, =0{no items} =1{one item} other{# items}}',
-  messages: '{count, plural, =0{No messages} =1{One message} other{# messages}}'
+  messages: '{count, plural, =0{No messages} =1{One message} other{# messages}}',
 }
 
 i18n.t('items', { count: 0 }) // "no items"
@@ -156,17 +156,17 @@ i18n.t('items', { count: 5 }) // "5 items"
 ```typescript
 // 英语复数规则
 const enTranslations = {
-  books: '{count, plural, =0{no books} =1{one book} other{# books}}'
+  books: '{count, plural, =0{no books} =1{one book} other{# books}}',
 }
 
 // 俄语复数规则（更复杂）
 const ruTranslations = {
-  books: '{count, plural, =0{нет книг} =1{одна книга} few{# книги} many{# книг} other{# книги}}'
+  books: '{count, plural, =0{нет книг} =1{одна книга} few{# книги} many{# книг} other{# книги}}',
 }
 
 // 中文复数规则（无复数变化）
 const zhTranslations = {
-  books: '{count} 本书'
+  books: '{count} 本书',
 }
 ```
 
@@ -174,7 +174,8 @@ const zhTranslations = {
 
 ```typescript
 const translations = {
-  notification: 'Hello {{name}}, you have {count, plural, =0{no new messages} =1{one new message} other{# new messages}}'
+  notification:
+    'Hello {{name}}, you have {count, plural, =0{no new messages} =1{one new message} other{# new messages}}',
 }
 
 i18n.t('notification', { name: 'John', count: 3 })
@@ -191,9 +192,9 @@ const translations = {
     _context: {
       save: 'Save',
       edit: 'Update',
-      create: 'Create'
-    }
-  }
+      create: 'Create',
+    },
+  },
 }
 
 i18n.t('button', {}, { context: 'save' }) // "Save"
@@ -208,8 +209,8 @@ const translations = {
   welcome: {
     male: 'Welcome, Mr. {{name}}',
     female: 'Welcome, Ms. {{name}}',
-    other: 'Welcome, {{name}}'
-  }
+    other: 'Welcome, {{name}}',
+  },
 }
 
 i18n.t('welcome.male', { name: 'John' }) // "Welcome, Mr. John"
@@ -256,7 +257,7 @@ console.log(translations)
 ```typescript
 const i18n = new I18n({
   defaultLocale: 'zh-CN',
-  fallbackLocale: 'en'
+  fallbackLocale: 'en',
 })
 
 // 如果中文翻译不存在，自动使用英文
@@ -270,7 +271,7 @@ i18n.t('some.missing.key') // 返回英文翻译或键名
 ```typescript
 const i18n = new I18n({
   defaultLocale: 'zh-TW',
-  fallbackLocale: ['zh-CN', 'en'] // 依次降级
+  fallbackLocale: ['zh-CN', 'en'], // 依次降级
 })
 ```
 
@@ -293,7 +294,7 @@ i18n.setFallbackResolver((key, locale) => {
 ```typescript
 // 全局默认值
 const i18n = new I18n({
-  defaultValue: key => `Missing: ${key}`
+  defaultValue: key => `Missing: ${key}`,
 })
 
 // 单次翻译默认值
@@ -303,9 +304,13 @@ i18n.t('missing.key', {}, { defaultValue: 'Default Text' })
 ### 动态默认值
 
 ```typescript
-i18n.t('user.greeting', { name: 'John' }, {
-  defaultValue: 'Hello {{name}}!' // 支持插值的默认值
-})
+i18n.t(
+  'user.greeting',
+  { name: 'John' },
+  {
+    defaultValue: 'Hello {{name}}!', // 支持插值的默认值
+  }
+)
 ```
 
 ## 翻译选项
@@ -320,7 +325,8 @@ interface TranslationOptions {
   count?: number // 复数计数
   lng?: string // 指定语言
   fallbackLng?: string[] // 降级语言
-  interpolation?: { // 插值选项
+  interpolation?: {
+    // 插值选项
     prefix?: string // 插值前缀，默认 '{{'
     suffix?: string // 插值后缀，默认 '}}'
     escapeValue?: boolean // 是否转义
@@ -331,12 +337,16 @@ interface TranslationOptions {
 ### 使用示例
 
 ```typescript
-i18n.t('message', { content: '<script>' }, {
-  defaultValue: 'No message',
-  escapeValue: true,
-  context: 'safe',
-  lng: 'en'
-})
+i18n.t(
+  'message',
+  { content: '<script>' },
+  {
+    defaultValue: 'No message',
+    escapeValue: true,
+    context: 'safe',
+    lng: 'en',
+  }
+)
 ```
 
 ## 性能优化
@@ -348,8 +358,8 @@ i18n.t('message', { content: '<script>' }, {
 const i18n = new I18n({
   cache: {
     enabled: true,
-    maxSize: 1000
-  }
+    maxSize: 1000,
+  },
 })
 
 // 缓存统计
@@ -361,11 +371,7 @@ console.log('Cache hit rate:', i18n.cache.getHitRate())
 
 ```typescript
 // 预编译常用翻译
-const precompiledTranslations = i18n.precompile([
-  'common.ok',
-  'common.cancel',
-  'common.save'
-])
+const precompiledTranslations = i18n.precompile(['common.ok', 'common.cancel', 'common.save'])
 
 // 使用预编译翻译
 i18n.usePrecompiled(precompiledTranslations)
@@ -380,7 +386,7 @@ const i18n = new I18n({
   debug: true, // 启用调试模式
   missingKeyHandler: (key, locale) => {
     console.warn(`Missing translation key: ${key} for locale: ${locale}`)
-  }
+  },
 })
 ```
 
@@ -464,8 +470,7 @@ console.log('Missing keys:', coverage.missingKeys)
 function safeTranslate(key, params = {}) {
   try {
     return i18n.t(key, params)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Translation error:', error)
     return key // 返回键名作为降级
   }

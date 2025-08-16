@@ -21,7 +21,7 @@ export class DeviceRouteGuard {
 
   constructor(
     getCurrentDevice: () => DeviceType,
-    options: DeviceGuardOptions = {},
+    options: DeviceGuardOptions = {}
   ) {
     this.getCurrentDevice = getCurrentDevice
     this.options = {
@@ -51,19 +51,17 @@ export class DeviceRouteGuard {
       const isSupported = this.options.checkSupportedDevices!(
         supportedDevices,
         currentDevice,
-        to,
+        to
       )
 
       if (isSupported) {
         next()
-      }
-      else {
+      } else {
         // 设备不支持，执行处理逻辑
         const result = this.options.onUnsupportedDevice!(currentDevice, to)
         if (result) {
           next(result)
-        }
-        else {
+        } else {
           // 如果没有返回重定向，则阻止导航
           next(false)
         }
@@ -74,7 +72,9 @@ export class DeviceRouteGuard {
   /**
    * 获取路由支持的设备类型
    */
-  private getSupportedDevices(route: RouteLocationNormalized): DeviceType[] | undefined {
+  private getSupportedDevices(
+    route: RouteLocationNormalized
+  ): DeviceType[] | undefined {
     // 优先使用路由元信息中的配置
     if (route.meta.supportedDevices) {
       return route.meta.supportedDevices
@@ -96,7 +96,7 @@ export class DeviceRouteGuard {
   private defaultCheckSupportedDevices = (
     supportedDevices: DeviceType[],
     currentDevice: DeviceType,
-    _route: RouteLocationNormalized,
+    _route: RouteLocationNormalized
   ): boolean => {
     return supportedDevices.includes(currentDevice)
   }
@@ -106,7 +106,7 @@ export class DeviceRouteGuard {
    */
   private defaultOnUnsupportedDevice = (
     currentDevice: DeviceType,
-    route: RouteLocationNormalized,
+    route: RouteLocationNormalized
   ): RouteLocationRaw | void => {
     // 优先使用路由配置的重定向
     if (route.meta.unsupportedRedirect) {
@@ -126,7 +126,8 @@ export class DeviceRouteGuard {
       query: {
         from: route.fullPath,
         device: currentDevice,
-        message: route.meta.unsupportedMessage || '当前系统不支持在此设备上查看',
+        message:
+          route.meta.unsupportedMessage || '当前系统不支持在此设备上查看',
       },
     }
   }
@@ -137,7 +138,7 @@ export class DeviceRouteGuard {
  */
 export function createDeviceGuard(
   getCurrentDevice: () => DeviceType,
-  options?: DeviceGuardOptions,
+  options?: DeviceGuardOptions
 ): NavigationGuard {
   const guard = new DeviceRouteGuard(getCurrentDevice, options)
   return guard.createGuard()

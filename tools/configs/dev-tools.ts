@@ -25,7 +25,7 @@ export interface DevToolsOptions {
  * 创建开发工具配置
  */
 export function createDevToolsConfig(
-  options: DevToolsOptions = {},
+  options: DevToolsOptions = {}
 ): UserConfig {
   const {
     hmr = true,
@@ -112,7 +112,7 @@ export function createDevToolsConfig(
  */
 export function createPackageDevConfig(
   packageName: string,
-  options: DevToolsOptions = {},
+  options: DevToolsOptions = {}
 ): UserConfig {
   const baseConfig = createDevToolsConfig(options)
 
@@ -138,7 +138,7 @@ export function createPackageDevConfig(
 export function setupDevErrorHandling() {
   if (typeof window !== 'undefined') {
     // 全局错误处理
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       console.group('🚨 JavaScript Error')
       console.error('Message:', event.message)
       console.error('Source:', event.filename)
@@ -149,7 +149,7 @@ export function setupDevErrorHandling() {
     })
 
     // Promise 错误处理
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       console.group('🚨 Unhandled Promise Rejection')
       console.error('Reason:', event.reason)
       console.error('Promise:', event.promise)
@@ -161,7 +161,7 @@ export function setupDevErrorHandling() {
       window.Vue.config.errorHandler = (
         err: Error,
         instance: any,
-        info: string,
+        info: string
       ) => {
         console.group('🚨 Vue Error')
         console.error('Error:', err)
@@ -188,23 +188,23 @@ export function setupDevPerformanceMonitoring() {
         console.log('Page Load Time:', `${loadTime}ms`)
         console.log(
           'DOM Ready Time:',
-          `${perfData.domContentLoadedEventEnd - perfData.navigationStart}ms`,
+          `${perfData.domContentLoadedEventEnd - perfData.navigationStart}ms`
         )
         console.log(
           'First Paint:',
-          `${perfData.responseStart - perfData.navigationStart}ms`,
+          `${perfData.responseStart - perfData.navigationStart}ms`
         )
         console.groupEnd()
       }, 0)
     })
 
     // 监控资源加载
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       for (const entry of list.getEntries()) {
         if (entry.duration > 1000) {
           // 超过1秒的资源
           console.warn(
-            `⚠️ Slow Resource: ${entry.name} (${entry.duration.toFixed(2)}ms)`,
+            `⚠️ Slow Resource: ${entry.name} (${entry.duration.toFixed(2)}ms)`
           )
         }
       }
@@ -257,7 +257,7 @@ export function setupDevDebugTools() {
     }
 
     console.log(
-      '🛠️ LDesign Debug Tools loaded. Access via window.__LDESIGN_DEBUG__',
+      '🛠️ LDesign Debug Tools loaded. Access via window.__LDESIGN_DEBUG__'
     )
   }
 }

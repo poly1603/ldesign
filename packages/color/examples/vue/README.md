@@ -132,7 +132,7 @@ const app = createApp(App)
 app.use(ThemePlugin, {
   defaultTheme: 'default',
   autoDetect: true,
-  idleProcessing: true
+  idleProcessing: true,
 })
 
 app.mount('#app')
@@ -144,22 +144,14 @@ app.mount('#app')
 <script setup>
 import { useTheme } from '@ldesign/color/vue'
 
-const {
-  currentTheme,
-  currentMode,
-  availableThemes,
-  setTheme,
-  toggleMode
-} = useTheme()
+const { currentTheme, currentMode, availableThemes, setTheme, toggleMode } = useTheme()
 </script>
 
 <template>
   <div>
     <p>当前主题: {{ currentTheme }}</p>
     <p>当前模式: {{ currentMode }}</p>
-    <button @click="toggleMode">
-      切换模式
-    </button>
+    <button @click="toggleMode">切换模式</button>
     <select @change="setTheme($event.target.value)">
       <option v-for="theme in availableThemes" :key="theme" :value="theme">
         {{ theme }}
@@ -179,9 +171,7 @@ const { toggle, isDark } = useThemeToggle()
 </script>
 
 <template>
-  <button @click="toggle">
-    切换到{{ isDark ? '亮色' : '暗色' }}模式
-  </button>
+  <button @click="toggle">切换到{{ isDark ? '亮色' : '暗色' }}模式</button>
 </template>
 ```
 
@@ -219,9 +209,7 @@ const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
   <div>
     <p>系统主题: {{ systemTheme }}</p>
     <p>是否系统暗色: {{ isSystemDark ? '是' : '否' }}</p>
-    <button @click="syncWithSystem">
-      同步系统主题
-    </button>
+    <button @click="syncWithSystem">同步系统主题</button>
   </div>
 </template>
 ```
@@ -302,7 +290,7 @@ export function useCustomTheme() {
 
   return {
     isCustomTheme,
-    createAndApplyTheme
+    createAndApplyTheme,
   }
 }
 ```

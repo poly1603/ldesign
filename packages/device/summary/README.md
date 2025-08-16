@@ -2,7 +2,8 @@
 
 ## 📋 项目概述
 
-@ldesign/device 是 LDesign 生态系统中的设备检测和适配工具包，提供了完整的设备识别、特性检测和响应式适配功能。
+@ldesign/device 是 LDesign 生态系统中的设备检测和适配工具包，提供了完整的设备识别、特性检测和响应式
+适配功能。
 
 ### 🎯 核心功能
 
@@ -17,16 +18,19 @@
 ## 🏗️ 设计理念
 
 ### 1. 精确检测
+
 - 基于多重特征的设备识别
 - 实时状态监控和更新
 - 高准确率的检测算法
 
 ### 2. 性能优先
+
 - 轻量级检测逻辑
 - 缓存机制减少重复检测
 - 按需加载检测模块
 
 ### 3. 易用性设计
+
 - 简洁的 API 接口
 - 响应式数据绑定
 - 丰富的预设配置
@@ -61,16 +65,19 @@
 ## 🔧 实现细节
 
 ### 设备检测引擎
+
 - 多维度特征分析（UA、屏幕、触摸、API）
 - 机器学习辅助识别
 - 实时特征更新和校正
 
 ### 响应式监控
+
 - 屏幕尺寸变化监听
 - 设备方向变化检测
 - 网络状态变化监控
 
 ### 缓存优化
+
 - 检测结果智能缓存
 - 过期策略和更新机制
 - 内存使用优化
@@ -86,13 +93,13 @@ import { DeviceDetector, createDeviceManager } from '@ldesign/device'
 const detector = new DeviceDetector()
 const deviceInfo = detector.detect()
 
-console.log(deviceInfo.type)        // 'desktop' | 'mobile' | 'tablet'
-console.log(deviceInfo.os.name)     // 'Windows' | 'macOS' | 'iOS' | 'Android'
+console.log(deviceInfo.type) // 'desktop' | 'mobile' | 'tablet'
+console.log(deviceInfo.os.name) // 'Windows' | 'macOS' | 'iOS' | 'Android'
 console.log(deviceInfo.browser.name) // 'Chrome' | 'Firefox' | 'Safari'
 
 // 设备管理器
 const deviceManager = createDeviceManager()
-deviceManager.onDeviceChange((newDevice) => {
+deviceManager.onDeviceChange(newDevice => {
   console.log('设备信息更新:', newDevice)
 })
 ```
@@ -129,16 +136,19 @@ watchEffect(() => {
 ## 🚀 扩展性设计
 
 ### 检测器插件系统
+
 - 自定义设备检测器
 - 第三方检测库集成
 - 检测规则配置
 
 ### 适配策略
+
 - 设备特定的样式适配
 - 功能降级策略
 - 性能优化配置
 
 ### 数据收集
+
 - 设备使用统计
 - 性能指标收集
 - 用户行为分析
@@ -146,6 +156,7 @@ watchEffect(() => {
 ## 📊 项目总结
 
 ### ✅ 已完成功能
+
 - [x] 完整的设备检测功能
 - [x] 响应式状态监控
 - [x] Vue 3 集成
@@ -156,18 +167,21 @@ watchEffect(() => {
 - [x] 文档和示例
 
 ### 🔄 持续改进
+
 - 更多设备类型支持
 - AI 辅助设备识别
 - 更精确的特征检测
 - 更好的性能优化
 
 ### 📈 性能指标
+
 - 包大小: < 30KB (gzipped)
 - 检测准确率: > 98%
 - 检测速度: < 10ms
 - 测试覆盖率: > 95%
 
 ### 🎯 检测能力
+
 - 支持设备类型: 20+
 - 支持浏览器: 15+
 - 支持操作系统: 10+

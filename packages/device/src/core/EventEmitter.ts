@@ -3,7 +3,9 @@ import type { EventListener } from '../types'
 /**
  * 简单的事件发射器实现
  */
-export class EventEmitter<T extends Record<string, unknown> = Record<string, unknown>> {
+export class EventEmitter<
+  T extends Record<string, unknown> = Record<string, unknown>
+> {
   private events: Map<keyof T, Set<EventListener<unknown>>> = new Map()
 
   /**
@@ -33,16 +35,14 @@ export class EventEmitter<T extends Record<string, unknown> = Record<string, unk
    */
   off<K extends keyof T>(event: K, listener?: EventListener<T[K]>): this {
     const listeners = this.events.get(event)
-    if (!listeners)
-      return this
+    if (!listeners) return this
 
     if (listener) {
       listeners.delete(listener as EventListener<unknown>)
       if (listeners.size === 0) {
         this.events.delete(event)
       }
-    }
-    else {
+    } else {
       this.events.delete(event)
     }
 
@@ -54,14 +54,12 @@ export class EventEmitter<T extends Record<string, unknown> = Record<string, unk
    */
   emit<K extends keyof T>(event: K, data: T[K]): this {
     const listeners = this.events.get(event)
-    if (!listeners)
-      return this
+    if (!listeners) return this
 
-    listeners.forEach((listener) => {
+    listeners.forEach(listener => {
       try {
         listener(data)
-      }
-      catch (error) {
+      } catch (error) {
         console.error(`Error in event listener for "${String(event)}":`, error)
       }
     })
@@ -90,8 +88,7 @@ export class EventEmitter<T extends Record<string, unknown> = Record<string, unk
   removeAllListeners<K extends keyof T>(event?: K): this {
     if (event) {
       this.events.delete(event)
-    }
-    else {
+    } else {
       this.events.clear()
     }
     return this

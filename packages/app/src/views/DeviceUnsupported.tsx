@@ -12,7 +12,7 @@ export default defineComponent({
     const device = computed(() => (route.query.device as string) || 'unknown')
     const from = computed(() => (route.query.from as string) || '/')
     const message = computed(
-      () => (route.query.message as string) || '当前系统不支持在此设备上查看',
+      () => (route.query.message as string) || '当前系统不支持在此设备上查看'
     )
 
     // 设备友好名称映射
@@ -27,8 +27,7 @@ export default defineComponent({
     const handleGoBack = () => {
       if (window.history.length > 1) {
         window.history.back()
-      }
-      else {
+      } else {
         router.push('/')
       }
     }
@@ -50,15 +49,13 @@ export default defineComponent({
           '确保屏幕分辨率至少为 1200×800',
           '使用现代浏览器（Chrome、Firefox、Safari、Edge）',
         ]
-      }
-      else if (fromPath.includes('/mobile-app')) {
+      } else if (fromPath.includes('/mobile-app')) {
         return [
           '请使用手机访问此功能',
           '确保使用移动端浏览器',
           '或下载我们的移动应用',
         ]
-      }
-      else if (fromPath.includes('/editor')) {
+      } else if (fromPath.includes('/editor')) {
         return [
           '编辑器需要较大的屏幕空间',
           '请使用平板或桌面设备',

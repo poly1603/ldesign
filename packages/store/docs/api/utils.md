@@ -227,12 +227,12 @@ console.log(json) // '{"user":{"id":"1","name":"John"}}'
 
 // 排除某些字段
 const filtered = serialize(userStore, {
-  exclude: ['password', 'token']
+  exclude: ['password', 'token'],
 })
 
 // 格式化输出
 const formatted = serialize(userStore, {
-  space: 2
+  space: 2,
 })
 ```
 
@@ -275,7 +275,7 @@ deserialize(userStore, json, {
       return new Date(value)
     }
     return value
-  }
+  },
 })
 ```
 
@@ -326,7 +326,7 @@ const cache = createCache<string, any>({
   ttl: 60000, // 1分钟
   onEvict: (key, value) => {
     console.log(`缓存项 ${key} 被驱逐`)
-  }
+  },
 })
 
 // 使用缓存
@@ -364,24 +364,30 @@ interface MemoizeOptions {
 import { memoize } from '@ldesign/store'
 
 // 记忆化昂贵的计算
-const expensiveCalculation = memoize((a: number, b: number) => {
-  console.log('执行计算...')
-  return a * b * Math.random()
-}, {
-  maxSize: 50,
-  ttl: 30000 // 30秒
-})
+const expensiveCalculation = memoize(
+  (a: number, b: number) => {
+    console.log('执行计算...')
+    return a * b * Math.random()
+  },
+  {
+    maxSize: 50,
+    ttl: 30000, // 30秒
+  }
+)
 
 console.log(expensiveCalculation(5, 10)) // 执行计算...
 console.log(expensiveCalculation(5, 10)) // 使用缓存
 
 // 自定义键生成器
-const memoizedFetch = memoize(async (url: string, options: any) => {
-  const response = await fetch(url, options)
-  return response.json()
-}, {
-  keyGenerator: (url, options) => `${url}-${JSON.stringify(options)}`
-})
+const memoizedFetch = memoize(
+  async (url: string, options: any) => {
+    const response = await fetch(url, options)
+    return response.json()
+  },
+  {
+    keyGenerator: (url, options) => `${url}-${JSON.stringify(options)}`,
+  }
+)
 ```
 
 ## 防抖和节流
@@ -483,7 +489,7 @@ import { deepClone } from '@ldesign/store'
 
 const original = {
   user: { id: '1', profile: { name: 'John' } },
-  items: [1, 2, 3]
+  items: [1, 2, 3],
 }
 
 const cloned = deepClone(original)
@@ -508,12 +514,12 @@ import { deepMerge } from '@ldesign/store'
 
 const target = {
   user: { id: '1', name: 'John' },
-  settings: { theme: 'light' }
+  settings: { theme: 'light' },
 }
 
 const source = {
   user: { email: 'john@example.com' },
-  settings: { language: 'en' }
+  settings: { language: 'en' },
 }
 
 const merged = deepMerge(target, source)
@@ -578,9 +584,9 @@ const schema = {
   type: 'object',
   properties: {
     name: { type: 'string', minLength: 1 },
-    age: { type: 'number', minimum: 0 }
+    age: { type: 'number', minimum: 0 },
   },
-  required: ['name']
+  required: ['name'],
 }
 
 const data = { name: 'John', age: 25 }
@@ -588,8 +594,7 @@ const result = validateSchema(data, schema)
 
 if (result.valid) {
   console.log('数据有效')
-}
-else {
+} else {
   console.log('验证错误:', result.errors)
 }
 ```
@@ -629,24 +634,24 @@ const userValidator = createValidator<User>([
   {
     field: 'name',
     validator: value => typeof value === 'string' && value.length > 0,
-    message: '姓名不能为空'
+    message: '姓名不能为空',
   },
   {
     field: 'email',
     validator: value => /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(value),
-    message: '邮箱格式不正确'
+    message: '邮箱格式不正确',
   },
   {
     field: 'age',
     validator: value => typeof value === 'number' && value >= 0,
-    message: '年龄必须是非负数'
-  }
+    message: '年龄必须是非负数',
+  },
 ])
 
 const result = userValidator({
   name: 'John',
   email: 'john@example.com',
-  age: 25
+  age: 25,
 })
 ```
 
@@ -680,7 +685,7 @@ import { createEventBus } from '@ldesign/store'
 const eventBus = createEventBus()
 
 // 监听事件
-const unsubscribe = eventBus.on('user:login', (user) => {
+const unsubscribe = eventBus.on('user:login', user => {
   console.log('用户登录:', user)
 })
 
@@ -715,9 +720,10 @@ A: 缓存工具提供了多种内存管理策略：
 const cache = createCache({
   maxSize: 100, // 限制最大数量
   ttl: 60000, // 自动过期
-  onEvict: (k, v) => { // 驱逐回调
+  onEvict: (k, v) => {
+    // 驱逐回调
     console.log('清理缓存:', k)
-  }
+  },
 })
 ```
 
@@ -732,7 +738,7 @@ const json = serialize(store, {
       return { __type: 'Date', value: value.toISOString() }
     }
     return value
-  }
+  },
 })
 
 deserialize(store, json, {
@@ -741,7 +747,7 @@ deserialize(store, json, {
       return new Date(value.value)
     }
     return value
-  }
+  },
 })
 ```
 

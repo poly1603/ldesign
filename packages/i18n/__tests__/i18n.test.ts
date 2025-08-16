@@ -63,7 +63,7 @@ describe('i18n', () => {
     // 创建测试用的组件
     loader = new StaticLoader()
     loader.registerPackages({
-      'en': enPackage,
+      en: enPackage,
       'zh-CN': zhPackage,
     })
 
@@ -130,7 +130,7 @@ describe('i18n', () => {
 
     it('应该支持默认值', () => {
       expect(i18n.t('nonexistent.key', {}, { defaultValue: 'Default' })).toBe(
-        'Default',
+        'Default'
       )
     })
   })
@@ -283,9 +283,9 @@ describe('i18n', () => {
       // 创建新的loader并注册所有语言包
       const testLoader = new StaticLoader()
       testLoader.registerPackages({
-        'en': enPackage,
+        en: enPackage,
         'zh-CN': zhPackage,
-        'partial': partialPackage,
+        partial: partialPackage,
       })
 
       i18n = new I18n({

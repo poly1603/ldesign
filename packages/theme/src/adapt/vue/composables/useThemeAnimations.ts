@@ -100,7 +100,7 @@ export function useThemeAnimations(): UseThemeAnimationsReturn {
    * 获取动画配置
    */
   const getAnimation = (
-    name: string,
+    name: string
   ): ComputedRef<AnimationConfig | undefined> => {
     return computed(() => {
       return animations.value.find(animation => animation.name === name)
@@ -169,12 +169,10 @@ export function useAnimationControl(animationName: string): {
     if (isRunning.value) {
       if (isPaused.value) {
         resume()
-      }
-      else {
+      } else {
         pause()
       }
-    }
-    else {
+    } else {
       start()
     }
   }
@@ -219,8 +217,7 @@ export function useAnimationSequence(animationNames: string[]): {
   })
 
   const startSequence = () => {
-    if (animationNames.length === 0)
-      return
+    if (animationNames.length === 0) return
 
     isSequenceRunning.value = true
     currentIndex.value = 0
@@ -236,8 +233,7 @@ export function useAnimationSequence(animationNames: string[]): {
   }
 
   const nextAnimation = () => {
-    if (!isSequenceRunning.value)
-      return
+    if (!isSequenceRunning.value) return
 
     if (currentAnimation.value) {
       stopAnimation(currentAnimation.value)
@@ -251,15 +247,14 @@ export function useAnimationSequence(animationNames: string[]): {
   }
 
   const previousAnimation = () => {
-    if (!isSequenceRunning.value)
-      return
+    if (!isSequenceRunning.value) return
 
     if (currentAnimation.value) {
       stopAnimation(currentAnimation.value)
     }
 
-    currentIndex.value
-      = currentIndex.value === 0
+    currentIndex.value =
+      currentIndex.value === 0
         ? animationNames.length - 1
         : currentIndex.value - 1
 
@@ -269,8 +264,7 @@ export function useAnimationSequence(animationNames: string[]): {
   }
 
   const jumpToAnimation = (index: number) => {
-    if (index < 0 || index >= animationNames.length)
-      return
+    if (index < 0 || index >= animationNames.length) return
 
     if (currentAnimation.value) {
       stopAnimation(currentAnimation.value)
@@ -316,8 +310,7 @@ export function useAnimationPerformance(): {
   let fpsStartTime = 0
 
   const monitor = (currentTime: number) => {
-    if (!monitoringId.value)
-      return
+    if (!monitoringId.value) return
 
     // 计算帧时间
     if (lastTime > 0) {
@@ -341,8 +334,7 @@ export function useAnimationPerformance(): {
   }
 
   const startMonitoring = () => {
-    if (monitoringId.value)
-      return
+    if (monitoringId.value) return
 
     lastTime = 0
     frameCount = 0

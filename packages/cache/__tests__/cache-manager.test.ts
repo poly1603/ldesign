@@ -155,7 +155,7 @@ describe('cacheManager', () => {
   describe('错误处理', () => {
     it('应该处理无效的存储引擎', async () => {
       await expect(
-        cacheManager.set('test', 'value', { engine: 'invalid' as any }),
+        cacheManager.set('test', 'value', { engine: 'invalid' as any })
       ).rejects.toThrow()
     })
 

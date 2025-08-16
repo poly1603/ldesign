@@ -2,8 +2,8 @@
 layout: home
 
 hero:
-  name: "@ldesign/i18n"
-  text: "多语言管理系统"
+  name: '@ldesign/i18n'
+  text: '多语言管理系统'
   tagline: 功能完整的框架无关国际化解决方案
   image:
     src: /logo.svg
@@ -75,7 +75,7 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
   fallbackLocale: 'en',
-  autoDetect: true
+  autoDetect: true,
 })
 
 // 基础翻译
@@ -101,7 +101,7 @@ import App from './App.vue'
 
 async function bootstrap() {
   const i18nInstance = await createI18nWithBuiltinLocales({
-    defaultLocale: 'en'
+    defaultLocale: 'en',
   })
 
   const vueI18nPlugin = createI18n(i18nInstance)
@@ -132,11 +132,7 @@ const { t, availableLanguages, changeLanguage } = useI18n()
 
     <!-- 语言切换 -->
     <select @change="changeLanguage($event.target.value)">
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>

@@ -61,8 +61,7 @@ export class TemplateScanner {
         ...result,
         duration: Date.now() - startTime,
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 模板扫描失败:', error)
       return this.getFallbackResult(startTime)
     }
@@ -97,8 +96,7 @@ export class TemplateScanner {
           },
         }
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('⚠️ Built模式失败:', error)
     }
 
@@ -127,8 +125,7 @@ export class TemplateScanner {
           },
         }
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('⚠️ Source模式失败:', error)
     }
 
@@ -151,7 +148,7 @@ export class TemplateScanner {
    */
   private async parseModules(
     configModules: Record<string, () => Promise<unknown>>,
-    componentModules: Record<string, () => Promise<unknown>>,
+    componentModules: Record<string, () => Promise<unknown>>
   ): Promise<TemplateMetadata[]> {
     const templates: TemplateMetadata[] = []
 
@@ -182,8 +179,7 @@ export class TemplateScanner {
         templates.push(template)
         console.log(`✅ 解析模板: ${pathInfo.category}/${pathInfo.device}/${pathInfo.template}`)
         console.log(`   组件路径: ${pathInfo.componentPath}`)
-      }
-      catch (error) {
+      } catch (error) {
         console.warn(`⚠️ 解析模板失败 ${configPath}:`, error)
       }
     }
@@ -226,7 +222,7 @@ export class TemplateScanner {
       'login/tablet/split',
     ]
 
-    return predefinedTemplates.map((path) => {
+    return predefinedTemplates.map(path => {
       const parts = path.split('/')
       const [category, device, template] = parts
 
@@ -252,8 +248,7 @@ export class TemplateScanner {
    * 检查缓存是否有效
    */
   private isCacheValid(key: string): boolean {
-    if (!this.cache.has(key))
-      return false
+    if (!this.cache.has(key)) return false
     return Date.now() - this.lastScanTime < this.cacheExpiration
   }
 
@@ -292,8 +287,8 @@ export class TemplateScanner {
    */
   findTemplate(category: string, device: string, template: string): TemplateMetadata | null {
     return (
-      this.getAllTemplates().find(t => t.category === category && t.device === device && t.template === template)
-      || null
+      this.getAllTemplates().find(t => t.category === category && t.device === device && t.template === template) ||
+      null
     )
   }
 }

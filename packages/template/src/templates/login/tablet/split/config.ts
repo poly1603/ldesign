@@ -12,13 +12,7 @@ export const config: TemplateConfig = {
   author: 'LDesign Team',
   tags: ['分屏', '平板端', '分栏', '视觉'],
   preview: '/previews/login-tablet-split.png',
-  features: [
-    '左右分屏',
-    '视觉分离',
-    '品牌展示',
-    '专业感',
-    '大屏优化',
-  ],
+  features: ['左右分屏', '视觉分离', '品牌展示', '专业感', '大屏优化'],
   props: {
     title: {
       type: 'string',

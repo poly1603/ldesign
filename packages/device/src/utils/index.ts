@@ -24,8 +24,7 @@ class LRUCache<K, V> {
   set(key: K, value: V): void {
     if (this.cache.has(key)) {
       this.cache.delete(key)
-    }
-    else if (this.cache.size >= this.maxSize) {
+    } else if (this.cache.size >= this.maxSize) {
       // 删除最旧的项
       const firstKey = this.cache.keys().next().value
       if (firstKey !== undefined) {
@@ -41,12 +40,21 @@ class LRUCache<K, V> {
 }
 
 // 全局缓存实例
-const userAgentCache = new LRUCache<string, { os: { name: string, version: string }, browser: { name: string, version: string } }>(20)
+const userAgentCache = new LRUCache<
+  string,
+  {
+    os: { name: string; version: string }
+    browser: { name: string; version: string }
+  }
+>(20)
 
 /**
  * 解析用户代理字符串（带缓存）
  */
-function parseUserAgent(userAgent: string): { os: { name: string, version: string }, browser: { name: string, version: string } } {
+function parseUserAgent(userAgent: string): {
+  os: { name: string; version: string }
+  browser: { name: string; version: string }
+} {
   // 检查缓存
   const cached = userAgentCache.get(userAgent)
   if (cached) {
@@ -148,7 +156,7 @@ function parseUserAgent(userAgent: string): { os: { name: string, version: strin
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
-  immediate = false,
+  immediate = false
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
   let result: ReturnType<T>
@@ -186,7 +194,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
-  options: { leading?: boolean, trailing?: boolean } = {},
+  options: { leading?: boolean; trailing?: boolean } = {}
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
   let previous = 0
@@ -208,8 +216,7 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
       }
       previous = now
       func(...args)
-    }
-    else if (!timeout && trailing) {
+    } else if (!timeout && trailing) {
       timeout = setTimeout(() => {
         previous = leading ? Date.now() : 0
         timeout = null
@@ -224,11 +231,13 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
  * @param userAgent - 可选的用户代理字符串，如果不提供则使用当前浏览器的 userAgent
  */
 export function isMobileDevice(userAgent?: string): boolean {
-  if (typeof window === 'undefined' && !userAgent)
-    return false
+  if (typeof window === 'undefined' && !userAgent) return false
 
-  const ua = userAgent || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+  const ua =
+    userAgent ||
+    (typeof window !== 'undefined' ? window.navigator.userAgent : '')
+  const mobileRegex =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
   return mobileRegex.test(ua)
 }
 
@@ -236,13 +245,13 @@ export function isMobileDevice(userAgent?: string): boolean {
  * 检测是否为触摸设备
  */
 export function isTouchDevice(): boolean {
-  if (typeof window === 'undefined')
-    return false
+  if (typeof window === 'undefined') return false
 
   return (
-    'ontouchstart' in window
-    || navigator.maxTouchPoints > 0
-    || ((navigator as unknown as Record<string, unknown>).msMaxTouchPoints as number || 0) > 0
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    (((navigator as unknown as Record<string, unknown>)
+      .msMaxTouchPoints as number) || 0) > 0
   )
 }
 
@@ -251,12 +260,10 @@ export function isTouchDevice(): boolean {
  */
 export function getDeviceTypeByWidth(
   width: number,
-  breakpoints = { mobile: 768, tablet: 1024 },
+  breakpoints = { mobile: 768, tablet: 1024 }
 ): DeviceType {
-  if (width < breakpoints.mobile)
-    return 'mobile'
-  if (width < breakpoints.tablet)
-    return 'tablet'
+  if (width < breakpoints.mobile) return 'mobile'
+  if (width < breakpoints.tablet) return 'tablet'
   return 'desktop'
 }
 
@@ -265,8 +272,14 @@ export function getDeviceTypeByWidth(
  * @param width - 可选的屏幕宽度，如果不提供则使用当前窗口宽度
  * @param height - 可选的屏幕高度，如果不提供则使用当前窗口高度
  */
-export function getScreenOrientation(width?: number, height?: number): Orientation {
-  if (typeof window === 'undefined' && (width === undefined || height === undefined))
+export function getScreenOrientation(
+  width?: number,
+  height?: number
+): Orientation {
+  if (
+    typeof window === 'undefined' &&
+    (width === undefined || height === undefined)
+  )
     return 'landscape'
 
   // 如果提供了宽高参数，直接使用参数判断
@@ -276,7 +289,9 @@ export function getScreenOrientation(width?: number, height?: number): Orientati
 
   // 优先使用 screen.orientation API
   if (typeof window !== 'undefined' && screen.orientation)
-    return screen.orientation.angle === 0 || screen.orientation.angle === 180 ? 'portrait' : 'landscape'
+    return screen.orientation.angle === 0 || screen.orientation.angle === 180
+      ? 'portrait'
+      : 'landscape'
 
   // 降级到窗口尺寸判断
   if (typeof window !== 'undefined')
@@ -288,14 +303,17 @@ export function getScreenOrientation(width?: number, height?: number): Orientati
 /**
  * 解析用户代理字符串获取操作系统信息（带缓存）
  */
-export function parseOS(userAgent: string): { name: string, version: string } {
+export function parseOS(userAgent: string): { name: string; version: string } {
   return parseUserAgent(userAgent).os
 }
 
 /**
  * 解析用户代理字符串获取浏览器信息（带缓存）
  */
-export function parseBrowser(userAgent: string): { name: string, version: string } {
+export function parseBrowser(userAgent: string): {
+  name: string
+  version: string
+} {
   return parseUserAgent(userAgent).browser
 }
 
@@ -303,8 +321,7 @@ export function parseBrowser(userAgent: string): { name: string, version: string
  * 获取设备像素比
  */
 export function getPixelRatio(): number {
-  if (typeof window === 'undefined')
-    return 1
+  if (typeof window === 'undefined') return 1
   return window.devicePixelRatio || 1
 }
 
@@ -312,15 +329,16 @@ export function getPixelRatio(): number {
  * 检查是否支持某个 API
  */
 export function isAPISupported(api: string): boolean {
-  if (typeof window === 'undefined')
-    return false
+  if (typeof window === 'undefined') return false
 
   const parts = api.split('.')
-  let obj: Record<string, unknown> = window as unknown as Record<string, unknown>
+  let obj: Record<string, unknown> = window as unknown as Record<
+    string,
+    unknown
+  >
 
   for (const part of parts) {
-    if (!(part in obj))
-      return false
+    if (!(part in obj)) return false
     obj = obj[part] as Record<string, unknown>
   }
 
@@ -332,28 +350,25 @@ export function isAPISupported(api: string): boolean {
  */
 export function safeNavigatorAccess<T>(
   accessor: (navigator: Navigator) => T,
-  fallback: T,
+  fallback: T
 ): T
 export function safeNavigatorAccess<K extends keyof Navigator>(
   property: K,
-  fallback?: Navigator[K],
+  fallback?: Navigator[K]
 ): Navigator[K] | undefined
 export function safeNavigatorAccess<T, K extends keyof Navigator>(
   accessorOrProperty: ((navigator: Navigator) => T) | K,
-  fallback?: T | Navigator[K],
+  fallback?: T | Navigator[K]
 ): T | Navigator[K] | undefined {
-  if (typeof navigator === 'undefined')
-    return fallback
+  if (typeof navigator === 'undefined') return fallback
 
   try {
     if (typeof accessorOrProperty === 'function') {
       return accessorOrProperty(navigator)
-    }
-    else {
+    } else {
       return navigator[accessorOrProperty] ?? fallback
     }
-  }
-  catch {
+  } catch {
     return fallback
   }
 }
@@ -362,8 +377,7 @@ export function safeNavigatorAccess<T, K extends keyof Navigator>(
  * 格式化字节大小
  */
 export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
@@ -379,6 +393,8 @@ export function formatBytes(bytes: number, decimals = 2): string {
  * @param prefix - 可选的前缀
  */
 export function generateId(prefix?: string): string {
-  const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  const id =
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
   return prefix ? `${prefix}-${id}` : id
 }

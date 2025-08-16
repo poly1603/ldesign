@@ -119,7 +119,7 @@ describe('baseStore', () => {
     const store = new TestStore('test-store')
     const actions: any[] = []
 
-    const unsubscribe = store.$onAction((context) => {
+    const unsubscribe = store.$onAction(context => {
       actions.push(context)
     })
 

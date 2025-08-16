@@ -29,7 +29,7 @@ const rl = readline.createInterface({
 })
 
 function question(prompt) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     rl.question(prompt, resolve)
   })
 }
@@ -71,7 +71,11 @@ async function selectCommitType() {
   log(`\n${colors.cyan}📝 选择提交类型:${colors.reset}`)
 
   commitTypes.forEach((type, index) => {
-    log(`${colors.yellow}${index + 1}.${colors.reset} ${colors.green}${type.value}${colors.reset} - ${type.description}`)
+    log(
+      `${colors.yellow}${index + 1}.${colors.reset} ${colors.green}${
+        type.value
+      }${colors.reset} - ${type.description}`
+    )
   })
 
   const answer = await question('\n请选择类型 (1-11): ')
@@ -119,7 +123,9 @@ async function getSubject() {
   }
 
   if (subject.length > 50) {
-    log(`${colors.yellow}⚠️  描述过长 (${subject.length} 字符)，建议控制在 50 字符以内${colors.reset}`)
+    log(
+      `${colors.yellow}⚠️  描述过长 (${subject.length} 字符)，建议控制在 50 字符以内${colors.reset}`
+    )
 
     const confirm = await question('是否继续? (y/N): ')
     if (confirm.toLowerCase() !== 'y') {
@@ -172,7 +178,9 @@ async function runValidation() {
     log(`${colors.green}✅ 快速验证通过${colors.reset}`)
 
     // 询问是否运行完整验证
-    const runFull = await question('\n是否运行完整验证 (包括测试和构建)? (Y/n): ')
+    const runFull = await question(
+      '\n是否运行完整验证 (包括测试和构建)? (Y/n): '
+    )
 
     if (runFull.toLowerCase() !== 'n') {
       execSync('pnpm validate', { stdio: 'inherit' })
@@ -180,8 +188,7 @@ async function runValidation() {
     }
 
     return true
-  }
-  catch (error) {
+  } catch (error) {
     log(`${colors.red}❌ 验证失败: ${error.message}${colors.reset}`)
 
     const force = await question('\n是否强制提交? (y/N): ')
@@ -192,17 +199,20 @@ async function runValidation() {
 async function commitChanges(message) {
   try {
     // 检查是否有暂存的文件
-    const status = execSync('git status --porcelain --cached', { encoding: 'utf8' })
+    const status = execSync('git status --porcelain --cached', {
+      encoding: 'utf8',
+    })
 
     if (!status.trim()) {
-      log(`${colors.yellow}⚠️  没有暂存的文件，请先添加要提交的文件${colors.reset}`)
+      log(
+        `${colors.yellow}⚠️  没有暂存的文件，请先添加要提交的文件${colors.reset}`
+      )
 
       const addAll = await question('是否添加所有修改的文件? (y/N): ')
       if (addAll.toLowerCase() === 'y') {
         execSync('git add .', { stdio: 'inherit' })
         log(`${colors.green}✅ 已添加所有文件${colors.reset}`)
-      }
-      else {
+      } else {
         log(`${colors.red}❌ 提交取消${colors.reset}`)
         return false
       }
@@ -213,8 +223,7 @@ async function commitChanges(message) {
     log(`${colors.green}🎉 提交成功！${colors.reset}`)
 
     return true
-  }
-  catch (error) {
+  } catch (error) {
     log(`${colors.red}❌ 提交失败: ${error.message}${colors.reset}`)
     return false
   }
@@ -265,17 +274,14 @@ async function main() {
         try {
           execSync('git push', { stdio: 'inherit' })
           log(`${colors.green}🚀 推送成功！${colors.reset}`)
-        }
-        catch (error) {
+        } catch (error) {
           log(`${colors.red}❌ 推送失败: ${error.message}${colors.reset}`)
         }
       }
     }
-  }
-  catch (error) {
+  } catch (error) {
     log(`${colors.red}❌ 提交助手执行失败: ${error.message}${colors.reset}`)
-  }
-  finally {
+  } finally {
     rl.close()
   }
 }

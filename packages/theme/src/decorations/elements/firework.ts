@@ -37,8 +37,7 @@ export class FireworkDecoration extends BaseDecoration {
         // 加载SVG内容
         const svgContent = await this.loadSVG(this.config.src)
         this.element.innerHTML = svgContent
-      }
-      else {
+      } else {
         // 使用默认烟花图案
         this.element.innerHTML = this.getDefaultFirework()
       }
@@ -48,8 +47,7 @@ export class FireworkDecoration extends BaseDecoration {
 
       // 创建粒子
       this.createParticles()
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to load firework content:', error)
       this.element.innerHTML = this.getDefaultFirework()
     }
@@ -294,7 +292,7 @@ export class FireworkDecoration extends BaseDecoration {
     this.element.style.opacity = '0'
     this.element.style.transform = 'scale(0)'
 
-    this.particles.forEach((particle) => {
+    this.particles.forEach(particle => {
       particle.style.opacity = '0'
       particle.style.transform = 'translate(-50%, -50%)'
     })
@@ -309,7 +307,7 @@ export class FireworkDecoration extends BaseDecoration {
       this.burstAnimation = undefined
     }
 
-    this.particleAnimations.forEach((animation) => {
+    this.particleAnimations.forEach(animation => {
       animation.cancel()
     })
     this.particleAnimations = []
@@ -341,7 +339,7 @@ export class FireworkDecoration extends BaseDecoration {
     this.stopAllAnimations()
 
     // 清理粒子
-    this.particles.forEach((particle) => {
+    this.particles.forEach(particle => {
       if (particle.parentNode) {
         particle.parentNode.removeChild(particle)
       }
@@ -361,7 +359,7 @@ export class FireworkDecoration extends BaseDecoration {
       duration?: number
       interval?: number
       colors?: string[]
-    } = {},
+    } = {}
   ): FireworkDecoration[] {
     const { count = 5, duration = 10000, interval = 1000 } = options
 
@@ -418,7 +416,7 @@ export class FireworkDecoration extends BaseDecoration {
  */
 export function createFireworkDecoration(
   config: DecorationConfig,
-  container: HTMLElement,
+  container: HTMLElement
 ): FireworkDecoration {
   return new FireworkDecoration(config, container)
 }
@@ -432,7 +430,7 @@ export function createCelebrationFireworks(
     intensity?: 'light' | 'medium' | 'heavy'
     duration?: number
     colors?: string[]
-  } = {},
+  } = {}
 ): FireworkDecoration[] {
   const { intensity = 'medium', duration = 8000 } = options
 

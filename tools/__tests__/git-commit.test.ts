@@ -63,7 +63,9 @@ describe('git Commit Tool', () => {
       mockExecSync.mockReturnValueOnce(Buffer.from('main'))
 
       // Mock git log @{u}..HEAD --oneline (has unpushed commits)
-      mockExecSync.mockReturnValueOnce(Buffer.from('abc123 feat: add new feature\ndef456 fix: resolve bug'))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from('abc123 feat: add new feature\ndef456 fix: resolve bug')
+      )
 
       expect(true).toBe(true)
     })
@@ -79,7 +81,9 @@ describe('git Commit Tool', () => {
     })
 
     it('should handle git pull --rebase successfully', () => {
-      mockExecSync.mockReturnValueOnce(Buffer.from('Successfully rebased and updated refs/heads/main.'))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from('Successfully rebased and updated refs/heads/main.')
+      )
 
       expect(() => {
         execSync('git pull --rebase origin')
@@ -96,7 +100,9 @@ describe('git Commit Tool', () => {
 
     it('should handle git commit successfully', () => {
       const commitMessage = 'feat: add new feature'
-      mockExecSync.mockReturnValueOnce(Buffer.from(`[main abc123] ${commitMessage}`))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from(`[main abc123] ${commitMessage}`)
+      )
 
       expect(() => {
         execSync(`git commit -m "${commitMessage}"`)
@@ -104,7 +110,9 @@ describe('git Commit Tool', () => {
     })
 
     it('should handle git push successfully', () => {
-      mockExecSync.mockReturnValueOnce(Buffer.from('To origin\n   abc123..def456  main -> main'))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from('To origin\n   abc123..def456  main -> main')
+      )
 
       expect(() => {
         execSync('git push origin main')
@@ -121,8 +129,7 @@ describe('git Commit Tool', () => {
       expect(() => {
         try {
           execSync('git status')
-        }
-        catch (error) {
+        } catch (error) {
           expect(error).toBeInstanceOf(Error)
           throw error
         }
@@ -139,8 +146,7 @@ describe('git Commit Tool', () => {
       expect(() => {
         try {
           execSync('git pull --rebase origin')
-        }
-        catch (error) {
+        } catch (error) {
           expect(error.message).toContain('CONFLICT')
           throw error
         }
@@ -149,15 +155,16 @@ describe('git Commit Tool', () => {
 
     it('should handle push failures (e.g., no upstream branch)', () => {
       mockExecSync.mockImplementationOnce(() => {
-        const error = new Error('fatal: The current branch has no upstream branch.')
+        const error = new Error(
+          'fatal: The current branch has no upstream branch.'
+        )
         throw error
       })
 
       expect(() => {
         try {
           execSync('git push origin main')
-        }
-        catch (error) {
+        } catch (error) {
           expect(error.message).toContain('upstream')
           throw error
         }
@@ -198,8 +205,7 @@ describe('git Commit Tool', () => {
       expect(() => {
         try {
           execSync('git rev-parse --git-dir')
-        }
-        catch (error) {
+        } catch (error) {
           expect(error.message).toContain('not a git repository')
           throw error
         }
@@ -225,23 +231,19 @@ describe('git Commit Tool', () => {
       commands.forEach((cmd, index) => {
         if (cmd.includes('status --porcelain')) {
           mockExecSync.mockReturnValueOnce(Buffer.from(' M file.ts'))
-        }
-        else if (cmd.includes('branch --show-current')) {
+        } else if (cmd.includes('branch --show-current')) {
           mockExecSync.mockReturnValueOnce(Buffer.from('main'))
-        }
-        else if (cmd.includes('log @{u}..HEAD')) {
+        } else if (cmd.includes('log @{u}..HEAD')) {
           mockExecSync.mockReturnValueOnce(Buffer.from(''))
-        }
-        else if (cmd.includes('rev-list HEAD..@{u}')) {
+        } else if (cmd.includes('rev-list HEAD..@{u}')) {
           mockExecSync.mockReturnValueOnce(Buffer.from('0'))
-        }
-        else {
+        } else {
           mockExecSync.mockReturnValueOnce(Buffer.from('success'))
         }
       })
 
       // Test that all commands can be executed without throwing
-      commands.forEach((cmd) => {
+      commands.forEach(cmd => {
         expect(() => execSync(cmd)).not.toThrow()
       })
     })

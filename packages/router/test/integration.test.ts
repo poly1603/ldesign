@@ -9,17 +9,20 @@ describe('集成测试', () => {
     {
       path: '/',
       name: 'home',
-      component: () => Promise.resolve({ default: { template: '<div>Home</div>' } }),
+      component: () =>
+        Promise.resolve({ default: { template: '<div>Home</div>' } }),
     },
     {
       path: '/about',
       name: 'about',
-      component: () => Promise.resolve({ default: { template: '<div>About</div>' } }),
+      component: () =>
+        Promise.resolve({ default: { template: '<div>About</div>' } }),
     },
     {
       path: '/user/:id',
       name: 'user',
-      component: () => Promise.resolve({ default: { template: '<div>User</div>' } }),
+      component: () =>
+        Promise.resolve({ default: { template: '<div>User</div>' } }),
     },
   ]
 
@@ -72,15 +75,16 @@ describe('集成测试', () => {
 
       await router.push('/about')
       expect(guardCalls.length).toBeGreaterThan(0)
-      expect(guardCalls.some((call: string) => call.includes('/about'))).toBe(true)
+      expect(guardCalls.some((call: string) => call.includes('/about'))).toBe(
+        true
+      )
     })
 
     it('应该支持守卫重定向', async () => {
       router.beforeEach((to: any, from: any, next: any) => {
         if (to.path === '/about') {
           next('/')
-        }
-        else {
+        } else {
           next()
         }
       })
@@ -105,7 +109,9 @@ describe('集成测试', () => {
       router.forward()
       await new Promise(resolve => setTimeout(resolve, 10))
       const currentPath = router.currentRoute.value.path
-      expect(currentPath === '/user/123' || currentPath === '/user/:id').toBe(true)
+      expect(currentPath === '/user/123' || currentPath === '/user/:id').toBe(
+        true
+      )
     })
 
     it('应该支持 replace 导航', async () => {
@@ -129,7 +135,8 @@ describe('集成测试', () => {
       const routeWithMeta: RouteRecordRaw = {
         path: '/meta-test',
         name: 'meta-test',
-        component: () => Promise.resolve({ default: { template: '<div>Meta Test</div>' } }),
+        component: () =>
+          Promise.resolve({ default: { template: '<div>Meta Test</div>' } }),
         meta: {
           title: 'Meta Test Page',
           requiresAuth: true,
@@ -149,7 +156,8 @@ describe('集成测试', () => {
       const dynamicRoute: RouteRecordRaw = {
         path: '/dynamic',
         name: 'dynamic',
-        component: () => Promise.resolve({ default: { template: '<div>Dynamic</div>' } }),
+        component: () =>
+          Promise.resolve({ default: { template: '<div>Dynamic</div>' } }),
       }
 
       router.addRoute(dynamicRoute)
@@ -162,7 +170,8 @@ describe('集成测试', () => {
       const routeToRemove: RouteRecordRaw = {
         path: '/to-remove',
         name: 'to-remove',
-        component: () => Promise.resolve({ default: { template: '<div>To Remove</div>' } }),
+        component: () =>
+          Promise.resolve({ default: { template: '<div>To Remove</div>' } }),
       }
 
       router.addRoute(routeToRemove)

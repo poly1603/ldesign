@@ -1,6 +1,6 @@
 # 基础示例
 
-本文档展示了Vue3 Engine的基本用法和常见场景。
+本文档展示了 Vue3 Engine 的基本用法和常见场景。
 
 ## 快速开始
 
@@ -40,12 +40,12 @@ const engine = createApp(App, {
   config: {
     appName: '我的应用',
     version: '1.0.0',
-    debug: true
+    debug: true,
   },
   logger: {
     level: 'info',
-    format: 'json'
-  }
+    format: 'json',
+  },
 })
 
 engine.mount('#app')
@@ -63,7 +63,7 @@ import { engine } from '../main'
 engine.state.set('user', {
   id: 1,
   name: '张三',
-  email: 'zhangsan@example.com'
+  email: 'zhangsan@example.com',
 })
 
 // 获取用户状态
@@ -101,7 +101,7 @@ function login() {
     id: 1,
     name: '张三',
     email: 'zhangsan@example.com',
-    loginCount: 1
+    loginCount: 1,
   })
 }
 
@@ -111,7 +111,7 @@ function updateProfile() {
   engine.state.set('user', {
     ...currentUser,
     name: '李四',
-    loginCount: currentUser.loginCount + 1
+    loginCount: currentUser.loginCount + 1,
   })
 }
 </script>
@@ -123,15 +123,11 @@ function updateProfile() {
       <p>姓名: {{ user.name }}</p>
       <p>邮箱: {{ user.email }}</p>
       <p>登录次数: {{ loginCount }}</p>
-      <button @click="updateProfile">
-        更新信息
-      </button>
+      <button @click="updateProfile">更新信息</button>
     </div>
     <div v-else>
       <p>请先登录</p>
-      <button @click="login">
-        登录
-      </button>
+      <button @click="login">登录</button>
     </div>
   </div>
 </template>
@@ -163,7 +159,7 @@ export function useAuth() {
 
   return {
     isLoggedIn,
-    user
+    user,
   }
 }
 ```
@@ -177,7 +173,7 @@ export function useAuth() {
 import { engine } from '../main'
 
 // 监听事件
-engine.events.on('user:login', (user) => {
+engine.events.on('user:login', user => {
   console.log('用户登录:', user)
   engine.notifications.success(`欢迎回来，${user.name}！`)
 })
@@ -216,15 +212,15 @@ engine.events.emit('app:ready')
 
 ```typescript
 // 使用命名空间组织事件
-engine.events.on('user:profile:update', (profile) => {
+engine.events.on('user:profile:update', profile => {
   console.log('用户资料更新:', profile)
 })
 
-engine.events.on('user:settings:change', (settings) => {
+engine.events.on('user:settings:change', settings => {
   console.log('用户设置变更:', settings)
 })
 
-engine.events.on('system:error', (error) => {
+engine.events.on('system:error', error => {
   console.error('系统错误:', error)
   engine.notifications.error('系统出现错误，请稍后重试')
 })
@@ -254,16 +250,15 @@ export async function fetchUserData(userId: string) {
     // 记录成功
     engine.logger.info('用户数据获取成功', {
       userId,
-      dataSize: JSON.stringify(userData).length
+      dataSize: JSON.stringify(userData).length,
     })
 
     return userData
-  }
-  catch (error) {
+  } catch (error) {
     // 记录错误
     engine.logger.error('用户数据获取失败', {
       userId,
-      error: error.message
+      error: error.message,
     })
 
     throw error
@@ -304,7 +299,7 @@ export function useLogger(component: string) {
     debug: (message: string, data?: any) => logger.debug(message, data),
     info: (message: string, data?: any) => logger.info(message, data),
     warn: (message: string, data?: any) => logger.warn(message, data),
-    error: (message: string, data?: any) => logger.error(message, data)
+    error: (message: string, data?: any) => logger.error(message, data),
   }
 }
 
@@ -344,12 +339,12 @@ engine.notifications.error('操作失败！')
 ```typescript
 // 自定义持续时间
 engine.notifications.success('保存成功', {
-  duration: 5000 // 5秒后自动关闭
+  duration: 5000, // 5秒后自动关闭
 })
 
 // 持久通知（不自动关闭）
 engine.notifications.warning('网络连接不稳定', {
-  persistent: true
+  persistent: true,
 })
 
 // 带操作按钮的通知
@@ -360,15 +355,15 @@ engine.notifications.info('发现新版本', {
       action: () => {
         console.log('开始更新')
         // 执行更新逻辑
-      }
+      },
     },
     {
       label: '稍后提醒',
       action: () => {
         console.log('稍后提醒')
-      }
-    }
-  ]
+      },
+    },
+  ],
 })
 ```
 
@@ -398,7 +393,7 @@ import { creators } from '@ldesign/engine'
 import { createApp } from '@ldesign/engine'
 import { counterPlugin } from './plugins/counter'
 
-export const counterPlugin = creators.plugin('counter', (engine) => {
+export const counterPlugin = creators.plugin('counter', engine => {
   // 初始化计数器状态
   engine.state.set('counter', { value: 0 })
 
@@ -427,14 +422,14 @@ export const counterPlugin = creators.plugin('counter', (engine) => {
     increment,
     decrement,
     reset,
-    getValue: () => engine.state.get('counter.value')
+    getValue: () => engine.state.get('counter.value'),
   }
 
   engine.logger.info('计数器插件已安装')
 })
 
 const engine = createApp(App, {
-  plugins: [counterPlugin]
+  plugins: [counterPlugin],
 })
 ```
 
@@ -455,7 +450,7 @@ const decrement = () => engine.counter.decrement()
 const reset = () => engine.counter.reset()
 
 // 监听计数变化
-engine.events.on('counter:increment', (value) => {
+engine.events.on('counter:increment', value => {
   if (value % 10 === 0) {
     engine.notifications.success(`计数达到 ${value}！`)
   }
@@ -466,15 +461,9 @@ engine.events.on('counter:increment', (value) => {
   <div class="counter">
     <h2>计数器: {{ count }}</h2>
     <div class="buttons">
-      <button @click="decrement">
-        -
-      </button>
-      <button @click="reset">
-        重置
-      </button>
-      <button @click="increment">
-        +
-      </button>
+      <button @click="decrement">-</button>
+      <button @click="reset">重置</button>
+      <button @click="increment">+</button>
     </div>
   </div>
 </template>
@@ -525,7 +514,7 @@ export const performanceMiddleware = creators.middleware('performance', async (c
   // 记录性能数据
   context.engine.logger.info('阶段执行时间', {
     phase: context.phase,
-    duration: `${duration.toFixed(2)}ms`
+    duration: `${duration.toFixed(2)}ms`,
   })
 })
 ```
@@ -538,8 +527,8 @@ import { createApp } from '@ldesign/engine'
 import { performanceMiddleware } from './middleware/performance'
 
 const engine = createApp(App, {
-  middleware: [performanceMiddleware]
+  middleware: [performanceMiddleware],
 })
 ```
 
-这些基础示例展示了Vue3 Engine的核心功能使用方法，帮助你快速上手并构建自己的应用。
+这些基础示例展示了 Vue3 Engine 的核心功能使用方法，帮助你快速上手并构建自己的应用。

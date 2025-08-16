@@ -80,12 +80,11 @@ watch(
           color: 'rgba(102, 126, 234, 0.2)',
         },
       })
-    }
-    else {
+    } else {
       await reactiveWatermark.destroy()
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 // 生命周期管理方法
@@ -121,10 +120,10 @@ async function destroyLifecycleWatermark() {
 
 // 条件渲染方法
 async function updateConditionalWatermark() {
-  const shouldShow
-    = conditionalConfig.condition === 'always'
-      || (conditionalConfig.condition === 'hover' && isHovered.value)
-      || (conditionalConfig.condition === 'focus' && isFocused.value)
+  const shouldShow =
+    conditionalConfig.condition === 'always' ||
+    (conditionalConfig.condition === 'hover' && isHovered.value) ||
+    (conditionalConfig.condition === 'focus' && isFocused.value)
 
   if (shouldShow) {
     await conditionalWatermark.create('Conditional Watermark', {
@@ -133,8 +132,7 @@ async function updateConditionalWatermark() {
         color: 'rgba(156, 39, 176, 0.2)',
       },
     })
-  }
-  else {
+  } else {
     await conditionalWatermark.destroy()
   }
 }
@@ -312,9 +310,7 @@ export function useWatermark(containerRef) {
 
 <template>
   <div class="composition-examples">
-    <h2 class="section-title">
-      🔧 Composition API 示例
-    </h2>
+    <h2 class="section-title">🔧 Composition API 示例</h2>
     <p class="section-desc">
       展示如何使用 Composition API 管理水印状态和生命周期
     </p>
@@ -325,11 +321,11 @@ export function useWatermark(containerRef) {
         <h3>响应式水印配置</h3>
         <div class="form-group">
           <label>水印文字</label>
-          <input v-model="reactiveConfig.text" type="text">
+          <input v-model="reactiveConfig.text" type="text" />
         </div>
         <div class="form-group">
           <label>是否启用: {{ reactiveConfig.enabled ? '是' : '否' }}</label>
-          <input v-model="reactiveConfig.enabled" type="checkbox">
+          <input v-model="reactiveConfig.enabled" type="checkbox" />
         </div>
         <div ref="reactiveRef" class="demo-container">
           <div class="demo-content">
@@ -389,18 +385,10 @@ export function useWatermark(containerRef) {
         <div class="form-group">
           <label>显示条件</label>
           <select v-model="conditionalConfig.condition">
-            <option value="always">
-              始终显示
-            </option>
-            <option value="hover">
-              鼠标悬停
-            </option>
-            <option value="focus">
-              获得焦点
-            </option>
-            <option value="never">
-              从不显示
-            </option>
+            <option value="always">始终显示</option>
+            <option value="hover">鼠标悬停</option>
+            <option value="focus">获得焦点</option>
+            <option value="never">从不显示</option>
           </select>
         </div>
         <div
@@ -437,20 +425,16 @@ export function useWatermark(containerRef) {
         <div class="form-group">
           <label>内容类型</label>
           <select v-model="dynamicConfig.type">
-            <option value="time">
-              当前时间
-            </option>
-            <option value="counter">
-              计数器
-            </option>
-            <option value="random">
-              随机文字
-            </option>
+            <option value="time">当前时间</option>
+            <option value="counter">计数器</option>
+            <option value="random">随机文字</option>
           </select>
         </div>
         <div class="form-group">
-          <label>自动更新: {{ dynamicConfig.autoUpdate ? '开启' : '关闭' }}</label>
-          <input v-model="dynamicConfig.autoUpdate" type="checkbox">
+          <label
+            >自动更新: {{ dynamicConfig.autoUpdate ? '开启' : '关闭' }}</label
+          >
+          <input v-model="dynamicConfig.autoUpdate" type="checkbox" />
         </div>
         <div ref="dynamicRef" class="demo-container">
           <div class="demo-content">

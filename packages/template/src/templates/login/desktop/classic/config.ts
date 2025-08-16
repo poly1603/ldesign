@@ -12,13 +12,7 @@ export const config: TemplateConfig = {
   author: 'LDesign Team',
   tags: ['经典', '简洁', '商务', '企业级'],
   preview: '/previews/login-desktop-classic.png',
-  features: [
-    '居中布局',
-    '表单验证',
-    '记住密码',
-    '忘记密码',
-    '第三方登录',
-  ],
+  features: ['居中布局', '表单验证', '记住密码', '忘记密码', '第三方登录'],
   props: {
     title: {
       type: 'string',

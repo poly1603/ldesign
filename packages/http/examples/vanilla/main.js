@@ -70,14 +70,10 @@ class StatsTracker {
     const cacheEl = document.getElementById('cache-hits')
     const errorsEl = document.getElementById('errors')
 
-    if (activeEl)
-      activeEl.textContent = this.stats.activeRequests
-    if (completedEl)
-      completedEl.textContent = this.stats.completedRequests
-    if (cacheEl)
-      cacheEl.textContent = this.stats.cacheHits
-    if (errorsEl)
-      errorsEl.textContent = this.stats.errors
+    if (activeEl) activeEl.textContent = this.stats.activeRequests
+    if (completedEl) completedEl.textContent = this.stats.completedRequests
+    if (cacheEl) cacheEl.textContent = this.stats.cacheHits
+    if (errorsEl) errorsEl.textContent = this.stats.errors
   }
 }
 
@@ -85,24 +81,24 @@ class StatsTracker {
 const statsTracker = new StatsTracker()
 
 // 添加请求/响应拦截器来跟踪统计信息
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   statsTracker.incrementActive()
   return config
 })
 
 http.interceptors.response.use(
-  (response) => {
+  response => {
     statsTracker.decrementActive()
     if (response.fromCache) {
       statsTracker.incrementCacheHits()
     }
     return response
   },
-  (error) => {
+  error => {
     statsTracker.decrementActive()
     statsTracker.incrementErrors()
     throw error
-  },
+  }
 )
 
 // 工具函数
@@ -123,8 +119,7 @@ function updateOutput(elementId, content, append = false) {
   const element = document.getElementById(elementId)
   if (append) {
     element.textContent += `\n\n${content}`
-  }
-  else {
+  } else {
     element.textContent = content
   }
   element.scrollTop = element.scrollHeight
@@ -136,8 +131,7 @@ window.sendGetRequest = async function () {
     updateOutput('basic-output', '🔄 发送 GET 请求...')
     const response = await http.get('/posts/1')
     updateOutput('basic-output', formatOutput(response, 'GET 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'GET 请求失败'))
   }
 }
@@ -151,8 +145,7 @@ window.sendPostRequest = async function () {
       userId: 1,
     })
     updateOutput('basic-output', formatOutput(response, 'POST 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'POST 请求失败'))
   }
 }
@@ -166,8 +159,7 @@ window.sendPutRequest = async function () {
       userId: 1,
     })
     updateOutput('basic-output', formatOutput(response, 'PUT 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'PUT 请求失败'))
   }
 }
@@ -177,8 +169,7 @@ window.sendDeleteRequest = async function () {
     updateOutput('basic-output', '🔄 发送 DELETE 请求...')
     const response = await http.delete('/posts/1')
     updateOutput('basic-output', formatOutput(response, 'DELETE 请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('basic-output', formatOutput(error, 'DELETE 请求失败'))
   }
 }
@@ -194,7 +185,7 @@ window.addAuthInterceptor = function () {
   }
 
   // 添加新的认证拦截器
-  authInterceptorId = http.interceptors.request.use((config) => {
+  authInterceptorId = http.interceptors.request.use(config => {
     config.headers = config.headers || {}
     config.headers.Authorization = 'Bearer fake-token-123'
     return config
@@ -202,26 +193,26 @@ window.addAuthInterceptor = function () {
 
   updateOutput(
     'interceptor-output',
-    '✅ 已添加认证拦截器\n请求将自动添加 Authorization 头部',
+    '✅ 已添加认证拦截器\n请求将自动添加 Authorization 头部'
   )
 }
 
 window.addLoggingInterceptor = function () {
   // 清除之前的日志拦截器
-  loggingInterceptorIds.forEach((id) => {
+  loggingInterceptorIds.forEach(id => {
     http.interceptors.request.eject(id)
     http.interceptors.response.eject(id)
   })
   loggingInterceptorIds = []
 
   // 添加请求日志拦截器
-  const requestId = http.interceptors.request.use((config) => {
+  const requestId = http.interceptors.request.use(config => {
     console.log('📤 发送请求:', config)
     return config
   })
 
   // 添加响应日志拦截器
-  const responseId = http.interceptors.response.use((response) => {
+  const responseId = http.interceptors.response.use(response => {
     console.log('📥 收到响应:', response)
     return response
   })
@@ -230,7 +221,7 @@ window.addLoggingInterceptor = function () {
   updateOutput(
     'interceptor-output',
     '✅ 已添加日志拦截器\n请求和响应将在控制台输出日志',
-    true,
+    true
   )
 }
 
@@ -243,7 +234,7 @@ window.addResponseTimeInterceptor = function () {
   updateOutput(
     'interceptor-output',
     '✅ 已添加响应时间拦截器\n响应时间将在控制台显示',
-    true,
+    true
   )
 }
 
@@ -254,7 +245,7 @@ window.clearInterceptors = function () {
     authInterceptorId = null
   }
 
-  loggingInterceptorIds.forEach((id) => {
+  loggingInterceptorIds.forEach(id => {
     http.interceptors.request.eject(id)
     http.interceptors.response.eject(id)
   })
@@ -270,14 +261,13 @@ window.testWithInterceptors = async function () {
     updateOutput(
       'interceptor-output',
       formatOutput(response, '拦截器测试成功'),
-      true,
+      true
     )
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput(
       'interceptor-output',
       formatOutput(error, '拦截器测试失败'),
-      true,
+      true
     )
   }
 }
@@ -287,8 +277,7 @@ window.testNetworkError = async function () {
   try {
     updateOutput('error-output', '🔄 测试网络错误...')
     await http.get('/error')
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('error-output', formatOutput(error, '网络错误测试'))
   }
 }
@@ -297,8 +286,7 @@ window.testTimeoutError = async function () {
   try {
     updateOutput('error-output', '🔄 测试超时错误...')
     await http.get('/timeout')
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('error-output', formatOutput(error, '超时错误测试'))
   }
 }
@@ -307,8 +295,7 @@ window.testHttpError = async function () {
   try {
     updateOutput('error-output', '🔄 测试 HTTP 错误...')
     await http.get('/404')
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('error-output', formatOutput(error, 'HTTP 错误测试'))
   }
 }
@@ -332,11 +319,10 @@ window.testRetry = async function () {
       updateOutput(
         'error-output',
         formatOutput(response, `第 ${attempts} 次尝试成功`),
-        true,
+        true
       )
       break
-    }
-    catch (error) {
+    } catch (error) {
       updateOutput('error-output', `❌ ${error.message}`, true)
 
       if (attempts < maxAttempts) {
@@ -371,7 +357,7 @@ window.testCache = async function () {
       `\n第一次请求 (${time1}ms): ${
         response1.fromCache ? '来自缓存' : '来自网络'
       }`,
-      true,
+      true
     )
 
     // 第二次请求
@@ -383,10 +369,9 @@ window.testCache = async function () {
       `第二次请求 (${time2}ms): ${
         response2.fromCache ? '来自缓存' : '来自网络'
       }`,
-      true,
+      true
     )
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('cache-output', formatOutput(error, '缓存测试失败'), true)
   }
 }
@@ -414,15 +399,14 @@ window.sendConcurrentRequests = async function () {
           id: i,
           success: false,
           error: error.message,
-        })),
+        }))
     )
   }
 
   try {
     const results = await Promise.all(promises)
     updateOutput('concurrency-output', formatOutput(results, '并发请求结果'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('concurrency-output', formatOutput(error, '并发请求失败'))
   }
 }
@@ -439,7 +423,7 @@ window.testRequestQueue = async function () {
   updateOutput(
     'concurrency-output',
     `📋 队列中有 ${requests.length} 个请求`,
-    true,
+    true
   )
 
   for (const request of requests) {
@@ -475,13 +459,11 @@ window.sendCustomRequest = async function () {
     updateOutput('custom-output', `🔄 发送 ${method} 请求到 ${url}...`)
 
     const config = { url, headers }
-    if (data)
-      config.data = data
+    if (data) config.data = data
 
     const response = await http.request({ ...config, method })
     updateOutput('custom-output', formatOutput(response, '自定义请求成功'))
-  }
-  catch (error) {
+  } catch (error) {
     updateOutput('custom-output', formatOutput(error, '自定义请求失败'))
   }
 }
@@ -490,7 +472,7 @@ window.sendCustomRequest = async function () {
 document.addEventListener('DOMContentLoaded', () => {
   updateOutput(
     'basic-output',
-    '👋 欢迎使用 @ldesign/http!\n点击上方按钮开始体验各种功能...',
+    '👋 欢迎使用 @ldesign/http!\n点击上方按钮开始体验各种功能...'
   )
   updateOutput('interceptor-output', '拦截器状态：无')
   updateOutput('error-output', '点击上方按钮测试错误处理...')

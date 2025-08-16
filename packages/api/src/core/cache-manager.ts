@@ -70,11 +70,10 @@ export class CacheManager {
 
       this.stats.hits++
       return item.value
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(
         `[Cache Manager] Failed to get cache for key "${key}"`,
-        error,
+        error
       )
       this.stats.misses++
       return null
@@ -103,11 +102,10 @@ export class CacheManager {
 
       // 检查缓存大小限制
       await this.enforceMaxSize()
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(
         `[Cache Manager] Failed to set cache for key "${key}"`,
-        error,
+        error
       )
     }
   }
@@ -119,11 +117,10 @@ export class CacheManager {
     try {
       await this.deleteItem(key)
       this.stats.deletes++
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(
         `[Cache Manager] Failed to delete cache for key "${key}"`,
-        error,
+        error
       )
     }
   }
@@ -135,8 +132,7 @@ export class CacheManager {
     try {
       await this.clearItems()
       this.stats.clears++
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('[Cache Manager] Failed to clear cache', error)
     }
   }
@@ -162,11 +158,10 @@ export class CacheManager {
       }
 
       return true
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(
         `[Cache Manager] Failed to check cache for key "${key}"`,
-        error,
+        error
       )
       return false
     }
@@ -276,7 +271,7 @@ export class CacheManager {
       case 'localStorage':
         if (typeof localStorage !== 'undefined') {
           const keys = Object.keys(localStorage).filter(key =>
-            key.startsWith(this.config.prefix),
+            key.startsWith(this.config.prefix)
           )
           keys.forEach(key => localStorage.removeItem(key))
         }
@@ -285,7 +280,7 @@ export class CacheManager {
       case 'sessionStorage':
         if (typeof sessionStorage !== 'undefined') {
           const keys = Object.keys(sessionStorage).filter(key =>
-            key.startsWith(this.config.prefix),
+            key.startsWith(this.config.prefix)
           )
           keys.forEach(key => sessionStorage.removeItem(key))
         }
@@ -306,8 +301,7 @@ export class CacheManager {
       const oldestKey = this.memoryCache.keys().next().value
       if (oldestKey) {
         this.memoryCache.delete(oldestKey)
-      }
-      else {
+      } else {
         break
       }
     }
@@ -340,13 +334,13 @@ export class CacheManager {
       }
     })
 
-    expiredKeys.forEach((key) => {
+    expiredKeys.forEach(key => {
       this.memoryCache.delete(key)
     })
 
     if (expiredKeys.length > 0) {
       console.warn(
-        `[Cache Manager] Cleaned up ${expiredKeys.length} expired cache items`,
+        `[Cache Manager] Cleaned up ${expiredKeys.length} expired cache items`
       )
     }
   }

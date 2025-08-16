@@ -54,7 +54,8 @@ export interface StoreProviderContext {
 /**
  * Provider 注入键
  */
-export const STORE_PROVIDER_KEY: InjectionKey<StoreProviderContext> = Symbol('store-provider')
+export const STORE_PROVIDER_KEY: InjectionKey<StoreProviderContext> =
+  Symbol('store-provider')
 
 /**
  * Store 工厂函数类型

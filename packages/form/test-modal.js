@@ -53,8 +53,7 @@ class MockModalManager {
   }
 
   async open(items = [], values = {}, animated = true) {
-    if (this.state.open || this.state.animating)
-      return
+    if (this.state.open || this.state.animating) return
 
     console.log('📂 打开弹窗...')
     this.state.animating = true
@@ -73,8 +72,7 @@ class MockModalManager {
   }
 
   async close(animated = true, trigger = 'api') {
-    if (!this.state.open || this.state.animating)
-      return
+    if (!this.state.open || this.state.animating) return
 
     console.log('📁 关闭弹窗...')
     this.state.animating = true
@@ -91,8 +89,7 @@ class MockModalManager {
   }
 
   async confirm(animated = true) {
-    if (!this.state.open)
-      return
+    if (!this.state.open) return
 
     console.log('✔️ 确认弹窗...')
     const values = { ...this.state.values }
@@ -102,8 +99,7 @@ class MockModalManager {
   }
 
   async cancel(animated = true) {
-    if (!this.state.open)
-      return
+    if (!this.state.open) return
 
     console.log('❌ 取消弹窗...')
     await this.close(animated, 'button')
@@ -114,15 +110,13 @@ class MockModalManager {
   async toggle(items, values, animated = true) {
     if (this.state.open) {
       await this.close(animated)
-    }
-    else if (items) {
+    } else if (items) {
       await this.open(items, values, animated)
     }
   }
 
   updateContent(items, values = {}) {
-    if (!this.state.open)
-      return
+    if (!this.state.open) return
 
     console.log('🔄 更新弹窗内容...')
     this.state.items = [...items]
@@ -185,7 +179,7 @@ async function testModalManager() {
 
   // 设置事件监听
   const events = []
-  modalManager.onModalEvent((event) => {
+  modalManager.onModalEvent(event => {
     events.push(event)
   })
 
@@ -266,15 +260,16 @@ async function testModalManager() {
     console.log('')
 
     console.log('🎉 所有测试通过！')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 测试失败:', error)
   }
 }
 
 // 运行测试
-testModalManager().then(() => {
-  console.log('\n✨ 弹窗功能测试完成')
-}).catch((error) => {
-  console.error('\n💥 测试过程中出现错误:', error)
-})
+testModalManager()
+  .then(() => {
+    console.log('\n✨ 弹窗功能测试完成')
+  })
+  .catch(error => {
+    console.error('\n💥 测试过程中出现错误:', error)
+  })

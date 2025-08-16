@@ -18,7 +18,7 @@ async function bootstrap() {
   const i18nInstance = await createI18nWithBuiltinLocales({
     defaultLocale: 'en',
     fallbackLocale: 'en',
-    autoDetect: true
+    autoDetect: true,
   })
 
   // 创建 Vue 插件
@@ -28,7 +28,7 @@ async function bootstrap() {
   const app = createApp(App)
   app.use(vueI18nPlugin, {
     globalInjection: true, // 注入全局属性
-    globalPropertyName: '$t' // 全局属性名称
+    globalPropertyName: '$t', // 全局属性名称
   })
 
   app.mount('#app')
@@ -49,8 +49,8 @@ app.use(vueI18nPlugin, {
   storage: 'localStorage',
   cache: {
     enabled: true,
-    maxSize: 1000
-  }
+    maxSize: 1000,
+  },
 })
 ```
 
@@ -72,7 +72,7 @@ const {
   changeLanguage, // 切换语言方法
   exists, // 检查键是否存在
   getKeys, // 获取所有键
-  i18n // I18n 实例
+  i18n, // I18n 实例
 } = useI18n()
 
 const selectedLocale = ref(locale.value)
@@ -88,11 +88,7 @@ async function handleLanguageChange() {
     <p>{{ t('common.currentLanguage') }}: {{ locale }}</p>
 
     <select v-model="selectedLocale" @change="handleLanguageChange">
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>
@@ -112,7 +108,7 @@ const {
   locale, // 当前语言
   availableLanguages, // 可用语言
   isChanging, // 是否正在切换
-  switchLanguage // 切换语言方法
+  switchLanguage, // 切换语言方法
 } = useLanguageSwitcher()
 </script>
 
@@ -139,11 +135,7 @@ const {
 <script setup lang="ts">
 import { useBatchTranslation } from '@ldesign/i18n/vue'
 
-const translations = useBatchTranslation([
-  'common.save',
-  'common.cancel',
-  'common.delete'
-])
+const translations = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
 </script>
 
 <template>
@@ -166,17 +158,13 @@ import { ref } from 'vue'
 
 const isOnline = ref(true)
 
-const statusText = useConditionalTranslation(
-  isOnline,
-  'common.online',
-  'common.offline'
-)
+const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.offline')
 </script>
 
 <template>
   <div>
     <label>
-      <input v-model="isOnline" type="checkbox">
+      <input v-model="isOnline" type="checkbox" />
       {{ statusText }}
     </label>
   </div>
@@ -199,7 +187,7 @@ const statusText = useConditionalTranslation(
     <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }" />
 
     <!-- 输入框占位符 -->
-    <input v-t="'common.searchPlaceholder'">
+    <input v-t="'common.searchPlaceholder'" />
 
     <!-- 带选项 -->
     <div
@@ -319,8 +307,8 @@ const { i18n } = useI18n()
 const localTranslations = {
   component: {
     title: 'Component Title',
-    description: 'Component Description'
-  }
+    description: 'Component Description',
+  },
 }
 
 // 扩展当前语言包（仅示例，实际使用中应该通过加载器管理）
@@ -341,7 +329,7 @@ import { reactive } from 'vue'
 const { t } = useI18n()
 
 const form = reactive({
-  name: ''
+  name: '',
 })
 
 function handleSubmit() {
@@ -353,10 +341,7 @@ function handleSubmit() {
   <div class="user-profile">
     <h2>{{ t('userProfile.title') }}</h2>
     <form @submit="handleSubmit">
-      <input
-        v-model="form.name"
-        :placeholder="t('userProfile.namePlaceholder')"
-      >
+      <input v-model="form.name" :placeholder="t('userProfile.namePlaceholder')" />
       <button type="submit">
         {{ t('userProfile.saveButton') }}
       </button>
@@ -373,17 +358,12 @@ function handleSubmit() {
 import { useLanguageSwitcher } from '@ldesign/i18n/vue'
 import { ref, watch } from 'vue'
 
-const {
-  locale,
-  availableLanguages,
-  isChanging,
-  switchLanguage
-} = useLanguageSwitcher()
+const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSwitcher()
 
 const currentLocale = ref(locale.value)
 
 // 监听语言变化
-watch(locale, (newLocale) => {
+watch(locale, newLocale => {
   currentLocale.value = newLocale
   // 更新页面标题、HTML lang 属性等
   document.title = t('app.title')
@@ -397,16 +377,8 @@ async function handleLanguageChange() {
 
 <template>
   <div class="language-switcher">
-    <select
-      v-model="currentLocale"
-      :disabled="isChanging"
-      @change="handleLanguageChange"
-    >
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+    <select v-model="currentLocale" :disabled="isChanging" @change="handleLanguageChange">
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>

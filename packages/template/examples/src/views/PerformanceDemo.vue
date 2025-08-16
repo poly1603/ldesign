@@ -14,7 +14,7 @@ const templateList = ref(
     device: 'desktop' as const,
     template: i % 2 === 0 ? 'modern' : 'default',
     name: `模板 ${i + 1}`,
-  })),
+  }))
 )
 
 // 性能指标
@@ -75,9 +75,7 @@ onMounted(() => {
         <button class="btn" @click="isMonitorVisible = !isMonitorVisible">
           {{ isMonitorVisible ? '隐藏' : '显示' }}监控面板
         </button>
-        <button class="btn btn-primary" @click="preloadTemplates">
-          预加载模板
-        </button>
+        <button class="btn btn-primary" @click="preloadTemplates">预加载模板</button>
       </div>
 
       <div v-if="isMonitorVisible" class="monitor-panel">
@@ -87,48 +85,24 @@ onMounted(() => {
       <!-- 性能指标卡片 -->
       <div class="metrics-grid">
         <div class="metric-card">
-          <div class="metric-icon">
-            ⚡
-          </div>
-          <div class="metric-value">
-            {{ metrics.renderTime.toFixed(1) }}ms
-          </div>
-          <div class="metric-label">
-            渲染时间
-          </div>
+          <div class="metric-icon">⚡</div>
+          <div class="metric-value">{{ metrics.renderTime.toFixed(1) }}ms</div>
+          <div class="metric-label">渲染时间</div>
         </div>
         <div class="metric-card">
-          <div class="metric-icon">
-            🎯
-          </div>
-          <div class="metric-value">
-            {{ metrics.cacheHitRate }}%
-          </div>
-          <div class="metric-label">
-            缓存命中率
-          </div>
+          <div class="metric-icon">🎯</div>
+          <div class="metric-value">{{ metrics.cacheHitRate }}%</div>
+          <div class="metric-label">缓存命中率</div>
         </div>
         <div class="metric-card">
-          <div class="metric-icon">
-            💾
-          </div>
-          <div class="metric-value">
-            {{ metrics.memoryUsage }}%
-          </div>
-          <div class="metric-label">
-            内存使用率
-          </div>
+          <div class="metric-icon">💾</div>
+          <div class="metric-value">{{ metrics.memoryUsage }}%</div>
+          <div class="metric-label">内存使用率</div>
         </div>
         <div class="metric-card">
-          <div class="metric-icon">
-            ⏱️
-          </div>
-          <div class="metric-value">
-            {{ metrics.loadTime.toFixed(1) }}ms
-          </div>
-          <div class="metric-label">
-            加载时间
-          </div>
+          <div class="metric-icon">⏱️</div>
+          <div class="metric-value">{{ metrics.loadTime.toFixed(1) }}ms</div>
+          <div class="metric-label">加载时间</div>
         </div>
       </div>
     </div>
@@ -161,9 +135,7 @@ onMounted(() => {
             <template #error="{ error, retry }">
               <div class="error-placeholder">
                 <p>❌ 加载失败: {{ error.message }}</p>
-                <button class="btn btn-small" @click="retry">
-                  重试
-                </button>
+                <button class="btn btn-small" @click="retry">重试</button>
               </div>
             </template>
 

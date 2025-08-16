@@ -17,9 +17,7 @@ yarn add @ldesign/store pinia vue reflect-metadata
 pnpm add @ldesign/store pinia vue reflect-metadata
 ```
 
-::: tip 提示
-`reflect-metadata` 是装饰器功能所必需的。如果你不使用装饰器，可以不安装此依赖。
-:::
+::: tip 提示 `reflect-metadata` 是装饰器功能所必需的。如果你不使用装饰器，可以不安装此依赖。 :::
 
 ## 基础设置
 
@@ -108,20 +106,12 @@ const store = new CounterStore('counter')
   <div class="counter">
     <h2>{{ store.displayText }}</h2>
     <p>当前计数: {{ store.count }}</p>
-    <p v-if="store.isPositive" class="positive">
-      计数为正数！
-    </p>
+    <p v-if="store.isPositive" class="positive">计数为正数！</p>
 
     <div class="buttons">
-      <button @click="store.increment">
-        增加
-      </button>
-      <button @click="store.decrement">
-        减少
-      </button>
-      <button @click="store.reset">
-        重置
-      </button>
+      <button @click="store.increment">增加</button>
+      <button @click="store.decrement">减少</button>
+      <button @click="store.reset">重置</button>
     </div>
   </div>
 </template>
@@ -162,7 +152,7 @@ export const useCounter = createStore('counter', () => {
 
   const increment = () => count.value++
   const decrement = () => count.value--
-  const reset = () => count.value = 0
+  const reset = () => (count.value = 0)
 
   const displayText = computed(() => `${title.value}: ${count.value}`)
   const isPositive = computed(() => count.value > 0)
@@ -170,7 +160,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count, title },
     actions: { increment, decrement, reset },
-    getters: { displayText, isPositive }
+    getters: { displayText, isPositive },
   }
 })
 ```

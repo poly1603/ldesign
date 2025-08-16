@@ -43,7 +43,7 @@ export class InstanceManager implements IInstanceManager {
         `Instance with id ${instance.id} already exists`,
         WatermarkErrorCode.INSTANCE_ALREADY_EXISTS,
         ErrorSeverity.MEDIUM,
-        { instanceId: instance.id },
+        { instanceId: instance.id }
       )
     }
 
@@ -112,7 +112,7 @@ export class InstanceManager implements IInstanceManager {
     return Array.from(instanceIds)
       .map(id => this.instances.get(id))
       .filter(
-        (instance): instance is WatermarkInstance => instance !== undefined,
+        (instance): instance is WatermarkInstance => instance !== undefined
       )
   }
 
@@ -121,7 +121,7 @@ export class InstanceManager implements IInstanceManager {
    */
   getByState(state: WatermarkInstanceState): WatermarkInstance[] {
     return Array.from(this.instances.values()).filter(
-      instance => instance.state === state,
+      instance => instance.state === state
     )
   }
 
@@ -135,10 +135,9 @@ export class InstanceManager implements IInstanceManager {
     if (query.state) {
       if (Array.isArray(query.state)) {
         results = results.filter(instance =>
-          query.state!.includes(instance.state),
+          query.state!.includes(instance.state)
         )
-      }
-      else {
+      } else {
         results = results.filter(instance => instance.state === query.state)
       }
     }
@@ -146,20 +145,20 @@ export class InstanceManager implements IInstanceManager {
     // 按容器过滤
     if (query.container) {
       results = results.filter(
-        instance => instance.container === query.container,
+        instance => instance.container === query.container
       )
     }
 
     // 按创建时间过滤
     if (query.createdAfter) {
       results = results.filter(
-        instance => instance.createdAt > query.createdAfter!,
+        instance => instance.createdAt > query.createdAfter!
       )
     }
 
     if (query.createdBefore) {
       results = results.filter(
-        instance => instance.createdAt < query.createdBefore!,
+        instance => instance.createdAt < query.createdBefore!
       )
     }
 
@@ -191,10 +190,8 @@ export class InstanceManager implements IInstanceManager {
             return 0
         }
 
-        if (aValue < bValue)
-          return query.sortOrder === 'desc' ? 1 : -1
-        if (aValue > bValue)
-          return query.sortOrder === 'desc' ? -1 : 1
+        if (aValue < bValue) return query.sortOrder === 'desc' ? 1 : -1
+        if (aValue > bValue) return query.sortOrder === 'desc' ? -1 : 1
         return 0
       })
     }
@@ -252,16 +249,16 @@ export class InstanceManager implements IInstanceManager {
   async batchOperation<T>(
     instanceIds: string[],
     operation: (instance: WatermarkInstance) => Promise<T>,
-    options: BatchOperationOptions = {},
-  ): Promise<Array<{ instanceId: string, result?: T, error?: Error }>> {
-    const results: Array<{ instanceId: string, result?: T, error?: Error }> = []
+    options: BatchOperationOptions = {}
+  ): Promise<Array<{ instanceId: string; result?: T; error?: Error }>> {
+    const results: Array<{ instanceId: string; result?: T; error?: Error }> = []
     const { concurrency = 5, continueOnError = true } = options
 
     // 分批处理
     for (let i = 0; i < instanceIds.length; i += concurrency) {
       const batch = instanceIds.slice(i, i + concurrency)
 
-      const batchPromises = batch.map(async (instanceId) => {
+      const batchPromises = batch.map(async instanceId => {
         const instance = this.instances.get(instanceId)
         if (!instance) {
           return {
@@ -273,8 +270,7 @@ export class InstanceManager implements IInstanceManager {
         try {
           const result = await operation(instance)
           return { instanceId, result }
-        }
-        catch (error) {
+        } catch (error) {
           const errorResult = { instanceId, error: error as Error }
           if (!continueOnError) {
             throw error
@@ -295,7 +291,7 @@ export class InstanceManager implements IInstanceManager {
    */
   cleanup(): number {
     const destroyedInstances = Array.from(this.instances.entries()).filter(
-      ([, instance]) => instance.state === 'destroyed',
+      ([, instance]) => instance.state === 'destroyed'
     )
 
     let cleanedCount = 0
@@ -334,11 +330,10 @@ export class InstanceManager implements IInstanceManager {
    * 根据选择器查找实例
    */
   findBySelector(selector: string): WatermarkInstance[] {
-    return Array.from(this.instances.values()).filter((instance) => {
+    return Array.from(this.instances.values()).filter(instance => {
       try {
         return instance.container.matches(selector)
-      }
-      catch {
+      } catch {
         return false
       }
     })
@@ -354,7 +349,7 @@ export class InstanceManager implements IInstanceManager {
     }
 
     return this.getByContainer(instance.container).filter(
-      sibling => sibling.id !== instanceId,
+      sibling => sibling.id !== instanceId
     )
   }
 
@@ -363,7 +358,7 @@ export class InstanceManager implements IInstanceManager {
    */
   updateInstanceState(
     instanceId: string,
-    state: WatermarkInstanceState,
+    state: WatermarkInstanceState
   ): boolean {
     const instance = this.instances.get(instanceId)
     if (!instance) {
@@ -454,7 +449,7 @@ export class InstanceManager implements IInstanceManager {
     if (!instance) {
       throw new WatermarkError(
         `Instance ${id} not found`,
-        WatermarkErrorCode.INSTANCE_NOT_FOUND,
+        WatermarkErrorCode.INSTANCE_NOT_FOUND
       )
     }
     // 更新逻辑应该由WatermarkCore处理

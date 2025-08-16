@@ -132,7 +132,7 @@ describe('i18n Engine Plugin Integration', () => {
         expect.objectContaining({
           newLanguage: 'en',
           oldLanguage: 'zh-CN',
-        }),
+        })
       )
     }
   })

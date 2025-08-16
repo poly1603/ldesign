@@ -41,7 +41,7 @@ async function bootstrap() {
         version: '1.0.0',
         mode: 'hash',
         base: '/',
-      }),
+      })
     )
 
     // 注册国际化插件
@@ -51,7 +51,7 @@ async function bootstrap() {
         createI18n: createCustomI18n,
         globalInjection: true,
         globalPropertyName: '$t',
-      }),
+      })
     )
 
     // 注册模板插件
@@ -62,7 +62,7 @@ async function bootstrap() {
         cacheExpiration: 5 * 60 * 1000, // 5分钟
         autoDetectDevice: true,
         debug: true,
-      }),
+      })
     )
 
     // 注册HTTP插件
@@ -71,7 +71,7 @@ async function bootstrap() {
         version: '1.0.0',
         baseURL: 'https://api.example.com',
         timeout: 10000,
-      }),
+      })
     )
 
     // 注册设备检测插件
@@ -81,7 +81,7 @@ async function bootstrap() {
         enableBreakpointDetection: true,
         enableOrientationDetection: true,
         enableTouchDetection: true,
-      }),
+      })
     )
 
     // 创建 Vue 应用
@@ -127,8 +127,7 @@ async function bootstrap() {
     await engine.mount('#app')
 
     console.log('✅ LDesign 应用启动成功!')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 应用启动失败:', error)
   }
 }

@@ -136,7 +136,7 @@ export interface PerformanceManager {
     start: number
     end: number
   }) => PerformanceMetrics[]
-  getReport: (timeRange?: { start: number, end: number }) => PerformanceReport
+  getReport: (timeRange?: { start: number; end: number }) => PerformanceReport
 
   // 阈值管理
   setThresholds: (thresholds: Partial<PerformanceThresholds>) => void
@@ -188,8 +188,8 @@ class FPSMonitor {
 
     // 计算FPS
     if (this.frames.length >= 10) {
-      const averageFrameTime
-        = this.frames.reduce((a, b) => a + b, 0) / this.frames.length
+      const averageFrameTime =
+        this.frames.reduce((a, b) => a + b, 0) / this.frames.length
       const fps = 1000 / averageFrameTime
 
       if (this.callback) {
@@ -208,7 +208,7 @@ class MemoryMonitor {
 
   start(
     callback: (memory: PerformanceMetrics['memory']) => void,
-    interval = 5000,
+    interval = 5000
   ): void {
     this.callback = callback
 
@@ -268,7 +268,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
   startEvent(
     type: PerformanceEventType,
     name: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ): string {
     const id = `perf_${++this.eventIdCounter}_${Date.now()}`
     const event: PerformanceEvent = {
@@ -343,11 +343,11 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
     // 收集网络信息
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.getEntriesByType
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.getEntriesByType
     ) {
-      const networkEntries
-        = globalThis.performance.getEntriesByType('navigation')
+      const networkEntries =
+        globalThis.performance.getEntriesByType('navigation')
       if (networkEntries.length > 0) {
         const entry = networkEntries[0] as PerformanceNavigationTiming
         metrics.network = {
@@ -379,11 +379,10 @@ export class PerformanceManagerImpl implements PerformanceManager {
     this.checkMetricsViolations(fullMetrics)
 
     // 触发指标回调
-    this.metricsCallbacks.forEach((callback) => {
+    this.metricsCallbacks.forEach(callback => {
       try {
         callback(fullMetrics)
-      }
-      catch (error) {
+      } catch (error) {
         this.engine?.logger?.error('Error in metrics callback', error)
       }
     })
@@ -398,7 +397,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
     // 启动FPS监控
     if (typeof requestAnimationFrame !== 'undefined') {
-      this.fpsMonitor.start((fps) => {
+      this.fpsMonitor.start(fps => {
         this.recordMetrics({
           rendering: {
             fps,
@@ -410,14 +409,14 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
 
     // 启动内存监控
-    this.memoryMonitor.start((memory) => {
+    this.memoryMonitor.start(memory => {
       this.recordMetrics({ memory })
     })
 
     // 监听性能观察者API
     if (typeof PerformanceObserver !== 'undefined') {
       try {
-        const observer = new PerformanceObserver((list) => {
+        const observer = new PerformanceObserver(list => {
           for (const entry of list.getEntries()) {
             this.handlePerformanceEntry(entry)
           }
@@ -426,8 +425,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
         observer.observe({
           entryTypes: ['navigation', 'resource', 'measure', 'mark'],
         })
-      }
-      catch (error) {
+      } catch (error) {
         this.engine?.logger?.warn('PerformanceObserver not supported', error)
       }
     }
@@ -455,7 +453,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
     let events = Array.from(this.events.values())
 
     if (filter) {
-      events = events.filter((event) => {
+      events = events.filter(event => {
         return Object.entries(filter).every(([key, value]) => {
           return event[key as keyof PerformanceEvent] === value
         })
@@ -465,21 +463,21 @@ export class PerformanceManagerImpl implements PerformanceManager {
     return events.sort((a, b) => a.startTime - b.startTime)
   }
 
-  getMetrics(timeRange?: { start: number, end: number }): PerformanceMetrics[] {
+  getMetrics(timeRange?: { start: number; end: number }): PerformanceMetrics[] {
     let metrics = [...this.metrics]
 
     if (timeRange) {
       metrics = metrics.filter(
         metric =>
-          metric.timestamp >= timeRange.start
-          && metric.timestamp <= timeRange.end,
+          metric.timestamp >= timeRange.start &&
+          metric.timestamp <= timeRange.end
       )
     }
 
     return metrics.sort((a, b) => a.timestamp - b.timestamp)
   }
 
-  getReport(timeRange?: { start: number, end: number }): PerformanceReport {
+  getReport(timeRange?: { start: number; end: number }): PerformanceReport {
     const events = this.getEvents()
     const metrics = this.getMetrics(timeRange)
 
@@ -487,28 +485,28 @@ export class PerformanceManagerImpl implements PerformanceManager {
     const completedEvents = events.filter(e => e.duration !== undefined)
     const totalResponseTime = completedEvents.reduce(
       (sum, e) => sum + (e.duration || 0),
-      0,
+      0
     )
-    const averageResponseTime
-      = completedEvents.length > 0
+    const averageResponseTime =
+      completedEvents.length > 0
         ? totalResponseTime / completedEvents.length
         : 0
 
     const fpsMetrics = metrics.filter(m => m.rendering?.fps)
-    const averageFPS
-      = fpsMetrics.length > 0
-        ? fpsMetrics.reduce((sum, m) => sum + (m.rendering?.fps || 0), 0)
-        / fpsMetrics.length
+    const averageFPS =
+      fpsMetrics.length > 0
+        ? fpsMetrics.reduce((sum, m) => sum + (m.rendering?.fps || 0), 0) /
+          fpsMetrics.length
         : 0
 
     const latestMemory = metrics.filter(m => m.memory).pop()
     const memoryUsage = latestMemory?.memory?.used || 0
 
-    const timeStart
-      = timeRange?.start
-        || (events.length > 0
-          ? Math.min(...events.map(e => e.startTime))
-          : Date.now())
+    const timeStart =
+      timeRange?.start ||
+      (events.length > 0
+        ? Math.min(...events.map(e => e.startTime))
+        : Date.now())
     const timeEnd = timeRange?.end || Date.now()
 
     return {
@@ -593,8 +591,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
       if (parsed.thresholds) {
         this.thresholds = { ...this.thresholds, ...parsed.thresholds }
       }
-    }
-    catch (error) {
+    } catch (error) {
       this.engine?.logger?.error('Failed to import performance data', error)
     }
   }
@@ -644,8 +641,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
   }
 
   private checkThresholdViolations(event: PerformanceEvent): void {
-    if (!event.duration)
-      return
+    if (!event.duration) return
 
     const { responseTime } = this.thresholds
 
@@ -678,8 +674,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
           },
           timestamp: Date.now(),
         })
-      }
-      else if (memoryMB > this.thresholds.memory.warning) {
+      } else if (memoryMB > this.thresholds.memory.warning) {
         this.reportViolation({
           type: 'memory_leak',
           severity: 'medium',
@@ -711,11 +706,10 @@ export class PerformanceManagerImpl implements PerformanceManager {
   }
 
   private reportViolation(violation: PerformanceViolation): void {
-    this.violationCallbacks.forEach((callback) => {
+    this.violationCallbacks.forEach(callback => {
       try {
         callback(violation)
-      }
-      catch (error) {
+      } catch (error) {
         this.engine?.logger?.error('Error in violation callback', error)
       }
     })
@@ -736,7 +730,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   private generateRecommendations(
     events: PerformanceEvent[],
-    metrics: PerformanceMetrics[],
+    metrics: PerformanceMetrics[]
   ): string[] {
     const recommendations: string[] = []
 
@@ -747,10 +741,10 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
       // 分析最慢的操作
       const slowestEvent = slowEvents.reduce((prev, current) =>
-        (prev.duration || 0) > (current.duration || 0) ? prev : current,
+        (prev.duration || 0) > (current.duration || 0) ? prev : current
       )
       recommendations.push(
-        `最慢操作: ${slowestEvent.name} (${slowestEvent.duration}ms)`,
+        `最慢操作: ${slowestEvent.name} (${slowestEvent.duration}ms)`
       )
     }
 
@@ -760,32 +754,31 @@ export class PerformanceManagerImpl implements PerformanceManager {
       // 如果有多个指标，分析内存增长
       if (memoryMetrics.length > 1) {
         const firstMemory = memoryMetrics[0].memory?.used || 0
-        const lastMemory
-          = memoryMetrics[memoryMetrics.length - 1].memory?.used || 0
+        const lastMemory =
+          memoryMetrics[memoryMetrics.length - 1].memory?.used || 0
         const memoryGrowth = lastMemory - firstMemory
         const memoryGrowthMB = memoryGrowth / (1024 * 1024)
 
         if (memoryGrowthMB > 50) {
           recommendations.push(
-            `检测到内存增长 ${memoryGrowthMB.toFixed(2)}MB，可能存在内存泄漏`,
+            `检测到内存增长 ${memoryGrowthMB.toFixed(2)}MB，可能存在内存泄漏`
           )
         }
       }
 
       // 分析平均内存使用
-      const avgMemory
-        = memoryMetrics.reduce((sum, m) => sum + (m.memory?.used || 0), 0)
-          / memoryMetrics.length
+      const avgMemory =
+        memoryMetrics.reduce((sum, m) => sum + (m.memory?.used || 0), 0) /
+        memoryMetrics.length
       const memoryMB = avgMemory / (1024 * 1024)
 
       if (memoryMB > 100) {
         recommendations.push(
-          `平均内存使用 ${memoryMB.toFixed(2)}MB，建议优化内存使用`,
+          `平均内存使用 ${memoryMB.toFixed(2)}MB，建议优化内存使用`
         )
-      }
-      else if (memoryMB > 50) {
+      } else if (memoryMB > 50) {
         recommendations.push(
-          `内存使用较高 ${memoryMB.toFixed(2)}MB，建议监控内存使用情况`,
+          `内存使用较高 ${memoryMB.toFixed(2)}MB，建议监控内存使用情况`
         )
       }
     }
@@ -793,9 +786,9 @@ export class PerformanceManagerImpl implements PerformanceManager {
     // 分析FPS和渲染性能
     const fpsMetrics = metrics.filter(m => m.rendering?.fps)
     if (fpsMetrics.length > 0) {
-      const avgFPS
-        = fpsMetrics.reduce((sum, m) => sum + (m.rendering?.fps || 0), 0)
-          / fpsMetrics.length
+      const avgFPS =
+        fpsMetrics.reduce((sum, m) => sum + (m.rendering?.fps || 0), 0) /
+        fpsMetrics.length
       const minFPS = Math.min(...fpsMetrics.map(m => m.rendering?.fps || 60))
 
       if (avgFPS < 30) {
@@ -809,45 +802,45 @@ export class PerformanceManagerImpl implements PerformanceManager {
       // 检查掉帧情况
       const droppedFrames = fpsMetrics.reduce(
         (sum, m) => sum + (m.rendering?.droppedFrames || 0),
-        0,
+        0
       )
       if (droppedFrames > fpsMetrics.length * 0.1) {
         recommendations.push(
           `掉帧率 ${((droppedFrames / fpsMetrics.length) * 100).toFixed(
-            1,
-          )}%，建议优化动画`,
+            1
+          )}%，建议优化动画`
         )
       }
     }
 
     // 分析网络性能
     const networkEvents = events.filter(
-      e => e.type === PerformanceEventType.NETWORK,
+      e => e.type === PerformanceEventType.NETWORK
     )
     if (networkEvents.length > 0) {
-      const avgResponseTime
-        = networkEvents.reduce((sum, e) => sum + (e.duration || 0), 0)
-          / networkEvents.length
+      const avgResponseTime =
+        networkEvents.reduce((sum, e) => sum + (e.duration || 0), 0) /
+        networkEvents.length
       if (avgResponseTime > 2000) {
         recommendations.push(
           `网络请求平均响应时间 ${avgResponseTime.toFixed(
-            0,
-          )}ms，建议优化网络性能`,
+            0
+          )}ms，建议优化网络性能`
         )
       }
     }
 
     // 分析组件渲染性能
     const renderEvents = events.filter(
-      e => e.type === PerformanceEventType.RENDER,
+      e => e.type === PerformanceEventType.RENDER
     )
     if (renderEvents.length > 0) {
       const slowRenders = renderEvents.filter(e => (e.duration || 0) > 16) // 超过一帧时间
       if (slowRenders.length > renderEvents.length * 0.2) {
         recommendations.push(
           `${((slowRenders.length / renderEvents.length) * 100).toFixed(
-            1,
-          )}% 的渲染超过16ms，建议优化组件`,
+            1
+          )}% 的渲染超过16ms，建议优化组件`
         )
       }
     }
@@ -869,8 +862,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   mark(name: string): void {
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.mark
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.mark
     ) {
       globalThis.performance.mark(name)
     }
@@ -878,13 +871,12 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   measure(name: string, startMark?: string, endMark?: string): void {
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.measure
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.measure
     ) {
       try {
         globalThis.performance.measure(name, startMark, endMark)
-      }
-      catch (error) {
+      } catch (error) {
         // 如果标记不存在，忽略错误
         console.warn(`Performance measure failed: ${error}`)
       }
@@ -893,8 +885,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   getMarks(): PerformanceEntry[] {
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.getEntriesByType
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.getEntriesByType
     ) {
       return globalThis.performance.getEntriesByType('mark')
     }
@@ -903,8 +895,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   getMeasures(): PerformanceEntry[] {
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.getEntriesByType
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.getEntriesByType
     ) {
       return globalThis.performance.getEntriesByType('measure')
     }
@@ -921,8 +913,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   clearMarks(): void {
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.clearMarks
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.clearMarks
     ) {
       globalThis.performance.clearMarks()
     }
@@ -930,8 +922,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   clearMeasures(): void {
     if (
-      typeof globalThis.performance !== 'undefined'
-      && globalThis.performance.clearMeasures
+      typeof globalThis.performance !== 'undefined' &&
+      globalThis.performance.clearMeasures
     ) {
       globalThis.performance.clearMeasures()
     }
@@ -941,7 +933,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
 // 创建性能管理器
 export function createPerformanceManager(
   thresholds?: PerformanceThresholds,
-  engine?: Engine,
+  engine?: Engine
 ): PerformanceManager {
   return new PerformanceManagerImpl(thresholds, engine)
 }
@@ -951,7 +943,7 @@ export function performance(name?: string) {
   return function (
     target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor,
+    descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value
     const eventName = name || `${target.constructor.name}.${propertyKey}`
@@ -964,8 +956,7 @@ export function performance(name?: string) {
         const result = await originalMethod.apply(this, args)
         manager.endEvent(eventId)
         return result
-      }
-      catch (error) {
+      } catch (error) {
         manager.endEvent(eventId, {
           error: error instanceof Error ? error.message : String(error),
         })

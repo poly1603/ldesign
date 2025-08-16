@@ -111,15 +111,9 @@ onUnmounted(() => {
   <div class="device-demo">
     <div class="device-demo__header">
       <div class="device-demo__container">
-        <router-link to="/" class="device-demo__back">
-          ← 返回首页
-        </router-link>
-        <h1 class="device-demo__title">
-          📱 响应式设备切换演示
-        </h1>
-        <p class="device-demo__subtitle">
-          体验自动设备检测和模板切换功能
-        </p>
+        <router-link to="/" class="device-demo__back"> ← 返回首页 </router-link>
+        <h1 class="device-demo__title">📱 响应式设备切换演示</h1>
+        <p class="device-demo__subtitle">体验自动设备检测和模板切换功能</p>
       </div>
     </div>
 
@@ -133,9 +127,8 @@ onUnmounted(() => {
             <button
               v-for="device in devices"
               :key="device.type"
-              class="device-demo__device-btn" :class="[
-                { 'device-demo__device-btn--active': currentDevice === device.type },
-              ]"
+              class="device-demo__device-btn"
+              :class="[{ 'device-demo__device-btn--active': currentDevice === device.type }]"
               @click="switchDevice(device.type)"
             >
               <span class="device-demo__device-icon">{{ device.icon }}</span>
@@ -154,9 +147,7 @@ onUnmounted(() => {
 
             <div class="device-demo__info-card">
               <h4>窗口尺寸</h4>
-              <div class="device-demo__info-value">
-                {{ windowSize.width }} × {{ windowSize.height }}
-              </div>
+              <div class="device-demo__info-value">{{ windowSize.width }} × {{ windowSize.height }}</div>
             </div>
 
             <div class="device-demo__info-card">
@@ -180,21 +171,14 @@ onUnmounted(() => {
             <h3>模板预览</h3>
             <div class="device-demo__auto-detect">
               <label class="device-demo__checkbox">
-                <input
-                  v-model="autoDetect"
-                  type="checkbox"
-                  @change="toggleAutoDetect"
-                >
+                <input v-model="autoDetect" type="checkbox" @change="toggleAutoDetect" />
                 <span class="device-demo__checkbox-mark" />
                 自动检测设备
               </label>
             </div>
           </div>
 
-          <div
-            class="device-demo__preview-container"
-            :class="`device-demo__preview-container--${currentDevice}`"
-          >
+          <div class="device-demo__preview-container" :class="`device-demo__preview-container--${currentDevice}`">
             <div class="device-demo__device-frame">
               <div class="device-demo__device-screen">
                 <component
@@ -207,9 +191,7 @@ onUnmounted(() => {
                   @third-party-login="handleThirdPartyLogin"
                 />
                 <div v-else class="device-demo__no-template">
-                  <div class="device-demo__no-template-icon">
-                    🚫
-                  </div>
+                  <div class="device-demo__no-template-icon">🚫</div>
                   <h4>当前设备类型暂无可用模板</h4>
                   <p>系统将自动使用桌面版本作为备选</p>
                 </div>
@@ -224,9 +206,8 @@ onUnmounted(() => {
             <div
               v-for="template in availableTemplates"
               :key="template.id"
-              class="device-demo__template-card" :class="[
-                { 'device-demo__template-card--active': template.id === currentTemplateId },
-              ]"
+              class="device-demo__template-card"
+              :class="[{ 'device-demo__template-card--active': template.id === currentTemplateId }]"
               @click="switchTemplate(template.id)"
             >
               <div class="device-demo__template-info">

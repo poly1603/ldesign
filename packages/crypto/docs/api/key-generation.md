@@ -14,7 +14,7 @@ function generateKey(length?: number): string
 
 **参数：**
 
-- `length` (number, 可选): 密钥长度（字节），默认 32（256位）
+- `length` (number, 可选): 密钥长度（字节），默认 32（256 位）
 
 **返回值：**
 
@@ -128,12 +128,12 @@ const customKeyPair = keyGenerator.generateRSAKeyPair(2048, {
   keyFormat: 'pem',
   publicKeyEncoding: {
     type: 'spki',
-    format: 'pem'
+    format: 'pem',
   },
   privateKeyEncoding: {
     type: 'pkcs8',
-    format: 'pem'
-  }
+    format: 'pem',
+  },
 })
 ```
 
@@ -196,7 +196,10 @@ const customString = keyGenerator.generateRandomString(12, 'ABCDEFGHIJKLMNOPQRST
 console.log('自定义字符串:', customString)
 
 // 生成密码
-const password = keyGenerator.generateRandomString(16, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*')
+const password = keyGenerator.generateRandomString(
+  16,
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
+)
 console.log('随机密码:', password)
 ```
 
@@ -245,7 +248,7 @@ function deriveKeyFromPassword(password: string, salt: string, keyLength: number
   return hash.pbkdf2(password, salt, {
     iterations: 100000,
     keyLength,
-    hashAlgorithm: 'SHA256'
+    hashAlgorithm: 'SHA256',
   })
 }
 
@@ -271,11 +274,9 @@ function validateKeyStrength(key: string): {
   // 检查长度
   if (key.length < 16) {
     issues.push('密钥长度不足（建议至少16字符）')
-  }
-  else if (key.length >= 32) {
+  } else if (key.length >= 32) {
     strength = 'strong'
-  }
-  else if (key.length >= 24) {
+  } else if (key.length >= 24) {
     strength = 'medium'
   }
 
@@ -301,7 +302,7 @@ function validateKeyStrength(key: string): {
   return {
     valid: issues.length === 0,
     strength,
-    issues
+    issues,
   }
 }
 
@@ -318,11 +319,14 @@ console.log('强密钥验证:', validateKeyStrength(strongKey))
 ```typescript
 class KeyManager {
   private keys: Map<string, string> = new Map()
-  private keyMetadata: Map<string, {
-    created: number
-    lastUsed: number
-    usage: number
-  }> = new Map()
+  private keyMetadata: Map<
+    string,
+    {
+      created: number
+      lastUsed: number
+      usage: number
+    }
+  > = new Map()
 
   // 生成并存储密钥
   generateKey(keyId: string, length: number = 32): string {
@@ -331,7 +335,7 @@ class KeyManager {
     this.keyMetadata.set(keyId, {
       created: Date.now(),
       lastUsed: Date.now(),
-      usage: 0
+      usage: 0,
     })
     return key
   }
@@ -405,7 +409,7 @@ class KeyManager {
       totalKeys,
       activeKeys,
       oldKeys,
-      mostUsedKey
+      mostUsedKey,
     }
   }
 }
@@ -443,7 +447,7 @@ function checkRandomnessAvailability(): {
     return {
       available: true,
       source: 'Web Crypto API',
-      quality: 'high'
+      quality: 'high',
     }
   }
 
@@ -454,11 +458,10 @@ function checkRandomnessAvailability(): {
         return {
           available: true,
           source: 'Node.js crypto',
-          quality: 'high'
+          quality: 'high',
         }
       }
-    }
-    catch {
+    } catch {
       // Node.js crypto 不可用
     }
   }
@@ -466,7 +469,7 @@ function checkRandomnessAvailability(): {
   return {
     available: false,
     source: 'none',
-    quality: 'low'
+    quality: 'low',
   }
 }
 
@@ -483,7 +486,10 @@ if (!randomnessCheck.available) {
 
 ```typescript
 // 简单的随机性测试
-function testRandomness(generator: () => number, samples: number = 10000): {
+function testRandomness(
+  generator: () => number,
+  samples: number = 10000
+): {
   mean: number
   variance: number
   uniformity: number
@@ -502,7 +508,7 @@ function testRandomness(generator: () => number, samples: number = 10000): {
 
   // 计算均匀性（简化版卡方检验）
   const buckets = Array.from({ length: 10 }).fill(0)
-  values.forEach((val) => {
+  values.forEach(val => {
     const bucket = Math.floor(val * 10)
     if (bucket >= 0 && bucket < 10) {
       buckets[bucket]++
@@ -510,13 +516,15 @@ function testRandomness(generator: () => number, samples: number = 10000): {
   })
 
   const expected = samples / 10
-  const chiSquare = buckets.reduce((sum, observed) =>
-    sum + (observed - expected) ** 2 / expected, 0)
+  const chiSquare = buckets.reduce(
+    (sum, observed) => sum + (observed - expected) ** 2 / expected,
+    0
+  )
 
   return {
     mean,
     variance,
-    uniformity: chiSquare
+    uniformity: chiSquare,
   }
 }
 
@@ -597,10 +605,10 @@ class KeyPool {
   }
 
   // 获取池状态
-  getPoolStatus(): { available: number, maxSize: number } {
+  getPoolStatus(): { available: number; maxSize: number } {
     return {
       available: this.pool.length,
-      maxSize: this.maxSize
+      maxSize: this.maxSize,
     }
   }
 }

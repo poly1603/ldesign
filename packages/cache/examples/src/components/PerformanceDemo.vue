@@ -38,12 +38,12 @@ function useCacheStats(options: any = {}) {
 
   const refresh = async () => {
     const keys = Object.keys(localStorage).filter(key =>
-      key.startsWith('perf_'),
+      key.startsWith('perf_')
     )
     formattedStats.value.totalItems = keys.length
 
     let totalSize = 0
-    keys.forEach((key) => {
+    keys.forEach(key => {
       totalSize += localStorage.getItem(key)?.length || 0
     })
 
@@ -85,7 +85,7 @@ function createCache(options: any = {}) {
     clear: async (engine?: string) => {
       const prefix = engine ? `${engine}_` : 'perf_'
       const keysToRemove = Object.keys(localStorage).filter(key =>
-        key.startsWith(prefix),
+        key.startsWith(prefix)
       )
       keysToRemove.forEach(key => localStorage.removeItem(key))
     },
@@ -106,8 +106,7 @@ function createCache(options: any = {}) {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -156,8 +155,7 @@ function toggleAutoRefresh() {
   if (autoRefresh.value) {
     stopAutoRefresh()
     autoRefresh.value = false
-  }
-  else {
+  } else {
     startAutoRefresh(2000)
     autoRefresh.value = true
   }
@@ -201,7 +199,7 @@ async function runPerformanceTest() {
         duration: Math.round(getDuration),
         operations,
         average: Number((getDuration / operations).toFixed(3)),
-      },
+      }
     )
 
     // 只保留最近6个结果
@@ -210,11 +208,9 @@ async function runPerformanceTest() {
     }
 
     await refreshStats()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -261,15 +257,13 @@ async function runBatchTest() {
         duration: Math.round(batchDuration),
         operations: batchSize,
         average: Number((batchDuration / batchSize).toFixed(3)),
-      },
+      }
     )
 
     await refreshStats()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -290,17 +284,15 @@ async function fillMemoryCache() {
         },
         {
           ttl: i % 2 === 0 ? 10000 : undefined, // 一半的数据10秒后过期
-        },
+        }
       )
     }
 
     await updateMemoryStats()
     await refreshStats()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -313,11 +305,9 @@ async function triggerCleanup() {
     await perfCache.cleanup()
     await updateMemoryStats()
     await refreshStats()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -330,11 +320,9 @@ async function clearMemoryCache() {
     await perfCache.clear('memory')
     await updateMemoryStats()
     await refreshStats()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -353,8 +341,7 @@ async function updateMemoryStats() {
         oldestItem: null, // 简化显示
       }
     }
-  }
-  catch (err) {
+  } catch (err) {
     console.error('Failed to update memory stats:', err)
   }
 }
@@ -381,9 +368,7 @@ onUnmounted(() => {
 
     <div class="demo-section">
       <h4>缓存统计</h4>
-      <button class="btn" @click="refreshStats">
-        刷新统计
-      </button>
+      <button class="btn" @click="refreshStats">刷新统计</button>
       <button class="btn secondary" @click="toggleAutoRefresh">
         {{ autoRefresh ? '停止' : '开始' }}自动刷新
       </button>
@@ -393,33 +378,23 @@ onUnmounted(() => {
           <div class="stat-value">
             {{ formattedStats.totalItems }}
           </div>
-          <div class="stat-label">
-            总缓存项
-          </div>
+          <div class="stat-label">总缓存项</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">
             {{ formattedStats.totalSizeFormatted }}
           </div>
-          <div class="stat-label">
-            总大小
-          </div>
+          <div class="stat-label">总大小</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">
-            {{ formattedStats.hitRatePercentage }}%
-          </div>
-          <div class="stat-label">
-            命中率
-          </div>
+          <div class="stat-value">{{ formattedStats.hitRatePercentage }}%</div>
+          <div class="stat-label">命中率</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">
             {{ formattedStats.expiredItems }}
           </div>
-          <div class="stat-label">
-            过期项
-          </div>
+          <div class="stat-label">过期项</div>
         </div>
       </div>
     </div>
@@ -452,12 +427,8 @@ onUnmounted(() => {
 
     <div class="demo-section">
       <h4>性能测试</h4>
-      <button class="btn" @click="runPerformanceTest">
-        运行性能测试
-      </button>
-      <button class="btn" @click="runBatchTest">
-        批量操作测试
-      </button>
+      <button class="btn" @click="runPerformanceTest">运行性能测试</button>
+      <button class="btn" @click="runBatchTest">批量操作测试</button>
 
       <div v-if="performanceResults.length > 0" class="performance-results">
         <div
@@ -479,15 +450,9 @@ onUnmounted(() => {
 
     <div class="demo-section">
       <h4>内存管理</h4>
-      <button class="btn" @click="fillMemoryCache">
-        填充内存缓存
-      </button>
-      <button class="btn secondary" @click="triggerCleanup">
-        触发清理
-      </button>
-      <button class="btn danger" @click="clearMemoryCache">
-        清空内存缓存
-      </button>
+      <button class="btn" @click="fillMemoryCache">填充内存缓存</button>
+      <button class="btn secondary" @click="triggerCleanup">触发清理</button>
+      <button class="btn danger" @click="clearMemoryCache">清空内存缓存</button>
 
       <div v-if="memoryStats" class="code">
         <div><strong>内存统计:</strong></div>
@@ -502,13 +467,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div v-if="loading" class="status info">
-      处理中...
-    </div>
+    <div v-if="loading" class="status info">处理中...</div>
 
-    <div v-if="error" class="status error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="error" class="status error">错误: {{ error.message }}</div>
   </div>
 </template>
 

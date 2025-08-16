@@ -52,7 +52,7 @@ function getRoleText(role: string) {
             placeholder="输入邮箱"
             class="input"
             :disabled="store.loading"
-          >
+          />
         </div>
         <div class="form-group">
           <label>密码:</label>
@@ -62,7 +62,7 @@ function getRoleText(role: string) {
             placeholder="输入密码"
             class="input"
             :disabled="store.loading"
-          >
+          />
         </div>
         <button
           type="submit"

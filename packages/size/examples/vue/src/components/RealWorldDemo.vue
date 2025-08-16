@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  SizeIndicator,
-  SizeSwitcher,
-} from '../../../../src/vue'
+import { SizeIndicator, SizeSwitcher } from '../../../../src/vue'
 import CustomButton from './CustomButton.vue'
 import CustomCard from './CustomCard.vue'
 </script>
@@ -66,58 +63,34 @@ import CustomCard from './CustomCard.vue'
         <section class="stats-section">
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-icon">
-                👥
-              </div>
+              <div class="stat-icon">👥</div>
               <div class="stat-content">
-                <div class="stat-number">
-                  1,234
-                </div>
-                <div class="stat-label">
-                  总用户数
-                </div>
+                <div class="stat-number">1,234</div>
+                <div class="stat-label">总用户数</div>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon">
-                📦
-              </div>
+              <div class="stat-icon">📦</div>
               <div class="stat-content">
-                <div class="stat-number">
-                  567
-                </div>
-                <div class="stat-label">
-                  产品数量
-                </div>
+                <div class="stat-number">567</div>
+                <div class="stat-label">产品数量</div>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon">
-                💰
-              </div>
+              <div class="stat-icon">💰</div>
               <div class="stat-content">
-                <div class="stat-number">
-                  ¥89,012
-                </div>
-                <div class="stat-label">
-                  总收入
-                </div>
+                <div class="stat-number">¥89,012</div>
+                <div class="stat-label">总收入</div>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon">
-                📈
-              </div>
+              <div class="stat-icon">📈</div>
               <div class="stat-content">
-                <div class="stat-number">
-                  +12.5%
-                </div>
-                <div class="stat-label">
-                  增长率
-                </div>
+                <div class="stat-number">+12.5%</div>
+                <div class="stat-label">增长率</div>
               </div>
             </div>
           </div>
@@ -161,19 +134,25 @@ import CustomCard from './CustomCard.vue'
                       <td>#001</td>
                       <td>张三</td>
                       <td>¥299</td>
-                      <td><span class="status-badge status-success">已完成</span></td>
+                      <td>
+                        <span class="status-badge status-success">已完成</span>
+                      </td>
                     </tr>
                     <tr>
                       <td>#002</td>
                       <td>李四</td>
                       <td>¥599</td>
-                      <td><span class="status-badge status-pending">处理中</span></td>
+                      <td>
+                        <span class="status-badge status-pending">处理中</span>
+                      </td>
                     </tr>
                     <tr>
                       <td>#003</td>
                       <td>王五</td>
                       <td>¥199</td>
-                      <td><span class="status-badge status-success">已完成</span></td>
+                      <td>
+                        <span class="status-badge status-success">已完成</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>

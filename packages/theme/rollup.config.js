@@ -9,7 +9,7 @@ export default createRollupConfig({
   vue: true, // 启用Vue支持以处理adapt/vue目录
   external: ['vue', '@ldesign/color'], // Vue和color包作为外部依赖
   globals: {
-    'vue': 'Vue',
+    vue: 'Vue',
     '@ldesign/color': 'LDesignColor',
   },
   globalName: 'LDesignTheme',

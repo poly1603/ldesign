@@ -60,8 +60,7 @@ class BundleAnalyzer {
       try {
         const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
         return { ...defaultConfig, ...userConfig }
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  配置文件加载失败，使用默认配置: ${err.message}`, 'yellow')
       }
     }
@@ -75,8 +74,7 @@ class BundleAnalyzer {
     if (fs.existsSync(packageJsonPath)) {
       try {
         return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      }
-      catch (err) {
+      } catch (err) {
         log(`⚠️  package.json加载失败: ${err.message}`, 'yellow')
       }
     }
@@ -85,8 +83,7 @@ class BundleAnalyzer {
 
   // 分析包大小
   analyzeBundleSize() {
-    if (!this.config.analysis.bundleSize)
-      return []
+    if (!this.config.analysis.bundleSize) return []
 
     log('\n📦 包大小分析', 'cyan')
 
@@ -116,14 +113,12 @@ class BundleAnalyzer {
         })
 
         let color = 'green'
-        if (stats.size > this.config.thresholds.maxWarningSize)
-          color = 'yellow'
-        if (stats.size > this.config.thresholds.maxBundleSize)
-          color = 'red'
+        if (stats.size > this.config.thresholds.maxWarningSize) color = 'yellow'
+        if (stats.size > this.config.thresholds.maxBundleSize) color = 'red'
 
         log(
           `  ${file.name.padEnd(15)} ${sizeKB.padStart(8)}KB (${sizeMB}MB)`,
-          color,
+          color
         )
       }
     }
@@ -134,10 +129,10 @@ class BundleAnalyzer {
 
     if (uncompressed && compressed) {
       const ratio = ((1 - compressed.bytes / uncompressed.bytes) * 100).toFixed(
-        1,
+        1
       )
-      const color
-        = Number.parseFloat(ratio) > this.config.thresholds.maxCompressionRatio
+      const color =
+        Number.parseFloat(ratio) > this.config.thresholds.maxCompressionRatio
           ? 'green'
           : 'yellow'
       log(`  压缩比: ${ratio}%`, color)
@@ -148,8 +143,7 @@ class BundleAnalyzer {
 
   // 分析目录结构
   analyzeDirectoryStructure() {
-    if (!this.config.analysis.directoryStructure)
-      return
+    if (!this.config.analysis.directoryStructure) return
 
     log('\n📁 目录结构分析', 'cyan')
 
@@ -166,7 +160,7 @@ class BundleAnalyzer {
           `  ${dir.padEnd(8)} ${files.length
             .toString()
             .padStart(3)} 文件, ${sizeKB.padStart(8)}KB`,
-          'white',
+          'white'
         )
 
         // 显示最大的几个文件
@@ -178,7 +172,7 @@ class BundleAnalyzer {
           .sort((a, b) => b.size - a.size)
           .slice(0, 3)
 
-        fileSizes.forEach((file) => {
+        fileSizes.forEach(file => {
           const sizeKB = (file.size / 1024).toFixed(2)
           log(`    └─ ${file.path} (${sizeKB}KB)`, 'gray')
         })
@@ -188,8 +182,7 @@ class BundleAnalyzer {
 
   // 分析依赖关系
   analyzeDependencies() {
-    if (!this.config.analysis.dependencies)
-      return
+    if (!this.config.analysis.dependencies) return
 
     log('\n🔗 依赖关系分析', 'cyan')
 
@@ -203,7 +196,7 @@ class BundleAnalyzer {
         const imports = content.match(/from\s+['"][^'"]+['"]/g) || []
         const uniqueImports = [
           ...new Set(
-            imports.map(imp => imp.replace(/from\s+['"]([^'"]+)['"]/, '$1')),
+            imports.map(imp => imp.replace(/from\s+['"]([^'"]+)['"]/, '$1'))
           ),
         ]
 
@@ -211,10 +204,10 @@ class BundleAnalyzer {
 
         // 分类导入
         const internalImports = uniqueImports.filter(
-          imp => imp.startsWith('./') || imp.startsWith('../'),
+          imp => imp.startsWith('./') || imp.startsWith('../')
         )
         const externalImports = uniqueImports.filter(
-          imp => !imp.startsWith('./') && !imp.startsWith('../'),
+          imp => !imp.startsWith('./') && !imp.startsWith('../')
         )
 
         log(`    内部模块: ${internalImports.length}`, 'blue')
@@ -222,7 +215,7 @@ class BundleAnalyzer {
 
         if (externalImports.length > 0) {
           log('    外部依赖列表:', 'yellow')
-          externalImports.forEach((dep) => {
+          externalImports.forEach(dep => {
             log(`      - ${dep}`, 'gray')
           })
         }
@@ -230,8 +223,7 @@ class BundleAnalyzer {
         // 检查是否有循环依赖
         this.checkCircularDependencies(internalImports)
       }
-    }
-    catch (err) {
+    } catch (err) {
       log(`  依赖分析失败: ${err.message}`, 'red')
     }
   }
@@ -250,8 +242,7 @@ class BundleAnalyzer {
 
   // 检查代码质量
   analyzeCodeQuality() {
-    if (!this.config.analysis.codeQuality)
-      return
+    if (!this.config.analysis.codeQuality) return
 
     log('\n✨ 代码质量分析', 'cyan')
 
@@ -265,7 +256,7 @@ class BundleAnalyzer {
             'lib/index.js.map',
           ]
           return mapFiles.some(file =>
-            fs.existsSync(path.join(this.packageRoot, file)),
+            fs.existsSync(path.join(this.packageRoot, file))
           )
         },
       },
@@ -279,14 +270,13 @@ class BundleAnalyzer {
         name: 'UMD格式',
         check: () => {
           const umdPath = path.join(this.packageRoot, 'dist/index.js')
-          if (!fs.existsSync(umdPath))
-            return false
+          if (!fs.existsSync(umdPath)) return false
 
           const content = fs.readFileSync(umdPath, 'utf8')
           return (
-            content.includes('typeof exports')
-            && content.includes('typeof module')
-            && content.includes('typeof define')
+            content.includes('typeof exports') &&
+            content.includes('typeof module') &&
+            content.includes('typeof define')
           )
         },
       },
@@ -294,8 +284,7 @@ class BundleAnalyzer {
         name: 'ES模块格式',
         check: () => {
           const esPath = path.join(this.packageRoot, 'es/index.js')
-          if (!fs.existsSync(esPath))
-            return false
+          if (!fs.existsSync(esPath)) return false
 
           const content = fs.readFileSync(esPath, 'utf8')
           return content.includes('export')
@@ -305,8 +294,7 @@ class BundleAnalyzer {
         name: 'CommonJS格式',
         check: () => {
           const cjsPath = path.join(this.packageRoot, 'lib/index.js')
-          if (!fs.existsSync(cjsPath))
-            return false
+          if (!fs.existsSync(cjsPath)) return false
 
           const content = fs.readFileSync(cjsPath, 'utf8')
           return content.includes('exports')
@@ -317,14 +305,14 @@ class BundleAnalyzer {
         check: () => {
           const packageJson = this.packageJson
           return (
-            packageJson.sideEffects === false
-            || Array.isArray(packageJson.sideEffects)
+            packageJson.sideEffects === false ||
+            Array.isArray(packageJson.sideEffects)
           )
         },
       },
     ]
 
-    checks.forEach((check) => {
+    checks.forEach(check => {
       const result = check.check()
       const status = result ? '✅' : '❌'
       const color = result ? 'green' : 'red'
@@ -334,8 +322,7 @@ class BundleAnalyzer {
 
   // 检查重复代码
   analyzeDuplicates() {
-    if (!this.config.analysis.duplicates)
-      return
+    if (!this.config.analysis.duplicates) return
 
     log('\n🔍 重复代码分析', 'cyan')
 
@@ -351,30 +338,26 @@ class BundleAnalyzer {
 
         if (difference === 0) {
           log('  ✅ ES模块和CommonJS模块文件数量一致', 'green')
-        }
-        else if (difference <= 2) {
+        } else if (difference <= 2) {
           log(
             `  ⚠️  ES模块和CommonJS模块文件数量略有差异 (${difference}个文件)`,
-            'yellow',
+            'yellow'
           )
-        }
-        else {
+        } else {
           log(
             `  ❌ ES模块和CommonJS模块文件数量差异较大 (${difference}个文件)`,
-            'red',
+            'red'
           )
         }
       }
-    }
-    catch (err) {
+    } catch (err) {
       log(`  重复代码分析失败: ${err.message}`, 'red')
     }
   }
 
   // 性能建议
   generatePerformanceRecommendations(sizes) {
-    if (!this.config.analysis.performance)
-      return
+    if (!this.config.analysis.performance) return
 
     log('\n💡 性能建议', 'cyan')
 
@@ -394,7 +377,7 @@ class BundleAnalyzer {
     // 检查Tree Shaking
     if (!this.packageJson.sideEffects) {
       recommendations.push(
-        '建议在package.json中设置sideEffects字段以支持Tree Shaking',
+        '建议在package.json中设置sideEffects字段以支持Tree Shaking'
       )
     }
 
@@ -405,8 +388,7 @@ class BundleAnalyzer {
 
     if (recommendations.length === 0) {
       log('  🎉 包大小和结构都很好！', 'green')
-    }
-    else {
+    } else {
       recommendations.forEach((rec, index) => {
         log(`  ${index + 1}. ${rec}`, 'yellow')
       })
@@ -427,13 +409,11 @@ class BundleAnalyzer {
 
           if (stat.isDirectory()) {
             traverse(itemPath)
-          }
-          else {
+          } else {
             files.push(itemPath)
           }
         }
-      }
-      catch (err) {
+      } catch (err) {
         // 忽略无法访问的目录
       }
     }
@@ -472,12 +452,10 @@ async function main() {
     if (arg === '--config' && args[i + 1]) {
       options.config = args[i + 1]
       i++
-    }
-    else if (arg === '--package-root' && args[i + 1]) {
+    } else if (arg === '--package-root' && args[i + 1]) {
       options.packageRoot = args[i + 1]
       i++
-    }
-    else if (arg === '--help') {
+    } else if (arg === '--help') {
       console.log(`
 使用方法: node bundle-analyzer.js [选项]
 
@@ -498,8 +476,7 @@ async function main() {
   try {
     const analyzer = new BundleAnalyzer(options)
     analyzer.analyze()
-  }
-  catch (err) {
+  } catch (err) {
     log(`❌ 分析过程出错: ${err.message}`, 'red')
     console.error(err.stack)
     process.exit(1)

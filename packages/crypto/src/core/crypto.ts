@@ -12,7 +12,17 @@ import type {
   RSAOptions,
   TripleDESOptions,
 } from '../types'
-import { aes, blowfish, des, des3, encoding, hash, hmac, rsa, tripledes } from '../algorithms'
+import {
+  aes,
+  blowfish,
+  des,
+  des3,
+  encoding,
+  hash,
+  hmac,
+  rsa,
+  tripledes,
+} from '../algorithms'
 import { Encoder } from '../algorithms/encoding'
 import { CONSTANTS, RandomUtils } from '../utils'
 
@@ -30,21 +40,33 @@ export class Encrypt {
   /**
    * AES-128 加密
    */
-  aes128(data: string, key: string, options?: Omit<AESOptions, 'keySize'>): EncryptResult {
+  aes128(
+    data: string,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): EncryptResult {
     return aes.encrypt128(data, key, options)
   }
 
   /**
    * AES-192 加密
    */
-  aes192(data: string, key: string, options?: Omit<AESOptions, 'keySize'>): EncryptResult {
+  aes192(
+    data: string,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): EncryptResult {
     return aes.encrypt192(data, key, options)
   }
 
   /**
    * AES-256 加密
    */
-  aes256(data: string, key: string, options?: Omit<AESOptions, 'keySize'>): EncryptResult {
+  aes256(
+    data: string,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): EncryptResult {
     return aes.encrypt256(data, key, options)
   }
 
@@ -72,14 +94,22 @@ export class Encrypt {
   /**
    * Triple DES 加密 (别名)
    */
-  tripledes(data: string, key: string, options?: TripleDESOptions): EncryptResult {
+  tripledes(
+    data: string,
+    key: string,
+    options?: TripleDESOptions
+  ): EncryptResult {
     return tripledes.encrypt(data, key, options)
   }
 
   /**
    * Blowfish 加密
    */
-  blowfish(data: string, key: string, options?: BlowfishOptions): EncryptResult {
+  blowfish(
+    data: string,
+    key: string,
+    options?: BlowfishOptions
+  ): EncryptResult {
     return blowfish.encrypt(data, key, options)
   }
 
@@ -87,7 +117,12 @@ export class Encrypt {
    * 通用加密方法
    * 根据算法类型自动选择合适的加密方法
    */
-  encrypt(data: string, key: string, algorithm: EncryptionAlgorithm, options?: any): EncryptResult {
+  encrypt(
+    data: string,
+    key: string,
+    algorithm: EncryptionAlgorithm,
+    options?: any
+  ): EncryptResult {
     switch (algorithm.toUpperCase()) {
       case 'AES':
         return this.aes(data, key, options as AESOptions)
@@ -145,63 +180,99 @@ export class Decrypt {
   /**
    * AES 解密
    */
-  aes(encryptedData: string | EncryptResult, key: string, options?: AESOptions): DecryptResult {
+  aes(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: AESOptions
+  ): DecryptResult {
     return aes.decrypt(encryptedData, key, options)
   }
 
   /**
    * AES-128 解密
    */
-  aes128(encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, 'keySize'>): DecryptResult {
+  aes128(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): DecryptResult {
     return aes.decrypt128(encryptedData, key, options)
   }
 
   /**
    * AES-192 解密
    */
-  aes192(encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, 'keySize'>): DecryptResult {
+  aes192(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): DecryptResult {
     return aes.decrypt192(encryptedData, key, options)
   }
 
   /**
    * AES-256 解密
    */
-  aes256(encryptedData: string | EncryptResult, key: string, options?: Omit<AESOptions, 'keySize'>): DecryptResult {
+  aes256(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: Omit<AESOptions, 'keySize'>
+  ): DecryptResult {
     return aes.decrypt256(encryptedData, key, options)
   }
 
   /**
    * RSA 解密
    */
-  rsa(encryptedData: string | EncryptResult, privateKey: string, options?: RSAOptions): DecryptResult {
+  rsa(
+    encryptedData: string | EncryptResult,
+    privateKey: string,
+    options?: RSAOptions
+  ): DecryptResult {
     return rsa.decrypt(encryptedData, privateKey, options)
   }
 
   /**
    * DES 解密
    */
-  des(encryptedData: string | EncryptResult, key: string, options?: DESOptions): DecryptResult {
+  des(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: DESOptions
+  ): DecryptResult {
     return des.decrypt(encryptedData, key, options)
   }
 
   /**
    * 3DES 解密
    */
-  des3(encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions): DecryptResult {
+  des3(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: TripleDESOptions
+  ): DecryptResult {
     return des3.decrypt(encryptedData, key, options)
   }
 
   /**
    * Triple DES 解密 (别名)
    */
-  tripledes(encryptedData: string | EncryptResult, key: string, options?: TripleDESOptions): DecryptResult {
+  tripledes(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: TripleDESOptions
+  ): DecryptResult {
     return tripledes.decrypt(encryptedData, key, options)
   }
 
   /**
    * Blowfish 解密
    */
-  blowfish(encryptedData: string | EncryptResult, key: string, options?: BlowfishOptions): DecryptResult {
+  blowfish(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: BlowfishOptions
+  ): DecryptResult {
     return blowfish.decrypt(encryptedData, key, options)
   }
 
@@ -209,7 +280,12 @@ export class Decrypt {
    * 通用解密方法
    * 根据算法类型自动选择合适的解密方法
    */
-  decrypt(encryptedData: string | EncryptResult, key: string, algorithm?: EncryptionAlgorithm, options?: any): DecryptResult {
+  decrypt(
+    encryptedData: string | EncryptResult,
+    key: string,
+    algorithm?: EncryptionAlgorithm,
+    options?: any
+  ): DecryptResult {
     // 如果传入的是 EncryptResult 对象，尝试从中获取算法信息
     let targetAlgorithm = algorithm
     if (typeof encryptedData === 'object' && encryptedData.algorithm) {
@@ -322,7 +398,11 @@ export class Hash {
   /**
    * 通用哈希
    */
-  hash(data: string, algorithm: HashAlgorithm = 'SHA256', options?: HashOptions): string {
+  hash(
+    data: string,
+    algorithm: HashAlgorithm = 'SHA256',
+    options?: HashOptions
+  ): string {
     switch (algorithm.toUpperCase()) {
       case 'MD5':
         return this.md5(data, options)
@@ -344,7 +424,12 @@ export class Hash {
   /**
    * 验证哈希
    */
-  verify(data: string, expectedHash: string, algorithm: HashAlgorithm = 'SHA256', options?: HashOptions): boolean {
+  verify(
+    data: string,
+    expectedHash: string,
+    algorithm: HashAlgorithm = 'SHA256',
+    options?: HashOptions
+  ): boolean {
     return hash.verify(data, expectedHash, algorithm, options)
   }
 }
@@ -391,7 +476,12 @@ export class HMAC {
   /**
    * 通用 HMAC
    */
-  hmac(data: string, key: string, algorithm: HashAlgorithm = 'SHA256', options?: HashOptions): string {
+  hmac(
+    data: string,
+    key: string,
+    algorithm: HashAlgorithm = 'SHA256',
+    options?: HashOptions
+  ): string {
     switch (algorithm.toUpperCase()) {
       case 'MD5':
         return this.md5(data, key, options)
@@ -411,7 +501,13 @@ export class HMAC {
   /**
    * 验证 HMAC
    */
-  verify(data: string, key: string, expectedHmac: string, algorithm: HashAlgorithm = 'SHA256', options?: HashOptions): boolean {
+  verify(
+    data: string,
+    key: string,
+    expectedHmac: string,
+    algorithm: HashAlgorithm = 'SHA256',
+    options?: HashOptions
+  ): boolean {
     return hmac.verify(data, key, expectedHmac, algorithm, options)
   }
 }
@@ -423,7 +519,9 @@ export class KeyGenerator {
   /**
    * 生成 RSA 密钥对
    */
-  generateRSAKeyPair(keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE): RSAKeyPair {
+  generateRSAKeyPair(
+    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE
+  ): RSAKeyPair {
     return rsa.generateKeyPair(keySize)
   }
 
@@ -470,7 +568,12 @@ export class DigitalSignature {
   /**
    * RSA 验证签名
    */
-  verify(data: string, signature: string, publicKey: string, algorithm: string = 'sha256'): boolean {
+  verify(
+    data: string,
+    signature: string,
+    publicKey: string,
+    algorithm: string = 'sha256'
+  ): boolean {
     return rsa.verify(data, signature, publicKey, algorithm)
   }
 }

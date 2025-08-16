@@ -90,11 +90,11 @@ console.log('当前模式:', globalSizeManager.getCurrentMode())
 import { createSizeManager } from '@ldesign/size'
 
 const sizeManager = createSizeManager({
-  defaultMode: 'large',        // 默认尺寸模式
-  prefix: '--my-app',          // CSS变量前缀
-  styleId: 'my-size-vars',     // 样式标签ID
-  selector: ':root',           // CSS选择器
-  autoInject: true             // 自动注入CSS
+  defaultMode: 'large', // 默认尺寸模式
+  prefix: '--my-app', // CSS变量前缀
+  styleId: 'my-size-vars', // 样式标签ID
+  selector: ':root', // CSS选择器
+  autoInject: true, // 自动注入CSS
 })
 ```
 
@@ -123,16 +123,32 @@ const sizeManager = createSizeManager({
 
 ```css
 /* 响应式字体类 */
-.text-xs { font-size: var(--ls-font-size-xs); }
-.text-sm { font-size: var(--ls-font-size-sm); }
-.text-base { font-size: var(--ls-font-size-base); }
-.text-lg { font-size: var(--ls-font-size-lg); }
+.text-xs {
+  font-size: var(--ls-font-size-xs);
+}
+.text-sm {
+  font-size: var(--ls-font-size-sm);
+}
+.text-base {
+  font-size: var(--ls-font-size-base);
+}
+.text-lg {
+  font-size: var(--ls-font-size-lg);
+}
 
 /* 响应式间距类 */
-.p-xs { padding: var(--ls-spacing-xs); }
-.p-sm { padding: var(--ls-spacing-sm); }
-.p-base { padding: var(--ls-spacing-base); }
-.p-lg { padding: var(--ls-spacing-lg); }
+.p-xs {
+  padding: var(--ls-spacing-xs);
+}
+.p-sm {
+  padding: var(--ls-spacing-sm);
+}
+.p-base {
+  padding: var(--ls-spacing-base);
+}
+.p-lg {
+  padding: var(--ls-spacing-lg);
+}
 
 /* 响应式组件类 */
 .btn {
@@ -150,70 +166,70 @@ const sizeManager = createSizeManager({
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@ldesign/size 测试</title>
-  <style>
-    .test-box {
-      padding: var(--ls-spacing-lg);
-      font-size: var(--ls-font-size-base);
-      border-radius: var(--ls-border-radius-base);
-      background: #f0f0f0;
-      margin: var(--ls-spacing-base) 0;
-    }
-    
-    .test-button {
-      height: var(--ls-button-height-medium);
-      padding: 0 var(--ls-spacing-base);
-      font-size: var(--ls-font-size-sm);
-      border: none;
-      border-radius: var(--ls-border-radius-base);
-      background: #1890ff;
-      color: white;
-      cursor: pointer;
-      margin-right: var(--ls-spacing-sm);
-    }
-  </style>
-</head>
-<body>
-  <div class="test-box">
-    <h1>@ldesign/size 测试页面</h1>
-    <p>当前尺寸模式: <span id="current-mode">loading...</span></p>
-    
-    <div>
-      <button class="test-button" onclick="setMode('small')">小尺寸</button>
-      <button class="test-button" onclick="setMode('medium')">中尺寸</button>
-      <button class="test-button" onclick="setMode('large')">大尺寸</button>
-      <button class="test-button" onclick="setMode('extra-large')">超大尺寸</button>
-    </div>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ldesign/size 测试</title>
+    <style>
+      .test-box {
+        padding: var(--ls-spacing-lg);
+        font-size: var(--ls-font-size-base);
+        border-radius: var(--ls-border-radius-base);
+        background: #f0f0f0;
+        margin: var(--ls-spacing-base) 0;
+      }
 
-  <script type="module">
-    import { globalSizeManager } from '@ldesign/size'
-    
-    // 更新显示
-    function updateDisplay() {
-      document.getElementById('current-mode').textContent = globalSizeManager.getCurrentMode()
-    }
-    
-    // 设置模式
-    window.setMode = (mode) => {
-      globalSizeManager.setMode(mode)
+      .test-button {
+        height: var(--ls-button-height-medium);
+        padding: 0 var(--ls-spacing-base);
+        font-size: var(--ls-font-size-sm);
+        border: none;
+        border-radius: var(--ls-border-radius-base);
+        background: #1890ff;
+        color: white;
+        cursor: pointer;
+        margin-right: var(--ls-spacing-sm);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-box">
+      <h1>@ldesign/size 测试页面</h1>
+      <p>当前尺寸模式: <span id="current-mode">loading...</span></p>
+
+      <div>
+        <button class="test-button" onclick="setMode('small')">小尺寸</button>
+        <button class="test-button" onclick="setMode('medium')">中尺寸</button>
+        <button class="test-button" onclick="setMode('large')">大尺寸</button>
+        <button class="test-button" onclick="setMode('extra-large')">超大尺寸</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { globalSizeManager } from '@ldesign/size'
+
+      // 更新显示
+      function updateDisplay() {
+        document.getElementById('current-mode').textContent = globalSizeManager.getCurrentMode()
+      }
+
+      // 设置模式
+      window.setMode = mode => {
+        globalSizeManager.setMode(mode)
+        updateDisplay()
+      }
+
+      // 监听变化
+      globalSizeManager.onSizeChange(() => {
+        updateDisplay()
+      })
+
+      // 初始化
       updateDisplay()
-    }
-    
-    // 监听变化
-    globalSizeManager.onSizeChange(() => {
-      updateDisplay()
-    })
-    
-    // 初始化
-    updateDisplay()
-    
-    console.log('✅ @ldesign/size 安装成功！')
-  </script>
-</body>
+
+      console.log('✅ @ldesign/size 安装成功！')
+    </script>
+  </body>
 </html>
 ```
 
@@ -223,8 +239,8 @@ const sizeManager = createSizeManager({
 
 安装完成后，你可以：
 
-1. [学习基础使用](./basic-usage.md) - 了解基本的API使用
-2. [Vue集成指南](./vue-integration.md) - 如果你使用Vue框架
+1. [学习基础使用](./basic-usage.md) - 了解基本的 API 使用
+2. [Vue 集成指南](./vue-integration.md) - 如果你使用 Vue 框架
 3. [查看示例项目](../examples/vue-example.md) - 学习完整的使用方式
 
 ## ❓ 遇到问题？

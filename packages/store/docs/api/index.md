@@ -61,7 +61,7 @@ $patch(partialState: Partial<State>): void
 ```typescript
 store.$patch({
   count: 10,
-  name: 'Updated Name'
+  name: 'Updated Name',
 })
 ```
 
@@ -84,10 +84,7 @@ $subscribe(callback: SubscriptionCallback): () => void
 **SubscriptionCallback:**
 
 ```typescript
-type SubscriptionCallback = (
-  mutation: { type: string, payload: any },
-  state: State
-) => void
+type SubscriptionCallback = (mutation: { type: string; payload: any }, state: State) => void
 ```
 
 **返回值:** 取消订阅的函数
@@ -314,10 +311,7 @@ interface MemoizedOptions {
 创建 Hook 式 Store。
 
 ```typescript
-function createStore<T>(
-  id: string,
-  setup: () => T
-): () => T
+function createStore<T>(id: string, setup: () => T): () => T
 ```
 
 **参数:**
@@ -337,7 +331,7 @@ const useCounter = createStore('counter', () => {
   return {
     state: { count },
     actions: { increment },
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -347,10 +341,7 @@ const useCounter = createStore('counter', () => {
 创建简单状态 Hook。
 
 ```typescript
-function createState<T>(
-  defaultValue: T,
-  options?: StateOptions
-): () => StateHookReturn<T>
+function createState<T>(defaultValue: T, options?: StateOptions): () => StateHookReturn<T>
 ```
 
 **StateHookReturn:**
@@ -413,10 +404,7 @@ interface PersistedStateHookReturn<T> {
 创建计算属性 Hook。
 
 ```typescript
-function createComputed<T>(
-  getter: () => T,
-  options?: ComputedOptions
-): () => ComputedRef<T>
+function createComputed<T>(getter: () => T, options?: ComputedOptions): () => ComputedRef<T>
 ```
 
 ## Vue 集成 API
@@ -474,10 +462,7 @@ function useStore<T>(id: string): T
 使用特定状态。
 
 ```typescript
-function useState<T>(
-  storeId: string,
-  stateKey: string
-): StateHookReturn<T>
+function useState<T>(storeId: string, stateKey: string): StateHookReturn<T>
 ```
 
 ### useAction
@@ -508,10 +493,7 @@ interface ActionHookReturn<T> {
 使用特定计算属性。
 
 ```typescript
-function useGetter<T>(
-  storeId: string,
-  getterName: string
-): ComputedRef<T>
+function useGetter<T>(storeId: string, getterName: string): ComputedRef<T>
 ```
 
 ### useBatch
@@ -593,10 +575,7 @@ function setNestedValue(obj: any, path: string, value: any): void
 创建防抖函数。
 
 ```typescript
-function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-): T
+function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T
 ```
 
 #### throttle
@@ -604,10 +583,7 @@ function debounce<T extends (...args: any[]) => any>(
 创建节流函数。
 
 ```typescript
-function throttle<T extends (...args: any[]) => any>(
-  fn: T,
-  interval: number
-): T
+function throttle<T extends (...args: any[]) => any>(fn: T, interval: number): T
 ```
 
 #### isFunction
@@ -698,11 +674,7 @@ type InferGetters<T> = T extends { getters: infer G } ? G : never
 type Constructor<T = {}> = new (...args: any[]) => T
 
 // 装饰器工厂类型
-type DecoratorFactory = (
-  target: any,
-  propertyKey: string,
-  descriptor?: PropertyDescriptor
-) => void
+type DecoratorFactory = (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => void
 ```
 
 ## 常量

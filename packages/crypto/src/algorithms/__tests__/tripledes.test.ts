@@ -55,7 +55,7 @@ describe('3DES 加密算法', () => {
     it('应该处理不同的加密模式', () => {
       const modes = ['CBC', 'ECB', 'CFB', 'OFB'] as const
 
-      modes.forEach((mode) => {
+      modes.forEach(mode => {
         const result = encryptor.encrypt(testData, testKey, { mode })
         expect(result.success).toBe(true)
         expect(result.mode).toBe(mode)
@@ -113,7 +113,9 @@ describe('3DES 加密算法', () => {
     const encryptor = new TripleDESEncryptor()
 
     it('应该处理无效的加密数据', () => {
-      const result = encryptor.decrypt('invalid_data', testKey, { iv: '1234567890abcdef' })
+      const result = encryptor.decrypt('invalid_data', testKey, {
+        iv: '1234567890abcdef',
+      })
       expect(result.success).toBe(false)
     })
   })

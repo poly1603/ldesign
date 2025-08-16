@@ -49,12 +49,10 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const result = await manager.scanTemplates()
       templates.value = result.templates
       return result
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err as Error
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -68,12 +66,10 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const result = await manager.render(options)
       currentTemplate.value = result.metadata
       return result
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err as Error
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }

@@ -28,7 +28,7 @@ export interface GetterDefinition {
 export interface StoreOptions<
   TState extends StateDefinition = StateDefinition,
   TActions extends ActionDefinition = ActionDefinition,
-  TGetters extends GetterDefinition = GetterDefinition,
+  TGetters extends GetterDefinition = GetterDefinition
 > {
   id: string
   state?: () => TState
@@ -65,7 +65,7 @@ export interface DecoratorMetadata {
 export interface BaseStore<
   TState extends StateDefinition = StateDefinition,
   TActions extends ActionDefinition = ActionDefinition,
-  TGetters extends GetterDefinition = GetterDefinition,
+  TGetters extends GetterDefinition = GetterDefinition
 > {
   readonly $id: string
   readonly $state: TState
@@ -83,7 +83,7 @@ export interface BaseStore<
 export interface UseStoreReturn<
   TState extends StateDefinition = StateDefinition,
   TActions extends ActionDefinition = ActionDefinition,
-  TGetters extends GetterDefinition = GetterDefinition,
+  TGetters extends GetterDefinition = GetterDefinition
 > extends BaseStore<TState, TActions, TGetters> {
   // 响应式状态
   state: Ref<TState>
@@ -104,9 +104,15 @@ export interface ProviderOptions {
 /**
  * 类型工具
  */
-export type InferState<T> = T extends StoreDefinition<infer S, any, any> ? S : never
-export type InferActions<T> = T extends StoreDefinition<any, infer A, any> ? A : never
-export type InferGetters<T> = T extends StoreDefinition<any, any, infer G> ? G : never
+export type InferState<T> = T extends StoreDefinition<infer S, any, any>
+  ? S
+  : never
+export type InferActions<T> = T extends StoreDefinition<any, infer A, any>
+  ? A
+  : never
+export type InferGetters<T> = T extends StoreDefinition<any, any, infer G>
+  ? G
+  : never
 
 /**
  * 导出所有类型

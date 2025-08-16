@@ -9,16 +9,22 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@ldesign/engine", "@ldesign/color", "@ldesign/crypto", "@ldesign/device", "@ldesign/http", "@ldesign/i18n", "@ldesign/router", "@ldesign/store", "@ldesign/template"]
+    [
+      "@ldesign/engine",
+      "@ldesign/color",
+      "@ldesign/crypto",
+      "@ldesign/device",
+      "@ldesign/http",
+      "@ldesign/i18n",
+      "@ldesign/router",
+      "@ldesign/store",
+      "@ldesign/template"
+    ]
   ],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "docs",
-    "examples",
-    "tools"
-  ],
+  "ignore": ["docs", "examples", "tools"],
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true
   }

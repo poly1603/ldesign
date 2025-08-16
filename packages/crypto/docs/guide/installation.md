@@ -32,7 +32,6 @@ yarn add @ldesign/crypto
 
 <!-- 生产版本（压缩） -->
 <script src="https://unpkg.com/@ldesign/crypto/dist/index.min.js"></script>
-
 ```
 
 使用 UMD 格式时，库会暴露为全局变量 `LDesignCrypto`：
@@ -44,7 +43,6 @@ yarn add @ldesign/crypto
   const encrypted = encrypt.aes('Hello World', 'secret-key')
   console.log(encrypted)
 </script>
-
 ```
 
 ### ESM 格式
@@ -56,7 +54,6 @@ yarn add @ldesign/crypto
   const encrypted = encrypt.aes('Hello World', 'secret-key')
   console.log(encrypted)
 </script>
-
 ```
 
 ## Vue 3 项目安装
@@ -119,7 +116,7 @@ console.log('Success:', decrypted.data === 'Hello World')
 ### 浏览器环境
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>Crypto Test</title>
@@ -139,7 +136,6 @@ console.log('Success:', decrypted.data === 'Hello World')
     </script>
   </body>
 </html>
-
 ```
 
 ### Vue 3 环境
@@ -165,8 +161,7 @@ onMounted(async () => {
     decrypted.value = decryptResult.data
 
     success.value = decryptResult.data === original.value
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Test failed:', error)
   }
 })
@@ -200,9 +195,9 @@ module.exports = {
     fallback: {
       crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify'),
-      buffer: require.resolve('buffer')
-    }
-  }
+      buffer: require.resolve('buffer'),
+    },
+  },
 }
 ```
 
@@ -217,10 +212,10 @@ export default {
   plugins: [
     nodeResolve({
       browser: true,
-      preferBuiltins: false
+      preferBuiltins: false,
     }),
-    commonjs()
-  ]
+    commonjs(),
+  ],
 }
 ```
 
@@ -229,10 +224,12 @@ export default {
 ### 常见问题
 
 1. **模块解析错误**
+
    - 确保使用正确的导入路径
    - 检查构建工具配置
 
 2. **类型错误**
+
    - 确保安装了 TypeScript 类型定义
    - 检查 tsconfig.json 配置
 

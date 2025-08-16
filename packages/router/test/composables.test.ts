@@ -81,7 +81,7 @@ describe('composables', () => {
       expect(() => {
         useRouter()
       }).toThrow(
-        'useRouter() can only be used inside a component that has a router instance',
+        'useRouter() can only be used inside a component that has a router instance'
       )
     })
   })
@@ -119,10 +119,10 @@ describe('composables', () => {
           currentRoute = useRoute()
           watch(
             () => currentRoute.value.path,
-            (path) => {
+            path => {
               paths.push(path)
             },
-            { immediate: true },
+            { immediate: true }
           )
           return () => h('div')
         },
@@ -178,7 +178,7 @@ describe('composables', () => {
                 ids.push(newId)
               }
             },
-            { immediate: true },
+            { immediate: true }
           )
           return () => h('div')
         },
@@ -286,7 +286,11 @@ describe('composables', () => {
       await nextTick()
 
       expect(matched.value.length).toBeGreaterThanOrEqual(1)
-      expect(matched.value.some((route: any) => route.name === 'posts' || route.path === '/posts/:id')).toBe(true)
+      expect(
+        matched.value.some(
+          (route: any) => route.name === 'posts' || route.path === '/posts/:id'
+        )
+      ).toBe(true)
     })
   })
 

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # 主项目开发环境
@@ -8,9 +8,9 @@ services:
       dockerfile: Dockerfile
       target: development
     ports:
-      - '3000:3000'
-      - '5173:5173'
-      - '4173:4173'
+      - "3000:3000"
+      - "5173:5173"
+      - "4173:4173"
     volumes:
       - .:/app
       - /app/node_modules
@@ -31,14 +31,14 @@ services:
       dockerfile: docs/Dockerfile
       target: development
     ports:
-      - '5174:5173'
+      - "5174:5173"
     volumes:
       - ./docs:/app/docs
       - ./packages:/app/packages
       - /app/node_modules
     environment:
       - NODE_ENV=development
-    command: [pnpm, 'docs:dev', --host, 0.0.0.0, --port, '5173']
+    command: [pnpm, "docs:dev", --host, 0.0.0.0, --port, "5173"]
     networks:
       - ldesign-dev
     stdin_open: true

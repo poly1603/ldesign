@@ -6,13 +6,12 @@ const rootDir = resolve(process.cwd())
 const packagesDir = join(rootDir, 'packages')
 
 // 获取所有包目录
-const packageDirs = readdirSync(packagesDir).filter((dir) => {
+const packageDirs = readdirSync(packagesDir).filter(dir => {
   try {
     const packageJsonPath = join(packagesDir, dir, 'package.json')
     readFileSync(packageJsonPath, 'utf-8')
     return true
-  }
-  catch {
+  } catch {
     return false
   }
 })
@@ -24,15 +23,14 @@ const vitestConfig = `import { createVitestConfig } from '../../tools/configs/vi
 export default createVitestConfig(process.cwd())
 `
 
-packageDirs.forEach((dir) => {
+packageDirs.forEach(dir => {
   const packagePath = join(packagesDir, dir)
   const vitestConfigPath = join(packagePath, 'vitest.config.ts')
 
   try {
     writeFileSync(vitestConfigPath, vitestConfig)
     console.log(`✅ 创建 Vitest 配置: ${dir}`)
-  }
-  catch (error) {
+  } catch (error) {
     console.error(`❌ 创建失败: ${dir}`, error.message)
   }
 })

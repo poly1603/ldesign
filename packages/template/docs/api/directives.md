@@ -13,8 +13,8 @@ const templateConfig = {
   device: 'desktop',
   template: 'login',
   props: {
-    title: '用户登录'
-  }
+    title: '用户登录',
+  },
 }
 </script>
 
@@ -67,8 +67,8 @@ const dynamicConfig = computed(() => ({
   category: 'dashboard',
   template: userRole.value === 'admin' ? 'admin' : 'user',
   props: {
-    role: userRole.value
-  }
+    role: userRole.value,
+  },
 }))
 </script>
 
@@ -154,8 +154,8 @@ const themeConfig = computed(() => ({
   template: selectedTheme.value,
   props: {
     title: `${selectedTheme.value} 主题`,
-    content: '主题内容区域'
-  }
+    content: '主题内容区域',
+  },
 }))
 
 // 认证状态
@@ -167,8 +167,8 @@ const authConfig = computed(() => ({
   props: {
     user: isAuthenticated.value ? { name: '用户' } : null,
     onLogin: handleLogin,
-    onLogout: handleLogout
-  }
+    onLogout: handleLogout,
+  },
 }))
 
 // 错误处理
@@ -177,10 +177,10 @@ const loadError = ref(null)
 const errorConfig = computed(() => ({
   category: 'nonexistent',
   template: 'invalid',
-  onError: (error) => {
+  onError: error => {
     loadError.value = error
     console.error('模板加载失败:', error)
-  }
+  },
 }))
 
 function toggleAuth() {
@@ -222,12 +222,8 @@ function handleLogout() {
       <h2>动态配置</h2>
       <div class="controls">
         <select v-model="selectedTheme">
-          <option value="light">
-            浅色主题
-          </option>
-          <option value="dark">
-            深色主题
-          </option>
+          <option value="light">浅色主题</option>
+          <option value="dark">深色主题</option>
         </select>
       </div>
       <div v-template="themeConfig" />
@@ -334,37 +330,27 @@ const templateConfigs = [
     id: 1,
     category: 'card',
     template: 'product',
-    props: { product: product1 }
+    props: { product: product1 },
   },
   {
     id: 2,
     category: 'card',
     template: 'product',
-    props: { product: product2 }
-  }
+    props: { product: product2 },
+  },
 ]
 </script>
 
 <template>
   <!-- 条件渲染 -->
-  <div
-    v-if="showTemplate"
-    v-template="templateConfig"
-  />
+  <div v-if="showTemplate" v-template="templateConfig" />
 
   <!-- 列表渲染 -->
-  <div
-    v-for="config in templateConfigs"
-    :key="config.id"
-    v-template="config"
-  />
+  <div v-for="config in templateConfigs" :key="config.id" v-template="config" />
 
   <!-- 动画过渡 -->
   <transition name="template-fade">
-    <div
-      v-if="currentTemplate"
-      v-template="currentTemplate"
-    />
+    <div v-if="currentTemplate" v-template="currentTemplate" />
   </transition>
 </template>
 
@@ -392,11 +378,11 @@ app.directive('auth-template', {
       category: 'auth',
       template: binding.value,
       props: {
-        onLogin: handleLogin
-      }
+        onLogin: handleLogin,
+      },
     }
     // 使用 v-template 指令的逻辑
-  }
+  },
 })
 
 app.directive('dashboard-template', {
@@ -405,11 +391,11 @@ app.directive('dashboard-template', {
       category: 'dashboard',
       template: binding.value === 'admin' ? 'admin' : 'user',
       props: {
-        role: binding.value
-      }
+        role: binding.value,
+      },
     }
     // 使用 v-template 指令的逻辑
-  }
+  },
 })
 </script>
 
@@ -430,8 +416,8 @@ const stableConfig = computed(() => ({
   category: 'dashboard',
   template: 'admin',
   props: {
-    data: processedData.value
-  }
+    data: processedData.value,
+  },
 }))
 </script>
 
@@ -484,7 +470,7 @@ app.config.globalProperties.$templateErrorHandler = (error, config) => {
   console.error('模板指令错误:', error)
   // 上报到错误监控系统
   errorReporting.captureException(error, {
-    extra: { templateConfig: config }
+    extra: { templateConfig: config },
   })
 }
 ```
@@ -496,13 +482,13 @@ app.config.globalProperties.$templateErrorHandler = (error, config) => {
 const templateConfigWithErrorHandling = computed(() => ({
   category: 'feature',
   template: 'advanced',
-  onError: (error) => {
+  onError: error => {
     // 组件级错误处理
     console.warn('功能模板加载失败，使用备用方案')
 
     // 可以触发备用模板加载
     loadFallbackTemplate()
-  }
+  },
 }))
 
 function loadFallbackTemplate() {

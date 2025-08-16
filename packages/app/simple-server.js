@@ -30,7 +30,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader(
     'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS',
+    'GET, POST, PUT, DELETE, OPTIONS'
   )
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
@@ -53,13 +53,11 @@ const server = http.createServer((req, res) => {
       if (error.code === 'ENOENT') {
         res.writeHead(404)
         res.end('File not found')
-      }
-      else {
+      } else {
         res.writeHead(500)
         res.end(`Server error: ${error.code}`)
       }
-    }
-    else {
+    } else {
       res.writeHead(200, { 'Content-Type': mimeType })
       res.end(content, 'utf-8')
     }

@@ -38,16 +38,16 @@ function parseArguments(): BuildOptions {
   const { values } = parseArgs({
     args: process.argv.slice(2),
     options: {
-      'packages': { type: 'string', short: 'p' },
-      'apps': { type: 'string', short: 'a' },
-      'watch': { type: 'boolean', short: 'w' },
-      'production': { type: 'boolean' },
-      'analyze': { type: 'boolean' },
+      packages: { type: 'string', short: 'p' },
+      apps: { type: 'string', short: 'a' },
+      watch: { type: 'boolean', short: 'w' },
+      production: { type: 'boolean' },
+      analyze: { type: 'boolean' },
       'skip-type-check': { type: 'boolean' },
       'skip-tests': { type: 'boolean' },
-      'clean': { type: 'boolean', short: 'c' },
-      'debug': { type: 'boolean', short: 'd' },
-      'help': { type: 'boolean', short: 'h' },
+      clean: { type: 'boolean', short: 'c' },
+      debug: { type: 'boolean', short: 'd' },
+      help: { type: 'boolean', short: 'h' },
     },
   })
 
@@ -106,15 +106,14 @@ function showHelp() {
  */
 function getAvailablePackages(): string[] {
   const packagesDir = resolve(process.cwd(), 'packages')
-  if (!existsSync(packagesDir))
-    return []
+  if (!existsSync(packagesDir)) return []
 
   const { readdirSync, statSync } = require('node:fs')
   return readdirSync(packagesDir).filter((name: string) => {
     const packagePath = resolve(packagesDir, name)
     return (
-      statSync(packagePath).isDirectory()
-      && existsSync(resolve(packagePath, 'package.json'))
+      statSync(packagePath).isDirectory() &&
+      existsSync(resolve(packagePath, 'package.json'))
     )
   })
 }
@@ -124,15 +123,14 @@ function getAvailablePackages(): string[] {
  */
 function getAvailableApps(): string[] {
   const appsDir = resolve(process.cwd(), 'apps')
-  if (!existsSync(appsDir))
-    return []
+  if (!existsSync(appsDir)) return []
 
   const { readdirSync, statSync } = require('node:fs')
   return readdirSync(appsDir).filter((name: string) => {
     const appPath = resolve(appsDir, name)
     return (
-      statSync(appPath).isDirectory()
-      && existsSync(resolve(appPath, 'package.json'))
+      statSync(appPath).isDirectory() &&
+      existsSync(resolve(appPath, 'package.json'))
     )
   })
 }
@@ -151,12 +149,9 @@ async function buildPackage(packageName: string, options: BuildOptions) {
   console.log(`🔧 构建包 ${packageName}...`)
 
   const args = ['build']
-  if (options.watch)
-    args.push('--watch')
-  if (options.analyze)
-    args.push('--analyze')
-  if (options.debug)
-    args.push('--debug')
+  if (options.watch) args.push('--watch')
+  if (options.analyze) args.push('--analyze')
+  if (options.debug) args.push('--debug')
 
   const child = spawn('pnpm', args, {
     cwd: packagePath,
@@ -164,17 +159,16 @@ async function buildPackage(packageName: string, options: BuildOptions) {
     shell: true,
   })
 
-  return new Promise<boolean>((resolve) => {
-    child.on('error', (error) => {
+  return new Promise<boolean>(resolve => {
+    child.on('error', error => {
       console.error(`❌ 构建包 ${packageName} 失败:`, error)
       resolve(false)
     })
-    child.on('exit', (code) => {
+    child.on('exit', code => {
       if (code === 0) {
         console.log(`✅ 包 ${packageName} 构建完成`)
         resolve(true)
-      }
-      else {
+      } else {
         console.error(`❌ 包 ${packageName} 构建失败，退出代码: ${code}`)
         resolve(false)
       }
@@ -196,10 +190,8 @@ async function buildApp(appName: string, options: BuildOptions) {
   console.log(`🚀 构建应用 ${appName}...`)
 
   const args = ['build']
-  if (options.analyze)
-    args.push('--analyze')
-  if (options.debug)
-    args.push('--debug')
+  if (options.analyze) args.push('--analyze')
+  if (options.debug) args.push('--debug')
 
   const child = spawn('pnpm', args, {
     cwd: appPath,
@@ -207,17 +199,16 @@ async function buildApp(appName: string, options: BuildOptions) {
     shell: true,
   })
 
-  return new Promise<boolean>((resolve) => {
-    child.on('error', (error) => {
+  return new Promise<boolean>(resolve => {
+    child.on('error', error => {
       console.error(`❌ 构建应用 ${appName} 失败:`, error)
       resolve(false)
     })
-    child.on('exit', (code) => {
+    child.on('exit', code => {
       if (code === 0) {
         console.log(`✅ 应用 ${appName} 构建完成`)
         resolve(true)
-      }
-      else {
+      } else {
         console.error(`❌ 应用 ${appName} 构建失败，退出代码: ${code}`)
         resolve(false)
       }
@@ -237,17 +228,16 @@ async function runTypeCheck(): Promise<boolean> {
     shell: true,
   })
 
-  return new Promise<boolean>((resolve) => {
-    child.on('error', (error) => {
+  return new Promise<boolean>(resolve => {
+    child.on('error', error => {
       console.error('❌ 类型检查失败:', error)
       resolve(false)
     })
-    child.on('exit', (code) => {
+    child.on('exit', code => {
       if (code === 0) {
         console.log('✅ 类型检查通过')
         resolve(true)
-      }
-      else {
+      } else {
         console.error(`❌ 类型检查失败，退出代码: ${code}`)
         resolve(false)
       }
@@ -267,17 +257,16 @@ async function runTests(): Promise<boolean> {
     shell: true,
   })
 
-  return new Promise<boolean>((resolve) => {
-    child.on('error', (error) => {
+  return new Promise<boolean>(resolve => {
+    child.on('error', error => {
       console.error('❌ 测试失败:', error)
       resolve(false)
     })
-    child.on('exit', (code) => {
+    child.on('exit', code => {
       if (code === 0) {
         console.log('✅ 测试通过')
         resolve(true)
-      }
-      else {
+      } else {
         console.error(`❌ 测试失败，退出代码: ${code}`)
         resolve(false)
       }
@@ -323,8 +312,7 @@ async function main() {
     const buildSuccess = await buildPackage(packageName, options)
     if (!buildSuccess) {
       success = false
-      if (!options.watch)
-        break
+      if (!options.watch) break
     }
   }
 
@@ -334,15 +322,13 @@ async function main() {
     const buildSuccess = await buildApp(appName, options)
     if (!buildSuccess) {
       success = false
-      if (!options.watch)
-        break
+      if (!options.watch) break
     }
   }
 
   if (success) {
     console.log('\n✅ 所有构建任务完成')
-  }
-  else {
+  } else {
     console.log('\n❌ 部分构建任务失败')
     if (!options.watch) {
       process.exit(1)

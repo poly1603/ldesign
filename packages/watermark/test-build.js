@@ -10,24 +10,21 @@ console.log('✅ 可用的导出:', Object.keys(watermark))
 // 检查核心类
 if (watermark.WatermarkCore) {
   console.log('✅ WatermarkCore 类可用')
-}
-else {
+} else {
   console.log('❌ WatermarkCore 类不可用')
 }
 
 // 检查工厂函数
 if (watermark.createWatermark) {
   console.log('✅ createWatermark 函数可用')
-}
-else {
+} else {
   console.log('❌ createWatermark 函数不可用')
 }
 
 // 检查版本
 if (watermark.VERSION) {
   console.log('✅ 版本号:', watermark.VERSION)
-}
-else {
+} else {
   console.log('❌ 版本号不可用')
 }
 

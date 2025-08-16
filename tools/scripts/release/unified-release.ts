@@ -58,8 +58,7 @@ class UnifiedRelease {
       }
 
       console.log('✅ 发布完成!')
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 发布失败:', error)
       throw error
     }
@@ -75,13 +74,14 @@ class UnifiedRelease {
       if (status.trim()) {
         throw new Error('工作区不干净，请先提交或暂存更改')
       }
-    }
-    catch {
+    } catch {
       throw new Error('Git 状态检查失败')
     }
 
     // 检查当前分支
-    const branch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim()
+    const branch = execSync('git branch --show-current', {
+      encoding: 'utf-8',
+    }).trim()
     if (branch !== 'main' && branch !== 'master') {
       console.warn(`⚠️ 当前分支: ${branch}，建议在 main/master 分支发布`)
     }
@@ -89,12 +89,13 @@ class UnifiedRelease {
     // 检查远程同步
     try {
       execSync('git fetch origin', { stdio: 'inherit' })
-      const behind = execSync(`git rev-list --count HEAD..origin/${branch}`, { encoding: 'utf-8' }).trim()
+      const behind = execSync(`git rev-list --count HEAD..origin/${branch}`, {
+        encoding: 'utf-8',
+      }).trim()
       if (Number.parseInt(behind) > 0) {
         throw new Error(`本地分支落后远程 ${behind} 个提交，请先拉取最新代码`)
       }
-    }
-    catch {
+    } catch {
       console.warn('⚠️ 无法检查远程同步状态')
     }
   }
@@ -128,8 +129,7 @@ class UnifiedRelease {
     if (options.dryRun) {
       console.log('🔍 预览版本更新...')
       execSync('changeset status', { stdio: 'inherit' })
-    }
-    else {
+    } else {
       execSync('changeset version', { stdio: 'inherit' })
     }
   }
@@ -151,7 +151,9 @@ class UnifiedRelease {
     console.log('📝 提交更改...')
 
     // 读取根 package.json 获取新版本
-    const rootPackage = JSON.parse(readFileSync(resolve(this.rootDir, 'package.json'), 'utf-8'))
+    const rootPackage = JSON.parse(
+      readFileSync(resolve(this.rootDir, 'package.json'), 'utf-8')
+    )
     const version = rootPackage.version
 
     execSync('git add .', { stdio: 'inherit' })
@@ -192,8 +194,7 @@ class UnifiedRelease {
       execSync('git push origin --force-with-lease', { stdio: 'inherit' })
 
       console.log('✅ 回滚完成')
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 回滚失败:', error)
       throw error
     }
@@ -210,25 +211,29 @@ switch (command) {
   case 'patch':
   case 'minor':
   case 'major':
-    release.release({
-      type: command,
-      dryRun: args.includes('--dry-run'),
-      skipTests: args.includes('--skip-tests'),
-      skipBuild: args.includes('--skip-build'),
-    }).catch(console.error)
+    release
+      .release({
+        type: command,
+        dryRun: args.includes('--dry-run'),
+        skipTests: args.includes('--skip-tests'),
+        skipBuild: args.includes('--skip-build'),
+      })
+      .catch(console.error)
     break
 
   case 'prerelease': {
     const tagIndex = args.indexOf('--tag')
     const tag = tagIndex !== -1 ? args[tagIndex + 1] : 'beta'
 
-    release.release({
-      type: 'prerelease',
-      tag,
-      dryRun: args.includes('--dry-run'),
-      skipTests: args.includes('--skip-tests'),
-      skipBuild: args.includes('--skip-build'),
-    }).catch(console.error)
+    release
+      .release({
+        type: 'prerelease',
+        tag,
+        dryRun: args.includes('--dry-run'),
+        skipTests: args.includes('--skip-tests'),
+        skipBuild: args.includes('--skip-build'),
+      })
+      .catch(console.error)
     break
   }
 

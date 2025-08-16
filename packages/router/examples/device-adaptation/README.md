@@ -90,8 +90,8 @@ const routes = [
     deviceComponents: {
       mobile: () => import('@/views/mobile/Home.vue'),
       tablet: () => import('@/views/tablet/Home.vue'),
-      desktop: () => import('@/views/desktop/Home.vue')
-    }
+      desktop: () => import('@/views/desktop/Home.vue'),
+    },
   },
   {
     path: '/admin',
@@ -100,21 +100,21 @@ const routes = [
     meta: {
       // 限制只能在桌面设备访问
       supportedDevices: ['desktop'],
-      unsupportedMessage: '管理后台仅支持桌面设备访问'
-    }
+      unsupportedMessage: '管理后台仅支持桌面设备访问',
+    },
   },
   {
     path: '/template-login',
     name: 'TemplateLogin',
     // 使用模板
     template: 'login',
-    templateCategory: 'auth'
-  }
+    templateCategory: 'auth',
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 // 安装设备路由插件
@@ -128,10 +128,10 @@ const devicePlugin = createDeviceRouterPlugin({
       query: {
         device,
         from: route.path,
-        message: route.meta.unsupportedMessage
-      }
-    })
-  }
+        message: route.meta.unsupportedMessage,
+      },
+    }),
+  },
 })
 
 devicePlugin.install(router)
@@ -147,7 +147,7 @@ devicePlugin.install(router)
     <p>当前设备: {{ currentDeviceName }}</p>
     <p>路由支持: {{ isCurrentRouteSupported ? '✅ 支持' : '❌ 不支持' }}</p>
     <p>支持的设备: {{ supportedDevices.join(', ') }}</p>
-    
+
     <div class="route-tests">
       <h4>路由测试</h4>
       <p>/admin 支持: {{ isRouteSupported('/admin') ? '✅' : '❌' }}</p>
@@ -159,12 +159,8 @@ devicePlugin.install(router)
 <script setup lang="ts">
 import { useDeviceRoute } from '@ldesign/router'
 
-const {
-  currentDeviceName,
-  isCurrentRouteSupported,
-  supportedDevices,
-  isRouteSupported
-} = useDeviceRoute()
+const { currentDeviceName, isCurrentRouteSupported, supportedDevices, isRouteSupported } =
+  useDeviceRoute()
 </script>
 ```
 
@@ -206,7 +202,7 @@ const simulateDevice = (device: DeviceType) => {
 调整浏览器窗口大小来测试响应式设备检测：
 
 - 宽度 < 768px: 移动端
-- 768px ≤ 宽度 < 1024px: 平板端  
+- 768px ≤ 宽度 < 1024px: 平板端
 - 宽度 ≥ 1024px: 桌面端
 
 ### 用户代理检测

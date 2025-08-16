@@ -1,6 +1,7 @@
 # 安全管理
 
-Vue3 Engine 提供了完整的安全管理功能，帮助开发者防范常见的安全威胁，包括 XSS 攻击、CSRF 攻击、恶意输入等。
+Vue3 Engine 提供了完整的安全管理功能，帮助开发者防范常见的安全威胁，包括 XSS 攻击、CSRF 攻击、恶意输
+入等。
 
 ## 基础用法
 
@@ -49,10 +50,10 @@ console.log(engine.security.validateUrl(url2)) // false
 ```typescript
 // 设置 CSP 策略
 engine.security.setCSP({
-  'default-src': ['\'self\''],
-  'script-src': ['\'self\'', '\'unsafe-inline\''],
-  'style-src': ['\'self\'', '\'unsafe-inline\''],
-  'img-src': ['\'self\'', 'data:', 'https:']
+  'default-src': ["'self'"],
+  'script-src': ["'self'", "'unsafe-inline'"],
+  'style-src': ["'self'", "'unsafe-inline'"],
+  'img-src': ["'self'", 'data:', 'https:'],
 })
 ```
 
@@ -64,7 +65,7 @@ engine.security.setSecurityHeaders({
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 })
 ```
 
@@ -75,7 +76,7 @@ engine.security.setSecurityHeaders({
 const validationRules = {
   email: /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/,
   phone: /^\+?[\d\s-()]+$/,
-  username: /^\w{3,20}$/
+  username: /^\w{3,20}$/,
 }
 
 // 验证输入
@@ -90,13 +91,13 @@ console.log(isValidEmail) // true
 
 ```typescript
 // 监听安全威胁事件
-engine.events.on('security:threat-detected', (event) => {
+engine.events.on('security:threat-detected', event => {
   console.log('安全威胁检测到:', event)
   // 记录日志、发送警报等
 })
 
 // 监听输入清理事件
-engine.events.on('security:input-sanitized', (event) => {
+engine.events.on('security:input-sanitized', event => {
   console.log('输入已清理:', event)
 })
 ```
@@ -112,7 +113,7 @@ engine.security.addHandler('custom-threat', (input, context) => {
       threat: true,
       type: 'custom-threat',
       severity: 'high',
-      message: '检测到自定义威胁模式'
+      message: '检测到自定义威胁模式',
     }
   }
   return { threat: false }
@@ -142,7 +143,7 @@ const engine = createEngine({
     customRules: {
       allowedTags: ['div', 'span', 'p', 'a', 'img'],
       allowedAttributes: ['class', 'id', 'href', 'src', 'alt'],
-      allowedSchemes: ['http', 'https', 'mailto']
+      allowedSchemes: ['http', 'https', 'mailto'],
     },
 
     // 威胁检测配置
@@ -150,9 +151,9 @@ const engine = createEngine({
       xss: true,
       sqlInjection: true,
       pathTraversal: true,
-      commandInjection: true
-    }
-  }
+      commandInjection: true,
+    },
+  },
 })
 ```
 
@@ -267,7 +268,7 @@ const isValidToken = engine.security.validateCSRFToken(token, userToken)
 
 ```typescript
 // 输入清理防止 SQL 注入
-const userInput = '\'; DROP TABLE users; --'
+const userInput = "'; DROP TABLE users; --"
 const cleanInput = engine.security.sanitizeInput(userInput)
 // 清理后的输入不会包含危险字符
 ```
@@ -278,8 +279,7 @@ const cleanInput = engine.security.sanitizeInput(userInput)
 try {
   const cleanInput = engine.security.sanitizeInput(userInput)
   // 处理清理后的输入
-}
-catch (error) {
+} catch (error) {
   engine.logger.error('输入清理失败:', error)
   // 处理错误情况
 }

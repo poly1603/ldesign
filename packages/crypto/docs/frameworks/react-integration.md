@@ -53,39 +53,39 @@ const BasicCryptoComponent: React.FC = () => {
   }
 
   return (
-    <div className="crypto-demo">
+    <div className='crypto-demo'>
       <h2>React 加密演示</h2>
-      
-      <div className="form-section">
+
+      <div className='form-section'>
         <input
           value={plaintext}
-          onChange={(e) => setPlaintext(e.target.value)}
-          placeholder="输入要加密的文本"
+          onChange={e => setPlaintext(e.target.value)}
+          placeholder='输入要加密的文本'
         />
         <input
           value={secretKey}
-          onChange={(e) => setSecretKey(e.target.value)}
-          placeholder="输入密钥"
-          type="password"
+          onChange={e => setSecretKey(e.target.value)}
+          placeholder='输入密钥'
+          type='password'
         />
-        
-        <div className="button-group">
+
+        <div className='button-group'>
           <button onClick={handleEncrypt}>🔒 加密</button>
           <button onClick={handleDecrypt} disabled={!encrypted}>
             🔓 解密
           </button>
         </div>
       </div>
-      
+
       {encrypted && (
-        <div className="result-section">
+        <div className='result-section'>
           <h3>加密结果:</h3>
           <pre>{encrypted}</pre>
         </div>
       )}
-      
+
       {decrypted && (
-        <div className="result-section">
+        <div className='result-section'>
           <h3>解密结果:</h3>
           <p>{decrypted}</p>
         </div>
@@ -113,7 +113,7 @@ export const useCrypto = () => {
   const [state, setState] = useState<CryptoState>({
     isProcessing: false,
     lastError: null,
-    lastResult: null
+    lastResult: null,
   })
 
   const setProcessing = useCallback((processing: boolean) => {
@@ -129,95 +129,99 @@ export const useCrypto = () => {
   }, [])
 
   // AES 加密
-  const encryptAES = useCallback(async (
-    data: string,
-    key: string,
-    options?: any
-  ): Promise<string> => {
-    setProcessing(true)
-    setError(null)
+  const encryptAES = useCallback(
+    async (data: string, key: string, options?: any): Promise<string> => {
+      setProcessing(true)
+      setError(null)
 
-    try {
-      const result = aes.encrypt(data, key, options)
-      if (result.success && result.data) {
-        setResult(result)
-        return result.data
-      } else {
-        throw new Error(result.error || '加密失败')
+      try {
+        const result = aes.encrypt(data, key, options)
+        if (result.success && result.data) {
+          setResult(result)
+          return result.data
+        } else {
+          throw new Error(result.error || '加密失败')
+        }
+      } catch (error) {
+        const errorMessage = (error as Error).message
+        setError(errorMessage)
+        throw error
+      } finally {
+        setProcessing(false)
       }
-    } catch (error) {
-      const errorMessage = (error as Error).message
-      setError(errorMessage)
-      throw error
-    } finally {
-      setProcessing(false)
-    }
-  }, [setProcessing, setError, setResult])
+    },
+    [setProcessing, setError, setResult]
+  )
 
   // AES 解密
-  const decryptAES = useCallback(async (
-    encryptedData: string,
-    key: string,
-    options?: any
-  ): Promise<string> => {
-    setProcessing(true)
-    setError(null)
+  const decryptAES = useCallback(
+    async (encryptedData: string, key: string, options?: any): Promise<string> => {
+      setProcessing(true)
+      setError(null)
 
-    try {
-      const result = aes.decrypt(encryptedData, key, options)
-      if (result.success && result.data) {
-        setResult(result)
-        return result.data
-      } else {
-        throw new Error(result.error || '解密失败')
+      try {
+        const result = aes.decrypt(encryptedData, key, options)
+        if (result.success && result.data) {
+          setResult(result)
+          return result.data
+        } else {
+          throw new Error(result.error || '解密失败')
+        }
+      } catch (error) {
+        const errorMessage = (error as Error).message
+        setError(errorMessage)
+        throw error
+      } finally {
+        setProcessing(false)
       }
-    } catch (error) {
-      const errorMessage = (error as Error).message
-      setError(errorMessage)
-      throw error
-    } finally {
-      setProcessing(false)
-    }
-  }, [setProcessing, setError, setResult])
+    },
+    [setProcessing, setError, setResult]
+  )
 
   // 生成 RSA 密钥对
-  const generateRSAKeyPair = useCallback(async (keySize: number = 2048) => {
-    setProcessing(true)
-    setError(null)
+  const generateRSAKeyPair = useCallback(
+    async (keySize: number = 2048) => {
+      setProcessing(true)
+      setError(null)
 
-    try {
-      const keyPair = keyGenerator.generateRSAKeyPair(keySize)
-      setResult(keyPair)
-      return keyPair
-    } catch (error) {
-      const errorMessage = (error as Error).message
-      setError(errorMessage)
-      throw error
-    } finally {
-      setProcessing(false)
-    }
-  }, [setProcessing, setError, setResult])
+      try {
+        const keyPair = keyGenerator.generateRSAKeyPair(keySize)
+        setResult(keyPair)
+        return keyPair
+      } catch (error) {
+        const errorMessage = (error as Error).message
+        setError(errorMessage)
+        throw error
+      } finally {
+        setProcessing(false)
+      }
+    },
+    [setProcessing, setError, setResult]
+  )
 
   // 哈希计算
-  const calculateHash = useCallback(async (
-    data: string,
-    algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256'
-  ): Promise<string> => {
-    setProcessing(true)
-    setError(null)
+  const calculateHash = useCallback(
+    async (
+      data: string,
+      algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256'
+    ): Promise<string> => {
+      setProcessing(true)
+      setError(null)
 
-    try {
-      const result = hash[algorithm](data)
-      setResult(result)
-      return result
-    } catch (error) {
-      const errorMessage = (error as Error).message
-      setError(errorMessage)
-      throw error
-    } finally {
-      setProcessing(false)
-    }
-  }, [setProcessing, setError, setResult])
+      try {
+        const result = hash[algorithm](data)
+        setResult(result)
+        return result
+      } catch (error) {
+        const errorMessage = (error as Error).message
+        setError(errorMessage)
+        throw error
+      } finally {
+        setProcessing(false)
+      }
+    },
+    [setProcessing, setError, setResult]
+  )
 
   // 清除错误
   const clearError = useCallback(() => {
@@ -229,7 +233,7 @@ export const useCrypto = () => {
     setState({
       isProcessing: false,
       lastError: null,
-      lastResult: null
+      lastResult: null,
     })
   }, [])
 
@@ -251,7 +255,7 @@ export const useCrypto = () => {
 
     // 工具方法
     clearError,
-    reset
+    reset,
   }
 }
 ```
@@ -270,7 +274,7 @@ const AdvancedCryptoComponent: React.FC = () => {
     decryptAES,
     generateRSAKeyPair,
     calculateHash,
-    clearError
+    clearError,
   } = useCrypto()
 
   const [inputData, setInputData] = useState('Hello, Advanced React!')
@@ -318,35 +322,35 @@ const AdvancedCryptoComponent: React.FC = () => {
   }
 
   return (
-    <div className="advanced-crypto-demo">
+    <div className='advanced-crypto-demo'>
       <h2>高级 React 加密演示</h2>
 
       {/* 错误显示 */}
       {lastError && (
-        <div className="error-message">
+        <div className='error-message'>
           ❌ {lastError}
           <button onClick={clearError}>清除</button>
         </div>
       )}
 
       {/* 输入区域 */}
-      <div className="input-section">
+      <div className='input-section'>
         <textarea
           value={inputData}
-          onChange={(e) => setInputData(e.target.value)}
-          placeholder="输入数据"
+          onChange={e => setInputData(e.target.value)}
+          placeholder='输入数据'
           rows={4}
         />
         <input
           value={inputKey}
-          onChange={(e) => setInputKey(e.target.value)}
-          placeholder="输入密钥"
-          type="password"
+          onChange={e => setInputKey(e.target.value)}
+          placeholder='输入密钥'
+          type='password'
         />
       </div>
 
       {/* 操作按钮 */}
-      <div className="button-group">
+      <div className='button-group'>
         <button onClick={handleEncrypt} disabled={isProcessing}>
           {isProcessing ? '加密中...' : '🔒 AES 加密'}
         </button>
@@ -363,34 +367,34 @@ const AdvancedCryptoComponent: React.FC = () => {
 
       {/* 结果显示 */}
       {encryptedResult && (
-        <div className="result-section">
+        <div className='result-section'>
           <h3>🔒 加密结果:</h3>
           <pre>{encryptedResult}</pre>
         </div>
       )}
 
       {decryptedResult && (
-        <div className="result-section success">
+        <div className='result-section success'>
           <h3>🔓 解密结果:</h3>
           <p>{decryptedResult}</p>
         </div>
       )}
 
       {hashResult && (
-        <div className="result-section">
+        <div className='result-section'>
           <h3>🔍 SHA-256 哈希:</h3>
           <code>{hashResult}</code>
         </div>
       )}
 
       {rsaKeyPair && (
-        <div className="key-section">
+        <div className='key-section'>
           <h3>🔑 RSA 密钥对:</h3>
-          <div className="key-item">
+          <div className='key-item'>
             <h4>公钥:</h4>
             <textarea value={rsaKeyPair.publicKey} readOnly rows={4} />
           </div>
-          <div className="key-item">
+          <div className='key-item'>
             <h4>私钥:</h4>
             <textarea value={rsaKeyPair.privateKey} readOnly rows={4} />
           </div>
@@ -435,8 +439,8 @@ const initialState: CryptoState = {
   settings: {
     enableCache: true,
     maxCacheSize: 1000,
-    autoGenerateIV: true
-  }
+    autoGenerateIV: true,
+  },
 }
 
 const cryptoReducer = (state: CryptoState, action: CryptoAction): CryptoState => {
@@ -445,31 +449,31 @@ const cryptoReducer = (state: CryptoState, action: CryptoAction): CryptoState =>
       return {
         ...state,
         isInitialized: true,
-        ...action.payload
+        ...action.payload,
       }
     case 'UPDATE_SETTINGS':
       return {
         ...state,
-        settings: { ...state.settings, ...action.payload }
+        settings: { ...state.settings, ...action.payload },
       }
     case 'CLEAR_CACHE':
       return {
         ...state,
-        cache: new Map()
+        cache: new Map(),
       }
     case 'ADD_TO_CACHE':
       const newCache = new Map(state.cache)
       newCache.set(action.payload.key, action.payload.value)
-      
+
       // 限制缓存大小
       if (newCache.size > state.settings.maxCacheSize) {
         const firstKey = newCache.keys().next().value
         newCache.delete(firstKey)
       }
-      
+
       return {
         ...state,
-        cache: newCache
+        cache: newCache,
       }
     default:
       return state
@@ -492,7 +496,7 @@ export const CryptoProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     cryptoManager.configure({
       enableCache: state.settings.enableCache,
       maxCacheSize: state.settings.maxCacheSize,
-      autoGenerateIV: state.settings.autoGenerateIV
+      autoGenerateIV: state.settings.autoGenerateIV,
     })
 
     dispatch({ type: 'INITIALIZE', payload: {} })
@@ -501,14 +505,10 @@ export const CryptoProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const value = {
     state,
     dispatch,
-    cryptoManager
+    cryptoManager,
   }
 
-  return (
-    <CryptoContext.Provider value={value}>
-      {children}
-    </CryptoContext.Provider>
-  )
+  return <CryptoContext.Provider value={value}>{children}</CryptoContext.Provider>
 }
 
 export const useCryptoContext = () => {
@@ -530,7 +530,7 @@ import CryptoApp from './components/CryptoApp'
 const App: React.FC = () => {
   return (
     <CryptoProvider>
-      <div className="app">
+      <div className='app'>
         <header>
           <h1>🔐 React Crypto App</h1>
         </header>
@@ -545,7 +545,7 @@ const App: React.FC = () => {
 export default App
 ```
 
-```tsx
+````tsx
 import React, { useState } from 'react'
 import { useCryptoContext } from '../context/CryptoContext'
 
@@ -557,7 +557,7 @@ const CryptoApp: React.FC = () => {
   const handleEncrypt = async () => {
     try {
       const result = await cryptoManager.encryptData(data, key, state.defaultAlgorithm)
-      
+
       if (state.settings.enableCache) {
         dispatch({
           type: 'ADD_TO_CACHE',
@@ -567,7 +567,7 @@ const CryptoApp: React.FC = () => {
           }
         })
       }
-      
+
       console.log('加密结果:', result)
     } catch (error) {
       console.error('加密失败:', error)
@@ -872,11 +872,11 @@ const PasswordManager: React.FC = () => {
 }
 
 export default PasswordManager
-```
+````
 
 ### 2. 文件加密组件
 
-```tsx
+````tsx
 import React, { useState, useRef } from 'react'
 import { aes, hash } from '@ldesign/crypto'
 
@@ -1263,7 +1263,7 @@ export const useWebWorkerCrypto = () => {
     cleanup
   }
 }
-```
+````
 
 ### 2. 批量处理组件
 
@@ -1290,16 +1290,14 @@ const BatchCryptoProcessor: React.FC = () => {
     const newItem: BatchItem = {
       id: Date.now().toString(),
       data: '',
-      status: 'pending'
+      status: 'pending',
     }
     setItems(prev => [...prev, newItem])
   }, [])
 
   // 更新项数据
   const updateItemData = useCallback((id: string, data: string) => {
-    setItems(prev => prev.map(item =>
-      item.id === id ? { ...item, data } : item
-    ))
+    setItems(prev => prev.map(item => (item.id === id ? { ...item, data } : item)))
   }, [])
 
   // 删除项
@@ -1328,11 +1326,11 @@ const BatchCryptoProcessor: React.FC = () => {
         const item = validItems[i]
 
         // 更新状态为处理中
-        setItems(prev => prev.map(prevItem =>
-          prevItem.id === item.id
-            ? { ...prevItem, status: 'processing' as const }
-            : prevItem
-        ))
+        setItems(prev =>
+          prev.map(prevItem =>
+            prevItem.id === item.id ? { ...prevItem, status: 'processing' as const } : prevItem
+          )
+        )
 
         try {
           // 执行加密
@@ -1340,29 +1338,33 @@ const BatchCryptoProcessor: React.FC = () => {
 
           if (result.success && result.data) {
             // 更新为完成状态
-            setItems(prev => prev.map(prevItem =>
-              prevItem.id === item.id
-                ? {
-                    ...prevItem,
-                    status: 'completed' as const,
-                    result: result.data
-                  }
-                : prevItem
-            ))
+            setItems(prev =>
+              prev.map(prevItem =>
+                prevItem.id === item.id
+                  ? {
+                      ...prevItem,
+                      status: 'completed' as const,
+                      result: result.data,
+                    }
+                  : prevItem
+              )
+            )
           } else {
             throw new Error(result.error || '加密失败')
           }
         } catch (error) {
           // 更新为错误状态
-          setItems(prev => prev.map(prevItem =>
-            prevItem.id === item.id
-              ? {
-                  ...prevItem,
-                  status: 'error' as const,
-                  error: (error as Error).message
-                }
-              : prevItem
-          ))
+          setItems(prev =>
+            prev.map(prevItem =>
+              prevItem.id === item.id
+                ? {
+                    ...prevItem,
+                    status: 'error' as const,
+                    error: (error as Error).message,
+                  }
+                : prevItem
+            )
+          )
         }
 
         // 更新进度
@@ -1390,12 +1392,12 @@ const BatchCryptoProcessor: React.FC = () => {
       algorithm: 'AES-256',
       results: completedItems.map(item => ({
         originalData: item.data,
-        encryptedData: item.result
-      }))
+        encryptedData: item.result,
+      })),
     }
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json'
+      type: 'application/json',
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -1417,11 +1419,16 @@ const BatchCryptoProcessor: React.FC = () => {
 
   const getStatusIcon = (status: BatchItem['status']) => {
     switch (status) {
-      case 'pending': return '⏳'
-      case 'processing': return '🔄'
-      case 'completed': return '✅'
-      case 'error': return '❌'
-      default: return '❓'
+      case 'pending':
+        return '⏳'
+      case 'processing':
+        return '🔄'
+      case 'completed':
+        return '✅'
+      case 'error':
+        return '❌'
+      default:
+        return '❓'
     }
   }
 
@@ -1429,29 +1436,26 @@ const BatchCryptoProcessor: React.FC = () => {
   const errorCount = items.filter(item => item.status === 'error').length
 
   return (
-    <div className="batch-crypto-processor">
+    <div className='batch-crypto-processor'>
       <h2>🔄 批量加密处理器</h2>
 
       {/* 控制面板 */}
-      <div className="control-panel">
-        <div className="key-section">
+      <div className='control-panel'>
+        <div className='key-section'>
           <input
-            type="password"
+            type='password'
             value={batchKey}
-            onChange={(e) => setBatchKey(e.target.value)}
-            placeholder="批量加密密钥"
+            onChange={e => setBatchKey(e.target.value)}
+            placeholder='批量加密密钥'
             disabled={isProcessing}
           />
         </div>
 
-        <div className="action-buttons">
+        <div className='action-buttons'>
           <button onClick={addBatchItem} disabled={isProcessing}>
             ➕ 添加项
           </button>
-          <button
-            onClick={processBatch}
-            disabled={isProcessing || items.length === 0 || !batchKey}
-          >
+          <button onClick={processBatch} disabled={isProcessing || items.length === 0 || !batchKey}>
             {isProcessing ? '处理中...' : '🚀 开始批量加密'}
           </button>
           <button onClick={exportResults} disabled={completedCount === 0}>
@@ -1464,19 +1468,16 @@ const BatchCryptoProcessor: React.FC = () => {
 
         {/* 进度显示 */}
         {isProcessing && (
-          <div className="progress-section">
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${progress}%` }}
-              ></div>
+          <div className='progress-section'>
+            <div className='progress-bar'>
+              <div className='progress-fill' style={{ width: `${progress}%` }}></div>
             </div>
             <p>处理进度: {progress.toFixed(1)}%</p>
           </div>
         )}
 
         {/* 统计信息 */}
-        <div className="stats">
+        <div className='stats'>
           <span>总计: {items.length}</span>
           <span>完成: {completedCount}</span>
           <span>错误: {errorCount}</span>
@@ -1484,50 +1485,45 @@ const BatchCryptoProcessor: React.FC = () => {
       </div>
 
       {/* 批处理项列表 */}
-      <div className="batch-items">
+      <div className='batch-items'>
         {items.length === 0 ? (
-          <div className="empty-state">
+          <div className='empty-state'>
             <p>点击"添加项"开始批量加密</p>
           </div>
         ) : (
           items.map(item => (
             <div key={item.id} className={`batch-item ${item.status}`}>
-              <div className="item-header">
-                <span className="status-icon">{getStatusIcon(item.status)}</span>
-                <span className="item-id">#{item.id.slice(-6)}</span>
+              <div className='item-header'>
+                <span className='status-icon'>{getStatusIcon(item.status)}</span>
+                <span className='item-id'>#{item.id.slice(-6)}</span>
                 <button
                   onClick={() => removeItem(item.id)}
                   disabled={isProcessing}
-                  className="remove-btn"
+                  className='remove-btn'
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="item-content">
+              <div className='item-content'>
                 <textarea
                   value={item.data}
-                  onChange={(e) => updateItemData(item.id, e.target.value)}
-                  placeholder="输入要加密的数据..."
+                  onChange={e => updateItemData(item.id, e.target.value)}
+                  placeholder='输入要加密的数据...'
                   disabled={isProcessing}
                   rows={3}
                 />
 
                 {item.status === 'completed' && item.result && (
-                  <div className="result-section">
+                  <div className='result-section'>
                     <h5>加密结果:</h5>
-                    <textarea
-                      value={item.result}
-                      readOnly
-                      rows={2}
-                      className="result-textarea"
-                    />
+                    <textarea value={item.result} readOnly rows={2} className='result-textarea' />
                   </div>
                 )}
 
                 {item.status === 'error' && item.error && (
-                  <div className="error-section">
-                    <p className="error-message">错误: {item.error}</p>
+                  <div className='error-section'>
+                    <p className='error-message'>错误: {item.error}</p>
                   </div>
                 )}
               </div>
@@ -1712,29 +1708,35 @@ describe('PasswordManager Component', () => {
 ## 最佳实践
 
 ### 1. 性能优化
+
 - 使用 Web Worker 处理大量数据加密
 - 实现批量处理减少单次操作开销
 - 使用 React.memo 优化组件渲染
 - 合理使用 useCallback 和 useMemo
 
 ### 2. 安全考虑
+
 - 不在组件状态中长期存储敏感数据
 - 使用 useEffect 清理函数清除敏感信息
 - 实现适当的错误边界
 - 验证用户输入
 
 ### 3. 用户体验
+
 - 提供加载状态和进度指示
 - 实现适当的错误处理和用户反馈
 - 支持键盘快捷键
 - 响应式设计
 
 ### 4. 代码组织
+
 - 使用自定义 Hook 封装加密逻辑
 - 实现 Context 进行状态管理
 - 分离业务逻辑和 UI 组件
 - 编写全面的测试用例
 
 通过这些示例和最佳实践，您可以在 React 应用中安全高效地集成 @ldesign/crypto 库。
+
 ```
+
 ```

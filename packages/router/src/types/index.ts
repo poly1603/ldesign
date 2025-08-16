@@ -144,9 +144,9 @@ export interface RouteRecordRaw {
   beforeEnter?: NavigationGuard | NavigationGuard[]
   /** 属性传递 */
   props?:
-  | boolean
-  | Record<string, unknown>
-  | ((route: RouteLocationNormalized) => Record<string, unknown>)
+    | boolean
+    | Record<string, unknown>
+    | ((route: RouteLocationNormalized) => Record<string, unknown>)
   /** 路径匹配是否大小写敏感 */
   sensitive?: boolean
   /** 路径匹配是否严格模式 */
@@ -420,12 +420,12 @@ export interface Router {
 /**
  * useRoute 返回类型
  */
-export interface UseRouteReturn extends ComputedRef<RouteLocationNormalized> { }
+export interface UseRouteReturn extends ComputedRef<RouteLocationNormalized> {}
 
 /**
  * useRouter 返回类型
  */
-export interface UseRouterReturn extends Router { }
+export interface UseRouterReturn extends Router {}
 
 // ==================== 设备适配类型 ====================
 

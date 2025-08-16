@@ -155,7 +155,9 @@ describe('sizeManagerImpl', () => {
       const largeConfig = manager.getConfig('large')
 
       expect(smallConfig).not.toBe(largeConfig)
-      expect(Number.parseFloat(smallConfig.fontSize.base)).toBeLessThan(Number.parseFloat(largeConfig.fontSize.base))
+      expect(Number.parseFloat(smallConfig.fontSize.base)).toBeLessThan(
+        Number.parseFloat(largeConfig.fontSize.base)
+      )
     })
   })
 
@@ -172,7 +174,9 @@ describe('sizeManagerImpl', () => {
       const smallVariables = manager.generateCSSVariables('small')
       const largeVariables = manager.generateCSSVariables('large')
 
-      expect(smallVariables['--ls-font-size-base']).not.toBe(largeVariables['--ls-font-size-base'])
+      expect(smallVariables['--ls-font-size-base']).not.toBe(
+        largeVariables['--ls-font-size-base']
+      )
     })
   })
 
@@ -182,7 +186,9 @@ describe('sizeManagerImpl', () => {
 
       expect(mockDocument.createElement).toHaveBeenCalledWith('style')
       expect(mockStyleElement.textContent).toContain('--ls-font-size-base')
-      expect(mockDocument.head.appendChild).toHaveBeenCalledWith(mockStyleElement)
+      expect(mockDocument.head.appendChild).toHaveBeenCalledWith(
+        mockStyleElement
+      )
     })
 
     it('应该注入指定模式的CSS变量', () => {
@@ -236,7 +242,10 @@ describe('sizeManagerImpl', () => {
 
       manager.setMode('large')
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error in size change callback:', expect.any(Error))
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error in size change callback:',
+        expect.any(Error)
+      )
       expect(normalCallback).toHaveBeenCalled()
 
       consoleSpy.mockRestore()
@@ -307,7 +316,10 @@ describe('工厂函数和便捷函数', () => {
 
   describe('createSizeManager', () => {
     it('应该创建新的管理器实例', () => {
-      const manager = createSizeManager({ defaultMode: 'large', autoInject: false })
+      const manager = createSizeManager({
+        defaultMode: 'large',
+        autoInject: false,
+      })
 
       expect(manager.getCurrentMode()).toBe('large')
       manager.destroy()

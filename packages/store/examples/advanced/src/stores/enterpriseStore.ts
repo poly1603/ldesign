@@ -69,8 +69,7 @@ export class EnterpriseStore extends BaseStore {
 
   @Action()
   hasPermission(permission: string): boolean {
-    if (!this.currentUser)
-      return false
+    if (!this.currentUser) return false
     return this.currentUser.permissions.includes(permission)
   }
 
@@ -114,30 +113,25 @@ export class EnterpriseStore extends BaseStore {
     // 用户名验证
     if (!data.username) {
       errors.username = '用户名不能为空'
-    }
-    else if (data.username.length < 3) {
+    } else if (data.username.length < 3) {
       errors.username = '用户名至少3个字符'
-    }
-    else if (data.username.length > 20) {
+    } else if (data.username.length > 20) {
       errors.username = '用户名不能超过20个字符'
     }
 
     // 邮箱验证
     if (!data.email) {
       errors.email = '邮箱不能为空'
-    }
-    else if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(data.email)) {
+    } else if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(data.email)) {
       errors.email = '邮箱格式不正确'
     }
 
     // 年龄验证
     if (!data.age) {
       errors.age = '年龄不能为空'
-    }
-    else if (data.age < 18) {
+    } else if (data.age < 18) {
       errors.age = '年龄不能小于18岁'
-    }
-    else if (data.age > 100) {
+    } else if (data.age > 100) {
       errors.age = '年龄不能大于100岁'
     }
 
@@ -181,7 +175,7 @@ export class EnterpriseStore extends BaseStore {
     this.logError(
       'NETWORK_ERROR',
       '网络连接失败',
-      '无法连接到服务器，请检查网络连接',
+      '无法连接到服务器，请检查网络连接'
     )
   }
 
@@ -190,7 +184,7 @@ export class EnterpriseStore extends BaseStore {
     this.logError(
       'VALIDATION_ERROR',
       '数据验证失败',
-      '提交的数据不符合业务规则',
+      '提交的数据不符合业务规则'
     )
   }
 
@@ -199,7 +193,7 @@ export class EnterpriseStore extends BaseStore {
     this.logError(
       'PERMISSION_ERROR',
       '权限不足',
-      '当前用户没有执行此操作的权限',
+      '当前用户没有执行此操作的权限'
     )
   }
 
@@ -208,7 +202,7 @@ export class EnterpriseStore extends BaseStore {
     this.logError(
       'UNKNOWN_ERROR',
       '未知错误',
-      '系统发生了未预期的错误，请联系管理员',
+      '系统发生了未预期的错误，请联系管理员'
     )
   }
 

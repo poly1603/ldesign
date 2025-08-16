@@ -277,7 +277,10 @@ export async function createFullRouter(options: {
   animation?: {
     enabled?: boolean
     defaultAnimation?: import('./core/constants').AnimationType
-    customAnimations?: Record<string, import('./components/types').AnimationConfig>
+    customAnimations?: Record<
+      string,
+      import('./components/types').AnimationConfig
+    >
   }
   // 缓存配置
   cache?: {
@@ -325,7 +328,7 @@ export async function createFullRouter(options: {
       createAnimationPlugin({
         defaultAnimation: options.animation?.defaultAnimation,
         customAnimations: options.animation?.customAnimations,
-      }),
+      })
     )
   }
 
@@ -335,7 +338,7 @@ export async function createFullRouter(options: {
       createCachePlugin({
         strategy: options.cache?.strategy,
         maxSize: options.cache?.maxSize,
-      }),
+      })
     )
   }
 
@@ -345,7 +348,7 @@ export async function createFullRouter(options: {
       createPreloadPlugin({
         strategy: options.preload?.strategy,
         autoPreloadRelated: options.preload?.autoPreloadRelated,
-      }),
+      })
     )
   }
 
@@ -355,7 +358,7 @@ export async function createFullRouter(options: {
       createPerformancePlugin({
         warningThreshold: options.performance?.warningThreshold,
         errorThreshold: options.performance?.errorThreshold,
-      }),
+      })
     )
   }
 
@@ -364,7 +367,7 @@ export async function createFullRouter(options: {
     plugins,
     install(app: any) {
       app.use(router)
-      plugins.forEach((plugin) => {
+      plugins.forEach(plugin => {
         if (plugin.install) {
           plugin.install(app, router)
         }

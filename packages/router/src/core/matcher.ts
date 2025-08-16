@@ -106,7 +106,7 @@ export class RouteMatcher {
    */
   addRoute(
     record: RouteRecordRaw,
-    parent?: RouteRecordNormalized,
+    parent?: RouteRecordNormalized
   ): RouteRecordNormalized {
     const normalized = this.normalizeRecord(record, parent)
 
@@ -173,7 +173,7 @@ export class RouteMatcher {
    */
   resolve(
     to: RouteLocationRaw,
-    _currentLocation?: RouteLocationNormalized,
+    _currentLocation?: RouteLocationNormalized
   ): RouteLocationNormalized {
     if (typeof to === 'string') {
       return this.resolveByPath(to)
@@ -195,7 +195,7 @@ export class RouteMatcher {
    */
   private normalizeRecord(
     record: RouteRecordRaw,
-    parent?: RouteRecordNormalized,
+    parent?: RouteRecordNormalized
   ): RouteRecordNormalized {
     const path = this.normalizePath(record.path, parent?.path)
 
@@ -208,7 +208,9 @@ export class RouteMatcher {
       children: [],
       meta: record.meta || {},
       props: this.normalizeProps(record.props),
-      beforeEnter: Array.isArray(record.beforeEnter) ? record.beforeEnter[0] : record.beforeEnter,
+      beforeEnter: Array.isArray(record.beforeEnter)
+        ? record.beforeEnter[0]
+        : record.beforeEnter,
       aliasOf: undefined,
       redirect: record.redirect,
     }
@@ -233,12 +235,9 @@ export class RouteMatcher {
    * 标准化属性配置
    */
   private normalizeProps(props: any): Record<string, any> {
-    if (!props)
-      return {}
-    if (typeof props === 'boolean')
-      return { default: props }
-    if (typeof props === 'object')
-      return props
+    if (!props) return {}
+    if (typeof props === 'boolean') return { default: props }
+    if (typeof props === 'object') return props
     return { default: props }
   }
 
@@ -266,8 +265,7 @@ export class RouteMatcher {
 
     for (const segment of segments) {
       const child = this.findChildNode(node, segment)
-      if (!child)
-        return
+      if (!child) return
       node = child
     }
 
@@ -342,7 +340,7 @@ export class RouteMatcher {
     segments: string[],
     index: number,
     params: RouteParams,
-    matchedSegments: string[],
+    matchedSegments: string[]
   ): MatchResult | null {
     // 匹配完成
     if (index >= segments.length) {
@@ -376,10 +374,9 @@ export class RouteMatcher {
         segments,
         index + 1,
         params,
-        [...matchedSegments, segment],
+        [...matchedSegments, segment]
       )
-      if (result)
-        return result
+      if (result) return result
     }
 
     // 尝试参数匹配
@@ -391,10 +388,9 @@ export class RouteMatcher {
         segments,
         index + 1,
         newParams,
-        [...matchedSegments, segment],
+        [...matchedSegments, segment]
       )
-      if (result)
-        return result
+      if (result) return result
     }
 
     // 尝试通配符匹配
@@ -417,7 +413,7 @@ export class RouteMatcher {
   private resolveByPath(
     path: string,
     query?: any,
-    hash?: string,
+    hash?: string
   ): RouteLocationNormalized {
     // 检查缓存
     const cacheKey = this.getCacheKey(path, query)
@@ -450,8 +446,7 @@ export class RouteMatcher {
       // 安全地处理 URLSearchParams
       if (url.searchParams && typeof url.searchParams.entries === 'function') {
         urlQuery = Object.fromEntries(url.searchParams.entries())
-      }
-      else {
+      } else {
         // 手动解析查询参数
         const searchString = url.search.slice(1)
         if (searchString) {
@@ -464,8 +459,7 @@ export class RouteMatcher {
           }
         }
       }
-    }
-    catch {
+    } catch {
       // 如果 URL 解析失败，手动解析
       const [pathPart, ...rest] = path.split('?')
       cleanPath = pathPart
@@ -507,7 +501,11 @@ export class RouteMatcher {
       params: match.params,
       query: { ...urlQuery, ...(query || {}) },
       hash: urlHash || hash || '',
-      fullPath: this.buildFullPath(cleanPath, { ...urlQuery, ...(query || {}) }, urlHash || hash),
+      fullPath: this.buildFullPath(
+        cleanPath,
+        { ...urlQuery, ...(query || {}) },
+        urlHash || hash
+      ),
       matched: [match.record],
       meta: match.record.meta,
     } as RouteLocationNormalized
@@ -520,7 +518,7 @@ export class RouteMatcher {
     name: string | symbol,
     params?: any,
     query?: any,
-    hash?: string,
+    hash?: string
   ): RouteLocationNormalized {
     const record = this.matchByName(name)
 
@@ -549,8 +547,7 @@ export class RouteMatcher {
     return pattern.replace(PARAM_RE, (_match, paramName, optional) => {
       const value = params[paramName]
       if (value === undefined || value === null) {
-        if (optional)
-          return ''
+        if (optional) return ''
         throw new Error(`Missing required parameter: ${paramName}`)
       }
       return String(value)

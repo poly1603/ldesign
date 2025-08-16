@@ -44,7 +44,7 @@ export const WatermarkPlugin = {
       app.component(`${opts.componentPrefix}Watermark`, Watermark)
       app.component(
         `${opts.componentPrefix}WatermarkProvider`,
-        WatermarkProvider,
+        WatermarkProvider
       )
     }
 
@@ -63,7 +63,7 @@ export const WatermarkPlugin = {
         // 创建水印
         create: async (
           container: Element | string,
-          config: Partial<WatermarkConfig>,
+          config: Partial<WatermarkConfig>
         ): Promise<WatermarkInstance> => {
           const mergedConfig = { ...opts.globalConfig, ...config }
           return createWatermark(container, mergedConfig)

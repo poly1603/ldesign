@@ -180,28 +180,17 @@ export default defineComponent({
               }}
             >
               <div>
-                <strong>当前设备:</strong>
-                {' '}
-                {currentDeviceName}
+                <strong>当前设备:</strong> {currentDeviceName}
               </div>
               <div>
-                <strong>访问时间:</strong>
-                {' '}
-                {new Date().toLocaleString()}
+                <strong>访问时间:</strong> {new Date().toLocaleString()}
               </div>
               <div>
-                <strong>屏幕分辨率:</strong>
-                {' '}
-                {window.screen.width}
-                {' '}
-                ×
-                {' '}
+                <strong>屏幕分辨率:</strong> {window.screen.width} ×{' '}
                 {window.screen.height}
               </div>
               <div>
-                <strong>浏览器:</strong>
-                {' '}
-                {navigator.userAgent.split(' ')[0]}
+                <strong>浏览器:</strong> {navigator.userAgent.split(' ')[0]}
               </div>
             </div>
           </div>

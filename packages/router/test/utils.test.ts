@@ -33,7 +33,7 @@ describe('utils', () => {
         expect(normalizePath('path')).toBe('/path')
         expect(normalizePath('/path/')).toBe('/path')
         expect(normalizePath('//path//to//resource//')).toBe(
-          '/path/to/resource',
+          '/path/to/resource'
         )
         expect(normalizePath('')).toBe('/')
       })
@@ -45,7 +45,7 @@ describe('utils', () => {
         expect(joinPaths('/base', 'path')).toBe('/base/path')
         expect(joinPaths('/base/', '/path/')).toBe('/base/path')
         expect(joinPaths('base', 'path', 'to', 'resource')).toBe(
-          '/base/path/to/resource',
+          '/base/path/to/resource'
         )
         expect(joinPaths('', 'path')).toBe('/path')
       })
@@ -55,7 +55,7 @@ describe('utils', () => {
       it('should parse path parameters', () => {
         expect(parsePathParams('/user/:id', '/user/123')).toEqual({ id: '123' })
         expect(
-          parsePathParams('/user/:id/post/:postId', '/user/123/post/456'),
+          parsePathParams('/user/:id/post/:postId', '/user/123/post/456')
         ).toEqual({
           id: '123',
           postId: '456',
@@ -77,7 +77,7 @@ describe('utils', () => {
       it('should build path from pattern and params', () => {
         expect(buildPath('/user/:id', { id: '123' })).toBe('/user/123')
         expect(
-          buildPath('/user/:id/post/:postId', { id: '123', postId: '456' }),
+          buildPath('/user/:id/post/:postId', { id: '123', postId: '456' })
         ).toBe('/user/123/post/456')
         expect(buildPath('/user/:id?', {})).toBe('/user/')
         expect(buildPath('/static', {})).toBe('/static')
@@ -85,13 +85,13 @@ describe('utils', () => {
 
       it('should encode URI components', () => {
         expect(buildPath('/user/:name', { name: 'john doe' })).toBe(
-          '/user/john%20doe',
+          '/user/john%20doe'
         )
       })
 
       it('should throw error for missing required params', () => {
         expect(() => buildPath('/user/:id', {})).toThrow(
-          'Missing required parameter: id',
+          'Missing required parameter: id'
         )
       })
     })
@@ -134,7 +134,7 @@ describe('utils', () => {
     describe('stringifyQuery', () => {
       it('should stringify query object', () => {
         expect(stringifyQuery({ name: 'john', age: '30' })).toBe(
-          '?name=john&age=30',
+          '?name=john&age=30'
         )
         expect(stringifyQuery({})).toBe('')
         expect(stringifyQuery({ name: null, age: undefined })).toBe('')
@@ -142,13 +142,13 @@ describe('utils', () => {
 
       it('should handle array values', () => {
         expect(stringifyQuery({ tag: ['vue', 'router'] })).toBe(
-          '?tag=vue&tag=router',
+          '?tag=vue&tag=router'
         )
       })
 
       it('should encode URI components', () => {
         expect(stringifyQuery({ name: 'john doe', city: 'new york' })).toBe(
-          '?name=john%20doe&city=new%20york',
+          '?name=john%20doe&city=new%20york'
         )
       })
     })
@@ -194,7 +194,7 @@ describe('utils', () => {
     describe('stringifyURL', () => {
       it('should stringify URL components', () => {
         expect(
-          stringifyURL('/path', { name: 'john', age: '30' }, '#section1'),
+          stringifyURL('/path', { name: 'john', age: '30' }, '#section1')
         ).toBe('/path?name=john&age=30#section1')
 
         expect(stringifyURL('/path')).toBe('/path')
@@ -259,7 +259,7 @@ describe('utils', () => {
           NavigationFailureType.aborted,
           from,
           to,
-          'Custom message',
+          'Custom message'
         )
 
         expect(failure.type).toBe(NavigationFailureType.aborted)
@@ -276,16 +276,16 @@ describe('utils', () => {
         const failure = createNavigationFailure(
           NavigationFailureType.aborted,
           from,
-          to,
+          to
         )
         const error = new Error('Regular error')
 
         expect(isNavigationFailure(failure)).toBe(true)
         expect(
-          isNavigationFailure(failure, NavigationFailureType.aborted),
+          isNavigationFailure(failure, NavigationFailureType.aborted)
         ).toBe(true)
         expect(
-          isNavigationFailure(failure, NavigationFailureType.cancelled),
+          isNavigationFailure(failure, NavigationFailureType.cancelled)
         ).toBe(false)
         expect(isNavigationFailure(error)).toBe(false)
       })
@@ -315,7 +315,7 @@ describe('utils', () => {
       it('should extract parameters from path', () => {
         expect(extractParams('/user/:id', '/user/123')).toEqual({ id: '123' })
         expect(
-          extractParams('/user/:id/post/:postId', '/user/123/post/456'),
+          extractParams('/user/:id/post/:postId', '/user/123/post/456')
         ).toEqual({
           id: '123',
           postId: '456',

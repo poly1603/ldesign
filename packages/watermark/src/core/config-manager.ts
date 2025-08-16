@@ -50,8 +50,7 @@ export class ConfigManager {
     if (Array.isArray(config.content)) {
       if (config.content.length === 0) {
         errors.push('Content array cannot be empty')
-      }
-      else {
+      } else {
         for (const item of config.content) {
           if (!isValidInput(item)) {
             errors.push('All content items must be valid')
@@ -64,12 +63,11 @@ export class ConfigManager {
     // 验证图片内容
     if (config.content instanceof HTMLImageElement) {
       await this.validateImageConfig(config.content, errors)
-    }
-    else if (
-      typeof config.content === 'object'
-      && config.content
-      && 'image' in config.content
-      && config.content.image
+    } else if (
+      typeof config.content === 'object' &&
+      config.content &&
+      'image' in config.content &&
+      config.content.image
     ) {
       await this.validateImageConfig(config.content.image, errors)
     }
@@ -104,7 +102,7 @@ export class ConfigManager {
         `Configuration validation failed: ${errors.join(', ')}`,
         WatermarkErrorCode.INVALID_CONFIG,
         ErrorSeverity.HIGH,
-        { context: { errors, config } },
+        { context: { errors, config } }
       )
     }
 
@@ -117,7 +115,7 @@ export class ConfigManager {
    */
   async merge(
     baseConfig: WatermarkConfig,
-    updateConfig: Partial<WatermarkConfig>,
+    updateConfig: Partial<WatermarkConfig>
   ): Promise<WatermarkConfig> {
     const merged = this.deepMerge(baseConfig, updateConfig)
     return this.validate(merged)
@@ -128,12 +126,12 @@ export class ConfigManager {
    */
   hasRenderingChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return (
-      this.hasContentChanges(oldConfig, newConfig)
-      || this.hasStyleChanges(oldConfig, newConfig)
-      || this.hasLayoutChanges(oldConfig, newConfig)
+      this.hasContentChanges(oldConfig, newConfig) ||
+      this.hasStyleChanges(oldConfig, newConfig) ||
+      this.hasLayoutChanges(oldConfig, newConfig)
     )
   }
 
@@ -142,7 +140,7 @@ export class ConfigManager {
    */
   hasAnimationChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return !this.deepEqual(oldConfig.animation, newConfig.animation)
   }
@@ -152,7 +150,7 @@ export class ConfigManager {
    */
   hasSecurityChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return !this.deepEqual(oldConfig.security, newConfig.security)
   }
@@ -162,7 +160,7 @@ export class ConfigManager {
    */
   hasResponsiveChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return !this.deepEqual(oldConfig.responsive, newConfig.responsive)
   }
@@ -187,8 +185,8 @@ export class ConfigManager {
   // 私有方法
 
   private async validateImageConfig(
-    imageConfig: { src: string, width?: number, height?: number },
-    errors: string[],
+    imageConfig: { src: string; width?: number; height?: number },
+    errors: string[]
   ): Promise<void> {
     if (!imageConfig.src) {
       errors.push('Image src is required')
@@ -198,8 +196,7 @@ export class ConfigManager {
     // 验证图片是否可以加载
     try {
       await this.validateImageSrc(imageConfig.src)
-    }
-    catch (error) {
+    } catch (error) {
       errors.push(`Invalid image src: ${imageConfig.src}`)
     }
 
@@ -230,16 +227,16 @@ export class ConfigManager {
 
     // 验证透明度
     if (
-      style.opacity !== undefined
-      && (style.opacity < 0 || style.opacity > 1)
+      style.opacity !== undefined &&
+      (style.opacity < 0 || style.opacity > 1)
     ) {
       errors.push('Opacity must be between 0 and 1')
     }
 
     // 验证旋转角度
     if (
-      style.rotate !== undefined
-      && (style.rotate < -360 || style.rotate > 360)
+      style.rotate !== undefined &&
+      (style.rotate < -360 || style.rotate > 360)
     ) {
       errors.push('Rotation must be between -360 and 360 degrees')
     }
@@ -256,7 +253,7 @@ export class ConfigManager {
 
   private validateLayoutConfig(
     layout: WatermarkLayout,
-    errors: string[],
+    errors: string[]
   ): void {
     // 验证间距
     if (layout.gapX !== undefined && layout.gapX < 0) {
@@ -288,7 +285,7 @@ export class ConfigManager {
 
   private validateSecurityConfig(
     security: SecurityConfig,
-    errors: string[],
+    errors: string[]
   ): void {
     // 验证安全级别
     const validLevels = ['none', 'low', 'medium', 'high']
@@ -311,7 +308,7 @@ export class ConfigManager {
 
   private validateAnimationConfig(
     animation: AnimationConfig,
-    errors: string[],
+    errors: string[]
   ): void {
     // 验证动画类型
     const validTypes = [
@@ -347,7 +344,7 @@ export class ConfigManager {
 
   private validateResponsiveConfig(
     responsive: ResponsiveConfig,
-    errors: string[],
+    errors: string[]
   ): void {
     // 验证断点配置
     if (responsive.breakpoints) {
@@ -355,7 +352,7 @@ export class ConfigManager {
         // 验证断点配置是否为有效的水印配置
         if (typeof breakpoint !== 'object' || breakpoint === null) {
           errors.push(
-            `Breakpoint ${name}: must be a valid configuration object`,
+            `Breakpoint ${name}: must be a valid configuration object`
           )
         }
       })
@@ -369,28 +366,28 @@ export class ConfigManager {
 
   private isValidColor(color: string): boolean {
     // 简单的颜色格式验证
-    const colorRegex
-      = /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/
+    const colorRegex =
+      /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)$/
     return colorRegex.test(color)
   }
 
   private hasContentChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return !this.deepEqual(oldConfig.content, newConfig.content)
   }
 
   private hasStyleChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return !this.deepEqual(oldConfig.style, newConfig.style)
   }
 
   private hasLayoutChanges(
     oldConfig: WatermarkConfig,
-    newConfig: WatermarkConfig,
+    newConfig: WatermarkConfig
   ): boolean {
     return !this.deepEqual(oldConfig.layout, newConfig.layout)
   }
@@ -412,10 +409,9 @@ export class ConfigManager {
             targetValue,
             sourceValue as Partial<
               T[Extract<keyof T, string>] & Record<string, any>
-            >,
+            >
           ) as any
-        }
-        else if (sourceValue !== undefined) {
+        } else if (sourceValue !== undefined) {
           result[key] = sourceValue as any
         }
       }

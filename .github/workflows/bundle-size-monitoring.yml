@@ -4,14 +4,14 @@ on:
   push:
     branches: [main, develop, master]
     paths:
-      - 'packages/**'
+      - "packages/**"
   pull_request:
     branches: [main, develop, master]
     paths:
-      - 'packages/**'
+      - "packages/**"
   schedule:
     # 每天凌晨2点运行包大小监控
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
 
 env:
   NODE_VERSION: 20

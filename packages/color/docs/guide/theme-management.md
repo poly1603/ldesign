@@ -40,7 +40,7 @@ const themeManager = await createThemeManagerWithPresets({
   storage: 'localStorage',
   storageKey: 'app-theme',
   cache: true,
-  idleProcessing: true
+  idleProcessing: true,
 })
 ```
 
@@ -59,21 +59,21 @@ const customThemes = [
       success: '#00a854',
       warning: '#ffbf00',
       danger: '#f04134',
-      gray: '#666666'
+      gray: '#666666',
     },
     dark: {
       primary: '#4d94ff',
       success: '#49aa19',
       warning: '#d4b106',
       danger: '#dc4446',
-      gray: '#8c8c8c'
-    }
-  }
+      gray: '#8c8c8c',
+    },
+  },
 ]
 
 const themeManager = createThemeManager({
   themes: customThemes,
-  defaultTheme: 'corporate'
+  defaultTheme: 'corporate',
 })
 
 await themeManager.init()
@@ -116,7 +116,7 @@ const newTheme = {
   name: 'sunset',
   displayName: '日落主题',
   light: { primary: '#ff6b35' },
-  dark: { primary: '#e55a2b' }
+  dark: { primary: '#e55a2b' },
 }
 
 themeManager.registerTheme(newTheme)
@@ -124,7 +124,7 @@ themeManager.registerTheme(newTheme)
 // 批量注册主题
 const themes = [
   { name: 'ocean', light: { primary: '#0077be' } },
-  { name: 'forest', light: { primary: '#228b22' } }
+  { name: 'forest', light: { primary: '#228b22' } },
 ]
 
 themeManager.registerThemes(themes)
@@ -135,12 +135,7 @@ themeManager.registerThemes(themes)
 @ldesign/color 提供了 10 个精心设计的预设主题：
 
 ```typescript
-import {
-  getPresetTheme,
-  getPresetThemeNames,
-  presetThemes,
-  themeCategories
-} from '@ldesign/color'
+import { getPresetTheme, getPresetThemeNames, presetThemes, themeCategories } from '@ldesign/color'
 
 // 获取所有预设主题
 console.log('预设主题:', presetThemes)
@@ -159,11 +154,7 @@ const colorfulThemes = themeCategories.colorful // 彩色主题
 ### 主题分类和标签
 
 ```typescript
-import {
-  getThemesByCategory,
-  getThemesByTag,
-  recommendThemes
-} from '@ldesign/color'
+import { getThemesByCategory, getThemesByTag, recommendThemes } from '@ldesign/color'
 
 // 按分类获取
 const professionalThemes = getThemesByTag('professional')
@@ -172,7 +163,7 @@ const vibrantThemes = getThemesByTag('vibrant')
 // 智能推荐
 const recommended = recommendThemes({
   style: 'professional',
-  excludeColors: ['red', 'pink']
+  excludeColors: ['red', 'pink'],
 })
 ```
 
@@ -206,8 +197,8 @@ if (generatedTheme) {
 const themeManager = await createThemeManagerWithPresets({
   cache: {
     maxSize: 100, // 最大缓存条目数
-    defaultTTL: 3600000 // 默认过期时间（1小时）
-  }
+    defaultTTL: 3600000, // 默认过期时间（1小时）
+  },
 })
 
 // 手动清理缓存（通常不需要）
@@ -220,23 +211,23 @@ const themeManager = await createThemeManagerWithPresets({
 
 ```typescript
 // 监听主题变化
-themeManager.on('theme-changed', (data) => {
+themeManager.on('theme-changed', data => {
   console.log('主题已变化:', data.theme, data.mode)
   console.log('之前的主题:', data.oldTheme, data.oldMode)
 })
 
 // 监听主题注册
-themeManager.on('theme-registered', (data) => {
+themeManager.on('theme-registered', data => {
   console.log('新主题已注册:', data.theme)
 })
 
 // 监听主题生成完成
-themeManager.on('theme-generated', (data) => {
+themeManager.on('theme-generated', data => {
   console.log('主题生成完成:', data.theme)
 })
 
 // 监听错误
-themeManager.on('error', (error) => {
+themeManager.on('error', error => {
   console.error('主题管理器错误:', error)
 })
 ```
@@ -252,12 +243,12 @@ import { createStorage } from '@ldesign/color'
 
 const themeManager = await createThemeManagerWithPresets({
   storage: 'localStorage', // 'localStorage' | 'sessionStorage' | 'memory' | 'cookie'
-  storageKey: 'my-app-theme' // 存储键名
+  storageKey: 'my-app-theme', // 存储键名
 })
 
 const customStorage = createStorage('cookie')
 const themeManager = createThemeManager({
-  storage: customStorage
+  storage: customStorage,
 })
 ```
 
@@ -300,7 +291,7 @@ const themeManager = await createThemeManagerWithPresets({
   idleProcessing: true,
   cache: {
     maxSize: 50,
-    defaultTTL: 7200000 // 2小时
+    defaultTTL: 7200000, // 2小时
   },
 
   // 预加载常用主题
@@ -308,8 +299,8 @@ const themeManager = await createThemeManagerWithPresets({
     // 只包含应用中实际使用的主题
     getPresetTheme('default'),
     getPresetTheme('green'),
-    getPresetTheme('dark')
-  ]
+    getPresetTheme('dark'),
+  ],
 })
 
 // 应用启动后预生成主题
@@ -326,7 +317,7 @@ const themes = [
   { name: 'brand-primary', displayName: '品牌主色' },
   { name: 'brand-secondary', displayName: '品牌辅色' },
   { name: 'high-contrast', displayName: '高对比度' },
-  { name: 'accessibility', displayName: '无障碍模式' }
+  { name: 'accessibility', displayName: '无障碍模式' },
 ]
 ```
 
@@ -338,10 +329,7 @@ const coreThemes = [getPresetTheme('default')]
 const themeManager = createThemeManager({ themes: coreThemes })
 
 // 后续按需加载其他主题
-const additionalThemes = [
-  getPresetTheme('green'),
-  getPresetTheme('purple')
-]
+const additionalThemes = [getPresetTheme('green'), getPresetTheme('purple')]
 themeManager.registerThemes(additionalThemes)
 ```
 
@@ -349,7 +337,7 @@ themeManager.registerThemes(additionalThemes)
 
 ```typescript
 const themeManager = await createThemeManagerWithPresets({
-  onError: (error) => {
+  onError: error => {
     // 记录错误日志
     console.error('主题管理器错误:', error)
 
@@ -357,7 +345,7 @@ const themeManager = await createThemeManagerWithPresets({
     themeManager.setTheme('default', 'light').catch(() => {
       console.error('无法回退到默认主题')
     })
-  }
+  },
 })
 ```
 

@@ -74,7 +74,7 @@ export class EventManager implements IEventManager {
    */
   on<T extends WatermarkEvent>(
     type: WatermarkEventType,
-    listener: EventListener<T>,
+    listener: EventListener<T>
   ): void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set())
@@ -89,7 +89,7 @@ export class EventManager implements IEventManager {
    */
   once<T extends WatermarkEvent>(
     type: WatermarkEventType,
-    listener: EventListener<T>,
+    listener: EventListener<T>
   ): void {
     const onceListener = async (event: T) => {
       await listener(event)
@@ -103,7 +103,7 @@ export class EventManager implements IEventManager {
    */
   off<T extends WatermarkEvent>(
     type: WatermarkEventType,
-    listener: EventListener<T>,
+    listener: EventListener<T>
   ): void {
     const listeners = this.listeners.get(type)
     if (!listeners) {
@@ -124,8 +124,7 @@ export class EventManager implements IEventManager {
   removeAllListeners(type?: WatermarkEventType): void {
     if (type) {
       this.listeners.delete(type)
-    }
-    else {
+    } else {
       this.listeners.clear()
     }
     this.updateStats()
@@ -182,8 +181,7 @@ export class EventManager implements IEventManager {
               // 继续处理下一个中间件
             })
           }
-        }
-        catch (error) {
+        } catch (error) {
           console.warn('Event middleware error:', error)
           // 继续处理其他中间件
         }
@@ -201,11 +199,10 @@ export class EventManager implements IEventManager {
       if (this.config.asyncHandling) {
         // 并发执行
         const promises = listenerArray.map(listener =>
-          this.executeListener(listener, processedEvent),
+          this.executeListener(listener, processedEvent)
         )
         await Promise.allSettled(promises)
-      }
-      else {
+      } else {
         // 串行执行
         for (const listener of listenerArray) {
           await this.executeListener(listener, processedEvent)
@@ -219,12 +216,11 @@ export class EventManager implements IEventManager {
       if (this.config.maxHistorySize && this.config.maxHistorySize > 0) {
         this.addToHistory(processedEvent)
       }
-    }
-    catch (error) {
+    } catch (error) {
       const watermarkError = new WatermarkError(
         'Failed to emit event',
         WatermarkErrorCode.EVENT_EMISSION_FAILED,
-        ErrorSeverity.MEDIUM,
+        ErrorSeverity.MEDIUM
       )
 
       console.error('Event emission error:', watermarkError)
@@ -322,12 +318,12 @@ export class EventManager implements IEventManager {
   waitFor<T extends WatermarkEvent>(
     type: WatermarkEventType,
     timeout?: number,
-    filter?: (event: T) => boolean,
+    filter?: (event: T) => boolean
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | undefined
 
-      const listener: EventListener<T> = (event) => {
+      const listener: EventListener<T> = event => {
         if (filter && !filter(event)) {
           return
         }
@@ -357,8 +353,7 @@ export class EventManager implements IEventManager {
     if (this.config.asyncHandling) {
       const promises = events.map(event => this.emit(event))
       await Promise.allSettled(promises)
-    }
-    else {
+    } else {
       for (const event of events) {
         await this.emit(event)
       }
@@ -390,16 +385,15 @@ export class EventManager implements IEventManager {
 
   private async executeListener(
     listener: EventListener<any>,
-    event: WatermarkEvent,
+    event: WatermarkEvent
   ): Promise<void> {
     try {
       await listener(event)
-    }
-    catch (error) {
+    } catch (error) {
       const watermarkError = new WatermarkError(
         'Event listener execution failed',
         WatermarkErrorCode.EVENT_LISTENER_ERROR,
-        ErrorSeverity.LOW,
+        ErrorSeverity.LOW
       )
 
       console.error('Event listener error:', watermarkError)
@@ -422,9 +416,9 @@ export class EventManager implements IEventManager {
       this.processingTimes.shift()
     }
 
-    this.stats.avgHandlingTime
-      = this.processingTimes.reduce((sum, time) => sum + time, 0)
-        / this.processingTimes.length
+    this.stats.avgHandlingTime =
+      this.processingTimes.reduce((sum, time) => sum + time, 0) /
+      this.processingTimes.length
   }
 
   private updateStats(): void {
@@ -439,8 +433,8 @@ export class EventManager implements IEventManager {
 
     // 限制历史记录大小
     if (
-      this.config.maxHistorySize
-      && this.eventHistory.length > this.config.maxHistorySize
+      this.config.maxHistorySize &&
+      this.eventHistory.length > this.config.maxHistorySize
     ) {
       this.eventHistory.shift()
     }
@@ -462,8 +456,7 @@ export class EventManager implements IEventManager {
       handle: async (_event, next) => {
         try {
           await next()
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Event processing error:', error)
           this.stats.errorCount++
         }
@@ -481,7 +474,7 @@ export class EventManager implements IEventManager {
 
         const endTime = performance.now()
         console.debug(
-          `Event ${event.type} processing time: ${endTime - startTime}ms`,
+          `Event ${event.type} processing time: ${endTime - startTime}ms`
         )
       },
     }

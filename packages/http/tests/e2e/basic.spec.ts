@@ -24,10 +24,14 @@ test.describe('HTTP Client E2E Tests', () => {
     await expect(page.locator('[data-testid="loading"]')).toBeVisible()
 
     // 等待响应显示
-    await expect(page.locator('[data-testid="response"]')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-testid="response"]')).toBeVisible({
+      timeout: 10000,
+    })
 
     // 检查响应内容
-    const responseText = await page.locator('[data-testid="response"]').textContent()
+    const responseText = await page
+      .locator('[data-testid="response"]')
+      .textContent()
     expect(responseText).toContain('success')
     expect(responseText).toContain('GET')
   })
@@ -40,10 +44,14 @@ test.describe('HTTP Client E2E Tests', () => {
     await expect(page.locator('[data-testid="loading"]')).toBeVisible()
 
     // 等待响应显示
-    await expect(page.locator('[data-testid="response"]')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-testid="response"]')).toBeVisible({
+      timeout: 10000,
+    })
 
     // 检查响应内容
-    const responseText = await page.locator('[data-testid="response"]').textContent()
+    const responseText = await page
+      .locator('[data-testid="response"]')
+      .textContent()
     expect(responseText).toContain('success')
     expect(responseText).toContain('POST')
   })
@@ -56,7 +64,9 @@ test.describe('HTTP Client E2E Tests', () => {
     await expect(page.locator('[data-testid="loading"]')).toBeVisible()
 
     // 等待错误显示
-    await expect(page.locator('[data-testid="error"]')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-testid="error"]')).toBeVisible({
+      timeout: 10000,
+    })
 
     // 检查错误内容
     const errorText = await page.locator('[data-testid="error"]').textContent()
@@ -71,10 +81,14 @@ test.describe('HTTP Client E2E Tests', () => {
     await expect(page.locator('[data-testid="vue-loading"]')).toBeVisible()
 
     // 等待 Vue 响应显示
-    await expect(page.locator('[data-testid="vue-response"]')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-testid="vue-response"]')).toBeVisible({
+      timeout: 10000,
+    })
 
     // 检查 Vue 响应内容
-    const responseText = await page.locator('[data-testid="vue-response"]').textContent()
+    const responseText = await page
+      .locator('[data-testid="vue-response"]')
+      .textContent()
     expect(responseText).toContain('success')
   })
 
@@ -93,7 +107,9 @@ test.describe('HTTP Client E2E Tests', () => {
     await requestPromise
 
     // 等待响应显示，加载状态隐藏
-    await expect(page.locator('[data-testid="response"]')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[data-testid="response"]')).toBeVisible({
+      timeout: 10000,
+    })
     await expect(page.locator('[data-testid="loading"]')).toBeHidden()
   })
 })

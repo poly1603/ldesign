@@ -34,14 +34,14 @@ function parseArguments(): DevOptions {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
-      'packages': { type: 'string', short: 'p' },
-      'apps': { type: 'string', short: 'a' },
-      'test': { type: 'boolean', short: 't' },
+      packages: { type: 'string', short: 'p' },
+      apps: { type: 'string', short: 'a' },
+      test: { type: 'boolean', short: 't' },
       'type-check': { type: 'boolean' },
-      'port': { type: 'string' },
-      'open': { type: 'boolean', short: 'o' },
-      'debug': { type: 'boolean', short: 'd' },
-      'help': { type: 'boolean', short: 'h' },
+      port: { type: 'string' },
+      open: { type: 'boolean', short: 'o' },
+      debug: { type: 'boolean', short: 'd' },
+      help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
   })
@@ -96,14 +96,13 @@ function showHelp() {
  */
 function getAvailablePackages(): string[] {
   const packagesDir = resolve(process.cwd(), 'packages')
-  if (!existsSync(packagesDir))
-    return []
+  if (!existsSync(packagesDir)) return []
 
   return readdirSync(packagesDir).filter((name: string) => {
     const packagePath = resolve(packagesDir, name)
     return (
-      statSync(packagePath).isDirectory()
-      && existsSync(resolve(packagePath, 'package.json'))
+      statSync(packagePath).isDirectory() &&
+      existsSync(resolve(packagePath, 'package.json'))
     )
   })
 }
@@ -113,15 +112,14 @@ function getAvailablePackages(): string[] {
  */
 function getAvailableApps(): string[] {
   const appsDir = resolve(process.cwd(), 'apps')
-  if (!existsSync(appsDir))
-    return []
+  if (!existsSync(appsDir)) return []
 
   const { readdirSync, statSync } = require('node:fs')
   return readdirSync(appsDir).filter((name: string) => {
     const appPath = resolve(appsDir, name)
     return (
-      statSync(appPath).isDirectory()
-      && existsSync(resolve(appPath, 'package.json'))
+      statSync(appPath).isDirectory() &&
+      existsSync(resolve(appPath, 'package.json'))
     )
   })
 }
@@ -140,8 +138,7 @@ async function startPackageDev(packageName: string, options: DevOptions) {
   console.log(`🔧 启动包 ${packageName} 的开发模式...`)
 
   const args = ['dev']
-  if (options.debug)
-    args.push('--debug')
+  if (options.debug) args.push('--debug')
 
   const child = spawn('pnpm', args, {
     cwd: packagePath,
@@ -151,9 +148,8 @@ async function startPackageDev(packageName: string, options: DevOptions) {
 
   return new Promise<void>((resolve, reject) => {
     child.on('error', reject)
-    child.on('exit', (code) => {
-      if (code === 0)
-        resolve()
+    child.on('exit', code => {
+      if (code === 0) resolve()
       else reject(new Error(`包 ${packageName} 开发模式退出，代码: ${code}`))
     })
   })
@@ -173,12 +169,9 @@ async function startAppDev(appName: string, options: DevOptions) {
   console.log(`🚀 启动应用 ${appName} 的开发模式...`)
 
   const args = ['dev']
-  if (options.port)
-    args.push('--port', options.port.toString())
-  if (options.open)
-    args.push('--open')
-  if (options.debug)
-    args.push('--debug')
+  if (options.port) args.push('--port', options.port.toString())
+  if (options.open) args.push('--open')
+  if (options.debug) args.push('--debug')
 
   const child = spawn('pnpm', args, {
     cwd: appPath,
@@ -188,9 +181,8 @@ async function startAppDev(appName: string, options: DevOptions) {
 
   return new Promise<void>((resolve, reject) => {
     child.on('error', reject)
-    child.on('exit', (code) => {
-      if (code === 0)
-        resolve()
+    child.on('exit', code => {
+      if (code === 0) resolve()
       else reject(new Error(`应用 ${appName} 开发模式退出，代码: ${code}`))
     })
   })
@@ -210,9 +202,8 @@ async function startTestWatch() {
 
   return new Promise<void>((resolve, reject) => {
     child.on('error', reject)
-    child.on('exit', (code) => {
-      if (code === 0)
-        resolve()
+    child.on('exit', code => {
+      if (code === 0) resolve()
       else reject(new Error(`测试监听退出，代码: ${code}`))
     })
   })
@@ -232,9 +223,8 @@ async function startTypeCheck() {
 
   return new Promise<void>((resolve, reject) => {
     child.on('error', reject)
-    child.on('exit', (code) => {
-      if (code === 0)
-        resolve()
+    child.on('exit', code => {
+      if (code === 0) resolve()
       else reject(new Error(`类型检查退出，代码: ${code}`))
     })
   })
@@ -282,8 +272,7 @@ async function main() {
   try {
     await Promise.all(tasks)
     console.log('✅ 所有开发任务已完成')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 开发任务失败:', error)
     process.exit(1)
   }

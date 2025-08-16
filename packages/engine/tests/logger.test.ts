@@ -207,7 +207,7 @@ describe('logger', () => {
 
       const logsInPast = logger.getLogsByTimeRange(
         oneHourAgo - 1000,
-        oneHourAgo,
+        oneHourAgo
       )
       expect(logsInPast).toHaveLength(0)
     })
@@ -476,7 +476,7 @@ describe('日志传输器', () => {
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
         'engine-logs',
-        expect.stringContaining('"message":"Test message"'),
+        expect.stringContaining('"message":"Test message"')
       )
     })
 
@@ -486,7 +486,7 @@ describe('日志传输器', () => {
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
         'custom-logs',
-        expect.any(String),
+        expect.any(String)
       )
     })
 
@@ -516,7 +516,7 @@ describe('日志传输器', () => {
       expect(() => transport(testEntry)).not.toThrow()
       expect(consoleSpy).toHaveBeenCalledWith(
         'Failed to store log in localStorage:',
-        expect.any(Error),
+        expect.any(Error)
       )
 
       consoleSpy.mockRestore()
@@ -553,7 +553,7 @@ describe('日志传输器', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: expect.stringContaining('"message":"Message 1"'),
-        }),
+        })
       )
     })
 
@@ -572,9 +572,9 @@ describe('日志传输器', () => {
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-api-key',
+            Authorization: 'Bearer test-api-key',
           },
-        }),
+        })
       )
     })
 
@@ -592,7 +592,7 @@ describe('日志传输器', () => {
       await expect(transport(testEntry)).resolves.not.toThrow()
       expect(consoleSpy).toHaveBeenCalledWith(
         'Failed to send logs to remote service:',
-        expect.any(Error),
+        expect.any(Error)
       )
 
       consoleSpy.mockRestore()

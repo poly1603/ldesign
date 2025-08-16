@@ -48,8 +48,7 @@ class BatchExampleValidator {
       this.printSummary()
 
       console.log(chalk.green('\n🎉 批量示例验证完成!'))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('❌ 批量示例验证失败:'), error)
       throw error
     }
@@ -83,8 +82,7 @@ class BatchExampleValidator {
       }
 
       console.log(chalk.green(`✅ 发现 ${this.packages.length} 个有文档的包`))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('发现包失败:'), error)
       throw error
     }
@@ -116,11 +114,11 @@ class BatchExampleValidator {
         const totalFiles = validationResults.length
         const totalExamples = validationResults.reduce(
           (sum, r) => sum + r.examples.length,
-          0,
+          0
         )
         const successfulExamples = validationResults.reduce(
           (sum, r) => sum + r.examples.filter(e => e.success).length,
-          0,
+          0
         )
         const errors = validationResults
           .filter(r => !r.success)
@@ -140,19 +138,17 @@ class BatchExampleValidator {
         if (result.success) {
           console.log(
             chalk.green(
-              `✅ ${packageName} 验证通过 (${successfulExamples}/${totalExamples} 示例)`,
-            ),
+              `✅ ${packageName} 验证通过 (${successfulExamples}/${totalExamples} 示例)`
+            )
           )
-        }
-        else {
+        } else {
           console.log(
             chalk.red(
-              `❌ ${packageName} 验证失败 (${successfulExamples}/${totalExamples} 示例)`,
-            ),
+              `❌ ${packageName} 验证失败 (${successfulExamples}/${totalExamples} 示例)`
+            )
           )
         }
-      }
-      catch (error) {
+      } catch (error) {
         const result: PackageValidationResult = {
           packageName,
           success: false,
@@ -192,8 +188,7 @@ class BatchExampleValidator {
       writeFileSync(latestReportPath, reportContent)
 
       console.log(chalk.green(`✅ 验证报告已生成: ${reportPath}`))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('生成验证报告失败:'), error)
     }
   }
@@ -207,11 +202,11 @@ class BatchExampleValidator {
     const successfulPackages = this.results.filter(r => r.success).length
     const totalExamples = this.results.reduce(
       (sum, r) => sum + r.totalExamples,
-      0,
+      0
     )
     const successfulExamples = this.results.reduce(
       (sum, r) => sum + r.successfulExamples,
-      0,
+      0
     )
 
     return `# 示例代码验证报告
@@ -226,23 +221,23 @@ class BatchExampleValidator {
 - **验证通过的示例**: ${successfulExamples}
 - **包成功率**: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%
 - **示例成功率**: ${
-  totalExamples > 0
-    ? ((successfulExamples / totalExamples) * 100).toFixed(1)
-    : 0
-}%
+      totalExamples > 0
+        ? ((successfulExamples / totalExamples) * 100).toFixed(1)
+        : 0
+    }%
 
 ## 详细结果
 
 | 包名 | 状态 | 文件数 | 示例数 | 成功数 | 成功率 |
 |------|------|--------|--------|--------|--------|
 ${this.results
-  .map((result) => {
+  .map(result => {
     const status = result.success ? '✅' : '❌'
-    const successRate
-      = result.totalExamples > 0
+    const successRate =
+      result.totalExamples > 0
         ? `${((result.successfulExamples / result.totalExamples) * 100).toFixed(
-          1,
-        )}%`
+            1
+          )}%`
         : 'N/A'
 
     return `| ${result.packageName} | ${status} | ${result.totalFiles} | ${result.totalExamples} | ${result.successfulExamples} | ${successRate} |`
@@ -260,7 +255,7 @@ ${this.results
 - **文件数**: ${result.totalFiles}
 - **示例数**: ${result.totalExamples}
 - **成功率**: 100%
-`,
+`
   )
   .join('\n')}
 
@@ -276,16 +271,16 @@ ${this.results
 - **示例数**: ${result.totalExamples}
 - **成功数**: ${result.successfulExamples}
 - **成功率**: ${
-  result.totalExamples > 0
-    ? `${((result.successfulExamples / result.totalExamples) * 100).toFixed(
-      1,
-    )}%`
-    : 'N/A'
-}
+      result.totalExamples > 0
+        ? `${((result.successfulExamples / result.totalExamples) * 100).toFixed(
+            1
+          )}%`
+        : 'N/A'
+    }
 
 **错误信息**:
 ${result.errors.map(error => `- ${error}`).join('\n')}
-`,
+`
   )
   .join('\n')}
 
@@ -311,9 +306,9 @@ ${this.generateRecommendations()}
    */
   private generateRecommendations(): string {
     const failedPackages = this.results.filter(r => !r.success)
-    const lowSuccessRatePackages = this.results.filter((r) => {
-      const rate
-        = r.totalExamples > 0 ? r.successfulExamples / r.totalExamples : 1
+    const lowSuccessRatePackages = this.results.filter(r => {
+      const rate =
+        r.totalExamples > 0 ? r.successfulExamples / r.totalExamples : 1
       return rate < 0.8 && rate > 0
     })
 
@@ -333,7 +328,7 @@ ${failedPackages
 
 以下包的示例成功率较低，建议改进：
 ${lowSuccessRatePackages
-  .map((r) => {
+  .map(r => {
     const rate = ((r.successfulExamples / r.totalExamples) * 100).toFixed(1)
     return `- **${r.packageName}**: ${rate}% 成功率`
   })
@@ -352,7 +347,7 @@ ${this.results
 
     if (recommendations.length === 0) {
       recommendations.push(
-        '### 🎉 所有包的示例都验证通过！\n\n继续保持高质量的文档和示例代码。',
+        '### 🎉 所有包的示例都验证通过！\n\n继续保持高质量的文档和示例代码。'
       )
     }
 
@@ -370,43 +365,42 @@ ${this.results
     const successfulPackages = this.results.filter(r => r.success).length
     const totalExamples = this.results.reduce(
       (sum, r) => sum + r.totalExamples,
-      0,
+      0
     )
     const successfulExamples = this.results.reduce(
       (sum, r) => sum + r.successfulExamples,
-      0,
+      0
     )
 
     console.log(`包: ${successfulPackages}/${totalPackages} 通过`)
     console.log(`示例: ${successfulExamples}/${totalExamples} 通过`)
     console.log(
-      `包成功率: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%`,
+      `包成功率: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%`
     )
     console.log(
       `示例成功率: ${
         totalExamples > 0
           ? ((successfulExamples / totalExamples) * 100).toFixed(1)
           : 0
-      }%`,
+      }%`
     )
 
     // 显示失败的包
     const failedPackages = this.results.filter(r => !r.success)
     if (failedPackages.length > 0) {
       console.log(chalk.red('\n❌ 失败的包:'))
-      failedPackages.forEach((result) => {
+      failedPackages.forEach(result => {
         console.log(
           chalk.red(
-            `  ${result.packageName}: ${result.successfulExamples}/${result.totalExamples} 示例通过`,
-          ),
+            `  ${result.packageName}: ${result.successfulExamples}/${result.totalExamples} 示例通过`
+          )
         )
       })
     }
 
     if (successfulPackages === totalPackages) {
       console.log(chalk.green('\n🎉 所有包的示例验证通过！'))
-    }
-    else {
+    } else {
       console.log(chalk.yellow('\n⚠️ 部分包的示例验证失败，请查看详细报告'))
     }
   }
@@ -422,8 +416,7 @@ async function main() {
     // 检查是否有失败的验证
     const hasFailures = validator.results.some(r => !r.success)
     process.exit(hasFailures ? 1 : 0)
-  }
-  catch (error) {
+  } catch (error) {
     console.error(chalk.red('批量示例验证失败:'), error)
     process.exit(1)
   }

@@ -33,18 +33,21 @@ pnpm run preview
 ## 📋 功能演示
 
 ### 1. Vue Composition API 集成
+
 - **useQuery**: 自动管理查询状态的响应式 hook
 - **useRequest**: 手动触发的请求 hook
 - **useMutation**: 用于数据变更的 hook
 - **响应式状态**: 自动管理 loading、error、data 状态
 
 ### 2. HTTP 客户端功能
+
 - **基础请求**: GET、POST、PUT、DELETE
 - **拦截器系统**: 请求/响应拦截器
 - **错误处理**: 网络错误、超时错误、HTTP 错误
 - **并发控制**: 同时发送多个请求
 
 ### 3. 高级特性
+
 - **类型安全**: 完整的 TypeScript 支持
 - **自动重试**: 失败请求自动重试
 - **请求取消**: 组件卸载时自动取消请求
@@ -60,15 +63,13 @@ import { createHttpClient, useQuery } from '@ldesign/http'
 
 // 创建客户端
 const http = createHttpClient({
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 
 // 使用 useQuery 获取数据
-const { data, loading, error, refresh } = useQuery(
-  http,
-  () => http.get('/users'),
-  { immediate: true }
-)
+const { data, loading, error, refresh } = useQuery(http, () => http.get('/users'), {
+  immediate: true,
+})
 </script>
 
 <template>
@@ -91,23 +92,19 @@ const { data, loading, error, refresh } = useQuery(
 <script setup lang="ts">
 import { useMutation } from '@ldesign/http'
 
-const { mutate, loading, error } = useMutation(
-  http,
-  (userData) => http.post('/users', userData),
-  {
-    onSuccess: (data) => {
-      console.log('用户创建成功:', data)
-    },
-    onError: (error) => {
-      console.error('创建失败:', error)
-    }
-  }
-)
+const { mutate, loading, error } = useMutation(http, userData => http.post('/users', userData), {
+  onSuccess: data => {
+    console.log('用户创建成功:', data)
+  },
+  onError: error => {
+    console.error('创建失败:', error)
+  },
+})
 
 function createUser() {
   mutate({
     name: 'John Doe',
-    email: 'john@example.com'
+    email: 'john@example.com',
   })
 }
 </script>
@@ -125,11 +122,11 @@ http.interceptors.request.use(authInterceptor)
 
 // 添加响应拦截器
 http.interceptors.response.use(
-  (response) => {
+  response => {
     console.log('请求成功:', response)
     return response
   },
-  (error) => {
+  error => {
     if (error.response?.status === 401) {
       // 处理认证失败
       router.push('/login')
@@ -144,28 +141,25 @@ http.interceptors.response.use(
 
 ```vue
 <script setup lang="ts">
-const { data, loading, error, execute } = useRequest(
-  http,
-  () => http.get('/users'),
-  {
-    immediate: false,
-    onError: (error) => {
-      if (error.isNetworkError) {
-        console.error('网络连接失败')
-      } else if (error.isTimeoutError) {
-        console.error('请求超时')
-      } else {
-        console.error('请求失败:', error.message)
-      }
+const { data, loading, error, execute } = useRequest(http, () => http.get('/users'), {
+  immediate: false,
+  onError: error => {
+    if (error.isNetworkError) {
+      console.error('网络连接失败')
+    } else if (error.isTimeoutError) {
+      console.error('请求超时')
+    } else {
+      console.error('请求失败:', error.message)
     }
-  }
-)
+  },
+})
 </script>
 ```
 
 ## 🎯 Vue 3 特性
 
 ### 1. 响应式状态管理
+
 所有 HTTP 状态都是响应式的，自动更新 UI：
 
 ```typescript
@@ -178,6 +172,7 @@ watch(loading, (isLoading) => {
 ```
 
 ### 2. 自动清理
+
 组件卸载时自动取消进行中的请求：
 
 ```typescript
@@ -186,25 +181,23 @@ const { data } = useQuery(http, () => http.get('/users'))
 ```
 
 ### 3. 条件请求
+
 根据条件动态执行请求：
 
 ```typescript
 const userId = ref(1)
 const enabled = computed(() => userId.value > 0)
 
-const { data } = useQuery(
-  http,
-  () => http.get(`/users/${userId.value}`),
-  { 
-    immediate: true,
-    enabled // 只有当 enabled 为 true 时才执行请求
-  }
-)
+const { data } = useQuery(http, () => http.get(`/users/${userId.value}`), {
+  immediate: true,
+  enabled, // 只有当 enabled 为 true 时才执行请求
+})
 ```
 
 ## 📊 实时统计
 
 示例应用显示以下统计信息：
+
 - **总请求数**: 发送的请求总数
 - **成功数**: 成功完成的请求数
 - **错误数**: 失败的请求数
@@ -213,6 +206,7 @@ const { data } = useQuery(
 ## 🎨 UI 组件
 
 示例包含以下交互式组件：
+
 - **文章列表**: 使用 useQuery 获取和显示文章
 - **文章详情**: 按需获取单篇文章
 - **创建文章**: 使用 useMutation 创建新文章

@@ -1,5 +1,10 @@
 <script setup>
-import { useBattery, useDevice, useGeolocation, useNetwork } from '@ldesign/device/vue'
+import {
+  useBattery,
+  useDevice,
+  useGeolocation,
+  useNetwork,
+} from '@ldesign/device/vue'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const { detector, deviceInfo } = useDevice()
@@ -45,7 +50,7 @@ function addLog(message, type = 'info') {
 // 清空日志
 function clearLogs() {
   logs.value = []
-  Object.keys(eventCounts.value).forEach((key) => {
+  Object.keys(eventCounts.value).forEach(key => {
     eventCounts.value[key] = 0
   })
   addLog('日志已清空', 'info')
@@ -70,10 +75,14 @@ async function getCurrentPos() {
     addLog('正在获取当前位置...', 'info')
     await getCurrentPosition()
     if (position.value) {
-      addLog(`位置获取成功: ${position.value.latitude.toFixed(6)}, ${position.value.longitude.toFixed(6)}`, 'success')
+      addLog(
+        `位置获取成功: ${position.value.latitude.toFixed(
+          6
+        )}, ${position.value.longitude.toFixed(6)}`,
+        'success'
+      )
     }
-  }
-  catch (error) {
+  } catch (error) {
     addLog(`位置获取失败: ${error.message}`, 'error')
   }
 }
@@ -83,8 +92,7 @@ function startLocationWatching() {
   try {
     startWatching()
     addLog('开始监听位置变化', 'success')
-  }
-  catch (error) {
+  } catch (error) {
     addLog(`开始位置监听失败: ${error.message}`, 'error')
   }
 }
@@ -94,8 +102,7 @@ function stopLocationWatching() {
   try {
     stopWatching()
     addLog('停止位置监听', 'warning')
-  }
-  catch (error) {
+  } catch (error) {
     addLog(`停止位置监听失败: ${error.message}`, 'error')
   }
 }
@@ -112,8 +119,7 @@ function toggleAutoRefresh() {
       }
     }, 5000)
     addLog('开启自动刷新 (5秒间隔)', 'success')
-  }
-  else {
+  } else {
     if (refreshInterval.value) {
       clearInterval(refreshInterval.value)
       refreshInterval.value = null
@@ -133,7 +139,9 @@ function exportDeviceInfo() {
     eventCounts: eventCounts.value,
   }
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -152,7 +160,7 @@ onMounted(() => {
       addLog('设备信息变化', 'info')
     })
 
-    detector.on('orientationChange', (orientation) => {
+    detector.on('orientationChange', orientation => {
       eventCounts.value.orientationChange++
       addLog(`屏幕方向变化: ${orientation}`, 'info')
     })
@@ -268,9 +276,7 @@ onUnmounted(() => {
       <div class="log-section">
         <div class="log-header">
           <h4>📋 实时日志</h4>
-          <button class="btn small" @click="clearLogs">
-            🗑️ 清空
-          </button>
+          <button class="btn small" @click="clearLogs">🗑️ 清空</button>
         </div>
 
         <div class="log-container">
@@ -284,9 +290,7 @@ onUnmounted(() => {
             <span class="message">{{ log.message }}</span>
           </div>
 
-          <div v-if="logs.length === 0" class="empty-log">
-            暂无日志记录
-          </div>
+          <div v-if="logs.length === 0" class="empty-log">暂无日志记录</div>
         </div>
       </div>
     </div>

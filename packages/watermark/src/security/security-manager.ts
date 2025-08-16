@@ -124,7 +124,7 @@ export class SecurityManager {
    */
   async addWatcher(
     instanceId: string,
-    config: Omit<SecurityWatcher, 'id' | 'instanceId' | 'active'>,
+    config: Omit<SecurityWatcher, 'id' | 'instanceId' | 'active'>
   ): Promise<string> {
     const watcherId = generateId('watcher')
 
@@ -200,7 +200,7 @@ export class SecurityManager {
   async reportViolation(
     instanceId: string,
     type: SecurityViolationType,
-    details: Record<string, any> = {},
+    details: Record<string, any> = {}
   ): Promise<void> {
     const violation: SecurityViolation = {
       instanceId,
@@ -227,8 +227,7 @@ export class SecurityManager {
     for (const callback of callbacks) {
       try {
         await callback(violation)
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Security callback error:', error)
       }
     }
@@ -258,8 +257,7 @@ export class SecurityManager {
   clearViolations(instanceId?: string): void {
     if (instanceId) {
       this.violations.delete(instanceId)
-    }
-    else {
+    } else {
       this.violations.clear()
       this.state.totalViolations = 0
     }
@@ -307,13 +305,13 @@ export class SecurityManager {
   // 私有方法
 
   private async enableLowLevelProtection(
-    instance: WatermarkInstance,
+    instance: WatermarkInstance
   ): Promise<void> {
     // 基础DOM监听
     await this.addWatcher(instance.id, {
       type: 'dom-mutation',
       observer: new MutationObserver(() => {}),
-      callback: async (violation) => {
+      callback: async violation => {
         await this.reportViolation(instance.id, 'element-removed', violation)
       },
       isActive: true,
@@ -322,7 +320,7 @@ export class SecurityManager {
   }
 
   private async enableMediumLevelProtection(
-    instance: WatermarkInstance,
+    instance: WatermarkInstance
   ): Promise<void> {
     // 包含低级别保护
     await this.enableLowLevelProtection(instance)
@@ -331,7 +329,7 @@ export class SecurityManager {
     await this.addWatcher(instance.id, {
       type: 'style-change',
       observer: new MutationObserver(() => {}),
-      callback: async (violation) => {
+      callback: async violation => {
         await this.reportViolation(instance.id, 'style-modified', violation)
       },
       isActive: true,
@@ -342,11 +340,11 @@ export class SecurityManager {
     await this.addWatcher(instance.id, {
       type: 'console-access',
       observer: {} as any,
-      callback: async (violation) => {
+      callback: async violation => {
         await this.reportViolation(
           instance.id,
           'console-manipulation',
-          violation,
+          violation
         )
       },
       isActive: true,
@@ -355,7 +353,7 @@ export class SecurityManager {
   }
 
   private async enableHighLevelProtection(
-    instance: WatermarkInstance,
+    instance: WatermarkInstance
   ): Promise<void> {
     // 包含中级别保护
     await this.enableMediumLevelProtection(instance)
@@ -364,7 +362,7 @@ export class SecurityManager {
     await this.addWatcher(instance.id, {
       type: 'devtools-detection',
       observer: {} as any,
-      callback: async (violation) => {
+      callback: async violation => {
         await this.reportViolation(instance.id, 'devtools-opened', violation)
       },
       isActive: true,
@@ -375,11 +373,11 @@ export class SecurityManager {
     await this.addWatcher(instance.id, {
       type: 'network-monitoring',
       observer: {} as any,
-      callback: async (violation) => {
+      callback: async violation => {
         await this.reportViolation(
           instance.id,
           'network-interception',
-          violation,
+          violation
         )
       },
       isActive: true,
@@ -444,7 +442,7 @@ export class SecurityManager {
   }
 
   private startDOMMutationWatcher(watcher: SecurityWatcher): void {
-    const observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
           for (const removedNode of mutation.removedNodes) {
@@ -526,8 +524,8 @@ export class SecurityManager {
       const threshold = 160
 
       if (
-        window.outerHeight - window.innerHeight > threshold
-        || window.outerWidth - window.innerWidth > threshold
+        window.outerHeight - window.innerHeight > threshold ||
+        window.outerWidth - window.innerWidth > threshold
       ) {
         watcher.callback({
           instanceId: watcher.instanceId || '',
@@ -600,17 +598,17 @@ export class SecurityManager {
     }
 
     // 禁用右键菜单
-    document.addEventListener('contextmenu', (e) => {
+    document.addEventListener('contextmenu', e => {
       e.preventDefault()
     })
 
     // 禁用常见快捷键
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       // F12, Ctrl+Shift+I, Ctrl+U 等
       if (
-        e.key === 'F12'
-        || (e.ctrlKey && e.shiftKey && e.key === 'I')
-        || (e.ctrlKey && e.key === 'u')
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.key === 'u')
       ) {
         e.preventDefault()
       }
@@ -621,11 +619,11 @@ export class SecurityManager {
     // 代码混淆保护（简化实现）
     const elements = instance.elements
 
-    elements.forEach((element) => {
+    elements.forEach(element => {
       // 添加随机属性
       element.setAttribute(
         `data-${this.generateRandomString()}`,
-        this.generateRandomString(),
+        this.generateRandomString()
       )
 
       // 混淆类名
@@ -638,19 +636,19 @@ export class SecurityManager {
   private isWatermarkElement(element: Element): boolean {
     // 检查元素是否为水印元素
     return (
-      element
-      && (element.hasAttribute('data-watermark')
-        || element.classList.contains('watermark')
-        || (element.tagName === 'CANVAS'
-          && element.hasAttribute('data-watermark-canvas')))
+      element &&
+      (element.hasAttribute('data-watermark') ||
+        element.classList.contains('watermark') ||
+        (element.tagName === 'CANVAS' &&
+          element.hasAttribute('data-watermark-canvas')))
     )
   }
 
   private findWatermarkElements(): Element[] {
     return Array.from(
       document.querySelectorAll(
-        '[data-watermark], .watermark, canvas[data-watermark-canvas]',
-      ),
+        '[data-watermark], .watermark, canvas[data-watermark-canvas]'
+      )
     )
   }
 
@@ -659,9 +657,9 @@ export class SecurityManager {
 
     // 检查是否被隐藏
     if (
-      style.display === 'none'
-      || style.visibility === 'hidden'
-      || style.opacity === '0'
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      style.opacity === '0'
     ) {
       return true
     }
@@ -676,7 +674,7 @@ export class SecurityManager {
   }
 
   private getViolationSeverity(
-    type: SecurityViolationType,
+    type: SecurityViolationType
   ): 'low' | 'medium' | 'high' | 'critical' {
     switch (type) {
       case 'element-removed':
@@ -703,8 +701,8 @@ export class SecurityManager {
   }
 
   private generateRandomString(length = 8): string {
-    const chars
-      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))

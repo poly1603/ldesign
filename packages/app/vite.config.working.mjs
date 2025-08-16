@@ -65,11 +65,7 @@ export default defineConfig({
     sourcemap: true,
   },
   optimizeDeps: {
-    include: [
-      'vue',
-      'monaco-editor',
-      'prismjs',
-    ],
+    include: ['vue', 'monaco-editor', 'prismjs'],
     exclude: ['alova'],
   },
 })

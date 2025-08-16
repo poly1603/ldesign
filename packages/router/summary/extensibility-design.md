@@ -16,7 +16,9 @@ interface DeviceRouterPlugin {
 }
 
 // 支持多个插件组合
-const router = createRouter({ /* ... */ })
+const router = createRouter({
+  /* ... */
+})
 
 // 核心设备插件
 const devicePlugin = createDeviceRouterPlugin(deviceOptions)
@@ -39,15 +41,15 @@ interface DeviceRouterHooks {
   // 设备检测钩子
   onDeviceDetected?: (device: DeviceType, info: DeviceInfo) => void
   onDeviceChanged?: (newDevice: DeviceType, oldDevice: DeviceType) => void
-  
+
   // 组件解析钩子
   beforeComponentResolve?: (record: RouteRecordNormalized) => void
   afterComponentResolve?: (resolution: DeviceComponentResolution) => void
-  
+
   // 访问控制钩子
   beforeDeviceGuard?: (route: RouteLocationNormalized, device: DeviceType) => void
   onDeviceBlocked?: (route: RouteLocationNormalized, device: DeviceType) => void
-  
+
   // 模板处理钩子
   beforeTemplateLoad?: (category: string, template: string, device: DeviceType) => void
   afterTemplateLoad?: (component: Component, meta: TemplateMeta) => void
@@ -63,8 +65,8 @@ const devicePlugin = createDeviceRouterPlugin({
     onDeviceBlocked: (route, device) => {
       // 设备被阻止时的自定义逻辑
       logger.warn(`Device ${device} blocked from accessing ${route.path}`)
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -119,8 +121,8 @@ devicePlugin.use(new PerformanceMiddleware())
 declare module '@ldesign/device' {
   interface DeviceTypeMap {
     'smart-tv': 'smart-tv'
-    'watch': 'watch'
-    'car': 'car'
+    watch: 'watch'
+    car: 'car'
   }
 }
 
@@ -130,18 +132,18 @@ type ExtendedDeviceType = DeviceType | 'smart-tv' | 'watch' | 'car'
 class ExtendedDeviceDetector extends DeviceDetector {
   detectDevice(): ExtendedDeviceType {
     const userAgent = navigator.userAgent.toLowerCase()
-    
+
     if (userAgent.includes('smart-tv')) return 'smart-tv'
     if (userAgent.includes('watch')) return 'watch'
     if (userAgent.includes('car')) return 'car'
-    
+
     return super.detectDevice()
   }
 }
 
 // 使用扩展设备检测器
 const devicePlugin = createDeviceRouterPlugin({
-  deviceDetector: new ExtendedDeviceDetector()
+  deviceDetector: new ExtendedDeviceDetector(),
 })
 ```
 
@@ -190,22 +192,22 @@ class CameraFeature implements DeviceFeature {
 // Google Analytics 集成
 class GoogleAnalyticsPlugin implements DeviceRouterPlugin {
   name = 'google-analytics'
-  
+
   install(router: Router) {
     const devicePlugin = router.devicePlugin
-    
-    devicePlugin.onDeviceChange((device) => {
+
+    devicePlugin.onDeviceChange(device => {
       gtag('event', 'device_change', {
         device_type: device,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     })
-    
+
     devicePlugin.onDeviceBlocked((route, device) => {
       gtag('event', 'device_blocked', {
         route: route.path,
         device_type: device,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     })
   }
@@ -221,25 +223,25 @@ router.use(new GoogleAnalyticsPlugin())
 // A/B 测试插件
 class ABTestPlugin implements DeviceRouterPlugin {
   name = 'ab-test'
-  
+
   install(router: Router, options: ABTestOptions) {
     const devicePlugin = router.devicePlugin
-    
+
     // 扩展组件解析逻辑
     const originalResolve = devicePlugin.componentResolver.resolveComponent
-    
-    devicePlugin.componentResolver.resolveComponent = (record) => {
+
+    devicePlugin.componentResolver.resolveComponent = record => {
       const resolution = originalResolve.call(this, record)
-      
+
       if (resolution && this.shouldRunABTest(record, resolution.deviceType)) {
         const variant = this.getABTestVariant(record.path, resolution.deviceType)
         return this.getVariantComponent(resolution, variant)
       }
-      
+
       return resolution
     }
   }
-  
+
   private shouldRunABTest(record: RouteRecordNormalized, device: DeviceType): boolean {
     return record.meta.abTest && record.meta.abTest.devices?.includes(device)
   }
@@ -252,21 +254,21 @@ class ABTestPlugin implements DeviceRouterPlugin {
 // 性能监控插件
 class PerformanceMonitorPlugin implements DeviceRouterPlugin {
   name = 'performance-monitor'
-  
+
   install(router: Router) {
     const devicePlugin = router.devicePlugin
-    
+
     // 监控组件加载性能
-    devicePlugin.hooks.beforeComponentResolve = (record) => {
+    devicePlugin.hooks.beforeComponentResolve = record => {
       this.startTimer(`component-${record.path}`)
     }
-    
-    devicePlugin.hooks.afterComponentResolve = (resolution) => {
+
+    devicePlugin.hooks.afterComponentResolve = resolution => {
       const duration = this.endTimer(`component-${resolution.deviceType}`)
       this.reportMetrics('component_load_time', {
         device: resolution.deviceType,
         source: resolution.source,
-        duration
+        duration,
       })
     }
   }
@@ -289,20 +291,20 @@ interface SmartDeviceAdapter {
 class MLComponentResolver extends DeviceComponentResolver {
   async resolveComponent(record: RouteRecordNormalized): Promise<DeviceComponentResolution> {
     const baseResolution = await super.resolveComponent(record)
-    
+
     if (this.mlEnabled) {
       const optimizedComponent = await this.mlAdapter.optimizeComponent(
         baseResolution.component,
         baseResolution.deviceType
       )
-      
+
       return {
         ...baseResolution,
         component: optimizedComponent,
-        source: 'ml-optimized'
+        source: 'ml-optimized',
       }
     }
-    
+
     return baseResolution
   }
 }
@@ -350,11 +352,11 @@ class TemplateBasedGenerator implements DynamicComponentGenerator {
     const adaptedTemplate = await this.adaptTemplate(template, context)
     const optimizedStyles = await this.optimizeStyles(template.styles, context)
     const enhancedLogic = await this.enhanceLogic(template.logic, context)
-    
+
     return this.compileComponent({
       template: adaptedTemplate,
       styles: optimizedStyles,
-      logic: enhancedLogic
+      logic: enhancedLogic,
     })
   }
 }
@@ -369,34 +371,34 @@ class TemplateBasedGenerator implements DynamicComponentGenerator {
 class DeviceAdaptationDebugger {
   private router: Router
   private devicePlugin: DeviceRouterPlugin
-  
+
   constructor(router: Router) {
     this.router = router
     this.devicePlugin = router.devicePlugin
   }
-  
+
   // 可视化设备适配状态
   visualizeAdaptationState() {
     return {
       currentDevice: this.devicePlugin.getCurrentDevice(),
       supportedRoutes: this.getSupportedRoutes(),
       componentResolutions: this.getComponentResolutions(),
-      performanceMetrics: this.getPerformanceMetrics()
+      performanceMetrics: this.getPerformanceMetrics(),
     }
   }
-  
+
   // 模拟不同设备
   simulateDevice(device: DeviceType) {
     this.devicePlugin.simulateDevice(device)
     this.logAdaptationChanges()
   }
-  
+
   // 分析适配性能
   analyzePerformance() {
     return {
       componentLoadTimes: this.getComponentLoadTimes(),
       deviceSwitchTimes: this.getDeviceSwitchTimes(),
-      memoryUsage: this.getMemoryUsage()
+      memoryUsage: this.getMemoryUsage(),
     }
   }
 }
@@ -425,11 +427,11 @@ class DeviceConfigEditor implements DeviceConfigurationUI {
         { name: '设备检测', component: DeviceDetectionConfig },
         { name: '访问控制', component: AccessControlConfig },
         { name: '组件映射', component: ComponentMappingConfig },
-        { name: '模板配置', component: TemplateConfig }
-      ]
+        { name: '模板配置', component: TemplateConfig },
+      ],
     })
   }
-  
+
   updateConfiguration(config: DeviceRouteConfig) {
     this.devicePlugin.updateConfig(config)
     this.previewChanges()
@@ -446,18 +448,18 @@ class DeviceConfigEditor implements DeviceConfigurationUI {
 class SmartPreloadStrategy {
   private userBehaviorAnalyzer: UserBehaviorAnalyzer
   private deviceCapabilityDetector: DeviceCapabilityDetector
-  
+
   async predictNextComponents(currentRoute: string, device: DeviceType): Promise<Component[]> {
     const userPatterns = await this.userBehaviorAnalyzer.analyzeNavigationPatterns()
     const deviceCapabilities = await this.deviceCapabilityDetector.getCapabilities(device)
-    
+
     return this.calculateOptimalPreloadSet(userPatterns, deviceCapabilities)
   }
-  
+
   shouldPreload(component: Component, device: DeviceType): boolean {
     const networkCondition = this.getNetworkCondition()
     const devicePerformance = this.getDevicePerformance(device)
-    
+
     return this.evaluatePreloadBenefit(component, networkCondition, devicePerformance) > 0.7
   }
 }
@@ -470,19 +472,23 @@ class SmartPreloadStrategy {
 class AdaptiveCacheStrategy {
   private cacheSize: Map<DeviceType, number> = new Map()
   private cachePolicy: Map<DeviceType, CachePolicy> = new Map()
-  
+
   getCacheConfig(device: DeviceType): CacheConfig {
     const deviceMemory = this.getDeviceMemory(device)
     const networkSpeed = this.getNetworkSpeed()
-    
+
     return {
       maxSize: this.calculateOptimalCacheSize(deviceMemory),
       ttl: this.calculateOptimalTTL(networkSpeed),
-      strategy: this.selectCacheStrategy(device, deviceMemory, networkSpeed)
+      strategy: this.selectCacheStrategy(device, deviceMemory, networkSpeed),
     }
   }
-  
-  private selectCacheStrategy(device: DeviceType, memory: number, networkSpeed: number): CacheStrategy {
+
+  private selectCacheStrategy(
+    device: DeviceType,
+    memory: number,
+    networkSpeed: number
+  ): CacheStrategy {
     if (device === 'mobile' && memory < 2048) {
       return 'memory-conservative'
     } else if (networkSpeed < 1000) {
@@ -504,18 +510,16 @@ class ReactDeviceAdapter {
   createDeviceProvider(config: DeviceRouteConfig) {
     return function DeviceProvider({ children }: { children: React.ReactNode }) {
       const [device, setDevice] = useState<DeviceType>('desktop')
-      
+
       useEffect(() => {
         const detector = new DeviceDetector(config)
         setDevice(detector.getDeviceType())
-        
+
         return detector.on('deviceChange', setDevice)
       }, [])
-      
+
       return (
-        <DeviceContext.Provider value={{ device, setDevice }}>
-          {children}
-        </DeviceContext.Provider>
+        <DeviceContext.Provider value={{ device, setDevice }}>{children}</DeviceContext.Provider>
       )
     }
   }
@@ -525,16 +529,16 @@ class ReactDeviceAdapter {
 @Injectable()
 class AngularDeviceService {
   private device$ = new BehaviorSubject<DeviceType>('desktop')
-  
+
   constructor(private config: DeviceRouteConfig) {
     const detector = new DeviceDetector(config)
     this.device$.next(detector.getDeviceType())
-    
-    detector.on('deviceChange', (device) => {
+
+    detector.on('deviceChange', device => {
       this.device$.next(device)
     })
   }
-  
+
   getCurrentDevice(): Observable<DeviceType> {
     return this.device$.asObservable()
   }
@@ -553,18 +557,19 @@ function viteDeviceAdaptationPlugin(options: DeviceAdaptationOptions) {
     },
     generateBundle(options, bundle) {
       // 生成设备特定的代码分割
-    }
+    },
   }
 }
 
 // Webpack 插件
 class WebpackDeviceAdaptationPlugin {
   apply(compiler: Compiler) {
-    compiler.hooks.compilation.tap('DeviceAdaptation', (compilation) => {
+    compiler.hooks.compilation.tap('DeviceAdaptation', compilation => {
       // 实现设备特定的代码分割和优化
     })
   }
 }
 ```
 
-通过这些扩展性设计，设备适配功能可以持续演进，适应不断变化的技术需求和用户期望，为开发者提供更强大、更灵活的多设备开发体验。
+通过这些扩展性设计，设备适配功能可以持续演进，适应不断变化的技术需求和用户期望，为开发者提供更强大、
+更灵活的多设备开发体验。

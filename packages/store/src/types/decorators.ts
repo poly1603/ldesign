@@ -56,7 +56,10 @@ export type DecoratorType = 'state' | 'action' | 'getter'
 export interface DecoratorMetadata {
   type: DecoratorType
   key: string
-  options?: StateDecoratorOptions | ActionDecoratorOptions | GetterDecoratorOptions
+  options?:
+    | StateDecoratorOptions
+    | ActionDecoratorOptions
+    | GetterDecoratorOptions
 }
 
 /**

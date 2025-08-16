@@ -64,12 +64,12 @@ function mergeConfig(localConfig: Partial<WatermarkConfig>): WatermarkConfig {
       ...localConfig.security,
       // 如果全局启用安全，确保安全级别不为none
       level:
-        globalSecurity.value
-        && (!localConfig.security?.level || localConfig.security.level === 'none')
+        globalSecurity.value &&
+        (!localConfig.security?.level || localConfig.security.level === 'none')
           ? 'basic'
-          : localConfig.security?.level
-            || DEFAULT_WATERMARK_CONFIG.security?.level
-            || 'none',
+          : localConfig.security?.level ||
+            DEFAULT_WATERMARK_CONFIG.security?.level ||
+            'none',
     },
     // 响应式配置合并
     responsive: {
@@ -78,10 +78,10 @@ function mergeConfig(localConfig: Partial<WatermarkConfig>): WatermarkConfig {
       ...localConfig.responsive,
       // 如果全局启用响应式，确保响应式功能开启
       enabled:
-        globalResponsive.value
-        || localConfig.responsive?.enabled
-        || DEFAULT_WATERMARK_CONFIG.responsive?.enabled
-        || false,
+        globalResponsive.value ||
+        localConfig.responsive?.enabled ||
+        DEFAULT_WATERMARK_CONFIG.responsive?.enabled ||
+        false,
     },
     // 动画配置合并
     animation: {

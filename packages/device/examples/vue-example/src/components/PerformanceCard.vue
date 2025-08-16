@@ -19,8 +19,7 @@ const avgDetectionTime = computed(() => {
 })
 
 const memoryUsageText = computed(() => {
-  if (memoryUsage.value.total === 0)
-    return '不支持'
+  if (memoryUsage.value.total === 0) return '不支持'
   return `${memoryUsage.value.used}MB / ${memoryUsage.value.total}MB`
 })
 
@@ -46,8 +45,7 @@ function updatePerformanceInfo() {
 
 // 性能测试
 async function performanceTest() {
-  if (!detector)
-    return
+  if (!detector) return
 
   const iterations = 100
   const startTime = performance.now()
@@ -119,13 +117,9 @@ onUnmounted(() => {
     </div>
 
     <div class="controls">
-      <button class="btn primary" @click="performanceTest">
-        🚀 性能测试
-      </button>
+      <button class="btn primary" @click="performanceTest">🚀 性能测试</button>
 
-      <button class="btn secondary" @click="resetStats">
-        🔄 重置统计
-      </button>
+      <button class="btn secondary" @click="resetStats">🔄 重置统计</button>
 
       <button
         class="btn"

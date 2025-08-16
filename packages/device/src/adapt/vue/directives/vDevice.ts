@@ -1,5 +1,9 @@
 import type { Directive, DirectiveBinding } from 'vue'
-import type { DeviceDirectiveValue, DeviceInfo, DeviceType } from '../../../types'
+import type {
+  DeviceDirectiveValue,
+  DeviceInfo,
+  DeviceType,
+} from '../../../types'
 import { DeviceDetector } from '../../../core/DeviceDetector'
 
 interface ElementWithDeviceData extends HTMLElement {
@@ -58,7 +62,11 @@ function parseDirectiveValue(value: DeviceDirectiveValue): {
 /**
  * 检查是否应该显示元素
  */
-function shouldShowElement(currentType: DeviceType, targetTypes: DeviceType[], inverse: boolean): boolean {
+function shouldShowElement(
+  currentType: DeviceType,
+  targetTypes: DeviceType[],
+  inverse: boolean
+): boolean {
   const matches = targetTypes.includes(currentType)
   return inverse ? !matches : matches
 }
@@ -69,7 +77,7 @@ function shouldShowElement(currentType: DeviceType, targetTypes: DeviceType[], i
 function updateElementVisibility(
   el: HTMLElement,
   binding: DirectiveBinding<DeviceDirectiveValue>,
-  currentType: DeviceType,
+  currentType: DeviceType
 ) {
   const { types, inverse } = parseDirectiveValue(binding.value)
   const shouldShow = shouldShowElement(currentType, types, inverse)
@@ -80,8 +88,7 @@ function updateElementVisibility(
       el.style.display = el.dataset.originalDisplay || ''
     }
     el.removeAttribute('hidden')
-  }
-  else {
+  } else {
     // 隐藏元素
     if (!el.dataset.originalDisplay) {
       el.dataset.originalDisplay = el.style.display || ''

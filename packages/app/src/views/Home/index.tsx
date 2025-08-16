@@ -28,7 +28,7 @@ export default defineComponent({
       themeApi = {
         currentTheme: ref('default'),
         setTheme: () => Promise.resolve(),
-        availableThemes: ref(['default'])
+        availableThemes: ref(['default']),
       }
     }
     const { currentTheme, setTheme, availableThemes } = themeApi
@@ -70,8 +70,7 @@ export default defineComponent({
       try {
         const result = await encryptAES(demoText.value, 'demo-key')
         encryptedText.value = result?.data || ''
-      }
-      catch (error) {
+      } catch (error) {
         console.error('加密失败:', error)
       }
     }
@@ -81,8 +80,7 @@ export default defineComponent({
       try {
         const result = await sha256(demoText.value)
         hashedText.value = result || ''
-      }
-      catch (error) {
+      } catch (error) {
         console.error('哈希失败:', error)
       }
     }
@@ -90,13 +88,13 @@ export default defineComponent({
     // 缓存演示
     const handleCacheDemo = () => {
       if (
-        cache
-        && typeof cache === 'object'
-        && 'set' in cache
-        && 'get' in cache
+        cache &&
+        typeof cache === 'object' &&
+        'set' in cache &&
+        'get' in cache
       ) {
         const timestamp = new Date().toLocaleString()
-          ; (cache as any).set(cacheKey, `缓存数据: ${timestamp}`)
+        ;(cache as any).set(cacheKey, `缓存数据: ${timestamp}`)
         const cached = (cache as any).get(cacheKey)
         alert(`缓存成功: ${cached}`)
       }
@@ -169,9 +167,7 @@ export default defineComponent({
                 cursor: 'pointer',
               }}
             >
-              🎨 切换主题 (
-              {currentTheme.value || 'default'}
-              )
+              🎨 切换主题 ({currentTheme.value || 'default'})
             </button>
 
             <button
@@ -185,9 +181,7 @@ export default defineComponent({
                 cursor: 'pointer',
               }}
             >
-              📏 切换尺寸 (
-              {currentMode.value || 'medium'}
-              )
+              📏 切换尺寸 ({currentMode.value || 'medium'})
             </button>
 
             <button
@@ -218,8 +212,9 @@ export default defineComponent({
               <input
                 value={demoText.value}
                 onInput={e =>
-                  (demoText.value = (e.target as HTMLInputElement).value)}
-                placeholder="输入要加密的文本"
+                  (demoText.value = (e.target as HTMLInputElement).value)
+                }
+                placeholder='输入要加密的文本'
                 style={{
                   padding: '8px',
                   width: '200px',
@@ -266,8 +261,7 @@ export default defineComponent({
                   borderRadius: '4px',
                 }}
               >
-                <strong>加密结果:</strong>
-                {' '}
+                <strong>加密结果:</strong>{' '}
                 <code style={{ wordBreak: 'break-all' }}>
                   {encryptedText.value}
                 </code>
@@ -283,8 +277,7 @@ export default defineComponent({
                   borderRadius: '4px',
                 }}
               >
-                <strong>哈希结果:</strong>
-                {' '}
+                <strong>哈希结果:</strong>{' '}
                 <code style={{ wordBreak: 'break-all' }}>
                   {hashedText.value}
                 </code>

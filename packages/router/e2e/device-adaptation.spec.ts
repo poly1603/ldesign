@@ -16,7 +16,9 @@ test.describe('设备适配功能', () => {
       await page.setViewportSize({ width: 1200, height: 800 })
 
       // 检查设备类型显示
-      const deviceType = await page.locator('[data-testid="current-device"]').textContent()
+      const deviceType = await page
+        .locator('[data-testid="current-device"]')
+        .textContent()
       expect(deviceType).toContain('桌面设备')
     })
 
@@ -27,7 +29,9 @@ test.describe('设备适配功能', () => {
       // 等待设备检测更新
       await page.waitForTimeout(100)
 
-      const deviceType = await page.locator('[data-testid="current-device"]').textContent()
+      const deviceType = await page
+        .locator('[data-testid="current-device"]')
+        .textContent()
       expect(deviceType).toContain('移动设备')
     })
 
@@ -37,7 +41,9 @@ test.describe('设备适配功能', () => {
 
       await page.waitForTimeout(100)
 
-      const deviceType = await page.locator('[data-testid="current-device"]').textContent()
+      const deviceType = await page
+        .locator('[data-testid="current-device"]')
+        .textContent()
       expect(deviceType).toContain('平板设备')
     })
   })
@@ -51,14 +57,18 @@ test.describe('设备适配功能', () => {
       await page.setViewportSize({ width: 1200, height: 800 })
       await page.waitForTimeout(100)
 
-      let componentName = await page.locator('[data-testid="component-name"]').textContent()
+      let componentName = await page
+        .locator('[data-testid="component-name"]')
+        .textContent()
       expect(componentName).toContain('Desktop')
 
       // 移动端
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
 
-      componentName = await page.locator('[data-testid="component-name"]').textContent()
+      componentName = await page
+        .locator('[data-testid="component-name"]')
+        .textContent()
       expect(componentName).toContain('Mobile')
     })
 
@@ -70,11 +80,15 @@ test.describe('设备适配功能', () => {
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
 
-      const componentName = await page.locator('[data-testid="component-name"]').textContent()
+      const componentName = await page
+        .locator('[data-testid="component-name"]')
+        .textContent()
       expect(componentName).toContain('Desktop')
 
       // 应该显示回退提示
-      const fallbackIndicator = await page.locator('[data-testid="fallback-indicator"]')
+      const fallbackIndicator = await page.locator(
+        '[data-testid="fallback-indicator"]'
+      )
       await expect(fallbackIndicator).toBeVisible()
     })
   })
@@ -89,11 +103,15 @@ test.describe('设备适配功能', () => {
       await expect(page).toHaveURL(/device-unsupported/)
 
       // 检查提示信息
-      const message = await page.locator('[data-testid="unsupported-message"]').textContent()
+      const message = await page
+        .locator('[data-testid="unsupported-message"]')
+        .textContent()
       expect(message).toContain('不支持')
 
       // 检查设备信息
-      const deviceInfo = await page.locator('[data-testid="current-device-info"]').textContent()
+      const deviceInfo = await page
+        .locator('[data-testid="current-device-info"]')
+        .textContent()
       expect(deviceInfo).toContain('移动设备')
     })
 
@@ -106,7 +124,9 @@ test.describe('设备适配功能', () => {
       await expect(page.locator('[data-testid="page-content"]')).toBeVisible()
 
       // 不应该显示不支持提示
-      await expect(page.locator('[data-testid="unsupported-message"]')).not.toBeVisible()
+      await expect(
+        page.locator('[data-testid="unsupported-message"]')
+      ).not.toBeVisible()
     })
 
     test('应该使用自定义重定向路由', async ({ page }) => {
@@ -124,10 +144,14 @@ test.describe('设备适配功能', () => {
       await page.goto('/template-login')
 
       // 检查模板组件是否正确渲染
-      const templateContent = await page.locator('[data-testid="template-content"]')
+      const templateContent = await page.locator(
+        '[data-testid="template-content"]'
+      )
       await expect(templateContent).toBeVisible()
 
-      const templateName = await page.locator('[data-testid="template-name"]').textContent()
+      const templateName = await page
+        .locator('[data-testid="template-name"]')
+        .textContent()
       expect(templateName).toContain('login')
     })
 
@@ -138,14 +162,18 @@ test.describe('设备适配功能', () => {
       await page.setViewportSize({ width: 1200, height: 800 })
       await page.waitForTimeout(100)
 
-      let templateVariant = await page.locator('[data-testid="template-variant"]').textContent()
+      let templateVariant = await page
+        .locator('[data-testid="template-variant"]')
+        .textContent()
       expect(templateVariant).toContain('desktop')
 
       // 移动端模板
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
 
-      templateVariant = await page.locator('[data-testid="template-variant"]').textContent()
+      templateVariant = await page
+        .locator('[data-testid="template-variant"]')
+        .textContent()
       expect(templateVariant).toContain('mobile')
     })
   })
@@ -156,18 +184,24 @@ test.describe('设备适配功能', () => {
       await page.goto('/device-unsupported?device=mobile&from=/admin')
 
       // 检查当前设备显示
-      const currentDevice = await page.locator('[data-testid="current-device"]').textContent()
+      const currentDevice = await page
+        .locator('[data-testid="current-device"]')
+        .textContent()
       expect(currentDevice).toContain('移动设备')
 
       // 检查来源页面
-      const fromPage = await page.locator('[data-testid="from-page"]').textContent()
+      const fromPage = await page
+        .locator('[data-testid="from-page"]')
+        .textContent()
       expect(fromPage).toContain('/admin')
     })
 
     test('应该显示支持的设备列表', async ({ page }) => {
       await page.goto('/device-unsupported?supportedDevices=desktop,tablet')
 
-      const supportedDevices = await page.locator('[data-testid="supported-devices"]').textContent()
+      const supportedDevices = await page
+        .locator('[data-testid="supported-devices"]')
+        .textContent()
       expect(supportedDevices).toContain('桌面设备')
       expect(supportedDevices).toContain('平板设备')
     })
@@ -190,7 +224,9 @@ test.describe('设备适配功能', () => {
       await refreshButton.click()
 
       // 页面应该刷新
-      await expect(page.locator('[data-testid="unsupported-container"]')).toBeVisible()
+      await expect(
+        page.locator('[data-testid="unsupported-container"]')
+      ).toBeVisible()
     })
   })
 
@@ -202,18 +238,24 @@ test.describe('设备适配功能', () => {
       await page.setViewportSize({ width: 1200, height: 800 })
       await page.waitForTimeout(100)
 
-      let deviceType = await page.locator('[data-testid="current-device"]').textContent()
+      let deviceType = await page
+        .locator('[data-testid="current-device"]')
+        .textContent()
       expect(deviceType).toContain('桌面设备')
 
       // 调整到移动端大小
       await page.setViewportSize({ width: 375, height: 667 })
       await page.waitForTimeout(100)
 
-      deviceType = await page.locator('[data-testid="current-device"]').textContent()
+      deviceType = await page
+        .locator('[data-testid="current-device"]')
+        .textContent()
       expect(deviceType).toContain('移动设备')
 
       // 检查组件是否也相应变化
-      const componentName = await page.locator('[data-testid="component-name"]').textContent()
+      const componentName = await page
+        .locator('[data-testid="component-name"]')
+        .textContent()
       expect(componentName).toContain('Mobile')
     })
 

@@ -9,6 +9,7 @@
 **问题：** 翻译键返回键名本身而不是翻译文本
 
 **可能原因：**
+
 1. 翻译键不存在
 2. 语言包未正确加载
 3. 当前语言设置错误
@@ -37,6 +38,7 @@ const text = i18n.t('missing.key', {}, { defaultValue: 'Default Text' })
 **问题：** 插值参数没有被正确替换
 
 **可能原因：**
+
 1. 参数名称不匹配
 2. 参数值为 undefined 或 null
 3. 插值语法错误
@@ -45,7 +47,7 @@ const text = i18n.t('missing.key', {}, { defaultValue: 'Default Text' })
 
 ```typescript
 // ❌ 错误的参数名
-i18n.t('hello.user', { username: 'John' })  // 翻译: "Hello {{name}}"
+i18n.t('hello.user', { username: 'John' }) // 翻译: "Hello {{name}}"
 
 // ✅ 正确的参数名
 i18n.t('hello.user', { name: 'John' })
@@ -66,6 +68,7 @@ console.log('Required parameters:', keys)
 **问题：** 复数规则没有按预期工作
 
 **可能原因：**
+
 1. ICU 语法错误
 2. count 参数缺失或错误
 3. 语言的复数规则不了解
@@ -96,6 +99,7 @@ console.log('Plural forms:', pluralKeys)
 **问题：** 切换语言后 Vue 组件中的翻译没有更新
 
 **可能原因：**
+
 1. 没有使用响应式的翻译方法
 2. 组件没有正确监听语言变化
 3. 使用了缓存的翻译结果
@@ -119,10 +123,10 @@ const title = computed(() => t('page.title'))
 <template>
   <!-- ✅ 直接在模板中使用 -->
   <h1>{{ t('page.title') }}</h1>
-  
+
   <!-- ✅ 使用指令 -->
   <h1 v-t="'page.title'"></h1>
-  
+
   <!-- ✅ 使用计算属性 -->
   <h1>{{ title }}</h1>
 </template>
@@ -133,6 +137,7 @@ const title = computed(() => t('page.title'))
 **问题：** 语言包无法加载或加载错误
 
 **可能原因：**
+
 1. 文件路径错误
 2. 网络请求失败
 3. 文件格式错误
@@ -144,7 +149,7 @@ const title = computed(() => t('page.title'))
 // 1. 监听加载错误
 i18n.on('loadError', (locale, error) => {
   console.error(`Failed to load ${locale}:`, error)
-  
+
   // 降级到默认语言
   if (locale !== 'en') {
     i18n.changeLanguage('en')
@@ -153,8 +158,8 @@ i18n.on('loadError', (locale, error) => {
 
 // 2. 检查文件路径
 const loader = new HttpLoader({
-  baseUrl: '/locales',  // 确保路径正确
-  fileExtension: '.json'
+  baseUrl: '/locales', // 确保路径正确
+  fileExtension: '.json',
 })
 
 // 3. 添加重试机制
@@ -163,7 +168,7 @@ class RetryLoader implements Loader {
 
   async load(locale: string): Promise<LanguagePackage> {
     let lastError: Error
-    
+
     for (let i = 0; i < this.maxRetries; i++) {
       try {
         return await this.baseLoader.load(locale)
@@ -173,7 +178,7 @@ class RetryLoader implements Loader {
         await this.delay(1000 * (i + 1)) // 递增延迟
       }
     }
-    
+
     throw lastError!
   }
 
@@ -188,6 +193,7 @@ class RetryLoader implements Loader {
 **问题：** TypeScript 编译时出现类型错误
 
 **可能原因：**
+
 1. 类型定义不匹配
 2. 模块解析问题
 3. 版本兼容性问题
@@ -233,6 +239,7 @@ declare module 'vue' {
 **问题：** 翻译性能慢或内存使用过高
 
 **可能原因：**
+
 1. 缓存配置不当
 2. 语言包过大
 3. 频繁的语言切换
@@ -260,7 +267,7 @@ class LazyLoader implements Loader {
       const module = await import(`./locales/${locale}/index.js`)
       this.loadedModules.set(locale, module.default)
     }
-    
+
     return this.loadedModules.get(locale)
   }
 }
@@ -294,12 +301,12 @@ setInterval(() => {
 ```typescript
 // 启用详细日志
 const i18n = new I18n({
-  debug: true,  // 启用调试模式
+  debug: true, // 启用调试模式
   logger: {
     log: console.log,
     warn: console.warn,
-    error: console.error
-  }
+    error: console.error,
+  },
 })
 
 // 监听所有事件
@@ -318,7 +325,7 @@ class TrackedI18n extends I18n {
   t(key: string, params?: any, options?: any): string {
     // 记录使用统计
     this.usageStats.set(key, (this.usageStats.get(key) || 0) + 1)
-    
+
     return super.t(key, params, options)
   }
 
@@ -338,7 +345,7 @@ class TrackedI18n extends I18n {
 ```typescript
 // 浏览器开发工具扩展
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).__I18N_DEVTOOLS__ = {
+  ;(window as any).__I18N_DEVTOOLS__ = {
     instance: i18n,
     changeLanguage: (locale: string) => i18n.changeLanguage(locale),
     getTranslation: (key: string) => i18n.t(key),
@@ -346,7 +353,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     validateTranslations: () => {
       const validator = new TranslationValidator()
       return validator.validate()
-    }
+    },
   }
 }
 ```
@@ -354,30 +361,35 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 ## 错误代码参考
 
 ### E001: Translation Key Not Found
+
 ```
 错误：翻译键 'xxx' 未找到
 解决：检查键名拼写，确保语言包中存在该键
 ```
 
 ### E002: Language Package Load Failed
+
 ```
 错误：语言包 'xxx' 加载失败
 解决：检查文件路径、网络连接、文件格式
 ```
 
 ### E003: Invalid Interpolation Syntax
+
 ```
 错误：插值语法错误
 解决：检查 {{}} 语法，确保参数名正确
 ```
 
 ### E004: Pluralization Rule Error
+
 ```
 错误：复数规则错误
 解决：检查 ICU 复数语法，确保提供 count 参数
 ```
 
 ### E005: Circular Reference Detected
+
 ```
 错误：检测到循环引用
 解决：检查翻译键是否相互引用

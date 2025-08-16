@@ -252,7 +252,7 @@ describe('vue Composables', () => {
 
   describe('useGeolocation', () => {
     beforeEach(() => {
-      mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+      mockGeolocation.getCurrentPosition.mockImplementation(success => {
         success({
           coords: {
             latitude: 40.7128,
@@ -325,7 +325,7 @@ describe('vue Composables', () => {
               message: 'User denied the request for Geolocation.',
             } as GeolocationPositionError)
           }
-        },
+        }
       )
 
       const TestComponent = {
@@ -340,8 +340,7 @@ describe('vue Composables', () => {
 
       try {
         await vm.getCurrentPosition()
-      }
-      catch (error) {
+      } catch (error) {
         // 预期会抛出错误
       }
       await nextTick()
@@ -373,8 +372,7 @@ describe('vue Composables', () => {
 
       try {
         await vm.getCurrentPosition()
-      }
-      catch (error) {
+      } catch (error) {
         // 预期会抛出错误
       }
       await nextTick()

@@ -38,15 +38,15 @@ async function bootstrap() {
       storageKey: 'vue-i18n-locale',
       cache: {
         enabled: true,
-        maxSize: 1000
+        maxSize: 1000,
       },
-      onLanguageChanged: (locale) => {
+      onLanguageChanged: locale => {
         console.log('Language changed to:', locale)
         document.documentElement.lang = locale
       },
       onLoadError: (locale, error) => {
         console.error(`Failed to load language '${locale}':`, error)
-      }
+      },
     })
 
     // 创建 Vue I18n 插件
@@ -58,15 +58,14 @@ async function bootstrap() {
     // 安装 I18n 插件
     app.use(vueI18nPlugin, {
       globalInjection: true,
-      globalPropertyName: '$t'
+      globalPropertyName: '$t',
     })
 
     // 挂载应用
     app.mount('#app')
 
     console.log('Vue I18n example app started successfully')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
   }
 }
@@ -83,7 +82,7 @@ import {
   useBatchTranslation,
   useConditionalTranslation,
   useI18n,
-  useLanguageSwitcher
+  useLanguageSwitcher,
 } from '@ldesign/i18n/vue'
 import { computed, onMounted, ref } from 'vue'
 
@@ -98,19 +97,11 @@ const error = ref<string>('')
 const currentLanguageInfo = computed(() => i18n.getCurrentLanguageInfo())
 
 // 批量翻译示例
-const batchTranslations = useBatchTranslation([
-  'common.save',
-  'common.cancel',
-  'common.delete'
-])
+const batchTranslations = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
 
 // 条件翻译示例
 const isOnline = ref(true)
-const conditionalStatus = useConditionalTranslation(
-  isOnline,
-  'common.online',
-  'common.offline'
-)
+const conditionalStatus = useConditionalTranslation(isOnline, 'common.online', 'common.offline')
 
 // 组件挂载时的初始化
 onMounted(() => {
@@ -143,7 +134,8 @@ i18n.on('loadError', (locale: string, err: Error) => {
       <button
         v-for="lang in availableLanguages"
         :key="lang.code"
-        class="btn" :class="[{ active: locale === lang.code }]"
+        class="btn"
+        :class="[{ active: locale === lang.code }]"
         :disabled="isChanging"
         @click="switchLanguage(lang.code)"
       >
@@ -220,15 +212,15 @@ i18n.on('loadError', (locale: string, err: Error) => {
       <h3>{{ t('examples.directive') }}</h3>
       <div class="example">
         <div class="code">
-          {{ '<div v-t="\'common.save\'"></div>' }}
+          {{ '
+          <div v-t="\'common.save\'"></div>
+          ' }}
         </div>
         <div v-t="'common.save'" class="result" />
       </div>
       <div class="example">
-        <div class="code">
-          {{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}
-        </div>
-        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example">
+        <div class="code">{{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}</div>
+        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example" />
       </div>
     </section>
 
@@ -248,12 +240,10 @@ i18n.on('loadError', (locale: string, err: Error) => {
       <h3>{{ t('examples.conditional') }}</h3>
       <div class="example">
         <label>
-          <input v-model="isOnline" type="checkbox">
+          <input v-model="isOnline" type="checkbox" />
           {{ t('common.online') }} / {{ t('common.offline') }}
         </label>
-        <div class="result">
-          {{ t('examples.status') }}: {{ conditionalStatus }}
-        </div>
+        <div class="result">{{ t('examples.status') }}: {{ conditionalStatus }}</div>
       </div>
     </section>
 
@@ -261,9 +251,7 @@ i18n.on('loadError', (locale: string, err: Error) => {
     <section class="section">
       <h3>{{ t('examples.info') }}</h3>
       <div class="example">
-        <div class="code">
-          getCurrentLanguageInfo()
-        </div>
+        <div class="code">getCurrentLanguageInfo()</div>
         <pre class="result">{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
       </div>
     </section>
@@ -428,17 +416,12 @@ const message = t('page.welcome', { name: 'Vue' })
 import { useLanguageSwitcher } from '@ldesign/i18n/vue'
 import { ref, watch } from 'vue'
 
-const {
-  locale,
-  availableLanguages,
-  isChanging,
-  switchLanguage
-} = useLanguageSwitcher()
+const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSwitcher()
 
 const currentLocale = ref(locale.value)
 
 // 监听语言变化
-watch(locale, (newLocale) => {
+watch(locale, newLocale => {
   currentLocale.value = newLocale
   // 更新页面元数据
   document.title = t('app.title')
@@ -452,16 +435,8 @@ async function handleLanguageChange() {
 
 <template>
   <div class="language-switcher">
-    <select
-      v-model="currentLocale"
-      :disabled="isChanging"
-      @change="handleLanguageChange"
-    >
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+    <select v-model="currentLocale" :disabled="isChanging" @change="handleLanguageChange">
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>
@@ -484,12 +459,12 @@ const { t } = useI18n()
 
 const form = reactive({
   name: '',
-  email: ''
+  email: '',
 })
 
 const errors = reactive({
   name: '',
-  email: ''
+  email: '',
 })
 
 const isSubmitting = ref(false)
@@ -504,8 +479,7 @@ function validateForm() {
 
   if (!form.email) {
     errors.email = t('validation.required')
-  }
-  else if (!/\S[^\s@]*@\S+\.\S+/.test(form.email)) {
+  } else if (!/\S[^\s@]*@\S+\.\S+/.test(form.email)) {
     errors.email = t('validation.email')
   }
 
@@ -513,19 +487,16 @@ function validateForm() {
 }
 
 async function handleSubmit() {
-  if (!validateForm())
-    return
+  if (!validateForm()) return
 
   isSubmitting.value = true
   try {
     // 提交表单逻辑
     await new Promise(resolve => setTimeout(resolve, 1000))
     alert(t('form.submitSuccess'))
-  }
-  catch (error) {
+  } catch (error) {
     alert(t('form.submitError'))
-  }
-  finally {
+  } finally {
     isSubmitting.value = false
   }
 }
@@ -539,7 +510,7 @@ async function handleSubmit() {
         v-model="form.name"
         :placeholder="t('form.namePlaceholder')"
         :class="{ error: errors.name }"
-      >
+      />
       <span v-if="errors.name" class="error-message">
         {{ errors.name }}
       </span>
@@ -552,7 +523,7 @@ async function handleSubmit() {
         type="email"
         :placeholder="t('form.emailPlaceholder')"
         :class="{ error: errors.email }"
-      >
+      />
       <span v-if="errors.email" class="error-message">
         {{ errors.email }}
       </span>
@@ -578,17 +549,15 @@ const { i18n, locale } = useI18n()
 const isLoading = ref(false)
 
 // 监听语言变化，动态加载语言包
-watch(locale, async (newLocale) => {
+watch(locale, async newLocale => {
   if (!i18n.isLanguageLoaded(newLocale)) {
     isLoading.value = true
     try {
       await i18n.preloadLanguage(newLocale)
       console.log(`Language ${newLocale} loaded successfully`)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Failed to load language ${newLocale}:`, error)
-    }
-    finally {
+    } finally {
       isLoading.value = false
     }
   }
@@ -608,7 +577,7 @@ const { t, i18n } = useI18n()
 i18n.addFormatter('currency', (value: number, locale: string) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(value)
 })
 
@@ -684,7 +653,7 @@ import { onErrorCaptured, ref } from 'vue'
 const { t } = useI18n()
 const error = ref<string>('')
 
-onErrorCaptured((err) => {
+onErrorCaptured(err => {
   if (err.message.includes('translation')) {
     error.value = t('errors.translationFailed')
     return false
@@ -700,12 +669,9 @@ onErrorCaptured((err) => {
 import { useBatchTranslation } from '@ldesign/i18n/vue'
 
 // 批量翻译减少函数调用
-const buttonTexts = useBatchTranslation([
-  'common.save',
-  'common.cancel',
-  'common.delete'
-])
+const buttonTexts = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
 </script>
 ```
 
-这个 Vue 3 示例展示了 @ldesign/i18n 在 Vue 项目中的完整使用方法，包括组合式 API、指令、组件设计和最佳实践。
+这个 Vue 3 示例展示了 @ldesign/i18n 在 Vue 项目中的完整使用方法，包括组合式 API、指令、组件设计和最
+佳实践。

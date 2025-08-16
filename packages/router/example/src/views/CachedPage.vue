@@ -12,11 +12,9 @@ const inputValue = ref('')
       v-model="inputValue"
       data-testid="input-field"
       placeholder="Type something to test caching"
-    >
+    />
     <p>Input value: {{ inputValue }}</p>
-    <router-link to="/">
-      Back to Home
-    </router-link>
+    <router-link to="/"> Back to Home </router-link>
   </div>
 </template>
 

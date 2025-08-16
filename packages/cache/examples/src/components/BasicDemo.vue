@@ -13,13 +13,11 @@ function useCache(options: any = {}) {
       const data = { value, timestamp: Date.now(), ...opts }
       localStorage.setItem(
         `${options.keyPrefix || ''}${key}`,
-        JSON.stringify(data),
+        JSON.stringify(data)
       )
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err as Error
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -36,8 +34,7 @@ function useCache(options: any = {}) {
         return parsed.value
       }
       return null
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err as Error
       return null
     }
@@ -58,7 +55,7 @@ function useCache(options: any = {}) {
   const clear = async () => {
     const prefix = options.keyPrefix || ''
     const keysToRemove = Object.keys(localStorage).filter(key =>
-      key.startsWith(prefix),
+      key.startsWith(prefix)
     )
     keysToRemove.forEach(key => localStorage.removeItem(key))
   }
@@ -78,7 +75,7 @@ const inputKey = ref('user-name')
 const inputValue = ref('张三')
 const getKey = ref('user-name')
 const getCacheResult = ref<any>(undefined)
-const ttlStatus = ref<{ type: string, message: string } | null>(null)
+const ttlStatus = ref<{ type: string; message: string } | null>(null)
 const allKeys = ref<string[]>([])
 
 // 设置缓存
@@ -89,8 +86,7 @@ async function setCache() {
       type: 'success',
       message: `缓存 "${inputKey.value}" 设置成功`,
     }
-  }
-  catch (err) {
+  } catch (err) {
     ttlStatus.value = {
       type: 'error',
       message: `设置失败: ${(err as Error).message}`,
@@ -102,8 +98,7 @@ async function setCache() {
 async function getCache() {
   try {
     getCacheResult.value = await get(getKey.value)
-  }
-  catch (err) {
+  } catch (err) {
     getCacheResult.value = null
     ttlStatus.value = {
       type: 'error',
@@ -117,8 +112,7 @@ async function setTTLCache() {
   try {
     await set('ttl-demo', '这是一个5秒后过期的缓存', { ttl: 5000 })
     ttlStatus.value = { type: 'success', message: 'TTL缓存设置成功，5秒后过期' }
-  }
-  catch (err) {
+  } catch (err) {
     ttlStatus.value = {
       type: 'error',
       message: `TTL设置失败: ${(err as Error).message}`,
@@ -133,12 +127,10 @@ async function checkTTLCache() {
     if (exists) {
       const value = await get('ttl-demo')
       ttlStatus.value = { type: 'success', message: `TTL缓存存在: ${value}` }
-    }
-    else {
+    } else {
       ttlStatus.value = { type: 'info', message: 'TTL缓存已过期或不存在' }
     }
-  }
-  catch (err) {
+  } catch (err) {
     ttlStatus.value = {
       type: 'error',
       message: `检查失败: ${(err as Error).message}`,
@@ -160,8 +152,7 @@ async function setBatchCache() {
 
     ttlStatus.value = { type: 'success', message: '批量设置成功' }
     await getAllKeys() // 刷新键列表
-  }
-  catch (err) {
+  } catch (err) {
     ttlStatus.value = {
       type: 'error',
       message: `批量设置失败: ${(err as Error).message}`,
@@ -173,8 +164,7 @@ async function setBatchCache() {
 async function getAllKeys() {
   try {
     allKeys.value = await keys()
-  }
-  catch (err) {
+  } catch (err) {
     ttlStatus.value = {
       type: 'error',
       message: `获取键列表失败: ${(err as Error).message}`,
@@ -189,8 +179,7 @@ async function clearAllCache() {
     allKeys.value = []
     getCacheResult.value = undefined
     ttlStatus.value = { type: 'success', message: '缓存已清空' }
-  }
-  catch (err) {
+  } catch (err) {
     ttlStatus.value = {
       type: 'error',
       message: `清空失败: ${(err as Error).message}`,
@@ -215,7 +204,7 @@ async function clearAllCache() {
           border: 1px solid #ddd;
           border-radius: 4px;
         "
-      >
+      />
       <input
         v-model="inputValue"
         placeholder="输入值"
@@ -225,10 +214,8 @@ async function clearAllCache() {
           border: 1px solid #ddd;
           border-radius: 4px;
         "
-      >
-      <button class="btn" @click="setCache">
-        设置缓存
-      </button>
+      />
+      <button class="btn" @click="setCache">设置缓存</button>
     </div>
 
     <div class="demo-section">
@@ -242,10 +229,8 @@ async function clearAllCache() {
           border: 1px solid #ddd;
           border-radius: 4px;
         "
-      >
-      <button class="btn" @click="getCache">
-        获取缓存
-      </button>
+      />
+      <button class="btn" @click="getCache">获取缓存</button>
 
       <div v-if="getCacheResult" class="status success">
         获取结果: {{ getCacheResult }}
@@ -257,12 +242,8 @@ async function clearAllCache() {
 
     <div class="demo-section">
       <h4>TTL 演示</h4>
-      <button class="btn" @click="setTTLCache">
-        设置5秒过期缓存
-      </button>
-      <button class="btn secondary" @click="checkTTLCache">
-        检查TTL缓存
-      </button>
+      <button class="btn" @click="setTTLCache">设置5秒过期缓存</button>
+      <button class="btn secondary" @click="checkTTLCache">检查TTL缓存</button>
 
       <div v-if="ttlStatus" class="status" :class="ttlStatus.type">
         {{ ttlStatus.message }}
@@ -271,28 +252,18 @@ async function clearAllCache() {
 
     <div class="demo-section">
       <h4>批量操作</h4>
-      <button class="btn" @click="setBatchCache">
-        批量设置
-      </button>
-      <button class="btn secondary" @click="getAllKeys">
-        获取所有键
-      </button>
-      <button class="btn danger" @click="clearAllCache">
-        清空缓存
-      </button>
+      <button class="btn" @click="setBatchCache">批量设置</button>
+      <button class="btn secondary" @click="getAllKeys">获取所有键</button>
+      <button class="btn danger" @click="clearAllCache">清空缓存</button>
 
       <div v-if="allKeys.length > 0" class="code">
         所有键名: {{ allKeys.join(', ') }}
       </div>
     </div>
 
-    <div v-if="loading" class="status info">
-      操作中...
-    </div>
+    <div v-if="loading" class="status info">操作中...</div>
 
-    <div v-if="error" class="status error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="error" class="status error">错误: {{ error.message }}</div>
   </div>
 </template>
 

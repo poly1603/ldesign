@@ -6,7 +6,7 @@
 global.navigator = {
   ...global.navigator,
   geolocation: {
-    getCurrentPosition: vi.fn((success) => {
+    getCurrentPosition: vi.fn(success => {
       success({
         coords: {
           latitude: 30.4596106,
@@ -31,7 +31,7 @@ global.navigator = {
       dischargingTime: null,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
-    }),
+    })
   ),
   connection: {
     effectiveType: '4g',

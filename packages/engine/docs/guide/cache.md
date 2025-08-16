@@ -74,7 +74,7 @@ engine.cache.setStrategy('api-data', {
   evictionPolicy: 'lru', // 最近最少使用
 
   // 序列化方式
-  serializer: 'json'
+  serializer: 'json',
 })
 ```
 
@@ -116,8 +116,7 @@ async function getDataWithProtection(key: string) {
         // 缓存数据（即使是null也要缓存，防止穿透）
         engine.cache.set(key, data || null, 300000)
       }
-    }
-    finally {
+    } finally {
       await engine.cache.releaseLock(lock)
     }
   }
@@ -132,22 +131,22 @@ async function getDataWithProtection(key: string) {
 
 ```typescript
 // 监听缓存设置事件
-engine.events.on('cache:set', (event) => {
+engine.events.on('cache:set', event => {
   console.log(`缓存设置: ${event.key} = ${event.value}`)
 })
 
 // 监听缓存获取事件
-engine.events.on('cache:get', (event) => {
+engine.events.on('cache:get', event => {
   console.log(`缓存${event.hit ? '命中' : '未命中'}: ${event.key}`)
 })
 
 // 监听缓存过期事件
-engine.events.on('cache:expired', (event) => {
+engine.events.on('cache:expired', event => {
   console.log(`缓存过期: ${event.key}`)
 })
 
 // 监听缓存清理事件
-engine.events.on('cache:evicted', (event) => {
+engine.events.on('cache:evicted', event => {
   console.log(`缓存淘汰: ${event.key} (原因: ${event.reason})`)
 })
 ```
@@ -162,7 +161,7 @@ console.log('缓存统计:', {
   命中率: stats.hitRate,
   未命中数: stats.misses,
   命中数: stats.hits,
-  内存使用: stats.memoryUsage
+  内存使用: stats.memoryUsage,
 })
 ```
 
@@ -191,7 +190,7 @@ const engine = createEngine({
       serializer: 'json', // 'json' | 'msgpack' | 'custom'
 
       // 压缩
-      compression: true
+      compression: true,
     },
 
     // 持久化配置
@@ -203,7 +202,7 @@ const engine = createEngine({
       storage: 'localStorage',
 
       // 持久化键前缀
-      keyPrefix: 'engine-cache:'
+      keyPrefix: 'engine-cache:',
     },
 
     // 性能配置
@@ -215,9 +214,9 @@ const engine = createEngine({
       cleanupInterval: 60000,
 
       // 批量操作大小
-      batchSize: 100
-    }
-  }
+      batchSize: 100,
+    },
+  },
 })
 ```
 
@@ -262,10 +261,7 @@ class UserService {
 class ConfigService {
   async setConfig(key: string, value: any) {
     // 同时写入缓存和持久化存储
-    await Promise.all([
-      engine.cache.set(`config:${key}`, value),
-      this.saveConfigToDB(key, value)
-    ])
+    await Promise.all([engine.cache.set(`config:${key}`, value), this.saveConfigToDB(key, value)])
   }
 
   async getConfig(key: string) {
@@ -310,8 +306,7 @@ class LogService {
   }
 
   private async flushWriteQueue() {
-    if (this.writeQueue.size === 0)
-      return
+    if (this.writeQueue.size === 0) return
 
     const events = Array.from(this.writeQueue.values())
     this.writeQueue.clear()
@@ -332,7 +327,7 @@ const cacheKeys = {
   user: (id: string) => `user:${id}`,
   userProfile: (id: string) => `user:${id}:profile`,
   userPosts: (id: string, page: number) => `user:${id}:posts:${page}`,
-  apiResponse: (endpoint: string, params: string) => `api:${endpoint}:${params}`
+  apiResponse: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
 }
 
 // 使用键前缀进行分组
@@ -368,11 +363,7 @@ class CacheInvalidationService {
 ```typescript
 class CachePreloader {
   async preloadCriticalData() {
-    const tasks = [
-      this.preloadUserData(),
-      this.preloadConfigData(),
-      this.preloadStaticData()
-    ]
+    const tasks = [this.preloadUserData(), this.preloadConfigData(), this.preloadStaticData()]
 
     await Promise.all(tasks)
     engine.logger.info('关键数据预加载完成')
@@ -381,9 +372,7 @@ class CachePreloader {
   private async preloadUserData() {
     const activeUsers = await this.getActiveUsers()
 
-    const promises = activeUsers.map(user =>
-      engine.cache.set(`user:${user.id}`, user, 3600000)
-    )
+    const promises = activeUsers.map(user => engine.cache.set(`user:${user.id}`, user, 3600000))
 
     await Promise.all(promises)
   }
@@ -429,7 +418,7 @@ class CacheMonitor {
 const batchData = new Map([
   ['user:1', userData1],
   ['user:2', userData2],
-  ['user:3', userData3]
+  ['user:3', userData3],
 ])
 
 await engine.cache.setMany(batchData)
@@ -445,7 +434,7 @@ const results = await engine.cache.getMany(keys)
 // 异步缓存更新
 async function updateCacheAsync(key: string, data: any) {
   // 不等待缓存写入完成
-  engine.cache.set(key, data).catch((error) => {
+  engine.cache.set(key, data).catch(error => {
     engine.logger.error('缓存写入失败:', error)
   })
 
@@ -461,7 +450,7 @@ engine.cache.configure({
   maxMemoryUsage: 100 * 1024 * 1024, // 100MB
 
   // 内存压力时的处理策略
-  memoryPressureHandler: (usage) => {
+  memoryPressureHandler: usage => {
     if (usage > 0.9) {
       // 清理过期缓存
       engine.cache.cleanupExpired()
@@ -469,7 +458,7 @@ engine.cache.configure({
       // 清理最少使用的缓存
       engine.cache.evictLRU(0.1) // 清理10%
     }
-  }
+  },
 })
 ```
 
@@ -479,8 +468,7 @@ engine.cache.configure({
 try {
   const data = engine.cache.get('some-key')
   // 处理数据
-}
-catch (error) {
+} catch (error) {
   engine.logger.error('缓存操作失败:', error)
 
   // 降级处理
@@ -527,10 +515,9 @@ const cacheMiddleware = {
       if (response.status === 200) {
         engine.cache.set(cacheKey, response, 300000) // 5分钟
       }
-    }
-    else {
+    } else {
       context.response = response
     }
-  }
+  },
 }
 ```

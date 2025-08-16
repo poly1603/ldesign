@@ -18,7 +18,7 @@ console.log('加密结果:', encrypted)
 
 // 解密
 const decrypted = des.decrypt(encrypted.data!, key, {
-  iv: encrypted.iv
+  iv: encrypted.iv,
 })
 console.log('解密结果:', decrypted.data)
 ```
@@ -33,22 +33,22 @@ const key = 'secret12'
 
 // CBC 模式（默认）
 const cbcEncrypted = des.encrypt(data, key, {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 // ECB 模式
 const ecbEncrypted = des.encrypt(data, key, {
-  mode: 'ECB'
+  mode: 'ECB',
 })
 
 // CFB 模式
 const cfbEncrypted = des.encrypt(data, key, {
-  mode: 'CFB'
+  mode: 'CFB',
 })
 
 // OFB 模式
 const ofbEncrypted = des.encrypt(data, key, {
-  mode: 'OFB'
+  mode: 'OFB',
 })
 ```
 
@@ -66,13 +66,13 @@ const customIV = RandomUtils.generateIV(8) // DES IV 长度为 8 字节
 // 使用自定义 IV 加密
 const encrypted = des.encrypt(data, key, {
   iv: customIV,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 // 解密时使用相同的 IV
 const decrypted = des.decrypt(encrypted.data!, key, {
   iv: customIV,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 ```
 
@@ -87,7 +87,7 @@ const key = 'secret12'
 
 // 加密
 const encrypted = desEncryptor.encrypt(data, key, {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 if (encrypted.success) {
@@ -97,17 +97,15 @@ if (encrypted.success) {
   // 解密
   const decrypted = desEncryptor.decrypt(encrypted.data!, key, {
     iv: encrypted.iv,
-    mode: 'CBC'
+    mode: 'CBC',
   })
 
   if (decrypted.success) {
     console.log('解密成功:', decrypted.data)
-  }
-  else {
+  } else {
     console.error('解密失败:', decrypted.error)
   }
-}
-else {
+} else {
   console.error('加密失败:', encrypted.error)
 }
 ```
@@ -125,7 +123,7 @@ console.log('随机密钥:', randomKey) // 8 字节密钥
 const data = 'Hello, World!'
 const encrypted = des.encrypt(data, randomKey)
 const decrypted = des.decrypt(encrypted.data!, randomKey, {
-  iv: encrypted.iv
+  iv: encrypted.iv,
 })
 ```
 
@@ -144,15 +142,14 @@ if (encrypted.success) {
   // 尝试用错误的密钥解密
   const wrongKey = 'wrong123'
   const decrypted = des.decrypt(encrypted.data!, wrongKey, {
-    iv: encrypted.iv
+    iv: encrypted.iv,
   })
 
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
     // 处理解密错误
   }
-}
-else {
+} else {
   console.error('加密失败:', encrypted.error)
   // 处理加密错误
 }
@@ -180,13 +177,16 @@ function handleEncrypt() {
   const result = des.encrypt(plaintext.value, key.value)
 
   if (result.success) {
-    encrypted.value = JSON.stringify({
-      data: result.data,
-      iv: result.iv
-    }, null, 2)
+    encrypted.value = JSON.stringify(
+      {
+        data: result.data,
+        iv: result.iv,
+      },
+      null,
+      2
+    )
     error.value = ''
-  }
-  else {
+  } else {
     error.value = result.error || '加密失败'
   }
 }
@@ -200,18 +200,16 @@ function handleDecrypt() {
   try {
     const encryptedData = JSON.parse(encrypted.value)
     const result = des.decrypt(encryptedData.data, key.value, {
-      iv: encryptedData.iv
+      iv: encryptedData.iv,
     })
 
     if (result.success) {
       decrypted.value = result.data || ''
       error.value = ''
-    }
-    else {
+    } else {
       error.value = result.error || '解密失败'
     }
-  }
-  catch (e) {
+  } catch (e) {
     error.value = '解析加密数据失败'
   }
 }
@@ -223,26 +221,20 @@ function handleDecrypt() {
 
     <div class="form-group">
       <label>明文:</label>
-      <input v-model="plaintext" placeholder="输入要加密的文本">
+      <input v-model="plaintext" placeholder="输入要加密的文本" />
     </div>
 
     <div class="form-group">
       <label>密钥 (8字节):</label>
-      <input v-model="key" placeholder="输入8字节密钥" maxlength="8">
+      <input v-model="key" placeholder="输入8字节密钥" maxlength="8" />
     </div>
 
     <div class="buttons">
-      <button @click="handleEncrypt">
-        加密
-      </button>
-      <button :disabled="!encrypted" @click="handleDecrypt">
-        解密
-      </button>
+      <button @click="handleEncrypt">加密</button>
+      <button :disabled="!encrypted" @click="handleDecrypt">解密</button>
     </div>
 
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
+    <div v-if="error" class="error">错误: {{ error }}</div>
 
     <div v-if="encrypted" class="result">
       <h4>加密结果:</h4>

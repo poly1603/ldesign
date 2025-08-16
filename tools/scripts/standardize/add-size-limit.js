@@ -21,20 +21,19 @@ const sizeLimits = {
 }
 
 // 获取所有包目录
-const packageDirs = readdirSync(packagesDir).filter((dir) => {
+const packageDirs = readdirSync(packagesDir).filter(dir => {
   try {
     const packageJsonPath = join(packagesDir, dir, 'package.json')
     readFileSync(packageJsonPath, 'utf-8')
     return true
-  }
-  catch {
+  } catch {
     return false
   }
 })
 
 console.log('📏 开始添加 size-limit 配置...')
 
-packageDirs.forEach((dir) => {
+packageDirs.forEach(dir => {
   const packagePath = join(packagesDir, dir)
   const packageJsonPath = join(packagePath, 'package.json')
 
@@ -56,9 +55,12 @@ packageDirs.forEach((dir) => {
     }
 
     writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
-    console.log(`✅ 添加 size-limit: ${packageJson.name} (${sizeLimits[packageName] || '50 KB'})`)
-  }
-  catch (error) {
+    console.log(
+      `✅ 添加 size-limit: ${packageJson.name} (${
+        sizeLimits[packageName] || '50 KB'
+      })`
+    )
+  } catch (error) {
     console.error(`❌ 添加失败: ${dir}`, error.message)
   }
 })

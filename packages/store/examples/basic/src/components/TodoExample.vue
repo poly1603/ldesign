@@ -41,17 +41,16 @@ function getFilterCount(filter: 'all' | 'active' | 'completed') {
         placeholder="添加新的待办事项..."
         class="input"
         @keyup.enter="addTodo"
-      >
-      <button class="btn btn-primary" @click="addTodo">
-        添加
-      </button>
+      />
+      <button class="btn btn-primary" @click="addTodo">添加</button>
     </div>
 
     <div class="filters">
       <button
         v-for="filterOption in filters"
         :key="filterOption.value"
-        class="filter-btn" :class="[{ active: store.filter === filterOption.value }]"
+        class="filter-btn"
+        :class="[{ active: store.filter === filterOption.value }]"
         @click="store.setFilter(filterOption.value)"
       >
         {{ filterOption.label }}
@@ -63,27 +62,22 @@ function getFilterCount(filter: 'all' | 'active' | 'completed') {
       <div
         v-for="todo in store.filteredTodos"
         :key="todo.id"
-        class="todo-item" :class="[{ completed: todo.completed }]"
+        class="todo-item"
+        :class="[{ completed: todo.completed }]"
       >
         <input
           type="checkbox"
           :checked="todo.completed"
           class="checkbox"
           @change="store.toggleTodo(todo.id)"
-        >
+        />
         <span class="todo-text">{{ todo.text }}</span>
-        <button class="remove-btn" @click="store.removeTodo(todo.id)">
-          ×
-        </button>
+        <button class="remove-btn" @click="store.removeTodo(todo.id)">×</button>
       </div>
 
       <div v-if="store.filteredTodos.length === 0" class="empty-state">
-        <p v-if="store.totalCount === 0">
-          还没有待办事项
-        </p>
-        <p v-else>
-          没有符合条件的待办事项
-        </p>
+        <p v-if="store.totalCount === 0">还没有待办事项</p>
+        <p v-else>没有符合条件的待办事项</p>
       </div>
     </div>
 

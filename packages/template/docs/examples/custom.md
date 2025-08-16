@@ -26,7 +26,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: '表单向导',
-  initialData: () => ({})
+  initialData: () => ({}),
 })
 
 const emit = defineEmits<{
@@ -57,7 +57,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 const isFormValid = computed(() => {
-  return props.steps.every((step) => {
+  return props.steps.every(step => {
     if (step.validation) {
       return step.validation(formData.value)
     }
@@ -95,7 +95,7 @@ function submit() {
 }
 
 // 监听步骤变化
-watch(currentStep, (newStep) => {
+watch(currentStep, newStep => {
   emit('stepChange', newStep, formData.value)
   props.onStepChange?.(newStep, formData.value)
 })
@@ -110,10 +110,13 @@ watch(currentStep, (newStep) => {
           <div
             v-for="(step, index) in steps"
             :key="step.id"
-            class="step" :class="[{
-              active: index === currentStep,
-              completed: index < currentStep,
-            }]"
+            class="step"
+            :class="[
+              {
+                active: index === currentStep,
+                completed: index < currentStep,
+              },
+            ]"
           >
             {{ index + 1 }}
           </div>
@@ -146,11 +149,7 @@ watch(currentStep, (newStep) => {
         :submit="submit"
       >
         <div class="wizard-actions">
-          <button
-            v-if="canGoBack"
-            class="btn btn-secondary"
-            @click="goBack"
-          >
+          <button v-if="canGoBack" class="btn btn-secondary" @click="goBack">
             上一步
           </button>
 
@@ -287,11 +286,7 @@ watch(currentStep, (newStep) => {
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const stepDescriptions = [
-  '请填写基本信息',
-  '请设置账户信息',
-  '请确认注册信息'
-]
+const stepDescriptions = ['请填写基本信息', '请设置账户信息', '请确认注册信息']
 
 const wizardProps = ref({
   title: '用户注册',
@@ -300,26 +295,26 @@ const wizardProps = ref({
       id: 'basic',
       title: '基本信息',
       component: 'BasicInfoStep',
-      validation: (data: any) => data.name && data.email
+      validation: (data: any) => data.name && data.email,
     },
     {
       id: 'account',
       title: '账户信息',
       component: 'AccountInfoStep',
-      validation: (data: any) => data.username && data.password
+      validation: (data: any) => data.username && data.password,
     },
     {
       id: 'confirm',
       title: '确认信息',
       component: 'ConfirmStep',
-      validation: () => true
-    }
+      validation: () => true,
+    },
   ],
   initialData: {
     name: '',
     email: '',
     username: '',
-    password: ''
+    password: '',
   },
   onStepChange: (step: number, data: any) => {
     console.log('步骤变化:', step, data)
@@ -327,7 +322,7 @@ const wizardProps = ref({
   onSubmit: (data: any) => {
     console.log('提交数据:', data)
     alert('注册成功！')
-  }
+  },
 })
 
 function onStepChange(step: number, data: any) {
@@ -368,21 +363,17 @@ function onFormSubmit(data: any) {
       </template>
 
       <!-- 自定义底部 -->
-      <template #footer="{ currentStep, canGoBack, canGoNext, goBack, goNext, submit }">
+      <template
+        #footer="{ currentStep, canGoBack, canGoNext, goBack, goNext, submit }"
+      >
         <div class="custom-footer">
           <div class="step-info">
             {{ stepDescriptions[currentStep] }}
           </div>
           <div class="actions">
-            <button v-if="canGoBack" @click="goBack">
-              ← 返回
-            </button>
-            <button v-if="canGoNext" @click="goNext">
-              继续 →
-            </button>
-            <button v-else class="submit-btn" @click="submit">
-              完成注册
-            </button>
+            <button v-if="canGoBack" @click="goBack">← 返回</button>
+            <button v-if="canGoNext" @click="goNext">继续 →</button>
+            <button v-else class="submit-btn" @click="submit">完成注册</button>
           </div>
         </div>
       </template>
@@ -477,7 +468,7 @@ const props = withDefaults(defineProps<Props>(), {
   pageSize: 10,
   pagination: true,
   searchable: true,
-  hasActions: true
+  hasActions: true,
 })
 
 const emit = defineEmits<{
@@ -494,8 +485,7 @@ const currentPage = ref(1)
 
 // 计算属性
 const filteredData = computed(() => {
-  if (!searchQuery.value)
-    return props.data
+  if (!searchQuery.value) return props.data
 
   return props.data.filter(row =>
     Object.values(row).some(value =>
@@ -505,17 +495,14 @@ const filteredData = computed(() => {
 })
 
 const sortedData = computed(() => {
-  if (!sortKey.value)
-    return filteredData.value
+  if (!sortKey.value) return filteredData.value
 
   return [...filteredData.value].sort((a, b) => {
     const aVal = a[sortKey.value]
     const bVal = b[sortKey.value]
 
-    if (aVal < bVal)
-      return sortDirection.value === 'asc' ? -1 : 1
-    if (aVal > bVal)
-      return sortDirection.value === 'asc' ? 1 : -1
+    if (aVal < bVal) return sortDirection.value === 'asc' ? -1 : 1
+    if (aVal > bVal) return sortDirection.value === 'asc' ? 1 : -1
     return 0
   })
 })
@@ -525,8 +512,7 @@ const totalPages = computed(() =>
 )
 
 const paginatedData = computed(() => {
-  if (!props.pagination)
-    return sortedData.value
+  if (!props.pagination) return sortedData.value
 
   const start = (currentPage.value - 1) * props.pageSize
   const end = start + props.pageSize
@@ -537,8 +523,7 @@ const paginatedData = computed(() => {
 function sort(key: string) {
   if (sortKey.value === key) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  }
-  else {
+  } else {
     sortKey.value = key
     sortDirection.value = 'asc'
   }
@@ -547,8 +532,7 @@ function sort(key: string) {
 }
 
 function getSortIndicator(key: string) {
-  if (sortKey.value !== key)
-    return '↕'
+  if (sortKey.value !== key) return '↕'
   return sortDirection.value === 'asc' ? '↑' : '↓'
 }
 
@@ -587,7 +571,7 @@ watch(searchQuery, () => {
             type="text"
             placeholder="搜索..."
             class="search-input"
-          >
+          />
           <slot name="actions" />
         </div>
       </slot>
@@ -608,13 +592,14 @@ watch(searchQuery, () => {
                 {{ getSortIndicator(column.key) }}
               </span>
             </th>
-            <th v-if="hasActions" class="actions-column">
-              操作
-            </th>
+            <th v-if="hasActions" class="actions-column">操作</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, index) in paginatedData" :key="getRowKey(row, index)">
+          <tr
+            v-for="(row, index) in paginatedData"
+            :key="getRowKey(row, index)"
+          >
             <td v-for="column in columns" :key="column.key">
               <slot
                 :name="`column-${column.key}`"

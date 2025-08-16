@@ -1,7 +1,4 @@
-import type {
-  ActionDecoratorOptions,
-  DecoratorMetadata,
-} from '@/types'
+import type { ActionDecoratorOptions, DecoratorMetadata } from '@/types'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 import 'reflect-metadata'
 
@@ -27,14 +24,18 @@ import 'reflect-metadata'
  * ```
  */
 export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
-  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
+  ) {
     if (typeof propertyKey === 'symbol') {
       throw new TypeError('Action decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[]
-      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[] =
+      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -44,7 +45,11 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
     }
 
     existingMetadata.push(newMetadata)
-    Reflect.defineMetadata(DECORATOR_METADATA_KEY, existingMetadata, target.constructor)
+    Reflect.defineMetadata(
+      DECORATOR_METADATA_KEY,
+      existingMetadata,
+      target.constructor
+    )
 
     // 保存原始方法
     const originalMethod = descriptor.value
@@ -54,7 +59,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
     }
 
     // 创建缓存 Map（如果需要缓存）
-    let cache: Map<string, { result: any, timestamp: number }> | undefined
+    let cache: Map<string, { result: any; timestamp: number }> | undefined
     if (options.cache) {
       cache = new Map()
       // 定期清理过期缓存
@@ -78,7 +83,10 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
         const cached = cache.get(cacheKey)
         const now = Date.now()
 
-        if (cached && (!options.cacheTime || (now - cached.timestamp) < options.cacheTime)) {
+        if (
+          cached &&
+          (!options.cacheTime || now - cached.timestamp < options.cacheTime)
+        ) {
           return cached.result
         }
       }
@@ -90,12 +98,11 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
         }
 
         return new Promise((resolve, reject) => {
-          (this as any)[`_debounce_${propertyKey}`] = setTimeout(async () => {
+          ;(this as any)[`_debounce_${propertyKey}`] = setTimeout(async () => {
             try {
               const result = await originalMethod.apply(this, args)
               resolve(result)
-            }
-            catch (error) {
+            } catch (error) {
               reject(error)
             }
           }, options.debounce)
@@ -111,7 +118,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
           return (this as any)[`_throttle_${propertyKey}_result`]
         }
 
-        (this as any)[`_throttle_${propertyKey}_last`] = now
+        ;(this as any)[`_throttle_${propertyKey}_last`] = now
       }
 
       // 执行原始方法
@@ -119,23 +126,25 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
 
       // 处理异步结果
       if (options.async && result instanceof Promise) {
-        return result.then((res: any) => {
-          // 缓存结果
-          if (options.cache && cache) {
-            const cacheKey = JSON.stringify(args)
-            cache.set(cacheKey, { result: res, timestamp: Date.now() })
-          }
+        return result
+          .then((res: any) => {
+            // 缓存结果
+            if (options.cache && cache) {
+              const cacheKey = JSON.stringify(args)
+              cache.set(cacheKey, { result: res, timestamp: Date.now() })
+            }
 
-          // 保存节流结果
-          if (options.throttle) {
-            (this as any)[`_throttle_${propertyKey}_result`] = res
-          }
+            // 保存节流结果
+            if (options.throttle) {
+              ;(this as any)[`_throttle_${propertyKey}_result`] = res
+            }
 
-          return res
-        }).catch((error: any) => {
-          console.error(`Action ${propertyKey} failed:`, error)
-          throw error
-        })
+            return res
+          })
+          .catch((error: any) => {
+            console.error(`Action ${propertyKey} failed:`, error)
+            throw error
+          })
       }
 
       // 缓存同步结果
@@ -146,7 +155,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
 
       // 保存节流结果
       if (options.throttle) {
-        (this as any)[`_throttle_${propertyKey}_result`] = result
+        ;(this as any)[`_throttle_${propertyKey}_result`] = result
       }
 
       return result
@@ -160,7 +169,9 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
  * 异步 Action 装饰器
  * 专门用于异步操作的 Action
  */
-export function AsyncAction(options: Omit<ActionDecoratorOptions, 'async'> = {}): MethodDecorator {
+export function AsyncAction(
+  options: Omit<ActionDecoratorOptions, 'async'> = {}
+): MethodDecorator {
   return Action({
     ...options,
     async: true,

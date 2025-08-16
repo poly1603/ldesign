@@ -55,7 +55,7 @@ export const SizeSwitcher = defineComponent({
 
     const renderButtonSwitcher = () => (
       <div class={`size-switcher size-switcher--button ${props.className}`}>
-        <div class="size-switcher__buttons">
+        <div class='size-switcher__buttons'>
           {availableModes.map(mode => (
             <button
               key={mode}
@@ -77,7 +77,7 @@ export const SizeSwitcher = defineComponent({
     const renderSelectSwitcher = () => (
       <div class={`size-switcher size-switcher--select ${props.className}`}>
         <select
-          class="size-switcher__select"
+          class='size-switcher__select'
           value={currentMode.value}
           onChange={(e: Event) => {
             const target = e.target as HTMLSelectElement
@@ -95,18 +95,18 @@ export const SizeSwitcher = defineComponent({
 
     const renderRadioSwitcher = () => (
       <div class={`size-switcher size-switcher--radio ${props.className}`}>
-        <div class="size-switcher__radios">
+        <div class='size-switcher__radios'>
           {availableModes.map(mode => (
-            <label key={mode} class="size-switcher__radio-label">
+            <label key={mode} class='size-switcher__radio-label'>
               <input
-                type="radio"
-                class="size-switcher__radio"
-                name="size-mode"
+                type='radio'
+                class='size-switcher__radio'
+                name='size-mode'
                 value={mode}
                 checked={currentMode.value === mode}
                 onChange={() => handleModeChange(mode)}
               />
-              <span class="size-switcher__radio-text">
+              <span class='size-switcher__radio-text'>
                 {getModeDisplayName(mode)}
               </span>
             </label>
@@ -132,11 +132,7 @@ export const SizeSwitcher = defineComponent({
         return null
       }
 
-      return (
-        <div class="size-switcher-wrapper">
-          {renderSwitcher()}
-        </div>
-      )
+      return <div class='size-switcher-wrapper'>{renderSwitcher()}</div>
     }
   },
 })
@@ -166,18 +162,12 @@ export const SizeIndicator = defineComponent({
     return () => (
       <div class={`size-indicator ${props.className}`}>
         {props.showMode && (
-          <span class="size-indicator__mode">
-            当前尺寸:
-            {' '}
-            {currentModeDisplayName.value}
+          <span class='size-indicator__mode'>
+            当前尺寸: {currentModeDisplayName.value}
           </span>
         )}
         {props.showScale && (
-          <span class="size-indicator__scale">
-            (
-            {currentMode.value}
-            )
-          </span>
+          <span class='size-indicator__scale'>({currentMode.value})</span>
         )}
       </div>
     )
@@ -216,11 +206,11 @@ export const SizeControlPanel = defineComponent({
     return () => (
       <div class={`size-control-panel ${props.className}`}>
         {props.showIndicator && (
-          <SizeIndicator class="size-control-panel__indicator" />
+          <SizeIndicator class='size-control-panel__indicator' />
         )}
         {props.showSwitcher && (
           <SizeSwitcher
-            class="size-control-panel__switcher"
+            class='size-control-panel__switcher'
             switcherStyle={props.switcherStyle}
             onChange={handleChange}
           />

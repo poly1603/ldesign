@@ -36,21 +36,17 @@ export function deepMerge<T extends Record<string, any>>(
   target: T,
   ...sources: Partial<T>[]
 ): T {
-  if (!sources.length)
-    return target
+  if (!sources.length) return target
 
   const source = sources.shift()
-  if (!source)
-    return target
+  if (!source) return target
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       if (isObject(source[key])) {
-        if (!target[key])
-          Object.assign(target, { [key]: {} })
+        if (!target[key]) Object.assign(target, { [key]: {} })
         deepMerge(target[key], source[key])
-      }
-      else {
+      } else {
         Object.assign(target, { [key]: source[key] })
       }
     }
@@ -212,7 +208,8 @@ export function capitalize(str: string): string {
  */
 export function camelCase(str: string): string {
   return str.replace(/[-_\s]+(.)?/g, (_, char) =>
-    char ? char.toUpperCase() : '')
+    char ? char.toUpperCase() : ''
+  )
 }
 
 /**
@@ -248,7 +245,7 @@ export function unique<T>(arr: T[]): T[] {
  */
 export function groupBy<T>(
   arr: T[],
-  key: string | ((item: T) => string),
+  key: string | ((item: T) => string)
 ): Record<string, T[]> {
   return arr.reduce((groups, item) => {
     const groupKey = typeof key === 'function' ? key(item) : get(item, key)
@@ -266,16 +263,14 @@ export function groupBy<T>(
 export function sortBy<T>(
   arr: T[],
   key: string | ((item: T) => any),
-  order: 'asc' | 'desc' = 'asc',
+  order: 'asc' | 'desc' = 'asc'
 ): T[] {
   return [...arr].sort((a, b) => {
     const aVal = typeof key === 'function' ? key(a) : get(a, key)
     const bVal = typeof key === 'function' ? key(b) : get(b, key)
 
-    if (aVal < bVal)
-      return order === 'asc' ? -1 : 1
-    if (aVal > bVal)
-      return order === 'asc' ? 1 : -1
+    if (aVal < bVal) return order === 'asc' ? -1 : 1
+    if (aVal > bVal) return order === 'asc' ? 1 : -1
     return 0
   })
 }
@@ -302,15 +297,14 @@ export function delay(ms: number): Promise<void> {
 export async function retryAsync<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
-  delayMs: number = 1000,
+  delayMs: number = 1000
 ): Promise<T> {
   let lastError: Error
 
   for (let i = 0; i <= maxRetries; i++) {
     try {
       return await fn()
-    }
-    catch (error) {
+    } catch (error) {
       lastError = error as Error
       if (i < maxRetries) {
         await delay(delayMs)
@@ -338,14 +332,14 @@ export function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  */
 export async function parallel<T>(
   tasks: (() => Promise<T>)[],
-  concurrency: number = 5,
+  concurrency: number = 5
 ): Promise<T[]> {
   const results: T[] = []
   const executing: Promise<void>[] = []
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i]
-    const promise = task().then((result) => {
+    const promise = task().then(result => {
       results[i] = result
     })
 
@@ -355,7 +349,7 @@ export async function parallel<T>(
       await Promise.race(executing)
       executing.splice(
         executing.findIndex(p => p === promise),
-        1,
+        1
       )
     }
   }
@@ -389,14 +383,12 @@ export function cancellable<T>(promise: Promise<T>): {
 
   const cancellablePromise = new Promise<T>((resolve, reject) => {
     promise.then(
-      (value) => {
-        if (!cancelled)
-          resolve(value)
+      value => {
+        if (!cancelled) resolve(value)
       },
-      (error) => {
-        if (!cancelled)
-          reject(error)
-      },
+      error => {
+        if (!cancelled) reject(error)
+      }
     )
   })
 
@@ -412,8 +404,7 @@ export function cancellable<T>(promise: Promise<T>): {
  * 格式化文件大小
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
 
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']

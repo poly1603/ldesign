@@ -37,11 +37,7 @@ const { availableTemplates: mobileTemplates } = useTemplate({
 
 // 所有模板（使用markRaw优化性能）
 const allAvailableTemplates = computed(() => {
-  const allTemplates = [
-    ...desktopTemplates.value,
-    ...tabletTemplates.value,
-    ...mobileTemplates.value,
-  ]
+  const allTemplates = [...desktopTemplates.value, ...tabletTemplates.value, ...mobileTemplates.value]
 
   // 使用markRaw标记组件为非响应式
   return allTemplates.map(template => ({
@@ -77,18 +73,18 @@ function selectTemplate(template: TemplateInfo) {
 function getTemplateConfig(template: TemplateInfo) {
   if (template.deviceType === 'desktop') {
     return templateConfigs.login[template.id as keyof typeof templateConfigs.login] || templateConfigs.login.default
-  }
-  else if (template.deviceType === 'tablet') {
+  } else if (template.deviceType === 'tablet') {
     return templateConfigs.login.tablet
-  }
-  else {
+  } else {
     return templateConfigs.login.mobile
   }
 }
 
 // 事件处理函数
 function handleLogin(data: any) {
-  alert(`登录成功！\n模板: ${selectedTemplate.value?.name}\n设备: ${selectedTemplate.value?.deviceType}\n用户名: ${data.username}`)
+  alert(
+    `登录成功！\n模板: ${selectedTemplate.value?.name}\n设备: ${selectedTemplate.value?.deviceType}\n用户名: ${data.username}`
+  )
 }
 
 function handleRegister() {
@@ -104,31 +100,29 @@ function handleThirdPartyLogin(data: any) {
 }
 
 // 初始化默认选中模板
-watch(allAvailableTemplates, (templates) => {
-  if (templates.length > 0 && !selectedTemplate.value) {
-    // 选择第一个模板作为默认模板，并确保组件使用markRaw
-    const firstTemplate = templates[0]
-    selectedTemplate.value = {
-      ...firstTemplate,
-      component: markRaw(firstTemplate.component),
+watch(
+  allAvailableTemplates,
+  templates => {
+    if (templates.length > 0 && !selectedTemplate.value) {
+      // 选择第一个模板作为默认模板，并确保组件使用markRaw
+      const firstTemplate = templates[0]
+      selectedTemplate.value = {
+        ...firstTemplate,
+        component: markRaw(firstTemplate.component),
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <div class="template-gallery">
     <div class="template-gallery__header">
       <div class="template-gallery__container">
-        <router-link to="/" class="template-gallery__back">
-          ← 返回首页
-        </router-link>
-        <h1 class="template-gallery__title">
-          🎨 模板画廊
-        </h1>
-        <p class="template-gallery__subtitle">
-          浏览所有可用的精美模板
-        </p>
+        <router-link to="/" class="template-gallery__back"> ← 返回首页 </router-link>
+        <h1 class="template-gallery__title">🎨 模板画廊</h1>
+        <p class="template-gallery__subtitle">浏览所有可用的精美模板</p>
       </div>
     </div>
 
@@ -141,9 +135,8 @@ watch(allAvailableTemplates, (templates) => {
               <button
                 v-for="device in deviceTypes"
                 :key="device.type"
-                class="template-gallery__filter-btn" :class="[
-                  { 'template-gallery__filter-btn--active': selectedDevice === device.type },
-                ]"
+                class="template-gallery__filter-btn"
+                :class="[{ 'template-gallery__filter-btn--active': selectedDevice === device.type }]"
                 @click="selectedDevice = device.type"
               >
                 {{ device.icon }} {{ device.name }}
@@ -184,9 +177,7 @@ watch(allAvailableTemplates, (templates) => {
 
             <div class="template-gallery__card-preview">
               <div class="template-gallery__preview-placeholder">
-                <div class="template-gallery__preview-icon">
-                  🎨
-                </div>
+                <div class="template-gallery__preview-icon">🎨</div>
                 <div class="template-gallery__preview-text">
                   {{ template.name }}
                 </div>
@@ -257,9 +248,7 @@ watch(allAvailableTemplates, (templates) => {
         </div>
 
         <div v-else class="template-gallery__no-selection">
-          <div class="template-gallery__no-selection-icon">
-            👆
-          </div>
+          <div class="template-gallery__no-selection-icon">👆</div>
           <h3>选择一个模板</h3>
           <p>点击上方的模板卡片来预览模板效果</p>
         </div>

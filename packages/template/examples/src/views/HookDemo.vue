@@ -5,8 +5,8 @@ import { computed, onMounted, ref } from 'vue'
 // useTemplate Hook 演示页面加载
 
 // 使用 useTemplate Hook
-const { currentTemplateId, availableTemplates, deviceType, TemplateComponent, templateConfig, currentTemplate }
-  = useTemplate({
+const { currentTemplateId, availableTemplates, deviceType, TemplateComponent, templateConfig, currentTemplate } =
+  useTemplate({
     category: 'login',
     autoSwitch: true, // 启用自动设备切换以响应窗口大小变化
   })
@@ -89,7 +89,7 @@ const {
   v-bind="templateConfig"
   @login="handleLogin"
   @register="handleRegister"
-/>`,
+/>`
 )
 </script>
 
@@ -97,15 +97,9 @@ const {
   <div class="hook-demo">
     <div class="hook-demo__header">
       <div class="hook-demo__container">
-        <router-link to="/" class="hook-demo__back">
-          ← 返回首页
-        </router-link>
-        <h1 class="hook-demo__title">
-          🪝 useTemplate Hook 演示
-        </h1>
-        <p class="hook-demo__subtitle">
-          使用 Composition API 风格的 Hook 进行模板管理
-        </p>
+        <router-link to="/" class="hook-demo__back"> ← 返回首页 </router-link>
+        <h1 class="hook-demo__title">🪝 useTemplate Hook 演示</h1>
+        <p class="hook-demo__subtitle">使用 Composition API 风格的 Hook 进行模板管理</p>
       </div>
     </div>
 
@@ -124,15 +118,9 @@ const {
           <div class="hook-demo__control-group">
             <label class="hook-demo__label">设备类型:</label>
             <select v-model="deviceType" class="hook-demo__select">
-              <option value="desktop">
-                🖥️ 桌面
-              </option>
-              <option value="tablet">
-                📱 平板
-              </option>
-              <option value="mobile">
-                📱 手机
-              </option>
+              <option value="desktop">🖥️ 桌面</option>
+              <option value="tablet">📱 平板</option>
+              <option value="mobile">📱 手机</option>
             </select>
           </div>
 
@@ -153,9 +141,7 @@ const {
 
           <!-- 性能监控面板 -->
           <div class="hook-demo__performance">
-            <h3 class="hook-demo__performance-title">
-              📊 性能监控
-            </h3>
+            <h3 class="hook-demo__performance-title">📊 性能监控</h3>
             <div class="hook-demo__performance-grid">
               <div class="hook-demo__performance-item">
                 <span class="hook-demo__performance-label">加载时间:</span>
@@ -174,8 +160,8 @@ const {
                 <span class="hook-demo__performance-value">
                   {{
                     (
-                      (performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses))
-                      * 100
+                      (performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) *
+                      100
                     ).toFixed(1)
                   }}%
                 </span>
@@ -204,9 +190,7 @@ const {
               @third-party-login="handleThirdPartyLogin"
             />
             <div v-else class="hook-demo__no-template">
-              <div class="hook-demo__no-template-icon">
-                🚫
-              </div>
+              <div class="hook-demo__no-template-icon">🚫</div>
               <h4>当前设备类型暂无可用模板</h4>
               <p>请尝试切换到其他设备类型或选择其他模板</p>
             </div>

@@ -6,10 +6,5 @@
       "@ldesign/*": ["packages/*/es", "packages/*/lib", "packages/*/dist"]
     }
   },
-  "include": [
-    "packages/*/es/**/*",
-    "packages/*/lib/**/*",
-    "packages/*/dist/**/*",
-    "packages/*/types/**/*"
-  ]
+  "include": ["packages/*/es/**/*", "packages/*/lib/**/*", "packages/*/dist/**/*", "packages/*/types/**/*"]
 }

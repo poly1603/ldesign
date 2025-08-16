@@ -42,7 +42,7 @@ test.describe('Vue 主题集成测试', () => {
     // 验证CSS变量已更新
     const primaryColor = await page.evaluate(() => {
       return getComputedStyle(document.body).getPropertyValue(
-        '--l-color-primary',
+        '--l-color-primary'
       )
     })
     expect(primaryColor.trim()).toBe('#1890ff')
@@ -65,7 +65,7 @@ test.describe('Vue 主题集成测试', () => {
 
     // 验证颜色已更新
     const preview = colorPicker.locator('.l-color-picker__preview')
-    const backgroundColor = await preview.evaluate((el) => {
+    const backgroundColor = await preview.evaluate(el => {
       return getComputedStyle(el).backgroundColor
     })
     expect(backgroundColor).toBeTruthy()

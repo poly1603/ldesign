@@ -68,12 +68,10 @@ try {
   const geolocationModule = await detector.loadModule('geolocation')
   if (geolocationModule.isSupported()) {
     // 使用地理位置功能
-  }
-  else {
+  } else {
     // 提供替代方案
   }
-}
-catch (error) {
+} catch (error) {
   console.warn('地理位置不支持:', error)
 }
 ```
@@ -87,8 +85,8 @@ const detector = new DeviceDetector({
   breakpoints: {
     mobile: 480, // 0-480px 为移动设备
     tablet: 1024, // 481-1024px 为平板设备
-    desktop: 1025 // 1025px+ 为桌面设备
-  }
+    desktop: 1025, // 1025px+ 为桌面设备
+  },
 })
 ```
 
@@ -99,7 +97,7 @@ A: 可以调整防抖延迟或使用立即模式：
 ```typescript
 // 方法1: 调整防抖延迟
 const detector = new DeviceDetector({
-  debounceDelay: 100 // 减少延迟
+  debounceDelay: 100, // 减少延迟
 })
 
 // 方法2: 监听原生事件获得更快响应
@@ -128,8 +126,7 @@ const batteryInfo = batteryModule.getData()
 if (batteryInfo) {
   // 电池信息可用
   console.log('电量:', batteryInfo.level)
-}
-else {
+} else {
   // 电池信息不可用
   console.log('电池信息不支持')
 }
@@ -160,9 +157,7 @@ const device = inject('device')
 </script>
 
 <template>
-  <div v-device-mobile>
-    移动端内容
-  </div>
+  <div v-device-mobile>移动端内容</div>
 </template>
 ```
 
@@ -201,7 +196,7 @@ watch(deviceType, (newType, oldType) => {
   console.log(`设备类型变化: ${oldType} -> ${newType}`)
 })
 
-watch(orientation, (newOrientation) => {
+watch(orientation, newOrientation => {
   console.log('屏幕方向变化:', newOrientation)
 })
 </script>
@@ -217,7 +212,7 @@ A: 几个优化建议：
 
 ```typescript
 const detector = new DeviceDetector({
-  debounceDelay: 300 // 根据需求调整
+  debounceDelay: 300, // 根据需求调整
 })
 ```
 
@@ -265,18 +260,12 @@ onMounted(() => {
 
 <template>
   <div v-if="isReady">
-    <div v-device-mobile>
-      移动端内容
-    </div>
-    <div v-device-desktop>
-      桌面端内容
-    </div>
+    <div v-device-mobile>移动端内容</div>
+    <div v-device-desktop>桌面端内容</div>
   </div>
   <div v-else>
     <!-- 加载状态 -->
-    <div class="loading">
-      检测设备中...
-    </div>
+    <div class="loading">检测设备中...</div>
   </div>
 </template>
 ```
@@ -291,8 +280,7 @@ A: 使用 try-catch 包装模块加载：
 async function loadModuleSafely<T>(name: string): Promise<T | null> {
   try {
     return await detector.loadModule<T>(name)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn(`模块 ${name} 加载失败:`, error)
     return null
   }
@@ -314,8 +302,7 @@ async function requestLocation() {
   try {
     const geolocationModule = await detector.loadModule('geolocation')
     return await geolocationModule.getCurrentPosition()
-  }
-  catch (error) {
+  } catch (error) {
     switch (error.code) {
       case 1: // PERMISSION_DENIED
         showMessage('需要位置权限才能使用此功能')
@@ -350,8 +337,7 @@ A: 库会自动降级，但你也可以提供 polyfill：
 function getDeviceTypeWithFallback(): DeviceType {
   try {
     return detector.getDeviceInfo().type
-  }
-  catch (error) {
+  } catch (error) {
     // 降级到简单的用户代理检测
     const ua = navigator.userAgent
     if (/Mobile|Android|iPhone|iPad/.test(ua)) {
@@ -370,7 +356,7 @@ A: 创建插件并正确处理 SSR：
 // plugins/device.client.ts
 import { DevicePlugin } from '@ldesign/device/vue'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(nuxtApp => {
   nuxtApp.vueApp.use(DevicePlugin)
 })
 ```
@@ -380,12 +366,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 <template>
   <div>
     <ClientOnly>
-      <div v-device-mobile>
-        移动端内容
-      </div>
-      <div v-device-desktop>
-        桌面端内容
-      </div>
+      <div v-device-mobile>移动端内容</div>
+      <div v-device-desktop>桌面端内容</div>
       <template #fallback>
         <div>加载中...</div>
       </template>
@@ -405,11 +387,11 @@ A: 启用调试模式并查看详细信息：
 const detector = new DeviceDetector()
 
 // 监听所有事件
-detector.on('deviceChange', (info) => {
+detector.on('deviceChange', info => {
   console.log('设备变化:', info)
 })
 
-detector.on('orientationChange', (orientation) => {
+detector.on('orientationChange', orientation => {
   console.log('方向变化:', orientation)
 })
 
@@ -425,6 +407,7 @@ console.log('已加载模块:', detector.getLoadedModules())
 A: 使用浏览器开发者工具：
 
 1. **Chrome DevTools**:
+
    - 打开开发者工具
    - 点击设备模拟按钮
    - 选择不同的设备预设

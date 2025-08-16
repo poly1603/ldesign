@@ -29,16 +29,14 @@ export class LanternDecoration extends BaseDecoration {
         // 加载SVG内容
         this.svgContent = await this.loadSVG(this.config.src)
         this.element.innerHTML = this.svgContent
-      }
-      else {
+      } else {
         // 使用默认灯笼图案
         this.element.innerHTML = this.getDefaultLantern()
       }
 
       // 设置灯笼特有的样式
       this.setupLanternStyles()
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to load lantern content:', error)
       this.element.innerHTML = this.getDefaultLantern()
     }
@@ -234,8 +232,7 @@ export class LanternDecoration extends BaseDecoration {
   private toggleGlow(): void {
     if (this.isGlowing) {
       this.stopGlowAnimation()
-    }
-    else {
+    } else {
       this.startGlowAnimation()
     }
   }
@@ -275,8 +272,8 @@ export class LanternDecoration extends BaseDecoration {
    */
   private enhanceGlow(): void {
     if (!this.isGlowing) {
-      this.element.style.filter
-        = 'drop-shadow(0 0 15px rgba(251, 191, 36, 0.8)) drop-shadow(0 0 25px rgba(220, 38, 38, 0.3))'
+      this.element.style.filter =
+        'drop-shadow(0 0 15px rgba(251, 191, 36, 0.8)) drop-shadow(0 0 25px rgba(220, 38, 38, 0.3))'
     }
   }
 
@@ -294,7 +291,7 @@ export class LanternDecoration extends BaseDecoration {
    */
   static createPair(
     container: HTMLElement,
-    baseConfig: Partial<DecorationConfig>,
+    baseConfig: Partial<DecorationConfig>
   ): [LanternDecoration, LanternDecoration] {
     const leftConfig: DecorationConfig = {
       id: 'lantern-left',
@@ -341,7 +338,7 @@ export class LanternDecoration extends BaseDecoration {
   static createString(
     count: number,
     container: HTMLElement,
-    baseConfig: Partial<DecorationConfig>,
+    baseConfig: Partial<DecorationConfig>
   ): LanternDecoration[] {
     const lanterns: LanternDecoration[] = []
     const spacing = 100 / (count + 1) // 均匀分布
@@ -384,7 +381,7 @@ export class LanternDecoration extends BaseDecoration {
  */
 export function createLanternDecoration(
   config: DecorationConfig,
-  container: HTMLElement,
+  container: HTMLElement
 ): LanternDecoration {
   return new LanternDecoration(config, container)
 }
@@ -399,7 +396,7 @@ export function createSpringFestivalLanterns(
     count?: number
     size?: 'small' | 'medium' | 'large'
     interactive?: boolean
-  } = {},
+  } = {}
 ): LanternDecoration[] {
   const {
     type = 'pair',
@@ -428,8 +425,7 @@ export function createSpringFestivalLanterns(
   if (type === 'pair') {
     const [left, right] = LanternDecoration.createPair(container, baseConfig)
     return [left, right]
-  }
-  else {
+  } else {
     return LanternDecoration.createString(count, container, baseConfig)
   }
 }

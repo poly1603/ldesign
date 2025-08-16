@@ -88,8 +88,7 @@ export default defineComponent({
     const goBack = () => {
       if (window.history.length > 1) {
         window.history.back()
-      }
-      else {
+      } else {
         window.location.href = '/'
       }
     }
@@ -101,28 +100,26 @@ export default defineComponent({
 
     return () => (
       <div class={['device-unsupported', props.className]}>
-        <div class="device-unsupported__container">
+        <div class='device-unsupported__container'>
           {/* 图标区域 */}
-          <div class="device-unsupported__icon">
-            <span class="device-unsupported__device-icon">{deviceIcon.value}</span>
-            <span class="device-unsupported__warning-icon">⚠️</span>
+          <div class='device-unsupported__icon'>
+            <span class='device-unsupported__device-icon'>
+              {deviceIcon.value}
+            </span>
+            <span class='device-unsupported__warning-icon'>⚠️</span>
           </div>
 
           {/* 标题 */}
-          <h1 class="device-unsupported__title">
-            设备不支持
-          </h1>
+          <h1 class='device-unsupported__title'>设备不支持</h1>
 
           {/* 消息内容 */}
-          <div class="device-unsupported__content">
-            <p class="device-unsupported__message">
-              {props.message}
-            </p>
+          <div class='device-unsupported__content'>
+            <p class='device-unsupported__message'>{props.message}</p>
 
-            <div class="device-unsupported__details">
+            <div class='device-unsupported__details'>
               <p>
                 <strong>当前设备：</strong>
-                <span class="device-unsupported__current-device">
+                <span class='device-unsupported__current-device'>
                   {currentDeviceName.value}
                 </span>
               </p>
@@ -130,7 +127,7 @@ export default defineComponent({
               {props.supportedDevices.length > 0 && (
                 <p>
                   <strong>支持的设备：</strong>
-                  <span class="device-unsupported__supported-devices">
+                  <span class='device-unsupported__supported-devices'>
                     {supportedDeviceNames.value.join('、')}
                   </span>
                 </p>
@@ -138,7 +135,7 @@ export default defineComponent({
             </div>
 
             {/* 建议 */}
-            <div class="device-unsupported__suggestions">
+            <div class='device-unsupported__suggestions'>
               <h3>建议：</h3>
               <ul>
                 {props.supportedDevices.includes('desktop') && (
@@ -156,11 +153,11 @@ export default defineComponent({
           </div>
 
           {/* 操作按钮 */}
-          <div class="device-unsupported__actions">
+          <div class='device-unsupported__actions'>
             {props.showBackButton && (
               <button
-                type="button"
-                class="device-unsupported__button device-unsupported__button--secondary"
+                type='button'
+                class='device-unsupported__button device-unsupported__button--secondary'
                 onClick={goBack}
               >
                 返回上一页
@@ -169,8 +166,8 @@ export default defineComponent({
 
             {props.showRefreshButton && (
               <button
-                type="button"
-                class="device-unsupported__button device-unsupported__button--primary"
+                type='button'
+                class='device-unsupported__button device-unsupported__button--primary'
                 onClick={refresh}
               >
                 刷新页面
@@ -180,7 +177,7 @@ export default defineComponent({
 
           {/* 来源信息 */}
           {props.from && (
-            <div class="device-unsupported__from">
+            <div class='device-unsupported__from'>
               <small>
                 来源页面：
                 {props.from}

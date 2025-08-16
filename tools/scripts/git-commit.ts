@@ -57,8 +57,7 @@ class GitCommitTool {
       })
       // 确保结果不为 null 或 undefined，并转换为字符串
       return (result || '').toString().trim()
-    }
-    catch (error) {
+    } catch (error) {
       if (!silent) {
         console.error(`❌ 命令执行失败: ${command}`)
         console.error(error)
@@ -70,12 +69,11 @@ class GitCommitTool {
   /**
    * 安全执行命令，不抛出异常
    */
-  private safeExec(command: string): { success: boolean, output: string } {
+  private safeExec(command: string): { success: boolean; output: string } {
     try {
       const output = this.exec(command, true)
       return { success: true, output }
-    }
-    catch (error) {
+    } catch (error) {
       return { success: false, output: '' }
     }
   }
@@ -92,7 +90,8 @@ class GitCommitTool {
       hasChanges: statusResult.success && statusResult.output.length > 0,
       currentBranch: branchResult.success ? branchResult.output : 'unknown',
       isClean: statusResult.success && statusResult.output.length === 0,
-      hasUnpushedCommits: unpushedResult.success && unpushedResult.output.length > 0,
+      hasUnpushedCommits:
+        unpushedResult.success && unpushedResult.output.length > 0,
     }
   }
 
@@ -100,8 +99,8 @@ class GitCommitTool {
    * 交互式获取提交信息
    */
   private async getCommitMessage(): Promise<string> {
-    return new Promise((resolve) => {
-      this.rl.question('📝 请输入提交信息: ', (answer) => {
+    return new Promise(resolve => {
+      this.rl.question('📝 请输入提交信息: ', answer => {
         resolve(answer.trim())
       })
     })
@@ -111,8 +110,8 @@ class GitCommitTool {
    * 确认操作
    */
   private async confirm(message: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      this.rl.question(`${message} (y/N): `, (answer) => {
+    return new Promise(resolve => {
+      this.rl.question(`${message} (y/N): `, answer => {
         resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes')
       })
     })
@@ -130,20 +129,20 @@ class GitCommitTool {
 
       // 检查是否有远程更新
       const behindResult = this.safeExec('git rev-list HEAD..@{u} --count')
-      const behind = behindResult.success ? Number.parseInt(behindResult.output) : 0
+      const behind = behindResult.success
+        ? Number.parseInt(behindResult.output)
+        : 0
 
       if (behind > 0) {
         console.log(`📥 发现 ${behind} 个远程提交，正在执行 rebase...`)
         this.exec('git pull --rebase origin')
         console.log('✅ Rebase 完成')
-      }
-      else {
+      } else {
         console.log('✅ 本地代码已是最新')
       }
 
       return true
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 拉取代码失败，可能存在冲突')
       console.log('💡 请手动解决冲突后重新运行此脚本')
       return false
@@ -177,20 +176,20 @@ class GitCommitTool {
     try {
       this.exec(`git push origin ${branch}`)
       console.log('✅ 推送完成')
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 推送失败')
 
       // 检查是否需要设置上游分支
       const upstreamResult = this.safeExec('git rev-parse --abbrev-ref @{u}')
       if (!upstreamResult.success) {
-        const shouldSetUpstream = await this.confirm('🔗 是否设置上游分支并推送？')
+        const shouldSetUpstream = await this.confirm(
+          '🔗 是否设置上游分支并推送？'
+        )
         if (shouldSetUpstream) {
           this.exec(`git push --set-upstream origin ${branch}`)
           console.log('✅ 上游分支设置完成并推送成功')
         }
-      }
-      else {
+      } else {
         throw error
       }
     }
@@ -234,7 +233,9 @@ class GitCommitTool {
 
       // 如果有未推送的提交，询问是否直接推送
       if (!status.hasChanges && status.hasUnpushedCommits) {
-        const shouldPush = await this.confirm('🚀 发现未推送的提交，是否直接推送？')
+        const shouldPush = await this.confirm(
+          '🚀 发现未推送的提交，是否直接推送？'
+        )
         if (shouldPush) {
           await this.push(status.currentBranch)
           this.rl.close()
@@ -271,8 +272,7 @@ class GitCommitTool {
 
       console.log('\n🎉 所有操作完成！')
       this.rl.close()
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 执行过程中发生错误:', error)
       this.rl.close()
       process.exit(1)

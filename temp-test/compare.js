@@ -69,15 +69,12 @@ function hexToHsl(hex) {
 
   let h = 0
   if (diff !== 0) {
-    if (max === r)
-      h = ((g - b) / diff) % 6
-    else if (max === g)
-      h = (b - r) / diff + 2
+    if (max === r) h = ((g - b) / diff) % 6
+    else if (max === g) h = (b - r) / diff + 2
     else h = (r - g) / diff + 4
   }
   h = Math.round(h * 60)
-  if (h < 0)
-    h += 360
+  if (h < 0) h += 360
 
   const l = (max + min) / 2
   const s = diff === 0 ? 0 : diff / (1 - Math.abs(2 * l - 1))
@@ -107,28 +104,23 @@ function hslToHex(h, s, l) {
     r = c
     g = x
     b = 0
-  }
-  else if (1 / 6 <= h && h < 2 / 6) {
+  } else if (1 / 6 <= h && h < 2 / 6) {
     r = x
     g = c
     b = 0
-  }
-  else if (2 / 6 <= h && h < 3 / 6) {
+  } else if (2 / 6 <= h && h < 3 / 6) {
     r = 0
     g = c
     b = x
-  }
-  else if (3 / 6 <= h && h < 4 / 6) {
+  } else if (3 / 6 <= h && h < 4 / 6) {
     r = 0
     g = x
     b = c
-  }
-  else if (4 / 6 <= h && h < 5 / 6) {
+  } else if (4 / 6 <= h && h < 5 / 6) {
     r = x
     g = 0
     b = c
-  }
-  else if (5 / 6 <= h && h < 1) {
+  } else if (5 / 6 <= h && h < 1) {
     r = c
     g = 0
     b = x
@@ -160,44 +152,39 @@ function ourAlgorithm(baseColor) {
     let resultHsv
     if (i === 6) {
       resultHsv = baseHsv
-    }
-    else {
+    } else {
       // 色相调整
       let newHue
       if (baseHsv.h >= 60 && baseHsv.h <= 240) {
         newHue = isLight
           ? baseHsv.h - hueStep * index
           : baseHsv.h + hueStep * index
-      }
-      else {
+      } else {
         newHue = isLight
           ? baseHsv.h + hueStep * index
           : baseHsv.h - hueStep * index
       }
-      if (newHue < 0)
-        newHue += 360
-      else if (newHue >= 360)
-        newHue -= 360
+      if (newHue < 0) newHue += 360
+      else if (newHue >= 360) newHue -= 360
 
       // 饱和度调整
       let newSaturation
       if (isLight) {
-        newSaturation
-          = baseHsv.s <= minSaturationStep
+        newSaturation =
+          baseHsv.s <= minSaturationStep
             ? baseHsv.s
             : baseHsv.s - ((baseHsv.s - minSaturationStep) / 5) * index
-      }
-      else {
-        newSaturation
-          = baseHsv.s + ((maxSaturationStep - baseHsv.s) / 4) * index
+      } else {
+        newSaturation =
+          baseHsv.s + ((maxSaturationStep - baseHsv.s) / 4) * index
       }
 
       // 明度调整
       const newValue = isLight
         ? baseHsv.v + ((maxValue - baseHsv.v) / 5) * index
         : baseHsv.v <= minValue
-          ? baseHsv.v
-          : baseHsv.v - ((baseHsv.v - minValue) / 4) * index
+        ? baseHsv.v
+        : baseHsv.v - ((baseHsv.v - minValue) / 4) * index
 
       resultHsv = { h: Math.round(newHue), s: newSaturation, v: newValue }
     }
@@ -207,8 +194,8 @@ function ourAlgorithm(baseColor) {
       hslToHex(
         resultHsl.h,
         Math.max(0, Math.min(100, resultHsl.s)),
-        Math.max(0, Math.min(100, resultHsl.l)),
-      ),
+        Math.max(0, Math.min(100, resultHsl.l))
+      )
     )
   }
 

@@ -1,4 +1,11 @@
-import { Action, AsyncAction, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import {
+  Action,
+  AsyncAction,
+  BaseStore,
+  Getter,
+  PersistentState,
+  State,
+} from '@ldesign/store'
 
 export interface User {
   id: number
@@ -57,23 +64,19 @@ export class UserStore extends BaseStore {
           email: 'admin@example.com',
           role: 'admin',
         })
-      }
-      else if (email === 'user@example.com' && password === 'user') {
+      } else if (email === 'user@example.com' && password === 'user') {
         this.setUser({
           id: 2,
           name: '普通用户',
           email: 'user@example.com',
           role: 'user',
         })
-      }
-      else {
+      } else {
         throw new Error('邮箱或密码错误')
       }
-    }
-    catch (error) {
+    } catch (error) {
       this.setError(error instanceof Error ? error.message : '登录失败')
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -85,8 +88,7 @@ export class UserStore extends BaseStore {
       // 模拟 API 调用
       await new Promise(resolve => setTimeout(resolve, 500))
       this.clearUser()
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -113,8 +115,7 @@ export class UserStore extends BaseStore {
 
   @Getter()
   get displayName() {
-    if (!this.user)
-      return '游客'
+    if (!this.user) return '游客'
     return `${this.user.name} (${this.getRoleText()})`
   }
 

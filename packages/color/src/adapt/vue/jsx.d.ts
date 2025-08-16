@@ -4,8 +4,8 @@
 
 declare global {
   namespace JSX {
-    interface Element extends VNode { }
-    interface ElementClass extends ComponentRenderProxy { }
+    interface Element extends VNode {}
+    interface ElementClass extends ComponentRenderProxy {}
     interface ElementAttributesProperty {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       $props: any
@@ -17,4 +17,4 @@ declare global {
   }
 }
 
-export { }
+export {}

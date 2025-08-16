@@ -35,30 +35,22 @@ function goToProtected() {
         <div class="guard-item">
           <h3>🔐 认证守卫</h3>
           <p>验证用户是否已登录</p>
-          <div class="status success">
-            ✅ 已通过
-          </div>
+          <div class="status success">✅ 已通过</div>
         </div>
         <div class="guard-item">
           <h3>🛡️ 权限守卫</h3>
           <p>检查用户是否具有访问权限</p>
-          <div class="status success">
-            ✅ 已通过
-          </div>
+          <div class="status success">✅ 已通过</div>
         </div>
         <div class="guard-item">
           <h3>📝 标题守卫</h3>
           <p>自动设置页面标题</p>
-          <div class="status success">
-            ✅ 已应用
-          </div>
+          <div class="status success">✅ 已应用</div>
         </div>
         <div class="guard-item">
           <h3>⏳ 加载守卫</h3>
           <p>显示加载状态</p>
-          <div class="status success">
-            ✅ 已执行
-          </div>
+          <div class="status success">✅ 已执行</div>
         </div>
       </div>
     </div>
@@ -66,9 +58,7 @@ function goToProtected() {
     <div class="card">
       <h2>模拟操作</h2>
       <div class="actions">
-        <button class="btn btn-warning" @click="logout">
-          退出登录
-        </button>
+        <button class="btn btn-warning" @click="logout">退出登录</button>
         <button class="btn btn-error" @click="clearPermissions">
           清除权限
         </button>

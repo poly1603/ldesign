@@ -24,11 +24,9 @@ async function loadBatteryModule() {
   try {
     await loadModule()
     isLoaded.value = true
-  }
-  catch (error) {
+  } catch (error) {
     console.error('加载电池模块失败:', error)
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -68,7 +66,8 @@ function formatTime(seconds) {
         <div class="level-container">
           <div class="level-bar">
             <div
-              class="level-fill" :style="{ width: `${batteryLevel}%` }"
+              class="level-fill"
+              :style="{ width: `${batteryLevel}%` }"
               :class="{ low: batteryLevel < 20, charging: isCharging }"
             />
           </div>
@@ -78,7 +77,10 @@ function formatTime(seconds) {
 
       <div class="info-item">
         <span class="label">充电状态:</span>
-        <span class="status" :class="{ 'charging': isCharging, 'not-charging': !isCharging }">
+        <span
+          class="status"
+          :class="{ charging: isCharging, 'not-charging': !isCharging }"
+        >
           {{ isCharging ? '充电中' : '未充电' }}
         </span>
       </div>
@@ -90,14 +92,14 @@ function formatTime(seconds) {
 
       <div class="info-item">
         <span class="label">放电时间:</span>
-        <span class="value">{{ formatTime(batteryInfo?.dischargingTime) }}</span>
+        <span class="value">{{
+          formatTime(batteryInfo?.dischargingTime)
+        }}</span>
       </div>
     </div>
 
     <div v-if="isLoaded" class="controls">
-      <button class="unload-btn" @click="unloadModule">
-        ❌ 卸载模块
-      </button>
+      <button class="unload-btn" @click="unloadModule">❌ 卸载模块</button>
     </div>
   </div>
 </template>

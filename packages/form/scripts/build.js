@@ -20,8 +20,7 @@ console.log('📦 构建库文件...')
 try {
   execSync('npx vite build', { stdio: 'inherit' })
   console.log('✅ 库文件构建完成')
-}
-catch (error) {
+} catch (error) {
   console.error('❌ 构建失败')
   process.exit(1)
 }
@@ -30,7 +29,7 @@ catch (error) {
 console.log('📋 复制额外文件...')
 const filesToCopy = ['README.md', 'LICENSE', 'CHANGELOG.md']
 
-filesToCopy.forEach((file) => {
+filesToCopy.forEach(file => {
   if (fs.existsSync(file)) {
     fs.copyFileSync(file, path.join('dist', file))
     console.log(`✅ 复制 ${file}`)
@@ -90,7 +89,7 @@ delete distPackageJson.private
 
 fs.writeFileSync(
   path.join('dist', 'package.json'),
-  JSON.stringify(distPackageJson, null, 2),
+  JSON.stringify(distPackageJson, null, 2)
 )
 
 console.log('✅ package.json 生成完成')
@@ -118,7 +117,7 @@ console.log(`   - 构建时间: ${new Date().toLocaleString()}`)
 
 // 显示文件大小
 console.log(`📁 文件列表:`)
-distFiles.forEach((file) => {
+distFiles.forEach(file => {
   const filePath = path.join('dist', file)
   const stat = fs.statSync(filePath)
   const size = (stat.size / 1024).toFixed(2)

@@ -61,7 +61,7 @@ describe('fetchAdapter', () => {
           method: 'GET',
           headers: expect.any(Object),
           signal: expect.any(Object),
-        }),
+        })
       )
 
       expect(response).toEqual({
@@ -107,7 +107,7 @@ describe('fetchAdapter', () => {
           }),
           body: JSON.stringify(requestData),
           signal: expect.any(Object),
-        }),
+        })
       )
 
       expect(response.data).toEqual(mockResponseData)
@@ -146,7 +146,7 @@ describe('fetchAdapter', () => {
           headers: expect.not.objectContaining({
             'Content-Type': expect.any(String),
           }),
-        }),
+        })
       )
     })
 
@@ -175,7 +175,7 @@ describe('fetchAdapter', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.example.com/users?page=1&limit=10&search=john',
-        expect.any(Object),
+        expect.any(Object)
       )
     })
 
@@ -211,10 +211,11 @@ describe('fetchAdapter', () => {
 
     it('should handle timeout', async () => {
       // 模拟超时
-      mockFetch.mockImplementation(() =>
-        new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('timeout')), 100)
-        }),
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('timeout')), 100)
+          })
       )
 
       const config: RequestConfig = {

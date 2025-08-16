@@ -84,25 +84,25 @@ export const config: TemplateConfig = {
       type: 'string',
       default: '用户登录',
       description: '登录页面标题',
-      required: false
+      required: false,
     },
     logo: {
       type: 'string',
       description: '公司Logo URL',
-      required: false
+      required: false,
     },
     onLogin: {
       type: 'function',
       description: '登录成功回调函数',
-      required: true
-    }
+      required: true,
+    },
   },
 
   // 兼容性
   compatibility: {
     vue: '>=3.2.0',
-    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14']
-  }
+    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14'],
+  },
 }
 ```
 
@@ -128,13 +128,13 @@ const props = withDefaults(defineProps<Props>(), {
   showHeader: true,
   showFooter: true,
   theme: 'light',
-  size: 'medium'
+  size: 'medium',
 })
 
 // 计算属性用于动态类名
 const wrapperClass = computed(() => [
   `template-theme-${props.theme}`,
-  `template-size-${props.size}`
+  `template-size-${props.size}`,
 ])
 </script>
 
@@ -188,13 +188,13 @@ const props = defineProps({
   size: {
     type: String as PropType<'small' | 'medium' | 'large'>,
     default: 'medium',
-    validator: (value: string) => ['small', 'medium', 'large'].includes(value)
+    validator: (value: string) => ['small', 'medium', 'large'].includes(value),
   },
   items: {
     type: Array as PropType<Item[]>,
     required: true,
-    validator: (value: Item[]) => value.length > 0
-  }
+    validator: (value: Item[]) => value.length > 0,
+  },
 })
 ```
 
@@ -209,7 +209,7 @@ const LazyTemplate = defineAsyncComponent({
   loadingComponent: LoadingSpinner,
   errorComponent: ErrorComponent,
   delay: 200,
-  timeout: 3000
+  timeout: 3000,
 })
 ```
 
@@ -221,14 +221,14 @@ const manager = new TemplateManager({
   cacheEnabled: true,
   cacheSize: 50, // 缓存50个模板
   cacheTTL: 10 * 60 * 1000, // 10分钟过期
-  preloadEnabled: true // 启用预加载
+  preloadEnabled: true, // 启用预加载
 })
 
 // 预加载关键模板
 manager.preload([
   { category: 'layout', template: 'header' },
   { category: 'layout', template: 'footer' },
-  { category: 'auth', template: 'login' }
+  { category: 'auth', template: 'login' },
 ])
 ```
 
@@ -241,9 +241,9 @@ const routes = [
     path: '/dashboard',
     component: () => import('@/views/Dashboard.vue'),
     meta: {
-      templates: ['dashboard/admin', 'layout/sidebar']
-    }
-  }
+      templates: ['dashboard/admin', 'layout/sidebar'],
+    },
+  },
 ]
 ```
 
@@ -260,16 +260,16 @@ const manager = new TemplateManager({
   logLevel: isDev ? 'debug' : 'error',
 
   // 开发环境禁用缓存
-  cacheEnabled: !isDev
+  cacheEnabled: !isDev,
 })
 
 // 开发环境监听模板变化
 if (isDev) {
-  manager.on('template:load', (event) => {
+  manager.on('template:load', event => {
     console.log('模板加载:', event)
   })
 
-  manager.on('template:error', (event) => {
+  manager.on('template:error', event => {
     console.error('模板错误:', event)
   })
 }
@@ -280,7 +280,7 @@ if (isDev) {
 ```typescript
 // Vite 热重载配置
 if (import.meta.hot) {
-  import.meta.hot.accept('./templates/**/*.vue', (newModule) => {
+  import.meta.hot.accept('./templates/**/*.vue', newModule => {
     // 重新加载模板
     manager.clearCache()
     manager.scanTemplates()
@@ -302,8 +302,8 @@ describe('LoginTemplate', () => {
     const wrapper = mount(LoginTemplate, {
       props: {
         title: '用户登录',
-        onLogin: vi.fn()
-      }
+        onLogin: vi.fn(),
+      },
     })
 
     expect(wrapper.find('h1').text()).toBe('用户登录')
@@ -313,7 +313,7 @@ describe('LoginTemplate', () => {
   it('应该在提交时调用回调函数', async () => {
     const onLogin = vi.fn()
     const wrapper = mount(LoginTemplate, {
-      props: { onLogin }
+      props: { onLogin },
     })
 
     await wrapper.find('form').trigger('submit')
@@ -338,7 +338,7 @@ describe('TemplateManager Integration', () => {
     const rendered = await manager.render({
       category: 'auth',
       device: 'desktop',
-      template: 'login'
+      template: 'login',
     })
     expect(rendered).toBeDefined()
   })
@@ -401,9 +401,11 @@ function sanitizeProps(props: Record<string, any>): Record<string, any> {
   for (const [key, value] of Object.entries(props)) {
     if (typeof value === 'string') {
       // 移除潜在的XSS攻击代码
-      cleaned[key] = value.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    }
-    else {
+      cleaned[key] = value.replace(
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        ''
+      )
+    } else {
       cleaned[key] = value
     }
   }
@@ -425,18 +427,18 @@ const performanceMonitor = {
       category,
       template,
       loadTime,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   },
 
   trackError: (error: Error, context: any) => {
     // 错误上报
     errorReporting.captureException(error, { extra: context })
-  }
+  },
 }
 
 // 在模板管理器中使用
-manager.on('template:load', (event) => {
+manager.on('template:load', event => {
   performanceMonitor.trackTemplateLoad(
     event.category,
     event.template,
@@ -449,13 +451,17 @@ manager.on('template:load', (event) => {
 
 ```typescript
 // 跟踪模板使用情况
-function trackTemplateUsage(category: string, template: string, device: string) {
+function trackTemplateUsage(
+  category: string,
+  template: string,
+  device: string
+) {
   analytics.track('template_view', {
     category,
     template,
     device,
     userAgent: navigator.userAgent,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
 }
 ```
@@ -474,10 +480,8 @@ function compareVersions(v1: string, v2: string): number {
     const part1 = parts1[i] || 0
     const part2 = parts2[i] || 0
 
-    if (part1 > part2)
-      return 1
-    if (part1 < part2)
-      return -1
+    if (part1 > part2) return 1
+    if (part1 < part2) return -1
   }
 
   return 0
@@ -493,7 +497,11 @@ function isCompatible(required: string, current: string): boolean {
 
 ```typescript
 // 模板迁移工具
-async function migrateTemplate(from: string, to: string, migrationRules: MigrationRule[]): Promise<void> {
+async function migrateTemplate(
+  from: string,
+  to: string,
+  migrationRules: MigrationRule[]
+): Promise<void> {
   for (const rule of migrationRules) {
     await rule.apply(from, to)
   }
@@ -542,7 +550,6 @@ async function migrateTemplate(from: string, to: string, migrationRules: Migrati
   :template-props="{ title: '登录' }"
 />
 ```
-
 ````
 
 ## 更新日志

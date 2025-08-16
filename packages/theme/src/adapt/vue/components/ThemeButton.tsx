@@ -101,18 +101,12 @@ export const ThemeButton = defineComponent({
         `theme-button--${props.size}`,
       ]
 
-      if (props.loading)
-        classes.push('theme-button--loading')
-      if (props.disabled)
-        classes.push('theme-button--disabled')
-      if (props.block)
-        classes.push('theme-button--block')
-      if (props.round)
-        classes.push('theme-button--round')
-      if (props.circle)
-        classes.push('theme-button--circle')
-      if (props.ghost)
-        classes.push('theme-button--ghost')
+      if (props.loading) classes.push('theme-button--loading')
+      if (props.disabled) classes.push('theme-button--disabled')
+      if (props.block) classes.push('theme-button--block')
+      if (props.round) classes.push('theme-button--round')
+      if (props.circle) classes.push('theme-button--circle')
+      if (props.ghost) classes.push('theme-button--ghost')
       if (currentTheme.value)
         classes.push(`theme-button--theme-${currentTheme.value}`)
 
@@ -140,8 +134,7 @@ export const ThemeButton = defineComponent({
 
     // 处理装饰元素
     const handleDecoration = () => {
-      if (!props.decoration || !buttonRef.value)
-        return
+      if (!props.decoration || !buttonRef.value) return
 
       let decorationConfig: DecorationConfig
 
@@ -165,8 +158,7 @@ export const ThemeButton = defineComponent({
           interactive: false,
           responsive: true,
         }
-      }
-      else {
+      } else {
         decorationConfig = {
           ...props.decoration,
           id: decorationId.value,
@@ -178,15 +170,13 @@ export const ThemeButton = defineComponent({
 
     // 处理动画
     const handleAnimation = () => {
-      if (!props.animation)
-        return
+      if (!props.animation) return
 
       let animationName: string
 
       if (typeof props.animation === 'string') {
         animationName = props.animation
-      }
-      else {
+      } else {
         animationName = props.animation.name
       }
 
@@ -200,8 +190,8 @@ export const ThemeButton = defineComponent({
       }
 
       if (props.animation) {
-        const animationName
-          = typeof props.animation === 'string'
+        const animationName =
+          typeof props.animation === 'string'
             ? props.animation
             : props.animation.name
         stopAnimation(animationName)
@@ -210,8 +200,7 @@ export const ThemeButton = defineComponent({
 
     // 事件处理
     const handleClick = (event: MouseEvent) => {
-      if (props.disabled || props.loading)
-        return
+      if (props.disabled || props.loading) return
 
       emit('click', event)
 
@@ -269,28 +258,28 @@ export const ThemeButton = defineComponent({
       )
 
       const loadingElement = props.loading && (
-        <i class="theme-button__loading">
-          <svg viewBox="0 0 24 24" class="theme-button__loading-icon">
+        <i class='theme-button__loading'>
+          <svg viewBox='0 0 24 24' class='theme-button__loading-icon'>
             <circle
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
+              cx='12'
+              cy='12'
+              r='10'
+              stroke='currentColor'
+              stroke-width='2'
+              fill='none'
             />
             <path
-              d="M12 2 A10 10 0 0 1 22 12"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
+              d='M12 2 A10 10 0 0 1 22 12'
+              stroke='currentColor'
+              stroke-width='2'
+              fill='none'
             />
           </svg>
         </i>
       )
 
       const contentElement = (
-        <span class="theme-button__content">
+        <span class='theme-button__content'>
           {props.iconPosition === 'left' && iconElement}
           {slots.default?.()}
           {props.iconPosition === 'right' && iconElement}

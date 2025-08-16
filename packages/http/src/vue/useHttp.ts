@@ -19,15 +19,15 @@ export const HTTP_CLIENT_KEY: InjectionKey<HttpClient> = Symbol('http-client')
 /**
  * 全局配置注入键
  */
-export const HTTP_CONFIG_KEY: InjectionKey<Ref<RequestConfig>>
-  = Symbol('http-config')
+export const HTTP_CONFIG_KEY: InjectionKey<Ref<RequestConfig>> =
+  Symbol('http-config')
 
 /**
  * 提供 HTTP 客户端
  */
 export function provideHttpClient(
   client: HttpClient,
-  globalConfig?: RequestConfig,
+  globalConfig?: RequestConfig
 ): void {
   provide(HTTP_CLIENT_KEY, client)
   if (globalConfig) {
@@ -42,7 +42,7 @@ export function injectHttpClient(): HttpClient {
   const client = inject(HTTP_CLIENT_KEY)
   if (!client) {
     throw new Error(
-      'HTTP client not provided. Please use provideHttpClient() in a parent component.',
+      'HTTP client not provided. Please use provideHttpClient() in a parent component.'
     )
   }
   return client as HttpClient
@@ -157,14 +157,14 @@ export function useResource<T = any>(baseUrl: string) {
       useQuery(
         ['resource-list', baseUrl, params],
         { url: baseUrl, params },
-        options,
+        options
       ),
 
     useDetail: (id: string | number, options?: any) =>
       useQuery(
         ['resource-detail', baseUrl, id],
         { url: `${baseUrl}/${id}` },
-        options,
+        options
       ),
 
     // 变更操作
@@ -173,16 +173,16 @@ export function useResource<T = any>(baseUrl: string) {
 
     useUpdate: (options?: any) =>
       useMutation(
-        ({ id, data }: { id: string | number, data: Partial<T> }) =>
+        ({ id, data }: { id: string | number; data: Partial<T> }) =>
           put<T>(`${baseUrl}/${id}`, data),
-        options,
+        options
       ),
 
     usePatch: (options?: any) =>
       useMutation(
-        ({ id, data }: { id: string | number, data: Partial<T> }) =>
+        ({ id, data }: { id: string | number; data: Partial<T> }) =>
           patch<T>(`${baseUrl}/${id}`, data),
-        options,
+        options
       ),
 
     useDelete: (options?: any) =>
@@ -206,7 +206,7 @@ export function useResource<T = any>(baseUrl: string) {
 export function usePagination<T = any>(
   baseUrl: string,
   initialPage = 1,
-  initialPageSize = 10,
+  initialPageSize = 10
 ) {
   const page = ref<number>(initialPage)
   const pageSize = ref<number>(initialPageSize)

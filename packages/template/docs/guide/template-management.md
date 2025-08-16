@@ -50,66 +50,58 @@ export const config: TemplateConfig = {
       type: 'string',
       default: '用户登录',
       description: '登录页面标题',
-      required: false
+      required: false,
     },
     logo: {
       type: 'string',
       description: '公司Logo URL',
-      required: false
+      required: false,
     },
     onLogin: {
       type: 'function',
       description: '登录成功回调函数',
-      required: true
+      required: true,
     },
     allowRegister: {
       type: 'boolean',
       default: true,
       description: '是否显示注册链接',
-      required: false
-    }
+      required: false,
+    },
   },
 
   // 插槽定义
   slots: {
     header: {
-      description: '页面头部内容'
+      description: '页面头部内容',
     },
     footer: {
-      description: '页面底部内容'
+      description: '页面底部内容',
     },
     extra: {
-      description: '额外内容区域'
-    }
+      description: '额外内容区域',
+    },
   },
 
   // 事件定义
   events: {
     login: {
       description: '用户登录时触发',
-      payload: 'LoginData'
+      payload: 'LoginData',
     },
     register: {
       description: '跳转注册时触发',
-      payload: 'void'
-    }
+      payload: 'void',
+    },
   },
 
   // 依赖关系
-  dependencies: [
-    '@/components/FormInput',
-    '@/components/Button'
-  ],
+  dependencies: ['@/components/FormInput', '@/components/Button'],
 
   // 兼容性信息
   compatibility: {
     vue: '>=3.2.0',
-    browsers: [
-      'Chrome >= 88',
-      'Firefox >= 85',
-      'Safari >= 14',
-      'Edge >= 88'
-    ]
+    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14', 'Edge >= 88'],
   },
 
   // 更新日志
@@ -117,13 +109,9 @@ export const config: TemplateConfig = {
     {
       version: '1.2.0',
       date: '2024-01-15',
-      changes: [
-        '新增记住密码功能',
-        '优化移动端适配',
-        '修复表单验证问题'
-      ]
-    }
-  ]
+      changes: ['新增记住密码功能', '优化移动端适配', '修复表单验证问题'],
+    },
+  ],
 }
 ```
 
@@ -136,10 +124,7 @@ export const config: TemplateConfig = {
 ```typescript
 const manager = new TemplateManager({
   autoScan: true,
-  scanPaths: [
-    'src/templates',
-    'src/custom-templates'
-  ]
+  scanPaths: ['src/templates', 'src/custom-templates'],
 })
 
 // 手动触发扫描
@@ -156,7 +141,7 @@ console.log('扫描结果:', {
   total: scanResult.total,
   success: scanResult.success,
   failed: scanResult.failed,
-  templates: scanResult.templates
+  templates: scanResult.templates,
 })
 ```
 
@@ -191,7 +176,7 @@ const exists = await manager.hasTemplate('auth', 'desktop', 'login')
 await manager.preload([
   { category: 'auth', device: 'desktop', template: 'login' },
   { category: 'auth', device: 'desktop', template: 'register' },
-  { category: 'dashboard', device: 'desktop', template: 'admin' }
+  { category: 'dashboard', device: 'desktop', template: 'admin' },
 ])
 ```
 
@@ -203,7 +188,7 @@ async function loadTemplate(userRole: string) {
   const templateMap = {
     admin: 'admin-dashboard',
     user: 'user-dashboard',
-    guest: 'public-dashboard'
+    guest: 'public-dashboard',
   }
 
   const template = templateMap[userRole] || 'public-dashboard'
@@ -220,7 +205,7 @@ const manager = new TemplateManager({
   cacheEnabled: true,
   cacheSize: 100, // 最大缓存数量
   cacheTTL: 30 * 60 * 1000, // 30分钟过期
-  preloadEnabled: true // 启用预加载
+  preloadEnabled: true, // 启用预加载
 })
 ```
 
@@ -238,7 +223,7 @@ const stats = manager.getCacheStats()
 console.log('缓存统计:', {
   hits: stats.hits,
   misses: stats.misses,
-  size: stats.size
+  size: stats.size,
 })
 ```
 
@@ -253,19 +238,17 @@ manager.setCacheStrategy({
   },
 
   // 缓存过期检查
-  isExpired: (item) => {
+  isExpired: item => {
     return Date.now() - item.timestamp > 60 * 60 * 1000 // 1小时
   },
 
   // 缓存优先级
   priority: (category, device, template) => {
     // 登录页面优先级最高
-    if (category === 'auth')
-      return 10
-    if (category === 'dashboard')
-      return 8
+    if (category === 'auth') return 10
+    if (category === 'dashboard') return 8
     return 5
-  }
+  },
 })
 ```
 
@@ -280,7 +263,7 @@ manager.registerTemplate({
   device: 'desktop',
   template: 'special',
   component: SpecialComponent,
-  config: specialConfig
+  config: specialConfig,
 })
 
 // 批量注册
@@ -290,15 +273,15 @@ manager.registerTemplates([
     device: 'desktop',
     template: 'template1',
     component: Template1,
-    config: config1
+    config: config1,
   },
   {
     category: 'custom',
     device: 'desktop',
     template: 'template2',
     component: Template2,
-    config: config2
-  }
+    config: config2,
+  },
 ])
 ```
 
@@ -311,8 +294,8 @@ async function loadRemoteTemplate(url: string) {
   const templateData = await response.json()
 
   // 动态创建组件
-  const component = defineAsyncComponent(() =>
-    import(templateData.componentUrl)
+  const component = defineAsyncComponent(
+    () => import(templateData.componentUrl)
   )
 
   // 注册模板
@@ -321,7 +304,7 @@ async function loadRemoteTemplate(url: string) {
     device: templateData.device,
     template: templateData.name,
     component,
-    config: templateData.config
+    config: templateData.config,
   })
 }
 ```
@@ -344,7 +327,7 @@ const mobileTemplates = manager.getTemplates({ device: 'mobile' })
 const loginTemplates = manager.getTemplates({
   category: 'auth',
   device: 'desktop',
-  tags: ['登录']
+  tags: ['登录'],
 })
 ```
 
@@ -352,7 +335,8 @@ const loginTemplates = manager.getTemplates({
 
 ```typescript
 // 使用查询构建器
-const query = manager.createQuery()
+const query = manager
+  .createQuery()
   .category('dashboard')
   .device(['desktop', 'tablet'])
   .version('>=1.0.0')
@@ -369,7 +353,7 @@ const results = await query.execute()
 const searchResults = manager.search('登录', {
   fields: ['title', 'description', 'tags'],
   fuzzy: true,
-  limit: 10
+  limit: 10,
 })
 ```
 
@@ -383,12 +367,9 @@ function validateConfig(config: TemplateConfig): ValidationResult {
   const errors: string[] = []
 
   // 检查必需字段
-  if (!config.name)
-    errors.push('模板名称不能为空')
-  if (!config.category)
-    errors.push('模板分类不能为空')
-  if (!config.device)
-    errors.push('设备类型不能为空')
+  if (!config.name) errors.push('模板名称不能为空')
+  if (!config.category) errors.push('模板分类不能为空')
+  if (!config.device) errors.push('设备类型不能为空')
 
   // 检查版本格式
   if (!/^\d+\.\d+\.\d+$/.test(config.version)) {
@@ -396,13 +377,16 @@ function validateConfig(config: TemplateConfig): ValidationResult {
   }
 
   // 检查兼容性
-  if (config.compatibility?.vue && !semver.satisfies(Vue.version, config.compatibility.vue)) {
+  if (
+    config.compatibility?.vue &&
+    !semver.satisfies(Vue.version, config.compatibility.vue)
+  ) {
     errors.push('Vue版本不兼容')
   }
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   }
 }
 ```
@@ -413,8 +397,7 @@ function validateConfig(config: TemplateConfig): ValidationResult {
 // 验证模板组件
 function validateComponent(component: Component): boolean {
   // 检查组件是否有效
-  if (!component)
-    return false
+  if (!component) return false
 
   // 检查组件类型
   if (typeof component !== 'object' && typeof component !== 'function') {
@@ -439,11 +422,11 @@ function validateComponent(component: Component): boolean {
 if (process.env.NODE_ENV === 'development') {
   manager.enableHotReload({
     watchPaths: ['src/templates'],
-    debounce: 300
+    debounce: 300,
   })
 
   // 监听文件变化
-  manager.on('template:updated', (event) => {
+  manager.on('template:updated', event => {
     console.log('模板已更新:', event.template)
     // 自动重新加载模板
     manager.reloadTemplate(event.category, event.device, event.template)
@@ -472,7 +455,11 @@ async function updateTemplate(templateInfo: TemplateInfo) {
   await manager.updateTemplate(templateInfo, newTemplate)
 
   // 清理缓存
-  manager.clearCache(templateInfo.category, templateInfo.device, templateInfo.template)
+  manager.clearCache(
+    templateInfo.category,
+    templateInfo.device,
+    templateInfo.template
+  )
 }
 ```
 
@@ -490,8 +477,7 @@ manager.setErrorHandler({
     if (device !== 'desktop') {
       try {
         return await manager.loadTemplate(category, 'desktop', template)
-      }
-      catch (fallbackError) {
+      } catch (fallbackError) {
         console.error('备用模板也加载失败:', fallbackError)
       }
     }
@@ -504,7 +490,7 @@ manager.setErrorHandler({
     console.error('模板配置验证失败:', error)
     // 上报错误到监控系统
     errorReporting.captureException(error, { extra: { config } })
-  }
+  },
 })
 ```
 
@@ -520,7 +506,7 @@ manager.setRetryStrategy({
   shouldRetry: (error, attempt) => {
     // 网络错误才重试
     return error.code === 'NETWORK_ERROR' && attempt < 3
-  }
+  },
 })
 ```
 
@@ -530,7 +516,7 @@ manager.setRetryStrategy({
 
 ```typescript
 // 监控模板加载性能
-manager.on('template:load', (event) => {
+manager.on('template:load', event => {
   const loadTime = event.endTime - event.startTime
 
   // 记录性能指标
@@ -540,8 +526,8 @@ manager.on('template:load', (event) => {
       device: event.device,
       template: event.template,
       loadTime,
-      cacheHit: event.fromCache
-    }
+      cacheHit: event.fromCache,
+    },
   })
 
   // 慢加载警告
@@ -561,11 +547,12 @@ function monitorMemory() {
   console.log('内存使用情况:', {
     templateCount: stats.templateCount,
     cacheSize: stats.cacheSize,
-    memoryUsage: stats.memoryUsage
+    memoryUsage: stats.memoryUsage,
   })
 
   // 内存使用过高时清理缓存
-  if (stats.memoryUsage > 100 * 1024 * 1024) { // 100MB
+  if (stats.memoryUsage > 100 * 1024 * 1024) {
+    // 100MB
     manager.clearCache()
     console.log('内存使用过高，已清理缓存')
   }

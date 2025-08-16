@@ -50,11 +50,9 @@ async function sendGetRequest() {
     error.value = null
     const response = await mockRequest('/api/posts/1')
     data.value = response.data
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -68,11 +66,9 @@ async function sendPostRequest() {
       data: { title: '新文章', body: '文章内容' },
     })
     data.value = response.data
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -82,11 +78,9 @@ async function sendErrorRequest() {
     loading.value = true
     error.value = null
     await mockRequest('/api/error')
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -100,11 +94,9 @@ async function submitForm() {
       data: form,
     })
     data.value = response.data
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -146,19 +138,13 @@ async function submitForm() {
       </div>
 
       <div class="output">
-        <div v-if="loading" class="loading">
-          🔄 请求进行中...
-        </div>
-        <div v-else-if="error" class="error">
-          ❌ 错误: {{ error.message }}
-        </div>
+        <div v-if="loading" class="loading">🔄 请求进行中...</div>
+        <div v-else-if="error" class="error">❌ 错误: {{ error.message }}</div>
         <div v-else-if="data" class="success">
           ✅ 成功:
           <pre>{{ JSON.stringify(data, null, 2) }}</pre>
         </div>
-        <div v-else class="placeholder">
-          点击按钮发送请求
-        </div>
+        <div v-else class="placeholder">点击按钮发送请求</div>
       </div>
     </section>
 
@@ -168,7 +154,7 @@ async function submitForm() {
       <form class="form" @submit.prevent="submitForm">
         <div class="form-group">
           <label>标题:</label>
-          <input v-model="form.title" type="text">
+          <input v-model="form.title" type="text" />
         </div>
         <div class="form-group">
           <label>内容:</label>

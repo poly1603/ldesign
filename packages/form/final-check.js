@@ -29,8 +29,7 @@ function runCommand(command, description, options = {}) {
       console.log(`  📝 输出: ${output.trim().slice(0, 100)}...`)
     }
     return { success: true, output }
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ ${description} 失败`)
     console.log(`  📝 错误: ${error.message.slice(0, 200)}...`)
 
@@ -62,11 +61,10 @@ function checkFileStructure() {
   ]
 
   let missingFiles = 0
-  criticalFiles.forEach((file) => {
+  criticalFiles.forEach(file => {
     if (fs.existsSync(file)) {
       console.log(`  ✅ ${file}`)
-    }
-    else {
+    } else {
       console.log(`  ❌ ${file} 缺失`)
       missingFiles++
     }
@@ -92,11 +90,10 @@ function checkPackageJson() {
     const requiredFields = ['name', 'version', 'main', 'module', 'types']
     let missingFields = 0
 
-    requiredFields.forEach((field) => {
+    requiredFields.forEach(field => {
       if (pkg[field]) {
         console.log(`  ✅ ${field}: ${pkg[field]}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${field} 缺失`)
         missingFields++
       }
@@ -104,11 +101,10 @@ function checkPackageJson() {
 
     // 检查脚本
     const requiredScripts = ['build', 'type-check', 'lint']
-    requiredScripts.forEach((script) => {
+    requiredScripts.forEach(script => {
       if (pkg.scripts && pkg.scripts[script]) {
         console.log(`  ✅ 脚本 ${script}: ${pkg.scripts[script]}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ 脚本 ${script} 缺失`)
         missingFields++
       }
@@ -120,8 +116,7 @@ function checkPackageJson() {
     }
 
     return true
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ 无法解析 package.json: ${error.message}`)
     totalErrors++
     return false
@@ -150,7 +145,7 @@ async function main() {
   // 3. TypeScript 类型检查
   const typeCheck = runCommand(
     'npx vue-tsc --noEmit',
-    'Vue TypeScript 类型检查',
+    'Vue TypeScript 类型检查'
   )
 
   if (!typeCheck.success) {
@@ -161,7 +156,7 @@ async function main() {
   // 4. ESLint 检查
   const lintCheck = runCommand(
     'npx eslint src --ext .ts,.vue',
-    'ESLint 代码检查',
+    'ESLint 代码检查'
   )
 
   if (!lintCheck.success) {
@@ -194,12 +189,11 @@ async function main() {
     ]
 
     let missingBuildFiles = 0
-    expectedFiles.forEach((file) => {
+    expectedFiles.forEach(file => {
       if (fs.existsSync(file)) {
         const stats = fs.statSync(file)
         console.log(`  ✅ ${file} (${Math.round(stats.size / 1024)}KB)`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${file} 缺失`)
         missingBuildFiles++
       }
@@ -223,13 +217,11 @@ async function main() {
       const packagePath = path.join(examplePath, 'package.json')
       if (fs.existsSync(packagePath)) {
         console.log(`  ✅ ${name} 配置正常`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${name} 缺少 package.json`)
         totalErrors++
       }
-    }
-    else {
+    } else {
       console.log(`  ❌ ${name} 目录不存在`)
       totalErrors++
     }
@@ -257,14 +249,12 @@ async function main() {
     console.log('  pnpm build      - 构建项目')
     console.log('  pnpm test       - 运行测试')
     console.log('  pnpm publish    - 发布包')
-  }
-  else if (totalErrors <= 3) {
+  } else if (totalErrors <= 3) {
     console.log('\n⚠️  项目基本可用，但有少量问题需要修复')
     console.log('\n🔧 建议执行:')
     console.log('  pnpm fix-types  - 自动修复类型问题')
     console.log('  pnpm lint:fix   - 自动修复代码风格问题')
-  }
-  else {
+  } else {
     console.log('\n❌ 项目有较多问题需要修复')
     console.log('\n🔧 建议步骤:')
     console.log('  1. 查看上述错误信息')
@@ -278,7 +268,7 @@ async function main() {
 }
 
 // 运行主函数
-main().catch((error) => {
+main().catch(error => {
   console.error('\n💥 检查过程中发生意外错误:', error.message)
   process.exit(1)
 })

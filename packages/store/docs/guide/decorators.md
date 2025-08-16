@@ -42,12 +42,12 @@ class ProfileStore extends BaseStore {
   @ReactiveState({
     default: {
       personal: { name: '', age: 0 },
-      contact: { email: '', phone: '' }
-    }
+      contact: { email: '', phone: '' },
+    },
   })
   profile: UserProfile = {
     personal: { name: '', age: 0 },
-    contact: { email: '', phone: '' }
+    contact: { email: '', phone: '' },
   }
 }
 ```
@@ -92,7 +92,7 @@ class TodoStore extends BaseStore {
     this.todos.push({
       id: Date.now(),
       text,
-      completed: false
+      completed: false,
     })
   }
 
@@ -144,8 +144,7 @@ class ApiStore extends BaseStore {
     try {
       const response = await fetch('/api/users')
       this.users = await response.json()
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -181,8 +180,7 @@ class SearchStore extends BaseStore {
     if (query.trim()) {
       const response = await fetch(`/api/search?q=${query}`)
       this.results = await response.json()
-    }
-    else {
+    } else {
       this.results = []
     }
   }
@@ -280,10 +278,8 @@ class UserStore extends BaseStore {
 
   @DependentGetter(['age'])
   get ageGroup() {
-    if (this.age < 18)
-      return 'minor'
-    if (this.age < 65)
-      return 'adult'
+    if (this.age < 18) return 'minor'
+    if (this.age < 65) return 'adult'
     return 'senior'
   }
 }
@@ -299,8 +295,7 @@ class FibonacciStore extends BaseStore {
   @MemoizedGetter(['n'])
   get fibonacci() {
     const fib = (num: number): number => {
-      if (num <= 1)
-        return num
+      if (num <= 1) return num
       return fib(num - 1) + fib(num - 2)
     }
     return fib(this.n)
@@ -334,8 +329,7 @@ class BlogStore extends BaseStore {
     try {
       const response = await fetch('/api/posts')
       this.posts = await response.json()
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -355,8 +349,7 @@ class BlogStore extends BaseStore {
   get postsByCategory() {
     return this.posts.reduce((acc, post) => {
       const category = post.category || 'uncategorized'
-      if (!acc[category])
-        acc[category] = []
+      if (!acc[category]) acc[category] = []
       acc[category].push(post)
       return acc
     }, {} as Record<string, BlogPost[]>)
@@ -365,11 +358,11 @@ class BlogStore extends BaseStore {
   // 依赖特定字段的计算
   @DependentGetter(['searchQuery', 'posts'])
   get filteredPosts() {
-    if (!this.searchQuery.trim())
-      return this.posts
-    return this.posts.filter(post =>
-      post.title.toLowerCase().includes(this.searchQuery.toLowerCase())
-      || post.content.toLowerCase().includes(this.searchQuery.toLowerCase())
+    if (!this.searchQuery.trim()) return this.posts
+    return this.posts.filter(
+      post =>
+        post.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(this.searchQuery.toLowerCase())
     )
   }
 }

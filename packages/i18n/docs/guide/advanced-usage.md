@@ -16,16 +16,16 @@ class CustomLoader implements Loader {
     // 从自定义源加载语言包
     const response = await fetch(`/api/locales/${locale}`)
     const data = await response.json()
-    
+
     const languagePackage: LanguagePackage = {
       info: {
         name: data.name,
         code: locale,
-        direction: data.direction || 'ltr'
+        direction: data.direction || 'ltr',
       },
-      translations: data.translations
+      translations: data.translations,
     }
-    
+
     this.packages.set(locale, languagePackage)
     return languagePackage
   }
@@ -47,7 +47,7 @@ class CustomLoader implements Loader {
 const customLoader = new CustomLoader()
 const i18n = new I18n({
   defaultLocale: 'en',
-  loader: customLoader
+  loader: customLoader,
 })
 ```
 
@@ -62,7 +62,7 @@ class DatabaseLoader implements Loader {
       'SELECT key, value FROM translations WHERE locale = ?',
       [locale]
     )
-    
+
     // 将平铺的键值对转换为嵌套对象
     const nestedTranslations = {}
     translations.forEach(({ key, value }) => {
@@ -73,23 +73,23 @@ class DatabaseLoader implements Loader {
       info: {
         name: this.getLanguageName(locale),
         code: locale,
-        direction: this.getLanguageDirection(locale)
+        direction: this.getLanguageDirection(locale),
       },
-      translations: nestedTranslations
+      translations: nestedTranslations,
     }
   }
 
   private setNestedValue(obj: any, path: string, value: string) {
     const keys = path.split('.')
     let current = obj
-    
+
     for (let i = 0; i < keys.length - 1; i++) {
       if (!(keys[i] in current)) {
         current[keys[i]] = {}
       }
       current = current[keys[i]]
     }
-    
+
     current[keys[keys.length - 1]] = value
   }
 }
@@ -125,7 +125,7 @@ class CustomStorage implements Storage {
       await fetch('/api/user-preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, value })
+        body: JSON.stringify({ key, value }),
       })
     } catch (error) {
       console.warn('Failed to persist preference:', error)
@@ -135,7 +135,7 @@ class CustomStorage implements Storage {
   private async removeFromServer(key: string) {
     try {
       await fetch(`/api/user-preferences/${key}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
     } catch (error) {
       console.warn('Failed to remove preference:', error)
@@ -147,7 +147,7 @@ class CustomStorage implements Storage {
 const customStorage = new CustomStorage()
 const i18n = new I18n({
   defaultLocale: 'en',
-  storage: customStorage
+  storage: customStorage,
 })
 ```
 
@@ -162,13 +162,13 @@ class IndexedDBStorage implements Storage {
   async init() {
     return new Promise<void>((resolve, reject) => {
       const request = indexedDB.open(this.dbName, 1)
-      
+
       request.onerror = () => reject(request.error)
       request.onsuccess = () => {
         this.db = request.result
         resolve()
       }
-      
+
       request.onupgradeneeded = () => {
         const db = request.result
         if (!db.objectStoreNames.contains(this.storeName)) {
@@ -180,12 +180,12 @@ class IndexedDBStorage implements Storage {
 
   get(key: string): string | null {
     if (!this.db) return null
-    
-    return new Promise((resolve) => {
+
+    return new Promise(resolve => {
       const transaction = this.db!.transaction([this.storeName], 'readonly')
       const store = transaction.objectStore(this.storeName)
       const request = store.get(key)
-      
+
       request.onsuccess = () => resolve(request.result || null)
       request.onerror = () => resolve(null)
     })
@@ -193,7 +193,7 @@ class IndexedDBStorage implements Storage {
 
   set(key: string, value: string): void {
     if (!this.db) return
-    
+
     const transaction = this.db.transaction([this.storeName], 'readwrite')
     const store = transaction.objectStore(this.storeName)
     store.put(value, key)
@@ -201,7 +201,7 @@ class IndexedDBStorage implements Storage {
 
   remove(key: string): void {
     if (!this.db) return
-    
+
     const transaction = this.db.transaction([this.storeName], 'readwrite')
     const store = transaction.objectStore(this.storeName)
     store.delete(key)
@@ -219,31 +219,31 @@ import type { Detector } from '@ldesign/i18n'
 class CustomDetector implements Detector {
   detect(): string[] {
     const languages: string[] = []
-    
+
     // 1. 从 URL 参数检测
     const urlParams = new URLSearchParams(window.location.search)
     const urlLang = urlParams.get('lang')
     if (urlLang) {
       languages.push(urlLang)
     }
-    
+
     // 2. 从用户配置检测
     const userLang = this.getUserPreferredLanguage()
     if (userLang) {
       languages.push(userLang)
     }
-    
+
     // 3. 从浏览器检测
     if (navigator.language) {
       languages.push(navigator.language)
     }
-    
+
     // 4. 从 Accept-Language 头检测（如果可用）
     const acceptLanguage = this.getAcceptLanguage()
     if (acceptLanguage) {
       languages.push(...acceptLanguage)
     }
-    
+
     return [...new Set(languages)] // 去重
   }
 
@@ -254,7 +254,9 @@ class CustomDetector implements Detector {
 
   private getAcceptLanguage(): string[] {
     // 在服务端渲染时可以从请求头获取
-    const acceptLang = document.querySelector('meta[name="accept-language"]')?.getAttribute('content')
+    const acceptLang = document
+      .querySelector('meta[name="accept-language"]')
+      ?.getAttribute('content')
     return acceptLang ? acceptLang.split(',').map(lang => lang.trim()) : []
   }
 }
@@ -263,7 +265,7 @@ class CustomDetector implements Detector {
 const customDetector = new CustomDetector()
 const i18n = new I18n({
   defaultLocale: 'en',
-  detector: customDetector
+  detector: customDetector,
 })
 ```
 
@@ -298,7 +300,7 @@ class CurrencyPlugin implements TranslationPlugin {
     return text.replace(currencyRegex, (match, amount) => {
       const formatter = new Intl.NumberFormat(locale, {
         style: 'currency',
-        currency: this.getCurrencyForLocale(locale)
+        currency: this.getCurrencyForLocale(locale),
       })
       return formatter.format(parseFloat(amount))
     })
@@ -306,11 +308,11 @@ class CurrencyPlugin implements TranslationPlugin {
 
   private getCurrencyForLocale(locale: string): string {
     const currencyMap: Record<string, string> = {
-      'en': 'USD',
+      en: 'USD',
       'zh-CN': 'CNY',
-      'ja': 'JPY',
+      ja: 'JPY',
       'en-GB': 'GBP',
-      'de': 'EUR'
+      de: 'EUR',
     }
     return currencyMap[locale] || 'USD'
   }
@@ -326,12 +328,12 @@ class ExtendedI18n extends I18n {
 
   t(key: string, params?: any, options?: any): string {
     let text = super.t(key, params, options)
-    
+
     // 应用所有插件
     for (const plugin of this.plugins) {
       text = plugin.transform(text, this.getCurrentLanguage(), key)
     }
-    
+
     return text
   }
 }
@@ -392,7 +394,7 @@ class OptimizedI18n extends I18n {
 
   t(key: string, params?: any, options?: any): string {
     const cacheKey = this.generateCacheKey(key, params, options)
-    
+
     // 检查缓存
     if (this.translationCache.has(cacheKey)) {
       return this.translationCache.get(cacheKey)!
@@ -400,10 +402,10 @@ class OptimizedI18n extends I18n {
 
     // 执行翻译
     const result = super.t(key, params, options)
-    
+
     // 缓存结果
     this.cacheTranslation(cacheKey, result)
-    
+
     return result
   }
 
@@ -420,7 +422,7 @@ class OptimizedI18n extends I18n {
       const firstKey = this.translationCache.keys().next().value
       this.translationCache.delete(firstKey)
     }
-    
+
     this.translationCache.set(key, value)
   }
 }
@@ -451,14 +453,14 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const i18n = await createI18nWithBuiltinLocales({
-    defaultLocale: locale || 'en'
+    defaultLocale: locale || 'en',
   })
 
   return {
     props: {
       locale: locale || 'en',
-      messages: i18n.getAllTranslations()
-    }
+      messages: i18n.getAllTranslations(),
+    },
   }
 }
 ```
@@ -473,21 +475,21 @@ import { createI18n } from '@ldesign/i18n/vue'
 export default defineNuxtPlugin(async () => {
   const i18nInstance = await createI18nWithBuiltinLocales({
     defaultLocale: 'en',
-    autoDetect: true
+    autoDetect: true,
   })
 
   const vueI18nPlugin = createI18n(i18nInstance)
 
   return {
     provide: {
-      i18n: i18nInstance
-    }
+      i18n: i18nInstance,
+    },
   }
 })
 
 // nuxt.config.ts
 export default defineNuxtConfig({
-  plugins: ['~/plugins/i18n.client.ts']
+  plugins: ['~/plugins/i18n.client.ts'],
 })
 ```
 
@@ -515,7 +517,7 @@ class MultiTenantI18n extends I18n {
       // 合并翻译
       return {
         ...basePackage,
-        translations: this.deepMerge(basePackage.translations, tenantPackage.translations)
+        translations: this.deepMerge(basePackage.translations, tenantPackage.translations),
       }
     } catch (error) {
       console.warn(`Failed to load tenant translations for ${this.tenantId}:`, error)
@@ -546,6 +548,6 @@ class MultiTenantI18n extends I18n {
 // 使用多租户 I18n
 const tenantI18n = new MultiTenantI18n('tenant-123', {
   defaultLocale: 'en',
-  fallbackLocale: 'en'
+  fallbackLocale: 'en',
 })
 ```

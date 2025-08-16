@@ -22,19 +22,16 @@ const currentThemeConfig = computed(() => {
 // 获取当前主题的颜色配置
 const currentColors = computed(() => {
   const config = currentThemeConfig.value
-  if (!config)
-    return null
+  if (!config) return null
 
   const modeColors = currentMode.value === 'light' ? config.light : config.dark
-  if (!modeColors)
-    return null
+  if (!modeColors) return null
 
   // 如果主题配置中没有定义完整的颜色，使用生成的颜色配置
   let generatedColors = null
   try {
     generatedColors = generateColorConfig(modeColors.primary)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn('生成颜色配置失败:', error)
   }
 
@@ -50,8 +47,7 @@ const currentColors = computed(() => {
 // 获取主题的预览颜色（使用生成的完整颜色配置）
 function getThemePreviewColors(themeName: string) {
   const themeConfig = themeConfigs.value.find(t => t.name === themeName)
-  if (!themeConfig)
-    return null
+  if (!themeConfig) return null
 
   // 使用主题管理器生成完整的颜色配置
   try {
@@ -62,8 +58,7 @@ function getThemePreviewColors(themeName: string) {
       warning: colors.warning || '#faad14',
       danger: colors.danger || '#f5222d',
     }
-  }
-  catch (error) {
+  } catch (error) {
     // 降级到默认颜色
     return {
       primary: themeConfig.light.primary,
@@ -76,21 +71,19 @@ function getThemePreviewColors(themeName: string) {
 
 // 生成当前主题的色阶
 const currentScales = computed(() => {
-  if (!currentColors.value)
-    return null
+  if (!currentColors.value) return null
 
   try {
     return generateColorScales(currentColors.value, currentMode.value)
-  }
-  catch (error) {
+  } catch (error) {
     console.warn('生成色阶失败:', error)
     return null
   }
 })
 
 // 通知系统
-const notifications = ref<Array<{ id: number, message: string, type: string }>>(
-  [],
+const notifications = ref<Array<{ id: number; message: string; type: string }>>(
+  []
 )
 let notificationId = 0
 
@@ -110,8 +103,7 @@ async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制颜色值: ${color}`, 'success')
-  }
-  catch (error) {
+  } catch (error) {
     showNotification('复制失败', 'error')
   }
 }
@@ -146,9 +138,7 @@ onMounted(() => {
       <div class="container">
         <!-- 主题控制面板 -->
         <section class="card">
-          <h2 class="card-title">
-            🎛️ 主题控制
-          </h2>
+          <h2 class="card-title">🎛️ 主题控制</h2>
 
           <div class="control-group">
             <label>选择主题:</label>
@@ -163,8 +153,8 @@ onMounted(() => {
                 :value="themeName"
               >
                 {{
-                  themeConfigs.find(t => t.name === themeName)?.displayName
-                    || themeName
+                  themeConfigs.find(t => t.name === themeName)?.displayName ||
+                  themeName
                 }}
               </option>
             </select>
@@ -179,12 +169,8 @@ onMounted(() => {
                 setMode(($event.target as HTMLSelectElement).value as any)
               "
             >
-              <option value="light">
-                亮色模式
-              </option>
-              <option value="dark">
-                暗色模式
-              </option>
+              <option value="light">亮色模式</option>
+              <option value="dark">暗色模式</option>
             </select>
           </div>
 
@@ -208,9 +194,7 @@ onMounted(() => {
 
         <!-- 主题预览 -->
         <section class="card">
-          <h2 class="card-title">
-            🎨 主题预览
-          </h2>
+          <h2 class="card-title">🎨 主题预览</h2>
           <p class="card-description">
             选择一个预设主题来快速应用，这些主题都是精心设计的美观配色方案
           </p>
@@ -255,14 +239,14 @@ onMounted(() => {
               </div>
               <div class="theme-name">
                 {{
-                  themeConfigs.find(t => t.name === themeName)?.displayName
-                    || themeName
+                  themeConfigs.find(t => t.name === themeName)?.displayName ||
+                  themeName
                 }}
               </div>
               <div class="theme-description">
                 {{
-                  themeConfigs.find(t => t.name === themeName)?.description
-                    || '精美的主题配色方案'
+                  themeConfigs.find(t => t.name === themeName)?.description ||
+                  '精美的主题配色方案'
                 }}
               </div>
             </div>
@@ -271,9 +255,7 @@ onMounted(() => {
 
         <!-- 当前主题色阶展示 -->
         <section class="card">
-          <h2 class="card-title">
-            � 当前主题色阶
-          </h2>
+          <h2 class="card-title">� 当前主题色阶</h2>
           <p class="card-description">
             当前主题 "{{ currentThemeConfig?.displayName || currentTheme }}" 在
             {{ currentMode === 'light' ? '亮色' : '暗色' }} 模式下的完整色阶体系

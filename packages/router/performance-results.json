@@ -16,14 +16,7 @@
     },
     "navigation": {
       "iterations": 1000,
-      "routes": [
-        "/",
-        "/about",
-        "/user/123",
-        "/posts/456",
-        "/admin",
-        "/profile"
-      ]
+      "routes": ["/", "/about", "/user/123", "/posts/456", "/admin", "/profile"]
     },
     "massRoutes": {
       "routeCount": 1000,

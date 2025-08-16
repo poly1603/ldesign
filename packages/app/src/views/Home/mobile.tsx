@@ -48,15 +48,11 @@ export default defineComponent({
               欢迎使用移动端应用
             </p>
             <p style={{ fontSize: '14px', margin: '8px 0', opacity: 0.9 }}>
-              当前设备:
-              {' '}
-              {currentDeviceName}
+              当前设备: {currentDeviceName}
             </p>
             {$i18n && (
               <p style={{ fontSize: '14px', margin: '8px 0', opacity: 0.9 }}>
-                语言:
-                {' '}
-                {$i18n.getCurrentLanguage()}
+                语言: {$i18n.getCurrentLanguage()}
               </p>
             )}
           </div>

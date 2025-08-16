@@ -85,9 +85,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/i18n' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/i18n' }],
 
     footer: {
       message: 'Released under the MIT License.',
@@ -99,7 +97,8 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/ldesign/i18n/edit/main/packages/i18n/docs/:path',
+      pattern:
+        'https://github.com/ldesign/i18n/edit/main/packages/i18n/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
 

@@ -28,7 +28,7 @@ export class DOMRendererImpl implements DOMRenderer {
    */
   async render(
     config: WatermarkConfig,
-    context: RenderContext,
+    context: RenderContext
   ): Promise<HTMLElement[]> {
     try {
       // 计算布局
@@ -43,20 +43,19 @@ export class DOMRendererImpl implements DOMRenderer {
             config,
             layout,
             row,
-            col,
+            col
           )
           elements.push(element)
         }
       }
 
       return elements
-    }
-    catch (error) {
+    } catch (error) {
       throw new WatermarkError(
         'DOM rendering failed',
         WatermarkErrorCode.RENDER_FAILED,
         ErrorSeverity.HIGH,
-        { context, originalError: error as Error },
+        { context, originalError: error as Error }
       )
     }
   }
@@ -67,7 +66,7 @@ export class DOMRendererImpl implements DOMRenderer {
   async update(
     elements: HTMLElement[],
     config: WatermarkConfig,
-    context: RenderContext,
+    context: RenderContext
   ): Promise<void> {
     // 简单实现：销毁旧元素，创建新元素
     await this.destroy(elements)
@@ -78,7 +77,7 @@ export class DOMRendererImpl implements DOMRenderer {
    * 销毁水印元素
    */
   async destroy(elements: HTMLElement[]): Promise<void> {
-    elements.forEach((element) => {
+    elements.forEach(element => {
       if (element.parentNode) {
         element.parentNode.removeChild(element)
       }
@@ -118,7 +117,7 @@ export class DOMRendererImpl implements DOMRenderer {
 
   calculateLayout(
     config: WatermarkConfig,
-    containerRect: DOMRect,
+    containerRect: DOMRect
   ): LayoutResult {
     const layout = config.layout || {}
     // const containerRect = context.containerRect
@@ -136,8 +135,7 @@ export class DOMRendererImpl implements DOMRenderer {
     if (layout.rows && layout.columns) {
       rows = layout.rows
       columns = layout.columns
-    }
-    else {
+    } else {
       // 自动计算行列数
       columns = Math.ceil(containerRect.width / gapX) + 1
       rows = Math.ceil(containerRect.height / gapY) + 1
@@ -165,7 +163,7 @@ export class DOMRendererImpl implements DOMRenderer {
     config: WatermarkConfig,
     layout: LayoutResult,
     row: number,
-    col: number,
+    col: number
   ): Promise<HTMLElement> {
     const element = document.createElement('div')
 
@@ -175,8 +173,7 @@ export class DOMRendererImpl implements DOMRenderer {
     // 添加内容
     if (typeof config.content === 'string') {
       await this.addTextContent(element, config)
-    }
-    else if (typeof config.content === 'object' && config.content) {
+    } else if (typeof config.content === 'object' && config.content) {
       if (config.content.text) {
         await this.addTextContent(element, config)
       }
@@ -199,7 +196,7 @@ export class DOMRendererImpl implements DOMRenderer {
     config: WatermarkConfig,
     layout: LayoutResult,
     row: number,
-    col: number,
+    col: number
   ): void {
     const style = element.style
 
@@ -235,29 +232,28 @@ export class DOMRendererImpl implements DOMRenderer {
 
   private async addTextContent(
     element: HTMLElement,
-    config: WatermarkConfig,
+    config: WatermarkConfig
   ): Promise<void> {
     const textElement = document.createElement('span')
-    const text
-      = typeof config.content === 'string'
+    const text =
+      typeof config.content === 'string'
         ? config.content
         : typeof config.content === 'object' && config.content?.text
-          ? config.content.text
-          : ''
+        ? config.content.text
+        : ''
     textElement.textContent = text
     element.appendChild(textElement)
   }
 
   private async addImageContent(
     element: HTMLElement,
-    config: WatermarkConfig,
+    config: WatermarkConfig
   ): Promise<void> {
-    const imageConfig
-      = typeof config.content === 'object' && config.content?.image
+    const imageConfig =
+      typeof config.content === 'object' && config.content?.image
         ? config.content.image
         : null
-    if (!imageConfig)
-      return
+    if (!imageConfig) return
 
     const img = await this.loadImage(imageConfig.src)
 
@@ -395,28 +391,28 @@ export class DOMRendererImpl implements DOMRenderer {
 
   private setupEventListeners(
     element: HTMLElement,
-    _config: WatermarkConfig,
+    _config: WatermarkConfig
   ): void {
     // 防止右键菜单
-    element.addEventListener('contextmenu', (e) => {
+    element.addEventListener('contextmenu', e => {
       e.preventDefault()
       return false
     })
 
     // 防止选择
-    element.addEventListener('selectstart', (e) => {
+    element.addEventListener('selectstart', e => {
       e.preventDefault()
       return false
     })
 
     // 防止拖拽
-    element.addEventListener('dragstart', (e) => {
+    element.addEventListener('dragstart', e => {
       e.preventDefault()
       return false
     })
 
     // 防止复制
-    element.addEventListener('copy', (e) => {
+    element.addEventListener('copy', e => {
       e.preventDefault()
       return false
     })
@@ -430,7 +426,7 @@ export class DOMRendererImpl implements DOMRenderer {
   createElement(
     _config: WatermarkConfig,
     row: number,
-    col: number,
+    col: number
   ): HTMLElement {
     const element = document.createElement('div')
     element.className = 'watermark-element'
@@ -448,8 +444,7 @@ export class DOMRendererImpl implements DOMRenderer {
   setElementContent(element: HTMLElement, content: string | string[]): void {
     if (typeof content === 'string') {
       element.textContent = content
-    }
-    else {
+    } else {
       element.textContent = content.join(' ')
     }
   }

@@ -127,7 +127,7 @@ describe('apiEngine', () => {
   describe('aPI 调用', () => {
     it('应该在调用不存在的方法时抛出错误', async () => {
       await expect(apiEngine.call('nonExistentMethod')).rejects.toThrow(
-        'API method "nonExistentMethod" not found',
+        'API method "nonExistentMethod" not found'
       )
     })
 
@@ -172,7 +172,7 @@ describe('apiEngine', () => {
       apiEngine.register('validateMethod', method)
 
       await expect(apiEngine.call('validateMethod')).rejects.toThrow(
-        'API method "validateMethod" response validation failed',
+        'API method "validateMethod" response validation failed'
       )
     })
 
@@ -193,7 +193,7 @@ describe('apiEngine', () => {
       apiEngine.register('errorMethod', method)
 
       await expect(apiEngine.call('errorMethod')).rejects.toThrow(
-        'Network error',
+        'Network error'
       )
       expect(onError).toHaveBeenCalledWith(expect.any(Error))
     })
@@ -207,7 +207,7 @@ describe('apiEngine', () => {
         apiEngine.register('test', {
           name: 'test',
           config: { method: 'GET', url: '/test' },
-        }),
+        })
       ).toThrow('API Engine has been destroyed')
     })
 
@@ -215,7 +215,7 @@ describe('apiEngine', () => {
       apiEngine.destroy()
 
       await expect(apiEngine.call('test')).rejects.toThrow(
-        'API Engine has been destroyed',
+        'API Engine has been destroyed'
       )
     })
   })

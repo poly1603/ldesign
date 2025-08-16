@@ -13,20 +13,10 @@ export {
 } from './Action'
 
 // Getter 装饰器
-export {
-  CachedGetter,
-  DependentGetter,
-  Getter,
-  MemoizedGetter,
-} from './Getter'
+export { CachedGetter, DependentGetter, Getter, MemoizedGetter } from './Getter'
 
 // State 装饰器
-export {
-  PersistentState,
-  ReactiveState,
-  ReadonlyState,
-  State,
-} from './State'
+export { PersistentState, ReactiveState, ReadonlyState, State } from './State'
 
 // 类型定义
 export type {

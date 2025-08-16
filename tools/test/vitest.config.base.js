@@ -9,15 +9,9 @@ export default defineConfig({
     include: [
       'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-      '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+      '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
-    exclude: [
-      'node_modules',
-      'dist',
-      'lib',
-      'es',
-      'types'
-    ],
+    exclude: ['node_modules', 'dist', 'lib', 'es', 'types'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -31,18 +25,18 @@ export default defineConfig({
         '__tests__/',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/coverage/**'
-      ]
-    }
+        '**/coverage/**',
+      ],
+    },
   },
   resolve: {
     alias: {
       '@': resolve(process.cwd(), 'src'),
       '@tests': resolve(process.cwd(), 'tests'),
-      '@/__tests__': resolve(process.cwd(), '__tests__')
-    }
+      '@/__tests__': resolve(process.cwd(), '__tests__'),
+    },
   },
   esbuild: {
-    target: 'es2020'
-  }
+    target: 'es2020',
+  },
 })

@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { Action, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import {
+  Action,
+  BaseStore,
+  Getter,
+  PersistentState,
+  State,
+} from '@ldesign/store'
 import { computed, onUnmounted, ref } from 'vue'
 
 interface Todo {
@@ -70,7 +76,7 @@ class TodoStore extends BaseStore {
   @Action()
   markAllCompleted() {
     const hasIncomplete = this.todos.some(todo => !todo.completed)
-    this.todos.forEach((todo) => {
+    this.todos.forEach(todo => {
       todo.completed = hasIncomplete
     })
   }
@@ -109,8 +115,7 @@ class TodoStore extends BaseStore {
 
   @Getter()
   get completionRate() {
-    if (this.totalCount === 0)
-      return 0
+    if (this.totalCount === 0) return 0
     return Math.round((this.completedCount / this.totalCount) * 100)
   }
 }
@@ -308,7 +313,10 @@ const highlightedCode = computed(() => {
   const code = codeExamples[activeTab.value]
   return code
     .replace(/(@\w+)/g, '<span class="decorator">$1</span>')
-    .replace(/(class|interface|import|export|from|const|let|var)/g, '<span class="keyword">$1</span>')
+    .replace(
+      /(class|interface|import|export|from|const|let|var)/g,
+      '<span class="keyword">$1</span>'
+    )
     .replace(/(string|number|boolean|void)/g, '<span class="type">$1</span>')
     .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
 })
@@ -354,21 +362,13 @@ onUnmounted(() => {
             placeholder="添加新的待办事项..."
             class="todo-input"
             @keyup.enter="addTodo"
-          >
+          />
           <select v-model="selectedPriority" class="priority-select">
-            <option value="low">
-              低优先级
-            </option>
-            <option value="medium">
-              中优先级
-            </option>
-            <option value="high">
-              高优先级
-            </option>
+            <option value="low">低优先级</option>
+            <option value="medium">中优先级</option>
+            <option value="high">高优先级</option>
           </select>
-          <button class="btn btn-primary" @click="addTodo">
-            添加
-          </button>
+          <button class="btn btn-primary" @click="addTodo">添加</button>
         </div>
       </div>
 
@@ -403,9 +403,11 @@ onUnmounted(() => {
               :checked="todo.completed"
               class="todo-checkbox"
               @change="store.toggleTodo(todo.id)"
-            >
+            />
             <span class="todo-text">{{ todo.text }}</span>
-            <span class="todo-priority">{{ getPriorityText(todo.priority) }}</span>
+            <span class="todo-priority">{{
+              getPriorityText(todo.priority)
+            }}</span>
             <span class="todo-date">{{ formatDate(todo.createdAt) }}</span>
           </div>
           <div class="todo-actions">
@@ -427,21 +429,20 @@ onUnmounted(() => {
         </div>
 
         <div v-if="store.filteredTodos.length === 0" class="empty-state">
-          <div class="empty-icon">
-            📝
-          </div>
+          <div class="empty-icon">📝</div>
           <div class="empty-text">
-            {{ store.filter === 'all' ? '还没有任务，添加一个吧！' : `没有${getFilterLabel(store.filter)}的任务` }}
+            {{
+              store.filter === 'all'
+                ? '还没有任务，添加一个吧！'
+                : `没有${getFilterLabel(store.filter)}的任务`
+            }}
           </div>
         </div>
       </div>
 
       <!-- 批量操作 -->
       <div v-if="store.totalCount > 0" class="bulk-actions">
-        <button
-          class="btn btn-outline"
-          @click="store.markAllCompleted"
-        >
+        <button class="btn btn-outline" @click="store.markAllCompleted">
           {{ store.activeCount > 0 ? '全部完成' : '全部未完成' }}
         </button>
         <button
@@ -451,12 +452,7 @@ onUnmounted(() => {
         >
           清除已完成 ({{ store.completedCount }})
         </button>
-        <button
-          class="btn btn-danger"
-          @click="clearAllTodos"
-        >
-          清空所有
-        </button>
+        <button class="btn btn-danger" @click="clearAllTodos">清空所有</button>
       </div>
     </div>
 
@@ -465,9 +461,7 @@ onUnmounted(() => {
       <div class="modal" @click.stop>
         <div class="modal-header">
           <h4>编辑任务</h4>
-          <button class="close-btn" @click="cancelEdit">
-            ×
-          </button>
+          <button class="close-btn" @click="cancelEdit">×</button>
         </div>
         <div class="modal-body">
           <input
@@ -475,26 +469,16 @@ onUnmounted(() => {
             class="edit-input"
             placeholder="任务内容"
             @keyup.enter="saveEdit"
-          >
+          />
           <select v-model="editPriority" class="edit-select">
-            <option value="low">
-              低优先级
-            </option>
-            <option value="medium">
-              中优先级
-            </option>
-            <option value="high">
-              高优先级
-            </option>
+            <option value="low">低优先级</option>
+            <option value="medium">中优先级</option>
+            <option value="high">高优先级</option>
           </select>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-outline" @click="cancelEdit">
-            取消
-          </button>
-          <button class="btn btn-primary" @click="saveEdit">
-            保存
-          </button>
+          <button class="btn btn-outline" @click="cancelEdit">取消</button>
+          <button class="btn btn-primary" @click="saveEdit">保存</button>
         </div>
       </div>
     </div>

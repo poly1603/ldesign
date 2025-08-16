@@ -2,7 +2,8 @@
 
 ## 项目概述
 
-成功创建了一个功能完整的主题色切换和管理模块，完全参考 `packages/i18n/` 目录的项目结构和架构模式，实现了所有要求的功能特性。
+成功创建了一个功能完整的主题色切换和管理模块，完全参考 `packages/i18n/` 目录的项目结构和架构模式，实
+现了所有要求的功能特性。
 
 ## 核心功能实现
 
@@ -10,11 +11,12 @@
 
 - 创建了 `ThemeManager` 主题管理类
 - 用户通过实例化该类并传入配置参数来获得主题管理对象
-- 提供了多种便捷的创建函数：`createThemeManagerWithPresets`、`createSimpleThemeManager`、`createCustomThemeManager`
+- 提供了多种便捷的创建函数
+  ：`createThemeManagerWithPresets`、`createSimpleThemeManager`、`createCustomThemeManager`
 
 ### ✅ 2. 主题预设与配置
 
-- 支持多个预设主题配置（10个内置主题）
+- 支持多个预设主题配置（10 个内置主题）
 - 每个主题包含主色调配置和可选的其他颜色配置
 - 实现了完整的主题配置接口和类型定义
 
@@ -27,7 +29,7 @@
 ### ✅ 4. 色阶生成系统
 
 - 集成 @arco-design/color 库
-- 生成亮色和暗色模式的完整色阶（10级）
+- 生成亮色和暗色模式的完整色阶（10 级）
 - 将生成的颜色转换为 CSS 自定义属性
 
 ### ✅ 5. CSS Variables 管理
@@ -109,7 +111,7 @@ packages/color/
 
 - 集成 @arco-design/color
 - 支持亮色和暗色模式
-- 10级色阶，满足各种设计需求
+- 10 级色阶，满足各种设计需求
 
 ### 🔧 框架无关
 
@@ -125,8 +127,8 @@ packages/color/
 
 ## 测试覆盖
 
-- ✅ 颜色转换工具测试（15个测试用例）
-- ✅ 颜色生成器测试（13个测试用例）
+- ✅ 颜色转换工具测试（15 个测试用例）
+- ✅ 颜色生成器测试（13 个测试用例）
 - ✅ 所有测试通过，覆盖核心功能
 
 ## 使用示例
@@ -138,7 +140,7 @@ import { createThemeManagerWithPresets } from '@ldesign/color'
 
 const themeManager = await createThemeManagerWithPresets({
   defaultTheme: 'default',
-  autoDetect: true
+  autoDetect: true,
 })
 
 await themeManager.setTheme('green', 'dark')
@@ -163,4 +165,5 @@ const { currentTheme, setTheme, toggleMode } = useTheme()
 
 ## 总结
 
-成功创建了一个企业级的主题色管理系统，不仅满足了所有功能要求，还在性能优化、易用性、扩展性等方面都做到了很高的水准。该模块可以直接用于生产环境，为应用提供强大的主题管理能力。
+成功创建了一个企业级的主题色管理系统，不仅满足了所有功能要求，还在性能优化、易用性、扩展性等方面都做
+到了很高的水准。该模块可以直接用于生产环境，为应用提供强大的主题管理能力。

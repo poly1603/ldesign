@@ -181,9 +181,9 @@ export interface ThemeChangeEvent {
 /** LoginPanel 组件事件 */
 export interface LoginPanelEvents {
   /** 登录事件 */
-  'login': (event: LoginEvent) => void
+  login: (event: LoginEvent) => void
   /** 注册事件 */
-  'register': () => void
+  register: () => void
   /** 忘记密码事件 */
   'forgot-password': () => void
   /** 第三方登录事件 */

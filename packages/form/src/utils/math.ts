@@ -6,7 +6,7 @@
 export function calculateColumns(
   containerWidth: number,
   minColumnWidth: number,
-  maxColumns?: number,
+  maxColumns?: number
 ): number {
   const columns = Math.floor(containerWidth / minColumnWidth)
   return maxColumns ? Math.min(columns, maxColumns) : Math.max(columns, 1)
@@ -18,7 +18,7 @@ export function calculateColumns(
 export function calculateColumnWidth(
   containerWidth: number,
   columns: number,
-  gap: number = 0,
+  gap: number = 0
 ): number {
   const totalGap = (columns - 1) * gap
   return (containerWidth - totalGap) / columns
@@ -30,7 +30,7 @@ export function calculateColumnWidth(
 export function calculateSpanWidth(
   columnWidth: number,
   span: number,
-  gap: number = 0,
+  gap: number = 0
 ): number {
   return columnWidth * span + gap * (span - 1)
 }
@@ -64,8 +64,8 @@ export function parseSpan(span: number | string, totalColumns: number): number {
 export function calculateGridPosition(
   index: number,
   columns: number,
-  spans: number[],
-): { row: number, column: number } {
+  spans: number[]
+): { row: number; column: number } {
   let currentRow = 0
   let currentColumn = 0
 
@@ -98,14 +98,10 @@ export function calculateGridPosition(
  * 计算响应式断点
  */
 export function getBreakpoint(width: number): string {
-  if (width < 576)
-    return 'xs'
-  if (width < 768)
-    return 'sm'
-  if (width < 992)
-    return 'md'
-  if (width < 1200)
-    return 'lg'
+  if (width < 576) return 'xs'
+  if (width < 768) return 'sm'
+  if (width < 992) return 'md'
+  if (width < 1200) return 'lg'
   return 'xl'
 }
 
@@ -115,10 +111,9 @@ export function getBreakpoint(width: number): string {
 export function calculateVisibleRows(
   containerHeight: number,
   rowHeight: number,
-  gap: number = 0,
+  gap: number = 0
 ): number {
-  if (rowHeight <= 0)
-    return 0
+  if (rowHeight <= 0) return 0
   return Math.floor((containerHeight + gap) / (rowHeight + gap))
 }
 
@@ -131,8 +126,8 @@ export function calculateElementPosition(
   columnWidth: number,
   rowHeight: number,
   horizontalGap: number = 0,
-  verticalGap: number = 0,
-): { x: number, y: number } {
+  verticalGap: number = 0
+): { x: number; y: number } {
   return {
     x: column * (columnWidth + horizontalGap),
     y: row * (rowHeight + verticalGap),
@@ -146,8 +141,8 @@ export function calculateElementSize(
   span: number,
   columnWidth: number,
   rowHeight: number,
-  horizontalGap: number = 0,
-): { width: number, height: number } {
+  horizontalGap: number = 0
+): { width: number; height: number } {
   return {
     width: calculateSpanWidth(columnWidth, span, horizontalGap),
     height: rowHeight,
@@ -190,7 +185,7 @@ export function distance(
   x1: number,
   y1: number,
   x2: number,
-  y2: number,
+  y2: number
 ): number {
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 }
@@ -234,8 +229,7 @@ export function inRange(value: number, min: number, max: number): boolean {
  * 计算数组的平均值
  */
 export function average(numbers: number[]): number {
-  if (numbers.length === 0)
-    return 0
+  if (numbers.length === 0) return 0
   return numbers.reduce((sum, num) => sum + num, 0) / numbers.length
 }
 
@@ -266,10 +260,9 @@ export function min(numbers: number[]): number {
 export function calculateGridHeight(
   rows: number,
   rowHeight: number,
-  verticalGap: number = 0,
+  verticalGap: number = 0
 ): number {
-  if (rows <= 0)
-    return 0
+  if (rows <= 0) return 0
   return rows * rowHeight + (rows - 1) * verticalGap
 }
 
@@ -279,10 +272,9 @@ export function calculateGridHeight(
 export function calculateGridWidth(
   columns: number,
   columnWidth: number,
-  horizontalGap: number = 0,
+  horizontalGap: number = 0
 ): number {
-  if (columns <= 0)
-    return 0
+  if (columns <= 0) return 0
   return columns * columnWidth + (columns - 1) * horizontalGap
 }
 
@@ -314,7 +306,7 @@ export function parseCssSize(value: string | number): {
 export function convertToPixels(
   value: string | number,
   containerSize?: number,
-  fontSize?: number,
+  fontSize?: number
 ): number {
   const { value: numValue, unit } = parseCssSize(value)
 

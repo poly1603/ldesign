@@ -30,8 +30,8 @@ module.exports = {
     'no-debugger': 'error',
     'prefer-const': 'error',
     'no-var': 'error',
-    'semi': ['error', 'never'],
-    'quotes': ['error', 'single'],
+    semi: ['error', 'never'],
+    quotes: ['error', 'single'],
     'comma-dangle': ['error', 'always-multiline'],
   },
   overrides: [

@@ -54,13 +54,11 @@ export type {
   ColorConfig,
   ColorGenerator,
   ColorMode,
-
   ColorScale,
   // 颜色相关
   ColorValue,
   CSSInjector,
   EventEmitter,
-
   GeneratedTheme,
   IdleProcessor,
   LRUCache,
@@ -76,7 +74,6 @@ export type {
   ThemeEventType,
   // 主要接口
   ThemeManagerInstance,
-
   ThemeManagerOptions,
   ThemeType,
 } from './core/types'
@@ -120,10 +117,7 @@ export {
   rgbToHsl,
 } from './utils/color-converter'
 
-export type {
-  HSL,
-  RGB,
-} from './utils/color-converter'
+export type { HSL, RGB } from './utils/color-converter'
 
 // 导出颜色生成器
 export {
@@ -157,9 +151,7 @@ export {
   removeAllColorVariables,
 } from './utils/css-injector'
 
-export type {
-  CSSInjectionOptions,
-} from './utils/css-injector'
+export type { CSSInjectionOptions } from './utils/css-injector'
 
 // 导出CSS变量工具
 export {
@@ -172,10 +164,7 @@ export {
 } from './utils/css-variables'
 
 // 导出事件发射器
-export {
-  createEventEmitter,
-  EventEmitterImpl,
-} from './utils/event-emitter'
+export { createEventEmitter, EventEmitterImpl } from './utils/event-emitter'
 
 // 导出闲时处理器
 export {
@@ -190,12 +179,12 @@ export {
   supportsIdleCallback,
 } from './utils/idle-processor'
 
-export type {
-  IdleProcessorOptions,
-} from './utils/idle-processor'
+export type { IdleProcessorOptions } from './utils/idle-processor'
 
 // 便捷的创建函数
-export function createThemeManager(options?: ThemeManagerOptions): ThemeManagerInstance {
+export function createThemeManager(
+  options?: ThemeManagerOptions
+): ThemeManagerInstance {
   return new ThemeManager(options)
 }
 
@@ -204,7 +193,9 @@ export function createThemeManager(options?: ThemeManagerOptions): ThemeManagerI
  * @param options 主题管理器配置选项
  * @returns 主题管理器实例
  */
-export async function createThemeManagerWithPresets(options?: ThemeManagerOptions): Promise<ThemeManagerInstance> {
+export async function createThemeManagerWithPresets(
+  options?: ThemeManagerOptions
+): Promise<ThemeManagerInstance> {
   const { presetThemes } = await import('./themes/presets')
 
   const manager = new ThemeManager({
@@ -221,7 +212,9 @@ export async function createThemeManagerWithPresets(options?: ThemeManagerOption
  * @param options 主题管理器配置选项
  * @returns 主题管理器实例
  */
-export async function createSimpleThemeManager(options?: ThemeManagerOptions): Promise<ThemeManagerInstance> {
+export async function createSimpleThemeManager(
+  options?: ThemeManagerOptions
+): Promise<ThemeManagerInstance> {
   const { defaultTheme } = await import('./themes/presets')
 
   const manager = new ThemeManager({
@@ -245,7 +238,7 @@ export async function createCustomThemeManager(
   options?: ThemeManagerOptions & {
     themeName?: string
     darkPrimaryColor?: string
-  },
+  }
 ): Promise<ThemeManagerInstance> {
   const { createCustomTheme } = await import('./themes/presets')
 
@@ -254,7 +247,7 @@ export async function createCustomThemeManager(
     primaryColor,
     {
       darkPrimaryColor: options?.darkPrimaryColor,
-    },
+    }
   )
 
   const manager = new ThemeManager({

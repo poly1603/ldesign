@@ -36,7 +36,7 @@ export class DecorationManager implements DecorationManagerInstance {
   constructor(
     container: HTMLElement,
     eventEmitter: EventEmitter,
-    resourceManager: ResourceManagerInstance,
+    resourceManager: ResourceManagerInstance
   ) {
     this.container = container
     this.eventEmitter = eventEmitter
@@ -105,8 +105,7 @@ export class DecorationManager implements DecorationManagerInstance {
       }
       instance.element = this.createElement(instance.config)
       instance.rendered = false
-    }
-    else {
+    } else {
       // 只更新样式
       this.updateElementStyle(instance.element, instance.config)
     }
@@ -117,8 +116,7 @@ export class DecorationManager implements DecorationManagerInstance {
       instance.visible = newVisible
       if (newVisible && !instance.rendered) {
         this.renderDecoration(instance)
-      }
-      else if (!newVisible && instance.rendered) {
+      } else if (!newVisible && instance.rendered) {
         this.unrenderDecoration(instance)
       }
     }
@@ -136,7 +134,7 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   getAll(): DecorationConfig[] {
     return Array.from(this.decorations.values()).map(
-      instance => instance.config,
+      instance => instance.config
     )
   }
 
@@ -191,18 +189,18 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   private updateElementStyle(
     element: HTMLElement,
-    config: DecorationConfig,
+    config: DecorationConfig
   ): void {
     const { position, style } = config
 
     // 设置定位
     element.style.position = position.type
-    element.style.left
-      = typeof position.position.x === 'number'
+    element.style.left =
+      typeof position.position.x === 'number'
         ? `${position.position.x}px`
         : position.position.x
-    element.style.top
-      = typeof position.position.y === 'number'
+    element.style.top =
+      typeof position.position.y === 'number'
         ? `${position.position.y}px`
         : position.position.y
 
@@ -211,12 +209,12 @@ export class DecorationManager implements DecorationManagerInstance {
     }
 
     // 设置尺寸
-    element.style.width
-      = typeof style.size.width === 'number'
+    element.style.width =
+      typeof style.size.width === 'number'
         ? `${style.size.width}px`
         : style.size.width
-    element.style.height
-      = typeof style.size.height === 'number'
+    element.style.height =
+      typeof style.size.height === 'number'
         ? `${style.size.height}px`
         : style.size.height
 
@@ -248,8 +246,7 @@ export class DecorationManager implements DecorationManagerInstance {
     if (config.interactive) {
       element.style.pointerEvents = 'auto'
       element.style.cursor = 'pointer'
-    }
-    else {
+    } else {
       element.style.pointerEvents = 'none'
     }
   }
@@ -259,14 +256,14 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   private async updateElementContent(
     element: HTMLElement,
-    config: DecorationConfig,
+    config: DecorationConfig
   ): Promise<void> {
     try {
       switch (config.type) {
         case 'image':
           const img = (await this.resourceManager.load(
             config.src,
-            'image',
+            'image'
           )) as HTMLImageElement
           element.appendChild(img.cloneNode() as HTMLImageElement)
           break
@@ -275,7 +272,7 @@ export class DecorationManager implements DecorationManagerInstance {
         case 'svg':
           const svgContent = (await this.resourceManager.load(
             config.src,
-            'icon',
+            'icon'
           )) as string
           element.innerHTML = svgContent
           break
@@ -291,8 +288,7 @@ export class DecorationManager implements DecorationManagerInstance {
           element.style.backgroundRepeat = 'no-repeat'
           element.style.backgroundPosition = 'center'
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Failed to load decoration content: ${config.src}`, error)
       element.textContent = '❌' // 显示错误标识
     }
@@ -391,7 +387,7 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   private checkTime(condition: DecorationCondition): boolean {
     const now = new Date()
-    const value = condition.value as { start: string, end: string }
+    const value = condition.value as { start: string; end: string }
 
     // 这里可以实现更复杂的时间检查逻辑
     return true
@@ -418,7 +414,7 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   private needsRecreate(
     oldConfig: DecorationConfig,
-    newConfig: DecorationConfig,
+    newConfig: DecorationConfig
   ): boolean {
     return oldConfig.type !== newConfig.type || oldConfig.src !== newConfig.src
   }
@@ -435,7 +431,7 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   private addInteractiveEvents(
     element: HTMLElement,
-    config: DecorationConfig,
+    config: DecorationConfig
   ): void {
     element.addEventListener('click', () => {
       this.eventEmitter.emit('decoration-clicked', { decoration: config.id })
@@ -451,8 +447,8 @@ export class DecorationManager implements DecorationManagerInstance {
    */
   private setupObservers(): void {
     // 交集观察器用于优化渲染
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+    this.observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
         const decorationId = entry.target.getAttribute('data-decoration-id')
         if (decorationId) {
           const instance = this.decorations.get(decorationId)
@@ -472,8 +468,7 @@ export class DecorationManager implements DecorationManagerInstance {
           instance.visible = newVisible
           if (newVisible && !instance.rendered) {
             this.renderDecoration(instance)
-          }
-          else if (!newVisible && instance.rendered) {
+          } else if (!newVisible && instance.rendered) {
             this.unrenderDecoration(instance)
           }
         }
@@ -490,7 +485,7 @@ export class DecorationManager implements DecorationManagerInstance {
 export function createDecorationManager(
   container: HTMLElement,
   eventEmitter: EventEmitter,
-  resourceManager: ResourceManagerInstance,
+  resourceManager: ResourceManagerInstance
 ): DecorationManagerInstance {
   return new DecorationManager(container, eventEmitter, resourceManager)
 }

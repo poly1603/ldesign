@@ -1,6 +1,7 @@
 # @ldesign/crypto Vue 3 示例
 
-这是一个完整的 Vue 3 应用示例，展示了如何在 Vue 项目中使用 `@ldesign/crypto` 加密库的所有核心功能，包括 Composition API Hooks 和 Vue 插件的使用。
+这是一个完整的 Vue 3 应用示例，展示了如何在 Vue 项目中使用 `@ldesign/crypto` 加密库的所有核心功能，
+包括 Composition API Hooks 和 Vue 插件的使用。
 
 ## 🚀 快速开始
 
@@ -33,12 +34,14 @@ pnpm preview
 ## 📋 功能特性
 
 ### 🔐 Vue 3 深度集成
+
 - **Composition API Hooks**: `useCrypto`、`useHash`、`useSignature`
 - **Vue 插件**: 全局注册加密功能
 - **响应式状态管理**: 自动追踪加密状态
 - **TypeScript 支持**: 完整的类型安全
 
 ### 🔑 加密算法支持
+
 - **对称加密**: AES、DES、3DES、Blowfish
 - **非对称加密**: RSA 密钥对生成和加密
 - **哈希算法**: MD5、SHA 系列、HMAC
@@ -60,7 +63,7 @@ const app = createApp(App)
 app.use(CryptoPlugin, {
   defaultAlgorithm: 'AES',
   enableCache: true,
-  debug: true
+  debug: true,
 })
 
 app.mount('#app')
@@ -99,7 +102,7 @@ const handleEncrypt = () => {
         {{ isEncrypting ? '加密中...' : '加密' }}
       </button>
     </div>
-    
+
     <div class="result-section" v-if="encryptedData">
       <h3>加密结果</h3>
       <p>{{ encryptedData }}</p>
@@ -107,12 +110,12 @@ const handleEncrypt = () => {
         {{ isDecrypting ? '解密中...' : '解密' }}
       </button>
     </div>
-    
+
     <div class="decrypted-section" v-if="decryptedData">
       <h3>解密结果</h3>
       <p>{{ decryptedData }}</p>
     </div>
-    
+
     <div class="error-section" v-if="lastError">
       <p class="error">{{ lastError }}</p>
       <button @click="clearError">清除错误</button>
@@ -125,14 +128,7 @@ import { ref } from 'vue'
 import { useCrypto } from '@ldesign/crypto/vue'
 
 // 使用加密 Hook
-const {
-  encryptAES,
-  decryptAES,
-  isEncrypting,
-  isDecrypting,
-  lastError,
-  clearError
-} = useCrypto()
+const { encryptAES, decryptAES, isEncrypting, isDecrypting, lastError, clearError } = useCrypto()
 
 // 响应式数据
 const plaintext = ref('Hello, Vue 3!')
@@ -145,7 +141,7 @@ const handleEncrypt = async () => {
   try {
     const result = await encryptAES(plaintext.value, secretKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
     encryptedData.value = result
   } catch (error) {
@@ -158,7 +154,7 @@ const handleDecrypt = async () => {
   try {
     const result = await decryptAES(encryptedData.value, secretKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
     decryptedData.value = result
   } catch (error) {
@@ -186,7 +182,7 @@ const handleDecrypt = async () => {
         {{ isHashing ? '计算中...' : '计算哈希' }}
       </button>
     </div>
-    
+
     <div class="result-section" v-if="hashResult">
       <h3>哈希结果 ({{ selectedAlgorithm.toUpperCase() }})</h3>
       <p class="hash-value">{{ hashResult }}</p>
@@ -200,16 +196,7 @@ import { ref } from 'vue'
 import { useHash } from '@ldesign/crypto/vue'
 
 // 使用哈希 Hook
-const {
-  md5,
-  sha1,
-  sha256,
-  sha384,
-  sha512,
-  isHashing,
-  lastError,
-  clearError
-} = useHash()
+const { md5, sha1, sha256, sha384, sha512, isHashing, lastError, clearError } = useHash()
 
 // 响应式数据
 const inputData = ref('Hello, Hash!')
@@ -220,7 +207,7 @@ const hashResult = ref('')
 const calculateHash = async () => {
   try {
     let result: string
-    
+
     switch (selectedAlgorithm.value) {
       case 'md5':
         result = await md5(inputData.value)
@@ -240,7 +227,7 @@ const calculateHash = async () => {
       default:
         result = await sha256(inputData.value)
     }
-    
+
     hashResult.value = result
   } catch (error) {
     console.error('哈希计算失败:', error)
@@ -293,32 +280,32 @@ const {
   // AES 加密
   encryptAES,
   decryptAES,
-  
+
   // RSA 加密
   encryptRSA,
   decryptRSA,
   generateRSAKeyPair,
-  
+
   // 编码
   encodeBase64,
   decodeBase64,
   encodeHex,
   decodeHex,
-  
+
   // 密钥生成
   generateKey,
   generateSalt,
   generateIV,
-  
+
   // 状态
   isEncrypting,
   isDecrypting,
   lastError,
   lastResult,
-  
+
   // 操作
   clearError,
-  reset
+  reset,
 } = useCrypto()
 ```
 
@@ -333,29 +320,29 @@ const {
   sha256,
   sha384,
   sha512,
-  
+
   // HMAC 算法
   hmacMd5,
   hmacSha1,
   hmacSha256,
   hmacSha384,
   hmacSha512,
-  
+
   // 验证
   verify,
   verifyHmac,
-  
+
   // 批量操作
   hashMultiple,
-  
+
   // 状态
   isHashing,
   lastError,
   lastResult,
-  
+
   // 操作
   clearError,
-  reset
+  reset,
 } = useHash()
 ```
 
@@ -367,16 +354,16 @@ const {
   sign,
   verify,
   generateKeyPair,
-  
+
   // 状态
   isSigning,
   isVerifying,
   lastError,
   lastSignature,
-  
+
   // 操作
   clearError,
-  reset
+  reset,
 } = useSignature()
 ```
 
@@ -399,14 +386,11 @@ const {
 
 ### 常见问题
 
-**Q: Hook 返回 undefined**
-A: 确保在 `setup()` 函数内部调用 Hook
+**Q: Hook 返回 undefined** A: 确保在 `setup()` 函数内部调用 Hook
 
-**Q: 插件注册失败**
-A: 检查插件导入路径是否正确：`@ldesign/crypto/vue`
+**Q: 插件注册失败** A: 检查插件导入路径是否正确：`@ldesign/crypto/vue`
 
-**Q: TypeScript 类型错误**
-A: 确保安装了正确的类型定义，重启 TypeScript 服务
+**Q: TypeScript 类型错误** A: 确保安装了正确的类型定义，重启 TypeScript 服务
 
 ## 📝 许可证
 

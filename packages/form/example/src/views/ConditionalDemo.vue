@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { createField, createFormConfig, createRule, FormBuilder } from '../../../src/index'
+import {
+  createField,
+  createFormConfig,
+  createRule,
+  FormBuilder,
+} from '../../../src/index'
 
 // 表单数据
 const formData = ref({
@@ -261,9 +266,8 @@ const formConfig = createFormConfig({
 
 // 当前显示的字段
 const visibleFields = computed(() => {
-  return formConfig.fields.filter((field) => {
-    if (!field.condition)
-      return true
+  return formConfig.fields.filter(field => {
+    if (!field.condition) return true
     return field.condition(formData.value)
   })
 })
@@ -321,20 +325,14 @@ function handleChange(key: string, value: any) {
 <template>
   <div class="space-y-8">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">
-        条件渲染演示
-      </h1>
-      <p class="text-gray-600">
-        展示基于条件的字段显示隐藏功能
-      </p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">条件渲染演示</h1>
+      <p class="text-gray-600">展示基于条件的字段显示隐藏功能</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- 表单区域 -->
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">
-          动态表单
-        </h2>
+        <h2 class="text-xl font-semibold mb-4">动态表单</h2>
 
         <FormBuilder
           v-model="formData"
@@ -348,9 +346,7 @@ function handleChange(key: string, value: any) {
       <div class="space-y-6">
         <!-- 当前显示的字段 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            当前显示的字段
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">当前显示的字段</h3>
           <div class="space-y-2">
             <div
               v-for="field in visibleFields"
@@ -365,9 +361,7 @@ function handleChange(key: string, value: any) {
 
         <!-- 条件规则说明 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            条件规则说明
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">条件规则说明</h3>
           <div class="space-y-3 text-sm">
             <div><strong>用户类型:</strong> 选择不同类型显示不同字段组</div>
             <div>
@@ -388,9 +382,7 @@ function handleChange(key: string, value: any) {
 
         <!-- 表单数据 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">
-            表单数据
-          </h3>
+          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(formData, null, 2)
           }}</pre>

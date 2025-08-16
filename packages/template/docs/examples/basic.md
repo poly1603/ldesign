@@ -37,7 +37,7 @@ const props = withDefaults(defineProps<Props>(), {
   title: 'Hello World',
   message: '欢迎使用 LDesign Template！',
   buttonText: '点击我',
-  showButton: true
+  showButton: true,
 })
 
 // 定义事件
@@ -67,11 +67,7 @@ function handleClick() {
         {{ message }}
       </p>
       <div class="greeting-actions">
-        <button
-          v-if="showButton"
-          class="greeting-button"
-          @click="handleClick"
-        >
+        <button v-if="showButton" class="greeting-button" @click="handleClick">
           {{ buttonText }}
         </button>
       </div>
@@ -169,49 +165,49 @@ export const config: TemplateConfig = {
       type: 'string',
       default: 'Hello World',
       description: '问候标题',
-      required: false
+      required: false,
     },
     message: {
       type: 'string',
       default: '欢迎使用 LDesign Template！',
       description: '问候消息',
-      required: false
+      required: false,
     },
     buttonText: {
       type: 'string',
       default: '点击我',
       description: '按钮文本',
-      required: false
+      required: false,
     },
     showButton: {
       type: 'boolean',
       default: true,
       description: '是否显示按钮',
-      required: false
+      required: false,
     },
     onClick: {
       type: 'function',
       description: '按钮点击回调函数',
-      required: false
-    }
+      required: false,
+    },
   },
 
   // 事件定义
   events: {
     click: {
-      description: '按钮点击时触发'
+      description: '按钮点击时触发',
     },
     greet: {
       description: '发送问候时触发',
-      payload: 'string'
-    }
+      payload: 'string',
+    },
   },
 
   // 兼容性
   compatibility: {
     vue: '>=3.2.0',
-    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14']
-  }
+    browsers: ['Chrome >= 88', 'Firefox >= 85', 'Safari >= 14'],
+  },
 }
 ```
 
@@ -232,7 +228,7 @@ const app = createApp(App)
 // 注册插件
 app.use(TemplatePlugin, {
   autoScan: true,
-  autoDetectDevice: true
+  autoDetectDevice: true,
 })
 
 app.mount('#app')
@@ -299,13 +295,7 @@ import { useTemplate } from '@ldesign/template'
 import { ref } from 'vue'
 
 // 使用模板管理 composable
-const {
-  currentTemplate,
-  loading,
-  error,
-  render,
-  clearCache
-} = useTemplate()
+const { currentTemplate, loading, error, render, clearCache } = useTemplate()
 
 // 响应式数据
 const templateTitle = ref('Hello')
@@ -316,7 +306,7 @@ async function loadTemplate() {
   await render({
     category: 'greeting',
     device: 'desktop',
-    template: 'hello'
+    template: 'hello',
   })
 }
 
@@ -326,7 +316,7 @@ function switchMessage() {
     '这是通过 Composable 加载的模板！',
     '消息已切换！',
     '又一条新消息！',
-    'LDesign Template 很棒！'
+    'LDesign Template 很棒！',
   ]
 
   const currentIndex = messages.indexOf(templateMessage.value)
@@ -359,27 +349,17 @@ function onGreet(message: string) {
     <h1>使用 Composable</h1>
 
     <div class="controls">
-      <button @click="loadTemplate">
-        加载模板
-      </button>
-      <button @click="switchMessage">
-        切换消息
-      </button>
-      <button @click="clearTemplate">
-        清空模板
-      </button>
+      <button @click="loadTemplate">加载模板</button>
+      <button @click="switchMessage">切换消息</button>
+      <button @click="clearTemplate">清空模板</button>
     </div>
 
     <div class="template-container">
-      <div v-if="loading" class="loading">
-        正在加载模板...
-      </div>
+      <div v-if="loading" class="loading">正在加载模板...</div>
 
       <div v-else-if="error" class="error">
         加载失败: {{ error.message }}
-        <button @click="retry">
-          重试
-        </button>
+        <button @click="retry">重试</button>
       </div>
 
       <component
@@ -391,9 +371,7 @@ function onGreet(message: string) {
         @greet="onGreet"
       />
 
-      <div v-else class="empty">
-        点击"加载模板"开始
-      </div>
+      <div v-else class="empty">点击"加载模板"开始</div>
     </div>
   </div>
 </template>
@@ -467,8 +445,7 @@ import { computed, ref } from 'vue'
 const selectedTemplate = ref('')
 
 const templateConfig = computed(() => {
-  if (!selectedTemplate.value)
-    return null
+  if (!selectedTemplate.value) return null
 
   return {
     category: 'greeting',
@@ -479,8 +456,8 @@ const templateConfig = computed(() => {
       message: '这是通过指令加载的模板！',
       onClick: () => {
         console.log('指令模板按钮被点击')
-      }
-    }
+      },
+    },
   }
 })
 
@@ -510,9 +487,7 @@ function updateTemplate() {
       class="template-container"
     />
 
-    <div v-else class="empty">
-      请选择一个模板
-    </div>
+    <div v-else class="empty">请选择一个模板</div>
   </div>
 </template>
 
@@ -560,7 +535,7 @@ import { ref } from 'vue'
 
 const templateProps = ref({
   title: '错误处理示例',
-  message: '这个示例展示了如何处理模板加载错误'
+  message: '这个示例展示了如何处理模板加载错误',
 })
 
 function handleError(error: Error) {
@@ -596,9 +571,7 @@ function handleLoad(component: any) {
         <div class="custom-error">
           <h3>😞 加载失败</h3>
           <p>{{ error.message }}</p>
-          <button @click="retry">
-            重新加载
-          </button>
+          <button @click="retry">重新加载</button>
         </div>
       </template>
 

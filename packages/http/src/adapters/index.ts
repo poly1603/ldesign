@@ -49,7 +49,9 @@ export class AdapterFactory {
 
     // 验证适配器是否可用
     if (!adapter.isSupported()) {
-      throw new Error(`Adapter '${name}' is not supported in current environment`)
+      throw new Error(
+        `Adapter '${name}' is not supported in current environment`
+      )
     }
 
     // 缓存适配器实例
@@ -82,8 +84,7 @@ export class AdapterFactory {
         if (isSupported) {
           available.push(name)
         }
-      }
-      catch {
+      } catch {
         // 缓存不可用结果
         this.availabilityCache.set(name, false)
       }
@@ -150,7 +151,11 @@ export function createAdapter(adapter?: string | HttpAdapter): HttpAdapter {
     return AdapterFactory.create(adapter)
   }
 
-  if (typeof adapter === 'object' && 'request' in adapter && 'isSupported' in adapter) {
+  if (
+    typeof adapter === 'object' &&
+    'request' in adapter &&
+    'isSupported' in adapter
+  ) {
     return adapter
   }
 
@@ -164,8 +169,7 @@ export function isAdapterAvailable(name: string): boolean {
   try {
     const adapter = AdapterFactory.create(name)
     return adapter.isSupported()
-  }
-  catch {
+  } catch {
     return false
   }
 }

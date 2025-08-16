@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "@ldesign/crypto"
-  text: "全面的加解密库"
-  tagline: "支持所有主流 JavaScript 框架，专为 Vue 3 深度集成"
+  name: '@ldesign/crypto'
+  text: '全面的加解密库'
+  tagline: '支持所有主流 JavaScript 框架，专为 Vue 3 深度集成'
   image:
     src: /logo.svg
     alt: LDesign Crypto
@@ -99,14 +99,12 @@ async function handleEncrypt() {
 
 <template>
   <div>
-    <input v-model="data" placeholder="输入要加密的数据">
-    <input v-model="key" placeholder="输入密钥">
+    <input v-model="data" placeholder="输入要加密的数据" />
+    <input v-model="key" placeholder="输入密钥" />
     <button :disabled="isEncrypting" @click="handleEncrypt">
       {{ isEncrypting ? '加密中...' : '加密' }}
     </button>
-    <div v-if="encryptedData">
-      加密结果: {{ encryptedData }}
-    </div>
+    <div v-if="encryptedData">加密结果: {{ encryptedData }}</div>
   </div>
 </template>
 ```

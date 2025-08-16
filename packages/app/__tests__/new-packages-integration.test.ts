@@ -89,7 +89,7 @@ describe('新集成包功能测试', () => {
         app.use(
           createStoreProviderPlugin({
             enableDevtools: false,
-          }),
+          })
         )
       }).not.toThrow()
     })

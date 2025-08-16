@@ -26,11 +26,10 @@ function checkRequiredFiles() {
     'src/components/FormInput.vue',
   ]
 
-  requiredFiles.forEach((file) => {
+  requiredFiles.forEach(file => {
     if (fs.existsSync(file)) {
       console.log(`  ✅ ${file}`)
-    }
-    else {
+    } else {
       console.log(`  ❌ ${file} 缺失`)
       hasErrors = true
     }
@@ -53,27 +52,24 @@ function checkDependencies() {
       'vue-tsc',
     ]
 
-    requiredDeps.forEach((dep) => {
+    requiredDeps.forEach(dep => {
       if (packageJson.dependencies && packageJson.dependencies[dep]) {
         console.log(`  ✅ ${dep} (生产依赖)`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${dep} 缺失 (生产依赖)`)
         hasErrors = true
       }
     })
 
-    requiredDevDeps.forEach((dep) => {
+    requiredDevDeps.forEach(dep => {
       if (packageJson.devDependencies && packageJson.devDependencies[dep]) {
         console.log(`  ✅ ${dep} (开发依赖)`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${dep} 缺失 (开发依赖)`)
         hasErrors = true
       }
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.log('  ❌ 无法读取 package.json')
     hasErrors = true
   }
@@ -87,16 +83,14 @@ function runTypeCheck() {
     execSync('npx vue-tsc --noEmit', { stdio: 'pipe' })
     console.log('  ✅ Vue TypeScript 检查通过')
     return true
-  }
-  catch (error) {
+  } catch (error) {
     console.log('  ⚠️  Vue TypeScript 检查失败，尝试普通 TypeScript...')
 
     try {
       execSync('npx tsc --noEmit', { stdio: 'pipe' })
       console.log('  ✅ TypeScript 检查通过')
       return true
-    }
-    catch (tscError) {
+    } catch (tscError) {
       console.log('  ❌ TypeScript 检查失败')
       console.log('  错误信息:', `${tscError.message.slice(0, 200)}...`)
       return false
@@ -112,8 +106,7 @@ function runLintCheck() {
     execSync('npx eslint src --ext .ts,.vue', { stdio: 'pipe' })
     console.log('  ✅ ESLint 检查通过')
     return true
-  }
-  catch (error) {
+  } catch (error) {
     console.log('  ⚠️  ESLint 检查有警告或错误')
 
     // 尝试自动修复
@@ -121,8 +114,7 @@ function runLintCheck() {
       execSync('npx eslint src --ext .ts,.vue --fix', { stdio: 'pipe' })
       console.log('  ✅ ESLint 自动修复完成')
       return true
-    }
-    catch (fixError) {
+    } catch (fixError) {
       console.log('  ❌ ESLint 自动修复失败')
       return false
     }
@@ -146,19 +138,17 @@ function runBuildTest() {
     const buildFiles = ['dist/index.mjs', 'dist/index.cjs', 'dist/index.d.ts']
 
     let buildSuccess = true
-    buildFiles.forEach((file) => {
+    buildFiles.forEach(file => {
       if (fs.existsSync(file)) {
         console.log(`  ✅ ${file}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${file} 构建失败`)
         buildSuccess = false
       }
     })
 
     return buildSuccess
-  }
-  catch (error) {
+  } catch (error) {
     console.log('  ❌ 构建失败')
     console.log('  错误信息:', `${error.message.slice(0, 200)}...`)
     return false
@@ -171,18 +161,16 @@ function checkExamples() {
 
   const exampleDirs = ['examples/vue', 'examples/vanilla']
 
-  exampleDirs.forEach((dir) => {
+  exampleDirs.forEach(dir => {
     if (fs.existsSync(dir)) {
       const packagePath = path.join(dir, 'package.json')
       if (fs.existsSync(packagePath)) {
         console.log(`  ✅ ${dir} 配置正常`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${dir} 缺少 package.json`)
         hasErrors = true
       }
-    }
-    else {
+    } else {
       console.log(`  ❌ ${dir} 目录不存在`)
       hasErrors = true
     }
@@ -233,8 +221,7 @@ async function main() {
       console.log('  pnpm type-check - TypeScript 类型检查')
       console.log('  pnpm lint       - ESLint 检查')
       console.log('  pnpm test       - 运行测试')
-    }
-    else {
+    } else {
       console.log('\n⚠️  部分验证失败，但项目基本可用。')
       console.log('\n🔧 建议修复步骤:')
       if (!typeCheckPassed) {
@@ -247,8 +234,7 @@ async function main() {
         console.log('  3. 修复构建配置问题')
       }
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('\n❌ 验证过程中发生错误:', error.message)
     process.exit(1)
   }

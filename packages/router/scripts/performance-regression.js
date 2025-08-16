@@ -41,13 +41,11 @@ class PerformanceRegression {
         this.baselineResults = JSON.parse(data)
         console.log('📊 已加载基准性能数据')
         return true
-      }
-      else {
+      } else {
         console.log('⚠️  未找到基准性能数据，将创建新的基准')
         return false
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 加载基准数据失败:', error.message)
       return false
     }
@@ -64,8 +62,7 @@ class PerformanceRegression {
 
       fs.writeFileSync(this.baselineFile, JSON.stringify(baselineData, null, 2))
       console.log('💾 基准性能数据已保存')
-    }
-    catch (error) {
+    } catch (error) {
       console.error('❌ 保存基准数据失败:', error.message)
     }
   }
@@ -106,8 +103,7 @@ class PerformanceRegression {
     const baseline = this.baselineResults.results.routeMatching
     const current = this.currentResults.routeMatching
 
-    if (!baseline || !current)
-      return null
+    if (!baseline || !current) return null
 
     const comparison = []
 
@@ -116,8 +112,15 @@ class PerformanceRegression {
       const currentItem = current[i]
 
       if (baselineItem.route === currentItem.route) {
-        const avgTimeDiff = ((Number.parseFloat(currentItem.avgTime) - Number.parseFloat(baselineItem.avgTime)) / Number.parseFloat(baselineItem.avgTime)) * 100
-        const opsPerSecondDiff = ((currentItem.opsPerSecond - baselineItem.opsPerSecond) / baselineItem.opsPerSecond) * 100
+        const avgTimeDiff =
+          ((Number.parseFloat(currentItem.avgTime) -
+            Number.parseFloat(baselineItem.avgTime)) /
+            Number.parseFloat(baselineItem.avgTime)) *
+          100
+        const opsPerSecondDiff =
+          ((currentItem.opsPerSecond - baselineItem.opsPerSecond) /
+            baselineItem.opsPerSecond) *
+          100
 
         comparison.push({
           route: currentItem.route,
@@ -146,8 +149,7 @@ class PerformanceRegression {
     const baseline = this.baselineResults.results.navigation
     const current = this.currentResults.navigation
 
-    if (!baseline || !current)
-      return null
+    if (!baseline || !current) return null
 
     const comparison = []
 
@@ -156,7 +158,11 @@ class PerformanceRegression {
       const currentItem = current[i]
 
       if (baselineItem.route === currentItem.route) {
-        const avgTimeDiff = ((Number.parseFloat(currentItem.avgTime) - Number.parseFloat(baselineItem.avgTime)) / Number.parseFloat(baselineItem.avgTime)) * 100
+        const avgTimeDiff =
+          ((Number.parseFloat(currentItem.avgTime) -
+            Number.parseFloat(baselineItem.avgTime)) /
+            Number.parseFloat(baselineItem.avgTime)) *
+          100
 
         comparison.push({
           route: currentItem.route,
@@ -184,10 +190,13 @@ class PerformanceRegression {
     const baseline = this.baselineResults.results.massRoutes
     const current = this.currentResults.massRoutes
 
-    if (!baseline || !current)
-      return null
+    if (!baseline || !current) return null
 
-    const createTimeDiff = ((Number.parseFloat(current.createTime) - Number.parseFloat(baseline.createTime)) / Number.parseFloat(baseline.createTime)) * 100
+    const createTimeDiff =
+      ((Number.parseFloat(current.createTime) -
+        Number.parseFloat(baseline.createTime)) /
+        Number.parseFloat(baseline.createTime)) *
+      100
 
     return {
       createTime: {
@@ -204,10 +213,13 @@ class PerformanceRegression {
     const baseline = this.baselineResults.results.memoryUsage
     const current = this.currentResults.memoryUsage
 
-    if (!baseline || !current)
-      return null
+    if (!baseline || !current) return null
 
-    const memoryDiff = ((Number.parseFloat(current.avgMemoryPerRouter) - Number.parseFloat(baseline.avgMemoryPerRouter)) / Number.parseFloat(baseline.avgMemoryPerRouter)) * 100
+    const memoryDiff =
+      ((Number.parseFloat(current.avgMemoryPerRouter) -
+        Number.parseFloat(baseline.avgMemoryPerRouter)) /
+        Number.parseFloat(baseline.avgMemoryPerRouter)) *
+      100
 
     return {
       avgMemoryPerRouter: {
@@ -221,10 +233,8 @@ class PerformanceRegression {
 
   // 获取性能状态
   getPerformanceStatus(diff, goodThreshold, badThreshold) {
-    if (diff <= goodThreshold)
-      return 'improved'
-    if (diff >= badThreshold)
-      return 'degraded'
+    if (diff <= goodThreshold) return 'improved'
+    if (diff >= badThreshold) return 'degraded'
     return 'stable'
   }
 
@@ -234,36 +244,61 @@ class PerformanceRegression {
 
     // 检查路由匹配阈值
     if (this.currentResults.routeMatching) {
-      this.currentResults.routeMatching.forEach((result) => {
-        if (Number.parseFloat(result.avgTime) > PERFORMANCE_THRESHOLDS.routeMatching.maxAvgTime) {
-          violations.push(`路由匹配 ${result.route}: 平均时间 ${result.avgTime}ms 超过阈值 ${PERFORMANCE_THRESHOLDS.routeMatching.maxAvgTime}ms`)
+      this.currentResults.routeMatching.forEach(result => {
+        if (
+          Number.parseFloat(result.avgTime) >
+          PERFORMANCE_THRESHOLDS.routeMatching.maxAvgTime
+        ) {
+          violations.push(
+            `路由匹配 ${result.route}: 平均时间 ${result.avgTime}ms 超过阈值 ${PERFORMANCE_THRESHOLDS.routeMatching.maxAvgTime}ms`
+          )
         }
-        if (result.opsPerSecond < PERFORMANCE_THRESHOLDS.routeMatching.minOpsPerSecond) {
-          violations.push(`路由匹配 ${result.route}: 操作数 ${result.opsPerSecond} ops/s 低于阈值 ${PERFORMANCE_THRESHOLDS.routeMatching.minOpsPerSecond} ops/s`)
+        if (
+          result.opsPerSecond <
+          PERFORMANCE_THRESHOLDS.routeMatching.minOpsPerSecond
+        ) {
+          violations.push(
+            `路由匹配 ${result.route}: 操作数 ${result.opsPerSecond} ops/s 低于阈值 ${PERFORMANCE_THRESHOLDS.routeMatching.minOpsPerSecond} ops/s`
+          )
         }
       })
     }
 
     // 检查导航阈值
     if (this.currentResults.navigation) {
-      this.currentResults.navigation.forEach((result) => {
-        if (Number.parseFloat(result.avgTime) > PERFORMANCE_THRESHOLDS.navigation.maxAvgTime) {
-          violations.push(`路由导航 ${result.route}: 平均时间 ${result.avgTime}ms 超过阈值 ${PERFORMANCE_THRESHOLDS.navigation.maxAvgTime}ms`)
+      this.currentResults.navigation.forEach(result => {
+        if (
+          Number.parseFloat(result.avgTime) >
+          PERFORMANCE_THRESHOLDS.navigation.maxAvgTime
+        ) {
+          violations.push(
+            `路由导航 ${result.route}: 平均时间 ${result.avgTime}ms 超过阈值 ${PERFORMANCE_THRESHOLDS.navigation.maxAvgTime}ms`
+          )
         }
       })
     }
 
     // 检查大量路由阈值
     if (this.currentResults.massRoutes) {
-      if (Number.parseFloat(this.currentResults.massRoutes.createTime) > PERFORMANCE_THRESHOLDS.massRoutes.maxCreateTime) {
-        violations.push(`大量路由创建时间 ${this.currentResults.massRoutes.createTime}ms 超过阈值 ${PERFORMANCE_THRESHOLDS.massRoutes.maxCreateTime}ms`)
+      if (
+        Number.parseFloat(this.currentResults.massRoutes.createTime) >
+        PERFORMANCE_THRESHOLDS.massRoutes.maxCreateTime
+      ) {
+        violations.push(
+          `大量路由创建时间 ${this.currentResults.massRoutes.createTime}ms 超过阈值 ${PERFORMANCE_THRESHOLDS.massRoutes.maxCreateTime}ms`
+        )
       }
     }
 
     // 检查内存使用阈值
     if (this.currentResults.memoryUsage) {
-      if (Number.parseFloat(this.currentResults.memoryUsage.avgMemoryPerRouter) > PERFORMANCE_THRESHOLDS.memoryUsage.maxMemoryPerRouter) {
-        violations.push(`平均内存使用 ${this.currentResults.memoryUsage.avgMemoryPerRouter}MB 超过阈值 ${PERFORMANCE_THRESHOLDS.memoryUsage.maxMemoryPerRouter}MB`)
+      if (
+        Number.parseFloat(this.currentResults.memoryUsage.avgMemoryPerRouter) >
+        PERFORMANCE_THRESHOLDS.memoryUsage.maxMemoryPerRouter
+      ) {
+        violations.push(
+          `平均内存使用 ${this.currentResults.memoryUsage.avgMemoryPerRouter}MB 超过阈值 ${PERFORMANCE_THRESHOLDS.memoryUsage.maxMemoryPerRouter}MB`
+        )
       }
     }
 
@@ -277,44 +312,71 @@ class PerformanceRegression {
 
     if (comparison.routeMatching) {
       console.log('\n🔍 路由匹配性能对比:')
-      comparison.routeMatching.forEach((item) => {
-        const statusIcon = item.status === 'improved' ? '✅' : item.status === 'degraded' ? '❌' : '➖'
-        console.log(`  ${statusIcon} ${item.route.padEnd(30)} ${item.diff.avgTime}% (${item.current.avgTime}ms)`)
+      comparison.routeMatching.forEach(item => {
+        const statusIcon =
+          item.status === 'improved'
+            ? '✅'
+            : item.status === 'degraded'
+            ? '❌'
+            : '➖'
+        console.log(
+          `  ${statusIcon} ${item.route.padEnd(30)} ${item.diff.avgTime}% (${
+            item.current.avgTime
+          }ms)`
+        )
       })
     }
 
     if (comparison.navigation) {
       console.log('\n🧭 路由导航性能对比:')
-      comparison.navigation.forEach((item) => {
-        const statusIcon = item.status === 'improved' ? '✅' : item.status === 'degraded' ? '❌' : '➖'
-        console.log(`  ${statusIcon} ${item.route.padEnd(20)} ${item.diff.avgTime}% (${item.current.avgTime}ms)`)
+      comparison.navigation.forEach(item => {
+        const statusIcon =
+          item.status === 'improved'
+            ? '✅'
+            : item.status === 'degraded'
+            ? '❌'
+            : '➖'
+        console.log(
+          `  ${statusIcon} ${item.route.padEnd(20)} ${item.diff.avgTime}% (${
+            item.current.avgTime
+          }ms)`
+        )
       })
     }
 
     if (comparison.massRoutes) {
       console.log('\n📊 大量路由性能对比:')
-      const statusIcon = comparison.massRoutes.createTime.status === 'improved'
-        ? '✅'
-        : comparison.massRoutes.createTime.status === 'degraded' ? '❌' : '➖'
-      console.log(`  ${statusIcon} 创建时间: ${comparison.massRoutes.createTime.diff}% (${comparison.massRoutes.createTime.current}ms)`)
+      const statusIcon =
+        comparison.massRoutes.createTime.status === 'improved'
+          ? '✅'
+          : comparison.massRoutes.createTime.status === 'degraded'
+          ? '❌'
+          : '➖'
+      console.log(
+        `  ${statusIcon} 创建时间: ${comparison.massRoutes.createTime.diff}% (${comparison.massRoutes.createTime.current}ms)`
+      )
     }
 
     if (comparison.memoryUsage) {
       console.log('\n💾 内存使用对比:')
-      const statusIcon = comparison.memoryUsage.avgMemoryPerRouter.status === 'improved'
-        ? '✅'
-        : comparison.memoryUsage.avgMemoryPerRouter.status === 'degraded' ? '❌' : '➖'
-      console.log(`  ${statusIcon} 平均内存/路由器: ${comparison.memoryUsage.avgMemoryPerRouter.diff}% (${comparison.memoryUsage.avgMemoryPerRouter.current}MB)`)
+      const statusIcon =
+        comparison.memoryUsage.avgMemoryPerRouter.status === 'improved'
+          ? '✅'
+          : comparison.memoryUsage.avgMemoryPerRouter.status === 'degraded'
+          ? '❌'
+          : '➖'
+      console.log(
+        `  ${statusIcon} 平均内存/路由器: ${comparison.memoryUsage.avgMemoryPerRouter.diff}% (${comparison.memoryUsage.avgMemoryPerRouter.current}MB)`
+      )
     }
 
     // 显示阈值违规
     if (violations.length > 0) {
       console.log('\n⚠️  性能阈值违规:')
-      violations.forEach((violation) => {
+      violations.forEach(violation => {
         console.log(`  ❌ ${violation}`)
       })
-    }
-    else {
+    } else {
       console.log('\n✅ 所有性能指标均在阈值范围内')
     }
 
@@ -360,12 +422,10 @@ async function runRegressionTest(createBaseline = false) {
     if (violations.length > 0) {
       console.log('\n❌ 性能回归测试失败')
       process.exit(1)
-    }
-    else {
+    } else {
       console.log('\n✅ 性能回归测试通过')
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 性能回归测试失败:', error)
     process.exit(1)
   }

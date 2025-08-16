@@ -268,9 +268,9 @@ export const extraLargeSizeConfig: SizeConfig = {
  * 所有尺寸配置的映射
  */
 export const sizeConfigs: Record<SizeMode, SizeConfig> = {
-  'small': smallSizeConfig,
-  'medium': mediumSizeConfig,
-  'large': largeSizeConfig,
+  small: smallSizeConfig,
+  medium: mediumSizeConfig,
+  large: largeSizeConfig,
   'extra-large': extraLargeSizeConfig,
 }
 

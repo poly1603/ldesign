@@ -28,19 +28,17 @@ function testCoreImports() {
     ]
 
     let allExists = true
-    requiredAPIs.forEach((api) => {
+    requiredAPIs.forEach(api => {
       if (coreModule[api]) {
         console.log(`  ✅ ${api}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${api} (缺失)`)
         allExists = false
       }
     })
 
     return allExists
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ 导入失败: ${error.message}`)
     return false
   }
@@ -51,17 +49,28 @@ function testBasicFunctionality() {
   console.log('\n⚙️ 测试基础功能...')
 
   try {
-    const { globalSizeManager, getSizeConfig, isValidSizeMode } = require('./lib/index.js')
+    const {
+      globalSizeManager,
+      getSizeConfig,
+      isValidSizeMode,
+    } = require('./lib/index.js')
 
     // 测试尺寸模式验证
     console.log('  测试尺寸模式验证:')
-    console.log(`    isValidSizeMode('small'): ${isValidSizeMode('small') ? '✅' : '❌'}`)
-    console.log(`    isValidSizeMode('invalid'): ${!isValidSizeMode('invalid') ? '✅' : '❌'}`)
+    console.log(
+      `    isValidSizeMode('small'): ${isValidSizeMode('small') ? '✅' : '❌'}`
+    )
+    console.log(
+      `    isValidSizeMode('invalid'): ${
+        !isValidSizeMode('invalid') ? '✅' : '❌'
+      }`
+    )
 
     // 测试配置获取
     console.log('  测试配置获取:')
     const config = getSizeConfig('medium')
-    const hasRequiredProps = config.fontSize && config.spacing && config.component
+    const hasRequiredProps =
+      config.fontSize && config.spacing && config.component
     console.log(`    配置完整性: ${hasRequiredProps ? '✅' : '❌'}`)
 
     // 测试管理器基础功能
@@ -80,8 +89,7 @@ function testBasicFunctionality() {
     console.log(`    变量生成: ${hasVariables ? '✅' : '❌'}`)
 
     return true
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ 功能测试失败: ${error.message}`)
     return false
   }
@@ -104,19 +112,17 @@ function testVueModule() {
     ]
 
     let allExists = true
-    requiredVueAPIs.forEach((api) => {
+    requiredVueAPIs.forEach(api => {
       if (vueModule[api]) {
         console.log(`  ✅ ${api}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${api} (缺失)`)
         allExists = false
       }
     })
 
     return allExists
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ Vue模块导入失败: ${error.message}`)
     return false
   }
@@ -144,22 +150,20 @@ function testExampleStructure() {
   let allExists = true
 
   console.log('  Vue示例文件:')
-  vueFiles.forEach((file) => {
+  vueFiles.forEach(file => {
     if (fs.existsSync(path.join(__dirname, file))) {
       console.log(`    ✅ ${file}`)
-    }
-    else {
+    } else {
       console.log(`    ❌ ${file} (缺失)`)
       allExists = false
     }
   })
 
   console.log('  原生JS示例文件:')
-  vanillaFiles.forEach((file) => {
+  vanillaFiles.forEach(file => {
     if (fs.existsSync(path.join(__dirname, file))) {
       console.log(`    ✅ ${file}`)
-    }
-    else {
+    } else {
       console.log(`    ❌ ${file} (缺失)`)
       allExists = false
     }
@@ -174,18 +178,25 @@ function testImportPaths() {
 
   try {
     // 检查Vue示例的导入路径
-    const vueMainContent = fs.readFileSync(path.join(__dirname, 'examples/vue/src/main.ts'), 'utf8')
+    const vueMainContent = fs.readFileSync(
+      path.join(__dirname, 'examples/vue/src/main.ts'),
+      'utf8'
+    )
     const hasCorrectVueImport = vueMainContent.includes('../../../src/vue')
     console.log(`  Vue示例导入路径: ${hasCorrectVueImport ? '✅' : '❌'}`)
 
     // 检查原生JS示例的导入路径
-    const vanillaMainContent = fs.readFileSync(path.join(__dirname, 'examples/vanilla/src/main.ts'), 'utf8')
+    const vanillaMainContent = fs.readFileSync(
+      path.join(__dirname, 'examples/vanilla/src/main.ts'),
+      'utf8'
+    )
     const hasCorrectVanillaImport = vanillaMainContent.includes('../../../src')
-    console.log(`  原生JS示例导入路径: ${hasCorrectVanillaImport ? '✅' : '❌'}`)
+    console.log(
+      `  原生JS示例导入路径: ${hasCorrectVanillaImport ? '✅' : '❌'}`
+    )
 
     return hasCorrectVueImport && hasCorrectVanillaImport
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ 导入路径检查失败: ${error.message}`)
     return false
   }
@@ -219,8 +230,7 @@ function main() {
     console.log('  - 原生JS示例: cd examples/vanilla && pnpm dev')
 
     process.exit(0)
-  }
-  else {
+  } else {
     console.log('❌ 部分测试失败！请检查上述问题。')
     process.exit(1)
   }

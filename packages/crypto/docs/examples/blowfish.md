@@ -1,6 +1,7 @@
 # Blowfish 加密示例
 
-Blowfish 是一种快速的分组密码算法，支持可变长度的密钥（32-448 位）。在 Web 环境中，我们使用 AES 作为替代实现以确保兼容性。
+Blowfish 是一种快速的分组密码算法，支持可变长度的密钥（32-448 位）。在 Web 环境中，我们使用 AES 作为
+替代实现以确保兼容性。
 
 ## 基础用法
 
@@ -18,7 +19,7 @@ console.log('加密结果:', encrypted)
 
 // 解密
 const decrypted = blowfish.decrypt(encrypted.data!, key, {
-  iv: encrypted.iv
+  iv: encrypted.iv,
 })
 console.log('解密结果:', decrypted.data)
 ```
@@ -33,12 +34,12 @@ const key = 'my-secret-key-123'
 
 // CBC 模式（默认）
 const cbcEncrypted = blowfish.encrypt(data, key, {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 // ECB 模式
 const ecbEncrypted = blowfish.encrypt(data, key, {
-  mode: 'ECB'
+  mode: 'ECB',
 })
 ```
 
@@ -77,7 +78,7 @@ const key = 'my-secret-key-123'
 
 // 加密
 const encrypted = blowfishEncryptor.encrypt(data, key, {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 if (encrypted.success) {
@@ -88,17 +89,15 @@ if (encrypted.success) {
   // 解密
   const decrypted = blowfishEncryptor.decrypt(encrypted.data!, key, {
     iv: encrypted.iv,
-    mode: 'CBC'
+    mode: 'CBC',
   })
 
   if (decrypted.success) {
     console.log('解密成功:', decrypted.data)
-  }
-  else {
+  } else {
     console.error('解密失败:', decrypted.error)
   }
-}
-else {
+} else {
   console.error('加密失败:', encrypted.error)
 }
 ```
@@ -126,7 +125,7 @@ console.log('64字节密钥:', key64)
 const data = 'Hello, World!'
 const encrypted = blowfish.encrypt(data, key32)
 const decrypted = blowfish.decrypt(encrypted.data!, key32, {
-  iv: encrypted.iv
+  iv: encrypted.iv,
 })
 ```
 
@@ -140,7 +139,7 @@ const key = 'my-secret-key-123'
 
 // 使用统一管理器加密
 const encrypted = await cryptoManager.encryptData(data, key, 'Blowfish', {
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 if (encrypted.success) {
@@ -265,9 +264,7 @@ function clearAll() {
   <div class="blowfish-demo">
     <h3>Blowfish 加密演示</h3>
 
-    <div v-if="warning" class="warning">
-      ⚠️ {{ warning }}
-    </div>
+    <div v-if="warning" class="warning">⚠️ {{ warning }}</div>
 
     <div class="form-group">
       <label>明文:</label>
@@ -276,7 +273,7 @@ function clearAll() {
 
     <div class="form-group">
       <label>密钥 ({{ key.length }} 字符):</label>
-      <input v-model="key" placeholder="输入密钥">
+      <input v-model="key" placeholder="输入密钥" />
       <div class="key-controls">
         <label>生成长度:</label>
         <select v-model="keyLength">
@@ -284,21 +281,15 @@ function clearAll() {
             {{ length }} 字节
           </option>
         </select>
-        <button class="btn-small" @click="generateRandomKey">
-          生成随机密钥
-        </button>
+        <button class="btn-small" @click="generateRandomKey">生成随机密钥</button>
       </div>
     </div>
 
     <div class="form-group">
       <label>加密模式:</label>
       <select v-model="mode">
-        <option value="CBC">
-          CBC
-        </option>
-        <option value="ECB">
-          ECB
-        </option>
+        <option value="CBC">CBC</option>
+        <option value="ECB">ECB</option>
       </select>
     </div>
 
@@ -309,14 +300,10 @@ function clearAll() {
       <button :disabled="isProcessing || !encrypted" @click="handleDecrypt">
         {{ isProcessing ? '处理中...' : '解密' }}
       </button>
-      <button class="btn-secondary" @click="clearAll">
-        清空
-      </button>
+      <button class="btn-secondary" @click="clearAll">清空</button>
     </div>
 
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
+    <div v-if="error" class="error">错误: {{ error }}</div>
 
     <div v-if="encrypted" class="result">
       <h4>加密结果:</h4>

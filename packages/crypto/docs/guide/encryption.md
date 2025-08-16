@@ -41,19 +41,19 @@ console.log(decrypted.data) // "Hello, World!"
 // AES-128-ECB
 const encrypted128 = encrypt.aes('data', 'key', {
   keySize: 128,
-  mode: 'ECB'
+  mode: 'ECB',
 })
 
 // AES-192-CFB
 const encrypted192 = encrypt.aes('data', 'key', {
   keySize: 192,
-  mode: 'CFB'
+  mode: 'CFB',
 })
 
 // AES-256-CTR (推荐用于高性能场景)
 const encrypted256 = encrypt.aes('data', 'key', {
   keySize: 256,
-  mode: 'CTR'
+  mode: 'CTR',
 })
 ```
 
@@ -66,12 +66,12 @@ import { keyGenerator } from '@ldesign/crypto'
 const iv = keyGenerator.generateIV(16)
 
 const encrypted = encrypt.aes('data', 'key', {
-  iv
+  iv,
 })
 
 // 解密时使用相同的 IV
 const decrypted = decrypt.aes(encrypted, 'key', {
-  iv
+  iv,
 })
 ```
 
@@ -157,8 +157,7 @@ try {
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
   }
-}
-catch (error) {
+} catch (error) {
   console.error('加密操作失败:', error.message)
 }
 ```

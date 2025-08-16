@@ -54,8 +54,8 @@ const manager = new TemplateManager({
   autoDetectDevice: true,
   deviceBreakpoints: {
     mobile: 767,
-    tablet: 1023
-  }
+    tablet: 1023,
+  },
 })
 ```
 
@@ -86,11 +86,11 @@ onUnmounted(() => {
 ```typescript
 const customBreakpoints = {
   mobile: 600, // 移动端最大宽度
-  tablet: 900 // 平板端最大宽度
+  tablet: 900, // 平板端最大宽度
 }
 
 const manager = new TemplateManager({
-  deviceBreakpoints: customBreakpoints
+  deviceBreakpoints: customBreakpoints,
 })
 ```
 
@@ -118,7 +118,7 @@ const currentDevice = ref(detectDevice())
 let deviceWatcher: (() => void) | null = null
 
 onMounted(() => {
-  deviceWatcher = createDeviceWatcher((newDevice) => {
+  deviceWatcher = createDeviceWatcher(newDevice => {
     currentDevice.value = newDevice
   })
 })
@@ -128,15 +128,13 @@ onUnmounted(() => {
 })
 
 const dashboardProps = {
-  title: '响应式仪表板'
+  title: '响应式仪表板',
 }
 </script>
 
 <template>
   <div class="responsive-container">
-    <div class="device-info">
-      当前设备: {{ currentDevice }}
-    </div>
+    <div class="device-info">当前设备: {{ currentDevice }}</div>
 
     <!-- 根据设备自动选择模板 -->
     <LTemplateRenderer

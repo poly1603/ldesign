@@ -38,7 +38,7 @@ export const ThemePlugin: Plugin = {
     })
 
     // 初始化主题管理器
-    themeManager.init().catch((error) => {
+    themeManager.init().catch(error => {
       console.error('Failed to initialize theme manager:', error)
     })
 
@@ -73,7 +73,10 @@ export const ThemePlugin: Plugin = {
     }
 
     // 开发模式下的调试信息
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env?.NODE_ENV === 'development'
+    ) {
       // eslint-disable-next-line no-console
       console.log('🎨 LDesign Color Theme Plugin installed', {
         themes: themes.length,
@@ -88,7 +91,10 @@ export const ThemePlugin: Plugin = {
 /**
  * 便捷的安装函数
  */
-export function installThemePlugin(app: App, options?: VueThemePluginOptions): void {
+export function installThemePlugin(
+  app: App,
+  options?: VueThemePluginOptions
+): void {
   app.use(ThemePlugin, options)
 }
 

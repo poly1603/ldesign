@@ -92,7 +92,10 @@ export class RandomUtils {
   /**
    * 生成随机字符串
    */
-  static generateRandomString(length: number, encoding: EncodingType = 'hex'): string {
+  static generateRandomString(
+    length: number,
+    encoding: EncodingType = 'hex'
+  ): string {
     const randomBytes = this.generateRandomBytes(length)
     switch (encoding) {
       case 'base64':
@@ -145,8 +148,7 @@ export class ValidationUtils {
   static isValidBase64(str: string): boolean {
     try {
       return btoa(atob(str)) === str
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -182,7 +184,9 @@ export class ErrorUtils {
    * 创建加密错误
    */
   static createEncryptionError(message: string, algorithm?: string): Error {
-    const error = new Error(`Encryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`)
+    const error = new Error(
+      `Encryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`
+    )
     error.name = 'EncryptionError'
     return error
   }
@@ -191,7 +195,9 @@ export class ErrorUtils {
    * 创建解密错误
    */
   static createDecryptionError(message: string, algorithm?: string): Error {
-    const error = new Error(`Decryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`)
+    const error = new Error(
+      `Decryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`
+    )
     error.name = 'DecryptionError'
     return error
   }
@@ -200,7 +206,9 @@ export class ErrorUtils {
    * 创建哈希错误
    */
   static createHashError(message: string, algorithm?: string): Error {
-    const error = new Error(`Hash Error${algorithm ? ` (${algorithm})` : ''}: ${message}`)
+    const error = new Error(
+      `Hash Error${algorithm ? ` (${algorithm})` : ''}: ${message}`
+    )
     error.name = 'HashError'
     return error
   }
@@ -244,12 +252,25 @@ export const CONSTANTS = {
 
   // 哈希相关常量
   HASH: {
-    ALGORITHMS: ['MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'] as const,
+    ALGORITHMS: [
+      'MD5',
+      'SHA1',
+      'SHA224',
+      'SHA256',
+      'SHA384',
+      'SHA512',
+    ] as const,
   },
 
   // HMAC 相关常量
   HMAC: {
-    ALGORITHMS: ['HMAC-MD5', 'HMAC-SHA1', 'HMAC-SHA256', 'HMAC-SHA384', 'HMAC-SHA512'] as const,
+    ALGORITHMS: [
+      'HMAC-MD5',
+      'HMAC-SHA1',
+      'HMAC-SHA256',
+      'HMAC-SHA384',
+      'HMAC-SHA512',
+    ] as const,
   },
 
   // 编码相关常量

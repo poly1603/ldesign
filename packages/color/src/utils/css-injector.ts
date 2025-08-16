@@ -2,7 +2,12 @@
  * CSS Variables 注入和管理系统
  */
 
-import type { ColorCategory, ColorScale, ColorValue, CSSInjector } from '../core/types'
+import type {
+  ColorCategory,
+  ColorScale,
+  ColorValue,
+  CSSInjector,
+} from '../core/types'
 
 /**
  * CSS 注入选项
@@ -75,7 +80,9 @@ export class CSSInjectorImpl implements CSSInjector {
   private generateCSSText(variables: Record<string, ColorValue>): string {
     const declarations = Object.entries(variables)
       .map(([key, value]) => {
-        const varName = key.startsWith('--') ? key : `${this.options.prefix}-${key}`
+        const varName = key.startsWith('--')
+          ? key
+          : `${this.options.prefix}-${key}`
         const important = this.options.important ? ' !important' : ''
         return `  ${varName}: ${value}${important};`
       })
@@ -147,19 +154,23 @@ export class CSSVariableGenerator {
    */
   generateFromScales(
     scales: Record<ColorCategory, ColorScale>,
-    prefix?: string,
+    prefix?: string
   ): Record<string, ColorValue> {
     const variables: Record<string, ColorValue> = {}
     const varPrefix = prefix || this.prefix
 
-    for (const [category, scale] of Object.entries(scales) as [ColorCategory, ColorScale][]) {
+    for (const [category, scale] of Object.entries(scales) as [
+      ColorCategory,
+      ColorScale
+    ][]) {
       // 生成索引变量
       for (const [index, color] of Object.entries(scale.indices)) {
         variables[`${varPrefix}-${category}-${index}`] = color
       }
 
       // 生成主要变量（使用索引 5 作为主色）
-      const primaryColor = scale.indices[5] || scale.colors[4] || scale.colors[0]
+      const primaryColor =
+        scale.indices[5] || scale.colors[4] || scale.colors[0]
       if (primaryColor) {
         variables[`${varPrefix}-${category}`] = primaryColor
       }
@@ -173,7 +184,7 @@ export class CSSVariableGenerator {
    */
   generateSemanticVariables(
     scales: Record<ColorCategory, ColorScale>,
-    prefix?: string,
+    prefix?: string
   ): Record<string, ColorValue> {
     const variables: Record<string, ColorValue> = {}
     const varPrefix = prefix || this.prefix
@@ -182,33 +193,42 @@ export class CSSVariableGenerator {
     const primary = scales.primary?.indices[5] || scales.primary?.colors[4]
     if (primary) {
       variables[`${varPrefix}-primary`] = primary
-      variables[`${varPrefix}-primary-hover`] = scales.primary?.indices[6] || primary
-      variables[`${varPrefix}-primary-active`] = scales.primary?.indices[7] || primary
-      variables[`${varPrefix}-primary-disabled`] = scales.primary?.indices[3] || primary
+      variables[`${varPrefix}-primary-hover`] =
+        scales.primary?.indices[6] || primary
+      variables[`${varPrefix}-primary-active`] =
+        scales.primary?.indices[7] || primary
+      variables[`${varPrefix}-primary-disabled`] =
+        scales.primary?.indices[3] || primary
     }
 
     // 成功色
     const success = scales.success?.indices[5] || scales.success?.colors[4]
     if (success) {
       variables[`${varPrefix}-success`] = success
-      variables[`${varPrefix}-success-hover`] = scales.success?.indices[6] || success
-      variables[`${varPrefix}-success-active`] = scales.success?.indices[7] || success
+      variables[`${varPrefix}-success-hover`] =
+        scales.success?.indices[6] || success
+      variables[`${varPrefix}-success-active`] =
+        scales.success?.indices[7] || success
     }
 
     // 警告色
     const warning = scales.warning?.indices[5] || scales.warning?.colors[4]
     if (warning) {
       variables[`${varPrefix}-warning`] = warning
-      variables[`${varPrefix}-warning-hover`] = scales.warning?.indices[6] || warning
-      variables[`${varPrefix}-warning-active`] = scales.warning?.indices[7] || warning
+      variables[`${varPrefix}-warning-hover`] =
+        scales.warning?.indices[6] || warning
+      variables[`${varPrefix}-warning-active`] =
+        scales.warning?.indices[7] || warning
     }
 
     // 危险色
     const danger = scales.danger?.indices[5] || scales.danger?.colors[4]
     if (danger) {
       variables[`${varPrefix}-danger`] = danger
-      variables[`${varPrefix}-danger-hover`] = scales.danger?.indices[6] || danger
-      variables[`${varPrefix}-danger-active`] = scales.danger?.indices[7] || danger
+      variables[`${varPrefix}-danger-hover`] =
+        scales.danger?.indices[6] || danger
+      variables[`${varPrefix}-danger-active`] =
+        scales.danger?.indices[7] || danger
     }
 
     // 灰色
@@ -249,7 +269,9 @@ export function createCSSInjector(options?: CSSInjectionOptions): CSSInjector {
 /**
  * 创建 CSS 变量生成器实例
  */
-export function createCSSVariableGenerator(prefix?: string): CSSVariableGenerator {
+export function createCSSVariableGenerator(
+  prefix?: string
+): CSSVariableGenerator {
   return new CSSVariableGenerator(prefix)
 }
 
@@ -268,7 +290,7 @@ export const defaultCSSVariableGenerator = new CSSVariableGenerator()
  */
 export function injectScaleVariables(
   scales: Record<ColorCategory, ColorScale>,
-  options?: CSSInjectionOptions & { prefix?: string, semantic?: boolean },
+  options?: CSSInjectionOptions & { prefix?: string; semantic?: boolean }
 ): void {
   const injector = options ? new CSSInjectorImpl(options) : defaultCSSInjector
   const generator = new CSSVariableGenerator(options?.prefix)

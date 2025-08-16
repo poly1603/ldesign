@@ -39,12 +39,12 @@ export class ErrorHandler {
    */
   static createNetworkError(
     config: RequestConfig,
-    originalError?: any,
+    originalError?: any
   ): HttpError {
     const error = createHttpError(
       this.ERROR_TEMPLATES[ErrorType.NETWORK],
       config,
-      ErrorType.NETWORK,
+      ErrorType.NETWORK
     )
     error.isNetworkError = true
     error.cause = originalError
@@ -55,8 +55,8 @@ export class ErrorHandler {
    * 创建超时错误（优化版）
    */
   static createTimeoutError(config: RequestConfig, timeout: number): HttpError {
-    const message
-      = typeof this.ERROR_TEMPLATES[ErrorType.TIMEOUT] === 'function'
+    const message =
+      typeof this.ERROR_TEMPLATES[ErrorType.TIMEOUT] === 'function'
         ? this.ERROR_TEMPLATES[ErrorType.TIMEOUT](timeout)
         : `Timeout Error: Request timed out after ${timeout}ms`
 
@@ -72,7 +72,7 @@ export class ErrorHandler {
     const error = createHttpError(
       this.ERROR_TEMPLATES[ErrorType.CANCEL],
       config,
-      ErrorType.CANCEL,
+      ErrorType.CANCEL
     )
     error.isCancelError = true
     return error
@@ -85,13 +85,13 @@ export class ErrorHandler {
     status: number,
     statusText: string,
     config: RequestConfig,
-    response?: ResponseData,
+    response?: ResponseData
   ): HttpError {
     const error = createHttpError(
       `HTTP Error: ${status} ${statusText}`,
       config,
       ErrorType.HTTP,
-      response,
+      response
     )
     return error
   }
@@ -101,12 +101,12 @@ export class ErrorHandler {
    */
   static createParseError(
     config: RequestConfig,
-    originalError?: any,
+    originalError?: any
   ): HttpError {
     const error = createHttpError(
       'Parse Error: Failed to parse response data',
       config,
-      ErrorType.PARSE,
+      ErrorType.PARSE
     )
     error.cause = originalError
     return error
@@ -196,7 +196,7 @@ export class RetryManager {
    */
   async executeWithRetry<T>(
     requestFn: () => Promise<T>,
-    _requestConfig?: RequestConfig,
+    _requestConfig?: RequestConfig
   ): Promise<T> {
     let lastError: HttpError
     let retryCount = 0
@@ -204,14 +204,13 @@ export class RetryManager {
     while (retryCount <= this.config.retries) {
       try {
         return await requestFn()
-      }
-      catch (error) {
+      } catch (error) {
         lastError = error as HttpError
 
         // 检查是否应该重试
         if (
-          retryCount >= this.config.retries
-          || !this.config.retryCondition(lastError)
+          retryCount >= this.config.retries ||
+          !this.config.retryCondition(lastError)
         ) {
           throw lastError
         }
@@ -234,7 +233,7 @@ export class RetryManager {
    */
   private defaultRetryDelayFunction(
     retryCount: number,
-    _error: HttpError,
+    _error: HttpError
   ): number {
     const baseDelay = this.config.retryDelay
     const exponentialDelay = baseDelay * 2 ** retryCount
@@ -271,11 +270,11 @@ export class TimeoutManager {
    */
   createTimeoutController(
     timeout: number,
-    requestId?: string,
+    requestId?: string
   ): {
-      signal: AbortSignal
-      cleanup: () => void
-    } {
+    signal: AbortSignal
+    cleanup: () => void
+  } {
     const controller = new AbortController()
     const id = requestId || this.generateId()
 
@@ -302,7 +301,7 @@ export class TimeoutManager {
    * 清理所有超时
    */
   clearAll(): void {
-    this.timeouts.forEach((timeoutId) => {
+    this.timeouts.forEach(timeoutId => {
       clearTimeout(timeoutId)
     })
     this.timeouts.clear()

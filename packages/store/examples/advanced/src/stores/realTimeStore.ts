@@ -69,8 +69,8 @@ export class RealTimeStore extends BaseStore {
   @Action()
   connect(): void {
     if (
-      this.connectionStatus === 'connected'
-      || this.connectionStatus === 'connecting'
+      this.connectionStatus === 'connected' ||
+      this.connectionStatus === 'connecting'
     ) {
       return
     }
@@ -193,8 +193,8 @@ export class RealTimeStore extends BaseStore {
   @Action()
   processOfflineQueue(): void {
     if (
-      this.connectionStatus !== 'connected'
-      || this.offlineQueue.length === 0
+      this.connectionStatus !== 'connected' ||
+      this.offlineQueue.length === 0
     ) {
       return
     }
@@ -202,7 +202,7 @@ export class RealTimeStore extends BaseStore {
     const queue = [...this.offlineQueue]
     this.offlineQueue = []
 
-    queue.forEach((item) => {
+    queue.forEach(item => {
       switch (item.action) {
         case 'send-message':
           this.sendMessage(item.data.content)

@@ -24,7 +24,7 @@ export interface MicrofrontendConfig {
  * 创建模块联邦配置
  */
 export function createModuleFederationConfig(
-  config: MicrofrontendConfig,
+  config: MicrofrontendConfig
 ): ModuleFederationConfig {
   const {
     name,
@@ -43,7 +43,7 @@ export function createModuleFederationConfig(
     runtimeVersion,
     shared: {
       // Vue 共享配置
-      'vue': {
+      vue: {
         singleton: true,
         requiredVersion: '^3.3.0',
         eager: false,
@@ -55,7 +55,7 @@ export function createModuleFederationConfig(
         eager: false,
       },
       // Pinia 共享配置
-      'pinia': {
+      pinia: {
         singleton: true,
         requiredVersion: '^2.0.0',
         eager: false,
@@ -255,12 +255,12 @@ export function createDevRemotes(basePort = 3000): Record<string, string> {
  * 创建生产环境的远程配置
  */
 export function createProdRemotes(
-  baseUrl = 'https://cdn.ldesign.com',
+  baseUrl = 'https://cdn.ldesign.com'
 ): Record<string, string> {
   const packages = Object.keys(packageConfigs)
   const remotes: Record<string, string> = {}
 
-  packages.forEach((pkg) => {
+  packages.forEach(pkg => {
     const config = packageConfigs[pkg]
     remotes[pkg] = `${config.name}@${baseUrl}/${pkg}/remoteEntry.js`
   })

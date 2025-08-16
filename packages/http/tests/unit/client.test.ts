@@ -30,7 +30,7 @@ describe('httpClientImpl', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }),
+        })
       )
     })
 
@@ -51,8 +51,8 @@ describe('httpClientImpl', () => {
       expect(config.headers).toEqual(
         expect.objectContaining({
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer token',
-        }),
+          Authorization: 'Bearer token',
+        })
       )
     })
 
@@ -64,7 +64,7 @@ describe('httpClientImpl', () => {
   describe('request methods', () => {
     beforeEach(() => {
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true }),
+        createMockResponse({ success: true })
       )
     })
 
@@ -75,7 +75,7 @@ describe('httpClientImpl', () => {
         expect.objectContaining({
           method: 'GET',
           url: '/users',
-        }),
+        })
       )
     })
 
@@ -88,7 +88,7 @@ describe('httpClientImpl', () => {
           method: 'POST',
           url: '/users',
           data,
-        }),
+        })
       )
     })
 
@@ -101,7 +101,7 @@ describe('httpClientImpl', () => {
           method: 'PUT',
           url: '/users/1',
           data,
-        }),
+        })
       )
     })
 
@@ -112,7 +112,7 @@ describe('httpClientImpl', () => {
         expect.objectContaining({
           method: 'DELETE',
           url: '/users/1',
-        }),
+        })
       )
     })
 
@@ -125,7 +125,7 @@ describe('httpClientImpl', () => {
           method: 'PATCH',
           url: '/users/1',
           data,
-        }),
+        })
       )
     })
 
@@ -136,7 +136,7 @@ describe('httpClientImpl', () => {
         expect.objectContaining({
           method: 'HEAD',
           url: '/users/1',
-        }),
+        })
       )
     })
 
@@ -147,14 +147,14 @@ describe('httpClientImpl', () => {
         expect.objectContaining({
           method: 'OPTIONS',
           url: '/users',
-        }),
+        })
       )
     })
   })
 
   describe('interceptors', () => {
     it('should execute request interceptors', async () => {
-      const requestInterceptor = vi.fn((config) => {
+      const requestInterceptor = vi.fn(config => {
         config.headers = { ...config.headers, 'X-Custom': 'test' }
         return config
       })
@@ -162,7 +162,7 @@ describe('httpClientImpl', () => {
       client.interceptors.request.use(requestInterceptor)
 
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true }),
+        createMockResponse({ success: true })
       )
 
       await client.get('/test')
@@ -173,12 +173,12 @@ describe('httpClientImpl', () => {
           headers: expect.objectContaining({
             'X-Custom': 'test',
           }),
-        }),
+        })
       )
     })
 
     it('should execute response interceptors', async () => {
-      const responseInterceptor = vi.fn((response) => {
+      const responseInterceptor = vi.fn(response => {
         response.data = { ...response.data, intercepted: true }
         return response
       })
@@ -186,7 +186,7 @@ describe('httpClientImpl', () => {
       client.interceptors.response.use(responseInterceptor)
 
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true }),
+        createMockResponse({ success: true })
       )
 
       const response = await client.get('/test')
@@ -199,7 +199,7 @@ describe('httpClientImpl', () => {
     })
 
     it('should execute error interceptors', async () => {
-      const errorInterceptor = vi.fn((error) => {
+      const errorInterceptor = vi.fn(error => {
         error.message = `Intercepted: ${error.message}`
         return error
       })
@@ -209,7 +209,9 @@ describe('httpClientImpl', () => {
       const mockError = createMockError('Original error')
       vi.mocked(mockAdapter.request).mockRejectedValue(mockError)
 
-      await expect(client.get('/test')).rejects.toThrow('Intercepted: Original error')
+      await expect(client.get('/test')).rejects.toThrow(
+        'Intercepted: Original error'
+      )
       expect(errorInterceptor).toHaveBeenCalled()
     })
   })
@@ -226,7 +228,7 @@ describe('httpClientImpl', () => {
       const clientWithConfig = new HttpClientImpl(globalConfig, mockAdapter)
 
       vi.mocked(mockAdapter.request).mockResolvedValue(
-        createMockResponse({ success: true }),
+        createMockResponse({ success: true })
       )
 
       await clientWithConfig.get('/users', {
@@ -239,11 +241,11 @@ describe('httpClientImpl', () => {
         expect.objectContaining({
           baseURL: 'https://api.example.com',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer token',
+            Authorization: 'Bearer token',
             'X-Custom': 'test',
             'Content-Type': 'application/json',
           }),
-        }),
+        })
       )
     })
   })

@@ -50,7 +50,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
     }
 
     // 清理字段分组映射
-    group.fields.forEach((field) => {
+    group.fields.forEach(field => {
       this.fieldGroupMap.delete(field.name)
     })
 
@@ -107,8 +107,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
     if (state) {
       if (state.expanded) {
         this.collapseGroup(name)
-      }
-      else {
+      } else {
         this.expandGroup(name)
       }
     }
@@ -166,8 +165,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
 
         if (typeof result === 'boolean') {
           isValid = result
-        }
-        else {
+        } else {
           isValid = false
           errors[name] = [result]
         }
@@ -181,8 +179,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
       this.emit('stateChange', name, state)
 
       return isValid
-    }
-    catch (error) {
+    } catch (error) {
       state.valid = false
       state.errors = { [name]: [`验证过程中发生错误: ${error.message}`] }
       state.validating = false
@@ -270,7 +267,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
     this.groupStates.clear()
     this.fieldGroupMap.clear()
 
-    groupNames.forEach((name) => {
+    groupNames.forEach(name => {
       this.emit('remove', name)
     })
   }
@@ -308,7 +305,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
    */
   getVisibleGroups(): FormGroupConfig[] {
     return Array.from(this.groups.values())
-      .filter((group) => {
+      .filter(group => {
         const state = this.groupStates.get(group.name)
         return state?.visible !== false
       })
@@ -333,7 +330,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
     const fieldStates: Record<string, any> = {}
     const data: Record<string, any> = {}
 
-    group.fields.forEach((field) => {
+    group.fields.forEach(field => {
       const value = field.defaultValue
       data[field.name] = value
       fieldStates[field.name] = {
@@ -364,7 +361,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
    * 更新字段分组映射
    */
   private updateFieldGroupMapping(group: FormGroupConfig): void {
-    group.fields.forEach((field) => {
+    group.fields.forEach(field => {
       this.fieldGroupMap.set(field.name, group.name)
     })
   }
@@ -387,10 +384,10 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
 
     // 检查字段名重复
     const fieldNames = new Set<string>()
-    group.fields.forEach((field) => {
+    group.fields.forEach(field => {
       if (fieldNames.has(field.name)) {
         throw new Error(
-          `分组 "${group.name}" 中存在重复的字段名: ${field.name}`,
+          `分组 "${group.name}" 中存在重复的字段名: ${field.name}`
         )
       }
       fieldNames.add(field.name)
@@ -414,7 +411,7 @@ export class GroupManager extends SimpleEventEmitter implements IGroupManager {
       groupCount: this.groups.size,
       totalFields: Array.from(this.groups.values()).reduce(
         (sum, group) => sum + group.fields.length,
-        0,
+        0
       ),
       expandedGroups: states.filter(state => state.expanded).length,
       collapsedGroups: states.filter(state => !state.expanded).length,

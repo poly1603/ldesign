@@ -83,8 +83,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [vue()],
   optimizeDeps: {
-    include: ['@ldesign/store', 'pinia', 'vue']
-  }
+    include: ['@ldesign/store', 'pinia', 'vue'],
+  },
 })
 ```
 
@@ -98,17 +98,17 @@ module.exports = {
     rules: [
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
+        loader: 'vue-loader',
       },
       {
         test: /\.ts$/,
         loader: 'ts-loader',
         options: {
-          appendTsSuffixTo: [/\.vue$/]
-        }
-      }
-    ]
-  }
+          appendTsSuffixTo: [/\.vue$/],
+        },
+      },
+    ],
+  },
 }
 ```
 
@@ -164,9 +164,7 @@ const store = new CounterStore('counter')
   <div>
     <p>计数: {{ store.count }}</p>
     <p>双倍: {{ store.doubleCount }}</p>
-    <button @click="store.increment">
-      增加
-    </button>
+    <button @click="store.increment">增加</button>
   </div>
 </template>
 ```
@@ -176,7 +174,7 @@ const store = new CounterStore('counter')
 如果你不使用构建工具，可以通过 CDN 直接使用：
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -223,7 +221,6 @@ const store = new CounterStore('counter')
     </script>
   </body>
 </html>
-
 ```
 
 ## 验证安装
@@ -258,7 +255,8 @@ console.log('更新后消息:', store.message) // "安装成功！"
 
 ### Q: 装饰器不工作？
 
-A: 确保在 `tsconfig.json` 中启用了 `experimentalDecorators` 和 `emitDecoratorMetadata`，并且导入了 `reflect-metadata`。
+A: 确保在 `tsconfig.json` 中启用了 `experimentalDecorators` 和 `emitDecoratorMetadata`，并且导入了
+`reflect-metadata`。
 
 ### Q: 构建时出现错误？
 

@@ -14,7 +14,7 @@ export interface PackageConfig {
   vue: boolean
   environment: 'node' | 'jsdom' | 'happy-dom'
   setupFiles: string[]
-  webServer: { command: string, port: number }
+  webServer: { command: string; port: number }
   testDir: string
 }
 
@@ -33,7 +33,11 @@ const packageConfigs: Record<string, PackageConfig> = {
   color: {
     external: ['vue', '@arco-design/color', 'chroma-js'],
     globalName: 'LDesignColor',
-    globals: { 'vue': 'Vue', '@arco-design/color': 'ArcoColor', 'chroma-js': 'chroma' },
+    globals: {
+      vue: 'Vue',
+      '@arco-design/color': 'ArcoColor',
+      'chroma-js': 'chroma',
+    },
     vue: true,
     environment: 'jsdom',
     setupFiles: ['__tests__/setup.ts'],
@@ -43,7 +47,7 @@ const packageConfigs: Record<string, PackageConfig> = {
   crypto: {
     external: ['vue', 'crypto-js', 'node-forge'],
     globalName: 'LDesignCrypto',
-    globals: { 'vue': 'Vue', 'crypto-js': 'CryptoJS', 'node-forge': 'forge' },
+    globals: { vue: 'Vue', 'crypto-js': 'CryptoJS', 'node-forge': 'forge' },
     vue: true,
     environment: 'node',
     setupFiles: ['test/setup.ts'],
@@ -125,13 +129,13 @@ const standardDirectories = [
 
 // 标准脚本
 const standardScripts = {
-  'build': 'rollup -c',
+  build: 'rollup -c',
   'build:watch': 'rollup -c -w',
-  'dev': 'rollup -c -w',
+  dev: 'rollup -c -w',
   'type-check': 'vue-tsc --noEmit',
-  'lint': 'eslint . --fix',
+  lint: 'eslint . --fix',
   'lint:check': 'eslint .',
-  'test': 'vitest',
+  test: 'vitest',
   'test:ui': 'vitest --ui',
   'test:run': 'vitest run',
   'test:coverage': 'vitest run --coverage',
@@ -140,9 +144,9 @@ const standardScripts = {
   'docs:dev': 'vitepress dev docs',
   'docs:build': 'vitepress build docs',
   'docs:preview': 'vitepress preview docs',
-  'clean': 'rimraf dist es lib types coverage .nyc_output',
+  clean: 'rimraf dist es lib types coverage .nyc_output',
   'size-check': 'size-limit',
-  'prepublishOnly': 'pnpm run clean && pnpm run build && pnpm run test:run',
+  prepublishOnly: 'pnpm run clean && pnpm run build && pnpm run test:run',
 }
 
 /**
@@ -215,10 +219,8 @@ function updateVitestConfig(packageDir: string, config: PackageConfig): void {
   const vitestConfigPath = path.join(packageDir, 'vitest.config.ts')
 
   const options = []
-  if (config.vue)
-    options.push(`vue: true`)
-  if (config.environment)
-    options.push(`environment: '${config.environment}'`)
+  if (config.vue) options.push(`vue: true`)
+  if (config.environment) options.push(`environment: '${config.environment}'`)
   if (config.setupFiles.length > 0)
     options.push(`setupFiles: ${JSON.stringify(config.setupFiles)}`)
 
@@ -236,7 +238,10 @@ export default createVitestConfig({
 /**
  * 更新 Playwright 配置
  */
-function updatePlaywrightConfig(packageDir: string, config: PackageConfig): void {
+function updatePlaywrightConfig(
+  packageDir: string,
+  config: PackageConfig
+): void {
   const playwrightConfigPath = path.join(packageDir, 'playwright.config.ts')
 
   let content = `import { createPlaywrightConfig } from '../../tools/test/playwright.config.base'
@@ -345,16 +350,18 @@ export function standardizeAllPackages(): void {
   console.log('🚀 开始标准化所有包配置...\n')
 
   const packagesDir = path.resolve(__dirname, '../../../packages')
-  const packages = fs.readdirSync(packagesDir).filter((name) => {
+  const packages = fs.readdirSync(packagesDir).filter(name => {
     const packagePath = path.join(packagesDir, name)
-    return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
+    return (
+      fs.statSync(packagePath).isDirectory() &&
+      fs.existsSync(path.join(packagePath, 'package.json'))
+    )
   })
 
   for (const packageName of packages) {
     try {
       standardizePackage(packageName)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`❌ 标准化 ${packageName} 失败:`, (error as Error).message)
     }
   }
@@ -368,13 +375,11 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
 
   if (args.length === 0) {
     standardizeAllPackages()
-  }
-  else {
+  } else {
     const packageName = args[0]
     if (packageConfigs[packageName]) {
       standardizePackage(packageName)
-    }
-    else {
+    } else {
       console.error(`❌ 未知的包名: ${packageName}`)
       console.log('可用的包:', Object.keys(packageConfigs).join(', '))
       process.exit(1)

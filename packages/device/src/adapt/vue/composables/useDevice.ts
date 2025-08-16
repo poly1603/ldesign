@@ -19,7 +19,7 @@ import { DeviceDetector } from '../../../core/DeviceDetector'
  * Vue3 设备检测 Composition API
  */
 export function useDevice(
-  options: DeviceDetectorOptions = {},
+  options: DeviceDetectorOptions = {}
 ): UseDeviceReturn {
   // 响应式状态
   const deviceInfo = ref<DeviceInfo>() as Ref<DeviceInfo>
@@ -68,7 +68,7 @@ export function useDevice(
 
     // 监听设备变化
     detector.on('deviceChange', updateDeviceInfo)
-    detector.on('orientationChange', (newOrientation) => {
+    detector.on('orientationChange', newOrientation => {
       orientation.value = newOrientation
     })
   }
@@ -129,8 +129,7 @@ export function useNetwork() {
         connectionType.value = networkModule.getConnectionType()
         isLoaded.value = true
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('Failed to load network module:', error)
       throw error
     }
@@ -194,8 +193,7 @@ export function useBattery() {
         batteryStatus.value = batteryModule.getBatteryStatus()
         isLoaded.value = true
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('Failed to load battery module:', error)
       throw error
     }
@@ -255,18 +253,17 @@ export function useGeolocation() {
 
     try {
       geolocationModule = await detector.loadModule<GeolocationModule>(
-        'geolocation',
+        'geolocation'
       )
       if (
-        geolocationModule
-        && typeof geolocationModule.isSupported === 'function'
+        geolocationModule &&
+        typeof geolocationModule.isSupported === 'function'
       ) {
         isSupported.value = geolocationModule.isSupported()
         isLoaded.value = true
         error.value = null
       }
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
       console.warn('Failed to load geolocation module:', err)
       throw err
@@ -293,8 +290,8 @@ export function useGeolocation() {
 
     try {
       if (
-        geolocationModule
-        && typeof geolocationModule.getCurrentPosition === 'function'
+        geolocationModule &&
+        typeof geolocationModule.getCurrentPosition === 'function'
       ) {
         const pos = await geolocationModule.getCurrentPosition()
         position.value = pos
@@ -303,8 +300,7 @@ export function useGeolocation() {
         accuracy.value = pos.accuracy
         error.value = null
       }
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
       throw err
     }
@@ -317,14 +313,13 @@ export function useGeolocation() {
       if (!geolocationModule) {
         await loadModule()
       }
-      if (isWatching.value)
-        return
+      if (isWatching.value) return
     }
 
     try {
       if (
-        geolocationModule
-        && typeof geolocationModule.startWatching === 'function'
+        geolocationModule &&
+        typeof geolocationModule.startWatching === 'function'
       ) {
         geolocationModule.startWatching((pos: GeolocationInfo) => {
           position.value = pos
@@ -335,25 +330,22 @@ export function useGeolocation() {
         isWatching.value = true
         error.value = null
       }
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
     }
   }
 
   const stopWatching = async () => {
-    if (!geolocationModule || !isWatching.value)
-      return
+    if (!geolocationModule || !isWatching.value) return
     try {
       if (
-        geolocationModule
-        && typeof geolocationModule.stopWatching === 'function'
+        geolocationModule &&
+        typeof geolocationModule.stopWatching === 'function'
       ) {
         geolocationModule.stopWatching()
         isWatching.value = false
       }
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : 'Unknown error'
     }
   }

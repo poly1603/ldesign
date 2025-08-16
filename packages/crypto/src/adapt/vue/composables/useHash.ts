@@ -24,29 +24,73 @@ export interface HashActions {
   sha512: (data: string, options?: HashOptions) => Promise<string>
 
   // 通用哈希函数
-  hashData: (data: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string>
+  hashData: (
+    data: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => Promise<string>
 
   // 哈希验证
-  verify: (data: string, expectedHash: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<boolean>
+  verify: (
+    data: string,
+    expectedHash: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => Promise<boolean>
 
   // HMAC 函数
   hmacMd5: (data: string, key: string, options?: HashOptions) => Promise<string>
-  hmacSha1: (data: string, key: string, options?: HashOptions) => Promise<string>
-  hmacSha256: (data: string, key: string, options?: HashOptions) => Promise<string>
-  hmacSha384: (data: string, key: string, options?: HashOptions) => Promise<string>
-  hmacSha512: (data: string, key: string, options?: HashOptions) => Promise<string>
+  hmacSha1: (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ) => Promise<string>
+  hmacSha256: (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ) => Promise<string>
+  hmacSha384: (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ) => Promise<string>
+  hmacSha512: (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ) => Promise<string>
 
   // 通用 HMAC 函数
-  hmacData: (data: string, key: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string>
+  hmacData: (
+    data: string,
+    key: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => Promise<string>
 
   // HMAC 验证
-  verifyHmac: (data: string, key: string, expectedHmac: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<boolean>
+  verifyHmac: (
+    data: string,
+    key: string,
+    expectedHmac: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => Promise<boolean>
 
   // 批量哈希
-  hashMultiple: (dataList: string[], algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string[]>
+  hashMultiple: (
+    dataList: string[],
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => Promise<string[]>
 
   // 文件哈希（模拟）
-  hashFile: (fileContent: string, algorithm?: HashAlgorithm, options?: HashOptions) => Promise<string>
+  hashFile: (
+    fileContent: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => Promise<string>
 
   // 清除错误
   clearError: () => void
@@ -81,7 +125,8 @@ export function useHash(): UseHashReturn {
 
   // 错误处理辅助函数
   const handleError = (error: unknown): never => {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     lastError.value = errorMessage
     throw new Error(errorMessage)
   }
@@ -96,12 +141,10 @@ export function useHash(): UseHashReturn {
         lastHash.value = result
       }
       return result
-    }
-    catch (error) {
+    } catch (error) {
       handleError(error)
       throw error // 这行永远不会执行，但满足类型要求
-    }
-    finally {
+    } finally {
       isHashing.value = false
     }
   }
@@ -117,22 +160,34 @@ export function useHash(): UseHashReturn {
   }
 
   // SHA224 哈希
-  const sha224 = async (data: string, options?: HashOptions): Promise<string> => {
+  const sha224 = async (
+    data: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hash.sha224(data, options))
   }
 
   // SHA256 哈希
-  const sha256 = async (data: string, options?: HashOptions): Promise<string> => {
+  const sha256 = async (
+    data: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hash.sha256(data, options))
   }
 
   // SHA384 哈希
-  const sha384 = async (data: string, options?: HashOptions): Promise<string> => {
+  const sha384 = async (
+    data: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hash.sha384(data, options))
   }
 
   // SHA512 哈希
-  const sha512 = async (data: string, options?: HashOptions): Promise<string> => {
+  const sha512 = async (
+    data: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hash.sha512(data, options))
   }
 
@@ -140,7 +195,7 @@ export function useHash(): UseHashReturn {
   const hashData = async (
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions,
+    options?: HashOptions
   ): Promise<string> => {
     return wrapAsync(() => hash.hash(data, algorithm, options))
   }
@@ -150,33 +205,53 @@ export function useHash(): UseHashReturn {
     data: string,
     expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions,
+    options?: HashOptions
   ): Promise<boolean> => {
     return wrapAsync(() => hash.verify(data, expectedHash, algorithm, options))
   }
 
   // HMAC-MD5
-  const hmacMd5 = async (data: string, key: string, options?: HashOptions): Promise<string> => {
+  const hmacMd5 = async (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hmac.md5(data, key, options))
   }
 
   // HMAC-SHA1
-  const hmacSha1 = async (data: string, key: string, options?: HashOptions): Promise<string> => {
+  const hmacSha1 = async (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hmac.sha1(data, key, options))
   }
 
   // HMAC-SHA256
-  const hmacSha256 = async (data: string, key: string, options?: HashOptions): Promise<string> => {
+  const hmacSha256 = async (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hmac.sha256(data, key, options))
   }
 
   // HMAC-SHA384
-  const hmacSha384 = async (data: string, key: string, options?: HashOptions): Promise<string> => {
+  const hmacSha384 = async (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hmac.sha384(data, key, options))
   }
 
   // HMAC-SHA512
-  const hmacSha512 = async (data: string, key: string, options?: HashOptions): Promise<string> => {
+  const hmacSha512 = async (
+    data: string,
+    key: string,
+    options?: HashOptions
+  ): Promise<string> => {
     return wrapAsync(() => hmac.sha512(data, key, options))
   }
 
@@ -185,7 +260,7 @@ export function useHash(): UseHashReturn {
     data: string,
     key: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions,
+    options?: HashOptions
   ): Promise<string> => {
     return wrapAsync(() => hmac.hmac(data, key, algorithm, options))
   }
@@ -196,16 +271,18 @@ export function useHash(): UseHashReturn {
     key: string,
     expectedHmac: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions,
+    options?: HashOptions
   ): Promise<boolean> => {
-    return wrapAsync(() => hmac.verify(data, key, expectedHmac, algorithm, options))
+    return wrapAsync(() =>
+      hmac.verify(data, key, expectedHmac, algorithm, options)
+    )
   }
 
   // 批量哈希
   const hashMultiple = async (
     dataList: string[],
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions,
+    options?: HashOptions
   ): Promise<string[]> => {
     return wrapAsync(() => {
       return dataList.map(data => hash.hash(data, algorithm, options))
@@ -216,7 +293,7 @@ export function useHash(): UseHashReturn {
   const hashFile = async (
     fileContent: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions,
+    options?: HashOptions
   ): Promise<string> => {
     return wrapAsync(() => hash.hash(fileContent, algorithm, options))
   }

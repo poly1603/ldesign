@@ -9,25 +9,25 @@ import {
   // 管理器
   createSizeManager,
   globalSizeManager,
-  
+
   // 预设配置
   getSizeConfig,
   getAvailableModes,
   sizeConfigs,
-  
+
   // CSS相关
   CSSVariableGenerator,
   CSSInjector,
-  
+
   // 工具函数
   isValidSizeMode,
   getNextSizeMode,
   getPreviousSizeMode,
-  
+
   // 类型
   type SizeMode,
   type SizeManager,
-  type SizeConfig
+  type SizeConfig,
 } from '@ldesign/size'
 ```
 
@@ -43,15 +43,15 @@ interface SizeManager {
   getCurrentMode(): SizeMode
   setMode(mode: SizeMode): void
   getConfig(mode?: SizeMode): SizeConfig
-  
+
   // CSS操作
   generateCSSVariables(mode?: SizeMode): Record<string, string>
   injectCSS(mode?: SizeMode): void
   removeCSS(): void
-  
+
   // 事件监听
   onSizeChange(callback: (event: SizeChangeEvent) => void): () => void
-  
+
   // 生命周期
   destroy(): void
 }
@@ -67,11 +67,11 @@ interface SizeManager {
 function createSizeManager(options?: SizeManagerOptions): SizeManager
 
 interface SizeManagerOptions {
-  prefix?: string           // CSS变量前缀，默认 '--ls'
-  defaultMode?: SizeMode    // 默认尺寸模式，默认 'medium'
-  styleId?: string          // 样式标签ID，默认 'ldesign-size-variables'
-  selector?: string         // CSS选择器，默认 ':root'
-  autoInject?: boolean      // 是否自动注入CSS，默认 true
+  prefix?: string // CSS变量前缀，默认 '--ls'
+  defaultMode?: SizeMode // 默认尺寸模式，默认 'medium'
+  styleId?: string // 样式标签ID，默认 'ldesign-size-variables'
+  selector?: string // CSS选择器，默认 ':root'
+  autoInject?: boolean // 是否自动注入CSS，默认 true
 }
 ```
 
@@ -87,7 +87,7 @@ const customManager = createSizeManager({
   defaultMode: 'large',
   styleId: 'my-size-vars',
   selector: '.app-container',
-  autoInject: false
+  autoInject: false,
 })
 ```
 
@@ -121,12 +121,12 @@ type SizeMode = 'small' | 'medium' | 'large' | 'extra-large'
 
 ### 模式特性
 
-| 模式 | 基础字体 | 基础间距 | 按钮高度 | 适用场景 |
-|------|----------|----------|----------|----------|
-| `small` | 12px | 8px | 28px | 移动端、紧凑布局 |
-| `medium` | 16px | 16px | 36px | 桌面端标准 |
-| `large` | 18px | 20px | 44px | 大屏显示、老年友好 |
-| `extra-large` | 20px | 24px | 52px | 超大屏、演示模式 |
+| 模式          | 基础字体 | 基础间距 | 按钮高度 | 适用场景           |
+| ------------- | -------- | -------- | -------- | ------------------ |
+| `small`       | 12px     | 8px      | 28px     | 移动端、紧凑布局   |
+| `medium`      | 16px     | 16px     | 36px     | 桌面端标准         |
+| `large`       | 18px     | 20px     | 44px     | 大屏显示、老年友好 |
+| `extra-large` | 20px     | 24px     | 52px     | 超大屏、演示模式   |
 
 ## ⚙️ 配置管理
 
@@ -143,7 +143,7 @@ function getSizeConfig(mode: SizeMode): SizeConfig
 ```typescript
 const config = getSizeConfig('large')
 console.log(config.fontSize.base) // '18px'
-console.log(config.spacing.base)  // '20px'
+console.log(config.spacing.base) // '20px'
 ```
 
 ### getAvailableModes
@@ -173,12 +173,12 @@ const sizeConfigs: Record<SizeMode, SizeConfig>
 
 ### CSSVariableGenerator
 
-CSS变量生成器类。
+CSS 变量生成器类。
 
 ```typescript
 class CSSVariableGenerator {
   constructor(prefix?: string)
-  
+
   generateVariables(config: SizeConfig): Record<string, string>
   generateCSSString(variables: Record<string, string>, selector?: string): string
   updatePrefix(prefix: string): void
@@ -203,12 +203,12 @@ console.log(variables)
 
 ### CSSInjector
 
-CSS注入器类。
+CSS 注入器类。
 
 ```typescript
 class CSSInjector {
   constructor(options?: CSSInjectionOptions)
-  
+
   injectVariables(variables: Record<string, string>): void
   injectCSS(cssString: string): void
   removeCSS(): void
@@ -246,11 +246,11 @@ function parseSizeMode(value: string): SizeMode | null
 
 ```typescript
 // 模式验证
-console.log(isValidSizeMode('large'))    // true
-console.log(isValidSizeMode('invalid'))  // false
+console.log(isValidSizeMode('large')) // true
+console.log(isValidSizeMode('invalid')) // false
 
 // 模式切换
-console.log(getNextSizeMode('medium'))     // 'large'
+console.log(getNextSizeMode('medium')) // 'large'
 console.log(getPreviousSizeMode('large')) // 'medium'
 
 // 模式比较
@@ -260,8 +260,8 @@ console.log(compareSizeModes('small', 'large')) // -2
 console.log(getSizeModeDisplayName('large')) // '大'
 
 // 模式解析
-console.log(parseSizeMode('l'))   // 'large'
-console.log(parseSizeMode('大'))  // 'large'
+console.log(parseSizeMode('l')) // 'large'
+console.log(parseSizeMode('大')) // 'large'
 ```
 
 ### CSS 工具函数
@@ -281,12 +281,12 @@ function calculateSizeScale(fromMode: SizeMode, toMode: SizeMode): number
 
 ```typescript
 // 值格式化
-console.log(formatCSSValue(16))        // '16px'
+console.log(formatCSSValue(16)) // '16px'
 console.log(formatCSSValue(1.5, 'rem')) // '1.5rem'
 
 // 值解析
-console.log(parseCSSValue('16px'))     // { number: 16, unit: 'px' }
-console.log(parseCSSValue('1.5rem'))   // { number: 1.5, unit: 'rem' }
+console.log(parseCSSValue('16px')) // { number: 16, unit: 'px' }
+console.log(parseCSSValue('1.5rem')) // { number: 1.5, unit: 'rem' }
 
 // 缩放计算
 console.log(calculateSizeScale('small', 'large')) // 1.5
@@ -300,16 +300,16 @@ console.log(calculateSizeScale('small', 'large')) // 1.5
 
 ```typescript
 interface SizeChangeEvent {
-  previousMode: SizeMode    // 之前的尺寸模式
-  currentMode: SizeMode     // 当前的尺寸模式
-  timestamp: number         // 变化时间戳
+  previousMode: SizeMode // 之前的尺寸模式
+  currentMode: SizeMode // 当前的尺寸模式
+  timestamp: number // 变化时间戳
 }
 ```
 
 ### 事件监听
 
 ```typescript
-const unsubscribe = manager.onSizeChange((event) => {
+const unsubscribe = manager.onSizeChange(event => {
   console.log(`尺寸从 ${event.previousMode} 变为 ${event.currentMode}`)
 })
 
@@ -324,7 +324,7 @@ unsubscribe()
 ```typescript
 const manager = createSizeManager({
   defaultMode: 'medium',
-  autoInject: true
+  autoInject: true,
 })
 ```
 
@@ -357,8 +357,8 @@ manager.destroy()
 ## 💡 最佳实践
 
 1. **使用全局管理器**：对于大多数应用，使用 `globalSizeManager` 即可
-2. **监听变化**：使用 `onSizeChange` 监听尺寸变化，及时更新UI
-3. **合理使用CSS变量**：在CSS中使用生成的变量，而不是硬编码值
+2. **监听变化**：使用 `onSizeChange` 监听尺寸变化，及时更新 UI
+3. **合理使用 CSS 变量**：在 CSS 中使用生成的变量，而不是硬编码值
 4. **及时清理**：在组件卸载时取消事件监听，避免内存泄漏
 
 ## 🔗 相关文档

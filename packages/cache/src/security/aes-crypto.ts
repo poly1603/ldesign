@@ -22,9 +22,9 @@ export class AESCrypto {
    */
   isAvailable(): boolean {
     return (
-      typeof window !== 'undefined'
-      && 'crypto' in window
-      && 'subtle' in window.crypto
+      typeof window !== 'undefined' &&
+      'crypto' in window &&
+      'subtle' in window.crypto
     )
   }
 
@@ -47,10 +47,9 @@ export class AESCrypto {
         hashBuffer,
         { name: 'AES-GCM' },
         false,
-        ['encrypt', 'decrypt'],
+        ['encrypt', 'decrypt']
       )
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Failed to initialize crypto key:', error)
       throw new Error('Failed to initialize encryption key')
     }
@@ -124,7 +123,7 @@ export class AESCrypto {
       const encryptedBuffer = await window.crypto.subtle.encrypt(
         { name: 'AES-GCM', iv },
         this.cryptoKey,
-        dataBuffer,
+        dataBuffer
       )
 
       // 将 IV 和加密数据组合
@@ -134,8 +133,7 @@ export class AESCrypto {
 
       // 转换为 Base64
       return this.arrayBufferToBase64(combined.buffer)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('AES encryption failed:', error)
       throw new Error('AES encryption failed')
     }
@@ -166,13 +164,12 @@ export class AESCrypto {
       const decryptedBuffer = await window.crypto.subtle.decrypt(
         { name: 'AES-GCM', iv },
         this.cryptoKey,
-        encryptedData,
+        encryptedData
       )
 
       const decoder = new TextDecoder()
       return decoder.decode(decryptedBuffer)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('AES decryption failed:', error)
       throw new Error('AES decryption failed')
     }
@@ -191,14 +188,12 @@ export class AESCrypto {
         binary += String.fromCharCode(bytes[i])
       }
       return btoa(binary)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Base64 encoding failed:', error)
       // 回退到简单编码
       try {
         return btoa(unescape(encodeURIComponent(data)))
-      }
-      catch (fallbackError) {
+      } catch (fallbackError) {
         console.error('Fallback Base64 encoding failed:', fallbackError)
         return data
       }
@@ -218,14 +213,12 @@ export class AESCrypto {
       // 使用 TextDecoder 处理 UTF-8 字符
       const decoder = new TextDecoder()
       return decoder.decode(bytes)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Base64 decoding failed:', error)
       // 回退到简单解码
       try {
         return decodeURIComponent(escape(atob(data)))
-      }
-      catch (fallbackError) {
+      } catch (fallbackError) {
         console.error('Fallback Base64 decoding failed:', fallbackError)
         return data
       }

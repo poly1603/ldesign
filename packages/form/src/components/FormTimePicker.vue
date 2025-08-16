@@ -9,10 +9,10 @@ defineProps<FormTimePickerProps>()
 
 defineEmits<{
   'update:modelValue': [value: string | Date | null]
-  'change': [value: string | Date | null, event: Event]
-  'blur': [event: FocusEvent]
-  'focus': [event: FocusEvent]
-  'clear': []
+  change: [value: string | Date | null, event: Event]
+  blur: [event: FocusEvent]
+  focus: [event: FocusEvent]
+  clear: []
 }>()
 </script>
 

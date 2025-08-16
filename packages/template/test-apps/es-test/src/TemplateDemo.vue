@@ -3,7 +3,7 @@ import { TemplateRenderer } from '@ldesign/template/vue'
 import { ref } from 'vue'
 
 // 事件日志
-const eventLog = ref<Array<{ time: string, type: string, data: string }>>([])
+const eventLog = ref<Array<{ time: string; type: string; data: string }>>([])
 
 function addEvent(type: string, data: any) {
   eventLog.value.unshift({

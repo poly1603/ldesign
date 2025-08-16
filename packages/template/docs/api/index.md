@@ -23,12 +23,7 @@ Vue 3 Composition API，提供响应式的模板管理功能。
 ```typescript
 import { useTemplate } from '@ldesign/template'
 
-const {
-  currentTemplate,
-  loading,
-  error,
-  render
-} = useTemplate(options)
+const { currentTemplate, loading, error, render } = useTemplate(options)
 ```
 
 [查看详细文档 →](./use-template.md)
@@ -73,17 +68,14 @@ import {
   createDeviceWatcher,
   detectDevice,
   detectDeviceByUserAgent,
-  detectDeviceByViewport
+  detectDeviceByViewport,
 } from '@ldesign/template'
 ```
 
 ### 缓存管理
 
 ```typescript
-import {
-  LRUCache,
-  TemplateCache
-} from '@ldesign/template'
+import { LRUCache, TemplateCache } from '@ldesign/template'
 ```
 
 [查看详细文档 →](./utilities.md)
@@ -193,7 +185,7 @@ import { TemplatePlugin } from '@ldesign/template'
 app.use(TemplatePlugin, {
   defaultDevice: 'desktop',
   autoScan: true,
-  autoDetectDevice: true
+  autoDetectDevice: true,
 })
 ```
 
@@ -239,17 +231,14 @@ class ConfigurationError extends Error {
 ```typescript
 try {
   const component = await manager.loadTemplate('login', 'desktop', 'classic')
-}
-catch (error) {
+} catch (error) {
   if (error instanceof TemplateNotFoundError) {
     // 处理模板未找到
     console.warn('模板未找到，使用默认模板')
-  }
-  else if (error instanceof TemplateLoadError) {
+  } else if (error instanceof TemplateLoadError) {
     // 处理加载错误
     console.error('模板加载失败:', error.cause)
-  }
-  else {
+  } else {
     // 处理其他错误
     console.error('未知错误:', error)
   }
@@ -264,7 +253,7 @@ catch (error) {
 // 预加载常用模板
 manager.preload([
   { category: 'login', device: 'desktop', template: 'classic' },
-  { category: 'login', device: 'mobile', template: 'simple' }
+  { category: 'login', device: 'mobile', template: 'simple' },
 ])
 ```
 
@@ -274,7 +263,7 @@ manager.preload([
 const manager = new TemplateManager({
   cacheEnabled: true,
   cacheSize: 100,
-  cacheTTL: 5 * 60 * 1000 // 5分钟
+  cacheTTL: 5 * 60 * 1000, // 5分钟
 })
 ```
 
@@ -282,8 +271,8 @@ const manager = new TemplateManager({
 
 ```typescript
 // 使用动态导入实现懒加载
-const LazyTemplate = defineAsyncComponent(() =>
-  import('./templates/login/desktop/classic/index.vue')
+const LazyTemplate = defineAsyncComponent(
+  () => import('./templates/login/desktop/classic/index.vue')
 )
 ```
 
@@ -293,7 +282,7 @@ const LazyTemplate = defineAsyncComponent(() =>
 
 ```typescript
 const manager = new TemplateManager({
-  debug: process.env.NODE_ENV === 'development'
+  debug: process.env.NODE_ENV === 'development',
 })
 ```
 
@@ -304,7 +293,7 @@ const manager = new TemplateManager({
 manager.setLogLevel('debug')
 
 // 监听事件
-manager.on('template:load', (event) => {
+manager.on('template:load', event => {
   console.log('模板加载:', event)
 })
 ```
@@ -352,15 +341,11 @@ manager.on('template:load', (event) => {
 虚拟滚动 Composable，用于优化大量数据的渲染性能。
 
 ```typescript
-const {
-  containerRef,
-  visibleItems,
-  totalHeight,
-  handleScroll,
-} = useVirtualScroll(items, {
-  containerHeight: 400,
-  itemHeight: 60,
-})
+const { containerRef, visibleItems, totalHeight, handleScroll } =
+  useVirtualScroll(items, {
+    containerHeight: 400,
+    itemHeight: 60,
+  })
 ```
 
 [查看详细文档 →](./vue-composables.md#usevirtualscroll)

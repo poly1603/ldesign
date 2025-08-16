@@ -17,7 +17,7 @@ export default defineComponent({
     // 当前语言信息
     const currentLanguage = computed(() => {
       return availableLanguages.value.find(
-        (lang: any) => lang.code === locale.value,
+        (lang: any) => lang.code === locale.value
       )
     })
 
@@ -35,8 +35,8 @@ export default defineComponent({
     function getLanguageFlag(code: string): string {
       const flagMap: Record<string, string> = {
         'zh-CN': '🇨🇳',
-        'en': '🇺🇸',
-        'ja': '🇯🇵',
+        en: '🇺🇸',
+        ja: '🇯🇵',
       }
       return flagMap[code] || '🌐'
     }
@@ -47,8 +47,7 @@ export default defineComponent({
         await switchLanguage(languageCode)
         isOpen.value = false
         console.log(`🌐 语言已切换到: ${languageCode}`)
-      }
-      catch (error) {
+      } catch (error) {
         console.error('❌ 语言切换失败:', error)
       }
     }
@@ -64,21 +63,21 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="language-switcher">
+      <div class='language-switcher'>
         <button
-          class="language-switcher__trigger"
+          class='language-switcher__trigger'
           onClick={toggleDropdown}
           onBlur={closeDropdown}
         >
-          <span class="language-flag">{getLanguageFlag(locale.value)}</span>
-          <span class="language-name">
+          <span class='language-flag'>{getLanguageFlag(locale.value)}</span>
+          <span class='language-name'>
             {currentLanguage.value?.nativeName || locale.value}
           </span>
           <span class={['language-arrow', { 'is-open': isOpen.value }]}>▼</span>
         </button>
 
         {isOpen.value && (
-          <div class="language-switcher__dropdown">
+          <div class='language-switcher__dropdown'>
             {languageOptions.value.map((option: any) => (
               <button
                 key={option.code}
@@ -88,13 +87,13 @@ export default defineComponent({
                 ]}
                 onClick={() => handleLanguageChange(option.code)}
               >
-                <span class="language-flag">{option.flag}</span>
-                <span class="language-info">
-                  <span class="language-native">{option.nativeName}</span>
-                  <span class="language-english">{option.name}</span>
+                <span class='language-flag'>{option.flag}</span>
+                <span class='language-info'>
+                  <span class='language-native'>{option.nativeName}</span>
+                  <span class='language-english'>{option.name}</span>
                 </span>
                 {option.code === locale.value && (
-                  <span class="language-check">✓</span>
+                  <span class='language-check'>✓</span>
                 )}
               </button>
             ))}

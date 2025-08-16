@@ -16,11 +16,14 @@ export interface VerificationOptions {
 /**
  * 发送 HTTP 请求
  */
-function httpGet(url: string, timeout = 10000): Promise<{ status: number, data: string }> {
+function httpGet(
+  url: string,
+  timeout = 10000
+): Promise<{ status: number; data: string }> {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { timeout }, (res) => {
+    const req = https.get(url, { timeout }, res => {
       let data = ''
-      res.on('data', chunk => data += chunk)
+      res.on('data', chunk => (data += chunk))
       res.on('end', () => resolve({ status: res.statusCode || 0, data }))
     })
 
@@ -35,7 +38,10 @@ function httpGet(url: string, timeout = 10000): Promise<{ status: number, data: 
 /**
  * 验证 npm 包是否可用
  */
-async function verifyNpmPackage(packageName: string, version?: string): Promise<boolean> {
+async function verifyNpmPackage(
+  packageName: string,
+  version?: string
+): Promise<boolean> {
   console.log(`📦 验证 npm 包: @ldesign/${packageName}`)
 
   try {
@@ -48,13 +54,11 @@ async function verifyNpmPackage(packageName: string, version?: string): Promise<
     if (status === 200) {
       console.log(`  ✅ npm 包可用`)
       return true
-    }
-    else {
+    } else {
       console.log(`  ❌ npm 包不可用 (状态码: ${status})`)
       return false
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ npm 包验证失败: ${(error as Error).message}`)
     return false
   }
@@ -63,7 +67,10 @@ async function verifyNpmPackage(packageName: string, version?: string): Promise<
 /**
  * 验证 CDN 链接是否可用
  */
-async function verifyCdnLinks(packageName: string, version?: string): Promise<boolean> {
+async function verifyCdnLinks(
+  packageName: string,
+  version?: string
+): Promise<boolean> {
   console.log(`🌐 验证 CDN 链接: @ldesign/${packageName}`)
 
   const versionStr = version || 'latest'
@@ -80,13 +87,11 @@ async function verifyCdnLinks(packageName: string, version?: string): Promise<bo
 
       if (status === 200) {
         console.log(`  ✅ ${link}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${link} (状态码: ${status})`)
         allValid = false
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log(`  ❌ ${link} (错误: ${(error as Error).message})`)
       allValid = false
     }
@@ -115,13 +120,11 @@ async function verifyDocsWebsite(): Promise<boolean> {
 
       if (status === 200) {
         console.log(`  ✅ ${url}`)
-      }
-      else {
+      } else {
         console.log(`  ❌ ${url} (状态码: ${status})`)
         allValid = false
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log(`  ❌ ${url} (错误: ${(error as Error).message})`)
       allValid = false
     }
@@ -133,7 +136,10 @@ async function verifyDocsWebsite(): Promise<boolean> {
 /**
  * 验证包的完整性
  */
-async function verifyPackageIntegrity(packageName: string, version?: string): Promise<boolean> {
+async function verifyPackageIntegrity(
+  packageName: string,
+  version?: string
+): Promise<boolean> {
   console.log(`🔍 验证包完整性: @ldesign/${packageName}`)
 
   try {
@@ -149,19 +155,18 @@ async function verifyPackageIntegrity(packageName: string, version?: string): Pr
     }
 
     // 检查是否包含基本的导出
-    const hasExports = data.includes('export') || data.includes('module.exports')
+    const hasExports =
+      data.includes('export') || data.includes('module.exports')
     const hasUMD = data.includes('(function') || data.includes('!function')
 
     if (hasExports || hasUMD) {
       console.log(`  ✅ 包内容完整`)
       return true
-    }
-    else {
+    } else {
       console.log(`  ❌ 包内容不完整`)
       return false
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.log(`  ❌ 包完整性验证失败: ${(error as Error).message}`)
     return false
   }
@@ -170,7 +175,10 @@ async function verifyPackageIntegrity(packageName: string, version?: string): Pr
 /**
  * 验证单个包的部署
  */
-export async function verifyPackageDeployment(packageName: string, options: VerificationOptions = {}): Promise<boolean> {
+export async function verifyPackageDeployment(
+  packageName: string,
+  options: VerificationOptions = {}
+): Promise<boolean> {
   const { version, timeout = 30000 } = options
 
   console.log(`\n🔍 验证包部署: @ldesign/${packageName}`)
@@ -186,8 +194,7 @@ export async function verifyPackageDeployment(packageName: string, options: Veri
 
   if (allValid) {
     console.log(`\n✅ 包 @ldesign/${packageName} 部署验证通过`)
-  }
-  else {
+  } else {
     console.log(`\n❌ 包 @ldesign/${packageName} 部署验证失败`)
   }
 
@@ -197,13 +204,18 @@ export async function verifyPackageDeployment(packageName: string, options: Veri
 /**
  * 验证所有包的部署
  */
-export async function verifyAllDeployments(options: VerificationOptions = {}): Promise<boolean> {
+export async function verifyAllDeployments(
+  options: VerificationOptions = {}
+): Promise<boolean> {
   console.log('🚀 开始验证所有包的部署状态...\n')
 
   const packagesDir = path.resolve(__dirname, '../../packages')
-  const packages = fs.readdirSync(packagesDir).filter((name) => {
+  const packages = fs.readdirSync(packagesDir).filter(name => {
     const packagePath = path.join(packagesDir, name)
-    return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
+    return (
+      fs.statSync(packagePath).isDirectory() &&
+      fs.existsSync(path.join(packagePath, 'package.json'))
+    )
   })
 
   const results: Record<string, boolean> = {}
@@ -212,8 +224,7 @@ export async function verifyAllDeployments(options: VerificationOptions = {}): P
   for (const packageName of packages) {
     try {
       results[packageName] = await verifyPackageDeployment(packageName, options)
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`❌ 验证 ${packageName} 失败:`, (error as Error).message)
       results[packageName] = false
     }
@@ -233,21 +244,18 @@ export async function verifyAllDeployments(options: VerificationOptions = {}): P
   for (const [packageName, isValid] of Object.entries(results)) {
     const status = isValid ? '✅ 通过' : '❌ 失败'
     console.log(`${packageName.padEnd(12)} ${status}`)
-    if (!isValid)
-      allValid = false
+    if (!isValid) allValid = false
   }
 
   const docsStatus = docsValid ? '✅ 通过' : '❌ 失败'
   console.log(`${'docs'.padEnd(12)} ${docsStatus}`)
-  if (!docsValid)
-    allValid = false
+  if (!docsValid) allValid = false
 
   console.log('=' * 50)
 
   if (allValid) {
     console.log('🎉 所有部署验证通过!')
-  }
-  else {
+  } else {
     console.log('⚠️  部分部署验证失败')
   }
 
@@ -257,7 +265,9 @@ export async function verifyAllDeployments(options: VerificationOptions = {}): P
 /**
  * 生成部署报告
  */
-export function generateDeploymentReport(results: Record<string, boolean>): void {
+export function generateDeploymentReport(
+  results: Record<string, boolean>
+): void {
   const reportPath = path.resolve(__dirname, '../../deployment-report.md')
 
   const timestamp = new Date().toISOString()
@@ -280,21 +290,32 @@ export function generateDeploymentReport(results: Record<string, boolean>): void
 
 | 包名 | 状态 | npm | CDN | 完整性 |
 |------|------|-----|-----|--------|
-${Object.entries(results).map(([name, status]) =>
-  `| @ldesign/${name} | ${status ? '✅' : '❌'} | ${status ? '✅' : '❌'} | ${status ? '✅' : '❌'} | ${status ? '✅' : '❌'} |`,
-).join('\n')}
+${Object.entries(results)
+  .map(
+    ([name, status]) =>
+      `| @ldesign/${name} | ${status ? '✅' : '❌'} | ${
+        status ? '✅' : '❌'
+      } | ${status ? '✅' : '❌'} | ${status ? '✅' : '❌'} |`
+  )
+  .join('\n')}
 
 ## 🔗 链接
 
 ### npm 包
-${Object.keys(results).map(name =>
-  `- [@ldesign/${name}](https://www.npmjs.com/package/@ldesign/${name})`,
-).join('\n')}
+${Object.keys(results)
+  .map(
+    name =>
+      `- [@ldesign/${name}](https://www.npmjs.com/package/@ldesign/${name})`
+  )
+  .join('\n')}
 
 ### CDN 链接
-${Object.keys(results).map(name =>
-  `- [jsDelivr](https://cdn.jsdelivr.net/npm/@ldesign/${name}@latest/dist/index.js) | [unpkg](https://unpkg.com/@ldesign/${name}@latest/dist/index.js)`,
-).join('\n')}
+${Object.keys(results)
+  .map(
+    name =>
+      `- [jsDelivr](https://cdn.jsdelivr.net/npm/@ldesign/${name}@latest/dist/index.js) | [unpkg](https://unpkg.com/@ldesign/${name}@latest/dist/index.js)`
+  )
+  .join('\n')}
 
 ### 文档
 - [主站](https://ldesign.github.io)
@@ -315,18 +336,21 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const args = process.argv.slice(2)
 
   const options: VerificationOptions = {
-    version: args.includes('--version') ? args[args.indexOf('--version') + 1] : undefined,
-    timeout: args.includes('--timeout') ? Number.parseInt(args[args.indexOf('--timeout') + 1]) : 30000,
+    version: args.includes('--version')
+      ? args[args.indexOf('--version') + 1]
+      : undefined,
+    timeout: args.includes('--timeout')
+      ? Number.parseInt(args[args.indexOf('--timeout') + 1])
+      : 30000,
   }
 
   if (args.length === 0 || args[0] === 'all') {
-    verifyAllDeployments(options).then((success) => {
+    verifyAllDeployments(options).then(success => {
       process.exit(success ? 0 : 1)
     })
-  }
-  else {
+  } else {
     const packageName = args[0]
-    verifyPackageDeployment(packageName, options).then((success) => {
+    verifyPackageDeployment(packageName, options).then(success => {
       process.exit(success ? 0 : 1)
     })
   }

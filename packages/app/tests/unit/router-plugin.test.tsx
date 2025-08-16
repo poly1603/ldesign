@@ -48,7 +48,7 @@ describe('router Plugin Integration', () => {
       routerPlugin({
         routes: mockRoutes,
         mode: 'memory',
-      }),
+      })
     )
 
     // 验证路由器已安装
@@ -85,7 +85,7 @@ describe('router Plugin Integration', () => {
       routerPlugin({
         routes: mockRoutes,
         mode: 'memory',
-      }),
+      })
     )
 
     // 测试路由导航

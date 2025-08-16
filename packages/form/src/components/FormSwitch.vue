@@ -30,16 +30,16 @@ const props = withDefaults(defineProps<FormSwitchProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean | string | number]
-  'change': [value: boolean | string | number, event: Event]
-  'blur': [event: FocusEvent]
-  'focus': [event: FocusEvent]
+  change: [value: boolean | string | number, event: Event]
+  blur: [event: FocusEvent]
+  focus: [event: FocusEvent]
 }>()
 
 const inputRef = ref<HTMLInputElement>()
 
 // 生成唯一ID
 const inputId = computed(
-  () => `form-switch-${Math.random().toString(36).substr(2, 9)}`,
+  () => `form-switch-${Math.random().toString(36).substr(2, 9)}`
 )
 
 // 检查是否选中
@@ -75,8 +75,7 @@ const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 事件处理
 function handleChange(event: Event) {
-  if (props.disabled)
-    return
+  if (props.disabled) return
 
   const target = event.target as HTMLInputElement
   const newValue = target.checked ? props.checkedValue : props.uncheckedValue
@@ -108,9 +107,7 @@ defineExpose({
         <span v-if="required" class="form-switch__required">*</span>
         <span v-if="showColon" class="form-switch__colon">:</span>
       </label>
-      <div v-if="tooltip" class="form-switch__tooltip" :title="tooltip">
-        ?
-      </div>
+      <div v-if="tooltip" class="form-switch__tooltip" :title="tooltip">?</div>
     </div>
 
     <div class="form-switch__wrapper" :class="wrapperClasses">
@@ -125,7 +122,7 @@ defineExpose({
           @change="handleChange"
           @blur="handleBlur"
           @focus="handleFocus"
-        >
+        />
         <span class="form-switch__slider" :class="sliderClasses">
           <span class="form-switch__handle" />
         </span>

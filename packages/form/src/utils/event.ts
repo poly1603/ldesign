@@ -16,7 +16,7 @@ export class SimpleEventEmitter implements EventEmitter {
   on<K extends keyof any>(
     event: K,
     listener: any,
-    options?: EventListenerOptions,
+    options?: EventListenerOptions
   ): void {
     const eventName = String(event)
 
@@ -55,11 +55,10 @@ export class SimpleEventEmitter implements EventEmitter {
     // 执行普通监听器
     const listeners = this.listeners.get(eventName)
     if (listeners) {
-      listeners.forEach((listener) => {
+      listeners.forEach(listener => {
         try {
           listener(...args)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Error in event listener for "${eventName}":`, error)
         }
       })
@@ -68,14 +67,13 @@ export class SimpleEventEmitter implements EventEmitter {
     // 执行一次性监听器
     const onceListeners = this.onceListeners.get(eventName)
     if (onceListeners) {
-      onceListeners.forEach((listener) => {
+      onceListeners.forEach(listener => {
         try {
           listener(...args)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(
             `Error in once event listener for "${eventName}":`,
-            error,
+            error
           )
         }
       })
@@ -89,8 +87,7 @@ export class SimpleEventEmitter implements EventEmitter {
       const eventName = String(event)
       this.listeners.delete(eventName)
       this.onceListeners.delete(eventName)
-    }
-    else {
+    } else {
       this.listeners.clear()
       this.onceListeners.clear()
     }
@@ -131,7 +128,7 @@ export class DOMEventManager {
     element: Element,
     event: string,
     listener: EventListener,
-    options?: AddEventListenerOptions,
+    options?: AddEventListenerOptions
   ): void {
     if (!this.listeners.has(element)) {
       this.listeners.set(element, new Map())
@@ -152,15 +149,13 @@ export class DOMEventManager {
   removeEventListener(
     element: Element,
     event: string,
-    listener: EventListener,
+    listener: EventListener
   ): void {
     const elementListeners = this.listeners.get(element)
-    if (!elementListeners)
-      return
+    if (!elementListeners) return
 
     const eventListeners = elementListeners.get(event)
-    if (!eventListeners)
-      return
+    if (!eventListeners) return
 
     const index = eventListeners.indexOf(listener)
     if (index > -1) {
@@ -183,11 +178,10 @@ export class DOMEventManager {
    */
   removeAllListeners(element: Element): void {
     const elementListeners = this.listeners.get(element)
-    if (!elementListeners)
-      return
+    if (!elementListeners) return
 
     elementListeners.forEach((listeners, event) => {
-      listeners.forEach((listener) => {
+      listeners.forEach(listener => {
         element.removeEventListener(event, listener as any)
       })
     })
@@ -201,7 +195,7 @@ export class DOMEventManager {
   clear(): void {
     this.listeners.forEach((elementListeners, element) => {
       elementListeners.forEach((listeners, event) => {
-        listeners.forEach((listener) => {
+        listeners.forEach(listener => {
           element.removeEventListener(event, listener as any)
         })
       })
@@ -215,15 +209,14 @@ export class DOMEventManager {
    */
   getListenerCount(element: Element, event?: string): number {
     const elementListeners = this.listeners.get(element)
-    if (!elementListeners)
-      return 0
+    if (!elementListeners) return 0
 
     if (event) {
       return elementListeners.get(event)?.length || 0
     }
 
     let count = 0
-    elementListeners.forEach((listeners) => {
+    elementListeners.forEach(listeners => {
       count += listeners.length
     })
     return count
@@ -244,7 +237,7 @@ export function delegate(
   container: Element,
   selector: string,
   event: string,
-  handler: (event: Event, target: Element) => void,
+  handler: (event: Event, target: Element) => void
 ): () => void {
   const delegateHandler = (e: Event) => {
     const target = (e.target as Element).closest(selector)
@@ -266,7 +259,7 @@ export function delegate(
 export function once(
   element: Element,
   event: string,
-  handler: EventListener,
+  handler: EventListener
 ): void {
   const onceHandler = (e: Event) => {
     handler(e)
@@ -282,7 +275,7 @@ export function once(
 export function waitForEvent(
   element: Element,
   event: string,
-  timeout?: number,
+  timeout?: number
 ): Promise<Event> {
   return new Promise((resolve, reject) => {
     let timeoutId: number | undefined
@@ -312,7 +305,7 @@ export function waitForEvent(
 export function createCustomEvent(
   type: string,
   detail?: any,
-  options?: EventInit,
+  options?: EventInit
 ): CustomEvent {
   return new CustomEvent(type, {
     detail,
@@ -329,7 +322,7 @@ export function dispatchCustomEvent(
   element: Element,
   type: string,
   detail?: any,
-  options?: EventInit,
+  options?: EventInit
 ): boolean {
   const event = createCustomEvent(type, detail, options)
   return element.dispatchEvent(event)
@@ -348,7 +341,7 @@ export function stopEvent(event: Event): void {
  */
 export function isEventSupported(
   eventName: string,
-  element?: Element,
+  element?: Element
 ): boolean {
   const testElement = element || document.createElement('div')
   const eventProperty = `on${eventName}`

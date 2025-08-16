@@ -81,8 +81,7 @@ describe('performanceMonitor', () => {
     if (report.slowActions.length > 0) {
       expect(report.slowActions[0].name).toBe('slowAction')
       expect(report.slowActions[0].avgTime).toBeGreaterThan(0)
-    }
-    else {
+    } else {
       // 如果装饰器没有工作，手动记录来测试监控功能
       monitor.recordActionTime('slowAction', 50)
       const report2 = monitor.getPerformanceReport()
@@ -179,7 +178,7 @@ describe('getOptimizationSuggestions', () => {
     const suggestions = getOptimizationSuggestions(report)
 
     expect(suggestions).toContain(
-      '发现 1 个慢速 Action，建议使用 @CachedAction 或 @DebouncedAction 优化',
+      '发现 1 个慢速 Action，建议使用 @CachedAction 或 @DebouncedAction 优化'
     )
   })
 
@@ -190,7 +189,7 @@ describe('getOptimizationSuggestions', () => {
     const suggestions = getOptimizationSuggestions(report)
 
     expect(suggestions).toContain(
-      '发现 1 个慢速 Getter，建议使用 @CachedGetter 或 @MemoizedGetter 优化',
+      '发现 1 个慢速 Getter，建议使用 @CachedGetter 或 @MemoizedGetter 优化'
     )
   })
 
@@ -203,7 +202,7 @@ describe('getOptimizationSuggestions', () => {
     const suggestions = getOptimizationSuggestions(report)
 
     expect(suggestions).toContain(
-      '发现 1 个频繁更新的状态，建议使用 @ThrottledAction 限制更新频率',
+      '发现 1 个频繁更新的状态，建议使用 @ThrottledAction 限制更新频率'
     )
   })
 
@@ -214,7 +213,7 @@ describe('getOptimizationSuggestions', () => {
     const suggestions = getOptimizationSuggestions(report)
 
     expect(suggestions).toContain(
-      '缓存大小过大，建议设置缓存过期时间或限制缓存大小',
+      '缓存大小过大，建议设置缓存过期时间或限制缓存大小'
     )
   })
 
@@ -225,7 +224,7 @@ describe('getOptimizationSuggestions', () => {
     const suggestions = getOptimizationSuggestions(report)
 
     expect(suggestions).toContain(
-      'Store 实例过多，建议合并相关的 Store 或使用 Store 池管理',
+      'Store 实例过多，建议合并相关的 Store 或使用 Store 池管理'
     )
   })
 
@@ -268,10 +267,10 @@ describe('性能装饰器集成测试', () => {
 
     const report2 = monitor.getPerformanceReport()
     expect(
-      report2.slowActions.some(action => action.name === 'slowAction'),
+      report2.slowActions.some(action => action.name === 'slowAction')
     ).toBe(true)
     expect(
-      report2.slowGetters.some(getter => getter.name === 'expensiveComputation'),
+      report2.slowGetters.some(getter => getter.name === 'expensiveComputation')
     ).toBe(true)
   })
 })

@@ -26,7 +26,7 @@ import { I18n } from '@ldesign/i18n'
 const i18n = new I18n({
   defaultLocale: 'en',
   fallbackLocale: 'en',
-  autoDetect: true
+  autoDetect: true,
 })
 ```
 
@@ -320,9 +320,7 @@ function createI18n(options?: I18nOptions): I18nInstance
 ### createI18nWithBuiltinLocales()
 
 ```typescript
-async function createI18nWithBuiltinLocales(
-  options?: I18nOptions
-): Promise<I18nInstance>
+async function createI18nWithBuiltinLocales(options?: I18nOptions): Promise<I18nInstance>
 ```
 
 创建带有内置语言包的 I18n 实例。
@@ -330,9 +328,7 @@ async function createI18nWithBuiltinLocales(
 ### createSimpleI18n()
 
 ```typescript
-async function createSimpleI18n(
-  options?: I18nOptions
-): Promise<I18nInstance>
+async function createSimpleI18n(options?: I18nOptions): Promise<I18nInstance>
 ```
 
 创建简单的 I18n 实例（仅英语）。

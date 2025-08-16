@@ -45,7 +45,7 @@ export default {
     },
     currentThemeInfo() {
       const themeMap = {
-        'christmas': {
+        christmas: {
           displayName: '圣诞节主题',
           description:
             '温馨的红绿配色，营造浓厚的圣诞节日氛围。包含雪花飘落、圣诞树闪烁等动态装饰效果',
@@ -87,7 +87,7 @@ export default {
           season: '春季',
           timeRange: '1月-2月',
         },
-        'halloween': {
+        halloween: {
           displayName: '万圣节主题',
           description:
             '神秘的橙黑配色，营造恐怖而有趣的万圣节氛围。包含南瓜灯闪烁、幽灵飘浮、蝙蝠飞行等诡异装饰',
@@ -137,9 +137,9 @@ export default {
     },
     getThemeIcon(theme) {
       const iconMap = {
-        'christmas': '🎄',
+        christmas: '🎄',
         'spring-festival': '🧧',
-        'halloween': '🎃',
+        halloween: '🎃',
       }
       return iconMap[theme] || '🎨'
     },
@@ -153,23 +153,13 @@ export default {
     <header class="app-header">
       <div class="container">
         <div class="header-content">
-          <h1 class="logo">
-            🎨 LDesign Theme Demo
-          </h1>
+          <h1 class="logo">🎨 LDesign Theme Demo</h1>
           <div class="theme-selector">
             <select v-model="currentTheme" @change="onThemeChange">
-              <option value="">
-                默认主题
-              </option>
-              <option value="christmas">
-                🎄 圣诞节
-              </option>
-              <option value="spring-festival">
-                🧧 春节
-              </option>
-              <option value="halloween">
-                🎃 万圣节
-              </option>
+              <option value="">默认主题</option>
+              <option value="christmas">🎄 圣诞节</option>
+              <option value="spring-festival">🧧 春节</option>
+              <option value="halloween">🎃 万圣节</option>
             </select>
           </div>
         </div>
@@ -181,9 +171,7 @@ export default {
       <div class="container">
         <!-- 英雄区域 -->
         <section class="hero-section">
-          <h2 class="hero-title">
-            欢迎使用 LDesign Theme
-          </h2>
+          <h2 class="hero-title">欢迎使用 LDesign Theme</h2>
           <p class="hero-description">
             功能强大的主题系统，为你的 Vue 应用带来节日的魅力
           </p>
@@ -225,9 +213,7 @@ export default {
 
         <!-- 功能展示 -->
         <section class="features-section">
-          <h3 class="section-title">
-            核心功能
-          </h3>
+          <h3 class="section-title">核心功能</h3>
           <div class="features-grid">
             <div
               v-for="(feature, index) in features"
@@ -250,9 +236,7 @@ export default {
 
         <!-- 主题信息 -->
         <section v-if="currentThemeInfo" class="theme-info-section">
-          <h3 class="section-title">
-            主题详情
-          </h3>
+          <h3 class="section-title">主题详情</h3>
           <div class="theme-info-card">
             <div class="theme-header">
               <span class="theme-icon">{{ getThemeIcon(currentTheme) }}</span>

@@ -36,7 +36,7 @@ describe('snowflakeDecoration', () => {
       ok: true,
       text: () =>
         Promise.resolve(
-          '<svg><path d="M12 2L13.09 8.26L19 7L17.74 9.74L24 12L17.74 14.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L6.26 14.26L0 12L6.26 9.74L5 7L10.91 8.26L12 2Z" fill="white"/></svg>',
+          '<svg><path d="M12 2L13.09 8.26L19 7L17.74 9.74L24 12L17.74 14.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L6.26 14.26L0 12L6.26 9.74L5 7L10.91 8.26L12 2Z" fill="white"/></svg>'
         ),
     })
 

@@ -24,8 +24,8 @@ import { createVueConfig } from '../../tools/configs/build/rollup.config.templat
 export default createVueConfig(import.meta.url, {
   globalName: 'YourPackageName',
   globals: {
-    'vue': 'Vue'
-  }
+    vue: 'Vue',
+  },
 })
 ```
 
@@ -39,7 +39,7 @@ import { createBasicConfig } from '../../tools/configs/build/rollup.config.templ
 
 export default createBasicConfig(import.meta.url, {
   external: ['lodash', 'axios'],
-  globalName: 'YourPackageName'
+  globalName: 'YourPackageName',
 })
 ```
 
@@ -54,8 +54,8 @@ import { createFullConfig } from '../../tools/configs/build/rollup.config.templa
 export default createFullConfig(import.meta.url, {
   globalName: 'YourPackageName',
   globals: {
-    'lodash': '_'
-  }
+    lodash: '_',
+  },
 })
 ```
 
@@ -79,7 +79,7 @@ export default createModernConfig(import.meta.url)
 import { createNodeConfig } from '../../tools/configs/build/rollup.config.template.js'
 
 export default createNodeConfig(import.meta.url, {
-  external: ['fs', 'path', 'child_process']
+  external: ['fs', 'path', 'child_process'],
 })
 ```
 
@@ -91,22 +91,22 @@ export default createNodeConfig(import.meta.url, {
 {
   // 外部依赖（不会被打包）
   external: ['vue', 'lodash'],
-  
+
   // UMD 全局变量名
   globalName: 'YourPackageName',
-  
+
   // UMD 全局变量映射
   globals: {
     'vue': 'Vue',
     'lodash': '_'
   },
-  
+
   // 是否启用 Vue 支持
   vue: true,
-  
+
   // 构建格式
   formats: ['es', 'cjs', 'umd'],
-  
+
   // 是否包含 UMD 构建
   includeUmd: true
 }
@@ -117,21 +117,25 @@ export default createNodeConfig(import.meta.url, {
 每种配置会生成以下文件：
 
 ### ES 模块 (`es/` 目录)
+
 - 保持源码目录结构
 - 支持 Tree Shaking
 - 现代项目首选
 
 ### CommonJS (`lib/` 目录)
+
 - Node.js 兼容
 - 保持源码目录结构
 - 传统项目支持
 
 ### UMD (`dist/` 目录)
+
 - 浏览器直接使用
 - 包含压缩版本
 - 全局变量访问
 
 ### TypeScript 声明 (`types/` 和 `dist/`)
+
 - 完整类型支持
 - IDE 智能提示
 - 类型安全

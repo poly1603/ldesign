@@ -33,8 +33,8 @@ function filterTemplates() {
   if (searchQuery.value) {
     result = result.filter(
       t =>
-        t.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-        || t.description.toLowerCase().includes(searchQuery.value.toLowerCase()),
+        t.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
@@ -143,60 +143,38 @@ function handleDeviceChange() {
     <div class="controls-panel">
       <div class="control-group">
         <label>搜索:</label>
-        <input v-model="searchQuery" placeholder="搜索模板..." class="search-input" @input="handleSearch">
+        <input v-model="searchQuery" placeholder="搜索模板..." class="search-input" @input="handleSearch" />
       </div>
 
       <div class="control-group">
         <label>分类:</label>
         <select v-model="selectedCategory" class="select" @change="handleCategoryChange">
-          <option value="all">
-            全部
-          </option>
-          <option value="login">
-            登录
-          </option>
-          <option value="dashboard">
-            仪表板
-          </option>
-          <option value="profile">
-            个人资料
-          </option>
+          <option value="all">全部</option>
+          <option value="login">登录</option>
+          <option value="dashboard">仪表板</option>
+          <option value="profile">个人资料</option>
         </select>
       </div>
 
       <div class="control-group">
         <label>设备:</label>
         <select v-model="selectedDevice" class="select" @change="handleDeviceChange">
-          <option value="all">
-            全部
-          </option>
-          <option value="desktop">
-            桌面
-          </option>
-          <option value="tablet">
-            平板
-          </option>
-          <option value="mobile">
-            手机
-          </option>
+          <option value="all">全部</option>
+          <option value="desktop">桌面</option>
+          <option value="tablet">平板</option>
+          <option value="mobile">手机</option>
         </select>
       </div>
 
       <div class="control-group">
         <label>跳转到:</label>
-        <input v-model.number="jumpToIndex" type="number" min="1" :max="filteredTemplates.length" class="jump-input">
-        <button class="btn" @click="jumpToItem">
-          跳转
-        </button>
+        <input v-model.number="jumpToIndex" type="number" min="1" :max="filteredTemplates.length" class="jump-input" />
+        <button class="btn" @click="jumpToItem">跳转</button>
       </div>
 
       <div class="control-group">
-        <button class="btn" @click="scrollToTop">
-          顶部
-        </button>
-        <button class="btn" @click="scrollToBottom">
-          底部
-        </button>
+        <button class="btn" @click="scrollToTop">顶部</button>
+        <button class="btn" @click="scrollToBottom">底部</button>
       </div>
     </div>
 
@@ -275,16 +253,12 @@ function handleDeviceChange() {
             }"
           >
             <div class="simple-card">
-              <div class="simple-icon">
-                🎨
-              </div>
+              <div class="simple-icon">🎨</div>
               <div class="simple-content">
                 <h4>{{ item.name }}</h4>
                 <p>{{ item.category }} - {{ item.device }}</p>
               </div>
-              <div class="simple-rating">
-                ⭐ {{ item.rating }}
-              </div>
+              <div class="simple-rating">⭐ {{ item.rating }}</div>
             </div>
           </div>
         </div>

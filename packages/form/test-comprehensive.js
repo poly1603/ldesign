@@ -53,8 +53,7 @@ function test(name, testFn) {
     testResults.passed++
     console.log(`✅ 通过: ${name}`)
     return true
-  }
-  catch (error) {
+  } catch (error) {
     testResults.failed++
     testResults.errors.push({ name, error: error.message })
     console.log(`❌ 失败: ${name} - ${error.message}`)
@@ -75,8 +74,7 @@ async function asyncTest(name, testFn) {
     testResults.passed++
     console.log(`✅ 通过: ${name}`)
     return true
-  }
-  catch (error) {
+  } catch (error) {
     testResults.failed++
     testResults.errors.push({ name, error: error.message })
     console.log(`❌ 失败: ${name} - ${error.message}`)
@@ -103,8 +101,7 @@ class MockFormManager {
   setValue(key, value) {
     if (typeof key === 'object') {
       Object.assign(this.values, key)
-    }
-    else {
+    } else {
       this.values[key] = value
     }
     this.emit('VALUE_CHANGE', { key, value })
@@ -112,11 +109,12 @@ class MockFormManager {
 
   validate(key) {
     const errors = []
-    const items = key ? [this.config.items.find(item => item.key === key)] : this.config.items
+    const items = key
+      ? [this.config.items.find(item => item.key === key)]
+      : this.config.items
 
-    items.forEach((item) => {
-      if (!item)
-        return
+    items.forEach(item => {
+      if (!item) return
       const value = this.values[item.key]
       if (item.required && (!value || value.trim() === '')) {
         errors.push(`${item.label}是必填项`)
@@ -217,8 +215,7 @@ class MockModalManager {
   }
 
   async open(items, values, animated = true) {
-    if (this.state.open)
-      return
+    if (this.state.open) return
     this.state.open = true
     this.state.items = items
     this.state.values = values
@@ -226,8 +223,7 @@ class MockModalManager {
   }
 
   async close(animated = true, trigger = 'api') {
-    if (!this.state.open)
-      return
+    if (!this.state.open) return
     this.state.open = false
     this.emitEvent('close', trigger)
   }
@@ -244,8 +240,7 @@ class MockModalManager {
     this.eventListeners.push(callback)
     return () => {
       const index = this.eventListeners.indexOf(callback)
-      if (index > -1)
-        this.eventListeners.splice(index, 1)
+      if (index > -1) this.eventListeners.splice(index, 1)
     }
   }
 
@@ -266,7 +261,7 @@ class MockFormGroupManager {
 
   setupGroups(groups) {
     this.groups.clear()
-    groups.forEach((group) => {
+    groups.forEach(group => {
       this.groups.set(group.key, {
         ...group,
         expanded: group.expanded !== false,
@@ -277,7 +272,7 @@ class MockFormGroupManager {
 
   assignItemsToGroups(items) {
     const grouped = new Map()
-    items.forEach((item) => {
+    items.forEach(item => {
       const groupKey = item.group || 'default'
       if (!grouped.has(groupKey)) {
         grouped.set(groupKey, [])
@@ -299,13 +294,14 @@ class MockFormGroupManager {
     this.eventListeners.push(callback)
     return () => {
       const index = this.eventListeners.indexOf(callback)
-      if (index > -1)
-        this.eventListeners.splice(index, 1)
+      if (index > -1) this.eventListeners.splice(index, 1)
     }
   }
 
   emitEvent(type, groupKey, expanded) {
-    this.eventListeners.forEach(callback => callback({ type, groupKey, expanded }))
+    this.eventListeners.forEach(callback =>
+      callback({ type, groupKey, expanded })
+    )
   }
 
   destroy() {
@@ -322,8 +318,7 @@ class MockJSAdapter {
   }
 
   mount(container) {
-    if (this.mounted)
-      return false
+    if (this.mounted) return false
     this.formManager = new MockFormManager(this.config, container)
     this.mounted = true
     this.emit('mounted')
@@ -331,8 +326,7 @@ class MockJSAdapter {
   }
 
   unmount() {
-    if (!this.mounted)
-      return
+    if (!this.mounted) return
     if (this.formManager) {
       this.formManager.destroy()
       this.formManager = null
@@ -346,14 +340,15 @@ class MockJSAdapter {
   }
 
   setValue(key, value) {
-    if (!this.formManager)
-      return false
+    if (!this.formManager) return false
     this.formManager.setValue(key, value)
     return true
   }
 
   validate(key) {
-    return this.formManager ? this.formManager.validate(key) : { valid: false, errors: [] }
+    return this.formManager
+      ? this.formManager.validate(key)
+      : { valid: false, errors: [] }
   }
 
   isMounted() {
@@ -367,8 +362,7 @@ class MockJSAdapter {
     this.eventListeners.get(event).add(handler)
     return () => {
       const handlers = this.eventListeners.get(event)
-      if (handlers)
-        handlers.delete(handler)
+      if (handlers) handlers.delete(handler)
     }
   }
 
@@ -458,7 +452,9 @@ async function runComprehensiveTests() {
     const newForm = new MockFormManager({ items: [] }, {})
     newForm.deserialize(serialized)
 
-    return newForm.getValue('name') === '张三' && newForm.getState().layout.expanded
+    return (
+      newForm.getValue('name') === '张三' && newForm.getState().layout.expanded
+    )
   })
 
   // 2. 展开收起功能测试
@@ -480,7 +476,7 @@ async function runComprehensiveTests() {
     const form = new MockFormManager({ items: [] }, {})
     let eventFired = false
 
-    form.on('EXPAND_CHANGE', (data) => {
+    form.on('EXPAND_CHANGE', data => {
       eventFired = data.expanded
     })
 
@@ -509,7 +505,7 @@ async function runComprehensiveTests() {
     const modal = new MockModalManager()
     let eventCount = 0
 
-    modal.onModalEvent((event) => {
+    modal.onModalEvent(event => {
       eventCount++
     })
 
@@ -538,16 +534,22 @@ async function runComprehensiveTests() {
 
     const grouped = groupManager.assignItemsToGroups(items)
 
-    return grouped.has('basic') && grouped.has('contact')
-      && grouped.get('basic').length === 1 && grouped.get('contact').length === 1
+    return (
+      grouped.has('basic') &&
+      grouped.has('contact') &&
+      grouped.get('basic').length === 1 &&
+      grouped.get('contact').length === 1
+    )
   })
 
   test('分组展开收起', () => {
     const groupManager = new MockFormGroupManager()
-    groupManager.setupGroups([{ key: 'test', title: '测试分组', expanded: true }])
+    groupManager.setupGroups([
+      { key: 'test', title: '测试分组', expanded: true },
+    ])
 
     let eventFired = false
-    groupManager.onGroupEvent((event) => {
+    groupManager.onGroupEvent(event => {
       eventFired = event.type === 'toggle'
     })
 
@@ -613,8 +615,7 @@ async function runComprehensiveTests() {
     try {
       const form = new MockFormManager(null, null)
       return true // 应该能够处理无效配置
-    }
-    catch (error) {
+    } catch (error) {
       return false
     }
   })
@@ -689,7 +690,9 @@ async function runComprehensiveTests() {
   console.log(`总测试数: ${testResults.total}`)
   console.log(`通过: ${testResults.passed} ✅`)
   console.log(`失败: ${testResults.failed} ❌`)
-  console.log(`成功率: ${((testResults.passed / testResults.total) * 100).toFixed(1)}%`)
+  console.log(
+    `成功率: ${((testResults.passed / testResults.total) * 100).toFixed(1)}%`
+  )
 
   if (testResults.failed > 0) {
     console.log('\n❌ 失败的测试:')
@@ -699,7 +702,11 @@ async function runComprehensiveTests() {
   }
 
   const allPassed = testResults.failed === 0
-  console.log(`\n${allPassed ? '🎉' : '⚠️'} 综合测试${allPassed ? '全部通过' : '存在失败'}!`)
+  console.log(
+    `\n${allPassed ? '🎉' : '⚠️'} 综合测试${
+      allPassed ? '全部通过' : '存在失败'
+    }!`
+  )
 
   if (allPassed) {
     console.log('\n✨ 自适应表单布局系统功能验证完成')
@@ -711,9 +718,11 @@ async function runComprehensiveTests() {
 }
 
 // 运行测试
-runComprehensiveTests().then((success) => {
-  process.exit(success ? 0 : 1)
-}).catch((error) => {
-  console.error('💥 测试过程中出现严重错误:', error)
-  process.exit(1)
-})
+runComprehensiveTests()
+  .then(success => {
+    process.exit(success ? 0 : 1)
+  })
+  .catch(error => {
+    console.error('💥 测试过程中出现严重错误:', error)
+    process.exit(1)
+  })

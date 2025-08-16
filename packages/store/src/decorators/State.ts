@@ -1,7 +1,4 @@
-import type {
-  DecoratorMetadata,
-  StateDecoratorOptions,
-} from '@/types'
+import type { DecoratorMetadata, StateDecoratorOptions } from '@/types'
 import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 import 'reflect-metadata'
 
@@ -27,8 +24,8 @@ export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[]
-      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[] =
+      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -39,20 +36,23 @@ export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
 
     // 检查是否已存在相同的状态定义
     const existingIndex = existingMetadata.findIndex(
-      meta => meta.type === 'state' && meta.key === propertyKey,
+      meta => meta.type === 'state' && meta.key === propertyKey
     )
 
     if (existingIndex >= 0) {
       // 更新现有的元数据
       existingMetadata[existingIndex] = newMetadata
-    }
-    else {
+    } else {
       // 添加新的元数据
       existingMetadata.push(newMetadata)
     }
 
     // 设置元数据
-    Reflect.defineMetadata(DECORATOR_METADATA_KEY, existingMetadata, target.constructor)
+    Reflect.defineMetadata(
+      DECORATOR_METADATA_KEY,
+      existingMetadata,
+      target.constructor
+    )
 
     // 设置属性描述符
     const descriptor: PropertyDescriptor = {
@@ -68,8 +68,7 @@ export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
         // 如果有 store 实例，更新 store 状态
         if (this._store) {
           this._store.$patch({ [propertyKey]: value })
-        }
-        else {
+        } else {
           // 否则直接设置属性值
           Object.defineProperty(this, `_${propertyKey}`, {
             value,
@@ -92,7 +91,9 @@ export function State(options: StateDecoratorOptions = {}): PropertyDecorator {
  * 响应式状态装饰器
  * 确保状态是深度响应式的
  */
-export function ReactiveState(options: StateDecoratorOptions = {}): PropertyDecorator {
+export function ReactiveState(
+  options: StateDecoratorOptions = {}
+): PropertyDecorator {
   return State({
     ...options,
     deep: true,
@@ -103,7 +104,9 @@ export function ReactiveState(options: StateDecoratorOptions = {}): PropertyDeco
  * 持久化状态装饰器
  * 自动持久化状态到本地存储
  */
-export function PersistentState(options: StateDecoratorOptions = {}): PropertyDecorator {
+export function PersistentState(
+  options: StateDecoratorOptions = {}
+): PropertyDecorator {
   return State({
     ...options,
     persist: true,
@@ -114,15 +117,19 @@ export function PersistentState(options: StateDecoratorOptions = {}): PropertyDe
  * 只读状态装饰器
  * 创建只读的状态属性
  */
-export function ReadonlyState(options: Omit<StateDecoratorOptions, 'default'> & { value: any }): PropertyDecorator {
+export function ReadonlyState(
+  options: Omit<StateDecoratorOptions, 'default'> & { value: any }
+): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     if (typeof propertyKey === 'symbol') {
-      throw new TypeError('ReadonlyState decorator does not support symbol properties')
+      throw new TypeError(
+        'ReadonlyState decorator does not support symbol properties'
+      )
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[]
-      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[] =
+      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -135,7 +142,11 @@ export function ReadonlyState(options: Omit<StateDecoratorOptions, 'default'> & 
     }
 
     existingMetadata.push(newMetadata)
-    Reflect.defineMetadata(DECORATOR_METADATA_KEY, existingMetadata, target.constructor)
+    Reflect.defineMetadata(
+      DECORATOR_METADATA_KEY,
+      existingMetadata,
+      target.constructor
+    )
 
     // 设置只读属性描述符
     const descriptor: PropertyDescriptor = {

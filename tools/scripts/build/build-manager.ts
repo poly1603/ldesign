@@ -37,7 +37,7 @@ class BuildManager {
 
   private ensureDirectories() {
     const dirs = ['dist', 'logs']
-    dirs.forEach((dir) => {
+    dirs.forEach(dir => {
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true })
       }
@@ -50,7 +50,10 @@ class BuildManager {
     console.log(logMessage)
   }
 
-  private async executeCommand(command: string, cwd?: string): Promise<{ success: boolean, output: string, error?: string }> {
+  private async executeCommand(
+    command: string,
+    cwd?: string
+  ): Promise<{ success: boolean; output: string; error?: string }> {
     try {
       const output = execSync(command, {
         cwd: cwd || process.cwd(),
@@ -58,8 +61,7 @@ class BuildManager {
         stdio: 'pipe',
       })
       return { success: true, output }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       return {
         success: false,
         output: '',
@@ -76,14 +78,18 @@ class BuildManager {
       // 类型检查（可选）
       if (!this.options.skipTypeCheck) {
         this.log('执行类型检查...')
-        const typeCheckResult = await this.executeCommand('pnpm type-check:packages')
+        const typeCheckResult = await this.executeCommand(
+          'pnpm type-check:packages'
+        )
         if (!typeCheckResult.success) {
           this.log(`类型检查失败: ${typeCheckResult.error}`, 'warn')
         }
       }
 
       // 构建所有包
-      const buildCommand = this.options.watch ? 'pnpm build:watch:legacy' : 'pnpm build:legacy'
+      const buildCommand = this.options.watch
+        ? 'pnpm build:watch:legacy'
+        : 'pnpm build:legacy'
       const buildResult = await this.executeCommand(buildCommand)
 
       if (!buildResult.success) {
@@ -107,8 +113,7 @@ class BuildManager {
         success: true,
         duration: Math.round(duration),
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       const duration = performance.now() - startTime
       this.log(`包构建失败: ${error.message}`, 'error')
 
@@ -140,8 +145,7 @@ class BuildManager {
         success: true,
         duration: Math.round(duration),
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       const duration = performance.now() - startTime
       this.log(`文档构建失败: ${error.message}`, 'error')
 
@@ -169,8 +173,7 @@ class BuildManager {
         success: true,
         duration: Math.round(duration),
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       const duration = performance.now() - startTime
       this.log(`示例构建失败: ${error.message}`, 'error')
 
@@ -184,22 +187,19 @@ class BuildManager {
   }
 
   private async updateVersions(): Promise<void> {
-    if (!this.options.updateVersion)
-      return
+    if (!this.options.updateVersion) return
 
     this.log('更新版本号...')
     try {
       await this.executeCommand('pnpm changeset version')
       this.log('版本号更新完成')
-    }
-    catch (error: any) {
+    } catch (error: any) {
       this.log(`版本号更新失败: ${error.message}`, 'error')
     }
   }
 
   private generateBuildReport(): void {
-    if (!this.options.generateReport)
-      return
+    if (!this.options.generateReport) return
 
     const totalDuration = performance.now() - this.startTime
     const report = {
@@ -251,7 +251,11 @@ class BuildManager {
     const successCount = this.buildResults.filter(r => r.success).length
     const totalCount = this.buildResults.length
 
-    this.log(`构建完成! 成功: ${successCount}/${totalCount}, 总耗时: ${Math.round(totalDuration)}ms`)
+    this.log(
+      `构建完成! 成功: ${successCount}/${totalCount}, 总耗时: ${Math.round(
+        totalDuration
+      )}ms`
+    )
 
     if (successCount < totalCount) {
       process.exit(1)
@@ -269,23 +273,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 
   // 解析命令行参数
-  args.forEach((arg) => {
-    if (arg === '--watch')
-      options.watch = true
-    if (arg === '--dev')
-      options.mode = 'development'
-    if (arg === '--skip-type-check')
-      options.skipTypeCheck = true
-    if (arg === '--skip-tests')
-      options.skipTests = true
-    if (arg === '--update-version')
-      options.updateVersion = true
-    if (arg.startsWith('--target='))
-      options.target = arg.split('=')[1] as any
+  args.forEach(arg => {
+    if (arg === '--watch') options.watch = true
+    if (arg === '--dev') options.mode = 'development'
+    if (arg === '--skip-type-check') options.skipTypeCheck = true
+    if (arg === '--skip-tests') options.skipTests = true
+    if (arg === '--update-version') options.updateVersion = true
+    if (arg.startsWith('--target=')) options.target = arg.split('=')[1] as any
   })
 
   const buildManager = new BuildManager(options)
-  buildManager.build().catch((error) => {
+  buildManager.build().catch(error => {
     console.error('构建失败:', error)
     process.exit(1)
   })

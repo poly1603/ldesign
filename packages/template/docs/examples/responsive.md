@@ -11,7 +11,7 @@
 <script setup lang="ts">
 interface Props {
   title?: string
-  menuItems?: Array<{ id: string, title: string }>
+  menuItems?: Array<{ id: string; title: string }>
 }
 
 withDefaults(defineProps<Props>(), {
@@ -19,8 +19,8 @@ withDefaults(defineProps<Props>(), {
   menuItems: () => [
     { id: '1', title: '首页' },
     { id: '2', title: '用户管理' },
-    { id: '3', title: '设置' }
-  ]
+    { id: '3', title: '设置' },
+  ],
 })
 </script>
 
@@ -79,7 +79,7 @@ import { ref } from 'vue'
 
 interface Props {
   title?: string
-  menuItems?: Array<{ id: string, title: string }>
+  menuItems?: Array<{ id: string; title: string }>
 }
 
 withDefaults(defineProps<Props>(), {
@@ -87,8 +87,8 @@ withDefaults(defineProps<Props>(), {
   menuItems: () => [
     { id: '1', title: '首页' },
     { id: '2', title: '用户管理' },
-    { id: '3', title: '设置' }
-  ]
+    { id: '3', title: '设置' },
+  ],
 })
 
 const showMenu = ref(false)
@@ -101,9 +101,7 @@ function toggleMenu() {
 <template>
   <div class="mobile-dashboard">
     <header class="mobile-header">
-      <button class="menu-toggle" @click="toggleMenu">
-        ☰
-      </button>
+      <button class="menu-toggle" @click="toggleMenu">☰</button>
       <h1>{{ title }}</h1>
     </header>
 
@@ -163,8 +161,8 @@ const dashboardProps = {
   menuItems: [
     { id: '1', title: '首页' },
     { id: '2', title: '数据分析' },
-    { id: '3', title: '用户管理' }
-  ]
+    { id: '3', title: '用户管理' },
+  ],
 }
 </script>
 
@@ -191,13 +189,13 @@ const devices: DeviceType[] = ['desktop', 'tablet', 'mobile']
 const deviceLabels = {
   desktop: '桌面端',
   tablet: '平板端',
-  mobile: '移动端'
+  mobile: '移动端',
 }
 
 const currentDevice = ref<DeviceType>('desktop')
 
 const dashboardProps = {
-  title: '设备切换示例'
+  title: '设备切换示例',
 }
 
 function switchDevice(device: DeviceType) {
@@ -274,15 +272,13 @@ onUnmounted(() => {
 })
 
 const dashboardProps = {
-  title: '设备检测示例'
+  title: '设备检测示例',
 }
 </script>
 
 <template>
   <div class="app">
-    <div class="device-info">
-      当前设备: {{ currentDevice }}
-    </div>
+    <div class="device-info">当前设备: {{ currentDevice }}</div>
 
     <LTemplateRenderer
       category="dashboard"

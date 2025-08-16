@@ -29,8 +29,7 @@ export class SessionStorageEngine extends BaseStorageEngine {
       window.sessionStorage.setItem(testKey, 'test')
       window.sessionStorage.removeItem(testKey)
       return true
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -77,11 +76,10 @@ export class SessionStorageEngine extends BaseStorageEngine {
     try {
       window.sessionStorage.setItem(fullKey, data)
       await this.updateUsedSize()
-    }
-    catch (error) {
+    } catch (error) {
       if (
-        error instanceof DOMException
-        && error.name === 'QuotaExceededError'
+        error instanceof DOMException &&
+        error.name === 'QuotaExceededError'
       ) {
         throw new Error('sessionStorage quota exceeded')
       }
@@ -113,8 +111,7 @@ export class SessionStorageEngine extends BaseStorageEngine {
       }
 
       return value
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`Error getting item from sessionStorage:`, error)
       return null
     }

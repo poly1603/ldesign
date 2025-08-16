@@ -72,12 +72,12 @@ export const ThemeSelector = defineComponent({
       }
 
       const query = filterText.value.toLowerCase()
-      return themeList.value.filter((themeName) => {
+      return themeList.value.filter(themeName => {
         const theme = getTheme(themeName)
         return (
-          themeName.toLowerCase().includes(query)
-          || theme?.displayName.toLowerCase().includes(query)
-          || theme?.description?.toLowerCase().includes(query)
+          themeName.toLowerCase().includes(query) ||
+          theme?.displayName.toLowerCase().includes(query) ||
+          theme?.description?.toLowerCase().includes(query)
         )
       })
     })
@@ -90,20 +90,16 @@ export const ThemeSelector = defineComponent({
         `theme-selector--placement-${props.placement}`,
       ]
 
-      if (props.disabled)
-        classes.push('theme-selector--disabled')
-      if (isOpen.value)
-        classes.push('theme-selector--open')
-      if (selectedTheme.value)
-        classes.push('theme-selector--has-value')
+      if (props.disabled) classes.push('theme-selector--disabled')
+      if (isOpen.value) classes.push('theme-selector--open')
+      if (selectedTheme.value) classes.push('theme-selector--has-value')
 
       return classes
     })
 
     // 处理主题选择
     const handleSelect = async (themeName: string) => {
-      if (props.disabled)
-        return
+      if (props.disabled) return
 
       try {
         await setTheme(themeName)
@@ -111,8 +107,7 @@ export const ThemeSelector = defineComponent({
         emit('change', themeName)
         isOpen.value = false
         filterText.value = ''
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Failed to set theme:', error)
       }
     }
@@ -121,8 +116,7 @@ export const ThemeSelector = defineComponent({
     const handleClear = (event: MouseEvent) => {
       event.stopPropagation()
 
-      if (props.disabled)
-        return
+      if (props.disabled) return
 
       emit('update:value', undefined)
       emit('clear')
@@ -131,8 +125,7 @@ export const ThemeSelector = defineComponent({
 
     // 处理点击
     const handleClick = () => {
-      if (props.disabled)
-        return
+      if (props.disabled) return
 
       isOpen.value = !isOpen.value
     }
@@ -161,7 +154,7 @@ export const ThemeSelector = defineComponent({
         : props.placeholder
 
       const clearIcon = props.clearable && selectedTheme.value && (
-        <i class="theme-selector__clear" onClick={handleClear}>
+        <i class='theme-selector__clear' onClick={handleClear}>
           ×
         </i>
       )
@@ -177,11 +170,11 @@ export const ThemeSelector = defineComponent({
       )
 
       const filterInput = props.filterable && isOpen.value && (
-        <div class="theme-selector__filter">
+        <div class='theme-selector__filter'>
           <input
-            type="text"
-            class="theme-selector__filter-input"
-            placeholder="搜索主题..."
+            type='text'
+            class='theme-selector__filter-input'
+            placeholder='搜索主题...'
             value={filterText.value}
             onInput={handleFilterInput}
           />
@@ -189,53 +182,51 @@ export const ThemeSelector = defineComponent({
       )
 
       const optionsList = isOpen.value && (
-        <div class="theme-selector__dropdown">
+        <div class='theme-selector__dropdown'>
           {filterInput}
-          <div class="theme-selector__options">
-            {filteredThemes.value.length === 0
-              ? (
-                  <div class="theme-selector__empty">没有找到匹配的主题</div>
-                )
-              : (
-                  filteredThemes.value.map((themeName) => {
-                    const isSelected = themeName === selectedTheme.value
-                    const displayName = getThemeDisplayName(themeName)
-                    const description = getThemeDescription(themeName)
+          <div class='theme-selector__options'>
+            {filteredThemes.value.length === 0 ? (
+              <div class='theme-selector__empty'>没有找到匹配的主题</div>
+            ) : (
+              filteredThemes.value.map(themeName => {
+                const isSelected = themeName === selectedTheme.value
+                const displayName = getThemeDisplayName(themeName)
+                const description = getThemeDescription(themeName)
 
-                    return (
-                      <div
-                        key={themeName}
-                        class={`theme-selector__option ${
-                          isSelected ? 'theme-selector__option--selected' : ''
-                        }`}
-                        onClick={() => handleSelect(themeName)}
-                      >
-                        <div class="theme-selector__option-content">
-                          <div class="theme-selector__option-name">
-                            {displayName}
-                          </div>
-                          {description && (
-                            <div class="theme-selector__option-description">
-                              {description}
-                            </div>
-                          )}
-                        </div>
-                        {isSelected && (
-                          <i class="theme-selector__option-check">✓</i>
-                        )}
+                return (
+                  <div
+                    key={themeName}
+                    class={`theme-selector__option ${
+                      isSelected ? 'theme-selector__option--selected' : ''
+                    }`}
+                    onClick={() => handleSelect(themeName)}
+                  >
+                    <div class='theme-selector__option-content'>
+                      <div class='theme-selector__option-name'>
+                        {displayName}
                       </div>
-                    )
-                  })
-                )}
+                      {description && (
+                        <div class='theme-selector__option-description'>
+                          {description}
+                        </div>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <i class='theme-selector__option-check'>✓</i>
+                    )}
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       )
 
       return (
         <div class={selectorClasses.value}>
-          <div class="theme-selector__trigger" onClick={handleClick}>
-            <span class="theme-selector__text">{selectedText}</span>
-            <div class="theme-selector__suffix">
+          <div class='theme-selector__trigger' onClick={handleClick}>
+            <span class='theme-selector__text'>{selectedText}</span>
+            <div class='theme-selector__suffix'>
               {clearIcon}
               {arrowIcon}
             </div>

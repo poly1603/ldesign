@@ -19,15 +19,11 @@ _功能强大 • 类型安全 • 开箱即用_
 
 ## ✨ 特性亮点
 
-🎯 **多适配器架构** - 支持 fetch、axios、alova，自动选择最佳适配器
-🔧 **强大拦截器** - 完整的请求/响应拦截器链，支持异步处理
-💾 **智能缓存** - 内置缓存系统，支持内存和本地存储
-🔄 **自动重试** - 可配置的重试机制，指数退避算法
-❌ **请求取消** - 基于 AbortController 的优雅取消机制
-⚡ **并发控制** - 内置并发限制和请求去重
-🎯 **TypeScript 优先** - 完整类型支持，智能提示
-🌟 **Vue 3 深度集成** - 专为 Vue 3 设计的 Composition API
-🛠️ **高度可配置** - 灵活的配置选项，满足各种需求
+🎯 **多适配器架构** - 支持 fetch、axios、alova，自动选择最佳适配器 🔧 **强大拦截器** - 完整的请求/响
+应拦截器链，支持异步处理 💾 **智能缓存** - 内置缓存系统，支持内存和本地存储 🔄 **自动重试** - 可配置
+的重试机制，指数退避算法 ❌ **请求取消** - 基于 AbortController 的优雅取消机制 ⚡ **并发控制** - 内
+置并发限制和请求去重 🎯 **TypeScript 优先** - 完整类型支持，智能提示 🌟 **Vue 3 深度集成** - 专为
+Vue 3 设计的 Composition API 🛠️ **高度可配置** - 灵活的配置选项，满足各种需求
 
 ## 🚀 快速开始
 
@@ -52,7 +48,7 @@ import { createHttpClient } from '@ldesign/http'
 // 创建客户端
 const http = createHttpClient({
   baseURL: 'https://api.example.com',
-  timeout: 10000
+  timeout: 10000,
 })
 
 // 发送请求
@@ -74,18 +70,14 @@ interface User {
 
 const { data, loading, error } = useRequest<User[]>({
   url: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 </script>
 
 <template>
   <div>
-    <div v-if="loading">
-      加载中...
-    </div>
-    <div v-else-if="error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">错误: {{ error.message }}</div>
     <div v-else>
       <h2>用户列表</h2>
       <ul>
@@ -109,8 +101,8 @@ const http = createHttpClient({
   baseURL: 'https://api.example.com',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 
 // 支持所有 HTTP 方法
@@ -136,7 +128,7 @@ const users: User[] = response.data // 自动类型推断
 // 类型安全的 POST 请求
 const newUser = await http.post<User>('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 ```
 
@@ -144,7 +136,7 @@ const newUser = await http.post<User>('/users', {
 
 ```typescript
 // 请求拦截器 - 自动添加认证头
-http.interceptors.request.use((config) => {
+http.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -153,12 +145,12 @@ http.interceptors.request.use((config) => {
 })
 
 // 响应拦截器 - 统一处理响应
-http.interceptors.response.use((response) => {
+http.interceptors.response.use(response => {
   return response.data // 直接返回数据
 })
 
 // 错误拦截器 - 统一错误处理
-http.interceptors.error.use((error) => {
+http.interceptors.error.use(error => {
   if (error.response?.status === 401) {
     // 处理未授权错误
     window.location.href = '/login'
@@ -174,8 +166,8 @@ const http = createHttpClient({
   cache: {
     enabled: true,
     ttl: 300000, // 5 分钟缓存
-    storage: 'memory' // 或 'localStorage'
-  }
+    storage: 'memory', // 或 'localStorage'
+  },
 })
 
 // 第一次请求 - 从网络获取
@@ -192,12 +184,11 @@ const http = createHttpClient({
   retry: {
     retries: 3,
     retryDelay: 1000,
-    retryCondition: (error) => {
+    retryCondition: error => {
       // 只重试网络错误和 5xx 错误
-      return error.isNetworkError
-        || (error.response?.status >= 500)
-    }
-  }
+      return error.isNetworkError || error.response?.status >= 500
+    },
+  },
 })
 ```
 
@@ -213,8 +204,8 @@ const app = createApp({})
 
 app.use(HttpPlugin, {
   client: createHttpClient({
-    baseURL: 'https://api.example.com'
-  })
+    baseURL: 'https://api.example.com',
+  }),
 })
 ```
 
@@ -225,14 +216,17 @@ app.use(HttpPlugin, {
 import { useRequest } from '@ldesign/http/vue'
 
 // 基础用法
-const { data, loading, error, execute, refresh } = useRequest({
-  url: '/api/users',
-  method: 'GET'
-}, {
-  immediate: true, // 立即执行
-  onSuccess: data => console.log('成功:', data),
-  onError: error => console.error('错误:', error)
-})
+const { data, loading, error, execute, refresh } = useRequest(
+  {
+    url: '/api/users',
+    method: 'GET',
+  },
+  {
+    immediate: true, // 立即执行
+    onSuccess: data => console.log('成功:', data),
+    onError: error => console.error('错误:', error),
+  }
+)
 
 // 手动触发
 function handleRefresh() {
@@ -253,7 +247,7 @@ const { data, loading, error, isStale } = useQuery(
   {
     staleTime: 300000, // 5分钟内不重新请求
     cacheTime: 600000, // 缓存10分钟
-    refetchOnWindowFocus: true // 窗口聚焦时重新获取
+    refetchOnWindowFocus: true, // 窗口聚焦时重新获取
   }
 )
 </script>
@@ -265,15 +259,12 @@ const { data, loading, error, isStale } = useQuery(
 <script setup lang="ts">
 import { useMutation } from '@ldesign/http/vue'
 
-const { mutate, loading, error } = useMutation(
-  userData => http.post('/api/users', userData),
-  {
-    onSuccess: () => {
-      // 刷新用户列表
-      queryClient.invalidateQueries('users')
-    }
-  }
-)
+const { mutate, loading, error } = useMutation(userData => http.post('/api/users', userData), {
+  onSuccess: () => {
+    // 刷新用户列表
+    queryClient.invalidateQueries('users')
+  },
+})
 
 function handleSubmit(formData) {
   mutate(formData)
@@ -296,7 +287,7 @@ const { data: users } = userResource.useList()
 const { mutate: createUser } = userResource.useCreate({
   onSuccess: () => {
     // 自动刷新列表
-  }
+  },
 })
 
 // 更新用户
@@ -315,13 +306,12 @@ const { mutate: deleteUser } = userResource.useDelete()
 const http = createHttpClient({
   concurrency: {
     maxConcurrent: 5, // 最大并发数
-    maxQueueSize: 100 // 最大队列大小
-  }
+    maxQueueSize: 100, // 最大队列大小
+  },
 })
 
 // 发送多个请求，自动排队处理
-const promises = Array.from({ length: 10 }, (_, i) =>
-  http.get(`/api/data/${i}`))
+const promises = Array.from({ length: 10 }, (_, i) => http.get(`/api/data/${i}`))
 
 const results = await Promise.all(promises)
 ```
@@ -333,7 +323,7 @@ const results = await Promise.all(promises)
 const controller = new AbortController()
 
 const request = http.get('/api/data', {
-  signal: controller.signal
+  signal: controller.signal,
 })
 
 // 取消请求
@@ -364,7 +354,7 @@ class CustomAdapter extends BaseAdapter {
 
 // 注册适配器
 const http = createHttpClient({
-  adapter: new CustomAdapter()
+  adapter: new CustomAdapter(),
 })
 ```
 
@@ -422,6 +412,7 @@ const http = createHttpClient({
 
 **如果这个项目对你有帮助，请给我们一个 ⭐️**
 
-[GitHub](https://github.com/ldesign/http) • [文档](./docs) • [问题反馈](https://github.com/ldesign/http/issues)
+[GitHub](https://github.com/ldesign/http) • [文档](./docs) •
+[问题反馈](https://github.com/ldesign/http/issues)
 
 </div>

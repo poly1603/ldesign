@@ -41,8 +41,8 @@ const props = withDefaults(defineProps<FormRateProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: number]
-  'change': [value: number]
-  'hoverChange': [value: number]
+  change: [value: number]
+  hoverChange: [value: number]
 }>()
 
 const inputValue = ref<number>(props.modelValue)
@@ -51,10 +51,10 @@ const hoverValue = ref<number>(-1)
 // 监听外部值变化
 watch(
   () => props.modelValue,
-  (newValue) => {
+  newValue => {
     inputValue.value = newValue
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 // 生成星星数组
@@ -69,8 +69,7 @@ const displayValue = computed(() => {
 
 // 评分文本
 const rateText = computed(() => {
-  if (props.texts.length === 0)
-    return ''
+  if (props.texts.length === 0) return ''
   const index = Math.ceil(inputValue.value) - 1
   return props.texts[index] || ''
 })
@@ -95,8 +94,8 @@ const hasError = computed(() => props.errors && props.errors.length > 0)
 
 // 获取星星样式类
 function getStarClasses(index: number) {
-  const currentValue
-    = hoverValue.value >= 0 ? hoverValue.value : inputValue.value
+  const currentValue =
+    hoverValue.value >= 0 ? hoverValue.value : inputValue.value
   const isActive = index < currentValue
   const isHalf = props.allowHalf && currentValue - index === 0.5
 
@@ -112,8 +111,8 @@ function getStarClasses(index: number) {
 
 // 获取星星图标
 function getStarIcon(index: number) {
-  const currentValue
-    = hoverValue.value >= 0 ? hoverValue.value : inputValue.value
+  const currentValue =
+    hoverValue.value >= 0 ? hoverValue.value : inputValue.value
 
   if (props.allowHalf && currentValue - index === 0.5) {
     return '☆' // 半星
@@ -124,8 +123,7 @@ function getStarIcon(index: number) {
 
 // 事件处理
 function handleClick(index: number) {
-  if (props.disabled || props.readonly)
-    return
+  if (props.disabled || props.readonly) return
 
   let newValue = index + 1
 
@@ -140,16 +138,14 @@ function handleClick(index: number) {
 }
 
 function handleMouseEnter(index: number) {
-  if (props.disabled || props.readonly)
-    return
+  if (props.disabled || props.readonly) return
 
   hoverValue.value = index + 1
   emit('hoverChange', hoverValue.value)
 }
 
 function handleMouseLeave() {
-  if (props.disabled || props.readonly)
-    return
+  if (props.disabled || props.readonly) return
 
   hoverValue.value = -1
   emit('hoverChange', inputValue.value)
@@ -164,9 +160,7 @@ function handleMouseLeave() {
         <span v-if="required" class="form-rate__required">*</span>
         <span v-if="showColon" class="form-rate__colon">:</span>
       </label>
-      <div v-if="tooltip" class="form-rate__tooltip" :title="tooltip">
-        ?
-      </div>
+      <div v-if="tooltip" class="form-rate__tooltip" :title="tooltip">?</div>
     </div>
 
     <div class="form-rate__wrapper" :class="wrapperClasses">
@@ -265,7 +259,9 @@ function handleMouseLeave() {
   user-select: none;
 }
 
-.form-rate__star:hover:not(.form-rate__star--disabled):not(.form-rate__star--readonly) {
+.form-rate__star:hover:not(.form-rate__star--disabled):not(
+    .form-rate__star--readonly
+  ) {
   transform: scale(1.1);
 }
 
@@ -274,7 +270,11 @@ function handleMouseLeave() {
 }
 
 .form-rate__star--half {
-  background: linear-gradient(90deg, var(--form-warning-color, #faad14) 50%, var(--form-border-color, #d9d9d9) 50%);
+  background: linear-gradient(
+    90deg,
+    var(--form-warning-color, #faad14) 50%,
+    var(--form-border-color, #d9d9d9) 50%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

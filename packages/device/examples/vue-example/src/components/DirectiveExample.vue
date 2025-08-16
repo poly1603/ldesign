@@ -51,12 +51,18 @@ const { deviceType, deviceInfo, orientation } = useDevice()
       <div class="example-section">
         <h4>反向指令</h4>
 
-        <div v-device="{ type: 'mobile', inverse: true }" class="device-box inverse">
+        <div
+          v-device="{ type: 'mobile', inverse: true }"
+          class="device-box inverse"
+        >
           <span class="icon">🚫📱</span>
           <span>在非移动设备显示</span>
         </div>
 
-        <div v-device="{ type: ['mobile', 'tablet'], inverse: true }" class="device-box inverse">
+        <div
+          v-device="{ type: ['mobile', 'tablet'], inverse: true }"
+          class="device-box inverse"
+        >
           <span class="icon">🚫📱📟</span>
           <span>在非移动和非平板设备显示</span>
         </div>
@@ -87,11 +93,10 @@ const { deviceType, deviceInfo, orientation } = useDevice()
     <div class="current-device">
       <h4>当前设备信息</h4>
       <div class="device-info">
+        <span class="info-item"> <strong>类型:</strong> {{ deviceType }} </span>
         <span class="info-item">
-          <strong>类型:</strong> {{ deviceType }}
-        </span>
-        <span class="info-item">
-          <strong>尺寸:</strong> {{ deviceInfo.width }} × {{ deviceInfo.height }}
+          <strong>尺寸:</strong> {{ deviceInfo.width }} ×
+          {{ deviceInfo.height }}
         </span>
         <span class="info-item">
           <strong>方向:</strong> {{ orientation }}

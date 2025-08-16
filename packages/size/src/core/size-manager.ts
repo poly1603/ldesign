@@ -140,11 +140,10 @@ export class SizeManagerImpl implements SizeManager {
    * 触发尺寸变化事件
    */
   private emitSizeChange(event: SizeChangeEvent): void {
-    this.listeners.forEach((callback) => {
+    this.listeners.forEach(callback => {
       try {
         callback(event)
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Error in size change callback:', error)
       }
     })
@@ -234,6 +233,8 @@ export function getGlobalSizeMode(): SizeMode {
 /**
  * 便捷函数：监听全局尺寸变化
  */
-export function onGlobalSizeChange(callback: (event: SizeChangeEvent) => void): () => void {
+export function onGlobalSizeChange(
+  callback: (event: SizeChangeEvent) => void
+): () => void {
   return globalSizeManager.onSizeChange(callback)
 }

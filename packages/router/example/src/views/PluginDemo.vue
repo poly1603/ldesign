@@ -103,18 +103,10 @@ onUnmounted(() => {
         <div class="animation-controls">
           <label>选择动画类型:</label>
           <select v-model="selectedAnimation" class="input">
-            <option value="fade">
-              淡入淡出
-            </option>
-            <option value="slide">
-              滑动
-            </option>
-            <option value="zoom">
-              缩放
-            </option>
-            <option value="bounce">
-              弹跳
-            </option>
+            <option value="fade">淡入淡出</option>
+            <option value="slide">滑动</option>
+            <option value="zoom">缩放</option>
+            <option value="bounce">弹跳</option>
           </select>
           <button class="btn btn-primary" @click="triggerAnimation">
             触发动画
@@ -138,9 +130,7 @@ onUnmounted(() => {
           <div class="info-item">
             <strong>缓存策略:</strong> LRU (最近最少使用)
           </div>
-          <div class="info-item">
-            <strong>最大缓存数:</strong> 10 个组件
-          </div>
+          <div class="info-item"><strong>最大缓存数:</strong> 10 个组件</div>
           <div class="info-item">
             <strong>当前缓存:</strong> {{ cacheCount }} 个组件
           </div>
@@ -149,9 +139,7 @@ onUnmounted(() => {
           <button class="btn btn-success" @click="addToCache">
             添加到缓存
           </button>
-          <button class="btn btn-warning" @click="clearCache">
-            清空缓存
-          </button>
+          <button class="btn btn-warning" @click="clearCache">清空缓存</button>
         </div>
         <div class="cache-list">
           <h4>缓存列表:</h4>
@@ -168,9 +156,7 @@ onUnmounted(() => {
       <h2>⚡ 预加载插件</h2>
       <div class="preload-demo">
         <div class="preload-info">
-          <div class="info-item">
-            <strong>预加载策略:</strong> 鼠标悬停触发
-          </div>
+          <div class="info-item"><strong>预加载策略:</strong> 鼠标悬停触发</div>
           <div class="info-item">
             <strong>自动预加载相关路由:</strong> 已启用
           </div>
@@ -199,15 +185,21 @@ onUnmounted(() => {
         <div class="performance-metrics">
           <div class="metric-item">
             <span class="metric-label">导航时间:</span>
-            <span class="metric-value">{{ performanceMetrics.navigationTime }}ms</span>
+            <span class="metric-value"
+              >{{ performanceMetrics.navigationTime }}ms</span
+            >
           </div>
           <div class="metric-item">
             <span class="metric-label">组件加载时间:</span>
-            <span class="metric-value">{{ performanceMetrics.componentLoadTime }}ms</span>
+            <span class="metric-value"
+              >{{ performanceMetrics.componentLoadTime }}ms</span
+            >
           </div>
           <div class="metric-item">
             <span class="metric-label">内存使用:</span>
-            <span class="metric-value">{{ performanceMetrics.memoryUsage }}MB</span>
+            <span class="metric-value"
+              >{{ performanceMetrics.memoryUsage }}MB</span
+            >
           </div>
           <div class="metric-item">
             <span class="metric-label">FPS:</span>

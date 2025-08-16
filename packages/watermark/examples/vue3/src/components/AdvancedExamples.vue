@@ -46,8 +46,8 @@ const securityConfig = reactive({
   styleProtection: true,
 })
 
-const securityLogs = ref<Array<{ id: number, time: string, message: string }>>(
-  [],
+const securityLogs = ref<Array<{ id: number; time: string; message: string }>>(
+  []
 )
 
 // 响应式配置
@@ -56,14 +56,10 @@ const containerSize = reactive({ width: 0, height: 0 })
 const isLargeContainer = ref(false)
 
 const currentBreakpoint = computed(() => {
-  if (screenWidth.value >= 1200)
-    return 'xl'
-  if (screenWidth.value >= 992)
-    return 'lg'
-  if (screenWidth.value >= 768)
-    return 'md'
-  if (screenWidth.value >= 576)
-    return 'sm'
+  if (screenWidth.value >= 1200) return 'xl'
+  if (screenWidth.value >= 992) return 'lg'
+  if (screenWidth.value >= 768) return 'md'
+  if (screenWidth.value >= 576) return 'sm'
   return 'xs'
 })
 
@@ -77,11 +73,11 @@ const animationConfig = reactive({
   type: 'fade' as 'none' | 'fade' | 'slide' | 'rotate' | 'scale' | 'bounce',
   duration: 2000,
   easing: 'ease-in-out' as
-  | 'ease'
-  | 'ease-in'
-  | 'ease-out'
-  | 'ease-in-out'
-  | 'linear',
+    | 'ease'
+    | 'ease-in'
+    | 'ease-out'
+    | 'ease-in-out'
+    | 'linear',
 })
 
 const animationPaused = ref(false)
@@ -125,8 +121,7 @@ function addSecurityLog(message: string) {
 }
 
 async function createSecurityWatermark() {
-  if (!securityRef.value)
-    return
+  if (!securityRef.value) return
 
   if (securityInstance.value) {
     await destroyWatermark(securityInstance.value)
@@ -143,8 +138,7 @@ async function createSecurityWatermark() {
     })
 
     addSecurityLog('安全水印创建成功')
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建安全水印失败:', error)
     addSecurityLog('安全水印创建失败')
   }
@@ -167,8 +161,7 @@ function updateContainerSize() {
 }
 
 async function createResponsiveWatermark() {
-  if (!responsiveRef.value)
-    return
+  if (!responsiveRef.value) return
 
   if (responsiveInstance.value) {
     await destroyWatermark(responsiveInstance.value)
@@ -187,8 +180,7 @@ async function createResponsiveWatermark() {
         gapY: currentBreakpoint.value === 'xs' ? 40 : 80,
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建响应式水印失败:', error)
   }
 }
@@ -204,8 +196,7 @@ function toggleContainerSize() {
 }
 
 async function createAnimationWatermark() {
-  if (!animationRef.value)
-    return
+  if (!animationRef.value) return
 
   if (animationInstance.value) {
     await destroyWatermark(animationInstance.value)
@@ -220,8 +211,7 @@ async function createAnimationWatermark() {
         opacity: 0.3,
       },
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error('创建动画水印失败:', error)
   }
 }
@@ -259,8 +249,7 @@ function getCurrentModeInfo() {
 async function switchRenderMode(mode: 'dom' | 'canvas' | 'svg') {
   currentRenderMode.value = mode
 
-  if (!renderModeRef.value)
-    return
+  if (!renderModeRef.value) return
 
   const startTime = performance.now()
 
@@ -285,8 +274,7 @@ async function switchRenderMode(mode: 'dom' | 'canvas' | 'svg') {
       memoryUsage: Math.round(Math.random() * 100 + 50), // 模拟内存使用
       elementCount: renderModeInstance.value.elements.length,
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('切换渲染模式失败:', error)
   }
 }
@@ -310,7 +298,7 @@ async function createBatchWatermarks() {
               color: `hsl(${(i * 60) % 360}, 70%, 50%)`,
               opacity: 0.2,
             },
-          },
+          }
         )
         promises.push(promise)
       }
@@ -321,10 +309,9 @@ async function createBatchWatermarks() {
     const endTime = performance.now()
     batchStats.totalCreateTime = Math.round(endTime - startTime)
     batchStats.avgCreateTime = Math.round(
-      batchStats.totalCreateTime / batchConfig.count,
+      batchStats.totalCreateTime / batchConfig.count
     )
-  }
-  catch (error) {
+  } catch (error) {
     console.error('批量创建水印失败:', error)
   }
 }
@@ -345,7 +332,7 @@ async function updateBatchWatermarks() {
             color: `hsl(${(i * 90) % 360}, 80%, 60%)`,
             opacity: 0.3,
           },
-        },
+        }
       )
       promises.push(promise)
     }
@@ -385,15 +372,14 @@ async function createBatchWatermarksAuto() {
               color: `hsl(${(i * 60) % 360}, 70%, 50%)`,
               opacity: 0.2,
             },
-          },
+          }
         )
         promises.push(promise)
       }
     }
 
     await Promise.all(promises)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('自动创建批量水印失败:', error)
   }
 }
@@ -406,7 +392,7 @@ watch(
       createAnimationWatermark()
     }
   },
-  { deep: true },
+  { deep: true }
 )
 
 watch(
@@ -416,7 +402,7 @@ watch(
       createSecurityWatermark()
     }
   },
-  { deep: true },
+  { deep: true }
 )
 
 // 生命周期
@@ -461,12 +447,8 @@ onUnmounted(async () => {
 
 <template>
   <div class="advanced-examples">
-    <h2 class="section-title">
-      🚀 高级功能示例
-    </h2>
-    <p class="section-desc">
-      展示水印组件的高级功能和特性
-    </p>
+    <h2 class="section-title">🚀 高级功能示例</h2>
+    <p class="section-desc">展示水印组件的高级功能和特性</p>
 
     <div class="grid grid-2">
       <!-- 安全防护水印 -->
@@ -476,18 +458,10 @@ onUnmounted(async () => {
           <div class="form-group">
             <label>安全级别</label>
             <select v-model="securityConfig.level">
-              <option value="none">
-                无保护
-              </option>
-              <option value="low">
-                低级保护
-              </option>
-              <option value="medium">
-                中级保护
-              </option>
-              <option value="high">
-                高级保护
-              </option>
+              <option value="none">无保护</option>
+              <option value="low">低级保护</option>
+              <option value="medium">中级保护</option>
+              <option value="high">高级保护</option>
             </select>
           </div>
           <div class="form-group">
@@ -495,13 +469,13 @@ onUnmounted(async () => {
               <input
                 v-model="securityConfig.mutationObserver"
                 type="checkbox"
-              >
+              />
               DOM 变化监控
             </label>
           </div>
           <div class="form-group">
             <label>
-              <input v-model="securityConfig.styleProtection" type="checkbox">
+              <input v-model="securityConfig.styleProtection" type="checkbox" />
               样式保护
             </label>
           </div>
@@ -572,24 +546,12 @@ onUnmounted(async () => {
           <div class="form-group">
             <label>动画类型</label>
             <select v-model="animationConfig.type">
-              <option value="none">
-                无动画
-              </option>
-              <option value="fade">
-                淡入淡出
-              </option>
-              <option value="slide">
-                滑动
-              </option>
-              <option value="rotate">
-                旋转
-              </option>
-              <option value="scale">
-                缩放
-              </option>
-              <option value="bounce">
-                弹跳
-              </option>
+              <option value="none">无动画</option>
+              <option value="fade">淡入淡出</option>
+              <option value="slide">滑动</option>
+              <option value="rotate">旋转</option>
+              <option value="scale">缩放</option>
+              <option value="bounce">弹跳</option>
             </select>
           </div>
           <div class="form-group">
@@ -600,26 +562,16 @@ onUnmounted(async () => {
               min="500"
               max="5000"
               step="100"
-            >
+            />
           </div>
           <div class="form-group">
             <label>缓动函数</label>
             <select v-model="animationConfig.easing">
-              <option value="ease">
-                ease
-              </option>
-              <option value="ease-in">
-                ease-in
-              </option>
-              <option value="ease-out">
-                ease-out
-              </option>
-              <option value="ease-in-out">
-                ease-in-out
-              </option>
-              <option value="linear">
-                linear
-              </option>
+              <option value="ease">ease</option>
+              <option value="ease-in">ease-in</option>
+              <option value="ease-out">ease-out</option>
+              <option value="ease-in-out">ease-in-out</option>
+              <option value="linear">linear</option>
             </select>
           </div>
         </div>
@@ -684,11 +636,11 @@ onUnmounted(async () => {
             type="number"
             min="1"
             max="10"
-          >
+          />
         </div>
         <div class="form-group">
           <label>基础文字</label>
-          <input v-model="batchConfig.baseText" type="text">
+          <input v-model="batchConfig.baseText" type="text" />
         </div>
         <div class="controls">
           <button class="btn btn-primary" @click="createBatchWatermarks">

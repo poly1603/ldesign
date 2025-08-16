@@ -33,7 +33,7 @@ export abstract class BaseAdapter implements HttpAdapter {
       processedConfig.url = buildURL(
         processedConfig.url,
         processedConfig.baseURL,
-        processedConfig.params,
+        processedConfig.params
       )
     }
 
@@ -59,7 +59,7 @@ export abstract class BaseAdapter implements HttpAdapter {
     statusText: string,
     headers: Record<string, string>,
     config: RequestConfig,
-    raw?: any,
+    raw?: any
   ): ResponseData<T> {
     return {
       data,
@@ -77,7 +77,7 @@ export abstract class BaseAdapter implements HttpAdapter {
   protected processError(
     error: any,
     config: RequestConfig,
-    response?: ResponseData,
+    response?: ResponseData
   ): HttpError {
     let message = 'Request failed'
     let code: string | undefined
@@ -85,8 +85,7 @@ export abstract class BaseAdapter implements HttpAdapter {
     if (error instanceof Error) {
       message = error.message
       code = (error as any).code
-    }
-    else if (typeof error === 'string') {
+    } else if (typeof error === 'string') {
       message = error
     }
 
@@ -97,12 +96,10 @@ export abstract class BaseAdapter implements HttpAdapter {
     if (error.name === 'AbortError' || message.includes('aborted')) {
       httpError.isCancelError = true
       httpError.code = 'CANCELED'
-    }
-    else if (error.name === 'TimeoutError' || message.includes('timeout')) {
+    } else if (error.name === 'TimeoutError' || message.includes('timeout')) {
       httpError.isTimeoutError = true
       httpError.code = 'TIMEOUT'
-    }
-    else if (message.includes('Network') || message.includes('fetch')) {
+    } else if (message.includes('Network') || message.includes('fetch')) {
       httpError.isNetworkError = true
       httpError.code = 'NETWORK_ERROR'
     }
@@ -140,10 +137,10 @@ export abstract class BaseAdapter implements HttpAdapter {
    * 合并 AbortSignal
    */
   protected mergeAbortSignals(
-    signals: (AbortSignal | undefined)[],
+    signals: (AbortSignal | undefined)[]
   ): AbortSignal {
     const validSignals = signals.filter(
-      (signal): signal is AbortSignal => signal !== undefined,
+      (signal): signal is AbortSignal => signal !== undefined
     )
 
     if (validSignals.length === 0) {
@@ -161,7 +158,7 @@ export abstract class BaseAdapter implements HttpAdapter {
       controller.abort()
     }
 
-    validSignals.forEach((signal) => {
+    validSignals.forEach(signal => {
       if (signal.aborted) {
         controller.abort()
         return
@@ -176,7 +173,7 @@ export abstract class BaseAdapter implements HttpAdapter {
    * 解析响应头
    */
   protected parseHeaders(
-    headers: Headers | Record<string, string>,
+    headers: Headers | Record<string, string>
   ): Record<string, string> {
     const result: Record<string, string> = {}
 
@@ -184,9 +181,8 @@ export abstract class BaseAdapter implements HttpAdapter {
       headers.forEach((value, key) => {
         result[key.toLowerCase()] = value
       })
-    }
-    else {
-      Object.keys(headers).forEach((key) => {
+    } else {
+      Object.keys(headers).forEach(key => {
         result[key.toLowerCase()] = headers[key]!
       })
     }

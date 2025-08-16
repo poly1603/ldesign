@@ -31,16 +31,6 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "es",
-    "docs/.vitepress/dist",
-    "**/__tests__/**",
-    "**/*.test.*",
-    "examples/**"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "es", "docs/.vitepress/dist", "**/__tests__/**", "**/*.test.*", "examples/**"]
 }

@@ -1,6 +1,6 @@
 # 高级示例
 
-本文档展示了Vue3 Engine的高级用法和实际应用场景。
+本文档展示了 Vue3 Engine 的高级用法和实际应用场景。
 
 ## 完整的应用示例
 
@@ -14,12 +14,12 @@ import { createApp, creators, presets } from '@ldesign/engine'
 import App from './App.vue'
 
 // 用户认证插件
-const authPlugin = creators.plugin('auth', (engine) => {
+const authPlugin = creators.plugin('auth', engine => {
   // 初始化认证状态
   engine.state.set('auth', {
     user: null,
     isAuthenticated: false,
-    token: localStorage.getItem('auth_token')
+    token: localStorage.getItem('auth_token'),
   })
 
   // 登录方法
@@ -30,7 +30,7 @@ const authPlugin = creators.plugin('auth', (engine) => {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify(credentials),
       })
 
       if (response.ok) {
@@ -40,7 +40,7 @@ const authPlugin = creators.plugin('auth', (engine) => {
         engine.state.set('auth', {
           user,
           isAuthenticated: true,
-          token
+          token,
         })
 
         // 保存token
@@ -53,12 +53,10 @@ const authPlugin = creators.plugin('auth', (engine) => {
         engine.notifications.success(`欢迎回来，${user.name}！`)
 
         engine.logger.info('用户登录成功', { userId: user.id })
-      }
-      else {
+      } else {
         throw new Error('登录失败')
       }
-    }
-    catch (error) {
+    } catch (error) {
       engine.logger.error('用户登录失败', error)
       engine.events.emit('auth:login:error', error)
       engine.notifications.error('登录失败，请检查用户名和密码')
@@ -73,7 +71,7 @@ const authPlugin = creators.plugin('auth', (engine) => {
     engine.state.set('auth', {
       user: null,
       isAuthenticated: false,
-      token: null
+      token: null,
     })
 
     localStorage.removeItem('auth_token')
@@ -87,7 +85,7 @@ const authPlugin = creators.plugin('auth', (engine) => {
   engine.auth = { login, logout }
 
   // 监听路由变化，检查认证状态
-  engine.events.on('router:beforeEach', (to) => {
+  engine.events.on('router:beforeEach', to => {
     const isAuthenticated = engine.state.get('auth.isAuthenticated')
     const requiresAuth = to.meta?.requiresAuth
 
@@ -99,7 +97,7 @@ const authPlugin = creators.plugin('auth', (engine) => {
 })
 
 // 数据管理插件
-const dataPlugin = creators.plugin('data', (engine) => {
+const dataPlugin = creators.plugin('data', engine => {
   // 数据缓存
   const cache = new Map()
 
@@ -120,12 +118,12 @@ const dataPlugin = creators.plugin('data', (engine) => {
       const headers = {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers
+        ...options.headers,
       }
 
       const response = await fetch(endpoint, {
         ...options,
-        headers
+        headers,
       })
 
       if (!response.ok) {
@@ -141,8 +139,7 @@ const dataPlugin = creators.plugin('data', (engine) => {
       engine.events.emit('data:fetched', { endpoint, data })
 
       return data
-    }
-    catch (error) {
+    } catch (error) {
       engine.logger.error('数据获取失败', { endpoint, error })
       engine.events.emit('data:error', { endpoint, error })
       throw error
@@ -157,8 +154,7 @@ const dataPlugin = creators.plugin('data', (engine) => {
           cache.delete(key)
         }
       }
-    }
-    else {
+    } else {
       cache.clear()
     }
     engine.logger.info('缓存已清除', { pattern })
@@ -185,7 +181,7 @@ const performanceMiddleware = creators.middleware('performance', async (context,
   // 记录性能数据
   engine.logger.info('中间件性能', {
     phase: context.phase,
-    duration: `${duration.toFixed(2)}ms`
+    duration: `${duration.toFixed(2)}ms`,
   })
 
   // 如果执行时间过长，发出警告
@@ -200,15 +196,10 @@ const engine = createApp(App, {
   config: {
     appName: '用户管理系统',
     version: '1.0.0',
-    debug: true
+    debug: true,
   },
-  plugins: [
-    authPlugin,
-    dataPlugin
-  ],
-  middleware: [
-    performanceMiddleware
-  ]
+  plugins: [authPlugin, dataPlugin],
+  middleware: [performanceMiddleware],
 })
 
 // 挂载应用
@@ -244,12 +235,10 @@ async function loadUsers() {
     users.value = data.users
 
     engine.logger.info('用户列表加载成功', { count: data.users.length })
-  }
-  catch (err) {
+  } catch (err) {
     error.value = '加载用户数据失败'
     engine.logger.error('用户列表加载失败', err)
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -261,8 +250,7 @@ async function refreshUsers() {
     users.value = data.users
 
     engine.notifications.success('用户列表已刷新')
-  }
-  catch (err) {
+  } catch (err) {
     engine.notifications.error('刷新失败')
   }
 }
@@ -280,7 +268,7 @@ async function deleteUser(user: User) {
   if (confirmed) {
     try {
       await engine.data.fetchData(`/api/users/${user.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       // 从列表中移除
@@ -288,8 +276,7 @@ async function deleteUser(user: User) {
 
       engine.notifications.success(`用户 ${user.name} 已删除`)
       engine.logger.info('用户删除成功', { userId: user.id })
-    }
-    catch (err) {
+    } catch (err) {
       engine.notifications.error('删除用户失败')
       engine.logger.error('用户删除失败', { userId: user.id, error: err })
     }
@@ -298,31 +285,31 @@ async function deleteUser(user: User) {
 
 // 确认对话框
 function showConfirmDialog(message: string): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     engine.notifications.warning(message, {
       persistent: true,
       actions: [
         {
           label: '确定',
           action: () => resolve(true),
-          style: 'danger'
+          style: 'danger',
         },
         {
           label: '取消',
-          action: () => resolve(false)
-        }
-      ]
+          action: () => resolve(false),
+        },
+      ],
     })
   })
 }
 
 // 监听事件
-engine.events.on('user:created', (newUser) => {
+engine.events.on('user:created', newUser => {
   users.value.push(newUser)
   engine.notifications.success(`用户 ${newUser.name} 已创建`)
 })
 
-engine.events.on('user:updated', (updatedUser) => {
+engine.events.on('user:updated', updatedUser => {
   const index = users.value.findIndex(u => u.id === updatedUser.id)
   if (index !== -1) {
     users.value[index] = updatedUser
@@ -345,32 +332,24 @@ onMounted(() => {
       </button>
     </div>
 
-    <div v-if="loading" class="loading">
-      正在加载用户数据...
-    </div>
+    <div v-if="loading" class="loading">正在加载用户数据...</div>
 
     <div v-else-if="error" class="error">
       {{ error }}
-      <button @click="loadUsers">
-        重试
-      </button>
+      <button @click="loadUsers">重试</button>
     </div>
 
     <div v-else class="users">
       <div v-for="user in users" :key="user.id" class="user-card">
-        <img :src="user.avatar" :alt="user.name" class="avatar">
+        <img :src="user.avatar" :alt="user.name" class="avatar" />
         <div class="info">
           <h3>{{ user.name }}</h3>
           <p>{{ user.email }}</p>
           <span class="role">{{ user.role }}</span>
         </div>
         <div class="actions">
-          <button @click="editUser(user)">
-            编辑
-          </button>
-          <button class="danger" @click="deleteUser(user)">
-            删除
-          </button>
+          <button @click="editUser(user)">编辑</button>
+          <button class="danger" @click="deleteUser(user)">删除</button>
         </div>
       </div>
     </div>
@@ -501,12 +480,12 @@ interface ThemeDefinition {
 }
 
 export function createThemePlugin(config: ThemeConfig) {
-  return creators.plugin('theme', (engine) => {
+  return creators.plugin('theme', engine => {
     // 初始化主题状态
     const savedTheme = localStorage.getItem(config.storageKey) || config.defaultTheme
     engine.state.set('theme', {
       current: savedTheme,
-      available: Object.keys(config.themes)
+      available: Object.keys(config.themes),
     })
 
     // 应用主题
@@ -540,8 +519,7 @@ export function createThemePlugin(config: ThemeConfig) {
       if (config.themes[themeName]) {
         applyTheme(themeName)
         engine.notifications.success(`已切换到${config.themes[themeName].name}主题`)
-      }
-      else {
+      } else {
         engine.notifications.error('主题不存在')
       }
     }
@@ -555,7 +533,7 @@ export function createThemePlugin(config: ThemeConfig) {
     const getAvailableThemes = () => {
       return Object.entries(config.themes).map(([key, theme]) => ({
         key,
-        name: theme.name
+        name: theme.name,
       }))
     }
 
@@ -564,7 +542,7 @@ export function createThemePlugin(config: ThemeConfig) {
       switch: switchTheme,
       getCurrent: getCurrentTheme,
       getAvailable: getAvailableThemes,
-      apply: applyTheme
+      apply: applyTheme,
     }
 
     // 初始化时应用保存的主题
@@ -583,13 +561,13 @@ const themePlugin = createThemePlugin({
         primary: '#1976d2',
         secondary: '#424242',
         background: '#ffffff',
-        surface: '#f5f5f5'
+        surface: '#f5f5f5',
       },
       variables: {
         'color-primary': '#1976d2',
         'color-background': '#ffffff',
-        'color-text': '#333333'
-      }
+        'color-text': '#333333',
+      },
     },
     dark: {
       name: '深色主题',
@@ -597,17 +575,17 @@ const themePlugin = createThemePlugin({
         primary: '#90caf9',
         secondary: '#b0bec5',
         background: '#121212',
-        surface: '#1e1e1e'
+        surface: '#1e1e1e',
       },
       variables: {
         'color-primary': '#90caf9',
         'color-background': '#121212',
-        'color-text': '#ffffff'
-      }
-    }
+        'color-text': '#ffffff',
+      },
+    },
   },
   defaultTheme: 'light',
-  storageKey: 'app_theme'
+  storageKey: 'app_theme',
 })
 ```
 
@@ -625,12 +603,12 @@ interface I18nConfig {
 }
 
 export function createI18nPlugin(config: I18nConfig) {
-  return creators.plugin('i18n', (engine) => {
+  return creators.plugin('i18n', engine => {
     // 初始化语言状态
     const savedLocale = localStorage.getItem(config.storageKey) || config.defaultLocale
     engine.state.set('i18n', {
       locale: savedLocale,
-      available: Object.keys(config.messages)
+      available: Object.keys(config.messages),
     })
 
     // 翻译函数
@@ -684,12 +662,12 @@ export function createI18nPlugin(config: I18nConfig) {
       t,
       setLocale,
       getLocale,
-      getAvailableLocales
+      getAvailableLocales,
     }
 
     // 全局注册翻译函数
     if (typeof window !== 'undefined') {
-      (window as any).$t = t
+      ;(window as any).$t = t
     }
 
     engine.logger.info('国际化插件已安装', { locale: savedLocale })
@@ -707,7 +685,7 @@ const i18nPlugin = createI18nPlugin({
       'user.create': '创建用户',
       'user.edit': '编辑用户',
       'user.delete': '删除用户',
-      'language.switched': '语言已切换到{language}'
+      'language.switched': '语言已切换到{language}',
     },
     'en-US': {
       'app.title': 'User Management System',
@@ -715,10 +693,10 @@ const i18nPlugin = createI18nPlugin({
       'user.create': 'Create User',
       'user.edit': 'Edit User',
       'user.delete': 'Delete User',
-      'language.switched': 'Language switched to {language}'
-    }
+      'language.switched': 'Language switched to {language}',
+    },
   },
-  storageKey: 'app_locale'
+  storageKey: 'app_locale',
 })
 ```
 
@@ -730,83 +708,85 @@ const i18nPlugin = createI18nPlugin({
 // middleware/request-interceptor.ts
 import { creators } from '@ldesign/engine'
 
-export const requestInterceptorMiddleware = creators.middleware('request-interceptor', async (context, next) => {
-  // 只在应用挂载后执行
-  if (context.phase === 'afterMount') {
-    // 拦截fetch请求
-    const originalFetch = window.fetch
+export const requestInterceptorMiddleware = creators.middleware(
+  'request-interceptor',
+  async (context, next) => {
+    // 只在应用挂载后执行
+    if (context.phase === 'afterMount') {
+      // 拦截fetch请求
+      const originalFetch = window.fetch
 
-    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = typeof input === 'string' ? input : input.toString()
-      const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input.toString()
+        const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-      // 记录请求开始
-      context.engine.logger.info('HTTP请求开始', {
-        requestId,
-        url,
-        method: init?.method || 'GET'
-      })
+        // 记录请求开始
+        context.engine.logger.info('HTTP请求开始', {
+          requestId,
+          url,
+          method: init?.method || 'GET',
+        })
 
-      const startTime = performance.now()
+        const startTime = performance.now()
 
-      try {
-        // 添加认证头
-        const token = context.engine.state.get('auth.token')
-        if (token && !init?.headers?.Authorization) {
-          init = {
-            ...init,
-            headers: {
-              ...init?.headers,
-              Authorization: `Bearer ${token}`
+        try {
+          // 添加认证头
+          const token = context.engine.state.get('auth.token')
+          if (token && !init?.headers?.Authorization) {
+            init = {
+              ...init,
+              headers: {
+                ...init?.headers,
+                Authorization: `Bearer ${token}`,
+              },
             }
           }
+
+          // 执行请求
+          const response = await originalFetch(input, init)
+
+          const endTime = performance.now()
+          const duration = endTime - startTime
+
+          // 记录请求完成
+          context.engine.logger.info('HTTP请求完成', {
+            requestId,
+            url,
+            status: response.status,
+            duration: `${duration.toFixed(2)}ms`,
+          })
+
+          // 处理认证失败
+          if (response.status === 401) {
+            context.engine.events.emit('auth:unauthorized', { url, response })
+            context.engine.notifications.error('认证失败，请重新登录')
+          }
+
+          return response
+        } catch (error) {
+          const endTime = performance.now()
+          const duration = endTime - startTime
+
+          // 记录请求错误
+          context.engine.logger.error('HTTP请求失败', {
+            requestId,
+            url,
+            error: error.message,
+            duration: `${duration.toFixed(2)}ms`,
+          })
+
+          context.engine.events.emit('http:error', { url, error })
+
+          throw error
         }
-
-        // 执行请求
-        const response = await originalFetch(input, init)
-
-        const endTime = performance.now()
-        const duration = endTime - startTime
-
-        // 记录请求完成
-        context.engine.logger.info('HTTP请求完成', {
-          requestId,
-          url,
-          status: response.status,
-          duration: `${duration.toFixed(2)}ms`
-        })
-
-        // 处理认证失败
-        if (response.status === 401) {
-          context.engine.events.emit('auth:unauthorized', { url, response })
-          context.engine.notifications.error('认证失败，请重新登录')
-        }
-
-        return response
       }
-      catch (error) {
-        const endTime = performance.now()
-        const duration = endTime - startTime
 
-        // 记录请求错误
-        context.engine.logger.error('HTTP请求失败', {
-          requestId,
-          url,
-          error: error.message,
-          duration: `${duration.toFixed(2)}ms`
-        })
-
-        context.engine.events.emit('http:error', { url, error })
-
-        throw error
-      }
+      context.engine.logger.info('请求拦截器已安装')
     }
 
-    context.engine.logger.info('请求拦截器已安装')
+    await next()
   }
-
-  await next()
-})
+)
 ```
 
 ### 2. 错误边界中间件
@@ -815,39 +795,41 @@ export const requestInterceptorMiddleware = creators.middleware('request-interce
 // middleware/error-boundary.ts
 import { creators } from '@ldesign/engine'
 
-export const errorBoundaryMiddleware = creators.middleware('error-boundary', async (context, next) => {
-  try {
-    await next()
+export const errorBoundaryMiddleware = creators.middleware(
+  'error-boundary',
+  async (context, next) => {
+    try {
+      await next()
+    } catch (error) {
+      // 记录错误
+      context.engine.logger.error('中间件执行错误', {
+        phase: context.phase,
+        error: error.message,
+        stack: error.stack,
+      })
+
+      // 发送错误事件
+      context.engine.events.emit('middleware:error', {
+        phase: context.phase,
+        error,
+        middleware: 'error-boundary',
+      })
+
+      // 显示错误通知
+      if (context.phase === 'beforeMount') {
+        context.engine.notifications.error('应用启动失败，请刷新页面重试')
+      } else {
+        context.engine.notifications.error('系统出现错误，请稍后重试')
+      }
+
+      // 在开发环境中重新抛出错误
+      if (context.engine.config.debug) {
+        throw error
+      }
+    }
   }
-  catch (error) {
-    // 记录错误
-    context.engine.logger.error('中间件执行错误', {
-      phase: context.phase,
-      error: error.message,
-      stack: error.stack
-    })
-
-    // 发送错误事件
-    context.engine.events.emit('middleware:error', {
-      phase: context.phase,
-      error,
-      middleware: 'error-boundary'
-    })
-
-    // 显示错误通知
-    if (context.phase === 'beforeMount') {
-      context.engine.notifications.error('应用启动失败，请刷新页面重试')
-    }
-    else {
-      context.engine.notifications.error('系统出现错误，请稍后重试')
-    }
-
-    // 在开发环境中重新抛出错误
-    if (context.engine.config.debug) {
-      throw error
-    }
-  }
-})
+)
 ```
 
-这些示例展示了如何使用Vue3 Engine构建复杂的应用，包括插件开发、中间件创建和组件集成。通过这些模式，你可以构建可维护、可扩展的Vue3应用。
+这些示例展示了如何使用 Vue3 Engine 构建复杂的应用，包括插件开发、中间件创建和组件集成。通过这些模式
+，你可以构建可维护、可扩展的 Vue3 应用。

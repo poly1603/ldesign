@@ -173,7 +173,9 @@ test.describe('移动端路由测试', () => {
     await menuButton.click()
 
     // 点击导航项
-    const aboutLink = page.locator('[data-testid="mobile-nav"] a[href="/about"]')
+    const aboutLink = page.locator(
+      '[data-testid="mobile-nav"] a[href="/about"]'
+    )
     await aboutLink.click()
 
     // 检查导航结果

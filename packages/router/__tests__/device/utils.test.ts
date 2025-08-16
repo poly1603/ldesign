@@ -2,7 +2,11 @@
  * 设备路由工具函数测试
  */
 
-import type { DeviceType, RouteComponent, RouteLocationNormalized } from '../../src/types'
+import type {
+  DeviceType,
+  RouteComponent,
+  RouteLocationNormalized,
+} from '../../src/types'
 import { describe, expect, it } from 'vitest'
 import {
   checkDeviceSupport,
@@ -116,7 +120,10 @@ describe('设备路由工具函数', () => {
         desktop: mockComponents.desktop,
       }
 
-      const result = resolveDeviceComponent(components as Record<DeviceType, RouteComponent>, 'mobile')
+      const result = resolveDeviceComponent(
+        components as Record<DeviceType, RouteComponent>,
+        'mobile'
+      )
 
       expect(result).toEqual({
         component: mockComponents.desktop,
@@ -127,7 +134,10 @@ describe('设备路由工具函数', () => {
     })
 
     it('没有可用组件时应该返回 null', () => {
-      const result = resolveDeviceComponent({} as Record<DeviceType, RouteComponent>, 'mobile')
+      const result = resolveDeviceComponent(
+        {} as Record<DeviceType, RouteComponent>,
+        'mobile'
+      )
 
       expect(result).toBeNull()
     })
@@ -279,7 +289,9 @@ describe('设备路由工具函数', () => {
 })
 
 // 辅助函数
-function createMockRoute(overrides: Partial<RouteLocationNormalized> = {}): RouteLocationNormalized {
+function createMockRoute(
+  overrides: Partial<RouteLocationNormalized> = {}
+): RouteLocationNormalized {
   return {
     path: '/',
     name: undefined,

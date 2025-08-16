@@ -49,7 +49,7 @@ export class DebounceManager {
   async execute<T = unknown>(
     key: string,
     task: () => Promise<T>,
-    delay?: number,
+    delay?: number
   ): Promise<T> {
     if (!this.config.enabled) {
       return await task()
@@ -84,11 +84,9 @@ export class DebounceManager {
           resolve(result)
           this.stats.executions++
           this.stats.totalDelay += actualDelay
-        }
-        catch (error) {
+        } catch (error) {
           reject(error)
-        }
-        finally {
+        } finally {
           this.tasks.delete(key)
         }
       }, actualDelay)
@@ -191,12 +189,10 @@ export class DebounceManager {
       task.resolve(result)
       this.stats.executions++
       return result as T | null
-    }
-    catch (error) {
+    } catch (error) {
       task.reject(error)
       throw error
-    }
-    finally {
+    } finally {
       this.tasks.delete(key)
     }
   }

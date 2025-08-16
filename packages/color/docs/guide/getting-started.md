@@ -33,7 +33,7 @@ import { createThemeManagerWithPresets } from '@ldesign/color'
 const themeManager = await createThemeManagerWithPresets({
   defaultTheme: 'default', // 默认主题
   autoDetect: true, // 自动检测系统主题
-  idleProcessing: true // 启用闲时处理优化
+  idleProcessing: true, // 启用闲时处理优化
 })
 
 console.log('当前主题:', themeManager.getCurrentTheme())
@@ -88,7 +88,7 @@ const app = createApp(App)
 // 安装主题插件
 app.use(ThemePlugin, {
   defaultTheme: 'default',
-  autoDetect: true
+  autoDetect: true,
 })
 
 app.mount('#app')
@@ -100,14 +100,7 @@ app.mount('#app')
 <script setup>
 import { useTheme } from '@ldesign/color/vue'
 
-const {
-  currentTheme,
-  currentMode,
-  isDark,
-  availableThemes,
-  setTheme,
-  toggleMode
-} = useTheme()
+const { currentTheme, currentMode, isDark, availableThemes, setTheme, toggleMode } = useTheme()
 </script>
 
 <template>
@@ -116,9 +109,15 @@ const {
 
     <!-- 当前状态显示 -->
     <div class="status">
-      <p>当前主题: <strong>{{ currentTheme }}</strong></p>
-      <p>当前模式: <strong>{{ currentMode }}</strong></p>
-      <p>是否暗色: <strong>{{ isDark ? '是' : '否' }}</strong></p>
+      <p>
+        当前主题: <strong>{{ currentTheme }}</strong>
+      </p>
+      <p>
+        当前模式: <strong>{{ currentMode }}</strong>
+      </p>
+      <p>
+        是否暗色: <strong>{{ isDark ? '是' : '否' }}</strong>
+      </p>
     </div>
 
     <!-- 主题切换 -->
@@ -132,9 +131,7 @@ const {
         </select>
       </label>
 
-      <button @click="toggleMode">
-        切换到{{ isDark ? '亮色' : '暗色' }}模式
-      </button>
+      <button @click="toggleMode">切换到{{ isDark ? '亮色' : '暗色' }}模式</button>
     </div>
   </div>
 </template>
@@ -194,7 +191,7 @@ import { createCustomThemeManager } from '@ldesign/color'
 // 使用自定义主色调创建主题管理器
 const themeManager = await createCustomThemeManager('#ff6b35', {
   themeName: 'orange-custom',
-  darkPrimaryColor: '#e55a2b'
+  darkPrimaryColor: '#e55a2b',
 })
 ```
 
@@ -208,19 +205,19 @@ const customThemes = [
     name: 'brand-blue',
     displayName: '品牌蓝',
     light: { primary: '#0066cc' },
-    dark: { primary: '#4d94ff' }
+    dark: { primary: '#4d94ff' },
   },
   {
     name: 'brand-green',
     displayName: '品牌绿',
     light: { primary: '#00a854' },
-    dark: { primary: '#49aa19' }
-  }
+    dark: { primary: '#49aa19' },
+  },
 ]
 
 const themeManager = createThemeManager({
   themes: customThemes,
-  defaultTheme: 'brand-blue'
+  defaultTheme: 'brand-blue',
 })
 
 await themeManager.init()
@@ -238,13 +235,13 @@ const themeManager = await createThemeManagerWithPresets({
   autoDetect: true, // 启用自动检测
   onThemeChanged: (theme, mode) => {
     console.log(`主题已切换: ${theme} - ${mode}`)
-  }
+  },
 })
 
 console.log('系统主题:', getSystemTheme()) // 'light' | 'dark'
 
 // 监听系统主题变化
-const unwatch = watchSystemTheme((mode) => {
+const unwatch = watchSystemTheme(mode => {
   console.log('系统主题变化:', mode)
   themeManager.setMode(mode)
 })
@@ -275,9 +272,9 @@ console.log('生成的主题数据:', generatedTheme)
 const themeManager = await createThemeManagerWithPresets({
   cache: {
     maxSize: 50, // 最大缓存数量
-    defaultTTL: 3600000 // 缓存过期时间（1小时）
+    defaultTTL: 3600000, // 缓存过期时间（1小时）
   },
-  idleProcessing: true // 启用闲时处理
+  idleProcessing: true, // 启用闲时处理
 })
 ```
 
@@ -291,7 +288,7 @@ A: 核心功能支持服务端渲染，但系统主题检测等浏览器特性�
 // 服务端安全的创建方式
 const themeManager = createThemeManager({
   defaultTheme: 'default',
-  autoDetect: false // 服务端禁用自动检测
+  autoDetect: false, // 服务端禁用自动检测
 })
 
 // 客户端激活时启用自动检测
@@ -314,7 +311,7 @@ const softColors = generateColorConfig('#1890ff', COLOR_GENERATION_PRESETS.soft)
 const customColors = generateColorConfig('#1890ff', {
   successHueOffset: 90, // 成功色色相偏移
   warningHueOffset: 30, // 警告色色相偏移
-  saturationRange: [0.8, 1.2] // 饱和度调整范围
+  saturationRange: [0.8, 1.2], // 饱和度调整范围
 })
 ```
 

@@ -185,12 +185,12 @@ const keyPair4096 = rsa.generateKeyPair(4096) // 高安全性
 // 使用不同的填充方式
 const encrypted1 = encrypt.rsa(data, publicKey, {
   padding: 'OAEP', // 推荐的填充方式
-  hashAlgorithm: 'SHA256'
+  hashAlgorithm: 'SHA256',
 })
 
 const encrypted2 = encrypt.rsa(data, publicKey, {
   padding: 'PKCS1', // 传统填充方式
-  hashAlgorithm: 'SHA1'
+  hashAlgorithm: 'SHA1',
 })
 ```
 
@@ -221,14 +221,8 @@ console.log('签名验证:', isValid ? '✅ 有效' : '❌ 无效')
 import { useCrypto } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
 
-const {
-  generateRSAKeyPair,
-  encryptRSA,
-  decryptRSA,
-  isEncrypting,
-  isDecrypting,
-  lastError
-} = useCrypto()
+const { generateRSAKeyPair, encryptRSA, decryptRSA, isEncrypting, isDecrypting, lastError } =
+  useCrypto()
 
 const data = ref('Hello, Vue RSA!')
 const keyPair = ref(null)
@@ -243,36 +237,30 @@ async function generateKeys() {
     keyPair.value = await generateRSAKeyPair(2048)
     encryptedResult.value = null
     decryptedResult.value = null
-  }
-  catch (err) {
+  } catch (err) {
     console.error('密钥生成失败:', err)
-  }
-  finally {
+  } finally {
     isGenerating.value = false
   }
 }
 
 async function encryptData() {
-  if (!keyPair.value)
-    return
+  if (!keyPair.value) return
 
   try {
     encryptedResult.value = await encryptRSA(data.value, keyPair.value.publicKey)
     decryptedResult.value = null
-  }
-  catch (err) {
+  } catch (err) {
     console.error('加密失败:', err)
   }
 }
 
 async function decryptData() {
-  if (!keyPair.value || !encryptedResult.value)
-    return
+  if (!keyPair.value || !encryptedResult.value) return
 
   try {
     decryptedResult.value = await decryptRSA(encryptedResult.value, keyPair.value.privateKey)
-  }
-  catch (err) {
+  } catch (err) {
     console.error('解密失败:', err)
   }
 }
@@ -313,9 +301,7 @@ async function decryptData() {
       <p>{{ decryptedResult.data }}</p>
     </div>
 
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
+    <div v-if="error" class="error">错误: {{ error }}</div>
   </div>
 </template>
 ```
@@ -391,7 +377,7 @@ class DigitalCertificate {
     const certificateData = JSON.stringify({
       ...userInfo,
       issuer: 'My Certificate Authority',
-      issuedAt: Date.now()
+      issuedAt: Date.now(),
     })
 
     const signature = digitalSignature.sign(
@@ -403,7 +389,7 @@ class DigitalCertificate {
     return JSON.stringify({
       data: certificateData,
       signature,
-      issuerPublicKey: this.issuerKeyPair.publicKey
+      issuerPublicKey: this.issuerKeyPair.publicKey,
     })
   }
 
@@ -418,8 +404,7 @@ class DigitalCertificate {
         'SHA256'
       )
 
-      if (!isValid)
-        return false
+      if (!isValid) return false
 
       // 检查证书是否过期
       const certData = JSON.parse(cert.data)
@@ -428,8 +413,7 @@ class DigitalCertificate {
       }
 
       return true
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -443,7 +427,7 @@ const certificate = ca.issueCertificate({
   name: 'John Doe',
   email: 'john@example.com',
   publicKey: userKeyPair.publicKey,
-  validUntil: Date.now() + 365 * 24 * 60 * 60 * 1000 // 1年后过期
+  validUntil: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1年后过期
 })
 
 const isValid = ca.verifyCertificate(certificate)
@@ -455,7 +439,10 @@ console.log('证书验证:', isValid ? '✅ 有效' : '❌ 无效')
 ```typescript
 // RSA + AES 混合加密（解决 RSA 加密大数据的问题）
 class HybridEncryption {
-  static encrypt(data: string, rsaPublicKey: string): {
+  static encrypt(
+    data: string,
+    rsaPublicKey: string
+  ): {
     encryptedData: any
     encryptedKey: any
   } {
@@ -470,15 +457,11 @@ class HybridEncryption {
 
     return {
       encryptedData,
-      encryptedKey
+      encryptedKey,
     }
   }
 
-  static decrypt(
-    encryptedData: any,
-    encryptedKey: any,
-    rsaPrivateKey: string
-  ): string {
+  static decrypt(encryptedData: any, encryptedKey: any, rsaPrivateKey: string): string {
     // 1. 使用 RSA 解密 AES 密钥
     const decryptedKey = decrypt.rsa(encryptedKey, rsaPrivateKey)
 
@@ -502,17 +485,10 @@ const keyPair = rsa.generateKeyPair(2048)
 const largeData = 'A'.repeat(10000) // 10KB 数据
 
 // 加密
-const { encryptedData, encryptedKey } = HybridEncryption.encrypt(
-  largeData,
-  keyPair.publicKey
-)
+const { encryptedData, encryptedKey } = HybridEncryption.encrypt(largeData, keyPair.publicKey)
 
 // 解密
-const decryptedData = HybridEncryption.decrypt(
-  encryptedData,
-  encryptedKey,
-  keyPair.privateKey
-)
+const decryptedData = HybridEncryption.decrypt(encryptedData, encryptedKey, keyPair.privateKey)
 
 console.log('数据匹配:', decryptedData === largeData)
 ```
@@ -541,14 +517,14 @@ console.log('数据匹配:', decryptedData === largeData)
 const secureRSAConfig = {
   keySize: 2048, // 最小推荐长度
   padding: 'OAEP', // 使用 OAEP 填充
-  hashAlgorithm: 'SHA256' // 使用 SHA256
+  hashAlgorithm: 'SHA256', // 使用 SHA256
 }
 
 // 不安全的配置（避免使用）
 const insecureConfig = {
   keySize: 1024, // 密钥长度不足
   padding: 'PKCS1', // 较弱的填充
-  hashAlgorithm: 'SHA1' // 已被破解的哈希
+  hashAlgorithm: 'SHA1', // 已被破解的哈希
 }
 ```
 

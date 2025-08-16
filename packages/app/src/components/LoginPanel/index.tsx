@@ -227,19 +227,18 @@ export const LoginPanel = defineComponent({
     const isFormValid = computed(() => {
       if (currentMode.value === 'username') {
         return (
-          usernameForm.username
-          && usernameForm.password
-          && usernameForm.captcha
-          && validateUsername(usernameForm.username)
-          && validatePassword(usernameForm.password)
+          usernameForm.username &&
+          usernameForm.password &&
+          usernameForm.captcha &&
+          validateUsername(usernameForm.username) &&
+          validatePassword(usernameForm.password)
         )
-      }
-      else {
+      } else {
         return (
-          phoneForm.phone
-          && phoneForm.captcha
-          && phoneForm.smsCode
-          && validatePhone(phoneForm.phone)
+          phoneForm.phone &&
+          phoneForm.captcha &&
+          phoneForm.smsCode &&
+          validatePhone(phoneForm.phone)
         )
       }
     })
@@ -259,14 +258,13 @@ export const LoginPanel = defineComponent({
 
     /** 切换登录模式 */
     const switchMode = (mode: LoginMode) => {
-      if (mode === currentMode.value)
-        return
+      if (mode === currentMode.value) return
 
       const from = currentMode.value
       currentMode.value = mode
 
       // 清除错误信息
-      Object.keys(errors).forEach((key) => {
+      Object.keys(errors).forEach(key => {
         delete errors[key as keyof ValidationErrors]
       })
 
@@ -282,8 +280,7 @@ export const LoginPanel = defineComponent({
       // 清除验证码输入
       if (currentMode.value === 'username') {
         usernameForm.captcha = ''
-      }
-      else {
+      } else {
         phoneForm.captcha = ''
       }
 
@@ -324,34 +321,30 @@ export const LoginPanel = defineComponent({
     /** 验证表单 */
     const validateForm = (): boolean => {
       // 清除之前的错误
-      Object.keys(errors).forEach((key) => {
+      Object.keys(errors).forEach(key => {
         delete errors[key as keyof ValidationErrors]
       })
 
       if (currentMode.value === 'username') {
         if (!usernameForm.username) {
           errors.username = '请输入用户名'
-        }
-        else if (!validateUsername(usernameForm.username)) {
+        } else if (!validateUsername(usernameForm.username)) {
           errors.username = '用户名长度应为3-20个字符'
         }
 
         if (!usernameForm.password) {
           errors.password = '请输入密码'
-        }
-        else if (!validatePassword(usernameForm.password)) {
+        } else if (!validatePassword(usernameForm.password)) {
           errors.password = '密码长度至少6个字符'
         }
 
         if (!usernameForm.captcha) {
           errors.captcha = '请输入验证码'
         }
-      }
-      else {
+      } else {
         if (!phoneForm.phone) {
           errors.phone = '请输入手机号'
-        }
-        else if (!validatePhone(phoneForm.phone)) {
+        } else if (!validatePhone(phoneForm.phone)) {
           errors.phone = '手机号格式不正确'
         }
 
@@ -369,14 +362,13 @@ export const LoginPanel = defineComponent({
 
     /** 提交登录 */
     const handleLogin = async () => {
-      if (!validateForm() || submitting.value || props.loading)
-        return
+      if (!validateForm() || submitting.value || props.loading) return
 
       submitting.value = true
 
       try {
-        const loginData: LoginData
-          = currentMode.value === 'username'
+        const loginData: LoginData =
+          currentMode.value === 'username'
             ? (usernameForm as UsernameLoginData)
             : (phoneForm as PhoneLoginData)
 
@@ -384,8 +376,7 @@ export const LoginPanel = defineComponent({
           mode: currentMode.value,
           data: loginData,
         })
-      }
-      finally {
+      } finally {
         submitting.value = false
       }
     }
@@ -423,10 +414,10 @@ export const LoginPanel = defineComponent({
 
     watch(
       () => props.theme,
-      (newTheme) => {
+      newTheme => {
         Object.assign(currentTheme, defaultTheme, newTheme)
       },
-      { deep: true },
+      { deep: true }
     )
 
     // ============ 渲染函数 ============
@@ -439,19 +430,19 @@ export const LoginPanel = defineComponent({
       >
         {/* 头部 */}
         {(props.title || props.subtitle || props.logo) && (
-          <div class="login-panel__header">
+          <div class='login-panel__header'>
             {props.logo && (
-              <img src={props.logo} alt="Logo" class="login-panel__logo" />
+              <img src={props.logo} alt='Logo' class='login-panel__logo' />
             )}
-            {props.title && <h1 class="login-panel__title">{props.title}</h1>}
+            {props.title && <h1 class='login-panel__title'>{props.title}</h1>}
             {props.subtitle && (
-              <p class="login-panel__subtitle">{props.subtitle}</p>
+              <p class='login-panel__subtitle'>{props.subtitle}</p>
             )}
           </div>
         )}
 
         {/* Tab 切换 */}
-        <div class="login-panel__tabs">
+        <div class='login-panel__tabs'>
           <button
             class={[
               'login-panel__tab',
@@ -471,70 +462,70 @@ export const LoginPanel = defineComponent({
             手机号登录
           </button>
           <div
-            class="login-panel__tab-indicator"
+            class='login-panel__tab-indicator'
             style={tabIndicatorStyle.value}
           />
         </div>
 
         {/* 表单内容 */}
-        <div class="login-panel__content">
-          <div class="login-panel__form">
+        <div class='login-panel__content'>
+          <div class='login-panel__form'>
             {/* 用户名登录表单 */}
             <div
               class={[
                 'login-panel__form-panel',
-                currentMode.value !== 'username'
-                && 'login-panel__form-panel--hidden',
+                currentMode.value !== 'username' &&
+                  'login-panel__form-panel--hidden',
               ]}
             >
               {/* 用户名输入 */}
-              <div class="login-panel__field">
-                <label class="login-panel__label">用户名</label>
+              <div class='login-panel__field'>
+                <label class='login-panel__label'>用户名</label>
                 <input
-                  type="text"
+                  type='text'
                   class={[
                     'login-panel__input',
                     errors.username && 'login-panel__input--error',
                   ]}
-                  placeholder="请输入用户名"
+                  placeholder='请输入用户名'
                   v-model={usernameForm.username}
                   disabled={props.disabled || submitting.value || props.loading}
                 />
                 {errors.username && (
-                  <div class="login-panel__error">{errors.username}</div>
+                  <div class='login-panel__error'>{errors.username}</div>
                 )}
               </div>
 
               {/* 密码输入 */}
-              <div class="login-panel__field">
-                <label class="login-panel__label">密码</label>
+              <div class='login-panel__field'>
+                <label class='login-panel__label'>密码</label>
                 <input
-                  type="password"
+                  type='password'
                   class={[
                     'login-panel__input',
                     errors.password && 'login-panel__input--error',
                   ]}
-                  placeholder="请输入密码"
+                  placeholder='请输入密码'
                   v-model={usernameForm.password}
                   disabled={props.disabled || submitting.value || props.loading}
                 />
                 {errors.password && (
-                  <div class="login-panel__error">{errors.password}</div>
+                  <div class='login-panel__error'>{errors.password}</div>
                 )}
               </div>
 
               {/* 图片验证码 */}
-              <div class="login-panel__field">
-                <label class="login-panel__label">验证码</label>
-                <div class="login-panel__captcha-group">
+              <div class='login-panel__field'>
+                <label class='login-panel__label'>验证码</label>
+                <div class='login-panel__captcha-group'>
                   <input
-                    type="text"
+                    type='text'
                     class={[
                       'login-panel__input',
                       'login-panel__captcha-input',
                       errors.captcha && 'login-panel__input--error',
                     ]}
-                    placeholder="请输入验证码"
+                    placeholder='请输入验证码'
                     v-model={usernameForm.captcha}
                     disabled={
                       props.disabled || submitting.value || props.loading
@@ -542,22 +533,22 @@ export const LoginPanel = defineComponent({
                   />
                   <img
                     src={captchaUrl.value}
-                    alt="验证码"
-                    class="login-panel__captcha-image"
+                    alt='验证码'
+                    class='login-panel__captcha-image'
                     onClick={refreshCaptcha}
                   />
                 </div>
                 {errors.captcha && (
-                  <div class="login-panel__error">{errors.captcha}</div>
+                  <div class='login-panel__error'>{errors.captcha}</div>
                 )}
               </div>
 
               {/* 记住我和忘记密码 */}
-              <div class="login-panel__options">
+              <div class='login-panel__options'>
                 {props.showRememberMe && (
-                  <label class="login-panel__checkbox">
+                  <label class='login-panel__checkbox'>
                     <input
-                      type="checkbox"
+                      type='checkbox'
                       v-model={usernameForm.rememberMe}
                       disabled={
                         props.disabled || submitting.value || props.loading
@@ -568,8 +559,8 @@ export const LoginPanel = defineComponent({
                 )}
                 {props.showForgotPassword && (
                   <a
-                    href="#"
-                    class="login-panel__link"
+                    href='#'
+                    class='login-panel__link'
                     onClick={(e: Event) => {
                       e.preventDefault()
                       handleForgotPassword()
@@ -585,40 +576,40 @@ export const LoginPanel = defineComponent({
             <div
               class={[
                 'login-panel__form-panel',
-                currentMode.value !== 'phone'
-                && 'login-panel__form-panel--hidden',
+                currentMode.value !== 'phone' &&
+                  'login-panel__form-panel--hidden',
               ]}
             >
               {/* 手机号输入 */}
-              <div class="login-panel__field">
-                <label class="login-panel__label">手机号</label>
+              <div class='login-panel__field'>
+                <label class='login-panel__label'>手机号</label>
                 <input
-                  type="tel"
+                  type='tel'
                   class={[
                     'login-panel__input',
                     errors.phone && 'login-panel__input--error',
                   ]}
-                  placeholder="请输入手机号"
+                  placeholder='请输入手机号'
                   v-model={phoneForm.phone}
                   disabled={props.disabled || submitting.value || props.loading}
                 />
                 {errors.phone && (
-                  <div class="login-panel__error">{errors.phone}</div>
+                  <div class='login-panel__error'>{errors.phone}</div>
                 )}
               </div>
 
               {/* 图片验证码 */}
-              <div class="login-panel__field">
-                <label class="login-panel__label">验证码</label>
-                <div class="login-panel__captcha-group">
+              <div class='login-panel__field'>
+                <label class='login-panel__label'>验证码</label>
+                <div class='login-panel__captcha-group'>
                   <input
-                    type="text"
+                    type='text'
                     class={[
                       'login-panel__input',
                       'login-panel__captcha-input',
                       errors.captcha && 'login-panel__input--error',
                     ]}
-                    placeholder="请输入验证码"
+                    placeholder='请输入验证码'
                     v-model={phoneForm.captcha}
                     disabled={
                       props.disabled || submitting.value || props.loading
@@ -626,42 +617,42 @@ export const LoginPanel = defineComponent({
                   />
                   <img
                     src={captchaUrl.value}
-                    alt="验证码"
-                    class="login-panel__captcha-image"
+                    alt='验证码'
+                    class='login-panel__captcha-image'
                     onClick={refreshCaptcha}
                   />
                 </div>
                 {errors.captcha && (
-                  <div class="login-panel__error">{errors.captcha}</div>
+                  <div class='login-panel__error'>{errors.captcha}</div>
                 )}
               </div>
 
               {/* 短信验证码 */}
-              <div class="login-panel__field">
-                <label class="login-panel__label">短信验证码</label>
-                <div class="login-panel__sms-group">
+              <div class='login-panel__field'>
+                <label class='login-panel__label'>短信验证码</label>
+                <div class='login-panel__sms-group'>
                   <input
-                    type="text"
+                    type='text'
                     class={[
                       'login-panel__input',
                       'login-panel__sms-input',
                       errors.smsCode && 'login-panel__input--error',
                     ]}
-                    placeholder="请输入短信验证码"
+                    placeholder='请输入短信验证码'
                     v-model={phoneForm.smsCode}
                     disabled={
                       props.disabled || submitting.value || props.loading
                     }
                   />
                   <button
-                    type="button"
-                    class="login-panel__sms-button"
+                    type='button'
+                    class='login-panel__sms-button'
                     onClick={sendSmsCode}
                     disabled={
-                      props.disabled
-                      || submitting.value
-                      || props.loading
-                      || countdown.counting
+                      props.disabled ||
+                      submitting.value ||
+                      props.loading ||
+                      countdown.counting
                     }
                   >
                     {countdown.counting
@@ -670,53 +661,53 @@ export const LoginPanel = defineComponent({
                   </button>
                 </div>
                 {errors.smsCode && (
-                  <div class="login-panel__error">{errors.smsCode}</div>
+                  <div class='login-panel__error'>{errors.smsCode}</div>
                 )}
               </div>
             </div>
 
             {/* 登录按钮 */}
             <button
-              type="button"
+              type='button'
               class={[
                 'login-panel__button',
-                (submitting.value || props.loading)
-                && 'login-panel__button--loading',
+                (submitting.value || props.loading) &&
+                  'login-panel__button--loading',
               ]}
               onClick={handleLogin}
               disabled={
-                props.disabled
-                || submitting.value
-                || props.loading
-                || !isFormValid.value
+                props.disabled ||
+                submitting.value ||
+                props.loading ||
+                !isFormValid.value
               }
             >
               {submitting.value || props.loading ? '' : '登录'}
             </button>
 
             {/* 第三方登录 */}
-            {props.thirdPartyLogin?.enabled
-            && props.thirdPartyLogin.providers.length > 0 && (
-              <>
-                <div class="login-panel__divider">其他登录方式</div>
-                <div class="login-panel__third-party">
-                  {props.thirdPartyLogin.providers.map(provider => (
-                    <button
-                      key={provider.name}
-                      type="button"
-                      class="login-panel__third-party-button"
-                      style={{ color: provider.color }}
-                      onClick={() => handleThirdPartyLogin(provider.name)}
-                      disabled={
-                        props.disabled || submitting.value || props.loading
-                      }
-                    >
-                      {provider.icon}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            {props.thirdPartyLogin?.enabled &&
+              props.thirdPartyLogin.providers.length > 0 && (
+                <>
+                  <div class='login-panel__divider'>其他登录方式</div>
+                  <div class='login-panel__third-party'>
+                    {props.thirdPartyLogin.providers.map(provider => (
+                      <button
+                        key={provider.name}
+                        type='button'
+                        class='login-panel__third-party-button'
+                        style={{ color: provider.color }}
+                        onClick={() => handleThirdPartyLogin(provider.name)}
+                        disabled={
+                          props.disabled || submitting.value || props.loading
+                        }
+                      >
+                        {provider.icon}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
             {/* 注册链接 */}
             {props.showRegisterLink && (
@@ -730,8 +721,8 @@ export const LoginPanel = defineComponent({
                   还没有账号？
                 </span>
                 <a
-                  href="#"
-                  class="login-panel__link"
+                  href='#'
+                  class='login-panel__link'
                   onClick={(e: Event) => {
                     e.preventDefault()
                     handleRegister()

@@ -28,7 +28,8 @@ export interface VueThemePluginOptions extends ThemeManagerOptions {
 /**
  * 主题管理器注入键
  */
-export const THEME_MANAGER_KEY: InjectionKey<ThemeManagerInstance> = Symbol('themeManager')
+export const THEME_MANAGER_KEY: InjectionKey<ThemeManagerInstance> =
+  Symbol('themeManager')
 
 /**
  * Vue 主题管理器组合式 API 返回值
@@ -115,11 +116,16 @@ export interface UseColorGeneratorReturn {
   /** 生成颜色配置 */
   generateColors: (primaryColor: string) => Promise<ColorConfig>
   /** 生成颜色色阶 */
-  generateColorScales: (colors: ColorConfig) => Promise<Record<string, string[]>>
+  generateColorScales: (
+    colors: ColorConfig
+  ) => Promise<Record<string, string[]>>
   /** 预览颜色 */
   previewColors: (primaryColor: string) => Promise<ColorConfig>
   /** 应用生成的颜色 */
-  applyGeneratedColors: (colors: ColorConfig, themeName?: string) => Promise<void>
+  applyGeneratedColors: (
+    colors: ColorConfig,
+    themeName?: string
+  ) => Promise<void>
   /** 是否正在生成 */
   isGenerating: Ref<boolean>
   /** 生成错误 */

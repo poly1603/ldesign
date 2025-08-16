@@ -8,18 +8,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "e2e/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "es",
-    "lib",
-    "types",
-    "coverage",
-    "examples"
-  ]
+  "include": ["src/**/*", "__tests__/**/*", "e2e/**/*"],
+  "exclude": ["node_modules", "dist", "es", "lib", "types", "coverage", "examples"]
 }

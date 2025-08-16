@@ -40,15 +40,17 @@ interface RequestConfig {
 // 静态配置
 const { data } = useRequest({
   url: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 
 // 响应式配置
 const userId = ref(1)
-const { data } = useRequest(computed(() => ({
-  url: `/api/users/${userId.value}`,
-  method: 'GET'
-})))
+const { data } = useRequest(
+  computed(() => ({
+    url: `/api/users/${userId.value}`,
+    method: 'GET',
+  }))
+)
 ```
 
 ### options
@@ -81,10 +83,7 @@ interface UseRequestOptions<T> {
 const { data } = useRequest({ url: '/api/users' })
 
 // 手动执行
-const { data, execute } = useRequest(
-  { url: '/api/users' },
-  { immediate: false }
-)
+const { data, execute } = useRequest({ url: '/api/users' }, { immediate: false })
 
 // 稍后手动执行
 execute()
@@ -101,7 +100,7 @@ execute()
 const { data } = useRequest(
   { url: '/api/users' },
   {
-    initialData: [] // 初始为空数组
+    initialData: [], // 初始为空数组
   }
 )
 ```
@@ -122,12 +121,12 @@ interface User {
 const { data } = useRequest<User[]>(
   { url: '/api/users' },
   {
-    transform: (rawData) => {
+    transform: rawData => {
       return rawData.map(user => ({
         ...user,
-        displayName: `${user.name} (${user.email})`
+        displayName: `${user.name} (${user.email})`,
       }))
-    }
+    },
   }
 )
 ```
@@ -145,7 +144,7 @@ const { data } = useRequest(
     onSuccess: (data, response) => {
       console.log('请求成功:', data)
       console.log('响应状态:', response.status)
-    }
+    },
   }
 )
 ```
@@ -160,12 +159,12 @@ const { data } = useRequest(
 const { data } = useRequest(
   { url: '/api/users' },
   {
-    onError: (error) => {
+    onError: error => {
       console.error('请求失败:', error.message)
       if (error.response?.status === 404) {
         showNotification('数据不存在')
       }
-    }
+    },
   }
 )
 ```
@@ -183,7 +182,7 @@ const { data } = useRequest(
     onFinally: () => {
       console.log('请求完成')
       hideLoadingSpinner()
-    }
+    },
   }
 )
 ```
@@ -199,7 +198,7 @@ const { data } = useRequest(
 const { data } = useRequest(
   { url: '/api/users' },
   {
-    cancelOnUnmount: false // 组件卸载时不取消请求
+    cancelOnUnmount: false, // 组件卸载时不取消请求
   }
 )
 ```
@@ -273,8 +272,7 @@ watchEffect(() => {
   if (error.value) {
     if (error.value.isNetworkError) {
       console.log('网络错误')
-    }
-    else if (error.value.response?.status === 404) {
+    } else if (error.value.response?.status === 404) {
       console.log('资源不存在')
     }
   }
@@ -292,7 +290,7 @@ watchEffect(() => {
 const { finished } = useRequest({ url: '/api/users' })
 
 // 请求完成后执行某些操作
-watch(finished, (isFinished) => {
+watch(finished, isFinished => {
   if (isFinished) {
     console.log('请求已完成')
   }
@@ -308,17 +306,14 @@ watch(finished, (isFinished) => {
 - **类型：** `(config?: RequestConfig) => Promise<ResponseData<T>>`
 
 ```typescript
-const { execute } = useRequest(
-  { url: '/api/users' },
-  { immediate: false }
-)
+const { execute } = useRequest({ url: '/api/users' }, { immediate: false })
 
 // 执行请求
 const response = await execute()
 
 // 使用新配置执行请求
 const response2 = await execute({
-  params: { page: 2 }
+  params: { page: 2 },
 })
 ```
 
@@ -336,8 +331,7 @@ async function handleRefresh() {
   try {
     await refresh()
     showNotification('数据已刷新')
-  }
-  catch (error) {
+  } catch (error) {
     showNotification('刷新失败')
   }
 }
@@ -405,33 +399,23 @@ interface User {
 
 const { data, loading, error, refresh, cancel, canCancel } = useRequest<User[]>({
   url: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 </script>
 
 <template>
   <div>
-    <div v-if="loading">
-      加载中...
-    </div>
-    <div v-else-if="error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">错误: {{ error.message }}</div>
     <div v-else-if="data">
       <h2>用户列表</h2>
       <ul>
-        <li v-for="user in data" :key="user.id">
-          {{ user.name }} - {{ user.email }}
-        </li>
+        <li v-for="user in data" :key="user.id">{{ user.name }} - {{ user.email }}</li>
       </ul>
     </div>
 
-    <button :disabled="loading" @click="refresh">
-      刷新
-    </button>
-    <button :disabled="!canCancel" @click="cancel">
-      取消
-    </button>
+    <button :disabled="loading" @click="refresh">刷新</button>
+    <button :disabled="!canCancel" @click="cancel">取消</button>
   </div>
 </template>
 ```
@@ -450,8 +434,8 @@ const { data, loading } = useRequest(
   computed(() => ({
     url: `/api/users/${userId.value}`,
     params: {
-      include: includeProfile.value ? 'profile' : undefined
-    }
+      include: includeProfile.value ? 'profile' : undefined,
+    },
   }))
 )
 
@@ -472,14 +456,14 @@ const { data, loading, execute } = useRequest(
   { url: '/api/search' },
   {
     immediate: false,
-    transform: data => data.results
+    transform: data => data.results,
   }
 )
 
 async function handleSearch() {
   if (searchTerm.value.trim()) {
     await execute({
-      params: { q: searchTerm.value }
+      params: { q: searchTerm.value },
     })
   }
 }

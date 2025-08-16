@@ -35,6 +35,7 @@
 ### 1. 自定义尺寸配置
 
 **扩展现有配置**：
+
 ```typescript
 import { createSizeManager, type SizeConfig } from '@ldesign/size'
 
@@ -55,36 +56,36 @@ interface ExtendedSizeConfig extends SizeConfig {
 class CustomConfigGenerator {
   generateConfig(mode: SizeMode): ExtendedSizeConfig {
     const baseConfig = getSizeConfig(mode)
-    
+
     return {
       ...baseConfig,
       animation: this.generateAnimationConfig(mode),
-      layout: this.generateLayoutConfig(mode)
+      layout: this.generateLayoutConfig(mode),
     }
   }
-  
+
   private generateAnimationConfig(mode: SizeMode) {
     const durations = {
       small: '200ms',
       medium: '300ms',
       large: '400ms',
-      'extra-large': '500ms'
+      'extra-large': '500ms',
     }
-    
+
     return {
       duration: durations[mode],
-      easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
     }
   }
-  
+
   private generateLayoutConfig(mode: SizeMode) {
     const layouts = {
       small: { containerWidth: '100%', sidebarWidth: '60px' },
       medium: { containerWidth: '1200px', sidebarWidth: '200px' },
       large: { containerWidth: '1400px', sidebarWidth: '250px' },
-      'extra-large': { containerWidth: '1600px', sidebarWidth: '300px' }
+      'extra-large': { containerWidth: '1600px', sidebarWidth: '300px' },
     }
-    
+
     return layouts[mode]
   }
 }
@@ -93,6 +94,7 @@ class CustomConfigGenerator {
 ### 2. 主题系统扩展
 
 **主题定义接口**：
+
 ```typescript
 interface SizeTheme {
   name: string
@@ -108,53 +110,53 @@ class ThemeManager {
   private themes = new Map<string, SizeTheme>()
   private currentTheme = 'default'
   private eventEmitter = new EventEmitter()
-  
+
   // 注册主题
   registerTheme(theme: SizeTheme): void {
     this.validateTheme(theme)
     this.themes.set(theme.name, theme)
     this.eventEmitter.emit('themeRegistered', theme)
   }
-  
+
   // 切换主题
   switchTheme(themeName: string): void {
     const theme = this.themes.get(themeName)
     if (!theme) {
       throw new Error(`Theme "${themeName}" not found`)
     }
-    
+
     const previousTheme = this.currentTheme
     this.currentTheme = themeName
-    
+
     // 更新配置
     this.updateConfigs(theme.configs)
-    
+
     // 注入自定义CSS变量
     if (theme.cssVariables) {
       this.injectThemeVariables(theme.cssVariables)
     }
-    
+
     this.eventEmitter.emit('themeChanged', {
       previousTheme,
       currentTheme: themeName,
-      theme
+      theme,
     })
   }
-  
+
   // 创建主题
   createTheme(baseTheme: string, overrides: Partial<SizeTheme>): SizeTheme {
     const base = this.themes.get(baseTheme)
     if (!base) {
       throw new Error(`Base theme "${baseTheme}" not found`)
     }
-    
+
     return {
       ...base,
       ...overrides,
       configs: {
         ...base.configs,
-        ...overrides.configs
-      }
+        ...overrides.configs,
+      },
     }
   }
 }
@@ -167,17 +169,17 @@ themeManager.registerTheme({
   name: 'dark',
   displayName: '暗色主题',
   configs: {
-    small: { ...getSizeConfig('small'), /* 暗色配置 */ },
-    medium: { ...getSizeConfig('medium'), /* 暗色配置 */ },
-    large: { ...getSizeConfig('large'), /* 暗色配置 */ },
-    'extra-large': { ...getSizeConfig('extra-large'), /* 暗色配置 */ }
+    small: { ...getSizeConfig('small') /* 暗色配置 */ },
+    medium: { ...getSizeConfig('medium') /* 暗色配置 */ },
+    large: { ...getSizeConfig('large') /* 暗色配置 */ },
+    'extra-large': { ...getSizeConfig('extra-large') /* 暗色配置 */ },
   },
   cssVariables: {
     '--ls-bg-primary': '#1a1a1a',
     '--ls-bg-secondary': '#2a2a2a',
     '--ls-text-primary': '#ffffff',
-    '--ls-text-secondary': '#cccccc'
-  }
+    '--ls-text-secondary': '#cccccc',
+  },
 })
 ```
 
@@ -191,11 +193,11 @@ interface SizePlugin {
   version?: string
   description?: string
   dependencies?: string[]
-  
+
   // 生命周期钩子
   install(manager: SizeManager, options?: any): void | Promise<void>
   uninstall?(manager: SizeManager): void | Promise<void>
-  
+
   // 可选的扩展点
   beforeModeChange?(event: BeforeModeChangeEvent): void | boolean
   afterModeChange?(event: AfterModeChangeEvent): void
@@ -208,51 +210,51 @@ class PluginManager {
   private plugins = new Map<string, SizePlugin>()
   private installedPlugins = new Set<string>()
   private sizeManager: SizeManager
-  
+
   constructor(sizeManager: SizeManager) {
     this.sizeManager = sizeManager
   }
-  
+
   // 注册插件
   register(plugin: SizePlugin): void {
     this.validatePlugin(plugin)
     this.plugins.set(plugin.name, plugin)
   }
-  
+
   // 安装插件
   async install(pluginName: string, options?: any): Promise<void> {
     const plugin = this.plugins.get(pluginName)
     if (!plugin) {
       throw new Error(`Plugin "${pluginName}" not found`)
     }
-    
+
     if (this.installedPlugins.has(pluginName)) {
       console.warn(`Plugin "${pluginName}" is already installed`)
       return
     }
-    
+
     // 检查依赖
     await this.checkDependencies(plugin)
-    
+
     // 安装插件
     await plugin.install(this.sizeManager, options)
     this.installedPlugins.add(pluginName)
-    
+
     // 注册事件监听器
     this.registerPluginHooks(plugin)
   }
-  
+
   // 卸载插件
   async uninstall(pluginName: string): Promise<void> {
     const plugin = this.plugins.get(pluginName)
     if (!plugin || !this.installedPlugins.has(pluginName)) {
       return
     }
-    
+
     if (plugin.uninstall) {
       await plugin.uninstall(this.sizeManager)
     }
-    
+
     this.installedPlugins.delete(pluginName)
     this.unregisterPluginHooks(plugin)
   }
@@ -262,28 +264,29 @@ class PluginManager {
 ### 2. 内置插件示例
 
 **动画插件**：
+
 ```typescript
 const AnimationPlugin: SizePlugin = {
   name: 'animation',
   version: '1.0.0',
   description: '为尺寸切换添加动画效果',
-  
+
   install(manager: SizeManager, options = {}) {
     const config = {
       duration: 300,
       easing: 'ease-in-out',
-      ...options
+      ...options,
     }
-    
+
     // 添加动画样式
     this.injectAnimationCSS(config)
-    
+
     // 监听尺寸变化
     manager.onSizeChange(() => {
       this.triggerAnimation(config)
     })
   },
-  
+
   injectAnimationCSS(config: any) {
     const css = `
       * {
@@ -293,59 +296,60 @@ const AnimationPlugin: SizePlugin = {
                    border-radius ${config.duration}ms ${config.easing} !important;
       }
     `
-    
+
     const style = document.createElement('style')
     style.id = 'size-animation-plugin'
     style.textContent = css
     document.head.appendChild(style)
   },
-  
+
   triggerAnimation(config: any) {
     // 添加动画类
     document.body.classList.add('size-changing')
-    
+
     setTimeout(() => {
       document.body.classList.remove('size-changing')
     }, config.duration)
   },
-  
+
   uninstall() {
     const style = document.getElementById('size-animation-plugin')
     if (style) {
       style.remove()
     }
-  }
+  },
 }
 ```
 
 **存储插件**：
+
 ```typescript
 const StoragePlugin: SizePlugin = {
   name: 'storage',
   version: '1.0.0',
   description: '自动保存和恢复用户的尺寸偏好',
-  
+
   install(manager: SizeManager, options = {}) {
     const config = {
       storageKey: 'ldesign-size-preference',
       storageType: 'localStorage', // 'localStorage' | 'sessionStorage' | 'cookie'
-      ...options
+      ...options,
     }
-    
+
     // 恢复保存的尺寸偏好
     this.restorePreference(manager, config)
-    
+
     // 监听变化并保存
-    manager.onSizeChange((event) => {
+    manager.onSizeChange(event => {
       this.savePreference(event.currentMode, config)
     })
   },
-  
+
   restorePreference(manager: SizeManager, config: any) {
     try {
       const storage = window[config.storageType]
       const saved = storage.getItem(config.storageKey)
-      
+
       if (saved && isValidSizeMode(saved)) {
         manager.setMode(saved as SizeMode)
       }
@@ -353,7 +357,7 @@ const StoragePlugin: SizePlugin = {
       console.warn('Failed to restore size preference:', error)
     }
   },
-  
+
   savePreference(mode: SizeMode, config: any) {
     try {
       const storage = window[config.storageType]
@@ -361,7 +365,7 @@ const StoragePlugin: SizePlugin = {
     } catch (error) {
       console.warn('Failed to save size preference:', error)
     }
-  }
+  },
 }
 ```
 
@@ -382,7 +386,7 @@ interface CustomSizeEvents {
 // 事件扩展管理器
 class EventExtensionManager {
   private customEvents = new Map<string, Set<Function>>()
-  
+
   // 注册自定义事件
   registerEvent<K extends keyof CustomSizeEvents>(
     event: K,
@@ -391,19 +395,16 @@ class EventExtensionManager {
     if (!this.customEvents.has(event)) {
       this.customEvents.set(event, new Set())
     }
-    
+
     this.customEvents.get(event)!.add(handler)
-    
+
     return () => {
       this.customEvents.get(event)?.delete(handler)
     }
   }
-  
+
   // 触发自定义事件
-  emitEvent<K extends keyof CustomSizeEvents>(
-    event: K,
-    data: CustomSizeEvents[K]
-  ): void {
+  emitEvent<K extends keyof CustomSizeEvents>(event: K, data: CustomSizeEvents[K]): void {
     const handlers = this.customEvents.get(event)
     if (handlers) {
       handlers.forEach(handler => {
@@ -424,7 +425,7 @@ class EventExtensionManager {
 interface SizeMiddleware {
   name: string
   priority?: number
-  
+
   // 中间件处理函数
   process(context: MiddlewareContext, next: () => void): void
 }
@@ -437,27 +438,27 @@ interface MiddlewareContext {
 
 class MiddlewareManager {
   private middlewares: SizeMiddleware[] = []
-  
+
   // 注册中间件
   use(middleware: SizeMiddleware): void {
     this.middlewares.push(middleware)
     // 按优先级排序
     this.middlewares.sort((a, b) => (b.priority || 0) - (a.priority || 0))
   }
-  
+
   // 执行中间件链
   async execute(context: MiddlewareContext): Promise<void> {
     let index = 0
-    
+
     const next = async (): Promise<void> => {
       if (index >= this.middlewares.length) {
         return
       }
-      
+
       const middleware = this.middlewares[index++]
       await middleware.process(context, next)
     }
-    
+
     await next()
   }
 }
@@ -466,32 +467,32 @@ class MiddlewareManager {
 const LoggingMiddleware: SizeMiddleware = {
   name: 'logging',
   priority: 100,
-  
+
   process(context, next) {
     console.log(`[Size] ${context.action}:`, context.data)
     const startTime = performance.now()
-    
+
     next()
-    
+
     const endTime = performance.now()
     console.log(`[Size] ${context.action} completed in ${endTime - startTime}ms`)
-  }
+  },
 }
 
 // 中间件示例：验证
 const ValidationMiddleware: SizeMiddleware = {
   name: 'validation',
   priority: 200,
-  
+
   process(context, next) {
     if (context.action === 'setMode') {
       if (!isValidSizeMode(context.data)) {
         throw new Error(`Invalid size mode: ${context.data}`)
       }
     }
-    
+
     next()
-  }
+  },
 }
 ```
 
@@ -506,51 +507,54 @@ import { useState, useEffect, useCallback } from 'react'
 export function useSize(options: UseSizeOptions = {}) {
   const [currentMode, setCurrentMode] = useState<SizeMode>('medium')
   const [currentConfig, setCurrentConfig] = useState<SizeConfig>()
-  
+
   const sizeManager = useMemo(() => {
     return options.global ? globalSizeManager : createSizeManager(options)
   }, [options.global])
-  
+
   useEffect(() => {
     setCurrentMode(sizeManager.getCurrentMode())
     setCurrentConfig(sizeManager.getConfig())
-    
-    const unsubscribe = sizeManager.onSizeChange((event) => {
+
+    const unsubscribe = sizeManager.onSizeChange(event => {
       setCurrentMode(event.currentMode)
       setCurrentConfig(sizeManager.getConfig(event.currentMode))
     })
-    
+
     return unsubscribe
   }, [sizeManager])
-  
-  const setMode = useCallback((mode: SizeMode) => {
-    sizeManager.setMode(mode)
-  }, [sizeManager])
-  
+
+  const setMode = useCallback(
+    (mode: SizeMode) => {
+      sizeManager.setMode(mode)
+    },
+    [sizeManager]
+  )
+
   return {
     currentMode,
     currentConfig,
     setMode,
-    sizeManager
+    sizeManager,
   }
 }
 
 // React 组件扩展
 export const SizeSwitcher: React.FC<SizeSwitcherProps> = ({
   switcherStyle = 'button',
-  onChange
+  onChange,
 }) => {
   const { currentMode, setMode } = useSize({ global: true })
   const availableModes: SizeMode[] = ['small', 'medium', 'large', 'extra-large']
-  
+
   const handleChange = (mode: SizeMode) => {
     setMode(mode)
     onChange?.(mode)
   }
-  
+
   if (switcherStyle === 'button') {
     return (
-      <div className="size-switcher size-switcher--button">
+      <div className='size-switcher size-switcher--button'>
         {availableModes.map(mode => (
           <button
             key={mode}
@@ -563,7 +567,7 @@ export const SizeSwitcher: React.FC<SizeSwitcherProps> = ({
       </div>
     )
   }
-  
+
   // 其他样式的实现...
 }
 ```
@@ -573,31 +577,31 @@ export const SizeSwitcher: React.FC<SizeSwitcherProps> = ({
 ```typescript
 // Angular 服务
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SizeService {
   private sizeManager = globalSizeManager
   private currentMode$ = new BehaviorSubject<SizeMode>('medium')
   private currentConfig$ = new BehaviorSubject<SizeConfig>(getSizeConfig('medium'))
-  
+
   constructor() {
     this.currentMode$.next(this.sizeManager.getCurrentMode())
     this.currentConfig$.next(this.sizeManager.getConfig())
-    
-    this.sizeManager.onSizeChange((event) => {
+
+    this.sizeManager.onSizeChange(event => {
       this.currentMode$.next(event.currentMode)
       this.currentConfig$.next(this.sizeManager.getConfig(event.currentMode))
     })
   }
-  
+
   getCurrentMode(): Observable<SizeMode> {
     return this.currentMode$.asObservable()
   }
-  
+
   getCurrentConfig(): Observable<SizeConfig> {
     return this.currentConfig$.asObservable()
   }
-  
+
   setMode(mode: SizeMode): void {
     this.sizeManager.setMode(mode)
   }
@@ -605,32 +609,33 @@ export class SizeService {
 
 // Angular 指令
 @Directive({
-  selector: '[sizeResponsive]'
+  selector: '[sizeResponsive]',
 })
 export class SizeResponsiveDirective implements OnInit, OnDestroy {
   @Input() sizeResponsive: Partial<Record<SizeMode, any>> = {}
-  
+
   private destroy$ = new Subject<void>()
-  
+
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
     private sizeService: SizeService
   ) {}
-  
+
   ngOnInit() {
-    this.sizeService.getCurrentMode()
+    this.sizeService
+      .getCurrentMode()
       .pipe(takeUntil(this.destroy$))
       .subscribe(mode => {
         this.applyModeStyles(mode)
       })
   }
-  
+
   ngOnDestroy() {
     this.destroy$.next()
     this.destroy$.complete()
   }
-  
+
   private applyModeStyles(mode: SizeMode) {
     const styles = this.sizeResponsive[mode]
     if (styles) {
@@ -650,13 +655,13 @@ export class SizeResponsiveDirective implements OnInit, OnDestroy {
 interface VisualConfigTool {
   // 可视化编辑器
   openEditor(): void
-  
+
   // 实时预览
   previewMode(mode: SizeMode): void
-  
+
   // 导出配置
   exportConfig(): SizeConfig
-  
+
   // 导入配置
   importConfig(config: SizeConfig): void
 }
@@ -668,10 +673,10 @@ interface VisualConfigTool {
 interface CloudSyncExtension {
   // 同步到云端
   syncToCloud(userId: string, preferences: UserPreferences): Promise<void>
-  
+
   // 从云端恢复
   restoreFromCloud(userId: string): Promise<UserPreferences>
-  
+
   // 跨设备同步
   enableCrossDeviceSync(userId: string): void
 }
@@ -683,10 +688,10 @@ interface CloudSyncExtension {
 interface AIRecommendationExtension {
   // 基于用户行为推荐尺寸
   recommendSize(userBehavior: UserBehaviorData): SizeMode
-  
+
   // 自动调整
   enableAutoAdjustment(preferences: AutoAdjustmentPreferences): void
-  
+
   // 学习用户偏好
   learnUserPreferences(interactions: UserInteraction[]): void
 }
@@ -694,4 +699,4 @@ interface AIRecommendationExtension {
 
 ---
 
-*通过这些扩展性设计，@ldesign/size 能够适应各种复杂的使用场景，并为未来的功能扩展提供了坚实的基础。*
+_通过这些扩展性设计，@ldesign/size 能够适应各种复杂的使用场景，并为未来的功能扩展提供了坚实的基础。_

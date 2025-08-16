@@ -4,7 +4,7 @@ export default createRollupConfig({
   external: ['vue', '@arco-design/color', 'chroma-js'],
   globalName: 'LDesignColor',
   globals: {
-    'vue': 'Vue',
+    vue: 'Vue',
     '@arco-design/color': 'ArcoColor',
     'chroma-js': 'chroma',
   },

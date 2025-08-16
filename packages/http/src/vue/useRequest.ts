@@ -16,7 +16,7 @@ import { createCancelTokenSource, isCancelError } from '../utils/cancel'
 export function useRequest<T = any>(
   client: HttpClient,
   config: MaybeRef<RequestConfig>,
-  options: UseRequestOptions<T> = {},
+  options: UseRequestOptions<T> = {}
 ): UseRequestReturn<T> {
   // 响应式状态
   const data = ref<T | null>(options.initialData ?? null)
@@ -34,7 +34,7 @@ export function useRequest<T = any>(
    * 执行请求
    */
   const execute = async (
-    overrideConfig?: RequestConfig,
+    overrideConfig?: RequestConfig
   ): Promise<ResponseData<T>> => {
     // 重置状态
     loading.value = true
@@ -71,8 +71,7 @@ export function useRequest<T = any>(
       }
 
       return response
-    }
-    catch (err) {
+    } catch (err) {
       const httpError = err as HttpError
 
       // 如果不是取消错误，更新错误状态
@@ -87,8 +86,7 @@ export function useRequest<T = any>(
       }
 
       throw httpError
-    }
-    finally {
+    } finally {
       loading.value = false
 
       // 调用完成回调
@@ -131,7 +129,7 @@ export function useRequest<T = any>(
       () => {
         execute()
       },
-      { immediate: true, deep: true },
+      { immediate: true, deep: true }
     )
   }
 
@@ -161,7 +159,7 @@ export function useRequest<T = any>(
 export function useAsyncRequest<T = any>(
   _client: HttpClient,
   requestFn: () => Promise<ResponseData<T>>,
-  options: Omit<UseRequestOptions<T>, 'immediate'> = {},
+  options: Omit<UseRequestOptions<T>, 'immediate'> = {}
 ): UseRequestReturn<T> {
   const data = ref<T | null>(options.initialData ?? null)
   const loading = ref<boolean>(false)
@@ -195,8 +193,7 @@ export function useAsyncRequest<T = any>(
       }
 
       return response
-    }
-    catch (err) {
+    } catch (err) {
       const httpError = err as HttpError
 
       if (!isCancelError(httpError)) {
@@ -209,8 +206,7 @@ export function useAsyncRequest<T = any>(
       }
 
       throw httpError
-    }
-    finally {
+    } finally {
       loading.value = false
 
       if (options.onFinally) {

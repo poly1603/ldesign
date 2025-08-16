@@ -12,13 +12,7 @@ export const config: TemplateConfig = {
   author: 'LDesign Team',
   tags: ['卡片', '移动端', '层次', '美观'],
   preview: '/previews/login-mobile-card.png',
-  features: [
-    '卡片式设计',
-    '阴影效果',
-    '分层布局',
-    '视觉层次',
-    '现代感',
-  ],
+  features: ['卡片式设计', '阴影效果', '分层布局', '视觉层次', '现代感'],
   props: {
     title: {
       type: 'string',

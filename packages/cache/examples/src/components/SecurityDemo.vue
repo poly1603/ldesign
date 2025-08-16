@@ -26,8 +26,7 @@ function createCache(options: any = {}) {
         if (options.security?.encryption?.enabled) {
           try {
             value = JSON.parse(atob(value))
-          }
-          catch {
+          } catch {
             // 如果不是加密数据，直接返回
           }
         }
@@ -38,7 +37,7 @@ function createCache(options: any = {}) {
     },
     clear: async () => {
       const keysToRemove = Object.keys(localStorage).filter(key =>
-        key.startsWith('secure_'),
+        key.startsWith('secure_')
       )
       keysToRemove.forEach(key => localStorage.removeItem(key))
     },
@@ -112,11 +111,9 @@ async function setEncryptedData() {
     })
 
     encryptionResult.value = '数据已加密存储'
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -129,11 +126,9 @@ async function getEncryptedData() {
   try {
     const result = await secureCache.get('sensitive-data')
     encryptionResult.value = result || '数据不存在'
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -142,13 +137,12 @@ async function getEncryptedData() {
 async function viewRawData() {
   try {
     // 直接从 localStorage 读取原始数据
-    const rawData
-      = localStorage.getItem('secure_sensitive-data')
-        || localStorage.getItem('ldesign_cache_sensitive-data')
-        || '未找到原始数据'
+    const rawData =
+      localStorage.getItem('secure_sensitive-data') ||
+      localStorage.getItem('ldesign_cache_sensitive-data') ||
+      '未找到原始数据'
     rawStorageData.value = rawData
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
   }
 }
@@ -170,11 +164,9 @@ async function testKeyObfuscation() {
       obfuscated: `secure_${btoa(keyToObfuscate.value).replace(/[+/=]/g, '')}`,
       deobfuscated: keyToObfuscate.value,
     }
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -214,11 +206,9 @@ async function testCustomEncryption() {
       encrypted: btoa(originalData.split('').reverse().join('')),
       decrypted: decryptedData || '解密失败',
     }
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err as Error
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -245,15 +235,11 @@ async function testCustomEncryption() {
         "
       />
       <div>
-        <button class="btn" @click="setEncryptedData">
-          加密存储
-        </button>
+        <button class="btn" @click="setEncryptedData">加密存储</button>
         <button class="btn secondary" @click="getEncryptedData">
           获取解密
         </button>
-        <button class="btn secondary" @click="viewRawData">
-          查看原始存储
-        </button>
+        <button class="btn secondary" @click="viewRawData">查看原始存储</button>
       </div>
 
       <div v-if="encryptionResult" class="code">
@@ -279,10 +265,8 @@ async function testCustomEncryption() {
           border: 1px solid #ddd;
           border-radius: 4px;
         "
-      >
-      <button class="btn" @click="testKeyObfuscation">
-        测试混淆
-      </button>
+      />
+      <button class="btn" @click="testKeyObfuscation">测试混淆</button>
 
       <div v-if="obfuscationResult" class="code">
         <div><strong>原始键名:</strong> {{ obfuscationResult.original }}</div>
@@ -295,9 +279,7 @@ async function testCustomEncryption() {
 
     <div class="demo-section">
       <h4>自定义加密算法</h4>
-      <button class="btn" @click="testCustomEncryption">
-        自定义加密演示
-      </button>
+      <button class="btn" @click="testCustomEncryption">自定义加密演示</button>
 
       <div v-if="customEncryptionResult" class="code">
         <div>
@@ -320,7 +302,7 @@ async function testCustomEncryption() {
             v-model="securityConfig.encryption"
             type="checkbox"
             @change="updateSecurityConfig"
-          >
+          />
           启用数据加密
         </label>
         <label>
@@ -328,7 +310,7 @@ async function testCustomEncryption() {
             v-model="securityConfig.obfuscation"
             type="checkbox"
             @change="updateSecurityConfig"
-          >
+          />
           启用键名混淆
         </label>
       </div>
@@ -339,13 +321,9 @@ async function testCustomEncryption() {
       </div>
     </div>
 
-    <div v-if="loading" class="status info">
-      处理中...
-    </div>
+    <div v-if="loading" class="status info">处理中...</div>
 
-    <div v-if="error" class="status error">
-      错误: {{ error.message }}
-    </div>
+    <div v-if="error" class="status error">错误: {{ error.message }}</div>
   </div>
 </template>
 

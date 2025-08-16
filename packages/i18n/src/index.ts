@@ -125,7 +125,7 @@ export function createI18n(options?: I18nOptions): I18nInstance {
  * @returns I18n 实例
  */
 export async function createI18nWithBuiltinLocales(
-  options?: I18nOptions,
+  options?: I18nOptions
 ): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
   const enPkg = await import('./locales/en')
@@ -134,9 +134,9 @@ export async function createI18nWithBuiltinLocales(
 
   const loader = new StaticLoader()
   loader.registerPackages({
-    'en': enPkg.default,
+    en: enPkg.default,
     'zh-CN': zhCNPkg.default,
-    'ja': jaPkg.default,
+    ja: jaPkg.default,
   })
 
   const i18n = new I18n(options)
@@ -152,7 +152,7 @@ export async function createI18nWithBuiltinLocales(
  * @returns I18n 实例
  */
 export async function createSimpleI18n(
-  options?: I18nOptions,
+  options?: I18nOptions
 ): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
   const enPkg = await import('./locales/en')

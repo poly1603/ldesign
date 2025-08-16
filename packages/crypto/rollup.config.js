@@ -4,7 +4,7 @@ export default createRollupConfig({
   external: ['vue', 'crypto-js', 'node-forge'],
   globalName: 'LDesignCrypto',
   globals: {
-    'vue': 'Vue',
+    vue: 'Vue',
     'crypto-js': 'CryptoJS',
     'node-forge': 'forge',
   },

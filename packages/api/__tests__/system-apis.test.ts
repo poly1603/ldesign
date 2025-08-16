@@ -61,7 +61,7 @@ describe('systemApiPlugin', () => {
       await apiEngine.use(plugin)
 
       // 检查所有系统 API 方法是否已注册
-      Object.values(SYSTEM_API_METHODS).forEach((methodName) => {
+      Object.values(SYSTEM_API_METHODS).forEach(methodName => {
         expect(apiEngine.getMethod(methodName)).toBeDefined()
       })
     })
@@ -143,7 +143,7 @@ describe('systemApiPlugin', () => {
       expect(loginConfig.url).toBe('/v2/custom-login')
 
       const userInfoMethod = apiEngine.getMethod(
-        SYSTEM_API_METHODS.GET_USER_INFO,
+        SYSTEM_API_METHODS.GET_USER_INFO
       )
       expect(userInfoMethod!.config).toEqual({
         method: 'GET',
@@ -161,7 +161,7 @@ describe('systemApiPlugin', () => {
       await apiEngine.use(pluginWithCache)
 
       const userInfoMethod = apiEngine.getMethod(
-        SYSTEM_API_METHODS.GET_USER_INFO,
+        SYSTEM_API_METHODS.GET_USER_INFO
       )
       expect(userInfoMethod!.cache?.enabled).toBe(true)
       expect(userInfoMethod!.cache?.ttl).toBe(60000)
@@ -180,7 +180,7 @@ describe('systemApiPlugin', () => {
         SYSTEM_API_METHODS.CHANGE_PASSWORD,
       ]
 
-      noCacheMethods.forEach((methodName) => {
+      noCacheMethods.forEach(methodName => {
         const method = apiEngine.getMethod(methodName)
         expect(method!.cache?.enabled).toBe(false)
       })
@@ -225,7 +225,7 @@ describe('systemApiPlugin', () => {
       }
 
       expect(() => method.transform!(mockResponse)).toThrow(
-        'API request failed',
+        'API request failed'
       )
     })
   })

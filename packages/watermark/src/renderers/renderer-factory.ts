@@ -44,7 +44,7 @@ export class RendererFactory implements IRendererFactory {
     // 检查浏览器兼容性
     if (!this.isRendererSupported(mode)) {
       console.warn(
-        `Renderer '${mode}' is not supported, falling back to DOM renderer`,
+        `Renderer '${mode}' is not supported, falling back to DOM renderer`
       )
       return this.defaultRenderer
     }
@@ -55,7 +55,7 @@ export class RendererFactory implements IRendererFactory {
         `Renderer '${mode}' is not registered`,
         WatermarkErrorCode.RENDERER_NOT_FOUND,
         ErrorSeverity.HIGH,
-        { context: { mode } },
+        { context: { mode } }
       )
     }
 
@@ -117,9 +117,9 @@ export class RendererFactory implements IRendererFactory {
 
     // 如果需要复杂动画，推荐Canvas
     if (
-      config.animation
-      && config.animation.type !== 'none'
-      && config.animation.type !== 'fade'
+      config.animation &&
+      config.animation.type !== 'none' &&
+      config.animation.type !== 'fade'
     ) {
       if (this.isCanvasSupported()) {
         return 'canvas'
@@ -128,9 +128,9 @@ export class RendererFactory implements IRendererFactory {
 
     // 如果需要高质量图片渲染，推荐Canvas
     if (
-      typeof config.content === 'object'
-      && config.content?.image
-      && this.isCanvasSupported()
+      typeof config.content === 'object' &&
+      config.content?.image &&
+      this.isCanvasSupported()
     ) {
       return 'canvas'
     }
@@ -208,7 +208,7 @@ export class RendererFactory implements IRendererFactory {
         `Cannot set default renderer: '${name}' is not registered`,
         WatermarkErrorCode.RENDERER_NOT_FOUND,
         ErrorSeverity.MEDIUM,
-        { context: { name } },
+        { context: { name } }
       )
     }
 
@@ -240,8 +240,7 @@ export class RendererFactory implements IRendererFactory {
     try {
       const canvas = document.createElement('canvas')
       return !!(canvas.getContext && canvas.getContext('2d'))
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -249,12 +248,11 @@ export class RendererFactory implements IRendererFactory {
   private isSVGSupported(): boolean {
     try {
       return !!(
-        document.createElementNS
-        && document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        document.createElementNS &&
+        document.createElementNS('http://www.w3.org/2000/svg', 'svg')
           .createSVGRect
       )
-    }
-    catch {
+    } catch {
       return false
     }
   }

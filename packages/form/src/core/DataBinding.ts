@@ -11,8 +11,8 @@ import { debounce } from '../utils/throttle'
 export class DataBinding extends SimpleEventEmitter {
   private data: FormData = {}
   private watchers: Map<string, Set<Function>> = new Map()
-  private computedCache: Map<string, { value: any, dependencies: string[] }>
-    = new Map()
+  private computedCache: Map<string, { value: any; dependencies: string[] }> =
+    new Map()
 
   private debouncedNotifiers: Map<string, Function> = new Map()
 
@@ -36,7 +36,7 @@ export class DataBinding extends SimpleEventEmitter {
     this.data = deepClone(data)
 
     // 通知所有字段变化
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       if (oldData[key] !== data[key]) {
         this.notifyWatchers(key, data[key], oldData[key])
       }
@@ -94,7 +94,7 @@ export class DataBinding extends SimpleEventEmitter {
    */
   watch(
     path: string,
-    callback: (newValue: any, oldValue: any) => void,
+    callback: (newValue: any, oldValue: any) => void
   ): () => void {
     if (!this.watchers.has(path)) {
       this.watchers.set(path, new Set())
@@ -132,10 +132,10 @@ export class DataBinding extends SimpleEventEmitter {
   watchMultiple(
     paths: string[],
     callback: (
-      changes: Record<string, { newValue: any, oldValue: any }>
-    ) => void,
+      changes: Record<string, { newValue: any; oldValue: any }>
+    ) => void
   ): () => void {
-    const changes: Record<string, { newValue: any, oldValue: any }> = {}
+    const changes: Record<string, { newValue: any; oldValue: any }> = {}
     let pendingNotification = false
 
     const debouncedCallback = debounce(() => {
@@ -153,7 +153,7 @@ export class DataBinding extends SimpleEventEmitter {
           pendingNotification = true
           debouncedCallback()
         }
-      }),
+      })
     )
 
     return () => {
@@ -167,7 +167,7 @@ export class DataBinding extends SimpleEventEmitter {
   computed(
     name: string,
     dependencies: string[],
-    computeFn: (data: FormData) => any,
+    computeFn: (data: FormData) => any
   ): () => void {
     const compute = () => {
       const value = computeFn(this.data)
@@ -183,7 +183,7 @@ export class DataBinding extends SimpleEventEmitter {
       this.watch(dep, () => {
         const newValue = compute()
         this.emit('computedChange', name, newValue)
-      }),
+      })
     )
 
     return () => {
@@ -205,7 +205,7 @@ export class DataBinding extends SimpleEventEmitter {
    */
   batchUpdate(updates: Record<string, any>): void {
     const oldData = deepClone(this.data)
-    const changes: Record<string, { newValue: any, oldValue: any }> = {}
+    const changes: Record<string, { newValue: any; oldValue: any }> = {}
 
     Object.entries(updates).forEach(([path, value]) => {
       const oldValue = this.getValue(path)
@@ -232,11 +232,10 @@ export class DataBinding extends SimpleEventEmitter {
   private notifyWatchers(path: string, newValue: any, oldValue: any): void {
     const watchers = this.watchers.get(path)
     if (watchers) {
-      watchers.forEach((callback) => {
+      watchers.forEach(callback => {
         try {
           callback(newValue, oldValue)
-        }
-        catch (error) {
+        } catch (error) {
           console.error(`Error in watcher for path "${path}":`, error)
         }
       })
@@ -252,7 +251,7 @@ export class DataBinding extends SimpleEventEmitter {
   private notifyParentWatchers(
     path: string,
     newValue: any,
-    oldValue: any,
+    oldValue: any
   ): void {
     const parts = path.split('.')
     for (let i = parts.length - 1; i > 0; i--) {
@@ -260,14 +259,13 @@ export class DataBinding extends SimpleEventEmitter {
       const parentWatchers = this.watchers.get(parentPath)
       if (parentWatchers) {
         const parentNewValue = this.getValue(parentPath)
-        parentWatchers.forEach((callback) => {
+        parentWatchers.forEach(callback => {
           try {
             callback(parentNewValue, parentNewValue) // 父对象引用相同，但内容已变化
-          }
-          catch (error) {
+          } catch (error) {
             console.error(
               `Error in parent watcher for path "${parentPath}":`,
-              error,
+              error
             )
           }
         })
@@ -293,7 +291,7 @@ export class DataBinding extends SimpleEventEmitter {
     const oldData = deepClone(this.data)
     this.data = { ...this.data, ...data }
 
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       if (oldData[key] !== data[key]) {
         this.notifyWatchers(key, data[key], oldData[key])
       }
@@ -337,7 +335,7 @@ export class DataBinding extends SimpleEventEmitter {
       dataSize: JSON.stringify(this.data).length,
       watcherCount: Array.from(this.watchers.values()).reduce(
         (sum, set) => sum + set.size,
-        0,
+        0
       ),
       computedCount: this.computedCache.size,
       watchedPaths: this.watchers.size,

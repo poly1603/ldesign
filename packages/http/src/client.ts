@@ -80,7 +80,7 @@ export class HttpClientImpl implements HttpClient {
     if (mergedConfig.retry?.retries && mergedConfig.retry.retries > 0) {
       return this.retryManager.executeWithRetry(
         () => this.executeRequest<T>(mergedConfig),
-        mergedConfig,
+        mergedConfig
       )
     }
 
@@ -91,7 +91,7 @@ export class HttpClientImpl implements HttpClient {
    * 执行单次请求
    */
   private async executeRequest<T = any>(
-    config: RequestConfig,
+    config: RequestConfig
   ): Promise<ResponseData<T>> {
     // 检查缓存
     const cachedResponse = await this.cacheManager.get<T>(config)
@@ -102,7 +102,7 @@ export class HttpClientImpl implements HttpClient {
     // 使用并发控制执行请求
     return this.concurrencyManager.execute(
       () => this.performRequest<T>(config),
-      config,
+      config
     )
   }
 
@@ -110,7 +110,7 @@ export class HttpClientImpl implements HttpClient {
    * 执行实际的请求
    */
   private async performRequest<T = any>(
-    config: RequestConfig,
+    config: RequestConfig
   ): Promise<ResponseData<T>> {
     try {
       // 执行请求拦截器
@@ -126,11 +126,10 @@ export class HttpClientImpl implements HttpClient {
       await this.cacheManager.set(processedConfig, response)
 
       return response
-    }
-    catch (error) {
+    } catch (error) {
       // 执行错误拦截器
       const processedError = await this.processErrorInterceptors(
-        error as HttpError,
+        error as HttpError
       )
       throw processedError
     }
@@ -141,7 +140,7 @@ export class HttpClientImpl implements HttpClient {
    */
   get<T = any>(
     url: string,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -156,7 +155,7 @@ export class HttpClientImpl implements HttpClient {
   post<T = any>(
     url: string,
     data?: any,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -172,7 +171,7 @@ export class HttpClientImpl implements HttpClient {
   put<T = any>(
     url: string,
     data?: any,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -187,7 +186,7 @@ export class HttpClientImpl implements HttpClient {
    */
   delete<T = any>(
     url: string,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -202,7 +201,7 @@ export class HttpClientImpl implements HttpClient {
   patch<T = any>(
     url: string,
     data?: any,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -217,7 +216,7 @@ export class HttpClientImpl implements HttpClient {
    */
   head<T = any>(
     url: string,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -231,7 +230,7 @@ export class HttpClientImpl implements HttpClient {
    */
   options<T = any>(
     url: string,
-    config: RequestConfig = {},
+    config: RequestConfig = {}
   ): Promise<ResponseData<T>> {
     return this.request<T>({
       ...config,
@@ -293,7 +292,7 @@ export class HttpClientImpl implements HttpClient {
    * 处理请求拦截器
    */
   private async processRequestInterceptors(
-    config: RequestConfig,
+    config: RequestConfig
   ): Promise<RequestConfig> {
     let processedConfig = config
 
@@ -304,8 +303,7 @@ export class HttpClientImpl implements HttpClient {
     for (const interceptor of interceptors) {
       try {
         processedConfig = await interceptor.fulfilled(processedConfig)
-      }
-      catch (error) {
+      } catch (error) {
         if (interceptor.rejected) {
           throw await interceptor.rejected(error as HttpError)
         }
@@ -320,7 +318,7 @@ export class HttpClientImpl implements HttpClient {
    * 处理响应拦截器
    */
   private async processResponseInterceptors<T>(
-    response: ResponseData<T>,
+    response: ResponseData<T>
   ): Promise<ResponseData<T>> {
     let processedResponse = response
 
@@ -331,8 +329,7 @@ export class HttpClientImpl implements HttpClient {
     for (const interceptor of interceptors) {
       try {
         processedResponse = await interceptor.fulfilled(processedResponse)
-      }
-      catch (error) {
+      } catch (error) {
         if (interceptor.rejected) {
           throw await interceptor.rejected(error as HttpError)
         }
@@ -356,8 +353,7 @@ export class HttpClientImpl implements HttpClient {
     for (const interceptor of interceptors) {
       try {
         processedError = await interceptor.fulfilled(processedError)
-      }
-      catch (err) {
+      } catch (err) {
         processedError = err as HttpError
       }
     }

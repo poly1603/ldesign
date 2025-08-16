@@ -12,13 +12,7 @@ export const config: TemplateConfig = {
   author: 'LDesign Team',
   tags: ['现代', '渐变', '动画', '创新'],
   preview: '/previews/login-desktop-modern.png',
-  features: [
-    '全屏渐变背景',
-    '浮动卡片设计',
-    '动画效果',
-    '现代化图标',
-    '响应式布局',
-  ],
+  features: ['全屏渐变背景', '浮动卡片设计', '动画效果', '现代化图标', '响应式布局'],
   props: {
     title: {
       type: 'string',

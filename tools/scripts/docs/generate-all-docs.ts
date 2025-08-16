@@ -46,8 +46,7 @@ class BatchDocumentationGenerator {
       this.printSummary()
 
       console.log(chalk.green('\n🎉 批量文档生成完成!'))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('❌ 批量文档生成失败:'), error)
       throw error
     }
@@ -87,8 +86,7 @@ class BatchDocumentationGenerator {
       }
 
       console.log(chalk.green(`✅ 发现 ${this.packages.length} 个包`))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('发现包失败:'), error)
       throw error
     }
@@ -123,8 +121,7 @@ class BatchDocumentationGenerator {
 
         this.results.set(pkg.name, true)
         console.log(chalk.green(`✅ ${pkg.name} 文档生成成功`))
-      }
-      catch (error) {
+      } catch (error) {
         this.results.set(pkg.name, false)
         console.error(chalk.red(`❌ ${pkg.name} 文档生成失败:`), error)
       }
@@ -155,8 +152,7 @@ class BatchDocumentationGenerator {
       await fs.writeFile(join(docsDir, 'api-index.md'), apiIndexContent)
 
       console.log(chalk.green('✅ 总览文档生成完成'))
-    }
-    catch (error) {
+    } catch (error) {
       console.error(chalk.red('总览文档生成失败:'), error)
     }
   }
@@ -166,10 +162,10 @@ class BatchDocumentationGenerator {
    */
   private generatePackageListDoc(): string {
     const successfulPackages = this.packages.filter(pkg =>
-      this.results.get(pkg.name),
+      this.results.get(pkg.name)
     )
     const failedPackages = this.packages.filter(
-      pkg => !this.results.get(pkg.name),
+      pkg => !this.results.get(pkg.name)
     )
 
     return `# LDesign 包列表
@@ -181,7 +177,7 @@ LDesign 是一个模块化的前端工具库，包含以下包：
 ## 可用包
 
 ${successfulPackages
-  .map((pkg) => {
+  .map(pkg => {
     const packageJsonPath = join(pkg.path, 'package.json')
     let description = ''
     let version = ''
@@ -190,8 +186,7 @@ ${successfulPackages
       const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
       description = packageJson.description || '暂无描述'
       version = packageJson.version || '0.0.0'
-    }
-    catch {
+    } catch {
       description = '暂无描述'
       version = '0.0.0'
     }
@@ -241,7 +236,7 @@ console.log(color) // { r: 255, g: 0, b: 0 }
 | 包名 | 状态 | 文档 | 测试覆盖率 |
 |------|------|------|------------|
 ${this.packages
-  .map((pkg) => {
+  .map(pkg => {
     const status = this.results.get(pkg.name) ? '✅ 稳定' : '🚧 开发中'
     const docs = pkg.hasExistingDocs ? '✅ 完整' : '📝 进行中'
     return `| @ldesign/${pkg.name} | ${status} | ${docs} | - |`
@@ -286,7 +281,7 @@ ${this.packages
 
 - [完整 API 文档](./packages/${pkg.name}/docs/api/)
 - [示例代码](./packages/${pkg.name}/docs/examples/)
-`,
+`
   )
   .join('\n')}
 
@@ -342,7 +337,7 @@ ${this.packages
 
     const totalPackages = this.packages.length
     const successfulPackages = Array.from(this.results.values()).filter(
-      Boolean,
+      Boolean
     ).length
     const failedPackages = totalPackages - successfulPackages
 
@@ -350,7 +345,7 @@ ${this.packages
     console.log(`成功: ${successfulPackages}`)
     console.log(`失败: ${failedPackages}`)
     console.log(
-      `成功率: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%`,
+      `成功率: ${((successfulPackages / totalPackages) * 100).toFixed(1)}%`
     )
 
     if (failedPackages > 0) {
@@ -371,8 +366,7 @@ async function main() {
   try {
     await generator.generateAllDocs()
     process.exit(0)
-  }
-  catch (error) {
+  } catch (error) {
     console.error(chalk.red('批量文档生成失败:'), error)
     process.exit(1)
   }

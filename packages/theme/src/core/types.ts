@@ -64,7 +64,13 @@ export interface TimeRange {
 export interface DecorationPosition {
   type: 'absolute' | 'relative' | 'fixed' | 'sticky'
   position: Position
-  anchor?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
+  anchor?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-right'
+    | 'center'
   offset?: Position
 }
 

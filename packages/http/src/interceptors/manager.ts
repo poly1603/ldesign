@@ -50,7 +50,7 @@ export class InterceptorManagerImpl<T> implements InterceptorManager<T> {
    * @param fn 遍历函数
    */
   forEach(fn: (interceptor: InterceptorItem<T>) => void): void {
-    this.interceptors.forEach((interceptor) => {
+    this.interceptors.forEach(interceptor => {
       if (interceptor !== null) {
         fn(interceptor)
       }
@@ -62,7 +62,7 @@ export class InterceptorManagerImpl<T> implements InterceptorManager<T> {
    */
   getInterceptors(): Array<InterceptorItem<T>> {
     return this.interceptors.filter(
-      (interceptor): interceptor is InterceptorItem<T> => interceptor !== null,
+      (interceptor): interceptor is InterceptorItem<T> => interceptor !== null
     )
   }
 }

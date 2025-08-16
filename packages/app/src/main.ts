@@ -43,7 +43,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         routes,
         mode: 'hash',
         base: '/',
-      }),
+      })
     )
 
     // 集成 i18n 插件
@@ -53,7 +53,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         name: 'i18n',
         version: '1.0.0',
         createI18n: createAppI18n,
-      }),
+      })
     )
 
     // 集成 Template 插件
@@ -62,7 +62,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         name: 'template',
         version: '1.0.0',
         defaultDevice: 'desktop',
-      }),
+      })
     )
 
     // 集成 HTTP 插件
@@ -74,7 +74,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
           baseURL: 'https://jsonplaceholder.typicode.com',
           timeout: 10000,
         },
-      }),
+      })
     )
 
     // 注入Engine到全局属性
@@ -125,7 +125,7 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
         createStoreProviderPlugin({
           enableDevtools: defaultConfig.debug,
           enablePersistence: true,
-        }),
+        })
       )
     }
 
@@ -133,15 +133,14 @@ async function createLDesignApp(config?: Partial<AppConfig>) {
 
     console.log('✅ LDesign 应用启动成功!')
     return { engine, config: defaultConfig }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('❌ 应用启动失败:', error)
     throw error
   }
 }
 
 // 启动应用
-createLDesignApp().catch((error) => {
+createLDesignApp().catch(error => {
   console.error('❌ 应用启动失败:', error)
 })
 

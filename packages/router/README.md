@@ -526,24 +526,24 @@ const routes = [
     deviceComponents: {
       mobile: () => import('@/views/mobile/Home.vue'),
       tablet: () => import('@/views/tablet/Home.vue'),
-      desktop: () => import('@/views/desktop/Home.vue')
-    }
+      desktop: () => import('@/views/desktop/Home.vue'),
+    },
   },
   {
     path: '/product/:id',
     // 支持回退机制：移动端使用专用组件，其他设备使用通用组件
     component: () => import('@/views/Product.vue'),
     deviceComponents: {
-      mobile: () => import('@/views/mobile/Product.vue')
-    }
-  }
+      mobile: () => import('@/views/mobile/Product.vue'),
+    },
+  },
 ]
 
 // 安装设备路由插件
 const devicePlugin = createDeviceRouterPlugin({
   enableDeviceDetection: true,
   enableDeviceGuard: true,
-  enableTemplateRoutes: true
+  enableTemplateRoutes: true,
 })
 
 devicePlugin.install(router)
@@ -562,16 +562,16 @@ const routes = [
       // 限制只能在桌面设备访问
       supportedDevices: ['desktop'],
       unsupportedMessage: '管理后台仅支持桌面设备访问',
-      unsupportedRedirect: '/admin-guide' // 可选：自定义重定向
-    }
+      unsupportedRedirect: '/admin-guide', // 可选：自定义重定向
+    },
   },
   {
     path: '/mobile-app',
     component: MobileApp,
     meta: {
       supportedDevices: ['mobile'],
-      unsupportedMessage: '此功能仅在移动设备上可用'
-    }
+      unsupportedMessage: '此功能仅在移动设备上可用',
+    },
   },
   {
     path: '/editor',
@@ -579,9 +579,9 @@ const routes = [
     meta: {
       // 支持多种设备
       supportedDevices: ['desktop', 'tablet'],
-      unsupportedMessage: '编辑器需要较大的屏幕空间'
-    }
-  }
+      unsupportedMessage: '编辑器需要较大的屏幕空间',
+    },
+  },
 ]
 ```
 
@@ -594,20 +594,20 @@ const routes = [
   {
     path: '/login',
     template: 'login',
-    templateCategory: 'auth'
+    templateCategory: 'auth',
   },
   {
     path: '/register',
     template: 'register',
-    templateCategory: 'auth'
+    templateCategory: 'auth',
   },
   {
     path: '/dashboard',
     meta: {
       template: 'dashboard',
-      templateCategory: 'admin'
-    }
-  }
+      templateCategory: 'admin',
+    },
+  },
 ]
 
 // 配置模板系统
@@ -617,8 +617,8 @@ const devicePlugin = createDeviceRouterPlugin({
     defaultCategory: 'pages',
     templateRoot: 'src/templates',
     enableCache: true,
-    timeout: 10000
-  }
+    timeout: 10000,
+  },
 })
 ```
 
@@ -638,24 +638,18 @@ const {
   supportedDevices,
   isRouteSupported,
   goToUnsupportedPage,
-  onDeviceChange
+  onDeviceChange,
 } = useDeviceRoute()
 
 // 设备组件解析功能
-const {
-  resolvedComponent,
-  resolution,
-  loading,
-  error,
-  hasDeviceComponent
-} = useDeviceComponent()
+const { resolvedComponent, resolution, loading, error, hasDeviceComponent } = useDeviceComponent()
 
 // 检查特定路由是否支持
 const canAccessAdmin = isRouteSupported('/admin')
 const canAccessEditor = isRouteSupported('/editor')
 
 // 监听设备变化
-const unwatch = onDeviceChange((device) => {
+const unwatch = onDeviceChange(device => {
   console.log(`设备切换到: ${device}`)
   // 可以在这里执行设备切换后的逻辑
 })
@@ -686,9 +680,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 不支持提示 -->
-    <button v-if="!isCurrentRouteSupported" @click="goToUnsupportedPage()">
-      查看不支持说明
-    </button>
+    <button v-if="!isCurrentRouteSupported" @click="goToUnsupportedPage()">查看不支持说明</button>
   </div>
 </template>
 ```
@@ -749,9 +741,9 @@ const devicePlugin = createDeviceRouterPlugin({
       // 自定义不支持设备处理逻辑
       return {
         path: '/device-guide',
-        query: { device, target: route.path }
+        query: { device, target: route.path },
       }
-    }
+    },
   },
 
   // 模板配置
@@ -759,8 +751,8 @@ const devicePlugin = createDeviceRouterPlugin({
     defaultCategory: 'pages',
     templateRoot: 'src/templates',
     enableCache: true,
-    timeout: 10000
-  }
+    timeout: 10000,
+  },
 })
 ```
 

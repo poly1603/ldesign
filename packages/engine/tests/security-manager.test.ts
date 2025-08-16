@@ -32,8 +32,8 @@ describe('securityManager', () => {
 
   describe('xSS防护', () => {
     it('应该检测和移除脚本标签', () => {
-      const maliciousHTML
-        = '<p>Hello</p><script>alert("xss")</script><p>World</p>'
+      const maliciousHTML =
+        '<p>Hello</p><script>alert("xss")</script><p>World</p>'
       const result = securityManager.sanitizeHTML(maliciousHTML)
 
       expect(result.safe).toBe(false)
@@ -60,8 +60,8 @@ describe('securityManager', () => {
     })
 
     it('应该检测和移除可疑的data协议', () => {
-      const maliciousHTML
-        = '<object data="data:text/html,<script>alert(\'xss\')</script>"></object>'
+      const maliciousHTML =
+        '<object data="data:text/html,<script>alert(\'xss\')</script>"></object>'
       const result = securityManager.sanitizeHTML(maliciousHTML)
 
       expect(result.safe).toBe(false)
@@ -69,8 +69,8 @@ describe('securityManager', () => {
     })
 
     it('应该允许安全的HTML标签', () => {
-      const safeHTML
-        = '<p>Hello <strong>world</strong>!</p><br><em>Emphasis</em>'
+      const safeHTML =
+        '<p>Hello <strong>world</strong>!</p><br><em>Emphasis</em>'
       const result = securityManager.sanitizeHTML(safeHTML)
 
       expect(result.safe).toBe(true)
@@ -79,8 +79,8 @@ describe('securityManager', () => {
     })
 
     it('应该移除不允许的标签', () => {
-      const htmlWithDisallowedTags
-        = '<p>Safe</p><iframe src="evil.com"></iframe><p>Also safe</p>'
+      const htmlWithDisallowedTags =
+        '<p>Safe</p><iframe src="evil.com"></iframe><p>Also safe</p>'
       const result = securityManager.sanitizeHTML(htmlWithDisallowedTags)
 
       expect(result.safe).toBe(false)
@@ -89,8 +89,8 @@ describe('securityManager', () => {
     })
 
     it('应该移除不允许的属性', () => {
-      const htmlWithDisallowedAttrs
-        = '<p class="test" style="color: red;">Text</p>'
+      const htmlWithDisallowedAttrs =
+        '<p class="test" style="color: red;">Text</p>'
       const result = securityManager.sanitizeHTML(htmlWithDisallowedAttrs)
 
       expect(result.safe).toBe(false)
@@ -110,8 +110,8 @@ describe('securityManager', () => {
         },
       })
 
-      const html
-        = '<p>Text</p><a href="https://example.com" title="Example">Link</a><img src="image.jpg" alt="Image">'
+      const html =
+        '<p>Text</p><a href="https://example.com" title="Example">Link</a><img src="image.jpg" alt="Image">'
       const result = customSecurityManager.sanitizeHTML(html)
 
       expect(result.safe).toBe(true)
@@ -138,40 +138,40 @@ describe('securityManager', () => {
       expect(securityManager.validateInput('Hello world')).toBe(true)
       expect(securityManager.validateInput('Safe text 123')).toBe(true)
       expect(
-        securityManager.validateInput('<script>alert("xss")</script>'),
+        securityManager.validateInput('<script>alert("xss")</script>')
       ).toBe(false)
       expect(securityManager.validateInput('javascript:alert("xss")')).toBe(
-        false,
+        false
       )
     })
 
     it('应该验证HTML输入', () => {
       expect(securityManager.validateInput('<p>Safe HTML</p>', 'html')).toBe(
-        true,
+        true
       )
       expect(
-        securityManager.validateInput('<script>alert("xss")</script>', 'html'),
+        securityManager.validateInput('<script>alert("xss")</script>', 'html')
       ).toBe(false)
       expect(
         securityManager.validateInput(
           '<div onclick="alert()">Bad</div>',
-          'html',
-        ),
+          'html'
+        )
       ).toBe(false)
     })
 
     it('应该验证URL输入', () => {
       expect(securityManager.validateInput('https://example.com', 'url')).toBe(
-        true,
+        true
       )
       expect(securityManager.validateInput('http://example.com', 'url')).toBe(
-        true,
+        true
       )
       expect(securityManager.validateInput('ftp://example.com', 'url')).toBe(
-        true,
+        true
       )
       expect(
-        securityManager.validateInput('javascript:alert("xss")', 'url'),
+        securityManager.validateInput('javascript:alert("xss")', 'url')
       ).toBe(false)
       expect(securityManager.validateInput('not-a-url', 'url')).toBe(false)
     })
@@ -220,7 +220,7 @@ describe('securityManager', () => {
       })
 
       expect(() => disabledCSRFManager.generateCSRFToken()).toThrow(
-        'CSRF protection is disabled',
+        'CSRF protection is disabled'
       )
     })
 
@@ -239,8 +239,8 @@ describe('securityManager', () => {
       const cspHeader = securityManager.generateCSPHeader()
 
       expect(cspHeader).toContain('Content-Security-Policy:')
-      expect(cspHeader).toContain('default-src \'self\'')
-      expect(cspHeader).toContain('script-src \'self\' \'unsafe-inline\'')
+      expect(cspHeader).toContain("default-src 'self'")
+      expect(cspHeader).toContain("script-src 'self' 'unsafe-inline'")
     })
 
     it('应该生成仅报告模式的CSP头', () => {
@@ -277,7 +277,7 @@ describe('securityManager', () => {
         expect.objectContaining({
           type: SecurityEventType.CSP_VIOLATION,
           details: violation,
-        }),
+        })
       )
     })
   })
@@ -293,7 +293,7 @@ describe('securityManager', () => {
       expect(headers).toHaveProperty('X-XSS-Protection', '1; mode=block')
       expect(headers).toHaveProperty(
         'Referrer-Policy',
-        'strict-origin-when-cross-origin',
+        'strict-origin-when-cross-origin'
       )
     })
 
@@ -319,7 +319,7 @@ describe('securityManager', () => {
 
       const headers = hstsManager.getSecurityHeaders()
       expect(headers['Strict-Transport-Security']).toBe(
-        'max-age=31536000; includeSubDomains; preload',
+        'max-age=31536000; includeSubDomains; preload'
       )
     })
   })
@@ -341,11 +341,11 @@ describe('securityManager', () => {
       expect(callback).toHaveBeenCalledWith(event)
       expect(mockEngine.logger?.warn).toHaveBeenCalledWith(
         'Security event detected',
-        event,
+        event
       )
       expect(mockEngine.events?.emit).toHaveBeenCalledWith(
         'security:event',
-        event,
+        event
       )
     })
 
@@ -366,7 +366,7 @@ describe('securityManager', () => {
       expect(() => securityManager.reportSecurityEvent(event)).not.toThrow()
       expect(mockEngine.logger?.error).toHaveBeenCalledWith(
         'Error in security event callback',
-        expect.any(Error),
+        expect.any(Error)
       )
     })
   })

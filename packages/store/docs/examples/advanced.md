@@ -36,7 +36,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
       debounceTime: 1000,
       maxRetries: 3,
       version: 1,
-      ...options
+      ...options,
     }
   }
 
@@ -59,8 +59,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
   private async restoreState(store: Store, key: string) {
     try {
       const stored = this.options.storage?.getItem(key)
-      if (!stored)
-        return
+      if (!stored) return
 
       let data = JSON.parse(stored)
 
@@ -83,8 +82,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
       const filteredData = this.filterData(data.state, 'restore')
 
       store.$hydrate(filteredData)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('恢复状态失败:', error)
     }
   }
@@ -113,7 +111,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
       let data = {
         state: filteredState,
         version: this.options.version,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       // 压缩
@@ -127,8 +125,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
       }
 
       this.options.storage?.setItem(key, JSON.stringify(data))
-    }
-    catch (error) {
+    } catch (error) {
       console.error('保存状态失败:', error)
 
       // 重试机制
@@ -141,8 +138,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
   }
 
   private filterData(data: any, operation: 'save' | 'restore'): any {
-    if (!data || typeof data !== 'object')
-      return data
+    if (!data || typeof data !== 'object') return data
 
     const { include, exclude } = this.options
     const result = { ...data }
@@ -150,7 +146,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
     if (include && include.length > 0) {
       // 只包含指定字段
       const filtered = {}
-      include.forEach((key) => {
+      include.forEach(key => {
         if (key in result) {
           filtered[key] = result[key]
         }
@@ -160,7 +156,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
 
     if (exclude && exclude.length > 0) {
       // 排除指定字段
-      exclude.forEach((key) => {
+      exclude.forEach(key => {
         delete result[key]
       })
     }
@@ -170,8 +166,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
 
   private migrateData(data: any): any {
     const { migrations } = this.options
-    if (!migrations)
-      return data
+    if (!migrations) return data
 
     let currentVersion = data.version || 1
     const targetVersion = this.options.version!
@@ -181,8 +176,7 @@ export class AdvancedPersistPlugin implements StorePlugin {
       if (migration) {
         data.state = migration(data.state)
         currentVersion++
-      }
-      else {
+      } else {
         break
       }
     }
@@ -227,20 +221,20 @@ const persistPlugin = new AdvancedPersistPlugin({
   exclude: ['temporaryData', 'cache'],
   version: 2,
   migrations: {
-    2: (data) => {
+    2: data => {
       // 从版本 1 迁移到版本 2
       return {
         ...data,
-        newField: 'default value'
+        newField: 'default value',
       }
-    }
-  }
+    },
+  },
 })
 
 class MyStore extends BaseStore {
   constructor(id: string) {
     super(id, {
-      plugins: [persistPlugin]
+      plugins: [persistPlugin],
     })
   }
 }
@@ -261,7 +255,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
       enableActionTiming: true,
       enableStateDiff: true,
       enableMemoryTracking: true,
-      ...options
+      ...options,
     }
   }
 
@@ -298,11 +292,11 @@ export class PerformanceMonitorPlugin implements StorePlugin {
           duration: endTime - startTime,
           memoryDelta: endMemory - startMemory,
           timestamp: Date.now(),
-          args: this.serializeArgs(args)
+          args: this.serializeArgs(args),
         })
       })
 
-      onError((error) => {
+      onError(error => {
         const endTime = performance.now()
 
         this.addMetric(store.$id, {
@@ -311,7 +305,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
           duration: endTime - startTime,
           error: error.message,
           timestamp: Date.now(),
-          args: this.serializeArgs(args)
+          args: this.serializeArgs(args),
         })
       })
     })
@@ -329,7 +323,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
           name: mutation.type,
           diff,
           timestamp: Date.now(),
-          stateSize: this.calculateStateSize(state)
+          stateSize: this.calculateStateSize(state),
         })
       }
 
@@ -345,7 +339,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
         type: 'memory-snapshot',
         name: 'memory-usage',
         memoryUsage,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }, 10000) // 每 10 秒记录一次
   }
@@ -376,11 +370,11 @@ export class PerformanceMonitorPlugin implements StorePlugin {
       totalMetrics: metrics.length,
       timeRange: {
         start: Math.min(...metrics.map(m => m.timestamp)),
-        end: Math.max(...metrics.map(m => m.timestamp))
+        end: Math.max(...metrics.map(m => m.timestamp)),
       },
       actions: this.analyzeActionMetrics(actionMetrics),
       stateChanges: this.analyzeStateChangeMetrics(stateChangeMetrics),
-      memory: this.analyzeMemoryMetrics(memoryMetrics)
+      memory: this.analyzeMemoryMetrics(memoryMetrics),
     }
   }
 
@@ -402,7 +396,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
         avgDuration: durations.reduce((sum, d) => sum + d, 0) / durations.length,
         minDuration: Math.min(...durations),
         maxDuration: Math.max(...durations),
-        totalDuration: durations.reduce((sum, d) => sum + d, 0)
+        totalDuration: durations.reduce((sum, d) => sum + d, 0),
       }
     })
   }
@@ -411,7 +405,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
     return {
       totalChanges: metrics.length,
       avgStateSize: metrics.reduce((sum, m) => sum + (m.stateSize || 0), 0) / metrics.length,
-      mostChangedFields: this.getMostChangedFields(metrics)
+      mostChangedFields: this.getMostChangedFields(metrics),
     }
   }
 
@@ -422,7 +416,7 @@ export class PerformanceMonitorPlugin implements StorePlugin {
       avgMemoryUsage: memoryUsages.reduce((sum, m) => sum + m, 0) / memoryUsages.length,
       minMemoryUsage: Math.min(...memoryUsages),
       maxMemoryUsage: Math.max(...memoryUsages),
-      memoryTrend: this.calculateMemoryTrend(memoryUsages)
+      memoryTrend: this.calculateMemoryTrend(memoryUsages),
     }
   }
 
@@ -446,11 +440,10 @@ export class PerformanceMonitorPlugin implements StorePlugin {
     for (const key in newState) {
       if (!(key in oldState)) {
         added[key] = newState[key]
-      }
-      else if (oldState[key] !== newState[key]) {
+      } else if (oldState[key] !== newState[key]) {
         changed[key] = {
           from: oldState[key],
-          to: newState[key]
+          to: newState[key],
         }
       }
     }
@@ -469,21 +462,21 @@ export class PerformanceMonitorPlugin implements StorePlugin {
   }
 
   private serializeArgs(args: any[]): any {
-    return args.map((arg) => {
-      if (typeof arg === 'function')
-        return '[Function]'
-      if (arg instanceof Error)
-        return arg.message
+    return args.map(arg => {
+      if (typeof arg === 'function') return '[Function]'
+      if (arg instanceof Error) return arg.message
       return arg
     })
   }
 
-  private getMostChangedFields(metrics: PerformanceMetric[]): Array<{ field: string, count: number }> {
+  private getMostChangedFields(
+    metrics: PerformanceMetric[]
+  ): Array<{ field: string; count: number }> {
     const fieldCounts = {}
 
-    metrics.forEach((metric) => {
+    metrics.forEach(metric => {
       if (metric.diff) {
-        Object.keys(metric.diff.changed).forEach((field) => {
+        Object.keys(metric.diff.changed).forEach(field => {
           fieldCounts[field] = (fieldCounts[field] || 0) + 1
         })
       }
@@ -496,17 +489,14 @@ export class PerformanceMonitorPlugin implements StorePlugin {
   }
 
   private calculateMemoryTrend(memoryUsages: number[]): 'increasing' | 'decreasing' | 'stable' {
-    if (memoryUsages.length < 2)
-      return 'stable'
+    if (memoryUsages.length < 2) return 'stable'
 
     const first = memoryUsages[0]
     const last = memoryUsages[memoryUsages.length - 1]
     const threshold = first * 0.1 // 10% 阈值
 
-    if (last > first + threshold)
-      return 'increasing'
-    if (last < first - threshold)
-      return 'decreasing'
+    if (last > first + threshold) return 'increasing'
+    if (last < first - threshold) return 'decreasing'
     return 'stable'
   }
 
@@ -538,7 +528,7 @@ interface PerformanceMetric {
 interface PerformanceReport {
   storeId: string
   totalMetrics: number
-  timeRange: { start: number, end: number }
+  timeRange: { start: number; end: number }
   actions: any[]
   stateChanges: any
   memory: any
@@ -620,7 +610,7 @@ export function LogExecution(options: LogOptions = {}) {
         class: className,
         method: propertyKey,
         args: options.logArgs ? args : '[hidden]',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
 
       if (options.logBefore) {
@@ -635,20 +625,19 @@ export function LogExecution(options: LogOptions = {}) {
           console.log(`[${className}] ${propertyKey} 执行成功 (${duration.toFixed(2)}ms):`, {
             ...logContext,
             duration,
-            result: options.logResult ? result : '[hidden]'
+            result: options.logResult ? result : '[hidden]',
           })
         }
 
         return result
-      }
-      catch (error) {
+      } catch (error) {
         const duration = performance.now() - startTime
 
         if (options.logError) {
           console.error(`[${className}] ${propertyKey} 执行失败 (${duration.toFixed(2)}ms):`, {
             ...logContext,
             duration,
-            error: error instanceof Error ? error.message : error
+            error: error instanceof Error ? error.message : error,
           })
         }
 
@@ -675,7 +664,7 @@ class UserStore extends BaseStore {
     logAfter: true,
     logError: true,
     logArgs: false,
-    logResult: false
+    logResult: false,
   })
   @AsyncAction()
   async fetchUsers() {
@@ -695,7 +684,7 @@ export function Retry(options: RetryOptions = {}) {
       maxAttempts = 3,
       delay = 1000,
       backoff = 'exponential',
-      retryCondition = error => true
+      retryCondition = error => true,
     } = options
 
     descriptor.value = async function (...args: any[]) {
@@ -704,8 +693,7 @@ export function Retry(options: RetryOptions = {}) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           return await originalMethod.apply(this, args)
-        }
-        catch (error) {
+        } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error))
 
           if (attempt === maxAttempts || !retryCondition(lastError)) {
@@ -713,7 +701,10 @@ export function Retry(options: RetryOptions = {}) {
           }
 
           const waitTime = calculateDelay(delay, attempt, backoff)
-          console.warn(`[Retry] ${propertyKey} 第 ${attempt} 次尝试失败，${waitTime}ms 后重试:`, lastError.message)
+          console.warn(
+            `[Retry] ${propertyKey} 第 ${attempt} 次尝试失败，${waitTime}ms 后重试:`,
+            lastError.message
+          )
 
           await new Promise(resolve => setTimeout(resolve, waitTime))
         }
@@ -726,7 +717,11 @@ export function Retry(options: RetryOptions = {}) {
   }
 }
 
-function calculateDelay(baseDelay: number, attempt: number, backoff: 'linear' | 'exponential'): number {
+function calculateDelay(
+  baseDelay: number,
+  attempt: number,
+  backoff: 'linear' | 'exponential'
+): number {
   switch (backoff) {
     case 'linear':
       return baseDelay * attempt
@@ -750,7 +745,7 @@ class ApiStore extends BaseStore {
     maxAttempts: 3,
     delay: 1000,
     backoff: 'exponential',
-    retryCondition: error => error.message.includes('network')
+    retryCondition: error => error.message.includes('network'),
   })
   @AsyncAction()
   async fetchData() {
@@ -824,7 +819,7 @@ export class StateMachineStore extends BaseStore {
       to: nextState,
       event,
       payload,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // 限制历史记录数量
@@ -845,10 +840,8 @@ export class StateMachineStore extends BaseStore {
       const currentStateConfig = this.stateMachine.getState(this.currentState)
       const transition = currentStateConfig.transitions[event]
 
-      if (!transition)
-        return false
-      if (!transition.guard)
-        return true
+      if (!transition) return false
+      if (!transition.guard) return true
 
       return transition.guard(this.context)
     }
@@ -921,13 +914,13 @@ const orderStateMachine = {
           action: (context, payload) => {
             context.paymentId = payload.paymentId
             context.paidAt = Date.now()
-          }
+          },
         },
         cancel: {
           target: 'cancelled',
-          guard: context => !context.paymentId
-        }
-      }
+          guard: context => !context.paymentId,
+        },
+      },
     },
     paid: {
       transitions: {
@@ -936,34 +929,34 @@ const orderStateMachine = {
           action: (context, payload) => {
             context.trackingNumber = payload.trackingNumber
             context.shippedAt = Date.now()
-          }
+          },
         },
         refund: {
           target: 'refunded',
-          guard: context => Date.now() - context.paidAt < 24 * 60 * 60 * 1000 // 24小时内
-        }
-      }
+          guard: context => Date.now() - context.paidAt < 24 * 60 * 60 * 1000, // 24小时内
+        },
+      },
     },
     shipped: {
       transitions: {
         deliver: {
           target: 'delivered',
-          action: (context) => {
+          action: context => {
             context.deliveredAt = Date.now()
-          }
-        }
-      }
+          },
+        },
+      },
     },
     delivered: {
-      transitions: {}
+      transitions: {},
     },
     cancelled: {
-      transitions: {}
+      transitions: {},
     },
     refunded: {
-      transitions: {}
-    }
-  }
+      transitions: {},
+    },
+  },
 }
 
 class OrderStore extends StateMachineStore {
@@ -977,8 +970,7 @@ class OrderStore extends StateMachineStore {
       const result = await paymentApi.process(paymentData)
       this.transition('pay', { paymentId: result.id })
       return result
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('支付失败')
     }
   }
@@ -989,8 +981,7 @@ class OrderStore extends StateMachineStore {
       const result = await shippingApi.ship(shippingData)
       this.transition('ship', { trackingNumber: result.trackingNumber })
       return result
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('发货失败')
     }
   }
@@ -1095,7 +1086,7 @@ class UserEventStore extends EventDrivenStore {
     this.users.push(user)
   }
 
-  private handleUserUpdated({ user, updates }: { user: User, updates: any }) {
+  private handleUserUpdated({ user, updates }: { user: User; updates: any }) {
     const index = this.users.findIndex(u => u.id === user.id)
     if (index > -1) {
       this.users[index] = user
@@ -1143,7 +1134,7 @@ class NotificationEventStore extends EventDrivenStore {
       type: 'success',
       title: '用户创建成功',
       message: `用户 ${user.name} 已成功创建`,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1152,7 +1143,7 @@ class NotificationEventStore extends EventDrivenStore {
       type: 'info',
       title: '用户登录',
       message: `欢迎回来，${user.name}！`,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1161,7 +1152,7 @@ class NotificationEventStore extends EventDrivenStore {
       type: 'success',
       title: '订单创建成功',
       message: `订单 ${order.id} 已创建`,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -1169,7 +1160,7 @@ class NotificationEventStore extends EventDrivenStore {
   private addNotification(notification: Notification) {
     this.notifications.unshift({
       id: generateId(),
-      ...notification
+      ...notification,
     })
 
     // 限制通知数量

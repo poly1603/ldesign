@@ -27,15 +27,15 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: () => import('@/views/Home.vue')
-    }
-  ]
+      component: () => import('@/views/Home.vue'),
+    },
+  ],
 })
 
 // 安装设备路由插件
 const devicePlugin = createDeviceRouterPlugin({
   enableDeviceDetection: true,
-  enableDeviceGuard: true
+  enableDeviceGuard: true,
 })
 
 devicePlugin.install(router)
@@ -58,9 +58,9 @@ const routes = [
     deviceComponents: {
       mobile: () => import('@/views/mobile/Home.vue'),
       tablet: () => import('@/views/tablet/Home.vue'),
-      desktop: () => import('@/views/desktop/Home.vue')
-    }
-  }
+      desktop: () => import('@/views/desktop/Home.vue'),
+    },
+  },
 ]
 ```
 
@@ -188,8 +188,8 @@ const devicePlugin = createDeviceRouterPlugin({
     defaultCategory: 'pages',
     templateRoot: 'src/templates',
     enableCache: true,
-    timeout: 10000
-  }
+    timeout: 10000,
+  },
 })
 ```
 
@@ -207,14 +207,14 @@ const {
   isCurrentRouteSupported,
   supportedDevices,
   isRouteSupported,
-  goToUnsupportedPage
+  goToUnsupportedPage,
 } = useDeviceRoute()
 
 // 检查特定路由是否支持
 const canAccessAdmin = isRouteSupported('/admin')
 
 // 监听设备变化
-const unwatch = onDeviceChange((device) => {
+const unwatch = onDeviceChange(device => {
   console.log(`设备切换到: ${device}`)
 })
 
@@ -227,12 +227,12 @@ onUnmounted(() => {
   <div>
     <p>当前设备: {{ currentDeviceName }}</p>
     <p>路由支持: {{ isCurrentRouteSupported ? '✅' : '❌' }}</p>
-    
+
     <div v-if="!isCurrentRouteSupported">
       <p>当前路由不支持您的设备</p>
       <button @click="goToUnsupportedPage()">查看详情</button>
     </div>
-    
+
     <nav>
       <router-link v-if="canAccessAdmin" to="/admin">管理后台</router-link>
     </nav>
@@ -246,13 +246,7 @@ onUnmounted(() => {
 <script setup lang="ts">
 import { useDeviceComponent } from '@ldesign/router'
 
-const {
-  resolvedComponent,
-  resolution,
-  loading,
-  error,
-  hasDeviceComponent
-} = useDeviceComponent()
+const { resolvedComponent, resolution, loading, error, hasDeviceComponent } = useDeviceComponent()
 
 // 检查是否有移动端专用组件
 const hasMobileComponent = hasDeviceComponent('mobile')
@@ -263,7 +257,7 @@ const hasMobileComponent = hasDeviceComponent('mobile')
     <div v-if="loading">组件加载中...</div>
     <div v-else-if="error">加载失败: {{ error.message }}</div>
     <component v-else-if="resolvedComponent" :is="resolvedComponent" />
-    
+
     <div v-if="resolution" class="component-info">
       <span>来源: {{ resolution.source }}</span>
       <span>设备: {{ resolution.deviceType }}</span>
@@ -303,12 +297,12 @@ import { DeviceUnsupported } from '@ldesign/router'
   <div class="custom-unsupported">
     <h1>设备不兼容</h1>
     <p>{{ message }}</p>
-    
+
     <div class="device-info">
       <p>当前设备: {{ deviceName }}</p>
       <p>支持的设备: {{ supportedDeviceNames.join('、') }}</p>
     </div>
-    
+
     <div class="actions">
       <button @click="goBack">返回</button>
       <button @click="contactSupport">联系客服</button>
@@ -353,29 +347,29 @@ const devicePlugin = createDeviceRouterPlugin({
         // 管理后台需要更严格的检查
         return currentDevice === 'desktop' && window.innerWidth >= 1200
       }
-      
+
       return supportedDevices.includes(currentDevice)
     },
-    
+
     onUnsupportedDevice: (currentDevice, route) => {
       // 自定义处理逻辑
       if (route.path.startsWith('/mobile-only')) {
         return {
           path: '/download-app',
-          query: { from: route.path }
+          query: { from: route.path },
         }
       }
-      
+
       return {
         path: '/device-unsupported',
         query: {
           device: currentDevice,
           from: route.path,
-          message: route.meta.unsupportedMessage
-        }
+          message: route.meta.unsupportedMessage,
+        },
       }
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -386,9 +380,9 @@ const devicePlugin = createDeviceRouterPlugin({
 const createDynamicRoute = (userRole: string) => {
   const baseRoute = {
     path: '/dashboard',
-    component: () => import('@/views/Dashboard.vue')
+    component: () => import('@/views/Dashboard.vue'),
   }
-  
+
   if (userRole === 'admin') {
     // 管理员可以在所有设备上访问
     return baseRoute
@@ -398,8 +392,8 @@ const createDynamicRoute = (userRole: string) => {
       ...baseRoute,
       meta: {
         supportedDevices: ['desktop'],
-        unsupportedMessage: '此功能需要管理员权限或桌面设备'
-      }
+        unsupportedMessage: '此功能需要管理员权限或桌面设备',
+      },
     }
   }
 }
@@ -444,11 +438,11 @@ const createDynamicRoute = (userRole: string) => {
 // 使用懒加载减少初始包大小
 deviceComponents: {
   mobile: () => import(
-    /* webpackChunkName: "mobile-home" */ 
+    /* webpackChunkName: "mobile-home" */
     '@/views/mobile/Home.vue'
   ),
   desktop: () => import(
-    /* webpackChunkName: "desktop-home" */ 
+    /* webpackChunkName: "desktop-home" */
     '@/views/desktop/Home.vue'
   )
 }
@@ -473,11 +467,7 @@ deviceComponents: {
 ```vue
 <!-- 添加测试标识 -->
 <template>
-  <div 
-    class="home-page"
-    :data-testid="`home-${currentDevice}`"
-    :data-device="currentDevice"
-  >
+  <div class="home-page" :data-testid="`home-${currentDevice}`" :data-device="currentDevice">
     <h1>{{ title }}</h1>
   </div>
 </template>
@@ -490,7 +480,7 @@ const title = computed(() => {
   const titles = {
     mobile: '移动端首页',
     tablet: '平板端首页',
-    desktop: '桌面端首页'
+    desktop: '桌面端首页',
   }
   return titles[currentDevice.value]
 })
@@ -512,9 +502,9 @@ const devicePlugin = createDeviceRouterPlugin({
       onUnsupportedDevice: (device, route) => {
         console.log('Device not supported:', { device, route: route.path })
         return { path: '/device-unsupported', query: { device, from: route.path } }
-      }
-    }
-  })
+      },
+    },
+  }),
 })
 ```
 
@@ -525,9 +515,11 @@ const devicePlugin = createDeviceRouterPlugin({
 if (process.env.NODE_ENV === 'development') {
   window.simulateDevice = (deviceType: DeviceType) => {
     // 触发设备变化事件
-    window.dispatchEvent(new CustomEvent('device-change', { 
-      detail: { type: deviceType } 
-    }))
+    window.dispatchEvent(
+      new CustomEvent('device-change', {
+        detail: { type: deviceType },
+      })
+    )
   }
 }
 ```

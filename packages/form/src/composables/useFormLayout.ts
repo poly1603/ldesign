@@ -109,7 +109,7 @@ export interface UseFormLayoutReturn {
  * useFormLayout Hook
  */
 export function useFormLayout(
-  options: UseFormLayoutOptions,
+  options: UseFormLayoutOptions
 ): UseFormLayoutReturn {
   const {
     fields,
@@ -135,8 +135,7 @@ export function useFormLayout(
   })
 
   const visibleFields = computed(() => {
-    if (!layout.value)
-      return fields
+    if (!layout.value) return fields
 
     return layout.value.fields
       .filter(fieldLayout => expanded.value || fieldLayout.visible)
@@ -145,8 +144,7 @@ export function useFormLayout(
   })
 
   const hiddenFields = computed(() => {
-    if (!layout.value)
-      return []
+    if (!layout.value) return []
 
     return layout.value.fields
       .filter(fieldLayout => !expanded.value && !fieldLayout.visible)
@@ -165,7 +163,7 @@ export function useFormLayout(
   // 计算布局
   const calculateLayout = (
     containerWidth?: number,
-    containerHeight?: number,
+    containerHeight?: number
   ): LayoutResult | null => {
     const container = getContainer()
 
@@ -208,16 +206,14 @@ export function useFormLayout(
 
   // 获取字段布局
   const getFieldLayout = (fieldName: string): FieldLayout | null => {
-    if (!layout.value)
-      return null
+    if (!layout.value) return null
     return layout.value.fields.find(field => field.name === fieldName) || null
   }
 
   // 获取字段样式
   const getFieldStyle = (fieldName: string): Record<string, any> => {
     const fieldLayout = getFieldLayout(fieldName)
-    if (!fieldLayout)
-      return {}
+    if (!fieldLayout) return {}
 
     return {
       gridColumn: `span ${fieldLayout.span}`,
@@ -229,8 +225,7 @@ export function useFormLayout(
 
   // 获取容器样式
   const getContainerStyle = (): Record<string, any> => {
-    if (!layout.value)
-      return {}
+    if (!layout.value) return {}
 
     const layoutConfig = layoutCalculator.getConfig()
 
@@ -276,7 +271,7 @@ export function useFormLayout(
     () => {
       recalculateLayout()
     },
-    { deep: true },
+    { deep: true }
   )
 
   // 监听展开状态变化

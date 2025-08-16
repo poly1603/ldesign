@@ -16,35 +16,20 @@ module.exports = {
   ],
 
   // Vue 文件
-  '*.vue': [
-    'eslint --fix',
-    () => 'pnpm type-check',
-    () => 'pnpm test:run',
-  ],
+  '*.vue': ['eslint --fix', () => 'pnpm type-check', () => 'pnpm test:run'],
 
   // 样式文件
-  '*.{css,less,scss,sass}': [
-    'eslint --fix',
-  ],
+  '*.{css,less,scss,sass}': ['eslint --fix'],
 
   // JSON 文件
-  '*.json': [
-    'eslint --fix',
-  ],
+  '*.json': ['eslint --fix'],
 
   // Markdown 文件
-  '*.md': [
-    'eslint --fix',
-  ],
+  '*.md': ['eslint --fix'],
 
   // 包配置文件变更时重新构建
-  'package.json': [
-    () => 'pnpm build',
-  ],
+  'package.json': [() => 'pnpm build'],
 
   // 源码变更时重新构建和测试
-  'src/**/*.{ts,tsx,vue}': [
-    () => 'pnpm build',
-    () => 'pnpm test:run',
-  ],
+  'src/**/*.{ts,tsx,vue}': [() => 'pnpm build', () => 'pnpm test:run'],
 }

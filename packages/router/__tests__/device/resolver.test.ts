@@ -2,7 +2,11 @@
  * 设备组件解析器测试
  */
 
-import type { DeviceType, RouteComponent, RouteRecordNormalized } from '../../src/types'
+import type {
+  DeviceType,
+  RouteComponent,
+  RouteRecordNormalized,
+} from '../../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DeviceComponentResolver } from '../../src/device/resolver'
 
@@ -207,7 +211,9 @@ describe('deviceComponentResolver', () => {
         },
       })
 
-      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(true)
+      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
+        true
+      )
       expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true) // 有回退组件
     })
@@ -215,7 +221,9 @@ describe('deviceComponentResolver', () => {
     it('没有任何组件时应该返回 false', () => {
       const record = createMockRecord({})
 
-      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(false)
+      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
+        false
+      )
     })
 
     it('有常规组件时应该支持所有设备', () => {
@@ -225,7 +233,9 @@ describe('deviceComponentResolver', () => {
         },
       })
 
-      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(true)
+      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
+        true
+      )
       expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true)
     })
@@ -237,7 +247,9 @@ describe('deviceComponentResolver', () => {
         },
       })
 
-      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(true)
+      expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
+        true
+      )
       expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true)
     })

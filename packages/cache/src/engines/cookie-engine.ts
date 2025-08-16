@@ -41,8 +41,7 @@ export class CookieEngine extends BaseStorageEngine {
       document.cookie = `${testKey}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${this.path}`
 
       return canRead
-    }
-    catch {
+    } catch {
       return false
     }
   }
@@ -60,7 +59,7 @@ export class CookieEngine extends BaseStorageEngine {
     // Cookie 单个大小限制
     if (dataSize > this.maxSize) {
       throw new Error(
-        `Cookie data too large: ${dataSize} bytes (max: ${this.maxSize} bytes)`,
+        `Cookie data too large: ${dataSize} bytes (max: ${this.maxSize} bytes)`
       )
     }
 
@@ -92,8 +91,7 @@ export class CookieEngine extends BaseStorageEngine {
     try {
       document.cookie = cookieString
       await this.updateUsedSize()
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error(`Failed to set cookie: ${error}`)
     }
   }
@@ -118,8 +116,7 @@ export class CookieEngine extends BaseStorageEngine {
       }
 
       return null
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`Error getting cookie:`, error)
       return null
     }
@@ -135,7 +132,7 @@ export class CookieEngine extends BaseStorageEngine {
 
     try {
       let cookieString = `${encodeURIComponent(
-        key,
+        key
       )}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${this.path}`
 
       if (this.domain) {
@@ -144,8 +141,7 @@ export class CookieEngine extends BaseStorageEngine {
 
       document.cookie = cookieString
       await this.updateUsedSize()
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`Error removing cookie:`, error)
     }
   }
@@ -183,16 +179,14 @@ export class CookieEngine extends BaseStorageEngine {
         if (cookieKey) {
           try {
             keys.push(decodeURIComponent(cookieKey))
-          }
-          catch {
+          } catch {
             // 跳过无法解码的键
           }
         }
       }
 
       return keys
-    }
-    catch (error) {
+    } catch (error) {
       console.warn(`Error getting cookie keys:`, error)
       return []
     }

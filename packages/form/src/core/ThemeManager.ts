@@ -186,9 +186,9 @@ export class ThemeManager extends SimpleEventEmitter implements IThemeManager {
     const currentType = this.currentTheme.type || 'light'
     const newType: ThemeType = currentType === 'light' ? 'dark' : 'light'
 
-    const newTheme
-      = this.registeredThemes.get(newType)
-        || (newType === 'dark' ? darkTheme : defaultTheme)
+    const newTheme =
+      this.registeredThemes.get(newType) ||
+      (newType === 'dark' ? darkTheme : defaultTheme)
 
     this.setTheme(newTheme)
   }
@@ -234,7 +234,7 @@ export class ThemeManager extends SimpleEventEmitter implements IThemeManager {
   removeCssVars(keys: string[]): void {
     const root = document.documentElement
 
-    keys.forEach((key) => {
+    keys.forEach(key => {
       const cssVar = key.startsWith('--') ? key : `--${key}`
       root.style.removeProperty(cssVar)
       this.appliedCssVars.delete(cssVar)
@@ -315,28 +315,28 @@ export class ThemeManager extends SimpleEventEmitter implements IThemeManager {
 
       if (theme.typography.fontWeight) {
         vars['--form-font-weight-light'] = String(
-          theme.typography.fontWeight.light || '',
+          theme.typography.fontWeight.light || ''
         )
         vars['--form-font-weight-normal'] = String(
-          theme.typography.fontWeight.normal || '',
+          theme.typography.fontWeight.normal || ''
         )
         vars['--form-font-weight-medium'] = String(
-          theme.typography.fontWeight.medium || '',
+          theme.typography.fontWeight.medium || ''
         )
         vars['--form-font-weight-bold'] = String(
-          theme.typography.fontWeight.bold || '',
+          theme.typography.fontWeight.bold || ''
         )
       }
 
       if (theme.typography.lineHeight) {
         vars['--form-line-height-tight'] = String(
-          theme.typography.lineHeight.tight || '',
+          theme.typography.lineHeight.tight || ''
         )
         vars['--form-line-height-normal'] = String(
-          theme.typography.lineHeight.normal || '',
+          theme.typography.lineHeight.normal || ''
         )
         vars['--form-line-height-loose'] = String(
-          theme.typography.lineHeight.loose || '',
+          theme.typography.lineHeight.loose || ''
         )
       }
     }
@@ -377,23 +377,23 @@ export class ThemeManager extends SimpleEventEmitter implements IThemeManager {
     // 动画变量
     if (theme.animation) {
       if (theme.animation.duration) {
-        vars['--form-animation-duration-fast']
-          = theme.animation.duration.fast || ''
-        vars['--form-animation-duration-normal']
-          = theme.animation.duration.normal || ''
-        vars['--form-animation-duration-slow']
-          = theme.animation.duration.slow || ''
+        vars['--form-animation-duration-fast'] =
+          theme.animation.duration.fast || ''
+        vars['--form-animation-duration-normal'] =
+          theme.animation.duration.normal || ''
+        vars['--form-animation-duration-slow'] =
+          theme.animation.duration.slow || ''
       }
 
       if (theme.animation.easing) {
-        vars['--form-animation-easing-linear']
-          = theme.animation.easing.linear || ''
-        vars['--form-animation-easing-ease-in']
-          = theme.animation.easing.easeIn || ''
-        vars['--form-animation-easing-ease-out']
-          = theme.animation.easing.easeOut || ''
-        vars['--form-animation-easing-ease-in-out']
-          = theme.animation.easing.easeInOut || ''
+        vars['--form-animation-easing-linear'] =
+          theme.animation.easing.linear || ''
+        vars['--form-animation-easing-ease-in'] =
+          theme.animation.easing.easeIn || ''
+        vars['--form-animation-easing-ease-out'] =
+          theme.animation.easing.easeOut || ''
+        vars['--form-animation-easing-ease-in-out'] =
+          theme.animation.easing.easeInOut || ''
       }
     }
 

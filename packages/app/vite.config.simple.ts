@@ -29,7 +29,7 @@ export default defineConfig({
       '@/components': resolve(__dirname, 'src/components'),
       '@/utils': resolve(__dirname, 'src/utils'),
       '@/styles': resolve(__dirname, 'src/styles'),
-      'vue': 'vue/dist/vue.esm-bundler.js',
+      vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
   css: {
@@ -48,11 +48,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['vue', 'pinia'],
-    exclude: ['@ldesign/*']
+    exclude: ['@ldesign/*'],
   },
   build: {
     rollupOptions: {
-      external: []
-    }
-  }
+      external: [],
+    },
+  },
 })

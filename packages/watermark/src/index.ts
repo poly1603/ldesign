@@ -72,14 +72,14 @@ export {
  */
 export async function createWatermark(
   container: Element | string,
-  config: Partial<WatermarkConfig>,
+  config: Partial<WatermarkConfig>
 ): Promise<WatermarkInstance> {
   const { WatermarkCore } = await import('./core')
   const core = new WatermarkCore()
   await core.init()
 
-  const containerElement
-    = typeof container === 'string'
+  const containerElement =
+    typeof container === 'string'
       ? document.querySelector(container)
       : container
 
@@ -94,7 +94,7 @@ export async function createWatermark(
  * 销毁水印实例的便捷函数
  */
 export async function destroyWatermark(
-  instance: WatermarkInstance,
+  instance: WatermarkInstance
 ): Promise<void> {
   const { WatermarkCore } = await import('./core')
   const core = new WatermarkCore()

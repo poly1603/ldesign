@@ -88,11 +88,11 @@ export const VueThemePlugin = {
     app.provide('themeManager', themeManager)
 
     // 初始化主题管理器
-    themeManager.init().catch((error) => {
+    themeManager.init().catch(error => {
       if (debug) {
         console.error(
           '[VueThemePlugin] Failed to initialize theme manager:',
-          error,
+          error
         )
       }
     })
@@ -117,7 +117,7 @@ export function createThemeApp(app: App, options: VueThemePluginOptions = {}) {
 export function installTheme(
   app: App,
   themes: ThemeConfig[],
-  options: Omit<VueThemePluginOptions, 'themes'> = {},
+  options: Omit<VueThemePluginOptions, 'themes'> = {}
 ) {
   return app.use(VueThemePlugin, {
     themes,

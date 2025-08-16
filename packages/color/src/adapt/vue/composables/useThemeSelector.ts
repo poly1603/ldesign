@@ -13,10 +13,10 @@ import { useTheme } from './useTheme'
  * @returns 主题选择相关的响应式状态和方法
  */
 export function useThemeSelector(
-  manager?: ThemeManagerInstance,
+  manager?: ThemeManagerInstance
 ): UseThemeSelectorReturn {
-  const { currentTheme, availableThemes, setTheme, getThemeConfig }
-    = useTheme(manager)
+  const { currentTheme, availableThemes, setTheme, getThemeConfig } =
+    useTheme(manager)
 
   const themeConfigs = computed(() => {
     return availableThemes.value
