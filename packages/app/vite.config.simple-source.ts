@@ -4,37 +4,26 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 
 /**
- * Vite 配置 - 源码模式
- *
- * 此配置直接引用 @ldesign/* 包的源码目录
- * 适用于：
- * - 开发调试
- * - 源码修改实时预览
- * - 包开发和测试
+ * 简化的 Source 模式配置
+ * 跳过类型检查，专注于功能验证
  */
 export default defineConfig({
-  root: __dirname,
-  publicDir: 'public',
   plugins: [
     vue({
       template: {
         compilerOptions: {
-          // 启用运行时模板编译
           isCustomElement: (_tag: string) => false,
         },
       },
     }),
     vueJsx({
-      // 配置 JSX 选项
       transformOn: true,
       mergeProps: true,
     }),
   ],
   define: {
-    // 启用Vue运行时编译器
     __VUE_OPTIONS_API__: true,
-    __VUE_PROD_DEVTOOLS__: true, // 开发模式启用 devtools
-    // 环境标识
+    __VUE_PROD_DEVTOOLS__: true,
     __DEV_MODE__: JSON.stringify('source'),
   },
   resolve: {
@@ -46,26 +35,19 @@ export default defineConfig({
       '@/plugins': resolve(__dirname, 'src/plugins'),
       '@/middleware': resolve(__dirname, 'src/middleware'),
 
-      // 直接映射到源码目录 - 用于开发调试
+      // 直接映射到源码目录
       '@ldesign/engine': resolve(__dirname, '../engine/src'),
       '@ldesign/engine/vue': resolve(__dirname, '../engine/src/vue'),
-
       '@ldesign/router': resolve(__dirname, '../router/src'),
       '@ldesign/router/vue': resolve(__dirname, '../router/src/vue'),
-
       '@ldesign/template': resolve(__dirname, '../template/src'),
       '@ldesign/template/vue': resolve(__dirname, '../template/src/vue'),
-
       '@ldesign/i18n': resolve(__dirname, '../i18n/src'),
       '@ldesign/i18n/vue': resolve(__dirname, '../i18n/src/vue'),
-
       '@ldesign/http': resolve(__dirname, '../http/src'),
       '@ldesign/http/vue': resolve(__dirname, '../http/src/vue'),
-
       '@ldesign/device': resolve(__dirname, '../device/src'),
       '@ldesign/device/vue': resolve(__dirname, '../device/src/vue'),
-
-      // 新集成的包
       '@ldesign/cache': resolve(__dirname, '../cache/src'),
       '@ldesign/color': resolve(__dirname, '../color/src'),
       '@ldesign/color/vue': resolve(__dirname, '../color/src/adapt/vue'),
@@ -75,13 +57,6 @@ export default defineConfig({
       '@ldesign/size/vue': resolve(__dirname, '../size/src/vue'),
       '@ldesign/store': resolve(__dirname, '../store/src'),
       '@ldesign/store/vue': resolve(__dirname, '../store/src/vue'),
-
-      // Store 包内部的类型路径别名
-      '@/types/decorators': resolve(
-        __dirname,
-        '../store/src/types/decorators.ts'
-      ),
-      '@/types/provider': resolve(__dirname, '../store/src/types/provider.ts'),
 
       // 使用包含编译器的Vue版本
       vue: 'vue/dist/vue.esm-bundler.js',
@@ -99,29 +74,36 @@ export default defineConfig({
     port: 3002,
     host: '0.0.0.0',
     cors: true,
-    // 源码模式需要更长的 HMR 超时
     hmr: {
       timeout: 60000,
     },
   },
   logLevel: 'info',
+  esbuild: {
+    // 完全跳过类型检查
+    logOverride: { 
+      'this-is-undefined-in-esm': 'silent',
+      'direct-eval': 'silent'
+    },
+    target: 'es2020',
+    keepNames: true,
+    // 忽略所有 TypeScript 错误
+    tsconfigRaw: {
+      compilerOptions: {
+        skipLibCheck: true,
+        noEmit: true,
+        allowJs: true,
+        checkJs: false,
+      }
+    }
+  },
   build: {
     target: 'es2020',
     outDir: 'dist-source',
     sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['vue'],
-          // 源码模式下不分离 ldesign 包，因为它们是源码
-          monaco: ['monaco-editor'],
-        },
-      },
-    },
   },
   optimizeDeps: {
     include: ['vue', 'monaco-editor', 'prismjs'],
-    // 排除源码包，让它们保持源码状态
     exclude: [
       '@ldesign/engine',
       '@ldesign/router',
@@ -134,23 +116,6 @@ export default defineConfig({
       '@ldesign/crypto',
       '@ldesign/size',
       '@ldesign/store',
-      'alova',
     ],
-  },
-  // 添加环境信息到开发工具
-  esbuild: {
-    // 忽略 TypeScript 错误以允许 Vite 启动
-    logOverride: { 'this-is-undefined-in-esm': 'silent' },
-    // 跳过类型检查以加快启动速度
-    target: 'es2020',
-    keepNames: true,
-    define: {
-      __DEV_ENV_INFO__: JSON.stringify({
-        mode: 'source',
-        description: '使用源码模式',
-        port: 3002,
-        packages: 'source files',
-      }),
-    },
   },
 })

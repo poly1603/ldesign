@@ -29,7 +29,6 @@ async function bootstrap() {
   try {
     // 创建引擎实例
     const engine = createEngine({
-      name: 'LDesign Demo App',
       version: '1.0.0',
       debug: true,
     })
@@ -57,11 +56,9 @@ async function bootstrap() {
     // 注册模板插件
     engine.use(
       createTemplateEnginePlugin({
+        name: 'template',
         version: '1.0.0',
-        enableCache: true,
-        cacheExpiration: 5 * 60 * 1000, // 5分钟
-        autoDetectDevice: true,
-        debug: true,
+        defaultDevice: 'desktop',
       })
     )
 
@@ -88,7 +85,7 @@ async function bootstrap() {
     const vueApp = createApp(App)
 
     // 安装引擎到 Vue 应用
-    await engine.install(vueApp)
+    engine.install(vueApp)
 
     // 手动注册其他插件
     if (vueApp && vueApp.config) {
@@ -112,10 +109,7 @@ async function bootstrap() {
       vueApp.use(CryptoPlugin)
 
       // 创建并安装缓存
-      const cache = createCache({
-        maxSize: 100,
-        ttl: 5 * 60 * 1000, // 5分钟
-      })
+      const cache = createCache()
       vueApp.provide('cache', cache)
 
       // 创建并安装状态管理
@@ -124,7 +118,7 @@ async function bootstrap() {
     }
 
     // 挂载应用
-    await engine.mount('#app')
+    engine.mount('#app')
 
     console.log('✅ LDesign 应用启动成功!')
   } catch (error) {
