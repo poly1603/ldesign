@@ -85,7 +85,7 @@ export default defineConfig({
     // 完全跳过类型检查
     logOverride: {
       'this-is-undefined-in-esm': 'silent',
-      'direct-eval': 'silent'
+      'direct-eval': 'silent',
     },
     target: 'es2020',
     keepNames: true,
@@ -96,13 +96,16 @@ export default defineConfig({
         noEmit: true,
         allowJs: true,
         checkJs: false,
-      }
-    }
+      },
+    },
   },
   build: {
     target: 'es2020',
     outDir: 'dist-source',
     sourcemap: true,
+    rollupOptions: {
+      input: resolve(__dirname, 'index.simple.html'),
+    },
   },
   optimizeDeps: {
     include: ['vue', 'monaco-editor', 'prismjs'],
