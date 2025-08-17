@@ -188,11 +188,11 @@ describe('logger', () => {
     })
 
     it('应该按级别获取日志', () => {
-      const errorLogs = logger.getLogsByLevel('error')
+      const errorLogs = (logger as any).getLogsByLevel('error')
       expect(errorLogs).toHaveLength(1)
       expect(errorLogs[0].level).toBe('error')
 
-      const infoLogs = logger.getLogsByLevel('info')
+      const infoLogs = (logger as any).getLogsByLevel('info')
       expect(infoLogs).toHaveLength(1)
       expect(infoLogs[0].level).toBe('info')
     })
@@ -202,12 +202,12 @@ describe('logger', () => {
       const oneHourAgo = now - 60 * 60 * 1000
       const oneHourLater = now + 60 * 60 * 1000
 
-      const logsInRange = logger.getLogsByTimeRange(oneHourAgo, oneHourLater)
+      const logsInRange = (logger as any).getLogsByTimeRange(oneHourAgo, oneHourLater)
       expect(logsInRange).toHaveLength(4)
 
-      const logsInPast = logger.getLogsByTimeRange(
+      const logsInPast = (logger as any).getLogsByTimeRange(
         oneHourAgo - 1000,
-        oneHourAgo
+        oneHourAgo,
       )
       expect(logsInPast).toHaveLength(0)
     })
@@ -217,13 +217,13 @@ describe('logger', () => {
       logger.info('User logout')
       logger.error('Database connection failed')
 
-      const userLogs = logger.searchLogs('user')
+      const userLogs = (logger as any).searchLogs('user')
       expect(userLogs).toHaveLength(2)
 
-      const loginLogs = logger.searchLogs('login')
+      const loginLogs = (logger as any).searchLogs('login')
       expect(loginLogs).toHaveLength(1)
 
-      const databaseLogs = logger.searchLogs('database')
+      const databaseLogs = (logger as any).searchLogs('database')
       expect(databaseLogs).toHaveLength(1)
     })
 
@@ -233,7 +233,7 @@ describe('logger', () => {
       logger.warn('Warning 1')
       logger.error('Error 1')
 
-      const stats = logger.getLogStats()
+      const stats = (logger as any).getLogStats()
       expect(stats.total).toBeGreaterThan(0)
       expect(stats.byLevel.info).toBeGreaterThan(0)
       expect(stats.byLevel.warn).toBeGreaterThan(0)
@@ -251,7 +251,7 @@ describe('logger', () => {
     })
 
     it('应该导出 JSON 格式的日志', () => {
-      const exported = logger.exportLogs('json')
+      const exported = (logger as any).exportLogs('json')
       expect(() => JSON.parse(exported)).not.toThrow()
 
       const logs = JSON.parse(exported)
@@ -260,7 +260,7 @@ describe('logger', () => {
     })
 
     it('应该导出 CSV 格式的日志', () => {
-      const exported = logger.exportLogs('csv')
+      const exported = (logger as any).exportLogs('csv')
       expect(exported).toContain('timestamp,level,message,data') // 修正列顺序
       expect(exported).toContain('Test message 1')
       expect(exported).toContain('Test message 2')
@@ -268,7 +268,7 @@ describe('logger', () => {
     })
 
     it('应该导出文本格式的日志', () => {
-      const exported = logger.exportLogs('txt')
+      const exported = (logger as any).exportLogs('txt')
       expect(exported).toContain('Test message 1')
       expect(exported).toContain('Test message 2')
       expect(exported).toContain('Test message 3')
@@ -278,14 +278,14 @@ describe('logger', () => {
     })
 
     it('应该默认导出 JSON 格式', () => {
-      const exported = logger.exportLogs()
+      const exported = (logger as any).exportLogs()
       expect(() => JSON.parse(exported)).not.toThrow()
     })
   })
 
   describe('子日志器', () => {
     it('应该创建带前缀的子日志器', () => {
-      const childLogger = logger.createChild('[MODULE]')
+      const childLogger = (logger as any).createChild('[MODULE]')
 
       childLogger.info('Child message')
 
@@ -294,7 +294,7 @@ describe('logger', () => {
     })
 
     it('应该创建命名空间日志器', () => {
-      const nsLogger = logger.namespace('auth')
+      const nsLogger = (logger as any).namespace('auth')
 
       nsLogger.info('Authentication successful')
 
@@ -304,14 +304,14 @@ describe('logger', () => {
 
     it('子日志器应该继承父日志器的配置', () => {
       logger.setLevel('warn')
-      const childLogger = logger.createChild('[CHILD]')
+      const childLogger = (logger as any).createChild('[CHILD]')
 
       expect(childLogger.getLevel()).toBe('warn')
       expect(childLogger.getMaxLogs()).toBe(logger.getMaxLogs())
     })
 
     it('子日志器的配置更改应该影响父日志器', () => {
-      const childLogger = logger.createChild('[CHILD]')
+      const childLogger = (logger as any).createChild('[CHILD]')
 
       childLogger.setLevel('error')
       expect(logger.getLevel()).toBe('error')
@@ -321,7 +321,7 @@ describe('logger', () => {
     })
 
     it('子日志器应该共享父日志器的日志存储', () => {
-      const childLogger = logger.createChild('[CHILD]')
+      const childLogger = (logger as any).createChild('[CHILD]')
 
       logger.info('Parent message')
       childLogger.info('Child message')
@@ -476,7 +476,7 @@ describe('日志传输器', () => {
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
         'engine-logs',
-        expect.stringContaining('"message":"Test message"')
+        expect.stringContaining('"message":"Test message"'),
       )
     })
 
@@ -486,7 +486,7 @@ describe('日志传输器', () => {
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
         'custom-logs',
-        expect.any(String)
+        expect.any(String),
       )
     })
 
@@ -516,7 +516,7 @@ describe('日志传输器', () => {
       expect(() => transport(testEntry)).not.toThrow()
       expect(consoleSpy).toHaveBeenCalledWith(
         'Failed to store log in localStorage:',
-        expect.any(Error)
+        expect.any(Error),
       )
 
       consoleSpy.mockRestore()
@@ -553,7 +553,7 @@ describe('日志传输器', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: expect.stringContaining('"message":"Message 1"'),
-        })
+        }),
       )
     })
 
@@ -572,9 +572,9 @@ describe('日志传输器', () => {
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
-            Authorization: 'Bearer test-api-key',
+            'Authorization': 'Bearer test-api-key',
           },
-        })
+        }),
       )
     })
 
@@ -592,7 +592,7 @@ describe('日志传输器', () => {
       await expect(transport(testEntry)).resolves.not.toThrow()
       expect(consoleSpy).toHaveBeenCalledWith(
         'Failed to send logs to remote service:',
-        expect.any(Error)
+        expect.any(Error),
       )
 
       consoleSpy.mockRestore()

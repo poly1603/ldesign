@@ -66,7 +66,8 @@ const conditionalMiddleware = creators.middleware('conditional', async (context,
 const errorHandlingMiddleware = creators.middleware('error-handler', async (context, next) => {
   try {
     await next()
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     context.engine.logger.error('中间件执行错误:', error)
 
@@ -590,7 +591,8 @@ const errorBoundaryMiddleware = {
   handler: async (context, next) => {
     try {
       await next()
-    } catch (error) {
+    }
+    catch (error) {
       // 记录错误详情
       const errorInfo = {
         phase: context.phase,
@@ -614,7 +616,8 @@ const errorBoundaryMiddleware = {
         // 挂载前错误，显示错误页面
         showErrorPage(error)
         throw error // 阻止应用启动
-      } else {
+      }
+      else {
         // 运行时错误，显示通知
         context.engine.notifications.error(`操作失败: ${error.message}`)
         // 不重新抛出，允许应用继续运行
@@ -637,7 +640,8 @@ function createRetryMiddleware(maxRetries = 3, delay = 1000) {
         try {
           await next()
           return // 成功执行，退出重试循环
-        } catch (error) {
+        }
+        catch (error) {
           attempts++
 
           if (attempts >= maxRetries) {
@@ -736,8 +740,8 @@ const memoizedMiddleware = {
 ### 单元测试
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest'
 import { createEngine } from '@ldesign/engine'
+import { describe, expect, it, vi } from 'vitest'
 
 describe('中间件测试', () => {
   it('应该正确执行中间件', async () => {

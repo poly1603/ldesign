@@ -17,8 +17,8 @@ describe('engine', () => {
   describe('创建和配置', () => {
     it('应该创建引擎实例', () => {
       expect(engine).toBeDefined()
-      expect(engine.config.appName).toBe('Test App')
-      expect(engine.config.debug).toBe(true)
+      expect(engine.getConfig('appName')).toBe('Test App')
+      expect(engine.getConfig('debug')).toBe(true)
     })
 
     it('应该有所有必需的管理器', () => {
@@ -44,7 +44,12 @@ describe('engine', () => {
       await engine.use(plugin)
 
       expect(engine.plugins.has('test-plugin')).toBe(true)
-      expect(plugin.install).toHaveBeenCalledWith(engine)
+      expect(plugin.install).toHaveBeenCalledWith(expect.objectContaining({
+        engine,
+        logger: expect.any(Object),
+        config: expect.any(Object),
+        events: expect.any(Object),
+      }))
     })
 
     it('应该处理插件依赖', async () => {
@@ -211,7 +216,7 @@ describe('engine', () => {
           message: 'Test error',
           level: 'error',
           timestamp: expect.any(Number),
-        })
+        }),
       )
     })
 
@@ -448,13 +453,13 @@ describe('engine', () => {
       expect(errorHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Event error',
-        })
+        }),
       )
     })
   })
 
   describe('引擎销毁', () => {
-    it('应该正确销毁引擎', () => {
+    it('应该正确销毁引擎', async () => {
       const destroyHandler = vi.fn()
       engine.events.on('engine:destroy', destroyHandler)
 
@@ -464,7 +469,7 @@ describe('engine', () => {
       engine.errors.captureError(new Error('Test error'))
       engine.notifications.show({ type: 'info', message: 'Test notification' })
 
-      engine.destroy()
+      await engine.destroy()
 
       expect(destroyHandler).toHaveBeenCalled()
       expect(engine.state.get('test')).toBeUndefined()
@@ -478,7 +483,7 @@ describe('engine', () => {
   describe('配置管理', () => {
     it('应该使用默认配置', () => {
       const defaultEngine = createEngine()
-      expect(defaultEngine.config.debug).toBe(false)
+      expect(defaultEngine.getConfig('debug')).toBe(false)
     })
 
     it('应该合并自定义配置', () => {
@@ -490,9 +495,9 @@ describe('engine', () => {
         },
       })
 
-      expect(customEngine.config.debug).toBe(true)
-      expect(customEngine.config.appName).toBe('Custom App')
-      expect(customEngine.config.version).toBe('1.0.0')
+      expect(customEngine.getConfig('debug')).toBe(true)
+      expect(customEngine.getConfig('appName')).toBe('Custom App')
+      expect(customEngine.getConfig('version')).toBe('1.0.0')
     })
 
     it('应该根据调试模式设置日志级别', () => {

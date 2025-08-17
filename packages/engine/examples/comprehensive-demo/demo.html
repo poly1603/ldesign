@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Engine - 综合功能演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      color: #333;
+      overflow-x: hidden;
+    }
+    
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 左侧导航栏 */
+    .sidebar {
+      width: 280px;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    
+    .sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid #e9ecef;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .sidebar-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .sidebar-header p {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    
+    .nav-menu {
+      padding: 16px 0;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: #495057;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    
+    .nav-item:hover {
+      background: #f8f9fa;
+      color: #667eea;
+    }
+    
+    .nav-item.active {
+      background: #667eea;
+      color: white;
+      position: relative;
+    }
+    
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #4c63d2;
+    }
+    
+    .nav-item-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      font-size: 16px;
+    }
+    
+    .nav-item-text {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      padding: 24px;
+      background: #f5f7fa;
+    }
+    
+    .content-header {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+    }
+    
+    .content-header h2 {
+      font-size: 1.75rem;
+      color: #2d3748;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .content-header p {
+      color: #718096;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .content-body {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .demo-section {
+      display: none;
+    }
+    
+    .demo-section.active {
+      display: block;
+    }
+    
+    .section-content {
+      padding: 24px;
+    }
+    
+    /* 演示组件样式 */
+    .demo-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-card h4 {
+      color: #495057;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #495057;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+    
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a6fd8;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+    }
+    
+    .btn-warning {
+      background: #ffc107;
+      color: #212529;
+    }
+    
+    .btn-warning:hover {
+      background: #e0a800;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #c82333;
+    }
+    
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      border: 1px solid transparent;
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border-color: #c3e6cb;
+    }
+    
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border-color: #f5c6cb;
+    }
+    
+    .alert-warning {
+      background: #fff3cd;
+      color: #856404;
+      border-color: #ffeaa7;
+    }
+    
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border-color: #bee5eb;
+    }
+    
+    .code-block {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    
+    .log-area {
+      background: #2d3748;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin-top: 16px;
+    }
+    
+    .log-entry {
+      margin-bottom: 4px;
+      padding: 2px 0;
+    }
+    
+    .log-entry.success { color: #68d391; }
+    .log-entry.error { color: #fc8181; }
+    .log-entry.info { color: #63b3ed; }
+    .log-entry.warning { color: #f6e05e; }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    
+    .metric-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .metric-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 4px;
+    }
+    
+    .metric-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 左侧导航栏 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>🚀 LDesign Engine</h1>
+        <p>综合功能演示</p>
+      </div>
+      
+      <nav class="nav-menu">
+        <button class="nav-item active" onclick="showSection('overview')">
+          <span class="nav-item-icon">🏠</span>
+          <span class="nav-item-text">起步</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('config')">
+          <span class="nav-item-icon">⚙️</span>
+          <span class="nav-item-text">配置管理</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('state')">
+          <span class="nav-item-icon">📊</span>
+          <span class="nav-item-text">状态管理</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('events')">
+          <span class="nav-item-icon">📡</span>
+          <span class="nav-item-text">事件系统</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('plugins')">
+          <span class="nav-item-icon">🔌</span>
+          <span class="nav-item-text">插件系统</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('middleware')">
+          <span class="nav-item-icon">🔗</span>
+          <span class="nav-item-text">中间件</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('environment')">
+          <span class="nav-item-icon">🌍</span>
+          <span class="nav-item-text">环境检测</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('performance')">
+          <span class="nav-item-icon">⚡</span>
+          <span class="nav-item-text">性能监控</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('security')">
+          <span class="nav-item-icon">🔒</span>
+          <span class="nav-item-text">安全管理</span>
+        </button>
+        
+        <button class="nav-item" onclick="showSection('notifications')">
+          <span class="nav-item-icon">🔔</span>
+          <span class="nav-item-text">通知系统</span>
+        </button>
+      </nav>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content">
+      <!-- 起步页面 -->
+      <div id="overview" class="demo-section active">
+        <div class="content-header">
+          <h2>🏠 起步</h2>
+          <p>欢迎使用 LDesign Engine 综合功能演示！这里展示了引擎的所有核心功能和特性。</p>
+        </div>
+        
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>🎯 功能概览</h4>
+              <p>LDesign Engine 是一个强大的前端开发引擎，提供了以下核心功能：</p>
+              <ul style="margin: 16px 0; padding-left: 20px; line-height: 1.8;">
+                <li><strong>配置管理</strong> - 动态配置、环境变量、类型验证</li>
+                <li><strong>状态管理</strong> - 响应式状态、数据持久化、状态快照</li>
+                <li><strong>事件系统</strong> - 发布订阅、命名空间、优先级控制</li>
+                <li><strong>插件系统</strong> - 动态加载、生命周期管理、依赖注入</li>
+                <li><strong>中间件</strong> - 请求拦截、响应处理、错误捕获</li>
+                <li><strong>环境检测</strong> - 设备信息、浏览器特性、性能指标</li>
+                <li><strong>性能监控</strong> - 实时监控、性能分析、优化建议</li>
+                <li><strong>安全管理</strong> - 权限控制、数据加密、安全策略</li>
+                <li><strong>通知系统</strong> - 多种类型、动画效果、位置控制</li>
+              </ul>
+            </div>
+            
+            <div class="demo-card">
+              <h4>🚀 快速开始</h4>
+              <p>点击左侧导航菜单，探索各个功能模块的详细演示。每个模块都包含：</p>
+              <ul style="margin: 16px 0; padding-left: 20px; line-height: 1.8;">
+                <li>功能介绍和使用场景</li>
+                <li>交互式演示和代码示例</li>
+                <li>实时日志和状态反馈</li>
+                <li>最佳实践和注意事项</li>
+              </ul>
+            </div>
+            
+            <div class="demo-card">
+              <h4>📊 系统状态</h4>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <div class="metric-value" id="engine-status">运行中</div>
+                  <div class="metric-label">引擎状态</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="modules-count">10</div>
+                  <div class="metric-label">已加载模块</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="events-count">0</div>
+                  <div class="metric-label">事件总数</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="memory-usage">--</div>
+                  <div class="metric-label">内存使用</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 配置管理页面 -->
+      <div id="config" class="demo-section">
+        <div class="content-header">
+          <h2>⚙️ 配置管理器演示</h2>
+          <p>ConfigManager 提供了强大的配置管理功能，支持嵌套配置、类型验证、变化监听等特性。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>基础配置操作</h4>
+              <div class="form-group">
+                <label>配置键</label>
+                <input type="text" class="form-control" id="config-key" value="app.theme" placeholder="输入配置键名">
+              </div>
+              <div class="form-group">
+                <label>配置值</label>
+                <input type="text" class="form-control" id="config-value" value="dark" placeholder="输入配置值">
+              </div>
+              <button class="btn btn-primary" onclick="setConfig()">设置配置</button>
+              <button class="btn btn-secondary" onclick="getConfig()">获取配置</button>
+              <button class="btn btn-warning" onclick="deleteConfig()">删除配置</button>
+              <div id="config-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>批量配置操作</h4>
+              <div class="form-group">
+                <label>JSON 配置</label>
+                <textarea class="form-control" id="batch-config" rows="6" placeholder="输入 JSON 格式的配置">{
+  "app": {
+    "theme": "dark",
+    "language": "zh-CN",
+    "debug": true
+  },
+  "api": {
+    "baseUrl": "https://api.example.com",
+    "timeout": 5000
+  }
+}</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="setBatchConfig()">批量设置</button>
+              <button class="btn btn-secondary" onclick="getAllConfig()">获取所有配置</button>
+              <button class="btn btn-danger" onclick="clearAllConfig()">清空配置</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>配置监听</h4>
+              <p>监听配置变化，实时响应配置更新：</p>
+              <button class="btn btn-success" onclick="startConfigWatch()">开始监听</button>
+              <button class="btn btn-warning" onclick="stopConfigWatch()">停止监听</button>
+              <div id="config-watch-status" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>当前配置状态</h4>
+              <div class="code-block" id="current-config">暂无配置</div>
+            </div>
+
+            <div class="log-area" id="config-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 状态管理页面 -->
+      <div id="state" class="demo-section">
+        <div class="content-header">
+          <h2>📊 状态管理器演示</h2>
+          <p>StateManager 提供响应式状态管理、数据持久化、状态快照等功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>基础状态操作</h4>
+              <div class="form-group">
+                <label>状态键名</label>
+                <input type="text" class="form-control" id="state-key" value="user.profile" placeholder="输入状态键名">
+              </div>
+              <div class="form-group">
+                <label>状态值 (JSON)</label>
+                <textarea class="form-control" id="state-value" rows="3" placeholder="输入状态值">{"name": "张三", "age": 25, "role": "admin"}</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="setState()">设置状态</button>
+              <button class="btn btn-secondary" onclick="getState()">获取状态</button>
+              <button class="btn btn-warning" onclick="deleteState()">删除状态</button>
+              <div id="state-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>状态订阅</h4>
+              <p>订阅状态变化，实现响应式更新：</p>
+              <div class="form-group">
+                <label>订阅键名</label>
+                <input type="text" class="form-control" id="subscribe-key" value="user.profile" placeholder="输入要订阅的状态键名">
+              </div>
+              <button class="btn btn-success" onclick="subscribeState()">订阅状态</button>
+              <button class="btn btn-warning" onclick="unsubscribeState()">取消订阅</button>
+              <div id="subscription-status" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>状态快照</h4>
+              <p>创建和恢复状态快照：</p>
+              <button class="btn btn-primary" onclick="createSnapshot()">创建快照</button>
+              <button class="btn btn-secondary" onclick="restoreSnapshot()">恢复快照</button>
+              <button class="btn btn-danger" onclick="clearSnapshots()">清空快照</button>
+              <div id="snapshot-info" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>当前状态</h4>
+              <div class="code-block" id="current-state">暂无状态</div>
+            </div>
+
+            <div class="log-area" id="state-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 事件系统页面 -->
+      <div id="events" class="demo-section">
+        <div class="content-header">
+          <h2>📡 事件系统演示</h2>
+          <p>EventManager 提供强大的事件发布订阅功能，支持命名空间、优先级控制、异步处理等特性。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>事件发布</h4>
+              <div class="form-group">
+                <label>事件名称</label>
+                <input type="text" class="form-control" id="event-name" value="user.login" placeholder="输入事件名称">
+              </div>
+              <div class="form-group">
+                <label>事件数据 (JSON)</label>
+                <textarea class="form-control" id="event-data" rows="3" placeholder="输入事件数据">{"userId": 123, "username": "张三", "timestamp": "2024-01-01T10:00:00Z"}</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="emitEvent()">发布事件</button>
+              <button class="btn btn-secondary" onclick="emitAsyncEvent()">异步发布</button>
+              <div id="event-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>事件订阅</h4>
+              <div class="form-group">
+                <label>订阅事件名称</label>
+                <input type="text" class="form-control" id="subscribe-event" value="user.login" placeholder="输入要订阅的事件名称">
+              </div>
+              <div class="form-group">
+                <label>优先级 (数字越大优先级越高)</label>
+                <input type="number" class="form-control" id="event-priority" value="0" placeholder="输入优先级">
+              </div>
+              <button class="btn btn-success" onclick="subscribeEvent()">订阅事件</button>
+              <button class="btn btn-warning" onclick="unsubscribeEvent()">取消订阅</button>
+              <div id="subscribe-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>事件命名空间</h4>
+              <p>使用命名空间组织事件：</p>
+              <button class="btn btn-primary" onclick="emitNamespacedEvent('user.login')">用户登录事件</button>
+              <button class="btn btn-primary" onclick="emitNamespacedEvent('user.logout')">用户登出事件</button>
+              <button class="btn btn-primary" onclick="emitNamespacedEvent('system.error')">系统错误事件</button>
+              <button class="btn btn-secondary" onclick="subscribeNamespace('user.*')">订阅用户事件</button>
+              <button class="btn btn-secondary" onclick="subscribeNamespace('system.*')">订阅系统事件</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>事件统计</h4>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <div class="metric-value" id="total-events">0</div>
+                  <div class="metric-label">总事件数</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="active-listeners">0</div>
+                  <div class="metric-label">活跃监听器</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="event-namespaces">0</div>
+                  <div class="metric-label">命名空间</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-area" id="event-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 插件系统页面 -->
+      <div id="plugins" class="demo-section">
+        <div class="content-header">
+          <h2>🔌 插件系统演示</h2>
+          <p>PluginManager 提供动态插件加载、生命周期管理、依赖注入等功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>插件注册</h4>
+              <div class="form-group">
+                <label>插件名称</label>
+                <input type="text" class="form-control" id="plugin-name" value="logger-plugin" placeholder="输入插件名称">
+              </div>
+              <div class="form-group">
+                <label>插件版本</label>
+                <input type="text" class="form-control" id="plugin-version" value="1.0.0" placeholder="输入插件版本">
+              </div>
+              <button class="btn btn-primary" onclick="registerPlugin()">注册插件</button>
+              <button class="btn btn-success" onclick="activatePlugin()">激活插件</button>
+              <button class="btn btn-warning" onclick="deactivatePlugin()">停用插件</button>
+              <button class="btn btn-danger" onclick="unregisterPlugin()">卸载插件</button>
+              <div id="plugin-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>预设插件</h4>
+              <p>演示一些常用的插件功能：</p>
+              <button class="btn btn-primary" onclick="loadPresetPlugin('cache')">缓存插件</button>
+              <button class="btn btn-primary" onclick="loadPresetPlugin('validator')">验证插件</button>
+              <button class="btn btn-primary" onclick="loadPresetPlugin('router')">路由插件</button>
+              <button class="btn btn-primary" onclick="loadPresetPlugin('i18n')">国际化插件</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>插件依赖</h4>
+              <p>演示插件依赖关系管理：</p>
+              <button class="btn btn-success" onclick="checkDependencies()">检查依赖</button>
+              <button class="btn btn-secondary" onclick="resolveDependencies()">解析依赖</button>
+              <div id="dependency-info" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>已注册插件</h4>
+              <div class="code-block" id="registered-plugins">暂无插件</div>
+            </div>
+
+            <div class="log-area" id="plugin-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中间件页面 -->
+      <div id="middleware" class="demo-section">
+        <div class="content-header">
+          <h2>🔗 中间件演示</h2>
+          <p>MiddlewareManager 提供请求拦截、响应处理、错误捕获等中间件功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>中间件注册</h4>
+              <div class="form-group">
+                <label>中间件类型</label>
+                <select class="form-control" id="middleware-type">
+                  <option value="request">请求中间件</option>
+                  <option value="response">响应中间件</option>
+                  <option value="error">错误中间件</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>中间件名称</label>
+                <input type="text" class="form-control" id="middleware-name" value="auth-middleware" placeholder="输入中间件名称">
+              </div>
+              <button class="btn btn-primary" onclick="registerMiddleware()">注册中间件</button>
+              <button class="btn btn-warning" onclick="removeMiddleware()">移除中间件</button>
+              <div id="middleware-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>模拟请求处理</h4>
+              <div class="form-group">
+                <label>请求URL</label>
+                <input type="text" class="form-control" id="request-url" value="/api/users" placeholder="输入请求URL">
+              </div>
+              <div class="form-group">
+                <label>请求方法</label>
+                <select class="form-control" id="request-method">
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="processRequest()">处理请求</button>
+              <button class="btn btn-danger" onclick="simulateError()">模拟错误</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>中间件链</h4>
+              <div class="code-block" id="middleware-chain">暂无中间件</div>
+            </div>
+
+            <div class="log-area" id="middleware-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 环境检测页面 -->
+      <div id="environment" class="demo-section">
+        <div class="content-header">
+          <h2>🌍 环境检测演示</h2>
+          <p>EnvironmentDetector 提供设备信息、浏览器特性、性能指标等环境检测功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>设备信息</h4>
+              <button class="btn btn-primary" onclick="detectDevice()">检测设备</button>
+              <button class="btn btn-secondary" onclick="detectBrowser()">检测浏览器</button>
+              <button class="btn btn-secondary" onclick="detectOS()">检测操作系统</button>
+              <div class="code-block" id="device-info">点击按钮检测设备信息</div>
+            </div>
+
+            <div class="demo-card">
+              <h4>浏览器特性</h4>
+              <button class="btn btn-primary" onclick="checkFeatures()">检测特性支持</button>
+              <button class="btn btn-secondary" onclick="checkPerformance()">性能检测</button>
+              <div class="code-block" id="feature-support">点击按钮检测浏览器特性</div>
+            </div>
+
+            <div class="demo-card">
+              <h4>网络状态</h4>
+              <button class="btn btn-primary" onclick="checkNetwork()">检测网络</button>
+              <button class="btn btn-secondary" onclick="measureSpeed()">测速</button>
+              <div class="code-block" id="network-info">点击按钮检测网络状态</div>
+            </div>
+
+            <div class="log-area" id="environment-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 性能监控页面 -->
+      <div id="performance" class="demo-section">
+        <div class="content-header">
+          <h2>⚡ 性能监控演示</h2>
+          <p>PerformanceMonitor 提供实时性能监控、内存管理、性能优化建议等功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>性能监控</h4>
+              <button class="btn btn-primary" onclick="startMonitoring()">开始监控</button>
+              <button class="btn btn-warning" onclick="stopMonitoring()">停止监控</button>
+              <button class="btn btn-secondary" onclick="getMetrics()">获取指标</button>
+              <div id="monitoring-status" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>实时性能指标</h4>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <div class="metric-value" id="fps-value">--</div>
+                  <div class="metric-label">FPS</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="memory-value">--</div>
+                  <div class="metric-label">内存使用</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="cpu-value">--</div>
+                  <div class="metric-label">CPU占用</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="load-time">--</div>
+                  <div class="metric-label">加载时间</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="demo-card">
+              <h4>性能分析</h4>
+              <button class="btn btn-primary" onclick="analyzePerformance()">分析性能</button>
+              <button class="btn btn-secondary" onclick="generateReport()">生成报告</button>
+              <div class="code-block" id="performance-analysis">点击按钮进行性能分析</div>
+            </div>
+
+            <div class="log-area" id="performance-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 安全管理页面 -->
+      <div id="security" class="demo-section">
+        <div class="content-header">
+          <h2>🔒 安全管理演示</h2>
+          <p>SecurityManager 提供权限控制、数据加密、安全策略等安全管理功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>权限管理</h4>
+              <div class="form-group">
+                <label>用户角色</label>
+                <select class="form-control" id="user-role">
+                  <option value="admin">管理员</option>
+                  <option value="user">普通用户</option>
+                  <option value="guest">访客</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>权限操作</label>
+                <input type="text" class="form-control" id="permission-action" value="user.create" placeholder="输入权限操作">
+              </div>
+              <button class="btn btn-primary" onclick="checkPermission()">检查权限</button>
+              <button class="btn btn-success" onclick="grantPermission()">授予权限</button>
+              <button class="btn btn-danger" onclick="revokePermission()">撤销权限</button>
+              <div id="permission-result" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="demo-card">
+              <h4>数据加密</h4>
+              <div class="form-group">
+                <label>原始数据</label>
+                <textarea class="form-control" id="encrypt-data" rows="3" placeholder="输入要加密的数据">这是一段敏感信息</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="encryptData()">加密数据</button>
+              <button class="btn btn-secondary" onclick="decryptData()">解密数据</button>
+              <div class="code-block" id="encryption-result">加密结果将显示在这里</div>
+            </div>
+
+            <div class="demo-card">
+              <h4>安全策略</h4>
+              <button class="btn btn-primary" onclick="enableCSP()">启用CSP</button>
+              <button class="btn btn-primary" onclick="enableXSS()">XSS防护</button>
+              <button class="btn btn-primary" onclick="enableCSRF()">CSRF防护</button>
+              <button class="btn btn-secondary" onclick="auditSecurity()">安全审计</button>
+              <div id="security-status" class="alert" style="display: none; margin-top: 16px;"></div>
+            </div>
+
+            <div class="log-area" id="security-logs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 通知系统页面 -->
+      <div id="notifications" class="demo-section">
+        <div class="content-header">
+          <h2>🔔 通知系统演示</h2>
+          <p>NotificationManager 提供多种通知类型、动画效果、位置控制等通知功能。</p>
+        </div>
+
+        <div class="content-body">
+          <div class="section-content">
+            <div class="demo-card">
+              <h4>基础通知</h4>
+              <div class="form-group">
+                <label>通知类型</label>
+                <select class="form-control" id="notification-type">
+                  <option value="success">成功</option>
+                  <option value="error">错误</option>
+                  <option value="warning">警告</option>
+                  <option value="info">信息</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>通知内容</label>
+                <input type="text" class="form-control" id="notification-message" value="这是一条测试通知" placeholder="输入通知内容">
+              </div>
+              <div class="form-group">
+                <label>显示时长 (毫秒)</label>
+                <input type="number" class="form-control" id="notification-duration" value="3000" placeholder="输入显示时长">
+              </div>
+              <button class="btn btn-primary" onclick="showNotification()">显示通知</button>
+              <button class="btn btn-secondary" onclick="clearNotifications()">清空通知</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>通知位置</h4>
+              <div class="form-group">
+                <label>通知位置</label>
+                <select class="form-control" id="notification-position">
+                  <option value="top-right">右上角</option>
+                  <option value="top-left">左上角</option>
+                  <option value="bottom-right">右下角</option>
+                  <option value="bottom-left">左下角</option>
+                  <option value="center">居中</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="showPositionedNotification()">显示定位通知</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>批量通知</h4>
+              <button class="btn btn-success" onclick="showBatchNotifications()">显示批量通知</button>
+              <button class="btn btn-warning" onclick="showProgressNotification()">进度通知</button>
+              <button class="btn btn-info" onclick="showInteractiveNotification()">交互通知</button>
+            </div>
+
+            <div class="demo-card">
+              <h4>通知统计</h4>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <div class="metric-value" id="total-notifications">0</div>
+                  <div class="metric-label">总通知数</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-value" id="active-notifications">0</div>
+                  <div class="metric-label">活跃通知</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-area" id="notification-logs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 全局变量
+    let currentSection = 'overview';
+    let engineLogs = [];
+    let configWatcher = null;
+    let stateSubscriptions = new Map();
+    let eventListeners = new Map();
+    let performanceMonitor = null;
+    let notificationCount = 0;
+    let activeNotifications = 0;
+
+    // 模拟的 LDesign Engine 实例
+    const LDesignEngine = {
+      config: new Map(),
+      state: new Map(),
+      events: new Map(),
+      plugins: new Map(),
+      middleware: [],
+      cache: new Map(),
+      logs: [],
+      snapshots: [],
+      permissions: new Map(),
+
+      // 日志记录
+      log(level, message, data = null) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = { timestamp, level, message, data };
+        this.logs.push(logEntry);
+        engineLogs.push(logEntry);
+        this.updateGlobalLogs();
+        this.updateMetrics();
+      },
+
+      updateGlobalLogs() {
+        const logAreas = document.querySelectorAll('.log-area');
+        logAreas.forEach(logArea => {
+          const logs = this.logs.slice(-50);
+          logArea.innerHTML = logs.map(log =>
+            `<div class="log-entry ${log.level}">
+              [${log.timestamp}] ${log.level.toUpperCase()}: ${log.message}
+              ${log.data ? ' | ' + JSON.stringify(log.data) : ''}
+            </div>`
+          ).join('');
+          logArea.scrollTop = logArea.scrollHeight;
+        });
+      },
+
+      updateMetrics() {
+        const eventsCountEl = document.getElementById('events-count');
+        const memoryUsageEl = document.getElementById('memory-usage');
+        if (eventsCountEl) eventsCountEl.textContent = this.events.size;
+        if (memoryUsageEl) memoryUsageEl.textContent = Math.round(Math.random() * 50 + 20) + 'MB';
+
+        // 更新事件统计
+        const totalEventsEl = document.getElementById('total-events');
+        const activeListenersEl = document.getElementById('active-listeners');
+        const eventNamespacesEl = document.getElementById('event-namespaces');
+        if (totalEventsEl) totalEventsEl.textContent = this.logs.filter(log => log.message.includes('事件')).length;
+        if (activeListenersEl) activeListenersEl.textContent = eventListeners.size;
+        if (eventNamespacesEl) eventNamespacesEl.textContent = new Set([...this.events.keys()].map(key => key.split('.')[0])).size;
+
+        // 更新通知统计
+        const totalNotificationsEl = document.getElementById('total-notifications');
+        const activeNotificationsEl = document.getElementById('active-notifications');
+        if (totalNotificationsEl) totalNotificationsEl.textContent = notificationCount;
+        if (activeNotificationsEl) activeNotificationsEl.textContent = activeNotifications;
+      }
+    };
+    
+    // 导航功能
+    function showSection(sectionId) {
+      // 隐藏所有section
+      document.querySelectorAll('.demo-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // 移除所有nav-item的active状态
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // 显示目标section
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+
+      // 激活对应的nav-item
+      event.target.classList.add('active');
+
+      currentSection = sectionId;
+      LDesignEngine.log('info', `切换到 ${sectionId} 页面`);
+    }
+
+    // 配置管理功能
+    function setConfig() {
+      const key = document.getElementById('config-key').value;
+      const value = document.getElementById('config-value').value;
+
+      if (!key) {
+        showAlert('config-result', '请输入配置键名', 'error');
+        return;
+      }
+
+      LDesignEngine.config.set(key, value);
+      LDesignEngine.log('success', `设置配置: ${key} = ${value}`);
+      showAlert('config-result', `配置 "${key}" 设置成功`, 'success');
+      updateCurrentConfig();
+
+      // 触发配置变化事件
+      if (configWatcher) {
+        LDesignEngine.log('info', `配置变化监听器触发: ${key}`);
+      }
+    }
+
+    function getConfig() {
+      const key = document.getElementById('config-key').value;
+
+      if (!key) {
+        showAlert('config-result', '请输入配置键名', 'error');
+        return;
+      }
+
+      const value = LDesignEngine.config.get(key);
+      if (value !== undefined) {
+        LDesignEngine.log('info', `获取配置: ${key} = ${value}`);
+        showAlert('config-result', `配置值: ${value}`, 'info');
+        document.getElementById('config-value').value = value;
+      } else {
+        LDesignEngine.log('warning', `配置不存在: ${key}`);
+        showAlert('config-result', '配置不存在', 'error');
+      }
+    }
+
+    function deleteConfig() {
+      const key = document.getElementById('config-key').value;
+
+      if (!key) {
+        showAlert('config-result', '请输入配置键名', 'error');
+        return;
+      }
+
+      if (LDesignEngine.config.has(key)) {
+        LDesignEngine.config.delete(key);
+        LDesignEngine.log('success', `删除配置: ${key}`);
+        showAlert('config-result', `配置 "${key}" 删除成功`, 'success');
+        updateCurrentConfig();
+      } else {
+        showAlert('config-result', '配置不存在', 'error');
+      }
+    }
+
+    function setBatchConfig() {
+      const configText = document.getElementById('batch-config').value;
+
+      try {
+        const configs = JSON.parse(configText);
+
+        function setNestedConfig(obj, prefix = '') {
+          for (const [key, value] of Object.entries(obj)) {
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              setNestedConfig(value, fullKey);
+            } else {
+              LDesignEngine.config.set(fullKey, value);
+            }
+          }
+        }
+
+        setNestedConfig(configs);
+        LDesignEngine.log('success', '批量设置配置成功', configs);
+        showAlert('config-result', '批量配置设置成功', 'success');
+        updateCurrentConfig();
+      } catch (error) {
+        LDesignEngine.log('error', '批量配置格式错误', error.message);
+        showAlert('config-result', 'JSON 格式错误', 'error');
+      }
+    }
+
+    function getAllConfig() {
+      const configs = Object.fromEntries(LDesignEngine.config);
+      LDesignEngine.log('info', '获取所有配置', configs);
+      document.getElementById('batch-config').value = JSON.stringify(configs, null, 2);
+      showAlert('config-result', '已获取所有配置', 'info');
+    }
+
+    function clearAllConfig() {
+      LDesignEngine.config.clear();
+      LDesignEngine.log('warning', '清空所有配置');
+      showAlert('config-result', '所有配置已清空', 'warning');
+      updateCurrentConfig();
+    }
+
+    function startConfigWatch() {
+      if (configWatcher) {
+        showAlert('config-watch-status', '配置监听已在运行', 'warning');
+        return;
+      }
+
+      configWatcher = setInterval(() => {
+        LDesignEngine.log('info', '配置监听器运行中...');
+      }, 5000);
+
+      LDesignEngine.log('success', '开始配置监听');
+      showAlert('config-watch-status', '配置监听已启动', 'success');
+    }
+
+    function stopConfigWatch() {
+      if (configWatcher) {
+        clearInterval(configWatcher);
+        configWatcher = null;
+        LDesignEngine.log('warning', '停止配置监听');
+        showAlert('config-watch-status', '配置监听已停止', 'warning');
+      } else {
+        showAlert('config-watch-status', '配置监听未运行', 'error');
+      }
+    }
+
+    function updateCurrentConfig() {
+      const configs = Object.fromEntries(LDesignEngine.config);
+      const configDisplay = document.getElementById('current-config');
+      if (configDisplay) {
+        configDisplay.textContent = Object.keys(configs).length > 0
+          ? JSON.stringify(configs, null, 2)
+          : '暂无配置';
+      }
+    }
+
+    // 状态管理功能
+    function setState() {
+      const key = document.getElementById('state-key').value;
+      const valueText = document.getElementById('state-value').value;
+
+      if (!key) {
+        showAlert('state-result', '请输入状态键名', 'error');
+        return;
+      }
+
+      try {
+        const value = JSON.parse(valueText);
+        LDesignEngine.state.set(key, value);
+        LDesignEngine.log('success', `设置状态: ${key}`, value);
+        showAlert('state-result', `状态 "${key}" 设置成功`, 'success');
+        updateCurrentState();
+
+        // 触发状态变化事件
+        if (stateSubscriptions.has(key)) {
+          LDesignEngine.log('info', `状态变化订阅触发: ${key}`);
+        }
+      } catch (error) {
+        LDesignEngine.log('error', '状态值格式错误', error.message);
+        showAlert('state-result', 'JSON 格式错误', 'error');
+      }
+    }
+
+    function getState() {
+      const key = document.getElementById('state-key').value;
+
+      if (!key) {
+        showAlert('state-result', '请输入状态键名', 'error');
+        return;
+      }
+
+      const value = LDesignEngine.state.get(key);
+      if (value !== undefined) {
+        LDesignEngine.log('info', `获取状态: ${key}`, value);
+        showAlert('state-result', `状态值: ${JSON.stringify(value)}`, 'info');
+        document.getElementById('state-value').value = JSON.stringify(value, null, 2);
+      } else {
+        LDesignEngine.log('warning', `状态不存在: ${key}`);
+        showAlert('state-result', '状态不存在', 'error');
+      }
+    }
+
+    function deleteState() {
+      const key = document.getElementById('state-key').value;
+
+      if (!key) {
+        showAlert('state-result', '请输入状态键名', 'error');
+        return;
+      }
+
+      if (LDesignEngine.state.has(key)) {
+        LDesignEngine.state.delete(key);
+        LDesignEngine.log('success', `删除状态: ${key}`);
+        showAlert('state-result', `状态 "${key}" 删除成功`, 'success');
+        updateCurrentState();
+      } else {
+        showAlert('state-result', '状态不存在', 'error');
+      }
+    }
+
+    function subscribeState() {
+      const key = document.getElementById('subscribe-key').value;
+
+      if (!key) {
+        showAlert('subscription-status', '请输入订阅键名', 'error');
+        return;
+      }
+
+      stateSubscriptions.set(key, true);
+      LDesignEngine.log('success', `订阅状态: ${key}`);
+      showAlert('subscription-status', `已订阅状态 "${key}"`, 'success');
+    }
+
+    function unsubscribeState() {
+      const key = document.getElementById('subscribe-key').value;
+
+      if (!key) {
+        showAlert('subscription-status', '请输入订阅键名', 'error');
+        return;
+      }
+
+      if (stateSubscriptions.has(key)) {
+        stateSubscriptions.delete(key);
+        LDesignEngine.log('warning', `取消订阅状态: ${key}`);
+        showAlert('subscription-status', `已取消订阅状态 "${key}"`, 'warning');
+      } else {
+        showAlert('subscription-status', '未订阅该状态', 'error');
+      }
+    }
+
+    function createSnapshot() {
+      const snapshot = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        data: Object.fromEntries(LDesignEngine.state)
+      };
+
+      LDesignEngine.snapshots.push(snapshot);
+      LDesignEngine.log('success', '创建状态快照', snapshot);
+      showAlert('snapshot-info', `快照创建成功 (ID: ${snapshot.id})`, 'success');
+    }
+
+    function restoreSnapshot() {
+      if (LDesignEngine.snapshots.length === 0) {
+        showAlert('snapshot-info', '没有可用的快照', 'error');
+        return;
+      }
+
+      const latestSnapshot = LDesignEngine.snapshots[LDesignEngine.snapshots.length - 1];
+      LDesignEngine.state.clear();
+
+      for (const [key, value] of Object.entries(latestSnapshot.data)) {
+        LDesignEngine.state.set(key, value);
+      }
+
+      LDesignEngine.log('success', '恢复状态快照', latestSnapshot);
+      showAlert('snapshot-info', `快照恢复成功 (ID: ${latestSnapshot.id})`, 'success');
+      updateCurrentState();
+    }
+
+    function clearSnapshots() {
+      LDesignEngine.snapshots = [];
+      LDesignEngine.log('warning', '清空所有快照');
+      showAlert('snapshot-info', '所有快照已清空', 'warning');
+    }
+
+    function updateCurrentState() {
+      const states = Object.fromEntries(LDesignEngine.state);
+      const stateDisplay = document.getElementById('current-state');
+      if (stateDisplay) {
+        stateDisplay.textContent = Object.keys(states).length > 0
+          ? JSON.stringify(states, null, 2)
+          : '暂无状态';
+      }
+    }
+
+    // 事件系统功能
+    function emitEvent() {
+      const eventName = document.getElementById('event-name').value;
+      const eventDataText = document.getElementById('event-data').value;
+
+      if (!eventName) {
+        showAlert('event-result', '请输入事件名称', 'error');
+        return;
+      }
+
+      try {
+        const eventData = eventDataText ? JSON.parse(eventDataText) : null;
+        LDesignEngine.events.set(eventName, eventData);
+        LDesignEngine.log('success', `发布事件: ${eventName}`, eventData);
+        showAlert('event-result', `事件 "${eventName}" 发布成功`, 'success');
+
+        // 触发事件监听器
+        if (eventListeners.has(eventName)) {
+          LDesignEngine.log('info', `事件监听器触发: ${eventName}`);
+        }
+      } catch (error) {
+        LDesignEngine.log('error', '事件数据格式错误', error.message);
+        showAlert('event-result', 'JSON 格式错误', 'error');
+      }
+    }
+
+    function emitAsyncEvent() {
+      const eventName = document.getElementById('event-name').value;
+      const eventDataText = document.getElementById('event-data').value;
+
+      if (!eventName) {
+        showAlert('event-result', '请输入事件名称', 'error');
+        return;
+      }
+
+      setTimeout(() => {
+        try {
+          const eventData = eventDataText ? JSON.parse(eventDataText) : null;
+          LDesignEngine.events.set(eventName, eventData);
+          LDesignEngine.log('success', `异步发布事件: ${eventName}`, eventData);
+          showAlert('event-result', `异步事件 "${eventName}" 发布成功`, 'success');
+        } catch (error) {
+          LDesignEngine.log('error', '异步事件数据格式错误', error.message);
+          showAlert('event-result', 'JSON 格式错误', 'error');
+        }
+      }, 1000);
+
+      showAlert('event-result', '异步事件已排队，1秒后发布', 'info');
+    }
+
+    function subscribeEvent() {
+      const eventName = document.getElementById('subscribe-event').value;
+      const priority = parseInt(document.getElementById('event-priority').value) || 0;
+
+      if (!eventName) {
+        showAlert('subscribe-result', '请输入事件名称', 'error');
+        return;
+      }
+
+      eventListeners.set(eventName, { priority, timestamp: Date.now() });
+      LDesignEngine.log('success', `订阅事件: ${eventName} (优先级: ${priority})`);
+      showAlert('subscribe-result', `已订阅事件 "${eventName}"`, 'success');
+    }
+
+    function unsubscribeEvent() {
+      const eventName = document.getElementById('subscribe-event').value;
+
+      if (!eventName) {
+        showAlert('subscribe-result', '请输入事件名称', 'error');
+        return;
+      }
+
+      if (eventListeners.has(eventName)) {
+        eventListeners.delete(eventName);
+        LDesignEngine.log('warning', `取消订阅事件: ${eventName}`);
+        showAlert('subscribe-result', `已取消订阅事件 "${eventName}"`, 'warning');
+      } else {
+        showAlert('subscribe-result', '未订阅该事件', 'error');
+      }
+    }
+
+    function emitNamespacedEvent(eventName) {
+      const eventData = {
+        namespace: eventName.split('.')[0],
+        action: eventName.split('.')[1],
+        timestamp: new Date().toISOString()
+      };
+
+      LDesignEngine.events.set(eventName, eventData);
+      LDesignEngine.log('success', `发布命名空间事件: ${eventName}`, eventData);
+    }
+
+    function subscribeNamespace(pattern) {
+      const namespace = pattern.replace('.*', '');
+      eventListeners.set(pattern, { namespace, timestamp: Date.now() });
+      LDesignEngine.log('success', `订阅命名空间: ${pattern}`);
+    }
+
+    // 插件系统功能
+    function registerPlugin() {
+      const name = document.getElementById('plugin-name').value;
+      const version = document.getElementById('plugin-version').value;
+
+      if (!name) {
+        showAlert('plugin-result', '请输入插件名称', 'error');
+        return;
+      }
+
+      const plugin = {
+        name,
+        version: version || '1.0.0',
+        status: 'registered',
+        registeredAt: new Date().toISOString()
+      };
+
+      LDesignEngine.plugins.set(name, plugin);
+      LDesignEngine.log('success', `注册插件: ${name} v${plugin.version}`);
+      showAlert('plugin-result', `插件 "${name}" 注册成功`, 'success');
+      updateRegisteredPlugins();
+    }
+
+    function activatePlugin() {
+      const name = document.getElementById('plugin-name').value;
+
+      if (!name) {
+        showAlert('plugin-result', '请输入插件名称', 'error');
+        return;
+      }
+
+      const plugin = LDesignEngine.plugins.get(name);
+      if (plugin) {
+        plugin.status = 'active';
+        plugin.activatedAt = new Date().toISOString();
+        LDesignEngine.log('success', `激活插件: ${name}`);
+        showAlert('plugin-result', `插件 "${name}" 激活成功`, 'success');
+        updateRegisteredPlugins();
+      } else {
+        showAlert('plugin-result', '插件未注册', 'error');
+      }
+    }
+
+    function deactivatePlugin() {
+      const name = document.getElementById('plugin-name').value;
+
+      if (!name) {
+        showAlert('plugin-result', '请输入插件名称', 'error');
+        return;
+      }
+
+      const plugin = LDesignEngine.plugins.get(name);
+      if (plugin) {
+        plugin.status = 'inactive';
+        plugin.deactivatedAt = new Date().toISOString();
+        LDesignEngine.log('warning', `停用插件: ${name}`);
+        showAlert('plugin-result', `插件 "${name}" 停用成功`, 'warning');
+        updateRegisteredPlugins();
+      } else {
+        showAlert('plugin-result', '插件未注册', 'error');
+      }
+    }
+
+    function unregisterPlugin() {
+      const name = document.getElementById('plugin-name').value;
+
+      if (!name) {
+        showAlert('plugin-result', '请输入插件名称', 'error');
+        return;
+      }
+
+      if (LDesignEngine.plugins.has(name)) {
+        LDesignEngine.plugins.delete(name);
+        LDesignEngine.log('warning', `卸载插件: ${name}`);
+        showAlert('plugin-result', `插件 "${name}" 卸载成功`, 'warning');
+        updateRegisteredPlugins();
+      } else {
+        showAlert('plugin-result', '插件未注册', 'error');
+      }
+    }
+
+    function loadPresetPlugin(type) {
+      const presetPlugins = {
+        cache: { name: 'cache-plugin', version: '2.1.0', description: '缓存管理插件' },
+        validator: { name: 'validator-plugin', version: '1.5.0', description: '数据验证插件' },
+        router: { name: 'router-plugin', version: '3.0.0', description: '路由管理插件' },
+        i18n: { name: 'i18n-plugin', version: '1.8.0', description: '国际化插件' }
+      };
+
+      const plugin = presetPlugins[type];
+      if (plugin) {
+        plugin.status = 'active';
+        plugin.registeredAt = new Date().toISOString();
+        plugin.activatedAt = new Date().toISOString();
+
+        LDesignEngine.plugins.set(plugin.name, plugin);
+        LDesignEngine.log('success', `加载预设插件: ${plugin.name} - ${plugin.description}`);
+        updateRegisteredPlugins();
+      }
+    }
+
+    function updateRegisteredPlugins() {
+      const plugins = Object.fromEntries(LDesignEngine.plugins);
+      const pluginDisplay = document.getElementById('registered-plugins');
+      if (pluginDisplay) {
+        pluginDisplay.textContent = Object.keys(plugins).length > 0
+          ? JSON.stringify(plugins, null, 2)
+          : '暂无插件';
+      }
+    }
+
+    // 通知系统功能
+    function showNotification() {
+      const type = document.getElementById('notification-type').value;
+      const message = document.getElementById('notification-message').value;
+      const duration = parseInt(document.getElementById('notification-duration').value) || 3000;
+
+      if (!message) {
+        showAlert('notification-result', '请输入通知内容', 'error');
+        return;
+      }
+
+      createNotification(type, message, duration);
+      notificationCount++;
+      LDesignEngine.log('success', `显示${type}通知: ${message}`);
+      LDesignEngine.updateMetrics();
+    }
+
+    function showPositionedNotification() {
+      const type = document.getElementById('notification-type').value;
+      const message = document.getElementById('notification-message').value;
+      const position = document.getElementById('notification-position').value;
+
+      if (!message) {
+        return;
+      }
+
+      createNotification(type, message, 3000, position);
+      notificationCount++;
+      LDesignEngine.log('success', `显示定位通知: ${message} (位置: ${position})`);
+      LDesignEngine.updateMetrics();
+    }
+
+    function showBatchNotifications() {
+      const types = ['success', 'info', 'warning', 'error'];
+      const messages = [
+        '操作成功完成！',
+        '这是一条信息提示',
+        '请注意这个警告',
+        '发生了一个错误'
+      ];
+
+      types.forEach((type, index) => {
+        setTimeout(() => {
+          createNotification(type, messages[index], 4000);
+          notificationCount++;
+          LDesignEngine.updateMetrics();
+        }, index * 500);
+      });
+
+      LDesignEngine.log('info', '显示批量通知');
+    }
+
+    function createNotification(type, message, duration = 3000, position = 'top-right') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+
+      const colors = {
+        success: '#28a745',
+        error: '#dc3545',
+        warning: '#ffc107',
+        info: '#17a2b8'
+      };
+
+      const positions = {
+        'top-right': { top: '20px', right: '20px' },
+        'top-left': { top: '20px', left: '20px' },
+        'bottom-right': { bottom: '20px', right: '20px' },
+        'bottom-left': { bottom: '20px', left: '20px' },
+        'center': { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+      };
+
+      const pos = positions[position] || positions['top-right'];
+
+      notification.style.cssText = `
+        position: fixed;
+        padding: 12px 20px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        background-color: ${colors[type]};
+        ${Object.entries(pos).map(([key, value]) => `${key}: ${value}`).join('; ')};
+      `;
+
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      activeNotifications++;
+
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+            activeNotifications--;
+            LDesignEngine.updateMetrics();
+          }
+        }, 300);
+      }, duration);
+    }
+
+    function clearNotifications() {
+      const notifications = document.querySelectorAll('.notification');
+      notifications.forEach(notification => {
+        document.body.removeChild(notification);
+      });
+      activeNotifications = 0;
+      LDesignEngine.log('info', '清空所有通知');
+      LDesignEngine.updateMetrics();
+    }
+
+    // 性能监控功能
+    function startMonitoring() {
+      if (performanceMonitor) {
+        showAlert('monitoring-status', '性能监控已在运行', 'warning');
+        return;
+      }
+
+      performanceMonitor = setInterval(() => {
+        updatePerformanceMetrics();
+      }, 1000);
+
+      LDesignEngine.log('success', '开始性能监控');
+      showAlert('monitoring-status', '性能监控已启动', 'success');
+    }
+
+    function stopMonitoring() {
+      if (performanceMonitor) {
+        clearInterval(performanceMonitor);
+        performanceMonitor = null;
+        LDesignEngine.log('warning', '停止性能监控');
+        showAlert('monitoring-status', '性能监控已停止', 'warning');
+      } else {
+        showAlert('monitoring-status', '性能监控未运行', 'error');
+      }
+    }
+
+    function updatePerformanceMetrics() {
+      const metrics = {
+        fps: Math.round(Math.random() * 20) + 40,
+        memory: Math.round(Math.random() * 50) + 20,
+        cpu: Math.round(Math.random() * 30) + 10,
+        loadTime: Math.round(Math.random() * 500) + 200
+      };
+
+      const fpsEl = document.getElementById('fps-value');
+      const memoryEl = document.getElementById('memory-value');
+      const cpuEl = document.getElementById('cpu-value');
+      const loadTimeEl = document.getElementById('load-time');
+
+      if (fpsEl) fpsEl.textContent = metrics.fps;
+      if (memoryEl) memoryEl.textContent = metrics.memory + 'MB';
+      if (cpuEl) cpuEl.textContent = metrics.cpu + '%';
+      if (loadTimeEl) loadTimeEl.textContent = metrics.loadTime + 'ms';
+    }
+
+    // 工具函数
+    function showAlert(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.className = `alert alert-${type}`;
+        element.style.display = 'block';
+
+        setTimeout(() => {
+          element.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    // 简化的其他功能实现
+    function detectDevice() {
+      const deviceInfo = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        cookieEnabled: navigator.cookieEnabled,
+        onLine: navigator.onLine,
+        screenWidth: screen.width,
+        screenHeight: screen.height
+      };
+
+      document.getElementById('device-info').textContent = JSON.stringify(deviceInfo, null, 2);
+      LDesignEngine.log('info', '检测设备信息', deviceInfo);
+    }
+
+    function checkPermission() {
+      const role = document.getElementById('user-role').value;
+      const action = document.getElementById('permission-action').value;
+
+      const permissions = {
+        admin: ['user.create', 'user.delete', 'system.config'],
+        user: ['user.read', 'user.update'],
+        guest: ['user.read']
+      };
+
+      const hasPermission = permissions[role]?.includes(action) || false;
+      LDesignEngine.log('info', `权限检查: ${role} - ${action} = ${hasPermission}`);
+      showAlert('permission-result',
+        hasPermission ? '权限检查通过' : '权限不足',
+        hasPermission ? 'success' : 'error'
+      );
+    }
+
+    function encryptData() {
+      const data = document.getElementById('encrypt-data').value;
+      if (!data) return;
+
+      // 简单的Base64编码模拟加密
+      const encrypted = btoa(data);
+      document.getElementById('encryption-result').textContent = `加密结果: ${encrypted}`;
+      LDesignEngine.log('success', '数据加密完成');
+    }
+
+    // 其他简化功能实现
+    function registerMiddleware() {
+      const type = document.getElementById('middleware-type').value;
+      const name = document.getElementById('middleware-name').value;
+
+      if (!name) {
+        showAlert('middleware-result', '请输入中间件名称', 'error');
+        return;
+      }
+
+      LDesignEngine.middleware.push({ type, name, registered: new Date().toISOString() });
+      LDesignEngine.log('success', `注册${type}中间件: ${name}`);
+      showAlert('middleware-result', `中间件 "${name}" 注册成功`, 'success');
+      updateMiddlewareChain();
+    }
+
+    function updateMiddlewareChain() {
+      const chainDisplay = document.getElementById('middleware-chain');
+      if (chainDisplay) {
+        chainDisplay.textContent = LDesignEngine.middleware.length > 0
+          ? JSON.stringify(LDesignEngine.middleware, null, 2)
+          : '暂无中间件';
+      }
+    }
+
+    function processRequest() {
+      const url = document.getElementById('request-url').value;
+      const method = document.getElementById('request-method').value;
+
+      LDesignEngine.log('info', `处理${method}请求: ${url}`);
+      showAlert('middleware-result', `请求处理完成: ${method} ${url}`, 'success');
+    }
+
+    function detectBrowser() {
+      const browserInfo = {
+        name: navigator.appName,
+        version: navigator.appVersion,
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        platform: navigator.platform
+      };
+
+      document.getElementById('device-info').textContent = JSON.stringify(browserInfo, null, 2);
+      LDesignEngine.log('info', '检测浏览器信息', browserInfo);
+    }
+
+    function checkFeatures() {
+      const features = {
+        localStorage: typeof(Storage) !== "undefined",
+        webGL: !!window.WebGLRenderingContext,
+        webWorkers: typeof(Worker) !== "undefined",
+        geolocation: !!navigator.geolocation,
+        notifications: "Notification" in window,
+        serviceWorker: 'serviceWorker' in navigator
+      };
+
+      document.getElementById('feature-support').textContent = JSON.stringify(features, null, 2);
+      LDesignEngine.log('info', '检测浏览器特性', features);
+    }
+
+    function checkNetwork() {
+      const networkInfo = {
+        onLine: navigator.onLine,
+        connection: navigator.connection ? {
+          effectiveType: navigator.connection.effectiveType,
+          downlink: navigator.connection.downlink,
+          rtt: navigator.connection.rtt
+        } : '不支持'
+      };
+
+      document.getElementById('network-info').textContent = JSON.stringify(networkInfo, null, 2);
+      LDesignEngine.log('info', '检测网络状态', networkInfo);
+    }
+
+    function analyzePerformance() {
+      const analysis = {
+        timing: performance.timing ? {
+          loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
+          domReady: performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart,
+          firstPaint: performance.getEntriesByType ? performance.getEntriesByType('paint')[0]?.startTime : '不支持'
+        } : '不支持',
+        memory: performance.memory ? {
+          used: Math.round(performance.memory.usedJSHeapSize / 1048576),
+          total: Math.round(performance.memory.totalJSHeapSize / 1048576),
+          limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576)
+        } : '不支持'
+      };
+
+      document.getElementById('performance-analysis').textContent = JSON.stringify(analysis, null, 2);
+      LDesignEngine.log('info', '性能分析完成', analysis);
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      LDesignEngine.log('success', 'LDesign Engine 演示系统已启动');
+      LDesignEngine.log('info', '所有功能模块加载完成');
+
+      // 更新初始指标
+      LDesignEngine.updateMetrics();
+      updateCurrentConfig();
+      updateCurrentState();
+      updateRegisteredPlugins();
+      updateMiddlewareChain();
+
+      // 添加动画样式
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .notification {
+          animation: slideIn 0.3s ease;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // 模拟实时数据更新
+      setInterval(() => {
+        LDesignEngine.updateMetrics();
+      }, 5000);
+
+      // 初始化一些示例数据
+      LDesignEngine.config.set('app.name', 'LDesign Engine Demo');
+      LDesignEngine.config.set('app.version', '1.0.0');
+      LDesignEngine.state.set('system.status', 'running');
+      updateCurrentConfig();
+      updateCurrentState();
+    });
+  </script>
+</body>
+</html>
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      LDesignEngine.log('success', 'LDesign Engine 演示系统已启动');
+      LDesignEngine.log('info', '所有功能模块加载完成');
+      
+      // 更新初始指标
+      LDesignEngine.updateMetrics();
+      
+      // 模拟实时数据更新
+      setInterval(() => {
+        LDesignEngine.updateMetrics();
+      }, 5000);
+    });
+  </script>
+</body>
+</html>

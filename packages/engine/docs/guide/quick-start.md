@@ -136,10 +136,14 @@ function logout() {
     <div v-if="user">
       <p>姓名: {{ user.name }}</p>
       <p>邮箱: {{ user.email }}</p>
-      <button @click="logout">退出登录</button>
+      <button @click="logout">
+        退出登录
+      </button>
     </div>
     <div v-else>
-      <button @click="login">登录</button>
+      <button @click="login">
+        登录
+      </button>
     </div>
   </div>
 </template>
@@ -154,7 +158,7 @@ function logout() {
 import { engine } from '../main'
 
 // 监听登录事件
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
   // 执行登录后的逻辑
 })
@@ -178,7 +182,8 @@ export async function login(credentials) {
     engine.events.emit('user:login', user)
 
     return user
-  } catch (error) {
+  }
+  catch (error) {
     engine.logger.error('登录失败', error)
     engine.notifications.error('登录失败，请检查用户名和密码')
     throw error
@@ -214,7 +219,8 @@ export async function fetchUserData(userId: string) {
     })
 
     return data
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     engine.logger.error('用户数据获取失败', {
       userId,
@@ -262,7 +268,7 @@ engine.mount('#app')
 // plugins/counter.ts
 import { creators } from '@ldesign/engine'
 
-export const counterPlugin = creators.plugin('counter', engine => {
+export const counterPlugin = creators.plugin('counter', (engine) => {
   // 初始化状态
   engine.state.set('counter', { value: 0 })
 
@@ -436,7 +442,7 @@ this.$engine
 A: 使用异步插件安装：
 
 ```typescript
-const asyncPlugin = creators.plugin('async', async engine => {
+const asyncPlugin = creators.plugin('async', async (engine) => {
   // 异步初始化
   const config = await fetchConfig()
   engine.state.set('config', config)
@@ -457,7 +463,7 @@ A: 使用插件依赖：
 ```typescript
 const dependentPlugin = creators.plugin(
   'dependent',
-  engine => {
+  (engine) => {
     // 检查依赖
     if (!engine.hasPlugin('auth')) {
       throw new Error('dependent插件需要auth插件')

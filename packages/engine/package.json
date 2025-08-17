@@ -35,12 +35,13 @@
     "types"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
-    "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
-    "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "build": "node scripts/build.js",
+    "build:rollup": "rollup -c",
+    "build:clean": "node scripts/build.js --clean",
+    "build:types": "node scripts/build.js --types",
+    "build:analyze": "node scripts/analyze-bundle.js",
     "build:watch": "rollup -c -w",
+    "build:check": "pnpm run build && pnpm run build:analyze",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
@@ -56,7 +57,9 @@
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "dev:examples": "vite serve examples --port 5173",
+    "serve:examples": "vite preview examples --port 5173"
   },
   "peerDependencies": {
     "vue": "^3.5.18"

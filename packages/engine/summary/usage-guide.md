@@ -18,9 +18,9 @@ yarn add @ldesign/engine
 ### 2. 基础设置
 
 ```typescript
+import { createEngine } from '@ldesign/engine'
 // main.ts
 import { createApp } from 'vue'
-import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
 
 // 创建引擎实例
@@ -44,34 +44,37 @@ app.mount('#app')
 ### 3. 在组件中使用
 
 ```vue
-<template>
-  <div>
-    <h1>{{ appName }}</h1>
-    <p>用户: {{ user?.name || '未登录' }}</p>
-    <button @click="login">登录</button>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useEngine } from '@ldesign/engine/vue'
+import { computed } from 'vue'
 
 const engine = useEngine()
 
 const appName = computed(() => engine.config.appName)
 const user = computed(() => engine.state.get('user.profile'))
 
-const login = async () => {
+async function login() {
   try {
     const userData = await loginUser()
     engine.state.set('user.profile', userData)
     engine.events.emit('user:login', userData)
     engine.notifications.success('登录成功')
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.error('登录失败')
   }
 }
 </script>
+
+<template>
+  <div>
+    <h1>{{ appName }}</h1>
+    <p>用户: {{ user?.name || '未登录' }}</p>
+    <button @click="login">
+      登录
+    </button>
+  </div>
+</template>
 ```
 
 ## 核心功能使用
@@ -117,7 +120,7 @@ const engine = createEngine({
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', userData => {
+engine.events.on('user:login', (userData) => {
   console.log('用户登录:', userData)
 })
 
@@ -153,7 +156,7 @@ const myPlugin = {
   version: '1.0.0',
   dependencies: ['auth'], // 依赖其他插件
 
-  install: engine => {
+  install: (engine) => {
     // 插件安装逻辑
     engine.myFeature = {
       doSomething() {
@@ -167,7 +170,7 @@ const myPlugin = {
     })
   },
 
-  uninstall: engine => {
+  uninstall: (engine) => {
     // 插件卸载逻辑
     delete engine.myFeature
   },
@@ -177,7 +180,7 @@ const myPlugin = {
 engine.use(myPlugin)
 
 // 动态加载插件
-const loadPlugin = async () => {
+async function loadPlugin() {
   const { default: plugin } = await import('./plugins/dynamic-plugin')
   engine.use(plugin)
 }
@@ -261,7 +264,7 @@ engine.logger.info('用户操作', {
 })
 
 // 日志过滤
-engine.logger.addFilter(entry => {
+engine.logger.addFilter((entry) => {
   // 过滤敏感信息
   if (entry.message.includes('password')) {
     entry.message = entry.message.replace(/password:\s*\S+/g, 'password: ***')
@@ -363,16 +366,16 @@ engine.errors.capture(error, {
 })
 
 // 错误分类处理
-engine.events.on('error:network', error => {
+engine.events.on('error:network', (error) => {
   engine.notifications.error('网络连接失败')
 })
 
-engine.events.on('error:validation', error => {
+engine.events.on('error:validation', (error) => {
   engine.notifications.warning(error.message)
 })
 
 // 全局错误处理
-window.addEventListener('error', event => {
+window.addEventListener('error', (event) => {
   engine.errors.capture(event.error, {
     type: 'global',
     filename: event.filename,
@@ -381,7 +384,7 @@ window.addEventListener('error', event => {
 })
 
 // Promise 错误处理
-window.addEventListener('unhandledrejection', event => {
+window.addEventListener('unhandledrejection', (event) => {
   engine.errors.capture(new Error(event.reason), {
     type: 'promise',
   })
@@ -421,7 +424,7 @@ engine.custom.customMethod()
 // 插件 A
 const pluginA = {
   name: 'plugin-a',
-  install: engine => {
+  install: (engine) => {
     engine.pluginA = {
       getData() {
         return { message: 'Hello from Plugin A' }
@@ -437,7 +440,7 @@ const pluginA = {
 const pluginB = {
   name: 'plugin-b',
   dependencies: ['plugin-a'],
-  install: engine => {
+  install: (engine) => {
     // 等待插件 A 就绪
     engine.events.on('plugin-a:ready', () => {
       const data = engine.pluginA.getData()
@@ -542,7 +545,7 @@ const goodPlugin = {
   description: '插件描述',
   dependencies: ['required-plugin'],
 
-  install: async engine => {
+  install: async (engine) => {
     // 1. 参数验证
     if (!engine.config.apiUrl) {
       throw new Error('API URL is required')
@@ -557,13 +560,14 @@ const goodPlugin = {
     // 4. 错误处理
     try {
       await this.initialize()
-    } catch (error) {
+    }
+    catch (error) {
       engine.logger.error('插件初始化失败:', error)
       throw error
     }
   },
 
-  uninstall: engine => {
+  uninstall: (engine) => {
     // 清理资源
     delete engine.api
     engine.events.off('app:ready', this.onAppReady)
@@ -583,9 +587,11 @@ class ErrorHandler {
     // 2. 用户提示
     if (error instanceof NetworkError) {
       engine.notifications.error('网络连接失败，请检查网络设置')
-    } else if (error instanceof ValidationError) {
+    }
+    else if (error instanceof ValidationError) {
       engine.notifications.warning(error.message)
-    } else {
+    }
+    else {
       engine.notifications.error('操作失败，请稍后重试')
     }
 
@@ -599,13 +605,13 @@ class ErrorHandler {
 
 ```typescript
 // 延迟加载
-const lazyLoadPlugin = async () => {
+async function lazyLoadPlugin() {
   const { default: plugin } = await import('./heavy-plugin')
   engine.use(plugin)
 }
 
 // 缓存优化
-const getCachedData = async (key: string) => {
+async function getCachedData(key: string) {
   let data = engine.cache.get(key)
 
   if (!data) {
@@ -617,7 +623,7 @@ const getCachedData = async (key: string) => {
 }
 
 // 状态优化
-const optimizedStateUpdate = () => {
+function optimizedStateUpdate() {
   engine.state.batch(() => {
     // 批量更新，减少重渲染
     engine.state.set('user.name', 'John')

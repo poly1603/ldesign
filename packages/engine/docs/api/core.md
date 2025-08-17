@@ -413,7 +413,7 @@ const creators = {
 import { creators } from '@ldesign/engine'
 
 // 创建插件
-const myPlugin = creators.plugin('my-plugin', engine => {
+const myPlugin = creators.plugin('my-plugin', (engine) => {
   engine.logger.info('插件已安装')
 })
 

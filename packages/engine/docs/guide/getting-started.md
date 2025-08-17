@@ -1,47 +1,47 @@
-# 入门指南
+# 🏁 快速开始
 
-欢迎使用 Vue3 Engine！这是一个强大的 Vue3 应用引擎，提供了插件系统、中间件、状态管理、事件系统、日志
-记录、通知管理等丰富功能。
+欢迎使用 LDesign Engine！这个指南将帮助你在5分钟内快速上手，体验引擎的强大功能。
 
-## 安装
+## 📦 安装
 
-### 使用包管理器
+### 环境要求
 
-::: code-group
+- **Node.js** >= 16.0.0
+- **npm** >= 8.0.0 或 **pnpm** >= 7.0.0 (推荐)
+- **TypeScript** >= 4.9.0 (可选，但强烈推荐)
 
-```bash [npm]
-npm install @ldesign/engine
-```
+### 安装引擎
 
-```bash [pnpm]
+```bash
+# 使用 pnpm (推荐)
 pnpm add @ldesign/engine
-```
 
-```bash [yarn]
+# 使用 npm
+npm install @ldesign/engine
+
+# 使用 yarn
 yarn add @ldesign/engine
 ```
 
-:::
+## 🚀 第一个应用
 
-### CDN 引入
-
-```html
-<script src="https://unpkg.com/@ldesign/engine@latest/dist/index.umd.js"></script>
-```
-
-## 快速开始
-
-### 简化 API（推荐）
-
-使用新的简化 API，无需手动创建 Vue 应用：
+### 1. 创建引擎实例
 
 ```typescript
-import { createApp, presets } from '@ldesign/engine'
-// main.ts
-import App from './App.vue'
+import { createEngine } from '@ldesign/engine'
 
-// 一行代码创建应用和引擎
-const engine = createApp(App, {
+// 创建引擎实例
+const engine = createEngine({
+  appName: 'My First App',
+  debug: true,
+  features: {
+    enableHotReload: true,
+    enableDevTools: true,
+    enablePerformanceMonitoring: true
+  }
+})
+
+console.log('引擎创建成功！', engine.getConfig('appName'))
   ...presets.development(), // 使用开发环境预设
   config: {
     debug: true,
@@ -162,7 +162,7 @@ function updateState() {
 // 监听事件
 onMounted(() => {
   // 监听用户登录事件
-  engine.events.on('user:login', userData => {
+  engine.events.on('user:login', (userData) => {
     engine.logger.info('用户登录', userData)
     engine.notifications.show({
       type: 'info',
@@ -183,9 +183,15 @@ onMounted(() => {
 <template>
   <div class="app">
     <h1>{{ appName }}</h1>
-    <button @click="showNotification">显示通知</button>
-    <button @click="logMessage">记录日志</button>
-    <button @click="updateState">更新状态</button>
+    <button @click="showNotification">
+      显示通知
+    </button>
+    <button @click="logMessage">
+      记录日志
+    </button>
+    <button @click="updateState">
+      更新状态
+    </button>
     <p>当前用户: {{ user?.name || '未登录' }}</p>
   </div>
 </template>
@@ -259,7 +265,7 @@ engine.config.set('language', 'zh-CN')
 const theme = engine.config.get('theme')
 
 // 监听配置变化
-engine.config.watch('theme', newTheme => {
+engine.config.watch('theme', (newTheme) => {
   document.body.className = `theme-${newTheme}`
 })
 ```
@@ -291,7 +297,7 @@ const user = computed(() => engine.state.get('user'))
 
 ```typescript
 // 监听事件
-engine.events.on('data:loaded', data => {
+engine.events.on('data:loaded', (data) => {
   console.log('数据加载完成:', data)
 })
 

@@ -47,7 +47,7 @@ const user = engine.state.get('user')
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
 })
 
@@ -359,7 +359,7 @@ console.log(fullName.value) // 计算结果
 - **示例**:
 
 ```typescript
-const off = engine.events.on('user:login', user => {
+const off = engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
 })
 

@@ -23,7 +23,7 @@ export function useEngine(): Engine {
   }
 
   throw new Error(
-    'Engine instance not found. Make sure the engine is properly initialized.'
+    'Engine instance not found. Make sure the engine is properly initialized.',
   )
 }
 

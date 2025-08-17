@@ -91,7 +91,7 @@ engine.performance.setBudget({
 
 ```typescript
 // 监听性能警报
-engine.events.on('performance:budget-exceeded', metric => {
+engine.events.on('performance:budget-exceeded', (metric) => {
   console.warn(`性能预算超标: ${metric.name} = ${metric.value}`)
 
   // 发送警报通知
@@ -187,7 +187,7 @@ engine.performance.enableAutoOptimization({
 // 获取优化建议
 const suggestions = engine.performance.getOptimizationSuggestions()
 
-suggestions.forEach(suggestion => {
+suggestions.forEach((suggestion) => {
   console.log(`建议: ${suggestion.title}`)
   console.log(`描述: ${suggestion.description}`)
   console.log(`影响: ${suggestion.impact}`)
@@ -292,7 +292,7 @@ class PerformanceMonitor {
   }
 
   private monitorUserInteractions() {
-    ;['click', 'scroll', 'input'].forEach(event => {
+    ;['click', 'scroll', 'input'].forEach((event) => {
       document.addEventListener(event, () => {
         this.engine.performance.mark(`${event}-start`)
 
@@ -366,7 +366,7 @@ class PerformanceBudgetManager {
     const metrics = this.engine.performance.getMetrics()
     const budget = this.engine.performance.getBudget()
 
-    Object.keys(budget).forEach(metric => {
+    Object.keys(budget).forEach((metric) => {
       if (metrics[metric] > budget[metric]) {
         this.handleBudgetExceeded(metric, metrics[metric], budget[metric])
       }
@@ -402,7 +402,8 @@ class PerformanceProfiler {
 
   endProfile(name: string) {
     const profile = this.profiles.get(name)
-    if (!profile) return
+    if (!profile)
+      return
 
     const endTime = performance.now()
     const endMemory = this.getMemoryUsage()
@@ -439,7 +440,7 @@ function identifyPerformanceHotspots() {
     timeWindow: 60000,
   })
 
-  hotspots.forEach(hotspot => {
+  hotspots.forEach((hotspot) => {
     console.log(`热点: ${hotspot.name}`)
     console.log(`平均耗时: ${hotspot.avgDuration}ms`)
     console.log(`调用次数: ${hotspot.callCount}`)
@@ -453,7 +454,8 @@ function identifyPerformanceHotspots() {
 ```typescript
 try {
   engine.performance.startMonitoring()
-} catch (error) {
+}
+catch (error) {
   engine.logger.error('性能监控启动失败:', error)
 
   // 降级处理
@@ -467,7 +469,7 @@ try {
 
 ```typescript
 // 性能日志记录
-engine.events.on('performance:metric-collected', metric => {
+engine.events.on('performance:metric-collected', (metric) => {
   engine.logger.info('性能指标:', metric)
 })
 ```
@@ -476,7 +478,7 @@ engine.events.on('performance:metric-collected', metric => {
 
 ```typescript
 // 性能警报通知
-engine.events.on('performance:threshold-exceeded', alert => {
+engine.events.on('performance:threshold-exceeded', (alert) => {
   engine.notifications.show({
     type: 'warning',
     title: '性能警告',

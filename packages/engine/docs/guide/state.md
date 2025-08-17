@@ -83,7 +83,8 @@ const unsubscribe = engine.state.subscribe('user', (newUser, oldUser) => {
   if (newUser && !oldUser) {
     console.log('用户已登录')
     engine.events.emit('user:login', newUser)
-  } else if (!newUser && oldUser) {
+  }
+  else if (!newUser && oldUser) {
     console.log('用户已登出')
     engine.events.emit('user:logout', oldUser)
   }
@@ -97,13 +98,13 @@ const unsubscribe = engine.state.subscribe('user', (newUser, oldUser) => {
 
 ```typescript
 // 基于其他状态计算新状态
-engine.state.subscribe('user', user => {
+engine.state.subscribe('user', (user) => {
   // 计算用户权限
   const permissions = user ? calculateUserPermissions(user) : []
   engine.state.set('userPermissions', permissions)
 })
 
-engine.state.subscribe('theme', theme => {
+engine.state.subscribe('theme', (theme) => {
   // 更新CSS变量
   document.documentElement.setAttribute('data-theme', theme)
 })
@@ -258,7 +259,8 @@ engine.state.setValidator('user', userStateSchema)
 // 无效状态会抛出错误
 try {
   engine.state.set('user', { name: '' }) // 验证失败
-} catch (error) {
+}
+catch (error) {
   console.error('状态验证失败:', error.message)
 }
 ```
@@ -268,9 +270,12 @@ try {
 ```typescript
 // 自定义验证函数
 function validateUser(user: any): boolean {
-  if (!user || typeof user !== 'object') return false
-  if (!user.id || !user.name || !user.email) return false
-  if (!user.email.includes('@')) return false
+  if (!user || typeof user !== 'object')
+    return false
+  if (!user.id || !user.name || !user.email)
+    return false
+  if (!user.email.includes('@'))
+    return false
   return true
 }
 
@@ -466,7 +471,7 @@ themeState.set('dark')
 
 ```typescript
 // 状态同步到URL
-engine.state.subscribe('app.currentPage', page => {
+engine.state.subscribe('app.currentPage', (page) => {
   if (page) {
     history.pushState(null, '', `/${page}`)
   }
@@ -490,7 +495,7 @@ function createComputed<T>(dependencies: string[], computeFn: (...values: any[])
   let isDirty = true
 
   // 监听依赖变化
-  dependencies.forEach(dep => {
+  dependencies.forEach((dep) => {
     engine.state.subscribe(dep, () => {
       isDirty = true
     })
@@ -540,7 +545,7 @@ class StateDeriver {
     this.updateDerived(key, deriveFn)
 
     // 监听依赖变化
-    dependencies.forEach(dep => {
+    dependencies.forEach((dep) => {
       this.engine.state.subscribe(dep, () => {
         this.updateDerived(key, deriveFn)
       })
@@ -569,7 +574,8 @@ deriver.derive(
   'userDisplayName',
   ['user.profile', 'user.preferences.showFullName'],
   (profile: User, showFullName: boolean) => {
-    if (!profile) return '未登录'
+    if (!profile)
+      return '未登录'
     return showFullName ? profile.fullName : profile.firstName
   }
 )
@@ -651,13 +657,15 @@ function updateUserProfile(profileData: Partial<User>) {
     if (validateChanges(changes)) {
       transaction.commit()
       engine.notifications.success('用户资料更新成功')
-    } else {
+    }
+    else {
       transaction.rollback()
       engine.notifications.error('用户资料验证失败')
     }
-  } catch (error) {
+  }
+  catch (error) {
     transaction.rollback()
-    engine.notifications.error('更新失败: ' + error.message)
+    engine.notifications.error(`更新失败: ${error.message}`)
   }
 }
 ```
@@ -687,8 +695,8 @@ class StateLock {
   // 检查是否被锁定
   isLocked(key: string): boolean {
     return (
-      this.locks.has(key) ||
-      Array.from(this.locks).some(lockedKey => key.startsWith(lockedKey + '.'))
+      this.locks.has(key)
+      || Array.from(this.locks).some(lockedKey => key.startsWith(`${lockedKey}.`))
     )
   }
 
@@ -714,9 +722,11 @@ async function saveUserData() {
   try {
     await api.saveUser(engine.state.get('user'))
     engine.notifications.success('保存成功')
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.error('保存失败')
-  } finally {
+  }
+  finally {
     stateLock.unlock('user')
   }
 }
@@ -748,7 +758,7 @@ class CrossWindowStateSync {
     })
 
     // 监听其他窗口的状态变化
-    this.channel.addEventListener('message', event => {
+    this.channel.addEventListener('message', (event) => {
       const { type, key, value, source } = event.data
 
       if (type === 'state-change' && source !== window.location.href) {
@@ -766,7 +776,8 @@ class CrossWindowStateSync {
 
     try {
       fn()
-    } finally {
+    }
+    finally {
       this.engine.state.subscribe = originalSubscribe
     }
   }
@@ -800,7 +811,7 @@ class ServerStateSync {
       this.requestInitialState()
     }
 
-    this.ws.onmessage = event => {
+    this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data)
       this.handleServerMessage(message)
     }
@@ -811,8 +822,8 @@ class ServerStateSync {
     }
 
     // 监听需要同步的状态变化
-    this.syncKeys.forEach(key => {
-      this.engine.state.subscribe(key, newValue => {
+    this.syncKeys.forEach((key) => {
+      this.engine.state.subscribe(key, (newValue) => {
         this.sendStateChange(key, newValue)
       })
     })
@@ -986,11 +997,12 @@ class LazyState {
 
     // 如果正在加载，等待完成
     if (this.loading.has(key)) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         const checkLoaded = () => {
           if (this.loaded.has(key)) {
             resolve(this.engine.state.get(key))
-          } else {
+          }
+          else {
             setTimeout(checkLoaded, 10)
           }
         }
@@ -1014,7 +1026,8 @@ class LazyState {
 
       this.engine.events.emit('state:lazy-loaded', { key, value })
       return value
-    } catch (error) {
+    }
+    catch (error) {
       this.loading.delete(key)
       this.engine.events.emit('state:lazy-load-error', { key, error })
       throw error
@@ -1056,9 +1069,11 @@ async function showUserPosts() {
     engine.state.set('ui.loading', true)
     const posts = await lazyState.load('user.posts')
     console.log('用户文章:', posts)
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.error('加载文章失败')
-  } finally {
+  }
+  finally {
     engine.state.set('ui.loading', false)
   }
 }

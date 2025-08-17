@@ -123,11 +123,15 @@ function updateProfile() {
       <p>姓名: {{ user.name }}</p>
       <p>邮箱: {{ user.email }}</p>
       <p>登录次数: {{ loginCount }}</p>
-      <button @click="updateProfile">更新信息</button>
+      <button @click="updateProfile">
+        更新信息
+      </button>
     </div>
     <div v-else>
       <p>请先登录</p>
-      <button @click="login">登录</button>
+      <button @click="login">
+        登录
+      </button>
     </div>
   </div>
 </template>
@@ -173,7 +177,7 @@ export function useAuth() {
 import { engine } from '../main'
 
 // 监听事件
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
   engine.notifications.success(`欢迎回来，${user.name}！`)
 })
@@ -212,15 +216,15 @@ engine.events.emit('app:ready')
 
 ```typescript
 // 使用命名空间组织事件
-engine.events.on('user:profile:update', profile => {
+engine.events.on('user:profile:update', (profile) => {
   console.log('用户资料更新:', profile)
 })
 
-engine.events.on('user:settings:change', settings => {
+engine.events.on('user:settings:change', (settings) => {
   console.log('用户设置变更:', settings)
 })
 
-engine.events.on('system:error', error => {
+engine.events.on('system:error', (error) => {
   console.error('系统错误:', error)
   engine.notifications.error('系统出现错误，请稍后重试')
 })
@@ -254,7 +258,8 @@ export async function fetchUserData(userId: string) {
     })
 
     return userData
-  } catch (error) {
+  }
+  catch (error) {
     // 记录错误
     engine.logger.error('用户数据获取失败', {
       userId,
@@ -393,7 +398,7 @@ import { creators } from '@ldesign/engine'
 import { createApp } from '@ldesign/engine'
 import { counterPlugin } from './plugins/counter'
 
-export const counterPlugin = creators.plugin('counter', engine => {
+export const counterPlugin = creators.plugin('counter', (engine) => {
   // 初始化计数器状态
   engine.state.set('counter', { value: 0 })
 
@@ -450,7 +455,7 @@ const decrement = () => engine.counter.decrement()
 const reset = () => engine.counter.reset()
 
 // 监听计数变化
-engine.events.on('counter:increment', value => {
+engine.events.on('counter:increment', (value) => {
   if (value % 10 === 0) {
     engine.notifications.success(`计数达到 ${value}！`)
   }
@@ -461,9 +466,15 @@ engine.events.on('counter:increment', value => {
   <div class="counter">
     <h2>计数器: {{ count }}</h2>
     <div class="buttons">
-      <button @click="decrement">-</button>
-      <button @click="reset">重置</button>
-      <button @click="increment">+</button>
+      <button @click="decrement">
+        -
+      </button>
+      <button @click="reset">
+        重置
+      </button>
+      <button @click="increment">
+        +
+      </button>
     </div>
   </div>
 </template>

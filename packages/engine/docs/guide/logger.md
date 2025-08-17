@@ -229,7 +229,8 @@ async function fetchUserData(userId: number) {
 
     logger.info('用户数据获取成功', { userId, dataSize: JSON.stringify(userData).length })
     return userData
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('用户数据获取失败', { userId, error: error.message })
     throw error
   }
@@ -276,11 +277,13 @@ class PerformanceLogger {
 
       if (result instanceof Promise) {
         return result.finally(() => this.end(name))
-      } else {
+      }
+      else {
         this.end(name)
         return result
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.end(name, { error: error.message })
       throw error
     }
@@ -323,7 +326,7 @@ setInterval(logMemoryUsage, 30000)
 
 ```typescript
 // 捕获未处理的错误
-window.addEventListener('error', event => {
+window.addEventListener('error', (event) => {
   engine.logger.error('全局错误', {
     message: event.error?.message || event.message,
     filename: event.filename,
@@ -335,7 +338,7 @@ window.addEventListener('error', event => {
 })
 
 // 捕获未处理的Promise拒绝
-window.addEventListener('unhandledrejection', event => {
+window.addEventListener('unhandledrejection', (event) => {
   engine.logger.error('未处理的Promise拒绝', {
     reason: event.reason,
     promise: event.promise,
@@ -408,7 +411,7 @@ class LogAnalyzer {
   }
 
   reset() {
-    Object.keys(this.stats).forEach(key => {
+    Object.keys(this.stats).forEach((key) => {
       this.stats[key as LogLevel] = 0
     })
     this.errorPatterns.clear()
@@ -466,13 +469,15 @@ function createSafeLogger() {
   const sensitiveKeys = ['password', 'token', 'secret', 'key', 'auth']
 
   const sanitize = (obj: any): any => {
-    if (typeof obj !== 'object' || obj === null) return obj
+    if (typeof obj !== 'object' || obj === null)
+      return obj
 
     const sanitized = { ...obj }
     for (const key in sanitized) {
       if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
         sanitized[key] = '***'
-      } else if (typeof sanitized[key] === 'object') {
+      }
+      else if (typeof sanitized[key] === 'object') {
         sanitized[key] = sanitize(sanitized[key])
       }
     }

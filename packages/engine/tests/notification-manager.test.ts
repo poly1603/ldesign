@@ -21,7 +21,7 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock requestAnimationFrame
-global.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16))
+global.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16)) as any as any
 
 describe('notificationManager', () => {
   let manager: NotificationManager
@@ -97,10 +97,10 @@ describe('notificationManager', () => {
       manager.show({ message: '左下角', position: 'bottom-left' })
 
       const topRightContainer = document.getElementById(
-        'engine-notifications-top-right'
+        'engine-notifications-top-right',
       )
       const bottomLeftContainer = document.getElementById(
-        'engine-notifications-bottom-left'
+        'engine-notifications-bottom-left',
       )
 
       expect(topRightContainer).toBeTruthy()
@@ -304,10 +304,10 @@ describe('notificationHelpers', () => {
     // 模拟点击确认按钮
     setTimeout(() => {
       const confirmButton = document.querySelector(
-        '.engine-notification-action'
+        '.engine-notification-action',
       )
       if (confirmButton) {
-        ;(confirmButton as HTMLElement).click()
+        ; (confirmButton as HTMLElement).click()
       }
     }, 10)
 

@@ -50,10 +50,10 @@ console.log(engine.security.validateUrl(url2)) // false
 ```typescript
 // 设置 CSP 策略
 engine.security.setCSP({
-  'default-src': ["'self'"],
-  'script-src': ["'self'", "'unsafe-inline'"],
-  'style-src': ["'self'", "'unsafe-inline'"],
-  'img-src': ["'self'", 'data:', 'https:'],
+  'default-src': ['\'self\''],
+  'script-src': ['\'self\'', '\'unsafe-inline\''],
+  'style-src': ['\'self\'', '\'unsafe-inline\''],
+  'img-src': ['\'self\'', 'data:', 'https:'],
 })
 ```
 
@@ -91,13 +91,13 @@ console.log(isValidEmail) // true
 
 ```typescript
 // 监听安全威胁事件
-engine.events.on('security:threat-detected', event => {
+engine.events.on('security:threat-detected', (event) => {
   console.log('安全威胁检测到:', event)
   // 记录日志、发送警报等
 })
 
 // 监听输入清理事件
-engine.events.on('security:input-sanitized', event => {
+engine.events.on('security:input-sanitized', (event) => {
   console.log('输入已清理:', event)
 })
 ```
@@ -268,7 +268,7 @@ const isValidToken = engine.security.validateCSRFToken(token, userToken)
 
 ```typescript
 // 输入清理防止 SQL 注入
-const userInput = "'; DROP TABLE users; --"
+const userInput = '\'; DROP TABLE users; --'
 const cleanInput = engine.security.sanitizeInput(userInput)
 // 清理后的输入不会包含危险字符
 ```
@@ -279,7 +279,8 @@ const cleanInput = engine.security.sanitizeInput(userInput)
 try {
   const cleanInput = engine.security.sanitizeInput(userInput)
   // 处理清理后的输入
-} catch (error) {
+}
+catch (error) {
   engine.logger.error('输入清理失败:', error)
   // 处理错误情况
 }

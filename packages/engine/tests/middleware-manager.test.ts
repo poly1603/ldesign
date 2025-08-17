@@ -30,7 +30,7 @@ describe('middlewareManager', () => {
   describe('基础功能', () => {
     it('应该创建中间件管理器实例', () => {
       expect(middlewareManager).toBeDefined()
-      expect(middlewareManager.size()).toBe(0)
+      expect((middlewareManager as any).size()).toBe(0)
     })
 
     it('应该添加中间件', () => {
@@ -41,9 +41,9 @@ describe('middlewareManager', () => {
 
       middlewareManager.use(middleware)
 
-      expect(middlewareManager.has('test')).toBe(true)
-      expect(middlewareManager.get('test')).toBe(middleware)
-      expect(middlewareManager.size()).toBe(1)
+      expect((middlewareManager as any).has('test')).toBe(true)
+      expect((middlewareManager as any).get('test')).toBe(middleware)
+      expect((middlewareManager as any).size()).toBe(1)
     })
 
     it('应该替换同名中间件', () => {
@@ -60,8 +60,8 @@ describe('middlewareManager', () => {
       middlewareManager.use(middleware1)
       middlewareManager.use(middleware2)
 
-      expect(middlewareManager.size()).toBe(1)
-      expect(middlewareManager.get('test')).toBe(middleware2)
+      expect((middlewareManager as any).size()).toBe(1)
+      expect((middlewareManager as any).get('test')).toBe(middleware2)
     })
 
     it('应该按优先级排序中间件', () => {
@@ -87,7 +87,7 @@ describe('middlewareManager', () => {
       middlewareManager.use(middleware2)
       middlewareManager.use(middleware3)
 
-      const order = middlewareManager.getExecutionOrder()
+      const order = (middlewareManager as any).getExecutionOrder()
       expect(order).toEqual([
         'high-priority',
         'medium-priority',
@@ -110,7 +110,7 @@ describe('middlewareManager', () => {
       middlewareManager.use(middleware1)
       middlewareManager.use(middleware2)
 
-      const order = middlewareManager.getExecutionOrder()
+      const order = (middlewareManager as any).getExecutionOrder()
       expect(order).toEqual(['with-priority', 'no-priority'])
     })
 
@@ -121,11 +121,11 @@ describe('middlewareManager', () => {
       }
 
       middlewareManager.use(middleware)
-      expect(middlewareManager.has('test')).toBe(true)
+      expect((middlewareManager as any).has('test')).toBe(true)
 
       middlewareManager.remove('test')
-      expect(middlewareManager.has('test')).toBe(false)
-      expect(middlewareManager.size()).toBe(0)
+      expect((middlewareManager as any).has('test')).toBe(false)
+      expect((middlewareManager as any).size()).toBe(0)
     })
 
     it('应该获取所有中间件', () => {
@@ -142,7 +142,7 @@ describe('middlewareManager', () => {
       middlewareManager.use(middleware1)
       middlewareManager.use(middleware2)
 
-      const allMiddleware = middlewareManager.getAll()
+      const allMiddleware = (middlewareManager as any).getAll()
       expect(allMiddleware).toHaveLength(2)
       expect(allMiddleware).toContain(middleware1)
       expect(allMiddleware).toContain(middleware2)
@@ -152,10 +152,10 @@ describe('middlewareManager', () => {
       middlewareManager.use({ name: 'test1', handler: vi.fn() })
       middlewareManager.use({ name: 'test2', handler: vi.fn() })
 
-      expect(middlewareManager.size()).toBe(2)
+      expect((middlewareManager as any).size()).toBe(2);
 
-      middlewareManager.clear()
-      expect(middlewareManager.size()).toBe(0)
+      (middlewareManager as any).clear()
+      expect((middlewareManager as any).size()).toBe(0)
     })
   })
 
@@ -219,7 +219,7 @@ describe('middlewareManager', () => {
       const context: MiddlewareContext = { data: 'test' }
 
       await expect(
-        middlewareManager.execute('nonexistent', context)
+        middlewareManager.execute('nonexistent', context),
       ).rejects.toThrow('Middleware "nonexistent" not found')
     })
 
@@ -237,7 +237,7 @@ describe('middlewareManager', () => {
       const context: MiddlewareContext = { data: 'test' }
 
       await expect(middlewareManager.execute(context)).rejects.toThrow(
-        'Test error'
+        'Test error',
       )
       expect(context.error).toBe(error)
     })
@@ -409,7 +409,7 @@ describe('预定义中间件功能测试', () => {
       expect(mockLogger.info).toHaveBeenNthCalledWith(
         1,
         'Middleware execution started',
-        { context }
+        { context },
       )
       expect(mockLogger.info).toHaveBeenNthCalledWith(
         2,
@@ -417,7 +417,7 @@ describe('预定义中间件功能测试', () => {
         expect.objectContaining({
           duration: expect.any(Number),
           context,
-        })
+        }),
       )
     })
 
@@ -456,8 +456,8 @@ describe('预定义中间件功能测试', () => {
         captureError: vi.fn(),
       }
 
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const errorMiddleware: Middleware = {
         name: 'error-thrower',
         handler: async () => {
@@ -473,7 +473,7 @@ describe('预定义中间件功能测试', () => {
       await middlewareManager.execute(context)
 
       expect(mockErrorManager.captureError).toHaveBeenCalledWith(
-        expect.any(Error)
+        expect.any(Error),
       )
       expect(context.error).toBeInstanceOf(Error)
       expect(context.error?.message).toBe('Test error')
@@ -484,8 +484,8 @@ describe('预定义中间件功能测试', () => {
         captureError: vi.fn(),
       }
 
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const errorMiddleware: Middleware = {
         name: 'error-thrower',
         handler: async () => {
@@ -561,7 +561,7 @@ describe('预定义中间件功能测试', () => {
         expect.objectContaining({
           duration: 150,
           context,
-        })
+        }),
       )
 
       // Restore original performance.now
@@ -585,8 +585,8 @@ describe('预定义中间件功能测试', () => {
       }
 
       const loggerMiddleware = commonMiddleware.logger(mockLogger)
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const performanceMiddleware = commonMiddleware.performance(mockLogger)
 
       middlewareManager.use(loggerMiddleware)
@@ -597,7 +597,7 @@ describe('预定义中间件功能测试', () => {
       await middlewareManager.execute(context)
 
       // 验证执行顺序（按优先级）
-      const order = middlewareManager.getExecutionOrder()
+      const order = (middlewareManager as any).getExecutionOrder()
       expect(order).toEqual(['logger', 'performance', 'errorHandler'])
 
       // 验证日志中间件被调用
@@ -617,8 +617,8 @@ describe('预定义中间件功能测试', () => {
       }
 
       const loggerMiddleware = commonMiddleware.logger(mockLogger)
-      const errorHandlerMiddleware =
-        commonMiddleware.errorHandler(mockErrorManager)
+      const errorHandlerMiddleware
+        = commonMiddleware.errorHandler(mockErrorManager)
       const errorMiddleware: Middleware = {
         name: 'error-thrower',
         handler: async () => {

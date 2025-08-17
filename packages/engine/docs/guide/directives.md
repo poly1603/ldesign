@@ -15,16 +15,24 @@ function handleClick(event) {
 
 <template>
   <!-- 基础用法 -->
-  <button v-click="handleClick">点击我</button>
+  <button v-click="handleClick">
+    点击我
+  </button>
 
   <!-- 防抖点击 -->
-  <button v-click.debounce="handleClick">防抖点击</button>
+  <button v-click.debounce="handleClick">
+    防抖点击
+  </button>
 
   <!-- 节流点击 -->
-  <button v-click.throttle="handleClick">节流点击</button>
+  <button v-click.throttle="handleClick">
+    节流点击
+  </button>
 
   <!-- 自定义延迟 -->
-  <button v-click.debounce.500="handleClick">500ms防抖</button>
+  <button v-click.debounce.500="handleClick">
+    500ms防抖
+  </button>
 </template>
 ```
 
@@ -39,13 +47,13 @@ function handleInput(value, event) {
 
 <template>
   <!-- 输入防抖 -->
-  <input v-debounce="handleInput" placeholder="输入内容" />
+  <input v-debounce="handleInput" placeholder="输入内容">
 
   <!-- 自定义延迟时间 -->
-  <input v-debounce.300="handleInput" placeholder="300ms防抖" />
+  <input v-debounce.300="handleInput" placeholder="300ms防抖">
 
   <!-- 立即执行 -->
-  <input v-debounce.immediate="handleInput" placeholder="立即执行" />
+  <input v-debounce.immediate="handleInput" placeholder="立即执行">
 </template>
 ```
 
@@ -64,10 +72,14 @@ function handleMouseMove(event) {
 
 <template>
   <!-- 滚动节流 -->
-  <div v-throttle:scroll="handleScroll" class="scroll-container">滚动内容</div>
+  <div v-throttle:scroll="handleScroll" class="scroll-container">
+    滚动内容
+  </div>
 
   <!-- 鼠标移动节流 -->
-  <div v-throttle:mousemove.100="handleMouseMove">鼠标移动区域</div>
+  <div v-throttle:mousemove.100="handleMouseMove">
+    鼠标移动区域
+  </div>
 </template>
 ```
 
@@ -100,8 +112,7 @@ const tooltipContent = ref('动态提示内容')
       delay: 500,
       theme: 'dark',
     }"
-    >配置提示</span
-  >
+  >配置提示</span>
 </template>
 ```
 
@@ -124,10 +135,14 @@ function startLoading() {
 
 <template>
   <!-- 基础加载 -->
-  <div v-loading="isLoading">内容区域</div>
+  <div v-loading="isLoading">
+    内容区域
+  </div>
 
   <!-- 自定义加载文本 -->
-  <div v-loading="isLoading" loading-text="正在加载...">内容区域</div>
+  <div v-loading="isLoading" loading-text="正在加载...">
+    内容区域
+  </div>
 
   <!-- 自定义加载样式 -->
   <div
@@ -154,13 +169,19 @@ const isVisible = ref(true)
 
 <template>
   <!-- 淡入淡出 -->
-  <div v-show-animate.fade="isVisible">淡入淡出内容</div>
+  <div v-show-animate.fade="isVisible">
+    淡入淡出内容
+  </div>
 
   <!-- 滑动效果 -->
-  <div v-show-animate.slide="isVisible">滑动内容</div>
+  <div v-show-animate.slide="isVisible">
+    滑动内容
+  </div>
 
   <!-- 缩放效果 -->
-  <div v-show-animate.scale="isVisible">缩放内容</div>
+  <div v-show-animate.scale="isVisible">
+    缩放内容
+  </div>
 
   <!-- 自定义动画 -->
   <div
@@ -195,11 +216,17 @@ function handleDragEnd(event) {
 
 <template>
   <!-- 基础拖拽 -->
-  <div v-drag="handleDrag" class="draggable">拖拽我</div>
+  <div v-drag="handleDrag" class="draggable">
+    拖拽我
+  </div>
 
   <!-- 限制拖拽方向 -->
-  <div v-drag.x="handleDrag">只能水平拖拽</div>
-  <div v-drag.y="handleDrag">只能垂直拖拽</div>
+  <div v-drag.x="handleDrag">
+    只能水平拖拽
+  </div>
+  <div v-drag.y="handleDrag">
+    只能垂直拖拽
+  </div>
 
   <!-- 拖拽配置 -->
   <div
@@ -227,11 +254,17 @@ function handleResize(size, event) {
 
 <template>
   <!-- 基础调整大小 -->
-  <div v-resize="handleResize" class="resizable">调整我的大小</div>
+  <div v-resize="handleResize" class="resizable">
+    调整我的大小
+  </div>
 
   <!-- 限制调整方向 -->
-  <div v-resize.horizontal="handleResize">只能水平调整</div>
-  <div v-resize.vertical="handleResize">只能垂直调整</div>
+  <div v-resize.horizontal="handleResize">
+    只能水平调整
+  </div>
+  <div v-resize.vertical="handleResize">
+    只能垂直调整
+  </div>
 
   <!-- 调整配置 -->
   <div
@@ -311,8 +344,8 @@ engine.directives.register('lifecycle-demo', {
 // 图片懒加载指令
 engine.directives.register('lazy', {
   mounted(el, binding) {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const img = entry.target as HTMLImageElement
           img.src = binding.value
@@ -364,8 +397,8 @@ engine.directives.register('infinite-scroll', {
     const options = binding.modifiers
 
     const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             callback()
           }
@@ -520,7 +553,8 @@ engine.directives.register('safe-directive', {
     try {
       // 指令逻辑
       this.setupDirective(el, binding)
-    } catch (error) {
+    }
+    catch (error) {
       engine.logger.error('指令初始化失败:', error)
 
       // 降级处理
@@ -636,7 +670,7 @@ engine.directives.register('debug', {
 engine.directives.register('event-bridge', {
   mounted(el, binding) {
     const eventName = binding.arg
-    const handler = event => {
+    const handler = (event) => {
       engine.events.emit(`directive:${eventName}`, {
         element: el,
         event,
@@ -664,10 +698,11 @@ engine.directives.register('state-sync', {
     const statePath = binding.value
 
     // 监听状态变化
-    const unwatch = engine.state.watch(statePath, newValue => {
+    const unwatch = engine.state.watch(statePath, (newValue) => {
       if (el.tagName === 'INPUT') {
         el.value = newValue
-      } else {
+      }
+      else {
         el.textContent = newValue
       }
     })

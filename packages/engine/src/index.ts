@@ -8,6 +8,21 @@ import { commonMiddleware } from './middleware/middleware-manager'
 
 // import './styles/index.less' // 暂时注释掉，需要配置CSS处理插件
 
+// 导出缓存管理器
+export {
+  CacheManagerImpl,
+  CacheStrategy,
+  createCacheManager,
+} from './cache/cache-manager'
+
+// 导出配置管理器
+export {
+  ConfigManagerImpl,
+  createConfigManager,
+  defaultConfigSchema,
+  NamespacedConfigManager,
+} from './config/config-manager'
+
 // 导出常量
 export * from './constants'
 
@@ -18,7 +33,9 @@ export {
   commonDirectives,
   createDirectiveManager,
 } from './directives/directive-manager'
+
 export { createErrorManager, errorHandlers } from './errors/error-manager'
+
 export { createEventManager, ENGINE_EVENTS } from './events/event-manager'
 export { createLogger, logFormatters, logTransports } from './logger/logger'
 export {
@@ -29,8 +46,18 @@ export {
   createNotificationManager,
   notificationTypes,
 } from './notifications/notification-manager'
+// 导出性能管理器
+export {
+  createPerformanceManager,
+  PerformanceEventType,
+} from './performance/performance-manager'
 // 导出管理器
 export { createPluginManager } from './plugins/plugin-manager'
+// 导出安全管理器
+export {
+  createSecurityManager,
+  SecurityEventType,
+} from './security/security-manager'
 export { createStateManager, stateModules } from './state/state-manager'
 
 /**
@@ -47,10 +74,23 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
     store,
     i18n,
     theme,
+    configSchema,
+    enableAutoSave = false,
+    autoSaveInterval = 30000,
   } = options
 
   // 创建引擎实例
-  const engine = new EngineImpl(config)
+  const engine = new EngineImpl(config as any)
+
+  // 设置自定义配置Schema
+  if (configSchema) {
+    engine.config.setSchema(configSchema)
+  }
+
+  // 启用配置自动保存
+  if (enableAutoSave) {
+    engine.config.enableAutoSave(autoSaveInterval)
+  }
 
   // 注册常用指令
   engine.directives.registerBatch(commonDirectives)
@@ -70,12 +110,12 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
   }
 
   // 注册中间件
-  middleware.forEach(m => {
+  middleware.forEach((m) => {
     engine.middleware.use(m)
   })
 
   // 注册插件（异步）
-  Promise.all(plugins.map(plugin => engine.use(plugin))).catch(error => {
+  Promise.all(plugins.map(plugin => engine.use(plugin))).catch((error) => {
     engine.logger.error('Failed to register plugins', error)
   })
 
@@ -90,7 +130,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
  */
 export function createApp(
   rootComponent: Component,
-  options: CreateEngineOptions = {}
+  options: CreateEngineOptions = {},
 ): Engine {
   // 创建引擎实例
   const engine = createEngine(options)
@@ -113,7 +153,7 @@ export const creators = {
   plugin: (
     name: string,
     install: Plugin['install'],
-    options?: Partial<Plugin>
+    options?: Partial<Plugin>,
   ): Plugin => ({
     name,
     install,
@@ -122,7 +162,7 @@ export const creators = {
   middleware: (
     name: string,
     handler: Middleware['handler'],
-    priority?: number
+    priority?: number,
   ): Middleware => ({
     name,
     handler,
@@ -139,10 +179,11 @@ export const utils = {
   isDev: () => {
     try {
       return (
-        typeof process !== 'undefined' &&
-        process.env?.NODE_ENV === 'development'
+        typeof process !== 'undefined'
+        && process.env?.NODE_ENV === 'development'
       )
-    } catch {
+    }
+    catch {
       return false
     }
   },
@@ -154,21 +195,22 @@ export const utils = {
   // 深度合并对象
   deepMerge: <T extends Record<string, any>>(
     target: T,
-    source: Partial<T>
+    source: Partial<T>,
   ): T => {
     const result = { ...target }
 
     for (const key in source) {
       if (
-        source[key] &&
-        typeof source[key] === 'object' &&
-        !Array.isArray(source[key])
+        source[key]
+        && typeof source[key] === 'object'
+        && !Array.isArray(source[key])
       ) {
         result[key] = utils.deepMerge(
           result[key] || ({} as any),
-          source[key]!
+          source[key]!,
         ) as any
-      } else {
+      }
+      else {
         result[key] = source[key]!
       }
     }
@@ -179,7 +221,7 @@ export const utils = {
   // 防抖函数
   debounce: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): ((...args: Parameters<T>) => void) => {
     let timeout: NodeJS.Timeout
 
@@ -192,7 +234,7 @@ export const utils = {
   // 节流函数
   throttle: <T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): ((...args: Parameters<T>) => void) => {
     let lastTime = 0
 
@@ -244,9 +286,40 @@ export const presets = {
     const logger = createLogger('debug')
     return {
       config: {
+        app: {
+          name: 'Development App',
+          version: '1.0.0',
+        },
+        environment: 'development',
         debug: true,
-        appName: 'Development App',
+        features: {
+          enableHotReload: true,
+          enableDevTools: true,
+          enablePerformanceMonitoring: true,
+          enableErrorReporting: true,
+          enableSecurityProtection: true,
+          enableCaching: true,
+          enableNotifications: true,
+        },
+        logger: {
+          level: 'debug',
+          maxLogs: 1000,
+          enableConsole: true,
+          enableStorage: true,
+          storageKey: 'engine-logs-dev',
+          transports: ['console', 'localStorage'],
+        },
+        cache: {
+          enabled: true,
+          maxSize: 500,
+          defaultTTL: 5 * 60 * 1000, // 5分钟
+          strategy: 'lru',
+          enableStats: true,
+          cleanupInterval: 60000,
+        },
       },
+      enableAutoSave: true,
+      autoSaveInterval: 10000, // 10秒
       middleware: [
         commonMiddleware.logger(logger),
         commonMiddleware.performance(logger),
@@ -257,16 +330,63 @@ export const presets = {
   // 生产环境预设
   production: (): CreateEngineOptions => ({
     config: {
+      app: {
+        name: 'Production App',
+        version: '1.0.0',
+      },
+      environment: 'production',
       debug: false,
+      features: {
+        enableHotReload: false,
+        enableDevTools: false,
+        enablePerformanceMonitoring: true,
+        enableErrorReporting: true,
+        enableSecurityProtection: true,
+        enableCaching: true,
+        enableNotifications: true,
+      },
+      logger: {
+        level: 'warn',
+        maxLogs: 500,
+        enableConsole: false,
+        enableStorage: true,
+        storageKey: 'engine-logs-prod',
+        transports: ['localStorage'],
+      },
+      cache: {
+        enabled: true,
+        maxSize: 1000,
+        defaultTTL: 30 * 60 * 1000, // 30分钟
+        strategy: 'lru',
+        enableStats: false,
+        cleanupInterval: 300000, // 5分钟
+      },
     },
+    enableAutoSave: true,
+    autoSaveInterval: 60000, // 1分钟
     middleware: [commonMiddleware.errorHandler(createErrorManager())],
   }),
 
   // 最小配置预设
   minimal: (): CreateEngineOptions => ({
     config: {
+      app: {
+        name: 'Minimal App',
+        version: '1.0.0',
+      },
+      environment: 'production',
       debug: false,
+      features: {
+        enableHotReload: false,
+        enableDevTools: false,
+        enablePerformanceMonitoring: false,
+        enableErrorReporting: false,
+        enableSecurityProtection: false,
+        enableCaching: false,
+        enableNotifications: false,
+      },
     },
+    enableAutoSave: false,
   }),
 }
 
@@ -279,32 +399,56 @@ export function install(app: any, options: CreateEngineOptions = {}) {
 
 // 导出主要类型
 export type {
+  CacheConfig,
+  // 管理器类型
+  CacheManager,
+  // 配置管理器类型
+  ConfigManager,
+  ConfigSchema,
+
+  ConfigSnapshot,
+  ConfigWatcher,
+  // 核心类型
   CreateEngineOptions,
   DirectiveManager,
   Engine,
   EngineConfig,
+
+  EnhancedEngineConfig,
   ErrorHandler,
   ErrorInfo,
   ErrorManager,
   EventHandler,
+
   EventManager,
+  // 适配器类型
   I18nAdapter,
   LogEntry,
   Logger,
+  // 各模块配置类型
+  LoggerConfig,
   LogLevel,
   Middleware,
   MiddlewareContext,
   MiddlewareManager,
   MiddlewareNext,
+  NotificationConfig,
   NotificationManager,
   NotificationOptions,
   NotificationType,
+  PerformanceConfig,
+  PerformanceManager,
   Plugin,
   PluginManager,
   RouterAdapter,
+  SecurityConfig,
+  SecurityManager,
   StateAdapter,
   StateManager,
+
   ThemeAdapter,
+  UnwatchFunction,
+  ValidationResult,
 } from './types'
 
 // 导出工具函数

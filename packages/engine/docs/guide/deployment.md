@@ -75,8 +75,8 @@ import { developmentConfig } from './config/development'
 import { productionConfig } from './config/production'
 
 // 根据环境选择配置
-const config =
-  process.env.NODE_ENV === 'production'
+const config
+  = process.env.NODE_ENV === 'production'
     ? { ...presets.production(), ...productionConfig }
     : { ...presets.development(), ...developmentConfig }
 
@@ -85,7 +85,7 @@ const engine = createApp(App, config)
 // 生产环境错误处理
 if (process.env.NODE_ENV === 'production') {
   // 全局错误捕获
-  window.addEventListener('error', event => {
+  window.addEventListener('error', (event) => {
     engine.logger.error('全局错误', {
       message: event.message,
       filename: event.filename,
@@ -96,7 +96,7 @@ if (process.env.NODE_ENV === 'production') {
   })
 
   // Promise 错误捕获
-  window.addEventListener('unhandledrejection', event => {
+  window.addEventListener('unhandledrejection', (event) => {
     engine.logger.error('未处理的Promise错误', {
       reason: event.reason,
     })
@@ -417,7 +417,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.meta?.preload) {
     // 预加载组件
-    to.matched.forEach(record => {
+    to.matched.forEach((record) => {
       if (typeof record.component === 'function') {
         record.component()
       }
@@ -435,12 +435,12 @@ export default router
 // plugins/performance.ts
 import { creators } from '@ldesign/engine'
 
-export const performancePlugin = creators.plugin('performance', engine => {
+export const performancePlugin = creators.plugin('performance', (engine) => {
   // 图片懒加载
   const lazyLoadImages = () => {
     const images = document.querySelectorAll('img[data-src]')
-    const imageObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
+    const imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const img = entry.target as HTMLImageElement
           img.src = img.dataset.src!
@@ -457,7 +457,7 @@ export const performancePlugin = creators.plugin('performance', engine => {
   const preloadCriticalResources = () => {
     const criticalResources = ['/api/user/profile', '/api/app/config']
 
-    criticalResources.forEach(url => {
+    criticalResources.forEach((url) => {
       fetch(url, { method: 'HEAD' }).catch(() => {}) // 忽略错误
     })
   }
@@ -479,7 +479,7 @@ import { creators } from '@ldesign/engine'
 // plugins/sentry.ts
 import * as Sentry from '@sentry/vue'
 
-export const sentryPlugin = creators.plugin('sentry', engine => {
+export const sentryPlugin = creators.plugin('sentry', (engine) => {
   if (process.env.NODE_ENV === 'production') {
     Sentry.init({
       app: engine.app,
@@ -524,7 +524,7 @@ export const sentryPlugin = creators.plugin('sentry', engine => {
 // plugins/analytics.ts
 import { creators } from '@ldesign/engine'
 
-export const analyticsPlugin = creators.plugin('analytics', engine => {
+export const analyticsPlugin = creators.plugin('analytics', (engine) => {
   // 页面访问统计
   const trackPageView = (path: string) => {
     if (typeof gtag !== 'undefined') {
@@ -616,7 +616,8 @@ export function decryptStorage(encryptedData: string) {
       return JSON.parse(atob(encryptedData))
     }
     return JSON.parse(encryptedData)
-  } catch {
+  }
+  catch {
     return null
   }
 }

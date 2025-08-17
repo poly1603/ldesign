@@ -34,7 +34,7 @@ class Engine implements IEngine {
       'directives',
     ]
 
-    managerOrder.forEach(name => {
+    managerOrder.forEach((name) => {
       const ManagerClass = this.getManagerClass(name)
       const manager = new ManagerClass(this, this._config[name])
       this._managers.set(name, manager)
@@ -173,7 +173,8 @@ class PluginManager implements IPluginManager {
         plugin,
         duration,
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.engine.events.emit('plugin:error', {
         plugin,
         error,
@@ -305,13 +306,15 @@ class MiddlewarePipeline {
     let index = 0
 
     const next = async (): Promise<void> => {
-      if (index >= this.middlewares.length) return
+      if (index >= this.middlewares.length)
+        return
 
       const middleware = this.middlewares[index++]
 
       try {
         await middleware.handler(context, next)
-      } catch (error) {
+      }
+      catch (error) {
         // 中间件错误处理
         context.engine.events.emit('middleware:error', {
           middleware,
@@ -362,7 +365,8 @@ class EventManager implements IEventManager {
     if (this.isAsync) {
       this.eventQueue.push(eventItem)
       this.processQueue()
-    } else {
+    }
+    else {
       this.processEvent(eventItem)
     }
   }
@@ -395,7 +399,8 @@ class EventManager implements IEventManager {
         if (listener.once) {
           this.removeListener(event, listener.id)
         }
-      } catch (error) {
+      }
+      catch (error) {
         this.engine.errors.capture(error, {
           event,
           listener: listener.id,
@@ -433,7 +438,8 @@ class EventQueue {
   private batchSize = 10
 
   async processQueue(): Promise<void> {
-    if (this.processing) return
+    if (this.processing)
+      return
 
     this.processing = true
 
@@ -544,28 +550,33 @@ class StatePersistence {
   }
 
   save(key: string, value: any): void {
-    if (!this.shouldPersist(key)) return
+    if (!this.shouldPersist(key))
+      return
 
     try {
       const serialized = this.serialize(value)
       const storageKey = this.getStorageKey(key)
       this.storage.setItem(storageKey, serialized)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to persist state:', error)
     }
   }
 
   load(key: string): any {
-    if (!this.shouldPersist(key)) return undefined
+    if (!this.shouldPersist(key))
+      return undefined
 
     try {
       const storageKey = this.getStorageKey(key)
       const serialized = this.storage.getItem(storageKey)
 
-      if (serialized === null) return undefined
+      if (serialized === null)
+        return undefined
 
       return this.deserialize(serialized)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to load persisted state:', error)
       return undefined
     }
@@ -580,12 +591,14 @@ class StatePersistence {
   }
 
   private shouldPersist(key: string): boolean {
-    if (this.keys.length === 0) return true
+    if (this.keys.length === 0)
+      return true
     return this.keys.some(pattern => this.matchKey(key, pattern))
   }
 
   private matchKey(key: string, pattern: string): boolean {
-    if (pattern === '*') return true
+    if (pattern === '*')
+      return true
     if (pattern.endsWith('*')) {
       return key.startsWith(pattern.slice(0, -1))
     }
@@ -624,7 +637,8 @@ class LRUCache<T = any> implements ICache<T> {
       existing.value = value
       existing.ttl = ttl ? Date.now() + ttl : undefined
       this.moveToHead(existing)
-    } else {
+    }
+    else {
       // 创建新节点
       const node: CacheNode<T> = {
         key,
@@ -647,7 +661,8 @@ class LRUCache<T = any> implements ICache<T> {
   get(key: string): T | undefined {
     const node = this.cache.get(key)
 
-    if (!node) return undefined
+    if (!node)
+      return undefined
 
     // 检查过期
     if (node.ttl && Date.now() > node.ttl) {
@@ -664,7 +679,8 @@ class LRUCache<T = any> implements ICache<T> {
   delete(key: string): boolean {
     const node = this.cache.get(key)
 
-    if (!node) return false
+    if (!node)
+      return false
 
     this.removeNode(node)
     this.cache.delete(key)
@@ -714,7 +730,7 @@ class PerformanceCollector {
   private initializeObservers(): void {
     // 观察导航性能
     if ('PerformanceObserver' in window) {
-      const navigationObserver = new PerformanceObserver(list => {
+      const navigationObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           this.processNavigationEntry(entry as PerformanceNavigationTiming)
         }
@@ -725,7 +741,7 @@ class PerformanceCollector {
     }
 
     // 观察资源加载性能
-    const resourceObserver = new PerformanceObserver(list => {
+    const resourceObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         this.processResourceEntry(entry as PerformanceResourceTiming)
       }

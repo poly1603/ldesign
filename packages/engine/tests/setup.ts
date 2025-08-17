@@ -37,6 +37,46 @@ globalThis.IntersectionObserver = vi.fn().mockImplementation(() => ({
 globalThis.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16)) as any
 globalThis.cancelAnimationFrame = vi.fn(id => clearTimeout(id))
 
+// 模拟 Canvas API
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  value: vi.fn().mockImplementation((contextType: string) => {
+    if (contextType === 'webgl' || contextType === 'experimental-webgl') {
+      return {
+        getExtension: vi.fn(),
+        getParameter: vi.fn(),
+        createShader: vi.fn(),
+        createProgram: vi.fn(),
+      }
+    }
+    if (contextType === 'webgl2') {
+      return {
+        getExtension: vi.fn(),
+        getParameter: vi.fn(),
+        createShader: vi.fn(),
+        createProgram: vi.fn(),
+      }
+    }
+    if (contextType === '2d') {
+      return {
+        fillRect: vi.fn(),
+        clearRect: vi.fn(),
+        getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
+        putImageData: vi.fn(),
+        createImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
+        setTransform: vi.fn(),
+        drawImage: vi.fn(),
+        save: vi.fn(),
+        restore: vi.fn(),
+        scale: vi.fn(),
+        rotate: vi.fn(),
+        translate: vi.fn(),
+        transform: vi.fn(),
+      }
+    }
+    return null
+  }),
+})
+
 // 模拟 localStorage
 const localStorageMock = {
   getItem: vi.fn(),

@@ -116,7 +116,8 @@ async function getDataWithProtection(key: string) {
         // 缓存数据（即使是null也要缓存，防止穿透）
         engine.cache.set(key, data || null, 300000)
       }
-    } finally {
+    }
+    finally {
       await engine.cache.releaseLock(lock)
     }
   }
@@ -131,22 +132,22 @@ async function getDataWithProtection(key: string) {
 
 ```typescript
 // 监听缓存设置事件
-engine.events.on('cache:set', event => {
+engine.events.on('cache:set', (event) => {
   console.log(`缓存设置: ${event.key} = ${event.value}`)
 })
 
 // 监听缓存获取事件
-engine.events.on('cache:get', event => {
+engine.events.on('cache:get', (event) => {
   console.log(`缓存${event.hit ? '命中' : '未命中'}: ${event.key}`)
 })
 
 // 监听缓存过期事件
-engine.events.on('cache:expired', event => {
+engine.events.on('cache:expired', (event) => {
   console.log(`缓存过期: ${event.key}`)
 })
 
 // 监听缓存清理事件
-engine.events.on('cache:evicted', event => {
+engine.events.on('cache:evicted', (event) => {
   console.log(`缓存淘汰: ${event.key} (原因: ${event.reason})`)
 })
 ```
@@ -306,7 +307,8 @@ class LogService {
   }
 
   private async flushWriteQueue() {
-    if (this.writeQueue.size === 0) return
+    if (this.writeQueue.size === 0)
+      return
 
     const events = Array.from(this.writeQueue.values())
     this.writeQueue.clear()
@@ -434,7 +436,7 @@ const results = await engine.cache.getMany(keys)
 // 异步缓存更新
 async function updateCacheAsync(key: string, data: any) {
   // 不等待缓存写入完成
-  engine.cache.set(key, data).catch(error => {
+  engine.cache.set(key, data).catch((error) => {
     engine.logger.error('缓存写入失败:', error)
   })
 
@@ -450,7 +452,7 @@ engine.cache.configure({
   maxMemoryUsage: 100 * 1024 * 1024, // 100MB
 
   // 内存压力时的处理策略
-  memoryPressureHandler: usage => {
+  memoryPressureHandler: (usage) => {
     if (usage > 0.9) {
       // 清理过期缓存
       engine.cache.cleanupExpired()
@@ -468,7 +470,8 @@ engine.cache.configure({
 try {
   const data = engine.cache.get('some-key')
   // 处理数据
-} catch (error) {
+}
+catch (error) {
   engine.logger.error('缓存操作失败:', error)
 
   // 降级处理
@@ -515,7 +518,8 @@ const cacheMiddleware = {
       if (response.status === 200) {
         engine.cache.set(cacheKey, response, 300000) // 5分钟
       }
-    } else {
+    }
+    else {
       context.response = response
     }
   },

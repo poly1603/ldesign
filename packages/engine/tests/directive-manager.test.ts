@@ -43,7 +43,7 @@ describe('directiveManager', () => {
   describe('基础功能', () => {
     it('应该创建指令管理器实例', () => {
       expect(directiveManager).toBeDefined()
-      expect(directiveManager.size()).toBe(0)
+      expect((directiveManager as any).size()).toBe(0)
     })
 
     it('应该注册指令', () => {
@@ -54,13 +54,13 @@ describe('directiveManager', () => {
 
       directiveManager.register('test', testDirective)
 
-      expect(directiveManager.has('test')).toBe(true)
+      expect((directiveManager as any).has('test')).toBe(true)
       expect(directiveManager.get('test')).toBe(testDirective)
-      expect(directiveManager.size()).toBe(1)
+      expect((directiveManager as any).size()).toBe(1)
     })
 
     it('应该在重复注册时发出警告', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
       const directive1: Directive = { mounted: vi.fn() }
       const directive2: Directive = { mounted: vi.fn() }
@@ -69,7 +69,7 @@ describe('directiveManager', () => {
       directiveManager.register('test', directive2)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Directive "test" is already registered. It will be replaced.'
+        'Directive "test" is already registered. It will be replaced.',
       )
       expect(directiveManager.get('test')).toBe(directive2)
 
@@ -80,10 +80,10 @@ describe('directiveManager', () => {
       const testDirective: Directive = { mounted: vi.fn() }
 
       directiveManager.register('test', testDirective)
-      expect(directiveManager.has('test')).toBe(true)
+      expect((directiveManager as any).has('test')).toBe(true)
 
       directiveManager.unregister('test')
-      expect(directiveManager.has('test')).toBe(false)
+      expect((directiveManager as any).has('test')).toBe(false)
       expect(directiveManager.get('test')).toBeUndefined()
     })
 
@@ -105,7 +105,7 @@ describe('directiveManager', () => {
       directiveManager.register('test1', { mounted: vi.fn() })
       directiveManager.register('test2', { mounted: vi.fn() })
 
-      const names = directiveManager.getNames()
+      const names = (directiveManager as any).getNames()
       expect(names).toEqual(['test1', 'test2'])
     })
 
@@ -113,11 +113,11 @@ describe('directiveManager', () => {
       directiveManager.register('test1', { mounted: vi.fn() })
       directiveManager.register('test2', { mounted: vi.fn() })
 
-      expect(directiveManager.size()).toBe(2)
+      expect((directiveManager as any).size()).toBe(2)
 
       directiveManager.clear()
-      expect(directiveManager.size()).toBe(0)
-      expect(directiveManager.getNames()).toEqual([])
+      expect((directiveManager as any).size()).toBe(0)
+      expect((directiveManager as any).getNames()).toEqual([])
     })
   })
 
@@ -131,10 +131,10 @@ describe('directiveManager', () => {
 
       directiveManager.registerBatch(directives)
 
-      expect(directiveManager.size()).toBe(3)
-      expect(directiveManager.has('test1')).toBe(true)
-      expect(directiveManager.has('test2')).toBe(true)
-      expect(directiveManager.has('test3')).toBe(true)
+      expect((directiveManager as any).size()).toBe(3)
+      expect((directiveManager as any).has('test1')).toBe(true)
+      expect((directiveManager as any).has('test2')).toBe(true)
+      expect((directiveManager as any).has('test3')).toBe(true)
     })
 
     it('应该批量卸载指令', () => {
@@ -144,10 +144,10 @@ describe('directiveManager', () => {
 
       directiveManager.unregisterBatch(['test1', 'test3'])
 
-      expect(directiveManager.size()).toBe(1)
-      expect(directiveManager.has('test1')).toBe(false)
-      expect(directiveManager.has('test2')).toBe(true)
-      expect(directiveManager.has('test3')).toBe(false)
+      expect((directiveManager as any).size()).toBe(1)
+      expect((directiveManager as any).has('test1')).toBe(false)
+      expect((directiveManager as any).has('test2')).toBe(true)
+      expect((directiveManager as any).has('test3')).toBe(false)
     })
   })
 
@@ -165,10 +165,10 @@ describe('directiveManager', () => {
     it('应该能够注册预定义指令', () => {
       directiveManager.registerBatch(commonDirectives)
 
-      expect(directiveManager.size()).toBe(7)
-      expect(directiveManager.has('clickOutside')).toBe(true)
-      expect(directiveManager.has('copy')).toBe(true)
-      expect(directiveManager.has('lazy')).toBe(true)
+      expect((directiveManager as any).size()).toBe(7)
+      expect((directiveManager as any).has('clickOutside')).toBe(true)
+      expect((directiveManager as any).has('copy')).toBe(true)
+      expect((directiveManager as any).has('lazy')).toBe(true)
     })
   })
 })
@@ -193,11 +193,11 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback }
 
-      ;(commonDirectives.clickOutside as any).mounted!(
+        ; (commonDirectives.clickOutside as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       // 模拟点击外部
@@ -205,10 +205,9 @@ describe('预定义指令功能测试', () => {
       mockElement.contains = vi.fn().mockReturnValue(false)
 
       // 获取注册的事件处理器并调用
-      const addEventListenerCalls = (document.addEventListener as any).mock
-        .calls
+      const addEventListenerCalls = (document.addEventListener as any).mock.calls
       const clickHandler = addEventListenerCalls.find(
-        (call: any) => call[0] === 'click'
+        (call: any) => call[0] === 'click',
       )?.[1]
 
       if (clickHandler) {
@@ -221,22 +220,22 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback }
 
-      ;(commonDirectives.clickOutside as any).mounted!(
+        ; (commonDirectives.clickOutside as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
-      ;(commonDirectives.clickOutside as any).unmounted!(
+      ; (commonDirectives.clickOutside as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(document.removeEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
@@ -245,11 +244,11 @@ describe('预定义指令功能测试', () => {
     it('应该在挂载时聚焦元素', () => {
       const binding = { value: true }
 
-      ;(commonDirectives.focus as any).mounted!(
+        ; (commonDirectives.focus as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.focus).toHaveBeenCalled()
@@ -258,11 +257,11 @@ describe('预定义指令功能测试', () => {
     it('应该在值为false时不聚焦', () => {
       const binding = { value: false }
 
-      ;(commonDirectives.focus as any).mounted!(
+        ; (commonDirectives.focus as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.focus).not.toHaveBeenCalled()
@@ -271,11 +270,11 @@ describe('预定义指令功能测试', () => {
     it('应该在更新时根据值变化聚焦', () => {
       const binding = { value: true, oldValue: false }
 
-      ;(commonDirectives.focus as any).updated!(
+        ; (commonDirectives.focus as any).updated!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.focus).toHaveBeenCalled()
@@ -287,16 +286,16 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback, arg: 'click' }
 
-      commonDirectives.debounce.mounted!(
+        ; (commonDirectives.debounce as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -304,22 +303,22 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback, arg: 'click' }
 
-      commonDirectives.debounce.mounted!(
+        ; (commonDirectives.debounce as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
-      commonDirectives.debounce.unmounted!(
+      ; (commonDirectives.debounce as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
@@ -329,16 +328,16 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback, arg: 'click' }
 
-      commonDirectives.throttle.mounted!(
+      ;(commonDirectives.throttle as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
 
@@ -346,22 +345,22 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback, arg: 'click' }
 
-      commonDirectives.throttle.mounted!(
+      ;(commonDirectives.throttle as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
-      commonDirectives.throttle.unmounted!(
+      ;(commonDirectives.throttle as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockElement.removeEventListener).toHaveBeenCalledWith(
         'click',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
@@ -371,11 +370,11 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback }
 
-      commonDirectives.lazy.mounted!(
+      ;(commonDirectives.lazy as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(IntersectionObserver).toHaveBeenCalled()
@@ -393,11 +392,11 @@ describe('预定义指令功能测试', () => {
       // 模拟观察器
       mockElement._lazyObserver = mockObserver as any
 
-      commonDirectives.lazy.unmounted!(
+      ;(commonDirectives.lazy as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       expect(mockObserver.disconnect).toHaveBeenCalled()
@@ -408,11 +407,11 @@ describe('预定义指令功能测试', () => {
     it('应该在有权限时不做任何操作', () => {
       const binding = { value: 'user', modifiers: { hide: true } }
 
-      commonDirectives.permission.mounted!(
+      ;(commonDirectives.permission as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       // 由于 checkPermission 总是返回 true，元素不应该被隐藏
@@ -424,11 +423,11 @@ describe('预定义指令功能测试', () => {
     it('应该支持数组形式的权限检查', () => {
       const binding = { value: ['admin', 'user'], modifiers: {} }
 
-      commonDirectives.permission.mounted!(
+      ;(commonDirectives.permission as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
-        {} as any
+        {} as any,
       )
 
       // 由于 checkPermission 总是返回 true，元素不应该被移除
@@ -438,16 +437,16 @@ describe('预定义指令功能测试', () => {
     it('应该正确处理权限指令的逻辑结构', () => {
       // 测试指令的基本结构
       expect(commonDirectives.permission).toHaveProperty('mounted')
-      expect(typeof commonDirectives.permission.mounted).toBe('function')
+      expect(typeof (commonDirectives.permission as any).mounted).toBe('function')
 
       // 测试不会抛出错误
       expect(() => {
         const binding = { value: 'test', modifiers: {} }
-        commonDirectives.permission.mounted!(
+        ;(commonDirectives.permission as any).mounted!(
           mockElement,
           binding as any,
           {} as any,
-          {} as any
+          {} as any,
         )
       }).not.toThrow()
     })

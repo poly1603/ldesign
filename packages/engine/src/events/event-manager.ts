@@ -1,4 +1,4 @@
-import type { EventHandler, EventManager, Logger } from '../types'
+import type { EventHandler, EventManager, Logger, EngineEventMap } from '../types'
 
 interface EventListener {
   handler: EventHandler
@@ -6,7 +6,7 @@ interface EventListener {
   priority: number
 }
 
-export class EventManagerImpl implements EventManager {
+export class EventManagerImpl implements EventManager<EngineEventMap> {
   private events = new Map<string, EventListener[]>()
   private maxListeners = 100
 
@@ -17,11 +17,11 @@ export class EventManagerImpl implements EventManager {
     // logger参数保留用于未来扩展
   }
 
-  on(event: string, handler: EventHandler, priority = 0): void {
+  on(event: any, handler: EventHandler, priority = 0): void {
     this.addEventListener(event, handler, false, priority)
   }
 
-  off(event: string, handler?: EventHandler): void {
+  off(event: any, handler?: EventHandler): void {
     if (!this.events.has(event)) {
       return
     }
@@ -44,7 +44,7 @@ export class EventManagerImpl implements EventManager {
     }
   }
 
-  emit(event: string, ...args: unknown[]): void {
+  emit(event: any, ...args: any[]): void {
     const listeners = this.events.get(event)
     if (!listeners || listeners.length === 0) {
       return
@@ -54,15 +54,16 @@ export class EventManagerImpl implements EventManager {
     let listenersToExecute = this.sortedListenersCache.get(event)
     if (!listenersToExecute) {
       listenersToExecute = [...listeners].sort(
-        (a, b) => b.priority - a.priority
+        (a, b) => b.priority - a.priority,
       )
       this.sortedListenersCache.set(event, listenersToExecute)
     }
 
     for (const listener of listenersToExecute) {
       try {
-        listener.handler(...args)
-      } catch (error) {
+        listener.handler(args[0])
+      }
+      catch (error) {
         console.error(`Error in event handler for "${event}":`, error)
       }
 
@@ -73,7 +74,7 @@ export class EventManagerImpl implements EventManager {
     }
   }
 
-  once(event: string, handler: EventHandler, priority = 0): void {
+  once(event: any, handler: EventHandler, priority = 0): void {
     this.addEventListener(event, handler, true, priority)
   }
 
@@ -81,7 +82,7 @@ export class EventManagerImpl implements EventManager {
     event: string,
     handler: EventHandler,
     once: boolean,
-    priority: number
+    priority: number,
   ): void {
     if (!this.events.has(event)) {
       this.events.set(event, [])
@@ -92,9 +93,9 @@ export class EventManagerImpl implements EventManager {
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(
-        `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
-          `${listeners.length + 1} "${event}" listeners added. ` +
-          `Use setMaxListeners() to increase limit.`
+        `MaxListenersExceededWarning: Possible EventManager memory leak detected. `
+        + `${listeners.length + 1} "${event}" listeners added. `
+        + `Use setMaxListeners() to increase limit.`,
       )
     }
 
@@ -139,7 +140,8 @@ export class EventManagerImpl implements EventManager {
   removeAllListeners(event?: string): void {
     if (event) {
       this.events.delete(event)
-    } else {
+    }
+    else {
       this.events.clear()
     }
   }
@@ -153,7 +155,7 @@ export class EventManagerImpl implements EventManager {
   prependOnceListener(
     event: string,
     handler: EventHandler,
-    priority = 1000
+    priority = 1000,
   ): void {
     this.addEventListener(event, handler, true, priority)
   }
@@ -187,7 +189,7 @@ export class EventManagerImpl implements EventManager {
 
 // 事件命名空间类
 export class EventNamespace {
-  constructor(private eventManager: EventManager, private namespace: string) {}
+  constructor(private eventManager: EventManager, private namespace: string) { }
 
   private getEventName(event: string): string {
     return `${this.namespace}:${event}`

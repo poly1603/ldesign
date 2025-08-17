@@ -45,7 +45,7 @@ type NotificationTheme = 'light' | 'dark' | 'auto'
 ### 快速开始
 
 ```typescript
-import { createNotificationManager, createNotificationHelpers } from '@ldesign/engine'
+import { createNotificationHelpers, createNotificationManager } from '@ldesign/engine'
 
 // 创建通知管理器
 const notificationManager = createNotificationManager()
@@ -298,7 +298,8 @@ const confirmed = await notifications.confirm('确定要删除这个文件吗？
 
 if (confirmed) {
   console.log('用户确认删除')
-} else {
+}
+else {
   console.log('用户取消删除')
 }
 ```
@@ -430,7 +431,8 @@ async function showProgressNotification(task: () => Promise<void>) {
       persistent: false,
       progress: undefined,
     })
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.update(notificationId, {
       type: 'error',
       message: '处理失败',
@@ -562,7 +564,8 @@ class NotificationMerger {
       existing.count++
       existing.lastMessage = message
       clearTimeout(existing.timer)
-    } else {
+    }
+    else {
       // 创建新的合并通知
       this.pendingNotifications.set(key, {
         count: 1,
@@ -578,7 +581,8 @@ class NotificationMerger {
 
       if (count === 1) {
         engine.notifications.show(type, lastMessage)
-      } else {
+      }
+      else {
         engine.notifications.show(type, `${lastMessage} (${count}条消息)`)
       }
 
@@ -644,7 +648,8 @@ const notificationTemplates = {
   networkStatus: (isOnline: boolean) => {
     if (isOnline) {
       return engine.notifications.success('网络连接已恢复')
-    } else {
+    }
+    else {
       return engine.notifications.error('网络连接已断开', {
         persistent: true,
         actions: [
@@ -715,7 +720,7 @@ const persistentNotifications = new PersistentNotifications()
 
 // 保存重要通知
 engine.notifications.error('系统错误', {
-  onShow: notification => {
+  onShow: (notification) => {
     if (notification.type === 'error') {
       persistentNotifications.save({
         id: notification.id,
@@ -798,7 +803,7 @@ class NotificationController {
   }
 
   dismissAll() {
-    this.activeNotifications.forEach(id => {
+    this.activeNotifications.forEach((id) => {
       engine.notifications.dismiss(id)
     })
     this.activeNotifications = []
@@ -824,7 +829,7 @@ engine.notifications.error('发生错误', {
   onFocus: () => {
     // 通知获得焦点时的处理
   },
-  onKeyDown: event => {
+  onKeyDown: (event) => {
     if (event.key === 'Escape') {
       engine.notifications.dismiss(notificationId)
     }

@@ -106,7 +106,7 @@ const engine = createEngine(presets.production())
 // 创建插件
 const myPlugin = {
   name: 'my-plugin',
-  install: engine => {
+  install: (engine) => {
     // 插件逻辑
     engine.logger.info('Plugin installed')
   },
@@ -152,7 +152,7 @@ engine.state.watch('user', (newValue, oldValue) => {
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('User logged in:', user)
 })
 

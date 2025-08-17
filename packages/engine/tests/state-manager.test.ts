@@ -140,7 +140,7 @@ describe('stateManager', () => {
       stateManager.set('user.age', 30)
       stateManager.set('app.title', 'MyApp')
 
-      const snapshot = stateManager.getSnapshot()
+      const snapshot = (stateManager as any).getSnapshot()
       expect(snapshot).toEqual({
         user: {
           name: 'John',
@@ -156,9 +156,9 @@ describe('stateManager', () => {
       const snapshot = {
         user: { name: 'Jane', age: 25 },
         app: { title: 'NewApp' },
-      }
+      };
 
-      stateManager.restoreFromSnapshot(snapshot)
+      (stateManager as any).restoreFromSnapshot(snapshot)
 
       expect(stateManager.get('user.name')).toBe('Jane')
       expect(stateManager.get('user.age')).toBe(25)
@@ -169,9 +169,9 @@ describe('stateManager', () => {
   describe('状态合并', () => {
     it('应该合并状态', () => {
       stateManager.set('user.name', 'John')
-      stateManager.set('user.age', 30)
+      stateManager.set('user.age', 30);
 
-      stateManager.merge({
+      (stateManager as any).merge({
         user: { age: 31, email: 'john@example.com' },
         app: { title: 'MyApp' },
       })
@@ -193,7 +193,7 @@ describe('stateManager', () => {
       stateManager.watch('user.name', listener)
       stateManager.watch('user.age', listener)
 
-      const stats = stateManager.getStats()
+      const stats = (stateManager as any).getStats()
       expect(stats.totalKeys).toBeGreaterThan(0)
       expect(stats.totalWatchers).toBe(2)
       expect(stats.memoryUsage).toContain('KB')
@@ -206,7 +206,7 @@ describe('stateManager', () => {
       stateManager.set('key1', 'value2')
       stateManager.set('key2', 'value3')
 
-      const history = stateManager.getChangeHistory()
+      const history = (stateManager as any).getChangeHistory()
       expect(history).toHaveLength(3)
       expect(history[0].path).toBe('key2')
       expect(history[0].newValue).toBe('value3')
@@ -220,17 +220,17 @@ describe('stateManager', () => {
 
       expect(stateManager.get('key1')).toBe('value2')
 
-      const undone = stateManager.undo()
+      const undone = (stateManager as any).undo()
       expect(undone).toBe(true)
       expect(stateManager.get('key1')).toBe('value1')
     })
 
     it('应该清除变更历史', () => {
       stateManager.set('key1', 'value1')
-      stateManager.set('key2', 'value2')
+      stateManager.set('key2', 'value2');
 
-      stateManager.clearHistory()
-      const history = stateManager.getChangeHistory()
+      (stateManager as any).clearHistory()
+      const history = (stateManager as any).getChangeHistory()
       expect(history).toHaveLength(0)
     })
   })
@@ -240,7 +240,7 @@ describe('stateManager', () => {
       stateManager.set('key1', 'value1')
       stateManager.set('key2', 'value2')
 
-      const stats = stateManager.getPerformanceStats()
+      const stats = (stateManager as any).getPerformanceStats()
       expect(stats.totalChanges).toBe(2)
       expect(stats.memoryUsage).toBeGreaterThan(0)
     })

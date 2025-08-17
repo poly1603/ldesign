@@ -34,7 +34,8 @@ const engine = createEngine({
 // 3. 捕获初始化错误
 try {
   const engine = createEngine(config)
-} catch (error) {
+}
+catch (error) {
   console.error('引擎初始化失败:', error)
   // 检查错误详情
 }
@@ -53,7 +54,7 @@ Error: Plugin "my-plugin" failed to load
 const plugin = {
   name: 'my-plugin',
   version: '1.0.0',
-  install: engine => {
+  install: (engine) => {
     // 插件安装逻辑
   },
 }
@@ -62,7 +63,7 @@ const plugin = {
 const plugin = {
   name: 'dependent-plugin',
   dependencies: ['base-plugin'], // 确保依赖插件已注册
-  install: engine => {
+  install: (engine) => {
     if (!engine.plugins.isRegistered('base-plugin')) {
       throw new Error('Required plugin "base-plugin" not found')
     }
@@ -72,10 +73,11 @@ const plugin = {
 // 3. 异步插件错误处理
 const asyncPlugin = {
   name: 'async-plugin',
-  install: async engine => {
+  install: async (engine) => {
     try {
       await someAsyncOperation()
-    } catch (error) {
+    }
+    catch (error) {
       engine.logger.error('Async plugin failed:', error)
       throw error
     }
@@ -117,7 +119,8 @@ engine.state.subscribe('*', (key, newValue, oldValue) => {
 // 4. 检查状态验证
 try {
   engine.state.set('user', userData)
-} catch (error) {
+}
+catch (error) {
   console.error('状态验证失败:', error)
 }
 ```
@@ -135,7 +138,8 @@ Warning: Failed to persist state to localStorage
 try {
   localStorage.setItem('test', 'test')
   localStorage.removeItem('test')
-} catch (error) {
+}
+catch (error) {
   console.error('localStorage 不可用:', error)
 }
 
@@ -152,7 +156,7 @@ const engine = createEngine({
 })
 
 // 3. 监听持久化错误
-engine.events.on('state:persistence:error', error => {
+engine.events.on('state:persistence:error', (error) => {
   console.error('状态持久化失败:', error)
 })
 ```
@@ -182,10 +186,11 @@ engine.events.on('*', (eventName, data) => {
 })
 
 // 4. 检查事件处理器错误
-engine.events.on('user:login', data => {
+engine.events.on('user:login', (data) => {
   try {
     // 事件处理逻辑
-  } catch (error) {
+  }
+  catch (error) {
     console.error('事件处理器错误:', error)
   }
 })
@@ -273,7 +278,7 @@ setTimeout(() => {
 // 2. 使用异步插件
 const asyncPlugin = {
   name: 'async-plugin',
-  install: async engine => {
+  install: async (engine) => {
     // 异步初始化，不阻塞启动
     setTimeout(async () => {
       await heavyInitialization()
@@ -291,8 +296,8 @@ const asyncPlugin = {
 setInterval(() => {
   const memory = performance.memory
   console.log('内存使用:', {
-    used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-    total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB',
+    used: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB`,
+    total: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`,
   })
 }, 5000)
 
@@ -302,7 +307,7 @@ console.log('缓存统计:', cacheStats)
 
 // 3. 检查状态大小
 const stateSize = JSON.stringify(engine.state.getAll()).length
-console.log('状态大小:', Math.round(stateSize / 1024) + 'KB')
+console.log('状态大小:', `${Math.round(stateSize / 1024)}KB`)
 ```
 
 **优化方案：**
@@ -330,7 +335,7 @@ userShard.set('user:1', userData)
 
 ```typescript
 // 诊断网络问题
-engine.events.on('api:error', error => {
+engine.events.on('api:error', (error) => {
   console.error('API错误:', error)
 
   // 检查网络状态
@@ -343,7 +348,8 @@ engine.events.on('api:error', error => {
   if (error.status === 401) {
     // 认证失败，重新登录
     redirectToLogin()
-  } else if (error.status >= 500) {
+  }
+  else if (error.status >= 500) {
     // 服务器错误，显示友好提示
     engine.notifications.error('服务器暂时不可用，请稍后重试')
   }
@@ -416,7 +422,7 @@ const engine = createEngine({
 })
 
 // 自定义日志过滤
-engine.logger.addFilter(entry => {
+engine.logger.addFilter((entry) => {
   // 过滤敏感信息
   if (entry.message.includes('password')) {
     entry.message = entry.message.replace(/password:\s*\S+/g, 'password: ***')
@@ -459,7 +465,7 @@ const engine = createEngine({
     apiKey: 'your-api-key',
 
     // 错误过滤
-    filter: error => {
+    filter: (error) => {
       // 不报告开发环境错误
       return process.env.NODE_ENV === 'production'
     },
@@ -480,7 +486,8 @@ const engine = createEngine({
 // 手动报告错误
 try {
   riskyOperation()
-} catch (error) {
+}
+catch (error) {
   engine.errors.report(error, {
     context: 'user-action',
     severity: 'high',

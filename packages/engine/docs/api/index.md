@@ -194,7 +194,7 @@ import { createPlugin } from '@ldesign/engine'
 const myPlugin = createPlugin({
   name: 'my-plugin',
   version: '1.0.0',
-  install: engine => {
+  install: (engine) => {
     // 插件安装逻辑
   },
 })
@@ -250,10 +250,10 @@ interface Engine {
   readonly directives: DirectiveManager
   readonly errors: ErrorManager
 
-  use(plugin: Plugin): Engine
-  mount(app: App): void
-  unmount(): void
-  destroy(): void
+  use: (plugin: Plugin) => Engine
+  mount: (app: App) => void
+  unmount: () => void
+  destroy: () => void
 }
 
 // 插件定义
@@ -335,7 +335,7 @@ const merged = mergeConfig(baseConfig, overrideConfig)
 ### 类型检查
 
 ```typescript
-import { isPlugin, isMiddleware, isEngine } from '@ldesign/engine'
+import { isEngine, isMiddleware, isPlugin } from '@ldesign/engine'
 
 if (isPlugin(obj)) {
   // obj 是有效的插件
@@ -442,7 +442,7 @@ engine.state.set('user', { name: 'John', age: 30 })
 const user = engine.state.get('user')
 
 // 使用事件系统
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
 })
 
@@ -460,7 +460,7 @@ import { createEngine, createPlugin } from '@ldesign/engine'
 // 创建自定义插件
 const analyticsPlugin = createPlugin({
   name: 'analytics',
-  install: engine => {
+  install: (engine) => {
     // 监听所有事件进行分析
     engine.events.on('*', (eventName, data) => {
       sendAnalytics(eventName, data)

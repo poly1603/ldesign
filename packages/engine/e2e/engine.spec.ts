@@ -54,7 +54,7 @@ test.describe('Engine E2E Tests', () => {
   test('should have no console errors', async ({ page }) => {
     const errors: string[] = []
 
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         errors.push(msg.text())
       }
@@ -65,7 +65,7 @@ test.describe('Engine E2E Tests', () => {
 
     // 过滤掉一些已知的无害错误
     const filteredErrors = errors.filter(
-      error => !error.includes('favicon.ico') && !error.includes('404')
+      error => !error.includes('favicon.ico') && !error.includes('404'),
     )
 
     expect(filteredErrors).toHaveLength(0)

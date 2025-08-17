@@ -67,7 +67,7 @@ export class NotificationStyleManager {
    * 获取容器位置样式
    */
   getContainerStyles(
-    position: NotificationPosition
+    position: NotificationPosition,
   ): Partial<CSSStyleDeclaration> {
     const baseStyles: Partial<CSSStyleDeclaration> = {
       position: 'fixed',
@@ -130,7 +130,7 @@ export class NotificationStyleManager {
    */
   getNotificationStyles(
     type: NotificationType = 'info',
-    theme: NotificationTheme = this.currentTheme
+    theme: NotificationTheme = this.currentTheme,
   ): NotificationStyles {
     const colors = this.themes[theme]
     const typeColor = colors[type]
@@ -226,7 +226,7 @@ export class NotificationStyleManager {
    */
   getActionButtonStyles(
     style: 'primary' | 'secondary' | 'danger' = 'primary',
-    theme: NotificationTheme = this.currentTheme
+    theme: NotificationTheme = this.currentTheme,
   ): Partial<CSSStyleDeclaration> {
     const colors = this.themes[theme]
 
@@ -272,7 +272,7 @@ export class NotificationStyleManager {
   getProgressBarStyles(
     value: number,
     color?: string,
-    theme: NotificationTheme = this.currentTheme
+    theme: NotificationTheme = this.currentTheme,
   ): Partial<CSSStyleDeclaration> {
     const colors = this.themes[theme]
 
@@ -290,7 +290,7 @@ export class NotificationStyleManager {
    */
   applyStyles(
     element: HTMLElement,
-    styles: Partial<CSSStyleDeclaration>
+    styles: Partial<CSSStyleDeclaration>,
   ): void {
     Object.entries(styles).forEach(([property, value]) => {
       if (value !== undefined) {

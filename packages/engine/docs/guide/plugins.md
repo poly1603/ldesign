@@ -25,7 +25,7 @@ import { createApp, creators } from '@ldesign/engine'
 import App from './App.vue'
 
 // 创建一个简单的插件
-const myPlugin = creators.plugin('my-plugin', engine => {
+const myPlugin = creators.plugin('my-plugin', (engine) => {
   // 插件安装逻辑
   engine.logger.info('My plugin installed!')
 
@@ -33,7 +33,7 @@ const myPlugin = creators.plugin('my-plugin', engine => {
   engine.state.set('myPluginData', { count: 0 })
 
   // 监听事件
-  engine.events.on('my-event', data => {
+  engine.events.on('my-event', (data) => {
     console.log('My event triggered:', data)
   })
 })
@@ -47,7 +47,7 @@ const engine = createApp(App, {
 ### 异步插件
 
 ```typescript
-const asyncPlugin = creators.plugin('async-plugin', async engine => {
+const asyncPlugin = creators.plugin('async-plugin', async (engine) => {
   // 异步初始化
   const data = await fetch('/api/plugin-config')
   const config = await data.json()
@@ -64,7 +64,7 @@ const dependentPlugin = {
   name: 'dependent-plugin',
   version: '1.0.0',
   dependencies: ['base-plugin'], // 依赖其他插件
-  install: engine => {
+  install: (engine) => {
     // 确保依赖插件已安装
     if (!engine.plugins.isRegistered('base-plugin')) {
       throw new Error('base-plugin is required')
@@ -95,10 +95,10 @@ await engine.use(dependentPlugin)
 // 如果插件提供了 uninstall 方法
 const removablePlugin = {
   name: 'removable-plugin',
-  install: engine => {
+  install: (engine) => {
     engine.logger.info('Plugin installed')
   },
-  uninstall: engine => {
+  uninstall: (engine) => {
     engine.logger.info('Plugin uninstalled')
     // 清理资源
   },
@@ -138,15 +138,15 @@ console.log(
 
 ```typescript
 // 插件A：发送事件
-const pluginA = creators.plugin('plugin-a', engine => {
+const pluginA = creators.plugin('plugin-a', (engine) => {
   // 发送数据给其他插件
   engine.events.emit('data-updated', { value: 42 })
 })
 
 // 插件B：监听事件
-const pluginB = creators.plugin('plugin-b', engine => {
+const pluginB = creators.plugin('plugin-b', (engine) => {
   // 监听来自其他插件的事件
-  engine.events.on('data-updated', data => {
+  engine.events.on('data-updated', (data) => {
     console.log('Received data from plugin A:', data.value)
   })
 })
@@ -165,11 +165,12 @@ const badPlugin = creators.plugin('plugin1', install) // ❌ 不好的命名
 ### 2. 错误处理
 
 ```typescript
-const robustPlugin = creators.plugin('robust-plugin', engine => {
+const robustPlugin = creators.plugin('robust-plugin', (engine) => {
   try {
     // 插件逻辑
     engine.state.set('data', processData())
-  } catch (error) {
+  }
+  catch (error) {
     engine.logger.error('Plugin initialization failed:', error)
     // 优雅降级
     engine.state.set('data', getDefaultData())
@@ -182,7 +183,7 @@ const robustPlugin = creators.plugin('robust-plugin', engine => {
 ```typescript
 const cleanPlugin = {
   name: 'clean-plugin',
-  install: engine => {
+  install: (engine) => {
     const timer = setInterval(() => {
       // 定期任务
     }, 1000)
@@ -190,7 +191,7 @@ const cleanPlugin = {
     // 保存定时器引用以便清理
     engine.state.set('cleanPluginTimer', timer)
   },
-  uninstall: engine => {
+  uninstall: (engine) => {
     // 清理资源
     const timer = engine.state.get('cleanPluginTimer')
     if (timer) {
@@ -210,7 +211,7 @@ interface MyPluginOptions {
 }
 
 function configurablePlugin(options: MyPluginOptions) {
-  return creators.plugin('configurable-plugin', engine => {
+  return creators.plugin('configurable-plugin', (engine) => {
     // 使用配置
     engine.state.set('apiConfig', {
       url: options.apiUrl,
@@ -236,12 +237,12 @@ const engine = createApp(App, {
 
 ```typescript
 // 监听插件注册事件
-engine.events.on('plugin:registered', plugin => {
+engine.events.on('plugin:registered', (plugin) => {
   console.log('Plugin registered:', plugin.name)
 })
 
 // 监听插件卸载事件
-engine.events.on('plugin:unregistered', pluginName => {
+engine.events.on('plugin:unregistered', (pluginName) => {
   console.log('Plugin unregistered:', pluginName)
 })
 ```

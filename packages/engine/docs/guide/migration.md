@@ -22,6 +22,9 @@ pnpm add @ldesign/engine
 #### 从 Vuex 迁移
 
 ```typescript
+// LDesign Engine (新)
+import { createEngine } from '@ldesign/engine'
+
 // Vuex (旧)
 import { createStore } from 'vuex'
 
@@ -46,9 +49,6 @@ const store = createStore({
   },
 })
 
-// LDesign Engine (新)
-import { createEngine } from '@ldesign/engine'
-
 const engine = createEngine({
   state: {
     initialState: {
@@ -63,17 +63,18 @@ engine.state.set('user', user)
 engine.state.set('count', count + 1)
 
 // 监听状态变化
-engine.state.subscribe('user', newUser => {
+engine.state.subscribe('user', (newUser) => {
   console.log('用户更新:', newUser)
 })
 
 // 异步操作
-const login = async credentials => {
+async function login(credentials) {
   try {
     const user = await api.login(credentials)
     engine.state.set('user', user)
     engine.events.emit('user:login', user)
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.error('登录失败')
   }
 }
@@ -84,6 +85,9 @@ const login = async credentials => {
 #### 从 EventBus 迁移
 
 ```typescript
+// LDesign Engine (新)
+import { createEngine } from '@ldesign/engine'
+
 // EventBus (旧)
 import { createApp } from 'vue'
 const eventBus = createApp({})
@@ -92,12 +96,9 @@ const eventBus = createApp({})
 eventBus.$emit('user-login', userData)
 
 // 监听事件
-eventBus.$on('user-login', userData => {
+eventBus.$on('user-login', (userData) => {
   console.log('用户登录:', userData)
 })
-
-// LDesign Engine (新)
-import { createEngine } from '@ldesign/engine'
 
 const engine = createEngine()
 
@@ -105,7 +106,7 @@ const engine = createEngine()
 engine.events.emit('user:login', userData)
 
 // 监听事件
-engine.events.on('user:login', userData => {
+engine.events.on('user:login', (userData) => {
   console.log('用户登录:', userData)
 })
 
@@ -224,6 +225,14 @@ export default {
 // Angular (旧)
 import { Injectable } from '@angular/core'
 
+// 在组件中使用
+import { Component } from '@angular/core'
+import { useEngine } from '@ldesign/engine/vue'
+
+// 在组件中使用
+import { computed } from 'vue'
+import { UserService } from './user.service'
+
 @Injectable({
   providedIn: 'root',
 })
@@ -239,10 +248,6 @@ export class UserService {
   }
 }
 
-// 在组件中使用
-import { Component } from '@angular/core'
-import { UserService } from './user.service'
-
 @Component({
   selector: 'app-user',
   template: '<div>{{ user?.name }}</div>',
@@ -257,7 +262,7 @@ export class UserComponent {
 // 创建用户插件
 const userPlugin = {
   name: 'user',
-  install: engine => {
+  install: (engine) => {
     const userService = {
       getUser() {
         return engine.state.get('user')
@@ -272,10 +277,6 @@ const userPlugin = {
     engine.userService = userService
   },
 }
-
-// 在组件中使用
-import { computed } from 'vue'
-import { useEngine } from '@ldesign/engine/vue'
 
 export default {
   setup() {
@@ -311,7 +312,7 @@ engine.state.set('user', userData)
 // 1.x (旧)
 const plugin = {
   name: 'my-plugin',
-  setup: engine => {
+  setup: (engine) => {
     // 插件逻辑
   },
 }
@@ -319,7 +320,7 @@ const plugin = {
 // 2.x (新)
 const plugin = {
   name: 'my-plugin',
-  install: engine => {
+  install: (engine) => {
     // 插件逻辑
   },
 }
@@ -452,14 +453,14 @@ if (oldData) {
 // 旧格式
 const plugin = {
   name: 'my-plugin',
-  setup: engine => {},
+  setup: (engine) => {},
 }
 
 // 新格式
 const plugin = {
   name: 'my-plugin',
   version: '2.0.0',
-  install: engine => {},
+  install: (engine) => {},
 }
 ```
 

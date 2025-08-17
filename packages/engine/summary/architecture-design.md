@@ -43,12 +43,12 @@ interface Engine {
   readonly errors: ErrorManager
 
   // 生命周期
-  mount(app: App): void
-  unmount(): void
-  destroy(): void
+  mount: (app: App) => void
+  unmount: () => void
+  destroy: () => void
 
   // 插件管理
-  use(plugin: Plugin): Engine
+  use: (plugin: Plugin) => Engine
 }
 ```
 
@@ -59,20 +59,20 @@ interface Engine {
 ```typescript
 interface Manager {
   // 初始化
-  initialize(config?: any): void
+  initialize: (config?: any) => void
 
   // 销毁
-  destroy(): void
+  destroy: () => void
 
   // 状态
-  isInitialized(): boolean
+  isInitialized: () => boolean
 
   // 配置
-  configure(config: any): void
+  configure: (config: any) => void
 
   // 事件
-  on(event: string, handler: Function): () => void
-  emit(event: string, data?: any): void
+  on: (event: string, handler: Function) => () => void
+  emit: (event: string, data?: any) => void
 }
 ```
 
@@ -138,7 +138,8 @@ class MiddlewarePipeline {
     let index = 0
 
     const next = async (): Promise<void> => {
-      if (index >= this.middlewares.length) return
+      if (index >= this.middlewares.length)
+        return
 
       const middleware = this.middlewares[index++]
       await middleware.handler(context, next)
@@ -367,7 +368,8 @@ class CacheManager {
   async get(key: string): Promise<any> {
     // L1 缓存查找
     let value = this.l1Cache.get(key)
-    if (value !== undefined) return value
+    if (value !== undefined)
+      return value
 
     // L2 缓存查找
     value = await this.l2Cache.get(key)
@@ -526,11 +528,11 @@ interface Module {
   version: string
   dependencies: string[]
 
-  initialize(engine: Engine): void
-  destroy(): void
+  initialize: (engine: Engine) => void
+  destroy: () => void
 
-  getAPI(): any
-  getConfig(): any
+  getAPI: () => any
+  getConfig: () => any
 }
 ```
 
@@ -563,8 +565,8 @@ interface Module {
 
 ```typescript
 interface Adapter<T> {
-  adapt(target: T): AdaptedInterface
-  isCompatible(target: T): boolean
+  adapt: (target: T) => AdaptedInterface
+  isCompatible: (target: T) => boolean
 }
 
 class RouterAdapter implements Adapter<Router> {

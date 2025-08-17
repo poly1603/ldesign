@@ -17,7 +17,8 @@ engine.errors.onError((error, context) => {
 try {
   // 可能出错的代码
   riskyOperation()
-} catch (error) {
+}
+catch (error) {
   engine.errors.reportError(error, {
     component: 'UserProfile',
     action: 'updateProfile',
@@ -303,7 +304,8 @@ engine.errors.addHandler('NetworkError', (error: NetworkError, context) => {
     // 处理认证失败
     engine.auth.logout()
     engine.router.push('/login')
-  } else if (error.status >= 500) {
+  }
+  else if (error.status >= 500) {
     // 服务器错误
     engine.notifications.show({
       type: 'error',
@@ -507,7 +509,8 @@ function collectErrorContext(error: Error, additionalContext?: any) {
 function validateInput(data: any, schema: any) {
   try {
     return schema.parse(data)
-  } catch (error) {
+  }
+  catch (error) {
     throw new ValidationError('输入验证失败', 'INVALID_INPUT', {
       errors: error.errors,
       input: data,
@@ -519,7 +522,8 @@ function validateInput(data: any, schema: any) {
 async function safeAsyncOperation<T>(operation: () => Promise<T>, fallback?: T): Promise<T> {
   try {
     return await operation()
-  } catch (error) {
+  }
+  catch (error) {
     engine.errors.reportError(error)
 
     if (fallback !== undefined) {
@@ -534,7 +538,8 @@ async function safeAsyncOperation<T>(operation: () => Promise<T>, fallback?: T):
 function safeAccess(obj: any, path: string, defaultValue?: any) {
   try {
     return path.split('.').reduce((current, key) => current?.[key], obj) ?? defaultValue
-  } catch (error) {
+  }
+  catch (error) {
     engine.logger.warn(`安全访问失败: ${path}`, error)
     return defaultValue
   }
@@ -661,7 +666,8 @@ engine.errors.onError((error, context) => {
         },
       ],
     })
-  } else if (severity === 'warning') {
+  }
+  else if (severity === 'warning') {
     engine.notifications.show({
       type: 'warning',
       title: '操作失败',
