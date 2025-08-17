@@ -7,5 +7,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"]
+  "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"],
+  "exclude": ["examples/**/*", "node_modules", "dist", "lib", "es"]
 }

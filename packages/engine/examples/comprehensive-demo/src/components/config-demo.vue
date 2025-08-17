@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { inject, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 const props = defineProps<{
   engine?: any
@@ -8,6 +8,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   log: [level: string, message: string, data?: any]
 }>()
+
+// 获取引擎实例
+const engine = inject('engine') as any || props.engine
 
 // 响应式数据
 const configKey = ref('app.theme')
@@ -61,7 +64,13 @@ const presets = [
 // 方法
 function setConfig() {
   try {
-    props.engine.config.set(configKey.value, configValue.value)
+    if (!engine) {
+      configResult.value = '引擎未初始化'
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    engine.config.set(configKey.value, configValue.value)
     configResult.value = `设置成功: ${configKey.value} = ${configValue.value}`
     emit('log', 'success', `设置配置: ${configKey.value} = ${configValue.value}`)
     refreshConfig()
@@ -74,7 +83,13 @@ function setConfig() {
 
 function getConfig() {
   try {
-    const value = props.engine.config.get(configKey.value)
+    if (!engine) {
+      configResult.value = '引擎未初始化'
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    const value = engine.config.get(configKey.value)
     configResult.value = `获取结果: ${configKey.value} = ${JSON.stringify(value)}`
     emit('log', 'info', `获取配置: ${configKey.value} = ${JSON.stringify(value)}`)
   }
@@ -86,7 +101,13 @@ function getConfig() {
 
 function deleteConfig() {
   try {
-    props.engine.config.delete(configKey.value)
+    if (!engine) {
+      configResult.value = '引擎未初始化'
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    engine.config.delete(configKey.value)
     configResult.value = `删除成功: ${configKey.value}`
     emit('log', 'warning', `删除配置: ${configKey.value}`)
     refreshConfig()
@@ -99,8 +120,13 @@ function deleteConfig() {
 
 function setBatchConfig() {
   try {
+    if (!engine) {
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
     const config = JSON.parse(batchConfig.value)
-    props.engine.config.merge(config)
+    engine.config.merge(config)
     emit('log', 'success', '批量设置配置成功', config)
     refreshConfig()
   }
@@ -111,7 +137,12 @@ function setBatchConfig() {
 
 function getAllConfig() {
   try {
-    const allConfig = props.engine.config.getAll()
+    if (!engine) {
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    const allConfig = engine.config.getAll()
     emit('log', 'info', '获取所有配置', allConfig)
     refreshConfig()
   }
@@ -122,7 +153,12 @@ function getAllConfig() {
 
 function clearAllConfig() {
   try {
-    props.engine.config.clear()
+    if (!engine) {
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    engine.config.clear()
     emit('log', 'warning', '清空所有配置')
     refreshConfig()
   }
@@ -133,7 +169,12 @@ function clearAllConfig() {
 
 function startWatching() {
   try {
-    unwatchConfig = props.engine.config.watch(watchKey.value, (newValue: any, oldValue: any) => {
+    if (!engine) {
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    unwatchConfig = engine.config.watch(watchKey.value, (newValue: any, oldValue: any) => {
       emit('log', 'info', `配置变化: ${watchKey.value}`, { newValue, oldValue })
     })
     isWatching.value = true
@@ -155,7 +196,9 @@ function stopWatching() {
 
 function refreshConfig() {
   try {
-    const allConfig = props.engine.config.getAll()
+    if (!engine) return
+
+    const allConfig = engine.config.getAll()
     Object.assign(currentConfig, allConfig)
   }
   catch (error: any) {

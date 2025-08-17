@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { inject, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 const props = defineProps<{
-  engine: any
+  engine?: any
 }>()
 
 const emit = defineEmits<{
   log: [level: string, message: string, data?: any]
 }>()
+
+// 获取引擎实例
+const engine = inject('engine') as any || props.engine
 
 // 响应式数据
 const statePath = ref('user.profile.name')
@@ -77,6 +80,12 @@ const presets = [
 // 方法
 function setState() {
   try {
+    if (!engine) {
+      stateResult.value = '引擎未初始化'
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
     let value = stateValue.value
     // 尝试解析为 JSON
     try {
@@ -86,7 +95,7 @@ function setState() {
       // 保持原始字符串值
     }
 
-    props.engine.state.set(statePath.value, value)
+    engine.state.set(statePath.value, value)
     stateResult.value = `设置成功: ${statePath.value} = ${JSON.stringify(value)}`
     emit('log', 'success', `设置状态: ${statePath.value}`, value)
     refreshState()
@@ -99,7 +108,13 @@ function setState() {
 
 function getState() {
   try {
-    const value = props.engine.state.get(statePath.value)
+    if (!engine) {
+      stateResult.value = '引擎未初始化'
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    const value = engine.state.get(statePath.value)
     stateResult.value = `获取结果: ${statePath.value} = ${JSON.stringify(value)}`
     emit('log', 'info', `获取状态: ${statePath.value}`, value)
   }
@@ -111,7 +126,13 @@ function getState() {
 
 function deleteState() {
   try {
-    props.engine.state.delete(statePath.value)
+    if (!engine) {
+      stateResult.value = '引擎未初始化'
+      emit('log', 'error', '引擎未初始化')
+      return
+    }
+
+    engine.state.delete(statePath.value)
     stateResult.value = `删除成功: ${statePath.value}`
     emit('log', 'warning', `删除状态: ${statePath.value}`)
     refreshState()

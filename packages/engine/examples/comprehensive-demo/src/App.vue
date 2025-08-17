@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, inject, onMounted, reactive, ref } from 'vue'
 
-// 引擎相关
-const engine = ref<any>(null)
-const engineReady = ref(false)
+// 从注入中获取引擎实例
+const engine = inject('engine') as any
+const engineReady = ref(!!engine)
 
 // 主题
 const theme = ref<'light' | 'dark'>('light')
@@ -105,64 +105,84 @@ async function initEngine() {
   try {
     addLog('info', '开始初始化 LDesign Engine...')
 
-    // 创建一个模拟的引擎实例用于演示
-    const createEngine = () => ({
-      config: {
-        get: (key: string, defaultValue?: any) => {
-          const configs: Record<string, any> = {
-            appName: 'LDesign Engine Demo',
-            version: '1.0.0',
-            debug: true,
-            theme: 'light',
-            language: 'zh-CN',
-          }
-          return configs[key] || defaultValue
-        },
-        set: (key: string, value: any) => {
-          console.log(`设置配置: ${key} = ${value}`)
-        },
-      },
-      events: {
-        on: (event: string, handler: Function) => {
-          console.log(`监听事件: ${event}`)
-        },
-        emit: (event: string, data?: any) => {
-          console.log(`触发事件: ${event}`, data)
-        },
-      },
-      state: {
-        get: (key: string) => {
-          console.log(`获取状态: ${key}`)
-          return null
-        },
-        set: (key: string, value: any) => {
-          console.log(`设置状态: ${key} = ${value}`)
-        },
-      },
-    })
+    if (engine) {
+      addLog('success', 'LDesign Engine 已经初始化')
 
-    // 创建引擎实例
-    engine.value = createEngine()
+      // 展示引擎配置
+      const appName = engine.config.get('app.name', 'Unknown App')
+      const version = engine.config.get('app.version', '1.0.0')
+      const environment = engine.config.get('environment', 'development')
 
-    // 监听引擎事件
-    engine.value.events.on('engine:ready', () => {
+      addLog('info', `应用名称: ${appName}`)
+      addLog('info', `应用版本: ${version}`)
+      addLog('info', `运行环境: ${environment}`)
+
+      // 监听引擎事件
+      engine.events.on('app:mounted', (data: any) => {
+        addLog('success', '应用挂载完成', data)
+      })
+
+      engine.events.on('config:changed', (data: any) => {
+        addLog('info', '配置已更改', data)
+      })
+
+      // 测试各种管理器
+      testEngineFeatures()
+
       engineReady.value = true
       addLog('success', 'LDesign Engine 初始化完成')
-    })
-
-    engine.value.events.on('engine:error', (error: any) => {
-      addLog('error', '引擎错误', error)
-    })
-
-    // 暴露到全局对象供调试使用
-    ;(window as any).engine = engine.value
-
-    addLog('success', '引擎创建成功')
-    engineReady.value = true
+    } else {
+      addLog('error', '未找到 LDesign Engine 实例')
+    }
   }
   catch (error) {
     addLog('error', '引擎初始化失败', error)
     console.error('Engine initialization failed:', error)
+  }
+}
+
+// 测试引擎功能
+function testEngineFeatures() {
+  if (!engine) return
+
+  // 测试配置管理
+  engine.config.set('demo.testValue', 'Hello from LDesign Engine!')
+  const testValue = engine.config.get('demo.testValue')
+  addLog('info', `配置测试: ${testValue}`)
+
+  // 测试事件系统
+  engine.events.emit('demo:test', { message: '事件系统测试' })
+
+  // 测试状态管理
+  engine.state.set('demo.counter', 0)
+  const counter = engine.state.get('demo.counter')
+  addLog('info', `状态测试: counter = ${counter}`)
+
+  // 测试缓存
+  if (engine.cache) {
+    engine.cache.set('demo.cache', { data: 'cached data', timestamp: Date.now() })
+    const cached = engine.cache.get('demo.cache')
+    addLog('info', '缓存测试:', cached)
+  }
+
+  // 测试性能监控
+  if (engine.performance) {
+    engine.performance.mark('demo-start')
+    setTimeout(() => {
+      engine.performance.mark('demo-end')
+      engine.performance.measure('demo-duration', 'demo-start', 'demo-end')
+      addLog('info', '性能监控测试完成')
+    }, 100)
+  }
+
+  // 测试通知系统
+  if (engine.notifications) {
+    engine.notifications.show({
+      type: 'info',
+      title: '功能测试',
+      message: 'LDesign Engine 各项功能测试完成',
+      duration: 3000,
+    })
   }
 }
 

@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { inject, onMounted, onUnmounted, reactive, ref } from 'vue'
 
 const props = defineProps<{
-  engine: any
+  engine?: any
 }>()
 
 const emit = defineEmits<{
   log: [level: string, message: string, data?: any]
 }>()
+
+// 获取引擎实例
+const engine = inject('engine') as any || props.engine
 
 // 响应式数据
 const eventName = ref('user:login')
