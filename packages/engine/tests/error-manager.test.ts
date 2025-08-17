@@ -127,7 +127,7 @@ describe('errorManager', () => {
     it('应该按级别获取错误', () => {
       // 创建不同级别的错误
       const error1 = new Error('Error 1')
-      const error2 = new Error('Error 2')
+      const _error2 = new Error('Error 2')
 
       errorManager.captureError(error1)
       // 手动添加 warn 级别的错误

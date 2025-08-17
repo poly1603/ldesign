@@ -177,7 +177,7 @@ describe('type Safety', () => {
 
   describe('插件系统类型安全', () => {
     it('应该提供类型安全的插件接口', () => {
-      const engine = createEngine()
+      const _engine = createEngine()
 
       // 创建类型安全的插件
       const testPlugin: Plugin<Engine> = {
@@ -230,7 +230,7 @@ describe('type Safety', () => {
           description: 'Plugin with rich metadata',
           author: 'Test Author',
           homepage: 'https://example.com',
-          // keywords: ['test', 'plugin', 'metadata'],
+          keywords: ['test', 'plugin', 'metadata'],
           dependencies: ['dep1', 'dep2'],
           peerDependencies: ['peer1'],
           optionalDependencies: ['opt1'],
@@ -244,7 +244,7 @@ describe('type Safety', () => {
           },
         },
 
-        install: async (context) => {
+        install: async (_context) => {
           // 安装逻辑
         },
       }

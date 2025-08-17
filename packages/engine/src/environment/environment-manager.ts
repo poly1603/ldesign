@@ -339,31 +339,39 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
   }
 
   private detectEnv(): Environment {
-    if (typeof process !== 'undefined' && process.env) {
-      const nodeEnv = process.env.NODE_ENV
-      if (nodeEnv === 'production')
-        return 'production'
-      if (nodeEnv === 'test')
+    try {
+      // eslint-disable-next-line ts/no-require-imports
+      const nodeProcess = require('node:process')
+      if (typeof nodeProcess !== 'undefined' && nodeProcess.env) {
+        const nodeEnv = nodeProcess.env.NODE_ENV
+        if (nodeEnv === 'production')
+          return 'production'
+        if (nodeEnv === 'test')
+          return 'test'
+      }
+
+      // 检测测试环境
+      if (typeof globalThis !== 'undefined'
+        && (globalThis as any).__vitest__ !== undefined) {
         return 'test'
-    }
+      }
 
-    // 检测测试环境
-    if (typeof globalThis !== 'undefined'
-      && (globalThis as any).__vitest__ !== undefined) {
-      return 'test'
-    }
+      if (typeof window !== 'undefined'
+        && (window as any).__karma__ !== undefined) {
+        return 'test'
+      }
 
-    if (typeof window !== 'undefined'
-      && (window as any).__karma__ !== undefined) {
-      return 'test'
+      return 'development'
     }
-
-    return 'development'
+    catch {
+      return 'development'
+    }
   }
 
   private detectPlatform(): Platform {
     if (typeof window !== 'undefined') {
       // 检测 Electron
+      // eslint-disable-next-line node/prefer-global/process
       if ((window as any).require && (window as any).process?.type) {
         return 'electron'
       }
@@ -376,11 +384,18 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       return 'browser'
     }
 
-    if (typeof process !== 'undefined' && process.versions?.node) {
-      return 'node'
-    }
+    try {
+      // eslint-disable-next-line ts/no-require-imports
+      const nodeProcess = require('node:process')
+      if (typeof nodeProcess !== 'undefined' && nodeProcess.versions?.node) {
+        return 'node'
+      }
 
-    return 'unknown'
+      return 'unknown'
+    }
+    catch {
+      return 'unknown'
+    }
   }
 
   private detectBrowser(): { name: Browser, version: string, userAgent: string } {

@@ -166,9 +166,9 @@ describe('engine Integration', () => {
   describe('管理器间协作', () => {
     it('配置变化应该影响其他管理器', () => {
       // 监听配置变化事件
-      let configChanged = false
+      let _configChanged = false
       engine.events.on('config:changed', () => {
-        configChanged = true
+        _configChanged = true
       })
 
       // 更改配置

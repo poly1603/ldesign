@@ -385,6 +385,7 @@ export const errorHandlers = {
           ? 'warn'
           : 'info'
 
+    // eslint-disable-next-line no-console
     console[method]('Engine Error:', {
       message: errorInfo.message,
       timestamp: new Date(errorInfo.timestamp).toISOString(),
@@ -471,8 +472,8 @@ export function createErrorBoundary(errorManager: ErrorManager) {
       }
     },
     errorCaptured(error: Error, component: Component, info: string) {
-      ;(this as any).hasError = true
-      ;(this as any).error = error
+      ; (this as any).hasError = true
+      ; (this as any).error = error
 
       // 捕获错误到错误管理器
       errorManager.captureError(error, component, info)

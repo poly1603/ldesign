@@ -67,9 +67,15 @@ describe('lifecycleManager', () => {
     it('应该按优先级顺序执行钩子', async () => {
       const executionOrder: number[] = []
 
-      lifecycleManager.on('init', () => { executionOrder.push(1) }, 1)
-      lifecycleManager.on('init', () => { executionOrder.push(3) }, 3)
-      lifecycleManager.on('init', () => { executionOrder.push(2) }, 2)
+      lifecycleManager.on('init', () => {
+        executionOrder.push(1)
+      }, 1)
+      lifecycleManager.on('init', () => {
+        executionOrder.push(3)
+      }, 3)
+      lifecycleManager.on('init', () => {
+        executionOrder.push(2)
+      }, 2)
 
       await lifecycleManager.execute('init', mockEngine)
 

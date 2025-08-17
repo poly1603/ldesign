@@ -274,7 +274,7 @@ export class NotificationManagerImpl implements NotificationManager {
     }
 
     // 强制重排，然后触发进入动画
-    element.offsetHeight // 强制重排
+    void element.offsetHeight // 强制重排
 
     return new Promise((resolve) => {
       // 添加进入动画类
@@ -1105,7 +1105,7 @@ export function createNotificationHelpers(manager: NotificationManager) {
 
       return {
         id,
-        update: (value: number, newMessage?: string) => {
+        update: (_value: number, _newMessage?: string) => {
           // 这里需要实现进度更新逻辑
           // 实际实现中需要找到对应的通知并更新进度条
         },
@@ -1139,7 +1139,7 @@ export function createNotificationHelpers(manager: NotificationManager) {
       options?: Partial<NotificationOptions>,
     ) => {
       return new Promise<boolean>((resolve) => {
-        const id = manager.show({
+        const _id = manager.show({
           type: 'warning',
           message,
           title,
@@ -1184,7 +1184,7 @@ export function createNotificationHelpers(manager: NotificationManager) {
 
       return {
         id,
-        update: (newMessage: string) => {
+        update: (_newMessage: string) => {
           // 更新加载消息
         },
         success: (successMessage: string) => {

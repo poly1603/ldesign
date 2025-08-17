@@ -110,24 +110,24 @@ export type UnwatchFunction = () => void
 // 类型安全的路径访问
 export type ConfigPath<T> = T extends object
   ? {
-    [K in keyof T]: K extends string
-    ? T[K] extends object
-    ? `${K}` | `${K}.${ConfigPath<T[K]>}`
-    : `${K}`
-    : never
-  }[keyof T]
+      [K in keyof T]: K extends string
+        ? T[K] extends object
+          ? `${K}` | `${K}.${ConfigPath<T[K]>}`
+          : `${K}`
+        : never
+    }[keyof T]
   : never
 
 // 根据路径获取值的类型
 export type ConfigValue<T, P extends string> = P extends keyof T
   ? T[P]
   : P extends `${infer K}.${infer Rest}`
-  ? K extends keyof T
-  ? T[K] extends object
-  ? ConfigValue<T[K], Rest>
-  : never
-  : never
-  : never
+    ? K extends keyof T
+      ? T[K] extends object
+        ? ConfigValue<T[K], Rest>
+        : never
+      : never
+    : never
 
 // 配置管理器接口（增强类型安全）
 export interface ConfigManager<TConfig = Record<string, any>> {
@@ -429,24 +429,24 @@ export interface StateMap {
 // 状态路径类型
 export type StatePath<T> = T extends object
   ? {
-    [K in keyof T]: K extends string
-    ? T[K] extends object
-    ? `${K}` | `${K}.${StatePath<T[K]>}`
-    : `${K}`
-    : never
-  }[keyof T]
+      [K in keyof T]: K extends string
+        ? T[K] extends object
+          ? `${K}` | `${K}.${StatePath<T[K]>}`
+          : `${K}`
+        : never
+    }[keyof T]
   : never
 
 // 根据路径获取状态值的类型
 export type StateValue<T, P extends string> = P extends keyof T
   ? T[P]
   : P extends `${infer K}.${infer Rest}`
-  ? K extends keyof T
-  ? T[K] extends object
-  ? StateValue<T[K], Rest>
-  : never
-  : never
-  : never
+    ? K extends keyof T
+      ? T[K] extends object
+        ? StateValue<T[K], Rest>
+        : never
+      : never
+    : never
 
 // 类型安全的状态管理器
 export interface StateManager<TState extends StateMap = StateMap> {
@@ -682,6 +682,8 @@ export interface PerformanceManager {
   getReport: () => any
   clearMetrics: () => void
   setThresholds: (thresholds: any) => void
+  onMetrics: (callback: (metrics: any) => void) => () => void
+  onViolation: (callback: (violation: any) => void) => void
 }
 
 // 安全管理器接口
@@ -728,7 +730,7 @@ export interface LifecycleManager<T = any> {
   getCurrentPhase: () => any | undefined
   getLastEvent: () => any | undefined
   getHistory: () => any[]
-  isPhaseExecuted: (phase: string) => boolean
+  isPhaseExecuted: (phase: any) => boolean
   onError: (callback: (error: Error, context: any) => void) => () => void
   getStats: () => any
   clear: () => void

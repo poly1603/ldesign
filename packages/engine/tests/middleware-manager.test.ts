@@ -13,7 +13,7 @@ import {
 } from '../src/middleware/middleware-manager'
 
 // Mock Performance API
-Object.defineProperty(global, 'performance', {
+Object.defineProperty(globalThis, 'performance', {
   writable: true,
   value: {
     now: vi.fn(() => Date.now()),
@@ -511,9 +511,9 @@ describe('预定义中间件功能测试', () => {
       }
 
       // Mock performance.now to control timing
-      const originalPerformanceNow = global.performance?.now
+      const originalPerformanceNow = globalThis.performance?.now
       let callCount = 0
-      global.performance = {
+      globalThis.performance = {
         now: vi.fn(() => {
           callCount++
           return callCount === 1 ? 0 : 50 // 50ms duration
@@ -526,12 +526,12 @@ describe('预定义中间件功能测试', () => {
       const context: MiddlewareContext = { data: 'test' }
       await middlewareManager.execute(context)
 
-      expect(global.performance.now).toHaveBeenCalledTimes(2)
+      expect(globalThis.performance.now).toHaveBeenCalledTimes(2)
       expect(mockLogger.warn).not.toHaveBeenCalled() // 50ms < 100ms threshold
 
       // Restore original performance.now
       if (originalPerformanceNow) {
-        global.performance.now = originalPerformanceNow
+        globalThis.performance.now = originalPerformanceNow
       }
     })
 
@@ -541,9 +541,9 @@ describe('预定义中间件功能测试', () => {
       }
 
       // Mock performance.now to simulate slow execution
-      const originalPerformanceNow = global.performance?.now
+      const originalPerformanceNow = globalThis.performance?.now
       let callCount = 0
-      global.performance = {
+      globalThis.performance = {
         now: vi.fn(() => {
           callCount++
           return callCount === 1 ? 0 : 150 // 150ms duration
@@ -566,7 +566,7 @@ describe('预定义中间件功能测试', () => {
 
       // Restore original performance.now
       if (originalPerformanceNow) {
-        global.performance.now = originalPerformanceNow
+        globalThis.performance.now = originalPerformanceNow
       }
     })
   })

@@ -4,7 +4,9 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      include: [/\.vue$/],
+    }),
   ],
   root: '.',
   server: {
@@ -36,5 +38,10 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['vue', '@vue/runtime-core', '@vue/runtime-dom'],
+    exclude: ['@ldesign/engine'],
+  },
+  define: {
+    __VUE_OPTIONS_API__: true,
+    __VUE_PROD_DEVTOOLS__: false,
   },
 })

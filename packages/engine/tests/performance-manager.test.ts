@@ -133,7 +133,7 @@ describe('performanceManager', () => {
 
     it('应该移除指标回调', () => {
       const callback = vi.fn()
-      const unsubscribe = performanceManager.onMetrics(callback)
+      const unsubscribe = (performanceManager as any).onMetrics(callback)
 
       if (typeof unsubscribe === 'function') {
         unsubscribe()
@@ -244,8 +244,8 @@ describe('performanceManager', () => {
 
   describe('性能标记', () => {
     it('应该创建性能标记', () => {
-      (performanceManager as any).mark('start-render')
-      (performanceManager as any).mark('end-render')
+      ; (performanceManager as any).mark('start-render')
+      ; (performanceManager as any).mark('end-render')
 
       const marks = (performanceManager as any).getMarks()
       expect(marks).toHaveLength(2)
@@ -259,8 +259,8 @@ describe('performanceManager', () => {
       // 模拟一些工作
       await new Promise<void>((resolve) => {
         setTimeout(() => {
-          (performanceManager as any).mark('end')
-          (performanceManager as any).measure('operation', 'start', 'end')
+          ; (performanceManager as any).mark('end')
+          ; (performanceManager as any).measure('operation', 'start', 'end')
 
           const measures = (performanceManager as any).getMeasures()
           expect(measures).toHaveLength(1)
@@ -297,15 +297,15 @@ describe('performanceManager', () => {
     })
 
     it('应该清空标记和测量', () => {
-      (performanceManager as any).mark('test-mark')
-      (performanceManager as any).clearMarks()
-      expect((performanceManager as any).getMarks()).toHaveLength(0);
+      ; (performanceManager as any).mark('test-mark')
+      ; (performanceManager as any).clearMarks()
+      expect((performanceManager as any).getMarks()).toHaveLength(0)
 
       // 先创建标记，然后测量
-      (performanceManager as any).mark('start')
-      (performanceManager as any).mark('end')
-      (performanceManager as any).measure('test-measure', 'start', 'end')
-      (performanceManager as any).clearMeasures()
+      ; (performanceManager as any).mark('start')
+      ; (performanceManager as any).mark('end')
+      ; (performanceManager as any).measure('test-measure', 'start', 'end')
+      ; (performanceManager as any).clearMeasures()
       expect((performanceManager as any).getMeasures()).toHaveLength(0)
     })
   })

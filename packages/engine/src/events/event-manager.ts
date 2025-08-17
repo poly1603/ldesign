@@ -1,4 +1,4 @@
-import type { EventHandler, EventManager, Logger, EngineEventMap } from '../types'
+import type { EngineEventMap, EventHandler, EventManager, Logger } from '../types'
 
 interface EventListener {
   handler: EventHandler

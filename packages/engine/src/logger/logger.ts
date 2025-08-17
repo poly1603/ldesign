@@ -67,11 +67,15 @@ export class LoggerImpl implements Logger {
     const styles = this.getConsoleStyles(entry.level)
 
     if (entry.data) {
+      // eslint-disable-next-line no-console
       console.groupCollapsed(`%c${prefix} ${entry.message}`, styles.prefix)
+      // eslint-disable-next-line no-console
       console.log('%cData:', styles.data, entry.data)
+      // eslint-disable-next-line no-console
       console.groupEnd()
     }
     else {
+      // eslint-disable-next-line no-console
       console.log(`%c${prefix} ${entry.message}`, styles.prefix)
     }
   }
@@ -229,9 +233,7 @@ export class LoggerImpl implements Logger {
             const dataStr = log.data
               ? ` | Data: ${JSON.stringify(log.data)}`
               : ''
-            return `[${timestamp}] [${log.level.toUpperCase()}] ${
-              log.message
-            }${dataStr}`
+            return `[${timestamp}] [${log.level.toUpperCase()}] ${log.message}${dataStr}`
           })
           .join('\n')
 
@@ -253,7 +255,7 @@ export class LoggerImpl implements Logger {
 
 // 子日志器类
 class ChildLogger implements Logger {
-  constructor(private parent: Logger, private prefix: string) {}
+  constructor(private parent: Logger, private prefix: string) { }
 
   debug(message: string, data?: unknown): void {
     this.parent.debug(`${this.prefix} ${message}`, data)
@@ -316,9 +318,7 @@ export const logFormatters = {
   detailed: (entry: LogEntry): string => {
     const timestamp = new Date(entry.timestamp).toISOString()
     const dataStr = entry.data ? ` | Data: ${JSON.stringify(entry.data)}` : ''
-    return `[${timestamp}] [${entry.level.toUpperCase()}] ${
-      entry.message
-    }${dataStr}`
+    return `[${timestamp}] [${entry.level.toUpperCase()}] ${entry.message}${dataStr}`
   },
 
   // JSON格式化器
@@ -338,11 +338,12 @@ export const logTransports = {
       (entry: LogEntry) => {
         const formatted = formatter(entry)
         const method
-        = entry.level === 'error'
-          ? 'error'
-          : entry.level === 'warn'
-            ? 'warn'
-            : 'log'
+          = entry.level === 'error'
+            ? 'error'
+            : entry.level === 'warn'
+              ? 'warn'
+              : 'log'
+        // eslint-disable-next-line no-console
         console[method](formatted)
       },
 

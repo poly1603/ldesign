@@ -377,23 +377,30 @@ export class ConfigManagerImpl implements ConfigManager {
 
   // 私有方法
   private detectEnvironment(): 'development' | 'production' | 'test' {
-    if (typeof process !== 'undefined' && process.env) {
-      const nodeEnv = process.env.NODE_ENV
-      if (nodeEnv === 'production') {
-        return 'production'
+    try {
+      // eslint-disable-next-line ts/no-require-imports
+      const nodeProcess = require('node:process')
+      if (typeof nodeProcess !== 'undefined' && nodeProcess.env) {
+        const nodeEnv = nodeProcess.env.NODE_ENV
+        if (nodeEnv === 'production') {
+          return 'production'
+        }
+        if (nodeEnv === 'test') {
+          return 'test'
+        }
       }
-      if (nodeEnv === 'test') {
+
+      // 在测试环境中，vitest会设置NODE_ENV为test
+      if (typeof globalThis !== 'undefined'
+        && (globalThis as any).__vitest__ !== undefined) {
         return 'test'
       }
-    }
 
-    // 在测试环境中，vitest会设置NODE_ENV为test
-    if (typeof globalThis !== 'undefined'
-      && (globalThis as any).__vitest__ !== undefined) {
-      return 'test'
+      return 'development'
     }
-
-    return 'development'
+    catch {
+      return 'development'
+    }
   }
 
   private triggerWatchers(path: string, newValue: any, oldValue: any): void {
@@ -572,7 +579,7 @@ export class ConfigManagerImpl implements ConfigManager {
       case 'string':
         return typeof value === 'string'
       case 'number':
-        return typeof value === 'number' && !isNaN(value)
+        return typeof value === 'number' && !Number.isNaN(value)
       case 'boolean':
         return typeof value === 'boolean'
       case 'object':
@@ -684,14 +691,21 @@ export class ConfigManagerImpl implements ConfigManager {
 
     // 这里只是一个简单的实现，实际应该使用js-yaml等库
     lines.forEach((line) => {
-      const match = line.match(/^(\s*)([^:]+):\s*(.*)$/)
-      if (match) {
-        const [, , key, value] = match
+      const colonIndex = line.indexOf(':')
+      if (colonIndex === -1)
+        return
+
+      const beforeColon = line.slice(0, colonIndex)
+      const afterColon = line.slice(colonIndex + 1)
+      const key = beforeColon.trim()
+      const value = afterColon.trim()
+
+      if (key && value !== undefined) {
         try {
-          result[key.trim()] = JSON.parse(value)
+          result[key] = JSON.parse(value)
         }
         catch {
-          result[key.trim()] = value
+          result[key] = value
         }
       }
     })

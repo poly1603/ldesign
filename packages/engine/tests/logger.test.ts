@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { LogEntry, Logger } from '../src/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -459,7 +460,7 @@ describe('日志传输器', () => {
       mockLocalStorage = {}
 
       // Mock localStorage
-      Object.defineProperty(global, 'localStorage', {
+      Object.defineProperty(globalThis, 'localStorage', {
         value: {
           getItem: vi.fn((key: string) => mockLocalStorage[key] || null),
           setItem: vi.fn((key: string, value: string) => {
@@ -504,7 +505,7 @@ describe('日志传输器', () => {
     })
 
     it('应该处理 localStorage 错误', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
       // Mock localStorage.setItem to throw an error
       localStorage.setItem = vi.fn().mockImplementation(() => {
@@ -531,7 +532,7 @@ describe('日志传输器', () => {
         ok: true,
         status: 200,
       })
-      global.fetch = mockFetch
+      globalThis.fetch = mockFetch
     })
 
     it('应该批量发送日志到远程服务', async () => {
@@ -579,7 +580,7 @@ describe('日志传输器', () => {
     })
 
     it('应该处理网络错误', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
 
       mockFetch.mockRejectedValue(new Error('Network error'))
 

@@ -190,7 +190,8 @@ class XSSProtector {
   }
 
   private filterTags(html: string, threats: string[]): string {
-    const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/giu
+    // 匹配完整的标签，包括自闭合标签和开闭标签对
+    const tagRegex = /<\/?([a-z]\w*)(?:[^>]*)>/giu
 
     return html.replace(tagRegex, (match, tagName) => {
       const tag = tagName.toLowerCase()
@@ -207,14 +208,14 @@ class XSSProtector {
   }
 
   private filterAttributes(html: string, threats: string[]): string {
-    const tagRegex = /<([a-z][a-z0-9]*)([^>]*)>/giu
+    const tagRegex = /<([a-z]\w*)([^>]*)>/giu
 
     return html.replace(tagRegex, (match, tagName, attributes) => {
       const tag = tagName.toLowerCase()
       const allowedAttrs = this.allowedAttributes.get(tag) || new Set()
 
-      if (!attributes.trim()) {
-        return match
+      if (!attributes || !attributes.trim()) {
+        return `<${tag}>`
       }
 
       const attrRegex = /\s+([a-z][a-z0-9-]*)\s*=\s*["']([^"']*)["']/giu

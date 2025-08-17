@@ -178,9 +178,11 @@ export const utils = {
   // 检查是否为开发环境
   isDev: () => {
     try {
+      // eslint-disable-next-line ts/no-require-imports
+      const nodeProcess = require('node:process')
       return (
-        typeof process !== 'undefined'
-        && process.env?.NODE_ENV === 'development'
+        typeof nodeProcess !== 'undefined'
+        && nodeProcess.env?.NODE_ENV === 'development'
       )
     }
     catch {

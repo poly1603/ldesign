@@ -21,11 +21,11 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock requestAnimationFrame
-global.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16)) as any as any
+globalThis.requestAnimationFrame = vi.fn(cb => setTimeout(cb, 16)) as any as any
 
 describe('notificationManager', () => {
   let manager: NotificationManager
-  let container: HTMLElement
+  let _container: HTMLElement
 
   beforeEach(() => {
     // 设置 DOM 环境
@@ -145,7 +145,7 @@ describe('notificationManager', () => {
     })
 
     it('应该在指定时间后自动隐藏通知', async () => {
-      const id = manager.show({
+      const _id = manager.show({
         message: '自动隐藏',
         duration: 100,
       })

@@ -25,7 +25,7 @@
       "require": "./lib/vue/index.js"
     }
   },
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "module": "es/index.js",
   "types": "dist/index.d.ts",
   "files": [

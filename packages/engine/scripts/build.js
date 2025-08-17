@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -93,6 +93,21 @@ function build() {
 
   try {
     exec('npx rollup -c')
+
+    // 复制UMD文件以满足构建脚本期望
+    const distDir = resolve(rootDir, 'dist')
+    const indexJs = resolve(distDir, 'index.js')
+    const indexMinJs = resolve(distDir, 'index.min.js')
+    const engineJs = resolve(distDir, 'ldesign-engine.js')
+    const engineMinJs = resolve(distDir, 'ldesign-engine.min.js')
+
+    if (existsSync(indexJs)) {
+      copyFileSync(indexJs, engineJs)
+    }
+    if (existsSync(indexMinJs)) {
+      copyFileSync(indexMinJs, engineMinJs)
+    }
+
     logSuccess('Rollup 构建完成')
   }
   catch (error) {
@@ -195,7 +210,7 @@ function validateBuild() {
     'dist/ldesign-engine.js',
     'dist/ldesign-engine.min.js',
     'lib/index.js',
-    'types/index.d.ts',
+    'dist/index.d.ts',
   ]
 
   let allValid = true

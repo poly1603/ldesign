@@ -202,7 +202,7 @@ export function setNestedValue(obj: any, path: string, value: unknown): void {
 /**
  * 类型守卫：检查是否为函数
  */
-export function isFunction(value: unknown): value is Function {
+export function isFunction(value: unknown): value is (...args: any[]) => any {
   return typeof value === 'function'
 }
 
@@ -238,7 +238,7 @@ export async function retry<T>(
   maxAttempts = 3,
   delayMs = 1000,
 ): Promise<T> {
-  let lastError: Error
+  let lastError: Error | undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -252,7 +252,7 @@ export async function retry<T>(
     }
   }
 
-  throw lastError!
+  throw lastError || new Error('All retry attempts failed')
 }
 
 /**
