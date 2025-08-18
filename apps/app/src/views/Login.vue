@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute } from '@ldesign/router'
 import { useAppStore } from '../stores/app'
 
 const router = useRouter()
@@ -74,7 +74,7 @@ const handleLogin = async () => {
 
     if (success) {
       // 登录成功，重定向到目标页面或首页
-      const redirect = (route.query.redirect as string) || '/home'
+      const redirect = (route.value.query.redirect as string) || '/home'
       router.push(redirect)
     }
   } finally {

@@ -2,81 +2,39 @@
   "name": "@ldesign/color",
   "type": "module",
   "version": "0.1.0",
-  "description": "A modern, framework-agnostic theme color management library with comprehensive support for native JavaScript and popular frameworks",
+  "description": "A framework-agnostic theme color management library with Vue 3 integration",
   "author": "ldesign",
   "license": "MIT",
-  "homepage": "https://github.com/ldesign/color",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/color.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/color/issues"
-  },
   "keywords": [
     "color",
     "theme",
     "color-management",
     "css-variables",
     "vue3",
-    "react",
     "typescript",
-    "framework-agnostic",
-    "native-javascript",
-    "design-system"
+    "framework-agnostic"
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./es/index.js",
-      "require": "./lib/index.js",
-      "default": "./es/index.js"
+      "require": "./lib/index.js"
     },
     "./vue": {
       "types": "./types/adapt/vue/index.d.ts",
       "import": "./es/adapt/vue/index.js",
-      "require": "./lib/adapt/vue/index.js",
-      "default": "./es/adapt/vue/index.js"
-    },
-    "./react": {
-      "types": "./types/adapt/react/index.d.ts",
-      "import": "./es/adapt/react/index.js",
-      "require": "./lib/adapt/react/index.js",
-      "default": "./es/adapt/react/index.js"
-    },
-    "./core": {
-      "types": "./types/core/index.d.ts",
-      "import": "./es/core/index.js",
-      "require": "./lib/core/index.js",
-      "default": "./es/core/index.js"
-    },
-    "./utils": {
-      "types": "./types/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.js",
-      "default": "./es/utils/index.js"
-    },
-    "./themes": {
-      "types": "./types/themes/index.d.ts",
-      "import": "./es/themes/index.js",
-      "require": "./lib/themes/index.js",
-      "default": "./es/themes/index.js"
+      "require": "./lib/adapt/vue/index.js"
     }
   },
-  "main": "./lib/index.js",
-  "module": "./es/index.js",
-  "types": "./types/index.d.ts",
+  "main": "dist/index.js",
+  "module": "es/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "CHANGELOG.md",
-    "README.md",
     "dist",
     "es",
     "lib",
     "types"
   ],
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "scripts": {
     "build": "rollup -c",
     "build:watch": "rollup -c -w",
@@ -99,19 +57,12 @@
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "examples:vue": "cd examples/vue && pnpm dev",
-    "examples:vanilla": "cd examples/vanilla && pnpm dev",
-    "examples:react": "cd examples/react && pnpm dev"
+    "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
     "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
     "vue": {
       "optional": true
     }
@@ -124,11 +75,8 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^22.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-vue": "^5.0.3",
@@ -136,11 +84,8 @@
     "@vue/test-utils": "^2.4.4",
     "eslint": "^9.32.0",
     "jsdom": "^24.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
-    "rollup-plugin-terser": "^7.0.2",
     "size-limit": "^11.0.0",
     "typescript": "^5.6.0",
     "vite": "^5.0.12",
@@ -151,21 +96,7 @@
   "size-limit": [
     {
       "path": "dist/index.js",
-      "limit": "50 KB"
-    },
-    {
-      "path": "es/index.js",
-      "limit": "45 KB"
-    },
-    {
-      "path": "lib/index.js",
-      "limit": "45 KB"
+      "limit": "30 KB"
     }
-  ],
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
   ]
 }

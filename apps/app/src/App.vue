@@ -9,13 +9,13 @@
     </Transition>
 
     <!-- 主布局 -->
-    <RouterView v-slot="{ Component, route }">
+    <router-view v-slot="{ Component, route }">
       <Transition :name="getTransitionName(route)" mode="out-in">
         <KeepAlive :include="keepAliveComponents">
           <component :is="Component" :key="route.fullPath" />
         </KeepAlive>
       </Transition>
-    </RouterView>
+    </router-view>
 
     <!-- 性能监控面板 -->
     <PerformanceMonitor v-if="showPerformanceMonitor" />
@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute } from '@ldesign/router'
 import { useAppStore } from './stores/app'
 import PerformanceMonitor from './components/PerformanceMonitor.vue'
 import NotificationContainer from './components/NotificationContainer.vue'

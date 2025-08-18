@@ -1,7 +1,7 @@
 {
-  "name": "@ldesign/router-demo",
+  "name": "@ldesign/app-demo",
   "version": "1.0.0",
-  "description": "LDesign Router 演示应用 - 展示路由器的各种功能和性能",
+  "description": "LDesign 完整应用演示 - 基于 LDesign Engine 和 Router 的现代化应用",
   "type": "module",
   "private": true,
   "scripts": {
@@ -17,9 +17,10 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@ldesign/engine": "workspace:*",
+    "@ldesign/router": "workspace:*",
     "pinia": "^2.3.1",
-    "vue": "^3.4.0",
-    "vue-router": "^4.5.1"
+    "vue": "^3.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
@@ -32,8 +33,9 @@
   },
   "keywords": [
     "vue",
-    "router",
     "ldesign",
+    "engine",
+    "router",
     "demo",
     "typescript",
     "performance",

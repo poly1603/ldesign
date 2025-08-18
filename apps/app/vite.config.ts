@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@ldesign/engine': resolve(__dirname, '../../packages/engine/src'),
+      '@ldesign/router': resolve(__dirname, '../../packages/router/src'),
     },
   },
   server: {
@@ -22,13 +24,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'vue-vendor': ['vue', 'pinia'],
         },
       },
     },
   },
   optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia'],
+    include: ['vue', 'pinia'],
   },
   css: {
     preprocessorOptions: {

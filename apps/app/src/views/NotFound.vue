@@ -7,17 +7,17 @@
         <p>抱歉，您访问的页面不存在或已被移除。</p>
 
         <div class="actions">
-          <router-link to="/" class="btn btn-primary"> 返回首页 </router-link>
+          <router-link to="/home" class="btn btn-primary">
+            返回首页
+          </router-link>
           <button @click="goBack" class="btn btn-secondary">返回上页</button>
         </div>
 
         <div class="suggestions">
           <h3>您可能想要访问:</h3>
           <ul>
-            <li><router-link to="/basic">基础路由</router-link></li>
-            <li><router-link to="/dynamic">动态路由</router-link></li>
-            <li><router-link to="/performance">性能测试</router-link></li>
-            <li><router-link to="/docs">API 文档</router-link></li>
+            <li><router-link to="/home">首页</router-link></li>
+            <li><router-link to="/login">登录页面</router-link></li>
           </ul>
         </div>
       </div>
@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter } from '@ldesign/router'
 
 const router = useRouter()
 

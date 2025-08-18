@@ -26,8 +26,8 @@ interface Plugin {
   name: string
   version: string
   dependencies?: string[]
-  install: (engine: any) => Promise<void>
-  uninstall?: (engine: any) => Promise<void>
+  install: (context: any) => Promise<void>
+  uninstall?: (context: any) => Promise<void>
   [key: string]: any
 }
 
@@ -311,8 +311,11 @@ export function createRouterEnginePlugin(
     version,
     dependencies: [], // 路由器插件通常不依赖其他插件
 
-    async install(engine) {
+    async install(context) {
       try {
+        // 从上下文中获取引擎实例
+        const engine = context.engine || context
+
         // 获取 Vue 应用实例
         const vueApp = engine.getApp()
         if (!vueApp) {
@@ -457,8 +460,11 @@ export function createRouterEnginePlugin(
       }
     },
 
-    async uninstall(engine) {
+    async uninstall(context) {
       try {
+        // 从上下文中获取引擎实例
+        const engine = context.engine || context
+
         engine.logger.info(`Uninstalling ${name} plugin...`)
 
         // 清理路由器引用
