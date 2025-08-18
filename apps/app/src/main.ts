@@ -10,7 +10,7 @@
  */
 
 import { createApp, presets } from '@ldesign/engine'
-import { createI18nEnginePlugin } from '@ldesign/i18n'
+import { createAppI18nPlugin } from './i18n'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createPinia } from 'pinia'
 import App from './App.vue'
@@ -55,7 +55,7 @@ async function createLDesignApp() {
 
     // 集成 I18n 插件
     console.log('🌍 开始安装 I18n 插件...')
-    await engine.use(createI18nEnginePlugin())
+    await engine.use(createAppI18nPlugin())
     console.log('✅ I18n 插件安装完成')
 
     // 集成路由插件

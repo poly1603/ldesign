@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useAppStore } from '../stores/app'
+import { useI18n } from '@ldesign/i18n/vue'
 
 const appStore = useAppStore()
+const { t } = useI18n()
 
 // 响应式状态
 const isMinimized = ref(false)
@@ -20,7 +22,7 @@ function toggleMinimize() {
 }
 
 function clearData() {
-  if (confirm('确定要清除所有性能数据吗？')) {
+  if (confirm(t('home.performanceMonitor.clearData') + '?')) {
     appStore.clearNavigationRecords()
   }
 }
@@ -131,15 +133,19 @@ onMounted(() => {
     <div class="monitor-header" @click="toggleMinimize">
       <div class="header-title">
         <span class="icon">📊</span>
-        <span>性能监控</span>
+        <span>{{ t('home.performanceMonitor.title') }}</span>
       </div>
       <div class="header-actions">
-        <button class="btn-icon" title="清除数据" @click.stop="clearData">
+        <button
+          class="btn-icon"
+          :title="t('home.performanceMonitor.clearData')"
+          @click.stop="clearData"
+        >
           🗑️
         </button>
         <button
           class="btn-icon"
-          :title="isMinimized ? '展开' : '收起'"
+          :title="t('home.performanceMonitor.toggleChart')"
           @click.stop="toggleMinimize"
         >
           {{ isMinimized ? '📈' : '📉' }}
@@ -152,28 +158,36 @@ onMounted(() => {
       <!-- 实时统计 -->
       <div class="stats-grid">
         <div class="stat-item">
-          <div class="stat-label">总导航次数</div>
+          <div class="stat-label">
+            {{ t('home.performanceMonitor.totalNavigations') }}
+          </div>
           <div class="stat-value">
             {{ stats.totalNavigations }}
           </div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">平均耗时</div>
+          <div class="stat-label">
+            {{ t('home.performanceMonitor.averageTime') }}
+          </div>
           <div class="stat-value">{{ stats.averageDuration.toFixed(2) }}ms</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">最快导航</div>
+          <div class="stat-label">
+            {{ t('home.performanceMonitor.fastestNavigation') }}
+          </div>
           <div class="stat-value">{{ stats.minDuration.toFixed(2) }}ms</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">最慢导航</div>
+          <div class="stat-label">
+            {{ t('home.performanceMonitor.slowestNavigation') }}
+          </div>
           <div class="stat-value">{{ stats.maxDuration.toFixed(2) }}ms</div>
         </div>
       </div>
 
       <!-- 最近导航记录 -->
       <div class="recent-navigations">
-        <h4>最近导航记录</h4>
+        <h4>{{ t('home.performanceMonitor.recentNavigations') }}</h4>
         <div class="navigation-list">
           <div
             v-for="record in recentRecords"
@@ -198,7 +212,7 @@ onMounted(() => {
 
       <!-- 性能图表 -->
       <div class="performance-chart">
-        <h4>导航耗时趋势</h4>
+        <h4>{{ t('home.performanceMonitor.navigationTrend') }}</h4>
         <div class="chart-container">
           <canvas ref="chartCanvas" width="300" height="100" />
         </div>

@@ -6,7 +6,7 @@ import { useAppStore } from '../stores/app'
 
 const router = useRouter()
 const appStore = useAppStore()
-const { locale } = useI18n()
+const { locale, changeLanguage } = useI18n()
 
 // 当前语言
 const currentLocale = computed(() => locale.value)
@@ -15,9 +15,16 @@ const currentLocale = computed(() => locale.value)
 const stats = computed(() => appStore.performanceStats)
 
 // 切换语言
-function toggleLanguage() {
-  locale.value = locale.value === 'zh-CN' ? 'en' : 'zh-CN'
-  console.log('🌍 语言已切换到:', locale.value)
+async function toggleLanguage() {
+  const newLocale = locale.value === 'zh-CN' ? 'en' : 'zh-CN'
+  console.log('🌍 开始切换语言到:', newLocale)
+
+  try {
+    await changeLanguage(newLocale)
+    console.log('✅ 语言切换成功:', locale.value)
+  } catch (error) {
+    console.error('❌ 语言切换失败:', error)
+  }
 }
 
 // 退出登录
@@ -42,7 +49,7 @@ function goToI18nDemo() {
         </div>
         <div class="navbar-actions">
           <span class="user-info"
-            >{{ $t('hello') }}，{{
+            >{{ $t('common.hello') }}，{{
               appStore.userInfo?.username || '用户'
             }}！</span
           >
@@ -50,7 +57,7 @@ function goToI18nDemo() {
             {{ currentLocale === 'zh-CN' ? 'EN' : '中文' }}
           </button>
           <button class="btn btn-outline" @click="handleLogout">
-            退出登录
+            {{ $t('common.logout') }}
           </button>
         </div>
       </div>
@@ -62,10 +69,10 @@ function goToI18nDemo() {
         <!-- 欢迎区域 -->
         <section class="welcome">
           <h1 class="welcome-title">
-            <span class="gradient-text">{{ $t('welcome') }}</span>
+            <span class="gradient-text">{{ $t('home.welcome') }}</span>
           </h1>
           <p class="welcome-description">
-            这是您的个人仪表板，您可以在这里查看和管理您的信息。
+            {{ $t('home.description') }}
           </p>
         </section>
 
@@ -75,11 +82,12 @@ function goToI18nDemo() {
             <div class="dashboard-card">
               <div class="card-icon">👤</div>
               <div class="card-content">
-                <h3>用户信息</h3>
-                <p>管理您的个人资料和设置</p>
+                <h3>{{ $t('home.cards.userInfo.title') }}</h3>
+                <p>{{ $t('home.cards.userInfo.description') }}</p>
                 <div class="card-stats">
                   <span
-                    >用户名: {{ appStore.userInfo?.username || 'admin' }}</span
+                    >{{ $t('home.cards.userInfo.username') }}:
+                    {{ appStore.userInfo?.username || 'admin' }}</span
                   >
                 </div>
               </div>
@@ -88,10 +96,13 @@ function goToI18nDemo() {
             <div class="dashboard-card">
               <div class="card-icon">📊</div>
               <div class="card-content">
-                <h3>系统状态</h3>
-                <p>查看应用程序运行状态</p>
+                <h3>{{ $t('home.cards.systemStatus.title') }}</h3>
+                <p>{{ $t('home.cards.systemStatus.description') }}</p>
                 <div class="card-stats">
-                  <span>状态: 正常运行</span>
+                  <span
+                    >{{ $t('home.cards.systemStatus.status') }}:
+                    {{ $t('home.cards.systemStatus.running') }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -99,11 +110,12 @@ function goToI18nDemo() {
             <div class="dashboard-card">
               <div class="card-icon">⚡</div>
               <div class="card-content">
-                <h3>性能监控</h3>
-                <p>实时监控应用性能指标</p>
+                <h3>{{ $t('home.cards.performance.title') }}</h3>
+                <p>{{ $t('home.cards.performance.description') }}</p>
                 <div class="card-stats">
                   <span
-                    >响应时间: {{ stats.averageDuration.toFixed(1) }}ms</span
+                    >{{ $t('home.cards.performance.responseTime') }}:
+                    {{ stats.averageDuration.toFixed(1) }}ms</span
                   >
                 </div>
               </div>
@@ -112,10 +124,13 @@ function goToI18nDemo() {
             <div class="dashboard-card">
               <div class="card-icon">🔒</div>
               <div class="card-content">
-                <h3>安全设置</h3>
-                <p>管理账户安全和权限</p>
+                <h3>{{ $t('home.cards.security.title') }}</h3>
+                <p>{{ $t('home.cards.security.description') }}</p>
                 <div class="card-stats">
-                  <span>安全级别: 高</span>
+                  <span
+                    >{{ $t('home.cards.security.securityLevel') }}:
+                    {{ $t('home.cards.security.high') }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -123,10 +138,10 @@ function goToI18nDemo() {
             <div class="dashboard-card clickable" @click="goToI18nDemo">
               <div class="card-icon">🌍</div>
               <div class="card-content">
-                <h3>国际化演示</h3>
-                <p>体验 LDesign I18n 的强大功能</p>
+                <h3>{{ $t('home.cards.i18nDemo.title') }}</h3>
+                <p>{{ $t('home.cards.i18nDemo.description') }}</p>
                 <div class="card-stats">
-                  <span>多语言支持 • 性能优化</span>
+                  <span>{{ $t('home.cards.i18nDemo.features') }}</span>
                 </div>
               </div>
             </div>

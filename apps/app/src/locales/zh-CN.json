@@ -4,6 +4,43 @@
     "subtitle": "现代化、高性能的前端解决方案",
     "description": "基于 LDesign Engine、Router 和 I18n 的完整应用演示"
   },
+  "common": {
+    "hello": "你好",
+    "welcome": "欢迎",
+    "test": "测试",
+    "login": "登录",
+    "logout": "退出登录",
+    "username": "用户名",
+    "password": "密码",
+    "submit": "提交",
+    "cancel": "取消",
+    "confirm": "确认",
+    "loading": "加载中...",
+    "success": "成功",
+    "error": "错误",
+    "warning": "警告",
+    "info": "信息",
+    "ok": "确定",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑"
+  },
+  "auth": {
+    "login": {
+      "title": "用户登录",
+      "subtitle": "登录以访问受保护的页面",
+      "username": "用户名",
+      "password": "密码",
+      "loginButton": "登录",
+      "testAccount": "测试账号:",
+      "usernameLabel": "用户名:",
+      "passwordLabel": "密码:",
+      "loginSuccess": "登录成功",
+      "welcomeBack": "欢迎回来，管理员！",
+      "invalidCredentials": "用户名或密码错误",
+      "loginFailed": "登录失败"
+    }
+  },
   "nav": {
     "home": "首页",
     "about": "关于",
@@ -15,27 +52,48 @@
   "home": {
     "welcome": "欢迎使用 LDesign",
     "subtitle": "构建现代化 Web 应用的最佳选择",
-    "description": "LDesign 提供了完整的前端解决方案，包括引擎、路由、国际化等核心功能，帮助您快速构建高性能的现代化应用。",
+    "description": "这是您的个人仪表板，您可以在这里查看和管理您的信息。",
     "getStarted": "开始使用",
     "learnMore": "了解更多",
-    "features": {
-      "title": "核心特性",
-      "engine": {
-        "title": "LDesign Engine",
-        "description": "插件化架构，支持模块化开发和扩展"
+    "cards": {
+      "userInfo": {
+        "title": "用户信息",
+        "description": "管理您的个人资料和设置",
+        "username": "用户名"
       },
-      "router": {
-        "title": "智能路由",
-        "description": "高性能路由系统，支持懒加载和预加载"
-      },
-      "i18n": {
-        "title": "国际化",
-        "description": "完整的多语言支持，智能缓存和性能优化"
+      "systemStatus": {
+        "title": "系统状态",
+        "description": "查看应用程序运行状态",
+        "status": "状态",
+        "running": "正常运行"
       },
       "performance": {
-        "title": "性能优化",
-        "description": "内置性能监控和优化建议"
+        "title": "性能监控",
+        "description": "实时监控应用性能指标",
+        "responseTime": "响应时间"
+      },
+      "security": {
+        "title": "安全设置",
+        "description": "管理账户安全和权限",
+        "securityLevel": "安全级别",
+        "high": "高"
+      },
+      "i18nDemo": {
+        "title": "国际化演示",
+        "description": "体验 LDesign I18n 的强大功能",
+        "features": "多语言支持 • 性能优化"
       }
+    },
+    "performanceMonitor": {
+      "title": "性能监控",
+      "totalNavigations": "总导航次数",
+      "averageTime": "平均耗时",
+      "fastestNavigation": "最快导航",
+      "slowestNavigation": "最慢导航",
+      "recentNavigations": "最近导航记录",
+      "navigationTrend": "导航耗时趋势",
+      "clearData": "清除数据",
+      "toggleChart": "切换图表"
     }
   },
   "about": {

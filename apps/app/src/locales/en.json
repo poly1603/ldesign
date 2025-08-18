@@ -4,6 +4,43 @@
     "subtitle": "Modern, High-Performance Frontend Solution",
     "description": "Complete application demo based on LDesign Engine, Router, and I18n"
   },
+  "common": {
+    "hello": "Hello",
+    "welcome": "Welcome",
+    "test": "Test",
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "ok": "OK",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "auth": {
+    "login": {
+      "title": "User Login",
+      "subtitle": "Login to access protected pages",
+      "username": "Username",
+      "password": "Password",
+      "loginButton": "Login",
+      "testAccount": "Test Account:",
+      "usernameLabel": "Username:",
+      "passwordLabel": "Password:",
+      "loginSuccess": "Login successful",
+      "welcomeBack": "Welcome back, Administrator!",
+      "invalidCredentials": "Invalid username or password",
+      "loginFailed": "Login failed"
+    }
+  },
   "nav": {
     "home": "Home",
     "about": "About",
@@ -15,9 +52,49 @@
   "home": {
     "welcome": "Welcome to LDesign",
     "subtitle": "The Best Choice for Building Modern Web Applications",
-    "description": "LDesign provides a complete frontend solution, including engine, router, internationalization and other core features to help you quickly build high-performance modern applications.",
+    "description": "This is your personal dashboard where you can view and manage your information.",
     "getStarted": "Get Started",
     "learnMore": "Learn More",
+    "cards": {
+      "userInfo": {
+        "title": "User Information",
+        "description": "Manage your personal profile and settings",
+        "username": "Username"
+      },
+      "systemStatus": {
+        "title": "System Status",
+        "description": "View application runtime status",
+        "status": "Status",
+        "running": "Running Normally"
+      },
+      "performance": {
+        "title": "Performance Monitor",
+        "description": "Real-time monitoring of application performance metrics",
+        "responseTime": "Response Time"
+      },
+      "security": {
+        "title": "Security Settings",
+        "description": "Manage account security and permissions",
+        "securityLevel": "Security Level",
+        "high": "High"
+      },
+      "i18nDemo": {
+        "title": "I18n Demo",
+        "description": "Experience the powerful features of LDesign I18n",
+        "features": "Multi-language Support • Performance Optimization"
+      }
+    },
+    "performanceMonitor": {
+      "title": "Performance Monitor",
+      "totalNavigations": "Total Navigations",
+      "averageTime": "Average Time",
+      "fastestNavigation": "Fastest Navigation",
+      "slowestNavigation": "Slowest Navigation",
+      "recentNavigations": "Recent Navigation Records",
+      "navigationTrend": "Navigation Time Trend",
+      "clearData": "Clear Data",
+      "toggleChart": "Toggle Chart"
+    },
     "features": {
       "title": "Core Features",
       "engine": {
