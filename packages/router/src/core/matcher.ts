@@ -1,7 +1,7 @@
 /**
  * @ldesign/router 路由匹配器
  *
- * 基于 Trie 树实现的高效路由匹配算法
+ * 基于 Trie 树实现的高效路由匹配算法，支持 LRU 缓存和路径预编译
  */
 
 import type {
@@ -16,7 +16,7 @@ import { OPTIONAL_PARAM_RE, PARAM_RE } from './constants'
 // ==================== 匹配器节点类型 ====================
 
 /**
- * Trie 树节点
+ * Trie 树节点（优化版）
  */
 interface TrieNode {
   /** 静态子节点 */
@@ -27,10 +27,16 @@ interface TrieNode {
   wildcardChild?: TrieNode
   /** 路由记录 */
   record?: RouteRecordNormalized
+  /** 默认子路由记录（用于空路径的子路由） */
+  defaultChild?: RouteRecordNormalized
   /** 参数名称 */
   paramName?: string
   /** 是否可选参数 */
   isOptional?: boolean
+  /** 节点权重（用于优化匹配顺序） */
+  weight?: number
+  /** 访问频率（用于缓存优化） */
+  accessCount?: number
 }
 
 /**
@@ -39,29 +45,180 @@ interface TrieNode {
 interface MatchResult {
   /** 匹配的路由记录 */
   record: RouteRecordNormalized
+  /** 所有匹配的路由记录（包括父路由） */
+  matched: RouteRecordNormalized[]
   /** 提取的参数 */
   params: RouteParams
   /** 匹配的路径段 */
   segments: string[]
 }
 
+/**
+ * LRU 缓存节点
+ */
+interface LRUNode {
+  key: string
+  value: MatchResult | null
+  prev?: LRUNode
+  next?: LRUNode
+  timestamp: number
+}
+
+/**
+ * 路径预编译结果
+ */
+interface CompiledPath {
+  /** 编译后的正则表达式 */
+  regex: RegExp
+  /** 参数名称列表 */
+  paramNames: string[]
+  /** 是否为静态路径 */
+  isStatic: boolean
+  /** 路径权重 */
+  weight: number
+}
+
+// ==================== LRU 缓存实现 ====================
+
+/**
+ * LRU 缓存实现
+ */
+class LRUCache {
+  private capacity: number
+  private size: number
+  private cache: Map<string, LRUNode>
+  private head: LRUNode
+  private tail: LRUNode
+
+  constructor(capacity: number = 200) {
+    this.capacity = capacity
+    this.size = 0
+    this.cache = new Map()
+
+    // 创建虚拟头尾节点
+    this.head = { key: '', value: null, timestamp: 0 }
+    this.tail = { key: '', value: null, timestamp: 0 }
+    this.head.next = this.tail
+    this.tail.prev = this.head
+  }
+
+  get(key: string): MatchResult | null | undefined {
+    const node = this.cache.get(key)
+    if (!node) return undefined
+
+    // 移动到头部（最近使用）
+    this.moveToHead(node)
+    node.timestamp = Date.now()
+    return node.value
+  }
+
+  set(key: string, value: MatchResult | null): void {
+    const existingNode = this.cache.get(key)
+
+    if (existingNode) {
+      // 更新现有节点
+      existingNode.value = value
+      existingNode.timestamp = Date.now()
+      this.moveToHead(existingNode)
+    } else {
+      // 创建新节点
+      const newNode: LRUNode = {
+        key,
+        value,
+        timestamp: Date.now(),
+      }
+
+      if (this.size >= this.capacity) {
+        // 移除最少使用的节点
+        const tail = this.removeTail()
+        if (tail) {
+          this.cache.delete(tail.key)
+          this.size--
+        }
+      }
+
+      this.cache.set(key, newNode)
+      this.addToHead(newNode)
+      this.size++
+    }
+  }
+
+  clear(): void {
+    this.cache.clear()
+    this.size = 0
+    this.head.next = this.tail
+    this.tail.prev = this.head
+  }
+
+  private addToHead(node: LRUNode): void {
+    node.prev = this.head
+    node.next = this.head.next
+    if (this.head.next) {
+      this.head.next.prev = node
+    }
+    this.head.next = node
+  }
+
+  private removeNode(node: LRUNode): void {
+    if (node.prev) {
+      node.prev.next = node.next
+    }
+    if (node.next) {
+      node.next.prev = node.prev
+    }
+  }
+
+  private moveToHead(node: LRUNode): void {
+    this.removeNode(node)
+    this.addToHead(node)
+  }
+
+  private removeTail(): LRUNode | null {
+    const lastNode = this.tail.prev
+    if (lastNode && lastNode !== this.head) {
+      this.removeNode(lastNode)
+      return lastNode
+    }
+    return null
+  }
+
+  getStats(): { size: number; capacity: number; hitRate: number } {
+    return {
+      size: this.size,
+      capacity: this.capacity,
+      hitRate: 0, // 可以添加命中率统计
+    }
+  }
+}
+
 // ==================== 路由匹配器类 ====================
 
 /**
- * 路由匹配器
+ * 路由匹配器（优化版）
  */
 export class RouteMatcher {
   private root: TrieNode
   private routes: Map<string | symbol, RouteRecordNormalized>
+  private rawRoutes: Map<string | symbol, RouteRecordRaw>
 
-  // 性能优化：缓存匹配结果
-  private matchCache = new Map<string, MatchResult | null>()
-  private cacheSize = 0
-  private readonly maxCacheSize = 100
+  // 性能优化：LRU 缓存
+  private lruCache: LRUCache
+  private compiledPaths: Map<string, CompiledPath>
 
-  constructor() {
+  // 性能统计
+  private stats = {
+    cacheHits: 0,
+    cacheMisses: 0,
+    totalMatches: 0,
+    averageMatchTime: 0,
+  }
+
+  constructor(cacheSize: number = 200) {
     this.root = this.createNode()
     this.routes = new Map()
+    this.rawRoutes = new Map()
+    this.lruCache = new LRUCache(cacheSize)
+    this.compiledPaths = new Map()
   }
 
   /**
@@ -70,26 +227,8 @@ export class RouteMatcher {
   private createNode(): TrieNode {
     return {
       children: new Map(),
-    }
-  }
-
-  /**
-   * 清理匹配缓存
-   */
-  private clearCache(): void {
-    if (this.cacheSize >= this.maxCacheSize) {
-      // 清理一半的缓存
-      const entries = Array.from(this.matchCache.entries())
-      const halfSize = Math.floor(entries.length / 2)
-
-      this.matchCache.clear()
-
-      // 保留最近使用的一半
-      for (let i = halfSize; i < entries.length; i++) {
-        this.matchCache.set(entries[i][0], entries[i][1])
-      }
-
-      this.cacheSize = entries.length - halfSize
+      weight: 0,
+      accessCount: 0,
     }
   }
 
@@ -99,6 +238,86 @@ export class RouteMatcher {
   private getCacheKey(path: string, query?: Record<string, any>): string {
     const queryStr = query ? JSON.stringify(query) : ''
     return `${path}${queryStr}`
+  }
+
+  /**
+   * 编译路径为正则表达式（用于快速匹配）
+   */
+  private compilePath(path: string): CompiledPath {
+    const cached = this.compiledPaths.get(path)
+    if (cached) return cached
+
+    const paramNames: string[] = []
+    let weight = 0
+    let isStatic = true
+
+    // 转换路径为正则表达式
+    const regexPattern = path
+      .split('/')
+      .map(segment => {
+        if (!segment) return ''
+
+        // 参数段 :param 或 :param?
+        if (segment.startsWith(':')) {
+          isStatic = false
+          const paramName = segment.slice(1).replace(/\?$/, '')
+          const isOptional = segment.endsWith('?')
+          paramNames.push(paramName)
+          weight += isOptional ? 1 : 2
+          return isOptional ? '([^/]*)?' : '([^/]+)'
+        }
+
+        // 通配符段
+        if (segment === '*') {
+          isStatic = false
+          paramNames.push('pathMatch')
+          weight += 0.5
+          return '(.*)'
+        }
+
+        // 静态段
+        weight += 3
+        return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      })
+      .join('/')
+
+    const regex = new RegExp(`^${regexPattern}$`)
+
+    const compiled: CompiledPath = {
+      regex,
+      paramNames,
+      isStatic,
+      weight,
+    }
+
+    this.compiledPaths.set(path, compiled)
+    return compiled
+  }
+
+  /**
+   * 获取性能统计
+   */
+  getStats() {
+    return {
+      ...this.stats,
+      cacheStats: this.lruCache.getStats(),
+      compiledPathsCount: this.compiledPaths.size,
+      routesCount: this.routes.size,
+    }
+  }
+
+  /**
+   * 清理缓存和统计
+   */
+  clearCache(): void {
+    this.lruCache.clear()
+    this.compiledPaths.clear()
+    this.stats = {
+      cacheHits: 0,
+      cacheMisses: 0,
+      totalMatches: 0,
+      averageMatchTime: 0,
+    }
   }
 
   /**
@@ -113,6 +332,7 @@ export class RouteMatcher {
     // 添加到路由映射
     if (normalized.name) {
       this.routes.set(normalized.name, normalized)
+      this.rawRoutes.set(normalized.name, record)
     }
 
     // 添加到 Trie 树
@@ -121,7 +341,22 @@ export class RouteMatcher {
     // 递归添加子路由
     if (record.children) {
       for (const child of record.children) {
-        this.addRoute(child, normalized)
+        const childRecord = this.normalizeRecord(child, normalized)
+
+        // 检查是否是默认子路由（空路径）
+        if (child.path === '') {
+          // 将默认子路由添加到父节点
+          this.addDefaultChildToTrie(normalized, childRecord)
+
+          // 同时添加到路由映射
+          if (childRecord.name) {
+            this.routes.set(childRecord.name, childRecord)
+            this.rawRoutes.set(childRecord.name, child)
+          }
+        } else {
+          // 正常添加子路由
+          this.addRoute(child, normalized)
+        }
       }
     }
 
@@ -154,11 +389,94 @@ export class RouteMatcher {
   }
 
   /**
-   * 根据路径匹配路由
+   * 根据路径匹配路由（优化版）
    */
   matchByPath(path: string): MatchResult | null {
+    const startTime = performance.now()
+    this.stats.totalMatches++
+
+    // 首先尝试缓存
+    const cacheKey = this.getCacheKey(path)
+    const cached = this.lruCache.get(cacheKey)
+
+    if (cached !== undefined) {
+      this.stats.cacheHits++
+      this.updateAverageMatchTime(performance.now() - startTime)
+      return cached
+    }
+
+    this.stats.cacheMisses++
+
+    // 尝试快速正则匹配（对于简单路径）
+    // 但是跳过可能有嵌套路由的路径，因为快速匹配不支持嵌套路由
+    const hasNestedRoutes = this.hasNestedRoutesForPath(path)
+
+    if (!hasNestedRoutes) {
+      const fastMatch = this.fastMatch(path)
+      if (fastMatch) {
+        this.lruCache.set(cacheKey, fastMatch)
+        this.updateAverageMatchTime(performance.now() - startTime)
+        return fastMatch
+      }
+    }
+
+    // 回退到 Trie 树匹配
     const segments = this.parsePathSegments(path)
-    return this.matchSegments(this.root, segments, 0, {}, [])
+    const result = this.matchSegments(this.root, segments, 0, {}, [], [])
+
+    // 缓存结果
+    this.lruCache.set(cacheKey, result)
+    this.updateAverageMatchTime(performance.now() - startTime)
+
+    return result
+  }
+
+  /**
+   * 快速匹配（使用预编译的正则表达式）
+   */
+  private fastMatch(path: string): MatchResult | null {
+    // 按权重排序的路由进行匹配
+    const sortedRoutes = Array.from(this.routes.values()).sort((a, b) => {
+      const aCompiled = this.compilePath(a.path)
+      const bCompiled = this.compilePath(b.path)
+      return bCompiled.weight - aCompiled.weight
+    })
+
+    for (const route of sortedRoutes) {
+      const compiled = this.compilePath(route.path)
+      const match = path.match(compiled.regex)
+
+      if (match) {
+        const params: RouteParams = {}
+
+        // 提取参数
+        for (let i = 0; i < compiled.paramNames.length; i++) {
+          const paramName = compiled.paramNames[i]
+          const paramValue = match[i + 1]
+          if (paramValue !== undefined) {
+            params[paramName] = paramValue
+          }
+        }
+
+        return {
+          record: route,
+          matched: [route], // 快速匹配只返回单个路由
+          params,
+          segments: this.parsePathSegments(path),
+        }
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * 更新平均匹配时间
+   */
+  private updateAverageMatchTime(time: number): void {
+    this.stats.averageMatchTime =
+      (this.stats.averageMatchTime * (this.stats.totalMatches - 1) + time) /
+      this.stats.totalMatches
   }
 
   /**
@@ -204,7 +522,7 @@ export class RouteMatcher {
       name: record.name,
       components: record.component
         ? { default: record.component }
-        : record.components || null,
+        : record.components || {},
       children: [],
       meta: record.meta || {},
       props: this.normalizeProps(record.props),
@@ -228,6 +546,12 @@ export class RouteMatcher {
       return `/${path}`
     }
 
+    // 处理空路径的子路由（默认子路由）
+    // 保持空路径，不规范化为父路径，避免覆盖父路由
+    if (path === '') {
+      return ''
+    }
+
     return `${parentPath.replace(/\/$/, '')}/${path}`
   }
 
@@ -242,17 +566,103 @@ export class RouteMatcher {
   }
 
   /**
-   * 添加到 Trie 树
+   * 添加默认子路由到 Trie 树
    */
-  private addToTrie(record: RouteRecordNormalized): void {
-    const segments = this.parsePathSegments(record.path)
+  private addDefaultChildToTrie(
+    parentRecord: RouteRecordNormalized,
+    childRecord: RouteRecordNormalized
+  ): void {
+    const segments = this.parsePathSegments(parentRecord.path)
     let node = this.root
 
     for (const segment of segments) {
       node = this.addSegmentToNode(node, segment)
     }
 
+    // 将默认子路由存储在父节点的 defaultChild 属性中
+    node.defaultChild = childRecord
+  }
+
+  /**
+   * 添加到 Trie 树（优化版）
+   */
+  private addToTrie(record: RouteRecordNormalized): void {
+    const segments = this.parsePathSegments(record.path)
+    let node = this.root
+
+    // 预编译路径以提高后续匹配性能
+    this.compilePath(record.path)
+
+    for (const segment of segments) {
+      node = this.addSegmentToNode(node, segment)
+      // 更新节点权重
+      if (node.weight !== undefined) {
+        node.weight++
+      }
+    }
+
     node.record = record
+  }
+
+  /**
+   * 检查路径是否可能有嵌套路由
+   */
+  private hasNestedRoutesForPath(path: string): boolean {
+    // 检查路径是否可能匹配到有子路由的路由记录
+    // 需要检查路径的所有可能的父路径
+
+    const segments = this.parsePathSegments(path)
+
+    // 检查每个可能的父路径
+    for (let i = 1; i <= segments.length; i++) {
+      const parentPath = '/' + segments.slice(0, i).join('/')
+
+      for (const [name, route] of this.rawRoutes.entries()) {
+        const normalizedRoute = this.routes.get(name)
+
+        // 如果找到匹配的父路径且有子路由，则认为是嵌套路由
+        if (
+          normalizedRoute?.path === parentPath &&
+          route.children &&
+          route.children.length > 0
+        ) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * 查找默认子路由（空路径的子路由）
+   */
+  private findDefaultChildRecord(
+    parentRecord: RouteRecordNormalized
+  ): RouteRecordNormalized | null {
+    // 查找对应的原始路由记录
+    if (!parentRecord.name || !this.rawRoutes.has(parentRecord.name)) {
+      return null
+    }
+
+    const rawParentRecord = this.rawRoutes.get(parentRecord.name)!
+
+    if (!rawParentRecord.children) {
+      return null
+    }
+
+    // 查找空路径的子路由
+    for (const child of rawParentRecord.children) {
+      if (child.path === '') {
+        // 通过名称查找对应的规范化记录
+        if (child.name && this.routes.has(child.name)) {
+          const foundRecord = this.routes.get(child.name)!
+          return foundRecord
+        }
+      }
+    }
+
+    return null
   }
 
   /**
@@ -340,13 +750,24 @@ export class RouteMatcher {
     segments: string[],
     index: number,
     params: RouteParams,
-    matchedSegments: string[]
+    matchedSegments: string[],
+    matchedRecords: RouteRecordNormalized[] = []
   ): MatchResult | null {
     // 匹配完成
     if (index >= segments.length) {
       if (node.record) {
+        let allMatched = [...matchedRecords, node.record]
+        let finalRecord = node.record
+
+        // 检查是否有默认子路由
+        if (node.defaultChild) {
+          allMatched = [...allMatched, node.defaultChild]
+          finalRecord = node.defaultChild
+        }
+
         return {
-          record: node.record,
+          record: finalRecord,
+          matched: allMatched,
           params: { ...params },
           segments: [...matchedSegments],
         }
@@ -354,8 +775,10 @@ export class RouteMatcher {
 
       // 检查可选参数
       if (node.paramChild?.isOptional && node.paramChild.record) {
+        const allMatched = [...matchedRecords, node.paramChild.record]
         return {
           record: node.paramChild.record,
+          matched: allMatched,
           params: { ...params },
           segments: [...matchedSegments],
         }
@@ -369,12 +792,20 @@ export class RouteMatcher {
     // 尝试静态匹配
     const staticChild = node.children.get(segment)
     if (staticChild) {
+      // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
+      const isRootPath = segments.length === 0
+      const shouldAddRecord =
+        node.record && (matchedSegments.length > 0 || isRootPath)
+      const newMatchedRecords = shouldAddRecord
+        ? [...matchedRecords, node.record!]
+        : matchedRecords
       const result = this.matchSegments(
         staticChild,
         segments,
         index + 1,
         params,
-        [...matchedSegments, segment]
+        [...matchedSegments, segment],
+        newMatchedRecords
       )
       if (result) return result
     }
@@ -383,12 +814,20 @@ export class RouteMatcher {
     if (node.paramChild) {
       const paramName = node.paramChild.paramName!
       const newParams = { ...params, [paramName]: segment }
+      // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
+      const isRootPath = segments.length === 0
+      const shouldAddRecord =
+        node.record && (matchedSegments.length > 0 || isRootPath)
+      const newMatchedRecords = shouldAddRecord
+        ? [...matchedRecords, node.record!]
+        : matchedRecords
       const result = this.matchSegments(
         node.paramChild,
         segments,
         index + 1,
         newParams,
-        [...matchedSegments, segment]
+        [...matchedSegments, segment],
+        newMatchedRecords
       )
       if (result) return result
     }
@@ -397,8 +836,17 @@ export class RouteMatcher {
     if (node.wildcardChild) {
       const remainingPath = segments.slice(index).join('/')
       const newParams = { ...params, pathMatch: remainingPath }
+      // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
+      const isRootPath = segments.length === 0
+      const shouldAddRecord =
+        node.record && (matchedSegments.length > 0 || isRootPath)
+      const newMatchedRecords = shouldAddRecord
+        ? [...matchedRecords, node.record!]
+        : matchedRecords
+      const allMatched = [...newMatchedRecords, node.wildcardChild.record!]
       return {
         record: node.wildcardChild.record!,
+        matched: allMatched,
         params: newParams,
         segments: [...matchedSegments, ...segments.slice(index)],
       }
@@ -408,29 +856,18 @@ export class RouteMatcher {
   }
 
   /**
-   * 根据路径解析
+   * 根据路径解析（优化版）
    */
   private resolveByPath(
     path: string,
     query?: any,
     hash?: string
   ): RouteLocationNormalized {
-    // 检查缓存
-    const cacheKey = this.getCacheKey(path, query)
-    const cached = this.matchCache.get(cacheKey)
+    // 使用优化后的匹配方法
+    const match = this.matchByPath(path)
 
-    if (cached) {
-      // 缓存命中，构建完整的路由位置
-      return {
-        path: cached.record.path,
-        name: cached.record.name,
-        params: cached.params,
-        query: { ...query },
-        hash: hash || '',
-        fullPath: this.buildFullPath(cached.record.path, query, hash),
-        matched: [cached.record],
-        meta: cached.record.meta,
-      } as RouteLocationNormalized
+    if (!match) {
+      throw new Error(`No match found for path: ${path}`)
     }
 
     // 解析 URL 以分离路径、查询参数和哈希
@@ -484,17 +921,6 @@ export class RouteMatcher {
       }
     }
 
-    const match = this.matchByPath(cleanPath)
-
-    if (!match) {
-      throw new Error(`No match found for path: ${cleanPath}`)
-    }
-
-    // 缓存匹配结果
-    this.clearCache()
-    this.matchCache.set(cacheKey, match)
-    this.cacheSize++
-
     return {
       path: cleanPath,
       name: match.record.name,
@@ -506,7 +932,7 @@ export class RouteMatcher {
         { ...urlQuery, ...(query || {}) },
         urlHash || hash
       ),
-      matched: [match.record],
+      matched: match.matched,
       meta: match.record.meta,
     } as RouteLocationNormalized
   }

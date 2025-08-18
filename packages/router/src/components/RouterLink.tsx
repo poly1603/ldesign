@@ -365,6 +365,7 @@ export const RouterLink = defineComponent({
       isExactActive: isExactActive.value,
       isDisabled: props.disabled,
       isLoading: props.loading,
+      isExternal: props.external || false,
     }
 
     // 渲染函数
@@ -447,9 +448,9 @@ export const RouterLink = defineComponent({
       // 加载指示器
       if (props.loading) {
         content.push(
-          <span class='router-link__loading'>
-            <i class='router-link__spinner' />
-          </span>
+          h('span', { class: 'router-link__loading' }, [
+            h('i', { class: 'router-link__spinner' }),
+          ])
         )
       }
 

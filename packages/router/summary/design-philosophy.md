@@ -266,8 +266,8 @@ src/device/
 ```typescript
 // 支持自定义插件
 interface DeviceRouterPlugin {
-  install(router: Router): void
-  uninstall?(): void
+  install: (router: Router) => void
+  uninstall?: () => void
 }
 ```
 

@@ -107,7 +107,7 @@ const templateComponent = await templateResolver.resolveTemplate(category, templ
 ### 基础配置
 
 ```typescript
-import { createRouter, createDeviceRouterPlugin } from '@ldesign/router'
+import { createDeviceRouterPlugin, createRouter } from '@ldesign/router'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -255,16 +255,8 @@ const { currentDevice, isCurrentRouteSupported, goToUnsupportedPage } = useDevic
 
 ### 功能完整性
 
-✅ 设备检测集成  
-✅ 设备访问控制  
-✅ 设备特定组件  
-✅ 模板路由支持  
-✅ 插件化架构  
-✅ Composition API  
-✅ TypeScript 支持  
-✅ 完整测试覆盖  
-✅ 详细文档  
-✅ 演示示例
+✅ 设备检测集成 ✅ 设备访问控制 ✅ 设备特定组件 ✅ 模板路由支持 ✅ 插件化架构 ✅ Composition API ✅
+TypeScript 支持 ✅ 完整测试覆盖 ✅ 详细文档 ✅ 演示示例
 
 ### 代码质量
 

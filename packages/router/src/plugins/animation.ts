@@ -72,7 +72,7 @@ export const ANIMATION_PRESETS: Record<AnimationType, AnimationConfig> = {
 export class AnimationManager {
   private animations = new Map<string, AnimationConfig>()
   private customAnimations = new Map<string, AnimationConfig>()
-  // @ts-ignore - 默认动画类型，用于后续扩展
+  // 默认动画类型，用于后续扩展
   private defaultAnimation: AnimationType = 'fade'
 
   constructor() {

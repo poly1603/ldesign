@@ -5,13 +5,13 @@ const router = useRouter()
 
 function logout() {
   localStorage.removeItem('token')
-  alert('已退出登录，下次访问将被重定向到登录页面')
+  console.warn('已退出登录，下次访问将被重定向到登录页面')
   router.push('/login')
 }
 
 function clearPermissions() {
   // 模拟清除权限
-  alert('权限已清除，下次访问受保护页面将被拒绝')
+  console.warn('权限已清除，下次访问受保护页面将被拒绝')
 }
 
 function goToProtected() {

@@ -6,11 +6,14 @@
 
 import type { RouteLocationNormalized } from '../types'
 
+// 导入 process 以避免 ESLint 错误
+// eslint-disable-next-line node/prefer-global/process
+const nodeProcess = typeof process !== 'undefined' ? process : undefined
+
 // ==================== 开发模式常量 ====================
 
 /** 是否为开发模式 */
-export const __DEV__ =
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+export const __DEV__ = nodeProcess?.env?.NODE_ENV === 'development'
 
 // ==================== 路径相关常量 ====================
 
@@ -185,16 +188,13 @@ export const SUPPORTS_INTERSECTION_OBSERVER =
 export const SUPPORTS_REQUEST_IDLE_CALLBACK =
   typeof window !== 'undefined' && 'requestIdleCallback' in window
 
-export const IS_DEV =
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+export const IS_DEV = nodeProcess?.env?.NODE_ENV === 'development'
 
 /** 是否为生产模式 */
-export const IS_PROD =
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'production'
+export const IS_PROD = nodeProcess?.env?.NODE_ENV === 'production'
 
 /** 是否为测试模式 */
-export const IS_TEST =
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
+export const IS_TEST = nodeProcess?.env?.NODE_ENV === 'test'
 
 // ==================== 版本信息常量 ====================
 

@@ -134,7 +134,7 @@ const Login = defineComponent({
       h('div', { 'data-testid': 'page-content' }, [
         h('h1', 'Login'),
         h('p', { 'data-testid': 'redirect-message' }, '请先登录'),
-        h('button', { onClick: () => alert('Login clicked') }, 'Login'),
+        h('button', { onClick: () => console.warn('Login clicked') }, 'Login'),
         h(RouterLink, { to: '/' }, () => 'Back to Home'),
       ])
   },

@@ -4,11 +4,12 @@
  * 这个文件定义了路由系统的所有核心类型，确保类型安全和良好的开发体验
  */
 
-import type { Component, ComputedRef, Ref } from 'vue'
 import type { DeviceType } from '@ldesign/device'
+import type { Component, ComputedRef, Ref } from 'vue'
+import type { NavigationFailureType } from '../core/constants'
 
-// 重新导出设备相关类型
-export type { DeviceType } from '@ldesign/device'
+// 重新导出 NavigationFailureType
+export { NavigationFailureType } from '../core/constants'
 
 // ==================== 基础类型 ====================
 
@@ -21,6 +22,51 @@ export type RouteParams = Record<string, string | string[]>
  * 查询参数类型
  */
 export type RouteQuery = Record<string, string | string[] | null | undefined>
+
+// ==================== 类型推导工具 ====================
+
+/**
+ * 从路径字符串中提取参数类型
+ */
+export type ExtractRouteParams<T extends string> =
+  T extends `${infer _Start}:${infer Param}/${infer Rest}`
+    ? { [K in Param]: string } & ExtractRouteParams<Rest>
+    : T extends `${infer _Start}:${infer Param}?/${infer Rest}`
+    ? { [K in Param]?: string } & ExtractRouteParams<Rest>
+    : T extends `${infer _Start}:${infer Param}`
+    ? { [K in Param]: string }
+    : T extends `${infer _Start}:${infer Param}?`
+    ? { [K in Param]?: string }
+    : Record<string, never>
+
+/**
+ * 路径参数类型推导
+ */
+export type RouteParamsFor<T extends string> = ExtractRouteParams<T>
+
+/**
+ * 类型安全的路由参数
+ */
+export type TypedRouteParams<
+  T extends Record<string, any> = Record<string, any>
+> = {
+  [K in keyof T]: T[K] extends string ? string : string | string[]
+}
+
+/**
+ * 类型安全的查询参数
+ */
+export type TypedRouteQuery<
+  T extends Record<string, any> = Record<string, any>
+> = {
+  [K in keyof T]?: T[K] extends string
+    ? string | string[] | null | undefined
+    : T[K] extends number
+    ? string | string[] | null | undefined
+    : T[K] extends boolean
+    ? string | string[] | null | undefined
+    : string | string[] | null | undefined
+}
 
 /**
  * 路由元信息类型
@@ -55,27 +101,35 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
 // ==================== 路由位置类型 ====================
 
 /**
- * 路由位置基础接口
+ * 路由位置基础接口（泛型版）
  */
-export interface RouteLocationBase {
+export interface RouteLocationBase<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>,
+  TMeta extends RouteMeta = RouteMeta
+> {
   /** 路径 */
   path: string
   /** 路由名称 */
   name?: string | symbol
   /** 路由参数 */
-  params: RouteParams
+  params: TypedRouteParams<TParams>
   /** 查询参数 */
-  query: RouteQuery
+  query: TypedRouteQuery<TQuery>
   /** 哈希值 */
   hash: string
   /** 元信息 */
-  meta: RouteMeta
+  meta: TMeta
 }
 
 /**
- * 标准化的路由位置
+ * 标准化的路由位置（泛型版）
  */
-export interface RouteLocationNormalized extends RouteLocationBase {
+export interface RouteLocationNormalized<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>,
+  TMeta extends RouteMeta = RouteMeta
+> extends RouteLocationBase<TParams, TQuery, TMeta> {
   /** 完整路径（包含查询参数和哈希） */
   fullPath: string
   /** 匹配的路由记录 */
@@ -85,30 +139,47 @@ export interface RouteLocationNormalized extends RouteLocationBase {
 }
 
 /**
- * 路由位置原始类型（用于导航）
+ * 类型安全的路由位置（基于路径推导）
  */
-export type RouteLocationRaw =
-  | string
-  | RouteLocationPathRaw
-  | RouteLocationNamedRaw
+export type TypedRouteLocation<T extends string> = RouteLocationNormalized<
+  RouteParamsFor<T>,
+  Record<string, any>,
+  RouteMeta
+>
 
 /**
- * 基于路径的路由位置
+ * 路由位置原始类型（用于导航）
  */
-export interface RouteLocationPathRaw {
+export type RouteLocationRaw<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>
+> =
+  | string
+  | RouteLocationPathRaw<TQuery>
+  | RouteLocationNamedRaw<TParams, TQuery>
+
+/**
+ * 基于路径的路由位置（泛型版）
+ */
+export interface RouteLocationPathRaw<
+  TQuery extends Record<string, any> = Record<string, any>
+> {
   path: string
-  query?: RouteQuery
+  query?: TypedRouteQuery<TQuery>
   hash?: string
   state?: HistoryState
 }
 
 /**
- * 基于名称的路由位置
+ * 基于名称的路由位置（泛型版）
  */
-export interface RouteLocationNamedRaw {
+export interface RouteLocationNamedRaw<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>
+> {
   name: string | symbol
-  params?: RouteParams
-  query?: RouteQuery
+  params?: TypedRouteParams<TParams>
+  query?: TypedRouteQuery<TQuery>
   hash?: string
   state?: HistoryState
 }
@@ -255,14 +326,14 @@ export interface RouterHistory {
   readonly location: HistoryLocation
   readonly state: HistoryState
 
-  push(to: HistoryLocation, data?: HistoryState): void
-  replace(to: HistoryLocation, data?: HistoryState): void
-  go(delta: number, triggerListeners?: boolean): void
-  back(): void
-  forward(): void
+  push: (to: HistoryLocation, data?: HistoryState) => void
+  replace: (to: HistoryLocation, data?: HistoryState) => void
+  go: (delta: number, triggerListeners?: boolean) => void
+  back: () => void
+  forward: () => void
 
-  listen(callback: NavigationCallback): () => void
-  destroy(): void
+  listen: (callback: NavigationCallback) => () => void
+  destroy: () => void
 }
 
 /**
@@ -297,9 +368,8 @@ export type NavigationDirection = 'forward' | 'backward' | 'unknown'
 
 // ==================== 导航失败类型 ====================
 
-// 重新导出 NavigationFailureType
-export { NavigationFailureType } from '../core/constants'
-import type { NavigationFailureType } from '../core/constants'
+// 重新导出设备相关类型
+export type { DeviceType } from '@ldesign/device'
 
 /**
  * 导航失败接口
@@ -367,52 +437,54 @@ export interface Router {
   readonly options: RouterOptions
 
   /** 添加路由 */
-  addRoute(route: RouteRecordRaw): () => void
-  addRoute(parentName: string | symbol, route: RouteRecordRaw): () => void
+  addRoute: ((route: RouteRecordRaw) => () => void) &
+    ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
 
   /** 移除路由 */
-  removeRoute(name: string | symbol): void
+  removeRoute: (name: string | symbol) => void
 
   /** 获取所有路由记录 */
-  getRoutes(): RouteRecordNormalized[]
+  getRoutes: () => RouteRecordNormalized[]
 
   /** 检查路由是否存在 */
-  hasRoute(name: string | symbol): boolean
+  hasRoute: (name: string | symbol) => boolean
 
   /** 解析路由位置 */
-  resolve(
+  resolve: (
     to: RouteLocationRaw,
     currentLocation?: RouteLocationNormalized
-  ): RouteLocationNormalized
+  ) => RouteLocationNormalized
 
   /** 导航到指定位置 */
-  push(to: RouteLocationRaw): Promise<NavigationFailure | void | undefined>
+  push: (to: RouteLocationRaw) => Promise<NavigationFailure | void | undefined>
 
   /** 替换当前位置 */
-  replace(to: RouteLocationRaw): Promise<NavigationFailure | void | undefined>
+  replace: (
+    to: RouteLocationRaw
+  ) => Promise<NavigationFailure | void | undefined>
 
   /** 历史导航 */
-  go(delta: number): void
-  back(): void
-  forward(): void
+  go: (delta: number) => void
+  back: () => void
+  forward: () => void
 
   /** 全局前置守卫 */
-  beforeEach(guard: NavigationGuard): () => void
+  beforeEach: (guard: NavigationGuard) => () => void
 
   /** 全局解析守卫 */
-  beforeResolve(guard: NavigationGuard): () => void
+  beforeResolve: (guard: NavigationGuard) => () => void
 
   /** 全局后置钩子 */
-  afterEach(hook: NavigationHookAfter): () => void
+  afterEach: (hook: NavigationHookAfter) => () => void
 
   /** 导航错误处理 */
-  onError(handler: (error: Error) => void): () => void
+  onError: (handler: (error: Error) => void) => () => void
 
   /** 准备就绪 */
-  isReady(): Promise<void>
+  isReady: () => Promise<void>
 
   /** 安装到 Vue 应用 */
-  install(app: any): void
+  install: (app: any) => void
 }
 
 // ==================== 组合式 API 类型 ====================

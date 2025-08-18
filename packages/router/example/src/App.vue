@@ -12,7 +12,7 @@ const router = useRouter()
 
 onMounted(() => {
   // 监听性能事件
-  router.afterEach((to, from) => {
+  router.afterEach((_to, _from) => {
     // 模拟性能数据收集
     performanceMetrics.value.navigationTime = Math.random() * 100
     performanceMetrics.value.componentLoadTime = Math.random() * 50

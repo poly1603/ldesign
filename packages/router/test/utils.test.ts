@@ -208,12 +208,14 @@ describe('utils', () => {
   describe('route Location Processing', () => {
     describe('normalizeParams', () => {
       it('should normalize route parameters', () => {
-        expect(normalizeParams({ id: 123, name: 'john' })).toEqual({
+        expect(normalizeParams({ id: 123 as any, name: 'john' })).toEqual({
           id: '123',
           name: 'john',
         })
 
-        expect(normalizeParams({ id: null, name: undefined })).toEqual({})
+        expect(
+          normalizeParams({ id: null as any, name: undefined as any })
+        ).toEqual({})
 
         expect(normalizeParams({ tags: ['vue', 'router'] })).toEqual({
           tags: ['vue', 'router'],

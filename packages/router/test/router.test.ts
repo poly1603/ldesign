@@ -120,6 +120,48 @@ describe('router Core', () => {
       expect(resolved.params.id).toBe('456')
     })
 
+    it('should resolve nested route with default child', () => {
+      // 添加一个带默认子路由的路由
+      console.log('Adding nested route with default child...')
+      router.addRoute({
+        path: '/nested',
+        name: 'Nested',
+        component: () => Promise.resolve({ name: 'NestedParent' }),
+        children: [
+          {
+            path: '',
+            name: 'NestedDefault',
+            component: () => Promise.resolve({ name: 'NestedDefault' }),
+          },
+          {
+            path: 'child',
+            name: 'NestedChild',
+            component: () => Promise.resolve({ name: 'NestedChild' }),
+          },
+        ],
+      })
+
+      // 测试默认子路由
+      console.log('Resolving /nested...')
+      const resolved = router.resolve('/nested')
+
+      // 调试信息
+      const matchedInfo = resolved.matched.map(r => ({
+        name: r.name,
+        path: r.path,
+      }))
+      console.log('Matched routes:', matchedInfo)
+      console.log('Resolved path:', resolved.path)
+      console.log('Resolved name:', resolved.name)
+      console.log('Resolved record name:', resolved.matched[0]?.name)
+
+      expect(resolved.path).toBe('/nested')
+      // 现在应该匹配到2个路由：Nested + NestedDefault（不包含根路由）
+      expect(resolved.matched).toHaveLength(2)
+      expect(resolved.matched[0].name).toBe('Nested') // 父路由
+      expect(resolved.matched[1].name).toBe('NestedDefault') // 默认子路由
+    })
+
     it('should throw error for invalid route', () => {
       expect(() => router.resolve('/nonexistent')).toThrow()
     })
@@ -199,7 +241,7 @@ describe('router Core', () => {
     })
 
     it('should cancel navigation when guard returns false', async () => {
-      router.beforeEach((to, from, next) => next(false))
+      router.beforeEach((to: any, from: any, next: any) => next(false))
 
       await router.push('/about')
 
@@ -208,7 +250,7 @@ describe('router Core', () => {
     })
 
     it('should redirect when guard returns route location', async () => {
-      router.beforeEach((to, from, next) => {
+      router.beforeEach((to: any, from: any, next: any) => {
         if (to.path === '/about') {
           next('/user/123')
         } else {

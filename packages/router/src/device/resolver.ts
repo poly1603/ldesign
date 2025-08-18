@@ -70,7 +70,7 @@ export class DeviceComponentResolver {
   /**
    * 解析设备特定组件
    */
-  // @ts-ignore - 解析设备特定组件，预留扩展接口
+  // 解析设备特定组件，预留扩展接口
   private resolveDeviceSpecificComponent(
     record: RouteRecordNormalized,
     device: DeviceType

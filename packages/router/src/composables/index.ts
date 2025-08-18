@@ -59,7 +59,24 @@ export function useRoute(): UseRouteReturn {
     )
   }
 
-  return computed(() => route.value) as UseRouteReturn
+  return computed(() => {
+    // 确保路由对象始终有效，防止初始化时的 undefined 访问
+    const currentRoute = route.value
+    if (!currentRoute) {
+      // 返回一个安全的默认路由对象
+      return {
+        path: '/',
+        name: undefined,
+        params: {},
+        query: {},
+        hash: '',
+        fullPath: '/',
+        matched: [],
+        meta: {},
+      } as RouteLocationNormalized
+    }
+    return currentRoute
+  }) as UseRouteReturn
 }
 
 // ==================== 路由参数相关 API ====================

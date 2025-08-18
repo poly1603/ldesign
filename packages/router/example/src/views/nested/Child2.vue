@@ -157,7 +157,7 @@ function navigateToParent() {
 onMounted(() => {
   updateClock()
   clockInterval = window.setInterval(updateClock, 1000)
-  console.log('Child2 组件已挂载')
+  // Child2 组件已挂载
 })
 
 onUnmounted(() => {
@@ -167,7 +167,7 @@ onUnmounted(() => {
   if (progressInterval) {
     clearInterval(progressInterval)
   }
-  console.log('Child2 组件已卸载')
+  // Child2 组件已卸载
 })
 </script>
 

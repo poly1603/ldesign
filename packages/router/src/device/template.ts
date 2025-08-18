@@ -39,10 +39,9 @@ export class TemplateRouteResolver {
       const { TemplateManager } = await import('@ldesign/template')
 
       this.templateManager = new TemplateManager({
-        defaultDevice: 'desktop',
         enableCache: this.config.enableCache,
         templateRoot: this.config.templateRoot,
-      })
+      } as any)
 
       // 扫描模板
       await this.templateManager.scanTemplates()

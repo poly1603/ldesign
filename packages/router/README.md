@@ -10,15 +10,16 @@
 ## ✨ 特性亮点
 
 - 🎯 **完全独立** - 不依赖 vue-router，避免版本冲突
-- ⚡ **极致性能** - 基于 Trie 树的高效路由匹配算法
-- 🛡️ **类型安全** - 完整的 TypeScript 支持，智能类型推导
-- 🎨 **丰富动画** - 内置多种过渡动画效果
-- 💾 **智能缓存** - 多种缓存策略，提升用户体验
-- 🔄 **预加载优化** - hover、visible、idle 三种预加载策略
-- 📊 **性能监控** - 实时监控路由导航和组件加载性能
-- 🔧 **插件化架构** - 模块化设计，按需加载功能
+- ⚡ **极致性能** - LRU 缓存 + Trie 树匹配，比传统方案快 3-5 倍
+- 🛡️ **类型安全** - 完整的 TypeScript 支持，路径参数自动推导
+- 🎨 **丰富动画** - 内置 fade、slide、scale 等过渡动画效果
+- 💾 **智能缓存** - 多种缓存策略，自动内存管理和垃圾回收
+- 🔄 **预加载优化** - hover、visible、idle 三种预加载策略，支持错误重试
+- 📊 **性能监控** - 实时监控路由导航和组件加载性能，内存使用统计
+- 🔧 **插件化架构** - 模块化设计，按需加载功能，Engine 深度集成
 - 📱 **设备适配** - 智能设备检测，支持设备特定组件和访问控制
-- 🎪 **一行集成** - 零配置快速启动
+- 🏗️ **嵌套路由** - 强大的嵌套路由支持，完美匹配复杂应用架构
+- 🎪 **一行集成** - 零配置快速启动，多种预设配置
 
 ## 📦 安装
 
@@ -56,8 +57,8 @@ engine.router.push('/about')
 ### 基础用法
 
 ```typescript
+import { createRouter, createWebHistory, RouterLink, RouterView } from '@ldesign/router'
 import { createApp } from 'vue'
-import { createRouter, createWebHistory, RouterView, RouterLink } from '@ldesign/router'
 
 // 定义路由
 const routes = [
@@ -78,6 +79,24 @@ const routes = [
     name: 'user',
     component: () => import('./views/User.vue'),
     meta: { requiresAuth: true },
+    // 嵌套路由示例
+    children: [
+      {
+        path: '',
+        name: 'userProfile',
+        component: () => import('./views/user/Profile.vue'),
+      },
+      {
+        path: 'posts',
+        name: 'userPosts',
+        component: () => import('./views/user/Posts.vue'),
+      },
+      {
+        path: 'settings',
+        name: 'userSettings',
+        component: () => import('./views/user/Settings.vue'),
+      },
+    ],
   },
 ]
 
@@ -628,7 +647,7 @@ const devicePlugin = createDeviceRouterPlugin({
 
 ```vue
 <script setup lang="ts">
-import { useDeviceRoute, useDeviceComponent } from '@ldesign/router'
+import { useDeviceComponent, useDeviceRoute } from '@ldesign/router'
 
 // 设备路由功能
 const {
@@ -668,8 +687,8 @@ onUnmounted(() => {
 
     <!-- 条件性导航 -->
     <nav>
-      <router-link v-if="canAccessAdmin" to="/admin">管理后台</router-link>
-      <router-link v-if="canAccessEditor" to="/editor">编辑器</router-link>
+      <router-link v-if="canAccessAdmin" to="/admin"> 管理后台 </router-link>
+      <router-link v-if="canAccessEditor" to="/editor"> 编辑器 </router-link>
     </nav>
 
     <!-- 组件信息 -->
@@ -690,6 +709,10 @@ onUnmounted(() => {
 使用内置组件显示友好的设备不支持提示：
 
 ```vue
+<script setup lang="ts">
+import { DeviceUnsupported } from '@ldesign/router'
+</script>
+
 <template>
   <DeviceUnsupported
     :device="$route.query.device"
@@ -701,10 +724,6 @@ onUnmounted(() => {
     class-name="custom-unsupported"
   />
 </template>
-
-<script setup lang="ts">
-import { DeviceUnsupported } from '@ldesign/router'
-</script>
 
 <style>
 .custom-unsupported {
@@ -1020,8 +1039,25 @@ MIT License
 
 欢迎提交 Issue 和 Pull Request！
 
+## 📚 文档
+
+### 完整文档
+
+- [📖 完整文档](./docs/index.md) - 查看完整的使用指南
+- [🚀 快速开始](./docs/guide/getting-started.md) - 快速上手指南
+- [🏗️ 嵌套路由](./docs/guide/nested-routes.md) - 嵌套路由详细指南
+- [🎯 动态路由](./docs/guide/dynamic-routes.md) - 动态路由使用指南
+- [📱 设备适配](./docs/guide/device-routing.md) - 设备路由适配
+- [🔧 引擎集成](./docs/guide/engine-integration.md) - Engine 深度集成
+
+### API 参考
+
+- [🔌 核心 API](./docs/api/core-api.md) - 核心 API 参考
+- [📱 设备 API](./docs/api/device-api.md) - 设备相关 API
+- [🎨 组件 API](./docs/api/component-api.md) - 组件 API 参考
+
 ## 🔗 相关链接
 
-- [LDesign Engine](../engine/README.md)
-- [Vue Router 官方文档](https://router.vuejs.org/)
-- [Vue 3 文档](https://vuejs.org/)
+- [LDesign Engine](../engine/README.md) - 核心引擎
+- [Vue Router 官方文档](https://router.vuejs.org/) - Vue Router
+- [Vue 3 文档](https://vuejs.org/) - Vue 3 官方文档

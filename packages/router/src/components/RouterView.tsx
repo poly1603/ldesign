@@ -16,10 +16,12 @@ import {
   computed,
   defineComponent,
   h,
+  inject,
   KeepAlive,
   markRaw,
   onMounted,
   onUnmounted,
+  provide,
   type PropType,
   ref,
   Suspense,
@@ -30,12 +32,15 @@ import {
 import { useRoute } from '../composables'
 import { DEFAULT_VIEW_NAME } from '../core/constants'
 
+// RouterView 深度注入键
+const ROUTER_VIEW_DEPTH_KEY = Symbol('RouterViewDepth')
+
 // ==================== 缓存管理器 ====================
 
 class ComponentCache {
   private cache = new Map<string, CacheItem>()
   private maxSize: number
-  // @ts-ignore - 缓存策略，用于后续扩展
+  // 缓存策略，用于后续扩展
   private _strategy: CacheStrategy
 
   constructor(maxSize: number = 10, strategy: CacheStrategy = 'memory') {
@@ -196,6 +201,11 @@ export const RouterView = defineComponent({
     // const router = useRouter()
     const currentRoute = useRoute()
 
+    // 计算 RouterView 深度
+    const parentDepth = inject(ROUTER_VIEW_DEPTH_KEY, 0)
+    const depth = parentDepth + 1
+    provide(ROUTER_VIEW_DEPTH_KEY, depth)
+
     // 状态管理
     const isLoading = ref(false)
     const error = ref<Error | null>(null)
@@ -260,7 +270,17 @@ export const RouterView = defineComponent({
       }
 
       // 获取匹配的路由记录
-      const matched = route.matched[route.matched.length - 1]
+      if (!route.matched || route.matched.length === 0) {
+        return null
+      }
+
+      // 根据深度选择正确的路由记录
+      const matchedIndex = depth - 1
+      if (matchedIndex >= route.matched.length) {
+        return null
+      }
+
+      const matched = route.matched[matchedIndex]
       if (!matched || !matched.components) {
         return null
       }
@@ -409,17 +429,17 @@ export const RouterView = defineComponent({
       componentCache.clear()
     })
 
-    // 插槽属性
-    const slotProps: RouterViewSlotProps = {
-      Component: currentComponent.value,
-      route: route.value,
-      isLoading: isLoading.value,
-      error: error.value,
-      retry,
-    }
-
     // 渲染函数
     return () => {
+      // 插槽属性 - 在渲染函数内部创建，确保响应式更新
+      const slotProps: RouterViewSlotProps = {
+        Component: currentComponent.value,
+        route: route.value,
+        isLoading: isLoading.value,
+        error: error.value,
+        retry,
+      }
+
       // 自定义渲染
       if (slots.default) {
         return slots.default(slotProps)
@@ -430,15 +450,10 @@ export const RouterView = defineComponent({
         if (props.error) {
           return h(props.error as any, { error: error.value, retry })
         }
-        return (
-          <div class='router-view__error'>
-            <p>
-              加载失败:
-              {error.value.message}
-            </p>
-            <button onClick={retry}>重试</button>
-          </div>
-        )
+        return h('div', { class: 'router-view__error' }, [
+          h('p', {}, ['加载失败: ', error.value.message]),
+          h('button', { onClick: retry }, '重试'),
+        ])
       }
 
       // 加载状态

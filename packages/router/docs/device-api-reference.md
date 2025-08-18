@@ -259,7 +259,7 @@ async hasTemplate(
 
 ```typescript
 function createDeviceRouterPlugin(options?: DeviceRouterPluginOptions): {
-  install(router: Router): DeviceRouterPlugin
+  install: (router: Router) => DeviceRouterPlugin
 }
 ```
 

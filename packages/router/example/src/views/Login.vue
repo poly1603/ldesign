@@ -39,7 +39,7 @@ async function handleLogin() {
       localStorage.setItem('user', JSON.stringify(user))
 
       // 显示成功消息
-      alert(
+      console.warn(
         `登录成功！欢迎 ${
           user.role === 'admin'
             ? '管理员'
@@ -53,11 +53,11 @@ async function handleLogin() {
       const redirect = (route.query.redirect as string) || '/'
       router.push(redirect)
     } else {
-      alert('用户名或密码错误，请检查后重试')
+      console.warn('用户名或密码错误，请检查后重试')
     }
   } catch (error) {
     console.error('Login error:', error)
-    alert('登录失败，请稍后重试')
+    console.warn('登录失败，请稍后重试')
   } finally {
     loading.value = false
   }

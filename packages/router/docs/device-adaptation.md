@@ -22,7 +22,7 @@ pnpm add @ldesign/router @ldesign/device @ldesign/template
 ### 2. 基础配置
 
 ```typescript
-import { createRouter, createWebHistory, createDeviceRouterPlugin } from '@ldesign/router'
+import { createDeviceRouterPlugin, createRouter, createWebHistory } from '@ldesign/router'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -246,7 +246,7 @@ const hasMobileComponent = hasDeviceComponent('mobile')
   <div>
     <div v-if="loading">加载中...</div>
     <div v-else-if="error">加载失败: {{ error.message }}</div>
-    <component v-else-if="resolvedComponent" :is="resolvedComponent" />
+    <component :is="resolvedComponent" v-else-if="resolvedComponent" />
 
     <div v-if="resolution">
       <p>组件来源: {{ resolution.source }}</p>
@@ -262,6 +262,12 @@ const hasMobileComponent = hasDeviceComponent('mobile')
 ### 使用内置组件
 
 ```vue
+<script setup lang="ts">
+import { DeviceUnsupported, useDeviceRoute } from '@ldesign/router'
+
+const { currentDevice } = useDeviceRoute()
+</script>
+
 <template>
   <DeviceUnsupported
     :device="currentDevice"
@@ -272,13 +278,6 @@ const hasMobileComponent = hasDeviceComponent('mobile')
     :show-refresh-button="true"
   />
 </template>
-
-<script setup lang="ts">
-import { DeviceUnsupported } from '@ldesign/router'
-import { useDeviceRoute } from '@ldesign/router'
-
-const { currentDevice } = useDeviceRoute()
-</script>
 ```
 
 ### 自定义不支持页面

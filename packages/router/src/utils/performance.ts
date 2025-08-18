@@ -260,18 +260,18 @@ export function findInOptimizedTree(
 
     // 尝试参数匹配
     for (const [key, child] of node.children) {
-      if (child.isParam && key.startsWith(':')) {
-        params[child.paramName!] = decodeURIComponent(segment)
+      if (child.isParam && key.startsWith(':') && child.paramName) {
+        params[child.paramName] = decodeURIComponent(segment)
         const result = traverse(child, segmentIndex + 1)
         if (result) return result
-        delete params[child.paramName!] // 回溯
+        delete params[child.paramName] // 回溯
       }
     }
 
     // 尝试通配符匹配
-    if (node.wildcardChild) {
+    if (node.wildcardChild && node.wildcardChild.paramName) {
       const remainingPath = segments.slice(segmentIndex).join('/')
-      params[node.wildcardChild.paramName!] = decodeURIComponent(remainingPath)
+      params[node.wildcardChild.paramName] = decodeURIComponent(remainingPath)
       return node.wildcardChild.record || null
     }
 

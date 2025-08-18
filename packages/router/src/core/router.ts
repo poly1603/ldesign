@@ -19,6 +19,7 @@ import type {
   RouterOptions,
 } from '../types'
 import { ref } from 'vue'
+import { MemoryManager } from '../utils/memory-manager'
 import {
   NavigationFailureType,
   ROUTE_INJECTION_SYMBOL,
@@ -30,7 +31,7 @@ import { RouteMatcher } from './matcher'
 // ==================== 路由器实现 ====================
 
 /**
- * 路由器类
+ * 路由器类（增强版）
  */
 export class RouterImpl implements Router {
   private matcher: RouteMatcher
@@ -40,8 +41,12 @@ export class RouterImpl implements Router {
   private errorHandlers: Array<(error: Error) => void> = []
   private isReadyPromise?: Promise<void>
   private isReadyResolve?: () => void
-  // @ts-ignore - 待处理的路由位置，用于导航状态管理
+  // 待处理的路由位置，用于导航状态管理
   private _pendingLocation?: RouteLocationNormalized
+
+  // 内存管理
+  private memoryManager: MemoryManager
+  private guardCleanupFunctions: Array<() => void> = []
 
   public readonly currentRoute: Ref<RouteLocationNormalized>
   public readonly options: RouterOptions
@@ -50,6 +55,17 @@ export class RouterImpl implements Router {
     this.options = options
     this.matcher = new RouteMatcher()
     this.currentRoute = ref(START_LOCATION)
+
+    // 初始化内存管理器
+    this.memoryManager = new MemoryManager(
+      {
+        warning: 50,
+        critical: 100,
+        maxCache: 20,
+        maxListeners: 1000,
+      },
+      'moderate'
+    )
 
     // 创建 isReady Promise
     this.isReadyPromise = new Promise(resolve => {
@@ -66,6 +82,9 @@ export class RouterImpl implements Router {
 
     // 初始化当前路由
     this.initializeCurrentRoute()
+
+    // 启动内存管理
+    this.memoryManager.start()
   }
 
   // ==================== 路由管理 ====================
@@ -146,12 +165,21 @@ export class RouterImpl implements Router {
 
   beforeEach(guard: NavigationGuard): () => void {
     this.beforeGuards.push(guard)
-    return () => {
+
+    // 注册到内存监控
+    const listener = guard as any
+    this.memoryManager.getMemoryMonitor().registerListener(listener)
+
+    const cleanup = () => {
       const index = this.beforeGuards.indexOf(guard)
       if (index >= 0) {
         this.beforeGuards.splice(index, 1)
       }
+      this.memoryManager.getMemoryMonitor().unregisterListener(listener)
     }
+
+    this.guardCleanupFunctions.push(cleanup)
+    return cleanup
   }
 
   beforeResolve(guard: NavigationGuard): () => void {
@@ -200,6 +228,46 @@ export class RouterImpl implements Router {
 
     // 注册全局组件
     // 这里会在组件实现后添加
+  }
+
+  /**
+   * 销毁路由器，清理所有资源
+   */
+  destroy(): void {
+    // 停止内存管理
+    this.memoryManager.stop()
+
+    // 清理所有守卫
+    this.guardCleanupFunctions.forEach(cleanup => cleanup())
+    this.guardCleanupFunctions = []
+
+    // 清理数组
+    this.beforeGuards = []
+    this.beforeResolveGuards = []
+    this.afterHooks = []
+    this.errorHandlers = []
+
+    // 清理匹配器缓存
+    this.matcher.clearCache()
+
+    // 清理历史监听器
+    this.options.history.destroy()
+  }
+
+  /**
+   * 获取内存统计信息
+   */
+  getMemoryStats() {
+    return {
+      memory: this.memoryManager.getMemoryMonitor().getStats(),
+      matcher: this.matcher.getStats(),
+      guards: {
+        beforeGuards: this.beforeGuards.length,
+        beforeResolveGuards: this.beforeResolveGuards.length,
+        afterHooks: this.afterHooks.length,
+        errorHandlers: this.errorHandlers.length,
+      },
+    }
   }
 
   // ==================== 私有方法 ====================

@@ -65,11 +65,11 @@ onMounted(() => {
   visitCount.value = stored ? Number.parseInt(stored) + 1 : 1
   sessionStorage.setItem('child1-visit-count', visitCount.value.toString())
 
-  console.log('Child1 组件已挂载')
+  // Child1 组件已挂载
 })
 
 onUnmounted(() => {
-  console.log('Child1 组件已卸载')
+  // Child1 组件已卸载
 })
 </script>
 

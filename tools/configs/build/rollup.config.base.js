@@ -164,6 +164,10 @@ export function createRollupConfig(options = {}) {
         exclude: ['**/*.vue'],
         compilerOptions: {
           outDir: undefined, // 让 rollup 控制输出目录
+          exactOptionalPropertyTypes: false,
+          noUncheckedIndexedAccess: false,
+          noUnusedLocals: false,
+          noUnusedParameters: false,
         },
       })
     )

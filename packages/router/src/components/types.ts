@@ -3,7 +3,11 @@
  */
 
 import type { Component } from 'vue'
-import type { RouteLocationNormalized, RouteLocationRaw } from '../types'
+import type {
+  ExtractRouteParams,
+  RouteLocationNormalized,
+  RouteLocationRaw,
+} from '../types'
 
 // ==================== 通用类型 ====================
 
@@ -41,11 +45,14 @@ export type CacheStrategy = 'memory' | 'session' | 'local' | 'none'
 // ==================== RouterLink 组件类型 ====================
 
 /**
- * RouterLink 属性
+ * RouterLink 属性（泛型版）
  */
-export interface RouterLinkProps {
+export interface RouterLinkProps<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>
+> {
   /** 目标路由 */
-  to: RouteLocationRaw
+  to: RouteLocationRaw<TParams, TQuery>
   /** 是否替换当前历史记录 */
   replace?: boolean
   /** 激活状态类名 */
@@ -87,13 +94,26 @@ export interface RouterLinkProps {
 }
 
 /**
- * RouterLink 插槽属性
+ * 类型安全的 RouterLink 属性（基于路径推导）
  */
-export interface RouterLinkSlotProps {
+export type TypedRouterLinkProps<T extends string> = RouterLinkProps<
+  ExtractRouteParams<T>,
+  Record<string, any>
+> & {
+  to: T | RouteLocationRaw<ExtractRouteParams<T>>
+}
+
+/**
+ * RouterLink 插槽属性（泛型版）
+ */
+export interface RouterLinkSlotProps<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>
+> {
   /** 链接地址 */
   href: string
   /** 目标路由 */
-  route: RouteLocationNormalized
+  route: RouteLocationNormalized<TParams, TQuery>
   /** 导航函数 */
   navigate: (e?: Event) => Promise<void>
   /** 是否激活 */
@@ -104,18 +124,45 @@ export interface RouterLinkSlotProps {
   isDisabled: boolean
   /** 是否加载中 */
   isLoading: boolean
+  /** 是否为外部链接 */
+  isExternal: boolean
+}
+
+/**
+ * RouterLink 事件类型
+ */
+export interface RouterLinkEmits {
+  /** 点击事件 */
+  click: [event: MouseEvent]
+  /** 导航开始事件 */
+  'navigate-start': [to: RouteLocationRaw]
+  /** 导航成功事件 */
+  'navigate-success': [to: RouteLocationNormalized]
+  /** 导航失败事件 */
+  'navigate-error': [error: Error, to: RouteLocationRaw]
+  /** 预加载开始事件 */
+  'preload-start': [to: RouteLocationRaw]
+  /** 预加载成功事件 */
+  'preload-success': [to: RouteLocationRaw]
+  /** 预加载失败事件 */
+  'preload-error': [error: Error, to: RouteLocationRaw]
+  /** 权限检查失败事件 */
+  'permission-denied': [permission: string | string[], to: RouteLocationRaw]
 }
 
 // ==================== RouterView 组件类型 ====================
 
 /**
- * RouterView 属性
+ * RouterView 属性（泛型版）
  */
-export interface RouterViewProps {
+export interface RouterViewProps<
+  TParams extends Record<string, any> = Record<string, any>,
+  TQuery extends Record<string, any> = Record<string, any>
+> {
   /** 视图名称 */
   name?: string
   /** 路由位置 */
-  route?: RouteLocationNormalized
+  route?: RouteLocationNormalized<TParams, TQuery>
   /** 动画类型 */
   animation?: AnimationType
   /** 动画持续时间（毫秒） */
@@ -142,6 +189,34 @@ export interface RouterViewProps {
   showLoading?: boolean
   /** 加载延迟时间（毫秒） */
   loadingDelay?: number
+  /** 是否启用过渡动画 */
+  transition?: boolean
+  /** 过渡模式 */
+  transitionMode?: 'in-out' | 'out-in' | 'default'
+}
+
+/**
+ * RouterView 事件类型
+ */
+export interface RouterViewEmits {
+  /** 组件加载开始事件 */
+  'load-start': [route: RouteLocationNormalized]
+  /** 组件加载成功事件 */
+  'load-success': [component: Component, route: RouteLocationNormalized]
+  /** 组件加载失败事件 */
+  'load-error': [error: Error, route: RouteLocationNormalized]
+  /** 组件渲染前事件 */
+  'before-render': [component: Component, route: RouteLocationNormalized]
+  /** 组件渲染后事件 */
+  'after-render': [component: Component, route: RouteLocationNormalized]
+  /** 缓存命中事件 */
+  'cache-hit': [component: Component, route: RouteLocationNormalized]
+  /** 缓存未命中事件 */
+  'cache-miss': [route: RouteLocationNormalized]
+  /** 动画开始事件 */
+  'animation-start': [type: AnimationType, route: RouteLocationNormalized]
+  /** 动画结束事件 */
+  'animation-end': [type: AnimationType, route: RouteLocationNormalized]
 }
 
 /**

@@ -15,9 +15,9 @@ pnpm add @ldesign/router
 ### 2. 基础配置
 
 ```typescript
+import { createDeviceRouterPlugin, createRouter, createWebHistory } from '@ldesign/router'
 // main.ts
 import { createApp } from 'vue'
-import { createRouter, createWebHistory, createDeviceRouterPlugin } from '@ldesign/router'
 import App from './App.vue'
 
 // 创建路由器
@@ -234,7 +234,7 @@ onUnmounted(() => {
     </div>
 
     <nav>
-      <router-link v-if="canAccessAdmin" to="/admin">管理后台</router-link>
+      <router-link v-if="canAccessAdmin" to="/admin"> 管理后台 </router-link>
     </nav>
   </div>
 </template>
@@ -256,7 +256,7 @@ const hasMobileComponent = hasDeviceComponent('mobile')
   <div>
     <div v-if="loading">组件加载中...</div>
     <div v-else-if="error">加载失败: {{ error.message }}</div>
-    <component v-else-if="resolvedComponent" :is="resolvedComponent" />
+    <component :is="resolvedComponent" v-else-if="resolvedComponent" />
 
     <div v-if="resolution" class="component-info">
       <span>来源: {{ resolution.source }}</span>
@@ -273,6 +273,10 @@ const hasMobileComponent = hasDeviceComponent('mobile')
 
 ```vue
 <!-- DeviceUnsupported.vue -->
+<script setup lang="ts">
+import { DeviceUnsupported } from '@ldesign/router'
+</script>
+
 <template>
   <DeviceUnsupported
     :device="$route.query.device"
@@ -283,16 +287,35 @@ const hasMobileComponent = hasDeviceComponent('mobile')
     :show-refresh-button="true"
   />
 </template>
-
-<script setup lang="ts">
-import { DeviceUnsupported } from '@ldesign/router'
-</script>
 ```
 
 ### 2. 自定义不支持页面
 
 ```vue
 <!-- CustomUnsupported.vue -->
+<script setup lang="ts">
+import { useDeviceRoute } from '@ldesign/router'
+
+const route = useRoute()
+const { currentDeviceName } = useDeviceRoute()
+
+const message = route.query.message || '当前功能不支持您的设备'
+const supportedDevices = route.query.supportedDevices?.split(',') || ['desktop']
+
+const supportedDeviceNames = supportedDevices.map(device => {
+  const names = { mobile: '移动设备', tablet: '平板设备', desktop: '桌面设备' }
+  return names[device] || device
+})
+
+function goBack() {
+  window.history.back()
+}
+
+function contactSupport() {
+  // 联系客服逻辑
+}
+</script>
+
 <template>
   <div class="custom-unsupported">
     <h1>设备不兼容</h1>
@@ -309,29 +332,6 @@ import { DeviceUnsupported } from '@ldesign/router'
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useDeviceRoute } from '@ldesign/router'
-
-const route = useRoute()
-const { currentDeviceName } = useDeviceRoute()
-
-const message = route.query.message || '当前功能不支持您的设备'
-const supportedDevices = route.query.supportedDevices?.split(',') || ['desktop']
-
-const supportedDeviceNames = supportedDevices.map(device => {
-  const names = { mobile: '移动设备', tablet: '平板设备', desktop: '桌面设备' }
-  return names[device] || device
-})
-
-const goBack = () => {
-  window.history.back()
-}
-
-const contactSupport = () => {
-  // 联系客服逻辑
-}
-</script>
 ```
 
 ## ⚙️ 高级配置
@@ -377,7 +377,7 @@ const devicePlugin = createDeviceRouterPlugin({
 
 ```typescript
 // 根据用户权限动态配置设备支持
-const createDynamicRoute = (userRole: string) => {
+function createDynamicRoute(userRole: string) {
   const baseRoute = {
     path: '/dashboard',
     component: () => import('@/views/Dashboard.vue'),
@@ -466,12 +466,6 @@ deviceComponents: {
 
 ```vue
 <!-- 添加测试标识 -->
-<template>
-  <div class="home-page" :data-testid="`home-${currentDevice}`" :data-device="currentDevice">
-    <h1>{{ title }}</h1>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useDeviceRoute } from '@ldesign/router'
 
@@ -485,6 +479,12 @@ const title = computed(() => {
   return titles[currentDevice.value]
 })
 </script>
+
+<template>
+  <div class="home-page" :data-testid="`home-${currentDevice}`" :data-device="currentDevice">
+    <h1>{{ title }}</h1>
+  </div>
+</template>
 ```
 
 ## 🔍 调试技巧

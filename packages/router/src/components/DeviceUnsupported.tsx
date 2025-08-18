@@ -5,7 +5,7 @@
  */
 
 import type { DeviceType } from '@ldesign/device'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 
 export interface DeviceUnsupportedProps {
   /** 当前设备类型 */
@@ -98,94 +98,114 @@ export default defineComponent({
       window.location.reload()
     }
 
-    return () => (
-      <div class={['device-unsupported', props.className]}>
-        <div class='device-unsupported__container'>
-          {/* 图标区域 */}
-          <div class='device-unsupported__icon'>
-            <span class='device-unsupported__device-icon'>
-              {deviceIcon.value}
-            </span>
-            <span class='device-unsupported__warning-icon'>⚠️</span>
-          </div>
+    const className = computed(() => {
+      return ['device-unsupported', props.className].filter(Boolean).join(' ')
+    })
 
-          {/* 标题 */}
-          <h1 class='device-unsupported__title'>设备不支持</h1>
+    return () =>
+      h('div', { class: className.value }, [
+        h('div', { class: 'device-unsupported__container' }, [
+          // 图标区域
+          h('div', { class: 'device-unsupported__icon' }, [
+            h(
+              'span',
+              { class: 'device-unsupported__device-icon' },
+              deviceIcon.value
+            ),
+            h('span', { class: 'device-unsupported__warning-icon' }, '⚠️'),
+          ]),
 
-          {/* 消息内容 */}
-          <div class='device-unsupported__content'>
-            <p class='device-unsupported__message'>{props.message}</p>
+          // 标题
+          h('h1', { class: 'device-unsupported__title' }, '设备不支持'),
 
-            <div class='device-unsupported__details'>
-              <p>
-                <strong>当前设备：</strong>
-                <span class='device-unsupported__current-device'>
-                  {currentDeviceName.value}
-                </span>
-              </p>
+          // 消息内容
+          h('div', { class: 'device-unsupported__content' }, [
+            h('p', { class: 'device-unsupported__message' }, props.message),
 
-              {props.supportedDevices.length > 0 && (
-                <p>
-                  <strong>支持的设备：</strong>
-                  <span class='device-unsupported__supported-devices'>
-                    {supportedDeviceNames.value.join('、')}
-                  </span>
-                </p>
-              )}
-            </div>
+            h('div', { class: 'device-unsupported__details' }, [
+              h('p', {}, [
+                h('strong', {}, '当前设备：'),
+                h(
+                  'span',
+                  { class: 'device-unsupported__current-device' },
+                  currentDeviceName.value
+                ),
+              ]),
 
-            {/* 建议 */}
-            <div class='device-unsupported__suggestions'>
-              <h3>建议：</h3>
-              <ul>
-                {props.supportedDevices.includes('desktop') && (
-                  <li>请使用桌面电脑或笔记本电脑访问</li>
-                )}
-                {props.supportedDevices.includes('tablet') && (
-                  <li>请使用平板设备访问</li>
-                )}
-                {props.supportedDevices.includes('mobile') && (
-                  <li>请使用手机访问</li>
-                )}
-                <li>联系管理员获取更多帮助</li>
-              </ul>
-            </div>
-          </div>
+              props.supportedDevices.length > 0
+                ? h('p', {}, [
+                    h('strong', {}, '支持的设备：'),
+                    h(
+                      'span',
+                      { class: 'device-unsupported__supported-devices' },
+                      supportedDeviceNames.value.join('、')
+                    ),
+                  ])
+                : null,
+            ]),
 
-          {/* 操作按钮 */}
-          <div class='device-unsupported__actions'>
-            {props.showBackButton && (
-              <button
-                type='button'
-                class='device-unsupported__button device-unsupported__button--secondary'
-                onClick={goBack}
-              >
-                返回上一页
-              </button>
-            )}
+            // 建议
+            h('div', { class: 'device-unsupported__suggestions' }, [
+              h('h3', {}, '建议：'),
+              h(
+                'ul',
+                {},
+                [
+                  props.supportedDevices.includes('desktop')
+                    ? h('li', {}, '请使用桌面电脑或笔记本电脑访问')
+                    : null,
+                  props.supportedDevices.includes('tablet')
+                    ? h('li', {}, '请使用平板设备访问')
+                    : null,
+                  props.supportedDevices.includes('mobile')
+                    ? h('li', {}, '请使用手机访问')
+                    : null,
+                  h('li', {}, '联系管理员获取更多帮助'),
+                ].filter(Boolean)
+              ),
+            ]),
+          ]),
 
-            {props.showRefreshButton && (
-              <button
-                type='button'
-                class='device-unsupported__button device-unsupported__button--primary'
-                onClick={refresh}
-              >
-                刷新页面
-              </button>
-            )}
-          </div>
+          // 操作按钮
+          h(
+            'div',
+            { class: 'device-unsupported__actions' },
+            [
+              props.showBackButton
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      class:
+                        'device-unsupported__button device-unsupported__button--secondary',
+                      onClick: goBack,
+                    },
+                    '返回上一页'
+                  )
+                : null,
 
-          {/* 来源信息 */}
-          {props.from && (
-            <div class='device-unsupported__from'>
-              <small>
-                来源页面：
-                {props.from}
-              </small>
-            </div>
-          )}
-        </div>
-      </div>
-    )
+              props.showRefreshButton
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      class:
+                        'device-unsupported__button device-unsupported__button--primary',
+                      onClick: refresh,
+                    },
+                    '刷新页面'
+                  )
+                : null,
+            ].filter(Boolean)
+          ),
+
+          // 来源信息
+          props.from
+            ? h('div', { class: 'device-unsupported__from' }, [
+                h('small', {}, ['来源页面：', props.from]),
+              ])
+            : null,
+        ]),
+      ])
   },
 })

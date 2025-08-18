@@ -11,8 +11,8 @@
 interface DeviceRouterPlugin {
   name: string
   version: string
-  install(router: Router, options?: any): void
-  uninstall?(): void
+  install: (router: Router, options?: any) => void
+  uninstall?: () => void
 }
 
 // 支持多个插件组合
@@ -79,7 +79,7 @@ const devicePlugin = createDeviceRouterPlugin({
 interface DeviceMiddleware {
   name: string
   priority?: number
-  execute(context: DeviceContext, next: () => void): void
+  execute: (context: DeviceContext, next: () => void) => void
 }
 
 // 设备检测中间件
@@ -282,9 +282,12 @@ class PerformanceMonitorPlugin implements DeviceRouterPlugin {
 ```typescript
 // 基于 AI 的设备适配
 interface SmartDeviceAdapter {
-  analyzeUserBehavior(device: DeviceType, interactions: UserInteraction[]): AdaptationSuggestion[]
-  optimizeComponentForDevice(component: Component, device: DeviceType): Component
-  predictOptimalLayout(content: any, device: DeviceType): LayoutConfig
+  analyzeUserBehavior: (
+    device: DeviceType,
+    interactions: UserInteraction[]
+  ) => AdaptationSuggestion[]
+  optimizeComponentForDevice: (component: Component, device: DeviceType) => Component
+  predictOptimalLayout: (content: any, device: DeviceType) => LayoutConfig
 }
 
 // 机器学习驱动的组件选择
@@ -340,10 +343,10 @@ interface ExtendedAdaptationContext {
 ```typescript
 // 动态组件生成器
 interface DynamicComponentGenerator {
-  generateComponent(
+  generateComponent: (
     template: ComponentTemplate,
     adaptationContext: ExtendedAdaptationContext
-  ): Promise<Component>
+  ) => Promise<Component>
 }
 
 // 基于模板的动态适配
@@ -414,9 +417,9 @@ if (process.env.NODE_ENV === 'development') {
 ```typescript
 // 可视化配置界面
 interface DeviceConfigurationUI {
-  renderConfigPanel(): HTMLElement
-  updateConfiguration(config: DeviceRouteConfig): void
-  previewAdaptation(device: DeviceType): void
+  renderConfigPanel: () => HTMLElement
+  updateConfiguration: (config: DeviceRouteConfig) => void
+  previewAdaptation: (device: DeviceType) => void
 }
 
 // 实时配置编辑器

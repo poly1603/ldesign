@@ -20,6 +20,18 @@ export {
   StorageStrategyResult,
   UseCacheOptions,
 } from './types/index.js'
+import { CacheManager } from './core/cache-manager.js'
+import { StorageEngineFactory } from './engines/factory.js'
+export { BaseStorageEngine } from './engines/base-engine.js'
+export { CookieEngine } from './engines/cookie-engine.js'
+export { IndexedDBEngine } from './engines/indexeddb-engine.js'
+export { LocalStorageEngine } from './engines/local-storage-engine.js'
+export { MemoryEngine } from './engines/memory-engine.js'
+export { SessionStorageEngine } from './engines/session-storage-engine.js'
+export { AESCrypto } from './security/aes-crypto.js'
+export { KeyObfuscator } from './security/key-obfuscator.js'
+export { SecurityManager } from './security/security-manager.js'
+export { StorageStrategy } from './strategies/storage-strategy.js'
 export {
   debounce,
   deepClone,
@@ -33,18 +45,6 @@ export {
   safeJsonStringify,
   throttle,
 } from './utils/index.js'
-import { CacheManager } from './core/cache-manager.js'
-import { StorageEngineFactory } from './engines/factory.js'
-export { BaseStorageEngine } from './engines/base-engine.js'
-export { LocalStorageEngine } from './engines/local-storage-engine.js'
-export { SessionStorageEngine } from './engines/session-storage-engine.js'
-export { CookieEngine } from './engines/cookie-engine.js'
-export { IndexedDBEngine } from './engines/indexeddb-engine.js'
-export { MemoryEngine } from './engines/memory-engine.js'
-export { StorageStrategy } from './strategies/storage-strategy.js'
-export { SecurityManager } from './security/security-manager.js'
-export { AESCrypto } from './security/aes-crypto.js'
-export { KeyObfuscator } from './security/key-obfuscator.js'
 export { EventEmitter } from './utils/event-emitter.js'
 
 /**

@@ -185,11 +185,8 @@ watch(
 )
 
 onMounted(() => {
-  console.log('DynamicRouting 组件已挂载')
-  console.log('当前参数:', {
-    id: routeId.value,
-    query: route.value?.query || {},
-  })
+  // DynamicRouting 组件已挂载
+  // 当前参数可用: id 和 query
 })
 </script>
 
@@ -240,13 +237,13 @@ onMounted(() => {
           <h3>数字 ID 导航</h3>
           <div class="nav-buttons">
             <button
-              v-for="id in numericIds"
-              :key="id"
+              v-for="numId in numericIds"
+              :key="numId"
               class="btn btn-primary"
-              :class="{ active: routeId === id.toString() }"
-              @click="navigateToId(id)"
+              :class="{ active: routeId === numId.toString() }"
+              @click="navigateToId(numId)"
             >
-              ID: {{ id }}
+              ID: {{ numId }}
             </button>
           </div>
         </div>
@@ -255,13 +252,13 @@ onMounted(() => {
           <h3>字符串 ID 导航</h3>
           <div class="nav-buttons">
             <button
-              v-for="id in stringIds"
-              :key="id"
+              v-for="strId in stringIds"
+              :key="strId"
               class="btn btn-secondary"
-              :class="{ active: routeId === id }"
-              @click="navigateToId(id)"
+              :class="{ active: routeId === strId }"
+              @click="navigateToId(strId)"
             >
-              ID: {{ id }}
+              ID: {{ strId }}
             </button>
           </div>
         </div>

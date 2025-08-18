@@ -46,18 +46,18 @@ Object.defineProperty(window, 'performance', {
 })
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(callback => ({
+globalThis.IntersectionObserver = vi.fn().mockImplementation(_callback => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
 // Mock requestIdleCallback
-global.requestIdleCallback = vi.fn(callback => {
-  return setTimeout(callback, 0)
-})
+globalThis.requestIdleCallback = vi.fn(callback => {
+  return setTimeout(callback, 0) as any
+}) as any
 
-global.cancelIdleCallback = vi.fn(id => {
+globalThis.cancelIdleCallback = vi.fn(id => {
   clearTimeout(id)
 })
 
@@ -78,7 +78,7 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock console methods to reduce noise in tests
 const originalConsole = { ...console }
-global.console = {
+globalThis.console = {
   ...console,
   warn: vi.fn(),
   error: vi.fn(),
@@ -87,7 +87,7 @@ global.console = {
 
 // Restore console for specific tests if needed
 export function restoreConsole() {
-  global.console = originalConsole
+  globalThis.console = originalConsole
 }
 
 // Mock localStorage and sessionStorage
@@ -128,15 +128,50 @@ Object.defineProperty(document, 'createElement', {
     const element = {
       tagName: tagName.toUpperCase(),
       style: {},
-      appendChild: vi.fn(),
-      removeChild: vi.fn(),
-      remove: vi.fn(),
+      appendChild: vi.fn(child => {
+        if (child && typeof child === 'object') {
+          child.parentNode = element
+          element.childNodes.push(child)
+          element.children.push(child)
+        }
+        return child
+      }),
+      removeChild: vi.fn(child => {
+        if (child && typeof child === 'object') {
+          child.parentNode = null
+          const index = element.childNodes.indexOf(child)
+          if (index > -1) {
+            element.childNodes.splice(index, 1)
+            element.children.splice(index, 1)
+          }
+        }
+        return child
+      }),
+      remove: vi.fn(() => {
+        if (element.parentNode) {
+          element.parentNode.removeChild(element)
+        }
+      }),
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
-      setAttribute: vi.fn(),
-      getAttribute: vi.fn(),
-      hasAttribute: vi.fn(),
-      removeAttribute: vi.fn(),
+      setAttribute: vi.fn((name, value) => {
+        if (name === 'id') element.id = value
+        if (name === 'class') element.className = value
+      }),
+      getAttribute: vi.fn(name => {
+        if (name === 'id') return element.id
+        if (name === 'class') return element.className
+        return null
+      }),
+      hasAttribute: vi.fn(name => {
+        if (name === 'id') return !!element.id
+        if (name === 'class') return !!element.className
+        return false
+      }),
+      removeAttribute: vi.fn(name => {
+        if (name === 'id') element.id = ''
+        if (name === 'class') element.className = ''
+      }),
       classList: {
         add: vi.fn(),
         remove: vi.fn(),
@@ -147,20 +182,53 @@ Object.defineProperty(document, 'createElement', {
       innerHTML: '',
       id: '',
       className: '',
-      parentNode: null,
-      childNodes: [],
-      children: [],
+      parentNode: null as any,
+      childNodes: [] as any[],
+      children: [] as any[],
       firstChild: null,
       lastChild: null,
       nextSibling: null,
       previousSibling: null,
       insertBefore: vi.fn((newNode, referenceNode) => {
+        if (newNode && typeof newNode === 'object') {
+          newNode.parentNode = element
+          if (referenceNode) {
+            const index = element.childNodes.indexOf(referenceNode)
+            if (index > -1) {
+              element.childNodes.splice(index, 0, newNode)
+              element.children.splice(index, 0, newNode)
+            }
+          } else {
+            element.childNodes.push(newNode)
+            element.children.push(newNode)
+          }
+        }
         return newNode
       }),
       replaceChild: vi.fn((newChild, oldChild) => {
+        if (
+          newChild &&
+          oldChild &&
+          typeof newChild === 'object' &&
+          typeof oldChild === 'object'
+        ) {
+          const index = element.childNodes.indexOf(oldChild)
+          if (index > -1) {
+            element.childNodes[index] = newChild
+            element.children[index] = newChild
+            newChild.parentNode = element
+            oldChild.parentNode = null
+          }
+        }
         return oldChild
       }),
-      cloneNode: vi.fn(() => element),
+      cloneNode: vi.fn(() => {
+        const clone = { ...element }
+        clone.childNodes = []
+        clone.children = []
+        clone.parentNode = null
+        return clone
+      }),
     }
     return element
   }),
@@ -172,19 +240,65 @@ Object.defineProperty(document, 'getElementById', {
   writable: true,
 })
 
+// Create proper document.body and document.head mocks
+function createDocumentElement(tagName: string) {
+  const element = {
+    tagName: tagName.toUpperCase(),
+    childNodes: [] as any[],
+    children: [] as any[],
+    appendChild: null as any,
+    removeChild: null as any,
+    insertBefore: null as any,
+  }
+
+  element.appendChild = vi.fn(child => {
+    if (child && typeof child === 'object') {
+      child.parentNode = element
+      element.childNodes.push(child)
+      element.children.push(child)
+    }
+    return child
+  })
+
+  element.removeChild = vi.fn(child => {
+    if (child && typeof child === 'object') {
+      child.parentNode = null
+      const index = element.childNodes.indexOf(child)
+      if (index > -1) {
+        element.childNodes.splice(index, 1)
+        element.children.splice(index, 1)
+      }
+    }
+    return child
+  })
+
+  element.insertBefore = vi.fn((newNode, referenceNode) => {
+    if (newNode && typeof newNode === 'object') {
+      newNode.parentNode = element
+      if (referenceNode) {
+        const index = element.childNodes.indexOf(referenceNode)
+        if (index > -1) {
+          element.childNodes.splice(index, 0, newNode)
+          element.children.splice(index, 0, newNode)
+        }
+      } else {
+        element.childNodes.push(newNode)
+        element.children.push(newNode)
+      }
+    }
+    return newNode
+  })
+
+  return element
+}
+
 Object.defineProperty(document, 'head', {
-  value: {
-    appendChild: vi.fn(),
-    removeChild: vi.fn(),
-  },
+  value: createDocumentElement('head'),
   writable: true,
 })
 
 Object.defineProperty(document, 'body', {
-  value: {
-    appendChild: vi.fn(),
-    removeChild: vi.fn(),
-  },
+  value: createDocumentElement('body'),
   writable: true,
 })
 
@@ -205,7 +319,7 @@ Object.defineProperty(window, 'scrollY', {
 })
 
 // Mock URL constructor
-global.URL = class URL {
+globalThis.URL = class URL {
   href: string
   origin: string
   protocol: string
@@ -216,7 +330,7 @@ global.URL = class URL {
   search: string
   hash: string
 
-  constructor(url: string, base?: string) {
+  constructor(url: string, _base?: string) {
     // Simple URL parsing for tests
     const [pathAndQuery, hash = ''] = url.split('#')
     const [pathname, search = ''] = pathAndQuery.split('?')
@@ -231,10 +345,10 @@ global.URL = class URL {
     this.search = search ? `?${search}` : ''
     this.hash = hash ? `#${hash}` : ''
   }
-}
+} as any
 
 // Mock URLSearchParams
-global.URLSearchParams = class URLSearchParams {
+globalThis.URLSearchParams = class URLSearchParams {
   private params: Map<string, string[]> = new Map()
 
   constructor(init?: string | URLSearchParams | Record<string, string>) {
@@ -313,7 +427,7 @@ global.URLSearchParams = class URLSearchParams {
       }
     }
   }
-}
+} as any
 
 // Export test utilities
 export const testUtils = {

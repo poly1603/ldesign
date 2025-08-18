@@ -89,9 +89,8 @@ watch(
 )
 
 onMounted(() => {
-  console.log('BasicRouting 组件已挂载')
-  console.log('当前路由:', route)
-  console.log('路由器实例:', router)
+  // BasicRouting 组件已挂载
+  // 当前路由和路由器实例可用
 })
 </script>
 

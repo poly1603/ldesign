@@ -161,7 +161,9 @@ Object.entries(scales).forEach(([colorType, scaleData]) => {
 </select>
 
 <!-- 切换按钮 -->
-<button @click="toggleMode">切换模式</button>
+<button @click="toggleMode">
+切换模式
+</button>
 ```
 
 #### Vanilla 示例

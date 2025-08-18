@@ -1,47 +1,65 @@
 /**
- * 主题色管理系统核心类型定义
+ * @ldesign/color 核心类型定义
+ *
+ * 本文件定义了整个主题色彩管理系统的核心类型接口，
+ * 包括主题配置、颜色管理、事件系统等关键类型。
+ *
+ * @version 0.1.0
+ * @author ldesign
  */
 
+// ==================== 基础类型定义 ====================
+
 /**
- * 颜色值类型 - 支持 hex、rgb、hsl 等格式
+ * 颜色值类型
+ * 支持十六进制、RGB、HSL等多种格式
  */
 export type ColorValue = string
 
 /**
  * 颜色模式
+ * 支持明暗两种模式
  */
 export type ColorMode = 'light' | 'dark'
 
 /**
  * 主题类型
+ * 支持系统、明色、暗色、自定义四种类型
  */
 export type ThemeType = 'system' | 'light' | 'dark' | 'custom'
 
 /**
  * 颜色类别
+ * 定义了系统中支持的所有颜色类别
  */
 export type ColorCategory =
-  | 'primary'
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'gray'
+  | 'primary' // 主色调
+  | 'secondary' // 次要色调
+  | 'accent' // 强调色
+  | 'success' // 成功色
+  | 'warning' // 警告色
+  | 'danger' // 危险色
+  | 'gray' // 灰色系
 
 /**
  * 中性色类别
+ * 用于界面元素的中性色彩
  */
 export type NeutralColorCategory =
-  | 'border'
-  | 'background'
-  | 'text'
-  | 'white'
-  | 'shadow'
+  | 'border' // 边框色
+  | 'background' // 背景色
+  | 'text' // 文字色
+  | 'white' // 白色变体
+  | 'shadow' // 阴影色
+
+// ==================== 颜色配置接口 ====================
 
 /**
  * 颜色配置接口
+ * 定义了主题中各个颜色类别的配置
  */
 export interface ColorConfig {
-  /** 主色调 */
+  /** 主色调 - 必填，用于品牌识别 */
   primary: ColorValue
   /** 次要色调 - 可选，不提供时自动生成 */
   secondary?: ColorValue
@@ -58,17 +76,19 @@ export interface ColorConfig {
 }
 
 /**
- * 色阶配置
+ * 颜色色阶接口
+ * 定义了某个颜色类别的完整色阶
  */
 export interface ColorScale {
-  /** 色阶数组，从浅到深 */
+  /** 色阶数组，从浅到深排列 */
   colors: ColorValue[]
-  /** 色阶索引映射 */
+  /** 色阶索引映射，方便按索引访问 */
   indices: Record<number, ColorValue>
 }
 
 /**
- * 中性色配置
+ * 中性色系统接口
+ * 定义了界面元素的中性色彩系统
  */
 export interface NeutralColors {
   /** 边框色系统 */
@@ -83,28 +103,32 @@ export interface NeutralColors {
   shadow: ColorScale
 }
 
+// ==================== 主题配置接口 ====================
+
 /**
  * 主题配置接口
+ * 定义了完整的主题配置结构
  */
 export interface ThemeConfig {
-  /** 主题名称 */
+  /** 主题名称 - 唯一标识符 */
   name: string
-  /** 主题显示名称 */
+  /** 主题显示名称 - 用于UI展示 */
   displayName?: string
-  /** 主题描述 */
+  /** 主题描述 - 详细说明 */
   description?: string
   /** 亮色模式颜色配置 */
   light: ColorConfig
-  /** 暗色模式颜色配置 */
+  /** 暗色模式颜色配置 - 可选，不提供时自动生成 */
   dark?: ColorConfig
   /** 是否为内置主题 */
   builtin?: boolean
-  /** 主题元数据 */
+  /** 主题元数据 - 扩展信息 */
   meta?: Record<string, unknown>
 }
 
 /**
- * 生成的主题数据
+ * 生成的主题数据接口
+ * 包含完整的主题生成结果
  */
 export interface GeneratedTheme {
   /** 主题名称 */
@@ -127,8 +151,11 @@ export interface GeneratedTheme {
   timestamp: number
 }
 
+// ==================== 存储系统接口 ====================
+
 /**
  * 存储接口
+ * 定义了统一的存储操作接口
  */
 export interface Storage {
   /** 获取数据 */
@@ -143,6 +170,7 @@ export interface Storage {
 
 /**
  * 缓存项接口
+ * 定义了缓存系统中的单个缓存项
  */
 export interface CacheItem<T = unknown> {
   /** 缓存值 */
@@ -154,7 +182,7 @@ export interface CacheItem<T = unknown> {
 }
 
 /**
- * 缓存选项
+ * 缓存配置选项
  */
 export interface CacheOptions {
   /** 最大缓存数量 */
@@ -164,7 +192,8 @@ export interface CacheOptions {
 }
 
 /**
- * LRU 缓存接口
+ * LRU缓存接口
+ * 实现了最近最少使用算法的缓存
  */
 export interface LRUCache<T = unknown> {
   /** 获取缓存值 */
@@ -181,8 +210,10 @@ export interface LRUCache<T = unknown> {
   has: (key: string) => boolean
 }
 
+// ==================== 主题管理器接口 ====================
+
 /**
- * 主题管理器选项
+ * 主题管理器配置选项
  */
 export interface ThemeManagerOptions {
   /** 默认主题名称 */
@@ -211,9 +242,10 @@ export interface ThemeManagerOptions {
 
 /**
  * 主题管理器实例接口
+ * 定义了主题管理器的完整功能
  */
 export interface ThemeManagerInstance extends EventEmitter {
-  /** 初始化 */
+  /** 初始化主题管理器 */
   init: () => Promise<void>
 
   /** 获取当前主题名称 */
@@ -262,23 +294,26 @@ export interface ThemeManagerInstance extends EventEmitter {
   destroy: () => void
 }
 
-/**
- * 事件类型
- */
-export type ThemeEventType =
-  | 'theme-changed'
-  | 'mode-changed'
-  | 'theme-registered'
-  | 'theme-generated'
-  | 'error'
+// ==================== 事件系统接口 ====================
 
 /**
- * 事件监听器
+ * 主题事件类型
+ */
+export type ThemeEventType =
+  | 'theme-changed' // 主题变更
+  | 'mode-changed' // 模式变更
+  | 'theme-registered' // 主题注册
+  | 'theme-generated' // 主题生成
+  | 'error' // 错误事件
+
+/**
+ * 主题事件监听器类型
  */
 export type ThemeEventListener<T = unknown> = (data: T) => void
 
 /**
  * 事件发射器接口
+ * 实现了观察者模式的事件系统
  */
 export interface EventEmitter {
   /** 添加事件监听器 */
@@ -312,8 +347,11 @@ export interface EventEmitter {
   eventNames: () => ThemeEventType[]
 }
 
+// ==================== 工具接口 ====================
+
 /**
  * 颜色生成器接口
+ * 负责从主色调生成配套颜色
  */
 export interface ColorGenerator {
   /** 从主色调生成其他颜色 */
@@ -345,6 +383,7 @@ export interface ColorGenerator {
 
 /**
  * 系统主题检测器接口
+ * 负责检测和监听系统主题变化
  */
 export interface SystemThemeDetector {
   /** 获取系统主题 */
@@ -356,6 +395,7 @@ export interface SystemThemeDetector {
 
 /**
  * 闲时处理器接口
+ * 利用浏览器空闲时间处理非紧急任务
  */
 export interface IdleProcessor {
   /** 添加闲时任务 */
@@ -372,7 +412,8 @@ export interface IdleProcessor {
 }
 
 /**
- * CSS 注入器接口
+ * CSS注入器接口
+ * 负责将CSS变量注入到页面中
  */
 export interface CSSInjector {
   /** 注入 CSS 变量 */
