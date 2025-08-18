@@ -40,8 +40,8 @@ app.config.globalProperties.$engine = engine
 
 // 暴露引擎实例到全局（用于调试）
 if (typeof window !== 'undefined') {
-  ; (window as any).__LDESIGN_ENGINE__ = engine
-    ; (window as any).engine = engine
+  ;(window as any).__LDESIGN_ENGINE__ = engine
+  ;(window as any).engine = engine
 }
 
 // 挂载应用

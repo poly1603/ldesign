@@ -1,62 +1,67 @@
-<template>
-  <div id="app" class="app">
-    <!-- 全局加载指示器 -->
-    <Transition name="loading">
-      <div v-if="isLoading" class="global-loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">{{ loadingText }}</div>
-      </div>
-    </Transition>
-
-    <!-- 主布局 -->
-    <router-view v-slot="{ Component, route }">
-      <Transition :name="getTransitionName(route)" mode="out-in">
-        <KeepAlive :include="keepAliveComponents">
-          <component :is="Component" :key="route.fullPath" />
-        </KeepAlive>
-      </Transition>
-    </router-view>
-
-    <!-- 性能监控面板 -->
-    <PerformanceMonitor v-if="showPerformanceMonitor" />
-
-    <!-- 全局通知 -->
-    <NotificationContainer />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
-import { useAppStore } from './stores/app'
-import PerformanceMonitor from './components/PerformanceMonitor.vue'
+import { useI18n } from '@ldesign/i18n/vue'
+import { RouterView, useRoute, useRouter } from '@ldesign/router'
+import { computed, onMounted, ref, watch } from 'vue'
 import NotificationContainer from './components/NotificationContainer.vue'
+import PerformanceMonitor from './components/PerformanceMonitor.vue'
+import { useAppStore } from './stores/app'
 
 const router = useRouter()
 const route = useRoute()
 const appStore = useAppStore()
+const { t } = useI18n()
 
 // 响应式状态
 const isLoading = ref(false)
-const loadingText = ref('正在加载...')
+const loadingText = ref(t('welcome'))
 
 // 计算属性
 const showPerformanceMonitor = computed(() => appStore.showPerformanceMonitor)
 const keepAliveComponents = computed(() => appStore.keepAliveComponents)
 
 // 获取路由过渡动画名称
-const getTransitionName = (currentRoute: any) => {
+function getTransitionName(currentRoute: any) {
   // 根据路由层级决定动画类型
-  const depth = currentRoute.path.split('/').length
+  const path = currentRoute?.path || '/'
+  const depth = path.split('/').length
   if (depth <= 2) return 'fade'
   if (depth === 3) return 'slide-left'
   return 'slide-up'
 }
 
-// 路由加载状态管理
-router.beforeEach((to, from, next) => {
+// 路由加载状态管理和认证守卫
+router.beforeEach((to, _from, next) => {
   isLoading.value = true
-  loadingText.value = `正在加载 ${to.meta?.title || to.name || '页面'}...`
+  loadingText.value = `正在加载 ${
+    to.meta?.title || String(to.name) || '页面'
+  }...`
+
+  // 检查是否需要认证
+  if (to.meta?.requiresAuth) {
+    // 获取认证状态
+    const authData = localStorage.getItem('app_auth')
+    let isAuthenticated = false
+
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData)
+        isAuthenticated = parsed.isAuthenticated
+      } catch (error) {
+        console.error('解析认证数据失败:', error)
+      }
+    }
+
+    if (!isAuthenticated) {
+      console.warn('用户未认证，重定向到登录页面')
+      isLoading.value = false
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath },
+      })
+      return
+    }
+  }
+
   next()
 })
 
@@ -93,7 +98,7 @@ onMounted(() => {
 
 // 监听路由变化，更新页面标题
 watch(
-  () => route.meta?.title,
+  () => route.value?.meta?.title,
   title => {
     if (title) {
       document.title = `${title} - LDesign Router 演示`
@@ -102,6 +107,35 @@ watch(
   { immediate: true }
 )
 </script>
+
+<template>
+  <div id="app" class="app">
+    <!-- 全局加载指示器 -->
+    <Transition name="loading">
+      <div v-if="isLoading" class="global-loading">
+        <div class="loading-spinner" />
+        <div class="loading-text">
+          {{ t('welcome') }}
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 主布局 -->
+    <RouterView v-slot="{ Component, route }">
+      <Transition :name="getTransitionName(route)" mode="out-in">
+        <KeepAlive :include="keepAliveComponents">
+          <component :is="Component" :key="route.fullPath" />
+        </KeepAlive>
+      </Transition>
+    </RouterView>
+
+    <!-- 性能监控面板 -->
+    <PerformanceMonitor v-if="showPerformanceMonitor" />
+
+    <!-- 全局通知 -->
+    <NotificationContainer />
+  </div>
+</template>
 
 <style lang="less">
 .app {

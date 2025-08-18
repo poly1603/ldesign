@@ -215,7 +215,14 @@ export type TranslationFunction = <T = string>(
  * 批量翻译结果
  */
 export interface BatchTranslationResult {
-  [key: string]: string
+  /** 翻译结果映射 */
+  translations: Record<string, string>
+  /** 成功翻译的键数量 */
+  successCount: number
+  /** 失败翻译的键数量 */
+  failureCount: number
+  /** 失败的键列表 */
+  failedKeys: string[]
 }
 
 /**
@@ -247,8 +254,20 @@ export interface I18nInstance extends EventEmitter {
   exists: (_key: string, _locale?: string) => boolean
   /** 获取所有翻译键 */
   getKeys: (_locale?: string) => string[]
+  /** 检查是否已初始化 */
+  isReady: () => boolean
   /** 销毁实例 */
-  destroy: () => void
+  destroy: () => Promise<void>
   /** 加载器实例（内部使用） */
   loader?: Loader
+  /** 获取性能指标 */
+  getPerformanceMetrics?: () => any
+  /** 生成性能报告 */
+  generatePerformanceReport?: () => string
+  /** 获取优化建议 */
+  getOptimizationSuggestions?: () => string[]
+  /** 预热缓存 */
+  warmUpCache?: (_keys: string[]) => void
+  /** 清理缓存 */
+  cleanupCache?: () => void
 }

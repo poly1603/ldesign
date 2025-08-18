@@ -15,18 +15,22 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "types": "./types/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "README.md",
+    "cjs",
     "dist",
-    "src"
+    "esm",
+    "src",
+    "types"
   ],
   "engines": {
     "node": ">=16.0.0"
@@ -47,7 +51,8 @@
     "fix-types": "node fix-types.js",
     "final-check": "node final-check.js",
     "release": "npm run build && npm publish dist",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output"
   },
   "peerDependencies": {
     "vue": "^3.4.0"
@@ -70,5 +75,6 @@
     "vite-plugin-dts": "^3.0.0",
     "vitest": "^1.0.0",
     "vue-tsc": "^2.0.0"
-  }
+  },
+  "browser": "dist/index.min.js"
 }

@@ -9,6 +9,7 @@ pnpm-debug.log*
 dist
 cjs
 es
+esm
 lib
 .rollup.cache
 types/**/*.d.ts

@@ -448,11 +448,14 @@ export function createRouterEnginePlugin(
       } catch (error) {
         // 安全地记录错误，避免 engine.logger 为 undefined 的情况
         if (
-          engine &&
-          engine.logger &&
-          typeof engine.logger.error === 'function'
+          context.engine &&
+          context.engine.logger &&
+          typeof context.engine.logger.error === 'function'
         ) {
-          engine.logger.error(`Failed to install ${name} plugin:`, error)
+          context.engine.logger.error(
+            `Failed to install ${name} plugin:`,
+            error
+          )
         } else {
           console.error(`Failed to install ${name} plugin:`, error)
         }
@@ -486,7 +489,16 @@ export function createRouterEnginePlugin(
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
       } catch (error) {
-        engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
+        const engine = context.engine || context
+        if (
+          engine &&
+          engine.logger &&
+          typeof engine.logger.error === 'function'
+        ) {
+          engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
+        } else {
+          console.error(`Failed to uninstall ${name} plugin:`, error)
+        }
         throw error
       }
     },

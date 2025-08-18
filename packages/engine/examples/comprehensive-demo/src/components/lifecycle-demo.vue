@@ -76,7 +76,12 @@ const lifecyclePhases = reactive([
 // 方法
 async function startLifecycle() {
   try {
-    addLifecycleLog('info', 'initializing', 'LIFECYCLE_START', '开始启动生命周期')
+    addLifecycleLog(
+      'info',
+      'initializing',
+      'LIFECYCLE_START',
+      '开始启动生命周期'
+    )
 
     // 初始化阶段
     await executePhase('initializing', async () => {
@@ -96,9 +101,13 @@ async function startLifecycle() {
     })
 
     emit('log', 'success', '生命周期启动完成')
-  }
-  catch (error: any) {
-    addLifecycleLog('error', currentPhase.value, 'LIFECYCLE_ERROR', `启动失败: ${error.message}`)
+  } catch (error: any) {
+    addLifecycleLog(
+      'error',
+      currentPhase.value,
+      'LIFECYCLE_ERROR',
+      `启动失败: ${error.message}`
+    )
     emit('log', 'error', '生命周期启动失败', error)
   }
 }
@@ -113,8 +122,7 @@ async function pauseLifecycle() {
     })
 
     emit('log', 'warning', '生命周期已暂停')
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '暂停生命周期失败', error)
   }
 }
@@ -129,15 +137,19 @@ async function resumeLifecycle() {
     })
 
     emit('log', 'success', '生命周期已恢复')
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '恢复生命周期失败', error)
   }
 }
 
 async function stopLifecycle() {
   try {
-    addLifecycleLog('info', currentPhase.value, 'LIFECYCLE_STOP', '停止生命周期')
+    addLifecycleLog(
+      'info',
+      currentPhase.value,
+      'LIFECYCLE_STOP',
+      '停止生命周期'
+    )
 
     // 停止阶段
     await executePhase('stopping', async () => {
@@ -152,9 +164,13 @@ async function stopLifecycle() {
     })
 
     emit('log', 'warning', '生命周期已停止')
-  }
-  catch (error: any) {
-    addLifecycleLog('error', currentPhase.value, 'LIFECYCLE_ERROR', `停止失败: ${error.message}`)
+  } catch (error: any) {
+    addLifecycleLog(
+      'error',
+      currentPhase.value,
+      'LIFECYCLE_ERROR',
+      `停止失败: ${error.message}`
+    )
     emit('log', 'error', '停止生命周期失败', error)
   }
 }
@@ -173,7 +189,7 @@ function resetLifecycle() {
   uptime.value = 0
 
   // 重置阶段状态
-  lifecyclePhases.forEach((phase) => {
+  lifecyclePhases.forEach(phase => {
     phase.completed = phase.name === 'stopped'
     phase.pending = false
   })
@@ -183,8 +199,7 @@ function resetLifecycle() {
 
 async function executePhase(phaseName: string, callback: () => Promise<void>) {
   const phase = lifecyclePhases.find(p => p.name === phaseName)
-  if (!phase)
-    return
+  if (!phase) return
 
   const startTime = Date.now()
 
@@ -193,7 +208,12 @@ async function executePhase(phaseName: string, callback: () => Promise<void>) {
     currentPhase.value = phaseName
     phase.pending = true
 
-    addLifecycleLog('info', phaseName, 'PHASE_START', `进入${phase.description}`)
+    addLifecycleLog(
+      'info',
+      phaseName,
+      'PHASE_START',
+      `进入${phase.description}`
+    )
 
     // 执行阶段逻辑
     await callback()
@@ -203,11 +223,21 @@ async function executePhase(phaseName: string, callback: () => Promise<void>) {
     phase.pending = false
 
     const duration = Date.now() - startTime
-    addLifecycleLog('success', phaseName, 'PHASE_COMPLETE', `${phase.description}完成`, duration)
-  }
-  catch (error: any) {
+    addLifecycleLog(
+      'success',
+      phaseName,
+      'PHASE_COMPLETE',
+      `${phase.description}完成`,
+      duration
+    )
+  } catch (error: any) {
     phase.pending = false
-    addLifecycleLog('error', phaseName, 'PHASE_ERROR', `${phase.description}失败: ${error.message}`)
+    addLifecycleLog(
+      'error',
+      phaseName,
+      'PHASE_ERROR',
+      `${phase.description}失败: ${error.message}`
+    )
     throw error
   }
 }
@@ -233,10 +263,20 @@ async function executeHooks(phase: string) {
         duration,
       })
 
-      addLifecycleLog('success', phase, 'HOOK_COMPLETE', `钩子执行完成: ${hook.name}`, duration)
-    }
-    catch (error: any) {
-      addLifecycleLog('error', phase, 'HOOK_ERROR', `钩子执行失败: ${hook.name} - ${error.message}`)
+      addLifecycleLog(
+        'success',
+        phase,
+        'HOOK_COMPLETE',
+        `钩子执行完成: ${hook.name}`,
+        duration
+      )
+    } catch (error: any) {
+      addLifecycleLog(
+        'error',
+        phase,
+        'HOOK_ERROR',
+        `钩子执行失败: ${hook.name} - ${error.message}`
+      )
       await executeHooks('onError')
     }
   }
@@ -260,8 +300,7 @@ function removeHook() {
   if (index !== -1) {
     registeredHooks.splice(index, 1)
     emit('log', 'warning', `移除钩子: ${hookName.value}`)
-  }
-  else {
+  } else {
     emit('log', 'warning', '钩子不存在')
   }
 }
@@ -310,7 +349,12 @@ function toggleDependency(name: string) {
 }
 
 async function checkDependencies() {
-  addLifecycleLog('info', currentPhase.value, 'DEPENDENCY_CHECK', '检查依赖状态')
+  addLifecycleLog(
+    'info',
+    currentPhase.value,
+    'DEPENDENCY_CHECK',
+    '检查依赖状态'
+  )
 
   for (const dependency of dependencies) {
     // 模拟依赖检查
@@ -319,24 +363,34 @@ async function checkDependencies() {
     if (success) {
       dependency.ready = true
       dependency.failed = false
-      addLifecycleLog('success', currentPhase.value, 'DEPENDENCY_READY', `依赖就绪: ${dependency.name}`)
-    }
-    else {
+      addLifecycleLog(
+        'success',
+        currentPhase.value,
+        'DEPENDENCY_READY',
+        `依赖就绪: ${dependency.name}`
+      )
+    } else {
       dependency.ready = false
       dependency.failed = true
-      addLifecycleLog('error', currentPhase.value, 'DEPENDENCY_FAILED', `依赖失败: ${dependency.name}`)
+      addLifecycleLog(
+        'error',
+        currentPhase.value,
+        'DEPENDENCY_FAILED',
+        `依赖失败: ${dependency.name}`
+      )
     }
   }
 
   const failedDeps = dependencies.filter(dep => dep.failed)
   if (failedDeps.length > 0) {
-    throw new Error(`依赖检查失败: ${failedDeps.map(dep => dep.name).join(', ')}`)
+    throw new Error(
+      `依赖检查失败: ${failedDeps.map(dep => dep.name).join(', ')}`
+    )
   }
 }
 
 function startUptimeCounter() {
-  if (uptimeInterval)
-    return
+  if (uptimeInterval) return
 
   uptimeInterval = window.setInterval(() => {
     uptime.value = Date.now() - startTime
@@ -350,7 +404,13 @@ function stopUptimeCounter() {
   }
 }
 
-function addLifecycleLog(type: string, phase: string, event: string, message: string, duration?: number) {
+function addLifecycleLog(
+  type: string,
+  phase: string,
+  event: string,
+  message: string,
+  duration?: number
+) {
   lifecycleLogs.push({
     timestamp: Date.now(),
     type,
@@ -372,10 +432,8 @@ function clearLifecycleLogs() {
 }
 
 function formatDuration(ms: number) {
-  if (ms < 1000)
-    return `${ms}ms`
-  if (ms < 60000)
-    return `${Math.floor(ms / 1000)}s`
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60000) return `${Math.floor(ms / 1000)}s`
   const minutes = Math.floor(ms / 60000)
   const seconds = Math.floor((ms % 60000) / 1000)
   return `${minutes}m ${seconds}s`
@@ -395,7 +453,7 @@ onMounted(() => {
     { name: 'cleanup', phase: 'beforeStop', priority: 60 },
   ]
 
-  defaultHooks.forEach((hook) => {
+  defaultHooks.forEach(hook => {
     registeredHooks.push({
       id: ++hookIdCounter,
       ...hook,
@@ -410,7 +468,7 @@ onMounted(() => {
     { name: 'config', type: 'config', ready: true, failed: false },
   ]
 
-  defaultDependencies.forEach((dep) => {
+  defaultDependencies.forEach(dep => {
     dependencies.push({
       ...dep,
       createdAt: Date.now(),
@@ -429,7 +487,10 @@ onUnmounted(() => {
   <div class="lifecycle-demo">
     <div class="demo-header">
       <h2>🔄 生命周期管理器演示</h2>
-      <p>LifecycleManager 提供了完整的生命周期管理，支持钩子函数、状态跟踪、依赖管理等功能。</p>
+      <p>
+        LifecycleManager
+        提供了完整的生命周期管理，支持钩子函数、状态跟踪、依赖管理等功能。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -442,7 +503,9 @@ onUnmounted(() => {
           <div class="lifecycle-status">
             <div class="status-item">
               <label>当前阶段:</label>
-              <span class="status-value" :class="currentPhase">{{ currentPhase }}</span>
+              <span class="status-value" :class="currentPhase">{{
+                currentPhase
+              }}</span>
             </div>
             <div class="status-item">
               <label>运行时间:</label>
@@ -543,31 +606,17 @@ onUnmounted(() => {
           <div class="form-group">
             <label>钩子阶段</label>
             <select v-model="hookPhase">
-              <option value="beforeStart">
-                启动前
-              </option>
-              <option value="afterStart">
-                启动后
-              </option>
-              <option value="beforeStop">
-                停止前
-              </option>
-              <option value="afterStop">
-                停止后
-              </option>
-              <option value="onError">
-                错误时
-              </option>
+              <option value="beforeStart">启动前</option>
+              <option value="afterStart">启动后</option>
+              <option value="beforeStop">停止前</option>
+              <option value="afterStop">停止后</option>
+              <option value="onError">错误时</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>钩子名称</label>
-            <input
-              v-model="hookName"
-              type="text"
-              placeholder="例如: cleanup"
-            >
+            <input v-model="hookName" type="text" placeholder="例如: cleanup" />
           </div>
 
           <div class="form-group">
@@ -577,14 +626,12 @@ onUnmounted(() => {
               type="number"
               min="0"
               max="100"
-            >
+            />
           </div>
 
           <div class="form-group">
             <div class="button-group">
-              <button class="btn btn-primary" @click="addHook">
-                添加钩子
-              </button>
+              <button class="btn btn-primary" @click="addHook">添加钩子</button>
               <button class="btn btn-warning" @click="removeHook">
                 移除钩子
               </button>
@@ -637,7 +684,9 @@ onUnmounted(() => {
               <span class="log-phase">{{ log.phase }}</span>
               <span class="log-event">{{ log.event }}</span>
               <span class="log-message">{{ log.message }}</span>
-              <span v-if="log.duration" class="log-duration">{{ log.duration }}ms</span>
+              <span v-if="log.duration" class="log-duration"
+                >{{ log.duration }}ms</span
+              >
             </div>
           </div>
         </div>
@@ -657,24 +706,16 @@ onUnmounted(() => {
                   v-model="dependencyName"
                   type="text"
                   placeholder="例如: database"
-                >
+                />
               </div>
 
               <div class="form-group">
                 <label>依赖类型</label>
                 <select v-model="dependencyType">
-                  <option value="service">
-                    服务
-                  </option>
-                  <option value="resource">
-                    资源
-                  </option>
-                  <option value="config">
-                    配置
-                  </option>
-                  <option value="external">
-                    外部依赖
-                  </option>
+                  <option value="service">服务</option>
+                  <option value="resource">资源</option>
+                  <option value="config">配置</option>
+                  <option value="external">外部依赖</option>
                 </select>
               </div>
 
@@ -702,7 +743,13 @@ onUnmounted(() => {
                   <span class="dependency-name">{{ dependency.name }}</span>
                   <span class="dependency-type">{{ dependency.type }}</span>
                   <span class="dependency-status">
-                    {{ dependency.ready ? '就绪' : dependency.failed ? '失败' : '等待中' }}
+                    {{
+                      dependency.ready
+                        ? '就绪'
+                        : dependency.failed
+                        ? '失败'
+                        : '等待中'
+                    }}
                   </span>
                 </div>
                 <div class="dependency-actions">
@@ -790,7 +837,9 @@ onUnmounted(() => {
           color: var(--error-color);
         }
 
-        &.initializing, &.starting, &.stopping {
+        &.initializing,
+        &.starting,
+        &.stopping {
           color: var(--info-color);
         }
       }
@@ -1042,11 +1091,13 @@ onUnmounted(() => {
     grid-template-columns: 1fr !important;
   }
 
-  .hook-item, .dependency-item {
+  .hook-item,
+  .dependency-item {
     flex-direction: column;
     align-items: flex-start !important;
 
-    .hook-info, .dependency-info {
+    .hook-info,
+    .dependency-info {
       margin-bottom: var(--spacing-sm);
     }
 

@@ -10,7 +10,7 @@ const emit = defineEmits<{
 }>()
 
 // 获取引擎实例
-const engine = inject('engine') as any || props.engine
+const engine = (inject('engine') as any) || props.engine
 
 // 响应式数据
 const configKey = ref('app.theme')
@@ -72,10 +72,13 @@ function setConfig() {
 
     engine.config.set(configKey.value, configValue.value)
     configResult.value = `设置成功: ${configKey.value} = ${configValue.value}`
-    emit('log', 'success', `设置配置: ${configKey.value} = ${configValue.value}`)
+    emit(
+      'log',
+      'success',
+      `设置配置: ${configKey.value} = ${configValue.value}`
+    )
     refreshConfig()
-  }
-  catch (error: any) {
+  } catch (error: any) {
     configResult.value = `设置失败: ${error.message}`
     emit('log', 'error', '设置配置失败', error)
   }
@@ -90,10 +93,15 @@ function getConfig() {
     }
 
     const value = engine.config.get(configKey.value)
-    configResult.value = `获取结果: ${configKey.value} = ${JSON.stringify(value)}`
-    emit('log', 'info', `获取配置: ${configKey.value} = ${JSON.stringify(value)}`)
-  }
-  catch (error: any) {
+    configResult.value = `获取结果: ${configKey.value} = ${JSON.stringify(
+      value
+    )}`
+    emit(
+      'log',
+      'info',
+      `获取配置: ${configKey.value} = ${JSON.stringify(value)}`
+    )
+  } catch (error: any) {
     configResult.value = `获取失败: ${error.message}`
     emit('log', 'error', '获取配置失败', error)
   }
@@ -111,8 +119,7 @@ function deleteConfig() {
     configResult.value = `删除成功: ${configKey.value}`
     emit('log', 'warning', `删除配置: ${configKey.value}`)
     refreshConfig()
-  }
-  catch (error: any) {
+  } catch (error: any) {
     configResult.value = `删除失败: ${error.message}`
     emit('log', 'error', '删除配置失败', error)
   }
@@ -129,8 +136,7 @@ function setBatchConfig() {
     engine.config.merge(config)
     emit('log', 'success', '批量设置配置成功', config)
     refreshConfig()
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '批量设置配置失败', error)
   }
 }
@@ -145,8 +151,7 @@ function getAllConfig() {
     const allConfig = engine.config.getAll()
     emit('log', 'info', '获取所有配置', allConfig)
     refreshConfig()
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '获取所有配置失败', error)
   }
 }
@@ -161,8 +166,7 @@ function clearAllConfig() {
     engine.config.clear()
     emit('log', 'warning', '清空所有配置')
     refreshConfig()
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '清空配置失败', error)
   }
 }
@@ -174,13 +178,18 @@ function startWatching() {
       return
     }
 
-    unwatchConfig = engine.config.watch(watchKey.value, (newValue: any, oldValue: any) => {
-      emit('log', 'info', `配置变化: ${watchKey.value}`, { newValue, oldValue })
-    })
+    unwatchConfig = engine.config.watch(
+      watchKey.value,
+      (newValue: any, oldValue: any) => {
+        emit('log', 'info', `配置变化: ${watchKey.value}`, {
+          newValue,
+          oldValue,
+        })
+      }
+    )
     isWatching.value = true
     emit('log', 'info', `开始监听配置: ${watchKey.value}`)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '开始监听失败', error)
   }
 }
@@ -200,8 +209,7 @@ function refreshConfig() {
 
     const allConfig = engine.config.getAll()
     Object.assign(currentConfig, allConfig)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '刷新配置失败', error)
   }
 }
@@ -211,8 +219,7 @@ function applyPreset(preset: any) {
     props.engine.config.merge(preset.config)
     emit('log', 'success', `应用预设配置: ${preset.name}`, preset.config)
     refreshConfig()
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '应用预设配置失败', error)
   }
 }
@@ -234,7 +241,10 @@ onUnmounted(() => {
   <div class="config-demo">
     <div class="demo-header">
       <h2>⚙️ 配置管理器演示</h2>
-      <p>ConfigManager 提供了强大的配置管理功能，支持嵌套配置、类型验证、变化监听等特性。</p>
+      <p>
+        ConfigManager
+        提供了强大的配置管理功能，支持嵌套配置、类型验证、变化监听等特性。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -250,16 +260,12 @@ onUnmounted(() => {
               v-model="configKey"
               type="text"
               placeholder="例如: app.theme"
-            >
+            />
           </div>
 
           <div class="form-group">
             <label>配置值</label>
-            <input
-              v-model="configValue"
-              type="text"
-              placeholder="例如: dark"
-            >
+            <input v-model="configValue" type="text" placeholder="例如: dark" />
           </div>
 
           <div class="form-group">
@@ -325,7 +331,7 @@ onUnmounted(() => {
               v-model="watchKey"
               type="text"
               placeholder="例如: app.theme"
-            >
+            />
           </div>
 
           <div class="form-group">

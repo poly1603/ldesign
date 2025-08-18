@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <title>ESM Test - @ldesign/device</title>
+  </head>
+  <body>
+    <h1>ESM 模块加载测试</h1>
+    <div id="result">测试中...</div>
+
+    <script type="module">
+      try {
+        const module = await import('../esm/index.js')
+        console.log('ESM 模块加载成功:', module)
+
+        if (Object.keys(module).length === 0) {
+          throw new Error('模块没有导出任何内容')
+        }
+
+        document.getElementById('result').innerHTML =
+          '<span style="color: green;">✅ ESM 加载成功</span><br>' + '导出: ' + Object.keys(module).join(', ')
+
+        window.testResult = { success: true, message: 'ESM 加载成功' }
+      } catch (error) {
+        console.error('ESM 模块加载失败:', error)
+        document.getElementById('result').innerHTML =
+          '<span style="color: red;">❌ ESM 加载失败: ' + error.message + '</span>'
+
+        window.testResult = { success: false, message: error.message }
+      }
+    </script>
+  </body>
+</html>

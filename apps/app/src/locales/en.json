@@ -1,0 +1,185 @@
+{
+  "app": {
+    "title": "LDesign App Demo",
+    "subtitle": "Modern, High-Performance Frontend Solution",
+    "description": "Complete application demo based on LDesign Engine, Router, and I18n"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "features": "Features",
+    "performance": "Performance",
+    "i18n": "Internationalization",
+    "settings": "Settings"
+  },
+  "home": {
+    "welcome": "Welcome to LDesign",
+    "subtitle": "The Best Choice for Building Modern Web Applications",
+    "description": "LDesign provides a complete frontend solution, including engine, router, internationalization and other core features to help you quickly build high-performance modern applications.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "features": {
+      "title": "Core Features",
+      "engine": {
+        "title": "LDesign Engine",
+        "description": "Plugin architecture supporting modular development and extension"
+      },
+      "router": {
+        "title": "Smart Router",
+        "description": "High-performance routing system with lazy loading and preloading support"
+      },
+      "i18n": {
+        "title": "Internationalization",
+        "description": "Complete multilingual support with smart caching and performance optimization"
+      },
+      "performance": {
+        "title": "Performance Optimization",
+        "description": "Built-in performance monitoring and optimization suggestions"
+      }
+    }
+  },
+  "about": {
+    "title": "About LDesign",
+    "description": "LDesign is a modern frontend framework focused on performance, developer experience, and scalability.",
+    "team": "Development Team",
+    "version": "Version Info",
+    "license": "Open Source License"
+  },
+  "features": {
+    "title": "Features",
+    "subtitle": "Explore the Powerful Features of LDesign",
+    "engine": {
+      "title": "LDesign Engine",
+      "description": "Core engine with plugin architecture",
+      "features": [
+        "Modular Design",
+        "Plugin System",
+        "Lifecycle Management",
+        "Event System",
+        "Configuration Management"
+      ]
+    },
+    "router": {
+      "title": "Smart Router",
+      "description": "High-performance routing management system",
+      "features": ["Lazy Loading Support", "Route Preloading", "Nested Routes", "Route Guards", "Dynamic Routes"]
+    },
+    "i18n": {
+      "title": "Internationalization System",
+      "description": "Complete multilingual solution",
+      "features": ["Smart Caching", "Batch Translation", "Performance Monitoring", "Error Handling", "Hot Reload"]
+    }
+  },
+  "performance": {
+    "title": "Performance Monitoring",
+    "subtitle": "Real-time Application Performance Monitoring",
+    "metrics": {
+      "title": "Performance Metrics",
+      "translationCalls": "Translation Calls",
+      "averageTime": "Average Translation Time",
+      "cacheHitRate": "Cache Hit Rate",
+      "memoryUsage": "Memory Usage",
+      "errorCount": "Error Count"
+    },
+    "optimization": {
+      "title": "Optimization Suggestions",
+      "noSuggestions": "Performance is good, no special optimization needed"
+    },
+    "refresh": "Refresh Data",
+    "reset": "Reset Statistics"
+  },
+  "i18n": {
+    "title": "Internationalization Demo",
+    "subtitle": "Multilingual Feature Showcase",
+    "currentLanguage": "Current Language",
+    "switchLanguage": "Switch Language",
+    "features": {
+      "title": "I18n Features",
+      "basicTranslation": "Basic Translation",
+      "interpolation": "Parameter Interpolation",
+      "pluralization": "Pluralization",
+      "batchTranslation": "Batch Translation",
+      "performance": "Performance Monitoring"
+    },
+    "examples": {
+      "basic": {
+        "title": "Basic Translation Example",
+        "description": "Simple text translation functionality"
+      },
+      "interpolation": {
+        "title": "Interpolation Example",
+        "welcome": "Welcome, {{name}}!",
+        "greeting": "Hello, {{name}}, today is {{date}}"
+      },
+      "pluralization": {
+        "title": "Pluralization Example",
+        "itemCount": "{{count}} items",
+        "itemCount_0": "no items",
+        "itemCount_1": "1 item",
+        "itemCount_other": "{{count}} items"
+      },
+      "batch": {
+        "title": "Batch Translation Example",
+        "description": "Translate multiple keys at once"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language Settings",
+      "current": "Current Language",
+      "available": "Available Languages"
+    },
+    "performance": {
+      "title": "Performance Settings",
+      "monitoring": "Performance Monitoring",
+      "caching": "Cache Settings",
+      "optimization": "Auto Optimization"
+    },
+    "debug": {
+      "title": "Debug Settings",
+      "enabled": "Enable Debug",
+      "verbose": "Verbose Logging",
+      "errorReporting": "Error Reporting"
+    }
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "yes": "Yes",
+    "no": "No",
+    "enable": "Enable",
+    "disable": "Disable",
+    "refresh": "Refresh",
+    "reset": "Reset",
+    "clear": "Clear",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import"
+  },
+  "errors": {
+    "notFound": "Page Not Found",
+    "serverError": "Server Error",
+    "networkError": "Network Error",
+    "unknownError": "Unknown Error",
+    "permissionDenied": "Permission Denied",
+    "timeout": "Request Timeout"
+  }
+}

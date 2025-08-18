@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -133,17 +133,17 @@
           })
 
           // 监听所有事件
-          detector.on('deviceChange', info => {
+          detector.on('deviceChange', (info) => {
             logEvent('deviceChange', info)
             updateDeviceInfo()
             updateDeviceSpecificContent()
           })
 
-          detector.on('deviceTypeChange', type => {
+          detector.on('deviceTypeChange', (type) => {
             logEvent('deviceTypeChange', { type })
           })
 
-          detector.on('orientationChange', orientation => {
+          detector.on('orientationChange', (orientation) => {
             logEvent('orientationChange', { orientation })
           })
 
@@ -399,7 +399,7 @@
       // 更新事件日志显示
       function updateEventLog() {
         const logHtml = eventLog
-          .map(entry => {
+          .map((entry) => {
             const dataStr = typeof entry.data === 'object' ? JSON.stringify(entry.data, null, 2) : entry.data
             return `[${entry.timestamp}] ${entry.type}: ${dataStr}`
           })

@@ -28,6 +28,16 @@ import {
 } from './constants'
 import { RouteMatcher } from './matcher'
 
+/**
+ * 导航重定向错误
+ */
+class NavigationRedirectError extends Error {
+  constructor(public to: RouteLocationNormalized) {
+    super('Navigation redirected')
+    this.name = 'NavigationRedirectError'
+  }
+}
+
 // ==================== 路由器实现 ====================
 
 /**
@@ -306,6 +316,12 @@ export class RouterImpl implements Router {
       // 执行后置钩子
       this.runAfterHooks(finalLocation, from)
     } catch (error) {
+      // 处理重定向错误
+      if (error instanceof NavigationRedirectError) {
+        // 递归处理重定向
+        return this.pushWithRedirect(error.to, replace)
+      }
+
       if (error instanceof Error) {
         this.handleError(error)
         return this.createNavigationFailure(
@@ -323,6 +339,16 @@ export class RouterImpl implements Router {
     from: RouteLocationNormalized
   ): Promise<RouteLocationNormalized> {
     let currentTo = to
+
+    // 首先检查路由记录的重定向配置
+    const redirectResult = this.handleRouteRedirect(currentTo, 0)
+
+    // 如果发生了重定向（比较路径），抛出重定向错误
+    if (redirectResult.path !== currentTo.path) {
+      throw new NavigationRedirectError(redirectResult)
+    }
+
+    currentTo = redirectResult
 
     // 执行全局前置守卫
     for (const guard of this.beforeGuards) {
@@ -369,6 +395,52 @@ export class RouterImpl implements Router {
     }
 
     return currentTo
+  }
+
+  /**
+   * 处理路由记录的重定向配置
+   */
+  private handleRouteRedirect(
+    to: RouteLocationNormalized,
+    redirectCount: number = 0
+  ): RouteLocationNormalized {
+    // 防止无限重定向
+    if (redirectCount > 10) {
+      throw new Error(`Too many redirects when navigating to ${to.path}`)
+    }
+
+    // 检查最后匹配的路由记录是否有重定向配置
+    const lastMatched = to.matched[to.matched.length - 1]
+
+    if (lastMatched?.redirect) {
+      const redirect = lastMatched.redirect
+      let redirectTarget: RouteLocationNormalized
+
+      // 如果重定向是字符串，直接解析
+      if (typeof redirect === 'string') {
+        redirectTarget = this.resolve(redirect)
+      }
+      // 如果重定向是函数，调用函数获取重定向目标
+      else if (typeof redirect === 'function') {
+        const redirectResult = redirect(to)
+        if (redirectResult) {
+          redirectTarget = this.resolve(redirectResult)
+        } else {
+          return to
+        }
+      }
+      // 如果重定向是对象，直接解析
+      else if (typeof redirect === 'object') {
+        redirectTarget = this.resolve(redirect)
+      } else {
+        return to
+      }
+
+      // 递归处理重定向目标，防止链式重定向
+      return this.handleRouteRedirect(redirectTarget, redirectCount + 1)
+    }
+
+    return to
   }
 
   private async runGuard(
@@ -456,12 +528,37 @@ export class RouterImpl implements Router {
   private initializeCurrentRoute(): void {
     const location = this.options.history.location
     const routeLocation = this.historyLocationToRouteLocation(location)
-    this.currentRoute.value = routeLocation
 
-    // 直接解析 isReady Promise，因为这是初始化，不需要运行导航守卫
-    if (this.isReadyResolve) {
-      this.isReadyResolve()
-      this.isReadyResolve = undefined as any
+    // 检查是否需要重定向
+    const redirectResult = this.handleRouteRedirect(routeLocation, 0)
+
+    if (redirectResult.path !== routeLocation.path) {
+      // 需要重定向，使用 replace 模式避免在历史记录中留下原始路径
+      this.replace(redirectResult.path)
+        .then(() => {
+          // 重定向完成后解析 isReady Promise
+          if (this.isReadyResolve) {
+            this.isReadyResolve()
+            this.isReadyResolve = undefined as any
+          }
+        })
+        .catch(error => {
+          this.handleError(error)
+          // 即使重定向失败也要解析 isReady Promise
+          if (this.isReadyResolve) {
+            this.isReadyResolve()
+            this.isReadyResolve = undefined as any
+          }
+        })
+    } else {
+      // 不需要重定向，直接设置当前路由
+      this.currentRoute.value = routeLocation
+
+      // 直接解析 isReady Promise
+      if (this.isReadyResolve) {
+        this.isReadyResolve()
+        this.isReadyResolve = undefined as any
+      }
     }
   }
 

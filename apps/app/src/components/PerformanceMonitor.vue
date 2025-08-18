@@ -1,85 +1,5 @@
-<template>
-  <div class="performance-monitor" :class="{ 'is-minimized': isMinimized }">
-    <!-- 标题栏 -->
-    <div class="monitor-header" @click="toggleMinimize">
-      <div class="header-title">
-        <span class="icon">📊</span>
-        <span>性能监控</span>
-      </div>
-      <div class="header-actions">
-        <button class="btn-icon" @click.stop="clearData" title="清除数据">
-          🗑️
-        </button>
-        <button
-          class="btn-icon"
-          @click.stop="toggleMinimize"
-          :title="isMinimized ? '展开' : '收起'"
-        >
-          {{ isMinimized ? '📈' : '📉' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- 内容区域 -->
-    <div v-if="!isMinimized" class="monitor-content">
-      <!-- 实时统计 -->
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-label">总导航次数</div>
-          <div class="stat-value">{{ stats.totalNavigations }}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">平均耗时</div>
-          <div class="stat-value">{{ stats.averageDuration.toFixed(2) }}ms</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">最快导航</div>
-          <div class="stat-value">{{ stats.minDuration.toFixed(2) }}ms</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">最慢导航</div>
-          <div class="stat-value">{{ stats.maxDuration.toFixed(2) }}ms</div>
-        </div>
-      </div>
-
-      <!-- 最近导航记录 -->
-      <div class="recent-navigations">
-        <h4>最近导航记录</h4>
-        <div class="navigation-list">
-          <div
-            v-for="record in recentRecords"
-            :key="`${record.timestamp}-${record.from}-${record.to}`"
-            class="navigation-item"
-            :class="getDurationClass(record.duration)"
-          >
-            <div class="navigation-path">
-              <span class="from">{{ record.from || '/' }}</span>
-              <span class="arrow">→</span>
-              <span class="to">{{ record.to }}</span>
-            </div>
-            <div class="navigation-duration">
-              {{ record.duration.toFixed(2) }}ms
-            </div>
-            <div class="navigation-time">
-              {{ formatTime(record.timestamp) }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 性能图表 -->
-      <div class="performance-chart">
-        <h4>导航耗时趋势</h4>
-        <div class="chart-container">
-          <canvas ref="chartCanvas" width="300" height="100"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useAppStore } from '../stores/app'
 
 const appStore = useAppStore()
@@ -95,24 +15,24 @@ const recentRecords = computed(() =>
 )
 
 // 方法
-const toggleMinimize = () => {
+function toggleMinimize() {
   isMinimized.value = !isMinimized.value
 }
 
-const clearData = () => {
+function clearData() {
   if (confirm('确定要清除所有性能数据吗？')) {
     appStore.clearNavigationRecords()
   }
 }
 
-const getDurationClass = (duration: number) => {
+function getDurationClass(duration: number) {
   if (duration < 100) return 'fast'
   if (duration < 300) return 'normal'
   if (duration < 500) return 'slow'
   return 'very-slow'
 }
 
-const formatTime = (timestamp: number) => {
+function formatTime(timestamp: number) {
   const date = new Date(timestamp)
   return date.toLocaleTimeString('zh-CN', {
     hour12: false,
@@ -123,7 +43,7 @@ const formatTime = (timestamp: number) => {
 }
 
 // 绘制性能图表
-const drawChart = () => {
+function drawChart() {
   if (!chartCanvas.value) return
 
   const canvas = chartCanvas.value
@@ -204,6 +124,88 @@ onMounted(() => {
   })
 })
 </script>
+
+<template>
+  <div class="performance-monitor" :class="{ 'is-minimized': isMinimized }">
+    <!-- 标题栏 -->
+    <div class="monitor-header" @click="toggleMinimize">
+      <div class="header-title">
+        <span class="icon">📊</span>
+        <span>性能监控</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" title="清除数据" @click.stop="clearData">
+          🗑️
+        </button>
+        <button
+          class="btn-icon"
+          :title="isMinimized ? '展开' : '收起'"
+          @click.stop="toggleMinimize"
+        >
+          {{ isMinimized ? '📈' : '📉' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div v-if="!isMinimized" class="monitor-content">
+      <!-- 实时统计 -->
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">总导航次数</div>
+          <div class="stat-value">
+            {{ stats.totalNavigations }}
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">平均耗时</div>
+          <div class="stat-value">{{ stats.averageDuration.toFixed(2) }}ms</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">最快导航</div>
+          <div class="stat-value">{{ stats.minDuration.toFixed(2) }}ms</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">最慢导航</div>
+          <div class="stat-value">{{ stats.maxDuration.toFixed(2) }}ms</div>
+        </div>
+      </div>
+
+      <!-- 最近导航记录 -->
+      <div class="recent-navigations">
+        <h4>最近导航记录</h4>
+        <div class="navigation-list">
+          <div
+            v-for="record in recentRecords"
+            :key="`${record.timestamp}-${record.from}-${record.to}`"
+            class="navigation-item"
+            :class="getDurationClass(record.duration)"
+          >
+            <div class="navigation-path">
+              <span class="from">{{ record.from || '/' }}</span>
+              <span class="arrow">→</span>
+              <span class="to">{{ record.to }}</span>
+            </div>
+            <div class="navigation-duration">
+              {{ record.duration.toFixed(2) }}ms
+            </div>
+            <div class="navigation-time">
+              {{ formatTime(record.timestamp) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 性能图表 -->
+      <div class="performance-chart">
+        <h4>导航耗时趋势</h4>
+        <div class="chart-container">
+          <canvas ref="chartCanvas" width="300" height="100" />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .performance-monitor {

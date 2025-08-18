@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import type { WatermarkConfig } from '../../types'
-import type { WatermarkProviderContext, WatermarkProviderProps } from '../types'
+import type { WatermarkProviderContext } from '../types'
 import { computed, provide } from 'vue'
 import { DEFAULT_WATERMARK_CONFIG } from '../../types/config'
 
-// 组件属性
-const props = withDefaults(defineProps<WatermarkProviderProps>(), {
-  globalSecurity: true,
-  globalResponsive: true,
+// 组件属性（使用运行时声明以避免 TS 类型解析在构建时的限制）
+const props = defineProps({
+  config: Object as PropType<Partial<WatermarkConfig>>,
+  globalSecurity: { type: Boolean, default: true },
+  globalResponsive: { type: Boolean, default: true },
+  globalStyle: Object as PropType<WatermarkConfig['style']>,
+  globalLayout: Object as PropType<WatermarkConfig['layout']>,
 })
 
 // 全局配置

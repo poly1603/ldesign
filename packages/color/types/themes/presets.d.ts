@@ -45,14 +45,6 @@ declare const darkTheme: ThemeConfig
  */
 declare const minimalTheme: ThemeConfig
 /**
- * 薰衣草主题 - 宁静舒缓
- */
-declare const lavenderTheme: ThemeConfig
-/**
- * 森林绿主题 - 自然沉稳
- */
-declare const forestTheme: ThemeConfig
-/**
  * 所有预设主题
  */
 declare const presetThemes: ThemeConfig[]
@@ -161,7 +153,6 @@ export {
   cyanTheme,
   darkTheme,
   defaultTheme,
-  forestTheme,
   getPresetTheme,
   getPresetThemeNames,
   getRandomPresetTheme,
@@ -169,7 +160,6 @@ export {
   getThemesByTag,
   greenTheme,
   isPresetTheme,
-  lavenderTheme,
   minimalTheme,
   orangeTheme,
   pinkTheme,

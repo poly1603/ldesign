@@ -7,6 +7,7 @@
  * @author LDesign Team
  */
 
+import { createThemeManager, ThemeManager } from './core/theme-manager'
 // 导出 Vue 适配层
 export * from './adapt/vue'
 
@@ -20,7 +21,7 @@ export {
 } from './core/decoration-manager'
 export { createResourceManager, ResourceManager } from './core/resource-manager'
 // 导出核心管理器
-export { createThemeManager, ThemeManager } from './core/theme-manager'
+export { createThemeManager, ThemeManager }
 
 // 导出核心类型
 export type {

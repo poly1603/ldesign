@@ -6,7 +6,6 @@
 
 import { computed, defineComponent, ref } from 'vue'
 import { useLanguageSwitcher } from '../composables'
-import './LanguageSwitcher.less'
 
 export default defineComponent({
   name: 'LanguageSwitcher',

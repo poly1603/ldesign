@@ -19,8 +19,8 @@ export type {
   TranslationParams,
 } from '../core/types'
 
-// 导出组件
-export { LanguageSwitcher } from './components'
+// 导出组件 (暂时注释掉，等修复JSX问题后再启用)
+// export { LanguageSwitcher } from './components'
 
 // 导出组合式 API
 export {

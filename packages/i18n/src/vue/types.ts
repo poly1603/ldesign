@@ -48,7 +48,7 @@ export interface VueI18nPlugin {
   /** I18n 实例 */
   global: I18nInstance
   /** 安装插件 */
-  install: (_app: App, _options?: VueI18nOptions) => void
+  install: (_app: App, _options?: VueI18nOptions) => void | Promise<void>
 }
 
 /**

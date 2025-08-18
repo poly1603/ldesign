@@ -10,7 +10,7 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: #f5f7fa;
@@ -18,12 +18,12 @@
       color: #333;
       overflow-x: hidden;
     }
-    
+
     .app-container {
       display: flex;
       min-height: 100vh;
     }
-    
+
     /* 左侧导航栏 */
     .sidebar {
       width: 280px;
@@ -34,14 +34,14 @@
       overflow-y: auto;
       z-index: 1000;
     }
-    
+
     .sidebar-header {
       padding: 24px 20px;
       border-bottom: 1px solid #e9ecef;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
-    
+
     .sidebar-header h1 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -49,17 +49,17 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .sidebar-header p {
       font-size: 0.9rem;
       opacity: 0.9;
       margin-top: 4px;
     }
-    
+
     .nav-menu {
       padding: 16px 0;
     }
-    
+
     .nav-item {
       display: flex;
       align-items: center;
@@ -73,18 +73,18 @@
       width: 100%;
       text-align: left;
     }
-    
+
     .nav-item:hover {
       background: #f8f9fa;
       color: #667eea;
     }
-    
+
     .nav-item.active {
       background: #667eea;
       color: white;
       position: relative;
     }
-    
+
     .nav-item.active::before {
       content: '';
       position: absolute;
@@ -94,19 +94,19 @@
       width: 3px;
       background: #4c63d2;
     }
-    
+
     .nav-item-icon {
       width: 20px;
       height: 20px;
       margin-right: 12px;
       font-size: 16px;
     }
-    
+
     .nav-item-text {
       font-size: 0.9rem;
       font-weight: 500;
     }
-    
+
     /* 主内容区域 */
     .main-content {
       flex: 1;
@@ -114,7 +114,7 @@
       padding: 24px;
       background: #f5f7fa;
     }
-    
+
     .content-header {
       background: white;
       padding: 24px;
@@ -122,7 +122,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       margin-bottom: 24px;
     }
-    
+
     .content-header h2 {
       font-size: 1.75rem;
       color: #2d3748;
@@ -131,32 +131,32 @@
       align-items: center;
       gap: 12px;
     }
-    
+
     .content-header p {
       color: #718096;
       font-size: 1rem;
       line-height: 1.6;
     }
-    
+
     .content-body {
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       overflow: hidden;
     }
-    
+
     .demo-section {
       display: none;
     }
-    
+
     .demo-section.active {
       display: block;
     }
-    
+
     .section-content {
       padding: 24px;
     }
-    
+
     /* 演示组件样式 */
     .demo-card {
       background: #f8f9fa;
@@ -165,24 +165,24 @@
       padding: 20px;
       margin-bottom: 20px;
     }
-    
+
     .demo-card h4 {
       color: #495057;
       margin-bottom: 16px;
       font-size: 1.1rem;
     }
-    
+
     .form-group {
       margin-bottom: 16px;
     }
-    
+
     .form-group label {
       display: block;
       margin-bottom: 6px;
       font-weight: 500;
       color: #495057;
     }
-    
+
     .form-control {
       width: 100%;
       padding: 10px 12px;
@@ -191,13 +191,13 @@
       font-size: 14px;
       transition: border-color 0.2s ease;
     }
-    
+
     .form-control:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
     }
-    
+
     .btn {
       padding: 10px 16px;
       border: none;
@@ -209,83 +209,83 @@
       margin-right: 8px;
       margin-bottom: 8px;
     }
-    
+
     .btn-primary {
       background: #667eea;
       color: white;
     }
-    
+
     .btn-primary:hover {
       background: #5a6fd8;
     }
-    
+
     .btn-secondary {
       background: #6c757d;
       color: white;
     }
-    
+
     .btn-secondary:hover {
       background: #5a6268;
     }
-    
+
     .btn-success {
       background: #28a745;
       color: white;
     }
-    
+
     .btn-success:hover {
       background: #218838;
     }
-    
+
     .btn-warning {
       background: #ffc107;
       color: #212529;
     }
-    
+
     .btn-warning:hover {
       background: #e0a800;
     }
-    
+
     .btn-danger {
       background: #dc3545;
       color: white;
     }
-    
+
     .btn-danger:hover {
       background: #c82333;
     }
-    
+
     .alert {
       padding: 12px 16px;
       border-radius: 6px;
       margin-bottom: 16px;
       border: 1px solid transparent;
     }
-    
+
     .alert-success {
       background: #d4edda;
       color: #155724;
       border-color: #c3e6cb;
     }
-    
+
     .alert-error {
       background: #f8d7da;
       color: #721c24;
       border-color: #f5c6cb;
     }
-    
+
     .alert-warning {
       background: #fff3cd;
       color: #856404;
       border-color: #ffeaa7;
     }
-    
+
     .alert-info {
       background: #d1ecf1;
       color: #0c5460;
       border-color: #bee5eb;
     }
-    
+
     .code-block {
       background: #f8f9fa;
       border: 1px solid #e9ecef;
@@ -296,7 +296,7 @@
       overflow-x: auto;
       margin: 16px 0;
     }
-    
+
     .log-area {
       background: #2d3748;
       color: #e2e8f0;
@@ -308,24 +308,24 @@
       font-size: 12px;
       margin-top: 16px;
     }
-    
+
     .log-entry {
       margin-bottom: 4px;
       padding: 2px 0;
     }
-    
+
     .log-entry.success { color: #68d391; }
     .log-entry.error { color: #fc8181; }
     .log-entry.info { color: #63b3ed; }
     .log-entry.warning { color: #f6e05e; }
-    
+
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin: 16px 0;
     }
-    
+
     .metric-card {
       background: #f8f9fa;
       border: 1px solid #e9ecef;
@@ -333,30 +333,30 @@
       padding: 16px;
       text-align: center;
     }
-    
+
     .metric-value {
       font-size: 2rem;
       font-weight: bold;
       color: #667eea;
       margin-bottom: 4px;
     }
-    
+
     .metric-label {
       font-size: 0.9rem;
       color: #6c757d;
     }
-    
+
     /* 响应式设计 */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
       }
-      
+
       .sidebar.open {
         transform: translateX(0);
       }
-      
+
       .main-content {
         margin-left: 0;
       }
@@ -371,60 +371,60 @@
         <h1>🚀 LDesign Engine</h1>
         <p>综合功能演示</p>
       </div>
-      
+
       <nav class="nav-menu">
         <button class="nav-item active" onclick="showSection('overview')">
           <span class="nav-item-icon">🏠</span>
           <span class="nav-item-text">起步</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('config')">
           <span class="nav-item-icon">⚙️</span>
           <span class="nav-item-text">配置管理</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('state')">
           <span class="nav-item-icon">📊</span>
           <span class="nav-item-text">状态管理</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('events')">
           <span class="nav-item-icon">📡</span>
           <span class="nav-item-text">事件系统</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('plugins')">
           <span class="nav-item-icon">🔌</span>
           <span class="nav-item-text">插件系统</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('middleware')">
           <span class="nav-item-icon">🔗</span>
           <span class="nav-item-text">中间件</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('environment')">
           <span class="nav-item-icon">🌍</span>
           <span class="nav-item-text">环境检测</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('performance')">
           <span class="nav-item-icon">⚡</span>
           <span class="nav-item-text">性能监控</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('security')">
           <span class="nav-item-icon">🔒</span>
           <span class="nav-item-text">安全管理</span>
         </button>
-        
+
         <button class="nav-item" onclick="showSection('notifications')">
           <span class="nav-item-icon">🔔</span>
           <span class="nav-item-text">通知系统</span>
         </button>
       </nav>
     </div>
-    
+
     <!-- 主内容区域 -->
     <div class="main-content">
       <!-- 起步页面 -->
@@ -433,7 +433,7 @@
           <h2>🏠 起步</h2>
           <p>欢迎使用 LDesign Engine 综合功能演示！这里展示了引擎的所有核心功能和特性。</p>
         </div>
-        
+
         <div class="content-body">
           <div class="section-content">
             <div class="demo-card">
@@ -451,7 +451,7 @@
                 <li><strong>通知系统</strong> - 多种类型、动画效果、位置控制</li>
               </ul>
             </div>
-            
+
             <div class="demo-card">
               <h4>🚀 快速开始</h4>
               <p>点击左侧导航菜单，探索各个功能模块的详细演示。每个模块都包含：</p>
@@ -462,7 +462,7 @@
                 <li>最佳实践和注意事项</li>
               </ul>
             </div>
-            
+
             <div class="demo-card">
               <h4>📊 系统状态</h4>
               <div class="metrics-grid">
@@ -1005,7 +1005,7 @@
       </div>
     </div>
   </div>
-  
+
   <script>
     // 全局变量
     let currentSection = 'overview';
@@ -1074,7 +1074,7 @@
         if (activeNotificationsEl) activeNotificationsEl.textContent = activeNotifications;
       }
     };
-    
+
     // 导航功能
     function showSection(sectionId) {
       // 隐藏所有section
@@ -1937,15 +1937,15 @@
   </script>
 </body>
 </html>
-    
+
     // 初始化
     document.addEventListener('DOMContentLoaded', function() {
       LDesignEngine.log('success', 'LDesign Engine 演示系统已启动');
       LDesignEngine.log('info', '所有功能模块加载完成');
-      
+
       // 更新初始指标
       LDesignEngine.updateMetrics();
-      
+
       // 模拟实时数据更新
       setInterval(() => {
         LDesignEngine.updateMetrics();

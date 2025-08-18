@@ -33,12 +33,9 @@
 
   // 阴影变量
   --lp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --lp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --lp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --lp-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --lp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --lp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --lp-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
   // 过渡变量
   --lp-transition-fast: 150ms ease-in-out;
@@ -51,7 +48,7 @@
   --lp-glass-border: rgba(255, 255, 255, 0.2);
 
   // 暗色主题变量
-  &[data-theme="dark"] {
+  &[data-theme='dark'] {
     --lp-primary: #818cf8;
     --lp-secondary: #a78bfa;
     --lp-success: #34d399;
@@ -66,12 +63,12 @@
   }
 
   // 毛玻璃效果
-  &[data-effect="glass"] {
+  &[data-effect='glass'] {
     background: rgba(255, 255, 255, var(--lp-glass-opacity));
     backdrop-filter: var(--lp-glass-backdrop);
     border: 1px solid var(--lp-glass-border);
 
-    &[data-theme="dark"] {
+    &[data-theme='dark'] {
       background: rgba(17, 24, 39, var(--lp-glass-opacity));
     }
   }
@@ -173,7 +170,8 @@
   }
 
   &__form-panel {
-    transition: transform var(--lp-transition-normal),
+    transition:
+      transform var(--lp-transition-normal),
       opacity var(--lp-transition-normal);
 
     &--hidden {
@@ -321,7 +319,7 @@
     color: var(--lp-text);
     cursor: pointer;
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
       margin: 0;
     }
   }
@@ -372,7 +370,7 @@
       color: transparent;
 
       &::after {
-        content: "";
+        content: '';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -397,7 +395,7 @@
 
     &::before,
     &::after {
-      content: "";
+      content: '';
       flex: 1;
       height: 1px;
       background: var(--lp-border);

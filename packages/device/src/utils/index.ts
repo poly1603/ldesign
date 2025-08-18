@@ -279,8 +279,9 @@ export function getScreenOrientation(
   if (
     typeof window === 'undefined' &&
     (width === undefined || height === undefined)
-  )
+  ) {
     return 'landscape'
+  }
 
   // 如果提供了宽高参数，直接使用参数判断
   if (width !== undefined && height !== undefined) {
@@ -288,10 +289,11 @@ export function getScreenOrientation(
   }
 
   // 优先使用 screen.orientation API
-  if (typeof window !== 'undefined' && screen.orientation)
+  if (typeof window !== 'undefined' && screen.orientation) {
     return screen.orientation.angle === 0 || screen.orientation.angle === 180
       ? 'portrait'
       : 'landscape'
+  }
 
   // 降级到窗口尺寸判断
   if (typeof window !== 'undefined')

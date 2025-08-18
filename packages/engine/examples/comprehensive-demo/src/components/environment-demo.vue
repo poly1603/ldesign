@@ -46,8 +46,7 @@ function refreshEnvInfo() {
     envInfo.networkStatus = getNetworkStatus()
 
     emit('log', 'info', '环境信息已刷新', envInfo)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '刷新环境信息失败', error)
   }
 }
@@ -55,22 +54,22 @@ function refreshEnvInfo() {
 function checkFeatures() {
   try {
     const featureChecks = {
-      'WebGL': !!window.WebGLRenderingContext,
-      'WebGL2': !!window.WebGL2RenderingContext,
-      'WebAssembly': typeof WebAssembly !== 'undefined',
-      'ServiceWorker': 'serviceWorker' in navigator,
-      'WebWorker': typeof Worker !== 'undefined',
-      'LocalStorage': typeof Storage !== 'undefined',
-      'SessionStorage': typeof sessionStorage !== 'undefined',
-      'IndexedDB': 'indexedDB' in window,
-      'WebRTC': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
-      'Geolocation': 'geolocation' in navigator,
-      'DeviceMotion': 'DeviceMotionEvent' in window,
-      'TouchEvents': 'ontouchstart' in window,
-      'PointerEvents': 'PointerEvent' in window,
-      'WebSockets': 'WebSocket' in window,
-      'Fetch': 'fetch' in window,
-      'ES6Modules': 'noModule' in HTMLScriptElement.prototype,
+      WebGL: !!window.WebGLRenderingContext,
+      WebGL2: !!window.WebGL2RenderingContext,
+      WebAssembly: typeof WebAssembly !== 'undefined',
+      ServiceWorker: 'serviceWorker' in navigator,
+      WebWorker: typeof Worker !== 'undefined',
+      LocalStorage: typeof Storage !== 'undefined',
+      SessionStorage: typeof sessionStorage !== 'undefined',
+      IndexedDB: 'indexedDB' in window,
+      WebRTC: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+      Geolocation: 'geolocation' in navigator,
+      DeviceMotion: 'DeviceMotionEvent' in window,
+      TouchEvents: 'ontouchstart' in window,
+      PointerEvents: 'PointerEvent' in window,
+      WebSockets: 'WebSocket' in window,
+      Fetch: 'fetch' in window,
+      ES6Modules: 'noModule' in HTMLScriptElement.prototype,
       'CSS Grid': CSS.supports('display', 'grid'),
       'CSS Flexbox': CSS.supports('display', 'flex'),
       'CSS Variables': CSS.supports('color', 'var(--test)'),
@@ -78,8 +77,7 @@ function checkFeatures() {
 
     Object.assign(features, featureChecks)
     emit('log', 'info', '特性检测完成', featureChecks)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '特性检测失败', error)
   }
 }
@@ -89,9 +87,12 @@ function measurePerformance() {
     // 内存使用情况
     if ('memory' in performance) {
       const memory = (performance as any).memory
-      performanceMetrics.memory = `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`
-    }
-    else {
+      performanceMetrics.memory = `${(
+        memory.usedJSHeapSize /
+        1024 /
+        1024
+      ).toFixed(2)} MB`
+    } else {
       performanceMetrics.memory = '不支持'
     }
 
@@ -115,8 +116,7 @@ function measurePerformance() {
       frameCount++
       if (performance.now() - startTime < 1000) {
         requestAnimationFrame(countFrames)
-      }
-      else {
+      } else {
         performanceMetrics.fps = `${frameCount} FPS`
       }
     }
@@ -124,8 +124,7 @@ function measurePerformance() {
     requestAnimationFrame(countFrames)
 
     emit('log', 'info', '性能测量完成', performanceMetrics)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '性能测量失败', error)
   }
 }
@@ -133,7 +132,7 @@ function measurePerformance() {
 function applyAdaptation() {
   try {
     const adaptations: Record<string, any> = {
-      'auto': {
+      auto: {
         strategy: '自动适配',
         settings: {
           animations: envInfo.deviceType !== 'mobile',
@@ -142,7 +141,7 @@ function applyAdaptation() {
           caching: true,
         },
       },
-      'mobile': {
+      mobile: {
         strategy: '移动端优化',
         settings: {
           animations: false,
@@ -152,7 +151,7 @@ function applyAdaptation() {
           reducedMotion: true,
         },
       },
-      'desktop': {
+      desktop: {
         strategy: '桌面端优化',
         settings: {
           animations: true,
@@ -185,9 +184,13 @@ function applyAdaptation() {
     }
 
     adaptationResult.value = adaptations[adaptationStrategy.value]
-    emit('log', 'success', `应用适配策略: ${adaptationStrategy.value}`, adaptationResult.value)
-  }
-  catch (error: any) {
+    emit(
+      'log',
+      'success',
+      `应用适配策略: ${adaptationStrategy.value}`,
+      adaptationResult.value
+    )
+  } catch (error: any) {
     emit('log', 'error', '应用适配失败', error)
   }
 }
@@ -201,8 +204,7 @@ function resetAdaptation() {
 function toggleMonitoring() {
   if (isMonitoring.value) {
     stopMonitoring()
-  }
-  else {
+  } else {
     startMonitoring()
   }
 }
@@ -235,8 +237,11 @@ function startMonitoring() {
     if ('memory' in performance) {
       const memory = (performance as any).memory
       const memoryUsage = memory.usedJSHeapSize / 1024 / 1024
-      if (memoryUsage > 50) { // 超过 50MB
-        addMonitoringLog('warning', '内存使用过高', { usage: `${memoryUsage.toFixed(2)} MB` })
+      if (memoryUsage > 50) {
+        // 超过 50MB
+        addMonitoringLog('warning', '内存使用过高', {
+          usage: `${memoryUsage.toFixed(2)} MB`,
+        })
       }
     }
   }, 2000)
@@ -273,44 +278,35 @@ function addMonitoringLog(type: string, message: string, data?: any) {
 
 // 辅助函数
 function getBrowserName(userAgent: string) {
-  if (userAgent.includes('Chrome'))
-    return 'Chrome'
-  if (userAgent.includes('Firefox'))
-    return 'Firefox'
-  if (userAgent.includes('Safari'))
-    return 'Safari'
-  if (userAgent.includes('Edge'))
-    return 'Edge'
+  if (userAgent.includes('Chrome')) return 'Chrome'
+  if (userAgent.includes('Firefox')) return 'Firefox'
+  if (userAgent.includes('Safari')) return 'Safari'
+  if (userAgent.includes('Edge')) return 'Edge'
   return '未知浏览器'
 }
 
 function getOSName(userAgent: string) {
-  if (userAgent.includes('Windows'))
-    return 'Windows'
-  if (userAgent.includes('Mac'))
-    return 'macOS'
-  if (userAgent.includes('Linux'))
-    return 'Linux'
-  if (userAgent.includes('Android'))
-    return 'Android'
-  if (userAgent.includes('iOS'))
-    return 'iOS'
+  if (userAgent.includes('Windows')) return 'Windows'
+  if (userAgent.includes('Mac')) return 'macOS'
+  if (userAgent.includes('Linux')) return 'Linux'
+  if (userAgent.includes('Android')) return 'Android'
+  if (userAgent.includes('iOS')) return 'iOS'
   return '未知系统'
 }
 
 function getDeviceType() {
   const width = window.screen.width
-  if (width < 768)
-    return 'mobile'
-  if (width < 1024)
-    return 'tablet'
+  if (width < 768) return 'mobile'
+  if (width < 1024) return 'tablet'
   return 'desktop'
 }
 
 function getNetworkStatus() {
   if ('connection' in navigator) {
     const connection = (navigator as any).connection
-    return `${connection.effectiveType || '未知'} (${connection.downlink || 0} Mbps)`
+    return `${connection.effectiveType || '未知'} (${
+      connection.downlink || 0
+    } Mbps)`
   }
   return navigator.onLine ? '在线' : '离线'
 }
@@ -338,7 +334,10 @@ onUnmounted(() => {
   <div class="environment-demo">
     <div class="demo-header">
       <h2>🌍 环境管理器演示</h2>
-      <p>EnvironmentManager 提供了环境检测和适配功能，自动识别运行环境并提供相应的优化策略。</p>
+      <p>
+        EnvironmentManager
+        提供了环境检测和适配功能，自动识别运行环境并提供相应的优化策略。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -448,21 +447,11 @@ onUnmounted(() => {
           <div class="form-group">
             <label>适配策略</label>
             <select v-model="adaptationStrategy">
-              <option value="auto">
-                自动适配
-              </option>
-              <option value="mobile">
-                移动端优化
-              </option>
-              <option value="desktop">
-                桌面端优化
-              </option>
-              <option value="low-end">
-                低端设备优化
-              </option>
-              <option value="high-end">
-                高端设备优化
-              </option>
+              <option value="auto">自动适配</option>
+              <option value="mobile">移动端优化</option>
+              <option value="desktop">桌面端优化</option>
+              <option value="low-end">低端设备优化</option>
+              <option value="high-end">高端设备优化</option>
             </select>
           </div>
 
@@ -508,7 +497,9 @@ onUnmounted(() => {
               <span class="log-time">{{ formatTime(log.timestamp) }}</span>
               <span class="log-type">{{ log.type.toUpperCase() }}</span>
               <span class="log-message">{{ log.message }}</span>
-              <span v-if="log.data" class="log-data">{{ JSON.stringify(log.data) }}</span>
+              <span v-if="log.data" class="log-data">{{
+                JSON.stringify(log.data)
+              }}</span>
             </div>
           </div>
         </div>
@@ -549,8 +540,10 @@ onUnmounted(() => {
     flex-wrap: wrap;
   }
 
-  .env-info, .performance-metrics {
-    .info-item, .metric-item {
+  .env-info,
+  .performance-metrics {
+    .info-item,
+    .metric-item {
       display: flex;
       justify-content: space-between;
       align-items: center;

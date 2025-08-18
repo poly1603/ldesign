@@ -62,7 +62,11 @@ const logTemplates = [
     name: '系统启动',
     level: 'info',
     message: '系统启动完成',
-    data: { version: '1.0.0', environment: 'production', startTime: Date.now() },
+    data: {
+      version: '1.0.0',
+      environment: 'production',
+      startTime: Date.now(),
+    },
   },
   {
     name: '致命错误',
@@ -84,10 +88,11 @@ const filteredLogs = computed(() => {
   // 按搜索词过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(log =>
-      log.message.toLowerCase().includes(query)
-      || log.source.toLowerCase().includes(query)
-      || (log.data && JSON.stringify(log.data).toLowerCase().includes(query)),
+    filtered = filtered.filter(
+      log =>
+        log.message.toLowerCase().includes(query) ||
+        log.source.toLowerCase().includes(query) ||
+        (log.data && JSON.stringify(log.data).toLowerCase().includes(query))
     )
   }
 
@@ -101,8 +106,7 @@ function writeLog() {
     if (logData.value.trim()) {
       try {
         data = JSON.parse(logData.value)
-      }
-      catch {
+      } catch {
         data = logData.value
       }
     }
@@ -111,8 +115,7 @@ function writeLog() {
     addLog(logEntry)
 
     emit('log', logLevel.value as any, logMessage.value, data)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '写入日志失败', error)
   }
 }
@@ -142,7 +145,8 @@ function writeErrorLog() {
     endpoint: '/api/users',
     status: 500,
     error: 'Internal Server Error',
-    stack: 'Error: API call failed\n    at fetchUsers (app.js:123:45)\n    at UserComponent (component.js:67:89)',
+    stack:
+      'Error: API call failed\n    at fetchUsers (app.js:123:45)\n    at UserComponent (component.js:67:89)',
   })
   addLog(logEntry)
   emit('log', 'info', '写入错误日志')
@@ -168,9 +172,17 @@ function formatLogEntry(level: string, message: string, data?: any) {
     case 'simple':
       return `${levelStr} ${message}`
     case 'detailed':
-      return `[${timestamp}] ${levelStr} [LoggerDemo] ${message}${data ? ` ${JSON.stringify(data)}` : ''}`
+      return `[${timestamp}] ${levelStr} [LoggerDemo] ${message}${
+        data ? ` ${JSON.stringify(data)}` : ''
+      }`
     case 'json':
-      return JSON.stringify({ timestamp, level, source: 'LoggerDemo', message, data })
+      return JSON.stringify({
+        timestamp,
+        level,
+        source: 'LoggerDemo',
+        message,
+        data,
+      })
     case 'custom':
       return `🚀 ${timestamp} | ${levelStr} | ${message}`
     default:
@@ -186,9 +198,11 @@ function addLog(logEntry: any) {
   if (enableConsoleOutput.value) {
     const consoleMethod = getConsoleMethod(logEntry.level)
     if (enableColors.value) {
-      console[consoleMethod](`%c${logEntry.formatted}`, getLogStyle(logEntry.level))
-    }
-    else {
+      console[consoleMethod](
+        `%c${logEntry.formatted}`,
+        getLogStyle(logEntry.level)
+      )
+    } else {
       console[consoleMethod](logEntry.formatted)
     }
   }
@@ -202,12 +216,18 @@ function addLog(logEntry: any) {
 
 function getConsoleMethod(level: string) {
   switch (level) {
-    case 'debug': return 'debug'
-    case 'info': return 'info'
-    case 'warn': return 'warn'
-    case 'error': return 'error'
-    case 'fatal': return 'error'
-    default: return 'log'
+    case 'debug':
+      return 'debug'
+    case 'info':
+      return 'info'
+    case 'warn':
+      return 'warn'
+    case 'error':
+      return 'error'
+    case 'fatal':
+      return 'error'
+    default:
+      return 'log'
   }
 }
 
@@ -281,7 +301,9 @@ function exportLogs() {
       })),
     }
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -290,14 +312,17 @@ function exportLogs() {
     URL.revokeObjectURL(url)
 
     emit('log', 'success', '日志导出成功')
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '日志导出失败', error)
   }
 }
 
 function writeQuickLog(template: any) {
-  const logEntry = createLogEntry(template.level, template.message, template.data)
+  const logEntry = createLogEntry(
+    template.level,
+    template.message,
+    template.data
+  )
   addLog(logEntry)
   emit('log', 'info', `写入快速日志: ${template.name}`)
 }
@@ -315,7 +340,7 @@ onMounted(() => {
     { level: 'warn', message: '配置项缺失', data: { key: 'database.timeout' } },
   ]
 
-  sampleLogs.forEach((log) => {
+  sampleLogs.forEach(log => {
     const logEntry = createLogEntry(log.level, log.message, log.data)
     addLog(logEntry)
   })
@@ -328,7 +353,10 @@ onMounted(() => {
   <div class="logger-demo">
     <div class="demo-header">
       <h2>📋 日志管理器演示</h2>
-      <p>LoggerManager 提供了完整的日志系统，支持多级别日志、格式化输出、日志过滤等功能。</p>
+      <p>
+        LoggerManager
+        提供了完整的日志系统，支持多级别日志、格式化输出、日志过滤等功能。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -341,21 +369,11 @@ onMounted(() => {
           <div class="form-group">
             <label>日志级别</label>
             <select v-model="logLevel">
-              <option value="debug">
-                DEBUG
-              </option>
-              <option value="info">
-                INFO
-              </option>
-              <option value="warn">
-                WARN
-              </option>
-              <option value="error">
-                ERROR
-              </option>
-              <option value="fatal">
-                FATAL
-              </option>
+              <option value="debug">DEBUG</option>
+              <option value="info">INFO</option>
+              <option value="warn">WARN</option>
+              <option value="error">ERROR</option>
+              <option value="fatal">FATAL</option>
             </select>
           </div>
 
@@ -365,16 +383,12 @@ onMounted(() => {
               v-model="logMessage"
               type="text"
               placeholder="输入日志消息"
-            >
+            />
           </div>
 
           <div class="form-group">
             <label>日志数据 (JSON)</label>
-            <textarea
-              v-model="logData"
-              placeholder="输入附加数据"
-              rows="3"
-            />
+            <textarea v-model="logData" placeholder="输入附加数据" rows="3" />
           </div>
 
           <div class="form-group">
@@ -405,68 +419,41 @@ onMounted(() => {
           <div class="form-group">
             <label>最小日志级别</label>
             <select v-model="minLogLevel">
-              <option value="debug">
-                DEBUG
-              </option>
-              <option value="info">
-                INFO
-              </option>
-              <option value="warn">
-                WARN
-              </option>
-              <option value="error">
-                ERROR
-              </option>
-              <option value="fatal">
-                FATAL
-              </option>
+              <option value="debug">DEBUG</option>
+              <option value="info">INFO</option>
+              <option value="warn">WARN</option>
+              <option value="error">ERROR</option>
+              <option value="fatal">FATAL</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>日志格式</label>
             <select v-model="logFormat">
-              <option value="simple">
-                简单格式
-              </option>
-              <option value="detailed">
-                详细格式
-              </option>
-              <option value="json">
-                JSON格式
-              </option>
-              <option value="custom">
-                自定义格式
-              </option>
+              <option value="simple">简单格式</option>
+              <option value="detailed">详细格式</option>
+              <option value="json">JSON格式</option>
+              <option value="custom">自定义格式</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>
-              <input
-                v-model="enableTimestamp"
-                type="checkbox"
-              >
+              <input v-model="enableTimestamp" type="checkbox" />
               显示时间戳
             </label>
           </div>
 
           <div class="form-group">
             <label>
-              <input
-                v-model="enableColors"
-                type="checkbox"
-              >
+              <input v-model="enableColors" type="checkbox" />
               启用颜色
             </label>
           </div>
 
           <div class="form-group">
             <label>
-              <input
-                v-model="enableConsoleOutput"
-                type="checkbox"
-              >
+              <input v-model="enableConsoleOutput" type="checkbox" />
               控制台输出
             </label>
           </div>
@@ -548,31 +535,19 @@ onMounted(() => {
           <h3>日志查看器</h3>
           <div class="header-actions">
             <select v-model="logFilter">
-              <option value="all">
-                全部
-              </option>
-              <option value="debug">
-                DEBUG
-              </option>
-              <option value="info">
-                INFO
-              </option>
-              <option value="warn">
-                WARN
-              </option>
-              <option value="error">
-                ERROR
-              </option>
-              <option value="fatal">
-                FATAL
-              </option>
+              <option value="all">全部</option>
+              <option value="debug">DEBUG</option>
+              <option value="info">INFO</option>
+              <option value="warn">WARN</option>
+              <option value="error">ERROR</option>
+              <option value="fatal">FATAL</option>
             </select>
             <input
               v-model="searchQuery"
               type="text"
               placeholder="搜索日志..."
               class="search-input"
-            >
+            />
             <button class="btn btn-secondary btn-sm" @click="clearLogs">
               清空日志
             </button>
@@ -587,7 +562,9 @@ onMounted(() => {
               :class="log.level"
             >
               <div class="log-header">
-                <span class="log-timestamp">{{ formatTimestamp(log.timestamp) }}</span>
+                <span class="log-timestamp">{{
+                  formatTimestamp(log.timestamp)
+                }}</span>
                 <span class="log-level">{{ log.level.toUpperCase() }}</span>
                 <span class="log-source">{{ log.source }}</span>
               </div>
@@ -778,7 +755,8 @@ onMounted(() => {
         margin-bottom: var(--spacing-xs);
       }
 
-      .log-data, .log-stack {
+      .log-data,
+      .log-stack {
         margin-top: var(--spacing-xs);
 
         details {

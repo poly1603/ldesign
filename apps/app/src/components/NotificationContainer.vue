@@ -1,3 +1,28 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useAppStore } from '../stores/app'
+
+const appStore = useAppStore()
+
+// 计算属性
+const notifications = computed(() => appStore.notifications)
+
+// 方法
+function removeNotification(id: string) {
+  appStore.removeNotification(id)
+}
+
+function getNotificationIcon(type: string) {
+  const icons = {
+    success: '✅',
+    warning: '⚠️',
+    error: '❌',
+    info: 'ℹ️',
+  }
+  return icons[type as keyof typeof icons] || 'ℹ️'
+}
+</script>
+
 <template>
   <Teleport to="body">
     <div class="notification-container">
@@ -13,8 +38,12 @@
             {{ getNotificationIcon(notification.type) }}
           </div>
           <div class="notification-content">
-            <div class="notification-title">{{ notification.title }}</div>
-            <div class="notification-message">{{ notification.message }}</div>
+            <div class="notification-title">
+              {{ notification.title }}
+            </div>
+            <div class="notification-message">
+              {{ notification.message }}
+            </div>
           </div>
           <button
             class="notification-close"
@@ -27,31 +56,6 @@
     </div>
   </Teleport>
 </template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useAppStore } from '../stores/app'
-
-const appStore = useAppStore()
-
-// 计算属性
-const notifications = computed(() => appStore.notifications)
-
-// 方法
-const removeNotification = (id: string) => {
-  appStore.removeNotification(id)
-}
-
-const getNotificationIcon = (type: string) => {
-  const icons = {
-    success: '✅',
-    warning: '⚠️',
-    error: '❌',
-    info: 'ℹ️',
-  }
-  return icons[type as keyof typeof icons] || 'ℹ️'
-}
-</script>
 
 <style lang="less" scoped>
 .notification-container {

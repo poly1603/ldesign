@@ -33,6 +33,17 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/i18n',
+    name: 'I18nDemo',
+    component: () => import('../views/I18nDemo.vue'),
+    meta: {
+      title: '国际化演示',
+      description: 'I18n 功能演示页面',
+      requiresAuth: true,
+      keepAlive: true,
+    },
+  },
+  {
     path: '/dashboard',
     redirect: '/home',
   },

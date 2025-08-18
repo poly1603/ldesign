@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -13,20 +13,20 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
       }
-      
+
       #app {
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
       }
-      
+
       .loading {
         text-align: center;
         color: white;
         font-size: 18px;
       }
-      
+
       .loading::after {
         content: '';
         display: inline-block;
@@ -38,9 +38,11 @@
         animation: spin 1s ease-in-out infinite;
         margin-left: 10px;
       }
-      
+
       @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>

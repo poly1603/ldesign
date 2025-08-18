@@ -49,7 +49,7 @@ export {
   HttpClientConfig,
   RequestConfig,
   ResponseData,
-} from './packages/http/dist/index.d.js'
+} from './node_modules/@ldesign/http/types/types/index.d.js'
 
 declare function createApi(config?: ApiEngineConfig): any
 declare const _default: {

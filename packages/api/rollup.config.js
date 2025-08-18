@@ -1,5 +1,8 @@
-import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
-  globalName: 'LDesignApi',
+  packageName: 'LDesignApi',
+  vue: false,
+  external: [], // API 包不依赖 Vue
+  globals: {},
 })

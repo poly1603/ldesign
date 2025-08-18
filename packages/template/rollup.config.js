@@ -1,8 +1,9 @@
 import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
+  packageDir: process.cwd(),
+  packageName: 'LDesignTemplate',
   external: ['vue'],
-  globalName: 'LDesignTemplate',
   globals: {
     vue: 'Vue',
   },

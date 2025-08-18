@@ -1,14 +1,37 @@
 import type { LRUCache, Storage } from './types'
 
 /**
- * 高性能 LRU 缓存实现
- * 使用 Map 的插入顺序特性来实现 LRU，避免频繁的删除和重新插入
+ * 增强的高性能 LRU 缓存实现
+ *
+ * 特性：
+ * - 基于 Map 的插入顺序特性实现 LRU
+ * - 性能指标收集（命中率、淘汰次数等）
+ * - 内存使用监控
+ * - 缓存预热支持
+ * - 智能淘汰策略
  */
 export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
   private cache = new Map<string, T>()
   private maxSize: number
 
-  constructor(maxSize = 100) {
+  // 性能统计
+  private hitCount = 0
+  private missCount = 0
+  private evictionCount = 0
+  private setCount = 0
+
+  // 缓存键的访问频率统计
+  private accessFrequency = new Map<string, number>()
+
+  // 批量操作优化
+  private batchOperations: Array<{
+    type: 'set' | 'delete'
+    key: string
+    value?: T
+  }> = []
+  private batchTimeout: NodeJS.Timeout | null = null
+
+  constructor(maxSize = 1000) {
     this.maxSize = maxSize
   }
 
@@ -20,10 +43,17 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
   get(key: string): T | undefined {
     const value = this.cache.get(key)
     if (value === undefined) {
+      this.missCount++
       return undefined
     }
 
+    this.hitCount++
+
+    // 更新访问频率
+    this.accessFrequency.set(key, (this.accessFrequency.get(key) || 0) + 1)
+
     // 将项目移到最后（最近使用）- 利用 Map 的插入顺序
+    this.cache.delete(key)
     this.cache.set(key, value)
 
     return value
@@ -35,19 +65,30 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    * @param value 缓存值
    */
   set(key: string, value: T): void {
+    this.setCount++
+
     // 如果已存在，先删除
     if (this.cache.has(key)) {
       this.cache.delete(key)
     } else if (this.cache.size >= this.maxSize) {
-      // 如果缓存已满，删除最旧的项（Map 的第一个项）
-      const firstKey = this.cache.keys().next().value
-      if (firstKey !== undefined) {
-        this.cache.delete(firstKey)
-      }
+      // 使用智能淘汰策略
+      this.evictLeastValuable()
     }
 
     // 添加新项到末尾
     this.cache.set(key, value)
+    this.accessFrequency.set(key, 1)
+  }
+
+  /**
+   * 批量设置缓存项（性能优化）
+   * @param entries 键值对数组
+   */
+  setBatch(entries: Array<[string, T]>): void {
+    for (const [key, value] of entries) {
+      this.batchOperations.push({ type: 'set', key, value })
+    }
+    this.scheduleBatchExecution()
   }
 
   /**
@@ -56,7 +97,11 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    * @returns 是否成功删除
    */
   delete(key: string): boolean {
-    return this.cache.delete(key)
+    const deleted = this.cache.delete(key)
+    if (deleted) {
+      this.accessFrequency.delete(key)
+    }
+    return deleted
   }
 
   /**
@@ -64,6 +109,8 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    */
   clear(): void {
     this.cache.clear()
+    this.accessFrequency.clear()
+    this.resetStats()
   }
 
   /**
@@ -72,6 +119,126 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    */
   size(): number {
     return this.cache.size
+  }
+
+  /**
+   * 获取缓存统计信息
+   */
+  getStats() {
+    const total = this.hitCount + this.missCount
+    return {
+      hitCount: this.hitCount,
+      missCount: this.missCount,
+      hitRate: total > 0 ? this.hitCount / total : 0,
+      evictionCount: this.evictionCount,
+      setCount: this.setCount,
+      size: this.cache.size,
+      maxSize: this.maxSize,
+      memoryUsage: this.estimateMemoryUsage(),
+    }
+  }
+
+  /**
+   * 重置统计信息
+   */
+  resetStats(): void {
+    this.hitCount = 0
+    this.missCount = 0
+    this.evictionCount = 0
+    this.setCount = 0
+  }
+
+  /**
+   * 预热缓存
+   * @param entries 预热数据
+   */
+  warmUp(entries: Array<[string, T]>): void {
+    for (const [key, value] of entries) {
+      if (this.cache.size < this.maxSize) {
+        this.cache.set(key, value)
+        this.accessFrequency.set(key, 1)
+      }
+    }
+  }
+
+  /**
+   * 智能淘汰策略：结合访问频率和时间
+   */
+  private evictLeastValuable(): void {
+    let leastValuableKey: string | null = null
+    let leastFrequency = Infinity
+
+    // 找到访问频率最低的键
+    for (const [key] of this.cache) {
+      const frequency = this.accessFrequency.get(key) || 0
+      if (frequency < leastFrequency) {
+        leastFrequency = frequency
+        leastValuableKey = key
+      }
+    }
+
+    // 如果没有找到，使用传统 LRU（删除最旧的）
+    if (!leastValuableKey) {
+      const firstKey = this.cache.keys().next().value
+      leastValuableKey = firstKey || null
+    }
+
+    if (leastValuableKey) {
+      this.cache.delete(leastValuableKey)
+      this.accessFrequency.delete(leastValuableKey)
+      this.evictionCount++
+    }
+  }
+
+  /**
+   * 调度批量操作执行
+   */
+  private scheduleBatchExecution(): void {
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout)
+    }
+
+    this.batchTimeout = setTimeout(() => {
+      this.executeBatchOperations()
+    }, 0) // 在下一个事件循环中执行
+  }
+
+  /**
+   * 执行批量操作
+   */
+  private executeBatchOperations(): void {
+    for (const operation of this.batchOperations) {
+      if (operation.type === 'set' && operation.value !== undefined) {
+        this.set(operation.key, operation.value)
+      } else if (operation.type === 'delete') {
+        this.delete(operation.key)
+      }
+    }
+    this.batchOperations = []
+    this.batchTimeout = null
+  }
+
+  /**
+   * 估算内存使用量（字节）
+   */
+  private estimateMemoryUsage(): number {
+    let totalSize = 0
+
+    for (const [key, value] of this.cache) {
+      // 估算键的大小
+      totalSize += key.length * 2 // UTF-16 字符
+
+      // 估算值的大小
+      if (typeof value === 'string') {
+        totalSize += value.length * 2
+      } else if (typeof value === 'object' && value !== null) {
+        totalSize += JSON.stringify(value).length * 2
+      } else {
+        totalSize += 8 // 基本类型大约 8 字节
+      }
+    }
+
+    return totalSize
   }
 }
 

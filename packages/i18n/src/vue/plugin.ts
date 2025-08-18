@@ -38,25 +38,35 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 
   const plugin: VueI18nPlugin = {
     global,
-    install(app: App, options: Partial<VueI18nOptions> = {}) {
+    async install(app: App, options: Partial<VueI18nOptions> = {}) {
       const opts = { ...DEFAULT_PLUGIN_OPTIONS, ...options }
+
+      // 确保 I18n 实例已初始化
+      if (!global.isReady()) {
+        await global.init()
+      }
 
       // 提供 I18n 实例给子组件
       app.provide(I18N_INJECTION_KEY, global)
 
       // 注入全局属性
       if (opts.globalInjection) {
-        // 注入翻译函数，确保正确绑定 this 上下文
-        ;(app.config.globalProperties as any)[opts.globalPropertyName] =
-          global.t.bind(global)
-        ;(app.config.globalProperties as any).$i18n = global
+        // 确保 t 方法存在
+        if (typeof global.t === 'function') {
+          // 注入翻译函数，确保正确绑定 this 上下文
+          ;(app.config.globalProperties as any)[opts.globalPropertyName] =
+            global.t.bind(global)
+          ;(app.config.globalProperties as any).$i18n = global
 
-        // 为了类型安全，也在 app.config.globalProperties 上设置
-        Object.defineProperty(app.config.globalProperties, '$t', {
-          get() {
-            return global.t.bind(global)
-          },
-        })
+          // 为了类型安全，也在 app.config.globalProperties 上设置
+          Object.defineProperty(app.config.globalProperties, '$t', {
+            get() {
+              return global.t.bind(global)
+            },
+          })
+        } else {
+          console.error('I18n instance does not have a t method')
+        }
       }
 
       // 注册 v-t 指令
@@ -226,10 +236,10 @@ export async function installI18nPlugin(
     console.log('✨ 使用自定义 i18n 创建函数')
     i18nInstance = await customCreateI18n(i18nOptions)
   } else {
-    console.log('📦 使用默认内置语言包')
-    // 动态导入默认的 createI18nWithBuiltinLocales 函数
-    const { createI18nWithBuiltinLocales } = await import('../index')
-    i18nInstance = await createI18nWithBuiltinLocales(i18nOptions)
+    console.log('📦 使用默认 i18n 实例')
+    // 创建默认的 i18n 实例
+    i18nInstance = new I18n(i18nOptions)
+    await i18nInstance.init()
   }
 
   // 创建 Vue 插件

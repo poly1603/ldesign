@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Vue Integration Test - @ldesign/device</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Vue 集成测试</h1>
+      <div id="result">测试中...</div>
+    </div>
+
+    <script type="module">
+      try {
+        const vueModule = await import('../esm/vue/index.js')
+        console.log('Vue 模块加载成功:', vueModule)
+
+        if (Object.keys(vueModule).length === 0) {
+          throw new Error('Vue 模块没有导出任何内容')
+        }
+
+        // 创建 Vue 应用测试集成
+        const { createApp } = Vue
+        const app = createApp({
+          data() {
+            return {
+              message: 'Vue 集成测试成功',
+            }
+          },
+        })
+
+        document.getElementById('result').innerHTML =
+          '<span style="color: green;">✅ Vue 集成成功</span><br>' + '导出: ' + Object.keys(vueModule).join(', ')
+
+        window.testResult = { success: true, message: 'Vue 集成成功' }
+      } catch (error) {
+        console.error('Vue 集成失败:', error)
+        document.getElementById('result').innerHTML =
+          '<span style="color: red;">❌ Vue 集成失败: ' + error.message + '</span>'
+
+        window.testResult = { success: false, message: error.message }
+      }
+    </script>
+  </body>
+</html>

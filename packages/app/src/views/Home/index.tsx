@@ -1,9 +1,9 @@
-import { useDevice } from '@ldesign/device'
-import { useRouter } from '@ldesign/router'
-import { defineComponent, getCurrentInstance, inject, ref } from 'vue'
 import { useTheme } from '@ldesign/color/vue'
 import { useCrypto, useHash } from '@ldesign/crypto/vue'
+import { useDevice } from '@ldesign/device'
+import { useRouter } from '@ldesign/router'
 import { useSize } from '@ldesign/size/vue'
+import { defineComponent, getCurrentInstance, inject, ref } from 'vue'
 
 export default defineComponent({
   name: 'Home',

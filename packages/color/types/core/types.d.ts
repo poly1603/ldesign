@@ -32,6 +32,10 @@ type NeutralColorCategory =
 interface ColorConfig {
   /** 主色调 */
   primary: ColorValue
+  /** 次要色调 - 可选，不提供时自动生成 */
+  secondary?: ColorValue
+  /** 强调色 - 可选，不提供时自动生成 */
+  accent?: ColorValue
   /** 成功色 - 可选，不提供时自动生成 */
   success?: ColorValue
   /** 警告色 - 可选，不提供时自动生成 */

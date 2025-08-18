@@ -1,28 +1,31 @@
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import type { WatermarkConfig } from '../../types'
-import type {
-  WatermarkComponentEvents,
-  WatermarkComponentProps,
-  WatermarkProviderContext,
-} from '../types'
+import type { WatermarkProviderContext } from '../types'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useWatermark } from '../composables/useWatermark'
 
-// 组件属性
-interface Props extends WatermarkComponentProps {
-  /** 是否显示错误信息 */
-  showError?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  immediate: true,
-  security: true,
-  responsive: true,
-  showError: true,
+// 组件属性（使用运行时声明，避免类型驱动的 defineProps 触发 SFC 类型解析）
+const props = defineProps({
+  config: Object as PropType<Partial<WatermarkConfig>>,
+  content: [String, Array] as PropType<string | string[]>,
+  security: { type: Boolean, default: true },
+  responsive: { type: Boolean, default: true },
+  immediate: { type: Boolean, default: true },
+  style: Object as PropType<WatermarkConfig['style']>,
+  layout: Object as PropType<WatermarkConfig['layout']>,
+  animation: Object as PropType<WatermarkConfig['animation']>,
+  showError: { type: Boolean, default: true },
 })
 
-// 组件事件
-const emit = defineEmits<WatermarkComponentEvents>()
+// 组件事件（使用运行时事件名，避免类型驱动编译依赖）
+const emit = defineEmits([
+  'created',
+  'updated',
+  'destroyed',
+  'error',
+  'securityViolation',
+])
 
 // 模板引用
 const containerRef = ref<HTMLElement>()

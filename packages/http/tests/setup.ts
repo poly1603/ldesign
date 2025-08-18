@@ -62,8 +62,9 @@ export function createMockError(
 }
 
 // 延迟函数，用于测试异步操作
-export const delay = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms))
+export function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 // 清理函数，在每个测试后执行
 afterEach(() => {

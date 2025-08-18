@@ -1,9 +1,5 @@
 import { ApiEngineConfig, ApiEngine } from '../types/index.js'
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js'
-import {
-  InjectionKey,
-  App,
-} from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js'
+import { InjectionKey, App } from 'vue'
 
 /**
  * Vue 插件选项
@@ -38,7 +34,7 @@ declare function createApiProvider(
   injectionKey?: InjectionKey<ApiEngine> | string | symbol
 ): {
   apiEngine: ApiEngine
-  provide: () => void
+  provide: () => any
   use: () => ApiEngine
 }
 

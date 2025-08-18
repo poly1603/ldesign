@@ -10,6 +10,7 @@
  */
 
 import { createApp, presets } from '@ldesign/engine'
+import { createI18nEnginePlugin } from '@ldesign/i18n'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createPinia } from 'pinia'
 import App from './App.vue'
@@ -30,7 +31,7 @@ async function createLDesignApp() {
   try {
     console.log('🚀 启动 LDesign Engine 应用...')
 
-    // 创建 LDesign Engine 应用
+    // 创建 LDesign Engine 应用（这会同时创建 Engine 和 Vue 应用）
     const engine = createApp(App, {
       ...presets.development(),
       config: {
@@ -40,7 +41,7 @@ async function createLDesignApp() {
       },
     })
 
-    // 验证 Vue 应用实例是否正确创建
+    // 获取 Vue 应用实例
     const vueApp = engine.getApp()
     if (!vueApp) {
       throw new Error('Failed to get Vue app from engine')
@@ -51,6 +52,11 @@ async function createLDesignApp() {
     // 集成 Pinia 状态管理
     const pinia = createPinia()
     vueApp.use(pinia)
+
+    // 集成 I18n 插件
+    console.log('🌍 开始安装 I18n 插件...')
+    await engine.use(createI18nEnginePlugin())
+    console.log('✅ I18n 插件安装完成')
 
     // 集成路由插件
     await engine.use(
@@ -94,6 +100,23 @@ async function createLDesignApp() {
       // 导出实例供调试使用
       ;(window as any).__LDESIGN_ENGINE__ = engine
       ;(window as any).__VUE_APP__ = vueApp
+
+      // 测试 i18n 功能
+      setTimeout(() => {
+        console.log('🧪 测试 i18n 功能...')
+        try {
+          if (vueApp.config.globalProperties.$t) {
+            console.log('✅ 全局 $t 函数可用')
+            const testTranslation =
+              vueApp.config.globalProperties.$t('common.hello')
+            console.log('✅ 测试翻译结果:', testTranslation)
+          } else {
+            console.log('❌ 全局 $t 函数不可用')
+          }
+        } catch (error) {
+          console.error('❌ i18n 测试失败:', error)
+        }
+      }, 1000)
     }
 
     return { engine, app: vueApp }

@@ -168,10 +168,13 @@ describe('i18n', () => {
 
     it('应该正确批量翻译', () => {
       const result = i18n.batchTranslate(['common.ok', 'common.cancel'])
-      expect(result).toEqual({
+      expect(result.translations).toEqual({
         'common.ok': 'OK',
         'common.cancel': 'Cancel',
       })
+      expect(result.successCount).toBe(2)
+      expect(result.failureCount).toBe(0)
+      expect(result.failedKeys).toEqual([])
     })
   })
 

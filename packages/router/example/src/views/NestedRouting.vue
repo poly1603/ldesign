@@ -169,13 +169,13 @@ function navigateWithParams() {
           >
             <transition name="nested-fade" mode="out-in">
               <component
-                v-if="Component"
                 :is="Component"
+                v-if="Component"
                 :key="childRoute?.path || 'default'"
                 :route-info="childRoute"
               />
               <div v-else-if="isLoading" class="loading-component">
-                <div class="spinner"></div>
+                <div class="spinner" />
                 <p>正在加载子路由组件...</p>
               </div>
               <div v-else-if="error" class="error-component">

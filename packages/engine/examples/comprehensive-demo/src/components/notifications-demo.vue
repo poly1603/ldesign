@@ -194,7 +194,12 @@ function showNotificationInternal(notification: any) {
   activeNotifications.push(notification)
   totalNotifications.value++
 
-  emit('log', 'info', `显示通知: ${notification.title || notification.message}`, notification)
+  emit(
+    'log',
+    'info',
+    `显示通知: ${notification.title || notification.message}`,
+    notification
+  )
 
   // 自动关闭
   if (notification.duration > 0 && !notification.persistent) {
@@ -218,12 +223,16 @@ function dismissNotification(id: number) {
       }
     }, 300)
 
-    emit('log', 'info', `关闭通知: ${notification.title || notification.message}`)
+    emit(
+      'log',
+      'info',
+      `关闭通知: ${notification.title || notification.message}`
+    )
   }
 }
 
 function clearAllNotifications() {
-  activeNotifications.forEach((notification) => {
+  activeNotifications.forEach(notification => {
     notification.hidden = true
   })
 
@@ -269,7 +278,10 @@ onMounted(() => {
   <div class="notifications-demo">
     <div class="demo-header">
       <h2>🔔 通知管理器演示</h2>
-      <p>NotificationManager 提供了丰富的通知功能，支持多种通知类型、动画效果和自定义样式。</p>
+      <p>
+        NotificationManager
+        提供了丰富的通知功能，支持多种通知类型、动画效果和自定义样式。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -282,18 +294,10 @@ onMounted(() => {
           <div class="form-group">
             <label>通知类型</label>
             <select v-model="notificationType">
-              <option value="info">
-                信息
-              </option>
-              <option value="success">
-                成功
-              </option>
-              <option value="warning">
-                警告
-              </option>
-              <option value="error">
-                错误
-              </option>
+              <option value="info">信息</option>
+              <option value="success">成功</option>
+              <option value="warning">警告</option>
+              <option value="error">错误</option>
             </select>
           </div>
 
@@ -303,7 +307,7 @@ onMounted(() => {
               v-model="notificationTitle"
               type="text"
               placeholder="输入通知标题"
-            >
+            />
           </div>
 
           <div class="form-group">
@@ -322,7 +326,7 @@ onMounted(() => {
               type="number"
               min="1000"
               max="10000"
-            >
+            />
           </div>
 
           <div class="form-group">
@@ -350,58 +354,34 @@ onMounted(() => {
           <div class="form-group">
             <label>通知位置</label>
             <select v-model="notificationPosition">
-              <option value="top-right">
-                右上角
-              </option>
-              <option value="top-left">
-                左上角
-              </option>
-              <option value="bottom-right">
-                右下角
-              </option>
-              <option value="bottom-left">
-                左下角
-              </option>
-              <option value="center">
-                居中
-              </option>
+              <option value="top-right">右上角</option>
+              <option value="top-left">左上角</option>
+              <option value="bottom-right">右下角</option>
+              <option value="bottom-left">左下角</option>
+              <option value="center">居中</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>动画效果</label>
             <select v-model="notificationAnimation">
-              <option value="fade">
-                淡入淡出
-              </option>
-              <option value="slide">
-                滑动
-              </option>
-              <option value="bounce">
-                弹跳
-              </option>
-              <option value="zoom">
-                缩放
-              </option>
+              <option value="fade">淡入淡出</option>
+              <option value="slide">滑动</option>
+              <option value="bounce">弹跳</option>
+              <option value="zoom">缩放</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>
-              <input
-                v-model="notificationClosable"
-                type="checkbox"
-              >
+              <input v-model="notificationClosable" type="checkbox" />
               可关闭
             </label>
           </div>
 
           <div class="form-group">
             <label>
-              <input
-                v-model="notificationPersistent"
-                type="checkbox"
-              >
+              <input v-model="notificationPersistent" type="checkbox" />
               持久显示
             </label>
           </div>
@@ -411,7 +391,10 @@ onMounted(() => {
               <button class="btn btn-primary" @click="showAdvancedNotification">
                 显示高级通知
               </button>
-              <button class="btn btn-secondary" @click="showProgressNotification">
+              <button
+                class="btn btn-secondary"
+                @click="showProgressNotification"
+              >
                 进度通知
               </button>
             </div>
@@ -516,8 +499,14 @@ onMounted(() => {
             <div class="toast-message">
               {{ notification.message }}
             </div>
-            <div v-if="notification.progress !== undefined" class="toast-progress">
-              <div class="progress-bar" :style="{ width: `${notification.progress}%` }" />
+            <div
+              v-if="notification.progress !== undefined"
+              class="toast-progress"
+            >
+              <div
+                class="progress-bar"
+                :style="{ width: `${notification.progress}%` }"
+              />
             </div>
           </div>
           <button
@@ -773,7 +762,8 @@ onMounted(() => {
 }
 
 // 动画效果
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: all 0.3s ease;
 }
 
@@ -787,7 +777,8 @@ onMounted(() => {
   transform: translateY(-20px);
 }
 
-.slide-enter-active, .slide-leave-active {
+.slide-enter-active,
+.slide-leave-active {
   transition: all 0.3s ease;
 }
 
@@ -838,7 +829,8 @@ onMounted(() => {
   }
 }
 
-.zoom-enter-active, .zoom-leave-active {
+.zoom-enter-active,
+.zoom-leave-active {
   transition: all 0.3s ease;
 }
 

@@ -22,25 +22,20 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
-    },
-    "./setup": {
-      "types": "./types/main.d.ts",
-      "import": "./es/main.js",
-      "require": "./lib/main.js"
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "./lib/index.js",
-  "module": "./es/index.js",
-  "types": "./types/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "cjs",
     "dist",
-    "es",
-    "lib",
+    "esm",
     "types"
   ],
   "engines": {
@@ -56,7 +51,7 @@
     "dev:no-check": "vite --force --port 3001",
     "dev:built:no-check": "vite --config vite.config.built.ts --force --port 3001",
     "dev:source:no-check": "cross-env VITE_DEV_MODE=source vite --config vite.config.source.ts --force --port 3002",
-    "build": "rollup -c",
+    "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" rollup -c",
     "build:watch": "rollup -c -w",
     "build:vite": "vue-tsc --noEmit && vite build",
     "build:vite:watch": "vite build --watch",
@@ -81,7 +76,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
@@ -143,5 +138,6 @@
     "vitepress": "^1.6.4",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.0.5"
-  }
+  },
+  "browser": "dist/index.min.js"
 }

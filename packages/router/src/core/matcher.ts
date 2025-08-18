@@ -333,6 +333,12 @@ export class RouteMatcher {
     if (normalized.name) {
       this.routes.set(normalized.name, normalized)
       this.rawRoutes.set(normalized.name, record)
+    } else {
+      // 为没有名称的路由生成一个唯一的内部名称
+      const internalName = Symbol(`route_${normalized.path}_${Date.now()}`)
+      normalized.name = internalName
+      this.routes.set(internalName, normalized)
+      this.rawRoutes.set(internalName, record)
     }
 
     // 添加到 Trie 树
@@ -378,7 +384,13 @@ export class RouteMatcher {
    * 获取所有路由记录
    */
   getRoutes(): RouteRecordNormalized[] {
-    return Array.from(this.routes.values())
+    return Array.from(this.routes.values()).map(route => {
+      // 如果是内部生成的 Symbol 名称，将 name 设置为 undefined
+      if (typeof route.name === 'symbol') {
+        return { ...route, name: undefined }
+      }
+      return route
+    })
   }
 
   /**
@@ -615,7 +627,7 @@ export class RouteMatcher {
 
     // 检查每个可能的父路径
     for (let i = 1; i <= segments.length; i++) {
-      const parentPath = '/' + segments.slice(0, i).join('/')
+      const parentPath = `/${segments.slice(0, i).join('/')}`
 
       for (const [name, route] of this.rawRoutes.entries()) {
         const normalizedRoute = this.routes.get(name)

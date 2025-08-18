@@ -9,7 +9,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 // 导航记录接口
 export interface NavigationRecord {

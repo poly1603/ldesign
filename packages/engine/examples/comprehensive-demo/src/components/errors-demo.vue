@@ -68,8 +68,7 @@ function triggerError() {
   try {
     const error = createError(errorType.value, errorMessage.value)
     throw error
-  }
-  catch (error: any) {
+  } catch (error: any) {
     handleError(error, 'sync')
   }
 }
@@ -79,18 +78,18 @@ function triggerAsyncError() {
     try {
       const error = createError(errorType.value, errorMessage.value)
       throw error
-    }
-    catch (error: any) {
+    } catch (error: any) {
       handleError(error, 'async')
     }
   }, 100)
 }
 
 function triggerPromiseError() {
-  Promise.reject(createError(errorType.value, errorMessage.value))
-    .catch((error) => {
+  Promise.reject(createError(errorType.value, errorMessage.value)).catch(
+    error => {
       handleError(error, 'promise')
-    })
+    }
+  )
 }
 
 function createError(type: string, message: string): Error {
@@ -126,8 +125,7 @@ function createError(type: string, message: string): Error {
 
   try {
     return errors[type as keyof typeof errors]()
-  }
-  catch (error) {
+  } catch (error) {
     return error as Error
   }
 }
@@ -179,9 +177,8 @@ function updateErrorStats() {
 }
 
 function applyErrorStrategies(errorLog: any) {
-  errorStrategies.forEach((strategy) => {
-    if (!strategy.enabled)
-      return
+  errorStrategies.forEach(strategy => {
+    if (!strategy.enabled) return
 
     switch (strategy.name) {
       case '自动重试':
@@ -208,7 +205,11 @@ function applyErrorStrategies(errorLog: any) {
 }
 
 function updateStrategy(strategy: any) {
-  emit('log', 'info', `${strategy.enabled ? '启用' : '禁用'}策略: ${strategy.name}`)
+  emit(
+    'log',
+    'info',
+    `${strategy.enabled ? '启用' : '禁用'}策略: ${strategy.name}`
+  )
 }
 
 async function testRecovery() {
@@ -222,8 +223,7 @@ async function testRecovery() {
       attempts: result.attempts,
     }
     emit('log', 'success', '错误恢复测试成功', recoveryResult.value)
-  }
-  catch (error: any) {
+  } catch (error: any) {
     recoveryResult.value = {
       success: false,
       message: `恢复失败: ${error.message}`,
@@ -242,7 +242,12 @@ function simulateRecovery() {
     attempts: Math.floor(Math.random() * retryCount.value) + 1,
   }
 
-  emit('log', success ? 'success' : 'error', '模拟错误恢复', recoveryResult.value)
+  emit(
+    'log',
+    success ? 'success' : 'error',
+    '模拟错误恢复',
+    recoveryResult.value
+  )
 }
 
 async function executeRecoveryStrategy(): Promise<{ attempts: number }> {
@@ -269,8 +274,7 @@ async function executeRecoveryStrategy(): Promise<{ attempts: number }> {
       }
 
       return { attempts }
-    }
-    catch (error) {
+    } catch (error) {
       if (i === retryCount.value - 1) {
         throw error
       }
@@ -317,11 +321,11 @@ function formatTime(timestamp: number) {
 // 生命周期
 onMounted(() => {
   // 设置全局错误处理
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     handleError(event.error, 'global')
   })
 
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     handleError(new Error(event.reason), 'unhandled-promise')
   })
 
@@ -333,7 +337,10 @@ onMounted(() => {
   <div class="errors-demo">
     <div class="demo-header">
       <h2>🚨 错误管理器演示</h2>
-      <p>ErrorManager 提供了完整的错误处理机制，包括错误捕获、分类、报告和恢复策略。</p>
+      <p>
+        ErrorManager
+        提供了完整的错误处理机制，包括错误捕获、分类、报告和恢复策略。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -346,24 +353,12 @@ onMounted(() => {
           <div class="form-group">
             <label>错误类型</label>
             <select v-model="errorType">
-              <option value="syntax">
-                语法错误
-              </option>
-              <option value="reference">
-                引用错误
-              </option>
-              <option value="type">
-                类型错误
-              </option>
-              <option value="network">
-                网络错误
-              </option>
-              <option value="validation">
-                验证错误
-              </option>
-              <option value="custom">
-                自定义错误
-              </option>
+              <option value="syntax">语法错误</option>
+              <option value="reference">引用错误</option>
+              <option value="type">类型错误</option>
+              <option value="network">网络错误</option>
+              <option value="validation">验证错误</option>
+              <option value="custom">自定义错误</option>
             </select>
           </div>
 
@@ -373,7 +368,7 @@ onMounted(() => {
               v-model="errorMessage"
               type="text"
               placeholder="输入错误消息"
-            >
+            />
           </div>
 
           <div class="form-group">
@@ -414,7 +409,7 @@ onMounted(() => {
                     v-model="strategy.enabled"
                     type="checkbox"
                     @change="updateStrategy(strategy)"
-                  >
+                  />
                   <span class="slider" />
                 </label>
               </div>
@@ -478,29 +473,16 @@ onMounted(() => {
           <div class="form-group">
             <label>恢复策略</label>
             <select v-model="recoveryStrategy">
-              <option value="retry">
-                重试
-              </option>
-              <option value="fallback">
-                降级
-              </option>
-              <option value="ignore">
-                忽略
-              </option>
-              <option value="reload">
-                重载
-              </option>
+              <option value="retry">重试</option>
+              <option value="fallback">降级</option>
+              <option value="ignore">忽略</option>
+              <option value="reload">重载</option>
             </select>
           </div>
 
           <div class="form-group">
             <label>重试次数</label>
-            <input
-              v-model.number="retryCount"
-              type="number"
-              min="1"
-              max="10"
-            >
+            <input v-model.number="retryCount" type="number" min="1" max="10" />
           </div>
 
           <div class="form-group">
@@ -516,9 +498,14 @@ onMounted(() => {
 
           <div v-if="recoveryResult" class="recovery-result">
             <h4>恢复结果</h4>
-            <div class="result-item" :class="recoveryResult.success ? 'success' : 'error'">
+            <div
+              class="result-item"
+              :class="recoveryResult.success ? 'success' : 'error'"
+            >
               <span>{{ recoveryResult.message }}</span>
-              <span v-if="recoveryResult.attempts">尝试次数: {{ recoveryResult.attempts }}</span>
+              <span v-if="recoveryResult.attempts"
+                >尝试次数: {{ recoveryResult.attempts }}</span
+              >
             </div>
           </div>
         </div>
@@ -530,18 +517,10 @@ onMounted(() => {
           <h3>错误日志</h3>
           <div class="header-actions">
             <select v-model="logFilter">
-              <option value="all">
-                全部
-              </option>
-              <option value="critical">
-                严重
-              </option>
-              <option value="error">
-                错误
-              </option>
-              <option value="warning">
-                警告
-              </option>
+              <option value="all">全部</option>
+              <option value="critical">严重</option>
+              <option value="error">错误</option>
+              <option value="warning">警告</option>
             </select>
             <button class="btn btn-secondary btn-sm" @click="clearErrorLogs">
               清空
@@ -557,7 +536,9 @@ onMounted(() => {
               :class="error.level"
             >
               <div class="error-header">
-                <span class="error-time">{{ formatTime(error.timestamp) }}</span>
+                <span class="error-time">{{
+                  formatTime(error.timestamp)
+                }}</span>
                 <span class="error-level">{{ error.level.toUpperCase() }}</span>
                 <span class="error-type">{{ error.type }}</span>
               </div>
@@ -659,18 +640,18 @@ onMounted(() => {
             right: 0;
             bottom: 0;
             background-color: #ccc;
-            transition: .4s;
+            transition: 0.4s;
             border-radius: 24px;
 
             &:before {
               position: absolute;
-              content: "";
+              content: '';
               height: 18px;
               width: 18px;
               left: 3px;
               bottom: 3px;
               background-color: white;
-              transition: .4s;
+              transition: 0.4s;
               border-radius: 50%;
             }
           }

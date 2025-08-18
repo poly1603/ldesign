@@ -32,22 +32,23 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./vue": {
       "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.js"
-    }
+      "import": "./esm/vue/index.js",
+      "require": "./cjs/vue/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "main": "lib/index.js",
-  "module": "es/index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "types": "types/index.d.ts",
   "files": [
+    "cjs",
     "dist",
-    "es",
-    "lib",
+    "esm",
     "types"
   ],
   "engines": {
@@ -71,7 +72,7 @@
     "test:consistency": "tsx scripts/test-consistency.ts",
     "dev:src": "cd test-apps/src-test && pnpm dev",
     "dev:es": "cd test-apps/es-test && pnpm dev",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "clean:cache": "rimraf node_modules/.cache .rollup.cache *.tsbuildinfo",
     "clean:all": "pnpm run clean && pnpm run clean:cache",
     "size-check": "size-limit",
@@ -132,5 +133,6 @@
       "path": "dist/index.js",
       "limit": "55 KB"
     }
-  ]
+  ],
+  "browser": "dist/index.min.js"
 }

@@ -25,12 +25,50 @@ export {
   ManualDetector,
 } from './core/detector'
 
+// 导出错误处理系统
+export {
+  CacheError,
+  ConfigurationError,
+  DefaultErrorHandler,
+  DevelopmentErrorHandler,
+  ErrorManager,
+  globalErrorManager,
+  handleErrors,
+  I18nError,
+  InitializationError,
+  InterpolationError,
+  LanguageLoadError,
+  PluralRuleError,
+  SilentErrorHandler,
+  TranslationKeyError,
+} from './core/errors'
+
+export type { ErrorHandler } from './core/errors'
+
 // 导出核心类和接口
 export { I18n } from './core/i18n'
 
 // 导出加载器
 export { DefaultLoader, HttpLoader, StaticLoader } from './core/loader'
 
+// 导出性能管理器
+export {
+  globalPerformanceManager,
+  PerformanceManager,
+  performanceMonitor,
+} from './core/performance'
+
+export type { PerformanceConfig, PerformanceMetrics } from './core/performance'
+// 导出管理器注册表
+export {
+  globalRegistry,
+  I18nCoreManager,
+  inject,
+  ManagerRegistry,
+  registerManager,
+} from './core/registry'
+
+export type { Manager, ManagerFactory } from './core/registry'
 // 导出存储实现
 export {
   CookieStorage,
@@ -73,7 +111,6 @@ export type {
   TranslationOptions,
   TranslationParams,
 } from './core/types'
-
 // 导出 Engine 插件
 export * from './engine/plugin'
 
@@ -117,33 +154,6 @@ export {
 // 便捷的创建函数
 export function createI18n(options?: I18nOptions): I18nInstance {
   return new I18n(options)
-}
-
-/**
- * 创建带有内置语言包的 I18n 实例
- * @param options I18n 配置选项
- * @returns I18n 实例
- */
-export async function createI18nWithBuiltinLocales(
-  options?: I18nOptions
-): Promise<I18nInstance> {
-  const { StaticLoader } = await import('./core/loader')
-  const enPkg = await import('./locales/en')
-  const zhCNPkg = await import('./locales/zh-CN')
-  const jaPkg = await import('./locales/ja')
-
-  const loader = new StaticLoader()
-  loader.registerPackages({
-    en: enPkg.default,
-    'zh-CN': zhCNPkg.default,
-    ja: jaPkg.default,
-  })
-
-  const i18n = new I18n(options)
-  i18n.setLoader(loader)
-
-  await i18n.init()
-  return i18n
 }
 
 /**

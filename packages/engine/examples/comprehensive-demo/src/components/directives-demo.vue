@@ -133,12 +133,13 @@ function registerDirective() {
     }
 
     // 检查是否已存在
-    const existingIndex = registeredDirectives.findIndex(d => d.name === directiveName.value)
+    const existingIndex = registeredDirectives.findIndex(
+      d => d.name === directiveName.value
+    )
     if (existingIndex !== -1) {
       registeredDirectives[existingIndex] = directive
       emit('log', 'warning', `更新指令: ${directiveName.value}`)
-    }
-    else {
+    } else {
       registeredDirectives.push(directive)
       emit('log', 'success', `注册指令: ${directiveName.value}`)
     }
@@ -147,15 +148,16 @@ function registerDirective() {
     if (props.engine && props.engine.directives) {
       props.engine.directives.register(directiveName.value, directiveObj)
     }
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '注册指令失败', error)
   }
 }
 
 function testDirective() {
   try {
-    const directive = registeredDirectives.find(d => d.name === directiveName.value)
+    const directive = registeredDirectives.find(
+      d => d.name === directiveName.value
+    )
     if (!directive) {
       emit('log', 'warning', '指令不存在')
       return
@@ -167,15 +169,16 @@ function testDirective() {
       type: directive.type,
       hasImplementation: !!directive.implementation,
     })
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '测试指令失败', error)
   }
 }
 
 function unregisterDirective() {
   try {
-    const index = registeredDirectives.findIndex(d => d.name === directiveName.value)
+    const index = registeredDirectives.findIndex(
+      d => d.name === directiveName.value
+    )
     if (index !== -1) {
       registeredDirectives.splice(index, 1)
       emit('log', 'warning', `注销指令: ${directiveName.value}`)
@@ -184,12 +187,10 @@ function unregisterDirective() {
       if (props.engine && props.engine.directives) {
         props.engine.directives.unregister(directiveName.value)
       }
-    }
-    else {
+    } else {
       emit('log', 'warning', '指令不存在')
     }
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '注销指令失败', error)
   }
 }
@@ -216,7 +217,9 @@ function applyDirective() {
   }
 
   try {
-    const directive = registeredDirectives.find(d => d.name === selectedDirective.value)
+    const directive = registeredDirectives.find(
+      d => d.name === selectedDirective.value
+    )
     if (!directive) {
       emit('log', 'warning', '指令不存在')
       return
@@ -251,8 +254,7 @@ function applyDirective() {
       args: directiveArgs.value,
       element: element.tagName,
     })
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '应用指令失败', error)
   }
 }
@@ -271,15 +273,14 @@ function removeDirectiveFromElement() {
     element.classList.remove('loading')
 
     // 移除所有 data 属性
-    Array.from(element.attributes).forEach((attr) => {
+    Array.from(element.attributes).forEach(attr => {
       if (attr.name.startsWith('data-v-')) {
         element.removeAttribute(attr.name)
       }
     })
 
     emit('log', 'info', '移除元素上的指令效果')
-  }
-  catch (error: any) {
+  } catch (error: any) {
     emit('log', 'error', '移除指令失败', error)
   }
 }
@@ -345,7 +346,10 @@ onMounted(() => {
   <div class="directives-demo">
     <div class="demo-header">
       <h2>📝 指令管理器演示</h2>
-      <p>DirectiveManager 提供了自定义指令系统，支持DOM操作、事件绑定、数据绑定等功能。</p>
+      <p>
+        DirectiveManager
+        提供了自定义指令系统，支持DOM操作、事件绑定、数据绑定等功能。
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -365,10 +369,7 @@ onMounted(() => {
             </div>
             <div class="form-group">
               <label>高亮颜色</label>
-              <input
-                v-model="highlightColor"
-                type="color"
-              >
+              <input v-model="highlightColor" type="color" />
             </div>
           </div>
 
@@ -390,14 +391,9 @@ onMounted(() => {
             <h4>v-loading 指令</h4>
             <div class="loading-demo" :class="{ loading: isLoading }">
               <div v-if="isLoading" class="loading-spinner" />
-              <div v-else>
-                内容已加载完成
-              </div>
+              <div v-else>内容已加载完成</div>
             </div>
-            <button
-              class="btn btn-secondary"
-              @click="toggleLoading"
-            >
+            <button class="btn btn-secondary" @click="toggleLoading">
               {{ isLoading ? '停止加载' : '开始加载' }}
             </button>
           </div>
@@ -416,21 +412,15 @@ onMounted(() => {
               v-model="directiveName"
               type="text"
               placeholder="例如: focus"
-            >
+            />
           </div>
 
           <div class="form-group">
             <label>指令类型</label>
             <select v-model="directiveType">
-              <option value="attribute">
-                属性指令
-              </option>
-              <option value="structural">
-                结构指令
-              </option>
-              <option value="component">
-                组件指令
-              </option>
+              <option value="attribute">属性指令</option>
+              <option value="structural">结构指令</option>
+              <option value="component">组件指令</option>
             </select>
           </div>
 
@@ -511,9 +501,7 @@ onMounted(() => {
               <div class="form-group">
                 <label>应用指令</label>
                 <select v-model="selectedDirective">
-                  <option value="">
-                    选择指令
-                  </option>
+                  <option value="">选择指令</option>
                   <option
                     v-for="directive in registeredDirectives"
                     :key="directive.name"
@@ -530,7 +518,7 @@ onMounted(() => {
                   v-model="directiveArgs"
                   type="text"
                   placeholder="指令参数"
-                >
+                />
               </div>
 
               <div class="form-group">
@@ -538,7 +526,10 @@ onMounted(() => {
                   <button class="btn btn-primary" @click="applyDirective">
                     应用指令
                   </button>
-                  <button class="btn btn-secondary" @click="removeDirectiveFromElement">
+                  <button
+                    class="btn btn-secondary"
+                    @click="removeDirectiveFromElement"
+                  >
                     移除指令
                   </button>
                 </div>
@@ -793,8 +784,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

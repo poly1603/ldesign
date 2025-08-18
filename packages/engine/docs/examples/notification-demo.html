@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -329,27 +329,27 @@
 
       // 临时模拟实现，实际使用时替换为真实的导入
       const mockManager = {
-        show: options => {
+        show: (options) => {
           console.log('显示通知:', options)
           return 'mock-id-' + Date.now()
         },
-        hide: id => {
+        hide: (id) => {
           console.log('隐藏通知:', id)
         },
         hideAll: () => {
           console.log('隐藏所有通知')
         },
         getAll: () => [],
-        setPosition: position => {
+        setPosition: (position) => {
           console.log('设置位置:', position)
         },
-        setTheme: theme => {
+        setTheme: (theme) => {
           console.log('设置主题:', theme)
         },
-        setMaxNotifications: max => {
+        setMaxNotifications: (max) => {
           console.log('设置最大通知数量:', max)
         },
-        setDefaultDuration: duration => {
+        setDefaultDuration: (duration) => {
           console.log('设置默认持续时间:', duration)
         },
         getStats: () => ({
@@ -373,9 +373,9 @@
         warning: (message, title, options) => mockManager.show({ type: 'warning', message, title, ...options }),
         info: (message, title, options) => mockManager.show({ type: 'info', message, title, ...options }),
         confirm: (message, title) => Promise.resolve(true),
-        loading: message => ({ id: 'loading', hide: () => {}, success: () => {}, error: () => {} }),
+        loading: (message) => ({ id: 'loading', hide: () => {}, success: () => {}, error: () => {} }),
         progress: (message, value) => ({ id: 'progress', update: () => {}, complete: () => {}, error: () => {} }),
-        batch: notifications => notifications.map(n => mockManager.show(n)),
+        batch: (notifications) => notifications.map((n) => mockManager.show(n)),
       }
 
       window.notificationManager = mockManager

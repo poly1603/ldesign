@@ -50,20 +50,22 @@ function verifyProjectStructure() {
   let allExists = true
 
   // 检查目录
-  requiredDirs.forEach(dir => {
+  requiredDirs.forEach((dir) => {
     if (fs.existsSync(path.join(__dirname, '..', dir))) {
       console.log(`  ✅ ${dir}/`)
-    } else {
+    }
+    else {
       console.log(`  ❌ ${dir}/ (缺失)`)
       allExists = false
     }
   })
 
   // 检查文件
-  requiredFiles.forEach(file => {
+  requiredFiles.forEach((file) => {
     if (fs.existsSync(path.join(__dirname, '..', file))) {
       console.log(`  ✅ ${file}`)
-    } else {
+    }
+    else {
       console.log(`  ❌ ${file} (缺失)`)
       allExists = false
     }
@@ -86,10 +88,11 @@ function verifyBuildArtifacts() {
 
   let allExists = true
 
-  buildArtifacts.forEach(artifact => {
+  buildArtifacts.forEach((artifact) => {
     if (fs.existsSync(path.join(__dirname, '..', artifact))) {
       console.log(`  ✅ ${artifact}`)
-    } else {
+    }
+    else {
       console.log(`  ❌ ${artifact} (缺失)`)
       allExists = false
     }
@@ -119,24 +122,26 @@ function verifyPackageJson() {
   let isValid = true
 
   // 检查必需字段
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     if (pkg[field]) {
       console.log(
         `  ✅ ${field}: ${
           typeof pkg[field] === 'string' ? pkg[field] : 'defined'
-        }`
+        }`,
       )
-    } else {
+    }
+    else {
       console.log(`  ❌ ${field} (缺失)`)
       isValid = false
     }
   })
 
   // 检查脚本
-  requiredScripts.forEach(script => {
+  requiredScripts.forEach((script) => {
     if (pkg.scripts && pkg.scripts[script]) {
       console.log(`  ✅ scripts.${script}`)
-    } else {
+    }
+    else {
       console.log(`  ❌ scripts.${script} (缺失)`)
       isValid = false
     }
@@ -165,16 +170,18 @@ function verifyDocumentation() {
 
   let allExists = true
 
-  docFiles.forEach(file => {
+  docFiles.forEach((file) => {
     const filePath = path.join(__dirname, '..', file)
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf8')
       if (content.length > 100) {
         console.log(`  ✅ ${file} (${Math.round(content.length / 1024)}KB)`)
-      } else {
+      }
+      else {
         console.log(`  ⚠️ ${file} (内容过少)`)
       }
-    } else {
+    }
+    else {
       console.log(`  ❌ ${file} (缺失)`)
       allExists = false
     }
@@ -198,10 +205,11 @@ function verifyExamples() {
 
   let allExists = true
 
-  examples.forEach(file => {
+  examples.forEach((file) => {
     if (fs.existsSync(path.join(__dirname, '..', file))) {
       console.log(`  ✅ ${file}`)
-    } else {
+    }
+    else {
       console.log(`  ❌ ${file} (缺失)`)
       allExists = false
     }
@@ -232,7 +240,7 @@ function main() {
     const srcFiles = getAllFiles(
       path.join(__dirname, '..', 'src'),
       '.ts',
-      '.tsx'
+      '.tsx',
     )
     const totalLines = srcFiles.reduce((total, file) => {
       const content = fs.readFileSync(file, 'utf8')
@@ -254,7 +262,8 @@ function main() {
 
     console.log('\n🚀 项目已准备就绪，可以发布！')
     process.exit(0)
-  } else {
+  }
+  else {
     console.log('❌ 验证失败！请修复上述问题后重试。')
     process.exit(1)
   }
@@ -265,21 +274,23 @@ function getAllFiles(dir, ...extensions) {
   const files = []
 
   function traverse(currentDir) {
-    if (!fs.existsSync(currentDir)) return
+    if (!fs.existsSync(currentDir))
+      return
 
     const items = fs.readdirSync(currentDir)
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const fullPath = path.join(currentDir, item)
       const stat = fs.statSync(fullPath)
 
       if (
-        stat.isDirectory() &&
-        !item.startsWith('.') &&
-        item !== 'node_modules'
+        stat.isDirectory()
+        && !item.startsWith('.')
+        && item !== 'node_modules'
       ) {
         traverse(fullPath)
-      } else if (stat.isFile()) {
+      }
+      else if (stat.isFile()) {
         const ext = path.extname(item)
         if (extensions.includes(ext)) {
           files.push(fullPath)

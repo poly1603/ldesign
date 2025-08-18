@@ -1,8 +1,10 @@
 import {
   HttpClientConfig,
   RequestConfig,
-} from '../packages/http/dist/index.d.js'
-export { ResponseData } from '../packages/http/dist/index.d.js'
+} from '../node_modules/@ldesign/http/types/types/index.d.js'
+export { ResponseData } from '../node_modules/@ldesign/http/types/types/index.d.js'
+import '../node_modules/@ldesign/http/types/types/vue.d.js'
+import '../node_modules/@ldesign/http/types/vue/plugin.d.js'
 
 /**
  * API 引擎配置

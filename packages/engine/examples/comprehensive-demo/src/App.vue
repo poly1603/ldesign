@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, inject, onMounted, reactive, ref } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  inject,
+  onMounted,
+  reactive,
+  ref,
+} from 'vue'
 
 // 从注入中获取引擎实例
 const engine = inject('engine') as any
@@ -14,12 +21,14 @@ const activeManager = ref('config')
 
 // 日志
 const logPanelExpanded = ref(false)
-const logs = reactive<Array<{
-  timestamp: number
-  level: string
-  message: string
-  data?: any
-}>>([])
+const logs = reactive<
+  Array<{
+    timestamp: number
+    level: string
+    message: string
+    data?: any
+  }>
+>([])
 
 // 管理器列表
 const managers = [
@@ -134,8 +143,7 @@ async function initEngine() {
     } else {
       addLog('error', '未找到 LDesign Engine 实例')
     }
-  }
-  catch (error) {
+  } catch (error) {
     addLog('error', '引擎初始化失败', error)
     console.error('Engine initialization failed:', error)
   }
@@ -160,7 +168,10 @@ function testEngineFeatures() {
 
   // 测试缓存
   if (engine.cache) {
-    engine.cache.set('demo.cache', { data: 'cached data', timestamp: Date.now() })
+    engine.cache.set('demo.cache', {
+      data: 'cached data',
+      timestamp: Date.now(),
+    })
     const cached = engine.cache.get('demo.cache')
     addLog('info', '缓存测试:', cached)
   }
@@ -203,11 +214,9 @@ onMounted(() => {
         </div>
 
         <div class="header-actions">
-          <button
-            class="btn btn-secondary btn-sm"
-            @click="toggleTheme"
-          >
-            {{ theme === 'light' ? '🌙' : '☀️' }} {{ theme === 'light' ? '暗色' : '亮色' }}
+          <button class="btn btn-secondary btn-sm" @click="toggleTheme">
+            {{ theme === 'light' ? '🌙' : '☀️' }}
+            {{ theme === 'light' ? '暗色' : '亮色' }}
           </button>
 
           <div class="engine-status">
@@ -223,10 +232,7 @@ onMounted(() => {
       <!-- 侧边栏 -->
       <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
         <div class="sidebar-header">
-          <button
-            class="btn btn-secondary btn-sm"
-            @click="toggleSidebar"
-          >
+          <button class="btn btn-secondary btn-sm" @click="toggleSidebar">
             {{ sidebarCollapsed ? '展开' : '收起' }}
           </button>
         </div>
@@ -240,7 +246,9 @@ onMounted(() => {
             @click="setActiveManager(manager.key)"
           >
             <span class="nav-icon">{{ manager.icon }}</span>
-            <span v-if="!sidebarCollapsed" class="nav-label">{{ manager.name }}</span>
+            <span v-if="!sidebarCollapsed" class="nav-label">{{
+              manager.name
+            }}</span>
           </div>
         </nav>
       </aside>
@@ -248,9 +256,7 @@ onMounted(() => {
       <!-- 内容区域 -->
       <div class="content-area">
         <div v-if="!engineReady" class="loading-container">
-          <div class="loading">
-            正在初始化 LDesign Engine...
-          </div>
+          <div class="loading">正在初始化 LDesign Engine...</div>
         </div>
 
         <div v-else class="manager-demo">
@@ -271,10 +277,7 @@ onMounted(() => {
           <button class="btn btn-secondary btn-sm" @click="clearLogs">
             清空
           </button>
-          <button
-            class="btn btn-secondary btn-sm"
-            @click="toggleLogPanel"
-          >
+          <button class="btn btn-secondary btn-sm" @click="toggleLogPanel">
             {{ logPanelExpanded ? '收起' : '展开' }}
           </button>
         </div>
@@ -290,7 +293,9 @@ onMounted(() => {
           <span class="log-time">{{ formatTime(log.timestamp) }}</span>
           <span class="log-level">{{ log.level.toUpperCase() }}</span>
           <span class="log-message">{{ log.message }}</span>
-          <span v-if="log.data" class="log-data">{{ JSON.stringify(log.data) }}</span>
+          <span v-if="log.data" class="log-data">{{
+            JSON.stringify(log.data)
+          }}</span>
         </div>
       </div>
     </div>
@@ -324,7 +329,11 @@ onMounted(() => {
     h1 {
       margin: 0;
       font-size: 24px;
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--secondary-color)
+      );
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -401,7 +410,11 @@ onMounted(() => {
       }
 
       &.active {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
         color: white;
       }
 
@@ -491,10 +504,18 @@ onMounted(() => {
         min-width: 60px;
         font-weight: bold;
 
-        &.info { color: var(--info-color); }
-        &.success { color: var(--success-color); }
-        &.warning { color: var(--warning-color); }
-        &.error { color: var(--error-color); }
+        &.info {
+          color: var(--info-color);
+        }
+        &.success {
+          color: var(--success-color);
+        }
+        &.warning {
+          color: var(--warning-color);
+        }
+        &.error {
+          color: var(--error-color);
+        }
       }
 
       .log-message {

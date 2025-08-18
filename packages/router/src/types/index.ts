@@ -204,7 +204,9 @@ export interface RouteRecordRaw {
   /** 命名视图组件 */
   components?: Record<string, RouteComponent>
   /** 重定向 */
-  redirect?: RouteLocationRaw
+  redirect?:
+    | RouteLocationRaw
+    | ((to: RouteLocationNormalized) => RouteLocationRaw)
   /** 别名 */
   alias?: string | string[]
   /** 子路由 */
@@ -262,7 +264,10 @@ export interface RouteRecordNormalized {
   /** 别名来源 */
   aliasOf: RouteRecordNormalized | undefined
   /** 重定向配置 */
-  redirect: RouteLocationRaw | undefined
+  redirect:
+    | RouteLocationRaw
+    | ((to: RouteLocationNormalized) => RouteLocationRaw)
+    | undefined
 }
 
 // ==================== 导航守卫类型 ====================

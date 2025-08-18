@@ -1,4 +1,5 @@
-es
+esm
+cjs
 lib
 dist
 node_modules

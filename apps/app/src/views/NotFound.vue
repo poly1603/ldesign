@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import { useRouter } from '@ldesign/router'
+
+const router = useRouter()
+
+function goBack() {
+  router.back()
+}
+</script>
+
 <template>
   <div class="not-found">
     <div class="container">
@@ -10,30 +20,24 @@
           <router-link to="/home" class="btn btn-primary">
             返回首页
           </router-link>
-          <button @click="goBack" class="btn btn-secondary">返回上页</button>
+          <button class="btn btn-secondary" @click="goBack">返回上页</button>
         </div>
 
         <div class="suggestions">
           <h3>您可能想要访问:</h3>
           <ul>
-            <li><router-link to="/home">首页</router-link></li>
-            <li><router-link to="/login">登录页面</router-link></li>
+            <li>
+              <router-link to="/home"> 首页 </router-link>
+            </li>
+            <li>
+              <router-link to="/login"> 登录页面 </router-link>
+            </li>
           </ul>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useRouter } from '@ldesign/router'
-
-const router = useRouter()
-
-const goBack = () => {
-  router.back()
-}
-</script>
 
 <style lang="less" scoped>
 .not-found {

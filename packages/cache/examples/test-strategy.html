@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -91,13 +91,13 @@
       })
 
       // 监听策略选择事件
-      cache.on('strategy', event => {
+      cache.on('strategy', (event) => {
         console.log('策略选择事件:', event)
         addResult(`策略选择: ${event.key} -> ${event.engine} (${event.strategy.reason})`, 'success')
       })
 
       // 监听错误事件
-      cache.on('error', event => {
+      cache.on('error', (event) => {
         console.error('缓存错误:', event)
         addResult(`错误: ${event.key} - ${event.error.message}`, 'error')
       })

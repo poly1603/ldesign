@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import { useRoute, useRouter } from '@ldesign/router'
+import { ref } from 'vue'
+import { useAppStore } from '../stores/app'
+
+const router = useRouter()
+const route = useRoute()
+const appStore = useAppStore()
+
+// 响应式数据
+const username = ref('')
+const password = ref('')
+const isLoading = ref(false)
+
+// 方法
+function handleLogin() {
+  isLoading.value = true
+
+  try {
+    const success = appStore.login(username.value, password.value)
+
+    if (success) {
+      // 登录成功，重定向到目标页面或首页
+      const redirect = (route.value.query.redirect as string) || '/home'
+      router.push(redirect)
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+</script>
+
 <template>
   <div class="login">
     <div class="login-container">
@@ -7,7 +39,7 @@
           <p>登录以访问受保护的页面</p>
         </div>
 
-        <form @submit.prevent="handleLogin" class="login-form">
+        <form class="login-form" @submit.prevent="handleLogin">
           <div class="form-group">
             <label for="username">用户名</label>
             <input
@@ -50,38 +82,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, useRoute } from '@ldesign/router'
-import { useAppStore } from '../stores/app'
-
-const router = useRouter()
-const route = useRoute()
-const appStore = useAppStore()
-
-// 响应式数据
-const username = ref('')
-const password = ref('')
-const isLoading = ref(false)
-
-// 方法
-const handleLogin = async () => {
-  isLoading.value = true
-
-  try {
-    const success = appStore.login(username.value, password.value)
-
-    if (success) {
-      // 登录成功，重定向到目标页面或首页
-      const redirect = (route.value.query.redirect as string) || '/home'
-      router.push(redirect)
-    }
-  } finally {
-    isLoading.value = false
-  }
-}
-</script>
 
 <style lang="less" scoped>
 .login {

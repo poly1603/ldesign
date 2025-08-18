@@ -1,8 +1,10 @@
 import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
+  packageDir: process.cwd(),
+  packageName: 'LDesignHttp',
+  formats: ['es', 'cjs', 'umd'],
   external: ['vue', 'axios', 'alova'],
-  globalName: 'LDesignHttp',
   globals: {
     vue: 'Vue',
     axios: 'axios',

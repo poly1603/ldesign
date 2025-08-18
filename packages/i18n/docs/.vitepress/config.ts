@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: '@ldesign/i18n',
-  description: '功能完整的框架无关多语言管理系统',
+  description: '现代化、高性能的国际化解决方案，经过全面优化',
   base: '/i18n/',
 
   head: [
@@ -16,6 +16,7 @@ export default defineConfig({
     nav: [
       { text: '指南', link: '/guide/getting-started' },
       { text: 'API 参考', link: '/api/core' },
+      { text: '性能', link: '/performance/overview' },
       { text: '示例', link: '/examples/vanilla' },
       {
         text: '相关链接',
@@ -42,7 +43,16 @@ export default defineConfig({
             { text: '翻译功能', link: '/guide/translation' },
             { text: '插值和复数', link: '/guide/interpolation' },
             { text: '语言包管理', link: '/guide/language-packs' },
-            { text: '缓存和性能', link: '/guide/performance' },
+            { text: '批量操作', link: '/guide/batch-operations' },
+          ],
+        },
+        {
+          text: '性能与可靠性',
+          items: [
+            { text: '性能优化', link: '/guide/performance' },
+            { text: '缓存策略', link: '/guide/caching' },
+            { text: '错误处理', link: '/guide/error-handling' },
+            { text: '性能监控', link: '/guide/monitoring' },
           ],
         },
         {
@@ -68,8 +78,24 @@ export default defineConfig({
           items: [
             { text: '核心 API', link: '/api/core' },
             { text: 'Vue API', link: '/api/vue' },
+            { text: 'Engine API', link: '/api/engine' },
+            { text: '性能 API', link: '/api/performance' },
+            { text: '错误处理 API', link: '/api/error-handling' },
             { text: '工具函数', link: '/api/utils' },
             { text: '类型定义', link: '/api/types' },
+          ],
+        },
+      ],
+      '/performance/': [
+        {
+          text: '性能指南',
+          items: [
+            { text: '性能概述', link: '/performance/overview' },
+            { text: '缓存策略', link: '/performance/caching' },
+            { text: '性能监控', link: '/performance/monitoring' },
+            { text: '优化技巧', link: '/performance/optimization' },
+            { text: '基准测试', link: '/performance/benchmarks' },
+            { text: '故障排除', link: '/performance/troubleshooting' },
           ],
         },
       ],

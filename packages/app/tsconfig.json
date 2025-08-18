@@ -22,7 +22,6 @@
     "resolveJsonModule": true,
     /* Vue specific */
     "types": ["vite/client", "node"],
-    "allowImportingTsExtensions": true,
     "allowJs": true,
     /* Linting */
     "strict": true,
@@ -35,6 +34,14 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "tests/**/*.ts", "tests/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "docs/.vitepress/dist"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs/.vitepress/dist",
+    "tests/**/*",
+    "__tests__/**/*",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ]
 }
