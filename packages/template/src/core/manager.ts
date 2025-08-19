@@ -570,7 +570,7 @@ export class TemplateManager extends SimpleEventEmitter {
   /**
    * 获取配置
    */
-  getConfig(): Required<TemplateManagerConfig> {
+  getConfig(): TemplateManagerConfig {
     return { ...this.config }
   }
 

@@ -19,7 +19,11 @@ import { TemplateManager } from './core/manager'
 import { TemplateScanner } from './core/scanner'
 import { createTemplateEnginePlugin } from './engine/plugin'
 import { TemplateRenderer } from './vue/components/TemplateRenderer'
+import { TemplateSelector } from './vue/components/TemplateSelector'
+import { TemplateProvider } from './vue/components/TemplateProvider'
 import { useTemplate } from './vue/composables/useTemplate'
+import { useTemplateSelector } from './vue/composables/useTemplateSelector'
+import { useTemplateProvider } from './vue/composables/useTemplateProvider'
 import { TemplatePlugin } from './vue/plugin'
 
 /** 模板加载器 - 动态加载模板组件 */
@@ -60,10 +64,12 @@ export {
 /** Vue 组件 */
 export { TemplateRenderer } from './vue/components/TemplateRenderer'
 export { TemplateSelector } from './vue/components/TemplateSelector'
+export { TemplateProvider } from './vue/components/TemplateProvider'
 
 /** Vue 组合式函数 */
 export { useTemplate } from './vue/composables/useTemplate'
 export { useTemplateSelector } from './vue/composables/useTemplateSelector'
+export { useTemplateProvider } from './vue/composables/useTemplateProvider'
 
 /** Vue 插件 */
 export {
@@ -111,8 +117,12 @@ export default {
   createTemplateLoader,
   // Vue 支持
   TemplateRenderer,
+  TemplateSelector,
+  TemplateProvider,
   TemplatePlugin,
   useTemplate,
+  useTemplateSelector,
+  useTemplateProvider,
   // Engine 支持
   createTemplateEnginePlugin,
 }

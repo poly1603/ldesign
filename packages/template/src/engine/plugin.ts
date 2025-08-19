@@ -235,8 +235,8 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
         console.log(`✅ Template 插件安装成功: ${name} v${version}`)
       } catch (error) {
         console.error(`❌ Template 插件安装失败: ${name}`, error)
-        if (engine.logger) {
-          engine.logger.error(`Failed to install template plugin ${name}`, error)
+        if (engineInstance.logger) {
+          engineInstance.logger.error(`Failed to install template plugin ${name}`, error)
         }
         throw error
       }

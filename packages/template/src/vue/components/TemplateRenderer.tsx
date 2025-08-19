@@ -1,13 +1,15 @@
 /**
  * TemplateRenderer 组件 - 重构版本
  *
- * 声明式的模板渲染组件
+ * 声明式的模板渲染组件，支持内置模板选择器
  */
 
-import type { DeviceType } from '../../types'
+import type { DeviceType, TemplateSelectorConfig, SlotConfig } from '../../types'
 import { computed, defineComponent, onMounted, onUnmounted, ref, watch, Transition, type PropType } from 'vue'
 import './TemplateRenderer.less'
 import { TemplateManager } from '../../core/manager'
+import { TemplateSelector } from './TemplateSelector'
+import { useTemplateProvider } from '../composables/useTemplateProvider'
 
 /**
  * TemplateRenderer 组件
@@ -86,6 +88,31 @@ export const TemplateRenderer = defineComponent({
       type: Boolean,
       default: false,
     },
+
+    // ============ 内置模板选择器配置 ============
+    /** 模板选择器配置 */
+    selector: {
+      type: [Boolean, Object] as PropType<boolean | TemplateSelectorConfig>,
+      default: false,
+    },
+
+    /** 自定义插槽配置 */
+    slots: {
+      type: Array as PropType<SlotConfig[]>,
+      default: () => [],
+    },
+
+    /** 是否允许用户切换模板 */
+    allowTemplateSwitch: {
+      type: Boolean,
+      default: true,
+    },
+
+    /** 模板切换权限检查 */
+    canSwitchTemplate: {
+      type: Function as PropType<(template: string) => boolean>,
+      default: () => true,
+    },
   },
 
   emits: {
@@ -106,12 +133,37 @@ export const TemplateRenderer = defineComponent({
   },
 
   setup(props: any, { emit, slots }: any) {
+    // 尝试使用Provider上下文
+    const provider = useTemplateProvider()
+
     // 状态管理
     const isLoading = ref(false)
     const error = ref<Error | null>(null)
     const currentComponent = ref<any>(null)
     const manager = ref<TemplateManager | null>(null)
     const currentDevice = ref<DeviceType>('desktop')
+    const selectedTemplate = ref<string | null>(null)
+    const selectorVisible = ref(false)
+    const availableTemplates = ref<any[]>([])
+
+    // 选择器配置
+    const selectorConfig = computed(() => {
+      if (props.selector === false) return null
+      if (props.selector === true) {
+        return (
+          provider.config.value?.defaultSelectorConfig || {
+            enabled: true,
+            position: 'top',
+            showPreview: true,
+            showSearch: true,
+            layout: 'grid',
+            columns: 3,
+            showInfo: true,
+          }
+        )
+      }
+      return props.selector
+    })
 
     // 计算属性
     const targetDevice = computed(() => {
@@ -138,6 +190,18 @@ export const TemplateRenderer = defineComponent({
 
     // 初始化管理器
     const initializeManager = async () => {
+      // 如果在Provider上下文中，使用Provider的管理器
+      if (provider.isInProvider.value && provider.config.value?.enableGlobalState) {
+        // 使用Provider的全局状态
+        currentDevice.value = provider.currentDevice.value
+
+        // 获取可用模板
+        availableTemplates.value = provider.getTemplates(props.category, currentDevice.value)
+
+        return
+      }
+
+      // 否则创建本地管理器实例
       if (!manager.value) {
         manager.value = new TemplateManager({
           enableCache: props.cache,
@@ -170,7 +234,10 @@ export const TemplateRenderer = defineComponent({
 
         // 扫描模板
         try {
-          await manager.value.scanTemplates()
+          const result = await manager.value.scanTemplates()
+          availableTemplates.value = result.templates.filter(
+            t => t.category === props.category && t.device === currentDevice.value
+          )
         } catch (err) {
           console.warn('Template scanning failed:', err)
         }
@@ -217,6 +284,40 @@ export const TemplateRenderer = defineComponent({
     // 重试加载
     const retryLoad = () => {
       loadTemplate()
+    }
+
+    // 模板选择器事件处理
+    const handleTemplateChange = async (template: string) => {
+      if (!props.allowTemplateSwitch || !props.canSwitchTemplate(template)) {
+        return
+      }
+
+      selectedTemplate.value = template
+
+      // 如果在Provider上下文中，使用Provider的方法
+      if (provider.isInProvider.value) {
+        try {
+          await provider.switchTemplate(props.category, currentDevice.value, template)
+          emit('template-change', template)
+        } catch (error) {
+          console.error('Template switch failed:', error)
+        }
+      } else {
+        // 否则直接加载模板
+        await loadTemplate()
+        emit('template-change', template)
+      }
+    }
+
+    const handleTemplatePreview = (template: string) => {
+      emit('template-preview', template)
+    }
+
+    const toggleSelector = () => {
+      if (selectorConfig.value?.trigger === 'manual') {
+        selectorVisible.value = !selectorVisible.value
+        emit('selector-visibility-change', selectorVisible.value)
+      }
     }
 
     // 监听属性变化
@@ -283,6 +384,58 @@ export const TemplateRenderer = defineComponent({
       }
     })
 
+    // 渲染模板选择器
+    const renderSelector = () => {
+      if (!selectorConfig.value?.enabled) return null
+
+      const config = selectorConfig.value
+      const position = config.position || 'top'
+
+      // 根据触发方式决定是否显示
+      let shouldShow = true
+      if (config.trigger === 'manual') {
+        shouldShow = selectorVisible.value
+      }
+
+      if (!shouldShow) return null
+
+      const selectorProps = {
+        category: props.category,
+        device: currentDevice.value,
+        currentTemplate: selectedTemplate.value || currentTemplate.value?.template,
+        config: config,
+        templates: availableTemplates.value,
+        onTemplateChange: handleTemplateChange,
+        onTemplatePreview: handleTemplatePreview,
+        onVisibilityChange: (visible: boolean) => {
+          selectorVisible.value = visible
+          emit('selector-visibility-change', visible)
+        },
+      }
+
+      return (
+        <div class={`template-selector-wrapper template-selector-wrapper--${position}`}>
+          <TemplateSelector {...selectorProps} />
+        </div>
+      )
+    }
+
+    // 渲染自定义插槽
+    const renderCustomSlots = () => {
+      if (!props.slots || props.slots.length === 0) return null
+
+      return props.slots.map((slotConfig, index) => {
+        const SlotComponent = slotConfig.content
+        if (!SlotComponent) return null
+
+        return (
+          <div key={index} class={`custom-slot custom-slot--${slotConfig.name}`}>
+            <SlotComponent {...(slotConfig.props || {})} />
+          </div>
+        )
+      })
+    }
+
     // 渲染内容的函数
     const renderContent = () => {
       // 显示加载状态
@@ -329,24 +482,78 @@ export const TemplateRenderer = defineComponent({
     // 渲染函数
     return () => {
       const content = renderContent()
+      const selector = renderSelector()
+      const customSlots = renderCustomSlots()
+      const selectorPosition = selectorConfig.value?.position || 'top'
 
-      // 如果启用了过渡动画
-      if (props.transition) {
-        return (
-          <div class="template-renderer" style={transitionStyle.value}>
-            <Transition name={transitionName.value} mode="out-in" appear={true}>
-              <div key={templateKey.value} class="template-content">
-                {content}
-              </div>
-            </Transition>
-          </div>
-        )
+      // 构建渲染元素数组
+      const elements = []
+
+      // 根据位置添加选择器
+      if (selector && (selectorPosition === 'top' || selectorPosition === 'left')) {
+        elements.push(selector)
       }
 
-      // 不使用过渡动画
+      // 添加自定义插槽（前置）
+      if (customSlots) {
+        elements.push(...customSlots.filter((slot: any) => slot.props?.position === 'before'))
+      }
+
+      // 添加主要内容
+      const mainContent = props.transition ? (
+        <Transition name={transitionName.value} mode="out-in" appear={true}>
+          <div key={templateKey.value} class="template-content">
+            {content}
+          </div>
+        </Transition>
+      ) : (
+        <div class="template-content">{content}</div>
+      )
+
+      elements.push(mainContent)
+
+      // 添加自定义插槽（后置）
+      if (customSlots) {
+        elements.push(...customSlots.filter((slot: any) => slot.props?.position === 'after'))
+      }
+
+      // 根据位置添加选择器
+      if (selector && (selectorPosition === 'bottom' || selectorPosition === 'right')) {
+        elements.push(selector)
+      }
+
+      // 渲染容器
+      const containerClass = [
+        'template-renderer',
+        `template-renderer--${selectorPosition}`,
+        {
+          'template-renderer--with-selector': !!selector,
+          'template-renderer--loading': isLoading.value,
+          'template-renderer--error': !!error.value,
+        },
+      ]
+
       return (
-        <div class="template-renderer">
-          <div class="template-content">{content}</div>
+        <div class={containerClass} style={transitionStyle.value}>
+          {selectorPosition === 'overlay' && selector ? (
+            <>
+              {mainContent}
+              <div class="template-selector-overlay">{selector}</div>
+            </>
+          ) : (
+            elements
+          )}
+
+          {/* 选择器切换按钮（手动触发模式） */}
+          {selectorConfig.value?.trigger === 'manual' && (
+            <button
+              class="template-selector-toggle"
+              onClick={toggleSelector}
+              title={selectorVisible.value ? '隐藏模板选择器' : '显示模板选择器'}
+            >
+              {selectorVisible.value ? '✕' : '⚙️'}
+            </button>
+          )}
         </div>
       )
     }

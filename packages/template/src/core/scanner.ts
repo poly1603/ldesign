@@ -38,6 +38,7 @@ export class TemplateScanner {
             count: cached.length,
             templates: cached,
             duration: Date.now() - startTime,
+            scannedDirectories: 0,
             scanMode: 'parent',
             debug: {
               scannedPaths: [],

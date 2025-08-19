@@ -13,6 +13,130 @@
     height: 100%;
   }
 
+  // ============ 选择器布局样式 ============
+
+  // 顶部布局
+  &.template-renderer--top {
+    display: flex;
+    flex-direction: column;
+
+    .template-selector-wrapper {
+      margin-bottom: 16px;
+    }
+  }
+
+  // 底部布局
+  &.template-renderer--bottom {
+    display: flex;
+    flex-direction: column;
+
+    .template-selector-wrapper {
+      margin-top: 16px;
+    }
+  }
+
+  // 左侧布局
+  &.template-renderer--left {
+    display: flex;
+    flex-direction: row;
+
+    .template-selector-wrapper {
+      margin-right: 16px;
+      min-width: 300px;
+    }
+  }
+
+  // 右侧布局
+  &.template-renderer--right {
+    display: flex;
+    flex-direction: row;
+
+    .template-selector-wrapper {
+      margin-left: 16px;
+      min-width: 300px;
+    }
+  }
+
+  // 覆盖层布局
+  &.template-renderer--overlay {
+    .template-selector-overlay {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 1000;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      max-width: 400px;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+
+  // 内联布局
+  &.template-renderer--inline {
+    .template-selector-wrapper {
+      margin: 16px 0;
+    }
+  }
+
+  // ============ 选择器切换按钮 ============
+
+  .template-selector-toggle {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #007bff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #0056b3;
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // ============ 自定义插槽样式 ============
+
+  .custom-slot {
+    margin: 8px 0;
+
+    &.custom-slot--before {
+      order: -1;
+    }
+
+    &.custom-slot--after {
+      order: 1;
+    }
+  }
+
+  // ============ 状态样式 ============
+
+  &.template-renderer--loading {
+    .template-selector-wrapper {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  }
+
+  &.template-renderer--error {
+    .template-selector-wrapper {
+      opacity: 0.8;
+    }
+  }
+
   // 加载状态样式
   .template-loading {
     display: flex;
@@ -178,6 +302,33 @@
         font-size: 13px;
         padding: 6px 12px;
       }
+    }
+
+    // 移动端强制使用顶部或底部布局
+    &.template-renderer--left,
+    &.template-renderer--right {
+      flex-direction: column;
+
+      .template-selector-wrapper {
+        margin: 16px 0;
+        min-width: auto;
+      }
+    }
+
+    // 覆盖层在移动端占满宽度
+    &.template-renderer--overlay {
+      .template-selector-overlay {
+        left: 16px;
+        right: 16px;
+        max-width: none;
+      }
+    }
+
+    // 选择器切换按钮在移动端调整大小
+    .template-selector-toggle {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
     }
   }
 

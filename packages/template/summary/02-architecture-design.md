@@ -54,14 +54,15 @@ core/
 ```typescript
 vue/
 ├── components/           # Vue 组件
-│   ├── TemplateRenderer.tsx    # 模板渲染器
-│   ├── TemplateSelector.tsx    # 模板选择器
+│   ├── TemplateRenderer.tsx    # 模板渲染器（支持内置选择器）
+│   ├── TemplateSelector.tsx    # 独立模板选择器
+│   ├── TemplateProvider.tsx    # 全局模板提供者
 │   ├── LazyTemplate.tsx        # 懒加载组件
 │   └── PerformanceMonitor.tsx  # 性能监控组件
 ├── composables/         # 组合式函数
-│   ├── useTemplate.ts          # 模板管理 Hook
+│   ├── useTemplate.ts          # 独立模板管理 Hook
 │   ├── useTemplateSelector.ts  # 模板选择器 Hook
-│   ├── useTemplateSystem.ts    # 模板系统 Hook
+│   ├── useTemplateProvider.ts  # Provider上下文 Hook
 │   └── useVirtualScroll.ts     # 虚拟滚动 Hook
 ├── directives/          # 自定义指令
 │   └── template.ts             # 模板指令

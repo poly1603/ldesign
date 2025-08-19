@@ -18,13 +18,13 @@ export type DeviceType = 'desktop' | 'mobile' | 'tablet'
  */
 export interface TemplateConfig {
   /** 模板唯一标识 */
-  id: string
+  id?: string
   /** 模板名称 */
   name: string
   /** 模板描述 */
   description?: string
   /** 模板版本 */
-  version: string
+  version?: string
   /** 作者 */
   author?: string
   /** 标签 */
@@ -33,6 +33,12 @@ export interface TemplateConfig {
   isDefault?: boolean
   /** 预览图 */
   preview?: string
+  /** 分类（兼容性） */
+  category?: string
+  /** 设备类型（兼容性） */
+  device?: string
+  /** 模板名称（兼容性） */
+  template?: string
   /** 自定义属性 */
   [key: string]: unknown
 }
@@ -53,6 +59,8 @@ export interface TemplateMetadata {
   componentPath: string
   /** 样式路径 */
   stylePath?: string
+  /** 模板路径（兼容性） */
+  path?: string
 }
 
 /**
@@ -160,6 +168,18 @@ export interface TemplateLoadResult {
 // ============ Vue 集成类型 ============
 
 /**
+ * 插槽配置
+ */
+export interface SlotConfig {
+  /** 插槽名称 */
+  name: string
+  /** 插槽内容 */
+  content?: any
+  /** 插槽属性 */
+  props?: Record<string, any>
+}
+
+/**
  * TemplateRenderer 组件属性
  */
 export interface TemplateRendererProps {
@@ -167,18 +187,34 @@ export interface TemplateRendererProps {
   category: string
   /** 设备类型 */
   device?: DeviceType
-  /** 模板名称 */
-  template: string
+  /** 模板名称（可选，支持字符串或对象格式） */
+  template?: string | Record<DeviceType, string>
   /** 传递给模板的属性 */
   templateProps?: Record<string, unknown>
   /** 是否使用缓存 */
   cache?: boolean
   /** 是否预加载 */
   preload?: boolean
-  /** 加载状态插槽 */
+  /** 是否显示加载状态 */
   loading?: boolean
-  /** 错误状态插槽 */
+  /** 是否显示错误状态 */
   error?: boolean
+  /** 是否启用切换动画 */
+  transition?: boolean
+  /** 动画持续时间（毫秒） */
+  transitionDuration?: number
+  /** 动画类型 */
+  transitionType?: 'fade' | 'slide' | 'scale' | 'flip'
+
+  // ============ 内置模板选择器配置 ============
+  /** 模板选择器配置 */
+  selector?: TemplateSelectorConfig | boolean
+  /** 自定义插槽配置 */
+  slots?: SlotConfig[]
+  /** 是否允许用户切换模板 */
+  allowTemplateSwitch?: boolean
+  /** 模板切换权限检查 */
+  canSwitchTemplate?: (template: string) => boolean
 }
 
 /**
@@ -202,15 +238,13 @@ export interface UseTemplateOptions extends TemplateManagerConfig {
 // ============ 模板选择器类型 ============
 
 /**
- * 模板选择器组件属性
+ * 模板选择器配置选项
  */
-export interface TemplateSelectorProps {
-  /** 模板分类 */
-  category: string
-  /** 设备类型 */
-  device?: DeviceType
-  /** 当前选中的模板 */
-  currentTemplate?: string
+export interface TemplateSelectorConfig {
+  /** 是否显示选择器 */
+  enabled?: boolean
+  /** 选择器位置 */
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'overlay' | 'inline'
   /** 是否显示预览 */
   showPreview?: boolean
   /** 是否显示搜索 */
@@ -221,10 +255,44 @@ export interface TemplateSelectorProps {
   columns?: number
   /** 是否显示模板信息 */
   showInfo?: boolean
+  /** 是否显示标题 */
+  showTitle?: boolean
+  /** 自定义标题 */
+  title?: string
+  /** 是否可折叠 */
+  collapsible?: boolean
+  /** 默认是否展开 */
+  defaultExpanded?: boolean
+  /** 自定义样式类 */
+  className?: string
+  /** 自定义样式 */
+  style?: Record<string, any>
+  /** 触发方式 */
+  trigger?: 'click' | 'hover' | 'manual'
+  /** 动画效果 */
+  animation?: boolean
+  /** 动画持续时间 */
+  animationDuration?: number
+}
+
+/**
+ * 模板选择器组件属性
+ */
+export interface TemplateSelectorProps {
+  /** 模板分类 */
+  category: string
+  /** 设备类型 */
+  device?: DeviceType
+  /** 当前选中的模板 */
+  currentTemplate?: string
+  /** 选择器配置 */
+  config?: TemplateSelectorConfig
   /** 模板变化回调 */
   onTemplateChange?: (template: string) => void
   /** 模板预览回调 */
   onTemplatePreview?: (template: string) => void
+  /** 选择器状态变化回调 */
+  onVisibilityChange?: (visible: boolean) => void
 }
 
 /**
@@ -295,6 +363,43 @@ export interface UseTemplateReturn {
   refresh: () => Promise<void>
 }
 
+// ============ Provider 模式类型 ============
+
+/**
+ * 模板提供者配置
+ */
+export interface TemplateProviderConfig extends TemplateManagerConfig {
+  /** 默认分类 */
+  defaultCategory?: string
+  /** 默认设备类型 */
+  defaultDevice?: DeviceType
+  /** 默认模板选择器配置 */
+  defaultSelectorConfig?: TemplateSelectorConfig
+  /** 全局模板属性 */
+  globalTemplateProps?: Record<string, unknown>
+  /** 是否启用全局状态管理 */
+  enableGlobalState?: boolean
+  /** 是否自动扫描模板 */
+  autoScan?: boolean
+  /** 主题配置 */
+  theme?: {
+    primaryColor?: string
+    borderRadius?: string
+    spacing?: string
+    [key: string]: any
+  }
+}
+
+/**
+ * 模板提供者属性
+ */
+export interface TemplateProviderProps {
+  /** 提供者配置 */
+  config?: TemplateProviderConfig
+  /** 子组件 */
+  children?: any
+}
+
 /**
  * Vue 插件选项
  */
@@ -311,6 +416,8 @@ export interface TemplatePluginOptions extends TemplateManagerConfig {
   defaultDevice?: DeviceType
   /** 全局属性名称 */
   globalPropertyName?: string
+  /** 提供者配置 */
+  providerConfig?: TemplateProviderConfig
 }
 
 // ============ 事件类型 ============
@@ -343,9 +450,9 @@ export interface TemplateChangeEvent {
 export type TemplateChangeCallback = (event: TemplateChangeEvent) => void
 
 /**
- * TemplateRenderer 组件属性
+ * TemplateRenderer 组件属性（旧版本，保持兼容性）
  */
-export interface TemplateRendererProps {
+export interface LegacyTemplateRendererProps {
   /** 分类 */
   category: string
   /** 设备类型 */
