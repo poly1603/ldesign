@@ -13,7 +13,7 @@ const router = useRouter()
 const query = useQuery()
 const appStore = useAppStore()
 
-// 使用模板系统，启用自动设备检测
+// 使用模板系统，启用自动设备检测和模板切换
 const {
   currentDevice,
   currentTemplate,
@@ -24,7 +24,7 @@ const {
 } = useTemplate({
   category: 'login',
   autoScan: true,
-  autoDetectDevice: true, // 确保启用自动设备检测
+  autoDetectDevice: true, // 启用自动设备检测
   debug: true, // 启用调试模式以便观察设备变化
 })
 
@@ -63,7 +63,7 @@ const templateProps = computed(() => ({
 
 // 模板选择器事件处理
 function handleTemplateChange(template: string) {
-  console.log('选择了模板:', template)
+  console.log('用户选择了模板:', template)
   switchTemplate('login', currentDevice.value, template)
 }
 

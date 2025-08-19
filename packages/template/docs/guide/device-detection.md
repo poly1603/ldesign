@@ -45,9 +45,33 @@ const device = detectDevice()
 console.log('设备类型:', device)
 ```
 
-## 自动检测配置
+## 自动检测与模板切换
 
-在模板管理器中启用自动设备检测：
+### 在 useTemplate 中启用（推荐）
+
+使用 `useTemplate` 组合函数可以同时启用设备检测和自动模板切换：
+
+```typescript
+import { useTemplate } from '@ldesign/template/vue'
+
+const { currentDevice, currentTemplate, availableTemplates, switchTemplate } =
+  useTemplate({
+    category: 'login',
+    autoScan: true,
+    autoDetectDevice: true, // 启用自动设备检测和模板切换
+    debug: true, // 启用调试模式查看切换过程
+  })
+```
+
+**自动切换逻辑：**
+
+1. 当设备类型发生变化时（如窗口缩放）
+2. 系统会自动查找新设备类型的可用模板
+3. 优先选择当前模板在新设备上的对应版本
+4. 如果对应版本不存在，则选择该设备的第一个可用模板
+5. 自动切换到选中的模板
+
+### 在模板管理器中启用
 
 ```typescript
 const manager = new TemplateManager({

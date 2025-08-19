@@ -5,7 +5,7 @@
  */
 
 import type { TemplateSelectorProps } from '../../types'
-import { computed, defineComponent, ref, type PropType } from 'vue'
+import { computed, defineComponent, ref, watch, type PropType } from 'vue'
 import './TemplateSelector.less'
 
 export const TemplateSelector = defineComponent({
@@ -63,6 +63,17 @@ export const TemplateSelector = defineComponent({
     const selectedTemplate = ref(props.currentTemplate || '')
     const loading = ref(false)
     const error = ref<Error | null>(null)
+
+    // 监听 currentTemplate 属性变化，同步更新选中状态
+    watch(
+      () => props.currentTemplate,
+      newTemplate => {
+        if (newTemplate !== selectedTemplate.value) {
+          selectedTemplate.value = newTemplate || ''
+        }
+      },
+      { immediate: true }
+    )
 
     // 计算属性 - 可用模板列表
     const availableTemplates = computed(() => {

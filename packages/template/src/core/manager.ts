@@ -119,7 +119,7 @@ export class TemplateManager extends SimpleEventEmitter {
   private scanner: TemplateScanner
   private loader: TemplateLoader
   private deviceDetector: SimpleDeviceDetector
-  private storageManager: TemplateStorageManager | null = null
+  public storageManager: TemplateStorageManager | null = null
   private config: Required<Omit<TemplateManagerConfig, 'storage'>> & { storage?: TemplateManagerConfig['storage'] }
   private templates: TemplateMetadata[] = []
   private currentTemplate: TemplateMetadata | null = null

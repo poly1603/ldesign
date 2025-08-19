@@ -34,7 +34,7 @@ declare function createApiProvider(
   injectionKey?: InjectionKey<ApiEngine> | string | symbol
 ): {
   apiEngine: ApiEngine
-  provide: () => any
+  provide: () => void
   use: () => ApiEngine
 }
 
