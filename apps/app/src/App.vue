@@ -3,7 +3,6 @@ import { useI18n } from '@ldesign/i18n/vue'
 import { RouterView, useRoute, useRouter } from '@ldesign/router'
 import { computed, onMounted, ref, watch } from 'vue'
 import NotificationContainer from './components/NotificationContainer.vue'
-import PerformanceMonitor from './components/PerformanceMonitor.vue'
 import { useAppStore } from './stores/app'
 
 const router = useRouter()
@@ -16,7 +15,6 @@ const isLoading = ref(false)
 const loadingText = ref(t('welcome'))
 
 // 计算属性
-const showPerformanceMonitor = computed(() => appStore.showPerformanceMonitor)
 const keepAliveComponents = computed(() => appStore.keepAliveComponents)
 
 // 获取路由过渡动画名称
@@ -89,11 +87,6 @@ onMounted(() => {
 
   // 初始化应用状态
   appStore.initialize()
-
-  // 开发环境下显示性能监控
-  if (import.meta.env.DEV) {
-    appStore.togglePerformanceMonitor(true)
-  }
 })
 
 // 监听路由变化，更新页面标题
@@ -128,9 +121,6 @@ watch(
         </KeepAlive>
       </Transition>
     </RouterView>
-
-    <!-- 性能监控面板 -->
-    <PerformanceMonitor v-if="showPerformanceMonitor" />
 
     <!-- 全局通知 -->
     <NotificationContainer />

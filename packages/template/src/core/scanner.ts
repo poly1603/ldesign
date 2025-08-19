@@ -88,6 +88,7 @@ export class TemplateScanner {
         return {
           count: templates.length,
           templates,
+          scannedDirectories: Object.keys(builtConfigModules).length,
           scanMode: 'Built模式 (相对路径)',
           debug: {
             scannedPaths: Object.keys(builtConfigModules),
@@ -117,6 +118,7 @@ export class TemplateScanner {
         return {
           count: templates.length,
           templates,
+          scannedDirectories: Object.keys(sourceConfigModules).length,
           scanMode: 'Source模式 (相对路径)',
           debug: {
             scannedPaths: Object.keys(sourceConfigModules),
@@ -134,6 +136,7 @@ export class TemplateScanner {
     return {
       count: 0,
       templates: [],
+      scannedDirectories: 0,
       scanMode: 'fallback',
       debug: {
         scannedPaths: [],
@@ -199,6 +202,7 @@ export class TemplateScanner {
       count: fallbackTemplates.length,
       templates: fallbackTemplates,
       duration: Date.now() - startTime,
+      scannedDirectories: 0,
       scanMode: 'fallback',
       debug: {
         scannedPaths: [],
@@ -290,5 +294,14 @@ export class TemplateScanner {
       this.getAllTemplates().find(t => t.category === category && t.device === device && t.template === template) ||
       null
     )
+  }
+
+  /**
+   * 获取缓存统计
+   */
+  getCacheStats(): { size: number } {
+    return {
+      size: this.cache.size,
+    }
   }
 }

@@ -21,6 +21,7 @@ export const routes: RouteRecordRaw[] = [
       hideInMenu: true,
     },
   },
+
   {
     path: '/home',
     name: 'Home',

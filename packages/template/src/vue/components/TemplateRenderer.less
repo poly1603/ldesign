@@ -1,0 +1,220 @@
+/**
+ * TemplateRenderer 组件样式
+ */
+
+.template-renderer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  .template-content {
+    width: 100%;
+    height: 100%;
+  }
+
+  // 加载状态样式
+  .template-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #666;
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  // 错误状态样式
+  .template-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 20px;
+    text-align: center;
+    color: #dc3545;
+
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #dc3545;
+    }
+
+    p {
+      margin: 0 0 20px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #0056b3;
+      }
+    }
+  }
+
+  // 占位符样式
+  .template-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #999;
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+}
+
+// 动画关键帧
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// ============ 过渡动画样式 ============
+
+// 淡入淡出动画
+.template-fade-enter-active,
+.template-fade-leave-active {
+  transition: opacity var(--transition-duration, 300ms) ease;
+}
+
+.template-fade-enter-from,
+.template-fade-leave-to {
+  opacity: 0;
+}
+
+// 滑动动画
+.template-slide-enter-active,
+.template-slide-leave-active {
+  transition: all var(--transition-duration, 300ms) ease;
+}
+
+.template-slide-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.template-slide-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+// 缩放动画
+.template-scale-enter-active,
+.template-scale-leave-active {
+  transition: all var(--transition-duration, 300ms) ease;
+}
+
+.template-scale-enter-from,
+.template-scale-leave-to {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+// 翻转动画
+.template-flip-enter-active,
+.template-flip-leave-active {
+  transition: all var(--transition-duration, 300ms) ease;
+}
+
+.template-flip-enter-from {
+  transform: rotateY(90deg);
+  opacity: 0;
+}
+
+.template-flip-leave-to {
+  transform: rotateY(-90deg);
+  opacity: 0;
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .template-renderer {
+    .template-loading,
+    .template-error,
+    .template-placeholder {
+      min-height: 150px;
+      padding: 15px;
+    }
+
+    .template-error {
+      h3 {
+        font-size: 16px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+
+      button {
+        font-size: 13px;
+        padding: 6px 12px;
+      }
+    }
+  }
+
+  // 移动端动画优化（减少动画复杂度）
+  .template-slide-enter-from,
+  .template-slide-leave-to {
+    transform: translateX(50%);
+  }
+
+  .template-flip-enter-from,
+  .template-flip-leave-to {
+    transform: rotateY(45deg);
+  }
+}
+
+// 减少动画偏好设置支持
+@media (prefers-reduced-motion: reduce) {
+  .template-fade-enter-active,
+  .template-fade-leave-active,
+  .template-slide-enter-active,
+  .template-slide-leave-active,
+  .template-scale-enter-active,
+  .template-scale-leave-active,
+  .template-flip-enter-active,
+  .template-flip-leave-active {
+    transition: none !important;
+  }
+
+  .template-fade-enter-from,
+  .template-fade-leave-to,
+  .template-slide-enter-from,
+  .template-slide-leave-to,
+  .template-scale-enter-from,
+  .template-scale-leave-to,
+  .template-flip-enter-from,
+  .template-flip-leave-to {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

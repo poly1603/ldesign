@@ -65,6 +65,8 @@ export interface TemplateScanResult {
   templates: TemplateMetadata[]
   /** 扫描耗时（毫秒） */
   duration: number
+  /** 扫描的目录数量 */
+  scannedDirectories: number
   /** 成功的扫描模式 */
   scanMode:
     | 'parent'
@@ -96,6 +98,20 @@ export interface TemplatePathInfo {
 // ============ 管理器相关类型 ============
 
 /**
+ * 存储配置选项
+ */
+export interface TemplateStorageOptions {
+  /** 存储键名 */
+  key?: string
+  /** 存储类型 */
+  storage?: 'localStorage' | 'sessionStorage' | 'memory'
+  /** 自定义序列化函数 */
+  serialize?: (data: any) => string
+  /** 自定义反序列化函数 */
+  deserialize?: (data: string) => any
+}
+
+/**
  * 模板管理器配置
  */
 export interface TemplateManagerConfig {
@@ -107,6 +123,8 @@ export interface TemplateManagerConfig {
   autoDetectDevice?: boolean
   /** 是否启用调试模式 */
   debug?: boolean
+  /** 持久化存储配置 */
+  storage?: TemplateStorageOptions
 }
 
 /**
@@ -169,6 +187,10 @@ export interface TemplateRendererProps {
 export interface UseTemplateOptions extends TemplateManagerConfig {
   /** 是否自动扫描模板 */
   autoScan?: boolean
+  /** 模板分类 */
+  category?: string
+  /** 设备类型 */
+  deviceType?: DeviceType
   /** 初始模板 */
   initialTemplate?: {
     category: string
@@ -177,21 +199,84 @@ export interface UseTemplateOptions extends TemplateManagerConfig {
   }
 }
 
+// ============ 模板选择器类型 ============
+
+/**
+ * 模板选择器组件属性
+ */
+export interface TemplateSelectorProps {
+  /** 模板分类 */
+  category: string
+  /** 设备类型 */
+  device?: DeviceType
+  /** 当前选中的模板 */
+  currentTemplate?: string
+  /** 是否显示预览 */
+  showPreview?: boolean
+  /** 是否显示搜索 */
+  showSearch?: boolean
+  /** 布局模式 */
+  layout?: 'grid' | 'list'
+  /** 每行显示的模板数量（网格模式） */
+  columns?: number
+  /** 是否显示模板信息 */
+  showInfo?: boolean
+  /** 模板变化回调 */
+  onTemplateChange?: (template: string) => void
+  /** 模板预览回调 */
+  onTemplatePreview?: (template: string) => void
+}
+
+/**
+ * 模板选择器组合式函数返回值
+ */
+export interface UseTemplateSelectorReturn {
+  // 状态
+  /** 可用模板列表 */
+  availableTemplates: any // import('vue').ComputedRef<TemplateMetadata[]>
+  /** 过滤后的模板列表 */
+  filteredTemplates: any // import('vue').ComputedRef<TemplateMetadata[]>
+  /** 搜索查询 */
+  searchQuery: any // import('vue').Ref<string>
+  /** 选中的模板 */
+  selectedTemplate: any // import('vue').Ref<string | null>
+  /** 加载状态 */
+  loading: any // import('vue').Ref<boolean>
+  /** 错误信息 */
+  error: any // import('vue').Ref<Error | null>
+
+  // 方法
+  /** 选择模板 */
+  selectTemplate: (template: string) => void
+  /** 预览模板 */
+  previewTemplate: (template: string) => void
+  /** 搜索模板 */
+  searchTemplates: (query: string) => void
+  /** 刷新模板列表 */
+  refreshTemplates: () => Promise<void>
+  /** 重置选择器 */
+  reset: () => void
+}
+
 /**
  * useTemplate 返回值
  */
 export interface UseTemplateReturn {
   // 状态
   /** 当前设备类型 */
-  currentDevice: import('vue').Ref<DeviceType>
+  currentDevice: any // import('vue').Ref<DeviceType>
   /** 当前模板 */
-  currentTemplate: import('vue').Ref<TemplateMetadata | null>
+  currentTemplate: any // import('vue').Ref<TemplateMetadata | null>
   /** 加载状态 */
-  loading: import('vue').Ref<boolean>
+  loading: any // import('vue').Ref<boolean>
   /** 错误信息 */
-  error: import('vue').Ref<Error | null>
+  error: any // import('vue').Ref<Error | null>
   /** 可用模板列表 */
-  availableTemplates: import('vue').ComputedRef<TemplateMetadata[]>
+  availableTemplates: any // import('vue').ComputedRef<TemplateMetadata[]>
+  /** 可用分类列表 */
+  availableCategories: any // import('vue').ComputedRef<string[]>
+  /** 可用设备类型列表 */
+  availableDevices: any // import('vue').ComputedRef<DeviceType[]>
 
   // 方法
   /** 扫描模板 */
@@ -220,8 +305,12 @@ export interface TemplatePluginOptions extends TemplateManagerConfig {
   registerComponents?: boolean
   /** 是否注册指令 */
   registerDirectives?: boolean
-  /** 是否提供全局属性 */
-  provideGlobalProperties?: boolean
+  /** 是否注册全局属性 */
+  registerGlobalProperties?: boolean
+  /** 默认设备类型 */
+  defaultDevice?: DeviceType
+  /** 全局属性名称 */
+  globalPropertyName?: string
 }
 
 // ============ 事件类型 ============
@@ -252,38 +341,6 @@ export interface TemplateChangeEvent {
  * 模板变化回调
  */
 export type TemplateChangeCallback = (event: TemplateChangeEvent) => void
-
-/**
- * Vue 集成选项
- */
-export interface UseTemplateOptions extends TemplateManagerConfig {
-  /** 是否自动扫描模板 */
-  autoScan?: boolean
-  /** 初始模板 */
-  initialTemplate?: {
-    category: string
-    device?: DeviceType
-    template: string
-  }
-}
-
-/**
- * Vue 插件选项
- */
-export interface TemplatePluginOptions extends TemplateManagerConfig {
-  /** 默认设备类型 */
-  defaultDevice?: DeviceType
-  /** 组件前缀 */
-  componentPrefix?: string
-  /** 是否注册全局组件 */
-  registerComponents?: boolean
-  /** 是否注册全局指令 */
-  registerDirectives?: boolean
-  /** 是否提供全局属性 */
-  provideGlobalProperties?: boolean
-  /** 全局属性名称 */
-  globalPropertyName?: string
-}
 
 /**
  * TemplateRenderer 组件属性

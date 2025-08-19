@@ -1,19 +1,90 @@
 <script setup lang="ts">
-import { useTemplate } from '@ldesign/template/vue'
-import { computed, onMounted, ref } from 'vue'
-
-// useTemplate Hook 演示页面加载
+import type { DeviceType } from '@ldesign/template'
+import { TemplateRenderer, TemplateSelector, useTemplate } from '@ldesign/template/vue'
+import { computed, ref } from 'vue'
 
 // 使用 useTemplate Hook
-const { currentTemplateId, availableTemplates, deviceType, TemplateComponent, templateConfig, currentTemplate } =
-  useTemplate({
-    category: 'login',
-    autoSwitch: true, // 启用自动设备切换以响应窗口大小变化
-  })
+const {
+  currentDevice,
+  currentTemplate,
+  availableTemplates,
+  availableCategories,
+  availableDevices,
+  switchTemplate,
+  loading,
+  error,
+  scanTemplates,
+} = useTemplate({
+  category: 'login',
+  autoScan: true,
+})
+
+// 选择的模板ID
+const selectedTemplateId = ref<string>('')
+
+// 选择的设备类型
+const selectedDevice = ref<DeviceType>('desktop')
+
+// 模板选择选项
+const templateOptions = computed(() => {
+  return availableTemplates.value.map((template: any) => ({
+    value: `${template.category}/${template.device}/${template.template}`,
+    label: `${template.config.name || template.template} - ${template.device} (${
+      template.config.description || '暂无描述'
+    })`,
+  }))
+})
+
+// 当前模板信息
+const currentTemplateInfo = computed(() => {
+  if (!currentTemplate.value) return null
+  return {
+    name: currentTemplate.value.config.name || currentTemplate.value.template,
+    description: currentTemplate.value.config.description || '暂无描述',
+    device: currentTemplate.value.device,
+    category: currentTemplate.value.category,
+  }
+})
+
+// 性能统计
+const performanceStats = ref({
+  loadTime: 0,
+  cacheHits: 50, // 模拟数据
+  cacheMisses: 14, // 模拟数据
+  hitRate: ((50 / (50 + 14)) * 100).toFixed(1),
+})
+
+// 更新性能统计
+async function updatePerformanceStats() {
+  try {
+    const startTime = Date.now()
+    await scanTemplates()
+    const endTime = Date.now()
+    performanceStats.value.loadTime = endTime - startTime
+  } catch (error) {
+    console.error('扫描模板失败:', error)
+  }
+}
+
+// 切换模板
+async function handleTemplateChange() {
+  if (!selectedTemplateId.value) return
+
+  const [category, device, template] = selectedTemplateId.value.split('/')
+  await switchTemplate(category, device as DeviceType, template)
+}
+
+// 切换设备类型
+function handleDeviceChange() {
+  // 这里可以添加设备切换逻辑
+  console.log('设备类型切换到:', selectedDevice.value)
+}
 
 // 事件处理函数
 function handleLogin(data: any) {
-  alert(`登录成功！\n模板: ${currentTemplate.value?.name}\n设备: ${deviceType.value}\n用户名: ${data.username}`)
+  alert(
+    `登录成功！\n模板: ${currentTemplateInfo.value?.name}\n设备: ${currentTemplateInfo.value?.device}\n用户名: ${data.username}`
+  )
 }
 
 function handleRegister() {
@@ -28,69 +99,17 @@ function handleThirdPartyLogin(data: any) {
   alert(`使用 ${data.provider} 登录`)
 }
 
-// 性能监控
-const performanceMetrics = ref({
-  loadTime: 0,
-  renderTime: 0,
-  cacheHits: 0,
-  cacheMisses: 0,
-})
-
-const loadStartTime = ref(0)
-
-// 性能监控函数
-function startPerformanceMonitoring() {
-  loadStartTime.value = performance.now()
+// 模板选择器事件处理
+function handleTemplateSelectorChange(template: string) {
+  console.log('模板选择器选择了模板:', template)
+  // 切换到选中的模板
+  switchTemplate('login', selectedDevice.value, template)
 }
 
-function endPerformanceMonitoring() {
-  const loadTime = performance.now() - loadStartTime.value
-  performanceMetrics.value.loadTime = loadTime
-  console.log(`模板加载耗时: ${loadTime.toFixed(2)}ms`)
+function handleTemplatePreview(template: string) {
+  console.log('预览模板:', template)
+  // 这里可以添加预览逻辑，比如显示模板详情
 }
-
-// 模拟缓存统计
-function updateCacheStats() {
-  // 这里应该从模板管理器获取真实的缓存统计
-  performanceMetrics.value.cacheHits = Math.floor(Math.random() * 50) + 20
-  performanceMetrics.value.cacheMisses = Math.floor(Math.random() * 10) + 5
-}
-
-onMounted(() => {
-  startPerformanceMonitoring()
-  updateCacheStats()
-
-  // 模拟加载完成
-  setTimeout(() => {
-    endPerformanceMonitoring()
-  }, 100)
-})
-
-// 代码示例
-const codeExample = computed(
-  () => `import { useTemplate } from '@ldesign/template'
-
-// 使用 useTemplate Hook
-const {
-  currentTemplateId,
-  availableTemplates,
-  deviceType,
-  TemplateComponent,
-  templateConfig
-} = useTemplate({
-  category: 'login',
-  autoSwitch: true
-})
-
-// 在模板中使用
-<component
-  v-if="TemplateComponent"
-  :is="TemplateComponent"
-  v-bind="templateConfig"
-  @login="handleLogin"
-  @register="handleRegister"
-/>`
-)
 </script>
 
 <template>
@@ -108,16 +127,17 @@ const {
         <div class="hook-demo__controls">
           <div class="hook-demo__control-group">
             <label class="hook-demo__label">选择模板:</label>
-            <select v-model="currentTemplateId" class="hook-demo__select">
-              <option v-for="template in availableTemplates" :key="template.id" :value="template.id">
-                {{ template.name }} - {{ template.description }}
+            <select v-model="selectedTemplateId" class="hook-demo__select" @change="handleTemplateChange">
+              <option value="">请选择模板</option>
+              <option v-for="option in templateOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
               </option>
             </select>
           </div>
 
           <div class="hook-demo__control-group">
             <label class="hook-demo__label">设备类型:</label>
-            <select v-model="deviceType" class="hook-demo__select">
+            <select v-model="selectedDevice" class="hook-demo__select" @change="handleDeviceChange">
               <option value="desktop">🖥️ 桌面</option>
               <option value="tablet">📱 平板</option>
               <option value="mobile">📱 手机</option>
@@ -127,11 +147,11 @@ const {
           <div class="hook-demo__info">
             <div class="hook-demo__info-item">
               <span class="hook-demo__info-label">当前模板:</span>
-              <span class="hook-demo__info-value">{{ currentTemplate?.name || '无' }}</span>
+              <span class="hook-demo__info-value">{{ currentTemplateInfo?.name || '无' }}</span>
             </div>
             <div class="hook-demo__info-item">
               <span class="hook-demo__info-label">设备类型:</span>
-              <span class="hook-demo__info-value">{{ deviceType }}</span>
+              <span class="hook-demo__info-value">{{ currentDevice }}</span>
             </div>
             <div class="hook-demo__info-item">
               <span class="hook-demo__info-label">可用模板数:</span>
@@ -139,56 +159,78 @@ const {
             </div>
           </div>
 
-          <!-- 性能监控面板 -->
           <div class="hook-demo__performance">
-            <h3 class="hook-demo__performance-title">📊 性能监控</h3>
+            <h3>📊 性能监控</h3>
             <div class="hook-demo__performance-grid">
               <div class="hook-demo__performance-item">
                 <span class="hook-demo__performance-label">加载时间:</span>
-                <span class="hook-demo__performance-value">{{ performanceMetrics.loadTime.toFixed(2) }}ms</span>
+                <span class="hook-demo__performance-value">{{ performanceStats.loadTime.toFixed(2) }}ms</span>
               </div>
               <div class="hook-demo__performance-item">
                 <span class="hook-demo__performance-label">缓存命中:</span>
-                <span class="hook-demo__performance-value">{{ performanceMetrics.cacheHits }}</span>
+                <span class="hook-demo__performance-value">{{ performanceStats.cacheHits }}</span>
               </div>
               <div class="hook-demo__performance-item">
                 <span class="hook-demo__performance-label">缓存未命中:</span>
-                <span class="hook-demo__performance-value">{{ performanceMetrics.cacheMisses }}</span>
+                <span class="hook-demo__performance-value">{{ performanceStats.cacheMisses }}</span>
               </div>
               <div class="hook-demo__performance-item">
                 <span class="hook-demo__performance-label">命中率:</span>
-                <span class="hook-demo__performance-value">
-                  {{
-                    (
-                      (performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) *
-                      100
-                    ).toFixed(1)
-                  }}%
-                </span>
+                <span class="hook-demo__performance-value">{{ performanceStats.hitRate }}%</span>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- 模板选择器区域 -->
+        <div class="hook-demo__selector">
+          <h3>🎨 模板选择器</h3>
+          <TemplateSelector
+            category="login"
+            :device="selectedDevice"
+            :current-template="currentTemplate?.template"
+            :templates="availableTemplates"
+            :show-preview="true"
+            :show-search="true"
+            layout="grid"
+            :columns="3"
+            @template-change="handleTemplateSelectorChange"
+            @template-preview="handleTemplatePreview"
+          />
+        </div>
+
         <div class="hook-demo__preview">
           <div class="hook-demo__preview-header">
             <h3>模板预览</h3>
-            <div class="hook-demo__device-indicator">
-              {{ deviceType === 'desktop' ? '🖥️' : deviceType === 'tablet' ? '📱' : '📱' }}
-              {{ deviceType }}
+            <div class="hook-demo__preview-device">
+              {{ currentDevice === 'desktop' ? '🖥️' : currentDevice === 'tablet' ? '📱' : '📱' }} {{ currentDevice }}
             </div>
           </div>
 
-          <div class="hook-demo__template-container">
-            <component
-              :is="TemplateComponent"
-              v-if="TemplateComponent"
-              v-bind="templateConfig"
-              @login="handleLogin"
-              @register="handleRegister"
-              @forgot-password="handleForgotPassword"
-              @third-party-login="handleThirdPartyLogin"
-            />
+          <div class="hook-demo__preview-container">
+            <div v-if="loading" class="hook-demo__loading">
+              <div class="hook-demo__loading-spinner" />
+              <p>加载中...</p>
+            </div>
+
+            <div v-else-if="error" class="hook-demo__error">
+              <div class="hook-demo__error-icon">❌</div>
+              <h4>加载失败</h4>
+              <p>{{ error }}</p>
+            </div>
+
+            <div v-else-if="currentTemplate" class="hook-demo__template-container">
+              <TemplateRenderer
+                :category="currentTemplate.category"
+                :device="currentTemplate.device"
+                :template="currentTemplate.template"
+                @login="handleLogin"
+                @register="handleRegister"
+                @forgot-password="handleForgotPassword"
+                @third-party-login="handleThirdPartyLogin"
+              />
+            </div>
+
             <div v-else class="hook-demo__no-template">
               <div class="hook-demo__no-template-icon">🚫</div>
               <h4>当前设备类型暂无可用模板</h4>
@@ -199,7 +241,30 @@ const {
 
         <div class="hook-demo__code">
           <h3>代码示例</h3>
-          <pre class="hook-demo__code-block"><code>{{ codeExample }}</code></pre>
+          <pre class="hook-demo__code-block"><code>import { useTemplate, TemplateRenderer } from '@ldesign/template/vue'
+
+// 使用 useTemplate Hook
+const {
+  currentDevice,
+  currentTemplate,
+  availableTemplates,
+  switchTemplate,
+  loading,
+  error
+} = useTemplate({
+  category: 'login',
+  autoScan: true
+})
+
+// 在模板中使用
+&lt;TemplateRenderer
+  v-if="currentTemplate"
+  :category="currentTemplate.category"
+  :device="currentTemplate.device"
+  :template="currentTemplate.template"
+  @login="handleLogin"
+  @register="handleRegister"
+/&gt;</code></pre>
         </div>
       </div>
     </div>
@@ -213,13 +278,13 @@ const {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   &__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
     padding: 40px 0;
   }
 
   &__container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
   }
@@ -259,26 +324,28 @@ const {
     padding: 30px;
     margin-bottom: 30px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    align-items: start;
   }
 
   &__control-group {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
   }
 
   &__label {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: #333;
+    white-space: nowrap;
+    min-width: 80px;
   }
 
   &__select {
-    padding: 12px;
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
     border: 2px solid #e1e5e9;
     border-radius: 8px;
     font-size: 14px;
@@ -288,35 +355,75 @@ const {
 
     &:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #f093fb;
     }
   }
 
   &__info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
   }
 
   &__info-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 12px 16px;
     background: #f8f9fa;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 8px;
   }
 
   &__info-label {
+    font-size: 14px;
     color: #666;
     font-weight: 500;
   }
 
   &__info-value {
+    font-size: 14px;
     color: #333;
     font-weight: 600;
+  }
+
+  &__performance {
+    margin-top: 30px;
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 20px 0;
+      color: #333;
+    }
+  }
+
+  &__performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  &__performance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  &__performance-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  &__performance-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f093fb;
   }
 
   &__preview {
@@ -331,60 +438,98 @@ const {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 2px solid #f0f0f0;
 
     h3 {
       margin: 0;
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 600;
       color: #333;
     }
   }
 
-  &__device-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+  &__preview-device {
     background: #f8f9fa;
-    border-radius: 20px;
-    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 12px;
     font-weight: 500;
     color: #666;
   }
 
-  &__template-container {
+  &__preview-container {
     min-height: 400px;
+    background: #f8f9fa;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 20px;
+  }
+
+  &__loading {
+    text-align: center;
+    color: #666;
+
+    &-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e1e5e9;
+      border-top: 4px solid #f093fb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+  }
+
+  &__error {
+    text-align: center;
+    color: #dc3545;
+
+    &-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
+
+  &__template-container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
     border-radius: 12px;
     overflow: hidden;
-    background: #f8f9fa;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
 
   &__no-template {
     text-align: center;
-    padding: 60px 20px;
     color: #666;
 
     &-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
+      font-size: 48px;
+      margin-bottom: 16px;
     }
 
     h4 {
-      font-size: 20px;
-      margin: 0 0 12px 0;
+      margin: 0 0 8px 0;
+      font-size: 18px;
       color: #333;
     }
 
     p {
-      font-size: 14px;
       margin: 0;
-      line-height: 1.5;
+      color: #666;
     }
   }
 
@@ -402,15 +547,30 @@ const {
     }
   }
 
+  &__selector {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e9ecef;
+
+    h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
   &__code-block {
     background: #2d3748;
     color: #e2e8f0;
     padding: 20px;
     border-radius: 8px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    overflow-x: auto;
+    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
     font-size: 14px;
     line-height: 1.5;
-    overflow-x: auto;
     margin: 0;
 
     code {
@@ -420,78 +580,58 @@ const {
       font-size: inherit;
     }
   }
+}
 
-  &__performance {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-
-  &__performance-title {
-    margin: 0 0 16px 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-  }
-
-  &__performance-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-  }
-
-  &__performance-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-  }
-
-  &__performance-label {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 4px;
-    text-align: center;
-  }
-
-  &__performance-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: #667eea;
+  100% {
+    transform: rotate(360deg);
   }
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .hook-demo {
-    &__controls {
-      grid-template-columns: 1fr;
-      padding: 20px;
+    &__control-group {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
-    &__preview,
-    &__code {
-      padding: 20px;
+    &__label {
+      min-width: auto;
+    }
+
+    &__select {
+      width: 100%;
+      min-width: auto;
+    }
+
+    &__info {
+      grid-template-columns: 1fr;
+    }
+
+    &__performance-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
 
     &__preview-header {
       flex-direction: column;
       align-items: flex-start;
-      gap: 12px;
+      gap: 16px;
+    }
+
+    &__preview-container {
+      min-height: 300px;
     }
 
     &__template-container {
-      min-height: 300px;
+      max-width: 100%;
     }
 
     &__code-block {
       font-size: 12px;
-      padding: 16px;
     }
   }
 }

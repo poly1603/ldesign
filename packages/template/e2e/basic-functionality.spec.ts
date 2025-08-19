@@ -148,7 +148,7 @@ test.describe('基础功能测试', () => {
     expect(visibleItems).toBeLessThan(100) // 应该少于总数据量
 
     // 测试滚动功能
-    await container.scroll({ top: 1000 })
+    await container.evaluate(el => (el.scrollTop = 1000))
     await page.waitForTimeout(100)
 
     // 检查新的项目是否渲染

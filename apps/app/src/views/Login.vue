@@ -1,211 +1,213 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from '@ldesign/router'
-import { ref } from 'vue'
+import { useRouter, useQuery } from '@ldesign/router'
+import { computed, ref } from 'vue'
 import { useAppStore } from '../stores/app'
-import { useI18n } from '@ldesign/i18n/vue'
+import {
+  TemplateRenderer,
+  TemplateSelector,
+  useTemplate,
+} from '@ldesign/template/vue'
+import LoginPanel from '../components/LoginPanel.vue'
 
 const router = useRouter()
-const route = useRoute()
+const query = useQuery()
 const appStore = useAppStore()
-const { t, locale, changeLanguage } = useI18n()
 
-// 响应式数据
-const username = ref('')
-const password = ref('')
-const isLoading = ref(false)
+// 使用模板系统，启用自动设备检测
+const {
+  currentDevice,
+  currentTemplate,
+  availableTemplates,
+  switchTemplate,
+  loading,
+  error,
+} = useTemplate({
+  category: 'login',
+  autoScan: true,
+  autoDetectDevice: true, // 确保启用自动设备检测
+  debug: true, // 启用调试模式以便观察设备变化
+})
 
-// 方法
-// 切换语言
-async function toggleLanguage() {
-  const newLocale = locale.value === 'zh-CN' ? 'en' : 'zh-CN'
-  console.log('🌍 开始切换语言到:', newLocale)
-
-  try {
-    await changeLanguage(newLocale)
-    console.log('✅ 语言切换成功:', locale.value)
-  } catch (error) {
-    console.error('❌ 语言切换失败:', error)
+// 登录处理
+async function handleLogin(loginData: any) {
+  const success = appStore.login(loginData.username, loginData.password)
+  if (success) {
+    const redirect = (query.value.redirect as string) || '/home'
+    await router.push(redirect)
   }
 }
 
-function handleLogin() {
-  isLoading.value = true
+// 注册处理
+function handleRegister() {
+  router.push('/register')
+}
 
-  try {
-    const success = appStore.login(username.value, password.value)
+// 忘记密码处理
+function handleForgotPassword() {
+  alert('忘记密码功能待实现')
+}
 
-    if (success) {
-      // 登录成功，重定向到目标页面或首页
-      const redirect = (route.value.query.redirect as string) || '/home'
-      router.push(redirect)
-    }
-  } finally {
-    isLoading.value = false
-  }
+// 第三方登录处理
+function handleThirdPartyLogin(data: any) {
+  alert(`使用 ${data.provider} 登录`)
+}
+
+// 动画类型选择状态
+const selectedTransition = ref<'fade' | 'slide' | 'scale' | 'flip'>('fade')
+
+// 传递给模板的属性
+const templateProps = computed(() => ({
+  // 传递 LoginPanel 组件
+  loginPanel: LoginPanel,
+}))
+
+// 模板选择器事件处理
+function handleTemplateChange(template: string) {
+  console.log('选择了模板:', template)
+  switchTemplate('login', currentDevice.value, template)
+}
+
+// 切换动画类型
+function switchTransition(type: 'fade' | 'slide' | 'scale' | 'flip') {
+  selectedTransition.value = type
 }
 </script>
 
 <template>
-  <div class="login">
-    <div class="login-container">
-      <div class="login-card">
-        <div class="login-header">
-          <div class="header-top">
-            <div class="header-content">
-              <h1>{{ t('auth.login.title') }}</h1>
-              <p>{{ t('auth.login.subtitle') }}</p>
-            </div>
-            <button
-              type="button"
-              class="language-toggle"
-              @click="toggleLanguage"
-              :title="locale === 'zh-CN' ? 'Switch to English' : '切换到中文'"
-            >
-              {{ locale === 'zh-CN' ? 'EN' : '中文' }}
-            </button>
-          </div>
-        </div>
+  <div class="login-container">
+    <!-- 内置模板选择器 -->
+    <div class="template-selector-panel">
+      <TemplateSelector
+        category="login"
+        :device="currentDevice"
+        :current-template="currentTemplate?.template"
+        :templates="availableTemplates"
+        :show-preview="false"
+        :show-search="true"
+        layout="list"
+        :show-info="false"
+        @template-change="handleTemplateChange"
+      />
 
-        <form class="login-form" @submit.prevent="handleLogin">
-          <div class="form-group">
-            <label for="username">{{ t('auth.login.username') }}</label>
-            <input
-              id="username"
-              v-model="username"
-              type="text"
-              class="form-input"
-              :placeholder="t('auth.login.username')"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password">{{ t('auth.login.password') }}</label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              class="form-input"
-              :placeholder="t('auth.login.password')"
-              required
-            />
-          </div>
-
+      <div class="animation-controls">
+        <h4>动画效果：</h4>
+        <div class="animation-buttons">
           <button
-            type="submit"
-            class="btn btn-primary btn-lg"
-            :disabled="isLoading"
+            @click="selectedTransition = 'fade'"
+            :class="{ active: selectedTransition === 'fade' }"
           >
-            {{ isLoading ? t('common.loading') : t('auth.login.loginButton') }}
+            淡入淡出
           </button>
-        </form>
-
-        <div class="login-tips">
-          <p>{{ t('auth.login.testAccount') }}</p>
-          <p>{{ t('auth.login.usernameLabel') }} <code>admin</code></p>
-          <p>{{ t('auth.login.passwordLabel') }} <code>admin</code></p>
+          <button
+            @click="selectedTransition = 'slide'"
+            :class="{ active: selectedTransition === 'slide' }"
+          >
+            滑动
+          </button>
+          <button
+            @click="selectedTransition = 'scale'"
+            :class="{ active: selectedTransition === 'scale' }"
+          >
+            缩放
+          </button>
+          <button
+            @click="selectedTransition = 'flip'"
+            :class="{ active: selectedTransition === 'flip' }"
+          >
+            翻转
+          </button>
         </div>
       </div>
+
+      <div class="device-info">
+        <p><strong>当前设备:</strong> {{ currentDevice }}</p>
+        <p><strong>可用模板:</strong> {{ availableTemplates.length }}</p>
+        <p>
+          <strong>当前模板:</strong> {{ currentTemplate?.template || '未选择' }}
+        </p>
+      </div>
     </div>
+
+    <!-- 模板渲染器 -->
+    <TemplateRenderer
+      category="login"
+      :device="currentDevice"
+      :template="currentTemplate?.template"
+      :template-props="templateProps"
+      :transition="true"
+      :transition-type="selectedTransition"
+      :transition-duration="400"
+      @login="handleLogin"
+      @register="handleRegister"
+      @forgot-password="handleForgotPassword"
+      @third-party-login="handleThirdPartyLogin"
+    />
   </div>
 </template>
 
 <style lang="less" scoped>
-.login {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-lg);
-}
-
 .login-container {
-  width: 100%;
-  max-width: 400px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.login-card {
-  background: var(--bg-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: var(--spacing-2xl);
-}
+.template-selector {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
 
-.login-header {
-  margin-bottom: var(--spacing-xl);
-
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--spacing-md);
+  h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #333;
   }
 
-  .header-content {
-    text-align: center;
-    flex: 1;
+  hr {
+    margin: 15px 0;
+    border: none;
+    border-top: 1px solid #eee;
   }
 
-  h1 {
-    font-size: var(--font-size-2xl);
-    font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: var(--spacing-sm);
-  }
-
-  p {
-    color: var(--text-color-secondary);
-  }
-
-  .language-toggle {
-    background: var(--bg-color-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--font-size-sm);
-    color: var(--text-color);
+  button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 50px;
+    font-size: 12px;
+    transition: all 0.2s;
 
     &:hover {
-      background: var(--bg-color-hover);
-      border-color: var(--primary-color);
+      background: #f5f5f5;
+      border-color: #ccc;
     }
 
-    &:active {
-      transform: translateY(1px);
+    &.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
     }
   }
 }
 
-.login-form {
-  margin-bottom: var(--spacing-xl);
-
-  .form-group {
-    margin-bottom: var(--spacing-lg);
-  }
-
-  .btn {
-    width: 100%;
-  }
-}
-
-.login-tips {
-  text-align: center;
-  padding: var(--spacing-md);
-  background: var(--bg-color-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-color-secondary);
-
-  code {
-    background: var(--bg-color);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    color: var(--primary-color);
+@media (max-width: 768px) {
+  .template-selector {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin: 10px;
+    order: -1;
   }
 }
 </style>

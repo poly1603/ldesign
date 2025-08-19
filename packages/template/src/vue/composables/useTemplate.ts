@@ -15,6 +15,7 @@ import type {
 } from '../../types'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { TemplateManager } from '../../core/manager'
+import { destroyGlobalTemplateManager } from '../plugin'
 
 /**
  * 创建模板管理器实例
@@ -37,8 +38,32 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const error = ref<Error | null>(null)
   const templates = ref<TemplateMetadata[]>([])
 
-  // 计算属性
-  const availableTemplates = computed(() => templates.value)
+  // 计算属性 - 根据选项过滤模板
+  const availableTemplates = computed(() => {
+    let filtered = templates.value
+
+    if (options.category) {
+      filtered = filtered.filter(t => t.category === options.category)
+    }
+
+    if (options.deviceType) {
+      filtered = filtered.filter(t => t.device === options.deviceType)
+    }
+
+    return filtered
+  })
+
+  // 计算属性 - 可用分类列表
+  const availableCategories = computed(() => {
+    const categories = new Set(templates.value.map(t => t.category))
+    return Array.from(categories)
+  })
+
+  // 计算属性 - 可用设备类型列表
+  const availableDevices = computed(() => {
+    const devices = new Set(templates.value.map(t => t.device))
+    return Array.from(devices)
+  })
 
   // 扫描模板
   const scanTemplates = async (): Promise<TemplateScanResult> => {
@@ -141,6 +166,8 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     loading,
     error,
     availableTemplates,
+    availableCategories,
+    availableDevices,
 
     // 方法
     scanTemplates,
@@ -151,4 +178,11 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     clearCache,
     refresh,
   }
+}
+
+/**
+ * 销毁全局模板管理器（测试用）
+ */
+export function destroyGlobalManager(): void {
+  destroyGlobalTemplateManager()
 }

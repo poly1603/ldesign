@@ -23,7 +23,7 @@ test.describe('兼容性测试', () => {
 
       // 检查 JavaScript 功能
       const jsWorking = await page.evaluate(() => {
-        return typeof window.Vue !== 'undefined' || typeof window.__VUE__ !== 'undefined'
+        return typeof (window as any).Vue !== 'undefined' || typeof (window as any).__VUE__ !== 'undefined'
       })
       expect(jsWorking).toBeTruthy()
     })
@@ -130,7 +130,7 @@ test.describe('兼容性测试', () => {
     // 检查样式是否正确应用
     const computedStyle = await page.evaluate(() => {
       const element = document.querySelector('h1')
-      return window.getComputedStyle(element).display
+      return element ? window.getComputedStyle(element).display : 'none'
     })
     expect(computedStyle).not.toBe('')
   })
@@ -183,7 +183,7 @@ test.describe('兼容性测试', () => {
 
   test('错误处理兼容性', async ({ page }) => {
     // 监听控制台错误
-    const errors = []
+    const errors: any[] = []
     page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(msg.text())

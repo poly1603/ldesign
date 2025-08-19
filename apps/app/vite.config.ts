@@ -11,6 +11,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       '@ldesign/engine': resolve(__dirname, '../../packages/engine/src'),
       '@ldesign/router': resolve(__dirname, '../../packages/router/src'),
+      '@ldesign/template': resolve(__dirname, '../../packages/template/src'),
     },
   },
   server: {

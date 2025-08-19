@@ -7,7 +7,7 @@ export const config: TemplateConfig = {
   category: 'login',
   device: 'tablet',
   variant: 'adaptive',
-  isDefault: true, // 设为平板端默认模板
+  isDefault: false, // tablet/default 是默认模板
   version: '1.0.0',
   author: 'LDesign Team',
   tags: ['自适应', '平板端', '灵活', '兼容'],

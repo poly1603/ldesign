@@ -7,7 +7,7 @@ export const config: TemplateConfig = {
   category: 'login',
   device: 'desktop',
   variant: 'classic',
-  isDefault: true, // 设为桌面端默认模板
+  isDefault: false, // desktop/default 是默认模板
   version: '1.0.0',
   author: 'LDesign Team',
   tags: ['经典', '简洁', '商务', '企业级'],

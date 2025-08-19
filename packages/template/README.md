@@ -340,6 +340,71 @@ interface TemplateRendererProps {
 }
 ```
 
+### TemplateSelector 组件
+
+模板选择器组件提供了智能的模板浏览和选择功能：
+
+```vue
+<template>
+  <TemplateSelector
+    category="login"
+    device="desktop"
+    :current-template="selectedTemplate"
+    :templates="availableTemplates"
+    :show-preview="true"
+    :show-search="true"
+    layout="grid"
+    :columns="3"
+    @template-change="handleTemplateChange"
+    @template-preview="handleTemplatePreview"
+  />
+</template>
+```
+
+#### 组件属性
+
+```typescript
+interface TemplateSelectorProps {
+  category: string // 模板分类
+  device?: DeviceType // 设备类型
+  currentTemplate?: string // 当前选中的模板
+  showPreview?: boolean // 是否显示预览
+  showSearch?: boolean // 是否显示搜索
+  layout?: 'grid' | 'list' // 布局模式
+  columns?: number // 网格列数
+  showInfo?: boolean // 是否显示模板信息
+  onTemplateChange?: (template: string) => void // 模板变化回调
+  onTemplatePreview?: (template: string) => void // 模板预览回调
+}
+```
+
+#### 功能特性
+
+- 🎯 **智能分类**：根据模板分类自动分组显示
+- 📱 **设备适配**：根据设备类型动态筛选模板
+- 🔍 **实时搜索**：支持模板名称、描述、标签搜索
+- 👀 **预览功能**：鼠标悬停即可预览模板
+- 🎨 **多种布局**：支持网格和列表两种布局模式
+- ⚡ **实时响应**：设备类型变化时自动更新模板列表
+
+### useTemplateSelector Hook
+
+```typescript
+const {
+  availableTemplates, // 可用模板列表
+  filteredTemplates, // 过滤后的模板列表
+  searchQuery, // 搜索查询
+  selectedTemplate, // 选中的模板
+  loading, // 加载状态
+  error, // 错误信息
+  selectTemplate, // 选择模板
+  previewTemplate, // 预览模板
+  searchTemplates, // 搜索模板
+  refreshTemplates, // 刷新模板列表
+  reset, // 重置选择器
+} = useTemplateSelector(options)
+```
+
 ## 🧪 测试
 
 ```bash

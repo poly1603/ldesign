@@ -42,10 +42,17 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
     version,
     dependencies,
 
-    async install(engine: any) {
+    async install(context: any) {
       console.log(`🎨 安装 Template 插件: ${name} v${version}`)
 
       try {
+        // 从 context 中获取 engine（与 I18n 插件保持一致）
+        const engine = context.engine || context
+
+        console.log('🔍 Template 插件安装开始')
+        console.log('🔍 Context 对象:', context)
+        console.log('🔍 Engine 对象:', engine)
+        console.log('🔍 Engine 类型:', typeof engine)
         // 动态导入模板管理器
         const { TemplateManager } = await import('../core/manager')
 
@@ -67,10 +74,22 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
           engine.state.set('template:currentTemplate', null)
         }
 
-        // 注册全局属性（如果引擎有Vue应用实例）
+        // 注册全局属性和指令（如果引擎有Vue应用实例）
+        console.log('🔍 检查引擎是否有 getApp 方法:', !!engine.getApp)
+        console.log('🔍 getApp 方法类型:', typeof engine.getApp)
+
         if (engine.getApp && typeof engine.getApp === 'function') {
+          console.log('🔍 开始获取 Vue 应用实例...')
           const app = engine.getApp()
+          console.log('🔍 获取到的 Vue 应用实例:', app)
+          console.log('🔍 应用实例类型:', typeof app)
+          console.log('🔍 应用实例配置:', app?.config)
+          console.log('🔍 应用实例全局属性:', app?.config?.globalProperties)
+          console.log('🔍 应用实例指令方法:', typeof app?.directive)
+
           if (app && app.config && app.config.globalProperties) {
+            console.log('🔍 Vue 应用实例验证通过，开始注册全局属性和指令...')
+            // 注册全局属性
             app.config.globalProperties.$templateManager = manager
             app.config.globalProperties.$template = {
               manager,
@@ -79,6 +98,103 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
               getCurrentDevice: manager.getCurrentDevice.bind(manager),
               getTemplates: manager.getTemplates.bind(manager),
             }
+
+            // 注册 v-template 指令
+            app.directive('template', {
+              async mounted(el: HTMLElement, binding: any, vnode: any) {
+                const { category, device, template, props = {} } = binding.value || {}
+
+                if (!category || !template) {
+                  console.warn('v-template 指令需要 category 和 template 参数')
+                  return
+                }
+
+                console.log(`🎨 v-template 指令开始渲染: ${category}/${device || 'auto'}/${template}`)
+
+                try {
+                  const result = await manager.render({
+                    category,
+                    device: device || manager.getCurrentDevice(),
+                    template: template,
+                    props,
+                  })
+
+                  console.log(`✅ v-template 指令渲染成功:`, result)
+
+                  // 使用 Vue 的 createApp 来渲染组件到指定元素
+                  const { createApp, h } = await import('vue')
+
+                  // 清空原有内容
+                  el.innerHTML = ''
+
+                  // 创建一个新的 Vue 应用来渲染模板组件
+                  const templateApp = createApp({
+                    render() {
+                      return h(result.component, props)
+                    },
+                  })
+
+                  // 挂载到元素
+                  templateApp.mount(el)
+
+                  // 保存应用实例以便后续清理
+                  ;(el as any).__templateApp = templateApp
+                } catch (error) {
+                  console.error('❌ v-template 指令渲染失败:', error)
+                  // 保持原有内容作为备用
+                }
+              },
+
+              async updated(el: HTMLElement, binding: any) {
+                // 处理指令更新
+                if (binding.value !== binding.oldValue) {
+                  // 清理旧的应用实例
+                  if ((el as any).__templateApp) {
+                    ;(el as any).__templateApp.unmount()
+                    delete (el as any).__templateApp
+                  }
+
+                  // 重新渲染
+                  const { category, deviceType, templateId, props = {} } = binding.value || {}
+
+                  if (category && templateId) {
+                    try {
+                      const result = await manager.render({
+                        category,
+                        device: deviceType || manager.getCurrentDevice(),
+                        template: templateId,
+                        props,
+                      })
+
+                      const { createApp, h } = await import('vue')
+
+                      el.innerHTML = ''
+
+                      const templateApp = createApp({
+                        render() {
+                          return h(result.component, props)
+                        },
+                      })
+
+                      templateApp.mount(el)
+                      ;(el as any).__templateApp = templateApp
+                    } catch (error) {
+                      console.error('❌ v-template 指令更新失败:', error)
+                    }
+                  }
+                }
+              },
+
+              unmounted(el: HTMLElement) {
+                // 清理应用实例
+                if ((el as any).__templateApp) {
+                  ;(el as any).__templateApp.unmount()
+                  delete (el as any).__templateApp
+                }
+              },
+            })
+
+            console.log('✅ 注册 v-template 指令成功')
           }
         }
 

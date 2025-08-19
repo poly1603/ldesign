@@ -55,10 +55,12 @@ core/
 vue/
 ├── components/           # Vue 组件
 │   ├── TemplateRenderer.tsx    # 模板渲染器
+│   ├── TemplateSelector.tsx    # 模板选择器
 │   ├── LazyTemplate.tsx        # 懒加载组件
 │   └── PerformanceMonitor.tsx  # 性能监控组件
 ├── composables/         # 组合式函数
 │   ├── useTemplate.ts          # 模板管理 Hook
+│   ├── useTemplateSelector.ts  # 模板选择器 Hook
 │   ├── useTemplateSystem.ts    # 模板系统 Hook
 │   └── useVirtualScroll.ts     # 虚拟滚动 Hook
 ├── directives/          # 自定义指令
@@ -135,7 +137,7 @@ class TemplateManager {
 
 ```typescript
 interface DeviceDetectionStrategy {
-  detect(config: DeviceConfig): DeviceType
+  detect: (config: DeviceConfig) => DeviceType
 }
 
 class ViewportStrategy implements DeviceDetectionStrategy {
@@ -332,8 +334,8 @@ class PerformanceMonitor {
 interface TemplatePlugin {
   name: string
   version: string
-  install(manager: TemplateManager): void
-  uninstall?(manager: TemplateManager): void
+  install: (manager: TemplateManager) => void
+  uninstall?: (manager: TemplateManager) => void
 }
 
 // 插件注册
@@ -357,8 +359,8 @@ interface TemplateHooks {
 
 ```typescript
 interface TemplateLoader {
-  canLoad(identifier: TemplateIdentifier): boolean
-  load(identifier: TemplateIdentifier): Promise<Component>
+  canLoad: (identifier: TemplateIdentifier) => boolean
+  load: (identifier: TemplateIdentifier) => Promise<Component>
 }
 
 // 自定义加载器示例
@@ -379,7 +381,10 @@ class RemoteTemplateLoader implements TemplateLoader {
 
 ```typescript
 interface TemplateValidator {
-  validate(component: Component, metadata: TemplateMetadata): ValidationResult
+  validate: (
+    component: Component,
+    metadata: TemplateMetadata
+  ) => ValidationResult
 }
 
 class SecurityValidator implements TemplateValidator {

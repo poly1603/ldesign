@@ -41,6 +41,10 @@ class SimpleCache {
     this.cache.clear()
     this.timestamps.clear()
   }
+
+  get size(): number {
+    return this.cache.size
+  }
 }
 
 /**
@@ -70,8 +74,8 @@ export class TemplateLoader {
       }
 
       // 动态加载组件
-      console.log(`🔄 动态加载模板: ${metadata.componentPath}`)
-      const component = await this.loadComponent(metadata.componentPath)
+      console.log(`🔄 动态加载模板: ${metadata.componentPath || metadata.path}`)
+      const component = await this.loadComponent(metadata)
 
       // 缓存组件
       this.cache.set(cacheKey, component)
@@ -127,8 +131,19 @@ export class TemplateLoader {
   /**
    * 动态加载组件
    */
-  private async loadComponent(componentPath: string): Promise<Component> {
+  private async loadComponent(metadata: TemplateMetadata): Promise<Component> {
     try {
+      // 如果是预构建模板，使用模板映射表
+      if (metadata.path && metadata.path.startsWith('templates/')) {
+        return await this.loadPrebuiltComponent(metadata)
+      }
+
+      // 传统的文件路径加载方式
+      const componentPath = metadata.componentPath || metadata.path
+      if (!componentPath) {
+        throw new Error('No component path provided')
+      }
+
       // 尝试多种可能的导入方式
       const importPaths = [
         componentPath,
@@ -158,7 +173,46 @@ export class TemplateLoader {
 
       throw lastError || new Error(`No valid component found for ${componentPath}`)
     } catch (error) {
-      console.error(`Failed to load component: ${componentPath}`, error)
+      console.error(`Failed to load component:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * 加载预构建组件
+   */
+  private async loadPrebuiltComponent(metadata: TemplateMetadata): Promise<Component> {
+    try {
+      console.log(`🔄 加载预构建模板: ${metadata.category}/${metadata.device}/${metadata.template}`)
+
+      // 动态导入模板映射表
+      const { templateMap } = await import('../templates')
+
+      // 获取对应的组件
+      const categoryMap = templateMap[metadata.category as keyof typeof templateMap]
+      if (!categoryMap) {
+        throw new Error(`Category not found: ${metadata.category}`)
+      }
+
+      const deviceMap = categoryMap[metadata.device as keyof typeof categoryMap]
+      if (!deviceMap) {
+        throw new Error(`Device not found: ${metadata.device}`)
+      }
+
+      const component = deviceMap[metadata.template as keyof typeof deviceMap]
+      if (!component) {
+        throw new Error(`Template not found: ${metadata.template}`)
+      }
+
+      // 直接使用组件，不需要再执行动态导入
+      if (!component) {
+        throw new Error(`No component found in prebuilt template`)
+      }
+
+      console.log(`✅ 预构建模板加载成功: ${metadata.category}/${metadata.device}/${metadata.template}`)
+      return this.wrapComponent(component, `prebuilt:${metadata.category}/${metadata.device}/${metadata.template}`)
+    } catch (error) {
+      console.error('❌ 预构建模板加载失败:', error)
       throw error
     }
   }
@@ -294,7 +348,7 @@ export class TemplateLoader {
    */
   getCacheStats(): { size: number } {
     return {
-      size: this.cache.cache.size, // 简单实现
+      size: this.cache.size, // 使用 size 属性
     }
   }
 }

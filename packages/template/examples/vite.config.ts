@@ -4,36 +4,22 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          // 启用模板编译器
-          isCustomElement: _tag => false,
-        },
-      },
-    }),
-    vueJsx(),
-  ],
-
+  plugins: [vue(), vueJsx()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ldesign/template': resolve(__dirname, '../es'),
+      '@ldesign/template': resolve(__dirname, '../src'),
     },
   },
-
   server: {
-    port: 3005,
-    open: true,
+    port: 3006,
+    host: true,
   },
-
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-  },
-
-  esbuild: {
-    target: 'es2020',
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+      },
+    },
   },
 })

@@ -1,9 +1,11 @@
 /**
  * LDesign 完整应用演示入口文件
  *
- * 这个应用展示了 LDesign Engine 和 Router 的集成功能：
+ * 这个应用展示了 LDesign 生态系统的完整集成：
  * - LDesign Engine 插件化架构
  * - @ldesign/router 路由管理
+ * - @ldesign/i18n 国际化支持
+ * - @ldesign/template 模板系统
  * - 状态管理集成
  * - 性能监控
  * - 错误处理
@@ -12,6 +14,7 @@
 import { createApp, presets } from '@ldesign/engine'
 import { createAppI18nPlugin } from './i18n'
 import { createRouterEnginePlugin } from '@ldesign/router'
+import { createTemplateEnginePlugin } from '@ldesign/template'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { routes } from './router/routes'
@@ -67,6 +70,19 @@ async function createLDesignApp() {
         version: '1.0.0',
       })
     )
+
+    // 集成模板系统插件（在路由插件之后）
+    console.log('🎨 开始安装模板系统插件...')
+    await engine.use(
+      createTemplateEnginePlugin({
+        name: 'template',
+        version: '1.0.0',
+        enableCache: true,
+        autoDetectDevice: true,
+        debug: appConfig.debug,
+      })
+    )
+    console.log('✅ 模板系统插件安装完成')
 
     // 全局错误处理
     vueApp.config.errorHandler = (err: any, vm: any, info: any) => {

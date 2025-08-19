@@ -33,6 +33,7 @@
     "@ldesign/engine": "workspace:*",
     "@ldesign/i18n": "workspace:*",
     "@ldesign/router": "workspace:*",
+    "@ldesign/template": "workspace:*",
     "pinia": "^2.3.1",
     "vue": "^3.4.0"
   },

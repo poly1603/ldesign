@@ -109,19 +109,19 @@ export const DEVICE_BREAKPOINTS = {
 4. 类型导入
 
 ```typescript
+// 4. 类型导入
+import type { DeviceType, TemplateConfig } from '../types'
 // 1. Node.js 内置模块
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+
+import { resolve } from 'node:path'
 
 // 2. 第三方库
 import { defineComponent, ref } from 'vue'
-
 // 3. 项目内部模块
 import { TemplateManager } from '../core/TemplateManager'
-import { detectDeviceType } from '../utils/device'
 
-// 4. 类型导入
-import type { DeviceType, TemplateConfig } from '../types'
+import { detectDeviceType } from '../utils/device'
 ```
 
 ### 导出组织
@@ -129,11 +129,11 @@ import type { DeviceType, TemplateConfig } from '../types'
 使用分组注释组织导出：
 
 ```typescript
-// ============ 核心功能 ============
-export { TemplateManager } from './core/TemplateManager'
-
 // ============ 设备检测 ============
 export { detectDeviceType, getDeviceInfo } from './core/device'
+
+// ============ 核心功能 ============
+export { TemplateManager } from './core/TemplateManager'
 
 // ============ 类型定义 ============
 export type * from './types'
@@ -213,7 +213,7 @@ const component = markRaw(defineAsyncComponent(() => import('./Component.vue')))
 // ✅ 实现智能缓存
 const componentCache = new Map<string, Component>()
 
-const getComponent = (key: string) => {
+function getComponent(key: string) {
   if (componentCache.has(key)) {
     return componentCache.get(key)
   }

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { DeviceType, TemplateInfo } from '@ldesign/template/vue'
-import { templateConfigs, useTemplate } from '@ldesign/template/vue'
-import { computed, markRaw, ref, watch } from 'vue'
-
-// 模板画廊页面加载
+import type { DeviceType, TemplateMetadata } from '@ldesign/template'
+import { TemplateRenderer, useTemplate } from '@ldesign/template/vue'
+import { computed, ref, watch } from 'vue'
 
 // 设备类型
 const deviceTypes = [
@@ -17,9 +15,9 @@ const deviceTypes = [
 const selectedDevice = ref<'all' | DeviceType>('all')
 
 // 选中的模板
-const selectedTemplate = ref<TemplateInfo | null>(null)
+const selectedTemplate = ref<TemplateMetadata | null>(null)
 
-// 获取各设备类型的模板（优化：避免在computed中重复调用useTemplate）
+// 获取各设备类型的模板
 const { availableTemplates: desktopTemplates } = useTemplate({
   category: 'login',
   deviceType: 'desktop',
@@ -35,15 +33,10 @@ const { availableTemplates: mobileTemplates } = useTemplate({
   deviceType: 'mobile',
 })
 
-// 所有模板（使用markRaw优化性能）
+// 所有模板
 const allAvailableTemplates = computed(() => {
   const allTemplates = [...desktopTemplates.value, ...tabletTemplates.value, ...mobileTemplates.value]
-
-  // 使用markRaw标记组件为非响应式
-  return allTemplates.map(template => ({
-    ...template,
-    component: markRaw(template.component),
-  }))
+  return allTemplates.filter(template => template && template.componentPath)
 })
 
 // 过滤后的模板
@@ -51,7 +44,7 @@ const filteredTemplates = computed(() => {
   if (selectedDevice.value === 'all') {
     return allAvailableTemplates.value
   }
-  return allAvailableTemplates.value.filter(template => template.deviceType === selectedDevice.value)
+  return allAvailableTemplates.value.filter(template => template.device === selectedDevice.value)
 })
 
 // 获取设备图标
@@ -61,29 +54,14 @@ function getDeviceIcon(deviceType: DeviceType) {
 }
 
 // 选择模板
-function selectTemplate(template: TemplateInfo) {
-  // 使用 markRaw 标记组件为非响应式，避免性能开销
-  selectedTemplate.value = {
-    ...template,
-    component: markRaw(template.component),
-  }
-}
-
-// 获取模板配置
-function getTemplateConfig(template: TemplateInfo) {
-  if (template.deviceType === 'desktop') {
-    return templateConfigs.login[template.id as keyof typeof templateConfigs.login] || templateConfigs.login.default
-  } else if (template.deviceType === 'tablet') {
-    return templateConfigs.login.tablet
-  } else {
-    return templateConfigs.login.mobile
-  }
+function selectTemplate(template: TemplateMetadata) {
+  selectedTemplate.value = template
 }
 
 // 事件处理函数
 function handleLogin(data: any) {
   alert(
-    `登录成功！\n模板: ${selectedTemplate.value?.name}\n设备: ${selectedTemplate.value?.deviceType}\n用户名: ${data.username}`
+    `登录成功！\n模板: ${selectedTemplate.value?.config.name}\n设备: ${selectedTemplate.value?.device}\n用户名: ${data.username}`
   )
 }
 
@@ -104,12 +82,7 @@ watch(
   allAvailableTemplates,
   templates => {
     if (templates.length > 0 && !selectedTemplate.value) {
-      // 选择第一个模板作为默认模板，并确保组件使用markRaw
-      const firstTemplate = templates[0]
-      selectedTemplate.value = {
-        ...firstTemplate,
-        component: markRaw(firstTemplate.component),
-      }
+      selectedTemplate.value = templates[0]
     }
   },
   { immediate: true }
@@ -150,7 +123,7 @@ watch(
               <span class="template-gallery__stat-label">个模板</span>
             </div>
             <div class="template-gallery__stat">
-              <span class="template-gallery__stat-number">{{ deviceTypes.length }}</span>
+              <span class="template-gallery__stat-number">{{ deviceTypes.length - 1 }}</span>
               <span class="template-gallery__stat-label">种设备</span>
             </div>
           </div>
@@ -159,16 +132,16 @@ watch(
         <div class="template-gallery__grid">
           <div
             v-for="template in filteredTemplates"
-            :key="`${template.deviceType}-${template.id}`"
+            :key="`${template.device}-${template.template}`"
             class="template-gallery__card"
             @click="selectTemplate(template)"
           >
             <div class="template-gallery__card-header">
               <div class="template-gallery__card-device">
-                {{ getDeviceIcon(template.deviceType) }} {{ template.deviceType }}
+                {{ getDeviceIcon(template.device) }} {{ template.device }}
               </div>
               <div
-                v-if="selectedTemplate?.id === template.id && selectedTemplate?.deviceType === template.deviceType"
+                v-if="selectedTemplate?.template === template.template && selectedTemplate?.device === template.device"
                 class="template-gallery__card-selected"
               >
                 ✓
@@ -179,17 +152,17 @@ watch(
               <div class="template-gallery__preview-placeholder">
                 <div class="template-gallery__preview-icon">🎨</div>
                 <div class="template-gallery__preview-text">
-                  {{ template.name }}
+                  {{ template.config.name || template.template }}
                 </div>
               </div>
             </div>
 
             <div class="template-gallery__card-info">
               <h3 class="template-gallery__card-title">
-                {{ template.name }}
+                {{ template.config.name || template.template }}
               </h3>
               <p class="template-gallery__card-description">
-                {{ template.description }}
+                {{ template.config.description || `${template.device}端的${template.template}登录模板` }}
               </p>
             </div>
           </div>
@@ -200,21 +173,24 @@ watch(
             <h2>模板预览</h2>
             <div class="template-gallery__preview-info">
               <span class="template-gallery__preview-device">
-                {{ getDeviceIcon(selectedTemplate.deviceType) }} {{ selectedTemplate.deviceType }}
+                {{ getDeviceIcon(selectedTemplate.device) }} {{ selectedTemplate.device }}
               </span>
-              <span class="template-gallery__preview-name">{{ selectedTemplate.name }}</span>
+              <span class="template-gallery__preview-name">{{
+                selectedTemplate.config.name || selectedTemplate.template
+              }}</span>
             </div>
           </div>
 
           <div
             class="template-gallery__preview-container"
-            :class="`template-gallery__preview-container--${selectedTemplate.deviceType}`"
+            :class="`template-gallery__preview-container--${selectedTemplate.device}`"
           >
             <div class="template-gallery__device-frame">
               <div class="template-gallery__device-screen">
-                <component
-                  :is="selectedTemplate.component"
-                  v-bind="getTemplateConfig(selectedTemplate)"
+                <TemplateRenderer
+                  :category="selectedTemplate.category"
+                  :device="selectedTemplate.device"
+                  :template="selectedTemplate.template"
                   @login="handleLogin"
                   @register="handleRegister"
                   @forgot-password="handleForgotPassword"
@@ -229,15 +205,19 @@ watch(
             <div class="template-gallery__details-grid">
               <div class="template-gallery__detail-item">
                 <span class="template-gallery__detail-label">名称:</span>
-                <span class="template-gallery__detail-value">{{ selectedTemplate.name }}</span>
+                <span class="template-gallery__detail-value">{{
+                  selectedTemplate.config.name || selectedTemplate.template
+                }}</span>
               </div>
               <div class="template-gallery__detail-item">
                 <span class="template-gallery__detail-label">描述:</span>
-                <span class="template-gallery__detail-value">{{ selectedTemplate.description }}</span>
+                <span class="template-gallery__detail-value">{{
+                  selectedTemplate.config.description || '暂无描述'
+                }}</span>
               </div>
               <div class="template-gallery__detail-item">
                 <span class="template-gallery__detail-label">设备类型:</span>
-                <span class="template-gallery__detail-value">{{ selectedTemplate.deviceType }}</span>
+                <span class="template-gallery__detail-value">{{ selectedTemplate.device }}</span>
               </div>
               <div class="template-gallery__detail-item">
                 <span class="template-gallery__detail-label">类别:</span>

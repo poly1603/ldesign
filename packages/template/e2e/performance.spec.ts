@@ -20,7 +20,7 @@ test.describe('性能测试', () => {
       return performance.getEntriesByType('navigation')[0]
     })
 
-    expect(performanceEntries.loadEventEnd - performanceEntries.loadEventStart).toBeLessThan(1000)
+    expect((performanceEntries as any).loadEventEnd - (performanceEntries as any).loadEventStart).toBeLessThan(1000)
   })
 
   test('模板切换性能', async ({ page }) => {
@@ -86,7 +86,7 @@ test.describe('性能测试', () => {
     // 快速滚动测试
     const scrollStartTime = performance.now()
     for (let i = 0; i < 10; i++) {
-      await container.scroll({ top: i * 1000 })
+      await container.evaluate((el, scrollTop) => (el.scrollTop = scrollTop), i * 1000)
       await page.waitForTimeout(50)
     }
     const scrollEndTime = performance.now()
@@ -229,7 +229,7 @@ test.describe('性能测试', () => {
 
   test('资源使用优化', async ({ page }) => {
     // 监控网络请求
-    const requests = []
+    const requests: any[] = []
     page.on('request', request => {
       requests.push({
         url: request.url(),

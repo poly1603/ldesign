@@ -1,0 +1,44 @@
+# 构建产物
+dist/
+cjs/
+esm/
+lib/
+build/
+
+# 依赖
+node_modules/
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# 日志文件
+*.log
+logs/
+
+# 覆盖率报告
+coverage/
+.nyc_output/
+
+# IDE 文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 文档构建产物
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# 测试快照
+__snapshots__/
+
+# 特定文件
+*.md
+!README.md
+!docs/**/*.md

@@ -34,6 +34,24 @@
 ### 示例
 
 ```vue
+<script setup>
+function handleTemplateChange(templateId) {
+  console.log('模板切换:', templateId)
+}
+
+function handlePerformanceUpdate(data) {
+  console.log('性能数据:', data)
+}
+
+function handleLoadStart() {
+  console.log('开始加载')
+}
+
+function handleLoadEnd({ renderTime }) {
+  console.log('加载完成，耗时:', renderTime, 'ms')
+}
+</script>
+
 <template>
   <TemplateRenderer
     category="login"
@@ -48,24 +66,6 @@
     @load-end="handleLoadEnd"
   />
 </template>
-
-<script setup>
-const handleTemplateChange = templateId => {
-  console.log('模板切换:', templateId)
-}
-
-const handlePerformanceUpdate = data => {
-  console.log('性能数据:', data)
-}
-
-const handleLoadStart = () => {
-  console.log('开始加载')
-}
-
-const handleLoadEnd = ({ renderTime }) => {
-  console.log('加载完成，耗时:', renderTime, 'ms')
-}
-</script>
 ```
 
 ## 🆕 LazyTemplate
@@ -103,6 +103,20 @@ const handleLoadEnd = ({ renderTime }) => {
 ### 示例
 
 ```vue
+<script setup>
+function handleLoad(component) {
+  console.log('模板加载完成:', component)
+}
+
+function handleVisible() {
+  console.log('模板进入可视区域')
+}
+
+function handleError(error) {
+  console.error('模板加载失败:', error)
+}
+</script>
+
 <template>
   <LazyTemplate
     category="login"
@@ -128,24 +142,10 @@ const handleLoadEnd = ({ renderTime }) => {
     </template>
 
     <template #placeholder>
-      <div class="skeleton-loader"></div>
+      <div class="skeleton-loader" />
     </template>
   </LazyTemplate>
 </template>
-
-<script setup>
-const handleLoad = component => {
-  console.log('模板加载完成:', component)
-}
-
-const handleVisible = () => {
-  console.log('模板进入可视区域')
-}
-
-const handleError = error => {
-  console.error('模板加载失败:', error)
-}
-</script>
 ```
 
 ## 🆕 PerformanceMonitor
@@ -169,6 +169,21 @@ const handleError = error => {
 ### 示例
 
 ```vue
+<script setup>
+function handlePerformanceUpdate(data) {
+  console.log('性能数据:', data)
+
+  // 性能警告
+  if (data.rendering?.fps < 30) {
+    console.warn('FPS 过低:', data.rendering.fps)
+  }
+
+  if (data.memory?.percentage > 80) {
+    console.warn('内存使用率过高:', `${data.memory.percentage}%`)
+  }
+}
+</script>
+
 <template>
   <div class="app">
     <!-- 你的应用内容 -->
@@ -186,21 +201,6 @@ const handleError = error => {
     />
   </div>
 </template>
-
-<script setup>
-const handlePerformanceUpdate = data => {
-  console.log('性能数据:', data)
-
-  // 性能警告
-  if (data.rendering?.fps < 30) {
-    console.warn('FPS 过低:', data.rendering.fps)
-  }
-
-  if (data.memory?.percentage > 80) {
-    console.warn('内存使用率过高:', data.memory.percentage + '%')
-  }
-}
-</script>
 ```
 
 ## 类型定义

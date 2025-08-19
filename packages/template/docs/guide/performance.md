@@ -68,33 +68,9 @@ console.log('平均加载时间:', metrics.averageLoadTime)
 对于大量模板列表，使用新的虚拟滚动 Hook：
 
 ```vue
-<template>
-  <div
-    ref="containerRef"
-    class="virtual-scroll-container"
-    :style="{ height: '400px', overflow: 'auto' }"
-    @scroll="handleScroll"
-  >
-    <div :style="{ height: totalHeight + 'px', position: 'relative' }">
-      <div
-        v-for="item in visibleItems"
-        :key="item.id"
-        :style="{
-          position: 'absolute',
-          top: item.top + 'px',
-          height: '60px',
-          width: '100%',
-        }"
-      >
-        <TemplateCard :template="item" />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import { useVirtualScroll } from '@ldesign/template/vue'
+import { ref } from 'vue'
 
 const templates = ref([
   /* 大量模板数据 */
@@ -107,6 +83,30 @@ const { containerRef, visibleItems, totalHeight, handleScroll, scrollToItem } =
     buffer: 5,
   })
 </script>
+
+<template>
+  <div
+    ref="containerRef"
+    class="virtual-scroll-container"
+    :style="{ height: '400px', overflow: 'auto' }"
+    @scroll="handleScroll"
+  >
+    <div :style="{ height: `${totalHeight}px`, position: 'relative' }">
+      <div
+        v-for="item in visibleItems"
+        :key="item.id"
+        :style="{
+          position: 'absolute',
+          top: `${item.top}px`,
+          height: '60px',
+          width: '100%',
+        }"
+      >
+        <TemplateCard :template="item" />
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ### 实时性能监控
@@ -114,6 +114,27 @@ const { containerRef, visibleItems, totalHeight, handleScroll, scrollToItem } =
 新的 `PerformanceMonitor` 组件提供实时性能监控：
 
 ```vue
+<script setup>
+function onPerformanceUpdate(data) {
+  // 性能警告
+  if (data.rendering?.fps < 30) {
+    console.warn('FPS 过低:', data.rendering.fps)
+  }
+
+  if (data.memory?.percentage > 80) {
+    console.warn('内存使用率过高:', `${data.memory.percentage}%`)
+  }
+}
+
+function onLoadStart() {
+  console.log('模板开始加载')
+}
+
+function onLoadEnd({ renderTime }) {
+  console.log('模板加载完成，耗时:', renderTime, 'ms')
+}
+</script>
+
 <template>
   <div class="app">
     <TemplateRenderer
@@ -132,27 +153,6 @@ const { containerRef, visibleItems, totalHeight, handleScroll, scrollToItem } =
     />
   </div>
 </template>
-
-<script setup>
-const onPerformanceUpdate = data => {
-  // 性能警告
-  if (data.rendering?.fps < 30) {
-    console.warn('FPS 过低:', data.rendering.fps)
-  }
-
-  if (data.memory?.percentage > 80) {
-    console.warn('内存使用率过高:', data.memory.percentage + '%')
-  }
-}
-
-const onLoadStart = () => {
-  console.log('模板开始加载')
-}
-
-const onLoadEnd = ({ renderTime }) => {
-  console.log('模板加载完成，耗时:', renderTime, 'ms')
-}
-</script>
 ```
 
 ## 加载优化

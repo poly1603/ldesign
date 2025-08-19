@@ -34,6 +34,10 @@ export { TemplateScanner } from './core/scanner'
 /** Engine 插件创建函数 */
 export { createDefaultTemplateEnginePlugin, createTemplateEnginePlugin } from './engine/plugin'
 
+// ============ 模板组件 ============
+/** 内置模板组件 */
+export * from './templates'
+
 // ============ 类型定义 ============
 export type * from './types'
 
@@ -55,9 +59,11 @@ export {
 // ============ Vue 集成 ============
 /** Vue 组件 */
 export { TemplateRenderer } from './vue/components/TemplateRenderer'
+export { TemplateSelector } from './vue/components/TemplateSelector'
 
 /** Vue 组合式函数 */
 export { useTemplate } from './vue/composables/useTemplate'
+export { useTemplateSelector } from './vue/composables/useTemplateSelector'
 
 /** Vue 插件 */
 export {

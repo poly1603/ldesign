@@ -1,6 +1,6 @@
 import type { TemplateManagerConfig } from '@/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { TemplateManager } from '@/core/TemplateManager'
+import { TemplateManager } from '@/core/manager'
 
 describe('templateManager', () => {
   let manager: TemplateManager
@@ -8,11 +8,10 @@ describe('templateManager', () => {
 
   beforeEach(() => {
     config = {
-      templateRoot: 'src/templates',
       enableCache: true,
-      cacheLimit: 10,
-      enablePreload: false,
-      defaultDevice: 'desktop',
+      cacheExpiration: 5 * 60 * 1000,
+      autoDetectDevice: false,
+      debug: false,
     }
     manager = new TemplateManager(config)
   })
@@ -27,23 +26,21 @@ describe('templateManager', () => {
       expect(manager.getCurrentDevice()).toBe('desktop')
     })
 
-    it('应该合并默认配置', () => {
-      const managerConfig = manager.getConfig()
-      expect(managerConfig.enableCache).toBe(true)
-      expect(managerConfig.cacheLimit).toBe(10)
-      expect(managerConfig.templateRoot).toBe('src/templates')
+    it('应该正确获取可用分类', () => {
+      const categories = manager.getAvailableCategories()
+      expect(Array.isArray(categories)).toBe(true)
     })
   })
 
   describe('设备检测', () => {
-    it('应该能检测当前设备类型', () => {
-      const device = manager.detectDevice()
-      expect(['desktop', 'mobile', 'tablet']).toContain(device)
-    })
-
     it('应该能获取当前设备类型', () => {
       const device = manager.getCurrentDevice()
       expect(['desktop', 'mobile', 'tablet']).toContain(device)
+    })
+
+    it('应该能获取可用设备类型', () => {
+      const devices = manager.getAvailableDevices()
+      expect(Array.isArray(devices)).toBe(true)
     })
   })
 
@@ -58,24 +55,24 @@ describe('templateManager', () => {
 
     it('应该能获取可用模板列表', async () => {
       await manager.scanTemplates()
-      const templates = await manager.getAvailableTemplates()
+      const templates = manager.getTemplates()
       expect(templates).toBeInstanceOf(Array)
     })
 
     it('应该能按分类获取模板', async () => {
       await manager.scanTemplates()
-      const templates = await manager.getAvailableTemplates('login')
+      const templates = manager.getTemplates('login')
       expect(templates).toBeInstanceOf(Array)
-      templates.forEach(template => {
+      templates.forEach((template: any) => {
         expect(template.category).toBe('login')
       })
     })
 
     it('应该能按设备类型获取模板', async () => {
       await manager.scanTemplates()
-      const templates = await manager.getAvailableTemplates(undefined, 'desktop')
+      const templates = manager.getTemplates(undefined, 'desktop')
       expect(templates).toBeInstanceOf(Array)
-      templates.forEach(template => {
+      templates.forEach((template: any) => {
         expect(template.device).toBe('desktop')
       })
     })
@@ -86,13 +83,13 @@ describe('templateManager', () => {
       await manager.scanTemplates()
     })
 
-    it('应该能检查模板是否存在', async () => {
-      const exists = await manager.hasTemplate('login', 'desktop', 'classic')
+    it('应该能检查模板是否存在', () => {
+      const exists = manager.hasTemplate('login', 'desktop', 'classic')
       expect(typeof exists).toBe('boolean')
     })
 
-    it('应该能获取模板元数据', async () => {
-      const metadata = await manager.getTemplateMetadata('login', 'desktop', 'classic')
+    it('应该能查找模板元数据', () => {
+      const metadata = manager.findTemplate('login', 'desktop', 'classic')
       if (metadata) {
         expect(metadata.category).toBe('login')
         expect(metadata.device).toBe('desktop')
@@ -101,15 +98,15 @@ describe('templateManager', () => {
       }
     })
 
-    it('应该能获取可用分类', async () => {
-      const categories = await manager.getAvailableCategories()
+    it('应该能获取可用分类', () => {
+      const categories = manager.getAvailableCategories()
       expect(categories).toBeInstanceOf(Array)
     })
 
-    it('应该能获取可用设备类型', async () => {
-      const devices = await manager.getAvailableDevices()
+    it('应该能获取可用设备类型', () => {
+      const devices = manager.getAvailableDevices()
       expect(devices).toBeInstanceOf(Array)
-      devices.forEach(device => {
+      devices.forEach((device: any) => {
         expect(['desktop', 'mobile', 'tablet']).toContain(device)
       })
     })

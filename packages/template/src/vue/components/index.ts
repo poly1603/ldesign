@@ -5,9 +5,16 @@
  */
 
 // ============ 组件 ============
-export { TemplateRenderer } from './TemplateRenderer'
+import TemplateRenderer from './TemplateRenderer'
+import LazyTemplate from './LazyTemplate'
+import PerformanceMonitor from './PerformanceMonitor'
+
+// 重新导出
+export { TemplateRenderer, LazyTemplate, PerformanceMonitor }
 
 // ============ 默认导出 ============
 export default {
   TemplateRenderer,
+  LazyTemplate,
+  PerformanceMonitor,
 }

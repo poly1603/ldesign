@@ -3,21 +3,12 @@
  *
  * 管理应用的全局状态，包括：
  * - 用户认证状态
- * - 性能监控数据
  * - 通知系统
  * - 应用配置
  */
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-
-// 导航记录接口
-export interface NavigationRecord {
-  from: string
-  to: string
-  duration: number
-  timestamp: number
-}
 
 // 通知接口
 export interface Notification {
@@ -29,26 +20,12 @@ export interface Notification {
   timestamp?: number
 }
 
-// 性能统计接口
-export interface PerformanceStats {
-  totalNavigations: number
-  averageDuration: number
-  minDuration: number
-  maxDuration: number
-  lastNavigationDuration: number
-}
-
 export const useAppStore = defineStore('app', () => {
   // ==================== 状态 ====================
 
   // 用户认证
   const isAuthenticated = ref(false)
   const userInfo = ref<any>(null)
-
-  // 性能监控
-  const showPerformanceMonitor = ref(false)
-  const navigationStartTime = ref(0)
-  const navigationRecords = ref<NavigationRecord[]>([])
 
   // 通知系统
   const notifications = ref<Notification[]>([])
@@ -63,36 +40,6 @@ export const useAppStore = defineStore('app', () => {
   const language = ref<'zh-CN' | 'en-US'>('zh-CN')
 
   // ==================== 计算属性 ====================
-
-  // 性能统计
-  const performanceStats = computed<PerformanceStats>(() => {
-    const records = navigationRecords.value
-    if (records.length === 0) {
-      return {
-        totalNavigations: 0,
-        averageDuration: 0,
-        minDuration: 0,
-        maxDuration: 0,
-        lastNavigationDuration: 0,
-      }
-    }
-
-    const durations = records.map(r => r.duration)
-    const total = durations.reduce((sum, d) => sum + d, 0)
-
-    return {
-      totalNavigations: records.length,
-      averageDuration: total / records.length,
-      minDuration: Math.min(...durations),
-      maxDuration: Math.max(...durations),
-      lastNavigationDuration: durations[durations.length - 1] || 0,
-    }
-  })
-
-  // 最近的导航记录（最多保留 50 条）
-  const recentNavigationRecords = computed(() => {
-    return navigationRecords.value.slice(-50)
-  })
 
   // 未读通知数量
   const unreadNotificationsCount = computed(() => {
@@ -179,32 +126,6 @@ export const useAppStore = defineStore('app', () => {
     })
   }
 
-  // 设置导航开始时间
-  const setNavigationStartTime = (time: number) => {
-    navigationStartTime.value = time
-  }
-
-  // 添加导航记录
-  const addNavigationRecord = (record: NavigationRecord) => {
-    navigationRecords.value.push(record)
-
-    // 限制记录数量，避免内存泄漏
-    if (navigationRecords.value.length > 1000) {
-      navigationRecords.value = navigationRecords.value.slice(-500)
-    }
-  }
-
-  // 清除导航记录
-  const clearNavigationRecords = () => {
-    navigationRecords.value = []
-  }
-
-  // 切换性能监控显示
-  const togglePerformanceMonitor = (show?: boolean) => {
-    showPerformanceMonitor.value =
-      show !== undefined ? show : !showPerformanceMonitor.value
-  }
-
   // 添加通知
   const addNotification = (
     notification: Omit<Notification, 'id' | 'timestamp'>
@@ -264,27 +185,18 @@ export const useAppStore = defineStore('app', () => {
     // 状态
     isAuthenticated,
     userInfo,
-    showPerformanceMonitor,
-    navigationStartTime,
-    navigationRecords,
     notifications,
     keepAliveComponents,
     theme,
     language,
 
     // 计算属性
-    performanceStats,
-    recentNavigationRecords,
     unreadNotificationsCount,
 
     // 方法
     initialize,
     login,
     logout,
-    setNavigationStartTime,
-    addNavigationRecord,
-    clearNavigationRecords,
-    togglePerformanceMonitor,
     addNotification,
     removeNotification,
     clearNotifications,

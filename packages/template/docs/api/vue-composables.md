@@ -52,7 +52,7 @@ const { currentTemplate, isLoading, error, loadTemplate, switchTemplate } =
   })
 
 // 加载模板
-const handleLoadTemplate = async () => {
+async function handleLoadTemplate() {
   try {
     await loadTemplate('default')
   } catch (err) {
@@ -61,7 +61,7 @@ const handleLoadTemplate = async () => {
 }
 
 // 切换模板
-const handleSwitchTemplate = async templateId => {
+async function handleSwitchTemplate(templateId) {
   await switchTemplate(templateId)
 }
 </script>
@@ -132,8 +132,8 @@ const {
 
 ```vue
 <script setup>
-import { ref } from 'vue'
 import { useVirtualScroll } from '@ldesign/template/vue'
+import { ref } from 'vue'
 
 const items = ref([
   { id: 1, name: 'Item 1' },
@@ -148,7 +148,7 @@ const { containerRef, visibleItems, totalHeight, handleScroll, scrollToItem } =
     buffer: 5,
   })
 
-const jumpToItem = index => {
+function jumpToItem(index) {
   scrollToItem(index)
 }
 </script>
@@ -165,7 +165,7 @@ const jumpToItem = index => {
     >
       <div
         class="virtual-content"
-        :style="{ height: totalHeight + 'px', position: 'relative' }"
+        :style="{ height: `${totalHeight}px`, position: 'relative' }"
       >
         <div
           v-for="item in visibleItems"
@@ -173,7 +173,7 @@ const jumpToItem = index => {
           class="virtual-item"
           :style="{
             position: 'absolute',
-            top: item.top + 'px',
+            top: `${item.top}px`,
             height: '60px',
             width: '100%',
           }"
@@ -211,8 +211,8 @@ const { containerRef, visibleItems, totalHeight, handleScroll } =
 
 ```vue
 <script setup>
-import { ref } from 'vue'
 import { useSimpleVirtualScroll } from '@ldesign/template/vue'
+import { ref } from 'vue'
 
 const items = ref(
   Array.from({ length: 1000 }, (_, i) => ({
@@ -234,7 +234,7 @@ const { containerRef, visibleItems, totalHeight, handleScroll } =
   >
     <div
       class="virtual-content"
-      :style="{ height: totalHeight + 'px', position: 'relative' }"
+      :style="{ height: `${totalHeight}px`, position: 'relative' }"
     >
       <div
         v-for="item in visibleItems"
@@ -242,7 +242,7 @@ const { containerRef, visibleItems, totalHeight, handleScroll } =
         class="simple-item"
         :style="{
           position: 'absolute',
-          top: item.top + 'px',
+          top: `${item.top}px`,
           height: '50px',
           width: '100%',
         }"
