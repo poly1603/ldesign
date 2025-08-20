@@ -1,13 +1,13 @@
-import type { Ref, ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import type {
+  HttpClient,
+  HttpError,
   RequestConfig,
   ResponseData,
-  HttpError,
-  HttpClient,
 } from './index'
 
 // 重新导出核心类型
-export type { RequestConfig, ResponseData, HttpError, HttpClient }
+export type { HttpClient, HttpError, RequestConfig, ResponseData }
 
 /**
  * 请求状态接口

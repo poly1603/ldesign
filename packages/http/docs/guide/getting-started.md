@@ -132,15 +132,23 @@ const { data, loading, error, refresh } = useRequest<User[]>(
 
 <template>
   <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error" class="error">错误: {{ error.message }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error" class="error">
+      错误: {{ error.message }}
+    </div>
     <div v-else>
       <h2>用户列表</h2>
       <ul>
-        <li v-for="user in data" :key="user.id">{{ user.name }} - {{ user.email }}</li>
+        <li v-for="user in data" :key="user.id">
+          {{ user.name }} - {{ user.email }}
+        </li>
       </ul>
     </div>
-    <button @click="refresh">刷新</button>
+    <button @click="refresh">
+      刷新
+    </button>
   </div>
 </template>
 ```
@@ -177,11 +185,11 @@ const form = ref({
 const { mutate, loading, error } = useMutation(
   (data: typeof form.value) => http.post('/users', data),
   {
-    onSuccess: data => {
+    onSuccess: (data) => {
       console.log('用户创建成功:', data)
       form.value = { name: '', email: '' }
     },
-    onError: error => {
+    onError: (error) => {
       console.error('创建失败:', error)
     },
   }
@@ -194,8 +202,8 @@ function handleSubmit() {
 
 <template>
   <form @submit.prevent="handleSubmit">
-    <input v-model="form.name" placeholder="姓名" required />
-    <input v-model="form.email" type="email" placeholder="邮箱" required />
+    <input v-model="form.name" placeholder="姓名" required>
+    <input v-model="form.email" type="email" placeholder="邮箱" required>
     <button type="submit" :disabled="loading">
       {{ loading ? '提交中...' : '提交' }}
     </button>
@@ -218,7 +226,7 @@ const http = createHttpClient({
   // 默认请求头
   headers: {
     'Content-Type': 'application/json',
-    Accept: 'application/json',
+    'Accept': 'application/json',
   },
 
   // 缓存配置

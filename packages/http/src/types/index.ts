@@ -95,9 +95,9 @@ export interface ErrorInterceptor {
  * 拦截器管理器接口
  */
 export interface InterceptorManager<T> {
-  use(fulfilled: T, rejected?: ErrorInterceptor): number
-  eject(id: number): void
-  clear(): void
+  use: (fulfilled: T, rejected?: ErrorInterceptor) => number
+  eject: (id: number) => void
+  clear: () => void
 }
 
 /**
@@ -132,10 +132,10 @@ export interface CacheConfig {
  * 缓存存储接口
  */
 export interface CacheStorage {
-  get(key: string): Promise<any> | any
-  set(key: string, value: any, ttl?: number): Promise<void> | void
-  delete(key: string): Promise<void> | void
-  clear(): Promise<void> | void
+  get: (key: string) => Promise<any> | any
+  set: (key: string, value: any, ttl?: number) => Promise<void> | void
+  delete: (key: string) => Promise<void> | void
+  clear: () => Promise<void> | void
 }
 
 /**
@@ -169,9 +169,9 @@ export interface HttpAdapter {
   /** 适配器名称 */
   name: string
   /** 发送请求 */
-  request<T = any>(config: RequestConfig): Promise<ResponseData<T>>
+  request: <T = any>(config: RequestConfig) => Promise<ResponseData<T>>
   /** 是否支持该环境 */
-  isSupported(): boolean
+  isSupported: () => boolean
 }
 
 /**
@@ -186,61 +186,61 @@ export interface HttpClient {
   }
 
   /** 发送请求 */
-  request<T = any>(config: RequestConfig): Promise<ResponseData<T>>
+  request: <T = any>(config: RequestConfig) => Promise<ResponseData<T>>
 
   /** GET 请求 */
-  get<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
+  get: <T = any>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** POST 请求 */
-  post<T = any>(
+  post: <T = any>(
     url: string,
     data?: any,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
+  ) => Promise<ResponseData<T>>
 
   /** PUT 请求 */
-  put<T = any>(
+  put: <T = any>(
     url: string,
     data?: any,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
+  ) => Promise<ResponseData<T>>
 
   /** DELETE 请求 */
-  delete<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
+  delete: <T = any>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** PATCH 请求 */
-  patch<T = any>(
+  patch: <T = any>(
     url: string,
     data?: any,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
+  ) => Promise<ResponseData<T>>
 
   /** HEAD 请求 */
-  head<T = any>(url: string, config?: RequestConfig): Promise<ResponseData<T>>
+  head: <T = any>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** OPTIONS 请求 */
-  options<T = any>(
+  options: <T = any>(
     url: string,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
+  ) => Promise<ResponseData<T>>
 
   /** 取消所有请求 */
-  cancelAll(reason?: string): void
+  cancelAll: (reason?: string) => void
 
   /** 获取活跃请求数量 */
-  getActiveRequestCount(): number
+  getActiveRequestCount: () => number
 
   /** 更新重试配置 */
-  updateRetryConfig(config: Partial<RetryConfig>): void
+  updateRetryConfig: (config: Partial<RetryConfig>) => void
 
   /** 获取当前配置 */
-  getConfig(): HttpClientConfig
+  getConfig: () => HttpClientConfig
 
   /** 清空缓存 */
-  clearCache(): Promise<void>
+  clearCache: () => Promise<void>
 
   /** 获取并发状态 */
-  getConcurrencyStatus(): {
+  getConcurrencyStatus: () => {
     activeCount: number
     queuedCount: number
     maxConcurrent: number
@@ -248,45 +248,45 @@ export interface HttpClient {
   }
 
   /** 取消队列中的所有请求 */
-  cancelQueue(reason?: string): void
+  cancelQueue: (reason?: string) => void
 }
 
 /**
  * 严格类型的 HTTP 客户端接口
  */
 export interface TypedHttpClient<TBaseResponse = any> extends HttpClient {
-  request<T = TBaseResponse>(config: RequestConfig): Promise<ResponseData<T>>
-  get<T = TBaseResponse>(
+  request: <T = TBaseResponse>(config: RequestConfig) => Promise<ResponseData<T>>
+  get: <T = TBaseResponse>(
     url: string,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
-  post<T = TBaseResponse, D = any>(
-    url: string,
-    data?: D,
-    config?: RequestConfig
-  ): Promise<ResponseData<T>>
-  put<T = TBaseResponse, D = any>(
+  ) => Promise<ResponseData<T>>
+  post: <T = TBaseResponse, D = any>(
     url: string,
     data?: D,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
-  delete<T = TBaseResponse>(
-    url: string,
-    config?: RequestConfig
-  ): Promise<ResponseData<T>>
-  patch<T = TBaseResponse, D = any>(
+  ) => Promise<ResponseData<T>>
+  put: <T = TBaseResponse, D = any>(
     url: string,
     data?: D,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
-  head<T = TBaseResponse>(
+  ) => Promise<ResponseData<T>>
+  delete: <T = TBaseResponse>(
     url: string,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
-  options<T = TBaseResponse>(
+  ) => Promise<ResponseData<T>>
+  patch: <T = TBaseResponse, D = any>(
+    url: string,
+    data?: D,
+    config?: RequestConfig
+  ) => Promise<ResponseData<T>>
+  head: <T = TBaseResponse>(
     url: string,
     config?: RequestConfig
-  ): Promise<ResponseData<T>>
+  ) => Promise<ResponseData<T>>
+  options: <T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig
+  ) => Promise<ResponseData<T>>
 }
 
 /**

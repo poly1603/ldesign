@@ -8,7 +8,7 @@ import type * as MainModule from '@ldesign/http'
 // Vue 模块不存在
 
 // 类型测试
-type TestMainModule = keyof typeof MainModule
+type _TestMainModule = keyof typeof MainModule
 // Vue 模块类型测试跳过
 
-export {}
+export { }

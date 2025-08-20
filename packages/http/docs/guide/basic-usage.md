@@ -137,7 +137,7 @@ const newUser = await http.post<User, CreateUserRequest>('/users', {
 const response = await http.get('/users', {
   timeout: 5000, // 覆盖全局超时设置
   headers: {
-    Authorization: 'Bearer token123',
+    'Authorization': 'Bearer token123',
     'X-Custom-Header': 'value',
   },
   params: {
@@ -180,18 +180,22 @@ console.log(response.headers) // 响应头对象
 try {
   const response = await http.get('/users/999')
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   if (error.response) {
     // 服务器返回了错误状态码
     console.log('错误状态:', error.response.status)
     console.log('错误数据:', error.response.data)
-  } else if (error.isNetworkError) {
+  }
+  else if (error.isNetworkError) {
     // 网络错误
     console.log('网络连接失败')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     // 超时错误
     console.log('请求超时')
-  } else {
+  }
+  else {
     // 其他错误
     console.log('未知错误:', error.message)
   }
@@ -220,7 +224,8 @@ const results = await Promise.allSettled([
 results.forEach((result, index) => {
   if (result.status === 'fulfilled') {
     console.log(`请求 ${index} 成功:`, result.value.data)
-  } else {
+  }
+  else {
     console.log(`请求 ${index} 失败:`, result.reason.message)
   }
 })
@@ -246,7 +251,8 @@ setTimeout(() => {
 try {
   const response = await requestPromise
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   if (error.isCancelError) {
     console.log('请求已取消')
   }
@@ -313,7 +319,7 @@ async function uploadFile(file: File, onProgress?: (progress: number) => void) {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    onUploadProgress: progressEvent => {
+    onUploadProgress: (progressEvent) => {
       if (onProgress && progressEvent.total) {
         const progress = (progressEvent.loaded / progressEvent.total) * 100
         onProgress(Math.round(progress))
@@ -326,7 +332,7 @@ async function uploadFile(file: File, onProgress?: (progress: number) => void) {
 const fileInput = document.querySelector('input[type="file"]')
 const file = fileInput.files[0]
 
-await uploadFile(file, progress => {
+await uploadFile(file, (progress) => {
   console.log(`上传进度: ${progress}%`)
 })
 ```

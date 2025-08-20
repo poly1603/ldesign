@@ -13,9 +13,8 @@ import type {
  * 类型安全的 HTTP 客户端包装器
  */
 export class TypedHttpClientWrapper<TBaseResponse = any>
-  implements TypedHttpClient<TBaseResponse>
-{
-  constructor(private client: HttpClient) {}
+implements TypedHttpClient<TBaseResponse> {
+  constructor(private client: HttpClient) { }
 
   // 代理所有基础方法
   get interceptors() {
@@ -23,14 +22,14 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
   }
 
   async request<T = TBaseResponse>(
-    config: RequestConfig
+    config: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.request<T>(config)
   }
 
   async get<T = TBaseResponse>(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.get<T>(url, config)
   }
@@ -38,7 +37,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
   async post<T = TBaseResponse, D = any>(
     url: string,
     data?: D,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.post<T>(url, data, config)
   }
@@ -46,14 +45,14 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
   async put<T = TBaseResponse, D = any>(
     url: string,
     data?: D,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.put<T>(url, data, config)
   }
 
   async delete<T = TBaseResponse>(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.delete<T>(url, config)
   }
@@ -61,21 +60,21 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
   async patch<T = TBaseResponse, D = any>(
     url: string,
     data?: D,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.patch<T>(url, data, config)
   }
 
   async head<T = TBaseResponse>(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.head<T>(url, config)
   }
 
   async options<T = TBaseResponse>(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> {
     return this.client.options<T>(url, config)
   }
@@ -114,7 +113,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
   async callEndpoint<TResponse = TBaseResponse, TRequest = any>(
     endpoint: ApiEndpoint<TResponse, TRequest>,
     data?: TRequest,
-    config?: TypedRequestConfig<TRequest>
+    config?: TypedRequestConfig<TRequest>,
   ): Promise<TypedResponseData<TResponse>> {
     const requestConfig: RequestConfig = {
       ...config,
@@ -166,10 +165,10 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
    */
   async conditionalRequest<T = TBaseResponse>(
     condition: boolean | (() => boolean),
-    config: RequestConfig
+    config: RequestConfig,
   ): Promise<ResponseData<T> | null> {
-    const shouldExecute =
-      typeof condition === 'function' ? condition() : condition
+    const shouldExecute
+      = typeof condition === 'function' ? condition() : condition
 
     if (!shouldExecute) {
       return null
@@ -184,14 +183,15 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
   async retryUntilSuccess<T = TBaseResponse>(
     config: RequestConfig,
     maxAttempts = 5,
-    delay = 1000
+    delay = 1000,
   ): Promise<ResponseData<T>> {
-    let lastError: Error
+    let lastError: Error | undefined
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await this.client.request<T>(config)
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
 
         if (attempt === maxAttempts) {
@@ -202,7 +202,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
       }
     }
 
-    throw lastError!
+    throw lastError || new Error('Retry failed')
   }
 
   /**
@@ -214,7 +214,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
       interval: number
       maxAttempts?: number
       condition?: (response: ResponseData<T>) => boolean
-    }
+    },
   ): Promise<ResponseData<T>> {
     const { interval, maxAttempts = Infinity, condition } = options
     let attempts = 0
@@ -238,7 +238,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any>
  * 创建类型安全的 HTTP 客户端
  */
 export function createTypedHttpClient<TBaseResponse = any>(
-  client: HttpClient
+  client: HttpClient,
 ): TypedHttpClient<TBaseResponse> {
   return new TypedHttpClientWrapper<TBaseResponse>(client)
 }
@@ -283,7 +283,7 @@ export class ApiEndpointBuilder<TResponse = any, TRequest = any> {
  */
 export function createEndpoint<
   TResponse = any,
-  TRequest = any
+  TRequest = any,
 >(): ApiEndpointBuilder<TResponse, TRequest> {
   return new ApiEndpointBuilder<TResponse, TRequest>()
 }

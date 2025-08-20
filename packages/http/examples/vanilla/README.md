@@ -95,18 +95,18 @@ console.log(response.data)
 
 ```javascript
 // 添加认证拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 // 添加响应拦截器
 http.interceptors.response.use(
-  response => {
+  (response) => {
     console.log('请求成功:', response)
     return response
   },
-  error => {
+  (error) => {
     console.error('请求失败:', error)
     throw error
   }
@@ -136,12 +136,15 @@ const data2 = await http.get('/users') // 瞬间返回
 try {
   const response = await http.get('/users')
   console.log(response.data)
-} catch (error) {
+}
+catch (error) {
   if (error.isNetworkError) {
     console.error('网络错误:', error.message)
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     console.error('请求超时:', error.message)
-  } else {
+  }
+  else {
     console.error('其他错误:', error.message)
   }
 }

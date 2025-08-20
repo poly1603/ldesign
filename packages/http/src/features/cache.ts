@@ -63,7 +63,8 @@ export class MemoryCacheStorage implements CacheStorage {
 
   async get(key: string): Promise<CacheItem | null> {
     const item = this.cache.get(key)
-    if (!item) return null
+    if (!item)
+      return null
 
     // 检查是否过期
     if (Date.now() > item.timestamp + item.ttl * 1000) {
@@ -116,7 +117,8 @@ export class LocalStorageCacheStorage implements CacheStorage {
   async get(key: string): Promise<CacheItem | null> {
     try {
       const data = localStorage.getItem(this.prefix + key)
-      if (!data) return null
+      if (!data)
+        return null
 
       const item: CacheItem = JSON.parse(data)
 
@@ -127,7 +129,8 @@ export class LocalStorageCacheStorage implements CacheStorage {
       }
 
       return item
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -135,12 +138,14 @@ export class LocalStorageCacheStorage implements CacheStorage {
   async set(key: string, item: CacheItem): Promise<void> {
     try {
       localStorage.setItem(this.prefix + key, JSON.stringify(item))
-    } catch {
+    }
+    catch {
       // 存储空间不足时清理过期条目
       await this.cleanup()
       try {
         localStorage.setItem(this.prefix + key, JSON.stringify(item))
-      } catch {
+      }
+      catch {
         // 仍然失败则忽略
       }
     }
@@ -265,7 +270,7 @@ export class HttpCacheManager {
     options: any,
     data: any,
     ttl?: number,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): Promise<void> {
     const key = this.generateKey(url, options)
     const item: CacheItem = {
@@ -322,7 +327,8 @@ export class HttpCacheManager {
   private calculateSize(data: any): number {
     try {
       return JSON.stringify(data).length
-    } catch {
+    }
+    catch {
       return 0
     }
   }
@@ -333,7 +339,7 @@ export class HttpCacheManager {
   static isCacheable(
     method: string,
     status: number,
-    headers: Record<string, string> = {}
+    headers: Record<string, string> = {},
   ): boolean {
     // 只缓存GET请求
     if (method.toUpperCase() !== 'GET') {
@@ -349,8 +355,8 @@ export class HttpCacheManager {
     const cacheControl = headers['cache-control'] || headers['Cache-Control']
     if (cacheControl) {
       if (
-        cacheControl.includes('no-cache') ||
-        cacheControl.includes('no-store')
+        cacheControl.includes('no-cache')
+        || cacheControl.includes('no-store')
       ) {
         return false
       }
@@ -364,7 +370,7 @@ export class HttpCacheManager {
  * 创建HTTP缓存管理器
  */
 export function createHttpCacheManager(
-  config?: Partial<CacheConfig>
+  config?: Partial<CacheConfig>,
 ): HttpCacheManager {
   return new HttpCacheManager(config)
 }

@@ -38,7 +38,7 @@ const response = await http.get('/users')
 
 ```typescript
 // 请求拦截器
-api.interceptors.request.use(config => {
+api.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -54,7 +54,7 @@ api.interceptors.response.use(
 
 ```typescript
 // 请求拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -62,7 +62,7 @@ http.interceptors.request.use(config => {
 // 响应拦截器
 http.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     throw error
   }
 )
@@ -75,10 +75,12 @@ http.interceptors.response.use(
 ```typescript
 try {
   const response = await api.get('/users')
-} catch (error) {
+}
+catch (error) {
   if (error.response) {
     console.error('HTTP Error:', error.response.status)
-  } else if (error.request) {
+  }
+  else if (error.request) {
     console.error('Network Error')
   }
 }
@@ -89,12 +91,15 @@ try {
 ```typescript
 try {
   const response = await http.get('/users')
-} catch (error) {
+}
+catch (error) {
   if (error.response) {
     console.error('HTTP Error:', error.response.status)
-  } else if (error.isNetworkError) {
+  }
+  else if (error.isNetworkError) {
     console.error('Network Error')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     console.error('Timeout Error')
   }
 }
@@ -166,18 +171,6 @@ controller.abort()
 ### Vue 2 方式
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="error">Error: {{ error }}</div>
-    <div v-else>
-      <div v-for="user in users" :key="user.id">
-        {{ user.name }}
-      </div>
-    </div>
-  </div>
-</template>
-
 <script>
 export default {
   data() {
@@ -197,32 +190,38 @@ export default {
         this.error = null
         const response = await this.$http.get('/users')
         this.users = response.data
-      } catch (error) {
+      }
+      catch (error) {
         this.error = error.message
-      } finally {
+      }
+      finally {
         this.loading = false
       }
     },
   },
 }
 </script>
-```
 
-### Vue 3 + @ldesign/http 方式
-
-```vue
 <template>
   <div>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="error">Error: {{ error.message }}</div>
+    <div v-if="loading">
+      Loading...
+    </div>
+    <div v-else-if="error">
+      Error: {{ error }}
+    </div>
     <div v-else>
-      <div v-for="user in data" :key="user.id">
+      <div v-for="user in users" :key="user.id">
         {{ user.name }}
       </div>
     </div>
   </div>
 </template>
+```
 
+### Vue 3 + @ldesign/http 方式
+
+```vue
 <script setup lang="ts">
 import { createHttpClient, useQuery } from '@ldesign/http'
 
@@ -232,6 +231,22 @@ const http = createHttpClient({
 
 const { data, loading, error } = useQuery(http, () => http.get('/users'), { immediate: true })
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      Loading...
+    </div>
+    <div v-else-if="error">
+      Error: {{ error.message }}
+    </div>
+    <div v-else>
+      <div v-for="user in data" :key="user.id">
+        {{ user.name }}
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 ## 从 SWR 迁移
@@ -273,11 +288,17 @@ const { data, error, loading, refresh } = useQuery(http, () => http.get('/api/us
 
 <template>
   <div>
-    <div v-if="error">Failed to load</div>
-    <div v-else-if="loading">Loading...</div>
+    <div v-if="error">
+      Failed to load
+    </div>
+    <div v-else-if="loading">
+      Loading...
+    </div>
     <div v-else>
       <h1>{{ data.name }}</h1>
-      <button @click="refresh">Refresh</button>
+      <button @click="refresh">
+        Refresh
+      </button>
     </div>
   </div>
 </template>
@@ -322,7 +343,7 @@ function Users() {
 
 ```vue
 <script setup lang="ts">
-import { createHttpClient, useQuery, useMutation } from '@ldesign/http'
+import { createHttpClient, useMutation, useQuery } from '@ldesign/http'
 
 const http = createHttpClient()
 
@@ -339,8 +360,12 @@ const { mutate } = useMutation(http, newUser => http.post('/api/users', newUser)
 
 <template>
   <div>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="error">Error: {{ error.message }}</div>
+    <div v-if="loading">
+      Loading...
+    </div>
+    <div v-else-if="error">
+      Error: {{ error.message }}
+    </div>
     <div v-else>
       <div v-for="user in data" :key="user.id">
         {{ user.name }}
@@ -393,7 +418,7 @@ const { mutate } = useMutation(http, newUser => http.post('/api/users', newUser)
 
 ```typescript
 // 使用响应拦截器统一处理
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   // 如果需要自动提取 data 字段
   return response.data
 })
@@ -407,7 +432,7 @@ http.interceptors.response.use(response => {
 // 统一错误处理
 http.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     // 转换为统一的错误格式
     const normalizedError = {
       message: error.message,

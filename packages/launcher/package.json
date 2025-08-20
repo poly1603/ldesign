@@ -1,0 +1,83 @@
+{
+  "name": "@ldesign/launcher",
+  "version": "1.0.0",
+  "description": "基于Vite JavaScript API的前端项目启动器，支持Vue2/Vue3/React/原生JS/Lit等主流前端技术栈",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "vite",
+    "launcher",
+    "frontend",
+    "build-tool",
+    "vue",
+    "react",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "dependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-vue": "^4.5.0",
+    "@vitejs/plugin-vue2": "^2.3.1",
+    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-legacy": "^5.2.0",
+    "picocolors": "^1.0.0",
+    "fast-glob": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "rimraf": "^5.0.5"
+  },
+  "peerDependencies": {
+    "vue": "^2.7.0 || ^3.0.0",
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/packages",
+    "directory": "packages/launcher"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/packages/issues"
+  },
+  "homepage": "https://github.com/ldesign/packages/tree/main/packages/launcher#readme"
+}

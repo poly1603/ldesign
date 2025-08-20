@@ -74,14 +74,20 @@ const { data, loading, error, refresh } = useQuery(http, () => http.get('/users'
 
 <template>
   <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
     <div v-else>
       <div v-for="user in data" :key="user.id">
         {{ user.name }}
       </div>
     </div>
-    <button @click="refresh">刷新</button>
+    <button @click="refresh">
+      刷新
+    </button>
   </div>
 </template>
 ```
@@ -93,10 +99,10 @@ const { data, loading, error, refresh } = useQuery(http, () => http.get('/users'
 import { useMutation } from '@ldesign/http'
 
 const { mutate, loading, error } = useMutation(http, userData => http.post('/users', userData), {
-  onSuccess: data => {
+  onSuccess: (data) => {
     console.log('用户创建成功:', data)
   },
-  onError: error => {
+  onError: (error) => {
     console.error('创建失败:', error)
   },
 })
@@ -122,11 +128,11 @@ http.interceptors.request.use(authInterceptor)
 
 // 添加响应拦截器
 http.interceptors.response.use(
-  response => {
+  (response) => {
     console.log('请求成功:', response)
     return response
   },
-  error => {
+  (error) => {
     if (error.response?.status === 401) {
       // 处理认证失败
       router.push('/login')
@@ -143,12 +149,14 @@ http.interceptors.response.use(
 <script setup lang="ts">
 const { data, loading, error, execute } = useRequest(http, () => http.get('/users'), {
   immediate: false,
-  onError: error => {
+  onError: (error) => {
     if (error.isNetworkError) {
       console.error('网络连接失败')
-    } else if (error.isTimeoutError) {
+    }
+    else if (error.isTimeoutError) {
       console.error('请求超时')
-    } else {
+    }
+    else {
       console.error('请求失败:', error.message)
     }
   },

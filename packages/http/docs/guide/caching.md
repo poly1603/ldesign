@@ -156,7 +156,7 @@ await http.get('/api/users', {
 const http = createHttpClient({
   cache: {
     enabled: true,
-    keyGenerator: config => {
+    keyGenerator: (config) => {
       // 包含查询参数的缓存键
       const params = new URLSearchParams(config.params).toString()
       return `${config.method}:${config.url}${params ? `?${params}` : ''}`
@@ -173,7 +173,7 @@ const http = createHttpClient({
 const http = createHttpClient({
   cache: {
     enabled: true,
-    keyGenerator: config => {
+    keyGenerator: (config) => {
       // 只缓存 GET 请求
       if (config.method !== 'GET') {
         return null // 返回 null 表示不缓存
@@ -284,7 +284,7 @@ class TaggedCacheStorage implements CacheStorage {
     this.cache.set(key, { value, timestamp: Date.now(), ttl })
 
     if (tags) {
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         if (!this.tags.has(tag)) {
           this.tags.set(tag, new Set())
         }
@@ -397,7 +397,8 @@ class CompressedCacheStorage implements CacheStorage {
 
   async get(key: string): Promise<any> {
     const compressed = localStorage.getItem(key)
-    if (!compressed) return null
+    if (!compressed)
+      return null
 
     const decompressed = decompress(compressed)
     return JSON.parse(decompressed)
@@ -415,7 +416,7 @@ class CompressedCacheStorage implements CacheStorage {
 const http = createHttpClient({
   cache: {
     enabled: true,
-    keyGenerator: config => {
+    keyGenerator: (config) => {
       // 根据数据类型设置不同的 TTL
       if (config.url.includes('/user/profile')) {
         return { key: `profile:${config.url}`, ttl: 600000 } // 10分钟
@@ -454,7 +455,8 @@ class MonitoredCacheStorage implements CacheStorage {
 
     if (value) {
       this.hits++
-    } else {
+    }
+    else {
       this.misses++
     }
 

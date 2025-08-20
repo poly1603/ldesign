@@ -37,10 +37,12 @@ export function useHttp(config?: HttpClientConfig) {
       const response = await client.get<T>(url, config)
       data.value = response.data
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -49,7 +51,7 @@ export function useHttp(config?: HttpClientConfig) {
   const post = async <T = any>(
     url: string,
     data?: any,
-    config?: any
+    config?: any,
   ): Promise<T | null> => {
     try {
       loading.value = true
@@ -57,10 +59,12 @@ export function useHttp(config?: HttpClientConfig) {
       const response = await client.post<T>(url, data, config)
       data.value = response.data
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -69,7 +73,7 @@ export function useHttp(config?: HttpClientConfig) {
   const put = async <T = any>(
     url: string,
     data?: any,
-    config?: any
+    config?: any,
   ): Promise<T | null> => {
     try {
       loading.value = true
@@ -77,10 +81,12 @@ export function useHttp(config?: HttpClientConfig) {
       const response = await client.put<T>(url, data, config)
       data.value = response.data
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -93,10 +99,12 @@ export function useHttp(config?: HttpClientConfig) {
       const response = await client.delete<T>(url, config)
       data.value = response.data
       return response.data
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }

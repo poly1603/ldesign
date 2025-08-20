@@ -28,12 +28,18 @@ const { data, loading, error, execute } = useRequest(
 
 <template>
   <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
     <div v-else-if="data">
       {{ data }}
     </div>
-    <button @click="execute">重新请求</button>
+    <button @click="execute">
+      重新请求
+    </button>
   </div>
 </template>
 ```
@@ -91,17 +97,17 @@ const { data, loading, error, execute } = useRequest<User[]>(
   })),
   {
     immediate: false,
-    transform: rawData => {
+    transform: (rawData) => {
       // 数据转换
       return rawData.map(user => ({
         ...user,
         displayName: `${user.name} (${user.email})`,
       }))
     },
-    onSuccess: data => {
+    onSuccess: (data) => {
       console.log('请求成功:', data)
     },
-    onError: error => {
+    onError: (error) => {
       console.error('请求失败:', error)
     },
   }
@@ -194,13 +200,13 @@ const form = reactive({
 const { mutate, loading, error, data } = useMutation(
   userData => http.post('/api/users', userData),
   {
-    onSuccess: data => {
+    onSuccess: (data) => {
       console.log('创建成功:', data)
       // 重置表单
       form.name = ''
       form.email = ''
     },
-    onError: error => {
+    onError: (error) => {
       console.error('创建失败:', error)
     },
   }
@@ -213,16 +219,20 @@ function handleSubmit() {
 
 <template>
   <form @submit.prevent="handleSubmit">
-    <input v-model="form.name" placeholder="姓名" required />
-    <input v-model="form.email" type="email" placeholder="邮箱" required />
+    <input v-model="form.name" placeholder="姓名" required>
+    <input v-model="form.email" type="email" placeholder="邮箱" required>
     <button type="submit" :disabled="loading">
       {{ loading ? '提交中...' : '提交' }}
     </button>
   </form>
 
-  <div v-if="error" class="error">错误: {{ error.message }}</div>
+  <div v-if="error" class="error">
+    错误: {{ error.message }}
+  </div>
 
-  <div v-if="data" class="success">创建成功: {{ data.name }}</div>
+  <div v-if="data" class="success">
+    创建成功: {{ data.name }}
+  </div>
 </template>
 ```
 
@@ -339,8 +349,12 @@ const {
 <template>
   <div>
     <!-- 数据列表 -->
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
     <div v-else>
       <div v-for="item in data?.data" :key="item.id">
         {{ item.name }}
@@ -349,14 +363,24 @@ const {
 
     <!-- 分页控件 -->
     <div class="pagination">
-      <button :disabled="!hasPrevPage" @click="prevPage">上一页</button>
+      <button :disabled="!hasPrevPage" @click="prevPage">
+        上一页
+      </button>
       <span>第 {{ page }} 页，共 {{ totalPages }} 页</span>
-      <button :disabled="!hasNextPage" @click="nextPage">下一页</button>
+      <button :disabled="!hasNextPage" @click="nextPage">
+        下一页
+      </button>
 
       <select v-model="pageSize" @change="setPageSize">
-        <option value="10">10 条/页</option>
-        <option value="20">20 条/页</option>
-        <option value="50">50 条/页</option>
+        <option value="10">
+          10 条/页
+        </option>
+        <option value="20">
+          20 条/页
+        </option>
+        <option value="50">
+          50 条/页
+        </option>
       </select>
     </div>
   </div>
@@ -424,7 +448,7 @@ const { data, loading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     params: { page: pageParam, limit: 10 },
   }),
   {
-    getNextPageParam: lastPage => {
+    getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.page + 1 : undefined
     },
   }
@@ -459,11 +483,12 @@ const app = createApp({})
 
 app.use(HttpPlugin, {
   client: httpClient,
-  globalErrorHandler: error => {
+  globalErrorHandler: (error) => {
     if (error.response?.status === 401) {
       // 处理未授权错误
       router.push('/login')
-    } else if (error.response?.status >= 500) {
+    }
+    else if (error.response?.status >= 500) {
       // 处理服务器错误
       showErrorNotification('服务器错误，请稍后重试')
     }
@@ -480,12 +505,14 @@ import { useRequest } from '@ldesign/http/vue'
 const { data, loading, error, execute } = useRequest(
   { url: '/api/users' },
   {
-    onError: error => {
+    onError: (error) => {
       if (error.isNetworkError) {
         showNotification('网络连接失败', 'error')
-      } else if (error.response?.status === 404) {
+      }
+      else if (error.response?.status === 404) {
         showNotification('数据不存在', 'warning')
-      } else {
+      }
+      else {
         showNotification('请求失败', 'error')
       }
     },
