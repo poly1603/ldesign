@@ -14,7 +14,6 @@ const appStore = useAppStore()
 
 // 使用模板系统，启用自动设备检测和模板切换
 const {
-  currentDevice,
   currentTemplate,
 } = useTemplate({
   category: 'login',
@@ -59,8 +58,6 @@ const templateProps = computed(() => ({
     <!-- 模板渲染器 - 自动内置模板选择器 -->
     <TemplateRenderer
       category="login"
-      :device="currentDevice"
-      :template="currentTemplate?.template"
       :template-props="templateProps"
       :selector="true"
       :allow-template-switch="true"

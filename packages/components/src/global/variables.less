@@ -1,0 +1,140 @@
+/* LDesign CSS Variables */
+
+:root {
+  /* Colors */
+  --ld-primary-color: #1890ff;
+  --ld-primary-color-hover: #40a9ff;
+  --ld-primary-color-active: #096dd9;
+  --ld-primary-color-light: rgba(24, 144, 255, 0.2);
+  
+  --ld-secondary-color: #f5f5f5;
+  --ld-secondary-color-hover: #e6e6e6;
+  --ld-secondary-color-active: #d9d9d9;
+  
+  --ld-danger-color: #ff4d4f;
+  --ld-danger-color-hover: #ff7875;
+  --ld-danger-color-active: #d9363e;
+  --ld-danger-color-light: rgba(255, 77, 79, 0.2);
+  
+  --ld-success-color: #52c41a;
+  --ld-success-color-hover: #73d13d;
+  --ld-success-color-active: #389e0d;
+  
+  --ld-warning-color: #faad14;
+  --ld-warning-color-hover: #ffc53d;
+  --ld-warning-color-active: #d48806;
+  
+  --ld-info-color: #1890ff;
+  --ld-info-color-hover: #40a9ff;
+  --ld-info-color-active: #096dd9;
+  
+  /* Text Colors */
+  --ld-text-color: rgba(0, 0, 0, 0.85);
+  --ld-text-color-secondary: rgba(0, 0, 0, 0.65);
+  --ld-text-color-disabled: rgba(0, 0, 0, 0.25);
+  --ld-text-color-inverse: #ffffff;
+  
+  /* Background Colors */
+  --ld-background-color: #ffffff;
+  --ld-background-color-light: #fafafa;
+  --ld-background-color-base: #f5f5f5;
+  
+  /* Border Colors */
+  --ld-border-color: #d9d9d9;
+  --ld-border-color-light: #e8e8e8;
+  --ld-border-color-dark: #bfbfbf;
+  
+  /* Typography */
+  --ld-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --ld-font-size-xs: 12px;
+  --ld-font-size-sm: 14px;
+  --ld-font-size-base: 16px;
+  --ld-font-size-lg: 18px;
+  --ld-font-size-xl: 20px;
+  
+  --ld-line-height-base: 1.5;
+  --ld-line-height-sm: 1.4;
+  --ld-line-height-lg: 1.6;
+  
+  --ld-font-weight-normal: 400;
+  --ld-font-weight-medium: 500;
+  --ld-font-weight-bold: 600;
+  
+  /* Spacing */
+  --ld-padding-xs: 4px;
+  --ld-padding-sm: 8px;
+  --ld-padding-md: 12px;
+  --ld-padding-lg: 16px;
+  --ld-padding-xl: 20px;
+  
+  --ld-margin-xs: 4px;
+  --ld-margin-sm: 8px;
+  --ld-margin-md: 12px;
+  --ld-margin-lg: 16px;
+  --ld-margin-xl: 20px;
+  
+  /* Border Radius */
+  --ld-border-radius-sm: 2px;
+  --ld-border-radius-base: 4px;
+  --ld-border-radius-lg: 6px;
+  --ld-border-radius-xl: 8px;
+  
+  /* Border Width */
+  --ld-border-width-base: 1px;
+  --ld-border-width-thick: 2px;
+  
+  /* Shadows */
+  --ld-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --ld-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --ld-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Z-index */
+  --ld-z-index-base: 1;
+  --ld-z-index-dropdown: 1050;
+  --ld-z-index-modal: 1060;
+  --ld-z-index-tooltip: 1070;
+  
+  /* Animation */
+  --ld-animation-duration-slow: 0.3s;
+  --ld-animation-duration-base: 0.2s;
+  --ld-animation-duration-fast: 0.1s;
+  
+  --ld-ease-base-out: cubic-bezier(0.7, 0.3, 0.1, 0.7);
+  --ld-ease-base-in: cubic-bezier(0.9, 0, 0.3, 0.7);
+  --ld-ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ld-ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --ld-ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  
+  /* Component specific */
+  --ld-disabled-opacity: 0.6;
+  --ld-hover-opacity: 0.8;
+  
+  /* Button specific */
+  --ld-button-height-sm: 24px;
+  --ld-button-height-base: 32px;
+  --ld-button-height-lg: 40px;
+  
+  /* Input specific */
+  --ld-input-height-sm: 24px;
+  --ld-input-height-base: 32px;
+  --ld-input-height-lg: 40px;
+  
+  --ld-input-padding-horizontal-sm: 7px;
+  --ld-input-padding-horizontal-base: 11px;
+  --ld-input-padding-horizontal-lg: 15px;
+}
+
+/* Dark theme variables */
+[data-theme='dark'] {
+  --ld-text-color: rgba(255, 255, 255, 0.85);
+  --ld-text-color-secondary: rgba(255, 255, 255, 0.65);
+  --ld-text-color-disabled: rgba(255, 255, 255, 0.25);
+  
+  --ld-background-color: #141414;
+  --ld-background-color-light: #1f1f1f;
+  --ld-background-color-base: #262626;
+  
+  --ld-border-color: #434343;
+  --ld-border-color-light: #303030;
+  --ld-border-color-dark: #595959;
+}

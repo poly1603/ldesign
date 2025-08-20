@@ -88,7 +88,6 @@ export class TemplateLoader {
         loadTime: Date.now() - startTime,
       }
     } catch (error) {
-      console.error(`❌ 模板加载失败: ${cacheKey}`, error)
       throw new Error(`Failed to load template: ${cacheKey}`)
     }
   }
@@ -105,10 +104,9 @@ export class TemplateLoader {
     }
 
     try {
-      console.log(`🚀 预加载模板: ${cacheKey}`)
       await this.loadTemplate(metadata)
     } catch (error) {
-      console.warn(`⚠️ 预加载失败: ${cacheKey}`, error)
+      // 预加载失败不影响主流程，静默处理
     }
   }
 
@@ -116,16 +114,13 @@ export class TemplateLoader {
    * 批量预加载模板
    */
   async preloadTemplates(templates: TemplateMetadata[]): Promise<void> {
-    console.log(`🚀 批量预加载 ${templates.length} 个模板`)
-
     const promises = templates.map(template =>
-      this.preloadTemplate(template).catch(error => {
-        console.warn(`预加载失败: ${this.generateCacheKey(template)}`, error)
+      this.preloadTemplate(template).catch(() => {
+        // 预加载失败不影响主流程，静默处理
       })
     )
 
     await Promise.all(promises)
-    console.log(`✅ 批量预加载完成`)
   }
 
   /**
@@ -152,16 +147,13 @@ export class TemplateLoader {
 
       for (const path of possiblePaths) {
         try {
-          console.log(`   尝试路径: ${path}`)
           const module = await import(/* @vite-ignore */ path)
           const component = module.default || module
 
           if (component) {
-            console.log(`✅ 组件加载成功: ${path}`)
             return this.wrapComponent(component, path)
           }
         } catch (error) {
-          console.warn(`   路径失败: ${path}`, error)
           lastError = error as Error
           continue
         }
@@ -169,7 +161,6 @@ export class TemplateLoader {
 
       throw lastError || new Error(`无法找到模板组件: ${componentPath}`)
     } catch (error) {
-      console.error(`模板组件加载失败:`, error)
       throw error
     }
   }

@@ -1,14 +1,22 @@
-import antfu from '@antfu/eslint-config'
+import { FlatCompat } from '@eslint/eslintrc';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-export default antfu({
-  typescript: true,
-  vue: false,
-  ignores: [
-    'dist',
-    'es',
-    'lib',
-    'types',
-    'node_modules',
-    '*.d.ts'
-  ]
-})
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+export default [
+  ...compat.extends('@stencil/core/eslint.config'),
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'prefer-const': 'error',
+    },
+  },
+];

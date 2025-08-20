@@ -1,15 +1,34 @@
 {
-  "extends": "../../tools/configs/build/tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "allowUnreachableCode": false,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "es2017",
+      "es2020"
+    ],
+    "moduleResolution": "node",
+    "module": "esnext",
+    "target": "es2017",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "noEmit": true
   },
   "include": [
-    "src/**/*",
-    "examples/**/*",
-    "__tests__/**/*",
-    "e2e/**/*"
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs"
   ]
 }

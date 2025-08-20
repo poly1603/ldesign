@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DeviceType } from '@ldesign/template'
 import { TemplateRenderer, TemplateSelector, useTemplate } from '@ldesign/template/vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 // 使用 useTemplate Hook
 const {
@@ -21,12 +21,13 @@ const {
 // 当前选择的分类和设备
 const selectedCategory = ref('login')
 const selectedDevice = ref<DeviceType>('desktop')
-const selectedTemplate = ref('')
+
+// 使用 currentTemplate 作为选中状态，确保与实际状态同步
+const selectedTemplate = computed(() => currentTemplate.value?.template || '')
 
 // 模板选择器事件处理
 function handleTemplateChange(template: string) {
   console.log('选择了模板:', template)
-  selectedTemplate.value = template
   switchTemplate(selectedCategory.value, selectedDevice.value, template)
 }
 
@@ -36,14 +37,12 @@ function handleTemplatePreview(template: string) {
 
 // 设备切换
 function handleDeviceChange() {
-  selectedTemplate.value = ''
   // 重新扫描当前设备的模板
   scanTemplates()
 }
 
 // 分类切换
 function handleCategoryChange() {
-  selectedTemplate.value = ''
   // 重新扫描当前分类的模板
   scanTemplates()
 }

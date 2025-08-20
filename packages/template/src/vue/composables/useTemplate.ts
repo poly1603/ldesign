@@ -45,10 +45,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const error = ref<Error | null>(null)
   const templates = ref<TemplateMetadata[]>([])
 
-  // 添加调试日志
-  if (options.debug) {
-    console.log(`🎯 useTemplate 初始化: 设备类型=${currentDevice.value}`)
-  }
+
 
   // 计算属性 - 根据选项过滤模板
   const availableTemplates = computed(() => {
@@ -235,10 +232,17 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const oldDevice = currentDevice.value
       const newDevice = event.newDevice
 
+      if (options.debug) {
+        console.log(`🎯 useTemplate 接收到设备变化事件: ${oldDevice} -> ${newDevice}`)
+      }
+
       currentDevice.value = newDevice
 
       // 如果启用了自动设备检测，自动切换模板
       if (options.autoDetectDevice !== false && oldDevice !== newDevice) {
+        if (options.debug) {
+          console.log(`🔄 useTemplate 自动切换设备模板: ${oldDevice} -> ${newDevice}`)
+        }
         await autoSwitchDeviceTemplate(newDevice)
       }
     })
@@ -277,13 +281,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
 
         if (isTemplateAvailable) {
           await switchTemplate(category, device, savedSelection.template)
-
-          if (options.debug) {
-            console.log(`🔄 恢复保存的模板选择: ${savedSelection.template}`)
-          }
           return
-        } else if (options.debug) {
-          console.warn(`保存的模板 ${savedSelection.template} 不再可用`)
         }
       }
     }
@@ -293,10 +291,6 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
 
     if (availableForDevice.length > 0) {
       await switchTemplate(category, device, availableForDevice[0].template)
-
-      if (options.debug) {
-        console.log(`🎯 使用默认模板: ${availableForDevice[0].template}`)
-      }
     }
   }
 
@@ -308,16 +302,14 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     const latestDevice = manager.getCurrentDevice()
     if (latestDevice !== currentDevice.value) {
       currentDevice.value = latestDevice
-      if (options.debug) {
-        console.log(`🔄 useTemplate 设备类型更新: ${currentDevice.value}`)
-      }
     }
 
+    // 先扫描模板
     if (options.autoScan !== false) {
       await scanTemplates()
     }
 
-    // 初始化模板选择
+    // 然后初始化模板选择
     await initializeTemplate()
   })
 

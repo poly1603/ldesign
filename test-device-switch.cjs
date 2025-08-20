@@ -24,7 +24,7 @@ async function testDeviceSwitch() {
   
   try {
     console.log('📱 导航到登录页面...');
-    await page.goto('http://localhost:3007/login');
+    await page.goto('http://localhost:3008/login');
     
     // 等待页面加载
     await page.waitForTimeout(3000);
@@ -82,30 +82,9 @@ async function testDeviceSwitch() {
 
       console.log(`📊 桌面端显示 ${templates} 个模板`);
 
-      // 关闭模态框
-      const closeSelectors = [
-        'button:has-text("×")',
-        '.modal-close',
-        '.close',
-        '[data-testid="close"]',
-        'button[class*="close"]'
-      ];
-
-      let closed = false;
-      for (const selector of closeSelectors) {
-        const closeButton = page.locator(selector).first();
-        if (await closeButton.isVisible()) {
-          await closeButton.click();
-          closed = true;
-          console.log(`✅ 使用关闭按钮: ${selector}`);
-          break;
-        }
-      }
-
-      if (!closed) {
-        await page.keyboard.press('Escape');
-        console.log('✅ 使用 ESC 键关闭');
-      }
+      // 关闭模态框 - 直接使用 ESC 键，避免点击被遮挡的问题
+      await page.keyboard.press('Escape');
+      console.log('✅ 使用 ESC 键关闭模态框');
 
       await page.waitForTimeout(1000);
     } else {

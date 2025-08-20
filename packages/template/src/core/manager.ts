@@ -50,7 +50,7 @@ class SimpleDeviceDetector {
       device = 'desktop'
     }
 
-    console.log(`📱 设备检测: 宽度=${width}px, 设备类型=${device}`)
+    console.log(`📱 SimpleDeviceDetector 设备检测: 宽度=${width}px, 设备类型=${device}`)
     return device
   }
 
@@ -275,6 +275,11 @@ export class TemplateManager extends SimpleEventEmitter {
     let { template } = options
     const targetDevice = device || this.getCurrentDevice()
 
+    // 确保模板已扫描
+    if (this.templates.length === 0) {
+      await this.scanTemplates()
+    }
+
     // 如果没有指定模板，按优先级选择模板
     if (!template) {
       // 1. 优先使用用户存储的选择
@@ -329,15 +334,6 @@ export class TemplateManager extends SimpleEventEmitter {
       // 更新当前模板
       const oldTemplate = this.currentTemplate
       this.currentTemplate = metadata
-
-      // 如果是用户手动指定的模板，保存选择
-      if (options.template && this.storageManager) {
-        this.storageManager.saveSelection(category, targetDevice, template)
-
-        if (this.config.debug) {
-          console.log(`💾 保存模板选择: ${category}/${targetDevice}/${template}`)
-        }
-      }
 
       // 如果是用户手动指定的模板，保存选择
       if (options.template && this.storageManager) {

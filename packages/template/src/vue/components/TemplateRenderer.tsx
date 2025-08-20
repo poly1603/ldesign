@@ -12,7 +12,7 @@ import { TemplateSelector } from './TemplateSelector'
 import { useTemplateProvider } from '../composables/useTemplateProvider'
 
 /**
- * 检测当前设备类型
+ * 检测当前设备类型 - 统一的设备检测逻辑
  */
 function detectCurrentDevice(): DeviceType {
   if (typeof window === 'undefined') return 'desktop'
@@ -27,7 +27,6 @@ function detectCurrentDevice(): DeviceType {
     device = 'desktop'
   }
 
-  console.log(`📱 TemplateRenderer 设备检测: 宽度=${width}px, 设备类型=${device}`)
   return device
 }
 
@@ -150,6 +149,12 @@ export const TemplateRenderer = defineComponent({
 
     /** 设备变化事件 */
     'device-change': (event: { oldDevice: DeviceType; newDevice: DeviceType }) => true,
+
+    /** 模板选择器可见性变化事件 */
+    'selector-visibility-change': (visible: boolean) => true,
+
+    /** 模板预览事件 */
+    'template-preview': (template: string) => true,
   },
 
   setup(props: any, { emit, slots }: any) {
@@ -160,9 +165,10 @@ export const TemplateRenderer = defineComponent({
     const isLoading = ref(false)
     const error = ref<Error | null>(null)
     const currentComponent = ref<any>(null)
+    const currentLoadedTemplate = ref<any>(null) // 保存当前加载的模板元数据
     const manager = ref<TemplateManager | null>(null)
-    // 初始化设备类型：优先使用 props.device，否则检测当前设备
-    const currentDevice = ref<DeviceType>(props.device || detectCurrentDevice())
+    // 设备类型状态 - 统一管理，避免冲突
+    const currentDevice = ref<DeviceType>('desktop') // 先设置默认值，后续会同步
     const selectedTemplate = ref<string | null>(null)
     const selectorVisible = ref(false)
     const availableTemplates = ref<any[]>([])
@@ -186,10 +192,10 @@ export const TemplateRenderer = defineComponent({
       return props.selector
     })
 
-    // 计算属性
+    // 计算属性 - 目标设备类型
     const targetDevice = computed(() => {
-      const device = props.device || currentDevice.value || 'desktop'
-      console.log(`📱 targetDevice 计算: props.device=${props.device}, currentDevice=${currentDevice.value}, 结果=${device}`)
+      // 优先使用 props.device（手动指定），否则使用检测到的设备类型
+      const device = props.device || currentDevice.value
       return device
     })
 
@@ -228,7 +234,7 @@ export const TemplateRenderer = defineComponent({
       if (!manager.value) {
         manager.value = new TemplateManager({
           enableCache: props.cache,
-          autoDetectDevice: !props.device,
+          autoDetectDevice: !props.device, // 只有在没有手动指定设备时才启用自动检测
           debug: true, // 启用调试模式
           // 启用持久化存储
           storage: {
@@ -237,55 +243,69 @@ export const TemplateRenderer = defineComponent({
           },
         })
 
-        // 设置设备变化监听 - 无论是否传递了 device 属性都需要监听
-        // 确保设备类型与管理器同步
-        const managerDevice = manager.value.getCurrentDevice()
-        if (managerDevice !== currentDevice.value) {
-          currentDevice.value = managerDevice
-          console.log(`📱 设备类型同步: ${currentDevice.value}`)
+        // 统一设备类型检测和同步
+        if (props.device) {
+          // 如果手动指定了设备类型，使用指定的类型
+          currentDevice.value = props.device
+        } else {
+          // 否则使用管理器检测的设备类型，确保一致性
+          const detectedDevice = manager.value.getCurrentDevice()
+          currentDevice.value = detectedDevice
         }
 
-        // 监听设备变化
-        console.log(`🎯 TemplateRenderer 设置设备变化监听器`)
-        manager.value.on('device:change', async (event: any) => {
-          const newDevice = event.newDevice
-          if (newDevice !== currentDevice.value) {
-            console.log(`📱 TemplateRenderer 设备类型变化: ${currentDevice.value} -> ${newDevice}`)
-            console.log(`📱 当前 availableTemplates 数量: ${availableTemplates.value.length}`)
+        // 设置设备变化监听器 - 统一处理，避免重复监听
+        // 只有在启用自动检测时才监听设备变化
+        if (manager.value.config.autoDetectDevice) {
+          // 监听 manager 的设备变化事件
+          manager.value.on('device:change', async (event: any) => {
+            const newDevice = event.newDevice
+            const oldDevice = event.oldDevice
+
+            // 更新当前设备类型
             currentDevice.value = newDevice
-            console.log(`📱 更新后 targetDevice 将变为: ${props.device || currentDevice.value || 'desktop'}`)
 
-            // 重新扫描模板以确保 TemplateSelector 获得最新的模板列表
-            try {
-              console.log(`🔄 重新扫描模板以响应设备变化`)
-              const result = await manager.value.scanTemplates()
-              availableTemplates.value = result.templates.filter(
-                t => t.category === props.category
-              )
-              console.log(`📊 重新扫描后 ${availableTemplates.value.length} 个 ${props.category} 模板:`,
-                availableTemplates.value.map(t => `${t.device}/${t.template}`))
-            } catch (err) {
-              console.warn('重新扫描模板失败:', err)
-            }
+            // 处理设备变化
+            await handleDeviceChange(newDevice, oldDevice)
+          })
+        }
 
-            emit('device-change', {
-              oldDevice: event.oldDevice,
-              newDevice: newDevice,
-            })
+        // 设备变化处理函数
+        async function handleDeviceChange(newDevice: string, oldDevice: string) {
+          // 重新扫描模板以确保 TemplateSelector 获得最新的模板列表
+          try {
+            const result = await manager.value!.scanTemplates()
+            availableTemplates.value = result.templates.filter(
+              t => t.category === props.category
+            )
+          } catch (err) {
+            console.warn('重新扫描模板失败:', err)
           }
-        })
+
+          // 发射设备变化事件
+          emit('device-change', {
+            oldDevice,
+            newDevice,
+          })
+
+          // 重新加载模板以适应新设备
+          await loadTemplate()
+        }
 
         // 扫描模板
         try {
           const result = await manager.value.scanTemplates()
-          // 只按分类过滤，不按设备类型过滤，让 TemplateSelector 自己处理设备过滤
+
+          // 只按分类过滤，保留所有设备类型的模板，让 TemplateSelector 自己处理设备过滤
           availableTemplates.value = result.templates.filter(
             t => t.category === props.category
           )
-          console.log(`📊 扫描到 ${availableTemplates.value.length} 个 ${props.category} 模板:`,
-            availableTemplates.value.map(t => `${t.device}/${t.template}`))
+
+          if (availableTemplates.value.length === 0) {
+            console.warn(`⚠️ 没有找到 ${props.category} 分类的模板`)
+          }
         } catch (err) {
-          console.warn('Template scanning failed:', err)
+          console.error('❌ 模板扫描失败:', err)
+          availableTemplates.value = []
         }
       }
     }
@@ -311,7 +331,12 @@ export const TemplateRenderer = defineComponent({
           <TemplateSelector
             category={props.category}
             device={targetDevice.value}
-            currentTemplate={selectedTemplate.value || currentTemplate.value}
+            currentTemplate={(() => {
+              if (selectedTemplate.value) return selectedTemplate.value
+              if (provider.isInProvider.value && provider.currentTemplate.value) return provider.currentTemplate.value.template
+              if (typeof currentTemplate.value === 'string') return currentTemplate.value
+              return undefined
+            })()}
             templates={availableTemplates.value}
             showPreview={true}
             showSearch={true}
@@ -331,16 +356,20 @@ export const TemplateRenderer = defineComponent({
           templateSelector: autoTemplateSelector,
         }
 
+        // 使用 selectedTemplate 优先，如果没有则使用 currentTemplate
+        const templateToRender = selectedTemplate.value || currentTemplate.value
+
         const result = await manager.value.render({
           category: props.category,
           device: targetDevice.value,
-          template: currentTemplate.value,
+          template: templateToRender,
           props: enhancedTemplateProps,
           cache: props.cache,
         })
 
         // 使用 markRaw 避免组件被响应式化
         currentComponent.value = markRaw(result.component)
+        currentLoadedTemplate.value = result.metadata // 保存当前加载的模板元数据
         emit('load', result)
         emit('template-change', result.metadata)
       } catch (err) {
@@ -392,6 +421,18 @@ export const TemplateRenderer = defineComponent({
       }
     }
 
+    // 监听Provider状态变化，同步selectedTemplate
+    watch(
+      () => provider.isInProvider.value ? provider.currentTemplate.value : null,
+      (newTemplate) => {
+        if (newTemplate && provider.isInProvider.value) {
+
+          selectedTemplate.value = newTemplate.template
+        }
+      },
+      { immediate: true }
+    )
+
     // 监听属性变化
     watch(
       () => [props.category, props.device, props.template, currentTemplate.value],
@@ -406,7 +447,7 @@ export const TemplateRenderer = defineComponent({
       () => currentDevice.value,
       (newDevice, oldDevice) => {
         if (!props.device && newDevice !== oldDevice) {
-          console.log(`📱 TemplateRenderer 检测到设备变化: ${oldDevice} -> ${newDevice}`)
+          // 设备变化时重新加载模板
           loadTemplate()
         }
       },
@@ -425,8 +466,21 @@ export const TemplateRenderer = defineComponent({
       { deep: true }
     )
 
+    // 初始化selectedTemplate
+    const initializeSelectedTemplate = () => {
+      // 优先级：Provider当前模板 > props.template > 默认
+      if (provider.isInProvider.value && provider.currentTemplate.value) {
+        selectedTemplate.value = provider.currentTemplate.value.template
+      } else if (currentTemplate.value) {
+        selectedTemplate.value = currentTemplate.value
+      }
+    }
+
     // 生命周期
     onMounted(async () => {
+      // 先初始化selectedTemplate
+      initializeSelectedTemplate()
+
       await loadTemplate()
 
       // 预加载
@@ -471,12 +525,47 @@ export const TemplateRenderer = defineComponent({
 
       if (!shouldShow) return null
 
+      // 计算当前模板名称，确保选中状态正确
+      const getCurrentTemplateName = () => {
+        // 优先使用selectedTemplate
+        if (selectedTemplate.value) {
+          return selectedTemplate.value
+        }
+
+        // 其次使用当前加载的模板元数据
+        if (currentLoadedTemplate.value) {
+          return currentLoadedTemplate.value.template
+        }
+
+        // 再次使用Provider的当前模板
+        if (provider.isInProvider.value && provider.currentTemplate.value) {
+          return provider.currentTemplate.value.template
+        }
+
+        // 最后使用computed的currentTemplate
+        if (typeof currentTemplate.value === 'string') {
+          return currentTemplate.value
+        }
+
+        return undefined
+      }
+
+      const currentTemplateName = getCurrentTemplateName()
+
+
       const selectorProps = {
         category: props.category,
         device: currentDevice.value,
-        currentTemplate: selectedTemplate.value || currentTemplate.value?.template,
-        config: config,
+        currentTemplate: currentTemplateName,
         templates: availableTemplates.value,
+        // 从config对象中提取TemplateSelector支持的属性
+        showPreview: config.showPreview ?? true,
+        showSearch: config.showSearch ?? true,
+        layout: config.layout ?? 'grid',
+        columns: config.columns ?? 3,
+        showInfo: config.showInfo ?? true,
+        buttonText: config.buttonText ?? '选择模板',
+        buttonIcon: config.buttonIcon ?? '⚙️',
         onTemplateChange: handleTemplateChange,
         onTemplatePreview: handleTemplatePreview,
         onVisibilityChange: (visible: boolean) => {

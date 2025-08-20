@@ -6,7 +6,7 @@
  */
 
 import type { TemplateSelectorProps } from '../../types'
-import { computed, defineComponent, ref, watch, Teleport, onMounted, onUnmounted, type PropType } from 'vue'
+import { computed, defineComponent, ref, watch, nextTick, Teleport, onMounted, onUnmounted, type PropType } from 'vue'
 import './TemplateSelector.less'
 
 export const TemplateSelector = defineComponent({
@@ -76,11 +76,18 @@ export const TemplateSelector = defineComponent({
     const loading = ref(false)
     const error = ref<Error | null>(null)
     const isModalVisible = ref(false) // 模态弹出层可见性
+    const isClosing = ref(false) // 关闭动画状态
+
+    // 强制刷新标志，用于解决状态异常问题
+    const forceRefresh = ref(0)
+
+
 
     // 监听 currentTemplate 属性变化，同步更新选中状态
     watch(
       () => props.currentTemplate,
       newTemplate => {
+
         if (newTemplate !== selectedTemplate.value) {
           selectedTemplate.value = newTemplate || ''
         }
@@ -90,13 +97,16 @@ export const TemplateSelector = defineComponent({
 
     // 计算属性 - 可用模板列表
     const availableTemplates = computed(() => {
+      // 触发强制刷新
+      forceRefresh.value
+
       const templates = Array.isArray(props.templates) ? props.templates : []
-      console.log(`🎨 TemplateSelector 接收到 ${templates.length} 个模板:`,
-        templates.map(t => `${t.device}/${t.template}`))
 
-      if (templates.length === 0) return []
+      if (templates.length === 0) {
+        return []
+      }
 
-      const filtered = templates.filter(template => {
+      const filtered = templates.filter((template: any) => {
         // 按分类过滤
         if (template.category !== props.category) return false
 
@@ -106,45 +116,67 @@ export const TemplateSelector = defineComponent({
         return true
       })
 
-      console.log(`🎯 TemplateSelector 过滤后 (${props.category}/${props.device}): ${filtered.length} 个模板:`,
-        filtered.map(t => `${t.device}/${t.template}`))
-
       return filtered
     })
 
     // 监听设备类型变化
     watch(
       () => props.device,
-      (newDevice, oldDevice) => {
-        console.log(`🔄 TemplateSelector 检测到设备类型变化: ${oldDevice} -> ${newDevice}`)
-        console.log(`📊 当前模板数量: ${props.templates?.length || 0}`)
-        console.log(`🎯 过滤后模板数量: ${availableTemplates.value.length}`)
+      () => {
+        // 设备类型变化时强制刷新模板列表
+        forceRefresh.value++
+        // 重置搜索查询
+        searchQuery.value = ''
+        // 如果模态框是打开的，保持打开状态但刷新内容
+        if (isModalVisible.value) {
+          nextTick(() => {
+            forceRefresh.value++
+          })
+        }
       },
       { immediate: false }
     )
 
     // 计算属性 - 过滤后的模板列表
     const filteredTemplates = computed(() => {
-      if (!searchQuery.value) return availableTemplates.value
+      const available = availableTemplates.value
+
+      if (!searchQuery.value) {
+        return available
+      }
 
       const query = searchQuery.value.toLowerCase()
-      return availableTemplates.value.filter(template => {
+      const filtered = available.filter((template: any) => {
         return (
           template.template.toLowerCase().includes(query) ||
           template.config.name.toLowerCase().includes(query) ||
           template.config.description?.toLowerCase().includes(query) ||
-          template.config.tags?.some(tag => tag.toLowerCase().includes(query))
+          template.config.tags?.some((tag: any) => tag.toLowerCase().includes(query))
         )
       })
+
+      return filtered
     })
+
+    // 重置状态
+    const resetState = () => {
+      searchQuery.value = ''
+      error.value = null
+      loading.value = false
+      forceRefresh.value++
+    }
 
     // 选择模板
     const selectTemplate = (template: string) => {
       selectedTemplate.value = template
       props.onTemplateChange?.(template)
       emit('template-change', template)
-      // 选择后关闭模态弹出层
+      // 选择后关闭模态弹出层并重置状态
       closeModal()
+      // 延迟重置状态，确保模态框完全关闭
+      setTimeout(() => {
+        resetState()
+      }, 100)
     }
 
     // 预览模板
@@ -155,23 +187,39 @@ export const TemplateSelector = defineComponent({
 
     // 打开模态弹出层
     const openModal = () => {
+      // 重置状态确保干净的开始
+      resetState()
+
       isModalVisible.value = true
       props.onVisibilityChange?.(true)
       emit('visibility-change', true)
       // 阻止页面滚动
       document.body.style.overflow = 'hidden'
+
+      // 强制刷新模板列表
+      nextTick(() => {
+        forceRefresh.value++
+      })
     }
 
     // 关闭模态弹出层
     const closeModal = () => {
-      isModalVisible.value = false
-      props.onVisibilityChange?.(false)
-      emit('visibility-change', false)
-      // 恢复页面滚动
-      document.body.style.overflow = ''
+      if (isClosing.value) return // 防止重复触发
+
+      isClosing.value = true
+
+      // 延迟关闭，等待动画完成
+      setTimeout(() => {
+        isModalVisible.value = false
+        isClosing.value = false
+        props.onVisibilityChange?.(false)
+        emit('visibility-change', false)
+        // 恢复页面滚动
+        document.body.style.overflow = ''
+      }, 300) // 与CSS动画时间匹配
     }
 
-    // 切换模态弹出层
+    // 切换模态弹出层 - 简化逻辑，移除防抖
     const toggleModal = () => {
       if (isModalVisible.value) {
         closeModal()
@@ -180,18 +228,18 @@ export const TemplateSelector = defineComponent({
       }
     }
 
-    // 搜索模板
-    const searchTemplates = (query: string) => {
-      searchQuery.value = query
-    }
+
 
     // 刷新模板列表
     const refreshTemplates = async () => {
       loading.value = true
       error.value = null
       try {
+        // 强制刷新
+        forceRefresh.value++
         await new Promise(resolve => setTimeout(resolve, 100))
       } catch (err) {
+        console.error('❌ TemplateSelector 模板列表刷新失败:', err)
         error.value = err as Error
       } finally {
         loading.value = false
@@ -229,7 +277,8 @@ export const TemplateSelector = defineComponent({
     const modalClass = computed(() => [
       'template-selector-modal',
       {
-        'template-selector-modal--visible': isModalVisible.value,
+        'template-selector-modal--visible': isModalVisible.value && !isClosing.value,
+        'template-selector-modal--closing': isClosing.value,
       },
     ])
 
@@ -259,29 +308,7 @@ export const TemplateSelector = defineComponent({
       previewTemplate(template)
     }
 
-    // 处理搜索
-    const handleSearch = (event: Event) => {
-      const target = event.target as HTMLInputElement
-      searchTemplates(target.value)
-    }
 
-    // 渲染搜索框
-    const renderSearchBox = () => {
-      if (!props.showSearch) return null
-
-      return (
-        <div class="template-selector__search">
-          <input
-            type="text"
-            class="template-selector__search-input"
-            placeholder="搜索模板..."
-            value={searchQuery.value}
-            onInput={handleSearch}
-          />
-          <div class="template-selector__search-icon">🔍</div>
-        </div>
-      )
-    }
 
     // 渲染模板项
     const renderTemplateItem = (template: any) => {
@@ -295,7 +322,7 @@ export const TemplateSelector = defineComponent({
 
       return (
         <div
-          key={template.template}
+          key={`${template.category}-${template.device}-${template.template}`}
           class={itemClass}
           onClick={() => handleTemplateSelect(template.template)}
           onMouseenter={() => props.showPreview && handleTemplatePreview(template.template)}
@@ -337,6 +364,9 @@ export const TemplateSelector = defineComponent({
 
     // 渲染模板列表
     const renderTemplateList = () => {
+      // 触发强制刷新检查
+      forceRefresh.value
+
       if (loading.value) {
         return (
           <div class="template-selector__loading">
@@ -359,16 +389,26 @@ export const TemplateSelector = defineComponent({
         )
       }
 
-      if (filteredTemplates.value.length === 0) {
+      // 检查可用模板数量
+      if (availableTemplates.value.length === 0) {
         return (
           <div class="template-selector__empty">
             <div class="template-selector__empty-icon">📭</div>
             <h4>暂无模板</h4>
-            <p>
-              {searchQuery.value
-                ? `没有找到匹配 "${searchQuery.value}" 的模板`
-                : `当前分类 "${props.category}" 下暂无可用模板`}
-            </p>
+            <p>当前分类 "{props.category}" 和设备 "{props.device}" 下暂无可用模板</p>
+            <button class="template-selector__error-retry" onClick={refreshTemplates}>
+              刷新
+            </button>
+          </div>
+        )
+      }
+
+      if (filteredTemplates.value.length === 0) {
+        return (
+          <div class="template-selector__empty">
+            <div class="template-selector__empty-icon">🔍</div>
+            <h4>无搜索结果</h4>
+            <p>没有找到匹配 "{searchQuery.value}" 的模板</p>
           </div>
         )
       }
@@ -381,52 +421,72 @@ export const TemplateSelector = defineComponent({
     }
 
     // 渲染模态弹出层内容
-    const renderModalContent = () => (
-      <div class={containerClass.value}>
-        <div class="template-selector__header">
-          <h3 class="template-selector__title">
-            选择模板 - {props.category} ({props.device})
-          </h3>
-          <button class="template-selector__close" onClick={closeModal}>
-            ✕
-          </button>
-          {renderSearchBox()}
-        </div>
+    const renderModalContent = () => {
 
-        <div class="template-selector__content">{renderTemplateList()}</div>
+      return (
+        <div class={containerClass.value}>
+          <div class="template-selector__header">
+            <h3 class="template-selector__title">
+              选择模板 - {props.category} ({props.device})
+            </h3>
+            <button class="template-selector__close" onClick={closeModal}>
+              ✕
+            </button>
+          </div>
 
-        <div class="template-selector__footer">
-          <div class="template-selector__stats">
-            共 {availableTemplates.value.length} 个模板
-            {searchQuery.value && ` (筛选后 ${filteredTemplates.value.length} 个)`}
+          <div class="template-selector__content">{renderTemplateList()}</div>
+
+          <div class="template-selector__footer">
+            <div class="template-selector__stats">
+              共 {availableTemplates.value.length} 个模板
+              {searchQuery.value && ` (筛选后 ${filteredTemplates.value.length} 个)`}
+            </div>
+            <button
+              class="template-selector__refresh"
+              onClick={refreshTemplates}
+              title="刷新模板列表"
+            >
+              🔄 刷新
+            </button>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
 
     // 渲染函数
-    return () => (
-      <>
-        {/* 触发按钮 */}
-        <button class={triggerButtonClass.value} onClick={toggleModal} title={props.buttonText}>
-          <span class="template-selector-trigger__icon">{props.buttonIcon}</span>
-          <span class="template-selector-trigger__text">{props.buttonText}</span>
-        </button>
+    return () => {
 
-        {/* 模态弹出层 */}
-        <Teleport to="body">
-          <div class={modalClass.value} style={{ display: isModalVisible.value ? 'flex' : 'none' }}>
-            {/* 背景遮罩 */}
-            <div class="template-selector-modal__backdrop" onClick={closeModal}></div>
+      return (
+        <>
+          {/* 触发按钮 */}
+          <button class={triggerButtonClass.value} onClick={toggleModal} title={props.buttonText}>
+            <span class="template-selector-trigger__icon">{props.buttonIcon}</span>
+            <span class="template-selector-trigger__text">{props.buttonText}</span>
+          </button>
 
-            {/* 模态内容 */}
-            <div class="template-selector-modal__content">
-              {renderModalContent()}
-            </div>
-          </div>
-        </Teleport>
-      </>
-    )
+          {/* 模态弹出层 - 只在可见时渲染内容 */}
+          {isModalVisible.value && (
+            <Teleport to="body">
+              <div class={modalClass.value}>
+                {/* 背景遮罩 - 直接绑定点击事件 */}
+                <div
+                  class="template-selector-modal__backdrop"
+                  onClick={closeModal}
+                ></div>
+
+                {/* 模态内容 */}
+                <div
+                  class="template-selector-modal__content"
+                  onClick={(e: Event) => e.stopPropagation()}
+                >
+                  {renderModalContent()}
+                </div>
+              </div>
+            </Teleport>
+          )}
+        </>
+      )
+    }
   },
 })
 
