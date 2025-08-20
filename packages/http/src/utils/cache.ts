@@ -72,7 +72,7 @@ export class MemoryCacheStorage implements CacheStorage {
   async clear(): Promise<void> {
     this.cache.clear()
 
-    this.timers.forEach(timer => {
+    this.timers.forEach((timer) => {
       clearTimeout(timer)
     })
     this.timers.clear()
@@ -123,7 +123,8 @@ export class LocalStorageCacheStorage implements CacheStorage {
       }
 
       return parsed.data
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -141,7 +142,8 @@ export class LocalStorageCacheStorage implements CacheStorage {
       }
 
       localStorage.setItem(this.prefix + key, JSON.stringify(item))
-    } catch {
+    }
+    catch {
       // 存储失败，可能是空间不足
     }
   }
@@ -160,7 +162,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
     }
 
     const keys = Object.keys(localStorage)
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (key.startsWith(this.prefix)) {
         localStorage.removeItem(key)
       }
@@ -204,7 +206,7 @@ export class CacheManager {
    */
   async set<T = any>(
     config: RequestConfig,
-    response: ResponseData<T>
+    response: ResponseData<T>,
   ): Promise<void> {
     if (!this.config.enabled) {
       return
@@ -212,9 +214,9 @@ export class CacheManager {
 
     // 只缓存成功的 GET 请求
     if (
-      config.method !== 'GET' ||
-      response.status < 200 ||
-      response.status >= 300
+      config.method !== 'GET'
+      || response.status < 200
+      || response.status >= 300
     ) {
       return
     }
@@ -261,7 +263,7 @@ export class CacheManager {
   private getCachedKey(config: RequestConfig): string {
     // 创建一个简单的配置标识符用于缓存查找
     const configId = `${config.method || 'GET'}:${config.url}:${JSON.stringify(
-      config.params || {}
+      config.params || {},
     )}:${JSON.stringify(config.data || {})}`
 
     if (this.keyCache.has(configId)) {

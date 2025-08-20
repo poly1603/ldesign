@@ -21,7 +21,7 @@ describe('utils', () => {
         timeout: 5000,
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
+          'Accept': 'application/json',
         },
         params: {
           version: 'v1',
@@ -45,8 +45,8 @@ describe('utils', () => {
         timeout: 10000,
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Authorization: 'Bearer token',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer token',
         },
         params: {
           version: 'v1',
@@ -91,7 +91,7 @@ describe('utils', () => {
       const queryString = buildQueryString(params)
 
       expect(queryString).toBe(
-        'tags=javascript&tags=typescript&ids=1&ids=2&ids=3'
+        'tags=javascript&tags=typescript&ids=1&ids=2&ids=3',
       )
     })
 
@@ -133,7 +133,7 @@ describe('utils', () => {
     it('should handle absolute URLs', () => {
       const url = buildURL(
         'https://other.example.com/users',
-        'https://api.example.com'
+        'https://api.example.com',
       )
       expect(url).toBe('https://other.example.com/users')
     })
@@ -163,22 +163,22 @@ describe('utils', () => {
   describe('combineURLs', () => {
     it('should combine URLs correctly', () => {
       expect(combineURLs('https://api.example.com', '/users')).toBe(
-        'https://api.example.com/users'
+        'https://api.example.com/users',
       )
       expect(combineURLs('https://api.example.com/', '/users')).toBe(
-        'https://api.example.com/users'
+        'https://api.example.com/users',
       )
       expect(combineURLs('https://api.example.com', 'users')).toBe(
-        'https://api.example.com/users'
+        'https://api.example.com/users',
       )
       expect(combineURLs('https://api.example.com/', 'users')).toBe(
-        'https://api.example.com/users'
+        'https://api.example.com/users',
       )
     })
 
     it('should handle empty relative URL', () => {
       expect(combineURLs('https://api.example.com', '')).toBe(
-        'https://api.example.com'
+        'https://api.example.com',
       )
     })
   })
@@ -206,7 +206,7 @@ describe('utils', () => {
       const error = createHttpError(
         'Request timeout',
         undefined,
-        'ECONNABORTED'
+        'ECONNABORTED',
       )
       expect(error.isTimeoutError).toBe(true)
     })

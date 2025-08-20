@@ -32,7 +32,7 @@ export function createMockResponse<T = any>(
   data: T,
   status = 200,
   statusText = 'OK',
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ) {
   return {
     data,
@@ -50,7 +50,7 @@ export function createMockResponse<T = any>(
 export function createMockError(
   message: string,
   code?: string,
-  status?: number
+  status?: number,
 ) {
   const error = new Error(message) as any
   error.code = code

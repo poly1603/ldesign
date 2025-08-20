@@ -55,7 +55,7 @@ const http = createHttpClient({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    Authorization: 'Bearer token',
+    'Authorization': 'Bearer token',
   },
   retry: {
     retries: 3,
@@ -70,7 +70,7 @@ A: 使用响应拦截器统一处理：
 
 ```typescript
 // 如果 API 返回 { data: T, message: string } 格式
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   if (response.data && 'data' in response.data) {
     return {
       ...response,
@@ -162,12 +162,12 @@ A:
 - **响应拦截器**: 先添加的先执行 (FIFO)
 
 ```typescript
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   console.log('第二个执行')
   return config
 })
 
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   console.log('第一个执行')
   return config
 })
@@ -189,7 +189,7 @@ http.interceptors.request.eject(interceptorId)
 A: 可以，但要返回修改后的配置：
 
 ```typescript
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   // 修改配置
   config.headers.Authorization = 'Bearer new-token'
   config.timeout = 5000
@@ -266,7 +266,7 @@ A: 使用 onError 回调或 error 状态：
 
 ```typescript
 const { data, error } = useQuery(http, () => http.get('/users'), {
-  onError: error => {
+  onError: (error) => {
     console.error('请求失败:', error)
     showNotification(error.message, 'error')
   },
@@ -335,7 +335,7 @@ const { data, loading, loadMore, hasMore } = usePagination(
 A: 添加 CSRF 令牌：
 
 ```typescript
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const token = document.querySelector('meta[name="csrf-token"]')?.content
   if (token) {
     config.headers['X-CSRF-Token'] = token
@@ -351,7 +351,7 @@ A: 在响应拦截器中处理：
 ```typescript
 http.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     if (error.response?.status === 401) {
       // 清除本地认证信息
       localStorage.removeItem('token')
@@ -371,17 +371,17 @@ A: 启用调试模式：
 
 ```typescript
 if (process.env.NODE_ENV === 'development') {
-  http.interceptors.request.use(config => {
+  http.interceptors.request.use((config) => {
     console.log('Request:', config)
     return config
   })
 
   http.interceptors.response.use(
-    response => {
+    (response) => {
       console.log('Response:', response)
       return response
     },
-    error => {
+    (error) => {
       console.error('Error:', error)
       throw error
     }
@@ -410,12 +410,15 @@ A: 使用错误类型判断：
 ```typescript
 try {
   await http.get('/users')
-} catch (error) {
+}
+catch (error) {
   if (error.isNetworkError) {
     showMessage('网络连接失败，请检查网络')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     showMessage('请求超时，请稍后重试')
-  } else {
+  }
+  else {
     showMessage(`请求失败: ${error.message}`)
   }
 }

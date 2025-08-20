@@ -76,8 +76,12 @@ const { data, loading, error } = useRequest<User[]>({
 
 <template>
   <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
     <div v-else>
       <h2>用户列表</h2>
       <ul>
@@ -136,7 +140,7 @@ const newUser = await http.post<User>('/users', {
 
 ```typescript
 // 请求拦截器 - 自动添加认证头
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -145,12 +149,12 @@ http.interceptors.request.use(config => {
 })
 
 // 响应拦截器 - 统一处理响应
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   return response.data // 直接返回数据
 })
 
 // 错误拦截器 - 统一错误处理
-http.interceptors.error.use(error => {
+http.interceptors.error.use((error) => {
   if (error.response?.status === 401) {
     // 处理未授权错误
     window.location.href = '/login'
@@ -184,7 +188,7 @@ const http = createHttpClient({
   retry: {
     retries: 3,
     retryDelay: 1000,
-    retryCondition: error => {
+    retryCondition: (error) => {
       // 只重试网络错误和 5xx 错误
       return error.isNetworkError || error.response?.status >= 500
     },

@@ -21,7 +21,7 @@ export const http = createHttpClient({
 })
 
 // 添加全局拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -31,7 +31,7 @@ http.interceptors.request.use(config => {
 
 http.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     if (error.response?.status === 401) {
       // 处理认证失败
       localStorage.removeItem('token')
@@ -133,7 +133,7 @@ const response = (await http.get('/users')) as any // ❌ 不推荐
 
 ```typescript
 // 认证拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const token = getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -142,13 +142,13 @@ http.interceptors.request.use(config => {
 })
 
 // 请求 ID 拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers['X-Request-ID'] = generateRequestId()
   return config
 })
 
 // 语言设置拦截器
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.headers['Accept-Language'] = getCurrentLanguage()
   return config
 })
@@ -158,7 +158,7 @@ http.interceptors.request.use(config => {
 
 ```typescript
 // 数据提取拦截器
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   // 如果 API 总是返回 { data: T, message: string } 格式
   // 可以自动提取 data 字段
   if (response.data && typeof response.data === 'object' && 'data' in response.data) {
@@ -173,7 +173,7 @@ http.interceptors.response.use(response => {
 // 错误处理拦截器
 http.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     // 统一错误处理
     if (error.response) {
       const { status, data } = error.response
@@ -191,9 +191,11 @@ http.interceptors.response.use(
         default:
           handleGenericError(data.message || error.message)
       }
-    } else if (error.isNetworkError) {
+    }
+    else if (error.isNetworkError) {
       handleNetworkError()
-    } else if (error.isTimeoutError) {
+    }
+    else if (error.isTimeoutError) {
       handleTimeoutError()
     }
 
@@ -231,7 +233,7 @@ const realtimeHttp = createHttpClient({
 const http = createHttpClient({
   cache: {
     enabled: true,
-    keyGenerator: config => {
+    keyGenerator: (config) => {
       // 自定义缓存键生成
       const { method, url, params, data } = config
       const key = `${method}:${url}`
@@ -258,7 +260,7 @@ const http = createHttpClient({
 // 全局错误处理（拦截器层）
 http.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     // 记录错误日志
     console.error('HTTP Error:', error)
 
@@ -275,7 +277,8 @@ http.interceptors.response.use(
 export async function getUserWithErrorHandling(id: number): Promise<User | null> {
   try {
     return await userService.getUser(id)
-  } catch (error) {
+  }
+  catch (error) {
     // 业务特定的错误处理
     if (error.response?.status === 404) {
       console.warn(`用户 ${id} 不存在`)
@@ -287,7 +290,7 @@ export async function getUserWithErrorHandling(id: number): Promise<User | null>
 
 // 组件层错误处理
 const { data, error } = useQuery(http, () => getUserWithErrorHandling(userId.value), {
-  onError: error => {
+  onError: (error) => {
     // 组件特定的错误处理
     showErrorMessage(`获取用户信息失败: ${error.message}`)
   },
@@ -300,8 +303,8 @@ const { data, error } = useQuery(http, () => getUserWithErrorHandling(userId.val
 const http = createHttpClient({
   retry: {
     retries: 3,
-    retryDelay: retryCount => Math.pow(2, retryCount) * 1000, // 指数退避
-    retryCondition: error => {
+    retryDelay: retryCount => 2 ** retryCount * 1000, // 指数退避
+    retryCondition: (error) => {
       // 只重试网络错误和 5xx 错误
       return error.isNetworkError || (error.response?.status >= 500 && error.response?.status < 600)
     },
@@ -358,7 +361,7 @@ const { data: user } = useQuery(http, () => userService.getUser(userId.value!), 
 })
 
 // 当 userId 变化时自动重新请求
-watch(userId, newId => {
+watch(userId, (newId) => {
   if (newId) {
     // 请求会自动触发，因为 enabled 变为 true
   }
@@ -432,7 +435,7 @@ await http.get('/users', {
 
 ```typescript
 // 添加 CSRF 令牌
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
   if (csrfToken) {
     config.headers['X-CSRF-Token'] = csrfToken
@@ -447,17 +450,17 @@ http.interceptors.request.use(config => {
 
 ```typescript
 if (import.meta.env.DEV) {
-  http.interceptors.request.use(config => {
+  http.interceptors.request.use((config) => {
     console.log('🚀 Request:', config)
     return config
   })
 
   http.interceptors.response.use(
-    response => {
+    (response) => {
       console.log('✅ Response:', response)
       return response
     },
-    error => {
+    (error) => {
       console.error('❌ Error:', error)
       throw error
     }
@@ -468,12 +471,12 @@ if (import.meta.env.DEV) {
 ### 2. 性能监控
 
 ```typescript
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   config.metadata = { startTime: Date.now() }
   return config
 })
 
-http.interceptors.response.use(response => {
+http.interceptors.response.use((response) => {
   const duration = Date.now() - response.config.metadata.startTime
   console.log(`Request to ${response.config.url} took ${duration}ms`)
   return response

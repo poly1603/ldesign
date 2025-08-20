@@ -140,7 +140,8 @@ async function test() {
   try {
     const response = await http.get('/posts/1')
     console.log('安装成功！', response.data)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('安装验证失败：', error)
   }
 }

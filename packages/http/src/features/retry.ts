@@ -115,12 +115,13 @@ export class RetryExecutor {
           data: result,
           retryState: state,
         }
-      } catch (error) {
+      }
+      catch (error) {
         state.errors.push(error)
 
         // 检查是否应该重试
-        const shouldRetry =
-          this.config.shouldRetry?.(error, state.attempt) ?? true
+        const shouldRetry
+          = this.config.shouldRetry?.(error, state.attempt) ?? true
 
         if (state.attempt > this.config.maxRetries || !shouldRetry) {
           return {
@@ -163,7 +164,7 @@ export class RetryExecutor {
  * 创建重试执行器
  */
 export function createRetryExecutor(
-  config?: Partial<RetryConfig>
+  config?: Partial<RetryConfig>,
 ): RetryExecutor {
   return new RetryExecutor(config)
 }
@@ -175,18 +176,19 @@ export function retry(config?: Partial<RetryConfig>) {
   return function (
     _target: any,
     _propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value
     const executor = createRetryExecutor(config)
 
     descriptor.value = async function (...args: any[]) {
       const result = await executor.execute(() =>
-        originalMethod.apply(this, args)
+        originalMethod.apply(this, args),
       )
       if (result.success) {
         return result.data
-      } else {
+      }
+      else {
         throw result.error
       }
     }
@@ -205,14 +207,15 @@ export const globalRetryExecutor = createRetryExecutor()
  */
 export async function retryOperation<T>(
   operation: () => Promise<T>,
-  config?: Partial<RetryConfig>
+  config?: Partial<RetryConfig>,
 ): Promise<T> {
   const executor = config ? createRetryExecutor(config) : globalRetryExecutor
   const result = await executor.execute(operation)
 
   if (result.success) {
     return result.data!
-  } else {
+  }
+  else {
     throw result.error
   }
 }

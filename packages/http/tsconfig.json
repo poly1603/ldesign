@@ -6,5 +6,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"]
+  "include": ["src/**/*"]
 }

@@ -184,7 +184,8 @@ class CustomAdapter extends BaseAdapter {
         processedConfig,
         response
       )
-    } catch (error) {
+    }
+    catch (error) {
       // 处理错误
       throw this.processError(error, processedConfig)
     }
@@ -231,7 +232,7 @@ abstract class BaseAdapter implements HttpAdapter {
   protected processConfig(config: RequestConfig): RequestConfig
   protected processResponse<T>(...args): ResponseData<T>
   protected processError(error: any, config: RequestConfig): HttpError
-  protected createTimeoutController(timeout?: number): { signal: AbortSignal; cleanup: () => void }
+  protected createTimeoutController(timeout?: number): { signal: AbortSignal, cleanup: () => void }
   protected mergeAbortSignals(signals: AbortSignal[]): AbortSignal
   protected parseHeaders(headers: Headers | Record<string, string>): Record<string, string>
 }
@@ -300,7 +301,8 @@ let adapter: string
 if (needsAdvancedFeatures) {
   await import('axios')
   adapter = 'axios'
-} else {
+}
+else {
   adapter = 'fetch'
 }
 

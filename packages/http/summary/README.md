@@ -117,7 +117,7 @@ const newUser = await client.post<User>('/users', {
 
 ```typescript
 // 请求拦截器
-client.interceptors.request.use(config => {
+client.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -125,7 +125,7 @@ client.interceptors.request.use(config => {
 // 响应拦截器
 client.interceptors.response.use(
   response => response,
-  error => {
+  (error) => {
     if (error.status === 401) {
       // 处理认证错误
       redirectToLogin()
@@ -158,12 +158,13 @@ const { data: users, loading, error, refresh } = useRequest(() =>
 )
 
 // 手动请求
-const createUser = async (userData) => {
+async function createUser(userData) {
   try {
     const response = await client.post('/users', userData)
     await refresh() // 刷新用户列表
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('创建用户失败:', error)
   }
 }
@@ -171,8 +172,12 @@ const createUser = async (userData) => {
 
 <template>
   <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
     <div v-else>
       <user-list :users="users" />
     </div>

@@ -26,7 +26,7 @@ export class CancelTokenImpl implements CancelToken {
   private resolvePromise!: (reason: string) => void
 
   constructor() {
-    this.promise = new Promise<string>(resolve => {
+    this.promise = new Promise<string>((resolve) => {
       this.resolvePromise = resolve
     })
   }
@@ -92,7 +92,7 @@ export class CancelManager {
   register(
     requestId: string,
     controller: AbortController,
-    token?: CancelToken
+    token?: CancelToken,
   ): void {
     this.requests.set(requestId, controller)
     if (token) {
@@ -171,7 +171,7 @@ export class CancelManager {
    */
   createMergedSignal(signals: (AbortSignal | undefined)[]): AbortSignal {
     const validSignals = signals.filter(
-      (signal): signal is AbortSignal => signal !== undefined
+      (signal): signal is AbortSignal => signal !== undefined,
     )
 
     if (validSignals.length === 0) {
@@ -189,7 +189,7 @@ export class CancelManager {
       controller.abort()
     }
 
-    validSignals.forEach(signal => {
+    validSignals.forEach((signal) => {
       if (signal.aborted) {
         controller.abort()
         return
@@ -218,12 +218,12 @@ export function createCancelTokenSource(): CancelTokenSource {
  */
 export function isCancelError(error: any): boolean {
   return (
-    error &&
-    (error.isCancelError ||
-      error.name === 'AbortError' ||
-      error.code === 'CANCELED' ||
-      error.message?.includes('cancelled') ||
-      error.message?.includes('aborted'))
+    error
+    && (error.isCancelError
+      || error.name === 'AbortError'
+      || error.code === 'CANCELED'
+      || error.message?.includes('cancelled')
+      || error.message?.includes('aborted'))
   )
 }
 
