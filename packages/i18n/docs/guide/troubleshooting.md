@@ -125,7 +125,7 @@ const title = computed(() => t('page.title'))
   <h1>{{ t('page.title') }}</h1>
 
   <!-- ✅ 使用指令 -->
-  <h1 v-t="'page.title'"></h1>
+  <h1 v-t="'page.title'" />
 
   <!-- ✅ 使用计算属性 -->
   <h1>{{ title }}</h1>
@@ -172,7 +172,8 @@ class RetryLoader implements Loader {
     for (let i = 0; i < this.maxRetries; i++) {
       try {
         return await this.baseLoader.load(locale)
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
         console.warn(`Retry ${i + 1}/${this.maxRetries} for ${locale}`)
         await this.delay(1000 * (i + 1)) // 递增延迟

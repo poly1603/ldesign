@@ -1,0 +1,136 @@
+{
+  "compilerOptions": {
+    // 基础配置
+    "target": "ES2020",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    
+    // Vue 相关
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    
+    // 类型检查
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": false,
+    
+    // 模块解析
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@composables/*": ["src/composables/*"],
+      "@types/*": ["src/types/*"],
+      "@assets/*": ["src/assets/*"],
+      "@utils/*": ["src/utils/*"],
+      "@ldesign/pdf": ["../../src/index.ts"],
+      "@ldesign/pdf/*": ["../../src/*"]
+    },
+    
+    // 输出配置
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "removeComments": false,
+    "importHelpers": true,
+    
+    // 实验性功能
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": true,
+    
+    // 互操作性
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    
+    // 跳过库检查
+    "skipLibCheck": true,
+    
+    // 增量编译
+    "incremental": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo",
+    
+    // 类型定义
+    "types": [
+      "vite/client",
+      "node",
+      "@types/web"
+    ],
+    
+    // Vue 特定配置
+    "allowJs": true,
+    "checkJs": false
+  },
+  
+  // 包含的文件
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.d.ts",
+    "*.d.ts",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ],
+  
+  // 排除的文件
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.spec.js",
+    "**/*.test.js",
+    "cypress",
+    "playwright"
+  ],
+  
+  // Vue 类型声明
+  "vueCompilerOptions": {
+    "target": 3.3,
+    "extensions": [".vue"],
+    "experimentalRuntimeMode": "runtime-dom",
+    "experimentalTemplateCompilerOptions": {
+      "isCustomElement": "tag => tag.startsWith('pdf-')"
+    }
+  },
+  
+  // 编译器选项的扩展
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "module": "ESNext",
+      "moduleResolution": "node"
+    }
+  }
+}

@@ -10,14 +10,14 @@
 
 ```typescript
 import {
-  I18nError,
-  LanguageLoadError,
-  TranslationKeyError,
-  InterpolationError,
-  PluralRuleError,
-  ConfigurationError,
-  InitializationError,
   CacheError,
+  ConfigurationError,
+  I18nError,
+  InitializationError,
+  InterpolationError,
+  LanguageLoadError,
+  PluralRuleError,
+  TranslationKeyError,
 } from '@ldesign/i18n'
 ```
 
@@ -28,7 +28,8 @@ import {
 ```typescript
 try {
   await i18n.changeLanguage('invalid-locale')
-} catch (error) {
+}
+catch (error) {
   if (error instanceof LanguageLoadError) {
     console.error('语言包加载失败:', error.context.locale)
     // 回退到默认语言
@@ -44,7 +45,8 @@ try {
 ```typescript
 try {
   const text = i18n.t('non.existent.key')
-} catch (error) {
+}
+catch (error) {
   if (error instanceof TranslationKeyError) {
     console.warn('翻译键不存在:', error.context.key)
     // 返回键本身作为回退
@@ -62,7 +64,8 @@ try {
   const text = i18n.t('welcome.message', {
     /* 缺少 name 参数 */
   })
-} catch (error) {
+}
+catch (error) {
   if (error instanceof InterpolationError) {
     console.warn('插值参数缺失:', error.context.missingParams)
     // 使用默认值
@@ -78,7 +81,7 @@ try {
 系统提供了多种内置错误处理器：
 
 ```typescript
-import { DefaultErrorHandler, SilentErrorHandler, DevelopmentErrorHandler } from '@ldesign/i18n'
+import { DefaultErrorHandler, DevelopmentErrorHandler, SilentErrorHandler } from '@ldesign/i18n'
 
 // 开发环境：详细错误信息
 const devHandler = new DevelopmentErrorHandler()
@@ -199,13 +202,6 @@ const i18n = new I18n({
 在 Vue 组件中处理翻译错误：
 
 ```vue
-<template>
-  <div>
-    <h1>{{ safeTranslate('page.title') }}</h1>
-    <p>{{ safeTranslate('page.description', { name: userName }) }}</p>
-  </div>
-</template>
-
 <script setup>
 import { useI18n } from '@ldesign/i18n/vue'
 
@@ -216,7 +212,8 @@ const userName = ref('User')
 function safeTranslate(key: string, params?: any): string {
   try {
     return t(key, params)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('Translation error:', error)
 
     // 返回友好的回退文本
@@ -224,6 +221,13 @@ function safeTranslate(key: string, params?: any): string {
   }
 }
 </script>
+
+<template>
+  <div>
+    <h1>{{ safeTranslate('page.title') }}</h1>
+    <p>{{ safeTranslate('page.description', { name: userName }) }}</p>
+  </div>
+</template>
 ```
 
 ## 🔍 调试支持
@@ -275,8 +279,10 @@ class RetryableI18n extends I18n {
       try {
         await super.changeLanguage(locale)
         return
-      } catch (error) {
-        if (i === retries - 1) throw error
+      }
+      catch (error) {
+        if (i === retries - 1)
+          throw error
 
         console.warn(`Language change failed, retrying... (${i + 1}/${retries})`)
         await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
@@ -304,7 +310,8 @@ async function healthCheck(i18n: I18n): Promise<boolean> {
     return (
       testTranslation !== undefined && currentLang !== undefined && metrics.translationCalls >= 0
     )
-  } catch (error) {
+  }
+  catch (error) {
     console.error('I18n health check failed:', error)
     return false
   }
@@ -365,7 +372,7 @@ const i18n = new I18n({
   fallbackLocale: 'en',
 
   // 自定义错误处理
-  onError: error => {
+  onError: (error) => {
     // 只记录关键错误
     if (error.code === 'INITIALIZATION_ERROR') {
       sendToErrorService(error)

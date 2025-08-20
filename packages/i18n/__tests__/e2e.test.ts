@@ -31,9 +31,9 @@ function createMockEngine() {
     events: {
       emit: vi.fn((event: string, data: any) => {
         const listeners = events.get(event) || []
-        listeners.forEach((listener: Function) => listener(data))
+        listeners.forEach((listener: (...args: any[]) => void) => listener(data))
       }),
-      on: vi.fn((event: string, listener: Function) => {
+      on: vi.fn((event: string, listener: (...args: any[]) => void) => {
         if (!events.has(event)) {
           events.set(event, [])
         }
@@ -129,7 +129,8 @@ describe('i18n E2E Tests', () => {
       try {
         await i18n.changeLanguage('invalid-locale')
         // 应该不会抛出错误，而是优雅降级
-      } catch (error) {
+      }
+      catch (error) {
         // 如果抛出错误，应该是可预期的错误类型
         expect(error).toBeDefined()
       }
@@ -144,8 +145,7 @@ describe('i18n E2E Tests', () => {
     it('should integrate seamlessly with engine', async () => {
       // 1. 创建插件
       const plugin = createI18nEnginePlugin({
-        defaultLanguage: 'en',
-        fallbackLanguage: 'en',
+        fallbackLocale: 'en',
         globalInjection: true,
         globalPropertyName: '$t',
         enablePerformanceMonitoring: true,
@@ -153,38 +153,38 @@ describe('i18n E2E Tests', () => {
       })
 
       // 2. 安装插件
-      await plugin.install(mockEngine)
+      await plugin.install({ engine: mockEngine })
 
       // 3. 验证插件安装
       expect(mockEngine.logger.info).toHaveBeenCalledWith(
         expect.stringContaining('Installing i18n plugin'),
-        expect.any(Object)
+        expect.any(Object),
       )
 
       // 4. 验证配置注册
       expect(mockEngine.config.set).toHaveBeenCalledWith(
         'i18n.instance',
-        expect.any(Object)
+        expect.any(Object),
       )
 
       // 5. 验证状态注册
       expect(mockEngine.state.set).toHaveBeenCalledWith(
         'i18n:currentLanguage',
-        expect.any(String)
+        expect.any(String),
       )
 
       // 6. 验证事件发送
       expect(mockEngine.events.emit).toHaveBeenCalledWith(
         'plugin:i18n:installed',
-        expect.any(Object)
+        expect.any(Object),
       )
 
       // 7. 卸载插件
       if (plugin.uninstall) {
-        await plugin.uninstall(mockEngine)
+        await plugin.uninstall({ engine: mockEngine })
 
         expect(mockEngine.logger.info).toHaveBeenCalledWith(
-          expect.stringContaining('Uninstalling i18n plugin')
+          expect.stringContaining('Uninstalling i18n plugin'),
         )
       }
     })
@@ -196,32 +196,32 @@ describe('i18n E2E Tests', () => {
 
       // 测试生命周期钩子
       if (plugin.beforeInstall) {
-        await plugin.beforeInstall(mockEngine)
+        await plugin.beforeInstall({ engine: mockEngine })
       }
 
-      await plugin.install(mockEngine)
+      await plugin.install({ engine: mockEngine })
 
       if (plugin.afterInstall) {
-        await plugin.afterInstall(mockEngine)
+        await plugin.afterInstall({ engine: mockEngine })
       }
 
       // 验证事件发送
       expect(mockEngine.events.emit).toHaveBeenCalledWith(
         'plugin:i18n:installed',
-        expect.any(Object)
+        expect.any(Object),
       )
 
       // 测试卸载生命周期
       if (plugin.beforeUninstall) {
-        await plugin.beforeUninstall(mockEngine)
+        await plugin.beforeUninstall({ engine: mockEngine })
       }
 
       if (plugin.uninstall) {
-        await plugin.uninstall(mockEngine)
+        await plugin.uninstall({ engine: mockEngine })
       }
 
       if (plugin.afterUninstall) {
-        await plugin.afterUninstall(mockEngine)
+        await plugin.afterUninstall({ engine: mockEngine })
       }
     })
   })
@@ -244,7 +244,8 @@ describe('i18n E2E Tests', () => {
       try {
         await i18n.changeLanguage('zh-CN')
         expect(i18n.getCurrentLanguage()).toBe('zh-CN')
-      } catch (error) {
+      }
+      catch (error) {
         // 如果语言包不存在，应该优雅降级
         expect(error).toBeDefined()
       }
@@ -275,7 +276,7 @@ describe('i18n E2E Tests', () => {
 
       const results = await concurrentTranslations
       expect(results).toHaveLength(5)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(typeof result).toBe('string')
       })
     })
@@ -304,7 +305,8 @@ describe('i18n E2E Tests', () => {
         expect(typeof translation1).toBe('string')
         expect(typeof translation2).toBe('string')
         expect(typeof translation3).toBe('string')
-      } catch (error) {
+      }
+      catch {
         // 如果语言切换失败，确保基本功能仍然可用
         const fallbackTranslation = i18n.t('test.key')
         expect(typeof fallbackTranslation).toBe('string')
@@ -366,7 +368,7 @@ describe('i18n E2E Tests', () => {
         globalPropertyName: '$t',
       })
 
-      await plugin.install(mockEngine)
+      await plugin.install({ engine: mockEngine })
 
       // 验证全局属性注册（由于Vue插件的异步特性，可能需要等待）
       // 检查是否有全局属性被设置
@@ -375,9 +377,9 @@ describe('i18n E2E Tests', () => {
 
       // 至少应该有一个全局属性被设置，或者插件安装成功
       expect(
-        hasGlobalT ||
-          hasGlobalI18n ||
-          typeof mockVueApp.config.globalProperties === 'object'
+        hasGlobalT
+        || hasGlobalI18n
+        || typeof mockVueApp.config.globalProperties === 'object',
       ).toBe(true)
     })
   })
@@ -392,7 +394,8 @@ describe('i18n E2E Tests', () => {
 
       try {
         await faultyI18n.init()
-      } catch (error) {
+      }
+      catch (error) {
         // 应该能够优雅处理错误
         expect(error).toBeDefined()
       }

@@ -3,6 +3,7 @@
     "allowUnreachableCode": false,
     "declaration": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "lib": [
       "dom",
       "es2017",

@@ -470,7 +470,8 @@ console.log('Missing keys:', coverage.missingKeys)
 function safeTranslate(key, params = {}) {
   try {
     return i18n.t(key, params)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Translation error:', error)
     return key // 返回键名作为降级
   }

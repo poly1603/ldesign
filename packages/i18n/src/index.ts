@@ -120,6 +120,8 @@ export { default as enLanguagePackage } from './locales/en'
 export { default as jaLanguagePackage } from './locales/ja'
 
 export { default as zhCNLanguagePackage } from './locales/zh-CN'
+// 导出插件系统
+export * from './plugins'
 export {
   batchInterpolate,
   extractInterpolationKeys,
@@ -128,6 +130,7 @@ export {
   interpolate,
   validateInterpolationParams,
 } from './utils/interpolation'
+
 // 导出工具函数
 export {
   deepMerge,
@@ -140,17 +143,6 @@ export {
   unflattenObject,
 } from './utils/path'
 
-export {
-  extractPluralKeys,
-  // 复数工具
-  getPluralRule,
-  getSupportedPluralLocales,
-  hasPluralExpression,
-  parsePluralExpression,
-  processPluralization,
-  registerPluralRule,
-} from './utils/pluralization'
-
 // 便捷的创建函数
 export function createI18n(options?: I18nOptions): I18nInstance {
   return new I18n(options)
@@ -162,7 +154,7 @@ export function createI18n(options?: I18nOptions): I18nInstance {
  * @returns I18n 实例
  */
 export async function createSimpleI18n(
-  options?: I18nOptions
+  options?: I18nOptions,
 ): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
   const enPkg = await import('./locales/en')
@@ -178,9 +170,45 @@ export async function createSimpleI18n(
 }
 
 /**
+ * 创建带有内置语言包的 I18n 实例
+ * @param options I18n 配置选项
+ * @returns I18n 实例
+ */
+export async function createI18nWithBuiltinLocales(
+  options?: I18nOptions,
+): Promise<I18nInstance> {
+  const { StaticLoader } = await import('./core/loader')
+  const enPkg = await import('./locales/en')
+  const zhCNPkg = await import('./locales/zh-CN')
+  const jaPkg = await import('./locales/ja')
+
+  const loader = new StaticLoader()
+  loader.registerPackage('en', enPkg.default)
+  loader.registerPackage('zh-CN', zhCNPkg.default)
+  loader.registerPackage('ja', jaPkg.default)
+
+  const i18n = new I18n({ defaultLocale: 'zh-CN', ...options })
+  i18n.setLoader(loader)
+
+  await i18n.init()
+  return i18n
+}
+
+/**
  * 版本信息
  */
 export const version = '0.1.0'
+
+export {
+  extractPluralKeys,
+  // 复数工具
+  getPluralRule,
+  getSupportedPluralLocales,
+  hasPluralExpression,
+  parsePluralExpression,
+  processPluralization,
+  registerPluralRule,
+} from './utils/pluralization'
 
 // 导出 Vue 集成（可选，需要单独导入）
 export * as vue from './vue'

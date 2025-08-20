@@ -1,0 +1,854 @@
+/* ==========================================================================
+   响应式样式文件 - 原生JavaScript PDF查看器
+   ========================================================================== */
+
+/* ==========================================================================
+   响应式断点定义
+   ========================================================================== */
+
+:root {
+  /* 响应式断点 */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* 移动端特定变量 */
+  --mobile-header-height: 56px;
+  --mobile-toolbar-height: 48px;
+  --mobile-spacing: 12px;
+  --mobile-touch-target: 44px;
+}
+
+/* ==========================================================================
+   大屏幕优化 (1536px+)
+   ========================================================================== */
+
+@media (min-width: 1536px) {
+  .app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .toolbar {
+    padding: var(--spacing-lg) var(--spacing-xl);
+  }
+  
+  .sidebar {
+    width: 320px;
+  }
+  
+  .pdf-container {
+    padding: var(--spacing-xl);
+  }
+  
+  .toolbar-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-base);
+  }
+  
+  .status-bar {
+    padding: var(--spacing-md) var(--spacing-xl);
+  }
+}
+
+/* ==========================================================================
+   桌面端优化 (1280px - 1535px)
+   ========================================================================== */
+
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .sidebar {
+    width: 280px;
+  }
+  
+  .toolbar {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  
+  .pdf-container {
+    padding: var(--spacing-lg);
+  }
+}
+
+/* ==========================================================================
+   笔记本电脑优化 (1024px - 1279px)
+   ========================================================================== */
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .sidebar {
+    width: 260px;
+  }
+  
+  .toolbar-group {
+    gap: var(--spacing-sm);
+  }
+  
+  .toolbar-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .toolbar-button .text {
+    display: none;
+  }
+  
+  .search-input {
+    width: 200px;
+  }
+}
+
+/* ==========================================================================
+   平板端优化 (768px - 1023px)
+   ========================================================================== */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .toolbar {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+  
+  .toolbar-group {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    order: 2;
+  }
+  
+  .sidebar.collapsed {
+    height: 0;
+    overflow: hidden;
+  }
+  
+  .main-content {
+    order: 1;
+    flex: 1;
+  }
+  
+  .sidebar-content {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  
+  .sidebar-panel {
+    min-width: 250px;
+    border-right: 1px solid var(--border-color);
+  }
+  
+  .sidebar-panel:last-child {
+    border-right: none;
+  }
+  
+  .thumbnails-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  
+  .toolbar-button .text {
+    display: none;
+  }
+  
+  .search-input {
+    width: 150px;
+  }
+  
+  .zoom-select {
+    width: 80px;
+  }
+  
+  .page-info {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* ==========================================================================
+   小平板端优化 (640px - 767px)
+   ========================================================================== */
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .toolbar {
+    padding: var(--spacing-xs);
+  }
+  
+  .toolbar-group {
+    gap: var(--spacing-xs);
+  }
+  
+  .toolbar-button {
+    padding: var(--spacing-xs);
+    min-width: var(--mobile-touch-target);
+    min-height: var(--mobile-touch-target);
+  }
+  
+  .toolbar-button .icon {
+    font-size: 18px;
+  }
+  
+  .search-container {
+    flex: 1;
+    max-width: 200px;
+  }
+  
+  .search-input {
+    width: 100%;
+    font-size: var(--font-size-sm);
+  }
+  
+  .zoom-select {
+    width: 70px;
+    font-size: var(--font-size-sm);
+  }
+  
+  .sidebar {
+    height: 150px;
+  }
+  
+  .sidebar-tabs {
+    gap: 2px;
+  }
+  
+  .sidebar-tab {
+    padding: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+  }
+  
+  .sidebar-tab .text {
+    display: none;
+  }
+  
+  .thumbnails-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: var(--spacing-xs);
+  }
+  
+  .thumbnail-item {
+    padding: var(--spacing-xs);
+  }
+  
+  .pdf-page {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .status-bar {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+}
+
+/* ==========================================================================
+   手机端优化 (480px - 639px)
+   ========================================================================== */
+
+@media (min-width: 480px) and (max-width: 639px) {
+  .app-container {
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .toolbar {
+    height: var(--mobile-toolbar-height);
+    padding: var(--spacing-xs) var(--mobile-spacing);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .toolbar-group {
+    flex-shrink: 0;
+    gap: var(--spacing-xs);
+  }
+  
+  .toolbar-button {
+    padding: var(--spacing-xs);
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .toolbar-button .text {
+    display: none;
+  }
+  
+  .toolbar-button .icon {
+    font-size: 16px;
+  }
+  
+  .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 150px;
+  }
+  
+  .search-input {
+    width: 100%;
+    height: 40px;
+    padding: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+  }
+  
+  .zoom-select {
+    width: 60px;
+    height: 40px;
+    font-size: var(--font-size-xs);
+  }
+  
+  .page-navigation {
+    gap: 4px;
+  }
+  
+  .page-nav-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+  
+  .page-info {
+    font-size: var(--font-size-xs);
+    min-width: 60px;
+    text-align: center;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: var(--mobile-toolbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    z-index: var(--z-modal);
+    background-color: var(--bg-primary);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.show {
+    transform: translateY(0);
+  }
+  
+  .sidebar-header {
+    padding: var(--mobile-spacing);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    z-index: 1;
+  }
+  
+  .sidebar-tabs {
+    flex: 1;
+    gap: 4px;
+  }
+  
+  .sidebar-tab {
+    flex: 1;
+    padding: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    text-align: center;
+  }
+  
+  .sidebar-tab .text {
+    display: block;
+  }
+  
+  .sidebar-tab .icon {
+    display: none;
+  }
+  
+  .sidebar-close {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .sidebar-content {
+    height: calc(100vh - var(--mobile-toolbar-height) - 60px);
+    overflow-y: auto;
+  }
+  
+  .thumbnails-container {
+    padding: var(--mobile-spacing);
+  }
+  
+  .thumbnails-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--spacing-sm);
+  }
+  
+  .thumbnail-item {
+    padding: var(--spacing-sm);
+  }
+  
+  .main-content {
+    height: calc(100vh - var(--mobile-toolbar-height) - 32px);
+    overflow: hidden;
+  }
+  
+  .pdf-container {
+    height: 100%;
+    padding: var(--mobile-spacing);
+    overflow-y: auto;
+  }
+  
+  .pdf-page {
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .welcome-screen {
+    padding: var(--spacing-xl) var(--mobile-spacing);
+  }
+  
+  .welcome-icon {
+    font-size: 48px;
+  }
+  
+  .welcome-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .welcome-text {
+    font-size: var(--font-size-sm);
+  }
+  
+  .status-bar {
+    height: 32px;
+    padding: var(--spacing-xs) var(--mobile-spacing);
+    font-size: var(--font-size-xs);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    z-index: var(--z-header);
+  }
+  
+  .loading-overlay {
+    padding: var(--spacing-xl) var(--mobile-spacing);
+  }
+  
+  .error-container {
+    padding: var(--spacing-xl) var(--mobile-spacing);
+  }
+}
+
+/* ==========================================================================
+   小屏手机优化 (最大479px)
+   ========================================================================== */
+
+@media (max-width: 479px) {
+  .app-container {
+    font-size: 14px;
+  }
+  
+  .toolbar {
+    height: 48px;
+    padding: 4px 8px;
+  }
+  
+  .toolbar-group {
+    gap: 4px;
+  }
+  
+  .toolbar-button {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px;
+  }
+  
+  .toolbar-button .icon {
+    font-size: 14px;
+  }
+  
+  .search-container {
+    max-width: 120px;
+  }
+  
+  .search-input {
+    height: 36px;
+    font-size: 12px;
+  }
+  
+  .zoom-select {
+    width: 50px;
+    height: 36px;
+    font-size: 11px;
+  }
+  
+  .page-nav-button {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .page-info {
+    font-size: 11px;
+    min-width: 50px;
+  }
+  
+  .sidebar {
+    top: 48px;
+  }
+  
+  .sidebar-header {
+    padding: 8px;
+  }
+  
+  .sidebar-tab {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+  
+  .sidebar-close {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .sidebar-content {
+    height: calc(100vh - 48px - 56px);
+  }
+  
+  .thumbnails-container {
+    padding: 8px;
+  }
+  
+  .thumbnails-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 6px;
+  }
+  
+  .thumbnail-item {
+    padding: 6px;
+  }
+  
+  .thumbnail-label {
+    font-size: 10px;
+  }
+  
+  .main-content {
+    height: calc(100vh - 48px - 28px);
+  }
+  
+  .pdf-container {
+    padding: 8px;
+  }
+  
+  .pdf-page {
+    margin-bottom: 8px;
+  }
+  
+  .welcome-screen {
+    padding: var(--spacing-lg) 8px;
+  }
+  
+  .welcome-icon {
+    font-size: 36px;
+  }
+  
+  .welcome-title {
+    font-size: var(--font-size-base);
+  }
+  
+  .welcome-text {
+    font-size: var(--font-size-xs);
+  }
+  
+  .status-bar {
+    height: 28px;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .loading-overlay {
+    padding: var(--spacing-lg) 8px;
+  }
+  
+  .error-container {
+    padding: var(--spacing-lg) 8px;
+  }
+  
+  .error-title {
+    font-size: var(--font-size-base);
+  }
+  
+  .error-message {
+    font-size: var(--font-size-xs);
+  }
+}
+
+/* ==========================================================================
+   触摸设备优化
+   ========================================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* 增加触摸目标大小 */
+  .toolbar-button,
+  .sidebar-tab,
+  .thumbnail-item,
+  .outline-link,
+  .attachment-item {
+    min-height: var(--mobile-touch-target);
+    min-width: var(--mobile-touch-target);
+  }
+  
+  /* 移除悬停效果 */
+  .toolbar-button:hover,
+  .sidebar-tab:hover,
+  .thumbnail-item:hover,
+  .outline-link:hover,
+  .attachment-item:hover {
+    background-color: initial;
+    border-color: initial;
+    color: initial;
+  }
+  
+  /* 添加触摸反馈 */
+  .toolbar-button:active,
+  .sidebar-tab:active,
+  .thumbnail-item:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  /* 优化滚动 */
+  .sidebar-content,
+  .thumbnails-container,
+  .outline-container,
+  .attachments-container,
+  .pdf-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* ==========================================================================
+   横屏模式优化
+   ========================================================================== */
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .sidebar {
+    width: 40%;
+    max-width: 300px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: -40%;
+    border-right: 1px solid var(--border-color);
+    border-bottom: none;
+    z-index: var(--z-modal);
+    transition: left 0.3s ease;
+  }
+  
+  .sidebar.show {
+    left: 0;
+  }
+  
+  .sidebar-content {
+    flex-direction: column;
+    height: calc(100vh - 60px);
+  }
+  
+  .sidebar-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .main-content {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .main-content.sidebar-open {
+    margin-left: 40%;
+  }
+}
+
+/* ==========================================================================
+   竖屏模式优化
+   ========================================================================== */
+
+@media (orientation: portrait) and (max-width: 767px) {
+  .toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .toolbar-group {
+    flex-shrink: 0;
+  }
+  
+  .pdf-page {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* ==========================================================================
+   高分辨率屏幕优化
+   ========================================================================== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .toolbar-button .icon,
+  .sidebar-tab .icon {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .pdf-page canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ==========================================================================
+   可访问性优化
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .toolbar-button,
+  .thumbnail-item {
+    transition: none;
+  }
+  
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .toolbar-button,
+  .sidebar-tab,
+  .thumbnail-item {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ==========================================================================
+   打印样式
+   ========================================================================== */
+
+@media print {
+  .toolbar,
+  .sidebar,
+  .status-bar {
+    display: none;
+  }
+  
+  .main-content {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .pdf-container {
+    padding: 0;
+  }
+  
+  .pdf-page {
+    page-break-inside: avoid;
+    margin-bottom: 0;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .welcome-screen,
+  .loading-overlay,
+  .error-container {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   容器查询支持 (实验性)
+   ========================================================================== */
+
+@supports (container-type: inline-size) {
+  .pdf-container {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 600px) {
+    .pdf-page {
+      width: 100% !important;
+    }
+  }
+  
+  @container (min-width: 800px) {
+    .pdf-page {
+      max-width: 800px;
+    }
+  }
+}
+
+/* ==========================================================================
+   动态视口单位支持
+   ========================================================================== */
+
+@supports (height: 100dvh) {
+  .app-container {
+    height: 100dvh;
+  }
+  
+  .main-content {
+    height: calc(100dvh - var(--mobile-toolbar-height) - 32px);
+  }
+  
+  .sidebar-content {
+    height: calc(100dvh - var(--mobile-toolbar-height) - 60px);
+  }
+}
+
+/* ==========================================================================
+   CSS Grid支持检测
+   ========================================================================== */
+
+@supports not (display: grid) {
+  .thumbnails-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+  
+  .thumbnail-item {
+    flex: 0 0 calc(33.333% - var(--spacing-sm));
+  }
+}
+
+/* ==========================================================================
+   Flexbox Gap支持检测
+   ========================================================================== */
+
+@supports not (gap: 1rem) {
+  .toolbar-group > * + * {
+    margin-left: var(--spacing-sm);
+  }
+  
+  .sidebar-tabs > * + * {
+    margin-left: var(--spacing-xs);
+  }
+  
+  .thumbnails-grid > * {
+    margin-right: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+  }
+}

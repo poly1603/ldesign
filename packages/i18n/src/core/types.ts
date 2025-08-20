@@ -24,6 +24,16 @@ export interface CacheOptions {
   enabled: boolean
   /** 最大缓存条目数 */
   maxSize: number
+  /** 最大内存使用量（字节） */
+  maxMemory?: number
+  /** 默认TTL（毫秒） */
+  defaultTTL?: number
+  /** 是否启用TTL */
+  enableTTL?: boolean
+  /** 清理间隔（毫秒） */
+  cleanupInterval?: number
+  /** 内存压力阈值 */
+  memoryPressureThreshold?: number
 }
 
 /**
@@ -271,3 +281,6 @@ export interface I18nInstance extends EventEmitter {
   /** 清理缓存 */
   cleanupCache?: () => void
 }
+
+// 导出增强类型定义
+export * from '../types/enhanced'

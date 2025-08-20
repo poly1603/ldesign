@@ -75,7 +75,7 @@ const i18n = createI18n({
       hello: '你好',
       welcome: '欢迎 {name}!',
     },
-    en: {
+    'en': {
       hello: 'Hello',
       welcome: 'Welcome {name}!',
     },
@@ -95,7 +95,7 @@ import { useI18n } from '@ldesign/i18n/vue'
 
 const { t, locale, setLocale } = useI18n()
 
-const switchLanguage = lang => {
+function switchLanguage(lang) {
   setLocale(lang)
 }
 </script>
@@ -105,8 +105,12 @@ const switchLanguage = lang => {
     <h1>{{ t('hello') }}</h1>
     <p>{{ t('welcome', { name: 'Vue' }) }}</p>
 
-    <button @click="switchLanguage('en')">English</button>
-    <button @click="switchLanguage('zh-CN')">中文</button>
+    <button @click="switchLanguage('en')">
+      English
+    </button>
+    <button @click="switchLanguage('zh-CN')">
+      中文
+    </button>
   </div>
 </template>
 ```

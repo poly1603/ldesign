@@ -198,7 +198,8 @@ async function testInstallation() {
     // 测试语言切换
     await i18n.changeLanguage('zh-CN')
     console.log('切换后翻译:', i18n.t('common.ok'))
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 安装验证失败:', error)
   }
 }

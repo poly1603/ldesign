@@ -42,6 +42,90 @@ export interface UseI18nReturn {
 }
 
 /**
+ * 翻译选项
+ */
+export interface UseTranslationOptions {
+  /** 默认值 */
+  defaultValue?: string
+  /** 是否立即执行 */
+  immediate?: boolean
+  /** 错误处理 */
+  onError?: (error: Error) => void
+  /** 成功回调 */
+  onSuccess?: (result: string) => void
+}
+
+/**
+ * 异步翻译返回类型
+ */
+export interface UseAsyncTranslationReturn {
+  /** 翻译结果 */
+  data: Ref<string | null>
+  /** 加载状态 */
+  loading: Ref<boolean>
+  /** 错误状态 */
+  error: Ref<Error | null>
+  /** 执行翻译 */
+  execute: (key: string, params?: TranslationParams) => Promise<void>
+  /** 重置状态 */
+  reset: () => void
+}
+
+/**
+ * 格式化翻译返回类型
+ */
+export interface UseFormattedTranslationReturn {
+  /** 格式化的翻译结果 */
+  formatted: ComputedRef<string>
+  /** 原始翻译结果 */
+  raw: ComputedRef<string>
+  /** 更新参数 */
+  updateParams: (newParams: TranslationParams) => void
+}
+
+/**
+ * 翻译验证返回类型
+ */
+export interface UseTranslationValidationReturn {
+  /** 是否有效 */
+  isValid: ComputedRef<boolean>
+  /** 验证错误 */
+  errors: ComputedRef<string[]>
+  /** 缺失的键 */
+  missingKeys: ComputedRef<string[]>
+  /** 验证翻译键 */
+  validate: (keys: string | string[]) => void
+}
+
+/**
+ * 翻译缓存返回类型
+ */
+export interface UseTranslationCacheReturn {
+  /** 缓存的翻译 */
+  cached: ComputedRef<Record<string, string>>
+  /** 缓存统计 */
+  stats: ComputedRef<{ hits: number, misses: number, size: number }>
+  /** 清除缓存 */
+  clear: () => void
+  /** 预加载翻译 */
+  preload: (keys: string[]) => Promise<void>
+}
+
+/**
+ * 翻译历史返回类型
+ */
+export interface UseTranslationHistoryReturn {
+  /** 翻译历史 */
+  history: ComputedRef<Array<{ key: string, result: string, timestamp: number }>>
+  /** 添加到历史 */
+  addToHistory: (key: string, result: string) => void
+  /** 清除历史 */
+  clearHistory: () => void
+  /** 获取最近的翻译 */
+  getRecent: (count?: number) => Array<{ key: string, result: string, timestamp: number }>
+}
+
+/**
  * Vue I18n 插件实例
  */
 export interface VueI18nPlugin {

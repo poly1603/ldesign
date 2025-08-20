@@ -4,9 +4,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "vue",
     "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*", "vue.ts"]
+  "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*", "vue.ts"],
+  "exclude": ["examples/**/*"]
 }

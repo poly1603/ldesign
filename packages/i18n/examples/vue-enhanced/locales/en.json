@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "Vue I18n Enhanced Features Demo"
+  },
+  "demo": {
+    "basic": {
+      "title": "Basic Translation",
+      "description": "This is a demonstration of basic translation features with parameter support.",
+      "welcome": "Welcome, {name}!",
+      "namePlaceholder": "Please enter your name"
+    },
+    "reactive": {
+      "title": "Reactive Translation",
+      "deepTitle": "Deep Reactive Translation",
+      "deepMessage1": "This is the first dynamic message: {value}",
+      "deepMessage2": "This is the second dynamic message: {value}",
+      "deepMessage3": "This is the third dynamic message: {value}",
+      "changeKey": "Switch Translation Key",
+      "batchTitle": "Batch Translation",
+      "computedTitle": "Computed Translation",
+      "computedMessage": "The dynamic value '{value}' has {count} characters",
+      "valuePlaceholder": "Enter dynamic value"
+    },
+    "async": {
+      "title": "Async Translation",
+      "load": "Load Async Translation",
+      "loading": "Loading...",
+      "error": "Loading failed",
+      "result": "Asynchronously loaded translation content, timestamp: {timestamp}"
+    },
+    "form": {
+      "title": "Form Translation",
+      "email": "Email Address",
+      "emailPlaceholder": "Please enter your email",
+      "message": "Message Content",
+      "messagePlaceholder": "Please enter your message",
+      "submit": "Submit Form"
+    },
+    "batch": {
+      "item1": "Batch Translation Item 1",
+      "item2": "Batch Translation Item 2",
+      "item3": "Batch Translation Item 3"
+    }
+  }
+}

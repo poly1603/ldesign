@@ -4,7 +4,7 @@
  * 提供语言切换功能的下拉选择组件
  */
 
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, h, ref } from 'vue'
 import { useLanguageSwitcher } from '../composables'
 
 export default defineComponent({
@@ -16,7 +16,7 @@ export default defineComponent({
     // 当前语言信息
     const currentLanguage = computed(() => {
       return availableLanguages.value.find(
-        (lang: any) => lang.code === locale.value
+        (lang: any) => lang.code === locale.value,
       )
     })
 
@@ -34,8 +34,8 @@ export default defineComponent({
     function getLanguageFlag(code: string): string {
       const flagMap: Record<string, string> = {
         'zh-CN': '🇨🇳',
-        en: '🇺🇸',
-        ja: '🇯🇵',
+        'en': '🇺🇸',
+        'ja': '🇯🇵',
       }
       return flagMap[code] || '🌐'
     }
@@ -45,8 +45,9 @@ export default defineComponent({
       try {
         await switchLanguage(languageCode)
         isOpen.value = false
-        console.log(`🌐 语言已切换到: ${languageCode}`)
-      } catch (error) {
+        console.warn(`🌐 语言已切换到: ${languageCode}`)
+      }
+      catch (error) {
         console.error('❌ 语言切换失败:', error)
       }
     }
@@ -61,44 +62,40 @@ export default defineComponent({
       isOpen.value = false
     }
 
-    return () => (
-      <div class='language-switcher'>
-        <button
-          class='language-switcher__trigger'
-          onClick={toggleDropdown}
-          onBlur={closeDropdown}
-        >
-          <span class='language-flag'>{getLanguageFlag(locale.value)}</span>
-          <span class='language-name'>
-            {currentLanguage.value?.nativeName || locale.value}
-          </span>
-          <span class={['language-arrow', { 'is-open': isOpen.value }]}>▼</span>
-        </button>
+    return () => {
+      return h('div', { class: 'language-switcher' }, [
+        h('button', {
+          class: 'language-switcher__trigger',
+          onClick: toggleDropdown,
+          onBlur: closeDropdown,
+        }, [
+          h('span', { class: 'language-flag' }, getLanguageFlag(locale.value)),
+          h('span', { class: 'language-name' }, currentLanguage.value?.nativeName || locale.value),
+          h('span', {
+            class: ['language-arrow', { 'is-open': isOpen.value }],
+          }, '▼'),
+        ]),
 
-        {isOpen.value && (
-          <div class='language-switcher__dropdown'>
-            {languageOptions.value.map((option: any) => (
-              <button
-                key={option.code}
-                class={[
+        isOpen.value
+          ? h('div', { class: 'language-switcher__dropdown' }, languageOptions.value.map((option: any) =>
+              h('button', {
+                key: option.code,
+                class: [
                   'language-option',
                   { 'is-active': option.code === locale.value },
-                ]}
-                onClick={() => handleLanguageChange(option.code)}
-              >
-                <span class='language-flag'>{option.flag}</span>
-                <span class='language-info'>
-                  <span class='language-native'>{option.nativeName}</span>
-                  <span class='language-english'>{option.name}</span>
-                </span>
-                {option.code === locale.value && (
-                  <span class='language-check'>✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    )
+                ],
+                onClick: () => handleLanguageChange(option.code),
+              }, [
+                h('span', { class: 'language-flag' }, option.flag),
+                h('span', { class: 'language-info' }, [
+                  h('span', { class: 'language-native' }, option.nativeName),
+                  h('span', { class: 'language-english' }, option.name),
+                ]),
+                option.code === locale.value ? h('span', { class: 'language-check' }, '✓') : null,
+              ]),
+            ))
+          : null,
+      ])
+    }
   },
 })

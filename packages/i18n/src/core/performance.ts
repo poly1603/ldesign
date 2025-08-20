@@ -16,7 +16,7 @@ export interface PerformanceMetrics {
   /** 内存使用量（字节） */
   memoryUsage: number
   /** 最慢的翻译键 */
-  slowestTranslations: Array<{ key: string; time: number }>
+  slowestTranslations: Array<{ key: string, time: number }>
 }
 
 export interface PerformanceConfig {
@@ -28,16 +28,111 @@ export interface PerformanceConfig {
   slowTranslationThreshold: number
   /** 最大记录的慢翻译数量 */
   maxSlowTranslations: number
+  /** 最大历史记录数量 */
+  maxHistorySize: number
+  /** 统计窗口大小（毫秒） */
+  statisticsWindow: number
+  /** 是否启用智能采样 */
+  enableSmartSampling: boolean
+  /** 内存压力阈值 */
+  memoryPressureThreshold: number
+}
+
+/**
+ * 高效的滑动窗口统计
+ */
+class SlidingWindowStats {
+  private values: number[] = []
+  private sum = 0
+  private maxSize: number
+  private windowStart = 0
+
+  constructor(maxSize: number) {
+    this.maxSize = maxSize
+  }
+
+  add(value: number): void {
+    if (this.values.length < this.maxSize) {
+      this.values.push(value)
+      this.sum += value
+    }
+    else {
+      // 替换最旧的值
+      this.sum = this.sum - this.values[this.windowStart] + value
+      this.values[this.windowStart] = value
+      this.windowStart = (this.windowStart + 1) % this.maxSize
+    }
+  }
+
+  getAverage(): number {
+    return this.values.length > 0 ? this.sum / this.values.length : 0
+  }
+
+  getCount(): number {
+    return this.values.length
+  }
+
+  clear(): void {
+    this.values = []
+    this.sum = 0
+    this.windowStart = 0
+  }
+}
+
+/**
+ * 智能采样器
+ */
+class SmartSampler {
+  private errorCount = 0
+  private totalCount = 0
+  private baseSampleRate: number
+  private adaptiveRate: number
+
+  constructor(baseSampleRate: number) {
+    this.baseSampleRate = baseSampleRate
+    this.adaptiveRate = baseSampleRate
+  }
+
+  shouldSample(isError = false): boolean {
+    this.totalCount++
+
+    if (isError) {
+      this.errorCount++
+      // 错误情况下提高采样率
+      return Math.random() < Math.min(1, this.adaptiveRate * 3)
+    }
+
+    // 根据错误率调整采样率
+    const errorRate = this.errorCount / this.totalCount
+    if (errorRate > 0.1) {
+      // 错误率高时提高采样率
+      this.adaptiveRate = Math.min(1, this.baseSampleRate * 2)
+    }
+    else if (errorRate < 0.01) {
+      // 错误率低时降低采样率
+      this.adaptiveRate = Math.max(0.001, this.baseSampleRate * 0.5)
+    }
+
+    return Math.random() < this.adaptiveRate
+  }
+
+  reset(): void {
+    this.errorCount = 0
+    this.totalCount = 0
+    this.adaptiveRate = this.baseSampleRate
+  }
 }
 
 /**
  * 性能监控管理器
  */
 export class PerformanceManager {
-  private config: PerformanceConfig
+  private config: Required<PerformanceConfig>
   private metrics: PerformanceMetrics
-  private translationTimes: number[] = []
+  private translationStats: SlidingWindowStats
+  private smartSampler: SmartSampler
   private languageLoadStartTimes = new Map<string, number>()
+  private lastCleanup = Date.now()
 
   constructor(config: Partial<PerformanceConfig> = {}) {
     this.config = {
@@ -45,8 +140,15 @@ export class PerformanceManager {
       sampleRate: 0.1, // 10% 采样
       slowTranslationThreshold: 10, // 10ms
       maxSlowTranslations: 50,
+      maxHistorySize: 1000,
+      statisticsWindow: 60 * 1000, // 1分钟
+      enableSmartSampling: true,
+      memoryPressureThreshold: 0.8,
       ...config,
     }
+
+    this.translationStats = new SlidingWindowStats(this.config.maxHistorySize)
+    this.smartSampler = new SmartSampler(this.config.sampleRate)
 
     this.metrics = {
       translationCalls: 0,
@@ -63,42 +165,98 @@ export class PerformanceManager {
    * @param key 翻译键
    * @param startTime 开始时间
    * @param endTime 结束时间
-   * @param fromCache 是否来自缓存
+   * @param _fromCache 是否来自缓存
    */
   recordTranslation(
     key: string,
     startTime: number,
     endTime: number,
-    fromCache: boolean
+    _fromCache: boolean,
   ): void {
-    if (!this.config.enabled || Math.random() > this.config.sampleRate) {
+    if (!this.config.enabled) {
       return
     }
 
     const duration = endTime - startTime
+    const isSlowTranslation = duration > this.config.slowTranslationThreshold
+
+    // 智能采样决策
+    const shouldSample = this.config.enableSmartSampling
+      ? this.smartSampler.shouldSample(isSlowTranslation)
+      : Math.random() <= this.config.sampleRate
+
+    if (!shouldSample && !isSlowTranslation) {
+      // 对于慢翻译，即使不在采样范围内也要记录
+      return
+    }
+
     this.metrics.translationCalls++
-    this.translationTimes.push(duration)
 
-    // 更新平均时间
-    this.metrics.averageTranslationTime =
-      this.translationTimes.reduce((sum, time) => sum + time, 0) /
-      this.translationTimes.length
+    // 使用滑动窗口统计，避免内存泄漏
+    this.translationStats.add(duration)
+    this.metrics.averageTranslationTime = this.translationStats.getAverage()
 
-    // 记录慢翻译
-    if (duration > this.config.slowTranslationThreshold) {
-      this.metrics.slowestTranslations.push({ key, time: duration })
+    // 记录慢翻译（使用更高效的插入排序）
+    if (isSlowTranslation) {
+      this.addSlowTranslation(key, duration)
+    }
 
-      // 保持最大数量限制
-      if (
-        this.metrics.slowestTranslations.length >
-        this.config.maxSlowTranslations
-      ) {
-        this.metrics.slowestTranslations.sort((a, b) => b.time - a.time)
-        this.metrics.slowestTranslations =
-          this.metrics.slowestTranslations.slice(
-            0,
-            this.config.maxSlowTranslations
-          )
+    // 定期清理以避免内存泄漏
+    this.performPeriodicCleanup()
+  }
+
+  /**
+   * 高效地添加慢翻译记录
+   */
+  private addSlowTranslation(key: string, time: number): void {
+    const slowTranslations = this.metrics.slowestTranslations
+
+    // 如果数组未满，直接添加
+    if (slowTranslations.length < this.config.maxSlowTranslations) {
+      slowTranslations.push({ key, time })
+      // 保持排序（插入排序）
+      for (let i = slowTranslations.length - 1; i > 0; i--) {
+        if (slowTranslations[i].time > slowTranslations[i - 1].time) {
+          [slowTranslations[i], slowTranslations[i - 1]] = [slowTranslations[i - 1], slowTranslations[i]]
+        }
+        else {
+          break
+        }
+      }
+    }
+    else if (time > slowTranslations[slowTranslations.length - 1].time) {
+      // 替换最慢的记录
+      slowTranslations[slowTranslations.length - 1] = { key, time }
+      // 向前冒泡到正确位置
+      for (let i = slowTranslations.length - 1; i > 0; i--) {
+        if (slowTranslations[i].time > slowTranslations[i - 1].time) {
+          [slowTranslations[i], slowTranslations[i - 1]] = [slowTranslations[i - 1], slowTranslations[i]]
+        }
+        else {
+          break
+        }
+      }
+    }
+  }
+
+  /**
+   * 定期清理以防止内存泄漏
+   */
+  private performPeriodicCleanup(): void {
+    const now = Date.now()
+    if (now - this.lastCleanup > this.config.statisticsWindow) {
+      this.lastCleanup = now
+
+      // 清理过期的语言加载记录
+      for (const [locale, startTime] of this.languageLoadStartTimes) {
+        if (now - startTime > 30000) { // 30秒超时
+          this.languageLoadStartTimes.delete(locale)
+        }
+      }
+
+      // 重置智能采样器
+      if (this.config.enableSmartSampling) {
+        this.smartSampler.reset()
       }
     }
   }
@@ -108,7 +266,8 @@ export class PerformanceManager {
    * @param locale 语言代码
    */
   recordLanguageLoadStart(locale: string): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
     this.languageLoadStartTimes.set(locale, performance.now())
   }
 
@@ -117,7 +276,8 @@ export class PerformanceManager {
    * @param locale 语言代码
    */
   recordLanguageLoadEnd(locale: string): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
 
     const startTime = this.languageLoadStartTimes.get(locale)
     if (startTime) {
@@ -132,7 +292,8 @@ export class PerformanceManager {
    * @param hitRate 命中率
    */
   updateCacheHitRate(hitRate: number): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
     this.metrics.cacheHitRate = hitRate
   }
 
@@ -141,7 +302,8 @@ export class PerformanceManager {
    * @param usage 内存使用量（字节）
    */
   updateMemoryUsage(usage: number): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+      return
     this.metrics.memoryUsage = usage
   }
 
@@ -164,8 +326,69 @@ export class PerformanceManager {
       memoryUsage: 0,
       slowestTranslations: [],
     }
-    this.translationTimes = []
+
+    // 重置内部状态
+    this.translationStats.clear()
+    this.smartSampler.reset()
     this.languageLoadStartTimes.clear()
+    this.lastCleanup = Date.now()
+  }
+
+  /**
+   * 获取内存使用情况
+   */
+  getMemoryUsage(): number {
+    let usage = 0
+
+    // 估算各种数据结构的内存使用
+    usage += this.metrics.slowestTranslations.length * 64 // 每个记录约64字节
+    usage += this.languageLoadStartTimes.size * 32 // 每个Map条目约32字节
+    usage += this.translationStats.getCount() * 8 // 每个数字8字节
+
+    return usage
+  }
+
+  /**
+   * 检查内存压力并执行清理
+   */
+  checkMemoryPressure(): void {
+    const memoryUsage = this.getMemoryUsage()
+    const maxMemory = 1024 * 1024 // 1MB限制
+
+    if (memoryUsage > maxMemory * this.config.memoryPressureThreshold) {
+      this.performMemoryCleanup()
+    }
+  }
+
+  /**
+   * 执行内存清理
+   */
+  private performMemoryCleanup(): void {
+    // 清理一半的慢翻译记录
+    const halfSize = Math.floor(this.config.maxSlowTranslations / 2)
+    this.metrics.slowestTranslations = this.metrics.slowestTranslations.slice(0, halfSize)
+
+    // 清理过期的语言加载记录
+    const now = Date.now()
+    for (const [locale, startTime] of this.languageLoadStartTimes) {
+      if (now - startTime > 10000) { // 10秒超时
+        this.languageLoadStartTimes.delete(locale)
+      }
+    }
+
+    // 重置统计窗口
+    this.translationStats.clear()
+  }
+
+  /**
+   * 清理历史数据
+   */
+  clearHistory(): void {
+    this.translationStats.clear()
+    this.smartSampler.reset()
+    this.languageLoadStartTimes.clear()
+    this.metrics.slowestTranslations = []
+    this.lastCleanup = Date.now()
   }
 
   /**
@@ -222,10 +445,10 @@ export class PerformanceManager {
       suggestions.push('存在较多慢翻译，考虑优化这些翻译键的处理逻辑')
     }
 
-    const avgLoadTime =
-      Object.values(metrics.languageLoadTimes).reduce(
+    const avgLoadTime
+      = Object.values(metrics.languageLoadTimes).reduce(
         (sum, time) => sum + time,
-        0
+        0,
       ) / Object.keys(metrics.languageLoadTimes).length
 
     if (avgLoadTime > 100) {
@@ -273,7 +496,7 @@ export const globalPerformanceManager = new PerformanceManager()
 export function performanceMonitor(
   target: any,
   propertyKey: string,
-  descriptor: PropertyDescriptor
+  descriptor: PropertyDescriptor,
 ) {
   const originalMethod = descriptor.value
 
@@ -286,7 +509,7 @@ export function performanceMonitor(
       `${target.constructor.name}.${propertyKey}`,
       startTime,
       endTime,
-      false
+      false,
     )
 
     return result

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="原生JavaScript PDF查看器示例 - 展示@ldesign/pdf库的完整功能">
+  <meta name="keywords" content="PDF, JavaScript, 查看器, 原生JS, 文档预览">
+  <meta name="author" content="LDesign Team">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e74c3c'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z'/%3E%3C/svg%3E">
+  
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#3498db">
+  
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e74c3c'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z'/%3E%3C/svg%3E">
+  
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <title>原生JavaScript PDF查看器 - @ldesign/pdf 示例</title>
+  
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/themes.css">
+  <link rel="stylesheet" href="styles/responsive.css">
+  
+  <!-- Loading Styles -->
+  <style>
+    /* 初始加载样式 */
+    .app-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    .loading-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    
+    .loading-subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* 错误页面样式 */
+    .error-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f8f9fa;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9998;
+      color: #495057;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .error-icon {
+      font-size: 64px;
+      color: #dc3545;
+      margin-bottom: 20px;
+    }
+    
+    .error-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #212529;
+    }
+    
+    .error-message {
+      font-size: 16px;
+      margin-bottom: 30px;
+      max-width: 500px;
+      line-height: 1.5;
+    }
+    
+    .error-actions {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .error-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .error-button.primary {
+      background: #007bff;
+      color: white;
+    }
+    
+    .error-button.primary:hover {
+      background: #0056b3;
+    }
+    
+    .error-button.secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .error-button.secondary:hover {
+      background: #545b62;
+    }
+  </style>
+</head>
+<body>
+  <!-- 应用加载指示器 -->
+  <div id="app-loading" class="app-loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在加载 PDF 查看器</div>
+    <div class="loading-subtitle">请稍候...</div>
+  </div>
+  
+  <!-- 错误页面 -->
+  <div id="error-page" class="error-page">
+    <div class="error-icon">⚠️</div>
+    <h1 class="error-title">加载失败</h1>
+    <p class="error-message">很抱歉，PDF 查看器无法正常加载。这可能是由于浏览器不兼容或网络问题导致的。</p>
+    <div class="error-actions">
+      <button class="error-button primary" onclick="location.reload()">
+        🔄 重新加载
+      </button>
+      <button class="error-button secondary" onclick="window.history.back()">
+        ← 返回上页
+      </button>
+    </div>
+  </div>
+  
+  <!-- 主应用容器 -->
+  <div id="app" class="app" style="display: none;">
+    <!-- 顶部工具栏 -->
+    <header id="pdf-toolbar" class="pdf-toolbar">
+      <div class="toolbar-section toolbar-left">
+        <!-- 文件操作 -->
+        <div class="toolbar-group">
+          <button id="open-file-btn" class="toolbar-button" title="打开文件">
+            <span class="icon">📁</span>
+            <span class="text">打开</span>
+          </button>
+          <input type="file" id="file-input" accept=".pdf" style="display: none;">
+          
+          <button id="download-btn" class="toolbar-button" title="下载文档" disabled>
+            <span class="icon">💾</span>
+            <span class="text">下载</span>
+          </button>
+          
+          <button id="print-btn" class="toolbar-button" title="打印文档" disabled>
+            <span class="icon">🖨️</span>
+            <span class="text">打印</span>
+          </button>
+        </div>
+        
+        <!-- 分隔符 -->
+        <div class="toolbar-separator"></div>
+        
+        <!-- 导航控制 -->
+        <div class="toolbar-group">
+          <button id="prev-page-btn" class="toolbar-button" title="上一页" disabled>
+            <span class="icon">⬅️</span>
+          </button>
+          
+          <div class="page-info">
+            <input type="number" id="page-input" class="page-input" min="1" value="1" disabled>
+            <span class="page-separator">/</span>
+            <span id="total-pages" class="total-pages">0</span>
+          </div>
+          
+          <button id="next-page-btn" class="toolbar-button" title="下一页" disabled>
+            <span class="icon">➡️</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="toolbar-section toolbar-center">
+        <!-- 搜索框 -->
+        <div class="search-container">
+          <input type="text" id="search-input" class="search-input" placeholder="搜索文档内容..." disabled>
+          <button id="search-btn" class="search-button" title="搜索" disabled>
+            <span class="icon">🔍</span>
+          </button>
+          <button id="search-prev-btn" class="search-nav-button" title="上一个结果" disabled>
+            <span class="icon">⬆️</span>
+          </button>
+          <button id="search-next-btn" class="search-nav-button" title="下一个结果" disabled>
+            <span class="icon">⬇️</span>
+          </button>
+          <button id="search-clear-btn" class="search-clear-button" title="清除搜索" disabled>
+            <span class="icon">❌</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="toolbar-section toolbar-right">
+        <!-- 缩放控制 -->
+        <div class="toolbar-group">
+          <button id="zoom-out-btn" class="toolbar-button" title="缩小" disabled>
+            <span class="icon">🔍➖</span>
+          </button>
+          
+          <select id="zoom-select" class="zoom-select" disabled>
+            <option value="0.5">50%</option>
+            <option value="0.75">75%</option>
+            <option value="1" selected>100%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5">150%</option>
+            <option value="2">200%</option>
+            <option value="fit-width">适应宽度</option>
+            <option value="fit-page">适应页面</option>
+          </select>
+          
+          <button id="zoom-in-btn" class="toolbar-button" title="放大" disabled>
+            <span class="icon">🔍➕</span>
+          </button>
+        </div>
+        
+        <!-- 分隔符 -->
+        <div class="toolbar-separator"></div>
+        
+        <!-- 视图控制 -->
+        <div class="toolbar-group">
+          <button id="toggle-sidebar-btn" class="toolbar-button" title="切换侧边栏">
+            <span class="icon">📋</span>
+          </button>
+          
+          <button id="fullscreen-btn" class="toolbar-button" title="全屏模式">
+            <span class="icon">⛶</span>
+          </button>
+          
+          <button id="theme-toggle-btn" class="toolbar-button" title="切换主题">
+            <span class="icon">🌙</span>
+          </button>
+        </div>
+        
+        <!-- 帮助 -->
+        <div class="toolbar-group">
+          <button id="help-btn" class="toolbar-button" title="帮助">
+            <span class="icon">❓</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 侧边栏 -->
+      <aside id="pdf-sidebar" class="pdf-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="thumbnails">
+              <span class="icon">🖼️</span>
+              <span class="text">缩略图</span>
+            </button>
+            <button class="sidebar-tab" data-tab="outline">
+              <span class="icon">📑</span>
+              <span class="text">大纲</span>
+            </button>
+            <button class="sidebar-tab" data-tab="attachments">
+              <span class="icon">📎</span>
+              <span class="text">附件</span>
+            </button>
+          </div>
+          <button class="sidebar-close" title="关闭侧边栏">
+            <span class="icon">❌</span>
+          </button>
+        </div>
+        
+        <div class="sidebar-content">
+          <!-- 缩略图面板 -->
+          <div id="thumbnails-panel" class="sidebar-panel active">
+            <div class="panel-header">
+              <h3>页面缩略图</h3>
+              <div class="thumbnail-controls">
+                <button class="thumbnail-size-btn" data-size="small" title="小尺寸">
+                  <span class="icon">🔸</span>
+                </button>
+                <button class="thumbnail-size-btn active" data-size="medium" title="中尺寸">
+                  <span class="icon">🔹</span>
+                </button>
+                <button class="thumbnail-size-btn" data-size="large" title="大尺寸">
+                  <span class="icon">🔶</span>
+                </button>
+              </div>
+            </div>
+            <div id="thumbnails-container" class="thumbnails-container">
+              <div class="empty-state">
+                <div class="empty-icon">📄</div>
+                <div class="empty-text">请先加载 PDF 文档</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 大纲面板 -->
+          <div id="outline-panel" class="sidebar-panel">
+            <div class="panel-header">
+              <h3>文档大纲</h3>
+            </div>
+            <div id="outline-container" class="outline-container">
+              <div class="empty-state">
+                <div class="empty-icon">📑</div>
+                <div class="empty-text">此文档没有大纲</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 附件面板 -->
+          <div id="attachments-panel" class="sidebar-panel">
+            <div class="panel-header">
+              <h3>文档附件</h3>
+            </div>
+            <div id="attachments-container" class="attachments-container">
+              <div class="empty-state">
+                <div class="empty-icon">📎</div>
+                <div class="empty-text">此文档没有附件</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- PDF 查看器容器 -->
+      <section id="pdf-container" class="pdf-container">
+        <!-- 欢迎页面 -->
+        <div id="welcome-screen" class="welcome-screen">
+          <div class="welcome-content">
+            <div class="welcome-icon">📄</div>
+            <h2 class="welcome-title">原生 JavaScript PDF 查看器</h2>
+            <p class="welcome-description">
+              这是一个使用原生 JavaScript 和 @ldesign/pdf 库构建的 PDF 查看器示例。
+              支持文档加载、页面导航、缩放控制、搜索功能等完整特性。
+            </p>
+            
+            <div class="welcome-actions">
+              <button id="welcome-open-btn" class="welcome-button primary">
+                <span class="icon">📁</span>
+                <span class="text">打开 PDF 文档</span>
+              </button>
+              
+              <button id="welcome-demo-btn" class="welcome-button secondary">
+                <span class="icon">🎯</span>
+                <span class="text">加载示例文档</span>
+              </button>
+            </div>
+            
+            <div class="welcome-features">
+              <div class="feature-item">
+                <span class="feature-icon">🔍</span>
+                <span class="feature-text">全文搜索</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🖼️</span>
+                <span class="feature-text">缩略图导航</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span class="feature-text">响应式设计</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🌙</span>
+                <span class="feature-text">主题切换</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- PDF 页面容器 -->
+        <div id="pdf-pages" class="pdf-pages" style="display: none;">
+          <!-- 页面将动态插入到这里 -->
+        </div>
+        
+        <!-- 加载指示器 -->
+        <div id="loading-indicator" class="loading-indicator" style="display: none;">
+          <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在加载文档...</div>
+            <div class="loading-progress">
+              <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+              </div>
+              <div id="progress-text" class="progress-text">0%</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- 状态栏 -->
+    <footer id="status-bar" class="status-bar">
+      <div class="status-section status-left">
+        <span id="document-info" class="document-info">就绪</span>
+      </div>
+      
+      <div class="status-section status-center">
+        <span id="search-status" class="search-status"></span>
+      </div>
+      
+      <div class="status-section status-right">
+        <span id="zoom-info" class="zoom-info">100%</span>
+        <span class="status-separator">|</span>
+        <span id="performance-info" class="performance-info"></span>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- 帮助对话框 -->
+  <div id="help-dialog" class="dialog-overlay" style="display: none;">
+    <div class="dialog">
+      <div class="dialog-header">
+        <h3>使用帮助</h3>
+        <button class="dialog-close" title="关闭">
+          <span class="icon">❌</span>
+        </button>
+      </div>
+      
+      <div class="dialog-content">
+        <div class="help-section">
+          <h4>🎯 快速开始</h4>
+          <ul>
+            <li>点击 "打开" 按钮选择本地 PDF 文件</li>
+            <li>或点击 "加载示例文档" 查看演示</li>
+            <li>使用工具栏控制文档查看</li>
+          </ul>
+        </div>
+        
+        <div class="help-section">
+          <h4>⌨️ 键盘快捷键</h4>
+          <div class="shortcut-list">
+            <div class="shortcut-item">
+              <kbd>Ctrl + O</kbd>
+              <span>打开文件</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Ctrl + F</kbd>
+              <span>搜索</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Ctrl + +</kbd>
+              <span>放大</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Ctrl + -</kbd>
+              <span>缩小</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Page Up/Down</kbd>
+              <span>翻页</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Home/End</kbd>
+              <span>首页/末页</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>F11</kbd>
+              <span>全屏</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="help-section">
+          <h4>🔧 功能说明</h4>
+          <ul>
+            <li><strong>缩略图</strong>：点击侧边栏缩略图快速跳转到指定页面</li>
+            <li><strong>搜索</strong>：支持全文搜索，高亮显示结果</li>
+            <li><strong>缩放</strong>：支持自定义缩放比例和自适应模式</li>
+            <li><strong>主题</strong>：支持浅色和深色主题切换</li>
+            <li><strong>下载</strong>：可以下载当前查看的文档</li>
+            <li><strong>打印</strong>：支持文档打印功能</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="dialog-footer">
+        <button class="dialog-button primary">知道了</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript 模块 -->
+  <script type="module" src="scripts/main.js"></script>
+  
+  <!-- 全局错误处理 -->
+  <script>
+    // 全局错误处理
+    window.addEventListener('error', function(event) {
+      console.error('全局错误:', event.error);
+      showErrorPage('应用程序遇到了一个错误：' + event.error.message);
+    });
+    
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('未处理的 Promise 拒绝:', event.reason);
+      showErrorPage('应用程序遇到了一个异步错误：' + event.reason);
+    });
+    
+    // 显示错误页面
+    function showErrorPage(message) {
+      const loadingEl = document.getElementById('app-loading');
+      const errorEl = document.getElementById('error-page');
+      const appEl = document.getElementById('app');
+      
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (appEl) appEl.style.display = 'none';
+      if (errorEl) {
+        errorEl.style.display = 'flex';
+        const messageEl = errorEl.querySelector('.error-message');
+        if (messageEl && message) {
+          messageEl.textContent = message;
+        }
+      }
+    }
+    
+    // 浏览器兼容性检查
+    function checkBrowserCompatibility() {
+      const features = {
+        'ES6 Classes': typeof class {} === 'function',
+        'Fetch API': typeof fetch === 'function',
+        'Promise': typeof Promise === 'function',
+        'Canvas': !!document.createElement('canvas').getContext,
+        'Web Workers': typeof Worker === 'function',
+        'Intersection Observer': 'IntersectionObserver' in window
+      };
+      
+      const unsupported = Object.entries(features)
+        .filter(([name, supported]) => !supported)
+        .map(([name]) => name);
+      
+      if (unsupported.length > 0) {
+        showErrorPage(
+          '您的浏览器不支持以下必需功能：' + unsupported.join(', ') + 
+          '。请使用现代浏览器（Chrome 61+、Firefox 60+、Safari 12+、Edge 79+）。'
+        );
+        return false;
+      }
+      
+      return true;
+    }
+    
+    // 性能监控
+    if ('performance' in window) {
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          if (perfData) {
+            console.log('页面加载性能:', {
+              DNS: perfData.domainLookupEnd - perfData.domainLookupStart,
+              TCP: perfData.connectEnd - perfData.connectStart,
+              Request: perfData.responseStart - perfData.requestStart,
+              Response: perfData.responseEnd - perfData.responseStart,
+              DOM: perfData.domContentLoadedEventEnd - perfData.responseEnd,
+              Total: perfData.loadEventEnd - perfData.navigationStart
+            });
+          }
+        }, 0);
+      });
+    }
+    
+    // 初始化检查
+    if (!checkBrowserCompatibility()) {
+      // 浏览器不兼容，错误页面已显示
+    } else {
+      // 浏览器兼容，继续加载应用
+      console.log('浏览器兼容性检查通过');
+    }
+  </script>
+  
+  <!-- 无 JavaScript 支持的回退 -->
+  <noscript>
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      color: #495057;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+      padding: 20px;
+    ">
+      <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+      <h1 style="font-size: 24px; margin-bottom: 10px;">需要启用 JavaScript</h1>
+      <p style="font-size: 16px; margin-bottom: 30px; max-width: 500px; line-height: 1.5;">
+        此 PDF 查看器需要 JavaScript 才能正常工作。请在浏览器设置中启用 JavaScript，然后刷新页面。
+      </p>
+      <button onclick="location.reload()" style="
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        background: #007bff;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+      ">刷新页面</button>
+    </div>
+  </noscript>
+</body>
+</html>

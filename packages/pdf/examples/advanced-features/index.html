@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PDF查看器高级功能示例 - 性能监控、批注、搜索、插件系统">
+  <meta name="keywords" content="PDF, 查看器, 高级功能, 性能监控, 批注, 搜索, 插件">
+  <meta name="author" content="LDesign Team">
+  <meta name="theme-color" content="#007acc">
+  <meta name="color-scheme" content="light dark">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="./styles/components.css">
+  <link rel="stylesheet" href="./styles/themes.css">
+  <link rel="stylesheet" href="./styles/animations.css">
+  <link rel="stylesheet" href="./styles/responsive.css">
+  
+  <title>PDF查看器高级功能示例 - LDesign</title>
+  
+  <!-- Initial loading styles -->
+  <style>
+    .initial-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    .loading-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    
+    .loading-progress {
+      width: 200px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .loading-progress-bar {
+      height: 100%;
+      background: white;
+      border-radius: 2px;
+      animation: progress 2s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes progress {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+    
+    .error-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f8f9fa;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .error-icon {
+      font-size: 64px;
+      color: #dc3545;
+      margin-bottom: 20px;
+    }
+    
+    .error-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .error-message {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 30px;
+      max-width: 500px;
+    }
+    
+    .error-actions {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .error-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .error-button.primary {
+      background: #007acc;
+      color: white;
+    }
+    
+    .error-button.secondary {
+      background: #f8f9fa;
+      color: #333;
+      border: 1px solid #dee2e6;
+    }
+    
+    .error-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <!-- Initial Loading Screen -->
+  <div id="initialLoading" class="initial-loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">加载PDF查看器高级功能</div>
+    <div class="loading-progress">
+      <div class="loading-progress-bar"></div>
+    </div>
+  </div>
+  
+  <!-- Error Page -->
+  <div id="errorPage" class="error-page">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title">加载失败</div>
+    <div class="error-message">抱歉，PDF查看器无法正常加载。请检查您的浏览器是否支持现代Web标准。</div>
+    <div class="error-actions">
+      <button class="error-button primary" onclick="location.reload()">重新加载</button>
+      <button class="error-button secondary" onclick="window.history.back()">返回上页</button>
+    </div>
+  </div>
+  
+  <!-- Main Application -->
+  <div id="app" class="app" style="display: none;">
+    <!-- Header -->
+    <header class="app-header">
+      <!-- Main Toolbar -->
+      <div class="toolbar">
+        <!-- File Operations -->
+        <div class="toolbar-group">
+          <button id="openFileBtn" class="toolbar-btn" title="打开文件 (Ctrl+O)">
+            <span class="icon">📁</span>
+            <span class="text">打开</span>
+          </button>
+          <button id="openUrlBtn" class="toolbar-btn" title="从URL打开">
+            <span class="icon">🌐</span>
+            <span class="text">URL</span>
+          </button>
+          <div class="toolbar-separator"></div>
+          <button id="downloadBtn" class="toolbar-btn" title="下载 (Ctrl+S)" disabled>
+            <span class="icon">💾</span>
+            <span class="text">下载</span>
+          </button>
+          <button id="printBtn" class="toolbar-btn" title="打印 (Ctrl+P)" disabled>
+            <span class="icon">🖨️</span>
+            <span class="text">打印</span>
+          </button>
+        </div>
+        
+        <!-- Document Tabs -->
+        <div class="document-tabs" id="documentTabs">
+          <!-- Dynamic tabs will be inserted here -->
+        </div>
+        
+        <!-- Navigation -->
+        <div class="toolbar-group">
+          <button id="prevPageBtn" class="toolbar-btn" title="上一页 (←)" disabled>
+            <span class="icon">⬅️</span>
+          </button>
+          <div class="page-info">
+            <input id="pageInput" type="number" min="1" value="1" disabled>
+            <span id="pageTotal">/ 0</span>
+          </div>
+          <button id="nextPageBtn" class="toolbar-btn" title="下一页 (→)" disabled>
+            <span class="icon">➡️</span>
+          </button>
+        </div>
+        
+        <!-- Search -->
+        <div class="toolbar-group search-group">
+          <div class="search-container">
+            <input id="searchInput" type="text" placeholder="搜索文档..." disabled>
+            <button id="searchBtn" class="search-btn" title="搜索 (Ctrl+F)" disabled>
+              <span class="icon">🔍</span>
+            </button>
+            <button id="searchOptionsBtn" class="search-options-btn" title="搜索选项">
+              <span class="icon">⚙️</span>
+            </button>
+          </div>
+          <div class="search-navigation">
+            <button id="searchPrevBtn" class="toolbar-btn small" title="上一个结果" disabled>
+              <span class="icon">⬆️</span>
+            </button>
+            <button id="searchNextBtn" class="toolbar-btn small" title="下一个结果" disabled>
+              <span class="icon">⬇️</span>
+            </button>
+            <span id="searchResults" class="search-results">0/0</span>
+          </div>
+        </div>
+        
+        <!-- Zoom -->
+        <div class="toolbar-group">
+          <button id="zoomOutBtn" class="toolbar-btn" title="缩小 (Ctrl+-)" disabled>
+            <span class="icon">🔍➖</span>
+          </button>
+          <select id="zoomSelect" class="zoom-select" disabled>
+            <option value="auto">自适应</option>
+            <option value="page-fit">适合页面</option>
+            <option value="page-width">适合宽度</option>
+            <option value="0.5">50%</option>
+            <option value="0.75">75%</option>
+            <option value="1" selected>100%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5">150%</option>
+            <option value="2">200%</option>
+            <option value="3">300%</option>
+          </select>
+          <button id="zoomInBtn" class="toolbar-btn" title="放大 (Ctrl++)" disabled>
+            <span class="icon">🔍➕</span>
+          </button>
+        </div>
+        
+        <!-- View Controls -->
+        <div class="toolbar-group">
+          <button id="rotateLeftBtn" class="toolbar-btn" title="逆时针旋转" disabled>
+            <span class="icon">↺</span>
+          </button>
+          <button id="rotateRightBtn" class="toolbar-btn" title="顺时针旋转" disabled>
+            <span class="icon">↻</span>
+          </button>
+          <div class="toolbar-separator"></div>
+          <button id="toggleSidebarBtn" class="toolbar-btn" title="切换侧边栏">
+            <span class="icon">📋</span>
+          </button>
+          <button id="togglePerformanceBtn" class="toolbar-btn" title="性能监控">
+            <span class="icon">📊</span>
+          </button>
+          <button id="toggleAnnotationsBtn" class="toolbar-btn" title="批注工具">
+            <span class="icon">✏️</span>
+          </button>
+          <button id="togglePluginsBtn" class="toolbar-btn" title="插件管理">
+            <span class="icon">🔌</span>
+          </button>
+        </div>
+        
+        <!-- Theme and Settings -->
+        <div class="toolbar-group">
+          <button id="themeToggleBtn" class="toolbar-btn" title="切换主题">
+            <span class="icon">🌓</span>
+          </button>
+          <button id="settingsBtn" class="toolbar-btn" title="设置">
+            <span class="icon">⚙️</span>
+          </button>
+          <button id="helpBtn" class="toolbar-btn" title="帮助 (F1)">
+            <span class="icon">❓</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="app-main">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+          <div class="sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="thumbnails" title="缩略图">
+              <span class="icon">🖼️</span>
+              <span class="text">缩略图</span>
+            </button>
+            <button class="sidebar-tab" data-tab="outline" title="大纲">
+              <span class="icon">📑</span>
+              <span class="text">大纲</span>
+            </button>
+            <button class="sidebar-tab" data-tab="attachments" title="附件">
+              <span class="icon">📎</span>
+              <span class="text">附件</span>
+            </button>
+            <button class="sidebar-tab" data-tab="annotations" title="批注">
+              <span class="icon">✏️</span>
+              <span class="text">批注</span>
+            </button>
+            <button class="sidebar-tab" data-tab="search" title="搜索">
+              <span class="icon">🔍</span>
+              <span class="text">搜索</span>
+            </button>
+          </div>
+          <button id="sidebarCloseBtn" class="sidebar-close" title="关闭侧边栏">
+            <span class="icon">✕</span>
+          </button>
+        </div>
+        
+        <!-- Sidebar Content -->
+        <div class="sidebar-content">
+          <!-- Thumbnails Panel -->
+          <div id="thumbnailsPanel" class="sidebar-panel active">
+            <div class="panel-header">
+              <h3>缩略图</h3>
+              <div class="panel-controls">
+                <button id="thumbnailSizeBtn" class="control-btn" title="调整大小">
+                  <span class="icon">📏</span>
+                </button>
+                <button id="thumbnailRefreshBtn" class="control-btn" title="刷新">
+                  <span class="icon">🔄</span>
+                </button>
+              </div>
+            </div>
+            <div id="thumbnailsContainer" class="thumbnails-container">
+              <div class="empty-state">
+                <div class="empty-icon">🖼️</div>
+                <div class="empty-text">暂无缩略图</div>
+                <div class="empty-hint">打开PDF文档后将显示缩略图</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Outline Panel -->
+          <div id="outlinePanel" class="sidebar-panel">
+            <div class="panel-header">
+              <h3>文档大纲</h3>
+              <div class="panel-controls">
+                <button id="outlineExpandBtn" class="control-btn" title="展开所有">
+                  <span class="icon">📂</span>
+                </button>
+                <button id="outlineCollapseBtn" class="control-btn" title="折叠所有">
+                  <span class="icon">📁</span>
+                </button>
+              </div>
+            </div>
+            <div id="outlineContainer" class="outline-container">
+              <div class="empty-state">
+                <div class="empty-icon">📑</div>
+                <div class="empty-text">暂无大纲</div>
+                <div class="empty-hint">此文档没有大纲信息</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Attachments Panel -->
+          <div id="attachmentsPanel" class="sidebar-panel">
+            <div class="panel-header">
+              <h3>附件</h3>
+              <div class="panel-controls">
+                <button id="attachmentDownloadAllBtn" class="control-btn" title="下载所有">
+                  <span class="icon">💾</span>
+                </button>
+              </div>
+            </div>
+            <div id="attachmentsContainer" class="attachments-container">
+              <div class="empty-state">
+                <div class="empty-icon">📎</div>
+                <div class="empty-text">暂无附件</div>
+                <div class="empty-hint">此文档没有附件</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Annotations Panel -->
+          <div id="annotationsPanel" class="sidebar-panel">
+            <div class="panel-header">
+              <h3>批注</h3>
+              <div class="panel-controls">
+                <button id="annotationAddBtn" class="control-btn" title="添加批注">
+                  <span class="icon">➕</span>
+                </button>
+                <button id="annotationExportBtn" class="control-btn" title="导出批注">
+                  <span class="icon">📤</span>
+                </button>
+                <button id="annotationImportBtn" class="control-btn" title="导入批注">
+                  <span class="icon">📥</span>
+                </button>
+              </div>
+            </div>
+            <div id="annotationsContainer" class="annotations-container">
+              <div class="empty-state">
+                <div class="empty-icon">✏️</div>
+                <div class="empty-text">暂无批注</div>
+                <div class="empty-hint">点击添加按钮创建批注</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Search Panel -->
+          <div id="searchPanel" class="sidebar-panel">
+            <div class="panel-header">
+              <h3>高级搜索</h3>
+              <div class="panel-controls">
+                <button id="searchHistoryBtn" class="control-btn" title="搜索历史">
+                  <span class="icon">🕒</span>
+                </button>
+                <button id="searchClearBtn" class="control-btn" title="清除结果">
+                  <span class="icon">🗑️</span>
+                </button>
+              </div>
+            </div>
+            <div class="search-options">
+              <div class="search-option">
+                <label>
+                  <input type="checkbox" id="caseSensitive"> 区分大小写
+                </label>
+              </div>
+              <div class="search-option">
+                <label>
+                  <input type="checkbox" id="wholeWords"> 全词匹配
+                </label>
+              </div>
+              <div class="search-option">
+                <label>
+                  <input type="checkbox" id="useRegex"> 正则表达式
+                </label>
+              </div>
+              <div class="search-option">
+                <label>
+                  <input type="checkbox" id="fuzzySearch"> 模糊搜索
+                </label>
+              </div>
+            </div>
+            <div id="searchResultsContainer" class="search-results-container">
+              <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <div class="empty-text">暂无搜索结果</div>
+                <div class="empty-hint">输入关键词开始搜索</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- PDF Viewer Container -->
+      <div class="pdf-container">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="welcome-screen">
+          <div class="welcome-content">
+            <div class="welcome-icon">📄</div>
+            <h1 class="welcome-title">PDF查看器高级功能示例</h1>
+            <p class="welcome-description">
+              体验强大的PDF查看功能，包括性能监控、批注支持、高级搜索、插件系统等。
+            </p>
+            <div class="welcome-features">
+              <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                <span class="feature-text">实时性能监控</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">✏️</span>
+                <span class="feature-text">批注和标记</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🔍</span>
+                <span class="feature-text">高级搜索功能</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🔌</span>
+                <span class="feature-text">可扩展插件</span>
+              </div>
+            </div>
+            <div class="welcome-actions">
+              <button id="welcomeOpenBtn" class="welcome-btn primary">
+                <span class="icon">📁</span>
+                <span class="text">打开PDF文件</span>
+              </button>
+              <button id="welcomeUrlBtn" class="welcome-btn secondary">
+                <span class="icon">🌐</span>
+                <span class="text">从URL加载</span>
+              </button>
+              <button id="welcomeSampleBtn" class="welcome-btn secondary">
+                <span class="icon">📋</span>
+                <span class="text">查看示例</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- PDF Viewer -->
+        <div id="pdfViewer" class="pdf-viewer" style="display: none;">
+          <!-- PDF pages will be rendered here -->
+        </div>
+        
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+          <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在加载PDF文档...</div>
+            <div class="loading-progress">
+              <div id="loadingProgressBar" class="loading-progress-bar" style="width: 0%;"></div>
+            </div>
+            <div id="loadingStatus" class="loading-status">准备中...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Performance Panel -->
+      <div id="performancePanel" class="performance-panel" style="display: none;">
+        <div class="panel-header">
+          <h3>性能监控</h3>
+          <div class="panel-controls">
+            <button id="performanceResetBtn" class="control-btn" title="重置数据">
+              <span class="icon">🔄</span>
+            </button>
+            <button id="performanceExportBtn" class="control-btn" title="导出数据">
+              <span class="icon">📤</span>
+            </button>
+            <button id="performanceCloseBtn" class="control-btn" title="关闭面板">
+              <span class="icon">✕</span>
+            </button>
+          </div>
+        </div>
+        <div class="performance-content">
+          <div class="performance-metrics">
+            <div class="metric-item">
+              <div class="metric-label">渲染时间</div>
+              <div id="renderTime" class="metric-value">0ms</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">内存使用</div>
+              <div id="memoryUsage" class="metric-value">0MB</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">FPS</div>
+              <div id="fpsValue" class="metric-value">0</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">页面数</div>
+              <div id="pageCount" class="metric-value">0</div>
+            </div>
+          </div>
+          <div class="performance-charts">
+            <canvas id="performanceChart" width="300" height="150"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Annotation Toolbar -->
+      <div id="annotationToolbar" class="annotation-toolbar" style="display: none;">
+        <div class="toolbar-group">
+          <button id="annotationTextBtn" class="annotation-btn" title="文本批注">
+            <span class="icon">📝</span>
+          </button>
+          <button id="annotationHighlightBtn" class="annotation-btn" title="高亮">
+            <span class="icon">🖍️</span>
+          </button>
+          <button id="annotationDrawBtn" class="annotation-btn" title="绘制">
+            <span class="icon">✏️</span>
+          </button>
+          <button id="annotationShapeBtn" class="annotation-btn" title="形状">
+            <span class="icon">🔷</span>
+          </button>
+        </div>
+        <div class="toolbar-group">
+          <input id="annotationColor" type="color" value="#ffff00" title="颜色">
+          <input id="annotationOpacity" type="range" min="0" max="100" value="50" title="透明度">
+          <input id="annotationSize" type="range" min="1" max="10" value="3" title="大小">
+        </div>
+        <div class="toolbar-group">
+          <button id="annotationUndoBtn" class="annotation-btn" title="撤销">
+            <span class="icon">↶</span>
+          </button>
+          <button id="annotationRedoBtn" class="annotation-btn" title="重做">
+            <span class="icon">↷</span>
+          </button>
+          <button id="annotationClearBtn" class="annotation-btn" title="清除所有">
+            <span class="icon">🗑️</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Plugin Panel -->
+      <div id="pluginPanel" class="plugin-panel" style="display: none;">
+        <div class="panel-header">
+          <h3>插件管理</h3>
+          <div class="panel-controls">
+            <button id="pluginRefreshBtn" class="control-btn" title="刷新插件">
+              <span class="icon">🔄</span>
+            </button>
+            <button id="pluginInstallBtn" class="control-btn" title="安装插件">
+              <span class="icon">➕</span>
+            </button>
+            <button id="pluginCloseBtn" class="control-btn" title="关闭面板">
+              <span class="icon">✕</span>
+            </button>
+          </div>
+        </div>
+        <div id="pluginList" class="plugin-list">
+          <!-- Plugin items will be inserted here -->
+        </div>
+      </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="status-bar">
+        <div class="status-left">
+          <span id="documentInfo" class="status-item">就绪</span>
+          <span id="zoomInfo" class="status-item">100%</span>
+          <span id="pageInfo" class="status-item">0 / 0</span>
+        </div>
+        <div class="status-center">
+          <span id="statusMessage" class="status-message">欢迎使用PDF查看器高级功能示例</span>
+        </div>
+        <div class="status-right">
+          <span id="performanceInfo" class="status-item">性能: 正常</span>
+          <span id="memoryInfo" class="status-item">内存: 0MB</span>
+          <span id="connectionInfo" class="status-item">在线</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- Hidden File Input -->
+  <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+  
+  <!-- Dialogs and Modals -->
+  <div id="dialogOverlay" class="dialog-overlay" style="display: none;">
+    <!-- Dialogs will be inserted here dynamically -->
+  </div>
+  
+  <!-- Notification Container -->
+  <div id="notificationContainer" class="notification-container"></div>
+  
+  <!-- Context Menu -->
+  <div id="contextMenu" class="context-menu" style="display: none;">
+    <!-- Context menu items will be inserted here -->
+  </div>
+  
+  <!-- Scripts -->
+  <script type="module" src="./src/main.ts"></script>
+  
+  <!-- Global Error Handling -->
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+      document.getElementById('errorPage').style.display = 'flex';
+      document.getElementById('initialLoading').style.display = 'none';
+    });
+    
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled promise rejection:', e.reason);
+      document.getElementById('errorPage').style.display = 'flex';
+      document.getElementById('initialLoading').style.display = 'none';
+    });
+    
+    // Browser compatibility check
+    if (!window.Promise || !window.fetch || !window.URL || !window.FileReader) {
+      document.getElementById('errorPage').style.display = 'flex';
+      document.getElementById('initialLoading').style.display = 'none';
+      document.querySelector('.error-message').textContent = '您的浏览器版本过低，请升级到现代浏览器。';
+    }
+    
+    // Performance monitoring
+    if ('performance' in window) {
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log('Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+        }, 0);
+      });
+    }
+  </script>
+  
+  <!-- No Script Fallback -->
+  <noscript>
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; text-align: center; z-index: 10000;">
+      <div>
+        <h1 style="color: #dc3545; margin-bottom: 20px;">需要启用JavaScript</h1>
+        <p style="color: #666; font-size: 16px;">此PDF查看器需要JavaScript才能正常工作，请在浏览器设置中启用JavaScript。</p>
+      </div>
+    </div>
+  </noscript>
+</body>
+</html>

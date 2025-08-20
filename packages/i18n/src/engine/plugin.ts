@@ -10,6 +10,7 @@
  */
 
 import type { I18nInstance, I18nOptions } from '../core/types'
+import process from 'node:process'
 import { globalErrorManager } from '../core/errors'
 import { I18n } from '../core/i18n'
 import { StaticLoader } from '../core/loader'
@@ -26,13 +27,13 @@ import { installI18nPlugin } from '../vue/plugin'
  * @returns I18n 实例
  */
 async function createI18nWithBuiltinLocales(
-  options?: I18nOptions
+  options?: I18nOptions,
 ): Promise<I18nInstance> {
   const loader = new StaticLoader()
   loader.registerPackages({
-    en: enLanguagePackage,
+    'en': enLanguagePackage,
     'zh-CN': zhCNLanguagePackage,
-    ja: jaLanguagePackage,
+    'ja': jaLanguagePackage,
   })
 
   const i18n = new I18n(options)
@@ -96,7 +97,7 @@ export interface I18nEnginePluginOptions extends I18nOptions {
  * @internal
  */
 function createI18nEnginePluginInternal(
-  options: I18nEnginePluginOptions = {}
+  options: I18nEnginePluginOptions = {},
 ): Plugin {
   const {
     name = 'i18n',
@@ -119,31 +120,33 @@ function createI18nEnginePluginInternal(
         const { engine } = context
 
         // 调试信息
-        console.log('🔍 I18n 插件安装开始')
-        console.log('🔍 Context 对象:', context)
-        console.log('🔍 Engine 对象:', engine)
-        console.log('🔍 Engine 类型:', typeof engine)
-        console.log('🔍 getApp 方法存在:', typeof engine.getApp === 'function')
+        console.warn('🔍 I18n 插件安装开始')
+        console.warn('🔍 Context 对象:', context)
+        console.warn('🔍 Engine 对象:', engine)
+        console.warn('🔍 Engine 类型:', typeof engine)
+        console.warn('🔍 getApp 方法存在:', typeof engine.getApp === 'function')
 
         // 获取 Vue 应用实例
         let vueApp
 
         // 尝试不同的方式获取 Vue 应用
         if (typeof engine.getApp === 'function') {
-          console.log('🔍 使用 engine.getApp() 获取 Vue 应用')
+          console.warn('🔍 使用 engine.getApp() 获取 Vue 应用')
           vueApp = engine.getApp()
-          console.log('🔍 getApp() 返回值:', vueApp)
-        } else if (engine._app) {
-          console.log('🔍 使用 engine._app 获取 Vue 应用')
+          console.warn('🔍 getApp() 返回值:', vueApp)
+        }
+        else if (engine._app) {
+          console.warn('🔍 使用 engine._app 获取 Vue 应用')
           vueApp = engine._app
-        } else if (engine.app) {
-          console.log('🔍 使用 engine.app 获取 Vue 应用')
+        }
+        else if (engine.app) {
+          console.warn('🔍 使用 engine.app 获取 Vue 应用')
           vueApp = engine.app
         }
 
         if (!vueApp) {
           throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing i18n plugin.'
+            'Vue app not found. Make sure the engine has created a Vue app before installing i18n plugin.',
           )
         }
 
@@ -154,9 +157,9 @@ function createI18nEnginePluginInternal(
         })
 
         // 确定使用的 i18n 创建函数
-        const i18nCreateFunction =
-          customCreateI18n ||
-          (useBuiltinLocales ? createI18nWithBuiltinLocales : undefined)
+        const i18nCreateFunction
+          = customCreateI18n
+            || (useBuiltinLocales ? createI18nWithBuiltinLocales : undefined)
 
         // 安装 i18n Vue 插件
         const i18nInstance = await installI18nPlugin(vueApp, {
@@ -170,9 +173,10 @@ function createI18nEnginePluginInternal(
         if (engine.i18n) {
           // 如果引擎支持 i18n 适配器，设置适配器
           engine.i18n.setInstance(i18nInstance)
-        } else {
+        }
+        else {
           // 否则直接挂载到引擎上
-          ;(engine as any).i18nInstance = i18nInstance
+          ; (engine as any).i18nInstance = i18nInstance
         }
 
         // 注册到引擎配置
@@ -194,11 +198,11 @@ function createI18nEnginePluginInternal(
         // 注册全局状态
         engine.state.set(
           'i18n:currentLanguage',
-          i18nInstance.getCurrentLanguage()
+          i18nInstance.getCurrentLanguage(),
         )
         engine.state.set(
           'i18n:availableLanguages',
-          i18nInstance.getAvailableLanguages()
+          i18nInstance.getAvailableLanguages(),
         )
 
         // 监听语言变更，更新全局状态
@@ -215,8 +219,8 @@ function createI18nEnginePluginInternal(
 
         // 启用性能监控
         if (
-          options.enablePerformanceMonitoring &&
-          i18nInstance.getPerformanceMetrics
+          options.enablePerformanceMonitoring
+          && i18nInstance.getPerformanceMetrics
         ) {
           setInterval(() => {
             const metrics = i18nInstance.getPerformanceMetrics!()
@@ -229,7 +233,7 @@ function createI18nEnginePluginInternal(
             if (metrics.averageTranslationTime > 10) {
               engine.logger.warn(
                 'I18n performance warning: slow translation detected',
-                metrics
+                metrics,
               )
             }
           }, 30000) // 每30秒报告一次
@@ -254,12 +258,13 @@ function createI18nEnginePluginInternal(
           for (const locale of options.preloadLanguages) {
             try {
               await i18nInstance.preloadLanguage(locale)
-            } catch (error) {
+            }
+            catch (error) {
               engine.logger.warn(`Failed to preload language: ${locale}`, error)
             }
           }
           engine.logger.info(
-            `Preloaded languages: ${options.preloadLanguages.join(', ')}`
+            `Preloaded languages: ${options.preloadLanguages.join(', ')}`,
           )
         }
 
@@ -268,7 +273,8 @@ function createI18nEnginePluginInternal(
           instance: i18nInstance,
           options: i18nOptions,
         })
-      } catch (error) {
+      }
+      catch (error) {
         // 记录安装失败
         context.logger.error(`Failed to install ${name} plugin`, error)
 
@@ -282,8 +288,9 @@ function createI18nEnginePluginInternal(
       }
     },
 
-    async uninstall(engine) {
+    async uninstall(context) {
       try {
+        const { engine } = context
         engine.logger.info(`Uninstalling ${name} plugin...`)
 
         // 清理全局状态
@@ -293,7 +300,8 @@ function createI18nEnginePluginInternal(
         // 清理引擎上的 i18n 实例
         if (engine.i18n) {
           engine.i18n.setInstance(null)
-        } else {
+        }
+        else {
           delete (engine as any).i18nInstance
         }
 
@@ -303,7 +311,9 @@ function createI18nEnginePluginInternal(
         })
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      } catch (error) {
+      }
+      catch (error) {
+        const { engine } = context
         engine.logger.error(`Failed to uninstall ${name} plugin`, error)
         throw error
       }
@@ -317,12 +327,12 @@ function createI18nEnginePluginInternal(
  * 提供更多高级功能的插件创建函数
  */
 export function createEnhancedI18nPlugin(
-  options: I18nEnginePluginOptions = {}
+  options: I18nEnginePluginOptions = {},
 ): Plugin {
   return createI18nEnginePluginInternal({
     enablePerformanceMonitoring: true,
     enableErrorReporting: true,
-    enableHotReload: process.env.NODE_ENV === 'development',
+    enableHotReload: typeof process !== 'undefined' && process?.env?.NODE_ENV === 'development',
     autoInit: true,
     ...options,
   })
@@ -392,8 +402,8 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
     useBuiltinLocales: true,
   }
 
-  const finalOptions =
-    Object.keys(options).length === 0 ? defaultOptions : options
+  const finalOptions
+    = Object.keys(options).length === 0 ? defaultOptions : options
 
   return createI18nEnginePluginInternal(finalOptions)
 }

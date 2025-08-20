@@ -13,6 +13,7 @@ import type {
   TranslationOptions,
   TranslationParams,
 } from './types'
+import process from 'node:process'
 import { hasInterpolation, interpolate } from '../utils/interpolation'
 import { getNestedValue } from '../utils/path'
 
@@ -47,6 +48,11 @@ const DEFAULT_OPTIONS: Required<
   cache: {
     enabled: true,
     maxSize: 1000,
+    maxMemory: 50 * 1024 * 1024, // 50MB
+    defaultTTL: 60 * 60 * 1000, // 1小时
+    enableTTL: true,
+    cleanupInterval: 5 * 60 * 1000, // 5分钟
+    memoryPressureThreshold: 0.8,
   },
 }
 
@@ -62,16 +68,19 @@ export class I18n implements I18nInstance {
   }
 
   private currentLocale: string
-  public loader: Loader
-  private storage: Storage
-  private detector: Detector
-  private cache: LRUCache<string>
+
+  // 懒加载的组件
+  private _loader?: Loader
+  private _storage?: Storage
+  private _detector?: Detector
+  private _cache?: LRUCache<string>
+  private _performanceManager?: PerformanceManager
+  private _errorManager?: ErrorManager
+  private _registry?: ManagerRegistry
+  private _coreManager?: I18nCoreManager
+
   private eventListeners = new Map<I18nEventType, Set<I18nEventListener>>()
   private isInitialized = false
-  private performanceManager: PerformanceManager
-  private errorManager: ErrorManager
-  private registry: ManagerRegistry
-  private coreManager: I18nCoreManager
 
   // 对象池，减少对象创建开销
   private readonly emptyParams: TranslationParams = Object.freeze({})
@@ -80,33 +89,94 @@ export class I18n implements I18nInstance {
   // 语言包缓存，避免重复查找
   private packageCache = new WeakMap<Loader, Map<string, any>>()
 
+  // 懒加载的getter方法
+  public get loader(): Loader {
+    if (!this._loader) {
+      this._loader = new DefaultLoader()
+    }
+    return this._loader
+  }
+
+  public set loader(value: Loader) {
+    this._loader = value
+  }
+
+  private get storage(): Storage {
+    if (!this._storage) {
+      this._storage = createStorage(this.options.storage, this.options.storageKey)
+    }
+    return this._storage
+  }
+
+  private set storage(value: Storage) {
+    this._storage = value
+  }
+
+  private get detector(): Detector {
+    if (!this._detector) {
+      this._detector = createDetector('browser')
+    }
+    return this._detector
+  }
+
+  private set detector(value: Detector) {
+    this._detector = value
+  }
+
+  private get cache(): LRUCache<string> {
+    if (!this._cache) {
+      this._cache = new LRUCacheImpl({
+        maxSize: this.options.cache.maxSize,
+        enableTTL: this.options.cache.enableTTL,
+        defaultTTL: this.options.cache.defaultTTL,
+        cleanupInterval: this.options.cache.cleanupInterval,
+      })
+    }
+    return this._cache
+  }
+
+  private get performanceManager(): PerformanceManager {
+    if (!this._performanceManager) {
+      this._performanceManager = new PerformanceManager({
+        enabled: typeof process !== 'undefined' && process?.env?.NODE_ENV !== 'production',
+      })
+    }
+    return this._performanceManager
+  }
+
+  private get errorManager(): ErrorManager {
+    if (!this._errorManager) {
+      this._errorManager = new ErrorManager()
+    }
+    return this._errorManager
+  }
+
+  private get registry(): ManagerRegistry {
+    if (!this._registry) {
+      this._registry = new ManagerRegistry()
+    }
+    return this._registry
+  }
+
+  private get coreManager(): I18nCoreManager {
+    if (!this._coreManager) {
+      this._coreManager = new I18nCoreManager(
+        this.loader,
+        this.storage,
+        this.detector,
+        this.cache,
+        this.performanceManager,
+        this.errorManager,
+      )
+      // 注册核心管理器
+      this.registry.registerManager(this._coreManager)
+    }
+    return this._coreManager
+  }
+
   constructor(options: I18nOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
     this.currentLocale = this.options.defaultLocale || 'en'
-
-    // 初始化组件
-    this.loader = new DefaultLoader()
-    this.storage = createStorage(this.options.storage, this.options.storageKey)
-    this.detector = createDetector('browser')
-    this.cache = new LRUCacheImpl(this.options.cache.maxSize)
-    this.performanceManager = new PerformanceManager({
-      enabled: process.env.NODE_ENV !== 'production',
-    })
-    this.errorManager = new ErrorManager()
-    this.registry = new ManagerRegistry()
-
-    // 创建核心管理器
-    this.coreManager = new I18nCoreManager(
-      this.loader,
-      this.storage,
-      this.detector,
-      this.cache,
-      this.performanceManager,
-      this.errorManager
-    )
-
-    // 注册核心管理器
-    this.registry.registerManager(this.coreManager)
 
     // 绑定翻译函数的 this 上下文
     this.t = this.t.bind(this)
@@ -139,8 +209,8 @@ export class I18n implements I18nInstance {
       // 2. 自动检测浏览器语言
       if (this.options.autoDetect && !this.storage.getLanguage()) {
         const detectedLanguages = this.detector.detect()
-        const availableLocales =
-          (
+        const availableLocales
+          = (
             this.loader as Loader & { getAvailableLocales?: () => string[] }
           ).getAvailableLocales?.() || []
 
@@ -153,7 +223,7 @@ export class I18n implements I18nInstance {
           // 尝试匹配主语言
           const mainLang = detected.split('-')[0]
           const match = availableLocales.find(locale =>
-            locale.startsWith(mainLang)
+            locale.startsWith(mainLang),
           )
           if (match) {
             initialLocale = match
@@ -166,14 +236,14 @@ export class I18n implements I18nInstance {
       if (this.options.preload.length > 0) {
         await Promise.all(
           this.options.preload.map(locale =>
-            this.loader.preload(locale).catch(error => {
+            this.loader.preload(locale).catch((error) => {
               this.errorManager.createAndHandle(
                 LanguageLoadError,
                 locale,
-                error
+                error,
               )
-            })
-          )
+            }),
+          ),
         )
       }
 
@@ -181,7 +251,8 @@ export class I18n implements I18nInstance {
       await this.forceChangeLanguage(initialLocale)
 
       this.isInitialized = true
-    } catch (error) {
+    }
+    catch (error) {
       const initError = new InitializationError((error as Error).message)
       this.errorManager.handle(initError)
       throw initError
@@ -232,7 +303,8 @@ export class I18n implements I18nInstance {
       if (this.options.onLanguageChanged) {
         this.options.onLanguageChanged(locale)
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 触发错误事件
       this.emit('loadError', locale, error)
 
@@ -255,7 +327,7 @@ export class I18n implements I18nInstance {
   t<T = string>(
     key: string,
     params: TranslationParams = this.emptyParams,
-    options: TranslationOptions = this.emptyOptions
+    options: TranslationOptions = this.emptyOptions,
   ): T {
     const startTime = performance.now()
     let fromCache = false
@@ -277,9 +349,9 @@ export class I18n implements I18nInstance {
         // 快速翻译查找
         const text = this.getTranslationTextOptimized(key, this.currentLocale)
         if (
-          text !== undefined &&
-          !hasInterpolation(text) &&
-          !hasPluralExpression(text)
+          text !== undefined
+          && !hasInterpolation(text)
+          && !hasPluralExpression(text)
         ) {
           this.cache.set(simpleCacheKey, text)
           return text as T
@@ -291,7 +363,7 @@ export class I18n implements I18nInstance {
         key,
         params,
         options,
-        this.currentLocale
+        this.currentLocale,
       )
 
       // 尝试从缓存获取
@@ -312,14 +384,15 @@ export class I18n implements I18nInstance {
       }
 
       return result as T
-    } finally {
+    }
+    finally {
       // 记录性能指标
       const endTime = performance.now()
       this.performanceManager.recordTranslation(
         key,
         startTime,
         endTime,
-        fromCache
+        fromCache,
       )
 
       // 更新缓存统计
@@ -339,14 +412,42 @@ export class I18n implements I18nInstance {
    */
   batchTranslate(
     keys: string[],
-    params: TranslationParams = {}
+    params: TranslationParams = this.emptyParams,
   ): BatchTranslationResult {
     const translations: Record<string, string> = {}
     const failedKeys: string[] = []
     let successCount = 0
     let failureCount = 0
 
-    for (const key of keys) {
+    // 优化：预分配对象大小
+    const keysLength = keys.length
+
+    // 优化：批量缓存查找
+    const hasParams = Object.keys(params).length > 0
+    const uncachedKeys: string[] = []
+
+    if (this.options.cache.enabled && !hasParams) {
+      // 批量检查缓存
+      for (let i = 0; i < keysLength; i++) {
+        const key = keys[i]
+        const cacheKey = `${this.currentLocale}:${key}`
+        const cached = this.cache.get(cacheKey)
+
+        if (cached !== undefined) {
+          translations[key] = cached as string
+          successCount++
+        }
+        else {
+          uncachedKeys.push(key)
+        }
+      }
+    }
+    else {
+      uncachedKeys.push(...keys)
+    }
+
+    // 处理未缓存的键
+    for (const key of uncachedKeys) {
       try {
         const translation = this.t(key, params)
         translations[key] = translation
@@ -354,11 +455,13 @@ export class I18n implements I18nInstance {
         // 检查是否是回退值（简单检查是否等于键本身）
         if (translation !== key) {
           successCount++
-        } else {
+        }
+        else {
           failedKeys.push(key)
           failureCount++
         }
-      } catch (error) {
+      }
+      catch {
         translations[key] = key // 回退到键本身
         failedKeys.push(key)
         failureCount++
@@ -421,12 +524,49 @@ export class I18n implements I18nInstance {
   }
 
   /**
+   * 清理内存，释放不必要的资源
+   */
+  clearMemory(): void {
+    // 清理缓存
+    if (this._cache) {
+      this._cache.clear()
+    }
+
+    // 清理语言包缓存
+    this.packageCache = new WeakMap<Loader, Map<string, any>>()
+
+    // 清理性能管理器的历史数据
+    if (this._performanceManager && 'clearHistory' in this._performanceManager) {
+      (this._performanceManager as any).clearHistory()
+    }
+  }
+
+  /**
    * 销毁实例
    */
   async destroy(): Promise<void> {
-    await this.registry.destroyAll()
-    this.cache.clear()
+    // 销毁注册表中的所有管理器
+    if (this._registry) {
+      await this._registry.destroyAll()
+    }
+
+    // 清理事件监听器
     this.eventListeners.clear()
+
+    // 清理所有组件
+    this._loader = undefined
+    this._storage = undefined
+    this._detector = undefined
+    this._cache = undefined
+    this._performanceManager = undefined
+    this._errorManager = undefined
+    this._registry = undefined
+    this._coreManager = undefined
+
+    // 清理语言包缓存
+    this.packageCache = new WeakMap<Loader, Map<string, any>>()
+
+    // 重置状态
     this.isInitialized = false
   }
 
@@ -468,7 +608,8 @@ export class I18n implements I18nInstance {
       for (const listener of listeners) {
         try {
           listener(...args)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in event listener for '${event}':`, error)
         }
       }
@@ -485,16 +626,16 @@ export class I18n implements I18nInstance {
   private performTranslation(
     key: string,
     params: TranslationParams,
-    options: TranslationOptions
+    options: TranslationOptions,
   ): string {
     // 获取翻译文本
     let text = this.getTranslationText(key, this.currentLocale)
 
     // 如果没有找到，尝试降级语言
     if (
-      text === undefined &&
-      this.options.fallbackLocale &&
-      this.options.fallbackLocale !== this.currentLocale
+      text === undefined
+      && this.options.fallbackLocale
+      && this.options.fallbackLocale !== this.currentLocale
     ) {
       text = this.getTranslationText(key, this.options.fallbackLocale)
     }
@@ -527,7 +668,7 @@ export class I18n implements I18nInstance {
    */
   private getTranslationTextOptimized(
     key: string,
-    locale: string
+    locale: string,
   ): string | undefined {
     // 使用缓存避免重复查找
     let loaderCache = this.packageCache.get(this.loader)
@@ -580,7 +721,7 @@ export class I18n implements I18nInstance {
     key: string,
     params: TranslationParams,
     options: TranslationOptions,
-    locale: string
+    locale: string,
   ): string {
     // 使用数组拼接，比字符串拼接更高效
     const parts = [locale, key]
@@ -619,7 +760,7 @@ export class I18n implements I18nInstance {
     key: string,
     params: TranslationParams,
     options: TranslationOptions,
-    locale: string
+    locale: string,
   ): string {
     return this.generateCacheKeyOptimized(key, params, options, locale)
   }
@@ -630,6 +771,13 @@ export class I18n implements I18nInstance {
    */
   setLoader(loader: Loader): void {
     this.loader = loader
+  }
+
+  /**
+   * 获取当前加载器
+   */
+  getLoader(): Loader {
+    return this.loader
   }
 
   /**
@@ -704,7 +852,7 @@ export class I18n implements I18nInstance {
    */
   private getAllKeysFromObject(
     obj: Record<string, unknown>,
-    prefix = ''
+    prefix = '',
   ): string[] {
     const keys: string[] = []
 
@@ -713,12 +861,13 @@ export class I18n implements I18nInstance {
 
       if (typeof value === 'string') {
         keys.push(fullKey)
-      } else if (typeof value === 'object' && value !== null) {
+      }
+      else if (typeof value === 'object' && value !== null) {
         keys.push(
           ...this.getAllKeysFromObject(
             value as Record<string, unknown>,
-            fullKey
-          )
+            fullKey,
+          ),
         )
       }
     }
@@ -774,9 +923,10 @@ export class I18n implements I18nInstance {
     // 如果缓存使用率过高，清理一些项
     if (this.cache instanceof LRUCacheImpl) {
       const stats = this.cache.getStats()
-      if (stats.size > stats.maxSize * 0.9) {
+      // 使用内存使用百分比来判断是否需要清理
+      if (stats.memoryUsagePercent > 0.9) {
         // 清理 10% 的缓存
-        const keysToRemove = Math.floor(stats.size * 0.1)
+        const _keysToRemove = Math.floor(stats.size * 0.1)
         // 这里可以实现更智能的清理策略
       }
     }
@@ -836,9 +986,9 @@ export class I18n implements I18nInstance {
    */
   async batchPreloadLanguages(locales: string[]): Promise<void> {
     const promises = locales.map(locale =>
-      this.preloadLanguage(locale).catch(error => {
+      this.preloadLanguage(locale).catch((error) => {
         this.errorManager.createAndHandle(LanguageLoadError, locale, error)
-      })
+      }),
     )
 
     await Promise.allSettled(promises)

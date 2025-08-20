@@ -110,7 +110,7 @@ import { globalErrorManager, I18nError } from '@ldesign/i18n'
 // 自定义错误处理器
 globalErrorManager.addHandler({
   canHandle: error => error instanceof I18nError,
-  handle: error => {
+  handle: (error) => {
     console.error('I18n Error:', error.getDetails())
     // 发送到错误监控服务
   },

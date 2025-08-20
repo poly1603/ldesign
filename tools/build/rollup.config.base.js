@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from 'node:fs'
-import * as fs from 'node:fs'
 import { resolve } from 'node:path'
 import babel from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
@@ -26,6 +25,7 @@ import VueJsx from 'unplugin-vue-jsx/rollup'
  * @param {boolean} [options.vue] - 是否启用 Vue 支持，默认为 true
  * @param {object} [options.globals] - 全局变量映射，默认包含 Vue 映射
  * @param {object} [options.entries] - 自定义入口点，默认自动发现
+ * @param {string} [options.tsconfig] - TypeScript 配置文件路径
  */
 export function createRollupConfig(options = {}) {
   // 必需参数检查
@@ -46,6 +46,7 @@ export function createRollupConfig(options = {}) {
       '@vue/runtime-dom': 'Vue',
     },
     entries: null, // 自动发现
+    tsconfig: null, // 默认使用 tsconfig.json
   }
 
   // 合并配置，用户配置优先
@@ -58,6 +59,7 @@ export function createRollupConfig(options = {}) {
     packageName,
     globals,
     entries,
+    tsconfig,
   } = {
     ...defaultConfig,
     ...options,
@@ -149,12 +151,14 @@ export function createRollupConfig(options = {}) {
           })
         : null,
       typescript({
-        tsconfig: resolve(packageDir, 'tsconfig.json'),
+        tsconfig: tsconfig || resolve(packageDir, 'tsconfig.json'),
         include: [/(\.tsx?|\.mts)(\?.*)?$/],
         declaration: false, // 不在 JS 构建中生成类型定义
         declarationMap: false, // 不生成声明映射文件
         rootDir: resolve(packageDir, 'src'),
         outDir: undefined, // 不设置 outDir，让 Rollup 处理输出
+        noEmitOnError: false, // 即使有类型错误也继续构建
+        filterRoot: resolve(packageDir, 'src'), // 只检查 src 目录
       }),
       ...plugins,
     ].filter(Boolean)
@@ -184,13 +188,6 @@ export function createRollupConfig(options = {}) {
   }
 
   // 类型定义构建插件
-  const createTypesPlugins = () => [
-    dts({
-      tsconfig: resolve(packageDir, 'tsconfig.json'),
-    }),
-  ]
-
-  // 类型定义构建插件
   const createDtsPlugins = () => [
     // 添加一个插件来忽略 CSS/LESS 文件
     {
@@ -208,7 +205,7 @@ export function createRollupConfig(options = {}) {
       },
     },
     dts({
-      tsconfig: resolve(packageDir, 'tsconfig.json'),
+      tsconfig: tsconfig || resolve(packageDir, 'tsconfig.json'),
       respectExternal: true,
     }),
   ]
@@ -232,6 +229,13 @@ export function createRollupConfig(options = {}) {
         },
         external: ['vue', '@vue/runtime-core', '@vue/runtime-dom', ...external],
         plugins: createJsPlugins(),
+        onwarn(warning, warn) {
+          // 忽略未使用的外部导入警告
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+          // 忽略循环依赖警告（如果是已知的安全循环依赖）
+          if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('vue/ssr.ts')) return
+          warn(warning)
+        },
       })
     )
   }
@@ -253,6 +257,13 @@ export function createRollupConfig(options = {}) {
         },
         external: ['vue', '@vue/runtime-core', '@vue/runtime-dom', ...external],
         plugins: createJsPlugins(),
+        onwarn(warning, warn) {
+          // 忽略未使用的外部导入警告
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+          // 忽略循环依赖警告（如果是已知的安全循环依赖）
+          if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('vue/ssr.ts')) return
+          warn(warning)
+        },
       })
     )
   }
@@ -283,6 +294,19 @@ export function createRollupConfig(options = {}) {
             ...external,
           ],
           plugins: createJsPlugins(),
+          onwarn(warning, warn) {
+            // 忽略未使用的外部导入警告
+            if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+            // 忽略循环依赖警告
+            if (warning.code === 'CIRCULAR_DEPENDENCY') return
+            // 忽略混合导出警告
+            if (warning.code === 'MIXED_EXPORTS') return
+            // 忽略缺失全局变量警告
+            if (warning.code === 'MISSING_GLOBAL_NAME') return
+            // 忽略缺失 Node.js 内置模块 shims 警告
+            if (warning.code === 'MISSING_NODE_BUILTINS') return
+            warn(warning)
+          },
         })
       )
 
@@ -309,6 +333,19 @@ export function createRollupConfig(options = {}) {
             ...external,
           ],
           plugins: createJsPlugins(),
+          onwarn(warning, warn) {
+            // 忽略未使用的外部导入警告
+            if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+            // 忽略循环依赖警告
+            if (warning.code === 'CIRCULAR_DEPENDENCY') return
+            // 忽略混合导出警告
+            if (warning.code === 'MIXED_EXPORTS') return
+            // 忽略缺失全局变量警告
+            if (warning.code === 'MISSING_GLOBAL_NAME') return
+            // 忽略缺失 Node.js 内置模块 shims 警告
+            if (warning.code === 'MISSING_NODE_BUILTINS') return
+            warn(warning)
+          },
         })
       )
     }

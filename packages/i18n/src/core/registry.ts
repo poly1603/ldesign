@@ -48,7 +48,7 @@ export class ManagerRegistry {
    */
   registerFactory<T extends Manager>(
     factory: ManagerFactory<T>,
-    dependencies: string[] = []
+    dependencies: string[] = [],
   ): void {
     this.factories.set(factory.type, factory)
     this.dependencies.set(factory.type, dependencies)
@@ -238,8 +238,8 @@ export class ManagerRegistry {
  */
 export class I18nCoreManager implements Manager {
   readonly name = 'i18n-core'
-  private status: 'idle' | 'initializing' | 'ready' | 'error' | 'destroyed' =
-    'idle'
+  private status: 'idle' | 'initializing' | 'ready' | 'error' | 'destroyed'
+    = 'idle'
 
   constructor(
     public readonly loader: Loader,
@@ -247,7 +247,7 @@ export class I18nCoreManager implements Manager {
     public readonly detector: Detector,
     public readonly cache: LRUCache<string>,
     public readonly performanceManager: PerformanceManager,
-    public readonly errorManager: ErrorManager
+    public readonly errorManager: ErrorManager,
   ) {}
 
   async init(): Promise<void> {
@@ -259,7 +259,8 @@ export class I18nCoreManager implements Manager {
       }
 
       this.status = 'ready'
-    } catch (error) {
+    }
+    catch (error) {
       this.status = 'error'
       throw error
     }

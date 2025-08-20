@@ -112,7 +112,7 @@ console.log(report)
 
 ```typescript
 const suggestions = i18n.getOptimizationSuggestions()
-suggestions.forEach(suggestion => {
+suggestions.forEach((suggestion) => {
   console.log(`💡 ${suggestion}`)
 })
 

@@ -40,7 +40,7 @@ async function bootstrap() {
         enabled: true,
         maxSize: 1000,
       },
-      onLanguageChanged: locale => {
+      onLanguageChanged: (locale) => {
         console.log('Language changed to:', locale)
         document.documentElement.lang = locale
       },
@@ -65,7 +65,8 @@ async function bootstrap() {
     app.mount('#app')
 
     console.log('Vue I18n example app started successfully')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
   }
 }
@@ -219,8 +220,10 @@ i18n.on('loadError', (locale: string, err: Error) => {
         <div v-t="'common.save'" class="result" />
       </div>
       <div class="example">
-        <div class="code">{{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}</div>
-        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example" />
+        <div class="code">
+          {{ '<input v-t="{ key: \'common.searchPlaceholder\' }" />' }}
+        </div>
+        <input v-t="{ key: 'common.searchPlaceholder' }" class="input-example">
       </div>
     </section>
 
@@ -240,10 +243,12 @@ i18n.on('loadError', (locale: string, err: Error) => {
       <h3>{{ t('examples.conditional') }}</h3>
       <div class="example">
         <label>
-          <input v-model="isOnline" type="checkbox" />
+          <input v-model="isOnline" type="checkbox">
           {{ t('common.online') }} / {{ t('common.offline') }}
         </label>
-        <div class="result">{{ t('examples.status') }}: {{ conditionalStatus }}</div>
+        <div class="result">
+          {{ t('examples.status') }}: {{ conditionalStatus }}
+        </div>
       </div>
     </section>
 
@@ -251,7 +256,9 @@ i18n.on('loadError', (locale: string, err: Error) => {
     <section class="section">
       <h3>{{ t('examples.info') }}</h3>
       <div class="example">
-        <div class="code">getCurrentLanguageInfo()</div>
+        <div class="code">
+          getCurrentLanguageInfo()
+        </div>
         <pre class="result">{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
       </div>
     </section>
@@ -421,7 +428,7 @@ const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSw
 const currentLocale = ref(locale.value)
 
 // 监听语言变化
-watch(locale, newLocale => {
+watch(locale, (newLocale) => {
   currentLocale.value = newLocale
   // 更新页面元数据
   document.title = t('app.title')
@@ -479,7 +486,8 @@ function validateForm() {
 
   if (!form.email) {
     errors.email = t('validation.required')
-  } else if (!/\S[^\s@]*@\S+\.\S+/.test(form.email)) {
+  }
+  else if (!/\S[^\s@]*@\S+\.\S+/.test(form.email)) {
     errors.email = t('validation.email')
   }
 
@@ -487,16 +495,19 @@ function validateForm() {
 }
 
 async function handleSubmit() {
-  if (!validateForm()) return
+  if (!validateForm())
+    return
 
   isSubmitting.value = true
   try {
     // 提交表单逻辑
     await new Promise(resolve => setTimeout(resolve, 1000))
     alert(t('form.submitSuccess'))
-  } catch (error) {
+  }
+  catch (error) {
     alert(t('form.submitError'))
-  } finally {
+  }
+  finally {
     isSubmitting.value = false
   }
 }
@@ -510,7 +521,7 @@ async function handleSubmit() {
         v-model="form.name"
         :placeholder="t('form.namePlaceholder')"
         :class="{ error: errors.name }"
-      />
+      >
       <span v-if="errors.name" class="error-message">
         {{ errors.name }}
       </span>
@@ -523,7 +534,7 @@ async function handleSubmit() {
         type="email"
         :placeholder="t('form.emailPlaceholder')"
         :class="{ error: errors.email }"
-      />
+      >
       <span v-if="errors.email" class="error-message">
         {{ errors.email }}
       </span>
@@ -549,15 +560,17 @@ const { i18n, locale } = useI18n()
 const isLoading = ref(false)
 
 // 监听语言变化，动态加载语言包
-watch(locale, async newLocale => {
+watch(locale, async (newLocale) => {
   if (!i18n.isLanguageLoaded(newLocale)) {
     isLoading.value = true
     try {
       await i18n.preloadLanguage(newLocale)
       console.log(`Language ${newLocale} loaded successfully`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`Failed to load language ${newLocale}:`, error)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -653,7 +666,7 @@ import { onErrorCaptured, ref } from 'vue'
 const { t } = useI18n()
 const error = ref<string>('')
 
-onErrorCaptured(err => {
+onErrorCaptured((err) => {
   if (err.message.includes('translation')) {
     error.value = t('errors.translationFailed')
     return false

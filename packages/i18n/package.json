@@ -38,6 +38,7 @@
   ],
   "scripts": {
     "build": "rollup -c",
+    "build:verbose": "rollup -c",
     "build:watch": "rollup -c -w",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",

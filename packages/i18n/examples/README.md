@@ -150,10 +150,10 @@ await i18n.changeLanguage('zh-CN')
 ```vue
 <script setup lang="ts">
 import {
-  useI18n,
-  useLanguageSwitcher,
   useBatchTranslation,
   useConditionalTranslation,
+  useI18n,
+  useLanguageSwitcher,
 } from '@ldesign/i18n/vue'
 
 // 基础翻译钩子
@@ -175,13 +175,15 @@ const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.
   <h1>{{ t('common.title') }}</h1>
 
   <!-- 指令翻译 -->
-  <div v-t="'common.save'"></div>
+  <div v-t="'common.save'" />
 
   <!-- 插值翻译 -->
   <p>{{ t('common.pageOf', { current: 1, total: 10 }) }}</p>
 
   <!-- 语言切换 -->
-  <button @click="switchLanguage('zh-CN')" :disabled="isChanging">中文</button>
+  <button :disabled="isChanging" @click="switchLanguage('zh-CN')">
+    中文
+  </button>
 </template>
 ```
 

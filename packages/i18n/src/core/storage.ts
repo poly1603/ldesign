@@ -1,38 +1,82 @@
 import type { LRUCache, Storage } from './types'
 
 /**
+ * 缓存项接口
+ */
+interface CacheItem<T> {
+  value: T
+  timestamp: number
+  accessCount: number
+  lastAccessed: number
+  ttl?: number
+  size: number
+}
+
+/**
+ * 缓存配置选项
+ */
+export interface CacheOptions {
+  /** 最大缓存项数量 */
+  maxSize?: number
+  /** 最大内存使用量（字节） */
+  maxMemory?: number
+  /** 默认TTL（毫秒） */
+  defaultTTL?: number
+  /** 是否启用TTL */
+  enableTTL?: boolean
+  /** 清理间隔（毫秒） */
+  cleanupInterval?: number
+  /** 内存压力阈值（0-1） */
+  memoryPressureThreshold?: number
+}
+
+/**
  * 增强的高性能 LRU 缓存实现
  *
  * 特性：
  * - 基于 Map 的插入顺序特性实现 LRU
- * - 性能指标收集（命中率、淘汰次数等）
- * - 内存使用监控
- * - 缓存预热支持
- * - 智能淘汰策略
+ * - TTL 支持和自动过期清理
+ * - 精确的内存使用监控
+ * - 智能淘汰策略（LRU + LFU 混合）
+ * - 批量操作优化
+ * - 内存压力自适应
  */
 export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
-  private cache = new Map<string, T>()
-  private maxSize: number
+  private cache = new Map<string, CacheItem<T>>()
+  private options: Required<CacheOptions>
 
   // 性能统计
   private hitCount = 0
   private missCount = 0
   private evictionCount = 0
   private setCount = 0
-
-  // 缓存键的访问频率统计
-  private accessFrequency = new Map<string, number>()
+  private currentMemoryUsage = 0
 
   // 批量操作优化
   private batchOperations: Array<{
     type: 'set' | 'delete'
     key: string
     value?: T
+    ttl?: number
   }> = []
-  private batchTimeout: NodeJS.Timeout | null = null
 
-  constructor(maxSize = 1000) {
-    this.maxSize = maxSize
+  private batchTimeout: NodeJS.Timeout | null = null
+  private cleanupTimer: NodeJS.Timeout | null = null
+
+  constructor(options: CacheOptions = {}) {
+    this.options = {
+      maxSize: options.maxSize || 1000,
+      maxMemory: options.maxMemory || 50 * 1024 * 1024, // 50MB
+      defaultTTL: options.defaultTTL || 60 * 60 * 1000, // 1小时
+      enableTTL: options.enableTTL ?? true,
+      cleanupInterval: options.cleanupInterval || 5 * 60 * 1000, // 5分钟
+      memoryPressureThreshold: options.memoryPressureThreshold || 0.8,
+    }
+
+    // 启动定期清理
+    if (this.options.enableTTL) {
+      this.startCleanup()
+    }
   }
 
   /**
@@ -41,52 +85,167 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    * @returns 缓存值或 undefined
    */
   get(key: string): T | undefined {
-    const value = this.cache.get(key)
-    if (value === undefined) {
+    const item = this.cache.get(key)
+    if (!item) {
+      this.missCount++
+      return undefined
+    }
+
+    // 检查TTL
+    if (this.options.enableTTL && item.ttl && this.isExpired(item)) {
+      this.delete(key)
       this.missCount++
       return undefined
     }
 
     this.hitCount++
 
-    // 更新访问频率
-    this.accessFrequency.set(key, (this.accessFrequency.get(key) || 0) + 1)
+    // 更新访问统计
+    item.accessCount++
+    item.lastAccessed = Date.now()
 
     // 将项目移到最后（最近使用）- 利用 Map 的插入顺序
     this.cache.delete(key)
-    this.cache.set(key, value)
+    this.cache.set(key, item)
 
-    return value
+    return item.value
+  }
+
+  /**
+   * 检查缓存项是否过期
+   */
+  private isExpired(item: CacheItem<T>): boolean {
+    if (!item.ttl)
+      return false
+    return Date.now() - item.timestamp > item.ttl
   }
 
   /**
    * 设置缓存项
    * @param key 缓存键
    * @param value 缓存值
+   * @param ttl 可选的TTL（毫秒）
    */
-  set(key: string, value: T): void {
+  set(key: string, value: T, ttl?: number): void {
     this.setCount++
 
-    // 如果已存在，先删除
-    if (this.cache.has(key)) {
+    const now = Date.now()
+    const itemSize = this.calculateSize(key, value)
+    const effectiveTTL = ttl || (this.options.enableTTL ? this.options.defaultTTL : undefined)
+
+    // 如果已存在，先删除旧项
+    const existingItem = this.cache.get(key)
+    if (existingItem) {
+      this.currentMemoryUsage -= existingItem.size
       this.cache.delete(key)
-    } else if (this.cache.size >= this.maxSize) {
-      // 使用智能淘汰策略
-      this.evictLeastValuable()
+    }
+
+    // 检查是否需要淘汰
+    this.ensureCapacity(itemSize)
+
+    // 创建新缓存项
+    const item: CacheItem<T> = {
+      value,
+      timestamp: now,
+      accessCount: 1,
+      lastAccessed: now,
+      ttl: effectiveTTL,
+      size: itemSize,
     }
 
     // 添加新项到末尾
-    this.cache.set(key, value)
-    this.accessFrequency.set(key, 1)
+    this.cache.set(key, item)
+    this.currentMemoryUsage += itemSize
+  }
+
+  /**
+   * 计算缓存项的大小（字节）
+   */
+  private calculateSize(key: string, value: T): number {
+    try {
+      // 基础大小：键的大小
+      let size = key.length * 2 // UTF-16 字符
+
+      // 值的大小估算
+      if (typeof value === 'string') {
+        size += value.length * 2
+      }
+      else if (typeof value === 'number') {
+        size += 8
+      }
+      else if (typeof value === 'boolean') {
+        size += 4
+      }
+      else if (value === null || value === undefined) {
+        size += 4
+      }
+      else {
+        // 对象类型，使用JSON序列化估算
+        try {
+          size += JSON.stringify(value).length * 2
+        }
+        catch {
+          // 如果序列化失败，使用默认大小
+          size += 1024
+        }
+      }
+
+      // 添加元数据开销
+      size += 64 // CacheItem 结构的开销
+
+      return size
+    }
+    catch {
+      // 如果计算失败，返回默认大小
+      return 1024
+    }
+  }
+
+  /**
+   * 确保有足够的容量
+   */
+  private ensureCapacity(newItemSize: number): void {
+    // 检查数量限制
+    while (this.cache.size >= this.options.maxSize) {
+      this.evictLeastValuable()
+    }
+
+    // 检查内存限制
+    while (this.currentMemoryUsage + newItemSize > this.options.maxMemory) {
+      if (!this.evictLeastValuable()) {
+        // 如果无法淘汰更多项目，停止
+        break
+      }
+    }
+
+    // 检查内存压力
+    const memoryPressure = this.currentMemoryUsage / this.options.maxMemory
+    if (memoryPressure > this.options.memoryPressureThreshold) {
+      this.performMemoryPressureCleanup()
+    }
+  }
+
+  /**
+   * 内存压力清理
+   */
+  private performMemoryPressureCleanup(): void {
+    const targetSize = Math.floor(this.cache.size * 0.8) // 清理20%的项目
+    const itemsToEvict = this.cache.size - targetSize
+
+    for (let i = 0; i < itemsToEvict; i++) {
+      if (!this.evictLeastValuable()) {
+        break
+      }
+    }
   }
 
   /**
    * 批量设置缓存项（性能优化）
    * @param entries 键值对数组
    */
-  setBatch(entries: Array<[string, T]>): void {
-    for (const [key, value] of entries) {
-      this.batchOperations.push({ type: 'set', key, value })
+  setBatch(entries: Array<[string, T, number?]>): void {
+    for (const [key, value, ttl] of entries) {
+      this.batchOperations.push({ type: 'set', key, value, ttl })
     }
     this.scheduleBatchExecution()
   }
@@ -97,11 +256,14 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    * @returns 是否成功删除
    */
   delete(key: string): boolean {
-    const deleted = this.cache.delete(key)
-    if (deleted) {
-      this.accessFrequency.delete(key)
+    const item = this.cache.get(key)
+    if (!item) {
+      return false
     }
-    return deleted
+
+    this.cache.delete(key)
+    this.currentMemoryUsage -= item.size
+    return true
   }
 
   /**
@@ -109,7 +271,7 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    */
   clear(): void {
     this.cache.clear()
-    this.accessFrequency.clear()
+    this.currentMemoryUsage = 0
     this.resetStats()
   }
 
@@ -119,23 +281,6 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    */
   size(): number {
     return this.cache.size
-  }
-
-  /**
-   * 获取缓存统计信息
-   */
-  getStats() {
-    const total = this.hitCount + this.missCount
-    return {
-      hitCount: this.hitCount,
-      missCount: this.missCount,
-      hitRate: total > 0 ? this.hitCount / total : 0,
-      evictionCount: this.evictionCount,
-      setCount: this.setCount,
-      size: this.cache.size,
-      maxSize: this.maxSize,
-      memoryUsage: this.estimateMemoryUsage(),
-    }
   }
 
   /**
@@ -154,25 +299,56 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
    */
   warmUp(entries: Array<[string, T]>): void {
     for (const [key, value] of entries) {
-      if (this.cache.size < this.maxSize) {
-        this.cache.set(key, value)
-        this.accessFrequency.set(key, 1)
+      if (this.cache.size < this.options.maxSize) {
+        this.set(key, value)
       }
     }
   }
 
   /**
-   * 智能淘汰策略：结合访问频率和时间
+   * 智能淘汰策略：结合LRU、LFU和TTL
    */
-  private evictLeastValuable(): void {
-    let leastValuableKey: string | null = null
-    let leastFrequency = Infinity
+  private evictLeastValuable(): boolean {
+    if (this.cache.size === 0) {
+      return false
+    }
 
-    // 找到访问频率最低的键
-    for (const [key] of this.cache) {
-      const frequency = this.accessFrequency.get(key) || 0
-      if (frequency < leastFrequency) {
-        leastFrequency = frequency
+    let leastValuableKey: string | null = null
+    let leastScore = Infinity
+
+    const now = Date.now()
+
+    // 计算每个项目的价值分数（分数越低越容易被淘汰）
+    for (const [key, item] of this.cache) {
+      let score = 0
+
+      // 1. 访问频率权重（40%）
+      const frequencyScore = item.accessCount / Math.max(1, this.cache.size)
+      score += frequencyScore * 0.4
+
+      // 2. 最近访问时间权重（30%）
+      const timeSinceAccess = now - item.lastAccessed
+      const maxTime = 24 * 60 * 60 * 1000 // 24小时
+      const recencyScore = Math.max(0, 1 - timeSinceAccess / maxTime)
+      score += recencyScore * 0.3
+
+      // 3. 大小权重（20%）- 大项目更容易被淘汰
+      const avgSize = this.currentMemoryUsage / this.cache.size
+      const sizeScore = Math.max(0, 1 - item.size / (avgSize * 2))
+      score += sizeScore * 0.2
+
+      // 4. TTL权重（10%）- 即将过期的项目更容易被淘汰
+      if (item.ttl) {
+        const timeToExpire = (item.timestamp + item.ttl) - now
+        const ttlScore = Math.max(0, timeToExpire / item.ttl)
+        score += ttlScore * 0.1
+      }
+      else {
+        score += 0.1 // 没有TTL的项目获得满分
+      }
+
+      if (score < leastScore) {
+        leastScore = score
         leastValuableKey = key
       }
     }
@@ -184,10 +360,16 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
     }
 
     if (leastValuableKey) {
-      this.cache.delete(leastValuableKey)
-      this.accessFrequency.delete(leastValuableKey)
-      this.evictionCount++
+      const item = this.cache.get(leastValuableKey)
+      if (item) {
+        this.cache.delete(leastValuableKey)
+        this.currentMemoryUsage -= item.size
+        this.evictionCount++
+        return true
+      }
     }
+
+    return false
   }
 
   /**
@@ -209,8 +391,9 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
   private executeBatchOperations(): void {
     for (const operation of this.batchOperations) {
       if (operation.type === 'set' && operation.value !== undefined) {
-        this.set(operation.key, operation.value)
-      } else if (operation.type === 'delete') {
+        this.set(operation.key, operation.value, operation.ttl)
+      }
+      else if (operation.type === 'delete') {
         this.delete(operation.key)
       }
     }
@@ -219,26 +402,91 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
   }
 
   /**
-   * 估算内存使用量（字节）
+   * 启动定期清理
    */
-  private estimateMemoryUsage(): number {
-    let totalSize = 0
+  private startCleanup(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+    }
 
-    for (const [key, value] of this.cache) {
-      // 估算键的大小
-      totalSize += key.length * 2 // UTF-16 字符
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupExpired()
+    }, this.options.cleanupInterval)
+  }
 
-      // 估算值的大小
-      if (typeof value === 'string') {
-        totalSize += value.length * 2
-      } else if (typeof value === 'object' && value !== null) {
-        totalSize += JSON.stringify(value).length * 2
-      } else {
-        totalSize += 8 // 基本类型大约 8 字节
+  /**
+   * 清理过期项目
+   */
+  private cleanupExpired(): void {
+    if (!this.options.enableTTL)
+      return
+
+    const expiredKeys: string[] = []
+
+    for (const [key, item] of this.cache) {
+      if (item.ttl && this.isExpired(item)) {
+        expiredKeys.push(key)
       }
     }
 
-    return totalSize
+    for (const key of expiredKeys) {
+      this.delete(key)
+    }
+  }
+
+  /**
+   * 获取缓存统计信息
+   * @returns 统计信息对象
+   */
+  getStats(): {
+    size: number
+    memoryUsage: number
+    memoryUsagePercent: number
+    hitRate: number
+    missRate: number
+    evictionCount: number
+    setCount: number
+    hitCount: number
+    missCount: number
+    averageItemSize: number
+  } {
+    const total = this.hitCount + this.missCount
+    return {
+      size: this.cache.size,
+      memoryUsage: this.currentMemoryUsage,
+      memoryUsagePercent: this.currentMemoryUsage / this.options.maxMemory,
+      hitRate: total > 0 ? this.hitCount / total : 0,
+      missRate: total > 0 ? this.missCount / total : 0,
+      evictionCount: this.evictionCount,
+      setCount: this.setCount,
+      hitCount: this.hitCount,
+      missCount: this.missCount,
+      averageItemSize: this.cache.size > 0 ? this.currentMemoryUsage / this.cache.size : 0,
+    }
+  }
+
+  /**
+   * 销毁缓存，清理定时器
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout)
+      this.batchTimeout = null
+    }
+
+    this.clear()
+  }
+
+  /**
+   * 估算内存使用量（字节）
+   */
+  private estimateMemoryUsage(): number {
+    return this.currentMemoryUsage
   }
 }
 
@@ -262,7 +510,8 @@ export class LocalStorage implements Storage {
         return null
       }
       return window.localStorage.getItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get language from localStorage:', error)
       return null
     }
@@ -278,7 +527,8 @@ export class LocalStorage implements Storage {
         return
       }
       window.localStorage.setItem(this.storageKey, locale)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set language to localStorage:', error)
     }
   }
@@ -292,7 +542,8 @@ export class LocalStorage implements Storage {
         return
       }
       window.localStorage.removeItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear language from localStorage:', error)
     }
   }
@@ -318,7 +569,8 @@ export class SessionStorage implements Storage {
         return null
       }
       return window.sessionStorage.getItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get language from sessionStorage:', error)
       return null
     }
@@ -334,7 +586,8 @@ export class SessionStorage implements Storage {
         return
       }
       window.sessionStorage.setItem(this.storageKey, locale)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set language to sessionStorage:', error)
     }
   }
@@ -348,7 +601,8 @@ export class SessionStorage implements Storage {
         return
       }
       window.sessionStorage.removeItem(this.storageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear language from sessionStorage:', error)
     }
   }
@@ -433,7 +687,7 @@ export class CookieStorage implements Storage {
       domain?: string
       secure?: boolean
       sameSite?: 'strict' | 'lax' | 'none'
-    } = {}
+    } = {},
   ) {
     this.storageKey = storageKey
     this.options = {
@@ -461,7 +715,8 @@ export class CookieStorage implements Storage {
         }
       }
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get language from cookie:', error)
       return null
     }
@@ -482,7 +737,7 @@ export class CookieStorage implements Storage {
       if (this.options.expires) {
         const date = new Date()
         date.setTime(
-          date.getTime() + this.options.expires * 24 * 60 * 60 * 1000
+          date.getTime() + this.options.expires * 24 * 60 * 60 * 1000,
         )
         cookieString += `; expires=${date.toUTCString()}`
       }
@@ -504,7 +759,8 @@ export class CookieStorage implements Storage {
       }
 
       document.cookie = cookieString
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set language to cookie:', error)
     }
   }
@@ -529,7 +785,8 @@ export class CookieStorage implements Storage {
       }
 
       document.cookie = cookieString
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear language from cookie:', error)
     }
   }
@@ -548,7 +805,7 @@ export function createStorage(
     | 'memory'
     | 'cookie'
     | 'none' = 'localStorage',
-  storageKey = 'i18n-locale'
+  storageKey = 'i18n-locale',
 ): Storage {
   switch (type) {
     case 'localStorage':

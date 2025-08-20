@@ -166,8 +166,8 @@ const result = i18n.batchTranslate(['common.ok', 'common.cancel'])
 ### Vue 集成
 
 ```typescript
-import { createApp } from 'vue'
 import { createI18n } from '@ldesign/i18n/vue'
+import { createApp } from 'vue'
 
 const app = createApp(App)
 const i18nPlugin = createI18n({

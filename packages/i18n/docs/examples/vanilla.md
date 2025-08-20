@@ -78,7 +78,7 @@ async function initI18n() {
     })
 
     // 监听语言变更事件
-    i18n.on('languageChanged', locale => {
+    i18n.on('languageChanged', (locale) => {
       console.log('Language changed to:', locale)
       updateUI()
       updatePageLanguage(locale)
@@ -94,7 +94,8 @@ async function initI18n() {
     updateUI()
 
     console.log('I18n initialized successfully')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to initialize I18n:', error)
     showError(`初始化失败: ${error.message}`)
   }
@@ -102,7 +103,8 @@ async function initI18n() {
 
 // 更新 UI
 function updateUI() {
-  if (!i18n) return
+  if (!i18n)
+    return
 
   try {
     const currentLang = i18n.getCurrentLanguage()
@@ -114,11 +116,12 @@ function updateUI() {
     } (${currentLang})`
 
     // 更新按钮状态
-    document.querySelectorAll('.controls button').forEach(btn => {
+    document.querySelectorAll('.controls button').forEach((btn) => {
       btn.classList.remove('active')
     })
     const activeBtn = document.getElementById(`btn-${currentLang.toLowerCase()}`)
-    if (activeBtn) activeBtn.classList.add('active')
+    if (activeBtn)
+      activeBtn.classList.add('active')
 
     // 基础翻译
     document.getElementById('text-ok').textContent = i18n.t('common.ok')
@@ -132,7 +135,8 @@ function updateUI() {
       current: 1,
       total: 10,
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error updating UI:', error)
     showError(`UI 更新失败: ${error.message}`)
   }
@@ -140,11 +144,13 @@ function updateUI() {
 
 // 切换语言
 window.changeLanguage = async function (locale) {
-  if (!i18n) return
+  if (!i18n)
+    return
 
   try {
     await i18n.changeLanguage(locale)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to change language:', error)
     showError(`语言切换失败: ${error.message}`)
   }
@@ -156,9 +162,9 @@ function updatePageLanguage(locale) {
 
   // 更新页面标题
   const titles = {
-    en: '@ldesign/i18n - Vanilla JavaScript Example',
+    'en': '@ldesign/i18n - Vanilla JavaScript Example',
     'zh-CN': '@ldesign/i18n - 原生 JavaScript 示例',
-    ja: '@ldesign/i18n - Vanilla JavaScript サンプル',
+    'ja': '@ldesign/i18n - Vanilla JavaScript サンプル',
   }
   document.title = titles[locale] || titles.en
 }
@@ -213,7 +219,8 @@ function updateButtons() {
   Object.entries(buttonTexts).forEach(([key, text]) => {
     const buttonId = key.replace('common.', 'btn-')
     const button = document.getElementById(buttonId)
-    if (button) button.textContent = text
+    if (button)
+      button.textContent = text
   })
 }
 ```
@@ -276,7 +283,8 @@ async function preloadLanguages() {
     try {
       await i18n.preloadLanguage(locale)
       console.log(`Preloaded language: ${locale}`)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to preload language ${locale}:`, error)
     }
   }
@@ -327,7 +335,8 @@ i18n.on('loadError', (locale, error) => {
 function safeTranslate(key, params = {}, fallback = key) {
   try {
     return i18n.t(key, params)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`Translation error for key '${key}':`, error)
     return fallback
   }
@@ -347,12 +356,14 @@ async function handleLanguageChange(locale) {
 
     // 隐藏加载状态
     showLoading(false)
-  } catch (error) {
+  }
+  catch (error) {
     showLoading(false)
 
     if (error.message.includes('network')) {
       showError(i18n.t('errors.networkError'))
-    } else {
+    }
+    else {
       showError(i18n.t('errors.unknownError'))
     }
   }

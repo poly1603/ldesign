@@ -54,9 +54,9 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
         // 确保 t 方法存在
         if (typeof global.t === 'function') {
           // 注入翻译函数，确保正确绑定 this 上下文
-          ;(app.config.globalProperties as any)[opts.globalPropertyName] =
-            global.t.bind(global)
-          ;(app.config.globalProperties as any).$i18n = global
+          ; (app.config.globalProperties as any)[opts.globalPropertyName]
+            = global.t.bind(global)
+          ; (app.config.globalProperties as any).$i18n = global
 
           // 为了类型安全，也在 app.config.globalProperties 上设置
           Object.defineProperty(app.config.globalProperties, '$t', {
@@ -64,27 +64,27 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
               return global.t.bind(global)
             },
           })
-        } else {
+        }
+        else {
           console.error('I18n instance does not have a t method')
         }
       }
 
-      // 注册 v-t 指令
-      app.directive('t', {
-        // 元素挂载时
-        mounted(el: HTMLElement, binding: any) {
-          updateElementText(el, binding, global)
-        },
-        // 绑定值更新时
-        updated(el: HTMLElement, binding: any) {
-          updateElementText(el, binding, global)
-        },
-      })
+      // 注册增强的 v-t 指令系统
+      const { createModifiableVTDirective, vTHtml, vTAttr, vTPlural } = await import('./directives')
+
+      // 主要的 v-t 指令（支持修饰符）
+      app.directive('t', createModifiableVTDirective(global))
+
+      // 专用指令
+      app.directive('t-html', vTHtml)
+      app.directive('t-attr', vTAttr)
+      app.directive('t-plural', vTPlural)
 
       // 监听语言变更，更新所有使用 v-t 指令的元素
       global.on('languageChanged', () => {
         // 触发 Vue 的响应式更新
-        ;(app as any)._instance?.proxy?.$forceUpdate?.()
+        ; (app as any)._instance?.proxy?.$forceUpdate?.()
       })
 
       // 如果提供了初始化选项，初始化 I18n
@@ -99,7 +99,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
           Object.assign(global, i18nOptions)
 
           // 如果还没有初始化，则初始化
-          global.init().catch(error => {
+          global.init().catch((error) => {
             console.error('Failed to initialize I18n:', error)
           })
         }
@@ -108,51 +108,6 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
   }
 
   return plugin
-}
-
-/**
- * 更新元素文本内容
- * @param el DOM 元素
- * @param binding 指令绑定
- * @param binding.value 指令值
- * @param i18n I18n 实例
- */
-function updateElementText(
-  el: HTMLElement,
-  binding: { value: I18nDirectiveBinding },
-  i18n: I18nInstance
-) {
-  try {
-    let key: string
-    let params: Record<string, string | number | boolean | null | undefined> =
-      {}
-    let options: Record<string, unknown> = {}
-
-    if (typeof binding.value === 'string') {
-      key = binding.value
-    } else if (binding.value && typeof binding.value === 'object') {
-      key = binding.value.key
-      params = (binding.value.params || {}) as Record<
-        string,
-        string | number | boolean | null | undefined
-      >
-      options = (binding.value.options || {}) as Record<string, unknown>
-    } else {
-      console.warn('v-t directive expects a string or object value')
-      return
-    }
-
-    const translatedText = i18n.t(key, params, options)
-
-    // 更新元素文本内容
-    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      ;(el as HTMLInputElement).placeholder = translatedText
-    } else {
-      el.textContent = translatedText
-    }
-  } catch (error) {
-    console.error('Error in v-t directive:', error)
-  }
 }
 
 /**
@@ -213,7 +168,7 @@ export async function installI18nPlugin(
     globalInjection?: boolean
     globalPropertyName?: string
     createI18n?: (options?: I18nOptions) => Promise<I18nInstance>
-  }
+  },
 ): Promise<I18nInstance> {
   // 提取 Vue 插件选项
   const {
@@ -223,7 +178,7 @@ export async function installI18nPlugin(
     ...i18nOptions
   } = options || {}
 
-  console.log('🔧 installI18nPlugin 选项:', {
+  console.warn('🔧 installI18nPlugin 选项:', {
     globalInjection,
     globalPropertyName,
     hasCustomCreateI18n: !!customCreateI18n,
@@ -233,10 +188,11 @@ export async function installI18nPlugin(
   // 创建 I18n 实例 - 使用自定义创建函数或默认函数
   let i18nInstance: I18nInstance
   if (customCreateI18n) {
-    console.log('✨ 使用自定义 i18n 创建函数')
+    console.warn('✨ 使用自定义 i18n 创建函数')
     i18nInstance = await customCreateI18n(i18nOptions)
-  } else {
-    console.log('📦 使用默认 i18n 实例')
+  }
+  else {
+    console.warn('📦 使用默认 i18n 实例')
     // 创建默认的 i18n 实例
     i18nInstance = new I18n(i18nOptions)
     await i18nInstance.init()
@@ -251,7 +207,7 @@ export async function installI18nPlugin(
     globalPropertyName,
   })
 
-  console.log('✅ i18n Vue 插件安装成功')
+  console.warn('✅ i18n Vue 插件安装成功')
   return i18nInstance
 }
 

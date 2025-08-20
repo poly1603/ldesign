@@ -240,12 +240,12 @@ function handleSubmit() {
     <form @submit="handleSubmit">
       <div class="field">
         <label>{{ ct('form.name') }}</label>
-        <input v-model="form.name" :placeholder="ct('form.namePlaceholder')" />
+        <input v-model="form.name" :placeholder="ct('form.namePlaceholder')">
       </div>
 
       <div class="field">
         <label>{{ ct('form.email') }}</label>
-        <input v-model="form.email" :placeholder="ct('form.emailPlaceholder')" />
+        <input v-model="form.email" :placeholder="ct('form.emailPlaceholder')">
       </div>
 
       <button type="submit">
@@ -397,7 +397,7 @@ const { t } = useI18n()
 const error = ref<string>('')
 
 // 捕获翻译相关错误
-onErrorCaptured(err => {
+onErrorCaptured((err) => {
   if (err.message.includes('translation')) {
     error.value = t('errors.translationFailed')
     return false // 阻止错误继续传播
@@ -408,7 +408,8 @@ onErrorCaptured(err => {
 function safeT(key: string, params?: any, fallback?: string) {
   try {
     return t(key, params)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`Translation error for key '${key}':`, error)
     return fallback || key
   }
@@ -457,7 +458,8 @@ function getAllKeys(obj: any, prefix = ''): string[] {
 
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       keys.push(...getAllKeys(obj[key], fullKey))
-    } else {
+    }
+    else {
       keys.push(fullKey)
     }
   }
@@ -529,14 +531,15 @@ function extractTranslationKeys() {
   const files = glob.sync('src/**/*.{ts,vue}')
   const keys = new Set<string>()
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const content = readFileSync(file, 'utf-8')
 
     // 提取 t('key') 模式
     const matches = content.match(/t\(['"`]([^'"`]+)['"`]\)/g)
-    matches?.forEach(match => {
+    matches?.forEach((match) => {
       const key = match.match(/['"`]([^'"`]+)['"`]/)?.[1]
-      if (key) keys.add(key)
+      if (key)
+        keys.add(key)
     })
   })
 

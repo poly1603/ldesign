@@ -7,7 +7,7 @@
 ### 创建自定义加载器
 
 ```typescript
-import type { Loader, LanguagePackage } from '@ldesign/i18n'
+import type { LanguagePackage, Loader } from '@ldesign/i18n'
 
 class CustomLoader implements Loader {
   private packages = new Map<string, LanguagePackage>()
@@ -127,7 +127,8 @@ class CustomStorage implements Storage {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, value }),
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to persist preference:', error)
     }
   }
@@ -137,7 +138,8 @@ class CustomStorage implements Storage {
       await fetch(`/api/user-preferences/${key}`, {
         method: 'DELETE',
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to remove preference:', error)
     }
   }
@@ -179,9 +181,10 @@ class IndexedDBStorage implements Storage {
   }
 
   get(key: string): string | null {
-    if (!this.db) return null
+    if (!this.db)
+      return null
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const transaction = this.db!.transaction([this.storeName], 'readonly')
       const store = transaction.objectStore(this.storeName)
       const request = store.get(key)
@@ -192,7 +195,8 @@ class IndexedDBStorage implements Storage {
   }
 
   set(key: string, value: string): void {
-    if (!this.db) return
+    if (!this.db)
+      return
 
     const transaction = this.db.transaction([this.storeName], 'readwrite')
     const store = transaction.objectStore(this.storeName)
@@ -200,7 +204,8 @@ class IndexedDBStorage implements Storage {
   }
 
   remove(key: string): void {
-    if (!this.db) return
+    if (!this.db)
+      return
 
     const transaction = this.db.transaction([this.storeName], 'readwrite')
     const store = transaction.objectStore(this.storeName)
@@ -302,17 +307,17 @@ class CurrencyPlugin implements TranslationPlugin {
         style: 'currency',
         currency: this.getCurrencyForLocale(locale),
       })
-      return formatter.format(parseFloat(amount))
+      return formatter.format(Number.parseFloat(amount))
     })
   }
 
   private getCurrencyForLocale(locale: string): string {
     const currencyMap: Record<string, string> = {
-      en: 'USD',
+      'en': 'USD',
       'zh-CN': 'CNY',
-      ja: 'JPY',
+      'ja': 'JPY',
       'en-GB': 'GBP',
-      de: 'EUR',
+      'de': 'EUR',
     }
     return currencyMap[locale] || 'USD'
   }
@@ -372,7 +377,8 @@ class LazyLoader implements Loader {
       const languagePackage = await loadingPromise
       this.loadedPackages.set(locale, languagePackage)
       return languagePackage
-    } finally {
+    }
+    finally {
       this.loadingPromises.delete(locale)
     }
   }
@@ -519,7 +525,8 @@ class MultiTenantI18n extends I18n {
         ...basePackage,
         translations: this.deepMerge(basePackage.translations, tenantPackage.translations),
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to load tenant translations for ${this.tenantId}:`, error)
       return basePackage
     }
@@ -536,7 +543,8 @@ class MultiTenantI18n extends I18n {
     for (const key in source) {
       if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
         result[key] = this.deepMerge(result[key] || {}, source[key])
-      } else {
+      }
+      else {
         result[key] = source[key]
       }
     }

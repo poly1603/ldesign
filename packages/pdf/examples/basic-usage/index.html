@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF预览组件 - 基础使用示例</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>PDF预览组件 - 基础使用示例</h1>
+            <div class="file-controls">
+                <input type="file" id="file-input" accept=".pdf" class="file-input">
+                <label for="file-input" class="file-label">选择PDF文件</label>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <div class="navigation-controls">
+                    <button id="prev-page" class="btn btn-nav" disabled>
+                        <span>←</span> 上一页
+                    </button>
+                    <span class="page-info">
+                        第 <span id="current-page">0</span> 页 / 共 <span id="total-pages">0</span> 页
+                    </span>
+                    <button id="next-page" class="btn btn-nav" disabled>
+                        下一页 <span>→</span>
+                    </button>
+                </div>
+
+                <div class="zoom-controls">
+                    <button id="zoom-out" class="btn btn-zoom" disabled>缩小</button>
+                    <span class="zoom-info">
+                        <span id="zoom-level">100</span>%
+                    </span>
+                    <button id="zoom-in" class="btn btn-zoom" disabled>放大</button>
+                    <button id="fit-width" class="btn btn-zoom" disabled>适应宽度</button>
+                </div>
+
+                <div class="page-jump">
+                    <input type="number" id="page-input" min="1" placeholder="页码" disabled>
+                    <button id="go-to-page" class="btn" disabled>跳转</button>
+                </div>
+            </div>
+
+            <!-- PDF显示区域 -->
+            <div class="pdf-container">
+                <div id="pdf-viewer" class="pdf-viewer">
+                    <div class="loading-placeholder">
+                        <div class="loading-icon">📄</div>
+                        <p>请选择一个PDF文件开始预览</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态信息 -->
+            <div class="status-bar">
+                <div id="status-message" class="status-message">就绪</div>
+                <div id="loading-progress" class="loading-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <span id="progress-text">加载中...</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- 错误提示 -->
+        <div id="error-modal" class="error-modal" style="display: none;">
+            <div class="error-content">
+                <h3>错误</h3>
+                <p id="error-message"></p>
+                <button id="close-error" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入主要的JavaScript文件 -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -215,7 +215,7 @@ const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.
 <template>
   <div>
     <label>
-      <input v-model="isOnline" type="checkbox" />
+      <input v-model="isOnline" type="checkbox">
       {{ statusText }}
     </label>
   </div>
@@ -267,7 +267,7 @@ const { t } = useI18nWithInstance(customI18n)
   <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }" />
 
   <!-- 输入框占位符 -->
-  <input v-t="'common.searchPlaceholder'" />
+  <input v-t="'common.searchPlaceholder'">
 
   <!-- 带选项的翻译 -->
   <div
@@ -286,10 +286,10 @@ const { t } = useI18nWithInstance(customI18n)
 type I18nDirectiveBinding =
   | string
   | {
-      key: string
-      params?: TranslationParams
-      options?: TranslationOptions
-    }
+    key: string
+    params?: TranslationParams
+    options?: TranslationOptions
+  }
 ```
 
 ## 全局属性
@@ -452,14 +452,16 @@ const { i18n, locale } = useI18n()
 const isLoading = ref(false)
 
 // 监听语言变化，动态加载语言包
-watch(locale, async newLocale => {
+watch(locale, async (newLocale) => {
   if (!i18n.isLanguageLoaded(newLocale)) {
     isLoading.value = true
     try {
       await i18n.preloadLanguage(newLocale)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load language:', error)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -478,7 +480,7 @@ const { i18n } = useI18n()
 const error = ref<string>('')
 
 // 捕获翻译相关错误
-onErrorCaptured(err => {
+onErrorCaptured((err) => {
   if (err.message.includes('translation')) {
     error.value = i18n.t('errors.translationFailed')
     return false // 阻止错误继续传播
@@ -514,7 +516,7 @@ import { watch } from 'vue'
 const { locale } = useI18n()
 
 // 监听语言变化，更新页面元数据
-watch(locale, newLocale => {
+watch(locale, (newLocale) => {
   document.documentElement.lang = newLocale
   document.title = t('app.title')
 })

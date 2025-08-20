@@ -1,0 +1,60 @@
+{
+  "name": "@ldesign/pdf-vanilla-js-example",
+  "version": "1.0.0",
+  "description": "Vanilla JavaScript PDF Viewer Example using @ldesign/pdf",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000",
+    "start": "vite dev --port 3000 --host",
+    "lint": "eslint . --ext .js,.ts --fix",
+    "format": "prettier --write .",
+    "check": "npm run lint && npm run build",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "pdf",
+    "viewer",
+    "javascript",
+    "vanilla",
+    "pdf.js",
+    "document",
+    "reader"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "dependencies": {
+    "@ldesign/pdf": "workspace:*",
+    "pdfjs-dist": "^3.11.174"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/ldesign.git",
+    "directory": "packages/pdf/examples/vanilla-js-example"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/ldesign/issues"
+  },
+  "homepage": "https://github.com/your-org/ldesign/tree/main/packages/pdf/examples/vanilla-js-example#readme"
+}

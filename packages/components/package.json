@@ -74,7 +74,7 @@
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts components --dry-run"
   },
   "dependencies": {
-    "@stencil/core": "^4.22.0"
+    "@stencil/core": "4.19.0"
   },
   "devDependencies": {
     "@stencil/eslint-plugin": "^1.1.0",

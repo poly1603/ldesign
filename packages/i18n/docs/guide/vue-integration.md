@@ -164,7 +164,7 @@ const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.
 <template>
   <div>
     <label>
-      <input v-model="isOnline" type="checkbox" />
+      <input v-model="isOnline" type="checkbox">
       {{ statusText }}
     </label>
   </div>
@@ -187,7 +187,7 @@ const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.
     <div v-t="{ key: 'common.welcome', params: { name: 'Vue' } }" />
 
     <!-- 输入框占位符 -->
-    <input v-t="'common.searchPlaceholder'" />
+    <input v-t="'common.searchPlaceholder'">
 
     <!-- 带选项 -->
     <div
@@ -341,7 +341,7 @@ function handleSubmit() {
   <div class="user-profile">
     <h2>{{ t('userProfile.title') }}</h2>
     <form @submit="handleSubmit">
-      <input v-model="form.name" :placeholder="t('userProfile.namePlaceholder')" />
+      <input v-model="form.name" :placeholder="t('userProfile.namePlaceholder')">
       <button type="submit">
         {{ t('userProfile.saveButton') }}
       </button>
@@ -363,7 +363,7 @@ const { locale, availableLanguages, isChanging, switchLanguage } = useLanguageSw
 const currentLocale = ref(locale.value)
 
 // 监听语言变化
-watch(locale, newLocale => {
+watch(locale, (newLocale) => {
   currentLocale.value = newLocale
   // 更新页面标题、HTML lang 属性等
   document.title = t('app.title')

@@ -126,7 +126,7 @@ async function handleLanguageChange() {
 
     <!-- 使用指令 -->
     <button v-t="'common.save'" />
-    <input v-t="{ key: 'common.searchPlaceholder' }" />
+    <input v-t="{ key: 'common.searchPlaceholder' }">
 
     <!-- 语言切换器 -->
     <select v-model="currentLocale" @change="handleLanguageChange">
@@ -165,7 +165,7 @@ const i18n = await createI18nWithBuiltinLocales({
   },
 
   // 事件回调
-  onLanguageChanged: locale => {
+  onLanguageChanged: (locale) => {
     console.log('Language changed to:', locale)
     document.documentElement.lang = locale
   },

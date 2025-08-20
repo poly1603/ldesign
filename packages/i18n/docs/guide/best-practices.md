@@ -133,9 +133,9 @@ class LazyI18nLoader implements Loader {
 
 // ❌ 不推荐：一次性加载所有语言
 const allLocales = {
-  en: require('./locales/en/index.json'),
+  'en': require('./locales/en/index.json'),
   'zh-CN': require('./locales/zh-CN/index.json'),
-  ja: require('./locales/ja/index.json'),
+  'ja': require('./locales/ja/index.json'),
 }
 ```
 
@@ -274,8 +274,8 @@ const invalid = t('invalid.key') // ❌ TypeScript 错误
 
 ```typescript
 // scripts/generate-i18n-types.ts
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 function generateTypesFromTranslations(localeDir: string) {
   const enTranslations = JSON.parse(fs.readFileSync(path.join(localeDir, 'en/index.json'), 'utf-8'))
@@ -287,7 +287,8 @@ function generateTypesFromTranslations(localeDir: string) {
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'object' && value !== null) {
         result += `${spaces}  ${key}: ${generateInterface(value, indent + 1)}\n`
-      } else {
+      }
+      else {
         result += `${spaces}  ${key}: string\n`
       }
     }
@@ -351,10 +352,10 @@ describe('I18n', () => {
 测试组件中的翻译：
 
 ```typescript
-// __tests__/components/UserProfile.test.ts
-import { mount } from '@vue/test-utils'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// __tests__/components/UserProfile.test.ts
+import { mount } from '@vue/test-utils'
 import UserProfile from '@/components/UserProfile.vue'
 
 describe('UserProfile', () => {
@@ -496,7 +497,7 @@ class RealtimeI18nManager {
   private setupWebSocket() {
     this.ws = new WebSocket('ws://localhost:8080/i18n-updates')
 
-    this.ws.onmessage = event => {
+    this.ws.onmessage = (event) => {
       const update = JSON.parse(event.data)
       this.handleTranslationUpdate(update)
     }
@@ -560,8 +561,8 @@ jobs:
 
 ```typescript
 // scripts/validate-translations.ts
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 interface ValidationResult {
   locale: string
@@ -612,7 +613,8 @@ class TranslationValidator {
 
       if (typeof value === 'object' && value !== null) {
         keys.push(...this.flattenKeys(value, fullKey))
-      } else {
+      }
+      else {
         keys.push(fullKey)
       }
     }
