@@ -705,12 +705,16 @@
 
 /* 动画关键帧 */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   33% {
     transform: translateY(-20px) rotate(1deg);
   }
+
   66% {
     transform: translateY(-10px) rotate(-1deg);
   }
@@ -720,6 +724,7 @@
   0% {
     transform: translate(0, 0);
   }
+
   100% {
     transform: translate(-60px, -60px);
   }
@@ -730,6 +735,7 @@
     opacity: 0;
     transform: translateY(40px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -737,19 +743,25 @@
 }
 
 @keyframes logoFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-8px);
   }
 }
 
 @keyframes logoGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(1.05);
@@ -757,12 +769,16 @@
 }
 
 @keyframes errorShake {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-5px);
   }
+
   75% {
     transform: translateX(5px);
   }
@@ -772,6 +788,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -841,7 +858,8 @@
     .login-form {
       .form-input {
         padding: 18px 20px;
-        font-size: 16px; /* 防止 iOS 缩放 */
+        font-size: 16px;
+        /* 防止 iOS 缩放 */
         border-radius: 16px;
       }
 
@@ -1029,5 +1047,18 @@
         min-height: 48px;
       }
     }
+  }
+}
+
+// 模板选择器样式
+.default-login__selector {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    top: 15px;
+    right: 15px;
   }
 }

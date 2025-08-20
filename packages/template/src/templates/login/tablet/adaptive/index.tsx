@@ -170,7 +170,7 @@ export default defineComponent({
         style={backgroundStyle.value}
       >
         {/* 使用传递进来的模板选择器 */}
-        {props.templateSelector && <div class="tablet-adaptive-login__selector">{props.templateSelector}</div>}
+        {props.templateSelector && <div class="tablet-adaptive-login__selector">{props.templateSelector()}</div>}
 
         {/* 自适应背景装饰 */}
         <div class="tablet-adaptive-login__background">

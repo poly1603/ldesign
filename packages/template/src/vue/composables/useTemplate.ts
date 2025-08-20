@@ -39,11 +39,16 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   })
 
   // 响应式状态
-  const currentDevice = ref<DeviceType>('desktop')
+  const currentDevice = ref<DeviceType>(manager.getCurrentDevice()) // 立即检测设备类型
   const currentTemplate = ref<TemplateMetadata | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const templates = ref<TemplateMetadata[]>([])
+
+  // 添加调试日志
+  if (options.debug) {
+    console.log(`🎯 useTemplate 初始化: 设备类型=${currentDevice.value}`)
+  }
 
   // 计算属性 - 根据选项过滤模板
   const availableTemplates = computed(() => {
@@ -175,23 +180,52 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     }
 
     // 2. 如果没有保存的选择，优先选择当前模板在新设备上的对应版本
-    if (!targetTemplate) {
+    if (!targetTemplate && currentTemplate.value) {
       targetTemplate = deviceTemplates.find(t => t.template === currentTemplate.value?.template)
+
+      if (targetTemplate && options.debug) {
+        console.log(`🎯 找到相同名称的模板: ${targetTemplate.template}`)
+      }
     }
 
-    // 3. 如果当前模板在新设备上不存在，选择第一个可用模板
+    // 3. 如果当前模板在新设备上不存在，使用智能回退策略
+    if (!targetTemplate) {
+      // 使用 manager 的智能回退逻辑
+      targetTemplate = manager.findFallbackTemplate(category, newDevice, currentTemplate.value?.template || '')
+
+      if (targetTemplate && options.debug) {
+        console.log(`🔄 使用智能回退模板: ${targetTemplate.template}`)
+      }
+    }
+
+    // 4. 最后的保险：使用第一个可用模板
     if (!targetTemplate) {
       targetTemplate = deviceTemplates[0]
+
+      if (options.debug) {
+        console.log(`⚠️ 使用第一个可用模板: ${targetTemplate.template}`)
+      }
     }
 
     try {
       await switchTemplate(category, newDevice, targetTemplate.template)
 
       if (options.debug) {
-        console.log(`🔄 自动切换到 ${newDevice} 设备模板: ${targetTemplate.template}`)
+        console.log(`✅ 成功切换到 ${newDevice} 设备模板: ${targetTemplate.template}`)
       }
     } catch (error) {
-      console.error('自动切换模板失败:', error)
+      console.error('❌ 自动切换模板失败:', error)
+
+      // 如果切换失败，尝试使用默认模板
+      try {
+        const defaultTemplate = deviceTemplates.find(t => t.template === 'default') || deviceTemplates[0]
+        if (defaultTemplate) {
+          await switchTemplate(category, newDevice, defaultTemplate.template)
+          console.log(`🔄 回退到默认模板: ${defaultTemplate.template}`)
+        }
+      } catch (fallbackError) {
+        console.error('❌ 回退模板也失败了:', fallbackError)
+      }
     }
   }
 
@@ -269,7 +303,15 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   // 生命周期
   onMounted(async () => {
     setupEventListeners()
-    currentDevice.value = manager.getCurrentDevice()
+
+    // 确保设备类型是最新的（可能在初始化后发生了变化）
+    const latestDevice = manager.getCurrentDevice()
+    if (latestDevice !== currentDevice.value) {
+      currentDevice.value = latestDevice
+      if (options.debug) {
+        console.log(`🔄 useTemplate 设备类型更新: ${currentDevice.value}`)
+      }
+    }
 
     if (options.autoScan !== false) {
       await scanTemplates()

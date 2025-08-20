@@ -2,6 +2,8 @@
  * 自适应桌面登录模板样式
  */
 
+/* 模板选择器样式直接定义在这里 */
+
 .desktop-adaptive-login {
   min-height: 100vh;
   display: flex;
@@ -36,7 +38,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
+    background:
       radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
     animation: meshFloat 20s ease-in-out infinite;
@@ -91,7 +93,7 @@
   // 左侧内容区
   &__content {
     padding: 40px;
-    
+
     @media (max-width: 1024px) {
       padding: 30px;
     }
@@ -187,10 +189,10 @@
 
   // 模板选择器
   &__selector {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 10;
+    z-index: 1000;
 
     @media (max-width: 768px) {
       top: 15px;
@@ -201,22 +203,29 @@
 
 // 动画定义
 @keyframes meshFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) rotate(0deg);
   }
+
   33% {
     transform: translate(30px, -30px) rotate(120deg);
   }
+
   66% {
     transform: translate(-20px, 20px) rotate(240deg);
   }
 }
 
 @keyframes dotFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
     opacity: 0.3;
   }
+
   50% {
     transform: translateY(-20px);
     opacity: 0.8;
@@ -225,6 +234,7 @@
 
 // 响应式工具类
 .desktop-adaptive-login {
+
   // 大屏幕优化
   &--large {
     .desktop-adaptive-login__container {

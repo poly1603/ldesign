@@ -130,92 +130,65 @@ export class TemplateLoader {
 
   /**
    * 动态加载组件
+   * 基于约定的路径自动加载模板组件
    */
   private async loadComponent(metadata: TemplateMetadata): Promise<Component> {
     try {
-      // 如果是预构建模板，使用模板映射表
-      if (metadata.path && metadata.path.startsWith('templates/')) {
-        return await this.loadPrebuiltComponent(metadata)
-      }
+      // 基于约定生成组件路径
+      const componentPath = this.generateComponentPath(metadata)
 
-      // 传统的文件路径加载方式
-      const componentPath = metadata.componentPath || metadata.path
-      if (!componentPath) {
-        throw new Error('No component path provided')
-      }
+      console.log(`🔄 自动加载模板组件: ${metadata.category}/${metadata.device}/${metadata.template}`)
+      console.log(`   组件路径: ${componentPath}`)
 
-      // 尝试多种可能的导入方式
-      const importPaths = [
-        componentPath,
+      // 尝试多种可能的文件扩展名
+      const possiblePaths = [
         componentPath.replace(/\.(ts|tsx|vue|js)$/, '.tsx'),
+        componentPath.replace(/\.(ts|tsx|vue|js)$/, '.ts'),
         componentPath.replace(/\.(ts|tsx|vue|js)$/, '.vue'),
         componentPath.replace(/\.(ts|tsx|vue|js)$/, '.js'),
       ]
 
       let lastError: Error | null = null
 
-      for (const path of importPaths) {
+      for (const path of possiblePaths) {
         try {
-          console.log(`🔄 尝试导入组件: ${path}`)
+          console.log(`   尝试路径: ${path}`)
           const module = await import(/* @vite-ignore */ path)
           const component = module.default || module
 
           if (component) {
-            console.log(`✅ 组件导入成功: ${path}`)
+            console.log(`✅ 组件加载成功: ${path}`)
             return this.wrapComponent(component, path)
           }
         } catch (error) {
-          console.warn(`⚠️ 组件导入失败: ${path}`, error)
+          console.warn(`   路径失败: ${path}`, error)
           lastError = error as Error
           continue
         }
       }
 
-      throw lastError || new Error(`No valid component found for ${componentPath}`)
+      throw lastError || new Error(`无法找到模板组件: ${componentPath}`)
     } catch (error) {
-      console.error(`Failed to load component:`, error)
+      console.error(`模板组件加载失败:`, error)
       throw error
     }
   }
 
   /**
-   * 加载预构建组件
+   * 基于约定生成组件路径
+   * 约定：../templates/{category}/{device}/{template}/index.tsx
    */
-  private async loadPrebuiltComponent(metadata: TemplateMetadata): Promise<Component> {
-    try {
-      console.log(`🔄 加载预构建模板: ${metadata.category}/${metadata.device}/${metadata.template}`)
-
-      // 动态导入模板映射表
-      const { templateMap } = await import('../templates')
-
-      // 获取对应的组件
-      const categoryMap = templateMap[metadata.category as keyof typeof templateMap]
-      if (!categoryMap) {
-        throw new Error(`Category not found: ${metadata.category}`)
-      }
-
-      const deviceMap = categoryMap[metadata.device as keyof typeof categoryMap]
-      if (!deviceMap) {
-        throw new Error(`Device not found: ${metadata.device}`)
-      }
-
-      const component = deviceMap[metadata.template as keyof typeof deviceMap]
-      if (!component) {
-        throw new Error(`Template not found: ${metadata.template}`)
-      }
-
-      // 直接使用组件，不需要再执行动态导入
-      if (!component) {
-        throw new Error(`No component found in prebuilt template`)
-      }
-
-      console.log(`✅ 预构建模板加载成功: ${metadata.category}/${metadata.device}/${metadata.template}`)
-      return this.wrapComponent(component, `prebuilt:${metadata.category}/${metadata.device}/${metadata.template}`)
-    } catch (error) {
-      console.error('❌ 预构建模板加载失败:', error)
-      throw error
+  private generateComponentPath(metadata: TemplateMetadata): string {
+    // 如果已经有路径，直接使用
+    if (metadata.path) {
+      return metadata.path
     }
+
+    // 基于约定生成路径
+    return `../templates/${metadata.category}/${metadata.device}/${metadata.template}/index.tsx`
   }
+
+
 
   /**
    * 包装组件为异步组件

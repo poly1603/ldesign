@@ -147,7 +147,7 @@ export default defineComponent({
     return () => (
       <div class="classic-login" style={backgroundStyle.value}>
         {/* 使用传递进来的模板选择器 */}
-        {props.templateSelector && <div class="classic-login__selector">{props.templateSelector}</div>}
+        {props.templateSelector && <div class="classic-login__selector">{props.templateSelector()}</div>}
 
         {/* 背景遮罩层 */}
         <div class="classic-login__overlay"></div>

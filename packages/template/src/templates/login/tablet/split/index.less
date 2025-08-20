@@ -430,7 +430,7 @@
     }
   }
 
-  &__checkbox input:checked + &__checkbox-mark {
+  &__checkbox input:checked+&__checkbox-mark {
     background: #667eea;
     border-color: #667eea;
 
@@ -592,10 +592,13 @@
 
 /* 新增动画关键帧 */
 @keyframes splitLineGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     transform: translateX(-50%) scaleY(1);
   }
+
   50% {
     opacity: 0.8;
     transform: translateX(-50%) scaleY(1.1);
@@ -606,16 +609,20 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 @keyframes logoFrame {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.3;
   }
+
   50% {
     transform: scale(1.05);
     opacity: 0.6;
@@ -623,10 +630,12 @@
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
@@ -636,6 +645,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -699,5 +709,18 @@
     &__third-party-grid {
       grid-template-columns: 1fr;
     }
+  }
+}
+
+// 模板选择器样式
+.tablet-split-login__selector {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    top: 10px;
+    right: 10px;
   }
 }

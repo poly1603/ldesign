@@ -98,16 +98,21 @@ export default defineComponent({
       }),
     },
 
+    // 新增：LoginPanel 组件实例
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
+    // 新增：模板选择器组件
+    templateSelector: {
+      type: Object,
+      default: null,
+    },
+
     // 语言切换
     languageToggle: {
       type: Object,
       default: () => null,
-    },
-
-    // 登录面板组件
-    loginPanel: {
-      type: Object,
-      default: null,
     },
   },
   emits: [
@@ -231,6 +236,13 @@ export default defineComponent({
     }
     return () => (
       <div class="default-login-template" style={backgroundStyle.value}>
+        {/* 自动注入的模板选择器 */}
+        {props.templateSelector && (
+          <div class="default-login__selector">
+            {props.templateSelector()}
+          </div>
+        )}
+
         {/* 背景装饰层 */}
         <div class="background-decoration">
           <div class="decoration-circle decoration-circle--1"></div>
@@ -382,7 +394,7 @@ export default defineComponent({
               {props.testAccount?.show && (
                 <div class="test-account-info">
                   <div class="test-account-header">
-                    <div class="test-account-icon" innerHTML={getIcon('info', { size: 'sm' })}></div>
+                    <div class="test-account-icon" innerHTML={getIcon('shield', { size: 'sm' })}></div>
                     <h4>{props.testAccount.title}</h4>
                   </div>
                   <div class="test-account-content">

@@ -1,11 +1,12 @@
 /**
- * TemplateSelector 组件
+ * TemplateSelector 组件 - 重构版本
  *
  * 模板选择器组件，提供模板浏览和选择功能
+ * 新设计：按钮触发 + 模态弹出层
  */
 
 import type { TemplateSelectorProps } from '../../types'
-import { computed, defineComponent, ref, watch, type PropType } from 'vue'
+import { computed, defineComponent, ref, watch, Teleport, onMounted, onUnmounted, type PropType } from 'vue'
 import './TemplateSelector.less'
 
 export const TemplateSelector = defineComponent({
@@ -17,7 +18,7 @@ export const TemplateSelector = defineComponent({
     },
     device: {
       type: String as PropType<'desktop' | 'mobile' | 'tablet'>,
-      default: 'desktop',
+      required: true, // 改为必需属性，由父组件传递
     },
     currentTemplate: {
       type: String,
@@ -47,15 +48,26 @@ export const TemplateSelector = defineComponent({
       type: Array,
       default: () => [],
     },
+    buttonText: {
+      type: String,
+      default: '选择模板',
+    },
+    buttonIcon: {
+      type: String,
+      default: '⚙️',
+    },
     onTemplateChange: {
       type: Function as PropType<(template: string) => void>,
     },
     onTemplatePreview: {
       type: Function as PropType<(template: string) => void>,
     },
+    onVisibilityChange: {
+      type: Function as PropType<(visible: boolean) => void>,
+    },
   },
 
-  emits: ['template-change', 'template-preview'],
+  emits: ['template-change', 'template-preview', 'visibility-change'],
 
   setup(props, { emit }) {
     // 响应式状态
@@ -63,6 +75,7 @@ export const TemplateSelector = defineComponent({
     const selectedTemplate = ref(props.currentTemplate || '')
     const loading = ref(false)
     const error = ref<Error | null>(null)
+    const isModalVisible = ref(false) // 模态弹出层可见性
 
     // 监听 currentTemplate 属性变化，同步更新选中状态
     watch(
@@ -78,9 +91,12 @@ export const TemplateSelector = defineComponent({
     // 计算属性 - 可用模板列表
     const availableTemplates = computed(() => {
       const templates = Array.isArray(props.templates) ? props.templates : []
+      console.log(`🎨 TemplateSelector 接收到 ${templates.length} 个模板:`,
+        templates.map(t => `${t.device}/${t.template}`))
+
       if (templates.length === 0) return []
 
-      return templates.filter(template => {
+      const filtered = templates.filter(template => {
         // 按分类过滤
         if (template.category !== props.category) return false
 
@@ -89,7 +105,23 @@ export const TemplateSelector = defineComponent({
 
         return true
       })
+
+      console.log(`🎯 TemplateSelector 过滤后 (${props.category}/${props.device}): ${filtered.length} 个模板:`,
+        filtered.map(t => `${t.device}/${t.template}`))
+
+      return filtered
     })
+
+    // 监听设备类型变化
+    watch(
+      () => props.device,
+      (newDevice, oldDevice) => {
+        console.log(`🔄 TemplateSelector 检测到设备类型变化: ${oldDevice} -> ${newDevice}`)
+        console.log(`📊 当前模板数量: ${props.templates?.length || 0}`)
+        console.log(`🎯 过滤后模板数量: ${availableTemplates.value.length}`)
+      },
+      { immediate: false }
+    )
 
     // 计算属性 - 过滤后的模板列表
     const filteredTemplates = computed(() => {
@@ -111,12 +143,41 @@ export const TemplateSelector = defineComponent({
       selectedTemplate.value = template
       props.onTemplateChange?.(template)
       emit('template-change', template)
+      // 选择后关闭模态弹出层
+      closeModal()
     }
 
     // 预览模板
     const previewTemplate = (template: string) => {
       props.onTemplatePreview?.(template)
       emit('template-preview', template)
+    }
+
+    // 打开模态弹出层
+    const openModal = () => {
+      isModalVisible.value = true
+      props.onVisibilityChange?.(true)
+      emit('visibility-change', true)
+      // 阻止页面滚动
+      document.body.style.overflow = 'hidden'
+    }
+
+    // 关闭模态弹出层
+    const closeModal = () => {
+      isModalVisible.value = false
+      props.onVisibilityChange?.(false)
+      emit('visibility-change', false)
+      // 恢复页面滚动
+      document.body.style.overflow = ''
+    }
+
+    // 切换模态弹出层
+    const toggleModal = () => {
+      if (isModalVisible.value) {
+        closeModal()
+      } else {
+        openModal()
+      }
     }
 
     // 搜索模板
@@ -137,6 +198,24 @@ export const TemplateSelector = defineComponent({
       }
     }
 
+    // 键盘事件处理
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isModalVisible.value) {
+        closeModal()
+      }
+    }
+
+    // 生命周期钩子
+    onMounted(() => {
+      document.addEventListener('keydown', handleKeydown)
+    })
+
+    onUnmounted(() => {
+      document.removeEventListener('keydown', handleKeydown)
+      // 确保在组件卸载时恢复页面滚动
+      document.body.style.overflow = ''
+    })
+
     // 计算样式类
     const containerClass = computed(() => [
       'template-selector',
@@ -144,6 +223,20 @@ export const TemplateSelector = defineComponent({
       {
         'template-selector--loading': loading.value,
         'template-selector--error': error.value,
+      },
+    ])
+
+    const modalClass = computed(() => [
+      'template-selector-modal',
+      {
+        'template-selector-modal--visible': isModalVisible.value,
+      },
+    ])
+
+    const triggerButtonClass = computed(() => [
+      'template-selector-trigger',
+      {
+        'template-selector-trigger--active': isModalVisible.value,
       },
     ])
 
@@ -287,13 +380,16 @@ export const TemplateSelector = defineComponent({
       )
     }
 
-    // 渲染函数
-    return () => (
+    // 渲染模态弹出层内容
+    const renderModalContent = () => (
       <div class={containerClass.value}>
         <div class="template-selector__header">
           <h3 class="template-selector__title">
             选择模板 - {props.category} ({props.device})
           </h3>
+          <button class="template-selector__close" onClick={closeModal}>
+            ✕
+          </button>
           {renderSearchBox()}
         </div>
 
@@ -306,6 +402,30 @@ export const TemplateSelector = defineComponent({
           </div>
         </div>
       </div>
+    )
+
+    // 渲染函数
+    return () => (
+      <>
+        {/* 触发按钮 */}
+        <button class={triggerButtonClass.value} onClick={toggleModal} title={props.buttonText}>
+          <span class="template-selector-trigger__icon">{props.buttonIcon}</span>
+          <span class="template-selector-trigger__text">{props.buttonText}</span>
+        </button>
+
+        {/* 模态弹出层 */}
+        <Teleport to="body">
+          <div class={modalClass.value} style={{ display: isModalVisible.value ? 'flex' : 'none' }}>
+            {/* 背景遮罩 */}
+            <div class="template-selector-modal__backdrop" onClick={closeModal}></div>
+
+            {/* 模态内容 */}
+            <div class="template-selector-modal__content">
+              {renderModalContent()}
+            </div>
+          </div>
+        </Teleport>
+      </>
     )
   },
 })

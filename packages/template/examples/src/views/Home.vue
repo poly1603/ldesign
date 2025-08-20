@@ -32,6 +32,12 @@ const features = [
     route: '/template-selector-demo',
     color: '#fa709a',
   },
+  {
+    title: '🔄 设备切换测试',
+    description: '测试设备切换时的智能回退机制，确保模板始终可用',
+    route: '/device-switch-test',
+    color: '#ff6b6b',
+  },
 ]
 
 const stats = ref({

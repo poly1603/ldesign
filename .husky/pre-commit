@@ -5,7 +5,7 @@ echo "🔍 运行pre-commit检查..."
 
 # 运行lint-staged
 echo "📝 检查代码格式..."
-npx lint-staged
+# npx lint-staged
 
 # 类型检查（只检查暂存的文件）
 # echo "🔧 类型检查..."

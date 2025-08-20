@@ -34,6 +34,11 @@ const router = createRouter({
       name: 'TemplateSelectorDemo',
       component: () => import('../views/TemplateSelectorDemo.vue'),
     },
+    {
+      path: '/device-switch-test',
+      name: 'DeviceSwitchTest',
+      component: () => import('../views/DeviceSwitchTest.vue'),
+    },
   ],
 })
 

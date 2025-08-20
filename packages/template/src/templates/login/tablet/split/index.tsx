@@ -128,7 +128,7 @@ export default defineComponent({
     return () => (
       <div class="tablet-split-login" style={backgroundStyle.value}>
         {/* 使用传递进来的模板选择器 */}
-        {props.templateSelector && <div class="tablet-split-login__selector">{props.templateSelector}</div>}
+        {props.templateSelector && <div class="tablet-split-login__selector">{props.templateSelector()}</div>}
 
         {/* 背景装饰层 */}
         <div class="tablet-split-login__background">

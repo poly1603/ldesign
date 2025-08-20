@@ -35,7 +35,8 @@ export { createDefaultTemplateEnginePlugin } from './engine/plugin.js'
 import { useTemplate } from './vue/composables/useTemplate.js'
 import { useTemplateSelector } from './vue/composables/useTemplateSelector.js'
 import useTemplateProvider from './vue/composables/useTemplateProvider.js'
-export { templateMap, templateMetadata } from './templates/index.js'
+// 模板映射现在通过自动扫描获取，无需手动导出
+// export { templateMap, templateMetadata } from './templates/index.js'
 export {
   buildTemplatePath,
   extractTemplatePathFromModulePath,
@@ -58,15 +59,16 @@ export {
   getGlobalTemplateManager,
   useTemplateManager,
 } from './vue/plugin.js'
-export { default as LoginDesktopClassic } from './templates/login/desktop/classic/index.js'
-export { default as LoginDesktopDefault } from './templates/login/desktop/default/index.js'
-export { default as LoginDesktopModern } from './templates/login/desktop/modern/index.js'
-export { default as LoginMobileCard } from './templates/login/mobile/card/index.js'
-export { default as LoginMobileDefault } from './templates/login/mobile/default/index.js'
-export { default as LoginMobileSimple } from './templates/login/mobile/simple/index.js'
-export { default as LoginTabletAdaptive } from './templates/login/tablet/adaptive/index.js'
-export { default as LoginTabletDefault } from './templates/login/tablet/default/index.js'
-export { default as LoginTabletSplit } from './templates/login/tablet/split/index.js'
+// 模板组件现在通过自动扫描获取，无需手动导出
+// export { default as LoginDesktopClassic } from './templates/login/desktop/classic/index.js'
+// export { default as LoginDesktopDefault } from './templates/login/desktop/default/index.js'
+// export { default as LoginDesktopModern } from './templates/login/desktop/modern/index.js'
+// export { default as LoginMobileCard } from './templates/login/mobile/card/index.js'
+// export { default as LoginMobileDefault } from './templates/login/mobile/default/index.js'
+// export { default as LoginMobileSimple } from './templates/login/mobile/simple/index.js'
+// export { default as LoginTabletAdaptive } from './templates/login/tablet/adaptive/index.js'
+// export { default as LoginTabletDefault } from './templates/login/tablet/default/index.js'
+// export { default as LoginTabletSplit } from './templates/login/tablet/split/index.js'
 
 /**
  * 创建模板管理器实例
@@ -231,13 +233,13 @@ declare const _default: {
         }
       }>
     > &
-      Readonly<{
-        onError?: ((error: Error) => any) | undefined
-        onLoad?: ((result: any) => any) | undefined
-        'onBefore-load'?: (() => any) | undefined
-        'onTemplate-change'?: ((template: any) => any) | undefined
-        'onDevice-change'?: ((event: { oldDevice: DeviceType; newDevice: DeviceType }) => any) | undefined
-      }>,
+    Readonly<{
+      onError?: ((error: Error) => any) | undefined
+      onLoad?: ((result: any) => any) | undefined
+      'onBefore-load'?: (() => any) | undefined
+      'onTemplate-change'?: ((template: any) => any) | undefined
+      'onDevice-change'?: ((event: { oldDevice: DeviceType; newDevice: DeviceType }) => any) | undefined
+    }>,
     {
       device: DeviceType
       template: string | Record<DeviceType, string>
@@ -363,10 +365,10 @@ declare const _default: {
         }
       }>
     > &
-      Readonly<{
-        'onTemplate-change'?: ((...args: any[]) => any) | undefined
-        'onTemplate-preview'?: ((...args: any[]) => any) | undefined
-      }>,
+    Readonly<{
+      'onTemplate-change'?: ((...args: any[]) => any) | undefined
+      'onTemplate-preview'?: ((...args: any[]) => any) | undefined
+    }>,
     {
       device: 'desktop' | 'mobile' | 'tablet'
       currentTemplate: string
@@ -410,7 +412,7 @@ declare const _default: {
         }
       }>
     > &
-      Readonly<{}>,
+    Readonly<{}>,
     {
       config: TemplateProviderConfig
     },

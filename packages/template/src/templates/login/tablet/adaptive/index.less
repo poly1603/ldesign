@@ -370,7 +370,7 @@
     }
   }
 
-  &__checkbox input:checked + &__checkbox-mark {
+  &__checkbox input:checked+&__checkbox-mark {
     background: #667eea;
     border-color: #667eea;
 
@@ -658,16 +658,20 @@
   from {
     transform: translate(0, 0);
   }
+
   to {
     transform: translate(-60px, -60px);
   }
 }
 
 @keyframes dotFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
     opacity: 0.4;
   }
+
   50% {
     transform: translateY(-15px);
     opacity: 0.8;
@@ -675,10 +679,13 @@
 }
 
 @keyframes logoPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.4;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.8;
@@ -689,6 +696,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -751,5 +759,18 @@
     &__third-party-grid {
       grid-template-columns: 1fr;
     }
+  }
+}
+
+// 模板选择器样式
+.tablet-adaptive-login__selector {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    top: 10px;
+    right: 10px;
   }
 }

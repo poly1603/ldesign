@@ -21,6 +21,11 @@ export default defineComponent({
       type: Object,
       default: null
     },
+    // LoginPanel 组件实例
+    loginPanel: {
+      type: Object,
+      default: null,
+    },
     // 自定义配置
     config: {
       type: Object,
@@ -133,10 +138,10 @@ export default defineComponent({
         ]}
         style={backgroundStyle.value}
       >
-        {/* 模板选择器 */}
+        {/* 自动注入的模板选择器 */}
         {props.templateSelector && (
           <div class="desktop-adaptive-login__selector">
-            {props.templateSelector}
+            {props.templateSelector()}
           </div>
         )}
 
@@ -145,9 +150,9 @@ export default defineComponent({
           <div class="desktop-adaptive-login__mesh"></div>
           <div class="desktop-adaptive-login__dots">
             {Array.from({ length: screenSize.value === 'large' ? 25 : screenSize.value === 'medium' ? 20 : 15 }).map((_, i) => (
-              <div 
-                key={i} 
-                class="desktop-adaptive-login__dot" 
+              <div
+                key={i}
+                class="desktop-adaptive-login__dot"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
@@ -180,23 +185,40 @@ export default defineComponent({
 
           {/* 右侧登录表单区 */}
           <div class="desktop-adaptive-login__form-container">
-            {/* 这里会被 LoginPanel 组件替换 */}
-            <div class="login-form-placeholder">
-              <h2 style={{ 
-                color: 'white', 
-                textAlign: 'center', 
-                marginBottom: '20px',
-                fontSize: screenSize.value === 'small' ? '1.5rem' : '1.8rem'
-              }}>
-                登录您的账户
-              </h2>
-              <p style={{ 
-                color: 'rgba(255, 255, 255, 0.8)', 
-                textAlign: 'center',
-                fontSize: '0.9rem'
-              }}>
-                请使用 LoginPanel 组件来显示登录表单
-              </p>
+            {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
+            <div class="login-panel-wrapper">
+              {props.loginPanel ? (
+                <props.loginPanel
+                  title="登录您的账户"
+                  subtitle="自适应设计，为您提供最佳的登录体验"
+                  showRememberMe={true}
+                  showForgotPassword={true}
+                  showThirdPartyLogin={true}
+                  thirdPartyProviders={['github', 'google', 'wechat']}
+                  onLogin={handleLogin}
+                  onRegister={handleRegister}
+                  onForgotPassword={handleForgotPassword}
+                  onThirdPartyLogin={handleThirdPartyLogin}
+                />
+              ) : (
+                <div class="login-form-placeholder">
+                  <h2 style={{
+                    color: 'white',
+                    textAlign: 'center',
+                    marginBottom: '20px',
+                    fontSize: screenSize.value === 'small' ? '1.5rem' : '1.8rem'
+                  }}>
+                    登录您的账户
+                  </h2>
+                  <p style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    textAlign: 'center',
+                    fontSize: '0.9rem'
+                  }}>
+                    请使用 LoginPanel 组件来显示登录表单
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

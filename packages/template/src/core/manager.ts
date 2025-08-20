@@ -41,9 +41,17 @@ class SimpleDeviceDetector {
     if (typeof window === 'undefined') return 'desktop'
 
     const width = window.innerWidth
-    if (width < 768) return 'mobile'
-    if (width < 1024) return 'tablet'
-    return 'desktop'
+    let device: DeviceType
+    if (width < 768) {
+      device = 'mobile'
+    } else if (width < 1024) {
+      device = 'tablet'
+    } else {
+      device = 'desktop'
+    }
+
+    console.log(`📱 设备检测: 宽度=${width}px, 设备类型=${device}`)
+    return device
   }
 
   getDeviceType(): DeviceType {
@@ -64,11 +72,13 @@ class SimpleDeviceDetector {
       if (newDevice !== this.currentDevice) {
         const oldDevice = this.currentDevice
         this.currentDevice = newDevice
+        console.log(`🔄 SimpleDeviceDetector 检测到设备变化: ${oldDevice} -> ${newDevice}`)
         this.listeners.forEach(listener => listener(newDevice))
       }
     }
 
     window.addEventListener('resize', handleResize)
+    console.log('📱 SimpleDeviceDetector 已设置 resize 监听器')
   }
 }
 
@@ -136,7 +146,8 @@ export class TemplateManager extends SimpleEventEmitter {
       storage: config.storage, // 保持 storage 为可选
     }
 
-    this.scanner = new TemplateScanner()
+    // 使用新的自动扫描器
+    this.scanner = new TemplateScanner({ debug: this.config.debug })
     this.loader = new TemplateLoader()
     this.deviceDetector = new SimpleDeviceDetector()
 
@@ -148,7 +159,7 @@ export class TemplateManager extends SimpleEventEmitter {
     this.setupDeviceListener()
 
     if (this.config.debug) {
-      console.log('🎯 TemplateManager 初始化完成', this.config)
+      console.log('🎯 TemplateManager 初始化完成 (自动扫描模式)', this.config)
     }
   }
 
@@ -193,69 +204,30 @@ export class TemplateManager extends SimpleEventEmitter {
 
   /**
    * 加载预构建的模板
+   * 现在直接使用扫描器的回退机制
    */
   private async loadPrebuiltTemplates(): Promise<TemplateScanResult> {
     try {
-      // 动态导入预构建的模板元数据
-      const { templateMetadata } = await import('../templates')
-
-      const templates: TemplateMetadata[] = []
-
-      // 转换模板元数据为 TemplateMetadata 格式
-      for (const [category, categoryData] of Object.entries(templateMetadata)) {
-        for (const [device, deviceData] of Object.entries(categoryData)) {
-          for (const [template, metadata] of Object.entries(deviceData)) {
-            templates.push({
-              id: `${category}-${device}-${template}`,
-              name: metadata.name,
-              description: metadata.description,
-              category: metadata.category,
-              device: metadata.device as any,
-              template: metadata.template,
-              path: `templates/${category}/${device}/${template}`,
-              component: null, // 将在加载时动态导入
-              config: metadata,
-            })
-          }
-        }
-      }
-
-      this.templates = templates
-
-      const result: TemplateScanResult = {
-        count: templates.length,
-        templates,
-        duration: 0,
-        scannedDirectories: 1,
-        scanMode: 'prebuilt',
-        debug: {
-          scannedPaths: ['templates/index.ts'],
-          foundConfigs: templates.length,
-          foundComponents: templates.length,
-        },
-      }
-
-      this.emit('scan:complete', {
-        type: 'scan:complete',
-        scanResult: result,
-        timestamp: Date.now(),
-      } as TemplateChangeEvent)
-
       if (this.config.debug) {
-        console.log('✅ 预构建模板加载完成:', result)
+        console.log('🔄 使用扫描器的回退模板列表')
       }
 
-      return result
-    } catch (error) {
-      console.error('❌ 预构建模板加载失败:', error)
+      // 直接使用扫描器的回退机制
+      const fallbackResult = await this.scanner.scanTemplates()
 
-      // 返回空结果
-      const fallbackResult: TemplateScanResult = {
+      // 如果扫描器返回了模板，使用它们
+      if (fallbackResult.count > 0) {
+        this.templates = fallbackResult.templates
+        return fallbackResult
+      }
+
+      // 如果扫描器也没有返回模板，创建空结果
+      const emptyResult: TemplateScanResult = {
         count: 0,
         templates: [],
         duration: 0,
         scannedDirectories: 0,
-        scanMode: 'fallback',
+        scanMode: 'empty',
         debug: {
           scannedPaths: [],
           foundConfigs: 0,
@@ -263,7 +235,35 @@ export class TemplateManager extends SimpleEventEmitter {
         },
       }
 
-      return fallbackResult
+      this.emit('scan:complete', {
+        type: 'scan:complete',
+        scanResult: emptyResult,
+        timestamp: Date.now(),
+      } as TemplateChangeEvent)
+
+      if (this.config.debug) {
+        console.log('⚠️ 没有找到任何模板')
+      }
+
+      return emptyResult
+    } catch (error) {
+      console.error('❌ 预构建模板加载失败:', error)
+
+      // 返回空结果
+      const errorResult: TemplateScanResult = {
+        count: 0,
+        templates: [],
+        duration: 0,
+        scannedDirectories: 0,
+        scanMode: 'error',
+        debug: {
+          scannedPaths: [],
+          foundConfigs: 0,
+          foundComponents: 0,
+        },
+      }
+
+      return errorResult
     }
   }
 
@@ -303,10 +303,23 @@ export class TemplateManager extends SimpleEventEmitter {
       }
     }
 
-    // 查找模板
-    const metadata = this.findTemplate(category, targetDevice, template)
+    // 查找模板，如果不存在则使用智能回退
+    let metadata = this.findTemplate(category, targetDevice, template)
     if (!metadata) {
-      throw new Error(`Template not found: ${category}/${targetDevice}/${template}`)
+      if (this.config.debug) {
+        console.warn(`⚠️ 模板不存在: ${category}/${targetDevice}/${template}，尝试智能回退...`)
+      }
+
+      // 智能回退：尝试找到最佳替代模板
+      metadata = this.findFallbackTemplate(category, targetDevice, template)
+
+      if (!metadata) {
+        throw new Error(`No template or fallback found for: ${category}/${targetDevice}/${template}`)
+      }
+
+      if (this.config.debug) {
+        console.log(`🔄 使用回退模板: ${category}/${targetDevice}/${metadata.template}`)
+      }
     }
 
     try {
@@ -418,6 +431,68 @@ export class TemplateManager extends SimpleEventEmitter {
    */
   findTemplate(category: string, device: DeviceType, template: string): TemplateMetadata | null {
     return this.templates.find(t => t.category === category && t.device === device && t.template === template) || null
+  }
+
+  /**
+   * 智能回退模板查找
+   * 当指定的模板不存在时，按优先级查找最佳替代模板
+   */
+  findFallbackTemplate(category: string, device: DeviceType, originalTemplate: string): TemplateMetadata | null {
+    if (this.config.debug) {
+      console.log(`🔍 开始智能回退查找: ${category}/${device}/${originalTemplate}`)
+    }
+
+    // 获取该分类和设备类型下的所有可用模板
+    const availableTemplates = this.getTemplates(category, device)
+
+    if (availableTemplates.length === 0) {
+      if (this.config.debug) {
+        console.warn(`⚠️ 该设备类型下没有可用模板: ${category}/${device}`)
+      }
+      return null
+    }
+
+    // 回退策略优先级：
+    // 1. 查找 'default' 模板
+    let fallback = availableTemplates.find(t => t.template === 'default')
+    if (fallback) {
+      if (this.config.debug) {
+        console.log(`✅ 找到 default 回退模板: ${fallback.template}`)
+      }
+      return fallback
+    }
+
+    // 2. 查找 'adaptive' 模板（通常是自适应的）
+    fallback = availableTemplates.find(t => t.template === 'adaptive')
+    if (fallback) {
+      if (this.config.debug) {
+        console.log(`✅ 找到 adaptive 回退模板: ${fallback.template}`)
+      }
+      return fallback
+    }
+
+    // 3. 查找标记为默认的模板
+    fallback = availableTemplates.find(t => t.config.isDefault === true)
+    if (fallback) {
+      if (this.config.debug) {
+        console.log(`✅ 找到标记为默认的回退模板: ${fallback.template}`)
+      }
+      return fallback
+    }
+
+    // 4. 使用第一个可用模板
+    fallback = availableTemplates[0]
+    if (fallback) {
+      if (this.config.debug) {
+        console.log(`✅ 使用第一个可用模板作为回退: ${fallback.template}`)
+      }
+      return fallback
+    }
+
+    if (this.config.debug) {
+      console.error(`❌ 无法找到任何回退模板: ${category}/${device}`)
+    }
+    return null
   }
 
   /**
@@ -607,10 +682,21 @@ export class TemplateManager extends SimpleEventEmitter {
    * 设置设备监听器
    */
   private setupDeviceListener(): void {
-    if (!this.config.autoDetectDevice) return
+    if (!this.config.autoDetectDevice) {
+      console.log('⚠️ TemplateManager: autoDetectDevice 已禁用')
+      return
+    }
+
+    console.log('🎯 TemplateManager: 设置设备监听器')
+
+    // 保存当前设备类型，用于比较
+    let lastDevice = this.getCurrentDevice()
 
     this.deviceDetector.on('deviceChange', (newDevice: DeviceType) => {
-      const oldDevice = this.getCurrentDevice()
+      const oldDevice = lastDevice
+      lastDevice = newDevice // 更新保存的设备类型
+
+      console.log(`📱 TemplateManager 接收到设备变化事件: ${oldDevice} -> ${newDevice}`)
 
       this.emit('device:change', {
         type: 'device:change',
@@ -620,7 +706,7 @@ export class TemplateManager extends SimpleEventEmitter {
       } as TemplateChangeEvent)
 
       if (this.config.debug) {
-        console.log('📱 设备类型变化:', `${oldDevice} -> ${newDevice}`)
+        console.log('📱 TemplateManager 发出 device:change 事件:', `${oldDevice} -> ${newDevice}`)
       }
     })
   }

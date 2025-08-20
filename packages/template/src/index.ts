@@ -39,8 +39,8 @@ export { TemplateScanner } from './core/scanner'
 export { createDefaultTemplateEnginePlugin, createTemplateEnginePlugin } from './engine/plugin'
 
 // ============ 模板组件 ============
-/** 内置模板组件 */
-export * from './templates'
+/** 内置模板组件 - 现在通过自动扫描发现，无需手动导出 */
+// 模板组件现在通过 TemplateScanner 自动发现，无需手动导出
 
 // ============ 类型定义 ============
 export type * from './types'
