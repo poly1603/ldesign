@@ -47,6 +47,10 @@ export interface TemplateConfig {
  * 模板元数据
  */
 export interface TemplateMetadata {
+  /** 显示名称 */
+  name: string
+  /** 描述 */
+  description: string
   /** 分类 */
   category: string
   /** 设备类型 */
@@ -61,6 +65,8 @@ export interface TemplateMetadata {
   stylePath?: string
   /** 模板路径（兼容性） */
   path?: string
+  /** 组件实例 */
+  component?: any
 }
 
 /**
@@ -77,13 +83,13 @@ export interface TemplateScanResult {
   scannedDirectories: number
   /** 成功的扫描模式 */
   scanMode:
-    | 'parent'
-    | 'current'
-    | 'fallback'
-    | 'Built模式 (相对路径)'
-    | 'Source模式 (相对路径)'
-    | '深层相对路径'
-    | string
+  | 'parent'
+  | 'current'
+  | 'fallback'
+  | 'Built模式 (相对路径)'
+  | 'Source模式 (相对路径)'
+  | '深层相对路径'
+  | string
   /** 调试信息 */
   debug: {
     scannedPaths: string[]

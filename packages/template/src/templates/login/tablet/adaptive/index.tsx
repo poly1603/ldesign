@@ -108,7 +108,7 @@ export default defineComponent({
           width: screenWidth.value,
           height: screenHeight.value,
           quality: 'high',
-          category: 'technology'
+          category: 'tech'
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {

@@ -52,11 +52,11 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     let filtered = templates.value
 
     if (options.category) {
-      filtered = filtered.filter(t => t.category === options.category)
+      filtered = filtered.filter((t: any) => t.category === options.category)
     }
 
     if (options.deviceType) {
-      filtered = filtered.filter(t => t.device === options.deviceType)
+      filtered = filtered.filter((t: any) => t.device === options.deviceType)
     }
 
     return filtered
@@ -64,13 +64,13 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
 
   // 计算属性 - 可用分类列表
   const availableCategories = computed(() => {
-    const categories = new Set(templates.value.map(t => t.category))
+    const categories = new Set(templates.value.map((t: any) => t.category))
     return Array.from(categories)
   })
 
   // 计算属性 - 可用设备类型列表
   const availableDevices = computed(() => {
-    const devices = new Set(templates.value.map(t => t.device))
+    const devices = new Set(templates.value.map((t: any) => t.device))
     return Array.from(devices)
   })
 
@@ -155,7 +155,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     }
 
     // 获取新设备类型的可用模板
-    const deviceTemplates = templates.value.filter(t => t.category === category && t.device === newDevice)
+    const deviceTemplates = templates.value.filter((t: any) => t.category === category && t.device === newDevice)
 
     if (deviceTemplates.length === 0) {
       console.warn(`没有找到 ${newDevice} 设备的 ${category} 模板`)
@@ -168,7 +168,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     if (manager.storageManager) {
       const savedSelection = manager.storageManager.getSelection(category, newDevice)
       if (savedSelection) {
-        targetTemplate = deviceTemplates.find(t => t.template === savedSelection.template)
+        targetTemplate = deviceTemplates.find((t: any) => t.template === savedSelection.template)
 
         if (targetTemplate && options.debug) {
           console.log(`📋 使用保存的模板选择: ${savedSelection.template}`)
@@ -178,7 +178,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
 
     // 2. 如果没有保存的选择，优先选择当前模板在新设备上的对应版本
     if (!targetTemplate && currentTemplate.value) {
-      targetTemplate = deviceTemplates.find(t => t.template === currentTemplate.value?.template)
+      targetTemplate = deviceTemplates.find((t: any) => t.template === currentTemplate.value?.template)
 
       if (targetTemplate && options.debug) {
         console.log(`🎯 找到相同名称的模板: ${targetTemplate.template}`)
@@ -215,7 +215,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
 
       // 如果切换失败，尝试使用默认模板
       try {
-        const defaultTemplate = deviceTemplates.find(t => t.template === 'default') || deviceTemplates[0]
+        const defaultTemplate = deviceTemplates.find((t: any) => t.template === 'default') || deviceTemplates[0]
         if (defaultTemplate) {
           await switchTemplate(category, newDevice, defaultTemplate.template)
           console.log(`🔄 回退到默认模板: ${defaultTemplate.template}`)
@@ -276,7 +276,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       if (savedSelection) {
         // 检查保存的模板是否仍然可用
         const isTemplateAvailable = templates.value.some(
-          t => t.category === category && t.device === device && t.template === savedSelection.template
+          (t: any) => t.category === category && t.device === device && t.template === savedSelection.template
         )
 
         if (isTemplateAvailable) {
@@ -287,7 +287,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     }
 
     // 3. 如果没有保存的选择，使用第一个可用模板
-    const availableForDevice = templates.value.filter(t => t.category === category && t.device === device)
+    const availableForDevice = templates.value.filter((t: any) => t.category === category && t.device === device)
 
     if (availableForDevice.length > 0) {
       await switchTemplate(category, device, availableForDevice[0].template)

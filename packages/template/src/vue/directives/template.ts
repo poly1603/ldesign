@@ -23,18 +23,18 @@ const elementApps = new WeakMap<HTMLElement, App>()
 /**
  * 模板指令实现
  */
-export const templateDirective: Directive<HTMLElement, TemplateDirectiveValue> = {
-  mounted(el, binding) {
+export const templateDirective: Directive = {
+  mounted(el: HTMLElement, binding: any) {
     updateTemplate(el, binding)
   },
 
-  updated(el, binding) {
+  updated(el: HTMLElement, binding: any) {
     if (binding.value !== binding.oldValue) {
       updateTemplate(el, binding)
     }
   },
 
-  unmounted(el) {
+  unmounted(el: HTMLElement) {
     // 清理 Vue 应用实例
     const app = elementApps.get(el)
     if (app) {

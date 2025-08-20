@@ -56,12 +56,12 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions): UseTem
     if (!searchQuery.value) return availableTemplates.value
 
     const query = searchQuery.value.toLowerCase()
-    return availableTemplates.value.filter(template => {
+    return availableTemplates.value.filter((template: any) => {
       return (
         template.template.toLowerCase().includes(query) ||
         template.config.name.toLowerCase().includes(query) ||
         template.config.description?.toLowerCase().includes(query) ||
-        template.config.tags?.some(tag => tag.toLowerCase().includes(query))
+        template.config.tags?.some((tag: string) => tag.toLowerCase().includes(query))
       )
     })
   })

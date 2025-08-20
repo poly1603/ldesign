@@ -275,7 +275,7 @@ export const TemplateRenderer = defineComponent({
           try {
             const result = await manager.value!.scanTemplates()
             availableTemplates.value = result.templates.filter(
-              t => t.category === props.category
+              (t: any) => t.category === props.category
             )
           } catch (err) {
             console.warn('重新扫描模板失败:', err)
@@ -297,7 +297,7 @@ export const TemplateRenderer = defineComponent({
 
           // 只按分类过滤，保留所有设备类型的模板，让 TemplateSelector 自己处理设备过滤
           availableTemplates.value = result.templates.filter(
-            t => t.category === props.category
+            (t: any) => t.category === props.category
           )
 
           if (availableTemplates.value.length === 0) {
@@ -333,7 +333,7 @@ export const TemplateRenderer = defineComponent({
             device={targetDevice.value}
             currentTemplate={(() => {
               if (selectedTemplate.value) return selectedTemplate.value
-              if (provider.isInProvider.value && provider.currentTemplate.value) return provider.currentTemplate.value.template
+              // Provider不提供currentTemplate，跳过此逻辑
               if (typeof currentTemplate.value === 'string') return currentTemplate.value
               return undefined
             })()}
@@ -422,16 +422,7 @@ export const TemplateRenderer = defineComponent({
     }
 
     // 监听Provider状态变化，同步selectedTemplate
-    watch(
-      () => provider.isInProvider.value ? provider.currentTemplate.value : null,
-      (newTemplate) => {
-        if (newTemplate && provider.isInProvider.value) {
-
-          selectedTemplate.value = newTemplate.template
-        }
-      },
-      { immediate: true }
-    )
+    // Provider不提供currentTemplate，移除此watch
 
     // 监听属性变化
     watch(
@@ -469,8 +460,8 @@ export const TemplateRenderer = defineComponent({
     // 初始化selectedTemplate
     const initializeSelectedTemplate = () => {
       // 优先级：Provider当前模板 > props.template > 默认
-      if (provider.isInProvider.value && provider.currentTemplate.value) {
-        selectedTemplate.value = provider.currentTemplate.value.template
+      // Provider不提供currentTemplate，跳过此逻辑
+      if (false) {
       } else if (currentTemplate.value) {
         selectedTemplate.value = currentTemplate.value
       }
@@ -486,7 +477,7 @@ export const TemplateRenderer = defineComponent({
       // 预加载
       if (props.preload && manager.value) {
         const templates = manager.value.getTemplates(props.category, targetDevice.value)
-        manager.value.preloadTemplates(templates).catch(err => {
+        manager.value.preloadTemplates(templates).catch((err: any) => {
           console.warn('Template preloading failed:', err)
         })
       }
@@ -538,8 +529,9 @@ export const TemplateRenderer = defineComponent({
         }
 
         // 再次使用Provider的当前模板
-        if (provider.isInProvider.value && provider.currentTemplate.value) {
-          return provider.currentTemplate.value.template
+        // Provider不提供currentTemplate，跳过此逻辑
+        if (false) {
+          return undefined
         }
 
         // 最后使用computed的currentTemplate
@@ -585,7 +577,7 @@ export const TemplateRenderer = defineComponent({
     const renderCustomSlots = () => {
       if (!props.slots || props.slots.length === 0) return null
 
-      return props.slots.map((slotConfig, index) => {
+      return props.slots.map((slotConfig: any, index: number) => {
         const SlotComponent = slotConfig.content
         if (!SlotComponent) return null
 

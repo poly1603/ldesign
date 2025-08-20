@@ -671,7 +671,7 @@ importers:
   packages/components:
     dependencies:
       '@stencil/core':
-        specifier: ^4.0.0
+        specifier: ^4.22.0
         version: 4.36.2
     devDependencies:
       '@stencil/eslint-plugin':

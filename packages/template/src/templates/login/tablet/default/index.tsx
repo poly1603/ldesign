@@ -80,7 +80,7 @@ export default defineComponent({
           width: 1366,
           height: 1024,
           quality: 'high',
-          category: 'landscape'
+          category: 'nature'
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {

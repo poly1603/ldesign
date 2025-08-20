@@ -109,7 +109,7 @@ export class TemplateScanner {
 
         // 创建模板元数据
         const metadata: TemplateMetadata = {
-          id: `${category}-${device}-${template}`,
+
           name: this.generateTemplateName(template, device),
           description: this.generateTemplateDescription(template, device, category),
           category,
@@ -286,12 +286,12 @@ export class TemplateScanner {
     ]
 
     return knownTemplates.map(({ category, device, template }) => ({
-      id: `${category}-${device}-${template}`,
       name: this.generateTemplateName(template, device),
       description: this.generateTemplateDescription(template, device, category),
       category,
       device: device as DeviceType,
       template,
+      componentPath: `../templates/${category}/${device}/${template}/index.tsx`,
       path: `../templates/${category}/${device}/${template}/index.tsx`,
       component: null,
       config: {
@@ -430,12 +430,7 @@ export class TemplateScanner {
   /**
    * 获取扫描统计
    */
-  getStats(): {
-    totalTemplates: number
-    categories: string[]
-    devices: DeviceType[]
-    cacheStats: ReturnType<typeof this.getCacheStats>
-  } {
+  getStats() {
     return {
       totalTemplates: this.getAllTemplates().length,
       categories: this.getAvailableCategories(),

@@ -46,7 +46,7 @@ export class ImagePreloader {
 
     return new Promise((resolve, reject) => {
       const img = new Image()
-      
+
       img.onload = () => {
         this.cache.set(url, img)
         this.loading.delete(url)
@@ -130,7 +130,9 @@ export class CacheManager {
     // 如果缓存已满，删除最旧的条目
     if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value
-      this.cache.delete(oldestKey)
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey)
+      }
     }
 
     this.cache.set(key, {
@@ -189,7 +191,7 @@ export class PerformanceMonitor {
   markEnd(name: string): number {
     performance.mark(`${name}-end`)
     performance.measure(name, `${name}-start`, `${name}-end`)
-    
+
     const measure = performance.getEntriesByName(name, 'measure')[0]
     return measure ? measure.duration : 0
   }
@@ -278,7 +280,7 @@ export const performanceMonitor = new PerformanceMonitor()
  */
 export async function optimizeImageLoading(urls: string[]): Promise<void> {
   const startTime = Date.now()
-  
+
   try {
     await imagePreloader.preload(urls)
     const duration = Date.now() - startTime
@@ -293,7 +295,7 @@ export async function optimizeImageLoading(urls: string[]): Promise<void> {
  */
 export function optimizeRender(callback: () => void): void {
   const startTime = performance.now()
-  
+
   requestAnimationFrame(() => {
     callback()
     const duration = performance.now() - startTime

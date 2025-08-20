@@ -28,6 +28,53 @@ const { currentTemplate, loading, error, render } = useTemplate(options)
 
 [查看详细文档 →](./use-template.md)
 
+## 类型定义
+
+### TemplateMetadata
+
+模板元数据接口，包含模板的基本信息：
+
+```typescript
+interface TemplateMetadata {
+  name: string // 显示名称
+  description: string // 描述
+  category: string // 模板分类
+  device: DeviceType // 设备类型
+  template: string // 模板名称
+  config: TemplateConfig // 模板配置
+  componentPath: string // 组件路径
+  stylePath?: string // 样式路径
+  path?: string // 模板路径（兼容性）
+  component?: any // 组件实例
+}
+```
+
+### DeviceType
+
+设备类型枚举：
+
+```typescript
+type DeviceType = 'mobile' | 'tablet' | 'desktop'
+```
+
+### TemplateConfig
+
+模板配置接口：
+
+```typescript
+interface TemplateConfig {
+  id: string // 模板ID
+  name: string // 模板名称
+  description: string // 模板描述
+  version: string // 版本号
+  author: string // 作者
+  tags: string[] // 标签
+  category: string // 分类
+  device: DeviceType // 设备类型
+  template: string // 模板名称
+}
+```
+
 ## 组件 API
 
 ### TemplateRenderer
