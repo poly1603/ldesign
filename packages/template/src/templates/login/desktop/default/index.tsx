@@ -1,4 +1,7 @@
-import { defineComponent, ref, reactive } from 'vue'
+import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
+import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
+import { LucideIcons, getIcon } from '../../../../utils/icons'
+import { getTheme, applyTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -124,6 +127,64 @@ export default defineComponent({
       rememberMe: props.rememberMe || false,
     })
 
+    // 背景图片状态
+    const backgroundImage = ref<BackgroundImage | null>(null)
+    const backgroundLoading = ref(true)
+    const showPassword = ref(false)
+
+    // 应用主题
+    const currentTheme = getTheme('default')
+
+    // 计算属性
+    const backgroundStyle = computed(() => {
+      if (backgroundImage.value?.url) {
+        if (backgroundImage.value.url.startsWith('linear-gradient')) {
+          return { background: backgroundImage.value.url }
+        } else {
+          return {
+            backgroundImage: `url(${backgroundImage.value.url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }
+        }
+      }
+      return { background: currentTheme.gradients.primary }
+    })
+
+    // 获取背景图片
+    const loadBackground = async () => {
+      try {
+        backgroundLoading.value = true
+        const bg = await getSmartBackground({
+          width: 1920,
+          height: 1080,
+          quality: 'high',
+          category: 'nature'
+        })
+
+        if (bg.url && !bg.url.startsWith('linear-gradient')) {
+          await preloadBackground(bg.url)
+        }
+
+        backgroundImage.value = bg
+      } catch (error) {
+        console.warn('Failed to load background:', error)
+        backgroundImage.value = {
+          url: currentTheme.gradients.primary,
+          title: 'Default Gradient'
+        }
+      } finally {
+        backgroundLoading.value = false
+      }
+    }
+
+    // 组件挂载时加载背景
+    onMounted(() => {
+      applyTheme('default')
+      loadBackground()
+    })
+
     // 处理登录（来自 LoginPanel 组件）
     const handleLogin = (loginData: any) => {
       emit('login', loginData)
@@ -163,8 +224,28 @@ export default defineComponent({
     const handleRegister = () => {
       emit('register')
     }
+
+    // 切换密码显示状态
+    const togglePasswordVisibility = () => {
+      showPassword.value = !showPassword.value
+    }
     return () => (
-      <div class="default-login-template">
+      <div class="default-login-template" style={backgroundStyle.value}>
+        {/* 背景装饰层 */}
+        <div class="background-decoration">
+          <div class="decoration-circle decoration-circle--1"></div>
+          <div class="decoration-circle decoration-circle--2"></div>
+          <div class="decoration-circle decoration-circle--3"></div>
+          <div class="decoration-grid"></div>
+        </div>
+
+        {/* 背景加载指示器 */}
+        {backgroundLoading.value && (
+          <div class="background-loader">
+            <div class="loader-spinner" innerHTML={getIcon('loader', { size: 'lg', className: 'animate-spin' })}></div>
+          </div>
+        )}
+
         <div class="login-container">
           {/* 如果有 loginPanel 组件，则使用它 */}
           {props.loginPanel ? (
@@ -196,7 +277,7 @@ export default defineComponent({
 
               {props.error && (
                 <div class="error-message">
-                  <span class="error-icon">❌</span>
+                  <div class="error-icon" innerHTML={getIcon('x', { size: 'sm', color: '#dc2626' })}></div>
                   <span class="error-text">{props.error}</span>
                 </div>
               )}
@@ -204,32 +285,49 @@ export default defineComponent({
               <form class="login-form" onSubmit={handleSubmit}>
                 <div class="form-group">
                   <label for="username" class="form-label">
-                    {props.usernameLabel}
+                    <div class="label-content">
+                      <div class="label-icon" innerHTML={getIcon('user', { size: 'sm' })}></div>
+                      <span>{props.usernameLabel}</span>
+                    </div>
                   </label>
-                  <input
-                    id="username"
-                    type="text"
-                    class="form-input"
-                    placeholder={props.usernameLabel}
-                    v-model={formData.username}
-                    required
-                    disabled={props.isLoading}
-                  />
+                  <div class="input-wrapper">
+                    <input
+                      id="username"
+                      type="text"
+                      class="form-input"
+                      placeholder={props.usernameLabel}
+                      v-model={formData.username}
+                      required
+                      disabled={props.isLoading}
+                    />
+                  </div>
                 </div>
 
                 <div class="form-group">
                   <label for="password" class="form-label">
-                    {props.passwordLabel}
+                    <div class="label-content">
+                      <div class="label-icon" innerHTML={getIcon('lock', { size: 'sm' })}></div>
+                      <span>{props.passwordLabel}</span>
+                    </div>
                   </label>
-                  <input
-                    id="password"
-                    type="password"
-                    class="form-input"
-                    placeholder={props.passwordLabel}
-                    v-model={formData.password}
-                    required
-                    disabled={props.isLoading}
-                  />
+                  <div class="input-wrapper">
+                    <input
+                      id="password"
+                      type={showPassword.value ? 'text' : 'password'}
+                      class="form-input"
+                      placeholder={props.passwordLabel}
+                      v-model={formData.password}
+                      required
+                      disabled={props.isLoading}
+                    />
+                    <button
+                      type="button"
+                      class="password-toggle"
+                      onClick={togglePasswordVisibility}
+                      disabled={props.isLoading}
+                      innerHTML={getIcon(showPassword.value ? 'eyeOff' : 'eye', { size: 'sm' })}
+                    ></button>
+                  </div>
                 </div>
 
                 <button
@@ -238,12 +336,14 @@ export default defineComponent({
                   disabled={props.isLoading || !formData.username || !formData.password}
                 >
                   {props.isLoading ? (
-                    <>
-                      <span class="loading-spinner"></span>
+                    <div class="btn-content">
+                      <div class="btn-icon" innerHTML={getIcon('loader', { size: 'sm', className: 'animate-spin' })}></div>
                       <span>登录中...</span>
-                    </>
+                    </div>
                   ) : (
-                    props.loginButtonText
+                    <div class="btn-content">
+                      <span>{props.loginButtonText}</span>
+                    </div>
                   )}
                 </button>
               </form>
@@ -258,7 +358,10 @@ export default defineComponent({
                       handleForgotPassword()
                     }}
                   >
-                    {props.forgotPasswordText}
+                    <div class="link-content">
+                      <div class="link-icon" innerHTML={getIcon('shield', { size: 'xs' })}></div>
+                      <span>{props.forgotPasswordText}</span>
+                    </div>
                   </a>
                 )}
                 <a
@@ -269,19 +372,29 @@ export default defineComponent({
                     handleRegister()
                   }}
                 >
-                  还没有账号？立即注册
+                  <div class="link-content">
+                    <div class="link-icon" innerHTML={getIcon('user', { size: 'xs' })}></div>
+                    <span>还没有账号？立即注册</span>
+                  </div>
                 </a>
               </div>
 
               {props.testAccount?.show && (
                 <div class="test-account-info">
-                  <h4>{props.testAccount.title}</h4>
-                  <p>
-                    用户名: <code>{props.testAccount.username}</code>
-                  </p>
-                  <p>
-                    密码: <code>{props.testAccount.password}</code>
-                  </p>
+                  <div class="test-account-header">
+                    <div class="test-account-icon" innerHTML={getIcon('info', { size: 'sm' })}></div>
+                    <h4>{props.testAccount.title}</h4>
+                  </div>
+                  <div class="test-account-content">
+                    <p>
+                      <span class="account-label">用户名:</span>
+                      <code>{props.testAccount.username}</code>
+                    </p>
+                    <p>
+                      <span class="account-label">密码:</span>
+                      <code>{props.testAccount.password}</code>
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

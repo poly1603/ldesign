@@ -523,14 +523,6 @@ onMounted(() => {
         </button>
       </div>
     </div>
-
-    <!-- 测试账号信息 -->
-    <div class="test-account-info">
-      <h4>测试账号</h4>
-      <p>用户名: <code>admin</code></p>
-      <p>密码: <code>admin</code></p>
-      <p>手机号: <code>13800138000</code></p>
-    </div>
   </div>
 </template>
 
@@ -989,38 +981,6 @@ onMounted(() => {
         color: #12b7f5;
         background: rgba(18, 183, 245, 0.05);
       }
-    }
-  }
-}
-
-.test-account-info {
-  margin-top: 24px;
-  padding: 16px;
-  background: rgba(102, 126, 234, 0.05);
-  border: 1px solid rgba(102, 126, 234, 0.2);
-  border-radius: 12px;
-  text-align: center;
-
-  h4 {
-    margin: 0 0 12px 0;
-    color: #667eea;
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  p {
-    margin: 6px 0;
-    font-size: 12px;
-    color: #64748b;
-
-    code {
-      background: rgba(102, 126, 234, 0.1);
-      color: #667eea;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-weight: 600;
-      font-size: 11px;
     }
   }
 }

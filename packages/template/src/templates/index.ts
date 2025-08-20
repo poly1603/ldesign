@@ -5,6 +5,7 @@
  */
 
 // 登录模板 - 桌面端
+export { default as LoginDesktopAdaptive } from './login/desktop/adaptive'
 export { default as LoginDesktopClassic } from './login/desktop/classic'
 export { default as LoginDesktopDefault } from './login/desktop/default'
 export { default as LoginDesktopModern } from './login/desktop/modern'
@@ -20,6 +21,7 @@ export { default as LoginTabletDefault } from './login/tablet/default'
 export { default as LoginTabletSplit } from './login/tablet/split'
 
 // 静态导入所有模板组件
+import LoginDesktopAdaptive from './login/desktop/adaptive'
 import LoginDesktopClassic from './login/desktop/classic'
 import LoginDesktopDefault from './login/desktop/default'
 import LoginDesktopModern from './login/desktop/modern'
@@ -34,6 +36,7 @@ import LoginTabletSplit from './login/tablet/split'
 export const templateMap = {
   login: {
     desktop: {
+      adaptive: LoginDesktopAdaptive,
       classic: LoginDesktopClassic,
       default: LoginDesktopDefault,
       modern: LoginDesktopModern,
@@ -55,6 +58,13 @@ export const templateMap = {
 export const templateMetadata = {
   login: {
     desktop: {
+      adaptive: {
+        name: '自适应登录',
+        description: '响应式自适应登录界面',
+        category: 'login',
+        device: 'desktop',
+        template: 'adaptive',
+      },
       classic: {
         name: '经典登录',
         description: '传统的登录界面设计',

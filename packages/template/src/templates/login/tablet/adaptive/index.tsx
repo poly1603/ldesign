@@ -1,4 +1,7 @@
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted, computed, onUnmounted } from 'vue'
+import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
+import { LucideIcons, getIcon } from '../../../../utils/icons'
+import { getTheme, applyTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -45,6 +48,98 @@ export default defineComponent({
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props: any, { emit }: any) {
+    // 背景图片状态
+    const backgroundImage = ref<BackgroundImage | null>(null)
+    const backgroundLoading = ref(true)
+
+    // 自适应状态
+    const screenWidth = ref(window.innerWidth)
+    const screenHeight = ref(window.innerHeight)
+    const orientation = ref(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait')
+    const layoutMode = ref<'compact' | 'normal' | 'expanded'>('normal')
+
+    // 应用主题
+    const currentTheme = getTheme('default')
+
+    // 计算背景样式
+    const backgroundStyle = computed(() => {
+      if (backgroundImage.value?.url) {
+        if (backgroundImage.value.url.startsWith('linear-gradient')) {
+          return { background: backgroundImage.value.url }
+        } else {
+          return {
+            backgroundImage: `url(${backgroundImage.value.url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }
+        }
+      }
+      return { background: currentTheme.gradients.primary }
+    })
+
+    // 计算布局模式
+    const updateLayoutMode = () => {
+      const width = screenWidth.value
+      const height = screenHeight.value
+
+      if (width < 768) {
+        layoutMode.value = 'compact'
+      } else if (width > 1200) {
+        layoutMode.value = 'expanded'
+      } else {
+        layoutMode.value = 'normal'
+      }
+    }
+
+    // 处理窗口大小变化
+    const handleResize = () => {
+      screenWidth.value = window.innerWidth
+      screenHeight.value = window.innerHeight
+      orientation.value = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
+      updateLayoutMode()
+    }
+
+    // 获取背景图片
+    const loadBackground = async () => {
+      try {
+        backgroundLoading.value = true
+        const bg = await getSmartBackground({
+          width: screenWidth.value,
+          height: screenHeight.value,
+          quality: 'high',
+          category: 'technology'
+        })
+
+        if (bg.url && !bg.url.startsWith('linear-gradient')) {
+          await preloadBackground(bg.url)
+        }
+
+        backgroundImage.value = bg
+      } catch (error) {
+        console.warn('Failed to load background:', error)
+        backgroundImage.value = {
+          url: currentTheme.gradients.primary,
+          title: 'Adaptive Gradient'
+        }
+      } finally {
+        backgroundLoading.value = false
+      }
+    }
+
+    // 组件挂载时初始化
+    onMounted(() => {
+      applyTheme('default')
+      updateLayoutMode()
+      loadBackground()
+      window.addEventListener('resize', handleResize)
+    })
+
+    // 组件卸载时清理
+    onUnmounted(() => {
+      window.removeEventListener('resize', handleResize)
+    })
+
     // 处理登录（来自 LoginPanel 组件）
     const handleLogin = (loginData: any) => {
       emit('login', loginData)
@@ -66,12 +161,46 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="tablet-adaptive-login">
+      <div
+        class={[
+          'tablet-adaptive-login',
+          `tablet-adaptive-login--${layoutMode.value}`,
+          `tablet-adaptive-login--${orientation.value}`
+        ]}
+        style={backgroundStyle.value}
+      >
         {/* 使用传递进来的模板选择器 */}
         {props.templateSelector && <div class="tablet-adaptive-login__selector">{props.templateSelector}</div>}
 
+        {/* 自适应背景装饰 */}
         <div class="tablet-adaptive-login__background">
-          <div class="tablet-adaptive-login__pattern"></div>
+          <div class="tablet-adaptive-login__mesh"></div>
+          <div class="tablet-adaptive-login__dots">
+            {Array.from({ length: layoutMode.value === 'expanded' ? 20 : layoutMode.value === 'normal' ? 15 : 10 }).map((_, i) => (
+              <div key={i} class="tablet-adaptive-login__dot" style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${3 + Math.random() * 4}s`
+              }}></div>
+            ))}
+          </div>
+        </div>
+
+        {/* 背景加载指示器 */}
+        {backgroundLoading.value && (
+          <div class="background-loader">
+            <div class="loader-spinner" innerHTML={getIcon('loader', { size: 'lg', className: 'animate-spin' })}></div>
+          </div>
+        )}
+
+        {/* 屏幕信息显示（开发模式） */}
+        <div class="tablet-adaptive-login__debug">
+          <div class="debug-info">
+            <span>{screenWidth.value}×{screenHeight.value}</span>
+            <span>{orientation.value}</span>
+            <span>{layoutMode.value}</span>
+          </div>
         </div>
 
         <div class="tablet-adaptive-login__container">
@@ -80,10 +209,27 @@ export default defineComponent({
               {props.logo && (
                 <div class="tablet-adaptive-login__logo">
                   <img src={props.logo} alt="Logo" />
+                  <div class="tablet-adaptive-login__logo-pulse"></div>
                 </div>
               )}
               <h1 class="tablet-adaptive-login__title">{props.title}</h1>
               <p class="tablet-adaptive-login__subtitle">{props.subtitle}</p>
+
+              {/* 自适应特性展示 */}
+              <div class="tablet-adaptive-login__features">
+                <div class="tablet-adaptive-login__feature">
+                  <div class="tablet-adaptive-login__feature-icon" innerHTML={getIcon('smartphone', { size: 'sm' })}></div>
+                  <span>智能适配</span>
+                </div>
+                <div class="tablet-adaptive-login__feature">
+                  <div class="tablet-adaptive-login__feature-icon" innerHTML={getIcon('monitor', { size: 'sm' })}></div>
+                  <span>多屏支持</span>
+                </div>
+                <div class="tablet-adaptive-login__feature">
+                  <div class="tablet-adaptive-login__feature-icon" innerHTML={getIcon('zap', { size: 'sm' })}></div>
+                  <span>动态布局</span>
+                </div>
+              </div>
             </div>
 
             <div class="tablet-adaptive-login__illustration">

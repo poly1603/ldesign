@@ -1,4 +1,7 @@
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted, computed } from 'vue'
+import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
+import { LucideIcons, getIcon } from '../../../../utils/icons'
+import { getTheme, applyTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -45,6 +48,63 @@ export default defineComponent({
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props: any, { emit }: any) {
+    // 背景图片状态
+    const backgroundImage = ref<BackgroundImage | null>(null)
+    const backgroundLoading = ref(true)
+
+    // 应用主题
+    const currentTheme = getTheme('default')
+
+    // 计算背景样式
+    const backgroundStyle = computed(() => {
+      if (backgroundImage.value?.url) {
+        if (backgroundImage.value.url.startsWith('linear-gradient')) {
+          return { background: backgroundImage.value.url }
+        } else {
+          return {
+            backgroundImage: `url(${backgroundImage.value.url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }
+        }
+      }
+      return { background: currentTheme.gradients.primary }
+    })
+
+    // 获取背景图片
+    const loadBackground = async () => {
+      try {
+        backgroundLoading.value = true
+        const bg = await getSmartBackground({
+          width: 1080,
+          height: 1920,
+          quality: 'medium',
+          category: 'minimal'
+        })
+
+        if (bg.url && !bg.url.startsWith('linear-gradient')) {
+          await preloadBackground(bg.url)
+        }
+
+        backgroundImage.value = bg
+      } catch (error) {
+        console.warn('Failed to load background:', error)
+        backgroundImage.value = {
+          url: currentTheme.gradients.primary,
+          title: 'Mobile Gradient'
+        }
+      } finally {
+        backgroundLoading.value = false
+      }
+    }
+
+    // 组件挂载时加载背景
+    onMounted(() => {
+      applyTheme('default')
+      loadBackground()
+    })
+
     // 处理登录（来自 LoginPanel 组件）
     const handleLogin = (loginData: any) => {
       emit('login', loginData)
@@ -66,15 +126,41 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="mobile-default-login">
+      <div class="mobile-default-login" style={backgroundStyle.value}>
         {/* 使用传递进来的模板选择器 */}
         {props.templateSelector && <div class="mobile-default-login__selector">{props.templateSelector}</div>}
+
+        {/* 背景装饰层 */}
+        <div class="mobile-default-login__background">
+          <div class="mobile-default-login__waves">
+            <div class="mobile-default-login__wave mobile-default-login__wave--1"></div>
+            <div class="mobile-default-login__wave mobile-default-login__wave--2"></div>
+            <div class="mobile-default-login__wave mobile-default-login__wave--3"></div>
+          </div>
+          <div class="mobile-default-login__particles">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} class="mobile-default-login__particle" style={{
+                animationDelay: `${Math.random() * 10}s`,
+                left: `${Math.random() * 100}%`,
+                animationDuration: `${8 + Math.random() * 4}s`
+              }}></div>
+            ))}
+          </div>
+        </div>
+
+        {/* 背景加载指示器 */}
+        {backgroundLoading.value && (
+          <div class="background-loader">
+            <div class="loader-spinner" innerHTML={getIcon('loader', { size: 'md', className: 'animate-spin' })}></div>
+          </div>
+        )}
 
         <div class="mobile-default-login__container">
           <div class="mobile-default-login__header">
             {props.logo && (
               <div class="mobile-default-login__logo">
                 <img src={props.logo} alt="Logo" />
+                <div class="mobile-default-login__logo-glow"></div>
               </div>
             )}
             <h1 class="mobile-default-login__title">{props.title}</h1>

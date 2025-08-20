@@ -1,4 +1,7 @@
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted, computed } from 'vue'
+import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
+import { LucideIcons, getIcon } from '../../../../utils/icons'
+import { getTheme, applyTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -45,6 +48,45 @@ export default defineComponent({
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props: any, { emit }: any) {
+    // 背景图片状态
+    const backgroundImage = ref<BackgroundImage | null>(null)
+    const backgroundLoading = ref(true)
+
+    // 应用主题
+    const currentTheme = getTheme('default')
+
+    // 计算背景样式 - 简洁模板使用渐变背景
+    const backgroundStyle = computed(() => {
+      // 简洁模板优先使用渐变背景以提升性能
+      return { background: currentTheme.gradients.background }
+    })
+
+    // 获取背景图片（可选，用于高端设备）
+    const loadBackground = async () => {
+      try {
+        backgroundLoading.value = true
+        // 简洁模板使用轻量级背景
+        backgroundImage.value = {
+          url: currentTheme.gradients.background,
+          title: 'Simple Gradient'
+        }
+      } catch (error) {
+        console.warn('Failed to load background:', error)
+        backgroundImage.value = {
+          url: currentTheme.gradients.background,
+          title: 'Fallback Gradient'
+        }
+      } finally {
+        backgroundLoading.value = false
+      }
+    }
+
+    // 组件挂载时加载背景
+    onMounted(() => {
+      applyTheme('default')
+      loadBackground()
+    })
+
     // 处理登录（来自 LoginPanel 组件）
     const handleLogin = (loginData: any) => {
       emit('login', loginData)
@@ -66,15 +108,23 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="mobile-simple-login">
+      <div class="mobile-simple-login" style={backgroundStyle.value}>
         {/* 使用传递进来的模板选择器 */}
         {props.templateSelector && <div class="mobile-simple-login__selector">{props.templateSelector}</div>}
+
+        {/* 简洁装饰元素 */}
+        <div class="mobile-simple-login__decoration">
+          <div class="mobile-simple-login__circle mobile-simple-login__circle--1"></div>
+          <div class="mobile-simple-login__circle mobile-simple-login__circle--2"></div>
+          <div class="mobile-simple-login__circle mobile-simple-login__circle--3"></div>
+        </div>
 
         <div class="mobile-simple-login__container">
           <div class="mobile-simple-login__header">
             {props.logo && (
               <div class="mobile-simple-login__logo">
                 <img src={props.logo} alt="Logo" />
+                <div class="mobile-simple-login__logo-ring"></div>
               </div>
             )}
             <h1 class="mobile-simple-login__title">{props.title}</h1>

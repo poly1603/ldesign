@@ -5,7 +5,7 @@
  */
 
 import type { DeviceType, TemplateSelectorConfig, SlotConfig } from '../../types'
-import { computed, defineComponent, onMounted, onUnmounted, ref, watch, Transition, type PropType } from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref, watch, Transition, markRaw, type PropType } from 'vue'
 import './TemplateRenderer.less'
 import { TemplateManager } from '../../core/manager'
 import { TemplateSelector } from './TemplateSelector'
@@ -268,7 +268,8 @@ export const TemplateRenderer = defineComponent({
           cache: props.cache,
         })
 
-        currentComponent.value = result.component
+        // 使用 markRaw 避免组件被响应式化
+        currentComponent.value = markRaw(result.component)
         emit('load', result)
         emit('template-change', result.metadata)
       } catch (err) {

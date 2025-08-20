@@ -88,44 +88,6 @@ function switchTransition(type: 'fade' | 'slide' | 'scale' | 'flip') {
         :show-info="false"
         @template-change="handleTemplateChange"
       />
-
-      <div class="animation-controls">
-        <h4>动画效果：</h4>
-        <div class="animation-buttons">
-          <button
-            @click="selectedTransition = 'fade'"
-            :class="{ active: selectedTransition === 'fade' }"
-          >
-            淡入淡出
-          </button>
-          <button
-            @click="selectedTransition = 'slide'"
-            :class="{ active: selectedTransition === 'slide' }"
-          >
-            滑动
-          </button>
-          <button
-            @click="selectedTransition = 'scale'"
-            :class="{ active: selectedTransition === 'scale' }"
-          >
-            缩放
-          </button>
-          <button
-            @click="selectedTransition = 'flip'"
-            :class="{ active: selectedTransition === 'flip' }"
-          >
-            翻转
-          </button>
-        </div>
-      </div>
-
-      <div class="device-info">
-        <p><strong>当前设备:</strong> {{ currentDevice }}</p>
-        <p><strong>可用模板:</strong> {{ availableTemplates.length }}</p>
-        <p>
-          <strong>当前模板:</strong> {{ currentTemplate?.template || '未选择' }}
-        </p>
-      </div>
     </div>
 
     <!-- 模板渲染器 -->
@@ -154,8 +116,9 @@ function switchTransition(type: 'fade' | 'slide' | 'scale' | 'flip') {
 
 .template-selector {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 0;
+  right: auto;
+  left: 0;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   padding: 15px;
