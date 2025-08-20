@@ -1,0 +1,206 @@
+/* LDesign Less Mixins */
+
+/* Button mixins */
+.button-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--ld-border-width-base) solid transparent;
+  border-radius: var(--ld-border-radius-base);
+  font-family: var(--ld-font-family);
+  font-weight: var(--ld-font-weight-normal);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--ld-animation-duration-base) var(--ld-ease-base-out);
+  user-select: none;
+  white-space: nowrap;
+  outline: none;
+  
+  &:focus {
+    .focus-style();
+  }
+  
+  &:disabled,
+  &.ld-disabled {
+    .disabled-style();
+  }
+}
+
+.button-variant(@color; @bg-color; @border-color) {
+  color: @color;
+  background-color: @bg-color;
+  border-color: @border-color;
+  
+  &:hover:not(:disabled):not(.ld-disabled) {
+    opacity: var(--ld-hover-opacity);
+  }
+  
+  &:active:not(:disabled):not(.ld-disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.button-size(@height; @padding-horizontal; @font-size) {
+  height: @height;
+  padding: 0 @padding-horizontal;
+  font-size: @font-size;
+  line-height: @height - 2px; // Subtract border width
+}
+
+/* Input mixins */
+.input-base() {
+  display: inline-block;
+  width: 100%;
+  border: var(--ld-border-width-base) solid var(--ld-border-color);
+  border-radius: var(--ld-border-radius-base);
+  background-color: var(--ld-background-color);
+  font-family: var(--ld-font-family);
+  font-size: var(--ld-font-size-base);
+  line-height: var(--ld-line-height-base);
+  color: var(--ld-text-color);
+  transition: all var(--ld-animation-duration-base) var(--ld-ease-base-out);
+  outline: none;
+  
+  &::placeholder {
+    color: var(--ld-text-color-disabled);
+  }
+  
+  &:hover:not(:disabled):not(:focus) {
+    border-color: var(--ld-border-color-dark);
+  }
+  
+  &:focus {
+    .focus-style();
+    border-color: var(--ld-primary-color);
+  }
+  
+  &:disabled,
+  &[readonly] {
+    .disabled-style();
+    background-color: var(--ld-background-color-light);
+  }
+}
+
+.input-size(@height; @padding-horizontal; @font-size) {
+  height: @height;
+  padding: 0 @padding-horizontal;
+  font-size: @font-size;
+  line-height: @height - 2px; // Subtract border width
+}
+
+/* Common utility mixins */
+.focus-style() {
+  box-shadow: 0 0 0 2px var(--ld-primary-color-light);
+}
+
+.disabled-style() {
+  opacity: var(--ld-disabled-opacity);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.loading-style() {
+  position: relative;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: ld-spin var(--ld-animation-duration-slow) linear infinite;
+  }
+}
+
+/* Layout mixins */
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between() {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.absolute-center() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Text mixins */
+.text-ellipsis() {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.text-truncate(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Shadow mixins */
+.shadow(@level: base) when (@level = sm) {
+  box-shadow: var(--ld-shadow-sm);
+}
+
+.shadow(@level: base) when (@level = base) {
+  box-shadow: var(--ld-shadow-base);
+}
+
+.shadow(@level: base) when (@level = lg) {
+  box-shadow: var(--ld-shadow-lg);
+}
+
+/* Animation mixins */
+.fade-in(@duration: var(--ld-animation-duration-base)) {
+  animation: ld-fade-in @duration var(--ld-ease-out);
+}
+
+.slide-up(@duration: var(--ld-animation-duration-base)) {
+  animation: ld-slide-up @duration var(--ld-ease-out);
+}
+
+/* Keyframes */
+@keyframes ld-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ld-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ld-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

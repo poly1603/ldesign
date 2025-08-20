@@ -1,0 +1,76 @@
+@import './variables.less';
+@import './mixins.less';
+
+/* Global styles for LDesign components */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Reset styles for components */
+.ld-component {
+  font-family: var(--ld-font-family);
+  font-size: var(--ld-font-size-base);
+  line-height: var(--ld-line-height-base);
+  color: var(--ld-text-color);
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+/* Common component states */
+.ld-disabled {
+  opacity: var(--ld-disabled-opacity);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ld-loading {
+  position: relative;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid var(--ld-primary-color);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: ld-spin 1s linear infinite;
+  }
+}
+
+@keyframes ld-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus styles */
+.ld-focus {
+  box-shadow: 0 0 0 2px var(--ld-primary-color-light);
+}
+
+/* Size utilities */
+.ld-size-small {
+  font-size: var(--ld-font-size-sm);
+  padding: var(--ld-padding-xs) var(--ld-padding-sm);
+}
+
+.ld-size-medium {
+  font-size: var(--ld-font-size-base);
+  padding: var(--ld-padding-sm) var(--ld-padding-md);
+}
+
+.ld-size-large {
+  font-size: var(--ld-font-size-lg);
+  padding: var(--ld-padding-md) var(--ld-padding-lg);
+}
