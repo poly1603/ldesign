@@ -1,0 +1,101 @@
+{
+  "name": "@ldesign/builder",
+  "version": "1.0.0",
+  "description": "智能前端库打包工具 - 基于Rollup JavaScript API的零配置多格式输出解决方案",
+  "main": "dist/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
+  "bin": {
+    "ldesign-builder": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist esm cjs lib types",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "rollup",
+    "bundler",
+    "typescript",
+    "vue",
+    "react",
+    "library",
+    "build-tool",
+    "frontend",
+    "cli"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "esm",
+    "cjs",
+    "lib",
+    "types",
+    "bin",
+    "README.md"
+  ],
+  "dependencies": {
+    "rollup": "^4.9.0",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-babel": "^6.0.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-vue": "^6.0.0",
+    "@vue/compiler-sfc": "^3.4.0",
+    "unplugin-vue-jsx": "^0.4.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "glob": "^10.3.10",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "typescript": "^5.3.3",
+    "tslib": "^2.6.2",
+    "gzip-size": "^7.0.0",
+    "pretty-bytes": "^6.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/fs-extra": "^11.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "ts-jest": "^29.1.1",
+    "rimraf": "^5.0.5"
+  },
+  "peerDependencies": {
+    "vue": ">=3.0.0",
+    "react": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/packages/builder"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/packages/builder/issues"
+  },
+  "homepage": "https://github.com/ldesign/packages/builder#readme"
+}
