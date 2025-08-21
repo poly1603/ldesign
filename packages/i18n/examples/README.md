@@ -62,7 +62,7 @@ pnpm install
 pnpm dev
 ```
 
-示例将在 http://localhost:5174 启动，展示以下功能：
+示例将在 http://localhost:3000 启动，展示以下功能：
 
 - ✅ **基础翻译**：`i18n.t('common.ok')` 简单键值翻译
 - ✅ **字符串插值**：`i18n.t('common.pageOf', { current: 1, total: 10 })` 动态参数
@@ -87,7 +87,7 @@ pnpm install
 pnpm dev
 ```
 
-示例将在 http://localhost:5173 启动，展示以下功能：
+示例将在 http://localhost:3001 启动，展示以下功能：
 
 - ✅ **Vue 组合式 API**：`useI18n()` 钩子函数的完整使用
 - ✅ **v-t 指令**：`<div v-t="'common.save'"></div>` 模板指令翻译
@@ -156,11 +156,8 @@ import {
   useLanguageSwitcher,
 } from '@ldesign/i18n/vue'
 
-// 基础翻译钩子
-const { t, i18n } = useI18n()
-
-// 语言切换钩子
-const { locale, switchLanguage, isChanging } = useLanguageSwitcher()
+// 统一使用 useI18n 钩子获取所有功能
+const { t, i18n, locale, availableLanguages, changeLanguage } = useI18n()
 
 // 批量翻译钩子
 const batchTranslations = useBatchTranslation(['common.save', 'common.delete', 'common.edit'])
@@ -168,6 +165,18 @@ const batchTranslations = useBatchTranslation(['common.save', 'common.delete', '
 // 条件翻译钩子
 const isOnline = ref(true)
 const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.offline')
+
+// 如果需要语言切换的加载状态，可以自己管理
+const isChanging = ref(false)
+async function handleLanguageChange(langCode: string) {
+  if (isChanging.value) return
+  try {
+    isChanging.value = true
+    await changeLanguage(langCode)
+  } finally {
+    isChanging.value = false
+  }
+}
 </script>
 
 <template>
@@ -181,7 +190,7 @@ const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.
   <p>{{ t('common.pageOf', { current: 1, total: 10 }) }}</p>
 
   <!-- 语言切换 -->
-  <button :disabled="isChanging" @click="switchLanguage('zh-CN')">
+  <button :disabled="isChanging" @click="handleLanguageChange('zh-CN')">
     中文
   </button>
 </template>

@@ -9,6 +9,8 @@ import type {
 
 import { I18n } from '../core/i18n'
 import { I18N_INJECTION_KEY } from './composables'
+import { createModifiableVTDirective, vTHtml, vTAttr, vTPlural } from './directives'
+import { createVueI18nPluginManager } from '../plugins/vue/plugin-manager'
 
 /**
  * 默认插件选项
@@ -35,9 +37,11 @@ const DEFAULT_PLUGIN_OPTIONS = {
  */
 export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
   const global = i18nInstance || new I18n()
+  const pluginManager = createVueI18nPluginManager()
 
   const plugin: VueI18nPlugin = {
     global,
+    plugins: pluginManager,
     async install(app: App, options: Partial<VueI18nOptions> = {}) {
       const opts = { ...DEFAULT_PLUGIN_OPTIONS, ...options }
 
@@ -45,6 +49,9 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
       if (!global.isReady()) {
         await global.init()
       }
+
+      // 设置插件管理器上下文
+      pluginManager.setContext(app, global, opts)
 
       // 提供 I18n 实例给子组件
       app.provide(I18N_INJECTION_KEY, global)
@@ -56,7 +63,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
           // 注入翻译函数，确保正确绑定 this 上下文
           ; (app.config.globalProperties as any)[opts.globalPropertyName]
             = global.t.bind(global)
-          ; (app.config.globalProperties as any).$i18n = global
+            ; (app.config.globalProperties as any).$i18n = global
 
           // 为了类型安全，也在 app.config.globalProperties 上设置
           Object.defineProperty(app.config.globalProperties, '$t', {
@@ -71,10 +78,9 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
       }
 
       // 注册增强的 v-t 指令系统
-      const { createModifiableVTDirective, vTHtml, vTAttr, vTPlural } = await import('./directives')
-
       // 主要的 v-t 指令（支持修饰符）
-      app.directive('t', createModifiableVTDirective(global))
+      const tDirective = createModifiableVTDirective(global)
+      app.directive('t', tDirective)
 
       // 专用指令
       app.directive('t-html', vTHtml)

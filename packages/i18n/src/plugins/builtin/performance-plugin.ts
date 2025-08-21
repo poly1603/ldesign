@@ -58,7 +58,7 @@ interface PerformanceMetrics {
  * 性能监控器
  */
 class PerformanceMonitor {
-  private config: Required<PerformancePluginConfig>
+  public readonly config: Required<PerformancePluginConfig>
   private records: PerformanceRecord[] = []
   private metrics: PerformanceMetrics = {
     totalTranslations: 0,
@@ -239,7 +239,9 @@ class PerformanceMonitor {
    * 获取内存使用情况
    */
   private getMemoryUsage(): number {
+    // eslint-disable-next-line node/prefer-global/process
     if (typeof globalThis.process !== 'undefined' && globalThis.process.memoryUsage) {
+      // eslint-disable-next-line node/prefer-global/process
       return globalThis.process.memoryUsage().heapUsed
     }
 
@@ -317,17 +319,17 @@ export const performancePlugin: I18nPlugin = {
       }
     }
 
-      // 添加性能监控方法
-      ; (i18n as any).performance = {
-        getMetrics: () => monitor.getMetrics(),
-        getRecords: () => monitor.getRecords(),
-        clearRecords: () => monitor.clearRecords(),
-        generateReport: () => monitor.generateReport(),
-        getRecommendations: () => monitor.getRecommendations(),
-      }
+    // 添加性能监控方法
+    ; (i18n as any).performance = {
+      getMetrics: () => monitor.getMetrics(),
+      getRecords: () => monitor.getRecords(),
+      clearRecords: () => monitor.clearRecords(),
+      generateReport: () => monitor.generateReport(),
+      getRecommendations: () => monitor.getRecommendations(),
+    }
 
-      // 保存监控器引用
-      ; (i18n as any)._performanceMonitor = monitor
+    // 保存监控器引用
+    ; (i18n as any)._performanceMonitor = monitor
   },
 
   uninstall(i18n: I18nInstance) {

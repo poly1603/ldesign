@@ -21,8 +21,8 @@ export type StringLiteral<T> = T extends string ? (string extends T ? never : T)
  */
 export type DeepKeyPaths<T, K extends keyof T = keyof T> = K extends string | number
   ? T[K] extends Record<string, any>
-  ? `${K}` | `${K}.${DeepKeyPaths<T[K]>}`
-  : `${K}`
+    ? `${K}` | `${K}.${DeepKeyPaths<T[K]>}`
+    : `${K}`
   : never
 
 /**
@@ -30,11 +30,11 @@ export type DeepKeyPaths<T, K extends keyof T = keyof T> = K extends string | nu
  */
 export type DeepKeyValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
   ? K extends keyof T
-  ? DeepKeyValue<T[K], Rest>
-  : never
+    ? DeepKeyValue<T[K], Rest>
+    : never
   : P extends keyof T
-  ? T[P]
-  : never
+    ? T[P]
+    : never
 
 /**
  * 提取翻译参数

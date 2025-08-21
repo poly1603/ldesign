@@ -1,14 +1,14 @@
 import { createApp } from 'vue'
 
-import { createI18nWithBuiltinLocales } from '../../src/index'
-import { createI18n } from '../../src/vue/index'
+import { createI18n } from '@ldesign/i18n'
+import { createI18n as createVueI18nPlugin } from '@ldesign/i18n/vue'
 
 import App from './App.vue'
 
 async function bootstrap() {
   try {
     // 创建 I18n 实例
-    const i18nInstance = await createI18nWithBuiltinLocales({
+    const i18nInstance = await createI18n({
       defaultLocale: 'en',
       fallbackLocale: 'en',
       autoDetect: true,
@@ -28,7 +28,7 @@ async function bootstrap() {
     })
 
     // 创建 Vue I18n 插件
-    const vueI18nPlugin = createI18n(i18nInstance)
+    const vueI18nPlugin = createVueI18nPlugin(i18nInstance)
 
     // 创建 Vue 应用
     const app = createApp(App)

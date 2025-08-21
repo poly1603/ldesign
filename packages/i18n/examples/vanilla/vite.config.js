@@ -21,7 +21,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@ldesign/i18n': resolve(__dirname, '../../es/index.js'),
+      '@ldesign/i18n': resolve(__dirname, '../../esm/index.js'),
     },
   },
 })

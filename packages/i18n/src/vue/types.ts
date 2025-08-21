@@ -126,13 +126,87 @@ export interface UseTranslationHistoryReturn {
 }
 
 /**
- * Vue I18n 插件实例
+ * Vue I18n 插件上下文
+ */
+export interface VueI18nPluginContext {
+  /** Vue 应用实例 */
+  readonly app: App
+  /** I18n 实例 */
+  readonly i18n: I18nInstance
+  /** 插件选项 */
+  readonly options: VueI18nOptions
+}
+
+/**
+ * Vue I18n 插件接口（统一架构）
+ */
+export interface VueI18nPluginInterface {
+  /** 插件名称 */
+  readonly name: string
+  /** 插件版本 */
+  readonly version?: string
+  /** 插件描述 */
+  readonly description?: string
+  /** 插件作者 */
+  readonly author?: string
+  /** 依赖插件 */
+  readonly dependencies?: readonly string[]
+  /** 对等依赖 */
+  readonly peerDependencies?: readonly string[]
+  /** 可选依赖 */
+  readonly optionalDependencies?: readonly string[]
+
+  /** 安装插件 */
+  install: (context: VueI18nPluginContext) => void | Promise<void>
+  /** 卸载插件 */
+  uninstall?: (context: VueI18nPluginContext) => void | Promise<void>
+
+  /** 生命周期钩子 */
+  beforeInstall?: (context: VueI18nPluginContext) => void | Promise<void>
+  afterInstall?: (context: VueI18nPluginContext) => void | Promise<void>
+  beforeUninstall?: (context: VueI18nPluginContext) => void | Promise<void>
+  afterUninstall?: (context: VueI18nPluginContext) => void | Promise<void>
+
+  /** 插件配置 */
+  readonly config?: Record<string, any>
+}
+
+/**
+ * Vue I18n 插件实例（兼容旧版本）
  */
 export interface VueI18nPlugin {
   /** I18n 实例 */
   global: I18nInstance
   /** 安装插件 */
   install: (_app: App, _options?: VueI18nOptions) => void | Promise<void>
+  /** 插件管理器 */
+  plugins?: VueI18nPluginManager
+}
+
+/**
+ * Vue I18n 插件管理器
+ */
+export interface VueI18nPluginManager {
+  /** 设置上下文 */
+  setContext: (app: App, i18n: I18nInstance, options: VueI18nOptions) => void
+  /** 注册插件 */
+  register: (plugin: VueI18nPluginInterface) => Promise<void>
+  /** 卸载插件 */
+  unregister: (name: string) => Promise<void>
+  /** 获取插件 */
+  get: (name: string) => VueI18nPluginInterface | undefined
+  /** 获取所有插件 */
+  getAll: () => VueI18nPluginInterface[]
+  /** 检查插件是否已注册 */
+  isRegistered: (name: string) => boolean
+  /** 检查依赖 */
+  checkDependencies: (plugin: VueI18nPluginInterface) => {
+    satisfied: boolean
+    missing: string[]
+    conflicts: string[]
+  }
+  /** 清理所有插件 */
+  clear: () => Promise<void>
 }
 
 /**

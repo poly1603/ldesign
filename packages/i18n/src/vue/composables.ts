@@ -667,6 +667,10 @@ export function useTranslationDebug() {
  * @param key 翻译键（可以是响应式的）
  * @param params 翻译参数（可以是响应式的）
  * @param options 选项
+ * @param options.immediate 是否立即执行
+ * @param options.deep 是否深度监听
+ * @param options.cache 是否启用缓存
+ * @param options.onError 错误处理函数
  * @returns 深度响应式的翻译结果
  */
 export function useDeepReactiveTranslation(
@@ -690,24 +694,24 @@ export function useDeepReactiveTranslation(
 
   const paramsGetter = typeof params === 'function'
     ? () => {
-      const result = params()
-      return result && typeof result === 'object' && !Array.isArray(result)
-        ? result as Record<string, unknown>
-        : undefined
-    }
+        const result = params()
+        return result && typeof result === 'object' && !Array.isArray(result)
+          ? result as Record<string, unknown>
+          : undefined
+      }
     : typeof params === 'object' && params && 'value' in params
       ? () => {
-        const value = params.value
-        return value && typeof value === 'object' && !Array.isArray(value)
-          ? value as Record<string, unknown>
-          : undefined
-      }
+          const value = params.value
+          return value && typeof value === 'object' && !Array.isArray(value)
+            ? value as Record<string, unknown>
+            : undefined
+        }
       : () => {
-        const value = params
-        return value && typeof value === 'object' && !Array.isArray(value)
-          ? value as Record<string, unknown>
-          : undefined
-      }
+          const value = params
+          return value && typeof value === 'object' && !Array.isArray(value)
+            ? value as Record<string, unknown>
+            : undefined
+        }
 
   const result = manager.createReactiveTranslation(keyGetter, paramsGetter as any, options)
 
@@ -740,24 +744,24 @@ export function useBatchReactiveTranslation(
 
   const paramsGetter = typeof params === 'function'
     ? () => {
-      const result = params()
-      return result && typeof result === 'object' && !Array.isArray(result)
-        ? result as Record<string, unknown>
-        : undefined
-    }
+        const result = params()
+        return result && typeof result === 'object' && !Array.isArray(result)
+          ? result as Record<string, unknown>
+          : undefined
+      }
     : typeof params === 'object' && params && 'value' in params
       ? () => {
-        const value = params.value
-        return value && typeof value === 'object' && !Array.isArray(value)
-          ? value as Record<string, unknown>
-          : undefined
-      }
+          const value = params.value
+          return value && typeof value === 'object' && !Array.isArray(value)
+            ? value as Record<string, unknown>
+            : undefined
+        }
       : () => {
-        const value = params
-        return value && typeof value === 'object' && !Array.isArray(value)
-          ? value as Record<string, unknown>
-          : undefined
-      }
+          const value = params
+          return value && typeof value === 'object' && !Array.isArray(value)
+            ? value as Record<string, unknown>
+            : undefined
+        }
 
   const result = manager.createBatchReactiveTranslation(keysGetter, paramsGetter as any)
 
@@ -774,6 +778,8 @@ export function useBatchReactiveTranslation(
  * @param keyGetter 翻译键获取函数
  * @param paramsGetter 翻译参数获取函数
  * @param options 选项
+ * @param options.cache 是否启用缓存
+ * @param options.onError 错误处理函数
  * @returns 计算属性翻译结果
  */
 export function useComputedTranslation(
@@ -847,6 +853,10 @@ export function useTranslationCacheManager() {
 /**
  * 性能监控的组合式 API
  * @param options 监控选项
+ * @param options.enabled 是否启用监控
+ * @param options.slowThreshold 慢翻译阈值
+ * @param options.maxLogs 最大日志数量
+ * @param options.autoStart 是否自动开始
  * @returns 性能监控的状态和方法
  */
 export function useI18nPerformanceMonitor(options?: {
@@ -904,6 +914,13 @@ export function useI18nPerformanceMonitor(options?: {
 /**
  * 调试工具的组合式 API
  * @param options 调试选项
+ * @param options.enabled 是否启用调试
+ * @param options.level 调试级别
+ * @param options.maxMessages 最大消息数量
+ * @param options.trackCoverage 是否跟踪覆盖率
+ * @param options.validateParams 是否验证参数
+ * @param options.checkMissingKeys 是否检查缺失键
+ * @param options.autoLog 是否自动记录
  * @returns 调试工具的状态和方法
  */
 export function useI18nDebugger(options?: {
@@ -964,6 +981,15 @@ export function useI18nDebugger(options?: {
 /**
  * 综合开发工具的组合式 API
  * @param options 开发工具选项
+ * @param options.performance 性能监控选项
+ * @param options.performance.enabled 是否启用性能监控
+ * @param options.performance.slowThreshold 慢翻译阈值
+ * @param options.performance.maxLogs 最大日志数量
+ * @param options.debug 调试选项
+ * @param options.debug.enabled 是否启用调试
+ * @param options.debug.level 调试级别
+ * @param options.debug.maxMessages 最大消息数量
+ * @param options.debug.trackCoverage 是否跟踪覆盖率
  * @returns 开发工具的状态和方法
  */
 export function useI18nDevTools(options?: {

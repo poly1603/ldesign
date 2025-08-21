@@ -112,7 +112,7 @@ export type {
   TranslationParams,
 } from './core/types'
 // 导出 Engine 插件
-export * from './engine/plugin'
+export * from './plugins/engine'
 
 // 导出内置语言包
 export { default as enLanguagePackage } from './locales/en'
@@ -143,38 +143,15 @@ export {
   unflattenObject,
 } from './utils/path'
 
-// 便捷的创建函数
-export function createI18n(options?: I18nOptions): I18nInstance {
-  return new I18n(options)
-}
-
 /**
- * 创建简单的 I18n 实例（仅英语）
+ * 创建 I18n 实例
+ *
+ * 默认自动加载所有内置语言包（en、zh-CN、ja）
+ *
  * @param options I18n 配置选项
  * @returns I18n 实例
  */
-export async function createSimpleI18n(
-  options?: I18nOptions,
-): Promise<I18nInstance> {
-  const { StaticLoader } = await import('./core/loader')
-  const enPkg = await import('./locales/en')
-
-  const loader = new StaticLoader()
-  loader.registerPackage('en', enPkg.default)
-
-  const i18n = new I18n({ defaultLocale: 'en', ...options })
-  i18n.setLoader(loader)
-
-  await i18n.init()
-  return i18n
-}
-
-/**
- * 创建带有内置语言包的 I18n 实例
- * @param options I18n 配置选项
- * @returns I18n 实例
- */
-export async function createI18nWithBuiltinLocales(
+export async function createI18n(
   options?: I18nOptions,
 ): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
@@ -187,7 +164,7 @@ export async function createI18nWithBuiltinLocales(
   loader.registerPackage('zh-CN', zhCNPkg.default)
   loader.registerPackage('ja', jaPkg.default)
 
-  const i18n = new I18n({ defaultLocale: 'zh-CN', ...options })
+  const i18n = new I18n({ defaultLocale: 'en', ...options })
   i18n.setLoader(loader)
 
   await i18n.init()

@@ -96,9 +96,40 @@ async function handleLanguageChange() {
 </template>
 ```
 
-### useLanguageSwitcher()
+### 语言切换
 
-专门用于语言切换的钩子：
+推荐使用 `useI18n()` 进行语言切换：
+
+```vue
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const {
+  locale, // 当前语言
+  availableLanguages, // 可用语言
+  changeLanguage, // 切换语言方法
+} = useI18n()
+
+// 如果需要加载状态，可以自己管理
+const isChanging = ref(false)
+
+async function handleLanguageChange(langCode: string) {
+  if (isChanging.value) return
+
+  try {
+    isChanging.value = true
+    await changeLanguage(langCode)
+  } finally {
+    isChanging.value = false
+  }
+}
+</script>
+```
+
+### useLanguageSwitcher()（可选）
+
+如果你需要内置的 `isChanging` 状态管理，也可以使用专门的语言切换钩子：
 
 ```vue
 <script setup lang="ts">

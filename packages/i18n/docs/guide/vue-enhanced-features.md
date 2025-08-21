@@ -18,8 +18,8 @@
 
 ```vue
 <script setup>
-import { ref, computed } from 'vue'
 import { useDeepReactiveTranslation } from '@ldesign/i18n/vue'
+import { computed, ref } from 'vue'
 
 const translationKey = ref('welcome.message')
 const userName = ref('Vue开发者')
@@ -38,8 +38,12 @@ const translation = useDeepReactiveTranslation(
 <template>
   <div>
     <p>{{ translation.value }}</p>
-    <p v-if="translation.isLoading">加载中...</p>
-    <p v-if="translation.error" class="error">{{ translation.error.message }}</p>
+    <p v-if="translation.isLoading">
+      加载中...
+    </p>
+    <p v-if="translation.error" class="error">
+      {{ translation.error.message }}
+    </p>
   </div>
 </template>
 ```
@@ -50,8 +54,8 @@ const translation = useDeepReactiveTranslation(
 
 ```vue
 <script setup>
-import { ref } from 'vue'
 import { useBatchReactiveTranslation } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
 
 const translationKeys = ref([
   'navigation.home',
@@ -77,8 +81,8 @@ const batchTranslations = useBatchReactiveTranslation(translationKeys)
 
 ```vue
 <script setup>
-import { ref } from 'vue'
 import { useComputedTranslation } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
 
 const itemCount = ref(0)
 
@@ -91,7 +95,9 @@ const statusMessage = useComputedTranslation(
 <template>
   <div>
     <p>{{ statusMessage }}</p>
-    <button @click="itemCount++">添加项目</button>
+    <button @click="itemCount++">
+      添加项目
+    </button>
   </div>
 </template>
 ```
@@ -126,7 +132,7 @@ const recommendations = performanceMonitor.getRecommendations()
       <div>平均时间: {{ metrics.averageTranslationTime.toFixed(2) }}ms</div>
       <div>缓存命中率: {{ (metrics.cacheHitRate * 100).toFixed(1) }}%</div>
     </div>
-    
+
     <div v-if="metrics.slowTranslations.length" class="slow-translations">
       <h4>慢翻译</h4>
       <ul>
@@ -135,11 +141,13 @@ const recommendations = performanceMonitor.getRecommendations()
         </li>
       </ul>
     </div>
-    
+
     <div class="recommendations">
       <h4>性能建议</h4>
       <ul>
-        <li v-for="rec in recommendations" :key="rec">{{ rec }}</li>
+        <li v-for="rec in recommendations" :key="rec">
+          {{ rec }}
+        </li>
       </ul>
     </div>
   </div>
@@ -150,9 +158,9 @@ const recommendations = performanceMonitor.getRecommendations()
 
 ```javascript
 // 导出性能报告
-const exportReport = () => {
+function exportReport() {
   const report = performanceMonitor.exportReport()
-  
+
   // 下载报告
   const blob = new Blob([report], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -192,15 +200,15 @@ const logCustomMessage = () => {
 <template>
   <div class="debug-panel">
     <h3>调试工具</h3>
-    
+
     <div class="debug-stats">
       <span class="stat error">错误: {{ debugger.errorCount }}</span>
       <span class="stat warning">警告: {{ debugger.warningCount }}</span>
     </div>
-    
+
     <div class="debug-messages">
-      <div 
-        v-for="message in debugger.messages.slice(0, 10)" 
+      <div
+        v-for="message in debugger.messages.slice(0, 10)"
         :key="message.id"
         :class="`message-${message.level}`"
       >
@@ -209,7 +217,7 @@ const logCustomMessage = () => {
         <span class="text">{{ message.message }}</span>
       </div>
     </div>
-    
+
     <div class="actions">
       <button @click="debugger.clearMessages()">清除消息</button>
       <button @click="logCustomMessage">记录自定义消息</button>
@@ -239,7 +247,7 @@ const coverageReport = debugger.getCoverageReport()
         <div>缺失: {{ coverageReport.missingKeys.size }}</div>
       </div>
     </div>
-    
+
     <div v-if="coverageReport.missingKeys.size" class="missing-keys">
       <h4>缺失的翻译键</h4>
       <ul>
@@ -257,6 +265,18 @@ const coverageReport = debugger.getCoverageReport()
 ### 增强的语言切换器
 
 ```vue
+<script setup>
+import { LanguageSwitcherEnhanced } from '@ldesign/i18n/vue'
+
+function handleLanguageChange(locale) {
+  console.log('语言已切换到:', locale)
+}
+
+function handleError(error) {
+  console.error('语言切换失败:', error)
+}
+</script>
+
 <template>
   <LanguageSwitcherEnhanced
     variant="dropdown"
@@ -270,30 +290,22 @@ const coverageReport = debugger.getCoverageReport()
     @error="handleError"
   />
 </template>
-
-<script setup>
-import { LanguageSwitcherEnhanced } from '@ldesign/i18n/vue'
-
-const handleLanguageChange = (locale) => {
-  console.log('语言已切换到:', locale)
-}
-
-const handleError = (error) => {
-  console.error('语言切换失败:', error)
-}
-</script>
 ```
 
 ### 翻译文本组件
 
 ```vue
+<script setup>
+import { TranslationText } from '@ldesign/i18n/vue'
+</script>
+
 <template>
   <div>
     <!-- 基础使用 -->
     <TranslationText key-path="welcome.message" :params="{ name: 'Vue' }" />
-    
+
     <!-- 带加载状态 -->
-    <TranslationText 
+    <TranslationText
       key-path="async.content"
       :delay="1000"
       fallback="加载中..."
@@ -301,24 +313,20 @@ const handleError = (error) => {
       <template #loading>
         <span class="spinner">⏳</span>
       </template>
-      
+
       <template #error="{ error, fallback }">
         <span class="error">{{ error.message || fallback }}</span>
       </template>
     </TranslationText>
-    
+
     <!-- HTML 渲染 -->
-    <TranslationText 
+    <TranslationText
       key-path="rich.content"
       :html="true"
       :params="{ link: 'https://example.com' }"
     />
   </div>
 </template>
-
-<script setup>
-import { TranslationText } from '@ldesign/i18n/vue'
-</script>
 ```
 
 ## 开发工具集成
@@ -348,7 +356,7 @@ const devTools = useI18nDevTools({
 const healthStatus = devTools.healthStatus
 
 // 导出所有报告
-const exportAllReports = () => {
+function exportAllReports() {
   const reports = devTools.exportAllReports()
   console.log('完整报告:', reports)
 }
@@ -367,12 +375,20 @@ const exportAllReports = () => {
         覆盖率: {{ (healthStatus.coverage.rate * 100).toFixed(1) }}%
       </div>
     </div>
-    
+
     <div class="actions">
-      <button @click="devTools.enableAll()">启用所有工具</button>
-      <button @click="devTools.disableAll()">禁用所有工具</button>
-      <button @click="devTools.clearAll()">清除所有数据</button>
-      <button @click="exportAllReports()">导出报告</button>
+      <button @click="devTools.enableAll()">
+        启用所有工具
+      </button>
+      <button @click="devTools.disableAll()">
+        禁用所有工具
+      </button>
+      <button @click="devTools.clearAll()">
+        清除所有数据
+      </button>
+      <button @click="exportAllReports()">
+        导出报告
+      </button>
     </div>
   </div>
 </template>
@@ -393,8 +409,8 @@ const i18n = createI18n({
 })
 
 // 或者在组件中条件性使用
-const devTools = process.env.NODE_ENV === 'development' 
-  ? useI18nDevTools() 
+const devTools = process.env.NODE_ENV === 'development'
+  ? useI18nDevTools()
   : null
 ```
 
@@ -431,9 +447,9 @@ npm install @ldesign/i18n
 ```
 
 ```javascript
+import { createI18n } from '@ldesign/i18n/vue'
 // main.js
 import { createApp } from 'vue'
-import { createI18n } from '@ldesign/i18n/vue'
 import App from './App.vue'
 
 const i18n = createI18n({

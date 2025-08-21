@@ -560,14 +560,14 @@
     <div id="error-container"></div>
 
     <script type="module">
-      import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
+      import { createI18n } from '@ldesign/i18n'
 
       let i18n = null
 
       // Initialize I18n
       async function initI18n() {
         try {
-          i18n = await createI18nWithBuiltinLocales({
+          i18n = await createI18n({
             defaultLocale: 'en',
             fallbackLocale: 'en',
             storage: 'localStorage',

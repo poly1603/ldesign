@@ -123,7 +123,47 @@ function useLanguageSwitcher(): {
 
 专门用于语言切换的组合式 API。
 
-**示例：**
+> **⚠️ 注意：** 推荐使用 `useI18n()` 来获取语言切换功能，它提供了更统一的API。`useLanguageSwitcher()` 主要用于需要 `isChanging` 状态的特殊场景。
+
+**推荐用法（使用 useI18n）：**
+
+```vue
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const { locale, availableLanguages, changeLanguage } = useI18n()
+const isChanging = ref(false)
+
+async function handleLanguageChange(langCode: string) {
+  if (isChanging.value) return
+
+  try {
+    isChanging.value = true
+    await changeLanguage(langCode)
+  } finally {
+    isChanging.value = false
+  }
+}
+</script>
+
+<template>
+  <div class="language-switcher">
+    <button
+      v-for="lang in availableLanguages"
+      :key="lang.code"
+      :class="{ active: locale === lang.code }"
+      :disabled="isChanging"
+      @click="handleLanguageChange(lang.code)"
+    >
+      {{ lang.nativeName }}
+      <span v-if="isChanging && locale === lang.code">...</span>
+    </button>
+  </div>
+</template>
+```
+
+**传统用法（使用 useLanguageSwitcher）：**
 
 ```vue
 <script setup lang="ts">

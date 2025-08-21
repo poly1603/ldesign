@@ -353,11 +353,11 @@ export class SSRManager {
     context: SSRContext,
     i18nConfig: Omit<I18nOptions, 'defaultLocale'>,
   ): Promise<{
-    i18n: I18nInstance
-    locale: string
-    hreflangTags: string[]
-    alternateLinks: Array<{ locale: string, url: string, label: string }>
-  }> {
+      i18n: I18nInstance
+      locale: string
+      hreflangTags: string[]
+      alternateLinks: Array<{ locale: string, url: string, label: string }>
+    }> {
     // 检测语言
     const detectedLocale = this.detector.detect(context)
     context.detectedLocale = detectedLocale

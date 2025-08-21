@@ -462,6 +462,15 @@ export class StaticLoader implements Loader {
   getLoadedPackage(locale: string): LanguagePackage | undefined {
     return this.loadedPackages.get(locale)
   }
+
+  /**
+   * 获取注册的语言包（无论是否已加载）
+   * @param locale 语言代码
+   * @returns 语言包或 undefined
+   */
+  getRegisteredPackage(locale: string): LanguagePackage | undefined {
+    return this.packages.get(locale)
+  }
 }
 
 /**

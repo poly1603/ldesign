@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from '../composables'
-import TranslationText from './TranslationText.vue'
+// import TranslationText from './TranslationText.vue' // 暂时禁用，等待修复类型问题
 
 /**
  * 表单字段定义
@@ -288,10 +288,10 @@ for (const field of props.fields) {
     <!-- 表单标题 -->
     <div v-if="title" class="form-header">
       <h2 class="form-title">
-        <TranslationText :key-path="title" :namespace="namespace" />
+        {{ t(namespace ? `${namespace}.${title}` : title) }}
       </h2>
       <p v-if="description" class="form-description">
-        <TranslationText :key-path="description" :namespace="namespace" />
+        {{ t(namespace ? `${namespace}.${description}` : description) }}
       </p>
     </div>
 
@@ -310,11 +310,7 @@ for (const field of props.fields) {
           class="field-label"
           :class="{ required: field.required }"
         >
-          <TranslationText
-            :key-path="field.label"
-            :namespace="namespace"
-            :fallback="field.name"
-          />
+          {{ t(namespace ? `${namespace}.${field.label}` : field.label, {}, { defaultValue: field.name }) }}
           <span v-if="field.required" class="required-indicator">*</span>
         </label>
 
@@ -370,11 +366,7 @@ for (const field of props.fields) {
               :key="option.value"
               :value="option.value"
             >
-              <TranslationText
-                :key-path="option.label"
-                :namespace="namespace"
-                :fallback="option.value"
-              />
+              {{ t(namespace ? `${namespace}.${option.label}` : option.label, {}, { defaultValue: option.value }) }}
             </option>
           </select>
 
@@ -393,11 +385,7 @@ for (const field of props.fields) {
               @change="handleFieldInput(field.name, $event)"
             >
             <span class="checkbox-label">
-              <TranslationText
-                :key-path="field.checkboxLabel || field.label"
-                :namespace="namespace"
-                :fallback="field.name"
-              />
+              {{ t(namespace ? `${namespace}.${field.checkboxLabel || field.label || field.name}` : (field.checkboxLabel || field.label || field.name), {}, { defaultValue: field.name }) }}
             </span>
           </label>
 
@@ -421,11 +409,7 @@ for (const field of props.fields) {
                 @change="handleFieldInput(field.name, $event)"
               >
               <span class="radio-label">
-                <TranslationText
-                  :key-path="option.label"
-                  :namespace="namespace"
-                  :fallback="option.value"
-                />
+                {{ t(namespace ? `${namespace}.${option.label}` : option.label, {}, { defaultValue: option.value }) }}
               </span>
             </label>
           </div>
@@ -433,10 +417,7 @@ for (const field of props.fields) {
 
         <!-- 字段帮助文本 -->
         <div v-if="field.help" class="field-help">
-          <TranslationText
-            :key-path="field.help"
-            :namespace="namespace"
-          />
+          {{ t(namespace ? `${namespace}.${field.help}` : field.help) }}
         </div>
 
         <!-- 字段错误 -->
@@ -456,11 +437,7 @@ for (const field of props.fields) {
         :disabled="isSubmitting"
         @click="handleCancel"
       >
-        <TranslationText
-          :key-path="cancelText || 'common.cancel'"
-          :namespace="namespace"
-          fallback="Cancel"
-        />
+        {{ t(cancelText || 'common.cancel', {}, { defaultValue: 'Cancel' }) }}
       </button>
 
       <button
@@ -469,11 +446,7 @@ for (const field of props.fields) {
         :disabled="isSubmitting || !isFormValid"
       >
         <span v-if="isSubmitting" class="button-spinner" />
-        <TranslationText
-          :key-path="submitText || 'common.submit'"
-          :namespace="namespace"
-          fallback="Submit"
-        />
+        {{ t(submitText || 'common.submit', {}, { defaultValue: 'Submit' }) }}
       </button>
     </div>
 

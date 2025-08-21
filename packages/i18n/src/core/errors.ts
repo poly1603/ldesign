@@ -439,13 +439,32 @@ export class ErrorManager {
   constructor() {
     // 默认添加一个错误处理器
     this.addHandler(
-      typeof process !== 'undefined' && process?.env?.NODE_ENV === 'development'
+      this.isDevelopment()
         ? new DevelopmentErrorHandler()
         : new DefaultErrorHandler(),
     )
 
     // 注册默认恢复策略
     this.registerDefaultRecoveryStrategies()
+  }
+
+  /**
+   * 检查是否为开发环境
+   */
+  private isDevelopment(): boolean {
+    // 浏览器环境检查
+    if (typeof window !== 'undefined') {
+      return window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.includes('dev')
+    }
+
+    // Node.js环境检查
+    if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+      return globalThis.process.env.NODE_ENV === 'development'
+    }
+
+    return false
   }
 
   /**

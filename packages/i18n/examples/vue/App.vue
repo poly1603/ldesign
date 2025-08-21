@@ -5,25 +5,11 @@ import {
   useBatchTranslation,
   useConditionalTranslation,
   useI18n,
-  useLanguageSwitcher,
-} from '../../src/vue/index'
+  LanguageSwitcher,
+} from '@ldesign/i18n/vue'
 
-// 使用 I18n 组合式 API
-const { t, i18n } = useI18n()
-const { locale, availableLanguages, isChanging, switchLanguage }
-  = useLanguageSwitcher()
-
-// 添加语言切换的调试信息
-async function handleLanguageSwitch(lang: string) {
-  console.warn('Switching to language:', lang)
-  try {
-    await switchLanguage(lang)
-    console.warn('Language switched successfully to:', lang)
-  }
-  catch (error) {
-    console.error('Failed to switch language:', error)
-  }
-}
+// 使用 I18n 组合式 API - 统一获取所有需要的功能
+const { t, i18n, locale, availableLanguages } = useI18n()
 
 // 错误状态
 const error = ref<string>('')
@@ -187,36 +173,7 @@ onMounted(() => {
 
       <!-- Language Switcher -->
       <div class="language-switcher">
-        <button
-          class="lang-btn"
-          :class="[{ active: 'en' === locale }]"
-          :disabled="isChanging"
-          @click="handleLanguageSwitch('en')"
-        >
-          English
-          <span v-if="isChanging && 'en' === locale" class="loading-spinner" />
-        </button>
-        <button
-          class="lang-btn"
-          :class="[{ active: 'zh-CN' === locale }]"
-          :disabled="isChanging"
-          @click="handleLanguageSwitch('zh-CN')"
-        >
-          中文
-          <span
-            v-if="isChanging && 'zh-CN' === locale"
-            class="loading-spinner"
-          />
-        </button>
-        <button
-          class="lang-btn"
-          :class="[{ active: 'ja' === locale }]"
-          :disabled="isChanging"
-          @click="handleLanguageSwitch('ja')"
-        >
-          日本語
-          <span v-if="isChanging && 'ja' === locale" class="loading-spinner" />
-        </button>
+        <LanguageSwitcher />
       </div>
 
       <!-- Current Language Display -->
@@ -571,67 +528,8 @@ onMounted(() => {
 /* Language Switcher */
 .language-switcher {
   display: flex;
-  gap: 15px;
   justify-content: center;
   margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.lang-btn {
-  padding: 15px 30px;
-  border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 16px;
-  font-weight: 600;
-  min-width: 140px;
-  position: relative;
-  overflow: hidden;
-}
-
-.lang-btn:hover:not(:disabled) {
-  background: white;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.lang-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.lang-btn.active {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.lang-btn.active:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
-}
-
-.loading-spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ffffff40;
-  border-top: 2px solid #ffffff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-left: 8px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .current-language {

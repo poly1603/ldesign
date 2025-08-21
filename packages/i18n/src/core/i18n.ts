@@ -6,6 +6,7 @@ import type {
   I18nInstance,
   I18nOptions,
   LanguageInfo,
+  LanguagePackage,
   Loader,
   LRUCache,
   NestedObject,
@@ -138,10 +139,29 @@ export class I18n implements I18nInstance {
   private get performanceManager(): PerformanceManager {
     if (!this._performanceManager) {
       this._performanceManager = new PerformanceManager({
-        enabled: typeof process !== 'undefined' && process?.env?.NODE_ENV !== 'production',
+        enabled: this.isDevelopmentEnvironment(),
       })
     }
     return this._performanceManager
+  }
+
+  /**
+   * 检查是否为开发环境
+   */
+  private isDevelopmentEnvironment(): boolean {
+    // 浏览器环境检查
+    if (typeof window !== 'undefined') {
+      return window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.includes('dev')
+    }
+
+    // Node.js环境检查
+    if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+      return globalThis.process.env.NODE_ENV !== 'production'
+    }
+
+    return true // 默认开启性能监控
   }
 
   private get errorManager(): ErrorManager {
@@ -483,13 +503,19 @@ export class I18n implements I18nInstance {
   getAvailableLanguages(): LanguageInfo[] {
     const loaderWithMethods = this.loader as Loader & {
       getAvailableLocales?: () => string[]
-      getLoadedPackage?: (_locale: string) => { info: LanguageInfo } | undefined
+      getLoadedPackage?: (_locale: string) => LanguagePackage | undefined
+      getRegisteredPackage?: (_locale: string) => LanguagePackage | undefined
     }
     const availableLocales = loaderWithMethods.getAvailableLocales?.() || []
     const languages: LanguageInfo[] = []
 
     for (const locale of availableLocales) {
-      const packageData = loaderWithMethods.getLoadedPackage?.(locale)
+      // 优先使用已加载的语言包，如果没有则使用注册的语言包
+      let packageData = loaderWithMethods.getLoadedPackage?.(locale)
+      if (!packageData && loaderWithMethods.getRegisteredPackage) {
+        packageData = loaderWithMethods.getRegisteredPackage(locale)
+      }
+
       if (packageData) {
         languages.push(packageData.info)
       }

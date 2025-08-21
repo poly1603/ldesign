@@ -8,15 +8,15 @@ export default createRollupConfig({
     'node:process',
     'vue',
     '@vue/runtime-core',
-    '@vue/runtime-dom'
+    '@vue/runtime-dom',
   ],
   // 解决全局变量警告
   globals: {
     'node:process': 'process',
     'vue': 'Vue',
     '@vue/runtime-core': 'Vue',
-    '@vue/runtime-dom': 'Vue'
+    '@vue/runtime-dom': 'Vue',
   },
   // 使用构建专用的 tsconfig
-  tsconfig: resolve(process.cwd(), 'tsconfig.build.json')
+  tsconfig: resolve(process.cwd(), 'tsconfig.build.json'),
 })

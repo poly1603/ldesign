@@ -43,9 +43,9 @@ npm install @ldesign/i18n
 ### 1. 基础配置
 
 ```javascript
+import { createI18n } from '@ldesign/i18n/vue'
 // main.js
 import { createApp } from 'vue'
-import { createI18n } from '@ldesign/i18n/vue'
 
 const i18n = createI18n({
   locale: 'zh-CN',
@@ -86,8 +86,8 @@ const { t } = useI18n()
 
 ```vue
 <script setup>
-import { ref, computed } from 'vue'
 import { useDeepReactiveTranslation } from '@ldesign/i18n/vue'
+import { computed, ref } from 'vue'
 
 const translationKey = ref('dynamic.message')
 const userName = ref('用户')
@@ -101,7 +101,7 @@ const translation = useDeepReactiveTranslation(
 <template>
   <div>
     <p>{{ translation.value }}</p>
-    <input v-model="userName" placeholder="输入用户名" />
+    <input v-model="userName" placeholder="输入用户名">
   </div>
 </template>
 ```
@@ -124,7 +124,9 @@ const monitor = useI18nPerformanceMonitor({
     <h3>性能监控</h3>
     <div>翻译次数: {{ monitor.metrics.translationCount }}</div>
     <div>平均时间: {{ monitor.metrics.averageTranslationTime.toFixed(2) }}ms</div>
-    <button @click="monitor.clear()">清除数据</button>
+    <button @click="monitor.clear()">
+      清除数据
+    </button>
   </div>
 </template>
 ```
@@ -170,10 +172,14 @@ const devTools = useI18nDevTools({
       <div>性能: {{ devTools.healthStatus.performance.status }}</div>
       <div>调试: {{ devTools.healthStatus.debug.status }}</div>
     </div>
-    
+
     <div class="actions">
-      <button @click="devTools.enableAll()">启用所有工具</button>
-      <button @click="devTools.exportAllReports()">导出报告</button>
+      <button @click="devTools.enableAll()">
+        启用所有工具
+      </button>
+      <button @click="devTools.exportAllReports()">
+        导出报告
+      </button>
     </div>
   </div>
 </template>

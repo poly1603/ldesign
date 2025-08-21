@@ -94,17 +94,17 @@ interface Plugin<T = any> {
   description?: string
   /** 插件依赖 */
   dependencies?: string[]
-  
+
   /** 安装方法 */
-  install(context: PluginContext, options?: T): Promise<void> | void
+  install: (context: PluginContext, options?: T) => Promise<void> | void
   /** 卸载方法 */
-  uninstall?(context: PluginContext): Promise<void> | void
-  
+  uninstall?: (context: PluginContext) => Promise<void> | void
+
   /** 生命周期钩子 */
-  beforeInstall?(context: PluginContext): Promise<void> | void
-  afterInstall?(context: PluginContext): Promise<void> | void
-  beforeUninstall?(context: PluginContext): Promise<void> | void
-  afterUninstall?(context: PluginContext): Promise<void> | void
+  beforeInstall?: (context: PluginContext) => Promise<void> | void
+  afterInstall?: (context: PluginContext) => Promise<void> | void
+  beforeUninstall?: (context: PluginContext) => Promise<void> | void
+  afterUninstall?: (context: PluginContext) => Promise<void> | void
 }
 ```
 
@@ -319,37 +319,37 @@ const myPlugin: Plugin = {
   name: 'My Custom Plugin',
   version: '1.0.0',
   description: 'A custom plugin example',
-  
+
   async install(context: PluginContext) {
     const { i18n, events, logger } = context
-    
+
     logger.info('Installing my plugin...')
-    
+
     // 监听翻译事件
     events.on('translation:before', (data) => {
       console.log('Before translation:', data.key)
     })
-    
+
     events.on('translation:after', (data) => {
       console.log('After translation:', data.key, data.result)
     })
-    
+
     // 扩展 I18n 实例
     i18n.myCustomMethod = () => {
       return 'Hello from my plugin!'
     }
-    
+
     logger.info('My plugin installed successfully')
   },
-  
+
   async uninstall(context: PluginContext) {
     const { i18n, logger } = context
-    
+
     logger.info('Uninstalling my plugin...')
-    
+
     // 清理扩展方法
     delete i18n.myCustomMethod
-    
+
     logger.info('My plugin uninstalled successfully')
   }
 }
@@ -367,28 +367,30 @@ interface MyPluginOptions {
   maxItems?: number
 }
 
-const createMyPlugin = (options: MyPluginOptions = {}): Plugin<MyPluginOptions> => ({
-  id: 'my-configurable-plugin',
-  name: 'My Configurable Plugin',
-  version: '1.0.0',
-  
-  async install(context: PluginContext, pluginOptions?: MyPluginOptions) {
-    const config = { ...options, ...pluginOptions }
-    const { i18n, events, logger } = context
-    
-    if (!config.enabled) {
-      logger.info('Plugin is disabled, skipping installation')
-      return
+function createMyPlugin(options: MyPluginOptions = {}): Plugin<MyPluginOptions> {
+  return {
+    id: 'my-configurable-plugin',
+    name: 'My Configurable Plugin',
+    version: '1.0.0',
+
+    async install(context: PluginContext, pluginOptions?: MyPluginOptions) {
+      const config = { ...options, ...pluginOptions }
+      const { i18n, events, logger } = context
+
+      if (!config.enabled) {
+        logger.info('Plugin is disabled, skipping installation')
+        return
+      }
+
+      // 使用配置
+      const prefix = config.prefix || 'default'
+      const maxItems = config.maxItems || 100
+
+      // 插件逻辑...
+      logger.info(`Plugin installed with prefix: ${prefix}, maxItems: ${maxItems}`)
     }
-    
-    // 使用配置
-    const prefix = config.prefix || 'default'
-    const maxItems = config.maxItems || 100
-    
-    // 插件逻辑...
-    logger.info(`Plugin installed with prefix: ${prefix}, maxItems: ${maxItems}`)
   }
-})
+}
 
 // 使用插件
 const myPlugin = createMyPlugin({
@@ -409,32 +411,32 @@ const lifecyclePlugin: Plugin = {
   id: 'lifecycle-plugin',
   name: 'Lifecycle Plugin',
   version: '1.0.0',
-  
+
   async beforeInstall(context) {
     console.log('Before install: preparing...')
     // 预安装检查
   },
-  
+
   async install(context) {
     console.log('Installing: main logic...')
     // 主要安装逻辑
   },
-  
+
   async afterInstall(context) {
     console.log('After install: finalizing...')
     // 后安装清理
   },
-  
+
   async beforeUninstall(context) {
     console.log('Before uninstall: preparing...')
     // 预卸载准备
   },
-  
+
   async uninstall(context) {
     console.log('Uninstalling: cleanup...')
     // 主要卸载逻辑
   },
-  
+
   async afterUninstall(context) {
     console.log('After uninstall: finalized')
     // 后卸载清理
@@ -451,11 +453,12 @@ const robustPlugin: Plugin = {
   id: 'robust-plugin',
   name: 'Robust Plugin',
   version: '1.0.0',
-  
+
   async install(context) {
     try {
       // 插件逻辑
-    } catch (error) {
+    }
+    catch (error) {
       context.logger.error('Plugin installation failed:', error)
       throw error // 重新抛出以便插件管理器处理
     }
@@ -471,16 +474,16 @@ const dependentPlugin: Plugin = {
   name: 'Dependent Plugin',
   version: '1.0.0',
   dependencies: ['cache-plugin'],
-  
+
   async install(context) {
     // 检查依赖
     if (!context.plugins.isRegistered('cache-plugin')) {
       throw new Error('Cache plugin is required')
     }
-    
+
     // 获取依赖插件
     const cachePlugin = context.plugins.getPlugin('cache-plugin')
-    
+
     // 使用依赖插件的功能
   }
 }
@@ -489,21 +492,21 @@ const dependentPlugin: Plugin = {
 ### 3. 配置验证
 
 ```typescript
-const validatedPlugin: Plugin<{ apiKey: string; timeout: number }> = {
+const validatedPlugin: Plugin<{ apiKey: string, timeout: number }> = {
   id: 'validated-plugin',
   name: 'Validated Plugin',
   version: '1.0.0',
-  
+
   async install(context, options) {
     // 验证配置
     if (!options?.apiKey) {
       throw new Error('API key is required')
     }
-    
+
     if (options.timeout && options.timeout < 1000) {
       throw new Error('Timeout must be at least 1000ms')
     }
-    
+
     // 使用验证后的配置
   }
 }
