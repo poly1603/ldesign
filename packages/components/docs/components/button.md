@@ -286,3 +286,4 @@ setThemeMode('light');
 // 自动切换主题
 setThemeMode('auto');
 ```
+

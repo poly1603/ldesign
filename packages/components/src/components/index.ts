@@ -1,3 +1,7 @@
+export * from './button/button';
+export * from './input/input';
+export * from './textarea/textarea';
+
 // Component type definitions for LDesign Web Components
 
 export interface LdButton {

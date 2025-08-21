@@ -1,5 +1,5 @@
-// Export individual components
 export { Components, JSX } from './components';
 export * from './components/button/button';
 export * from './components/input/input';
 export * from './components/textarea/textarea';
+export * from './utils/theme';

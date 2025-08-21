@@ -1,0 +1,6 @@
+@import url('../../../src/global/app.css');
+
+/* VitePress local tweaks */
+.VPDoc .container .content { contain: paint; }
+
+
