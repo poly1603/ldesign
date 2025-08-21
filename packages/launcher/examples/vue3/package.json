@@ -1,0 +1,7 @@
+{
+  "name": "launcher-example-vue3",
+  "private": true,
+  "type": "module",
+  "description": "Vue3 example powered by @ldesign/launcher programmatic API",
+  "license": "MIT"
+}

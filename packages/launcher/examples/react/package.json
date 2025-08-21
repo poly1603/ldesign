@@ -1,0 +1,7 @@
+{
+  "name": "launcher-example-react",
+  "private": true,
+  "type": "module",
+  "description": "React example powered by @ldesign/launcher programmatic API",
+  "license": "MIT"
+}
