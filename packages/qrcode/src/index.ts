@@ -28,7 +28,7 @@ export type {
 } from './types'
 
 // 核心生成器
-export { QRCodeGenerator, defaultGenerator } from './core/generator'
+export { QRCodeGenerator, defaultGenerator, createQRCodeGenerator } from './core/generator'
 export { LogoProcessor } from './core/logo'
 export { StyleProcessor } from './core/styles'
 
@@ -44,8 +44,7 @@ export {
   PerformanceMonitor,
   canvasToDataURL,
   downloadFile,
-  createError,
-  QRCodeError
+  createError
 } from './utils'
 
 // Vue组件和Hook
@@ -71,9 +70,5 @@ export const version = '1.0.0'
 
 // 默认导出
 export default {
-  QRCode,
-  QRCodeGenerator,
-  useQRCode,
-  generateQRCode,
   version
 }

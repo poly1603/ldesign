@@ -7,14 +7,12 @@ import QRCode from 'qrcode'
 import type {
   QRCodeOptions,
   QRCodeResult,
-  QRCodeFormat,
-  QRCodeGenerationResult,
   PerformanceMetric,
   GeneratorConfig
 } from '../types'
 import { LogoProcessor } from './logo'
 import { StyleProcessor } from './styles'
-import { PerformanceMonitor, createError, validateQRCodeOptions } from '../utils'
+import { PerformanceMonitor, createError } from '../utils'
 
 export class QRCodeGenerator {
   private logoProcessor: LogoProcessor
@@ -24,20 +22,21 @@ export class QRCodeGenerator {
   private config: GeneratorConfig
   private options: QRCodeOptions
 
-  constructor(options: QRCodeOptions) {
+  constructor(options?: Partial<QRCodeOptions>) {
     this.options = {
       data: '',
       size: 200,
       format: 'canvas',
+      margin: 4,
+      errorCorrectionLevel: 'M',
       ...options
     }
-    
+
     this.config = {
-      enableCache: true,
       maxCacheSize: 100,
       enablePerformanceMonitoring: true
     }
-    
+
     this.logoProcessor = new LogoProcessor()
     this.styleProcessor = new StyleProcessor()
     this.performanceMonitor = new PerformanceMonitor()
@@ -46,96 +45,47 @@ export class QRCodeGenerator {
   /**
    * 生成二维码
    */
-  async generate(): Promise<QRCodeGenerationResult> {
-    const startTime = performance.now()
-    
+  async generate(
+    text?: string,
+    overrideOptions?: Partial<QRCodeOptions>
+  ): Promise<QRCodeResult> {
+    const endTimer = this.performanceMonitor.startOperation('generate')
+
     try {
-      const text = this.options.data
-      if (!text) {
+      const targetText = (text ?? this.options.data) || ''
+      if (!targetText) {
         throw createError('No data provided for QR code generation', 'INVALID_DATA')
       }
 
       // 合并选项
       const mergedOptions: QRCodeOptions = {
-        width: this.options.size || 200,
-        height: this.options.size || 200,
-        format: this.options.format || 'canvas',
-        errorCorrectionLevel: this.options.errorCorrectionLevel || 'M',
-        margin: this.options.margin || 4,
-        color: this.options.color || {
-          dark: '#000000',
-          light: '#FFFFFF'
-        },
-        ...this.options
+        ...this.options,
+        ...(overrideOptions || {}),
+        format: overrideOptions?.format || this.options.format || 'canvas',
+        errorCorrectionLevel: overrideOptions?.errorCorrectionLevel || this.options.errorCorrectionLevel || 'M',
+        margin: overrideOptions?.margin ?? this.options.margin ?? 4
       }
 
       // 检查缓存
-      const cacheKey = this.generateCacheKey(text, mergedOptions)
-      if (this.config.enableCache && this.cache.has(cacheKey)) {
+      const cacheKey = this.generateCacheKey(targetText, mergedOptions)
+      if ((mergedOptions.enableCache ?? true) && this.cache.has(cacheKey)) {
         const cached = this.cache.get(cacheKey)!
-        return {
-          success: true,
-          data: cached.dataURL,
-          format: cached.format,
-          metrics: {
-            generationTime: 0,
-            cacheHit: true,
-            size: cached.dataURL.length
-          }
-        }
+        endTimer(true, cached.dataURL ? cached.dataURL.length : undefined)
+        return { ...cached, fromCache: true }
       }
 
-      const result = await this.generateQRCode(text, mergedOptions)
-      
+      const result = await this.generateQRCode(targetText, mergedOptions)
+
       // 添加到缓存
-      if (this.config.enableCache) {
+      if (mergedOptions.enableCache ?? true) {
         this.addToCache(cacheKey, result)
       }
 
-      const endTime = performance.now()
-      const generationTime = endTime - startTime
+      endTimer(false, result.dataURL ? result.dataURL.length : undefined)
 
-      // 记录性能指标
-      if (this.config.enablePerformanceMonitoring) {
-        this.performanceMonitor.recordMetric({
-          operation: 'generate',
-          duration: generationTime,
-          timestamp: Date.now(),
-          metadata: {
-            format: mergedOptions.format,
-            size: `${mergedOptions.width}x${mergedOptions.height}`,
-            hasLogo: !!mergedOptions.logo,
-            hasStyle: !!mergedOptions.style
-          }
-        })
-      }
-
-      return {
-        success: true,
-        data: result.dataURL,
-        format: result.format,
-        metrics: {
-          generationTime,
-          cacheHit: false,
-          size: result.dataURL.length
-        }
-      }
+      return result
     } catch (error) {
-      const endTime = performance.now()
-      const generationTime = endTime - startTime
-      
-      // 记录错误指标
-      if (this.config.enablePerformanceMonitoring) {
-        this.performanceMonitor.recordMetric({
-          operation: 'generate_error',
-          duration: generationTime,
-          timestamp: Date.now(),
-          metadata: {
-            error: error instanceof Error ? error.message : String(error)
-          }
-        })
-      }
-      
+      endTimer(false)
       console.error('QRCode generation failed:', error)
       throw createError(
         `Generation failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -152,9 +102,9 @@ export class QRCodeGenerator {
     options: QRCodeOptions
   ): Promise<QRCodeResult> {
     const format = options.format || 'canvas'
-    const width = options.width || 200
-    const height = options.height || width
-    
+    const width = options.size || 200
+    const height = options.size || width
+
     // 准备QRCode库的选项
     const qrOptions = {
       errorCorrectionLevel: options.errorCorrectionLevel || 'M',
@@ -176,18 +126,18 @@ export class QRCodeGenerator {
         element = await this.generateCanvas(text, qrOptions, options)
         dataURL = (element as HTMLCanvasElement).toDataURL('image/png')
         break
-        
+
       case 'svg':
         element = await this.generateSVG(text, qrOptions, options)
         const svgData = new XMLSerializer().serializeToString(element)
         dataURL = `data:image/svg+xml;base64,${btoa(svgData)}`
         break
-        
+
       case 'image':
         element = await this.generateImage(text, qrOptions, options)
         dataURL = (element as HTMLImageElement).src
         break
-        
+
       default:
         throw createError(`Unsupported format: ${format}`, 'INVALID_FORMAT')
     }
@@ -201,7 +151,9 @@ export class QRCodeGenerator {
       text,
       options,
       fromCache: false,
-      generatedAt: Date.now()
+      generatedAt: Date.now(),
+      size: Math.max(width, height),
+      timestamp: Date.now()
     }
   }
 
@@ -214,10 +166,9 @@ export class QRCodeGenerator {
     options: QRCodeOptions
   ): Promise<HTMLCanvasElement> {
     const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    
-    canvas.width = options.width || 200
-    canvas.height = options.height || canvas.width
+
+    canvas.width = options.size || 200
+    canvas.height = options.size || canvas.width
 
     // 生成基础二维码
     await QRCode.toCanvas(canvas, text, qrOptions)
@@ -244,10 +195,10 @@ export class QRCodeGenerator {
     options: QRCodeOptions
   ): Promise<SVGElement> {
     // 生成SVG字符串
-    const svgString = await QRCode.toString(text, {
+    const svgString = (await (QRCode as any).toString(text, {
       ...qrOptions,
       type: 'svg'
-    })
+    })) as string
 
     // 解析SVG
     const parser = new DOMParser()
@@ -255,8 +206,8 @@ export class QRCodeGenerator {
     const svgElement = svgDoc.documentElement as unknown as SVGElement
 
     // 设置尺寸
-    svgElement.setAttribute('width', (options.width || 200).toString())
-    svgElement.setAttribute('height', (options.height || options.width || 200).toString())
+    svgElement.setAttribute('width', (options.size || 200).toString())
+    svgElement.setAttribute('height', (options.size || 200).toString())
 
     // 应用样式
     if (options.style) {
@@ -281,12 +232,12 @@ export class QRCodeGenerator {
   ): Promise<HTMLImageElement> {
     // 先生成Canvas，然后转换为Image
     const canvas = await this.generateCanvas(text, qrOptions, options)
-    
+
     const img = new Image()
     img.src = canvas.toDataURL('image/png')
     img.width = canvas.width
     img.height = canvas.height
-    
+
     return new Promise((resolve, reject) => {
       img.onload = () => resolve(img)
       img.onerror = () => reject(createError('Failed to create image', 'IMAGE_GENERATION_ERROR'))
@@ -297,12 +248,12 @@ export class QRCodeGenerator {
    * 生成缓存键
    */
   private generateCacheKey(text: string, options: QRCodeOptions): string {
-    const optionsStr = JSON.stringify(options, (key, value) => {
+    const optionsStr = JSON.stringify(options, (_key, value) => {
       // 排除函数和不可序列化的值
       if (typeof value === 'function') return undefined
       return value
     })
-    
+
     return `${text}:${btoa(optionsStr)}`
   }
 
@@ -310,12 +261,14 @@ export class QRCodeGenerator {
    * 添加到缓存
    */
   private addToCache(key: string, result: QRCodeResult): void {
-    if (this.cache.size >= this.config.maxCacheSize!) {
+    if (this.cache.size >= (this.config.maxCacheSize || 100)) {
       // 删除最旧的条目
-      const firstKey = this.cache.keys().next().value
-      this.cache.delete(firstKey)
+      const it = this.cache.keys().next()
+      if (!it.done) {
+        this.cache.delete(it.value as string)
+      }
     }
-    
+
     this.cache.set(key, result)
   }
 
@@ -347,7 +300,7 @@ export class QRCodeGenerator {
    * 清除性能指标
    */
   clearPerformanceMetrics(): void {
-    this.performanceMonitor.clearMetrics()
+    this.performanceMonitor.clear()
   }
 
   /**
@@ -382,5 +335,10 @@ export class QRCodeGenerator {
   }
 }
 
-export { QRCodeGenerator }
 export default QRCodeGenerator
+
+// 便捷导出：默认单例与工厂函数
+export const defaultGenerator = new QRCodeGenerator()
+export function createQRCodeGenerator(options?: Partial<QRCodeOptions>) {
+  return new QRCodeGenerator(options)
+}

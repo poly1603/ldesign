@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     ref="containerRef"
     :class="[
       'l-qrcode',
@@ -16,7 +16,7 @@
         <div class="l-qrcode__spinner"></div>
       </slot>
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="l-qrcode__error">
       <slot name="error" :error="error">
@@ -25,7 +25,7 @@
         </div>
       </slot>
     </div>
-    
+
     <!-- 二维码内容 -->
     <div v-else class="l-qrcode__content">
       <!-- Canvas渲染 -->
@@ -36,7 +36,7 @@
         :height="actualHeight"
         class="l-qrcode__canvas"
       />
-      
+
       <!-- SVG渲染 -->
       <div
         v-else-if="format === 'svg' && svgElement"
@@ -44,7 +44,7 @@
         class="l-qrcode__svg"
         v-html="svgHTML"
       />
-      
+
       <!-- Image渲染 -->
       <img
         v-else-if="format === 'image' && imageElement"
@@ -56,7 +56,7 @@
         class="l-qrcode__image"
       />
     </div>
-    
+
     <!-- 下载按钮 -->
     <button
       v-if="showDownloadButton && !loading && !error"
@@ -174,14 +174,14 @@ const generateQRCode = async () => {
   if (!props.text.trim()) {
     return
   }
-  
+
   try {
     const qrResult = await generate(props.text, qrCodeOptions.value)
-    
+
     // 渲染到DOM
     await nextTick()
     await renderToDom(qrResult)
-    
+
     emit('generated', qrResult)
   } catch (err) {
     const qrError = err as QRCodeError
@@ -205,21 +205,21 @@ const renderToDom = async (qrResult: QRCodeResult) => {
 
 const renderCanvas = async (sourceCanvas: HTMLCanvasElement) => {
   if (!canvasRef.value) return
-  
+
   const targetCanvas = canvasRef.value
   const ctx = targetCanvas.getContext('2d')
   if (!ctx) return
-  
+
   // 清除画布
   ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height)
-  
+
   // 绘制源画布内容
   ctx.drawImage(sourceCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
 }
 
 const handleDownload = async () => {
   if (!result.value) return
-  
+
   try {
     await download(result.value, props.downloadFilename)
     emit('download', result.value)

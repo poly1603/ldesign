@@ -56,24 +56,24 @@ export interface QRCodeOptions {
   data: string
   size?: number
   format?: QRCodeFormat
-  
+
   // 二维码配置
   errorCorrectionLevel?: QRCodeErrorCorrectionLevel
   mode?: QRCodeMode
   version?: number
   mask?: number
-  
+
   // 样式配置
   style?: StyleOptions
-  
+
   // Logo配置
   logo?: LogoOptions
-  
+
   // 高级配置
   margin?: number
   scale?: number
   quality?: number
-  
+
   // 性能配置
   enableCache?: boolean
   cacheKey?: string
@@ -122,7 +122,7 @@ export interface PerformanceMetric {
 export class QRCodeError extends Error {
   code: string
   details?: any
-  
+
   constructor(message: string, code: string, details?: any) {
     super(message)
     this.name = 'QRCodeError'
@@ -169,7 +169,7 @@ export interface UseQRCodeReturn {
   result: import('vue').Ref<QRCodeResult | null>
   isLoading: import('vue').Ref<boolean>
   error: import('vue').Ref<QRCodeError | null>
-  
+
   // 方法
   generate: (customOptions?: Partial<QRCodeOptions>) => Promise<QRCodeResult | null>
   updateOptions: (newOptions: Partial<QRCodeOptions>, autoGenerate?: boolean) => Promise<void>
@@ -186,4 +186,4 @@ export type CacheKeyGenerator = (options: QRCodeOptions) => string
 export type SizeCalculator = (options: QRCodeOptions) => { width: number; height: number }
 
 // 导出所有类型
-export * from './index'
+// 注意：避免自循环导出

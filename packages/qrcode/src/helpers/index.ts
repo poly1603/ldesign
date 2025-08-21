@@ -66,7 +66,7 @@ export async function downloadQRCode(
 ): Promise<void> {
   const result = await generateQRCode(text, options)
   const finalFilename = filename || 'qrcode'
-  await downloadFile(result.dataURL, finalFilename, result.format)
+  await downloadFile(result.dataURL || '', finalFilename, result.format)
 }
 
 /**
@@ -77,7 +77,7 @@ export async function getQRCodeDataURL(
   options?: QRCodeOptions
 ): Promise<string> {
   const result = await generateQRCode(text, options)
-  return result.dataURL
+  return result.dataURL || ''
 }
 
 /**
@@ -126,9 +126,9 @@ export async function generateQRCodeBatch(
   const results = await Promise.allSettled(
     items.map(item => generateQRCode(item.text, item.options))
   )
-  
+
   return results
-    .filter((result): result is PromiseFulfilledResult<QRCodeResult> => 
+    .filter((result): result is PromiseFulfilledResult<QRCodeResult> =>
       result.status === 'fulfilled'
     )
     .map(result => result.value)
@@ -141,16 +141,16 @@ export function validateQRCodeText(text: string): boolean {
   if (!text || typeof text !== 'string') {
     return false
   }
-  
+
   if (text.trim().length === 0) {
     return false
   }
-  
+
   // 检查文本长度（二维码有最大容量限制）
   if (text.length > 4296) {
     return false
   }
-  
+
   return true
 }
 
@@ -162,20 +162,20 @@ export function estimateQRCodeSize(
   errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H' = 'M'
 ): { version: number; modules: number; capacity: number } {
   const textLength = text.length
-  
+
   // 简化的版本估算（实际情况更复杂）
   let version = 1
   let capacity = 25 // Version 1, Level M
-  
+
   const capacities = {
     L: [25, 47, 77, 114, 154, 195, 224, 279, 335, 395],
     M: [20, 38, 61, 90, 122, 154, 178, 221, 262, 311],
     Q: [16, 29, 47, 67, 87, 108, 125, 157, 189, 221],
     H: [10, 20, 35, 50, 64, 84, 93, 122, 143, 174]
   }
-  
+
   const levelCapacities = capacities[errorCorrectionLevel]
-  
+
   for (let i = 0; i < levelCapacities.length; i++) {
     if (textLength <= levelCapacities[i]) {
       version = i + 1
@@ -183,9 +183,9 @@ export function estimateQRCodeSize(
       break
     }
   }
-  
+
   const modules = 21 + (version - 1) * 4
-  
+
   return {
     version,
     modules,
@@ -210,4 +210,6 @@ export function getQRCodeMetrics() {
 /**
  * 获取默认生成器缓存统计
  */
-export function
+export function getQRCodeCacheStats() {
+  return defaultGenerator.getCacheStats()
+}

@@ -17,13 +17,13 @@ export interface UseQRCodeReturn {
   loading: Ref<boolean>
   error: Ref<QRCodeError | null>
   options: Ref<QRCodeOptions>
-  
+
   // 计算属性
   isReady: Ref<boolean>
   dataURL: Ref<string | null>
   format: Ref<string | null>
   element: Ref<HTMLCanvasElement | SVGElement | HTMLImageElement | null>
-  
+
   // 方法
   generate: (text: string, newOptions?: QRCodeOptions) => Promise<QRCodeResult>
   updateOptions: (newOptions: Partial<QRCodeOptions>) => void
@@ -45,17 +45,17 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
   const result = ref<QRCodeResult | null>(null)
   const loading = ref(false)
   const error = ref<QRCodeError | null>(null)
-  const options = ref<QRCodeOptions>(initialOptions || {})
-  
+  const options = ref<QRCodeOptions>(initialOptions || { data: '', size: 200, format: 'canvas' })
+
   // 生成器实例
-  const generator = new QRCodeGenerator()
-  
+  const generator = new QRCodeGenerator(initialOptions)
+
   // 计算属性
   const isReady = computed(() => !!result.value && !loading.value)
   const dataURL = computed(() => result.value?.dataURL || null)
   const format = computed(() => result.value?.format || null)
   const element = computed(() => result.value?.element || null)
-  
+
   /**
    * 生成二维码
    */
@@ -67,21 +67,21 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
     if (!finalText.trim()) {
       throw createError('Text cannot be empty', 'INVALID_TEXT')
     }
-    
+
     loading.value = true
     error.value = null
-    
+
     try {
       const finalOptions = { ...options.value, ...newOptions }
       const qrResult = await generator.generate(finalText, finalOptions)
-      
+
       result.value = qrResult
       return qrResult
     } catch (err) {
-      const qrError = err instanceof Error 
+      const qrError = err instanceof Error
         ? createError(err.message, 'GENERATION_ERROR')
         : createError('An unknown error occurred', 'UNKNOWN_ERROR')
-      
+
       error.value = qrError
       throw qrError
     } finally {
@@ -122,7 +122,7 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
 
     try {
       const finalFilename = filename || 'qrcode'
-      await downloadFile(targetResult.dataURL, finalFilename, targetResult.format)
+      await downloadFile(targetResult.dataURL || '', finalFilename, targetResult.format)
     } catch (err) {
       throw createError(`Failed to download: ${err instanceof Error ? err.message : 'Unknown error'}`, 'DOWNLOAD_ERROR')
     }
@@ -184,13 +184,13 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
     loading: loading as Ref<boolean>,
     error: error as Ref<QRCodeError | null>,
     options: options as Ref<QRCodeOptions>,
-    
+
     // 计算属性
     isReady,
     dataURL,
     format,
     element,
-    
+
     // 方法
     generate,
     updateOptions,
@@ -210,22 +210,22 @@ export function useQRCode(initialOptions?: QRCodeOptions): UseQRCodeReturn {
  */
 export function useQRCodeGenerator() {
   const generator = new QRCodeGenerator()
-  
+
   const generate = async (
     text: string,
     options?: QRCodeOptions
   ): Promise<QRCodeResult> => {
     return await generator.generate(text, options || {})
   }
-  
+
   const download = async (
     result: QRCodeResult,
     filename?: string
   ): Promise<void> => {
     const finalFilename = filename || 'qrcode'
-    await downloadFile(result.dataURL, finalFilename, result.format)
+    await downloadFile(result.dataURL || '', finalFilename, result.format)
   }
-  
+
   return {
     generate,
     download,
@@ -243,21 +243,21 @@ export function useReactiveQRCode(
   options?: Ref<QRCodeOptions> | QRCodeOptions
 ) {
   const qrCode = useQRCode()
-  const optionsRef = ref(options || {})
-  
+  const optionsRef = ref(options || { data: '', size: 200, format: 'canvas' })
+
   // 监听文本和选项变化
   const { watchEffect } = require('vue')
-  
+
   watchEffect(async () => {
     if (text.value.trim()) {
       try {
-        await qrCode.generate(text.value, optionsRef.value)
+        await qrCode.generate(text.value, optionsRef.value as QRCodeOptions)
       } catch (err) {
         console.error('QRCode generation failed:', err)
       }
     }
   })
-  
+
   return qrCode
 }
 
@@ -266,10 +266,9 @@ export function useReactiveQRCode(
  */
 export function useBatchQRCode() {
   const generator = new QRCodeGenerator({
-    enableCache: true,
-    maxCacheSize: 200
+    enableCache: true
   })
-  
+
   const generateBatch = async (
     items: Array<{ text: string; options?: QRCodeOptions; id?: string }>
   ): Promise<Array<QRCodeResult & { id?: string }>> => {
@@ -279,14 +278,10 @@ export function useBatchQRCode() {
         return { ...result, id: item.id }
       })
     )
-    
-    return results
-      .filter((result): result is PromiseFulfilledResult<QRCodeResult & { id?: string }> => 
-        result.status === 'fulfilled'
-      )
-      .map(result => result.value)
+
+    return results.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
   }
-  
+
   return {
     generateBatch,
     clearCache: () => generator.clearCache(),

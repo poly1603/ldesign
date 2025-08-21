@@ -9,7 +9,7 @@ export class StyleProcessor {
   constructor() {
     // 初始化
   }
-  
+
   /**
    * 向Canvas应用样式
    */
@@ -19,18 +19,18 @@ export class StyleProcessor {
   ): void {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Cannot get canvas context')
-    
+
     // 应用背景色
     if (styleOptions.backgroundColor) {
       this.applyBackgroundColor(ctx, canvas.width, canvas.height, styleOptions.backgroundColor)
     }
-    
+
     // 应用前景色和样式
     if (styleOptions.foregroundColor || styleOptions.dotStyle) {
       this.applyForegroundStyle(ctx, canvas, styleOptions)
     }
   }
-  
+
   /**
    * 向SVG应用样式
    */
@@ -42,13 +42,13 @@ export class StyleProcessor {
     if (styleOptions.backgroundColor) {
       this.applySVGBackgroundColor(svgElement, styleOptions.backgroundColor)
     }
-    
+
     // 应用前景样式
     if (styleOptions.foregroundColor || styleOptions.dotStyle) {
       this.applySVGForegroundStyle(svgElement, styleOptions)
     }
   }
-  
+
   /**
    * 应用Canvas背景色
    */
@@ -59,7 +59,7 @@ export class StyleProcessor {
     backgroundColor: ColorValue
   ): void {
     ctx.save()
-    
+
     if (typeof backgroundColor === 'string') {
       ctx.fillStyle = backgroundColor
     } else {
@@ -67,11 +67,11 @@ export class StyleProcessor {
       const gradient = this.createCanvasGradient(ctx, backgroundColor, width, height)
       ctx.fillStyle = gradient
     }
-    
+
     ctx.fillRect(0, 0, width, height)
     ctx.restore()
   }
-  
+
   /**
    * 应用Canvas前景样式
    */
@@ -80,21 +80,19 @@ export class StyleProcessor {
     canvas: HTMLCanvasElement,
     styleOptions: StyleOptions
   ): void {
-    // 获取图像数据
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const data = imageData.data
-    
+    // 可按需读取像素
+
     // 应用点样式
     if (styleOptions.dotStyle && styleOptions.dotStyle !== 'square') {
       this.applyDotStyle(ctx, canvas, styleOptions.dotStyle)
     }
-    
+
     // 应用前景色
     if (styleOptions.foregroundColor) {
       this.applyForegroundColor(ctx, canvas, styleOptions.foregroundColor)
     }
   }
-  
+
   /**
    * 应用点样式
    */
@@ -105,17 +103,17 @@ export class StyleProcessor {
   ): void {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const data = imageData.data
-    
+
     // 清除画布
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
+
     // 分析像素并绘制自定义点
     const dotSize = this.calculateDotSize(canvas.width)
-    
+
     for (let y = 0; y < canvas.height; y += dotSize) {
       for (let x = 0; x < canvas.width; x += dotSize) {
         const pixelIndex = (y * canvas.width + x) * 4
-        
+
         // 检查是否为前景像素（黑色）
         if (data[pixelIndex] < 128) {
           this.drawCustomDot(ctx, x, y, dotSize, dotStyle)
@@ -123,7 +121,7 @@ export class StyleProcessor {
       }
     }
   }
-  
+
   /**
    * 绘制自定义点
    */
@@ -136,7 +134,7 @@ export class StyleProcessor {
   ): void {
     ctx.save()
     ctx.fillStyle = '#000000'
-    
+
     switch (style) {
       case 'rounded':
         this.drawRoundedDot(ctx, x, y, size)
@@ -150,10 +148,10 @@ export class StyleProcessor {
       default:
         ctx.fillRect(x, y, size, size)
     }
-    
+
     ctx.restore()
   }
-  
+
   /**
    * 绘制圆角点
    */
@@ -164,7 +162,7 @@ export class StyleProcessor {
     size: number
   ): void {
     const radius = size * 0.2
-    
+
     ctx.beginPath()
     ctx.moveTo(x + radius, y)
     ctx.lineTo(x + size - radius, y)
@@ -178,7 +176,7 @@ export class StyleProcessor {
     ctx.closePath()
     ctx.fill()
   }
-  
+
   /**
    * 绘制圆形点
    */
@@ -191,12 +189,12 @@ export class StyleProcessor {
     const centerX = x + size / 2
     const centerY = y + size / 2
     const radius = size / 2
-    
+
     ctx.beginPath()
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
     ctx.fill()
   }
-  
+
   /**
    * 绘制优雅点
    */
@@ -210,7 +208,7 @@ export class StyleProcessor {
     const gap = size * 0.1
     ctx.fillRect(x + gap, y + gap, size - gap * 2, size - gap * 2)
   }
-  
+
   /**
    * 应用前景色
    */
@@ -234,7 +232,7 @@ export class StyleProcessor {
       ctx.globalCompositeOperation = 'source-over'
     }
   }
-  
+
   /**
    * 创建Canvas渐变
    */
@@ -245,31 +243,31 @@ export class StyleProcessor {
     height: number
   ): CanvasGradient {
     let gradient: CanvasGradient
-    
+
     if (gradientOptions.type === 'linear') {
       const angle = (gradientOptions.direction || 0) * Math.PI / 180
       const x1 = width / 2 - Math.cos(angle) * width / 2
       const y1 = height / 2 - Math.sin(angle) * height / 2
       const x2 = width / 2 + Math.cos(angle) * width / 2
       const y2 = height / 2 + Math.sin(angle) * height / 2
-      
+
       gradient = ctx.createLinearGradient(x1, y1, x2, y2)
     } else {
       const centerX = gradientOptions.centerX || width / 2
       const centerY = gradientOptions.centerY || height / 2
       const radius = Math.max(width, height) / 2
-      
+
       gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius)
     }
-    
+
     // 添加颜色停止点
     gradientOptions.colors.forEach(colorStop => {
       gradient.addColorStop(colorStop.offset, colorStop.color)
     })
-    
+
     return gradient
   }
-  
+
   /**
    * 应用SVG背景色
    */
@@ -279,23 +277,23 @@ export class StyleProcessor {
   ): void {
     const rect = svgElement.getBoundingClientRect()
     const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-    
+
     background.setAttribute('x', '0')
     background.setAttribute('y', '0')
     background.setAttribute('width', rect.width.toString())
     background.setAttribute('height', rect.height.toString())
-    
+
     if (typeof backgroundColor === 'string') {
       background.setAttribute('fill', backgroundColor)
     } else {
       const gradientId = this.createSVGGradient(svgElement, backgroundColor)
       background.setAttribute('fill', `url(#${gradientId})`)
     }
-    
+
     // 插入到第一个位置
     svgElement.insertBefore(background, svgElement.firstChild)
   }
-  
+
   /**
    * 应用SVG前景样式
    */
@@ -304,7 +302,7 @@ export class StyleProcessor {
     styleOptions: StyleOptions
   ): void {
     const paths = svgElement.querySelectorAll('path')
-    
+
     paths.forEach(path => {
       if (styleOptions.foregroundColor) {
         if (typeof styleOptions.foregroundColor === 'string') {
@@ -316,7 +314,7 @@ export class StyleProcessor {
       }
     })
   }
-  
+
   /**
    * 创建SVG渐变
    */
@@ -328,10 +326,10 @@ export class StyleProcessor {
     if (!svgElement.querySelector('defs')) {
       svgElement.appendChild(defs)
     }
-    
+
     const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`
     let gradient: SVGElement
-    
+
     if (gradientOptions.type === 'linear') {
       gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient')
       const angle = gradientOptions.direction || 0
@@ -339,7 +337,7 @@ export class StyleProcessor {
       const y1 = 50 - Math.sin(angle * Math.PI / 180) * 50
       const x2 = 50 + Math.cos(angle * Math.PI / 180) * 50
       const y2 = 50 + Math.sin(angle * Math.PI / 180) * 50
-      
+
       gradient.setAttribute('x1', `${x1}%`)
       gradient.setAttribute('y1', `${y1}%`)
       gradient.setAttribute('x2', `${x2}%`)
@@ -350,9 +348,9 @@ export class StyleProcessor {
       gradient.setAttribute('cy', `${gradientOptions.centerY || 50}%`)
       gradient.setAttribute('r', '50%')
     }
-    
+
     gradient.setAttribute('id', gradientId)
-    
+
     // 添加颜色停止点
     gradientOptions.colors.forEach(colorStop => {
       const stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
@@ -360,11 +358,11 @@ export class StyleProcessor {
       stop.setAttribute('stop-color', colorStop.color)
       gradient.appendChild(stop)
     })
-    
+
     defs.appendChild(gradient)
     return gradientId
   }
-  
+
   /**
    * 计算点大小
    */
@@ -372,7 +370,7 @@ export class StyleProcessor {
     // 假设二维码是21x21模块（最小版本）
     return Math.floor(canvasSize / 21)
   }
-  
+
   /**
    * 销毁处理器
    */
