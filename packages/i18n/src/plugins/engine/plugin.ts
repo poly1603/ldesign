@@ -113,7 +113,7 @@ export const i18nEnginePlugin: EngineI18nPlugin = {
       const i18n = await createI18nInstance(i18nOptions)
 
       // 注册到 Engine
-      engine.services.register('i18n', i18n)
+      engine.state.set('i18n', i18n)
 
       // 如果有 Vue 应用，安装 Vue 插件
       if (engine.vue && engine.vue.app) {
@@ -134,8 +134,8 @@ export const i18nEnginePlugin: EngineI18nPlugin = {
       })
 
       logger?.info('[I18n Plugin] I18n plugin installed successfully')
-
-    } catch (error) {
+    }
+    catch (error) {
       logger?.error('[I18n Plugin] Failed to install i18n plugin:', error)
       throw error
     }
@@ -148,19 +148,19 @@ export const i18nEnginePlugin: EngineI18nPlugin = {
       logger?.info('[I18n Plugin] Uninstalling i18n plugin...')
 
       // 获取 I18n 实例
-      const i18n = engine.services.get('i18n')
+      const i18n = engine.state.get('i18n')
 
       if (i18n) {
         // 清理事件监听器
         i18n.removeAllListeners()
 
         // 从 Engine 中移除
-        engine.services.unregister('i18n')
+        engine.state.delete('i18n')
       }
 
       logger?.info('[I18n Plugin] I18n plugin uninstalled successfully')
-
-    } catch (error) {
+    }
+    catch (error) {
       logger?.error('[I18n Plugin] Failed to uninstall i18n plugin:', error)
       throw error
     }

@@ -1,16 +1,16 @@
 /**
  * Vue I18n 插件管理器
- * 
+ *
  * 统一的插件架构，与engine插件管理器保持一致
  */
 
 import type { App } from 'vue'
 import type { I18nInstance } from '../../core/types'
 import type {
+  VueI18nOptions,
+  VueI18nPluginContext,
   VueI18nPluginInterface,
   VueI18nPluginManager,
-  VueI18nPluginContext,
-  VueI18nOptions,
 } from '../../vue/types'
 
 export class VueI18nPluginManagerImpl implements VueI18nPluginManager {

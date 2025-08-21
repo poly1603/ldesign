@@ -9,12 +9,15 @@ export type { CachePluginConfig } from './builtin/cache-plugin'
 export { performancePlugin } from './builtin/performance-plugin'
 export type { PerformancePluginConfig } from './builtin/performance-plugin'
 
+// Engine 插件
+export * from './engine'
 // 插件注册表
 export {
   createPluginRegistry,
   PluginRegistry,
   PluginStatus,
 } from './registry'
+
 export type {
   I18nPlugin,
   PluginEvents,
@@ -23,6 +26,3 @@ export type {
 
 // Vue 插件
 export * from './vue'
-
-// Engine 插件
-export * from './engine'

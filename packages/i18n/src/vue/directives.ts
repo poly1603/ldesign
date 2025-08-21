@@ -14,7 +14,7 @@
 
 import type { Directive, DirectiveBinding } from 'vue'
 import type { I18nInstance, TranslationParams } from '../core/types'
-import type { EnhancedI18nInstance } from '../types/enhanced'
+import type { EnhancedI18nInstance } from './types/enhanced'
 
 /**
  * 指令绑定值类型

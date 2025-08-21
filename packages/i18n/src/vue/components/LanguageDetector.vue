@@ -8,42 +8,8 @@
   - 智能语言建议
 -->
 
-<template>
-  <div v-if="shouldShowSuggestion" class="language-detector" :class="detectorClasses">
-    <div class="detector-content">
-      <div class="detector-icon">🌐</div>
-      <div class="detector-message">
-        <div class="detector-title">{{ title }}</div>
-        <div class="detector-description">{{ description }}</div>
-      </div>
-      <div class="detector-actions">
-        <button
-          class="detector-button detector-button--primary"
-          @click="acceptSuggestion"
-          :disabled="isChanging"
-        >
-          {{ acceptText }}
-        </button>
-        <button
-          class="detector-button detector-button--secondary"
-          @click="dismissSuggestion"
-        >
-          {{ dismissText }}
-        </button>
-      </div>
-      <button
-        class="detector-close"
-        @click="dismissSuggestion"
-        :aria-label="closeLabel"
-      >
-        ×
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useLanguageSwitcher } from '../composables'
 
 interface Props {
@@ -99,18 +65,18 @@ const detectedLanguages = ref<string[]>([])
 
 // 是否应该显示建议
 const shouldShowSuggestion = computed(() => {
-  return props.autoDetect && 
-         isVisible.value && 
-         !isDismissed.value && 
-         suggestedLanguage.value && 
-         suggestedLanguage.value !== locale.value
+  return props.autoDetect
+    && isVisible.value
+    && !isDismissed.value
+    && suggestedLanguage.value
+    && suggestedLanguage.value !== locale.value
 })
 
 // 检测器CSS类
 const detectorClasses = computed(() => {
   return [
     `language-detector--${props.mode}`,
-    { 'is-dismissible': props.dismissible }
+    { 'is-dismissible': props.dismissible },
   ]
 })
 
@@ -142,16 +108,17 @@ const description = computed(() => {
 // 检测浏览器语言
 function detectBrowserLanguages(): string[] {
   const languages: string[] = []
-  
+
   // 获取浏览器语言列表
   if (navigator.languages) {
     languages.push(...navigator.languages)
-  } else if (navigator.language) {
+  }
+  else if (navigator.language) {
     languages.push(navigator.language)
   }
-  
+
   // 标准化语言代码
-  return languages.map(lang => {
+  return languages.map((lang) => {
     // 处理常见的语言代码映射
     const normalized = lang.toLowerCase()
     if (normalized.startsWith('zh-cn') || normalized.startsWith('zh-hans')) {
@@ -170,14 +137,14 @@ function detectBrowserLanguages(): string[] {
 // 查找最佳匹配语言
 function findBestMatch(detectedLangs: string[]): string | null {
   const availableCodes = (availableLanguages.value as any[]).map(lang => lang.code)
-  
+
   // 精确匹配
   for (const lang of detectedLangs) {
     if (availableCodes.includes(lang)) {
       return lang
     }
   }
-  
+
   // 主语言匹配
   for (const lang of detectedLangs) {
     const mainLang = lang.split('-')[0]
@@ -186,7 +153,7 @@ function findBestMatch(detectedLangs: string[]): string | null {
       return match
     }
   }
-  
+
   return null
 }
 
@@ -195,7 +162,8 @@ function checkDismissed(): boolean {
   try {
     const dismissed = localStorage.getItem(props.storageKey)
     return dismissed === 'true'
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -204,7 +172,8 @@ function checkDismissed(): boolean {
 function saveDismissed() {
   try {
     localStorage.setItem(props.storageKey, 'true')
-  } catch {
+  }
+  catch {
     // 忽略存储错误
   }
 }
@@ -214,14 +183,14 @@ function performDetection() {
   if (!props.autoDetect || checkDismissed()) {
     return
   }
-  
+
   const detected = detectBrowserLanguages()
   detectedLanguages.value = detected
-  
+
   const bestMatch = findBestMatch(detected)
   if (bestMatch && bestMatch !== locale.value) {
     suggestedLanguage.value = bestMatch
-    
+
     setTimeout(() => {
       isVisible.value = true
       emit('detected', bestMatch, detected)
@@ -234,12 +203,13 @@ async function acceptSuggestion() {
   if (!suggestedLanguage.value || isChanging.value) {
     return
   }
-  
+
   try {
     await switchLanguage(suggestedLanguage.value)
     emit('accepted', suggestedLanguage.value)
     isVisible.value = false
-  } catch (error) {
+  }
+  catch (error) {
     console.error('语言切换失败:', error)
   }
 }
@@ -279,6 +249,46 @@ defineExpose({
   accept: acceptSuggestion,
 })
 </script>
+
+<template>
+  <div v-if="shouldShowSuggestion" class="language-detector" :class="detectorClasses">
+    <div class="detector-content">
+      <div class="detector-icon">
+        🌐
+      </div>
+      <div class="detector-message">
+        <div class="detector-title">
+          {{ title }}
+        </div>
+        <div class="detector-description">
+          {{ description }}
+        </div>
+      </div>
+      <div class="detector-actions">
+        <button
+          class="detector-button detector-button--primary"
+          :disabled="isChanging"
+          @click="acceptSuggestion"
+        >
+          {{ acceptText }}
+        </button>
+        <button
+          class="detector-button detector-button--secondary"
+          @click="dismissSuggestion"
+        >
+          {{ dismissText }}
+        </button>
+      </div>
+      <button
+        class="detector-close"
+        :aria-label="closeLabel"
+        @click="dismissSuggestion"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 /* 基础样式 */
@@ -416,7 +426,7 @@ defineExpose({
     left: 10px;
     max-width: none;
   }
-  
+
   .language-detector--modal {
     top: 20px;
     left: 10px;
@@ -424,16 +434,16 @@ defineExpose({
     transform: none;
     max-width: none;
   }
-  
+
   .detector-content {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .detector-actions {
     width: 100%;
   }
-  
+
   .detector-button {
     flex: 1;
   }

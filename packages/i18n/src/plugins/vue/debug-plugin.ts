@@ -1,10 +1,10 @@
 /**
  * Vue I18n 调试插件
- * 
+ *
  * 提供调试功能的示例插件，展示统一插件架构的使用
  */
 
-import type { VueI18nPluginInterface, VueI18nPluginContext } from '../../vue/types'
+import type { VueI18nPluginContext, VueI18nPluginInterface } from '../../vue/types'
 
 /**
  * 调试插件配置
@@ -87,16 +87,16 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
       if (finalConfig.enablePerformanceMonitor) {
         const originalT = ctx.i18n.t.bind(ctx.i18n)
           ; (ctx.i18n as any).t = function (key: string, params?: any, options?: any) {
-            const start = performance.now()
-            const result = originalT(key, params, options)
-            const end = performance.now()
+          const start = performance.now()
+          const result = originalT(key, params, options)
+          const end = performance.now()
 
-            if (end - start > 10) { // 超过10ms的翻译记录警告
-              console.warn(`[I18n Performance] Slow translation: ${key} took ${(end - start).toFixed(2)}ms`)
-            }
-
-            return result
+          if (end - start > 10) { // 超过10ms的翻译记录警告
+            console.warn(`[I18n Performance] Slow translation: ${key} took ${(end - start).toFixed(2)}ms`)
           }
+
+          return result
+        }
       }
 
       // 监听语言变化

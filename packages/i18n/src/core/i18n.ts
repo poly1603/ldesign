@@ -14,7 +14,6 @@ import type {
   TranslationOptions,
   TranslationParams,
 } from './types'
-import process from 'node:process'
 import { hasInterpolation, interpolate } from '../utils/interpolation'
 import { getNestedValue } from '../utils/path'
 
@@ -151,9 +150,9 @@ export class I18n implements I18nInstance {
   private isDevelopmentEnvironment(): boolean {
     // 浏览器环境检查
     if (typeof window !== 'undefined') {
-      return window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname.includes('dev')
+      return window.location.hostname === 'localhost'
+        || window.location.hostname === '127.0.0.1'
+        || window.location.hostname.includes('dev')
     }
 
     // Node.js环境检查

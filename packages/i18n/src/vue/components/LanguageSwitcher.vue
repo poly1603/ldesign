@@ -6,130 +6,10 @@
   - dialog: 对话框模式
 -->
 
-<template>
-  <div 
-    :class="[
-      'language-switcher',
-      `language-switcher--${mode}`,
-      { 'is-disabled': disabled || isChanging }
-    ]"
-    @keydown="handleKeydown"
-  >
-    <!-- 触发按钮 -->
-    <button
-      class="language-switcher__trigger"
-      :class="{ 'is-open': isOpen, 'is-loading': isChanging }"
-      :disabled="disabled || isChanging"
-      :aria-expanded="isOpen"
-      :aria-haspopup="true"
-      :aria-label="triggerLabel"
-      @click="toggle"
-    >
-      <span class="trigger-content">
-        <span v-if="showFlag" class="language-flag">{{ currentLanguageFlag }}</span>
-        <span class="language-name">{{ currentLanguageDisplay }}</span>
-        <span v-if="showCode" class="language-code">({{ locale }})</span>
-      </span>
-      
-      <span class="trigger-icon" :class="{ 'is-open': isOpen }">
-        <template v-if="mode === 'dialog'">⚙️</template>
-        <template v-else>▼</template>
-      </span>
-      
-      <span v-if="isChanging" class="loading-indicator">
-        <svg class="spinner" width="16" height="16" viewBox="0 0 16 16">
-          <circle 
-            cx="8" cy="8" r="6" 
-            stroke="currentColor" 
-            stroke-width="2" 
-            fill="none" 
-            stroke-dasharray="37.7" 
-            stroke-dashoffset="37.7"
-          >
-            <animate 
-              attributeName="stroke-dashoffset" 
-              dur="1s" 
-              values="37.7;0" 
-              repeatCount="indefinite" 
-            />
-          </circle>
-        </svg>
-      </span>
-    </button>
-
-    <!-- 下拉菜单模式 -->
-    <Transition name="dropdown" v-if="mode === 'dropdown'">
-      <div 
-        v-if="isOpen" 
-        class="language-switcher__dropdown"
-        @click.stop
-      >
-        <button
-          v-for="option in languageOptions"
-          :key="option.code"
-          class="language-option"
-          :class="{ 'is-active': option.code === locale }"
-          :disabled="disabled || isChanging"
-          @click="handleLanguageChange(option.code)"
-        >
-          <span v-if="showFlag" class="language-flag">{{ option.flag }}</span>
-          <span class="language-info">
-            <span class="language-native">{{ option.nativeName }}</span>
-            <span class="language-english">{{ option.name }}</span>
-          </span>
-          <span v-if="option.code === locale" class="language-check">✓</span>
-        </button>
-      </div>
-    </Transition>
-
-    <!-- 对话框模式 -->
-    <Teleport to="body" v-if="mode === 'dialog'">
-      <Transition name="dialog">
-        <div 
-          v-if="isOpen" 
-          class="language-switcher__dialog"
-          @click="close"
-        >
-          <div class="language-switcher__backdrop"></div>
-          <div class="language-switcher__modal" @click.stop>
-            <div class="language-switcher__header">
-              <h3 class="language-switcher__title">{{ dialogTitle }}</h3>
-              <button 
-                class="language-switcher__close"
-                @click="close"
-                :aria-label="closeLabel"
-              >
-                ×
-              </button>
-            </div>
-            <div class="language-switcher__body">
-              <button
-                v-for="option in languageOptions"
-                :key="option.code"
-                class="language-option"
-                :class="{ 'is-active': option.code === locale }"
-                :disabled="disabled || isChanging"
-                @click="handleLanguageChange(option.code)"
-              >
-                <span v-if="showFlag" class="language-flag">{{ option.flag }}</span>
-                <span class="language-info">
-                  <span class="language-native">{{ option.nativeName }}</span>
-                  <span class="language-english">{{ option.name }}</span>
-                </span>
-                <span v-if="option.code === locale" class="language-check">✓</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { useLanguageSwitcher } from '../composables'
 import type { LanguageInfo } from '../../core/types'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useLanguageSwitcher } from '../composables'
 
 interface Props {
   /** UI模式：下拉菜单或对话框 */
@@ -171,7 +51,7 @@ const isOpen = ref(false)
 // 当前语言信息
 const currentLanguage = computed(() => {
   const languages = availableLanguages.value as LanguageInfo[]
-  return languages.find((lang) => lang.code === locale.value) || {
+  return languages.find(lang => lang.code === locale.value) || {
     code: locale.value,
     name: locale.value,
     nativeName: locale.value,
@@ -194,7 +74,7 @@ const currentLanguageFlag = computed(() => {
 // 语言选项列表
 const languageOptions = computed(() => {
   const languages = availableLanguages.value as LanguageInfo[]
-  return languages.map((lang) => ({
+  return languages.map(lang => ({
     code: lang.code,
     name: lang.name,
     nativeName: lang.nativeName,
@@ -248,10 +128,11 @@ function toggle() {
   if (props.disabled || isChanging.value) {
     return
   }
-  
+
   if (isOpen.value) {
     close()
-  } else {
+  }
+  else {
     open()
   }
 }
@@ -294,6 +175,127 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+<template>
+  <div
+    class="language-switcher" :class="[
+      `language-switcher--${mode}`,
+      { 'is-disabled': disabled || isChanging },
+    ]"
+    @keydown="handleKeydown"
+  >
+    <!-- 触发按钮 -->
+    <button
+      class="language-switcher__trigger"
+      :class="{ 'is-open': isOpen, 'is-loading': isChanging }"
+      :disabled="disabled || isChanging"
+      :aria-expanded="isOpen"
+      :aria-haspopup="true"
+      :aria-label="triggerLabel"
+      @click="toggle"
+    >
+      <span class="trigger-content">
+        <span v-if="showFlag" class="language-flag">{{ currentLanguageFlag }}</span>
+        <span class="language-name">{{ currentLanguageDisplay }}</span>
+        <span v-if="showCode" class="language-code">({{ locale }})</span>
+      </span>
+
+      <span class="trigger-icon" :class="{ 'is-open': isOpen }">
+        <template v-if="mode === 'dialog'">⚙️</template>
+        <template v-else>▼</template>
+      </span>
+
+      <span v-if="isChanging" class="loading-indicator">
+        <svg class="spinner" width="16" height="16" viewBox="0 0 16 16">
+          <circle
+            cx="8" cy="8" r="6"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
+            stroke-dasharray="37.7"
+            stroke-dashoffset="37.7"
+          >
+            <animate
+              attributeName="stroke-dashoffset"
+              dur="1s"
+              values="37.7;0"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
+      </span>
+    </button>
+
+    <!-- 下拉菜单模式 -->
+    <Transition v-if="mode === 'dropdown'" name="dropdown">
+      <div
+        v-if="isOpen"
+        class="language-switcher__dropdown"
+        @click.stop
+      >
+        <button
+          v-for="option in languageOptions"
+          :key="option.code"
+          class="language-option"
+          :class="{ 'is-active': option.code === locale }"
+          :disabled="disabled || isChanging"
+          @click="handleLanguageChange(option.code)"
+        >
+          <span v-if="showFlag" class="language-flag">{{ option.flag }}</span>
+          <span class="language-info">
+            <span class="language-native">{{ option.nativeName }}</span>
+            <span class="language-english">{{ option.name }}</span>
+          </span>
+          <span v-if="option.code === locale" class="language-check">✓</span>
+        </button>
+      </div>
+    </Transition>
+
+    <!-- 对话框模式 -->
+    <Teleport v-if="mode === 'dialog'" to="body">
+      <Transition name="dialog">
+        <div
+          v-if="isOpen"
+          class="language-switcher__dialog"
+          @click="close"
+        >
+          <div class="language-switcher__backdrop" />
+          <div class="language-switcher__modal" @click.stop>
+            <div class="language-switcher__header">
+              <h3 class="language-switcher__title">
+                {{ dialogTitle }}
+              </h3>
+              <button
+                class="language-switcher__close"
+                :aria-label="closeLabel"
+                @click="close"
+              >
+                ×
+              </button>
+            </div>
+            <div class="language-switcher__body">
+              <button
+                v-for="option in languageOptions"
+                :key="option.code"
+                class="language-option"
+                :class="{ 'is-active': option.code === locale }"
+                :disabled="disabled || isChanging"
+                @click="handleLanguageChange(option.code)"
+              >
+                <span v-if="showFlag" class="language-flag">{{ option.flag }}</span>
+                <span class="language-info">
+                  <span class="language-native">{{ option.nativeName }}</span>
+                  <span class="language-english">{{ option.name }}</span>
+                </span>
+                <span v-if="option.code === locale" class="language-check">✓</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
+</template>
 
 <style scoped>
 /* 基础样式 */

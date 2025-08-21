@@ -7,7 +7,7 @@ import type {
   TranslationFunction,
   TranslationOptions,
   TranslationParams,
-} from '../core/types'
+} from '../../core/types'
 
 // Vue 类型已从 'vue' 导入，移除重复定义
 

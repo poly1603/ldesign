@@ -111,17 +111,18 @@ export type {
   TranslationOptions,
   TranslationParams,
 } from './core/types'
-// 导出 Engine 插件
-export * from './plugins/engine'
-
 // 导出内置语言包
 export { default as enLanguagePackage } from './locales/en'
 
 export { default as jaLanguagePackage } from './locales/ja'
 
 export { default as zhCNLanguagePackage } from './locales/zh-CN'
+
 // 导出插件系统
 export * from './plugins'
+
+// 导出 Engine 插件
+export * from './plugins/engine'
 export {
   batchInterpolate,
   extractInterpolationKeys,
@@ -130,7 +131,6 @@ export {
   interpolate,
   validateInterpolationParams,
 } from './utils/interpolation'
-
 // 导出工具函数
 export {
   deepMerge,
@@ -142,6 +142,17 @@ export {
   setNestedValue,
   unflattenObject,
 } from './utils/path'
+
+export {
+  extractPluralKeys,
+  // 复数工具
+  getPluralRule,
+  getSupportedPluralLocales,
+  hasPluralExpression,
+  parsePluralExpression,
+  processPluralization,
+  registerPluralRule,
+} from './utils/pluralization'
 
 /**
  * 创建 I18n 实例
@@ -176,19 +187,14 @@ export async function createI18n(
  */
 export const version = '0.1.0'
 
-export {
-  extractPluralKeys,
-  // 复数工具
-  getPluralRule,
-  getSupportedPluralLocales,
-  hasPluralExpression,
-  parsePluralExpression,
-  processPluralization,
-  registerPluralRule,
-} from './utils/pluralization'
-
 // 导出 Vue 集成（可选，需要单独导入）
 export * as vue from './vue'
+
+// 导出 Vue 组件（直接导出以便使用）
+export { LanguageSwitcher } from './vue/components'
+
+// 导出 Web Components
+export * from './web-components'
 
 /**
  * 默认导出（主要的 I18n 类）

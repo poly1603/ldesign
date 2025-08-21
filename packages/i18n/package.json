@@ -24,6 +24,11 @@
       "import": "./esm/vue/index.js",
       "require": "./cjs/vue/index.js"
     },
+    "./web-components": {
+      "types": "./types/web-components/index.d.ts",
+      "import": "./esm/web-components/index.js",
+      "require": "./cjs/web-components/index.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "cjs/index.js",
@@ -70,6 +75,7 @@
     }
   },
   "dependencies": {
+    "lit": "^3.0.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

@@ -4,8 +4,6 @@
  * 提供统一的错误类型和处理机制
  */
 
-import process from 'node:process'
-
 /**
  * 错误严重级别
  */
@@ -454,9 +452,9 @@ export class ErrorManager {
   private isDevelopment(): boolean {
     // 浏览器环境检查
     if (typeof window !== 'undefined') {
-      return window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname.includes('dev')
+      return window.location.hostname === 'localhost'
+        || window.location.hostname === '127.0.0.1'
+        || window.location.hostname.includes('dev')
     }
 
     // Node.js环境检查

@@ -8,42 +8,6 @@
   - 加载状态显示
 -->
 
-<template>
-  <button
-    :class="buttonClasses"
-    :disabled="disabled || isChanging || isCurrentLanguage"
-    :aria-label="ariaLabel"
-    :title="tooltip"
-    @click="handleClick"
-  >
-    <span v-if="showFlag" class="language-flag">{{ languageFlag }}</span>
-    <span v-if="showName" class="language-name">{{ displayName }}</span>
-    <span v-if="showCode" class="language-code">{{ targetLanguage }}</span>
-    
-    <span v-if="isChanging" class="loading-indicator">
-      <svg class="spinner" width="16" height="16" viewBox="0 0 16 16">
-        <circle 
-          cx="8" cy="8" r="6" 
-          stroke="currentColor" 
-          stroke-width="2" 
-          fill="none" 
-          stroke-dasharray="37.7" 
-          stroke-dashoffset="37.7"
-        >
-          <animate 
-            attributeName="stroke-dashoffset" 
-            dur="1s" 
-            values="37.7;0" 
-            repeatCount="indefinite" 
-          />
-        </circle>
-      </svg>
-    </span>
-    
-    <span v-if="isCurrentLanguage && showCheck" class="current-indicator">✓</span>
-  </button>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useLanguageSwitcher } from '../composables'
@@ -121,15 +85,15 @@ const buttonClasses = computed(() => {
     `language-button--${props.variant}`,
     `language-button--${props.size}`,
   ]
-  
+
   if (isCurrentLanguage.value) {
     classes.push('is-current')
   }
-  
+
   if (isChanging.value) {
     classes.push('is-loading')
   }
-  
+
   if (props.disabled) {
     classes.push('is-disabled')
   }
@@ -137,9 +101,11 @@ const buttonClasses = computed(() => {
   if (props.class) {
     if (typeof props.class === 'string') {
       classes.push(props.class)
-    } else if (Array.isArray(props.class)) {
+    }
+    else if (Array.isArray(props.class)) {
       classes.push(...props.class)
-    } else {
+    }
+    else {
       Object.entries(props.class).forEach(([key, value]) => {
         if (value) {
           classes.push(key)
@@ -147,7 +113,7 @@ const buttonClasses = computed(() => {
       })
     }
   }
-  
+
   return classes
 })
 
@@ -198,7 +164,7 @@ async function handleClick() {
   }
 
   const oldLanguage = locale.value
-  
+
   try {
     emit('click', props.targetLanguage)
     await switchLanguage(props.targetLanguage)
@@ -209,6 +175,42 @@ async function handleClick() {
   }
 }
 </script>
+
+<template>
+  <button
+    :class="buttonClasses"
+    :disabled="disabled || isChanging || isCurrentLanguage"
+    :aria-label="ariaLabel"
+    :title="tooltip"
+    @click="handleClick"
+  >
+    <span v-if="showFlag" class="language-flag">{{ languageFlag }}</span>
+    <span v-if="showName" class="language-name">{{ displayName }}</span>
+    <span v-if="showCode" class="language-code">{{ targetLanguage }}</span>
+
+    <span v-if="isChanging" class="loading-indicator">
+      <svg class="spinner" width="16" height="16" viewBox="0 0 16 16">
+        <circle
+          cx="8" cy="8" r="6"
+          stroke="currentColor"
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="37.7"
+          stroke-dashoffset="37.7"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            dur="1s"
+            values="37.7;0"
+            repeatCount="indefinite"
+          />
+        </circle>
+      </svg>
+    </span>
+
+    <span v-if="isCurrentLanguage && showCheck" class="current-indicator">✓</span>
+  </button>
+</template>
 
 <style scoped>
 /* 基础样式 */
@@ -356,7 +358,7 @@ async function handleClick() {
     font-size: 14px;
     min-height: 36px;
   }
-  
+
   .language-button--medium {
     padding: 4px 8px;
     font-size: 12px;

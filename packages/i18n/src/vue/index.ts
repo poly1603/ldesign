@@ -25,14 +25,28 @@ export {
   performancePlugin,
 } from '../plugins'
 
+// 导出内置插件
+export {
+  createDebugPlugin,
+  debugPlugin,
+  devDebugPlugin,
+  prodDebugPlugin,
+} from '../plugins/vue'
+
+// 导出插件管理器
+export {
+  createVueI18nPluginManager,
+  VueI18nPluginManagerImpl,
+} from '../plugins/vue/plugin-manager'
+
 // 导出组件
 export {
-  LanguageSwitcher,
-  TranslationProvider,
-  TranslationText,
-  TranslationForm,
   LanguageButton,
   LanguageDetector,
+  LanguageSwitcher,
+  TranslationForm,
+  TranslationProvider,
+  TranslationText,
 } from './components'
 
 // 导出组合式 API
@@ -122,20 +136,6 @@ export {
   vueI18n,
 } from './plugin'
 
-// 导出插件管理器
-export {
-  createVueI18nPluginManager,
-  VueI18nPluginManagerImpl,
-} from '../plugins/vue/plugin-manager'
-
-// 导出内置插件
-export {
-  createDebugPlugin,
-  debugPlugin,
-  devDebugPlugin,
-  prodDebugPlugin,
-} from '../plugins/vue'
-
 // 导出响应式系统
 export {
   createReactiveTranslationManager,
@@ -172,7 +172,7 @@ export type {
   UseI18nReturn,
   VueI18nOptions,
   VueI18nPlugin,
-  VueI18nPluginInterface,
   VueI18nPluginContext,
+  VueI18nPluginInterface,
   VueI18nPluginManager,
-} from './types'
+} from './types/index'

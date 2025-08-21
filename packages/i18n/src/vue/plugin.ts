@@ -8,9 +8,9 @@ import type {
 } from './types'
 
 import { I18n } from '../core/i18n'
-import { I18N_INJECTION_KEY } from './composables'
-import { createModifiableVTDirective, vTHtml, vTAttr, vTPlural } from './directives'
 import { createVueI18nPluginManager } from '../plugins/vue/plugin-manager'
+import { I18N_INJECTION_KEY } from './composables'
+import { createModifiableVTDirective, vTAttr, vTHtml, vTPlural } from './directives'
 
 /**
  * 默认插件选项
@@ -37,33 +37,38 @@ const DEFAULT_PLUGIN_OPTIONS = {
  */
 export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
   const global = i18nInstance || new I18n()
-  const pluginManager = createVueI18nPluginManager()
+  const pluginManager = createVueI18nPluginManager(undefined, global)
 
   const plugin: VueI18nPlugin = {
     global,
     plugins: pluginManager,
     async install(app: App, options: Partial<VueI18nOptions> = {}) {
+      console.log('🔧 Vue plugin install started')
       const opts = { ...DEFAULT_PLUGIN_OPTIONS, ...options }
 
       // 确保 I18n 实例已初始化
       if (!global.isReady()) {
+        console.log('🔧 Initializing I18n instance')
         await global.init()
       }
 
       // 设置插件管理器上下文
+      console.log('🔧 Setting plugin manager context')
       pluginManager.setContext(app, global, opts)
 
       // 提供 I18n 实例给子组件
+      console.log('🔧 Providing I18n instance to components')
       app.provide(I18N_INJECTION_KEY, global)
 
       // 注入全局属性
+      console.log('🔧 Injecting global properties')
       if (opts.globalInjection) {
         // 确保 t 方法存在
         if (typeof global.t === 'function') {
           // 注入翻译函数，确保正确绑定 this 上下文
           ; (app.config.globalProperties as any)[opts.globalPropertyName]
             = global.t.bind(global)
-            ; (app.config.globalProperties as any).$i18n = global
+          ; (app.config.globalProperties as any).$i18n = global
 
           // 为了类型安全，也在 app.config.globalProperties 上设置
           Object.defineProperty(app.config.globalProperties, '$t', {
@@ -79,7 +84,9 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 
       // 注册增强的 v-t 指令系统
       // 主要的 v-t 指令（支持修饰符）
+      console.log('🔧 Creating modifiable v-t directive')
       const tDirective = createModifiableVTDirective(global)
+      console.log('🔧 Registering v-t directive')
       app.directive('t', tDirective)
 
       // 专用指令

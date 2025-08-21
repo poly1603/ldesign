@@ -14,6 +14,8 @@ export interface LanguageInfo {
   direction: 'ltr' | 'rtl'
   /** 默认日期格式 */
   dateFormat: string
+  /** 国旗图标 */
+  flag?: string
 }
 
 /**
@@ -283,4 +285,4 @@ export interface I18nInstance extends EventEmitter {
 }
 
 // 导出增强类型定义
-export * from '../types/enhanced'
+export * from '../vue/types/enhanced'

@@ -10,7 +10,7 @@ import type {
   UseTranslationHistoryReturn,
   UseTranslationOptions,
   UseTranslationValidationReturn,
-} from './types'
+} from './types/index'
 import { computed, inject, nextTick, onUnmounted, reactive, ref } from 'vue'
 import { createDebugger } from './debug'
 import { createPerformanceMonitor } from './performance'

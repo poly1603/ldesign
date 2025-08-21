@@ -11,61 +11,10 @@
   - 错误处理
 -->
 
-<template>
-  <component
-    :is="tag"
-    :class="textClasses"
-    :title="showTooltip ? tooltipText : undefined"
-    v-bind="$attrs"
-  >
-    <!-- 加载状态 -->
-    <template v-if="isLoading">
-      <slot name="loading">
-        <span class="translation-loading">
-          <span class="loading-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </span>
-      </slot>
-    </template>
-
-    <!-- 错误状态 -->
-    <template v-else-if="hasError && showError">
-      <slot name="error" :error="error" :fallback="fallbackText">
-        <span class="translation-error" :title="error?.message">
-          {{ fallbackText }}
-        </span>
-      </slot>
-    </template>
-
-    <!-- 正常翻译内容 -->
-    <template v-else>
-      <!-- HTML 渲染模式 -->
-      <span
-        v-if="html"
-        class="translation-html"
-        v-html="translatedText"
-      />
-
-      <!-- 普通文本模式 -->
-      <template v-else>
-        {{ translatedText }}
-      </template>
-    </template>
-
-    <!-- 调试信息 -->
-    <span v-if="debug" class="translation-debug">
-      [{{ resolvedKey }}{{ params ? ` | ${JSON.stringify(params)}` : '' }}]
-    </span>
-  </component>
-</template>
-
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
-import { useI18n } from '../composables'
 import type { TranslationParams } from '../../core/types'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from '../composables'
 
 interface Props {
   /** 翻译键 */
@@ -183,19 +132,19 @@ const tooltipText = computed(() => {
 // CSS类
 const textClasses = computed(() => {
   const classes = ['translation-text']
-  
+
   if (isLoading.value) {
     classes.push('is-loading')
   }
-  
+
   if (hasError.value) {
     classes.push('has-error')
   }
-  
+
   if (props.html) {
     classes.push('is-html')
   }
-  
+
   if (props.debug) {
     classes.push('is-debug')
   }
@@ -203,9 +152,11 @@ const textClasses = computed(() => {
   if (props.class) {
     if (typeof props.class === 'string') {
       classes.push(props.class)
-    } else if (Array.isArray(props.class)) {
+    }
+    else if (Array.isArray(props.class)) {
       classes.push(...props.class)
-    } else {
+    }
+    else {
       Object.entries(props.class).forEach(([key, value]) => {
         if (value) {
           classes.push(key)
@@ -213,7 +164,7 @@ const textClasses = computed(() => {
       })
     }
   }
-  
+
   return classes
 })
 
@@ -228,6 +179,57 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <component
+    :is="tag"
+    :class="textClasses"
+    :title="showTooltip ? tooltipText : undefined"
+    v-bind="$attrs"
+  >
+    <!-- 加载状态 -->
+    <template v-if="isLoading">
+      <slot name="loading">
+        <span class="translation-loading">
+          <span class="loading-dots">
+            <span />
+            <span />
+            <span />
+          </span>
+        </span>
+      </slot>
+    </template>
+
+    <!-- 错误状态 -->
+    <template v-else-if="hasError && showError">
+      <slot name="error" :error="error" :fallback="fallbackText">
+        <span class="translation-error" :title="error?.message">
+          {{ fallbackText }}
+        </span>
+      </slot>
+    </template>
+
+    <!-- 正常翻译内容 -->
+    <template v-else>
+      <!-- HTML 渲染模式 -->
+      <span
+        v-if="html"
+        class="translation-html"
+        v-html="translatedText"
+      />
+
+      <!-- 普通文本模式 -->
+      <template v-else>
+        {{ translatedText }}
+      </template>
+    </template>
+
+    <!-- 调试信息 -->
+    <span v-if="debug" class="translation-debug">
+      [{{ resolvedKey }}{{ params ? ` | ${JSON.stringify(params)}` : '' }}]
+    </span>
+  </component>
+</template>
 
 <style scoped>
 .translation-text {

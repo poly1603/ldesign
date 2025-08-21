@@ -1,252 +1,340 @@
 /**
  * 语言切换器组件 (TSX版本)
  *
- * 提供语言切换功能的下拉选择组件
+ * 提供语言切换功能，支持下拉菜单模式
  */
 
-import { computed, defineComponent, h, ref } from 'vue'
-import { useI18n } from '../composables'
 import type { LanguageInfo } from '../../core/types'
+import { computed, defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import { useLanguageSwitcher } from '../composables'
+
+// Vue JSX 类型增强
+declare module '@vue/runtime-core' {
+  interface HTMLAttributes {
+    children?: any
+  }
+  interface ButtonHTMLAttributes {
+    children?: any
+  }
+  interface StyleHTMLAttributes {
+    children?: any
+  }
+}
+
+export interface LanguageSwitcherProps {
+  /** UI模式：下拉菜单或对话框 */
+  mode?: 'dropdown' | 'dialog'
+  /** 是否显示国旗图标 */
+  showFlag?: boolean
+  /** 是否显示语言代码 */
+  showCode?: boolean
+  /** 是否显示本地名称 */
+  showNativeName?: boolean
+  /** 主题 */
+  theme?: 'light' | 'dark' | 'auto'
+  /** 是否禁用 */
+  disabled?: boolean
+}
 
 export default defineComponent({
   name: 'LanguageSwitcher',
   props: {
-    /** UI模式：下拉菜单或对话框 */
     mode: {
       type: String as () => 'dropdown' | 'dialog',
       default: 'dropdown',
     },
-    /** 是否显示国旗图标 */
     showFlag: {
       type: Boolean,
       default: true,
     },
-    /** 是否显示语言代码 */
     showCode: {
       type: Boolean,
       default: false,
     },
-    /** 是否禁用 */
+    showNativeName: {
+      type: Boolean,
+      default: true,
+    },
+    theme: {
+      type: String as () => 'light' | 'dark' | 'auto',
+      default: 'light',
+    },
     disabled: {
       type: Boolean,
       default: false,
     },
   },
-  setup(props) {
-    const { locale, availableLanguages, changeLanguage } = useI18n()
+  emits: ['language-changed'],
+  setup(props, { emit }) {
+    const {
+      locale: currentLanguage,
+      availableLanguages,
+      isChanging,
+      switchLanguage: changeLanguage,
+    } = useLanguageSwitcher()
+
     const isOpen = ref(false)
-    const isChanging = ref(false)
+    const triggerRef = ref<HTMLElement>()
+    const dropdownRef = ref<HTMLElement>()
 
     // 当前语言信息
-    const currentLanguage = computed(() => {
-      const languages = availableLanguages.value as LanguageInfo[]
-      return languages.find((lang) => lang.code === locale.value) || {
-        code: locale.value,
-        name: locale.value,
-        nativeName: locale.value,
-        region: '',
-        direction: 'ltr',
-        dateFormat: 'YYYY-MM-DD',
-      }
+    const currentLanguageInfo = computed(() => {
+      return availableLanguages.value.find(lang => lang.code === currentLanguage.value)
     })
 
-    // 语言选项
-    const languageOptions = computed(() => {
-      const languages = availableLanguages.value as LanguageInfo[]
-      return languages.map((lang) => ({
-        code: lang.code,
-        name: lang.name,
-        nativeName: lang.nativeName,
-        flag: getLanguageFlag(lang.code),
-      }))
-    })
-
-    // 获取语言对应的国旗图标
-    function getLanguageFlag(code: string): string {
-      const flagMap: Record<string, string> = {
-        'zh-CN': '🇨🇳',
-        'zh-TW': '🇹🇼',
-        'en': '🇺🇸',
-        'en-US': '🇺🇸',
-        'en-GB': '🇬🇧',
-        'ja': '🇯🇵',
-        'ko': '🇰🇷',
-        'fr': '🇫🇷',
-        'de': '🇩🇪',
-        'es': '🇪🇸',
-        'it': '🇮🇹',
-        'pt': '🇵🇹',
-        'ru': '🇷🇺',
-        'ar': '🇸🇦',
-        'hi': '🇮🇳',
-        'th': '🇹🇭',
-        'vi': '🇻🇳',
-      }
-      return flagMap[code] || '🌐'
+    // 切换下拉菜单
+    const toggleDropdown = () => {
+      if (props.disabled || isChanging.value)
+        return
+      isOpen.value = !isOpen.value
     }
 
-    // 切换语言
-    async function handleLanguageChange(languageCode: string) {
-      if (props.disabled || isChanging.value || languageCode === locale.value) {
+    // 选择语言
+    const selectLanguage = async (languageCode: string) => {
+      if (languageCode === currentLanguage.value) {
+        isOpen.value = false
         return
       }
 
       try {
-        isChanging.value = true
         await changeLanguage(languageCode)
-        close()
-        console.warn(`🌐 语言已切换到: ${languageCode}`)
+        emit('language-changed', languageCode)
+        isOpen.value = false
       }
       catch (error) {
-        console.error('❌ 语言切换失败:', error)
-      }
-      finally {
-        isChanging.value = false
+        console.error('Failed to change language:', error)
       }
     }
 
-    // 切换打开/关闭状态
-    function toggle() {
-      if (props.disabled || isChanging.value) {
+    // 点击外部关闭
+    const handleClickOutside = (event: Event) => {
+      if (!isOpen.value)
         return
-      }
-      isOpen.value = !isOpen.value
-    }
 
-    // 关闭
-    function close() {
-      isOpen.value = false
+      const target = event.target as Node
+      if (
+        triggerRef.value && !triggerRef.value.contains(target)
+        && dropdownRef.value && !dropdownRef.value.contains(target)
+      ) {
+        isOpen.value = false
+      }
     }
 
     // 键盘事件处理
-    function handleKeydown(event: KeyboardEvent) {
+    const handleKeydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        close()
+        isOpen.value = false
       }
     }
 
-    return () => {
-      const triggerContent = [
-        props.showFlag ? h('span', { class: 'language-flag' }, getLanguageFlag(locale.value)) : null,
-        h('span', { class: 'language-name' }, currentLanguage.value.nativeName),
-        props.showCode ? h('span', { class: 'language-code' }, `(${locale.value})`) : null,
-        h('span', {
-          class: ['language-arrow', { 'is-open': isOpen.value }],
-        }, '▼'),
-      ].filter(Boolean)
+    onMounted(() => {
+      document.addEventListener('click', handleClickOutside)
+      document.addEventListener('keydown', handleKeydown)
+    })
 
-      const languageList = languageOptions.value.map((option) =>
-        h('button', {
-          key: option.code,
-          class: [
-            'language-option',
-            { 'is-active': option.code === locale.value },
-          ],
-          disabled: props.disabled || isChanging.value,
-          onClick: () => handleLanguageChange(option.code),
-          style: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            width: '100%',
-            padding: '8px 16px',
-            border: 'none',
-            background: option.code === locale.value ? '#eff6ff' : 'transparent',
-            color: option.code === locale.value ? '#1d4ed8' : '#374151',
-            fontSize: '14px',
-            textAlign: 'left',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          },
-          onMouseenter: (e: Event) => {
-            if (option.code !== locale.value) {
-              (e.target as HTMLElement).style.background = '#f3f4f6'
-            }
-          },
-          onMouseleave: (e: Event) => {
-            if (option.code !== locale.value) {
-              (e.target as HTMLElement).style.background = 'transparent'
-            }
-          },
-        }, [
-          props.showFlag ? h('span', {
-            class: 'language-flag',
-            style: { fontSize: '16px', lineHeight: '1' }
-          }, option.flag) : null,
-          h('span', {
-            class: 'language-info',
-            style: {
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '2px',
-              flex: '1'
-            }
-          }, [
-            h('span', {
-              class: 'language-native',
-              style: { fontWeight: '500', lineHeight: '1.2' }
-            }, option.nativeName),
-            h('span', {
-              class: 'language-english',
-              style: { fontSize: '12px', color: '#6b7280', lineHeight: '1.2' }
-            }, option.name),
-          ]),
-          option.code === locale.value ? h('span', {
-            class: 'language-check',
-            style: { color: '#059669', fontWeight: '600' }
-          }, '✓') : null,
-        ].filter(Boolean)),
+    onUnmounted(() => {
+      document.removeEventListener('click', handleClickOutside)
+      document.removeEventListener('keydown', handleKeydown)
+    })
+
+    // 渲染语言选项
+    const renderLanguageOption = (language: LanguageInfo) => {
+      const isSelected = language.code === currentLanguage.value
+
+      return (
+        <button
+          key={language.code}
+          class={[
+            'language-switcher__option',
+            { 'is-selected': isSelected },
+          ]}
+          onClick={() => selectLanguage(language.code)}
+          disabled={isChanging.value}
+        >
+          {props.showFlag && (
+            <span class="language-switcher__flag">
+              {language.flag || '🌐'}
+            </span>
+          )}
+          <span class="language-switcher__name">
+            {props.showNativeName ? language.nativeName : language.name}
+          </span>
+          {props.showCode && (
+            <span class="language-switcher__code">
+              (
+              {language.code}
+              )
+            </span>
+          )}
+          {isSelected && (
+            <span class="language-switcher__check">✓</span>
+          )}
+        </button>
       )
-
-      // 默认下拉模式
-      return h('div', {
-        class: ['language-switcher', 'language-switcher--dropdown'],
-        onKeydown: handleKeydown,
-        style: {
-          position: 'relative',
-          display: 'inline-block',
-        }
-      }, [
-        h('button', {
-          class: ['language-switcher__trigger', { 'is-disabled': props.disabled || isChanging.value }],
-          disabled: props.disabled || isChanging.value,
-          onClick: toggle,
-          style: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
-            background: 'white',
-            color: '#374151',
-            fontSize: '14px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            minWidth: '120px',
-          }
-        }, triggerContent),
-
-        isOpen.value ? h('div', {
-          class: 'language-switcher__dropdown',
-          onClick: (e: Event) => e.stopPropagation(),
-          style: {
-            position: 'absolute',
-            top: '100%',
-            left: '0',
-            right: '0',
-            zIndex: '1000',
-            marginTop: '4px',
-            padding: '4px 0',
-            background: 'white',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            maxHeight: '300px',
-            overflowY: 'auto',
-          }
-        }, languageList) : null,
-      ])
     }
+
+    return () => (
+      <div
+        class={[
+          'language-switcher',
+          `language-switcher--${props.mode}`,
+          `language-switcher--${props.theme}`,
+          { 'is-disabled': props.disabled || isChanging.value },
+        ]}
+      >
+        {/* 触发按钮 */}
+        <button
+          ref={triggerRef}
+          class="language-switcher__trigger"
+          onClick={toggleDropdown}
+          disabled={props.disabled || isChanging.value}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen.value}
+        >
+          {currentLanguageInfo.value && (
+            <>
+              {props.showFlag && (
+                <span class="language-switcher__flag">
+                  {currentLanguageInfo.value.flag || '🌐'}
+                </span>
+              )}
+              <span class="language-switcher__name">
+                {props.showNativeName
+                  ? currentLanguageInfo.value.nativeName
+                  : currentLanguageInfo.value.name}
+              </span>
+              {props.showCode && (
+                <span class="language-switcher__code">
+                  (
+                  {currentLanguageInfo.value.code}
+                  )
+                </span>
+              )}
+            </>
+          )}
+          <span class="language-switcher__arrow">▼</span>
+        </button>
+
+        {/* 下拉菜单 */}
+        {isOpen.value && (
+          <div
+            ref={dropdownRef}
+            class="language-switcher__dropdown"
+            role="listbox"
+          >
+            {availableLanguages.value.map(renderLanguageOption)}
+          </div>
+        )}
+
+        {/* 基础样式 */}
+        <style>
+          {`
+          .language-switcher {
+            position: relative;
+            display: inline-block;
+          }
+          
+          .language-switcher__trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+          }
+          
+          .language-switcher__trigger:hover {
+            border-color: #9ca3af;
+          }
+          
+          .language-switcher__trigger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+          
+          .language-switcher__dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 0.25rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            max-height: 200px;
+            overflow-y: auto;
+          }
+          
+          .language-switcher__option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            text-align: left;
+            transition: background-color 0.2s;
+          }
+          
+          .language-switcher__option:hover {
+            background-color: #f3f4f6;
+          }
+          
+          .language-switcher__option.is-selected {
+            background-color: #eff6ff;
+            color: #2563eb;
+          }
+          
+          .language-switcher__flag {
+            font-size: 1rem;
+          }
+          
+          .language-switcher__code {
+            color: #6b7280;
+            font-size: 0.75rem;
+          }
+          
+          .language-switcher__check {
+            margin-left: auto;
+            color: #10b981;
+          }
+          
+          .language-switcher__arrow {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+          }
+          
+          .language-switcher--dark .language-switcher__trigger {
+            background: #374151;
+            border-color: #4b5563;
+            color: white;
+          }
+          
+          .language-switcher--dark .language-switcher__dropdown {
+            background: #374151;
+            border-color: #4b5563;
+          }
+          
+          .language-switcher--dark .language-switcher__option {
+            color: white;
+          }
+          
+          .language-switcher--dark .language-switcher__option:hover {
+            background-color: #4b5563;
+          }
+        `}
+        </style>
+      </div>
+    )
   },
 })
