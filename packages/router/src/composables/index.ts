@@ -183,8 +183,9 @@ export function onBeforeRouteUpdate(guard: NavigationGuard): void {
   const setupGuard = () => {
     removeGuard = router.beforeEach((to, from, next) => {
       // 只在当前组件的路由更新时触发
+      const lastMatchedRecord = route.value.matched[route.value.matched.length - 1]
       if (
-        to.matched.includes(route.value.matched[route.value.matched.length - 1])
+        lastMatchedRecord && to.matched.includes(lastMatchedRecord)
       ) {
         guard(to, from, next)
       } else {
@@ -225,13 +226,11 @@ export function onBeforeRouteLeave(guard: NavigationGuard): void {
   const setupGuard = () => {
     removeGuard = router.beforeEach((to, from, next) => {
       // 只在离开当前组件的路由时触发
+      const lastMatchedRecord = route.value.matched[route.value.matched.length - 1]
       if (
-        from.matched.includes(
-          route.value.matched[route.value.matched.length - 1]
-        ) &&
-        !to.matched.includes(
-          route.value.matched[route.value.matched.length - 1]
-        )
+        lastMatchedRecord &&
+        from.matched.includes(lastMatchedRecord) &&
+        !to.matched.includes(lastMatchedRecord)
       ) {
         guard(to, from, next)
       } else {

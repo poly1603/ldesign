@@ -282,15 +282,40 @@ export class RouterImpl implements Router {
 
   // ==================== 私有方法 ====================
 
+  // 重定向跟踪，防止无限重定向
+  private redirectCount = 0
+  private readonly MAX_REDIRECTS = 10
+  private redirectStartTime = 0
+  private readonly REDIRECT_TIMEOUT = 5000 // 5秒超时
+
   private async pushWithRedirect(
     to: RouteLocationRaw,
     replace: boolean
   ): Promise<NavigationFailure | void | undefined> {
+    // 重置重定向计数器（如果是新的导航）
+    const now = Date.now()
+    if (now - this.redirectStartTime > this.REDIRECT_TIMEOUT) {
+      this.redirectCount = 0
+      this.redirectStartTime = now
+    }
+
+    // 检查重定向次数限制
+    if (this.redirectCount >= this.MAX_REDIRECTS) {
+      const error = new Error(`Maximum redirect limit (${this.MAX_REDIRECTS}) exceeded`)
+      this.handleError(error)
+      return this.createNavigationFailure(
+        NavigationFailureType.aborted,
+        this.currentRoute.value,
+        this.resolve(to)
+      )
+    }
+
     const targetLocation = this.resolve(to)
     const from = this.currentRoute.value
 
     // 检查是否重复导航
     if (this.isSameRouteLocation(targetLocation, from)) {
+      this.redirectCount = 0 // 重置计数器
       return this.createNavigationFailure(
         NavigationFailureType.duplicated,
         from,
@@ -318,20 +343,29 @@ export class RouterImpl implements Router {
     } catch (error) {
       // 处理重定向错误
       if (error instanceof NavigationRedirectError) {
+        // 增加重定向计数
+        this.redirectCount++
+        
         // 递归处理重定向
         return this.pushWithRedirect(error.to, replace)
       }
 
       if (error instanceof Error) {
         this.handleError(error)
+        this.redirectCount = 0 // 重置计数器
         return this.createNavigationFailure(
           NavigationFailureType.aborted,
           from,
           targetLocation
         )
       }
+      
+      this.redirectCount = 0 // 重置计数器
       throw error
     }
+
+    // 成功导航后重置计数器
+    this.redirectCount = 0
   }
 
   private async runNavigationGuards(

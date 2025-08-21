@@ -54,7 +54,7 @@ export function parsePathParams(pattern: string, path: string): RouteParams {
     const patternSegment = patternSegments[i]
     const pathSegment = pathSegments[i]
 
-    if (patternSegment.startsWith(':')) {
+    if (patternSegment && patternSegment.startsWith(':')) {
       const paramName = patternSegment.slice(1).replace(/\?$/, '')
       if (pathSegment !== undefined) {
         params[paramName] = decodeURIComponent(pathSegment)
@@ -164,7 +164,8 @@ export function parseURL(url: string): {
   hash: string
 } {
   const [pathAndQuery, hash = ''] = url.split('#')
-  const [path, search = ''] = pathAndQuery.split('?')
+  const pathAndQueryDefined = pathAndQuery || ''
+  const [path, search = ''] = pathAndQueryDefined.split('?')
 
   return {
     path: normalizePath(path),

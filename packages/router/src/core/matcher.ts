@@ -465,7 +465,7 @@ export class RouteMatcher {
         for (let i = 0; i < compiled.paramNames.length; i++) {
           const paramName = compiled.paramNames[i]
           const paramValue = match[i + 1]
-          if (paramValue !== undefined) {
+          if (paramName && paramValue !== undefined) {
             params[paramName] = paramValue
           }
         }
@@ -800,6 +800,9 @@ export class RouteMatcher {
     }
 
     const segment = segments[index]
+    if (!segment) {
+      return null
+    }
 
     // 尝试静态匹配
     const staticChild = node.children.get(segment)
@@ -825,7 +828,7 @@ export class RouteMatcher {
     // 尝试参数匹配
     if (node.paramChild) {
       const paramName = node.paramChild.paramName!
-      const newParams = { ...params, [paramName]: segment }
+      const newParams: RouteParams = { ...params, [paramName]: segment }
       // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
       const isRootPath = segments.length === 0
       const shouldAddRecord =

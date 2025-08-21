@@ -1,4 +1,5 @@
 import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
+import { resolve } from 'node:path'
 
 export default createRollupConfig({
   packageDir: process.cwd(),
@@ -12,4 +13,5 @@ export default createRollupConfig({
     '@ldesign/template': 'LDesignTemplate',
   },
   vue: true,
+  tsconfig: resolve(process.cwd(), 'tsconfig.build.json'),
 })

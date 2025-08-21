@@ -4,19 +4,25 @@
     "target": "ES2021",
     "lib": ["ES2021", "DOM"],
     "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "dist",
     "paths": {
       "@/*": ["src/*"]
     },
-    "strict": false,
-    "strictBindCallApply": false,
-    "strictFunctionTypes": false,
-    "strictNullChecks": false,
-    "strictPropertyInitialization": false,
+    "strict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "exactOptionalPropertyTypes": false,
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    "skipLibCheck": true
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"]
+  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"],
+  "exclude": ["node_modules", "dist", "esm", "cjs", "types", "coverage"]
 }

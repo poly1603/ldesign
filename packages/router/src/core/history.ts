@@ -389,7 +389,11 @@ class MemoryHistory extends BaseHistory {
     }
 
     const from = { ...this._location }
-    const { location, state } = this.stack[newIndex]
+    const stackEntry = this.stack[newIndex]
+    if (!stackEntry) {
+      return // 无法导航，堆栈条目不存在
+    }
+    const { location, state } = stackEntry
 
     this.index = newIndex
     this._location = location
