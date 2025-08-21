@@ -8,6 +8,7 @@ import chalk from 'chalk'
 import ora from 'ora'
 import { RollupBuilder } from '../../core/rollup-builder'
 import { ProjectScanner } from '../../core/project-scanner'
+import { PluginConfigurator } from '../../core/plugin-configurator'
 import { Logger } from '../../utils/logger'
 import type { BuildOptions, OutputFormat, BuildMode } from '../../types'
 
@@ -27,23 +28,23 @@ export class WatchCommand {
     try {
       // 解析构建选项
       const buildOptions = await this.parseBuildOptions(input, options)
-      
+
       // 显示监听信息
       this.showWatchInfo(buildOptions)
-      
+
       // 初始化扫描器和构建器
       this.scanner = new ProjectScanner()
       this.builder = new RollupBuilder()
-      
+
       // 执行初始构建
       spinner.text = '正在执行初始构建...'
       await this.performBuild(buildOptions)
-      
+
       spinner.stop()
-      
+
       // 启动文件监听
       await this.startWatching(buildOptions)
-      
+
     } catch (error) {
       spinner.stop()
       logger.error('监听模式启动失败:', error)
@@ -56,7 +57,7 @@ export class WatchCommand {
    */
   private async parseBuildOptions(input: string, options: any): Promise<BuildOptions> {
     const root = process.cwd()
-    
+
     // 解析输入
     let inputPath: string | string[]
     if (input) {
@@ -65,29 +66,26 @@ export class WatchCommand {
       // 自动检测入口文件
       inputPath = await this.detectEntryFiles(root)
     }
-    
+
     // 解析输出格式（监听模式默认只生成 ESM 和 CJS）
     const formats = this.parseFormats(options.format || 'esm,cjs')
-    
+
     // 监听模式默认为开发模式
     const mode: BuildMode = options.mode === 'production' ? 'production' : 'development'
-    
+
     return {
+      root,
       input: inputPath,
-      output: {
-        dir: path.resolve(root, options.outDir || 'dist'),
-        format: formats[0],
-        file: undefined,
-        name: undefined,
-        sourcemap: true
-      },
+      outDir: path.resolve(root, options.outDir || 'dist'),
       formats,
-      dts: options.dts === true, // 监听模式默认不生成类型声明（性能考虑）
+      mode,
+      dts: options.dts === true, // 监听模式默认不生成类型声明
       dtsDir: path.resolve(root, options.dtsDir || 'types'),
-      minify: false, // 监听模式不压缩
-      sourcemap: true, // 监听模式生成 sourcemap
-      clean: false, // 监听模式不清理目录
+      minify: false,
+      sourcemap: true,
+      clean: false,
       verbose: options.verbose || false,
+      watch: true,
     }
   }
 
@@ -103,10 +101,10 @@ export class WatchCommand {
       'index.ts',
       'index.js',
     ]
-    
+
     const fs = await import('fs-extra')
     const entries: string[] = []
-    
+
     for (const entry of possibleEntries) {
       const entryPath = path.resolve(root, entry)
       if (await fs.pathExists(entryPath)) {
@@ -114,11 +112,11 @@ export class WatchCommand {
         break
       }
     }
-    
+
     if (entries.length === 0) {
       throw new Error('未找到入口文件，请指定入口文件')
     }
-    
+
     return entries
   }
 
@@ -128,13 +126,13 @@ export class WatchCommand {
   private parseFormats(formatStr: string): OutputFormat[] {
     const formats = formatStr.split(',').map(f => f.trim()) as OutputFormat[]
     const validFormats: OutputFormat[] = ['esm', 'cjs', 'iife', 'umd']
-    
+
     for (const format of formats) {
       if (!validFormats.includes(format)) {
         throw new Error(`不支持的输出格式: ${format}`)
       }
     }
-    
+
     return formats
   }
 
@@ -145,9 +143,9 @@ export class WatchCommand {
     console.log()
     console.log(chalk.cyan.bold('👀 启动监听模式'))
     console.log(chalk.gray('─'.repeat(50)))
-    console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(process.cwd())}`) 
-    console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.output?.dir || 'dist')}`)
-    console.log(`${chalk.bold('输出格式:')} ${chalk.yellow(options.formats?.join(', '))}`) 
+    console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(process.cwd())}`)
+    console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.outDir || 'dist')}`)
+    console.log(`${chalk.bold('输出格式:')} ${chalk.yellow(options.formats?.join(', '))}`)
     console.log(chalk.gray('─'.repeat(50)))
     console.log(chalk.gray('提示: 按 Ctrl+C 退出监听模式'))
     console.log()
@@ -159,18 +157,22 @@ export class WatchCommand {
   private async performBuild(options: BuildOptions): Promise<void> {
     try {
       const startTime = Date.now()
-      
+
       // 扫描项目
       const scanResult = await this.scanner!.scan(process.cwd())
-      
+
+      // 配置插件
+      const configurator = new PluginConfigurator()
+      const plugins = await configurator.configure(scanResult, options)
+
       // 执行构建
-      const result = await this.builder!.build(scanResult, [], options)
-      
+      const result = await this.builder!.build(scanResult, { plugins }, options)
+
       const duration = Date.now() - startTime
-      
+
       if (result.success) {
         console.log(chalk.green(`✅ 构建完成 (${duration}ms)`))
-        
+
         // 显示输出文件
         if (result.outputs && result.outputs.length > 0) {
           for (const output of result.outputs) {
@@ -180,7 +182,7 @@ export class WatchCommand {
         }
       } else {
         console.log(chalk.red('❌ 构建失败'))
-        
+
         // 显示错误信息
         if (result.errors && result.errors.length > 0) {
           for (const error of result.errors) {
@@ -188,7 +190,7 @@ export class WatchCommand {
           }
         }
       }
-      
+
       console.log()
     } catch (error) {
       console.log(chalk.red('❌ 构建失败:'), error)
@@ -201,7 +203,7 @@ export class WatchCommand {
    */
   private async startWatching(options: BuildOptions): Promise<void> {
     const chokidar = await import('chokidar')
-    
+
     // 监听源文件目录
     const root = process.cwd()
     const watchPaths = [
@@ -209,7 +211,7 @@ export class WatchCommand {
       path.join(root, '*.ts'),
       path.join(root, '*.js'),
     ]
-    
+
     const watcher = chokidar.watch(watchPaths, {
       ignored: [
         '**/node_modules/**',
@@ -221,27 +223,27 @@ export class WatchCommand {
       ignoreInitial: true,
       persistent: true,
     })
-    
+
     this.isWatching = true
-    
+
     console.log(chalk.blue('🔍 正在监听文件变化...'))
     console.log()
-    
+
     // 防抖处理
     let buildTimeout: NodeJS.Timeout | null = null
-    
+
     const triggerBuild = (eventType: string, filePath: string) => {
       if (buildTimeout) {
         clearTimeout(buildTimeout)
       }
-      
+
       buildTimeout = setTimeout(async () => {
         const relativePath = path.relative(process.cwd(), filePath)
         console.log(chalk.gray(`📝 ${eventType}: ${relativePath}`))
         await this.performBuild(options)
       }, 100) // 100ms 防抖
     }
-    
+
     watcher
       .on('add', (filePath) => triggerBuild('新增', filePath))
       .on('change', (filePath) => triggerBuild('修改', filePath))
@@ -249,7 +251,7 @@ export class WatchCommand {
       .on('error', (error) => {
         logger.error('文件监听错误:', error)
       })
-    
+
     // 处理退出信号
     process.on('SIGINT', () => {
       console.log('\n')
@@ -258,7 +260,7 @@ export class WatchCommand {
       this.isWatching = false
       process.exit(0)
     })
-    
+
     // 保持进程运行
     return new Promise(() => {}) // 永不 resolve
   }

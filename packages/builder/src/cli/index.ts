@@ -10,6 +10,7 @@ import { WatchCommand } from './commands/watch'
 import { InitCommand } from './commands/init'
 import { AnalyzeCommand } from './commands/analyze'
 import { Logger } from '../utils/logger'
+import { loadUserConfig } from '../utils/config-loader'
 import type { CliOptions } from '../types'
 
 const logger = new Logger('CLI')
@@ -46,7 +47,8 @@ function createProgram(): Command {
     .option('--no-clean', '构建前不清理输出目录')
     .action(async (input: string, options: any) => {
       const buildCommand = new BuildCommand()
-      await buildCommand.execute(input, options)
+      const user = await loadUserConfig(process.cwd())
+      await buildCommand.execute(input, { ...user, ...options })
     })
 
   // 监听模式
@@ -61,7 +63,8 @@ function createProgram(): Command {
     .option('--no-dts', '不生成 TypeScript 声明文件')
     .action(async (input: string, options: any) => {
       const watchCommand = new WatchCommand()
-      await watchCommand.execute(input, options)
+      const user = await loadUserConfig(process.cwd())
+      await watchCommand.execute(input, { ...user, ...options })
     })
 
   // 初始化命令

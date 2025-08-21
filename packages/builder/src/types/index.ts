@@ -43,8 +43,8 @@ export interface BuildOptions {
   formats?: OutputFormat[]
   /** 构建模式 */
   mode?: BuildMode
-  /** 是否生成类型声明文件 */
-  dts?: boolean
+  /** 是否生成类型声明文件，或类型声明生成配置 */
+  dts?: boolean | TypeGenerationOptions
   /** 类型声明文件输出目录 */
   dtsDir?: string
   /** 是否压缩代码 */
@@ -57,12 +57,42 @@ export interface BuildOptions {
   globals?: Record<string, string>
   /** 自定义 Rollup 配置 */
   rollupOptions?: Partial<RollupOptions>
-  /** 插件配置 */
+  /** 插件配置（高级）*/
   plugins?: PluginConfig[]
   /** 是否启用详细日志 */
   verbose?: boolean
   /** 是否清理输出目录 */
   clean?: boolean
+  /** 库模式 */
+  lib?: boolean
+  /** UMD/IIFE 名称 */
+  name?: string
+  /** 监听配置 */
+  watchOptions?: Record<string, any>
+  /** 是否在产物分析时展示文件体积 */
+  analyze?: boolean
+  /** 开发服务、热更等可选项占位（保持向后兼容） */
+  serve?: Record<string, any>
+  livereload?: Record<string, any>
+  /** 允许附加自定义字段（用于插件细粒度配置） */
+  [key: string]: any
+}
+
+// ============= 类型生成相关 =============
+
+export interface TypeGenerationOptions {
+  bundled?: boolean
+  outDir?: string
+  fileName?: string
+  includePrivate?: boolean
+  followSymlinks?: boolean
+}
+
+export interface TypeGenerationResult {
+  success: boolean
+  generatedFiles: string[]
+  errors: string[]
+  generationTime: number
 }
 
 /**
@@ -131,6 +161,14 @@ export interface FileInfo {
   isEntry?: boolean
   /** 依赖的文件 */
   dependencies?: string[]
+  /** 基名（不含扩展名）*/
+  name?: string
+  /** 扩展名（.ts/.js 等）*/
+  extension?: string
+  /** 最后修改时间 */
+  lastModified?: Date
+  /** 导出符号（静态分析）*/
+  exports?: string[]
 }
 
 /**
@@ -453,24 +491,10 @@ export interface Logger {
 export interface CliOptions {
   /** 配置文件路径 */
   config?: string
-  /** 入口文件 */
-  input?: string
-  /** 输出目录 */
-  outDir?: string
-  /** 输出格式 */
-  format?: string
-  /** 构建模式 */
-  mode?: BuildMode
-  /** 是否生成类型声明 */
-  dts?: boolean
-  /** 是否压缩 */
-  minify?: boolean
-  /** 是否监听文件变化 */
-  watch?: boolean
   /** 是否启用详细日志 */
   verbose?: boolean
-  /** 是否清理输出目录 */
-  clean?: boolean
+  /** 是否启用静默模式 */
+  silent?: boolean
 }
 
 /**
@@ -503,17 +527,7 @@ export interface InitOptions {
   force?: boolean
 }
 
-/**
- * CLI 选项
- */
-export interface CliOptions {
-  /** 配置文件路径 */
-  config?: string
-  /** 是否启用详细日志 */
-  verbose?: boolean
-  /** 是否启用静默模式 */
-  silent?: boolean
-}
+// 删除重复的 CliOptions 定义，保留上方定义
 
 /**
  * 分析选项

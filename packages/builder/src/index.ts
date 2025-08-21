@@ -37,7 +37,7 @@ export {
 } from './utils/logger'
 
 // 版本信息
-export const version = require('../package.json').version
+export const version: string = require('../package.json').version
 
 
 
@@ -50,10 +50,10 @@ export async function build(options: import('./types').BuildOptions) {
   const { PluginConfigurator } = await import('./core/plugin-configurator')
   const { RollupBuilder } = await import('./core/rollup-builder')
   const { TypeGenerator } = await import('./core/type-generator')
-  
+
   const logger = new Logger('Builder')
   logger.info('开始构建项目...')
-  
+
   try {
     // 扫描项目
     const scanner = new ProjectScanner()
@@ -61,23 +61,23 @@ export async function build(options: import('./types').BuildOptions) {
       ignorePatterns: ['node_modules/**', '.git/**'],
       includePatterns: ['**/*.{ts,tsx,js,jsx,vue}']
     })
-    
+
     // 配置插件
     const configurator = new PluginConfigurator()
     const plugins = await configurator.configure(scanResult, options)
-    
+
     // 创建构建器
     const builder = new RollupBuilder()
-    
+
     // 执行构建
     const result = await builder.build(scanResult, { plugins }, options)
-    
+
     // 生成类型文件
     if (options.dts) {
       const typeGenerator = new TypeGenerator()
       await typeGenerator.generate(scanResult, options)
     }
-    
+
     logger.success('构建完成')
     return result
   } catch (error) {
@@ -94,24 +94,24 @@ export async function watch(options: import('./types').BuildOptions): Promise<vo
   const { ProjectScanner } = await import('./core/project-scanner')
   const { PluginConfigurator } = await import('./core/plugin-configurator')
   const { RollupBuilder } = await import('./core/rollup-builder')
-  
+
   const logger = new Logger('Builder')
   logger.info('启动监听模式...')
-  
+
   // 扫描项目
   const scanner = new ProjectScanner()
   const scanResult = await scanner.scan(options.root || process.cwd(), {
     ignorePatterns: ['node_modules/**', '.git/**'],
     includePatterns: ['**/*.{ts,tsx,js,jsx,vue}']
   })
-  
+
   // 配置插件
   const configurator = new PluginConfigurator()
   const plugins = await configurator.configure(scanResult, options)
-  
+
   // 创建构建器
   const builder = new RollupBuilder()
-  
+
   await builder.watch(scanResult, { plugins }, options, (result) => {
     if (result.success) {
       logger.info('重新构建完成')
@@ -127,13 +127,13 @@ export async function watch(options: import('./types').BuildOptions): Promise<vo
 export async function analyze(input: string = process.cwd()) {
   const { Logger } = await import('./utils')
   const { ProjectScanner } = await import('./core/project-scanner')
-  
+
   const logger = new Logger('Analyzer')
-  
+
   try {
     const scanner = new ProjectScanner()
     const result = await scanner.scan(input, {})
-    
+
     logger.info('项目分析完成')
     return result
   } catch (error) {
@@ -152,10 +152,10 @@ export async function init(options: {
 } = {}) {
   const { InitCommand } = await import('./cli/commands/init')
   const { Logger } = await import('./utils')
-  
+
   const logger = new Logger('Init')
   const initCommand = new InitCommand()
-  
+
   try {
     await initCommand.execute(options)
     logger.success('项目初始化完成')
@@ -184,4 +184,9 @@ export default {
   TypeGenerator,
   Logger,
   ErrorHandler
+}
+
+// 轻量配置辅助，便于用户在 ldesign.config.ts 中编写配置
+export function defineConfig(config: import('./types').BuildOptions) {
+  return config
 }

@@ -83,11 +83,11 @@ export class FileUtils {
    */
   static async getFileInfo(filePath: string): Promise<FileInfo> {
     const stat = await fs.stat(filePath)
-    
+
     return {
       path: filePath,
       relativePath: path.relative(process.cwd(), filePath),
-      type: 'unknown' as any, // 需要根据扩展名确定类型
+      type: 'other',
       size: stat.size,
       isEntry: false,
       dependencies: []
@@ -231,7 +231,7 @@ export class PathUtils {
     if (PathUtils.isAbsolute(filePath)) {
       return PathUtils.normalize(filePath)
     }
-    
+
     const base = basePath || process.cwd()
     return PathUtils.resolve(base, filePath)
   }
@@ -253,14 +253,14 @@ export class PathUtils {
 
     const normalizedPaths = paths.map(p => PathUtils.normalize(p))
     const parts = normalizedPaths[0].split('/')
-    
+
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
       if (!normalizedPaths.every(p => p.split('/')[i] === part)) {
         return parts.slice(0, i).join('/')
       }
     }
-    
+
     return normalizedPaths[0]
   }
 }
@@ -391,7 +391,7 @@ export class ObjectUtils {
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
           const value = obj[key]
-          
+
           if (value && typeof value === 'object' && !Array.isArray(value)) {
             (result as any)[key] = ObjectUtils.deepMerge((result as any)[key] || {}, value)
           } else {
@@ -446,15 +446,15 @@ export class ObjectUtils {
     if (obj === null || obj === undefined) {
       return true
     }
-    
+
     if (Array.isArray(obj)) {
       return obj.length === 0
     }
-    
+
     if (typeof obj === 'object') {
       return Object.keys(obj).length === 0
     }
-    
+
     return false
   }
 
@@ -466,13 +466,13 @@ export class ObjectUtils {
     keys: K[]
   ): Pick<T, K> {
     const result = {} as Pick<T, K>
-    
+
     for (const key of keys) {
       if (key in obj) {
         result[key] = obj[key]
       }
     }
-    
+
     return result
   }
 
@@ -484,11 +484,11 @@ export class ObjectUtils {
     keys: K[]
   ): Omit<T, K> {
     const result = { ...obj }
-    
+
     for (const key of keys) {
       delete result[key]
     }
-    
+
     return result
   }
 }
@@ -512,7 +512,7 @@ export class ArrayUtils {
     keyFn: (item: T) => K
   ): Record<K, T[]> {
     const result = {} as Record<K, T[]>
-    
+
     for (const item of array) {
       const key = keyFn(item)
       if (!result[key]) {
@@ -520,7 +520,7 @@ export class ArrayUtils {
       }
       result[key].push(item)
     }
-    
+
     return result
   }
 
@@ -529,11 +529,11 @@ export class ArrayUtils {
    */
   static chunk<T>(array: T[], size: number): T[][] {
     const result: T[][] = []
-    
+
     for (let i = 0; i < array.length; i += size) {
       result.push(array.slice(i, i + size))
     }
-    
+
     return result
   }
 
@@ -542,7 +542,7 @@ export class ArrayUtils {
    */
   static flatten<T>(array: (T | T[])[]): T[] {
     const result: T[] = []
-    
+
     for (const item of array) {
       if (Array.isArray(item)) {
         result.push(...ArrayUtils.flatten(item))
@@ -550,7 +550,7 @@ export class ArrayUtils {
         result.push(item)
       }
     }
-    
+
     return result
   }
 
@@ -560,8 +560,8 @@ export class ArrayUtils {
   static intersection<T>(...arrays: T[][]): T[] {
     if (arrays.length === 0) return []
     if (arrays.length === 1) return arrays[0]
-    
-    return arrays.reduce((acc, array) => 
+
+    return arrays.reduce((acc, array) =>
       acc.filter(item => array.includes(item))
     )
   }
@@ -598,7 +598,7 @@ export class AsyncUtils {
   static timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     return Promise.race([
       promise,
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error(`操作超时 (${ms}ms)`)), ms)
       )
     ])
@@ -616,24 +616,24 @@ export class AsyncUtils {
     } = {}
   ): Promise<T> {
     const { maxAttempts = 3, delay = 1000, backoff = false } = options
-    
+
     let lastError: Error
-    
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await fn()
       } catch (error) {
         lastError = error as Error
-        
+
         if (attempt === maxAttempts) {
           throw lastError
         }
-        
+
         const waitTime = backoff ? delay * Math.pow(2, attempt - 1) : delay
         await AsyncUtils.delay(waitTime)
       }
     }
-    
+
     throw lastError!
   }
 
@@ -646,20 +646,20 @@ export class AsyncUtils {
   ): Promise<T[]> {
     const results: T[] = []
     const executing: Promise<void>[] = []
-    
+
     for (const task of tasks) {
       const promise = task().then(result => {
         results.push(result)
       })
-      
+
       executing.push(promise)
-      
+
       if (executing.length >= concurrency) {
         await Promise.race(executing)
         executing.splice(executing.findIndex(p => p === promise), 1)
       }
     }
-    
+
     await Promise.all(executing)
     return results
   }

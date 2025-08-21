@@ -8,6 +8,7 @@ import chalk from 'chalk'
 import ora from 'ora'
 import { RollupBuilder } from '../../core/rollup-builder'
 import { ProjectScanner } from '../../core/project-scanner'
+import { PluginConfigurator } from '../../core/plugin-configurator'
 import { Logger } from '../../utils/logger'
 import { FileUtils } from '../../utils'
 import type { BuildOptions, OutputFormat, BuildMode } from '../../types'
@@ -25,29 +26,31 @@ export class BuildCommand {
     try {
       // 解析构建选项
       const buildOptions = await this.parseBuildOptions(input, options)
-      
+
       // 显示构建信息
       this.showBuildInfo(buildOptions)
-      
+
       // 扫描项目
       spinner.text = '正在扫描项目结构...'
       const scanner = new ProjectScanner()
       const scanResult = await scanner.scan(buildOptions.root!)
-      
+
       logger.info(`检测到项目类型: ${chalk.cyan(scanResult.projectType)}`)
       logger.info(`发现 ${chalk.yellow(scanResult.entryPoints.length)} 个入口文件`)
       logger.info(`扫描到 ${chalk.yellow(scanResult.files.length)} 个源文件`)
-      
-      // 创建构建器
+
+      // 配置插件
       spinner.text = '正在配置构建环境...'
-      const builder = new RollupBuilder()
-      
+      const configurator = new PluginConfigurator()
+      const plugins = await configurator.configure(scanResult, buildOptions)
+
       // 执行构建
       spinner.text = '正在构建项目...'
-      const result = await builder.build(scanResult, [], buildOptions)
-      
+      const builder = new RollupBuilder()
+      const result = await builder.build(scanResult, { plugins }, buildOptions)
+
       spinner.stop()
-      
+
       if (result.success) {
         // 显示构建成功信息
         this.showBuildSuccess(result, Date.now() - startTime)
@@ -68,7 +71,7 @@ export class BuildCommand {
    */
   private async parseBuildOptions(input: string, options: any): Promise<BuildOptions> {
     const root = process.cwd()
-    
+
     // 解析输入
     let inputPath: string | string[]
     if (input) {
@@ -77,23 +80,19 @@ export class BuildCommand {
       // 自动检测入口文件
       inputPath = await this.detectEntryFiles(root)
     }
-    
+
     // 解析输出格式
     const formats = this.parseFormats(options.format)
-    
+
     // 解析构建模式
     const mode: BuildMode = options.mode === 'development' ? 'development' : 'production'
-    
+
     return {
+      root,
       input: inputPath,
-      output: {
-        dir: path.resolve(root, options.outDir || 'dist'),
-        format: formats[0], // 使用第一个格式作为默认格式
-        file: undefined,
-        name: undefined,
-        sourcemap: options.sourcemap !== false
-      },
+      outDir: path.resolve(root, options.outDir || 'dist'),
       formats,
+      mode,
       dts: options.dts !== false, // 默认生成类型声明
       dtsDir: path.resolve(root, options.dtsDir || 'types'),
       minify: options.minify !== false && mode === 'production', // 生产模式默认压缩
@@ -117,10 +116,10 @@ export class BuildCommand {
       'main.ts',
       'main.js',
     ]
-    
+
     const fs = await import('fs-extra')
     const entries: string[] = []
-    
+
     for (const entry of possibleEntries) {
       const entryPath = path.resolve(root, entry)
       if (await fs.pathExists(entryPath)) {
@@ -128,11 +127,11 @@ export class BuildCommand {
         break // 只取第一个找到的入口文件
       }
     }
-    
+
     if (entries.length === 0) {
       throw new Error('未找到入口文件，请指定入口文件或确保存在 src/index.ts 等常见入口文件')
     }
-    
+
     return entries
   }
 
@@ -142,13 +141,13 @@ export class BuildCommand {
   private parseFormats(formatStr: string): OutputFormat[] {
     const formats = formatStr.split(',').map(f => f.trim()) as OutputFormat[]
     const validFormats: OutputFormat[] = ['esm', 'cjs', 'iife', 'umd']
-    
+
     for (const format of formats) {
       if (!validFormats.includes(format)) {
         throw new Error(`不支持的输出格式: ${format}，支持的格式: ${validFormats.join(', ')}`)
       }
     }
-    
+
     return formats
   }
 
@@ -159,9 +158,9 @@ export class BuildCommand {
     console.log()
     console.log(chalk.cyan.bold('📦 开始构建'))
     console.log(chalk.gray('─'.repeat(50)))
-    console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(process.cwd())}`) 
-    console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.output?.dir || 'dist')}`)
-    console.log(`${chalk.bold('输出格式:')} ${chalk.yellow(options.formats?.join(', '))}`) 
+    console.log(`${chalk.bold('项目根目录:')} ${chalk.cyan(process.cwd())}`)
+    console.log(`${chalk.bold('输出目录:')} ${chalk.cyan(options.outDir || 'dist')}`)
+    console.log(`${chalk.bold('输出格式:')} ${chalk.yellow(options.formats?.join(', '))}`)
     console.log(`${chalk.bold('生成类型声明:')} ${options.dts ? chalk.green('是') : chalk.red('否')}`)
     console.log(`${chalk.bold('代码压缩:')} ${options.minify ? chalk.green('是') : chalk.red('否')}`)
     console.log(`${chalk.bold('Source Map:')} ${options.sourcemap ? chalk.green('是') : chalk.red('否')}`)
@@ -176,7 +175,7 @@ export class BuildCommand {
     console.log()
     console.log(chalk.green.bold('✅ 构建成功!'))
     console.log(chalk.gray('─'.repeat(50)))
-    
+
     // 显示输出文件信息
     if (result.outputs && result.outputs.length > 0) {
       console.log(chalk.bold('输出文件:'))
@@ -187,7 +186,7 @@ export class BuildCommand {
         console.log(`  ${formatBadge} ${chalk.cyan(path.relative(process.cwd(), output.path))} ${chalk.gray(size + gzipSize)}`)
       }
     }
-    
+
     // 显示构建统计
     if (result.stats) {
       console.log()
@@ -198,7 +197,7 @@ export class BuildCommand {
         console.log(`  ${chalk.bold('压缩后大小:')} ${chalk.yellow(FileUtils.formatSize(result.stats.totalGzipSize))}`)
       }
     }
-    
+
     console.log()
     console.log(`${chalk.bold('构建时间:')} ${chalk.green(this.formatDuration(duration))}`)
     console.log(chalk.gray('─'.repeat(50)))
@@ -212,7 +211,7 @@ export class BuildCommand {
     console.log()
     console.log(chalk.red.bold('❌ 构建失败!'))
     console.log(chalk.gray('─'.repeat(50)))
-    
+
     // 显示错误信息
     if (result.errors && result.errors.length > 0) {
       console.log(chalk.bold('错误信息:'))
@@ -226,7 +225,7 @@ export class BuildCommand {
         }
       }
     }
-    
+
     // 显示警告信息
     if (result.warnings && result.warnings.length > 0) {
       console.log()
@@ -238,7 +237,7 @@ export class BuildCommand {
         }
       }
     }
-    
+
     console.log(chalk.gray('─'.repeat(50)))
     console.log()
   }
@@ -263,12 +262,12 @@ export class BuildCommand {
     if (ms < 1000) {
       return `${ms}ms`
     }
-    
+
     const seconds = ms / 1000
     if (seconds < 60) {
       return `${seconds.toFixed(1)}s`
     }
-    
+
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
     return `${minutes}m ${remainingSeconds}s`

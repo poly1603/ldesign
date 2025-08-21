@@ -4,9 +4,9 @@
  */
 
 import { Logger } from '../utils/logger'
-import type { 
-  ProjectScanResult, 
-  BuildOptions, 
+import type {
+  ProjectScanResult,
+  BuildOptions,
   BuildContext
 } from '../types'
 import type { Plugin } from 'rollup'
@@ -18,7 +18,7 @@ type PluginFactory = (context: BuildContext) => Promise<Plugin | null>
 
 export class PluginConfigurator {
   private readonly pluginRegistry: Map<string, PluginFactory> = new Map()
-  
+
   constructor() {
     this.registerBuiltinPlugins()
   }
@@ -26,11 +26,11 @@ export class PluginConfigurator {
   /**
    * 配置插件
    */
-  async configure(scanResult: ProjectScanResult, buildOptions?: BuildOptions): Promise<Plugin[]> {
+  async configure(scanResult: ProjectScanResult, buildOptions?: Partial<BuildOptions>): Promise<Plugin[]> {
     logger.info('开始配置插件...')
-    
+
     const context: BuildContext = {
-      options: buildOptions || {},
+      options: (buildOptions || {}) as BuildOptions,
       scanResult,
       outputConfig: {
         format: 'esm',
@@ -41,35 +41,35 @@ export class PluginConfigurator {
       root: process.cwd(),
       outDir: buildOptions?.outDir || 'dist'
     }
-    
+
     const plugins: Plugin[] = []
-    
+
     try {
       // 分析项目需求
       const requirements = this.analyzeRequirements(context.scanResult)
-      
+
       // 配置基础插件
       await this.configureBasePlugins(context, requirements, plugins)
-      
+
       // 配置语言插件
       await this.configureLanguagePlugins(context, requirements, plugins)
-      
+
       // 配置样式插件
       await this.configureStylePlugins(context, requirements, plugins)
-      
+
       // 配置框架插件
       await this.configureFrameworkPlugins(context, requirements, plugins)
-      
+
       // 配置优化插件
       await this.configureOptimizationPlugins(context, requirements, plugins)
-      
+
       // 配置开发插件
       await this.configureDevelopmentPlugins(context, requirements, plugins)
-      
+
       logger.info(`插件配置完成，共配置 ${plugins.length} 个插件`)
-      
+
       return plugins
-      
+
     } catch (error) {
       logger.error('插件配置失败:', error)
       throw error
@@ -85,29 +85,29 @@ export class PluginConfigurator {
     this.registerPlugin('commonjs', this.createCommonJSPlugin)
     this.registerPlugin('json', this.createJsonPlugin)
     this.registerPlugin('alias', this.createAliasPlugin)
-    
+
     // 语言插件
     this.registerPlugin('typescript', this.createTypeScriptPlugin)
     this.registerPlugin('babel', this.createBabelPlugin)
     this.registerPlugin('esbuild', this.createEsbuildPlugin)
-    
+
     // 样式插件
     this.registerPlugin('postcss', this.createPostCSSPlugin)
     this.registerPlugin('sass', this.createSassPlugin)
     this.registerPlugin('less', this.createLessPlugin)
     this.registerPlugin('stylus', this.createStylusPlugin)
-    
+
     // 框架插件
     this.registerPlugin('vue', this.createVuePlugin)
     this.registerPlugin('react', this.createReactPlugin)
     this.registerPlugin('svelte', this.createSveltePlugin)
-    
+
     // 优化插件
     this.registerPlugin('terser', this.createTerserPlugin)
     this.registerPlugin('replace', this.createReplacePlugin)
     this.registerPlugin('strip', this.createStripPlugin)
     this.registerPlugin('filesize', this.createFilesizePlugin)
-    
+
     // 开发插件
     this.registerPlugin('serve', this.createServePlugin)
     this.registerPlugin('livereload', this.createLivereloadPlugin)
@@ -124,45 +124,55 @@ export class PluginConfigurator {
    * 分析项目需求
    */
   private analyzeRequirements(scanResult: ProjectScanResult) {
+    const files = scanResult.files || []
+    const hasTypeScript = files.some(f => f.type === 'typescript' || f.type === 'tsx')
+    const hasJSX = files.some(f => f.type === 'jsx' || f.type === 'tsx')
+    const hasVue = files.some(f => f.type === 'vue') || scanResult.projectType === 'vue'
+    const hasReact = hasJSX || scanResult.projectType === 'react'
+    const hasSvelte = files.some(f => (f as any).type === 'svelte')
+    const hasSass = files.some(f => f.type === 'scss')
+    const hasLess = files.some(f => f.type === 'less')
+    const hasStyles = files.some(f => ['css', 'scss', 'less', 'stylus'].includes(f.type as string))
+
     return {
       projectType: scanResult.projectType,
-      hasTypeScript: (scanResult.fileTypes.typescript || 0) > 0,
-      hasJSX: scanResult.projectType === 'react' || scanResult.frameworks.includes('react'),
-      hasVue: scanResult.projectType === 'vue' || scanResult.frameworks.includes('vue'),
-      hasReact: scanResult.projectType === 'react' || scanResult.frameworks.includes('react'),
-      hasSvelte: scanResult.frameworks.includes('svelte'),
-      hasStyles: (scanResult.fileTypes.css || 0) > 0 || (scanResult.fileTypes.scss || 0) > 0 || (scanResult.fileTypes.less || 0) > 0,
-      hasSass: (scanResult.fileTypes.scss || 0) > 0,
-      hasLess: (scanResult.fileTypes.less || 0) > 0,
-      hasStylus: false, // TODO: 添加 stylus 检测
-      fileTypes: scanResult.fileTypes
+      hasTypeScript,
+      hasJSX,
+      hasVue,
+      hasReact,
+      hasSvelte,
+      hasStyles,
+      hasSass,
+      hasLess,
+      hasStylus: files.some(f => f.type === 'stylus'),
+      fileTypes: {}
     }
   }
 
   /**
    * 配置基础插件
    */
-  private async configureBasePlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
+  private async configureBasePlugins(context: BuildContext, _requirements: any, plugins: Plugin[]): Promise<void> {
     // Node resolve
     const nodeResolvePlugin = await this.createPlugin('node-resolve', context)
     if (nodeResolvePlugin) {
       plugins.push(nodeResolvePlugin)
     }
-    
+
     // CommonJS
     const commonjsPlugin = await this.createPlugin('commonjs', context)
     if (commonjsPlugin) {
       plugins.push(commonjsPlugin)
     }
-    
+
     // JSON
     const jsonPlugin = await this.createPlugin('json', context)
     if (jsonPlugin) {
       plugins.push(jsonPlugin)
     }
-    
+
     // Alias (如果有配置)
-    if (context.options.external) {
+    if ((context.options as any).alias) {
       const aliasPlugin = await this.createPlugin('alias', context)
       if (aliasPlugin) {
         plugins.push(aliasPlugin)
@@ -205,7 +215,7 @@ export class PluginConfigurator {
       if (postcssPlugin) {
         plugins.push(postcssPlugin)
       }
-      
+
       // Sass/SCSS
       if ((requirements.fileTypes.scss || 0) > 0) {
         const sassPlugin = await this.createPlugin('sass', context)
@@ -213,7 +223,7 @@ export class PluginConfigurator {
           plugins.push(sassPlugin)
         }
       }
-      
+
       // Less
       if ((requirements.fileTypes.less || 0) > 0) {
         const lessPlugin = await this.createPlugin('less', context)
@@ -221,12 +231,12 @@ export class PluginConfigurator {
           plugins.push(lessPlugin)
         }
       }
-      
+
       // Stylus
       if (false) { // Stylus support not implemented yet
         const stylusPlugin = await this.createPlugin('stylus', context)
-        if (stylusPlugin) {
-          plugins.push(stylusPlugin)
+        if (stylusPlugin != null) {
+          plugins.push(stylusPlugin as Plugin)
         }
       }
     }
@@ -238,54 +248,49 @@ export class PluginConfigurator {
   private async configureFrameworkPlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
     if (requirements.projectType === 'vue' || requirements.hasVue) {
       const vuePlugin = await this.createPlugin('vue', context)
-      if (vuePlugin) {
-        plugins.push(vuePlugin)
+      if (vuePlugin != null) {
+        plugins.push(vuePlugin as Plugin)
       }
     }
-    
+
     if (requirements.projectType === 'react') {
-      const reactPlugin = await this.createPlugin('react', context)
-      if (reactPlugin) {
-        plugins.push(reactPlugin)
-      }
+      // React 主要通过 Babel/ESBuild 处理，跳过占位的 react 插件
     }
-    
+
     if (requirements.projectType === 'svelte') {
       const sveltePlugin = await this.createPlugin('svelte', context)
-      if (sveltePlugin) {
-        plugins.push(sveltePlugin)
-      }
+      if (sveltePlugin != null) plugins.push(sveltePlugin as Plugin)
     }
   }
 
   /**
    * 配置优化插件
    */
-  private async configureOptimizationPlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
-    const isProduction = context.options.mode === 'production'
-    
+  private async configureOptimizationPlugins(context: BuildContext, _requirements: any, plugins: Plugin[]): Promise<void> {
+    const isProduction = (context.options.mode || 'production') === 'production'
+
     if (isProduction) {
       // 代码压缩
       const terserPlugin = await this.createPlugin('terser', context)
       if (terserPlugin) {
         plugins.push(terserPlugin)
       }
-      
+
       // 移除调试代码
       const stripPlugin = await this.createPlugin('strip', context)
       if (stripPlugin) {
         plugins.push(stripPlugin)
       }
     }
-    
+
     // 环境变量替换
     const replacePlugin = await this.createPlugin('replace', context)
     if (replacePlugin) {
       plugins.push(replacePlugin)
     }
-    
+
     // 文件大小分析
-    if (context.options.analyze) {
+    if ((context.options as any).analyze) {
       const filesizePlugin = await this.createPlugin('filesize', context)
       if (filesizePlugin) {
         plugins.push(filesizePlugin)
@@ -296,21 +301,21 @@ export class PluginConfigurator {
   /**
    * 配置开发插件
    */
-  private async configureDevelopmentPlugins(context: BuildContext, requirements: any, plugins: Plugin[]): Promise<void> {
+  private async configureDevelopmentPlugins(context: BuildContext, _requirements: any, plugins: Plugin[]): Promise<void> {
     const isDevelopment = context.options.mode === 'development'
     const isWatch = context.options.watch
-    
+
     if (isDevelopment || isWatch) {
       // 开发服务器
-      if (context.options.serve) {
+      if ((context.options as any).serve) {
         const servePlugin = await this.createPlugin('serve', context)
         if (servePlugin) {
           plugins.push(servePlugin)
         }
       }
-      
+
       // 热重载
-      if (context.options.livereload) {
+      if ((context.options as any).livereload) {
         const livereloadPlugin = await this.createPlugin('livereload', context)
         if (livereloadPlugin) {
           plugins.push(livereloadPlugin)
@@ -328,7 +333,7 @@ export class PluginConfigurator {
       logger.warn(`插件 ${name} 未注册`)
       return null
     }
-    
+
     try {
       return await factory(context)
     } catch (error) {
@@ -543,7 +548,7 @@ export class PluginConfigurator {
   /**
    * 创建 React 插件
    */
-  private createReactPlugin: PluginFactory = async (context) => {
+  private createReactPlugin: PluginFactory = async (_context) => {
     // React 主要通过 Babel 或 ESBuild 处理，这里可以添加特定的 React 优化
     return null
   }
@@ -551,13 +556,10 @@ export class PluginConfigurator {
   /**
    * 创建 Svelte 插件
    */
-  private createSveltePlugin: PluginFactory = async (context) => {
+  private createSveltePlugin: PluginFactory = async (_context) => {
     try {
       const { default: svelte } = await import('rollup-plugin-svelte')
-      return svelte({
-        css: css => css.write('dist/bundle.css'),
-        ...context.options.svelte
-      })
+      return svelte({})
     } catch (error) {
       logger.warn('无法加载 rollup-plugin-svelte')
       return null

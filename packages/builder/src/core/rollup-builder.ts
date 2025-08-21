@@ -34,12 +34,12 @@ export class RollupBuilder {
     buildOptions: BuildOptions
   ): Promise<BuildResult> {
     logger.info('开始构建项目...')
-    
+
     const startTime = Date.now()
     const errors: BuildError[] = []
     const warnings: BuildWarning[] = []
     const outputFiles: OutputFile[] = []
-    
+
     try {
       // 生成 Rollup 配置
       const rollupOptions = this.generateRollupOptions(
@@ -47,21 +47,21 @@ export class RollupBuilder {
         pluginConfig,
         buildOptions
       )
-      
+
       // 创建输出目录
       this.ensureOutputDir(buildOptions.outDir || 'dist')
-      
+
       // 执行构建
       this.currentBuild = await rollup(rollupOptions)
-      
+
       // 生成输出文件
       const outputs = this.generateOutputOptions(scanResult, buildOptions)
-      
+
       for (const output of outputs) {
         logger.info(`生成 ${output.format} 格式文件...`)
-        
+
         const { output: generatedFiles } = await this.currentBuild.write(output)
-        
+
         // 收集输出文件信息
         for (const file of generatedFiles) {
           if (file.type === 'chunk') {
@@ -83,20 +83,20 @@ export class RollupBuilder {
           }
         }
       }
-      
+
       const endTime = Date.now()
       const buildTime = endTime - startTime
-      
+
       const totalSize = outputFiles.reduce((sum, file) => sum + file.size, 0)
       const totalGzipSize = outputFiles.reduce((sum, file) => sum + (file.gzipSize || 0), 0)
-      
+
       const formatStats: Record<OutputFormat, any> = {
         esm: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
         cjs: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
         iife: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
         umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 }
       }
-      
+
       // 统计各格式的文件信息
       outputFiles.forEach(file => {
         if (formatStats[file.format]) {
@@ -105,16 +105,16 @@ export class RollupBuilder {
           formatStats[file.format].totalGzipSize += file.gzipSize || 0
         }
       })
-      
+
       const stats: BuildStats = {
         totalFiles: outputFiles.length,
         totalSize,
         totalGzipSize,
         formatStats
       }
-      
+
       logger.info(`构建完成，耗时 ${buildTime}ms`)
-      
+
       return {
         success: true,
         duration: buildTime,
@@ -123,7 +123,7 @@ export class RollupBuilder {
         warnings,
         stats
       }
-      
+
     } catch (error) {
       const buildError: BuildError = {
         message: error instanceof Error ? error.message : String(error),
@@ -132,10 +132,10 @@ export class RollupBuilder {
         line: undefined,
         column: undefined
       }
-      
+
       errors.push(buildError)
       logger.error('构建失败:', error)
-      
+
       return {
         success: false,
         duration: Date.now() - startTime,
@@ -173,7 +173,7 @@ export class RollupBuilder {
     onRebuild?: (result: BuildResult) => void
   ): Promise<void> {
     logger.info('启动监听模式...')
-    
+
     try {
       // 生成 Rollup 配置
       const rollupOptions = this.generateRollupOptions(
@@ -181,10 +181,10 @@ export class RollupBuilder {
         pluginConfig,
         buildOptions
       )
-      
+
       // 生成输出配置
       const outputs = this.generateOutputOptions(scanResult, buildOptions)
-      
+
       // 创建监听器
       this.currentWatcher = watch({
         ...rollupOptions,
@@ -195,18 +195,18 @@ export class RollupBuilder {
           ...buildOptions.watchOptions
         }
       })
-      
+
       // 监听事件
       this.currentWatcher.on('event', async (event) => {
         switch (event.code) {
           case 'START':
             logger.info('检测到文件变化，开始重新构建...')
             break
-            
+
           case 'BUNDLE_START':
             logger.info('开始打包...')
             break
-            
+
           case 'BUNDLE_END':
             logger.info('打包完成')
             if (onRebuild) {
@@ -232,11 +232,11 @@ export class RollupBuilder {
               onRebuild(result)
             }
             break
-            
+
           case 'END':
             logger.info('监听构建完成')
             break
-            
+
           case 'ERROR':
             logger.error('构建错误:', event.error)
             if (onRebuild) {
@@ -269,7 +269,7 @@ export class RollupBuilder {
             break
         }
       })
-      
+
     } catch (error) {
       logger.error('启动监听模式失败:', error)
       throw error
@@ -296,7 +296,7 @@ export class RollupBuilder {
     buildOptions: BuildOptions
   ): RollupOptions {
     const input = this.resolveInput(scanResult, buildOptions)
-    
+
     const rollupOptions: RollupOptions = {
       input,
       plugins: pluginConfig.plugins,
@@ -307,7 +307,7 @@ export class RollupBuilder {
       ...pluginConfig.rollupOptions,
       ...buildOptions.rollupOptions
     }
-    
+
     return rollupOptions
   }
 
@@ -322,20 +322,20 @@ export class RollupBuilder {
     if (buildOptions.input) {
       return buildOptions.input
     }
-    
+
     // 如果只有一个入口点
     if (scanResult.entryPoints.length === 1) {
       return scanResult.entryPoints[0]
     }
-    
+
     // 多个入口点，生成对象形式
     const input: Record<string, string> = {}
-    
+
     for (const entryPoint of scanResult.entryPoints) {
       const name = basename(entryPoint, extname(entryPoint))
       input[name] = entryPoint
     }
-    
+
     return input
   }
 
@@ -345,27 +345,29 @@ export class RollupBuilder {
   private resolveExternal(
     scanResult: ProjectScanResult,
     buildOptions: BuildOptions
-  ): string[] {
-    const external: string[] = []
-    
-    // 添加用户指定的外部依赖
-    if (buildOptions.external) {
-      external.push(...buildOptions.external)
+  ): RollupOptions['external'] {
+    // 如果用户提供了函数，优先使用函数
+    if (typeof buildOptions.external === 'function') {
+      return buildOptions.external
     }
-    
+
+    const externalList: string[] = []
+
+    if (Array.isArray(buildOptions.external)) {
+      externalList.push(...buildOptions.external)
+    }
+
     // 添加 peerDependencies
     if (scanResult.packageInfo?.peerDependencies) {
-      external.push(...Object.keys(scanResult.packageInfo.peerDependencies))
+      externalList.push(...Object.keys(scanResult.packageInfo.peerDependencies))
     }
-    
+
     // 如果是库模式，添加所有依赖
-    if (buildOptions.lib) {
-      if (scanResult.packageInfo?.dependencies) {
-        external.push(...Object.keys(scanResult.packageInfo.dependencies))
-      }
+    if (buildOptions.lib && scanResult.packageInfo?.dependencies) {
+      externalList.push(...Object.keys(scanResult.packageInfo.dependencies))
     }
-    
-    return [...new Set(external)] // 去重
+
+    return [...new Set(externalList)]
   }
 
   /**
@@ -377,19 +379,19 @@ export class RollupBuilder {
   ): OutputOptions[] {
     const outputs: OutputOptions[] = []
     const outDir = buildOptions.outDir || 'dist'
-    const formats = buildOptions.formats || ['es', 'cjs']
-    
+    const formats = (buildOptions.formats || ['esm', 'cjs']) as OutputFormat[]
+
     for (const format of formats) {
       const output: OutputOptions = {
         dir: outDir,
-        format,
+        format: this.mapToRollupFormat(format),
         sourcemap: buildOptions.sourcemap !== false,
         ...this.getFormatSpecificOptions(format, scanResult, buildOptions)
       }
-      
+
       outputs.push(output)
     }
-    
+
     return outputs
   }
 
@@ -402,46 +404,41 @@ export class RollupBuilder {
     buildOptions: BuildOptions
   ): Partial<OutputOptions> {
     const options: Partial<OutputOptions> = {}
-    
+
     switch (format) {
-      case 'es':
       case 'esm':
         options.entryFileNames = '[name].esm.js'
         options.chunkFileNames = '[name]-[hash].esm.js'
         break
-        
+
       case 'cjs':
-      case 'commonjs':
         options.entryFileNames = '[name].cjs.js'
         options.chunkFileNames = '[name]-[hash].cjs.js'
         options.exports = 'auto'
         break
-        
+
       case 'umd':
         options.entryFileNames = '[name].umd.js'
         options.name = buildOptions.name || scanResult.packageInfo?.name || 'MyLibrary'
         options.globals = buildOptions.globals || {}
         break
-        
+
       case 'iife':
         options.entryFileNames = '[name].iife.js'
         options.name = buildOptions.name || scanResult.packageInfo?.name || 'MyLibrary'
         options.globals = buildOptions.globals || {}
         break
-        
-      case 'amd':
-        options.entryFileNames = '[name].amd.js'
-        options.amd = {
-          id: buildOptions.name || scanResult.packageInfo?.name
-        }
-        break
-        
-      case 'system':
-        options.entryFileNames = '[name].system.js'
-        break
     }
-    
+
     return options
+  }
+
+  /**
+   * 将内部格式映射到 Rollup 的格式
+   */
+  private mapToRollupFormat(format: OutputFormat): OutputOptions['format'] {
+    if (format === 'esm') return 'es'
+    return format as OutputOptions['format']
   }
 
   /**
@@ -477,7 +474,7 @@ export class RollupBuilder {
       await this.currentBuild.close()
       this.currentBuild = null
     }
-    
+
     if (this.currentWatcher) {
       await this.currentWatcher.close()
       this.currentWatcher = null
