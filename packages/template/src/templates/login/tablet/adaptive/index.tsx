@@ -1,7 +1,7 @@
-import { defineComponent, ref, onMounted, computed, onUnmounted } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { getIcon } from '../../../../utils/icons'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -66,12 +66,13 @@ export default defineComponent({
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -85,9 +86,11 @@ export default defineComponent({
 
       if (width < 768) {
         layoutMode.value = 'compact'
-      } else if (width > 1200) {
+      }
+      else if (width > 1200) {
         layoutMode.value = 'expanded'
-      } else {
+      }
+      else {
         layoutMode.value = 'normal'
       }
     }
@@ -108,7 +111,7 @@ export default defineComponent({
           width: screenWidth.value,
           height: screenHeight.value,
           quality: 'high',
-          category: 'tech'
+          category: 'tech',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -116,13 +119,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Adaptive Gradient'
+          title: 'Adaptive Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -165,7 +170,7 @@ export default defineComponent({
         class={[
           'tablet-adaptive-login',
           `tablet-adaptive-login--${layoutMode.value}`,
-          `tablet-adaptive-login--${orientation.value}`
+          `tablet-adaptive-login--${orientation.value}`,
         ]}
         style={backgroundStyle.value}
       >
@@ -177,12 +182,17 @@ export default defineComponent({
           <div class="tablet-adaptive-login__mesh"></div>
           <div class="tablet-adaptive-login__dots">
             {Array.from({ length: layoutMode.value === 'expanded' ? 20 : layoutMode.value === 'normal' ? 15 : 10 }).map((_, i) => (
-              <div key={i} class="tablet-adaptive-login__dot" style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${3 + Math.random() * 4}s`
-              }}></div>
+              <div
+                key={i}
+                class="tablet-adaptive-login__dot"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: `${3 + Math.random() * 4}s`,
+                }}
+              >
+              </div>
             ))}
           </div>
         </div>
@@ -197,7 +207,11 @@ export default defineComponent({
         {/* 屏幕信息显示（开发模式） */}
         <div class="tablet-adaptive-login__debug">
           <div class="debug-info">
-            <span>{screenWidth.value}×{screenHeight.value}</span>
+            <span>
+              {screenWidth.value}
+              ×
+              {screenHeight.value}
+            </span>
             <span>{orientation.value}</span>
             <span>{layoutMode.value}</span>
           </div>
@@ -244,75 +258,77 @@ export default defineComponent({
           <div class="tablet-adaptive-login__main">
             {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
             <div class="login-panel-wrapper">
-              {props.loginPanel ? (
-                <props.loginPanel
-                  title={props.title}
-                  subtitle={props.subtitle}
-                  showRememberMe={props.showRememberMe}
-                  showForgotPassword={props.showForgotPassword}
-                  showThirdPartyLogin={props.showThirdPartyLogin}
-                  thirdPartyProviders={props.thirdPartyProviders}
-                  isLoading={props.isLoading}
-                  error={props.error}
-                  onLogin={handleLogin}
-                  onRegister={handleRegister}
-                  onForgotPassword={handleForgotPassword}
-                  onThirdPartyLogin={handleThirdPartyLogin}
-                />
-              ) : (
-                <div class="tablet-adaptive-login__default-panel">
-                  <div class="tablet-adaptive-login__header">
-                    <h1 class="tablet-adaptive-login__title">{props.title}</h1>
-                    <p class="tablet-adaptive-login__subtitle">{props.subtitle}</p>
-                  </div>
+              {props.loginPanel
+                ? (
+                    <props.loginPanel
+                      title={props.title}
+                      subtitle={props.subtitle}
+                      showRememberMe={props.showRememberMe}
+                      showForgotPassword={props.showForgotPassword}
+                      showThirdPartyLogin={props.showThirdPartyLogin}
+                      thirdPartyProviders={props.thirdPartyProviders}
+                      isLoading={props.isLoading}
+                      error={props.error}
+                      onLogin={handleLogin}
+                      onRegister={handleRegister}
+                      onForgotPassword={handleForgotPassword}
+                      onThirdPartyLogin={handleThirdPartyLogin}
+                    />
+                  )
+                : (
+                    <div class="tablet-adaptive-login__default-panel">
+                      <div class="tablet-adaptive-login__header">
+                        <h1 class="tablet-adaptive-login__title">{props.title}</h1>
+                        <p class="tablet-adaptive-login__subtitle">{props.subtitle}</p>
+                      </div>
 
-                  <div class="tablet-adaptive-login__form">
-                    <div class="tablet-adaptive-login__field">
-                      <input type="text" placeholder="用户名" class="tablet-adaptive-login__input" />
-                    </div>
-                    <div class="tablet-adaptive-login__field">
-                      <input type="password" placeholder="密码" class="tablet-adaptive-login__input" />
-                    </div>
+                      <div class="tablet-adaptive-login__form">
+                        <div class="tablet-adaptive-login__field">
+                          <input type="text" placeholder="用户名" class="tablet-adaptive-login__input" />
+                        </div>
+                        <div class="tablet-adaptive-login__field">
+                          <input type="password" placeholder="密码" class="tablet-adaptive-login__input" />
+                        </div>
 
-                    {props.showRememberMe && (
-                      <div class="tablet-adaptive-login__options">
-                        <label class="tablet-adaptive-login__checkbox">
-                          <input type="checkbox" />
-                          <span>记住密码</span>
-                        </label>
-                        {props.showForgotPassword && (
-                          <a href="#" class="tablet-adaptive-login__forgot">
-                            忘记密码？
-                          </a>
+                        {props.showRememberMe && (
+                          <div class="tablet-adaptive-login__options">
+                            <label class="tablet-adaptive-login__checkbox">
+                              <input type="checkbox" />
+                              <span>记住密码</span>
+                            </label>
+                            {props.showForgotPassword && (
+                              <a href="#" class="tablet-adaptive-login__forgot">
+                                忘记密码？
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        <button class="tablet-adaptive-login__submit">登录</button>
+
+                        {props.showThirdPartyLogin && (
+                          <div class="tablet-adaptive-login__third-party">
+                            <div class="tablet-adaptive-login__divider">
+                              <span>或</span>
+                            </div>
+                            <div class="tablet-adaptive-login__providers">
+                              {props.thirdPartyProviders.map((provider: string) => (
+                                <button
+                                  key={provider}
+                                  class={`tablet-adaptive-login__provider tablet-adaptive-login__provider--${provider}`}
+                                >
+                                  {provider === 'github' && '🐙'}
+                                  {provider === 'google' && '🔍'}
+                                  {provider === 'wechat' && '💬'}
+                                  {provider === 'apple' && '🍎'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
-                    )}
-
-                    <button class="tablet-adaptive-login__submit">登录</button>
-
-                    {props.showThirdPartyLogin && (
-                      <div class="tablet-adaptive-login__third-party">
-                        <div class="tablet-adaptive-login__divider">
-                          <span>或</span>
-                        </div>
-                        <div class="tablet-adaptive-login__providers">
-                          {props.thirdPartyProviders.map((provider: string) => (
-                            <button
-                              key={provider}
-                              class={`tablet-adaptive-login__provider tablet-adaptive-login__provider--${provider}`}
-                            >
-                              {provider === 'github' && '🐙'}
-                              {provider === 'google' && '🔍'}
-                              {provider === 'wechat' && '💬'}
-                              {provider === 'apple' && '🍎'}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
             </div>
           </div>
         </div>

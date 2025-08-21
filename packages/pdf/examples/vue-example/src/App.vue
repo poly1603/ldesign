@@ -1230,48 +1230,48 @@ onUnmounted(() => {
   .header-content {
     padding: 0 var(--pdf-spacing-small, 8px);
   }
-  
+
   .brand-text {
     display: none;
   }
-  
+
   .upload-section {
     padding: var(--pdf-spacing-medium, 16px);
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
     gap: var(--pdf-spacing-medium, 16px);
   }
-  
+
   .feature-item {
     padding: var(--pdf-spacing-medium, 16px);
   }
-  
+
   .footer-content {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .footer-stats {
     justify-content: center;
   }
-  
+
   .toast-container {
     top: var(--pdf-spacing-medium, 16px);
     right: var(--pdf-spacing-medium, 16px);
     left: var(--pdf-spacing-medium, 16px);
     max-width: none;
   }
-  
+
   .help-panel {
     padding: var(--pdf-spacing-small, 8px);
   }
-  
+
   .help-content {
     max-height: 90vh;
   }
-  
+
   .shortcuts-grid {
     grid-template-columns: 1fr;
   }
@@ -1283,16 +1283,16 @@ onUnmounted(() => {
     align-items: flex-start;
     gap: var(--pdf-spacing-small, 8px);
   }
-  
+
   .file-info {
     width: 100%;
   }
-  
+
   .feature-icon {
     width: 48px;
     height: 48px;
   }
-  
+
   .feature-icon .icon {
     width: 24px;
     height: 24px;
@@ -1321,11 +1321,11 @@ onUnmounted(() => {
   .global-loading {
     display: none !important;
   }
-  
+
   .app-main {
     height: auto !important;
   }
-  
+
   .viewer-section {
     height: auto !important;
   }
@@ -1337,7 +1337,7 @@ onUnmounted(() => {
     --pdf-color-border: #000000;
     --pdf-color-secondary: #000000;
   }
-  
+
   .app--dark {
     --pdf-color-border: #ffffff;
     --pdf-color-secondary: #ffffff;

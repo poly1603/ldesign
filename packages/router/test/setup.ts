@@ -53,11 +53,11 @@ globalThis.IntersectionObserver = vi.fn().mockImplementation(_callback => ({
 }))
 
 // Mock requestIdleCallback
-globalThis.requestIdleCallback = vi.fn(callback => {
+globalThis.requestIdleCallback = vi.fn((callback) => {
   return setTimeout(callback, 0) as any
 }) as any
 
-globalThis.cancelIdleCallback = vi.fn(id => {
+globalThis.cancelIdleCallback = vi.fn((id) => {
   clearTimeout(id)
 })
 
@@ -128,7 +128,7 @@ Object.defineProperty(document, 'createElement', {
     const element = {
       tagName: tagName.toUpperCase(),
       style: {},
-      appendChild: vi.fn(child => {
+      appendChild: vi.fn((child) => {
         if (child && typeof child === 'object') {
           child.parentNode = element
           element.childNodes.push(child)
@@ -136,7 +136,7 @@ Object.defineProperty(document, 'createElement', {
         }
         return child
       }),
-      removeChild: vi.fn(child => {
+      removeChild: vi.fn((child) => {
         if (child && typeof child === 'object') {
           child.parentNode = null
           const index = element.childNodes.indexOf(child)
@@ -155,22 +155,30 @@ Object.defineProperty(document, 'createElement', {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       setAttribute: vi.fn((name, value) => {
-        if (name === 'id') element.id = value
-        if (name === 'class') element.className = value
+        if (name === 'id')
+          element.id = value
+        if (name === 'class')
+          element.className = value
       }),
-      getAttribute: vi.fn(name => {
-        if (name === 'id') return element.id
-        if (name === 'class') return element.className
+      getAttribute: vi.fn((name) => {
+        if (name === 'id')
+          return element.id
+        if (name === 'class')
+          return element.className
         return null
       }),
-      hasAttribute: vi.fn(name => {
-        if (name === 'id') return !!element.id
-        if (name === 'class') return !!element.className
+      hasAttribute: vi.fn((name) => {
+        if (name === 'id')
+          return !!element.id
+        if (name === 'class')
+          return !!element.className
         return false
       }),
-      removeAttribute: vi.fn(name => {
-        if (name === 'id') element.id = ''
-        if (name === 'class') element.className = ''
+      removeAttribute: vi.fn((name) => {
+        if (name === 'id')
+          element.id = ''
+        if (name === 'class')
+          element.className = ''
       }),
       classList: {
         add: vi.fn(),
@@ -198,7 +206,8 @@ Object.defineProperty(document, 'createElement', {
               element.childNodes.splice(index, 0, newNode)
               element.children.splice(index, 0, newNode)
             }
-          } else {
+          }
+          else {
             element.childNodes.push(newNode)
             element.children.push(newNode)
           }
@@ -207,10 +216,10 @@ Object.defineProperty(document, 'createElement', {
       }),
       replaceChild: vi.fn((newChild, oldChild) => {
         if (
-          newChild &&
-          oldChild &&
-          typeof newChild === 'object' &&
-          typeof oldChild === 'object'
+          newChild
+          && oldChild
+          && typeof newChild === 'object'
+          && typeof oldChild === 'object'
         ) {
           const index = element.childNodes.indexOf(oldChild)
           if (index > -1) {
@@ -251,7 +260,7 @@ function createDocumentElement(tagName: string) {
     insertBefore: null as any,
   }
 
-  element.appendChild = vi.fn(child => {
+  element.appendChild = vi.fn((child) => {
     if (child && typeof child === 'object') {
       child.parentNode = element
       element.childNodes.push(child)
@@ -260,7 +269,7 @@ function createDocumentElement(tagName: string) {
     return child
   })
 
-  element.removeChild = vi.fn(child => {
+  element.removeChild = vi.fn((child) => {
     if (child && typeof child === 'object') {
       child.parentNode = null
       const index = element.childNodes.indexOf(child)
@@ -281,7 +290,8 @@ function createDocumentElement(tagName: string) {
           element.childNodes.splice(index, 0, newNode)
           element.children.splice(index, 0, newNode)
         }
-      } else {
+      }
+      else {
         element.childNodes.push(newNode)
         element.children.push(newNode)
       }
@@ -354,9 +364,11 @@ globalThis.URLSearchParams = class URLSearchParams {
   constructor(init?: string | URLSearchParams | Record<string, string>) {
     if (typeof init === 'string') {
       this.parseString(init)
-    } else if (init instanceof URLSearchParams) {
+    }
+    else if (init instanceof URLSearchParams) {
       this.params = new Map(init.params)
-    } else if (init && typeof init === 'object') {
+    }
+    else if (init && typeof init === 'object') {
       for (const [key, value] of Object.entries(init)) {
         this.params.set(key, [value])
       }
@@ -368,7 +380,8 @@ globalThis.URLSearchParams = class URLSearchParams {
       str = str.slice(1)
     }
 
-    if (!str) return
+    if (!str)
+      return
 
     const pairs = str.split('&')
     for (const pair of pairs) {

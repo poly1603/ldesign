@@ -1,196 +1,7 @@
-<template>
-  <div class="file-upload" :class="uploadClasses">
-    <!-- 拖拽上传区域 -->
-    <div 
-      class="upload-area"
-      :class="{
-        'upload-area--dragover': isDragOver,
-        'upload-area--disabled': disabled,
-        'upload-area--error': hasError
-      }"
-      @click="handleAreaClick"
-      @dragover.prevent="handleDragOver"
-      @dragleave.prevent="handleDragLeave"
-      @drop.prevent="handleDrop"
-    >
-      <!-- 上传图标 -->
-      <div class="upload-icon">
-        <svg v-if="!uploading" class="icon icon--upload" viewBox="0 0 24 24">
-          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-        </svg>
-        <svg v-else class="icon icon--loading" viewBox="0 0 24 24">
-          <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
-        </svg>
-      </div>
-      
-      <!-- 上传文本 -->
-      <div class="upload-text">
-        <h3 class="upload-title">
-          {{ uploading ? uploadingText : uploadTitle }}
-        </h3>
-        <p class="upload-description">
-          {{ uploading ? uploadingDescription : uploadDescription }}
-        </p>
-        
-        <!-- 文件限制信息 -->
-        <div class="upload-limits" v-if="!uploading">
-          <span class="limit-item" v-if="maxSize">
-            最大 {{ formatFileSize(maxSize) }}
-          </span>
-          <span class="limit-item" v-if="acceptedTypes.length > 0">
-            支持 {{ acceptedTypes.join(', ') }}
-          </span>
-        </div>
-      </div>
-      
-      <!-- 进度条 -->
-      <div class="upload-progress" v-if="uploading && showProgress">
-        <div class="progress-bar">
-          <div 
-            class="progress-fill"
-            :style="{ width: `${progress}%` }"
-          ></div>
-        </div>
-        <div class="progress-text">
-          {{ Math.round(progress) }}%
-        </div>
-      </div>
-      
-      <!-- 错误信息 -->
-      <div class="upload-error" v-if="hasError">
-        <svg class="icon icon--error" viewBox="0 0 24 24">
-          <path d="M12,2L13.09,8.26L22,9L17,14L18.18,22L12,19.27L5.82,22L7,14L2,9L10.91,8.26L12,2Z" />
-        </svg>
-        <span class="error-message">{{ errorMessage }}</span>
-      </div>
-    </div>
-    
-    <!-- 文件输入 -->
-    <input 
-      ref="fileInput"
-      type="file"
-      class="file-input"
-      :accept="accept"
-      :multiple="multiple"
-      :disabled="disabled || uploading"
-      @change="handleFileSelect"
-    />
-    
-    <!-- 已选择的文件列表 -->
-    <div class="file-list" v-if="selectedFiles.length > 0">
-      <h4 class="file-list-title">已选择的文件:</h4>
-      <div class="file-items">
-        <div 
-          v-for="(file, index) in selectedFiles"
-          :key="file.id"
-          class="file-item"
-          :class="{
-            'file-item--uploading': file.status === 'uploading',
-            'file-item--success': file.status === 'success',
-            'file-item--error': file.status === 'error'
-          }"
-        >
-          <!-- 文件图标 -->
-          <div class="file-icon">
-            <svg v-if="file.status === 'pending'" class="icon" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-            </svg>
-            <svg v-else-if="file.status === 'uploading'" class="icon icon--spin" viewBox="0 0 24 24">
-              <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
-            </svg>
-            <svg v-else-if="file.status === 'success'" class="icon icon--success" viewBox="0 0 24 24">
-              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z" />
-            </svg>
-            <svg v-else-if="file.status === 'error'" class="icon icon--error" viewBox="0 0 24 24">
-              <path d="M12,2L13.09,8.26L22,9L17,14L18.18,22L12,19.27L5.82,22L7,14L2,9L10.91,8.26L12,2Z" />
-            </svg>
-          </div>
-          
-          <!-- 文件信息 -->
-          <div class="file-info">
-            <div class="file-name">{{ file.name }}</div>
-            <div class="file-details">
-              <span class="file-size">{{ formatFileSize(file.size) }}</span>
-              <span class="file-status" v-if="file.status !== 'pending'">
-                {{ getStatusText(file.status) }}
-              </span>
-            </div>
-            
-            <!-- 文件进度 -->
-            <div class="file-progress" v-if="file.status === 'uploading'">
-              <div class="progress-bar progress-bar--small">
-                <div 
-                  class="progress-fill"
-                  :style="{ width: `${file.progress || 0}%` }"
-                ></div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- 操作按钮 -->
-          <div class="file-actions">
-            <button 
-              class="btn-icon btn-icon--remove"
-              @click="removeFile(index)"
-              :disabled="file.status === 'uploading'"
-              :title="file.status === 'uploading' ? '上传中，无法删除' : '删除文件'"
-            >
-              <svg class="icon" viewBox="0 0 24 24">
-                <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 批量操作 -->
-      <div class="file-actions-bulk" v-if="selectedFiles.length > 1">
-        <button 
-          class="btn btn-secondary"
-          @click="clearFiles"
-          :disabled="uploading"
-        >
-          清空所有
-        </button>
-        <button 
-          class="btn btn-primary"
-          @click="uploadFiles"
-          :disabled="uploading || selectedFiles.length === 0"
-        >
-          {{ uploading ? '上传中...' : `上传 ${selectedFiles.length} 个文件` }}
-        </button>
-      </div>
-    </div>
-    
-    <!-- 上传历史 -->
-    <div class="upload-history" v-if="showHistory && uploadHistory.length > 0">
-      <h4 class="history-title">最近上传:</h4>
-      <div class="history-items">
-        <div 
-          v-for="item in uploadHistory.slice(0, 5)"
-          :key="item.id"
-          class="history-item"
-          @click="$emit('file-select', item)"
-        >
-          <div class="history-icon">
-            <svg class="icon" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-            </svg>
-          </div>
-          <div class="history-info">
-            <div class="history-name">{{ item.name }}</div>
-            <div class="history-time">{{ formatTime(item.uploadTime) }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useFileUpload, useDragUpload } from '../composables/useFileUpload'
 import type { FileUploadProps } from '../types'
+import { computed, ref, watch } from 'vue'
+import { useDragUpload, useFileUpload } from '../composables/useFileUpload'
 
 // Props
 const props = withDefaults(defineProps<FileUploadProps>(), {
@@ -202,7 +13,7 @@ const props = withDefaults(defineProps<FileUploadProps>(), {
   showHistory: false,
   uploadText: '选择PDF文件或拖拽到此处',
   uploadingText: '正在上传文件...',
-  theme: 'auto'
+  theme: 'auto',
 })
 
 // Emits
@@ -230,16 +41,16 @@ const {
   addFiles,
   removeFile,
   clearFiles,
-  cancelUpload
+  cancelUpload,
 } = useFileUpload({
   maxSize: props.maxSize,
   acceptedTypes: props.accept.split(',').map(type => type.trim()),
   multiple: props.multiple,
-  onUploadStart: (files) => emit('upload-start', files),
+  onUploadStart: files => emit('upload-start', files),
   onUploadProgress: (progress, file) => emit('upload-progress', progress, file),
   onUploadSuccess: (file, result) => emit('upload-success', file, result),
   onUploadError: (error, file) => emit('upload-error', error, file),
-  onUploadComplete: (results) => emit('upload-complete', results)
+  onUploadComplete: results => emit('upload-complete', results),
 })
 
 // 使用拖拽上传组合式函数
@@ -247,10 +58,10 @@ const {
   isDragOver,
   handleDragOver,
   handleDragLeave,
-  handleDrop
+  handleDrop,
 } = useDragUpload({
   onFilesDropped: handleFilesDropped,
-  disabled: computed(() => props.disabled || uploading.value)
+  disabled: computed(() => props.disabled || uploading.value),
 })
 
 // 计算属性
@@ -258,7 +69,7 @@ const uploadClasses = computed(() => ({
   'file-upload--dark': props.theme === 'dark',
   'file-upload--light': props.theme === 'light',
   'file-upload--disabled': props.disabled,
-  'file-upload--uploading': uploading.value
+  'file-upload--uploading': uploading.value,
 }))
 
 const hasError = computed(() => !!error.value)
@@ -266,12 +77,14 @@ const hasError = computed(() => !!error.value)
 const errorMessage = computed(() => error.value?.message || '上传失败')
 
 const uploadTitle = computed(() => {
-  if (props.uploadText) return props.uploadText
+  if (props.uploadText)
+    return props.uploadText
   return props.multiple ? '选择PDF文件或拖拽到此处' : '选择PDF文件或拖拽到此处'
 })
 
 const uploadDescription = computed(() => {
-  if (props.uploadDescription) return props.uploadDescription
+  if (props.uploadDescription)
+    return props.uploadDescription
   const parts = []
   if (props.maxSize) {
     parts.push(`最大 ${formatFileSize(props.maxSize)}`)
@@ -283,7 +96,8 @@ const uploadDescription = computed(() => {
 })
 
 const uploadingDescription = computed(() => {
-  if (props.uploadingDescription) return props.uploadingDescription
+  if (props.uploadingDescription)
+    return props.uploadingDescription
   return '请稍候，正在处理您的文件...'
 })
 
@@ -294,12 +108,13 @@ const acceptedTypes = computed(() => {
 const accept = computed(() => props.accept)
 
 // 方法
-const handleAreaClick = () => {
-  if (props.disabled || uploading.value) return
+function handleAreaClick() {
+  if (props.disabled || uploading.value)
+    return
   fileInput.value?.click()
 }
 
-const handleFileSelect = (event: Event) => {
+function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const files = Array.from(target.files || [])
   handleFilesSelected(files)
@@ -307,68 +122,74 @@ const handleFileSelect = (event: Event) => {
   target.value = ''
 }
 
-const handleFilesDropped = (files: File[]) => {
+function handleFilesDropped(files: File[]) {
   handleFilesSelected(files)
 }
 
-const handleFilesSelected = (files: File[]) => {
-  if (files.length === 0) return
-  
+function handleFilesSelected(files: File[]) {
+  if (files.length === 0)
+    return
+
   // 添加文件到列表
   addFiles(files)
-  
+
   // 发送事件
   if (files.length === 1) {
     emit('file-select', files[0])
   }
   emit('files-select', files)
-  
+
   // 如果不是多文件模式，自动开始上传
   if (!props.multiple && files.length === 1) {
     uploadFiles()
   }
 }
 
-const uploadFiles = async () => {
+async function uploadFiles() {
   try {
     await uploadFilesComposable()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Upload failed:', error)
   }
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  
+function formatFileSize(bytes: number): string {
+  if (bytes === 0)
+    return '0 B'
+
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
-const formatTime = (timestamp: number): string => {
+function formatTime(timestamp: number): string {
   const date = new Date(timestamp)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
-  
+
   if (diff < 60000) { // 1分钟内
     return '刚刚'
-  } else if (diff < 3600000) { // 1小时内
+  }
+  else if (diff < 3600000) { // 1小时内
     return `${Math.floor(diff / 60000)}分钟前`
-  } else if (diff < 86400000) { // 1天内
+  }
+  else if (diff < 86400000) { // 1天内
     return `${Math.floor(diff / 3600000)}小时前`
-  } else {
+  }
+  else {
     return date.toLocaleDateString()
   }
 }
 
-const getStatusText = (status: string): string => {
+function getStatusText(status: string): string {
   const statusMap: Record<string, string> = {
     pending: '等待上传',
     uploading: '上传中',
     success: '上传成功',
-    error: '上传失败'
+    error: '上传失败',
   }
   return statusMap[status] || status
 }
@@ -387,9 +208,208 @@ defineExpose({
   clearFiles,
   cancelUpload,
   getSelectedFiles: () => selectedFiles.value,
-  isUploading: () => uploading.value
+  isUploading: () => uploading.value,
 })
 </script>
+
+<template>
+  <div class="file-upload" :class="uploadClasses">
+    <!-- 拖拽上传区域 -->
+    <div
+      class="upload-area"
+      :class="{
+        'upload-area--dragover': isDragOver,
+        'upload-area--disabled': disabled,
+        'upload-area--error': hasError,
+      }"
+      @click="handleAreaClick"
+      @dragover.prevent="handleDragOver"
+      @dragleave.prevent="handleDragLeave"
+      @drop.prevent="handleDrop"
+    >
+      <!-- 上传图标 -->
+      <div class="upload-icon">
+        <svg v-if="!uploading" class="icon icon--upload" viewBox="0 0 24 24">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+        </svg>
+        <svg v-else class="icon icon--loading" viewBox="0 0 24 24">
+          <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+        </svg>
+      </div>
+
+      <!-- 上传文本 -->
+      <div class="upload-text">
+        <h3 class="upload-title">
+          {{ uploading ? uploadingText : uploadTitle }}
+        </h3>
+        <p class="upload-description">
+          {{ uploading ? uploadingDescription : uploadDescription }}
+        </p>
+
+        <!-- 文件限制信息 -->
+        <div v-if="!uploading" class="upload-limits">
+          <span v-if="maxSize" class="limit-item">
+            最大 {{ formatFileSize(maxSize) }}
+          </span>
+          <span v-if="acceptedTypes.length > 0" class="limit-item">
+            支持 {{ acceptedTypes.join(', ') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 进度条 -->
+      <div v-if="uploading && showProgress" class="upload-progress">
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            :style="{ width: `${progress}%` }"
+          />
+        </div>
+        <div class="progress-text">
+          {{ Math.round(progress) }}%
+        </div>
+      </div>
+
+      <!-- 错误信息 -->
+      <div v-if="hasError" class="upload-error">
+        <svg class="icon icon--error" viewBox="0 0 24 24">
+          <path d="M12,2L13.09,8.26L22,9L17,14L18.18,22L12,19.27L5.82,22L7,14L2,9L10.91,8.26L12,2Z" />
+        </svg>
+        <span class="error-message">{{ errorMessage }}</span>
+      </div>
+    </div>
+
+    <!-- 文件输入 -->
+    <input
+      ref="fileInput"
+      type="file"
+      class="file-input"
+      :accept="accept"
+      :multiple="multiple"
+      :disabled="disabled || uploading"
+      @change="handleFileSelect"
+    >
+
+    <!-- 已选择的文件列表 -->
+    <div v-if="selectedFiles.length > 0" class="file-list">
+      <h4 class="file-list-title">
+        已选择的文件:
+      </h4>
+      <div class="file-items">
+        <div
+          v-for="(file, index) in selectedFiles"
+          :key="file.id"
+          class="file-item"
+          :class="{
+            'file-item--uploading': file.status === 'uploading',
+            'file-item--success': file.status === 'success',
+            'file-item--error': file.status === 'error',
+          }"
+        >
+          <!-- 文件图标 -->
+          <div class="file-icon">
+            <svg v-if="file.status === 'pending'" class="icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+            <svg v-else-if="file.status === 'uploading'" class="icon icon--spin" viewBox="0 0 24 24">
+              <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
+            </svg>
+            <svg v-else-if="file.status === 'success'" class="icon icon--success" viewBox="0 0 24 24">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z" />
+            </svg>
+            <svg v-else-if="file.status === 'error'" class="icon icon--error" viewBox="0 0 24 24">
+              <path d="M12,2L13.09,8.26L22,9L17,14L18.18,22L12,19.27L5.82,22L7,14L2,9L10.91,8.26L12,2Z" />
+            </svg>
+          </div>
+
+          <!-- 文件信息 -->
+          <div class="file-info">
+            <div class="file-name">
+              {{ file.name }}
+            </div>
+            <div class="file-details">
+              <span class="file-size">{{ formatFileSize(file.size) }}</span>
+              <span v-if="file.status !== 'pending'" class="file-status">
+                {{ getStatusText(file.status) }}
+              </span>
+            </div>
+
+            <!-- 文件进度 -->
+            <div v-if="file.status === 'uploading'" class="file-progress">
+              <div class="progress-bar progress-bar--small">
+                <div
+                  class="progress-fill"
+                  :style="{ width: `${file.progress || 0}%` }"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="file-actions">
+            <button
+              class="btn-icon btn-icon--remove"
+              :disabled="file.status === 'uploading'"
+              :title="file.status === 'uploading' ? '上传中，无法删除' : '删除文件'"
+              @click="removeFile(index)"
+            >
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 批量操作 -->
+      <div v-if="selectedFiles.length > 1" class="file-actions-bulk">
+        <button
+          class="btn btn-secondary"
+          :disabled="uploading"
+          @click="clearFiles"
+        >
+          清空所有
+        </button>
+        <button
+          class="btn btn-primary"
+          :disabled="uploading || selectedFiles.length === 0"
+          @click="uploadFiles"
+        >
+          {{ uploading ? '上传中...' : `上传 ${selectedFiles.length} 个文件` }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 上传历史 -->
+    <div v-if="showHistory && uploadHistory.length > 0" class="upload-history">
+      <h4 class="history-title">
+        最近上传:
+      </h4>
+      <div class="history-items">
+        <div
+          v-for="item in uploadHistory.slice(0, 5)"
+          :key="item.id"
+          class="history-item"
+          @click="$emit('file-select', item)"
+        >
+          <div class="history-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </div>
+          <div class="history-info">
+            <div class="history-name">
+              {{ item.name }}
+            </div>
+            <div class="history-time">
+              {{ formatTime(item.uploadTime) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .file-upload {
@@ -907,29 +927,29 @@ defineExpose({
     min-height: 150px;
     padding: var(--pdf-spacing-medium, 16px);
   }
-  
+
   .icon {
     width: 32px;
     height: 32px;
   }
-  
+
   .upload-title {
     font-size: var(--pdf-font-size-medium, 16px);
   }
-  
+
   .upload-description {
     font-size: var(--pdf-font-size-small, 12px);
   }
-  
+
   .file-item {
     padding: var(--pdf-spacing-small, 8px);
     gap: var(--pdf-spacing-small, 8px);
   }
-  
+
   .file-actions-bulk {
     flex-direction: column;
   }
-  
+
   .btn {
     justify-content: center;
   }
@@ -940,12 +960,12 @@ defineExpose({
     min-height: 120px;
     padding: var(--pdf-spacing-small, 8px);
   }
-  
+
   .upload-limits {
     flex-direction: column;
     gap: var(--pdf-spacing-small, 8px);
   }
-  
+
   .file-details {
     flex-direction: column;
     align-items: flex-start;

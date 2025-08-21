@@ -10,7 +10,7 @@ const LoginPanel = {
     const formData = ref({
       username: '',
       password: '',
-      rememberMe: false
+      rememberMe: false,
     })
 
     const handleSubmit = () => {
@@ -42,14 +42,14 @@ const LoginPanel = {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           登录
         </button>
       </div>
     )
-  }
+  },
 }
 
 // 事件处理

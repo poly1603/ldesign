@@ -68,8 +68,10 @@ const currentDeviceConfig = computed(() => {
 // 自动检测设备类型
 function detectDeviceType(): DeviceType {
   const width = window.innerWidth
-  if (width >= 1024) return 'desktop'
-  if (width >= 768) return 'tablet'
+  if (width >= 1024)
+    return 'desktop'
+  if (width >= 768)
+    return 'tablet'
   return 'mobile'
 }
 
@@ -155,9 +157,15 @@ onUnmounted(() => {
   <div class="device-demo">
     <div class="device-demo__header">
       <div class="device-demo__container">
-        <router-link to="/" class="device-demo__back"> ← 返回首页 </router-link>
-        <h1 class="device-demo__title">📱 响应式切换演示</h1>
-        <p class="device-demo__subtitle">演示不同设备类型的自动切换功能</p>
+        <router-link to="/" class="device-demo__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="device-demo__title">
+          📱 响应式切换演示
+        </h1>
+        <p class="device-demo__subtitle">
+          演示不同设备类型的自动切换功能
+        </p>
       </div>
     </div>
 
@@ -192,7 +200,9 @@ onUnmounted(() => {
           </div>
 
           <div class="device-demo__auto-detect">
-            <button class="device-demo__auto-btn" @click="autoDetectDevice">🔍 自动检测当前设备</button>
+            <button class="device-demo__auto-btn" @click="autoDetectDevice">
+              🔍 自动检测当前设备
+            </button>
           </div>
 
           <div class="device-demo__device-info">
@@ -242,7 +252,9 @@ onUnmounted(() => {
                   @third-party-login="handleThirdPartyLogin"
                 />
                 <div v-else class="device-demo__no-template">
-                  <div class="device-demo__no-template-icon">🚫</div>
+                  <div class="device-demo__no-template-icon">
+                    🚫
+                  </div>
                   <h4>暂无可用模板</h4>
                   <p>当前设备类型没有可用的模板</p>
                 </div>

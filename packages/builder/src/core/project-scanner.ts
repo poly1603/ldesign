@@ -3,17 +3,17 @@
  * 自动扫描项目文件类型和结构
  */
 
-import path from 'path'
-import { glob } from 'glob'
-import { Logger } from '../utils/logger'
 import type {
-  ProjectScanResult,
+  DependencyGraph,
   FileInfo,
-  ProjectType,
   FileType,
   PackageInfo,
-  DependencyGraph
+  ProjectScanResult,
+  ProjectType,
 } from '../types'
+import path from 'node:path'
+import { glob } from 'glob'
+import { Logger } from '../utils/logger'
 
 const logger = new Logger('ProjectScanner')
 
@@ -29,7 +29,7 @@ export class ProjectScanner {
     '**/types/**',
     '**/*.d.ts',
     '**/.DS_Store',
-    '**/Thumbs.db'
+    '**/Thumbs.db',
   ]
 
   /**
@@ -69,14 +69,14 @@ export class ProjectScanner {
         entryPoints,
         packageInfo,
         dependencyGraph,
-        scanTime
+        scanTime,
       }
 
       logger.info(`项目扫描完成，耗时 ${scanTime}ms，发现 ${files.length} 个文件`)
 
       return result
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.error('项目扫描失败:', error)
       throw error
     }
@@ -113,10 +113,10 @@ export class ProjectScanner {
         license: packageJson.license,
         repository: packageJson.repository,
         bugs: packageJson.bugs,
-        homepage: packageJson.homepage
+        homepage: packageJson.homepage,
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('读取 package.json 失败:', error)
       return null
     }
@@ -133,7 +133,7 @@ export class ProjectScanner {
     const {
       ignorePatterns = [],
       includePatterns = ['**/*'],
-      maxDepth = 10
+      maxDepth = 10,
     } = options
 
     const allIgnorePatterns = [...this.defaultIgnorePatterns, ...ignorePatterns]
@@ -148,7 +148,7 @@ export class ProjectScanner {
           ignore: allIgnorePatterns,
           absolute: true,
           nodir: true,
-          maxDepth
+          maxDepth,
         })
 
         for (const filePath of matchedFiles) {
@@ -164,8 +164,8 @@ export class ProjectScanner {
       uniqueFiles.sort((a, b) => a.path.localeCompare(b.path))
 
       return uniqueFiles
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.error('文件扫描失败:', error)
       throw error
     }
@@ -197,7 +197,7 @@ export class ProjectScanner {
         lastModified: stats.mtime,
         isEntry: this.isEntryFile(relativePath, basename),
         dependencies: [],
-        exports: []
+        exports: [],
       }
 
       // 分析文件内容（仅对源码文件）
@@ -206,8 +206,8 @@ export class ProjectScanner {
       }
 
       return fileInfo
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn(`分析文件失败 ${filePath}:`, error)
       return null
     }
@@ -299,8 +299,8 @@ export class ProjectScanner {
     // 检查路径
     const normalizedPath = relativePath.replace(/\\+/g, '/').toLowerCase()
     return entryPaths.some(entryPath =>
-      normalizedPath.startsWith(entryPath) ||
-      normalizedPath === entryPath + path.extname(relativePath)
+      normalizedPath.startsWith(entryPath)
+      || normalizedPath === entryPath + path.extname(relativePath),
     )
   }
 
@@ -313,7 +313,7 @@ export class ProjectScanner {
       'tsx',
       'javascript',
       'jsx',
-      'vue'
+      'vue',
     ].includes(type)
   }
 
@@ -330,8 +330,8 @@ export class ProjectScanner {
 
       // 提取导出
       fileInfo.exports = this.extractExports(content)
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn(`分析文件内容失败 ${fileInfo.path}:`, error)
     }
   }
@@ -343,7 +343,7 @@ export class ProjectScanner {
     const dependencies: string[] = []
 
     // ES6 import
-    const importRegex = /import\s+(?:[^\s,{}]+\s*,?\s*)?(?:\{[^}]*\}\s*)?from\s+['"]([^'"]+)['"]/g
+    const importRegex = /import\s+(?:[^\s,{}]+\s*(?:,\s*)?)?(?:\{[^}]*\}\s*)?from\s+['"]([^'"]+)['"]/g
     let match
 
     while ((match = importRegex.exec(content)) !== null) {
@@ -374,7 +374,7 @@ export class ProjectScanner {
     const exports: string[] = []
 
     // export const/let/var
-    const exportVarRegex = /export\s+(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g
+    const exportVarRegex = /export\s+(?:const|let|var)\s+([a-zA-Z_$][\w$]*)/g
     let match
 
     while ((match = exportVarRegex.exec(content)) !== null) {
@@ -382,21 +382,21 @@ export class ProjectScanner {
     }
 
     // export function
-    const exportFunctionRegex = /export\s+(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g
+    const exportFunctionRegex = /export\s+(?:async\s+)?function\s+([a-zA-Z_$][\w$]*)/g
 
     while ((match = exportFunctionRegex.exec(content)) !== null) {
       exports.push(match[1])
     }
 
     // export class
-    const exportClassRegex = /export\s+(?:abstract\s+)?class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g
+    const exportClassRegex = /export\s+(?:abstract\s+)?class\s+([a-zA-Z_$][\w$]*)/g
 
     while ((match = exportClassRegex.exec(content)) !== null) {
       exports.push(match[1])
     }
 
     // export interface/type (TypeScript)
-    const exportTypeRegex = /export\s+(?:interface|type)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g
+    const exportTypeRegex = /export\s+(?:interface|type)\s+([a-zA-Z_$][\w$]*)/g
 
     while ((match = exportTypeRegex.exec(content)) !== null) {
       exports.push(match[1])
@@ -431,7 +431,7 @@ export class ProjectScanner {
       const allDeps = {
         ...packageInfo.dependencies,
         ...packageInfo.devDependencies,
-        ...packageInfo.peerDependencies
+        ...packageInfo.peerDependencies,
       }
 
       if (allDeps.vue || allDeps['@vue/core']) {
@@ -491,7 +491,7 @@ export class ProjectScanner {
 
     // 自动检测入口文件
     const entryFiles = files.filter(f => f.isEntry)
-    entryFiles.forEach(f => {
+    entryFiles.forEach((f) => {
       if (!entryPoints.includes(f.relativePath)) {
         entryPoints.push(f.relativePath)
       }
@@ -518,11 +518,13 @@ export class ProjectScanner {
   private extractExportsEntries(exports: any, entryPoints: string[]): void {
     if (typeof exports === 'string') {
       entryPoints.push(exports)
-    } else if (typeof exports === 'object' && exports !== null) {
+    }
+    else if (typeof exports === 'object' && exports !== null) {
       for (const [key, value] of Object.entries(exports)) {
         if (typeof value === 'string') {
           entryPoints.push(value)
-        } else if (typeof value === 'object' && value !== null) {
+        }
+        else if (typeof value === 'object' && value !== null) {
           this.extractExportsEntries(value, entryPoints)
         }
       }
@@ -555,16 +557,16 @@ export class ProjectScanner {
   private async createDependencyGraph(files: FileInfo[]): Promise<DependencyGraph> {
     const dependencyGraph: DependencyGraph = {
       nodes: new Map(),
-      edges: []
+      edges: [],
     }
 
     // 创建节点
     for (const file of files) {
       dependencyGraph.nodes.set(file.path, {
         id: file.path,
-        file: file,
+        file,
         inDegree: 0,
-        outDegree: 0
+        outDegree: 0,
       })
     }
 
@@ -579,14 +581,16 @@ export class ProjectScanner {
         dependencyGraph.edges.push({
           from: file.path,
           to: depPath,
-          type: 'import'
+          type: 'import',
         })
 
         // 更新节点的度数
         const fromNode = dependencyGraph.nodes.get(file.path)
         const toNode = dependencyGraph.nodes.get(depPath)
-        if (fromNode) fromNode.outDegree++
-        if (toNode) toNode.inDegree++
+        if (fromNode)
+          fromNode.outDegree++
+        if (toNode)
+          toNode.inDegree++
       }
     }
 
@@ -609,9 +613,25 @@ export class ProjectScanner {
 
     // Node.js 内置模块
     const builtinModules = [
-      'fs', 'path', 'url', 'util', 'events', 'stream', 'buffer',
-      'crypto', 'os', 'http', 'https', 'zlib', 'querystring',
-      'child_process', 'cluster', 'dgram', 'dns', 'net', 'tls'
+      'fs',
+      'path',
+      'url',
+      'util',
+      'events',
+      'stream',
+      'buffer',
+      'crypto',
+      'os',
+      'http',
+      'https',
+      'zlib',
+      'querystring',
+      'child_process',
+      'cluster',
+      'dgram',
+      'dns',
+      'net',
+      'tls',
     ]
 
     if (builtinModules.includes(dep)) {

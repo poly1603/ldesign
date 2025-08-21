@@ -139,7 +139,7 @@ test.describe('Vue Integration E2E Tests', () => {
     // Wait for result
     await page.waitForSelector('[data-testid="encrypted-result"]')
     const encryptedResult = await page.textContent(
-      '[data-testid="encrypted-result"]'
+      '[data-testid="encrypted-result"]',
     )
     expect(encryptedResult).toBeTruthy()
     expect(encryptedResult).not.toBe('Hello from Vue!')
@@ -150,7 +150,7 @@ test.describe('Vue Integration E2E Tests', () => {
     // Wait for decrypted result
     await page.waitForSelector('[data-testid="decrypted-result"]')
     const decryptedResult = await page.textContent(
-      '[data-testid="decrypted-result"]'
+      '[data-testid="decrypted-result"]',
     )
     expect(decryptedResult).toBe('Hello from Vue!')
   })

@@ -52,12 +52,12 @@ export const apiVuePlugin = {
  * 使用 API 引擎的组合式函数
  */
 export function useApi(
-  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY
+  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY,
 ): ApiEngine {
   const apiEngine = inject(injectionKey as InjectionKey<ApiEngine>)
   if (!apiEngine) {
     throw new Error(
-      'API Engine not found. Make sure you have installed the apiVuePlugin.'
+      'API Engine not found. Make sure you have installed the apiVuePlugin.',
     )
   }
   return apiEngine
@@ -68,7 +68,7 @@ export function useApi(
  */
 export function createApiProvider(
   config?: ApiEngineConfig,
-  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY
+  injectionKey: InjectionKey<ApiEngine> | string | symbol = API_ENGINE_KEY,
 ) {
   const apiEngine = createApiEngine(config)
 

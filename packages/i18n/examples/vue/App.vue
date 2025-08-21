@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-
 import {
+  LanguageSwitcher,
   useBatchTranslation,
   useConditionalTranslation,
   useI18n,
-  LanguageSwitcher,
 } from '@ldesign/i18n/vue'
+
+import { computed, onMounted, reactive, ref } from 'vue'
 
 // 使用 I18n 组合式 API - 统一获取所有需要的功能
 const { t, i18n, locale, availableLanguages } = useI18n()

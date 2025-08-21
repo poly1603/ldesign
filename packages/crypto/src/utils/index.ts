@@ -94,7 +94,7 @@ export class RandomUtils {
    */
   static generateRandomString(
     length: number,
-    encoding: EncodingType = 'hex'
+    encoding: EncodingType = 'hex',
   ): string {
     const randomBytes = this.generateRandomBytes(length)
     switch (encoding) {
@@ -148,7 +148,8 @@ export class ValidationUtils {
   static isValidBase64(str: string): boolean {
     try {
       return btoa(atob(str)) === str
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -185,7 +186,7 @@ export class ErrorUtils {
    */
   static createEncryptionError(message: string, algorithm?: string): Error {
     const error = new Error(
-      `Encryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`
+      `Encryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`,
     )
     error.name = 'EncryptionError'
     return error
@@ -196,7 +197,7 @@ export class ErrorUtils {
    */
   static createDecryptionError(message: string, algorithm?: string): Error {
     const error = new Error(
-      `Decryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`
+      `Decryption Error${algorithm ? ` (${algorithm})` : ''}: ${message}`,
     )
     error.name = 'DecryptionError'
     return error
@@ -207,7 +208,7 @@ export class ErrorUtils {
    */
   static createHashError(message: string, algorithm?: string): Error {
     const error = new Error(
-      `Hash Error${algorithm ? ` (${algorithm})` : ''}: ${message}`
+      `Hash Error${algorithm ? ` (${algorithm})` : ''}: ${message}`,
     )
     error.name = 'HashError'
     return error

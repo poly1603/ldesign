@@ -13,7 +13,7 @@ import { useTheme } from './useTheme'
  * @returns 系统主题同步相关的响应式状态和方法
  */
 export function useSystemThemeSync(
-  manager?: ThemeManagerInstance
+  manager?: ThemeManagerInstance,
 ): UseSystemThemeSyncReturn {
   const { setMode } = useTheme(manager)
   const systemTheme = ref<ColorMode>('light')
@@ -21,9 +21,9 @@ export function useSystemThemeSync(
   // 检查是否支持系统主题检测
   const isSupported = computed(() => {
     return (
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      typeof window.matchMedia === 'function'
+      typeof window !== 'undefined'
+      && window.matchMedia
+      && typeof window.matchMedia === 'function'
     )
   })
 
@@ -34,7 +34,8 @@ export function useSystemThemeSync(
   let cleanup: (() => void) | null = null
 
   onMounted(() => {
-    if (!isSupported.value) return
+    if (!isSupported.value)
+      return
 
     try {
       mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -52,12 +53,14 @@ export function useSystemThemeSync(
         mediaQuery.addEventListener('change', updateSystemTheme)
         cleanup = () =>
           mediaQuery!.removeEventListener('change', updateSystemTheme)
-      } else {
+      }
+      else {
         // 兼容旧版本浏览器
         mediaQuery.addListener(updateSystemTheme)
         cleanup = () => mediaQuery!.removeListener(updateSystemTheme)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to setup system theme detection:', error)
     }
   })

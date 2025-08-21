@@ -28,13 +28,13 @@ export class RSAEncryptor implements IEncryptor {
    * 生成 RSA 密钥对
    */
   generateKeyPair(
-    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE
+    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE,
   ): RSAKeyPair {
     try {
       if (!CONSTANTS.RSA.KEY_SIZES.includes(keySize as any)) {
         throw ErrorUtils.createEncryptionError(
           `Unsupported RSA key size: ${keySize}`,
-          'RSA'
+          'RSA',
         )
       }
 
@@ -44,13 +44,14 @@ export class RSAEncryptor implements IEncryptor {
         publicKey: forge.pki.publicKeyToPem(keypair.publicKey),
         privateKey: forge.pki.privateKeyToPem(keypair.privateKey),
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
       throw ErrorUtils.createEncryptionError(
         'Failed to generate RSA key pair',
-        'RSA'
+        'RSA',
       )
     }
   }
@@ -61,7 +62,7 @@ export class RSAEncryptor implements IEncryptor {
   encrypt(
     data: string,
     publicKey: string,
-    options: RSAOptions = {}
+    options: RSAOptions = {},
   ): EncryptResult {
     try {
       if (ValidationUtils.isEmpty(data)) {
@@ -71,7 +72,7 @@ export class RSAEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(publicKey)) {
         throw ErrorUtils.createEncryptionError(
           'Public key cannot be empty',
-          'RSA'
+          'RSA',
         )
       }
 
@@ -92,7 +93,8 @@ export class RSAEncryptor implements IEncryptor {
         data: encryptedBase64,
         algorithm: `RSA-${opts.keySize}`,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -106,7 +108,7 @@ export class RSAEncryptor implements IEncryptor {
   decrypt(
     encryptedData: string | EncryptResult,
     privateKey: string,
-    options: RSAOptions = {}
+    options: RSAOptions = {},
   ): DecryptResult {
     const opts = { ...this.defaultOptions, ...options }
 
@@ -114,7 +116,7 @@ export class RSAEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(privateKey)) {
         throw ErrorUtils.createDecryptionError(
           'Private key cannot be empty',
-          'RSA'
+          'RSA',
         )
       }
       let ciphertext: string
@@ -122,7 +124,8 @@ export class RSAEncryptor implements IEncryptor {
       // 处理输入数据
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
-      } else {
+      }
+      else {
         ciphertext = encryptedData.data || ''
       }
 
@@ -143,7 +146,8 @@ export class RSAEncryptor implements IEncryptor {
         data: decrypted,
         algorithm: `RSA-${opts.keySize}`,
       }
-    } catch (error) {
+    }
+    catch (error) {
       const algorithmName = `RSA-${opts.keySize}`
       if (error instanceof Error) {
         return {
@@ -174,7 +178,7 @@ export class RSAEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(privateKey)) {
         throw ErrorUtils.createEncryptionError(
           'Private key cannot be empty',
-          'RSA'
+          'RSA',
         )
       }
 
@@ -189,7 +193,8 @@ export class RSAEncryptor implements IEncryptor {
       const signature = privateKeyObj.sign(md)
 
       return forge.util.encode64(signature)
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -204,13 +209,13 @@ export class RSAEncryptor implements IEncryptor {
     data: string,
     signature: string,
     publicKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): boolean {
     try {
       if (
-        ValidationUtils.isEmpty(data) ||
-        ValidationUtils.isEmpty(signature) ||
-        ValidationUtils.isEmpty(publicKey)
+        ValidationUtils.isEmpty(data)
+        || ValidationUtils.isEmpty(signature)
+        || ValidationUtils.isEmpty(publicKey)
       ) {
         return false
       }
@@ -227,7 +232,8 @@ export class RSAEncryptor implements IEncryptor {
 
       // 验证签名
       return publicKeyObj.verify(md.digest().bytes(), signatureBytes)
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -245,7 +251,8 @@ export class RSAEncryptor implements IEncryptor {
       // 尝试解析 Base64 格式
       const pemKey = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`
       return forge.pki.publicKeyFromPem(pemKey)
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createEncryptionError('Invalid public key format', 'RSA')
     }
   }
@@ -263,10 +270,11 @@ export class RSAEncryptor implements IEncryptor {
       // 尝试解析 Base64 格式
       const pemKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`
       return forge.pki.privateKeyFromPem(pemKey)
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createDecryptionError(
         'Invalid private key format',
-        'RSA'
+        'RSA',
       )
     }
   }
@@ -290,7 +298,7 @@ export class RSAEncryptor implements IEncryptor {
    */
   private cachePublicKey(
     keyString: string,
-    publicKey: forge.pki.rsa.PublicKey
+    publicKey: forge.pki.rsa.PublicKey,
   ): void {
     if (this.publicKeyCache.size >= this.maxKeyCacheSize) {
       const firstKey = this.publicKeyCache.keys().next().value
@@ -306,7 +314,7 @@ export class RSAEncryptor implements IEncryptor {
    */
   private cachePrivateKey(
     keyString: string,
-    privateKey: forge.pki.rsa.PrivateKey
+    privateKey: forge.pki.rsa.PrivateKey,
   ): void {
     if (this.privateKeyCache.size >= this.maxKeyCacheSize) {
       const firstKey = this.privateKeyCache.keys().next().value
@@ -373,7 +381,7 @@ export const rsa = {
   encrypt: (
     data: string,
     publicKey: string,
-    options?: RSAOptions
+    options?: RSAOptions,
   ): EncryptResult => {
     const encryptor = new RSAEncryptor()
     return encryptor.encrypt(data, publicKey, options)
@@ -385,7 +393,7 @@ export const rsa = {
   decrypt: (
     encryptedData: string | EncryptResult,
     privateKey: string,
-    options?: RSAOptions
+    options?: RSAOptions,
   ): DecryptResult => {
     const encryptor = new RSAEncryptor()
     return encryptor.decrypt(encryptedData, privateKey, options)
@@ -406,7 +414,7 @@ export const rsa = {
     data: string,
     signature: string,
     publicKey: string,
-    algorithm?: string
+    algorithm?: string,
   ): boolean => {
     const encryptor = new RSAEncryptor()
     return encryptor.verify(data, signature, publicKey, algorithm)

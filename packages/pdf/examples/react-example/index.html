@@ -1,249 +1,252 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="PDF查看器 React示例 - 基于 @ldesign/pdf 组件包的完整PDF预览解决方案" />
-  <meta name="keywords" content="PDF, 查看器, React, 组件, 预览, JavaScript, TypeScript" />
-  <meta name="author" content="LDesign Team" />
-  
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="PDF查看器 React示例" />
-  <meta property="og:description" content="基于 @ldesign/pdf 组件包的完整PDF预览解决方案" />
-  <meta property="og:type" content="website" />
-  
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="PDF查看器 React示例" />
-  <meta name="twitter:description" content="基于 @ldesign/pdf 组件包的完整PDF预览解决方案" />
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc3545'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' /%3E%3C/svg%3E" />
-  
-  <!-- Preconnect to improve performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#0066cc" />
-  
-  <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc3545'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' /%3E%3C/svg%3E" />
-  
-  <title>PDF查看器 React示例 | @ldesign/pdf</title>
-  
-  <style>
-    /* 加载时的基础样式 */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #ffffff;
-      color: #333333;
-    }
-    
-    /* 加载指示器 */
-    .loading-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffffff;
-      z-index: 9999;
-    }
-    
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0066cc;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    }
-    
-    .loading-text {
-      font-size: 16px;
-      color: #666666;
-      font-weight: 500;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* 隐藏加载指示器当应用加载完成 */
-    .app-loaded .loading-container {
-      display: none;
-    }
-    
-    /* 错误页面样式 */
-    .error-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffffff;
-      text-align: center;
-      padding: 40px;
-      box-sizing: border-box;
-    }
-    
-    .error-icon {
-      font-size: 64px;
-      margin-bottom: 24px;
-    }
-    
-    .error-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: #dc3545;
-      margin: 0 0 16px 0;
-    }
-    
-    .error-message {
-      font-size: 16px;
-      color: #666666;
-      line-height: 1.5;
-      margin: 0 0 24px 0;
-      max-width: 500px;
-    }
-    
-    .error-button {
-      padding: 12px 24px;
-      background-color: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .error-button:hover {
-      background-color: #0052a3;
-    }
-  </style>
-</head>
-<body>
-  <!-- 应用根容器 -->
-  <div id="root">
-    <!-- 加载指示器 -->
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">正在加载PDF查看器...</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PDF查看器 React示例 - 基于 @ldesign/pdf 组件包的完整PDF预览解决方案" />
+    <meta name="keywords" content="PDF, 查看器, React, 组件, 预览, JavaScript, TypeScript" />
+    <meta name="author" content="LDesign Team" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="PDF查看器 React示例" />
+    <meta property="og:description" content="基于 @ldesign/pdf 组件包的完整PDF预览解决方案" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PDF查看器 React示例" />
+    <meta name="twitter:description" content="基于 @ldesign/pdf 组件包的完整PDF预览解决方案" />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc3545'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' /%3E%3C/svg%3E"
+    />
+
+    <!-- Preconnect to improve performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0066cc" />
+
+    <!-- Apple Touch Icon -->
+    <link
+      rel="apple-touch-icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc3545'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' /%3E%3C/svg%3E"
+    />
+
+    <title>PDF查看器 React示例 | @ldesign/pdf</title>
+
+    <style>
+        /* 加载时的基础样式 */
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background-color: #ffffff;
+          color: #333333;
+        }
+
+      /* 加载指示器 */
+        .loading-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background-color: #ffffff;
+          z-index: 9999;
+        }
+
+      .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #0066cc;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 16px;
+        }
+
+        .loading-text {
+          font-size: 16px;
+          color: #666666;
+          font-weight: 500;
+        }
+
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+
+        /* 隐藏加载指示器当应用加载完成 */
+        .app-loaded .loading-container {
+          display: none;
+        }
+
+      /* 错误页面样式 */
+        .error-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background-color: #ffffff;
+          text-align: center;
+          padding: 40px;
+          box-sizing: border-box;
+        }
+
+        .error-icon {
+          font-size: 64px;
+          margin-bottom: 24px;
+        }
+
+      .error-title {
+          font-size: 24px;
+          font-weight: 600;
+          color: #dc3545;
+          margin: 0 0 16px 0;
+        }
+
+        .error-message {
+          font-size: 16px;
+          color: #666666;
+          line-height: 1.5;
+          margin: 0 0 24px 0;
+          max-width: 500px;
+        }
+
+      .error-button {
+          padding: 12px 24px;
+          background-color: #0066cc;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 16px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .error-button:hover {
+          background-color: #0052a3;
+        }
+    </style>
+  </head>
+  <body>
+    <!-- 应用根容器 -->
+    <div id="root">
+      <!-- 加载指示器 -->
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在加载PDF查看器...</div>
+      </div>
     </div>
-  </div>
-  
-  <!-- 错误回退页面模板 -->
-  <script id="error-template" type="text/template">
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h1 class="error-title">应用加载失败</h1>
-      <p class="error-message">
-        抱歉，PDF查看器应用无法正常加载。这可能是由于网络问题或浏览器兼容性问题导致的。
-        <br><br>
-        请尝试刷新页面或检查您的网络连接。
-      </p>
-      <button class="error-button" onclick="window.location.reload()">
-        🔄 刷新页面
-      </button>
-    </div>
-  </script>
-  
-  <!-- 应用脚本 -->
-  <script type="module" src="/src/main.tsx"></script>
-  
-  <!-- 错误处理脚本 -->
-  <script>
-    // 全局错误处理
-    window.addEventListener('error', function(event) {
-      console.error('全局错误:', event.error);
-      showErrorPage();
-    });
-    
-    window.addEventListener('unhandledrejection', function(event) {
-      console.error('未处理的Promise拒绝:', event.reason);
-      showErrorPage();
-    });
-    
-    // 显示错误页面
-    function showErrorPage() {
-      const root = document.getElementById('root');
-      const template = document.getElementById('error-template');
-      
-      if (root && template) {
-        root.innerHTML = template.innerHTML;
+
+    <!-- 错误回退页面模板 -->
+    <script id="error-template" type="text/template">
+      <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">应用加载失败</h1>
+        <p class="error-message">
+          抱歉，PDF查看器应用无法正常加载。这可能是由于网络问题或浏览器兼容性问题导致的。
+          <br><br>
+          请尝试刷新页面或检查您的网络连接。
+        </p>
+        <button class="error-button" onclick="window.location.reload()">
+          🔄 刷新页面
+        </button>
+      </div>
+    </script>
+
+    <!-- 应用脚本 -->
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- 错误处理脚本 -->
+    <script>
+      // 全局错误处理
+      window.addEventListener('error', function (event) {
+        console.error('全局错误:', event.error)
+        showErrorPage()
+      })
+
+      window.addEventListener('unhandledrejection', function (event) {
+        console.error('未处理的Promise拒绝:', event.reason)
+        showErrorPage()
+      })
+
+      // 显示错误页面
+      function showErrorPage() {
+        const root = document.getElementById('root')
+        const template = document.getElementById('error-template')
+
+        if (root && template) {
+          root.innerHTML = template.innerHTML
+        }
       }
-    }
-    
-    // 应用加载完成后隐藏加载指示器
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        document.body.classList.add('app-loaded');
-      }, 500);
-    });
-    
-    // 检测浏览器兼容性
-    function checkBrowserCompatibility() {
-      const isModernBrowser = (
-        'fetch' in window &&
-        'Promise' in window &&
-        'Map' in window &&
-        'Set' in window &&
-        'Symbol' in window
-      );
-      
-      if (!isModernBrowser) {
-        console.warn('浏览器兼容性警告: 当前浏览器可能不支持某些现代JavaScript特性');
+
+      // 应用加载完成后隐藏加载指示器
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          document.body.classList.add('app-loaded')
+        }, 500)
+      })
+
+      // 检测浏览器兼容性
+      function checkBrowserCompatibility() {
+        const isModernBrowser =
+          'fetch' in window && 'Promise' in window && 'Map' in window && 'Set' in window && 'Symbol' in window
+
+        if (!isModernBrowser) {
+          console.warn('浏览器兼容性警告: 当前浏览器可能不支持某些现代JavaScript特性')
+        }
+
+        return isModernBrowser
       }
-      
-      return isModernBrowser;
-    }
-    
-    // 性能监控
-    function trackPerformance() {
-      if ('performance' in window && 'getEntriesByType' in performance) {
-        window.addEventListener('load', function() {
-          setTimeout(function() {
-            const navigation = performance.getEntriesByType('navigation')[0];
-            if (navigation) {
-              console.log('页面加载性能:', {
-                domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
-                loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
-                totalTime: navigation.loadEventEnd - navigation.fetchStart
-              });
-            }
-          }, 0);
-        });
+
+      // 性能监控
+      function trackPerformance() {
+        if ('performance' in window && 'getEntriesByType' in performance) {
+          window.addEventListener('load', function () {
+            setTimeout(function () {
+              const navigation = performance.getEntriesByType('navigation')[0]
+              if (navigation) {
+                console.log('页面加载性能:', {
+                  domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+                  loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
+                  totalTime: navigation.loadEventEnd - navigation.fetchStart,
+                })
+              }
+            }, 0)
+          })
+        }
       }
-    }
-    
-    // 初始化
-    checkBrowserCompatibility();
-    trackPerformance();
-  </script>
-  
-  <!-- 无JavaScript回退 -->
-  <noscript>
-    <div class="error-container">
-      <div class="error-icon">⚠️</div>
-      <h1 class="error-title">需要启用JavaScript</h1>
-      <p class="error-message">
-        PDF查看器需要JavaScript才能正常运行。请在浏览器设置中启用JavaScript，然后刷新页面。
-      </p>
-    </div>
-  </noscript>
-</body>
+
+      // 初始化
+      checkBrowserCompatibility()
+      trackPerformance()
+    </script>
+
+    <!-- 无JavaScript回退 -->
+    <noscript>
+      <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">需要启用JavaScript</h1>
+        <p class="error-message">PDF查看器需要JavaScript才能正常运行。请在浏览器设置中启用JavaScript，然后刷新页面。</p>
+      </div>
+    </noscript>
+  </body>
 </html>

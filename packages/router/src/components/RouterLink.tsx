@@ -169,18 +169,24 @@ export const RouterLink = defineComponent({
       classes.push(`router-link--${props.size}`)
 
       // 状态样式
-      if (props.disabled) classes.push('router-link--disabled')
-      if (props.loading) classes.push('router-link--loading')
-      if (isActive.value) classes.push(props.activeClass)
-      if (isExactActive.value) classes.push(props.exactActiveClass)
-      if (isPreloading.value) classes.push('router-link--preloading')
+      if (props.disabled)
+        classes.push('router-link--disabled')
+      if (props.loading)
+        classes.push('router-link--loading')
+      if (isActive.value)
+        classes.push(props.activeClass)
+      if (isExactActive.value)
+        classes.push(props.exactActiveClass)
+      if (isPreloading.value)
+        classes.push('router-link--preloading')
 
       return classes
     })
 
     // 权限检查
     const hasPermission = computed(() => {
-      if (!props.permission) return true
+      if (!props.permission)
+        return true
 
       // 这里应该集成权限系统
       // 暂时返回 true，实际使用时需要实现权限检查逻辑
@@ -194,7 +200,8 @@ export const RouterLink = defineComponent({
 
     // 预加载功能
     const preloadComponent = async () => {
-      if (isPreloading.value || !props.preload) return
+      if (isPreloading.value || !props.preload)
+        return
 
       try {
         isPreloading.value = true
@@ -208,16 +215,19 @@ export const RouterLink = defineComponent({
               if (typeof component === 'function') {
                 try {
                   await (component as () => Promise<any>)()
-                } catch (error) {
+                }
+                catch (error) {
                   console.warn('预加载组件失败:', error)
                 }
               }
             }
           }
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('预加载失败:', error)
-      } finally {
+      }
+      finally {
         isPreloading.value = false
       }
     }
@@ -254,7 +264,8 @@ export const RouterLink = defineComponent({
 
       try {
         await originalNavigate(e)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('导航失败:', error)
       }
     }
@@ -305,18 +316,19 @@ export const RouterLink = defineComponent({
     let intersectionObserver: IntersectionObserver | undefined
 
     const setupVisibilityPreload = () => {
-      if (props.preload !== 'visible' || !linkRef.value) return
+      if (props.preload !== 'visible' || !linkRef.value)
+        return
 
       if ('IntersectionObserver' in window) {
         intersectionObserver = new IntersectionObserver(
-          entries => {
-            entries.forEach(entry => {
+          (entries) => {
+            entries.forEach((entry) => {
               if (entry.isIntersecting) {
                 preloadComponent()
               }
             })
           },
-          { threshold: 0.1 }
+          { threshold: 0.1 },
         )
 
         intersectionObserver.observe(linkRef.value)
@@ -325,13 +337,15 @@ export const RouterLink = defineComponent({
 
     // 空闲预加载
     const setupIdlePreload = () => {
-      if (props.preload !== 'idle') return
+      if (props.preload !== 'idle')
+        return
 
       if ('requestIdleCallback' in window) {
         requestIdleCallback(() => {
           preloadComponent()
         })
-      } else {
+      }
+      else {
         setTimeout(() => {
           preloadComponent()
         }, 1000)
@@ -392,7 +406,7 @@ export const RouterLink = defineComponent({
             onBlur: handleBlur,
             ...attrs,
           },
-          renderContent()
+          renderContent(),
         )
       }
 
@@ -410,7 +424,7 @@ export const RouterLink = defineComponent({
           onBlur: handleBlur,
           ...attrs,
         },
-        renderContent()
+        renderContent(),
       )
     }
 
@@ -425,13 +439,13 @@ export const RouterLink = defineComponent({
             typeof props.icon === 'string'
               ? h('i', { class: props.icon })
               : h(props.icon as any),
-          ])
+          ]),
         )
       }
 
       // 主要内容
       content.push(
-        h('span', { class: 'router-link__content' }, slots.default?.(slotProps))
+        h('span', { class: 'router-link__content' }, slots.default?.(slotProps)),
       )
 
       // 右侧图标
@@ -441,7 +455,7 @@ export const RouterLink = defineComponent({
             typeof props.icon === 'string'
               ? h('i', { class: props.icon })
               : h(props.icon as any),
-          ])
+          ]),
         )
       }
 
@@ -450,7 +464,7 @@ export const RouterLink = defineComponent({
         content.push(
           h('span', { class: 'router-link__loading' }, [
             h('i', { class: 'router-link__spinner' }),
-          ])
+          ]),
         )
       }
 

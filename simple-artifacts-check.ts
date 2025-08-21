@@ -58,13 +58,15 @@ function checkPackageArtifacts(packagePath: string) {
         console.log(
           `    文件: ${files.slice(0, 3).join(', ')}${
             files.length > 3 ? '...' : ''
-          }`
+          }`,
         )
-      } catch (error) {
+      }
+      catch (error) {
         console.log(`  ${dir}/: ❌ (读取错误: ${error})`)
         results[dir] = { exists: true, error }
       }
-    } else {
+    }
+    else {
       console.log(`  ${dir}/: ❌ (不存在)`)
       results[dir] = { exists: false }
     }
@@ -96,14 +98,21 @@ function main() {
   }
 
   for (const [pkg, result] of Object.entries(allResults)) {
-    if (result.esm?.exists) stats.hasESM++
-    if (result.cjs?.exists) stats.hasCJS++
-    if (result.types?.exists) stats.hasTypes++
-    if (result.dist?.exists) stats.hasDist++
+    if (result.esm?.exists)
+      stats.hasESM++
+    if (result.cjs?.exists)
+      stats.hasCJS++
+    if (result.types?.exists)
+      stats.hasTypes++
+    if (result.dist?.exists)
+      stats.hasDist++
 
-    if (result.esm?.hasIndexJs) stats.hasESMIndex++
-    if (result.cjs?.hasIndexJs) stats.hasCJSIndex++
-    if (result.types?.hasIndexDts) stats.hasTypesIndex++
+    if (result.esm?.hasIndexJs)
+      stats.hasESMIndex++
+    if (result.cjs?.hasIndexJs)
+      stats.hasCJSIndex++
+    if (result.types?.hasIndexDts)
+      stats.hasTypesIndex++
   }
 
   const total = successfulPackages.length

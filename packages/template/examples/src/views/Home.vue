@@ -51,8 +51,12 @@ const stats = ref({
   <div class="home">
     <div class="hero">
       <div class="hero-content">
-        <h1 class="hero-title">🎨 LDesign Template System</h1>
-        <p class="hero-subtitle">强大的模板管理系统，支持多设备、多主题的动态模板切换</p>
+        <h1 class="hero-title">
+          🎨 LDesign Template System
+        </h1>
+        <p class="hero-subtitle">
+          强大的模板管理系统，支持多设备、多主题的动态模板切换
+        </p>
         <div class="hero-stats">
           <div class="stat">
             <span class="stat-number">{{ stats.templates }}</span>
@@ -72,7 +76,9 @@ const stats = ref({
 
     <div class="features">
       <div class="container">
-        <h2 class="features-title">功能演示</h2>
+        <h2 class="features-title">
+          功能演示
+        </h2>
         <div class="features-grid">
           <router-link
             v-for="feature in features"
@@ -87,7 +93,9 @@ const stats = ref({
             <p class="feature-description">
               {{ feature.description }}
             </p>
-            <div class="feature-arrow">→</div>
+            <div class="feature-arrow">
+              →
+            </div>
           </router-link>
         </div>
       </div>

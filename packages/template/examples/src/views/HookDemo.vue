@@ -37,7 +37,8 @@ const templateOptions = computed(() => {
 
 // 当前模板信息
 const currentTemplateInfo = computed(() => {
-  if (!currentTemplate.value) return null
+  if (!currentTemplate.value)
+    return null
   return {
     name: currentTemplate.value.config.name || currentTemplate.value.template,
     description: currentTemplate.value.config.description || '暂无描述',
@@ -61,14 +62,16 @@ async function updatePerformanceStats() {
     await scanTemplates()
     const endTime = Date.now()
     performanceStats.value.loadTime = endTime - startTime
-  } catch (error) {
+  }
+  catch (error) {
     console.error('扫描模板失败:', error)
   }
 }
 
 // 切换模板
 async function handleTemplateChange() {
-  if (!selectedTemplateId.value) return
+  if (!selectedTemplateId.value)
+    return
 
   const [category, device, template] = selectedTemplateId.value.split('/')
   await switchTemplate(category, device as DeviceType, template)
@@ -83,7 +86,7 @@ function handleDeviceChange() {
 // 事件处理函数
 function handleLogin(data: any) {
   alert(
-    `登录成功！\n模板: ${currentTemplateInfo.value?.name}\n设备: ${currentTemplateInfo.value?.device}\n用户名: ${data.username}`
+    `登录成功！\n模板: ${currentTemplateInfo.value?.name}\n设备: ${currentTemplateInfo.value?.device}\n用户名: ${data.username}`,
   )
 }
 
@@ -116,9 +119,15 @@ function handleTemplatePreview(template: string) {
   <div class="hook-demo">
     <div class="hook-demo__header">
       <div class="hook-demo__container">
-        <router-link to="/" class="hook-demo__back"> ← 返回首页 </router-link>
-        <h1 class="hook-demo__title">🪝 useTemplate Hook 演示</h1>
-        <p class="hook-demo__subtitle">使用 Composition API 风格的 Hook 进行模板管理</p>
+        <router-link to="/" class="hook-demo__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="hook-demo__title">
+          🪝 useTemplate Hook 演示
+        </h1>
+        <p class="hook-demo__subtitle">
+          使用 Composition API 风格的 Hook 进行模板管理
+        </p>
       </div>
     </div>
 
@@ -128,7 +137,9 @@ function handleTemplatePreview(template: string) {
           <div class="hook-demo__control-group">
             <label class="hook-demo__label">选择模板:</label>
             <select v-model="selectedTemplateId" class="hook-demo__select" @change="handleTemplateChange">
-              <option value="">请选择模板</option>
+              <option value="">
+                请选择模板
+              </option>
               <option v-for="option in templateOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
@@ -138,9 +149,15 @@ function handleTemplatePreview(template: string) {
           <div class="hook-demo__control-group">
             <label class="hook-demo__label">设备类型:</label>
             <select v-model="selectedDevice" class="hook-demo__select" @change="handleDeviceChange">
-              <option value="desktop">🖥️ 桌面</option>
-              <option value="tablet">📱 平板</option>
-              <option value="mobile">📱 手机</option>
+              <option value="desktop">
+                🖥️ 桌面
+              </option>
+              <option value="tablet">
+                📱 平板
+              </option>
+              <option value="mobile">
+                📱 手机
+              </option>
             </select>
           </div>
 
@@ -214,7 +231,9 @@ function handleTemplatePreview(template: string) {
             </div>
 
             <div v-else-if="error" class="hook-demo__error">
-              <div class="hook-demo__error-icon">❌</div>
+              <div class="hook-demo__error-icon">
+                ❌
+              </div>
               <h4>加载失败</h4>
               <p>{{ error }}</p>
             </div>
@@ -232,7 +251,9 @@ function handleTemplatePreview(template: string) {
             </div>
 
             <div v-else class="hook-demo__no-template">
-              <div class="hook-demo__no-template-icon">🚫</div>
+              <div class="hook-demo__no-template-icon">
+                🚫
+              </div>
               <h4>当前设备类型暂无可用模板</h4>
               <p>请尝试切换到其他设备类型或选择其他模板</p>
             </div>

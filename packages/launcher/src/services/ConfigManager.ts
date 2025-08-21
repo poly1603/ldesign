@@ -1,27 +1,27 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { mergeConfig, type UserConfig, type InlineConfig } from 'vite';
-import type { 
-  IConfigManager, 
-  ProjectType, 
-  PresetConfig, 
-  ConfigMergeOptions
-} from '@/types';
-import { ERROR_CODES } from '@/types';
-import { ErrorHandler } from './ErrorHandler';
+import type {
+  ConfigMergeOptions,
+  IConfigManager,
+  PresetConfig,
+  ProjectType,
+} from '@/types'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import { type InlineConfig, mergeConfig, type UserConfig } from 'vite'
+import { ERROR_CODES } from '@/types'
+import { ErrorHandler } from './ErrorHandler'
 
 /**
  * 配置管理器实现类
  * 负责处理 Vite 配置的加载、合并、验证和管理
  */
 export class ConfigManager implements IConfigManager {
-  private errorHandler: ErrorHandler;
-  private presetConfigs: Map<ProjectType, PresetConfig>;
+  private errorHandler: ErrorHandler
+  private presetConfigs: Map<ProjectType, PresetConfig>
 
   constructor() {
-    this.errorHandler = new ErrorHandler();
-    this.presetConfigs = new Map();
-    this.initializePresetConfigs();
+    this.errorHandler = new ErrorHandler()
+    this.presetConfigs = new Map()
+    this.initializePresetConfigs()
   }
 
   /**
@@ -38,22 +38,22 @@ export class ConfigManager implements IConfigManager {
           outDir: 'dist',
           assetsDir: 'assets',
           sourcemap: false,
-          minify: 'esbuild'
+          minify: 'esbuild',
         },
         server: {
           port: 3000,
           open: true,
-          cors: true
+          cors: true,
         },
         resolve: {
           alias: {
-            '@': path.resolve(process.cwd(), 'src')
-          }
-        }
+            '@': path.resolve(process.cwd(), 'src'),
+          },
+        },
       },
       priority: 1,
-      description: 'Vue 3项目的默认配置'
-    });
+      description: 'Vue 3项目的默认配置',
+    })
 
     // Vue 2 预设配置
     this.presetConfigs.set('vue2', {
@@ -65,22 +65,22 @@ export class ConfigManager implements IConfigManager {
           outDir: 'dist',
           assetsDir: 'assets',
           sourcemap: false,
-          minify: 'esbuild'
+          minify: 'esbuild',
         },
         server: {
           port: 3000,
           open: true,
-          cors: true
+          cors: true,
         },
         resolve: {
           alias: {
-            '@': path.resolve(process.cwd(), 'src')
-          }
-        }
+            '@': path.resolve(process.cwd(), 'src'),
+          },
+        },
       },
       priority: 1,
-      description: 'Vue 2项目的默认配置'
-    });
+      description: 'Vue 2项目的默认配置',
+    })
 
     // React 预设配置
     this.presetConfigs.set('react', {
@@ -92,25 +92,25 @@ export class ConfigManager implements IConfigManager {
           outDir: 'dist',
           assetsDir: 'assets',
           sourcemap: false,
-          minify: 'esbuild'
+          minify: 'esbuild',
         },
         server: {
           port: 3000,
           open: true,
-          cors: true
+          cors: true,
         },
         resolve: {
           alias: {
-            '@': path.resolve(process.cwd(), 'src')
-          }
+            '@': path.resolve(process.cwd(), 'src'),
+          },
         },
         esbuild: {
-          jsxInject: `import React from 'react'`
-        }
+          jsxInject: `import React from 'react'`,
+        },
       },
       priority: 1,
-      description: 'React项目的默认配置'
-    });
+      description: 'React项目的默认配置',
+    })
 
     // Lit 预设配置
     this.presetConfigs.set('lit', {
@@ -125,21 +125,21 @@ export class ConfigManager implements IConfigManager {
           minify: 'esbuild',
           lib: {
             entry: 'src/index.ts',
-            formats: ['es']
+            formats: ['es'],
           },
           rollupOptions: {
-            external: /^lit/
-          }
+            external: /^lit/,
+          },
         },
         server: {
           port: 3000,
           open: true,
-          cors: true
-        }
+          cors: true,
+        },
       },
       priority: 1,
-      description: 'Lit项目的默认配置'
-    });
+      description: 'Lit项目的默认配置',
+    })
 
     // Vanilla TypeScript 预设配置
     this.presetConfigs.set('vanilla-ts', {
@@ -151,22 +151,22 @@ export class ConfigManager implements IConfigManager {
           outDir: 'dist',
           assetsDir: 'assets',
           sourcemap: false,
-          minify: 'esbuild'
+          minify: 'esbuild',
         },
         server: {
           port: 3000,
           open: true,
-          cors: true
+          cors: true,
         },
         resolve: {
           alias: {
-            '@': path.resolve(process.cwd(), 'src')
-          }
-        }
+            '@': path.resolve(process.cwd(), 'src'),
+          },
+        },
       },
       priority: 1,
-      description: 'Vanilla TypeScript项目的默认配置'
-    });
+      description: 'Vanilla TypeScript项目的默认配置',
+    })
 
     // Vanilla JavaScript 预设配置
     this.presetConfigs.set('vanilla', {
@@ -178,17 +178,17 @@ export class ConfigManager implements IConfigManager {
           outDir: 'dist',
           assetsDir: 'assets',
           sourcemap: false,
-          minify: 'esbuild'
+          minify: 'esbuild',
         },
         server: {
           port: 3000,
           open: true,
-          cors: true
-        }
+          cors: true,
+        },
       },
       priority: 1,
-      description: 'Vanilla JavaScript项目的默认配置'
-    });
+      description: 'Vanilla JavaScript项目的默认配置',
+    })
   }
 
   /**
@@ -201,39 +201,41 @@ export class ConfigManager implements IConfigManager {
       const configFiles = [
         'vite.config.ts',
         'vite.config.js',
-        'vite.config.mjs'
-      ];
+        'vite.config.mjs',
+      ]
 
       for (const configFile of configFiles) {
-        const configPath = path.join(projectRoot, configFile);
-        
+        const configPath = path.join(projectRoot, configFile)
+
         try {
-          await fs.access(configPath);
-          
+          await fs.access(configPath)
+
           // 动态导入配置文件
-          const configModule = await import(configPath);
-          const config = configModule.default || configModule;
-          
+          const configModule = await import(configPath)
+          const config = configModule.default || configModule
+
           // 如果配置是函数，调用它
           if (typeof config === 'function') {
-            return config({ command: 'serve', mode: 'development' });
+            return config({ command: 'serve', mode: 'development' })
           }
-          
-          return config;
-        } catch (error) {
+
+          return config
+        }
+        catch (error) {
           // 继续尝试下一个配置文件
-          continue;
+          continue
         }
       }
-      
+
       // 没有找到配置文件，返回空配置
-      return {};
-    } catch (error) {
+      return {}
+    }
+    catch (error) {
       const launcherError = this.errorHandler.handleError(
         error as Error,
-        'load project config'
-      );
-      throw launcherError;
+        'load project config',
+      )
+      throw launcherError
     }
   }
 
@@ -243,14 +245,14 @@ export class ConfigManager implements IConfigManager {
    * @returns 预设配置
    */
   getPresetConfig(projectType: ProjectType): PresetConfig {
-    const preset = this.presetConfigs.get(projectType);
+    const preset = this.presetConfigs.get(projectType)
     if (!preset) {
       throw ErrorHandler.createError(
         ERROR_CODES.UNSUPPORTED_FRAMEWORK,
-        `不支持的项目类型: ${projectType}`
-      );
+        `不支持的项目类型: ${projectType}`,
+      )
     }
-    return JSON.parse(JSON.stringify(preset)); // 深拷贝
+    return JSON.parse(JSON.stringify(preset)) // 深拷贝
   }
 
   /**
@@ -263,30 +265,31 @@ export class ConfigManager implements IConfigManager {
   mergeConfigs(
     baseConfig: UserConfig,
     userConfig: UserConfig,
-    options?: ConfigMergeOptions
+    options?: ConfigMergeOptions,
   ): UserConfig {
     try {
       const mergeOptions = {
         arrayMergeStrategy: 'replace' as const,
-        ...options
-      };
+        ...options,
+      }
 
       // 使用 Vite 的 mergeConfig 函数
-      let mergedConfig = mergeConfig(baseConfig, userConfig);
+      let mergedConfig = mergeConfig(baseConfig, userConfig)
 
       // 处理数组合并策略
       if (mergeOptions?.overrideArrays) {
         // 如果设置为覆盖数组，直接使用用户配置的数组
-        mergedConfig = this.mergeArrayFields(baseConfig, userConfig, mergedConfig);
+        mergedConfig = this.mergeArrayFields(baseConfig, userConfig, mergedConfig)
       }
 
-      return mergedConfig;
-    } catch (error) {
+      return mergedConfig
+    }
+    catch (error) {
       const launcherError = this.errorHandler.handleError(
         error as Error,
-        'config merge'
-      );
-      throw launcherError;
+        'config merge',
+      )
+      throw launcherError
     }
   }
 
@@ -300,28 +303,28 @@ export class ConfigManager implements IConfigManager {
   private mergeArrayFields(
     baseConfig: UserConfig,
     userConfig: UserConfig,
-    mergedConfig: UserConfig
+    mergedConfig: UserConfig,
   ): UserConfig {
     // 合并插件数组
     if (Array.isArray(baseConfig.plugins) && Array.isArray(userConfig.plugins)) {
-      mergedConfig.plugins = [...baseConfig.plugins, ...userConfig.plugins];
+      mergedConfig.plugins = [...baseConfig.plugins, ...userConfig.plugins]
     }
 
     // 合并构建目标数组
     if (baseConfig.build?.target && userConfig.build?.target) {
-      const baseTargets = Array.isArray(baseConfig.build.target) 
-        ? baseConfig.build.target 
-        : [baseConfig.build.target];
-      const userTargets = Array.isArray(userConfig.build.target) 
-        ? userConfig.build.target 
-        : [userConfig.build.target];
-      
+      const baseTargets = Array.isArray(baseConfig.build.target)
+        ? baseConfig.build.target
+        : [baseConfig.build.target]
+      const userTargets = Array.isArray(userConfig.build.target)
+        ? userConfig.build.target
+        : [userConfig.build.target]
+
       if (mergedConfig.build) {
-        mergedConfig.build.target = [...baseTargets, ...userTargets];
+        mergedConfig.build.target = [...baseTargets, ...userTargets]
       }
     }
 
-    return mergedConfig;
+    return mergedConfig
   }
 
   /**
@@ -330,39 +333,39 @@ export class ConfigManager implements IConfigManager {
    * @returns 验证结果
    */
   async validateConfig(config: InlineConfig): Promise<boolean> {
-    const errors: string[] = [];
+    const errors: string[] = []
 
     try {
       // 验证基本结构
       if (config && typeof config !== 'object') {
-        errors.push('配置必须是一个对象');
-        return false;
+        errors.push('配置必须是一个对象')
+        return false
       }
 
       // 验证服务器配置
       if (config.server) {
         if (config.server.port && (typeof config.server.port !== 'number' || config.server.port < 1 || config.server.port > 65535)) {
-          errors.push('服务器端口必须是 1-65535 之间的数字');
+          errors.push('服务器端口必须是 1-65535 之间的数字')
         }
-        
+
         if (config.server.host && typeof config.server.host !== 'string' && typeof config.server.host !== 'boolean') {
-          errors.push('服务器主机必须是字符串或布尔值');
+          errors.push('服务器主机必须是字符串或布尔值')
         }
       }
 
       // 验证构建配置
       if (config.build) {
         if (config.build.outDir && typeof config.build.outDir !== 'string') {
-          errors.push('构建输出目录必须是字符串');
+          errors.push('构建输出目录必须是字符串')
         }
-        
+
         if (config.build.target) {
-          const validTargets = ['es5', 'es2015', 'es2016', 'es2017', 'es2018', 'es2019', 'es2020', 'esnext'];
-          const targets = Array.isArray(config.build.target) ? config.build.target : [config.build.target];
-          
+          const validTargets = ['es5', 'es2015', 'es2016', 'es2017', 'es2018', 'es2019', 'es2020', 'esnext']
+          const targets = Array.isArray(config.build.target) ? config.build.target : [config.build.target]
+
           for (const target of targets) {
             if (typeof target === 'string' && !validTargets.includes(target)) {
-              errors.push(`无效的构建目标: ${target}`);
+              errors.push(`无效的构建目标: ${target}`)
             }
           }
         }
@@ -370,22 +373,23 @@ export class ConfigManager implements IConfigManager {
 
       // 验证插件配置
       if (config.plugins && !Array.isArray(config.plugins)) {
-        errors.push('插件配置必须是数组');
+        errors.push('插件配置必须是数组')
       }
 
       // 验证解析配置
       if (config.resolve?.alias) {
-        const alias = config.resolve.alias;
+        const alias = config.resolve.alias
         if (typeof alias !== 'object' || Array.isArray(alias)) {
-          errors.push('别名配置必须是对象');
+          errors.push('别名配置必须是对象')
         }
       }
 
-      return errors.length === 0;
-    } catch (error) {
-        errors.push(`配置验证失败: ${(error as Error).message}`);
-        return false;
-      }
+      return errors.length === 0
+    }
+    catch (error) {
+      errors.push(`配置验证失败: ${(error as Error).message}`)
+      return false
+    }
   }
 
   /**
@@ -394,14 +398,14 @@ export class ConfigManager implements IConfigManager {
    * @returns 预设配置
    */
   async loadPreset(framework: ProjectType): Promise<PresetConfig> {
-    const preset = this.presetConfigs.get(framework);
+    const preset = this.presetConfigs.get(framework)
     if (!preset) {
       throw ErrorHandler.createError(
         ERROR_CODES.UNSUPPORTED_FRAMEWORK,
-        `不支持的框架类型: ${framework}`
-      );
+        `不支持的框架类型: ${framework}`,
+      )
     }
-    return preset;
+    return preset
   }
 
   /**
@@ -414,9 +418,9 @@ export class ConfigManager implements IConfigManager {
   mergeConfig(
     base: InlineConfig,
     override: Partial<InlineConfig>,
-    options?: ConfigMergeOptions
+    options?: ConfigMergeOptions,
   ): InlineConfig {
-    return this.mergeConfigs(base, override, options);
+    return this.mergeConfigs(base, override, options)
   }
 
   /**
@@ -424,7 +428,7 @@ export class ConfigManager implements IConfigManager {
    * @returns 所有预设配置列表
    */
   async getAllPresets(): Promise<PresetConfig[]> {
-    return Array.from(this.presetConfigs.values());
+    return Array.from(this.presetConfigs.values())
   }
 
   /**
@@ -435,38 +439,39 @@ export class ConfigManager implements IConfigManager {
    */
   async createRuntimeConfig(
     framework: ProjectType,
-    options: any = {}
+    options: any = {},
   ): Promise<InlineConfig> {
     try {
       // 获取预设配置
-      const presetConfig = await this.loadPreset(framework);
-      
+      const presetConfig = await this.loadPreset(framework)
+
       // 创建基础配置
       const baseConfig: UserConfig = {
-          ...presetConfig.config,
-          root: options.root || process.cwd(),
-          mode: options.mode || 'development',
-          logLevel: options.logLevel || 'info'
-        };
-
-      // 合并用户配置
-      const finalConfig = options.userConfig 
-        ? this.mergeConfigs(baseConfig, options.userConfig)
-        : baseConfig;
-
-      // 验证最终配置
-      const isValid = await this.validateConfig(finalConfig as InlineConfig);
-      if (!isValid) {
-        throw new Error('配置验证失败');
+        ...presetConfig.config,
+        root: options.root || process.cwd(),
+        mode: options.mode || 'development',
+        logLevel: options.logLevel || 'info',
       }
 
-      return finalConfig as InlineConfig;
-    } catch (error) {
+      // 合并用户配置
+      const finalConfig = options.userConfig
+        ? this.mergeConfigs(baseConfig, options.userConfig)
+        : baseConfig
+
+      // 验证最终配置
+      const isValid = await this.validateConfig(finalConfig as InlineConfig)
+      if (!isValid) {
+        throw new Error('配置验证失败')
+      }
+
+      return finalConfig as InlineConfig
+    }
+    catch (error) {
       const launcherError = this.errorHandler.handleError(
         error as Error,
-        'create runtime config'
-      );
-      throw launcherError;
+        'create runtime config',
+      )
+      throw launcherError
     }
   }
 
@@ -476,7 +481,7 @@ export class ConfigManager implements IConfigManager {
    * @param config 新的预设配置
    */
   updatePresetConfig(projectType: ProjectType, config: PresetConfig): void {
-    this.presetConfigs.set(projectType, JSON.parse(JSON.stringify(config)));
+    this.presetConfigs.set(projectType, JSON.parse(JSON.stringify(config)))
   }
 
   /**
@@ -484,11 +489,11 @@ export class ConfigManager implements IConfigManager {
    * @returns 预设配置映射
    */
   getAllPresetConfigs(): Map<ProjectType, PresetConfig> {
-    const result = new Map<ProjectType, PresetConfig>();
+    const result = new Map<ProjectType, PresetConfig>()
     for (const [key, value] of this.presetConfigs.entries()) {
-      result.set(key, JSON.parse(JSON.stringify(value)));
+      result.set(key, JSON.parse(JSON.stringify(value)))
     }
-    return result;
+    return result
   }
 
   /**
@@ -499,32 +504,34 @@ export class ConfigManager implements IConfigManager {
    */
   resolveConfigPath(projectRoot: string, configFile?: string): string | null {
     if (configFile) {
-      const customPath = path.resolve(projectRoot, configFile);
+      const customPath = path.resolve(projectRoot, configFile)
       try {
-        require.resolve(customPath);
-        return customPath;
-      } catch {
-        return null;
+        require.resolve(customPath)
+        return customPath
+      }
+      catch {
+        return null
       }
     }
 
     const defaultConfigFiles = [
       'vite.config.ts',
       'vite.config.js',
-      'vite.config.mjs'
-    ];
+      'vite.config.mjs',
+    ]
 
     for (const file of defaultConfigFiles) {
-      const configPath = path.join(projectRoot, file);
+      const configPath = path.join(projectRoot, file)
       try {
-        require.resolve(configPath);
-        return configPath;
-      } catch {
-        continue;
+        require.resolve(configPath)
+        return configPath
+      }
+      catch {
+        continue
       }
     }
 
-    return null;
+    return null
   }
 
   /**
@@ -535,29 +542,29 @@ export class ConfigManager implements IConfigManager {
    */
   generateConfigFile(
     projectType: ProjectType,
-    options: { typescript?: boolean; plugins?: string[] } = {}
+    options: { typescript?: boolean, plugins?: string[] } = {},
   ): string {
-    const { plugins = [] } = options || {};
-    const presetConfig = this.getPresetConfig(projectType);
-    
+    const { plugins = [] } = options || {}
+    const presetConfig = this.getPresetConfig(projectType)
+
     // 只使用传入的插件字符串数组
-    const allPlugins = plugins;
+    const allPlugins = plugins
 
-    const imports = allPlugins.map(plugin => {
+    const imports = allPlugins.map((plugin) => {
       if (typeof plugin === 'string') {
-        const pluginName = plugin.replace('@vitejs/plugin-', '').replace('@', '');
-        return `import ${pluginName} from '${plugin}';`;
+        const pluginName = plugin.replace('@vitejs/plugin-', '').replace('@', '')
+        return `import ${pluginName} from '${plugin}';`
       }
-      return '';
-    }).filter(Boolean).join('\n');
+      return ''
+    }).filter(Boolean).join('\n')
 
-    const pluginsArray = allPlugins.map(plugin => {
+    const pluginsArray = allPlugins.map((plugin) => {
       if (typeof plugin === 'string') {
-        const pluginName = plugin.replace('@vitejs/plugin-', '').replace('@', '');
-        return `    ${pluginName}()`;
+        const pluginName = plugin.replace('@vitejs/plugin-', '').replace('@', '')
+        return `    ${pluginName}()`
       }
-      return '';
-    }).filter(Boolean).join(',\n');
+      return ''
+    }).filter(Boolean).join(',\n')
 
     const configContent = `${imports}
 import { defineConfig } from 'vite';
@@ -572,13 +579,13 @@ export default defineConfig({
     outDir: '${presetConfig.config.build?.outDir || 'dist'}',
     sourcemap: ${presetConfig.config.build?.sourcemap || false}
   }
-});`;
+});`
 
-    return configContent;
+    return configContent
   }
 }
 
 /**
  * 默认配置管理器实例
  */
-export const configManager = new ConfigManager();
+export const configManager = new ConfigManager()

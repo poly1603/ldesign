@@ -52,7 +52,7 @@ export class AnimationFactory {
    */
   static create(
     config: AnimationConfig,
-    elements: HTMLElement[]
+    elements: HTMLElement[],
   ): BaseAnimation {
     // 首先尝试根据动画名称查找
     let Constructor = animationRegistry.get(config.name)
@@ -78,9 +78,9 @@ export class AnimationFactory {
    */
   static createMultiple(
     configs: AnimationConfig[],
-    elementsMap: Map<string, HTMLElement[]>
+    elementsMap: Map<string, HTMLElement[]>,
   ): BaseAnimation[] {
-    return configs.map(config => {
+    return configs.map((config) => {
       const elements = elementsMap.get(config.name) || []
       return this.create(config, elements)
     })
@@ -118,42 +118,42 @@ export class AnimationFactory {
    * 根据配置推断动画类型
    */
   private static inferAnimationType(
-    config: AnimationConfig
+    config: AnimationConfig,
   ): AnimationConstructor | undefined {
     const name = config.name.toLowerCase()
 
     // 下落动画关键词
     if (
-      name.includes('fall') ||
-      name.includes('drop') ||
-      name.includes('rain') ||
-      name.includes('snow') ||
-      name.includes('coin') ||
-      name.includes('petal')
+      name.includes('fall')
+      || name.includes('drop')
+      || name.includes('rain')
+      || name.includes('snow')
+      || name.includes('coin')
+      || name.includes('petal')
     ) {
       return FallingAnimation
     }
 
     // 漂浮动画关键词
     if (
-      name.includes('float') ||
-      name.includes('drift') ||
-      name.includes('hover') ||
-      name.includes('ghost') ||
-      name.includes('balloon') ||
-      name.includes('cloud')
+      name.includes('float')
+      || name.includes('drift')
+      || name.includes('hover')
+      || name.includes('ghost')
+      || name.includes('balloon')
+      || name.includes('cloud')
     ) {
       return FloatingAnimation
     }
 
     // 闪烁动画关键词
     if (
-      name.includes('sparkle') ||
-      name.includes('glow') ||
-      name.includes('twinkle') ||
-      name.includes('flicker') ||
-      name.includes('shine') ||
-      name.includes('blink')
+      name.includes('sparkle')
+      || name.includes('glow')
+      || name.includes('twinkle')
+      || name.includes('flicker')
+      || name.includes('shine')
+      || name.includes('blink')
     ) {
       return SparklingAnimation
     }
@@ -162,16 +162,16 @@ export class AnimationFactory {
     if (config.keyframes && config.keyframes.length > 0) {
       const hasTranslateY = config.keyframes.some(kf =>
         Object.keys(kf.properties).some(
-          prop => prop.includes('translateY') || prop.includes('transform')
-        )
+          prop => prop.includes('translateY') || prop.includes('transform'),
+        ),
       )
 
       const hasOpacity = config.keyframes.some(kf =>
-        Object.keys(kf.properties).includes('opacity')
+        Object.keys(kf.properties).includes('opacity'),
       )
 
       const hasFilter = config.keyframes.some(kf =>
-        Object.keys(kf.properties).includes('filter')
+        Object.keys(kf.properties).includes('filter'),
       )
 
       if (hasTranslateY && !hasOpacity) {
@@ -199,7 +199,7 @@ export class AnimationFactory {
     options: {
       intensity?: 'light' | 'medium' | 'heavy'
       duration?: number
-    } = {}
+    } = {},
   ): BaseAnimation[] {
     const { intensity = 'medium', duration = 5000 } = options
 
@@ -232,7 +232,7 @@ export class AnimationFactory {
    */
   private static createChristmasAnimations(
     elements: HTMLElement[],
-    options: any
+    options: any,
   ): BaseAnimation[] {
     const animations: BaseAnimation[] = []
     const { intensity, duration } = options
@@ -242,8 +242,8 @@ export class AnimationFactory {
       name: 'christmas-snowfall',
       type: 'js',
       duration:
-        duration *
-        (intensity === 'light' ? 1.5 : intensity === 'heavy' ? 0.7 : 1),
+        duration
+        * (intensity === 'light' ? 1.5 : intensity === 'heavy' ? 0.7 : 1),
       iterations: 'infinite',
       keyframes: [
         {
@@ -272,7 +272,7 @@ export class AnimationFactory {
       FallingAnimation.createSnowfall(elements, {
         duration: snowfallConfig.duration,
         intensity: intensity as any,
-      })
+      }),
     )
 
     return animations
@@ -283,7 +283,7 @@ export class AnimationFactory {
    */
   private static createSpringFestivalAnimations(
     elements: HTMLElement[],
-    options: any
+    options: any,
   ): BaseAnimation[] {
     const animations: BaseAnimation[] = []
 
@@ -321,7 +321,7 @@ export class AnimationFactory {
    */
   private static createHalloweenAnimations(
     elements: HTMLElement[],
-    options: any
+    options: any,
   ): BaseAnimation[] {
     const animations: BaseAnimation[] = []
 
@@ -330,7 +330,7 @@ export class AnimationFactory {
       FloatingAnimation.createGhostFloat(elements, {
         amplitude: 15,
         opacity: true,
-      })
+      }),
     )
 
     return animations
@@ -341,7 +341,7 @@ export class AnimationFactory {
    */
   private static createCelebrationAnimations(
     elements: HTMLElement[],
-    options: any
+    options: any,
   ): BaseAnimation[] {
     const animations: BaseAnimation[] = []
 
@@ -350,7 +350,7 @@ export class AnimationFactory {
       SparklingAnimation.createStarSparkle(elements, {
         intensity: 'intense',
         color: '#FFD700',
-      })
+      }),
     )
 
     return animations
@@ -364,7 +364,7 @@ export class AnimationFactory {
       config: AnimationConfig
       elements: HTMLElement[]
       delay?: number
-    }>
+    }>,
   ): BaseAnimation[] {
     const animations: BaseAnimation[] = []
 
@@ -393,16 +393,18 @@ export class AnimationFactory {
       mobile?: Partial<AnimationConfig>
       tablet?: Partial<AnimationConfig>
       desktop?: Partial<AnimationConfig>
-    }
+    },
   ): BaseAnimation {
     const screenWidth = window.innerWidth
     let responsiveConfig = { ...config }
 
     if (screenWidth < 768 && breakpoints.mobile) {
       responsiveConfig = { ...responsiveConfig, ...breakpoints.mobile }
-    } else if (screenWidth < 1024 && breakpoints.tablet) {
+    }
+    else if (screenWidth < 1024 && breakpoints.tablet) {
       responsiveConfig = { ...responsiveConfig, ...breakpoints.tablet }
-    } else if (breakpoints.desktop) {
+    }
+    else if (breakpoints.desktop) {
       responsiveConfig = { ...responsiveConfig, ...breakpoints.desktop }
     }
 
@@ -419,7 +421,7 @@ export class AnimationFactory {
       reduceMotion?: boolean
       lowPowerMode?: boolean
       maxElements?: number
-    } = {}
+    } = {},
   ): BaseAnimation {
     const {
       reduceMotion = false,
@@ -441,7 +443,7 @@ export class AnimationFactory {
       optimizedConfig.type = 'css' // 优先使用CSS动画
       optimizedElements = elements.slice(
         0,
-        Math.min(elements.length, maxElements)
+        Math.min(elements.length, maxElements),
       )
     }
 

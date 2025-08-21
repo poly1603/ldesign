@@ -22,8 +22,10 @@ function getTransitionName(currentRoute: any) {
   // 根据路由层级决定动画类型
   const path = currentRoute?.path || '/'
   const depth = path.split('/').length
-  if (depth <= 2) return 'fade'
-  if (depth === 3) return 'slide-left'
+  if (depth <= 2)
+    return 'fade'
+  if (depth === 3)
+    return 'slide-left'
   return 'slide-up'
 }
 
@@ -44,7 +46,8 @@ router.beforeEach((to, _from, next) => {
       try {
         const parsed = JSON.parse(authData)
         isAuthenticated = parsed.isAuthenticated
-      } catch (error) {
+      }
+      catch (error) {
         console.error('解析认证数据失败:', error)
       }
     }
@@ -71,7 +74,7 @@ router.afterEach(() => {
 })
 
 // 监听路由错误
-router.onError(error => {
+router.onError((error) => {
   console.error('路由错误:', error)
   isLoading.value = false
   appStore.addNotification({
@@ -92,12 +95,12 @@ onMounted(() => {
 // 监听路由变化，更新页面标题
 watch(
   () => route.value?.meta?.title,
-  title => {
+  (title) => {
     if (title) {
       document.title = `${title} - LDesign Router 演示`
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 

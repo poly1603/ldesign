@@ -245,7 +245,7 @@ export function createCustomTheme(
     displayName?: string
     description?: string
     darkPrimaryColor?: string
-  }
+  },
 ): ThemeConfig {
   return {
     name,
@@ -287,7 +287,7 @@ export const themeCategories = {
  * 按分类获取主题
  */
 export function getThemesByCategory(
-  category: keyof typeof themeCategories
+  category: keyof typeof themeCategories,
 ): ThemeConfig[] {
   return [...(themeCategories[category] || [])]
 }
@@ -340,8 +340,8 @@ export function recommendThemes(preferences: {
     candidates = candidates.filter(
       theme =>
         !preferences.excludeColors!.some(color =>
-          theme.name.toLowerCase().includes(color.toLowerCase())
-        )
+          theme.name.toLowerCase().includes(color.toLowerCase()),
+        ),
     )
   }
 

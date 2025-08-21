@@ -1,378 +1,381 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>模板选择缓存测试</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        
-        .test-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .test-section {
-            margin-bottom: 30px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-        }
-        
-        .test-section h3 {
-            margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-        
-        .device-simulator {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .device-btn {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .device-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .device-btn.active {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        
-        .template-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .template-item {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        
-        .template-item:hover {
-            background: #f8f9fa;
-            border-color: #007bff;
-        }
-        
-        .template-item.selected {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        
-        .storage-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-        }
-        
-        .status {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .btn.primary {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        
-        .btn.danger {
-            background: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .test-section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+      }
+
+      .test-section h3 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+      }
+
+      .device-simulator {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .device-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .device-btn:hover {
+        background: #f0f0f0;
+      }
+
+      .device-btn.active {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+
+      .template-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .template-item {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+      }
+
+      .template-item:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+      }
+
+      .template-item.selected {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+
+      .storage-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+      }
+
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .status.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn:hover {
+        background: #f0f0f0;
+      }
+
+      .btn.primary {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+
+      .btn.danger {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="test-container">
-        <h1>🧪 模板选择缓存功能测试</h1>
-        
-        <div class="status info">
-            <strong>测试说明：</strong>
-            <br>1. 选择不同设备类型和模板，系统会自动保存您的选择
-            <br>2. 刷新页面或切换设备类型，系统会恢复您之前的选择
-            <br>3. 查看 localStorage 中的缓存数据
-        </div>
+      <h1>🧪 模板选择缓存功能测试</h1>
 
-        <div class="test-section">
-            <h3>📱 设备类型切换</h3>
-            <div class="device-simulator">
-                <button class="device-btn active" data-device="desktop">桌面端</button>
-                <button class="device-btn" data-device="tablet">平板端</button>
-                <button class="device-btn" data-device="mobile">移动端</button>
-            </div>
-            <div class="status" id="deviceStatus">当前设备: desktop</div>
-        </div>
+      <div class="status info">
+        <strong>测试说明：</strong>
+        <br />1. 选择不同设备类型和模板，系统会自动保存您的选择 <br />2. 刷新页面或切换设备类型，系统会恢复您之前的选择
+        <br />3. 查看 localStorage 中的缓存数据
+      </div>
 
-        <div class="test-section">
-            <h3>🎨 模板选择</h3>
-            <div class="template-list" id="templateList">
-                <!-- 模板列表将动态生成 -->
-            </div>
-            <div class="status" id="templateStatus">当前模板: 未选择</div>
+      <div class="test-section">
+        <h3>📱 设备类型切换</h3>
+        <div class="device-simulator">
+          <button class="device-btn active" data-device="desktop">桌面端</button>
+          <button class="device-btn" data-device="tablet">平板端</button>
+          <button class="device-btn" data-device="mobile">移动端</button>
         </div>
+        <div class="status" id="deviceStatus">当前设备: desktop</div>
+      </div>
 
-        <div class="test-section">
-            <h3>🔧 控制面板</h3>
-            <div class="controls">
-                <button class="btn primary" onclick="refreshPage()">刷新页面</button>
-                <button class="btn" onclick="showStorageData()">查看缓存</button>
-                <button class="btn danger" onclick="clearStorage()">清空缓存</button>
-            </div>
+      <div class="test-section">
+        <h3>🎨 模板选择</h3>
+        <div class="template-list" id="templateList">
+          <!-- 模板列表将动态生成 -->
         </div>
+        <div class="status" id="templateStatus">当前模板: 未选择</div>
+      </div>
 
-        <div class="test-section">
-            <h3>💾 存储数据</h3>
-            <div class="storage-info" id="storageInfo">点击"查看缓存"按钮查看存储的数据</div>
+      <div class="test-section">
+        <h3>🔧 控制面板</h3>
+        <div class="controls">
+          <button class="btn primary" onclick="refreshPage()">刷新页面</button>
+          <button class="btn" onclick="showStorageData()">查看缓存</button>
+          <button class="btn danger" onclick="clearStorage()">清空缓存</button>
         </div>
+      </div>
+
+      <div class="test-section">
+        <h3>💾 存储数据</h3>
+        <div class="storage-info" id="storageInfo">点击"查看缓存"按钮查看存储的数据</div>
+      </div>
     </div>
 
     <script>
-        // 模拟模板数据
-        const mockTemplates = {
-            desktop: ['classic', 'modern', 'minimal', 'corporate'],
-            tablet: ['responsive', 'touch-friendly', 'compact'],
-            mobile: ['mobile-first', 'simple', 'gesture-based']
-        };
+      // 模拟模板数据
+      const mockTemplates = {
+        desktop: ['classic', 'modern', 'minimal', 'corporate'],
+        tablet: ['responsive', 'touch-friendly', 'compact'],
+        mobile: ['mobile-first', 'simple', 'gesture-based'],
+      }
 
-        // 当前状态
-        let currentDevice = 'desktop';
-        let currentTemplate = null;
+      // 当前状态
+      let currentDevice = 'desktop'
+      let currentTemplate = null
 
-        // 存储管理器（模拟 TemplateStorageManager）
-        class MockTemplateStorage {
-            constructor() {
-                this.key = 'ldesign-template-selections';
-                this.loadData();
-            }
-
-            loadData() {
-                try {
-                    const stored = localStorage.getItem(this.key);
-                    if (stored) {
-                        this.data = JSON.parse(stored);
-                    } else {
-                        this.data = { selections: {}, lastUpdated: Date.now(), version: '1.0.0' };
-                    }
-                } catch (error) {
-                    console.warn('Failed to load template selections:', error);
-                    this.data = { selections: {}, lastUpdated: Date.now(), version: '1.0.0' };
-                }
-            }
-
-            saveData() {
-                try {
-                    this.data.lastUpdated = Date.now();
-                    localStorage.setItem(this.key, JSON.stringify(this.data));
-                } catch (error) {
-                    console.warn('Failed to save template selections:', error);
-                }
-            }
-
-            getSelectionKey(category, device) {
-                return `${category}:${device}`;
-            }
-
-            saveSelection(category, device, template) {
-                const key = this.getSelectionKey(category, device);
-                this.data.selections[key] = {
-                    category,
-                    device,
-                    template,
-                    timestamp: Date.now()
-                };
-                this.saveData();
-                console.log(`💾 保存模板选择: ${key} -> ${template}`);
-            }
-
-            getSelection(category, device) {
-                const key = this.getSelectionKey(category, device);
-                return this.data.selections[key] || null;
-            }
-
-            clearAll() {
-                this.data = { selections: {}, lastUpdated: Date.now(), version: '1.0.0' };
-                this.saveData();
-            }
+      // 存储管理器（模拟 TemplateStorageManager）
+      class MockTemplateStorage {
+        constructor() {
+          this.key = 'ldesign-template-selections'
+          this.loadData()
         }
 
-        // 初始化存储管理器
-        const storage = new MockTemplateStorage();
-
-        // 初始化页面
-        function init() {
-            updateDeviceButtons();
-            updateTemplateList();
-            loadSavedSelection();
-            updateStatus();
+        loadData() {
+          try {
+            const stored = localStorage.getItem(this.key)
+            if (stored) {
+              this.data = JSON.parse(stored)
+            } else {
+              this.data = { selections: {}, lastUpdated: Date.now(), version: '1.0.0' }
+            }
+          } catch (error) {
+            console.warn('Failed to load template selections:', error)
+            this.data = { selections: {}, lastUpdated: Date.now(), version: '1.0.0' }
+          }
         }
 
-        // 更新设备按钮状态
-        function updateDeviceButtons() {
-            document.querySelectorAll('.device-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.device === currentDevice);
-                btn.onclick = () => switchDevice(btn.dataset.device);
-            });
+        saveData() {
+          try {
+            this.data.lastUpdated = Date.now()
+            localStorage.setItem(this.key, JSON.stringify(this.data))
+          } catch (error) {
+            console.warn('Failed to save template selections:', error)
+          }
         }
 
-        // 更新模板列表
-        function updateTemplateList() {
-            const templateList = document.getElementById('templateList');
-            const templates = mockTemplates[currentDevice] || [];
-            
-            templateList.innerHTML = templates.map(template => `
+        getSelectionKey(category, device) {
+          return `${category}:${device}`
+        }
+
+        saveSelection(category, device, template) {
+          const key = this.getSelectionKey(category, device)
+          this.data.selections[key] = {
+            category,
+            device,
+            template,
+            timestamp: Date.now(),
+          }
+          this.saveData()
+          console.log(`💾 保存模板选择: ${key} -> ${template}`)
+        }
+
+        getSelection(category, device) {
+          const key = this.getSelectionKey(category, device)
+          return this.data.selections[key] || null
+        }
+
+        clearAll() {
+          this.data = { selections: {}, lastUpdated: Date.now(), version: '1.0.0' }
+          this.saveData()
+        }
+      }
+
+      // 初始化存储管理器
+      const storage = new MockTemplateStorage()
+
+      // 初始化页面
+      function init() {
+        updateDeviceButtons()
+        updateTemplateList()
+        loadSavedSelection()
+        updateStatus()
+      }
+
+      // 更新设备按钮状态
+      function updateDeviceButtons() {
+        document.querySelectorAll('.device-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.device === currentDevice)
+          btn.onclick = () => switchDevice(btn.dataset.device)
+        })
+      }
+
+      // 更新模板列表
+      function updateTemplateList() {
+        const templateList = document.getElementById('templateList')
+        const templates = mockTemplates[currentDevice] || []
+
+        templateList.innerHTML = templates
+          .map(
+            (template) => `
                 <div class="template-item" data-template="${template}">
                     <strong>${template}</strong>
                     <br><small>${currentDevice} 模板</small>
                 </div>
-            `).join('');
+            `,
+          )
+          .join('')
 
-            // 添加点击事件
-            templateList.querySelectorAll('.template-item').forEach(item => {
-                item.onclick = () => selectTemplate(item.dataset.template);
-            });
+        // 添加点击事件
+        templateList.querySelectorAll('.template-item').forEach((item) => {
+          item.onclick = () => selectTemplate(item.dataset.template)
+        })
 
-            updateTemplateSelection();
+        updateTemplateSelection()
+      }
+
+      // 更新模板选中状态
+      function updateTemplateSelection() {
+        document.querySelectorAll('.template-item').forEach((item) => {
+          item.classList.toggle('selected', item.dataset.template === currentTemplate)
+        })
+      }
+
+      // 切换设备
+      function switchDevice(device) {
+        const oldDevice = currentDevice
+        currentDevice = device
+
+        console.log(`📱 设备切换: ${oldDevice} -> ${device}`)
+
+        updateDeviceButtons()
+        updateTemplateList()
+        loadSavedSelection()
+        updateStatus()
+      }
+
+      // 选择模板
+      function selectTemplate(template) {
+        currentTemplate = template
+
+        // 保存选择
+        storage.saveSelection('login', currentDevice, template)
+
+        updateTemplateSelection()
+        updateStatus()
+
+        console.log(`🎨 用户选择模板: ${template}`)
+      }
+
+      // 加载保存的选择
+      function loadSavedSelection() {
+        const saved = storage.getSelection('login', currentDevice)
+        if (saved && mockTemplates[currentDevice].includes(saved.template)) {
+          currentTemplate = saved.template
+          console.log(`📋 恢复保存的选择: ${saved.template}`)
+        } else {
+          // 使用默认模板
+          currentTemplate = mockTemplates[currentDevice][0]
+          console.log(`🎯 使用默认模板: ${currentTemplate}`)
         }
+      }
 
-        // 更新模板选中状态
-        function updateTemplateSelection() {
-            document.querySelectorAll('.template-item').forEach(item => {
-                item.classList.toggle('selected', item.dataset.template === currentTemplate);
-            });
-        }
+      // 更新状态显示
+      function updateStatus() {
+        document.getElementById('deviceStatus').textContent = `当前设备: ${currentDevice}`
+        document.getElementById('templateStatus').textContent = `当前模板: ${currentTemplate || '未选择'}`
+      }
 
-        // 切换设备
-        function switchDevice(device) {
-            const oldDevice = currentDevice;
-            currentDevice = device;
-            
-            console.log(`📱 设备切换: ${oldDevice} -> ${device}`);
-            
-            updateDeviceButtons();
-            updateTemplateList();
-            loadSavedSelection();
-            updateStatus();
-        }
+      // 显示存储数据
+      function showStorageData() {
+        const data = JSON.stringify(storage.data, null, 2)
+        document.getElementById('storageInfo').textContent = data
+      }
 
-        // 选择模板
-        function selectTemplate(template) {
-            currentTemplate = template;
-            
-            // 保存选择
-            storage.saveSelection('login', currentDevice, template);
-            
-            updateTemplateSelection();
-            updateStatus();
-            
-            console.log(`🎨 用户选择模板: ${template}`);
-        }
+      // 清空存储
+      function clearStorage() {
+        storage.clearAll()
+        currentTemplate = null
+        updateTemplateList()
+        updateStatus()
+        showStorageData()
+        console.log('🗑️ 已清空所有缓存数据')
+      }
 
-        // 加载保存的选择
-        function loadSavedSelection() {
-            const saved = storage.getSelection('login', currentDevice);
-            if (saved && mockTemplates[currentDevice].includes(saved.template)) {
-                currentTemplate = saved.template;
-                console.log(`📋 恢复保存的选择: ${saved.template}`);
-            } else {
-                // 使用默认模板
-                currentTemplate = mockTemplates[currentDevice][0];
-                console.log(`🎯 使用默认模板: ${currentTemplate}`);
-            }
-        }
+      // 刷新页面
+      function refreshPage() {
+        location.reload()
+      }
 
-        // 更新状态显示
-        function updateStatus() {
-            document.getElementById('deviceStatus').textContent = `当前设备: ${currentDevice}`;
-            document.getElementById('templateStatus').textContent = `当前模板: ${currentTemplate || '未选择'}`;
-        }
-
-        // 显示存储数据
-        function showStorageData() {
-            const data = JSON.stringify(storage.data, null, 2);
-            document.getElementById('storageInfo').textContent = data;
-        }
-
-        // 清空存储
-        function clearStorage() {
-            storage.clearAll();
-            currentTemplate = null;
-            updateTemplateList();
-            updateStatus();
-            showStorageData();
-            console.log('🗑️ 已清空所有缓存数据');
-        }
-
-        // 刷新页面
-        function refreshPage() {
-            location.reload();
-        }
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', init);
+      // 页面加载完成后初始化
+      document.addEventListener('DOMContentLoaded', init)
     </script>
-</body>
+  </body>
 </html>

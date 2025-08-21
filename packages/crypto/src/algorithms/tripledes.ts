@@ -23,7 +23,7 @@ export class TripleDESEncryptor implements IEncryptor {
   encrypt(
     data: string,
     key: string,
-    options: TripleDESOptions = {}
+    options: TripleDESOptions = {},
   ): EncryptResult {
     try {
       if (ValidationUtils.isEmpty(data)) {
@@ -64,7 +64,8 @@ export class TripleDESEncryptor implements IEncryptor {
         iv,
         keySize: 192, // 3DES 密钥大小为 192 位
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, '3DES encryption'),
@@ -79,7 +80,7 @@ export class TripleDESEncryptor implements IEncryptor {
   decrypt(
     encryptedData: string | EncryptResult,
     key: string,
-    options: TripleDESOptions = {}
+    options: TripleDESOptions = {},
   ): DecryptResult {
     try {
       // 处理输入数据
@@ -89,7 +90,8 @@ export class TripleDESEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      } else {
+      }
+      else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
@@ -97,7 +99,7 @@ export class TripleDESEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(ciphertext)) {
         throw ErrorUtils.createDecryptionError(
           'Encrypted data cannot be empty',
-          '3DES'
+          '3DES',
         )
       }
 
@@ -111,18 +113,18 @@ export class TripleDESEncryptor implements IEncryptor {
       if (!opts.iv) {
         throw ErrorUtils.createDecryptionError(
           'IV is required for decryption',
-          '3DES'
+          '3DES',
         )
       }
 
       // 验证加密数据格式（应该是有效的 Base64 或十六进制）
       if (
-        !/^[A-Z0-9+/=]+$/i.test(ciphertext) &&
-        !/^[0-9a-f]+$/i.test(ciphertext)
+        !/^[A-Z0-9+/=]+$/i.test(ciphertext)
+        && !/^[0-9a-f]+$/i.test(ciphertext)
       ) {
         throw ErrorUtils.createDecryptionError(
           'Invalid encrypted data format',
-          '3DES'
+          '3DES',
         )
       }
 
@@ -147,17 +149,18 @@ export class TripleDESEncryptor implements IEncryptor {
       try {
         decrypted = CryptoJS.TripleDES.decrypt(ciphertext, keyWordArray, config)
         decryptedText = decrypted.toString(CryptoJS.enc.Utf8)
-      } catch {
+      }
+      catch {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid format or corrupted data',
-          '3DES'
+          '3DES',
         )
       }
 
       if (!decryptedText || decryptedText.length === 0) {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid key or corrupted data',
-          '3DES'
+          '3DES',
         )
       }
 
@@ -167,7 +170,8 @@ export class TripleDESEncryptor implements IEncryptor {
         algorithm: '3DES',
         mode: opts.mode,
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, '3DES decryption'),
@@ -187,7 +191,8 @@ export class TripleDESEncryptor implements IEncryptor {
         key += key
       }
       key = key.substring(0, 24)
-    } else if (key.length > 24) {
+    }
+    else if (key.length > 24) {
       // 如果密钥太长，截取前 24 字节
       key = key.substring(0, 24)
     }
@@ -224,7 +229,7 @@ export const tripledes = {
   encrypt: (
     data: string,
     key: string,
-    options?: TripleDESOptions
+    options?: TripleDESOptions,
   ): EncryptResult => {
     const encryptor = new TripleDESEncryptor()
     return encryptor.encrypt(data, key, options)
@@ -236,7 +241,7 @@ export const tripledes = {
   decrypt: (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: TripleDESOptions
+    options?: TripleDESOptions,
   ): DecryptResult => {
     const encryptor = new TripleDESEncryptor()
     return encryptor.decrypt(encryptedData, key, options)

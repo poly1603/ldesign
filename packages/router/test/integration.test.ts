@@ -76,7 +76,7 @@ describe('集成测试', () => {
       await router.push('/about')
       expect(guardCalls.length).toBeGreaterThan(0)
       expect(guardCalls.some((call: string) => call.includes('/about'))).toBe(
-        true
+        true,
       )
     })
 
@@ -84,7 +84,8 @@ describe('集成测试', () => {
       router.beforeEach((to: any, from: any, next: any) => {
         if (to.path === '/about') {
           next('/')
-        } else {
+        }
+        else {
           next()
         }
       })
@@ -110,7 +111,7 @@ describe('集成测试', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
       const currentPath = router.currentRoute.value.path
       expect(currentPath === '/user/123' || currentPath === '/user/:id').toBe(
-        true
+        true,
       )
     })
 

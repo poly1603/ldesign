@@ -12,7 +12,9 @@ function goBack() {
   <div class="not-found">
     <div class="container">
       <div class="not-found-content">
-        <div class="error-code">404</div>
+        <div class="error-code">
+          404
+        </div>
         <h1>页面未找到</h1>
         <p>抱歉，您访问的页面不存在或已被移除。</p>
 
@@ -20,17 +22,23 @@ function goBack() {
           <router-link to="/home" class="btn btn-primary">
             返回首页
           </router-link>
-          <button class="btn btn-secondary" @click="goBack">返回上页</button>
+          <button class="btn btn-secondary" @click="goBack">
+            返回上页
+          </button>
         </div>
 
         <div class="suggestions">
           <h3>您可能想要访问:</h3>
           <ul>
             <li>
-              <router-link to="/home"> 首页 </router-link>
+              <router-link to="/home">
+                首页
+              </router-link>
             </li>
             <li>
-              <router-link to="/login"> 登录页面 </router-link>
+              <router-link to="/login">
+                登录页面
+              </router-link>
             </li>
           </ul>
         </div>

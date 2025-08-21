@@ -110,7 +110,8 @@ export const StoreProvider = defineComponent({
           }
 
           return store
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Failed to create store "${id}":`, error)
           return undefined
         }
@@ -219,7 +220,8 @@ export function createStoreProviderPlugin(options: StoreProviderOptions = {}) {
               instances.set(id, store)
             }
             return store
-          } catch (error) {
+          }
+          catch (error) {
             console.error(`Failed to create store "${id}":`, error)
             return undefined
           }

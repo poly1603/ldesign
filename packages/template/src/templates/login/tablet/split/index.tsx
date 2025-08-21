@@ -1,7 +1,7 @@
-import { defineComponent, ref, onMounted, computed } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { getIcon } from '../../../../utils/icons'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -60,12 +60,13 @@ export default defineComponent({
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -80,7 +81,7 @@ export default defineComponent({
           width: 1366,
           height: 1024,
           quality: 'high',
-          category: 'business'
+          category: 'business',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -88,13 +89,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Split Gradient'
+          title: 'Split Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -197,75 +200,77 @@ export default defineComponent({
         <div class="tablet-split-login__right">
           {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
           <div class="login-panel-wrapper">
-            {props.loginPanel ? (
-              <props.loginPanel
-                title={props.title}
-                subtitle={props.subtitle}
-                showRememberMe={props.showRememberMe}
-                showForgotPassword={props.showForgotPassword}
-                showThirdPartyLogin={props.showThirdPartyLogin}
-                thirdPartyProviders={props.thirdPartyProviders}
-                isLoading={props.isLoading}
-                error={props.error}
-                onLogin={handleLogin}
-                onRegister={handleRegister}
-                onForgotPassword={handleForgotPassword}
-                onThirdPartyLogin={handleThirdPartyLogin}
-              />
-            ) : (
-              <div class="tablet-split-login__default-panel">
-                <div class="tablet-split-login__header">
-                  <h1 class="tablet-split-login__title">{props.title}</h1>
-                  <p class="tablet-split-login__subtitle">{props.subtitle}</p>
-                </div>
+            {props.loginPanel
+              ? (
+                  <props.loginPanel
+                    title={props.title}
+                    subtitle={props.subtitle}
+                    showRememberMe={props.showRememberMe}
+                    showForgotPassword={props.showForgotPassword}
+                    showThirdPartyLogin={props.showThirdPartyLogin}
+                    thirdPartyProviders={props.thirdPartyProviders}
+                    isLoading={props.isLoading}
+                    error={props.error}
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onForgotPassword={handleForgotPassword}
+                    onThirdPartyLogin={handleThirdPartyLogin}
+                  />
+                )
+              : (
+                  <div class="tablet-split-login__default-panel">
+                    <div class="tablet-split-login__header">
+                      <h1 class="tablet-split-login__title">{props.title}</h1>
+                      <p class="tablet-split-login__subtitle">{props.subtitle}</p>
+                    </div>
 
-                <div class="tablet-split-login__form">
-                  <div class="tablet-split-login__field">
-                    <input type="text" placeholder="用户名" class="tablet-split-login__input" />
-                  </div>
-                  <div class="tablet-split-login__field">
-                    <input type="password" placeholder="密码" class="tablet-split-login__input" />
-                  </div>
+                    <div class="tablet-split-login__form">
+                      <div class="tablet-split-login__field">
+                        <input type="text" placeholder="用户名" class="tablet-split-login__input" />
+                      </div>
+                      <div class="tablet-split-login__field">
+                        <input type="password" placeholder="密码" class="tablet-split-login__input" />
+                      </div>
 
-                  {props.showRememberMe && (
-                    <div class="tablet-split-login__options">
-                      <label class="tablet-split-login__checkbox">
-                        <input type="checkbox" />
-                        <span>记住密码</span>
-                      </label>
-                      {props.showForgotPassword && (
-                        <a href="#" class="tablet-split-login__forgot">
-                          忘记密码？
-                        </a>
+                      {props.showRememberMe && (
+                        <div class="tablet-split-login__options">
+                          <label class="tablet-split-login__checkbox">
+                            <input type="checkbox" />
+                            <span>记住密码</span>
+                          </label>
+                          {props.showForgotPassword && (
+                            <a href="#" class="tablet-split-login__forgot">
+                              忘记密码？
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      <button class="tablet-split-login__submit">登录</button>
+
+                      {props.showThirdPartyLogin && (
+                        <div class="tablet-split-login__third-party">
+                          <div class="tablet-split-login__divider">
+                            <span>或</span>
+                          </div>
+                          <div class="tablet-split-login__providers">
+                            {props.thirdPartyProviders.map((provider: string) => (
+                              <button
+                                key={provider}
+                                class={`tablet-split-login__provider tablet-split-login__provider--${provider}`}
+                              >
+                                {provider === 'github' && '🐙'}
+                                {provider === 'google' && '🔍'}
+                                {provider === 'microsoft' && '🪟'}
+                                {provider === 'apple' && '🍎'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  )}
-
-                  <button class="tablet-split-login__submit">登录</button>
-
-                  {props.showThirdPartyLogin && (
-                    <div class="tablet-split-login__third-party">
-                      <div class="tablet-split-login__divider">
-                        <span>或</span>
-                      </div>
-                      <div class="tablet-split-login__providers">
-                        {props.thirdPartyProviders.map((provider: string) => (
-                          <button
-                            key={provider}
-                            class={`tablet-split-login__provider tablet-split-login__provider--${provider}`}
-                          >
-                            {provider === 'github' && '🐙'}
-                            {provider === 'google' && '🔍'}
-                            {provider === 'microsoft' && '🪟'}
-                            {provider === 'apple' && '🍎'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
           </div>
         </div>
       </div>

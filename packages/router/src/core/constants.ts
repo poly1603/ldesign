@@ -175,18 +175,18 @@ export enum HttpStatusCode {
 // ==================== 浏览器兼容性常量 ====================
 
 /** 是否支持 History API */
-export const SUPPORTS_HISTORY =
-  typeof window !== 'undefined' &&
-  'history' in window &&
-  'pushState' in window.history
+export const SUPPORTS_HISTORY
+  = typeof window !== 'undefined'
+    && 'history' in window
+    && 'pushState' in window.history
 
 /** 是否支持 IntersectionObserver */
-export const SUPPORTS_INTERSECTION_OBSERVER =
-  typeof window !== 'undefined' && 'IntersectionObserver' in window
+export const SUPPORTS_INTERSECTION_OBSERVER
+  = typeof window !== 'undefined' && 'IntersectionObserver' in window
 
 /** 是否支持 requestIdleCallback */
-export const SUPPORTS_REQUEST_IDLE_CALLBACK =
-  typeof window !== 'undefined' && 'requestIdleCallback' in window
+export const SUPPORTS_REQUEST_IDLE_CALLBACK
+  = typeof window !== 'undefined' && 'requestIdleCallback' in window
 
 export const IS_DEV = nodeProcess?.env?.NODE_ENV === 'development'
 

@@ -87,7 +87,7 @@ test.describe('设备适配功能', () => {
 
       // 应该显示回退提示
       const fallbackIndicator = await page.locator(
-        '[data-testid="fallback-indicator"]'
+        '[data-testid="fallback-indicator"]',
       )
       await expect(fallbackIndicator).toBeVisible()
     })
@@ -125,7 +125,7 @@ test.describe('设备适配功能', () => {
 
       // 不应该显示不支持提示
       await expect(
-        page.locator('[data-testid="unsupported-message"]')
+        page.locator('[data-testid="unsupported-message"]'),
       ).not.toBeVisible()
     })
 
@@ -145,7 +145,7 @@ test.describe('设备适配功能', () => {
 
       // 检查模板组件是否正确渲染
       const templateContent = await page.locator(
-        '[data-testid="template-content"]'
+        '[data-testid="template-content"]',
       )
       await expect(templateContent).toBeVisible()
 
@@ -225,7 +225,7 @@ test.describe('设备适配功能', () => {
 
       // 页面应该刷新
       await expect(
-        page.locator('[data-testid="unsupported-container"]')
+        page.locator('[data-testid="unsupported-container"]'),
       ).toBeVisible()
     })
   })

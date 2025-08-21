@@ -16,7 +16,7 @@ export class Hasher implements IHasher {
   hash(
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options: HashOptions = {}
+    options: HashOptions = {},
   ): HashResult {
     try {
       if (ValidationUtils.isEmpty(data)) {
@@ -48,7 +48,7 @@ export class Hasher implements IHasher {
           break
         default:
           throw ErrorUtils.createHashError(
-            `Unsupported hash algorithm: ${algorithm}`
+            `Unsupported hash algorithm: ${algorithm}`,
           )
       }
 
@@ -76,7 +76,8 @@ export class Hasher implements IHasher {
         algorithm,
         encoding: opts.encoding,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
@@ -91,12 +92,13 @@ export class Hasher implements IHasher {
     data: string,
     expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options: HashOptions = {}
+    options: HashOptions = {},
   ): boolean {
     try {
       const result = this.hash(data, algorithm, options)
       return result.hash === expectedHash
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -107,7 +109,7 @@ export class Hasher implements IHasher {
   hashFile(
     fileContent: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options: HashOptions = {}
+    options: HashOptions = {},
   ): HashResult {
     return this.hash(fileContent, algorithm, options)
   }
@@ -128,20 +130,20 @@ export class HMACHasher {
     data: string,
     key: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options: HashOptions = {}
+    options: HashOptions = {},
   ): HashResult {
     try {
       if (ValidationUtils.isEmpty(data)) {
         throw ErrorUtils.createHashError(
           'Data cannot be empty',
-          `HMAC-${algorithm}`
+          `HMAC-${algorithm}`,
         )
       }
 
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createHashError(
           'Key cannot be empty',
-          `HMAC-${algorithm}`
+          `HMAC-${algorithm}`,
         )
       }
 
@@ -170,7 +172,7 @@ export class HMACHasher {
           break
         default:
           throw ErrorUtils.createHashError(
-            `Unsupported HMAC algorithm: ${algorithm}`
+            `Unsupported HMAC algorithm: ${algorithm}`,
           )
       }
 
@@ -198,13 +200,14 @@ export class HMACHasher {
         algorithm: `HMAC-${algorithm}`,
         encoding: opts.encoding,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
       throw ErrorUtils.createHashError(
         'Unknown HMAC error',
-        `HMAC-${algorithm}`
+        `HMAC-${algorithm}`,
       )
     }
   }
@@ -217,12 +220,13 @@ export class HMACHasher {
     key: string,
     expectedHmac: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options: HashOptions = {}
+    options: HashOptions = {},
   ): boolean {
     try {
       const result = this.hmac(data, key, algorithm, options)
       return result.hash === expectedHmac
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -287,7 +291,7 @@ export const hash = {
     data: string,
     expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): boolean => {
     const hasher = new Hasher()
     return hasher.verify(data, expectedHash, algorithm, options)
@@ -346,7 +350,7 @@ export const hmac = {
     key: string,
     expectedHmac: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): boolean => {
     const hasher = new HMACHasher()
     return hasher.verify(data, key, expectedHmac, algorithm, options)

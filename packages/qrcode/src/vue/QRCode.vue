@@ -1,19 +1,214 @@
+<script setup lang="ts">
+import type {
+  QRCodeError,
+  QRCodeOptions,
+  QRCodeProps,
+  QRCodeResult,
+} from '../types'
+import {
+  computed,
+  type CSSProperties,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue'
+import { useQRCode } from './useQRCode'
+
+// Props定义
+const props = withDefaults(defineProps<QRCodeProps>(), {
+  text: '',
+  format: 'canvas',
+  width: 200,
+  height: undefined,
+  errorCorrectionLevel: 'M',
+  margin: 1,
+  showDownloadButton: false,
+  downloadButtonText: 'Download',
+  downloadFilename: 'qrcode',
+  autoGenerate: true,
+})
+
+// Emits定义
+const emit = defineEmits<{
+  generated: [result: QRCodeResult]
+  error: [error: QRCodeError]
+  download: [result: QRCodeResult]
+}>()
+
+// 响应式引用
+const containerRef = ref<HTMLDivElement>()
+const canvasRef = ref<HTMLCanvasElement>()
+const svgRef = ref<HTMLDivElement>()
+const imageRef = ref<HTMLImageElement>()
+
+// 计算属性
+const qrCodeOptions = computed<QRCodeOptions>(() => ({
+  format: props.format,
+  width: props.width,
+  height: props.height || props.width,
+  errorCorrectionLevel: props.errorCorrectionLevel,
+  margin: props.margin,
+  logo: props.logo,
+  style: props.style,
+}))
+
+const actualWidth = computed(() => props.width)
+const actualHeight = computed(() => props.height || props.width)
+
+const containerStyle = computed<CSSProperties>(() => ({
+  width: `${actualWidth.value}px`,
+  height: `${actualHeight.value}px`,
+  position: 'relative',
+  display: 'inline-block',
+}))
+
+// 使用QRCode Hook
+const {
+  result,
+  loading,
+  error,
+  generate,
+  download,
+  clearCache,
+  getMetrics,
+  destroy,
+} = useQRCode()
+
+// 计算属性：获取不同格式的元素
+const canvasElement = computed(() => {
+  return result.value?.format === 'canvas' ? result.value.element as HTMLCanvasElement : null
+})
+
+const svgElement = computed(() => {
+  return result.value?.format === 'svg' ? result.value.element as SVGElement : null
+})
+
+const imageElement = computed(() => {
+  return result.value?.format === 'image' ? result.value.element as HTMLImageElement : null
+})
+
+const svgHTML = computed(() => {
+  if (!svgElement.value)
+    return ''
+  return new XMLSerializer().serializeToString(svgElement.value)
+})
+
+// 方法
+async function generateQRCode() {
+  if (!props.text.trim()) {
+    return
+  }
+
+  try {
+    const qrResult = await generate(props.text, qrCodeOptions.value)
+
+    // 渲染到DOM
+    await nextTick()
+    await renderToDom(qrResult)
+
+    emit('generated', qrResult)
+  }
+  catch (err) {
+    const qrError = err as QRCodeError
+    emit('error', qrError)
+  }
+}
+
+async function renderToDom(qrResult: QRCodeResult) {
+  switch (qrResult.format) {
+    case 'canvas':
+      await renderCanvas(qrResult.element as HTMLCanvasElement)
+      break
+    case 'svg':
+      // SVG通过v-html渲染，无需额外处理
+      break
+    case 'image':
+      // Image通过src属性渲染，无需额外处理
+      break
+  }
+}
+
+async function renderCanvas(sourceCanvas: HTMLCanvasElement) {
+  if (!canvasRef.value)
+    return
+
+  const targetCanvas = canvasRef.value
+  const ctx = targetCanvas.getContext('2d')
+  if (!ctx)
+    return
+
+  // 清除画布
+  ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height)
+
+  // 绘制源画布内容
+  ctx.drawImage(sourceCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
+}
+
+async function handleDownload() {
+  if (!result.value)
+    return
+
+  try {
+    await download(result.value, props.downloadFilename)
+    emit('download', result.value)
+  }
+  catch (err) {
+    const qrError = err as QRCodeError
+    emit('error', qrError)
+  }
+}
+
+// 暴露方法给父组件
+defineExpose({
+  generate: generateQRCode,
+  download: handleDownload,
+  clearCache,
+  getMetrics,
+  result,
+  loading,
+  error,
+})
+
+// 监听器
+watch(
+  [() => props.text, qrCodeOptions],
+  () => {
+    if (props.autoGenerate && props.text.trim()) {
+      generateQRCode()
+    }
+  },
+  { deep: true, immediate: true },
+)
+
+// 生命周期
+onMounted(() => {
+  if (props.autoGenerate && props.text.trim()) {
+    generateQRCode()
+  }
+})
+
+onUnmounted(() => {
+  destroy()
+})
+</script>
+
 <template>
   <div
     ref="containerRef"
-    :class="[
-      'l-qrcode',
+    class="l-qrcode" :class="[
       {
         'l-qrcode--loading': loading,
-        'l-qrcode--error': !!error
-      }
+        'l-qrcode--error': !!error,
+      },
     ]"
     :style="containerStyle"
   >
     <!-- 加载状态 -->
     <div v-if="loading" class="l-qrcode__loading">
       <slot name="loading">
-        <div class="l-qrcode__spinner"></div>
+        <div class="l-qrcode__spinner" />
       </slot>
     </div>
 
@@ -54,15 +249,15 @@
         :height="actualHeight"
         :alt="`QR Code: ${text}`"
         class="l-qrcode__image"
-      />
+      >
     </div>
 
     <!-- 下载按钮 -->
     <button
       v-if="showDownloadButton && !loading && !error"
-      @click="handleDownload"
       class="l-qrcode__download-btn"
       type="button"
+      @click="handleDownload"
     >
       <slot name="download-icon">
         📥
@@ -71,197 +266,6 @@
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-import {
-  ref,
-  computed,
-  watch,
-  onMounted,
-  onUnmounted,
-  nextTick,
-  type CSSProperties
-} from 'vue'
-import type {
-  QRCodeOptions,
-  QRCodeResult,
-  QRCodeFormat,
-  QRCodeError,
-  QRCodeProps
-} from '../types'
-import { useQRCode } from './useQRCode'
-
-// Props定义
-const props = withDefaults(defineProps<QRCodeProps>(), {
-  text: '',
-  format: 'canvas',
-  width: 200,
-  height: undefined,
-  errorCorrectionLevel: 'M',
-  margin: 1,
-  showDownloadButton: false,
-  downloadButtonText: 'Download',
-  downloadFilename: 'qrcode',
-  autoGenerate: true
-})
-
-// Emits定义
-const emit = defineEmits<{
-  generated: [result: QRCodeResult]
-  error: [error: QRCodeError]
-  download: [result: QRCodeResult]
-}>()
-
-// 响应式引用
-const containerRef = ref<HTMLDivElement>()
-const canvasRef = ref<HTMLCanvasElement>()
-const svgRef = ref<HTMLDivElement>()
-const imageRef = ref<HTMLImageElement>()
-
-// 计算属性
-const qrCodeOptions = computed<QRCodeOptions>(() => ({
-  format: props.format,
-  width: props.width,
-  height: props.height || props.width,
-  errorCorrectionLevel: props.errorCorrectionLevel,
-  margin: props.margin,
-  logo: props.logo,
-  style: props.style
-}))
-
-const actualWidth = computed(() => props.width)
-const actualHeight = computed(() => props.height || props.width)
-
-const containerStyle = computed<CSSProperties>(() => ({
-  width: `${actualWidth.value}px`,
-  height: `${actualHeight.value}px`,
-  position: 'relative',
-  display: 'inline-block'
-}))
-
-// 使用QRCode Hook
-const {
-  result,
-  loading,
-  error,
-  generate,
-  download,
-  clearCache,
-  getMetrics,
-  destroy
-} = useQRCode()
-
-// 计算属性：获取不同格式的元素
-const canvasElement = computed(() => {
-  return result.value?.format === 'canvas' ? result.value.element as HTMLCanvasElement : null
-})
-
-const svgElement = computed(() => {
-  return result.value?.format === 'svg' ? result.value.element as SVGElement : null
-})
-
-const imageElement = computed(() => {
-  return result.value?.format === 'image' ? result.value.element as HTMLImageElement : null
-})
-
-const svgHTML = computed(() => {
-  if (!svgElement.value) return ''
-  return new XMLSerializer().serializeToString(svgElement.value)
-})
-
-// 方法
-const generateQRCode = async () => {
-  if (!props.text.trim()) {
-    return
-  }
-
-  try {
-    const qrResult = await generate(props.text, qrCodeOptions.value)
-
-    // 渲染到DOM
-    await nextTick()
-    await renderToDom(qrResult)
-
-    emit('generated', qrResult)
-  } catch (err) {
-    const qrError = err as QRCodeError
-    emit('error', qrError)
-  }
-}
-
-const renderToDom = async (qrResult: QRCodeResult) => {
-  switch (qrResult.format) {
-    case 'canvas':
-      await renderCanvas(qrResult.element as HTMLCanvasElement)
-      break
-    case 'svg':
-      // SVG通过v-html渲染，无需额外处理
-      break
-    case 'image':
-      // Image通过src属性渲染，无需额外处理
-      break
-  }
-}
-
-const renderCanvas = async (sourceCanvas: HTMLCanvasElement) => {
-  if (!canvasRef.value) return
-
-  const targetCanvas = canvasRef.value
-  const ctx = targetCanvas.getContext('2d')
-  if (!ctx) return
-
-  // 清除画布
-  ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height)
-
-  // 绘制源画布内容
-  ctx.drawImage(sourceCanvas, 0, 0, targetCanvas.width, targetCanvas.height)
-}
-
-const handleDownload = async () => {
-  if (!result.value) return
-
-  try {
-    await download(result.value, props.downloadFilename)
-    emit('download', result.value)
-  } catch (err) {
-    const qrError = err as QRCodeError
-    emit('error', qrError)
-  }
-}
-
-// 暴露方法给父组件
-defineExpose({
-  generate: generateQRCode,
-  download: handleDownload,
-  clearCache,
-  getMetrics,
-  result,
-  loading,
-  error
-})
-
-// 监听器
-watch(
-  [() => props.text, qrCodeOptions],
-  () => {
-    if (props.autoGenerate && props.text.trim()) {
-      generateQRCode()
-    }
-  },
-  { deep: true, immediate: true }
-)
-
-// 生命周期
-onMounted(() => {
-  if (props.autoGenerate && props.text.trim()) {
-    generateQRCode()
-  }
-})
-
-onUnmounted(() => {
-  destroy()
-})
-</script>
 
 <style scoped>
 .l-qrcode {
@@ -303,8 +307,12 @@ onUnmounted(() => {
 }
 
 @keyframes l-qrcode-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .l-qrcode__error {

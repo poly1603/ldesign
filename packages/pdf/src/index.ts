@@ -3,64 +3,64 @@
  * 导出所有核心模块和API
  */
 
-// 核心类型定义
-export * from './types'
+// 适配器模块（跨框架支持）
+export {
+  BaseAdapter,
+  createAdapter,
+  createReactAdapter,
+  createVanillaAdapter,
+  createVueAdapter,
+  FrameworkType,
+} from './adapters'
 
 // 核心API
 export * from './api/pdf-api'
 
-// PDF引擎
-export { PdfEngine, createPdfEngine } from './engine/pdf-engine'
-
-// 缓存系统
-export { LRUCacheImpl as LRUCache, createLRUCache, defaultCacheOptions } from './cache/lru-cache'
-
-// WebWorker支持
-export * from './worker/worker-manager'
-
-// 工具函数 - 显式导出避免命名冲突
-export {
-  typeUtils,
-  dataUtils,
-  cacheUtils,
-  asyncUtils,
-  domUtils,
-  mathUtils,
-  formatUtils,
-  debugUtils
-} from './utils'
-
-// 适配器模块（跨框架支持）
-export {
-  BaseAdapter,
-  createReactAdapter,
-  createVueAdapter,
-  createVanillaAdapter,
-  createAdapter,
-  FrameworkType
-} from './adapters'
-
 // 默认实例导出
 export {
-  defaultPdfApi
+  defaultPdfApi,
 } from './api/pdf-api'
 
 // 便捷函数导出
 export {
+  getTextContent,
   loadPdf,
   renderPage,
-  getTextContent
 } from './api/pdf-api'
 
 // 创建函数导出
 export {
-  createPdfApi,
   createDefaultCache,
-  createWorkerManager,
   createEventEmitter,
+  createPdfApi,
+  createPdfError,
   createPerformanceMonitor,
-  createPdfError
+  createWorkerManager,
 } from './api/pdf-api'
+
+// 缓存系统
+export { createLRUCache, defaultCacheOptions, LRUCacheImpl as LRUCache } from './cache/lru-cache'
+
+// PDF引擎
+export { createPdfEngine, PdfEngine } from './engine/pdf-engine'
+
+// 核心类型定义
+export * from './types'
+
+// 工具函数 - 显式导出避免命名冲突
+export {
+  asyncUtils,
+  cacheUtils,
+  dataUtils,
+  debugUtils,
+  domUtils,
+  formatUtils,
+  mathUtils,
+  typeUtils,
+} from './utils'
+
+// WebWorker支持
+export * from './worker/worker-manager'
 
 /**
  * 包版本信息
@@ -80,30 +80,30 @@ export const DEFAULT_CONFIG = {
   cache: {
     maxSize: 100 * 1024 * 1024, // 100MB
     maxItems: 1000,
-    ttl: 30 * 60 * 1000 // 30分钟
+    ttl: 30 * 60 * 1000, // 30分钟
   },
-  
+
   // 渲染配置
   render: {
     scale: 1.0,
     rotation: 0,
     enableAnnotations: true,
-    enableTextSelection: true
+    enableTextSelection: true,
   },
-  
+
   // Worker配置
   worker: {
     maxWorkers: navigator.hardwareConcurrency || 4,
     taskTimeout: 30000, // 30秒
-    enableWorker: typeof Worker !== 'undefined'
+    enableWorker: typeof Worker !== 'undefined',
   },
-  
+
   // 性能配置
   performance: {
     enableMonitoring: false,
     preloadPages: 3,
-    lazyLoadThreshold: 5
-  }
+    lazyLoadThreshold: 5,
+  },
 } as const
 
 /**
@@ -113,12 +113,12 @@ export const DEFAULT_CONFIG = {
 export function initializePdfPackage(config?: Partial<typeof DEFAULT_CONFIG>) {
   const finalConfig = {
     ...DEFAULT_CONFIG,
-    ...config
+    ...config,
   }
-  
+
   // 这里可以添加全局初始化逻辑
   console.warn(`[${PACKAGE_NAME}] Initialized with config:`, finalConfig)
-  
+
   return finalConfig
 }
 
@@ -134,18 +134,18 @@ export function checkBrowserCompatibility() {
     uint8Array: typeof Uint8Array !== 'undefined',
     blob: typeof Blob !== 'undefined',
     fileReader: typeof FileReader !== 'undefined',
-    fetch: typeof fetch !== 'undefined'
+    fetch: typeof fetch !== 'undefined',
   }
-  
+
   const unsupported = Object.entries(features)
     .filter(([, supported]) => !supported)
     .map(([feature]) => feature)
-  
+
   if (unsupported.length > 0) {
     console.error(`[${PACKAGE_NAME}] Unsupported features:`, unsupported)
     return false
   }
-  
+
   return true
 }
 
@@ -159,7 +159,7 @@ export function getPackageInfo() {
     compatible: checkBrowserCompatibility(),
     features: {
       webWorker: typeof Worker !== 'undefined',
-      offscreenCanvas: typeof OffscreenCanvas !== 'undefined'
-    }
+      offscreenCanvas: typeof OffscreenCanvas !== 'undefined',
+    },
   }
 }

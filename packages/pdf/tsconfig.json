@@ -2,48 +2,17 @@
   "compilerOptions": {
     // 基础配置
     "target": "ES2020",
-    "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
     "useDefineForClassFields": true,
-    
-    // 输出配置
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": false,
-    "importHelpers": true,
-    
-    // 严格模式配置
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "exactOptionalPropertyTypes": true,
-    
-    // 额外检查
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
-    
+
+    "emitDecoratorMetadata": true,
+    // 实验性功能
+    "experimentalDecorators": true,
     // 模块解析
     "baseUrl": ".",
+    "rootDir": "./src",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "paths": {
       "@/*": ["src/*"],
       "@/types/*": ["src/types/*"],
@@ -53,14 +22,43 @@
       "@/worker/*": ["src/worker/*"],
       "@/utils/*": ["src/utils/*"]
     },
-    
-    // 实验性功能
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    
+    "resolveJsonModule": true,
+
+    // 严格模式配置
+    "strict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "declaration": true,
+    // 输出配置
+    "outDir": "./dist",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "declarationMap": true,
+    "importHelpers": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    // 额外检查
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "forceConsistentCasingInFileNames": true,
     // 跳过库检查以提高性能
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*",

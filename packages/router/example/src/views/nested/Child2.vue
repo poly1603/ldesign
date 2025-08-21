@@ -93,7 +93,8 @@ function toggleClock() {
   clockRunning.value = !clockRunning.value
   if (clockRunning.value) {
     clockInterval = window.setInterval(updateClock, 1000)
-  } else {
+  }
+  else {
     if (clockInterval) {
       clearInterval(clockInterval)
       clockInterval = null
@@ -112,10 +113,10 @@ function handleDragStart(event: DragEvent, item: any) {
 function handleDrop(event: DragEvent, targetItem: any) {
   if (draggedItem && draggedItem.id !== targetItem.id) {
     const draggedIndex = sortableItems.value.findIndex(
-      item => item.id === draggedItem.id
+      item => item.id === draggedItem.id,
     )
     const targetIndex = sortableItems.value.findIndex(
-      item => item.id === targetItem.id
+      item => item.id === targetItem.id,
     )
 
     // 交换位置
@@ -127,7 +128,8 @@ function handleDrop(event: DragEvent, targetItem: any) {
 }
 
 function startProgress() {
-  if (progressInterval) return
+  if (progressInterval)
+    return
 
   progress.value = 0
   progressInterval = window.setInterval(() => {
@@ -254,8 +256,12 @@ onUnmounted(() => {
               </button>
             </div>
             <div class="theme-preview" :style="themeStyles">
-              <div class="preview-header">预览</div>
-              <div class="preview-content">当前主题效果</div>
+              <div class="preview-header">
+                预览
+              </div>
+              <div class="preview-content">
+                当前主题效果
+              </div>
             </div>
           </div>
         </div>

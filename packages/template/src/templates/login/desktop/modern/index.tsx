@@ -1,7 +1,7 @@
-import { defineComponent, ref, onMounted, computed } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { getIcon } from '../../../../utils/icons'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -61,12 +61,13 @@ export default defineComponent({
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -81,7 +82,7 @@ export default defineComponent({
           width: 1920,
           height: 1080,
           quality: 'high',
-          category: 'abstract'
+          category: 'abstract',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -89,13 +90,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Modern Gradient'
+          title: 'Modern Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -140,11 +143,16 @@ export default defineComponent({
         <div class="modern-login__background">
           <div class="modern-login__particles">
             {Array.from({ length: 60 }).map((_, i) => (
-              <div key={i} class="modern-login__particle" style={{
-                animationDelay: `${Math.random() * 20}s`,
-                left: `${Math.random() * 100}%`,
-                animationDuration: `${15 + Math.random() * 10}s`
-              }}></div>
+              <div
+                key={i}
+                class="modern-login__particle"
+                style={{
+                  animationDelay: `${Math.random() * 20}s`,
+                  left: `${Math.random() * 100}%`,
+                  animationDuration: `${15 + Math.random() * 10}s`,
+                }}
+              >
+              </div>
             ))}
           </div>
           <div class="modern-login__gradient-orbs">
@@ -165,106 +173,113 @@ export default defineComponent({
           <div class="modern-login__card">
             {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
             <div class="login-panel-wrapper">
-              {props.loginPanel ? (
-                <props.loginPanel
-                  title={props.title}
-                  subtitle={props.subtitle}
-                  showRememberMe={props.showRememberMe}
-                  showForgotPassword={props.showForgotPassword}
-                  showThirdPartyLogin={props.showThirdPartyLogin}
-                  thirdPartyProviders={props.thirdPartyProviders}
-                  onLogin={handleLogin}
-                  onRegister={handleRegister}
-                  onForgotPassword={handleForgotPassword}
-                  onThirdPartyLogin={handleThirdPartyLogin}
-                />
-              ) : (
-                <div class="modern-login__default-panel">
-                  <div class="modern-login__header">
-                    {props.logo && (
-                      <div class="modern-login__logo">
-                        <img src={props.logo} alt="Logo" />
-                        <div class="modern-login__logo-glow"></div>
+              {props.loginPanel
+                ? (
+                    <props.loginPanel
+                      title={props.title}
+                      subtitle={props.subtitle}
+                      showRememberMe={props.showRememberMe}
+                      showForgotPassword={props.showForgotPassword}
+                      showThirdPartyLogin={props.showThirdPartyLogin}
+                      thirdPartyProviders={props.thirdPartyProviders}
+                      onLogin={handleLogin}
+                      onRegister={handleRegister}
+                      onForgotPassword={handleForgotPassword}
+                      onThirdPartyLogin={handleThirdPartyLogin}
+                    />
+                  )
+                : (
+                    <div class="modern-login__default-panel">
+                      <div class="modern-login__header">
+                        {props.logo && (
+                          <div class="modern-login__logo">
+                            <img src={props.logo} alt="Logo" />
+                            <div class="modern-login__logo-glow"></div>
+                          </div>
+                        )}
+                        <h1 class="modern-login__title">{props.title}</h1>
+                        <p class="modern-login__subtitle">{props.subtitle}</p>
                       </div>
-                    )}
-                    <h1 class="modern-login__title">{props.title}</h1>
-                    <p class="modern-login__subtitle">{props.subtitle}</p>
-                  </div>
 
-                  <div class="modern-login__form">
-                    <div class="modern-login__field">
-                      <div class="modern-login__field-icon" innerHTML={getIcon('user', { size: 'sm' })}></div>
-                      <input type="text" placeholder="用户名或邮箱" class="modern-login__input" />
-                      <div class="modern-login__field-border"></div>
-                    </div>
-                    <div class="modern-login__field">
-                      <div class="modern-login__field-icon" innerHTML={getIcon('lock', { size: 'sm' })}></div>
-                      <input
-                        type={showPassword.value ? 'text' : 'password'}
-                        placeholder="密码"
-                        class="modern-login__input"
-                      />
-                      <button
-                        type="button"
-                        class="modern-login__password-toggle"
-                        onClick={togglePasswordVisibility}
-                        innerHTML={getIcon(showPassword.value ? 'eyeOff' : 'eye', { size: 'sm' })}
-                      ></button>
-                      <div class="modern-login__field-border"></div>
-                    </div>
-
-                    <div class="modern-login__options">
-                      {props.showRememberMe && (
-                        <label class="modern-login__checkbox">
-                          <input type="checkbox" />
-                          <div class="modern-login__checkbox-mark"></div>
-                          <span>记住密码</span>
-                        </label>
-                      )}
-                      {props.showForgotPassword && (
-                        <a href="#" class="modern-login__forgot" onClick={(e: Event) => {
-                          e.preventDefault()
-                          handleForgotPassword()
-                        }}>
-                          <div class="modern-login__forgot-icon" innerHTML={getIcon('shield', { size: 'xs' })}></div>
-                          <span>忘记密码？</span>
-                        </a>
-                      )}
-                    </div>
-
-                    <button class="modern-login__submit" onClick={handleLogin}>
-                      <span>立即登录</span>
-                      <div class="modern-login__submit-icon" innerHTML={getIcon('zap', { size: 'sm' })}></div>
-                      <div class="modern-login__submit-glow"></div>
-                    </button>
-
-                    {props.showThirdPartyLogin && (
-                      <div class="modern-login__third-party">
-                        <div class="modern-login__divider">
-                          <span>或使用以下方式登录</span>
+                      <div class="modern-login__form">
+                        <div class="modern-login__field">
+                          <div class="modern-login__field-icon" innerHTML={getIcon('user', { size: 'sm' })}></div>
+                          <input type="text" placeholder="用户名或邮箱" class="modern-login__input" />
+                          <div class="modern-login__field-border"></div>
                         </div>
-                        <div class="modern-login__providers">
-                          {props.thirdPartyProviders.map((provider: string) => (
-                            <button
-                              key={provider}
-                              class={`modern-login__provider modern-login__provider--${provider}`}
-                              onClick={() => handleThirdPartyLogin({ provider })}
+                        <div class="modern-login__field">
+                          <div class="modern-login__field-icon" innerHTML={getIcon('lock', { size: 'sm' })}></div>
+                          <input
+                            type={showPassword.value ? 'text' : 'password'}
+                            placeholder="密码"
+                            class="modern-login__input"
+                          />
+                          <button
+                            type="button"
+                            class="modern-login__password-toggle"
+                            onClick={togglePasswordVisibility}
+                            innerHTML={getIcon(showPassword.value ? 'eyeOff' : 'eye', { size: 'sm' })}
+                          >
+                          </button>
+                          <div class="modern-login__field-border"></div>
+                        </div>
+
+                        <div class="modern-login__options">
+                          {props.showRememberMe && (
+                            <label class="modern-login__checkbox">
+                              <input type="checkbox" />
+                              <div class="modern-login__checkbox-mark"></div>
+                              <span>记住密码</span>
+                            </label>
+                          )}
+                          {props.showForgotPassword && (
+                            <a
+                              href="#"
+                              class="modern-login__forgot"
+                              onClick={(e: Event) => {
+                                e.preventDefault()
+                                handleForgotPassword()
+                              }}
                             >
-                              <div class="modern-login__provider-icon" innerHTML={getIcon(provider as any, { size: 'sm' })}></div>
-                              <span class="modern-login__provider-name">
-                                {provider === 'github' && 'GitHub'}
-                                {provider === 'google' && 'Google'}
-                                {provider === 'wechat' && '微信'}
-                              </span>
-                              <div class="modern-login__provider-glow"></div>
-                            </button>
-                          ))}
+                              <div class="modern-login__forgot-icon" innerHTML={getIcon('shield', { size: 'xs' })}></div>
+                              <span>忘记密码？</span>
+                            </a>
+                          )}
                         </div>
+
+                        <button class="modern-login__submit" onClick={handleLogin}>
+                          <span>立即登录</span>
+                          <div class="modern-login__submit-icon" innerHTML={getIcon('zap', { size: 'sm' })}></div>
+                          <div class="modern-login__submit-glow"></div>
+                        </button>
+
+                        {props.showThirdPartyLogin && (
+                          <div class="modern-login__third-party">
+                            <div class="modern-login__divider">
+                              <span>或使用以下方式登录</span>
+                            </div>
+                            <div class="modern-login__providers">
+                              {props.thirdPartyProviders.map((provider: string) => (
+                                <button
+                                  key={provider}
+                                  class={`modern-login__provider modern-login__provider--${provider}`}
+                                  onClick={() => handleThirdPartyLogin({ provider })}
+                                >
+                                  <div class="modern-login__provider-icon" innerHTML={getIcon(provider as any, { size: 'sm' })}></div>
+                                  <span class="modern-login__provider-name">
+                                    {provider === 'github' && 'GitHub'}
+                                    {provider === 'google' && 'Google'}
+                                    {provider === 'wechat' && '微信'}
+                                  </span>
+                                  <div class="modern-login__provider-glow"></div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
             </div>
           </div>
         </div>

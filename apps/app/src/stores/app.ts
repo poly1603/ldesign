@@ -90,7 +90,7 @@ export const useAppStore = defineStore('app', () => {
         JSON.stringify({
           isAuthenticated: true,
           userInfo: userInfo.value,
-        })
+        }),
       )
 
       addNotification({
@@ -128,7 +128,7 @@ export const useAppStore = defineStore('app', () => {
 
   // 添加通知
   const addNotification = (
-    notification: Omit<Notification, 'id' | 'timestamp'>
+    notification: Omit<Notification, 'id' | 'timestamp'>,
   ) => {
     const id = Date.now().toString()
     const newNotification: Notification = {
@@ -176,7 +176,8 @@ export const useAppStore = defineStore('app', () => {
     const index = keepAliveComponents.value.indexOf(componentName)
     if (index > -1) {
       keepAliveComponents.value.splice(index, 1)
-    } else {
+    }
+    else {
       keepAliveComponents.value.push(componentName)
     }
   }

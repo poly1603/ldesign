@@ -22,28 +22,28 @@ class PackageStandardizer {
     this.rootDir = resolve(process.cwd())
     this.packagesDir = join(this.rootDir, 'packages')
     this.rootPackage = JSON.parse(
-      readFileSync(join(this.rootDir, 'package.json'), 'utf-8')
+      readFileSync(join(this.rootDir, 'package.json'), 'utf-8'),
     )
   }
 
   // 标准化脚本配置
   private getStandardScripts() {
     return {
-      build: 'rollup -c',
+      'build': 'rollup -c',
       'build:watch': 'rollup -c -w',
-      dev: 'rollup -c -w',
+      'dev': 'rollup -c -w',
       'type-check': 'vue-tsc --noEmit',
-      lint: 'eslint . --fix',
+      'lint': 'eslint . --fix',
       'lint:check': 'eslint .',
-      test: 'vitest',
+      'test': 'vitest',
       'test:ui': 'vitest --ui',
       'test:run': 'vitest run',
       'test:coverage': 'vitest run --coverage',
       'test:e2e': 'playwright test',
       'test:e2e:ui': 'playwright test --ui',
-      clean: 'rimraf dist es lib types coverage .nyc_output',
+      'clean': 'rimraf dist es lib types coverage .nyc_output',
       'size-check': 'size-limit',
-      prepublishOnly: 'pnpm run clean && pnpm run build && pnpm run test:run',
+      'prepublishOnly': 'pnpm run clean && pnpm run build && pnpm run test:run',
     }
   }
 
@@ -58,25 +58,25 @@ class PackageStandardizer {
       '@vitejs/plugin-vue': rootDevDeps['@vitejs/plugin-vue'],
       '@vitest/ui': rootDevDeps['@vitest/ui'],
       '@vue/test-utils': rootDevDeps['@vue/test-utils'],
-      eslint: rootDevDeps.eslint,
-      jsdom: rootDevDeps.jsdom,
-      rollup: rootDevDeps.rollup,
+      'eslint': rootDevDeps.eslint,
+      'jsdom': rootDevDeps.jsdom,
+      'rollup': rootDevDeps.rollup,
       'rollup-plugin-dts': rootDevDeps['rollup-plugin-dts'],
-      typescript: rootDevDeps.typescript,
-      vite: rootDevDeps.vite,
-      vitest: rootDevDeps.vitest,
-      vue: rootDevDeps.vue,
+      'typescript': rootDevDeps.typescript,
+      'vite': rootDevDeps.vite,
+      'vitest': rootDevDeps.vitest,
+      'vue': rootDevDeps.vue,
       'vue-tsc': rootDevDeps['vue-tsc'],
     }
   }
 
   // 获取所有包目录
   private getPackageDirs(): string[] {
-    return readdirSync(this.packagesDir).filter(dir => {
+    return readdirSync(this.packagesDir).filter((dir) => {
       const fullPath = join(this.packagesDir, dir)
       return (
-        statSync(fullPath).isDirectory() &&
-        readFileSync(join(fullPath, 'package.json'), 'utf-8')
+        statSync(fullPath).isDirectory()
+        && readFileSync(join(fullPath, 'package.json'), 'utf-8')
       )
     })
   }
@@ -87,7 +87,7 @@ class PackageStandardizer {
     const packageJsonPath = join(packagePath, 'package.json')
 
     const packageJson: PackageJson = JSON.parse(
-      readFileSync(packageJsonPath, 'utf-8')
+      readFileSync(packageJsonPath, 'utf-8'),
     )
 
     // 标准化基本信息
@@ -138,7 +138,8 @@ class PackageStandardizer {
     for (const dir of packageDirs) {
       try {
         this.standardizePackage(dir)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`❌ 标准化失败: ${dir}`, error)
       }
     }

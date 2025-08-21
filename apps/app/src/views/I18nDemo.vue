@@ -21,7 +21,8 @@ async function switchLanguage(langCode: string) {
   try {
     await changeLanguage(langCode)
     console.log('Language switched to:', langCode)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to switch language:', error)
   }
 }
@@ -116,7 +117,7 @@ onMounted(() => {
           </div>
           <div class="input-group">
             <label>{{ $t('common.edit') }} Name:</label>
-            <input v-model="userName" type="text" />
+            <input v-model="userName" type="text">
           </div>
         </div>
       </section>
@@ -132,7 +133,7 @@ onMounted(() => {
           </div>
           <div class="input-group">
             <label>{{ $t('common.edit') }} Count:</label>
-            <input v-model.number="itemCount" type="number" min="0" />
+            <input v-model.number="itemCount" type="number" min="0">
           </div>
         </div>
       </section>
@@ -174,19 +175,15 @@ onMounted(() => {
             </div>
             <div class="metric-item">
               <span>{{ $t('performance.metrics.averageTime') }}:</span>
-              <strong
-                >{{
-                  performanceMetrics.averageTranslationTime.toFixed(3)
-                }}ms</strong
-              >
+              <strong>{{
+                performanceMetrics.averageTranslationTime.toFixed(3)
+              }}ms</strong>
             </div>
             <div class="metric-item">
               <span>{{ $t('performance.metrics.cacheHitRate') }}:</span>
-              <strong
-                >{{
-                  (performanceMetrics.cacheHitRate * 100).toFixed(1)
-                }}%</strong
-              >
+              <strong>{{
+                (performanceMetrics.cacheHitRate * 100).toFixed(1)
+              }}%</strong>
             </div>
           </div>
 

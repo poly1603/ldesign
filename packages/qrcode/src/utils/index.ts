@@ -4,9 +4,9 @@
  */
 
 import type {
+  PerformanceMetric,
   QRCodeOptions,
   ValidationResult,
-  PerformanceMetric
 } from '../types'
 // 直接定义错误类型，避免与类型声明合并冲突
 
@@ -23,25 +23,26 @@ export const DEFAULT_OPTIONS: Required<Omit<QRCodeOptions, 'logo' | 'style'>> = 
   scale: 1,
   quality: 0.92,
   enableCache: true,
-  cacheKey: ''
+  cacheKey: '',
 }
 
 // 颜色验证
 export function isValidColor(color: string): boolean {
-  if (!color || typeof color !== 'string') return false
+  if (!color || typeof color !== 'string')
+    return false
 
   // 检查十六进制颜色
-  if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color)) {
+  if (/^#([0-9A-F]{3}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(color)) {
     return true
   }
 
   // 检查RGB/RGBA
-  if (/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*[0-9.]+)?\s*\)$/.test(color)) {
+  if (/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:(,\s*[0-9.]+)\s*)?\)$/.test(color)) {
     return true
   }
 
   // 检查HSL/HSLA
-  if (/^hsla?\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*(,\s*[0-9.]+)?\s*\)$/.test(color)) {
+  if (/^hsla?\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*(?:(,\s*[0-9.]+)\s*)?\)$/.test(color)) {
     return true
   }
 
@@ -52,8 +53,21 @@ export function isValidColor(color: string): boolean {
 // 命名颜色检查
 export function isNamedColor(color: string): boolean {
   const namedColors = [
-    'black', 'white', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta',
-    'gray', 'grey', 'orange', 'purple', 'pink', 'brown', 'transparent'
+    'black',
+    'white',
+    'red',
+    'green',
+    'blue',
+    'yellow',
+    'cyan',
+    'magenta',
+    'gray',
+    'grey',
+    'orange',
+    'purple',
+    'pink',
+    'brown',
+    'transparent',
   ]
   return namedColors.includes(color.toLowerCase())
 }
@@ -72,7 +86,8 @@ export function validateQRCodeOptions(options: QRCodeOptions): ValidationResult 
   if (options.size !== undefined) {
     if (typeof options.size !== 'number' || options.size <= 0) {
       errors.push('size must be a positive number')
-    } else if (options.size > 2000) {
+    }
+    else if (options.size > 2000) {
       warnings.push('size is very large, may impact performance')
     }
   }
@@ -118,7 +133,7 @@ export function validateQRCodeOptions(options: QRCodeOptions): ValidationResult 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   }
 }
 
@@ -127,7 +142,7 @@ export function getDefaultOptions(): QRCodeOptions {
   return {
     data: '',
     size: 200,
-    format: 'canvas'
+    format: 'canvas',
   }
 }
 
@@ -135,25 +150,25 @@ export function getDefaultOptions(): QRCodeOptions {
 export function mergeOptions(base: QRCodeOptions, override: Partial<QRCodeOptions>): QRCodeOptions {
   const merged: QRCodeOptions = {
     ...base,
-    ...override
+    ...override,
   }
   if (base.style || override.style) {
     merged.style = {
       ...(base.style || {}),
-      ...(override.style || {})
+      ...(override.style || {}),
     }
   }
   if (base.logo || override.logo) {
     merged.logo = {
       ...(base.logo || {} as any),
-      ...(override.logo || {} as any)
+      ...(override.logo || {} as any),
     } as any
   }
   return merged
 }
 
 // 计算实际尺寸
-export function calculateActualSize(options: QRCodeOptions): { width: number; height: number } {
+export function calculateActualSize(options: QRCodeOptions): { width: number, height: number } {
   const baseSize = options.size || DEFAULT_OPTIONS.size
   const margin = options.margin || DEFAULT_OPTIONS.margin
   const scale = options.scale || DEFAULT_OPTIONS.scale
@@ -162,7 +177,7 @@ export function calculateActualSize(options: QRCodeOptions): { width: number; he
 
   return {
     width: actualSize,
-    height: actualSize
+    height: actualSize,
   }
 }
 
@@ -178,7 +193,7 @@ export function generateCacheKey(options: QRCodeOptions): string {
     format: options.format,
     errorCorrectionLevel: options.errorCorrectionLevel,
     style: options.style,
-    logo: options.logo
+    logo: options.logo,
   }
 
   return btoa(JSON.stringify(keyData)).replace(/[+/=]/g, '')
@@ -200,7 +215,7 @@ export class PerformanceMonitor {
         duration,
         timestamp: Date.now(),
         cacheHit,
-        size
+        size,
       })
 
       // 限制指标数量
@@ -219,7 +234,8 @@ export class PerformanceMonitor {
       ? this.metrics.filter(m => m.operation === operation)
       : this.metrics
 
-    if (filteredMetrics.length === 0) return 0
+    if (filteredMetrics.length === 0)
+      return 0
 
     const totalTime = filteredMetrics.reduce((sum, m) => sum + m.duration, 0)
     return totalTime / filteredMetrics.length
@@ -227,7 +243,8 @@ export class PerformanceMonitor {
 
   getCacheHitRate(): number {
     const cacheableMetrics = this.metrics.filter(m => m.cacheHit !== undefined)
-    if (cacheableMetrics.length === 0) return 0
+    if (cacheableMetrics.length === 0)
+      return 0
 
     const hits = cacheableMetrics.filter(m => m.cacheHit).length
     return hits / cacheableMetrics.length
@@ -247,7 +264,7 @@ export function canvasToDataURL(canvas: HTMLCanvasElement, format = 'image/png',
 export function downloadFile(dataURL: string, filename: string, format?: 'canvas' | 'svg' | 'image'): void {
   const link = document.createElement('a')
   // 自动补全扩展名
-  const hasExt = /\.[a-zA-Z0-9]+$/.test(filename)
+  const hasExt = /\.[a-z0-9]+$/i.test(filename)
   const ext = format === 'svg' ? 'svg' : 'png'
   link.download = hasExt ? filename : `${filename}.${ext}`
   link.href = dataURL || ''

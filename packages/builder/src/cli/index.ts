@@ -3,15 +3,15 @@
  * 处理命令行参数解析和命令分发
  */
 
-import { Command } from 'commander'
-import chalk from 'chalk'
-import { BuildCommand } from './commands/build'
-import { WatchCommand } from './commands/watch'
-import { InitCommand } from './commands/init'
-import { AnalyzeCommand } from './commands/analyze'
-import { Logger } from '../utils/logger'
-import { loadUserConfig } from '../utils/config-loader'
 import type { CliOptions } from '../types'
+import chalk from 'chalk'
+import { Command } from 'commander'
+import { loadUserConfig } from '../utils/config-loader'
+import { Logger } from '../utils/logger'
+import { AnalyzeCommand } from './commands/analyze'
+import { BuildCommand } from './commands/build'
+import { InitCommand } from './commands/init'
+import { WatchCommand } from './commands/watch'
 
 const logger = new Logger('CLI')
 
@@ -101,7 +101,8 @@ function getVersion(): string {
   try {
     const packageJson = require('../../package.json')
     return packageJson.version || '1.0.0'
-  } catch {
+  }
+  catch {
     return '1.0.0'
   }
 }
@@ -184,7 +185,8 @@ export async function runCli(): Promise<void> {
 
     // 解析并执行命令
     await program.parseAsync(args)
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('CLI 执行失败:', error)
     process.exit(1)
   }

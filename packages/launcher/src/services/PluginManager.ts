@@ -1,26 +1,26 @@
-import type { Plugin, PluginOption } from 'vite';
-import type { 
-  IPluginManager, 
-  ProjectType, 
+import type { Plugin, PluginOption } from 'vite'
+import type {
+  FrameworkType,
+  IPluginManager,
   PluginConfig,
-  FrameworkType
-} from '@/types';
-import { ErrorHandler } from './ErrorHandler';
+  ProjectType,
+} from '@/types'
+import { ErrorHandler } from './ErrorHandler'
 
 /**
  * 插件管理器实现类
  * 负责 Vite 插件的加载、管理和配置
  */
 export class PluginManager implements IPluginManager {
-  private errorHandler: ErrorHandler;
-  private pluginRegistry: Map<string, PluginConfig>;
-  private loadedPlugins: Map<string, Plugin>;
+  private errorHandler: ErrorHandler
+  private pluginRegistry: Map<string, PluginConfig>
+  private loadedPlugins: Map<string, Plugin>
 
   constructor() {
-    this.errorHandler = new ErrorHandler();
-    this.pluginRegistry = new Map();
-    this.loadedPlugins = new Map();
-    this.initializeBuiltinPlugins();
+    this.errorHandler = new ErrorHandler()
+    this.pluginRegistry = new Map()
+    this.loadedPlugins = new Map()
+    this.initializeBuiltinPlugins()
   }
 
   /**
@@ -37,10 +37,10 @@ export class PluginManager implements IPluginManager {
       supportedFrameworks: ['vue3'],
       defaultOptions: {
         include: [/\.vue$/],
-        exclude: []
+        exclude: [],
       },
-      required: true
-    });
+      required: true,
+    })
 
     // Vue 2 插件
     this.pluginRegistry.set('@vitejs/plugin-vue2', {
@@ -52,10 +52,10 @@ export class PluginManager implements IPluginManager {
       supportedFrameworks: ['vue2'],
       defaultOptions: {
         include: [/\.vue$/],
-        exclude: []
+        exclude: [],
       },
-      required: true
-    });
+      required: true,
+    })
 
     // React 插件
     this.pluginRegistry.set('@vitejs/plugin-react', {
@@ -67,10 +67,10 @@ export class PluginManager implements IPluginManager {
       supportedFrameworks: ['react'],
       defaultOptions: {
         include: '**/*.{jsx,tsx}',
-        exclude: []
+        exclude: [],
       },
-      required: true
-    });
+      required: true,
+    })
 
     // React SWC 插件（替代方案）
     this.pluginRegistry.set('@vitejs/plugin-react-swc', {
@@ -81,8 +81,8 @@ export class PluginManager implements IPluginManager {
       frameworks: ['react'],
       supportedFrameworks: ['react'],
       defaultOptions: {},
-      required: false
-    });
+      required: false,
+    })
 
     // Lit 插件
     this.pluginRegistry.set('@vitejs/plugin-lit', {
@@ -93,8 +93,8 @@ export class PluginManager implements IPluginManager {
       frameworks: ['lit'],
       supportedFrameworks: ['lit'],
       defaultOptions: {},
-      required: true
-    });
+      required: true,
+    })
 
     // Svelte 插件
     this.pluginRegistry.set('@sveltejs/vite-plugin-svelte', {
@@ -105,10 +105,10 @@ export class PluginManager implements IPluginManager {
       frameworks: ['svelte'],
       supportedFrameworks: ['svelte'],
       defaultOptions: {
-        hot: true
+        hot: true,
       },
-      required: true
-    });
+      required: true,
+    })
 
     // TypeScript 插件
     this.pluginRegistry.set('@vitejs/plugin-typescript', {
@@ -119,8 +119,8 @@ export class PluginManager implements IPluginManager {
       frameworks: ['vanilla-ts', 'vue3', 'vue2', 'react', 'lit'],
       supportedFrameworks: ['vanilla-ts', 'vue3', 'vue2', 'react', 'lit'],
       defaultOptions: {},
-      required: false
-    });
+      required: false,
+    })
 
     // 常用工具插件
     this.pluginRegistry.set('@vitejs/plugin-legacy', {
@@ -131,10 +131,10 @@ export class PluginManager implements IPluginManager {
       frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts'],
       supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts'],
       defaultOptions: {
-        targets: ['defaults', 'not IE 11']
+        targets: ['defaults', 'not IE 11'],
       },
-      required: false
-    });
+      required: false,
+    })
 
     this.pluginRegistry.set('vite-plugin-eslint', {
       name: 'vite-plugin-eslint',
@@ -144,10 +144,10 @@ export class PluginManager implements IPluginManager {
       frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts'],
       supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts'],
       defaultOptions: {
-        cache: false
+        cache: false,
       },
-      required: false
-    });
+      required: false,
+    })
 
     this.pluginRegistry.set('vite-plugin-windicss', {
       name: 'vite-plugin-windicss',
@@ -157,8 +157,8 @@ export class PluginManager implements IPluginManager {
       frameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts'],
       supportedFrameworks: ['vue3', 'vue2', 'react', 'vanilla', 'vanilla-ts'],
       defaultOptions: {},
-      required: false
-    });
+      required: false,
+    })
 
     this.pluginRegistry.set('unplugin-auto-import/vite', {
       name: 'unplugin-auto-import',
@@ -169,10 +169,10 @@ export class PluginManager implements IPluginManager {
       supportedFrameworks: ['vue3', 'vue2', 'react'],
       defaultOptions: {
         imports: ['vue', 'vue-router'],
-        dts: true
+        dts: true,
       },
-      required: false
-    });
+      required: false,
+    })
   }
 
   /**
@@ -184,50 +184,52 @@ export class PluginManager implements IPluginManager {
   async loadPlugin(pluginName: string, options?: any): Promise<Plugin> {
     try {
       // 检查是否已加载
-      const cached = this.loadedPlugins.get(pluginName);
+      const cached = this.loadedPlugins.get(pluginName)
       if (cached) {
-        return cached;
+        return cached
       }
 
       // 获取插件配置
-      const config = this.pluginRegistry.get(pluginName);
+      const config = this.pluginRegistry.get(pluginName)
       if (!config) {
-        throw new Error(`未知的插件: ${pluginName}`);
+        throw new Error(`未知的插件: ${pluginName}`)
       }
 
       // 动态导入插件
-      let pluginModule;
+      let pluginModule
       try {
-        pluginModule = await import(pluginName);
-      } catch (importError) {
-        throw new Error(`无法导入插件 ${pluginName}: ${(importError as Error).message}`);
+        pluginModule = await import(pluginName)
+      }
+      catch (importError) {
+        throw new Error(`无法导入插件 ${pluginName}: ${(importError as Error).message}`)
       }
 
       // 获取插件工厂函数
-      const pluginFactory = pluginModule.default || pluginModule;
+      const pluginFactory = pluginModule.default || pluginModule
       if (typeof pluginFactory !== 'function') {
-        throw new Error(`插件 ${pluginName} 不是有效的插件工厂函数`);
+        throw new TypeError(`插件 ${pluginName} 不是有效的插件工厂函数`)
       }
 
       // 合并选项
       const finalOptions = {
         ...config.defaultOptions,
-        ...options
-      };
+        ...options,
+      }
 
       // 创建插件实例
-      const plugin = pluginFactory(finalOptions);
-      
+      const plugin = pluginFactory(finalOptions)
+
       // 缓存插件实例
-      this.loadedPlugins.set(pluginName, plugin);
-      
-      return plugin;
-    } catch (error) {
+      this.loadedPlugins.set(pluginName, plugin)
+
+      return plugin
+    }
+    catch (error) {
       const launcherError = this.errorHandler.handleError(
         error as Error,
-        `load plugin: ${pluginName}`
-      );
-      throw launcherError;
+        `load plugin: ${pluginName}`,
+      )
+      throw launcherError
     }
   }
 
@@ -237,21 +239,21 @@ export class PluginManager implements IPluginManager {
    * @returns 推荐插件列表
    */
   getRecommendedPlugins(projectType: ProjectType): PluginConfig[] {
-    const recommended: PluginConfig[] = [];
-    
+    const recommended: PluginConfig[] = []
+
     for (const [, config] of this.pluginRegistry.entries()) {
       if (config.supportedFrameworks.includes(projectType as any)) {
-        recommended.push(config);
+        recommended.push(config)
       }
     }
-    
+
     // 按必需性和名称排序
     return recommended.sort((a, b) => {
       if (a.required !== b.required) {
-        return a.required ? -1 : 1;
+        return a.required ? -1 : 1
       }
-      return a.name.localeCompare(b.name);
-    });
+      return a.name.localeCompare(b.name)
+    })
   }
 
   /**
@@ -260,7 +262,7 @@ export class PluginManager implements IPluginManager {
    * @returns 必需插件列表
    */
   getRequiredPlugins(projectType: ProjectType): PluginConfig[] {
-    return this.getRecommendedPlugins(projectType).filter(config => config.required);
+    return this.getRecommendedPlugins(projectType).filter(config => config.required)
   }
 
   /**
@@ -268,24 +270,25 @@ export class PluginManager implements IPluginManager {
    * @param pluginConfigs 插件配置列表
    * @returns 加载的插件实例数组
    */
-  async loadPlugins(pluginConfigs: Array<{ name: string; options?: any }>): Promise<Plugin[]> {
-    const plugins: Plugin[] = [];
-    const errors: string[] = [];
+  async loadPlugins(pluginConfigs: Array<{ name: string, options?: any }>): Promise<Plugin[]> {
+    const plugins: Plugin[] = []
+    const errors: string[] = []
 
     for (const { name, options } of pluginConfigs) {
       try {
-        const plugin = await this.loadPlugin(name, options);
-        plugins.push(plugin);
-      } catch (error) {
-        errors.push(`加载插件 ${name} 失败: ${(error as Error).message}`);
+        const plugin = await this.loadPlugin(name, options)
+        plugins.push(plugin)
+      }
+      catch (error) {
+        errors.push(`加载插件 ${name} 失败: ${(error as Error).message}`)
       }
     }
 
     if (errors.length > 0) {
-      console.warn('部分插件加载失败:', errors.join(', '));
+      console.warn('部分插件加载失败:', errors.join(', '))
     }
 
-    return plugins;
+    return plugins
   }
 
   /**
@@ -296,28 +299,29 @@ export class PluginManager implements IPluginManager {
    */
   async createPluginsForProject(
     projectType: ProjectType,
-    additionalPlugins: Array<{ name: string; options?: any }> = []
+    additionalPlugins: Array<{ name: string, options?: any }> = [],
   ): Promise<PluginOption[]> {
     try {
       // 获取必需插件
-      const requiredPlugins = this.getRequiredPlugins(projectType);
-      
+      const requiredPlugins = this.getRequiredPlugins(projectType)
+
       // 构建插件配置列表
       const pluginConfigs = [
         ...requiredPlugins.map(config => ({ name: config.name, options: config.defaultOptions })),
-        ...additionalPlugins
-      ];
+        ...additionalPlugins,
+      ]
 
       // 加载所有插件
-      const plugins = await this.loadPlugins(pluginConfigs);
-      
-      return plugins as PluginOption[];
-    } catch (error) {
+      const plugins = await this.loadPlugins(pluginConfigs)
+
+      return plugins as PluginOption[]
+    }
+    catch (error) {
       const launcherError = this.errorHandler.handleError(
         error as Error,
-        `create plugins for ${projectType}`
-      );
-      throw launcherError;
+        `create plugins for ${projectType}`,
+      )
+      throw launcherError
     }
   }
 
@@ -326,7 +330,7 @@ export class PluginManager implements IPluginManager {
    * @param config 插件配置
    */
   registerPlugin(config: PluginConfig): void {
-    this.pluginRegistry.set(config.name, config);
+    this.pluginRegistry.set(config.name, config)
   }
 
   /**
@@ -334,8 +338,8 @@ export class PluginManager implements IPluginManager {
    * @param pluginName 插件名称
    */
   unregisterPlugin(pluginName: string): void {
-    this.pluginRegistry.delete(pluginName);
-    this.loadedPlugins.delete(pluginName);
+    this.pluginRegistry.delete(pluginName)
+    this.loadedPlugins.delete(pluginName)
   }
 
   /**
@@ -344,7 +348,7 @@ export class PluginManager implements IPluginManager {
    * @returns 插件配置
    */
   getPluginConfig(pluginName: string): PluginConfig | undefined {
-    return this.pluginRegistry.get(pluginName);
+    return this.pluginRegistry.get(pluginName)
   }
 
   /**
@@ -352,7 +356,7 @@ export class PluginManager implements IPluginManager {
    * @returns 插件配置映射
    */
   getAllPlugins(): Map<string, PluginConfig> {
-    return new Map(this.pluginRegistry);
+    return new Map(this.pluginRegistry)
   }
 
   /**
@@ -362,11 +366,11 @@ export class PluginManager implements IPluginManager {
    * @returns 是否兼容
    */
   isPluginCompatible(pluginName: string, projectType: ProjectType): boolean {
-    const config = this.pluginRegistry.get(pluginName);
+    const config = this.pluginRegistry.get(pluginName)
     if (!config) {
-      return false;
+      return false
     }
-    return config.supportedFrameworks.includes(projectType as any);
+    return config.supportedFrameworks.includes(projectType as any)
   }
 
   /**
@@ -376,14 +380,14 @@ export class PluginManager implements IPluginManager {
    */
   async loadFrameworkPlugins(framework: FrameworkType): Promise<PluginOption[]> {
     const plugins = Array.from(this.pluginRegistry.values())
-      .filter(plugin => plugin.supportedFrameworks.includes(framework));
-    
+      .filter(plugin => plugin.supportedFrameworks.includes(framework))
+
     // 将 PluginConfig 转换为 PluginOption
-    return plugins.map(plugin => {
+    return plugins.map((plugin) => {
       // 这里需要动态导入插件模块并返回实际的插件函数
       // 简化实现，返回插件名称作为标识
-      return plugin.name as any;
-    });
+      return plugin.name as any
+    })
   }
 
   /**
@@ -394,9 +398,9 @@ export class PluginManager implements IPluginManager {
   async getAvailablePlugins(framework?: FrameworkType): Promise<PluginConfig[]> {
     if (framework) {
       return Array.from(this.pluginRegistry.values())
-        .filter(plugin => plugin.supportedFrameworks.includes(framework));
+        .filter(plugin => plugin.supportedFrameworks.includes(framework))
     }
-    return Array.from(this.pluginRegistry.values());
+    return Array.from(this.pluginRegistry.values())
   }
 
   /**
@@ -406,14 +410,14 @@ export class PluginManager implements IPluginManager {
    * @returns 解析后的选项
    */
   resolvePluginOptions(pluginName: string, userOptions?: any): any {
-    const config = this.pluginRegistry.get(pluginName);
+    const config = this.pluginRegistry.get(pluginName)
     if (!config) {
-      return userOptions || {};
+      return userOptions || {}
     }
     return {
       ...config.defaultOptions,
-      ...userOptions
-    };
+      ...userOptions,
+    }
   }
 
   /**
@@ -421,60 +425,60 @@ export class PluginManager implements IPluginManager {
    * @param pluginNames 插件名称列表
    * @returns 验证结果
    */
-  validatePluginDependencies(pluginNames: string[]): { valid: boolean; errors: string[] } {
-    const errors: string[] = [];
-    const unknownPlugins: string[] = [];
+  validatePluginDependencies(pluginNames: string[]): { valid: boolean, errors: string[] } {
+    const errors: string[] = []
+    const unknownPlugins: string[] = []
 
     for (const pluginName of pluginNames) {
       if (!this.pluginRegistry.has(pluginName)) {
-        unknownPlugins.push(pluginName);
+        unknownPlugins.push(pluginName)
       }
     }
 
     if (unknownPlugins.length > 0) {
-      errors.push(`未知插件: ${unknownPlugins.join(', ')}`);
+      errors.push(`未知插件: ${unknownPlugins.join(', ')}`)
     }
 
     // 检查插件冲突（例如 @vitejs/plugin-react 和 @vitejs/plugin-react-swc）
-    const reactPlugins = pluginNames.filter(name => 
-      name === '@vitejs/plugin-react' || name === '@vitejs/plugin-react-swc'
-    );
-    
+    const reactPlugins = pluginNames.filter(name =>
+      name === '@vitejs/plugin-react' || name === '@vitejs/plugin-react-swc',
+    )
+
     if (reactPlugins.length > 1) {
-      errors.push('不能同时使用 @vitejs/plugin-react 和 @vitejs/plugin-react-swc');
+      errors.push('不能同时使用 @vitejs/plugin-react 和 @vitejs/plugin-react-swc')
     }
 
-    const vuePlugins = pluginNames.filter(name => 
-      name === '@vitejs/plugin-vue' || name === '@vitejs/plugin-vue2'
-    );
-    
+    const vuePlugins = pluginNames.filter(name =>
+      name === '@vitejs/plugin-vue' || name === '@vitejs/plugin-vue2',
+    )
+
     if (vuePlugins.length > 1) {
-      errors.push('不能同时使用 @vitejs/plugin-vue 和 @vitejs/plugin-vue2');
+      errors.push('不能同时使用 @vitejs/plugin-vue 和 @vitejs/plugin-vue2')
     }
 
-    return { valid: errors.length === 0, errors };
+    return { valid: errors.length === 0, errors }
   }
 
   /**
    * 清理插件缓存
    */
   clearCache(): void {
-    this.loadedPlugins.clear();
+    this.loadedPlugins.clear()
   }
 
   /**
    * 获取插件使用统计
    * @returns 插件使用统计
    */
-  getPluginStats(): { name: string; loadCount: number }[] {
-    const stats: { name: string; loadCount: number }[] = [];
-    
+  getPluginStats(): { name: string, loadCount: number }[] {
+    const stats: { name: string, loadCount: number }[] = []
+
     for (const [name] of this.pluginRegistry.entries()) {
-      const loadCount = this.loadedPlugins.has(name) ? 1 : 0;
-      stats.push({ name, loadCount });
+      const loadCount = this.loadedPlugins.has(name) ? 1 : 0
+      stats.push({ name, loadCount })
     }
-    
-    return stats.sort((a, b) => b.loadCount - a.loadCount);
+
+    return stats.sort((a, b) => b.loadCount - a.loadCount)
   }
 
   /**
@@ -484,18 +488,18 @@ export class PluginManager implements IPluginManager {
    * @returns 安装命令
    */
   generateInstallCommand(pluginNames: string[], packageManager: 'npm' | 'yarn' | 'pnpm' = 'npm'): string {
-    const packages = pluginNames.map(name => {
-      const config = this.pluginRegistry.get(name);
-      return config ? `${name}@${config.version}` : name;
-    });
+    const packages = pluginNames.map((name) => {
+      const config = this.pluginRegistry.get(name)
+      return config ? `${name}@${config.version}` : name
+    })
 
     switch (packageManager) {
       case 'yarn':
-        return `yarn add -D ${packages.join(' ')}`;
+        return `yarn add -D ${packages.join(' ')}`
       case 'pnpm':
-        return `pnpm add -D ${packages.join(' ')}`;
+        return `pnpm add -D ${packages.join(' ')}`
       default:
-        return `npm install -D ${packages.join(' ')}`;
+        return `npm install -D ${packages.join(' ')}`
     }
   }
 }
@@ -503,4 +507,4 @@ export class PluginManager implements IPluginManager {
 /**
  * 默认插件管理器实例
  */
-export const pluginManager = new PluginManager();
+export const pluginManager = new PluginManager()

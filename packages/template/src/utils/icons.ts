@@ -22,7 +22,7 @@ const sizeMap: Record<IconSize, number> = {
   sm: 20,
   md: 24,
   lg: 32,
-  xl: 40
+  xl: 40,
 }
 
 /**
@@ -127,7 +127,7 @@ export const LucideIcons = {
 
   laptop: (props: Partial<IconProps> = {}) => createSVGIcon('laptop', props, `
     <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>
-  `)
+  `),
 }
 
 /**
@@ -138,7 +138,7 @@ function createSVGIcon(name: string, props: Partial<IconProps>, pathContent: str
     size = 'md',
     color = 'currentColor',
     className = '',
-    library = 'lucide'
+    library = 'lucide',
   } = props
 
   const iconSize = sizeMap[size]
@@ -232,5 +232,5 @@ export const socialIcons = {
   alipay: (props: Partial<IconProps> = {}) => createSVGIcon('alipay', props, `
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
     <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
-  `)
+  `),
 }

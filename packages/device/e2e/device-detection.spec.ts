@@ -200,7 +200,8 @@ test.describe('扩展模块功能', () => {
           hasNetworkInfo: !!networkInfo,
           isOnline: networkInfo?.isOnline,
         }
-      } catch (error) {
+      }
+      catch (error) {
         return { error: error.message }
       }
     })
@@ -242,7 +243,8 @@ test.describe('扩展模块功能', () => {
         // 尝试加载不存在的模块
         await detector.loadModule('invalid', null)
         return { success: true }
-      } catch (error) {
+      }
+      catch (error) {
         return { error: error.message }
       }
     })

@@ -3,10 +3,10 @@
  * 提供文件操作、路径处理等通用功能
  */
 
-import fs from 'fs/promises'
-import path from 'path'
-import { createHash } from 'crypto'
 import type { FileInfo } from '../types'
+import { createHash } from 'node:crypto'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 /**
  * 文件操作工具
@@ -19,7 +19,8 @@ export class FileUtils {
     try {
       await fs.access(filePath)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -30,7 +31,8 @@ export class FileUtils {
   static async ensureDir(dirPath: string): Promise<void> {
     try {
       await fs.mkdir(dirPath, { recursive: true })
-    } catch (error: any) {
+    }
+    catch (error: any) {
       if (error.code !== 'EEXIST') {
         throw error
       }
@@ -68,10 +70,12 @@ export class FileUtils {
       const stat = await fs.stat(filePath)
       if (stat.isDirectory()) {
         await fs.rm(filePath, { recursive: true, force: true })
-      } else {
+      }
+      else {
         await fs.unlink(filePath)
       }
-    } catch (error: any) {
+    }
+    catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error
       }
@@ -90,7 +94,7 @@ export class FileUtils {
       type: 'other',
       size: stat.size,
       isEntry: false,
-      dependencies: []
+      dependencies: [],
     }
   }
 
@@ -103,13 +107,14 @@ export class FileUtils {
       extensions?: string[]
       ignore?: string[]
       maxDepth?: number
-    } = {}
+    } = {},
   ): Promise<FileInfo[]> {
     const { extensions, ignore = [], maxDepth = Infinity } = options
     const files: FileInfo[] = []
 
     async function scan(currentPath: string, depth: number): Promise<void> {
-      if (depth > maxDepth) return
+      if (depth > maxDepth)
+        return
 
       const entries = await fs.readdir(currentPath, { withFileTypes: true })
 
@@ -124,7 +129,8 @@ export class FileUtils {
 
         if (entry.isDirectory()) {
           await scan(fullPath, depth + 1)
-        } else {
+        }
+        else {
           // 检查文件扩展名
           if (extensions && !extensions.includes(path.extname(entry.name))) {
             continue
@@ -248,8 +254,10 @@ export class PathUtils {
    * 获取公共路径前缀
    */
   static getCommonPrefix(paths: string[]): string {
-    if (paths.length === 0) return ''
-    if (paths.length === 1) return PathUtils.dirname(paths[0])
+    if (paths.length === 0)
+      return ''
+    if (paths.length === 1)
+      return PathUtils.dirname(paths[0])
 
     const normalizedPaths = paths.map(p => PathUtils.normalize(p))
     const parts = normalizedPaths[0].split('/')
@@ -364,7 +372,7 @@ export class ObjectUtils {
       return new Date(obj.getTime()) as unknown as T
     }
 
-    if (obj instanceof Array) {
+    if (Array.isArray(obj)) {
       return obj.map(item => ObjectUtils.deepClone(item)) as unknown as T
     }
 
@@ -394,7 +402,8 @@ export class ObjectUtils {
 
           if (value && typeof value === 'object' && !Array.isArray(value)) {
             (result as any)[key] = ObjectUtils.deepMerge((result as any)[key] || {}, value)
-          } else {
+          }
+          else {
             (result as any)[key] = value
           }
         }
@@ -463,7 +472,7 @@ export class ObjectUtils {
    */
   static pick<T extends Record<string, any>, K extends keyof T>(
     obj: T,
-    keys: K[]
+    keys: K[],
   ): Pick<T, K> {
     const result = {} as Pick<T, K>
 
@@ -481,7 +490,7 @@ export class ObjectUtils {
    */
   static omit<T extends Record<string, any>, K extends keyof T>(
     obj: T,
-    keys: K[]
+    keys: K[],
   ): Omit<T, K> {
     const result = { ...obj }
 
@@ -509,7 +518,7 @@ export class ArrayUtils {
    */
   static groupBy<T, K extends string | number>(
     array: T[],
-    keyFn: (item: T) => K
+    keyFn: (item: T) => K,
   ): Record<K, T[]> {
     const result = {} as Record<K, T[]>
 
@@ -546,7 +555,8 @@ export class ArrayUtils {
     for (const item of array) {
       if (Array.isArray(item)) {
         result.push(...ArrayUtils.flatten(item))
-      } else {
+      }
+      else {
         result.push(item)
       }
     }
@@ -558,11 +568,13 @@ export class ArrayUtils {
    * 数组交集
    */
   static intersection<T>(...arrays: T[][]): T[] {
-    if (arrays.length === 0) return []
-    if (arrays.length === 1) return arrays[0]
+    if (arrays.length === 0)
+      return []
+    if (arrays.length === 1)
+      return arrays[0]
 
     return arrays.reduce((acc, array) =>
-      acc.filter(item => array.includes(item))
+      acc.filter(item => array.includes(item)),
     )
   }
 
@@ -599,8 +611,8 @@ export class AsyncUtils {
     return Promise.race([
       promise,
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`操作超时 (${ms}ms)`)), ms)
-      )
+        setTimeout(() => reject(new Error(`操作超时 (${ms}ms)`)), ms),
+      ),
     ])
   }
 
@@ -613,7 +625,7 @@ export class AsyncUtils {
       maxAttempts?: number
       delay?: number
       backoff?: boolean
-    } = {}
+    } = {},
   ): Promise<T> {
     const { maxAttempts = 3, delay = 1000, backoff = false } = options
 
@@ -622,14 +634,15 @@ export class AsyncUtils {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await fn()
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error as Error
 
         if (attempt === maxAttempts) {
           throw lastError
         }
 
-        const waitTime = backoff ? delay * Math.pow(2, attempt - 1) : delay
+        const waitTime = backoff ? delay * 2 ** (attempt - 1) : delay
         await AsyncUtils.delay(waitTime)
       }
     }
@@ -642,13 +655,13 @@ export class AsyncUtils {
    */
   static async concurrent<T>(
     tasks: (() => Promise<T>)[],
-    concurrency = 5
+    concurrency = 5,
   ): Promise<T[]> {
     const results: T[] = []
     const executing: Promise<void>[] = []
 
     for (const task of tasks) {
-      const promise = task().then(result => {
+      const promise = task().then((result) => {
         results.push(result)
       })
 
@@ -666,4 +679,4 @@ export class AsyncUtils {
 }
 
 // 导出所有工具类
-export { Logger, ProgressBar, Timer, ErrorHandler } from './logger'
+export { ErrorHandler, Logger, ProgressBar, Timer } from './logger'

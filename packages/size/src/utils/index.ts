@@ -47,9 +47,9 @@ export function compareSizeModes(mode1: SizeMode, mode2: SizeMode): number {
  */
 export function getSizeModeDisplayName(mode: SizeMode): string {
   const displayNames: Record<SizeMode, string> = {
-    small: '小',
-    medium: '中',
-    large: '大',
+    'small': '小',
+    'medium': '中',
+    'large': '大',
     'extra-large': '超大',
   }
   return displayNames[mode]
@@ -86,7 +86,7 @@ export function parseSizeMode(value: string): SizeMode | null {
  */
 export function calculateSizeScale(
   fromMode: SizeMode,
-  toMode: SizeMode
+  toMode: SizeMode,
 ): number {
   const fromConfig = getSizeConfig(fromMode)
   const toConfig = getSizeConfig(toMode)
@@ -111,7 +111,7 @@ export function formatCSSValue(value: string | number, unit?: string): string {
 /**
  * 解析CSS值
  */
-export function parseCSSValue(value: string): { number: number; unit: string } {
+export function parseCSSValue(value: string): { number: number, unit: string } {
   const match = value.match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)$/)
   if (match) {
     return {
@@ -127,22 +127,23 @@ export function parseCSSValue(value: string): { number: number; unit: string } {
  */
 export function deepMergeConfig<T extends Record<string, any>>(
   target: T,
-  source: Partial<T>
+  source: Partial<T>,
 ): T {
   const result = { ...target }
 
   for (const key in source) {
     if (source[key] !== undefined) {
       if (
-        typeof source[key] === 'object' &&
-        source[key] !== null &&
-        !Array.isArray(source[key]) &&
-        typeof target[key] === 'object' &&
-        target[key] !== null &&
-        !Array.isArray(target[key])
+        typeof source[key] === 'object'
+        && source[key] !== null
+        && !Array.isArray(source[key])
+        && typeof target[key] === 'object'
+        && target[key] !== null
+        && !Array.isArray(target[key])
       ) {
         result[key] = deepMergeConfig(target[key], source[key])
-      } else {
+      }
+      else {
         result[key] = source[key] as T[Extract<keyof T, string>]
       }
     }
@@ -156,7 +157,7 @@ export function deepMergeConfig<T extends Record<string, any>>(
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
 
@@ -173,7 +174,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { createCacheManager, createHttpClient, createResponseTimeInterceptor } from '@ldesign/http'
 import { computed, reactive, ref } from 'vue'
-import { createHttpClient, createCacheManager, createResponseTimeInterceptor } from '@ldesign/http'
 
 // 创建HTTP客户端实例
 const http = createHttpClient({
@@ -120,7 +120,8 @@ function formatOutput(data: any, title = '') {
 function updateOutput(tab: string, content: string, append = false) {
   if (append) {
     outputs[tab as keyof typeof outputs] += `\n\n${content}`
-  } else {
+  }
+  else {
     outputs[tab as keyof typeof outputs] = content
   }
 }
@@ -136,7 +137,8 @@ async function sendGetRequest() {
     updateOutput('basic', '🔄 发送 GET 请求...')
     const response = await http.get('/posts/1')
     updateOutput('basic', formatOutput(response, 'GET 请求成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('basic', formatOutput(error, 'GET 请求失败'))
   }
 }
@@ -150,7 +152,8 @@ async function sendPostRequest() {
       userId: 1,
     })
     updateOutput('basic', formatOutput(response, 'POST 请求成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('basic', formatOutput(error, 'POST 请求失败'))
   }
 }
@@ -164,7 +167,8 @@ async function sendPutRequest() {
       userId: 1,
     })
     updateOutput('basic', formatOutput(response, 'PUT 请求成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('basic', formatOutput(error, 'PUT 请求失败'))
   }
 }
@@ -174,7 +178,8 @@ async function sendDeleteRequest() {
     updateOutput('basic', '🔄 发送 DELETE 请求...')
     const response = await http.delete('/posts/1')
     updateOutput('basic', formatOutput(response, 'DELETE 请求成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('basic', formatOutput(error, 'DELETE 请求失败'))
   }
 }
@@ -186,7 +191,8 @@ async function sendPatchRequest() {
       title: '部分更新的标题',
     })
     updateOutput('basic', formatOutput(response, 'PATCH 请求成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('basic', formatOutput(error, 'PATCH 请求失败'))
   }
 }
@@ -207,9 +213,10 @@ async function testCurrentAdapter() {
     updateOutput('adapters', formatOutput({
       adapter: currentAdapter.value,
       responseTime: `${(endTime - startTime).toFixed(2)}ms`,
-      data: response.data
+      data: response.data,
     }, `${currentAdapter.value.toUpperCase()} 适配器测试成功`))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('adapters', formatOutput(error, `${currentAdapter.value.toUpperCase()} 适配器测试失败`))
   }
 }
@@ -226,7 +233,8 @@ async function compareAdapters() {
       await http.get('/posts/1')
       const endTime = performance.now()
       results[adapter] = `${(endTime - startTime).toFixed(2)}ms`
-    } catch (error) {
+    }
+    catch (error) {
       results[adapter] = 'Error'
     }
   }
@@ -298,7 +306,8 @@ async function testWithInterceptors() {
     updateOutput('interceptors', '🔄 测试拦截器...', true)
     const response = await http.get('/posts/1')
     updateOutput('interceptors', formatOutput(response, '拦截器测试成功'), true)
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('interceptors', formatOutput(error, '拦截器测试失败'), true)
   }
 }
@@ -333,7 +342,8 @@ async function testCache() {
     const response2 = await http.get('/posts/1')
     const time2 = Date.now() - start2
     updateOutput('cache', `第二次请求 (${time2}ms): ${response2.fromCache ? '来自缓存' : '来自网络'}`, true)
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('cache', formatOutput(error, '缓存测试失败'), true)
   }
 }
@@ -353,11 +363,12 @@ async function testSmartCache() {
     const result = {
       firstRequest: `${(endTime1 - startTime1).toFixed(2)}ms`,
       secondRequest: `${(endTime2 - startTime2).toFixed(2)}ms`,
-      cacheHit: endTime2 - startTime2 < endTime1 - startTime1
+      cacheHit: endTime2 - startTime2 < endTime1 - startTime1,
     }
 
     updateOutput('cache', formatOutput(result, '智能缓存测试完成'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('cache', formatOutput(error, '智能缓存测试失败'))
   }
 }
@@ -377,10 +388,11 @@ async function testRetrySuccess() {
 
   try {
     const response = await http.get('/posts/1', {
-      retry: { maxRetries: retryConfig.maxRetries, delay: retryConfig.delay }
+      retry: { maxRetries: retryConfig.maxRetries, delay: retryConfig.delay },
     })
     updateOutput('retry', formatOutput(response.data, '重试成功测试完成'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('retry', formatOutput(error, '重试成功测试失败'))
   }
 }
@@ -390,12 +402,13 @@ async function testRetryFailure() {
 
   try {
     await http.get('/nonexistent-endpoint', {
-      retry: { maxRetries: retryConfig.maxRetries, delay: 500 }
+      retry: { maxRetries: retryConfig.maxRetries, delay: 500 },
     })
-  } catch (error: any) {
+  }
+  catch (error: any) {
     updateOutput('retry', formatOutput({
       error: error.message,
-      retryCount: error.retryCount || 0
+      retryCount: error.retryCount || 0,
     }, '重试失败测试完成（预期结果）'))
   }
 }
@@ -406,7 +419,7 @@ async function testCircuitBreaker() {
   const promises = []
   for (let i = 0; i < 5; i++) {
     promises.push(
-      http.get('/error-endpoint').catch(err => ({ error: err.message }))
+      http.get('/error-endpoint').catch(err => ({ error: err.message })),
     )
   }
 
@@ -433,11 +446,13 @@ function stopPerformanceMonitoring() {
 }
 
 function getPerformanceReport() {
-  const report = (http as any).getPerformanceReport ? (http as any).getPerformanceReport() : {
-    requests: { total: 0, successful: 0, failed: 0 },
-    cache: { hits: 0, misses: 0, hitRate: 0 },
-    averageResponseTime: 0
-  }
+  const report = (http as any).getPerformanceReport
+    ? (http as any).getPerformanceReport()
+    : {
+        requests: { total: 0, successful: 0, failed: 0 },
+        cache: { hits: 0, misses: 0, hitRate: 0 },
+        averageResponseTime: 0,
+      }
 
   updateOutput('performance', formatOutput(report, '性能报告'))
 }
@@ -450,7 +465,8 @@ function clearPerformanceData() {
 }
 
 function updatePerformanceStats() {
-  if (!performanceMonitoring.value) return
+  if (!performanceMonitoring.value)
+    return
 
   performanceStats.averageResponseTime = Math.round(Math.random() * 500 + 100)
 
@@ -465,11 +481,12 @@ async function testPriorityRequests() {
     const results = await Promise.all([
       http.get('/posts/1').then(r => ({ priority: 'normal', data: r.data })),
       http.get('/posts/2').then(r => ({ priority: 'high', data: r.data })),
-      http.get('/posts/3').then(r => ({ priority: 'critical', data: r.data }))
+      http.get('/posts/3').then(r => ({ priority: 'critical', data: r.data })),
     ])
 
     updateOutput('advanced', formatOutput(results, '优先级请求测试成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced', formatOutput(error, '优先级请求测试失败'))
   }
 }
@@ -481,15 +498,16 @@ async function testBatchRequests() {
     const requests = [
       { url: '/posts/1', method: 'GET' },
       { url: '/posts/2', method: 'GET' },
-      { url: '/posts/3', method: 'GET' }
+      { url: '/posts/3', method: 'GET' },
     ]
 
-    const results = (http as any).batchRequest ?
-      await (http as any).batchRequest(requests, { concurrent: true }) :
-      await Promise.all(requests.map(req => http.get(req.url)))
+    const results = (http as any).batchRequest
+      ? await (http as any).batchRequest(requests, { concurrent: true })
+      : await Promise.all(requests.map(req => http.get(req.url)))
 
     updateOutput('advanced', formatOutput(results.map((r: any) => r.data || r), '批量请求测试成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced', formatOutput(error, '批量请求测试失败'))
   }
 }
@@ -499,14 +517,15 @@ async function testStreamingRequest() {
 
   try {
     const response = await http.get('/posts', {
-      responseType: 'stream'
+      responseType: 'stream',
     })
 
     updateOutput('advanced', formatOutput({
       message: '流式请求模拟完成',
-      dataSize: JSON.stringify(response.data).length
+      dataSize: JSON.stringify(response.data).length,
     }, '流式请求测试'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced', formatOutput(error, '流式请求测试失败'))
   }
 }
@@ -515,14 +534,17 @@ function testRequestScheduler() {
   updateOutput('advanced', '⏰ 测试请求调度器...')
 
   try {
-    const schedulerStatus = (http as any).getSchedulerStatus ? (http as any).getSchedulerStatus() : {
-      activeRequests: stats.activeRequests,
-      queuedRequests: 0,
-      maxConcurrent: 5
-    }
+    const schedulerStatus = (http as any).getSchedulerStatus
+      ? (http as any).getSchedulerStatus()
+      : {
+          activeRequests: stats.activeRequests,
+          queuedRequests: 0,
+          maxConcurrent: 5,
+        }
 
     updateOutput('advanced', formatOutput(schedulerStatus, '请求调度器状态'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced', formatOutput(error, '请求调度器测试失败'))
   }
 }
@@ -543,21 +565,24 @@ async function testConcurrencyControl() {
     updateOutput('advanced', formatOutput({
       requestCount: results.length,
       totalTime: `${(endTime - startTime).toFixed(2)}ms`,
-      averageTime: `${((endTime - startTime) / results.length).toFixed(2)}ms`
+      averageTime: `${((endTime - startTime) / results.length).toFixed(2)}ms`,
     }, '并发控制测试完成'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced', formatOutput(error, '并发控制测试失败'))
   }
 }
 
 // 计算属性
 const successRate = computed(() => {
-  if (stats.totalRequests === 0) return '0%'
+  if (stats.totalRequests === 0)
+    return '0%'
   return `${Math.round((stats.successfulRequests / stats.totalRequests) * 100)}%`
 })
 
 const cacheHitRate = computed(() => {
-  if (stats.totalRequests === 0) return '0%'
+  if (stats.totalRequests === 0)
+    return '0%'
   return `${Math.round((stats.cacheHits / stats.totalRequests) * 100)}%`
 })
 
@@ -582,20 +607,36 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
       <!-- 统计信息 -->
       <div class="stats">
         <div class="stat-card">
-          <div class="stat-value">{{ stats.totalRequests }}</div>
-          <div class="stat-label">总请求数</div>
+          <div class="stat-value">
+            {{ stats.totalRequests }}
+          </div>
+          <div class="stat-label">
+            总请求数
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">{{ successRate }}</div>
-          <div class="stat-label">成功率</div>
+          <div class="stat-value">
+            {{ successRate }}
+          </div>
+          <div class="stat-label">
+            成功率
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">{{ performanceStats.averageResponseTime }}ms</div>
-          <div class="stat-label">平均响应时间</div>
+          <div class="stat-value">
+            {{ performanceStats.averageResponseTime }}ms
+          </div>
+          <div class="stat-label">
+            平均响应时间
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">{{ cacheHitRate }}</div>
-          <div class="stat-label">缓存命中率</div>
+          <div class="stat-value">
+            {{ cacheHitRate }}
+          </div>
+          <div class="stat-label">
+            缓存命中率
+          </div>
         </div>
       </div>
 
@@ -656,13 +697,25 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
       <div v-show="activeTab === 'basic'" class="section tab-content">
         <h2>🚀 基础请求示例</h2>
         <div class="controls">
-          <button @click="sendGetRequest">GET 请求</button>
-          <button @click="sendPostRequest" class="btn-success">POST 请求</button>
-          <button @click="sendPutRequest" class="btn-warning">PUT 请求</button>
-          <button @click="sendDeleteRequest" class="btn-danger">DELETE 请求</button>
-          <button @click="sendPatchRequest">PATCH 请求</button>
+          <button @click="sendGetRequest">
+            GET 请求
+          </button>
+          <button class="btn-success" @click="sendPostRequest">
+            POST 请求
+          </button>
+          <button class="btn-warning" @click="sendPutRequest">
+            PUT 请求
+          </button>
+          <button class="btn-danger" @click="sendDeleteRequest">
+            DELETE 请求
+          </button>
+          <button @click="sendPatchRequest">
+            PATCH 请求
+          </button>
         </div>
-        <div class="output">{{ outputs.basic || '点击上方按钮发送请求...' }}</div>
+        <div class="output">
+          {{ outputs.basic || '点击上方按钮发送请求...' }}
+        </div>
       </div>
 
       <!-- 适配器切换标签页 -->
@@ -671,29 +724,53 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
         <div class="form-group">
           <label>选择适配器:</label>
           <select v-model="currentAdapter" @change="switchAdapter">
-            <option value="fetch">Fetch API</option>
-            <option value="axios">Axios</option>
-            <option value="alova">Alova</option>
+            <option value="fetch">
+              Fetch API
+            </option>
+            <option value="axios">
+              Axios
+            </option>
+            <option value="alova">
+              Alova
+            </option>
           </select>
         </div>
         <div class="controls">
-          <button @click="testCurrentAdapter">测试当前适配器</button>
-          <button @click="compareAdapters">性能对比</button>
+          <button @click="testCurrentAdapter">
+            测试当前适配器
+          </button>
+          <button @click="compareAdapters">
+            性能对比
+          </button>
         </div>
-        <div class="output">{{ outputs.adapters }}</div>
+        <div class="output">
+          {{ outputs.adapters }}
+        </div>
       </div>
 
       <!-- 拦截器标签页 -->
       <div v-show="activeTab === 'interceptors'" class="section tab-content">
         <h2>🔧 拦截器系统</h2>
         <div class="controls">
-          <button @click="addAuthInterceptor">添加认证拦截器</button>
-          <button @click="addLoggingInterceptor">添加日志拦截器</button>
-          <button @click="addResponseTimeInterceptor">添加响应时间拦截器</button>
-          <button @click="clearInterceptors">清除拦截器</button>
-          <button @click="testWithInterceptors">测试拦截器</button>
+          <button @click="addAuthInterceptor">
+            添加认证拦截器
+          </button>
+          <button @click="addLoggingInterceptor">
+            添加日志拦截器
+          </button>
+          <button @click="addResponseTimeInterceptor">
+            添加响应时间拦截器
+          </button>
+          <button @click="clearInterceptors">
+            清除拦截器
+          </button>
+          <button @click="testWithInterceptors">
+            测试拦截器
+          </button>
         </div>
-        <div class="output">{{ outputs.interceptors }}</div>
+        <div class="output">
+          {{ outputs.interceptors }}
+        </div>
       </div>
 
       <!-- 缓存系统标签页 -->
@@ -702,19 +779,37 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
         <div class="form-group">
           <label>缓存策略:</label>
           <select v-model="cacheStrategy" @change="updateCacheStrategy">
-            <option value="lru">LRU (最近最少使用)</option>
-            <option value="lfu">LFU (最少使用频率)</option>
-            <option value="fifo">FIFO (先进先出)</option>
+            <option value="lru">
+              LRU (最近最少使用)
+            </option>
+            <option value="lfu">
+              LFU (最少使用频率)
+            </option>
+            <option value="fifo">
+              FIFO (先进先出)
+            </option>
           </select>
         </div>
         <div class="controls">
-          <button @click="enableCache">启用缓存</button>
-          <button @click="disableCache">禁用缓存</button>
-          <button @click="testCache">测试缓存</button>
-          <button @click="clearCache">清除缓存</button>
-          <button @click="testSmartCache">测试智能缓存</button>
+          <button @click="enableCache">
+            启用缓存
+          </button>
+          <button @click="disableCache">
+            禁用缓存
+          </button>
+          <button @click="testCache">
+            测试缓存
+          </button>
+          <button @click="clearCache">
+            清除缓存
+          </button>
+          <button @click="testSmartCache">
+            测试智能缓存
+          </button>
         </div>
-        <div class="output">{{ outputs.cache }}</div>
+        <div class="output">
+          {{ outputs.cache }}
+        </div>
       </div>
 
       <!-- 智能重试标签页 -->
@@ -723,44 +818,84 @@ updateOutput('advanced', '点击上方按钮测试高级功能...')
         <div class="form-group">
           <label>重试策略:</label>
           <select v-model="retryConfig.strategy" @change="updateRetryStrategy">
-            <option value="fixed">固定延迟</option>
-            <option value="exponential">指数退避</option>
-            <option value="linear">线性增长</option>
-            <option value="adaptive">自适应重试</option>
+            <option value="fixed">
+              固定延迟
+            </option>
+            <option value="exponential">
+              指数退避
+            </option>
+            <option value="linear">
+              线性增长
+            </option>
+            <option value="adaptive">
+              自适应重试
+            </option>
           </select>
         </div>
         <div class="controls">
-          <button @click="testRetrySuccess">测试重试成功</button>
-          <button @click="testRetryFailure">测试重试失败</button>
-          <button @click="testCircuitBreaker">测试断路器</button>
-          <button @click="getRetryStats">获取重试统计</button>
+          <button @click="testRetrySuccess">
+            测试重试成功
+          </button>
+          <button @click="testRetryFailure">
+            测试重试失败
+          </button>
+          <button @click="testCircuitBreaker">
+            测试断路器
+          </button>
+          <button @click="getRetryStats">
+            获取重试统计
+          </button>
         </div>
-        <div class="output">{{ outputs.retry }}</div>
+        <div class="output">
+          {{ outputs.retry }}
+        </div>
       </div>
 
       <!-- 性能监控标签页 -->
       <div v-show="activeTab === 'performance'" class="section tab-content">
         <h2>📊 性能监控</h2>
         <div class="controls">
-          <button @click="startPerformanceMonitoring">开始监控</button>
-          <button @click="stopPerformanceMonitoring">停止监控</button>
-          <button @click="getPerformanceReport">获取性能报告</button>
-          <button @click="clearPerformanceData">清除数据</button>
+          <button @click="startPerformanceMonitoring">
+            开始监控
+          </button>
+          <button @click="stopPerformanceMonitoring">
+            停止监控
+          </button>
+          <button @click="getPerformanceReport">
+            获取性能报告
+          </button>
+          <button @click="clearPerformanceData">
+            清除数据
+          </button>
         </div>
-        <div class="output">{{ outputs.performance }}</div>
+        <div class="output">
+          {{ outputs.performance }}
+        </div>
       </div>
 
       <!-- 高级功能标签页 -->
       <div v-show="activeTab === 'advanced'" class="section tab-content">
         <h2>🚀 高级功能</h2>
         <div class="controls">
-          <button @click="testPriorityRequests">优先级请求</button>
-          <button @click="testBatchRequests">批量请求</button>
-          <button @click="testStreamingRequest">流式请求</button>
-          <button @click="testRequestScheduler">请求调度器</button>
-          <button @click="testConcurrencyControl">并发控制</button>
+          <button @click="testPriorityRequests">
+            优先级请求
+          </button>
+          <button @click="testBatchRequests">
+            批量请求
+          </button>
+          <button @click="testStreamingRequest">
+            流式请求
+          </button>
+          <button @click="testRequestScheduler">
+            请求调度器
+          </button>
+          <button @click="testConcurrencyControl">
+            并发控制
+          </button>
         </div>
-        <div class="output">{{ outputs.advanced }}</div>
+        <div class="output">
+          {{ outputs.advanced }}
+        </div>
       </div>
     </div>
   </div>
@@ -958,7 +1093,9 @@ button:active {
   color: #2c3e50;
 }
 
-select, input, textarea {
+select,
+input,
+textarea {
   width: 100%;
   max-width: 300px;
   padding: 10px;
@@ -968,7 +1105,9 @@ select, input, textarea {
   transition: border-color 0.3s ease;
 }
 
-select:focus, input:focus, textarea:focus {
+select:focus,
+input:focus,
+textarea:focus {
   outline: none;
   border-color: #3498db;
 }

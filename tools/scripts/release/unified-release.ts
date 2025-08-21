@@ -58,7 +58,8 @@ class UnifiedRelease {
       }
 
       console.log('✅ 发布完成!')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 发布失败:', error)
       throw error
     }
@@ -74,7 +75,8 @@ class UnifiedRelease {
       if (status.trim()) {
         throw new Error('工作区不干净，请先提交或暂存更改')
       }
-    } catch {
+    }
+    catch {
       throw new Error('Git 状态检查失败')
     }
 
@@ -95,7 +97,8 @@ class UnifiedRelease {
       if (Number.parseInt(behind) > 0) {
         throw new Error(`本地分支落后远程 ${behind} 个提交，请先拉取最新代码`)
       }
-    } catch {
+    }
+    catch {
       console.warn('⚠️ 无法检查远程同步状态')
     }
   }
@@ -129,7 +132,8 @@ class UnifiedRelease {
     if (options.dryRun) {
       console.log('🔍 预览版本更新...')
       execSync('changeset status', { stdio: 'inherit' })
-    } else {
+    }
+    else {
       execSync('changeset version', { stdio: 'inherit' })
     }
   }
@@ -152,7 +156,7 @@ class UnifiedRelease {
 
     // 读取根 package.json 获取新版本
     const rootPackage = JSON.parse(
-      readFileSync(resolve(this.rootDir, 'package.json'), 'utf-8')
+      readFileSync(resolve(this.rootDir, 'package.json'), 'utf-8'),
     )
     const version = rootPackage.version
 
@@ -194,7 +198,8 @@ class UnifiedRelease {
       execSync('git push origin --force-with-lease', { stdio: 'inherit' })
 
       console.log('✅ 回滚完成')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 回滚失败:', error)
       throw error
     }

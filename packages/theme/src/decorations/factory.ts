@@ -45,7 +45,7 @@ export class DecorationFactory {
    */
   static create(
     config: DecorationConfig,
-    container: HTMLElement
+    container: HTMLElement,
   ): BaseDecoration {
     // 首先尝试根据装饰名称查找
     let Constructor = decorationRegistry.get(config.name)
@@ -68,7 +68,7 @@ export class DecorationFactory {
    */
   static createMultiple(
     configs: DecorationConfig[],
-    container: HTMLElement
+    container: HTMLElement,
   ): BaseDecoration[] {
     return configs.map(config => this.create(config, container))
   }
@@ -105,7 +105,7 @@ export class DecorationFactory {
    * 根据配置获取默认装饰类型
    */
   private static getDefaultDecoration(
-    config: DecorationConfig
+    config: DecorationConfig,
   ): DecorationConstructor {
     // 根据配置特征智能选择装饰类型
     if (config.name.includes('snow') || config.name.includes('flake')) {
@@ -122,22 +122,22 @@ export class DecorationFactory {
 
     // 根据动画类型推断
     if (
-      config.animation?.includes('fall') ||
-      config.animation?.includes('snow')
+      config.animation?.includes('fall')
+      || config.animation?.includes('snow')
     ) {
       return SnowflakeDecoration
     }
 
     if (
-      config.animation?.includes('swing') ||
-      config.animation?.includes('glow')
+      config.animation?.includes('swing')
+      || config.animation?.includes('glow')
     ) {
       return LanternDecoration
     }
 
     if (
-      config.animation?.includes('burst') ||
-      config.animation?.includes('explode')
+      config.animation?.includes('burst')
+      || config.animation?.includes('explode')
     ) {
       return FireworkDecoration
     }
@@ -156,7 +156,7 @@ export class DecorationFactory {
       intensity?: 'light' | 'medium' | 'heavy'
       interactive?: boolean
       responsive?: boolean
-    } = {}
+    } = {},
   ): BaseDecoration[] {
     const {
       intensity = 'medium',
@@ -203,14 +203,14 @@ export class DecorationFactory {
    */
   private static createChristmasDecorations(
     container: HTMLElement,
-    options: any
+    options: any,
   ): BaseDecoration[] {
     const decorations: BaseDecoration[] = []
     const { intensity, interactive, responsive } = options
 
     // 雪花数量根据强度调整
-    const snowflakeCount =
-      intensity === 'light' ? 10 : intensity === 'heavy' ? 30 : 20
+    const snowflakeCount
+      = intensity === 'light' ? 10 : intensity === 'heavy' ? 30 : 20
 
     // 创建雪花
     for (let i = 0; i < snowflakeCount; i++) {
@@ -251,7 +251,7 @@ export class DecorationFactory {
    */
   private static createSpringFestivalDecorations(
     container: HTMLElement,
-    options: any
+    options: any,
   ): BaseDecoration[] {
     const decorations: BaseDecoration[] = []
     const { interactive, responsive } = options
@@ -298,7 +298,7 @@ export class DecorationFactory {
       },
     ]
 
-    lanternConfigs.forEach(config => {
+    lanternConfigs.forEach((config) => {
       decorations.push(this.create(config, container))
     })
 
@@ -333,7 +333,7 @@ export class DecorationFactory {
    */
   private static createHalloweenDecorations(
     _container: HTMLElement,
-    _options: any
+    _options: any,
   ): BaseDecoration[] {
     const decorations: BaseDecoration[] = []
     // 这里可以添加万圣节特有的装饰元素
@@ -346,14 +346,14 @@ export class DecorationFactory {
    */
   private static createCelebrationDecorations(
     container: HTMLElement,
-    options: any
+    options: any,
   ): BaseDecoration[] {
     const decorations: BaseDecoration[] = []
     const { intensity, interactive, responsive } = options
 
     // 烟花数量根据强度调整
-    const fireworkCount =
-      intensity === 'light' ? 3 : intensity === 'heavy' ? 8 : 5
+    const fireworkCount
+      = intensity === 'light' ? 3 : intensity === 'heavy' ? 8 : 5
 
     // 创建烟花
     for (let i = 0; i < fireworkCount; i++) {
@@ -399,7 +399,7 @@ export class DecorationFactory {
       baseConfig: Partial<DecorationConfig>
       variations?: Partial<DecorationConfig>[]
     },
-    container: HTMLElement
+    container: HTMLElement,
   ): BaseDecoration[] {
     const decorations: BaseDecoration[] = []
     const { type, count, baseConfig, variations = [] } = template

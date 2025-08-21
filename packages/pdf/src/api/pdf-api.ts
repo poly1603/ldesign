@@ -3,27 +3,28 @@
  * 提供loadPdf、renderPage等核心API函数
  */
 
+import type { PdfEngine } from '../engine/pdf-engine'
 import type {
-  PdfSource,
-  PdfDocument,
-  PdfPage,
+  CacheOptions,
+  DocumentMetadata,
   LoadOptions,
-  RenderOptions,
-  RenderContext,
-  RenderResult,
+  LRUCache,
+  OutlineNode,
   PageViewport,
+  PdfDocument,
+  PdfError,
+  PdfPage,
+  PdfSource,
+  RenderContext,
+  RenderOptions,
+  RenderResult,
   TextContent,
   TextExtractionOptions,
-  DocumentMetadata,
-  OutlineNode,
-  PdfError,
-  CacheOptions,
-  LRUCache
 } from '../types'
-import { ErrorCode } from '../types'
 
-import { PdfEngine, createPdfEngine } from '../engine/pdf-engine'
 import { createLRUCache, defaultCacheOptions } from '../cache/lru-cache'
+import { createPdfEngine } from '../engine/pdf-engine'
+import { ErrorCode } from '../types'
 
 /**
  * PDF API配置选项
@@ -71,10 +72,10 @@ export class PdfApi {
   constructor(options: PdfApiOptions = {}) {
     this.engine = options.engine || createPdfEngine()
     this.enableCache = options.enableCache !== false
-    
+
     if (this.enableCache) {
       this.cache = options.cache || createLRUCache<CachedRenderResult>(
-        options.cacheOptions || defaultCacheOptions
+        options.cacheOptions || defaultCacheOptions,
       )
     }
   }
@@ -91,14 +92,15 @@ export class PdfApi {
    */
   async loadPdf(
     source: PdfSource,
-    options: LoadOptions = {}
+    options: LoadOptions = {},
   ): Promise<PdfDocument> {
     try {
       const document = await this.engine.loadDocument(source, options)
       const documentId = this.generateDocumentId(source)
       this.documents.set(documentId, document)
       return document
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleError(error, 'Failed to load PDF document')
     }
   }
@@ -108,20 +110,21 @@ export class PdfApi {
    */
   async getPage(
     document: PdfDocument,
-    pageNumber: number
+    pageNumber: number,
   ): Promise<PdfPage> {
     try {
       const pageKey = `${document.fingerprint}_${pageNumber}`
-      
+
       // 检查缓存
       if (this.pages.has(pageKey)) {
         return this.pages.get(pageKey)!
       }
-      
+
       const page = await document.getPage(pageNumber)
       this.pages.set(pageKey, page)
       return page
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleError(error, `Failed to get page ${pageNumber}`)
     }
   }
@@ -132,22 +135,22 @@ export class PdfApi {
   async renderPage(
     page: PdfPage,
     canvas: HTMLCanvasElement,
-    options: RenderOptions = {}
+    options: RenderOptions = {},
   ): Promise<RenderResult> {
     try {
       const scale = options.scale || 1.0
       const rotation = options.rotation || 0
       const background = options.background || 'white'
-      
+
       // 生成缓存键
       const cacheKey = this.generateRenderCacheKey({
         documentId: page.ref?.toString() || 'unknown',
         pageNumber: page.pageNumber,
         scale,
         rotation,
-        background
+        background,
       })
-      
+
       // 检查缓存
       if (this.enableCache && this.cache) {
         const cached = this.cache.get(cacheKey)
@@ -155,32 +158,32 @@ export class PdfApi {
           this.copyCanvas(cached.canvas, canvas)
           return {
             promise: Promise.resolve(),
-            cancel: () => {}
+            cancel: () => {},
           }
         }
       }
-      
+
       // 获取视口
       const viewport = page.getViewport({ scale, rotation })
-      
+
       // 设置画布尺寸
       const context = canvas.getContext('2d')
       if (!context) {
         throw this.createError(
           ErrorCode.CANVAS_ERROR,
-          'Failed to get canvas 2D context'
+          'Failed to get canvas 2D context',
         )
       }
-      
+
       canvas.width = viewport.width
       canvas.height = viewport.height
-      
+
       // 设置背景
       if (background && background !== 'transparent') {
         context.fillStyle = background
         context.fillRect(0, 0, canvas.width, canvas.height)
       }
-      
+
       // 创建渲染上下文
       const renderContext: RenderContext = {
         canvasContext: context,
@@ -189,12 +192,12 @@ export class PdfApi {
         enableWebGL: options.enableWebGL,
         renderInteractiveForms: true,
         transform: options.transform,
-        background
+        background,
       }
-      
+
       // 执行渲染
       const renderResult = page.render(renderContext)
-      
+
       // 缓存结果
       if (this.enableCache && this.cache) {
         renderResult.promise.then(() => {
@@ -202,9 +205,9 @@ export class PdfApi {
           const cachedResult: CachedRenderResult = {
             canvas: cachedCanvas,
             viewport,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           }
-          
+
           // 估算缓存大小（像素数 * 4字节/像素）
           const size = canvas.width * canvas.height * 4
           this.cache!.set(cacheKey, cachedResult, size)
@@ -212,9 +215,10 @@ export class PdfApi {
           // 渲染失败时不缓存
         })
       }
-      
+
       return renderResult
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleError(error, `Failed to render page ${page.pageNumber}`)
     }
   }
@@ -224,11 +228,12 @@ export class PdfApi {
    */
   async getTextContent(
     page: PdfPage,
-    options: TextExtractionOptions = {}
+    options: TextExtractionOptions = {},
   ): Promise<TextContent> {
     try {
       return await page.getTextContent(options)
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleError(error, `Failed to get text content for page ${page.pageNumber}`)
     }
   }
@@ -238,11 +243,12 @@ export class PdfApi {
    */
   async getAnnotations(
     page: PdfPage,
-    options: { intent?: string } = {}
+    options: { intent?: string } = {},
   ): Promise<any[]> {
     try {
       return await page.getAnnotations(options)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to get annotations for page ${page.pageNumber}:`, error)
       return []
     }
@@ -254,7 +260,8 @@ export class PdfApi {
   async getMetadata(document: PdfDocument): Promise<DocumentMetadata> {
     try {
       return await document.getMetadata()
-    } catch (error) {
+    }
+    catch (error) {
       throw this.handleError(error, 'Failed to get document metadata')
     }
   }
@@ -265,7 +272,8 @@ export class PdfApi {
   async getOutline(document: PdfDocument): Promise<OutlineNode[] | null> {
     try {
       return await document.getOutline()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get document outline:', error)
       return null
     }
@@ -277,7 +285,8 @@ export class PdfApi {
   async getPermissions(document: PdfDocument): Promise<number[] | null> {
     try {
       return await document.getPermissions()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get document permissions:', error)
       return null
     }
@@ -288,16 +297,17 @@ export class PdfApi {
    */
   async preloadPages(
     document: PdfDocument,
-    pageNumbers: number[]
+    pageNumbers: number[],
   ): Promise<void> {
     const promises = pageNumbers.map(async (pageNumber) => {
       try {
         await this.getPage(document, pageNumber)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to preload page ${pageNumber}:`, error)
       }
     })
-    
+
     await Promise.allSettled(promises)
   }
 
@@ -307,11 +317,12 @@ export class PdfApi {
   cleanupPage(page: PdfPage): void {
     try {
       page.cleanup()
-      
+
       // 从缓存中移除相关项
       const pageKey = `${page.ref?.toString() || 'unknown'}_${page.pageNumber}`
       this.pages.delete(pageKey)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to cleanup page ${page.pageNumber}:`, error)
     }
   }
@@ -322,7 +333,7 @@ export class PdfApi {
   destroyDocument(document: PdfDocument): void {
     try {
       document.destroy()
-      
+
       // 清理相关缓存
       const documentId = document.fingerprint
       for (const [key] of this.documents) {
@@ -330,13 +341,14 @@ export class PdfApi {
           this.documents.delete(key)
         }
       }
-      
+
       for (const [key] of this.pages) {
         if (key.includes(documentId)) {
           this.pages.delete(key)
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to destroy document:', error)
     }
   }
@@ -375,7 +387,7 @@ export class PdfApi {
    */
   private generateDocumentId(source: PdfSource): string {
     if (typeof source === 'string') {
-      return `url_${btoa(source).replace(/[^a-zA-Z0-9]/g, '')}`
+      return `url_${btoa(source).replace(/[^a-z0-9]/gi, '')}`
     }
     return `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
@@ -402,12 +414,12 @@ export class PdfApi {
     const clone = document.createElement('canvas')
     clone.width = original.width
     clone.height = original.height
-    
+
     const context = clone.getContext('2d')
     if (context) {
       context.drawImage(original, 0, 0)
     }
-    
+
     return clone
   }
 
@@ -417,7 +429,7 @@ export class PdfApi {
   private copyCanvas(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
     target.width = source.width
     target.height = source.height
-    
+
     const context = target.getContext('2d')
     if (context) {
       context.drawImage(source, 0, 0)
@@ -431,11 +443,11 @@ export class PdfApi {
     if (error && typeof error === 'object' && 'code' in error) {
       return error as PdfError
     }
-    
+
     return this.createError(
       ErrorCode.UNKNOWN_ERROR,
       message,
-      { originalError: error }
+      { originalError: error },
     )
   }
 
@@ -445,7 +457,7 @@ export class PdfApi {
   private createError(
     code: ErrorCode,
     message: string,
-    details?: any
+    details?: any,
   ): PdfError {
     const error = new Error(message) as PdfError
     error.code = code
@@ -476,7 +488,7 @@ export const defaultPdfApi = createPdfApi()
  */
 export async function loadPdf(
   source: PdfSource,
-  options: LoadOptions = {}
+  options: LoadOptions = {},
 ): Promise<PdfDocument> {
   return defaultPdfApi.loadPdf(source, options)
 }
@@ -487,7 +499,7 @@ export async function loadPdf(
 export async function renderPage(
   page: PdfPage,
   canvas: HTMLCanvasElement,
-  options: RenderOptions = {}
+  options: RenderOptions = {},
 ): Promise<RenderResult> {
   return defaultPdfApi.renderPage(page, canvas, options)
 }
@@ -497,7 +509,7 @@ export async function renderPage(
  */
 export async function getTextContent(
   page: PdfPage,
-  options: TextExtractionOptions = {}
+  options: TextExtractionOptions = {},
 ): Promise<TextContent> {
   return defaultPdfApi.getTextContent(page, options)
 }

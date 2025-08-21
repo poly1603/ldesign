@@ -1,5 +1,4 @@
-import { defineConfig } from 'vitepress';
-import { resolve } from 'path';
+import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'LDesign Web Components',
@@ -87,7 +86,7 @@ export default defineConfig({
   vue: {
     template: {
       compilerOptions: {
-        isCustomElement: (tag) => tag.startsWith('ld-'),
+        isCustomElement: tag => tag.startsWith('ld-'),
       },
     },
   },
@@ -98,5 +97,4 @@ export default defineConfig({
     },
     lineNumbers: true,
   },
-});
-
+})

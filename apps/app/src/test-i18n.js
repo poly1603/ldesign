@@ -6,17 +6,18 @@ setTimeout(() => {
   try {
     // 检查全局 $t 函数是否可用
     if (
-      window.Vue &&
-      window.Vue.config &&
-      window.Vue.config.globalProperties &&
-      window.Vue.config.globalProperties.$t
+      window.Vue
+      && window.Vue.config
+      && window.Vue.config.globalProperties
+      && window.Vue.config.globalProperties.$t
     ) {
       console.log('✅ 全局 $t 函数已注册')
 
       // 测试基础翻译
       const translation = window.Vue.config.globalProperties.$t('common.ok')
       console.log('✅ 基础翻译测试:', translation)
-    } else {
+    }
+    else {
       console.log('❌ 全局 $t 函数未找到')
     }
 
@@ -31,12 +32,14 @@ setTimeout(() => {
       // 测试性能指标
       const metrics = window.$engine.i18n.getPerformanceMetrics()
       console.log('✅ 性能指标:', metrics)
-    } else {
+    }
+    else {
       console.log('❌ Engine i18n 实例未找到')
     }
 
     console.log('🎉 i18n 功能测试完成！')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ i18n 测试失败:', error)
   }
 }, 2000) // 等待2秒确保应用完全加载

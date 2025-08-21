@@ -161,7 +161,7 @@ export function createCSSInjector(options?: CSSInjectionOptions): CSSInjector {
  */
 export function injectGlobalVariables(
   variables: Record<string, string>,
-  options?: CSSInjectionOptions
+  options?: CSSInjectionOptions,
 ): void {
   const injector = options ? new CSSInjector(options) : globalCSSInjector
   injector.injectVariables(variables)
@@ -174,7 +174,8 @@ export function removeGlobalVariables(styleId?: string): void {
   if (styleId) {
     const injector = new CSSInjector({ styleId })
     injector.removeCSS()
-  } else {
+  }
+  else {
     globalCSSInjector.removeCSS()
   }
 }
@@ -209,7 +210,7 @@ export function getCSSVariableValue(name: string, element?: Element): string {
 export function setCSSVariableValue(
   name: string,
   value: string,
-  element?: Element
+  element?: Element,
 ): void {
   if (typeof document === 'undefined') {
     return

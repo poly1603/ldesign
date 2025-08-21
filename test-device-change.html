@@ -1,184 +1,182 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>设备变化测试</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-        }
-        .test-controls {
-            background: #f5f5f5;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        .device-buttons {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background: #007acc;
-            color: white;
-        }
-        button:hover {
-            background: #005a9e;
-        }
-        .current-info {
-            background: #e8f5e8;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border-left: 4px solid #28a745;
-        }
-        .log {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        iframe {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+      }
+      .test-controls {
+        background: #f5f5f5;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 5px;
+      }
+      .device-buttons {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background: #007acc;
+        color: white;
+      }
+      button:hover {
+        background: #005a9e;
+      }
+      .current-info {
+        background: #e8f5e8;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border-left: 4px solid #28a745;
+      }
+      .log {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>设备变化测试工具</h1>
-    
+
     <div class="test-controls">
-        <h3>🎮 测试控制</h3>
-        <p>点击下面的按钮来模拟不同的设备尺寸：</p>
-        
-        <div class="device-buttons">
-            <button onclick="setDeviceSize('mobile')">📱 手机 (375x667)</button>
-            <button onclick="setDeviceSize('tablet')">📱 平板 (768x1024)</button>
-            <button onclick="setDeviceSize('desktop')">🖥️ 桌面 (1200x800)</button>
-        </div>
-        
-        <div class="device-buttons">
-            <button onclick="setDeviceSize('small-mobile')">📱 小手机 (320x568)</button>
-            <button onclick="setDeviceSize('large-tablet')">📱 大平板 (1000x700)</button>
-            <button onclick="setDeviceSize('large-desktop')">🖥️ 大桌面 (1920x1080)</button>
-        </div>
-        
-        <button onclick="clearLog()" style="background: #dc3545;">🗑️ 清空日志</button>
+      <h3>🎮 测试控制</h3>
+      <p>点击下面的按钮来模拟不同的设备尺寸：</p>
+
+      <div class="device-buttons">
+        <button onclick="setDeviceSize('mobile')">📱 手机 (375x667)</button>
+        <button onclick="setDeviceSize('tablet')">📱 平板 (768x1024)</button>
+        <button onclick="setDeviceSize('desktop')">🖥️ 桌面 (1200x800)</button>
+      </div>
+
+      <div class="device-buttons">
+        <button onclick="setDeviceSize('small-mobile')">📱 小手机 (320x568)</button>
+        <button onclick="setDeviceSize('large-tablet')">📱 大平板 (1000x700)</button>
+        <button onclick="setDeviceSize('large-desktop')">🖥️ 大桌面 (1920x1080)</button>
+      </div>
+
+      <button onclick="clearLog()" style="background: #dc3545">🗑️ 清空日志</button>
     </div>
 
     <div class="current-info">
-        <h3>📊 当前状态</h3>
-        <p><strong>窗口尺寸:</strong> <span id="window-size">-</span></p>
-        <p><strong>检测到的设备类型:</strong> <span id="detected-device">-</span></p>
-        <p><strong>iframe 尺寸:</strong> <span id="iframe-size">-</span></p>
+      <h3>📊 当前状态</h3>
+      <p><strong>窗口尺寸:</strong> <span id="window-size">-</span></p>
+      <p><strong>检测到的设备类型:</strong> <span id="detected-device">-</span></p>
+      <p><strong>iframe 尺寸:</strong> <span id="iframe-size">-</span></p>
     </div>
 
-    <div class="log" id="console-log">
-        <strong>控制台日志:</strong><br>
-    </div>
+    <div class="log" id="console-log"><strong>控制台日志:</strong><br /></div>
 
     <h3>🖼️ 应用预览</h3>
     <iframe id="app-iframe" src="http://localhost:3006/login"></iframe>
 
     <script>
-        const iframe = document.getElementById('app-iframe');
-        const deviceSizes = {
-            'mobile': { width: 375, height: 667 },
-            'tablet': { width: 768, height: 1024 },
-            'desktop': { width: 1200, height: 800 },
-            'small-mobile': { width: 320, height: 568 },
-            'large-tablet': { width: 1000, height: 700 },
-            'large-desktop': { width: 1920, height: 1080 }
-        };
+      const iframe = document.getElementById('app-iframe')
+      const deviceSizes = {
+        mobile: { width: 375, height: 667 },
+        tablet: { width: 768, height: 1024 },
+        desktop: { width: 1200, height: 800 },
+        'small-mobile': { width: 320, height: 568 },
+        'large-tablet': { width: 1000, height: 700 },
+        'large-desktop': { width: 1920, height: 1080 },
+      }
 
-        function detectDevice(width) {
-            if (width < 768) return 'mobile';
-            if (width < 1024) return 'tablet';
-            return 'desktop';
-        }
+      function detectDevice(width) {
+        if (width < 768) return 'mobile'
+        if (width < 1024) return 'tablet'
+        return 'desktop'
+      }
 
-        function setDeviceSize(deviceType) {
-            const size = deviceSizes[deviceType];
-            if (!size) return;
+      function setDeviceSize(deviceType) {
+        const size = deviceSizes[deviceType]
+        if (!size) return
 
-            // 调整 iframe 尺寸
-            iframe.style.width = size.width + 'px';
-            iframe.style.height = size.height + 'px';
+        // 调整 iframe 尺寸
+        iframe.style.width = size.width + 'px'
+        iframe.style.height = size.height + 'px'
 
-            // 更新显示信息
-            updateInfo();
+        // 更新显示信息
+        updateInfo()
 
-            // 记录日志
-            log(`🔧 设置设备尺寸: ${deviceType} (${size.width}x${size.height})`);
+        // 记录日志
+        log(`🔧 设置设备尺寸: ${deviceType} (${size.width}x${size.height})`)
 
-            // 向 iframe 发送消息，通知尺寸变化
-            setTimeout(() => {
-                try {
-                    iframe.contentWindow.dispatchEvent(new Event('resize'));
-                    log(`📡 向 iframe 发送 resize 事件`);
-                } catch (e) {
-                    log(`⚠️ 无法向 iframe 发送事件: ${e.message}`);
-                }
-            }, 100);
-        }
-
-        function updateInfo() {
-            const windowSize = `${window.innerWidth}x${window.innerHeight}`;
-            const detectedDevice = detectDevice(window.innerWidth);
-            const iframeSize = `${iframe.offsetWidth}x${iframe.offsetHeight}`;
-
-            document.getElementById('window-size').textContent = windowSize;
-            document.getElementById('detected-device').textContent = detectedDevice;
-            document.getElementById('iframe-size').textContent = iframeSize;
-        }
-
-        function log(message) {
-            const logElement = document.getElementById('console-log');
-            const timestamp = new Date().toLocaleTimeString();
-            logElement.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-            logElement.scrollTop = logElement.scrollHeight;
-            console.log(message);
-        }
-
-        function clearLog() {
-            document.getElementById('console-log').innerHTML = '<strong>控制台日志:</strong><br>';
-        }
-
-        // 监听窗口大小变化
-        window.addEventListener('resize', updateInfo);
-
-        // 监听 iframe 加载完成
-        iframe.addEventListener('load', () => {
-            log('✅ iframe 加载完成');
-            updateInfo();
-        });
-
-        // 初始化
-        updateInfo();
-        log('🚀 测试工具初始化完成');
-
-        // 添加说明
+        // 向 iframe 发送消息，通知尺寸变化
         setTimeout(() => {
-            log('💡 使用说明:');
-            log('1. 点击设备按钮来模拟不同尺寸');
-            log('2. 观察 iframe 中的应用是否正确响应设备变化');
-            log('3. 打开浏览器开发者工具查看详细日志');
-            log('4. 在 iframe 中调整浏览器窗口大小也会触发设备检测');
-        }, 1000);
+          try {
+            iframe.contentWindow.dispatchEvent(new Event('resize'))
+            log(`📡 向 iframe 发送 resize 事件`)
+          } catch (e) {
+            log(`⚠️ 无法向 iframe 发送事件: ${e.message}`)
+          }
+        }, 100)
+      }
+
+      function updateInfo() {
+        const windowSize = `${window.innerWidth}x${window.innerHeight}`
+        const detectedDevice = detectDevice(window.innerWidth)
+        const iframeSize = `${iframe.offsetWidth}x${iframe.offsetHeight}`
+
+        document.getElementById('window-size').textContent = windowSize
+        document.getElementById('detected-device').textContent = detectedDevice
+        document.getElementById('iframe-size').textContent = iframeSize
+      }
+
+      function log(message) {
+        const logElement = document.getElementById('console-log')
+        const timestamp = new Date().toLocaleTimeString()
+        logElement.innerHTML += `<div>[${timestamp}] ${message}</div>`
+        logElement.scrollTop = logElement.scrollHeight
+        console.log(message)
+      }
+
+      function clearLog() {
+        document.getElementById('console-log').innerHTML = '<strong>控制台日志:</strong><br>'
+      }
+
+      // 监听窗口大小变化
+      window.addEventListener('resize', updateInfo)
+
+      // 监听 iframe 加载完成
+      iframe.addEventListener('load', () => {
+        log('✅ iframe 加载完成')
+        updateInfo()
+      })
+
+      // 初始化
+      updateInfo()
+      log('🚀 测试工具初始化完成')
+
+      // 添加说明
+      setTimeout(() => {
+        log('💡 使用说明:')
+        log('1. 点击设备按钮来模拟不同尺寸')
+        log('2. 观察 iframe 中的应用是否正确响应设备变化')
+        log('3. 打开浏览器开发者工具查看详细日志')
+        log('4. 在 iframe 中调整浏览器窗口大小也会触发设备检测')
+      }, 1000)
     </script>
-</body>
+  </body>
 </html>

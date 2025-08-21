@@ -1,12 +1,11 @@
 import { ProjectScanner } from '../src/core/project-scanner'
-import path from 'path'
 
-describe('ProjectScanner', () => {
+describe('projectScanner', () => {
   it('should scan current project and return valid result', async () => {
     const scanner = new ProjectScanner()
     const result = await scanner.scan(process.cwd(), {
       includePatterns: ['src/**/*.{ts,tsx,js,jsx,vue}'],
-      ignorePatterns: ['node_modules/**']
+      ignorePatterns: ['node_modules/**'],
     })
 
     expect(result).toBeTruthy()
@@ -15,5 +14,3 @@ describe('ProjectScanner', () => {
     expect(result.scanTime).toBeGreaterThanOrEqual(0)
   })
 })
-
-

@@ -38,15 +38,18 @@ class SimpleDeviceDetector {
   }
 
   detectDevice(): DeviceType {
-    if (typeof window === 'undefined') return 'desktop'
+    if (typeof window === 'undefined')
+      return 'desktop'
 
     const width = window.innerWidth
     let device: DeviceType
     if (width < 768) {
       device = 'mobile'
-    } else if (width < 1024) {
+    }
+    else if (width < 1024) {
       device = 'tablet'
-    } else {
+    }
+    else {
       device = 'desktop'
     }
 
@@ -65,7 +68,8 @@ class SimpleDeviceDetector {
   }
 
   private setupListener(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     const handleResize = () => {
       const newDevice = this.detectDevice()
@@ -101,10 +105,11 @@ class SimpleEventEmitter {
   emit(event: string, ...args: any[]): void {
     const callbacks = this.events.get(event)
     if (callbacks) {
-      callbacks.forEach(callback => {
+      callbacks.forEach((callback) => {
         try {
           callback(...args)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Event callback error for ${event}:`, error)
         }
       })
@@ -191,7 +196,8 @@ export class TemplateManager extends SimpleEventEmitter {
       }
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 模板扫描失败:', error)
 
       // 扫描失败时，尝试使用预构建模板
@@ -246,7 +252,8 @@ export class TemplateManager extends SimpleEventEmitter {
       }
 
       return emptyResult
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 预构建模板加载失败:', error)
 
       // 返回空结果
@@ -357,7 +364,8 @@ export class TemplateManager extends SimpleEventEmitter {
       }
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 模板渲染失败:', error)
       throw error
     }
@@ -400,7 +408,7 @@ export class TemplateManager extends SimpleEventEmitter {
   getDefaultTemplate(category: string, device: DeviceType): TemplateMetadata | null {
     // 查找指定分类和设备类型下标记为默认的模板
     const defaultTemplate = this.templates.find(
-      t => t.category === category && t.device === device && t.config.isDefault === true
+      t => t.category === category && t.device === device && t.config.isDefault === true,
     )
 
     if (defaultTemplate) {
@@ -409,7 +417,7 @@ export class TemplateManager extends SimpleEventEmitter {
 
     // 如果没有找到默认模板，尝试查找名为 'default' 的模板
     const namedDefaultTemplate = this.templates.find(
-      t => t.category === category && t.device === device && t.template === 'default'
+      t => t.category === category && t.device === device && t.template === 'default',
     )
 
     if (namedDefaultTemplate) {
@@ -607,7 +615,7 @@ export class TemplateManager extends SimpleEventEmitter {
   /**
    * 获取缓存统计
    */
-  getCacheStats(): { components: number; metadata: number } {
+  getCacheStats(): { components: number, metadata: number } {
     try {
       const loaderStats = this.loader.getCacheStats()
       const scannerStats = this.scanner.getCacheStats()
@@ -620,7 +628,8 @@ export class TemplateManager extends SimpleEventEmitter {
         components: loaderStats.size,
         metadata: scannerStats.size,
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (this.config.debug) {
         console.error('❌ 获取缓存统计失败:', error)
       }

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useRouter, useQuery } from '@ldesign/router'
-import { computed } from 'vue'
-import { useAppStore } from '../stores/app'
+import { useQuery, useRouter } from '@ldesign/router'
 import {
   TemplateRenderer,
   useTemplate,
 } from '@ldesign/template/vue'
+import { computed } from 'vue'
 import LoginPanel from '../components/LoginPanel.vue'
+import { useAppStore } from '../stores/app'
 
 const router = useRouter()
 const query = useQuery()

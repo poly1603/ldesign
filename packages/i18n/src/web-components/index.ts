@@ -5,6 +5,9 @@
  * 提供开箱即用的多语言组件支持
  */
 
+// 导入 getI18nConnector 用于内部使用
+import { getI18nConnector } from './utils/i18n-connector'
+
 export { I18nButton } from './components/i18n-button'
 export { I18nInput } from './components/i18n-input'
 export { I18nLanguageSwitcher } from './components/i18n-language-switcher'
@@ -31,9 +34,6 @@ export {
   I18nConnector,
   t,
 } from './utils/i18n-connector'
-
-// 导入 getI18nConnector 用于内部使用
-import { getI18nConnector } from './utils/i18n-connector'
 
 export type {
   I18nConnectorConfig,
@@ -100,8 +100,8 @@ export function initI18nComponents(
   if (typeof window !== 'undefined') {
     (window as any).i18n = i18n
 
-      // 暴露 getI18nConnector 函数到全局作用域，以便 WebComponent 可以访问
-      (window as any).getI18nConnector = getI18nConnector
+    // 暴露 getI18nConnector 函数到全局作用域，以便 WebComponent 可以访问
+    (window as any).getI18nConnector = getI18nConnector
 
     // 发出i18n实例就绪事件
     const event = new CustomEvent('i18n-instance-ready', {

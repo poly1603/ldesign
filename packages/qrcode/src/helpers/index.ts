@@ -12,7 +12,7 @@ import { downloadFile } from '../utils'
  */
 export async function generateQRCode(
   text: string,
-  options?: QRCodeOptions
+  options?: QRCodeOptions,
 ): Promise<QRCodeResult> {
   return await defaultGenerator.generate(text, options || {})
 }
@@ -22,11 +22,11 @@ export async function generateQRCode(
  */
 export async function generateQRCodeCanvas(
   text: string,
-  options?: Omit<QRCodeOptions, 'format'>
+  options?: Omit<QRCodeOptions, 'format'>,
 ): Promise<QRCodeResult> {
   return await defaultGenerator.generate(text, {
     ...options,
-    format: 'canvas'
+    format: 'canvas',
   })
 }
 
@@ -35,11 +35,11 @@ export async function generateQRCodeCanvas(
  */
 export async function generateQRCodeSVG(
   text: string,
-  options?: Omit<QRCodeOptions, 'format'>
+  options?: Omit<QRCodeOptions, 'format'>,
 ): Promise<QRCodeResult> {
   return await defaultGenerator.generate(text, {
     ...options,
-    format: 'svg'
+    format: 'svg',
   })
 }
 
@@ -48,11 +48,11 @@ export async function generateQRCodeSVG(
  */
 export async function generateQRCodeImage(
   text: string,
-  options?: Omit<QRCodeOptions, 'format'>
+  options?: Omit<QRCodeOptions, 'format'>,
 ): Promise<QRCodeResult> {
   return await defaultGenerator.generate(text, {
     ...options,
-    format: 'image'
+    format: 'image',
   })
 }
 
@@ -62,7 +62,7 @@ export async function generateQRCodeImage(
 export async function downloadQRCode(
   text: string,
   filename?: string,
-  options?: QRCodeOptions
+  options?: QRCodeOptions,
 ): Promise<void> {
   const result = await generateQRCode(text, options)
   const finalFilename = filename || 'qrcode'
@@ -74,7 +74,7 @@ export async function downloadQRCode(
  */
 export async function getQRCodeDataURL(
   text: string,
-  options?: QRCodeOptions
+  options?: QRCodeOptions,
 ): Promise<string> {
   const result = await generateQRCode(text, options)
   return result.dataURL || ''
@@ -85,7 +85,7 @@ export async function getQRCodeDataURL(
  */
 export async function getQRCodeCanvas(
   text: string,
-  options?: Omit<QRCodeOptions, 'format'>
+  options?: Omit<QRCodeOptions, 'format'>,
 ): Promise<HTMLCanvasElement> {
   const result = await generateQRCodeCanvas(text, options)
   return result.element as HTMLCanvasElement
@@ -96,7 +96,7 @@ export async function getQRCodeCanvas(
  */
 export async function getQRCodeSVG(
   text: string,
-  options?: Omit<QRCodeOptions, 'format'>
+  options?: Omit<QRCodeOptions, 'format'>,
 ): Promise<SVGElement> {
   const result = await generateQRCodeSVG(text, options)
   return result.element as SVGElement
@@ -107,7 +107,7 @@ export async function getQRCodeSVG(
  */
 export async function getQRCodeImage(
   text: string,
-  options?: Omit<QRCodeOptions, 'format'>
+  options?: Omit<QRCodeOptions, 'format'>,
 ): Promise<HTMLImageElement> {
   const result = await generateQRCodeImage(text, options)
   return result.element as HTMLImageElement
@@ -121,15 +121,15 @@ export async function generateQRCodeBatch(
     text: string
     options?: QRCodeOptions
     filename?: string
-  }>
+  }>,
 ): Promise<QRCodeResult[]> {
   const results = await Promise.allSettled(
-    items.map(item => generateQRCode(item.text, item.options))
+    items.map(item => generateQRCode(item.text, item.options)),
   )
 
   return results
     .filter((result): result is PromiseFulfilledResult<QRCodeResult> =>
-      result.status === 'fulfilled'
+      result.status === 'fulfilled',
     )
     .map(result => result.value)
 }
@@ -159,8 +159,8 @@ export function validateQRCodeText(text: string): boolean {
  */
 export function estimateQRCodeSize(
   text: string,
-  errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H' = 'M'
-): { version: number; modules: number; capacity: number } {
+  errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H' = 'M',
+): { version: number, modules: number, capacity: number } {
   const textLength = text.length
 
   // 简化的版本估算（实际情况更复杂）
@@ -171,7 +171,7 @@ export function estimateQRCodeSize(
     L: [25, 47, 77, 114, 154, 195, 224, 279, 335, 395],
     M: [20, 38, 61, 90, 122, 154, 178, 221, 262, 311],
     Q: [16, 29, 47, 67, 87, 108, 125, 157, 189, 221],
-    H: [10, 20, 35, 50, 64, 84, 93, 122, 143, 174]
+    H: [10, 20, 35, 50, 64, 84, 93, 122, 143, 174],
   }
 
   const levelCapacities = capacities[errorCorrectionLevel]
@@ -189,7 +189,7 @@ export function estimateQRCodeSize(
   return {
     version,
     modules,
-    capacity
+    capacity,
   }
 }
 

@@ -213,7 +213,8 @@ export class I18nText extends LitElement {
       let result: string
       if (this.i18nInstance && typeof this.i18nInstance.t === 'function') {
         result = this.i18nInstance.t(this.key, parsedParams, parsedOptions)
-      } else {
+      }
+      else {
         result = this.connector.translate(this.key, parsedParams, parsedOptions)
       }
 

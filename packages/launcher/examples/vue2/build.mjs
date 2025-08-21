@@ -1,7 +1,7 @@
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import fs from 'node:fs/promises'
-import { createProject, buildProject } from '../../dist/index.js'
+import { buildProject, createProject } from '../../dist/index.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectDir = path.resolve(__dirname, 'app-vue2')
@@ -19,7 +19,8 @@ async function main() {
     console.log(' - 输出文件数:', result.outputFiles.length)
     console.log(' - 耗时(ms):', result.duration)
     console.log(' - 体积(bytes):', result.size)
-  } else {
+  }
+  else {
     console.error('[vue2] 构建失败:')
     for (const e of result.errors || []) console.error(' -', e)
     process.exit(1)

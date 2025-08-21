@@ -33,7 +33,7 @@ vi.mock('../../src/engines/indexeddb-engine', () => ({
         isAvailable() {
           return true
         }
-      })()
+      })(),
     ),
   },
 }))
@@ -76,13 +76,13 @@ describe('storageEngineFactory', () => {
 
       const localEngine = await StorageEngineFactory.create(
         'localStorage',
-        config
+        config,
       )
       expect(localEngine).toBeInstanceOf(LocalStorageEngine)
 
       const sessionEngine = await StorageEngineFactory.create(
         'sessionStorage',
-        config
+        config,
       )
       expect(sessionEngine).toBeInstanceOf(SessionStorageEngine)
 
@@ -101,7 +101,7 @@ describe('storageEngineFactory', () => {
 
     it('should throw error for unsupported engine', async () => {
       await expect(
-        StorageEngineFactory.create('unsupported' as any)
+        StorageEngineFactory.create('unsupported' as any),
       ).rejects.toThrow('Unsupported storage engine: unsupported')
     })
   })
@@ -231,11 +231,13 @@ describe('storageEngineFactory', () => {
     it('should fallback to next available engine', () => {
       // Mock localStorage as unavailable
       vi.spyOn(StorageEngineFactory, 'isAvailable').mockImplementation(
-        engine => {
-          if (engine === 'localStorage') return false
-          if (engine === 'memory') return true
+        (engine) => {
+          if (engine === 'localStorage')
+            return false
+          if (engine === 'memory')
+            return true
           return false
-        }
+        },
       )
 
       const recommended = StorageEngineFactory.getRecommendedEngine()
@@ -247,9 +249,9 @@ describe('storageEngineFactory', () => {
     it('should fallback to memory when no other engines available', () => {
       // Mock all engines as unavailable except memory
       vi.spyOn(StorageEngineFactory, 'isAvailable').mockImplementation(
-        engine => {
+        (engine) => {
           return engine === 'memory'
-        }
+        },
       )
 
       const recommended = StorageEngineFactory.getRecommendedEngine()

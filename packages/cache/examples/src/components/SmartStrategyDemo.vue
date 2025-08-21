@@ -24,7 +24,7 @@ function createCache(options: any = {}) {
     },
     clear: async () => {
       const keysToRemove = Object.keys(localStorage).filter(key =>
-        key.startsWith('smart_')
+        key.startsWith('smart_'),
       )
       keysToRemove.forEach(key => localStorage.removeItem(key))
     },
@@ -56,7 +56,7 @@ smartCache.on('strategy', (event: any) => {
       `策略选择: ${event.key}`,
       event.engine,
       event.strategy.reason,
-      event.strategy.confidence
+      event.strategy.confidence,
     )
   }
 })
@@ -82,7 +82,7 @@ function addResult(
   description: string,
   engine: string,
   reason: string,
-  confidence: number
+  confidence: number,
 ) {
   strategyResults.value.unshift({
     id: generateId(),
@@ -106,9 +106,11 @@ async function simulateStrategy(description: string, data: any, options?: any) {
   try {
     // 设置数据，策略选择结果会通过事件监听器自动添加到结果中
     await smartCache.set(`strategy-test-${generateId()}`, data, options)
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -192,7 +194,8 @@ async function getAllKeys() {
   try {
     const keyList = await smartCache.keys()
     allKeys.value = keyList
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
   }
 }
@@ -203,7 +206,8 @@ async function clearAllCache() {
     await smartCache.clear()
     allKeys.value = []
     strategyResults.value = []
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
   }
 }
@@ -238,12 +242,16 @@ async function testAllStrategies() {
       <button class="btn" @click="testMediumData">
         中等数据 (→ sessionStorage)
       </button>
-      <button class="btn" @click="testLargeData">大数据 (→ IndexedDB)</button>
+      <button class="btn" @click="testLargeData">
+        大数据 (→ IndexedDB)
+      </button>
     </div>
 
     <div class="demo-section">
       <h4>TTL 策略</h4>
-      <button class="btn" @click="testShortTTL">短期缓存 (→ Memory)</button>
+      <button class="btn" @click="testShortTTL">
+        短期缓存 (→ Memory)
+      </button>
       <button class="btn" @click="testMediumTTL">
         中期缓存 (→ sessionStorage)
       </button>
@@ -260,7 +268,9 @@ async function testAllStrategies() {
       <button class="btn" @click="testComplexObject">
         复杂对象 (→ IndexedDB)
       </button>
-      <button class="btn" @click="testArrayData">数组数据 (→ IndexedDB)</button>
+      <button class="btn" @click="testArrayData">
+        数组数据 (→ IndexedDB)
+      </button>
     </div>
 
     <div v-if="strategyResults.length > 0" class="strategy-results">
@@ -284,13 +294,21 @@ async function testAllStrategies() {
     </div>
 
     <div class="demo-section">
-      <button class="btn secondary" @click="clearResults">清空结果</button>
-      <button class="btn" @click="testAllStrategies">测试所有策略</button>
+      <button class="btn secondary" @click="clearResults">
+        清空结果
+      </button>
+      <button class="btn" @click="testAllStrategies">
+        测试所有策略
+      </button>
     </div>
 
-    <div v-if="loading" class="status info">策略分析中...</div>
+    <div v-if="loading" class="status info">
+      策略分析中...
+    </div>
 
-    <div v-if="error" class="status error">错误: {{ error.message }}</div>
+    <div v-if="error" class="status error">
+      错误: {{ error.message }}
+    </div>
   </div>
 </template>
 

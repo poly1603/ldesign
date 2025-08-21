@@ -17,7 +17,7 @@ const selectedTheme = ref(currentTheme.value)
 const systemTheme = ref(getSystemTheme())
 
 // 监听当前主题变化，同步选择器
-watch(currentTheme, newTheme => {
+watch(currentTheme, (newTheme) => {
   selectedTheme.value = newTheme
 })
 
@@ -73,7 +73,9 @@ async function _resetToDefault() {
 
 <template>
   <div class="card">
-    <h2 class="card-title">🎛️ 主题控制</h2>
+    <h2 class="card-title">
+      🎛️ 主题控制
+    </h2>
 
     <div class="control-group">
       <label for="theme-select">选择主题:</label>
@@ -97,8 +99,12 @@ async function _resetToDefault() {
         class="mode-select"
         @change="setMode(($event.target as HTMLSelectElement).value as any)"
       >
-        <option value="light">亮色模式</option>
-        <option value="dark">暗色模式</option>
+        <option value="light">
+          亮色模式
+        </option>
+        <option value="dark">
+          暗色模式
+        </option>
       </select>
     </div>
 

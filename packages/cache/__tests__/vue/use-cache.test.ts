@@ -120,7 +120,7 @@ describe('useCache', () => {
       const { cache } = wrapper.vm
       const reactiveCache = cache.useReactiveCache(
         'reactive-key',
-        'default-value'
+        'default-value',
       )
 
       // 初始值应该是默认值
@@ -175,7 +175,8 @@ describe('useCache', () => {
 
       try {
         await reactiveCache.save(circularObj)
-      } catch {
+      }
+      catch {
         // 预期会抛出错误
       }
 

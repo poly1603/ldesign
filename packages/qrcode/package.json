@@ -2,13 +2,46 @@
   "name": "@ldesign/qrcode",
   "version": "1.0.0",
   "description": "LDesign QRCode - A powerful and flexible QR code generator for Vue.js and vanilla JavaScript",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/qrcode#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/qrcode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/qrcode/issues"
+  },
+  "keywords": [
+    "qrcode",
+    "qr-code",
+    "vue",
+    "vue3",
+    "typescript",
+    "canvas",
+    "svg",
+    "generator",
+    "ldesign"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.esm.js",
+      "require": "./dist/vue.js"
+    }
+  },
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
+    "README.md",
     "dist",
-    "src",
-    "README.md"
+    "src"
   ],
   "scripts": {
     "dev": "vite",
@@ -24,27 +57,6 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
-  "keywords": [
-    "qrcode",
-    "qr-code",
-    "vue",
-    "vue3",
-    "typescript",
-    "canvas",
-    "svg",
-    "generator",
-    "ldesign"
-  ],
-  "author": "LDesign Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/qrcode.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/qrcode/issues"
-  },
-  "homepage": "https://github.com/ldesign/qrcode#readme",
   "peerDependencies": {
     "vue": "^3.0.0"
   },
@@ -69,17 +81,5 @@
     "vitest": "^0.34.0",
     "vue": "^3.3.0",
     "vue-tsc": "^1.8.0"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./vue": {
-      "import": "./dist/vue.esm.js",
-      "require": "./dist/vue.js",
-      "types": "./dist/vue.d.ts"
-    }
   }
 }

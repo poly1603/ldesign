@@ -9,30 +9,30 @@
   --pdf-color-accent: #2196f3;
   --pdf-color-accent-dark: #1976d2;
   --pdf-color-accent-light: #64b5f6;
-  
+
   --pdf-color-background: #ffffff;
   --pdf-color-surface: #f5f5f5;
   --pdf-color-surface-variant: #e3f2fd;
   --pdf-color-text: #212121;
   --pdf-color-text-secondary: #757575;
   --pdf-color-text-disabled: #bdbdbd;
-  
+
   --pdf-color-border: #e0e0e0;
   --pdf-color-border-light: #f0f0f0;
   --pdf-color-divider: #e0e0e0;
-  
+
   --pdf-color-success: #4caf50;
   --pdf-color-warning: #ff9800;
   --pdf-color-error: #f44336;
   --pdf-color-info: #2196f3;
-  
+
   /* 阴影系统 */
   --pdf-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   --pdf-shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   --pdf-shadow-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
   --pdf-shadow-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  --pdf-shadow-5: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
-  
+  --pdf-shadow-5: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
+
   /* 间距系统 */
   --pdf-spacing-xs: 4px;
   --pdf-spacing-sm: 8px;
@@ -41,11 +41,11 @@
   --pdf-spacing-xl: 32px;
   --pdf-spacing-2xl: 48px;
   --pdf-spacing-3xl: 64px;
-  
+
   /* 字体系统 */
   --pdf-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --pdf-font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  
+
   --pdf-font-size-xs: 10px;
   --pdf-font-size-sm: 12px;
   --pdf-font-size-base: 14px;
@@ -55,17 +55,17 @@
   --pdf-font-size-2xl: 24px;
   --pdf-font-size-3xl: 30px;
   --pdf-font-size-4xl: 36px;
-  
+
   --pdf-font-weight-light: 300;
   --pdf-font-weight-normal: 400;
   --pdf-font-weight-medium: 500;
   --pdf-font-weight-semibold: 600;
   --pdf-font-weight-bold: 700;
-  
+
   --pdf-line-height-tight: 1.25;
   --pdf-line-height-normal: 1.5;
   --pdf-line-height-relaxed: 1.75;
-  
+
   /* 边框系统 */
   --pdf-border-radius-sm: 2px;
   --pdf-border-radius-base: 4px;
@@ -74,17 +74,17 @@
   --pdf-border-radius-xl: 12px;
   --pdf-border-radius-2xl: 16px;
   --pdf-border-radius-full: 9999px;
-  
+
   --pdf-border-width: 1px;
   --pdf-border-width-2: 2px;
   --pdf-border-width-4: 4px;
-  
+
   /* 过渡动画 */
   --pdf-transition-fast: 150ms ease;
   --pdf-transition-base: 200ms ease;
   --pdf-transition-slow: 300ms ease;
   --pdf-transition-slower: 500ms ease;
-  
+
   /* Z-index层级 */
   --pdf-z-dropdown: 1000;
   --pdf-z-sticky: 1020;
@@ -97,7 +97,7 @@
 }
 
 /* 深色主题变量 */
-[data-theme="dark"],
+[data-theme='dark'],
 .dark {
   --pdf-color-primary: #90caf9;
   --pdf-color-primary-dark: #64b5f6;
@@ -105,18 +105,18 @@
   --pdf-color-accent: #64b5f6;
   --pdf-color-accent-dark: #42a5f5;
   --pdf-color-accent-light: #90caf9;
-  
+
   --pdf-color-background: #121212;
   --pdf-color-surface: #1e1e1e;
   --pdf-color-surface-variant: #2d2d2d;
   --pdf-color-text: #ffffff;
   --pdf-color-text-secondary: #b0bec5;
   --pdf-color-text-disabled: #616161;
-  
+
   --pdf-color-border: #333333;
   --pdf-color-border-light: #2d2d2d;
   --pdf-color-divider: #333333;
-  
+
   --pdf-color-success: #66bb6a;
   --pdf-color-warning: #ffb74d;
   --pdf-color-error: #ef5350;
@@ -306,7 +306,12 @@ hr {
 }
 
 /* 标题样式 */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0 0 var(--pdf-spacing-md) 0;
   font-weight: var(--pdf-font-weight-semibold);
   line-height: var(--pdf-line-height-tight);
@@ -443,85 +448,211 @@ p {
 }
 
 /* 间距工具类 */
-.m-0 { margin: 0; }
-.m-1 { margin: var(--pdf-spacing-xs); }
-.m-2 { margin: var(--pdf-spacing-sm); }
-.m-3 { margin: var(--pdf-spacing-md); }
-.m-4 { margin: var(--pdf-spacing-lg); }
-.m-5 { margin: var(--pdf-spacing-xl); }
+.m-0 {
+  margin: 0;
+}
+.m-1 {
+  margin: var(--pdf-spacing-xs);
+}
+.m-2 {
+  margin: var(--pdf-spacing-sm);
+}
+.m-3 {
+  margin: var(--pdf-spacing-md);
+}
+.m-4 {
+  margin: var(--pdf-spacing-lg);
+}
+.m-5 {
+  margin: var(--pdf-spacing-xl);
+}
 
-.p-0 { padding: 0; }
-.p-1 { padding: var(--pdf-spacing-xs); }
-.p-2 { padding: var(--pdf-spacing-sm); }
-.p-3 { padding: var(--pdf-spacing-md); }
-.p-4 { padding: var(--pdf-spacing-lg); }
-.p-5 { padding: var(--pdf-spacing-xl); }
+.p-0 {
+  padding: 0;
+}
+.p-1 {
+  padding: var(--pdf-spacing-xs);
+}
+.p-2 {
+  padding: var(--pdf-spacing-sm);
+}
+.p-3 {
+  padding: var(--pdf-spacing-md);
+}
+.p-4 {
+  padding: var(--pdf-spacing-lg);
+}
+.p-5 {
+  padding: var(--pdf-spacing-xl);
+}
 
 /* 文本工具类 */
-.text-left { text-align: left; }
-.text-center { text-align: center; }
-.text-right { text-align: right; }
-.text-justify { text-align: justify; }
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-justify {
+  text-align: justify;
+}
 
-.text-xs { font-size: var(--pdf-font-size-xs); }
-.text-sm { font-size: var(--pdf-font-size-sm); }
-.text-base { font-size: var(--pdf-font-size-base); }
-.text-md { font-size: var(--pdf-font-size-md); }
-.text-lg { font-size: var(--pdf-font-size-lg); }
-.text-xl { font-size: var(--pdf-font-size-xl); }
-.text-2xl { font-size: var(--pdf-font-size-2xl); }
-.text-3xl { font-size: var(--pdf-font-size-3xl); }
+.text-xs {
+  font-size: var(--pdf-font-size-xs);
+}
+.text-sm {
+  font-size: var(--pdf-font-size-sm);
+}
+.text-base {
+  font-size: var(--pdf-font-size-base);
+}
+.text-md {
+  font-size: var(--pdf-font-size-md);
+}
+.text-lg {
+  font-size: var(--pdf-font-size-lg);
+}
+.text-xl {
+  font-size: var(--pdf-font-size-xl);
+}
+.text-2xl {
+  font-size: var(--pdf-font-size-2xl);
+}
+.text-3xl {
+  font-size: var(--pdf-font-size-3xl);
+}
 
-.font-light { font-weight: var(--pdf-font-weight-light); }
-.font-normal { font-weight: var(--pdf-font-weight-normal); }
-.font-medium { font-weight: var(--pdf-font-weight-medium); }
-.font-semibold { font-weight: var(--pdf-font-weight-semibold); }
-.font-bold { font-weight: var(--pdf-font-weight-bold); }
+.font-light {
+  font-weight: var(--pdf-font-weight-light);
+}
+.font-normal {
+  font-weight: var(--pdf-font-weight-normal);
+}
+.font-medium {
+  font-weight: var(--pdf-font-weight-medium);
+}
+.font-semibold {
+  font-weight: var(--pdf-font-weight-semibold);
+}
+.font-bold {
+  font-weight: var(--pdf-font-weight-bold);
+}
 
-.leading-tight { line-height: var(--pdf-line-height-tight); }
-.leading-normal { line-height: var(--pdf-line-height-normal); }
-.leading-relaxed { line-height: var(--pdf-line-height-relaxed); }
+.leading-tight {
+  line-height: var(--pdf-line-height-tight);
+}
+.leading-normal {
+  line-height: var(--pdf-line-height-normal);
+}
+.leading-relaxed {
+  line-height: var(--pdf-line-height-relaxed);
+}
 
 /* 颜色工具类 */
-.text-primary { color: var(--pdf-color-primary); }
-.text-secondary { color: var(--pdf-color-text-secondary); }
-.text-success { color: var(--pdf-color-success); }
-.text-warning { color: var(--pdf-color-warning); }
-.text-error { color: var(--pdf-color-error); }
-.text-info { color: var(--pdf-color-info); }
+.text-primary {
+  color: var(--pdf-color-primary);
+}
+.text-secondary {
+  color: var(--pdf-color-text-secondary);
+}
+.text-success {
+  color: var(--pdf-color-success);
+}
+.text-warning {
+  color: var(--pdf-color-warning);
+}
+.text-error {
+  color: var(--pdf-color-error);
+}
+.text-info {
+  color: var(--pdf-color-info);
+}
 
-.bg-primary { background-color: var(--pdf-color-primary); }
-.bg-surface { background-color: var(--pdf-color-surface); }
-.bg-success { background-color: var(--pdf-color-success); }
-.bg-warning { background-color: var(--pdf-color-warning); }
-.bg-error { background-color: var(--pdf-color-error); }
-.bg-info { background-color: var(--pdf-color-info); }
+.bg-primary {
+  background-color: var(--pdf-color-primary);
+}
+.bg-surface {
+  background-color: var(--pdf-color-surface);
+}
+.bg-success {
+  background-color: var(--pdf-color-success);
+}
+.bg-warning {
+  background-color: var(--pdf-color-warning);
+}
+.bg-error {
+  background-color: var(--pdf-color-error);
+}
+.bg-info {
+  background-color: var(--pdf-color-info);
+}
 
 /* 边框工具类 */
-.border { border: var(--pdf-border-width) solid var(--pdf-color-border); }
-.border-t { border-top: var(--pdf-border-width) solid var(--pdf-color-border); }
-.border-r { border-right: var(--pdf-border-width) solid var(--pdf-color-border); }
-.border-b { border-bottom: var(--pdf-border-width) solid var(--pdf-color-border); }
-.border-l { border-left: var(--pdf-border-width) solid var(--pdf-color-border); }
+.border {
+  border: var(--pdf-border-width) solid var(--pdf-color-border);
+}
+.border-t {
+  border-top: var(--pdf-border-width) solid var(--pdf-color-border);
+}
+.border-r {
+  border-right: var(--pdf-border-width) solid var(--pdf-color-border);
+}
+.border-b {
+  border-bottom: var(--pdf-border-width) solid var(--pdf-color-border);
+}
+.border-l {
+  border-left: var(--pdf-border-width) solid var(--pdf-color-border);
+}
 
-.rounded { border-radius: var(--pdf-border-radius-base); }
-.rounded-sm { border-radius: var(--pdf-border-radius-sm); }
-.rounded-md { border-radius: var(--pdf-border-radius-md); }
-.rounded-lg { border-radius: var(--pdf-border-radius-lg); }
-.rounded-xl { border-radius: var(--pdf-border-radius-xl); }
-.rounded-full { border-radius: var(--pdf-border-radius-full); }
+.rounded {
+  border-radius: var(--pdf-border-radius-base);
+}
+.rounded-sm {
+  border-radius: var(--pdf-border-radius-sm);
+}
+.rounded-md {
+  border-radius: var(--pdf-border-radius-md);
+}
+.rounded-lg {
+  border-radius: var(--pdf-border-radius-lg);
+}
+.rounded-xl {
+  border-radius: var(--pdf-border-radius-xl);
+}
+.rounded-full {
+  border-radius: var(--pdf-border-radius-full);
+}
 
 /* 阴影工具类 */
-.shadow-1 { box-shadow: var(--pdf-shadow-1); }
-.shadow-2 { box-shadow: var(--pdf-shadow-2); }
-.shadow-3 { box-shadow: var(--pdf-shadow-3); }
-.shadow-4 { box-shadow: var(--pdf-shadow-4); }
-.shadow-5 { box-shadow: var(--pdf-shadow-5); }
+.shadow-1 {
+  box-shadow: var(--pdf-shadow-1);
+}
+.shadow-2 {
+  box-shadow: var(--pdf-shadow-2);
+}
+.shadow-3 {
+  box-shadow: var(--pdf-shadow-3);
+}
+.shadow-4 {
+  box-shadow: var(--pdf-shadow-4);
+}
+.shadow-5 {
+  box-shadow: var(--pdf-shadow-5);
+}
 
 /* 过渡工具类 */
-.transition { transition: all var(--pdf-transition-base); }
-.transition-fast { transition: all var(--pdf-transition-fast); }
-.transition-slow { transition: all var(--pdf-transition-slow); }
+.transition {
+  transition: all var(--pdf-transition-base);
+}
+.transition-fast {
+  transition: all var(--pdf-transition-fast);
+}
+.transition-slow {
+  transition: all var(--pdf-transition-slow);
+}
 
 /* 网络状态样式 */
 body.offline {
@@ -551,31 +682,38 @@ body.offline::before {
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  
+
   body {
     font-size: 12pt;
     line-height: 1.5;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     page-break-after: avoid;
   }
-  
-  p, blockquote {
+
+  p,
+  blockquote {
     orphans: 3;
     widows: 3;
   }
-  
-  blockquote, pre {
+
+  blockquote,
+  pre {
     page-break-inside: avoid;
   }
-  
+
   a {
     text-decoration: underline;
   }
-  
-  a[href^="http"]:after {
-    content: " (" attr(href) ")";
+
+  a[href^='http']:after {
+    content: ' (' attr(href) ')';
   }
 }
 
@@ -585,8 +723,8 @@ body.offline::before {
     --pdf-color-border: #000000;
     --pdf-color-text-secondary: #000000;
   }
-  
-  [data-theme="dark"],
+
+  [data-theme='dark'],
   .dark {
     --pdf-color-border: #ffffff;
     --pdf-color-text-secondary: #ffffff;
@@ -610,17 +748,23 @@ body.offline::before {
   .container {
     padding: 0 var(--pdf-spacing-sm);
   }
-  
-  h1 { font-size: var(--pdf-font-size-2xl); }
-  h2 { font-size: var(--pdf-font-size-xl); }
-  h3 { font-size: var(--pdf-font-size-lg); }
+
+  h1 {
+    font-size: var(--pdf-font-size-2xl);
+  }
+  h2 {
+    font-size: var(--pdf-font-size-xl);
+  }
+  h3 {
+    font-size: var(--pdf-font-size-lg);
+  }
 }
 
 @media (max-width: 480px) {
   html {
     font-size: 14px;
   }
-  
+
   .container {
     padding: 0 var(--pdf-spacing-xs);
   }
@@ -635,25 +779,25 @@ body.offline::before {
 
 /* 深色模式媒体查询 */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme='light']) {
     --pdf-color-primary: #90caf9;
     --pdf-color-primary-dark: #64b5f6;
     --pdf-color-primary-light: #bbdefb;
     --pdf-color-accent: #64b5f6;
     --pdf-color-accent-dark: #42a5f5;
     --pdf-color-accent-light: #90caf9;
-    
+
     --pdf-color-background: #121212;
     --pdf-color-surface: #1e1e1e;
     --pdf-color-surface-variant: #2d2d2d;
     --pdf-color-text: #ffffff;
     --pdf-color-text-secondary: #b0bec5;
     --pdf-color-text-disabled: #616161;
-    
+
     --pdf-color-border: #333333;
     --pdf-color-border-light: #2d2d2d;
     --pdf-color-divider: #333333;
-    
+
     --pdf-color-success: #66bb6a;
     --pdf-color-warning: #ffb74d;
     --pdf-color-error: #ef5350;

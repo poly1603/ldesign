@@ -1,32 +1,32 @@
-import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   build: {
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        vue: resolve(__dirname, 'src/vue/index.ts')
+        vue: resolve(__dirname, 'src/vue/index.ts'),
       },
       name: 'LDesignQRCode',
-      formats: ['es', 'cjs']
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
       external: ['vue', 'qrcode'],
       output: {
         globals: {
           vue: 'Vue',
-          qrcode: 'QRCode'
-        }
-      }
-    }
+          qrcode: 'QRCode',
+        },
+      },
+    },
   },
   test: {
     environment: 'jsdom',
@@ -39,8 +39,8 @@ export default defineConfig({
         'tests/',
         '**/*.d.ts',
         '**/*.test.ts',
-        '**/*.spec.ts'
-      ]
-    }
-  }
+        '**/*.spec.ts',
+      ],
+    },
+  },
 })

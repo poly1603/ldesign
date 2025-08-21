@@ -3,19 +3,19 @@
  * 为不使用框架的项目提供PDF预览组件支持
  */
 
+import { defaultPdfApi } from '../api/pdf-api'
+import { createPdfError, ErrorCode } from '../utils/error-handler'
 import { BaseAdapter } from './base-adapter'
 import {
-  FrameworkType,
   type AdapterConfig,
+  type ComponentMethods,
   type ComponentProps,
+  type ComponentState,
   type EventHandlers,
+  FrameworkType,
   type LifecycleHooks,
   type RenderContext,
-  type ComponentState,
-  type ComponentMethods
 } from './types'
-import { createPdfError, ErrorCode } from '../utils/error-handler'
-import { defaultPdfApi } from '../api/pdf-api'
 
 /**
  * 原生组件实例接口
@@ -70,25 +70,25 @@ export class VanillaAdapter extends BaseAdapter {
   createComponent(
     props: ComponentProps,
     handlers?: EventHandlers,
-    hooks?: LifecycleHooks
+    hooks?: LifecycleHooks,
   ): VanillaComponentInstance {
     if (!this._initialized) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Vanilla adapter not initialized'
+        'Vanilla adapter not initialized',
       )
     }
 
     // 创建组件状态
     const state = this.createComponentState()
-    
+
     // 创建临时容器用于初始化渲染上下文
     const tempContainer = document.createElement('div')
     const context = this.createRenderContext(tempContainer)
-    
+
     // 创建组件方法
     const methods = this.createComponentMethods(state, context, handlers)
-    
+
     // 创建原生组件实例
     const instance: VanillaComponentInstance = {
       state,
@@ -99,7 +99,7 @@ export class VanillaAdapter extends BaseAdapter {
       mounted: false,
       cleanup: [],
       eventListeners: new Map(),
-      observers: []
+      observers: [],
     }
 
     // 注册组件实例
@@ -120,7 +120,7 @@ export class VanillaAdapter extends BaseAdapter {
     if (!instance) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Invalid Vanilla component instance'
+        'Invalid Vanilla component instance',
       )
     }
 
@@ -158,11 +158,12 @@ export class VanillaAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[Vanilla Adapter] Component mounted to container')
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.RENDER_ERROR,
         'Failed to mount Vanilla component',
-        error
+        error,
       )
       this._handleError(pdfError)
       throw pdfError
@@ -177,7 +178,7 @@ export class VanillaAdapter extends BaseAdapter {
     if (!instance) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Invalid Vanilla component instance'
+        'Invalid Vanilla component instance',
       )
     }
 
@@ -192,14 +193,14 @@ export class VanillaAdapter extends BaseAdapter {
 
       // 更新页码
       if (props.page && props.page !== instance.state.currentPage) {
-        instance.methods.goToPage(props.page).catch(error => {
+        instance.methods.goToPage(props.page).catch((error) => {
           this._handleError(error)
         })
       }
 
       // 更新缩放比例
       if (props.scale && props.scale !== instance.state.scale) {
-        instance.methods.setScale(props.scale).catch(error => {
+        instance.methods.setScale(props.scale).catch((error) => {
           this._handleError(error)
         })
       }
@@ -207,7 +208,7 @@ export class VanillaAdapter extends BaseAdapter {
       // 更新渲染选项
       if (props.renderOptions) {
         // 重新渲染当前页面
-        this.renderCurrentPage(instance.state, instance.context).catch(error => {
+        this.renderCurrentPage(instance.state, instance.context).catch((error) => {
           this._handleError(error)
         })
       }
@@ -238,11 +239,12 @@ export class VanillaAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[Vanilla Adapter] Component props updated:', props)
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.VALIDATION_ERROR,
         'Failed to update Vanilla component props',
-        error
+        error,
       )
       this._handleError(pdfError)
     }
@@ -268,10 +270,11 @@ export class VanillaAdapter extends BaseAdapter {
       this._cleanupObservers(instance)
 
       // 执行清理函数
-      instance.cleanup.forEach(cleanup => {
+      instance.cleanup.forEach((cleanup) => {
         try {
           cleanup()
-        } catch (error) {
+        }
+        catch (error) {
           console.error('[Vanilla Adapter] Cleanup error:', error)
         }
       })
@@ -295,11 +298,12 @@ export class VanillaAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[Vanilla Adapter] Component unmounted')
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.UNKNOWN_ERROR,
         'Failed to unmount Vanilla component',
-        error
+        error,
       )
       this._handleError(pdfError)
     }
@@ -311,7 +315,7 @@ export class VanillaAdapter extends BaseAdapter {
   protected doDestroy(): void {
     // 清理所有原生实例
     this._vanillaInstances = new WeakMap()
-    
+
     if (this._config.debug) {
       console.warn('[Vanilla Adapter] Destroyed')
     }
@@ -333,7 +337,8 @@ export class VanillaAdapter extends BaseAdapter {
     const { container, canvas } = instance.context
     const { handlers } = instance
 
-    if (!container || !canvas) return
+    if (!container || !canvas)
+      return
 
     // 点击事件
     if (handlers?.onClick) {
@@ -358,7 +363,7 @@ export class VanillaAdapter extends BaseAdapter {
       event.preventDefault()
       const delta = event.deltaY > 0 ? -0.1 : 0.1
       const newScale = Math.max(0.1, Math.min(5.0, instance.state.scale + delta))
-      instance.methods.setScale(newScale).catch(error => {
+      instance.methods.setScale(newScale).catch((error) => {
         this._handleError(error)
       })
     }
@@ -371,27 +376,27 @@ export class VanillaAdapter extends BaseAdapter {
         case 'ArrowLeft':
         case 'PageUp':
           event.preventDefault()
-          instance.methods.previousPage().catch(error => {
+          instance.methods.previousPage().catch((error) => {
             this._handleError(error)
           })
           break
         case 'ArrowRight':
         case 'PageDown':
           event.preventDefault()
-          instance.methods.nextPage().catch(error => {
+          instance.methods.nextPage().catch((error) => {
             this._handleError(error)
           })
           break
         case '+':
         case '=':
           event.preventDefault()
-          instance.methods.zoomIn().catch(error => {
+          instance.methods.zoomIn().catch((error) => {
             this._handleError(error)
           })
           break
         case '-':
           event.preventDefault()
-          instance.methods.zoomOut().catch(error => {
+          instance.methods.zoomOut().catch((error) => {
             this._handleError(error)
           })
           break
@@ -413,7 +418,8 @@ export class VanillaAdapter extends BaseAdapter {
     instance.eventListeners.forEach((listener, eventType) => {
       if (eventType === 'keydown' && container) {
         container.removeEventListener(eventType, listener)
-      } else if (canvas) {
+      }
+      else if (canvas) {
         canvas.removeEventListener(eventType, listener)
       }
     })
@@ -426,14 +432,15 @@ export class VanillaAdapter extends BaseAdapter {
    */
   private _setupObservers(instance: VanillaComponentInstance): void {
     const { container } = instance.context
-    if (!container) return
+    if (!container)
+      return
 
     // 尺寸变化观察器
     if (typeof ResizeObserver !== 'undefined') {
       const resizeObserver = new ResizeObserver(() => {
         // 容器尺寸变化时重新渲染
         if (instance.mounted && instance.state.document) {
-          this.renderCurrentPage(instance.state, instance.context).catch(error => {
+          this.renderCurrentPage(instance.state, instance.context).catch((error) => {
             this._handleError(error)
           })
         }
@@ -445,10 +452,10 @@ export class VanillaAdapter extends BaseAdapter {
     // 可见性观察器
     if (typeof IntersectionObserver !== 'undefined') {
       const intersectionObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting && instance.state.document) {
             // 组件进入视口时重新渲染
-            this.renderCurrentPage(instance.state, instance.context).catch(error => {
+            this.renderCurrentPage(instance.state, instance.context).catch((error) => {
               this._handleError(error)
             })
           }
@@ -463,7 +470,7 @@ export class VanillaAdapter extends BaseAdapter {
    * 清理观察器
    */
   private _cleanupObservers(instance: VanillaComponentInstance): void {
-    instance.observers.forEach(observer => {
+    instance.observers.forEach((observer) => {
       observer.disconnect()
     })
     instance.observers.length = 0
@@ -474,12 +481,14 @@ export class VanillaAdapter extends BaseAdapter {
    */
   private _updateLoadingState(instance: VanillaComponentInstance): void {
     const { container } = instance.context
-    if (!container) return
+    if (!container)
+      return
 
     if (instance.state.loading) {
       container.style.cursor = 'wait'
       container.setAttribute('aria-busy', 'true')
-    } else {
+    }
+    else {
       container.style.cursor = 'default'
       container.removeAttribute('aria-busy')
     }
@@ -490,13 +499,15 @@ export class VanillaAdapter extends BaseAdapter {
    */
   private _updateDisabledState(instance: VanillaComponentInstance, disabled: boolean): void {
     const { container } = instance.context
-    if (!container) return
+    if (!container)
+      return
 
     if (disabled) {
       container.style.pointerEvents = 'none'
       container.style.opacity = '0.6'
       container.setAttribute('aria-disabled', 'true')
-    } else {
+    }
+    else {
       container.style.pointerEvents = 'auto'
       container.style.opacity = '1'
       container.removeAttribute('aria-disabled')
@@ -527,7 +538,8 @@ export class VanillaAdapter extends BaseAdapter {
       if (instance.mounted) {
         await this.renderCurrentPage(instance.state, instance.context)
       }
-    } catch (error) {
+    }
+    catch (error) {
       instance.state.loading = false
       instance.state.error = error as Error
       this._updateLoadingState(instance)
@@ -546,8 +558,8 @@ export function createVanillaAdapter(config?: Partial<AdapterConfig>): VanillaAd
     framework: FrameworkType.VANILLA,
     componentName: 'PdfViewer',
     debug: false,
-    ...config
+    ...config,
   }
-  
+
   return new VanillaAdapter(defaultConfig)
 }

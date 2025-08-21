@@ -3,6 +3,6 @@ import { createPlaywrightConfig } from '../../tools/configs/test/playwright.conf
 export default createPlaywrightConfig({
   webServer: {
     command: 'pnpm dev',
-    port: 5173
-  }
+    port: 5173,
+  },
 })

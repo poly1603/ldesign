@@ -13,14 +13,15 @@ const darkPrimary = ref('#177ddc')
 
 const canCreate = computed(() => {
   return (
-    themeName.value.trim() &&
-    isValidHex(lightPrimary.value) &&
-    isValidHex(darkPrimary.value)
+    themeName.value.trim()
+    && isValidHex(lightPrimary.value)
+    && isValidHex(darkPrimary.value)
   )
 })
 
 async function createTheme() {
-  if (!canCreate.value) return
+  if (!canCreate.value)
+    return
 
   try {
     const customTheme = createCustomTheme(
@@ -30,7 +31,7 @@ async function createTheme() {
         displayName: themeName.value.trim(),
         description: `自定义主题：${themeName.value.trim()}`,
         darkPrimaryColor: darkPrimary.value,
-      }
+      },
     )
 
     registerTheme(customTheme)
@@ -42,7 +43,8 @@ async function createTheme() {
     themeName.value = ''
     lightPrimary.value = '#1890ff'
     darkPrimary.value = '#177ddc'
-  } catch {
+  }
+  catch {
     showNotification('创建主题失败', 'error')
   }
 }
@@ -50,7 +52,9 @@ async function createTheme() {
 
 <template>
   <div class="card">
-    <h2 class="card-title">🛠️ 自定义主题</h2>
+    <h2 class="card-title">
+      🛠️ 自定义主题
+    </h2>
 
     <form class="theme-form" @submit.prevent="createTheme">
       <div class="form-group">
@@ -61,32 +65,32 @@ async function createTheme() {
           class="form-control"
           placeholder="输入主题名称"
           required
-        />
+        >
       </div>
 
       <div class="form-group">
         <label class="form-label">亮色模式主色调</label>
         <div class="color-input-group">
-          <input v-model="lightPrimary" type="color" class="color-picker" />
+          <input v-model="lightPrimary" type="color" class="color-picker">
           <input
             v-model="lightPrimary"
             type="text"
             class="form-control"
             placeholder="#1890ff"
-          />
+          >
         </div>
       </div>
 
       <div class="form-group">
         <label class="form-label">暗色模式主色调</label>
         <div class="color-input-group">
-          <input v-model="darkPrimary" type="color" class="color-picker" />
+          <input v-model="darkPrimary" type="color" class="color-picker">
           <input
             v-model="darkPrimary"
             type="text"
             class="form-control"
             placeholder="#177ddc"
-          />
+          >
         </div>
       </div>
 

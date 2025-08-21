@@ -11,40 +11,40 @@ module.exports = {
   bracketSameLine: false,
   arrowParens: 'avoid',
   endOfLine: 'lf',
-  
+
   // TypeScript 特定选项
   parser: 'typescript',
-  
+
   // 覆盖特定文件类型的配置
   overrides: [
     {
       files: '*.json',
       options: {
         parser: 'json',
-        trailingComma: 'none'
-      }
+        trailingComma: 'none',
+      },
     },
     {
       files: '*.md',
       options: {
         parser: 'markdown',
         printWidth: 80,
-        proseWrap: 'always'
-      }
+        proseWrap: 'always',
+      },
     },
     {
       files: '*.yml',
       options: {
         parser: 'yaml',
-        tabWidth: 2
-      }
+        tabWidth: 2,
+      },
     },
     {
       files: '*.yaml',
       options: {
         parser: 'yaml',
-        tabWidth: 2
-      }
-    }
-  ]
+        tabWidth: 2,
+      },
+    },
+  ],
 }

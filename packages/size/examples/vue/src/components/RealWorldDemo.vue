@@ -63,34 +63,58 @@ import CustomCard from './CustomCard.vue'
         <section class="stats-section">
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-icon">👥</div>
+              <div class="stat-icon">
+                👥
+              </div>
               <div class="stat-content">
-                <div class="stat-number">1,234</div>
-                <div class="stat-label">总用户数</div>
+                <div class="stat-number">
+                  1,234
+                </div>
+                <div class="stat-label">
+                  总用户数
+                </div>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon">📦</div>
+              <div class="stat-icon">
+                📦
+              </div>
               <div class="stat-content">
-                <div class="stat-number">567</div>
-                <div class="stat-label">产品数量</div>
+                <div class="stat-number">
+                  567
+                </div>
+                <div class="stat-label">
+                  产品数量
+                </div>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon">💰</div>
+              <div class="stat-icon">
+                💰
+              </div>
               <div class="stat-content">
-                <div class="stat-number">¥89,012</div>
-                <div class="stat-label">总收入</div>
+                <div class="stat-number">
+                  ¥89,012
+                </div>
+                <div class="stat-label">
+                  总收入
+                </div>
               </div>
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon">📈</div>
+              <div class="stat-icon">
+                📈
+              </div>
               <div class="stat-content">
-                <div class="stat-number">+12.5%</div>
-                <div class="stat-label">增长率</div>
+                <div class="stat-number">
+                  +12.5%
+                </div>
+                <div class="stat-label">
+                  增长率
+                </div>
               </div>
             </div>
           </div>

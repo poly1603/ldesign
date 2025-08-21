@@ -3,11 +3,10 @@
  * 处理项目配置初始化
  */
 
-import path from 'path'
+import path from 'node:path'
 import chalk from 'chalk'
 import ora from 'ora'
 import { Logger } from '../../utils/logger'
-import type { ProjectType, BuildOptions } from '../../types'
 
 const logger = new Logger('Init')
 
@@ -21,24 +20,24 @@ export class InitCommand {
     try {
       const template = options.template || 'vanilla'
       const useTypeScript = options.typescript !== false
-      
+
       // 显示初始化信息
       this.showInitInfo(template, useTypeScript)
-      
+
       // 创建配置文件
       spinner.text = '正在创建配置文件...'
       await this.createConfigFiles(template, useTypeScript)
-      
+
       // 创建示例文件
       spinner.text = '正在创建示例文件...'
       await this.createExampleFiles(template, useTypeScript)
-      
+
       spinner.stop()
-      
+
       // 显示成功信息
       this.showInitSuccess(template, useTypeScript)
-      
-    } catch (error) {
+    }
+    catch (error) {
       spinner.stop()
       logger.error('初始化失败:', error)
       process.exit(1)
@@ -64,19 +63,19 @@ export class InitCommand {
   private async createConfigFiles(template: string, useTypeScript: boolean): Promise<void> {
     const fs = await import('fs-extra')
     const root = process.cwd()
-    
+
     // 创建 ldesign.config.js
     const configContent = this.generateConfigContent(template, useTypeScript)
     const configPath = path.join(root, useTypeScript ? 'ldesign.config.ts' : 'ldesign.config.js')
     await fs.writeFile(configPath, configContent)
-    
+
     // 创建 .gitignore（如果不存在）
     const gitignorePath = path.join(root, '.gitignore')
     if (!await fs.pathExists(gitignorePath)) {
       const gitignoreContent = this.generateGitignoreContent()
       await fs.writeFile(gitignorePath, gitignoreContent)
     }
-    
+
     // 如果使用 TypeScript，创建 tsconfig.json（如果不存在）
     if (useTypeScript) {
       const tsconfigPath = path.join(root, 'tsconfig.json')
@@ -94,23 +93,24 @@ export class InitCommand {
     const fs = await import('fs-extra')
     const root = process.cwd()
     const srcDir = path.join(root, 'src')
-    
+
     // 确保 src 目录存在
     await fs.ensureDir(srcDir)
-    
+
     // 创建入口文件
     const ext = useTypeScript ? 'ts' : 'js'
     const entryPath = path.join(srcDir, `index.${ext}`)
-    
+
     if (!await fs.pathExists(entryPath)) {
       const entryContent = this.generateEntryContent(template, useTypeScript)
       await fs.writeFile(entryPath, entryContent)
     }
-    
+
     // 根据模板创建特定文件
     if (template === 'vue') {
       await this.createVueFiles(srcDir, useTypeScript)
-    } else if (template === 'react') {
+    }
+    else if (template === 'react') {
       await this.createReactFiles(srcDir, useTypeScript)
     }
   }
@@ -120,11 +120,11 @@ export class InitCommand {
    */
   private async createVueFiles(srcDir: string, useTypeScript: boolean): Promise<void> {
     const fs = await import('fs-extra')
-    
+
     // 创建组件示例
     const componentPath = path.join(srcDir, 'components', `HelloWorld.vue`)
     await fs.ensureDir(path.dirname(componentPath))
-    
+
     if (!await fs.pathExists(componentPath)) {
       const componentContent = this.generateVueComponentContent(useTypeScript)
       await fs.writeFile(componentPath, componentContent)
@@ -136,12 +136,12 @@ export class InitCommand {
    */
   private async createReactFiles(srcDir: string, useTypeScript: boolean): Promise<void> {
     const fs = await import('fs-extra')
-    
+
     // 创建组件示例
     const ext = useTypeScript ? 'tsx' : 'jsx'
     const componentPath = path.join(srcDir, 'components', `HelloWorld.${ext}`)
     await fs.ensureDir(path.dirname(componentPath))
-    
+
     if (!await fs.pathExists(componentPath)) {
       const componentContent = this.generateReactComponentContent(useTypeScript)
       await fs.writeFile(componentPath, componentContent)
@@ -152,12 +152,12 @@ export class InitCommand {
    * 生成配置文件内容
    */
   private generateConfigContent(template: string, useTypeScript: boolean): string {
-    const importStatement = useTypeScript 
-      ? "import { defineConfig } from '@ldesign/builder'"
-      : "const { defineConfig } = require('@ldesign/builder')"
-    
+    const importStatement = useTypeScript
+      ? 'import { defineConfig } from \'@ldesign/builder\''
+      : 'const { defineConfig } = require(\'@ldesign/builder\')'
+
     const exportStatement = useTypeScript ? 'export default' : 'module.exports ='
-    
+
     return `${importStatement}
 
 ${exportStatement} defineConfig({
@@ -262,20 +262,21 @@ coverage/
       include: ['src/**/*'],
       exclude: ['node_modules', 'dist', 'types'],
     }
-    
+
     // 根据模板调整配置
     if (template === 'vue') {
       config.compilerOptions = {
         ...config.compilerOptions,
         jsx: 'preserve' as any,
       }
-    } else if (template === 'react') {
+    }
+    else if (template === 'react') {
       config.compilerOptions = {
         ...config.compilerOptions,
         jsx: 'react-jsx' as any,
       }
     }
-    
+
     return JSON.stringify(config, null, 2)
   }
 
@@ -295,7 +296,8 @@ export default HelloWorld
 export { HelloWorld }
 export default HelloWorld
 `
-    } else if (template === 'react') {
+    }
+    else if (template === 'react') {
       return useTypeScript
         ? `import HelloWorld from './components/HelloWorld'
 
@@ -307,7 +309,8 @@ export default HelloWorld
 export { HelloWorld }
 export default HelloWorld
 `
-    } else {
+    }
+    else {
       return useTypeScript
         ? `/**
  * LDesign Builder 示例库
@@ -359,7 +362,7 @@ export default {
   private generateVueComponentContent(useTypeScript: boolean): string {
     const scriptLang = useTypeScript ? ' lang="ts"' : ''
     const propsType = useTypeScript ? '\ninterface Props {\n  msg: string\n}\n\ndefineProps<Props>()' : 'defineProps(["msg"])'
-    
+
     return `<template>
   <div class="hello-world">
     <h1>{{ msg }}</h1>
@@ -406,7 +409,8 @@ const HelloWorld: React.FC<Props> = ({ msg }) => {
 
 export default HelloWorld
 `
-    } else {
+    }
+    else {
       return `import React from 'react'
 
 const HelloWorld = ({ msg }) => {
@@ -432,20 +436,21 @@ export default HelloWorld
     console.log(chalk.gray('─'.repeat(50)))
     console.log(chalk.bold('已创建的文件:'))
     console.log(`  ${chalk.cyan(useTypeScript ? 'ldesign.config.ts' : 'ldesign.config.js')} - 构建配置文件`)
-    console.log(`  ${chalk.cyan('src/index.' + (useTypeScript ? 'ts' : 'js'))} - 入口文件`)
-    
+    console.log(`  ${chalk.cyan(`src/index.${useTypeScript ? 'ts' : 'js'}`)} - 入口文件`)
+
     if (template === 'vue') {
       console.log(`  ${chalk.cyan('src/components/HelloWorld.vue')} - Vue 组件示例`)
-    } else if (template === 'react') {
-      console.log(`  ${chalk.cyan('src/components/HelloWorld.' + (useTypeScript ? 'tsx' : 'jsx'))} - React 组件示例`)
     }
-    
+    else if (template === 'react') {
+      console.log(`  ${chalk.cyan(`src/components/HelloWorld.${useTypeScript ? 'tsx' : 'jsx'}`)} - React 组件示例`)
+    }
+
     if (useTypeScript) {
       console.log(`  ${chalk.cyan('tsconfig.json')} - TypeScript 配置文件`)
     }
-    
+
     console.log(`  ${chalk.cyan('.gitignore')} - Git 忽略文件`)
-    
+
     console.log()
     console.log(chalk.bold('下一步:'))
     console.log(`  ${chalk.yellow('ldesign-builder build')} - 构建项目`)

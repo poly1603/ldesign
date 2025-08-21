@@ -3,14 +3,14 @@
  * 处理文件监听和自动重新构建
  */
 
-import path from 'path'
+import type { BuildMode, BuildOptions, OutputFormat } from '../../types'
+import path from 'node:path'
 import chalk from 'chalk'
 import ora from 'ora'
-import { RollupBuilder } from '../../core/rollup-builder'
-import { ProjectScanner } from '../../core/project-scanner'
 import { PluginConfigurator } from '../../core/plugin-configurator'
+import { ProjectScanner } from '../../core/project-scanner'
+import { RollupBuilder } from '../../core/rollup-builder'
 import { Logger } from '../../utils/logger'
-import type { BuildOptions, OutputFormat, BuildMode } from '../../types'
 
 const logger = new Logger('Watch')
 
@@ -44,8 +44,8 @@ export class WatchCommand {
 
       // 启动文件监听
       await this.startWatching(buildOptions)
-
-    } catch (error) {
+    }
+    catch (error) {
       spinner.stop()
       logger.error('监听模式启动失败:', error)
       process.exit(1)
@@ -62,7 +62,8 @@ export class WatchCommand {
     let inputPath: string | string[]
     if (input) {
       inputPath = path.resolve(root, input)
-    } else {
+    }
+    else {
       // 自动检测入口文件
       inputPath = await this.detectEntryFiles(root)
     }
@@ -180,7 +181,8 @@ export class WatchCommand {
             console.log(`   ${this.getFormatBadge(output.format)} ${chalk.cyan(relativePath)}`)
           }
         }
-      } else {
+      }
+      else {
         console.log(chalk.red('❌ 构建失败'))
 
         // 显示错误信息
@@ -192,7 +194,8 @@ export class WatchCommand {
       }
 
       console.log()
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.red('❌ 构建失败:'), error)
       console.log()
     }
@@ -245,9 +248,9 @@ export class WatchCommand {
     }
 
     watcher
-      .on('add', (filePath) => triggerBuild('新增', filePath))
-      .on('change', (filePath) => triggerBuild('修改', filePath))
-      .on('unlink', (filePath) => triggerBuild('删除', filePath))
+      .on('add', filePath => triggerBuild('新增', filePath))
+      .on('change', filePath => triggerBuild('修改', filePath))
+      .on('unlink', filePath => triggerBuild('删除', filePath))
       .on('error', (error) => {
         logger.error('文件监听错误:', error)
       })

@@ -45,7 +45,8 @@ function runCommand(command, description) {
     execSync(command, { stdio: 'inherit' })
     logSuccess(`${description} 完成`)
     return true
-  } catch (error) {
+  }
+  catch (error) {
     logError(`${description} 失败: ${error.message}`)
     return false
   }
@@ -57,11 +58,13 @@ function makeExecutable(filePath) {
       chmodSync(filePath, 0o755)
       logSuccess(`设置 ${filePath} 为可执行`)
       return true
-    } else {
+    }
+    else {
       logWarning(`文件不存在: ${filePath}`)
       return false
     }
-  } catch (error) {
+  }
+  catch (error) {
     logError(`设置文件权限失败: ${error.message}`)
     return false
   }
@@ -74,7 +77,8 @@ async function main() {
   try {
     execSync('git rev-parse --git-dir', { stdio: 'pipe' })
     logSuccess('Git 仓库检查通过')
-  } catch (error) {
+  }
+  catch (error) {
     logError('当前目录不是 Git 仓库')
     process.exit(1)
   }
@@ -88,7 +92,7 @@ async function main() {
   const hooksDir = '.husky'
   const hooks = ['pre-commit', 'commit-msg']
 
-  hooks.forEach(hook => {
+  hooks.forEach((hook) => {
     const hookPath = path.join(hooksDir, hook)
     makeExecutable(hookPath)
   })
@@ -103,7 +107,8 @@ async function main() {
     try {
       execSync(`git config ${key} ${value}`, { stdio: 'pipe' })
       logSuccess(`设置 Git 配置: ${key} = ${value}`)
-    } catch (error) {
+    }
+    catch (error) {
       logWarning(`设置 Git 配置失败: ${key}`)
     }
   })
@@ -144,7 +149,8 @@ async function main() {
     const fs = await import('node:fs')
     fs.writeFileSync('.gitmessage', commitTemplate)
     logSuccess('创建提交信息模板')
-  } catch (error) {
+  }
+  catch (error) {
     logWarning('创建提交信息模板失败')
   }
 
@@ -172,7 +178,8 @@ async function main() {
     try {
       execSync(command, { stdio: 'pipe' })
       logSuccess(description)
-    } catch (error) {
+    }
+    catch (error) {
       logError(`${description} 失败`)
       allValid = false
     }
@@ -204,7 +211,8 @@ async function main() {
 
   if (allValid) {
     log(`${colors.green}🎉 所有工具都已正确安装和配置！${colors.reset}`)
-  } else {
+  }
+  else {
     log(`${colors.yellow}⚠️  部分工具可能需要手动安装依赖${colors.reset}`)
     log('请运行: pnpm install')
   }
@@ -213,18 +221,18 @@ async function main() {
 }
 
 // 处理未捕获的异常
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
   logError(`未捕获的异常: ${error.message}`)
   process.exit(1)
 })
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
   logError(`未处理的 Promise 拒绝: ${reason}`)
   process.exit(1)
 })
 
 // 运行主函数
-main().catch(error => {
+main().catch((error) => {
   logError(`安装脚本执行失败: ${error.message}`)
   process.exit(1)
 })

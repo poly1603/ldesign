@@ -4,6 +4,7 @@
 
 import type { App, Plugin } from 'vue'
 import type { VueThemePluginOptions } from './types'
+import { env } from 'node:process'
 import { ThemeManager } from '../../core/theme-manager'
 import { presetThemes } from '../../themes/presets'
 import ColorPicker from './components/ColorPicker'
@@ -38,7 +39,7 @@ export const ThemePlugin: Plugin = {
     })
 
     // 初始化主题管理器
-    themeManager.init().catch(error => {
+    themeManager.init().catch((error) => {
       console.error('Failed to initialize theme manager:', error)
     })
 
@@ -73,10 +74,7 @@ export const ThemePlugin: Plugin = {
     }
 
     // 开发模式下的调试信息
-    if (
-      typeof process !== 'undefined' &&
-      process.env?.NODE_ENV === 'development'
-    ) {
+    if (env?.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.log('🎨 LDesign Color Theme Plugin installed', {
         themes: themes.length,
@@ -93,7 +91,7 @@ export const ThemePlugin: Plugin = {
  */
 export function installThemePlugin(
   app: App,
-  options?: VueThemePluginOptions
+  options?: VueThemePluginOptions,
 ): void {
   app.use(ThemePlugin, options)
 }

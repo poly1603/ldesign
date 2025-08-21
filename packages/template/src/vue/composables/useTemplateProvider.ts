@@ -4,9 +4,9 @@
  * 用于在子组件中访问TemplateProvider提供的上下文
  */
 
-import { inject, computed, type ComputedRef } from 'vue'
+import type { DeviceType, TemplateMetadata, TemplateProviderConfig } from '../../types'
+import { computed, type ComputedRef, inject } from 'vue'
 import { TEMPLATE_PROVIDER_KEY, type TemplateProviderContext } from '../components/TemplateProvider'
-import type { TemplateProviderConfig, DeviceType, TemplateMetadata } from '../../types'
 
 /**
  * useTemplateProvider 返回值接口

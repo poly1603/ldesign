@@ -4,7 +4,8 @@ console.log('🚀 开始加载缓存库...')
 try {
   var { createCache } = await import('../es/index.js')
   console.log('✅ 缓存库加载成功')
-} catch (error) {
+}
+catch (error) {
   console.error('❌ 缓存库加载失败:', error.message)
   process.exit(1)
 }
@@ -99,7 +100,7 @@ const cache = createCache({
 })
 
 // 监听策略选择事件
-cache.on('strategy', event => {
+cache.on('strategy', (event) => {
   console.log('✅ 策略选择事件:', {
     key: event.key,
     engine: event.engine,
@@ -111,7 +112,7 @@ cache.on('strategy', event => {
 })
 
 // 监听错误事件
-cache.on('error', event => {
+cache.on('error', (event) => {
   console.error('❌ 缓存错误:', event.key, event.error.message)
 })
 
@@ -122,7 +123,8 @@ async function testSmallData() {
     const data = 'small data string'
     await cache.set('small-test', data)
     console.log('✅ 小数据测试完成')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 小数据测试失败:', error.message)
   }
 }
@@ -134,7 +136,8 @@ async function testLargeData() {
     const largeData = Array.from({ length: 100000 }).fill('x').join('')
     await cache.set('large-test', largeData)
     console.log('✅ 大数据测试完成, 大小:', largeData.length, '字符')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 大数据测试失败:', error.message)
   }
 }
@@ -145,7 +148,8 @@ async function testShortTTL() {
     const data = 'short ttl data'
     await cache.set('short-ttl-test', data, { ttl: 3000 }) // 3秒
     console.log('✅ 短期缓存测试完成')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 短期缓存测试失败:', error.message)
   }
 }
@@ -156,7 +160,8 @@ async function testMediumTTL() {
     const data = 'medium ttl data'
     await cache.set('medium-ttl-test', data, { ttl: 60 * 60 * 1000 }) // 1小时
     console.log('✅ 中期缓存测试完成')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 中期缓存测试失败:', error.message)
   }
 }
@@ -182,9 +187,10 @@ async function testComplexObject() {
     console.log(
       '✅ 复杂对象测试完成, 大小:',
       JSON.stringify(complexData).length,
-      '字符'
+      '字符',
     )
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 复杂对象测试失败:', error.message)
   }
 }
@@ -203,10 +209,12 @@ async function testEncryption() {
     const retrieved = await cache.get('encrypted-test')
     if (retrieved && retrieved.username === 'admin') {
       console.log('✅ 加密测试成功: 数据正确加密和解密')
-    } else {
+    }
+    else {
       console.error('❌ 加密测试失败: 数据不匹配')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 加密测试失败:', error.message)
   }
 }

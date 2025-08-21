@@ -1,6 +1,6 @@
-import path from 'path'
-import fs from 'fs'
 import type { BuildOptions } from '../types'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export async function loadUserConfig(cwd: string = process.cwd()): Promise<Partial<BuildOptions> | null> {
   const candidates = [
@@ -16,7 +16,8 @@ export async function loadUserConfig(cwd: string = process.cwd()): Promise<Parti
       try {
         if (name.endsWith('.ts')) {
           // 尝试动态加载 ts-node 以支持本地 TS 配置
-          try { require('ts-node/register') } catch {}
+          try { require('ts-node/register') }
+          catch {}
         }
         // 清理 require 缓存以便二次读取同一路径时能够命中新内容
         try {
@@ -28,19 +29,19 @@ export async function loadUserConfig(cwd: string = process.cwd()): Promise<Parti
               delete (require as any).cache[key]
             }
           }
-        } catch {}
+        }
+        catch {}
         const mod = require(full)
         const raw = (mod && (mod.default || mod))
         if (raw && typeof raw === 'object') {
           return raw as Partial<BuildOptions>
         }
         return null
-      } catch (e) {
+      }
+      catch (e) {
         return null
       }
     }
   }
   return null
 }
-
-

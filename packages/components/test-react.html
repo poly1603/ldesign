@@ -1,271 +1,273 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LDesign Components - React Test</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-        }
-        .section h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .demo-row {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-            align-items: center;
-        }
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .theme-toggle:hover {
-            background: #0056b3;
-        }
-        [data-theme="dark"] {
-            background-color: #1a1a1a;
-            color: #ffffff;
-        }
-        [data-theme="dark"] .container {
-            background: #2d2d2d;
-            color: #ffffff;
-        }
-        [data-theme="dark"] .section {
-            border-color: #404040;
-            background: #333;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+      }
+      .section h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      .demo-row {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0;
+        align-items: center;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .theme-toggle:hover {
+        background: #0056b3;
+      }
+      [data-theme='dark'] {
+        background-color: #1a1a1a;
+        color: #ffffff;
+      }
+      [data-theme='dark'] .container {
+        background: #2d2d2d;
+        color: #ffffff;
+      }
+      [data-theme='dark'] .section {
+        border-color: #404040;
+        background: #333;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <button class="theme-toggle" onclick="toggleTheme()">切换主题</button>
-    
+
     <div class="container">
-        <h1>LDesign Components - React 兼容性测试</h1>
-        <p>这个页面测试 LDesign Web Components 在 React 环境中的兼容性。</p>
-        
-        <div id="react-root"></div>
+      <h1>LDesign Components - React 兼容性测试</h1>
+      <p>这个页面测试 LDesign Web Components 在 React 环境中的兼容性。</p>
+
+      <div id="react-root"></div>
     </div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        function App() {
-            const [inputValue, setInputValue] = useState('');
-            const [textareaValue, setTextareaValue] = useState('');
-            const [buttonClicked, setButtonClicked] = useState(0);
-            
-            const handleButtonClick = () => {
-                setButtonClicked(prev => prev + 1);
-                alert(`按钮被点击了 ${buttonClicked + 1} 次！`);
-            };
-            
-            const handleInputChange = (e) => {
-                setInputValue(e.target.value);
-            };
-            
-            const handleTextareaChange = (e) => {
-                setTextareaValue(e.target.value);
-            };
-            
-            return (
-                <div>
-                    <div className="section">
-                        <h3>Button 按钮组件</h3>
-                        <div className="demo-row">
-                            <button 
-                                onClick={handleButtonClick}
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#007bff',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                默认按钮
-                            </button>
-                            <button 
-                                onClick={handleButtonClick}
-                                style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#28a745',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                }}
-                            >
-                                小按钮
-                            </button>
-                            <button 
-                                onClick={handleButtonClick}
-                                style={{
-                                    padding: '12px 24px',
-                                    backgroundColor: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '16px'
-                                }}
-                            >
-                                大按钮
-                            </button>
-                            <button 
-                                disabled
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'not-allowed',
-                                    opacity: 0.6
-                                }}
-                            >
-                                禁用按钮
-                            </button>
-                        </div>
-                        <p>按钮点击次数: {buttonClicked}</p>
-                    </div>
-                    
-                    <div className="section">
-                        <h3>Input 输入框组件</h3>
-                        <div className="demo-row">
-                            <input 
-                                type="text"
-                                placeholder="请输入内容"
-                                value={inputValue}
-                                onChange={handleInputChange}
-                                style={{
-                                    padding: '8px 12px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    width: '200px'
-                                }}
-                            />
-                            <input 
-                                type="password"
-                                placeholder="请输入密码"
-                                style={{
-                                    padding: '8px 12px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    width: '200px'
-                                }}
-                            />
-                            <input 
-                                type="text"
-                                placeholder="禁用状态"
-                                disabled
-                                style={{
-                                    padding: '8px 12px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    width: '200px',
-                                    backgroundColor: '#f5f5f5',
-                                    cursor: 'not-allowed'
-                                }}
-                            />
-                        </div>
-                        <p>输入值: {inputValue}</p>
-                    </div>
-                    
-                    <div className="section">
-                        <h3>Textarea 多行文本框组件</h3>
-                        <div className="demo-row">
-                            <textarea 
-                                placeholder="请输入多行文本"
-                                value={textareaValue}
-                                onChange={handleTextareaChange}
-                                style={{
-                                    padding: '8px 12px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    width: '300px',
-                                    height: '80px',
-                                    resize: 'vertical'
-                                }}
-                            />
-                            <textarea 
-                                placeholder="只读状态"
-                                readOnly
-                                value="这是只读文本"
-                                style={{
-                                    padding: '8px 12px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    width: '200px',
-                                    height: '80px',
-                                    backgroundColor: '#f8f9fa',
-                                    cursor: 'default'
-                                }}
-                            />
-                        </div>
-                        <p>文本内容: {textareaValue}</p>
-                    </div>
-                    
-                    <div className="section">
-                        <h3>React 兼容性说明</h3>
-                        <ul>
-                            <li>✅ 组件可以在 React 中正常渲染</li>
-                            <li>✅ 事件处理正常工作</li>
-                            <li>✅ 状态管理正常</li>
-                            <li>✅ 属性传递正常</li>
-                            <li>✅ 样式应用正常</li>
-                        </ul>
-                        <p><strong>注意:</strong> 这个测试使用原生 HTML 元素模拟 Web Components 的行为，实际的 LDesign Web Components 在 React 中的使用方式可能略有不同。</p>
-                    </div>
-                </div>
-            );
+      const { useState, useEffect } = React
+
+      function App() {
+        const [inputValue, setInputValue] = useState('')
+        const [textareaValue, setTextareaValue] = useState('')
+        const [buttonClicked, setButtonClicked] = useState(0)
+
+        const handleButtonClick = () => {
+          setButtonClicked((prev) => prev + 1)
+          alert(`按钮被点击了 ${buttonClicked + 1} 次！`)
         }
-        
-        ReactDOM.render(<App />, document.getElementById('react-root'));
+
+        const handleInputChange = (e) => {
+          setInputValue(e.target.value)
+        }
+
+        const handleTextareaChange = (e) => {
+          setTextareaValue(e.target.value)
+        }
+
+        return (
+          <div>
+            <div className="section">
+              <h3>Button 按钮组件</h3>
+              <div className="demo-row">
+                <button
+                  onClick={handleButtonClick}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  默认按钮
+                </button>
+                <button
+                  onClick={handleButtonClick}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                  }}
+                >
+                  小按钮
+                </button>
+                <button
+                  onClick={handleButtonClick}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                  }}
+                >
+                  大按钮
+                </button>
+                <button
+                  disabled
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'not-allowed',
+                    opacity: 0.6,
+                  }}
+                >
+                  禁用按钮
+                </button>
+              </div>
+              <p>按钮点击次数: {buttonClicked}</p>
+            </div>
+
+            <div className="section">
+              <h3>Input 输入框组件</h3>
+              <div className="demo-row">
+                <input
+                  type="text"
+                  placeholder="请输入内容"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    width: '200px',
+                  }}
+                />
+                <input
+                  type="password"
+                  placeholder="请输入密码"
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    width: '200px',
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="禁用状态"
+                  disabled
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    width: '200px',
+                    backgroundColor: '#f5f5f5',
+                    cursor: 'not-allowed',
+                  }}
+                />
+              </div>
+              <p>输入值: {inputValue}</p>
+            </div>
+
+            <div className="section">
+              <h3>Textarea 多行文本框组件</h3>
+              <div className="demo-row">
+                <textarea
+                  placeholder="请输入多行文本"
+                  value={textareaValue}
+                  onChange={handleTextareaChange}
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    width: '300px',
+                    height: '80px',
+                    resize: 'vertical',
+                  }}
+                />
+                <textarea
+                  placeholder="只读状态"
+                  readOnly
+                  value="这是只读文本"
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    width: '200px',
+                    height: '80px',
+                    backgroundColor: '#f8f9fa',
+                    cursor: 'default',
+                  }}
+                />
+              </div>
+              <p>文本内容: {textareaValue}</p>
+            </div>
+
+            <div className="section">
+              <h3>React 兼容性说明</h3>
+              <ul>
+                <li>✅ 组件可以在 React 中正常渲染</li>
+                <li>✅ 事件处理正常工作</li>
+                <li>✅ 状态管理正常</li>
+                <li>✅ 属性传递正常</li>
+                <li>✅ 样式应用正常</li>
+              </ul>
+              <p>
+                <strong>注意:</strong> 这个测试使用原生 HTML 元素模拟 Web Components 的行为，实际的 LDesign Web
+                Components 在 React 中的使用方式可能略有不同。
+              </p>
+            </div>
+          </div>
+        )
+
+      ReactDOM.render(<App />, document.getElementById('react-root'))
     </script>
-    
+
     <script>
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-        }
+      function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme')
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
+        document.documentElement.setAttribute('data-theme', newTheme)
+      }
     </script>
-</body>
+  </body>
 </html>

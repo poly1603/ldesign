@@ -102,7 +102,7 @@ describe('集成测试', () => {
         encrypted.data!,
         authKey,
         messageHmac,
-        'SHA256'
+        'SHA256',
       )
       expect(isValid).toBe(true)
 
@@ -151,7 +151,7 @@ describe('集成测试', () => {
         encrypted.data!,
         authKey,
         messageHmac,
-        'SHA256'
+        'SHA256',
       )
       expect(isValid).toBe(true)
 
@@ -228,7 +228,7 @@ describe('集成测试', () => {
       // 2. 模拟数据损坏
       const corruptedData = `${encrypted.data!.substring(
         0,
-        encrypted.data!.length - 5
+        encrypted.data!.length - 5,
       )}XXXXX`
 
       // 3. 尝试解密损坏的数据
@@ -247,7 +247,7 @@ describe('集成测试', () => {
       // 2. 模拟数据篡改
       const tamperedData = `${encrypted.data!.substring(
         0,
-        encrypted.data!.length - 5
+        encrypted.data!.length - 5,
       )}XXXXX`
 
       // 3. 验证 HMAC（应该失败）
@@ -306,7 +306,7 @@ describe('集成测试', () => {
       const totalTime = end - start
 
       console.log(
-        `完成 ${iterations} 次复杂操作耗时: ${totalTime.toFixed(2)}ms`
+        `完成 ${iterations} 次复杂操作耗时: ${totalTime.toFixed(2)}ms`,
       )
 
       // 应该在合理时间内完成（10秒内）
@@ -347,7 +347,7 @@ describe('集成测试', () => {
       })
 
       console.log(
-        `并发操作 (${concurrency} 个) 耗时: ${(end - start).toFixed(2)}ms`
+        `并发操作 (${concurrency} 个) 耗时: ${(end - start).toFixed(2)}ms`,
       )
 
       // 并发操作应该在合理时间内完成
@@ -365,7 +365,7 @@ describe('集成测试', () => {
       ]
 
       // 加密所有密码
-      const encryptedPasswords = websites.map(site => {
+      const encryptedPasswords = websites.map((site) => {
         const encrypted = aes.encrypt(site.password, masterPassword, {
           keySize: 256,
         })
@@ -386,7 +386,7 @@ describe('集成测试', () => {
           {
             keySize: 256,
             iv: encryptedSite.iv,
-          }
+          },
         )
         expect(decrypted.success).toBe(true)
         expect(decrypted.data).toBe(websites[index].password)
@@ -472,7 +472,7 @@ describe('集成测试', () => {
         tamperedString,
         apiKey,
         signature,
-        'SHA256'
+        'SHA256',
       )
       expect(isTamperedValid).toBe(false)
     })

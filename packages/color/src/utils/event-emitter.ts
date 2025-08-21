@@ -19,7 +19,7 @@ export class EventEmitterImpl implements EventEmitter {
    */
   on<T = unknown>(
     event: ThemeEventType,
-    listener: ThemeEventListener<T>
+    listener: ThemeEventListener<T>,
   ): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
@@ -32,7 +32,7 @@ export class EventEmitterImpl implements EventEmitter {
    */
   off<T = unknown>(
     event: ThemeEventType,
-    listener: ThemeEventListener<T>
+    listener: ThemeEventListener<T>,
   ): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
@@ -49,10 +49,11 @@ export class EventEmitterImpl implements EventEmitter {
   emit<T = unknown>(event: ThemeEventType, data?: T): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
-      eventListeners.forEach(listener => {
+      eventListeners.forEach((listener) => {
         try {
           listener(data)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in event listener for ${event}:`, error)
         }
       })
@@ -64,7 +65,7 @@ export class EventEmitterImpl implements EventEmitter {
    */
   once<T = unknown>(
     event: ThemeEventType,
-    listener: ThemeEventListener<T>
+    listener: ThemeEventListener<T>,
   ): void {
     const onceListener = (data: T) => {
       listener(data)
@@ -79,7 +80,8 @@ export class EventEmitterImpl implements EventEmitter {
   removeAllListeners(event?: ThemeEventType): void {
     if (event) {
       this.listeners.delete(event)
-    } else {
+    }
+    else {
       this.listeners.clear()
     }
   }

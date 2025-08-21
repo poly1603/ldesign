@@ -1,4 +1,4 @@
-import { Component, h } from '@stencil/core';
+import { Component, h } from '@stencil/core'
 
 @Component({
   tag: 'ld-test',
@@ -6,6 +6,6 @@ import { Component, h } from '@stencil/core';
 })
 export class Test {
   render() {
-    return h('div', null, 'Hello World');
+    return h('div', null, 'Hello World')
   }
 }

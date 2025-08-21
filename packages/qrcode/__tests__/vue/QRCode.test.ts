@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mount, VueWrapper } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import QRCode from '../../src/vue/QRCode.vue'
-import type { QRCodeOptions } from '../../src/types'
 
 // Mock the QRCodeGenerator
 vi.mock('../../src/core/generator', () => ({
@@ -10,21 +10,21 @@ vi.mock('../../src/core/generator', () => ({
     generate: vi.fn().mockResolvedValue({
       canvas: document.createElement('canvas'),
       svg: '<svg></svg>',
-      dataURL: 'data:image/png;base64,test'
+      dataURL: 'data:image/png;base64,test',
     }),
     updateOptions: vi.fn(),
     clearCache: vi.fn(),
     getMetrics: vi.fn().mockReturnValue([]),
-    destroy: vi.fn()
-  }))
+    destroy: vi.fn(),
+  })),
 }))
 
-describe('QRCode Vue Component', () => {
+describe('qRCode Vue Component', () => {
   let wrapper: VueWrapper<any>
 
   const defaultProps = {
     data: 'test data',
-    size: 200
+    size: 200,
   }
 
   beforeEach(() => {
@@ -41,17 +41,17 @@ describe('QRCode Vue Component', () => {
   describe('component mounting', () => {
     it('should mount successfully', () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       expect(wrapper.exists()).toBe(true)
     })
 
     it('should render with default props', () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       const container = wrapper.find('.qrcode-container')
       expect(container.exists()).toBe(true)
     })
@@ -62,10 +62,10 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          data: 'https://example.com'
-        }
+          data: 'https://example.com',
+        },
       })
-      
+
       expect(wrapper.props('data')).toBe('https://example.com')
     })
 
@@ -73,10 +73,10 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          size: 300
-        }
+          size: 300,
+        },
       })
-      
+
       expect(wrapper.props('size')).toBe(300)
     })
 
@@ -84,42 +84,42 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          format: 'svg'
-        }
+          format: 'svg',
+        },
       })
-      
+
       expect(wrapper.props('format')).toBe('svg')
     })
 
     it('should accept style options', () => {
       const styleOptions = {
         foreground: '#000000',
-        background: '#ffffff'
+        background: '#ffffff',
       }
-      
+
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          style: styleOptions
-        }
+          style: styleOptions,
+        },
       })
-      
+
       expect(wrapper.props('style')).toEqual(styleOptions)
     })
 
     it('should accept logo options', () => {
       const logoOptions = {
         src: 'logo.png',
-        size: 0.2
+        size: 0.2,
       }
-      
+
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          logo: logoOptions
-        }
+          logo: logoOptions,
+        },
       })
-      
+
       expect(wrapper.props('logo')).toEqual(logoOptions)
     })
   })
@@ -127,11 +127,11 @@ describe('QRCode Vue Component', () => {
   describe('rendering formats', () => {
     it('should render canvas format by default', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       const canvas = wrapper.find('canvas')
       expect(canvas.exists()).toBe(true)
     })
@@ -140,12 +140,12 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          format: 'svg'
-        }
+          format: 'svg',
+        },
       })
-      
+
       await nextTick()
-      
+
       const svgContainer = wrapper.find('.qrcode-svg')
       expect(svgContainer.exists()).toBe(true)
     })
@@ -154,12 +154,12 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          format: 'image'
-        }
+          format: 'image',
+        },
       })
-      
+
       await nextTick()
-      
+
       const img = wrapper.find('img')
       expect(img.exists()).toBe(true)
     })
@@ -168,47 +168,47 @@ describe('QRCode Vue Component', () => {
   describe('reactivity', () => {
     it('should regenerate QR code when data changes', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       // Change data prop
       await wrapper.setProps({ data: 'new data' })
-      
+
       // Should trigger regeneration
       expect(wrapper.vm.isLoading).toBe(false)
     })
 
     it('should regenerate QR code when size changes', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       // Change size prop
       await wrapper.setProps({ size: 300 })
-      
+
       // Should trigger regeneration
       expect(wrapper.vm.isLoading).toBe(false)
     })
 
     it('should regenerate QR code when options change', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       // Change style options
       await wrapper.setProps({
         style: {
           foreground: '#ff0000',
-          background: '#00ff00'
-        }
+          background: '#00ff00',
+        },
       })
-      
+
       // Should trigger regeneration
       expect(wrapper.vm.isLoading).toBe(false)
     })
@@ -217,11 +217,11 @@ describe('QRCode Vue Component', () => {
   describe('events', () => {
     it('should emit generated event on successful generation', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       const generatedEvents = wrapper.emitted('generated')
       expect(generatedEvents).toBeTruthy()
       expect(generatedEvents![0]).toBeDefined()
@@ -236,15 +236,15 @@ describe('QRCode Vue Component', () => {
         updateOptions: vi.fn(),
         clearCache: vi.fn(),
         getMetrics: vi.fn().mockReturnValue([]),
-        destroy: vi.fn()
+        destroy: vi.fn(),
       }))
-      
+
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       const errorEvents = wrapper.emitted('error')
       expect(errorEvents).toBeTruthy()
     })
@@ -256,19 +256,19 @@ describe('QRCode Vue Component', () => {
       const { QRCodeGenerator } = await import('../../src/core/generator')
       const mockGenerator = QRCodeGenerator as any
       mockGenerator.mockImplementation(() => ({
-        generate: vi.fn().mockImplementation(() => 
-          new Promise(resolve => setTimeout(resolve, 100))
+        generate: vi.fn().mockImplementation(() =>
+          new Promise(resolve => setTimeout(resolve, 100)),
         ),
         updateOptions: vi.fn(),
         clearCache: vi.fn(),
         getMetrics: vi.fn().mockReturnValue([]),
-        destroy: vi.fn()
+        destroy: vi.fn(),
       }))
-      
+
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       // Should be loading initially
       expect(wrapper.vm.isLoading).toBe(true)
     })
@@ -279,12 +279,12 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          data: ''
-        }
+          data: '',
+        },
       })
-      
+
       await nextTick()
-      
+
       expect(wrapper.vm.error).toBeTruthy()
     })
 
@@ -292,12 +292,12 @@ describe('QRCode Vue Component', () => {
       wrapper = mount(QRCode, {
         props: {
           ...defaultProps,
-          size: -1
-        }
+          size: -1,
+        },
       })
-      
+
       await nextTick()
-      
+
       expect(wrapper.vm.error).toBeTruthy()
     })
   })
@@ -305,13 +305,13 @@ describe('QRCode Vue Component', () => {
   describe('methods', () => {
     it('should expose regenerate method', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       expect(typeof wrapper.vm.regenerate).toBe('function')
-      
+
       // Should be able to call regenerate
       await wrapper.vm.regenerate()
       expect(wrapper.vm.isLoading).toBe(false)
@@ -319,26 +319,26 @@ describe('QRCode Vue Component', () => {
 
     it('should expose download method', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       expect(typeof wrapper.vm.download).toBe('function')
-      
+
       // Should be able to call download
       expect(() => wrapper.vm.download('test.png')).not.toThrow()
     })
 
     it('should expose getMetrics method', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       expect(typeof wrapper.vm.getMetrics).toBe('function')
-      
+
       const metrics = wrapper.vm.getMetrics()
       expect(Array.isArray(metrics)).toBe(true)
     })
@@ -347,15 +347,15 @@ describe('QRCode Vue Component', () => {
   describe('cleanup', () => {
     it('should cleanup resources on unmount', async () => {
       wrapper = mount(QRCode, {
-        props: defaultProps
+        props: defaultProps,
       })
-      
+
       await nextTick()
-      
+
       const destroySpy = vi.spyOn(wrapper.vm.generator, 'destroy')
-      
+
       wrapper.unmount()
-      
+
       expect(destroySpy).toHaveBeenCalled()
     })
   })

@@ -27,15 +27,15 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
   return function (
     target: any,
     propertyKey: string | symbol,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     if (typeof propertyKey === 'symbol') {
       throw new TypeError('Action decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[] =
-      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[]
+      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -48,7 +48,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
     Reflect.defineMetadata(
       DECORATOR_METADATA_KEY,
       existingMetadata,
-      target.constructor
+      target.constructor,
     )
 
     // 保存原始方法
@@ -59,7 +59,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
     }
 
     // 创建缓存 Map（如果需要缓存）
-    let cache: Map<string, { result: any; timestamp: number }> | undefined
+    let cache: Map<string, { result: any, timestamp: number }> | undefined
     if (options.cache) {
       cache = new Map()
       // 定期清理过期缓存
@@ -84,8 +84,8 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
         const now = Date.now()
 
         if (
-          cached &&
-          (!options.cacheTime || now - cached.timestamp < options.cacheTime)
+          cached
+          && (!options.cacheTime || now - cached.timestamp < options.cacheTime)
         ) {
           return cached.result
         }
@@ -102,7 +102,8 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
             try {
               const result = await originalMethod.apply(this, args)
               resolve(result)
-            } catch (error) {
+            }
+            catch (error) {
               reject(error)
             }
           }, options.debounce)
@@ -170,7 +171,7 @@ export function Action(options: ActionDecoratorOptions = {}): MethodDecorator {
  * 专门用于异步操作的 Action
  */
 export function AsyncAction(
-  options: Omit<ActionDecoratorOptions, 'async'> = {}
+  options: Omit<ActionDecoratorOptions, 'async'> = {},
 ): MethodDecorator {
   return Action({
     ...options,

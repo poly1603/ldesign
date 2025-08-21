@@ -3,18 +3,20 @@
  * 负责PDF文档的加载、解析和页面管理
  */
 
-import {
+import type {
+  DocumentMetadata,
+  EventEmitter,
+  EventListener,
+  EventType,
+  LoadOptions,
+  OutlineNode,
   PdfDocument,
+  PdfError,
   PdfPage,
   PdfSource,
-  LoadOptions,
-  DocumentMetadata,
-  OutlineNode,
+} from '../types'
+import {
   ErrorCode,
-  PdfError,
-  EventType,
-  EventListener,
-  EventEmitter
 } from '../types'
 
 /**
@@ -41,12 +43,13 @@ export class PdfEngine implements EventEmitter {
         try {
           // TODO: 配置PDF.js库
         // pdfjsLib = await import('pdfjs-dist') as any
-        throw new Error('PDF.js library not configured')
-        } catch (error) {
+          throw new Error('PDF.js library not configured')
+        }
+        catch (error) {
           throw this.createError(
             ErrorCode.LOAD_FAILED,
             'Failed to load pdfjs-dist library',
-            { originalError: error }
+            { originalError: error },
           )
         }
       }
@@ -60,11 +63,12 @@ export class PdfEngine implements EventEmitter {
       }
 
       this.emit('engineInitialized')
-    } catch (error) {
-      const pdfError = error instanceof Error ? 
-        this.createError(ErrorCode.LOAD_FAILED, error.message, { originalError: error }) :
-        this.createError(ErrorCode.UNKNOWN_ERROR, 'Unknown initialization error')
-      
+    }
+    catch (error) {
+      const pdfError = error instanceof Error
+        ? this.createError(ErrorCode.LOAD_FAILED, error.message, { originalError: error })
+        : this.createError(ErrorCode.UNKNOWN_ERROR, 'Unknown initialization error')
+
       this.emit('error', pdfError)
       throw pdfError
     }
@@ -75,7 +79,7 @@ export class PdfEngine implements EventEmitter {
    */
   async loadDocument(
     source: PdfSource,
-    options: LoadOptions = {}
+    options: LoadOptions = {},
   ): Promise<PdfDocument> {
     try {
       this.ensureInitialized()
@@ -83,15 +87,15 @@ export class PdfEngine implements EventEmitter {
       const loadingTask = this.pdfjsLib.getDocument({
         ...this.prepareSource(source),
         ...options,
-        onProgress: (progress: { loaded: number; total: number }) => {
+        onProgress: (progress: { loaded: number, total: number }) => {
           this.emit('loadProgress', progress)
           options.onProgress?.(progress)
-        }
+        },
       })
 
       const pdfDoc = await loadingTask.promise
       const documentId = this.generateDocumentId(source)
-      
+
       const document: PdfDocument = {
         numPages: pdfDoc.numPages,
         fingerprint: pdfDoc.fingerprint,
@@ -100,14 +104,15 @@ export class PdfEngine implements EventEmitter {
         getMetadata: async () => this.getMetadata(pdfDoc),
         getOutline: async () => this.getOutline(pdfDoc),
         getPermissions: async () => this.getPermissions(pdfDoc),
-        destroy: () => this.destroyDocument(documentId)
+        destroy: () => this.destroyDocument(documentId),
       }
 
       this.documents.set(documentId, document)
       this.emit('documentLoaded', { documentId, document })
-      
+
       return document
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = this.handleLoadError(error)
       this.emit('error', pdfError)
       throw pdfError
@@ -122,12 +127,12 @@ export class PdfEngine implements EventEmitter {
       if (pageNumber < 1 || pageNumber > pdfDoc.numPages) {
         throw this.createError(
           ErrorCode.INVALID_PAGE_NUMBER,
-          `Page number ${pageNumber} is out of range (1-${pdfDoc.numPages})`
+          `Page number ${pageNumber} is out of range (1-${pdfDoc.numPages})`,
         )
       }
 
       const page = await pdfDoc.getPage(pageNumber)
-      
+
       return {
         pageNumber: page.pageNumber,
         pageIndex: page.pageIndex,
@@ -135,17 +140,18 @@ export class PdfEngine implements EventEmitter {
         ref: page.ref,
         userUnit: page.userUnit,
         view: page.view,
-        getViewport: (options) => page.getViewport(options),
-        render: (renderContext) => page.render(renderContext),
-        getTextContent: (options) => page.getTextContent(options),
-        getAnnotations: (options) => page.getAnnotations(options),
-        cleanup: () => page.cleanup()
+        getViewport: options => page.getViewport(options),
+        render: renderContext => page.render(renderContext),
+        getTextContent: options => page.getTextContent(options),
+        getAnnotations: options => page.getAnnotations(options),
+        cleanup: () => page.cleanup(),
       }
-    } catch (error) {
-      const pdfError = error instanceof Error && 'code' in error ?
-        error as PdfError :
-        this.createError(ErrorCode.PAGE_NOT_FOUND, `Failed to get page ${pageNumber}`, { originalError: error })
-      
+    }
+    catch (error) {
+      const pdfError = error instanceof Error && 'code' in error
+        ? error as PdfError
+        : this.createError(ErrorCode.PAGE_NOT_FOUND, `Failed to get page ${pageNumber}`, { originalError: error })
+
       throw pdfError
     }
   }
@@ -157,20 +163,21 @@ export class PdfEngine implements EventEmitter {
     try {
       const [info, metadata] = await Promise.all([
         pdfDoc.getMetadata(),
-        pdfDoc.getMetadata().then((m: any) => m.metadata)
+        pdfDoc.getMetadata().then((m: any) => m.metadata),
       ])
 
       return {
         info: info.info || {},
         metadata: metadata || null,
         contentDispositionFilename: info.contentDispositionFilename,
-        contentLength: info.contentLength
+        contentLength: info.contentLength,
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get document metadata:', error)
       return {
         info: {},
-        metadata: null
+        metadata: null,
       }
     }
   }
@@ -181,7 +188,8 @@ export class PdfEngine implements EventEmitter {
   private async getOutline(pdfDoc: any): Promise<OutlineNode[] | null> {
     try {
       return await pdfDoc.getOutline()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get document outline:', error)
       return null
     }
@@ -193,7 +201,8 @@ export class PdfEngine implements EventEmitter {
   private async getPermissions(pdfDoc: any): Promise<number[] | null> {
     try {
       return await pdfDoc.getPermissions()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get document permissions:', error)
       return null
     }
@@ -207,7 +216,8 @@ export class PdfEngine implements EventEmitter {
     if (document) {
       try {
         document.loadingTask.destroy()
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Error destroying document:', error)
       }
       this.documents.delete(documentId)
@@ -254,7 +264,8 @@ export class PdfEngine implements EventEmitter {
       for (const listener of eventListeners) {
         try {
           listener(data)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in event listener for ${event}:`, error)
         }
       }
@@ -280,7 +291,7 @@ export class PdfEngine implements EventEmitter {
     if (!this.initialized) {
       throw this.createError(
         ErrorCode.LOAD_FAILED,
-        'PDF engine is not initialized. Call initialize() first.'
+        'PDF engine is not initialized. Call initialize() first.',
       )
     }
   }
@@ -300,7 +311,7 @@ export class PdfEngine implements EventEmitter {
     }
     throw this.createError(
       ErrorCode.INVALID_ARGUMENT,
-      'Invalid PDF source type'
+      'Invalid PDF source type',
     )
   }
 
@@ -309,7 +320,7 @@ export class PdfEngine implements EventEmitter {
    */
   private generateDocumentId(source: PdfSource): string {
     if (typeof source === 'string') {
-      return `url_${btoa(source).replace(/[^a-zA-Z0-9]/g, '')}`
+      return `url_${btoa(source).replace(/[^a-z0-9]/gi, '')}`
     }
     return `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
@@ -330,30 +341,30 @@ export class PdfEngine implements EventEmitter {
       return this.createError(
         ErrorCode.PASSWORD_REQUIRED,
         'PDF document requires a password',
-        { originalError: error }
+        { originalError: error },
       )
     }
-    
+
     if (error?.name === 'InvalidPDFException') {
       return this.createError(
         ErrorCode.INVALID_PDF,
         'Invalid PDF document',
-        { originalError: error }
+        { originalError: error },
       )
     }
-    
+
     if (error?.name === 'MissingPDFException') {
       return this.createError(
         ErrorCode.NETWORK_ERROR,
         'PDF document not found',
-        { originalError: error }
+        { originalError: error },
       )
     }
-    
+
     return this.createError(
       ErrorCode.LOAD_FAILED,
       error?.message || 'Failed to load PDF document',
-      { originalError: error }
+      { originalError: error },
     )
   }
 
@@ -363,7 +374,7 @@ export class PdfEngine implements EventEmitter {
   private createError(
     code: ErrorCode,
     message: string,
-    details?: any
+    details?: any,
   ): PdfError {
     const error = new Error(message) as PdfError
     error.code = code
@@ -379,7 +390,7 @@ export class PdfEngine implements EventEmitter {
     const recoverableErrors = [
       ErrorCode.NETWORK_ERROR,
       ErrorCode.WORKER_TIMEOUT,
-      ErrorCode.RENDER_FAILED
+      ErrorCode.RENDER_FAILED,
     ]
     return recoverableErrors.includes(code)
   }

@@ -133,7 +133,8 @@ export class ThemeManager implements ThemeManagerInstance {
         theme: this.currentTheme,
         mode: this.currentMode,
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -193,7 +194,8 @@ export class ThemeManager implements ThemeManagerInstance {
       if (this.options.onThemeChanged) {
         this.options.onThemeChanged(this.currentTheme, this.currentMode)
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -220,13 +222,14 @@ export class ThemeManager implements ThemeManagerInstance {
   registerTheme(config: ThemeConfig): void {
     // 检查主题是否已存在
     const existingIndex = this.options.themes.findIndex(
-      t => t.name === config.name
+      t => t.name === config.name,
     )
 
     if (existingIndex >= 0) {
       // 更新现有主题
       this.options.themes[existingIndex] = config
-    } else {
+    }
+    else {
       // 添加新主题
       this.options.themes.push(config)
     }
@@ -289,7 +292,8 @@ export class ThemeManager implements ThemeManagerInstance {
       this.cache.set(cacheKey, generatedTheme)
 
       this.eventEmitter.emit('theme-generated', { theme: name })
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
       throw error
     }
@@ -300,7 +304,7 @@ export class ThemeManager implements ThemeManagerInstance {
    */
   async preGenerateAllThemes(): Promise<void> {
     const tasks = this.getThemeNames().map(
-      name => () => this.preGenerateTheme(name)
+      name => () => this.preGenerateTheme(name),
     )
 
     if (this.options.idleProcessing) {
@@ -308,7 +312,8 @@ export class ThemeManager implements ThemeManagerInstance {
       tasks.forEach((task, index) => {
         this.idleProcessor.addTask(task, index)
       })
-    } else {
+    }
+    else {
       // 直接执行
       await Promise.all(tasks.map(task => task()))
     }
@@ -399,9 +404,9 @@ export class ThemeManager implements ThemeManagerInstance {
    * 创建缓存实例
    */
   private createCache(): LRUCache<GeneratedTheme> {
-    const cache = new Map<string, { value: GeneratedTheme; accessed: number }>()
-    const maxSize =
-      typeof this.options.cache === 'object'
+    const cache = new Map<string, { value: GeneratedTheme, accessed: number }>()
+    const maxSize
+      = typeof this.options.cache === 'object'
         ? this.options.cache.maxSize || 50
         : 50
 
@@ -463,11 +468,11 @@ export class ThemeManager implements ThemeManagerInstance {
 
     // 监听系统主题变化
     this.systemThemeWatcher = this.systemThemeDetector.watchSystemTheme(
-      mode => {
+      (mode) => {
         if (this.currentTheme === 'system') {
           this.setMode(mode)
         }
-      }
+      },
     )
   }
 
@@ -486,7 +491,8 @@ export class ThemeManager implements ThemeManagerInstance {
           this.currentMode = mode
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to restore theme from storage:', error)
     }
 
@@ -506,7 +512,8 @@ export class ThemeManager implements ThemeManagerInstance {
         mode: this.currentMode,
       }
       this.storage.setItem(this.options.storageKey, JSON.stringify(data))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to save theme to storage:', error)
     }
   }
@@ -524,10 +531,18 @@ export class ThemeManager implements ThemeManagerInstance {
 
   /**
    * 生成主题数据
+   * @param config - 主题配置
+   * @returns 生成的主题数据
+   * @throws 当主题配置缺失必要信息时抛出错误
    */
   private async generateThemeData(
-    config: ThemeConfig
+    config: ThemeConfig,
   ): Promise<GeneratedTheme> {
+    // 验证主题配置的完整性
+    if (!config.light?.primary) {
+      throw new Error(`Theme "${config.name}" is missing light.primary color`)
+    }
+
     const lightColors = this.colorGenerator.generateColors(config.light.primary)
     const lightColorConfig = {
       primary: config.light.primary,
@@ -553,18 +568,18 @@ export class ThemeManager implements ThemeManagerInstance {
     // 生成色阶
     const lightScales = this.scaleGenerator.generateScales(
       lightColorConfig,
-      'light'
+      'light',
     )
     const darkScales = this.scaleGenerator.generateScales(
       darkColorConfig,
-      'dark'
+      'dark',
     )
 
     // 生成 CSS 变量
-    const lightCSSVariables =
-      this.cssVariableGenerator.generateSemanticVariables(lightScales)
-    const darkCSSVariables =
-      this.cssVariableGenerator.generateSemanticVariables(darkScales)
+    const lightCSSVariables
+      = this.cssVariableGenerator.generateSemanticVariables(lightScales)
+    const darkCSSVariables
+      = this.cssVariableGenerator.generateSemanticVariables(darkScales)
 
     return {
       name: config.name,
@@ -603,14 +618,14 @@ export class ThemeManager implements ThemeManagerInstance {
   // EventEmitter 方法代理
   on<T = unknown>(
     event: ThemeEventType,
-    listener: ThemeEventListener<T>
+    listener: ThemeEventListener<T>,
   ): void {
     this.eventEmitter.on(event, listener)
   }
 
   off<T = unknown>(
     event: ThemeEventType,
-    listener: ThemeEventListener<T>
+    listener: ThemeEventListener<T>,
   ): void {
     this.eventEmitter.off(event, listener)
   }
@@ -621,7 +636,7 @@ export class ThemeManager implements ThemeManagerInstance {
 
   once<T = unknown>(
     event: ThemeEventType,
-    listener: ThemeEventListener<T>
+    listener: ThemeEventListener<T>,
   ): void {
     this.eventEmitter.once(event, listener)
   }

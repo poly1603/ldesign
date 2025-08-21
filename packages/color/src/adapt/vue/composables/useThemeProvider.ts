@@ -13,7 +13,7 @@ import { THEME_MANAGER_KEY } from '../types'
  */
 export function provideThemeManager(
   manager: ThemeManagerInstance,
-  key: string | symbol = THEME_MANAGER_KEY
+  key: string | symbol = THEME_MANAGER_KEY,
 ): void {
   provide(key, manager)
 }
@@ -24,7 +24,7 @@ export function provideThemeManager(
  * @returns 主题管理器实例或 undefined
  */
 export function injectThemeManager(
-  key: string | symbol = THEME_MANAGER_KEY
+  key: string | symbol = THEME_MANAGER_KEY,
 ): ThemeManagerInstance | undefined {
   return inject<ThemeManagerInstance>(key)
 }

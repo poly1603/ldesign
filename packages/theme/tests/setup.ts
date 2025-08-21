@@ -37,11 +37,11 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 }))
 
 // 模拟 requestAnimationFrame
-global.requestAnimationFrame = vi.fn().mockImplementation(cb => {
+global.requestAnimationFrame = vi.fn().mockImplementation((cb) => {
   return setTimeout(cb, 16)
 })
 
-global.cancelAnimationFrame = vi.fn().mockImplementation(id => {
+global.cancelAnimationFrame = vi.fn().mockImplementation((id) => {
   clearTimeout(id)
 })
 
@@ -88,7 +88,7 @@ Element.prototype.animate = vi.fn().mockImplementation(() => ({
 
 // 配置 Vue Test Utils
 config.global.stubs = {
-  transition: false,
+  'transition': false,
   'transition-group': false,
 }
 

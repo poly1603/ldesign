@@ -69,10 +69,12 @@ export class TypeScriptChecker {
       const result = await this.execTsc()
       if (result.exitCode !== 0) {
         this.parseTypeScriptErrors(result.stderr)
-      } else {
+      }
+      else {
         console.log('  ✅ TypeScript 编译检查通过')
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.errors.push(`TypeScript 编译器运行失败: ${error.message}`)
     }
   }
@@ -81,7 +83,7 @@ export class TypeScriptChecker {
    * 执行 tsc 命令
    */
   execTsc() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // Windows 兼容性处理
       const isWindows = process.platform === 'win32'
       const cmd = isWindows ? 'npx.cmd' : 'npx'
@@ -93,21 +95,21 @@ export class TypeScriptChecker {
           cwd: this.packageDir,
           stdio: 'pipe',
           shell: isWindows,
-        }
+        },
       )
 
       let stdout = ''
       let stderr = ''
 
-      tsc.stdout.on('data', data => {
+      tsc.stdout.on('data', (data) => {
         stdout += data.toString()
       })
 
-      tsc.stderr.on('data', data => {
+      tsc.stderr.on('data', (data) => {
         stderr += data.toString()
       })
 
-      tsc.on('close', exitCode => {
+      tsc.on('close', (exitCode) => {
         resolve({ exitCode, stdout, stderr })
       })
     })
@@ -119,10 +121,11 @@ export class TypeScriptChecker {
   parseTypeScriptErrors(stderr) {
     const lines = stderr.split('\n').filter(line => line.trim())
 
-    lines.forEach(line => {
+    lines.forEach((line) => {
       if (line.includes('error TS')) {
         this.errors.push(`TypeScript 错误: ${line.trim()}`)
-      } else if (line.includes('warning TS')) {
+      }
+      else if (line.includes('warning TS')) {
         this.warnings.push(`TypeScript 警告: ${line.trim()}`)
       }
     })
@@ -136,7 +139,7 @@ export class TypeScriptChecker {
 
     const typeFiles = this.findTypeDefinitionFiles()
 
-    typeFiles.forEach(file => {
+    typeFiles.forEach((file) => {
       this.validateSingleTypeFile(file)
     })
   }
@@ -148,7 +151,7 @@ export class TypeScriptChecker {
     const patterns = ['esm/**/*.d.ts', 'cjs/**/*.d.ts', 'dist/**/*.d.ts']
 
     const files = []
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       const matches = glob.sync(pattern, { cwd: this.packageDir })
       files.push(...matches.map(file => resolve(this.packageDir, file)))
     })
@@ -179,11 +182,12 @@ export class TypeScriptChecker {
       this.checkTypeFileSyntax(content, relativePath)
 
       console.log(`  ✅ ${relativePath}`)
-    } catch (error) {
+    }
+    catch (error) {
       this.errors.push(
         `读取类型定义文件失败: ${relative(this.packageDir, filePath)} - ${
           error.message
-        }`
+        }`,
       )
     }
   }
@@ -240,23 +244,25 @@ export class TypeScriptChecker {
       const content = readFileSync(filePath, 'utf-8')
 
       // 检查是否有类型导出
-      const hasTypeExports =
-        content.includes('export type') ||
-        content.includes('export interface') ||
-        content.includes('export declare')
+      const hasTypeExports
+        = content.includes('export type')
+          || content.includes('export interface')
+          || content.includes('export declare')
 
-      const hasValueExports =
-        content.includes('export {') ||
-        content.includes('export const') ||
-        content.includes('export function') ||
-        content.includes('export class')
+      const hasValueExports
+        = content.includes('export {')
+          || content.includes('export const')
+          || content.includes('export function')
+          || content.includes('export class')
 
       if (!hasTypeExports && !hasValueExports) {
         this.warnings.push(`${moduleName} 模块可能缺少类型导出`)
-      } else {
+      }
+      else {
         console.log(`  ✅ ${moduleName} 模块类型导出正常`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.errors.push(`检查 ${moduleName} 模块类型导出失败: ${error.message}`)
     }
   }
@@ -288,11 +294,13 @@ export class TypeScriptChecker {
           if (existsSync(testFile)) {
             require('node:fs').unlinkSync(testFile)
           }
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略清理错误
         }
       }, 1000)
-    } catch (error) {
+    }
+    catch (error) {
       this.warnings.push(`创建类型导入测试失败: ${error.message}`)
     }
   }
@@ -388,7 +396,8 @@ export async function checkTypeScript(packageDir = process.cwd()) {
     }
 
     return result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ TypeScript 类型检查失败:', error.message)
     process.exit(1)
   }

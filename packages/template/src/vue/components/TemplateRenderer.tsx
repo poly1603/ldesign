@@ -4,26 +4,29 @@
  * 声明式的模板渲染组件，支持内置模板选择器
  */
 
-import type { DeviceType, TemplateSelectorConfig, SlotConfig } from '../../types'
-import { computed, defineComponent, onMounted, onUnmounted, ref, watch, Transition, markRaw, type PropType } from 'vue'
-import './TemplateRenderer.less'
+import type { DeviceType, SlotConfig, TemplateSelectorConfig } from '../../types'
+import { computed, defineComponent, markRaw, onMounted, onUnmounted, type PropType, ref, Transition, watch } from 'vue'
 import { TemplateManager } from '../../core/manager'
-import { TemplateSelector } from './TemplateSelector'
 import { useTemplateProvider } from '../composables/useTemplateProvider'
+import { TemplateSelector } from './TemplateSelector'
+import './TemplateRenderer.less'
 
 /**
  * 检测当前设备类型 - 统一的设备检测逻辑
  */
 function detectCurrentDevice(): DeviceType {
-  if (typeof window === 'undefined') return 'desktop'
+  if (typeof window === 'undefined')
+    return 'desktop'
 
   const width = window.innerWidth
   let device: DeviceType
   if (width < 768) {
     device = 'mobile'
-  } else if (width < 1024) {
+  }
+  else if (width < 1024) {
     device = 'tablet'
-  } else {
+  }
+  else {
     device = 'desktop'
   }
 
@@ -49,7 +52,8 @@ export const TemplateRenderer = defineComponent({
       default: undefined,
     },
 
-    /** 模板名称（可选，不指定时使用默认模板）
+    /**
+     * 模板名称（可选，不指定时使用默认模板）
      * 支持字符串或对象格式：
      * - 字符串：'default' - 所有设备使用相同模板
      * - 对象：{ desktop: 'classic', tablet: 'adaptive', mobile: 'simple' } - 不同设备使用不同模板
@@ -136,10 +140,10 @@ export const TemplateRenderer = defineComponent({
 
   emits: {
     /** 加载完成事件 */
-    load: (result: any) => true,
+    'load': (result: any) => true,
 
     /** 加载错误事件 */
-    error: (error: Error) => true,
+    'error': (error: Error) => true,
 
     /** 加载前事件 */
     'before-load': () => true,
@@ -148,7 +152,7 @@ export const TemplateRenderer = defineComponent({
     'template-change': (template: any) => true,
 
     /** 设备变化事件 */
-    'device-change': (event: { oldDevice: DeviceType; newDevice: DeviceType }) => true,
+    'device-change': (event: { oldDevice: DeviceType, newDevice: DeviceType }) => true,
 
     /** 模板选择器可见性变化事件 */
     'selector-visibility-change': (visible: boolean) => true,
@@ -175,7 +179,8 @@ export const TemplateRenderer = defineComponent({
 
     // 选择器配置
     const selectorConfig = computed(() => {
-      if (props.selector === false) return null
+      if (props.selector === false)
+        return null
       if (props.selector === true) {
         return (
           provider.config.value?.defaultSelectorConfig || {
@@ -247,7 +252,8 @@ export const TemplateRenderer = defineComponent({
         if (props.device) {
           // 如果手动指定了设备类型，使用指定的类型
           currentDevice.value = props.device
-        } else {
+        }
+        else {
           // 否则使用管理器检测的设备类型，确保一致性
           const detectedDevice = manager.value.getCurrentDevice()
           currentDevice.value = detectedDevice
@@ -275,9 +281,10 @@ export const TemplateRenderer = defineComponent({
           try {
             const result = await manager.value!.scanTemplates()
             availableTemplates.value = result.templates.filter(
-              (t: any) => t.category === props.category
+              (t: any) => t.category === props.category,
             )
-          } catch (err) {
+          }
+          catch (err) {
             console.warn('重新扫描模板失败:', err)
           }
 
@@ -297,13 +304,14 @@ export const TemplateRenderer = defineComponent({
 
           // 只按分类过滤，保留所有设备类型的模板，让 TemplateSelector 自己处理设备过滤
           availableTemplates.value = result.templates.filter(
-            (t: any) => t.category === props.category
+            (t: any) => t.category === props.category,
           )
 
           if (availableTemplates.value.length === 0) {
             console.warn(`⚠️ 没有找到 ${props.category} 分类的模板`)
           }
-        } catch (err) {
+        }
+        catch (err) {
           console.error('❌ 模板扫描失败:', err)
           availableTemplates.value = []
         }
@@ -332,9 +340,11 @@ export const TemplateRenderer = defineComponent({
             category={props.category}
             device={targetDevice.value}
             currentTemplate={(() => {
-              if (selectedTemplate.value) return selectedTemplate.value
+              if (selectedTemplate.value)
+                return selectedTemplate.value
               // Provider不提供currentTemplate，跳过此逻辑
-              if (typeof currentTemplate.value === 'string') return currentTemplate.value
+              if (typeof currentTemplate.value === 'string')
+                return currentTemplate.value
               return undefined
             })()}
             templates={availableTemplates.value}
@@ -372,12 +382,14 @@ export const TemplateRenderer = defineComponent({
         currentLoadedTemplate.value = result.metadata // 保存当前加载的模板元数据
         emit('load', result)
         emit('template-change', result.metadata)
-      } catch (err) {
+      }
+      catch (err) {
         const loadError = err as Error
         error.value = loadError
         emit('error', loadError)
         console.error('Template loading failed:', loadError)
-      } finally {
+      }
+      finally {
         isLoading.value = false
       }
     }
@@ -400,10 +412,12 @@ export const TemplateRenderer = defineComponent({
         try {
           await provider.switchTemplate(props.category, currentDevice.value, template)
           emit('template-change', template)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('Template switch failed:', error)
         }
-      } else {
+      }
+      else {
         // 否则直接加载模板
         await loadTemplate()
         emit('template-change', template)
@@ -430,7 +444,7 @@ export const TemplateRenderer = defineComponent({
       () => {
         loadTemplate()
       },
-      { immediate: false }
+      { immediate: false },
     )
 
     // 监听设备变化（仅在未手动指定设备时）
@@ -442,7 +456,7 @@ export const TemplateRenderer = defineComponent({
           loadTemplate()
         }
       },
-      { immediate: false }
+      { immediate: false },
     )
 
     // 监听模板属性变化
@@ -454,7 +468,7 @@ export const TemplateRenderer = defineComponent({
           // 这里可以触发组件重新渲染
         }
       },
-      { deep: true }
+      { deep: true },
     )
 
     // 初始化selectedTemplate
@@ -462,7 +476,8 @@ export const TemplateRenderer = defineComponent({
       // 优先级：Provider当前模板 > props.template > 默认
       // Provider不提供currentTemplate，跳过此逻辑
       if (false) {
-      } else if (currentTemplate.value) {
+      }
+      else if (currentTemplate.value) {
         selectedTemplate.value = currentTemplate.value
       }
     }
@@ -503,7 +518,8 @@ export const TemplateRenderer = defineComponent({
 
     // 渲染模板选择器
     const renderSelector = () => {
-      if (!selectorConfig.value?.enabled) return null
+      if (!selectorConfig.value?.enabled)
+        return null
 
       const config = selectorConfig.value
       const position = config.position || 'top'
@@ -514,7 +530,8 @@ export const TemplateRenderer = defineComponent({
         shouldShow = selectorVisible.value
       }
 
-      if (!shouldShow) return null
+      if (!shouldShow)
+        return null
 
       // 计算当前模板名称，确保选中状态正确
       const getCurrentTemplateName = () => {
@@ -543,7 +560,6 @@ export const TemplateRenderer = defineComponent({
       }
 
       const currentTemplateName = getCurrentTemplateName()
-
 
       const selectorProps = {
         category: props.category,
@@ -575,11 +591,13 @@ export const TemplateRenderer = defineComponent({
 
     // 渲染自定义插槽
     const renderCustomSlots = () => {
-      if (!props.slots || props.slots.length === 0) return null
+      if (!props.slots || props.slots.length === 0)
+        return null
 
       return props.slots.map((slotConfig: any, index: number) => {
         const SlotComponent = slotConfig.content
-        if (!SlotComponent) return null
+        if (!SlotComponent)
+          return null
 
         return (
           <div key={index} class={`custom-slot custom-slot--${slotConfig.name}`}>
@@ -653,15 +671,17 @@ export const TemplateRenderer = defineComponent({
       }
 
       // 添加主要内容
-      const mainContent = props.transition ? (
-        <Transition name={transitionName.value} mode="out-in" appear={true}>
-          <div key={templateKey.value} class="template-content">
-            {content}
-          </div>
-        </Transition>
-      ) : (
-        <div class="template-content">{content}</div>
-      )
+      const mainContent = props.transition
+        ? (
+            <Transition name={transitionName.value} mode="out-in" appear={true}>
+              <div key={templateKey.value} class="template-content">
+                {content}
+              </div>
+            </Transition>
+          )
+        : (
+            <div class="template-content">{content}</div>
+          )
 
       elements.push(mainContent)
 
@@ -688,14 +708,16 @@ export const TemplateRenderer = defineComponent({
 
       return (
         <div class={containerClass} style={transitionStyle.value}>
-          {selectorPosition === 'overlay' && selector ? (
-            <>
-              {mainContent}
-              <div class="template-selector-overlay">{selector}</div>
-            </>
-          ) : (
-            elements
-          )}
+          {selectorPosition === 'overlay' && selector
+            ? (
+                <>
+                  {mainContent}
+                  <div class="template-selector-overlay">{selector}</div>
+                </>
+              )
+            : (
+                elements
+              )}
 
           {/* 选择器切换按钮（手动触发模式） */}
           {selectorConfig.value?.trigger === 'manual' && (

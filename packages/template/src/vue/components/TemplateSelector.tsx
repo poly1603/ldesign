@@ -5,8 +5,7 @@
  * 新设计：按钮触发 + 模态弹出层
  */
 
-import type { TemplateSelectorProps } from '../../types'
-import { computed, defineComponent, ref, watch, nextTick, Teleport, onMounted, onUnmounted, type PropType } from 'vue'
+import { computed, defineComponent, nextTick, onMounted, onUnmounted, type PropType, ref, Teleport, watch } from 'vue'
 import './TemplateSelector.less'
 
 export const TemplateSelector = defineComponent({
@@ -81,18 +80,15 @@ export const TemplateSelector = defineComponent({
     // 强制刷新标志，用于解决状态异常问题
     const forceRefresh = ref(0)
 
-
-
     // 监听 currentTemplate 属性变化，同步更新选中状态
     watch(
       () => props.currentTemplate,
-      newTemplate => {
-
+      (newTemplate) => {
         if (newTemplate !== selectedTemplate.value) {
           selectedTemplate.value = newTemplate || ''
         }
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     // 计算属性 - 可用模板列表
@@ -108,10 +104,12 @@ export const TemplateSelector = defineComponent({
 
       const filtered = templates.filter((template: any) => {
         // 按分类过滤
-        if (template.category !== props.category) return false
+        if (template.category !== props.category)
+          return false
 
         // 按设备类型过滤
-        if (props.device && template.device !== props.device) return false
+        if (props.device && template.device !== props.device)
+          return false
 
         return true
       })
@@ -134,7 +132,7 @@ export const TemplateSelector = defineComponent({
           })
         }
       },
-      { immediate: false }
+      { immediate: false },
     )
 
     // 计算属性 - 过滤后的模板列表
@@ -148,10 +146,10 @@ export const TemplateSelector = defineComponent({
       const query = searchQuery.value.toLowerCase()
       const filtered = available.filter((template: any) => {
         return (
-          template.template.toLowerCase().includes(query) ||
-          template.config.name.toLowerCase().includes(query) ||
-          template.config.description?.toLowerCase().includes(query) ||
-          template.config.tags?.some((tag: any) => tag.toLowerCase().includes(query))
+          template.template.toLowerCase().includes(query)
+          || template.config.name.toLowerCase().includes(query)
+          || template.config.description?.toLowerCase().includes(query)
+          || template.config.tags?.some((tag: any) => tag.toLowerCase().includes(query))
         )
       })
 
@@ -204,7 +202,8 @@ export const TemplateSelector = defineComponent({
 
     // 关闭模态弹出层
     const closeModal = () => {
-      if (isClosing.value) return // 防止重复触发
+      if (isClosing.value)
+        return // 防止重复触发
 
       isClosing.value = true
 
@@ -223,12 +222,11 @@ export const TemplateSelector = defineComponent({
     const toggleModal = () => {
       if (isModalVisible.value) {
         closeModal()
-      } else {
+      }
+      else {
         openModal()
       }
     }
-
-
 
     // 刷新模板列表
     const refreshTemplates = async () => {
@@ -238,10 +236,12 @@ export const TemplateSelector = defineComponent({
         // 强制刷新
         forceRefresh.value++
         await new Promise(resolve => setTimeout(resolve, 100))
-      } catch (err) {
+      }
+      catch (err) {
         console.error('❌ TemplateSelector 模板列表刷新失败:', err)
         error.value = err as Error
-      } finally {
+      }
+      finally {
         loading.value = false
       }
     }
@@ -308,8 +308,6 @@ export const TemplateSelector = defineComponent({
       previewTemplate(template)
     }
 
-
-
     // 渲染模板项
     const renderTemplateItem = (template: any) => {
       const isSelected = selectedTemplate.value === template.template
@@ -329,11 +327,13 @@ export const TemplateSelector = defineComponent({
         >
           {props.showPreview && (
             <div class="template-selector__item-preview">
-              {template.config.preview ? (
-                <img src={template.config.preview} alt={template.config.name} class="template-selector__item-image" />
-              ) : (
-                <div class="template-selector__item-placeholder">📄</div>
-              )}
+              {template.config.preview
+                ? (
+                    <img src={template.config.preview} alt={template.config.name} class="template-selector__item-image" />
+                  )
+                : (
+                    <div class="template-selector__item-placeholder">📄</div>
+                  )}
             </div>
           )}
 
@@ -395,7 +395,13 @@ export const TemplateSelector = defineComponent({
           <div class="template-selector__empty">
             <div class="template-selector__empty-icon">📭</div>
             <h4>暂无模板</h4>
-            <p>当前分类 "{props.category}" 和设备 "{props.device}" 下暂无可用模板</p>
+            <p>
+              当前分类 "
+              {props.category}
+              " 和设备 "
+              {props.device}
+              " 下暂无可用模板
+            </p>
             <button class="template-selector__error-retry" onClick={refreshTemplates}>
               刷新
             </button>
@@ -408,7 +414,11 @@ export const TemplateSelector = defineComponent({
           <div class="template-selector__empty">
             <div class="template-selector__empty-icon">🔍</div>
             <h4>无搜索结果</h4>
-            <p>没有找到匹配 "{searchQuery.value}" 的模板</p>
+            <p>
+              没有找到匹配 "
+              {searchQuery.value}
+              " 的模板
+            </p>
           </div>
         )
       }
@@ -422,12 +432,17 @@ export const TemplateSelector = defineComponent({
 
     // 渲染模态弹出层内容
     const renderModalContent = () => {
-
       return (
         <div class={containerClass.value}>
           <div class="template-selector__header">
             <h3 class="template-selector__title">
-              选择模板 - {props.category} ({props.device})
+              选择模板 -
+              {' '}
+              {props.category}
+              {' '}
+              (
+              {props.device}
+              )
             </h3>
             <button class="template-selector__close" onClick={closeModal}>
               ✕
@@ -438,7 +453,11 @@ export const TemplateSelector = defineComponent({
 
           <div class="template-selector__footer">
             <div class="template-selector__stats">
-              共 {availableTemplates.value.length} 个模板
+              共
+              {' '}
+              {availableTemplates.value.length}
+              {' '}
+              个模板
               {searchQuery.value && ` (筛选后 ${filteredTemplates.value.length} 个)`}
             </div>
             <button
@@ -455,7 +474,6 @@ export const TemplateSelector = defineComponent({
 
     // 渲染函数
     return () => {
-
       return (
         <>
           {/* 触发按钮 */}
@@ -472,7 +490,8 @@ export const TemplateSelector = defineComponent({
                 <div
                   class="template-selector-modal__backdrop"
                   onClick={closeModal}
-                ></div>
+                >
+                </div>
 
                 {/* 模态内容 */}
                 <div

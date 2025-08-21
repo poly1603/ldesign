@@ -480,8 +480,8 @@ export const halloweenTheme: ThemeConfig = {
     images: {},
     icons: {
       'pumpkin-lantern': '/assets/halloween/pumpkin-lantern.svg',
-      ghost: '/assets/halloween/ghost.svg',
-      bat: '/assets/halloween/bat.svg',
+      'ghost': '/assets/halloween/ghost.svg',
+      'bat': '/assets/halloween/bat.svg',
       'spider-web': '/assets/halloween/spider-web.svg',
     },
     sounds: {

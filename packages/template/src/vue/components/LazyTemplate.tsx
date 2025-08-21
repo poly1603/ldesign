@@ -72,8 +72,8 @@ export const LazyTemplate = defineComponent({
       }
 
       observer.value = new IntersectionObserver(
-        entries => {
-          entries.forEach(entry => {
+        (entries) => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting && !isVisible.value) {
               isVisible.value = true
               emit('visible')
@@ -87,7 +87,7 @@ export const LazyTemplate = defineComponent({
         {
           rootMargin: props.rootMargin,
           threshold: props.threshold,
-        }
+        },
       )
 
       observer.value.observe(containerRef.value)
@@ -115,16 +115,17 @@ export const LazyTemplate = defineComponent({
     // 监听 lazy 属性变化
     watch(
       () => props.lazy,
-      newLazy => {
+      (newLazy) => {
         if (!newLazy) {
           isVisible.value = true
           if (observer.value) {
             observer.value.disconnect()
           }
-        } else if (!isVisible.value) {
+        }
+        else if (!isVisible.value) {
           initObserver()
         }
-      }
+      },
     )
 
     onMounted(() => {

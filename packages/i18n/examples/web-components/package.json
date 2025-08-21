@@ -1,9 +1,9 @@
 {
   "name": "@ldesign/i18n-web-components-example",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "description": "Web Components example for @ldesign/i18n",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -35,14 +35,15 @@ export class NetworkModule implements DeviceModule {
    * 初始化模块
    */
   async init(): Promise<void> {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     // 获取网络连接对象
-    this.connection = safeNavigatorAccess(nav => {
+    this.connection = safeNavigatorAccess((nav) => {
       const navAny = nav as unknown as Record<string, unknown>
-      return (navAny.connection ||
-        navAny.mozConnection ||
-        navAny.webkitConnection) as NetworkConnection | null
+      return (navAny.connection
+        || navAny.mozConnection
+        || navAny.webkitConnection) as NetworkConnection | null
     }, null)
 
     // 设置事件监听器
@@ -127,17 +128,17 @@ export class NetworkModule implements DeviceModule {
     }
 
     const status: NetworkStatus = navigator.onLine ? 'online' : 'offline'
-    const connection = safeNavigatorAccess(nav => {
+    const connection = safeNavigatorAccess((nav) => {
       const navAny = nav as unknown as Record<string, unknown>
-      return (navAny.connection ||
-        navAny.mozConnection ||
-        navAny.webkitConnection) as NetworkConnection | null
+      return (navAny.connection
+        || navAny.mozConnection
+        || navAny.webkitConnection) as NetworkConnection | null
     }, null)
 
     const networkInfo: NetworkInfo = {
       status,
       type: this.parseConnectionType(
-        connection?.effectiveType || connection?.type
+        connection?.effectiveType || connection?.type,
       ),
     }
 
@@ -161,7 +162,8 @@ export class NetworkModule implements DeviceModule {
    * 解析连接类型
    */
   private parseConnectionType(type?: string): NetworkType {
-    if (!type) return 'unknown'
+    if (!type)
+      return 'unknown'
 
     const typeMap: Record<string, NetworkType> = {
       'slow-2g': 'cellular',
@@ -169,9 +171,9 @@ export class NetworkModule implements DeviceModule {
       '3g': 'cellular',
       '4g': 'cellular',
       '5g': 'cellular',
-      wifi: 'wifi',
-      ethernet: 'ethernet',
-      bluetooth: 'bluetooth',
+      'wifi': 'wifi',
+      'ethernet': 'ethernet',
+      'bluetooth': 'bluetooth',
     }
 
     return typeMap[type.toLowerCase()] || 'unknown'
@@ -188,7 +190,8 @@ export class NetworkModule implements DeviceModule {
    * 设置事件监听器
    */
   private setupEventListeners(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     // 监听在线/离线状态变化
     this.onlineHandler = () => {
@@ -216,7 +219,8 @@ export class NetworkModule implements DeviceModule {
    * 移除事件监听器
    */
   private removeEventListeners(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     if (this.onlineHandler) {
       window.removeEventListener('online', this.onlineHandler)

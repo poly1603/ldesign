@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DeviceType } from '@ldesign/template'
 import { TemplateRenderer, TemplateSelector, useTemplate } from '@ldesign/template/vue'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 // 使用 useTemplate Hook
 const {
@@ -52,9 +52,15 @@ function handleCategoryChange() {
   <div class="selector-demo">
     <div class="selector-demo__header">
       <div class="selector-demo__container">
-        <router-link to="/" class="selector-demo__back"> ← 返回首页 </router-link>
-        <h1 class="selector-demo__title">🎨 模板选择器演示</h1>
-        <p class="selector-demo__subtitle">体验智能模板选择和实时预览功能</p>
+        <router-link to="/" class="selector-demo__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="selector-demo__title">
+          🎨 模板选择器演示
+        </h1>
+        <p class="selector-demo__subtitle">
+          体验智能模板选择和实时预览功能
+        </p>
       </div>
     </div>
 

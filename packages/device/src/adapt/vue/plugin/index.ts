@@ -59,7 +59,7 @@ export function useDeviceDetector(): DeviceDetector {
 
   if (!detector) {
     throw new Error(
-      'DeviceDetector not found. Make sure to install DevicePlugin first.'
+      'DeviceDetector not found. Make sure to install DevicePlugin first.',
     )
   }
 

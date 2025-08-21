@@ -143,10 +143,11 @@ export class BrowserSystemThemeDetector implements SystemThemeDetector {
    * 通知所有监听器
    */
   private notifyListeners(mode: ColorMode): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(mode)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in system theme change listener:', error)
       }
     })
@@ -207,10 +208,11 @@ export class ManualSystemThemeDetector implements SystemThemeDetector {
    * 通知所有监听器
    */
   private notifyListeners(mode: ColorMode): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(mode)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in manual theme change listener:', error)
       }
     })
@@ -222,7 +224,7 @@ export class ManualSystemThemeDetector implements SystemThemeDetector {
  */
 export function createSystemThemeDetector(
   type: 'browser' | 'manual' = 'browser',
-  options?: SystemThemeDetectorOptions
+  options?: SystemThemeDetectorOptions,
 ): SystemThemeDetector {
   switch (type) {
     case 'browser':
@@ -250,7 +252,7 @@ export function getSystemTheme(): ColorMode {
  * 便捷函数：监听系统主题变化
  */
 export function watchSystemTheme(
-  callback: (mode: ColorMode) => void
+  callback: (mode: ColorMode) => void,
 ): () => void {
   return browserDetector.watchSystemTheme(callback)
 }
@@ -279,10 +281,11 @@ export function createThemeMediaQuery(): {
 
   const handleChange = (event: MediaQueryListEvent) => {
     const mode: ColorMode = event.matches ? 'dark' : 'light'
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(mode)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error in theme media query listener:', error)
       }
     })

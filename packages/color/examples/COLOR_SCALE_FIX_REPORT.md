@@ -75,7 +75,7 @@ colors.forEach((color, index) => {
 
 ```javascript
 // 模式选择器
-this.elements.modeSelect.addEventListener('change', e => {
+this.elements.modeSelect.addEventListener('change', (e) => {
   this.themeManager.setMode(e.target.value)
 })
 
@@ -170,7 +170,7 @@ Object.entries(scales).forEach(([colorType, scaleData]) => {
 
 ```javascript
 // 模式选择器事件
-modeSelect.addEventListener('change', e => {
+modeSelect.addEventListener('change', (e) => {
   themeManager.setMode(e.target.value)
 })
 

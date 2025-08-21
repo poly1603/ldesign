@@ -93,7 +93,7 @@ test.describe('基础功能测试', () => {
       window.dispatchEvent(
         new CustomEvent('template-error', {
           detail: { error: new Error('模板不存在') },
-        })
+        }),
       )
     })
 
@@ -106,7 +106,7 @@ test.describe('基础功能测试', () => {
     await page.click('text=组件演示')
 
     // 模拟慢速网络
-    await page.route('**/*', route => {
+    await page.route('**/*', (route) => {
       setTimeout(() => route.continue(), 1000)
     })
 

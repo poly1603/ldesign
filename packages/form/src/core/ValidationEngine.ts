@@ -22,7 +22,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
   private fieldRules: Map<string, ValidationRule[]> = new Map()
   private validationCache: Map<
     string,
-    { result: ValidationResult; timestamp: number }
+    { result: ValidationResult, timestamp: number }
   > = new Map()
 
   private debouncedValidators: Map<string, Function> = new Map()
@@ -53,7 +53,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
       const debouncedValidator = debounce(
         (value: any, formData: FormData) =>
           this.validateFieldInternal(fieldName, value, formData),
-        this.config.validateDelay || 300
+        this.config.validateDelay || 300,
       )
       this.debouncedValidators.set(fieldName, debouncedValidator)
     }
@@ -63,7 +63,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
    * 从字段配置设置验证规则
    */
   setRulesFromFields(fields: FormItemConfig[]): void {
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (field.rules && field.rules.length > 0) {
         this.setFieldRules(field.name, field.rules)
       }
@@ -77,7 +77,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
     value: any,
     rules: ValidationRule[],
     formData: FormData,
-    field: string
+    field: string,
   ): Promise<ValidationResult> {
     return this.validateFieldInternal(field, value, formData, rules)
   }
@@ -89,7 +89,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
     fieldName: string,
     value: any,
     formData: FormData,
-    customRules?: ValidationRule[]
+    customRules?: ValidationRule[],
   ): Promise<ValidationResult> {
     const rules = customRules || this.fieldRules.get(fieldName) || []
 
@@ -125,7 +125,8 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
 
       this.emit('fieldValidate', fieldName, result)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const errorResult: ValidationResult = {
         valid: false,
         errors: [`验证过程中发生错误: ${error.message}`],
@@ -142,7 +143,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
    */
   async validateForm(
     formData: FormData,
-    rules?: Record<string, ValidationRule[]>
+    rules?: Record<string, ValidationRule[]>,
   ): Promise<Record<string, ValidationResult>> {
     const allRules = rules || Object.fromEntries(this.fieldRules)
     const results: Record<string, ValidationResult> = {}
@@ -155,11 +156,11 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
           fieldName,
           value,
           formData,
-          fieldRules
+          fieldRules,
         )
         results[fieldName] = result
         return result
-      }
+      },
     )
 
     await Promise.all(validationPromises)
@@ -167,7 +168,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
     // 触发表单验证事件
     const overallValid = Object.values(results).every(result => result.valid)
     const overallErrors = Object.values(results).flatMap(
-      result => result.errors
+      result => result.errors,
     )
 
     this.emit('validate', {
@@ -185,12 +186,13 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
   async validateFieldDebounced(
     fieldName: string,
     value: any,
-    formData: FormData
+    formData: FormData,
   ): Promise<void> {
     const debouncedValidator = this.debouncedValidators.get(fieldName)
     if (debouncedValidator) {
       debouncedValidator(value, formData)
-    } else {
+    }
+    else {
       await this.validateFieldInternal(fieldName, value, formData)
     }
   }
@@ -242,7 +244,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
   private generateCacheKey(
     fieldName: string,
     value: any,
-    formData: FormData
+    formData: FormData,
   ): string {
     const valueStr = JSON.stringify(value)
     const formDataStr = JSON.stringify(formData)
@@ -278,8 +280,8 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
    */
   hasFieldRules(fieldName: string): boolean {
     return (
-      this.fieldRules.has(fieldName) &&
-      this.fieldRules.get(fieldName)!.length > 0
+      this.fieldRules.has(fieldName)
+      && this.fieldRules.get(fieldName)!.length > 0
     )
   }
 
@@ -313,7 +315,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
         const debouncedValidator = debounce(
           (value: any, formData: FormData) =>
             this.validateFieldInternal(fieldName, value, formData),
-          this.config.validateDelay || 300
+          this.config.validateDelay || 300,
         )
         this.debouncedValidators.set(fieldName, debouncedValidator)
       }
@@ -355,7 +357,7 @@ export class ValidationEngine extends SimpleEventEmitter implements Validator {
     return {
       totalRules: Array.from(this.fieldRules.values()).reduce(
         (sum, rules) => sum + rules.length,
-        0
+        0,
       ),
       customRules: this.customRules.size,
       cacheSize: this.validationCache.size,

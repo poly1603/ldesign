@@ -27,14 +27,16 @@ export class SnowflakeDecoration extends BaseDecoration {
         // 加载SVG内容
         this.svgContent = await this.loadSVG(this.config.src)
         this.element.innerHTML = this.svgContent
-      } else {
+      }
+      else {
         // 使用默认雪花图案
         this.element.innerHTML = this.getDefaultSnowflake()
       }
 
       // 设置雪花特有的样式
       this.setupSnowflakeStyles()
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load snowflake content:', error)
       this.element.innerHTML = this.getDefaultSnowflake()
     }
@@ -88,8 +90,8 @@ export class SnowflakeDecoration extends BaseDecoration {
 
     // 开始飘落动画
     if (
-      this.config.animation === 'snowfall' ||
-      this.config.animation?.includes('snowfall')
+      this.config.animation === 'snowfall'
+      || this.config.animation?.includes('snowfall')
     ) {
       this.startFallAnimation()
     }
@@ -222,7 +224,7 @@ export class SnowflakeDecoration extends BaseDecoration {
   static createMultiple(
     count: number,
     container: HTMLElement,
-    baseConfig: Partial<DecorationConfig>
+    baseConfig: Partial<DecorationConfig>,
   ): SnowflakeDecoration[] {
     const snowflakes: SnowflakeDecoration[] = []
 
@@ -284,7 +286,7 @@ export class SnowflakeDecoration extends BaseDecoration {
    * 批量隐藏雪花
    */
   static hideMultiple(snowflakes: SnowflakeDecoration[]): void {
-    snowflakes.forEach(snowflake => {
+    snowflakes.forEach((snowflake) => {
       snowflake.hide()
     })
   }
@@ -293,7 +295,7 @@ export class SnowflakeDecoration extends BaseDecoration {
    * 批量销毁雪花
    */
   static destroyMultiple(snowflakes: SnowflakeDecoration[]): void {
-    snowflakes.forEach(snowflake => {
+    snowflakes.forEach((snowflake) => {
       snowflake.destroy()
     })
   }
@@ -304,7 +306,7 @@ export class SnowflakeDecoration extends BaseDecoration {
  */
 export function createSnowflakeDecoration(
   config: DecorationConfig,
-  container: HTMLElement
+  container: HTMLElement,
 ): SnowflakeDecoration {
   return new SnowflakeDecoration(config, container)
 }
@@ -319,7 +321,7 @@ export function createSnowfallEffect(
     duration?: number
     intensity?: 'light' | 'medium' | 'heavy'
     size?: 'small' | 'medium' | 'large' | 'mixed'
-  } = {}
+  } = {},
 ): SnowflakeDecoration[] {
   const { count = 20, intensity = 'medium' } = options
 
@@ -343,7 +345,7 @@ export function createSnowfallEffect(
   const snowflakes = SnowflakeDecoration.createMultiple(
     actualCount,
     container,
-    baseConfig
+    baseConfig,
   )
 
   // 显示雪花

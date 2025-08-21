@@ -31,8 +31,8 @@ export async function getBingWallpaper(options: BackgroundOptions = {}): Promise
     const params = new URLSearchParams({
       format: 'js',
       idx: '0', // 今日壁纸
-      n: '1',   // 获取1张
-      mkt: 'zh-CN'
+      n: '1', // 获取1张
+      mkt: 'zh-CN',
     })
 
     const response = await fetch(`${bingApi}?${params}`)
@@ -44,9 +44,12 @@ export async function getBingWallpaper(options: BackgroundOptions = {}): Promise
 
       // 根据质量设置选择合适的分辨率
       let resolution = '1920x1080'
-      if (quality === 'low') resolution = '1366x768'
-      else if (quality === 'medium') resolution = '1600x900'
-      else if (quality === 'high') resolution = '1920x1080'
+      if (quality === 'low')
+        resolution = '1366x768'
+      else if (quality === 'medium')
+        resolution = '1600x900'
+      else if (quality === 'high')
+        resolution = '1920x1080'
 
       const imageUrl = `${baseUrl}${image.url}&w=${width}&h=${height}&rs=1&c=4`
 
@@ -55,12 +58,13 @@ export async function getBingWallpaper(options: BackgroundOptions = {}): Promise
         title: image.title,
         copyright: image.copyright,
         width,
-        height
+        height,
       }
     }
 
     throw new Error('No images found from Bing API')
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('Failed to fetch Bing wallpaper:', error)
     return getFallbackBackground(options)
   }
@@ -80,7 +84,7 @@ export async function getUnsplashImage(options: BackgroundOptions = {}): Promise
       abstract: 'abstract,pattern',
       minimal: 'minimal,clean',
       tech: 'technology,computer',
-      business: 'business,office'
+      business: 'business,office',
     }
 
     const query = categoryMap[category] || 'nature,landscape'
@@ -89,9 +93,10 @@ export async function getUnsplashImage(options: BackgroundOptions = {}): Promise
     return {
       url: imageUrl,
       width,
-      height
+      height,
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('Failed to fetch Unsplash image:', error)
     return getFallbackBackground(options)
   }
@@ -108,14 +113,14 @@ export function getFallbackBackground(options: BackgroundOptions = {}): Backgrou
     abstract: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     minimal: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
     tech: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    business: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+    business: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
   }
 
   return {
     url: gradients[category] || gradients.nature,
     title: 'Gradient Background',
     width: 1920,
-    height: 1080
+    height: 1080,
   }
 }
 
@@ -132,7 +137,7 @@ export async function getSmartBackground(options: BackgroundOptions = {}): Promi
   const sources = [
     () => getBingWallpaper(options),
     () => getUnsplashImage(options),
-    () => Promise.resolve(getFallbackBackground(options))
+    () => Promise.resolve(getFallbackBackground(options)),
   ]
 
   for (const getBackground of sources) {
@@ -141,7 +146,8 @@ export async function getSmartBackground(options: BackgroundOptions = {}): Promi
       if (result.url) {
         return result
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Background source failed, trying next...', error)
       continue
     }
@@ -187,7 +193,7 @@ export function setCachedBackground(key: string, background: BackgroundImage): v
  */
 export async function getCachedSmartBackground(
   cacheKey: string,
-  options: BackgroundOptions = {}
+  options: BackgroundOptions = {},
 ): Promise<BackgroundImage> {
   // 检查缓存
   const cached = getCachedBackground(cacheKey)

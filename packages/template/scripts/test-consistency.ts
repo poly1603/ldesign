@@ -50,7 +50,7 @@ class TestRunner {
    * 检查端口是否可用
    */
   private async isPortAvailable(port: number): Promise<boolean> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const net = require('node:net')
       const server = net.createServer()
 
@@ -97,11 +97,12 @@ class TestRunner {
         shell: true,
       })
 
-      install.on('close', code => {
+      install.on('close', (code) => {
         if (code === 0) {
           console.log(`✅ Dependencies installed for ${config.name}`)
           resolve()
-        } else {
+        }
+        else {
           reject(new Error(`Failed to install dependencies for ${config.name}`))
         }
       })
@@ -138,7 +139,7 @@ class TestRunner {
 
       let output = ''
 
-      process.stdout?.on('data', data => {
+      process.stdout?.on('data', (data) => {
         const text = data.toString()
         output += text
 
@@ -149,16 +150,16 @@ class TestRunner {
         }
       })
 
-      process.stderr?.on('data', data => {
+      process.stderr?.on('data', (data) => {
         console.error(`${config.name} stderr:`, data.toString())
       })
 
-      process.on('error', error => {
+      process.on('error', (error) => {
         console.error(`Failed to start ${config.name}:`, error)
         reject(error)
       })
 
-      process.on('close', code => {
+      process.on('close', (code) => {
         if (code !== 0 && !this.isShuttingDown) {
           console.error(`${config.name} exited with code ${code}`)
           reject(new Error(`${config.name} exited with code ${code}`))
@@ -187,11 +188,12 @@ class TestRunner {
         shell: true,
       })
 
-      test.on('close', code => {
+      test.on('close', (code) => {
         if (code === 0) {
           console.log('✅ All tests passed!')
           resolve()
-        } else {
+        }
+        else {
           reject(new Error(`Tests failed with code ${code}`))
         }
       })
@@ -204,7 +206,8 @@ class TestRunner {
    * 关闭所有进程
    */
   private shutdown(): void {
-    if (this.isShuttingDown) return
+    if (this.isShuttingDown)
+      return
     this.isShuttingDown = true
 
     console.log('\n🛑 Shutting down test servers...')
@@ -240,11 +243,12 @@ class TestRunner {
           shell: true,
         })
 
-        build.on('close', code => {
+        build.on('close', (code) => {
           if (code === 0) {
             console.log('✅ Build completed successfully\n')
             resolve()
-          } else {
+          }
+          else {
             reject(new Error(`Build failed with code ${code}`))
           }
         })
@@ -280,10 +284,12 @@ class TestRunner {
       await this.runPlaywrightTests()
 
       console.log('\n🎉 All tests completed successfully!')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('\n❌ Test failed:', error)
       process.exit(1)
-    } finally {
+    }
+    finally {
       this.shutdown()
     }
   }
@@ -292,7 +298,7 @@ class TestRunner {
 // 运行测试
 if (require.main === module) {
   const runner = new TestRunner()
-  runner.run().catch(error => {
+  runner.run().catch((error) => {
     console.error('Fatal error:', error)
     process.exit(1)
   })

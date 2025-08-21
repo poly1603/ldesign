@@ -24,20 +24,20 @@ export class BlowfishEncryptor implements IEncryptor {
   encrypt(
     data: string,
     key: string,
-    options: BlowfishOptions = {}
+    options: BlowfishOptions = {},
   ): EncryptResult {
     try {
       if (ValidationUtils.isEmpty(data)) {
         throw ErrorUtils.createEncryptionError(
           'Data cannot be empty',
-          'Blowfish'
+          'Blowfish',
         )
       }
 
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createEncryptionError(
           'Key cannot be empty',
-          'Blowfish'
+          'Blowfish',
         )
       }
 
@@ -46,7 +46,7 @@ export class BlowfishEncryptor implements IEncryptor {
       // 由于 crypto-js 不支持 Blowfish，我们使用 AES 作为替代方案
       // 在实际项目中，建议使用专门的 Blowfish 库或 Web Crypto API
       console.warn(
-        'Blowfish algorithm is not natively supported in crypto-js. Using AES-256-CBC as fallback.'
+        'Blowfish algorithm is not natively supported in crypto-js. Using AES-256-CBC as fallback.',
       )
 
       // 生成或使用提供的 IV
@@ -71,7 +71,8 @@ export class BlowfishEncryptor implements IEncryptor {
         iv,
         keySize: 256, // 使用 256 位密钥
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'Blowfish encryption'),
@@ -86,7 +87,7 @@ export class BlowfishEncryptor implements IEncryptor {
   decrypt(
     encryptedData: string | EncryptResult,
     key: string,
-    options: BlowfishOptions = {}
+    options: BlowfishOptions = {},
   ): DecryptResult {
     try {
       // 处理输入数据
@@ -96,7 +97,8 @@ export class BlowfishEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      } else {
+      }
+      else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
@@ -104,14 +106,14 @@ export class BlowfishEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(ciphertext)) {
         throw ErrorUtils.createDecryptionError(
           'Encrypted data cannot be empty',
-          'Blowfish'
+          'Blowfish',
         )
       }
 
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createDecryptionError(
           'Key cannot be empty',
-          'Blowfish'
+          'Blowfish',
         )
       }
 
@@ -124,7 +126,7 @@ export class BlowfishEncryptor implements IEncryptor {
       if (!opts.iv) {
         throw ErrorUtils.createDecryptionError(
           'IV is required for decryption',
-          'Blowfish'
+          'Blowfish',
         )
       }
       const ivWordArray = CryptoJS.enc.Hex.parse(opts.iv)
@@ -141,7 +143,7 @@ export class BlowfishEncryptor implements IEncryptor {
       if (!decryptedText) {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid key or corrupted data',
-          'Blowfish'
+          'Blowfish',
         )
       }
 
@@ -151,7 +153,8 @@ export class BlowfishEncryptor implements IEncryptor {
         algorithm: 'Blowfish',
         mode: opts.mode,
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'Blowfish decryption'),
@@ -181,7 +184,7 @@ export const blowfish = {
   encrypt: (
     data: string,
     key: string,
-    options?: BlowfishOptions
+    options?: BlowfishOptions,
   ): EncryptResult => {
     const encryptor = new BlowfishEncryptor()
     return encryptor.encrypt(data, key, options)
@@ -193,7 +196,7 @@ export const blowfish = {
   decrypt: (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: BlowfishOptions
+    options?: BlowfishOptions,
   ): DecryptResult => {
     const encryptor = new BlowfishEncryptor()
     return encryptor.decrypt(encryptedData, key, options)

@@ -4,21 +4,21 @@ module.exports = {
     browser: true,
     es2020: true,
     node: true,
-    worker: true
+    worker: true,
   },
   extends: [
     'eslint:recommended',
     '@typescript-eslint/recommended',
-    '@typescript-eslint/recommended-requiring-type-checking'
+    '@typescript-eslint/recommended-requiring-type-checking',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
-    project: './tsconfig.json'
+    project: './tsconfig.json',
   },
   plugins: [
-    '@typescript-eslint'
+    '@typescript-eslint',
   ],
   rules: {
     // TypeScript 严格规则
@@ -39,36 +39,36 @@ module.exports = {
     '@typescript-eslint/no-misused-promises': 'error',
     '@typescript-eslint/require-await': 'error',
     '@typescript-eslint/return-await': 'error',
-    
+
     // 禁止使用 Function 类型
     '@typescript-eslint/ban-types': [
       'error',
       {
         types: {
-          Function: {
+          'Function': {
             message: 'Use specific function type instead of Function',
-            fixWith: '(...args: any[]) => any'
+            fixWith: '(...args: any[]) => any',
           },
           '{}': {
             message: 'Use Record<string, unknown> instead of {}',
-            fixWith: 'Record<string, unknown>'
+            fixWith: 'Record<string, unknown>',
           },
-          object: {
+          'object': {
             message: 'Use Record<string, unknown> instead of object',
-            fixWith: 'Record<string, unknown>'
-          }
-        }
-      }
+            fixWith: 'Record<string, unknown>',
+          },
+        },
+      },
     ],
-    
+
     // 控制台使用规则
     'no-console': [
       'error',
       {
-        allow: ['warn', 'error']
-      }
+        allow: ['warn', 'error'],
+      },
     ],
-    
+
     // 代码质量规则
     'prefer-const': 'error',
     'no-var': 'error',
@@ -86,63 +86,63 @@ module.exports = {
         code: 100,
         ignoreUrls: true,
         ignoreStrings: true,
-        ignoreTemplateLiterals: true
-      }
+        ignoreTemplateLiterals: true,
+      },
     ],
-    
+
     // 导入规则
     'sort-imports': [
       'error',
       {
         ignoreCase: true,
-        ignoreDeclarationSort: true
-      }
+        ignoreDeclarationSort: true,
+      },
     ],
-    
+
     // 错误处理
     'no-throw-literal': 'error',
     'prefer-promise-reject-errors': 'error',
-    
+
     // 性能相关
     'no-await-in-loop': 'warn',
     'require-atomic-updates': 'error',
-    
+
     // 安全相关
     'no-eval': 'error',
     'no-implied-eval': 'error',
     'no-new-func': 'error',
-    'no-script-url': 'error'
+    'no-script-url': 'error',
   },
   overrides: [
     {
       files: ['**/*.test.ts', '**/*.spec.ts'],
       env: {
-        jest: true
+        jest: true,
       },
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-unsafe-any': 'off',
         '@typescript-eslint/no-unsafe-assignment': 'off',
         '@typescript-eslint/no-unsafe-call': 'off',
-        '@typescript-eslint/no-unsafe-member-access': 'off'
-      }
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+      },
     },
     {
       files: ['**/*.worker.ts'],
       env: {
         worker: true,
-        browser: false
+        browser: false,
       },
       globals: {
         self: 'readonly',
-        importScripts: 'readonly'
-      }
-    }
+        importScripts: 'readonly',
+      },
+    },
   ],
   ignorePatterns: [
     'dist/',
     'node_modules/',
     '*.js',
-    '*.d.ts'
-  ]
+    '*.d.ts',
+  ],
 }

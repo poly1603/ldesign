@@ -15,7 +15,7 @@ import { useTheme } from './useTheme'
  * @returns 颜色生成相关的响应式状态和方法
  */
 export function useColorGenerator(
-  manager?: ThemeManagerInstance
+  manager?: ThemeManagerInstance,
 ): UseColorGeneratorReturn {
   const { registerTheme } = useTheme(manager)
 
@@ -29,17 +29,19 @@ export function useColorGenerator(
     try {
       const colors = await generateColorConfig(primaryColor)
       return colors
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to generate colors'
+    }
+    catch (err) {
+      error.value
+        = err instanceof Error ? err.message : 'Failed to generate colors'
       throw err
-    } finally {
+    }
+    finally {
       isGenerating.value = false
     }
   }
 
   const generateColorScales = async (
-    colors: ColorConfig
+    colors: ColorConfig,
   ): Promise<Record<string, string[]>> => {
     isGenerating.value = true
     error.value = null
@@ -53,11 +55,13 @@ export function useColorGenerator(
         }
       })
       return scales
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to generate color scales'
+    }
+    catch (err) {
+      error.value
+        = err instanceof Error ? err.message : 'Failed to generate color scales'
       throw err
-    } finally {
+    }
+    finally {
       isGenerating.value = false
     }
   }
@@ -67,16 +71,17 @@ export function useColorGenerator(
     try {
       const colors = await generateColorConfig(primaryColor)
       return colors
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to preview colors'
+    }
+    catch (err) {
+      error.value
+        = err instanceof Error ? err.message : 'Failed to preview colors'
       throw err
     }
   }
 
   const applyGeneratedColors = async (
     colors: ColorConfig,
-    themeName: string = 'custom'
+    themeName: string = 'custom',
   ): Promise<void> => {
     isGenerating.value = true
     error.value = null
@@ -87,11 +92,13 @@ export function useColorGenerator(
 
       // 注册主题
       registerTheme(customTheme)
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Failed to apply generated colors'
+    }
+    catch (err) {
+      error.value
+        = err instanceof Error ? err.message : 'Failed to apply generated colors'
       throw err
-    } finally {
+    }
+    finally {
       isGenerating.value = false
     }
   }

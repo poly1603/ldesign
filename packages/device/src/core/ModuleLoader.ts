@@ -30,7 +30,8 @@ export class ModuleLoader implements IModuleLoader {
       this.modules.set(name, module)
       this.loadingPromises.delete(name)
       return module.getData() as T
-    } catch (error) {
+    }
+    catch (error) {
       this.loadingPromises.delete(name)
       throw error
     }
@@ -40,7 +41,7 @@ export class ModuleLoader implements IModuleLoader {
    * 加载模块并返回模块实例
    */
   async loadModuleInstance<T extends DeviceModule = DeviceModule>(
-    name: string
+    name: string,
   ): Promise<T> {
     // 如果模块已加载，直接返回实例
     if (this.modules.has(name)) {
@@ -62,7 +63,8 @@ export class ModuleLoader implements IModuleLoader {
       this.modules.set(name, module)
       this.loadingPromises.delete(name)
       return module as T
-    } catch (error) {
+    }
+    catch (error) {
       this.loadingPromises.delete(name)
       throw error
     }
@@ -73,13 +75,16 @@ export class ModuleLoader implements IModuleLoader {
    */
   async unload(name: string): Promise<void> {
     const module = this.modules.get(name)
-    if (!module) return
+    if (!module)
+      return
 
     try {
       await module.destroy()
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`Error destroying module "${name}":`, error)
-    } finally {
+    }
+    finally {
       this.modules.delete(name)
     }
   }
@@ -110,7 +115,7 @@ export class ModuleLoader implements IModuleLoader {
    */
   async unloadAll(): Promise<void> {
     const unloadPromises = Array.from(this.modules.keys()).map(name =>
-      this.unload(name)
+      this.unload(name),
     )
     await Promise.all(unloadPromises)
   }

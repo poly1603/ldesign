@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { ViteLauncher, createProject, startDev, buildProject, startPreview } from '../../src/index'
-import type { ProjectType, DevOptions, BuildOptions } from '../../src/types'
-import path from 'path'
-import fs from 'fs/promises'
+import type { BuildOptions, DevOptions, ProjectType } from '../../src/types'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { buildProject, createProject, startDev, startPreview, ViteLauncher } from '../../src/index'
 
 // Mock all external dependencies
 vi.mock('vite', () => ({
@@ -27,7 +27,7 @@ vi.mock('fs/promises', () => ({
   rm: vi.fn(),
 }))
 
-describe('ViteLauncher Integration', () => {
+describe('viteLauncher Integration', () => {
   let tempDir: string
   let mockFs: any
 
@@ -49,7 +49,8 @@ describe('ViteLauncher Integration', () => {
     // Clean up temp directory
     try {
       await mockFs.rm(tempDir, { recursive: true, force: true })
-    } catch {
+    }
+    catch {
       // Ignore cleanup errors
     }
   })

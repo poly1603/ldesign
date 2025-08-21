@@ -88,9 +88,11 @@ async function generateData() {
 
     // 存储到 localStorage 用于后续测试
     localStorage.setItem('large-data-demo', dataString)
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
     loadingMessage.value = ''
   }
@@ -132,7 +134,8 @@ async function testStoragePerformance() {
       const storeStart = performance.now()
       if (engine === 'localStorage') {
         localStorage.setItem(testKey, testData)
-      } else if (engine === 'sessionStorage') {
+      }
+      else if (engine === 'sessionStorage') {
         sessionStorage.setItem(testKey, testData)
       }
       const storeEnd = performance.now()
@@ -142,7 +145,8 @@ async function testStoragePerformance() {
       let readData = null
       if (engine === 'localStorage') {
         readData = localStorage.getItem(testKey)
-      } else if (engine === 'sessionStorage') {
+      }
+      else if (engine === 'sessionStorage') {
         readData = sessionStorage.getItem(testKey)
       }
       const readEnd = performance.now()
@@ -153,7 +157,8 @@ async function testStoragePerformance() {
         storeDuration: Math.round(storeEnd - storeStart),
         readDuration: Math.round(readEnd - readStart),
       })
-    } catch (err) {
+    }
+    catch (err) {
       storageResults.value.push({
         engine,
         success: false,
@@ -182,21 +187,21 @@ async function testBatchOperations() {
 
     // 批量设置
     const setStart = performance.now()
-    testData.forEach(item => {
+    testData.forEach((item) => {
       localStorage.setItem(`batch_${item.key}`, JSON.stringify(item.value))
     })
     const setEnd = performance.now()
 
     // 批量获取
     const getStart = performance.now()
-    testData.forEach(item => {
+    testData.forEach((item) => {
       localStorage.getItem(`batch_${item.key}`)
     })
     const getEnd = performance.now()
 
     // 批量删除
     const deleteStart = performance.now()
-    testData.forEach(item => {
+    testData.forEach((item) => {
       localStorage.removeItem(`batch_${item.key}`)
     })
     const deleteEnd = performance.now()
@@ -215,9 +220,11 @@ async function testBatchOperations() {
       deleteDuration: Math.round(deleteDuration),
       averageTime: Number((totalDuration / (batchSize * 3)).toFixed(3)),
     }
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
     loadingMessage.value = ''
   }
@@ -237,7 +244,8 @@ function monitorMemory() {
       availableFormatted: formatBytes(available),
       usagePercentage: Math.round((used / total) * 100),
     }
-  } else {
+  }
+  else {
     // 模拟内存信息
     const mockUsed = Math.random() * 100 * 1024 * 1024 // 0-100MB
     const mockTotal = 200 * 1024 * 1024 // 200MB
@@ -253,7 +261,8 @@ function monitorMemory() {
 
 // 工具函数
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
+  if (bytes === 0)
+    return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -283,7 +292,9 @@ function formatBytes(bytes: number): string {
           {{ loading ? '生成中...' : '生成数据' }}
         </button>
 
-        <button class="btn danger" @click="clearData">清空数据</button>
+        <button class="btn danger" @click="clearData">
+          清空数据
+        </button>
       </div>
 
       <div v-if="generatedData" class="data-info">
@@ -347,7 +358,9 @@ function formatBytes(bytes: number): string {
 
     <div class="demo-section">
       <h4>内存使用监控</h4>
-      <button class="btn secondary" @click="monitorMemory">监控内存</button>
+      <button class="btn secondary" @click="monitorMemory">
+        监控内存
+      </button>
 
       <div v-if="memoryInfo" class="memory-info">
         <div class="memory-item">
@@ -373,7 +386,9 @@ function formatBytes(bytes: number): string {
       {{ loadingMessage }}
     </div>
 
-    <div v-if="error" class="status error">错误: {{ error.message }}</div>
+    <div v-if="error" class="status error">
+      错误: {{ error.message }}
+    </div>
   </div>
 </template>
 

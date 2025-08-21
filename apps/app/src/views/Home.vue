@@ -22,7 +22,8 @@ async function toggleLanguage() {
   try {
     await changeLanguage(newLocale)
     console.log('✅ 语言切换成功:', locale.value)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 语言切换失败:', error)
   }
 }
@@ -48,11 +49,9 @@ function goToI18nDemo() {
           <h1>{{ $t('app.title') }}</h1>
         </div>
         <div class="navbar-actions">
-          <span class="user-info"
-            >{{ $t('common.hello') }}，{{
-              appStore.userInfo?.username || '用户'
-            }}！</span
-          >
+          <span class="user-info">{{ $t('common.hello') }}，{{
+            appStore.userInfo?.username || '用户'
+          }}！</span>
           <button class="btn btn-secondary" @click="toggleLanguage">
             {{ currentLocale === 'zh-CN' ? 'EN' : '中文' }}
           </button>
@@ -80,63 +79,65 @@ function goToI18nDemo() {
         <section class="dashboard">
           <div class="dashboard-grid">
             <div class="dashboard-card">
-              <div class="card-icon">👤</div>
+              <div class="card-icon">
+                👤
+              </div>
               <div class="card-content">
                 <h3>{{ $t('home.cards.userInfo.title') }}</h3>
                 <p>{{ $t('home.cards.userInfo.description') }}</p>
                 <div class="card-stats">
-                  <span
-                    >{{ $t('home.cards.userInfo.username') }}:
-                    {{ appStore.userInfo?.username || 'admin' }}</span
-                  >
+                  <span>{{ $t('home.cards.userInfo.username') }}:
+                    {{ appStore.userInfo?.username || 'admin' }}</span>
                 </div>
               </div>
             </div>
 
             <div class="dashboard-card">
-              <div class="card-icon">📊</div>
+              <div class="card-icon">
+                📊
+              </div>
               <div class="card-content">
                 <h3>{{ $t('home.cards.systemStatus.title') }}</h3>
                 <p>{{ $t('home.cards.systemStatus.description') }}</p>
                 <div class="card-stats">
-                  <span
-                    >{{ $t('home.cards.systemStatus.status') }}:
-                    {{ $t('home.cards.systemStatus.running') }}</span
-                  >
+                  <span>{{ $t('home.cards.systemStatus.status') }}:
+                    {{ $t('home.cards.systemStatus.running') }}</span>
                 </div>
               </div>
             </div>
 
             <div class="dashboard-card">
-              <div class="card-icon">⚡</div>
+              <div class="card-icon">
+                ⚡
+              </div>
               <div class="card-content">
                 <h3>{{ $t('home.cards.performance.title') }}</h3>
                 <p>{{ $t('home.cards.performance.description') }}</p>
                 <div class="card-stats">
-                  <span
-                    >{{ $t('home.cards.performance.responseTime') }}:
-                    {{ stats.averageDuration.toFixed(1) }}ms</span
-                  >
+                  <span>{{ $t('home.cards.performance.responseTime') }}:
+                    {{ stats.averageDuration.toFixed(1) }}ms</span>
                 </div>
               </div>
             </div>
 
             <div class="dashboard-card">
-              <div class="card-icon">🔒</div>
+              <div class="card-icon">
+                🔒
+              </div>
               <div class="card-content">
                 <h3>{{ $t('home.cards.security.title') }}</h3>
                 <p>{{ $t('home.cards.security.description') }}</p>
                 <div class="card-stats">
-                  <span
-                    >{{ $t('home.cards.security.securityLevel') }}:
-                    {{ $t('home.cards.security.high') }}</span
-                  >
+                  <span>{{ $t('home.cards.security.securityLevel') }}:
+                    {{ $t('home.cards.security.high') }}</span>
                 </div>
               </div>
             </div>
 
             <div class="dashboard-card clickable" @click="goToI18nDemo">
-              <div class="card-icon">🌍</div>
+              <div class="card-icon">
+                🌍
+              </div>
               <div class="card-content">
                 <h3>{{ $t('home.cards.i18nDemo.title') }}</h3>
                 <p>{{ $t('home.cards.i18nDemo.description') }}</p>

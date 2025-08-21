@@ -104,15 +104,16 @@ async function addExampleTranslations(i18n) {
           locale,
           name: locale === 'en' ? 'English' : locale === 'zh-CN' ? '中文' : '日本語',
           flag: locale === 'en' ? '🇺🇸' : locale === 'zh-CN' ? '🇨🇳' : '🇯🇵',
-          direction: 'ltr'
+          direction: 'ltr',
         },
-        translations: data
+        translations: data,
       }
 
       // 注册语言包
       i18n.loader.registerPackage(locale, packageData)
       console.log(`✅ Added translations for ${locale}`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`❌ Failed to add translations for ${locale}:`, error)
     }
   }
@@ -155,8 +156,8 @@ async function initApp() {
 
     console.log('✅ Event listeners setup complete')
     console.log('🎉 Web Components example ready!')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Failed to initialize Web Components example:', error)
   }
 }
@@ -217,7 +218,7 @@ function setupEventListeners() {
     exampleForm.addEventListener('submit', (event) => {
       event.preventDefault()
       logEvent('Form submitted (prevented default)', 'info')
-      
+
       // 获取表单数据
       const formData = new FormData(exampleForm)
       const data = Object.fromEntries(formData.entries())
@@ -227,7 +228,7 @@ function setupEventListeners() {
   }
 
   // 监听所有语言选择器的事件
-  document.querySelectorAll('i18n-language-switcher').forEach(switcher => {
+  document.querySelectorAll('i18n-language-switcher').forEach((switcher) => {
     switcher.addEventListener('language-changed', (event) => {
       logEvent(`Language switcher: ${event.detail.language}`, 'success')
     })
@@ -241,7 +242,8 @@ function setupEventListeners() {
 // 事件日志功能
 function logEvent(message, type = 'info') {
   const eventLog = document.getElementById('event-log')
-  if (!eventLog) return
+  if (!eventLog)
+    return
 
   const timestamp = new Date().toLocaleTimeString()
   const colors = {
@@ -292,7 +294,7 @@ function demonstrateFeatures() {
   // 演示动态参数更新
   setTimeout(() => {
     const pageButtons = document.querySelectorAll('i18n-button[text-key="common.pageOf"]')
-    pageButtons.forEach(button => {
+    pageButtons.forEach((button) => {
       const currentParams = JSON.parse(button.getAttribute('params') || '{}')
       const newParams = {
         current: Math.floor(Math.random() * 10) + 1,
@@ -310,7 +312,7 @@ function demonstrateFeatures() {
     if (randomButton) {
       randomButton.setAttribute('loading', 'true')
       logEvent('Set random button to loading state')
-      
+
       setTimeout(() => {
         randomButton.removeAttribute('loading')
         logEvent('Removed loading state from button')

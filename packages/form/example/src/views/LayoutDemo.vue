@@ -164,7 +164,7 @@ const layoutConfigs = {
   mixed: {
     columns: 24,
     gutter: 16,
-    fields: baseFields.map(field => {
+    fields: baseFields.map((field) => {
       const spanMap: Record<string, number> = {
         firstName: 8,
         lastName: 8,
@@ -198,8 +198,8 @@ const layoutConfigs = {
 
 // 当前表单配置
 const currentFormConfig = computed((): FormOptions => {
-  const config =
-    layoutConfigs[currentLayout.value as keyof typeof layoutConfigs]
+  const config
+    = layoutConfigs[currentLayout.value as keyof typeof layoutConfigs]
   return {
     fields: config.fields,
     layout: {
@@ -235,13 +235,19 @@ function handleChange(name: string, value: any) {
 <template>
   <div class="space-y-8">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">布局演示</h1>
-      <p class="text-gray-600">展示不同的表单布局方式</p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        布局演示
+      </h1>
+      <p class="text-gray-600">
+        展示不同的表单布局方式
+      </p>
     </div>
 
     <!-- 布局切换 -->
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">布局类型</h2>
+      <h2 class="text-xl font-semibold mb-4">
+        布局类型
+      </h2>
       <div class="flex flex-wrap gap-4">
         <button
           v-for="layout in layoutTypes"
@@ -279,7 +285,9 @@ function handleChange(name: string, value: any) {
       <div class="space-y-6">
         <!-- 布局说明 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">布局说明</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            布局说明
+          </h3>
           <div class="text-sm text-gray-600">
             <p>{{ getCurrentLayoutDescription() }}</p>
           </div>
@@ -287,7 +295,9 @@ function handleChange(name: string, value: any) {
 
         <!-- 表单数据 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            表单数据
+          </h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(formData, null, 2)
           }}</pre>
@@ -295,7 +305,9 @@ function handleChange(name: string, value: any) {
 
         <!-- 当前配置 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">当前配置</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            当前配置
+          </h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(currentFormConfig.layout, null, 2)
           }}</pre>

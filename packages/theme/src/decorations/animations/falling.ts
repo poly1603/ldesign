@@ -34,7 +34,8 @@ export class FallingAnimation extends BaseAnimation {
   protected createAnimation(): void {
     if (this.config.type === 'css') {
       this.createCSSAnimation()
-    } else {
+    }
+    else {
       this.createJSAnimation()
     }
   }
@@ -89,7 +90,7 @@ export class FallingAnimation extends BaseAnimation {
    * 初始化粒子
    */
   private initializeParticles(): void {
-    this.particles = this.elements.map(element => {
+    this.particles = this.elements.map((element) => {
       const rect = element.getBoundingClientRect()
 
       return {
@@ -132,7 +133,7 @@ export class FallingAnimation extends BaseAnimation {
   private updateParticles(): void {
     const deltaTime = 16 / 1000 // 假设60fps
 
-    this.particles.forEach(particle => {
+    this.particles.forEach((particle) => {
       // 更新位置
       particle.x += particle.vx
       particle.y += particle.vy
@@ -163,7 +164,7 @@ export class FallingAnimation extends BaseAnimation {
    * 渲染粒子
    */
   private renderParticles(): void {
-    this.particles.forEach(particle => {
+    this.particles.forEach((particle) => {
       const { element, x, y, rotation, scale, opacity } = particle
 
       element.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg) scale(${scale})`
@@ -209,9 +210,9 @@ export class FallingAnimation extends BaseAnimation {
 
     // 清理CSS动画
     const styles = document.querySelectorAll(
-      `style:contains("${this.config.name}")`
+      `style:contains("${this.config.name}")`,
     )
-    styles.forEach(style => {
+    styles.forEach((style) => {
       if (style.textContent?.includes(this.config.name)) {
         style.remove()
       }
@@ -227,7 +228,7 @@ export class FallingAnimation extends BaseAnimation {
       duration?: number
       intensity?: 'light' | 'medium' | 'heavy'
       wind?: number
-    } = {}
+    } = {},
   ): FallingAnimation {
     const { duration = 8000, intensity = 'medium', wind = 0 } = options
 
@@ -296,7 +297,7 @@ export class FallingAnimation extends BaseAnimation {
       duration?: number
       bounce?: boolean
       sparkle?: boolean
-    } = {}
+    } = {},
   ): FallingAnimation {
     const { duration = 6000, bounce = true, sparkle = true } = options
 
@@ -355,7 +356,7 @@ export class FallingAnimation extends BaseAnimation {
       duration?: number
       swirl?: boolean
       colors?: string[]
-    } = {}
+    } = {},
   ): FallingAnimation {
     const { duration = 10000, swirl = true } = options
 
@@ -422,7 +423,7 @@ export class FallingAnimation extends BaseAnimation {
  */
 export function createFallingAnimation(
   config: AnimationConfig,
-  elements: HTMLElement[]
+  elements: HTMLElement[],
 ): FallingAnimation {
   const animation = new FallingAnimation(config)
   animation.setElements(elements)

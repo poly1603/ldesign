@@ -18,17 +18,17 @@ export class StorageEngineFactory {
    */
   static async create(
     type: StorageEngine,
-    config?: StorageEngineConfig[StorageEngine]
+    config?: StorageEngineConfig[StorageEngine],
   ): Promise<IStorageEngine> {
     switch (type) {
       case 'localStorage':
         return new LocalStorageEngine(
-          config as StorageEngineConfig['localStorage']
+          config as StorageEngineConfig['localStorage'],
         )
 
       case 'sessionStorage':
         return new SessionStorageEngine(
-          config as StorageEngineConfig['sessionStorage']
+          config as StorageEngineConfig['sessionStorage'],
         )
 
       case 'cookie':
@@ -36,7 +36,7 @@ export class StorageEngineFactory {
 
       case 'indexedDB':
         return await IndexedDBEngine.create(
-          config as StorageEngineConfig['indexedDB']
+          config as StorageEngineConfig['indexedDB'],
         )
 
       case 'memory':
@@ -55,16 +55,16 @@ export class StorageEngineFactory {
       switch (type) {
         case 'localStorage':
           return (
-            typeof window !== 'undefined' &&
-            'localStorage' in window &&
-            window.localStorage !== null
+            typeof window !== 'undefined'
+            && 'localStorage' in window
+            && window.localStorage !== null
           )
 
         case 'sessionStorage':
           return (
-            typeof window !== 'undefined' &&
-            'sessionStorage' in window &&
-            window.sessionStorage !== null
+            typeof window !== 'undefined'
+            && 'sessionStorage' in window
+            && window.sessionStorage !== null
           )
 
         case 'cookie':
@@ -72,9 +72,9 @@ export class StorageEngineFactory {
 
         case 'indexedDB':
           return (
-            typeof window !== 'undefined' &&
-            'indexedDB' in window &&
-            window.indexedDB !== null
+            typeof window !== 'undefined'
+            && 'indexedDB' in window
+            && window.indexedDB !== null
           )
 
         case 'memory':
@@ -83,7 +83,8 @@ export class StorageEngineFactory {
         default:
           return false
       }
-    } catch {
+    }
+    catch {
       return false
     }
   }

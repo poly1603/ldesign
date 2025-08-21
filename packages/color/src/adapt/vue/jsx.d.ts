@@ -7,11 +7,9 @@ declare global {
     interface Element extends VNode {}
     interface ElementClass extends ComponentRenderProxy {}
     interface ElementAttributesProperty {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       $props: any
     }
     interface IntrinsicElements {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [elem: string]: any
     }
   }

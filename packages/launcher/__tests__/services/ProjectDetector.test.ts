@@ -1,8 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import fs from 'node:fs/promises'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectDetector } from '../../src/services/ProjectDetector'
-import type { ProjectType, DetectionResult } from '../../src/types'
-import path from 'path'
-import fs from 'fs/promises'
 
 // Mock fs operations
 vi.mock('fs/promises', () => ({
@@ -23,7 +21,7 @@ vi.mock('../../src/services/ErrorHandler', () => ({
   })),
 }))
 
-describe('ProjectDetector', () => {
+describe('projectDetector', () => {
   let detector: ProjectDetector
   let mockFs: any
 
@@ -47,7 +45,7 @@ describe('ProjectDetector', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify({
         dependencies: {
-          vue: '^3.0.0',
+          'vue': '^3.0.0',
           '@vitejs/plugin-vue': '^4.0.0',
         },
       }))
@@ -72,7 +70,7 @@ describe('ProjectDetector', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify({
         dependencies: {
-          react: '^18.0.0',
+          'react': '^18.0.0',
           'react-dom': '^18.0.0',
           '@vitejs/plugin-react': '^4.0.0',
         },
@@ -98,7 +96,7 @@ describe('ProjectDetector', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify({
         dependencies: {
-          vue: '^2.7.0',
+          'vue': '^2.7.0',
           '@vitejs/plugin-vue2': '^2.0.0',
         },
       }))
@@ -174,7 +172,7 @@ describe('ProjectDetector', () => {
   describe('detectFramework', () => {
     it('应该检测Vue框架', async () => {
       const dependencies = {
-        vue: '^3.0.0',
+        'vue': '^3.0.0',
         '@vitejs/plugin-vue': '^4.0.0',
       }
 
@@ -185,7 +183,7 @@ describe('ProjectDetector', () => {
 
     it('应该检测React框架', async () => {
       const dependencies = {
-        react: '^18.0.0',
+        'react': '^18.0.0',
         'react-dom': '^18.0.0',
         '@vitejs/plugin-react': '^4.0.0',
       }

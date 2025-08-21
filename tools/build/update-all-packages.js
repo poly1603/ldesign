@@ -40,7 +40,8 @@ class PackageConfigUpdater {
         await this.updateSinglePackage(pkg)
         this.results.push({ name: pkg.name, success: true })
         console.log(`  ✅ ${pkg.name} 更新成功`)
-      } catch (error) {
+      }
+      catch (error) {
         this.results.push({
           name: pkg.name,
           success: false,
@@ -68,7 +69,7 @@ class PackageConfigUpdater {
         if (existsSync(packageJsonPath)) {
           try {
             const packageJson = JSON.parse(
-              readFileSync(packageJsonPath, 'utf-8')
+              readFileSync(packageJsonPath, 'utf-8'),
             )
             packages.push({
               name: packageJson.name || entry.name,
@@ -76,7 +77,8 @@ class PackageConfigUpdater {
               packageJson,
               dirName: entry.name,
             })
-          } catch (error) {
+          }
+          catch (error) {
             console.warn(`⚠️  跳过无效的 package.json: ${packageJsonPath}`)
           }
         }
@@ -193,7 +195,8 @@ export default createRollupConfig({
 
     if (updated) {
       writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
-    } else {
+    }
+    else {
       console.log(`    ⏭️  package.json 无需更新`)
     }
   }
@@ -272,8 +275,8 @@ export default createRollupConfig({
     // 保留非构建产物的文件
     const keepFiles = currentFiles.filter(
       file =>
-        !['es', 'lib', 'types', 'dist'].includes(file) ||
-        ['dist', 'types'].includes(file)
+        !['es', 'lib', 'types', 'dist'].includes(file)
+        || ['dist', 'types'].includes(file),
     )
 
     const finalFiles = [...new Set([...keepFiles, ...newFiles])]
@@ -322,14 +325,14 @@ export default createRollupConfig({
 
     if (successful.length > 0) {
       console.log('\n✅ 更新成功的包:')
-      successful.forEach(result => {
+      successful.forEach((result) => {
         console.log(`  • ${result.name}`)
       })
     }
 
     if (failed.length > 0) {
       console.log('\n❌ 更新失败的包:')
-      failed.forEach(result => {
+      failed.forEach((result) => {
         console.log(`  • ${result.name}: ${result.error}`)
       })
     }
@@ -338,7 +341,8 @@ export default createRollupConfig({
 
     if (failed.length === 0) {
       console.log('🎉 所有包配置更新成功！')
-    } else {
+    }
+    else {
       console.log(`⚠️  ${failed.length} 个包更新失败，请手动检查`)
     }
   }
@@ -352,7 +356,8 @@ async function updateAllPackages() {
     const packagesDir = resolve(__dirname, '../../packages')
     const updater = new PackageConfigUpdater(packagesDir)
     await updater.updateAllPackages()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 批量更新失败:', error.message)
     process.exit(1)
   }

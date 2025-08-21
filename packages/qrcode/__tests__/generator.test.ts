@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { QRCodeGenerator, createQRCodeGenerator } from '../src/core/generator'
 import type { QRCodeOptions } from '../src/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createQRCodeGenerator, QRCodeGenerator } from '../src/core/generator'
 
 // Mock qrcode library
 vi.mock('qrcode', () => ({
   default: {
     toCanvas: vi.fn().mockResolvedValue(undefined),
     toString: vi.fn().mockResolvedValue('<svg>test</svg>'),
-    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,test')
-  }
+    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,test'),
+  },
 }))
 
 // Mock LogoProcessor
@@ -16,8 +16,8 @@ vi.mock('../src/core/logo', () => ({
   createLogoProcessor: vi.fn(() => ({
     addLogoToCanvas: vi.fn().mockResolvedValue(undefined),
     addLogoToSVG: vi.fn().mockResolvedValue('<svg>test with logo</svg>'),
-    destroy: vi.fn()
-  }))
+    destroy: vi.fn(),
+  })),
 }))
 
 // Mock StyleProcessor
@@ -25,11 +25,11 @@ vi.mock('../src/core/styles', () => ({
   createStyleProcessor: vi.fn(() => ({
     applyStylesToCanvas: vi.fn().mockResolvedValue(undefined),
     applyStylesToSVG: vi.fn().mockResolvedValue('<svg>styled</svg>'),
-    destroy: vi.fn()
-  }))
+    destroy: vi.fn(),
+  })),
 }))
 
-describe('QRCodeGenerator', () => {
+describe('qRCodeGenerator', () => {
   let generator: QRCodeGenerator
   let mockOptions: QRCodeOptions
 
@@ -39,7 +39,7 @@ describe('QRCodeGenerator', () => {
       size: 200,
       margin: 4,
       errorCorrectionLevel: 'M',
-      outputFormat: 'canvas'
+      outputFormat: 'canvas',
     }
     generator = new QRCodeGenerator(mockOptions)
   })
@@ -56,15 +56,15 @@ describe('QRCodeGenerator', () => {
 
     it('should merge with default options', () => {
       const minimalOptions: QRCodeOptions = {
-        data: 'test'
+        data: 'test',
       }
       const gen = new QRCodeGenerator(minimalOptions)
       const options = gen.getOptions()
-      
+
       expect(options.size).toBe(200) // default
       expect(options.margin).toBe(4) // default
       expect(options.data).toBe('test')
-      
+
       gen.destroy()
     })
   })
@@ -72,7 +72,7 @@ describe('QRCodeGenerator', () => {
   describe('generate', () => {
     it('should generate canvas output', async () => {
       const result = await generator.generate()
-      
+
       expect(result.success).toBe(true)
       expect(result.data).toBeInstanceOf(HTMLCanvasElement)
       expect(result.format).toBe('canvas')
@@ -82,7 +82,7 @@ describe('QRCodeGenerator', () => {
     it('should generate SVG output', async () => {
       generator.updateOptions({ outputFormat: 'svg' })
       const result = await generator.generate()
-      
+
       expect(result.success).toBe(true)
       expect(typeof result.data).toBe('string')
       expect(result.format).toBe('svg')
@@ -91,7 +91,7 @@ describe('QRCodeGenerator', () => {
     it('should generate image output', async () => {
       generator.updateOptions({ outputFormat: 'image' })
       const result = await generator.generate()
-      
+
       expect(result.success).toBe(true)
       expect(typeof result.data).toBe('string')
       expect(result.format).toBe('image')
@@ -101,9 +101,9 @@ describe('QRCodeGenerator', () => {
     it('should handle generation errors', async () => {
       const QRCode = await import('qrcode')
       vi.mocked(QRCode.default.toCanvas).mockRejectedValueOnce(new Error('Generation failed'))
-      
+
       const result = await generator.generate()
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toBeDefined()
       expect(result.error?.message).toContain('Generation failed')
@@ -111,10 +111,10 @@ describe('QRCodeGenerator', () => {
 
     it('should use cache when enabled', async () => {
       generator.updateOptions({ performance: { enableCache: true } })
-      
+
       const result1 = await generator.generate()
       const result2 = await generator.generate()
-      
+
       expect(result1.success).toBe(true)
       expect(result2.success).toBe(true)
       expect(result2.fromCache).toBe(true)
@@ -124,10 +124,10 @@ describe('QRCodeGenerator', () => {
       generator.updateOptions({
         color: {
           foreground: '#ff0000',
-          background: '#00ff00'
-        }
+          background: '#00ff00',
+        },
       })
-      
+
       const result = await generator.generate()
       expect(result.success).toBe(true)
     })
@@ -136,17 +136,17 @@ describe('QRCodeGenerator', () => {
       generator.updateOptions({
         logo: {
           src: 'data:image/png;base64,test',
-          size: 0.2
-        }
+          size: 0.2,
+        },
       })
-      
+
       const result = await generator.generate()
       expect(result.success).toBe(true)
     })
 
     it('should record performance metrics', async () => {
       const result = await generator.generate()
-      
+
       expect(result.metrics).toBeDefined()
       expect(result.metrics?.duration).toBeGreaterThanOrEqual(0)
       expect(result.metrics?.timestamp).toBeInstanceOf(Date)
@@ -157,7 +157,7 @@ describe('QRCodeGenerator', () => {
     it('should update options', () => {
       const newOptions = { size: 300, margin: 8 }
       generator.updateOptions(newOptions)
-      
+
       const options = generator.getOptions()
       expect(options.size).toBe(300)
       expect(options.margin).toBe(8)
@@ -166,10 +166,10 @@ describe('QRCodeGenerator', () => {
 
     it('should clear cache when options change', async () => {
       generator.updateOptions({ performance: { enableCache: true } })
-      
+
       await generator.generate() // populate cache
       generator.updateOptions({ size: 300 })
-      
+
       const result = await generator.generate()
       expect(result.fromCache).toBeFalsy()
     })
@@ -185,10 +185,10 @@ describe('QRCodeGenerator', () => {
   describe('clearCache', () => {
     it('should clear the cache', async () => {
       generator.updateOptions({ performance: { enableCache: true } })
-      
+
       await generator.generate() // populate cache
       generator.clearCache()
-      
+
       const result = await generator.generate()
       expect(result.fromCache).toBeFalsy()
     })
@@ -205,12 +205,12 @@ describe('createQRCodeGenerator', () => {
   it('should create generator instance', () => {
     const options: QRCodeOptions = {
       data: 'test',
-      size: 200
+      size: 200,
     }
-    
+
     const generator = createQRCodeGenerator(options)
     expect(generator).toBeInstanceOf(QRCodeGenerator)
-    
+
     generator.destroy()
   })
 })

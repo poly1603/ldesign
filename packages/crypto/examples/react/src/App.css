@@ -2,7 +2,11 @@
 .app {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 .header {
@@ -303,7 +307,7 @@
   color: #e2e8f0;
   padding: 1rem;
   border-radius: 6px;
-  font-family: "Fira Code", monospace;
+  font-family: 'Fira Code', monospace;
   font-size: 0.875rem;
   overflow-x: auto;
   white-space: pre-wrap;
@@ -320,7 +324,7 @@
 }
 
 .hash-result {
-  font-family: "Fira Code", monospace;
+  font-family: 'Fira Code', monospace;
   font-size: 0.875rem;
   background: #1a202c;
   color: #e2e8f0;

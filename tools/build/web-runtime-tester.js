@@ -92,7 +92,8 @@ export class WebRuntimeTester {
         message: result.message,
         errors: result.errors,
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.results.push({
         test: 'ESM Loading',
         status: 'fail',
@@ -129,7 +130,8 @@ export class WebRuntimeTester {
         message: result.message,
         errors: result.errors,
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.results.push({
         test: 'UMD Loading',
         status: 'fail',
@@ -166,7 +168,8 @@ export class WebRuntimeTester {
         message: result.message,
         errors: result.errors,
       })
-    } catch (error) {
+    }
+    catch (error) {
       this.results.push({
         test: 'Vue Integration',
         status: 'fail',
@@ -334,7 +337,7 @@ export class WebRuntimeTester {
    * 运行浏览器测试
    */
   async runBrowserTest(testFile, testType) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // 这里应该使用 Playwright 或 Puppeteer 来运行浏览器测试
       // 为了简化，这里返回模拟结果
       console.log(`  🔍 运行 ${testType} 测试: ${testFile}`)
@@ -369,9 +372,9 @@ export class WebRuntimeTester {
     console.log('\n🌐 Web 端测试报告:')
     console.log('='.repeat(50))
 
-    this.results.forEach(result => {
-      const icon =
-        result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⏭️'
+    this.results.forEach((result) => {
+      const icon
+        = result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⏭️'
       console.log(`${icon} ${result.test}: ${result.message}`)
 
       if (result.errors && result.errors.length > 0) {
@@ -405,7 +408,8 @@ export async function testWebRuntime(packageDir = process.cwd()) {
     }
 
     return result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Web 端测试失败:', error.message)
     process.exit(1)
   }

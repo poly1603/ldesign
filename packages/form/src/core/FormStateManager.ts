@@ -31,7 +31,7 @@ export class FormStateManager extends SimpleEventEmitter {
     const fieldStates: Record<string, FieldState> = {}
 
     // 为每个字段创建初始状态
-    this.options.fields.forEach(field => {
+    this.options.fields.forEach((field) => {
       const value = data[field.name] ?? field.defaultValue
       fieldStates[field.name] = {
         value,
@@ -80,7 +80,7 @@ export class FormStateManager extends SimpleEventEmitter {
     this.state.data = { ...data }
 
     // 更新字段状态
-    Object.keys(data).forEach(fieldName => {
+    Object.keys(data).forEach((fieldName) => {
       if (this.state.fieldStates[fieldName]) {
         const oldValue = oldData[fieldName]
         const newValue = data[fieldName]
@@ -169,7 +169,8 @@ export class FormStateManager extends SimpleEventEmitter {
     // 更新表单级错误
     if (errors.length > 0) {
       this.state.errors[name] = errors
-    } else {
+    }
+    else {
       delete this.state.errors[name]
     }
 
@@ -189,7 +190,7 @@ export class FormStateManager extends SimpleEventEmitter {
    */
   clearAllErrors(): void {
     this.state.errors = {}
-    Object.keys(this.state.fieldStates).forEach(name => {
+    Object.keys(this.state.fieldStates).forEach((name) => {
       this.state.fieldStates[name].errors = []
       this.state.fieldStates[name].valid = true
     })
@@ -267,9 +268,9 @@ export class FormStateManager extends SimpleEventEmitter {
    * 重置字段
    */
   resetField(name: string): void {
-    const initialValue =
-      this.initialData[name] ??
-      this.options.fields.find(f => f.name === name)?.defaultValue
+    const initialValue
+      = this.initialData[name]
+        ?? this.options.fields.find(f => f.name === name)?.defaultValue
 
     if (this.state.fieldStates[name]) {
       this.state.fieldStates[name] = {
@@ -300,7 +301,7 @@ export class FormStateManager extends SimpleEventEmitter {
   private updateFormValidity(): void {
     const hasErrors = Object.keys(this.state.errors).length > 0
     const hasFieldErrors = Object.values(this.state.fieldStates).some(
-      state => !state.valid
+      state => !state.valid,
     )
 
     this.state.valid = !hasErrors && !hasFieldErrors
@@ -374,7 +375,7 @@ export class FormStateManager extends SimpleEventEmitter {
    */
   getVisibleFieldNames(): string[] {
     return Object.keys(this.state.fieldStates).filter(
-      name => this.state.fieldStates[name].visible
+      name => this.state.fieldStates[name].visible,
     )
   }
 
@@ -383,7 +384,7 @@ export class FormStateManager extends SimpleEventEmitter {
    */
   getDirtyFieldNames(): string[] {
     return Object.keys(this.state.fieldStates).filter(
-      name => this.state.fieldStates[name].dirty
+      name => this.state.fieldStates[name].dirty,
     )
   }
 
@@ -392,7 +393,7 @@ export class FormStateManager extends SimpleEventEmitter {
    */
   getInvalidFieldNames(): string[] {
     return Object.keys(this.state.fieldStates).filter(
-      name => !this.state.fieldStates[name].valid
+      name => !this.state.fieldStates[name].valid,
     )
   }
 

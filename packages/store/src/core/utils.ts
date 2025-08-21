@@ -20,7 +20,7 @@ export function deepClone<T>(obj: T): T {
 
   if (typeof obj === 'object') {
     const cloned = {} as T
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       ;(cloned as any)[key] = deepClone((obj as any)[key])
     })
     return cloned
@@ -33,22 +33,29 @@ export function deepClone<T>(obj: T): T {
  * 检查两个值是否深度相等
  */
 export function deepEqual(a: any, b: any): boolean {
-  if (a === b) return true
+  if (a === b)
+    return true
 
-  if (a == null || b == null) return false
+  if (a == null || b == null)
+    return false
 
-  if (typeof a !== typeof b) return false
+  if (typeof a !== typeof b)
+    return false
 
-  if (typeof a !== 'object') return false
+  if (typeof a !== 'object')
+    return false
 
   const keysA = Object.keys(a)
   const keysB = Object.keys(b)
 
-  if (keysA.length !== keysB.length) return false
+  if (keysA.length !== keysB.length)
+    return false
 
   for (const key of keysA) {
-    if (!keysB.includes(key)) return false
-    if (!deepEqual(a[key], b[key])) return false
+    if (!keysB.includes(key))
+      return false
+    if (!deepEqual(a[key], b[key]))
+      return false
   }
 
   return true
@@ -59,7 +66,7 @@ export function deepEqual(a: any, b: any): boolean {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
 
@@ -79,7 +86,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 

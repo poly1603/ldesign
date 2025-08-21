@@ -4,8 +4,8 @@
  */
 
 import type {
+  PerformanceMonitor as IPerformanceMonitor,
   PerformanceMetrics,
-  PerformanceMonitor as IPerformanceMonitor
 } from '../types'
 
 /**
@@ -53,7 +53,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
   private maxMetrics = 1000
   private enableLogging = false
   private categories = new Set<string>()
-  
+
   constructor(options: {
     maxMetrics?: number
     enableLogging?: boolean
@@ -69,9 +69,9 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     const timer: Timer = {
       name,
       startTime: performance.now(),
-      category
+      category,
     }
-    
+
     this.timers.set(name, timer)
     this.categories.add(category)
     this.log(`Started timer '${name}' in category '${category}'`)
@@ -86,13 +86,13 @@ export class PerformanceMonitor implements IPerformanceMonitor {
       console.warn(`Timer '${name}' not found`)
       return 0
     }
-    
+
     const duration = this.now() - timer.startTime
     this.timers.delete(name)
-    
+
     this.recordMetric(timer.name, duration, timer.category, timer.metadata || {})
     this.log(`Ended timer '${name}': ${duration.toFixed(2)}ms`)
-    
+
     return duration
   }
 
@@ -105,17 +105,17 @@ export class PerformanceMonitor implements IPerformanceMonitor {
       value,
       timestamp: Date.now(),
       category,
-      ...(metadata && { metadata })
+      ...(metadata && { metadata }),
     }
-    
+
     this.metrics.push(entry)
     this.categories.add(category)
-    
+
     // 限制指标数量
     if (this.metrics.length > this.maxMetrics) {
       this.metrics.shift()
     }
-    
+
     this.log(`Recorded metric '${name}': ${value} (${category})`)
   }
 
@@ -126,26 +126,26 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     const now = Date.now()
     // const oneMinuteAgo = now - 60000
     const fiveMinutesAgo = now - 300000
-    
+
     // 过滤最近的指标
     const recentMetrics = this.metrics.filter(m => m.timestamp >= fiveMinutesAgo)
     // 过滤最近一分钟的指标（暂未使用）
     // const lastMinuteMetrics = this.metrics.filter(m => m.timestamp >= oneMinuteAgo)
-    
+
     // 按类别分组（暂未使用）
     // const metricsByCategory = this.groupMetricsByCategory(recentMetrics)
-    
+
     // 计算统计信息
     const renderTimes = this.getMetricValues(recentMetrics, 'render')
     const loadTimes = this.getMetricValues(recentMetrics, 'load')
-    
+
     return {
       loadTime: this.average(loadTimes),
       renderTime: this.average(renderTimes),
       memoryUsage: this.getMemoryUsage(),
       cacheHitRate: this.calculateCacheHitRate(recentMetrics),
       workerUtilization: 0, // TODO: 实现worker利用率计算
-      errorRate: this.getErrorCount(recentMetrics) / Math.max(recentMetrics.length, 1) * 100
+      errorRate: this.getErrorCount(recentMetrics) / Math.max(recentMetrics.length, 1) * 100,
     }
   }
 
@@ -154,23 +154,23 @@ export class PerformanceMonitor implements IPerformanceMonitor {
    */
   getStats(metricName?: string, category?: string): Record<string, PerformanceStats> {
     let filteredMetrics = this.metrics
-    
+
     if (metricName) {
       filteredMetrics = filteredMetrics.filter(m => m.name === metricName)
     }
-    
+
     if (category) {
       filteredMetrics = filteredMetrics.filter(m => m.category === category)
     }
-    
+
     const statsByName: Record<string, PerformanceStats> = {}
-    
+
     // 按指标名称分组
     const metricGroups = this.groupBy(filteredMetrics, 'name')
-    
+
     for (const [name, metrics] of Object.entries(metricGroups)) {
       const values = metrics.map(m => m.value).sort((a, b) => a - b)
-      
+
       if (values.length > 0) {
         statsByName[name] = {
           count: values.length,
@@ -181,11 +181,11 @@ export class PerformanceMonitor implements IPerformanceMonitor {
           p50: this.percentile(values, 50),
           p90: this.percentile(values, 90),
           p95: this.percentile(values, 95),
-          p99: this.percentile(values, 99)
+          p99: this.percentile(values, 99),
         }
       }
     }
-    
+
     return statsByName
   }
 
@@ -210,7 +210,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     return {
       metrics: [...this.metrics],
       stats: this.getStats(),
-      summary: this.getMetrics()
+      summary: this.getMetrics(),
     }
   }
 
@@ -233,7 +233,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
    */
   setMaxMetrics(max: number): void {
     this.maxMetrics = max
-    
+
     // 如果当前指标超过限制，删除旧的
     if (this.metrics.length > max) {
       this.metrics = this.metrics.slice(-max)
@@ -273,11 +273,11 @@ export class PerformanceMonitor implements IPerformanceMonitor {
    */
   // private groupMetricsByCategory(metrics: MetricEntry[]): Record<string, number> {
   //   const groups: Record<string, number> = {}
-  //   
+  //
   //   for (const metric of metrics) {
   //     groups[metric.category] = (groups[metric.category] || 0) + 1
   //   }
-  //   
+  //
   //   return groups
   // }
 
@@ -297,7 +297,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     const cacheHits = metrics.filter(m => m.name === 'cache_hit').length
     const cacheMisses = metrics.filter(m => m.name === 'cache_miss').length
     const total = cacheHits + cacheMisses
-    
+
     return total > 0 ? (cacheHits / total) * 100 : 0
   }
 
@@ -348,16 +348,17 @@ export class PerformanceMonitor implements IPerformanceMonitor {
    * 计算百分位数
    */
   private percentile(sortedValues: number[], percentile: number): number {
-    if (sortedValues.length === 0) return 0
-    
+    if (sortedValues.length === 0)
+      return 0
+
     const index = (percentile / 100) * (sortedValues.length - 1)
     const lower = Math.floor(index)
     const upper = Math.ceil(index)
-    
+
     if (lower === upper) {
       return sortedValues[lower] || 0
     }
-    
+
     const weight = index - lower
     return (sortedValues[lower] || 0) * (1 - weight) + (sortedValues[upper] || 0) * weight
   }
@@ -387,33 +388,35 @@ export function createPerformanceMonitor(options?: {
  */
 export function measurePerformance(
   monitor: IPerformanceMonitor,
-  _category = 'function'
+  _category = 'function',
 ) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
-    
+
     descriptor.value = function (...args: any[]) {
       const timerName = `${target.constructor.name}.${propertyKey}`
       monitor.startTiming(timerName)
-      
+
       try {
         const result = originalMethod.apply(this, args)
-        
+
         if (result instanceof Promise) {
           return result.finally(() => {
             monitor.endTiming(timerName)
           })
-        } else {
+        }
+        else {
           monitor.endTiming(timerName)
           return result
         }
-      } catch (error) {
+      }
+      catch (error) {
         monitor.endTiming(timerName)
         monitor.recordMetric(`${timerName}_error`, 1)
         throw error
       }
     }
-    
+
     return descriptor
   }
 }
@@ -425,15 +428,16 @@ export async function measureAsync<T>(
   fn: () => Promise<T>,
   monitor: IPerformanceMonitor,
   name: string,
-  _category = 'async'
+  _category = 'async',
 ): Promise<T> {
   monitor.startTiming(name)
-  
+
   try {
     const result = await fn()
     monitor.endTiming(name)
     return result
-  } catch (error) {
+  }
+  catch (error) {
     monitor.endTiming(name)
     monitor.recordMetric(`${name}_error`, 1)
     throw error
@@ -445,5 +449,5 @@ export async function measureAsync<T>(
  */
 export const defaultPerformanceMonitor = createPerformanceMonitor({
   maxMetrics: 500,
-  enableLogging: false
+  enableLogging: false,
 })

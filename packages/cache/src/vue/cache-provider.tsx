@@ -9,8 +9,8 @@ import {
 import { CacheManager } from '../core/cache-manager'
 
 // 注入键
-export const CACHE_MANAGER_KEY: InjectionKey<CacheManager> =
-  Symbol('cache-manager')
+export const CACHE_MANAGER_KEY: InjectionKey<CacheManager>
+  = Symbol('cache-manager')
 
 /**
  * 缓存提供者组件属性
@@ -49,7 +49,7 @@ export function useCacheManager(): CacheManager {
 
   if (!cacheManager) {
     throw new Error(
-      'CacheManager not found. Make sure to wrap your component with CacheProvider.'
+      'CacheManager not found. Make sure to wrap your component with CacheProvider.',
     )
   }
 

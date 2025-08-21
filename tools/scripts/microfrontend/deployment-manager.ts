@@ -68,7 +68,8 @@ class MicrofrontendDeploymentManager {
       // 3. 部署包
       if (this.config.parallel) {
         await this.deployPackagesParallel()
-      } else {
+      }
+      else {
         await this.deployPackagesSequential()
       }
 
@@ -82,7 +83,8 @@ class MicrofrontendDeploymentManager {
       this.printSummary()
 
       return this.results
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 部署失败:'), error)
       throw error
     }
@@ -123,7 +125,8 @@ class MicrofrontendDeploymentManager {
       console.log(chalk.green(`✅ ${packageName} 部署成功: ${url}`))
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const result: DeploymentResult = {
         package: packageName,
         success: false,
@@ -156,7 +159,8 @@ class MicrofrontendDeploymentManager {
     // 检查构建工具
     try {
       execSync('pnpm --version', { stdio: 'pipe' })
-    } catch {
+    }
+    catch {
       throw new Error('pnpm 未安装')
     }
 
@@ -221,7 +225,7 @@ class MicrofrontendDeploymentManager {
           rootDir,
           'packages',
           packageName,
-          'package.json'
+          'package.json',
         )
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
         return packageJson.version
@@ -240,7 +244,7 @@ class MicrofrontendDeploymentManager {
    */
   private async uploadPackage(
     packageName: string,
-    version: string
+    version: string,
   ): Promise<string> {
     const packageDir = join(rootDir, 'packages', packageName)
     const distDir = join(packageDir, 'dist')
@@ -252,7 +256,8 @@ class MicrofrontendDeploymentManager {
     // 根据 CDN 配置选择上传方式
     if (this.config.cdn) {
       return this.uploadToCDN(packageName, version, distDir)
-    } else {
+    }
+    else {
       return this.uploadToServer(packageName, version, distDir)
     }
   }
@@ -263,7 +268,7 @@ class MicrofrontendDeploymentManager {
   private async uploadToCDN(
     packageName: string,
     version: string,
-    distDir: string
+    distDir: string,
   ): Promise<string> {
     const { provider, bucket, region } = this.config.cdn!
 
@@ -276,7 +281,7 @@ class MicrofrontendDeploymentManager {
           version,
           distDir,
           bucket,
-          region
+          region,
         )
       case 'custom':
         return this.uploadToCustomCDN(packageName, version, distDir)
@@ -291,7 +296,7 @@ class MicrofrontendDeploymentManager {
   private async uploadToServer(
     packageName: string,
     version: string,
-    distDir: string
+    distDir: string,
   ): Promise<string> {
     // 简单的文件复制示例（实际应该使用 rsync 或其他工具）
     const targetDir = join('/var/www/microfrontend', packageName, version)
@@ -310,7 +315,7 @@ class MicrofrontendDeploymentManager {
     version: string,
     distDir: string,
     bucket: string,
-    region?: string
+    region?: string,
   ): Promise<string> {
     const s3Path = `s3://${bucket}/${packageName}/${version}/`
 
@@ -318,7 +323,7 @@ class MicrofrontendDeploymentManager {
       `aws s3 sync ${distDir} ${s3Path} --region ${region || 'us-east-1'}`,
       {
         stdio: 'inherit',
-      }
+      },
     )
 
     return `https://${bucket}.s3.amazonaws.com/${packageName}/${version}/remoteEntry.js`
@@ -332,7 +337,7 @@ class MicrofrontendDeploymentManager {
     version: string,
     distDir: string,
     bucket: string,
-    region?: string
+    region?: string,
   ): Promise<string> {
     const ossPath = `oss://${bucket}/${packageName}/${version}/`
 
@@ -351,7 +356,7 @@ class MicrofrontendDeploymentManager {
   private async uploadToCustomCDN(
     packageName: string,
     version: string,
-    distDir: string
+    distDir: string,
   ): Promise<string> {
     // 自定义上传逻辑
     console.log(chalk.yellow(`上传 ${packageName} 到自定义 CDN...`))
@@ -366,7 +371,7 @@ class MicrofrontendDeploymentManager {
   private async updatePackageRegistry(
     packageName: string,
     version: string,
-    url: string
+    url: string,
   ) {
     const registryPath = join(rootDir, 'microfrontend-registry.json')
 
@@ -432,10 +437,11 @@ class MicrofrontendDeploymentManager {
           const response = await fetch(result.url, { method: 'HEAD' })
           if (!response.ok) {
             console.warn(
-              chalk.yellow(`⚠️ ${result.package} URL 不可访问: ${result.url}`)
+              chalk.yellow(`⚠️ ${result.package} URL 不可访问: ${result.url}`),
             )
           }
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(chalk.yellow(`⚠️ ${result.package} 验证失败:`, error))
         }
       }
@@ -460,14 +466,14 @@ class MicrofrontendDeploymentManager {
 
     if (successful.length > 0) {
       console.log(chalk.green('\n✅ 成功部署的包:'))
-      successful.forEach(result => {
+      successful.forEach((result) => {
         console.log(`  ${result.package}@${result.version} - ${result.url}`)
       })
     }
 
     if (failed.length > 0) {
       console.log(chalk.red('\n❌ 部署失败的包:'))
-      failed.forEach(result => {
+      failed.forEach((result) => {
         console.log(`  ${result.package} - ${result.error}`)
       })
     }
@@ -496,7 +502,8 @@ async function main() {
   try {
     await manager.deployAll()
     process.exit(0)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(chalk.red('部署失败:'), error)
     process.exit(1)
   }

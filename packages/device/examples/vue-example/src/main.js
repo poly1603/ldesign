@@ -10,7 +10,7 @@ app.use(
     enableResize: true,
     enableOrientation: true,
     debounceDelay: 300,
-  })
+  }),
 )
 
 // 挂载应用

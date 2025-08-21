@@ -44,7 +44,7 @@ describe('storageStrategy', () => {
       const result = await strategy.selectEngine('test-key', mediumData)
 
       expect(['localStorage', 'sessionStorage', 'indexedDB']).toContain(
-        result.engine
+        result.engine,
       )
     })
 
@@ -109,7 +109,7 @@ describe('storageStrategy', () => {
       const numberResult = await strategy.selectEngine('number-key', numberData)
       const booleanResult = await strategy.selectEngine(
         'boolean-key',
-        booleanData
+        booleanData,
       )
 
       expect(['localStorage', 'sessionStorage']).toContain(stringResult.engine)
@@ -235,7 +235,7 @@ describe('storageStrategy', () => {
       const nullResult = await strategy.selectEngine('null-key', null)
       const undefinedResult = await strategy.selectEngine(
         'undefined-key',
-        undefined
+        undefined,
       )
 
       expect(nullResult.engine).toBeDefined()

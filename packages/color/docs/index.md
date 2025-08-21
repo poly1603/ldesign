@@ -75,7 +75,9 @@ const { currentTheme, currentMode, availableThemes, setTheme, toggleMode } = use
   <div>
     <p>当前主题: {{ currentTheme }}</p>
     <p>当前模式: {{ currentMode }}</p>
-    <button @click="toggleMode">切换模式</button>
+    <button @click="toggleMode">
+      切换模式
+    </button>
     <select @change="setTheme($event.target.value)">
       <option v-for="theme in availableThemes" :key="theme" :value="theme">
         {{ theme }}

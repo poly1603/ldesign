@@ -1,7 +1,7 @@
-import { defineComponent, ref, onMounted, computed } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { getIcon } from '../../../../utils/icons'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -60,12 +60,13 @@ export default defineComponent({
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -80,7 +81,7 @@ export default defineComponent({
           width: 1080,
           height: 1920,
           quality: 'medium',
-          category: 'minimal'
+          category: 'minimal',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -88,13 +89,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Mobile Gradient'
+          title: 'Mobile Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -139,11 +142,16 @@ export default defineComponent({
           </div>
           <div class="mobile-default-login__particles">
             {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i} class="mobile-default-login__particle" style={{
-                animationDelay: `${Math.random() * 10}s`,
-                left: `${Math.random() * 100}%`,
-                animationDuration: `${8 + Math.random() * 4}s`
-              }}></div>
+              <div
+                key={i}
+                class="mobile-default-login__particle"
+                style={{
+                  animationDelay: `${Math.random() * 10}s`,
+                  left: `${Math.random() * 100}%`,
+                  animationDuration: `${8 + Math.random() * 4}s`,
+                }}
+              >
+              </div>
             ))}
           </div>
         </div>
@@ -169,69 +177,71 @@ export default defineComponent({
 
           {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
           <div class="mobile-default-login__panel">
-            {props.loginPanel ? (
-              <props.loginPanel
-                title={props.title}
-                subtitle={props.subtitle}
-                showRememberMe={props.showRememberMe}
-                showForgotPassword={props.showForgotPassword}
-                showThirdPartyLogin={props.showThirdPartyLogin}
-                thirdPartyProviders={props.thirdPartyProviders}
-                isLoading={props.isLoading}
-                error={props.error}
-                onLogin={handleLogin}
-                onRegister={handleRegister}
-                onForgotPassword={handleForgotPassword}
-                onThirdPartyLogin={handleThirdPartyLogin}
-              />
-            ) : (
-              <div class="mobile-default-login__default-panel">
-                <div class="mobile-default-login__form">
-                  <div class="mobile-default-login__field">
-                    <input type="text" placeholder="手机号" class="mobile-default-login__input" />
-                  </div>
-                  <div class="mobile-default-login__field">
-                    <input type="password" placeholder="密码" class="mobile-default-login__input" />
-                  </div>
+            {props.loginPanel
+              ? (
+                  <props.loginPanel
+                    title={props.title}
+                    subtitle={props.subtitle}
+                    showRememberMe={props.showRememberMe}
+                    showForgotPassword={props.showForgotPassword}
+                    showThirdPartyLogin={props.showThirdPartyLogin}
+                    thirdPartyProviders={props.thirdPartyProviders}
+                    isLoading={props.isLoading}
+                    error={props.error}
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    onForgotPassword={handleForgotPassword}
+                    onThirdPartyLogin={handleThirdPartyLogin}
+                  />
+                )
+              : (
+                  <div class="mobile-default-login__default-panel">
+                    <div class="mobile-default-login__form">
+                      <div class="mobile-default-login__field">
+                        <input type="text" placeholder="手机号" class="mobile-default-login__input" />
+                      </div>
+                      <div class="mobile-default-login__field">
+                        <input type="password" placeholder="密码" class="mobile-default-login__input" />
+                      </div>
 
-                  {props.showRememberMe && (
-                    <div class="mobile-default-login__options">
-                      <label class="mobile-default-login__checkbox">
-                        <input type="checkbox" />
-                        <span>记住密码</span>
-                      </label>
-                      {props.showForgotPassword && (
-                        <a href="#" class="mobile-default-login__forgot">
-                          忘记密码？
-                        </a>
+                      {props.showRememberMe && (
+                        <div class="mobile-default-login__options">
+                          <label class="mobile-default-login__checkbox">
+                            <input type="checkbox" />
+                            <span>记住密码</span>
+                          </label>
+                          {props.showForgotPassword && (
+                            <a href="#" class="mobile-default-login__forgot">
+                              忘记密码？
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      <button class="mobile-default-login__submit">登录</button>
+
+                      {props.showThirdPartyLogin && (
+                        <div class="mobile-default-login__third-party">
+                          <div class="mobile-default-login__divider">
+                            <span>其他登录方式</span>
+                          </div>
+                          <div class="mobile-default-login__providers">
+                            {props.thirdPartyProviders.map((provider: string) => (
+                              <button
+                                key={provider}
+                                class={`mobile-default-login__provider mobile-default-login__provider--${provider}`}
+                              >
+                                {provider === 'wechat' && '💬'}
+                                {provider === 'qq' && '🐧'}
+                                {provider === 'weibo' && '📱'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  )}
-
-                  <button class="mobile-default-login__submit">登录</button>
-
-                  {props.showThirdPartyLogin && (
-                    <div class="mobile-default-login__third-party">
-                      <div class="mobile-default-login__divider">
-                        <span>其他登录方式</span>
-                      </div>
-                      <div class="mobile-default-login__providers">
-                        {props.thirdPartyProviders.map((provider: string) => (
-                          <button
-                            key={provider}
-                            class={`mobile-default-login__provider mobile-default-login__provider--${provider}`}
-                          >
-                            {provider === 'wechat' && '💬'}
-                            {provider === 'qq' && '🐧'}
-                            {provider === 'weibo' && '📱'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
           </div>
         </div>
       </div>

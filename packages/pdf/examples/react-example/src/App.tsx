@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { PdfViewer } from './components/PdfViewer';
-import { FileUpload } from './components/FileUpload';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { PdfViewerConfig, ThemeConfig } from './types';
-import './App.css';
+import type { PdfViewerConfig } from './types'
+import React, { useCallback, useState } from 'react'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { FileUpload } from './components/FileUpload'
+import { PdfViewer } from './components/PdfViewer'
+import './App.css'
 
 /**
  * 主应用组件
@@ -11,11 +11,11 @@ import './App.css';
  */
 function App() {
   // 当前加载的PDF文件
-  const [currentFile, setCurrentFile] = useState<File | null>(null);
-  
+  const [currentFile, setCurrentFile] = useState<File | null>(null)
+
   // 主题配置
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+
   // PDF查看器配置
   const [config, setConfig] = useState<PdfViewerConfig>({
     enableSearch: true,
@@ -23,45 +23,45 @@ function App() {
     enableDownload: true,
     enablePrint: true,
     initialZoom: 'fit-width',
-    theme: 'light'
-  });
+    theme: 'light',
+  })
 
   // 处理文件上传
   const handleFileUpload = useCallback((file: File) => {
-    console.log('文件上传:', file.name, file.size);
-    setCurrentFile(file);
-  }, []);
+    console.log('文件上传:', file.name, file.size)
+    setCurrentFile(file)
+  }, [])
 
   // 处理文件上传错误
   const handleFileError = useCallback((error: string) => {
-    console.error('文件上传错误:', error);
-    alert(`文件上传失败: ${error}`);
-  }, []);
+    console.error('文件上传错误:', error)
+    alert(`文件上传失败: ${error}`)
+  }, [])
 
   // 切换主题
   const toggleTheme = useCallback(() => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    setConfig(prev => ({ ...prev, theme: newTheme }));
-  }, [theme]);
+    const newTheme = theme === 'light' ? 'dark' : 'light'
+    setTheme(newTheme)
+    setConfig(prev => ({ ...prev, theme: newTheme }))
+  }, [theme])
 
   // 切换缩略图显示
   const toggleThumbnails = useCallback(() => {
-    setConfig(prev => ({ ...prev, enableThumbnails: !prev.enableThumbnails }));
-  }, []);
+    setConfig(prev => ({ ...prev, enableThumbnails: !prev.enableThumbnails }))
+  }, [])
 
   // 重置应用状态
   const handleReset = useCallback(() => {
-    setCurrentFile(null);
+    setCurrentFile(null)
     setConfig({
       enableSearch: true,
       enableThumbnails: false,
       enableDownload: true,
       enablePrint: true,
       initialZoom: 'fit-width',
-      theme: theme
-    });
-  }, [theme]);
+      theme,
+    })
+  }, [theme])
 
   return (
     <ErrorBoundary>
@@ -72,7 +72,7 @@ function App() {
             <h1 className="app__title">
               📄 PDF查看器 React示例
             </h1>
-            
+
             <div className="app__header-controls">
               {/* 主题切换 */}
               <button
@@ -82,7 +82,7 @@ function App() {
               >
                 {theme === 'light' ? '🌙' : '☀️'}
               </button>
-              
+
               {/* 缩略图切换 */}
               <button
                 className={`app__toggle ${config.enableThumbnails ? 'active' : ''}`}
@@ -91,7 +91,7 @@ function App() {
               >
                 🖼️ 缩略图
               </button>
-              
+
               {/* 重置按钮 */}
               <button
                 className="app__reset"
@@ -116,7 +116,7 @@ function App() {
                 <p className="app__upload-description">
                   支持拖拽上传或点击选择文件，最大支持50MB的PDF文档
                 </p>
-                
+
                 <FileUpload
                   onFileSelect={handleFileUpload}
                   onError={handleFileError}
@@ -124,7 +124,7 @@ function App() {
                   maxSize={50 * 1024 * 1024} // 50MB
                   className="app__file-upload"
                 />
-                
+
                 {/* 功能特性说明 */}
                 <div className="app__features">
                   <h3 className="app__features-title">功能特性</h3>
@@ -165,20 +165,20 @@ function App() {
                 config={config}
                 className="app__pdf-viewer"
                 onError={(error) => {
-                  console.error('PDF查看器错误:', error);
-                  alert(`PDF加载失败: ${error.message}`);
+                  console.error('PDF查看器错误:', error)
+                  alert(`PDF加载失败: ${error.message}`)
                 }}
                 onLoadSuccess={(info) => {
-                  console.log('PDF加载成功:', info);
+                  console.log('PDF加载成功:', info)
                 }}
                 onPageChange={(page) => {
-                  console.log('页面切换:', page);
+                  console.log('页面切换:', page)
                 }}
                 onZoomChange={(zoom) => {
-                  console.log('缩放变化:', zoom);
+                  console.log('缩放变化:', zoom)
                 }}
                 onSearchResult={(results) => {
-                  console.log('搜索结果:', results);
+                  console.log('搜索结果:', results)
                 }}
               />
             </div>
@@ -192,32 +192,32 @@ function App() {
               PDF查看器 React示例 - 基于 @ldesign/pdf 组件包
             </p>
             <div className="app__footer-links">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="app__footer-link"
                 onClick={(e) => {
-                  e.preventDefault();
-                  alert('这是一个示例链接');
+                  e.preventDefault()
+                  alert('这是一个示例链接')
                 }}
               >
                 📖 文档
               </a>
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="app__footer-link"
                 onClick={(e) => {
-                  e.preventDefault();
-                  alert('这是一个示例链接');
+                  e.preventDefault()
+                  alert('这是一个示例链接')
                 }}
               >
                 🐛 反馈
               </a>
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="app__footer-link"
                 onClick={(e) => {
-                  e.preventDefault();
-                  alert('这是一个示例链接');
+                  e.preventDefault()
+                  alert('这是一个示例链接')
                 }}
               >
                 ⭐ GitHub
@@ -227,7 +227,7 @@ function App() {
         </footer>
       </div>
     </ErrorBoundary>
-  );
+  )
 }
 
-export default App;
+export default App

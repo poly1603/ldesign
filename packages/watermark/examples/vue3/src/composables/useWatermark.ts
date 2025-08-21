@@ -23,7 +23,7 @@ export interface UseWatermarkReturn {
  * 水印组合式API
  */
 export function useWatermark(
-  container?: Ref<HTMLElement | undefined>
+  container?: Ref<HTMLElement | undefined>,
 ): UseWatermarkReturn {
   // 状态管理
   const instance = ref<WatermarkInstance | null>(null)
@@ -37,7 +37,8 @@ export function useWatermark(
    * 销毁水印
    */
   const destroy = async (): Promise<void> => {
-    if (!instance.value || loading.value) return
+    if (!instance.value || loading.value)
+      return
 
     try {
       loading.value = true
@@ -45,10 +46,12 @@ export function useWatermark(
 
       await destroyWatermark(instance.value)
       instance.value = null
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -58,9 +61,10 @@ export function useWatermark(
    */
   const create = async (
     content: string,
-    config: Partial<WatermarkConfig> = {}
+    config: Partial<WatermarkConfig> = {},
   ): Promise<void> => {
-    if (loading.value) return
+    if (loading.value)
+      return
 
     try {
       loading.value = true
@@ -87,10 +91,12 @@ export function useWatermark(
       })
 
       instance.value = newInstance
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -99,7 +105,8 @@ export function useWatermark(
    * 更新水印
    */
   const update = async (config: Partial<WatermarkConfig>): Promise<void> => {
-    if (!instance.value || loading.value) return
+    if (!instance.value || loading.value)
+      return
 
     try {
       loading.value = true
@@ -117,10 +124,12 @@ export function useWatermark(
         ...config,
       })
       instance.value = newInstance
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -146,7 +155,7 @@ export function useWatermark(
           }
         }
       },
-      { flush: 'post' }
+      { flush: 'post' },
     )
   }
 

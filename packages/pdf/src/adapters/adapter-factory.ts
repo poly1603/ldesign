@@ -3,16 +3,16 @@
  * 提供统一的适配器创建和管理接口
  */
 
-import {
-  FrameworkType,
-  type FrameworkAdapter,
-  type AdapterFactory,
-  type AdapterConfig
-} from './types'
-import { VueAdapter, createVueAdapter } from './vue-adapter'
-import { ReactAdapter, createReactAdapter } from './react-adapter'
-import { VanillaAdapter, createVanillaAdapter } from './vanilla-adapter'
 import { createPdfError, ErrorCode } from '../utils/error-handler'
+import { createReactAdapter } from './react-adapter'
+import {
+  type AdapterConfig,
+  type AdapterFactory,
+  type FrameworkAdapter,
+  FrameworkType,
+} from './types'
+import { createVanillaAdapter } from './vanilla-adapter'
+import { createVueAdapter } from './vue-adapter'
 
 /**
  * 适配器注册表
@@ -22,7 +22,7 @@ type AdapterConstructor = (config?: Partial<AdapterConfig>) => FrameworkAdapter
 const adapterRegistry = new Map<FrameworkType, AdapterConstructor>([
   [FrameworkType.VUE, createVueAdapter],
   [FrameworkType.REACT, createReactAdapter],
-  [FrameworkType.VANILLA, createVanillaAdapter]
+  [FrameworkType.VANILLA, createVanillaAdapter],
 ])
 
 /**
@@ -41,27 +41,27 @@ export class PdfAdapterFactory implements AdapterFactory {
    */
   createAdapter(
     framework: FrameworkType,
-    config?: Partial<AdapterConfig>
+    config?: Partial<AdapterConfig>,
   ): FrameworkAdapter {
     const constructor = adapterRegistry.get(framework)
     if (!constructor) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        `Unsupported framework: ${framework}`
+        `Unsupported framework: ${framework}`,
       )
     }
 
     const mergedConfig = {
       ...this._defaultConfig,
       ...config,
-      framework
+      framework,
     }
 
     const adapter = constructor(mergedConfig)
-    
+
     // 缓存适配器实例
     this._adapters.set(framework, adapter)
-    
+
     return adapter
   }
 
@@ -77,7 +77,7 @@ export class PdfAdapterFactory implements AdapterFactory {
    */
   getOrCreateAdapter(
     framework: FrameworkType,
-    config?: Partial<AdapterConfig>
+    config?: Partial<AdapterConfig>,
   ): FrameworkAdapter {
     let adapter = this._adapters.get(framework)
     if (!adapter) {
@@ -105,7 +105,7 @@ export class PdfAdapterFactory implements AdapterFactory {
    */
   registerAdapter(
     framework: FrameworkType,
-    constructor: AdapterConstructor
+    constructor: AdapterConstructor,
   ): void {
     adapterRegistry.set(framework, constructor)
   }
@@ -127,10 +127,11 @@ export class PdfAdapterFactory implements AdapterFactory {
    * 销毁所有适配器实例
    */
   destroyAll(): void {
-    this._adapters.forEach(adapter => {
+    this._adapters.forEach((adapter) => {
       try {
         adapter.destroy()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('[AdapterFactory] Error destroying adapter:', error)
       }
     })
@@ -147,7 +148,7 @@ export class PdfAdapterFactory implements AdapterFactory {
       if (window.Vue || (typeof global !== 'undefined' && global.Vue)) {
         return FrameworkType.VUE
       }
-      
+
       // 检测React
       // @ts-ignore
       if (window.React || (typeof global !== 'undefined' && global.React)) {
@@ -161,7 +162,8 @@ export class PdfAdapterFactory implements AdapterFactory {
         // 尝试检测Vue
         require.resolve('vue')
         return FrameworkType.VUE
-      } catch {
+      }
+      catch {
         // Vue未安装
       }
 
@@ -169,7 +171,8 @@ export class PdfAdapterFactory implements AdapterFactory {
         // 尝试检测React
         require.resolve('react')
         return FrameworkType.REACT
-      } catch {
+      }
+      catch {
         // React未安装
       }
     }
@@ -191,19 +194,20 @@ export class PdfAdapterFactory implements AdapterFactory {
    */
   createAdapters(
     frameworks: FrameworkType[],
-    config?: Partial<AdapterConfig>
+    config?: Partial<AdapterConfig>,
   ): Map<FrameworkType, FrameworkAdapter> {
     const adapters = new Map<FrameworkType, FrameworkAdapter>()
-    
-    frameworks.forEach(framework => {
+
+    frameworks.forEach((framework) => {
       try {
         const adapter = this.createAdapter(framework, config)
         adapters.set(framework, adapter)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`[AdapterFactory] Failed to create ${framework} adapter:`, error)
       }
     })
-    
+
     return adapters
   }
 
@@ -220,7 +224,7 @@ export class PdfAdapterFactory implements AdapterFactory {
       supported: adapterRegistry.size,
       created: this._adapters.size,
       frameworks: this.getSupportedFrameworks(),
-      createdFrameworks: Array.from(this._adapters.keys())
+      createdFrameworks: Array.from(this._adapters.keys()),
     }
   }
 
@@ -231,15 +235,15 @@ export class PdfAdapterFactory implements AdapterFactory {
     if (config.framework && !this.isSupported(config.framework)) {
       return false
     }
-    
+
     if (config.componentName && typeof config.componentName !== 'string') {
       return false
     }
-    
+
     if (config.debug !== undefined && typeof config.debug !== 'boolean') {
       return false
     }
-    
+
     return true
   }
 
@@ -256,14 +260,14 @@ export class PdfAdapterFactory implements AdapterFactory {
  * 默认适配器工厂实例
  */
 export const defaultAdapterFactory = new PdfAdapterFactory({
-  debug: false
+  debug: false,
 })
 
 /**
  * 创建适配器工厂实例
  */
 export function createAdapterFactory(
-  defaultConfig?: Partial<AdapterConfig>
+  defaultConfig?: Partial<AdapterConfig>,
 ): PdfAdapterFactory {
   return new PdfAdapterFactory(defaultConfig)
 }
@@ -273,7 +277,7 @@ export function createAdapterFactory(
  */
 export function createAdapter(
   framework: FrameworkType,
-  config?: Partial<AdapterConfig>
+  config?: Partial<AdapterConfig>,
 ): FrameworkAdapter {
   return defaultAdapterFactory.createAdapter(framework, config)
 }
@@ -282,7 +286,7 @@ export function createAdapter(
  * 便捷函数：自动检测并创建适配器
  */
 export function createAutoAdapter(
-  config?: Partial<AdapterConfig>
+  config?: Partial<AdapterConfig>,
 ): FrameworkAdapter {
   return defaultAdapterFactory.createAutoAdapter(config)
 }

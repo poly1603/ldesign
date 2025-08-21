@@ -48,7 +48,7 @@ export function createProdAliases(packageRoot: string) {
     // Vue子模块
     '@ldesign/template/vue': resolve(
       packageRoot,
-      '../template/es/vue/index.js'
+      '../template/es/vue/index.js',
     ),
     '@ldesign/i18n/vue': resolve(packageRoot, '../i18n/es/vue/index.js'),
     '@ldesign/crypto/vue': resolve(packageRoot, '../crypto/es/vue/index.js'),
@@ -60,7 +60,7 @@ export function createProdAliases(packageRoot: string) {
  */
 export function createAliases(
   packageRoot: string,
-  isDev = process.env.NODE_ENV === 'development'
+  isDev = process.env.NODE_ENV === 'development',
 ) {
   return isDev ? createDevAliases(packageRoot) : createProdAliases(packageRoot)
 }

@@ -140,16 +140,16 @@ test.describe('性能测试', () => {
     const startTime = performance.now()
     for (let i = 0; i < 5; i++) {
       promises.push(
-        page.evaluate(template => {
+        page.evaluate((template) => {
           // 模拟并发加载
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             setTimeout(() => {
               const event = new CustomEvent('load-template', { detail: { template } })
               window.dispatchEvent(event)
               resolve(template)
             }, Math.random() * 100)
           })
-        }, templates[i % templates.length])
+        }, templates[i % templates.length]),
       )
     }
 
@@ -208,7 +208,7 @@ test.describe('性能测试', () => {
 
   test('网络性能测试', async ({ page }) => {
     // 模拟慢速网络
-    await page.route('**/*.js', route => {
+    await page.route('**/*.js', (route) => {
       setTimeout(() => route.continue(), 200)
     })
 
@@ -230,7 +230,7 @@ test.describe('性能测试', () => {
   test('资源使用优化', async ({ page }) => {
     // 监控网络请求
     const requests: any[] = []
-    page.on('request', request => {
+    page.on('request', (request) => {
       requests.push({
         url: request.url(),
         method: request.method(),

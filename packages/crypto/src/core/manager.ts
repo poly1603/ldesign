@@ -77,7 +77,7 @@ export class CryptoManager {
     data: string,
     key: string,
     algorithm?: EncryptionAlgorithm,
-    options?: any
+    options?: any,
   ): Promise<EncryptResult> {
     const targetAlgorithm = algorithm || this.config.defaultAlgorithm
 
@@ -92,7 +92,8 @@ export class CryptoManager {
       })
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.log('error', 'Encryption failed', error)
       return {
         success: false,
@@ -110,7 +111,7 @@ export class CryptoManager {
     encryptedData: string | EncryptResult,
     key: string,
     algorithm?: EncryptionAlgorithm,
-    options?: any
+    options?: any,
   ): Promise<DecryptResult> {
     try {
       this.log('debug', `Decrypting data`)
@@ -119,13 +120,14 @@ export class CryptoManager {
         encryptedData,
         key,
         algorithm,
-        options
+        options,
       )
 
       this.log('debug', `Decryption completed`, { success: result.success })
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.log('error', 'Decryption failed', error)
       return {
         success: false,
@@ -140,8 +142,8 @@ export class CryptoManager {
    * 批量加密
    */
   async batchEncrypt(
-    operations: BatchOperation[]
-  ): Promise<Array<{ id: string; result: EncryptResult }>> {
+    operations: BatchOperation[],
+  ): Promise<Array<{ id: string, result: EncryptResult }>> {
     if (!this.config.enableParallel || operations.length <= 1) {
       // 串行处理
       const results = []
@@ -150,7 +152,7 @@ export class CryptoManager {
           op.data,
           op.key,
           op.algorithm,
-          op.options
+          op.options,
         )
         results.push({ id: op.id, result })
       }
@@ -165,8 +167,8 @@ export class CryptoManager {
    * 批量解密
    */
   async batchDecrypt(
-    operations: BatchOperation[]
-  ): Promise<Array<{ id: string; result: DecryptResult }>> {
+    operations: BatchOperation[],
+  ): Promise<Array<{ id: string, result: DecryptResult }>> {
     if (!this.config.enableParallel || operations.length <= 1) {
       // 串行处理
       const results = []
@@ -175,7 +177,7 @@ export class CryptoManager {
           op.data,
           op.key,
           op.algorithm,
-          op.options
+          op.options,
         )
         results.push({ id: op.id, result })
       }
@@ -192,7 +194,7 @@ export class CryptoManager {
   hashData(
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): string {
     return this.hash.hash(data, algorithm, options)
   }
@@ -203,7 +205,7 @@ export class CryptoManager {
   hmacData(
     data: string,
     key: string,
-    algorithm: HashAlgorithm = 'SHA256'
+    algorithm: HashAlgorithm = 'SHA256',
   ): string {
     return this.hmac.hmac(data, key, `HMAC-${algorithm}` as any)
   }
@@ -213,7 +215,7 @@ export class CryptoManager {
    */
   generateKey(
     algorithm: EncryptionAlgorithm,
-    keySize?: number
+    keySize?: number,
   ): string | RSAKeyPair {
     switch (algorithm.toUpperCase()) {
       case 'AES':
@@ -228,7 +230,7 @@ export class CryptoManager {
         return this.keyGenerator.generateRandomBytes(keySize || 16)
       default:
         throw new Error(
-          `Unsupported algorithm for key generation: ${algorithm}`
+          `Unsupported algorithm for key generation: ${algorithm}`,
         )
     }
   }
@@ -276,9 +278,10 @@ export class CryptoManager {
   private log(
     level: 'error' | 'warn' | 'info' | 'debug',
     message: string,
-    data?: any
+    data?: any,
   ): void {
-    if (!this.config.debug) return
+    if (!this.config.debug)
+      return
 
     const levels = ['error', 'warn', 'info', 'debug']
     const currentLevelIndex = levels.indexOf(this.config.logLevel)
@@ -290,7 +293,8 @@ export class CryptoManager {
 
       if (data) {
         console[level](logMessage, data)
-      } else {
+      }
+      else {
         console[level](logMessage)
       }
     }

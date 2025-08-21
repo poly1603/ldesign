@@ -1,6 +1,6 @@
-export * from './button/button';
-export * from './input/input';
-export * from './textarea/textarea';
+export * from './button/button'
+export * from './input/input'
+export * from './textarea/textarea'
 
 // Component type definitions for LDesign Web Components
 
@@ -8,171 +8,171 @@ export interface LdButton {
   /**
    * Button type
    */
-  type?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  type?: 'primary' | 'secondary' | 'danger' | 'ghost'
   /**
    * Button size
    */
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large'
   /**
    * Whether the button is disabled
    */
-  disabled?: boolean;
+  disabled?: boolean
   /**
    * Whether the button is in loading state
    */
-  loading?: boolean;
+  loading?: boolean
   /**
    * Click event handler
    */
-  onLdClick?: (event: CustomEvent<MouseEvent>) => void;
+  onLdClick?: (event: CustomEvent<MouseEvent>) => void
 }
 
 export interface LdInput {
   /**
    * Input type
    */
-  type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search';
+  type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search'
   /**
    * Input size
    */
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large'
   /**
    * Input value
    */
-  value?: string;
+  value?: string
   /**
    * Placeholder text
    */
-  placeholder?: string;
+  placeholder?: string
   /**
    * Whether the input is disabled
    */
-  disabled?: boolean;
+  disabled?: boolean
   /**
    * Whether the input is readonly
    */
-  readonly?: boolean;
+  readonly?: boolean
   /**
    * Whether the input is required
    */
-  required?: boolean;
+  required?: boolean
   /**
    * Maximum length of input
    */
-  maxlength?: number;
+  maxlength?: number
   /**
    * Minimum length of input
    */
-  minlength?: number;
+  minlength?: number
   /**
    * Input pattern for validation
    */
-  pattern?: string;
+  pattern?: string
   /**
    * Whether to show clear button
    */
-  clearable?: boolean;
+  clearable?: boolean
   /**
    * Whether to show password toggle (only for password type)
    */
-  showPassword?: boolean;
+  showPassword?: boolean
   /**
    * Input event handler
    */
-  onLdInput?: (event: CustomEvent<string>) => void;
+  onLdInput?: (event: CustomEvent<string>) => void
   /**
    * Change event handler
    */
-  onLdChange?: (event: CustomEvent<string>) => void;
+  onLdChange?: (event: CustomEvent<string>) => void
   /**
    * Focus event handler
    */
-  onLdFocus?: (event: CustomEvent<FocusEvent>) => void;
+  onLdFocus?: (event: CustomEvent<FocusEvent>) => void
   /**
    * Blur event handler
    */
-  onLdBlur?: (event: CustomEvent<FocusEvent>) => void;
+  onLdBlur?: (event: CustomEvent<FocusEvent>) => void
   /**
    * Clear event handler
    */
-  onLdClear?: (event: CustomEvent<void>) => void;
+  onLdClear?: (event: CustomEvent<void>) => void
 }
 
 export interface LdTextarea {
   /**
    * Textarea size
    */
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large'
   /**
    * Textarea value
    */
-  value?: string;
+  value?: string
   /**
    * Placeholder text
    */
-  placeholder?: string;
+  placeholder?: string
   /**
    * Whether the textarea is disabled
    */
-  disabled?: boolean;
+  disabled?: boolean
   /**
    * Whether the textarea is readonly
    */
-  readonly?: boolean;
+  readonly?: boolean
   /**
    * Whether the textarea is required
    */
-  required?: boolean;
+  required?: boolean
   /**
    * Maximum length of textarea
    */
-  maxlength?: number;
+  maxlength?: number
   /**
    * Minimum length of textarea
    */
-  minlength?: number;
+  minlength?: number
   /**
    * Number of rows
    */
-  rows?: number;
+  rows?: number
   /**
    * Number of columns
    */
-  cols?: number;
+  cols?: number
   /**
    * Resize behavior
    */
-  resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+  resize?: 'none' | 'both' | 'horizontal' | 'vertical'
   /**
    * Whether to show character count
    */
-  showCount?: boolean;
+  showCount?: boolean
   /**
    * Whether to auto resize height
    */
-  autosize?: boolean;
+  autosize?: boolean
   /**
    * Min rows for autosize
    */
-  minRows?: number;
+  minRows?: number
   /**
    * Max rows for autosize
    */
-  maxRows?: number;
+  maxRows?: number
   /**
    * Input event handler
    */
-  onLdInput?: (event: CustomEvent<string>) => void;
+  onLdInput?: (event: CustomEvent<string>) => void
   /**
    * Change event handler
    */
-  onLdChange?: (event: CustomEvent<string>) => void;
+  onLdChange?: (event: CustomEvent<string>) => void
   /**
    * Focus event handler
    */
-  onLdFocus?: (event: CustomEvent<FocusEvent>) => void;
+  onLdFocus?: (event: CustomEvent<FocusEvent>) => void
   /**
    * Blur event handler
    */
-  onLdBlur?: (event: CustomEvent<FocusEvent>) => void;
+  onLdBlur?: (event: CustomEvent<FocusEvent>) => void
 }

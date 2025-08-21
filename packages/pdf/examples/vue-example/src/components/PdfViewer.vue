@@ -1,335 +1,9 @@
-<template>
-  <div class="pdf-viewer" :class="themeClasses">
-    <!-- 工具栏 -->
-    <div class="pdf-toolbar">
-      <div class="toolbar-left">
-        <button
-          class="toolbar-btn"
-          @click="openFile"
-          :disabled="loading"
-          title="打开PDF文件"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-          </svg>
-          打开文件
-        </button>
-        
-        <div class="toolbar-divider"></div>
-        
-        <button
-          class="toolbar-btn"
-          @click="previousPage"
-          :disabled="!canGoPrevious"
-          title="上一页"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M15.41,16.58L10.83,12L15.41,7.42L14,6L8,12L14,18L15.41,16.58Z" />
-          </svg>
-        </button>
-        
-        <div class="page-info">
-          <input
-            v-model.number="inputPage"
-            @keyup.enter="goToPage(inputPage)"
-            @blur="inputPage = currentPage"
-            class="page-input"
-            type="number"
-            :min="1"
-            :max="totalPages"
-          />
-          <span class="page-total">/ {{ totalPages }}</span>
-        </div>
-        
-        <button
-          class="toolbar-btn"
-          @click="nextPage"
-          :disabled="!canGoNext"
-          title="下一页"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M8.59,16.58L13.17,12L8.59,7.42L10,6L16,12L10,18L8.59,16.58Z" />
-          </svg>
-        </button>
-        
-        <div class="toolbar-divider"></div>
-        
-        <button
-          class="toolbar-btn"
-          @click="zoomOut"
-          :disabled="!canZoomOut"
-          title="缩小"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M19,13H5V11H19V13Z" />
-          </svg>
-        </button>
-        
-        <div class="zoom-info">
-          <select v-model="selectedZoom" @change="setZoom(selectedZoom)" class="zoom-select">
-            <option v-for="option in zoomOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        
-        <button
-          class="toolbar-btn"
-          @click="zoomIn"
-          :disabled="!canZoomIn"
-          title="放大"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-          </svg>
-        </button>
-      </div>
-      
-      <div class="toolbar-center">
-        <div class="search-container" v-if="showSearch">
-          <input
-            v-model="searchQuery"
-            @keyup.enter="performSearch"
-            @input="onSearchInput"
-            class="search-input"
-            type="text"
-            placeholder="搜索文档内容..."
-          />
-          <button
-            class="search-btn"
-            @click="performSearch"
-            :disabled="!searchQuery.trim()"
-            title="搜索"
-          >
-            <svg class="icon" viewBox="0 0 24 24">
-              <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
-            </svg>
-          </button>
-          <button
-            class="search-btn"
-            @click="clearSearch"
-            v-if="searchResults.length > 0"
-            title="清除搜索"
-          >
-            <svg class="icon" viewBox="0 0 24 24">
-              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-            </svg>
-          </button>
-          <div class="search-results" v-if="searchResults.length > 0">
-            {{ currentSearchIndex + 1 }} / {{ searchResults.length }}
-          </div>
-        </div>
-      </div>
-      
-      <div class="toolbar-right">
-        <button
-          class="toolbar-btn"
-          @click="toggleSearch"
-          :class="{ active: showSearch }"
-          title="搜索"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
-          </svg>
-        </button>
-        
-        <button
-          class="toolbar-btn"
-          @click="toggleThumbnails"
-          :class="{ active: showThumbnails }"
-          title="缩略图"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,12H7V14H5V12M3,13H9V19H3V13M5,15V17H7V15H5Z" />
-          </svg>
-        </button>
-        
-        <button
-          class="toolbar-btn"
-          @click="downloadPdf"
-          :disabled="!pdfLoaded"
-          title="下载"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-          </svg>
-        </button>
-        
-        <button
-          class="toolbar-btn"
-          @click="printPdf"
-          :disabled="!pdfLoaded"
-          title="打印"
-        >
-          <svg class="icon" viewBox="0 0 24 24">
-            <path d="M18,3H6V7H18M19,12A1,1 0 0,1 18,11A1,1 0 0,1 19,10A1,1 0 0,1 20,11A1,1 0 0,1 19,12M16,19H8V14H16M19,8H5A3,3 0 0,0 2,11V17H6V21H18V17H22V11A3,3 0 0,0 19,8Z" />
-          </svg>
-        </button>
-        
-        <div class="toolbar-divider"></div>
-        
-        <button
-          class="toolbar-btn"
-          @click="toggleTheme"
-          :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
-        >
-          <svg v-if="isDark" class="icon" viewBox="0 0 24 24">
-            <path d="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8M12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" />
-          </svg>
-          <svg v-else class="icon" viewBox="0 0 24 24">
-            <path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.4 6.35,17.41C9.37,20.43 14,20.54 17.33,17.97Z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-    
-    <!-- 主要内容区域 -->
-    <div class="pdf-content">
-      <!-- 侧边栏 -->
-      <div class="pdf-sidebar" v-if="showThumbnails">
-        <div class="sidebar-header">
-          <h3>缩略图</h3>
-          <button class="close-btn" @click="showThumbnails = false">
-            <svg class="icon" viewBox="0 0 24 24">
-              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-            </svg>
-          </button>
-        </div>
-        <div class="thumbnails-container">
-          <div
-            v-for="page in thumbnails"
-            :key="page.pageNumber"
-            class="thumbnail-item"
-            :class="{ active: page.pageNumber === currentPage }"
-            @click="goToPage(page.pageNumber)"
-          >
-            <div class="thumbnail-image">
-              <img
-                v-if="page.imageUrl"
-                :src="page.imageUrl"
-                :alt="`第 ${page.pageNumber} 页`"
-                @load="onThumbnailLoad(page.pageNumber)"
-                @error="onThumbnailError(page.pageNumber)"
-              />
-              <div v-else class="thumbnail-placeholder">
-                <svg class="icon" viewBox="0 0 24 24">
-                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                </svg>
-              </div>
-            </div>
-            <div class="thumbnail-label">{{ page.pageNumber }}</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 文档显示区域 -->
-      <div class="pdf-document" ref="documentContainer">
-        <!-- 加载状态 -->
-        <div v-if="loading" class="loading-container">
-          <LoadingIndicator
-            :progress="loadingProgress"
-            :message="loadingMessage"
-            :stage="loadingStage"
-          />
-        </div>
-        
-        <!-- 错误状态 -->
-        <div v-else-if="error" class="error-container">
-          <div class="error-content">
-            <svg class="error-icon" viewBox="0 0 24 24">
-              <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" />
-            </svg>
-            <h3>加载失败</h3>
-            <p>{{ error.message }}</p>
-            <div class="error-actions">
-              <button class="btn btn-primary" @click="retryLoad">
-                重试
-              </button>
-              <button class="btn btn-secondary" @click="openFile">
-                选择其他文件
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- 空状态 -->
-        <div v-else-if="!pdfLoaded" class="empty-container">
-          <div class="empty-content">
-            <svg class="empty-icon" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-            </svg>
-            <h3>选择PDF文件</h3>
-            <p>点击"打开文件"按钮选择要查看的PDF文档</p>
-            <button class="btn btn-primary" @click="openFile">
-              打开文件
-            </button>
-          </div>
-        </div>
-        
-        <!-- PDF页面 -->
-        <div v-else class="pdf-pages">
-          <div
-            class="pdf-page"
-            :style="{
-              transform: `scale(${zoom})`,
-              transformOrigin: 'top left'
-            }"
-          >
-            <canvas
-              ref="pageCanvas"
-              class="page-canvas"
-              @wheel="onWheel"
-              @mousedown="onMouseDown"
-              @mousemove="onMouseMove"
-              @mouseup="onMouseUp"
-              @mouseleave="onMouseLeave"
-            ></canvas>
-            
-            <!-- 搜索高亮 -->
-            <div
-              v-for="(result, index) in searchResults"
-              :key="index"
-              class="search-highlight"
-              :class="{ active: index === currentSearchIndex }"
-              :style="getHighlightStyle(result)"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 状态栏 -->
-    <div class="pdf-statusbar" v-if="pdfLoaded">
-      <div class="status-left">
-        <span class="status-item">文档: {{ pdfInfo?.title || '未知' }}</span>
-        <span class="status-item">页数: {{ totalPages }}</span>
-        <span class="status-item">缩放: {{ Math.round(zoom * 100) }}%</span>
-      </div>
-      <div class="status-right">
-        <span class="status-item" v-if="searchResults.length > 0">
-          搜索结果: {{ searchResults.length }}
-        </span>
-        <span class="status-item">{{ performanceInfo }}</span>
-      </div>
-    </div>
-    
-    <!-- 文件输入 -->
-    <input
-      ref="fileInput"
-      type="file"
-      accept=".pdf"
-      @change="onFileSelected"
-      style="display: none"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import type { PdfViewerProps, SearchResult } from '../types'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { usePdfViewer } from '../composables/usePdfViewer'
 import { useTheme } from '../composables/useTheme'
 import LoadingIndicator from './LoadingIndicator.vue'
-import type { PdfViewerProps, SearchResult, ThumbnailInfo } from '../types'
 
 // Props
 const props = withDefaults(defineProps<PdfViewerProps>(), {
@@ -338,7 +12,7 @@ const props = withDefaults(defineProps<PdfViewerProps>(), {
   enableThumbnails: true,
   enableDownload: true,
   enablePrint: true,
-  theme: 'auto'
+  theme: 'auto',
 })
 
 // Emits
@@ -370,7 +44,7 @@ const {
   loadingMessage,
   loadingStage,
   performanceMetrics,
-  
+
   // 方法
   loadPdf,
   goToPage,
@@ -384,11 +58,11 @@ const {
   downloadPdf,
   printPdf,
   renderPage,
-  generateThumbnails
+  generateThumbnails,
 } = usePdfViewer({
   enableSearch: props.enableSearch,
   enableThumbnails: props.enableThumbnails,
-  initialZoom: props.initialZoom
+  initialZoom: props.initialZoom,
 })
 
 // 本地状态
@@ -413,11 +87,12 @@ const canZoomOut = computed(() => zoom.value > 0.25)
 
 const themeClasses = computed(() => ({
   'pdf-viewer--dark': isDark.value,
-  'pdf-viewer--light': !isDark.value
+  'pdf-viewer--light': !isDark.value,
 }))
 
 const performanceInfo = computed(() => {
-  if (!performanceMetrics.value) return ''
+  if (!performanceMetrics.value)
+    return ''
   const { renderTime, memoryUsage } = performanceMetrics.value
   return `渲染: ${renderTime}ms | 内存: ${memoryUsage}MB`
 })
@@ -431,35 +106,36 @@ const zoomOptions = [
   { value: 1.25, label: '125%' },
   { value: 1.5, label: '150%' },
   { value: 2, label: '200%' },
-  { value: 3, label: '300%' }
+  { value: 3, label: '300%' },
 ]
 
 // 方法
-const openFile = () => {
+function openFile() {
   fileInput.value?.click()
 }
 
-const onFileSelected = async (event: Event) => {
+async function onFileSelected(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file && file.type === 'application/pdf') {
     try {
       await loadPdf(file)
       emit('documentLoad', pdfInfo.value)
-    } catch (err) {
+    }
+    catch (err) {
       emit('error', err as Error)
     }
   }
 }
 
-const retryLoad = () => {
+function retryLoad() {
   if (fileInput.value?.files?.[0]) {
     onFileSelected({ target: fileInput.value } as any)
   }
 }
 
-const toggleSearch = () => {
+function toggleSearch() {
   showSearch.value = !showSearch.value
   if (!showSearch.value) {
     clearSearch()
@@ -467,45 +143,45 @@ const toggleSearch = () => {
   }
 }
 
-const toggleThumbnails = () => {
+function toggleThumbnails() {
   showThumbnails.value = !showThumbnails.value
   if (showThumbnails.value && thumbnails.value.length === 0) {
     generateThumbnails()
   }
 }
 
-const performSearch = async () => {
+async function performSearch() {
   if (searchQuery.value.trim()) {
     const results = await search(searchQuery.value)
     emit('search', searchQuery.value, results)
   }
 }
 
-const onSearchInput = () => {
+function onSearchInput() {
   if (!searchQuery.value.trim()) {
     clearSearch()
   }
 }
 
-const getHighlightStyle = (result: SearchResult) => {
+function getHighlightStyle(result: SearchResult) {
   return {
     left: `${result.x}px`,
     top: `${result.y}px`,
     width: `${result.width}px`,
-    height: `${result.height}px`
+    height: `${result.height}px`,
   }
 }
 
-const onThumbnailLoad = (pageNumber: number) => {
+function onThumbnailLoad(pageNumber: number) {
   console.log(`缩略图 ${pageNumber} 加载完成`)
 }
 
-const onThumbnailError = (pageNumber: number) => {
+function onThumbnailError(pageNumber: number) {
   console.error(`缩略图 ${pageNumber} 加载失败`)
 }
 
 // 鼠标事件处理
-const onWheel = (event: WheelEvent) => {
+function onWheel(event: WheelEvent) {
   if (event.ctrlKey) {
     event.preventDefault()
     const delta = event.deltaY > 0 ? -0.1 : 0.1
@@ -514,31 +190,32 @@ const onWheel = (event: WheelEvent) => {
   }
 }
 
-const onMouseDown = (event: MouseEvent) => {
+function onMouseDown(event: MouseEvent) {
   isDragging.value = true
   lastMousePos.value = { x: event.clientX, y: event.clientY }
   event.preventDefault()
 }
 
-const onMouseMove = (event: MouseEvent) => {
-  if (!isDragging.value) return
-  
+function onMouseMove(event: MouseEvent) {
+  if (!isDragging.value)
+    return
+
   const deltaX = event.clientX - lastMousePos.value.x
   const deltaY = event.clientY - lastMousePos.value.y
-  
+
   if (documentContainer.value) {
     documentContainer.value.scrollLeft -= deltaX
     documentContainer.value.scrollTop -= deltaY
   }
-  
+
   lastMousePos.value = { x: event.clientX, y: event.clientY }
 }
 
-const onMouseUp = () => {
+function onMouseUp() {
   isDragging.value = false
 }
 
-const onMouseLeave = () => {
+function onMouseLeave() {
   isDragging.value = false
 }
 
@@ -588,7 +265,8 @@ onMounted(() => {
           setZoom(1)
           break
       }
-    } else {
+    }
+    else {
       switch (event.key) {
         case 'ArrowLeft':
           if (!showSearch.value) {
@@ -610,14 +288,342 @@ onMounted(() => {
       }
     }
   }
-  
+
   document.addEventListener('keydown', handleKeydown)
-  
+
   onUnmounted(() => {
     document.removeEventListener('keydown', handleKeydown)
   })
 })
 </script>
+
+<template>
+  <div class="pdf-viewer" :class="themeClasses">
+    <!-- 工具栏 -->
+    <div class="pdf-toolbar">
+      <div class="toolbar-left">
+        <button
+          class="toolbar-btn"
+          :disabled="loading"
+          title="打开PDF文件"
+          @click="openFile"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+          </svg>
+          打开文件
+        </button>
+
+        <div class="toolbar-divider" />
+
+        <button
+          class="toolbar-btn"
+          :disabled="!canGoPrevious"
+          title="上一页"
+          @click="previousPage"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M15.41,16.58L10.83,12L15.41,7.42L14,6L8,12L14,18L15.41,16.58Z" />
+          </svg>
+        </button>
+
+        <div class="page-info">
+          <input
+            v-model.number="inputPage"
+            class="page-input"
+            type="number"
+            :min="1"
+            :max="totalPages"
+            @keyup.enter="goToPage(inputPage)"
+            @blur="inputPage = currentPage"
+          >
+          <span class="page-total">/ {{ totalPages }}</span>
+        </div>
+
+        <button
+          class="toolbar-btn"
+          :disabled="!canGoNext"
+          title="下一页"
+          @click="nextPage"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M8.59,16.58L13.17,12L8.59,7.42L10,6L16,12L10,18L8.59,16.58Z" />
+          </svg>
+        </button>
+
+        <div class="toolbar-divider" />
+
+        <button
+          class="toolbar-btn"
+          :disabled="!canZoomOut"
+          title="缩小"
+          @click="zoomOut"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M19,13H5V11H19V13Z" />
+          </svg>
+        </button>
+
+        <div class="zoom-info">
+          <select v-model="selectedZoom" class="zoom-select" @change="setZoom(selectedZoom)">
+            <option v-for="option in zoomOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <button
+          class="toolbar-btn"
+          :disabled="!canZoomIn"
+          title="放大"
+          @click="zoomIn"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="toolbar-center">
+        <div v-if="showSearch" class="search-container">
+          <input
+            v-model="searchQuery"
+            class="search-input"
+            type="text"
+            placeholder="搜索文档内容..."
+            @keyup.enter="performSearch"
+            @input="onSearchInput"
+          >
+          <button
+            class="search-btn"
+            :disabled="!searchQuery.trim()"
+            title="搜索"
+            @click="performSearch"
+          >
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+            </svg>
+          </button>
+          <button
+            v-if="searchResults.length > 0"
+            class="search-btn"
+            title="清除搜索"
+            @click="clearSearch"
+          >
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+            </svg>
+          </button>
+          <div v-if="searchResults.length > 0" class="search-results">
+            {{ currentSearchIndex + 1 }} / {{ searchResults.length }}
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <button
+          class="toolbar-btn"
+          :class="{ active: showSearch }"
+          title="搜索"
+          @click="toggleSearch"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+          </svg>
+        </button>
+
+        <button
+          class="toolbar-btn"
+          :class="{ active: showThumbnails }"
+          title="缩略图"
+          @click="toggleThumbnails"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,12H7V14H5V12M3,13H9V19H3V13M5,15V17H7V15H5Z" />
+          </svg>
+        </button>
+
+        <button
+          class="toolbar-btn"
+          :disabled="!pdfLoaded"
+          title="下载"
+          @click="downloadPdf"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+          </svg>
+        </button>
+
+        <button
+          class="toolbar-btn"
+          :disabled="!pdfLoaded"
+          title="打印"
+          @click="printPdf"
+        >
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M18,3H6V7H18M19,12A1,1 0 0,1 18,11A1,1 0 0,1 19,10A1,1 0 0,1 20,11A1,1 0 0,1 19,12M16,19H8V14H16M19,8H5A3,3 0 0,0 2,11V17H6V21H18V17H22V11A3,3 0 0,0 19,8Z" />
+          </svg>
+        </button>
+
+        <div class="toolbar-divider" />
+
+        <button
+          class="toolbar-btn"
+          :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+          @click="toggleTheme"
+        >
+          <svg v-if="isDark" class="icon" viewBox="0 0 24 24">
+            <path d="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8M12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" />
+          </svg>
+          <svg v-else class="icon" viewBox="0 0 24 24">
+            <path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.4 6.35,17.41C9.37,20.43 14,20.54 17.33,17.97Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="pdf-content">
+      <!-- 侧边栏 -->
+      <div v-if="showThumbnails" class="pdf-sidebar">
+        <div class="sidebar-header">
+          <h3>缩略图</h3>
+          <button class="close-btn" @click="showThumbnails = false">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="thumbnails-container">
+          <div
+            v-for="page in thumbnails"
+            :key="page.pageNumber"
+            class="thumbnail-item"
+            :class="{ active: page.pageNumber === currentPage }"
+            @click="goToPage(page.pageNumber)"
+          >
+            <div class="thumbnail-image">
+              <img
+                v-if="page.imageUrl"
+                :src="page.imageUrl"
+                :alt="`第 ${page.pageNumber} 页`"
+                @load="onThumbnailLoad(page.pageNumber)"
+                @error="onThumbnailError(page.pageNumber)"
+              >
+              <div v-else class="thumbnail-placeholder">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                </svg>
+              </div>
+            </div>
+            <div class="thumbnail-label">
+              {{ page.pageNumber }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文档显示区域 -->
+      <div ref="documentContainer" class="pdf-document">
+        <!-- 加载状态 -->
+        <div v-if="loading" class="loading-container">
+          <LoadingIndicator
+            :progress="loadingProgress"
+            :message="loadingMessage"
+            :stage="loadingStage"
+          />
+        </div>
+
+        <!-- 错误状态 -->
+        <div v-else-if="error" class="error-container">
+          <div class="error-content">
+            <svg class="error-icon" viewBox="0 0 24 24">
+              <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z" />
+            </svg>
+            <h3>加载失败</h3>
+            <p>{{ error.message }}</p>
+            <div class="error-actions">
+              <button class="btn btn-primary" @click="retryLoad">
+                重试
+              </button>
+              <button class="btn btn-secondary" @click="openFile">
+                选择其他文件
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else-if="!pdfLoaded" class="empty-container">
+          <div class="empty-content">
+            <svg class="empty-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+            <h3>选择PDF文件</h3>
+            <p>点击"打开文件"按钮选择要查看的PDF文档</p>
+            <button class="btn btn-primary" @click="openFile">
+              打开文件
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF页面 -->
+        <div v-else class="pdf-pages">
+          <div
+            class="pdf-page"
+            :style="{
+              transform: `scale(${zoom})`,
+              transformOrigin: 'top left',
+            }"
+          >
+            <canvas
+              ref="pageCanvas"
+              class="page-canvas"
+              @wheel="onWheel"
+              @mousedown="onMouseDown"
+              @mousemove="onMouseMove"
+              @mouseup="onMouseUp"
+              @mouseleave="onMouseLeave"
+            />
+
+            <!-- 搜索高亮 -->
+            <div
+              v-for="(result, index) in searchResults"
+              :key="index"
+              class="search-highlight"
+              :class="{ active: index === currentSearchIndex }"
+              :style="getHighlightStyle(result)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div v-if="pdfLoaded" class="pdf-statusbar">
+      <div class="status-left">
+        <span class="status-item">文档: {{ pdfInfo?.title || '未知' }}</span>
+        <span class="status-item">页数: {{ totalPages }}</span>
+        <span class="status-item">缩放: {{ Math.round(zoom * 100) }}%</span>
+      </div>
+      <div class="status-right">
+        <span v-if="searchResults.length > 0" class="status-item">
+          搜索结果: {{ searchResults.length }}
+        </span>
+        <span class="status-item">{{ performanceInfo }}</span>
+      </div>
+    </div>
+
+    <!-- 文件输入 -->
+    <input
+      ref="fileInput"
+      type="file"
+      accept=".pdf"
+      style="display: none"
+      @change="onFileSelected"
+    >
+  </div>
+</template>
 
 <style scoped>
 .pdf-viewer {
@@ -1061,17 +1067,17 @@ onMounted(() => {
     flex-wrap: wrap;
     gap: var(--pdf-spacing-small);
   }
-  
+
   .toolbar-center {
     order: 3;
     flex-basis: 100%;
     margin-top: var(--pdf-spacing-small);
   }
-  
+
   .pdf-sidebar {
     width: 150px;
   }
-  
+
   .search-container {
     max-width: none;
   }
@@ -1086,12 +1092,12 @@ onMounted(() => {
     z-index: 20;
     box-shadow: var(--pdf-shadow-large);
   }
-  
+
   .toolbar-btn {
     padding: 4px 8px;
     font-size: 12px;
   }
-  
+
   .toolbar-btn .icon {
     width: 14px;
     height: 14px;

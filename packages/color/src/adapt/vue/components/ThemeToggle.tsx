@@ -50,11 +50,11 @@ export default defineComponent({
     ])
 
     const currentIcon = computed(() =>
-      isLight.value ? props.lightIcon : props.darkIcon
+      isLight.value ? props.lightIcon : props.darkIcon,
     )
 
     const currentText = computed(() =>
-      isLight.value ? '浅色模式' : '深色模式'
+      isLight.value ? '浅色模式' : '深色模式',
     )
 
     return () => {
@@ -62,16 +62,16 @@ export default defineComponent({
         return (
           <label class={buttonClass.value}>
             <input
-              type='checkbox'
+              type="checkbox"
               checked={isDark.value}
               onChange={handleToggle}
-              class='l-theme-toggle__input'
+              class="l-theme-toggle__input"
             />
-            <span class='l-theme-toggle__slider'>
-              <span class='l-theme-toggle__icon'>{currentIcon.value}</span>
+            <span class="l-theme-toggle__slider">
+              <span class="l-theme-toggle__icon">{currentIcon.value}</span>
             </span>
             {props.showText && (
-              <span class='l-theme-toggle__text'>{currentText.value}</span>
+              <span class="l-theme-toggle__text">{currentText.value}</span>
             )}
           </label>
         )
@@ -79,14 +79,14 @@ export default defineComponent({
 
       return (
         <button
-          type='button'
+          type="button"
           class={buttonClass.value}
           onClick={handleToggle}
           title={`切换到${isLight.value ? '深色' : '浅色'}模式`}
         >
-          <span class='l-theme-toggle__icon'>{currentIcon.value}</span>
+          <span class="l-theme-toggle__icon">{currentIcon.value}</span>
           {props.showText && (
-            <span class='l-theme-toggle__text'>{currentText.value}</span>
+            <span class="l-theme-toggle__text">{currentText.value}</span>
           )}
         </button>
       )

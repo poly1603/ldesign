@@ -1,7 +1,7 @@
-import type { BuildOptions, OutputFormat, FileInfo } from '../src/types'
+import type { BuildOptions, FileInfo, OutputFormat } from '../src/types'
 
-describe('Types', () => {
-  it('BuildOptions should accept basic fields', () => {
+describe('types', () => {
+  it('buildOptions should accept basic fields', () => {
     const options: BuildOptions = {
       input: 'src/index.ts',
       outDir: 'dist',
@@ -13,7 +13,7 @@ describe('Types', () => {
     expect(options.outDir).toBe('dist')
   })
 
-  it('FileInfo should allow optional fields', () => {
+  it('fileInfo should allow optional fields', () => {
     const f: FileInfo = {
       path: 'src/index.ts',
       relativePath: 'src/index.ts',
@@ -25,5 +25,3 @@ describe('Types', () => {
     expect(f.isEntry).toBe(true)
   })
 })
-
-

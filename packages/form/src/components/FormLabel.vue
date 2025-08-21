@@ -35,18 +35,20 @@ const labelStyle = computed(() => {
 
   if (props.position === 'left' || props.position === 'right') {
     if (props.width) {
-      style.width =
-        typeof props.width === 'number' ? `${props.width}px` : props.width
+      style.width
+        = typeof props.width === 'number' ? `${props.width}px` : props.width
       style.flexShrink = 0
     }
     if (props.gap) {
       if (props.position === 'left') {
         style.marginRight = `${props.gap}px`
-      } else {
+      }
+      else {
         style.marginLeft = `${props.gap}px`
       }
     }
-  } else if (props.position === 'top') {
+  }
+  else if (props.position === 'top') {
     if (props.gap) {
       style.marginBottom = `${props.gap}px`
     }
@@ -77,7 +79,9 @@ const labelClasses = computed(() => [
       <span v-if="required" class="form-label__required">*</span>
       <span v-if="showColon" class="form-label__colon">:</span>
     </label>
-    <div v-if="tooltip" class="form-label__tooltip" :title="tooltip">?</div>
+    <div v-if="tooltip" class="form-label__tooltip" :title="tooltip">
+      ?
+    </div>
   </div>
 </template>
 

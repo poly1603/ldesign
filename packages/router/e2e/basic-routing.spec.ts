@@ -174,7 +174,7 @@ test.describe('移动端路由测试', () => {
 
     // 点击导航项
     const aboutLink = page.locator(
-      '[data-testid="mobile-nav"] a[href="/about"]'
+      '[data-testid="mobile-nav"] a[href="/about"]',
     )
     await aboutLink.click()
 

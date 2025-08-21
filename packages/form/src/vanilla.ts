@@ -244,7 +244,7 @@ class FormInstance extends SimpleEventEmitter {
     for (const field of fields) {
       const fieldValid = await this.validateField(
         field.name,
-        this.formData[field.name]
+        this.formData[field.name],
       )
       if (!fieldValid) {
         hasErrors = true
@@ -259,7 +259,8 @@ class FormInstance extends SimpleEventEmitter {
 
   async validateField(name: string, value?: any): Promise<boolean> {
     const field = this.options.fields?.find(f => f.name === name)
-    if (!field) return true
+    if (!field)
+      return true
 
     const fieldValue = value !== undefined ? value : this.formData[name]
 

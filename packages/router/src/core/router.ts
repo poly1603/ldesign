@@ -74,11 +74,11 @@ export class RouterImpl implements Router {
         maxCache: 20,
         maxListeners: 1000,
       },
-      'moderate'
+      'moderate',
     )
 
     // 创建 isReady Promise
-    this.isReadyPromise = new Promise(resolve => {
+    this.isReadyPromise = new Promise((resolve) => {
       this.isReadyResolve = resolve
     })
 
@@ -103,14 +103,15 @@ export class RouterImpl implements Router {
   addRoute(parentName: string | symbol, route: RouteRecordRaw): () => void
   addRoute(
     parentNameOrRoute: string | symbol | RouteRecordRaw,
-    route?: RouteRecordRaw
+    route?: RouteRecordRaw,
   ): () => void {
     let normalizedRecord: RouteRecordNormalized
 
     if (typeof parentNameOrRoute === 'object') {
       // addRoute(route)
       normalizedRecord = this.matcher.addRoute(parentNameOrRoute)
-    } else {
+    }
+    else {
       // addRoute(parentName, route)
       const parent = this.matcher.matchByName(parentNameOrRoute)
       if (!parent) {
@@ -140,7 +141,7 @@ export class RouterImpl implements Router {
 
   resolve(
     to: RouteLocationRaw,
-    currentLocation?: RouteLocationNormalized
+    currentLocation?: RouteLocationNormalized,
   ): RouteLocationNormalized {
     return this.matcher.resolve(to, currentLocation || this.currentRoute.value)
   }
@@ -148,13 +149,13 @@ export class RouterImpl implements Router {
   // ==================== 导航控制 ====================
 
   async push(
-    to: RouteLocationRaw
+    to: RouteLocationRaw,
   ): Promise<NavigationFailure | void | undefined> {
     return this.pushWithRedirect(to, false)
   }
 
   async replace(
-    to: RouteLocationRaw
+    to: RouteLocationRaw,
   ): Promise<NavigationFailure | void | undefined> {
     return this.pushWithRedirect(to, true)
   }
@@ -290,7 +291,7 @@ export class RouterImpl implements Router {
 
   private async pushWithRedirect(
     to: RouteLocationRaw,
-    replace: boolean
+    replace: boolean,
   ): Promise<NavigationFailure | void | undefined> {
     // 重置重定向计数器（如果是新的导航）
     const now = Date.now()
@@ -306,7 +307,7 @@ export class RouterImpl implements Router {
       return this.createNavigationFailure(
         NavigationFailureType.aborted,
         this.currentRoute.value,
-        this.resolve(to)
+        this.resolve(to),
       )
     }
 
@@ -319,7 +320,7 @@ export class RouterImpl implements Router {
       return this.createNavigationFailure(
         NavigationFailureType.duplicated,
         from,
-        targetLocation
+        targetLocation,
       )
     }
 
@@ -331,7 +332,8 @@ export class RouterImpl implements Router {
       const historyLocation = this.routeLocationToHistoryLocation(finalLocation)
       if (replace) {
         this.options.history.replace(historyLocation, { ...finalLocation })
-      } else {
+      }
+      else {
         this.options.history.push(historyLocation, { ...finalLocation })
       }
 
@@ -340,12 +342,13 @@ export class RouterImpl implements Router {
 
       // 执行后置钩子
       this.runAfterHooks(finalLocation, from)
-    } catch (error) {
+    }
+    catch (error) {
       // 处理重定向错误
       if (error instanceof NavigationRedirectError) {
         // 增加重定向计数
         this.redirectCount++
-        
+
         // 递归处理重定向
         return this.pushWithRedirect(error.to, replace)
       }
@@ -356,10 +359,10 @@ export class RouterImpl implements Router {
         return this.createNavigationFailure(
           NavigationFailureType.aborted,
           from,
-          targetLocation
+          targetLocation,
         )
       }
-      
+
       this.redirectCount = 0 // 重置计数器
       throw error
     }
@@ -370,7 +373,7 @@ export class RouterImpl implements Router {
 
   private async runNavigationGuards(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
+    from: RouteLocationNormalized,
   ): Promise<RouteLocationNormalized> {
     let currentTo = to
 
@@ -389,9 +392,10 @@ export class RouterImpl implements Router {
       const result = await this.runGuard(guard, currentTo, from)
       if (result === false) {
         throw new Error('Navigation aborted by guard')
-      } else if (
-        result &&
-        (typeof result === 'string' || typeof result === 'object')
+      }
+      else if (
+        result
+        && (typeof result === 'string' || typeof result === 'object')
       ) {
         // 重定向
         currentTo = this.resolve(result)
@@ -404,9 +408,10 @@ export class RouterImpl implements Router {
         const result = await this.runGuard(record.beforeEnter, currentTo, from)
         if (result === false) {
           throw new Error('Navigation aborted by route guard')
-        } else if (
-          result &&
-          (typeof result === 'string' || typeof result === 'object')
+        }
+        else if (
+          result
+          && (typeof result === 'string' || typeof result === 'object')
         ) {
           // 重定向
           currentTo = this.resolve(result)
@@ -419,9 +424,10 @@ export class RouterImpl implements Router {
       const result = await this.runGuard(guard, currentTo, from)
       if (result === false) {
         throw new Error('Navigation aborted by resolve guard')
-      } else if (
-        result &&
-        (typeof result === 'string' || typeof result === 'object')
+      }
+      else if (
+        result
+        && (typeof result === 'string' || typeof result === 'object')
       ) {
         // 重定向
         currentTo = this.resolve(result)
@@ -436,7 +442,7 @@ export class RouterImpl implements Router {
    */
   private handleRouteRedirect(
     to: RouteLocationNormalized,
-    redirectCount: number = 0
+    redirectCount: number = 0,
   ): RouteLocationNormalized {
     // 防止无限重定向
     if (redirectCount > 10) {
@@ -459,14 +465,16 @@ export class RouterImpl implements Router {
         const redirectResult = redirect(to)
         if (redirectResult) {
           redirectTarget = this.resolve(redirectResult)
-        } else {
+        }
+        else {
           return to
         }
       }
       // 如果重定向是对象，直接解析
       else if (typeof redirect === 'object') {
         redirectTarget = this.resolve(redirect)
-      } else {
+      }
+      else {
         return to
       }
 
@@ -480,15 +488,17 @@ export class RouterImpl implements Router {
   private async runGuard(
     guard: NavigationGuard,
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
+    from: RouteLocationNormalized,
   ): Promise<any> {
     return new Promise((resolve, reject) => {
       const next = (result?: any) => {
         if (result === false) {
           reject(new Error('Navigation cancelled'))
-        } else if (result instanceof Error) {
+        }
+        else if (result instanceof Error) {
           reject(result)
-        } else {
+        }
+        else {
           // 包括重定向在内的所有结果都通过 resolve 返回
           resolve(result)
         }
@@ -496,10 +506,10 @@ export class RouterImpl implements Router {
 
       const guardResult = guard(to, from, next)
       if (
-        guardResult &&
-        typeof guardResult === 'object' &&
-        'then' in guardResult &&
-        typeof guardResult.then === 'function'
+        guardResult
+        && typeof guardResult === 'object'
+        && 'then' in guardResult
+        && typeof guardResult.then === 'function'
       ) {
         ;(guardResult as Promise<any>).then(resolve, reject)
       }
@@ -508,12 +518,13 @@ export class RouterImpl implements Router {
 
   private runAfterHooks(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
+    from: RouteLocationNormalized,
   ): void {
     for (const hook of this.afterHooks) {
       try {
         hook(to, from)
-      } catch (error) {
+      }
+      catch (error) {
         this.handleError(error as Error)
       }
     }
@@ -521,7 +532,7 @@ export class RouterImpl implements Router {
 
   private updateCurrentRoute(
     to: RouteLocationNormalized,
-    _from: RouteLocationNormalized
+    _from: RouteLocationNormalized,
   ): void {
     this.currentRoute.value = to
     this._pendingLocation = undefined as any
@@ -542,7 +553,7 @@ export class RouterImpl implements Router {
   private async handleHistoryChange(
     to: HistoryLocation,
     _from: HistoryLocation,
-    _info: NavigationInformation
+    _info: NavigationInformation,
   ): Promise<void> {
     const targetLocation = this.historyLocationToRouteLocation(to)
     const fromLocation = this.currentRoute.value
@@ -550,11 +561,12 @@ export class RouterImpl implements Router {
     try {
       const finalLocation = await this.runNavigationGuards(
         targetLocation,
-        fromLocation
+        fromLocation,
       )
       this.updateCurrentRoute(finalLocation, fromLocation)
       this.runAfterHooks(finalLocation, fromLocation)
-    } catch (error) {
+    }
+    catch (error) {
       this.handleError(error as Error)
     }
   }
@@ -576,7 +588,7 @@ export class RouterImpl implements Router {
             this.isReadyResolve = undefined as any
           }
         })
-        .catch(error => {
+        .catch((error) => {
           this.handleError(error)
           // 即使重定向失败也要解析 isReady Promise
           if (this.isReadyResolve) {
@@ -584,7 +596,8 @@ export class RouterImpl implements Router {
             this.isReadyResolve = undefined as any
           }
         })
-    } else {
+    }
+    else {
       // 不需要重定向，直接设置当前路由
       this.currentRoute.value = routeLocation
 
@@ -597,7 +610,7 @@ export class RouterImpl implements Router {
   }
 
   private routeLocationToHistoryLocation(
-    location: RouteLocationNormalized
+    location: RouteLocationNormalized,
   ): HistoryLocation {
     return {
       pathname: location.path,
@@ -607,7 +620,7 @@ export class RouterImpl implements Router {
   }
 
   private historyLocationToRouteLocation(
-    location: HistoryLocation
+    location: HistoryLocation,
   ): RouteLocationNormalized {
     const path = location.pathname
     const query = this.parseQuery(location.search)
@@ -615,7 +628,8 @@ export class RouterImpl implements Router {
 
     try {
       return this.matcher.resolve({ path, query, hash })
-    } catch {
+    }
+    catch {
       // 如果匹配失败，返回 404 路由或默认路由
       return {
         ...START_LOCATION,
@@ -662,19 +676,19 @@ export class RouterImpl implements Router {
 
   private isSameRouteLocation(
     a: RouteLocationNormalized,
-    b: RouteLocationNormalized
+    b: RouteLocationNormalized,
   ): boolean {
     return (
-      a.path === b.path &&
-      JSON.stringify(a.query) === JSON.stringify(b.query) &&
-      a.hash === b.hash
+      a.path === b.path
+      && JSON.stringify(a.query) === JSON.stringify(b.query)
+      && a.hash === b.hash
     )
   }
 
   private createNavigationFailure(
     type: NavigationFailureType,
     from: RouteLocationNormalized,
-    to: RouteLocationNormalized
+    to: RouteLocationNormalized,
   ): NavigationFailure {
     const error = new Error(`Navigation failed`) as NavigationFailure
     error.type = type
@@ -687,7 +701,8 @@ export class RouterImpl implements Router {
     for (const handler of this.errorHandlers) {
       try {
         handler(error)
-      } catch (handlerError) {
+      }
+      catch (handlerError) {
         console.error('Error in error handler:', handlerError)
       }
     }

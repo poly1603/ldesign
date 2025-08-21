@@ -25,7 +25,8 @@ export class LRUCache<T = any> {
 
   get(key: string): T | undefined {
     const item = this.cache.get(key)
-    if (!item) return undefined
+    if (!item)
+      return undefined
 
     // 检查是否过期
     if (this.isExpired(item)) {
@@ -64,7 +65,8 @@ export class LRUCache<T = any> {
 
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item) return false
+    if (!item)
+      return false
 
     if (this.isExpired(item)) {
       this.cache.delete(key)
@@ -91,7 +93,8 @@ export class LRUCache<T = any> {
   }
 
   private isExpired(item: CacheItem<T>): boolean {
-    if (!item.ttl) return false
+    if (!item.ttl)
+      return false
     return Date.now() - item.timestamp > item.ttl
   }
 }
@@ -115,7 +118,8 @@ export class TemplateCache {
     const result = this.cache.get(key)
     if (result) {
       this.stats.hits++
-    } else {
+    }
+    else {
       this.stats.misses++
     }
     return result

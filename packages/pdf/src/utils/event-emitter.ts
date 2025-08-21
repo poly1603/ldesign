@@ -4,9 +4,9 @@
  */
 
 import type {
-  EventType,
   EventListener,
-  EventEmitter as IEventEmitter
+  EventType,
+  EventEmitter as IEventEmitter,
 } from '../types'
 
 /**
@@ -26,7 +26,7 @@ export class EventEmitter implements IEventEmitter {
   private maxListeners = 100
   private enableLogging = false
 
-  constructor(options: { maxListeners?: number; enableLogging?: boolean } = {}) {
+  constructor(options: { maxListeners?: number, enableLogging?: boolean } = {}) {
     this.maxListeners = options.maxListeners || 100
     this.enableLogging = options.enableLogging || false
   }
@@ -50,13 +50,14 @@ export class EventEmitter implements IEventEmitter {
    */
   off(event: EventType, listener: EventListener): void {
     const listeners = this.listeners.get(event)
-    if (!listeners) return
+    if (!listeners)
+      return
 
     const index = listeners.findIndex(info => info.listener === listener)
     if (index > -1) {
       listeners.splice(index, 1)
       this.log(`Removed listener for event '${event}'`)
-      
+
       if (listeners.length === 0) {
         this.listeners.delete(event)
       }
@@ -70,7 +71,8 @@ export class EventEmitter implements IEventEmitter {
     if (event) {
       this.listeners.delete(event)
       this.log(`Removed all listeners for event '${event}'`)
-    } else {
+    }
+    else {
       this.listeners.clear()
       this.log('Removed all listeners for all events')
     }
@@ -86,19 +88,21 @@ export class EventEmitter implements IEventEmitter {
     }
 
     const listenersToExecute = [...listeners]
-    
+
     for (const listenerInfo of listenersToExecute) {
       try {
         if (data !== undefined) {
           listenerInfo.listener(data)
-        } else {
+        }
+        else {
           listenerInfo.listener({} as any)
         }
-        
+
         if (listenerInfo.once) {
           this.off(event, listenerInfo.listener)
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Error in event listener for ${event}:`, error)
       }
     }
@@ -154,16 +158,16 @@ export class EventEmitter implements IEventEmitter {
   waitForEvent(event: EventType, timeout?: number): Promise<any[]> {
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | undefined
-      
+
       const listener = (...args: any[]) => {
         if (timeoutId) {
           clearTimeout(timeoutId)
         }
         resolve(args)
       }
-      
+
       this.once(event, listener)
-      
+
       if (timeout) {
         timeoutId = setTimeout(() => {
           this.off(event, listener)
@@ -178,7 +182,7 @@ export class EventEmitter implements IEventEmitter {
    */
   proxy(targetEmitter: IEventEmitter, events?: EventType[]): void {
     const eventsToProxy = events || this.eventNames()
-    
+
     for (const event of eventsToProxy) {
       this.on(event, (...args) => {
         targetEmitter.emit(event, ...args)
@@ -205,7 +209,7 @@ export class EventEmitter implements IEventEmitter {
     event: EventType,
     listener: EventListener,
     once: boolean,
-    priority: number
+    priority: number,
   ): void {
     if (typeof listener !== 'function') {
       throw new TypeError('Listener must be a function')
@@ -220,16 +224,16 @@ export class EventEmitter implements IEventEmitter {
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(
-        `MaxListenersExceededWarning: Possible EventEmitter memory leak detected. ` +
-        `${listeners.length + 1} ${event} listeners added. ` +
-        `Use emitter.setMaxListeners() to increase limit.`
+        `MaxListenersExceededWarning: Possible EventEmitter memory leak detected. `
+        + `${listeners.length + 1} ${event} listeners added. `
+        + `Use emitter.setMaxListeners() to increase limit.`,
       )
     }
 
     const listenerInfo: ListenerInfo = {
       listener,
       once,
-      priority
+      priority,
     }
 
     // 按优先级插入（高优先级在前）
@@ -243,10 +247,10 @@ export class EventEmitter implements IEventEmitter {
     }
 
     listeners.splice(insertIndex, 0, listenerInfo)
-    
+
     this.log(
-      `Added ${once ? 'once' : 'on'} listener for event '${event}' ` +
-      `with priority ${priority} (total: ${listeners.length})`
+      `Added ${once ? 'once' : 'on'} listener for event '${event}' `
+      + `with priority ${priority} (total: ${listeners.length})`,
     )
   }
 
@@ -274,7 +278,7 @@ export function createEventEmitter(options?: {
  * 混入事件发射器功能
  */
 export function mixinEventEmitter<T extends new (...args: any[]) => any>(
-  BaseClass: T
+  BaseClass: T,
 ): T & (new (...args: any[]) => IEventEmitter) {
   return class extends BaseClass implements IEventEmitter {
     private _eventEmitter = new EventEmitter()
@@ -342,5 +346,5 @@ export function mixinEventEmitter<T extends new (...args: any[]) => any>(
  */
 export const defaultEventEmitter = createEventEmitter({
   maxListeners: 50,
-  enableLogging: false
+  enableLogging: false,
 })

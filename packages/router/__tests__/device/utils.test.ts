@@ -122,7 +122,7 @@ describe('设备路由工具函数', () => {
 
       const result = resolveDeviceComponent(
         components as Record<DeviceType, RouteComponent>,
-        'mobile'
+        'mobile',
       )
 
       expect(result).toEqual({
@@ -136,7 +136,7 @@ describe('设备路由工具函数', () => {
     it('没有可用组件时应该返回 null', () => {
       const result = resolveDeviceComponent(
         {} as Record<DeviceType, RouteComponent>,
-        'mobile'
+        'mobile',
       )
 
       expect(result).toBeNull()
@@ -290,7 +290,7 @@ describe('设备路由工具函数', () => {
 
 // 辅助函数
 function createMockRoute(
-  overrides: Partial<RouteLocationNormalized> = {}
+  overrides: Partial<RouteLocationNormalized> = {},
 ): RouteLocationNormalized {
   return {
     path: '/',

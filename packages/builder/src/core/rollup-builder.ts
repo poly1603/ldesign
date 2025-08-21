@@ -3,21 +3,21 @@
  * 执行多格式打包
  */
 
-import { rollup, watch, type RollupOptions, type OutputOptions, type RollupBuild, type RollupWatcher } from 'rollup'
-import { resolve, dirname, basename, extname } from 'path'
-import { existsSync, mkdirSync } from 'fs'
-import { Logger } from '../utils/logger'
 import type {
+  BuildError,
   BuildOptions,
   BuildResult,
-  OutputFormat,
-  ProjectScanResult,
-  PluginConfiguration,
-  OutputFile,
-  BuildError,
+  BuildStats,
   BuildWarning,
-  BuildStats
+  OutputFile,
+  OutputFormat,
+  PluginConfiguration,
+  ProjectScanResult,
 } from '../types'
+import { existsSync, mkdirSync } from 'node:fs'
+import { basename, extname, resolve } from 'node:path'
+import { type OutputOptions, rollup, type RollupBuild, type RollupOptions, type RollupWatcher, watch } from 'rollup'
+import { Logger } from '../utils/logger'
 
 const logger = new Logger('RollupBuilder')
 
@@ -31,7 +31,7 @@ export class RollupBuilder {
   async build(
     scanResult: ProjectScanResult,
     pluginConfig: PluginConfiguration,
-    buildOptions: BuildOptions
+    buildOptions: BuildOptions,
   ): Promise<BuildResult> {
     logger.info('开始构建项目...')
 
@@ -45,7 +45,7 @@ export class RollupBuilder {
       const rollupOptions = this.generateRollupOptions(
         scanResult,
         pluginConfig,
-        buildOptions
+        buildOptions,
       )
 
       // 创建输出目录
@@ -70,15 +70,16 @@ export class RollupBuilder {
               format: output.format as OutputFormat,
               size: file.code.length,
               gzipSize: this.calculateGzipSize(file.code),
-              isEntry: file.isEntry
+              isEntry: file.isEntry,
             })
-          } else if (file.type === 'asset') {
+          }
+          else if (file.type === 'asset') {
             outputFiles.push({
               path: file.fileName,
               format: output.format as OutputFormat,
               size: typeof file.source === 'string' ? file.source.length : file.source.byteLength,
               gzipSize: this.calculateGzipSize(typeof file.source === 'string' ? file.source : file.source.toString()),
-              isEntry: false
+              isEntry: false,
             })
           }
         }
@@ -94,11 +95,11 @@ export class RollupBuilder {
         esm: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
         cjs: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
         iife: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
-        umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 }
+        umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
       }
 
       // 统计各格式的文件信息
-      outputFiles.forEach(file => {
+      outputFiles.forEach((file) => {
         if (formatStats[file.format]) {
           formatStats[file.format].fileCount++
           formatStats[file.format].totalSize += file.size
@@ -110,7 +111,7 @@ export class RollupBuilder {
         totalFiles: outputFiles.length,
         totalSize,
         totalGzipSize,
-        formatStats
+        formatStats,
       }
 
       logger.info(`构建完成，耗时 ${buildTime}ms`)
@@ -121,16 +122,16 @@ export class RollupBuilder {
         outputs: outputFiles,
         errors,
         warnings,
-        stats
+        stats,
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       const buildError: BuildError = {
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         file: undefined,
         line: undefined,
-        column: undefined
+        column: undefined,
       }
 
       errors.push(buildError)
@@ -150,11 +151,12 @@ export class RollupBuilder {
             esm: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
             cjs: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
             iife: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
-            umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 }
-          }
-        }
+            umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
+          },
+        },
       }
-    } finally {
+    }
+    finally {
       // 清理资源
       if (this.currentBuild) {
         await this.currentBuild.close()
@@ -170,7 +172,7 @@ export class RollupBuilder {
     scanResult: ProjectScanResult,
     pluginConfig: PluginConfiguration,
     buildOptions: BuildOptions,
-    onRebuild?: (result: BuildResult) => void
+    onRebuild?: (result: BuildResult) => void,
   ): Promise<void> {
     logger.info('启动监听模式...')
 
@@ -179,7 +181,7 @@ export class RollupBuilder {
       const rollupOptions = this.generateRollupOptions(
         scanResult,
         pluginConfig,
-        buildOptions
+        buildOptions,
       )
 
       // 生成输出配置
@@ -192,8 +194,8 @@ export class RollupBuilder {
         watch: {
           include: 'src/**',
           exclude: 'node_modules/**',
-          ...buildOptions.watchOptions
-        }
+          ...buildOptions.watchOptions,
+        },
       })
 
       // 监听事件
@@ -225,9 +227,9 @@ export class RollupBuilder {
                     esm: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
                     cjs: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
                     iife: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
-                    umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 }
-                  }
-                }
+                    umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
+                  },
+                },
               }
               onRebuild(result)
             }
@@ -249,7 +251,7 @@ export class RollupBuilder {
                   stack: event.error.stack,
                   file: event.error.loc?.file,
                   line: event.error.loc?.line,
-                  column: event.error.loc?.column
+                  column: event.error.loc?.column,
                 }],
                 warnings: [],
                 stats: {
@@ -260,17 +262,17 @@ export class RollupBuilder {
                     esm: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
                     cjs: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
                     iife: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
-                    umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 }
-                  }
-                }
+                    umd: { fileCount: 0, totalSize: 0, totalGzipSize: 0 },
+                  },
+                },
               }
               onRebuild(result)
             }
             break
         }
       })
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.error('启动监听模式失败:', error)
       throw error
     }
@@ -293,7 +295,7 @@ export class RollupBuilder {
   private generateRollupOptions(
     scanResult: ProjectScanResult,
     pluginConfig: PluginConfiguration,
-    buildOptions: BuildOptions
+    buildOptions: BuildOptions,
   ): RollupOptions {
     const input = this.resolveInput(scanResult, buildOptions)
 
@@ -305,7 +307,7 @@ export class RollupBuilder {
         logger.warn(`Rollup警告: ${warning.message}`)
       },
       ...pluginConfig.rollupOptions,
-      ...buildOptions.rollupOptions
+      ...buildOptions.rollupOptions,
     }
 
     return rollupOptions
@@ -316,7 +318,7 @@ export class RollupBuilder {
    */
   private resolveInput(
     scanResult: ProjectScanResult,
-    buildOptions: BuildOptions
+    buildOptions: BuildOptions,
   ): string | string[] | Record<string, string> {
     // 如果用户指定了输入文件
     if (buildOptions.input) {
@@ -344,7 +346,7 @@ export class RollupBuilder {
    */
   private resolveExternal(
     scanResult: ProjectScanResult,
-    buildOptions: BuildOptions
+    buildOptions: BuildOptions,
   ): RollupOptions['external'] {
     // 如果用户提供了函数，优先使用函数
     if (typeof buildOptions.external === 'function') {
@@ -375,7 +377,7 @@ export class RollupBuilder {
    */
   private generateOutputOptions(
     scanResult: ProjectScanResult,
-    buildOptions: BuildOptions
+    buildOptions: BuildOptions,
   ): OutputOptions[] {
     const outputs: OutputOptions[] = []
     const outDir = buildOptions.outDir || 'dist'
@@ -386,7 +388,7 @@ export class RollupBuilder {
         dir: outDir,
         format: this.mapToRollupFormat(format),
         sourcemap: buildOptions.sourcemap !== false,
-        ...this.getFormatSpecificOptions(format, scanResult, buildOptions)
+        ...this.getFormatSpecificOptions(format, scanResult, buildOptions),
       }
 
       outputs.push(output)
@@ -401,7 +403,7 @@ export class RollupBuilder {
   private getFormatSpecificOptions(
     format: OutputFormat,
     scanResult: ProjectScanResult,
-    buildOptions: BuildOptions
+    buildOptions: BuildOptions,
   ): Partial<OutputOptions> {
     const options: Partial<OutputOptions> = {}
 
@@ -437,7 +439,8 @@ export class RollupBuilder {
    * 将内部格式映射到 Rollup 的格式
    */
   private mapToRollupFormat(format: OutputFormat): OutputOptions['format'] {
-    if (format === 'esm') return 'es'
+    if (format === 'esm')
+      return 'es'
     return format as OutputOptions['format']
   }
 
@@ -457,10 +460,11 @@ export class RollupBuilder {
    */
   private calculateGzipSize(content: string | Buffer): number {
     try {
-      const { gzipSync } = require('zlib')
+      const { gzipSync } = require('node:zlib')
       const buffer = typeof content === 'string' ? Buffer.from(content) : content
       return gzipSync(buffer).length
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法计算 Gzip 大小:', error)
       return 0
     }

@@ -64,9 +64,10 @@ for (const packageName of packages) {
         duration,
         artifacts: requiredDirs,
       }
-    } else {
+    }
+    else {
       console.log(
-        `  ❌ ${packageName} 构建产物不完整，缺少: ${missingDirs.join(', ')}`
+        `  ❌ ${packageName} 构建产物不完整，缺少: ${missingDirs.join(', ')}`,
       )
       results[packageName] = {
         success: false,
@@ -74,7 +75,8 @@ for (const packageName of packages) {
         duration,
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.log(`  ❌ ${packageName} 构建失败`)
     console.log(`     错误: ${error.message.split('\n')[0]}`)
     results[packageName] = {
@@ -101,7 +103,8 @@ for (const [packageName, result] of Object.entries(results)) {
   if (result.success) {
     successCount++
     totalDuration += result.duration || 0
-  } else {
+  }
+  else {
     console.log(`${''.padEnd(12)}    ${result.error}`)
   }
 }
@@ -115,7 +118,8 @@ console.log(`平均耗时: ${Math.round(totalDuration / successCount)}ms`)
 
 if (successCount === packages.length) {
   console.log('\n🎉 所有包构建成功!')
-} else {
+}
+else {
   console.log('\n⚠️  部分包构建失败，需要修复')
 }
 

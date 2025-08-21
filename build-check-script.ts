@@ -28,8 +28,8 @@ function findPackages(): string[] {
     for (const item of items) {
       const itemPath = join(packagesDir, item)
       if (
-        statSync(itemPath).isDirectory() &&
-        existsSync(join(itemPath, 'package.json'))
+        statSync(itemPath).isDirectory()
+        && existsSync(join(itemPath, 'package.json'))
       ) {
         packages.push(join('packages', item))
       }
@@ -43,8 +43,8 @@ function findPackages(): string[] {
     for (const item of items) {
       const itemPath = join(appsDir, item)
       if (
-        statSync(itemPath).isDirectory() &&
-        existsSync(join(itemPath, 'package.json'))
+        statSync(itemPath).isDirectory()
+        && existsSync(join(itemPath, 'package.json'))
       ) {
         packages.push(join('apps', item))
       }
@@ -113,11 +113,14 @@ function analyzePackage(packagePath: string): PackageInfo {
   if (info.buildTool === 'none') {
     if (info.buildScript.includes('rollup')) {
       info.buildTool = 'rollup'
-    } else if (info.buildScript.includes('vite build')) {
+    }
+    else if (info.buildScript.includes('vite build')) {
       info.buildTool = 'vite'
-    } else if (info.buildScript.includes('tsup')) {
+    }
+    else if (info.buildScript.includes('tsup')) {
       info.buildTool = 'tsup'
-    } else if (info.buildScript.includes('vitepress')) {
+    }
+    else if (info.buildScript.includes('vitepress')) {
       info.buildTool = 'vitepress'
     }
   }
@@ -142,11 +145,13 @@ function analyzePackage(packagePath: string): PackageInfo {
   // 确定项目类型
   if (packagePath.startsWith('apps/') || packagePath.startsWith('apps\\')) {
     info.type = 'app'
-  } else if (packagePath === 'docs') {
+  }
+  else if (packagePath === 'docs') {
     info.type = 'docs'
-  } else if (
-    packagePath.startsWith('packages/') ||
-    packagePath.startsWith('packages\\')
+  }
+  else if (
+    packagePath.startsWith('packages/')
+    || packagePath.startsWith('packages\\')
   ) {
     // 根据特征判断是否为库
     if (packageJson.exports || packageJson.main || packageJson.module) {
@@ -167,11 +172,12 @@ function validatePackageConfig(info: PackageInfo): void {
       // 库项目可以使用 rollup 或 vite（库模式），但不应该使用 tsup（除非是 node 库）
       if (info.buildTool === 'none') {
         info.issues.push('库项目缺少构建工具配置')
-      } else if (info.buildTool === 'tsup') {
+      }
+      else if (info.buildTool === 'tsup') {
         // 检查是否是 node 库（没有 Vue/React 依赖）
         if (info.framework !== 'none') {
           info.issues.push(
-            'Vue/React 库项目不应使用 tsup，建议使用 rollup 或 vite'
+            'Vue/React 库项目不应使用 tsup，建议使用 rollup 或 vite',
           )
         }
       }
@@ -179,17 +185,17 @@ function validatePackageConfig(info: PackageInfo): void {
     case 'app':
       if (info.buildTool !== 'vite' && info.buildTool !== 'multiple') {
         info.issues.push(
-          `应用项目应使用 vite 打包，当前使用: ${info.buildTool}`
+          `应用项目应使用 vite 打包，当前使用: ${info.buildTool}`,
         )
       }
       break
     case 'docs':
       if (
-        info.buildTool !== 'vitepress' &&
-        !info.buildScript.includes('vitepress')
+        info.buildTool !== 'vitepress'
+        && !info.buildScript.includes('vitepress')
       ) {
         info.issues.push(
-          `文档项目应使用 vitepress，当前使用: ${info.buildTool}`
+          `文档项目应使用 vitepress，当前使用: ${info.buildTool}`,
         )
       }
       break
@@ -251,7 +257,8 @@ function generateReport(packages: PackageInfo[]): void {
       for (const issue of pkg.issues) {
         console.log(`    - ${issue}`)
       }
-    } else {
+    }
+    else {
       console.log(`  ✅ 配置正常`)
     }
   }

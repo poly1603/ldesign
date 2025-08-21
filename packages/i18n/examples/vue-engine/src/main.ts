@@ -2,11 +2,11 @@
  * Vue Engine 示例主文件
  */
 
-import { createApp } from 'vue'
-import App from './App.vue'
 import { createEngine } from '@ldesign/engine'
 import { i18nEnginePlugin } from '@ldesign/i18n'
 import { I18N_INJECTION_KEY } from '@ldesign/i18n/vue'
+import { createApp } from 'vue'
+import App from './App.vue'
 
 async function initApp() {
   try {
@@ -50,11 +50,11 @@ async function initApp() {
 
     console.log('✅ Vue Engine example initialized successfully')
 
-      // 导出到全局作用域，方便调试
-      ; (window as any).engine = engine
-      ; (window as any).app = app
-
-  } catch (error) {
+    // 导出到全局作用域，方便调试
+    ; (window as any).engine = engine
+    ; (window as any).app = app
+  }
+  catch (error) {
     console.error('❌ Failed to initialize Vue Engine example:', error)
   }
 }

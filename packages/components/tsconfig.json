@@ -1,29 +1,29 @@
 {
   "compilerOptions": {
-    "allowUnreachableCode": false,
-    "declaration": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "target": "es2017",
+    "jsx": "preserve",
+    "jsxFactory": "h",
     "lib": [
       "dom",
       "es2017",
       "es2020"
     ],
-    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "module": "esnext",
-    "target": "es2017",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "strict": true,
+    "allowUnreachableCode": false,
+    "noImplicitAny": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "jsx": "preserve",
-    "jsxFactory": "h",
-    "strict": true,
-    "noImplicitAny": false,
+    "declaration": true,
+    "noEmit": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "isolatedModules": false,
-    "noEmit": true
+    "skipLibCheck": true
   },
   "include": [
     "src"

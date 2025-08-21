@@ -27,26 +27,28 @@ export class BatteryModule implements DeviceModule {
    * 初始化模块
    */
   async init(): Promise<void> {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     try {
       // 获取电池 API
-      this.battery = await safeNavigatorAccess(async nav => {
+      this.battery = await safeNavigatorAccess(async (nav) => {
         if ('getBattery' in nav && nav.getBattery) {
           return await nav.getBattery()
         }
         // 降级到旧版本的 API
         const navAny = nav as unknown as Record<string, unknown>
-        return (navAny.battery ||
-          navAny.mozBattery ||
-          navAny.webkitBattery) as BatteryManager | null
+        return (navAny.battery
+          || navAny.mozBattery
+          || navAny.webkitBattery) as BatteryManager | null
       }, null)
 
       if (this.battery) {
         this.updateBatteryInfo()
         this.setupEventListeners()
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Battery API not supported or failed to initialize:', error)
     }
   }
@@ -160,7 +162,8 @@ export class BatteryModule implements DeviceModule {
    * 更新电池信息
    */
   private updateBatteryInfo(): void {
-    if (!this.battery) return
+    if (!this.battery)
+      return
 
     this.batteryInfo = {
       level: this.battery.level || 1,
@@ -201,7 +204,7 @@ export class BatteryModule implements DeviceModule {
       'dischargingtimechange',
     ]
 
-    events.forEach(event => {
+    events.forEach((event) => {
       const handler = () => {
         this.updateBatteryInfo()
       }

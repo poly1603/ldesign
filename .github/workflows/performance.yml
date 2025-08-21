@@ -7,7 +7,7 @@ on:
     branches: [main]
   schedule:
     # 每天凌晨2点运行性能测试
-    - cron: "0 2 * * *"
+    - cron: '0 2 * * *'
 
 jobs:
   performance:
@@ -79,9 +79,9 @@ jobs:
       - name: Analyze bundle size
         uses: preactjs/compressed-size-action@v2
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          pattern: "packages/*/dist/*.js"
-          exclude: "{**/*.map,**/node_modules/**}"
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          pattern: 'packages/*/dist/*.js'
+          exclude: '{**/*.map,**/node_modules/**}'
 
       - name: Bundle analyzer
         run: |

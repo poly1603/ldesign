@@ -1,4 +1,4 @@
-import { Config } from '@stencil/core';
+import type { Config } from '@stencil/core'
 
 export const config: Config = {
   namespace: 'ldesign',
@@ -25,7 +25,6 @@ export const config: Config = {
     enableImportInjection: true,
   },
   testing: {
-    browserHeadless: "new",
+    browserHeadless: 'new',
   },
-};
-
+}

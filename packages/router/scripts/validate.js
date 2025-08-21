@@ -55,7 +55,8 @@ function runCommand(command, description) {
     logSuccess(`${description} completed in ${duration}s`)
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     const duration = ((performance.now() - startTime) / 1000).toFixed(2)
     logError(`${description} failed after ${duration}s`)
     logError(`Command: ${command}`)
@@ -126,7 +127,7 @@ async function main() {
   log(`\n${colors.cyan}📊 验证结果总结:${colors.reset}`)
   log('='.repeat(50))
 
-  results.forEach(result => {
+  results.forEach((result) => {
     const icon = result.success ? '✅' : '❌'
     const status = result.success ? '通过' : '失败'
     const required = result.required ? '(必需)' : '(可选)'
@@ -140,13 +141,14 @@ async function main() {
   if (allPassed) {
     logSuccess('🎉 所有验证步骤都通过了！代码可以安全提交。')
     process.exit(0)
-  } else {
+  }
+  else {
     logError('💥 验证失败！请修复问题后重试。')
 
     // 提供修复建议
     log(`\n${colors.yellow}💡 修复建议:${colors.reset}`)
 
-    results.forEach(result => {
+    results.forEach((result) => {
       if (!result.success) {
         switch (result.description) {
           case 'TypeScript 类型检查':
@@ -178,18 +180,18 @@ async function main() {
 }
 
 // 处理未捕获的异常
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
   logError(`未捕获的异常: ${error.message}`)
   process.exit(1)
 })
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
   logError(`未处理的 Promise 拒绝: ${reason}`)
   process.exit(1)
 })
 
 // 运行主函数
-main().catch(error => {
+main().catch((error) => {
   logError(`验证脚本执行失败: ${error.message}`)
   process.exit(1)
 })

@@ -102,7 +102,7 @@ describe('cSSInjector', () => {
       expect(mockStyleElement.textContent).toContain('--test-var: value1;')
       expect(mockStyleElement.textContent).toContain('--test-var2: value2;')
       expect(mockDocument.head.appendChild).toHaveBeenCalledWith(
-        mockStyleElement
+        mockStyleElement,
       )
     })
 
@@ -113,7 +113,7 @@ describe('cSSInjector', () => {
       injector.injectVariables({ '--test': 'value' })
 
       expect(mockDocument.getElementById).toHaveBeenCalledWith(
-        'ldesign-size-variables'
+        'ldesign-size-variables',
       )
       expect(existingElement.remove).toHaveBeenCalled()
     })
@@ -128,7 +128,7 @@ describe('cSSInjector', () => {
       injector.injectVariables({ '--test': 'value' })
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'CSS injection is only available in browser environment'
+        'CSS injection is only available in browser environment',
       )
 
       global.document = originalDocument
@@ -144,7 +144,7 @@ describe('cSSInjector', () => {
 
       expect(mockStyleElement.textContent).toBe(cssString)
       expect(mockDocument.head.appendChild).toHaveBeenCalledWith(
-        mockStyleElement
+        mockStyleElement,
       )
     })
   })
@@ -157,7 +157,7 @@ describe('cSSInjector', () => {
       injector.removeCSS()
 
       expect(mockDocument.getElementById).toHaveBeenCalledWith(
-        'ldesign-size-variables'
+        'ldesign-size-variables',
       )
       expect(existingElement.remove).toHaveBeenCalled()
     })
@@ -258,7 +258,7 @@ describe('工厂函数和便捷函数', () => {
       expect(isVariablesInjected()).toBe(true)
 
       expect(mockDocument.getElementById).toHaveBeenCalledWith(
-        'ldesign-size-variables'
+        'ldesign-size-variables',
       )
     })
 

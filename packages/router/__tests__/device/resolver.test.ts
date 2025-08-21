@@ -212,7 +212,7 @@ describe('deviceComponentResolver', () => {
       })
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
-        true
+        true,
       )
       expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true) // 有回退组件
@@ -222,7 +222,7 @@ describe('deviceComponentResolver', () => {
       const record = createMockRecord({})
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
-        false
+        false,
       )
     })
 
@@ -234,7 +234,7 @@ describe('deviceComponentResolver', () => {
       })
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
-        true
+        true,
       )
       expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true)
@@ -248,7 +248,7 @@ describe('deviceComponentResolver', () => {
       })
 
       expect(resolver.isComponentSupportedOnDevice(record, 'desktop')).toBe(
-        true
+        true,
       )
       expect(resolver.isComponentSupportedOnDevice(record, 'tablet')).toBe(true)
       expect(resolver.isComponentSupportedOnDevice(record, 'mobile')).toBe(true)

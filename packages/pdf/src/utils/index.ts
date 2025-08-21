@@ -44,11 +44,13 @@ export const typeUtils = {
    * 检查是否为URL字符串
    */
   isUrl(value: any): value is string {
-    if (typeof value !== 'string') return false
+    if (typeof value !== 'string')
+      return false
     try {
       new URL(value)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   },
@@ -60,10 +62,12 @@ export const typeUtils = {
     if (typeof pageNumber !== 'number' || !Number.isInteger(pageNumber)) {
       return false
     }
-    if (pageNumber < 1) return false
-    if (totalPages && pageNumber > totalPages) return false
+    if (pageNumber < 1)
+      return false
+    if (totalPages && pageNumber > totalPages)
+      return false
     return true
-  }
+  },
 }
 
 /**
@@ -122,11 +126,11 @@ export const dataUtils = {
     const base64Data = base64.replace(/^data:[^;]+;base64,/, '')
     const binaryString = atob(base64Data)
     const bytes = new Uint8Array(binaryString.length)
-    
+
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i)
     }
-    
+
     return bytes.buffer
   },
 
@@ -136,16 +140,16 @@ export const dataUtils = {
   arrayBufferToBase64(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer)
     let binary = ''
-    
+
     for (let i = 0; i < bytes.byteLength; i++) {
       const byte = bytes[i]
       if (byte !== undefined) {
         binary += String.fromCharCode(byte)
       }
     }
-    
+
     return btoa(binary)
-  }
+  },
 }
 
 /**
@@ -176,7 +180,7 @@ export const cacheUtils = {
     pageKey: string,
     scale: number,
     rotation: number,
-    options?: Record<string, any>
+    options?: Record<string, any>,
   ): string {
     const optionsHash = options ? this.hashObject(options) : ''
     return `render_${pageKey}_${scale}_${rotation}_${optionsHash}`
@@ -187,14 +191,15 @@ export const cacheUtils = {
    */
   hashString(str: string): string {
     let hash = 0
-    if (str.length === 0) return hash.toString()
-    
+    if (str.length === 0)
+      return hash.toString()
+
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
       hash = ((hash << 5) - hash) + char
       hash = hash & hash // 转换为32位整数
     }
-    
+
     return Math.abs(hash).toString(36)
   },
 
@@ -204,10 +209,10 @@ export const cacheUtils = {
   hashBuffer(buffer: ArrayBuffer | Uint8Array): string {
     const bytes = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : buffer
     let hash = 0
-    
+
     // 只对前1KB进行哈希以提高性能
     const sampleSize = Math.min(bytes.length, 1024)
-    
+
     for (let i = 0; i < sampleSize; i++) {
       const byte = bytes[i]
       if (byte !== undefined) {
@@ -215,7 +220,7 @@ export const cacheUtils = {
         hash = hash & hash
       }
     }
-    
+
     return `${Math.abs(hash).toString(36)}_${bytes.length}`
   },
 
@@ -225,7 +230,7 @@ export const cacheUtils = {
   hashObject(obj: Record<string, any>): string {
     const str = JSON.stringify(obj, Object.keys(obj).sort())
     return this.hashString(str)
-  }
+  },
 }
 
 /**
@@ -247,7 +252,7 @@ export const asyncUtils = {
       promise,
       new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Operation timed out')), timeoutMs)
-      })
+      }),
     ])
   },
 
@@ -258,25 +263,26 @@ export const asyncUtils = {
     fn: () => Promise<T>,
     maxAttempts: number,
     delayMs = 1000,
-    backoffMultiplier = 1.5
+    backoffMultiplier = 1.5,
   ): Promise<T> {
     let lastError: Error
-    
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await fn()
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
-        
+
         if (attempt === maxAttempts) {
           throw lastError
         }
-        
-        const delay = delayMs * Math.pow(backoffMultiplier, attempt - 1)
+
+        const delay = delayMs * backoffMultiplier ** (attempt - 1)
         await this.delay(delay)
       }
     }
-    
+
     throw lastError!
   },
 
@@ -286,27 +292,27 @@ export const asyncUtils = {
   async batchExecute<T, R>(
     items: T[],
     executor: (item: T) => Promise<R>,
-    concurrency = 3
+    concurrency = 3,
   ): Promise<R[]> {
     const results: R[] = []
     const executing: Promise<void>[] = []
-    
+
     for (const item of items) {
-      const promise = executor(item).then(result => {
+      const promise = executor(item).then((result) => {
         results.push(result)
       })
-      
+
       executing.push(promise)
-      
+
       if (executing.length >= concurrency) {
         await Promise.race(executing)
         executing.splice(executing.findIndex(p => p === promise), 1)
       }
     }
-    
+
     await Promise.all(executing)
     return results
-  }
+  },
 }
 
 /**
@@ -340,15 +346,16 @@ export const domUtils = {
   canvasToBlob(canvas: HTMLCanvasElement, type = 'image/png', quality = 0.92): Promise<Blob> {
     return new Promise((resolve, reject) => {
       canvas.toBlob(
-        blob => {
+        (blob) => {
           if (blob) {
             resolve(blob)
-          } else {
+          }
+          else {
             reject(new Error('Failed to convert canvas to blob'))
           }
         },
         type,
-        quality
+        quality,
       )
     })
   },
@@ -373,7 +380,7 @@ export const domUtils = {
    */
   supportsWebWorker(): boolean {
     return typeof Worker !== 'undefined'
-  }
+  },
 }
 
 /**
@@ -424,12 +431,12 @@ export const mathUtils = {
     contentWidth: number,
     contentHeight: number,
     containerWidth: number,
-    containerHeight: number
+    containerHeight: number,
   ): number {
     const scaleX = containerWidth / contentWidth
     const scaleY = containerHeight / contentHeight
     return Math.min(scaleX, scaleY)
-  }
+  },
 }
 
 /**
@@ -440,22 +447,26 @@ export const formatUtils = {
    * 格式化文件大小
    */
   formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B'
-    
+    if (bytes === 0)
+      return '0 B'
+
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   },
 
   /**
    * 格式化时间
    */
   formatDuration(ms: number): string {
-    if (ms < 1000) return `${ms.toFixed(0)}ms`
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-    if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`
+    if (ms < 1000)
+      return `${ms.toFixed(0)}ms`
+    if (ms < 60000)
+      return `${(ms / 1000).toFixed(1)}s`
+    if (ms < 3600000)
+      return `${(ms / 60000).toFixed(1)}m`
     return `${(ms / 3600000).toFixed(1)}h`
   },
 
@@ -464,7 +475,7 @@ export const formatUtils = {
    */
   formatPercentage(value: number, decimals = 1): string {
     return `${value.toFixed(decimals)}%`
-  }
+  },
 }
 
 /**
@@ -495,7 +506,7 @@ export const debugUtils = {
         if (enabled) {
           console.timeEnd(`[${prefix}] ${label}`)
         }
-      }
+      },
     }
   },
 
@@ -509,10 +520,11 @@ export const debugUtils = {
       const end = performance.now()
       console.warn(`[Benchmark] ${name}: ${(end - start).toFixed(2)}ms`)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const end = performance.now()
       console.error(`[Benchmark] ${name} failed after ${(end - start).toFixed(2)}ms:`, error)
       throw error
     }
-  }
+  },
 }

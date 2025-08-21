@@ -35,7 +35,7 @@ class CommitHelper {
 
   // 获取用户输入
   private question(prompt: string): Promise<string> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.rl.question(prompt, resolve)
     })
   }
@@ -51,7 +51,8 @@ class CommitHelper {
 
       console.log('📋 当前更改:')
       console.log(status)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 无法获取 Git 状态')
       process.exit(1)
     }
@@ -78,7 +79,7 @@ class CommitHelper {
   // 获取影响范围
   private async getScope(): Promise<string> {
     const scope = await this.question(
-      '\n🎯 影响范围 (可选，如: engine, color, http): '
+      '\n🎯 影响范围 (可选，如: engine, color, http): ',
     )
     return scope.trim()
   }
@@ -118,7 +119,7 @@ class CommitHelper {
     description: string,
     body: string,
     issues: string,
-    isBreaking: boolean
+    isBreaking: boolean,
   ): string {
     let message = type
 
@@ -172,18 +173,20 @@ class CommitHelper {
       console.log('✅ 提交成功!')
 
       // 询问是否推送
-      this.question('\n⬆️ 是否推送到远程? (Y/n): ').then(answer => {
+      this.question('\n⬆️ 是否推送到远程? (Y/n): ').then((answer) => {
         if (answer.toLowerCase() !== 'n' && answer.toLowerCase() !== 'no') {
           try {
             execSync('git push', { stdio: 'inherit' })
             console.log('✅ 推送成功!')
-          } catch (error) {
+          }
+          catch (error) {
             console.error('❌ 推送失败:', error)
           }
         }
         this.rl.close()
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 提交失败:', error)
       this.rl.close()
     }
@@ -212,18 +215,20 @@ class CommitHelper {
         description,
         body,
         issues,
-        isBreaking
+        isBreaking,
       )
 
       // 确认并提交
       const confirmed = await this.confirmCommit(message)
       if (confirmed) {
         this.executeCommit(message)
-      } else {
+      }
+      else {
         console.log('❌ 提交已取消')
         this.rl.close()
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 提交过程出错:', error)
       this.rl.close()
     }
@@ -239,7 +244,7 @@ class CommitHelper {
       message,
       '',
       '',
-      false
+      false,
     )
 
     console.log('📋 快速提交:', commitMessage)
@@ -250,7 +255,8 @@ class CommitHelper {
         stdio: 'inherit',
       })
       console.log('✅ 提交成功!')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 提交失败:', error)
     }
 
@@ -267,7 +273,8 @@ if (args.length >= 2) {
   // 快速提交模式
   const [type, message, scope] = args
   helper.quickCommit(type, message, scope).catch(console.error)
-} else {
+}
+else {
   // 交互模式
   helper.run().catch(console.error)
 }

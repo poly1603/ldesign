@@ -38,14 +38,17 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions): UseTem
   // 计算属性 - 可用模板列表
   const availableTemplates = computed(() => {
     const templates = Array.isArray(options.templates) ? options.templates : []
-    if (templates.length === 0) return []
+    if (templates.length === 0)
+      return []
 
-    return templates.filter(template => {
+    return templates.filter((template) => {
       // 按分类过滤
-      if (template.category !== options.category) return false
+      if (template.category !== options.category)
+        return false
 
       // 按设备类型过滤
-      if (options.device && template.device !== options.device) return false
+      if (options.device && template.device !== options.device)
+        return false
 
       return true
     })
@@ -53,15 +56,16 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions): UseTem
 
   // 计算属性 - 过滤后的模板列表
   const filteredTemplates = computed(() => {
-    if (!searchQuery.value) return availableTemplates.value
+    if (!searchQuery.value)
+      return availableTemplates.value
 
     const query = searchQuery.value.toLowerCase()
     return availableTemplates.value.filter((template: any) => {
       return (
-        template.template.toLowerCase().includes(query) ||
-        template.config.name.toLowerCase().includes(query) ||
-        template.config.description?.toLowerCase().includes(query) ||
-        template.config.tags?.some((tag: string) => tag.toLowerCase().includes(query))
+        template.template.toLowerCase().includes(query)
+        || template.config.name.toLowerCase().includes(query)
+        || template.config.description?.toLowerCase().includes(query)
+        || template.config.tags?.some((tag: string) => tag.toLowerCase().includes(query))
       )
     })
   })
@@ -91,9 +95,11 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions): UseTem
       // 这里可以触发模板重新扫描
       // 具体实现依赖于传入的模板列表更新机制
       await new Promise(resolve => setTimeout(resolve, 100)) // 模拟异步操作
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -112,7 +118,7 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions): UseTem
       // 分类变化时重置选择
       selectedTemplate.value = null
       searchQuery.value = ''
-    }
+    },
   )
 
   watch(
@@ -120,7 +126,7 @@ export function useTemplateSelector(options: UseTemplateSelectorOptions): UseTem
     () => {
       // 设备类型变化时重置选择
       selectedTemplate.value = null
-    }
+    },
   )
 
   return {

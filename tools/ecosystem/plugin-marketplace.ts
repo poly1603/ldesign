@@ -118,12 +118,12 @@ export class PluginMarketplace {
       registryUrl?: string
       localRegistry?: string
       cacheDir?: string
-    } = {}
+    } = {},
   ) {
-    this.registryUrl =
-      options.registryUrl || 'https://registry.ldesign.com/plugins'
-    this.localRegistry =
-      options.localRegistry || resolve(process.cwd(), '.ldesign/registry.json')
+    this.registryUrl
+      = options.registryUrl || 'https://registry.ldesign.com/plugins'
+    this.localRegistry
+      = options.localRegistry || resolve(process.cwd(), '.ldesign/registry.json')
     this.cacheDir = options.cacheDir || resolve(process.cwd(), '.ldesign/cache')
 
     this.ensureDirectories()
@@ -133,7 +133,7 @@ export class PluginMarketplace {
    * 搜索插件
    */
   async searchPlugins(
-    options: PluginSearchOptions = {}
+    options: PluginSearchOptions = {},
   ): Promise<PluginSearchResult> {
     console.log(chalk.blue('🔍 搜索插件...'))
 
@@ -149,7 +149,8 @@ export class PluginMarketplace {
 
       console.log(chalk.green(`✅ 找到 ${mergedResults.total} 个插件`))
       return mergedResults
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 搜索插件失败:'), error)
       throw error
     }
@@ -176,7 +177,8 @@ export class PluginMarketplace {
       }
 
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red(`❌ 获取插件详情失败: ${name}`), error)
       return null
     }
@@ -187,7 +189,7 @@ export class PluginMarketplace {
    */
   async installPlugin(name: string, version?: string): Promise<boolean> {
     console.log(
-      chalk.blue(`📥 安装插件: ${name}${version ? `@${version}` : ''}`)
+      chalk.blue(`📥 安装插件: ${name}${version ? `@${version}` : ''}`),
     )
 
     try {
@@ -222,7 +224,8 @@ export class PluginMarketplace {
 
       console.log(chalk.green(`✅ 插件 ${name} 安装成功`))
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red(`❌ 安装插件失败: ${name}`), error)
       return false
     }
@@ -259,7 +262,8 @@ export class PluginMarketplace {
 
       console.log(chalk.green(`✅ 插件 ${name} 卸载成功`))
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red(`❌ 卸载插件失败: ${name}`), error)
       return false
     }
@@ -272,7 +276,8 @@ export class PluginMarketplace {
     try {
       const registry = await this.loadLocalRegistry()
       return Object.values(registry.installed || {})
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 获取已安装插件列表失败:'), error)
       return []
     }
@@ -313,11 +318,12 @@ export class PluginMarketplace {
 
       console.log(
         chalk.green(
-          `✅ 插件 ${name} 更新成功: ${installed} → ${latest.version}`
-        )
+          `✅ 插件 ${name} 更新成功: ${installed} → ${latest.version}`,
+        ),
       )
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red(`❌ 更新插件失败: ${name}`), error)
       return false
     }
@@ -354,7 +360,8 @@ export class PluginMarketplace {
 
       console.log(chalk.green(`✅ 插件 ${metadata.name} 发布成功`))
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 发布插件失败:'), error)
       return false
     }
@@ -366,7 +373,7 @@ export class PluginMarketplace {
   private ensureDirectories(): void {
     const dirs = [this.cacheDir, resolve(this.localRegistry, '..')]
 
-    dirs.forEach(dir => {
+    dirs.forEach((dir) => {
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true })
       }
@@ -377,7 +384,7 @@ export class PluginMarketplace {
    * 搜索本地插件
    */
   private async searchLocalPlugins(
-    options: PluginSearchOptions
+    options: PluginSearchOptions,
   ): Promise<PluginSearchResult> {
     const registry = await this.loadLocalRegistry()
     let plugins = Object.values(registry.plugins || {}) as PluginMetadata[]
@@ -387,9 +394,9 @@ export class PluginMarketplace {
       const query = options.query.toLowerCase()
       plugins = plugins.filter(
         plugin =>
-          plugin.name.toLowerCase().includes(query) ||
-          plugin.description.toLowerCase().includes(query) ||
-          plugin.keywords.some(keyword => keyword.toLowerCase().includes(query))
+          plugin.name.toLowerCase().includes(query)
+          || plugin.description.toLowerCase().includes(query)
+          || plugin.keywords.some(keyword => keyword.toLowerCase().includes(query)),
       )
     }
 
@@ -423,7 +430,7 @@ export class PluginMarketplace {
    * 搜索远程插件
    */
   private async searchRemotePlugins(
-    options: PluginSearchOptions
+    options: PluginSearchOptions,
   ): Promise<PluginSearchResult> {
     try {
       // 模拟远程 API 调用
@@ -435,7 +442,8 @@ export class PluginMarketplace {
         limit: options.limit || 20,
         hasMore: false,
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow('⚠️ 无法连接到远程注册表'))
       return {
         plugins: [],
@@ -452,21 +460,21 @@ export class PluginMarketplace {
    */
   private mergeSearchResults(
     local: PluginSearchResult,
-    remote: PluginSearchResult
+    remote: PluginSearchResult,
   ): PluginSearchResult {
     const pluginMap = new Map<string, PluginMetadata>()
 
     // 添加本地插件
-    local.plugins.forEach(plugin => {
+    local.plugins.forEach((plugin) => {
       pluginMap.set(plugin.name, plugin)
     })
 
     // 添加远程插件（如果本地没有或版本更新）
-    remote.plugins.forEach(plugin => {
+    remote.plugins.forEach((plugin) => {
       const existing = pluginMap.get(plugin.name)
       if (
-        !existing ||
-        this.compareVersions(plugin.version, existing.version) > 0
+        !existing
+        || this.compareVersions(plugin.version, existing.version) > 0
       ) {
         pluginMap.set(plugin.name, plugin)
       }
@@ -489,7 +497,7 @@ export class PluginMarketplace {
   private sortPlugins(
     plugins: PluginMetadata[],
     sortBy: PluginSearchOptions['sortBy'] = 'downloads',
-    sortOrder: PluginSearchOptions['sortOrder'] = 'desc'
+    sortOrder: PluginSearchOptions['sortOrder'] = 'desc',
   ): PluginMetadata[] {
     return plugins.sort((a, b) => {
       let comparison = 0
@@ -502,8 +510,8 @@ export class PluginMarketplace {
           comparison = a.rating.average - b.rating.average
           break
         case 'updated':
-          comparison =
-            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+          comparison
+            = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
           break
         case 'name':
           comparison = a.name.localeCompare(b.name)
@@ -523,7 +531,8 @@ export class PluginMarketplace {
         const content = readFileSync(this.localRegistry, 'utf-8')
         return JSON.parse(content)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow('⚠️ 无法加载本地注册表'))
     }
 
@@ -536,7 +545,8 @@ export class PluginMarketplace {
   private async saveLocalRegistry(registry: any): Promise<void> {
     try {
       writeFileSync(this.localRegistry, JSON.stringify(registry, null, 2))
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 保存本地注册表失败:'), error)
     }
   }
@@ -545,8 +555,10 @@ export class PluginMarketplace {
    * 检测包管理器
    */
   private detectPackageManager(): string {
-    if (existsSync('pnpm-lock.yaml')) return 'pnpm'
-    if (existsSync('yarn.lock')) return 'yarn'
+    if (existsSync('pnpm-lock.yaml'))
+      return 'pnpm'
+    if (existsSync('yarn.lock'))
+      return 'yarn'
     return 'npm'
   }
 
@@ -561,8 +573,10 @@ export class PluginMarketplace {
       const v1Part = v1Parts[i] || 0
       const v2Part = v2Parts[i] || 0
 
-      if (v1Part > v2Part) return 1
-      if (v1Part < v2Part) return -1
+      if (v1Part > v2Part)
+        return 1
+      if (v1Part < v2Part)
+        return -1
     }
 
     return 0
@@ -587,7 +601,8 @@ export class PluginMarketplace {
         const content = readFileSync(cachePath, 'utf-8')
         return JSON.parse(content)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow(`⚠️ 无法加载缓存的插件: ${name}`))
     }
     return null
@@ -600,7 +615,8 @@ export class PluginMarketplace {
     try {
       const cachePath = join(this.cacheDir, `${plugin.name}.json`)
       writeFileSync(cachePath, JSON.stringify(plugin, null, 2))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow(`⚠️ 无法缓存插件: ${plugin.name}`))
     }
   }
@@ -609,13 +625,14 @@ export class PluginMarketplace {
    * 从远程获取插件
    */
   private async fetchRemotePlugin(
-    name: string
+    name: string,
   ): Promise<PluginMetadata | null> {
     try {
       // 模拟远程 API 调用
       // 实际实现中应该调用真实的 API
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow(`⚠️ 无法从远程获取插件: ${name}`))
       return null
     }
@@ -662,7 +679,7 @@ export class PluginMarketplace {
    */
   private async confirmUninstall(
     name: string,
-    dependents: string[]
+    dependents: string[],
   ): Promise<boolean> {
     // 在实际实现中，这里应该提示用户确认
     // 现在简单返回 false
@@ -699,7 +716,7 @@ export class PluginMarketplace {
    * 生成插件元数据
    */
   private async generatePluginMetadata(
-    pluginPath: string
+    pluginPath: string,
   ): Promise<PluginMetadata> {
     const packageJsonPath = join(pluginPath, 'package.json')
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
@@ -738,7 +755,8 @@ export class PluginMarketplace {
       })
 
       console.log(chalk.green('✅ 插件构建成功'))
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 插件构建失败:'), error)
       throw error
     }
@@ -754,7 +772,8 @@ export class PluginMarketplace {
       // 模拟提交到远程注册表
       // 实际实现中应该调用真实的 API
       console.log(chalk.green('✅ 提交到注册表成功'))
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 提交到注册表失败:'), error)
       throw error
     }

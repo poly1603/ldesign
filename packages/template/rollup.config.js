@@ -1,5 +1,5 @@
-import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 import copy from 'rollup-plugin-copy'
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
   packageDir: process.cwd(),

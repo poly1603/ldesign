@@ -4,10 +4,14 @@
 
 <template>
   <div data-testid="page-content">
-    <nav data-testid="breadcrumb">Home > Profile</nav>
+    <nav data-testid="breadcrumb">
+      Home > Profile
+    </nav>
     <h1>Profile</h1>
     <p>User profile page</p>
-    <router-link to="/"> Back to Home </router-link>
+    <router-link to="/">
+      Back to Home
+    </router-link>
   </div>
 </template>
 

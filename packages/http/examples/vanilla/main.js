@@ -506,13 +506,13 @@ window.sendCustomRequest = async function () {
 window.switchTab = function (tabName) {
   // 隐藏所有标签页内容
   const tabContents = document.querySelectorAll('.tab-content')
-  tabContents.forEach(content => {
+  tabContents.forEach((content) => {
     content.style.display = 'none'
   })
 
   // 移除所有标签的active类
   const tabs = document.querySelectorAll('.tab')
-  tabs.forEach(tab => {
+  tabs.forEach((tab) => {
     tab.classList.remove('active')
   })
 
@@ -545,9 +545,10 @@ window.testCurrentAdapter = async function () {
     updateOutput('adapters-output', formatOutput({
       adapter: currentAdapter,
       responseTime: `${(endTime - startTime).toFixed(2)}ms`,
-      data: response.data
+      data: response.data,
     }, `${currentAdapter.toUpperCase()} 适配器测试成功`))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('adapters-output', formatOutput(error, `${currentAdapter.toUpperCase()} 适配器测试失败`))
   }
 }
@@ -564,7 +565,8 @@ window.compareAdapters = async function () {
       await http.get('/posts/1')
       const endTime = performance.now()
       results[adapter] = `${(endTime - startTime).toFixed(2)}ms`
-    } catch (error) {
+    }
+    catch (error) {
       results[adapter] = 'Error'
     }
   }
@@ -610,11 +612,12 @@ window.testSmartCache = async function () {
     const result = {
       firstRequest: `${(endTime1 - startTime1).toFixed(2)}ms`,
       secondRequest: `${(endTime2 - startTime2).toFixed(2)}ms`,
-      cacheHit: endTime2 - startTime2 < endTime1 - startTime1
+      cacheHit: endTime2 - startTime2 < endTime1 - startTime1,
     }
 
     updateOutput('cache-output', formatOutput(result, '智能缓存测试完成'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('cache-output', formatOutput(error, '智能缓存测试失败'))
   }
 }
@@ -631,10 +634,11 @@ window.testRetrySuccess = async function () {
 
   try {
     const response = await http.get('/posts/1', {
-      retry: { maxRetries: 3, delay: 1000 }
+      retry: { maxRetries: 3, delay: 1000 },
     })
     updateOutput('retry-output', formatOutput(response.data, '重试成功测试完成'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('retry-output', formatOutput(error, '重试成功测试失败'))
   }
 }
@@ -644,12 +648,13 @@ window.testRetryFailure = async function () {
 
   try {
     await http.get('/nonexistent-endpoint', {
-      retry: { maxRetries: 3, delay: 500 }
+      retry: { maxRetries: 3, delay: 500 },
     })
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('retry-output', formatOutput({
       error: error.message,
-      retryCount: error.retryCount || 0
+      retryCount: error.retryCount || 0,
     }, '重试失败测试完成（预期结果）'))
   }
 }
@@ -661,7 +666,7 @@ window.testCircuitBreaker = async function () {
   const promises = []
   for (let i = 0; i < 5; i++) {
     promises.push(
-      http.get('/error-endpoint').catch(err => ({ error: err.message }))
+      http.get('/error-endpoint').catch(err => ({ error: err.message })),
     )
   }
 
@@ -691,11 +696,13 @@ window.stopPerformanceMonitoring = function () {
 }
 
 window.getPerformanceReport = function () {
-  const report = http.getPerformanceReport ? http.getPerformanceReport() : {
-    requests: { total: 0, successful: 0, failed: 0 },
-    cache: { hits: 0, misses: 0, hitRate: 0 },
-    averageResponseTime: 0
-  }
+  const report = http.getPerformanceReport
+    ? http.getPerformanceReport()
+    : {
+        requests: { total: 0, successful: 0, failed: 0 },
+        cache: { hits: 0, misses: 0, hitRate: 0 },
+        averageResponseTime: 0,
+      }
 
   updateOutput('performance-output', formatOutput(report, '性能报告'))
 }
@@ -710,7 +717,8 @@ window.clearPerformanceData = function () {
 }
 
 function updatePerformanceStats() {
-  if (!performanceMonitoring) return
+  if (!performanceMonitoring)
+    return
 
   // 使用统计跟踪器更新显示
   statsTracker.updateDisplay()
@@ -727,11 +735,12 @@ window.testPriorityRequests = async function () {
     const results = await Promise.all([
       http.get('/posts/1').then(r => ({ priority: 'normal', data: r.data })),
       http.get('/posts/2').then(r => ({ priority: 'high', data: r.data })),
-      http.get('/posts/3').then(r => ({ priority: 'critical', data: r.data }))
+      http.get('/posts/3').then(r => ({ priority: 'critical', data: r.data })),
     ])
 
     updateOutput('advanced-output', formatOutput(results, '优先级请求测试成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced-output', formatOutput(error, '优先级请求测试失败'))
   }
 }
@@ -743,15 +752,16 @@ window.testBatchRequests = async function () {
     const requests = [
       { url: '/posts/1', method: 'GET' },
       { url: '/posts/2', method: 'GET' },
-      { url: '/posts/3', method: 'GET' }
+      { url: '/posts/3', method: 'GET' },
     ]
 
-    const results = await http.batchRequest ?
-      http.batchRequest(requests, { concurrent: true }) :
-      Promise.all(requests.map(req => http.get(req.url)))
+    const results = await http.batchRequest
+      ? http.batchRequest(requests, { concurrent: true })
+      : Promise.all(requests.map(req => http.get(req.url)))
 
     updateOutput('advanced-output', formatOutput(results.map(r => r.data || r), '批量请求测试成功'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced-output', formatOutput(error, '批量请求测试失败'))
   }
 }
@@ -762,14 +772,15 @@ window.testStreamingRequest = async function () {
   try {
     // 模拟流式请求
     const response = await http.get('/posts', {
-      responseType: 'stream'
+      responseType: 'stream',
     })
 
     updateOutput('advanced-output', formatOutput({
       message: '流式请求模拟完成',
-      dataSize: JSON.stringify(response.data).length
+      dataSize: JSON.stringify(response.data).length,
     }, '流式请求测试'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced-output', formatOutput(error, '流式请求测试失败'))
   }
 }
@@ -778,14 +789,17 @@ window.testRequestScheduler = async function () {
   updateOutput('advanced-output', '⏰ 测试请求调度器...')
 
   try {
-    const schedulerStatus = http.getSchedulerStatus ? http.getSchedulerStatus() : {
-      activeRequests: statsTracker.stats.activeRequests,
-      queuedRequests: 0,
-      maxConcurrent: 5
-    }
+    const schedulerStatus = http.getSchedulerStatus
+      ? http.getSchedulerStatus()
+      : {
+          activeRequests: statsTracker.stats.activeRequests,
+          queuedRequests: 0,
+          maxConcurrent: 5,
+        }
 
     updateOutput('advanced-output', formatOutput(schedulerStatus, '请求调度器状态'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced-output', formatOutput(error, '请求调度器测试失败'))
   }
 }
@@ -807,9 +821,10 @@ window.testConcurrencyControl = async function () {
     updateOutput('advanced-output', formatOutput({
       requestCount: results.length,
       totalTime: `${(endTime - startTime).toFixed(2)}ms`,
-      averageTime: `${((endTime - startTime) / results.length).toFixed(2)}ms`
+      averageTime: `${((endTime - startTime) / results.length).toFixed(2)}ms`,
     }, '并发控制测试完成'))
-  } catch (error) {
+  }
+  catch (error) {
     updateOutput('advanced-output', formatOutput(error, '并发控制测试失败'))
   }
 }

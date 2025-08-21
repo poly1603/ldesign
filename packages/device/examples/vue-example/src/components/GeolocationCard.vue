@@ -25,9 +25,11 @@ async function loadGeolocationModule() {
     await loadModule()
     await getCurrentPosition()
     isLoaded.value = true
-  } catch (err) {
+  }
+  catch (err) {
     error.value = getErrorMessage(err)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -39,9 +41,11 @@ async function getCurrentPosition() {
   try {
     await getPosition()
     timestamp.value = new Date()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = getErrorMessage(err)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -96,7 +100,9 @@ function formatTimestamp(ts) {
       >
         {{ loading ? '加载中...' : '📍 获取位置信息' }}
       </button>
-      <p class="note">需要用户授权访问位置信息</p>
+      <p class="note">
+        需要用户授权访问位置信息
+      </p>
     </div>
 
     <div v-else-if="error" class="error-state">
@@ -104,7 +110,9 @@ function formatTimestamp(ts) {
         <span class="error-icon">⚠️</span>
         <span>{{ error }}</span>
       </div>
-      <button class="retry-btn" @click="retry">🔄 重试</button>
+      <button class="retry-btn" @click="retry">
+        🔄 重试
+      </button>
     </div>
 
     <div v-else class="info-grid">
@@ -157,7 +165,9 @@ function formatTimestamp(ts) {
       >
         {{ loading ? '获取中...' : '🔄 刷新位置' }}
       </button>
-      <button class="unload-btn" @click="unloadModule">❌ 卸载模块</button>
+      <button class="unload-btn" @click="unloadModule">
+        ❌ 卸载模块
+      </button>
     </div>
   </div>
 </template>

@@ -31,8 +31,8 @@ function findPackages(): Array<{
   path: string
   buildCommand: string
 }> {
-  const packages: Array<{ name: string; path: string; buildCommand: string }> =
-    []
+  const packages: Array<{ name: string, path: string, buildCommand: string }>
+    = []
 
   // 从之前的检测脚本结果中获取包列表
   const packagePaths = [
@@ -79,9 +79,9 @@ function findPackages(): Array<{
 
 function runBuildCommand(
   packagePath: string,
-  buildCommand: string
+  buildCommand: string,
 ): Promise<BuildResult> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const startTime = Date.now()
     const fullPath = join(workspaceRoot, packagePath)
 
@@ -101,19 +101,19 @@ function runBuildCommand(
     let output = ''
     let errorOutput = ''
 
-    child.stdout?.on('data', data => {
+    child.stdout?.on('data', (data) => {
       const text = data.toString()
       output += text
       process.stdout.write(text)
     })
 
-    child.stderr?.on('data', data => {
+    child.stderr?.on('data', (data) => {
       const text = data.toString()
       errorOutput += text
       process.stderr.write(text)
     })
 
-    child.on('close', code => {
+    child.on('close', (code) => {
       const duration = Date.now() - startTime
       const success = code === 0
 
@@ -128,9 +128,10 @@ function runBuildCommand(
         const lowerLine = line.toLowerCase()
         if (lowerLine.includes('error') && !lowerLine.includes('0 errors')) {
           errors.push(line.trim())
-        } else if (
-          lowerLine.includes('warning') &&
-          !lowerLine.includes('0 warnings')
+        }
+        else if (
+          lowerLine.includes('warning')
+          && !lowerLine.includes('0 warnings')
         ) {
           warnings.push(line.trim())
         }
@@ -149,14 +150,15 @@ function runBuildCommand(
 
       if (success) {
         console.log(`✅ ${packagePath} 构建成功 (${duration}ms)`)
-      } else {
+      }
+      else {
         console.log(`❌ ${packagePath} 构建失败 (${duration}ms)`)
       }
 
       resolve(result)
     })
 
-    child.on('error', error => {
+    child.on('error', (error) => {
       const duration = Date.now() - startTime
       console.log(`❌ ${packagePath} 构建出错: ${error.message}`)
 
@@ -217,8 +219,8 @@ function generateReport(report: BuildReport): void {
   console.log(`总耗时: ${(report.totalDuration / 1000).toFixed(2)}s`)
   console.log(
     `平均耗时: ${(report.totalDuration / report.totalPackages / 1000).toFixed(
-      2
-    )}s`
+      2,
+    )}s`,
   )
 
   // 成功的包
@@ -243,7 +245,7 @@ function generateReport(report: BuildReport): void {
       console.log(`    耗时: ${(result.duration / 1000).toFixed(2)}s`)
       if (result.errors.length > 0) {
         console.log(`    错误:`)
-        result.errors.slice(0, 3).forEach(error => {
+        result.errors.slice(0, 3).forEach((error) => {
           console.log(`      - ${error}`)
         })
         if (result.errors.length > 3) {
@@ -279,7 +281,8 @@ function generateReport(report: BuildReport): void {
   console.log(`\n${'='.repeat(60)}`)
   if (report.failureCount === 0) {
     console.log('🎉 所有包构建成功！')
-  } else {
+  }
+  else {
     console.log(`⚠️  ${report.failureCount} 个包构建失败，请检查上述错误信息`)
   }
 }
@@ -292,7 +295,8 @@ async function main() {
 
     // 返回适当的退出码
     process.exit(report.failureCount > 0 ? 1 : 0)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('构建测试过程中发生错误:', error)
     process.exit(1)
   }

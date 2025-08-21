@@ -38,7 +38,7 @@ export interface PermissionGuardOptions {
  * 创建权限守卫
  */
 export function createPermissionGuard(
-  options: PermissionGuardOptions
+  options: PermissionGuardOptions,
 ): NavigationGuard {
   const {
     checker,
@@ -49,7 +49,7 @@ export function createPermissionGuard(
 
   return async (to, _from, next) => {
     // 检查路由是否需要权限验证
-    const requiresPermission = to.matched.some(record => {
+    const requiresPermission = to.matched.some((record) => {
       return record.meta[permissionField] || record.meta.permissions
     })
 
@@ -65,16 +65,18 @@ export function createPermissionGuard(
       // 执行权限检查
       const hasPermission = await checker(
         Array.isArray(permissions) ? permissions : [permissions],
-        to
+        to,
       )
 
       if (hasPermission) {
         next()
-      } else {
+      }
+      else {
         console.warn(errorMessage, { route: to.path, permissions })
         next(redirectTo)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('权限检查失败:', error)
       next(redirectTo)
     }
@@ -120,7 +122,8 @@ export function createAuthGuard(options: AuthGuardOptions): NavigationGuard {
 
       if (isAuthenticated) {
         next()
-      } else {
+      }
+      else {
         console.warn('用户未认证，重定向到登录页面')
         next({
           ...(typeof redirectTo === 'object'
@@ -129,7 +132,8 @@ export function createAuthGuard(options: AuthGuardOptions): NavigationGuard {
           query: { redirect: to.fullPath },
         } as RouteLocationRaw)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('认证检查失败:', error)
       next(redirectTo)
     }
@@ -176,7 +180,7 @@ export function createLoadingGuard(options: LoadingGuardOptions = {}): {
 
   const afterEach = (
     to: RouteLocationNormalized,
-    _from: RouteLocationNormalized
+    _from: RouteLocationNormalized,
   ) => {
     const loadingTime = Date.now() - loadingStartTime
     const remainingTime = Math.max(0, minLoadingTime - loadingTime)
@@ -209,7 +213,7 @@ export interface TitleGuardOptions {
  * 创建标题守卫
  */
 export function createTitleGuard(
-  options: TitleGuardOptions = {}
+  options: TitleGuardOptions = {},
 ): NavigationGuard {
   const {
     defaultTitle = '',
@@ -270,7 +274,7 @@ export function createScrollGuard(options: ScrollGuardOptions = {}): {
 } {
   const { behavior = 'auto', scrollToTop = true, savePosition = true } = options
 
-  const savedPositions = new Map<string, { x: number; y: number }>()
+  const savedPositions = new Map<string, { x: number, y: number }>()
 
   const beforeEach: NavigationGuard = (_to, from, next) => {
     // 保存当前滚动位置
@@ -286,7 +290,7 @@ export function createScrollGuard(options: ScrollGuardOptions = {}): {
 
   const afterEach = (
     to: RouteLocationNormalized,
-    _from: RouteLocationNormalized
+    _from: RouteLocationNormalized,
   ) => {
     // 恢复滚动位置或滚动到顶部
     setTimeout(() => {
@@ -298,7 +302,8 @@ export function createScrollGuard(options: ScrollGuardOptions = {}): {
           top: savedPosition.y,
           behavior,
         })
-      } else if (scrollToTop) {
+      }
+      else if (scrollToTop) {
         window.scrollTo({
           left: 0,
           top: 0,
@@ -348,7 +353,8 @@ export function createProgressGuard(options: ProgressGuardOptions = {}): {
   let progressTimer: number | null = null
 
   const createProgressBar = () => {
-    if (progressBar) return
+    if (progressBar)
+      return
 
     progressBar = document.createElement('div')
     progressBar.style.cssText = `
@@ -405,7 +411,7 @@ export function createProgressGuard(options: ProgressGuardOptions = {}): {
 
   const afterEach = (
     _to: RouteLocationNormalized,
-    _from: RouteLocationNormalized
+    _from: RouteLocationNormalized,
   ) => {
     // 完成进度条
     updateProgress(100)
@@ -429,9 +435,9 @@ export function combineGuards(...guards: NavigationGuard[]): NavigationGuard {
 
     const runNext = (result?: any) => {
       if (
-        result === false ||
-        result instanceof Error ||
-        (result && typeof result === 'object')
+        result === false
+        || result instanceof Error
+        || (result && typeof result === 'object')
       ) {
         next(result)
         return

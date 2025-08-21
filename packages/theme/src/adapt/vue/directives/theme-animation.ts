@@ -35,7 +35,7 @@ export const vThemeAnimation: Directive<HTMLElement, VThemeAnimationBinding> = {
  */
 function createAnimation(
   el: HTMLElement,
-  binding: DirectiveBinding<VThemeAnimationBinding>
+  binding: DirectiveBinding<VThemeAnimationBinding>,
 ) {
   const {
     animation,
@@ -60,7 +60,8 @@ function createAnimation(
         iterations: 1,
         keyframes: [],
       }
-    } else {
+    }
+    else {
       // 对象类型，使用提供的配置
       animationConfig = animation
     }
@@ -86,7 +87,8 @@ function createAnimation(
 
     // 设置触发器
     setupTrigger(el, binding, animationInstance)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('[v-theme-animation] Failed to create animation:', error)
   }
 }
@@ -96,7 +98,7 @@ function createAnimation(
  */
 function updateAnimation(
   el: HTMLElement,
-  binding: DirectiveBinding<VThemeAnimationBinding>
+  binding: DirectiveBinding<VThemeAnimationBinding>,
 ) {
   const animationData = animationMap.get(el)
 
@@ -139,7 +141,7 @@ function removeAnimation(el: HTMLElement) {
 function setupTrigger(
   el: HTMLElement,
   binding: DirectiveBinding<VThemeAnimationBinding>,
-  animationInstance: any
+  animationInstance: any,
 ) {
   const { trigger = 'manual', once = false } = binding.value
   const animationData = animationMap.get(el)!
@@ -149,7 +151,8 @@ function setupTrigger(
   el.removeEventListener('click', handleClick)
 
   function handleMouseEnter() {
-    if (once && animationData.hasPlayed) return
+    if (once && animationData.hasPlayed)
+      return
 
     animationInstance.start()
 
@@ -159,7 +162,8 @@ function setupTrigger(
   }
 
   function handleClick() {
-    if (once && animationData.hasPlayed) return
+    if (once && animationData.hasPlayed)
+      return
 
     animationInstance.start()
 
@@ -169,10 +173,11 @@ function setupTrigger(
   }
 
   function handleVisible() {
-    if (once && animationData.hasPlayed) return
+    if (once && animationData.hasPlayed)
+      return
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           animationInstance.start()
 
@@ -220,7 +225,7 @@ function setupTrigger(
 function handleModifiers(
   el: HTMLElement,
   binding: DirectiveBinding<VThemeAnimationBinding>,
-  animationInstance: any
+  animationInstance: any,
 ) {
   const { modifiers } = binding
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectDetector } from '../../src/services/ProjectDetector'
 
 // Mock fs operations
@@ -22,13 +22,13 @@ vi.mock('../../src/services/ErrorHandler', () => ({
   })),
 }))
 
-describe('ProjectDetector 简化测试', () => {
+describe('projectDetector 简化测试', () => {
   let detector: ProjectDetector
   let mockFs: any
 
   beforeEach(async () => {
     detector = new ProjectDetector()
-    mockFs = vi.mocked(await import('fs/promises'))
+    mockFs = vi.mocked(await import('node:fs/promises'))
 
     // Reset all mocks
     vi.clearAllMocks()
@@ -67,7 +67,7 @@ describe('ProjectDetector 简化测试', () => {
     })
   })
 
-  describe('Vue项目检测', () => {
+  describe('vue项目检测', () => {
     it('应该检测Vue3项目', async () => {
       const projectPath = '/test/vue3-project'
 
@@ -107,7 +107,7 @@ describe('ProjectDetector 简化测试', () => {
     })
   })
 
-  describe('React项目检测', () => {
+  describe('react项目检测', () => {
     it('应该检测React项目', async () => {
       const projectPath = '/test/react-project'
 
@@ -115,7 +115,7 @@ describe('ProjectDetector 简化测试', () => {
       mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
       mockFs.readFile.mockResolvedValue(JSON.stringify({
         dependencies: {
-          react: '^18.0.0',
+          'react': '^18.0.0',
           'react-dom': '^18.0.0',
         },
       }))
@@ -129,7 +129,7 @@ describe('ProjectDetector 简化测试', () => {
     })
   })
 
-  describe('Vanilla项目检测', () => {
+  describe('vanilla项目检测', () => {
     it('应该检测Vanilla项目', async () => {
       const projectPath = '/test/vanilla-project'
 
@@ -151,7 +151,7 @@ describe('ProjectDetector 简化测试', () => {
     })
   })
 
-  describe('TypeScript项目检测', () => {
+  describe('typeScript项目检测', () => {
     it('应该检测TypeScript项目', async () => {
       const projectPath = '/test/ts-project'
 

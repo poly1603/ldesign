@@ -40,7 +40,8 @@ const successfulPackages = [
 ]
 
 function getDirectoryFiles(dirPath: string): string[] {
-  if (!existsSync(dirPath)) return []
+  if (!existsSync(dirPath))
+    return []
 
   try {
     const fs = require('node:fs')
@@ -56,10 +57,12 @@ function getDirectoryFiles(dirPath: string): string[] {
         try {
           if (statSync(fullPath).isDirectory()) {
             walkDir(fullPath, relPath)
-          } else {
+          }
+          else {
             files.push(relPath)
           }
-        } catch (err) {
+        }
+        catch (err) {
           // 忽略无法访问的文件
           continue
         }
@@ -68,7 +71,8 @@ function getDirectoryFiles(dirPath: string): string[] {
 
     walkDir(dirPath)
     return files
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Error reading directory ${dirPath}:`, error)
     return []
   }
@@ -160,7 +164,7 @@ function validateArtifactCompleteness(validation: ArtifactValidation): void {
   if (validation.hasDist) {
     const hasMainBundle = validation.distFiles.some(f => f.includes('index.js'))
     const hasMinBundle = validation.distFiles.some(f =>
-      f.includes('index.min.js')
+      f.includes('index.min.js'),
     )
 
     if (!hasMainBundle) {
@@ -173,15 +177,17 @@ function validateArtifactCompleteness(validation: ArtifactValidation): void {
 
   // 检查 package.json exports 配置
   if (
-    !validation.packageJsonExports ||
-    Object.keys(validation.packageJsonExports).length === 0
+    !validation.packageJsonExports
+    || Object.keys(validation.packageJsonExports).length === 0
   ) {
     validation.issues.push('package.json 缺少 exports 字段配置')
-  } else {
+  }
+  else {
     const mainExport = validation.packageJsonExports['.']
     if (!mainExport) {
       validation.issues.push('package.json exports 缺少主入口配置')
-    } else {
+    }
+    else {
       if (!mainExport.import) {
         validation.issues.push('package.json exports 缺少 ESM 入口配置')
       }
@@ -210,28 +216,41 @@ function calculateScore(validation: ArtifactValidation): void {
   let score = 0
 
   // 基础产物目录 (40分)
-  if (validation.hasESM) score += 10
-  if (validation.hasCJS) score += 10
-  if (validation.hasTypes) score += 10
-  if (validation.hasDist) score += 10
+  if (validation.hasESM)
+    score += 10
+  if (validation.hasCJS)
+    score += 10
+  if (validation.hasTypes)
+    score += 10
+  if (validation.hasDist)
+    score += 10
 
   // 主入口文件 (30分)
-  if (validation.esmFiles.includes('index.js')) score += 10
-  if (validation.cjsFiles.includes('index.js')) score += 10
-  if (validation.typeFiles.includes('index.d.ts')) score += 10
+  if (validation.esmFiles.includes('index.js'))
+    score += 10
+  if (validation.cjsFiles.includes('index.js'))
+    score += 10
+  if (validation.typeFiles.includes('index.d.ts'))
+    score += 10
 
   // package.json 配置 (20分)
   if (validation.packageJsonExports && validation.packageJsonExports['.']) {
     const mainExport = validation.packageJsonExports['.']
-    if (mainExport.import) score += 5
-    if (mainExport.require) score += 5
-    if (mainExport.types) score += 5
-    if (mainExport.import && mainExport.require && mainExport.types) score += 5
+    if (mainExport.import)
+      score += 5
+    if (mainExport.require)
+      score += 5
+    if (mainExport.types)
+      score += 5
+    if (mainExport.import && mainExport.require && mainExport.types)
+      score += 5
   }
 
   // 产物完整性 (10分)
-  if (validation.distFiles.some(f => f.includes('index.min.js'))) score += 5
-  if (validation.issues.length === 0) score += 5
+  if (validation.distFiles.some(f => f.includes('index.min.js')))
+    score += 5
+  if (validation.issues.length === 0)
+    score += 5
 
   validation.score = score
 }
@@ -243,10 +262,10 @@ function generateValidationReport(validations: ArtifactValidation[]): void {
   const totalPackages = validations.length
   const perfectPackages = validations.filter(v => v.score === 100).length
   const goodPackages = validations.filter(
-    v => v.score >= 80 && v.score < 100
+    v => v.score >= 80 && v.score < 100,
   ).length
-  const averageScore =
-    validations.reduce((sum, v) => sum + v.score, 0) / totalPackages
+  const averageScore
+    = validations.reduce((sum, v) => sum + v.score, 0) / totalPackages
 
   console.log(`\n📊 总体统计:`)
   console.log(`验证包数: ${totalPackages}`)
@@ -259,8 +278,8 @@ function generateValidationReport(validations: ArtifactValidation[]): void {
 
   console.log(`\n📦 包产物详情:`)
   for (const validation of sortedValidations) {
-    const scoreEmoji =
-      validation.score === 100 ? '🟢' : validation.score >= 80 ? '🟡' : '🔴'
+    const scoreEmoji
+      = validation.score === 100 ? '🟢' : validation.score >= 80 ? '🟡' : '🔴'
     console.log(`\n${scoreEmoji} ${validation.name} (${validation.score}/100)`)
 
     // 产物目录状态
@@ -270,15 +289,15 @@ function generateValidationReport(validations: ArtifactValidation[]): void {
     const distStatus = validation.hasDist ? '✅' : '❌'
 
     console.log(
-      `  产物目录: ESM${esmStatus} CJS${cjsStatus} Types${typesStatus} Dist${distStatus}`
+      `  产物目录: ESM${esmStatus} CJS${cjsStatus} Types${typesStatus} Dist${distStatus}`,
     )
     console.log(
-      `  文件数量: ESM(${validation.esmFiles.length}) CJS(${validation.cjsFiles.length}) Types(${validation.typeFiles.length}) Dist(${validation.distFiles.length})`
+      `  文件数量: ESM(${validation.esmFiles.length}) CJS(${validation.cjsFiles.length}) Types(${validation.typeFiles.length}) Dist(${validation.distFiles.length})`,
     )
 
     if (validation.issues.length > 0) {
       console.log(`  ⚠️  问题:`)
-      validation.issues.forEach(issue => {
+      validation.issues.forEach((issue) => {
         console.log(`    - ${issue}`)
       })
     }
@@ -289,7 +308,7 @@ function generateValidationReport(validations: ArtifactValidation[]): void {
   if (allIssues.length > 0) {
     console.log(`\n⚠️  问题汇总:`)
     const issueCount = new Map<string, number>()
-    allIssues.forEach(issue => {
+    allIssues.forEach((issue) => {
       issueCount.set(issue, (issueCount.get(issue) || 0) + 1)
     })
 
@@ -303,11 +322,12 @@ function generateValidationReport(validations: ArtifactValidation[]): void {
   console.log(`\n${'='.repeat(60)}`)
   if (perfectPackages === totalPackages) {
     console.log('🎉 所有包的产物都完美！')
-  } else {
+  }
+  else {
     console.log(
       `✨ ${perfectPackages}/${totalPackages} 个包产物完美，${
         totalPackages - perfectPackages
-      } 个包需要改进`
+      } 个包需要改进`,
     )
   }
 }

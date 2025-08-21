@@ -1,7 +1,7 @@
-import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { getIcon } from '../../../../utils/icons'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -145,12 +145,13 @@ export default defineComponent({
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -165,7 +166,7 @@ export default defineComponent({
           width: 1920,
           height: 1080,
           quality: 'high',
-          category: 'nature'
+          category: 'nature',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -173,13 +174,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Default Gradient'
+          title: 'Default Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -216,7 +219,7 @@ export default defineComponent({
         'forgot-password',
         data || {
           username: formData.username,
-        }
+        },
       )
     }
 
@@ -338,7 +341,8 @@ export default defineComponent({
                       onClick={togglePasswordVisibility}
                       disabled={props.isLoading}
                       innerHTML={getIcon(showPassword.value ? 'eyeOff' : 'eye', { size: 'sm' })}
-                    ></button>
+                    >
+                    </button>
                   </div>
                 </div>
 
@@ -347,16 +351,18 @@ export default defineComponent({
                   class={['btn', 'btn-primary', 'btn-lg', { 'btn-loading': props.isLoading }]}
                   disabled={props.isLoading || !formData.username || !formData.password}
                 >
-                  {props.isLoading ? (
-                    <div class="btn-content">
-                      <div class="btn-icon" innerHTML={getIcon('loader', { size: 'sm', className: 'animate-spin' })}></div>
-                      <span>登录中...</span>
-                    </div>
-                  ) : (
-                    <div class="btn-content">
-                      <span>{props.loginButtonText}</span>
-                    </div>
-                  )}
+                  {props.isLoading
+                    ? (
+                        <div class="btn-content">
+                          <div class="btn-icon" innerHTML={getIcon('loader', { size: 'sm', className: 'animate-spin' })}></div>
+                          <span>登录中...</span>
+                        </div>
+                      )
+                    : (
+                        <div class="btn-content">
+                          <span>{props.loginButtonText}</span>
+                        </div>
+                      )}
                 </button>
               </form>
 

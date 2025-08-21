@@ -13,8 +13,8 @@ vi.mock('qrcode', () => ({
       return Promise.resolve()
     }),
     toString: vi.fn().mockResolvedValue('<svg width="200" height="200"><rect width="200" height="200" fill="#000"/></svg>'),
-    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,test')
-  }
+    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,test'),
+  },
 }))
 
 // Mock Canvas API
@@ -34,17 +34,17 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
     clip: vi.fn(),
     drawImage: vi.fn(),
     createLinearGradient: vi.fn(() => ({
-      addColorStop: vi.fn()
+      addColorStop: vi.fn(),
     })),
     createRadialGradient: vi.fn(() => ({
-      addColorStop: vi.fn()
-    }))
-  }))
+      addColorStop: vi.fn(),
+    })),
+  })),
 })
 
 // Mock HTMLCanvasElement.prototype.toDataURL
 Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
-  value: vi.fn(() => 'data:image/png;base64,test')
+  value: vi.fn(() => 'data:image/png;base64,test'),
 })
 
 // Mock Image constructor
@@ -54,7 +54,7 @@ global.Image = class {
   src = ''
   width = 0
   height = 0
-  
+
   constructor() {
     setTimeout(() => {
       this.width = 100
@@ -87,9 +87,9 @@ global.DOMParser = class {
           bottom: 200,
           right: 200,
           x: 0,
-          y: 0
-        }))
-      }
+          y: 0,
+        })),
+      },
     }
     return doc
   }
@@ -123,21 +123,21 @@ Object.defineProperty(document, 'createElementNS', {
         bottom: 200,
         right: 200,
         x: 0,
-        y: 0
-      }))
+        y: 0,
+      })),
     }
     return element
   }),
-  writable: true
+  writable: true,
 })
 
 // Mock document.body methods
 Object.defineProperty(document.body, 'appendChild', {
-  value: vi.fn()
+  value: vi.fn(),
 })
 
 Object.defineProperty(document.body, 'removeChild', {
-  value: vi.fn()
+  value: vi.fn(),
 })
 
 // Mock document.createElement for <a> tags
@@ -145,19 +145,19 @@ const originalCreateElement = document.createElement.bind(document)
 Object.defineProperty(document, 'createElement', {
   value: vi.fn((tagName: string) => {
     const element = originalCreateElement(tagName)
-    
+
     if (tagName === 'a') {
       element.click = vi.fn()
       Object.defineProperty(element, 'download', {
         value: '',
-        writable: true
+        writable: true,
       })
       Object.defineProperty(element, 'href', {
         value: '',
-        writable: true
+        writable: true,
       })
     }
-    
+
     return element
-  })
+  }),
 })

@@ -1,13 +1,13 @@
-import { RollupBuilder } from '../src/core/rollup-builder'
-import { ProjectScanner } from '../src/core/project-scanner'
 import { PluginConfigurator } from '../src/core/plugin-configurator'
+import { ProjectScanner } from '../src/core/project-scanner'
+import { RollupBuilder } from '../src/core/rollup-builder'
 
-describe('RollupBuilder', () => {
+describe('rollupBuilder', () => {
   it('should generate build options and not throw with minimal project', async () => {
     const scanner = new ProjectScanner()
     const scan = await scanner.scan(process.cwd(), {
       includePatterns: ['src/**/*.{ts,tsx,js,jsx,vue}'],
-      ignorePatterns: ['node_modules/**']
+      ignorePatterns: ['node_modules/**'],
     })
 
     const configurator = new PluginConfigurator()
@@ -26,5 +26,3 @@ describe('RollupBuilder', () => {
     await expect(resultPromise).resolves.toBeTruthy()
   })
 })
-
-

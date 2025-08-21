@@ -1,4 +1,4 @@
-export { ErrorHandler } from './ErrorHandler'
-export { ProjectDetector } from './ProjectDetector'
 export { ConfigManager } from './ConfigManager'
+export { ErrorHandler } from './ErrorHandler'
 export { PluginManager, pluginManager } from './PluginManager'
+export { ProjectDetector } from './ProjectDetector'

@@ -67,7 +67,7 @@ function updatePackageJson(packagePath, packageName) {
 
     // 检查是否已经有构建校验脚本
     const hasValidationScripts = Object.keys(buildValidationScripts).some(
-      script => packageJson.scripts[script]
+      script => packageJson.scripts[script],
     )
 
     if (hasValidationScripts) {
@@ -78,7 +78,7 @@ function updatePackageJson(packagePath, packageName) {
     // 添加构建校验脚本
     let scriptsAdded = 0
     for (const [scriptName, scriptCommand] of Object.entries(
-      buildValidationScripts
+      buildValidationScripts,
     )) {
       if (!packageJson.scripts[scriptName]) {
         packageJson.scripts[scriptName] = scriptCommand
@@ -90,15 +90,17 @@ function updatePackageJson(packagePath, packageName) {
       // 写回文件
       fs.writeFileSync(
         packageJsonPath,
-        `${JSON.stringify(packageJson, null, 2)}\n`
+        `${JSON.stringify(packageJson, null, 2)}\n`,
       )
       log(`✅ ${packageName}: 添加了 ${scriptsAdded} 个构建校验脚本`, 'green')
       return true
-    } else {
+    }
+    else {
       log(`ℹ️  ${packageName}: 无需添加脚本`, 'blue')
       return false
     }
-  } catch (err) {
+  }
+  catch (err) {
     log(`❌ ${packageName}: 更新失败 - ${err.message}`, 'red')
     return false
   }
@@ -140,7 +142,8 @@ async function main() {
 
     if (updated) {
       updatedCount++
-    } else {
+    }
+    else {
       skippedCount++
     }
   }
@@ -166,7 +169,7 @@ async function main() {
 
 // 如果直接运行此脚本
 if (import.meta.url.endsWith('add-build-validation.js')) {
-  main().catch(err => {
+  main().catch((err) => {
     log(`❌ 执行失败: ${err.message}`, 'red')
     console.error(err.stack)
     process.exit(1)

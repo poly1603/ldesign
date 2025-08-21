@@ -10,8 +10,8 @@ let instanceCounter = 0
  * 创建水印实例
  */
 export async function createWatermark(container, config = {}) {
-  const containerElement =
-    typeof container === 'string'
+  const containerElement
+    = typeof container === 'string'
       ? document.querySelector(container)
       : container
 
@@ -104,10 +104,11 @@ export async function createWatermark(container, config = {}) {
  * 销毁水印实例
  */
 export async function destroyWatermark(instance) {
-  if (!instance) return
+  if (!instance)
+    return
 
   // 移除DOM元素
-  instance.elements.forEach(element => {
+  instance.elements.forEach((element) => {
     if (element.parentNode) {
       element.parentNode.removeChild(element)
     }

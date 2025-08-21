@@ -89,7 +89,7 @@ class DeploymentValidator {
     // 显示失败的验证项
     const failures = results.filter(r => !r.success)
     if (failures.length > 0) {
-      failures.forEach(failure => {
+      failures.forEach((failure) => {
         console.log(chalk.red(`    ❌ ${failure.message}`))
       })
     }
@@ -101,12 +101,12 @@ class DeploymentValidator {
    * 验证构建产物
    */
   private async validateBuildArtifacts(
-    pkg: PackageInfo
+    pkg: PackageInfo,
   ): Promise<ValidationResult> {
     const packageDir = join(
       this.rootDir,
       'packages',
-      pkg.name.replace('@ldesign/', '')
+      pkg.name.replace('@ldesign/', ''),
     )
     const distDir = join(packageDir, 'dist')
 
@@ -142,12 +142,12 @@ class DeploymentValidator {
    * 验证包结构
    */
   private async validatePackageStructure(
-    pkg: PackageInfo
+    pkg: PackageInfo,
   ): Promise<ValidationResult> {
     const packageDir = join(
       this.rootDir,
       'packages',
-      pkg.name.replace('@ldesign/', '')
+      pkg.name.replace('@ldesign/', ''),
     )
     const packageJsonPath = join(packageDir, 'package.json')
 
@@ -187,7 +187,8 @@ class DeploymentValidator {
         success: true,
         message: '包结构验证通过',
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         message: `package.json 解析失败: ${error}`,
@@ -199,7 +200,7 @@ class DeploymentValidator {
    * 验证类型定义
    */
   private async validateTypeDefinitions(
-    pkg: PackageInfo
+    pkg: PackageInfo,
   ): Promise<ValidationResult> {
     if (!pkg.types) {
       return {
@@ -211,7 +212,7 @@ class DeploymentValidator {
     const packageDir = join(
       this.rootDir,
       'packages',
-      pkg.name.replace('@ldesign/', '')
+      pkg.name.replace('@ldesign/', ''),
     )
     const typesPath = join(packageDir, pkg.types)
 
@@ -237,7 +238,8 @@ class DeploymentValidator {
         success: true,
         message: '类型定义验证通过',
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         message: `类型定义验证失败: ${error}`,
@@ -249,12 +251,12 @@ class DeploymentValidator {
    * 验证包可加载性
    */
   private async validatePackageLoadability(
-    pkg: PackageInfo
+    pkg: PackageInfo,
   ): Promise<ValidationResult> {
     const packageDir = join(
       this.rootDir,
       'packages',
-      pkg.name.replace('@ldesign/', '')
+      pkg.name.replace('@ldesign/', ''),
     )
 
     try {
@@ -278,7 +280,8 @@ class DeploymentValidator {
         success: true,
         message: '包加载验证通过',
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         message: `包加载失败: ${error}`,
@@ -290,7 +293,7 @@ class DeploymentValidator {
    * 验证 npm 发布状态
    */
   private async validateNpmPublication(
-    pkg: PackageInfo
+    pkg: PackageInfo,
   ): Promise<ValidationResult> {
     try {
       const result = execSync(`npm view ${pkg.name}@${pkg.version} version`, {
@@ -304,13 +307,15 @@ class DeploymentValidator {
           success: true,
           message: 'npm 发布验证通过',
         }
-      } else {
+      }
+      else {
         return {
           success: false,
           message: 'npm 上的版本不匹配',
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         message: `npm 发布验证失败: ${error}`,
@@ -322,7 +327,7 @@ class DeploymentValidator {
    * 验证 CDN 可用性
    */
   private async validateCdnAvailability(
-    pkg: PackageInfo
+    pkg: PackageInfo,
   ): Promise<ValidationResult> {
     const cdnUrls = [
       `https://cdn.jsdelivr.net/npm/${pkg.name}@${pkg.version}/dist/index.js`,
@@ -344,7 +349,8 @@ class DeploymentValidator {
         success: true,
         message: 'CDN 可用性验证通过',
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         message: `CDN 验证失败: ${error}`,
@@ -370,7 +376,7 @@ class DeploymentValidator {
         if (existsSync(packageJsonPath)) {
           try {
             const packageJson = JSON.parse(
-              readFileSync(packageJsonPath, 'utf-8')
+              readFileSync(packageJsonPath, 'utf-8'),
             )
             packages.push({
               name: packageJson.name,
@@ -379,12 +385,14 @@ class DeploymentValidator {
               module: packageJson.module,
               types: packageJson.types,
             })
-          } catch (error) {
+          }
+          catch (error) {
             console.warn(chalk.yellow(`警告: 无法解析 ${dir}/package.json`))
           }
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('获取包列表失败:'), error)
     }
 
@@ -418,7 +426,7 @@ class DeploymentValidator {
       console.log(
         `${icon} ${packageName}: ${results.filter(r => r.success).length}/${
           results.length
-        } 检查通过`
+        } 检查通过`,
       )
     }
 
@@ -429,7 +437,8 @@ class DeploymentValidator {
 
     if (validPackages === totalPackages) {
       console.log(chalk.green('\n🎉 所有包验证通过！'))
-    } else {
+    }
+    else {
       console.log(chalk.red('\n❌ 部分包验证失败，请检查上述错误'))
     }
   }
@@ -454,7 +463,8 @@ async function main() {
 
     const isValid = await validator.validatePackage(pkg)
     process.exit(isValid ? 0 : 1)
-  } else {
+  }
+  else {
     // 验证所有包
     const allValid = await validator.validateAll()
     process.exit(allValid ? 0 : 1)

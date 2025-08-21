@@ -75,7 +75,7 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    */
   const updateDecoration = (
     id: string,
-    updates: Partial<DecorationConfig>
+    updates: Partial<DecorationConfig>,
   ): void => {
     if (!themeContext.themeManager.value) {
       return
@@ -94,7 +94,7 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
     }
 
     const currentDecorations = decorations.value
-    currentDecorations.forEach(decoration => {
+    currentDecorations.forEach((decoration) => {
       themeContext.themeManager.value!.removeDecoration(decoration.id)
     })
 
@@ -114,7 +114,7 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    * 获取装饰元素
    */
   const getDecoration = (
-    id: string
+    id: string,
   ): ComputedRef<DecorationConfig | undefined> => {
     return computed(() => {
       return decorations.value.find(decoration => decoration.id === id)
@@ -130,7 +130,7 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
       themeContext.themeManager.value.off('decoration-added', updateDecorations)
       themeContext.themeManager.value.off(
         'decoration-removed',
-        updateDecorations
+        updateDecorations,
       )
     }
   })
@@ -174,7 +174,7 @@ export function useDecorationFilter(): {
 
     if (currentFilter.value.type) {
       filtered = filtered.filter(
-        decoration => decoration.type === currentFilter.value.type
+        decoration => decoration.type === currentFilter.value.type,
       )
     }
 
@@ -226,8 +226,8 @@ export function useDecorationBatch(): {
   updateSelected: (updates: Partial<DecorationConfig>) => void
   isSelected: (id: string) => ComputedRef<boolean>
 } {
-  const { decorations, removeDecoration, updateDecoration } =
-    useThemeDecorations()
+  const { decorations, removeDecoration, updateDecoration }
+    = useThemeDecorations()
 
   const selectedDecorations = ref<string[]>([])
 
@@ -246,7 +246,7 @@ export function useDecorationBatch(): {
 
   const selectAll = () => {
     selectedDecorations.value = decorations.value.map(
-      decoration => decoration.id
+      decoration => decoration.id,
     )
   }
 
@@ -257,20 +257,21 @@ export function useDecorationBatch(): {
   const toggleSelection = (id: string) => {
     if (selectedDecorations.value.includes(id)) {
       deselectDecoration(id)
-    } else {
+    }
+    else {
       selectDecoration(id)
     }
   }
 
   const removeSelected = () => {
-    selectedDecorations.value.forEach(id => {
+    selectedDecorations.value.forEach((id) => {
       removeDecoration(id)
     })
     selectedDecorations.value = []
   }
 
   const updateSelected = (updates: Partial<DecorationConfig>) => {
-    selectedDecorations.value.forEach(id => {
+    selectedDecorations.value.forEach((id) => {
       updateDecoration(id, updates)
     })
   }

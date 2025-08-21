@@ -1,271 +1,8 @@
-<template>
-  <div class="app">
-    <!-- 头部 -->
-    <header class="header">
-      <h1>@ldesign/i18n</h1>
-      <p>Vue Engine Example</p>
-    </header>
-
-    <!-- 控制面板 -->
-    <div class="controls">
-      <div class="control-group">
-        <label>Language:</label>
-        <LanguageSwitcher
-          :show-flag="true"
-          :show-code="false"
-          mode="dropdown"
-          @language-changed="onLanguageChanged">
-        </LanguageSwitcher>
-      </div>
-      
-      <div class="control-group">
-        <label>Engine Status:</label>
-        <div class="status-indicator" :class="{ active: engineStatus.isActive }">
-          {{ engineStatus.isActive ? 'Active' : 'Inactive' }}
-        </div>
-      </div>
-      
-      <div class="control-group">
-        <button @click="showEngineInfo = !showEngineInfo" class="btn btn-secondary">
-          {{ showEngineInfo ? 'Hide' : 'Show' }} Engine Info
-        </button>
-      </div>
-    </div>
-
-    <!-- Engine 信息面板 -->
-    <div v-if="showEngineInfo" class="engine-info">
-      <h3>Engine Information</h3>
-      <div class="info-grid">
-        <div class="info-card">
-          <h4>Services ({{ engineStatus.services.length }})</h4>
-          <ul>
-            <li v-for="service in engineStatus.services" :key="service">
-              {{ service }}
-            </li>
-          </ul>
-        </div>
-        
-        <div class="info-card">
-          <h4>Plugins ({{ engineStatus.plugins.length }})</h4>
-          <ul>
-            <li v-for="plugin in engineStatus.plugins" :key="plugin">
-              {{ plugin }}
-            </li>
-          </ul>
-        </div>
-        
-        <div class="info-card">
-          <h4>Events ({{ engineStatus.events.length }})</h4>
-          <ul>
-            <li v-for="event in engineStatus.events" :key="event">
-              {{ event }}
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- 主要内容 -->
-    <main class="content">
-      <!-- 基础翻译功能 -->
-      <section class="section">
-        <h2>{{ t('common.ok') }}</h2>
-        
-        <div class="example-grid">
-          <!-- 基础翻译 -->
-          <div class="example-card">
-            <h3>Basic Translation</h3>
-            <div class="demo">
-              <p><strong>{{ t('common.ok') }}</strong></p>
-              <p><strong>{{ t('common.cancel') }}</strong></p>
-              <p><strong>{{ t('common.save') }}</strong></p>
-              <p><strong>{{ t('common.delete') }}</strong></p>
-              <p><strong>{{ t('common.loading') }}</strong></p>
-            </div>
-            <div class="code">
-              t('common.ok')<br>
-              t('common.cancel')<br>
-              t('common.save')
-            </div>
-          </div>
-
-          <!-- 参数插值 -->
-          <div class="example-card">
-            <h3>Parameter Interpolation</h3>
-            <div class="demo">
-              <p>{{ t('common.pageOf', { current: 1, total: 10 }) }}</p>
-              <p>{{ t('common.showingItems', { start: 1, end: 20, total: 100 }) }}</p>
-              <p>{{ t('date.duration.minutes', { count: 5 }) }}</p>
-            </div>
-            <div class="code">
-              t('common.pageOf', { current: 1, total: 10 })<br>
-              t('common.showingItems', { start: 1, end: 20, total: 100 })
-            </div>
-          </div>
-
-          <!-- 复数处理 -->
-          <div class="example-card">
-            <h3>Pluralization</h3>
-            <div class="demo">
-              <p>{{ t('date.duration.minutes', { count: 0 }) }}</p>
-              <p>{{ t('date.duration.minutes', { count: 1 }) }}</p>
-              <p>{{ t('date.duration.minutes', { count: 5 }) }}</p>
-            </div>
-            <div class="code">
-              t('date.duration.minutes', { count: 0 })<br>
-              t('date.duration.minutes', { count: 1 })<br>
-              t('date.duration.minutes', { count: 5 })
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 组合式API示例 -->
-      <section class="section">
-        <h2>Composition API Examples</h2>
-        
-        <div class="example-grid">
-          <!-- 批量翻译 -->
-          <div class="example-card">
-            <h3>Batch Translation</h3>
-            <div class="demo">
-              <div v-for="(text, key) in batchTranslations" :key="key" class="translation-item">
-                <strong>{{ key }}:</strong> {{ text }}
-              </div>
-            </div>
-            <div class="code">
-              const batchTranslations = useBatchTranslation([<br>
-              &nbsp;&nbsp;'common.save',<br>
-              &nbsp;&nbsp;'common.delete',<br>
-              &nbsp;&nbsp;'common.edit'<br>
-              ])
-            </div>
-          </div>
-
-          <!-- 条件翻译 -->
-          <div class="example-card">
-            <h3>Conditional Translation</h3>
-            <div class="demo">
-              <p>
-                <button @click="isOnline = !isOnline" class="btn btn-secondary">
-                  Toggle Status
-                </button>
-              </p>
-              <p><strong>Status:</strong> {{ statusText }}</p>
-            </div>
-            <div class="code">
-              const statusText = useConditionalTranslation(<br>
-              &nbsp;&nbsp;isOnline,<br>
-              &nbsp;&nbsp;'common.online',<br>
-              &nbsp;&nbsp;'common.offline'<br>
-              )
-            </div>
-          </div>
-
-          <!-- 响应式语言信息 -->
-          <div class="example-card">
-            <h3>Reactive Language Info</h3>
-            <div class="demo">
-              <p><strong>Current:</strong> {{ locale }}</p>
-              <p><strong>Available:</strong></p>
-              <ul>
-                <li v-for="lang in availableLanguages" :key="lang.code">
-                  {{ lang.nativeName }} ({{ lang.code }})
-                </li>
-              </ul>
-            </div>
-            <div class="code">
-              const { locale, availableLanguages } = useI18n()
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Engine 特有功能 -->
-      <section class="section">
-        <h2>Engine-Specific Features</h2>
-        
-        <div class="example-grid">
-          <!-- 插件生命周期 -->
-          <div class="example-card">
-            <h3>Plugin Lifecycle</h3>
-            <div class="demo">
-              <div class="button-group">
-                <button @click="restartI18nPlugin" class="btn btn-primary">
-                  Restart I18n Plugin
-                </button>
-                <button @click="showPluginLogs" class="btn btn-secondary">
-                  Show Plugin Logs
-                </button>
-              </div>
-              <div v-if="pluginLogs.length > 0" class="logs">
-                <div v-for="(log, index) in pluginLogs" :key="index" class="log-entry">
-                  {{ log }}
-                </div>
-              </div>
-            </div>
-            <div class="code">
-              await engine.unuse('i18n')<br>
-              await engine.use(i18nEnginePlugin)
-            </div>
-          </div>
-
-          <!-- 事件系统 -->
-          <div class="example-card">
-            <h3>Event System</h3>
-            <div class="demo">
-              <div class="button-group">
-                <button @click="emitCustomEvent" class="btn btn-primary">
-                  Emit Custom Event
-                </button>
-                <button @click="clearEventLogs" class="btn btn-secondary">
-                  Clear Logs
-                </button>
-              </div>
-              <div v-if="eventLogs.length > 0" class="logs">
-                <div v-for="(log, index) in eventLogs" :key="index" class="log-entry">
-                  {{ log }}
-                </div>
-              </div>
-            </div>
-            <div class="code">
-              engine.events.on('custom:event', handler)<br>
-              engine.events.emit('custom:event', data)
-            </div>
-          </div>
-
-          <!-- 服务注册 -->
-          <div class="example-card">
-            <h3>Service Registry</h3>
-            <div class="demo">
-              <div class="button-group">
-                <button @click="registerCustomService" class="btn btn-primary">
-                  Register Service
-                </button>
-                <button @click="unregisterCustomService" class="btn btn-danger">
-                  Unregister Service
-                </button>
-              </div>
-              <p v-if="customServiceRegistered">
-                <strong>Custom service is registered!</strong>
-              </p>
-            </div>
-            <div class="code">
-              engine.state.set('customService', service)<br>
-              const service = engine.state.get('customService')
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+import type { Engine } from '@ldesign/engine'
 import { i18nEnginePlugin } from '@ldesign/i18n'
 import { LanguageSwitcher } from '@ldesign/i18n/vue'
-import type { Engine } from '@ldesign/engine'
+import { computed, getCurrentInstance, inject, onMounted, onUnmounted, ref } from 'vue'
 
 // 注入 Engine 实例
 const engine = inject<Engine>('engine')!
@@ -360,7 +97,8 @@ async function restartI18nPlugin() {
     })
 
     pluginLogs.value.push('I18n plugin restarted successfully!')
-  } catch (error) {
+  }
+  catch (error) {
     pluginLogs.value.push(`Error: ${error}`)
   }
 }
@@ -431,6 +169,269 @@ onUnmounted(() => {
   eventListeners.forEach(cleanup => cleanup())
 })
 </script>
+
+<template>
+  <div class="app">
+    <!-- 头部 -->
+    <header class="header">
+      <h1>@ldesign/i18n</h1>
+      <p>Vue Engine Example</p>
+    </header>
+
+    <!-- 控制面板 -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Language:</label>
+        <LanguageSwitcher
+          :show-flag="true"
+          :show-code="false"
+          mode="dropdown"
+          @language-changed="onLanguageChanged"
+        />
+      </div>
+
+      <div class="control-group">
+        <label>Engine Status:</label>
+        <div class="status-indicator" :class="{ active: engineStatus.isActive }">
+          {{ engineStatus.isActive ? 'Active' : 'Inactive' }}
+        </div>
+      </div>
+
+      <div class="control-group">
+        <button class="btn btn-secondary" @click="showEngineInfo = !showEngineInfo">
+          {{ showEngineInfo ? 'Hide' : 'Show' }} Engine Info
+        </button>
+      </div>
+    </div>
+
+    <!-- Engine 信息面板 -->
+    <div v-if="showEngineInfo" class="engine-info">
+      <h3>Engine Information</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>Services ({{ engineStatus.services.length }})</h4>
+          <ul>
+            <li v-for="service in engineStatus.services" :key="service">
+              {{ service }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h4>Plugins ({{ engineStatus.plugins.length }})</h4>
+          <ul>
+            <li v-for="plugin in engineStatus.plugins" :key="plugin">
+              {{ plugin }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h4>Events ({{ engineStatus.events.length }})</h4>
+          <ul>
+            <li v-for="event in engineStatus.events" :key="event">
+              {{ event }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <main class="content">
+      <!-- 基础翻译功能 -->
+      <section class="section">
+        <h2>{{ t('common.ok') }}</h2>
+
+        <div class="example-grid">
+          <!-- 基础翻译 -->
+          <div class="example-card">
+            <h3>Basic Translation</h3>
+            <div class="demo">
+              <p><strong>{{ t('common.ok') }}</strong></p>
+              <p><strong>{{ t('common.cancel') }}</strong></p>
+              <p><strong>{{ t('common.save') }}</strong></p>
+              <p><strong>{{ t('common.delete') }}</strong></p>
+              <p><strong>{{ t('common.loading') }}</strong></p>
+            </div>
+            <div class="code">
+              t('common.ok')<br>
+              t('common.cancel')<br>
+              t('common.save')
+            </div>
+          </div>
+
+          <!-- 参数插值 -->
+          <div class="example-card">
+            <h3>Parameter Interpolation</h3>
+            <div class="demo">
+              <p>{{ t('common.pageOf', { current: 1, total: 10 }) }}</p>
+              <p>{{ t('common.showingItems', { start: 1, end: 20, total: 100 }) }}</p>
+              <p>{{ t('date.duration.minutes', { count: 5 }) }}</p>
+            </div>
+            <div class="code">
+              t('common.pageOf', { current: 1, total: 10 })<br>
+              t('common.showingItems', { start: 1, end: 20, total: 100 })
+            </div>
+          </div>
+
+          <!-- 复数处理 -->
+          <div class="example-card">
+            <h3>Pluralization</h3>
+            <div class="demo">
+              <p>{{ t('date.duration.minutes', { count: 0 }) }}</p>
+              <p>{{ t('date.duration.minutes', { count: 1 }) }}</p>
+              <p>{{ t('date.duration.minutes', { count: 5 }) }}</p>
+            </div>
+            <div class="code">
+              t('date.duration.minutes', { count: 0 })<br>
+              t('date.duration.minutes', { count: 1 })<br>
+              t('date.duration.minutes', { count: 5 })
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 组合式API示例 -->
+      <section class="section">
+        <h2>Composition API Examples</h2>
+
+        <div class="example-grid">
+          <!-- 批量翻译 -->
+          <div class="example-card">
+            <h3>Batch Translation</h3>
+            <div class="demo">
+              <div v-for="(text, key) in batchTranslations" :key="key" class="translation-item">
+                <strong>{{ key }}:</strong> {{ text }}
+              </div>
+            </div>
+            <div class="code">
+              const batchTranslations = useBatchTranslation([<br>
+              &nbsp;&nbsp;'common.save',<br>
+              &nbsp;&nbsp;'common.delete',<br>
+              &nbsp;&nbsp;'common.edit'<br>
+              ])
+            </div>
+          </div>
+
+          <!-- 条件翻译 -->
+          <div class="example-card">
+            <h3>Conditional Translation</h3>
+            <div class="demo">
+              <p>
+                <button class="btn btn-secondary" @click="isOnline = !isOnline">
+                  Toggle Status
+                </button>
+              </p>
+              <p><strong>Status:</strong> {{ statusText }}</p>
+            </div>
+            <div class="code">
+              const statusText = useConditionalTranslation(<br>
+              &nbsp;&nbsp;isOnline,<br>
+              &nbsp;&nbsp;'common.online',<br>
+              &nbsp;&nbsp;'common.offline'<br>
+              )
+            </div>
+          </div>
+
+          <!-- 响应式语言信息 -->
+          <div class="example-card">
+            <h3>Reactive Language Info</h3>
+            <div class="demo">
+              <p><strong>Current:</strong> {{ locale }}</p>
+              <p><strong>Available:</strong></p>
+              <ul>
+                <li v-for="lang in availableLanguages" :key="lang.code">
+                  {{ lang.nativeName }} ({{ lang.code }})
+                </li>
+              </ul>
+            </div>
+            <div class="code">
+              const { locale, availableLanguages } = useI18n()
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Engine 特有功能 -->
+      <section class="section">
+        <h2>Engine-Specific Features</h2>
+
+        <div class="example-grid">
+          <!-- 插件生命周期 -->
+          <div class="example-card">
+            <h3>Plugin Lifecycle</h3>
+            <div class="demo">
+              <div class="button-group">
+                <button class="btn btn-primary" @click="restartI18nPlugin">
+                  Restart I18n Plugin
+                </button>
+                <button class="btn btn-secondary" @click="showPluginLogs">
+                  Show Plugin Logs
+                </button>
+              </div>
+              <div v-if="pluginLogs.length > 0" class="logs">
+                <div v-for="(log, index) in pluginLogs" :key="index" class="log-entry">
+                  {{ log }}
+                </div>
+              </div>
+            </div>
+            <div class="code">
+              await engine.unuse('i18n')<br>
+              await engine.use(i18nEnginePlugin)
+            </div>
+          </div>
+
+          <!-- 事件系统 -->
+          <div class="example-card">
+            <h3>Event System</h3>
+            <div class="demo">
+              <div class="button-group">
+                <button class="btn btn-primary" @click="emitCustomEvent">
+                  Emit Custom Event
+                </button>
+                <button class="btn btn-secondary" @click="clearEventLogs">
+                  Clear Logs
+                </button>
+              </div>
+              <div v-if="eventLogs.length > 0" class="logs">
+                <div v-for="(log, index) in eventLogs" :key="index" class="log-entry">
+                  {{ log }}
+                </div>
+              </div>
+            </div>
+            <div class="code">
+              engine.events.on('custom:event', handler)<br>
+              engine.events.emit('custom:event', data)
+            </div>
+          </div>
+
+          <!-- 服务注册 -->
+          <div class="example-card">
+            <h3>Service Registry</h3>
+            <div class="demo">
+              <div class="button-group">
+                <button class="btn btn-primary" @click="registerCustomService">
+                  Register Service
+                </button>
+                <button class="btn btn-danger" @click="unregisterCustomService">
+                  Unregister Service
+                </button>
+              </div>
+              <p v-if="customServiceRegistered">
+                <strong>Custom service is registered!</strong>
+              </p>
+            </div>
+            <div class="code">
+              engine.state.set('customService', service)<br>
+              const service = engine.state.get('customService')
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .app {

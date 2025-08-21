@@ -49,7 +49,6 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
       const engine = context.engine || context
 
       try {
-
         console.log('🔍 Template 插件安装开始')
         console.log('🔍 Context 对象:', context)
         console.log('🔍 Engine 对象:', engine)
@@ -116,7 +115,7 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
                   const result = await manager.render({
                     category,
                     device: device || manager.getCurrentDevice(),
-                    template: template,
+                    template,
                     props,
                   })
 
@@ -138,9 +137,10 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
                   // 挂载到元素
                   templateApp.mount(el)
 
-                    // 保存应用实例以便后续清理
-                    ; (el as any).__templateApp = templateApp
-                } catch (error) {
+                  // 保存应用实例以便后续清理
+                  ; (el as any).__templateApp = templateApp
+                }
+                catch (error) {
                   console.error('❌ v-template 指令渲染失败:', error)
                   // 保持原有内容作为备用
                 }
@@ -178,8 +178,9 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
                       })
 
                       templateApp.mount(el)
-                        ; (el as any).__templateApp = templateApp
-                    } catch (error) {
+                      ; (el as any).__templateApp = templateApp
+                    }
+                    catch (error) {
                       console.error('❌ v-template 指令更新失败:', error)
                     }
                   }
@@ -234,7 +235,8 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
         }
 
         console.log(`✅ Template 插件安装成功: ${name} v${version}`)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`❌ Template 插件安装失败: ${name}`, error)
         if (engine.logger) {
           engine.logger.error(`Failed to install template plugin ${name}`, error)
@@ -283,7 +285,8 @@ export function createTemplateEnginePlugin(config: TemplateEnginePluginConfig): 
         }
 
         console.log(`✅ Template 插件卸载成功: ${name}`)
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`❌ Template 插件卸载失败: ${name}`, error)
         if (engine.logger) {
           engine.logger.error(`Failed to uninstall template plugin ${name}`, error)

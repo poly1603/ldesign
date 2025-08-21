@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
-
 import { createI18n } from '@ldesign/i18n'
+
 import { createI18n as createVueI18nPlugin } from '@ldesign/i18n/vue'
+import { createApp } from 'vue'
 
 import App from './App.vue'
 

@@ -43,7 +43,7 @@ export class CSSVariableGenerator {
    */
   private generateFontSizeVariables(
     fontSize: SizeConfig['fontSize'],
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): void {
     variables[`${this.prefix}-font-size-xs`] = fontSize.xs
     variables[`${this.prefix}-font-size-sm`] = fontSize.sm
@@ -66,7 +66,7 @@ export class CSSVariableGenerator {
    */
   private generateSpacingVariables(
     spacing: SizeConfig['spacing'],
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): void {
     variables[`${this.prefix}-spacing-xs`] = spacing.xs
     variables[`${this.prefix}-spacing-sm`] = spacing.sm
@@ -96,20 +96,20 @@ export class CSSVariableGenerator {
    */
   private generateComponentVariables(
     component: SizeConfig['component'],
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): void {
     // 按钮高度
-    variables[`${this.prefix}-button-height-small`] =
-      component.buttonHeight.small
-    variables[`${this.prefix}-button-height-medium`] =
-      component.buttonHeight.medium
-    variables[`${this.prefix}-button-height-large`] =
-      component.buttonHeight.large
+    variables[`${this.prefix}-button-height-small`]
+      = component.buttonHeight.small
+    variables[`${this.prefix}-button-height-medium`]
+      = component.buttonHeight.medium
+    variables[`${this.prefix}-button-height-large`]
+      = component.buttonHeight.large
 
     // 输入框高度
     variables[`${this.prefix}-input-height-small`] = component.inputHeight.small
-    variables[`${this.prefix}-input-height-medium`] =
-      component.inputHeight.medium
+    variables[`${this.prefix}-input-height-medium`]
+      = component.inputHeight.medium
     variables[`${this.prefix}-input-height-large`] = component.inputHeight.large
 
     // 图标尺寸
@@ -128,7 +128,7 @@ export class CSSVariableGenerator {
    */
   private generateBorderRadiusVariables(
     borderRadius: SizeConfig['borderRadius'],
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): void {
     variables[`${this.prefix}-border-radius-none`] = borderRadius.none
     variables[`${this.prefix}-border-radius-sm`] = borderRadius.sm
@@ -143,7 +143,7 @@ export class CSSVariableGenerator {
    */
   private generateShadowVariables(
     shadow: SizeConfig['shadow'],
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): void {
     variables[`${this.prefix}-shadow-none`] = shadow.none
     variables[`${this.prefix}-shadow-sm`] = shadow.sm
@@ -157,7 +157,7 @@ export class CSSVariableGenerator {
    */
   generateCSSString(
     variables: Record<string, string>,
-    selector: string = ':root'
+    selector: string = ':root',
   ): string {
     const cssRules = Object.entries(variables)
       .map(([name, value]) => `  ${name}: ${value};`)
@@ -185,7 +185,7 @@ export class CSSVariableGenerator {
  * 创建CSS变量生成器实例
  */
 export function createCSSVariableGenerator(
-  prefix?: string
+  prefix?: string,
 ): CSSVariableGenerator {
   return new CSSVariableGenerator(prefix)
 }

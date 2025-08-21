@@ -15,7 +15,7 @@ export function useDevice() {
   const isDesktop = computed(() => deviceInfo.value?.type === 'desktop')
   const isTouchDevice = computed(() => deviceInfo.value?.isTouchDevice || false)
   const orientation = computed(
-    () => deviceInfo.value?.orientation || 'portrait'
+    () => deviceInfo.value?.orientation || 'portrait',
   )
 
   // 检测设备信息
@@ -53,8 +53,8 @@ export function useDevice() {
  * 设备检测组合式函数（简化版）
  */
 export function useDeviceDetection() {
-  const { deviceInfo, isMobile, isTablet, isDesktop, isTouchDevice } =
-    useDevice()
+  const { deviceInfo, isMobile, isTablet, isDesktop, isTouchDevice }
+    = useDevice()
 
   return {
     deviceInfo,

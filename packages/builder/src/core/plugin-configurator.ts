@@ -3,13 +3,13 @@
  * 智能配置Rollup插件
  */
 
-import { Logger } from '../utils/logger'
-import type {
-  ProjectScanResult,
-  BuildOptions,
-  BuildContext
-} from '../types'
 import type { Plugin } from 'rollup'
+import type {
+  BuildContext,
+  BuildOptions,
+  ProjectScanResult,
+} from '../types'
+import { Logger } from '../utils/logger'
 
 const logger = new Logger('PluginConfigurator')
 
@@ -34,12 +34,12 @@ export class PluginConfigurator {
       scanResult,
       outputConfig: {
         format: 'esm',
-        dir: 'dist'
+        dir: 'dist',
       },
       mode: buildOptions?.mode || 'production',
       isProduction: (buildOptions?.mode || 'production') === 'production',
       root: process.cwd(),
-      outDir: buildOptions?.outDir || 'dist'
+      outDir: buildOptions?.outDir || 'dist',
     }
 
     const plugins: Plugin[] = []
@@ -69,8 +69,8 @@ export class PluginConfigurator {
       logger.info(`插件配置完成，共配置 ${plugins.length} 个插件`)
 
       return plugins
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.error('插件配置失败:', error)
       throw error
     }
@@ -145,7 +145,7 @@ export class PluginConfigurator {
       hasSass,
       hasLess,
       hasStylus: files.some(f => f.type === 'stylus'),
-      fileTypes: {}
+      fileTypes: {},
     }
   }
 
@@ -189,14 +189,16 @@ export class PluginConfigurator {
       const esbuildPlugin = await this.createPlugin('esbuild', context)
       if (esbuildPlugin) {
         plugins.push(esbuildPlugin)
-      } else {
+      }
+      else {
         // 回退到 TypeScript 插件
         const tsPlugin = await this.createPlugin('typescript', context)
         if (tsPlugin) {
           plugins.push(tsPlugin)
         }
       }
-    } else if (requirements.hasJSX) {
+    }
+    else if (requirements.hasJSX) {
       // 对于纯 JSX 项目，使用 Babel
       const babelPlugin = await this.createPlugin('babel', context)
       if (babelPlugin) {
@@ -259,7 +261,8 @@ export class PluginConfigurator {
 
     if (requirements.projectType === 'svelte') {
       const sveltePlugin = await this.createPlugin('svelte', context)
-      if (sveltePlugin != null) plugins.push(sveltePlugin as Plugin)
+      if (sveltePlugin != null)
+        plugins.push(sveltePlugin as Plugin)
     }
   }
 
@@ -336,7 +339,8 @@ export class PluginConfigurator {
 
     try {
       return await factory(context)
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn(`创建插件 ${name} 失败:`, error)
       return null
     }
@@ -354,9 +358,10 @@ export class PluginConfigurator {
         browser: true,
         preferBuiltins: false,
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue', '.json'],
-        ...context.options.nodeResolve
+        ...context.options.nodeResolve,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-node-resolve')
       return null
     }
@@ -370,9 +375,10 @@ export class PluginConfigurator {
       const { default: commonjs } = await import('@rollup/plugin-commonjs')
       return commonjs({
         include: ['node_modules/**'],
-        ...context.options.commonjs
+        ...context.options.commonjs,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-commonjs')
       return null
     }
@@ -385,7 +391,8 @@ export class PluginConfigurator {
     try {
       const { default: json } = await import('@rollup/plugin-json')
       return json(context.options.json)
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-json')
       return null
     }
@@ -399,9 +406,10 @@ export class PluginConfigurator {
       const { default: alias } = await import('@rollup/plugin-alias')
       return alias({
         entries: context.options.alias || {},
-        ...context.options.aliasOptions
+        ...context.options.aliasOptions,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-alias')
       return null
     }
@@ -416,9 +424,10 @@ export class PluginConfigurator {
       return typescript({
         tsconfig: 'tsconfig.json',
         declaration: false, // 由单独的类型生成器处理
-        ...context.options.typescript
+        ...context.options.typescript,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-typescript')
       return null
     }
@@ -437,11 +446,12 @@ export class PluginConfigurator {
         presets: [
           ['@babel/preset-env', { modules: false }],
           '@babel/preset-react',
-          '@babel/preset-typescript'
+          '@babel/preset-typescript',
         ],
-        ...context.options.babel
+        ...context.options.babel,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-babel')
       return null
     }
@@ -456,9 +466,10 @@ export class PluginConfigurator {
       return esbuild({
         target: 'es2015',
         jsx: context.scanResult.projectType === 'react' ? 'automatic' : 'preserve',
-        ...context.options.esbuild
+        ...context.options.esbuild,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-esbuild')
       return null
     }
@@ -473,9 +484,10 @@ export class PluginConfigurator {
       return postcss.default({
         extract: true,
         minimize: context.options.mode === 'production',
-        ...context.options.postcss
+        ...context.options.postcss,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-postcss')
       return null
     }
@@ -489,9 +501,10 @@ export class PluginConfigurator {
       const { default: sass } = await import('rollup-plugin-sass')
       return sass({
         output: true,
-        ...context.options.sass
+        ...context.options.sass,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-sass')
       return null
     }
@@ -505,9 +518,10 @@ export class PluginConfigurator {
       const { default: less } = await import('rollup-plugin-less')
       return less({
         output: true,
-        ...context.options.less
+        ...context.options.less,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-less')
       return null
     }
@@ -521,9 +535,10 @@ export class PluginConfigurator {
       const { default: stylus } = await import('rollup-plugin-stylus')
       return stylus({
         output: true,
-        ...context.options.stylus
+        ...context.options.stylus,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-stylus')
       return null
     }
@@ -537,9 +552,10 @@ export class PluginConfigurator {
       const { default: vue } = await import('rollup-plugin-vue')
       return vue({
         css: true,
-        ...context.options.vue
+        ...context.options.vue,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-vue')
       return null
     }
@@ -560,7 +576,8 @@ export class PluginConfigurator {
     try {
       const { default: svelte } = await import('rollup-plugin-svelte')
       return svelte({})
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-svelte')
       return null
     }
@@ -575,11 +592,12 @@ export class PluginConfigurator {
       return terser({
         compress: {
           drop_console: true,
-          drop_debugger: true
+          drop_debugger: true,
         },
-        ...context.options.terser
+        ...context.options.terser,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-terser')
       return null
     }
@@ -592,11 +610,12 @@ export class PluginConfigurator {
     try {
       const { default: replace } = await import('@rollup/plugin-replace')
       return replace({
-        preventAssignment: true,
+        'preventAssignment': true,
         'process.env.NODE_ENV': JSON.stringify(context.options.mode || 'production'),
-        ...context.options.replace
+        ...context.options.replace,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-replace')
       return null
     }
@@ -610,9 +629,10 @@ export class PluginConfigurator {
       const { default: strip } = await import('@rollup/plugin-strip')
       return strip({
         functions: ['console.*', 'assert.*'],
-        ...context.options.strip
+        ...context.options.strip,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 @rollup/plugin-strip')
       return null
     }
@@ -627,9 +647,10 @@ export class PluginConfigurator {
       return filesize({
         showMinifiedSize: true,
         showGzippedSize: true,
-        ...context.options.filesize
+        ...context.options.filesize,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-filesize')
       return null
     }
@@ -645,9 +666,10 @@ export class PluginConfigurator {
         open: true,
         contentBase: 'dist',
         port: 3000,
-        ...context.options.serve
+        ...context.options.serve,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-serve')
       return null
     }
@@ -661,9 +683,10 @@ export class PluginConfigurator {
       const { default: livereload } = await import('rollup-plugin-livereload')
       return livereload({
         watch: 'dist',
-        ...context.options.livereload
+        ...context.options.livereload,
       })
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn('无法加载 rollup-plugin-livereload')
       return null
     }

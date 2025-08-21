@@ -43,7 +43,7 @@ export class Encrypt {
   aes128(
     data: string,
     key: string,
-    options?: Omit<AESOptions, 'keySize'>
+    options?: Omit<AESOptions, 'keySize'>,
   ): EncryptResult {
     return aes.encrypt128(data, key, options)
   }
@@ -54,7 +54,7 @@ export class Encrypt {
   aes192(
     data: string,
     key: string,
-    options?: Omit<AESOptions, 'keySize'>
+    options?: Omit<AESOptions, 'keySize'>,
   ): EncryptResult {
     return aes.encrypt192(data, key, options)
   }
@@ -65,7 +65,7 @@ export class Encrypt {
   aes256(
     data: string,
     key: string,
-    options?: Omit<AESOptions, 'keySize'>
+    options?: Omit<AESOptions, 'keySize'>,
   ): EncryptResult {
     return aes.encrypt256(data, key, options)
   }
@@ -97,7 +97,7 @@ export class Encrypt {
   tripledes(
     data: string,
     key: string,
-    options?: TripleDESOptions
+    options?: TripleDESOptions,
   ): EncryptResult {
     return tripledes.encrypt(data, key, options)
   }
@@ -108,7 +108,7 @@ export class Encrypt {
   blowfish(
     data: string,
     key: string,
-    options?: BlowfishOptions
+    options?: BlowfishOptions,
   ): EncryptResult {
     return blowfish.encrypt(data, key, options)
   }
@@ -121,7 +121,7 @@ export class Encrypt {
     data: string,
     key: string,
     algorithm: EncryptionAlgorithm,
-    options?: any
+    options?: any,
   ): EncryptResult {
     switch (algorithm.toUpperCase()) {
       case 'AES':
@@ -183,7 +183,7 @@ export class Decrypt {
   aes(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: AESOptions
+    options?: AESOptions,
   ): DecryptResult {
     return aes.decrypt(encryptedData, key, options)
   }
@@ -194,7 +194,7 @@ export class Decrypt {
   aes128(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: Omit<AESOptions, 'keySize'>
+    options?: Omit<AESOptions, 'keySize'>,
   ): DecryptResult {
     return aes.decrypt128(encryptedData, key, options)
   }
@@ -205,7 +205,7 @@ export class Decrypt {
   aes192(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: Omit<AESOptions, 'keySize'>
+    options?: Omit<AESOptions, 'keySize'>,
   ): DecryptResult {
     return aes.decrypt192(encryptedData, key, options)
   }
@@ -216,7 +216,7 @@ export class Decrypt {
   aes256(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: Omit<AESOptions, 'keySize'>
+    options?: Omit<AESOptions, 'keySize'>,
   ): DecryptResult {
     return aes.decrypt256(encryptedData, key, options)
   }
@@ -227,7 +227,7 @@ export class Decrypt {
   rsa(
     encryptedData: string | EncryptResult,
     privateKey: string,
-    options?: RSAOptions
+    options?: RSAOptions,
   ): DecryptResult {
     return rsa.decrypt(encryptedData, privateKey, options)
   }
@@ -238,7 +238,7 @@ export class Decrypt {
   des(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: DESOptions
+    options?: DESOptions,
   ): DecryptResult {
     return des.decrypt(encryptedData, key, options)
   }
@@ -249,7 +249,7 @@ export class Decrypt {
   des3(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: TripleDESOptions
+    options?: TripleDESOptions,
   ): DecryptResult {
     return des3.decrypt(encryptedData, key, options)
   }
@@ -260,7 +260,7 @@ export class Decrypt {
   tripledes(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: TripleDESOptions
+    options?: TripleDESOptions,
   ): DecryptResult {
     return tripledes.decrypt(encryptedData, key, options)
   }
@@ -271,7 +271,7 @@ export class Decrypt {
   blowfish(
     encryptedData: string | EncryptResult,
     key: string,
-    options?: BlowfishOptions
+    options?: BlowfishOptions,
   ): DecryptResult {
     return blowfish.decrypt(encryptedData, key, options)
   }
@@ -284,7 +284,7 @@ export class Decrypt {
     encryptedData: string | EncryptResult,
     key: string,
     algorithm?: EncryptionAlgorithm,
-    options?: any
+    options?: any,
   ): DecryptResult {
     // 如果传入的是 EncryptResult 对象，尝试从中获取算法信息
     let targetAlgorithm = algorithm
@@ -401,7 +401,7 @@ export class Hash {
   hash(
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): string {
     switch (algorithm.toUpperCase()) {
       case 'MD5':
@@ -428,7 +428,7 @@ export class Hash {
     data: string,
     expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): boolean {
     return hash.verify(data, expectedHash, algorithm, options)
   }
@@ -480,7 +480,7 @@ export class HMAC {
     data: string,
     key: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): string {
     switch (algorithm.toUpperCase()) {
       case 'MD5':
@@ -506,7 +506,7 @@ export class HMAC {
     key: string,
     expectedHmac: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): boolean {
     return hmac.verify(data, key, expectedHmac, algorithm, options)
   }
@@ -520,7 +520,7 @@ export class KeyGenerator {
    * 生成 RSA 密钥对
    */
   generateRSAKeyPair(
-    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE
+    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE,
   ): RSAKeyPair {
     return rsa.generateKeyPair(keySize)
   }
@@ -572,7 +572,7 @@ export class DigitalSignature {
     data: string,
     signature: string,
     publicKey: string,
-    algorithm: string = 'sha256'
+    algorithm: string = 'sha256',
   ): boolean {
     return rsa.verify(data, signature, publicKey, algorithm)
   }

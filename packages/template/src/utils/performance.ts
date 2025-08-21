@@ -32,9 +32,11 @@ export class ImagePreloader {
         const checkLoaded = () => {
           if (this.cache.has(url)) {
             resolve(this.cache.get(url)!)
-          } else if (!this.loading.has(url)) {
+          }
+          else if (!this.loading.has(url)) {
             reject(new Error('Image loading failed'))
-          } else {
+          }
+          else {
             setTimeout(checkLoaded, 50)
           }
         }
@@ -81,7 +83,7 @@ export class LazyLoader {
 
   constructor(options: IntersectionObserverInit = {}) {
     this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const callback = this.callbacks.get(entry.target)
           if (callback) {
@@ -93,7 +95,7 @@ export class LazyLoader {
     }, {
       rootMargin: '50px',
       threshold: 0.1,
-      ...options
+      ...options,
     })
   }
 
@@ -117,7 +119,7 @@ export class LazyLoader {
  * 缓存管理器
  */
 export class CacheManager {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
+  private cache = new Map<string, { data: any, timestamp: number, ttl: number }>()
   private maxSize: number
   private defaultTTL: number
 
@@ -138,13 +140,14 @@ export class CacheManager {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     })
   }
 
   get(key: string): any | null {
     const item = this.cache.get(key)
-    if (!item) return null
+    if (!item)
+      return null
 
     // 检查是否过期
     if (Date.now() - item.timestamp > item.ttl) {
@@ -217,7 +220,7 @@ export class PerformanceMonitor {
       loadTime: this.metrics.loadTime || 0,
       renderTime: this.metrics.renderTime || 0,
       imageLoadTime: this.metrics.imageLoadTime || 0,
-      cacheHitRate: this.metrics.cacheHitRate || 0
+      cacheHitRate: this.metrics.cacheHitRate || 0,
     }
   }
 
@@ -237,7 +240,7 @@ export class PerformanceMonitor {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
 
@@ -254,7 +257,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle = false
 
@@ -285,7 +288,8 @@ export async function optimizeImageLoading(urls: string[]): Promise<void> {
     await imagePreloader.preload(urls)
     const duration = Date.now() - startTime
     performanceMonitor.recordImageLoadTime(duration)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('Image preloading failed:', error)
   }
 }
@@ -311,8 +315,10 @@ export function getDevicePerformance(): 'low' | 'medium' | 'high' {
   const cores = navigator.hardwareConcurrency || 2
   const memory = (navigator as any).deviceMemory || 4
 
-  if (cores >= 8 && memory >= 8) return 'high'
-  if (cores >= 4 && memory >= 4) return 'medium'
+  if (cores >= 8 && memory >= 8)
+    return 'high'
+  if (cores >= 4 && memory >= 4)
+    return 'medium'
   return 'low'
 }
 

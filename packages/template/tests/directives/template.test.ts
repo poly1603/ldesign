@@ -24,7 +24,7 @@ describe('templateDirective', () => {
   describe('指令使用', () => {
     it('应该能在组件中使用指令', () => {
       const TestComponent = {
-        template: "<div v-template=\"{ category: 'login', device: 'desktop', template: 'classic' }\"></div>",
+        template: '<div v-template="{ category: \'login\', device: \'desktop\', template: \'classic\' }"></div>',
         directives: {
           template: templateDirective,
         },
@@ -62,7 +62,7 @@ describe('templateDirective', () => {
   describe('指令生命周期', () => {
     it('应该在 mounted 时初始化', () => {
       const TestComponent = {
-        template: "<div v-template=\"{ category: 'login', device: 'desktop', template: 'classic' }\"></div>",
+        template: '<div v-template="{ category: \'login\', device: \'desktop\', template: \'classic\' }"></div>',
         directives: {
           template: templateDirective,
         },
@@ -97,7 +97,7 @@ describe('templateDirective', () => {
 
     it('应该在 unmounted 时清理', () => {
       const TestComponent = {
-        template: "<div v-template=\"{ category: 'login', device: 'desktop', template: 'classic' }\"></div>",
+        template: '<div v-template="{ category: \'login\', device: \'desktop\', template: \'classic\' }"></div>',
         directives: {
           template: templateDirective,
         },

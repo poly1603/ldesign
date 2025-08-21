@@ -3,13 +3,13 @@
  * 分析项目依赖关系和构建信息
  */
 
-import path from 'path'
+import type { DependencyGraph, FileInfo, ProjectScanResult } from '../../types'
+import path from 'node:path'
 import chalk from 'chalk'
 import ora from 'ora'
-import { Logger } from '../../utils/logger'
-import { ProjectScanner } from '../../core/project-scanner'
 import { PluginConfigurator } from '../../core/plugin-configurator'
-import type { ProjectScanResult, DependencyGraph, FileInfo } from '../../types'
+import { ProjectScanner } from '../../core/project-scanner'
+import { Logger } from '../../utils/logger'
 
 const logger = new Logger('Analyze')
 
@@ -44,8 +44,8 @@ export class AnalyzeCommand {
 
       // 显示分析结果
       this.showAnalysisResult(scanResult, dependencyGraph, { plugins: pluginConfig }, options)
-
-    } catch (error) {
+    }
+    catch (error) {
       spinner.stop()
       logger.error('分析失败:', error)
       process.exit(1)
@@ -58,7 +58,7 @@ export class AnalyzeCommand {
   private async analyzeDependencies(scanResult: ProjectScanResult): Promise<DependencyGraph> {
     const dependencyGraph: DependencyGraph = {
       nodes: new Map(),
-      edges: []
+      edges: [],
     }
 
     // 分析每个文件的依赖
@@ -66,17 +66,17 @@ export class AnalyzeCommand {
       const dependencies = await this.extractDependencies(file)
       dependencyGraph.nodes.set(file.path, {
         id: file.path,
-        file: file,
+        file,
         inDegree: 0,
-        outDegree: dependencies.internal.length
+        outDegree: dependencies.internal.length,
       })
 
       // 记录内部依赖关系
-      dependencies.internal.forEach(dep => {
+      dependencies.internal.forEach((dep) => {
         dependencyGraph.edges.push({
           from: file.path,
           to: dep,
-          type: 'import'
+          type: 'import',
         })
       })
     }
@@ -107,7 +107,7 @@ export class AnalyzeCommand {
       const content = await fs.readFile(file.path, 'utf-8')
 
       // 匹配 import 语句
-      const importRegex = /import\s+(?:[^\s,{}]+\s*,?\s*)?(?:\{[^}]*\}\s*)?from\s+['"]([^'"]+)['"]/g
+      const importRegex = /import\s+(?:[^\s,{}]+\s*(?:,\s*)?)?(?:\{[^}]*\}\s*)?from\s+['"]([^'"]+)['"]/g
       const requireRegex = /require\s*\(['"]([^'"]+)['"]\)/g
 
       let match
@@ -117,7 +117,8 @@ export class AnalyzeCommand {
         const dep = match[1]
         if (this.isExternalDependency(dep)) {
           external.push(dep)
-        } else {
+        }
+        else {
           const resolvedPath = this.resolvePath(dep, file.path)
           if (resolvedPath) {
             internal.push(resolvedPath)
@@ -130,15 +131,16 @@ export class AnalyzeCommand {
         const dep = match[1]
         if (this.isExternalDependency(dep)) {
           external.push(dep)
-        } else {
+        }
+        else {
           const resolvedPath = this.resolvePath(dep, file.path)
           if (resolvedPath) {
             internal.push(resolvedPath)
           }
         }
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       logger.warn(`无法读取文件 ${file.path}:`, error)
     }
 
@@ -156,8 +158,19 @@ export class AnalyzeCommand {
 
     // Node.js 内置模块
     const builtinModules = [
-      'fs', 'path', 'url', 'util', 'events', 'stream', 'buffer',
-      'crypto', 'os', 'http', 'https', 'zlib', 'querystring'
+      'fs',
+      'path',
+      'url',
+      'util',
+      'events',
+      'stream',
+      'buffer',
+      'crypto',
+      'os',
+      'http',
+      'https',
+      'zlib',
+      'querystring',
     ]
 
     if (builtinModules.includes(dep)) {
@@ -174,11 +187,11 @@ export class AnalyzeCommand {
   private resolvePath(dep: string, fromPath: string): string | null {
     try {
       const fromDir = path.dirname(fromPath)
-      let resolvedPath = path.resolve(fromDir, dep)
+      const resolvedPath = path.resolve(fromDir, dep)
 
       // 尝试添加常见扩展名
       const extensions = ['.js', '.ts', '.jsx', '.tsx', '.vue', '.json']
-      const fs = require('fs')
+      const fs = require('node:fs')
 
       if (fs.existsSync(resolvedPath)) {
         return resolvedPath
@@ -198,8 +211,8 @@ export class AnalyzeCommand {
           return indexPath
         }
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       // 忽略解析错误
     }
 
@@ -259,7 +272,7 @@ export class AnalyzeCommand {
     scanResult: ProjectScanResult,
     dependencyGraph: DependencyGraph,
     pluginConfig: any,
-    options: any
+    options: any,
   ): void {
     console.log()
     console.log(chalk.cyan.bold('📊 项目分析报告'))
@@ -313,7 +326,7 @@ export class AnalyzeCommand {
     const typeStats = new Map<string, number>()
     let totalSize = 0
 
-    scanResult.files.forEach(file => {
+    scanResult.files.forEach((file) => {
       const count = typeStats.get(file.type) || 0
       typeStats.set(file.type, count + 1)
       totalSize += file.size || 0
@@ -355,7 +368,8 @@ export class AnalyzeCommand {
       if (cycles.length > 3) {
         console.log(`  ${chalk.gray(`... 还有 ${cycles.length - 3} 个`)}`)
       }
-    } else {
+    }
+    else {
       console.log(`\n${chalk.green('✓ 未检测到循环依赖')}`)
     }
   }
@@ -373,7 +387,8 @@ export class AnalyzeCommand {
       pluginConfig.plugins.forEach((plugin: any) => {
         console.log(`  ${chalk.cyan('•')} ${plugin.name}`)
       })
-    } else {
+    }
+    else {
       console.log(chalk.yellow('未检测到需要特殊插件的文件类型'))
     }
   }
@@ -391,7 +406,8 @@ export class AnalyzeCommand {
     // 基于项目类型的建议
     if (scanResult.projectType === 'vue') {
       recommendations.push('建议使用 ESM 和 UMD 格式以支持 Vue 生态系统')
-    } else if (scanResult.projectType === 'react') {
+    }
+    else if (scanResult.projectType === 'react') {
       recommendations.push('建议使用 ESM 和 CJS 格式以支持 React 生态系统')
     }
 
@@ -430,12 +446,13 @@ export class AnalyzeCommand {
    * 格式化文件大小
    */
   private formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B'
+    if (bytes === 0)
+      return '0 B'
 
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   }
 }

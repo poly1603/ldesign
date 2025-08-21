@@ -1,3 +1,151 @@
+<script setup lang="ts">
+import type { LoadingIndicatorProps } from '../types'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+
+// Props
+const props = withDefaults(defineProps<LoadingIndicatorProps>(), {
+  progress: 0,
+  message: '正在加载...',
+  stage: 'parsing',
+  showProgress: true,
+  showDetails: false,
+  showActions: false,
+  theme: 'auto',
+})
+
+// Emits
+const emit = defineEmits<{
+  cancel: []
+  retry: []
+}>()
+
+// 本地状态
+const startTime = ref(Date.now())
+const elapsedTime = ref(0)
+const animationProgress = ref(0)
+
+// 计算属性
+const themeClasses = computed(() => ({
+  'loading-indicator--dark': props.theme === 'dark',
+  'loading-indicator--light': props.theme === 'light',
+}))
+
+const displayProgress = computed(() => {
+  if (props.stage === 'complete')
+    return 100
+  return Math.max(0, Math.min(100, props.progress))
+})
+
+const displayMessage = computed(() => {
+  if (props.message)
+    return props.message
+  return getDefaultMessage(props.stage)
+})
+
+const stageTitle = computed(() => {
+  return getStageTitle(props.stage)
+})
+
+const circumference = computed(() => 2 * Math.PI * 20)
+
+const dashOffset = computed(() => {
+  const progress = displayProgress.value / 100
+  return circumference.value * (1 - progress)
+})
+
+// 阶段配置
+const stages = [
+  { key: 'parsing', label: '解析文档' },
+  { key: 'initializing', label: '初始化引擎' },
+  { key: 'rendering', label: '渲染页面' },
+  { key: 'complete', label: '加载完成' },
+]
+
+// 方法
+function getDefaultMessage(stage: string): string {
+  const messages: Record<string, string> = {
+    parsing: '正在解析PDF文档结构...',
+    initializing: '正在初始化渲染引擎...',
+    rendering: '正在渲染PDF页面...',
+    complete: 'PDF文档加载完成！',
+    error: '加载过程中出现错误',
+  }
+  return messages[stage] || '正在处理...'
+}
+
+function getStageTitle(stage: string): string {
+  const titles: Record<string, string> = {
+    parsing: '解析文档',
+    initializing: '初始化',
+    rendering: '渲染页面',
+    complete: '加载完成',
+    error: '加载失败',
+  }
+  return titles[stage] || '加载中'
+}
+
+function isStageCompleted(stageKey: string): boolean {
+  const currentIndex = stages.findIndex(s => s.key === props.stage)
+  const stageIndex = stages.findIndex(s => s.key === stageKey)
+  return stageIndex < currentIndex || props.stage === 'complete'
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0)
+    return '0 B'
+
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
+}
+
+function formatTime(ms: number): string {
+  const seconds = Math.floor(ms / 1000)
+  if (seconds < 60) {
+    return `${seconds}秒`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}分${remainingSeconds}秒`
+}
+
+function updateElapsedTime() {
+  elapsedTime.value = Date.now() - startTime.value
+}
+
+// 定时器
+let timer: number | null = null
+
+// 监听器
+watch(() => props.stage, (newStage) => {
+  if (newStage === 'parsing') {
+    startTime.value = Date.now()
+    elapsedTime.value = 0
+  }
+}, { immediate: true })
+
+// 生命周期
+onMounted(() => {
+  // 启动计时器
+  timer = window.setInterval(updateElapsedTime, 100)
+
+  // 启动动画
+  const animateProgress = () => {
+    animationProgress.value = (animationProgress.value + 1) % 360
+    requestAnimationFrame(animateProgress)
+  }
+  animateProgress()
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+  }
+})
+</script>
+
 <template>
   <div class="loading-indicator" :class="themeClasses">
     <!-- 主要加载动画 -->
@@ -17,7 +165,7 @@
             :stroke-dashoffset="dashOffset"
           />
         </svg>
-        
+
         <!-- 阶段图标 -->
         <div class="stage-icon">
           <svg v-if="stage === 'parsing'" class="icon" viewBox="0 0 24 24">
@@ -38,222 +186,81 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 进度信息 -->
     <div class="loading-info">
-      <h3 class="loading-title">{{ stageTitle }}</h3>
-      <p class="loading-message">{{ displayMessage }}</p>
-      
+      <h3 class="loading-title">
+        {{ stageTitle }}
+      </h3>
+      <p class="loading-message">
+        {{ displayMessage }}
+      </p>
+
       <!-- 进度条 -->
-      <div class="progress-container" v-if="showProgress">
+      <div v-if="showProgress" class="progress-container">
         <div class="progress-bar">
-          <div 
-            class="progress-fill" 
+          <div
+            class="progress-fill"
             :style="{ width: `${displayProgress}%` }"
-          ></div>
+          />
         </div>
         <div class="progress-text">
           {{ Math.round(displayProgress) }}%
         </div>
       </div>
-      
+
       <!-- 阶段指示器 -->
       <div class="stage-indicators">
-        <div 
+        <div
           v-for="(stageInfo, index) in stages"
           :key="stageInfo.key"
           class="stage-indicator"
           :class="{
             'stage-indicator--active': stageInfo.key === stage,
-            'stage-indicator--completed': isStageCompleted(stageInfo.key)
+            'stage-indicator--completed': isStageCompleted(stageInfo.key),
           }"
         >
-          <div class="stage-dot"></div>
+          <div class="stage-dot" />
           <span class="stage-label">{{ stageInfo.label }}</span>
         </div>
       </div>
     </div>
-    
+
     <!-- 详细信息 -->
-    <div class="loading-details" v-if="showDetails">
-      <div class="detail-item" v-if="fileSize">
+    <div v-if="showDetails" class="loading-details">
+      <div v-if="fileSize" class="detail-item">
         <span class="detail-label">文件大小:</span>
         <span class="detail-value">{{ formatFileSize(fileSize) }}</span>
       </div>
-      <div class="detail-item" v-if="pageCount">
+      <div v-if="pageCount" class="detail-item">
         <span class="detail-label">页数:</span>
         <span class="detail-value">{{ pageCount }}</span>
       </div>
-      <div class="detail-item" v-if="elapsedTime > 0">
+      <div v-if="elapsedTime > 0" class="detail-item">
         <span class="detail-label">已用时间:</span>
         <span class="detail-value">{{ formatTime(elapsedTime) }}</span>
       </div>
     </div>
-    
+
     <!-- 操作按钮 -->
-    <div class="loading-actions" v-if="showActions">
-      <button 
+    <div v-if="showActions" class="loading-actions">
+      <button
+        v-if="stage !== 'complete'"
         class="btn btn-secondary"
         @click="$emit('cancel')"
-        v-if="stage !== 'complete'"
       >
         取消
       </button>
-      <button 
+      <button
+        v-if="stage === 'error'"
         class="btn btn-primary"
         @click="$emit('retry')"
-        v-if="stage === 'error'"
       >
         重试
       </button>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import type { LoadingIndicatorProps } from '../types'
-
-// Props
-const props = withDefaults(defineProps<LoadingIndicatorProps>(), {
-  progress: 0,
-  message: '正在加载...',
-  stage: 'parsing',
-  showProgress: true,
-  showDetails: false,
-  showActions: false,
-  theme: 'auto'
-})
-
-// Emits
-const emit = defineEmits<{
-  cancel: []
-  retry: []
-}>()
-
-// 本地状态
-const startTime = ref(Date.now())
-const elapsedTime = ref(0)
-const animationProgress = ref(0)
-
-// 计算属性
-const themeClasses = computed(() => ({
-  'loading-indicator--dark': props.theme === 'dark',
-  'loading-indicator--light': props.theme === 'light'
-}))
-
-const displayProgress = computed(() => {
-  if (props.stage === 'complete') return 100
-  return Math.max(0, Math.min(100, props.progress))
-})
-
-const displayMessage = computed(() => {
-  if (props.message) return props.message
-  return getDefaultMessage(props.stage)
-})
-
-const stageTitle = computed(() => {
-  return getStageTitle(props.stage)
-})
-
-const circumference = computed(() => 2 * Math.PI * 20)
-
-const dashOffset = computed(() => {
-  const progress = displayProgress.value / 100
-  return circumference.value * (1 - progress)
-})
-
-// 阶段配置
-const stages = [
-  { key: 'parsing', label: '解析文档' },
-  { key: 'initializing', label: '初始化引擎' },
-  { key: 'rendering', label: '渲染页面' },
-  { key: 'complete', label: '加载完成' }
-]
-
-// 方法
-const getDefaultMessage = (stage: string): string => {
-  const messages: Record<string, string> = {
-    parsing: '正在解析PDF文档结构...',
-    initializing: '正在初始化渲染引擎...',
-    rendering: '正在渲染PDF页面...',
-    complete: 'PDF文档加载完成！',
-    error: '加载过程中出现错误'
-  }
-  return messages[stage] || '正在处理...'
-}
-
-const getStageTitle = (stage: string): string => {
-  const titles: Record<string, string> = {
-    parsing: '解析文档',
-    initializing: '初始化',
-    rendering: '渲染页面',
-    complete: '加载完成',
-    error: '加载失败'
-  }
-  return titles[stage] || '加载中'
-}
-
-const isStageCompleted = (stageKey: string): boolean => {
-  const currentIndex = stages.findIndex(s => s.key === props.stage)
-  const stageIndex = stages.findIndex(s => s.key === stageKey)
-  return stageIndex < currentIndex || props.stage === 'complete'
-}
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-const formatTime = (ms: number): string => {
-  const seconds = Math.floor(ms / 1000)
-  if (seconds < 60) {
-    return `${seconds}秒`
-  }
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}分${remainingSeconds}秒`
-}
-
-const updateElapsedTime = () => {
-  elapsedTime.value = Date.now() - startTime.value
-}
-
-// 定时器
-let timer: number | null = null
-
-// 监听器
-watch(() => props.stage, (newStage) => {
-  if (newStage === 'parsing') {
-    startTime.value = Date.now()
-    elapsedTime.value = 0
-  }
-}, { immediate: true })
-
-// 生命周期
-onMounted(() => {
-  // 启动计时器
-  timer = window.setInterval(updateElapsedTime, 100)
-  
-  // 启动动画
-  const animateProgress = () => {
-    animationProgress.value = (animationProgress.value + 1) % 360
-    requestAnimationFrame(animateProgress)
-  }
-  animateProgress()
-})
-
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer)
-  }
-})
-</script>
 
 <style scoped>
 .loading-indicator {
@@ -519,7 +526,8 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -530,10 +538,15 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: translate(-50%, -50%) scale(1);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: translate(-50%, -50%) scale(1.1);
   }
   70% {
@@ -580,29 +593,29 @@ onUnmounted(() => {
     padding: var(--pdf-spacing-medium, 16px);
     min-height: 250px;
   }
-  
+
   .loading-spinner {
     width: 60px;
     height: 60px;
   }
-  
+
   .stage-icon {
     width: 24px;
     height: 24px;
   }
-  
+
   .loading-title {
     font-size: var(--pdf-font-size-medium, 16px);
   }
-  
+
   .stage-indicators {
     gap: var(--pdf-spacing-small, 8px);
   }
-  
+
   .stage-label {
     font-size: 10px;
   }
-  
+
   .loading-details {
     padding: var(--pdf-spacing-small, 8px);
   }

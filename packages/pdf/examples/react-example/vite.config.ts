@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { resolve } from 'node:path'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 /**
  * Vite配置文件
@@ -16,12 +16,12 @@ export default defineConfig({
           // 支持装饰器语法
           ['@babel/plugin-proposal-decorators', { legacy: true }],
           // 支持类属性语法
-          ['@babel/plugin-proposal-class-properties', { loose: true }]
-        ]
-      }
-    })
+          ['@babel/plugin-proposal-class-properties', { loose: true }],
+        ],
+      },
+    }),
   ],
-  
+
   // 路径解析配置
   resolve: {
     alias: {
@@ -30,11 +30,11 @@ export default defineConfig({
       '@hooks': resolve(__dirname, 'src/hooks'),
       '@types': resolve(__dirname, 'src/types'),
       '@utils': resolve(__dirname, 'src/utils'),
-      '@ldesign/pdf': resolve(__dirname, '../../src')
+      '@ldesign/pdf': resolve(__dirname, '../../src'),
     },
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
   },
-  
+
   // 开发服务器配置
   server: {
     port: 3000,
@@ -46,18 +46,18 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
+        rewrite: path => path.replace(/^\/api/, ''),
+      },
+    },
   },
-  
+
   // 预览服务器配置
   preview: {
     port: 3001,
     host: true,
-    open: true
+    open: true,
   },
-  
+
   // 构建配置
   build: {
     outDir: 'dist',
@@ -66,96 +66,97 @@ export default defineConfig({
     target: 'es2020',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html')
+        main: resolve(__dirname, 'index.html'),
       },
       output: {
         manualChunks: {
           // 将React相关库打包到单独的chunk
           react: ['react', 'react-dom'],
           // 将PDF相关库打包到单独的chunk
-          pdf: ['@ldesign/pdf']
+          pdf: ['@ldesign/pdf'],
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]'
-      }
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+      },
     },
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
-      }
+        drop_debugger: true,
+      },
     },
     // 构建分析
     reportCompressedSize: true,
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
   },
-  
+
   // 依赖优化配置
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
-      '@ldesign/pdf'
+      '@ldesign/pdf',
     ],
     exclude: [
       // 排除某些依赖的预构建
-    ]
+    ],
   },
-  
+
   // CSS配置
   css: {
     modules: {
-      localsConvention: 'camelCase'
+      localsConvention: 'camelCase',
     },
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/styles/variables.scss";`
-      }
+        additionalData: `@import "@/styles/variables.scss";`,
+      },
     },
-    devSourcemap: true
+    devSourcemap: true,
   },
-  
+
   // 环境变量配置
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0'),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development')
+    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
   },
-  
+
   // 公共基础路径
   base: './',
-  
+
   // 静态资源处理
   assetsInclude: ['**/*.pdf'],
-  
+
   // Worker配置
   worker: {
-    format: 'es'
+    format: 'es',
   },
-  
+
   // 实验性功能
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
       if (hostType === 'js') {
-        return { js: `/${filename}` };
-      } else {
-        return { relative: true };
+        return { js: `/${filename}` }
       }
-    }
+      else {
+        return { relative: true }
+      }
+    },
   },
-  
+
   // ESBuild配置
   esbuild: {
     target: 'es2020',
     jsxFactory: 'React.createElement',
     jsxFragment: 'React.Fragment',
-    jsxInject: `import React from 'react'`
+    jsxInject: `import React from 'react'`,
   },
-  
+
   // 日志级别
   logLevel: 'info',
-  
+
   // 清除控制台
-  clearScreen: false
-});
+  clearScreen: false,
+})

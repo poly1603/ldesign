@@ -1,16 +1,18 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { loadUserConfig } from '../src/utils/config-loader'
-import fs from 'fs'
-import path from 'path'
 
-describe('Config Loader', () => {
+describe('config Loader', () => {
   const root = path.join(process.cwd(), '.tmp-config')
 
   beforeAll(() => {
-    if (!fs.existsSync(root)) fs.mkdirSync(root)
+    if (!fs.existsSync(root))
+      fs.mkdirSync(root)
   })
 
   afterAll(() => {
-    try { fs.rmSync(root, { recursive: true, force: true }) } catch {}
+    try { fs.rmSync(root, { recursive: true, force: true }) }
+    catch {}
   })
 
   it('returns null when no config present', async () => {
@@ -52,7 +54,8 @@ describe('Config Loader', () => {
     const res = await loadUserConfig(dir)
     if (res) {
       expect(res).toEqual(expect.objectContaining({ outDir: 'out-ts' }))
-    } else {
+    }
+    else {
       expect(res).toBeNull()
     }
   })
@@ -61,15 +64,13 @@ describe('Config Loader', () => {
     const dir = path.join(root, 'case-cache')
     fs.mkdirSync(dir, { recursive: true })
     const cfgPath = path.join(dir, 'ldesign.config.js')
-    fs.writeFileSync(cfgPath, "module.exports = { outDir: 'v1' }", 'utf-8')
+    fs.writeFileSync(cfgPath, 'module.exports = { outDir: \'v1\' }', 'utf-8')
     const first = await loadUserConfig(dir)
     expect(first).toEqual(expect.objectContaining({ outDir: 'v1' }))
     // overwrite and ensure cache invalidation
-    fs.writeFileSync(cfgPath, "module.exports = { outDir: 'v2' }", 'utf-8')
+    fs.writeFileSync(cfgPath, 'module.exports = { outDir: \'v2\' }', 'utf-8')
     jest.resetModules()
     const second = await loadUserConfig(dir)
     expect(second).toEqual(expect.objectContaining({ outDir: 'v2' }))
   })
 })
-
-

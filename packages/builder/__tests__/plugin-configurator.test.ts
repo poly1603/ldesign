@@ -1,12 +1,12 @@
-import { ProjectScanner } from '../src/core/project-scanner'
 import { PluginConfigurator } from '../src/core/plugin-configurator'
+import { ProjectScanner } from '../src/core/project-scanner'
 
-describe('PluginConfigurator', () => {
+describe('pluginConfigurator', () => {
   it('should configure plugins without throwing', async () => {
     const scanner = new ProjectScanner()
     const scan = await scanner.scan(process.cwd(), {
       includePatterns: ['src/**/*.{ts,tsx,js,jsx,vue}'],
-      ignorePatterns: ['node_modules/**']
+      ignorePatterns: ['node_modules/**'],
     })
 
     const configurator = new PluginConfigurator()
@@ -15,5 +15,3 @@ describe('PluginConfigurator', () => {
     expect(Array.isArray(plugins)).toBe(true)
   })
 })
-
-

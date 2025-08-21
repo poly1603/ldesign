@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { TemplateRenderer } from '@ldesign/template/vue'
-import { ref, onMounted } from 'vue'
 import { TemplateScanner } from '@ldesign/template/core'
+import { TemplateRenderer } from '@ldesign/template/vue'
+import { onMounted, ref } from 'vue'
 
 // 简单的登录面板组件
 const LoginPanel = {
@@ -11,7 +11,7 @@ const LoginPanel = {
     const formData = ref({
       username: '',
       password: '',
-      rememberMe: false
+      rememberMe: false,
     })
 
     const handleSubmit = () => {
@@ -43,32 +43,33 @@ const LoginPanel = {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           登录
         </button>
       </div>
     )
-  }
+  },
 }
 
 // 扫描统计信息
 const scanStats = ref<any>(null)
 
 // 测试自动扫描功能
-const testAutoScan = async () => {
+async function testAutoScan() {
   try {
     const scanner = new TemplateScanner({ debug: true })
     const result = await scanner.scanTemplates()
-    
+
     scanStats.value = {
       ...result,
-      stats: scanner.getStats()
+      stats: scanner.getStats(),
     }
-    
+
     console.log('🎉 自动扫描测试结果:', scanStats.value)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 自动扫描测试失败:', error)
   }
 }
@@ -105,7 +106,7 @@ onMounted(() => {
     <div class="demo-header">
       <h1>🚀 自动扫描模板系统演示</h1>
       <p>基于文件系统约定的零配置模板发现机制</p>
-      
+
       <!-- 扫描统计信息 -->
       <div v-if="scanStats" class="scan-stats">
         <h3>📊 扫描统计</h3>
@@ -131,13 +132,13 @@ onMounted(() => {
             <span class="stat-value">{{ scanStats.stats?.devices?.join(', ') }}</span>
           </div>
         </div>
-        
+
         <!-- 模板列表 -->
         <div class="template-list">
           <h4>🎨 发现的模板:</h4>
           <div class="template-grid">
-            <div 
-              v-for="template in scanStats.templates" 
+            <div
+              v-for="template in scanStats.templates"
               :key="template.id"
               class="template-card"
             >

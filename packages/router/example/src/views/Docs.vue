@@ -13,7 +13,9 @@
       <h2>Section 2</h2>
       <p>This is section 2 content</p>
     </div>
-    <router-link to="/"> Back to Home </router-link>
+    <router-link to="/">
+      Back to Home
+    </router-link>
   </div>
 </template>
 

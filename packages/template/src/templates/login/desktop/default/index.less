@@ -351,7 +351,7 @@
       color: #666;
       cursor: pointer;
 
-      input[type="checkbox"] {
+      input[type='checkbox'] {
         margin-right: 8px;
         width: 16px;
         height: 16px;
@@ -427,7 +427,12 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.1) 100%
+        );
         opacity: 0;
         transition: opacity 0.3s ease;
         z-index: 1;
@@ -638,7 +643,6 @@
 
 /* 动画关键帧 */
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px) rotate(0deg);
@@ -676,7 +680,6 @@
 }
 
 @keyframes logoFloat {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -688,7 +691,6 @@
 }
 
 @keyframes logoGlow {
-
   0%,
   100% {
     opacity: 0.3;
@@ -702,7 +704,6 @@
 }
 
 @keyframes errorShake {
-
   0%,
   100% {
     transform: translateX(0);

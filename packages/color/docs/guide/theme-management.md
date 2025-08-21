@@ -211,23 +211,23 @@ const themeManager = await createThemeManagerWithPresets({
 
 ```typescript
 // 监听主题变化
-themeManager.on('theme-changed', data => {
+themeManager.on('theme-changed', (data) => {
   console.log('主题已变化:', data.theme, data.mode)
   console.log('之前的主题:', data.oldTheme, data.oldMode)
 })
 
 // 监听主题注册
-themeManager.on('theme-registered', data => {
+themeManager.on('theme-registered', (data) => {
   console.log('新主题已注册:', data.theme)
 })
 
 // 监听主题生成完成
-themeManager.on('theme-generated', data => {
+themeManager.on('theme-generated', (data) => {
   console.log('主题生成完成:', data.theme)
 })
 
 // 监听错误
-themeManager.on('error', error => {
+themeManager.on('error', (error) => {
   console.error('主题管理器错误:', error)
 })
 ```
@@ -337,7 +337,7 @@ themeManager.registerThemes(additionalThemes)
 
 ```typescript
 const themeManager = await createThemeManagerWithPresets({
-  onError: error => {
+  onError: (error) => {
     // 记录错误日志
     console.error('主题管理器错误:', error)
 

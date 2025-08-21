@@ -55,7 +55,7 @@ describe('dES 加密算法', () => {
     it('应该处理不同的加密模式', () => {
       const modes = ['CBC', 'ECB', 'CFB', 'OFB'] as const
 
-      modes.forEach(mode => {
+      modes.forEach((mode) => {
         const result = encryptor.encrypt(testData, testKey, { mode })
         expect(result.success).toBe(true)
         expect(result.mode).toBe(mode)

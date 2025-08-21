@@ -1,6 +1,6 @@
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import fs from 'node:fs/promises'
 import { createProject, startDev, stopDev } from '../../dist/index.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -20,7 +20,8 @@ async function main() {
     console.log('\n[react] 捕获 SIGINT，正在关闭服务器...')
     try {
       await stopDev()
-    } finally {
+    }
+    finally {
       process.exit(0)
     }
   })

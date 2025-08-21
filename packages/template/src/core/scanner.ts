@@ -8,7 +8,7 @@
  * 4. 零配置 - 无需手动注册模板
  */
 
-import type { TemplateMetadata, TemplateScanResult, DeviceType } from '../types'
+import type { DeviceType, TemplateMetadata, TemplateScanResult } from '../types'
 
 /**
  * 自动化模板扫描器
@@ -71,7 +71,8 @@ export class TemplateScanner {
         ...result,
         duration: Date.now() - startTime,
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 自动模板扫描失败:', error)
       return this.getFallbackResult(startTime)
     }
@@ -136,7 +137,8 @@ export class TemplateScanner {
         if (this.debug) {
           console.log(`✅ 发现模板: ${category}/${device}/${template}`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         if (this.debug) {
           console.warn(`⚠️ 解析模板失败 ${componentPath}:`, error)
         }
@@ -167,12 +169,12 @@ export class TemplateScanner {
    * 路径格式: ../templates/{category}/{device}/{template}/index.tsx
    * 示例: ../templates/login/desktop/adaptive/index.tsx
    */
-  private parseTemplatePath(path: string): { category: string; device: string; template: string } | null {
+  private parseTemplatePath(path: string): { category: string, device: string, template: string } | null {
     // 移除文件名和扩展名，只保留目录路径
     const dirPath = path.replace(/\/index\.(tsx|ts|vue|js)$/, '')
 
     // 匹配路径模式: ../templates/{category}/{device}/{template}
-    const match = dirPath.match(/\.\.\/templates\/([^\/]+)\/([^\/]+)\/([^\/]+)$/)
+    const match = dirPath.match(/\.\.\/templates\/([^/]+)\/([^/]+)\/([^/]+)$/)
 
     if (!match) {
       return null
@@ -312,7 +314,8 @@ export class TemplateScanner {
    * 检查缓存是否有效
    */
   private isCacheValid(key: string): boolean {
-    if (!this.cache.has(key)) return false
+    if (!this.cache.has(key))
+      return false
     return Date.now() - this.lastScanTime < this.cacheExpiration
   }
 
@@ -371,8 +374,8 @@ export class TemplateScanner {
    */
   findTemplate(category: string, device: string, template: string): TemplateMetadata | null {
     return (
-      this.getAllTemplates().find(t => t.category === category && t.device === device && t.template === template) ||
-      null
+      this.getAllTemplates().find(t => t.category === category && t.device === device && t.template === template)
+      || null
     )
   }
 
@@ -419,7 +422,7 @@ export class TemplateScanner {
   /**
    * 获取缓存统计
    */
-  getCacheStats(): { size: number; lastScanTime: number; templates: number } {
+  getCacheStats(): { size: number, lastScanTime: number, templates: number } {
     return {
       size: this.cache.size,
       lastScanTime: this.lastScanTime,

@@ -18,12 +18,13 @@ const categoryNames = {
 
 const colorScales = computed(() => {
   const generatedTheme = themeManager.getGeneratedTheme(currentTheme.value)
-  if (!generatedTheme) return {}
+  if (!generatedTheme)
+    return {}
 
   const scales = generatedTheme[currentMode.value].scales
   const result: Record<
     string,
-    { colors: string[]; indices: Record<string, string> }
+    { colors: string[], indices: Record<string, string> }
   > = {}
 
   // 转换色阶数据格式
@@ -43,7 +44,8 @@ const colorScales = computed(() => {
 // 获取色阶中的特定颜色
 function _getScaleColor(category: string, index: number): string {
   const scale = colorScales.value[category]
-  if (!scale || !scale.colors) return ''
+  if (!scale || !scale.colors)
+    return ''
   return scale.colors[index] || ''
 }
 
@@ -66,7 +68,8 @@ async function copyColor(color: string) {
   try {
     await navigator.clipboard.writeText(color)
     showNotification(`已复制 ${color}`, 'success')
-  } catch {
+  }
+  catch {
     showNotification('复制失败', 'error')
   }
 }
@@ -74,8 +77,12 @@ async function copyColor(color: string) {
 
 <template>
   <div class="card">
-    <h2 class="card-title">🌈 色阶展示</h2>
-    <p class="card-description">当前主题的完整色阶展示，点击色块可复制颜色值</p>
+    <h2 class="card-title">
+      🌈 色阶展示
+    </h2>
+    <p class="card-description">
+      当前主题的完整色阶展示，点击色块可复制颜色值
+    </p>
 
     <div class="scales-container">
       <div

@@ -1,6 +1,7 @@
-import { Component, Event, EventEmitter, h, Host, Prop, State, Watch } from '@stencil/core';
+import type { EventEmitter } from '@stencil/core'
+import { Component, Event, Host, Prop, State, Watch } from '@stencil/core'
 
-type TextareaSize = 'small' | 'medium' | 'large';
+type TextareaSize = 'small' | 'medium' | 'large'
 
 @Component({
   tag: 'ld-textarea',
@@ -8,67 +9,73 @@ type TextareaSize = 'small' | 'medium' | 'large';
   shadow: true,
 })
 export class LdTextarea {
-  @Prop() size: TextareaSize = 'medium';
-  @Prop({ mutable: true }) value?: string = '';
-  @Prop() placeholder?: string = '';
-  @Prop({ reflect: true }) disabled: boolean = false;
-  @Prop({ reflect: true }) readonly: boolean = false;
-  @Prop() required?: boolean = false;
-  @Prop() maxlength?: number;
-  @Prop() minlength?: number;
-  @Prop() rows?: number;
-  @Prop() cols?: number;
-  @Prop() showCount?: boolean = false;
-  @Prop() autosize?: boolean = false;
-  @Prop() minRows?: number;
-  @Prop() maxRows?: number;
+  @Prop() size: TextareaSize = 'medium'
+  @Prop({ mutable: true }) value?: string = ''
+  @Prop() placeholder?: string = ''
+  @Prop({ reflect: true }) disabled: boolean = false
+  @Prop({ reflect: true }) readonly: boolean = false
+  @Prop() required?: boolean = false
+  @Prop() maxlength?: number
+  @Prop() minlength?: number
+  @Prop() rows?: number
+  @Prop() cols?: number
+  @Prop() showCount?: boolean = false
+  @Prop() autosize?: boolean = false
+  @Prop() minRows?: number
+  @Prop() maxRows?: number
 
-  @State() private focused: boolean = false;
+  @State() private focused: boolean = false
 
-  @Event() ldInput: EventEmitter<string>;
-  @Event() ldChange: EventEmitter<string>;
-  @Event() ldFocus: EventEmitter<FocusEvent>;
-  @Event() ldBlur: EventEmitter<FocusEvent>;
+  @Event() ldInput: EventEmitter<string>
+  @Event() ldChange: EventEmitter<string>
+  @Event() ldFocus: EventEmitter<FocusEvent>
+  @Event() ldBlur: EventEmitter<FocusEvent>
 
-  private textareaEl?: HTMLTextAreaElement;
+  private textareaEl?: HTMLTextAreaElement
 
   @Watch('value')
   protected onValueChange() {
-    if (this.autosize) this.resizeToContent();
+    if (this.autosize)
+      this.resizeToContent()
   }
 
   private onInput = (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    this.value = target.value;
-    if (this.autosize) this.resizeToContent();
-    this.ldInput.emit(this.value ?? '');
-  };
+    const target = e.target as HTMLTextAreaElement
+    this.value = target.value
+    if (this.autosize)
+      this.resizeToContent()
+    this.ldInput.emit(this.value ?? '')
+  }
 
   private onChange = () => {
-    this.ldChange.emit(this.value ?? '');
-  };
+    this.ldChange.emit(this.value ?? '')
+  }
 
   private onFocus = (e: FocusEvent) => {
-    this.focused = true;
-    this.ldFocus.emit(e);
-  };
+    this.focused = true
+    this.ldFocus.emit(e)
+  }
 
   private onBlur = (e: FocusEvent) => {
-    this.focused = false;
-    this.ldBlur.emit(e);
-  };
+    this.focused = false
+    this.ldBlur.emit(e)
+  }
 
   private resizeToContent() {
-    if (!this.textareaEl) return;
-    const ta = this.textareaEl;
-    ta.style.height = 'auto';
-    ta.style.height = `${ta.scrollHeight}px`;
-    if (this.minRows) ta.rows = this.minRows;
-    if (this.maxRows) ta.rows = Math.min(this.maxRows, ta.rows);
+    if (!this.textareaEl)
+      return
+    const ta = this.textareaEl
+    ta.style.height = 'auto'
+    ta.style.height = `${ta.scrollHeight}px`
+    if (this.minRows)
+      ta.rows = this.minRows
+    if (this.maxRows)
+      ta.rows = Math.min(this.maxRows, ta.rows)
   }
 
   componentDidLoad() {
-    if (this.autosize) this.resizeToContent();
+    if (this.autosize)
+      this.resizeToContent()
   }
 
   render() {
@@ -82,16 +89,16 @@ export class LdTextarea {
       this.showCount ? 'ld-textarea--show-count' : '',
     ]
       .filter(Boolean)
-      .join(' ');
+      .join(' ')
 
-    const length = this.value?.length ?? 0;
-    const max = this.maxlength ?? undefined;
+    const length = this.value?.length ?? 0
+    const max = this.maxlength ?? undefined
 
     return (
       <Host>
         <div class={classes}>
           <textarea
-            ref={(el) => (this.textareaEl = el as HTMLTextAreaElement)}
+            ref={el => (this.textareaEl = el as HTMLTextAreaElement)}
             class="ld-textarea__inner"
             value={this.value}
             placeholder={this.placeholder}
@@ -107,13 +114,13 @@ export class LdTextarea {
             onFocus={this.onFocus}
             onBlur={this.onBlur}
           />
-          {this.showCount ? (
-            <div class="ld-textarea__count">{max ? `${length}/${max}` : length}</div>
-          ) : null}
+          {this.showCount
+            ? (
+                <div class="ld-textarea__count">{max ? `${length}/${max}` : length}</div>
+              )
+            : null}
         </div>
       </Host>
-    );
+    )
   }
 }
-
-

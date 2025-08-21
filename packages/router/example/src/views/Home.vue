@@ -84,8 +84,12 @@ const stats = {
 <template>
   <div class="home">
     <div class="hero">
-      <h1 class="hero-title">@ldesign/router</h1>
-      <p class="hero-subtitle">现代化、高性能、类型安全的 Vue 路由库</p>
+      <h1 class="hero-title">
+        @ldesign/router
+      </h1>
+      <p class="hero-subtitle">
+        现代化、高性能、类型安全的 Vue 路由库
+      </p>
       <div class="hero-actions">
         <RouterLink to="/basic" class="btn btn-primary btn-lg">
           开始体验
@@ -104,19 +108,37 @@ const stats = {
     <div class="test-navigation">
       <h2>测试导航</h2>
       <nav class="test-nav">
-        <RouterLink to="/about"> About </RouterLink>
-        <RouterLink to="/user/123"> User 123 </RouterLink>
-        <RouterLink to="/posts"> Posts </RouterLink>
-        <RouterLink to="/search?q=test&category=all"> Search </RouterLink>
-        <RouterLink to="/docs#section1"> Docs </RouterLink>
-        <RouterLink to="/profile"> Profile </RouterLink>
-        <RouterLink to="/cached-page"> Cached Page </RouterLink>
-        <RouterLink to="/admin"> Admin </RouterLink>
+        <RouterLink to="/about">
+          About
+        </RouterLink>
+        <RouterLink to="/user/123">
+          User 123
+        </RouterLink>
+        <RouterLink to="/posts">
+          Posts
+        </RouterLink>
+        <RouterLink to="/search?q=test&category=all">
+          Search
+        </RouterLink>
+        <RouterLink to="/docs#section1">
+          Docs
+        </RouterLink>
+        <RouterLink to="/profile">
+          Profile
+        </RouterLink>
+        <RouterLink to="/cached-page">
+          Cached Page
+        </RouterLink>
+        <RouterLink to="/admin">
+          Admin
+        </RouterLink>
       </nav>
     </div>
 
     <div class="features">
-      <h2 class="section-title">核心特性</h2>
+      <h2 class="section-title">
+        核心特性
+      </h2>
       <div class="feature-grid">
         <div
           v-for="feature in features"
@@ -137,7 +159,9 @@ const stats = {
     </div>
 
     <div class="demo-links">
-      <h2 class="section-title">功能演示</h2>
+      <h2 class="section-title">
+        功能演示
+      </h2>
       <div class="demo-grid">
         <RouterLink
           v-for="demo in demos"
@@ -159,31 +183,41 @@ const stats = {
     </div>
 
     <div class="stats">
-      <h2 class="section-title">性能统计</h2>
+      <h2 class="section-title">
+        性能统计
+      </h2>
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-number">
             {{ stats.bundleSize }}
           </div>
-          <div class="stat-label">打包大小</div>
+          <div class="stat-label">
+            打包大小
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-number">
             {{ stats.loadTime }}
           </div>
-          <div class="stat-label">加载时间</div>
+          <div class="stat-label">
+            加载时间
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-number">
             {{ stats.features }}
           </div>
-          <div class="stat-label">功能特性</div>
+          <div class="stat-label">
+            功能特性
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-number">
             {{ stats.coverage }}
           </div>
-          <div class="stat-label">测试覆盖率</div>
+          <div class="stat-label">
+            测试覆盖率
+          </div>
         </div>
       </div>
     </div>

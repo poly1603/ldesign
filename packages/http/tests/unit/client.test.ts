@@ -49,7 +49,7 @@ describe('httpClientImpl', () => {
       expect(config.baseURL).toBe('https://api.example.com')
       expect(config.timeout).toBe(5000)
       expect(config.headers).toEqual({
-        'Authorization': 'Bearer token',
+        Authorization: 'Bearer token',
       })
     })
 

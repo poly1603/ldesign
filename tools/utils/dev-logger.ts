@@ -44,7 +44,7 @@ export class DevLogger {
   private formatMessage(
     level: LogLevel,
     message: string,
-    options: LogOptions = {}
+    options: LogOptions = {},
   ): string {
     let formatted = ''
 
@@ -72,7 +72,7 @@ export class DevLogger {
     }
 
     formatted += levelColors[level](
-      `${levelIcons[level]} [${level.toUpperCase()}]`
+      `${levelIcons[level]} [${level.toUpperCase()}]`,
     )
 
     // 前缀
@@ -131,7 +131,8 @@ export class DevLogger {
       console.group(formatted)
       callback()
       console.groupEnd()
-    } else {
+    }
+    else {
       callback()
     }
   }
@@ -145,11 +146,11 @@ export class DevLogger {
 
   progress(current: number, total: number, message: string) {
     const percentage = Math.round((current / total) * 100)
-    const progressBar =
-      '█'.repeat(Math.round(percentage / 5)) +
-      '░'.repeat(20 - Math.round(percentage / 5))
+    const progressBar
+      = '█'.repeat(Math.round(percentage / 5))
+        + '░'.repeat(20 - Math.round(percentage / 5))
     const formatted = `${chalk.cyan(
-      '📊'
+      '📊',
     )} ${message} [${progressBar}] ${percentage}% (${current}/${total})`
 
     // 清除当前行并打印新的进度
@@ -174,14 +175,14 @@ export class DevLogger {
     }, 100)
 
     return promise
-      .then(result => {
+      .then((result) => {
         clearInterval(interval)
         process.stdout.clearLine(0)
         process.stdout.cursorTo(0)
         this.success(message)
         return result
       })
-      .catch(error => {
+      .catch((error) => {
         clearInterval(interval)
         process.stdout.clearLine(0)
         process.stdout.cursorTo(0)
@@ -198,18 +199,18 @@ export class DevLogger {
     console.log(
       chalk.blue(
         `║${' '.repeat((width - title.length) / 2)}${chalk.bold.white(
-          title
-        )}${' '.repeat(Math.ceil((width - title.length) / 2))}║`
-      )
+          title,
+        )}${' '.repeat(Math.ceil((width - title.length) / 2))}║`,
+      ),
     )
 
     if (subtitle) {
       console.log(
         chalk.blue(
           `║${' '.repeat((width - subtitle.length) / 2)}${chalk.gray(
-            subtitle
-          )}${' '.repeat(Math.ceil((width - subtitle.length) / 2))}║`
-        )
+            subtitle,
+          )}${' '.repeat(Math.ceil((width - subtitle.length) / 2))}║`,
+        ),
       )
     }
 
@@ -221,10 +222,11 @@ export class DevLogger {
     if (title) {
       const padding = Math.max(0, (width - title.length - 2) / 2)
       const line = `${'─'.repeat(Math.floor(padding))} ${title} ${'─'.repeat(
-        Math.ceil(padding)
+        Math.ceil(padding),
       )}`
       console.log(chalk.gray(line))
-    } else {
+    }
+    else {
       console.log(chalk.gray('─'.repeat(width)))
     }
   }

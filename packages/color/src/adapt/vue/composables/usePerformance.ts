@@ -22,22 +22,22 @@ export function usePerformance(): UsePerformanceReturn {
 
   // 性能统计计算属性
   const performanceStats = computed(() => {
-    const avgThemeChange =
-      themeChangeTimes.value.length > 0
-        ? themeChangeTimes.value.reduce((a, b) => a + b, 0) /
-          themeChangeTimes.value.length
+    const avgThemeChange
+      = themeChangeTimes.value.length > 0
+        ? themeChangeTimes.value.reduce((a, b) => a + b, 0)
+        / themeChangeTimes.value.length
         : 0
 
-    const avgColorGeneration =
-      colorGenerationTimes.value.length > 0
-        ? colorGenerationTimes.value.reduce((a, b) => a + b, 0) /
-          colorGenerationTimes.value.length
+    const avgColorGeneration
+      = colorGenerationTimes.value.length > 0
+        ? colorGenerationTimes.value.reduce((a, b) => a + b, 0)
+        / colorGenerationTimes.value.length
         : 0
 
-    const avgCssInjection =
-      cssInjectionTimes.value.length > 0
-        ? cssInjectionTimes.value.reduce((a, b) => a + b, 0) /
-          cssInjectionTimes.value.length
+    const avgCssInjection
+      = cssInjectionTimes.value.length > 0
+        ? cssInjectionTimes.value.reduce((a, b) => a + b, 0)
+        / cssInjectionTimes.value.length
         : 0
 
     return {
@@ -45,9 +45,9 @@ export function usePerformance(): UsePerformanceReturn {
       averageColorGenerationTime: Math.round(avgColorGeneration * 100) / 100,
       averageCssInjectionTime: Math.round(avgCssInjection * 100) / 100,
       totalOperations:
-        themeChangeTimes.value.length +
-        colorGenerationTimes.value.length +
-        cssInjectionTimes.value.length,
+        themeChangeTimes.value.length
+        + colorGenerationTimes.value.length
+        + cssInjectionTimes.value.length,
     }
   })
 
@@ -82,12 +82,12 @@ export function usePerformance(): UsePerformanceReturn {
   // 更新内存使用情况
   const updateMemoryUsage = () => {
     if (
-      typeof window !== 'undefined' &&
-      'performance' in window &&
-      'memory' in
-        (window.performance as unknown as {
-          memory: { usedJSHeapSize: number }
-        })
+      typeof window !== 'undefined'
+      && 'performance' in window
+      && 'memory'
+      in (window.performance as unknown as {
+        memory: { usedJSHeapSize: number }
+      })
     ) {
       const memory = (
         window.performance as unknown as { memory: { usedJSHeapSize: number } }

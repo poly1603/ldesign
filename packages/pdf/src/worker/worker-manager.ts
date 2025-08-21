@@ -4,13 +4,13 @@
  */
 
 import type {
+  PdfError,
+  TaskPriority,
+  WorkerManagerOptions,
   WorkerMessage,
   WorkerResponse,
-  WorkerTask,
-  WorkerManagerOptions,
   WorkerStatistics,
-  TaskPriority,
-  PdfError
+  WorkerTask,
 } from '../types'
 import { ErrorCode } from '../types'
 
@@ -37,17 +37,17 @@ export class WorkerManager {
   private readonly enableLogging: boolean
   private readonly taskTimeout: number
   private readonly maxRetries: number
-  
+
   private workers = new Map<string, WorkerInstance>()
   private taskQueue: WorkerTask[] = []
   private activeTasks = new Map<string, WorkerTask>()
   private pendingMessages = new Map<string, (response: WorkerResponse) => void>()
-  
+
   private totalTasks = 0
   private completedTasks = 0
   private failedTasks = 0
   private taskTimes: number[] = []
-  
+
   private destroyed = false
 
   constructor(options: WorkerManagerOptions = {}) {
@@ -56,10 +56,10 @@ export class WorkerManager {
     this.enableLogging = options.enableLogging || false
     this.taskTimeout = options.taskTimeout || 30000 // 30秒
     this.maxRetries = options.maxRetries || 3
-    
+
     this.log('WorkerManager initialized', {
       maxWorkers: this.maxWorkers,
-      workerScript: this.workerScript
+      workerScript: this.workerScript,
     })
   }
 
@@ -70,15 +70,15 @@ export class WorkerManager {
     if (this.destroyed) {
       throw new Error('WorkerManager has been destroyed')
     }
-    
+
     // 创建初始Worker
     const initialWorkers = Math.min(2, this.maxWorkers)
     const promises = []
-    
+
     for (let i = 0; i < initialWorkers; i++) {
       promises.push(this.createWorker())
     }
-    
+
     await Promise.all(promises)
     this.log(`Initialized with ${initialWorkers} workers`)
   }
@@ -89,12 +89,12 @@ export class WorkerManager {
   async executeTask<T = any>(
     type: string,
     data: any,
-    priority: TaskPriority = 'normal'
+    priority: TaskPriority = 'normal',
   ): Promise<T> {
     if (this.destroyed) {
       throw new Error('WorkerManager has been destroyed')
     }
-    
+
     return new Promise<T>((resolve, reject) => {
       const task: WorkerTask = {
         id: this.generateTaskId(),
@@ -105,9 +105,9 @@ export class WorkerManager {
         retries: 0,
         maxAttempts: this.maxRetries,
         resolve,
-        reject
+        reject,
       }
-      
+
       this.totalTasks++
       this.queueTask(task)
       this.processQueue()
@@ -118,17 +118,17 @@ export class WorkerManager {
    * 获取统计信息
    */
   getStatistics(): WorkerStatistics {
-    const averageTaskTime = this.taskTimes.length > 0 ?
-      this.taskTimes.reduce((sum, time) => sum + time, 0) / this.taskTimes.length :
-      0
-    
+    const averageTaskTime = this.taskTimes.length > 0
+      ? this.taskTimes.reduce((sum, time) => sum + time, 0) / this.taskTimes.length
+      : 0
+
     return {
       totalTasks: this.totalTasks,
       completedTasks: this.completedTasks,
       failedTasks: this.failedTasks,
       activeWorkers: this.workers.size,
       queuedTasks: this.taskQueue.length,
-      averageTaskTime
+      averageTaskTime,
     }
   }
 
@@ -136,28 +136,29 @@ export class WorkerManager {
    * 销毁Worker管理器
    */
   destroy(): void {
-    if (this.destroyed) return
-    
+    if (this.destroyed)
+      return
+
     this.destroyed = true
-    
+
     // 取消所有待处理任务
     for (const task of this.taskQueue) {
       task.reject(new Error('WorkerManager destroyed'))
     }
     this.taskQueue.length = 0
-    
+
     // 取消所有活动任务
     for (const task of this.activeTasks.values()) {
       task.reject(new Error('WorkerManager destroyed'))
     }
     this.activeTasks.clear()
-    
+
     // 销毁所有Worker
     for (const workerInstance of this.workers.values()) {
       this.destroyWorker(workerInstance.id)
     }
     this.workers.clear()
-    
+
     this.pendingMessages.clear()
     this.log('WorkerManager destroyed')
   }
@@ -171,10 +172,10 @@ export class WorkerManager {
    */
   private async createWorker(): Promise<WorkerInstance> {
     const workerId = this.generateWorkerId()
-    
+
     try {
       const worker = new Worker(this.workerScript)
-      
+
       const workerInstance: WorkerInstance = {
         id: workerId,
         worker,
@@ -182,26 +183,27 @@ export class WorkerManager {
         currentTask: undefined as WorkerTask | undefined,
         createdAt: Date.now(),
         completedTasks: 0,
-        failedTasks: 0
+        failedTasks: 0,
       }
-      
+
       // 设置消息处理器
       worker.onmessage = (event) => {
         this.handleWorkerMessage(workerId, event.data)
       }
-      
+
       worker.onerror = (error) => {
         this.handleWorkerError(workerId, error)
       }
-      
+
       // 初始化Worker
       await this.initializeWorker(workerInstance)
-      
+
       this.workers.set(workerId, workerInstance)
       this.log(`Worker ${workerId} created`)
-      
+
       return workerInstance
-    } catch (error) {
+    }
+    catch (error) {
       this.log(`Failed to create worker ${workerId}:`, error)
       throw error
     }
@@ -217,27 +219,28 @@ export class WorkerManager {
         this.pendingMessages.delete(messageId)
         reject(new Error('Worker initialization timeout'))
       }, 5000)
-      
+
       this.pendingMessages.set(messageId, (response) => {
         clearTimeout(timeout)
         if (response.type === 'success') {
           resolve()
-        } else {
+        }
+        else {
           reject(new Error(response.error as string))
         }
       })
-      
+
       const initMessage: WorkerMessage = {
         id: messageId,
         type: 'init',
         payload: {
           workerId: workerInstance.id,
           options: {
-            enableLogging: this.enableLogging
-          }
-        }
+            enableLogging: this.enableLogging,
+          },
+        },
       }
-      
+
       workerInstance.worker.postMessage(initMessage)
     })
   }
@@ -247,28 +250,30 @@ export class WorkerManager {
    */
   private destroyWorker(workerId: string): void {
     const workerInstance = this.workers.get(workerId)
-    if (!workerInstance) return
-    
+    if (!workerInstance)
+      return
+
     try {
       // 如果Worker正在执行任务，取消任务
       if (workerInstance.currentTask) {
         this.failTask(workerInstance.currentTask, 'Worker destroyed')
         workerInstance.currentTask = undefined as WorkerTask | undefined
       }
-      
+
       // 发送销毁消息
       const destroyMessage: WorkerMessage = {
         id: this.generateMessageId(),
-        type: 'destroy'
+        type: 'destroy',
       }
       workerInstance.worker.postMessage(destroyMessage)
-      
+
       // 终止Worker
       workerInstance.worker.terminate()
-      
+
       this.workers.delete(workerId)
       this.log(`Worker ${workerId} destroyed`)
-    } catch (error) {
+    }
+    catch (error) {
       this.log(`Error destroying worker ${workerId}:`, error)
     }
   }
@@ -278,7 +283,7 @@ export class WorkerManager {
    */
   private handleWorkerMessage(workerId: string, message: WorkerResponse): void {
     this.log(`Received message from worker ${workerId}:`, message)
-    
+
     // 处理初始化响应
     const pendingCallback = this.pendingMessages.get(message.id)
     if (pendingCallback) {
@@ -286,34 +291,35 @@ export class WorkerManager {
       pendingCallback(message)
       return
     }
-    
+
     // 处理任务响应
     const task = this.activeTasks.get(message.id)
     if (!task) {
       this.log(`Received response for unknown task ${message.id}`)
       return
     }
-    
+
     const workerInstance = this.workers.get(workerId)
     if (workerInstance) {
       workerInstance.busy = false
       workerInstance.currentTask = undefined as WorkerTask | undefined
     }
-    
+
     this.activeTasks.delete(message.id)
-    
+
     if (message.type === 'success') {
       this.completeTask(task, message.data)
       if (workerInstance) {
         workerInstance.completedTasks++
       }
-    } else {
+    }
+    else {
       this.failTask(task, message.error as string)
       if (workerInstance) {
         workerInstance.failedTasks++
       }
     }
-    
+
     // 处理队列中的下一个任务
     this.processQueue()
   }
@@ -323,12 +329,12 @@ export class WorkerManager {
    */
   private handleWorkerError(workerId: string, error: ErrorEvent): void {
     this.log(`Worker ${workerId} error:`, error)
-    
+
     const workerInstance = this.workers.get(workerId)
     if (workerInstance?.currentTask) {
       this.failTask(workerInstance.currentTask, `Worker error: ${error.message}`)
     }
-    
+
     // 重新创建Worker
     this.destroyWorker(workerId)
     if (!this.destroyed && this.workers.size < this.maxWorkers) {
@@ -345,18 +351,19 @@ export class WorkerManager {
     // 按优先级插入
     const priorityOrder = { urgent: 0, high: 1, normal: 2, low: 3 }
     const taskPriority = priorityOrder[task.priority]
-    
+
     let insertIndex = this.taskQueue.length
     for (let i = 0; i < this.taskQueue.length; i++) {
       const queuedTask = this.taskQueue[i]
-      if (!queuedTask) continue
+      if (!queuedTask)
+        continue
       const queuedTaskPriority = priorityOrder[queuedTask.priority]
       if (taskPriority < queuedTaskPriority) {
         insertIndex = i
         break
       }
     }
-    
+
     this.taskQueue.splice(insertIndex, 0, task)
     this.log(`Task ${task.id} queued with priority ${task.priority}`)
   }
@@ -368,7 +375,7 @@ export class WorkerManager {
     if (this.destroyed || this.taskQueue.length === 0) {
       return
     }
-    
+
     // 查找空闲Worker
     const availableWorker = this.findAvailableWorker()
     if (!availableWorker) {
@@ -382,7 +389,7 @@ export class WorkerManager {
       }
       return
     }
-    
+
     // 分配任务
     const task = this.taskQueue.shift()!
     this.assignTaskToWorker(task, availableWorker)
@@ -407,18 +414,18 @@ export class WorkerManager {
     task.status = 'running'
     workerInstance.busy = true
     workerInstance.currentTask = task
-    
+
     this.activeTasks.set(task.id, task)
-    
+
     const message: WorkerMessage = {
       id: task.id,
       type: task.type as any,
       data: task.data,
-      payload: task.data
+      payload: task.data,
     }
-    
+
     workerInstance.worker.postMessage(message)
-    
+
     // 设置任务超时
     setTimeout(() => {
       if (this.activeTasks.has(task.id)) {
@@ -428,7 +435,7 @@ export class WorkerManager {
         this.activeTasks.delete(task.id)
       }
     }, this.taskTimeout)
-    
+
     this.log(`Task ${task.id} assigned to worker ${workerInstance.id}`)
   }
 
@@ -439,14 +446,14 @@ export class WorkerManager {
     const startTime = Date.now()
     task.status = 'completed'
     this.completedTasks++
-    
+
     // 记录任务时间（估算）
     const taskTime = Date.now() - startTime
     this.taskTimes.push(taskTime)
     if (this.taskTimes.length > 100) {
       this.taskTimes.shift() // 保持最近100个任务的时间
     }
-    
+
     task.resolve(result)
     this.log(`Task ${task.id} completed`)
   }
@@ -456,22 +463,23 @@ export class WorkerManager {
    */
   private failTask(task: WorkerTask, errorMessage: string): void {
     task.retries++
-    
+
     if (task.retries < task.maxAttempts) {
       // 重试任务
       task.status = 'pending'
       this.queueTask(task)
       this.log(`Task ${task.id} failed, retrying (${task.retries}/${task.maxAttempts})`)
       this.processQueue()
-    } else {
+    }
+    else {
       // 任务最终失败
       task.status = 'failed'
       this.failedTasks++
-      
+
       const error = new Error(errorMessage) as PdfError
       error.code = ErrorCode.WORKER_ERROR
       task.reject(error)
-      
+
       this.log(`Task ${task.id} failed permanently: ${errorMessage}`)
     }
   }

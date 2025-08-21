@@ -130,7 +130,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
   const fieldStates = reactive<Record<string, any>>({})
 
   // 初始化字段状态
-  options.fields?.forEach(field => {
+  options.fields?.forEach((field) => {
     fieldStates[field.name] = reactive({
       value: formData[field.name] ?? field.defaultValue,
       dirty: false,
@@ -187,7 +187,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
     try {
       const fieldNames = options.fields?.map(f => f.name) || []
       const validationResults = await Promise.all(
-        fieldNames.map(name => validateField(name))
+        fieldNames.map(name => validateField(name)),
       )
 
       const isValid = validationResults.every(result => result)
@@ -195,7 +195,8 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 
       eventEmitter.emit('validate', isValid, formErrors)
       return isValid
-    } finally {
+    }
+    finally {
       formState.validating = false
     }
   }
@@ -221,7 +222,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
           case 'required':
             if (!value || value === '') {
               errors.push(
-                rule.message || `${field.title || field.label || name}不能为空`
+                rule.message || `${field.title || field.label || name}不能为空`,
               )
             }
             break
@@ -233,30 +234,30 @@ export function useForm(options: UseFormOptions): UseFormReturn {
           case 'number':
             if (value && isNaN(Number(value))) {
               errors.push(
-                rule.message ||
-                  `${field.title || field.label || name}必须是数字`
+                rule.message
+                || `${field.title || field.label || name}必须是数字`,
               )
             }
             break
           case 'min':
             if (
-              value &&
-              !isNaN(Number(value)) &&
-              Number(value) < (rule.params || 0)
+              value
+              && !isNaN(Number(value))
+              && Number(value) < (rule.params || 0)
             ) {
               errors.push(
-                rule.message ||
-                  `${field.title || field.label || name}不能小于${rule.params}`
+                rule.message
+                || `${field.title || field.label || name}不能小于${rule.params}`,
               )
             }
             break
           case 'minLength':
             if (value && value.length < (rule.params || 0)) {
               errors.push(
-                rule.message ||
-                  `${field.title || field.label || name}至少${
-                    rule.params
-                  }个字符`
+                rule.message
+                || `${field.title || field.label || name}至少${
+                  rule.params
+                }个字符`,
               )
             }
             break
@@ -275,9 +276,10 @@ export function useForm(options: UseFormOptions): UseFormReturn {
         case 'number':
           if (isNaN(Number(value))) {
             errors.push(`${field.title || field.label || name}必须是数字`)
-          } else if (field.min !== undefined && Number(value) < field.min) {
+          }
+          else if (field.min !== undefined && Number(value) < field.min) {
             errors.push(
-              `${field.title || field.label || name}不能小于${field.min}`
+              `${field.title || field.label || name}不能小于${field.min}`,
             )
           }
           break
@@ -293,7 +295,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
 
   const reset = (): void => {
     // 清空当前数据
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       delete formData[key]
     })
 
@@ -301,7 +303,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
     Object.assign(formData, { ...options.initialData })
 
     // 重置字段状态
-    Object.values(fieldStates).forEach(state => {
+    Object.values(fieldStates).forEach((state) => {
       state.dirty = false
       state.touched = false
       state.valid = true
@@ -327,7 +329,8 @@ export function useForm(options: UseFormOptions): UseFormReturn {
         eventEmitter.emit('submit', getFormData())
       }
       return isValid
-    } finally {
+    }
+    finally {
       formState.submitting = false
     }
   }
@@ -388,7 +391,7 @@ export function useForm(options: UseFormOptions): UseFormReturn {
   }
 
   const clearValidation = (): void => {
-    Object.values(fieldStates).forEach(state => {
+    Object.values(fieldStates).forEach((state) => {
       state.errors = []
       state.valid = true
     })
@@ -419,8 +422,8 @@ export function useForm(options: UseFormOptions): UseFormReturn {
   // 渲染表单组件
   const renderForm = (): VNode => {
     return h(DynamicForm, {
-      modelValue: formData,
-      options: {
+      'modelValue': formData,
+      'options': {
         ...options,
         layout: {
           ...options.layout,
@@ -432,13 +435,13 @@ export function useForm(options: UseFormOptions): UseFormReturn {
           },
         },
       },
-      ref: containerRef,
-      isExpanded: layout.isExpanded.value,
+      'ref': containerRef,
+      'isExpanded': layout.isExpanded.value,
       'onUpdate:modelValue': setFormData,
-      onSubmit: (data: FormData) => emit('submit', data),
-      onReset: () => emit('reset', formData),
-      onFieldChange: (name: string, value: any) => setFieldValue(name, value),
-      onToggleExpand: layout.toggleExpand,
+      'onSubmit': (data: FormData) => emit('submit', data),
+      'onReset': () => emit('reset', formData),
+      'onFieldChange': (name: string, value: any) => setFieldValue(name, value),
+      'onToggleExpand': layout.toggleExpand,
     })
   }
 

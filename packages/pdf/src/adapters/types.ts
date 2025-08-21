@@ -3,7 +3,7 @@
  * 定义跨框架PDF预览组件的统一接口
  */
 
-import type { PdfSource, RenderOptions, PdfDocument, PdfPage, ErrorHandler } from '../types'
+import type { ErrorHandler, PdfDocument, PdfPage, PdfSource, RenderOptions } from '../types'
 
 /**
  * 框架类型枚举
@@ -13,7 +13,7 @@ export enum FrameworkType {
   REACT = 'react',
   VANILLA = 'vanilla',
   ANGULAR = 'angular',
-  SVELTE = 'svelte'
+  SVELTE = 'svelte',
 }
 
 /**
@@ -126,55 +126,55 @@ export interface FrameworkAdapter {
   readonly type: FrameworkType
   /** 适配器配置 */
   readonly config: AdapterConfig
-  
+
   /**
    * 初始化适配器
    * @param config 配置选项
    */
-  initialize(config: AdapterConfig): Promise<void>
-  
+  initialize: (config: AdapterConfig) => Promise<void>
+
   /**
    * 创建组件实例
    * @param props 组件属性
    * @param handlers 事件处理器
    * @param hooks 生命周期钩子
    */
-  createComponent(
+  createComponent: (
     props: ComponentProps,
     handlers?: EventHandlers,
     hooks?: LifecycleHooks
-  ): unknown
-  
+  ) => unknown
+
   /**
    * 挂载组件到容器
    * @param component 组件实例
    * @param container 容器元素
    */
-  mount(component: unknown, container: HTMLElement): Promise<void>
-  
+  mount: (component: unknown, container: HTMLElement) => Promise<void>
+
   /**
    * 更新组件属性
    * @param component 组件实例
    * @param props 新的属性
    */
-  updateProps(component: unknown, props: Partial<ComponentProps>): void
-  
+  updateProps: (component: unknown, props: Partial<ComponentProps>) => void
+
   /**
    * 卸载组件
    * @param component 组件实例
    */
-  unmount(component: unknown): void
-  
+  unmount: (component: unknown) => void
+
   /**
    * 销毁适配器
    */
-  destroy(): void
-  
+  destroy: () => void
+
   /**
    * 获取渲染上下文
    * @param component 组件实例
    */
-  getRenderContext(component: unknown): RenderContext | null
+  getRenderContext: (component: unknown) => RenderContext | null
 }
 
 /**
@@ -186,25 +186,25 @@ export interface AdapterFactory {
    * @param type 框架类型
    * @param config 配置选项
    */
-  createAdapter(type: FrameworkType, config?: Partial<AdapterConfig>): FrameworkAdapter
-  
+  createAdapter: (type: FrameworkType, config?: Partial<AdapterConfig>) => FrameworkAdapter
+
   /**
    * 注册自定义适配器
    * @param type 框架类型
    * @param adapter 适配器类
    */
-  registerAdapter(type: FrameworkType, adapter: new (config: AdapterConfig) => FrameworkAdapter): void
-  
+  registerAdapter: (type: FrameworkType, adapter: new (config: AdapterConfig) => FrameworkAdapter) => void
+
   /**
    * 获取支持的框架类型列表
    */
-  getSupportedFrameworks(): FrameworkType[]
-  
+  getSupportedFrameworks: () => FrameworkType[]
+
   /**
    * 检查框架是否支持
    * @param type 框架类型
    */
-  isSupported(type: FrameworkType): boolean
+  isSupported: (type: FrameworkType) => boolean
 }
 
 /**
@@ -230,21 +230,21 @@ export interface ComponentState {
  */
 export interface ComponentMethods {
   /** 跳转到指定页面 */
-  goToPage(page: number): Promise<void>
+  goToPage: (page: number) => Promise<void>
   /** 上一页 */
-  previousPage(): Promise<void>
+  previousPage: () => Promise<void>
   /** 下一页 */
-  nextPage(): Promise<void>
+  nextPage: () => Promise<void>
   /** 设置缩放比例 */
-  setScale(scale: number): Promise<void>
+  setScale: (scale: number) => Promise<void>
   /** 放大 */
-  zoomIn(): Promise<void>
+  zoomIn: () => Promise<void>
   /** 缩小 */
-  zoomOut(): Promise<void>
+  zoomOut: () => Promise<void>
   /** 适应宽度 */
-  fitWidth(): Promise<void>
+  fitWidth: () => Promise<void>
   /** 适应页面 */
-  fitPage(): Promise<void>
+  fitPage: () => Promise<void>
   /** 刷新渲染 */
-  refresh(): Promise<void>
+  refresh: () => Promise<void>
 }

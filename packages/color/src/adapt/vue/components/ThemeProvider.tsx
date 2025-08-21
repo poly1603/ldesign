@@ -43,7 +43,8 @@ export default defineComponent({
 
     if (props.themeManager) {
       manager = props.themeManager
-    } else {
+    }
+    else {
       manager = new ThemeManager({
         themes: props.themes,
         defaultTheme: props.defaultTheme,
@@ -69,18 +70,18 @@ export default defineComponent({
     // 监听属性变化
     watch(
       () => props.themes,
-      newThemes => {
+      (newThemes) => {
         if (newThemes && newThemes.length > 0) {
-          newThemes.forEach(theme => {
+          newThemes.forEach((theme) => {
             manager.registerTheme(theme)
           })
         }
       },
-      { deep: true }
+      { deep: true },
     )
 
     return () => {
-      return <div class='l-theme-provider'>{slots.default?.()}</div>
+      return <div class="l-theme-provider">{slots.default?.()}</div>
     }
   },
 })

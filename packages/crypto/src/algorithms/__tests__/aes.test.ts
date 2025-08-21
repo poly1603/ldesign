@@ -38,20 +38,20 @@ describe('aES Encryption', () => {
 
       // Verify decryption works
       expect(encryptor.decrypt(encrypted128, testKey, options128).data).toBe(
-        testData
+        testData,
       )
       expect(encryptor.decrypt(encrypted192, testKey, options192).data).toBe(
-        testData
+        testData,
       )
       expect(encryptor.decrypt(encrypted256, testKey, options256).data).toBe(
-        testData
+        testData,
       )
     })
 
     it('should encrypt with different modes', () => {
       const modes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR'] as const
 
-      modes.forEach(mode => {
+      modes.forEach((mode) => {
         const options: AESOptions = { mode }
         const encrypted = encryptor.encrypt(testData, testKey, options)
         expect(encrypted.algorithm).toBe(`AES-256-${mode}`)
@@ -85,13 +85,13 @@ describe('aES Encryption', () => {
 
     it('should throw error for empty data', () => {
       expect(() => encryptor.encrypt('', testKey)).toThrow(
-        'Data cannot be empty'
+        'Data cannot be empty',
       )
     })
 
     it('should throw error for empty key', () => {
       expect(() => encryptor.encrypt(testData, '')).toThrow(
-        'Key cannot be empty'
+        'Key cannot be empty',
       )
     })
   })

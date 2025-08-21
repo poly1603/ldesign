@@ -155,8 +155,8 @@ export class CommunityContributionManager {
   private badgesFile: string
 
   constructor(options: { dataDir?: string } = {}) {
-    this.dataDir =
-      options.dataDir || resolve(process.cwd(), '.ldesign/community')
+    this.dataDir
+      = options.dataDir || resolve(process.cwd(), '.ldesign/community')
     this.contributorsFile = join(this.dataDir, 'contributors.json')
     this.contributionsFile = join(this.dataDir, 'contributions.json')
     this.badgesFile = join(this.dataDir, 'badges.json')
@@ -169,7 +169,7 @@ export class CommunityContributionManager {
    * 注册新贡献者
    */
   async registerContributor(
-    contributorData: Partial<Contributor>
+    contributorData: Partial<Contributor>,
   ): Promise<Contributor> {
     console.log(chalk.blue(`👋 注册新贡献者: ${contributorData.username}`))
 
@@ -211,7 +211,7 @@ export class CommunityContributionManager {
    * 提交贡献
    */
   async submitContribution(
-    contributionData: Partial<Contribution>
+    contributionData: Partial<Contribution>,
   ): Promise<Contribution> {
     console.log(chalk.blue(`📝 提交贡献: ${contributionData.title}`))
 
@@ -230,7 +230,7 @@ export class CommunityContributionManager {
       impact: contributionData.impact || 'minor',
       points: this.calculatePoints(
         contributionData.type!,
-        contributionData.impact || 'minor'
+        contributionData.impact || 'minor',
       ),
     }
 
@@ -240,7 +240,7 @@ export class CommunityContributionManager {
     // 更新贡献者统计
     await this.updateContributorStats(
       contribution.contributorId,
-      contribution.type
+      contribution.type,
     )
 
     // 检查并颁发徽章
@@ -257,7 +257,7 @@ export class CommunityContributionManager {
     contributionId: string,
     reviewerId: string,
     status: ContributionStatus,
-    feedback?: string
+    feedback?: string,
   ): Promise<void> {
     console.log(chalk.blue(`🔍 审查贡献: ${contributionId}`))
 
@@ -313,10 +313,10 @@ export class CommunityContributionManager {
     const contributionsByType: Record<string, number> = {}
     const contributionsByMonth: Record<string, number> = {}
 
-    Object.values(contributions).forEach(contribution => {
+    Object.values(contributions).forEach((contribution) => {
       // 按类型统计
-      contributionsByType[contribution.type] =
-        (contributionsByType[contribution.type] || 0) + 1
+      contributionsByType[contribution.type]
+        = (contributionsByType[contribution.type] || 0) + 1
 
       // 按月份统计
       const month = contribution.createdAt.substring(0, 7) // YYYY-MM
@@ -352,10 +352,10 @@ export class CommunityContributionManager {
 - **等级**: ${contributor.level}
 - **加入时间**: ${new Date(contributor.joinedAt).toLocaleDateString('zh-CN')}
 - **GitHub**: ${
-      contributor.github
-        ? `[@${contributor.github}](https://github.com/${contributor.github})`
-        : '未设置'
-    }
+  contributor.github
+    ? `[@${contributor.github}](https://github.com/${contributor.github})`
+    : '未设置'
+}
 
 ## 贡献统计
 - **总贡献数**: ${contributor.stats.totalContributions}
@@ -379,7 +379,7 @@ ${contributions
     contribution =>
       `- [${contribution.title}](${contribution.url || '#'}) (${
         contribution.type
-      }) - ${new Date(contribution.createdAt).toLocaleDateString('zh-CN')}`
+      }) - ${new Date(contribution.createdAt).toLocaleDateString('zh-CN')}`,
   )
   .join('\n')}
 
@@ -405,7 +405,7 @@ ${contributions
 
     if (!existsSync(badgesPath)) {
       const defaultBadges = {
-        newcomer: {
+        'newcomer': {
           id: 'newcomer',
           name: '新人',
           description: '欢迎加入 LDesign 社区！',
@@ -480,8 +480,8 @@ ${contributions
    */
   private generateId(): string {
     return (
-      Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15)
+      + Math.random().toString(36).substring(2, 15)
     )
   }
 
@@ -490,19 +490,19 @@ ${contributions
    */
   private calculatePoints(
     type: ContributionType,
-    impact: ContributionImpact
+    impact: ContributionImpact,
   ): number {
     const basePoints = {
-      code: 10,
-      plugin: 20,
-      documentation: 5,
+      'code': 10,
+      'plugin': 20,
+      'documentation': 5,
       'bug-report': 3,
       'feature-request': 2,
-      design: 8,
-      testing: 6,
-      translation: 4,
-      community: 3,
-      tutorial: 15,
+      'design': 8,
+      'testing': 6,
+      'translation': 4,
+      'community': 3,
+      'tutorial': 15,
     }
 
     const impactMultiplier = {
@@ -532,7 +532,7 @@ ${contributions
     contributions[contribution.id] = contribution
     writeFileSync(
       this.contributionsFile,
-      JSON.stringify(contributions, null, 2)
+      JSON.stringify(contributions, null, 2),
     )
   }
 
@@ -545,7 +545,8 @@ ${contributions
         const content = readFileSync(this.contributorsFile, 'utf-8')
         return JSON.parse(content)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow('⚠️ 无法加载贡献者数据'))
     }
     return {}
@@ -560,7 +561,8 @@ ${contributions
         const content = readFileSync(this.contributionsFile, 'utf-8')
         return JSON.parse(content)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow('⚠️ 无法加载贡献数据'))
     }
     return {}
@@ -586,14 +588,14 @@ ${contributions
    * 获取贡献者的贡献列表
    */
   private async getContributorContributions(
-    contributorId: string
+    contributorId: string,
   ): Promise<Contribution[]> {
     const contributions = await this.loadContributions()
     return Object.values(contributions)
       .filter(contribution => contribution.contributorId === contributorId)
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
   }
 
@@ -602,10 +604,11 @@ ${contributions
    */
   private async updateContributorStats(
     contributorId: string,
-    type: ContributionType
+    type: ContributionType,
   ): Promise<void> {
     const contributor = await this.getContributor(contributorId)
-    if (!contributor) return
+    if (!contributor)
+      return
 
     contributor.stats.totalContributions++
 
@@ -639,7 +642,8 @@ ${contributions
    */
   private async updateReviewerStats(reviewerId: string): Promise<void> {
     const reviewer = await this.getContributor(reviewerId)
-    if (!reviewer) return
+    if (!reviewer)
+      return
 
     reviewer.stats.reviews++
     await this.saveContributor(reviewer)
@@ -651,12 +655,18 @@ ${contributions
   private calculateLevel(stats: ContributorStats): ContributorLevel {
     const total = stats.totalContributions
 
-    if (total >= 100) return 'core'
-    if (total >= 50) return 'maintainer'
-    if (total >= 25) return 'expert'
-    if (total >= 10) return 'veteran'
-    if (total >= 5) return 'regular'
-    if (total >= 1) return 'contributor'
+    if (total >= 100)
+      return 'core'
+    if (total >= 50)
+      return 'maintainer'
+    if (total >= 25)
+      return 'expert'
+    if (total >= 10)
+      return 'veteran'
+    if (total >= 5)
+      return 'regular'
+    if (total >= 1)
+      return 'contributor'
     return 'newcomer'
   }
 
@@ -665,10 +675,11 @@ ${contributions
    */
   private async awardBadge(
     contributorId: string,
-    badgeId: string
+    badgeId: string,
   ): Promise<void> {
     const contributor = await this.getContributor(contributorId)
-    if (!contributor) return
+    if (!contributor)
+      return
 
     // 检查是否已经有此徽章
     if (contributor.badges.some(badge => badge.id === badgeId)) {
@@ -688,7 +699,7 @@ ${contributions
       await this.saveContributor(contributor)
 
       console.log(
-        chalk.green(`🏆 ${contributor.username} 获得徽章: ${badge.name}`)
+        chalk.green(`🏆 ${contributor.username} 获得徽章: ${badge.name}`),
       )
     }
   }
@@ -698,7 +709,8 @@ ${contributions
    */
   private async checkAndAwardBadges(contributorId: string): Promise<void> {
     const contributor = await this.getContributor(contributorId)
-    if (!contributor) return
+    if (!contributor)
+      return
 
     const stats = contributor.stats
 
@@ -738,7 +750,8 @@ ${contributions
    */
   private async rewardContribution(contribution: Contribution): Promise<void> {
     const contributor = await this.getContributor(contribution.contributorId)
-    if (!contributor) return
+    if (!contributor)
+      return
 
     // 增加积分
     contributor.stats.stars += contribution.points
@@ -746,7 +759,7 @@ ${contributions
     await this.saveContributor(contributor)
 
     console.log(
-      chalk.green(`⭐ ${contributor.username} 获得 ${contribution.points} 积分`)
+      chalk.green(`⭐ ${contributor.username} 获得 ${contribution.points} 积分`),
     )
   }
 }

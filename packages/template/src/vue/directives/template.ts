@@ -4,10 +4,10 @@
  * 提供 v-template 指令用于动态渲染模板
  */
 
-import type { Directive, DirectiveBinding, App } from 'vue'
+import type { App, Directive, DirectiveBinding } from 'vue'
+import type { DeviceType } from '../../types'
 import { createApp } from 'vue'
 import { TemplateManager } from '../../core/manager'
-import type { DeviceType } from '../../types'
 
 export interface TemplateDirectiveValue {
   category: string
@@ -77,10 +77,12 @@ async function updateTemplate(el: HTMLElement, binding: DirectiveBinding<Templat
     if (result && result.component) {
       // 渲染组件到元素
       renderComponentToElement(el, result.component, props, events)
-    } else {
+    }
+    else {
       el.innerHTML = `<div class="template-error">Failed to load template</div>`
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('[v-template] Error loading template:', error)
     el.innerHTML = `<div class="template-error">Template loading error</div>`
   }
@@ -93,7 +95,7 @@ function renderComponentToElement(
   el: HTMLElement,
   component: any,
   props: Record<string, any>,
-  events: Record<string, (...args: any[]) => void> = {}
+  events: Record<string, (...args: any[]) => void> = {},
 ) {
   // 清理之前的应用实例
   const existingApp = elementApps.get(el)
@@ -111,7 +113,7 @@ function renderComponentToElement(
       ...props,
       // 将事件作为 props 传递
       ...Object.fromEntries(
-        Object.entries(events).map(([key, handler]) => [`on${key.charAt(0).toUpperCase()}${key.slice(1)}`, handler])
+        Object.entries(events).map(([key, handler]) => [`on${key.charAt(0).toUpperCase()}${key.slice(1)}`, handler]),
       ),
     })
 
@@ -120,7 +122,8 @@ function renderComponentToElement(
 
     // 存储应用实例以便后续清理
     elementApps.set(el, app)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('[v-template] Error rendering component:', error)
     el.innerHTML = `<div class="template-error">Component render error</div>`
   }

@@ -1,15 +1,14 @@
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import type { Ref } from 'vue'
 import type {
-  PdfViewerConfig,
-  PdfInfo,
   LoadingState,
-  ZoomState,
-  SearchResult,
-  SearchOptions,
   PdfError,
-  UsePdfViewerReturn
+  PdfInfo,
+  PdfViewerConfig,
+  SearchOptions,
+  SearchResult,
+  UsePdfViewerReturn,
+  ZoomState,
 } from '../types'
+import { computed, onUnmounted, ref } from 'vue'
 
 // 模拟PDF查看器类（实际使用时应该导入真实的PDF库）
 class MockPdfViewer {
@@ -32,10 +31,10 @@ class MockPdfViewer {
 
   async loadDocument(source: File | string): Promise<PdfInfo> {
     this.emit('load-start')
-    
+
     // 模拟加载过程
     await this.simulateLoading()
-    
+
     // 模拟PDF信息
     const pdfInfo: PdfInfo = {
       numPages: Math.floor(Math.random() * 50) + 10,
@@ -49,16 +48,16 @@ class MockPdfViewer {
       version: '1.7',
       pageSize: {
         width: 595,
-        height: 842
+        height: 842,
       },
       fileSize: source instanceof File ? source.size : 1024000,
-      encrypted: false
+      encrypted: false,
     }
-    
+
     this.totalPages = pdfInfo.numPages
     this.isLoaded = true
     this.renderCurrentPage()
-    
+
     this.emit('load-success', pdfInfo)
     return pdfInfo
   }
@@ -67,7 +66,7 @@ class MockPdfViewer {
     const stages = [
       { stage: 'parsing', message: '解析PDF文档...', duration: 500 },
       { stage: 'initializing', message: '初始化渲染引擎...', duration: 300 },
-      { stage: 'rendering', message: '渲染页面...', duration: 700 }
+      { stage: 'rendering', message: '渲染页面...', duration: 700 },
     ]
 
     for (let i = 0; i < stages.length; i++) {
@@ -75,20 +74,21 @@ class MockPdfViewer {
       this.emit('load-progress', {
         progress: (i + 1) / stages.length * 100,
         stage,
-        message
+        message,
       })
       await new Promise(resolve => setTimeout(resolve, duration))
     }
   }
 
   private renderCurrentPage() {
-    if (!this.isLoaded) return
+    if (!this.isLoaded)
+      return
 
     this.emit('render-start', { pageNumber: this.currentPage })
-    
+
     // 清空容器
     this.container.innerHTML = ''
-    
+
     // 创建页面元素
     const pageElement = document.createElement('div')
     pageElement.className = 'pdf-page'
@@ -105,10 +105,10 @@ class MockPdfViewer {
       font-size: ${16 * this.zoomLevel}px;
       color: #666;
     `
-    
+
     pageElement.textContent = `第 ${this.currentPage} 页 / 共 ${this.totalPages} 页`
     this.container.appendChild(pageElement)
-    
+
     // 模拟渲染延迟
     setTimeout(() => {
       this.emit('render-complete', { pageNumber: this.currentPage })
@@ -116,15 +116,16 @@ class MockPdfViewer {
   }
 
   goToPage(pageNumber: number): void {
-    if (pageNumber < 1 || pageNumber > this.totalPages || !this.isLoaded) return
-    
+    if (pageNumber < 1 || pageNumber > this.totalPages || !this.isLoaded)
+      return
+
     const oldPage = this.currentPage
     this.currentPage = pageNumber
     this.renderCurrentPage()
-    
+
     this.emit('page-change', {
       currentPage: this.currentPage,
-      previousPage: oldPage
+      previousPage: oldPage,
     })
   }
 
@@ -138,7 +139,7 @@ class MockPdfViewer {
 
   setZoom(zoom: number | string): void {
     let newZoom: number
-    
+
     if (typeof zoom === 'string') {
       switch (zoom) {
         case 'fit-width':
@@ -147,29 +148,30 @@ class MockPdfViewer {
         case 'fit-page':
           newZoom = Math.min(
             this.container.clientWidth / 595,
-            this.container.clientHeight / 842
+            this.container.clientHeight / 842,
           )
           break
         case 'auto':
           newZoom = 1
           break
         default:
-          newZoom = parseFloat(zoom) || 1
+          newZoom = Number.parseFloat(zoom) || 1
       }
-    } else {
+    }
+    else {
       newZoom = zoom
     }
-    
+
     newZoom = Math.max(0.1, Math.min(5, newZoom))
-    
+
     if (newZoom !== this.zoomLevel) {
       const oldZoom = this.zoomLevel
       this.zoomLevel = newZoom
       this.renderCurrentPage()
-      
+
       this.emit('zoom-change', {
         zoomLevel: this.zoomLevel,
-        previousZoom: oldZoom
+        previousZoom: oldZoom,
       })
     }
   }
@@ -184,14 +186,14 @@ class MockPdfViewer {
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
     this.emit('search-start', options)
-    
+
     // 模拟搜索延迟
     await new Promise(resolve => setTimeout(resolve, 300))
-    
+
     // 模拟搜索结果
     const results: SearchResult[] = []
     const query = options.query.toLowerCase()
-    
+
     if (query.length > 0) {
       for (let i = 1; i <= Math.min(this.totalPages, 10); i++) {
         if (Math.random() > 0.7) { // 30%的页面包含搜索结果
@@ -205,17 +207,17 @@ class MockPdfViewer {
               x: Math.random() * 400,
               y: Math.random() * 600,
               width: options.query.length * 8,
-              height: 16
-            }
+              height: 16,
+            },
           })
         }
       }
     }
-    
+
     this.searchResults = results
     this.emit('search-result', results)
     this.emit('search-complete', { query: options.query, resultCount: results.length })
-    
+
     return results
   }
 
@@ -290,7 +292,7 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
   const loadingState = ref<LoadingState>({
     isLoading: false,
     progress: 0,
-    stage: 'idle'
+    stage: 'idle',
   })
   const pdfInfo = ref<PdfInfo | null>(null)
   const currentPage = ref(1)
@@ -300,11 +302,11 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
     mode: 'custom',
     min: 0.1,
     max: 5,
-    step: 0.2
+    step: 0.2,
   })
   const searchResults = ref<SearchResult[]>([])
   const error = ref<PdfError | null>(null)
-  
+
   // PDF查看器实例
   let pdfViewer: MockPdfViewer | null = null
   let containerElement: HTMLElement | null = null
@@ -320,10 +322,10 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
     if (pdfViewer) {
       pdfViewer.destroy()
     }
-    
+
     containerElement = container
     pdfViewer = new MockPdfViewer(container, config)
-    
+
     // 绑定事件监听器
     setupEventListeners()
   }
@@ -332,7 +334,8 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
    * 设置事件监听器
    */
   const setupEventListeners = () => {
-    if (!pdfViewer) return
+    if (!pdfViewer)
+      return
 
     pdfViewer.on('load-start', () => {
       isLoading.value = true
@@ -340,7 +343,7 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
         isLoading: true,
         progress: 0,
         stage: 'parsing',
-        message: '开始加载PDF...'
+        message: '开始加载PDF...',
       }
       error.value = null
     })
@@ -350,7 +353,7 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
         isLoading: true,
         progress: data.progress,
         stage: data.stage,
-        message: data.message
+        message: data.message,
       }
     })
 
@@ -360,12 +363,12 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
         isLoading: false,
         progress: 100,
         stage: 'complete',
-        message: 'PDF加载完成'
+        message: 'PDF加载完成',
       }
       pdfInfo.value = info
       totalPages.value = info.numPages
       currentPage.value = config.initialPage || 1
-      
+
       // 设置初始缩放
       if (config.initialZoom) {
         setZoom(config.initialZoom)
@@ -378,12 +381,12 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
         isLoading: false,
         progress: 0,
         stage: 'error',
-        message: '加载失败'
+        message: '加载失败',
       }
       error.value = {
         name: 'LoadError',
         message: err.message || '加载PDF时发生错误',
-        details: err
+        details: err,
       }
     })
 
@@ -415,11 +418,12 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
     try {
       const info = await pdfViewer.loadDocument(file)
       return Promise.resolve()
-    } catch (err: any) {
+    }
+    catch (err: any) {
       error.value = {
         name: 'LoadError',
         message: err.message || '加载PDF失败',
-        details: err
+        details: err,
       }
       throw err
     }
@@ -478,10 +482,11 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
   const setZoom = (zoom: number | string): void => {
     if (pdfViewer) {
       pdfViewer.setZoom(zoom)
-      
+
       if (typeof zoom === 'string') {
         zoomState.value.mode = zoom as any
-      } else {
+      }
+      else {
         zoomState.value.mode = 'custom'
       }
     }
@@ -498,11 +503,12 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
     try {
       const results = await pdfViewer.search(options)
       return results
-    } catch (err: any) {
+    }
+    catch (err: any) {
       error.value = {
         name: 'SearchError',
         message: err.message || '搜索失败',
-        details: err
+        details: err,
       }
       return []
     }
@@ -548,13 +554,13 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
       pdfViewer.destroy()
       pdfViewer = null
     }
-    
+
     // 重置状态
     isLoading.value = false
     loadingState.value = {
       isLoading: false,
       progress: 0,
-      stage: 'idle'
+      stage: 'idle',
     }
     pdfInfo.value = null
     currentPage.value = 1
@@ -564,7 +570,7 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
       mode: 'custom',
       min: 0.1,
       max: 5,
-      step: 0.2
+      step: 0.2,
     }
     searchResults.value = []
     error.value = null
@@ -585,11 +591,11 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
     zoomState,
     searchResults,
     error,
-    
+
     // 计算属性
     canGoPrevious,
     canGoNext,
-    
+
     // 方法
     initViewer,
     loadPdf,
@@ -603,6 +609,6 @@ export function usePdfViewer(config: PdfViewerConfig = {}): UsePdfViewerReturn {
     clearSearch,
     downloadPdf,
     printPdf,
-    destroy
+    destroy,
   }
 }

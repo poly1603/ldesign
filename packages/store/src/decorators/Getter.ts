@@ -31,15 +31,15 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
   return function (
     target: any,
     propertyKey: string | symbol,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     if (typeof propertyKey === 'symbol') {
       throw new TypeError('Getter decorator does not support symbol properties')
     }
 
     // 获取现有的元数据
-    const existingMetadata: DecoratorMetadata[] =
-      Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
+    const existingMetadata: DecoratorMetadata[]
+      = Reflect.getMetadata(DECORATOR_METADATA_KEY, target.constructor) || []
 
     // 添加新的元数据
     const newMetadata: DecoratorMetadata = {
@@ -52,7 +52,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     Reflect.defineMetadata(
       DECORATOR_METADATA_KEY,
       existingMetadata,
-      target.constructor
+      target.constructor,
     )
 
     // 保存原始 getter
@@ -60,7 +60,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
 
     if (typeof originalGetter !== 'function') {
       throw new TypeError(
-        `Getter decorator can only be applied to getter methods`
+        `Getter decorator can only be applied to getter methods`,
       )
     }
 
@@ -73,7 +73,7 @@ export function Getter(options: GetterDecoratorOptions = {}): MethodDecorator {
     descriptor.get = function (this: any) {
       // 检查依赖是否变化（优化版本）
       if (options.deps && options.deps.length > 0) {
-        const currentDepsValues = options.deps.map(dep => {
+        const currentDepsValues = options.deps.map((dep) => {
           if (this._store) {
             return this._store.$state[dep]
           }

@@ -90,14 +90,14 @@ export const ThemeProvider = defineComponent({
         })
 
         // 监听主题变化事件
-        themeManager.value.on('theme-changed', data => {
+        themeManager.value.on('theme-changed', (data) => {
           currentTheme.value = data.theme
           if (props.debug) {
             console.log('[ThemeProvider] Theme changed:', data.theme)
           }
         })
 
-        themeManager.value.on('theme-error', data => {
+        themeManager.value.on('theme-error', (data) => {
           error.value = data.error || new Error('Unknown theme error')
           if (props.debug) {
             console.error('[ThemeProvider] Theme error:', data.error)
@@ -110,15 +110,17 @@ export const ThemeProvider = defineComponent({
         if (props.debug) {
           console.log('[ThemeProvider] Theme manager initialized')
         }
-      } catch (err) {
+      }
+      catch (err) {
         error.value = err as Error
         if (props.debug) {
           console.error(
             '[ThemeProvider] Failed to initialize theme manager:',
-            err
+            err,
           )
         }
-      } finally {
+      }
+      finally {
         isLoading.value = false
       }
     }
@@ -140,45 +142,46 @@ export const ThemeProvider = defineComponent({
     // 监听主题属性变化
     watch(
       () => props.theme,
-      async newTheme => {
+      async (newTheme) => {
         if (themeManager.value && newTheme && newTheme !== currentTheme.value) {
           try {
             await themeManager.value.setTheme(newTheme)
-          } catch (err) {
+          }
+          catch (err) {
             error.value = err as Error
             if (props.debug) {
               console.error('[ThemeProvider] Failed to set theme:', err)
             }
           }
         }
-      }
+      },
     )
 
     // 监听主题列表变化
     watch(
       () => props.themes,
-      newThemes => {
+      (newThemes) => {
         if (themeManager.value && newThemes) {
           // 清除现有主题
           const existingThemes = themeManager.value.getAvailableThemes()
-          existingThemes.forEach(themeName => {
+          existingThemes.forEach((themeName) => {
             themeManager.value!.removeTheme(themeName)
           })
 
           // 添加新主题
-          newThemes.forEach(theme => {
+          newThemes.forEach((theme) => {
             themeManager.value!.addTheme(theme)
           })
 
           if (props.debug) {
             console.log(
               '[ThemeProvider] Themes updated:',
-              newThemes.map(t => t.name)
+              newThemes.map(t => t.name),
             )
           }
         }
       },
-      { deep: true }
+      { deep: true },
     )
 
     // 生命周期钩子
@@ -192,10 +195,10 @@ export const ThemeProvider = defineComponent({
 
     return () => {
       return (
-        <div class='theme-provider'>
+        <div class="theme-provider">
           {/* 错误状态 */}
           {error.value && (
-            <div class='theme-provider__error'>
+            <div class="theme-provider__error">
               <p>
                 主题加载失败:
                 {error.value.message}
@@ -213,7 +216,7 @@ export const ThemeProvider = defineComponent({
 
           {/* 加载状态 */}
           {isLoading.value && (
-            <div class='theme-provider__loading'>
+            <div class="theme-provider__loading">
               <p>正在加载主题...</p>
             </div>
           )}

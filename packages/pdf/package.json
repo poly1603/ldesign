@@ -2,12 +2,25 @@
   "name": "@ldesign/pdf",
   "version": "1.0.0",
   "description": "PDF预览组件包 - 提供高性能的PDF文档预览功能",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "keywords": [
+    "pdf",
+    "preview",
+    "viewer",
+    "typescript",
+    "vue",
+    "react"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "check": "tsc --noEmit",
@@ -18,16 +31,12 @@
     "test:watch": "jest --watch",
     "clean": "rimraf dist"
   },
-  "keywords": [
-    "pdf",
-    "preview",
-    "viewer",
-    "typescript",
-    "vue",
-    "react"
-  ],
-  "author": "LDesign Team",
-  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^4.0.0"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -37,14 +46,5 @@
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
     "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "pdfjs-dist": "^4.0.0"
-  },
-  "peerDependencies": {
-    "vue": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }

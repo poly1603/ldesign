@@ -135,8 +135,7 @@ const buildTime = computed(() => {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text, #333);
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
-    'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 @media (max-width: 768px) {

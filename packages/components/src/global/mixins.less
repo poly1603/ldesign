@@ -5,19 +5,19 @@
   color: @color;
   background-color: @background;
   border-color: @border;
-  
+
   &:hover {
     color: @color;
     background-color: lighten(@background, 5%);
     border-color: lighten(@border, 5%);
   }
-  
+
   &:active {
     color: @color;
     background-color: darken(@background, 5%);
     border-color: darken(@border, 5%);
   }
-  
+
   &:focus {
     box-shadow: 0 0 0 2px fade(@background, 20%);
   }
@@ -33,7 +33,7 @@
 /* Input mixins */
 .input-variant(@border-color; @focus-color) {
   border-color: @border-color;
-  
+
   &:focus {
     border-color: @focus-color;
     box-shadow: 0 0 0 2px fade(@focus-color, 20%);
@@ -53,7 +53,7 @@
     content: '';
     display: table;
   }
-  
+
   &::after {
     clear: both;
   }

@@ -1,12 +1,11 @@
-import { defineComponent, ref, onMounted, computed, onUnmounted } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 /**
  * 自适应桌面登录模板
- * 
+ *
  * 特性：
  * - 响应式布局，自动适配不同屏幕尺寸
  * - 智能背景加载
@@ -19,7 +18,7 @@ export default defineComponent({
     // 模板选择器组件
     templateSelector: {
       type: Object,
-      default: null
+      default: null,
     },
     // LoginPanel 组件实例
     loginPanel: {
@@ -29,8 +28,8 @@ export default defineComponent({
     // 自定义配置
     config: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   },
   emits: ['login', 'register', 'forgotPassword', 'thirdPartyLogin', 'template-change'],
   setup(props: any, { emit }: any) {
@@ -43,8 +42,10 @@ export default defineComponent({
     // 计算屏幕尺寸类别
     const screenSize = computed(() => {
       const width = screenWidth.value
-      if (width >= 1400) return 'large'
-      if (width >= 1024) return 'medium'
+      if (width >= 1400)
+        return 'large'
+      if (width >= 1024)
+        return 'medium'
       return 'small'
     })
 
@@ -56,12 +57,13 @@ export default defineComponent({
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -82,7 +84,7 @@ export default defineComponent({
           width: screenWidth.value,
           height: screenHeight.value,
           quality: 'high',
-          category: 'tech'
+          category: 'tech',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -90,13 +92,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Adaptive Gradient'
+          title: 'Adaptive Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -134,7 +138,7 @@ export default defineComponent({
       <div
         class={[
           'desktop-adaptive-login',
-          `desktop-adaptive-login--${screenSize.value}`
+          `desktop-adaptive-login--${screenSize.value}`,
         ]}
         style={backgroundStyle.value}
       >
@@ -157,9 +161,10 @@ export default defineComponent({
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
                   animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${3 + Math.random() * 4}s`
+                  animationDuration: `${3 + Math.random() * 4}s`,
                 }}
-              ></div>
+              >
+              </div>
             ))}
           </div>
         </div>
@@ -187,42 +192,46 @@ export default defineComponent({
           <div class="desktop-adaptive-login__form-container">
             {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
             <div class="login-panel-wrapper">
-              {props.loginPanel ? (
-                <props.loginPanel
-                  title="登录您的账户"
-                  subtitle="自适应设计，为您提供最佳的登录体验"
-                  showRememberMe={true}
-                  showForgotPassword={true}
-                  showThirdPartyLogin={true}
-                  thirdPartyProviders={['github', 'google', 'wechat']}
-                  onLogin={handleLogin}
-                  onRegister={handleRegister}
-                  onForgotPassword={handleForgotPassword}
-                  onThirdPartyLogin={handleThirdPartyLogin}
-                />
-              ) : (
-                <div class="login-form-placeholder">
-                  <h2 style={{
-                    color: 'white',
-                    textAlign: 'center',
-                    marginBottom: '20px',
-                    fontSize: screenSize.value === 'small' ? '1.5rem' : '1.8rem'
-                  }}>
-                    登录您的账户
-                  </h2>
-                  <p style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    textAlign: 'center',
-                    fontSize: '0.9rem'
-                  }}>
-                    请使用 LoginPanel 组件来显示登录表单
-                  </p>
-                </div>
-              )}
+              {props.loginPanel
+                ? (
+                    <props.loginPanel
+                      title="登录您的账户"
+                      subtitle="自适应设计，为您提供最佳的登录体验"
+                      showRememberMe={true}
+                      showForgotPassword={true}
+                      showThirdPartyLogin={true}
+                      thirdPartyProviders={['github', 'google', 'wechat']}
+                      onLogin={handleLogin}
+                      onRegister={handleRegister}
+                      onForgotPassword={handleForgotPassword}
+                      onThirdPartyLogin={handleThirdPartyLogin}
+                    />
+                  )
+                : (
+                    <div class="login-form-placeholder">
+                      <h2 style={{
+                        color: 'white',
+                        textAlign: 'center',
+                        marginBottom: '20px',
+                        fontSize: screenSize.value === 'small' ? '1.5rem' : '1.8rem',
+                      }}
+                      >
+                        登录您的账户
+                      </h2>
+                      <p style={{
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        textAlign: 'center',
+                        fontSize: '0.9rem',
+                      }}
+                      >
+                        请使用 LoginPanel 组件来显示登录表单
+                      </p>
+                    </div>
+                  )}
             </div>
           </div>
         </div>
       </div>
     )
-  }
+  },
 })

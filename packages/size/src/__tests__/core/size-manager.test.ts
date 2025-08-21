@@ -156,7 +156,7 @@ describe('sizeManagerImpl', () => {
 
       expect(smallConfig).not.toBe(largeConfig)
       expect(Number.parseFloat(smallConfig.fontSize.base)).toBeLessThan(
-        Number.parseFloat(largeConfig.fontSize.base)
+        Number.parseFloat(largeConfig.fontSize.base),
       )
     })
   })
@@ -175,7 +175,7 @@ describe('sizeManagerImpl', () => {
       const largeVariables = manager.generateCSSVariables('large')
 
       expect(smallVariables['--ls-font-size-base']).not.toBe(
-        largeVariables['--ls-font-size-base']
+        largeVariables['--ls-font-size-base'],
       )
     })
   })
@@ -187,7 +187,7 @@ describe('sizeManagerImpl', () => {
       expect(mockDocument.createElement).toHaveBeenCalledWith('style')
       expect(mockStyleElement.textContent).toContain('--ls-font-size-base')
       expect(mockDocument.head.appendChild).toHaveBeenCalledWith(
-        mockStyleElement
+        mockStyleElement,
       )
     })
 
@@ -244,7 +244,7 @@ describe('sizeManagerImpl', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error in size change callback:',
-        expect.any(Error)
+        expect.any(Error),
       )
       expect(normalCallback).toHaveBeenCalled()
 

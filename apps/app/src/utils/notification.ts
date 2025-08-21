@@ -18,7 +18,7 @@ export function showNotification(
   title: string,
   message: string,
   type: NotificationType = 'info',
-  duration: number = 3000
+  duration: number = 3000,
 ) {
   console.log(`[${type.toUpperCase()}] ${title}: ${message}`)
 
@@ -30,12 +30,13 @@ export function showNotification(
         type === 'success'
           ? '✅'
           : type === 'error'
-          ? '❌'
-          : type === 'warning'
-          ? '⚠️'
-          : 'ℹ️',
+            ? '❌'
+            : type === 'warning'
+              ? '⚠️'
+              : 'ℹ️',
     })
-  } else {
+  }
+  else {
     // 使用 alert 作为后备方案
     alert(`${title}\n${message}`)
   }

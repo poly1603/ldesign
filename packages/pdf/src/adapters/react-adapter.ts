@@ -3,19 +3,19 @@
  * 为React提供PDF预览组件支持
  */
 
+import { defaultPdfApi } from '../api/pdf-api'
+import { createPdfError, ErrorCode } from '../utils/error-handler'
 import { BaseAdapter } from './base-adapter'
 import {
-  FrameworkType,
   type AdapterConfig,
+  type ComponentMethods,
   type ComponentProps,
+  type ComponentState,
   type EventHandlers,
+  FrameworkType,
   type LifecycleHooks,
   type RenderContext,
-  type ComponentState,
-  type ComponentMethods
 } from './types'
-import { createPdfError, ErrorCode } from '../utils/error-handler'
-import { defaultPdfApi } from '../api/pdf-api'
 
 /**
  * React组件实例接口
@@ -70,25 +70,25 @@ export class ReactAdapter extends BaseAdapter {
   createComponent(
     props: ComponentProps,
     handlers?: EventHandlers,
-    hooks?: LifecycleHooks
+    hooks?: LifecycleHooks,
   ): ReactComponentInstance {
     if (!this._initialized) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'React adapter not initialized'
+        'React adapter not initialized',
       )
     }
 
     // 创建组件状态
     const state = this.createComponentState()
-    
+
     // 创建临时容器用于初始化渲染上下文
     const tempContainer = document.createElement('div')
     const context = this.createRenderContext(tempContainer)
-    
+
     // 创建组件方法
     const methods = this.createComponentMethods(state, context, handlers)
-    
+
     // 创建React组件实例
     const instance: ReactComponentInstance = {
       state,
@@ -97,7 +97,7 @@ export class ReactAdapter extends BaseAdapter {
       handlers,
       hooks,
       mounted: false,
-      cleanup: []
+      cleanup: [],
     }
 
     // 注册组件实例
@@ -118,7 +118,7 @@ export class ReactAdapter extends BaseAdapter {
     if (!instance) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Invalid React component instance'
+        'Invalid React component instance',
       )
     }
 
@@ -143,10 +143,10 @@ export class ReactAdapter extends BaseAdapter {
       instance.setState = (updater) => {
         const newState = updater(instance.state)
         Object.assign(instance.state, newState)
-        
+
         // 触发重新渲染
         if (instance.mounted) {
-          this.renderCurrentPage(instance.state, instance.context).catch(error => {
+          this.renderCurrentPage(instance.state, instance.context).catch((error) => {
             this._handleError(error)
           })
         }
@@ -155,7 +155,7 @@ export class ReactAdapter extends BaseAdapter {
       // 设置强制更新函数（模拟React的forceUpdate）
       instance.forceUpdate = () => {
         if (instance.mounted) {
-          this.renderCurrentPage(instance.state, instance.context).catch(error => {
+          this.renderCurrentPage(instance.state, instance.context).catch((error) => {
             this._handleError(error)
           })
         }
@@ -169,11 +169,12 @@ export class ReactAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[React Adapter] Component mounted to container')
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.RENDER_ERROR,
         'Failed to mount React component',
-        error
+        error,
       )
       this._handleError(pdfError)
       throw pdfError
@@ -188,7 +189,7 @@ export class ReactAdapter extends BaseAdapter {
     if (!instance) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Invalid React component instance'
+        'Invalid React component instance',
       )
     }
 
@@ -203,14 +204,14 @@ export class ReactAdapter extends BaseAdapter {
 
       // 更新页码
       if (props.page && props.page !== instance.state.currentPage) {
-        instance.methods.goToPage(props.page).catch(error => {
+        instance.methods.goToPage(props.page).catch((error) => {
           this._handleError(error)
         })
       }
 
       // 更新缩放比例
       if (props.scale && props.scale !== instance.state.scale) {
-        instance.methods.setScale(props.scale).catch(error => {
+        instance.methods.setScale(props.scale).catch((error) => {
           this._handleError(error)
         })
       }
@@ -218,7 +219,7 @@ export class ReactAdapter extends BaseAdapter {
       // 更新渲染选项
       if (props.renderOptions) {
         // 重新渲染当前页面
-        this.renderCurrentPage(instance.state, instance.context).catch(error => {
+        this.renderCurrentPage(instance.state, instance.context).catch((error) => {
           this._handleError(error)
         })
       }
@@ -242,7 +243,8 @@ export class ReactAdapter extends BaseAdapter {
         if (props.disabled) {
           instance.context.container.style.pointerEvents = 'none'
           instance.context.container.style.opacity = '0.6'
-        } else {
+        }
+        else {
           instance.context.container.style.pointerEvents = 'auto'
           instance.context.container.style.opacity = '1'
         }
@@ -254,11 +256,12 @@ export class ReactAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[React Adapter] Component props updated:', props)
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.VALIDATION_ERROR,
         'Failed to update React component props',
-        error
+        error,
       )
       this._handleError(pdfError)
     }
@@ -278,10 +281,11 @@ export class ReactAdapter extends BaseAdapter {
       instance.hooks?.beforeUnmount?.()
 
       // 执行清理函数
-      instance.cleanup.forEach(cleanup => {
+      instance.cleanup.forEach((cleanup) => {
         try {
           cleanup()
-        } catch (error) {
+        }
+        catch (error) {
           console.error('[React Adapter] Cleanup error:', error)
         }
       })
@@ -307,11 +311,12 @@ export class ReactAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[React Adapter] Component unmounted')
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.UNKNOWN_ERROR,
         'Failed to unmount React component',
-        error
+        error,
       )
       this._handleError(pdfError)
     }
@@ -323,7 +328,7 @@ export class ReactAdapter extends BaseAdapter {
   protected doDestroy(): void {
     // 清理所有React实例
     this._reactInstances = new WeakMap()
-    
+
     if (this._config.debug) {
       console.warn('[React Adapter] Destroyed')
     }
@@ -342,7 +347,7 @@ export class ReactAdapter extends BaseAdapter {
    */
   setComponentState(
     component: unknown,
-    updater: (prevState: ComponentState) => ComponentState
+    updater: (prevState: ComponentState) => ComponentState,
   ): void {
     const instance = this._reactInstances.get(component)
     if (instance && instance.setState) {
@@ -382,7 +387,8 @@ export class ReactAdapter extends BaseAdapter {
       if (instance.mounted) {
         await this.renderCurrentPage(instance.state, instance.context)
       }
-    } catch (error) {
+    }
+    catch (error) {
       instance.state.loading = false
       instance.state.error = error as Error
       instance.handlers?.onLoadingChange?.(false)
@@ -400,8 +406,8 @@ export function createReactAdapter(config?: Partial<AdapterConfig>): ReactAdapte
     framework: FrameworkType.REACT,
     componentName: 'PdfViewer',
     debug: false,
-    ...config
+    ...config,
   }
-  
+
   return new ReactAdapter(defaultConfig)
 }

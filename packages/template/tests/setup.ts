@@ -1,7 +1,9 @@
 import { vi } from 'vitest'
 
 // 为Vue TSX设置全局React变量（兼容性）
-;(globalThis as any).React = {
+;
+
+(globalThis as any).React = {
   createElement: () => null,
   Fragment: 'Fragment',
 }

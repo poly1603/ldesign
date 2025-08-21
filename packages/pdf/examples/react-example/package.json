@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/pdf-react-example",
   "version": "1.0.0",
-  "description": "React integration example for @ldesign/pdf",
   "private": true,
+  "description": "React integration example for @ldesign/pdf",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -13,16 +13,16 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix"
   },
   "dependencies": {
+    "@ldesign/pdf": "file:../../",
+    "clsx": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "@ldesign/pdf": "file:../../",
-    "clsx": "^2.0.0"
+    "react-scripts": "5.0.1"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",

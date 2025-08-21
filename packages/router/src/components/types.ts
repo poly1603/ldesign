@@ -49,7 +49,7 @@ export type CacheStrategy = 'memory' | 'session' | 'local' | 'none'
  */
 export interface RouterLinkProps<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > {
   /** 目标路由 */
   to: RouteLocationRaw<TParams, TQuery>
@@ -108,7 +108,7 @@ export type TypedRouterLinkProps<T extends string> = RouterLinkProps<
  */
 export interface RouterLinkSlotProps<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > {
   /** 链接地址 */
   href: string
@@ -133,7 +133,7 @@ export interface RouterLinkSlotProps<
  */
 export interface RouterLinkEmits {
   /** 点击事件 */
-  click: [event: MouseEvent]
+  'click': [event: MouseEvent]
   /** 导航开始事件 */
   'navigate-start': [to: RouteLocationRaw]
   /** 导航成功事件 */
@@ -157,7 +157,7 @@ export interface RouterLinkEmits {
  */
 export interface RouterViewProps<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > {
   /** 视图名称 */
   name?: string

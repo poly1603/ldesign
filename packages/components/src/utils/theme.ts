@@ -3,19 +3,19 @@
  */
 
 export interface ThemeConfig {
-  primaryColor?: string;
-  dangerColor?: string;
-  successColor?: string;
-  warningColor?: string;
-  textColor?: string;
-  backgroundColor?: string;
-  borderColor?: string;
-  borderRadius?: string;
-  fontSize?: string;
-  fontFamily?: string;
+  primaryColor?: string
+  dangerColor?: string
+  successColor?: string
+  warningColor?: string
+  textColor?: string
+  backgroundColor?: string
+  borderColor?: string
+  borderRadius?: string
+  fontSize?: string
+  fontFamily?: string
 }
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark'
 
 /**
  * Apply theme configuration to CSS variables
@@ -32,21 +32,21 @@ export function applyTheme(config: ThemeConfig, element: HTMLElement = document.
     borderRadius: '--ld-border-radius-base',
     fontSize: '--ld-font-size-base',
     fontFamily: '--ld-font-family',
-  };
+  }
 
   Object.entries(config).forEach(([key, value]) => {
     if (value && cssVarMap[key as keyof ThemeConfig]) {
-      element.style.setProperty(cssVarMap[key as keyof ThemeConfig], value);
+      element.style.setProperty(cssVarMap[key as keyof ThemeConfig], value)
     }
-  });
+  })
 }
 
 /**
  * Get current theme configuration from CSS variables
  */
 export function getCurrentTheme(element: HTMLElement = document.documentElement): ThemeConfig {
-  const computedStyle = getComputedStyle(element);
-  
+  const computedStyle = getComputedStyle(element)
+
   return {
     primaryColor: computedStyle.getPropertyValue('--ld-primary-color').trim(),
     dangerColor: computedStyle.getPropertyValue('--ld-danger-color').trim(),
@@ -58,32 +58,32 @@ export function getCurrentTheme(element: HTMLElement = document.documentElement)
     borderRadius: computedStyle.getPropertyValue('--ld-border-radius-base').trim(),
     fontSize: computedStyle.getPropertyValue('--ld-font-size-base').trim(),
     fontFamily: computedStyle.getPropertyValue('--ld-font-family').trim(),
-  };
+  }
 }
 
 /**
  * Switch between light and dark theme modes
  */
 export function setThemeMode(mode: ThemeMode, element: HTMLElement = document.documentElement): void {
-  element.setAttribute('data-theme', mode);
+  element.setAttribute('data-theme', mode)
 }
 
 /**
  * Get current theme mode
  */
 export function getThemeMode(element: HTMLElement = document.documentElement): ThemeMode {
-  const theme = element.getAttribute('data-theme');
-  return (theme as ThemeMode) || 'light';
+  const theme = element.getAttribute('data-theme')
+  return (theme as ThemeMode) || 'light'
 }
 
 /**
  * Toggle between light and dark theme modes
  */
 export function toggleThemeMode(element: HTMLElement = document.documentElement): ThemeMode {
-  const currentMode = getThemeMode(element);
-  const newMode = currentMode === 'light' ? 'dark' : 'light';
-  setThemeMode(newMode, element);
-  return newMode;
+  const currentMode = getThemeMode(element)
+  const newMode = currentMode === 'light' ? 'dark' : 'light'
+  setThemeMode(newMode, element)
+  return newMode
 }
 
 /**
@@ -132,22 +132,22 @@ export const themes = {
     successColor: '#52c41a',
     warningColor: '#faad14',
   },
-} as const;
+} as const
 
 /**
  * Apply a predefined theme
  */
 export function applyPredefinedTheme(
   themeName: keyof typeof themes,
-  element: HTMLElement = document.documentElement
+  element: HTMLElement = document.documentElement,
 ): void {
-  applyTheme(themes[themeName], element);
+  applyTheme(themes[themeName], element)
 }
 
 /**
  * Reset theme to default values
  */
 export function resetTheme(element: HTMLElement = document.documentElement): void {
-  applyTheme(themes.default, element);
-  setThemeMode('light', element);
+  applyTheme(themes.default, element)
+  setThemeMode('light', element)
 }

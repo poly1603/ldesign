@@ -807,12 +807,7 @@
 }
 
 .progress-bar.indeterminate {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--primary-color),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
   background-size: 200% 100%;
   animation: progress-indeterminate 1.5s infinite;
 }
@@ -857,7 +852,7 @@
 
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 18px;
   width: 18px;
   left: 3px;
@@ -985,20 +980,20 @@ input:focus + .toggle-slider {
   .sidebar-tab .text {
     display: none;
   }
-  
+
   .thumbnail-controls {
     flex-direction: column;
   }
-  
+
   .shortcut-list {
     grid-template-columns: 1fr;
   }
-  
+
   .dialog {
     margin: var(--spacing-sm);
     max-height: calc(100vh - 2 * var(--spacing-sm));
   }
-  
+
   .notification {
     left: var(--spacing-sm);
     right: var(--spacing-sm);
@@ -1011,16 +1006,16 @@ input:focus + .toggle-slider {
     flex-direction: column;
     gap: 2px;
   }
-  
+
   .sidebar-tab {
     justify-content: center;
     padding: var(--spacing-xs);
   }
-  
+
   .thumbnails-grid.size-small {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .dialog-header,
   .dialog-content,
   .dialog-footer {

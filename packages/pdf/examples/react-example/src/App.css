@@ -12,26 +12,26 @@
   --color-danger: #dc3545;
   --color-warning: #ffc107;
   --color-info: #17a2b8;
-  
+
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #e9ecef;
   --bg-accent: #f0f8ff;
-  
+
   --text-primary: #333333;
   --text-secondary: #666666;
   --text-muted: #999999;
   --text-inverse: #ffffff;
-  
+
   --border-color: #dee2e6;
   --border-radius: 8px;
   --border-radius-sm: 4px;
   --border-radius-lg: 12px;
-  
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-  
+
   --transition: all 0.2s ease;
   --transition-slow: all 0.3s ease;
 }
@@ -42,14 +42,14 @@
   --bg-secondary: #2d2d2d;
   --bg-tertiary: #404040;
   --bg-accent: #1a2332;
-  
+
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
   --text-muted: #999999;
   --text-inverse: #333333;
-  
+
   --border-color: #404040;
-  
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
@@ -63,8 +63,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-               'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   color: var(--text-primary);
   background-color: var(--bg-primary);
@@ -310,38 +309,38 @@ body {
     gap: 16px;
     padding: 16px;
   }
-  
+
   .app__title {
     font-size: 20px;
   }
-  
+
   .app__header-controls {
     width: 100%;
     justify-content: center;
   }
-  
+
   .app__upload-section {
     padding: 24px 16px;
   }
-  
+
   .app__upload-title {
     font-size: 24px;
   }
-  
+
   .app__upload-description {
     font-size: 14px;
   }
-  
+
   .app__features-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .app__footer-content {
     flex-direction: column;
     gap: 12px;
     text-align: center;
   }
-  
+
   .app__footer-links {
     gap: 16px;
   }
@@ -351,39 +350,39 @@ body {
   .app__header-content {
     padding: 12px;
   }
-  
+
   .app__title {
     font-size: 18px;
   }
-  
+
   .app__header-controls {
     flex-wrap: wrap;
     gap: 8px;
   }
-  
+
   .app__theme-toggle,
   .app__toggle,
   .app__reset {
     padding: 6px 12px;
     font-size: 12px;
   }
-  
+
   .app__upload-section {
     padding: 16px 12px;
   }
-  
+
   .app__upload-title {
     font-size: 20px;
   }
-  
+
   .app__feature {
     padding: 12px;
   }
-  
+
   .app__feature-icon {
     font-size: 16px;
   }
-  
+
   .app__feature-text {
     font-size: 12px;
   }
@@ -420,12 +419,24 @@ body {
   animation: slideIn 0.4s ease-out;
 }
 
-.app__feature:nth-child(1) { animation-delay: 0.1s; }
-.app__feature:nth-child(2) { animation-delay: 0.2s; }
-.app__feature:nth-child(3) { animation-delay: 0.3s; }
-.app__feature:nth-child(4) { animation-delay: 0.4s; }
-.app__feature:nth-child(5) { animation-delay: 0.5s; }
-.app__feature:nth-child(6) { animation-delay: 0.6s; }
+.app__feature:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.app__feature:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.app__feature:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.app__feature:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.app__feature:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.app__feature:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 /* 滚动条样式 */
 ::-webkit-scrollbar {

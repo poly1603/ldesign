@@ -19,7 +19,6 @@ import {
   inject,
   KeepAlive,
   markRaw,
-  onMounted,
   onUnmounted,
   type PropType,
   provide,
@@ -201,42 +200,43 @@ export const RouterView = defineComponent({
     // 获取路由信息
     const injectedRoute = useRoute()
     const currentRoute = computed(() => props.route || injectedRoute.value)
-    
+
     // 获取视图深度
     const depth = inject(ROUTER_VIEW_DEPTH_KEY, 0)
     const childDepth = depth + 1
     provide(ROUTER_VIEW_DEPTH_KEY, childDepth)
-    
+
     // 缓存管理
     const cache = new ComponentCache(props.maxCache, props.cacheStrategy)
-    
+
     // 组件状态
     const isLoading = ref(false)
     const hasError = ref(false)
     const errorInfo = ref<Error | null>(null)
     const retryCount = ref(0)
     const maxRetries = 3
-    
+
     // 异步组件加载状态
     const componentLoadingPromises = new Map<string, Promise<Component>>()
-    
+
     // 匹配的路由记录和组件
     const matchedRoute = computed(() => {
       const route = currentRoute.value
       return route.matched[depth] || null
     })
-    
+
     const viewComponent = computed(() => {
       const route = matchedRoute.value
-      if (!route) return null
-      
+      if (!route)
+        return null
+
       const components = route.components || {}
       return components[props.name] || null
     })
-    
+
     // 组件解析和缓存
     const resolvedComponent = ref<Component | null>(null)
-    
+
     // 异步组件加载函数
     const loadComponent = async (component: Component): Promise<Component> => {
       // 如果是函数组件，可能是异步组件
@@ -244,13 +244,13 @@ export const RouterView = defineComponent({
         try {
           // 生成缓存键
           const cacheKey = `${currentRoute.value.fullPath}_${props.name}_${depth}`
-          
+
           // 检查是否已在加载中
           const existingPromise = componentLoadingPromises.get(cacheKey)
           if (existingPromise) {
             return await existingPromise
           }
-          
+
           // 检查缓存
           if (props.keepAlive) {
             const cached = cache.get(cacheKey)
@@ -258,12 +258,12 @@ export const RouterView = defineComponent({
               return cached.component
             }
           }
-          
+
           // 标记为加载中
           isLoading.value = true
           hasError.value = false
           errorInfo.value = null
-          
+
           // 创建加载Promise，带超时
           const loadingPromise = Promise.race([
             Promise.resolve(typeof component === 'function' ? (component as any)() : component),
@@ -271,56 +271,58 @@ export const RouterView = defineComponent({
               setTimeout(() => {
                 reject(new Error(`Component loading timeout after ${props.timeout}ms`))
               }, props.timeout)
-            })
+            }),
           ]) as Promise<Component>
-          
+
           componentLoadingPromises.set(cacheKey, loadingPromise)
-          
+
           const loadedComponent = await loadingPromise
-          
+
           // 缓存组件
           if (props.keepAlive) {
             cache.set(cacheKey, markRaw(loadedComponent), currentRoute.value)
           }
-          
+
           // 清理加载状态
           componentLoadingPromises.delete(cacheKey)
           retryCount.value = 0
-          
+
           return loadedComponent
-        } catch (error) {
+        }
+        catch (error) {
           // 清理加载状态
           const cacheKey = `${currentRoute.value.fullPath}_${props.name}_${depth}`
           componentLoadingPromises.delete(cacheKey)
-          
+
           // 记录错误
           hasError.value = true
           errorInfo.value = error as Error
-          
+
           // 发出错误事件
           emit('error', error)
-          
+
           // 如果有重试机制且未达到最大重试次数
           if (retryCount.value < maxRetries) {
             console.warn(`Component loading failed, attempt ${retryCount.value + 1}/${maxRetries}:`, error)
             return component
           }
-          
+
           throw error
-        } finally {
+        }
+        finally {
           isLoading.value = false
         }
       }
-      
+
       return component
     }
-    
+
     // 重试函数
     const retry = async () => {
       if (retryCount.value < maxRetries && viewComponent.value) {
         retryCount.value++
         emit('retry', retryCount.value)
-        
+
         try {
           const component = await loadComponent(viewComponent.value)
           if (component) {
@@ -328,30 +330,32 @@ export const RouterView = defineComponent({
             hasError.value = false
             errorInfo.value = null
           }
-        } catch (error) {
+        }
+        catch (error) {
           console.error('Retry failed:', error)
         }
       }
     }
-    
+
     // 监听路由变化，解析组件
     watch([viewComponent, currentRoute], async ([component, route]) => {
       if (!component || !route) {
         resolvedComponent.value = null
         return
       }
-      
+
       try {
         const resolved = await loadComponent(component)
         if (resolved) {
           resolvedComponent.value = resolved
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Component loading failed:', error)
         // 组件已设置错误状态，这里不需要额外处理
       }
     }, { immediate: true })
-    
+
     // 清理函数
     const cleanup = () => {
       // 清理所有加载中的Promise
@@ -361,27 +365,27 @@ export const RouterView = defineComponent({
         cache.clear()
       }
     }
-    
+
     // 组件卸载时清理
     onUnmounted(() => {
       cleanup()
     })
-    
+
     // 渲染函数
     const renderComponent = (): VNode | null => {
       const route = currentRoute.value
       const component = resolvedComponent.value
-      
+
       // 没有匹配的路由
       if (!matchedRoute.value) {
         return props.empty ? h(props.empty) : null
       }
-      
+
       // 加载状态
       if (isLoading.value && props.showLoading) {
         return props.loading ? h(props.loading) : h('div', 'Loading...')
       }
-      
+
       // 错误状态
       if (hasError.value && errorInfo.value) {
         if (props.error) {
@@ -389,66 +393,67 @@ export const RouterView = defineComponent({
             error: errorInfo.value,
             retry,
             retryCount: retryCount.value,
-            maxRetries
+            maxRetries,
           })
         }
-        
+
         // 默认错误UI
         return h('div', {
-          class: 'router-view-error'
+          class: 'router-view-error',
         }, [
           h('p', 'Component loading failed'),
           h('p', { class: 'error-message' }, errorInfo.value.message),
           retryCount.value < maxRetries
             ? h('button', { onClick: retry }, `Retry (${retryCount.value}/${maxRetries})`)
-            : null
+            : null,
         ])
       }
-      
+
       // 没有组件
       if (!component) {
         return props.empty ? h(props.empty) : null
       }
-      
+
       // 创建组件实例
       const componentInstance = h(component, {
         ...attrs,
-        key: route.fullPath
+        key: route.fullPath,
       })
-      
+
       // 包装slot内容
       const slotProps: RouterViewSlotProps = {
         Component: component,
-        route: route,
+        route,
         isLoading: isLoading.value,
         error: errorInfo.value,
-        retry
+        retry,
       }
-      
+
       if (slots.default) {
         const slotResult = slots.default(slotProps)
         return Array.isArray(slotResult) ? slotResult[0] : slotResult
       }
       return componentInstance
     }
-    
+
     // 过渡和缓存包装
     const renderWithFeatures = (): VNode | null => {
       const content = renderComponent()
-      
-      if (!content) return null
-      
+
+      if (!content)
+        return null
+
       let wrappedContent = content
-      
+
       // KeepAlive 包装
       if (props.keepAlive) {
         wrappedContent = h(KeepAlive, {
           include: props.include,
           exclude: props.exclude,
-          max: props.maxCache
+          max: props.maxCache,
         }, () => wrappedContent)
       }
-      
+
       // Suspense 包装（异步组件支持）
       wrappedContent = h(Suspense, {
         timeout: props.timeout,
@@ -459,12 +464,12 @@ export const RouterView = defineComponent({
           hasError.value = true
           errorInfo.value = error
           emit('error', error)
-        }
+        },
       }, {
         default: () => wrappedContent,
-        fallback: () => props.loading ? h(props.loading) : h('div', 'Loading...')
+        fallback: () => props.loading ? h(props.loading) : h('div', 'Loading...'),
       })
-      
+
       // Transition 包装
       if (props.animation !== 'none') {
         const transitionProps = {
@@ -482,15 +487,15 @@ export const RouterView = defineComponent({
             emit('leave', el)
             setTimeout(done, props.animationDuration)
           },
-          onAfterLeave: (el: Element) => emit('afterLeave', el)
+          onAfterLeave: (el: Element) => emit('afterLeave', el),
         }
-        
+
         wrappedContent = h(Transition, transitionProps, () => wrappedContent)
       }
-      
+
       return wrappedContent
     }
-    
+
     return renderWithFeatures
   },
 })

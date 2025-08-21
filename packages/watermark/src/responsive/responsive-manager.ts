@@ -117,13 +117,13 @@ export class ResponsiveManager implements IResponsiveManager {
 
     // 按宽度从大到小排序，找到第一个匹配的断点
     const sortedBreakpoints = Array.from(this.breakpoints.values()).sort(
-      (a, b) => b.minWidth - a.minWidth
+      (a, b) => b.minWidth - a.minWidth,
     )
 
     for (const breakpoint of sortedBreakpoints) {
       if (
-        width >= breakpoint.minWidth &&
-        (!breakpoint.maxWidth || width <= breakpoint.maxWidth)
+        width >= breakpoint.minWidth
+        && (!breakpoint.maxWidth || width <= breakpoint.maxWidth)
       ) {
         return breakpoint
       }
@@ -183,7 +183,7 @@ export class ResponsiveManager implements IResponsiveManager {
       if (mediaQuery) {
         // 移除监听器
         const listeners = this.eventListeners.get(name) || []
-        listeners.forEach(listener => {
+        listeners.forEach((listener) => {
           mediaQuery.removeEventListener('change', listener)
         })
         this.mediaQueries.delete(name)
@@ -216,7 +216,8 @@ export class ResponsiveManager implements IResponsiveManager {
       if (instance) {
         await this.handleInstanceResize(instance)
       }
-    } else {
+    }
+    else {
       // 更新所有实例
       for (const instance of this.instances.values()) {
         await this.handleInstanceResize(instance)
@@ -254,7 +255,7 @@ export class ResponsiveManager implements IResponsiveManager {
     // 移除媒体查询监听器
     for (const [name, mediaQuery] of this.mediaQueries) {
       const listeners = this.eventListeners.get(name) || []
-      listeners.forEach(listener => {
+      listeners.forEach((listener) => {
         mediaQuery.removeEventListener('change', listener)
       })
     }
@@ -263,7 +264,7 @@ export class ResponsiveManager implements IResponsiveManager {
     window.removeEventListener('resize', this.handleWindowResize)
     window.removeEventListener(
       'orientationchange',
-      this.handleOrientationChange
+      this.handleOrientationChange,
     )
 
     // 清理数据
@@ -287,28 +288,38 @@ export class ResponsiveManager implements IResponsiveManager {
     let type: 'mobile' | 'tablet' | 'desktop' = 'desktop'
     if (
       /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(
-        userAgent
+        userAgent,
       )
     ) {
       type = 'mobile'
-    } else if (/tablet|ipad/i.test(userAgent)) {
+    }
+    else if (/tablet|ipad/i.test(userAgent)) {
       type = 'tablet'
     }
 
     // 检测操作系统
     let os = 'unknown'
-    if (/windows/i.test(userAgent)) os = 'windows'
-    else if (/mac/i.test(userAgent)) os = 'macos'
-    else if (/linux/i.test(userAgent)) os = 'linux'
-    else if (/android/i.test(userAgent)) os = 'android'
-    else if (/ios|iphone|ipad/i.test(userAgent)) os = 'ios'
+    if (/windows/i.test(userAgent))
+      os = 'windows'
+    else if (/mac/i.test(userAgent))
+      os = 'macos'
+    else if (/linux/i.test(userAgent))
+      os = 'linux'
+    else if (/android/i.test(userAgent))
+      os = 'android'
+    else if (/ios|iphone|ipad/i.test(userAgent))
+      os = 'ios'
 
     // 检测浏览器
     let browser = 'unknown'
-    if (/chrome/i.test(userAgent)) browser = 'chrome'
-    else if (/firefox/i.test(userAgent)) browser = 'firefox'
-    else if (/safari/i.test(userAgent)) browser = 'safari'
-    else if (/edge/i.test(userAgent)) browser = 'edge'
+    if (/chrome/i.test(userAgent))
+      browser = 'chrome'
+    else if (/firefox/i.test(userAgent))
+      browser = 'firefox'
+    else if (/safari/i.test(userAgent))
+      browser = 'safari'
+    else if (/edge/i.test(userAgent))
+      browser = 'edge'
 
     return {
       type,
@@ -344,7 +355,7 @@ export class ResponsiveManager implements IResponsiveManager {
       apply: async (
         instance: any,
         containerInfo: ContainerInfo,
-        _deviceInfo: DeviceInfo
+        _deviceInfo: DeviceInfo,
       ) => {
         const baseWidth = 1200
         const scale = Math.min(containerInfo.width / baseWidth, 1)
@@ -363,7 +374,7 @@ export class ResponsiveManager implements IResponsiveManager {
       apply: async (
         instance: any,
         _containerInfo: ContainerInfo,
-        deviceInfo: DeviceInfo
+        deviceInfo: DeviceInfo,
       ) => {
         const isMobile = deviceInfo.type === 'mobile'
         const config = instance.config
@@ -382,10 +393,10 @@ export class ResponsiveManager implements IResponsiveManager {
       apply: async (
         instance: any,
         containerInfo: ContainerInfo,
-        _deviceInfo: DeviceInfo
+        _deviceInfo: DeviceInfo,
       ) => {
-        const shouldHide =
-          containerInfo.width < 480 || containerInfo.height < 320
+        const shouldHide
+          = containerInfo.width < 480 || containerInfo.height < 320
 
         instance.elements.forEach((element: any) => {
           element.style.display = shouldHide ? 'none' : ''
@@ -430,7 +441,7 @@ export class ResponsiveManager implements IResponsiveManager {
       return
     }
 
-    this.resizeObserver = new ResizeObserver(entries => {
+    this.resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const element = entry.target
 
@@ -477,7 +488,7 @@ export class ResponsiveManager implements IResponsiveManager {
   }
 
   private async handleInstanceResize(
-    instance: WatermarkInstance
+    instance: WatermarkInstance,
   ): Promise<void> {
     if (!instance.container) {
       return
@@ -492,7 +503,7 @@ export class ResponsiveManager implements IResponsiveManager {
   }
 
   private async applyResponsiveConfig(
-    instance: WatermarkInstance
+    instance: WatermarkInstance,
   ): Promise<void> {
     const responsiveConfig = instance.config.responsive
     if (!responsiveConfig || !responsiveConfig.enabled) {
@@ -518,7 +529,7 @@ export class ResponsiveManager implements IResponsiveManager {
 
   private async applyBreakpointConfig(
     instance: WatermarkInstance,
-    breakpoint: Breakpoint
+    breakpoint: Breakpoint,
   ): Promise<void> {
     const responsiveConfig = instance.config.responsive
     if (!responsiveConfig || !responsiveConfig.breakpoints) {
@@ -549,7 +560,7 @@ export class ResponsiveManager implements IResponsiveManager {
 
   private async applyAdaptiveStrategies(
     instance: WatermarkInstance,
-    containerInfo: ContainerInfo
+    containerInfo: ContainerInfo,
   ): Promise<void> {
     const adaptiveConfig = instance.config.responsive?.adaptive
     if (!adaptiveConfig || !adaptiveConfig.enabled) {
@@ -566,10 +577,11 @@ export class ResponsiveManager implements IResponsiveManager {
         if (strategy) {
           try {
             await strategy.apply(instance, containerInfo, this.deviceInfo)
-          } catch (error) {
+          }
+          catch (error) {
             console.error(
               `Failed to apply adaptive strategy ${strategyName}:`,
-              error
+              error,
             )
           }
         }
@@ -586,7 +598,7 @@ export class ResponsiveManager implements IResponsiveManager {
     this.eventListeners.forEach((listeners, breakpointName) => {
       const breakpoint = this.breakpoints.get(breakpointName)
       if (breakpoint?.mediaQuery) {
-        listeners.forEach(listener => {
+        listeners.forEach((listener) => {
           breakpoint.mediaQuery!.removeEventListener('change', listener)
         })
       }

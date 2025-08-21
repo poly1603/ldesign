@@ -107,7 +107,8 @@ class PerformanceBenchmark {
       for (let i = 0; i < iterations; i++) {
         try {
           router.resolve(route)
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略解析错误，专注于性能
         }
       }
@@ -149,7 +150,8 @@ class PerformanceBenchmark {
 
         try {
           await router.push(route)
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略导航错误
         }
 
@@ -207,7 +209,8 @@ class PerformanceBenchmark {
         const startTime = performance.now()
         try {
           router.resolve(route)
-        } catch (error) {
+        }
+        catch (error) {
           // 忽略解析错误
         }
         const endTime = performance.now()
@@ -253,19 +256,19 @@ class PerformanceBenchmark {
 
     const memoryDiff = {
       heapUsed: (
-        (finalMemory.heapUsed - initialMemory.heapUsed) /
-        1024 /
-        1024
+        (finalMemory.heapUsed - initialMemory.heapUsed)
+        / 1024
+        / 1024
       ).toFixed(2),
       heapTotal: (
-        (finalMemory.heapTotal - initialMemory.heapTotal) /
-        1024 /
-        1024
+        (finalMemory.heapTotal - initialMemory.heapTotal)
+        / 1024
+        / 1024
       ).toFixed(2),
       external: (
-        (finalMemory.external - initialMemory.external) /
-        1024 /
-        1024
+        (finalMemory.external - initialMemory.external)
+        / 1024
+        / 1024
       ).toFixed(2),
     }
 
@@ -286,11 +289,11 @@ class PerformanceBenchmark {
     // 路由匹配报告
     if (this.results.routeMatching) {
       console.log('\n🔍 路由匹配性能:')
-      this.results.routeMatching.forEach(result => {
+      this.results.routeMatching.forEach((result) => {
         console.log(
           `  ${result.route.padEnd(30)} ${result.avgTime}ms (${
             result.opsPerSecond
-          } ops/s)`
+          } ops/s)`,
         )
       })
     }
@@ -298,11 +301,11 @@ class PerformanceBenchmark {
     // 路由导航报告
     if (this.results.navigation) {
       console.log('\n🧭 路由导航性能:')
-      this.results.navigation.forEach(result => {
+      this.results.navigation.forEach((result) => {
         console.log(
           `  ${result.route.padEnd(20)} 平均: ${result.avgTime}ms, 最小: ${
             result.minTime
-          }ms, 最大: ${result.maxTime}ms`
+          }ms, 最大: ${result.maxTime}ms`,
         )
       })
     }
@@ -313,11 +316,11 @@ class PerformanceBenchmark {
       console.log(`  路由数量: ${this.results.massRoutes.routeCount}`)
       console.log(`  创建时间: ${this.results.massRoutes.createTime}ms`)
       console.log('  解析性能:')
-      this.results.massRoutes.resolveResults.forEach(result => {
+      this.results.massRoutes.resolveResults.forEach((result) => {
         console.log(
           `    ${result.route.padEnd(30)} ${result.avgTime}ms (${
             result.opsPerSecond
-          } ops/s)`
+          } ops/s)`,
         )
       })
     }
@@ -326,13 +329,13 @@ class PerformanceBenchmark {
     if (this.results.memoryUsage) {
       console.log('\n💾 内存使用情况:')
       console.log(
-        `  创建路由器数量: ${this.results.memoryUsage.routersCreated}`
+        `  创建路由器数量: ${this.results.memoryUsage.routersCreated}`,
       )
       console.log(
-        `  堆内存增加: ${this.results.memoryUsage.memoryDiff.heapUsed}MB`
+        `  堆内存增加: ${this.results.memoryUsage.memoryDiff.heapUsed}MB`,
       )
       console.log(
-        `  平均每个路由器: ${this.results.memoryUsage.avgMemoryPerRouter}MB`
+        `  平均每个路由器: ${this.results.memoryUsage.avgMemoryPerRouter}MB`,
       )
     }
 
@@ -367,7 +370,8 @@ async function runBenchmark() {
 
     benchmark.generateReport()
     benchmark.saveResults()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 性能测试失败:', error)
     process.exit(1)
   }

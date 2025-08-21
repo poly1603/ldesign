@@ -12,11 +12,11 @@
  */
 
 import { createApp, presets } from '@ldesign/engine'
-import { createAppI18nPlugin } from './i18n'
 import { createRouterEnginePlugin } from '@ldesign/router'
 import { createTemplateEnginePlugin } from '@ldesign/template'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import { createAppI18nPlugin } from './i18n'
 import { routes } from './router/routes'
 
 // 导入样式
@@ -68,7 +68,7 @@ async function createLDesignApp() {
         mode: 'hash', // 使用 hash 模式，避免服务器配置问题
         base: '/',
         version: '1.0.0',
-      })
+      }),
     )
 
     // 集成模板系统插件（在路由插件之后）
@@ -80,7 +80,7 @@ async function createLDesignApp() {
         enableCache: true,
         autoDetectDevice: true,
         debug: appConfig.debug,
-      })
+      }),
     )
     console.log('✅ 模板系统插件安装完成')
 
@@ -123,26 +123,29 @@ async function createLDesignApp() {
         try {
           if (vueApp.config.globalProperties.$t) {
             console.log('✅ 全局 $t 函数可用')
-            const testTranslation =
-              vueApp.config.globalProperties.$t('common.hello')
+            const testTranslation
+              = vueApp.config.globalProperties.$t('common.hello')
             console.log('✅ 测试翻译结果:', testTranslation)
-          } else {
+          }
+          else {
             console.log('❌ 全局 $t 函数不可用')
           }
-        } catch (error) {
+        }
+        catch (error) {
           console.error('❌ i18n 测试失败:', error)
         }
       }, 1000)
     }
 
     return { engine, app: vueApp }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 应用启动失败:', error)
     throw error
   }
 }
 
 // 启动应用
-createLDesignApp().catch(error => {
+createLDesignApp().catch((error) => {
   console.error('应用启动失败:', error)
 })

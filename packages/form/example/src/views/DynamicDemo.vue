@@ -104,7 +104,8 @@ function addField(type: keyof typeof fieldTemplates) {
   // 初始化字段值
   if (type === 'checkbox') {
     formData.value[newField.name] = []
-  } else {
+  }
+  else {
     formData.value[newField.name] = ''
   }
 }
@@ -154,7 +155,7 @@ function handleChange(name: string, value: any) {
 }
 
 // 初始化表单数据
-baseFormConfig.fields.forEach(field => {
+baseFormConfig.fields.forEach((field) => {
   formData.value[field.name] = ''
 })
 </script>
@@ -162,14 +163,20 @@ baseFormConfig.fields.forEach(field => {
 <template>
   <div class="space-y-8">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">动态表单</h1>
-      <p class="text-gray-600">展示动态添加/删除字段功能</p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        动态表单
+      </h1>
+      <p class="text-gray-600">
+        展示动态添加/删除字段功能
+      </p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- 表单区域 -->
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">动态表单</h2>
+        <h2 class="text-xl font-semibold mb-4">
+          动态表单
+        </h2>
 
         <DynamicForm
           v-model="formData"
@@ -228,7 +235,9 @@ baseFormConfig.fields.forEach(field => {
       <div class="space-y-6">
         <!-- 当前字段列表 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">当前字段列表</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            当前字段列表
+          </h3>
           <div class="space-y-2">
             <div
               v-for="(field, index) in currentFormConfig.fields"
@@ -237,9 +246,7 @@ baseFormConfig.fields.forEach(field => {
             >
               <div class="flex items-center space-x-2">
                 <span class="text-sm font-medium">{{ field.title }}</span>
-                <span class="text-xs text-gray-500"
-                  >({{ field.component }})</span
-                >
+                <span class="text-xs text-gray-500">({{ field.component }})</span>
               </div>
               <button
                 class="text-red-500 hover:text-red-700 text-sm"
@@ -259,7 +266,9 @@ baseFormConfig.fields.forEach(field => {
 
         <!-- 表单数据 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单数据</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            表单数据
+          </h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(formData, null, 2)
           }}</pre>
@@ -267,7 +276,9 @@ baseFormConfig.fields.forEach(field => {
 
         <!-- 表单配置 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">表单配置</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            表单配置
+          </h3>
           <pre class="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-48">{{
             JSON.stringify(currentFormConfig, null, 2)
           }}</pre>

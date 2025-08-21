@@ -17,9 +17,11 @@ async function loadNetworkModule() {
   try {
     await loadModule()
     isLoaded.value = true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('加载网络模块失败:', error)
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -74,7 +76,9 @@ function unloadModule() {
     </div>
 
     <div v-if="isLoaded" class="controls">
-      <button class="unload-btn" @click="unloadModule">❌ 卸载模块</button>
+      <button class="unload-btn" @click="unloadModule">
+        ❌ 卸载模块
+      </button>
     </div>
   </div>
 </template>

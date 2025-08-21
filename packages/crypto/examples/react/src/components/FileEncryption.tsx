@@ -74,17 +74,20 @@ export const FileEncryption: React.FC = () => {
           if (fileInputRef.current) {
             fileInputRef.current.value = ''
           }
-        } else {
+        }
+        else {
           alert(`加密失败: ${encrypted.error}`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         alert(`文件处理失败: ${(error as Error).message}`)
-      } finally {
+      }
+      finally {
         setIsProcessing(false)
         setTimeout(() => setProgress(0), 1000)
       }
     },
-    [password]
+    [password],
   )
 
   // 解密文件
@@ -119,14 +122,16 @@ export const FileEncryption: React.FC = () => {
           a.click()
           document.body.removeChild(a)
           URL.revokeObjectURL(url)
-        } else {
+        }
+        else {
           alert(`解密失败: ${decrypted.error}`)
         }
-      } catch (error) {
+      }
+      catch (error) {
         alert(`解密错误: ${(error as Error).message}`)
       }
     },
-    [password]
+    [password],
   )
 
   // 导出加密文件
@@ -177,12 +182,13 @@ export const FileEncryption: React.FC = () => {
         encryptFile(file)
       }
     },
-    [encryptFile]
+    [encryptFile],
   )
 
   // 格式化文件大小
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
+    if (bytes === 0)
+      return '0 Bytes'
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -190,138 +196,158 @@ export const FileEncryption: React.FC = () => {
   }
 
   return (
-    <div className='file-encryption'>
+    <div className="file-encryption">
       <h2>📁 文件加密工具</h2>
 
-      <div className='encryption-controls'>
-        <div className='password-section'>
+      <div className="encryption-controls">
+        <div className="password-section">
           <label>加密密码:</label>
           <input
-            type='password'
-            placeholder='请输入强密码'
+            type="password"
+            placeholder="请输入强密码"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className='password-input'
+            className="password-input"
           />
         </div>
 
-        <div className='file-upload-section'>
+        <div className="file-upload-section">
           <input
             ref={fileInputRef}
-            type='file'
+            type="file"
             onChange={handleFileSelect}
             disabled={isProcessing || !password}
-            accept='.txt,text/*'
-            className='file-input'
+            accept=".txt,text/*"
+            className="file-input"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isProcessing || !password}
-            className='btn-upload'
+            className="btn-upload"
           >
             {isProcessing ? '加密中...' : '选择文件加密'}
           </button>
         </div>
 
         {isProcessing && (
-          <div className='progress-section'>
-            <div className='progress-bar'>
+          <div className="progress-section">
+            <div className="progress-bar">
               <div
-                className='progress-fill'
+                className="progress-fill"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span>{progress}%</span>
+            <span>
+              {progress}
+              %
+            </span>
           </div>
         )}
       </div>
 
-      <div className='encrypted-files-section'>
-        <h3>加密文件列表 ({encryptedFiles.length})</h3>
+      <div className="encrypted-files-section">
+        <h3>
+          加密文件列表 (
+          {encryptedFiles.length}
+          )
+        </h3>
 
-        {encryptedFiles.length === 0 ? (
-          <div className='empty-state'>
-            <p>还没有加密任何文件</p>
-            <div className='tips'>
-              <h4>使用提示:</h4>
-              <ul>
-                <li>支持文本文件加密（.txt 等）</li>
-                <li>文件大小限制: 1MB</li>
-                <li>使用 AES-256-CBC 加密</li>
-                <li>包含文件完整性验证</li>
-              </ul>
-            </div>
-          </div>
-        ) : (
-          <div className='files-grid'>
-            {encryptedFiles.map((file, index) => (
-              <div key={index} className='file-card'>
-                <div className='file-header'>
-                  <h4>
-                    📄
-                    {file.name}
-                  </h4>
-                  <button
-                    onClick={() => deleteEncryptedFile(index)}
-                    className='btn-delete'
-                    title='删除'
-                  >
-                    🗑️
-                  </button>
-                </div>
-
-                <div className='file-info'>
-                  <p>
-                    <strong>原始大小:</strong>{' '}
-                    {formatFileSize(file.originalSize)}
-                  </p>
-                  <p>
-                    <strong>加密时间:</strong> {file.timestamp.toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>文件哈希:</strong>
-                    <code className='hash-display'>
-                      {file.hash.substring(0, 16)}
-                      ...
-                    </code>
-                  </p>
-                </div>
-
-                <div className='file-actions'>
-                  <button
-                    onClick={() => decryptFile(file)}
-                    className='btn-decrypt'
-                    disabled={!password}
-                  >
-                    🔓 解密下载
-                  </button>
-                  <button
-                    onClick={() => exportEncryptedFile(file)}
-                    className='btn-export'
-                  >
-                    💾 导出
-                  </button>
+        {encryptedFiles.length === 0
+          ? (
+              <div className="empty-state">
+                <p>还没有加密任何文件</p>
+                <div className="tips">
+                  <h4>使用提示:</h4>
+                  <ul>
+                    <li>支持文本文件加密（.txt 等）</li>
+                    <li>文件大小限制: 1MB</li>
+                    <li>使用 AES-256-CBC 加密</li>
+                    <li>包含文件完整性验证</li>
+                  </ul>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            )
+          : (
+              <div className="files-grid">
+                {encryptedFiles.map((file, index) => (
+                  <div key={index} className="file-card">
+                    <div className="file-header">
+                      <h4>
+                        📄
+                        {file.name}
+                      </h4>
+                      <button
+                        onClick={() => deleteEncryptedFile(index)}
+                        className="btn-delete"
+                        title="删除"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+
+                    <div className="file-info">
+                      <p>
+                        <strong>原始大小:</strong>
+                        {' '}
+                        {formatFileSize(file.originalSize)}
+                      </p>
+                      <p>
+                        <strong>加密时间:</strong>
+                        {' '}
+                        {file.timestamp.toLocaleString()}
+                      </p>
+                      <p>
+                        <strong>文件哈希:</strong>
+                        <code className="hash-display">
+                          {file.hash.substring(0, 16)}
+                          ...
+                        </code>
+                      </p>
+                    </div>
+
+                    <div className="file-actions">
+                      <button
+                        onClick={() => decryptFile(file)}
+                        className="btn-decrypt"
+                        disabled={!password}
+                      >
+                        🔓 解密下载
+                      </button>
+                      <button
+                        onClick={() => exportEncryptedFile(file)}
+                        className="btn-export"
+                      >
+                        💾 导出
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
       </div>
 
-      <div className='security-info'>
+      <div className="security-info">
         <h4>🔒 安全特性:</h4>
         <ul>
           <li>
-            <strong>AES-256-CBC 加密:</strong> 军用级别的加密标准
+            <strong>AES-256-CBC 加密:</strong>
+            {' '}
+            军用级别的加密标准
           </li>
           <li>
-            <strong>随机 IV:</strong> 每次加密使用不同的初始化向量
+            <strong>随机 IV:</strong>
+            {' '}
+            每次加密使用不同的初始化向量
           </li>
           <li>
-            <strong>完整性验证:</strong> SHA-256 哈希确保文件未被篡改
+            <strong>完整性验证:</strong>
+            {' '}
+            SHA-256 哈希确保文件未被篡改
           </li>
           <li>
-            <strong>密码保护:</strong> 只有正确密码才能解密文件
+            <strong>密码保护:</strong>
+            {' '}
+            只有正确密码才能解密文件
           </li>
         </ul>
       </div>

@@ -73,14 +73,14 @@
 ```vue
 <script setup lang="ts">
 // 核心功能
-;-useTheme() -
-  主题管理 -
-  useThemeSelector() -
-  主题配置获取 -
-  generateColorScales() -
-  色阶生成 -
-  复制颜色功能 -
-  通知系统
+;-useTheme()
+- 主题管理
+- useThemeSelector()
+- 主题配置获取
+- generateColorScales()
+- 色阶生成
+- 复制颜色功能
+- 通知系统
 </script>
 
 <template>

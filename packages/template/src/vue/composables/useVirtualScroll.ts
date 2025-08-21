@@ -70,7 +70,8 @@ export function useVirtualScroll<T = any>(items: T[], options: VirtualScrollOpti
 
   // 滚动到指定索引
   const scrollToIndex = (index: number, behavior: ScrollBehavior = 'smooth') => {
-    if (!scrollElement.value) return
+    if (!scrollElement.value)
+      return
 
     const targetScrollTop = index * itemHeight
     scrollElement.value.scrollTo({
@@ -90,9 +91,9 @@ export function useVirtualScroll<T = any>(items: T[], options: VirtualScrollOpti
   // 监听滚动元素变化
   watch(
     () => options.scrollElement,
-    newElement => {
+    (newElement) => {
       scrollElement.value = newElement || null
-    }
+    },
   )
 
   onMounted(() => {
@@ -135,7 +136,7 @@ export function useSimpleVirtualScroll<T = any>(items: T[], itemHeight: number, 
 export function useDynamicVirtualScroll<T = any>(
   items: T[],
   getItemHeight: (item: T, index: number) => number,
-  containerHeight: number
+  containerHeight: number,
 ) {
   const scrollTop = ref(0)
   const itemHeights = ref<number[]>([])

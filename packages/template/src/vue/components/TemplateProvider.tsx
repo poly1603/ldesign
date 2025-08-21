@@ -4,8 +4,8 @@
  * 提供全局模板配置和状态管理的Provider组件
  */
 
-import type { TemplateProviderConfig, TemplateProviderProps } from '../../types'
-import { defineComponent, provide, reactive, ref, onMounted, onUnmounted, type PropType } from 'vue'
+import type { TemplateProviderConfig } from '../../types'
+import { defineComponent, onMounted, onUnmounted, type PropType, provide, reactive } from 'vue'
 import { TemplateManager } from '../../core/manager'
 
 // Provider 注入键
@@ -85,10 +85,12 @@ export const TemplateProvider = defineComponent({
           if (manager.storageManager) {
             manager.storageManager.saveSelection(category, device as any, template)
           }
-        } catch (error) {
+        }
+        catch (error) {
           state.error = error as Error
           throw error
-        } finally {
+        }
+        finally {
           state.loading = false
         }
       },
@@ -99,10 +101,12 @@ export const TemplateProvider = defineComponent({
 
         try {
           await manager.refresh()
-        } catch (error) {
+        }
+        catch (error) {
           state.error = error as Error
           throw error
-        } finally {
+        }
+        finally {
           state.loading = false
         }
       },
@@ -149,7 +153,8 @@ export const TemplateProvider = defineComponent({
       if (props.config.autoScan !== false) {
         try {
           await manager.scanTemplates()
-        } catch (error) {
+        }
+        catch (error) {
           console.warn('Template scanning failed:', error)
         }
       }

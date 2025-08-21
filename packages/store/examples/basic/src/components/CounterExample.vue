@@ -11,8 +11,10 @@ const countClass = computed(() => ({
 }))
 
 const statusText = computed(() => {
-  if (store.isPositive) return '正数'
-  if (store.isNegative) return '负数'
+  if (store.isPositive)
+    return '正数'
+  if (store.isNegative)
+    return '负数'
   return '零'
 })
 
@@ -49,14 +51,16 @@ function updateStep(event: Event) {
           min="1"
           max="10"
           @input="updateStep"
-        />
+        >
       </div>
 
       <div class="buttons">
         <button class="btn btn-danger" @click="store.decrement">
           -{{ store.step }}
         </button>
-        <button class="btn btn-secondary" @click="store.reset">重置</button>
+        <button class="btn btn-secondary" @click="store.reset">
+          重置
+        </button>
         <button class="btn btn-success" @click="store.increment">
           +{{ store.step }}
         </button>

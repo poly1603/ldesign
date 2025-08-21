@@ -84,12 +84,12 @@ const Search = defineComponent({
         h(
           'p',
           { 'data-testid': 'search-query' },
-          `Query: ${route.query.q || ''}`
+          `Query: ${route.query.q || ''}`,
         ),
         h(
           'p',
           { 'data-testid': 'search-category' },
-          `Category: ${route.query.category || ''}`
+          `Category: ${route.query.category || ''}`,
         ),
         h(RouterLink, { to: '/' }, () => 'Back to Home'),
       ])
@@ -162,8 +162,8 @@ const CachedPage = defineComponent({
         h('h1', 'Cached Page'),
         h('input', {
           'data-testid': 'input-field',
-          value: inputValue.value,
-          onInput: (e: any) => (inputValue.value = e.target.value),
+          'value': inputValue.value,
+          'onInput': (e: any) => (inputValue.value = e.target.value),
         }),
         h(RouterLink, { to: '/' }, () => 'Back to Home'),
       ])
@@ -217,14 +217,16 @@ router.beforeEach((to, from, next) => {
   // 更新页面标题
   if (to.meta.title) {
     document.title = `${to.meta.title} - Router Test App`
-  } else {
+  }
+  else {
     document.title = 'Router Test App'
   }
 
   // 简单的认证检查
   if (to.path === '/admin') {
     next('/login')
-  } else {
+  }
+  else {
     next()
   }
 })

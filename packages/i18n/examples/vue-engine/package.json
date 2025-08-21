@@ -1,9 +1,9 @@
 {
   "name": "@ldesign/i18n-vue-engine-example",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "description": "Vue Engine example for @ldesign/i18n",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

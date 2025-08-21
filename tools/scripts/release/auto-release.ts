@@ -37,7 +37,7 @@ const rl = readline.createInterface({
  * 提示用户输入
  */
 function prompt(question: string): Promise<string> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     rl.question(question, resolve)
   })
 }
@@ -55,7 +55,8 @@ function exec(command: string, options: { silent?: boolean } = {}): string {
       encoding: 'utf-8',
       stdio: options.silent ? 'pipe' : 'inherit',
     }).toString()
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw new Error(`命令执行失败: ${command}\n${error.message}`)
   }
 }
@@ -74,10 +75,12 @@ function getAllPackages(): PackageJson[] {
 
   for (const dir of dirs) {
     const packagePath = join(packagesDir, dir)
-    if (!statSync(packagePath).isDirectory()) continue
+    if (!statSync(packagePath).isDirectory())
+      continue
 
     const packageJsonPath = join(packagePath, 'package.json')
-    if (!existsSync(packageJsonPath)) continue
+    if (!existsSync(packageJsonPath))
+      continue
 
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
     if (!packageJson.private) {
@@ -126,7 +129,8 @@ async function runPreReleaseChecks(options: ReleaseOptions) {
   try {
     exec('pnpm audit --audit-level=high', { silent: true })
     console.log('✅ 依赖安全检查通过')
-  } catch {
+  }
+  catch {
     console.warn('⚠️  发现安全问题，建议修复后再发布')
   }
 
@@ -181,7 +185,7 @@ function updateVersion(options: ReleaseOptions) {
  */
 function getNewVersion(): string {
   const rootPackageJson = JSON.parse(
-    readFileSync(join(process.cwd(), 'package.json'), 'utf-8')
+    readFileSync(join(process.cwd(), 'package.json'), 'utf-8'),
   )
   return rootPackageJson.version
 }
@@ -201,7 +205,7 @@ async function publishPackages(options: ReleaseOptions) {
   // 确认发布
   const packages = getAllPackages()
   console.log('将要发布以下包:')
-  packages.forEach(pkg => {
+  packages.forEach((pkg) => {
     console.log(`  - ${pkg.name}@${pkg.version}`)
   })
 
@@ -250,7 +254,7 @@ function generateReleaseNotes(version: string) {
 
   const changelog = readFileSync(changelogPath, 'utf-8')
   const versionSection = changelog.match(
-    new RegExp(`## ${version}[\\s\\S]*?(?=## |$)`)
+    new RegExp(`## ${version}[\\s\\S]*?(?=## |$)`),
   )
 
   if (versionSection) {
@@ -304,10 +308,12 @@ async function release(options: ReleaseOptions) {
     console.log('   1. 在GitHub上创建Release')
     console.log('   2. 更新文档')
     console.log('   3. 通知用户')
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('\n❌ 发布失败:', error.message)
     process.exit(1)
-  } finally {
+  }
+  finally {
     rl.close()
   }
 }
@@ -363,7 +369,8 @@ const args = process.argv.slice(2)
 if (args.length === 0) {
   // 交互式模式
   interactiveRelease().catch(console.error)
-} else {
+}
+else {
   // 命令行模式
   const type = args[0] as ReleaseOptions['type']
   const options: ReleaseOptions = {

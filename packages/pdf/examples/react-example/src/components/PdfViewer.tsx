@@ -3,13 +3,13 @@
  * 提供完整的PDF查看功能和用户界面
  */
 
-import React, { useRef, useEffect, useState } from 'react';
-import { usePdfViewer } from '../hooks/usePdfViewer';
-import { PdfViewerProps, SearchResult } from '../types';
-import { PdfControls } from './PdfControls';
-import { LoadingIndicator } from './LoadingIndicator';
-import { ErrorBoundary } from './ErrorBoundary';
-import './PdfViewer.css';
+import type { PdfViewerProps, SearchResult } from '../types'
+import React, { useEffect, useRef, useState } from 'react'
+import { usePdfViewer } from '../hooks/usePdfViewer'
+import { ErrorBoundary } from './ErrorBoundary'
+import { LoadingIndicator } from './LoadingIndicator'
+import { PdfControls } from './PdfControls'
+import './PdfViewer.css'
 
 /**
  * PDF查看器主组件
@@ -28,12 +28,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   showToolbar = true,
   enableSearch = true,
   enableThumbnails = false,
-  theme = 'light'
+  theme = 'light',
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   // 使用PDF查看器Hook
   const {
@@ -49,121 +49,124 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     search,
     setConfig,
     reset,
-    setContainer
+    setContainer,
   } = usePdfViewer({
     config,
     onPageChange: (page) => {
-      onPageChange?.(page);
+      onPageChange?.(page)
     },
     onZoomChange: (zoom) => {
-      onZoomChange?.(zoom);
+      onZoomChange?.(zoom)
     },
     onError: (error) => {
-      onError?.(error);
-    }
-  });
+      onError?.(error)
+    },
+  })
 
   // 设置容器引用
   useEffect(() => {
     if (containerRef.current) {
-      setContainer(containerRef.current);
+      setContainer(containerRef.current)
     }
-  }, [setContainer]);
+  }, [setContainer])
 
   // 加载PDF文档
   useEffect(() => {
     if (src) {
-      onLoadStart?.();
+      onLoadStart?.()
       loadPdf(src)
         .then(() => {
           onLoadSuccess?.({
             totalPages: state.totalPages,
-            source: src
-          });
+            source: src,
+          })
         })
         .catch((error) => {
-          console.error('Failed to load PDF:', error);
-        });
+          console.error('Failed to load PDF:', error)
+        })
     }
-  }, [src, loadPdf, onLoadStart, onLoadSuccess, state.totalPages]);
+  }, [src, loadPdf, onLoadStart, onLoadSuccess, state.totalPages])
 
   // 搜索处理
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
-      setSearchResults([]);
-      return;
+      setSearchResults([])
+      return
     }
 
-    setIsSearching(true);
-    setSearchQuery(query);
+    setIsSearching(true)
+    setSearchQuery(query)
 
     try {
-      const results = await search(query);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Search failed:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
+      const results = await search(query)
+      setSearchResults(results)
     }
-  };
+    catch (error) {
+      console.error('Search failed:', error)
+      setSearchResults([])
+    }
+    finally {
+      setIsSearching(false)
+    }
+  }
 
   // 跳转到搜索结果
   const goToSearchResult = (result: SearchResult) => {
-    goToPage(result.pageNumber);
-  };
+    goToPage(result.pageNumber)
+  }
 
   // 键盘快捷键
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!state.isDocumentLoaded) return;
+      if (!state.isDocumentLoaded)
+        return
 
       switch (event.key) {
         case 'ArrowLeft':
         case 'PageUp':
-          event.preventDefault();
-          previousPage();
-          break;
+          event.preventDefault()
+          previousPage()
+          break
         case 'ArrowRight':
         case 'PageDown':
-          event.preventDefault();
-          nextPage();
-          break;
+          event.preventDefault()
+          nextPage()
+          break
         case '+':
         case '=':
           if (event.ctrlKey) {
-            event.preventDefault();
-            zoomIn();
+            event.preventDefault()
+            zoomIn()
           }
-          break;
+          break
         case '-':
           if (event.ctrlKey) {
-            event.preventDefault();
-            zoomOut();
+            event.preventDefault()
+            zoomOut()
           }
-          break;
+          break
         case '0':
           if (event.ctrlKey) {
-            event.preventDefault();
-            setZoom(1.0);
+            event.preventDefault()
+            setZoom(1.0)
           }
-          break;
+          break
         case 'f':
           if (event.ctrlKey) {
-            event.preventDefault();
-            fitWidth();
+            event.preventDefault()
+            fitWidth()
           }
-          break;
+          break
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [state.isDocumentLoaded, previousPage, nextPage, zoomIn, zoomOut, setZoom, fitWidth]);
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [state.isDocumentLoaded, previousPage, nextPage, zoomIn, zoomOut, setZoom, fitWidth])
 
   return (
     <ErrorBoundary>
-      <div 
+      <div
         className={`pdf-viewer ${theme} ${className}`}
         style={style}
         data-testid="pdf-viewer"
@@ -176,12 +179,18 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 PDF查看器
                 {state.isDocumentLoaded && (
                   <span className="pdf-viewer__page-info">
-                    ({state.currentPage} / {state.totalPages})
+                    (
+                    {state.currentPage}
+                    {' '}
+                    /
+                    {' '}
+                    {state.totalPages}
+                    )
                   </span>
                 )}
               </h3>
             </div>
-            
+
             <div className="pdf-viewer__toolbar-center">
               {enableSearch && state.isDocumentLoaded && (
                 <div className="pdf-viewer__search">
@@ -189,10 +198,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     type="text"
                     placeholder="搜索文档..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={e => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
-                        handleSearch(searchQuery);
+                        handleSearch(searchQuery)
                       }
                     }}
                     className="pdf-viewer__search-input"
@@ -208,10 +217,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="pdf-viewer__toolbar-right">
               <div className="pdf-viewer__zoom-info">
-                {Math.round(state.zoomLevel * 100)}%
+                {Math.round(state.zoomLevel * 100)}
+                %
               </div>
             </div>
           </div>
@@ -223,7 +233,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           {enableSearch && searchResults.length > 0 && (
             <div className="pdf-viewer__sidebar">
               <div className="pdf-viewer__search-results">
-                <h4>搜索结果 ({searchResults.length})</h4>
+                <h4>
+                  搜索结果 (
+                  {searchResults.length}
+                  )
+                </h4>
                 <div className="pdf-viewer__search-list">
                   {searchResults.map((result, index) => (
                     <div
@@ -232,7 +246,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                       onClick={() => goToSearchResult(result)}
                     >
                       <div className="pdf-viewer__search-page">
-                        第 {result.pageNumber} 页
+                        第
+                        {' '}
+                        {result.pageNumber}
+                        {' '}
+                        页
                       </div>
                       <div className="pdf-viewer__search-text">
                         {result.text}
@@ -266,19 +284,19 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             {/* PDF容器 */}
             <div className="pdf-viewer__container">
               {state.isLoading && (
-                <LoadingIndicator 
+                <LoadingIndicator
                   progress={state.loadProgress}
                   message="正在加载PDF文档..."
                 />
               )}
-              
+
               {state.error && (
                 <div className="pdf-viewer__error">
                   <div className="pdf-viewer__error-icon">⚠️</div>
                   <div className="pdf-viewer__error-message">
                     <h4>加载失败</h4>
                     <p>{state.error.message}</p>
-                    <button 
+                    <button
                       onClick={reset}
                       className="pdf-viewer__error-retry"
                     >
@@ -287,7 +305,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                   </div>
                 </div>
               )}
-              
+
               {!state.isLoading && !state.error && !state.isDocumentLoaded && (
                 <div className="pdf-viewer__placeholder">
                   <div className="pdf-viewer__placeholder-icon">📄</div>
@@ -296,12 +314,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                   </div>
                 </div>
               )}
-              
-              <div 
+
+              <div
                 ref={containerRef}
                 className="pdf-viewer__document"
                 style={{
-                  display: state.isDocumentLoaded && !state.isLoading ? 'block' : 'none'
+                  display: state.isDocumentLoaded && !state.isLoading ? 'block' : 'none',
                 }}
               />
             </div>
@@ -313,23 +331,40 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           <div className="pdf-viewer__status-left">
             {state.isDocumentLoaded && (
               <span>
-                第 {state.currentPage} 页，共 {state.totalPages} 页
+                第
+                {' '}
+                {state.currentPage}
+                {' '}
+                页，共
+                {' '}
+                {state.totalPages}
+                {' '}
+                页
               </span>
             )}
           </div>
-          
+
           <div className="pdf-viewer__status-right">
             {state.isLoading && (
-              <span>加载进度: {state.loadProgress}%</span>
+              <span>
+                加载进度:
+                {state.loadProgress}
+                %
+              </span>
             )}
             {searchResults.length > 0 && (
-              <span>找到 {searchResults.length} 个搜索结果</span>
+              <span>
+                找到
+                {searchResults.length}
+                {' '}
+                个搜索结果
+              </span>
             )}
           </div>
         </div>
       </div>
     </ErrorBoundary>
-  );
-};
+  )
+}
 
-export default PdfViewer;
+export default PdfViewer

@@ -3,9 +3,9 @@
  * 提供页面导航、缩放控制等功能
  */
 
-import React, { useState } from 'react';
-import { PdfControlsProps } from '../types';
-import './PdfControls.css';
+import type { PdfControlsProps } from '../types'
+import React, { useState } from 'react'
+import './PdfControls.css'
 
 /**
  * PDF控制面板组件
@@ -22,31 +22,31 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
   onSetZoom,
   onFitWidth,
   className = '',
-  disabled = false
+  disabled = false,
 }) => {
-  const [pageInput, setPageInput] = useState('');
-  const [zoomInput, setZoomInput] = useState('');
+  const [pageInput, setPageInput] = useState('')
+  const [zoomInput, setZoomInput] = useState('')
 
   // 处理页面跳转
   const handleGoToPage = () => {
-    const page = parseInt(pageInput, 10);
+    const page = Number.parseInt(pageInput, 10)
     if (!isNaN(page) && page >= 1 && page <= totalPages) {
-      onGoToPage(page);
-      setPageInput('');
+      onGoToPage(page)
+      setPageInput('')
     }
-  };
+  }
 
   // 处理缩放设置
   const handleSetZoom = () => {
-    const zoom = parseFloat(zoomInput) / 100;
+    const zoom = Number.parseFloat(zoomInput) / 100
     if (!isNaN(zoom) && zoom >= 0.25 && zoom <= 3.0) {
-      onSetZoom(zoom);
-      setZoomInput('');
+      onSetZoom(zoom)
+      setZoomInput('')
     }
-  };
+  }
 
   // 预设缩放级别
-  const presetZooms = [25, 50, 75, 100, 125, 150, 200];
+  const presetZooms = [25, 50, 75, 100, 125, 150, 200]
 
   return (
     <div className={`pdf-controls ${className}`}>
@@ -61,7 +61,7 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
           >
             ←
           </button>
-          
+
           <div className="pdf-controls__page-info">
             <span className="pdf-controls__current-page">
               {currentPage}
@@ -71,7 +71,7 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
               {totalPages}
             </span>
           </div>
-          
+
           <button
             onClick={onNextPage}
             disabled={disabled || currentPage >= totalPages}
@@ -89,10 +89,10 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
             min="1"
             max={totalPages}
             value={pageInput}
-            onChange={(e) => setPageInput(e.target.value)}
+            onChange={e => setPageInput(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                handleGoToPage();
+                handleGoToPage()
               }
             }}
             placeholder="页码"
@@ -121,11 +121,12 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
           >
             −
           </button>
-          
+
           <div className="pdf-controls__zoom-info">
-            {Math.round(zoomLevel * 100)}%
+            {Math.round(zoomLevel * 100)}
+            %
           </div>
-          
+
           <button
             onClick={onZoomIn}
             disabled={disabled || zoomLevel >= 3.0}
@@ -141,15 +142,16 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
           <select
             value={Math.round(zoomLevel * 100)}
             onChange={(e) => {
-              const zoom = parseInt(e.target.value, 10) / 100;
-              onSetZoom(zoom);
+              const zoom = Number.parseInt(e.target.value, 10) / 100
+              onSetZoom(zoom)
             }}
             className="pdf-controls__select pdf-controls__zoom-select"
             disabled={disabled}
           >
             {presetZooms.map(zoom => (
               <option key={zoom} value={zoom}>
-                {zoom}%
+                {zoom}
+                %
               </option>
             ))}
           </select>
@@ -163,10 +165,10 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
             max="300"
             step="25"
             value={zoomInput}
-            onChange={(e) => setZoomInput(e.target.value)}
+            onChange={e => setZoomInput(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                handleSetZoom();
+                handleSetZoom()
               }
             }}
             placeholder="缩放%"
@@ -195,7 +197,7 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
           >
             适应宽度
           </button>
-          
+
           <button
             onClick={() => onSetZoom(1.0)}
             disabled={disabled}
@@ -215,28 +217,58 @@ export const PdfControls: React.FC<PdfControlsProps> = ({
           </summary>
           <div className="pdf-controls__shortcuts-content">
             <div className="pdf-controls__shortcut">
-              <kbd>←</kbd> / <kbd>PageUp</kbd> - 上一页
+              <kbd>←</kbd>
+              {' '}
+              /
+              <kbd>PageUp</kbd>
+              {' '}
+              - 上一页
             </div>
             <div className="pdf-controls__shortcut">
-              <kbd>→</kbd> / <kbd>PageDown</kbd> - 下一页
+              <kbd>→</kbd>
+              {' '}
+              /
+              <kbd>PageDown</kbd>
+              {' '}
+              - 下一页
             </div>
             <div className="pdf-controls__shortcut">
-              <kbd>Ctrl</kbd> + <kbd>+</kbd> - 放大
+              <kbd>Ctrl</kbd>
+              {' '}
+              +
+              <kbd>+</kbd>
+              {' '}
+              - 放大
             </div>
             <div className="pdf-controls__shortcut">
-              <kbd>Ctrl</kbd> + <kbd>-</kbd> - 缩小
+              <kbd>Ctrl</kbd>
+              {' '}
+              +
+              <kbd>-</kbd>
+              {' '}
+              - 缩小
             </div>
             <div className="pdf-controls__shortcut">
-              <kbd>Ctrl</kbd> + <kbd>0</kbd> - 实际大小
+              <kbd>Ctrl</kbd>
+              {' '}
+              +
+              <kbd>0</kbd>
+              {' '}
+              - 实际大小
             </div>
             <div className="pdf-controls__shortcut">
-              <kbd>Ctrl</kbd> + <kbd>F</kbd> - 适应宽度
+              <kbd>Ctrl</kbd>
+              {' '}
+              +
+              <kbd>F</kbd>
+              {' '}
+              - 适应宽度
             </div>
           </div>
         </details>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PdfControls;
+export default PdfControls

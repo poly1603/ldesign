@@ -131,7 +131,7 @@ export function createMockThemeManager(): ThemeManagerInstance {
     emit(event: string, data: any) {
       const listeners = eventListeners.get(event)
       if (listeners) {
-        listeners.forEach(listener => {
+        listeners.forEach((listener) => {
           listener({
             type: event,
             timestamp: Date.now(),
@@ -154,7 +154,7 @@ export function createMockThemeManager(): ThemeManagerInstance {
  * 创建测试主题配置
  */
 export function createTestThemeConfig(
-  overrides: Partial<ThemeConfig> = {}
+  overrides: Partial<ThemeConfig> = {},
 ): ThemeConfig {
   return {
     name: 'test-theme',
@@ -210,7 +210,7 @@ export function createTestThemeConfig(
  * 创建测试装饰配置
  */
 export function createTestDecorationConfig(
-  overrides: Partial<DecorationConfig> = {}
+  overrides: Partial<DecorationConfig> = {},
 ): DecorationConfig {
   return {
     id: 'test-decoration',
@@ -237,7 +237,7 @@ export function createTestDecorationConfig(
  * 创建测试动画配置
  */
 export function createTestAnimationConfig(
-  overrides: Partial<AnimationConfig> = {}
+  overrides: Partial<AnimationConfig> = {},
 ): AnimationConfig {
   return {
     name: 'test-animation',
@@ -263,7 +263,7 @@ export function createTestAnimationConfig(
  */
 export function createMockElement(
   tagName = 'div',
-  attributes: Record<string, any> = {}
+  attributes: Record<string, any> = {},
 ): HTMLElement {
   const element = document.createElement(tagName)
   Object.assign(element, attributes)
@@ -365,7 +365,7 @@ export class MockUserInteraction {
  * 创建用户交互模拟器
  */
 export function createUserInteraction(
-  element: HTMLElement
+  element: HTMLElement,
 ): MockUserInteraction {
   return new MockUserInteraction(element)
 }

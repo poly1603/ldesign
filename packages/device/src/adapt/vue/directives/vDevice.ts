@@ -65,7 +65,7 @@ function parseDirectiveValue(value: DeviceDirectiveValue): {
 function shouldShowElement(
   currentType: DeviceType,
   targetTypes: DeviceType[],
-  inverse: boolean
+  inverse: boolean,
 ): boolean {
   const matches = targetTypes.includes(currentType)
   return inverse ? !matches : matches
@@ -77,7 +77,7 @@ function shouldShowElement(
 function updateElementVisibility(
   el: HTMLElement,
   binding: DirectiveBinding<DeviceDirectiveValue>,
-  currentType: DeviceType
+  currentType: DeviceType,
 ) {
   const { types, inverse } = parseDirectiveValue(binding.value)
   const shouldShow = shouldShowElement(currentType, types, inverse)
@@ -88,7 +88,8 @@ function updateElementVisibility(
       el.style.display = el.dataset.originalDisplay || ''
     }
     el.removeAttribute('hidden')
-  } else {
+  }
+  else {
     // 隐藏元素
     if (!el.dataset.originalDisplay) {
       el.dataset.originalDisplay = el.style.display || ''

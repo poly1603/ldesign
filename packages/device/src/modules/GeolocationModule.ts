@@ -23,7 +23,8 @@ export class GeolocationModule implements DeviceModule {
    * 初始化模块
    */
   async init(): Promise<void> {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     if (!this.isSupported()) {
       throw new Error('Geolocation API is not supported')
@@ -32,7 +33,8 @@ export class GeolocationModule implements DeviceModule {
     try {
       // 获取当前位置
       await this.getCurrentPosition()
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get initial position:', error)
     }
   }
@@ -69,15 +71,15 @@ export class GeolocationModule implements DeviceModule {
       }
 
       navigator.geolocation.getCurrentPosition(
-        position => {
+        (position) => {
           const info = this.parsePosition(position)
           this.geolocationInfo = info
           resolve(info)
         },
-        error => {
+        (error) => {
           reject(this.parseGeolocationError(error))
         },
-        this.options
+        this.options,
       )
     })
   }
@@ -95,18 +97,18 @@ export class GeolocationModule implements DeviceModule {
     }
 
     this.watchId = navigator.geolocation.watchPosition(
-      position => {
+      (position) => {
         const info = this.parsePosition(position)
         this.geolocationInfo = info
         callback?.(info)
       },
-      error => {
+      (error) => {
         console.error(
           'Geolocation watch error:',
-          this.parseGeolocationError(error)
+          this.parseGeolocationError(error),
         )
       },
-      this.options
+      this.options,
     )
   }
 
@@ -176,7 +178,7 @@ export class GeolocationModule implements DeviceModule {
     lat1: number,
     lon1: number,
     lat2: number,
-    lon2: number
+    lon2: number,
   ): number {
     const R = 6371e3 // 地球半径（米）
     const φ1 = (lat1 * Math.PI) / 180
@@ -184,9 +186,9 @@ export class GeolocationModule implements DeviceModule {
     const Δφ = ((lat2 - lat1) * Math.PI) / 180
     const Δλ = ((lon2 - lon1) * Math.PI) / 180
 
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+    const a
+      = Math.sin(Δφ / 2) * Math.sin(Δφ / 2)
+        + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
     return R * c
@@ -196,13 +198,14 @@ export class GeolocationModule implements DeviceModule {
    * 计算与当前位置的距离
    */
   getDistanceFromCurrent(latitude: number, longitude: number): number | null {
-    if (!this.geolocationInfo) return null
+    if (!this.geolocationInfo)
+      return null
 
     return this.calculateDistance(
       this.geolocationInfo.latitude,
       this.geolocationInfo.longitude,
       latitude,
-      longitude
+      longitude,
     )
   }
 

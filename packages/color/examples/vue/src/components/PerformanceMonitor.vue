@@ -31,7 +31,8 @@ async function preGenerateAll() {
   try {
     await themeManager.preGenerateAllThemes()
     showNotification('所有主题预生成完成', 'success')
-  } catch {
+  }
+  catch {
     showNotification('预生成失败', 'error')
   }
 }
@@ -46,50 +47,66 @@ onMounted(() => {
 
 <template>
   <div class="card">
-    <h2 class="card-title">📊 性能监控</h2>
-    <p class="card-description">实时监控主题系统的性能状态和统计信息</p>
+    <h2 class="card-title">
+      📊 性能监控
+    </h2>
+    <p class="card-description">
+      实时监控主题系统的性能状态和统计信息
+    </p>
 
     <div class="stats-grid">
       <div class="stat-item">
         <div class="stat-value">
           {{ stats.themeCount }}
         </div>
-        <div class="stat-label">主题数量</div>
+        <div class="stat-label">
+          主题数量
+        </div>
       </div>
 
       <div class="stat-item">
         <div class="stat-value">
           {{ stats.currentTheme }}
         </div>
-        <div class="stat-label">当前主题</div>
+        <div class="stat-label">
+          当前主题
+        </div>
       </div>
 
       <div class="stat-item">
         <div class="stat-value">
           {{ stats.currentMode }}
         </div>
-        <div class="stat-label">当前模式</div>
+        <div class="stat-label">
+          当前模式
+        </div>
       </div>
 
       <div class="stat-item">
         <div class="stat-value">
           {{ stats.cacheStatus }}
         </div>
-        <div class="stat-label">缓存状态</div>
+        <div class="stat-label">
+          缓存状态
+        </div>
       </div>
 
       <div class="stat-item">
         <div class="stat-value">
           {{ stats.idleProcessing }}
         </div>
-        <div class="stat-label">闲时处理</div>
+        <div class="stat-label">
+          闲时处理
+        </div>
       </div>
 
       <div class="stat-item">
         <div class="stat-value">
           {{ stats.systemTheme }}
         </div>
-        <div class="stat-label">系统主题</div>
+        <div class="stat-label">
+          系统主题
+        </div>
       </div>
     </div>
 
@@ -127,8 +144,7 @@ onMounted(() => {
   font-weight: 700;
   color: var(--color-primary, #1890ff);
   margin-bottom: 0.25rem;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
-    'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 .stat-label {

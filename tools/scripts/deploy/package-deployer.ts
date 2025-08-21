@@ -55,7 +55,7 @@ function validatePackageBuild(packageName: string): void {
 
   // 检查 package.json 配置
   const packageJson = JSON.parse(
-    fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8')
+    fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8'),
   )
 
   if (!packageJson.name || !packageJson.version) {
@@ -63,10 +63,10 @@ function validatePackageBuild(packageName: string): void {
   }
 
   if (
-    !packageJson.exports ||
-    !packageJson.main ||
-    !packageJson.module ||
-    !packageJson.types
+    !packageJson.exports
+    || !packageJson.main
+    || !packageJson.module
+    || !packageJson.types
   ) {
     throw new Error(`❌ ${packageName}: package.json 缺少导出配置`)
   }
@@ -88,7 +88,8 @@ function validatePackageTests(packageName: string): void {
       stdio: 'pipe',
     })
     console.log(`  ✅ ${packageName} 测试覆盖率验证通过`)
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error(`❌ ${packageName}: 测试覆盖率不达标`)
   }
 }
@@ -107,7 +108,8 @@ function validatePackageSize(packageName: string): void {
       stdio: 'pipe',
     })
     console.log(`  ✅ ${packageName} 包大小验证通过`)
-  } catch (error) {
+  }
+  catch (error) {
     console.warn(`  ⚠️  ${packageName} 包大小超出限制，但继续部署`)
   }
 }
@@ -172,8 +174,8 @@ function generateCdnLinks(packageName: string, version: string): void {
 \`\`\`javascript
 // ES 模块
 import { ${toCamelCase(
-    packageName
-  )} } from 'https://cdn.jsdelivr.net/npm/@ldesign/${packageName}@latest/es/index.js'
+  packageName,
+)} } from 'https://cdn.jsdelivr.net/npm/@ldesign/${packageName}@latest/es/index.js'
 \`\`\`
 `
 
@@ -185,7 +187,7 @@ import { ${toCamelCase(
  * 部署单个包
  */
 export async function deployPackage(
-  options: PackageDeployOptions
+  options: PackageDeployOptions,
 ): Promise<void> {
   const {
     packageName,
@@ -211,7 +213,7 @@ export async function deployPackage(
 
     // 获取包版本
     const packageJson = JSON.parse(
-      fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8')
+      fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8'),
     )
     const packageVersion = version || packageJson.version
 
@@ -225,8 +227,8 @@ export async function deployPackage(
 
     // 发布到 npm
     console.log('📤 发布到 npm...')
-    const publishCommand =
-      tag === 'latest'
+    const publishCommand
+      = tag === 'latest'
         ? 'npm publish --access public'
         : `npm publish --access public --tag ${tag}`
 
@@ -241,7 +243,8 @@ export async function deployPackage(
     generateCdnLinks(packageName, packageVersion)
 
     console.log(`\n🎉 包 ${packageName} 部署完成！`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`❌ 包 ${packageName} 部署失败:`, (error as Error).message)
     process.exit(1)
   }
@@ -251,16 +254,16 @@ export async function deployPackage(
  * 部署所有包
  */
 export async function deployAllPackages(
-  options: Omit<PackageDeployOptions, 'packageName'> = {}
+  options: Omit<PackageDeployOptions, 'packageName'> = {},
 ): Promise<void> {
   console.log('🚀 开始部署所有包...\n')
 
   const packagesDir = path.resolve(__dirname, '../../../packages')
-  const packages = fs.readdirSync(packagesDir).filter(name => {
+  const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
     return (
-      fs.statSync(packagePath).isDirectory() &&
-      fs.existsSync(path.join(packagePath, 'package.json'))
+      fs.statSync(packagePath).isDirectory()
+      && fs.existsSync(path.join(packagePath, 'package.json'))
     )
   })
 
@@ -268,7 +271,8 @@ export async function deployAllPackages(
     try {
       await deployPackage({ ...options, packageName })
       console.log('')
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`❌ 包 ${packageName} 部署失败，继续下一个包`)
     }
   }
@@ -288,7 +292,7 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   if (args.length === 0) {
     console.log('用法:')
     console.log(
-      '  tsx tools/deploy/package-deployer.ts <package-name> [options]'
+      '  tsx tools/deploy/package-deployer.ts <package-name> [options]',
     )
     console.log('  tsx tools/deploy/package-deployer.ts all [options]')
     console.log('')
@@ -313,7 +317,8 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
 
   if (packageName === 'all') {
     deployAllPackages(options)
-  } else {
+  }
+  else {
     deployPackage(options)
   }
 }

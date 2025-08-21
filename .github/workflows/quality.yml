@@ -7,7 +7,7 @@ on:
     branches: [main]
   schedule:
     # 每周一凌晨3点运行完整质量检查
-    - cron: "0 3 * * 1"
+    - cron: '0 3 * * 1'
 
 jobs:
   dependency-review:

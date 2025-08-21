@@ -110,7 +110,8 @@ export class IdleProcessorImpl implements IdleProcessor {
     if (this.requestId !== null) {
       if (typeof cancelIdleCallback !== 'undefined') {
         cancelIdleCallback(this.requestId)
-      } else {
+      }
+      else {
         clearTimeout(this.requestId)
       }
       this.requestId = null
@@ -165,10 +166,11 @@ export class IdleProcessorImpl implements IdleProcessor {
 
     // 使用 requestIdleCallback 或回退到 setTimeout
     if (typeof requestIdleCallback !== 'undefined') {
-      this.requestId = requestIdleCallback(deadline => {
+      this.requestId = requestIdleCallback((deadline) => {
         this.processTasksInIdle(deadline)
       })
-    } else {
+    }
+    else {
       // 回退到 setTimeout
       this.requestId = setTimeout(() => {
         this.processTasksInIdle({
@@ -190,13 +192,14 @@ export class IdleProcessorImpl implements IdleProcessor {
 
     try {
       while (
-        this.taskQueue.length > 0 &&
-        this.isRunning &&
-        (deadline.timeRemaining() > 0 || deadline.didTimeout) &&
-        performance.now() - startTime < this.options.maxProcessingTime
+        this.taskQueue.length > 0
+        && this.isRunning
+        && (deadline.timeRemaining() > 0 || deadline.didTimeout)
+        && performance.now() - startTime < this.options.maxProcessingTime
       ) {
         const task = this.taskQueue.shift()
-        if (!task) break
+        if (!task)
+          break
 
         try {
           const result = task.task()
@@ -205,11 +208,13 @@ export class IdleProcessorImpl implements IdleProcessor {
           if (result instanceof Promise) {
             await result
           }
-        } catch (error) {
+        }
+        catch (error) {
           this.options.onError(error as Error, task)
         }
       }
-    } finally {
+    }
+    finally {
       this.isProcessing = false
 
       // 如果还有任务且处理器仍在运行，继续调度
@@ -238,7 +243,7 @@ export class IdleProcessorImpl implements IdleProcessor {
  * 创建闲时处理器实例
  */
 export function createIdleProcessor(
-  options?: IdleProcessorOptions
+  options?: IdleProcessorOptions,
 ): IdleProcessor {
   return new IdleProcessorImpl(options)
 }
@@ -253,7 +258,7 @@ export const defaultIdleProcessor = new IdleProcessorImpl()
  */
 export function addIdleTask(
   task: () => void | Promise<void>,
-  priority?: number
+  priority?: number,
 ): void {
   defaultIdleProcessor.addTask(task, priority)
 }
@@ -265,7 +270,7 @@ export function addIdleTasks(
   tasks: Array<{
     task: () => void | Promise<void>
     priority?: number
-  }>
+  }>,
 ): void {
   tasks.forEach(({ task, priority }) => {
     defaultIdleProcessor.addTask(task, priority)
@@ -278,7 +283,7 @@ export function addIdleTasks(
 export function createDelayedIdleTask(
   task: () => void | Promise<void>,
   delay: number,
-  priority?: number
+  priority?: number,
 ): void {
   setTimeout(() => {
     defaultIdleProcessor.addTask(task, priority)
@@ -291,7 +296,7 @@ export function createDelayedIdleTask(
 export function createConditionalIdleTask(
   condition: () => boolean,
   task: () => void | Promise<void>,
-  priority?: number
+  priority?: number,
 ): void {
   defaultIdleProcessor.addTask(() => {
     if (condition()) {

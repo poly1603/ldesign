@@ -37,11 +37,13 @@ function App() {
         setEncrypted(result.data)
         setSuccess('AES 加密成功')
         setError('')
-      } else {
+      }
+      else {
         setError(`加密失败: ${result.error || '未知错误'}`)
         setSuccess('')
       }
-    } catch (err) {
+    }
+    catch (err) {
       setError(`加密错误: ${(err as Error).message}`)
       setSuccess('')
     }
@@ -59,11 +61,13 @@ function App() {
         setDecrypted(result.data)
         setSuccess('AES 解密成功')
         setError('')
-      } else {
+      }
+      else {
         setError(`解密失败: ${result.error || '未知错误'}`)
         setSuccess('')
       }
-    } catch (err) {
+    }
+    catch (err) {
       setError(`解密错误: ${(err as Error).message}`)
       setSuccess('')
     }
@@ -76,7 +80,8 @@ function App() {
       setHashResult(result)
       setSuccess('SHA-256 哈希计算成功')
       setError('')
-    } catch (err) {
+    }
+    catch (err) {
       setError(`哈希计算错误: ${(err as Error).message}`)
       setSuccess('')
     }
@@ -87,36 +92,36 @@ function App() {
     switch (activeTab) {
       case 'basic':
         return (
-          <div className='basic-demo'>
+          <div className="basic-demo">
             <h2>🔐 基础加密演示</h2>
 
-            <div className='demo-section'>
+            <div className="demo-section">
               <h3>AES 加密/解密</h3>
-              <div className='form-group'>
+              <div className="form-group">
                 <label>明文:</label>
                 <input
-                  type='text'
+                  type="text"
                   value={plaintext}
                   onChange={e => setPlaintext(e.target.value)}
-                  placeholder='输入要加密的文本'
+                  placeholder="输入要加密的文本"
                 />
               </div>
-              <div className='form-group'>
+              <div className="form-group">
                 <label>密钥:</label>
                 <input
-                  type='text'
+                  type="text"
                   value={key}
                   onChange={e => setKey(e.target.value)}
-                  placeholder='输入加密密钥'
+                  placeholder="输入加密密钥"
                 />
               </div>
-              <div className='button-group'>
-                <button onClick={handleEncrypt} className='btn-primary'>
+              <div className="button-group">
+                <button onClick={handleEncrypt} className="btn-primary">
                   🔒 加密
                 </button>
                 <button
                   onClick={handleDecrypt}
-                  className='btn-secondary'
+                  className="btn-secondary"
                   disabled={!encrypted}
                 >
                   🔓 解密
@@ -124,61 +129,68 @@ function App() {
               </div>
 
               {encrypted && (
-                <div className='result-section'>
+                <div className="result-section">
                   <h4>加密结果:</h4>
                   <textarea value={encrypted} readOnly rows={3} />
                 </div>
               )}
 
               {decrypted && (
-                <div className='result-section'>
+                <div className="result-section">
                   <h4>解密结果:</h4>
-                  <p className='decrypted-text'>{decrypted}</p>
+                  <p className="decrypted-text">{decrypted}</p>
                 </div>
               )}
             </div>
 
-            <div className='demo-section'>
+            <div className="demo-section">
               <h3>SHA-256 哈希</h3>
-              <div className='form-group'>
+              <div className="form-group">
                 <label>输入数据:</label>
                 <input
-                  type='text'
+                  type="text"
                   value={hashInput}
                   onChange={e => setHashInput(e.target.value)}
-                  placeholder='输入要哈希的数据'
+                  placeholder="输入要哈希的数据"
                 />
               </div>
-              <button onClick={handleHash} className='btn-primary'>
+              <button onClick={handleHash} className="btn-primary">
                 🔍 计算哈希
               </button>
 
               {hashResult && (
-                <div className='result-section'>
+                <div className="result-section">
                   <h4>哈希值:</h4>
-                  <code className='hash-result'>{hashResult}</code>
+                  <code className="hash-result">{hashResult}</code>
                 </div>
               )}
             </div>
 
-            <div className='demo-section'>
+            <div className="demo-section">
               <h3>快速示例</h3>
-              <div className='examples-grid'>
-                <div className='example-card'>
+              <div className="examples-grid">
+                <div className="example-card">
                   <h4>Base64 编码</h4>
                   <code>base64.encode('Hello')</code>
-                  <p>→{base64.encode('Hello')}</p>
+                  <p>
+                    →
+                    {base64.encode('Hello')}
+                  </p>
                 </div>
-                <div className='example-card'>
+                <div className="example-card">
                   <h4>Hex 编码</h4>
                   <code>hex.encode('World')</code>
-                  <p>→{hex.encode('World')}</p>
+                  <p>
+                    →
+                    {hex.encode('World')}
+                  </p>
                 </div>
-                <div className='example-card'>
+                <div className="example-card">
                   <h4>MD5 哈希</h4>
                   <code>hash.md5('Test')</code>
                   <p>
-                    →{hash.md5('Test').substring(0, 16)}
+                    →
+                    {hash.md5('Test').substring(0, 16)}
                     ...
                   </p>
                 </div>
@@ -200,13 +212,13 @@ function App() {
   }
 
   return (
-    <div className='app'>
-      <header className='app-header'>
+    <div className="app">
+      <header className="app-header">
         <h1>🔐 LDesign Crypto 演示</h1>
         <p>全面的 JavaScript 加密库演示应用</p>
       </header>
 
-      <nav className='tab-navigation'>
+      <nav className="tab-navigation">
         <button
           className={`tab-button ${activeTab === 'basic' ? 'active' : ''}`}
           onClick={() => setActiveTab('basic')}
@@ -241,21 +253,35 @@ function App() {
         </button>
       </nav>
 
-      <main className='app-main'>
-        {error && <div className='alert alert-error'>❌{error}</div>}
+      <main className="app-main">
+        {error && (
+          <div className="alert alert-error">
+            ❌
+            {error}
+          </div>
+        )}
 
-        {success && <div className='alert alert-success'>✅{success}</div>}
+        {success && (
+          <div className="alert alert-success">
+            ✅
+            {success}
+          </div>
+        )}
 
-        <div className='tab-content'>{renderTabContent()}</div>
+        <div className="tab-content">{renderTabContent()}</div>
       </main>
 
-      <footer className='app-footer'>
+      <footer className="app-footer">
         <p>
-          Powered by <strong>@ldesign/crypto</strong> -
+          Powered by
+          {' '}
+          <strong>@ldesign/crypto</strong>
+          {' '}
+          -
           <a
-            href='https://github.com/ldesign/crypto'
-            target='_blank'
-            rel='noopener noreferrer'
+            href="https://github.com/ldesign/crypto"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             GitHub
           </a>

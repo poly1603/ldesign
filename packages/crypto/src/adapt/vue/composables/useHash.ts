@@ -125,8 +125,8 @@ export function useHash(): UseHashReturn {
 
   // 错误处理辅助函数
   const handleError = (error: unknown): never => {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage
+      = error instanceof Error ? error.message : 'Unknown error'
     lastError.value = errorMessage
     throw new Error(errorMessage)
   }
@@ -141,10 +141,12 @@ export function useHash(): UseHashReturn {
         lastHash.value = result
       }
       return result
-    } catch (error) {
+    }
+    catch (error) {
       handleError(error)
       throw error // 这行永远不会执行，但满足类型要求
-    } finally {
+    }
+    finally {
       isHashing.value = false
     }
   }
@@ -162,7 +164,7 @@ export function useHash(): UseHashReturn {
   // SHA224 哈希
   const sha224 = async (
     data: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.sha224(data, options))
   }
@@ -170,7 +172,7 @@ export function useHash(): UseHashReturn {
   // SHA256 哈希
   const sha256 = async (
     data: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.sha256(data, options))
   }
@@ -178,7 +180,7 @@ export function useHash(): UseHashReturn {
   // SHA384 哈希
   const sha384 = async (
     data: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.sha384(data, options))
   }
@@ -186,7 +188,7 @@ export function useHash(): UseHashReturn {
   // SHA512 哈希
   const sha512 = async (
     data: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.sha512(data, options))
   }
@@ -195,7 +197,7 @@ export function useHash(): UseHashReturn {
   const hashData = async (
     data: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.hash(data, algorithm, options))
   }
@@ -205,7 +207,7 @@ export function useHash(): UseHashReturn {
     data: string,
     expectedHash: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<boolean> => {
     return wrapAsync(() => hash.verify(data, expectedHash, algorithm, options))
   }
@@ -214,7 +216,7 @@ export function useHash(): UseHashReturn {
   const hmacMd5 = async (
     data: string,
     key: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.md5(data, key, options))
   }
@@ -223,7 +225,7 @@ export function useHash(): UseHashReturn {
   const hmacSha1 = async (
     data: string,
     key: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.sha1(data, key, options))
   }
@@ -232,7 +234,7 @@ export function useHash(): UseHashReturn {
   const hmacSha256 = async (
     data: string,
     key: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.sha256(data, key, options))
   }
@@ -241,7 +243,7 @@ export function useHash(): UseHashReturn {
   const hmacSha384 = async (
     data: string,
     key: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.sha384(data, key, options))
   }
@@ -250,7 +252,7 @@ export function useHash(): UseHashReturn {
   const hmacSha512 = async (
     data: string,
     key: string,
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.sha512(data, key, options))
   }
@@ -260,7 +262,7 @@ export function useHash(): UseHashReturn {
     data: string,
     key: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hmac.hmac(data, key, algorithm, options))
   }
@@ -271,10 +273,10 @@ export function useHash(): UseHashReturn {
     key: string,
     expectedHmac: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<boolean> => {
     return wrapAsync(() =>
-      hmac.verify(data, key, expectedHmac, algorithm, options)
+      hmac.verify(data, key, expectedHmac, algorithm, options),
     )
   }
 
@@ -282,7 +284,7 @@ export function useHash(): UseHashReturn {
   const hashMultiple = async (
     dataList: string[],
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string[]> => {
     return wrapAsync(() => {
       return dataList.map(data => hash.hash(data, algorithm, options))
@@ -293,7 +295,7 @@ export function useHash(): UseHashReturn {
   const hashFile = async (
     fileContent: string,
     algorithm: HashAlgorithm = 'SHA256',
-    options?: HashOptions
+    options?: HashOptions,
   ): Promise<string> => {
     return wrapAsync(() => hash.hash(fileContent, algorithm, options))
   }

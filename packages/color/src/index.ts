@@ -183,7 +183,7 @@ export type { IdleProcessorOptions } from './utils/idle-processor'
 
 // 便捷的创建函数
 export function createThemeManager(
-  options?: ThemeManagerOptions
+  options?: ThemeManagerOptions,
 ): ThemeManagerInstance {
   return new ThemeManager(options)
 }
@@ -194,7 +194,7 @@ export function createThemeManager(
  * @returns 主题管理器实例
  */
 export async function createThemeManagerWithPresets(
-  options?: ThemeManagerOptions
+  options?: ThemeManagerOptions,
 ): Promise<ThemeManagerInstance> {
   const { presetThemes } = await import('./themes/presets')
 
@@ -213,7 +213,7 @@ export async function createThemeManagerWithPresets(
  * @returns 主题管理器实例
  */
 export async function createSimpleThemeManager(
-  options?: ThemeManagerOptions
+  options?: ThemeManagerOptions,
 ): Promise<ThemeManagerInstance> {
   const { defaultTheme } = await import('./themes/presets')
 
@@ -238,7 +238,7 @@ export async function createCustomThemeManager(
   options?: ThemeManagerOptions & {
     themeName?: string
     darkPrimaryColor?: string
-  }
+  },
 ): Promise<ThemeManagerInstance> {
   const { createCustomTheme } = await import('./themes/presets')
 
@@ -247,7 +247,7 @@ export async function createCustomThemeManager(
     primaryColor,
     {
       darkPrimaryColor: options?.darkPrimaryColor,
-    }
+    },
   )
 
   const manager = new ThemeManager({

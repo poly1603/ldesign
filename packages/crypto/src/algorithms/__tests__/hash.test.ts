@@ -67,7 +67,7 @@ describe('hash Algorithms', () => {
         'SHA512',
       ]
 
-      algorithms.forEach(algorithm => {
+      algorithms.forEach((algorithm) => {
         const result = hasher.hash(testData, algorithm)
         expect(result.hash).toBeDefined()
         expect(result.algorithm).toBe(algorithm)
@@ -99,13 +99,13 @@ describe('hash Algorithms', () => {
     it('should verify HMAC correctly', () => {
       const result = hmacHasher.hmac(testData, testKey, 'SHA256')
       expect(hmacHasher.verify(testData, testKey, result.hash, 'SHA256')).toBe(
-        true
+        true,
       )
       expect(
-        hmacHasher.verify(testData, 'wrong-key', result.hash, 'SHA256')
+        hmacHasher.verify(testData, 'wrong-key', result.hash, 'SHA256'),
       ).toBe(false)
       expect(
-        hmacHasher.verify('wrong data', testKey, result.hash, 'SHA256')
+        hmacHasher.verify('wrong data', testKey, result.hash, 'SHA256'),
       ).toBe(false)
     })
 
@@ -118,7 +118,7 @@ describe('hash Algorithms', () => {
         'SHA512',
       ]
 
-      algorithms.forEach(algorithm => {
+      algorithms.forEach((algorithm) => {
         const result = hmacHasher.hmac(testData, testKey, algorithm)
         expect(result.hash).toBeDefined()
         expect(result.algorithm).toBe(`HMAC-${algorithm}`)
@@ -128,10 +128,10 @@ describe('hash Algorithms', () => {
 
     it('should throw error for empty data or key', () => {
       expect(() => hmacHasher.hmac('', testKey, 'SHA256')).toThrow(
-        'Data cannot be empty'
+        'Data cannot be empty',
       )
       expect(() => hmacHasher.hmac(testData, '', 'SHA256')).toThrow(
-        'Key cannot be empty'
+        'Key cannot be empty',
       )
     })
   })
@@ -164,7 +164,7 @@ describe('hash Algorithms', () => {
       const hmacSha256 = hmac.sha256(testData, testKey)
       expect(hmac.verify(testData, testKey, hmacSha256, 'SHA256')).toBe(true)
       expect(hmac.verify(testData, 'wrong-key', hmacSha256, 'SHA256')).toBe(
-        false
+        false,
       )
     })
   })

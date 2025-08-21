@@ -3,16 +3,16 @@
  * 实现Canvas/SVG/Image三种输出格式
  */
 
-import QRCode from 'qrcode'
 import type {
+  GeneratorConfig,
+  PerformanceMetric,
   QRCodeOptions,
   QRCodeResult,
-  PerformanceMetric,
-  GeneratorConfig
 } from '../types'
+import QRCode from 'qrcode'
+import { createError, PerformanceMonitor } from '../utils'
 import { LogoProcessor } from './logo'
 import { StyleProcessor } from './styles'
-import { PerformanceMonitor, createError } from '../utils'
 
 export class QRCodeGenerator {
   private logoProcessor: LogoProcessor
@@ -29,12 +29,12 @@ export class QRCodeGenerator {
       format: 'canvas',
       margin: 4,
       errorCorrectionLevel: 'M',
-      ...options
+      ...options,
     }
 
     this.config = {
       maxCacheSize: 100,
-      enablePerformanceMonitoring: true
+      enablePerformanceMonitoring: true,
     }
 
     this.logoProcessor = new LogoProcessor()
@@ -47,7 +47,7 @@ export class QRCodeGenerator {
    */
   async generate(
     text?: string,
-    overrideOptions?: Partial<QRCodeOptions>
+    overrideOptions?: Partial<QRCodeOptions>,
   ): Promise<QRCodeResult> {
     const endTimer = this.performanceMonitor.startOperation('generate')
 
@@ -63,7 +63,7 @@ export class QRCodeGenerator {
         ...(overrideOptions || {}),
         format: overrideOptions?.format || this.options.format || 'canvas',
         errorCorrectionLevel: overrideOptions?.errorCorrectionLevel || this.options.errorCorrectionLevel || 'M',
-        margin: overrideOptions?.margin ?? this.options.margin ?? 4
+        margin: overrideOptions?.margin ?? this.options.margin ?? 4,
       }
 
       // 检查缓存
@@ -84,12 +84,13 @@ export class QRCodeGenerator {
       endTimer(false, result.dataURL ? result.dataURL.length : undefined)
 
       return result
-    } catch (error) {
+    }
+    catch (error) {
       endTimer(false)
       console.error('QRCode generation failed:', error)
       throw createError(
         `Generation failed: ${error instanceof Error ? error.message : String(error)}`,
-        'GENERATION_ERROR'
+        'GENERATION_ERROR',
       )
     }
   }
@@ -99,7 +100,7 @@ export class QRCodeGenerator {
    */
   private async generateQRCode(
     text: string,
-    options: QRCodeOptions
+    options: QRCodeOptions,
   ): Promise<QRCodeResult> {
     const format = options.format || 'canvas'
     const width = options.size || 200
@@ -113,9 +114,9 @@ export class QRCodeGenerator {
       margin: options.margin || 1,
       color: {
         dark: '#000000',
-        light: '#FFFFFF'
+        light: '#FFFFFF',
       },
-      width: width
+      width,
     }
 
     let dataURL: string
@@ -153,7 +154,7 @@ export class QRCodeGenerator {
       fromCache: false,
       generatedAt: Date.now(),
       size: Math.max(width, height),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 
@@ -163,7 +164,7 @@ export class QRCodeGenerator {
   private async generateCanvas(
     text: string,
     qrOptions: any,
-    options: QRCodeOptions
+    options: QRCodeOptions,
   ): Promise<HTMLCanvasElement> {
     const canvas = document.createElement('canvas')
 
@@ -192,12 +193,12 @@ export class QRCodeGenerator {
   private async generateSVG(
     text: string,
     qrOptions: any,
-    options: QRCodeOptions
+    options: QRCodeOptions,
   ): Promise<SVGElement> {
     // 生成SVG字符串
     const svgString = (await (QRCode as any).toString(text, {
       ...qrOptions,
-      type: 'svg'
+      type: 'svg',
     })) as string
 
     // 解析SVG
@@ -228,7 +229,7 @@ export class QRCodeGenerator {
   private async generateImage(
     text: string,
     qrOptions: any,
-    options: QRCodeOptions
+    options: QRCodeOptions,
   ): Promise<HTMLImageElement> {
     // 先生成Canvas，然后转换为Image
     const canvas = await this.generateCanvas(text, qrOptions, options)
@@ -250,7 +251,8 @@ export class QRCodeGenerator {
   private generateCacheKey(text: string, options: QRCodeOptions): string {
     const optionsStr = JSON.stringify(options, (_key, value) => {
       // 排除函数和不可序列化的值
-      if (typeof value === 'function') return undefined
+      if (typeof value === 'function')
+        return undefined
       return value
     })
 
@@ -282,10 +284,10 @@ export class QRCodeGenerator {
   /**
    * 获取缓存统计
    */
-  getCacheStats(): { size: number; maxSize: number } {
+  getCacheStats(): { size: number, maxSize: number } {
     return {
       size: this.cache.size,
-      maxSize: this.config.maxCacheSize || 100
+      maxSize: this.config.maxCacheSize || 100,
     }
   }
 

@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import type { Plugin } from 'vite';
+import type { Plugin } from 'vite'
+import { resolve } from 'node:path'
+import { defineConfig } from 'vite'
 
 // Custom plugin for advanced features
 function advancedFeaturesPlugin(): Plugin {
@@ -9,18 +9,18 @@ function advancedFeaturesPlugin(): Plugin {
     configureServer(server) {
       // Add custom middleware for development
       server.middlewares.use('/api', (req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
         if (req.method === 'OPTIONS') {
-          res.statusCode = 200;
-          res.end();
-          return;
+          res.statusCode = 200
+          res.end()
+          return
         }
-        
-        next();
-      });
+
+        next()
+      })
     },
     generateBundle(options, bundle) {
       // Add performance monitoring in production
@@ -28,12 +28,12 @@ function advancedFeaturesPlugin(): Plugin {
         console.log('Bundle analysis:', {
           chunks: Object.keys(bundle).length,
           totalSize: Object.values(bundle).reduce((acc, chunk) => {
-            return acc + (chunk.type === 'chunk' ? chunk.code.length : 0);
-          }, 0)
-        });
+            return acc + (chunk.type === 'chunk' ? chunk.code.length : 0)
+          }, 0),
+        })
       }
-    }
-  };
+    },
+  }
 }
 
 export default defineConfig({
@@ -47,14 +47,14 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
+        rewrite: path => path.replace(/^\/api/, ''),
+      },
     },
     hmr: {
-      overlay: true
-    }
+      overlay: true,
+    },
   },
-  
+
   // Build configuration
   build: {
     outDir: 'dist',
@@ -63,7 +63,7 @@ export default defineConfig({
     target: 'es2020',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html')
+        main: resolve(__dirname, 'index.html'),
       },
       output: {
         manualChunks: {
@@ -73,49 +73,49 @@ export default defineConfig({
           'vendor-utils': ['lodash-es', 'date-fns', 'uuid'],
           'vendor-search': ['fuse.js'],
           'vendor-storage': ['idb'],
-          
+
           // Core chunks
           'core-pdf': ['@ldesign/pdf'],
           'core-performance': [resolve(__dirname, 'src/core/PerformanceMonitor.ts')],
           'core-annotations': [resolve(__dirname, 'src/core/AnnotationManager.ts')],
           'core-search': [resolve(__dirname, 'src/core/SearchEngine.ts')],
           'core-plugins': [resolve(__dirname, 'src/core/PluginSystem.ts')],
-          
+
           // Workers
           'workers': [
             resolve(__dirname, 'src/workers/pdf-worker.ts'),
             resolve(__dirname, 'src/workers/search-worker.ts'),
-            resolve(__dirname, 'src/workers/analysis-worker.ts')
-          ]
+            resolve(__dirname, 'src/workers/analysis-worker.ts'),
+          ],
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name?.split('.') || [];
-          const ext = info[info.length - 1];
+          const info = assetInfo.name?.split('.') || []
+          const ext = info[info.length - 1]
           if (/\.(css)$/.test(assetInfo.name || '')) {
-            return 'assets/css/[name]-[hash].[ext]';
+            return 'assets/css/[name]-[hash].[ext]'
           }
           if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(assetInfo.name || '')) {
-            return 'assets/images/[name]-[hash].[ext]';
+            return 'assets/images/[name]-[hash].[ext]'
           }
           if (/\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name || '')) {
-            return 'assets/fonts/[name]-[hash].[ext]';
+            return 'assets/fonts/[name]-[hash].[ext]'
           }
-          return 'assets/[name]-[hash].[ext]';
-        }
-      }
+          return 'assets/[name]-[hash].[ext]'
+        },
+      },
     },
     terserOptions: {
       compress: {
         drop_console: false,
-        drop_debugger: true
-      }
+        drop_debugger: true,
+      },
     },
     reportCompressedSize: true,
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
   },
-  
+
   // Path resolution
   resolve: {
     alias: {
@@ -128,10 +128,10 @@ export default defineConfig({
       '@/workers': resolve(__dirname, 'src/workers'),
       '@/styles': resolve(__dirname, 'styles'),
       '@/assets': resolve(__dirname, 'assets'),
-      '@ldesign/pdf': resolve(__dirname, '../../src/index.ts')
-    }
+      '@ldesign/pdf': resolve(__dirname, '../../src/index.ts'),
+    },
   },
-  
+
   // Dependency optimization
   optimizeDeps: {
     include: [
@@ -143,22 +143,22 @@ export default defineConfig({
       'idb',
       'lodash-es',
       'mitt',
-      'uuid'
+      'uuid',
     ],
     exclude: [
-      '@ldesign/pdf'
-    ]
+      '@ldesign/pdf',
+    ],
   },
-  
+
   // CSS configuration
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/styles/variables.scss";`
-      }
+        additionalData: `@import "@/styles/variables.scss";`,
+      },
     },
     modules: {
-      localsConvention: 'camelCase'
+      localsConvention: 'camelCase',
     },
     postcss: {
       plugins: [
@@ -167,48 +167,48 @@ export default defineConfig({
           AtRule: {
             charset: (atRule) => {
               if (atRule.name === 'charset') {
-                atRule.remove();
+                atRule.remove()
               }
-            }
-          }
-        }
-      ]
-    }
+            },
+          },
+        },
+      ],
+    },
   },
-  
+
   // Environment variables
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
-    __PROD__: JSON.stringify(process.env.NODE_ENV === 'production')
+    __PROD__: JSON.stringify(process.env.NODE_ENV === 'production'),
   },
-  
+
   // ESBuild configuration
   esbuild: {
     target: 'es2020',
     drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
-    legalComments: 'none'
+    legalComments: 'none',
   },
-  
+
   // Preview configuration
   preview: {
     port: 4174,
     host: true,
-    cors: true
+    cors: true,
   },
-  
+
   // Worker configuration
   worker: {
     format: 'es',
-    plugins: []
+    plugins: [],
   },
-  
+
   // Plugins
   plugins: [
-    advancedFeaturesPlugin()
+    advancedFeaturesPlugin(),
   ],
-  
+
   // Test configuration
   test: {
     globals: true,
@@ -221,8 +221,8 @@ export default defineConfig({
         'node_modules/',
         'src/test/',
         '**/*.d.ts',
-        '**/*.config.ts'
-      ]
-    }
-  }
-});
+        '**/*.config.ts',
+      ],
+    },
+  },
+})

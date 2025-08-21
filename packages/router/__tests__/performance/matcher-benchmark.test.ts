@@ -43,7 +43,7 @@ describe('routeMatcher Performance Benchmark', () => {
       routes.push(
         { path: `/page${i}`, component: {} },
         { path: `/category${i}/:id`, component: {} },
-        { path: `/section${i}/:type/:id`, component: {} }
+        { path: `/section${i}/:type/:id`, component: {} },
       )
     }
 
@@ -58,7 +58,7 @@ describe('routeMatcher Performance Benchmark', () => {
       const startTime = performance.now()
 
       for (let i = 0; i < 1000; i++) {
-        paths.forEach(path => {
+        paths.forEach((path) => {
           matcher.matchByPath(path)
         })
       }
@@ -83,7 +83,7 @@ describe('routeMatcher Performance Benchmark', () => {
       const startTime = performance.now()
 
       for (let i = 0; i < 1000; i++) {
-        paths.forEach(path => {
+        paths.forEach((path) => {
           matcher.matchByPath(path)
         })
       }
@@ -109,7 +109,7 @@ describe('routeMatcher Performance Benchmark', () => {
       const startTime = performance.now()
 
       for (let i = 0; i < 100; i++) {
-        paths.forEach(path => {
+        paths.forEach((path) => {
           matcher.matchByPath(path)
         })
       }
@@ -145,15 +145,15 @@ describe('routeMatcher Performance Benchmark', () => {
 
       // eslint-disable-next-line no-console
       console.log(
-        `无缓存匹配 1000 次耗时: ${durationWithoutCache.toFixed(2)}ms`
+        `无缓存匹配 1000 次耗时: ${durationWithoutCache.toFixed(2)}ms`,
       )
       // eslint-disable-next-line no-console
       console.log(`有缓存匹配 1000 次耗时: ${durationWithCache.toFixed(2)}ms`)
       // eslint-disable-next-line no-console
       console.log(
         `缓存提升倍数: ${(durationWithoutCache / durationWithCache).toFixed(
-          2
-        )}x`
+          2,
+        )}x`,
       )
 
       // 缓存应该至少提升 1.5 倍性能（降低期望值，使测试更稳定）
@@ -196,7 +196,7 @@ describe('routeMatcher Performance Benchmark', () => {
 
       // 缓存大小应该受到限制
       expect(afterStats.cacheStats.size).toBeLessThanOrEqual(
-        afterStats.cacheStats.capacity
+        afterStats.cacheStats.capacity,
       )
 
       // eslint-disable-next-line no-console
@@ -221,7 +221,7 @@ describe('routeMatcher Performance Benchmark', () => {
       const startTime = performance.now()
 
       for (let i = 0; i < 1000; i++) {
-        invalidPaths.forEach(path => {
+        invalidPaths.forEach((path) => {
           const result = matcher.matchByPath(path)
           expect(result).toBeNull()
         })
@@ -244,14 +244,14 @@ describe('routeMatcher Performance Benchmark', () => {
       ]
 
       // 添加对应的路由
-      complexPaths.forEach(path => {
+      complexPaths.forEach((path) => {
         matcher.addRoute({ path, component: {} })
       })
 
       const startTime = performance.now()
 
       for (let i = 0; i < 1000; i++) {
-        complexPaths.forEach(path => {
+        complexPaths.forEach((path) => {
           matcher.matchByPath(path)
         })
       }
@@ -275,8 +275,7 @@ describe('routeMatcher Performance Benchmark', () => {
       const promises = Array.from({ length: 100 }, () =>
         Promise.resolve().then(() => {
           paths.forEach(path => matcher.matchByPath(path))
-        })
-      )
+        }))
 
       await Promise.all(promises)
 

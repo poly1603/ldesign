@@ -15,7 +15,7 @@ import type {
  */
 export function checkDeviceSupport(
   route: RouteLocationNormalized,
-  currentDevice: DeviceType
+  currentDevice: DeviceType,
 ): boolean {
   const supportedDevices = getSupportedDevicesFromRoute(route)
 
@@ -31,7 +31,7 @@ export function checkDeviceSupport(
  * 从路由中获取支持的设备类型
  */
 export function getSupportedDevicesFromRoute(
-  route: RouteLocationNormalized
+  route: RouteLocationNormalized,
 ): DeviceType[] | undefined {
   // 优先使用路由元信息中的配置
   if (route.meta.supportedDevices) {
@@ -53,7 +53,7 @@ export function getSupportedDevicesFromRoute(
  */
 export function resolveDeviceComponent(
   deviceComponents: Record<DeviceType, RouteComponent>,
-  currentDevice: DeviceType
+  currentDevice: DeviceType,
 ): DeviceComponentResolution | null {
   // 优先使用当前设备的组件
   if (deviceComponents[currentDevice]) {
@@ -87,12 +87,12 @@ export function resolveDeviceComponent(
 export function createUnsupportedDeviceRoute(
   originalRoute: RouteLocationNormalized,
   currentDevice: DeviceType,
-  customMessage?: string
+  customMessage?: string,
 ): RouteLocationRaw {
-  const message =
-    customMessage ||
-    originalRoute.meta.unsupportedMessage ||
-    '当前系统不支持在此设备上查看'
+  const message
+    = customMessage
+      || originalRoute.meta.unsupportedMessage
+      || '当前系统不支持在此设备上查看'
 
   // 如果路由配置了自定义重定向
   if (originalRoute.meta.unsupportedRedirect) {
@@ -121,7 +121,7 @@ export function createUnsupportedDeviceRoute(
  * 检查路由是否有设备特定配置
  */
 export function hasDeviceSpecificConfig(
-  route: RouteLocationNormalized
+  route: RouteLocationNormalized,
 ): boolean {
   // 检查是否有设备限制
   if (route.meta.supportedDevices && route.meta.supportedDevices.length > 0) {
@@ -134,8 +134,8 @@ export function hasDeviceSpecificConfig(
       return true
     }
     if (
-      record.meta.supportedDevices &&
-      record.meta.supportedDevices.length > 0
+      record.meta.supportedDevices
+      && record.meta.supportedDevices.length > 0
     ) {
       return true
     }
@@ -193,6 +193,6 @@ export function getDevicePriority(device: DeviceType): number {
  */
 export function sortDevicesByPriority(devices: DeviceType[]): DeviceType[] {
   return [...devices].sort(
-    (a, b) => getDevicePriority(a) - getDevicePriority(b)
+    (a, b) => getDevicePriority(a) - getDevicePriority(b),
   )
 }

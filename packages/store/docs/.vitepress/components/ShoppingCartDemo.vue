@@ -54,7 +54,8 @@ class ShoppingCartStore extends BaseStore {
 
     if (existingItem) {
       existingItem.quantity += quantity
-    } else {
+    }
+    else {
       this.items.push({
         id: `${product.id}-${Date.now()}`,
         productId: product.id,
@@ -84,7 +85,8 @@ class ShoppingCartStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeItem(itemId)
-      } else {
+      }
+      else {
         item.quantity = quantity
         this.calculateShippingAndTax()
       }
@@ -115,7 +117,8 @@ class ShoppingCartStore extends BaseStore {
     // 计算运费
     if (this.subtotal >= 99) {
       this.shippingFee = 0 // 满99免运费
-    } else {
+    }
+    else {
       this.shippingFee = 10
     }
 
@@ -135,12 +138,14 @@ class ShoppingCartStore extends BaseStore {
 
   @Getter()
   get discountAmount() {
-    if (!this.appliedCoupon) return 0
+    if (!this.appliedCoupon)
+      return 0
 
     let discount = 0
     if (this.appliedCoupon.type === 'percentage') {
       discount = this.subtotal * (this.appliedCoupon.value / 100)
-    } else {
+    }
+    else {
       discount = this.appliedCoupon.value
     }
 
@@ -156,7 +161,7 @@ class ShoppingCartStore extends BaseStore {
   get total() {
     return Math.max(
       0,
-      this.subtotal - this.discountAmount + this.shippingFee + this.tax
+      this.subtotal - this.discountAmount + this.shippingFee + this.tax,
     )
   }
 
@@ -214,7 +219,8 @@ function applyCoupon() {
   if (coupon) {
     cartStore.applyCoupon(coupon)
     couponCode.value = ''
-  } else {
+  }
+  else {
     alert('无效的优惠券代码')
   }
 }
@@ -223,7 +229,7 @@ function checkout() {
   alert(`结算成功！总金额: ¥${cartStore.total.toFixed(2)}`)
   cartStore.clearCart()
   // 重置库存
-  products.value.forEach(product => {
+  products.value.forEach((product) => {
     switch (product.id) {
       case '1':
         product.stock = 5
@@ -386,7 +392,7 @@ const highlightedCode = computed(() => {
     .replace(/(@\w+)/g, '<span class="decorator">$1</span>')
     .replace(
       /(class|interface|import|export|from|const|let|var)/g,
-      '<span class="keyword">$1</span>'
+      '<span class="keyword">$1</span>',
     )
     .replace(/(string|number|boolean|void)/g, '<span class="type">$1</span>')
     .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
@@ -421,8 +427,12 @@ onUnmounted(() => {
               <h5 class="product-name">
                 {{ product.name }}
               </h5>
-              <div class="product-price">¥{{ product.price }}</div>
-              <div class="product-stock">库存: {{ product.stock }}</div>
+              <div class="product-price">
+                ¥{{ product.price }}
+              </div>
+              <div class="product-stock">
+                库存: {{ product.stock }}
+              </div>
             </div>
             <button
               :disabled="product.stock === 0"
@@ -449,8 +459,12 @@ onUnmounted(() => {
         </div>
 
         <div v-if="cartStore.isEmpty" class="empty-cart">
-          <div class="empty-icon">🛒</div>
-          <div class="empty-text">购物车是空的</div>
+          <div class="empty-icon">
+            🛒
+          </div>
+          <div class="empty-text">
+            购物车是空的
+          </div>
         </div>
 
         <div v-else class="cart-items">
@@ -462,7 +476,9 @@ onUnmounted(() => {
               <div class="item-name">
                 {{ item.name }}
               </div>
-              <div class="item-price">¥{{ item.price }}</div>
+              <div class="item-price">
+                ¥{{ item.price }}
+              </div>
             </div>
             <div class="item-quantity">
               <button
@@ -501,7 +517,7 @@ onUnmounted(() => {
               placeholder="输入优惠券代码"
               class="coupon-field"
               :disabled="cartStore.appliedCoupon !== null"
-            />
+            >
             <button
               v-if="cartStore.appliedCoupon === null"
               :disabled="!couponCode.trim()"

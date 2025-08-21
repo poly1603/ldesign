@@ -68,7 +68,8 @@ try {
     warning: generatedColors.warning || '#faad14',
     danger: generatedColors.danger || '#f5222d',
   }
-} catch (error) {
+}
+catch (error) {
   // 降级处理
 }
 ```
@@ -117,7 +118,8 @@ private smoothCurve(t: number): number {
 if (mode === 'dark') {
   // 暗色模式：15-85%，避免过深颜色
   lightness = 15 + smoothFactor * 70
-} else {
+}
+else {
   // 亮色模式：85-15%，避免过深颜色
   lightness = 85 - smoothFactor * 70
 }
@@ -126,7 +128,8 @@ if (mode === 'dark') {
 if (mode === 'dark') {
   // 暗色模式：10-90%，提供更好对比度
   lightness = 10 + smoothFactor * 80
-} else {
+}
+else {
   // 亮色模式：90-10%，避免过深灰色
   lightness = 90 - smoothFactor * 80
 }

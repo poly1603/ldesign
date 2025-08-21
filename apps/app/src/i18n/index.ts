@@ -6,20 +6,20 @@
 
 import type {
   I18nEnginePluginOptions,
-  I18nOptions,
   I18nInstance,
+  I18nOptions,
 } from '@ldesign/i18n'
 import {
   createI18nEnginePlugin,
+  enLanguagePackage,
   I18n,
   StaticLoader,
   zhCNLanguagePackage,
-  enLanguagePackage,
 } from '@ldesign/i18n'
 
+import appEn from '../locales/en.json'
 // 导入应用特定的翻译文件
 import appZhCN from '../locales/zh-CN.json'
-import appEn from '../locales/en.json'
 
 /**
  * 自定义 i18n 创建函数
@@ -36,13 +36,14 @@ async function createCustomI18n(options?: I18nOptions): Promise<I18nInstance> {
     for (const key in source) {
       if (source.hasOwnProperty(key)) {
         if (
-          typeof source[key] === 'object' &&
-          source[key] !== null &&
-          !Array.isArray(source[key])
+          typeof source[key] === 'object'
+          && source[key] !== null
+          && !Array.isArray(source[key])
         ) {
           // 如果是对象，递归合并
           result[key] = deepMerge(result[key] || {}, source[key])
-        } else {
+        }
+        else {
           // 如果是基本类型，直接覆盖
           result[key] = source[key]
         }
@@ -87,7 +88,7 @@ async function createCustomI18n(options?: I18nOptions): Promise<I18nInstance> {
       },
       translations: mergedZhCN,
     },
-    en: {
+    'en': {
       info: {
         name: 'English',
         nativeName: 'English',

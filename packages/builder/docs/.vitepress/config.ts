@@ -18,18 +18,16 @@ export default defineConfig({
             { text: '构建与监听', link: '/guide/build' },
             { text: '类型声明', link: '/guide/dts' },
             { text: '高级特性', link: '/guide/advanced' },
-          ]
+          ],
         },
         {
           text: '参考',
           items: [
             { text: '配置', link: '/guide/config' },
             { text: 'API', link: '/guide/api' },
-          ]
-        }
-      ]
-    }
-  }
+          ],
+        },
+      ],
+    },
+  },
 })
-
-

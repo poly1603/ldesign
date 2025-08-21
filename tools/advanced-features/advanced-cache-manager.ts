@@ -130,10 +130,11 @@ export class AdvancedCacheManager {
         const adapter = await this.createAdapter(adapterConfig)
         this.adapters.set(adapterConfig.name, adapter)
         console.log(chalk.green(`✅ ${adapterConfig.name} 适配器初始化成功`))
-      } catch (error) {
+      }
+      catch (error) {
         console.error(
           chalk.red(`❌ ${adapterConfig.name} 适配器初始化失败:`),
-          error
+          error,
         )
       }
     }
@@ -215,7 +216,8 @@ export class AdvancedCacheManager {
       async get(key: string): Promise<CacheItem | null> {
         try {
           const data = localStorage.getItem(prefix + key)
-          if (!data) return null
+          if (!data)
+            return null
 
           const item: CacheItem = JSON.parse(data)
           if (this.isExpired(item)) {
@@ -223,7 +225,8 @@ export class AdvancedCacheManager {
             return null
           }
           return item
-        } catch {
+        }
+        catch {
           return null
         }
       },
@@ -231,7 +234,8 @@ export class AdvancedCacheManager {
       async set(key: string, item: CacheItem): Promise<void> {
         try {
           localStorage.setItem(prefix + key, JSON.stringify(item))
-        } catch (error) {
+        }
+        catch (error) {
           // 处理存储空间不足
           if (error instanceof DOMException && error.code === 22) {
             await this.evictLRU()
@@ -248,7 +252,7 @@ export class AdvancedCacheManager {
 
       async clear(): Promise<void> {
         const keys = Object.keys(localStorage).filter(key =>
-          key.startsWith(prefix)
+          key.startsWith(prefix),
         )
         keys.forEach(key => localStorage.removeItem(key))
       },
@@ -260,8 +264,7 @@ export class AdvancedCacheManager {
       },
 
       async size(): Promise<number> {
-        return Object.keys(localStorage).filter(key => key.startsWith(prefix))
-          .length
+        return Object.keys(localStorage).filter(key => key.startsWith(prefix)).length
       },
     }
   }
@@ -299,7 +302,8 @@ export class AdvancedCacheManager {
       },
 
       async get(key: string): Promise<CacheItem | null> {
-        if (!db) await this.init()
+        if (!db)
+          await this.init()
 
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readonly')
@@ -312,7 +316,8 @@ export class AdvancedCacheManager {
             if (item && this.isExpired(item)) {
               this.delete(key)
               resolve(null)
-            } else {
+            }
+            else {
               resolve(item || null)
             }
           }
@@ -320,7 +325,8 @@ export class AdvancedCacheManager {
       },
 
       async set(key: string, item: CacheItem): Promise<void> {
-        if (!db) await this.init()
+        if (!db)
+          await this.init()
 
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readwrite')
@@ -333,7 +339,8 @@ export class AdvancedCacheManager {
       },
 
       async delete(key: string): Promise<boolean> {
-        if (!db) await this.init()
+        if (!db)
+          await this.init()
 
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readwrite')
@@ -346,7 +353,8 @@ export class AdvancedCacheManager {
       },
 
       async clear(): Promise<void> {
-        if (!db) await this.init()
+        if (!db)
+          await this.init()
 
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readwrite')
@@ -359,7 +367,8 @@ export class AdvancedCacheManager {
       },
 
       async keys(): Promise<string[]> {
-        if (!db) await this.init()
+        if (!db)
+          await this.init()
 
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readonly')
@@ -372,7 +381,8 @@ export class AdvancedCacheManager {
       },
 
       async size(): Promise<number> {
-        if (!db) await this.init()
+        if (!db)
+          await this.init()
 
         return new Promise((resolve, reject) => {
           const transaction = db.transaction([storeName], 'readonly')
@@ -481,7 +491,8 @@ export class AdvancedCacheManager {
 
         const blob = new Blob([workerCode], { type: 'application/javascript' })
         this.compressionWorker = new Worker(URL.createObjectURL(blob))
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(chalk.yellow('⚠️ 压缩 Worker 初始化失败，使用同步压缩'))
       }
     }
@@ -496,9 +507,10 @@ export class AdvancedCacheManager {
         this.encryptionKey = await crypto.subtle.generateKey(
           { name: 'AES-GCM', length: 256 },
           false,
-          ['encrypt', 'decrypt']
+          ['encrypt', 'decrypt'],
         )
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(chalk.yellow('⚠️ 加密密钥生成失败'))
       }
     }
@@ -509,7 +521,7 @@ export class AdvancedCacheManager {
    */
   async get<T = any>(
     key: string,
-    options: { layer?: string } = {}
+    options: { layer?: string } = {},
   ): Promise<T | null> {
     const startTime = performance.now()
 
@@ -517,12 +529,13 @@ export class AdvancedCacheManager {
       const layers = options.layer
         ? [this.layers.get(options.layer)!]
         : Array.from(this.layers.values()).sort((a, b) =>
-            a.name.localeCompare(b.name)
+            a.name.localeCompare(b.name),
           )
 
       for (const layer of layers) {
         const adapter = this.adapters.get(layer.adapter)
-        if (!adapter) continue
+        if (!adapter)
+          continue
 
         const item = await adapter.get(key)
         if (item) {
@@ -550,7 +563,8 @@ export class AdvancedCacheManager {
 
       this.metrics.misses++
       return null
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 缓存获取失败:'), error)
       this.metrics.misses++
       return null
@@ -568,7 +582,7 @@ export class AdvancedCacheManager {
       layer?: string
       tags?: string[]
       dependencies?: string[]
-    } = {}
+    } = {},
   ): Promise<void> {
     try {
       const layer = options.layer
@@ -623,7 +637,8 @@ export class AdvancedCacheManager {
 
       // 检查缓存大小限制
       await this.checkSizeLimit(layer)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 缓存设置失败:'), error)
       throw error
     }
@@ -634,7 +649,7 @@ export class AdvancedCacheManager {
    */
   async delete(
     key: string,
-    options: { layer?: string } = {}
+    options: { layer?: string } = {},
   ): Promise<boolean> {
     try {
       const layers = options.layer
@@ -645,7 +660,8 @@ export class AdvancedCacheManager {
 
       for (const layer of layers) {
         const adapter = this.adapters.get(layer.adapter)
-        if (!adapter) continue
+        if (!adapter)
+          continue
 
         const item = await adapter.get(key)
         if (item) {
@@ -663,7 +679,8 @@ export class AdvancedCacheManager {
       }
 
       return deleted
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 缓存删除失败:'), error)
       return false
     }
@@ -687,7 +704,8 @@ export class AdvancedCacheManager {
 
       this.metrics.totalSize = 0
       this.metrics.itemCount = 0
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 缓存清空失败:'), error)
       throw error
     }
@@ -701,7 +719,8 @@ export class AdvancedCacheManager {
 
     for (const layer of this.layers.values()) {
       const adapter = this.adapters.get(layer.adapter)
-      if (!adapter) continue
+      if (!adapter)
+        continue
 
       const keys = await adapter.keys()
 
@@ -737,7 +756,8 @@ export class AdvancedCacheManager {
             this.compressionWorker!.removeEventListener('message', handler)
             if (e.data.error) {
               reject(new Error(e.data.error))
-            } else {
+            }
+            else {
               resolve(e.data.result)
             }
           }
@@ -746,7 +766,8 @@ export class AdvancedCacheManager {
         this.compressionWorker.addEventListener('message', handler)
         this.compressionWorker.postMessage({ action: 'compress', data, id })
       })
-    } else {
+    }
+    else {
       // 同步压缩
       return JSON.stringify(data)
     }
@@ -765,7 +786,8 @@ export class AdvancedCacheManager {
             this.compressionWorker!.removeEventListener('message', handler)
             if (e.data.error) {
               reject(new Error(e.data.error))
-            } else {
+            }
+            else {
               resolve(e.data.result)
             }
           }
@@ -774,7 +796,8 @@ export class AdvancedCacheManager {
         this.compressionWorker.addEventListener('message', handler)
         this.compressionWorker.postMessage({ action: 'decompress', data, id })
       })
-    } else {
+    }
+    else {
       // 同步解压缩
       return JSON.parse(data)
     }
@@ -784,7 +807,8 @@ export class AdvancedCacheManager {
    * 加密数据
    */
   private async encrypt(data: any): Promise<any> {
-    if (!this.encryptionKey) return data
+    if (!this.encryptionKey)
+      return data
 
     try {
       const encoder = new TextEncoder()
@@ -795,14 +819,15 @@ export class AdvancedCacheManager {
       const encrypted = await crypto.subtle.encrypt(
         { name: 'AES-GCM', iv },
         this.encryptionKey,
-        dataBuffer
+        dataBuffer,
       )
 
       return {
         encrypted: Array.from(new Uint8Array(encrypted)),
         iv: Array.from(iv),
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow('⚠️ 加密失败，使用原始数据'))
       return data
     }
@@ -812,7 +837,8 @@ export class AdvancedCacheManager {
    * 解密数据
    */
   private async decrypt(encryptedData: any): Promise<any> {
-    if (!this.encryptionKey || !encryptedData.encrypted) return encryptedData
+    if (!this.encryptionKey || !encryptedData.encrypted)
+      return encryptedData
 
     try {
       const encrypted = new Uint8Array(encryptedData.encrypted)
@@ -821,13 +847,14 @@ export class AdvancedCacheManager {
       const decrypted = await crypto.subtle.decrypt(
         { name: 'AES-GCM', iv },
         this.encryptionKey,
-        encrypted
+        encrypted,
       )
 
       const decoder = new TextDecoder()
       const dataString = decoder.decode(decrypted)
       return JSON.parse(dataString)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(chalk.yellow('⚠️ 解密失败'))
       return encryptedData
     }
@@ -854,10 +881,11 @@ export class AdvancedCacheManager {
    */
   private async evictItems(layer: CacheLayer): Promise<void> {
     const adapter = this.adapters.get(layer.adapter)
-    if (!adapter) return
+    if (!adapter)
+      return
 
     const keys = await adapter.keys()
-    const items: Array<{ key: string; item: CacheItem }> = []
+    const items: Array<{ key: string, item: CacheItem }> = []
 
     for (const key of keys) {
       const item = await adapter.get(key)
@@ -899,17 +927,17 @@ export class AdvancedCacheManager {
    */
   private updateAverageAccessTime(accessTime: number): void {
     const totalAccesses = this.metrics.hits + this.metrics.misses
-    this.metrics.averageAccessTime =
-      (this.metrics.averageAccessTime * (totalAccesses - 1) + accessTime) /
-      totalAccesses
+    this.metrics.averageAccessTime
+      = (this.metrics.averageAccessTime * (totalAccesses - 1) + accessTime)
+        / totalAccesses
   }
 
   /**
    * 获取缓存指标
    */
   getMetrics(): CacheMetrics {
-    this.metrics.hitRate =
-      this.metrics.hits / (this.metrics.hits + this.metrics.misses) || 0
+    this.metrics.hitRate
+      = this.metrics.hits / (this.metrics.hits + this.metrics.misses) || 0
     return { ...this.metrics }
   }
 
@@ -934,7 +962,7 @@ export class AdvancedCacheManager {
  * 创建高级缓存管理器
  */
 export function createAdvancedCacheManager(
-  config: CacheConfig
+  config: CacheConfig,
 ): AdvancedCacheManager {
   return new AdvancedCacheManager(config)
 }

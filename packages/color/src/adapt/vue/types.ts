@@ -28,8 +28,8 @@ export interface VueThemePluginOptions extends ThemeManagerOptions {
 /**
  * 主题管理器注入键
  */
-export const THEME_MANAGER_KEY: InjectionKey<ThemeManagerInstance> =
-  Symbol('themeManager')
+export const THEME_MANAGER_KEY: InjectionKey<ThemeManagerInstance>
+  = Symbol('themeManager')
 
 /**
  * Vue 主题管理器组合式 API 返回值

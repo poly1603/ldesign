@@ -60,7 +60,8 @@ export class DESEncryptor implements IEncryptor {
         iv,
         keySize: 64, // DES 密钥大小为 64 位
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'DES encryption'),
@@ -75,7 +76,7 @@ export class DESEncryptor implements IEncryptor {
   decrypt(
     encryptedData: string | EncryptResult,
     key: string,
-    options: DESOptions = {}
+    options: DESOptions = {},
   ): DecryptResult {
     try {
       // 处理输入数据
@@ -85,7 +86,8 @@ export class DESEncryptor implements IEncryptor {
       if (typeof encryptedData === 'string') {
         ciphertext = encryptedData
         iv = options.iv
-      } else {
+      }
+      else {
         ciphertext = encryptedData.data || ''
         iv = encryptedData.iv || options.iv
       }
@@ -93,7 +95,7 @@ export class DESEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(ciphertext)) {
         throw ErrorUtils.createDecryptionError(
           'Encrypted data cannot be empty',
-          'DES'
+          'DES',
         )
       }
 
@@ -110,7 +112,7 @@ export class DESEncryptor implements IEncryptor {
       if (!opts.iv) {
         throw ErrorUtils.createDecryptionError(
           'IV is required for decryption',
-          'DES'
+          'DES',
         )
       }
       const ivWordArray = CryptoJS.enc.Hex.parse(opts.iv)
@@ -132,7 +134,7 @@ export class DESEncryptor implements IEncryptor {
       if (!decryptedText) {
         throw ErrorUtils.createDecryptionError(
           'Failed to decrypt data - invalid key or corrupted data',
-          'DES'
+          'DES',
         )
       }
 
@@ -142,7 +144,8 @@ export class DESEncryptor implements IEncryptor {
         algorithm: 'DES',
         mode: opts.mode,
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         success: false,
         error: ErrorUtils.handleError(error, 'DES decryption'),
@@ -159,7 +162,8 @@ export class DESEncryptor implements IEncryptor {
     if (key.length < 8) {
       // 如果密钥太短，用零填充
       key = key.padEnd(8, '0')
-    } else if (key.length > 8) {
+    }
+    else if (key.length > 8) {
       // 如果密钥太长，截取前 8 字节
       key = key.substring(0, 8)
     }
@@ -204,7 +208,7 @@ export const des = {
   decrypt: (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: DESOptions
+    options?: DESOptions,
   ): DecryptResult => {
     const encryptor = new DESEncryptor()
     return encryptor.decrypt(encryptedData, key, options)

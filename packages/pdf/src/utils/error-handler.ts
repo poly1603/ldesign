@@ -4,9 +4,9 @@
  */
 
 import type {
-  PdfError,
   ErrorHandler,
-  ErrorRecoveryStrategy
+  ErrorRecoveryStrategy,
+  PdfError,
 } from '../types'
 import { ErrorCode } from '../types'
 
@@ -18,128 +18,128 @@ const recoveryStrategies: Record<ErrorCode, ErrorRecoveryStrategy> = {
     maxRetries: 3,
     retryDelay: 1000,
     backoffMultiplier: 2,
-    fallbackAction: 'show_error_message'
+    fallbackAction: 'show_error_message',
   },
   [ErrorCode.PARSE_ERROR]: {
     maxRetries: 1,
     retryDelay: 500,
     backoffMultiplier: 1,
-    fallbackAction: 'show_error_message'
+    fallbackAction: 'show_error_message',
   },
   [ErrorCode.RENDER_ERROR]: {
     maxRetries: 2,
     retryDelay: 800,
     backoffMultiplier: 1.5,
-    fallbackAction: 'render_placeholder'
+    fallbackAction: 'render_placeholder',
   },
   [ErrorCode.CACHE_ERROR]: {
     maxRetries: 1,
     retryDelay: 200,
     backoffMultiplier: 1,
-    fallbackAction: 'clear_cache'
+    fallbackAction: 'clear_cache',
   },
   [ErrorCode.WORKER_ERROR]: {
     maxRetries: 2,
     retryDelay: 1500,
     backoffMultiplier: 2,
-    fallbackAction: 'restart_worker'
+    fallbackAction: 'restart_worker',
   },
   [ErrorCode.NETWORK_ERROR]: {
     maxRetries: 5,
     retryDelay: 2000,
     backoffMultiplier: 2,
-    fallbackAction: 'show_offline_message'
+    fallbackAction: 'show_offline_message',
   },
   [ErrorCode.PERMISSION_ERROR]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'show_permission_error'
+    fallbackAction: 'show_permission_error',
   },
   [ErrorCode.MEMORY_ERROR]: {
     maxRetries: 1,
     retryDelay: 3000,
     backoffMultiplier: 1,
-    fallbackAction: 'reduce_quality'
+    fallbackAction: 'reduce_quality',
   },
   [ErrorCode.TIMEOUT_ERROR]: {
     maxRetries: 2,
     retryDelay: 1000,
     backoffMultiplier: 1.5,
-    fallbackAction: 'increase_timeout'
+    fallbackAction: 'increase_timeout',
   },
   [ErrorCode.VALIDATION_ERROR]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'show_validation_error'
+    fallbackAction: 'show_validation_error',
   },
   [ErrorCode.UNKNOWN_ERROR]: {
     maxRetries: 1,
     retryDelay: 1000,
     backoffMultiplier: 1,
-    fallbackAction: 'show_generic_error'
+    fallbackAction: 'show_generic_error',
   },
   [ErrorCode.LOAD_FAILED]: {
     maxRetries: 2,
     retryDelay: 1500,
     backoffMultiplier: 2,
-    fallbackAction: 'show_error_message'
+    fallbackAction: 'show_error_message',
   },
   [ErrorCode.INVALID_PDF]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'show_invalid_pdf_error'
+    fallbackAction: 'show_invalid_pdf_error',
   },
   [ErrorCode.PASSWORD_REQUIRED]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'prompt_password'
+    fallbackAction: 'prompt_password',
   },
   [ErrorCode.RENDER_FAILED]: {
     maxRetries: 2,
     retryDelay: 800,
     backoffMultiplier: 1.5,
-    fallbackAction: 'render_placeholder'
+    fallbackAction: 'render_placeholder',
   },
   [ErrorCode.CANVAS_ERROR]: {
     maxRetries: 1,
     retryDelay: 500,
     backoffMultiplier: 1,
-    fallbackAction: 'fallback_renderer'
+    fallbackAction: 'fallback_renderer',
   },
   [ErrorCode.WEBGL_ERROR]: {
     maxRetries: 1,
     retryDelay: 500,
     backoffMultiplier: 1,
-    fallbackAction: 'disable_webgl'
+    fallbackAction: 'disable_webgl',
   },
   [ErrorCode.PAGE_NOT_FOUND]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'show_page_error'
+    fallbackAction: 'show_page_error',
   },
   [ErrorCode.INVALID_PAGE_NUMBER]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'show_page_error'
+    fallbackAction: 'show_page_error',
   },
   [ErrorCode.WORKER_TIMEOUT]: {
     maxRetries: 2,
     retryDelay: 2000,
     backoffMultiplier: 2,
-    fallbackAction: 'restart_worker'
+    fallbackAction: 'restart_worker',
   },
   [ErrorCode.INVALID_ARGUMENT]: {
     maxRetries: 0,
     retryDelay: 0,
     backoffMultiplier: 1,
-    fallbackAction: 'show_validation_error'
-  }
+    fallbackAction: 'show_validation_error',
+  },
 }
 
 /**
@@ -150,20 +150,20 @@ export class PdfErrorHandler implements ErrorHandler {
   private lastErrors = new Map<ErrorCode, number>()
   private errorCallbacks = new Map<ErrorCode, Array<(error: PdfError) => void>>()
   private globalErrorCallback?: (error: PdfError) => void
-  
+
   /**
    * 处理错误
    */
   handleError(error: PdfError): void {
     // 标准化错误
     const standardizedError = this.standardizeError(error)
-    
+
     // 记录错误
     this.recordError(standardizedError)
-    
+
     // 执行错误回调
     this.executeErrorCallbacks(standardizedError)
-    
+
     // 日志记录
     this.logError(standardizedError)
   }
@@ -237,7 +237,7 @@ export class PdfErrorHandler implements ErrorHandler {
    */
   calculateRetryDelay(errorCode: ErrorCode, retryCount: number): number {
     const strategy = this.getRecoveryStrategy(errorCode)
-    return strategy.retryDelay * Math.pow(strategy.backoffMultiplier, retryCount)
+    return strategy.retryDelay * strategy.backoffMultiplier ** retryCount
   }
 
   // ============================================================================
@@ -254,12 +254,12 @@ export class PdfErrorHandler implements ErrorHandler {
 
     // 根据错误消息推断错误类型
     const errorCode = this.inferErrorCode(error)
-    
+
     const pdfError = error as PdfError
     pdfError.code = errorCode
     pdfError.timestamp = Date.now()
     pdfError.context = pdfError.context || {}
-    
+
     return pdfError
   }
 
@@ -275,7 +275,7 @@ export class PdfErrorHandler implements ErrorHandler {
    */
   private inferErrorCode(error: Error): ErrorCode {
     const message = error.message.toLowerCase()
-    
+
     if (message.includes('network') || message.includes('fetch')) {
       return ErrorCode.NETWORK_ERROR
     }
@@ -306,7 +306,7 @@ export class PdfErrorHandler implements ErrorHandler {
     if (message.includes('validation') || message.includes('validate')) {
       return ErrorCode.VALIDATION_ERROR
     }
-    
+
     return ErrorCode.UNKNOWN_ERROR
   }
 
@@ -326,20 +326,22 @@ export class PdfErrorHandler implements ErrorHandler {
     // 执行特定错误类型的回调
     const callbacks = this.errorCallbacks.get(error.code)
     if (callbacks) {
-      callbacks.forEach(callback => {
+      callbacks.forEach((callback) => {
         try {
           callback(error)
-        } catch (callbackError) {
+        }
+        catch (callbackError) {
           console.error('Error in error callback:', callbackError)
         }
       })
     }
-    
+
     // 执行全局错误回调
     if (this.globalErrorCallback) {
       try {
         this.globalErrorCallback(error)
-      } catch (callbackError) {
+      }
+      catch (callbackError) {
         console.error('Error in global error callback:', callbackError)
       }
     }
@@ -354,9 +356,9 @@ export class PdfErrorHandler implements ErrorHandler {
       message: error.message,
       timestamp: error.timestamp,
       context: error.context,
-      stack: error.stack
+      stack: error.stack,
     }
-    
+
     console.error('[PdfErrorHandler] Error occurred:', errorInfo)
   }
 }
@@ -367,7 +369,7 @@ export class PdfErrorHandler implements ErrorHandler {
 export function createPdfError(
   code: ErrorCode,
   message: string,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): PdfError {
   const error = new Error(message) as PdfError
   error.code = code
@@ -382,12 +384,13 @@ export function createPdfError(
 export function withErrorHandling<T extends any[], R>(
   fn: (...args: T) => Promise<R>,
   errorHandler: ErrorHandler,
-  errorCode?: ErrorCode
+  errorCode?: ErrorCode,
 ) {
   return async (...args: T): Promise<R> => {
     try {
       return await fn(...args)
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = error instanceof Error ? error as PdfError : new Error(String(error)) as PdfError
       if (errorCode && !pdfError.code) {
         pdfError.code = errorCode
@@ -405,19 +408,20 @@ export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   errorHandler: ErrorHandler,
   errorCode: ErrorCode,
-  maxRetries?: number
+  maxRetries?: number,
 ): Promise<T> {
   const strategy = errorHandler.getRecoveryStrategy(errorCode)
   const retries = maxRetries ?? strategy.maxRetries
-  
+
   let lastError: Error
-  
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await fn()
-    } catch (error) {
+    }
+    catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
-      
+
       if (attempt === retries) {
         // 最后一次尝试失败
         const pdfError = lastError as PdfError
@@ -425,13 +429,13 @@ export async function retryWithBackoff<T>(
         errorHandler.handleError(pdfError)
         throw pdfError
       }
-      
+
       // 计算延迟并等待
       const delay = errorHandler.calculateRetryDelay(errorCode, attempt)
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
-  
+
   throw lastError!
 }
 
@@ -450,11 +454,11 @@ export function setupGlobalErrorHandling(errorHandler: ErrorHandler = defaultErr
       const error = createPdfError(
         ErrorCode.UNKNOWN_ERROR,
         `Unhandled promise rejection: ${event.reason}`,
-        { reason: event.reason }
+        { reason: event.reason },
       )
       errorHandler.handleError(error)
     })
-    
+
     // 处理未捕获的错误
     window.addEventListener('error', (event) => {
       const error = createPdfError(
@@ -464,8 +468,8 @@ export function setupGlobalErrorHandling(errorHandler: ErrorHandler = defaultErr
           filename: event.filename,
           lineno: event.lineno,
           colno: event.colno,
-          error: event.error
-        }
+          error: event.error,
+        },
       )
       errorHandler.handleError(error)
     })

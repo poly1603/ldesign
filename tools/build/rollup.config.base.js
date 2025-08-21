@@ -9,8 +9,8 @@ import { glob } from 'glob'
 import { defineConfig } from 'rollup'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
-import Vue from 'unplugin-vue/rollup'
 import VueJsx from 'unplugin-vue-jsx/rollup'
+import Vue from 'unplugin-vue/rollup'
 
 /**
  * 增强的 Rollup 配置创建器
@@ -41,7 +41,7 @@ export function createRollupConfig(options = {}) {
     formats: ['es', 'cjs', 'umd'],
     vue: true,
     globals: {
-      vue: 'Vue',
+      'vue': 'Vue',
       '@vue/runtime-core': 'Vue',
       '@vue/runtime-dom': 'Vue',
     },
@@ -76,8 +76,8 @@ export function createRollupConfig(options = {}) {
   }
 
   const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-  const name =
-    packageName || pkg.name?.replace('@ldesign/', '') || 'LDesignPackage'
+  const name
+    = packageName || pkg.name?.replace('@ldesign/', '') || 'LDesignPackage'
 
   /**
    * 自动发现入口点
@@ -104,7 +104,7 @@ export function createRollupConfig(options = {}) {
       ignore: ['index.ts'], // 排除根目录的 index.ts，因为已经作为主入口点处理
     })
 
-    subModules.forEach(subModule => {
+    subModules.forEach((subModule) => {
       // 将路径转换为入口点名称
       // 例如：vue/index.ts -> vue/index, utils/index.ts -> utils/index
       const entryName = subModule.replace(/\.ts$/, '')
@@ -180,7 +180,7 @@ export function createRollupConfig(options = {}) {
               },
             ],
           ],
-        })
+        }),
       )
     }
 
@@ -194,10 +194,10 @@ export function createRollupConfig(options = {}) {
       name: 'ignore-styles',
       resolveId(id) {
         if (
-          id.endsWith('.css') ||
-          id.endsWith('.less') ||
-          id.endsWith('.scss') ||
-          id.endsWith('.sass')
+          id.endsWith('.css')
+          || id.endsWith('.less')
+          || id.endsWith('.scss')
+          || id.endsWith('.sass')
         ) {
           return { id, external: true }
         }
@@ -231,12 +231,14 @@ export function createRollupConfig(options = {}) {
         plugins: createJsPlugins(),
         onwarn(warning, warn) {
           // 忽略未使用的外部导入警告
-          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT')
+            return
           // 忽略循环依赖警告（如果是已知的安全循环依赖）
-          if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('vue/ssr.ts')) return
+          if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('vue/ssr.ts'))
+            return
           warn(warning)
         },
-      })
+      }),
     )
   }
 
@@ -259,12 +261,14 @@ export function createRollupConfig(options = {}) {
         plugins: createJsPlugins(),
         onwarn(warning, warn) {
           // 忽略未使用的外部导入警告
-          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT')
+            return
           // 忽略循环依赖警告（如果是已知的安全循环依赖）
-          if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('vue/ssr.ts')) return
+          if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('vue/ssr.ts'))
+            return
           warn(warning)
         },
-      })
+      }),
     )
   }
 
@@ -296,18 +300,23 @@ export function createRollupConfig(options = {}) {
           plugins: createJsPlugins(),
           onwarn(warning, warn) {
             // 忽略未使用的外部导入警告
-            if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+            if (warning.code === 'UNUSED_EXTERNAL_IMPORT')
+              return
             // 忽略循环依赖警告
-            if (warning.code === 'CIRCULAR_DEPENDENCY') return
+            if (warning.code === 'CIRCULAR_DEPENDENCY')
+              return
             // 忽略混合导出警告
-            if (warning.code === 'MIXED_EXPORTS') return
+            if (warning.code === 'MIXED_EXPORTS')
+              return
             // 忽略缺失全局变量警告
-            if (warning.code === 'MISSING_GLOBAL_NAME') return
+            if (warning.code === 'MISSING_GLOBAL_NAME')
+              return
             // 忽略缺失 Node.js 内置模块 shims 警告
-            if (warning.code === 'MISSING_NODE_BUILTINS') return
+            if (warning.code === 'MISSING_NODE_BUILTINS')
+              return
             warn(warning)
           },
-        })
+        }),
       )
 
       // UMD 压缩版本
@@ -335,18 +344,23 @@ export function createRollupConfig(options = {}) {
           plugins: createJsPlugins(),
           onwarn(warning, warn) {
             // 忽略未使用的外部导入警告
-            if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+            if (warning.code === 'UNUSED_EXTERNAL_IMPORT')
+              return
             // 忽略循环依赖警告
-            if (warning.code === 'CIRCULAR_DEPENDENCY') return
+            if (warning.code === 'CIRCULAR_DEPENDENCY')
+              return
             // 忽略混合导出警告
-            if (warning.code === 'MIXED_EXPORTS') return
+            if (warning.code === 'MIXED_EXPORTS')
+              return
             // 忽略缺失全局变量警告
-            if (warning.code === 'MISSING_GLOBAL_NAME') return
+            if (warning.code === 'MISSING_GLOBAL_NAME')
+              return
             // 忽略缺失 Node.js 内置模块 shims 警告
-            if (warning.code === 'MISSING_NODE_BUILTINS') return
+            if (warning.code === 'MISSING_NODE_BUILTINS')
+              return
             warn(warning)
           },
-        })
+        }),
       )
     }
   }
@@ -365,7 +379,7 @@ export function createRollupConfig(options = {}) {
       },
       external: ['vue', '@vue/runtime-core', '@vue/runtime-dom', ...external],
       plugins: createDtsPlugins(),
-    })
+    }),
   )
 
   return configs.length === 1 ? configs[0] : configs

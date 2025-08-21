@@ -117,6 +117,9 @@ declare class ThemeManager implements ThemeManagerInstance {
     private applyCurrentTheme;
     /**
      * 生成主题数据
+     * @param config - 主题配置
+     * @returns 生成的主题数据
+     * @throws 当主题配置缺失必要信息时抛出错误
      */
     private generateThemeData;
     /**

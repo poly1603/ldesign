@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 import type { FileUploadOptions, UseFileUploadReturn } from '../types'
+import { computed, ref } from 'vue'
 
 /**
  * 文件上传组合式函数
@@ -13,13 +13,13 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
   const uploadProgress = ref(0)
   const uploadedFiles = ref<File[]>([])
   const uploadError = ref<Error | null>(null)
-  
+
   // 默认配置
   const config = {
     accept: '.pdf',
     maxSize: 50 * 1024 * 1024, // 50MB
     multiple: false,
-    ...options
+    ...options,
   }
 
   // 计算属性
@@ -53,16 +53,18 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
    */
   const isFileTypeAccepted = (file: File, accept: string): boolean => {
     const acceptTypes = accept.split(',').map(type => type.trim())
-    
-    return acceptTypes.some(acceptType => {
+
+    return acceptTypes.some((acceptType) => {
       if (acceptType.startsWith('.')) {
         // 文件扩展名匹配
         return file.name.toLowerCase().endsWith(acceptType.toLowerCase())
-      } else if (acceptType.includes('*')) {
+      }
+      else if (acceptType.includes('*')) {
         // MIME类型通配符匹配
         const regex = new RegExp(acceptType.replace('*', '.*'))
         return regex.test(file.type)
-      } else {
+      }
+      else {
         // 精确MIME类型匹配
         return file.type === acceptType
       }
@@ -78,20 +80,21 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
       const interval = setInterval(() => {
         progress += Math.random() * 20
         uploadProgress.value = Math.min(progress, 100)
-        
+
         // 触发进度回调
         if (config.onProgress) {
           config.onProgress(uploadProgress.value)
         }
-        
+
         if (progress >= 100) {
           clearInterval(interval)
           uploadProgress.value = 100
-          
+
           // 模拟偶尔的上传失败
           if (Math.random() < 0.1) {
             reject(new Error('上传失败: 网络错误'))
-          } else {
+          }
+          else {
             resolve()
           }
         }
@@ -121,11 +124,12 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
 
       // 模拟上传过程
       await simulateUpload(file)
-      
+
       // 添加到已上传文件列表
       if (config.multiple) {
         uploadedFiles.value.push(file)
-      } else {
+      }
+      else {
         uploadedFiles.value = [file]
       }
 
@@ -133,17 +137,18 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
       if (config.onSuccess) {
         config.onSuccess(file)
       }
-
-    } catch (error: any) {
+    }
+    catch (error: any) {
       uploadError.value = error
-      
+
       // 触发错误回调
       if (config.onError) {
         config.onError(error)
       }
-      
+
       throw error
-    } finally {
+    }
+    finally {
       isUploading.value = false
     }
   }
@@ -201,7 +206,7 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
       size: file.size,
       type: file.type,
       lastModified: file.lastModified,
-      sizeFormatted: formatFileSize(file.size)
+      sizeFormatted: formatFileSize(file.size),
     }
   }
 
@@ -209,13 +214,14 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
    * 格式化文件大小
    */
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    
+    if (bytes === 0)
+      return '0 Bytes'
+
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   }
 
   return {
@@ -224,11 +230,11 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
     uploadProgress,
     uploadedFiles: uploadedFiles as Ref<File[]>,
     uploadError: uploadError as Ref<Error | null>,
-    
+
     // 计算属性
     canUpload,
     hasError,
-    
+
     // 方法
     uploadFile,
     uploadFiles,
@@ -237,7 +243,7 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
     removeFile,
     validateFile,
     getFileInfo,
-    formatFileSize
+    formatFileSize,
   }
 }
 
@@ -249,11 +255,11 @@ export function useFileUpload(options: FileUploadOptions = {}): UseFileUploadRet
  */
 export function useDragUpload(
   targetRef: Ref<HTMLElement | null>,
-  options: FileUploadOptions = {}
+  options: FileUploadOptions = {},
 ) {
   const isDragOver = ref(false)
   const dragCounter = ref(0)
-  
+
   const fileUpload = useFileUpload(options)
 
   /**
@@ -262,7 +268,7 @@ export function useDragUpload(
   const handleDragEnter = (e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     dragCounter.value++
     if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
       isDragOver.value = true
@@ -275,7 +281,7 @@ export function useDragUpload(
   const handleDragLeave = (e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     dragCounter.value--
     if (dragCounter.value === 0) {
       isDragOver.value = false
@@ -288,7 +294,7 @@ export function useDragUpload(
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (e.dataTransfer) {
       e.dataTransfer.dropEffect = 'copy'
     }
@@ -300,15 +306,16 @@ export function useDragUpload(
   const handleDrop = async (e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     isDragOver.value = false
     dragCounter.value = 0
-    
+
     const files = Array.from(e.dataTransfer?.files || [])
     if (files.length > 0) {
       try {
         await fileUpload.uploadFiles(files)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('拖拽上传失败:', error)
       }
     }
@@ -319,7 +326,8 @@ export function useDragUpload(
    */
   const bindDragEvents = () => {
     const element = targetRef.value
-    if (!element) return
+    if (!element)
+      return
 
     element.addEventListener('dragenter', handleDragEnter)
     element.addEventListener('dragleave', handleDragLeave)
@@ -332,7 +340,8 @@ export function useDragUpload(
    */
   const unbindDragEvents = () => {
     const element = targetRef.value
-    if (!element) return
+    if (!element)
+      return
 
     element.removeEventListener('dragenter', handleDragEnter)
     element.removeEventListener('dragleave', handleDragLeave)
@@ -344,6 +353,6 @@ export function useDragUpload(
     ...fileUpload,
     isDragOver,
     bindDragEvents,
-    unbindDragEvents
+    unbindDragEvents,
   }
 }

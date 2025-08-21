@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { BuildOptions, DevOptions, LauncherOptions, ProjectType } from '../src/types'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ViteLauncher } from '../src/core/ViteLauncher'
-import type { LauncherOptions, ProjectType, DevOptions, BuildOptions } from '../src/types'
-import path from 'path'
-import fs from 'fs/promises'
 
 // Mock dependencies
 vi.mock('vite', () => ({
@@ -68,7 +68,7 @@ vi.mock('../src/services/ProjectDetector')
 vi.mock('../src/services/ConfigManager')
 vi.mock('../src/services/PluginManager')
 
-describe('ViteLauncher', () => {
+describe('viteLauncher', () => {
   let launcher: ViteLauncher
   let tempDir: string
 
@@ -85,7 +85,8 @@ describe('ViteLauncher', () => {
     // Clean up temp directory
     try {
       await fs.rm(tempDir, { recursive: true, force: true })
-    } catch {
+    }
+    catch {
       // Ignore cleanup errors
     }
   })

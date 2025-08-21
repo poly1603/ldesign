@@ -13,7 +13,7 @@ import { useTheme } from './useTheme'
  * @returns 主题切换相关的响应式状态和方法
  */
 export function useThemeToggle(
-  manager?: ThemeManagerInstance
+  manager?: ThemeManagerInstance,
 ): UseThemeToggleReturn {
   const { currentMode, setMode } = useTheme(manager)
 

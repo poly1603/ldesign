@@ -52,7 +52,8 @@ describe.skip('router Integration E2E Tests', () => {
         app = null
         router = null
       }
-    } catch (error) {
+    }
+    catch (error) {
       // 忽略卸载错误
       console.warn('Unmount error:', error)
     }
@@ -62,7 +63,8 @@ describe.skip('router Integration E2E Tests', () => {
       if (container && container.parentNode) {
         container.parentNode.removeChild(container)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('DOM cleanup error:', error)
     }
 
@@ -272,7 +274,8 @@ describe.skip('router Integration E2E Tests', () => {
       router.beforeEach((to: any, from: any, next: any) => {
         if (to.meta.requiresAuth && !isAuthenticated()) {
           next('/login')
-        } else {
+        }
+        else {
           next()
         }
       })

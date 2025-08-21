@@ -12,33 +12,33 @@
   --warning-color: #f59e0b;
   --error-color: #ef4444;
   --info-color: #06b6d4;
-  
+
   /* Advanced UI Colors */
   --surface-primary: #ffffff;
   --surface-secondary: #f8fafc;
   --surface-tertiary: #f1f5f9;
   --surface-elevated: #ffffff;
   --surface-overlay: rgba(0, 0, 0, 0.5);
-  
+
   /* Text Colors */
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-tertiary: #94a3b8;
   --text-inverse: #ffffff;
   --text-muted: #64748b;
-  
+
   /* Border Colors */
   --border-primary: #e2e8f0;
   --border-secondary: #cbd5e1;
   --border-focus: #2563eb;
   --border-error: #ef4444;
-  
+
   /* Shadow Definitions */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
+
   /* Spacing Scale */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -46,7 +46,7 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
   --space-2xl: 3rem;
-  
+
   /* Typography */
   --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
@@ -56,19 +56,19 @@
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.25rem;
   --font-size-2xl: 1.5rem;
-  
+
   /* Layout */
   --header-height: 64px;
   --sidebar-width: 320px;
   --sidebar-collapsed-width: 48px;
   --footer-height: 40px;
   --panel-width: 400px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
-  
+
   /* Z-Index Scale */
   --z-dropdown: 1000;
   --z-sticky: 1020;
@@ -81,25 +81,25 @@
 }
 
 /* Dark Theme Variables */
-[data-theme="dark"] {
+[data-theme='dark'] {
   --surface-primary: #0f172a;
   --surface-secondary: #1e293b;
   --surface-tertiary: #334155;
   --surface-elevated: #1e293b;
   --surface-overlay: rgba(0, 0, 0, 0.7);
-  
+
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-tertiary: #64748b;
   --text-inverse: #0f172a;
   --text-muted: #94a3b8;
-  
+
   --border-primary: #334155;
   --border-secondary: #475569;
 }
 
 /* High Contrast Theme */
-[data-theme="high-contrast"] {
+[data-theme='high-contrast'] {
   --primary-color: #0000ff;
   --surface-primary: #ffffff;
   --surface-secondary: #f0f0f0;
@@ -423,13 +423,17 @@ body {
   overflow: auto;
   padding: var(--space-lg);
   background-color: var(--surface-secondary);
-  background-image: 
+  background-image:
     linear-gradient(45deg, var(--surface-tertiary) 25%, transparent 25%),
     linear-gradient(-45deg, var(--surface-tertiary) 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, var(--surface-tertiary) 75%),
     linear-gradient(-45deg, transparent 75%, var(--surface-tertiary) 75%);
   background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0px;
 }
 
 .pdf-pages {
@@ -606,8 +610,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Welcome Screen */
@@ -674,11 +682,11 @@ body {
   .plugin-panel {
     display: none !important;
   }
-  
+
   .pdf-container {
     background: white !important;
   }
-  
+
   .pdf-page {
     box-shadow: none !important;
     page-break-inside: avoid;
@@ -706,8 +714,8 @@ body {
     --text-primary: #000000;
     --text-secondary: #000000;
   }
-  
-  [data-theme="dark"] {
+
+  [data-theme='dark'] {
     --border-primary: #ffffff;
     --border-secondary: #ffffff;
     --text-primary: #ffffff;

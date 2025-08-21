@@ -243,7 +243,14 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.03), transparent, rgba(236, 72, 153, 0.03), transparent);
+    background: conic-gradient(
+      from 0deg,
+      transparent,
+      rgba(139, 92, 246, 0.03),
+      transparent,
+      rgba(236, 72, 153, 0.03),
+      transparent
+    );
     animation: cardRotate 20s linear infinite;
     z-index: -1;
   }
@@ -354,12 +361,12 @@
       0 0 0 4px rgba(139, 92, 246, 0.15),
       0 12px 32px rgba(139, 92, 246, 0.2);
 
-    +.modern-login__field-border {
+    + .modern-login__field-border {
       transform: scaleX(1);
       background: linear-gradient(90deg, var(--color-primary, #8b5cf6), var(--color-secondary, #ec4899));
     }
 
-    ~.modern-login__field-icon {
+    ~ .modern-login__field-icon {
       color: var(--color-primary, #8b5cf6);
       transform: translateY(-50%) scale(1.1);
     }
@@ -454,7 +461,7 @@
     }
   }
 
-  input:checked+&-mark {
+  input:checked + &-mark {
     background: linear-gradient(135deg, var(--color-primary, #8b5cf6), var(--color-secondary, #ec4899));
     border-color: var(--color-primary, #8b5cf6);
     transform: scale(1.05);
@@ -785,7 +792,6 @@
 }
 
 @keyframes orbFloat {
-
   0%,
   100% {
     transform: translate(0, 0) scale(1);
@@ -823,7 +829,6 @@
 }
 
 @keyframes logoGlow {
-
   0%,
   100% {
     opacity: 0.3;

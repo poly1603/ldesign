@@ -74,15 +74,16 @@ export class BuildValidator {
       expectedFiles.push(
         'esm/vue/index.js',
         'cjs/vue/index.js',
-        'types/vue/index.d.ts'
+        'types/vue/index.d.ts',
       )
     }
 
-    expectedFiles.forEach(file => {
+    expectedFiles.forEach((file) => {
       const filePath = resolve(this.packageDir, file)
       if (!existsSync(filePath)) {
         this.errors.push(`缺少构建产物文件: ${file}`)
-      } else {
+      }
+      else {
         console.log(`  ✅ ${file}`)
       }
     })
@@ -109,13 +110,15 @@ export class BuildValidator {
 
         if (size < minSize) {
           this.errors.push(
-            `文件 ${file} 太小 (${size}B < ${minSize}B)，可能构建失败`
+            `文件 ${file} 太小 (${size}B < ${minSize}B)，可能构建失败`,
           )
-        } else if (size > maxSize) {
+        }
+        else if (size > maxSize) {
           this.warnings.push(
-            `文件 ${file} 较大 (${size}B > ${maxSize}B)，建议检查`
+            `文件 ${file} 较大 (${size}B > ${maxSize}B)，建议检查`,
           )
-        } else {
+        }
+        else {
           console.log(`  ✅ ${file} (${this.formatSize(size)})`)
         }
       }
@@ -145,11 +148,13 @@ export class BuildValidator {
         const module = await import(`file://${esmPath}`)
         if (Object.keys(module).length === 0) {
           this.errors.push('ESM 模块没有导出任何内容')
-        } else {
+        }
+        else {
           console.log(`  ✅ ESM 导出: ${Object.keys(module).join(', ')}`)
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.errors.push(`ESM 导入失败: ${error.message}`)
     }
   }
@@ -165,15 +170,17 @@ export class BuildValidator {
         const content = readFileSync(cjsPath, 'utf-8')
 
         if (
-          content.includes('exports.') ||
-          content.includes('module.exports')
+          content.includes('exports.')
+          || content.includes('module.exports')
         ) {
           console.log('  ✅ CJS 导出: 检测到 CommonJS 导出语法')
-        } else {
+        }
+        else {
           this.warnings.push('CJS 文件可能缺少 CommonJS 导出语法')
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.errors.push(`CJS 导入检查失败: ${error.message}`)
     }
   }
@@ -196,7 +203,7 @@ export class BuildValidator {
     }
 
     // 检查子模块导出
-    Object.keys(exports).forEach(key => {
+    Object.keys(exports).forEach((key) => {
       if (key !== '.') {
         this.validateExportEntry(key, exports[key])
       }
@@ -209,7 +216,8 @@ export class BuildValidator {
   validateExportEntry(exportKey, exportValue) {
     if (typeof exportValue === 'string') {
       this.checkExportFile(exportKey, exportValue)
-    } else if (typeof exportValue === 'object') {
+    }
+    else if (typeof exportValue === 'object') {
       Object.entries(exportValue).forEach(([condition, path]) => {
         this.checkExportFile(`${exportKey}[${condition}]`, path)
       })
@@ -223,7 +231,8 @@ export class BuildValidator {
     const fullPath = resolve(this.packageDir, filePath)
     if (!existsSync(fullPath)) {
       this.errors.push(`exports["${exportKey}"] 指向的文件不存在: ${filePath}`)
-    } else {
+    }
+    else {
       console.log(`  ✅ ${exportKey} -> ${filePath}`)
     }
   }
@@ -241,19 +250,22 @@ export class BuildValidator {
       typeFiles.push('types/vue/index.d.ts')
     }
 
-    typeFiles.forEach(file => {
+    typeFiles.forEach((file) => {
       const filePath = resolve(this.packageDir, file)
       if (existsSync(filePath)) {
         try {
           const content = readFileSync(filePath, 'utf-8')
           if (content.trim().length === 0) {
             this.warnings.push(`类型定义文件为空: ${file}`)
-          } else if (!content.includes('export')) {
+          }
+          else if (!content.includes('export')) {
             this.warnings.push(`类型定义文件可能缺少导出: ${file}`)
-          } else {
+          }
+          else {
             console.log(`  ✅ ${file}`)
           }
-        } catch (error) {
+        }
+        catch (error) {
           this.errors.push(`读取类型定义文件失败: ${file} - ${error.message}`)
         }
       }
@@ -297,8 +309,10 @@ export class BuildValidator {
    * 格式化文件大小
    */
   formatSize(bytes) {
-    if (bytes < 1024) return `${bytes}B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
+    if (bytes < 1024)
+      return `${bytes}B`
+    if (bytes < 1024 * 1024)
+      return `${(bytes / 1024).toFixed(1)}KB`
     return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
   }
 }
@@ -316,7 +330,8 @@ export async function validateBuild(packageDir = process.cwd()) {
     }
 
     return result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 校验失败:', error.message)
     process.exit(1)
   }

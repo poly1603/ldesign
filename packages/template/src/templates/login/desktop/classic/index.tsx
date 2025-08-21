@@ -1,7 +1,7 @@
-import { defineComponent, ref, onMounted, computed } from 'vue'
-import { getSmartBackground, preloadBackground, type BackgroundImage } from '../../../../utils/background'
-import { LucideIcons, getIcon } from '../../../../utils/icons'
-import { getTheme, applyTheme } from '../../../../utils/theme'
+import { computed, defineComponent, onMounted, ref } from 'vue'
+import { type BackgroundImage, getSmartBackground, preloadBackground } from '../../../../utils/background'
+import { getIcon } from '../../../../utils/icons'
+import { applyTheme, getTheme } from '../../../../utils/theme'
 import './index.less'
 
 export default defineComponent({
@@ -66,19 +66,20 @@ export default defineComponent({
           backgroundImage: `url(${props.backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }
       }
 
       if (backgroundImage.value?.url) {
         if (backgroundImage.value.url.startsWith('linear-gradient')) {
           return { background: backgroundImage.value.url }
-        } else {
+        }
+        else {
           return {
             backgroundImage: `url(${backgroundImage.value.url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }
         }
       }
@@ -99,7 +100,7 @@ export default defineComponent({
           width: 1920,
           height: 1080,
           quality: 'high',
-          category: 'business'
+          category: 'business',
         })
 
         if (bg.url && !bg.url.startsWith('linear-gradient')) {
@@ -107,13 +108,15 @@ export default defineComponent({
         }
 
         backgroundImage.value = bg
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to load background:', error)
         backgroundImage.value = {
           url: currentTheme.gradients.primary,
-          title: 'Classic Gradient'
+          title: 'Classic Gradient',
         }
-      } finally {
+      }
+      finally {
         backgroundLoading.value = false
       }
     }
@@ -225,84 +228,86 @@ export default defineComponent({
           <div class="classic-login__right">
             {/* 使用传递进来的 LoginPanel 组件，如果没有则显示默认内容 */}
             <div class="login-panel-wrapper">
-              {props.loginPanel ? (
-                <props.loginPanel
-                  title={props.title}
-                  subtitle={props.subtitle}
-                  showRememberMe={props.showRememberMe}
-                  showForgotPassword={props.showForgotPassword}
-                  showThirdPartyLogin={props.showThirdPartyLogin}
-                  thirdPartyProviders={props.thirdPartyProviders}
-                  onLogin={handleLogin}
-                  onRegister={handleRegister}
-                  onForgotPassword={handleForgotPassword}
-                  onThirdPartyLogin={handleThirdPartyLogin}
-                />
-              ) : (
-                <div class="classic-login__default-panel">
-                  <div class="classic-login__header">
-                    <div class="classic-login__header-icon" innerHTML={getIcon('user', { size: 'xl' })}></div>
-                    <h1 class="classic-login__panel-title">登录账户</h1>
-                    <p class="classic-login__panel-subtitle">请输入您的登录凭据</p>
-                  </div>
-
-                  <div class="classic-login__form">
-                    <div class="classic-login__field">
-                      <div class="classic-login__field-icon" innerHTML={getIcon('user', { size: 'sm' })}></div>
-                      <input type="text" placeholder="用户名或邮箱" class="classic-login__input" />
-                    </div>
-                    <div class="classic-login__field">
-                      <div class="classic-login__field-icon" innerHTML={getIcon('lock', { size: 'sm' })}></div>
-                      <input type="password" placeholder="密码" class="classic-login__input" />
-                    </div>
-
-                    <div class="classic-login__options">
-                      {props.showRememberMe && (
-                        <label class="classic-login__checkbox">
-                          <input type="checkbox" />
-                          <div class="classic-login__checkbox-mark"></div>
-                          <span>记住密码</span>
-                        </label>
-                      )}
-                      {props.showForgotPassword && (
-                        <a href="#" class="classic-login__forgot">
-                          <div class="classic-login__forgot-icon" innerHTML={getIcon('shield', { size: 'xs' })}></div>
-                          <span>忘记密码？</span>
-                        </a>
-                      )}
-                    </div>
-
-                    <button class="classic-login__submit">
-                      <span>立即登录</span>
-                      <div class="classic-login__submit-icon" innerHTML={getIcon('check', { size: 'sm' })}></div>
-                    </button>
-
-                    {props.showThirdPartyLogin && (
-                      <div class="classic-login__third-party">
-                        <div class="classic-login__divider">
-                          <span>或使用以下方式登录</span>
-                        </div>
-                        <div class="classic-login__providers">
-                          {props.thirdPartyProviders.map((provider: string) => (
-                            <button
-                              key={provider}
-                              class={`classic-login__provider classic-login__provider--${provider}`}
-                              onClick={() => handleThirdPartyLogin({ provider })}
-                            >
-                              <div class="classic-login__provider-icon" innerHTML={getIcon(provider as any, { size: 'sm' })}></div>
-                              <span class="classic-login__provider-name">
-                                {provider === 'github' && 'GitHub'}
-                                {provider === 'google' && 'Google'}
-                                {provider === 'wechat' && '微信'}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
+              {props.loginPanel
+                ? (
+                    <props.loginPanel
+                      title={props.title}
+                      subtitle={props.subtitle}
+                      showRememberMe={props.showRememberMe}
+                      showForgotPassword={props.showForgotPassword}
+                      showThirdPartyLogin={props.showThirdPartyLogin}
+                      thirdPartyProviders={props.thirdPartyProviders}
+                      onLogin={handleLogin}
+                      onRegister={handleRegister}
+                      onForgotPassword={handleForgotPassword}
+                      onThirdPartyLogin={handleThirdPartyLogin}
+                    />
+                  )
+                : (
+                    <div class="classic-login__default-panel">
+                      <div class="classic-login__header">
+                        <div class="classic-login__header-icon" innerHTML={getIcon('user', { size: 'xl' })}></div>
+                        <h1 class="classic-login__panel-title">登录账户</h1>
+                        <p class="classic-login__panel-subtitle">请输入您的登录凭据</p>
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
+
+                      <div class="classic-login__form">
+                        <div class="classic-login__field">
+                          <div class="classic-login__field-icon" innerHTML={getIcon('user', { size: 'sm' })}></div>
+                          <input type="text" placeholder="用户名或邮箱" class="classic-login__input" />
+                        </div>
+                        <div class="classic-login__field">
+                          <div class="classic-login__field-icon" innerHTML={getIcon('lock', { size: 'sm' })}></div>
+                          <input type="password" placeholder="密码" class="classic-login__input" />
+                        </div>
+
+                        <div class="classic-login__options">
+                          {props.showRememberMe && (
+                            <label class="classic-login__checkbox">
+                              <input type="checkbox" />
+                              <div class="classic-login__checkbox-mark"></div>
+                              <span>记住密码</span>
+                            </label>
+                          )}
+                          {props.showForgotPassword && (
+                            <a href="#" class="classic-login__forgot">
+                              <div class="classic-login__forgot-icon" innerHTML={getIcon('shield', { size: 'xs' })}></div>
+                              <span>忘记密码？</span>
+                            </a>
+                          )}
+                        </div>
+
+                        <button class="classic-login__submit">
+                          <span>立即登录</span>
+                          <div class="classic-login__submit-icon" innerHTML={getIcon('check', { size: 'sm' })}></div>
+                        </button>
+
+                        {props.showThirdPartyLogin && (
+                          <div class="classic-login__third-party">
+                            <div class="classic-login__divider">
+                              <span>或使用以下方式登录</span>
+                            </div>
+                            <div class="classic-login__providers">
+                              {props.thirdPartyProviders.map((provider: string) => (
+                                <button
+                                  key={provider}
+                                  class={`classic-login__provider classic-login__provider--${provider}`}
+                                  onClick={() => handleThirdPartyLogin({ provider })}
+                                >
+                                  <div class="classic-login__provider-icon" innerHTML={getIcon(provider as any, { size: 'sm' })}></div>
+                                  <span class="classic-login__provider-name">
+                                    {provider === 'github' && 'GitHub'}
+                                    {provider === 'google' && 'Google'}
+                                    {provider === 'wechat' && '微信'}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
             </div>
           </div>
         </div>

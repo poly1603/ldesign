@@ -75,7 +75,8 @@ class SessionCacheStorage implements CacheStorage {
   private prefix = 'ldesign-router-cache:'
 
   get(key: string): CacheItem | null {
-    if (typeof sessionStorage === 'undefined') return null
+    if (typeof sessionStorage === 'undefined')
+      return null
 
     try {
       const data = sessionStorage.getItem(this.prefix + key)
@@ -86,14 +87,16 @@ class SessionCacheStorage implements CacheStorage {
         this.set(key, item)
         return item
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get from session storage:', error)
     }
     return null
   }
 
   set(key: string, item: CacheItem): void {
-    if (typeof sessionStorage === 'undefined') return
+    if (typeof sessionStorage === 'undefined')
+      return
 
     try {
       // 不能序列化组件实例，只存储元数据
@@ -102,28 +105,33 @@ class SessionCacheStorage implements CacheStorage {
         component: null, // 组件实例不能序列化
       }
       sessionStorage.setItem(this.prefix + key, JSON.stringify(serializable))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set to session storage:', error)
     }
   }
 
   has(key: string): boolean {
-    if (typeof sessionStorage === 'undefined') return false
+    if (typeof sessionStorage === 'undefined')
+      return false
     return sessionStorage.getItem(this.prefix + key) !== null
   }
 
   delete(key: string): boolean {
-    if (typeof sessionStorage === 'undefined') return false
+    if (typeof sessionStorage === 'undefined')
+      return false
     try {
       sessionStorage.removeItem(this.prefix + key)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
 
   clear(): void {
-    if (typeof sessionStorage === 'undefined') return
+    if (typeof sessionStorage === 'undefined')
+      return
 
     const keysToRemove: string[] = []
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -137,7 +145,8 @@ class SessionCacheStorage implements CacheStorage {
   }
 
   size(): number {
-    if (typeof sessionStorage === 'undefined') return 0
+    if (typeof sessionStorage === 'undefined')
+      return 0
 
     let count = 0
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -150,7 +159,8 @@ class SessionCacheStorage implements CacheStorage {
   }
 
   keys(): string[] {
-    if (typeof sessionStorage === 'undefined') return []
+    if (typeof sessionStorage === 'undefined')
+      return []
 
     const keys: string[] = []
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -172,7 +182,8 @@ class LocalCacheStorage implements CacheStorage {
   private prefix = 'ldesign-router-cache:'
 
   get(key: string): CacheItem | null {
-    if (typeof localStorage === 'undefined') return null
+    if (typeof localStorage === 'undefined')
+      return null
 
     try {
       const data = localStorage.getItem(this.prefix + key)
@@ -190,14 +201,16 @@ class LocalCacheStorage implements CacheStorage {
         this.set(key, item)
         return item
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to get from local storage:', error)
     }
     return null
   }
 
   set(key: string, item: CacheItem): void {
-    if (typeof localStorage === 'undefined') return
+    if (typeof localStorage === 'undefined')
+      return
 
     try {
       // 不能序列化组件实例，只存储元数据
@@ -206,28 +219,33 @@ class LocalCacheStorage implements CacheStorage {
         component: null, // 组件实例不能序列化
       }
       localStorage.setItem(this.prefix + key, JSON.stringify(serializable))
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set to local storage:', error)
     }
   }
 
   has(key: string): boolean {
-    if (typeof localStorage === 'undefined') return false
+    if (typeof localStorage === 'undefined')
+      return false
     return localStorage.getItem(this.prefix + key) !== null
   }
 
   delete(key: string): boolean {
-    if (typeof localStorage === 'undefined') return false
+    if (typeof localStorage === 'undefined')
+      return false
     try {
       localStorage.removeItem(this.prefix + key)
       return true
-    } catch {
+    }
+    catch {
       return false
     }
   }
 
   clear(): void {
-    if (typeof localStorage === 'undefined') return
+    if (typeof localStorage === 'undefined')
+      return
 
     const keysToRemove: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
@@ -241,7 +259,8 @@ class LocalCacheStorage implements CacheStorage {
   }
 
   size(): number {
-    if (typeof localStorage === 'undefined') return 0
+    if (typeof localStorage === 'undefined')
+      return 0
 
     let count = 0
     for (let i = 0; i < localStorage.length; i++) {
@@ -254,7 +273,8 @@ class LocalCacheStorage implements CacheStorage {
   }
 
   keys(): string[] {
-    if (typeof localStorage === 'undefined') return []
+    if (typeof localStorage === 'undefined')
+      return []
 
     const keys: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
@@ -302,7 +322,7 @@ export class CacheManager {
    */
   private generateKey(route: RouteLocationNormalized): string {
     return `${route.path}-${JSON.stringify(route.params)}-${JSON.stringify(
-      route.query
+      route.query,
     )}`
   }
 
@@ -314,7 +334,7 @@ export class CacheManager {
       const include = Array.isArray(this.config.include)
         ? this.config.include
         : [this.config.include]
-      return include.some(pattern => {
+      return include.some((pattern) => {
         if (typeof pattern === 'string') {
           return componentName === pattern
         }
@@ -326,7 +346,7 @@ export class CacheManager {
       const exclude = Array.isArray(this.config.exclude)
         ? this.config.exclude
         : [this.config.exclude]
-      return !exclude.some(pattern => {
+      return !exclude.some((pattern) => {
         if (typeof pattern === 'string') {
           return componentName === pattern
         }
@@ -434,7 +454,8 @@ export class CacheManager {
    */
   private evict(): void {
     const keys = this.storage.keys()
-    if (keys.length === 0) return
+    if (keys.length === 0)
+      return
 
     let oldestKey = keys[0]
     let oldestTime = Date.now()

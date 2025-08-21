@@ -131,7 +131,9 @@ const { currentTheme, currentMode, isDark, availableThemes, setTheme, toggleMode
         </select>
       </label>
 
-      <button @click="toggleMode">切换到{{ isDark ? '亮色' : '暗色' }}模式</button>
+      <button @click="toggleMode">
+        切换到{{ isDark ? '亮色' : '暗色' }}模式
+      </button>
     </div>
   </div>
 </template>
@@ -241,7 +243,7 @@ const themeManager = await createThemeManagerWithPresets({
 console.log('系统主题:', getSystemTheme()) // 'light' | 'dark'
 
 // 监听系统主题变化
-const unwatch = watchSystemTheme(mode => {
+const unwatch = watchSystemTheme((mode) => {
   console.log('系统主题变化:', mode)
   themeManager.setMode(mode)
 })

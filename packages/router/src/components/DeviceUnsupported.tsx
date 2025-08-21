@@ -88,7 +88,8 @@ export default defineComponent({
     const goBack = () => {
       if (window.history.length > 1) {
         window.history.back()
-      } else {
+      }
+      else {
         window.location.href = '/'
       }
     }
@@ -110,7 +111,7 @@ export default defineComponent({
             h(
               'span',
               { class: 'device-unsupported__device-icon' },
-              deviceIcon.value
+              deviceIcon.value,
             ),
             h('span', { class: 'device-unsupported__warning-icon' }, '⚠️'),
           ]),
@@ -128,7 +129,7 @@ export default defineComponent({
                 h(
                   'span',
                   { class: 'device-unsupported__current-device' },
-                  currentDeviceName.value
+                  currentDeviceName.value,
                 ),
               ]),
 
@@ -138,7 +139,7 @@ export default defineComponent({
                     h(
                       'span',
                       { class: 'device-unsupported__supported-devices' },
-                      supportedDeviceNames.value.join('、')
+                      supportedDeviceNames.value.join('、'),
                     ),
                   ])
                 : null,
@@ -161,7 +162,7 @@ export default defineComponent({
                     ? h('li', {}, '请使用手机访问')
                     : null,
                   h('li', {}, '联系管理员获取更多帮助'),
-                ].filter(Boolean)
+                ].filter(Boolean),
               ),
             ]),
           ]),
@@ -180,7 +181,7 @@ export default defineComponent({
                         'device-unsupported__button device-unsupported__button--secondary',
                       onClick: goBack,
                     },
-                    '返回上一页'
+                    '返回上一页',
                   )
                 : null,
 
@@ -193,10 +194,10 @@ export default defineComponent({
                         'device-unsupported__button device-unsupported__button--primary',
                       onClick: refresh,
                     },
-                    '刷新页面'
+                    '刷新页面',
                   )
                 : null,
-            ].filter(Boolean)
+            ].filter(Boolean),
           ),
 
           // 来源信息

@@ -19,7 +19,7 @@ const demoCards = [
 // 当前主题信息
 const currentThemeInfo = computed(() => {
   const themeMap = {
-    christmas: {
+    'christmas': {
       displayName: '圣诞节主题',
       description: '温馨的红绿配色，营造浓厚的圣诞节日氛围',
       colors: {
@@ -39,7 +39,7 @@ const currentThemeInfo = computed(() => {
         background: '#fef3c7',
       },
     },
-    halloween: {
+    'halloween': {
       displayName: '万圣节主题',
       description: '神秘的橙黑配色，营造恐怖而有趣的万圣节氛围',
       colors: {
@@ -91,9 +91,15 @@ onMounted(() => {
         <h1>🎨 LDesign Theme Demo</h1>
         <div class="theme-controls">
           <select v-model="currentTheme" @change="onThemeChange">
-            <option value="christmas">🎄 圣诞节</option>
-            <option value="spring-festival">🧧 春节</option>
-            <option value="halloween">🎃 万圣节</option>
+            <option value="christmas">
+              🎄 圣诞节
+            </option>
+            <option value="spring-festival">
+              🧧 春节
+            </option>
+            <option value="halloween">
+              🎃 万圣节
+            </option>
           </select>
         </div>
       </div>

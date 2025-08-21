@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ErrorHandler } from '../../src/services/ErrorHandler'
 import { ERROR_CODES } from '../../src/types'
 
-describe('ErrorHandler', () => {
+describe('errorHandler', () => {
   let errorHandler: ErrorHandler
 
   beforeEach(() => {

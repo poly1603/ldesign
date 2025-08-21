@@ -178,20 +178,20 @@ describe('securityManager', () => {
     it('应该能够检查数据是否需要加密', () => {
       expect(securityManager.shouldEncrypt('data')).toBe(true)
       expect(securityManager.shouldEncrypt('data', { encrypt: false })).toBe(
-        false
+        false,
       )
       expect(securityManager.shouldEncrypt('data', { encrypt: true })).toBe(
-        true
+        true,
       )
     })
 
     it('应该能够检查键名是否需要混淆', () => {
       expect(securityManager.shouldObfuscateKey()).toBe(true)
       expect(securityManager.shouldObfuscateKey({ obfuscateKey: false })).toBe(
-        false
+        false,
       )
       expect(securityManager.shouldObfuscateKey({ obfuscateKey: true })).toBe(
-        true
+        true,
       )
     })
 
@@ -213,13 +213,13 @@ describe('securityManager', () => {
 
       const isValid = await securityManager.verifyIntegrity(
         originalData,
-        encrypted
+        encrypted,
       )
       expect(isValid).toBe(true)
 
       const isInvalid = await securityManager.verifyIntegrity(
         originalData,
-        'tampered data'
+        'tampered data',
       )
       expect(isInvalid).toBe(false)
     })

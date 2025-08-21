@@ -26,7 +26,7 @@ export interface PlaywrightConfigOptions {
  * @param options 配置选项
  */
 export function createPlaywrightConfig(
-  options: PlaywrightConfigOptions = {}
+  options: PlaywrightConfigOptions = {},
 ): PlaywrightTestConfig {
   const {
     testDir = './e2e',
@@ -73,7 +73,7 @@ export function createPlaywrightConfig(
       {
         name: 'Mobile Safari',
         use: { ...devices['iPhone 12'] },
-      }
+      },
     )
   }
 

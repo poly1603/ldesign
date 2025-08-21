@@ -19,7 +19,8 @@ const matchedRoutes = computed(() => matched.value)
 
 // 路由深度 - 添加安全检查
 const routeDepth = computed(() => {
-  if (!route.value?.path) return 0
+  if (!route.value?.path)
+    return 0
   return route.value.path.split('/').filter(Boolean).length
 })
 
@@ -42,7 +43,8 @@ const breadcrumbs = computed(() => {
 
     if (index === 0) {
       crumbs.push({ name: '嵌套路由', path: currentPath })
-    } else {
+    }
+    else {
       crumbs.push({
         name: `子路由 ${index}`,
         path: currentPath,
@@ -156,8 +158,7 @@ function navigateWithParams() {
               <span
                 v-if="index < breadcrumbs.length - 1"
                 class="breadcrumb-separator"
-                >/</span
-              >
+              >/</span>
             </span>
           </div>
         </div>
@@ -180,7 +181,9 @@ function navigateWithParams() {
               </div>
               <div v-else-if="error" class="error-component">
                 <p>加载组件时出错：{{ error.message }}</p>
-                <button @click="router.go(0)">重新加载</button>
+                <button @click="router.go(0)">
+                  重新加载
+                </button>
               </div>
               <div v-else class="empty-component">
                 <p>没有找到匹配的子路由组件</p>
@@ -215,7 +218,7 @@ function navigateWithParams() {
               v-model="paramValue"
               class="input"
               placeholder="输入参数值"
-            />
+            >
           </div>
           <button class="btn btn-info" @click="navigateWithParams">
             带参数导航

@@ -1,6 +1,6 @@
+import { httpPlugin } from '@ldesign/http'
 import { createApp } from 'vue'
 import App from './App.vue'
-import { httpPlugin } from '@ldesign/http'
 
 const app = createApp(App)
 

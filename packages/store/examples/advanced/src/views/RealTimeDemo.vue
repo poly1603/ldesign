@@ -107,19 +107,25 @@ onUnmounted(() => {
           <div class="metric-value" :class="connectionStatusClass">
             {{ connectionStatus }}
           </div>
-          <div class="metric-label">连接状态</div>
+          <div class="metric-label">
+            连接状态
+          </div>
         </div>
         <div class="metric">
           <div class="metric-value">
             {{ messageCount }}
           </div>
-          <div class="metric-label">消息数量</div>
+          <div class="metric-label">
+            消息数量
+          </div>
         </div>
         <div class="metric">
           <div class="metric-value">
             {{ onlineUsers }}
           </div>
-          <div class="metric-label">在线用户</div>
+          <div class="metric-label">
+            在线用户
+          </div>
         </div>
       </div>
 
@@ -175,7 +181,7 @@ onUnmounted(() => {
               class="form-input"
               :disabled="connectionStatus !== 'connected'"
               @keyup.enter="sendMessage"
-            />
+            >
             <button
               class="btn btn-primary"
               :disabled="!newMessage.trim() || connectionStatus !== 'connected'"
@@ -227,7 +233,9 @@ onUnmounted(() => {
               <button class="btn btn-secondary" @click="decrementCounter">
                 -1
               </button>
-              <button class="btn btn-danger" @click="resetCounter">重置</button>
+              <button class="btn btn-danger" @click="resetCounter">
+                重置
+              </button>
             </div>
           </div>
           <div class="sync-info">
@@ -302,8 +310,7 @@ class RealTimeStore extends WebSocketStore {
   sendMessage(content: string) {
     this.emit('send-message', { content, user: this.currentUser })
   }
-}</pre
-          >
+}</pre>
         </div>
       </div>
     </div>

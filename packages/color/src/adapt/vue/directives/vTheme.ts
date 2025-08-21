@@ -31,7 +31,7 @@ export const vTheme: Directive<HTMLElement, string | ThemeDirectiveValue> = {
   unmounted(el) {
     // 清理主题相关的类名和样式
     el.classList.remove(
-      ...Array.from(el.classList).filter(cls => cls.startsWith('l-theme-'))
+      ...Array.from(el.classList).filter(cls => cls.startsWith('l-theme-')),
     )
     el.removeAttribute('data-theme')
     el.removeAttribute('data-mode')
@@ -40,20 +40,21 @@ export const vTheme: Directive<HTMLElement, string | ThemeDirectiveValue> = {
 
 function updateTheme(
   el: HTMLElement,
-  binding: DirectiveBinding<string | ThemeDirectiveValue>
+  binding: DirectiveBinding<string | ThemeDirectiveValue>,
 ) {
   const value = binding.value
 
   // 清理之前的主题类名
   el.classList.remove(
-    ...Array.from(el.classList).filter(cls => cls.startsWith('l-theme-'))
+    ...Array.from(el.classList).filter(cls => cls.startsWith('l-theme-')),
   )
 
   if (typeof value === 'string') {
     // 简单字符串值，作为主题名
     el.setAttribute('data-theme', value)
     el.classList.add(`l-theme-${value}`)
-  } else if (value && typeof value === 'object') {
+  }
+  else if (value && typeof value === 'object') {
     // 对象值，支持更多配置
     const { theme, mode, colors, className } = value
 

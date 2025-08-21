@@ -30,10 +30,12 @@ export function useCacheStats(options?: {
 
     try {
       stats.value = await cacheManager.getStats()
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       console.error('Failed to load cache stats:', err)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -63,7 +65,8 @@ export function useCacheStats(options?: {
 
   // 计算属性
   const formattedStats = computed(() => {
-    if (!stats.value) return null
+    if (!stats.value)
+      return null
 
     return {
       ...stats.value,
@@ -78,13 +81,13 @@ export function useCacheStats(options?: {
             hitRate:
               engineStats.hits + engineStats.misses > 0
                 ? (
-                    (engineStats.hits /
-                      (engineStats.hits + engineStats.misses)) *
-                    100
+                    (engineStats.hits
+                      / (engineStats.hits + engineStats.misses))
+                    * 100
                   ).toFixed(2)
                 : '0.00',
           },
-        ])
+        ]),
       ),
     }
   })
@@ -93,7 +96,8 @@ export function useCacheStats(options?: {
    * 获取引擎使用情况
    */
   const engineUsage = computed(() => {
-    if (!stats.value) return []
+    if (!stats.value)
+      return []
 
     return Object.entries(stats.value.engines).map(([engine, engineStats]) => ({
       engine: engine as StorageEngine,
@@ -112,11 +116,12 @@ export function useCacheStats(options?: {
    * 获取性能指标
    */
   const performanceMetrics = computed(() => {
-    if (!stats.value) return null
+    if (!stats.value)
+      return null
 
     const totalRequests = Object.values(stats.value.engines).reduce(
       (sum, engine) => sum + engine.hits + engine.misses,
-      0
+      0,
     )
 
     return {
@@ -149,10 +154,12 @@ export function useCacheStats(options?: {
     try {
       await cacheManager.cleanup()
       await loadStats()
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }

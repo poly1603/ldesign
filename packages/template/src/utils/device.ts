@@ -41,9 +41,11 @@ export function detectDeviceType(width?: number, breakpoints: DeviceBreakpoints 
 
   if (screenWidth < breakpoints.mobile) {
     return 'mobile'
-  } else if (screenWidth < breakpoints.tablet) {
+  }
+  else if (screenWidth < breakpoints.tablet) {
     return 'tablet'
-  } else {
+  }
+  else {
     return 'desktop'
   }
 }
@@ -88,7 +90,8 @@ export function getDeviceInfo(breakpoints?: DeviceBreakpoints): DeviceInfo {
  * 检测是否为移动设备
  */
 export function isMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false
+  if (typeof window === 'undefined')
+    return false
 
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 }
@@ -97,7 +100,8 @@ export function isMobileDevice(): boolean {
  * 检测是否为平板设备
  */
 export function isTabletDevice(): boolean {
-  if (typeof window === 'undefined') return false
+  if (typeof window === 'undefined')
+    return false
 
   const userAgent = navigator.userAgent
   return /iPad|Android(?!.*Mobile)/i.test(userAgent)
@@ -114,7 +118,8 @@ export function isDesktopDevice(): boolean {
  * 检测设备方向
  */
 export function getDeviceOrientation(): 'portrait' | 'landscape' {
-  if (typeof window === 'undefined') return 'landscape'
+  if (typeof window === 'undefined')
+    return 'landscape'
 
   return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
 }
@@ -123,7 +128,8 @@ export function getDeviceOrientation(): 'portrait' | 'landscape' {
  * 检测是否支持触摸
  */
 export function isTouchDevice(): boolean {
-  if (typeof window === 'undefined') return false
+  if (typeof window === 'undefined')
+    return false
 
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0
 }
@@ -132,7 +138,8 @@ export function isTouchDevice(): boolean {
  * 获取屏幕像素比
  */
 export function getPixelRatio(): number {
-  if (typeof window === 'undefined') return 1
+  if (typeof window === 'undefined')
+    return 1
 
   return window.devicePixelRatio || 1
 }
@@ -206,7 +213,8 @@ export class DeviceDetector {
   }
 
   private setupListener(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     window.addEventListener('resize', this.handleResize)
     window.addEventListener('orientationchange', this.handleResize)
@@ -219,7 +227,8 @@ export class DeviceDetector {
     if (newDeviceInfo.type !== this.currentDeviceInfo.type) {
       this.currentDeviceInfo = newDeviceInfo
       this.listeners.forEach(callback => callback(newDeviceInfo))
-    } else {
+    }
+    else {
       // 更新尺寸信息
       this.currentDeviceInfo = newDeviceInfo
     }

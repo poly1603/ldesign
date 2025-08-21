@@ -70,26 +70,26 @@ export interface RouterEnginePluginOptions {
   preload?:
     | boolean
     | {
-        strategy?: 'hover' | 'visible' | 'idle'
-        delay?: number
-        enabled?: boolean
-      }
+      strategy?: 'hover' | 'visible' | 'idle'
+      delay?: number
+      enabled?: boolean
+    }
   /** 是否启用缓存 */
   cache?:
     | boolean
     | {
-        maxSize?: number
-        strategy?: 'memory' | 'session' | 'local'
-        enabled?: boolean
-      }
+      maxSize?: number
+      strategy?: 'memory' | 'session' | 'local'
+      enabled?: boolean
+    }
   /** 动画配置 */
   animation?:
     | boolean
     | {
-        type?: 'fade' | 'slide' | 'scale' | 'flip'
-        duration?: number
-        enabled?: boolean
-      }
+      type?: 'fade' | 'slide' | 'scale' | 'flip'
+      duration?: number
+      enabled?: boolean
+    }
   /** 性能配置 */
   performance?: {
     enableLazyLoading?: boolean
@@ -117,7 +117,7 @@ export interface RouterEnginePluginOptions {
  * 获取预设配置
  */
 function getPresetConfig(
-  preset: RouterPreset
+  preset: RouterPreset,
 ): Partial<RouterEnginePluginOptions> {
   const presets: Record<RouterPreset, Partial<RouterEnginePluginOptions>> = {
     spa: {
@@ -203,7 +203,7 @@ function getPresetConfig(
  * 合并配置选项
  */
 function mergeOptions(
-  options: RouterEnginePluginOptions
+  options: RouterEnginePluginOptions,
 ): RouterEnginePluginOptions {
   const { preset, ...userOptions } = options
 
@@ -225,8 +225,8 @@ function mergeOptions(
           ? { ...(presetConfig.cache as any), ...(userOptions.cache as any) }
           : userOptions.cache ?? presetConfig.cache,
       animation:
-        typeof userOptions.animation === 'object' &&
-        userOptions.animation !== null
+        typeof userOptions.animation === 'object'
+        && userOptions.animation !== null
           ? {
               ...(presetConfig.animation as any),
               ...(userOptions.animation as any),
@@ -284,7 +284,7 @@ function mergeOptions(
  * ```
  */
 export function createRouterEnginePlugin(
-  options: RouterEnginePluginOptions
+  options: RouterEnginePluginOptions,
 ): Plugin {
   // 合并预设配置和用户配置
   const mergedOptions = mergeOptions(options)
@@ -320,7 +320,7 @@ export function createRouterEnginePlugin(
         const vueApp = engine.getApp()
         if (!vueApp) {
           throw new Error(
-            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.'
+            'Vue app not found. Make sure the engine has created a Vue app before installing router plugin.',
           )
         }
 
@@ -416,7 +416,7 @@ export function createRouterEnginePlugin(
         }
 
         // 监听路由错误
-        router.onError(error => {
+        router.onError((error) => {
           engine.logger.error('Router navigation error:', error)
           if (engine.events) {
             engine.events.emit('router:error', error)
@@ -445,18 +445,20 @@ export function createRouterEnginePlugin(
             routesCount: routes.length,
           })
         }
-      } catch (error) {
+      }
+      catch (error) {
         // 安全地记录错误，避免 engine.logger 为 undefined 的情况
         if (
-          context.engine &&
-          context.engine.logger &&
-          typeof context.engine.logger.error === 'function'
+          context.engine
+          && context.engine.logger
+          && typeof context.engine.logger.error === 'function'
         ) {
           context.engine.logger.error(
             `Failed to install ${name} plugin:`,
-            error
+            error,
           )
-        } else {
+        }
+        else {
           console.error(`Failed to install ${name} plugin:`, error)
         }
         throw error
@@ -488,15 +490,17 @@ export function createRouterEnginePlugin(
         }
 
         engine.logger.info(`${name} plugin uninstalled successfully`)
-      } catch (error) {
+      }
+      catch (error) {
         const engine = context.engine || context
         if (
-          engine &&
-          engine.logger &&
-          typeof engine.logger.error === 'function'
+          engine
+          && engine.logger
+          && typeof engine.logger.error === 'function'
         ) {
           engine.logger.error(`Failed to uninstall ${name} plugin:`, error)
-        } else {
+        }
+        else {
           console.error(`Failed to uninstall ${name} plugin:`, error)
         }
         throw error
@@ -512,7 +516,7 @@ export function createRouterEnginePlugin(
  */
 export function createSPARouter(
   routes: RouteRecordRaw[],
-  options?: Partial<RouterEnginePluginOptions>
+  options?: Partial<RouterEnginePluginOptions>,
 ) {
   return createRouterEnginePlugin({
     preset: 'spa',
@@ -526,7 +530,7 @@ export function createSPARouter(
  */
 export function createMobileRouter(
   routes: RouteRecordRaw[],
-  options?: Partial<RouterEnginePluginOptions>
+  options?: Partial<RouterEnginePluginOptions>,
 ) {
   return createRouterEnginePlugin({
     preset: 'mobile',
@@ -540,7 +544,7 @@ export function createMobileRouter(
  */
 export function createDesktopRouter(
   routes: RouteRecordRaw[],
-  options?: Partial<RouterEnginePluginOptions>
+  options?: Partial<RouterEnginePluginOptions>,
 ) {
   return createRouterEnginePlugin({
     preset: 'desktop',
@@ -554,7 +558,7 @@ export function createDesktopRouter(
  */
 export function createAdminRouter(
   routes: RouteRecordRaw[],
-  options?: Partial<RouterEnginePluginOptions>
+  options?: Partial<RouterEnginePluginOptions>,
 ) {
   return createRouterEnginePlugin({
     preset: 'admin',
@@ -568,7 +572,7 @@ export function createAdminRouter(
  */
 export function createBlogRouter(
   routes: RouteRecordRaw[],
-  options?: Partial<RouterEnginePluginOptions>
+  options?: Partial<RouterEnginePluginOptions>,
 ) {
   return createRouterEnginePlugin({
     preset: 'blog',
@@ -582,7 +586,7 @@ export function createBlogRouter(
  */
 export function createSimpleRouter(
   routes: RouteRecordRaw[],
-  mode: 'history' | 'hash' = 'history'
+  mode: 'history' | 'hash' = 'history',
 ) {
   return createRouterEnginePlugin({
     routes,
@@ -599,7 +603,7 @@ export function createSimpleRouter(
  * 验证路由配置
  */
 export function validateRouterConfig(
-  options: RouterEnginePluginOptions
+  options: RouterEnginePluginOptions,
 ): string[] {
   const errors: string[] = []
 
@@ -616,9 +620,9 @@ export function validateRouterConfig(
   }
 
   if (
-    options.preset &&
-    !['spa', 'mpa', 'mobile', 'desktop', 'admin', 'blog'].includes(
-      options.preset
+    options.preset
+    && !['spa', 'mpa', 'mobile', 'desktop', 'admin', 'blog'].includes(
+      options.preset,
     )
   ) {
     errors.push('preset 必须是有效的预设类型')
@@ -682,7 +686,7 @@ export function routerPlugin(options: RouterEnginePluginOptions): Plugin {
  * ```
  */
 export function createDefaultRouterEnginePlugin(
-  routes: RouteRecordRaw[]
+  routes: RouteRecordRaw[],
 ): Plugin {
   return createRouterEnginePlugin({
     routes,
@@ -703,7 +707,7 @@ export function createSimpleSPARouter(
     mode?: 'history' | 'hash' | 'memory'
     base?: string
     scrollBehavior?: ScrollBehavior
-  }
+  },
 ) {
   const { mode = 'history', base = '/', scrollBehavior } = options || {}
 
@@ -738,10 +742,10 @@ export function createSimpleSPARouter(
 export function createSimpleMobileRouter(
   routes: RouteRecordRaw[],
   options?: {
-    animation?: { type: string; duration: number }
+    animation?: { type: string, duration: number }
     mode?: 'history' | 'hash' | 'memory'
     base?: string
-  }
+  },
 ) {
   const {
     mode = 'hash', // 移动端默认使用 hash 模式
@@ -772,7 +776,7 @@ export function createSimpleAdminRouter(
     security?: { enableCSRFProtection: boolean }
     mode?: 'history' | 'hash' | 'memory'
     base?: string
-  }
+  },
 ) {
   const { mode = 'history', base = '/', security } = options || {}
 

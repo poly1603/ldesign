@@ -148,7 +148,8 @@ const { currentTheme, setTheme } = useTheme()
 try {
   const themeManager = await createThemeManagerWithPresets()
   await themeManager.setTheme('nonexistent-theme')
-} catch (error) {
+}
+catch (error) {
   console.error('主题操作失败:', error.message)
 }
 ```
@@ -199,7 +200,7 @@ const themeManager = await createThemeManagerWithPresets({
   onThemeChanged: (theme, mode) => {
     console.log(`[DEBUG] 主题变化: ${theme} - ${mode}`)
   },
-  onError: error => {
+  onError: (error) => {
     console.error('[DEBUG] 主题错误:', error)
   },
 })

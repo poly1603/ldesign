@@ -83,8 +83,8 @@ export class TemplateStorageManager {
    */
   private loadData(): TemplateStorageData {
     try {
-      const stored =
-        this.storage instanceof Map ? this.storage.get(this.options.key) : this.storage.getItem(this.options.key)
+      const stored
+        = this.storage instanceof Map ? this.storage.get(this.options.key) : this.storage.getItem(this.options.key)
 
       if (stored) {
         const parsed = this.options.deserialize(stored)
@@ -98,7 +98,8 @@ export class TemplateStorageManager {
           }
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to load template selections from storage:', error)
     }
 
@@ -120,10 +121,12 @@ export class TemplateStorageManager {
 
       if (this.storage instanceof Map) {
         this.storage.set(this.options.key, serialized)
-      } else {
+      }
+      else {
         this.storage.setItem(this.options.key, serialized)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to save template selections to storage:', error)
     }
   }

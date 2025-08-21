@@ -126,8 +126,8 @@ describe('deviceDetector', () => {
     beforeEach(() => {
       mockWindow.innerWidth = 375
       mockWindow.innerHeight = 667
-      mockNavigator.userAgent =
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
+      mockNavigator.userAgent
+        = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
       mockNavigator.maxTouchPoints = 5
     })
 
@@ -148,8 +148,8 @@ describe('deviceDetector', () => {
     beforeEach(() => {
       mockWindow.innerWidth = 768
       mockWindow.innerHeight = 1024
-      mockNavigator.userAgent =
-        'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
+      mockNavigator.userAgent
+        = 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
       mockNavigator.maxTouchPoints = 5
     })
 

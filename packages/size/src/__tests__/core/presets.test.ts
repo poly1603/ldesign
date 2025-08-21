@@ -23,7 +23,7 @@ describe('presets', () => {
         extraLargeSizeConfig,
       ]
 
-      configs.forEach(config => {
+      configs.forEach((config) => {
         expect(config).toHaveProperty('fontSize')
         expect(config).toHaveProperty('spacing')
         expect(config).toHaveProperty('component')
@@ -80,7 +80,7 @@ describe('presets', () => {
       const baseMedium = Number.parseFloat(mediumSizeConfig.fontSize.base)
       const baseLarge = Number.parseFloat(largeSizeConfig.fontSize.base)
       const baseExtraLarge = Number.parseFloat(
-        extraLargeSizeConfig.fontSize.base
+        extraLargeSizeConfig.fontSize.base,
       )
 
       expect(baseSmall).toBeLessThan(baseMedium)
@@ -122,7 +122,7 @@ describe('presets', () => {
 
     it('返回的模式应该都是有效的', () => {
       const modes = getAvailableModes()
-      modes.forEach(mode => {
+      modes.forEach((mode) => {
         expect(sizeConfigs).toHaveProperty(mode)
       })
     })

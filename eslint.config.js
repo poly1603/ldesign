@@ -25,5 +25,5 @@ export default antfu(
       'prefer-const': 'error',
       'no-var': 'error',
     },
-  }
+  },
 )

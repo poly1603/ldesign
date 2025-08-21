@@ -187,28 +187,28 @@ export default defineConfig({
       alias: {
         '@': fileURLToPath(new URL('../', import.meta.url)),
         '@ldesign/engine': fileURLToPath(
-          new URL('../packages/engine/src', import.meta.url)
+          new URL('../packages/engine/src', import.meta.url),
         ),
         '@ldesign/router': fileURLToPath(
-          new URL('../packages/router/src', import.meta.url)
+          new URL('../packages/router/src', import.meta.url),
         ),
         '@ldesign/http': fileURLToPath(
-          new URL('../packages/http/src', import.meta.url)
+          new URL('../packages/http/src', import.meta.url),
         ),
         '@ldesign/crypto': fileURLToPath(
-          new URL('../packages/crypto/src', import.meta.url)
+          new URL('../packages/crypto/src', import.meta.url),
         ),
         '@ldesign/device': fileURLToPath(
-          new URL('../packages/device/src', import.meta.url)
+          new URL('../packages/device/src', import.meta.url),
         ),
         '@ldesign/template': fileURLToPath(
-          new URL('../packages/template/src', import.meta.url)
+          new URL('../packages/template/src', import.meta.url),
         ),
         '@ldesign/color': fileURLToPath(
-          new URL('../packages/color/src', import.meta.url)
+          new URL('../packages/color/src', import.meta.url),
         ),
         '@ldesign/i18n': fileURLToPath(
-          new URL('../packages/i18n/src', import.meta.url)
+          new URL('../packages/i18n/src', import.meta.url),
         ),
       },
     },

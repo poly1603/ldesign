@@ -15,18 +15,18 @@ export const config: TemplateConfig = {
     '自动适配屏幕尺寸',
     '流畅的动画效果',
     '现代化设计',
-    '支持多种主题'
+    '支持多种主题',
   ],
   breakpoints: {
     mobile: 768,
     tablet: 1024,
-    desktop: 1200
+    desktop: 1200,
   },
   dependencies: [],
   customization: {
     colors: true,
     layout: true,
     animations: true,
-    background: true
-  }
+    background: true,
+  },
 }

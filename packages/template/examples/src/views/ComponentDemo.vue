@@ -77,9 +77,15 @@ updatePerformanceStats()
   <div class="component-demo">
     <div class="component-demo__header">
       <div class="component-demo__container">
-        <router-link to="/" class="component-demo__back"> ← 返回首页 </router-link>
-        <h1 class="component-demo__title">🧩 TemplateRenderer 组件演示</h1>
-        <p class="component-demo__subtitle">使用声明式组件快速渲染模板</p>
+        <router-link to="/" class="component-demo__back">
+          ← 返回首页
+        </router-link>
+        <h1 class="component-demo__title">
+          🧩 TemplateRenderer 组件演示
+        </h1>
+        <p class="component-demo__subtitle">
+          使用声明式组件快速渲染模板
+        </p>
       </div>
     </div>
 
@@ -103,16 +109,24 @@ updatePerformanceStats()
             <div class="component-demo__control-group">
               <label>分类:</label>
               <select v-model="selectedCategory" @change="handleTemplateChange">
-                <option value="login">登录</option>
+                <option value="login">
+                  登录
+                </option>
               </select>
             </div>
 
             <div class="component-demo__control-group">
               <label>设备:</label>
               <select v-model="selectedDevice" @change="handleTemplateChange">
-                <option value="desktop">🖥️ 桌面</option>
-                <option value="tablet">📱 平板</option>
-                <option value="mobile">📱 手机</option>
+                <option value="desktop">
+                  🖥️ 桌面
+                </option>
+                <option value="tablet">
+                  📱 平板
+                </option>
+                <option value="mobile">
+                  📱 手机
+                </option>
               </select>
             </div>
 

@@ -24,7 +24,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'warn',
     '@typescript-eslint/prefer-const': 'error',
     '@typescript-eslint/no-var-requires': 'error',
-    
+
     // 通用规则
     'no-console': 'off', // CLI工具需要console输出
     'no-debugger': 'error',

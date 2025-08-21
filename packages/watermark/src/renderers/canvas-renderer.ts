@@ -31,7 +31,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
    */
   async render(
     config: WatermarkConfig,
-    context: RenderContext
+    context: RenderContext,
   ): Promise<HTMLElement[]> {
     try {
       // 创建Canvas元素
@@ -54,11 +54,12 @@ export class CanvasRendererImpl implements CanvasRenderer {
       this.applyCanvasStyles(canvas, config)
 
       return [canvas]
-    } catch (error) {
+    }
+    catch (error) {
       throw new WatermarkError(
         'Canvas rendering failed',
         WatermarkErrorCode.RENDER_FAILED,
-        ErrorSeverity.HIGH
+        ErrorSeverity.HIGH,
       )
     }
   }
@@ -69,7 +70,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
   async update(
     elements: HTMLElement[],
     config: WatermarkConfig,
-    context: RenderContext
+    context: RenderContext,
   ): Promise<void> {
     if (elements.length === 0) {
       await this.render(config, context)
@@ -101,7 +102,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
    * 销毁水印元素
    */
   async destroy(elements: HTMLElement[]): Promise<void> {
-    elements.forEach(element => {
+    elements.forEach((element) => {
       if (element.parentNode) {
         element.parentNode.removeChild(element)
       }
@@ -122,7 +123,8 @@ export class CanvasRendererImpl implements CanvasRenderer {
     try {
       const canvas = document.createElement('canvas')
       return !!(canvas.getContext && canvas.getContext('2d'))
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -155,7 +157,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private updateCanvasSize(
     canvas: HTMLCanvasElement,
-    context: RenderContext
+    context: RenderContext,
   ): void {
     const rect = context.containerRect
     const dpr = context.devicePixelRatio
@@ -175,7 +177,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   calculateLayout(
     config: WatermarkConfig,
-    containerRect: DOMRect
+    containerRect: DOMRect,
   ): LayoutResult {
     const layout = config.layout || {}
     // containerRect已经作为参数传入
@@ -193,7 +195,8 @@ export class CanvasRendererImpl implements CanvasRenderer {
     if (layout.rows && layout.cols) {
       rows = layout.rows
       columns = layout.cols
-    } else {
+    }
+    else {
       // 自动计算行列数
       columns = Math.ceil(containerRect.width / gapX) + 1
       rows = Math.ceil(containerRect.height / gapY) + 1
@@ -232,7 +235,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private applyGlobalStyles(
     ctx: CanvasRenderingContext2D,
-    config: WatermarkConfig
+    config: WatermarkConfig,
   ): void {
     const style = config.style || {}
 
@@ -260,7 +263,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
   private async renderWatermarks(
     ctx: CanvasRenderingContext2D,
     config: WatermarkConfig,
-    layout: LayoutResult
+    layout: LayoutResult,
   ): Promise<void> {
     for (let row = 0; row < layout.rows; row++) {
       for (let col = 0; col < layout.columns; col++) {
@@ -276,7 +279,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
     ctx: CanvasRenderingContext2D,
     config: WatermarkConfig,
     x: number,
-    y: number
+    y: number,
   ): Promise<void> {
     ctx.save()
 
@@ -299,7 +302,8 @@ export class CanvasRendererImpl implements CanvasRenderer {
         ...config,
         content: { text: config.content },
       })
-    } else if (typeof config.content === 'object' && config.content) {
+    }
+    else if (typeof config.content === 'object' && config.content) {
       if (config.content.text) {
         await this.renderText(ctx, config)
       }
@@ -313,7 +317,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private renderBackground(
     ctx: CanvasRenderingContext2D,
-    config: WatermarkConfig
+    config: WatermarkConfig,
   ): void {
     const style = config.style!
     const padding = style.padding || 0
@@ -325,26 +329,27 @@ export class CanvasRendererImpl implements CanvasRenderer {
     if (typeof config.content === 'string') {
       const metrics = ctx.measureText(config.content)
       width = metrics.width + (typeof padding === 'number' ? padding * 2 : 0)
-      height =
-        (style.fontSize || 16) + (typeof padding === 'number' ? padding * 2 : 0)
-    } else if (typeof config.content === 'object' && config.content) {
+      height
+        = (style.fontSize || 16) + (typeof padding === 'number' ? padding * 2 : 0)
+    }
+    else if (typeof config.content === 'object' && config.content) {
       if (config.content.text) {
         const metrics = ctx.measureText(config.content.text)
         width = metrics.width + (typeof padding === 'number' ? padding * 2 : 0)
-        height =
-          (style.fontSize || 16) +
-          (typeof padding === 'number' ? padding * 2 : 0)
+        height
+          = (style.fontSize || 16)
+            + (typeof padding === 'number' ? padding * 2 : 0)
       }
       if (config.content.image) {
         width = Math.max(
           width,
-          (config.content.image.width || 100) +
-            (typeof padding === 'number' ? padding * 2 : 0)
+          (config.content.image.width || 100)
+          + (typeof padding === 'number' ? padding * 2 : 0),
         )
         height = Math.max(
           height,
-          (config.content.image.height || 100) +
-            (typeof padding === 'number' ? padding * 2 : 0)
+          (config.content.image.height || 100)
+          + (typeof padding === 'number' ? padding * 2 : 0),
         )
       }
     }
@@ -362,14 +367,14 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private async renderText(
     ctx: CanvasRenderingContext2D,
-    config: WatermarkConfig
+    config: WatermarkConfig,
   ): Promise<void> {
-    const text =
-      typeof config.content === 'string'
+    const text
+      = typeof config.content === 'string'
         ? config.content
         : typeof config.content === 'object' && config.content?.text
-        ? config.content.text
-        : ''
+          ? config.content.text
+          : ''
     const style = config.style || {}
 
     // 设置文本样式
@@ -392,13 +397,14 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private async renderImage(
     ctx: CanvasRenderingContext2D,
-    config: WatermarkConfig
+    config: WatermarkConfig,
   ): Promise<void> {
-    const imageConfig =
-      typeof config.content === 'object' && config.content?.image
+    const imageConfig
+      = typeof config.content === 'object' && config.content?.image
         ? config.content.image
         : null
-    if (!imageConfig) return
+    if (!imageConfig)
+      return
 
     const img = await this.loadImage(imageConfig.src)
 
@@ -435,7 +441,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private applyCanvasStyles(
     canvas: HTMLCanvasElement,
-    config: WatermarkConfig
+    config: WatermarkConfig,
   ): void {
     const style = canvas.style
 
@@ -462,7 +468,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
     ;(style as any).msUserDrag = 'none'
 
     // 防止右键菜单
-    canvas.addEventListener('contextmenu', e => {
+    canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault()
       return false
     })
@@ -470,7 +476,7 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   private applyTextShadow(
     ctx: CanvasRenderingContext2D,
-    textShadow: string
+    textShadow: string,
   ): void {
     // 解析text-shadow值
     // 简化实现，支持基本格式："2px 2px 4px rgba(0,0,0,0.5)"
@@ -510,7 +516,8 @@ export class CanvasRendererImpl implements CanvasRenderer {
 
   // 实现CanvasRenderer接口的缺失方法
   drawText(text: string, x: number, y: number, config: WatermarkConfig): void {
-    if (!this.ctx) return
+    if (!this.ctx)
+      return
 
     const style = config.style || {}
     this.ctx.fillStyle = style.color || '#000000'
@@ -523,19 +530,22 @@ export class CanvasRendererImpl implements CanvasRenderer {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
   ): void {
-    if (!this.ctx) return
+    if (!this.ctx)
+      return
     this.ctx.drawImage(image, x, y, width, height)
   }
 
   clear(): void {
-    if (!this.ctx || !this.canvas) return
+    if (!this.ctx || !this.canvas)
+      return
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   toDataURL(type?: string, quality?: number): string {
-    if (!this.canvas) return ''
+    if (!this.canvas)
+      return ''
     return this.canvas.toDataURL(type, quality)
   }
 

@@ -104,7 +104,8 @@ class LRUCache {
 
   get(key: string): MatchResult | null | undefined {
     const node = this.cache.get(key)
-    if (!node) return undefined
+    if (!node)
+      return undefined
 
     // 移动到头部（最近使用）
     this.moveToHead(node)
@@ -120,7 +121,8 @@ class LRUCache {
       existingNode.value = value
       existingNode.timestamp = Date.now()
       this.moveToHead(existingNode)
-    } else {
+    }
+    else {
       // 创建新节点
       const newNode: LRUNode = {
         key,
@@ -182,7 +184,7 @@ class LRUCache {
     return null
   }
 
-  getStats(): { size: number; capacity: number; hitRate: number } {
+  getStats(): { size: number, capacity: number, hitRate: number } {
     return {
       size: this.size,
       capacity: this.capacity,
@@ -245,7 +247,8 @@ export class RouteMatcher {
    */
   private compilePath(path: string): CompiledPath {
     const cached = this.compiledPaths.get(path)
-    if (cached) return cached
+    if (cached)
+      return cached
 
     const paramNames: string[] = []
     let weight = 0
@@ -254,8 +257,9 @@ export class RouteMatcher {
     // 转换路径为正则表达式
     const regexPattern = path
       .split('/')
-      .map(segment => {
-        if (!segment) return ''
+      .map((segment) => {
+        if (!segment)
+          return ''
 
         // 参数段 :param 或 :param?
         if (segment.startsWith(':')) {
@@ -325,7 +329,7 @@ export class RouteMatcher {
    */
   addRoute(
     record: RouteRecordRaw,
-    parent?: RouteRecordNormalized
+    parent?: RouteRecordNormalized,
   ): RouteRecordNormalized {
     const normalized = this.normalizeRecord(record, parent)
 
@@ -333,7 +337,8 @@ export class RouteMatcher {
     if (normalized.name) {
       this.routes.set(normalized.name, normalized)
       this.rawRoutes.set(normalized.name, record)
-    } else {
+    }
+    else {
       // 为没有名称的路由生成一个唯一的内部名称
       const internalName = Symbol(`route_${normalized.path}_${Date.now()}`)
       normalized.name = internalName
@@ -359,7 +364,8 @@ export class RouteMatcher {
             this.routes.set(childRecord.name, childRecord)
             this.rawRoutes.set(childRecord.name, child)
           }
-        } else {
+        }
+        else {
           // 正常添加子路由
           this.addRoute(child, normalized)
         }
@@ -384,7 +390,7 @@ export class RouteMatcher {
    * 获取所有路由记录
    */
   getRoutes(): RouteRecordNormalized[] {
-    return Array.from(this.routes.values()).map(route => {
+    return Array.from(this.routes.values()).map((route) => {
       // 如果是内部生成的 Symbol 名称，将 name 设置为 undefined
       if (typeof route.name === 'symbol') {
         return { ...route, name: undefined }
@@ -486,9 +492,9 @@ export class RouteMatcher {
    * 更新平均匹配时间
    */
   private updateAverageMatchTime(time: number): void {
-    this.stats.averageMatchTime =
-      (this.stats.averageMatchTime * (this.stats.totalMatches - 1) + time) /
-      this.stats.totalMatches
+    this.stats.averageMatchTime
+      = (this.stats.averageMatchTime * (this.stats.totalMatches - 1) + time)
+        / this.stats.totalMatches
   }
 
   /**
@@ -503,7 +509,7 @@ export class RouteMatcher {
    */
   resolve(
     to: RouteLocationRaw,
-    _currentLocation?: RouteLocationNormalized
+    _currentLocation?: RouteLocationNormalized,
   ): RouteLocationNormalized {
     if (typeof to === 'string') {
       return this.resolveByPath(to)
@@ -525,7 +531,7 @@ export class RouteMatcher {
    */
   private normalizeRecord(
     record: RouteRecordRaw,
-    parent?: RouteRecordNormalized
+    parent?: RouteRecordNormalized,
   ): RouteRecordNormalized {
     const path = this.normalizePath(record.path, parent?.path)
 
@@ -571,9 +577,12 @@ export class RouteMatcher {
    * 标准化属性配置
    */
   private normalizeProps(props: any): Record<string, any> {
-    if (!props) return {}
-    if (typeof props === 'boolean') return { default: props }
-    if (typeof props === 'object') return props
+    if (!props)
+      return {}
+    if (typeof props === 'boolean')
+      return { default: props }
+    if (typeof props === 'object')
+      return props
     return { default: props }
   }
 
@@ -582,7 +591,7 @@ export class RouteMatcher {
    */
   private addDefaultChildToTrie(
     parentRecord: RouteRecordNormalized,
-    childRecord: RouteRecordNormalized
+    childRecord: RouteRecordNormalized,
   ): void {
     const segments = this.parsePathSegments(parentRecord.path)
     let node = this.root
@@ -634,9 +643,9 @@ export class RouteMatcher {
 
         // 如果找到匹配的父路径且有子路由，则认为是嵌套路由
         if (
-          normalizedRoute?.path === parentPath &&
-          route.children &&
-          route.children.length > 0
+          normalizedRoute?.path === parentPath
+          && route.children
+          && route.children.length > 0
         ) {
           return true
         }
@@ -650,7 +659,7 @@ export class RouteMatcher {
    * 查找默认子路由（空路径的子路由）
    */
   private findDefaultChildRecord(
-    parentRecord: RouteRecordNormalized
+    parentRecord: RouteRecordNormalized,
   ): RouteRecordNormalized | null {
     // 查找对应的原始路由记录
     if (!parentRecord.name || !this.rawRoutes.has(parentRecord.name)) {
@@ -687,7 +696,8 @@ export class RouteMatcher {
 
     for (const segment of segments) {
       const child = this.findChildNode(node, segment)
-      if (!child) return
+      if (!child)
+        return
       node = child
     }
 
@@ -763,7 +773,7 @@ export class RouteMatcher {
     index: number,
     params: RouteParams,
     matchedSegments: string[],
-    matchedRecords: RouteRecordNormalized[] = []
+    matchedRecords: RouteRecordNormalized[] = [],
   ): MatchResult | null {
     // 匹配完成
     if (index >= segments.length) {
@@ -809,8 +819,8 @@ export class RouteMatcher {
     if (staticChild) {
       // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
       const isRootPath = segments.length === 0
-      const shouldAddRecord =
-        node.record && (matchedSegments.length > 0 || isRootPath)
+      const shouldAddRecord
+        = node.record && (matchedSegments.length > 0 || isRootPath)
       const newMatchedRecords = shouldAddRecord
         ? [...matchedRecords, node.record!]
         : matchedRecords
@@ -820,9 +830,10 @@ export class RouteMatcher {
         index + 1,
         params,
         [...matchedSegments, segment],
-        newMatchedRecords
+        newMatchedRecords,
       )
-      if (result) return result
+      if (result)
+        return result
     }
 
     // 尝试参数匹配
@@ -831,8 +842,8 @@ export class RouteMatcher {
       const newParams: RouteParams = { ...params, [paramName]: segment }
       // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
       const isRootPath = segments.length === 0
-      const shouldAddRecord =
-        node.record && (matchedSegments.length > 0 || isRootPath)
+      const shouldAddRecord
+        = node.record && (matchedSegments.length > 0 || isRootPath)
       const newMatchedRecords = shouldAddRecord
         ? [...matchedRecords, node.record!]
         : matchedRecords
@@ -842,9 +853,10 @@ export class RouteMatcher {
         index + 1,
         newParams,
         [...matchedSegments, segment],
-        newMatchedRecords
+        newMatchedRecords,
       )
-      if (result) return result
+      if (result)
+        return result
     }
 
     // 尝试通配符匹配
@@ -853,8 +865,8 @@ export class RouteMatcher {
       const newParams = { ...params, pathMatch: remainingPath }
       // 只有当当前节点不是根节点或者路径是根路径时，才添加到匹配记录
       const isRootPath = segments.length === 0
-      const shouldAddRecord =
-        node.record && (matchedSegments.length > 0 || isRootPath)
+      const shouldAddRecord
+        = node.record && (matchedSegments.length > 0 || isRootPath)
       const newMatchedRecords = shouldAddRecord
         ? [...matchedRecords, node.record!]
         : matchedRecords
@@ -876,7 +888,7 @@ export class RouteMatcher {
   private resolveByPath(
     path: string,
     query?: any,
-    hash?: string
+    hash?: string,
   ): RouteLocationNormalized {
     // 使用优化后的匹配方法
     const match = this.matchByPath(path)
@@ -898,7 +910,8 @@ export class RouteMatcher {
       // 安全地处理 URLSearchParams
       if (url.searchParams && typeof url.searchParams.entries === 'function') {
         urlQuery = Object.fromEntries(url.searchParams.entries())
-      } else {
+      }
+      else {
         // 手动解析查询参数
         const searchString = url.search.slice(1)
         if (searchString) {
@@ -911,7 +924,8 @@ export class RouteMatcher {
           }
         }
       }
-    } catch {
+    }
+    catch {
       // 如果 URL 解析失败，手动解析
       const [pathPart, ...rest] = path.split('?')
       cleanPath = pathPart
@@ -945,7 +959,7 @@ export class RouteMatcher {
       fullPath: this.buildFullPath(
         cleanPath,
         { ...urlQuery, ...(query || {}) },
-        urlHash || hash
+        urlHash || hash,
       ),
       matched: match.matched,
       meta: match.record.meta,
@@ -959,7 +973,7 @@ export class RouteMatcher {
     name: string | symbol,
     params?: any,
     query?: any,
-    hash?: string
+    hash?: string,
   ): RouteLocationNormalized {
     const record = this.matchByName(name)
 
@@ -988,7 +1002,8 @@ export class RouteMatcher {
     return pattern.replace(PARAM_RE, (_match, paramName, optional) => {
       const value = params[paramName]
       if (value === undefined || value === null) {
-        if (optional) return ''
+        if (optional)
+          return ''
         throw new Error(`Missing required parameter: ${paramName}`)
       }
       return String(value)

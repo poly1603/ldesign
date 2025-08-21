@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from '@ldesign/i18n/vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 
 // 定义 props
 interface LoginPanelProps {
@@ -32,10 +32,10 @@ const emit = defineEmits<{
       rememberMe: boolean
       captcha?: string
       smsCode?: string
-    }
+    },
   ]
   register: []
-  forgotPassword: [data: { username?: string; phone?: string }]
+  forgotPassword: [data: { username?: string, phone?: string }]
   thirdPartyLogin: [data: { provider: string }]
 }>()
 
@@ -73,12 +73,13 @@ const validation = reactive({
 const canSubmit = computed(() => {
   if (loginMethods.value === 'password') {
     return (
-      formData.username &&
-      formData.password &&
-      formData.captcha &&
-      !props.isLoading
+      formData.username
+      && formData.password
+      && formData.captcha
+      && !props.isLoading
     )
-  } else {
+  }
+  else {
     return (
       formData.phone && formData.smsCode && formData.captcha && !props.isLoading
     )
@@ -131,7 +132,8 @@ function generateCaptcha() {
 
 // 发送短信验证码
 function sendSmsCode() {
-  if (smsCountdown.value > 0 || !formData.phone) return
+  if (smsCountdown.value > 0 || !formData.phone)
+    return
 
   // 验证手机号格式
   const phoneRegex = /^1[3-9]\d{9}$/
@@ -168,7 +170,8 @@ function validateForm() {
       validation.username.valid = false
       validation.username.message = '请输入用户名'
       isValid = false
-    } else {
+    }
+    else {
       validation.username.valid = true
       validation.username.message = ''
     }
@@ -178,26 +181,31 @@ function validateForm() {
       validation.password.valid = false
       validation.password.message = '请输入密码'
       isValid = false
-    } else if (formData.password.length < 6) {
+    }
+    else if (formData.password.length < 6) {
       validation.password.valid = false
       validation.password.message = '密码至少6位'
       isValid = false
-    } else {
+    }
+    else {
       validation.password.valid = true
       validation.password.message = ''
     }
-  } else {
+  }
+  else {
     // 验证手机号
     const phoneRegex = /^1[3-9]\d{9}$/
     if (!formData.phone) {
       validation.phone.valid = false
       validation.phone.message = '请输入手机号'
       isValid = false
-    } else if (!phoneRegex.test(formData.phone)) {
+    }
+    else if (!phoneRegex.test(formData.phone)) {
       validation.phone.valid = false
       validation.phone.message = '请输入正确的手机号'
       isValid = false
-    } else {
+    }
+    else {
       validation.phone.valid = true
       validation.phone.message = ''
     }
@@ -207,11 +215,13 @@ function validateForm() {
       validation.smsCode.valid = false
       validation.smsCode.message = '请输入短信验证码'
       isValid = false
-    } else if (formData.smsCode.length !== 6) {
+    }
+    else if (formData.smsCode.length !== 6) {
       validation.smsCode.valid = false
       validation.smsCode.message = '验证码为6位数字'
       isValid = false
-    } else {
+    }
+    else {
       validation.smsCode.valid = true
       validation.smsCode.message = ''
     }
@@ -222,13 +232,15 @@ function validateForm() {
     validation.captcha.valid = false
     validation.captcha.message = '请输入验证码'
     isValid = false
-  } else if (
+  }
+  else if (
     formData.captcha.toLowerCase() !== captchaCode.value.toLowerCase()
   ) {
     validation.captcha.valid = false
     validation.captcha.message = '验证码错误'
     isValid = false
-  } else {
+  }
+  else {
     validation.captcha.valid = true
     validation.captcha.message = ''
   }
@@ -238,7 +250,8 @@ function validateForm() {
 
 // 处理登录
 function handleLogin() {
-  if (!validateForm()) return
+  if (!validateForm())
+    return
 
   const loginData = {
     username: formData.username,
@@ -259,8 +272,8 @@ function handleRegister() {
 
 // 处理忘记密码
 function handleForgotPassword() {
-  const data =
-    loginMethods.value === 'password'
+  const data
+    = loginMethods.value === 'password'
       ? { username: formData.username }
       : { phone: formData.phone }
   emit('forgotPassword', data)
@@ -275,7 +288,7 @@ function handleThirdPartyLogin(provider: string) {
 function switchLoginMethod(method: 'password' | 'sms') {
   loginMethods.value = method
   // 清空验证状态
-  Object.keys(validation).forEach(key => {
+  Object.keys(validation).forEach((key) => {
     validation[key as keyof typeof validation].valid = true
     validation[key as keyof typeof validation].message = ''
   })
@@ -291,8 +304,12 @@ onMounted(() => {
   <div class="login-panel">
     <!-- 头部 -->
     <div class="login-header">
-      <h1 class="title">{{ props.title }}</h1>
-      <p class="subtitle">{{ props.subtitle }}</p>
+      <h1 class="title">
+        {{ props.title }}
+      </h1>
+      <p class="subtitle">
+        {{ props.subtitle }}
+      </p>
     </div>
 
     <!-- 错误提示 -->
@@ -340,7 +357,7 @@ onMounted(() => {
             :class="{ error: !validation.username.valid }"
             placeholder="请输入用户名"
             :disabled="props.isLoading"
-          />
+          >
           <div v-if="!validation.username.valid" class="error-tip">
             {{ validation.username.message }}
           </div>
@@ -359,7 +376,7 @@ onMounted(() => {
             :class="{ error: !validation.password.valid }"
             placeholder="请输入密码"
             :disabled="props.isLoading"
-          />
+          >
           <div v-if="!validation.password.valid" class="error-tip">
             {{ validation.password.message }}
           </div>
@@ -381,7 +398,7 @@ onMounted(() => {
             :class="{ error: !validation.phone.valid }"
             placeholder="请输入手机号"
             :disabled="props.isLoading"
-          />
+          >
           <div v-if="!validation.phone.valid" class="error-tip">
             {{ validation.phone.message }}
           </div>
@@ -402,7 +419,7 @@ onMounted(() => {
               placeholder="请输入验证码"
               maxlength="6"
               :disabled="props.isLoading"
-            />
+            >
             <button
               type="button"
               class="sms-btn"
@@ -434,20 +451,20 @@ onMounted(() => {
             placeholder="请输入验证码"
             maxlength="4"
             :disabled="props.isLoading"
-          />
+          >
           <div class="captcha-container">
             <img
               :src="captchaImage"
               alt="验证码"
               class="captcha-image"
-              @click="generateCaptcha"
               title="点击刷新验证码"
-            />
+              @click="generateCaptcha"
+            >
             <button
               type="button"
               class="refresh-btn"
-              @click="generateCaptcha"
               title="刷新验证码"
+              @click="generateCaptcha"
             >
               🔄
             </button>
@@ -465,7 +482,7 @@ onMounted(() => {
             v-model="formData.rememberMe"
             type="checkbox"
             :disabled="props.isLoading"
-          />
+          >
           <span class="checkbox-text">记住密码</span>
         </label>
       </div>
@@ -477,7 +494,7 @@ onMounted(() => {
         :disabled="!canSubmit"
         :class="{ loading: props.isLoading }"
       >
-        <span v-if="props.isLoading" class="loading-spinner"></span>
+        <span v-if="props.isLoading" class="loading-spinner" />
         <span>{{ props.isLoading ? '登录中...' : '登录' }}</span>
       </button>
     </form>
@@ -534,14 +551,18 @@ onMounted(() => {
   backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.3);
   animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.2),
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.25),
+      0 12px 32px rgba(0, 0, 0, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.9);
   }
 }
@@ -838,12 +859,7 @@ onMounted(() => {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s ease;
   }
 

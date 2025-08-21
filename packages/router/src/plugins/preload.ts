@@ -88,9 +88,9 @@ export class PreloadManager {
       retryCondition: (error: Error) => {
         // 网络错误或超时错误可以重试
         return (
-          error.name === 'NetworkError' ||
-          error.message.includes('timeout') ||
-          error.message.includes('fetch')
+          error.name === 'NetworkError'
+          || error.message.includes('timeout')
+          || error.message.includes('fetch')
         )
       },
       ...retryConfig,
@@ -134,12 +134,12 @@ export class PreloadManager {
     // 如果缓存仍然过大，删除最少使用的项
     if (this.componentCache.size > this.maxCacheSize) {
       const sortedEntries = Array.from(this.componentCache.entries()).sort(
-        (a, b) => a[1].accessCount - b[1].accessCount
+        (a, b) => a[1].accessCount - b[1].accessCount,
       )
 
       const toDelete = sortedEntries.slice(
         0,
-        this.componentCache.size - this.maxCacheSize
+        this.componentCache.size - this.maxCacheSize,
       )
       toDelete.forEach(([key]) => this.componentCache.delete(key))
     }
@@ -151,7 +151,7 @@ export class PreloadManager {
   async preload(
     route: RouteLocationNormalized,
     strategy: PreloadStrategy = this.config.strategy,
-    priority: number = 0
+    priority: number = 0,
   ): Promise<void> {
     const key = this.generateKey(route)
 
@@ -208,7 +208,8 @@ export class PreloadManager {
       this.updateErrorRate()
 
       // 预加载成功: ${route.path} (${strategy})
-    } catch (error) {
+    }
+    catch (error) {
       this.preloadQueue.delete(key)
       this.stats.failed++
       this.updateErrorRate()
@@ -227,7 +228,7 @@ export class PreloadManager {
    */
   async preloadBatch(
     routes: RouteLocationNormalized[],
-    strategy: PreloadStrategy
+    strategy: PreloadStrategy,
   ): Promise<void> {
     const promises = routes.map(route => this.preload(route, strategy))
     await Promise.allSettled(promises)
@@ -246,25 +247,26 @@ export class PreloadManager {
    */
   private async loadRouteComponentsWithRetry(
     route: RouteLocationNormalized,
-    retryCount: number = 0
+    retryCount: number = 0,
   ): Promise<any> {
     try {
       return await this.loadRouteComponents(route)
-    } catch (error) {
+    }
+    catch (error) {
       if (
-        retryCount < this.retryConfig.maxRetries &&
-        this.retryConfig.retryCondition?.(error as Error)
+        retryCount < this.retryConfig.maxRetries
+        && this.retryConfig.retryCondition?.(error as Error)
       ) {
         // 计算重试延迟（指数退避）
-        const delay =
-          this.retryConfig.retryDelay *
-          this.retryConfig.backoffMultiplier ** retryCount
+        const delay
+          = this.retryConfig.retryDelay
+            * this.retryConfig.backoffMultiplier ** retryCount
 
         console.warn(
           `预加载失败，${delay}ms后重试 (${retryCount + 1}/${
             this.retryConfig.maxRetries
           }):`,
-          error
+          error,
         )
 
         await new Promise(resolve => setTimeout(resolve, delay))
@@ -281,7 +283,8 @@ export class PreloadManager {
   private estimateComponentSize(components: any): number {
     try {
       return JSON.stringify(components).length
-    } catch {
+    }
+    catch {
       return 1024 // 默认1KB
     }
   }
@@ -290,8 +293,8 @@ export class PreloadManager {
    * 更新错误率
    */
   private updateErrorRate(): void {
-    this.stats.errorRate =
-      this.stats.total > 0 ? this.stats.failed / this.stats.total : 0
+    this.stats.errorRate
+      = this.stats.total > 0 ? this.stats.failed / this.stats.total : 0
   }
 
   /**
@@ -356,7 +359,7 @@ export class PreloadManager {
         size: item.size,
         accessCount: item.accessCount,
         age: now - item.timestamp,
-      })
+      }),
     )
 
     const totalSize = items.reduce((sum, item) => sum + item.size, 0)
@@ -380,7 +383,7 @@ export class PreloadManager {
    * 加载路由组件
    */
   private async loadRouteComponents(
-    route: RouteLocationNormalized
+    route: RouteLocationNormalized,
   ): Promise<any> {
     const components: Record<string, any> = {}
 
@@ -388,11 +391,12 @@ export class PreloadManager {
       if (record.components) {
         for (const [name, component] of Object.entries(record.components)) {
           if (typeof component === 'function') {
-            components[name] =
-              typeof component === 'function' && 'then' in component
+            components[name]
+              = typeof component === 'function' && 'then' in component
                 ? await (component as () => Promise<any>)()
                 : component
-          } else {
+          }
+          else {
             components[name] = component
           }
         }
@@ -406,7 +410,7 @@ export class PreloadManager {
    * 查找相关路由
    */
   private findRelatedRoutes(
-    _currentRoute: RouteLocationNormalized
+    _currentRoute: RouteLocationNormalized,
   ): RouteLocationNormalized[] {
     // 简化实现：返回同级路由
     // const pathSegments = currentRoute.path.split('/').filter(Boolean)
@@ -422,8 +426,8 @@ export class PreloadManager {
    */
   private updateAverageTime(time: number): void {
     const total = this.stats.success + this.stats.failed
-    this.stats.averageTime =
-      (this.stats.averageTime * (total - 1) + time) / total
+    this.stats.averageTime
+      = (this.stats.averageTime * (total - 1) + time) / total
   }
 }
 
@@ -502,11 +506,12 @@ export class VisibilityPreloadStrategy {
    * 设置交叉观察器
    */
   private setupObserver(): void {
-    if (typeof IntersectionObserver === 'undefined') return
+    if (typeof IntersectionObserver === 'undefined')
+      return
 
     this.observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const route = this.observedElements.get(entry.target)
             if (route) {
@@ -518,7 +523,7 @@ export class VisibilityPreloadStrategy {
       {
         threshold: 0.1,
         rootMargin: '50px',
-      }
+      },
     )
   }
 
@@ -526,7 +531,8 @@ export class VisibilityPreloadStrategy {
    * 观察元素
    */
   observe(element: Element, route: RouteLocationNormalized): void {
-    if (!this.observer) return
+    if (!this.observer)
+      return
 
     this.observer.observe(element)
     this.observedElements.set(element, route)
@@ -536,7 +542,8 @@ export class VisibilityPreloadStrategy {
    * 停止观察元素
    */
   unobserve(element: Element): void {
-    if (!this.observer) return
+    if (!this.observer)
+      return
 
     this.observer.unobserve(element)
     this.observedElements.delete(element)
@@ -579,7 +586,8 @@ export class IdlePreloadStrategy {
    */
   private scheduleIdlePreload(): void {
     const processQueue = () => {
-      if (this.pendingRoutes.length === 0) return
+      if (this.pendingRoutes.length === 0)
+        return
 
       const route = this.pendingRoutes.shift()!
       this.manager.preload(route, 'idle', 3)
@@ -592,7 +600,8 @@ export class IdlePreloadStrategy {
 
     if ('requestIdleCallback' in window) {
       requestIdleCallback(processQueue, { timeout: 5000 })
-    } else {
+    }
+    else {
       setTimeout(processQueue, 1000)
     }
   }
@@ -603,7 +612,8 @@ export class IdlePreloadStrategy {
   private scheduleNext(): void {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => this.scheduleIdlePreload(), { timeout: 5000 })
-    } else {
+    }
+    else {
       setTimeout(() => this.scheduleIdlePreload(), 1000)
     }
   }
@@ -676,7 +686,7 @@ export function createPreloadPlugin(options: PreloadPluginOptions = {}) {
 
       // 路由守卫：自动预加载相关路由
       if (autoPreloadRelated) {
-        router.afterEach(to => {
+        router.afterEach((to) => {
           manager.preloadRelated(to)
         })
       }
@@ -696,7 +706,7 @@ export function createPreloadPlugin(options: PreloadPluginOptions = {}) {
  * 创建预加载配置
  */
 export function createPreloadConfig(
-  config: Partial<PreloadConfig>
+  config: Partial<PreloadConfig>,
 ): PreloadConfig {
   return {
     strategy: 'hover',

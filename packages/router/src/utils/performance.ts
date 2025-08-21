@@ -55,7 +55,7 @@ export function compilePattern(path: string): CompiledPattern {
           return `(?:/([^/]+))?`
         }
         return '/([^/]+)'
-      }
+      },
     )
     .replace(/\*/g, '(.*)')
 
@@ -112,7 +112,7 @@ export function quickMatch(pattern: CompiledPattern, path: string): boolean {
  */
 export function extractParams(
   pattern: CompiledPattern,
-  path: string
+  path: string,
 ): Record<string, string> | null {
   const match = pattern.regex.exec(path)
   if (!match) {
@@ -154,7 +154,7 @@ interface OptimizedRouteNode {
  * 构建优化的路由树
  */
 export function buildOptimizedRouteTree(
-  routes: RouteRecordRaw[]
+  routes: RouteRecordRaw[],
 ): OptimizedRouteNode {
   const root: OptimizedRouteNode = {
     segment: '',
@@ -165,7 +165,7 @@ export function buildOptimizedRouteTree(
   function addRoute(
     route: RouteRecordRaw,
     node: OptimizedRouteNode = root,
-    parentPath = ''
+    parentPath = '',
   ) {
     const fullPath = parentPath + route.path
     const segments = fullPath.split('/').filter(Boolean)
@@ -188,7 +188,8 @@ export function buildOptimizedRouteTree(
           })
         }
         currentNode = currentNode.children.get(paramKey)!
-      } else if (segment === '*') {
+      }
+      else if (segment === '*') {
         // 通配符段
         if (!currentNode.wildcardChild) {
           currentNode.wildcardChild = {
@@ -199,7 +200,8 @@ export function buildOptimizedRouteTree(
           }
         }
         currentNode = currentNode.wildcardChild
-      } else {
+      }
+      else {
         // 静态段
         if (!currentNode.children.has(segment)) {
           currentNode.children.set(segment, {
@@ -235,14 +237,14 @@ export function buildOptimizedRouteTree(
  */
 export function findInOptimizedTree(
   tree: OptimizedRouteNode,
-  path: string
-): { record: RouteRecordNormalized; params: Record<string, string> } | null {
+  path: string,
+): { record: RouteRecordNormalized, params: Record<string, string> } | null {
   const segments = path.split('/').filter(Boolean)
   const params: Record<string, string> = {}
 
   function traverse(
     node: OptimizedRouteNode,
-    segmentIndex: number
+    segmentIndex: number,
   ): RouteRecordNormalized | null {
     // 如果已经遍历完所有段
     if (segmentIndex >= segments.length) {
@@ -255,7 +257,8 @@ export function findInOptimizedTree(
     const staticChild = node.children.get(segment)
     if (staticChild) {
       const result = traverse(staticChild, segmentIndex + 1)
-      if (result) return result
+      if (result)
+        return result
     }
 
     // 尝试参数匹配
@@ -263,7 +266,8 @@ export function findInOptimizedTree(
       if (child.isParam && key.startsWith(':') && child.paramName) {
         params[child.paramName] = decodeURIComponent(segment)
         const result = traverse(child, segmentIndex + 1)
-        if (result) return result
+        if (result)
+          return result
         delete params[child.paramName] // 回溯
       }
     }
@@ -320,7 +324,7 @@ export interface RoutePerformanceStats {
   /** 缓存命中率 */
   cacheHitRate: number
   /** 最常访问的路由 */
-  mostVisitedRoutes: Array<{ path: string; count: number }>
+  mostVisitedRoutes: Array<{ path: string, count: number }>
 }
 
 /**
@@ -349,10 +353,10 @@ export class PerformanceCollector {
 
   getStats(): RoutePerformanceStats {
     const totalNavigations = this.navigationTimes.length
-    const averageNavigationTime =
-      totalNavigations > 0
-        ? this.navigationTimes.reduce((sum, time) => sum + time, 0) /
-          totalNavigations
+    const averageNavigationTime
+      = totalNavigations > 0
+        ? this.navigationTimes.reduce((sum, time) => sum + time, 0)
+        / totalNavigations
         : 0
 
     const sortedTimes = [...this.navigationTimes].sort((a, b) => a - b)
@@ -360,8 +364,8 @@ export class PerformanceCollector {
     const slowestNavigationTime = sortedTimes[sortedTimes.length - 1] || 0
 
     const totalCacheRequests = this.cacheHits + this.cacheMisses
-    const cacheHitRate =
-      totalCacheRequests > 0 ? this.cacheHits / totalCacheRequests : 0
+    const cacheHitRate
+      = totalCacheRequests > 0 ? this.cacheHits / totalCacheRequests : 0
 
     const mostVisitedRoutes = Array.from(this.routeVisits.entries())
       .sort((a, b) => b[1] - a[1])

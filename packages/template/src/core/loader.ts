@@ -87,7 +87,8 @@ export class TemplateLoader {
         fromCache: false,
         loadTime: Date.now() - startTime,
       }
-    } catch (error) {
+    }
+    catch (error) {
       throw new Error(`Failed to load template: ${cacheKey}`)
     }
   }
@@ -105,7 +106,8 @@ export class TemplateLoader {
 
     try {
       await this.loadTemplate(metadata)
-    } catch (error) {
+    }
+    catch (error) {
       // 预加载失败不影响主流程，静默处理
     }
   }
@@ -117,7 +119,7 @@ export class TemplateLoader {
     const promises = templates.map(template =>
       this.preloadTemplate(template).catch(() => {
         // 预加载失败不影响主流程，静默处理
-      })
+      }),
     )
 
     await Promise.all(promises)
@@ -153,14 +155,16 @@ export class TemplateLoader {
           if (component) {
             return this.wrapComponent(component, path)
           }
-        } catch (error) {
+        }
+        catch (error) {
           lastError = error as Error
           continue
         }
       }
 
       throw lastError || new Error(`无法找到模板组件: ${componentPath}`)
-    } catch (error) {
+    }
+    catch (error) {
       throw error
     }
   }
@@ -178,8 +182,6 @@ export class TemplateLoader {
     // 基于约定生成路径
     return `../templates/${metadata.category}/${metadata.device}/${metadata.template}/index.tsx`
   }
-
-
 
   /**
    * 包装组件为异步组件

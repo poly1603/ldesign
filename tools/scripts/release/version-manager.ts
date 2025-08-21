@@ -90,7 +90,8 @@ function sizeCheck(): void {
   try {
     execSync('pnpm size-check', { stdio: 'inherit' })
     console.log('✅ 包大小检查通过\n')
-  } catch {
+  }
+  catch {
     console.warn('⚠️  包大小检查失败，但继续发布\n')
   }
 }
@@ -232,7 +233,8 @@ export async function release(options: ReleaseOptions = {}): Promise<void> {
     pushToRemote()
 
     console.log('🎉 发布流程完成！')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 发布失败:', (error as Error).message)
     process.exit(1)
   }
@@ -243,7 +245,7 @@ export async function release(options: ReleaseOptions = {}): Promise<void> {
  */
 export async function prerelease(
   tag: string = 'beta',
-  options: ReleaseOptions = {}
+  options: ReleaseOptions = {},
 ): Promise<void> {
   const { skipTests = false, skipBuild = false, dryRun = false } = options
 
@@ -277,7 +279,8 @@ export async function prerelease(
     publishToNpm(tag)
 
     console.log(`🎉 ${tag} 版本发布完成！`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 预发布失败:', (error as Error).message)
     process.exit(1)
   }

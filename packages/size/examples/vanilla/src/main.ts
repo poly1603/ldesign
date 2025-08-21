@@ -24,17 +24,17 @@ let currentMode: SizeMode = 'medium'
 const elements = {
   currentModeEl: document.getElementById('currentMode') as HTMLElement,
   currentModeDisplay: document.querySelector(
-    '.current-mode-display'
+    '.current-mode-display',
   ) as HTMLElement,
   sizeBtns: document.querySelectorAll(
-    '.size-btn'
+    '.size-btn',
   ) as NodeListOf<HTMLButtonElement>,
   managerModeEl: document.getElementById('managerMode') as HTMLElement,
   baseFontSizeEl: document.getElementById('baseFontSize') as HTMLElement,
   baseSpacingEl: document.getElementById('baseSpacing') as HTMLElement,
   cssVariablesEl: document.getElementById('cssVariables') as HTMLElement,
   responsiveLayoutEl: document.getElementById(
-    'responsiveLayout'
+    'responsiveLayout',
   ) as HTMLElement,
   utilsResultEl: document.getElementById('utilsResult') as HTMLElement,
   cssUtilsResultEl: document.getElementById('cssUtilsResult') as HTMLElement,
@@ -69,7 +69,7 @@ function initApp() {
  */
 function bindEventListeners() {
   // 尺寸切换按钮
-  elements.sizeBtns.forEach(btn => {
+  elements.sizeBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
       const mode = btn.dataset.mode as SizeMode
       if (isValidSizeMode(mode)) {
@@ -137,12 +137,12 @@ function updateUI() {
 
   if (elements.currentModeDisplay) {
     elements.currentModeDisplay.textContent = ` (${getSizeModeDisplayName(
-      currentMode
+      currentMode,
     )})`
   }
 
   // 更新按钮状态
-  elements.sizeBtns.forEach(btn => {
+  elements.sizeBtns.forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.mode === currentMode)
   })
 
@@ -263,15 +263,17 @@ function demoCompareMode() {
   const results = comparisons.map(([mode1, mode2]) => {
     const result = compareSizeModes(mode1 as SizeMode, mode2 as SizeMode)
     let comparison = '='
-    if (result < 0) comparison = '<'
-    if (result > 0) comparison = '>'
+    if (result < 0)
+      comparison = '<'
+    if (result > 0)
+      comparison = '>'
 
     return `${mode1} ${comparison} ${mode2}`
   })
 
   if (elements.utilsResultEl) {
     elements.utilsResultEl.innerHTML = `<pre>模式比较结果:\n${results.join(
-      '\n'
+      '\n',
     )}</pre>`
   }
 }
@@ -315,7 +317,7 @@ function demoFormatValue() {
 
   if (elements.cssUtilsResultEl) {
     elements.cssUtilsResultEl.innerHTML = `<pre>值格式化结果:\n${results.join(
-      '\n'
+      '\n',
     )}</pre>`
   }
 }
@@ -325,14 +327,14 @@ function demoFormatValue() {
  */
 function demoParseValue() {
   const testValues = ['16px', '1.5rem', '100%', '0', '-10px']
-  const results = testValues.map(value => {
+  const results = testValues.map((value) => {
     const parsed = parseCSSValue(value)
     return `"${value}" → {number: ${parsed.number}, unit: "${parsed.unit}"}`
   })
 
   if (elements.cssUtilsResultEl) {
     elements.cssUtilsResultEl.innerHTML = `<pre>值解析结果:\n${results.join(
-      '\n'
+      '\n',
     )}</pre>`
   }
 }
@@ -355,7 +357,7 @@ function demoScaleCalc() {
 
   if (elements.cssUtilsResultEl) {
     elements.cssUtilsResultEl.innerHTML = `<pre>缩放比例计算:\n${results.join(
-      '\n'
+      '\n',
     )}</pre>`
   }
 }

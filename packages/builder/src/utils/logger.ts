@@ -3,7 +3,7 @@
  * 统一的日志记录和错误处理
  */
 
-import type { LogLevel, LogEntry, LoggerOptions } from '../types'
+import type { LogEntry, LoggerOptions, LogLevel } from '../types'
 
 export class Logger {
   private readonly name: string
@@ -17,7 +17,7 @@ export class Logger {
       level: 'info',
       timestamp: true,
       colors: true,
-      ...options
+      ...options,
     }
   }
 
@@ -27,8 +27,6 @@ export class Logger {
   static setGlobalLevel(level: LogLevel): void {
     Logger.globalLevel = level
   }
-
-
 
   /**
    * 获取所有日志记录
@@ -88,10 +86,11 @@ export class Logger {
     }
 
     const output = this.formatMessage(level, message)
-    
+
     if (args && args.length > 0) {
       console.log(output, ...args)
-    } else {
+    }
+    else {
       console.log(output)
     }
   }
@@ -104,14 +103,12 @@ export class Logger {
       debug: 0,
       info: 1,
       warn: 2,
-      error: 3
+      error: 3,
     }
 
     const currentLevel = this.options.level || Logger.globalLevel
     return levels[level] >= levels[currentLevel]
   }
-
-
 
   /**
    * 格式化消息
@@ -131,15 +128,15 @@ export class Logger {
     }
 
     const colors: Record<LogLevel, string> = {
-      debug: '\x1b[36m',   // cyan
-      info: '\x1b[34m',    // blue
-      warn: '\x1b[33m',    // yellow
-      error: '\x1b[31m',   // red
+      debug: '\x1B[36m', // cyan
+      info: '\x1B[34m', // blue
+      warn: '\x1B[33m', // yellow
+      error: '\x1B[31m', // red
     }
 
-    const reset = '\x1b[0m'
+    const reset = '\x1B[0m'
     const color = colors[level] || ''
-    
+
     return `${color}${level.toUpperCase()}${reset}`
   }
 
@@ -180,12 +177,12 @@ export class Logger {
     if (ms < 1000) {
       return `${ms}ms`
     }
-    
+
     const seconds = ms / 1000
     if (seconds < 60) {
       return `${seconds.toFixed(1)}s`
     }
-    
+
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
     return `${minutes}m ${remainingSeconds}s`
@@ -215,7 +212,8 @@ export class ProgressBar {
   update(current?: number): void {
     if (current !== undefined) {
       this.current = current
-    } else {
+    }
+    else {
       this.current++
     }
 
@@ -298,7 +296,7 @@ export class ErrorHandler {
   static handleUncaughtException(error: Error): void {
     ErrorHandler.logger.error('未捕获的异常:', error)
     ErrorHandler.logger.error('堆栈跟踪:', error.stack)
-    
+
     // 优雅退出
     process.exit(1)
   }
@@ -309,7 +307,7 @@ export class ErrorHandler {
   static handleUnhandledRejection(reason: any, promise: Promise<any>): void {
     ErrorHandler.logger.error('未处理的Promise拒绝:', reason)
     ErrorHandler.logger.error('Promise:', promise)
-    
+
     // 优雅退出
     process.exit(1)
   }
@@ -319,15 +317,17 @@ export class ErrorHandler {
    */
   static wrapAsync<T extends (...args: any[]) => Promise<any>>(
     fn: T,
-    errorMessage?: string
+    errorMessage?: string,
   ): T {
     return (async (...args: any[]) => {
       try {
         return await fn(...args)
-      } catch (error) {
+      }
+      catch (error) {
         if (errorMessage) {
           ErrorHandler.logger.error(errorMessage, error)
-        } else {
+        }
+        else {
           ErrorHandler.logger.error('异步操作失败:', error)
         }
         throw error
@@ -344,13 +344,17 @@ export class ErrorHandler {
     // 处理常见错误类型
     if (error.message.includes('ENOENT')) {
       message = '文件或目录不存在'
-    } else if (error.message.includes('EACCES')) {
+    }
+    else if (error.message.includes('EACCES')) {
       message = '权限不足'
-    } else if (error.message.includes('EMFILE')) {
+    }
+    else if (error.message.includes('EMFILE')) {
       message = '打开的文件过多'
-    } else if (error.message.includes('ENOTDIR')) {
+    }
+    else if (error.message.includes('ENOTDIR')) {
       message = '不是一个目录'
-    } else if (error.message.includes('EISDIR')) {
+    }
+    else if (error.message.includes('EISDIR')) {
       message = '是一个目录'
     }
 
@@ -367,13 +371,13 @@ export class ErrorHandler {
   static registerGlobalHandlers(): void {
     process.on('uncaughtException', ErrorHandler.handleUncaughtException)
     process.on('unhandledRejection', ErrorHandler.handleUnhandledRejection)
-    
+
     // 处理SIGINT信号（Ctrl+C）
     process.on('SIGINT', () => {
       ErrorHandler.logger.info('收到SIGINT信号，正在退出...')
       process.exit(0)
     })
-    
+
     // 处理SIGTERM信号
     process.on('SIGTERM', () => {
       ErrorHandler.logger.info('收到SIGTERM信号，正在退出...')

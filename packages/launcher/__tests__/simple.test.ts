@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { ViteLauncher, createLauncher } from '../src/index'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createLauncher, ViteLauncher } from '../src/index'
 
-describe('ViteLauncher 简化测试', () => {
+describe('viteLauncher 简化测试', () => {
   let launcher: ViteLauncher
 
   beforeEach(() => {

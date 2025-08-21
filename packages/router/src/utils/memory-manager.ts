@@ -77,11 +77,12 @@ export class WeakRefWrapper<T extends object> {
         this.finalizer = new (globalThis as any).FinalizationRegistry(
           (heldValue: string) => {
             onFinalize?.(heldValue)
-          }
+          },
         ) as FinalizationRegistryLike<string>
         this.finalizer.register(target, key)
       }
-    } else {
+    }
+    else {
       // Fallback: 直接存储引用（不是真正的弱引用）
       this.target = target
       console.warn('WeakRef not supported, using fallback storage')
@@ -103,7 +104,8 @@ export class WeakRefWrapper<T extends object> {
     if (this.finalizer && this.weakRef) {
       try {
         this.finalizer.unregister(this.weakRef as any)
-      } catch {
+      }
+      catch {
         // 忽略清理错误
       }
     }
@@ -124,12 +126,12 @@ export class WeakRefManager {
   createWeakRef<T extends object>(
     target: T,
     key: string,
-    onCleanup?: () => void
+    onCleanup?: () => void,
   ): WeakRefWrapper<T> {
     // 清理已存在的引用
     this.removeWeakRef(key)
 
-    const wrapper = new WeakRefWrapper(target, key, finalizedKey => {
+    const wrapper = new WeakRefWrapper(target, key, (finalizedKey) => {
       this.handleFinalization(finalizedKey)
     })
 
@@ -147,7 +149,8 @@ export class WeakRefManager {
    */
   getWeakRef<T extends object>(key: string): T | undefined {
     const wrapper = this.refs.get(key)
-    if (!wrapper) return undefined
+    if (!wrapper)
+      return undefined
 
     const target = wrapper.get()
     if (!target) {
@@ -164,7 +167,8 @@ export class WeakRefManager {
    */
   removeWeakRef(key: string): boolean {
     const wrapper = this.refs.get(key)
-    if (!wrapper) return false
+    if (!wrapper)
+      return false
 
     wrapper.cleanup()
     this.refs.delete(key)
@@ -190,7 +194,7 @@ export class WeakRefManager {
   /**
    * 获取弱引用统计
    */
-  getStats(): { count: number; keys: string[] } {
+  getStats(): { count: number, keys: string[] } {
     return {
       count: this.refs.size,
       keys: Array.from(this.refs.keys()),
@@ -243,7 +247,7 @@ export class MemoryMonitor {
     callbacks?: {
       onWarning?: (stats: MemoryStats) => void
       onCritical?: (stats: MemoryStats) => void
-    }
+    },
   ) {
     if (thresholds) {
       this.thresholds = { ...this.thresholds, ...thresholds }
@@ -307,11 +311,12 @@ export class MemoryMonitor {
     const cacheMB = this.stats.cacheMemory / (1024 * 1024)
 
     if (
-      totalMB > this.thresholds.critical ||
-      cacheMB > this.thresholds.maxCache
+      totalMB > this.thresholds.critical
+      || cacheMB > this.thresholds.maxCache
     ) {
       this.onCritical?.(this.stats)
-    } else if (totalMB > this.thresholds.warning) {
+    }
+    else if (totalMB > this.thresholds.warning) {
       this.onWarning?.(this.stats)
     }
 
@@ -375,7 +380,7 @@ export class MemoryManager {
 
   constructor(
     thresholds?: Partial<MemoryThresholds>,
-    strategy: CleanupStrategy = 'moderate'
+    strategy: CleanupStrategy = 'moderate',
   ) {
     this.weakRefManager = new WeakRefManager()
     this.memoryMonitor = new MemoryMonitor(thresholds, {

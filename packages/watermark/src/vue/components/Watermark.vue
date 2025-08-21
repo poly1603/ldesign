@@ -33,7 +33,7 @@ const containerRef = ref<HTMLElement>()
 // 注入Provider上下文
 const providerContext = inject<WatermarkProviderContext>(
   'watermarkProvider',
-  {} as WatermarkProviderContext
+  {} as WatermarkProviderContext,
 )
 
 // 合并配置
@@ -100,8 +100,9 @@ function clearError() {
 // 监听配置变化
 watch(
   mergedConfig,
-  async newConfig => {
-    if (!containerRef.value) return
+  async (newConfig) => {
+    if (!containerRef.value)
+      return
 
     try {
       if (isCreated.value) {
@@ -109,30 +110,33 @@ watch(
         if (instance.value) {
           emit('updated', instance.value)
         }
-      } else if (props.immediate) {
+      }
+      else if (props.immediate) {
         await create(newConfig)
         if (instance.value) {
           emit('created', instance.value)
         }
       }
-    } catch (err) {
+    }
+    catch (err) {
       emit('error', err as Error)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 监听实例变化
 watch(instance, (newInstance, oldInstance) => {
   if (newInstance && !oldInstance) {
     emit('created', newInstance)
-  } else if (!newInstance && oldInstance) {
+  }
+  else if (!newInstance && oldInstance) {
     emit('destroyed', oldInstance.id)
   }
 })
 
 // 监听错误
-watch(error, newError => {
+watch(error, (newError) => {
   if (newError) {
     emit('error', newError)
   }
@@ -143,7 +147,8 @@ onMounted(async () => {
   if (props.immediate && containerRef.value) {
     try {
       await create(mergedConfig.value)
-    } catch (err) {
+    }
+    catch (err) {
       emit('error', err as Error)
     }
   }

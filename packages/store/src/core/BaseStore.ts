@@ -17,9 +17,8 @@ import { DECORATOR_METADATA_KEY } from '@/types/decorators'
 export abstract class BaseStore<
   TState extends StateDefinition = StateDefinition,
   TActions extends ActionDefinition = ActionDefinition,
-  TGetters extends GetterDefinition = GetterDefinition
-> implements IBaseStore<TState, TActions, TGetters>
-{
+  TGetters extends GetterDefinition = GetterDefinition,
+> implements IBaseStore<TState, TActions, TGetters> {
   /** Store ID */
   public readonly $id: string
 
@@ -43,7 +42,7 @@ export abstract class BaseStore<
 
   constructor(
     id: string,
-    options?: Partial<StoreOptions<TState, TActions, TGetters>>
+    options?: Partial<StoreOptions<TState, TActions, TGetters>>,
   ) {
     this.$id = id
     this._initializeStore(options)
@@ -66,7 +65,7 @@ export abstract class BaseStore<
 
     metadata
       .filter(meta => meta.type === 'action')
-      .forEach(meta => {
+      .forEach((meta) => {
         const method = (this as any)[meta.key]
         if (typeof method === 'function') {
           actions[meta.key as keyof TActions] = method.bind(this) as any
@@ -85,7 +84,7 @@ export abstract class BaseStore<
 
     metadata
       .filter(meta => meta.type === 'getter')
-      .forEach(meta => {
+      .forEach((meta) => {
         const getter = (this as any)[meta.key]
         if (typeof getter === 'function') {
           getters[meta.key as keyof TGetters] = getter.bind(this) as any
@@ -101,7 +100,8 @@ export abstract class BaseStore<
   $reset(): void {
     if (this._store && this._initialState) {
       this._store.$patch(this._initialState)
-    } else {
+    }
+    else {
       this._store?.$reset()
     }
   }
@@ -176,7 +176,7 @@ export abstract class BaseStore<
    * 初始化 Store
    */
   private _initializeStore(
-    options?: Partial<StoreOptions<TState, TActions, TGetters>>
+    options?: Partial<StoreOptions<TState, TActions, TGetters>>,
   ): void {
     const metadata = this._getDecoratorMetadata()
 
@@ -208,7 +208,7 @@ export abstract class BaseStore<
    */
   private _buildState(
     metadata: DecoratorMetadata[],
-    customState?: () => TState
+    customState?: () => TState,
   ): () => TState {
     return () => {
       const state = customState?.() || ({} as TState)
@@ -216,7 +216,7 @@ export abstract class BaseStore<
       // 添加装饰器定义的状态
       metadata
         .filter(meta => meta.type === 'state')
-        .forEach(meta => {
+        .forEach((meta) => {
           const value = (this as any)[meta.key]
           if (value !== undefined) {
             ;(state as any)[meta.key] = value
@@ -232,13 +232,13 @@ export abstract class BaseStore<
    */
   private _buildActions(
     metadata: DecoratorMetadata[],
-    customActions?: TActions
+    customActions?: TActions,
   ): TActions {
     const actions = { ...customActions } as TActions
 
     metadata
       .filter(meta => meta.type === 'action')
-      .forEach(meta => {
+      .forEach((meta) => {
         const method = (this as any)[meta.key]
         if (typeof method === 'function') {
           // 绑定 this 上下文并包装方法以支持 $onAction
@@ -257,13 +257,13 @@ export abstract class BaseStore<
    */
   private _buildGetters(
     metadata: DecoratorMetadata[],
-    customGetters?: TGetters
+    customGetters?: TGetters,
   ): TGetters {
     const getters = { ...customGetters } as TGetters
 
     metadata
       .filter(meta => meta.type === 'getter')
-      .forEach(meta => {
+      .forEach((meta) => {
         const getter = (this as any)[meta.key]
         if (typeof getter === 'function') {
           getters[meta.key as keyof TGetters] = getter.bind(this) as any
@@ -278,8 +278,8 @@ export abstract class BaseStore<
    */
   private _getDecoratorMetadata(): DecoratorMetadata[] {
     if (!this._cachedMetadata) {
-      this._cachedMetadata =
-        Reflect.getMetadata(DECORATOR_METADATA_KEY, this.constructor) || []
+      this._cachedMetadata
+        = Reflect.getMetadata(DECORATOR_METADATA_KEY, this.constructor) || []
     }
     return this._cachedMetadata!
   }

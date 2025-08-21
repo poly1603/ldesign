@@ -3,15 +3,15 @@
  * 处理项目构建逻辑
  */
 
-import path from 'path'
+import type { BuildMode, BuildOptions, OutputFormat } from '../../types'
+import path from 'node:path'
 import chalk from 'chalk'
 import ora from 'ora'
-import { RollupBuilder } from '../../core/rollup-builder'
-import { ProjectScanner } from '../../core/project-scanner'
 import { PluginConfigurator } from '../../core/plugin-configurator'
-import { Logger } from '../../utils/logger'
+import { ProjectScanner } from '../../core/project-scanner'
+import { RollupBuilder } from '../../core/rollup-builder'
 import { FileUtils } from '../../utils'
-import type { BuildOptions, OutputFormat, BuildMode } from '../../types'
+import { Logger } from '../../utils/logger'
 
 const logger = new Logger('Build')
 
@@ -54,12 +54,14 @@ export class BuildCommand {
       if (result.success) {
         // 显示构建成功信息
         this.showBuildSuccess(result, Date.now() - startTime)
-      } else {
+      }
+      else {
         // 显示构建失败信息
         this.showBuildFailure(result)
         process.exit(1)
       }
-    } catch (error) {
+    }
+    catch (error) {
       spinner.stop()
       logger.error('构建失败:', error)
       process.exit(1)
@@ -76,7 +78,8 @@ export class BuildCommand {
     let inputPath: string | string[]
     if (input) {
       inputPath = path.resolve(root, input)
-    } else {
+    }
+    else {
       // 自动检测入口文件
       inputPath = await this.detectEntryFiles(root)
     }

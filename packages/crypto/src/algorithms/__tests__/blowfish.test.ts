@@ -55,7 +55,7 @@ describe('blowfish 加密算法', () => {
     it('应该处理不同的加密模式', () => {
       const modes = ['CBC', 'ECB'] as const
 
-      modes.forEach(mode => {
+      modes.forEach((mode) => {
         const result = encryptor.encrypt(testData, testKey, { mode })
         expect(result.success).toBe(true)
         expect(result.mode).toBe(mode)
@@ -101,8 +101,8 @@ describe('blowfish 加密算法', () => {
     })
 
     it('应该处理长密钥', () => {
-      const longKey =
-        'this_is_a_very_long_key_for_testing_purposes_and_more_content'
+      const longKey
+        = 'this_is_a_very_long_key_for_testing_purposes_and_more_content'
       const result = encryptor.encrypt(testData, longKey)
       expect(result.success).toBe(true)
     })
@@ -130,8 +130,8 @@ describe('blowfish 加密算法', () => {
 
       expect(
         warnings.some(w =>
-          w.includes('Blowfish algorithm is not natively supported')
-        )
+          w.includes('Blowfish algorithm is not natively supported'),
+        ),
       ).toBe(true)
 
       // 恢复原始的 console.warn

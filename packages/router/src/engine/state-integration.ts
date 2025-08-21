@@ -56,7 +56,7 @@ export class RouterStateManager {
   constructor(
     stateManager: any,
     router: Router,
-    config: RouterStateConfig = {}
+    config: RouterStateConfig = {},
   ) {
     this.stateManager = stateManager
     this.router = router
@@ -119,7 +119,7 @@ export class RouterStateManager {
     })
 
     // 监听错误
-    const unsubscribeError = this.router.onError(error => {
+    const unsubscribeError = this.router.onError((error) => {
       this.setError(error)
       this.setNavigating(false)
     })
@@ -127,7 +127,7 @@ export class RouterStateManager {
     this.unsubscribers.push(
       unsubscribeRoute,
       unsubscribeBeforeEach,
-      unsubscribeError
+      unsubscribeError,
     )
   }
 
@@ -135,7 +135,8 @@ export class RouterStateManager {
    * 设置状态同步
    */
   private setupStateSync(): void {
-    if (!this.config.enableSync) return
+    if (!this.config.enableSync)
+      return
 
     // 监听状态变化并持久化
     if (this.config.persistent) {
@@ -143,7 +144,7 @@ export class RouterStateManager {
         'router',
         (newState: RouterState) => {
           this.persistState(newState)
-        }
+        },
       )
       this.unsubscribers.push(unsubscribe)
     }
@@ -215,9 +216,10 @@ export class RouterStateManager {
 
       localStorage.setItem(
         this.config.persistentKey!,
-        JSON.stringify(persistentData)
+        JSON.stringify(persistentData),
       )
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to persist router state:', error)
     }
   }
@@ -228,7 +230,8 @@ export class RouterStateManager {
   private restorePersistedState(): void {
     try {
       const persistentData = localStorage.getItem(this.config.persistentKey!)
-      if (!persistentData) return
+      if (!persistentData)
+        return
 
       const data = JSON.parse(persistentData)
       const now = Date.now()
@@ -243,7 +246,8 @@ export class RouterStateManager {
       if (data.history && Array.isArray(data.history)) {
         this.stateManager.set('router.history', data.history)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to restore router state:', error)
       localStorage.removeItem(this.config.persistentKey!)
     }
@@ -296,7 +300,8 @@ export class RouterStateManager {
    */
   goBack(): void {
     const history = this.getHistory()
-    if (history.length === 0) return
+    if (history.length === 0)
+      return
 
     const previousRoute = history[0]
     const currentRoute = this.getCurrentRoute()
@@ -320,7 +325,8 @@ export class RouterStateManager {
    */
   goForward(): void {
     const forwardHistory = this.getForwardHistory()
-    if (forwardHistory.length === 0) return
+    if (forwardHistory.length === 0)
+      return
 
     const nextRoute = forwardHistory[0]
     const currentRoute = this.getCurrentRoute()
@@ -365,7 +371,7 @@ export class RouterStateManager {
 export function createRouterStateManager(
   stateManager: any,
   router: Router,
-  config?: RouterStateConfig
+  config?: RouterStateConfig,
 ): RouterStateManager {
   return new RouterStateManager(stateManager, router, config)
 }

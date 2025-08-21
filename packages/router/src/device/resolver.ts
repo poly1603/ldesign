@@ -27,13 +27,13 @@ export class DeviceComponentResolver {
    */
   resolveComponent(
     record: RouteRecordNormalized,
-    viewName: string = 'default'
+    viewName: string = 'default',
   ): DeviceComponentResolution | null {
     const currentDevice = this.getCurrentDevice()
 
     // 1. 优先检查设备特定组件
-    const deviceComponentResult =
-      this.resolveDeviceSpecificComponentWithFallback(record, currentDevice)
+    const deviceComponentResult
+      = this.resolveDeviceSpecificComponentWithFallback(record, currentDevice)
     if (deviceComponentResult) {
       return {
         component: deviceComponentResult.component,
@@ -73,7 +73,7 @@ export class DeviceComponentResolver {
   // 解析设备特定组件，预留扩展接口
   private resolveDeviceSpecificComponent(
     record: RouteRecordNormalized,
-    device: DeviceType
+    device: DeviceType,
   ): RouteComponent | null {
     // 检查路由记录是否有设备特定组件配置
     const deviceComponents = (record as any).deviceComponents
@@ -102,7 +102,7 @@ export class DeviceComponentResolver {
    */
   private resolveDeviceSpecificComponentWithFallback(
     record: RouteRecordNormalized,
-    device: DeviceType
+    device: DeviceType,
   ): {
     component: RouteComponent
     deviceType: DeviceType
@@ -142,7 +142,7 @@ export class DeviceComponentResolver {
    */
   private resolveRegularComponent(
     record: RouteRecordNormalized,
-    viewName: string
+    viewName: string,
   ): RouteComponent | null {
     if (!record.components) {
       return null
@@ -155,7 +155,7 @@ export class DeviceComponentResolver {
    * 创建模板组件
    */
   private createTemplateComponent(
-    record: RouteRecordNormalized
+    record: RouteRecordNormalized,
   ): RouteComponent {
     // 返回一个异步组件，延迟加载模板
     return async () => {
@@ -167,9 +167,10 @@ export class DeviceComponentResolver {
         return await templateResolver.resolveTemplate(
           record.meta.templateCategory || 'default',
           record.meta.template!,
-          this.getCurrentDevice()
+          this.getCurrentDevice(),
         )
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Failed to load template component:', error)
         // 返回错误组件
         return this.createErrorComponent(error as Error)
@@ -199,14 +200,14 @@ export class DeviceComponentResolver {
    */
   isComponentSupportedOnDevice(
     record: RouteRecordNormalized,
-    device: DeviceType
+    device: DeviceType,
   ): boolean {
     // 如果有设备特定组件，检查是否支持当前设备
     const deviceComponents = (record as any).deviceComponents
     if (deviceComponents) {
       return (
-        !!deviceComponents[device] ||
-        this.hasAnyDeviceComponent(deviceComponents)
+        !!deviceComponents[device]
+        || this.hasAnyDeviceComponent(deviceComponents)
       )
     }
 
@@ -218,7 +219,7 @@ export class DeviceComponentResolver {
    * 检查是否有任何设备组件可用作回退
    */
   private hasAnyDeviceComponent(
-    deviceComponents: Record<string, RouteComponent>
+    deviceComponents: Record<string, RouteComponent>,
   ): boolean {
     const devices: DeviceType[] = ['desktop', 'tablet', 'mobile']
     return devices.some(device => !!deviceComponents[device])
@@ -229,7 +230,7 @@ export class DeviceComponentResolver {
  * 创建设备组件解析器的便捷函数
  */
 export function createDeviceComponentResolver(
-  getCurrentDevice: () => DeviceType
+  getCurrentDevice: () => DeviceType,
 ): DeviceComponentResolver {
   return new DeviceComponentResolver(getCurrentDevice)
 }

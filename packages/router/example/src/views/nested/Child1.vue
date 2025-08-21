@@ -136,16 +136,24 @@ onUnmounted(() => {
             v-model="inputValue"
             class="input"
             placeholder="输入一些内容..."
-          />
+          >
         </div>
 
         <div class="control-group">
           <label>选择器:</label>
           <select v-model="selectedOption" class="input">
-            <option value="">请选择...</option>
-            <option value="option1">选项 1</option>
-            <option value="option2">选项 2</option>
-            <option value="option3">选项 3</option>
+            <option value="">
+              请选择...
+            </option>
+            <option value="option1">
+              选项 1
+            </option>
+            <option value="option2">
+              选项 2
+            </option>
+            <option value="option3">
+              选项 3
+            </option>
           </select>
         </div>
       </div>

@@ -86,16 +86,16 @@ describe('cSSVariableGenerator', () => {
       const variables = generator.generateVariables(mediumSizeConfig)
 
       expect(variables['--test-font-size-base']).toBe(
-        mediumSizeConfig.fontSize.base
+        mediumSizeConfig.fontSize.base,
       )
       expect(variables['--test-spacing-base']).toBe(
-        mediumSizeConfig.spacing.base
+        mediumSizeConfig.spacing.base,
       )
       expect(variables['--test-button-height-medium']).toBe(
-        mediumSizeConfig.component.buttonHeight.medium
+        mediumSizeConfig.component.buttonHeight.medium,
       )
       expect(variables['--test-border-radius-base']).toBe(
-        mediumSizeConfig.borderRadius.base
+        mediumSizeConfig.borderRadius.base,
       )
       expect(variables['--test-shadow-base']).toBe(mediumSizeConfig.shadow.base)
     })
@@ -120,7 +120,7 @@ describe('cSSVariableGenerator', () => {
       const variables = { '--test-var': 'value' }
       const cssString = generator.generateCSSString(
         variables,
-        '.custom-selector'
+        '.custom-selector',
       )
 
       expect(cssString).toContain('.custom-selector {')

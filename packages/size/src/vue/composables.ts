@@ -71,9 +71,11 @@ export function useSize(options: UseSizeOptions = {}): UseSizeReturn {
   let sizeManager: SizeManager
   if (global) {
     sizeManager = globalSizeManager
-  } else if (injectedManager) {
+  }
+  else if (injectedManager) {
     sizeManager = injectedManager
-  } else {
+  }
+  else {
     sizeManager = createSizeManager({
       defaultMode: initialMode,
       autoInject,
@@ -86,7 +88,7 @@ export function useSize(options: UseSizeOptions = {}): UseSizeReturn {
 
   // 计算属性
   const currentModeDisplayName = computed(() =>
-    getSizeModeDisplayName(currentMode.value)
+    getSizeModeDisplayName(currentMode.value),
   )
 
   // 监听尺寸变化
@@ -186,7 +188,7 @@ export function useSizeSwitcher(options: UseSizeOptions = {}) {
  * 使用尺寸响应式 Hook
  */
 export function useSizeResponsive(
-  breakpoints?: Partial<Record<SizeMode, boolean>>
+  breakpoints?: Partial<Record<SizeMode, boolean>>,
 ) {
   const { currentMode } = useSize({ global: true })
 
@@ -225,7 +227,7 @@ export function useSizeResponsive(
  */
 export function useSizeWatcher(
   callback: (event: SizeChangeEvent) => void,
-  options: UseSizeOptions = {}
+  options: UseSizeOptions = {},
 ) {
   const { sizeManager } = useSize(options)
 

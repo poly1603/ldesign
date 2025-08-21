@@ -449,7 +449,7 @@
       }
     }
 
-    input:checked+&-mark {
+    input:checked + &-mark {
       background: var(--color-primary, #2563eb);
       border-color: var(--color-primary, #2563eb);
 
@@ -518,7 +518,7 @@
     }
   }
 
-  &__checkbox input:checked+&__checkbox-mark {
+  &__checkbox input:checked + &__checkbox-mark {
     background: #667eea;
     border-color: #667eea;
 
@@ -878,7 +878,6 @@
 }
 
 @keyframes logoFloat {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -890,7 +889,6 @@
 }
 
 @keyframes iconFloat {
-
   0%,
   100% {
     transform: translateY(0px) scale(1);

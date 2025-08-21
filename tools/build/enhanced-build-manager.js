@@ -74,7 +74,8 @@ export class EnhancedBuildManager {
 
       // 5. 生成最终报告
       return this.generateFinalReport(packageJson.name)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`❌ 构建失败: ${error.message}`)
       throw error
     }
@@ -92,10 +93,12 @@ export class EnhancedBuildManager {
       if (result.exitCode === 0) {
         console.log('✅ 构建完成')
         this.results.build = { success: true, message: '构建成功' }
-      } else {
+      }
+      else {
         throw new Error(`构建失败: ${result.stderr}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.results.build = { success: false, message: error.message }
       throw error
     }
@@ -120,7 +123,8 @@ export class EnhancedBuildManager {
       if (!result.success) {
         throw new Error('构建产物校验失败')
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.results.validation = { success: false, errors: [error.message] }
       throw error
     }
@@ -141,7 +145,8 @@ export class EnhancedBuildManager {
       if (!result.success) {
         throw new Error('TypeScript 类型检查失败')
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.results.typeCheck = { success: false, errors: [error.message] }
       throw error
     }
@@ -162,7 +167,8 @@ export class EnhancedBuildManager {
       if (!result.success) {
         throw new Error('Web 端测试失败')
       }
-    } catch (error) {
+    }
+    catch (error) {
       this.results.webTest = { success: false, errors: [error.message] }
       throw error
     }
@@ -177,7 +183,8 @@ export class EnhancedBuildManager {
     for (const error of errors) {
       if (error.includes('package.json')) {
         await this.fixPackageJsonExports(packageDir)
-      } else if (error.includes('缺少构建产物文件')) {
+      }
+      else if (error.includes('缺少构建产物文件')) {
         console.log('  ⚠️  需要重新构建，无法自动修复')
       }
     }
@@ -219,10 +226,11 @@ export class EnhancedBuildManager {
 
       require('node:fs').writeFileSync(
         packageJsonPath,
-        JSON.stringify(packageJson, null, 2)
+        JSON.stringify(packageJson, null, 2),
       )
       console.log('  ✅ package.json exports 配置已修复')
-    } catch (error) {
+    }
+    catch (error) {
       console.log(`  ❌ 修复 package.json 失败: ${error.message}`)
     }
   }
@@ -231,7 +239,7 @@ export class EnhancedBuildManager {
    * 执行命令
    */
   execCommand(command, args, cwd) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // Windows 兼容性处理
       const isWindows = process.platform === 'win32'
       const cmd = isWindows && command === 'pnpm' ? 'pnpm.cmd' : command
@@ -246,16 +254,16 @@ export class EnhancedBuildManager {
       let stderr = ''
 
       if (!this.options.verbose) {
-        child.stdout?.on('data', data => {
+        child.stdout?.on('data', (data) => {
           stdout += data.toString()
         })
 
-        child.stderr?.on('data', data => {
+        child.stderr?.on('data', (data) => {
           stderr += data.toString()
         })
       }
 
-      child.on('close', exitCode => {
+      child.on('close', (exitCode) => {
         resolve({ exitCode, stdout, stderr })
       })
     })
@@ -269,7 +277,7 @@ export class EnhancedBuildManager {
     console.log('='.repeat(60))
 
     const allSuccess = Object.values(this.results).every(
-      result => result === null || result.success
+      result => result === null || result.success,
     )
 
     // 构建结果
@@ -294,7 +302,8 @@ export class EnhancedBuildManager {
 
     if (allSuccess) {
       console.log('🎉 所有检查通过！包构建成功！')
-    } else {
+    }
+    else {
       console.log('❌ 构建过程中发现问题，请查看上述报告')
     }
 
@@ -345,7 +354,8 @@ export async function enhancedBuild(packageDir = process.cwd(), options = {}) {
     }
 
     return result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 增强构建失败:', error.message)
     process.exit(1)
   }

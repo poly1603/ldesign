@@ -45,8 +45,6 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
   const error = ref<Error | null>(null)
   const templates = ref<TemplateMetadata[]>([])
 
-
-
   // 计算属性 - 根据选项过滤模板
   const availableTemplates = computed(() => {
     let filtered = templates.value
@@ -83,10 +81,12 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const result = await manager.scanTemplates()
       templates.value = result.templates
       return result
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -100,10 +100,12 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       const result = await manager.render(options)
       currentTemplate.value = result.metadata
       return result
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -210,7 +212,8 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       if (options.debug) {
         console.log(`✅ 成功切换到 ${newDevice} 设备模板: ${targetTemplate.template}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 自动切换模板失败:', error)
 
       // 如果切换失败，尝试使用默认模板
@@ -220,7 +223,8 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
           await switchTemplate(category, newDevice, defaultTemplate.template)
           console.log(`🔄 回退到默认模板: ${defaultTemplate.template}`)
         }
-      } catch (fallbackError) {
+      }
+      catch (fallbackError) {
         console.error('❌ 回退模板也失败了:', fallbackError)
       }
     }
@@ -261,7 +265,8 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
     const device = currentDevice.value
     const category = options.category
 
-    if (!category) return
+    if (!category)
+      return
 
     // 1. 优先使用 initialTemplate 配置
     if (options.initialTemplate) {
@@ -276,7 +281,7 @@ export function useTemplate(options: UseTemplateOptions = {}): UseTemplateReturn
       if (savedSelection) {
         // 检查保存的模板是否仍然可用
         const isTemplateAvailable = templates.value.some(
-          (t: any) => t.category === category && t.device === device && t.template === savedSelection.template
+          (t: any) => t.category === category && t.device === device && t.template === savedSelection.template,
         )
 
         if (isTemplateAvailable) {

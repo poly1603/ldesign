@@ -3,19 +3,19 @@
  * 为Vue提供PDF预览组件支持
  */
 
+import { defaultPdfApi } from '../api/pdf-api'
+import { createPdfError, ErrorCode } from '../utils/error-handler'
 import { BaseAdapter } from './base-adapter'
 import {
-  FrameworkType,
   type AdapterConfig,
+  type ComponentMethods,
   type ComponentProps,
+  type ComponentState,
   type EventHandlers,
+  FrameworkType,
   type LifecycleHooks,
   type RenderContext,
-  type ComponentState,
-  type ComponentMethods
 } from './types'
-import { createPdfError, ErrorCode } from '../utils/error-handler'
-import { defaultPdfApi } from '../api/pdf-api'
 
 /**
  * Vue组件实例接口
@@ -66,25 +66,25 @@ export class VueAdapter extends BaseAdapter {
   createComponent(
     props: ComponentProps,
     handlers?: EventHandlers,
-    hooks?: LifecycleHooks
+    hooks?: LifecycleHooks,
   ): VueComponentInstance {
     if (!this._initialized) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Vue adapter not initialized'
+        'Vue adapter not initialized',
       )
     }
 
     // 创建组件状态
     const state = this.createComponentState()
-    
+
     // 创建临时容器用于初始化渲染上下文
     const tempContainer = document.createElement('div')
     const context = this.createRenderContext(tempContainer)
-    
+
     // 创建组件方法
     const methods = this.createComponentMethods(state, context, handlers)
-    
+
     // 创建Vue组件实例
     const instance: VueComponentInstance = {
       state,
@@ -93,7 +93,7 @@ export class VueAdapter extends BaseAdapter {
       handlers,
       hooks,
       mounted: false,
-      cleanup: []
+      cleanup: [],
     }
 
     // 注册组件实例
@@ -114,7 +114,7 @@ export class VueAdapter extends BaseAdapter {
     if (!instance) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Invalid Vue component instance'
+        'Invalid Vue component instance',
       )
     }
 
@@ -143,11 +143,12 @@ export class VueAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[Vue Adapter] Component mounted to container')
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.RENDER_ERROR,
         'Failed to mount Vue component',
-        error
+        error,
       )
       this._handleError(pdfError)
       throw pdfError
@@ -162,7 +163,7 @@ export class VueAdapter extends BaseAdapter {
     if (!instance) {
       throw createPdfError(
         ErrorCode.VALIDATION_ERROR,
-        'Invalid Vue component instance'
+        'Invalid Vue component instance',
       )
     }
 
@@ -177,14 +178,14 @@ export class VueAdapter extends BaseAdapter {
 
       // 更新页码
       if (props.page && props.page !== instance.state.currentPage) {
-        instance.methods.goToPage(props.page).catch(error => {
+        instance.methods.goToPage(props.page).catch((error) => {
           this._handleError(error)
         })
       }
 
       // 更新缩放比例
       if (props.scale && props.scale !== instance.state.scale) {
-        instance.methods.setScale(props.scale).catch(error => {
+        instance.methods.setScale(props.scale).catch((error) => {
           this._handleError(error)
         })
       }
@@ -192,7 +193,7 @@ export class VueAdapter extends BaseAdapter {
       // 更新渲染选项
       if (props.renderOptions) {
         // 重新渲染当前页面
-        this.renderCurrentPage(instance.state, instance.context).catch(error => {
+        this.renderCurrentPage(instance.state, instance.context).catch((error) => {
           this._handleError(error)
         })
       }
@@ -212,11 +213,12 @@ export class VueAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[Vue Adapter] Component props updated:', props)
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.VALIDATION_ERROR,
         'Failed to update Vue component props',
-        error
+        error,
       )
       this._handleError(pdfError)
     }
@@ -236,10 +238,11 @@ export class VueAdapter extends BaseAdapter {
       instance.hooks?.beforeUnmount?.()
 
       // 执行清理函数
-      instance.cleanup.forEach(cleanup => {
+      instance.cleanup.forEach((cleanup) => {
         try {
           cleanup()
-        } catch (error) {
+        }
+        catch (error) {
           console.error('[Vue Adapter] Cleanup error:', error)
         }
       })
@@ -263,11 +266,12 @@ export class VueAdapter extends BaseAdapter {
       if (this._config.debug) {
         console.warn('[Vue Adapter] Component unmounted')
       }
-    } catch (error) {
+    }
+    catch (error) {
       const pdfError = createPdfError(
         ErrorCode.UNKNOWN_ERROR,
         'Failed to unmount Vue component',
-        error
+        error,
       )
       this._handleError(pdfError)
     }
@@ -279,7 +283,7 @@ export class VueAdapter extends BaseAdapter {
   protected doDestroy(): void {
     // 清理所有Vue实例
     this._vueInstances = new WeakMap()
-    
+
     if (this._config.debug) {
       console.warn('[Vue Adapter] Destroyed')
     }
@@ -307,7 +311,8 @@ export class VueAdapter extends BaseAdapter {
       if (instance.mounted) {
         await this.renderCurrentPage(instance.state, instance.context)
       }
-    } catch (error) {
+    }
+    catch (error) {
       instance.state.loading = false
       instance.state.error = error as Error
       instance.handlers?.onLoadingChange?.(false)
@@ -325,8 +330,8 @@ export function createVueAdapter(config?: Partial<AdapterConfig>): VueAdapter {
     framework: FrameworkType.VUE,
     componentName: 'PdfViewer',
     debug: false,
-    ...config
+    ...config,
   }
-  
+
   return new VueAdapter(defaultConfig)
 }

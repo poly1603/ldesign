@@ -1,16 +1,16 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import dts from 'vite-plugin-dts';
+import { resolve } from 'node:path'
+import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
 
 export default defineConfig({
   build: {
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        cli: resolve(__dirname, 'src/cli.ts')
+        cli: resolve(__dirname, 'src/cli.ts'),
       },
       name: 'ViteLauncher',
-      formats: ['es', 'cjs']
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
       external: [
@@ -28,31 +28,31 @@ export default defineConfig({
         'fast-glob',
         'picocolors',
         'esbuild',
-        'rollup'
+        'rollup',
       ],
       output: {
         globals: {
-          vite: 'Vite'
-        }
-      }
+          vite: 'Vite',
+        },
+      },
     },
     target: 'node14',
     minify: false,
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     dts({
       include: ['src/**/*'],
       exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
-      rollupTypes: true
-    })
+      rollupTypes: true,
+    }),
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   define: {
-    __VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0')
-  }
-});
+    __VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0'),
+  },
+})

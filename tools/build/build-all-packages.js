@@ -55,14 +55,15 @@ class AllPackagesBuildManager {
         if (existsSync(packageJsonPath)) {
           try {
             const packageJson = JSON.parse(
-              readFileSync(packageJsonPath, 'utf-8')
+              readFileSync(packageJsonPath, 'utf-8'),
             )
             packages.push({
               name: packageJson.name || entry.name,
               path: packageDir,
               packageJson,
             })
-          } catch (error) {
+          }
+          catch (error) {
             console.warn(`⚠️  跳过无效的 package.json: ${packageJsonPath}`)
           }
         }
@@ -86,7 +87,8 @@ class AllPackagesBuildManager {
 
     if (this.options.parallel) {
       await this.buildPackagesInParallel(packages)
-    } else {
+    }
+    else {
       await this.buildPackagesSequentially(packages)
     }
 
@@ -104,7 +106,8 @@ class AllPackagesBuildManager {
       try {
         const result = await this.buildSinglePackage(pkg)
         this.results.push(result)
-      } catch (error) {
+      }
+      catch (error) {
         this.results.push({
           success: false,
           packageName: pkg.name,
@@ -131,7 +134,8 @@ class AllPackagesBuildManager {
         const result = await this.buildSinglePackage(pkg)
         console.log(`[${index + 1}/${packages.length}] ✅ 完成: ${pkg.name}`)
         return result
-      } catch (error) {
+      }
+      catch (error) {
         console.log(`[${index + 1}/${packages.length}] ❌ 失败: ${pkg.name}`)
         return {
           success: false,
@@ -179,14 +183,14 @@ class AllPackagesBuildManager {
 
     if (successful.length > 0) {
       console.log('\n✅ 构建成功的包:')
-      successful.forEach(result => {
+      successful.forEach((result) => {
         console.log(`  • ${result.packageName}`)
       })
     }
 
     if (failed.length > 0) {
       console.log('\n❌ 构建失败的包:')
-      failed.forEach(result => {
+      failed.forEach((result) => {
         console.log(`  • ${result.packageName}: ${result.error}`)
       })
     }
@@ -200,13 +204,13 @@ class AllPackagesBuildManager {
       const webTestResults = successful.filter(r => r.results?.webTest)
 
       console.log(
-        `  📋 构建产物校验: ${validationResults.length}/${successful.length} 通过`
+        `  📋 构建产物校验: ${validationResults.length}/${successful.length} 通过`,
       )
       console.log(
-        `  🔷 TypeScript 检查: ${typeCheckResults.length}/${successful.length} 通过`
+        `  🔷 TypeScript 检查: ${typeCheckResults.length}/${successful.length} 通过`,
       )
       console.log(
-        `  🌐 Web 端测试: ${webTestResults.length}/${successful.length} 通过`
+        `  🌐 Web 端测试: ${webTestResults.length}/${successful.length} 通过`,
       )
     }
 
@@ -214,7 +218,8 @@ class AllPackagesBuildManager {
 
     if (failed.length === 0) {
       console.log('🎉 所有包构建成功！')
-    } else {
+    }
+    else {
       console.log(`⚠️  ${failed.length} 个包构建失败，请查看上述错误信息`)
     }
 
@@ -231,8 +236,10 @@ class AllPackagesBuildManager {
    * 格式化时间
    */
   formatTime(ms) {
-    if (ms < 1000) return `${ms}ms`
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+    if (ms < 1000)
+      return `${ms}ms`
+    if (ms < 60000)
+      return `${(ms / 1000).toFixed(1)}s`
     return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
   }
 }
@@ -250,7 +257,8 @@ export async function buildAllPackages(options = {}) {
     }
 
     return result
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 构建所有包失败:', error.message)
     process.exit(1)
   }

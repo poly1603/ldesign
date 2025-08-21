@@ -30,7 +30,8 @@ function checkFile(filePath, description) {
   if (fs.existsSync(fullPath)) {
     log(`✅ ${description}`, 'green')
     return true
-  } else {
+  }
+  else {
     log(`❌ ${description}`, 'red')
     return false
   }
@@ -70,7 +71,8 @@ function main() {
     log('1. cd packages/theme/examples/vue-demo', 'reset')
     log('2. pnpm install', 'reset')
     log('3. pnpm dev', 'reset')
-  } else {
+  }
+  else {
     log('❌ 部分文件缺失，请检查项目创建过程', 'red')
   }
 }

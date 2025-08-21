@@ -13,7 +13,8 @@ export class LocalStorage implements Storage {
       return typeof localStorage !== 'undefined'
         ? localStorage.getItem(key)
         : null
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -23,7 +24,8 @@ export class LocalStorage implements Storage {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(key, value)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set localStorage item:', error)
     }
   }
@@ -33,7 +35,8 @@ export class LocalStorage implements Storage {
       if (typeof localStorage !== 'undefined') {
         localStorage.removeItem(key)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to remove localStorage item:', error)
     }
   }
@@ -43,7 +46,8 @@ export class LocalStorage implements Storage {
       if (typeof localStorage !== 'undefined') {
         localStorage.clear()
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear localStorage:', error)
     }
   }
@@ -58,7 +62,8 @@ export class SessionStorage implements Storage {
       return typeof sessionStorage !== 'undefined'
         ? sessionStorage.getItem(key)
         : null
-    } catch {
+    }
+    catch {
       return null
     }
   }
@@ -68,7 +73,8 @@ export class SessionStorage implements Storage {
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.setItem(key, value)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to set sessionStorage item:', error)
     }
   }
@@ -78,7 +84,8 @@ export class SessionStorage implements Storage {
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.removeItem(key)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to remove sessionStorage item:', error)
     }
   }
@@ -88,7 +95,8 @@ export class SessionStorage implements Storage {
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.clear()
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Failed to clear sessionStorage:', error)
     }
   }
@@ -323,7 +331,7 @@ export class LRUCacheImpl<T = unknown> implements LRUCache<T> {
  * 创建存储实例
  */
 export function createStorage(
-  type: 'localStorage' | 'sessionStorage' | 'memory' | 'cookie' | 'none'
+  type: 'localStorage' | 'sessionStorage' | 'memory' | 'cookie' | 'none',
 ): Storage {
   switch (type) {
     case 'localStorage':
@@ -345,7 +353,7 @@ export function createStorage(
  * 创建 LRU 缓存实例
  */
 export function createLRUCache<T = unknown>(
-  options?: CacheOptions
+  options?: CacheOptions,
 ): LRUCache<T> {
   return new LRUCacheImpl<T>(options)
 }

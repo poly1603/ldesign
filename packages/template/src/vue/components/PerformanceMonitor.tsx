@@ -66,9 +66,12 @@ export const PerformanceMonitor = defineComponent({
     // 计算性能等级
     const performanceLevel = computed(() => {
       const { fps, memory } = performanceData.value
-      if (fps >= 55 && memory.percentage < 70) return 'excellent'
-      if (fps >= 45 && memory.percentage < 80) return 'good'
-      if (fps >= 30 && memory.percentage < 90) return 'fair'
+      if (fps >= 55 && memory.percentage < 70)
+        return 'excellent'
+      if (fps >= 45 && memory.percentage < 80)
+        return 'good'
+      if (fps >= 30 && memory.percentage < 90)
+        return 'fair'
       return 'poor'
     })
 
@@ -194,7 +197,8 @@ export const PerformanceMonitor = defineComponent({
               <span class="metric-label">内存:</span>
               <span class="metric-value">
                 {memory.used}
-                MB ({memory.percentage}
+                MB (
+                {memory.percentage}
                 %)
               </span>
             </div>
@@ -219,7 +223,10 @@ export const PerformanceMonitor = defineComponent({
 
                 <div class="performance-metric">
                   <span class="metric-label">缓存:</span>
-                  <span class="metric-value">{cacheHitRate.toFixed(1)}%</span>
+                  <span class="metric-value">
+                    {cacheHitRate.toFixed(1)}
+                    %
+                  </span>
                 </div>
               </>
             )}

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ViteLauncher, createLauncher, createProject, startDev, buildProject } from '../src/index'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { buildProject, createLauncher, createProject, startDev, ViteLauncher } from '../src/index'
 
 // Mock vite
 vi.mock('vite', () => ({
@@ -69,7 +69,7 @@ vi.mock('../src/services/PluginManager', () => ({
   })),
 }))
 
-describe('ViteLauncher 集成测试', () => {
+describe('viteLauncher 集成测试', () => {
   let launcher: ViteLauncher
 
   beforeEach(() => {

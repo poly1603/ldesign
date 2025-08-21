@@ -3,43 +3,47 @@
  * 主入口文件
  */
 
+import { PluginConfigurator } from './core/plugin-configurator'
+import { ProjectScanner } from './core/project-scanner'
+import { RollupBuilder } from './core/rollup-builder'
+import { TypeGenerator } from './core/type-generator'
 // 核心类型定义
-export * from './types'
-
-// 核心模块
-export { ProjectScanner } from './core/project-scanner'
-export { PluginConfigurator } from './core/plugin-configurator'
-export { RollupBuilder } from './core/rollup-builder'
-export { TypeGenerator } from './core/type-generator'
+import { ErrorHandler, Logger } from './utils/logger'
 
 // CLI模块
 export { runCli } from './cli'
-export { BuildCommand } from './cli/commands/build'
-export { WatchCommand } from './cli/commands/watch'
-export { InitCommand } from './cli/commands/init'
+
 export { AnalyzeCommand } from './cli/commands/analyze'
+export { BuildCommand } from './cli/commands/build'
+export { InitCommand } from './cli/commands/init'
+export { WatchCommand } from './cli/commands/watch'
+
+export { PluginConfigurator } from './core/plugin-configurator'
+// 核心模块
+export { ProjectScanner } from './core/project-scanner'
+export { RollupBuilder } from './core/rollup-builder'
+export { TypeGenerator } from './core/type-generator'
+export * from './types'
 
 // 工具函数
 export {
+  ArrayUtils,
+  AsyncUtils,
   FileUtils,
+  ObjectUtils,
   PathUtils,
   StringUtils,
-  ObjectUtils,
-  ArrayUtils,
-  AsyncUtils
 } from './utils'
 
 export {
+  ErrorHandler,
   Logger,
   ProgressBar,
   Timer,
-  ErrorHandler
 } from './utils/logger'
 
 // 版本信息
 export const version: string = require('../package.json').version
-
-
 
 /**
  * 快速构建函数
@@ -59,7 +63,7 @@ export async function build(options: import('./types').BuildOptions) {
     const scanner = new ProjectScanner()
     const scanResult = await scanner.scan(options.root || process.cwd(), {
       ignorePatterns: ['node_modules/**', '.git/**'],
-      includePatterns: ['**/*.{ts,tsx,js,jsx,vue}']
+      includePatterns: ['**/*.{ts,tsx,js,jsx,vue}'],
     })
 
     // 配置插件
@@ -80,7 +84,8 @@ export async function build(options: import('./types').BuildOptions) {
 
     logger.success('构建完成')
     return result
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('构建失败:', error)
     throw error
   }
@@ -102,7 +107,7 @@ export async function watch(options: import('./types').BuildOptions): Promise<vo
   const scanner = new ProjectScanner()
   const scanResult = await scanner.scan(options.root || process.cwd(), {
     ignorePatterns: ['node_modules/**', '.git/**'],
-    includePatterns: ['**/*.{ts,tsx,js,jsx,vue}']
+    includePatterns: ['**/*.{ts,tsx,js,jsx,vue}'],
   })
 
   // 配置插件
@@ -115,7 +120,8 @@ export async function watch(options: import('./types').BuildOptions): Promise<vo
   await builder.watch(scanResult, { plugins }, options, (result) => {
     if (result.success) {
       logger.info('重新构建完成')
-    } else {
+    }
+    else {
       logger.error('重新构建失败:', result.errors)
     }
   })
@@ -136,7 +142,8 @@ export async function analyze(input: string = process.cwd()) {
 
     logger.info('项目分析完成')
     return result
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('项目分析失败:', error)
     throw error
   }
@@ -159,17 +166,12 @@ export async function init(options: {
   try {
     await initCommand.execute(options)
     logger.success('项目初始化完成')
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('项目初始化失败:', error)
     throw error
   }
 }
-
-import { Logger, ErrorHandler } from './utils/logger'
-import { ProjectScanner } from './core/project-scanner'
-import { PluginConfigurator } from './core/plugin-configurator'
-import { RollupBuilder } from './core/rollup-builder'
-import { TypeGenerator } from './core/type-generator'
 
 // 默认导出
 export default {
@@ -183,7 +185,7 @@ export default {
   RollupBuilder,
   TypeGenerator,
   Logger,
-  ErrorHandler
+  ErrorHandler,
 }
 
 // 轻量配置辅助，便于用户在 ldesign.config.ts 中编写配置

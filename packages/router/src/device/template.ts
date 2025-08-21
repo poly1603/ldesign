@@ -47,7 +47,8 @@ export class TemplateRouteResolver {
       await this.templateManager.scanTemplates()
 
       return this.templateManager
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to initialize template manager:', error)
       throw new Error('Template system not available')
     }
@@ -59,7 +60,7 @@ export class TemplateRouteResolver {
   async resolveTemplate(
     category: string,
     templateName: string,
-    deviceType: DeviceType
+    deviceType: DeviceType,
   ): Promise<Component> {
     const manager = await this.initTemplateManager()
 
@@ -73,10 +74,11 @@ export class TemplateRouteResolver {
       })
 
       return component
-    } catch (error) {
+    }
+    catch (error) {
       console.error(
         `Failed to resolve template: ${category}/${templateName}`,
-        error
+        error,
       )
 
       // 尝试回退到默认设备
@@ -91,7 +93,8 @@ export class TemplateRouteResolver {
 
           console.warn(`Using desktop template as fallback for ${deviceType}`)
           return fallbackComponent
-        } catch (fallbackError) {
+        }
+        catch (fallbackError) {
           console.error('Fallback template also failed:', fallbackError)
         }
       }
@@ -100,7 +103,7 @@ export class TemplateRouteResolver {
       return this.createTemplateErrorComponent(
         category,
         templateName,
-        error as Error
+        error as Error,
       )
     }
   }
@@ -111,12 +114,13 @@ export class TemplateRouteResolver {
   async hasTemplate(
     category: string,
     templateName: string,
-    deviceType: DeviceType
+    deviceType: DeviceType,
   ): Promise<boolean> {
     try {
       const manager = await this.initTemplateManager()
       return manager.hasTemplate(category, deviceType, templateName)
-    } catch {
+    }
+    catch {
       return false
     }
   }
@@ -126,13 +130,14 @@ export class TemplateRouteResolver {
    */
   async getAvailableTemplates(
     category: string,
-    deviceType: DeviceType
+    deviceType: DeviceType,
   ): Promise<string[]> {
     try {
       const manager = await this.initTemplateManager()
       const templates = await manager.getTemplates(category, deviceType)
       return templates.map((t: any) => t.name)
-    } catch {
+    }
+    catch {
       return []
     }
   }
@@ -143,7 +148,7 @@ export class TemplateRouteResolver {
   private createTemplateErrorComponent(
     category: string,
     templateName: string,
-    error: Error
+    error: Error,
   ): Component {
     return {
       name: 'TemplateError',
@@ -164,7 +169,7 @@ export class TemplateRouteResolver {
                   class: 'template-error__retry',
                   onClick: () => window.location.reload(),
                 },
-                '重试'
+                '重试',
               ),
             ]),
           ])
@@ -191,7 +196,7 @@ export class TemplateRouteResolver {
  * 创建模板路由解析器的便捷函数
  */
 export function createTemplateRouteResolver(
-  config?: TemplateRouteConfig
+  config?: TemplateRouteConfig,
 ): TemplateRouteResolver {
   return new TemplateRouteResolver(config)
 }

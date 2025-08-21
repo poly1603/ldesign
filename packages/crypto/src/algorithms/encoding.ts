@@ -14,7 +14,7 @@ export class Encoder implements IEncoder {
       if (ValidationUtils.isEmpty(data)) {
         throw ErrorUtils.createEncryptionError(
           'Data cannot be empty',
-          'Encoding'
+          'Encoding',
         )
       }
 
@@ -28,16 +28,17 @@ export class Encoder implements IEncoder {
         default:
           throw ErrorUtils.createEncryptionError(
             `Unsupported encoding type: ${encoding}`,
-            'Encoding'
+            'Encoding',
           )
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
       throw ErrorUtils.createEncryptionError(
         'Unknown encoding error',
-        'Encoding'
+        'Encoding',
       )
     }
   }
@@ -50,7 +51,7 @@ export class Encoder implements IEncoder {
       if (ValidationUtils.isEmpty(encodedData)) {
         throw ErrorUtils.createDecryptionError(
           'Encoded data cannot be empty',
-          'Decoding'
+          'Decoding',
         )
       }
 
@@ -64,16 +65,17 @@ export class Encoder implements IEncoder {
         default:
           throw ErrorUtils.createDecryptionError(
             `Unsupported encoding type: ${encoding}`,
-            'Decoding'
+            'Decoding',
           )
       }
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error) {
         throw error
       }
       throw ErrorUtils.createDecryptionError(
         'Unknown decoding error',
-        'Decoding'
+        'Decoding',
       )
     }
   }
@@ -86,14 +88,16 @@ export class Encoder implements IEncoder {
       // 优先使用浏览器原生 API
       if (typeof btoa !== 'undefined') {
         return btoa(unescape(encodeURIComponent(data)))
-      } else {
+      }
+      else {
         // 使用 CryptoJS 作为后备
         return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(data))
       }
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createEncryptionError(
         'Failed to encode Base64',
-        'Base64'
+        'Base64',
       )
     }
   }
@@ -107,23 +111,25 @@ export class Encoder implements IEncoder {
       if (!ValidationUtils.isValidBase64(encodedData)) {
         throw ErrorUtils.createDecryptionError(
           'Invalid Base64 format',
-          'Base64'
+          'Base64',
         )
       }
 
       // 优先使用浏览器原生 API
       if (typeof atob !== 'undefined') {
         return decodeURIComponent(escape(atob(encodedData)))
-      } else {
+      }
+      else {
         // 使用 CryptoJS 作为后备
         return CryptoJS.enc.Utf8.stringify(
-          CryptoJS.enc.Base64.parse(encodedData)
+          CryptoJS.enc.Base64.parse(encodedData),
         )
       }
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createDecryptionError(
         'Failed to decode Base64',
-        'Base64'
+        'Base64',
       )
     }
   }
@@ -135,7 +141,8 @@ export class Encoder implements IEncoder {
     try {
       // 使用 CryptoJS
       return CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(data))
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createEncryptionError('Failed to encode Hex', 'Hex')
     }
   }
@@ -152,7 +159,8 @@ export class Encoder implements IEncoder {
 
       // 使用 CryptoJS
       return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Hex.parse(encodedData))
-    } catch {
+    }
+    catch {
       throw ErrorUtils.createDecryptionError('Failed to decode Hex', 'Hex')
     }
   }

@@ -90,11 +90,11 @@ export default defineComponent({
     // 监听外部值变化
     watch(
       () => props.modelValue,
-      newValue => {
+      (newValue) => {
         if (newValue !== inputValue.value) {
           inputValue.value = newValue
         }
-      }
+      },
     )
 
     return () => (
@@ -107,43 +107,43 @@ export default defineComponent({
           },
         ]}
       >
-        <div class='l-color-picker__trigger' onClick={togglePicker}>
+        <div class="l-color-picker__trigger" onClick={togglePicker}>
           <div
-            class='l-color-picker__preview'
+            class="l-color-picker__preview"
             style={{ backgroundColor: normalizedValue.value }}
           />
           <input
-            type='text'
-            class='l-color-picker__input'
+            type="text"
+            class="l-color-picker__input"
             value={inputValue.value}
             onInput={handleInputChange}
             disabled={props.disabled}
-            placeholder='请输入颜色值'
+            placeholder="请输入颜色值"
           />
         </div>
 
         {isOpen.value && (
-          <div class='l-color-picker__panel'>
-            <div class='l-color-picker__color-input'>
+          <div class="l-color-picker__panel">
+            <div class="l-color-picker__color-input">
               <input
-                type='color'
+                type="color"
                 value={normalizedValue.value}
                 onInput={(e: Event) => {
                   const value = (e.target as HTMLInputElement).value
                   handlePresetClick(value)
                 }}
-                class='l-color-picker__native'
+                class="l-color-picker__native"
               />
             </div>
 
             {props.showPresets && (
-              <div class='l-color-picker__presets'>
-                <div class='l-color-picker__presets-title'>预设颜色</div>
-                <div class='l-color-picker__presets-grid'>
+              <div class="l-color-picker__presets">
+                <div class="l-color-picker__presets-title">预设颜色</div>
+                <div class="l-color-picker__presets-grid">
                   {props.presets.map(color => (
                     <button
                       key={color}
-                      type='button'
+                      type="button"
                       class={[
                         'l-color-picker__preset',
                         {

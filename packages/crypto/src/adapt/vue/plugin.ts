@@ -141,8 +141,8 @@ export const CryptoPlugin: Plugin = {
 
     // 开发模式下的调试信息
     if (
-      typeof process !== 'undefined' &&
-      process.env?.NODE_ENV === 'development'
+      typeof process !== 'undefined'
+      && process.env?.NODE_ENV === 'development'
     ) {
       console.warn('[LDesign Crypto] Plugin installed successfully')
       console.warn('[LDesign Crypto] Global property:', globalPropertyName)
