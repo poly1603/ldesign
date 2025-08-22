@@ -294,20 +294,29 @@ export const asyncUtils = {
     executor: (item: T) => Promise<R>,
     concurrency = 3,
   ): Promise<R[]> {
-    const results: R[] = []
+    if (items.length === 0) {
+      return []
+    }
+
+    const results: R[] = new Array(items.length)
     const executing: Promise<void>[] = []
+    let index = 0
 
-    for (const item of items) {
-      const promise = executor(item).then((result) => {
-        results.push(result)
-      })
+    const executeNext = async (): Promise<void> => {
+      const currentIndex = index++
+      if (currentIndex >= items.length) return
 
-      executing.push(promise)
+      const item = items[currentIndex]
+      const result = await executor(item)
+      results[currentIndex] = result
 
-      if (executing.length >= concurrency) {
-        await Promise.race(executing)
-        executing.splice(executing.findIndex(p => p === promise), 1)
-      }
+      // 继续执行下一个任务
+      return executeNext()
+    }
+
+    // 启动初始并发任务
+    for (let i = 0; i < Math.min(concurrency, items.length); i++) {
+      executing.push(executeNext())
     }
 
     await Promise.all(executing)
@@ -518,7 +527,8 @@ export const debugUtils = {
     try {
       const result = await fn()
       const end = performance.now()
-      console.warn(`[Benchmark] ${name}: ${(end - start).toFixed(2)}ms`)
+      const duration = `${(end - start).toFixed(2)}ms`
+      console.warn(`[Benchmark] ${name}:`, duration)
       return result
     }
     catch (error) {
@@ -528,3 +538,4 @@ export const debugUtils = {
     }
   },
 }
+

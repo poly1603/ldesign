@@ -8,32 +8,38 @@ import { vi } from 'vitest'
 // 模拟浏览器环境的全局对象
 Object.defineProperty(window, 'HTMLCanvasElement', {
   value: class MockCanvas {
-    getContext() {
-      return {
-        fillRect: vi.fn(),
-        clearRect: vi.fn(),
-        getImageData: vi.fn(() => ({
-          data: new Uint8ClampedArray(4),
-        })),
-        putImageData: vi.fn(),
-        createImageData: vi.fn(() => ({
-          data: new Uint8ClampedArray(4),
-        })),
-        setTransform: vi.fn(),
-        drawImage: vi.fn(),
-        save: vi.fn(),
-        restore: vi.fn(),
-        fillText: vi.fn(),
-        measureText: vi.fn(() => ({ width: 10 })),
+    width: number = 0
+    height: number = 0
+
+    getContext(type: string) {
+      if (type === '2d') {
+        return {
+          fillRect: vi.fn(),
+          clearRect: vi.fn(),
+          getImageData: vi.fn(() => ({
+            data: new Uint8ClampedArray(4),
+          })),
+          putImageData: vi.fn(),
+          createImageData: vi.fn(() => ({
+            data: new Uint8ClampedArray(4),
+          })),
+          setTransform: vi.fn(),
+          drawImage: vi.fn(),
+          save: vi.fn(),
+          restore: vi.fn(),
+          fillText: vi.fn(),
+          measureText: vi.fn(() => ({ width: 10 })),
+        }
       }
+      return null
     }
-    
+
     toDataURL() {
       return 'data:image/png;base64,test'
     }
-    
-    toBlob() {
-      return new Blob()
+
+    toBlob(callback: (blob: Blob | null) => void) {
+      setTimeout(() => callback(new Blob()), 0)
     }
   },
 })
@@ -45,7 +51,7 @@ Object.defineProperty(window, 'OffscreenCanvas', {
       this.width = width
       this.height = height
     }
-    
+
     getContext() {
       return {
         fillRect: vi.fn(),
@@ -53,7 +59,7 @@ Object.defineProperty(window, 'OffscreenCanvas', {
         drawImage: vi.fn(),
       }
     }
-    
+
     convertToBlob() {
       return Promise.resolve(new Blob())
     }
@@ -65,11 +71,11 @@ Object.defineProperty(window, 'Worker', {
   value: class MockWorker {
     onmessage: ((event: MessageEvent) => void) | null = null
     onerror: ((error: ErrorEvent) => void) | null = null
-    
+
     constructor(url: string) {
       // 模拟 Worker 构造函数
     }
-    
+
     postMessage(data: unknown) {
       // 模拟异步响应
       setTimeout(() => {
@@ -80,7 +86,7 @@ Object.defineProperty(window, 'Worker', {
         }
       }, 10)
     }
-    
+
     terminate() {
       // 模拟终止 Worker
     }
@@ -93,19 +99,19 @@ Object.defineProperty(window, 'File', {
     name: string
     size: number
     type: string
-    
+
     constructor(chunks: BlobPart[], filename: string, options?: FilePropertyBag) {
       this.name = filename
-      this.size = chunks.reduce((acc, chunk) => 
+      this.size = chunks.reduce((acc, chunk) =>
         acc + (typeof chunk === 'string' ? chunk.length : chunk.byteLength || 0), 0
       )
       this.type = options?.type || ''
     }
-    
+
     arrayBuffer() {
       return Promise.resolve(new ArrayBuffer(this.size))
     }
-    
+
     text() {
       return Promise.resolve('mock file content')
     }
@@ -118,7 +124,7 @@ Object.defineProperty(window, 'FileReader', {
     onload: ((event: ProgressEvent<FileReader>) => void) | null = null
     onerror: ((error: ProgressEvent<FileReader>) => void) | null = null
     result: string | ArrayBuffer | null = null
-    
+
     readAsArrayBuffer(file: File) {
       setTimeout(() => {
         this.result = new ArrayBuffer(file.size)
@@ -127,7 +133,7 @@ Object.defineProperty(window, 'FileReader', {
         }
       }, 10)
     }
-    
+
     readAsText(file: File) {
       setTimeout(() => {
         this.result = 'mock file content'
@@ -164,9 +170,9 @@ const originalConsole = { ...console }
 
 beforeEach(() => {
   // 在每个测试前重置 console mock
-  vi.spyOn(console, 'warn').mockImplementation(() => {})
-  vi.spyOn(console, 'error').mockImplementation(() => {})
-  vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => { })
+  vi.spyOn(console, 'error').mockImplementation(() => { })
+  vi.spyOn(console, 'log').mockImplementation(() => { })
 })
 
 afterEach(() => {
