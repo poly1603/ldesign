@@ -39,6 +39,12 @@ const router = createRouter({
       name: 'DeviceSwitchTest',
       component: () => import('../views/DeviceSwitchTest.vue'),
     },
+    {
+      path: '/login',
+      name: 'Login',
+      component: () => import('../views/Login.vue'),
+    },
+
   ],
 })
 

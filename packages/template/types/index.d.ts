@@ -9,13 +9,20 @@ import { TemplateScanner } from './core/scanner.js';
 import { createTemplateEnginePlugin } from './engine/plugin.js';
 export { createDefaultTemplateEnginePlugin } from './engine/plugin.js';
 import { useTemplate } from './vue/composables/useTemplate.js';
-import { useTemplateSelector } from './vue/composables/useTemplateSelector.js';
 import useTemplateProvider from './vue/composables/useTemplateProvider.js';
+import { useTemplateSelector } from './vue/composables/useTemplateSelector.js';
 export { buildTemplatePath, extractTemplatePathFromModulePath, getComponentPathFromConfigPath, getConfigPathFromComponentPath, getStylePathFromConfigPath, isTemplateComponentPath, isTemplateConfigPath, normalizeTemplatePath, parseTemplatePath, validateTemplatePath } from './utils/path.js';
+export { default as TemplateProvider } from './vue/components/TemplateProvider.js';
 export { default as TemplateRenderer } from './vue/components/TemplateRenderer.js';
 export { default as TemplateSelector } from './vue/components/TemplateSelector.js';
-export { default as TemplateProvider } from './vue/components/TemplateProvider.js';
 export { default as TemplatePlugin, createTemplatePlugin, destroyGlobalTemplateManager, getGlobalTemplateManager, useTemplateManager } from './vue/plugin.js';
+export { ErrorHandler, TemplateError, TemplateErrorType } from './services/error-handler.js';
+export { EventEmitter, TemplateEventType } from './services/event-emitter.js';
+export { PerformanceMonitor } from './services/performance-monitor.js';
+export { CacheService } from './services/cache-service.js';
+export { StorageService } from './services/storage-service.js';
+export { DeviceService } from './services/device-service.js';
+export { LogLevel, Logger, logger } from './services/logger.js';
 
 /**
  * 创建模板管理器实例

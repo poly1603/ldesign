@@ -65,7 +65,15 @@ export interface UseDeviceRouteReturn {
   /** 检查指定路由是否支持指定设备 */
   isRouteSupportedOnDevice: (path: string, device: DeviceType) => boolean
   /** 获取设备信息 */
-  getDeviceInfo: () => any
+  getDeviceInfo: () => {
+    type: DeviceType
+    isMobile: boolean
+    isTablet: boolean
+    isDesktop: boolean
+    userAgent: string
+    screenWidth: number
+    screenHeight: number
+  }
   /** 监听设备变化 */
   onDeviceChange: (callback: (device: DeviceType) => void) => () => void
   /** 跳转到设备不支持页面 */
@@ -84,7 +92,13 @@ export function useDeviceRoute(
   const route = useRoute()
 
   // 获取设备路由插件实例
-  const devicePlugin = (router as any).devicePlugin
+  const devicePlugin = (router as Router & {
+    devicePlugin?: {
+      isSupported: (device: DeviceType) => boolean
+      getCurrentDevice: () => DeviceType
+      getDeviceInfo: () => ReturnType<UseDeviceRouteReturn['getDeviceInfo']>
+    }
+  }).devicePlugin
   if (!devicePlugin) {
     console.warn(
       'DeviceRouterPlugin not found. Please install the plugin first.',
@@ -170,7 +184,7 @@ export function useDeviceRoute(
     callback: (device: DeviceType) => void,
   ): (() => void) => {
     if (!devicePlugin) {
-      return () => {}
+      return () => { }
     }
 
     return devicePlugin.onDeviceChange((device: DeviceType) => {

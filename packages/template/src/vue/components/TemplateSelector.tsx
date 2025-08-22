@@ -5,6 +5,7 @@
  * 新设计：按钮触发 + 模态弹出层
  */
 
+import type { DeviceType, TemplateSelectorConfig, TemplateMetadata } from '../../types'
 import { computed, defineComponent, nextTick, onMounted, onUnmounted, type PropType, ref, Teleport, watch } from 'vue'
 import './TemplateSelector.less'
 
@@ -102,7 +103,7 @@ export const TemplateSelector = defineComponent({
         return []
       }
 
-      const filtered = templates.filter((template: any) => {
+      const filtered = templates.filter((template: TemplateMetadata) => {
         // 按分类过滤
         if (template.category !== props.category)
           return false
@@ -329,11 +330,11 @@ export const TemplateSelector = defineComponent({
             <div class="template-selector__item-preview">
               {template.config.preview
                 ? (
-                    <img src={template.config.preview} alt={template.config.name} class="template-selector__item-image" />
-                  )
+                  <img src={template.config.preview} alt={template.config.name} class="template-selector__item-image" />
+                )
                 : (
-                    <div class="template-selector__item-placeholder">📄</div>
-                  )}
+                  <div class="template-selector__item-placeholder">📄</div>
+                )}
             </div>
           )}
 

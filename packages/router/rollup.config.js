@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import process from 'node:process'
 import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({

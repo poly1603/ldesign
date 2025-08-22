@@ -98,7 +98,10 @@
   },
   "dependencies": {
     "@ldesign/cache": "workspace:*",
-    "@ldesign/device": "workspace:*"
+    "@ldesign/device": "workspace:*",
+    "@ldesign/shared": "workspace:*",
+    "@vueuse/core": "^13.7.0"
+
   },
   "devDependencies": {
     "@playwright/test": "^1.40.1",

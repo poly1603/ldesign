@@ -17,6 +17,9 @@ import type {
   TemplateRenderOptions,
   TemplateScanResult,
 } from '../types'
+import { EventEmitter, TemplateEventType } from '../services/event-emitter'
+import { ErrorHandler, TemplateError } from '../services/error-handler'
+import { logger } from '../services/logger'
 import { TemplateLoader } from './loader'
 import { TemplateScanner } from './scanner'
 import { TemplateStorageManager } from './storage'
@@ -86,51 +89,14 @@ class SimpleDeviceDetector {
   }
 }
 
-/**
- * 简单的事件发射器
- */
-class SimpleEventEmitter {
-  private events = new Map<string, Array<(...args: any[]) => void>>()
 
-  on(event: string, callback: (...args: any[]) => void): () => void {
-    if (!this.events.has(event)) {
-      this.events.set(event, [])
-    }
-    this.events.get(event)!.push(callback)
-
-    // 返回取消订阅函数
-    return () => this.off(event, callback)
-  }
-
-  emit(event: string, ...args: any[]): void {
-    const callbacks = this.events.get(event)
-    if (callbacks) {
-      callbacks.forEach((callback) => {
-        try {
-          callback(...args)
-        }
-        catch (error) {
-          console.error(`Event callback error for ${event}:`, error)
-        }
-      })
-    }
-  }
-
-  off(event: string, callback: (...args: any[]) => void): void {
-    const callbacks = this.events.get(event)
-    if (callbacks) {
-      const index = callbacks.indexOf(callback)
-      if (index > -1) {
-        callbacks.splice(index, 1)
-      }
-    }
-  }
-}
 
 /**
  * 模板管理器
  */
-export class TemplateManager extends SimpleEventEmitter {
+export class TemplateManager {
+  private eventEmitter: EventEmitter
+  private errorHandler: ErrorHandler
   private scanner: TemplateScanner
   private loader: TemplateLoader
   private deviceDetector: SimpleDeviceDetector
@@ -140,8 +106,6 @@ export class TemplateManager extends SimpleEventEmitter {
   private currentTemplate: TemplateMetadata | null = null
 
   constructor(config: TemplateManagerConfig = {}) {
-    super()
-
     this.config = {
       enableCache: true,
       cacheExpiration: 5 * 60 * 1000,
@@ -150,6 +114,10 @@ export class TemplateManager extends SimpleEventEmitter {
       ...config,
       storage: config.storage, // 保持 storage 为可选
     }
+
+    // 初始化服务
+    this.eventEmitter = new EventEmitter({ debug: this.config.debug })
+    this.errorHandler = new ErrorHandler({ debug: this.config.debug })
 
     // 使用新的自动扫描器
     this.scanner = new TemplateScanner({ debug: this.config.debug })
@@ -164,7 +132,7 @@ export class TemplateManager extends SimpleEventEmitter {
     this.setupDeviceListener()
 
     if (this.config.debug) {
-      console.log('🎯 TemplateManager 初始化完成 (自动扫描模式)', this.config)
+      logger.info('🎯 TemplateManager 初始化完成 (自动扫描模式)', this.config)
     }
   }
 
@@ -185,24 +153,36 @@ export class TemplateManager extends SimpleEventEmitter {
 
       this.templates = result.templates
 
-      this.emit('scan:complete', {
+      await this.emit(TemplateEventType.SCAN_COMPLETE, {
         type: 'scan:complete',
         scanResult: result,
         timestamp: Date.now(),
       } as TemplateChangeEvent)
 
       if (this.config.debug) {
-        console.log('📊 模板扫描完成:', result)
+        logger.info('📊 模板扫描完成', result)
       }
 
       return result
     }
     catch (error) {
-      console.error('❌ 模板扫描失败:', error)
+      const templateError = TemplateError.templateScanError(
+        '模板扫描失败',
+        { originalError: error },
+      )
+
+      try {
+        // 尝试通过错误处理器恢复
+        await this.errorHandler.handleError(templateError)
+      }
+      catch {
+        // 错误处理器也无法恢复，记录错误并使用预构建模板
+        logger.error('❌ 模板扫描失败', error)
+      }
 
       // 扫描失败时，尝试使用预构建模板
       if (this.config.debug) {
-        console.log('🔄 扫描异常，尝试使用预构建模板...')
+        logger.info('🔄 扫描异常，尝试使用预构建模板...')
       }
       return await this.loadPrebuiltTemplates()
     }
@@ -352,7 +332,7 @@ export class TemplateManager extends SimpleEventEmitter {
       }
 
       // 发射模板变化事件
-      this.emit('template:change', {
+      await this.emit(TemplateEventType.TEMPLATE_CHANGE, {
         type: 'template:change',
         newTemplate: metadata,
         oldTemplate,
@@ -360,14 +340,24 @@ export class TemplateManager extends SimpleEventEmitter {
       } as TemplateChangeEvent)
 
       if (this.config.debug) {
-        console.log('🎨 模板渲染成功:', result)
+        logger.info('🎨 模板渲染成功', result)
       }
 
       return result
     }
     catch (error) {
-      console.error('❌ 模板渲染失败:', error)
-      throw error
+      const templateError = TemplateError.templateRenderError(
+        '模板渲染失败',
+        {
+          category,
+          device: targetDevice,
+          template,
+          originalError: error,
+        },
+      )
+
+      logger.error('❌ 模板渲染失败', templateError)
+      throw templateError
     }
   }
 
@@ -561,7 +551,7 @@ export class TemplateManager extends SimpleEventEmitter {
   /**
    * 获取所有存储的模板选择
    */
-  getAllStoredSelections(): Record<string, any> {
+  getAllStoredSelections(): Record<string, unknown> {
     if (this.storageManager) {
       return this.storageManager.getAllSelections()
     }
@@ -571,7 +561,7 @@ export class TemplateManager extends SimpleEventEmitter {
   /**
    * 获取存储统计信息
    */
-  getStorageStats(): any {
+  getStorageStats(): Record<string, unknown> | null {
     if (this.storageManager) {
       return this.storageManager.getStats()
     }
@@ -697,13 +687,13 @@ export class TemplateManager extends SimpleEventEmitter {
     // 保存当前设备类型，用于比较
     let lastDevice = this.getCurrentDevice()
 
-    this.deviceDetector.on('deviceChange', (newDevice: DeviceType) => {
+    this.deviceDetector.on('deviceChange', async (newDevice: DeviceType) => {
       const oldDevice = lastDevice
       lastDevice = newDevice // 更新保存的设备类型
 
-      console.log(`📱 TemplateManager 接收到设备变化事件: ${oldDevice} -> ${newDevice}`)
+      logger.device(`📱 TemplateManager 接收到设备变化事件: ${oldDevice} -> ${newDevice}`)
 
-      this.emit('device:change', {
+      await this.emit(TemplateEventType.DEVICE_CHANGE, {
         type: 'device:change',
         newDevice,
         oldDevice,
@@ -711,9 +701,39 @@ export class TemplateManager extends SimpleEventEmitter {
       } as TemplateChangeEvent)
 
       if (this.config.debug) {
-        console.log('📱 TemplateManager 发出 device:change 事件:', `${oldDevice} -> ${newDevice}`)
+        logger.device('📱 TemplateManager 发出 device:change 事件', `${oldDevice} -> ${newDevice}`)
       }
     })
+  }
+
+  // ============ 事件系统代理方法 ============
+
+  /**
+   * 监听事件
+   */
+  on(eventType: TemplateEventType | string, listener: (event: TemplateChangeEvent) => void): () => void {
+    return this.eventEmitter.on(eventType, listener)
+  }
+
+  /**
+   * 监听事件一次
+   */
+  once(eventType: TemplateEventType | string, listener: (event: TemplateChangeEvent) => void): () => void {
+    return this.eventEmitter.once(eventType, listener)
+  }
+
+  /**
+   * 取消监听事件
+   */
+  off(eventType: TemplateEventType | string, listener: (event: TemplateChangeEvent) => void): void {
+    this.eventEmitter.off(eventType, listener)
+  }
+
+  /**
+   * 发射事件
+   */
+  private async emit(eventType: TemplateEventType | string, event: TemplateChangeEvent): Promise<void> {
+    await this.eventEmitter.emit(eventType, event)
   }
 
   /**
@@ -723,9 +743,10 @@ export class TemplateManager extends SimpleEventEmitter {
     this.clearCache()
     this.templates = []
     this.currentTemplate = null
+    this.eventEmitter.destroy()
 
     if (this.config.debug) {
-      console.log('💥 TemplateManager 已销毁')
+      logger.info('💥 TemplateManager 已销毁')
     }
   }
 }

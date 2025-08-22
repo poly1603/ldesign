@@ -8,9 +8,15 @@ console.log('🎨 LDesign Template System App 启动')
   </div>
 </template>
 
-<style scoped>
+<style lang="less">
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
 #app {
-  min-height: 100vh;
+  height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 </style>

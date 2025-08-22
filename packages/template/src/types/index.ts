@@ -4,7 +4,7 @@
  * 重构版本 - 使用现有子包，专注于模板特有功能
  */
 
-import type { Component } from 'vue'
+import type { Component, ComputedRef, Ref } from 'vue'
 
 // ============ 基础类型（临时，稍后使用外部包） ============
 
@@ -66,7 +66,7 @@ export interface TemplateMetadata {
   /** 模板路径（兼容性） */
   path?: string
   /** 组件实例 */
-  component?: any
+  component?: Component
 }
 
 /**
@@ -120,9 +120,9 @@ export interface TemplateStorageOptions {
   /** 存储类型 */
   storage?: 'localStorage' | 'sessionStorage' | 'memory'
   /** 自定义序列化函数 */
-  serialize?: (data: any) => string
+  serialize?: (data: unknown) => string
   /** 自定义反序列化函数 */
-  deserialize?: (data: string) => any
+  deserialize?: (data: string) => unknown
 }
 
 /**
@@ -180,9 +180,9 @@ export interface SlotConfig {
   /** 插槽名称 */
   name: string
   /** 插槽内容 */
-  content?: any
+  content?: unknown
   /** 插槽属性 */
-  props?: Record<string, any>
+  props?: Record<string, unknown>
 }
 
 /**
@@ -272,7 +272,7 @@ export interface TemplateSelectorConfig {
   /** 自定义样式类 */
   className?: string
   /** 自定义样式 */
-  style?: Record<string, any>
+  style?: Record<string, string | number>
   /** 触发方式 */
   trigger?: 'click' | 'hover' | 'manual'
   /** 动画效果 */
@@ -307,17 +307,17 @@ export interface TemplateSelectorProps {
 export interface UseTemplateSelectorReturn {
   // 状态
   /** 可用模板列表 */
-  availableTemplates: any // import('vue').ComputedRef<TemplateMetadata[]>
+  availableTemplates: ComputedRef<TemplateMetadata[]>
   /** 过滤后的模板列表 */
-  filteredTemplates: any // import('vue').ComputedRef<TemplateMetadata[]>
+  filteredTemplates: ComputedRef<TemplateMetadata[]>
   /** 搜索查询 */
-  searchQuery: any // import('vue').Ref<string>
+  searchQuery: Ref<string>
   /** 选中的模板 */
-  selectedTemplate: any // import('vue').Ref<string | null>
+  selectedTemplate: Ref<string | null>
   /** 加载状态 */
-  loading: any // import('vue').Ref<boolean>
+  loading: Ref<boolean>
   /** 错误信息 */
-  error: any // import('vue').Ref<Error | null>
+  error: Ref<Error | null>
 
   // 方法
   /** 选择模板 */
@@ -338,19 +338,19 @@ export interface UseTemplateSelectorReturn {
 export interface UseTemplateReturn {
   // 状态
   /** 当前设备类型 */
-  currentDevice: any // import('vue').Ref<DeviceType>
+  currentDevice: Ref<DeviceType>
   /** 当前模板 */
-  currentTemplate: any // import('vue').Ref<TemplateMetadata | null>
+  currentTemplate: Ref<TemplateMetadata | null>
   /** 加载状态 */
-  loading: any // import('vue').Ref<boolean>
+  loading: Ref<boolean>
   /** 错误信息 */
-  error: any // import('vue').Ref<Error | null>
+  error: Ref<Error | null>
   /** 可用模板列表 */
-  availableTemplates: any // import('vue').ComputedRef<TemplateMetadata[]>
+  availableTemplates: ComputedRef<TemplateMetadata[]>
   /** 可用分类列表 */
-  availableCategories: any // import('vue').ComputedRef<string[]>
+  availableCategories: ComputedRef<string[]>
   /** 可用设备类型列表 */
-  availableDevices: any // import('vue').ComputedRef<DeviceType[]>
+  availableDevices: ComputedRef<DeviceType[]>
 
   // 方法
   /** 扫描模板 */
@@ -392,7 +392,7 @@ export interface TemplateProviderConfig extends TemplateManagerConfig {
     primaryColor?: string
     borderRadius?: string
     spacing?: string
-    [key: string]: any
+    [key: string]: string | number | boolean | undefined
   }
 }
 
@@ -403,7 +403,7 @@ export interface TemplateProviderProps {
   /** 提供者配置 */
   config?: TemplateProviderConfig
   /** 子组件 */
-  children?: any
+  children?: unknown
 }
 
 /**

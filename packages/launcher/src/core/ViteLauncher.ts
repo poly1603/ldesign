@@ -2,7 +2,6 @@ import type { InlineConfig, ViteDevServer } from 'vite'
 import type {
   BuildOptions,
   BuildResult,
-  BuildStats,
   DevOptions,
   IViteLauncher,
   LauncherOptions,
@@ -12,22 +11,29 @@ import type {
   ProjectType,
   RunMode,
 } from '@/types'
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import { build, createServer, preview } from 'vite'
 import { ERROR_CODES } from '@/types'
 import { ConfigManager, ErrorHandler, PluginManager, ProjectDetector } from '../services'
+import { ProjectGenerator, type ProjectGenerationOptions } from './ProjectGenerator'
+import { BuildAnalyzer } from './BuildAnalyzer'
+import { FileUtils, LoggerUtils } from '@/utils'
 
 /**
  * Vite 前端项目启动器核心类
  * 提供项目创建、开发、构建和预览功能
+ * 
+ * @author Vite Launcher Team
+ * @version 1.0.0
  */
 export class ViteLauncher implements IViteLauncher {
   private errorHandler: ErrorHandler
   private projectDetector: ProjectDetector
   private configManager: ConfigManager
   private pluginManager: PluginManager
+  private projectGenerator: ProjectGenerator
+  private buildAnalyzer: BuildAnalyzer
   private currentServer?: ViteDevServer | null
   private config?: InlineConfig
   private projectType?: ProjectType
@@ -42,10 +48,13 @@ export class ViteLauncher implements IViteLauncher {
       ...options,
     }
 
+    // 初始化服务模块
     this.errorHandler = new ErrorHandler()
     this.projectDetector = new ProjectDetector()
     this.configManager = new ConfigManager()
     this.pluginManager = new PluginManager()
+    this.projectGenerator = new ProjectGenerator()
+    this.buildAnalyzer = new BuildAnalyzer()
 
     this.log('ViteLauncher 初始化完成', 'info')
   }
@@ -66,32 +75,18 @@ export class ViteLauncher implements IViteLauncher {
     try {
       this.log(`开始创建 ${projectType} 项目: ${projectPath}`, 'info')
 
-      const absolutePath = path.resolve(projectPath)
-
-      // 检查目录是否存在
-      const exists = await this.checkDirectoryExists(absolutePath)
-      if (exists && !options.force) {
-        const files = await fs.readdir(absolutePath)
-        if (files.length > 0) {
-          throw ErrorHandler.createError(
-            ERROR_CODES.INVALID_PROJECT_ROOT,
-            `目录 ${absolutePath} 不为空。使用 force: true 选项覆盖。`,
-          )
-        }
+      const generationOptions: ProjectGenerationOptions = {
+        template: options.template,
+        force: options.force,
+        installDeps: true,
+        projectName: path.basename(path.resolve(projectPath))
       }
 
-      // 创建目录
-      await fs.mkdir(absolutePath, { recursive: true })
+      await this.projectGenerator.generateProject(projectPath, projectType, generationOptions)
 
-      // 生成项目文件
-      await this.generateProjectFiles(absolutePath, projectType, options.template)
-
-      // 安装依赖
-      await this.installDependencies(absolutePath)
-
-      this.log(`项目创建完成: ${absolutePath}`, 'info')
+      this.log(`项目创建完成: ${path.resolve(projectPath)}`, 'info')
       this.log('运行以下命令开始开发:', 'info')
-      this.log(`  cd ${path.relative(process.cwd(), absolutePath)}`, 'info')
+      this.log(`  cd ${path.relative(process.cwd(), path.resolve(projectPath))}`, 'info')
       this.log('  npm run dev', 'info')
     }
     catch (error) {
@@ -187,22 +182,34 @@ export class ViteLauncher implements IViteLauncher {
       // 分析构建结果
       const outputDir = viteConfig.build?.outDir || 'dist'
       const outputPath = path.resolve(absolutePath, outputDir)
-      const stats = await this.analyzeBuildOutput(outputPath)
+      
+      let analysisResult
+      let stats
+      try {
+        analysisResult = await this.buildAnalyzer.analyzeBuildOutput(outputPath, {
+          detailed: true,
+          generateReport: false
+        })
+        stats = analysisResult.stats
+        
+        // 输出分析结果
+        this.log('构建分析结果:', 'info')
+        console.log(this.buildAnalyzer.formatAnalysisResult(analysisResult))
+      } catch (analysisError) {
+        this.log(`构建分析失败: ${(analysisError as Error).message}`, 'warn')
+        stats = { entryCount: 0, moduleCount: 0, assetCount: 0, chunkCount: 0 }
+      }
 
       const result: BuildResult = {
         success: true,
         outputFiles: [outputPath],
         duration,
-        size: 0, // 可以后续计算总大小
+        size: analysisResult?.totalSize || 0,
         stats,
       }
 
       this.log(`构建完成! 耗时: ${duration}ms`, 'info')
       this.log(`输出目录: ${outputPath}`, 'info')
-      this.log(`入口文件数: ${stats.entryCount}`, 'info')
-      this.log(`模块数量: ${stats.moduleCount}`, 'info')
-      this.log(`资源文件数: ${stats.assetCount}`, 'info')
-      this.log(`代码块数: ${stats.chunkCount}`, 'info')
 
       return result
     }
@@ -244,8 +251,7 @@ export class ViteLauncher implements IViteLauncher {
       const outputDir = options.outDir || 'dist'
       const outputPath = path.resolve(absolutePath, outputDir)
 
-      const exists = await this.checkDirectoryExists(outputPath)
-      if (!exists) {
+      if (!(await FileUtils.exists(outputPath))) {
         throw ErrorHandler.createError(
           ERROR_CODES.BUILD_OUTPUT_NOT_FOUND,
           `构建输出目录不存在: ${outputPath}。请先运行构建命令。`,
@@ -405,214 +411,6 @@ export class ViteLauncher implements IViteLauncher {
   }
 
   /**
-   * 生成项目文件
-   */
-  private async generateProjectFiles(
-    projectPath: string,
-    projectType: ProjectType,
-    _template?: string,
-  ): Promise<void> {
-    // 生成 package.json
-    const packageJson = this.generatePackageJson(projectType)
-    await fs.writeFile(
-      path.join(projectPath, 'package.json'),
-      JSON.stringify(packageJson, null, 2),
-    )
-
-    // 生成 index.html
-    const indexHtml = this.generateIndexHtml(projectType)
-    await fs.writeFile(path.join(projectPath, 'index.html'), indexHtml)
-
-    // 生成 Vite 配置文件
-    const viteConfig = await this.configManager.generateConfigFile(projectType)
-    await fs.writeFile(path.join(projectPath, 'vite.config.ts'), viteConfig)
-
-    // 创建 src 目录和基础文件
-    const srcDir = path.join(projectPath, 'src')
-    await fs.mkdir(srcDir, { recursive: true })
-
-    // 根据项目类型生成不同的入口文件
-    await this.generateEntryFiles(srcDir, projectType)
-  }
-
-  /**
-   * 生成 package.json
-   */
-  private generatePackageJson(projectType: ProjectType) {
-    const basePackage = {
-      name: 'vite-project',
-      private: true,
-      version: '0.0.0',
-      type: 'module',
-      scripts: {
-        dev: 'vite',
-        build: 'vite build',
-        preview: 'vite preview',
-      },
-      devDependencies: {
-        vite: '^5.0.0',
-      } as Record<string, string>,
-    }
-
-    // 根据项目类型添加特定依赖
-    const requiredPlugins = this.pluginManager.getRequiredPlugins(projectType)
-    for (const plugin of requiredPlugins) {
-      basePackage.devDependencies[plugin.name] = plugin.version
-    }
-
-    // 添加框架特定的依赖
-    switch (projectType) {
-      case 'vue3':
-        Object.assign(basePackage, {
-          dependencies: { vue: '^3.3.0' },
-          devDependencies: { ...basePackage.devDependencies, '@vitejs/plugin-vue': '^5.0.0' },
-        })
-        break
-      case 'vue2':
-        Object.assign(basePackage, {
-          dependencies: { vue: '^2.7.0' },
-          devDependencies: { ...basePackage.devDependencies, '@vitejs/plugin-vue2': '^2.3.0' },
-        })
-        break
-      case 'react':
-        Object.assign(basePackage, {
-          dependencies: { 'react': '^18.2.0', 'react-dom': '^18.2.0' },
-          devDependencies: {
-            ...basePackage.devDependencies,
-            '@vitejs/plugin-react': '^4.0.0',
-            '@types/react': '^18.2.0',
-            '@types/react-dom': '^18.2.0',
-          },
-        })
-        break
-      case 'vanilla-ts':
-        Object.assign(basePackage, {
-          devDependencies: { ...basePackage.devDependencies, typescript: '^5.0.0' },
-        })
-        break
-    }
-
-    return basePackage
-  }
-
-  /**
-   * 生成 index.html
-   */
-  private generateIndexHtml(projectType: ProjectType): string {
-    const title = `Vite + ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}`
-
-    return `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${title}</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.${projectType.includes('ts') ? 'ts' : 'js'}"></script>
-  </body>
-</html>`
-  }
-
-  /**
-   * 生成入口文件
-   */
-  private async generateEntryFiles(srcDir: string, projectType: ProjectType): Promise<void> {
-    switch (projectType) {
-      case 'vue3':
-        await fs.writeFile(path.join(srcDir, 'main.js'), `import { createApp } from 'vue'\nimport App from './App.vue'\n\ncreateApp(App).mount('#app')`)
-        await fs.writeFile(path.join(srcDir, 'App.vue'), `<template>\n  <div>\n    <h1>Hello Vue 3!</h1>\n  </div>\n</template>\n\n<script>\nexport default {\n  name: 'App'\n}\n</script>`)
-        break
-      case 'react':
-        await fs.writeFile(path.join(srcDir, 'main.jsx'), `import React from 'react'\nimport ReactDOM from 'react-dom/client'\nimport App from './App.jsx'\n\nReactDOM.createRoot(document.getElementById('app')).render(<App />)`)
-        await fs.writeFile(path.join(srcDir, 'App.jsx'), `function App() {\n  return <h1>Hello React!</h1>\n}\n\nexport default App`)
-        break
-      case 'vanilla':
-        await fs.writeFile(path.join(srcDir, 'main.js'), `document.querySelector('#app').innerHTML = '<h1>Hello Vite!</h1>'`)
-        break
-      case 'vanilla-ts':
-        await fs.writeFile(path.join(srcDir, 'main.ts'), `const app = document.querySelector<HTMLDivElement>('#app')!\napp.innerHTML = '<h1>Hello Vite + TypeScript!</h1>'`)
-        break
-    }
-  }
-
-  /**
-   * 安装依赖
-   */
-  private async installDependencies(_projectPath: string): Promise<void> {
-    this.log('安装依赖...', 'info')
-
-    // 这里可以根据检测到的包管理器执行安装命令
-    // 为了简化，这里只是记录日志
-    this.log('请手动运行 npm install 安装依赖', 'info')
-  }
-
-  /**
-   * 检查目录是否存在
-   */
-  private async checkDirectoryExists(dirPath: string): Promise<boolean> {
-    try {
-      const stat = await fs.stat(dirPath)
-      return stat.isDirectory()
-    }
-    catch {
-      return false
-    }
-  }
-
-  /**
-   * 分析构建输出
-   */
-  private async analyzeBuildOutput(outputPath: string): Promise<BuildStats> {
-    const stats: BuildStats = {
-      entryCount: 0,
-      moduleCount: 0,
-      assetCount: 0,
-      chunkCount: 0,
-    }
-
-    try {
-      const files = await fs.readdir(outputPath, { recursive: true })
-
-      for (const file of files) {
-        const filePath = path.join(outputPath, file.toString())
-        const stat = await fs.stat(filePath)
-
-        if (stat.isFile()) {
-          const fileName = file.toString()
-          const ext = path.extname(fileName).slice(1)
-
-          // 统计不同类型的文件
-          if (fileName.includes('index') && (ext === 'js' || ext === 'ts')) {
-            stats.entryCount++
-          }
-          if (ext === 'js' || ext === 'ts' || ext === 'jsx' || ext === 'tsx') {
-            stats.moduleCount++
-          }
-          if (ext === 'css' || ext === 'png' || ext === 'jpg' || ext === 'svg' || ext === 'ico') {
-            stats.assetCount++
-          }
-          if (fileName.includes('chunk') || fileName.includes('vendor')) {
-            stats.chunkCount++
-          }
-        }
-      }
-    }
-    catch (error) {
-      this.log(`分析构建输出失败: ${(error as Error).message}`, 'warn')
-    }
-
-    return stats
-  }
-
-  /**
-   * 格式化字节数
-   */
-  // formatBytes method removed as it's not currently used
-
-  /**
    * 检查实例是否已销毁
    */
   private checkDestroyed(): void {
@@ -636,12 +434,18 @@ export class ViteLauncher implements IViteLauncher {
     }
 
     if (levels[level] <= levels[this.options.logLevel || 'info']) {
-      console.log(`[ViteLauncher] ${message}`)
+      switch (level) {
+        case 'error':
+          LoggerUtils.error(message, 'ViteLauncher')
+          break
+        case 'warn':
+          LoggerUtils.warn(message, 'ViteLauncher')
+          break
+        case 'info':
+        default:
+          LoggerUtils.info(message, 'ViteLauncher')
+          break
+      }
     }
   }
 }
-
-/**
- * 默认启动器实例
- */
-export const viteLauncher = new ViteLauncher()

@@ -48,8 +48,8 @@ export type CacheStrategy = 'memory' | 'session' | 'local' | 'none'
  * RouterLink 属性（泛型版）
  */
 export interface RouterLinkProps<
-  TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>,
+  TParams extends Record<string, unknown> = Record<string, unknown>,
+  TQuery extends Record<string, unknown> = Record<string, unknown>,
 > {
   /** 目标路由 */
   to: RouteLocationRaw<TParams, TQuery>
@@ -98,7 +98,7 @@ export interface RouterLinkProps<
  */
 export type TypedRouterLinkProps<T extends string> = RouterLinkProps<
   ExtractRouteParams<T>,
-  Record<string, any>
+  Record<string, unknown>
 > & {
   to: T | RouteLocationRaw<ExtractRouteParams<T>>
 }
@@ -107,8 +107,8 @@ export type TypedRouterLinkProps<T extends string> = RouterLinkProps<
  * RouterLink 插槽属性（泛型版）
  */
 export interface RouterLinkSlotProps<
-  TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>,
+  TParams extends Record<string, unknown> = Record<string, unknown>,
+  TQuery extends Record<string, unknown> = Record<string, unknown>,
 > {
   /** 链接地址 */
   href: string
@@ -156,8 +156,8 @@ export interface RouterLinkEmits {
  * RouterView 属性（泛型版）
  */
 export interface RouterViewProps<
-  TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>,
+  TParams extends Record<string, unknown> = Record<string, unknown>,
+  TQuery extends Record<string, unknown> = Record<string, unknown>,
 > {
   /** 视图名称 */
   name?: string
@@ -332,7 +332,7 @@ export interface RouteEvent {
   /** 时间戳 */
   timestamp: number
   /** 额外数据 */
-  data?: any
+  data?: Record<string, unknown>
 }
 
 /**
