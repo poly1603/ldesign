@@ -113,7 +113,7 @@
     "prepare": "husky install",
     "tools:create-package": "tsx tools/scripts/package/create-package.ts",
     "tools:standardize": "tsx tools/scripts/standardize/package-standardizer.ts",
-    "tools:standardize-rollup": "tsx tools/scripts/standardize-rollup.ts",
+    "tools:standardize-rollup": "tsx tools/scripts/standardize/package-standardizer.ts --rollup-only",
     "tools:migrate-to-vite": "tsx tools/scripts/migrate-to-vite.ts",
     "tools:release": "tsx tools/scripts/release/version-manager.ts",
     "version:bump": "tsx tools/scripts/build/version-manager.ts bump",

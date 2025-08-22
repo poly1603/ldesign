@@ -1,18 +1,17 @@
 # @ldesign/form
 
-一个功能强大、类型安全的 Vue 3 动态表单系统，支持多种使用方式和丰富的功能特性。
+一个功能完整的 Vue 3 表单系统，支持 Vue 组件、Composition API 以及原生 JavaScript 三种使用方式。
 
 ## ✨ 特性
 
-- 🚀 **多种使用方式**: 支持 Vue 组件、Composition API Hook 和原生 JavaScript
-- 📝 **动态表单**: 基于配置生成表单，支持复杂的表单结构
-- 🔧 **类型安全**: 完整的 TypeScript 支持，提供优秀的开发体验
-- ✅ **强大验证**: 内置多种验证规则，支持自定义验证器和异步验证
-- 📱 **响应式布局**: 自适应网格布局，支持多种屏幕尺寸
-- 🎨 **主题定制**: 支持主题切换和深度样式定制
-- 🔄 **条件渲染**: 支持字段的条件显示和动态配置
-- 📊 **状态管理**: 完整的表单状态管理，包括脏检查、验证状态等
-- 🎯 **高性能**: 优化的渲染性能和内存使用
+- 🎯 **多种使用方式**：支持 Vue 组件、Composition API Hook 和原生 JavaScript
+- 📱 **响应式设计**：完全适配移动端，支持断点响应式布局
+- 🔧 **配置驱动**：通过配置快速创建功能丰富的表单
+- ✅ **强大验证**：内置丰富的验证规则，支持自定义验证器
+- 🎨 **主题系统**：支持自定义 CSS 变量和样式覆盖
+- 📦 **TypeScript**：完整的类型定义，确保类型安全
+- 🚀 **高性能**：优化的渲染和响应式系统
+- 🔌 **插件化**：支持通过插件机制扩展功能
 
 ## 📦 安装
 
@@ -26,95 +25,186 @@ pnpm add @ldesign/form
 
 ## 🚀 快速开始
 
-### 原生 JavaScript
-
-```javascript
-import { FormManager } from '@ldesign/form'
-
-const formConfig = {
-  items: [
-    {
-      key: 'name',
-      label: '姓名',
-      type: 'input',
-      required: true,
-    },
-    {
-      key: 'email',
-      label: '邮箱',
-      type: 'email',
-      required: true,
-    },
-  ],
-  layout: {
-    defaultRows: 2,
-    minColumns: 1,
-    maxColumns: 4,
-  },
-  display: {
-    labelPosition: 'left',
-    expandMode: 'inline',
-  },
-  validation: {
-    validateOnChange: true,
-  },
-  behavior: {
-    readonly: false,
-  },
-}
-
-const container = document.getElementById('form-container')
-const formManager = new FormManager(formConfig, container)
-formManager.render()
-```
-
-### Vue3
+### Vue 组件方式
 
 ```vue
+<template>
+  <DynamicForm
+    v-model="formData"
+    :options="formOptions"
+    @submit="handleSubmit"
+    @change="handleChange"
+  />
+</template>
+
 <script setup>
-import { AdaptiveForm } from '@ldesign/form/vue'
 import { ref } from 'vue'
+import { DynamicForm } from '@ldesign/form'
 
 const formData = ref({})
-const formConfig = {
-  // ... 配置同上
+const formOptions = {
+  fields: [
+    {
+      name: 'username',
+      title: '用户名',
+      component: 'FormInput',
+      required: true,
+      rules: [{ validator: 'required', message: '请输入用户名' }]
+    },
+    {
+      name: 'email',
+      title: '邮箱',
+      component: 'FormInput',
+      props: { type: 'email' },
+      rules: [{ validator: 'email', message: '请输入有效的邮箱地址' }]
+    }
+  ]
 }
 
-function handleChange(data) {
-  console.log('表单数据变化:', data)
+const handleSubmit = (data, valid) => {
+  if (valid) {
+    console.log('提交数据:', data)
+  }
 }
 </script>
-
-<template>
-  <AdaptiveForm v-model="formData" :config="formConfig" @change="handleChange" />
-</template>
 ```
 
-## 开发状态
+### Composition API Hook 方式
 
-🎉 **当前状态**: 核心功能已完成 95%，是一个功能完整的智能表单布局系统
+```vue
+<template>
+  <component :is="renderForm" />
+</template>
 
-已完成:
+<script setup>
+import { useForm } from '@ldesign/form'
 
-- ✅ **项目基础架构** (100%) - 完整的项目结构、TypeScript 类型系统、构建配置
-- ✅ **核心工具函数** (100%) - DOM 操作、数学计算、事件系统、节流工具
-- ✅ **布局引擎系统** (100%) - 布局计算器、表单渲染器、响应式布局引擎
-- ✅ **状态管理系统** (100%) - 表单状态管理器、数据绑定系统、FormManager 主类
-- ✅ **验证引擎系统** (100%) - 验证规则管理器、实时验证器、8 种内置验证器
-- ✅ **展开收起功能** (90%) - 内联展开收起、动画效果、展开按钮
-- ✅ **Vue3 框架集成** (85%) - AdaptiveForm 组件、useAdaptiveForm Hook、事件系统
-- ✅ **测试覆盖系统** (90%) - 15 个测试文件、单元测试、集成测试
-- ✅ **API 文档和指南** (100%) - 完整的 API 文档、使用指南、最佳实践
+const {
+  formData,
+  errors,
+  validate,
+  submit,
+  renderForm
+} = useForm({
+  fields: [
+    {
+      name: 'username',
+      title: '用户名',
+      component: 'FormInput',
+      required: true
+    }
+  ]
+})
+</script>
+```
 
-**项目规模**: 约 8000 行高质量 TypeScript 代码，功能完整、架构清晰、性能优秀
+### 原生 JavaScript 方式
 
-待完善:
+```javascript
+import { createFormInstance } from '@ldesign/form/vanilla'
 
-- 🔄 弹窗模式的完整实现
-- 🔄 Vue3 Provider/Plugin 系统
-- 🔄 分组表单功能
-- 🔄 React/Angular 框架集成
+const formInstance = createFormInstance({
+  container: '#form-container',
+  fields: [
+    {
+      name: 'username',
+      title: '用户名',
+      component: 'input',
+      required: true
+    }
+  ],
+  onSubmit: (data, valid) => {
+    if (valid) {
+      console.log('提交数据:', data)
+    }
+  }
+})
+```
 
-## 许可证
+## 📋 核心配置
 
-MIT License
+### 字段配置
+
+```typescript
+interface FormItemConfig {
+  title: string                    // 字段标题
+  name: string                     // 字段名称
+  span?: number | string           // 所占列数
+  component: string | Component    // 表单组件类型
+  props?: Record<string, any>      // 组件属性
+  defaultValue?: any               // 默认值
+  required?: boolean               // 是否必填
+  rules?: ValidationRule[]         // 验证规则
+}
+```
+
+### 布局配置
+
+```typescript
+interface LayoutConfig {
+  defaultRows?: number             // 默认显示行数
+  minColumnWidth?: number          // 最小列宽
+  autoCalculate?: boolean          // 自动计算列数
+  columns?: number                 // 固定列数
+  horizontalGap?: number           // 水平间距
+  verticalGap?: number            // 垂直间距
+}
+```
+
+## 🔧 内置验证器
+
+- `required` - 必填验证
+- `email` - 邮箱格式验证
+- `phone` - 手机号验证
+- `url` - URL 格式验证
+- `number` - 数字验证
+- `min` / `max` - 最小/最大值验证
+- `minLength` / `maxLength` - 最小/最大长度验证
+- `pattern` - 正则表达式验证
+
+## 📱 响应式设计
+
+表单支持完整的响应式设计，自动适配不同设备：
+
+```javascript
+const responsiveLayout = {
+  columns: {
+    xs: 1,    // 手机：1列
+    sm: 2,    // 平板：2列
+    md: 3,    // 桌面：3列
+    lg: 4     // 大屏：4列
+  }
+}
+```
+
+## 🛠️ API 参考
+
+### FormInstance 方法
+
+```typescript
+interface FormInstance {
+  setFormData(data: Partial<FormData>): void
+  getFormData(): FormData
+  setFieldValue(name: string, value: any): void
+  getFieldValue(name: string): any
+  validate(): Promise<FormValidationResult>
+  reset(): void
+  submit(): Promise<{data: FormData, valid: boolean}>
+  destroy(): void
+}
+```
+
+## 📦 构建输出
+
+- **ES 模块**: `@ldesign/form` - Vue 完整版本
+- **Vanilla JS**: `@ldesign/form/vanilla` - 原生 JavaScript 版本
+- **UMD**: `@ldesign/form/dist/index.min.js` - 浏览器直接引入
+- **类型定义**: 完整的 TypeScript 类型支持
+
+## 🤝 贡献
+
+欢迎贡献代码！请查看 [贡献指南](../../CONTRIBUTING.md)。
+
+## 📄 许可证
+
+[MIT](./LICENSE) © LDesign Team

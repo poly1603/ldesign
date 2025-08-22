@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 功能特性列表
 const features = ref([
@@ -75,10 +75,10 @@ app.mount('#app')`)
 
 // 引擎状态信息
 const engineStatus = computed(() => {
-  if (!engine.value)
+  if (!engine)
     return []
 
-  const stats = engine.value.getManagerStats()
+  const stats = engine.getManagerStats() as any
   return [
     {
       key: 'plugins',
@@ -113,8 +113,8 @@ const engineStatus = computed(() => {
 
 // 显示欢迎通知
 function showWelcomeNotification() {
-  if (engine.value?.notifications) {
-    engine.value.notifications.show({
+  if (engine?.notifications) {
+    engine.notifications.show({
       title: '🎉 欢迎使用 Vue3 Engine!',
       message: '开始探索引擎的强大功能吧！',
       type: 'success',
@@ -125,9 +125,9 @@ function showWelcomeNotification() {
 
 // 显示引擎信息
 function showEngineInfo() {
-  if (engine.value?.notifications) {
-    const info = engine.value.getManagerStats()
-    engine.value.notifications.show({
+  if (engine?.notifications) {
+    const info = engine.getManagerStats()
+    engine.notifications.show({
       title: 'ℹ️ 引擎信息',
       message: `版本: ${info.version || '0.1.0'}, 环境: ${info.environment || 'development'}`,
       type: 'info',
@@ -138,8 +138,8 @@ function showEngineInfo() {
 
 // 显示功能演示
 function showFeatureDemo(feature: string) {
-  if (engine.value?.notifications) {
-    engine.value.notifications.show({
+  if (engine?.notifications) {
+    engine.notifications.show({
       title: `✨ ${features.value.find(f => f.id === feature)?.title}`,
       message: '正在跳转到功能演示页面...',
       type: 'info',
@@ -157,8 +157,8 @@ function showFeatureDemo(feature: string) {
 async function copyCode() {
   try {
     await navigator.clipboard.writeText(codeExample.value)
-    if (engine.value?.notifications) {
-      engine.value.notifications.show({
+    if (engine?.notifications) {
+      engine.notifications.show({
         title: '📋 复制成功',
         message: '代码已复制到剪贴板',
         type: 'success',
@@ -167,8 +167,8 @@ async function copyCode() {
     }
   }
   catch (error) {
-    if (engine.value?.notifications) {
-      engine.value.notifications.show({
+    if (engine?.notifications) {
+      engine.notifications.show({
         title: '❌ 复制失败',
         message: '无法复制代码到剪贴板',
         type: 'error',

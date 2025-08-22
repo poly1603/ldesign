@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 通知历史记录
 const notificationHistory = ref([
@@ -120,10 +120,10 @@ const activeNotifications = computed(() => {
 })
 
 const notificationByType = computed(() => {
-  const types = { success: 0, error: 0, warning: 0, info: 0 }
+  const types: Record<'success' | 'error' | 'warning' | 'info', number> = { success: 0, error: 0, warning: 0, info: 0 }
   notificationHistory.value.forEach(n => {
-    if (types.hasOwnProperty(n.type)) {
-      types[n.type]++
+    if ((['success','error','warning','info'] as const).includes(n.type as any)) {
+      types[n.type as 'success' | 'error' | 'warning' | 'info']++
     }
   })
   return types
@@ -142,7 +142,7 @@ const clickRate = computed(() => {
 // 发送自定义通知
 function sendCustomNotification() {
   if (!newNotification.value.title || !newNotification.value.message) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写通知标题和内容',
       type: 'error',
@@ -150,7 +150,7 @@ function sendCustomNotification() {
     return
   }
   
-  const notification = {
+  const notification: any = {
     title: newNotification.value.title,
     message: newNotification.value.message,
     type: newNotification.value.type,
@@ -158,7 +158,7 @@ function sendCustomNotification() {
   }
   
   // 发送通知
-  engine.value?.notifications.show(notification)
+  engine?.notifications.show(notification)
   
   // 添加到历史记录
   addToHistory(notification)
@@ -180,7 +180,7 @@ function sendCustomNotification() {
 function sendTemplateNotification(templateId: string) {
   const template = notificationTemplates.value.find(t => t.id === templateId)
   if (template) {
-    const notification = {
+    const notification: any = {
       title: template.title,
       message: template.message,
       type: template.type,
@@ -188,7 +188,7 @@ function sendTemplateNotification(templateId: string) {
     }
     
     // 发送通知
-    engine.value?.notifications.show(notification)
+    engine?.notifications.show(notification)
     
     // 添加到历史记录
     addToHistory(notification)
@@ -196,7 +196,7 @@ function sendTemplateNotification(templateId: string) {
     // 更新统计
     notificationStats.value.totalSent++
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '📨 模板通知已发送',
       message: `已使用模板 "${template.name}" 发送通知`,
       type: 'success',
@@ -215,17 +215,17 @@ function sendBulkNotifications() {
   
   notifications.forEach((notification, index) => {
     setTimeout(() => {
-      engine.value?.notifications.show({
-        ...notification,
+      engine?.notifications.show({
+        ...(notification as any),
         duration: 4000,
-      })
+      } as any)
       
       addToHistory(notification)
       notificationStats.value.totalSent++
     }, index * 1000)
   })
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '📨 批量通知开始发送',
     message: `正在发送 ${notifications.length} 条通知...`,
     type: 'info',
@@ -234,7 +234,7 @@ function sendBulkNotifications() {
 
 // 演示不同类型的通知
 function showNotificationDemo(type: string) {
-  const demos = {
+  const demos: Record<string, any> = {
     success: {
       title: '🎉 操作成功',
       message: '您的操作已成功完成！',
@@ -267,9 +267,9 @@ function showNotificationDemo(type: string) {
     },
   }
   
-  const demo = demos[type]
+  const demo = (demos as any)[type]
   if (demo) {
-    engine.value?.notifications.show(demo)
+    engine?.notifications.show(demo)
     addToHistory(demo)
     notificationStats.value.totalSent++
   }
@@ -277,37 +277,37 @@ function showNotificationDemo(type: string) {
 
 // 演示持久化通知
 function showPersistentNotification() {
-  const notification = {
+  const notification: any = {
     title: '🔔 重要通知',
     message: '这是一条不会自动消失的重要通知，需要手动关闭。',
     type: 'warning',
     duration: 0, // 不自动消失
   }
   
-  engine.value?.notifications.show(notification)
+  engine?.notifications.show(notification)
   addToHistory(notification)
   notificationStats.value.totalSent++
 }
 
 // 演示富文本通知
 function showRichNotification() {
-  const notification = {
+  const notification: any = {
     title: '🎨 富文本通知',
     message: '这是一条包含<strong>粗体</strong>和<em>斜体</em>的通知',
     type: 'info',
     duration: 6000,
   }
   
-  engine.value?.notifications.show(notification)
+  engine?.notifications.show(notification)
   addToHistory(notification)
   notificationStats.value.totalSent++
 }
 
 // 清除所有通知
 function clearAllNotifications() {
-  engine.value?.notifications.clear?.()
+  engine?.notifications.clear?.()
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🧹 通知已清除',
     message: '所有通知已被清除',
     type: 'info',
@@ -318,11 +318,9 @@ function clearAllNotifications() {
 // 更新通知设置
 function updateNotificationSettings() {
   // 这里可以将设置同步到引擎
-  if (engine.value?.notifications?.configure) {
-    engine.value.notifications.configure(notificationSettings.value)
-  }
+  // 如需应用设置，可在引擎内部扩展对应API
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '⚙️ 设置已更新',
     message: '通知系统设置已更新',
     type: 'success',
@@ -335,7 +333,7 @@ function testNotificationPerformance() {
   const startTime = Date.now()
   const count = 50
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🧪 性能测试开始',
     message: `正在发送 ${count} 条测试通知...`,
     type: 'info',
@@ -344,7 +342,7 @@ function testNotificationPerformance() {
   
   for (let i = 0; i < count; i++) {
     setTimeout(() => {
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: `测试通知 ${i + 1}`,
         message: `这是第 ${i + 1} 条测试通知`,
         type: 'info',
@@ -356,7 +354,7 @@ function testNotificationPerformance() {
         const duration = endTime - startTime
         
         setTimeout(() => {
-          engine.value?.notifications.show({
+          engine?.notifications.show({
             title: '✅ 性能测试完成',
             message: `发送 ${count} 条通知耗时 ${duration}ms`,
             type: 'success',
@@ -405,7 +403,7 @@ function toggleNotificationDismissal(notificationId: number) {
 function clearHistory() {
   notificationHistory.value = []
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🗑️ 历史记录已清除',
     message: '所有通知历史记录已清除',
     type: 'info',
@@ -432,7 +430,7 @@ function exportNotificationData() {
   
   URL.revokeObjectURL(url)
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '📊 数据导出成功',
     message: '通知数据已导出到文件',
     type: 'success',
@@ -441,11 +439,11 @@ function exportNotificationData() {
 
 // 组件挂载
 onMounted(() => {
-  engine.value?.logger.info('通知系统页面已加载')
+  engine?.logger.info('通知系统页面已加载')
   
   // 发送欢迎通知
   setTimeout(() => {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🎉 欢迎来到通知系统',
       message: '您可以在这里测试和管理各种通知功能',
       type: 'success',
@@ -509,7 +507,7 @@ onMounted(() => {
             <span class="demo-label">{{ type.label }}</span>
           </div>
           <div class="demo-stats">
-            <span class="demo-count">{{ notificationByType[type.value] }} 条</span>
+            <span class="demo-count">{{ notificationByType[type.value as 'success' | 'error' | 'warning' | 'info'] }} 条</span>
           </div>
           <button 
             class="btn demo-btn"

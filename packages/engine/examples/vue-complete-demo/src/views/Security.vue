@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 安全状态
 const securityStatus = ref({
@@ -190,15 +190,18 @@ const securityHealth = computed(() => {
 })
 
 // 切换安全功能
-function toggleSecurityFeature(feature: string) {
+function toggleSecurityFeature(feature: keyof typeof securityStatus.value) {
+  // @ts-ignore
   securityStatus.value[feature] = !securityStatus.value[feature]
   
+  // @ts-ignore
   const action = securityStatus.value[feature] ? '启用' : '禁用'
   addSecurityEvent('info', 'Security', `${feature} 已${action}`, 'low')
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: `🔒 安全功能${action}`,
     message: `${feature} 已${action}`,
+    // @ts-ignore
     type: securityStatus.value[feature] ? 'success' : 'warning',
   })
 }
@@ -211,7 +214,7 @@ function toggleSecurityRule(ruleId: string) {
     
     addSecurityEvent('info', 'Rules', `安全规则 ${rule.name} 已${rule.enabled ? '启用' : '禁用'}`, 'low')
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: rule.enabled ? '✅ 规则已启用' : '⏸️ 规则已禁用',
       message: `${rule.name} 已${rule.enabled ? '启用' : '禁用'}`,
       type: rule.enabled ? 'success' : 'warning',
@@ -225,7 +228,7 @@ function runSecurityTest(testName: string) {
   if (test) {
     test.status = 'running'
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🔍 安全测试开始',
       message: `正在运行 ${testName}...`,
       type: 'info',
@@ -241,7 +244,7 @@ function runSecurityTest(testName: string) {
       
       addSecurityEvent('info', 'Testing', `安全测试 ${testName} 完成`, 'low')
       
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: test.status === 'passed' ? '✅ 测试通过' : '⚠️ 发现问题',
         message: `${testName}: ${test.details}`,
         type: test.status === 'passed' ? 'success' : 'warning',
@@ -253,7 +256,7 @@ function runSecurityTest(testName: string) {
 // 创建安全规则
 function createSecurityRule() {
   if (!newRule.value.name || !newRule.value.description) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写规则名称和描述',
       type: 'error',
@@ -283,7 +286,7 @@ function createSecurityRule() {
     level: 'medium',
   }
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🎉 规则创建成功',
     message: `安全规则 ${rule.name} 已创建`,
     type: 'success',
@@ -293,7 +296,7 @@ function createSecurityRule() {
 // 创建访问控制规则
 function createAccessControl() {
   if (!newAcl.value.target || !newAcl.value.description) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写目标和描述',
       type: 'error',
@@ -323,7 +326,7 @@ function createAccessControl() {
     priority: 100,
   }
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🎉 访问控制规则创建成功',
     message: `已创建针对 ${acl.target} 的规则`,
     type: 'success',
@@ -338,7 +341,7 @@ function toggleAccessControl(aclId: number) {
     
     addSecurityEvent('info', 'Access', `访问控制规则 ${acl.target} 已${acl.active ? '启用' : '禁用'}`, 'low')
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: acl.active ? '✅ 规则已启用' : '⏸️ 规则已禁用',
       message: `${acl.target} 的访问控制规则已${acl.active ? '启用' : '禁用'}`,
       type: acl.active ? 'success' : 'warning',
@@ -347,7 +350,7 @@ function toggleAccessControl(aclId: number) {
 }
 
 // 模拟安全攻击
-function simulateAttack(attackType: string) {
+function simulateAttack(attackType: 'xss' | 'sqlinjection' | 'bruteforce') {
   const attacks = {
     xss: {
       category: 'XSS',
@@ -376,7 +379,7 @@ function simulateAttack(attackType: string) {
       rule.hits++
     }
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🛡️ 攻击已阻止',
       message: attack.description,
       type: 'success',
@@ -409,7 +412,7 @@ function addSecurityEvent(type: string, category: string, description: string, s
 function clearSecurityEvents() {
   securityEvents.value = []
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🗑️ 事件日志已清除',
     message: '所有安全事件日志已清除',
     type: 'info',
@@ -436,7 +439,7 @@ function exportSecurityReport() {
   
   URL.revokeObjectURL(url)
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '📊 安全报告导出成功',
     message: '安全报告已导出到文件',
     type: 'success',
@@ -445,7 +448,7 @@ function exportSecurityReport() {
 
 // 组件挂载
 onMounted(() => {
-  engine.value?.logger.info('安全防护页面已加载')
+  engine?.logger.info('安全防护页面已加载')
 })
 </script>
 
@@ -782,10 +785,10 @@ onMounted(() => {
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   methods: {
-    getFeatureName(key) {
+    getFeatureName(key: keyof any) {
       const names = {
         xssProtection: 'XSS防护',
         csrfProtection: 'CSRF防护', 
@@ -796,10 +799,10 @@ export default {
         accessControl: '访问控制',
         inputValidation: '输入验证',
       }
-      return names[key] || key
+      return (names as any)[key] || (key as any)
     },
     
-    getFeatureDescription(key) {
+    getFeatureDescription(key: keyof any) {
       const descriptions = {
         xssProtection: '防止跨站脚本攻击',
         csrfProtection: '防止跨站请求伪造',
@@ -810,7 +813,7 @@ export default {
         accessControl: '控制用户访问权限',
         inputValidation: '验证用户输入数据',
       }
-      return descriptions[key] || key
+      return (descriptions as any)[key] || (key as any)
     },
   },
 }

@@ -105,6 +105,8 @@ export function createPackage(
 
   // 创建基础文件
   createBasicFiles(packageDir, packageName, description, { vue })
+  createTestFiles(packageDir)
+  createExampleFiles(packageDir, packageName, description)
 
   console.log(`✅ 包 @ldesign/${packageName} 创建成功`)
   console.log(`📁 位置: packages/${packageName}`)
@@ -142,6 +144,64 @@ export * from './utils'
 // Main functionality
 export function ${toCamelCase(packageName)}() {
   console.log('${description}')
+}
+
+/**
+ * 生成基础测试文件
+ */
+function createTestFiles(packageDir: string): void {
+  const testContent = `import { describe, it, expect } from 'vitest'
+  import { isValidInput } from '../src/utils'
+
+  describe('utils', () => {
+    it('isValidInput should validate non-nullish values', () => {
+      expect(isValidInput('a')).toBe(true)
+      expect(isValidInput(0)).toBe(true)
+      expect(isValidInput(false)).toBe(true)
+      expect(isValidInput(null)).toBe(false)
+      expect(isValidInput(undefined)).toBe(false)
+    })
+  })
+    `
+
+  fs.writeFileSync(path.resolve(packageDir, '__tests__/basic.test.ts'), testContent)
+}
+
+/**
+ * 生成基础示例文件
+ */
+function createExampleFiles(
+  packageDir: string,
+  packageName: string,
+  description: string,
+): void {
+  const exampleHtml = `< !DOCTYPE html >
+    <html lang="zh-CN" >
+      <head>
+      <meta charset="UTF-8" >
+        <meta name="viewport" content = "width=device-width, initial-scale=1.0" >
+          <title>@ldesign / ${ packageName } Example </title>
+            <style>
+    body { font - family: -apple - system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; padding: 24px; }
+    code { background: #f6f8fa; padding: 2px 6px; border - radius: 4px; }
+  </style>
+    </head>
+    < body >
+    <h1>@ldesign / ${ packageName } 示例 </h1>
+      < p > ${ description } </p>
+        < div id = "app" > </div>
+          < p style = "margin-top:16px;color:#666" > 开发模式下可使用 < code > pnpm dev < /code> 运行并从 <code>src</code > 导入；生产模式下请从 < code > dist < /code> 导入构建产物。</p >
+
+            <script type="module" >
+              // 开发时可改为从 '../src/index.ts' 导入
+              // 生产构建后，改为从 '../dist/index.js' 导入
+              console.log('Example loaded for @ldesign/${packageName}')
+              </script>
+              </body>
+              </html>
+                `
+
+  fs.writeFileSync(path.resolve(packageDir, 'examples/basic.html'), exampleHtml)
 }
 
 export default {
@@ -213,8 +273,8 @@ export default ${toPascalCase(packageName)}
 import type { ${toPascalCase(packageName)}Options } from '../types'
 
 export function install(app: App, options?: ${toPascalCase(
-  packageName,
-)}Options) {
+        packageName,
+      )}Options) {
   // Vue 插件安装逻辑
 }
 
@@ -375,9 +435,8 @@ import { ${toCamelCase(packageName)} } from '@ldesign/${packageName}'
 ${toCamelCase(packageName)}()
 \`\`\`
 
-${
-  vue
-    ? `### Vue 3 集成
+${vue
+      ? `### Vue 3 集成
 
 \`\`\`typescript
 import { createApp } from 'vue'
@@ -397,8 +456,8 @@ const ${toCamelCase(packageName)} = use${toPascalCase(packageName)}()
 </script>
 \`\`\`
 `
-    : ''
-}
+      : ''
+    }
 
 ## API 文档
 

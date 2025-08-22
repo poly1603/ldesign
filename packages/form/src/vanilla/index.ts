@@ -1,5 +1,23 @@
-// @ldesign/form/vanilla 入口文件
-// 原生 JavaScript 支持
+/**
+ * @fileoverview Vanilla JavaScript module exports
+ * @author LDesign Team
+ */
 
-export type { FormData, FormOptions } from '../types/form'
-export { createFormInstance, FormInstance } from '../vanilla'
+export { VanillaFormInstanceImpl } from './VanillaFormInstance'
+export {
+  createFormInstance,
+  FormInstanceClass,
+  createSimpleForm,
+  createFormFromHTML,
+  formRegistry,
+  createAndRegisterForm,
+  getForm,
+} from './factory'
+
+// Re-export core functionality for vanilla usage
+export {
+  FormEngine,
+  ValidationEngine,
+  LayoutCalculator,
+  EventEmitter,
+} from '../core'

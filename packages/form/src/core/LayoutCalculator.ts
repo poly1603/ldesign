@@ -1,431 +1,303 @@
-// 布局计算器
+/**
+ * @fileoverview Layout calculator for responsive form layouts
+ * @author LDesign Team
+ */
 
-import type { FormItemConfig } from '../types/field'
 import type {
-  BreakpointConfig,
-  FieldLayout,
   LayoutConfig,
-  LayoutResult,
-} from '../types/layout'
-import { SimpleEventEmitter } from '../utils/event'
-import {
-  calculateColumns,
-  calculateColumnWidth,
-  calculateElementPosition,
-  calculateElementSize,
-  getBreakpoint,
-  parseSpan,
-} from '../utils/math'
+  ResponsiveConfig,
+  ResponsiveBreakpoints,
+  BreakpointType,
+  DeviceType,
+} from '../types'
 
 /**
- * 布局计算器
+ * Layout calculator for form responsive design
  */
-export class LayoutCalculator extends SimpleEventEmitter {
-  private config: LayoutConfig
-  private containerSize: { width: number, height: number } = {
-    width: 0,
-    height: 0,
+export class LayoutCalculator {
+  private defaultBreakpoints: ResponsiveBreakpoints = {
+    xs: 576,
+    sm: 768,
+    md: 992,
+    lg: 1200,
+    xl: 1400,
   }
 
-  private currentBreakpoint: string = 'lg'
-
-  constructor(config: LayoutConfig = {}) {
-    super()
+  constructor(private config: LayoutConfig = {}) {
     this.config = {
       defaultRows: 3,
       minColumnWidth: 300,
       autoCalculate: true,
       horizontalGap: 16,
       verticalGap: 16,
+      breakpoints: this.defaultBreakpoints,
       ...config,
     }
   }
 
   /**
-   * 计算布局
+   * Get current breakpoint based on container width
    */
-  calculateLayout(
-    fields: FormItemConfig[],
+  getCurrentBreakpoint(containerWidth: number): BreakpointType {
+    const breakpoints = this.config.breakpoints || this.defaultBreakpoints
+
+    if (containerWidth < (breakpoints.xs || 576)) return 'xs'
+    if (containerWidth < (breakpoints.sm || 768)) return 'sm'
+    if (containerWidth < (breakpoints.md || 992)) return 'md'
+    if (containerWidth < (breakpoints.lg || 1200)) return 'lg'
+    return 'xl'
+  }
+
+  /**
+   * Get device type based on container width
+   */
+  getDeviceType(containerWidth: number): DeviceType {
+    const breakpoint = this.getCurrentBreakpoint(containerWidth)
+
+    switch (breakpoint) {
+      case 'xs':
+      case 'sm':
+        return 'mobile'
+      case 'md':
+        return 'tablet'
+      default:
+        return 'desktop'
+    }
+  }
+
+  /**
+   * Calculate optimal number of columns based on container width
+   */
+  calculateColumns(containerWidth: number): number {
+    if (!this.config.autoCalculate && this.config.columns) {
+      return this.resolveResponsiveValue(this.config.columns, containerWidth)
+    }
+
+    const minWidth = this.resolveResponsiveValue(
+      this.config.minColumnWidth || 300,
+      containerWidth
+    )
+
+    const horizontalGap = this.resolveResponsiveValue(
+      this.config.horizontalGap || 16,
+      containerWidth
+    )
+
+    // Calculate how many columns can fit
+    const availableWidth = containerWidth - horizontalGap
+    const columnWidth = minWidth + horizontalGap
+    const calculatedColumns = Math.floor(availableWidth / columnWidth)
+
+    // Ensure at least 1 column, maximum 6 columns for usability
+    return Math.max(1, Math.min(calculatedColumns, 6))
+  }
+
+  /**
+   * Calculate grid layout for form fields
+   */
+  calculateGridLayout(
     containerWidth: number,
-    containerHeight: number = 0,
-  ): LayoutResult {
-    this.containerSize = { width: containerWidth, height: containerHeight }
-    this.currentBreakpoint = getBreakpoint(containerWidth)
-
-    // 获取响应式配置
-    const responsiveConfig = this.getResponsiveConfig()
-    const effectiveConfig = { ...this.config, ...responsiveConfig }
-
-    // 计算列数
-    const columns = this.calculateEffectiveColumns(
-      containerWidth,
-      effectiveConfig,
-    )
-
-    // 计算列宽
-    const columnWidth = calculateColumnWidth(
-      containerWidth,
-      columns,
-      effectiveConfig.horizontalGap || 0,
-    )
-
-    // 过滤可见字段
-    const visibleFields = fields.filter(field => !field.hidden)
-
-    // 计算字段布局
-    const fieldLayouts = this.calculateFieldLayouts(
-      visibleFields,
-      columns,
-      columnWidth,
-      effectiveConfig,
-    )
-
-    // 计算是否需要展开按钮
-    const needsExpand = this.shouldShowExpandButton(
-      fieldLayouts,
-      effectiveConfig,
-    )
-
-    const result: LayoutResult = {
-      columns,
-      columnWidth,
-      fields: fieldLayouts,
-      containerSize: this.containerSize,
-      needsExpand,
-      visibleFieldCount: visibleFields.length,
-      hiddenFieldCount: fields.length - visibleFields.length,
-    }
-
-    this.emit('layoutCalculated', result)
-    return result
-  }
-
-  /**
-   * 计算有效列数
-   */
-  private calculateEffectiveColumns(
-    containerWidth: number,
-    config: LayoutConfig,
-  ): number {
-    if (config.columns && !config.autoCalculate) {
-      return config.columns
-    }
-
-    const minWidth = config.minColumnWidth || 300
-    const maxColumns = config.columns || 12
-
-    return calculateColumns(containerWidth, minWidth, maxColumns)
-  }
-
-  /**
-   * 获取响应式配置
-   */
-  private getResponsiveConfig(): Partial<LayoutConfig> {
-    const breakpoints = this.config.breakpoints
-    if (!breakpoints) {
-      return {}
-    }
-
-    const currentConfig
-      = breakpoints[this.currentBreakpoint as keyof BreakpointConfig]
-    if (!currentConfig) {
-      return {}
-    }
-
-    return {
-      columns: currentConfig.columns,
-      minColumnWidth: currentConfig.minColumnWidth,
-      horizontalGap: currentConfig.horizontalGap,
-      verticalGap: currentConfig.verticalGap,
-    }
-  }
-
-  /**
-   * 计算字段布局
-   */
-  private calculateFieldLayouts(
-    fields: FormItemConfig[],
-    columns: number,
-    columnWidth: number,
-    config: LayoutConfig,
-  ): FieldLayout[] {
-    const layouts: FieldLayout[] = []
-    const spans = fields.map(field => parseSpan(field.span || 1, columns))
-
-    let currentRow = 0
-    let currentColumn = 0
-
-    fields.forEach((field, index) => {
-      const span = spans[index]
-
-      // 检查当前行是否有足够空间
-      if (currentColumn + span > columns) {
-        currentRow++
-        currentColumn = 0
-      }
-
-      // 计算位置和尺寸
-      const position = calculateElementPosition(
-        currentRow,
-        currentColumn,
-        columnWidth,
-        this.getRowHeight(),
-        config.horizontalGap || 0,
-        config.verticalGap || 0,
-      )
-
-      const size = calculateElementSize(
-        span,
-        columnWidth,
-        this.getRowHeight(),
-        config.horizontalGap || 0,
-      )
-
-      // 判断是否可见（基于默认行数）
-      const visible = currentRow < (config.defaultRows || 3)
-
-      const layout: FieldLayout = {
-        name: field.name,
-        row: currentRow,
-        column: currentColumn,
-        span,
-        width: size.width,
-        height: size.height,
-        visible,
-        position,
-        size,
-      }
-
-      layouts.push(layout)
-
-      // 更新当前位置
-      currentColumn += span
-
-      // 如果到达行末，换行
-      if (currentColumn >= columns) {
-        currentRow++
-        currentColumn = 0
-      }
-    })
-
-    return layouts
-  }
-
-  /**
-   * 获取行高
-   */
-  private getRowHeight(): number {
-    // 默认行高，可以根据需要调整
-    return 60
-  }
-
-  /**
-   * 判断是否应该显示展开按钮
-   */
-  private shouldShowExpandButton(
-    layouts: FieldLayout[],
-    config: LayoutConfig,
-  ): boolean {
-    const defaultRows = config.defaultRows || 3
-    const maxRow = Math.max(...layouts.map(layout => layout.row), -1)
-    return maxRow >= defaultRows
-  }
-
-  /**
-   * 重新计算指定字段的布局
-   */
-  recalculateField(
-    fieldName: string,
-    fields: FormItemConfig[],
-    containerWidth: number,
-  ): FieldLayout | null {
-    const fieldIndex = fields.findIndex(field => field.name === fieldName)
-    if (fieldIndex === -1) {
-      return null
-    }
-
-    const layout = this.calculateLayout(fields, containerWidth)
-    return layout.fields[fieldIndex] || null
-  }
-
-  /**
-   * 获取字段在指定断点下的布局
-   */
-  getFieldLayoutAtBreakpoint(
-    field: FormItemConfig,
-    breakpoint: string,
-    containerWidth: number,
-  ): Partial<FieldLayout> {
-    const oldBreakpoint = this.currentBreakpoint
-    this.currentBreakpoint = breakpoint
-
-    const responsiveConfig = this.getResponsiveConfig()
-    const effectiveConfig = { ...this.config, ...responsiveConfig }
-
-    const columns = this.calculateEffectiveColumns(
-      containerWidth,
-      effectiveConfig,
-    )
-    const columnWidth = calculateColumnWidth(
-      containerWidth,
-      columns,
-      effectiveConfig.horizontalGap || 0,
-    )
-
-    const span = parseSpan(field.span || 1, columns)
-    const size = calculateElementSize(
-      span,
-      columnWidth,
-      this.getRowHeight(),
-      effectiveConfig.horizontalGap || 0,
-    )
-
-    this.currentBreakpoint = oldBreakpoint
-
-    return {
-      span,
-      width: size.width,
-      height: size.height,
-      size,
-    }
-  }
-
-  /**
-   * 计算最小容器宽度
-   */
-  calculateMinContainerWidth(fields: FormItemConfig[]): number {
-    const minColumnWidth = this.config.minColumnWidth || 300
-    const horizontalGap = this.config.horizontalGap || 0
-
-    // 找到最大跨列数
-    const maxSpan = Math.max(
-      ...fields.map((field) => {
-        if (typeof field.span === 'number') {
-          return field.span
-        }
-        if (typeof field.span === 'string' && field.span.endsWith('%')) {
-          const percentage = Number.parseFloat(field.span) / 100
-          return Math.ceil(12 * percentage) // 假设最大12列
-        }
-        return 1
-      }),
-    )
-
-    return maxSpan * minColumnWidth + (maxSpan - 1) * horizontalGap
-  }
-
-  /**
-   * 计算推荐容器高度
-   */
-  calculateRecommendedHeight(layout: LayoutResult): number {
-    if (layout.fields.length === 0) {
-      return 0
-    }
-
-    const maxRow = Math.max(...layout.fields.map(field => field.row))
-    const rowHeight = this.getRowHeight()
-    const verticalGap = this.config.verticalGap || 0
-
-    return (maxRow + 1) * rowHeight + maxRow * verticalGap
-  }
-
-  /**
-   * 获取布局统计信息
-   */
-  getLayoutStats(layout: LayoutResult): {
+    fieldCount: number
+  ): {
+    columns: number
+    rows: number
     totalRows: number
     visibleRows: number
-    hiddenRows: number
-    averageSpan: number
-    utilization: number
+    showExpand: boolean
   } {
-    const totalRows = Math.max(...layout.fields.map(field => field.row), -1) + 1
-    const visibleRows
-      = Math.max(
-        ...layout.fields.filter(field => field.visible).map(field => field.row),
-        -1,
-      ) + 1
-    const hiddenRows = totalRows - visibleRows
-
-    const totalSpan = layout.fields.reduce((sum, field) => sum + field.span, 0)
-    const averageSpan
-      = layout.fields.length > 0 ? totalSpan / layout.fields.length : 0
-
-    const maxPossibleSpan = totalRows * layout.columns
-    const utilization
-      = maxPossibleSpan > 0 ? (totalSpan / maxPossibleSpan) * 100 : 0
+    const columns = this.calculateColumns(containerWidth)
+    const totalRows = Math.ceil(fieldCount / columns)
+    const defaultRows = this.config.defaultRows || 3
+    const visibleRows = Math.min(totalRows, defaultRows)
+    const showExpand = totalRows > defaultRows
 
     return {
+      columns,
+      rows: totalRows,
       totalRows,
       visibleRows,
-      hiddenRows,
-      averageSpan: Math.round(averageSpan * 100) / 100,
-      utilization: Math.round(utilization * 100) / 100,
+      showExpand,
     }
   }
 
   /**
-   * 更新配置
+   * Calculate field span based on responsive configuration
+   */
+  calculateFieldSpan(
+    span: number | string | ResponsiveConfig<number | string> | undefined,
+    containerWidth: number,
+    totalColumns: number
+  ): number {
+    if (!span) return 1
+
+    const resolvedSpan = this.resolveResponsiveValue(span, containerWidth)
+
+    if (typeof resolvedSpan === 'string') {
+      // Handle percentage values
+      if (resolvedSpan.endsWith('%')) {
+        const percentage = parseFloat(resolvedSpan) / 100
+        return Math.max(1, Math.floor(totalColumns * percentage))
+      }
+      return 1
+    }
+
+    return Math.max(1, Math.min(resolvedSpan, totalColumns))
+  }
+
+  /**
+   * Calculate gaps based on responsive configuration
+   */
+  calculateGaps(containerWidth: number): {
+    horizontal: number
+    vertical: number
+  } {
+    return {
+      horizontal: this.resolveResponsiveValue(
+        this.config.horizontalGap || 16,
+        containerWidth
+      ),
+      vertical: this.resolveResponsiveValue(
+        this.config.verticalGap || 16,
+        containerWidth
+      ),
+    }
+  }
+
+  /**
+   * Resolve responsive value based on current breakpoint
+   */
+  private resolveResponsiveValue<T>(
+    value: T | ResponsiveConfig<T>,
+    containerWidth: number
+  ): T {
+    if (typeof value !== 'object' || value === null) {
+      return value
+    }
+
+    const responsiveConfig = value as ResponsiveConfig<T>
+
+    // If it's not a responsive config, return as is
+    if (!this.isResponsiveConfig(responsiveConfig)) {
+      return value
+    }
+
+    const breakpoint = this.getCurrentBreakpoint(containerWidth)
+
+    // Try to find value for current breakpoint
+    if (responsiveConfig[breakpoint] !== undefined) {
+      return responsiveConfig[breakpoint]!
+    }
+
+    // Fallback to smaller breakpoints
+    const breakpoints: BreakpointType[] = ['xl', 'lg', 'md', 'sm', 'xs']
+    const currentIndex = breakpoints.indexOf(breakpoint)
+
+    for (let i = currentIndex + 1; i < breakpoints.length; i++) {
+      const fallbackBreakpoint = breakpoints[i]
+      if (responsiveConfig[fallbackBreakpoint] !== undefined) {
+        return responsiveConfig[fallbackBreakpoint]!
+      }
+    }
+
+    // If no responsive value found, return the first available value
+    for (const bp of breakpoints) {
+      if (responsiveConfig[bp] !== undefined) {
+        return responsiveConfig[bp]!
+      }
+    }
+
+    // This should not happen, but return default value
+    return value as T
+  }
+
+  /**
+   * Check if value is a responsive configuration object
+   */
+  private isResponsiveConfig<T>(value: any): value is ResponsiveConfig<T> {
+    if (typeof value !== 'object' || value === null) {
+      return false
+    }
+
+    const keys = Object.keys(value)
+    const breakpointKeys = ['xs', 'sm', 'md', 'lg', 'xl']
+
+    return keys.some(key => breakpointKeys.includes(key))
+  }
+
+  /**
+   * Get container padding based on device type
+   */
+  getContainerPadding(containerWidth: number): {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  } {
+    const deviceType = this.getDeviceType(containerWidth)
+
+    switch (deviceType) {
+      case 'mobile':
+        return { top: 12, right: 16, bottom: 12, left: 16 }
+      case 'tablet':
+        return { top: 16, right: 24, bottom: 16, left: 24 }
+      default:
+        return { top: 24, right: 32, bottom: 24, left: 32 }
+    }
+  }
+
+  /**
+   * Update layout configuration
    */
   updateConfig(config: Partial<LayoutConfig>): void {
     this.config = { ...this.config, ...config }
-    this.emit('configUpdated', this.config)
   }
 
   /**
-   * 获取当前配置
+   * Get current layout configuration
    */
   getConfig(): LayoutConfig {
     return { ...this.config }
   }
 
   /**
-   * 获取当前断点
+   * Calculate label width based on configuration
    */
-  getCurrentBreakpoint(): string {
-    return this.currentBreakpoint
+  calculateLabelWidth(
+    labelConfig: { width?: 'auto' | number | number[] | ResponsiveConfig<'auto' | number | number[]> },
+    containerWidth: number,
+    columnIndex?: number
+  ): 'auto' | number {
+    if (!labelConfig.width) return 'auto'
+
+    const resolvedWidth = this.resolveResponsiveValue(labelConfig.width, containerWidth)
+
+    if (resolvedWidth === 'auto') return 'auto'
+
+    if (Array.isArray(resolvedWidth)) {
+      return resolvedWidth[columnIndex || 0] || resolvedWidth[0] || 'auto'
+    }
+
+    return resolvedWidth
   }
 
   /**
-   * 获取容器尺寸
+   * Generate CSS Grid template
    */
-  getContainerSize(): { width: number, height: number } {
-    return { ...this.containerSize }
-  }
+  generateGridTemplate(
+    containerWidth: number,
+    fieldCount: number
+  ): {
+    gridTemplateColumns: string
+    gridTemplateRows: string
+    gap: string
+  } {
+    const layout = this.calculateGridLayout(containerWidth, fieldCount)
+    const gaps = this.calculateGaps(containerWidth)
 
-  /**
-   * 验证布局配置
-   */
-  validateConfig(config: LayoutConfig): string[] {
-    const errors: string[] = []
-
-    if (config.minColumnWidth && config.minColumnWidth <= 0) {
-      errors.push('最小列宽必须大于0')
+    return {
+      gridTemplateColumns: `repeat(${layout.columns}, 1fr)`,
+      gridTemplateRows: `repeat(${layout.visibleRows}, auto)`,
+      gap: `${gaps.vertical}px ${gaps.horizontal}px`,
     }
-
-    if (config.columns && config.columns <= 0) {
-      errors.push('列数必须大于0')
-    }
-
-    if (config.defaultRows && config.defaultRows <= 0) {
-      errors.push('默认行数必须大于0')
-    }
-
-    if (config.horizontalGap && config.horizontalGap < 0) {
-      errors.push('水平间距不能为负数')
-    }
-
-    if (config.verticalGap && config.verticalGap < 0) {
-      errors.push('垂直间距不能为负数')
-    }
-
-    return errors
-  }
-
-  /**
-   * 销毁布局计算器
-   */
-  destroy(): void {
-    this.removeAllListeners()
   }
 }

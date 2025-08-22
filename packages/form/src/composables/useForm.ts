@@ -1,490 +1,219 @@
-// useForm Composition API Hook
+/**
+ * @fileoverview useForm Composition API hook
+ * @author LDesign Team
+ */
 
-import type { FormData, FormOptions } from '../types/form'
-import { h, reactive, ref, type VNode } from 'vue'
-import DynamicForm from '../components/DynamicForm.vue'
-import {
-  useAdvancedLayout,
-  type UseAdvancedLayoutReturn,
-} from './useAdvancedLayout'
-
-// 简单的事件发射器
-class SimpleEventEmitter {
-  private events: Record<string, Function[]> = {}
-
-  on(event: string, handler: Function): void {
-    if (!this.events[event]) {
-      this.events[event] = []
-    }
-    this.events[event].push(handler)
-  }
-
-  off(event: string, handler: Function): void {
-    if (this.events[event]) {
-      this.events[event] = this.events[event].filter(h => h !== handler)
-    }
-  }
-
-  emit(event: string, ...args: any[]): void {
-    if (this.events[event]) {
-      this.events[event].forEach(handler => handler(...args))
-    }
-  }
-}
+import { ref, reactive, computed, watch, onUnmounted, h, type VNode } from 'vue'
+import type {
+  FormData,
+  FormFieldValue,
+  FormOptions,
+  FormValidationResult,
+  FieldValidationResult,
+  UseFormReturn,
+  UseFormOptions,
+  FormInstance,
+} from '../types'
+import { FormEngine } from '../core/FormEngine'
+import { ValidationEngine } from '../core/ValidationEngine'
 
 /**
- * useForm Hook 选项
+ * Use form composition hook
+ * Provides reactive form state and operations
  */
-export interface UseFormOptions extends FormOptions {
-  /** 初始数据 */
-  initialData?: FormData
-}
+export function useForm(options: UseFormOptions = {}): UseFormReturn {
+  // Initialize engines
+  const formEngine = new FormEngine(options)
+  const validationEngine = new ValidationEngine()
 
-/**
- * useForm Hook 返回值
- */
-export interface UseFormReturn {
-  /** 表单数据 */
-  formData: FormData
+  // Reactive state
+  const formData = ref<FormData>({})
+  const errors = ref<Record<string, FieldValidationResult>>({})
+  const loading = ref(false)
+  const expanded = ref(false)
+  const groupStates = ref<Record<string, { collapsed: boolean }>>({})
 
-  /** 表单状态 */
-  formState: {
-    submitting: boolean
-    validating: boolean
-    dirty: boolean
-    valid: boolean
-    touched: boolean
+  // Initialize reactive state from engine
+  const initializeState = () => {
+    const state = formEngine.getState()
+    formData.value = state.data
+    errors.value = state.errors
+    loading.value = state.loading
+    expanded.value = state.expanded
+    groupStates.value = state.groupStates
   }
 
-  /** 表单错误 */
-  formErrors: Record<string, string[]>
-
-  /** 字段状态 */
-  fieldStates: Record<
-    string,
-    {
-      value: any
-      dirty: boolean
-      touched: boolean
-      valid: boolean
-      errors: string[]
-      visible: boolean
-      disabled: boolean
-      readonly: boolean
-    }
-  >
-
-  /** 渲染表单组件 */
-  renderForm: () => VNode
-
-  /** 事件方法 */
-  on: (event: string, handler: Function) => void
-  off: (event: string, handler: Function) => void
-  emit: (event: string, ...args: any[]) => void
-
-  /** 表单操作方法 */
-  submit: () => Promise<boolean>
-  reset: () => void
-  clear: () => void
-  validate: () => Promise<boolean>
-  validateField: (name: string) => Promise<boolean>
-
-  /** 字段操作方法 */
-  setFieldValue: (name: string, value: any) => void
-  getFieldValue: (name: string) => any
-  setFormData: (data: FormData) => void
-  getFormData: () => FormData
-  showField: (name: string) => void
-  hideField: (name: string) => void
-  enableField: (name: string) => void
-  disableField: (name: string) => void
-  isFieldVisible: (name: string) => boolean
-  isFieldDisabled: (name: string) => boolean
-  addField: (field: any) => void
-  removeField: (name: string) => void
-  resetField: (name: string) => void
-  clearValidation: () => void
-  destroy: () => void
-
-  /** 高级布局功能 */
-  layout: UseAdvancedLayoutReturn
-}
-
-/**
- * useForm Hook
- */
-export function useForm(options: UseFormOptions): UseFormReturn {
-  // 事件发射器
-  const eventEmitter = new SimpleEventEmitter()
-
-  // 响应式状态
-  const formData = reactive<FormData>(options.initialData || {})
-  const formState = reactive({
-    submitting: false,
-    validating: false,
-    dirty: false,
-    valid: true,
-    touched: false,
-  })
-  const formErrors = reactive<Record<string, string[]>>({})
-  const fieldStates = reactive<Record<string, any>>({})
-
-  // 初始化字段状态
-  options.fields?.forEach((field) => {
-    fieldStates[field.name] = reactive({
-      value: formData[field.name] ?? field.defaultValue,
-      dirty: false,
-      touched: false,
-      valid: true,
-      errors: [],
-      visible: !field.hidden,
-      disabled: field.disabled || false,
-      readonly: field.readonly || false,
+  // Set up event listeners
+  const setupEventListeners = () => {
+    formEngine.on('form:change', (event) => {
+      formData.value = { ...event.data }
     })
-  })
 
-  // 容器引用（用于高级布局计算）
-  const containerRef = ref<HTMLElement | null>(null)
+    formEngine.on('form:validate', (event) => {
+      errors.value = { ...event.result.errors }
+    })
 
-  // 集成高级布局功能
-  const layout = useAdvancedLayout({
-    fields: options.fields || [],
-    config: options.layout,
-    containerRef,
-    formData,
-    watchResize: true,
-  })
+    formEngine.on('form:expand', (event) => {
+      expanded.value = event.expanded
+    })
 
-  // 表单操作方法
-  const getFormData = (): FormData => {
-    return formData
+    formEngine.on('group:toggle', (event) => {
+      if (groupStates.value[event.groupName]) {
+        groupStates.value[event.groupName].collapsed = event.collapsed
+      }
+    })
+
+    formEngine.on('form:loading', (event) => {
+      loading.value = event.loading
+    })
   }
 
-  const setFormData = (data: FormData): void => {
-    Object.assign(formData, data)
-    formState.dirty = Object.keys(data).length > 0
-  }
+  // Enhanced form instance with validation engine
+  const enhancedFormInstance: FormInstance = {
+    ...formEngine,
+    async validate(): Promise<FormValidationResult> {
+      const fieldRules: Record<string, any[]> = {}
 
-  const getFieldValue = (name: string): any => {
-    return formData[name]
-  }
+      // Collect validation rules from field configs
+      const allFields = [
+        ...(options.fields || []),
+        ...(options.groups?.flatMap(g => g.fields) || [])
+      ]
 
-  const setFieldValue = (name: string, value: any): void => {
-    formData[name] = value
-    if (fieldStates[name]) {
-      fieldStates[name].value = value
-      fieldStates[name].dirty = true
-      fieldStates[name].touched = true
-    }
-    formState.dirty = true
-    eventEmitter.emit('change', formData, name)
-    eventEmitter.emit('fieldChange', name, value)
-  }
+      allFields.forEach(field => {
+        if (field.rules && field.rules.length > 0) {
+          fieldRules[field.name] = field.rules
+        }
+      })
 
-  const validate = async (): Promise<boolean> => {
-    formState.validating = true
+      const result = await validationEngine.validateForm(formData.value, fieldRules)
+      errors.value = result.errors
 
-    try {
-      const fieldNames = options.fields?.map(f => f.name) || []
-      const validationResults = await Promise.all(
-        fieldNames.map(name => validateField(name)),
+      formEngine.emit('form:validate', {
+        result,
+        trigger: 'manual',
+        timestamp: Date.now(),
+      })
+
+      return result
+    },
+
+    async validateField(name: string): Promise<FieldValidationResult> {
+      const field = allFields.find(f => f.name === name)
+      if (!field || !field.rules) {
+        return { valid: true }
+      }
+
+      const result = await validationEngine.validateField(
+        name,
+        formData.value[name],
+        field.rules,
+        formData.value
       )
 
-      const isValid = validationResults.every(result => result)
-      formState.valid = isValid
+      if (!result.valid) {
+        errors.value[name] = result
+      } else {
+        delete errors.value[name]
+      }
 
-      eventEmitter.emit('validate', isValid, formErrors)
-      return isValid
-    }
-    finally {
-      formState.validating = false
+      formEngine.emit('field:validate', {
+        field: name,
+        result,
+        value: formData.value[name],
+        trigger: 'manual',
+        timestamp: Date.now(),
+      })
+
+      return result
     }
   }
 
-  const validateField = async (name: string): Promise<boolean> => {
-    const field = options.fields?.find(f => f.name === name)
-    if (!field || !fieldStates[name]) {
-      return true
-    }
+  // Get all fields for validation
+  const allFields = computed(() => [
+    ...(options.fields || []),
+    ...(options.groups?.flatMap(g => g.fields) || [])
+  ])
 
-    const value = formData[name]
-    const errors: string[] = []
-
-    // 必填验证
-    if (field.required && (!value || value === '')) {
-      errors.push(`${field.title || field.label || name}不能为空`)
-    }
-
-    // 规则验证
-    if (field.rules && field.rules.length > 0) {
-      for (const rule of field.rules) {
-        switch (rule.type) {
-          case 'required':
-            if (!value || value === '') {
-              errors.push(
-                rule.message || `${field.title || field.label || name}不能为空`,
-              )
-            }
-            break
-          case 'email':
-            if (value && !/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(value)) {
-              errors.push(rule.message || '请输入有效的邮箱地址')
-            }
-            break
-          case 'number':
-            if (value && isNaN(Number(value))) {
-              errors.push(
-                rule.message
-                || `${field.title || field.label || name}必须是数字`,
-              )
-            }
-            break
-          case 'min':
-            if (
-              value
-              && !isNaN(Number(value))
-              && Number(value) < (rule.params || 0)
-            ) {
-              errors.push(
-                rule.message
-                || `${field.title || field.label || name}不能小于${rule.params}`,
-              )
-            }
-            break
-          case 'minLength':
-            if (value && value.length < (rule.params || 0)) {
-              errors.push(
-                rule.message
-                || `${field.title || field.label || name}至少${
-                  rule.params
-                }个字符`,
-              )
-            }
-            break
-        }
-      }
-    }
-
-    // 类型验证（向后兼容）
-    if (value && field.type) {
-      switch (field.type) {
-        case 'email':
-          if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(value)) {
-            errors.push('请输入有效的邮箱地址')
-          }
-          break
-        case 'number':
-          if (isNaN(Number(value))) {
-            errors.push(`${field.title || field.label || name}必须是数字`)
-          }
-          else if (field.min !== undefined && Number(value) < field.min) {
-            errors.push(
-              `${field.title || field.label || name}不能小于${field.min}`,
-            )
-          }
-          break
-      }
-    }
-
-    // 更新字段状态
-    fieldStates[name].errors = errors
-    fieldStates[name].valid = errors.length === 0
-
-    return errors.length === 0
+  // Form operations
+  const validate = async (): Promise<FormValidationResult> => {
+    return enhancedFormInstance.validate()
   }
 
   const reset = (): void => {
-    // 清空当前数据
-    Object.keys(formData).forEach((key) => {
-      delete formData[key]
-    })
-
-    // 重置为初始数据
-    Object.assign(formData, { ...options.initialData })
-
-    // 重置字段状态
-    Object.values(fieldStates).forEach((state) => {
-      state.dirty = false
-      state.touched = false
-      state.valid = true
-      state.errors = []
-    })
-
-    formState.dirty = false
-    formState.valid = true
-    formState.touched = false
-    eventEmitter.emit('reset', formData)
+    formEngine.reset()
+    initializeState()
   }
 
-  const clear = (): void => {
-    reset()
+  const setFieldValue = (name: string, value: FormFieldValue): void => {
+    formEngine.setFieldValue(name, value)
   }
 
-  const submit = async (): Promise<boolean> => {
-    formState.submitting = true
+  const getFieldValue = (name: string): FormFieldValue => {
+    return formEngine.getFieldValue(name)
+  }
 
+  const submit = async (): Promise<{ data: FormData; valid: boolean }> => {
+    loading.value = true
     try {
-      const isValid = await validate()
-      if (isValid) {
-        eventEmitter.emit('submit', getFormData())
-      }
-      return isValid
-    }
-    finally {
-      formState.submitting = false
-    }
-  }
+      const validationResult = await validate()
+      const data = formEngine.getFormData()
 
-  // 字段操作方法
-  const showField = (name: string): void => {
-    if (fieldStates[name]) {
-      fieldStates[name].visible = true
+      formEngine.emit('form:submit', {
+        data,
+        valid: validationResult.valid,
+        validationResult,
+        timestamp: Date.now(),
+      })
+
+      return { data, valid: validationResult.valid }
+    } finally {
+      loading.value = false
     }
   }
 
-  const hideField = (name: string): void => {
-    if (fieldStates[name]) {
-      fieldStates[name].visible = false
-    }
-  }
-
-  const enableField = (name: string): void => {
-    if (fieldStates[name]) {
-      fieldStates[name].disabled = false
-    }
-  }
-
-  const disableField = (name: string): void => {
-    if (fieldStates[name]) {
-      fieldStates[name].disabled = true
-    }
-  }
-
-  const isFieldVisible = (name: string): boolean => {
-    return fieldStates[name]?.visible ?? true
-  }
-
-  const isFieldDisabled = (name: string): boolean => {
-    return fieldStates[name]?.disabled ?? false
-  }
-
-  const addField = (field: any): void => {
-    // 简化实现
-  }
-
-  const removeField = (name: string): void => {
-    delete fieldStates[name]
-    delete formData[name]
-  }
-
-  const resetField = (name: string): void => {
-    if (fieldStates[name]) {
-      // 重置为初始数据中的值，如果没有则为空字符串
-      const defaultValue = options.initialData?.[name] || ''
-      formData[name] = defaultValue
-      fieldStates[name].value = defaultValue
-      fieldStates[name].dirty = false
-      fieldStates[name].touched = false
-      fieldStates[name].valid = true
-      fieldStates[name].errors = []
-    }
-  }
-
-  const clearValidation = (): void => {
-    Object.values(fieldStates).forEach((state) => {
-      state.errors = []
-      state.valid = true
-    })
-    formState.valid = true
-  }
-
-  const destroy = (): void => {
-    // 清理事件监听器
-    eventEmitter.events = {}
-    // 清理状态
-    Object.keys(fieldStates).forEach(key => delete fieldStates[key])
-    Object.keys(formData).forEach(key => delete formData[key])
-  }
-
-  // 事件方法
-  const on = (event: string, handler: Function): void => {
-    eventEmitter.on(event, handler)
-  }
-
-  const off = (event: string, handler: Function): void => {
-    eventEmitter.off(event, handler)
-  }
-
-  const emit = (event: string, ...args: any[]): void => {
-    eventEmitter.emit(event, ...args)
-  }
-
-  // 渲染表单组件
-  const renderForm = (): VNode => {
-    return h(DynamicForm, {
-      'modelValue': formData,
-      'options': {
-        ...options,
-        layout: {
-          ...options.layout,
-          // 传递计算后的布局配置
-          columns: layout.calculatedColumns.value,
-          label: {
-            ...options.layout?.label,
-            widthByColumn: layout.calculatedLabelWidths.value,
-          },
-        },
+  // Watch for auto-validation
+  if (options.autoValidateDelay && options.autoValidateDelay > 0) {
+    watch(
+      formData,
+      async () => {
+        await validate()
       },
-      'ref': containerRef,
-      'isExpanded': layout.isExpanded.value,
-      'onUpdate:modelValue': setFormData,
-      'onSubmit': (data: FormData) => emit('submit', data),
-      'onReset': () => emit('reset', formData),
-      'onFieldChange': (name: string, value: any) => setFieldValue(name, value),
-      'onToggleExpand': layout.toggleExpand,
-    })
+      {
+        deep: true,
+        debounce: options.autoValidateDelay
+      }
+    )
   }
+
+  // Render function (placeholder for now)
+  const renderForm = (): VNode => {
+    return h('div', { class: 'ldesign-form' }, [
+      h('p', 'Form rendering will be implemented with form components')
+    ])
+  }
+
+  // Initialize state and event listeners
+  initializeState()
+  setupEventListeners()
+
+  // Cleanup on unmount
+  onUnmounted(() => {
+    formEngine.destroy()
+  })
 
   return {
-    // 数据
     formData,
-    formState,
-    formErrors,
-    fieldStates,
-
-    // 渲染
-    renderForm,
-
-    // 事件方法
-    on,
-    off,
-    emit,
-
-    // 表单操作方法
-    submit,
-    reset,
-    clear,
+    errors,
+    loading,
+    expanded,
+    groupStates,
+    formInstance: enhancedFormInstance,
     validate,
-    validateField,
-
-    // 字段操作方法
+    reset,
     setFieldValue,
     getFieldValue,
-    setFormData,
-    getFormData,
-    showField,
-    hideField,
-    enableField,
-    disableField,
-    isFieldVisible,
-    isFieldDisabled,
-    addField,
-    removeField,
-    resetField,
-    clearValidation,
-    destroy,
-
-    // 高级布局功能
-    layout,
+    submit,
+    renderForm,
   }
 }

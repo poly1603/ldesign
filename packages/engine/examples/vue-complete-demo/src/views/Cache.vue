@@ -3,7 +3,8 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
+const testKey = ref('')
 
 // 缓存演示数据
 const cacheData = ref([
@@ -122,7 +123,7 @@ function getCacheItem(key: string) {
     
     addCacheHistory('GET', key, 'HIT', `${Math.random() * 5 + 1}ms`)
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '✅ 缓存命中',
       message: `成功获取缓存项: ${key}`,
       type: 'success',
@@ -134,7 +135,7 @@ function getCacheItem(key: string) {
     
     addCacheHistory('GET', key, 'MISS', `${Math.random() * 20 + 10}ms`)
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 缓存未命中',
       message: `缓存项不存在: ${key}`,
       type: 'warning',
@@ -166,7 +167,7 @@ function setCacheItem(key: string, value: string, ttl: number = 3600, type: stri
   
   addCacheHistory('SET', key, 'SUCCESS', `${Math.random() * 8 + 2}ms`)
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '💾 缓存设置成功',
     message: `已设置缓存项: ${key}`,
     type: 'success',
@@ -181,7 +182,7 @@ function deleteCacheItem(key: string) {
     
     addCacheHistory('DELETE', key, 'SUCCESS', `${Math.random() * 3 + 1}ms`)
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🗑️ 缓存删除成功',
       message: `已删除缓存项: ${key}`,
       type: 'info',
@@ -192,7 +193,7 @@ function deleteCacheItem(key: string) {
 // 创建新缓存项
 function createCacheItem() {
   if (!newCacheItem.value.key || !newCacheItem.value.value) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写缓存键和值',
       type: 'error',
@@ -223,7 +224,7 @@ function cleanupExpiredCache() {
     deleteCacheItem(item.key)
   })
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🧹 缓存清理完成',
     message: `已清理 ${expiredCount} 个过期缓存项`,
     type: 'success',
@@ -237,7 +238,7 @@ function clearAllCache() {
   
   addCacheHistory('CLEAR', 'ALL', 'SUCCESS', '5ms')
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🗑️ 缓存已清空',
     message: `已清空 ${count} 个缓存项`,
     type: 'warning',
@@ -252,7 +253,7 @@ function demoWarmup() {
     { key: 'warmup:data:stats', value: '{"totalUsers":1000,"activeUsers":250}', type: 'warmup' },
   ]
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🔥 缓存预热开始',
     message: '正在预热关键缓存数据...',
     type: 'info',
@@ -266,7 +267,7 @@ function demoWarmup() {
       index++
     } else {
       clearInterval(warmupInterval)
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: '✅ 缓存预热完成',
         message: `已预热 ${warmupItems.length} 个关键缓存项`,
         type: 'success',
@@ -279,7 +280,7 @@ function demoWarmup() {
 function updateCacheStrategy() {
   addCacheHistory('CONFIG', 'STRATEGY', 'UPDATE', '1ms')
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '⚙️ 缓存策略已更新',
     message: `缓存策略已设置为 ${cacheConfig.value.strategy}`,
     type: 'info',
@@ -307,7 +308,7 @@ function addCacheHistory(action: string, key: string, result: string, responseTi
 function clearHistory() {
   cacheHistory.value = []
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🗑️ 历史记录已清除',
     message: '所有缓存操作历史已清除',
     type: 'info',
@@ -335,7 +336,7 @@ function getTTLStatus(item: any): string {
 
 // 组件挂载
 onMounted(() => {
-  engine.value?.logger.info('缓存管理页面已加载')
+  engine?.logger.info('缓存管理页面已加载')
 })
 </script>
 
@@ -609,17 +610,7 @@ onMounted(() => {
       </div>
     </div>
   </div>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      testKey: '',
-    }
-  },
-}
-</script>
+ </template>
 
 <style scoped>
 .cache {

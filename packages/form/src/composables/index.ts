@@ -1,16 +1,9 @@
-// Composables 模块主入口文件
+/**
+ * @fileoverview Composables module exports
+ * @author LDesign Team
+ */
 
-export { FormPlugin } from './plugin'
 export { useForm } from './useForm'
-// 导出类型
-export type { UseFormOptions, UseFormReturn } from './useForm'
-export { useFormField } from './useFormField'
-export type { UseFormFieldOptions, UseFormFieldReturn } from './useFormField'
-
-export { useFormLayout } from './useFormLayout'
-export type { UseFormLayoutOptions, UseFormLayoutReturn } from './useFormLayout'
+export { useFormItem } from './useFormItem'
 export { useFormValidation } from './useFormValidation'
-export type {
-  UseFormValidationOptions,
-  UseFormValidationReturn,
-} from './useFormValidation'
+export { useFormLayout } from './useFormLayout'

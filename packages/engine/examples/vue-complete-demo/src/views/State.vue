@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, ref, watch } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 状态管理演示数据
 const stateDemo = ref({
@@ -31,10 +31,10 @@ const stateDemo = ref({
 })
 
 // 状态历史记录
-const stateHistory = ref([])
+const stateHistory = ref<Array<{ id: number; action: string; description: string; timestamp: string }>>([])
 
 // 状态监听器
-const watchers = ref([
+const watchers = ref<Array<{ id: string; path: string; active: boolean; description: string }>>([
   {
     id: 'user-watcher',
     path: 'user.name',
@@ -56,7 +56,7 @@ const watchers = ref([
 ])
 
 // 新状态表单
-const newState = ref({
+const newState = ref<{ key: string; value: string; type: 'string' | 'number' | 'boolean' | 'object' | 'array' }>({
   key: '',
   value: '',
   type: 'string',
@@ -64,9 +64,9 @@ const newState = ref({
 
 // 计算属性
 const allStates = computed(() => {
-  const states = []
+  const states: Array<{ key: string; value: string; type: string }> = []
   
-  function flattenObject(obj, prefix = '') {
+  function flattenObject(obj: any, prefix = '') {
     for (const key in obj) {
       const fullKey = prefix ? `${prefix}.${key}` : key
       const value = obj[key]
@@ -89,9 +89,9 @@ const allStates = computed(() => {
 
 // 初始化状态到引擎
 function initializeState() {
-  if (engine.value?.state) {
+  if ((engine as any)?.state) {
     // 设置初始状态
-    engine.value.state.set('demo', stateDemo.value)
+    ;(engine as any).state.set('demo', stateDemo.value)
     
     // 设置监听器
     watchers.value.forEach(watcher => {
@@ -105,13 +105,13 @@ function initializeState() {
 }
 
 // 设置状态监听器
-function setupWatcher(watcher) {
-  if (engine.value?.state) {
-    engine.value.state.watch(`demo.${watcher.path}`, (newValue, oldValue) => {
+function setupWatcher(watcher: { id: string; path: string; active: boolean; description: string }) {
+  if ((engine as any)?.state) {
+    ;(engine as any).state.watch(`demo.${watcher.path}`, (newValue: any, oldValue: any) => {
       addHistoryEntry('状态变化', `${watcher.path}: ${oldValue} → ${newValue}`)
       
       // 显示通知
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: '📊 状态变化监听',
         message: `${watcher.description}: ${JSON.stringify(newValue)}`,
         type: 'info',
@@ -122,7 +122,7 @@ function setupWatcher(watcher) {
 }
 
 // 切换监听器
-function toggleWatcher(watcherId) {
+function toggleWatcher(watcherId: string) {
   const watcher = watchers.value.find(w => w.id === watcherId)
   if (watcher) {
     watcher.active = !watcher.active
@@ -135,7 +135,7 @@ function toggleWatcher(watcherId) {
     }
     
     // 显示通知
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: watcher.active ? '👁️ 监听器已启用' : '🙈 监听器已禁用',
       message: watcher.description,
       type: watcher.active ? 'success' : 'warning',
@@ -144,32 +144,34 @@ function toggleWatcher(watcherId) {
 }
 
 // 更新状态
-function updateState(path, value) {
+function updateState(path: string, value: any) {
   const keys = path.split('.')
   let current = stateDemo.value
   
   // 导航到目标对象
   for (let i = 0; i < keys.length - 1; i++) {
-    if (!current[keys[i]]) {
-      current[keys[i]] = {}
+    const k: any = keys[i]
+    if (!(current as any)[k]) {
+      ;(current as any)[k] = {}
     }
-    current = current[keys[i]]
+    current = (current as any)[k]
   }
   
   // 设置值
-  const oldValue = current[keys[keys.length - 1]]
-  current[keys[keys.length - 1]] = value
+  const lastKey: any = keys[keys.length - 1]
+  const oldValue = (current as any)[lastKey]
+  ;(current as any)[lastKey] = value
   
   // 同步到引擎状态
-  if (engine.value?.state) {
-    engine.value.state.set('demo', stateDemo.value)
+  if ((engine as any)?.state) {
+    ;(engine as any).state.set('demo', stateDemo.value)
   }
   
   addHistoryEntry('状态更新', `${path}: ${oldValue} → ${value}`)
 }
 
 // 增加计数器
-function incrementCounter(counter) {
+function incrementCounter(counter: keyof typeof stateDemo.value.counters) {
   updateState(`counters.${counter}`, stateDemo.value.counters[counter] + 1)
 }
 
@@ -180,14 +182,14 @@ function toggleTheme() {
 }
 
 // 切换设置
-function toggleSetting(setting) {
+function toggleSetting(setting: keyof typeof stateDemo.value.settings) {
   updateState(`settings.${setting}`, !stateDemo.value.settings[setting])
 }
 
 // 创建新状态
 function createNewState() {
   if (!newState.value.key || !newState.value.value) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写状态键和值',
       type: 'error',
@@ -195,16 +197,16 @@ function createNewState() {
     return
   }
   
-  let value = newState.value.value
+  let value: any = newState.value.value
   
   // 根据类型转换值
   try {
     switch (newState.value.type) {
       case 'number':
-        value = Number(value)
+        value = Number(value as any) as any
         break
       case 'boolean':
-        value = value === 'true'
+        value = (value as any) === 'true' as any
         break
       case 'object':
         value = JSON.parse(value)
@@ -214,7 +216,7 @@ function createNewState() {
         break
     }
   } catch (error) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 值格式错误',
       message: '请输入有效的JSON格式',
       type: 'error',
@@ -228,7 +230,7 @@ function createNewState() {
   newState.value = { key: '', value: '', type: 'string' }
   
   // 显示通知
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '✅ 状态创建成功',
     message: `新状态 ${newState.value.key} 已创建`,
     type: 'success',
@@ -262,14 +264,14 @@ function resetState() {
   }
   
   // 同步到引擎
-  if (engine.value?.state) {
-    engine.value.state.set('demo', stateDemo.value)
+  if ((engine as any)?.state) {
+    ;(engine as any).state.set('demo', stateDemo.value)
   }
   
   addHistoryEntry('状态重置', '重置所有状态到初始值')
   
   // 显示通知
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🔄 状态已重置',
     message: '所有状态已重置到初始值',
     type: 'info',
@@ -293,7 +295,7 @@ function exportState() {
   addHistoryEntry('状态导出', '导出当前状态到JSON文件')
   
   // 显示通知
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '📁 状态导出成功',
     message: '状态已导出到JSON文件',
     type: 'success',
@@ -301,7 +303,7 @@ function exportState() {
 }
 
 // 添加历史记录
-function addHistoryEntry(action, description) {
+function addHistoryEntry(action: string, description: string) {
   stateHistory.value.unshift({
     id: Date.now(),
     action,
@@ -319,7 +321,7 @@ function addHistoryEntry(action, description) {
 function clearHistory() {
   stateHistory.value = []
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🗑️ 历史记录已清除',
     message: '所有状态历史记录已清除',
     type: 'info',
@@ -333,7 +335,7 @@ function demoPersistence() {
   
   addHistoryEntry('状态持久化', '状态已保存到localStorage')
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '💾 状态持久化演示',
     message: '状态已保存到本地存储',
     type: 'success',
@@ -343,14 +345,14 @@ function demoPersistence() {
 // 组件挂载
 onMounted(() => {
   initializeState()
-  engine.value?.logger.info('状态管理页面已加载')
+  engine?.logger.info('状态管理页面已加载')
 })
 
 // 监听状态变化
 watch(stateDemo, (newValue) => {
   // 同步到引擎状态
-  if (engine.value?.state) {
-    engine.value.state.set('demo', newValue)
+  if ((engine as any)?.state) {
+    ;(engine as any).state.set('demo', newValue)
   }
 }, { deep: true })
 </script>

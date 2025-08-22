@@ -4,6 +4,7 @@ import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { performance } from 'node:perf_hooks'
+import { logger } from '../../utils/dev-logger'
 
 interface BuildOptions {
   target?: 'all' | 'packages' | 'docs' | 'examples'
@@ -45,15 +46,24 @@ class BuildManager {
   }
 
   private log(message: string, level: 'info' | 'warn' | 'error' = 'info') {
-    const timestamp = new Date().toISOString()
-    const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
-    console.log(logMessage)
+    switch (level) {
+      case 'warn':
+        logger.warn(message, { prefix: 'BUILD' })
+        break
+      case 'error':
+        logger.error(message, undefined, { prefix: 'BUILD' })
+        break
+      case 'info':
+      default:
+        logger.info(message, { prefix: 'BUILD' })
+        break
+    }
   }
 
   private async executeCommand(
     command: string,
     cwd?: string,
-  ): Promise<{ success: boolean, output: string, error?: string }> {
+  ): Promise<{ success: boolean, output: string, error?: string, code?: number }> {
     try {
       const output = execSync(command, {
         cwd: cwd || process.cwd(),
@@ -63,11 +73,12 @@ class BuildManager {
       return { success: true, output }
     }
     catch (error: any) {
-      return {
-        success: false,
-        output: '',
-        error: error.message,
-      }
+      const stderr: string = error?.stderr?.toString?.() || ''
+      const stdout: string = error?.stdout?.toString?.() || ''
+      const msg = error?.message || 'Unknown error'
+      const code: number | undefined = typeof error?.status === 'number' ? error.status : undefined
+      const combined = [msg, stderr, stdout].filter(Boolean).join('\n')
+      return { success: false, output: combined, error: msg, code }
     }
   }
 
@@ -94,7 +105,8 @@ class BuildManager {
       const buildResult = await this.executeCommand(buildCommand)
 
       if (!buildResult.success) {
-        throw new Error(buildResult.error)
+        this.log(`构建命令失败:\n${buildResult.output}`, 'error')
+        throw new Error(buildResult.error || '构建失败')
       }
 
       // 运行测试（可选）
@@ -102,7 +114,7 @@ class BuildManager {
         this.log('运行测试...')
         const testResult = await this.executeCommand('pnpm test:run')
         if (!testResult.success) {
-          this.log(`测试失败: ${testResult.error}`, 'warn')
+          this.log(`测试失败: ${testResult.error}\n${testResult.output}`, 'warn')
         }
       }
 
@@ -117,13 +129,13 @@ class BuildManager {
     }
     catch (error: any) {
       const duration = performance.now() - startTime
-      this.log(`包构建失败: ${error.message}`, 'error')
+      this.log(`包构建失败: ${error?.message || '未知错误'}`, 'error')
 
       return {
         target: 'packages',
         success: false,
         duration: Math.round(duration),
-        errors: [error.message],
+        errors: [String(error?.message || error)],
       }
     }
   }
@@ -136,7 +148,8 @@ class BuildManager {
       const buildResult = await this.executeCommand('pnpm docs:build')
 
       if (!buildResult.success) {
-        throw new Error(buildResult.error)
+        this.log(`文档构建失败输出:\n${buildResult.output}`, 'error')
+        throw new Error(buildResult.error || '文档构建失败')
       }
 
       const duration = performance.now() - startTime
@@ -150,13 +163,13 @@ class BuildManager {
     }
     catch (error: any) {
       const duration = performance.now() - startTime
-      this.log(`文档构建失败: ${error.message}`, 'error')
+      this.log(`文档构建失败: ${error?.message || '未知错误'}`, 'error')
 
       return {
         target: 'docs',
         success: false,
         duration: Math.round(duration),
-        errors: [error.message],
+        errors: [String(error?.message || error)],
       }
     }
   }
@@ -179,13 +192,13 @@ class BuildManager {
     }
     catch (error: any) {
       const duration = performance.now() - startTime
-      this.log(`示例构建失败: ${error.message}`, 'error')
+      this.log(`示例构建失败: ${error?.message || '未知错误'}`, 'error')
 
       return {
         target: 'examples',
         success: false,
         duration: Math.round(duration),
-        errors: [error.message],
+        errors: [String(error?.message || error)],
       }
     }
   }
@@ -222,8 +235,13 @@ class BuildManager {
       },
     }
 
-    writeFileSync(this.logFile, JSON.stringify(report, null, 2))
-    this.log(`构建报告已生成: ${this.logFile}`)
+    try {
+      writeFileSync(this.logFile, JSON.stringify(report, null, 2))
+      this.log(`构建报告已生成: ${this.logFile}`)
+    }
+    catch (e: any) {
+      this.log(`构建报告写入失败: ${e?.message || e}`, 'warn')
+    }
   }
 
   async build(): Promise<void> {
@@ -265,7 +283,8 @@ class BuildManager {
     )
 
     if (successCount < totalCount) {
-      process.exit(1)
+      // 使用非零退出码，但避免在外部调用环境中直接中断未处理逻辑
+      process.exitCode = 1
     }
   }
 }

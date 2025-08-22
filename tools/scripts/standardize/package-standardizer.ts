@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 
@@ -17,13 +17,17 @@ class PackageStandardizer {
   private rootDir: string
   private packagesDir: string
   private rootPackage: PackageJson
+  private rollupOnly: boolean
+  private validateOnly: boolean
 
-  constructor() {
+  constructor(options: { rollupOnly?: boolean, validateOnly?: boolean } = {}) {
     this.rootDir = resolve(process.cwd())
     this.packagesDir = join(this.rootDir, 'packages')
     this.rootPackage = JSON.parse(
       readFileSync(join(this.rootDir, 'package.json'), 'utf-8'),
     )
+    this.rollupOnly = Boolean(options.rollupOnly)
+    this.validateOnly = Boolean(options.validateOnly)
   }
 
   // 标准化脚本配置
@@ -74,10 +78,13 @@ class PackageStandardizer {
   private getPackageDirs(): string[] {
     return readdirSync(this.packagesDir).filter((dir) => {
       const fullPath = join(this.packagesDir, dir)
-      return (
-        statSync(fullPath).isDirectory()
-        && readFileSync(join(fullPath, 'package.json'), 'utf-8')
-      )
+      const pkgJson = join(fullPath, 'package.json')
+      try {
+        return statSync(fullPath).isDirectory() && existsSync(pkgJson)
+      }
+      catch {
+        return false
+      }
     })
   }
 
@@ -89,6 +96,55 @@ class PackageStandardizer {
     const packageJson: PackageJson = JSON.parse(
       readFileSync(packageJsonPath, 'utf-8'),
     )
+
+    // 迁移旧构建脚本到 TS 工具
+    const scripts = packageJson.scripts || {}
+    const replaceLegacy = (key: string, matcher: RegExp, replacement: string) => {
+      if (typeof scripts[key] === 'string' && matcher.test(String(scripts[key]))) {
+        scripts[key] = replacement
+      }
+    }
+    // analyze -> 使用 TS 优化分析器
+    replaceLegacy(
+      'build:analyze',
+      /tools\/(scripts\/)?build\/bundle-analyzer\.js/,
+      'pnpm run build && tsx ../../tools/scripts/optimize/bundle-analyzer.ts',
+    )
+    // validate -> 使用 TS validate-build 入口
+    replaceLegacy(
+      'build:validate',
+      /tools\/(scripts\/)?build\/validate-build\.js/,
+      'pnpm run build && tsx ../../tools/scripts/build/validate-build.ts',
+    )
+    // check -> 统一到 validate（若存在）
+    if (scripts['build:check'] && /bundle-validator\.js/.test(String(scripts['build:check']))) {
+      scripts['build:validate'] = 'pnpm run build && tsx ../../tools/scripts/build/validate-build.ts'
+      delete scripts['build:check']
+    }
+    // 浏览器测试旧实现（无 TS 版本时先保留；如需移除可在外部传参控制）
+    if (this.rollupOnly) {
+      // rollup-only 模式下，不触及其它脚本
+    } else {
+      // 清理明显错误的 legacy 引用路径（可选）
+      if (scripts['build:browser-test'] && /bundle-analyzer\.js/.test(String(scripts['build:browser-test']))) {
+        delete scripts['build:browser-test']
+      }
+    }
+    packageJson.scripts = scripts
+
+    // 仅 rollup 配置标准化
+    if (this.rollupOnly) {
+      // 确保 rollup 构建脚本存在
+      packageJson.scripts = {
+        ...(packageJson.scripts || {}),
+        build: 'rollup -c',
+        'build:watch': 'rollup -c -w',
+        dev: 'rollup -c -w',
+      }
+      writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+      console.log(`✅ 仅标准化 rollup 脚本: ${packageJson.name}`)
+      return
+    }
 
     // 标准化基本信息
     packageJson.type = 'module'
@@ -144,16 +200,22 @@ class PackageStandardizer {
       }
     }
 
-    console.log('✨ 所有包标准化完成!')
+    if (this.validateOnly) {
+      console.log('🔍 验证模式：已完成检查（未更改依赖）')
+      return
+    }
 
-    // 更新依赖
+    console.log('✨ 所有包标准化完成!')
     console.log('📦 更新依赖中...')
     execSync('pnpm install', { stdio: 'inherit' })
-
     console.log('🎉 标准化流程完成!')
   }
 }
 
-// 执行标准化
-const standardizer = new PackageStandardizer()
+// 执行标准化（解析参数）
+const args = process.argv.slice(2)
+const standardizer = new PackageStandardizer({
+  rollupOnly: args.includes('--rollup-only'),
+  validateOnly: args.includes('--validate'),
+})
 standardizer.standardize().catch(console.error)
