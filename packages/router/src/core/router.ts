@@ -9,6 +9,7 @@ import type {
   HistoryLocation,
   NavigationFailure,
   NavigationGuard,
+  NavigationGuardReturn,
   NavigationHookAfter,
   NavigationInformation,
   RouteLocationNormalized,
@@ -178,15 +179,14 @@ export class RouterImpl implements Router {
     this.beforeGuards.push(guard)
 
     // 注册到内存监控
-    const listener = guard as any
-    this.memoryManager.getMemoryMonitor().registerListener(listener)
+    this.memoryManager.getMemoryMonitor().registerListener(guard as () => void)
 
     const cleanup = () => {
       const index = this.beforeGuards.indexOf(guard)
       if (index >= 0) {
         this.beforeGuards.splice(index, 1)
       }
-      this.memoryManager.getMemoryMonitor().unregisterListener(listener)
+      this.memoryManager.getMemoryMonitor().unregisterListener(guard as () => void)
     }
 
     this.guardCleanupFunctions.push(cleanup)
@@ -489,9 +489,9 @@ export class RouterImpl implements Router {
     guard: NavigationGuard,
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
-  ): Promise<any> {
+  ): Promise<RouteLocationNormalized> {
     return new Promise((resolve, reject) => {
-      const next = (result?: any) => {
+      const next = (result?: NavigationGuardReturn) => {
         if (result === false) {
           reject(new Error('Navigation cancelled'))
         }
@@ -511,7 +511,7 @@ export class RouterImpl implements Router {
         && 'then' in guardResult
         && typeof guardResult.then === 'function'
       ) {
-        ;(guardResult as Promise<any>).then(resolve, reject)
+        ; (guardResult as Promise<NavigationGuardReturn>).then(resolve, reject)
       }
     })
   }

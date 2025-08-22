@@ -23,7 +23,7 @@ export interface TypedRouteRecord<
   TPath extends string = string,
   TParams extends Record<string, any> = ExtractRouteParams<TPath>,
   TQuery extends Record<string, any> = Record<string, any>,
-  TMeta extends RouteMeta = RouteMeta
+  TMeta extends RouteMeta = RouteMeta,
 > {
   /** 路径模式 */
   path: TPath
@@ -54,7 +54,7 @@ export function defineRoute<
   TPath extends string,
   TParams extends Record<string, any> = ExtractRouteParams<TPath>,
   TQuery extends Record<string, any> = Record<string, any>,
-  TMeta extends RouteMeta = RouteMeta
+  TMeta extends RouteMeta = RouteMeta,
 >(route: TypedRouteRecord<TPath, TParams, TQuery, TMeta>): RouteRecordRaw {
   return route as RouteRecordRaw
 }
@@ -63,7 +63,7 @@ export function defineRoute<
  * 创建类型安全的路由集合
  */
 export function defineRoutes<T extends readonly TypedRouteRecord[]>(
-  routes: [...T]
+  routes: [...T],
 ): RouteRecordRaw[] {
   return routes as unknown as RouteRecordRaw[]
 }
@@ -75,7 +75,7 @@ export function defineRoutes<T extends readonly TypedRouteRecord[]>(
  */
 export interface TypedNavigationOptions<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > {
   /** 路由参数 */
   params?: TypedRouteParams<TParams>
@@ -92,7 +92,7 @@ export interface TypedNavigationOptions<
  */
 export function navigateToPath<TPath extends string>(
   path: TPath,
-  options?: TypedNavigationOptions<ExtractRouteParams<TPath>>
+  options?: TypedNavigationOptions<ExtractRouteParams<TPath>>,
 ): RouteLocationRaw {
   if (!options) {
     return path
@@ -113,10 +113,10 @@ export function navigateToPath<TPath extends string>(
  */
 export function navigateToName<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 >(
   name: string | symbol,
-  options?: TypedNavigationOptions<TParams, TQuery>
+  options?: TypedNavigationOptions<TParams, TQuery>,
 ): RouteLocationRaw {
   const { params, query, hash, ...rest } = options || {}
   return {
@@ -146,7 +146,7 @@ export interface TypedRouteMatcher {
    */
   matchName: <
     TParams extends Record<string, any> = Record<string, any>,
-    TQuery extends Record<string, any> = Record<string, any>
+    TQuery extends Record<string, any> = Record<string, any>,
   >(
     name: string | symbol,
     params?: TypedRouteParams<TParams>,
@@ -163,7 +163,7 @@ export type TypedNavigationGuard<
   TFromParams extends Record<string, any> = Record<string, any>,
   TFromQuery extends Record<string, any> = Record<string, any>,
   TToParams extends Record<string, any> = Record<string, any>,
-  TToQuery extends Record<string, any> = Record<string, any>
+  TToQuery extends Record<string, any> = Record<string, any>,
 > = (
   to: RouteLocationNormalized<TToParams, TToQuery>,
   from: RouteLocationNormalized<TFromParams, TFromQuery>,
@@ -177,9 +177,9 @@ export function defineNavigationGuard<
   TFromParams extends Record<string, any> = Record<string, any>,
   TFromQuery extends Record<string, any> = Record<string, any>,
   TToParams extends Record<string, any> = Record<string, any>,
-  TToQuery extends Record<string, any> = Record<string, any>
+  TToQuery extends Record<string, any> = Record<string, any>,
 >(
-  guard: TypedNavigationGuard<TFromParams, TFromQuery, TToParams, TToQuery>
+  guard: TypedNavigationGuard<TFromParams, TFromQuery, TToParams, TToQuery>,
 ): any {
   return guard
 }

@@ -16,9 +16,19 @@ import type {
 // ==================== 路径处理工具 ====================
 
 /**
- * 标准化路径
+ * 标准化路径（增强版）
  */
 export function normalizePath(path: string): string {
+  // 输入验证
+  if (typeof path !== 'string') {
+    throw new TypeError('路径必须是字符串类型')
+  }
+
+  // 处理空字符串
+  if (!path || path === '') {
+    return '/'
+  }
+
   // 移除多余的斜杠
   path = path.replace(/\/+/g, '/')
 
@@ -32,7 +42,24 @@ export function normalizePath(path: string): string {
     path = path.slice(0, -1)
   }
 
-  return path
+  // 处理相对路径符号
+  const segments = path.split('/').filter(Boolean)
+  const normalizedSegments: string[] = []
+
+  for (const segment of segments) {
+    if (segment === '..') {
+      // 向上一级目录
+      if (normalizedSegments.length > 0) {
+        normalizedSegments.pop()
+      }
+    }
+    else if (segment !== '.') {
+      // 忽略当前目录符号，添加其他有效段
+      normalizedSegments.push(segment)
+    }
+  }
+
+  return normalizedSegments.length === 0 ? '/' : `/${normalizedSegments.join('/')}`
 }
 
 /**
@@ -83,12 +110,13 @@ export function buildPath(pattern: string, params: RouteParams = {}): string {
 // ==================== 查询参数处理工具 ====================
 
 /**
- * 解析查询字符串
+ * 解析查询字符串（增强版）
  */
 export function parseQuery(search: string): RouteQuery {
   const query: RouteQuery = {}
 
-  if (!search || search === '?') {
+  // 输入验证
+  if (typeof search !== 'string' || !search || search === '?') {
     return query
   }
 
@@ -99,25 +127,49 @@ export function parseQuery(search: string): RouteQuery {
     return query
   }
 
-  const pairs = queryString.split('&')
+  // 分割查询参数，支持 & 和 ; 分隔符
+  const pairs = queryString.split(/[&;]/)
 
   for (const pair of pairs) {
-    const [key, value] = pair.split('=').map(decodeURIComponent)
+    if (!pair)
+      continue // 跳过空字符串
 
-    if (key) {
-      if (query[key] === undefined) {
-        query[key] = value || ''
+    try {
+      // 分割键值对，只在第一个 = 处分割
+      const equalIndex = pair.indexOf('=')
+      let key: string
+      let value: string
+
+      if (equalIndex === -1) {
+        // 没有 = 的情况，整个作为 key，value 为空字符串
+        key = decodeURIComponent(pair)
+        value = ''
       }
       else {
-        // 处理多个相同键的情况
-        const existing = query[key]
-        if (Array.isArray(existing)) {
-          existing.push(value || '')
+        key = decodeURIComponent(pair.slice(0, equalIndex))
+        value = decodeURIComponent(pair.slice(equalIndex + 1))
+      }
+
+      if (key) {
+        if (query[key] === undefined) {
+          query[key] = value
         }
         else {
-          query[key] = [existing as string, value || '']
+          // 处理多个相同键的情况
+          const existing = query[key]
+          if (Array.isArray(existing)) {
+            existing.push(value)
+          }
+          else {
+            query[key] = [existing as string, value]
+          }
         }
       }
+    }
+    catch (error) {
+      // 解码失败时跳过该参数
+      console.warn(`查询参数解析失败: ${pair}`, error)
+      continue
     }
   }
 

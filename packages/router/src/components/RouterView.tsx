@@ -237,84 +237,93 @@ export const RouterView = defineComponent({
     // 组件解析和缓存
     const resolvedComponent = ref<Component | null>(null)
 
-    // 异步组件加载函数
+    // 异步组件加载函数（优化版）
     const loadComponent = async (component: Component): Promise<Component> => {
-      // 如果是函数组件，可能是异步组件
-      if (typeof component === 'function') {
-        try {
-          // 生成缓存键
-          const cacheKey = `${currentRoute.value.fullPath}_${props.name}_${depth}`
-
-          // 检查是否已在加载中
-          const existingPromise = componentLoadingPromises.get(cacheKey)
-          if (existingPromise) {
-            return await existingPromise
-          }
-
-          // 检查缓存
-          if (props.keepAlive) {
-            const cached = cache.get(cacheKey)
-            if (cached) {
-              return cached.component
-            }
-          }
-
-          // 标记为加载中
-          isLoading.value = true
-          hasError.value = false
-          errorInfo.value = null
-
-          // 创建加载Promise，带超时
-          const loadingPromise = Promise.race([
-            Promise.resolve(typeof component === 'function' ? (component as any)() : component),
-            new Promise<never>((_, reject) => {
-              setTimeout(() => {
-                reject(new Error(`Component loading timeout after ${props.timeout}ms`))
-              }, props.timeout)
-            }),
-          ]) as Promise<Component>
-
-          componentLoadingPromises.set(cacheKey, loadingPromise)
-
-          const loadedComponent = await loadingPromise
-
-          // 缓存组件
-          if (props.keepAlive) {
-            cache.set(cacheKey, markRaw(loadedComponent), currentRoute.value)
-          }
-
-          // 清理加载状态
-          componentLoadingPromises.delete(cacheKey)
-          retryCount.value = 0
-
-          return loadedComponent
-        }
-        catch (error) {
-          // 清理加载状态
-          const cacheKey = `${currentRoute.value.fullPath}_${props.name}_${depth}`
-          componentLoadingPromises.delete(cacheKey)
-
-          // 记录错误
-          hasError.value = true
-          errorInfo.value = error as Error
-
-          // 发出错误事件
-          emit('error', error)
-
-          // 如果有重试机制且未达到最大重试次数
-          if (retryCount.value < maxRetries) {
-            console.warn(`Component loading failed, attempt ${retryCount.value + 1}/${maxRetries}:`, error)
-            return component
-          }
-
-          throw error
-        }
-        finally {
-          isLoading.value = false
-        }
+      // 如果不是函数组件，直接返回
+      if (typeof component !== 'function') {
+        return component
       }
 
-      return component
+      // 生成缓存键
+      const cacheKey = `${currentRoute.value.fullPath}_${props.name}_${depth}`
+
+      try {
+        // 检查是否已在加载中
+        const existingPromise = componentLoadingPromises.get(cacheKey)
+        if (existingPromise) {
+          return await existingPromise
+        }
+
+        // 检查缓存
+        if (props.keepAlive) {
+          const cached = cache.get(cacheKey)
+          if (cached) {
+            return cached.component
+          }
+        }
+
+        // 标记为加载中
+        isLoading.value = true
+        hasError.value = false
+        errorInfo.value = null
+
+        // 创建加载Promise，带超时和取消机制
+        const abortController = new AbortController()
+        const timeoutId = setTimeout(() => {
+          abortController.abort()
+        }, props.timeout)
+
+        const loadingPromise = Promise.race([
+          Promise.resolve((component as () => Promise<Component>)()),
+          new Promise<never>((_, reject) => {
+            abortController.signal.addEventListener('abort', () => {
+              reject(new Error(`组件加载超时 (${props.timeout}ms)`))
+            })
+          }),
+        ]) as Promise<Component>
+
+        componentLoadingPromises.set(cacheKey, loadingPromise)
+
+        const loadedComponent = await loadingPromise
+        clearTimeout(timeoutId)
+
+        // 验证加载的组件
+        if (!loadedComponent || typeof loadedComponent !== 'object') {
+          throw new Error('加载的组件无效')
+        }
+
+        // 缓存组件
+        if (props.keepAlive) {
+          cache.set(cacheKey, markRaw(loadedComponent), currentRoute.value)
+        }
+
+        // 重置重试计数
+        retryCount.value = 0
+
+        return loadedComponent
+      }
+      catch (error) {
+        // 记录错误
+        hasError.value = true
+        errorInfo.value = error as Error
+
+        // 发出错误事件
+        emit('error', error)
+
+        // 如果有重试机制且未达到最大重试次数
+        if (retryCount.value < maxRetries) {
+          console.warn(`组件加载失败，尝试 ${retryCount.value + 1}/${maxRetries}:`, error)
+          // 不抛出错误，允许重试
+          return component
+        }
+
+        throw error
+      }
+      finally {
+        // 清理加载状态
+        componentLoadingPromises.delete(cacheKey)
+        isLoading.value = false
+      }
     }
 
     // 重试函数

@@ -122,7 +122,7 @@ describe('router Core', () => {
 
     it('should resolve nested route with default child', () => {
       // 添加一个带默认子路由的路由
-      console.log('Adding nested route with default child...')
+      console.warn('Adding nested route with default child...')
       router.addRoute({
         path: '/nested',
         name: 'Nested',
@@ -142,7 +142,7 @@ describe('router Core', () => {
       })
 
       // 测试默认子路由
-      console.log('Resolving /nested...')
+      console.warn('Resolving /nested...')
       const resolved = router.resolve('/nested')
 
       // 调试信息
@@ -150,10 +150,10 @@ describe('router Core', () => {
         name: r.name,
         path: r.path,
       }))
-      console.log('Matched routes:', matchedInfo)
-      console.log('Resolved path:', resolved.path)
-      console.log('Resolved name:', resolved.name)
-      console.log('Resolved record name:', resolved.matched[0]?.name)
+      console.warn('Matched routes:', matchedInfo)
+      console.warn('Resolved path:', resolved.path)
+      console.warn('Resolved name:', resolved.name)
+      console.warn('Resolved record name:', resolved.matched[0]?.name)
 
       expect(resolved.path).toBe('/nested')
       // 现在应该匹配到2个路由：Nested + NestedDefault（不包含根路由）

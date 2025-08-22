@@ -8,6 +8,7 @@ import type {
   RouteLocationNormalized,
   RouteLocationRaw,
   RouteParams,
+  RouteQuery,
   RouteRecordNormalized,
   RouteRecordRaw,
 } from '../types'
@@ -237,7 +238,7 @@ export class RouteMatcher {
   /**
    * 获取缓存键
    */
-  private getCacheKey(path: string, query?: Record<string, any>): string {
+  private getCacheKey(path: string, query?: Record<string, unknown>): string {
     const queryStr = query ? JSON.stringify(query) : ''
     return `${path}${queryStr}`
   }
@@ -576,7 +577,7 @@ export class RouteMatcher {
   /**
    * 标准化属性配置
    */
-  private normalizeProps(props: any): Record<string, any> {
+  private normalizeProps(props: unknown): Record<string, unknown> {
     if (!props)
       return {}
     if (typeof props === 'boolean')
@@ -701,7 +702,7 @@ export class RouteMatcher {
       node = child
     }
 
-    node.record = undefined as any
+    node.record = undefined
   }
 
   /**
@@ -887,7 +888,7 @@ export class RouteMatcher {
    */
   private resolveByPath(
     path: string,
-    query?: any,
+    query?: RouteQuery,
     hash?: string,
   ): RouteLocationNormalized {
     // 使用优化后的匹配方法
@@ -971,8 +972,8 @@ export class RouteMatcher {
    */
   private resolveByName(
     name: string | symbol,
-    params?: any,
-    query?: any,
+    params?: RouteParams,
+    query?: RouteQuery,
     hash?: string,
   ): RouteLocationNormalized {
     const record = this.matchByName(name)
@@ -1013,7 +1014,7 @@ export class RouteMatcher {
   /**
    * 构建完整路径
    */
-  private buildFullPath(path: string, query?: any, hash?: string): string {
+  private buildFullPath(path: string, query?: RouteQuery, hash?: string): string {
     let fullPath = path
 
     if (query && Object.keys(query).length > 0) {

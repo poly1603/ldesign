@@ -5,11 +5,14 @@
  */
 
 import type { DeviceType } from '@ldesign/device'
-import type { ComputedRef, Ref } from 'vue'
+import type { Component, Ref } from 'vue'
 import type {
   DeviceComponentResolution,
   RouteComponent,
   RouteLocationNormalized,
+  RouteRecordNormalized,
+  UseDeviceComponentOptions,
+  UseDeviceComponentReturn,
 } from '../types'
 import { computed, inject, ref, watch } from 'vue'
 import { ROUTE_INJECTION_SYMBOL } from '../core/constants'
@@ -28,32 +31,6 @@ function useRoute(): Ref<RouteLocationNormalized> {
   }
 
   return route
-}
-
-export interface UseDeviceComponentOptions {
-  /** 视图名称 */
-  viewName?: string
-  /** 是否启用自动解析 */
-  autoResolve?: boolean
-  /** 回退组件 */
-  fallbackComponent?: RouteComponent
-}
-
-export interface UseDeviceComponentReturn {
-  /** 当前解析的组件 */
-  resolvedComponent: ComputedRef<RouteComponent | null>
-  /** 组件解析结果 */
-  resolution: ComputedRef<DeviceComponentResolution | null>
-  /** 是否正在加载 */
-  loading: Ref<boolean>
-  /** 错误信息 */
-  error: Ref<Error | null>
-  /** 手动解析组件 */
-  resolveComponent: () => Promise<RouteComponent | null>
-  /** 检查是否有设备特定组件 */
-  hasDeviceComponent: (device: DeviceType) => boolean
-  /** 获取设备特定组件 */
-  getDeviceComponent: (device: DeviceType) => RouteComponent | null
 }
 
 /**
@@ -80,12 +57,14 @@ export function useDeviceComponent(
     if (!currentRecord)
       return null
 
-    const deviceComponents = (currentRecord as any).deviceComponents
+    const deviceComponents = (currentRecord as RouteRecordNormalized & {
+      deviceComponents?: Record<string, RouteComponent>
+    }).deviceComponents
     return deviceComponents?.[device] || null
   }
 
   // 创建模板组件
-  const createTemplateComponent = (record: any): RouteComponent => {
+  const createTemplateComponent = (record: RouteRecordNormalized): RouteComponent => {
     return async () => {
       try {
         const { TemplateRouteResolver } = await import('../device/template')
@@ -112,7 +91,9 @@ export function useDeviceComponent(
 
     try {
       // 检查设备特定组件
-      const deviceComponents = (currentRecord as any).deviceComponents
+      const deviceComponents = (currentRecord as RouteRecordNormalized & {
+        deviceComponents?: Record<string, RouteComponent>
+      }).deviceComponents
       if (deviceComponents) {
         const deviceComponent = getDeviceComponent(currentDevice.value)
         if (deviceComponent) {
@@ -196,7 +177,7 @@ export function useDeviceComponent(
       if (typeof comp === 'function') {
         const loadedComp
           = typeof comp === 'function' && 'then' in comp
-            ? await (comp as () => Promise<any>)()
+            ? await (comp as () => Promise<Component>)()
             : comp
         return loadedComp
       }
@@ -218,7 +199,9 @@ export function useDeviceComponent(
     if (!currentRecord)
       return false
 
-    const deviceComponents = (currentRecord as any).deviceComponents
+    const deviceComponents = (currentRecord as RouteRecordNormalized & {
+      deviceComponents?: Record<string, RouteComponent>
+    }).deviceComponents
     return !!(deviceComponents && deviceComponents[device])
   }
 

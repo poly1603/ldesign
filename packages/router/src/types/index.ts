@@ -30,14 +30,14 @@ export type RouteQuery = Record<string, string | string[] | null | undefined>
  */
 export type ExtractRouteParams<T extends string> =
   T extends `${infer _Start}:${infer Param}/${infer Rest}`
-    ? { [K in Param]: string } & ExtractRouteParams<Rest>
-    : T extends `${infer _Start}:${infer Param}?/${infer Rest}`
-    ? { [K in Param]?: string } & ExtractRouteParams<Rest>
-    : T extends `${infer _Start}:${infer Param}`
-    ? { [K in Param]: string }
-    : T extends `${infer _Start}:${infer Param}?`
-    ? { [K in Param]?: string }
-    : Record<string, never>
+  ? { [K in Param]: string } & ExtractRouteParams<Rest>
+  : T extends `${infer _Start}:${infer Param}?/${infer Rest}`
+  ? { [K in Param]?: string } & ExtractRouteParams<Rest>
+  : T extends `${infer _Start}:${infer Param}`
+  ? { [K in Param]: string }
+  : T extends `${infer _Start}:${infer Param}?`
+  ? { [K in Param]?: string }
+  : Record<string, never>
 
 /**
  * 路径参数类型推导
@@ -48,25 +48,25 @@ export type RouteParamsFor<T extends string> = ExtractRouteParams<T>
  * 类型安全的路由参数
  */
 export type TypedRouteParams<
-  T extends Record<string, any> = Record<string, any>
+  T extends Record<string, any> = Record<string, any>,
 > = {
-  [K in keyof T]: T[K] extends string ? string : string | string[]
-}
+    [K in keyof T]: T[K] extends string ? string : string | string[]
+  }
 
 /**
  * 类型安全的查询参数
  */
 export type TypedRouteQuery<
-  T extends Record<string, any> = Record<string, any>
+  T extends Record<string, any> = Record<string, any>,
 > = {
-  [K in keyof T]?: T[K] extends string
+    [K in keyof T]?: T[K] extends string
     ? string | string[] | null | undefined
     : T[K] extends number
     ? string | string[] | null | undefined
     : T[K] extends boolean
     ? string | string[] | null | undefined
     : string | string[] | null | undefined
-}
+  }
 
 /**
  * 路由元信息类型
@@ -106,7 +106,7 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
 export interface RouteLocationBase<
   TParams extends Record<string, any> = Record<string, any>,
   TQuery extends Record<string, any> = Record<string, any>,
-  TMeta extends RouteMeta = RouteMeta
+  TMeta extends RouteMeta = RouteMeta,
 > {
   /** 路径 */
   path: string
@@ -128,7 +128,7 @@ export interface RouteLocationBase<
 export interface RouteLocationNormalized<
   TParams extends Record<string, any> = Record<string, any>,
   TQuery extends Record<string, any> = Record<string, any>,
-  TMeta extends RouteMeta = RouteMeta
+  TMeta extends RouteMeta = RouteMeta,
 > extends RouteLocationBase<TParams, TQuery, TMeta> {
   /** 完整路径（包含查询参数和哈希） */
   fullPath: string
@@ -152,7 +152,7 @@ export type TypedRouteLocation<T extends string> = RouteLocationNormalized<
  */
 export type RouteLocationRaw<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > =
   | string
   | RouteLocationPathRaw<TQuery>
@@ -162,7 +162,7 @@ export type RouteLocationRaw<
  * 基于路径的路由位置（泛型版）
  */
 export interface RouteLocationPathRaw<
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > {
   path: string
   query?: TypedRouteQuery<TQuery>
@@ -175,7 +175,7 @@ export interface RouteLocationPathRaw<
  */
 export interface RouteLocationNamedRaw<
   TParams extends Record<string, any> = Record<string, any>,
-  TQuery extends Record<string, any> = Record<string, any>
+  TQuery extends Record<string, any> = Record<string, any>,
 > {
   name: string | symbol
   params?: TypedRouteParams<TParams>
@@ -205,8 +205,8 @@ export interface RouteRecordRaw {
   components?: Record<string, RouteComponent>
   /** 重定向 */
   redirect?:
-    | RouteLocationRaw
-    | ((to: RouteLocationNormalized) => RouteLocationRaw)
+  | RouteLocationRaw
+  | ((to: RouteLocationNormalized) => RouteLocationRaw)
   /** 别名 */
   alias?: string | string[]
   /** 子路由 */
@@ -217,9 +217,9 @@ export interface RouteRecordRaw {
   beforeEnter?: NavigationGuard | NavigationGuard[]
   /** 属性传递 */
   props?:
-    | boolean
-    | Record<string, unknown>
-    | ((route: RouteLocationNormalized) => Record<string, unknown>)
+  | boolean
+  | Record<string, unknown>
+  | ((route: RouteLocationNormalized) => Record<string, unknown>)
   /** 路径匹配是否大小写敏感 */
   sensitive?: boolean
   /** 路径匹配是否严格模式 */
@@ -265,9 +265,9 @@ export interface RouteRecordNormalized {
   aliasOf: RouteRecordNormalized | undefined
   /** 重定向配置 */
   redirect:
-    | RouteLocationRaw
-    | ((to: RouteLocationNormalized) => RouteLocationRaw)
-    | undefined
+  | RouteLocationRaw
+  | ((to: RouteLocationNormalized) => RouteLocationRaw)
+  | undefined
 }
 
 // ==================== 导航守卫类型 ====================
@@ -375,6 +375,7 @@ export type NavigationDirection = 'forward' | 'backward' | 'unknown'
 
 // 重新导出设备相关类型
 export type { DeviceType } from '@ldesign/device'
+export type { Component, ComputedRef, Ref } from 'vue'
 
 /**
  * 导航失败接口
@@ -443,7 +444,7 @@ export interface Router {
 
   /** 添加路由 */
   addRoute: ((route: RouteRecordRaw) => () => void) &
-    ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
+  ((parentName: string | symbol, route: RouteRecordRaw) => () => void)
 
   /** 移除路由 */
   removeRoute: (name: string | symbol) => void
@@ -497,12 +498,12 @@ export interface Router {
 /**
  * useRoute 返回类型
  */
-export interface UseRouteReturn extends ComputedRef<RouteLocationNormalized> {}
+export interface UseRouteReturn extends ComputedRef<RouteLocationNormalized> { }
 
 /**
  * useRouter 返回类型
  */
-export interface UseRouterReturn extends Router {}
+export interface UseRouterReturn extends Router { }
 
 // ==================== 设备适配类型 ====================
 
@@ -536,6 +537,38 @@ export interface DeviceComponentResolution {
   isFallback: boolean
   /** 解析来源 */
   source: 'deviceComponents' | 'component' | 'template'
+}
+
+/**
+ * 设备组件选项
+ */
+export interface UseDeviceComponentOptions {
+  /** 视图名称 */
+  viewName?: string
+  /** 是否启用自动解析 */
+  autoResolve?: boolean
+  /** 回退组件 */
+  fallbackComponent?: RouteComponent
+}
+
+/**
+ * 设备组件返回值
+ */
+export interface UseDeviceComponentReturn {
+  /** 当前解析的组件 */
+  resolvedComponent: ComputedRef<RouteComponent | null>
+  /** 组件解析结果 */
+  resolution: ComputedRef<DeviceComponentResolution | null>
+  /** 是否正在加载 */
+  loading: Ref<boolean>
+  /** 错误信息 */
+  error: Ref<Error | null>
+  /** 手动解析组件 */
+  resolveComponent: () => Promise<RouteComponent | null>
+  /** 检查是否有设备特定组件 */
+  hasDeviceComponent: (device: DeviceType) => boolean
+  /** 获取设备特定组件 */
+  getDeviceComponent: (device: DeviceType) => RouteComponent | null
 }
 
 /**
