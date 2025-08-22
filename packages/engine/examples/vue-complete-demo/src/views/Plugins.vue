@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 插件列表
 const plugins = ref([
@@ -83,7 +83,7 @@ function installPlugin(pluginId: string) {
     })
 
     // 显示通知
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '✅ 插件安装成功',
       message: `${plugin.name} 已成功安装并启用`,
       type: 'success',
@@ -108,7 +108,7 @@ function uninstallPlugin(pluginId: string) {
     })
 
     // 显示通知
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🗑️ 插件卸载成功',
       message: `${plugin.name} 已成功卸载`,
       type: 'info',
@@ -132,7 +132,7 @@ function togglePlugin(pluginId: string) {
     })
 
     // 显示通知
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: plugin.enabled ? '✅ 插件已启用' : '⏸️ 插件已禁用',
       message: `${plugin.name} 已${plugin.enabled ? '启用' : '禁用'}`,
       type: plugin.enabled ? 'success' : 'warning',
@@ -143,7 +143,7 @@ function togglePlugin(pluginId: string) {
 // 创建新插件
 function createPlugin() {
   if (!newPlugin.value.name || !newPlugin.value.description) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写插件名称和描述',
       type: 'error',
@@ -166,7 +166,7 @@ function createPlugin() {
   newPlugin.value = { name: '', description: '' }
 
   // 显示通知
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🎉 插件创建成功',
     message: `${plugin.name} 已成功创建并安装`,
     type: 'success',
@@ -175,7 +175,7 @@ function createPlugin() {
 
 // 演示插件热重载
 function demoHotReload() {
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🔄 热重载演示',
     message: '正在重载所有插件...',
     type: 'info',
@@ -183,7 +183,7 @@ function demoHotReload() {
 
   // 模拟重载过程
   setTimeout(() => {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '✅ 热重载完成',
       message: '所有插件已成功重载',
       type: 'success',
@@ -194,7 +194,7 @@ function demoHotReload() {
 // 组件挂载
 onMounted(() => {
   // 记录日志
-  engine.value?.logger.info('插件管理页面已加载')
+  engine?.logger.info('插件管理页面已加载')
 })
 </script>
 

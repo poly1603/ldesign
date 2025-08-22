@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 引擎统计信息
 const engineStats = ref({
@@ -15,8 +15,8 @@ const engineStats = ref({
 
 // 更新引擎统计信息
 function updateEngineStats() {
-  if (engine.value) {
-    const stats = engine.value.getManagerStats()
+  if (engine) {
+    const stats = engine.getManagerStats() as any
     engineStats.value = {
       plugins: stats.plugins?.total || 0,
       middleware: stats.middleware?.total || 0,

@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { onMounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 中间件列表
 const middlewares = ref([
@@ -100,7 +100,7 @@ function toggleMiddleware(id: string) {
     addExecutionLog(id, middleware.enabled ? '启用中间件' : '禁用中间件', 'success')
     
     // 显示通知
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: middleware.enabled ? '✅ 中间件已启用' : '⏸️ 中间件已禁用',
       message: `${middleware.name} 已${middleware.enabled ? '启用' : '禁用'}`,
       type: middleware.enabled ? 'success' : 'warning',
@@ -123,7 +123,7 @@ function testMiddleware(id: string) {
       addExecutionLog(id, '测试执行', 'success', `${duration}ms`)
       
       // 显示通知
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: '🧪 中间件测试完成',
         message: `${middleware.name} 执行成功，耗时 ${duration}ms`,
         type: 'success',
@@ -146,7 +146,7 @@ function updatePriority(id: string, change: number) {
     addExecutionLog(id, `优先级调整为 ${newPriority}`, 'success')
     
     // 显示通知
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '📊 优先级已更新',
       message: `${middleware.name} 优先级调整为 ${newPriority}`,
       type: 'info',
@@ -157,7 +157,7 @@ function updatePriority(id: string, change: number) {
 // 创建新中间件
 function createMiddleware() {
   if (!newMiddleware.value.name || !newMiddleware.value.description) {
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '❌ 输入错误',
       message: '请填写中间件名称和描述',
       type: 'error',
@@ -198,7 +198,7 @@ function createMiddleware() {
   }
 
   // 显示通知
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🎉 中间件创建成功',
     message: `${middleware.name} 已成功创建`,
     type: 'success',
@@ -207,7 +207,7 @@ function createMiddleware() {
 
 // 演示中间件管道
 function demoPipeline() {
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🔄 中间件管道演示',
     message: '正在执行完整的中间件管道...',
     type: 'info',
@@ -232,7 +232,7 @@ function demoPipeline() {
       currentIndex++
       setTimeout(executeNext, 800)
     } else {
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: '✅ 管道执行完成',
         message: `成功执行了 ${enabledMiddlewares.length} 个中间件`,
         type: 'success',
@@ -266,7 +266,7 @@ function addExecutionLog(middleware: string, action: string, result: string, dur
 // 清除日志
 function clearLogs() {
   executionLogs.value = []
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🗑️ 日志已清除',
     message: '所有执行日志已清除',
     type: 'info',
@@ -275,7 +275,7 @@ function clearLogs() {
 
 // 组件挂载
 onMounted(() => {
-  engine.value?.logger.info('中间件管理页面已加载')
+  engine?.logger.info('中间件管理页面已加载')
 })
 </script>
 

@@ -3,7 +3,7 @@ import { useEngine } from '@ldesign/engine/vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 // 使用引擎组合式API
-const { engine } = useEngine()
+const engine = useEngine()
 
 // 性能指标数据
 const performanceMetrics = ref({
@@ -18,7 +18,7 @@ const performanceMetrics = ref({
 })
 
 // 历史性能数据（用于图表）
-const performanceHistory = ref([])
+const performanceHistory = ref<Array<{ timestamp: number } & typeof performanceMetrics.value>>([])
 
 // 性能警告
 const performanceAlerts = ref([
@@ -99,7 +99,7 @@ const optimizationSuggestions = ref([
 ])
 
 // 定时器
-let performanceTimer = null
+let performanceTimer: ReturnType<typeof setInterval> | null = null
 
 // 计算属性
 const overallScore = computed(() => {
@@ -198,7 +198,7 @@ function addAlert(type: string, metric: string, message: string) {
   performanceAlerts.value.unshift(alert)
   
   // 显示通知
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: `⚠️ 性能警告`,
     message,
     type: type === 'error' ? 'error' : 'warning',
@@ -212,7 +212,7 @@ function resolveAlert(alertId: number) {
   if (alert) {
     alert.resolved = true
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '✅ 警告已处理',
       message: '性能警告已标记为已解决',
       type: 'success',
@@ -228,7 +228,7 @@ function runPerformanceTest(testName: string) {
     test.score = 0
     test.duration = '0s'
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🧪 性能测试开始',
       message: `正在运行 ${testName}...`,
       type: 'info',
@@ -251,7 +251,7 @@ function runPerformanceTest(testName: string) {
         }
       }
       
-      engine.value?.notifications.show({
+      engine?.notifications.show({
         title: '✅ 性能测试完成',
         message: `${testName} 得分: ${test.score}`,
         type: 'success',
@@ -271,7 +271,7 @@ function implementSuggestion(suggestionId: number) {
     performanceMetrics.value.cpu = Math.max(0, performanceMetrics.value.cpu - improvement)
     performanceMetrics.value.memory = Math.max(0, performanceMetrics.value.memory - improvement)
     
-    engine.value?.notifications.show({
+    engine?.notifications.show({
       title: '🚀 优化已实施',
       message: `${suggestion.title} - ${suggestion.impact}`,
       type: 'success',
@@ -285,7 +285,7 @@ function clearAllAlerts() {
     alert.resolved = true
   })
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '🧹 警告已清除',
     message: '所有性能警告已清除',
     type: 'info',
@@ -313,7 +313,7 @@ function exportPerformanceReport() {
   
   URL.revokeObjectURL(url)
   
-  engine.value?.notifications.show({
+  engine?.notifications.show({
     title: '📊 报告导出成功',
     message: '性能报告已导出到文件',
     type: 'success',
@@ -344,7 +344,7 @@ onMounted(() => {
   // 启动性能监控
   performanceTimer = setInterval(updatePerformanceMetrics, 2000)
   
-  engine.value?.logger.info('性能监控页面已加载')
+  engine?.logger.info('性能监控页面已加载')
 })
 
 // 组件卸载
