@@ -14,16 +14,16 @@ import { defineAsyncComponent } from 'vue'
  * 简单的内存缓存（临时实现，稍后使用外部包）
  */
 class SimpleCache {
-  private cache = new Map<string, any>()
+  private cache = new Map<string, Component>()
   private timestamps = new Map<string, number>()
   private readonly ttl = 5 * 60 * 1000 // 5分钟
 
-  set(key: string, value: any): void {
+  set(key: string, value: Component): void {
     this.cache.set(key, value)
     this.timestamps.set(key, Date.now())
   }
 
-  get(key: string): any | null {
+  get(key: string): Component | null {
     const timestamp = this.timestamps.get(key)
     if (!timestamp || Date.now() - timestamp > this.ttl) {
       this.cache.delete(key)
@@ -186,7 +186,7 @@ export class TemplateLoader {
   /**
    * 包装组件为异步组件
    */
-  private wrapComponent(component: any, path: string): Component {
+  private wrapComponent(component: unknown, path: string): Component {
     // 如果已经是Vue组件，直接返回
     if (component && (component.render || component.setup || component.template)) {
       return component

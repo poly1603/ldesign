@@ -4,8 +4,8 @@
  * 声明式的模板渲染组件，支持内置模板选择器
  */
 
-import type { DeviceType, SlotConfig, TemplateSelectorConfig } from '../../types'
-import { computed, defineComponent, markRaw, onMounted, onUnmounted, type PropType, ref, Transition, watch } from 'vue'
+import type { DeviceType, SlotConfig, TemplateSelectorConfig, TemplateLoadResult, TemplateMetadata, TemplateChangeEvent } from '../../types'
+import { computed, defineComponent, markRaw, onMounted, onUnmounted, type PropType, ref, Transition, watch, type Component } from 'vue'
 import { TemplateManager } from '../../core/manager'
 import { useTemplateProvider } from '../composables/useTemplateProvider'
 import { TemplateSelector } from './TemplateSelector'
@@ -140,7 +140,7 @@ export const TemplateRenderer = defineComponent({
 
   emits: {
     /** 加载完成事件 */
-    'load': (result: any) => true,
+    'load': (result: TemplateLoadResult) => true,
 
     /** 加载错误事件 */
     'error': (error: Error) => true,
@@ -149,7 +149,7 @@ export const TemplateRenderer = defineComponent({
     'before-load': () => true,
 
     /** 模板变化事件 */
-    'template-change': (template: any) => true,
+    'template-change': (template: TemplateMetadata) => true,
 
     /** 设备变化事件 */
     'device-change': (event: { oldDevice: DeviceType, newDevice: DeviceType }) => true,
@@ -161,21 +161,21 @@ export const TemplateRenderer = defineComponent({
     'template-preview': (template: string) => true,
   },
 
-  setup(props: any, { emit, slots }: any) {
+  setup(props, { emit, slots }) {
     // 尝试使用Provider上下文
     const provider = useTemplateProvider()
 
     // 状态管理
     const isLoading = ref(false)
     const error = ref<Error | null>(null)
-    const currentComponent = ref<any>(null)
-    const currentLoadedTemplate = ref<any>(null) // 保存当前加载的模板元数据
+    const currentComponent = ref<Component | null>(null)
+    const currentLoadedTemplate = ref<TemplateMetadata | null>(null) // 保存当前加载的模板元数据
     const manager = ref<TemplateManager | null>(null)
     // 设备类型状态 - 统一管理，避免冲突
     const currentDevice = ref<DeviceType>('desktop') // 先设置默认值，后续会同步
     const selectedTemplate = ref<string | null>(null)
     const selectorVisible = ref(false)
-    const availableTemplates = ref<any[]>([])
+    const availableTemplates = ref<TemplateMetadata[]>([])
 
     // 选择器配置
     const selectorConfig = computed(() => {
@@ -263,9 +263,9 @@ export const TemplateRenderer = defineComponent({
         // 只有在启用自动检测时才监听设备变化
         if (manager.value.config.autoDetectDevice) {
           // 监听 manager 的设备变化事件
-          manager.value.on('device:change', async (event: any) => {
-            const newDevice = event.newDevice
-            const oldDevice = event.oldDevice
+          manager.value.on('device:change', async (event: TemplateChangeEvent) => {
+            const newDevice = event.newDevice!
+            const oldDevice = event.oldDevice!
 
             // 更新当前设备类型
             currentDevice.value = newDevice
@@ -281,7 +281,7 @@ export const TemplateRenderer = defineComponent({
           try {
             const result = await manager.value!.scanTemplates()
             availableTemplates.value = result.templates.filter(
-              (t: any) => t.category === props.category,
+              (t: TemplateMetadata) => t.category === props.category,
             )
           }
           catch (err) {
@@ -304,7 +304,7 @@ export const TemplateRenderer = defineComponent({
 
           // 只按分类过滤，保留所有设备类型的模板，让 TemplateSelector 自己处理设备过滤
           availableTemplates.value = result.templates.filter(
-            (t: any) => t.category === props.category,
+            (t: TemplateMetadata) => t.category === props.category,
           )
 
           if (availableTemplates.value.length === 0) {
@@ -492,7 +492,7 @@ export const TemplateRenderer = defineComponent({
       // 预加载
       if (props.preload && manager.value) {
         const templates = manager.value.getTemplates(props.category, targetDevice.value)
-        manager.value.preloadTemplates(templates).catch((err: any) => {
+        manager.value.preloadTemplates(templates).catch((err: Error) => {
           console.warn('Template preloading failed:', err)
         })
       }
@@ -594,7 +594,7 @@ export const TemplateRenderer = defineComponent({
       if (!props.slots || props.slots.length === 0)
         return null
 
-      return props.slots.map((slotConfig: any, index: number) => {
+      return props.slots.map((slotConfig: SlotConfig, index: number) => {
         const SlotComponent = slotConfig.content
         if (!SlotComponent)
           return null
@@ -667,27 +667,27 @@ export const TemplateRenderer = defineComponent({
 
       // 添加自定义插槽（前置）
       if (customSlots) {
-        elements.push(...customSlots.filter((slot: any) => slot.props?.position === 'before'))
+        elements.push(...customSlots.filter((slot: unknown) => (slot as any).props?.position === 'before'))
       }
 
       // 添加主要内容
       const mainContent = props.transition
         ? (
-            <Transition name={transitionName.value} mode="out-in" appear={true}>
-              <div key={templateKey.value} class="template-content">
-                {content}
-              </div>
-            </Transition>
-          )
+          <Transition name={transitionName.value} mode="out-in" appear={true}>
+            <div key={templateKey.value} class="template-content">
+              {content}
+            </div>
+          </Transition>
+        )
         : (
-            <div class="template-content">{content}</div>
-          )
+          <div class="template-content">{content}</div>
+        )
 
       elements.push(mainContent)
 
       // 添加自定义插槽（后置）
       if (customSlots) {
-        elements.push(...customSlots.filter((slot: any) => slot.props?.position === 'after'))
+        elements.push(...customSlots.filter((slot: unknown) => (slot as any).props?.position === 'after'))
       }
 
       // 根据位置添加选择器
@@ -710,14 +710,14 @@ export const TemplateRenderer = defineComponent({
         <div class={containerClass} style={transitionStyle.value}>
           {selectorPosition === 'overlay' && selector
             ? (
-                <>
-                  {mainContent}
-                  <div class="template-selector-overlay">{selector}</div>
-                </>
-              )
+              <>
+                {mainContent}
+                <div class="template-selector-overlay">{selector}</div>
+              </>
+            )
             : (
-                elements
-              )}
+              elements
+            )}
 
           {/* 选择器切换按钮（手动触发模式） */}
           {selectorConfig.value?.trigger === 'manual' && (

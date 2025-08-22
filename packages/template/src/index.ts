@@ -80,6 +80,28 @@ export {
   useTemplateManager,
 } from './vue/plugin'
 
+// ============ 服务层导出 ============
+/** 错误处理服务 */
+export { ErrorHandler, TemplateError, TemplateErrorType } from './services/error-handler'
+
+/** 事件系统服务 */
+export { EventEmitter, TemplateEventType } from './services/event-emitter'
+
+/** 性能监控服务 */
+export { PerformanceMonitor } from './services/performance-monitor'
+
+/** 缓存服务 */
+export { CacheService } from './services/cache-service'
+
+/** 存储服务 */
+export { StorageService } from './services/storage-service'
+
+/** 设备检测服务 */
+export { DeviceService } from './services/device-service'
+
+/** 日志服务 */
+export { Logger, LogLevel, logger } from './services/logger'
+
 // ============ 外部依赖重新导出 ============
 // TODO: 稍后启用这些导出
 // export { DeviceDetector } from '@ldesign/device'
