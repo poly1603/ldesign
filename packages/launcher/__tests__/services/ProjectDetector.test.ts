@@ -1,231 +1,190 @@
-import fs from 'node:fs/promises'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ProjectDetector } from '../../src/services/ProjectDetector'
+/**
+ * @fileoverview ProjectDetector 单元测试 - 重构版本
+ * @author ViteLauncher Team
+ * @since 1.0.0
+ */
 
-// Mock fs operations
-vi.mock('fs/promises', () => ({
-  default: {
-    readdir: vi.fn(),
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import { ProjectDetector } from '../../src/services/ProjectDetector.new'
+import type { ProjectType, FrameworkType } from '../../src/types'
+
+// Mock 文件系统
+vi.mock('node:fs', () => ({
+  promises: {
     readFile: vi.fn(),
+    access: vi.fn(),
+    readdir: vi.fn(),
     stat: vi.fn(),
   },
-  readdir: vi.fn(),
-  readFile: vi.fn(),
-  stat: vi.fn(),
 }))
 
-// Mock ErrorHandler
-vi.mock('../../src/services/ErrorHandler', () => ({
-  ErrorHandler: vi.fn().mockImplementation(() => ({
-    handleError: vi.fn().mockReturnValue({ message: 'Mock error', code: 'E001' }),
-  })),
+// Mock fast-glob
+vi.mock('fast-glob', () => ({
+  default: vi.fn(),
 }))
 
-describe('projectDetector', () => {
-  let detector: ProjectDetector
-  let mockFs: any
+describe('ProjectDetector', () => {
+  let projectDetector: ProjectDetector
 
   beforeEach(() => {
-    detector = new ProjectDetector()
-    mockFs = vi.mocked(fs)
+    projectDetector = new ProjectDetector()
+    vi.clearAllMocks()
   })
 
-  describe('detectProjectType', () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
+  describe('constructor', () => {
+    it('应该正确初始化', () => {
+      expect(projectDetector).toBeInstanceOf(ProjectDetector)
+    })
+  })
+
+  describe('detect', () => {
     it('应该检测Vue3项目', async () => {
-      const projectPath = '/test/vue3-project'
+      const mockPackageJson = {
+        dependencies: { vue: '^3.3.0' },
+        devDependencies: { '@vitejs/plugin-vue': '^5.0.0' },
+      }
 
-      // Mock directory exists
-      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
-      mockFs.readdir.mockResolvedValue([
-        'package.json',
-        'vite.config.ts',
-        'src',
-        'index.html',
-      ])
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
 
-      mockFs.readFile.mockResolvedValue(JSON.stringify({
-        dependencies: {
-          'vue': '^3.0.0',
-          '@vitejs/plugin-vue': '^4.0.0',
-        },
-      }))
-
-      const result = await detector.detectProjectType(projectPath)
+      const result = await projectDetector.detect('/test/vue3-project')
 
       expect(result.projectType).toBe('vue3')
-      expect(result.confidence).toBeGreaterThan(0.8)
-    })
-
-    it('应该检测React项目', async () => {
-      const projectPath = '/test/react-project'
-
-      // Mock directory exists
-      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
-      mockFs.readdir.mockResolvedValue([
-        'package.json',
-        'vite.config.ts',
-        'src',
-        'index.html',
-      ])
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify({
-        dependencies: {
-          'react': '^18.0.0',
-          'react-dom': '^18.0.0',
-          '@vitejs/plugin-react': '^4.0.0',
-        },
-      }))
-
-      const result = await detector.detectProjectType(projectPath)
-
-      expect(result.projectType).toBe('react')
-      expect(result.confidence).toBeGreaterThan(0.8)
+      expect(result.framework).toBe('vue3')
+      expect(result.confidence).toBeGreaterThan(0.7)
+      expect(result.report.dependencies).toEqual(mockPackageJson.dependencies)
     })
 
     it('应该检测Vue2项目', async () => {
-      const projectPath = '/test/vue2-project'
+      const mockPackageJson = {
+        dependencies: { vue: '^2.7.0' },
+        devDependencies: { '@vitejs/plugin-vue2': '^2.3.0' },
+      }
 
-      // Mock directory exists
-      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
-      mockFs.readdir.mockResolvedValue([
-        'package.json',
-        'vite.config.ts',
-        'src',
-        'index.html',
-      ])
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
 
-      mockFs.readFile.mockResolvedValue(JSON.stringify({
-        dependencies: {
-          'vue': '^2.7.0',
-          '@vitejs/plugin-vue2': '^2.0.0',
-        },
-      }))
-
-      const result = await detector.detectProjectType(projectPath)
+      const result = await projectDetector.detect('/test/vue2-project')
 
       expect(result.projectType).toBe('vue2')
-      expect(result.confidence).toBeGreaterThan(0.8)
+      expect(result.framework).toBe('vue2')
+      expect(result.confidence).toBeGreaterThan(0.7)
     })
 
-    it('应该检测Vanilla项目', async () => {
-      const projectPath = '/test/vanilla-project'
+    it('应该检测React项目', async () => {
+      const mockPackageJson = {
+        dependencies: {
+          react: '^18.2.0',
+          'react-dom': '^18.2.0',
+        },
+        devDependencies: {
+          '@vitejs/plugin-react': '^4.0.0',
+        },
+      }
 
-      // Mock directory exists
-      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
-      mockFs.readdir.mockResolvedValue([
-        'package.json',
-        'vite.config.ts',
-        'index.html',
-        'main.js',
-      ])
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
 
-      mockFs.readFile.mockResolvedValue(JSON.stringify({
-        dependencies: {},
+      const result = await projectDetector.detect('/test/react-project')
+
+      expect(result.projectType).toBe('react')
+      expect(result.framework).toBe('react')
+      expect(result.confidence).toBeGreaterThan(0.7)
+    })
+
+    it('应该检测Vanilla TypeScript项目', async () => {
+      const mockPackageJson = {
+        devDependencies: {
+          typescript: '^5.0.0',
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access)
+        .mockResolvedValueOnce(undefined) // package.json
+        .mockResolvedValueOnce(undefined) // tsconfig.json
+        .mockRejectedValue(new Error('Not found')) // 其他文件
+
+      const result = await projectDetector.detect('/test/vanilla-ts-project')
+
+      expect(result.projectType).toBe('vanilla-ts')
+      expect(result.framework).toBe('vanilla-ts')
+    })
+
+    it('应该检测Vanilla JavaScript项目', async () => {
+      const mockPackageJson = {
         devDependencies: {
           vite: '^5.0.0',
         },
-      }))
+      }
 
-      const result = await detector.detectProjectType(projectPath)
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access)
+        .mockResolvedValueOnce(undefined) // package.json
+        .mockRejectedValue(new Error('Not found')) // 其他文件
+
+      const result = await projectDetector.detect('/test/vanilla-project')
 
       expect(result.projectType).toBe('vanilla')
-      expect(result.confidence).toBeGreaterThan(0.6)
+      expect(result.framework).toBe('vanilla')
     })
 
-    it('应该检测TypeScript项目', async () => {
-      const projectPath = '/test/ts-project'
+    it('应该处理未知项目类型', async () => {
+      vi.mocked(fs.readFile).mockRejectedValue(new Error('File not found'))
+      vi.mocked(fs.access).mockRejectedValue(new Error('File not found'))
 
-      // Mock directory exists
-      mockFs.stat.mockResolvedValue({ isDirectory: () => true } as any)
-      mockFs.readdir.mockResolvedValue([
-        'package.json',
-        'vite.config.ts',
-        'tsconfig.json',
-        'src',
-        'index.html',
-      ])
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify({
-        dependencies: {
-          typescript: '^5.0.0',
-        },
-      }))
-
-      const result = await detector.detectProjectType(projectPath)
-
-      expect(result.report.detectedFiles).toContain('tsconfig.json')
-    })
-
-    it('应该返回未知项目类型当无法检测时', async () => {
-      const projectPath = '/test/unknown-project'
-
-      mockFs.readdir.mockResolvedValue([])
-      mockFs.readFile.mockRejectedValue(new Error('File not found'))
-
-      const result = await detector.detectProjectType(projectPath)
+      const result = await projectDetector.detect('/test/unknown-project')
 
       expect(result.projectType).toBe('unknown')
       expect(result.confidence).toBe(0)
     })
+
+    it('应该处理错误情况', async () => {
+      vi.mocked(fs.readFile).mockRejectedValue(new Error('Permission denied'))
+
+      const result = await projectDetector.detect('/test/error-project')
+
+      expect(result.error).toBeDefined()
+      expect(result.projectType).toBe('unknown')
+    })
   })
 
   describe('detectFramework', () => {
-    it('应该检测Vue框架', async () => {
-      const dependencies = {
-        'vue': '^3.0.0',
-        '@vitejs/plugin-vue': '^4.0.0',
+    it('应该检测框架类型', async () => {
+      const mockPackageJson = {
+        dependencies: { vue: '^3.3.0' },
       }
 
-      const framework = await detector.detectFramework(dependencies)
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const framework = await projectDetector.detectFramework('/test/project')
 
       expect(framework).toBe('vue3')
-    })
-
-    it('应该检测React框架', async () => {
-      const dependencies = {
-        'react': '^18.0.0',
-        'react-dom': '^18.0.0',
-        '@vitejs/plugin-react': '^4.0.0',
-      }
-
-      const framework = await detector.detectFramework(dependencies)
-
-      expect(framework).toBe('react')
-    })
-
-    it('应该检测Vanilla框架', async () => {
-      const dependencies = {}
-
-      const framework = await detector.detectFramework(dependencies)
-
-      expect(framework).toBe('vanilla')
     })
   })
 
   describe('detectTypeScript', () => {
-    it('应该检测TypeScript项目', async () => {
-      const projectPath = '/test/ts-project'
+    it('应该检测TypeScript支持', async () => {
+      vi.mocked(fs.access).mockResolvedValue(undefined)
 
-      mockFs.readdir.mockResolvedValue([
-        'tsconfig.json',
-        'main.ts',
-        'src/index.ts',
-      ])
-
-      const hasTypeScript = await detector.detectTypeScript(projectPath)
+      const hasTypeScript = await projectDetector.detectTypeScript('/test/project')
 
       expect(hasTypeScript).toBe(true)
+      expect(fs.access).toHaveBeenCalledWith('/test/project/tsconfig.json')
     })
 
-    it('应该检测非TypeScript项目', async () => {
-      const projectPath = '/test/js-project'
+    it('应该在没有TypeScript时返回false', async () => {
+      vi.mocked(fs.access).mockRejectedValue(new Error('File not found'))
 
-      mockFs.readdir.mockResolvedValue([
-        'main.js',
-        'src/index.js',
-      ])
-
-      const hasTypeScript = await detector.detectTypeScript(projectPath)
+      const hasTypeScript = await projectDetector.detectTypeScript('/test/project')
 
       expect(hasTypeScript).toBe(false)
     })
@@ -233,41 +192,118 @@ describe('projectDetector', () => {
 
   describe('detectCSSPreprocessor', () => {
     it('应该检测Sass预处理器', async () => {
-      const dependencies = {
-        sass: '^1.60.0',
+      const mockPackageJson = {
+        devDependencies: { sass: '^1.0.0' },
       }
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const preprocessor = await projectDetector.detectCSSPreprocessor('/test/project')
 
       expect(preprocessor).toBe('sass')
     })
 
     it('应该检测Less预处理器', async () => {
-      const dependencies = {
-        less: '^4.1.0',
+      const mockPackageJson = {
+        devDependencies: { less: '^4.0.0' },
       }
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const preprocessor = await projectDetector.detectCSSPreprocessor('/test/project')
 
       expect(preprocessor).toBe('less')
     })
 
     it('应该检测Stylus预处理器', async () => {
-      const dependencies = {
-        stylus: '^0.59.0',
+      const mockPackageJson = {
+        devDependencies: { stylus: '^0.60.0' },
       }
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const preprocessor = await projectDetector.detectCSSPreprocessor('/test/project')
 
       expect(preprocessor).toBe('stylus')
     })
 
-    it('应该返回undefined当没有预处理器时', async () => {
-      const dependencies = {}
+    it('应该在没有预处理器时返回undefined', async () => {
+      const mockPackageJson = {
+        devDependencies: { vite: '^5.0.0' },
+      }
 
-      const preprocessor = await detector.detectCSSPreprocessor(dependencies)
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const preprocessor = await projectDetector.detectCSSPreprocessor('/test/project')
 
       expect(preprocessor).toBeUndefined()
+    })
+  })
+
+  describe('边界情况', () => {
+    it('应该处理空项目路径', async () => {
+      const result = await projectDetector.detect('')
+      expect(result.projectType).toBe('unknown')
+    })
+
+    it('应该处理无效的package.json', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue('invalid json')
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const result = await projectDetector.detect('/test/project')
+      expect(result.projectType).toBe('unknown')
+    })
+
+    it('应该处理缺少dependencies的package.json', async () => {
+      const mockPackageJson = {
+        name: 'test-project',
+        version: '1.0.0',
+      }
+
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const result = await projectDetector.detect('/test/project')
+      expect(result.projectType).toBe('vanilla')
+    })
+
+    it('应该处理多个框架的混合项目', async () => {
+      const mockPackageJson = {
+        dependencies: {
+          vue: '^3.3.0',
+          react: '^18.2.0',
+        },
+      }
+
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const result = await projectDetector.detect('/test/project')
+      
+      // 应该选择置信度最高的框架
+      expect(['vue3', 'react']).toContain(result.projectType)
+    })
+  })
+
+  describe('性能测试', () => {
+    it('应该在合理时间内完成检测', async () => {
+      const mockPackageJson = {
+        dependencies: { vue: '^3.3.0' },
+      }
+
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fs.access).mockResolvedValue(undefined)
+
+      const startTime = Date.now()
+      const result = await projectDetector.detect('/test/project')
+      const endTime = Date.now()
+
+      expect(endTime - startTime).toBeLessThan(1000) // 应该在1秒内完成
+      expect(result.report.duration).toBeGreaterThan(0)
     })
   })
 })

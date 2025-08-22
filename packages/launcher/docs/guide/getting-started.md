@@ -1,249 +1,256 @@
-# 🚀 快速开始
+# 快速开始
 
-欢迎使用 Vite Launcher！这个指南将帮你在 5 分钟内创建你的第一个项目。
+## 安装
 
-## 📦 安装
-
-::: tip 💡 推荐使用 PNPM
-我们推荐使用 [PNPM](https://pnpm.io/) 作为包管理器，它速度更快，占用空间更小。当然，NPM 和 Yarn 也完全没问题！
-:::
-
-::: code-group
-
-```bash [PNPM (推荐)]
-# 全局安装
-pnpm add -g @ldesign/launcher
-
-# 或者直接使用（无需安装）
-pnpm create @ldesign/launcher my-awesome-app
-```
-
-```bash [NPM]
-# 全局安装
-npm install -g @ldesign/launcher
-
-# 或者直接使用
-npm create @ldesign/launcher my-awesome-app
-```
-
-```bash [Yarn]
-# 全局安装
-yarn global add @ldesign/launcher
-
-# 或者直接使用
-yarn create @ldesign/launcher my-awesome-app
-```
-
-:::
-
-## 🎯 创建你的第一个项目
-
-### 方式一：交互式创建（推荐）
+### 使用 npm
 
 ```bash
-# 🎨 启动交互式创建向导
-vite-launcher create my-awesome-app
-
-# 🤖 AI 会问你几个问题：
-# ❓ 选择项目类型: Vue 3, React, TypeScript...
-# ❓ 是否使用 TypeScript: 是/否
-# ❓ 选择包管理器: npm, yarn, pnpm
-# ❓ 是否立即安装依赖: 是/否
+npm install @ldesign/launcher
 ```
 
-### 方式二：命令行参数
+### 使用 yarn
 
 ```bash
-# 🚀 Vue 3 + TypeScript 项目
-vite-launcher create my-vue-app --template vue3 --typescript
-
-# ⚛️ React + TypeScript 项目  
-vite-launcher create my-react-app --template react --typescript
-
-# 🔷 纯 TypeScript 项目
-vite-launcher create my-ts-app --template vanilla-ts
-
-# 🌟 Lit Web Components 项目
-vite-launcher create my-lit-app --template lit
+yarn add @ldesign/launcher
 ```
 
-### 方式三：编程方式使用
+### 使用 pnpm
+
+```bash
+pnpm add @ldesign/launcher
+```
+
+## 基本使用
+
+### 1. 导入模块
 
 ```typescript
-import { createProject, startDev } from '@ldesign/launcher'
+import { ViteLauncher, createProject, startDev, buildProject } from '@ldesign/launcher'
+```
 
-// 🎨 创建项目
-await createProject('./my-app', 'vue3', {
-  force: true,        // 覆盖已存在的目录
-  installDeps: true,  // 自动安装依赖
-  packageManager: 'pnpm' // 指定包管理器
-})
+### 2. 创建项目
 
-// ⚡ 启动开发服务器
-const server = await startDev('./my-app', {
+```typescript
+// 创建 Vue 3 项目
+await createProject('./my-vue-app', 'vue3', { force: true })
+
+// 创建 React 项目
+await createProject('./my-react-app', 'react')
+
+// 创建 Vanilla 项目
+await createProject('./my-vanilla-app', 'vanilla')
+```
+
+### 3. 启动开发服务器
+
+```typescript
+// 启动开发服务器
+const server = await startDev('./my-vue-app', { 
   port: 3000,
-  open: true,
-  host: 'localhost'
+  host: 'localhost',
+  open: true 
 })
 
-console.log('🎉 开发服务器已启动！')
+console.log('开发服务器已启动:', server.config.server?.port)
 ```
 
-## 🎊 启动开发服务器
+### 4. 构建项目
 
-创建完项目后，让我们启动开发服务器：
+```typescript
+// 构建项目
+const result = await buildProject('./my-vue-app', {
+  outDir: 'dist',
+  minify: true,
+  sourcemap: false
+})
 
-```bash
-# 📁 进入项目目录
-cd my-awesome-app
-
-# ⚡ 启动开发服务器
-npm run dev
-
-# 🎯 或者使用 Vite Launcher
-vite-launcher dev
+if (result.success) {
+  console.log('构建成功!')
+  console.log('输出文件:', result.outputFiles)
+  console.log('构建时间:', result.duration, 'ms')
+} else {
+  console.error('构建失败:', result.errors)
+}
 ```
 
-::: info 🌟 开发服务器特性
-- **⚡ 闪电般的热重载**: 修改代码后瞬间看到效果
-- **🔍 智能错误提示**: 友好的错误信息和解决建议  
-- **📱 移动端适配**: 自动生成移动端访问链接
-- **🌐 网络访问**: 局域网内其他设备可以访问
-:::
+## 完整示例
 
-你会看到类似这样的输出：
+```typescript
+import { ViteLauncher, createProject, startDev, buildProject, stopDev } from '@ldesign/launcher'
 
-```bash
-🎉 开发服务器已启动！
+async function main() {
+  try {
+    // 1. 创建项目
+    console.log('创建 Vue 3 项目...')
+    await createProject('./my-app', 'vue3', { force: true })
+    
+    // 2. 启动开发服务器
+    console.log('启动开发服务器...')
+    const server = await startDev('./my-app', { 
+      port: 3000,
+      open: true 
+    })
+    
+    // 3. 等待一段时间后构建
+    console.log('等待 5 秒后开始构建...')
+    await new Promise(resolve => setTimeout(resolve, 5000))
+    
+    // 4. 停止开发服务器
+    await stopDev()
+    
+    // 5. 构建项目
+    console.log('开始构建项目...')
+    const result = await buildProject('./my-app', {
+      outDir: 'dist',
+      minify: true
+    })
+    
+    if (result.success) {
+      console.log('✅ 项目创建和构建完成!')
+      console.log(`📦 输出目录: ${result.outputFiles.length} 个文件`)
+      console.log(`⏱️  构建时间: ${result.duration}ms`)
+    } else {
+      console.error('❌ 构建失败:', result.errors)
+    }
+    
+  } catch (error) {
+    console.error('❌ 操作失败:', error)
+  }
+}
 
-  ➜  本地地址:   http://localhost:3000/
-  ➜  网络地址:   http://192.168.1.100:3000/
-  ➜  移动端:     http://192.168.1.100:3000/
-
-💡 按 Ctrl+C 停止服务器
-🔍 按 o + Enter 在浏览器中打开
-📱 按 r + Enter 重启服务器
+main()
 ```
 
-## 🏗️ 构建项目
+## 使用 ViteLauncher 类
 
-当你的项目开发完成，准备部署时：
+如果你需要更多控制，可以直接使用 `ViteLauncher` 类：
 
-```bash
-# 🔨 构建生产版本
-npm run build
+```typescript
+import { ViteLauncher } from '@ldesign/launcher'
 
-# 🎯 或者使用 Vite Launcher
-vite-launcher build
+async function advancedUsage() {
+  // 创建启动器实例
+  const launcher = new ViteLauncher({
+    logLevel: 'info',
+    mode: 'development',
+    autoDetect: true
+  })
+  
+  try {
+    // 配置启动器
+    launcher.configure({
+      server: {
+        port: 3000,
+        host: 'localhost'
+      },
+      build: {
+        outDir: 'dist',
+        sourcemap: true
+      }
+    })
+    
+    // 创建项目
+    await launcher.create('./my-app', 'vue3', { force: true })
+    
+    // 启动开发服务器
+    const server = await launcher.dev('./my-app')
+    
+    // 获取项目信息
+    const projectInfo = await launcher.getProjectInfo('./my-app')
+    console.log('项目信息:', projectInfo)
+    
+    // 停止服务器
+    await launcher.stop()
+    
+    // 构建项目
+    const result = await launcher.build('./my-app')
+    console.log('构建结果:', result)
+    
+  } finally {
+    // 销毁实例
+    await launcher.destroy()
+  }
+}
 
-# 📊 构建并生成分析报告
-vite-launcher build --analyze
+advancedUsage()
 ```
 
-构建完成后，你会看到详细的构建报告：
+## 项目类型
 
-```bash
-📊 构建分析结果
-==================================================
-📁 总文件数: 12
-📦 总大小: 2.1 MB
-🗜️  压缩后: 890 KB (压缩率: 58%)
-⏱️  构建耗时: 3.2s
+Vite Launcher 支持以下项目类型：
 
-📈 文件统计:
-  • 入口文件: 1
-  • 代码块: 3  
-  • 模块数: 25
-  • 资源文件: 8
+| 类型 | 描述 | 框架 |
+|------|------|------|
+| `vue3` | Vue 3 项目 | Vue 3 |
+| `vue2` | Vue 2 项目 | Vue 2 |
+| `react` | React 项目 | React |
+| `react-next` | Next.js 项目 | React + Next.js |
+| `vanilla` | 原生 JavaScript 项目 | 无框架 |
+| `vanilla-ts` | TypeScript 项目 | 无框架 |
+| `lit` | Lit 项目 | Lit |
+| `svelte` | Svelte 项目 | Svelte |
+| `angular` | Angular 项目 | Angular |
 
-📋 最大的文件:
-  1. vendor.js: 1.2 MB (chunk)
-  2. main.js: 450 KB (entry)
-  3. style.css: 120 KB (asset)
-  4. logo.png: 89 KB (asset)
-  5. app.js: 67 KB (chunk)
+## 配置选项
 
-💡 优化建议:
-  • 建议启用 Gzip 压缩以减少传输大小
-  • 考虑代码分割来减少首屏加载时间
-  • 1个大图片文件建议优化或使用 WebP 格式
+### LauncherOptions
+
+```typescript
+interface LauncherOptions {
+  logLevel?: 'error' | 'warn' | 'info' | 'silent' // 日志级别
+  mode?: 'development' | 'production' // 运行模式
+  autoDetect?: boolean // 是否启用自动检测
+  root?: string // 项目根目录
+  configFile?: string // Vite 配置文件路径
+}
 ```
 
-## 🔍 预览构建结果
+### DevOptions
 
-在部署之前，你可以本地预览构建后的项目：
-
-```bash
-# 👀 预览构建结果
-npm run preview
-
-# 🎯 或者使用 Vite Launcher
-vite-launcher preview
-
-# 🚀 在指定端口预览
-vite-launcher preview --port 4000
+```typescript
+interface DevOptions {
+  port?: number // 端口号
+  host?: string // 主机地址
+  open?: boolean // 是否自动打开浏览器
+  https?: boolean // 是否使用 HTTPS
+}
 ```
 
-## 🎨 项目结构
+### BuildOptions
 
-Vite Launcher 创建的项目具有清晰的结构：
-
-```
-my-awesome-app/
-├── 📁 public/           # 静态资源
-│   ├── 🖼️ favicon.ico
-│   └── 🎨 logo.svg
-├── 📁 src/             # 源代码
-│   ├── 📁 assets/      # 项目资源
-│   ├── 📁 components/  # Vue/React 组件
-│   ├── 🎯 main.ts      # 入口文件
-│   └── 🧩 App.vue      # 根组件
-├── 📋 index.html       # HTML 模板
-├── 📦 package.json     # 项目配置
-├── ⚙️ vite.config.ts   # Vite 配置
-└── 🔧 tsconfig.json    # TypeScript 配置
+```typescript
+interface BuildOptions {
+  outDir?: string // 输出目录
+  minify?: boolean // 是否压缩
+  sourcemap?: boolean // 是否生成 sourcemap
+  emptyOutDir?: boolean // 是否清空输出目录
+}
 ```
 
-::: details 📂 文件说明
-- **`src/main.ts`**: 应用程序的入口点，负责创建和挂载应用
-- **`src/App.vue`**: Vue 应用的根组件，或 React 的主组件
-- **`src/components/`**: 存放可复用组件的目录
-- **`src/assets/`**: 存放图片、字体等静态资源
-- **`public/`**: 直接复制到构建输出的静态文件
-- **`vite.config.ts`**: Vite 的配置文件，可以自定义构建行为
-:::
+## 错误处理
 
-## 🎯 下一步
+Vite Launcher 提供统一的错误处理：
 
-恭喜！🎉 你已经成功创建并运行了你的第一个 Vite Launcher 项目。现在你可以：
+```typescript
+import { ViteLauncher } from '@ldesign/launcher'
 
-::: tip 🚀 继续你的开发之旅
-- 📚 [探索更多功能](/guide/creating-projects) - 了解如何创建不同类型的项目
-- 🔧 [学习配置选项](/config/) - 自定义你的开发环境
-- 💡 [查看实际示例](/examples/) - 学习最佳实践
-- 🛠️ [了解构建优化](/guide/build-analysis) - 让你的应用更快更小
-:::
+const launcher = new ViteLauncher()
 
-### 📚 推荐阅读
+try {
+  await launcher.create('./my-app', 'vue3')
+} catch (error) {
+  if (error.code === 'PROJECT_EXISTS') {
+    console.log('项目已存在，使用 force: true 选项覆盖')
+    await launcher.create('./my-app', 'vue3', { force: true })
+  } else {
+    console.error('创建项目失败:', error.message)
+  }
+}
+```
 
-1. **[创建项目详解](/guide/creating-projects)** - 深入了解各种项目模板
-2. **[开发服务器配置](/guide/dev-server)** - 优化你的开发体验  
-3. **[构建和部署](/guide/building)** - 准备生产环境
-4. **[性能优化技巧](/guide/performance)** - 让应用飞起来
+## 下一步
 
-### 🆘 需要帮助？
-
-如果遇到任何问题，不要犹豫：
-
-- 🐛 [报告 Bug](https://github.com/ldesign/packages/issues)
-- 💬 [加入讨论](https://github.com/ldesign/packages/discussions)  
-- 📖 [查看 FAQ](/faq)
-- 📧 [联系我们](mailto:support@ldesign.dev)
-
-::: warning 💡 小贴士
-记住，最好的学习方式就是实践！尝试修改代码，看看会发生什么。Vite Launcher 的热重载会让你立即看到变化的效果。
-:::
-
----
-
-准备好深入了解 Vite Launcher 的更多功能了吗？让我们继续探索吧！🚀
+- [基础用法](./basic-usage.md) - 学习更多基本功能
+- [高级用法](./advanced-usage.md) - 探索高级特性
+- [配置选项](./configuration.md) - 了解详细配置
+- [API 参考](../api/vite-launcher.md) - 查看完整 API 文档
