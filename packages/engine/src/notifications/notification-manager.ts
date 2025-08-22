@@ -32,6 +32,7 @@ export class NotificationManagerImpl implements NotificationManager {
   private idCounter = 0
   private styleManager: NotificationStyleManager
   private logger?: Logger
+  private defaultOptions: Partial<NotificationOptions> = {}
 
   constructor(logger?: Logger) {
     this.logger = logger
@@ -196,7 +197,7 @@ export class NotificationManagerImpl implements NotificationManager {
     await Promise.all(hidePromises)
   }
 
-  getAll(): NotificationOptions[] {
+  getAll(): Notification[] {
     return Array.from(this.notifications.values())
       .filter(n => n.visible)
       .sort((a, b) => {
@@ -988,6 +989,53 @@ export class NotificationManagerImpl implements NotificationManager {
       }
     })
     this.notifications.clear()
+  }
+
+  // 添加缺失的方法
+  update(id: string, options: Partial<NotificationOptions>): void {
+    const notification = this.notifications.get(id)
+    if (notification) {
+      Object.assign(notification, options)
+    }
+  }
+
+  get(id: string): Notification | undefined {
+    const notification = this.notifications.get(id)
+    if (notification && notification.visible) {
+      return {
+        id: notification.id,
+        title: notification.title || '',
+        message: notification.message,
+        type: notification.type,
+        position: notification.position,
+        duration: notification.duration,
+        animation: notification.animation,
+        theme: notification.theme,
+        icon: notification.icon,
+        actions: notification.actions || [],
+        closable: notification.closable,
+        persistent: notification.persistent,
+        group: notification.group,
+        priority: notification.priority || 0,
+        metadata: notification.metadata,
+        timestamp: notification.createdAt,
+        isVisible: notification.visible,
+        isAnimating: notification.animating,
+      }
+    }
+    return undefined
+  }
+
+  clear(): void {
+    this.hideAll()
+  }
+
+  setDefaultOptions(options: Partial<NotificationOptions>): void {
+    Object.assign(this.defaultOptions, options)
+  }
+
+  getDefaultOptions(): Partial<NotificationOptions> {
+    return { ...this.defaultOptions }
   }
 }
 

@@ -40,7 +40,7 @@ export class ErrorManagerImpl implements ErrorManager {
     this.errorHandlers.delete(handler)
   }
 
-  captureError(error: Error, component?: Component, info?: string): void {
+  captureError(error: Error, component?: unknown, info?: string): void {
     const errorInfo: ErrorInfo = {
       message: error.message,
       stack: error.stack,

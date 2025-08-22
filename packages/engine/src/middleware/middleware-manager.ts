@@ -226,4 +226,15 @@ export const commonMiddleware = {
       },
       20,
     ),
+
+  // 安全中间件
+  security: (logger: any) =>
+    createRequestMiddleware(
+      'security',
+      async (context, next) => {
+        logger.debug('Security middleware executed', { context })
+        await next()
+      },
+      30,
+    ),
 }

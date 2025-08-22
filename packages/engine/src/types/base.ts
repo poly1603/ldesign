@@ -106,6 +106,7 @@ export interface BasePlugin {
 export interface RouterAdapter {
   readonly name: string
   readonly version: string
+  install: (engine: any) => void
   navigate: (to: string, options?: Record<string, unknown>) => void
   push: (to: string, options?: Record<string, unknown>) => void
   replace: (to: string, options?: Record<string, unknown>) => void
@@ -123,6 +124,7 @@ export interface RouterAdapter {
 export interface StateAdapter {
   readonly name: string
   readonly version: string
+  install: (engine: any) => void
   get: <T>(key: string, defaultValue?: T) => T
   set: <T>(key: string, value: T) => void
   delete: (key: string) => void
@@ -137,6 +139,7 @@ export interface StateAdapter {
 export interface I18nAdapter {
   readonly name: string
   readonly version: string
+  install: (engine: any) => void
   t: (key: string, params?: Record<string, unknown>) => string
   setLocale: (locale: string) => void
   getLocale: () => string
@@ -149,6 +152,7 @@ export interface I18nAdapter {
 export interface ThemeAdapter {
   readonly name: string
   readonly version: string
+  install: (engine: any) => void
   setTheme: (theme: string) => void
   getTheme: () => string
   getAvailableThemes: () => string[]
@@ -201,6 +205,8 @@ export interface ErrorInfo {
   timestamp: number
   level: 'error' | 'warn' | 'info'
   context?: Record<string, any>
+  component?: unknown
+  info?: string
 }
 
 // 通用日志条目接口

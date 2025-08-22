@@ -95,10 +95,9 @@ describe('directiveManager', () => {
       directiveManager.register('test2', directive2)
 
       const allDirectives = directiveManager.getAll()
-      expect(allDirectives).toEqual({
-        test1: directive1,
-        test2: directive2,
-      })
+      expect(allDirectives).toHaveLength(2)
+      expect(allDirectives).toContain(directive1)
+      expect(allDirectives).toContain(directive2)
     })
 
     it('应该获取所有指令名称', () => {
@@ -328,7 +327,7 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback, arg: 'click' }
 
-      ;(commonDirectives.throttle as any).mounted!(
+        ; (commonDirectives.throttle as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
@@ -345,13 +344,13 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback, arg: 'click' }
 
-      ;(commonDirectives.throttle as any).mounted!(
+        ; (commonDirectives.throttle as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
         {} as any,
       )
-      ;(commonDirectives.throttle as any).unmounted!(
+      ; (commonDirectives.throttle as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
@@ -370,7 +369,7 @@ describe('预定义指令功能测试', () => {
       const callback = vi.fn()
       const binding = { value: callback }
 
-      ;(commonDirectives.lazy as any).mounted!(
+        ; (commonDirectives.lazy as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
@@ -392,7 +391,7 @@ describe('预定义指令功能测试', () => {
       // 模拟观察器
       mockElement._lazyObserver = mockObserver as any
 
-      ;(commonDirectives.lazy as any).unmounted!(
+      ; (commonDirectives.lazy as any).unmounted!(
         mockElement,
         binding as any,
         {} as any,
@@ -407,7 +406,7 @@ describe('预定义指令功能测试', () => {
     it('应该在有权限时不做任何操作', () => {
       const binding = { value: 'user', modifiers: { hide: true } }
 
-      ;(commonDirectives.permission as any).mounted!(
+        ; (commonDirectives.permission as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
@@ -423,7 +422,7 @@ describe('预定义指令功能测试', () => {
     it('应该支持数组形式的权限检查', () => {
       const binding = { value: ['admin', 'user'], modifiers: {} }
 
-      ;(commonDirectives.permission as any).mounted!(
+        ; (commonDirectives.permission as any).mounted!(
         mockElement,
         binding as any,
         {} as any,
@@ -442,7 +441,7 @@ describe('预定义指令功能测试', () => {
       // 测试不会抛出错误
       expect(() => {
         const binding = { value: 'test', modifiers: {} }
-        ;(commonDirectives.permission as any).mounted!(
+          ; (commonDirectives.permission as any).mounted!(
           mockElement,
           binding as any,
           {} as any,

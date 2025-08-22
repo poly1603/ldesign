@@ -1,6 +1,9 @@
 import type { Engine, Plugin, PluginManager } from '../types'
 
 export class PluginManagerImpl implements PluginManager {
+  readonly name = 'PluginManager'
+  readonly version = '1.0.0'
+
   private plugins = new Map<string, Plugin>()
   private loadOrder: string[] = []
   private engine?: Engine
@@ -254,6 +257,7 @@ export class PluginManagerImpl implements PluginManager {
     pending: number
     errors: number
     averageInstallTime: number
+    timestamp: number
   } {
     return {
       total: this.plugins.size,
@@ -263,6 +267,7 @@ export class PluginManagerImpl implements PluginManager {
       pending: 0,
       errors: 0,
       averageInstallTime: 0,
+      timestamp: Date.now(),
     }
   }
 
@@ -325,6 +330,23 @@ export class PluginManagerImpl implements PluginManager {
     return Array.from(this.plugins.values()).filter(plugin =>
       plugin.dependencies?.includes(dependency),
     )
+  }
+
+  destroy(): void {
+    // 卸载所有插件
+    for (const plugin of this.plugins.values()) {
+      if (plugin.uninstall) {
+        try {
+          plugin.uninstall({ engine: this.engine! })
+        }
+        catch (error) {
+          console.error(`Error uninstalling plugin ${plugin.name}:`, error)
+        }
+      }
+    }
+    this.plugins.clear()
+    this.loadOrder = []
+    this.clearCaches()
   }
 }
 

@@ -18,11 +18,19 @@ export interface NotificationManager {
   getDefaultOptions: () => Partial<NotificationOptions>
 }
 
+// 通知进度
+export interface NotificationProgress {
+  value: number
+  max: number
+  label?: string
+  showText?: boolean
+}
+
 // 通知选项
 export interface NotificationOptions {
   id?: string
-  title: string
-  message?: string
+  title?: string
+  message: string
   type?: NotificationType
   position?: NotificationPosition
   duration?: number
@@ -35,6 +43,15 @@ export interface NotificationOptions {
   group?: string
   priority?: number
   metadata?: Record<string, unknown>
+  progress?: NotificationProgress
+  allowHTML?: boolean
+  onClick?: () => void
+  onShow?: () => void
+  onClose?: () => void
+  style?: Record<string, string>
+  className?: string
+  maxWidth?: number
+  zIndex?: number
 }
 
 // 通知实例
@@ -63,7 +80,9 @@ export interface Notification {
 export interface NotificationAction {
   label: string
   action: () => void
+  handler?: () => void
   type?: 'primary' | 'secondary' | 'danger'
+  style?: string
   disabled?: boolean
   loading?: boolean
 }

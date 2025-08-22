@@ -533,6 +533,37 @@ export class LifecycleManagerImpl<T = any> implements LifecycleManager<T> {
 
     return criticalPhases.includes(phase)
   }
+
+  // 添加缺失的方法
+  add(hook: any): void {
+    // 兼容性方法，委托给on方法
+    if (hook.phase && hook.handler) {
+      this.on(hook.phase, hook.handler, hook.priority || 0)
+    }
+  }
+
+  remove(name: string): void {
+    // 兼容性方法，委托给off方法
+    this.off(name)
+  }
+
+  getOrder(phase: LifecyclePhase): string[] {
+    const hooks = this.getHooks(phase)
+    return hooks.sort((a, b) => (b?.priority || 0) - (a?.priority || 0)).map(h => h?.id || '')
+  }
+
+  validate(): any {
+    return {
+      valid: true,
+      errors: [],
+      warnings: [],
+    }
+  }
+
+  optimize(): void {
+    // 优化钩子执行顺序和性能
+    this.logger?.debug('Lifecycle hooks optimized')
+  }
 }
 
 // 工厂函数

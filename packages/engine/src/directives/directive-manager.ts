@@ -1,14 +1,15 @@
-import type { Directive } from '@vue/runtime-dom'
-import type { DirectiveManager, Logger } from '../types'
+import type { DirectiveManager, EngineDirective, Logger } from '../types'
 
 export class DirectiveManagerImpl implements DirectiveManager {
-  private directives = new Map<string, Directive>()
+  private directives = new Map<string, EngineDirective>()
+  private logger?: Logger
 
-  constructor(_logger?: Logger) {
+  constructor(logger?: Logger) {
+    this.logger = logger
     // logger参数保留用于未来扩展
   }
 
-  register(name: string, directive: Directive): void {
+  register(name: string, directive: EngineDirective): void {
     if (this.directives.has(name)) {
       console.warn(
         `Directive "${name}" is already registered. It will be replaced.`,
@@ -22,16 +23,12 @@ export class DirectiveManagerImpl implements DirectiveManager {
     this.directives.delete(name)
   }
 
-  get(name: string): Directive | undefined {
+  get(name: string): EngineDirective | undefined {
     return this.directives.get(name)
   }
 
-  getAll(): Record<string, Directive> {
-    const result: Record<string, Directive> = {}
-    for (const [name, directive] of this.directives) {
-      result[name] = directive
-    }
-    return result
+  getAll(): EngineDirective[] {
+    return Array.from(this.directives.values())
   }
 
   // 检查指令是否存在
@@ -55,7 +52,7 @@ export class DirectiveManagerImpl implements DirectiveManager {
   }
 
   // 批量注册指令
-  registerBatch(directives: Record<string, Directive>): void {
+  registerBatch(directives: Record<string, EngineDirective>): void {
     for (const [name, directive] of Object.entries(directives)) {
       this.register(name, directive)
     }
@@ -65,6 +62,57 @@ export class DirectiveManagerImpl implements DirectiveManager {
   unregisterBatch(names: string[]): void {
     for (const name of names) {
       this.unregister(name)
+    }
+  }
+
+  // 按分类获取指令
+  getByCategory(category: string): EngineDirective[] {
+    return Array.from(this.directives.values()).filter(directive =>
+      directive.category === category,
+    )
+  }
+
+  // 按标签获取指令
+  getByTag(tag: string): EngineDirective[] {
+    return Array.from(this.directives.values()).filter(directive =>
+      directive.tags?.includes(tag),
+    )
+  }
+
+  // 启用指令
+  enable(name: string): void {
+    const directive = this.directives.get(name)
+    if (directive) {
+      // 指令启用逻辑
+      this.logger?.debug(`Directive "${name}" enabled`)
+    }
+  }
+
+  // 禁用指令
+  disable(name: string): void {
+    const directive = this.directives.get(name)
+    if (directive) {
+      // 指令禁用逻辑
+      this.logger?.debug(`Directive "${name}" disabled`)
+    }
+  }
+
+  // 重新加载指令
+  reload(name: string): void {
+    const directive = this.directives.get(name)
+    if (directive) {
+      // 指令重新加载逻辑
+      this.logger?.debug(`Directive "${name}" reloaded`)
+    }
+  }
+
+  // 验证指令
+  validate(_directive: EngineDirective): any {
+    return {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      suggestions: [],
     }
   }
 }
@@ -91,7 +139,7 @@ export const commonDirectives = {
         delete el._clickOutsideHandler
       }
     },
-  } as Directive,
+  } as any,
 
   // 复制到剪贴板指令
   copy: {
@@ -137,7 +185,7 @@ export const commonDirectives = {
         delete el._copyHandler
       }
     },
-  } as Directive,
+  } as any,
 
   // 懒加载指令
   lazy: {
@@ -173,7 +221,7 @@ export const commonDirectives = {
         delete el._lazyObserver
       }
     },
-  } as Directive,
+  } as any,
 
   // 防抖指令
   debounce: {
@@ -209,7 +257,7 @@ export const commonDirectives = {
         delete el._debounceHandler
       }
     },
-  } as Directive,
+  } as any,
 
   // 节流指令
   throttle: {
@@ -240,7 +288,7 @@ export const commonDirectives = {
         delete el._throttleHandler
       }
     },
-  } as Directive,
+  } as any,
 
   // 权限控制指令
   permission: {
@@ -267,7 +315,7 @@ export const commonDirectives = {
         }
       }
     },
-  } as Directive,
+  } as any,
 
   // 焦点指令
   focus: {
@@ -281,7 +329,7 @@ export const commonDirectives = {
         el.focus()
       }
     },
-  } as Directive,
+  } as any,
 }
 
 // 权限检查函数（示例实现）

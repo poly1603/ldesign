@@ -35,6 +35,16 @@ export interface StateSnapshot<T = unknown> {
   metadata?: Record<string, unknown>
 }
 
+// 状态历史记录条目
+export interface StateHistoryEntry {
+  timestamp: number
+  action: string
+  key: string
+  oldValue: unknown
+  newValue: unknown
+  metadata?: Record<string, unknown>
+}
+
 // 状态持久化接口
 export interface StatePersistence {
   save: (state: Record<string, unknown>, key: string) => Promise<void>

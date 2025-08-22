@@ -3,7 +3,7 @@
 export * from './base'
 // 缓存管理类型
 export * from './cache'
-// 配置管理类型
+// 配置管理类型 - 包含所有配置相关类型
 export * from './config'
 // 指令管理类型
 export * from './directive'
@@ -15,20 +15,32 @@ export * from './environment'
 export * from './error'
 // 事件管理类型
 export * from './event'
-// 生命周期类型
-export * from './lifecycle'
+// 生命周期类型 - 排除重复的ValidationResult
+export type {
+  LifecycleEvent,
+  LifecycleHook,
+  LifecycleManager,
+  LifecyclePhase,
+} from './lifecycle'
 // 日志管理类型
 export * from './logger'
 // 中间件类型
 export * from './middleware'
-// 通知管理类型
-export * from './notification'
-// 性能监控类型
-export * from './performance'
+// 通知管理类型 - 只导出非配置类型
+export type {
+  Notification,
+  NotificationAction,
+  NotificationManager,
+  NotificationOptions,
+  NotificationProgress,
+  NotificationStats,
+} from './notification'
+// 性能监控类型 - 只导出非配置类型
+export type { PerformanceManager } from './performance'
 // 插件系统类型
 export * from './plugin'
-// 安全管理类型
-export * from './security'
+// 安全管理类型 - 只导出非配置类型
+export type { SecurityManager } from './security'
 // 状态管理类型
 export * from './state'
 // 样式管理类型
