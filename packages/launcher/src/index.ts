@@ -6,17 +6,32 @@
  * @version 1.0.0
  */
 
-import type { BuildOptions, DevOptions, LauncherOptions, PreviewOptions, ProjectType } from './types'
+import type { 
+  BuildOptions, 
+  DevOptions, 
+  LauncherOptions, 
+  PreviewOptions, 
+  ProjectType,
+  CreateProjectOptions 
+} from './types'
 import { ViteLauncher } from './core/ViteLauncher'
+import { ProjectDetector } from './services/ProjectDetector.new'
 
 // 核心类导出
 export { ViteLauncher } from './core/ViteLauncher'
-
-export { ConfigManager } from './services/ConfigManager'
-// 服务类导出
 export { ErrorHandler } from './services/ErrorHandler'
-export { PluginManager, pluginManager } from './services/PluginManager'
-export { ProjectDetector } from './services/ProjectDetector'
+export { ProjectDetector } from './services/ProjectDetector.new'
+export { ConfigManager } from './services/ConfigManager'
+export { PluginManager } from './services/PluginManager'
+
+// 工具函数导出
+export * from './utils'
+
+// 常量导出
+export * from './constants'
+
+// 类型定义导出
+export type * from './types'
 
 // 默认配置
 const defaultOptions: LauncherOptions = {
@@ -81,7 +96,7 @@ export default viteLauncher
 export async function createProject(
   projectPath: string,
   projectType: ProjectType,
-  options?: { template?: string, force?: boolean },
+  options?: CreateProjectOptions,
 ) {
   return viteLauncher.create(projectPath, projectType, options)
 }
@@ -159,6 +174,6 @@ export function createLauncher(options?: LauncherOptions): ViteLauncher {
  * @param projectPath 项目路径
  */
 export async function detectProject(projectPath?: string) {
-  const detector = new (await import('./services/ProjectDetector')).ProjectDetector()
+  const detector = new ProjectDetector()
   return detector.detectProjectType(projectPath || process.cwd())
 }
