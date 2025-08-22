@@ -12,15 +12,9 @@ const darkPrimary = ref('#177ddc')
 
 const canCreate = computed(() => {
   return (
-<<<<<<< HEAD
     themeName.value.trim() &&
     isValidHex(lightPrimary.value) &&
     isValidHex(darkPrimary.value)
-=======
-    themeName.value.trim()
-    && isValidHex(lightPrimary.value)
-    && isValidHex(darkPrimary.value)
->>>>>>> d558c53bb81f65625318631d106345bf8a2cfdfe
   )
 })
 
@@ -72,11 +66,7 @@ async function createTheme() {
       <div class="form-group">
         <label class="form-label">亮色模式主色调</label>
         <div class="color-input-group">
-<<<<<<< HEAD
           <input v-model="lightPrimary" type="color" class="color-picker" />
-=======
-          <input v-model="lightPrimary" type="color" class="color-picker">
->>>>>>> d558c53bb81f65625318631d106345bf8a2cfdfe
           <input
             v-model="lightPrimary"
             type="text"
@@ -89,11 +79,7 @@ async function createTheme() {
       <div class="form-group">
         <label class="form-label">暗色模式主色调</label>
         <div class="color-input-group">
-<<<<<<< HEAD
           <input v-model="darkPrimary" type="color" class="color-picker" />
-=======
-          <input v-model="darkPrimary" type="color" class="color-picker">
->>>>>>> d558c53bb81f65625318631d106345bf8a2cfdfe
           <input
             v-model="darkPrimary"
             type="text"
