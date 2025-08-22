@@ -182,9 +182,9 @@ export interface PluginConfig {
   /** 插件版本 */
   version: string;
   /** 插件选项 */
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
   /** 默认选项 */
-  defaultOptions?: Record<string, any>;
+  defaultOptions?: Record<string, unknown>;
   /** 是否必需 */
   required: boolean;
   /** 插件描述 */
@@ -274,7 +274,7 @@ export interface ConfigMergeOptions {
   /** 是否覆盖数组 */
   overrideArrays?: boolean;
   /** 自定义合并函数 */
-  customMerger?: (target: any, source: any, key: string) => any;
+  customMerger?: (target: unknown, source: unknown, key: string) => unknown;
 }
 
 /**
@@ -336,7 +336,7 @@ export interface IPluginManager {
   /** 获取所有可用插件 */
   getAvailablePlugins(): Promise<PluginConfig[]>;
   /** 解析插件选项 */
-  resolvePluginOptions(pluginName: string, options?: Record<string, any>): Record<string, any>;
+  resolvePluginOptions(pluginName: string, options?: Record<string, unknown>): Record<string, unknown>;
 }
 
 /**

@@ -27,8 +27,8 @@
       "import": "./es/index.js",
       "require": "./lib/index.js"
     },
-    "./vue": {
-      "types": "./types/vue/index.d.ts",
+    "./type": {
+      "types": "./types/types/index.d.ts",
       "import": "./es/vue/index.js",
       "require": "./lib/vue/index.js"
     },
