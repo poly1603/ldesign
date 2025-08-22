@@ -2,6 +2,10 @@
   "extends": "../../tools/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "types": ["vue/jsx"],
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "paths": {
       "@/*": ["src/*"]
     }

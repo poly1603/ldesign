@@ -1,0 +1,361 @@
+/**
+ * 基于元素类型的装饰样式
+ * 
+ * 这些样式定义了装饰元素的基础外观和动画
+ * 所有主题共享这些基础样式，只是装饰内容不同
+ */
+
+/* 基础装饰样式 */
+.theme-decoration {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  font-size: 16px;
+  line-height: 1;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+/* 装饰大小 */
+.theme-decoration.decoration-small {
+  font-size: 12px;
+  transform: scale(0.8);
+}
+
+.theme-decoration.decoration-medium {
+  font-size: 16px;
+  transform: scale(1);
+}
+
+.theme-decoration.decoration-large {
+  font-size: 24px;
+  transform: scale(1.2);
+}
+
+/* 位置样式 */
+.theme-decoration.position-top-left {
+  top: -8px;
+  left: -8px;
+}
+
+.theme-decoration.position-top-right {
+  top: -8px;
+  right: -8px;
+}
+
+.theme-decoration.position-bottom-left {
+  bottom: -8px;
+  left: -8px;
+}
+
+.theme-decoration.position-bottom-right {
+  bottom: -8px;
+  right: -8px;
+}
+
+.theme-decoration.position-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.theme-decoration.position-edge-top {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.theme-decoration.position-edge-bottom {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.theme-decoration.position-edge-left {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.theme-decoration.position-edge-right {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.theme-decoration.position-corner {
+  top: -6px;
+  right: -6px;
+}
+
+/* 动画效果 */
+
+/* 摆动动画 - 适用于灯笼、铃铛等 */
+@keyframes swing {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+}
+
+.theme-decoration.animation-swing {
+  animation: swing 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* 发光动画 - 适用于福字、星星等 */
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    opacity: 0.7;
+    text-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
+  }
+}
+
+.theme-decoration.animation-glow {
+  animation: glow 1.5s ease-in-out infinite;
+}
+
+/* 闪烁动画 - 适用于光点、装饰等 */
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.theme-decoration.animation-sparkle {
+  animation: sparkle 1s ease-in-out infinite;
+}
+
+/* 爆发动画 - 适用于烟花等 */
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+.theme-decoration.animation-burst {
+  animation: burst 2s ease-out infinite;
+}
+
+/* 飘浮动画 - 适用于背景装饰 */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.theme-decoration.animation-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 龙舞动画 - 适用于中国龙 */
+@keyframes dragon-dance {
+  0% {
+    transform: translateX(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateX(5px) rotate(2deg);
+  }
+  50% {
+    transform: translateX(0px) rotate(0deg);
+  }
+  75% {
+    transform: translateX(-5px) rotate(-2deg);
+  }
+  100% {
+    transform: translateX(0px) rotate(0deg);
+  }
+}
+
+.theme-decoration.animation-dragon-dance {
+  animation: dragon-dance 4s ease-in-out infinite;
+}
+
+/* 闪烁动画 - 适用于圣诞树、星星 */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  75% {
+    opacity: 0.5;
+  }
+}
+
+.theme-decoration.animation-twinkle {
+  animation: twinkle 2s linear infinite;
+}
+
+/* 铃铛摇摆 */
+@keyframes ring {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(10deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  30% {
+    transform: rotate(6deg);
+  }
+  40% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+  60% {
+    transform: rotate(0deg);
+  }
+}
+
+.theme-decoration.animation-ring {
+  animation: ring 3s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* 雪花飘落 */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(20px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.theme-decoration.animation-snowfall {
+  animation: snowfall 4s linear infinite;
+}
+
+/* 弹跳动画 */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.theme-decoration.animation-bounce {
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+/* 挥手动画 */
+@keyframes wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-10deg);
+  }
+}
+
+.theme-decoration.animation-wave {
+  animation: wave 2.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* 微妙发光 - 适用于默认主题 */
+@keyframes subtle-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.theme-decoration.animation-subtle-glow {
+  animation: subtle-glow 3s ease-in-out infinite;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .theme-decoration {
+    font-size: 14px;
+  }
+
+  .theme-decoration.decoration-large {
+    font-size: 18px;
+  }
+
+  .theme-decoration.decoration-small {
+    font-size: 10px;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .theme-decoration {
+    animation: none !important;
+  }
+}
+
+/* 高对比度模式适配 */
+@media (prefers-contrast: high) {
+  .theme-decoration {
+    filter: contrast(1.5);
+  }
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .theme-decoration {
+    filter: brightness(1.2);
+  }
+}

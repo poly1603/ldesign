@@ -376,7 +376,11 @@ export interface IdleProcessor {
  */
 export interface CSSInjector {
   /** 注入 CSS 变量 */
-  injectVariables: (variables: Record<string, ColorValue>, id?: string) => void
+  injectVariables: (
+    variables: Record<string, ColorValue>,
+    id?: string,
+    themeInfo?: { name?: string; mode?: string; primaryColor?: string }
+  ) => void
 
   /** 移除 CSS 变量 */
   removeVariables: (id?: string) => void
