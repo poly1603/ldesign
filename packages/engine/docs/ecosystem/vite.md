@@ -21,11 +21,11 @@ pnpm add -D @ldesign/vite-plugin-engine
 ### Vite 配置
 
 ```typescript
+import { resolve } from 'node:path'
+import { ldesignEngine } from '@ldesign/vite-plugin-engine'
+import vue from '@vitejs/plugin-vue'
 // vite.config.ts
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { ldesignEngine } from '@ldesign/vite-plugin-engine'
-import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [
@@ -87,7 +87,7 @@ export default defineConfig({
           'ldesign-engine': ['@ldesign/engine'],
 
           // 将第三方库分离
-          vendor: ['vue', 'vue-router'],
+          'vendor': ['vue', 'vue-router'],
 
           // 将 UI 库分离
           'element-plus': ['element-plus'],
@@ -167,7 +167,8 @@ export function ldesignEngine(options: LDesignOptions = {}): Plugin {
 
     // 代码转换
     transform(code, id) {
-      if (!filter(id)) return
+      if (!filter(id))
+        return
 
       let transformedCode = code
 
@@ -199,7 +200,8 @@ export function ldesignEngine(options: LDesignOptions = {}): Plugin {
         if (req.url === '/status') {
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ status: 'ok', version: '1.0.0' }))
-        } else {
+        }
+        else {
           next()
         }
       })
@@ -385,7 +387,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // 手动分包
-        manualChunks: id => {
+        manualChunks: (id) => {
           // 第三方库
           if (id.includes('node_modules')) {
             if (id.includes('vue')) {
@@ -412,7 +414,7 @@ export default defineConfig({
         // 文件命名
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
-        assetFileNames: assetInfo => {
+        assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('.')
           const ext = info[info.length - 1]
 
@@ -462,9 +464,9 @@ export default defineConfig({
 ### 性能分析
 
 ```typescript
+import { visualizer } from 'rollup-plugin-visualizer'
 // vite.config.ts - 性能分析
 import { defineConfig } from 'vite'
-import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   plugins: [
@@ -486,10 +488,10 @@ export default defineConfig({
 ### Vitest 配置
 
 ```typescript
+import { resolve } from 'node:path'
+import vue from '@vitejs/plugin-vue'
 // vitest.config.ts
 import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
@@ -527,10 +529,10 @@ export default defineConfig({
 ### 测试设置
 
 ```typescript
+import { createTestEngine } from '@ldesign/engine/testing'
+import { config } from '@vue/test-utils'
 // tests/setup.ts
 import { vi } from 'vitest'
-import { config } from '@vue/test-utils'
-import { createTestEngine } from '@ldesign/engine/testing'
 
 // 全局测试引擎
 const testEngine = createTestEngine({

@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import BasicDemo from './components/BasicDemo.vue'
+import LargeDataDemo from './components/LargeDataDemo.vue'
+import PerformanceDemo from './components/PerformanceDemo.vue'
+import SecurityDemo from './components/SecurityDemo.vue'
+import SmartStrategyDemo from './components/SmartStrategyDemo.vue'
+import VueIntegrationDemo from './components/VueIntegrationDemo.vue'
+</script>
+
 <template>
   <div id="app">
     <div class="header">
@@ -26,12 +35,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import BasicDemo from './components/BasicDemo.vue'
-import SmartStrategyDemo from './components/SmartStrategyDemo.vue'
-import SecurityDemo from './components/SecurityDemo.vue'
-import VueIntegrationDemo from './components/VueIntegrationDemo.vue'
-import PerformanceDemo from './components/PerformanceDemo.vue'
-import LargeDataDemo from './components/LargeDataDemo.vue'
-</script>

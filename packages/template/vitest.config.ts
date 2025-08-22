@@ -1,4 +1,4 @@
-import { createVitestConfig } from '../../tools/configs/vitest.base.config'
+import { createVitestConfig } from '../../tools/test/vitest.config.base'
 
 export default createVitestConfig({
   vue: true,

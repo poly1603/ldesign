@@ -1,0 +1,144 @@
+:host {
+  display: inline-block;
+  width: 100%;
+  font-family: var(--ld-font-family);
+}
+
+.ld-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  transition: all var(--ld-transition-duration) var(--ld-transition-timing);
+}
+
+.ld-input__inner {
+  flex: 1;
+  width: 100%;
+  padding: var(--ld-input-padding-y) var(--ld-input-padding-x);
+  font-size: var(--ld-input-font-size);
+  line-height: var(--ld-input-line-height);
+  color: var(--ld-text-color);
+  background-color: var(--ld-input-bg-color);
+  border: var(--ld-input-border-width) solid var(--ld-input-border-color);
+  border-radius: var(--ld-input-border-radius);
+  outline: none;
+  transition: all var(--ld-transition-duration) var(--ld-transition-timing);
+  box-sizing: border-box;
+}
+.ld-input__inner::placeholder {
+  color: var(--ld-text-color-placeholder);
+}
+.ld-input__inner:hover:not(:disabled):not(:read-only) {
+  border-color: var(--ld-input-border-color-hover);
+}
+.ld-input__inner:focus {
+  border-color: var(--ld-primary-color);
+  box-shadow: 0 0 0 2px var(--ld-primary-color-light);
+}
+.ld-input__inner:disabled {
+  background-color: var(--ld-input-bg-color-disabled);
+  border-color: var(--ld-input-border-color);
+  cursor: not-allowed;
+}
+.ld-input__inner:read-only {
+  background-color: var(--ld-input-bg-color-readonly);
+  cursor: default;
+}
+
+.ld-input__suffix {
+  position: absolute;
+  right: var(--ld-input-padding-x);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+.ld-input__clear,
+.ld-input__password-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  color: var(--ld-text-color-secondary);
+  background: none;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color var(--ld-transition-duration) var(--ld-transition-timing);
+}
+.ld-input__clear:hover,
+.ld-input__password-toggle:hover {
+  color: var(--ld-primary-color);
+}
+.ld-input__clear:focus,
+.ld-input__password-toggle:focus {
+  outline: 2px solid var(--ld-primary-color-light);
+  outline-offset: 1px;
+}
+
+.ld-input--small .ld-input__inner {
+  padding: var(--ld-input-padding-y-sm) var(--ld-input-padding-x-sm);
+  font-size: var(--ld-input-font-size-sm);
+  line-height: var(--ld-input-line-height-sm);
+  border-radius: var(--ld-input-border-radius-sm);
+}
+.ld-input--small .ld-input__suffix {
+  right: var(--ld-input-padding-x-sm);
+}
+.ld-input--large .ld-input__inner {
+  padding: var(--ld-input-padding-y-lg) var(--ld-input-padding-x-lg);
+  font-size: var(--ld-input-font-size-lg);
+  line-height: var(--ld-input-line-height-lg);
+  border-radius: var(--ld-input-border-radius-lg);
+}
+.ld-input--large .ld-input__suffix {
+  right: var(--ld-input-padding-x-lg);
+}
+
+.ld-input--focused .ld-input__inner {
+  border-color: var(--ld-primary-color);
+  box-shadow: 0 0 0 2px var(--ld-primary-color-light);
+}
+.ld-input--disabled .ld-input__clear,
+.ld-input--disabled .ld-input__password-toggle {
+  color: var(--ld-text-color-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.ld-input--readonly .ld-input__clear,
+.ld-input--readonly .ld-input__password-toggle {
+  display: none;
+}
+
+.ld-input--clearable .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x) + 24px);
+}
+.ld-input--small.ld-input--clearable .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x-sm) + 22px);
+}
+.ld-input--large.ld-input--clearable .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x-lg) + 26px);
+}
+
+.ld-input--password .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x) + 24px);
+}
+.ld-input--small.ld-input--password .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x-sm) + 22px);
+}
+.ld-input--large.ld-input--password .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x-lg) + 26px);
+}
+.ld-input--clearable.ld-input--password .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x) + 48px);
+}
+.ld-input--small.ld-input--clearable.ld-input--password .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x-sm) + 44px);
+}
+.ld-input--large.ld-input--clearable.ld-input--password .ld-input__inner {
+  padding-right: calc(var(--ld-input-padding-x-lg) + 52px);
+}

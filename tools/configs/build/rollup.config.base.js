@@ -11,10 +11,10 @@ import vuePlugin from '@vitejs/plugin-vue'
 import vueJsxPlugin from '@vitejs/plugin-vue-jsx'
 import autoprefixer from 'autoprefixer'
 import { glob } from 'glob'
+import postcssLess from 'postcss-less'
 import del from 'rollup-plugin-delete'
 import dts from 'rollup-plugin-dts'
 import postcss from 'rollup-plugin-postcss'
-import postcssLess from 'postcss-less'
 
 /**
  * 创建基础的 Rollup 配置
@@ -64,7 +64,7 @@ export function createRollupConfig(options = {}) {
         'src/vue/**/*.vue',
         'src/adapt/vue/**/*.ts',
         'src/adapt/vue/**/*.tsx',
-        'src/adapt/vue/**/*.vue'
+        'src/adapt/vue/**/*.vue',
       )
     }
 
@@ -75,7 +75,7 @@ export function createRollupConfig(options = {}) {
     }
 
     const allFiles = []
-    filePatterns.forEach(pattern => {
+    filePatterns.forEach((pattern) => {
       const files = glob.sync(pattern, {
         cwd: packagePath,
         ignore: ignorePatterns,
@@ -84,7 +84,7 @@ export function createRollupConfig(options = {}) {
     })
 
     const input = {}
-    allFiles.forEach(file => {
+    allFiles.forEach((file) => {
       const name = path.relative('src', file).replace(/\.(ts|tsx|vue)$/, '')
       input[name] = path.resolve(packagePath, file)
     })
@@ -107,7 +107,7 @@ export function createRollupConfig(options = {}) {
             path.resolve(packagePath, 'types'),
           ],
           verbose: false,
-        })
+        }),
       )
     }
 
@@ -148,13 +148,13 @@ export function createRollupConfig(options = {}) {
       // 环境变量替换
       replace({
         'process.env.NODE_ENV': JSON.stringify(
-          format === 'umd' ? 'production' : 'development'
+          format === 'umd' ? 'production' : 'development',
         ),
-        preventAssignment: true,
+        'preventAssignment': true,
       }),
       typescript({
         tsconfig: fs.existsSync(
-          path.resolve(packagePath, 'tsconfig.build.json')
+          path.resolve(packagePath, 'tsconfig.build.json'),
         )
           ? path.resolve(packagePath, 'tsconfig.build.json')
           : path.resolve(packagePath, 'tsconfig.json'),
@@ -164,8 +164,12 @@ export function createRollupConfig(options = {}) {
         exclude: ['**/*.vue'],
         compilerOptions: {
           outDir: undefined, // 让 rollup 控制输出目录
+          exactOptionalPropertyTypes: false,
+          noUncheckedIndexedAccess: false,
+          noUnusedLocals: false,
+          noUnusedParameters: false,
         },
-      })
+      }),
     )
 
     // 如果启用了 Vue 支持，添加 Vue 插件
@@ -181,9 +185,10 @@ export function createRollupConfig(options = {}) {
         // Vue JSX 支持
         vueJsxPlugin({
           include: /\.[jt]sx$/,
-        })
+        }),
       )
-    } else {
+    }
+    else {
       // 非 Vue 项目的 JSX 支持
       plugins.push(
         babel({
@@ -191,7 +196,7 @@ export function createRollupConfig(options = {}) {
           extensions: ['.js', '.jsx', '.ts', '.tsx'],
           presets: [['@babel/preset-react', { runtime: 'automatic' }]],
           exclude: ['node_modules/**', '**/*.d.ts'],
-        })
+        }),
       )
     }
 
@@ -200,21 +205,21 @@ export function createRollupConfig(options = {}) {
       name: 'empty-chunk-filter',
       generateBundle(_options, bundle) {
         // 删除空的chunk以减少警告
-        Object.keys(bundle).forEach(fileName => {
+        Object.keys(bundle).forEach((fileName) => {
           const chunk = bundle[fileName]
           if (chunk.type === 'chunk') {
             const code = chunk.code || ''
             const trimmedCode = code.trim()
 
             // 检查是否为空chunk
-            const isEmpty =
-              !trimmedCode ||
-              trimmedCode === 'export {};' ||
-              trimmedCode === 'export{};' ||
+            const isEmpty
+              = !trimmedCode
+                || trimmedCode === 'export {};'
+                || trimmedCode === 'export{};'
               // 只包含sourcemap注释的文件
-              /^\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode) ||
+                || /^\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode)
               // 只包含空行和sourcemap注释
-              /^\s*\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode)
+                || /^\s*\/\/# sourceMappingURL=.*\.map\s*$/.test(trimmedCode)
 
             if (isEmpty) {
               delete bundle[fileName]
@@ -278,8 +283,10 @@ export function createRollupConfig(options = {}) {
 
   // UMD 格式 - dist/ 目录（仅主入口文件，不使用代码分割）
   if (formats.includes('umd') && includeUmd) {
+    // 支持自定义 UMD 入口文件
+    const umdInputFile = options.umdEntry || 'src/index.ts'
     configs.push({
-      input: path.resolve(packagePath, 'src/index.ts'),
+      input: path.resolve(packagePath, umdInputFile),
       output: [
         {
           file: path.resolve(packagePath, 'dist/index.js'),
@@ -307,7 +314,7 @@ export function createRollupConfig(options = {}) {
           name: 'inline-dynamic-imports',
           generateBundle(_options, bundle) {
             // 将动态导入转换为静态导入以避免代码分割
-            Object.keys(bundle).forEach(fileName => {
+            Object.keys(bundle).forEach((fileName) => {
               const chunk = bundle[fileName]
               if (chunk.type === 'chunk' && chunk.isDynamicEntry) {
                 chunk.isDynamicEntry = false
@@ -351,7 +358,8 @@ export function createRollupConfig(options = {}) {
         plugins: getPlugins('umd'),
       })
     }
-  } catch (e) {
+  }
+  catch (e) {
     // Vue 入口文件不存在，跳过
   }
 

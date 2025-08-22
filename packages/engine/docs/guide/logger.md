@@ -47,7 +47,7 @@ engine.logger.info('用户操作', {
   userId: 123,
   timestamp: Date.now(),
   ip: '192.168.1.1',
-  userAgent: navigator.userAgent
+  userAgent: navigator.userAgent,
 })
 
 // 记录API调用
@@ -56,7 +56,7 @@ engine.logger.debug('API调用', {
   url: '/api/users',
   duration: 150,
   status: 200,
-  requestId: 'req-123'
+  requestId: 'req-123',
 })
 
 // 记录性能数据
@@ -64,7 +64,7 @@ engine.logger.info('性能指标', {
   metric: 'page_load_time',
   value: 1200,
   page: '/dashboard',
-  timestamp: Date.now()
+  timestamp: Date.now(),
 })
 ```
 
@@ -77,8 +77,8 @@ const engine = createApp(App, {
   logger: {
     level: 'info', // 只输出info及以上级别的日志
     // 开发环境显示所有日志
-    level: process.env.NODE_ENV === 'development' ? 'debug' : 'warn'
-  }
+    level: process.env.NODE_ENV === 'development' ? 'debug' : 'warn',
+  },
 })
 ```
 
@@ -93,13 +93,13 @@ const customFormatter = {
     const argsStr = args.length > 0 ? ` ${JSON.stringify(args)}` : ''
 
     return `[${time}] ${levelUpper} ${message}${argsStr}`
-  }
+  },
 }
 
 const engine = createApp(App, {
   logger: {
-    formatter: customFormatter
-  }
+    formatter: customFormatter,
+  },
 })
 ```
 
@@ -110,11 +110,9 @@ const engine = createApp(App, {
 const consoleTransport = {
   name: 'console',
   log: (formattedMessage: string, level: LogLevel) => {
-    const method = level === 'error'
-      ? 'error'
-      : level === 'warn' ? 'warn' : 'log'
+    const method = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'
     console[method](formattedMessage)
-  }
+  },
 }
 
 // 远程日志服务
@@ -130,11 +128,11 @@ const remoteTransport = {
           message: formattedMessage,
           timestamp: Date.now(),
           userAgent: navigator.userAgent,
-          url: location.href
-        })
+          url: location.href,
+        }),
       })
     }
-  }
+  },
 }
 
 // 本地存储
@@ -145,7 +143,7 @@ const localStorageTransport = {
     logs.push({
       message: formattedMessage,
       level,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // 限制日志数量
@@ -154,13 +152,13 @@ const localStorageTransport = {
     }
 
     localStorage.setItem('app_logs', JSON.stringify(logs))
-  }
+  },
 }
 
 const engine = createApp(App, {
   logger: {
-    transports: [consoleTransport, remoteTransport, localStorageTransport]
-  }
+    transports: [consoleTransport, remoteTransport, localStorageTransport],
+  },
 })
 ```
 
@@ -183,7 +181,7 @@ function createModuleLogger(moduleName: string) {
     },
     error: (message: string, ...args: any[]) => {
       engine.logger.error(`[${moduleName}] ${message}`, ...args)
-    }
+    },
   }
 }
 
@@ -214,7 +212,7 @@ function createRequestLogger(requestId: string) {
     },
     error: (message: string, ...args: any[]) => {
       engine.logger.error(message, { ...context, ...args })
-    }
+    },
   }
 }
 
@@ -261,7 +259,7 @@ class PerformanceLogger {
 
       engine.logger.info(`⏱️ 计时结束: ${name}`, {
         duration: `${duration.toFixed(2)}ms`,
-        ...additionalData
+        ...additionalData,
       })
 
       return duration
@@ -313,7 +311,7 @@ function logMemoryUsage() {
     engine.logger.info('内存使用情况', {
       used: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
       total: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
-      limit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`
+      limit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`,
     })
   }
 }
@@ -335,7 +333,7 @@ window.addEventListener('error', (event) => {
     lineno: event.lineno,
     colno: event.colno,
     stack: event.error?.stack,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
 })
 
@@ -344,7 +342,7 @@ window.addEventListener('unhandledrejection', (event) => {
   engine.logger.error('未处理的Promise拒绝', {
     reason: event.reason,
     promise: event.promise,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
 })
 ```
@@ -361,10 +359,10 @@ const engine = createApp(App, {
         stack: error.stack,
         componentName: instance?.$options.name || 'Unknown',
         errorInfo: info,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -379,7 +377,7 @@ class LogAnalyzer {
     debug: 0,
     info: 0,
     warn: 0,
-    error: 0
+    error: 0,
   }
 
   private errorPatterns = new Map<string, number>()
@@ -408,7 +406,7 @@ class LogAnalyzer {
       total: Object.values(this.stats).reduce((a, b) => a + b, 0),
       errorPatterns: Array.from(this.errorPatterns.entries())
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 10)
+        .slice(0, 10),
     }
   }
 
@@ -456,7 +454,7 @@ engine.logger.info('API调用', {
   endpoint: '/api/users',
   duration: 150,
   status: 200,
-  userId: 123
+  userId: 123,
 })
 
 // ❌ 非结构化的日志
@@ -498,7 +496,7 @@ function createSafeLogger() {
     },
     error: (message: string, ...args: any[]) => {
       engine.logger.error(message, ...args.map(sanitize))
-    }
+    },
   }
 }
 
@@ -508,7 +506,7 @@ const safeLogger = createSafeLogger()
 safeLogger.info('用户登录', {
   username: 'john',
   password: 'secret123', // 会被替换为 '***'
-  token: 'abc123' // 会被替换为 '***'
+  token: 'abc123', // 会被替换为 '***'
 })
 ```
 

@@ -1,12 +1,12 @@
-import { JSX } from '../node_modules/.pnpm/vue@3.5.18_typescript@5.8.3/node_modules/vue/jsx-runtime/index.d.js';
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
+import { JSX } from '../node_modules/vue/jsx-runtime/index.d.js';
+import * as vue from 'vue';
+import { PropType } from 'vue';
 import { SizeMode } from '../types/index.js';
-import { DefineComponent, ExtractPropTypes, PropType, ComponentOptionsMixin, PublicProps, ComponentProvideOptions } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
 
 /**
  * 尺寸切换器组件
  */
-declare const SizeSwitcher: DefineComponent<ExtractPropTypes<{
+declare const SizeSwitcher: vue.DefineComponent<vue.ExtractPropTypes<{
     mode: {
         type: PropType<SizeMode>;
         default: undefined;
@@ -23,7 +23,7 @@ declare const SizeSwitcher: DefineComponent<ExtractPropTypes<{
         type: StringConstructor;
         default: string;
     };
-}>, () => JSX.Element | null, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "update:mode")[], "change" | "update:mode", PublicProps, Readonly<ExtractPropTypes<{
+}>, () => JSX.Element | null, {}, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, ("change" | "update:mode")[], "change" | "update:mode", vue.PublicProps, Readonly<vue.ExtractPropTypes<{
     mode: {
         type: PropType<SizeMode>;
         default: undefined;
@@ -48,11 +48,11 @@ declare const SizeSwitcher: DefineComponent<ExtractPropTypes<{
     showSwitcher: boolean;
     switcherStyle: "button" | "select" | "radio";
     className: string;
-}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
+}, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
 /**
  * 尺寸指示器组件
  */
-declare const SizeIndicator: DefineComponent<ExtractPropTypes<{
+declare const SizeIndicator: vue.DefineComponent<vue.ExtractPropTypes<{
     showMode: {
         type: BooleanConstructor;
         default: boolean;
@@ -65,7 +65,7 @@ declare const SizeIndicator: DefineComponent<ExtractPropTypes<{
         type: StringConstructor;
         default: string;
     };
-}>, () => JSX.Element, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<ExtractPropTypes<{
+}>, () => JSX.Element, {}, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, {}, string, vue.PublicProps, Readonly<vue.ExtractPropTypes<{
     showMode: {
         type: BooleanConstructor;
         default: boolean;
@@ -82,11 +82,11 @@ declare const SizeIndicator: DefineComponent<ExtractPropTypes<{
     className: string;
     showMode: boolean;
     showScale: boolean;
-}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
+}, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
 /**
  * 尺寸控制面板组件
  */
-declare const SizeControlPanel: DefineComponent<ExtractPropTypes<{
+declare const SizeControlPanel: vue.DefineComponent<vue.ExtractPropTypes<{
     showSwitcher: {
         type: BooleanConstructor;
         default: boolean;
@@ -103,7 +103,7 @@ declare const SizeControlPanel: DefineComponent<ExtractPropTypes<{
         type: StringConstructor;
         default: string;
     };
-}>, () => JSX.Element, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "change"[], "change", PublicProps, Readonly<ExtractPropTypes<{
+}>, () => JSX.Element, {}, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, "change"[], "change", vue.PublicProps, Readonly<vue.ExtractPropTypes<{
     showSwitcher: {
         type: BooleanConstructor;
         default: boolean;
@@ -127,6 +127,6 @@ declare const SizeControlPanel: DefineComponent<ExtractPropTypes<{
     switcherStyle: "button" | "select" | "radio";
     className: string;
     showIndicator: boolean;
-}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
+}, {}, {}, {}, string, vue.ComponentProvideOptions, true, {}, any>;
 
 export { SizeControlPanel, SizeIndicator, SizeSwitcher, SizeSwitcher as default };

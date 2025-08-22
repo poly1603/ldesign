@@ -81,31 +81,18 @@ const store = new CounterStore('counter')
     <p class="count">
       {{ store.count }}
     </p>
-    <p v-if="store.isPositive" class="positive">
-      正数！
-    </p>
+    <p v-if="store.isPositive" class="positive">正数！</p>
 
     <div class="controls">
       <label>
         步长:
-        <input
-          v-model.number="store.step"
-          type="number"
-          min="1"
-          max="10"
-        >
+        <input v-model.number="store.step" type="number" min="1" max="10" />
       </label>
 
       <div class="buttons">
-        <button @click="store.decrement">
-          -{{ store.step }}
-        </button>
-        <button @click="store.reset">
-          重置
-        </button>
-        <button @click="store.increment">
-          +{{ store.step }}
-        </button>
+        <button @click="store.decrement">-{{ store.step }}</button>
+        <button @click="store.reset">重置</button>
+        <button @click="store.increment">+{{ store.step }}</button>
       </div>
     </div>
   </div>
@@ -180,7 +167,7 @@ export class TodoStore extends BaseStore {
         text: text.trim(),
         completed: false,
         createdAt: new Date(),
-        priority
+        priority,
       })
       this.newTodoText = ''
     }
@@ -223,7 +210,7 @@ export class TodoStore extends BaseStore {
   @Action()
   markAllCompleted() {
     const hasIncomplete = this.todos.some(todo => !todo.completed)
-    this.todos.forEach((todo) => {
+    this.todos.forEach(todo => {
       todo.completed = hasIncomplete
     })
   }
@@ -257,8 +244,7 @@ export class TodoStore extends BaseStore {
 
   @Getter()
   get completionRate() {
-    if (this.totalCount === 0)
-      return 0
+    if (this.totalCount === 0) return 0
     return Math.round((this.completedCount / this.totalCount) * 100)
   }
 }
@@ -276,7 +262,7 @@ const selectedPriority = ref<'low' | 'medium' | 'high'>('medium')
 const filters = [
   { value: 'all', label: '全部' },
   { value: 'active', label: '待完成' },
-  { value: 'completed', label: '已完成' }
+  { value: 'completed', label: '已完成' },
 ]
 
 function addTodo() {
@@ -295,7 +281,7 @@ function formatDate(date: Date) {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   }).format(new Date(date))
 }
 </script>
@@ -318,21 +304,13 @@ function formatDate(date: Date) {
         placeholder="添加新的待办事项..."
         class="new-todo"
         @keyup.enter="addTodo"
-      >
+      />
       <select v-model="selectedPriority">
-        <option value="low">
-          低优先级
-        </option>
-        <option value="medium">
-          中优先级
-        </option>
-        <option value="high">
-          高优先级
-        </option>
+        <option value="low">低优先级</option>
+        <option value="medium">中优先级</option>
+        <option value="high">高优先级</option>
       </select>
-      <button @click="addTodo">
-        添加
-      </button>
+      <button @click="addTodo">添加</button>
     </div>
 
     <div class="filters">
@@ -355,17 +333,11 @@ function formatDate(date: Date) {
           [`priority-${todo.priority}`]: true,
         }"
       >
-        <input
-          type="checkbox"
-          :checked="todo.completed"
-          @change="store.toggleTodo(todo.id)"
-        >
+        <input type="checkbox" :checked="todo.completed" @change="store.toggleTodo(todo.id)" />
         <span class="todo-text">{{ todo.text }}</span>
         <span class="priority">{{ getPriorityText(todo.priority) }}</span>
         <span class="date">{{ formatDate(todo.createdAt) }}</span>
-        <button class="remove" @click="store.removeTodo(todo.id)">
-          删除
-        </button>
+        <button class="remove" @click="store.removeTodo(todo.id)">删除</button>
       </li>
     </ul>
 
@@ -373,12 +345,7 @@ function formatDate(date: Date) {
       <button @click="store.markAllCompleted">
         {{ store.activeCount > 0 ? '全部完成' : '全部未完成' }}
       </button>
-      <button
-        v-if="store.completedCount > 0"
-        @click="store.clearCompleted"
-      >
-        清除已完成
-      </button>
+      <button v-if="store.completedCount > 0" @click="store.clearCompleted">清除已完成</button>
     </div>
   </div>
 </template>
@@ -561,15 +528,12 @@ export class ShoppingStore extends BaseStore {
 
     try {
       const response = await fetch('/api/products')
-      if (!response.ok)
-        throw new Error('获取产品失败')
+      if (!response.ok) throw new Error('获取产品失败')
 
       this.products = await response.json()
-    }
-    catch (error) {
+    } catch (error) {
       this.error = error instanceof Error ? error.message : '获取产品失败'
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -581,12 +545,11 @@ export class ShoppingStore extends BaseStore {
 
     if (existingItem) {
       existingItem.quantity += quantity
-    }
-    else {
+    } else {
       this.cartItems.push({
         ...product,
         quantity,
-        addedAt: new Date()
+        addedAt: new Date(),
       })
     }
   }
@@ -605,8 +568,7 @@ export class ShoppingStore extends BaseStore {
     if (item) {
       if (quantity <= 0) {
         this.removeFromCart(productId)
-      }
-      else {
+      } else {
         item.quantity = Math.min(quantity, item.stock)
       }
     }
@@ -628,19 +590,16 @@ export class ShoppingStore extends BaseStore {
       const response = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: couponCode, amount: this.subtotal })
+        body: JSON.stringify({ code: couponCode, amount: this.subtotal }),
       })
 
-      if (!response.ok)
-        throw new Error('优惠券无效')
+      if (!response.ok) throw new Error('优惠券无效')
 
       const coupon = await response.json()
       this.appliedCoupon = coupon
-    }
-    catch (error) {
+    } catch (error) {
       this.error = error instanceof Error ? error.message : '优惠券验证失败'
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -664,27 +623,24 @@ export class ShoppingStore extends BaseStore {
       const orderData = {
         items: this.cartItems,
         coupon: this.appliedCoupon,
-        total: this.finalTotal
+        total: this.finalTotal,
       }
 
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(orderData),
       })
 
-      if (!response.ok)
-        throw new Error('结账失败')
+      if (!response.ok) throw new Error('结账失败')
 
       const order = await response.json()
       this.clearCart()
       return order
-    }
-    catch (error) {
+    } catch (error) {
       this.error = error instanceof Error ? error.message : '结账失败'
       throw error
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -702,16 +658,11 @@ export class ShoppingStore extends BaseStore {
 
   @Getter()
   get discountAmount() {
-    if (!this.appliedCoupon)
-      return 0
+    if (!this.appliedCoupon) return 0
 
-    if (this.subtotal < this.appliedCoupon.minAmount)
-      return 0
+    if (this.subtotal < this.appliedCoupon.minAmount) return 0
 
-    return Math.min(
-      this.subtotal * (this.appliedCoupon.discount / 100),
-      this.subtotal
-    )
+    return Math.min(this.subtotal * (this.appliedCoupon.discount / 100), this.subtotal)
   }
 
   @Getter()
@@ -779,11 +730,10 @@ export const useAuth = createStore('auth', () => {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify(credentials),
       })
 
-      if (!response.ok)
-        throw new Error('登录失败')
+      if (!response.ok) throw new Error('登录失败')
 
       const data = await response.json()
       user.value = data.user
@@ -791,12 +741,10 @@ export const useAuth = createStore('auth', () => {
       localStorage.setItem('auth_token', data.token)
 
       return data.user
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : '登录失败'
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -808,11 +756,10 @@ export const useAuth = createStore('auth', () => {
       if (token.value) {
         await fetch('/api/auth/logout', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token.value}` }
+          headers: { Authorization: `Bearer ${token.value}` },
         })
       }
-    }
-    finally {
+    } finally {
       user.value = null
       token.value = null
       localStorage.removeItem('auth_token')
@@ -821,30 +768,26 @@ export const useAuth = createStore('auth', () => {
   }
 
   const checkAuth = async () => {
-    if (!token.value)
-      return false
+    if (!token.value) return false
 
     loading.value = true
 
     try {
       const response = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token.value}` }
+        headers: { Authorization: `Bearer ${token.value}` },
       })
 
       if (response.ok) {
         user.value = await response.json()
         return true
-      }
-      else {
+      } else {
         await logout()
         return false
       }
-    }
-    catch (error) {
+    } catch (error) {
       await logout()
       return false
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -853,15 +796,14 @@ export const useAuth = createStore('auth', () => {
   const isLoggedIn = computed(() => user.value !== null && token.value !== null)
   const userName = computed(() => user.value?.name || '游客')
   const userAvatar = computed(() => {
-    if (user.value?.avatar)
-      return user.value.avatar
+    if (user.value?.avatar) return user.value.avatar
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(userName.value)}`
   })
 
   return {
     state: { user, loading, error, token },
     actions: { login, logout, checkAuth },
-    getters: { isLoggedIn, userName, userAvatar }
+    getters: { isLoggedIn, userName, userAvatar },
   }
 })
 ```
@@ -873,10 +815,13 @@ export const useAuth = createStore('auth', () => {
 import { createStore } from '@ldesign/store'
 import { computed, ref } from 'vue'
 
-export function createApiHook<T>(url: string, options: {
-  immediate?: boolean
-  transform?: (data: any) => T
-} = {}) {
+export function createApiHook<T>(
+  url: string,
+  options: {
+    immediate?: boolean
+    transform?: (data: any) => T
+  } = {}
+) {
   return createStore(`api-${url}`, () => {
     const data = ref<T | null>(null)
     const loading = ref(false)
@@ -892,20 +837,17 @@ export function createApiHook<T>(url: string, options: {
         const fullUrl = searchParams ? `${url}?${searchParams}` : url
 
         const response = await window.fetch(fullUrl)
-        if (!response.ok)
-          throw new Error(`HTTP ${response.status}`)
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
         const rawData = await response.json()
         data.value = options.transform ? options.transform(rawData) : rawData
         lastFetch.value = new Date()
 
         return data.value
-      }
-      catch (err) {
+      } catch (err) {
         error.value = err instanceof Error ? err : new Error('请求失败')
         throw err
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -925,8 +867,7 @@ export function createApiHook<T>(url: string, options: {
     const hasData = computed(() => data.value !== null)
     const hasError = computed(() => error.value !== null)
     const isStale = computed(() => {
-      if (!lastFetch.value)
-        return true
+      if (!lastFetch.value) return true
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
       return lastFetch.value < fiveMinutesAgo
     })
@@ -934,17 +875,18 @@ export function createApiHook<T>(url: string, options: {
     return {
       state: { data, loading, error, lastFetch },
       actions: { fetch, refresh, reset },
-      getters: { hasData, hasError, isStale }
+      getters: { hasData, hasError, isStale },
     }
   })
 }
 
 // 使用示例
 export const useUsers = createApiHook<User[]>('/api/users', {
-  transform: data => data.map(user => ({
-    ...user,
-    fullName: `${user.firstName} ${user.lastName}`
-  }))
+  transform: data =>
+    data.map(user => ({
+      ...user,
+      fullName: `${user.firstName} ${user.lastName}`,
+    })),
 })
 
 export const usePosts = createApiHook<Post[]>('/api/posts')
@@ -958,18 +900,13 @@ export const usePosts = createApiHook<Post[]>('/api/posts')
 <!-- App.vue -->
 <script setup lang="ts">
 import { StoreProvider } from '@ldesign/store/vue'
-import {
-  NotificationStore,
-  SettingsStore,
-  ThemeStore,
-  UserStore
-} from '@/stores'
+import { NotificationStore, SettingsStore, ThemeStore, UserStore } from '@/stores'
 
 const stores = {
   user: UserStore,
   settings: SettingsStore,
   notifications: NotificationStore,
-  theme: ThemeStore
+  theme: ThemeStore,
 }
 </script>
 
@@ -997,7 +934,7 @@ import { CartStore, ProductStore, ShoppingStore } from '@/stores'
 const shoppingStores = {
   shopping: ShoppingStore,
   products: ProductStore,
-  cart: CartStore
+  cart: CartStore,
 }
 </script>
 

@@ -1,19 +1,10 @@
 {
-  "extends": "../../tools/configs/build/tsconfig.base.json",
+  "extends": "../../tools/build/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "examples/**/*",
-    "__tests__/**/*",
-    "tests/**/*",
-    "test/**/*",
-    "e2e/**/*"
-  ]
+  "include": ["src/**/*", "examples/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"]
 }

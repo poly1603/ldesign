@@ -12,7 +12,7 @@ LDesign Template 内置了高效的缓存机制，提升模板加载性能和用
 const manager = new TemplateManager({
   cacheEnabled: true,
   cacheSize: 100, // 最大缓存数量
-  cacheTTL: 10 * 60 * 1000 // 10分钟过期
+  cacheTTL: 10 * 60 * 1000, // 10分钟过期
 })
 ```
 
@@ -24,7 +24,7 @@ const manager = new TemplateManager({
 // 元数据缓存通常比组件缓存更大
 const manager = new TemplateManager({
   cacheSize: 50, // 组件缓存
-  metadataCacheSize: 100 // 元数据缓存
+  metadataCacheSize: 100, // 元数据缓存
 })
 ```
 
@@ -79,7 +79,7 @@ manager.clearCache('auth', 'desktop', 'login')
 // 预加载模板到缓存
 await manager.preload([
   { category: 'auth', device: 'desktop', template: 'login' },
-  { category: 'dashboard', device: 'desktop', template: 'admin' }
+  { category: 'dashboard', device: 'desktop', template: 'admin' },
 ])
 ```
 
@@ -93,7 +93,7 @@ console.log('缓存统计:', {
   hits: stats.hits, // 命中次数
   misses: stats.misses, // 未命中次数
   size: stats.size, // 当前缓存大小
-  hitRate: stats.hits / (stats.hits + stats.misses) // 命中率
+  hitRate: stats.hits / (stats.hits + stats.misses), // 命中率
 })
 ```
 
@@ -113,7 +113,7 @@ const manager = new TemplateManager({
   cacheTTL: 30 * 60 * 1000, // 30分钟
 
   // 启用预加载
-  preloadEnabled: true
+  preloadEnabled: true,
 })
 ```
 
@@ -122,18 +122,10 @@ const manager = new TemplateManager({
 ```vue
 <template>
   <!-- 启用缓存 -->
-  <LTemplateRenderer
-    category="auth"
-    template="login"
-    :cache="true"
-  />
+  <LTemplateRenderer category="auth" template="login" :cache="true" />
 
   <!-- 禁用缓存（每次都重新加载） -->
-  <LTemplateRenderer
-    category="dynamic"
-    template="realtime"
-    :cache="false"
-  />
+  <LTemplateRenderer category="dynamic" template="realtime" :cache="false" />
 </template>
 ```
 
@@ -171,7 +163,7 @@ onMounted(async () => {
   await manager.preload([
     { category: 'layout', template: 'header' },
     { category: 'layout', template: 'footer' },
-    { category: 'auth', template: 'login' }
+    { category: 'auth', template: 'login' },
   ])
 })
 ```
@@ -180,7 +172,7 @@ onMounted(async () => {
 
 ```typescript
 // 在路由变化时预加载相关模板
-router.beforeEach(async (to) => {
+router.beforeEach(async to => {
   const templates = getTemplatesForRoute(to.name)
   await manager.preload(templates)
 })
@@ -189,11 +181,9 @@ function getTemplatesForRoute(routeName: string) {
   const routeTemplates = {
     dashboard: [
       { category: 'dashboard', template: 'admin' },
-      { category: 'layout', template: 'sidebar' }
+      { category: 'layout', template: 'sidebar' },
     ],
-    profile: [
-      { category: 'user', template: 'profile' }
-    ]
+    profile: [{ category: 'user', template: 'profile' }],
   }
 
   return routeTemplates[routeName] || []
@@ -214,8 +204,7 @@ const preloadManager = {
         { category: 'admin', template: 'dashboard' },
         { category: 'admin', template: 'users' }
       )
-    }
-    else {
+    } else {
       templates.push(
         { category: 'user', template: 'dashboard' },
         { category: 'user', template: 'profile' }
@@ -229,11 +218,11 @@ const preloadManager = {
   async preloadForDevice(device: DeviceType) {
     const commonTemplates = [
       { category: 'layout', device, template: 'header' },
-      { category: 'layout', device, template: 'footer' }
+      { category: 'layout', device, template: 'footer' },
     ]
 
     await manager.preload(commonTemplates)
-  }
+  },
 }
 ```
 
@@ -247,7 +236,8 @@ function monitorCache() {
   const stats = manager.getCacheStats()
 
   // 内存使用过高时清理缓存
-  if (stats.memoryUsage > 50 * 1024 * 1024) { // 50MB
+  if (stats.memoryUsage > 50 * 1024 * 1024) {
+    // 50MB
     manager.clearCache()
     console.log('缓存已清理，释放内存')
   }
@@ -278,8 +268,7 @@ const l2Cache = new LRUCache(100, 30 * 60 * 1000) // L2: 100个项目，30分钟
 function getFromCache(key: string) {
   // 先从 L1 缓存获取
   let value = l1Cache.get(key)
-  if (value)
-    return value
+  if (value) return value
 
   // 再从 L2 缓存获取
   value = l2Cache.get(key)
@@ -299,17 +288,17 @@ function getFromCache(key: string) {
 
 ```typescript
 // 监听缓存命中
-manager.on('cache:hit', (event) => {
+manager.on('cache:hit', event => {
   console.log('缓存命中:', event.key)
 })
 
 // 监听缓存未命中
-manager.on('cache:miss', (event) => {
+manager.on('cache:miss', event => {
   console.log('缓存未命中:', event.key)
 })
 
 // 监听缓存清理
-manager.on('cache:clear', (event) => {
+manager.on('cache:clear', event => {
   console.log('缓存已清理')
 })
 ```
@@ -328,11 +317,13 @@ const cacheMonitor = {
     console.log('缓存性能报告:', {
       运行时间: `${runtime / 1000}秒`,
       总请求: stats.hits + stats.misses,
-      命中率: `${((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(2)}%`,
+      命中率: `${((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(
+        2
+      )}%`,
       缓存大小: stats.size,
-      内存使用: `${(stats.memoryUsage / 1024 / 1024).toFixed(2)}MB`
+      内存使用: `${(stats.memoryUsage / 1024 / 1024).toFixed(2)}MB`,
     })
-  }
+  },
 }
 
 // 定期输出性能报告
@@ -369,11 +360,13 @@ function debugCache() {
   const cache = manager.getCache()
   const entries = cache.entries()
 
-  console.table(Array.from(entries).map(([key, value]) => ({
-    键: key,
-    大小: JSON.stringify(value).length,
-    访问时间: new Date(value.lastAccessed).toLocaleString()
-  })))
+  console.table(
+    Array.from(entries).map(([key, value]) => ({
+      键: key,
+      大小: JSON.stringify(value).length,
+      访问时间: new Date(value.lastAccessed).toLocaleString(),
+    }))
+  )
 }
 
 // 在控制台中调用

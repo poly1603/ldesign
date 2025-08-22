@@ -72,7 +72,10 @@ function validateBuild(): void {
   const packagesDir = path.resolve(__dirname, '../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
-    return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
+    return (
+      fs.statSync(packagePath).isDirectory()
+      && fs.existsSync(path.join(packagePath, 'package.json'))
+    )
   })
 
   for (const packageName of packages) {
@@ -87,7 +90,12 @@ function validateBuild(): void {
     }
 
     // 检查主要文件
-    const mainFiles = ['dist/index.js', 'es/index.js', 'lib/index.js', 'types/index.d.ts']
+    const mainFiles = [
+      'dist/index.js',
+      'es/index.js',
+      'lib/index.js',
+      'types/index.d.ts',
+    ]
     for (const file of mainFiles) {
       const filePath = path.join(packageDir, file)
       if (!fs.existsSync(filePath)) {
@@ -199,7 +207,10 @@ function deployCdn(config: DeployConfig, options: DeployOptions): void {
 /**
  * 自定义 CDN 部署
  */
-function deployCustomCdn(cdnConfig: DeployConfig['cdn'], options: DeployOptions): void {
+function deployCustomCdn(
+  cdnConfig: DeployConfig['cdn'],
+  options: DeployOptions,
+): void {
   const { endpoint, bucket, region } = cdnConfig
 
   if (!endpoint || !bucket) {
@@ -301,7 +312,9 @@ export function rollbackDeploy(target: string, version?: string): void {
   switch (target) {
     case 'npm':
       if (version) {
-        execSync(`npm deprecate @ldesign/* "${version} 版本已回滚"`, { stdio: 'inherit' })
+        execSync(`npm deprecate @ldesign/* "${version} 版本已回滚"`, {
+          stdio: 'inherit',
+        })
       }
       break
     case 'docs':
@@ -369,7 +382,9 @@ export async function deploy(options: DeployOptions = {}): Promise<void> {
 
     if (!force) {
       console.log('\n🔄 可以使用 --force 参数强制部署')
-      console.log('🔄 或使用回滚命令: tsx tools/deploy/deploy-manager.ts rollback <target>')
+      console.log(
+        '🔄 或使用回滚命令: tsx tools/deploy/deploy-manager.ts rollback <target>',
+      )
     }
 
     process.exit(1)
@@ -388,8 +403,14 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   }
   else {
     const options: DeployOptions = {
-      target: (args.find(arg => ['npm', 'cdn', 'docs', 'all'].includes(arg)) as any) || 'all',
-      environment: (args.find(arg => ['production', 'staging', 'development'].includes(arg)) as any) || 'production',
+      target:
+        (args.find(arg =>
+          ['npm', 'cdn', 'docs', 'all'].includes(arg),
+        ) as any) || 'all',
+      environment:
+        (args.find(arg =>
+          ['production', 'staging', 'development'].includes(arg),
+        ) as any) || 'production',
       skipValidation: args.includes('--skip-validation'),
       dryRun: args.includes('--dry-run'),
       force: args.includes('--force'),

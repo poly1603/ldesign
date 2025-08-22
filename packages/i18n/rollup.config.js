@@ -1,18 +1,22 @@
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { resolve } from 'node:path'
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
-  packageDir: __dirname,
-  vue: true, // 启用 Vue 支持，因为包含 Vue 集成
-  external: ['vue'],
-  globalName: 'LDesignI18n',
+  packageName: 'LDesignI18n',
+  // 解决外部依赖警告
+  external: [
+    'node:process',
+    'vue',
+    '@vue/runtime-core',
+    '@vue/runtime-dom',
+  ],
+  // 解决全局变量警告
   globals: {
-    vue: 'Vue',
+    'node:process': 'process',
+    'vue': 'Vue',
+    '@vue/runtime-core': 'Vue',
+    '@vue/runtime-dom': 'Vue',
   },
-  // 只构建 ES 和 CJS 格式，避免 UMD 的复杂性
-  formats: ['es', 'cjs'],
+  // 使用构建专用的 tsconfig
+  tsconfig: resolve(process.cwd(), 'tsconfig.build.json'),
 })

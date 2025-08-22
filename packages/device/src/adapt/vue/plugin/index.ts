@@ -2,17 +2,19 @@ import type { App, Plugin } from 'vue'
 import type { DevicePluginOptions } from '../../../types'
 import { inject } from 'vue'
 import { DeviceDetector } from '../../../core/DeviceDetector'
-import { vDevice, vDeviceDesktop, vDeviceMobile, vDeviceTablet } from '../directives/vDevice'
+import {
+  vDevice,
+  vDeviceDesktop,
+  vDeviceMobile,
+  vDeviceTablet,
+} from '../directives/vDevice'
 
 /**
  * Vue3 设备检测插件
  */
 export const DevicePlugin: Plugin = {
   install(app: App, options: DevicePluginOptions = {}) {
-    const {
-      globalPropertyName = '$device',
-      ...detectorOptions
-    } = options
+    const { globalPropertyName = '$device', ...detectorOptions } = options
 
     // 创建全局设备检测器实例
     const detector = new DeviceDetector(detectorOptions)
@@ -56,7 +58,9 @@ export function useDeviceDetector(): DeviceDetector {
   const detector = inject('device-detector') as DeviceDetector
 
   if (!detector) {
-    throw new Error('DeviceDetector not found. Make sure to install DevicePlugin first.')
+    throw new Error(
+      'DeviceDetector not found. Make sure to install DevicePlugin first.',
+    )
   }
 
   return detector

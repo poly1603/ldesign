@@ -21,7 +21,9 @@ class PackageStandardizer {
   constructor() {
     this.rootDir = resolve(process.cwd())
     this.packagesDir = join(this.rootDir, 'packages')
-    this.rootPackage = JSON.parse(readFileSync(join(this.rootDir, 'package.json'), 'utf-8'))
+    this.rootPackage = JSON.parse(
+      readFileSync(join(this.rootDir, 'package.json'), 'utf-8'),
+    )
   }
 
   // 标准化脚本配置
@@ -70,12 +72,13 @@ class PackageStandardizer {
 
   // 获取所有包目录
   private getPackageDirs(): string[] {
-    return readdirSync(this.packagesDir)
-      .filter((dir) => {
-        const fullPath = join(this.packagesDir, dir)
-        return statSync(fullPath).isDirectory()
-          && readFileSync(join(fullPath, 'package.json'), 'utf-8')
-      })
+    return readdirSync(this.packagesDir).filter((dir) => {
+      const fullPath = join(this.packagesDir, dir)
+      return (
+        statSync(fullPath).isDirectory()
+        && readFileSync(join(fullPath, 'package.json'), 'utf-8')
+      )
+    })
   }
 
   // 标准化单个包
@@ -83,7 +86,9 @@ class PackageStandardizer {
     const packagePath = join(this.packagesDir, packageDir)
     const packageJsonPath = join(packagePath, 'package.json')
 
-    const packageJson: PackageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+    const packageJson: PackageJson = JSON.parse(
+      readFileSync(packageJsonPath, 'utf-8'),
+    )
 
     // 标准化基本信息
     packageJson.type = 'module'

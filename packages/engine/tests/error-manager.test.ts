@@ -54,7 +54,7 @@ describe('errorManager', () => {
         expect.objectContaining({
           message: 'Test error',
           level: 'error',
-        })
+        }),
       )
     })
 
@@ -84,7 +84,7 @@ describe('errorManager', () => {
     })
 
     it('应该处理处理器中的错误', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
       const faultyHandler = vi.fn(() => {
         throw new Error('Handler error')
       })
@@ -96,7 +96,7 @@ describe('errorManager', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error in error handler:',
-        expect.any(Error)
+        expect.any(Error),
       )
 
       consoleSpy.mockRestore()
@@ -105,7 +105,7 @@ describe('errorManager', () => {
 
   describe('错误管理', () => {
     it('应该限制错误数量', () => {
-      errorManager.setMaxErrors(3)
+      (errorManager as any).setMaxErrors(3)
 
       for (let i = 0; i < 5; i++) {
         errorManager.captureError(new Error(`Error ${i}`))
@@ -127,7 +127,7 @@ describe('errorManager', () => {
     it('应该按级别获取错误', () => {
       // 创建不同级别的错误
       const error1 = new Error('Error 1')
-      const error2 = new Error('Error 2')
+      const _error2 = new Error('Error 2')
 
       errorManager.captureError(error1)
       // 手动添加 warn 级别的错误
@@ -138,11 +138,11 @@ describe('errorManager', () => {
         stack: undefined,
         component: undefined,
         info: undefined,
-      }
-      errorManager.addError(errorInfo)
+      };
+      (errorManager as any).addError(errorInfo)
 
-      const errorLevelErrors = errorManager.getErrorsByLevel('error')
-      const warnLevelErrors = errorManager.getErrorsByLevel('warn')
+      const errorLevelErrors = (errorManager as any).getErrorsByLevel('error')
+      const warnLevelErrors = (errorManager as any).getErrorsByLevel('warn')
 
       expect(errorLevelErrors).toHaveLength(1)
       expect(warnLevelErrors).toHaveLength(1)
@@ -150,7 +150,7 @@ describe('errorManager', () => {
       expect(warnLevelErrors[0].message).toBe('Warning message')
     })
 
-    it('应该按时间范围获取错误', () => {
+    it('应该按时间范围获取错误', async () => {
       const now = Date.now()
       const error1 = new Error('Error 1')
       const error2 = new Error('Error 2')
@@ -158,12 +158,12 @@ describe('errorManager', () => {
       errorManager.captureError(error1)
 
       // 等待一小段时间
-      setTimeout(() => {
-        errorManager.captureError(error2)
+      await new Promise(resolve => setTimeout(resolve, 10))
 
-        const recentErrors = errorManager.getErrorsByTimeRange(now, Date.now())
-        expect(recentErrors).toHaveLength(2)
-      }, 10)
+      errorManager.captureError(error2)
+
+      const recentErrors = (errorManager as any).getErrorsByTimeRange(now, Date.now())
+      expect(recentErrors).toHaveLength(2)
     })
 
     it('应该获取最近的错误', () => {
@@ -171,7 +171,7 @@ describe('errorManager', () => {
         errorManager.captureError(new Error(`Error ${i}`))
       }
 
-      const recentErrors = errorManager.getRecentErrors(3)
+      const recentErrors = (errorManager as any).getRecentErrors(3)
       expect(recentErrors).toHaveLength(3)
       expect(recentErrors[0].message).toBe('Error 4') // 最新的
     })
@@ -181,8 +181,8 @@ describe('errorManager', () => {
       errorManager.captureError(new Error('Component render failed'))
       errorManager.captureError(new Error('Database connection error'))
 
-      const networkErrors = errorManager.searchErrors('network')
-      const renderErrors = errorManager.searchErrors('render')
+      const networkErrors = (errorManager as any).searchErrors('network')
+      const renderErrors = (errorManager as any).searchErrors('render')
 
       expect(networkErrors).toHaveLength(1)
       expect(renderErrors).toHaveLength(1)
@@ -196,7 +196,7 @@ describe('errorManager', () => {
       errorManager.captureError(new Error('Error 1'))
       errorManager.captureError(new Error('Error 2'))
 
-      const stats = errorManager.getErrorStats()
+      const stats = (errorManager as any).getErrorStats()
       expect(stats.total).toBe(2)
       expect(stats.byLevel.error).toBe(2)
       expect(stats.byLevel.warn).toBe(0)
@@ -209,7 +209,7 @@ describe('errorManager', () => {
       const networkError = new Error('Network request failed')
       errorManager.captureError(networkError)
 
-      const categoryStats = errorManager.getCategoryStats()
+      const categoryStats = (errorManager as any).getCategoryStats()
       expect(categoryStats[ErrorCategory.NETWORK]).toBeGreaterThan(0)
     })
 
@@ -218,7 +218,7 @@ describe('errorManager', () => {
       const component = { name: 'TestComponent' } as any
       errorManager.captureError(componentError, component)
 
-      const categoryStats = errorManager.getCategoryStats()
+      const categoryStats = (errorManager as any).getCategoryStats()
       expect(categoryStats[ErrorCategory.COMPONENT]).toBeGreaterThan(0)
     })
 
@@ -226,7 +226,7 @@ describe('errorManager', () => {
       const securityError = new Error('XSS attack detected')
       errorManager.captureError(securityError)
 
-      const categoryStats = errorManager.getCategoryStats()
+      const categoryStats = (errorManager as any).getCategoryStats()
       expect(categoryStats[ErrorCategory.SECURITY]).toBeGreaterThan(0)
     })
   })
@@ -235,7 +235,7 @@ describe('errorManager', () => {
     it('应该导出 JSON 格式的错误', () => {
       errorManager.captureError(new Error('Test error'))
 
-      const exported = errorManager.exportErrors('json')
+      const exported = (errorManager as any).exportErrors('json')
       const parsed = JSON.parse(exported)
 
       expect(Array.isArray(parsed)).toBe(true)
@@ -245,7 +245,7 @@ describe('errorManager', () => {
     it('应该导出 CSV 格式的错误', () => {
       errorManager.captureError(new Error('Test error'))
 
-      const exported = errorManager.exportErrors('csv')
+      const exported = (errorManager as any).exportErrors('csv')
       const lines = exported.split('\n')
 
       expect(lines[0]).toContain('timestamp,level,message,stack,info')
@@ -259,7 +259,7 @@ describe('errorManager', () => {
       errorManager.captureError(new Error('Error 2'))
       errorManager.captureError(new Error('Error 1')) // 重复错误
 
-      const report = errorManager.createErrorReport()
+      const report = (errorManager as any).createErrorReport()
 
       expect(report.summary.total).toBe(3)
       expect(report.recentErrors).toHaveLength(3)
@@ -281,7 +281,7 @@ describe('errorManager', () => {
 
       expect(logger.warn).toHaveBeenCalledWith(
         'Error burst detected',
-        expect.objectContaining({ count: expect.any(Number) })
+        expect.objectContaining({ count: expect.any(Number) }),
       )
     })
   })

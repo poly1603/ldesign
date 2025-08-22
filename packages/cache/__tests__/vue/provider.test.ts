@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createApp } from 'vue'
 
 // Mock createCache
@@ -28,7 +28,7 @@ vi.mock('../../src/vue/provider', () => ({
   CacheProvider: mockCacheProvider,
 }))
 
-describe('CacheProvider', () => {
+describe('cacheProvider', () => {
   it('should have install method', () => {
     expect(typeof mockCacheProvider.install).toBe('function')
   })

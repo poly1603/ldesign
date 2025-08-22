@@ -1,0 +1,210 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    name: 代码验证
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript 类型检查
+        run: pnpm type-check
+
+      - name: ESLint 检查
+        run: pnpm lint:check
+
+      - name: 单元测试
+        run: pnpm test:run
+
+      - name: 构建验证
+        run: pnpm build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-node-${{ matrix.node-version }}
+          path: |
+            dist/
+            es/
+            lib/
+            types/
+          retention-days: 7
+
+  e2e:
+    name: E2E 测试
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 安装 Playwright 浏览器
+        run: pnpm exec playwright install --with-deps
+
+      - name: 构建项目
+        run: pnpm build
+
+      - name: 运行 E2E 测试
+        run: pnpm test:e2e
+
+      - name: 上传 E2E 测试报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  performance:
+    name: 性能测试
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建项目
+        run: pnpm build
+
+      - name: 运行性能基准测试
+        run: pnpm benchmark
+
+      - name: 运行性能回归测试
+        run: pnpm benchmark:regression
+
+      - name: 上传性能报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: |
+            performance-*.json
+          retention-days: 30
+
+  security:
+    name: 安全检查
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 运行安全审计
+        run: pnpm audit
+
+      - name: 检查许可证
+        run: pnpm licenses list
+
+  release:
+    name: 发布检查
+    runs-on: ubuntu-latest
+    needs: [validate, e2e, performance]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建项目
+        run: pnpm build
+
+      - name: 检查包大小
+        run: |
+          echo "📦 包大小分析:"
+          du -sh dist/
+          du -sh es/
+          du -sh lib/
+          du -sh types/
+
+      - name: 验证包内容
+        run: |
+          echo "📋 包内容验证:"
+          ls -la dist/
+          ls -la es/
+          ls -la lib/
+          ls -la types/

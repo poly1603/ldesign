@@ -1,4 +1,4 @@
-import type { RequestConfig } from '@/types'
+import type { RequestConfig } from '../types'
 import { ErrorHandler } from './error'
 
 /**
@@ -68,7 +68,7 @@ export class CancelTokenSource {
    * 取消请求
    */
   cancel(reason?: string): void {
-    ; (this.token as CancelTokenImpl).cancel(reason)
+    ;(this.token as CancelTokenImpl).cancel(reason)
   }
 }
 
@@ -89,17 +89,23 @@ export class CancelManager {
   /**
    * 注册请求
    */
-  register(requestId: string, controller: AbortController, token?: CancelToken): void {
+  register(
+    requestId: string,
+    controller: AbortController,
+    token?: CancelToken,
+  ): void {
     this.requests.set(requestId, controller)
     if (token) {
       this.cancelTokens.set(requestId, token)
 
       // 监听取消令牌
-      token.promise.then(() => {
-        this.cancel(requestId)
-      }).catch(() => {
-        // 忽略错误
-      })
+      token.promise
+        .then(() => {
+          this.cancel(requestId)
+        })
+        .catch(() => {
+          // 忽略错误
+        })
     }
   }
 
@@ -115,7 +121,7 @@ export class CancelManager {
 
     const token = this.cancelTokens.get(requestId)
     if (token && !token.isCancelled) {
-      ; (token as CancelTokenImpl).cancel(reason)
+      ;(token as CancelTokenImpl).cancel(reason)
       this.cancelTokens.delete(requestId)
     }
   }
@@ -131,7 +137,7 @@ export class CancelManager {
 
     this.cancelTokens.forEach((token, _requestId) => {
       if (!token.isCancelled) {
-        ; (token as CancelTokenImpl).cancel(reason)
+        ;(token as CancelTokenImpl).cancel(reason)
       }
     })
     this.cancelTokens.clear()
@@ -164,8 +170,8 @@ export class CancelManager {
    * 创建合并的 AbortSignal
    */
   createMergedSignal(signals: (AbortSignal | undefined)[]): AbortSignal {
-    const validSignals = signals.filter((signal): signal is AbortSignal =>
-      signal !== undefined,
+    const validSignals = signals.filter(
+      (signal): signal is AbortSignal => signal !== undefined,
     )
 
     if (validSignals.length === 0) {
@@ -211,12 +217,13 @@ export function createCancelTokenSource(): CancelTokenSource {
  * 检查是否为取消错误
  */
 export function isCancelError(error: any): boolean {
-  return error && (
-    error.isCancelError
-    || error.name === 'AbortError'
-    || error.code === 'CANCELED'
-    || error.message?.includes('cancelled')
-    || error.message?.includes('aborted')
+  return (
+    error
+    && (error.isCancelError
+      || error.name === 'AbortError'
+      || error.code === 'CANCELED'
+      || error.message?.includes('cancelled')
+      || error.message?.includes('aborted'))
   )
 }
 

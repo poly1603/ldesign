@@ -1,6 +1,6 @@
 // 适配器导出
 import type { HttpClientConfig } from './types'
-import { AdapterFactory, createAdapter } from './adapters'
+import { createAdapter } from './adapters'
 // 便利函数
 import { HttpClientImpl } from './client'
 
@@ -109,7 +109,7 @@ export * from './vue'
  * 创建 HTTP 客户端实例
  */
 export function createHttpClient(
-  config: HttpClientConfig = {}
+  config: HttpClientConfig = {},
 ): HttpClientImpl {
   const adapter = createAdapter(config.adapter)
   return new HttpClientImpl(config, adapter)
@@ -120,11 +120,5 @@ export function createHttpClient(
  */
 export const http = createHttpClient()
 
-// 默认导出
-export default {
-  createHttpClient,
-  http,
-  HttpClient: HttpClientImpl,
-  createAdapter,
-  AdapterFactory,
-}
+// 默认导出（为了兼容性保留，但推荐使用命名导出）
+export default createHttpClient

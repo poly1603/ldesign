@@ -31,7 +31,7 @@
 }
 
 .form-loading::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -45,7 +45,7 @@
 }
 
 .form-loading::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -73,7 +73,7 @@
 }
 
 .form-required::after {
-  content: "*";
+  content: '*';
   color: var(--form-color-error, #f5222d);
   margin-left: 2px;
 }
@@ -375,27 +375,22 @@
 
 /* 边框类 */
 .form-border {
-  border: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9) !important;
+  border: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9) !important;
 }
 .form-border-0 {
   border: none !important;
 }
 .form-border-t {
-  border-top: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9) !important;
+  border-top: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9) !important;
 }
 .form-border-b {
-  border-bottom: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9) !important;
+  border-bottom: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9) !important;
 }
 .form-border-l {
-  border-left: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9) !important;
+  border-left: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9) !important;
 }
 .form-border-r {
-  border-right: var(--form-border-width, 1px) var(--form-border-style, solid)
-    var(--form-border-default, #d9d9d9) !important;
+  border-right: var(--form-border-width, 1px) var(--form-border-style, solid) var(--form-border-default, #d9d9d9) !important;
 }
 
 .form-border-success {
@@ -436,25 +431,13 @@
   box-shadow: var(--form-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05)) !important;
 }
 .form-shadow {
-  box-shadow: var(
-    --form-shadow-base,
-    0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06)
-  ) !important;
+  box-shadow: var(--form-shadow-base, 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)) !important;
 }
 .form-shadow-lg {
-  box-shadow: var(
-    --form-shadow-lg,
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06)
-  ) !important;
+  box-shadow: var(--form-shadow-lg, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)) !important;
 }
 .form-shadow-xl {
-  box-shadow: var(
-    --form-shadow-xl,
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05)
-  ) !important;
+  box-shadow: var(--form-shadow-xl, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)) !important;
 }
 
 /* 布局类 */

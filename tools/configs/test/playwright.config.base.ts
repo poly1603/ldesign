@@ -25,7 +25,9 @@ export interface PlaywrightConfigOptions {
  * 创建基础的 Playwright 配置
  * @param options 配置选项
  */
-export function createPlaywrightConfig(options: PlaywrightConfigOptions = {}): PlaywrightTestConfig {
+export function createPlaywrightConfig(
+  options: PlaywrightConfigOptions = {},
+): PlaywrightTestConfig {
   const {
     testDir = './e2e',
     baseURL = 'http://localhost:5173',

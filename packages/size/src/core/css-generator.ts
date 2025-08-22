@@ -2,7 +2,7 @@
  * CSS变量生成器
  */
 
-import type { SizeConfig, SizeMode } from '../types'
+import type { SizeConfig } from '../types'
 
 /**
  * CSS变量生成器类
@@ -99,13 +99,17 @@ export class CSSVariableGenerator {
     variables: Record<string, string>,
   ): void {
     // 按钮高度
-    variables[`${this.prefix}-button-height-small`] = component.buttonHeight.small
-    variables[`${this.prefix}-button-height-medium`] = component.buttonHeight.medium
-    variables[`${this.prefix}-button-height-large`] = component.buttonHeight.large
+    variables[`${this.prefix}-button-height-small`]
+      = component.buttonHeight.small
+    variables[`${this.prefix}-button-height-medium`]
+      = component.buttonHeight.medium
+    variables[`${this.prefix}-button-height-large`]
+      = component.buttonHeight.large
 
     // 输入框高度
     variables[`${this.prefix}-input-height-small`] = component.inputHeight.small
-    variables[`${this.prefix}-input-height-medium`] = component.inputHeight.medium
+    variables[`${this.prefix}-input-height-medium`]
+      = component.inputHeight.medium
     variables[`${this.prefix}-input-height-large`] = component.inputHeight.large
 
     // 图标尺寸
@@ -151,7 +155,10 @@ export class CSSVariableGenerator {
   /**
    * 生成CSS字符串
    */
-  generateCSSString(variables: Record<string, string>, selector: string = ':root'): string {
+  generateCSSString(
+    variables: Record<string, string>,
+    selector: string = ':root',
+  ): string {
     const cssRules = Object.entries(variables)
       .map(([name, value]) => `  ${name}: ${value};`)
       .join('\n')
@@ -177,7 +184,9 @@ export class CSSVariableGenerator {
 /**
  * 创建CSS变量生成器实例
  */
-export function createCSSVariableGenerator(prefix?: string): CSSVariableGenerator {
+export function createCSSVariableGenerator(
+  prefix?: string,
+): CSSVariableGenerator {
   return new CSSVariableGenerator(prefix)
 }
 

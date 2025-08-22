@@ -101,9 +101,9 @@ function sizeCheck(): void {
  */
 function checkChangesets(): boolean {
   console.log('📝 检查变更集...')
-  const changesetFiles = fs.readdirSync('.changeset').filter(file =>
-    file.endsWith('.md') && file !== 'README.md',
-  )
+  const changesetFiles = fs
+    .readdirSync('.changeset')
+    .filter(file => file.endsWith('.md') && file !== 'README.md')
 
   if (changesetFiles.length === 0) {
     console.log('ℹ️  没有待处理的变更集')
@@ -139,7 +139,9 @@ function commitVersions(): void {
  */
 function publishToNpm(tag?: string): void {
   console.log('📤 发布到 npm...')
-  const command = tag ? `pnpm changeset publish --tag ${tag}` : 'pnpm changeset publish'
+  const command = tag
+    ? `pnpm changeset publish --tag ${tag}`
+    : 'pnpm changeset publish'
   execSync(command, { stdio: 'inherit' })
   console.log('✅ 发布完成\n')
 }
@@ -241,7 +243,10 @@ export async function release(options: ReleaseOptions = {}): Promise<void> {
 /**
  * 预发布
  */
-export async function prerelease(tag: string = 'beta', options: ReleaseOptions = {}): Promise<void> {
+export async function prerelease(
+  tag: string = 'beta',
+  options: ReleaseOptions = {},
+): Promise<void> {
   const { skipTests = false, skipBuild = false, dryRun = false } = options
 
   console.log(`🚀 开始预发布流程 (${tag})...\n`)

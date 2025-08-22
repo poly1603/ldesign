@@ -14,55 +14,64 @@ const defaultPluralRule: PluralRule = (count: number): number => {
  */
 const PLURAL_RULES: PluralRules = {
   // 英语：单数/复数
-  en: (count: number) => (count === 1 ? 0 : 1),
+  'en': (count: number) => (count === 1 ? 0 : 1),
   'en-US': (count: number) => (count === 1 ? 0 : 1),
   'en-GB': (count: number) => (count === 1 ? 0 : 1),
 
   // 中文：无复数变化
-  zh: () => 0,
+  'zh': () => 0,
   'zh-CN': () => 0,
   'zh-TW': () => 0,
   'zh-HK': () => 0,
 
   // 日语：无复数变化
-  ja: () => 0,
+  'ja': () => 0,
   'ja-JP': () => 0,
 
   // 法语：0和1为单数，其他为复数
-  fr: (count: number) => (count <= 1 ? 0 : 1),
+  'fr': (count: number) => (count <= 1 ? 0 : 1),
   'fr-FR': (count: number) => (count <= 1 ? 0 : 1),
 
   // 德语：单数/复数
-  de: (count: number) => (count === 1 ? 0 : 1),
+  'de': (count: number) => (count === 1 ? 0 : 1),
   'de-DE': (count: number) => (count === 1 ? 0 : 1),
 
   // 俄语：复杂的复数规则
-  ru: (count: number) => {
+  'ru': (count: number) => {
     const mod10 = count % 10
     const mod100 = count % 100
 
-    if (mod10 === 1 && mod100 !== 11) return 0
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 1
+    if (mod10 === 1 && mod100 !== 11)
+      return 0
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return 1
     return 2
   },
 
   // 波兰语：复杂的复数规则
-  pl: (count: number) => {
-    if (count === 1) return 0
+  'pl': (count: number) => {
+    if (count === 1)
+      return 0
     const mod10 = count % 10
     const mod100 = count % 100
 
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 1
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return 1
     return 2
   },
 
   // 阿拉伯语：非常复杂的复数规则
-  ar: (count: number) => {
-    if (count === 0) return 0
-    if (count === 1) return 1
-    if (count === 2) return 2
-    if (count % 100 >= 3 && count % 100 <= 10) return 3
-    if (count % 100 >= 11) return 4
+  'ar': (count: number) => {
+    if (count === 0)
+      return 0
+    if (count === 1)
+      return 1
+    if (count === 2)
+      return 2
+    if (count % 100 >= 3 && count % 100 <= 10)
+      return 3
+    if (count % 100 >= 11)
+      return 4
     return 5
   },
 }
@@ -99,16 +108,45 @@ export function getPluralRule(locale: string): PluralRule {
 export function parsePluralExpression(
   expression: string,
   params: TranslationParams,
-  locale: string
+  locale: string,
 ): string {
   // 使用更强大的解析方法来处理嵌套大括号
-  const match = expression.match(/\{(\w+),\s*plural,\s*(.+)\}/)
-
-  if (!match) {
+  // 手动解析以避免正则表达式的复杂性
+  const startIndex = expression.indexOf('{')
+  if (startIndex === -1) {
     return expression
   }
 
-  const [, countKey, rulesStr] = match
+  // 找到匹配的结束大括号
+  let braceCount = 0
+  let endIndex = -1
+  for (let i = startIndex; i < expression.length; i++) {
+    if (expression[i] === '{') {
+      braceCount++
+    }
+    else if (expression[i] === '}') {
+      braceCount--
+      if (braceCount === 0) {
+        endIndex = i
+        break
+      }
+    }
+  }
+
+  if (endIndex === -1) {
+    return expression
+  }
+
+  const content = expression.slice(startIndex + 1, endIndex)
+  const parts = content.split(',')
+
+  if (parts.length < 3 || parts[1].trim() !== 'plural') {
+    return expression
+  }
+
+  const countKey = parts[0].trim()
+  const rulesStr = parts.slice(2).join(',').trim()
+
   const count = Number(params[countKey]) || 0
 
   // 解析规则部分
@@ -158,7 +196,8 @@ function parsePluralRules(rulesStr: string): Record<string, string> {
       i++
     }
 
-    if (i >= rulesStr.length) break
+    if (i >= rulesStr.length)
+      break
 
     // 匹配规则键（=0, =1, other, etc.）
     const keyMatch = rulesStr
@@ -192,7 +231,8 @@ function parsePluralRules(rulesStr: string): Record<string, string> {
     while (i < rulesStr.length && braceCount > 0) {
       if (rulesStr[i] === '{') {
         braceCount++
-      } else if (rulesStr[i] === '}') {
+      }
+      else if (rulesStr[i] === '}') {
         braceCount--
       }
       i++
@@ -223,8 +263,8 @@ function interpolatePluralRule(rule: string, count: number): string {
  * @returns 是否包含复数表达式
  */
 export function hasPluralExpression(str: string): boolean {
-  const pluralRegex =
-    /\{\w+,\s*plural,\s*(?:\S.*|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/
+  const pluralRegex
+    = /\{\w+,\s*plural,\s*(?:\S.*|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\}/
   return pluralRegex.test(str)
 }
 
@@ -238,6 +278,7 @@ export function extractPluralKeys(expression: string): string[] {
   const pluralRegex = /\{(\w+),\s*plural,[^}]+\}/g
   let match: RegExpExecArray | null
 
+  // eslint-disable-next-line no-cond-assign
   while ((match = pluralRegex.exec(expression)) !== null) {
     const countKey = match[1]
     if (!keys.includes(countKey)) {
@@ -275,7 +316,7 @@ export function getSupportedPluralLocales(): string[] {
 export function processPluralization(
   template: string,
   params: TranslationParams,
-  locale: string
+  locale: string,
 ): string {
   if (!hasPluralExpression(template)) {
     return template
@@ -304,7 +345,8 @@ export function processPluralization(
     while (pos < result.length && braceCount > 0) {
       if (result[pos] === '{') {
         braceCount++
-      } else if (result[pos] === '}') {
+      }
+      else if (result[pos] === '}') {
         braceCount--
       }
       pos++
@@ -313,10 +355,11 @@ export function processPluralization(
     if (braceCount === 0) {
       const fullExpression = result.slice(expressionStart, pos)
       const replacement = parsePluralExpression(fullExpression, params, locale)
-      result =
-        result.slice(0, expressionStart) + replacement + result.slice(pos)
+      result
+        = result.slice(0, expressionStart) + replacement + result.slice(pos)
       i = expressionStart + replacement.length
-    } else {
+    }
+    else {
       i = pos
     }
   }

@@ -85,11 +85,7 @@ async function _resetToDefault() {
         class="theme-select"
         @change="handleThemeChange"
       >
-        <option
-          v-for="theme in availableThemes"
-          :key="theme"
-          :value="theme"
-        >
+        <option v-for="theme in availableThemes" :key="theme" :value="theme">
           {{ getThemeDisplayName(theme) }}
         </option>
       </select>
@@ -113,22 +109,13 @@ async function _resetToDefault() {
     </div>
 
     <div class="control-group">
-      <button
-        class="btn btn-primary"
-        @click="toggleMode"
-      >
+      <button class="btn btn-primary" @click="toggleMode">
         切换到{{ currentMode === 'light' ? '暗色' : '亮色' }}模式
       </button>
-      <button
-        class="btn btn-secondary"
-        @click="handleRandomTheme"
-      >
+      <button class="btn btn-secondary" @click="handleRandomTheme">
         随机主题
       </button>
-      <button
-        class="btn btn-secondary"
-        @click="syncSystemTheme"
-      >
+      <button class="btn btn-secondary" @click="syncSystemTheme">
         同步系统主题
       </button>
     </div>
@@ -140,7 +127,9 @@ async function _resetToDefault() {
       </div>
       <div class="status-item">
         <span class="label">当前模式:</span>
-        <span class="value">{{ currentMode === 'light' ? '亮色模式' : '暗色模式' }}</span>
+        <span class="value">{{
+          currentMode === 'light' ? '亮色模式' : '暗色模式'
+        }}</span>
       </div>
       <div class="status-item">
         <span class="label">系统主题:</span>

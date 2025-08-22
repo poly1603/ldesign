@@ -72,12 +72,21 @@ export const ANIMATION_PRESETS: Record<AnimationType, AnimationConfig> = {
 export class AnimationManager {
   private animations = new Map<string, AnimationConfig>()
   private customAnimations = new Map<string, AnimationConfig>()
+  // 默认动画类型，用于后续扩展
+  private defaultAnimation: AnimationType = 'fade'
 
   constructor() {
     // 注册预定义动画
     for (const [name, config] of Object.entries(ANIMATION_PRESETS)) {
       this.animations.set(name, config)
     }
+  }
+
+  /**
+   * 设置默认动画
+   */
+  setDefaultAnimation(animation: AnimationType): void {
+    this.defaultAnimation = animation
   }
 
   /**
@@ -107,12 +116,13 @@ export class AnimationManager {
    */
   selectAnimation(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
+    from: RouteLocationNormalized,
   ): AnimationConfig {
     // 检查路由元信息中的动画配置
     if (to.meta.transition) {
       const config = this.get(to.meta.transition)
-      if (config) return config
+      if (config)
+        return config
     }
 
     // 默认动画逻辑
@@ -122,7 +132,8 @@ export class AnimationManager {
     if (toDepth > fromDepth) {
       // 进入子路由，使用滑入动画
       return this.get('slide') || ANIMATION_PRESETS.slide
-    } else if (toDepth < fromDepth) {
+    }
+    else if (toDepth < fromDepth) {
       // 返回父路由，使用滑出动画
       const slideConfig = this.get('slide') || ANIMATION_PRESETS.slide
       return {
@@ -273,7 +284,8 @@ export class AnimationManager {
    * 注入样式到页面
    */
   injectStyles(): void {
-    if (typeof document === 'undefined') return
+    if (typeof document === 'undefined')
+      return
 
     const styleId = 'ldesign-router-animations'
     let styleElement = document.getElementById(styleId) as HTMLStyleElement
@@ -309,13 +321,18 @@ export interface AnimationPluginOptions {
  */
 export function createAnimationPlugin(options: AnimationPluginOptions = {}) {
   const {
-    defaultAnimation = 'fade',
+    defaultAnimation = 'fade' as AnimationType,
     customAnimations = {},
     autoInjectStyles = true,
     smartSelection = true,
   } = options
 
   const manager = new AnimationManager()
+
+  // 设置默认动画
+  if (defaultAnimation) {
+    manager.setDefaultAnimation(defaultAnimation)
+  }
 
   // 注册自定义动画
   for (const [name, config] of Object.entries(customAnimations)) {
@@ -356,10 +373,10 @@ export function createAnimationPlugin(options: AnimationPluginOptions = {}) {
  * 创建自定义动画配置
  */
 export function createAnimationConfig(
-  config: Partial<AnimationConfig>
+  config: Partial<AnimationConfig>,
 ): AnimationConfig {
   return {
-    type: 'custom',
+    type: 'fade' as AnimationType,
     duration: 300,
     easing: 'ease-in-out',
     ...config,
@@ -370,7 +387,8 @@ export function createAnimationConfig(
  * 检查是否支持动画
  */
 export function supportsAnimations(): boolean {
-  if (typeof window === 'undefined') return false
+  if (typeof window === 'undefined')
+    return false
 
   // 检查用户是否禁用了动画
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -386,15 +404,17 @@ export function supportsAnimations(): boolean {
  * 获取动画持续时间
  */
 export function getAnimationDuration(element: Element): number {
-  if (typeof window === 'undefined') return 0
+  if (typeof window === 'undefined')
+    return 0
 
   const computedStyle = window.getComputedStyle(element)
-  const duration =
-    computedStyle.transitionDuration || computedStyle.animationDuration
+  const duration
+    = computedStyle.transitionDuration || computedStyle.animationDuration
 
   // 解析持续时间（支持 s 和 ms）
   const match = duration.match(/^([\d.]+)(s|ms)$/)
-  if (!match) return 0
+  if (!match)
+    return 0
 
   const value = Number.parseFloat(match[1])
   const unit = match[2]

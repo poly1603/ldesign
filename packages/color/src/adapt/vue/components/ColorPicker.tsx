@@ -57,7 +57,9 @@ export default defineComponent({
     const isOpen = ref(false)
 
     const normalizedValue = computed(() => {
-      return isValidHex(inputValue.value) ? normalizeHex(inputValue.value) : '#000000'
+      return isValidHex(inputValue.value)
+        ? normalizeHex(inputValue.value)
+        : '#000000'
     })
 
     const handleInputChange = (event: Event) => {
@@ -96,13 +98,14 @@ export default defineComponent({
     )
 
     return () => (
-      <div class={[
-        'l-color-picker',
-        {
-          'l-color-picker--disabled': props.disabled,
-          'l-color-picker--open': isOpen.value,
-        },
-      ]}
+      <div
+        class={[
+          'l-color-picker',
+          {
+            'l-color-picker--disabled': props.disabled,
+            'l-color-picker--open': isOpen.value,
+          },
+        ]}
       >
         <div class="l-color-picker__trigger" onClick={togglePicker}>
           <div
@@ -144,7 +147,8 @@ export default defineComponent({
                       class={[
                         'l-color-picker__preset',
                         {
-                          'l-color-picker__preset--active': color === normalizedValue.value,
+                          'l-color-picker__preset--active':
+                            color === normalizedValue.value,
                         },
                       ]}
                       style={{ backgroundColor: color }}

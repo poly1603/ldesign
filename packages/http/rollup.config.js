@@ -1,17 +1,15 @@
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import process from 'node:process'
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
-  packageDir: __dirname,
-  vue: true,
+  packageDir: process.cwd(),
+  packageName: 'LDesignHttp',
+  formats: ['es', 'cjs', 'umd'],
   external: ['vue', 'axios', 'alova'],
-  globalName: 'LDesignHttp',
   globals: {
     vue: 'Vue',
     axios: 'axios',
     alova: 'alova',
   },
+  vue: true,
 })

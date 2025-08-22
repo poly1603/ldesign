@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { Action, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import {
+  Action,
+  BaseStore,
+  Getter,
+  PersistentState,
+  State,
+} from '@ldesign/store'
 import { computed, onUnmounted, ref } from 'vue'
 
 interface Todo {
@@ -308,7 +314,10 @@ const highlightedCode = computed(() => {
   const code = codeExamples[activeTab.value]
   return code
     .replace(/(@\w+)/g, '<span class="decorator">$1</span>')
-    .replace(/(class|interface|import|export|from|const|let|var)/g, '<span class="keyword">$1</span>')
+    .replace(
+      /(class|interface|import|export|from|const|let|var)/g,
+      '<span class="keyword">$1</span>',
+    )
     .replace(/(string|number|boolean|void)/g, '<span class="type">$1</span>')
     .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
 })
@@ -405,7 +414,9 @@ onUnmounted(() => {
               @change="store.toggleTodo(todo.id)"
             >
             <span class="todo-text">{{ todo.text }}</span>
-            <span class="todo-priority">{{ getPriorityText(todo.priority) }}</span>
+            <span class="todo-priority">{{
+              getPriorityText(todo.priority)
+            }}</span>
             <span class="todo-date">{{ formatDate(todo.createdAt) }}</span>
           </div>
           <div class="todo-actions">
@@ -431,17 +442,18 @@ onUnmounted(() => {
             📝
           </div>
           <div class="empty-text">
-            {{ store.filter === 'all' ? '还没有任务，添加一个吧！' : `没有${getFilterLabel(store.filter)}的任务` }}
+            {{
+              store.filter === 'all'
+                ? '还没有任务，添加一个吧！'
+                : `没有${getFilterLabel(store.filter)}的任务`
+            }}
           </div>
         </div>
       </div>
 
       <!-- 批量操作 -->
       <div v-if="store.totalCount > 0" class="bulk-actions">
-        <button
-          class="btn btn-outline"
-          @click="store.markAllCompleted"
-        >
+        <button class="btn btn-outline" @click="store.markAllCompleted">
           {{ store.activeCount > 0 ? '全部完成' : '全部未完成' }}
         </button>
         <button
@@ -451,10 +463,7 @@ onUnmounted(() => {
         >
           清除已完成 ({{ store.completedCount }})
         </button>
-        <button
-          class="btn btn-danger"
-          @click="clearAllTodos"
-        >
+        <button class="btn btn-danger" @click="clearAllTodos">
           清空所有
         </button>
       </div>

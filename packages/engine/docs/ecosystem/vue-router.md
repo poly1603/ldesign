@@ -17,10 +17,10 @@ pnpm add @ldesign/engine-router
 ### 基础设置
 
 ```typescript
-// src/router/index.ts
-import { createRouter, createWebHistory } from 'vue-router'
 import { createEngine } from '@ldesign/engine'
 import { routerPlugin } from '@ldesign/engine-router'
+// src/router/index.ts
+import { createRouter, createWebHistory } from 'vue-router'
 
 // 定义路由
 const routes = [
@@ -70,7 +70,7 @@ const engine = createEngine({
   ],
 })
 
-export { router, engine }
+export { engine, router }
 ```
 
 ### 在 Vue 应用中使用
@@ -79,7 +79,7 @@ export { router, engine }
 // src/main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import { router, engine } from './router'
+import { engine, router } from './router'
 
 const app = createApp(App)
 
@@ -199,9 +199,9 @@ const routes = [
 const routeStatePlugin = {
   name: 'route-state',
 
-  install: engine => {
+  install: (engine) => {
     // 监听路由变化，更新状态
-    engine.router.afterEach(to => {
+    engine.router.afterEach((to) => {
       engine.state.set('router.current', {
         path: to.path,
         name: to.name,
@@ -215,7 +215,8 @@ const routeStatePlugin = {
     engine.router.navigate = (to, options = {}) => {
       if (options.replace) {
         return engine.router.replace(to)
-      } else {
+      }
+      else {
         return engine.router.push(to)
       }
     }
@@ -224,7 +225,8 @@ const routeStatePlugin = {
     engine.router.goBack = () => {
       if (window.history.length > 1) {
         engine.router.back()
-      } else {
+      }
+      else {
         engine.router.push('/')
       }
     }
@@ -239,11 +241,11 @@ const routeStatePlugin = {
 const routeCachePlugin = {
   name: 'route-cache',
 
-  install: engine => {
+  install: (engine) => {
     const cache = new Map()
 
     // 缓存路由数据
-    engine.router.beforeEach(async to => {
+    engine.router.beforeEach(async (to) => {
       const cacheKey = `route:${to.path}`
 
       // 检查缓存
@@ -259,7 +261,8 @@ const routeCachePlugin = {
           const data = await to.meta.loadData(to)
           cache.set(cacheKey, data)
           engine.state.set('route.data', data)
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('加载页面数据失败')
           throw error
         }
@@ -274,7 +277,8 @@ const routeCachePlugin = {
             cache.delete(key)
           }
         }
-      } else {
+      }
+      else {
         cache.clear()
       }
     }
@@ -324,10 +328,11 @@ class DynamicRouteManager {
 
   // 根据权限动态添加路由
   addRoutesByPermissions(routes: RouteRecordRaw[], permissions: string[]) {
-    const allowedRoutes = routes.filter(route => {
+    const allowedRoutes = routes.filter((route) => {
       const requiredPermissions = route.meta?.permissions as string[]
 
-      if (!requiredPermissions) return true
+      if (!requiredPermissions)
+        return true
 
       return requiredPermissions.every(permission => permissions.includes(permission))
     })
@@ -340,7 +345,7 @@ class DynamicRouteManager {
 const routeManager = new DynamicRouteManager(engine)
 
 // 根据用户权限动态添加路由
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   const userPermissions = user.permissions || []
 
   // 管理员路由
@@ -373,14 +378,16 @@ engine.events.on('user:login', user => {
 
 ```typescript
 // 路由懒加载配置
-const createLazyRoute = (path: string, component: string, meta = {}) => ({
-  path,
-  component: () => import(`../views/${component}.vue`),
-  meta: {
-    ...meta,
-    lazy: true,
-  },
-})
+function createLazyRoute(path: string, component: string, meta = {}) {
+  return {
+    path,
+    component: () => import(`../views/${component}.vue`),
+    meta: {
+      ...meta,
+      lazy: true,
+    },
+  }
+}
 
 // 使用懒加载路由
 const routes = [
@@ -415,7 +422,7 @@ const routes = [
 const routeAnalyticsPlugin = {
   name: 'route-analytics',
 
-  install: engine => {
+  install: (engine) => {
     const analytics = {
       pageViews: new Map(),
       userJourney: [],
@@ -474,12 +481,12 @@ const routeAnalyticsPlugin = {
 
 ```typescript
 // 路由性能监控
-engine.router.beforeEach(to => {
+engine.router.beforeEach((to) => {
   // 开始计时
   engine.performance.mark(`route-start-${to.path}`)
 })
 
-engine.router.afterEach(to => {
+engine.router.afterEach((to) => {
   // 结束计时
   engine.performance.mark(`route-end-${to.path}`)
 
@@ -547,13 +554,14 @@ const badRoutes = [
 
 ```typescript
 // 路由错误处理
-engine.router.onError(error => {
+engine.router.onError((error) => {
   engine.logger.error('路由错误:', error)
 
   // 根据错误类型处理
   if (error.message.includes('Failed to fetch')) {
     engine.notifications.error('页面加载失败，请检查网络连接')
-  } else {
+  }
+  else {
     engine.notifications.error('页面访问出错')
   }
 
@@ -579,7 +587,7 @@ const routes = [
 
 ```typescript
 // SEO 元数据管理
-engine.router.afterEach(to => {
+engine.router.afterEach((to) => {
   // 更新页面标题
   document.title = to.meta?.title
     ? `${to.meta.title} - ${engine.config.appName}`

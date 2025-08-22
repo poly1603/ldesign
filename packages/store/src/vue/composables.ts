@@ -10,7 +10,7 @@ import type {
   UseStoreOptions,
 } from '@/types'
 import { computed, inject, onUnmounted, ref, watch } from 'vue'
-import { STORE_PROVIDER_KEY } from '@/types/provider'
+import { STORE_PROVIDER_KEY } from '../types/provider'
 
 /**
  * 使用 Store 的组合式函数
@@ -116,7 +116,9 @@ export function useAction<T extends (...args: any[]) => any>(
     try {
       const action = (store as any)[actionName]
       if (typeof action !== 'function') {
-        throw new TypeError(`Action "${actionName}" not found in store "${storeId}"`)
+        throw new TypeError(
+          `Action "${actionName}" not found in store "${storeId}"`,
+        )
       }
 
       const result = await action(...args)

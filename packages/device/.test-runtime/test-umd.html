@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <title>UMD Test - @ldesign/device</title>
+  </head>
+  <body>
+    <h1>UMD 模块加载测试</h1>
+    <div id="result">测试中...</div>
+
+    <script src="../dist/index.min.js"></script>
+    <script>
+      try {
+        console.log('UMD 全局对象:', window.LDesignDevice)
+
+        if (!window.LDesignDevice) {
+          throw new Error('UMD 全局对象不存在')
+        }
+
+        document.getElementById('result').innerHTML =
+          '<span style="color: green;">✅ UMD 加载成功</span><br>' + '全局对象: LDesignDevice'
+
+        window.testResult = { success: true, message: 'UMD 加载成功' }
+      } catch (error) {
+        console.error('UMD 模块加载失败:', error)
+        document.getElementById('result').innerHTML =
+          '<span style="color: red;">❌ UMD 加载失败: ' + error.message + '</span>'
+
+        window.testResult = { success: false, message: error.message }
+      }
+    </script>
+  </body>
+</html>

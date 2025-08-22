@@ -17,13 +17,26 @@ export interface SignatureState {
  */
 export interface SignatureActions {
   // RSA 签名
-  sign: (data: string, privateKey: string, algorithm?: string) => Promise<string>
+  sign: (
+    data: string,
+    privateKey: string,
+    algorithm?: string
+  ) => Promise<string>
 
   // RSA 验证签名
-  verify: (data: string, signature: string, publicKey: string, algorithm?: string) => Promise<boolean>
+  verify: (
+    data: string,
+    signature: string,
+    publicKey: string,
+    algorithm?: string
+  ) => Promise<boolean>
 
   // 批量签名
-  signMultiple: (dataList: string[], privateKey: string, algorithm?: string) => Promise<string[]>
+  signMultiple: (
+    dataList: string[],
+    privateKey: string,
+    algorithm?: string
+  ) => Promise<string[]>
 
   // 批量验证签名
   verifyMultiple: (
@@ -36,10 +49,19 @@ export interface SignatureActions {
   ) => Promise<boolean[]>
 
   // 签名文件（模拟）
-  signFile: (fileContent: string, privateKey: string, algorithm?: string) => Promise<string>
+  signFile: (
+    fileContent: string,
+    privateKey: string,
+    algorithm?: string
+  ) => Promise<string>
 
   // 验证文件签名（模拟）
-  verifyFile: (fileContent: string, signature: string, publicKey: string, algorithm?: string) => Promise<boolean>
+  verifyFile: (
+    fileContent: string,
+    signature: string,
+    publicKey: string,
+    algorithm?: string
+  ) => Promise<boolean>
 
   // 清除错误
   clearError: () => void
@@ -75,7 +97,8 @@ export function useSignature(): UseSignatureReturn {
 
   // 错误处理辅助函数
   const handleError = (error: unknown): never => {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage
+      = error instanceof Error ? error.message : 'Unknown error'
     lastError.value = errorMessage
     throw new Error(errorMessage)
   }
@@ -115,7 +138,10 @@ export function useSignature(): UseSignatureReturn {
     privateKey: string,
     algorithm: string = 'sha256',
   ): Promise<string> => {
-    return wrapAsync(() => digitalSignature.sign(data, privateKey, algorithm), isSigning)
+    return wrapAsync(
+      () => digitalSignature.sign(data, privateKey, algorithm),
+      isSigning,
+    )
   }
 
   // RSA 验证签名
@@ -125,7 +151,10 @@ export function useSignature(): UseSignatureReturn {
     publicKey: string,
     algorithm: string = 'sha256',
   ): Promise<boolean> => {
-    return wrapAsync(() => digitalSignature.verify(data, signature, publicKey, algorithm), isVerifying)
+    return wrapAsync(
+      () => digitalSignature.verify(data, signature, publicKey, algorithm),
+      isVerifying,
+    )
   }
 
   // 批量签名
@@ -135,7 +164,9 @@ export function useSignature(): UseSignatureReturn {
     algorithm: string = 'sha256',
   ): Promise<string[]> => {
     return wrapAsync(() => {
-      return dataList.map(data => digitalSignature.sign(data, privateKey, algorithm))
+      return dataList.map(data =>
+        digitalSignature.sign(data, privateKey, algorithm),
+      )
     }, isSigning)
   }
 
@@ -166,7 +197,10 @@ export function useSignature(): UseSignatureReturn {
     privateKey: string,
     algorithm: string = 'sha256',
   ): Promise<string> => {
-    return wrapAsync(() => digitalSignature.sign(fileContent, privateKey, algorithm), isSigning)
+    return wrapAsync(
+      () => digitalSignature.sign(fileContent, privateKey, algorithm),
+      isSigning,
+    )
   }
 
   // 验证文件签名（模拟）
@@ -176,7 +210,11 @@ export function useSignature(): UseSignatureReturn {
     publicKey: string,
     algorithm: string = 'sha256',
   ): Promise<boolean> => {
-    return wrapAsync(() => digitalSignature.verify(fileContent, signature, publicKey, algorithm), isVerifying)
+    return wrapAsync(
+      () =>
+        digitalSignature.verify(fileContent, signature, publicKey, algorithm),
+      isVerifying,
+    )
   }
 
   // 清除错误

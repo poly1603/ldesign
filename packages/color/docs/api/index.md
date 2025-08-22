@@ -35,7 +35,7 @@ export {
   createCustomThemeManager,
   createSimpleThemeManager,
   createThemeManager,
-  createThemeManagerWithPresets
+  createThemeManagerWithPresets,
 } from './index'
 
 // 颜色生成
@@ -43,7 +43,7 @@ export {
   ColorGeneratorImpl,
   createColorGenerator,
   generateColorConfig,
-  safeGenerateColorConfig
+  safeGenerateColorConfig,
 } from './utils/color-generator'
 
 // 色阶生成
@@ -51,7 +51,7 @@ export {
   ColorScaleGenerator,
   createColorScaleGenerator,
   generateColorScale,
-  generateColorScales
+  generateColorScales,
 } from './utils/color-scale'
 ```
 
@@ -68,40 +68,25 @@ export type {
   GeneratedTheme,
   ThemeConfig,
   ThemeManagerInstance,
-  ThemeManagerOptions
+  ThemeManagerOptions,
 } from './core/types'
 
 // 工具类型
-export type {
-  HSL,
-  RGB
-} from './utils/color-converter'
+export type { HSL, RGB } from './utils/color-converter'
 
-export type {
-  ColorScaleOptions
-} from './utils/color-scale'
+export type { ColorScaleOptions } from './utils/color-scale'
 
-export type {
-  CSSInjectionOptions
-} from './utils/css-injector'
+export type { CSSInjectionOptions } from './utils/css-injector'
 ```
 
 ### Vue 集成
 
 ```typescript
 // Vue 组合式 API
-export {
-  useSystemThemeSync,
-  useTheme,
-  useThemeSelector,
-  useThemeToggle
-} from './vue'
+export { useSystemThemeSync, useTheme, useThemeSelector, useThemeToggle } from './vue'
 
 // Vue 插件
-export {
-  installThemePlugin,
-  ThemePlugin
-} from './vue'
+export { installThemePlugin, ThemePlugin } from './vue'
 ```
 
 ## 使用模式
@@ -122,7 +107,7 @@ import {
   COLOR_GENERATION_PRESETS,
   createColorGenerator,
   generateColorConfig,
-  ThemeManager
+  ThemeManager,
 } from '@ldesign/color'
 
 // 自定义颜色生成
@@ -133,13 +118,13 @@ const colors = generator.generateColors('#1890ff')
 const customTheme = {
   name: 'custom',
   light: colors,
-  dark: colors
+  dark: colors,
 }
 
 // 创建管理器
 const themeManager = new ThemeManager({
   themes: [customTheme],
-  defaultTheme: 'custom'
+  defaultTheme: 'custom',
 })
 
 await themeManager.init()
@@ -198,7 +183,7 @@ import { useTheme } from '@ldesign/color/vue'
 ```typescript
 // 在应用启动时预生成主题
 const themeManager = await createThemeManagerWithPresets({
-  idleProcessing: true
+  idleProcessing: true,
 })
 
 // 预生成所有主题
@@ -217,7 +202,7 @@ const themeManager = await createThemeManagerWithPresets({
   },
   onError: (error) => {
     console.error('[DEBUG] 主题错误:', error)
-  }
+  },
 })
 ```
 

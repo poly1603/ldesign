@@ -20,9 +20,9 @@ pnpm add -D @types/jsdom
 ### Vitest 配置
 
 ```typescript
+import vue from '@vitejs/plugin-vue'
 // vitest.config.ts
 import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
@@ -37,10 +37,10 @@ export default defineConfig({
 ### 测试环境设置
 
 ```typescript
+import { createTestEngine } from '@ldesign/engine/testing'
+import { config } from '@vue/test-utils'
 // tests/setup.ts
 import { vi } from 'vitest'
-import { config } from '@vue/test-utils'
-import { createTestEngine } from '@ldesign/engine/testing'
 
 // 全局测试引擎
 const testEngine = createTestEngine({
@@ -83,10 +83,10 @@ vi.stubGlobal('localStorage', localStorageMock)
 ### 引擎测试
 
 ```typescript
-// tests/engine.test.ts
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { createEngine } from '@ldesign/engine'
 import type { Engine } from '@ldesign/engine'
+import { createEngine } from '@ldesign/engine'
+// tests/engine.test.ts
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 describe('Engine', () => {
   let engine: Engine
@@ -128,9 +128,9 @@ describe('Engine', () => {
 ### 状态管理测试
 
 ```typescript
-// tests/state.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createTestEngine } from '@ldesign/engine/testing'
+// tests/state.test.ts
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('State Manager', () => {
   let engine: Engine
@@ -200,9 +200,9 @@ describe('State Manager', () => {
 ### 事件系统测试
 
 ```typescript
-// tests/events.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createTestEngine } from '@ldesign/engine/testing'
+// tests/events.test.ts
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('Event Manager', () => {
   let engine: Engine
@@ -262,9 +262,9 @@ describe('Event Manager', () => {
 ### 插件测试
 
 ```typescript
-// tests/plugins.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createTestEngine } from '@ldesign/engine/testing'
+// tests/plugins.test.ts
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('Plugin Manager', () => {
   let engine: Engine
@@ -339,10 +339,10 @@ describe('Plugin Manager', () => {
 ### 组件测试
 
 ```typescript
-// tests/components/UserProfile.test.ts
-import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { createTestEngine } from '@ldesign/engine/testing'
+import { mount } from '@vue/test-utils'
+// tests/components/UserProfile.test.ts
+import { beforeEach, describe, expect, it } from 'vitest'
 import UserProfile from '@/components/UserProfile.vue'
 
 describe('UserProfile Component', () => {
@@ -410,10 +410,10 @@ describe('UserProfile Component', () => {
 ### 路由测试
 
 ```typescript
-// tests/router.test.ts
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createRouter, createWebHistory } from 'vue-router'
 import { createTestEngine } from '@ldesign/engine/testing'
+// tests/router.test.ts
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from '@/router'
 
 describe('Router Integration', () => {
@@ -496,7 +496,7 @@ export default defineConfig({
 
 ```typescript
 // e2e/user-flow.spec.ts
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('User Flow', () => {
   test('should complete user registration and login', async ({ page }) => {
@@ -548,9 +548,9 @@ test.describe('User Flow', () => {
 ### 测试辅助函数
 
 ```typescript
+import type { Engine } from '@ldesign/engine'
 // tests/helpers/test-utils.ts
 import { createTestEngine } from '@ldesign/engine/testing'
-import type { Engine } from '@ldesign/engine'
 
 export function createMockEngine(overrides = {}) {
   return createTestEngine({
@@ -563,7 +563,7 @@ export function createMockEngine(overrides = {}) {
 }
 
 export function mockApiResponse(data: any, delay = 0) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => resolve({ data }), delay)
   })
 }
@@ -574,7 +574,7 @@ export function waitForState(engine: Engine, key: string, value: any, timeout = 
       reject(new Error(`Timeout waiting for state ${key} to be ${value}`))
     }, timeout)
 
-    const unsubscribe = engine.state.subscribe(key, newValue => {
+    const unsubscribe = engine.state.subscribe(key, (newValue) => {
       if (newValue === value) {
         clearTimeout(timer)
         unsubscribe()
@@ -597,7 +597,7 @@ export function waitForEvent(engine: Engine, eventName: string, timeout = 1000) 
       reject(new Error(`Timeout waiting for event ${eventName}`))
     }, timeout)
 
-    const unsubscribe = engine.events.once(eventName, data => {
+    const unsubscribe = engine.events.once(eventName, (data) => {
       clearTimeout(timer)
       resolve(data)
     })

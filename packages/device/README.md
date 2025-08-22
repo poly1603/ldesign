@@ -14,7 +14,8 @@ _轻量、高效、类型安全的设备检测解决方案，完美支持 Vue 3_
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/npm/l/@ldesign/device.svg)](https://github.com/ldesign-org/device/blob/main/LICENSE)
 
-[📖 文档](https://ldesign.github.io/device/) | [🚀 快速开始](#快速开始) | [💡 示例](./examples/) | [🔧 API 参考](./docs/api/)
+[📖 文档](https://ldesign.github.io/device/) | [🚀 快速开始](#快速开始) | [💡 示例](./examples/) |
+[🔧 API 参考](./docs/api/)
 
 </div>
 
@@ -107,7 +108,7 @@ console.log('屏幕方向:', detector.getOrientation()) // 'landscape'
 
 ```typescript
 // 监听设备信息变化
-detector.on('deviceChange', (deviceInfo) => {
+detector.on('deviceChange', deviceInfo => {
   console.log('设备信息变化:', deviceInfo)
   // 根据设备类型调整布局
   if (deviceInfo.type === 'mobile') {
@@ -116,7 +117,7 @@ detector.on('deviceChange', (deviceInfo) => {
 })
 
 // 监听屏幕方向变化
-detector.on('orientationChange', (orientation) => {
+detector.on('orientationChange', orientation => {
   console.log('屏幕方向变化:', orientation)
   // 根据方向调整界面
   if (orientation === 'landscape') {
@@ -137,8 +138,8 @@ const detector = new DeviceDetector({
   breakpoints: {
     mobile: 480, // 0-480px 为移动设备
     tablet: 1024, // 481-1024px 为平板设备
-    desktop: 1025 // 1025px+ 为桌面设备
-  }
+    desktop: 1025, // 1025px+ 为桌面设备
+  },
 })
 ```
 
@@ -163,21 +164,21 @@ const {
   isTablet, // 是否平板设备
   isDesktop, // 是否桌面设备
   isTouchDevice, // 是否触摸设备
-  refresh // 手动刷新
+  refresh, // 手动刷新
 } = useDevice()
 
 // 网络状态
 const {
   isOnline, // 是否在线
   connectionType, // 连接类型
-  networkInfo // 网络详情
+  networkInfo, // 网络详情
 } = useNetwork()
 
 // 电池状态
 const {
   level, // 电池电量 (0-1)
   isCharging, // 是否充电中
-  batteryInfo // 电池详情
+  batteryInfo, // 电池详情
 } = useBattery()
 
 // 地理位置
@@ -188,7 +189,7 @@ const {
   accuracy, // 精度
   getCurrentPosition, // 获取当前位置
   startWatching, // 开始监听位置变化
-  stopWatching // 停止监听
+  stopWatching, // 停止监听
 } = useGeolocation()
 </script>
 
@@ -235,45 +236,27 @@ const {
 ```vue
 <template>
   <!-- 基础指令 -->
-  <nav v-device-mobile class="mobile-nav">
-    移动端导航菜单
-  </nav>
+  <nav v-device-mobile class="mobile-nav">移动端导航菜单</nav>
 
-  <nav v-device-desktop class="desktop-nav">
-    桌面端导航菜单
-  </nav>
+  <nav v-device-desktop class="desktop-nav">桌面端导航菜单</nav>
 
-  <aside v-device-tablet class="tablet-sidebar">
-    平板端侧边栏
-  </aside>
+  <aside v-device-tablet class="tablet-sidebar">平板端侧边栏</aside>
 
   <!-- 触摸设备检测 -->
-  <div v-device-touch class="touch-controls">
-    触摸操作提示
-  </div>
+  <div v-device-touch class="touch-controls">触摸操作提示</div>
 
-  <div v-device-no-touch class="mouse-controls">
-    鼠标操作提示
-  </div>
+  <div v-device-no-touch class="mouse-controls">鼠标操作提示</div>
 
   <!-- 屏幕方向检测 -->
-  <div v-orientation-portrait class="portrait-layout">
-    竖屏布局
-  </div>
+  <div v-orientation-portrait class="portrait-layout">竖屏布局</div>
 
-  <div v-orientation-landscape class="landscape-layout">
-    横屏布局
-  </div>
+  <div v-orientation-landscape class="landscape-layout">横屏布局</div>
 
   <!-- 组合条件 -->
-  <div v-device="{ type: 'mobile', orientation: 'portrait' }">
-    移动设备竖屏时显示
-  </div>
+  <div v-device="{ type: 'mobile', orientation: 'portrait' }">移动设备竖屏时显示</div>
 
   <!-- 多设备支持 -->
-  <div v-device="['tablet', 'desktop']">
-    平板或桌面设备时显示
-  </div>
+  <div v-device="['tablet', 'desktop']">平板或桌面设备时显示</div>
 </template>
 ```
 
@@ -297,8 +280,8 @@ app.use(DevicePlugin, {
   breakpoints: {
     mobile: 480,
     tablet: 1024,
-    desktop: 1200
-  }
+    desktop: 1200,
+  },
 })
 
 app.mount('#app')
@@ -319,9 +302,7 @@ const { $device } = getCurrentInstance()?.appContext.config.globalProperties
 
 <template>
   <!-- 使用指令 -->
-  <div v-device-mobile>
-    移动端内容
-  </div>
+  <div v-device-mobile>移动端内容</div>
 </template>
 ```
 
@@ -353,11 +334,10 @@ console.log('是否在线:', networkModule.isOnline())
 console.log('连接类型:', networkModule.getConnectionType())
 
 // 监听网络变化
-detector.on('networkChange', (info) => {
+detector.on('networkChange', info => {
   if (info.status === 'offline') {
     showOfflineMessage()
-  }
-  else if (info.type === '2g') {
+  } else if (info.type === '2g') {
     enableDataSavingMode()
   }
 })
@@ -387,7 +367,7 @@ console.log('是否充电:', batteryModule.isCharging())
 console.log('电池状态:', batteryModule.getBatteryStatus())
 
 // 监听电池变化
-detector.on('batteryChange', (info) => {
+detector.on('batteryChange', info => {
   if (info.level < 0.2 && !info.charging) {
     enablePowerSavingMode()
   }
@@ -418,15 +398,14 @@ if (geoModule.isSupported()) {
   // }
 
   // 开始监听位置变化
-  const watchId = await geoModule.startWatching((position) => {
+  const watchId = await geoModule.startWatching(position => {
     console.log('位置更新:', position)
     updateMapLocation(position)
   })
 
   // 停止监听
   geoModule.stopWatching(watchId)
-}
-else {
+} else {
   console.warn('设备不支持地理位置功能')
 }
 ```
@@ -446,14 +425,13 @@ detector.unloadModule('battery')
 const modules = await Promise.all([
   detector.loadModule('network'),
   detector.loadModule('battery'),
-  detector.loadModule('geolocation')
+  detector.loadModule('geolocation'),
 ])
 
 // 错误处理
 try {
   const batteryModule = await detector.loadModule('battery')
-}
-catch (error) {
+} catch (error) {
   console.warn('电池模块加载失败:', error.message)
   // 提供降级方案
   showBatteryNotSupported()
@@ -471,11 +449,11 @@ import { DeviceDetector } from '@ldesign/device'
 
 const detector = new DeviceDetector()
 
-detector.on('deviceChange', (info) => {
+detector.on('deviceChange', info => {
   const layout = {
     mobile: { columns: 1, spacing: 8, fontSize: 14 },
     tablet: { columns: 2, spacing: 12, fontSize: 16 },
-    desktop: { columns: 3, spacing: 16, fontSize: 18 }
+    desktop: { columns: 3, spacing: 16, fontSize: 18 },
   }[info.type]
 
   applyLayout(layout)
@@ -488,19 +466,18 @@ detector.on('deviceChange', (info) => {
 
 ```typescript
 // 根据网络状态优化资源加载
-detector.on('networkChange', (info) => {
+detector.on('networkChange', info => {
   if (info.type === '2g' || info.saveData) {
     loadLowQualityImages()
     disableAnimations()
-  }
-  else {
+  } else {
     loadHighQualityImages()
     enableAnimations()
   }
 })
 
 // 根据电池状态调整功能
-detector.on('batteryChange', (info) => {
+detector.on('batteryChange', info => {
   if (info.level < 0.2 && !info.charging) {
     enablePowerSavingMode()
     reduceBackgroundTasks()
@@ -515,18 +492,16 @@ detector.on('batteryChange', (info) => {
 if (detector.isTouchDevice()) {
   enableTouchGestures()
   increaseTouchTargetSize()
-}
-else {
+} else {
   enableMouseHover()
   showTooltips()
 }
 
 // 屏幕方向适配
-detector.on('orientationChange', (orientation) => {
+detector.on('orientationChange', orientation => {
   if (orientation === 'landscape') {
     showLandscapeUI()
-  }
-  else {
+  } else {
     showPortraitUI()
   }
 })
@@ -542,7 +517,7 @@ const detector = new DeviceDetector({
   breakpoints: {
     mobile: 480,
     tablet: 1024,
-    desktop: 1200
+    desktop: 1200,
   },
 
   // 防抖配置
@@ -557,8 +532,8 @@ const detector = new DeviceDetector({
     isTablet: (width, height, userAgent) => {
       // 自定义平板检测逻辑
       return width >= 768 && width <= 1024
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -571,7 +546,7 @@ import type {
   DeviceType,
   GeolocationInfo,
   NetworkInfo,
-  Orientation
+  Orientation,
 } from '@ldesign/device'
 
 // 类型安全的设备信息处理
@@ -732,6 +707,7 @@ packages/device/
 
 **如果这个项目对你有帮助，请给我们一个 ⭐️！**
 
-[⭐️ Star on GitHub](https://github.com/ldesign-org/device) | [📖 查看文档](https://ldesign.github.io/device/) | [🚀 快速开始](#快速开始)
+[⭐️ Star on GitHub](https://github.com/ldesign-org/device) |
+[📖 查看文档](https://ldesign.github.io/device/) | [🚀 快速开始](#快速开始)
 
 </div>

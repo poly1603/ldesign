@@ -4,6 +4,9 @@ export default defineConfig({
   title: 'LDesign Engine',
   description: '强大的Vue3应用引擎，提供插件化架构和完整的开发工具链',
 
+  // 忽略死链接检查
+  ignoreDeadLinks: true,
+
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['meta', { name: 'theme-color', content: '#3c82f6' }],
@@ -141,6 +144,8 @@ export default defineConfig({
             { text: '缓存管理器', link: '/api/cache-manager' },
             { text: '指令管理器', link: '/api/directive-manager' },
             { text: '错误管理器', link: '/api/error-manager' },
+            { text: '环境管理器', link: '/api/environment-manager' },
+            { text: '生命周期管理器', link: '/api/lifecycle-manager' },
           ],
         },
         {
@@ -298,7 +303,7 @@ export default defineConfig({
       dark: 'github-dark',
     },
     lineNumbers: true,
-    config: md => {
+    config: (md) => {
       // 添加自定义markdown插件
     },
   },

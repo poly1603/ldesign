@@ -61,7 +61,7 @@ module.exports = {
           'error',
           { maxNumericValue: process.env.CI ? 4000 : 3000 },
         ],
-        interactive: [
+        'interactive': [
           'error',
           { maxNumericValue: process.env.CI ? 5000 : 3000 },
         ],

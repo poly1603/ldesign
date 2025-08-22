@@ -45,9 +45,9 @@ const encrypted = encrypt.aes('data', 'key')
 
 **A:** 推荐选择：
 
-- **AES-256** (32字节密钥): 推荐用于一般用途，安全性高
-- **AES-192** (24字节密钥): 平衡安全性和性能
-- **AES-128** (16字节密钥): 性能最好，安全性足够
+- **AES-256** (32 字节密钥): 推荐用于一般用途，安全性高
+- **AES-192** (24 字节密钥): 平衡安全性和性能
+- **AES-128** (16 字节密钥): 性能最好，安全性足够
 
 ```typescript
 // 推荐使用 AES-256
@@ -116,7 +116,7 @@ const key = process.env.ENCRYPTION_KEY
 const masterKey = process.env.MASTER_KEY
 const derivedKey = hash.pbkdf2(masterKey, salt, {
   iterations: 100000,
-  keyLength: 32
+  keyLength: 32,
 })
 ```
 
@@ -154,7 +154,7 @@ function storePassword(password: string): string {
   const hashedPassword = hash.pbkdf2(password, salt, {
     iterations: 100000, // 足够的迭代次数
     keyLength: 32,
-    hashAlgorithm: 'SHA256'
+    hashAlgorithm: 'SHA256',
   })
 
   return `${salt}:${hashedPassword}`
@@ -166,7 +166,7 @@ function verifyPassword(password: string, storedHash: string): boolean {
   const computedHash = hash.pbkdf2(password, salt, {
     iterations: 100000,
     keyLength: 32,
-    hashAlgorithm: 'SHA256'
+    hashAlgorithm: 'SHA256',
   })
 
   return computedHash === expectedHash
@@ -196,7 +196,7 @@ const isValidHmac = hmac.verify(data, secretKey, hmacValue, 'SHA256')
 
 **A:** 有两种方式：
 
-**方式1：使用 Composition API**
+**方式 1：使用 Composition API**
 
 ```typescript
 import { useCrypto } from '@ldesign/crypto/vue'
@@ -208,13 +208,13 @@ export default {
     return {
       encryptAES,
       decryptAES,
-      isEncrypting
+      isEncrypting,
     }
-  }
+  },
 }
 ```
 
-**方式2：使用插件**
+**方式 2：使用插件**
 
 ```typescript
 // main.ts
@@ -226,8 +226,8 @@ export default {
   methods: {
     encrypt() {
       const result = this.$crypto.encrypt.aes(this.data, this.key)
-    }
-  }
+    },
+  },
 }
 ```
 
@@ -244,7 +244,7 @@ const { encryptAES, lastError, clearError } = useCrypto()
 const errorMessage = ref('')
 
 // 监听错误
-watch(lastError, (error) => {
+watch(lastError, error => {
   if (error) {
     errorMessage.value = error
     // 5秒后自动清除错误
@@ -260,8 +260,7 @@ async function handleEncrypt() {
     clearError()
     const result = await encryptAES(data.value, key.value)
     // 处理成功结果
-  }
-  catch (error) {
+  } catch (error) {
     // 错误会自动设置到 lastError
     console.error('加密失败:', error)
   }
@@ -340,8 +339,7 @@ const unsafeCompare = (a: string, b: string) => a === b
 
 // 安全的常数时间比较
 function safeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length)
-    return false
+  if (a.length !== b.length) return false
 
   let result = 0
   for (let i = 0; i < a.length; i++) {
@@ -410,16 +408,15 @@ async function safeEncrypt(data: string, key: string) {
     return {
       success: true,
       data: result,
-      error: null
+      error: null,
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('加密错误:', error)
 
     return {
       success: false,
       data: null,
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -436,12 +433,7 @@ function sanitizeError(error: Error, isProduction: boolean): string {
   }
 
   // 生产环境过滤敏感信息
-  const sensitivePatterns = [
-    /key/i,
-    /password/i,
-    /secret/i,
-    /token/i
-  ]
+  const sensitivePatterns = [/key/i, /password/i, /secret/i, /token/i]
 
   for (const pattern of sensitivePatterns) {
     if (pattern.test(error.message)) {
@@ -461,8 +453,7 @@ function sanitizeError(error: Error, isProduction: boolean): string {
 
 ```typescript
 function checkCryptoSupport(): boolean {
-  return typeof crypto !== 'undefined'
-    && typeof crypto.getRandomValues === 'function'
+  return typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function'
 }
 
 if (!checkCryptoSupport()) {
@@ -505,8 +496,7 @@ function migrateEncryptedData(oldEncryptedData: any, key: string) {
       // 用新库重新加密
       return encrypt.aes(decrypted.data, key)
     }
-  }
-  catch {
+  } catch {
     // 如果新库无法解密，使用旧库解密后重新加密
     const oldDecrypted = oldLibrary.decrypt(oldEncryptedData, key)
     return encrypt.aes(oldDecrypted, key)
@@ -534,4 +524,5 @@ function migrateEncryptedData(oldEncryptedData: any, key: string) {
 3. **提供详细信息**：包括复现步骤和影响范围
 4. **等待响应**：给维护者时间修复问题
 
-如果您还有其他问题，请查看我们的 [GitHub Issues](https://github.com/ldesign/crypto/issues) 或提交新的问题。
+如果您还有其他问题，请查看我们的 [GitHub Issues](https://github.com/ldesign/crypto/issues) 或提交新
+的问题。

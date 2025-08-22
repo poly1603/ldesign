@@ -268,7 +268,17 @@ export const themeCategories = {
   /** 基础主题 */
   basic: [defaultTheme, darkTheme, minimalTheme],
   /** 彩色主题 */
-  colorful: [greenTheme, forestTheme, purpleTheme, lavenderTheme, redTheme, orangeTheme, cyanTheme, pinkTheme, yellowTheme],
+  colorful: [
+    greenTheme,
+    forestTheme,
+    purpleTheme,
+    lavenderTheme,
+    redTheme,
+    orangeTheme,
+    cyanTheme,
+    pinkTheme,
+    yellowTheme,
+  ],
   /** 所有主题 */
   all: presetThemes,
 } as const
@@ -276,7 +286,9 @@ export const themeCategories = {
 /**
  * 按分类获取主题
  */
-export function getThemesByCategory(category: keyof typeof themeCategories): ThemeConfig[] {
+export function getThemesByCategory(
+  category: keyof typeof themeCategories,
+): ThemeConfig[] {
   return [...(themeCategories[category] || [])]
 }
 
@@ -325,10 +337,11 @@ export function recommendThemes(preferences: {
 
   // 排除指定颜色
   if (preferences.excludeColors && preferences.excludeColors.length > 0) {
-    candidates = candidates.filter(theme =>
-      !preferences.excludeColors!.some(color =>
-        theme.name.toLowerCase().includes(color.toLowerCase()),
-      ),
+    candidates = candidates.filter(
+      theme =>
+        !preferences.excludeColors!.some(color =>
+          theme.name.toLowerCase().includes(color.toLowerCase()),
+        ),
     )
   }
 

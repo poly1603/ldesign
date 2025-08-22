@@ -1,4 +1,9 @@
-import type { DeviceModule, NetworkInfo, NetworkStatus, NetworkType } from '../types'
+import type {
+  DeviceModule,
+  NetworkInfo,
+  NetworkStatus,
+  NetworkType,
+} from '../types'
 import { safeNavigatorAccess } from '../utils'
 
 interface NetworkConnection {
@@ -34,13 +39,12 @@ export class NetworkModule implements DeviceModule {
       return
 
     // 获取网络连接对象
-    this.connection = safeNavigatorAccess(
-      (nav) => {
-        const navAny = nav as unknown as Record<string, unknown>
-        return (navAny.connection || navAny.mozConnection || navAny.webkitConnection) as NetworkConnection | null
-      },
-      null,
-    )
+    this.connection = safeNavigatorAccess((nav) => {
+      const navAny = nav as unknown as Record<string, unknown>
+      return (navAny.connection
+        || navAny.mozConnection
+        || navAny.webkitConnection) as NetworkConnection | null
+    }, null)
 
     // 设置事件监听器
     this.setupEventListeners()
@@ -124,17 +128,18 @@ export class NetworkModule implements DeviceModule {
     }
 
     const status: NetworkStatus = navigator.onLine ? 'online' : 'offline'
-    const connection = safeNavigatorAccess(
-      (nav) => {
-        const navAny = nav as unknown as Record<string, unknown>
-        return (navAny.connection || navAny.mozConnection || navAny.webkitConnection) as NetworkConnection | null
-      },
-      null,
-    )
+    const connection = safeNavigatorAccess((nav) => {
+      const navAny = nav as unknown as Record<string, unknown>
+      return (navAny.connection
+        || navAny.mozConnection
+        || navAny.webkitConnection) as NetworkConnection | null
+    }, null)
 
     const networkInfo: NetworkInfo = {
       status,
-      type: this.parseConnectionType(connection?.effectiveType || connection?.type),
+      type: this.parseConnectionType(
+        connection?.effectiveType || connection?.type,
+      ),
     }
 
     // 添加额外的网络信息（如果可用）

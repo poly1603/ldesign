@@ -29,23 +29,24 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "types": "./types/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./vue": {
       "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.js"
-    }
+      "import": "./esm/vue/index.js",
+      "require": "./cjs/vue/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "es/index.js",
-  "types": "dist/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
   "files": [
+    "cjs",
     "dist",
-    "es",
-    "lib",
+    "esm",
     "types"
   ],
   "engines": {
@@ -65,7 +66,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
@@ -109,5 +110,6 @@
       "path": "dist/index.js",
       "limit": "60 KB"
     }
-  ]
+  ],
+  "browser": "dist/index.min.js"
 }

@@ -81,9 +81,10 @@ describe('dynamicForm', () => {
         expect(wrapper.emitted('update:modelValue')).toBeTruthy()
         const emittedEvents = wrapper.emitted('update:modelValue') as any[]
         expect(emittedEvents[emittedEvents.length - 1][0]).toEqual(
-          expect.objectContaining({ username: 'newtest' })
+          expect.objectContaining({ username: 'newtest' }),
         )
-      } else {
+      }
+      else {
         throw new Error('Username input not found')
       }
     })
@@ -101,7 +102,7 @@ describe('dynamicForm', () => {
       })
 
       const inputs = wrapper.findAll('input')
-      inputs.forEach(input => {
+      inputs.forEach((input) => {
         expect(input.element.disabled).toBe(true)
       })
     })
@@ -119,7 +120,7 @@ describe('dynamicForm', () => {
       })
 
       const inputs = wrapper.findAll('input')
-      inputs.forEach(input => {
+      inputs.forEach((input) => {
         expect(input.element.readOnly).toBe(true)
       })
     })
@@ -212,7 +213,7 @@ describe('dynamicForm', () => {
 
       const formGrid = wrapper.find('.dynamic-form__fields')
       expect(formGrid.element.style.gridTemplateColumns).toContain(
-        'repeat(2, 1fr)'
+        'repeat(2, 1fr)',
       )
     })
 
@@ -355,7 +356,7 @@ describe('dynamicForm', () => {
       })
 
       expect(wrapper.find('.dynamic-form').classes()).toContain(
-        'dynamic-form--theme-dark'
+        'dynamic-form--theme-dark',
       )
     })
   })

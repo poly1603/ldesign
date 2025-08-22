@@ -4,7 +4,7 @@ test.describe('兼容性测试', () => {
   // 测试不同浏览器
   const browsers = ['chromium', 'firefox', 'webkit']
 
-  browsers.forEach(browserName => {
+  browsers.forEach((browserName) => {
     test(`${browserName} 浏览器兼容性`, async ({ page }) => {
       await page.goto('http://localhost:3005')
 
@@ -23,7 +23,7 @@ test.describe('兼容性测试', () => {
 
       // 检查 JavaScript 功能
       const jsWorking = await page.evaluate(() => {
-        return typeof window.Vue !== 'undefined' || typeof window.__VUE__ !== 'undefined'
+        return typeof (window as any).Vue !== 'undefined' || typeof (window as any).__VUE__ !== 'undefined'
       })
       expect(jsWorking).toBeTruthy()
     })
@@ -130,7 +130,7 @@ test.describe('兼容性测试', () => {
     // 检查样式是否正确应用
     const computedStyle = await page.evaluate(() => {
       const element = document.querySelector('h1')
-      return window.getComputedStyle(element).display
+      return element ? window.getComputedStyle(element).display : 'none'
     })
     expect(computedStyle).not.toBe('')
   })
@@ -183,15 +183,15 @@ test.describe('兼容性测试', () => {
 
   test('错误处理兼容性', async ({ page }) => {
     // 监听控制台错误
-    const errors = []
-    page.on('console', msg => {
+    const errors: any[] = []
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         errors.push(msg.text())
       }
     })
 
     // 监听页面错误
-    page.on('pageerror', error => {
+    page.on('pageerror', (error) => {
       errors.push(error.message)
     })
 
@@ -210,7 +210,7 @@ test.describe('兼容性测试', () => {
 
     // 检查是否有严重错误
     const criticalErrors = errors.filter(
-      error => !error.includes('Warning') && !error.includes('DevTools') && !error.includes('Extension')
+      error => !error.includes('Warning') && !error.includes('DevTools') && !error.includes('Extension'),
     )
 
     expect(criticalErrors.length).toBe(0)
@@ -286,7 +286,8 @@ test.describe('兼容性测试', () => {
       try {
         const response = await fetch(window.location.href)
         return response.ok
-      } catch {
+      }
+      catch {
         return false
       }
     })

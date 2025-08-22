@@ -1,19 +1,3 @@
-<template>
-  <button 
-    :class="[
-      'custom-button',
-      `custom-button--${size}`,
-      `custom-button--${variant}`,
-      { 'custom-button--loading': loading }
-    ]"
-    :disabled="disabled || loading"
-    @click="handleClick"
-  >
-    <span v-if="loading" class="loading-spinner"></span>
-    <slot />
-  </button>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSize } from '../../../../src/vue'
@@ -44,12 +28,28 @@ const buttonHeight = computed(() => {
   return currentConfig.value.component.buttonHeight[props.size]
 })
 
-const handleClick = (event: MouseEvent) => {
+function handleClick(event: MouseEvent) {
   if (!props.disabled && !props.loading) {
     emit('click', event)
   }
 }
 </script>
+
+<template>
+  <button
+    class="custom-button"
+    :class="[
+      `custom-button--${size}`,
+      `custom-button--${variant}`,
+      { 'custom-button--loading': loading },
+    ]"
+    :disabled="disabled || loading"
+    @click="handleClick"
+  >
+    <span v-if="loading" class="loading-spinner" />
+    <slot />
+  </button>
+</template>
 
 <style scoped>
 .custom-button {

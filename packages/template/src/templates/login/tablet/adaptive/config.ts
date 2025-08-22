@@ -7,18 +7,12 @@ export const config: TemplateConfig = {
   category: 'login',
   device: 'tablet',
   variant: 'adaptive',
-  isDefault: true, // 设为平板端默认模板
+  isDefault: false, // tablet/default 是默认模板
   version: '1.0.0',
   author: 'LDesign Team',
   tags: ['自适应', '平板端', '灵活', '兼容'],
   preview: '/previews/login-tablet-adaptive.png',
-  features: [
-    '自适应布局',
-    '横竖屏兼容',
-    '中等尺寸优化',
-    '触摸友好',
-    '视觉平衡',
-  ],
+  features: ['自适应布局', '横竖屏兼容', '中等尺寸优化', '触摸友好', '视觉平衡'],
   props: {
     title: {
       type: 'string',

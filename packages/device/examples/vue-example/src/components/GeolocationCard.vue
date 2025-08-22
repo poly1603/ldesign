@@ -93,7 +93,11 @@ function formatTimestamp(ts) {
     <h3>📍 地理位置</h3>
 
     <div v-if="!isLoaded" class="loading-state">
-      <button class="load-btn" :disabled="loading" @click="loadGeolocationModule">
+      <button
+        class="load-btn"
+        :disabled="loading"
+        @click="loadGeolocationModule"
+      >
         {{ loading ? '加载中...' : '📍 获取位置信息' }}
       </button>
       <p class="note">
@@ -115,11 +119,15 @@ function formatTimestamp(ts) {
       <div class="coordinates">
         <div class="coord-item">
           <span class="coord-label">纬度:</span>
-          <span class="coord-value">{{ formatCoordinate(position?.latitude) }}</span>
+          <span class="coord-value">{{
+            formatCoordinate(position?.latitude)
+          }}</span>
         </div>
         <div class="coord-item">
           <span class="coord-label">经度:</span>
-          <span class="coord-value">{{ formatCoordinate(position?.longitude) }}</span>
+          <span class="coord-value">{{
+            formatCoordinate(position?.longitude)
+          }}</span>
         </div>
       </div>
 
@@ -150,7 +158,11 @@ function formatTimestamp(ts) {
     </div>
 
     <div v-if="isLoaded" class="controls">
-      <button class="refresh-btn" :disabled="loading" @click="getCurrentPosition">
+      <button
+        class="refresh-btn"
+        :disabled="loading"
+        @click="getCurrentPosition"
+      >
         {{ loading ? '获取中...' : '🔄 刷新位置' }}
       </button>
       <button class="unload-btn" @click="unloadModule">

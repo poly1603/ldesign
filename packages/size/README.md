@@ -10,11 +10,11 @@
 ## ✨ 特性
 
 - 🚀 **开箱即用** - 零配置快速上手，一行代码启用尺寸缩放
-- 🎨 **动态CSS变量** - 智能生成完整的CSS变量系统，覆盖字体、间距、组件尺寸等
-- 🔧 **框架无关** - 支持原生JS、React、Angular等所有前端框架
-- 💎 **Vue生态完整支持** - 提供Plugin、Composition API、组件等多种使用方式
+- 🎨 **动态 CSS 变量** - 智能生成完整的 CSS 变量系统，覆盖字体、间距、组件尺寸等
+- 🔧 **框架无关** - 支持原生 JS、React、Angular 等所有前端框架
+- 💎 **Vue 生态完整支持** - 提供 Plugin、Composition API、组件等多种使用方式
 - 📱 **响应式友好** - 完美适配移动端，支持多种尺寸模式切换
-- 🎯 **TypeScript优先** - 完整的类型定义，零TS错误，极佳的开发体验
+- 🎯 **TypeScript 优先** - 完整的类型定义，零 TS 错误，极佳的开发体验
 - ⚡ **性能优化** - 轻量级设计，运行时开销极小
 - 🛠️ **高度可定制** - 支持自定义前缀、选择器、配置等
 
@@ -42,7 +42,7 @@ import { globalSizeManager } from '@ldesign/size'
 globalSizeManager.setMode('large')
 
 // 监听尺寸变化
-globalSizeManager.onSizeChange((event) => {
+globalSizeManager.onSizeChange(event => {
   console.log('尺寸变化:', event.currentMode)
 })
 ```
@@ -60,7 +60,7 @@ const app = createApp(App)
 // 安装插件
 app.use(VueSizePlugin, {
   defaultMode: 'medium',
-  autoInject: true
+  autoInject: true,
 })
 
 app.mount('#app')
@@ -90,30 +90,25 @@ const { currentMode, setMode } = useSize()
 
 支持四种内置尺寸模式，每种模式都有完整的设计规范：
 
-| 模式 | 描述 | 基础字体 | 基础间距 | 适用场景 |
-|------|------|----------|----------|----------|
-| `small` | 小尺寸 | 12px | 8px | 移动端、紧凑布局 |
-| `medium` | 中等尺寸 | 16px | 16px | 桌面端标准 |
-| `large` | 大尺寸 | 18px | 20px | 大屏显示、老年友好 |
-| `extra-large` | 超大尺寸 | 20px | 24px | 超大屏、演示模式 |
+| 模式          | 描述     | 基础字体 | 基础间距 | 适用场景           |
+| ------------- | -------- | -------- | -------- | ------------------ |
+| `small`       | 小尺寸   | 12px     | 8px      | 移动端、紧凑布局   |
+| `medium`      | 中等尺寸 | 16px     | 16px     | 桌面端标准         |
+| `large`       | 大尺寸   | 18px     | 20px     | 大屏显示、老年友好 |
+| `extra-large` | 超大尺寸 | 20px     | 24px     | 超大屏、演示模式   |
 
 ## 🛠️ API 文档
 
 ### 核心 API
 
 ```typescript
-import {
-  createSizeManager,
-  globalSizeManager,
-  getSizeConfig,
-  type SizeMode
-} from '@ldesign/size'
+import { createSizeManager, globalSizeManager, getSizeConfig, type SizeMode } from '@ldesign/size'
 
 // 创建管理器
 const manager = createSizeManager({
   defaultMode: 'medium',
   prefix: '--ls',
-  autoInject: true
+  autoInject: true,
 })
 
 // 基础操作
@@ -126,12 +121,7 @@ manager.generateCSSVariables() // 生成CSS变量
 ### Vue API
 
 ```typescript
-import {
-  useSize,
-  useSizeResponsive,
-  SizeSwitcher,
-  SizeIndicator
-} from '@ldesign/size/vue'
+import { useSize, useSizeResponsive, SizeSwitcher, SizeIndicator } from '@ldesign/size/vue'
 
 // Composition API
 const { currentMode, setMode, nextMode } = useSize()
@@ -141,23 +131,27 @@ const { isSmall, isMedium, isLarge } = useSizeResponsive()
 ## 🎯 使用场景
 
 ### 1. 无障碍访问
+
 为视力不佳的用户提供大字体模式，提升网站可访问性。
 
 ### 2. 多设备适配
+
 根据设备屏幕大小自动调整界面尺寸，提供最佳用户体验。
 
 ### 3. 用户偏好
+
 让用户根据个人喜好选择合适的界面尺寸。
 
 ### 4. 演示模式
+
 在演示或展示时使用大尺寸模式，确保内容清晰可见。
 
 ## 📱 示例项目
 
 我们提供了完整的示例项目来展示各种使用方式：
 
-- **Vue 示例**: `examples/vue/` - 展示在Vue项目中的完整使用方式
-- **原生JS示例**: `examples/vanilla/` - 展示在纯JavaScript环境中的使用方式
+- **Vue 示例**: `examples/vue/` - 展示在 Vue 项目中的完整使用方式
+- **原生 JS 示例**: `examples/vanilla/` - 展示在纯 JavaScript 环境中的使用方式
 
 ```bash
 # 运行Vue示例
@@ -173,7 +167,7 @@ pnpm dev
 
 ## 🔧 高级配置
 
-### 自定义CSS变量前缀
+### 自定义 CSS 变量前缀
 
 ```javascript
 const manager = createSizeManager({
@@ -196,7 +190,7 @@ const customConfig = {
   spacing: {
     base: '20px',
     // ... 其他配置
-  }
+  },
 }
 
 // 使用自定义配置（需要扩展功能）
@@ -236,7 +230,7 @@ pnpm build
 ## 🔗 相关链接
 
 - [完整文档](./docs/README.md)
-- [API参考](./docs/api/README.md)
+- [API 参考](./docs/api/README.md)
 - [最佳实践](./docs/best-practices/README.md)
 - [更新日志](./CHANGELOG.md)
 - [问题反馈](https://github.com/ldesign/ldesign/issues)
@@ -254,7 +248,6 @@ pnpm build
 - 🎯 **类型安全** - 完整的 TypeScript 支持
 - 📦 **轻量级** - 最小化的包体积
 - 🔧 **易于使用** - 简洁的 API 设计
-
 
 ## 安装
 
@@ -275,8 +268,6 @@ import { size } from '@ldesign/size'
 
 size()
 ```
-
-
 
 ## API 文档
 

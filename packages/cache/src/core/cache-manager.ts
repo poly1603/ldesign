@@ -1,18 +1,18 @@
 import type {
-  CacheOptions,
-  ICacheManager,
-  IStorageEngine,
-  CacheMetadata,
-  CacheStats,
-  SetOptions,
-  StorageEngine,
   CacheEvent,
   CacheEventListener,
   CacheEventType,
+  CacheMetadata,
+  CacheOptions,
+  CacheStats,
+  ICacheManager,
+  IStorageEngine,
+  SetOptions,
+  StorageEngine,
 } from '../types'
 import { StorageEngineFactory } from '../engines/factory'
-import { StorageStrategy } from '../strategies/storage-strategy'
 import { SecurityManager } from '../security/security-manager'
+import { StorageStrategy } from '../strategies/storage-strategy'
 import { EventEmitter } from '../utils'
 
 /**
@@ -23,8 +23,9 @@ export class CacheManager implements ICacheManager {
   private strategy: StorageStrategy
   private security: SecurityManager
   private eventEmitter: EventEmitter<CacheEvent>
-  private stats: Map<StorageEngine, { hits: number; misses: number }> =
-    new Map()
+  private stats: Map<StorageEngine, { hits: number, misses: number }>
+    = new Map()
+
   private cleanupTimer?: number
   private initialized: boolean = false
   private initPromise: Promise<void> | null = null
@@ -63,13 +64,14 @@ export class CacheManager implements ICacheManager {
       try {
         const engine = await StorageEngineFactory.create(
           engineType,
-          this.options.engines?.[engineType]
+          this.options.engines?.[engineType],
         )
         if (engine.available) {
           this.engines.set(engineType, engine)
           this.stats.set(engineType, { hits: 0, misses: 0 })
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to initialize ${engineType} engine:`, error)
       }
     }
@@ -94,7 +96,7 @@ export class CacheManager implements ICacheManager {
   private async selectEngine(
     key: string,
     value: any,
-    options?: SetOptions
+    options?: SetOptions,
   ): Promise<IStorageEngine> {
     if (options?.engine) {
       const engine = this.engines.get(options.engine)
@@ -122,16 +124,17 @@ export class CacheManager implements ICacheManager {
       // 调试输出策略选择结果
       if (this.options.debug) {
         console.log(
-          `[CacheManager] Strategy selected engine: ${result.engine}, reason: ${result.reason}, confidence: ${result.confidence}`
+          `[CacheManager] Strategy selected engine: ${result.engine}, reason: ${result.reason}, confidence: ${result.confidence}`,
         )
       }
 
       const engine = this.engines.get(result.engine)
       if (engine) {
         return engine
-      } else {
+      }
+      else {
         console.warn(
-          `[CacheManager] Strategy selected engine ${result.engine} is not available, falling back to default`
+          `[CacheManager] Strategy selected engine ${result.engine} is not available, falling back to default`,
         )
       }
     }
@@ -141,7 +144,7 @@ export class CacheManager implements ICacheManager {
     const engine = this.engines.get(defaultEngine)
     if (!engine) {
       throw new Error(
-        `Default storage engine ${defaultEngine} is not available`
+        `Default storage engine ${defaultEngine} is not available`,
       )
     }
     return engine
@@ -193,7 +196,7 @@ export class CacheManager implements ICacheManager {
    */
   private async serializeValue(
     value: any,
-    options?: SetOptions
+    options?: SetOptions,
   ): Promise<string> {
     let serialized = JSON.stringify(value)
 
@@ -210,7 +213,7 @@ export class CacheManager implements ICacheManager {
    */
   private async deserializeValue<T>(
     data: string,
-    encrypted: boolean
+    encrypted: boolean,
   ): Promise<T> {
     let deserialized = data
 
@@ -228,7 +231,7 @@ export class CacheManager implements ICacheManager {
   private createMetadata(
     value: any,
     engine: StorageEngine,
-    options?: SetOptions
+    options?: SetOptions,
   ): CacheMetadata {
     const now = Date.now()
     const serialized = JSON.stringify(value)
@@ -250,11 +253,16 @@ export class CacheManager implements ICacheManager {
    * 获取数据类型
    */
   private getDataType(value: any): import('../types').DataType {
-    if (value === null || value === undefined) return 'string'
-    if (typeof value === 'string') return 'string'
-    if (typeof value === 'number') return 'number'
-    if (typeof value === 'boolean') return 'boolean'
-    if (Array.isArray(value)) return 'array'
+    if (value === null || value === undefined)
+      return 'string'
+    if (typeof value === 'string')
+      return 'string'
+    if (typeof value === 'number')
+      return 'number'
+    if (typeof value === 'boolean')
+      return 'boolean'
+    if (Array.isArray(value))
+      return 'array'
     if (value instanceof ArrayBuffer || value instanceof Uint8Array)
       return 'binary'
     return 'object'
@@ -268,7 +276,7 @@ export class CacheManager implements ICacheManager {
     key: string,
     engine: StorageEngine,
     value?: T,
-    error?: Error
+    error?: Error,
   ): void {
     const event: CacheEvent<T> = {
       type,
@@ -299,7 +307,7 @@ export class CacheManager implements ICacheManager {
       dataSize: number
       dataType: string
       ttl?: number
-    }
+    },
   ): void {
     const event: CacheEvent<T> = {
       type: 'strategy',
@@ -323,7 +331,7 @@ export class CacheManager implements ICacheManager {
   async set<T = any>(
     key: string,
     value: T,
-    options?: SetOptions
+    options?: SetOptions,
   ): Promise<void> {
     await this.ensureInitialized()
 
@@ -344,7 +352,8 @@ export class CacheManager implements ICacheManager {
       await engine.setItem(processedKey, itemData, options?.ttl)
 
       this.emitEvent('set', key, engine.name, value)
-    } catch (error) {
+    }
+    catch (error) {
       this.emitEvent('error', key, 'memory', value, error as Error)
       throw error
     }
@@ -382,13 +391,14 @@ export class CacheManager implements ICacheManager {
           // 反序列化值
           const deserializedValue = await this.deserializeValue<T>(
             value,
-            metadata.encrypted
+            metadata.encrypted,
           )
 
           this.emitEvent('get', key, engineType, deserializedValue)
           return deserializedValue
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Error getting from ${engineType}:`, error)
       }
     }
@@ -414,7 +424,8 @@ export class CacheManager implements ICacheManager {
       try {
         await engine.removeItem(processedKey)
         this.emitEvent('remove', key, engineType)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Error removing from ${engineType}:`, error)
       }
     }
@@ -430,12 +441,14 @@ export class CacheManager implements ICacheManager {
         await storageEngine.clear()
         this.emitEvent('clear', '*', engine)
       }
-    } else {
+    }
+    else {
       for (const [engineType, storageEngine] of this.engines) {
         try {
           await storageEngine.clear()
           this.emitEvent('clear', '*', engineType)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Error clearing ${engineType}:`, error)
         }
       }
@@ -465,10 +478,11 @@ export class CacheManager implements ICacheManager {
         try {
           const engineKeys = await storageEngine.keys()
           const processedKeys = await Promise.all(
-            engineKeys.map(k => this.unprocessKey(k))
+            engineKeys.map(k => this.unprocessKey(k)),
           )
           allKeys.push(...processedKeys)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Error getting keys from ${storageEngine.name}:`, error)
         }
       }
@@ -490,7 +504,8 @@ export class CacheManager implements ICacheManager {
           const { metadata } = JSON.parse(itemData)
           return metadata
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Error getting metadata from ${engine.name}:`, error)
       }
     }
@@ -502,13 +517,13 @@ export class CacheManager implements ICacheManager {
    * 获取缓存统计信息
    */
   async getStats(): Promise<CacheStats> {
-    const engineStats: Record<StorageEngine, import('../types').EngineStats> =
-      {} as any
+    const engineStats: Record<StorageEngine, import('../types').EngineStats>
+      = {} as any
     let totalItems = 0
     let totalSize = 0
     let totalHits = 0
     let totalRequests = 0
-    let expiredItems = 0
+    const expiredItems = 0
 
     for (const [engineType, engine] of this.engines) {
       const stats = this.stats.get(engineType)!
@@ -545,7 +560,8 @@ export class CacheManager implements ICacheManager {
     for (const [engineType, engine] of this.engines) {
       try {
         await engine.cleanup()
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Error cleaning up ${engineType}:`, error)
       }
     }

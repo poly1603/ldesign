@@ -4,7 +4,7 @@
 
 ## 特性
 
-- 🔐 **全面的加密算法支持**: AES、RSA、MD5、SHA系列、Base64、HMAC等
+- 🔐 **全面的加密算法支持**: AES、RSA、MD5、SHA 系列、Base64、HMAC 等
 - 🚀 **高性能**: 优化的算法实现，适合生产环境使用
 - 🎯 **框架无关**: 可在任何 JavaScript 环境中使用
 - 🔧 **Vue 3 深度集成**: 提供 Composition API hooks 和插件
@@ -63,9 +63,9 @@ export default {
     }
 
     return {
-      handleEncrypt
+      handleEncrypt,
     }
-  }
+  },
 }
 ```
 
@@ -84,7 +84,7 @@ export default {
   mounted() {
     const encrypted = this.$crypto.encrypt.aes('data', 'key')
     console.log(encrypted)
-  }
+  },
 }
 ```
 

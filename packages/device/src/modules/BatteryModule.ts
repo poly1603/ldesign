@@ -32,17 +32,16 @@ export class BatteryModule implements DeviceModule {
 
     try {
       // 获取电池 API
-      this.battery = await safeNavigatorAccess(
-        async (nav) => {
-          if ('getBattery' in nav && nav.getBattery) {
-            return await nav.getBattery()
-          }
-          // 降级到旧版本的 API
-          const navAny = nav as unknown as Record<string, unknown>
-          return (navAny.battery || navAny.mozBattery || navAny.webkitBattery) as BatteryManager | null
-        },
-        null,
-      )
+      this.battery = await safeNavigatorAccess(async (nav) => {
+        if ('getBattery' in nav && nav.getBattery) {
+          return await nav.getBattery()
+        }
+        // 降级到旧版本的 API
+        const navAny = nav as unknown as Record<string, unknown>
+        return (navAny.battery
+          || navAny.mozBattery
+          || navAny.webkitBattery) as BatteryManager | null
+      }, null)
 
       if (this.battery) {
         this.updateBatteryInfo()
@@ -198,7 +197,12 @@ export class BatteryModule implements DeviceModule {
     if (!this.battery || typeof this.battery.addEventListener !== 'function')
       return
 
-    const events = ['chargingchange', 'levelchange', 'chargingtimechange', 'dischargingtimechange']
+    const events = [
+      'chargingchange',
+      'levelchange',
+      'chargingtimechange',
+      'dischargingtimechange',
+    ]
 
     events.forEach((event) => {
       const handler = () => {

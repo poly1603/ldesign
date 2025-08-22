@@ -16,7 +16,7 @@ setGlobalConfig({
     keySize: 256, // 默认密钥长度
     mode: 'CBC', // 默认加密模式
     padding: 'Pkcs7', // 填充方式
-    encoding: 'hex' // 输出编码
+    encoding: 'hex', // 输出编码
   },
 
   // RSA 配置
@@ -24,21 +24,21 @@ setGlobalConfig({
     keySize: 2048, // 默认密钥长度
     keyFormat: 'pem', // 密钥格式
     padding: 'OAEP', // 填充方式
-    hashAlgorithm: 'SHA256' // 哈希算法
+    hashAlgorithm: 'SHA256', // 哈希算法
   },
 
   // 哈希配置
   hash: {
     algorithm: 'SHA256', // 默认哈希算法
     encoding: 'hex', // 输出编码
-    iterations: 1000 // PBKDF2 迭代次数
+    iterations: 1000, // PBKDF2 迭代次数
   },
 
   // 编码配置
   encoding: {
     charset: 'utf8', // 字符编码
-    urlSafe: false // Base64 URL 安全模式
-  }
+    urlSafe: false, // Base64 URL 安全模式
+  },
 })
 ```
 
@@ -49,12 +49,12 @@ setGlobalConfig({
 const baseConfig = {
   aes: {
     keySize: 256,
-    mode: 'CBC'
+    mode: 'CBC',
   },
   rsa: {
     keySize: 2048,
-    keyFormat: 'pem'
-  }
+    keyFormat: 'pem',
+  },
 }
 
 export const cryptoConfigs = {
@@ -63,10 +63,10 @@ export const cryptoConfigs = {
     // 开发环境：优化性能
     aes: {
       ...baseConfig.aes,
-      keySize: 128 // 使用较小的密钥提高开发速度
+      keySize: 128, // 使用较小的密钥提高开发速度
     },
     debug: true,
-    strictValidation: false
+    strictValidation: false,
   },
 
   production: {
@@ -74,14 +74,14 @@ export const cryptoConfigs = {
     // 生产环境：最高安全性
     aes: {
       ...baseConfig.aes,
-      keySize: 256
+      keySize: 256,
     },
     rsa: {
       ...baseConfig.rsa,
-      keySize: 4096 // 使用更大的密钥
+      keySize: 4096, // 使用更大的密钥
     },
     debug: false,
-    strictValidation: true
+    strictValidation: true,
   },
 
   test: {
@@ -89,11 +89,11 @@ export const cryptoConfigs = {
     // 测试环境：快速执行
     aes: {
       ...baseConfig.aes,
-      keySize: 128
+      keySize: 128,
     },
     debug: false,
-    strictValidation: true
-  }
+    strictValidation: true,
+  },
 }
 
 // 根据环境加载配置
@@ -114,8 +114,8 @@ console.log('当前配置:', currentConfig)
 // 动态更新配置
 updateGlobalConfig({
   aes: {
-    keySize: 192 // 只更新 AES 密钥长度
-  }
+    keySize: 192, // 只更新 AES 密钥长度
+  },
 })
 resetGlobalConfig()
 ```
@@ -133,7 +133,7 @@ const encrypted = encrypt.aes(data, key, {
   mode: 'CBC', // 加密模式：CBC, ECB, CFB, OFB, CTR
   padding: 'Pkcs7', // 填充方式：Pkcs7, NoPadding
   iv: 'custom-iv', // 自定义初始化向量
-  encoding: 'base64' // 输出编码：hex, base64
+  encoding: 'base64', // 输出编码：hex, base64
 })
 
 // 方式2：创建配置对象
@@ -141,7 +141,7 @@ const aesConfig = {
   keySize: 256,
   mode: 'GCM', // 认证加密模式
   tagLength: 128, // GCM 标签长度
-  additionalData: 'metadata' // 附加认证数据
+  additionalData: 'metadata', // 附加认证数据
 }
 
 const encrypted = encrypt.aes(data, key, aesConfig)
@@ -157,14 +157,14 @@ const keyPair = rsa.generateKeyPair(2048, {
   keyFormat: 'pem', // 密钥格式：pem, der
   publicKeyEncoding: {
     type: 'spki',
-    format: 'pem'
+    format: 'pem',
   },
   privateKeyEncoding: {
     type: 'pkcs8',
     format: 'pem',
     cipher: 'aes256', // 私钥加密算法
-    passphrase: 'secret' // 私钥密码
-  }
+    passphrase: 'secret', // 私钥密码
+  },
 })
 
 // 加密配置
@@ -172,7 +172,7 @@ const encrypted = encrypt.rsa(data, publicKey, {
   padding: 'OAEP', // 填充方式：OAEP, PKCS1
   hashAlgorithm: 'SHA256', // 哈希算法
   mgf: 'MGF1', // 掩码生成函数
-  saltLength: 32 // 盐值长度
+  saltLength: 32, // 盐值长度
 })
 ```
 
@@ -185,14 +185,14 @@ import { hash } from '@ldesign/crypto'
 const hashValue = hash.sha256(data, {
   encoding: 'hex', // 输出编码：hex, base64, binary
   iterations: 1, // 迭代次数
-  salt: 'custom-salt' // 自定义盐值
+  salt: 'custom-salt', // 自定义盐值
 })
 
 // PBKDF2 配置
 const derivedKey = hash.pbkdf2(password, salt, {
   iterations: 10000, // 迭代次数
   keyLength: 32, // 输出密钥长度
-  hashAlgorithm: 'SHA256' // 哈希算法
+  hashAlgorithm: 'SHA256', // 哈希算法
 })
 
 // Scrypt 配置
@@ -200,7 +200,7 @@ const scryptKey = hash.scrypt(password, salt, {
   N: 16384, // CPU/内存成本参数
   r: 8, // 块大小参数
   p: 1, // 并行化参数
-  keyLength: 32 // 输出密钥长度
+  keyLength: 32, // 输出密钥长度
 })
 ```
 
@@ -245,8 +245,8 @@ app.use(CryptoPlugin, {
 
     // 调试配置
     enableLogs: process.env.NODE_ENV === 'development',
-    logLevel: 'info'
-  }
+    logLevel: 'info',
+  },
 })
 ```
 
@@ -272,7 +272,7 @@ const crypto = useCrypto({
 
   // 性能配置
   enableWorker: false,
-  batchSize: 10
+  batchSize: 10,
 })
 ```
 
@@ -295,10 +295,10 @@ registerAlgorithm('CUSTOM_AES', {
     return customDecrypt(encryptedData, key, options)
   },
 
-  generateKey: (keySize) => {
+  generateKey: keySize => {
     // 自定义密钥生成
     return customGenerateKey(keySize)
-  }
+  },
 })
 
 // 使用自定义算法
@@ -351,7 +351,7 @@ setPerformanceConfig({
     enabled: true,
     maxWorkers: navigator.hardwareConcurrency || 4,
     taskTimeout: 30000,
-    workerScript: '/crypto-worker.js'
+    workerScript: '/crypto-worker.js',
   },
 
   // 缓存配置
@@ -359,22 +359,22 @@ setPerformanceConfig({
     enabled: true,
     maxSize: 1000,
     ttl: 300000, // 5分钟
-    strategy: 'lru' // LRU 策略
+    strategy: 'lru', // LRU 策略
   },
 
   // 批处理配置
   batch: {
     enabled: true,
     maxBatchSize: 100,
-    batchTimeout: 1000 // 1秒
+    batchTimeout: 1000, // 1秒
   },
 
   // 内存管理
   memory: {
     autoCleanup: true,
     cleanupInterval: 60000, // 1分钟
-    maxMemoryUsage: 100 * 1024 * 1024 // 100MB
-  }
+    maxMemoryUsage: 100 * 1024 * 1024, // 100MB
+  },
 })
 ```
 
@@ -388,11 +388,11 @@ import { validateConfig } from '@ldesign/crypto'
 const config = {
   aes: {
     keySize: 256,
-    mode: 'CBC'
+    mode: 'CBC',
   },
   rsa: {
-    keySize: 2048
-  }
+    keySize: 2048,
+  },
 }
 
 // 验证配置
@@ -410,7 +410,7 @@ if (!validation.valid) {
 import { addConfigValidator } from '@ldesign/crypto'
 
 // 添加自定义验证规则
-addConfigValidator('aes.keySize', (value) => {
+addConfigValidator('aes.keySize', value => {
   const validSizes = [128, 192, 256]
   if (!validSizes.includes(value)) {
     return `AES 密钥长度必须是 ${validSizes.join(', ')} 之一`
@@ -418,7 +418,7 @@ addConfigValidator('aes.keySize', (value) => {
   return null
 })
 
-addConfigValidator('rsa.keySize', (value) => {
+addConfigValidator('rsa.keySize', value => {
   if (value < 1024) {
     return 'RSA 密钥长度不能小于 1024 位'
   }
@@ -440,32 +440,32 @@ export default {
   base: {
     aes: { keySize: 256, mode: 'CBC' },
     rsa: { keySize: 2048, keyFormat: 'pem' },
-    hash: { algorithm: 'SHA256', encoding: 'hex' }
+    hash: { algorithm: 'SHA256', encoding: 'hex' },
   },
 
   // 环境覆盖
   environments: {
     development: {
       aes: { keySize: 128 },
-      debug: true
+      debug: true,
     },
     production: {
       rsa: { keySize: 4096 },
-      strictMode: true
-    }
+      strictMode: true,
+    },
   },
 
   // 功能特定配置
   features: {
     vue: {
       globalPropertyName: '$crypto',
-      registerComposables: true
+      registerComposables: true,
     },
     performance: {
       enableCache: true,
-      enableWorker: true
-    }
-  }
+      enableWorker: true,
+    },
+  },
 }
 ```
 
@@ -489,7 +489,7 @@ export class ConfigLoader {
     return {
       ...defaultConfig.base,
       ...envConfig,
-      ...defaultConfig.features
+      ...defaultConfig.features,
     }
   }
 
@@ -511,8 +511,7 @@ export class ConfigLoader {
     const keys = path.split('.')
     const lastKey = keys.pop()!
     const target = keys.reduce((current, key) => {
-      if (!current[key])
-        current[key] = {}
+      if (!current[key]) current[key] = {}
       return current[key]
     }, obj)
     target[lastKey] = value
@@ -524,4 +523,5 @@ const configLoader = new ConfigLoader()
 const aesKeySize = configLoader.get('aes.keySize', 256)
 ```
 
-通过这些配置选项，您可以根据项目需求灵活地自定义 @ldesign/crypto 的行为，确保在不同环境和场景下都能获得最佳的性能和安全性。
+通过这些配置选项，您可以根据项目需求灵活地自定义 @ldesign/crypto 的行为，确保在不同环境和场景下都能
+获得最佳的性能和安全性。

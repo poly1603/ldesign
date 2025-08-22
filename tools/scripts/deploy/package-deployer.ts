@@ -54,13 +54,20 @@ function validatePackageBuild(packageName: string): void {
   }
 
   // 检查 package.json 配置
-  const packageJson = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8'))
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8'),
+  )
 
   if (!packageJson.name || !packageJson.version) {
     throw new Error(`❌ ${packageName}: package.json 缺少必要字段`)
   }
 
-  if (!packageJson.exports || !packageJson.main || !packageJson.module || !packageJson.types) {
+  if (
+    !packageJson.exports
+    || !packageJson.main
+    || !packageJson.module
+    || !packageJson.types
+  ) {
     throw new Error(`❌ ${packageName}: package.json 缺少导出配置`)
   }
 
@@ -166,7 +173,9 @@ function generateCdnLinks(packageName: string, version: string): void {
 
 \`\`\`javascript
 // ES 模块
-import { ${toCamelCase(packageName)} } from 'https://cdn.jsdelivr.net/npm/@ldesign/${packageName}@latest/es/index.js'
+import { ${toCamelCase(
+  packageName,
+)} } from 'https://cdn.jsdelivr.net/npm/@ldesign/${packageName}@latest/es/index.js'
 \`\`\`
 `
 
@@ -177,7 +186,9 @@ import { ${toCamelCase(packageName)} } from 'https://cdn.jsdelivr.net/npm/@ldesi
 /**
  * 部署单个包
  */
-export async function deployPackage(options: PackageDeployOptions): Promise<void> {
+export async function deployPackage(
+  options: PackageDeployOptions,
+): Promise<void> {
   const {
     packageName,
     version,
@@ -201,7 +212,9 @@ export async function deployPackage(options: PackageDeployOptions): Promise<void
     }
 
     // 获取包版本
-    const packageJson = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8'))
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(packageDir, 'package.json'), 'utf-8'),
+    )
     const packageVersion = version || packageJson.version
 
     if (dryRun) {
@@ -214,9 +227,10 @@ export async function deployPackage(options: PackageDeployOptions): Promise<void
 
     // 发布到 npm
     console.log('📤 发布到 npm...')
-    const publishCommand = tag === 'latest'
-      ? 'npm publish --access public'
-      : `npm publish --access public --tag ${tag}`
+    const publishCommand
+      = tag === 'latest'
+        ? 'npm publish --access public'
+        : `npm publish --access public --tag ${tag}`
 
     execSync(publishCommand, {
       cwd: packageDir,
@@ -239,13 +253,18 @@ export async function deployPackage(options: PackageDeployOptions): Promise<void
 /**
  * 部署所有包
  */
-export async function deployAllPackages(options: Omit<PackageDeployOptions, 'packageName'> = {}): Promise<void> {
+export async function deployAllPackages(
+  options: Omit<PackageDeployOptions, 'packageName'> = {},
+): Promise<void> {
   console.log('🚀 开始部署所有包...\n')
 
   const packagesDir = path.resolve(__dirname, '../../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
-    return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
+    return (
+      fs.statSync(packagePath).isDirectory()
+      && fs.existsSync(path.join(packagePath, 'package.json'))
+    )
   })
 
   for (const packageName of packages) {
@@ -272,7 +291,9 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
 
   if (args.length === 0) {
     console.log('用法:')
-    console.log('  tsx tools/deploy/package-deployer.ts <package-name> [options]')
+    console.log(
+      '  tsx tools/deploy/package-deployer.ts <package-name> [options]',
+    )
     console.log('  tsx tools/deploy/package-deployer.ts all [options]')
     console.log('')
     console.log('选项:')
@@ -287,7 +308,9 @@ if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
   const options: PackageDeployOptions = {
     packageName,
     tag: args.includes('--tag') ? args[args.indexOf('--tag') + 1] : 'latest',
-    version: args.includes('--version') ? args[args.indexOf('--version') + 1] : undefined,
+    version: args.includes('--version')
+      ? args[args.indexOf('--version') + 1]
+      : undefined,
     dryRun: args.includes('--dry-run'),
     skipValidation: args.includes('--skip-validation'),
   }

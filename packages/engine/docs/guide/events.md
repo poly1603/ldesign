@@ -28,7 +28,7 @@ import App from './App.vue'
 const engine = createApp(App)
 
 // 监听事件
-engine.events.on('user:login', userData => {
+engine.events.on('user:login', (userData) => {
   console.log('用户登录:', userData)
   // 更新UI状态
   engine.state.set('currentUser', userData)
@@ -105,12 +105,12 @@ engine.events.on('app:unmounted', () => {
 
 ```typescript
 // 插件注册
-engine.events.on('plugin:registered', plugin => {
+engine.events.on('plugin:registered', (plugin) => {
   console.log('插件已注册:', plugin.name)
 })
 
 // 插件卸载
-engine.events.on('plugin:unregistered', pluginName => {
+engine.events.on('plugin:unregistered', (pluginName) => {
   console.log('插件已卸载:', pluginName)
 })
 ```
@@ -133,7 +133,7 @@ engine.events.on('state:removed', ({ key, value }) => {
 
 ```typescript
 // 全局错误
-engine.events.on('error:global', error => {
+engine.events.on('error:global', (error) => {
   console.error('全局错误:', error)
   // 发送错误报告
   sendErrorReport(error)
@@ -170,7 +170,7 @@ engine.events.on('ui:notification:shown', handleNotificationShown)
 
 ```typescript
 // 异步事件处理
-engine.events.on('data:save', async data => {
+engine.events.on('data:save', async (data) => {
   try {
     // 异步保存数据
     await saveToDatabase(data)
@@ -178,7 +178,8 @@ engine.events.on('data:save', async data => {
 
     // 发送成功事件
     engine.events.emit('data:saved', data)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('数据保存失败:', error)
 
     // 发送错误事件
@@ -192,7 +193,7 @@ engine.events.on('data:save', async data => {
 ```typescript
 // 创建Promise来等待事件
 function waitForEvent<T>(eventName: string): Promise<T> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     engine.events.once(eventName, resolve)
   })
 }
@@ -230,7 +231,7 @@ const adminUserFilter = createEventFilter<User>(user => user.role === 'admin')
 
 engine.events.on(
   'user:action',
-  adminUserFilter(user => {
+  adminUserFilter((user) => {
     console.log('管理员操作:', user)
   })
 )
@@ -240,7 +241,7 @@ engine.events.on(
 
 ```typescript
 // 事件数据转换
-engine.events.on('api:response', response => {
+engine.events.on('api:response', (response) => {
   // 转换API响应为应用数据格式
   const transformedData = transformApiResponse(response)
 
@@ -269,7 +270,7 @@ if (engine.config.debug) {
 // 事件统计
 const eventStats = new Map<string, number>()
 
-engine.events.on('*', eventName => {
+engine.events.on('*', (eventName) => {
   const count = eventStats.get(eventName) || 0
   eventStats.set(eventName, count + 1)
 })
@@ -300,10 +301,11 @@ engine.events.emit('event1', data)
 
 ```typescript
 // 在事件处理器中进行错误处理
-engine.events.on('data:process', async data => {
+engine.events.on('data:process', async (data) => {
   try {
     await processData(data)
-  } catch (error) {
+  }
+  catch (error) {
     // 不要让错误传播到事件系统
     engine.logger.error('数据处理失败:', error)
     engine.events.emit('data:process:error', { data, error })
@@ -364,10 +366,10 @@ engine.events.emit(USER_EVENTS.LOGIN, userData)
 ```typescript
 // 定义事件类型
 interface EventMap {
-  'user:login': { id: number; name: string; email: string }
+  'user:login': { id: number, name: string, email: string }
   'user:logout': { id: number }
-  'data:loaded': { type: string; data: any[] }
-  'error:occurred': { message: string; stack?: string }
+  'data:loaded': { type: string, data: any[] }
+  'error:occurred': { message: string, stack?: string }
 }
 
 // 类型安全的事件发送
@@ -457,7 +459,7 @@ class EventAggregator {
   batch(eventName: string, batchSize: number, timeout: number) {
     return {
       on: (handler: (events: any[]) => void) => {
-        this.engine.events.on(eventName, data => {
+        this.engine.events.on(eventName, (data) => {
           const events = this.events.get(eventName) || []
           events.push(data)
           this.events.set(eventName, events)
@@ -465,7 +467,8 @@ class EventAggregator {
           // 达到批量大小，立即处理
           if (events.length >= batchSize) {
             this.processBatch(eventName, handler)
-          } else {
+          }
+          else {
             // 设置超时处理
             this.resetTimer(eventName, timeout, handler)
           }
@@ -480,7 +483,7 @@ class EventAggregator {
 
     return {
       on: (handler: (data: any) => void) => {
-        this.engine.events.on(eventName, data => {
+        this.engine.events.on(eventName, (data) => {
           const key = keyExtractor(data)
           if (!seen.has(key)) {
             seen.add(key)
@@ -497,7 +500,7 @@ class EventAggregator {
 
     return {
       on: (handler: (data: any) => void) => {
-        this.engine.events.on(eventName, data => {
+        this.engine.events.on(eventName, (data) => {
           const now = Date.now()
           if (now - lastEmit >= interval) {
             lastEmit = now
@@ -540,7 +543,7 @@ class EventAggregator {
 const aggregator = new EventAggregator(engine)
 
 // 批量处理用户操作
-aggregator.batch('user:action', 10, 1000).on(actions => {
+aggregator.batch('user:action', 10, 1000).on((actions) => {
   console.log('批量处理用户操作:', actions)
   // 批量发送到分析服务
   sendBatchAnalytics(actions)
@@ -549,13 +552,13 @@ aggregator.batch('user:action', 10, 1000).on(actions => {
 // 去重处理错误事件
 aggregator
   .dedupe('error:occurred', error => error.message)
-  .on(error => {
+  .on((error) => {
     console.log('新的错误类型:', error)
     // 只处理新类型的错误
   })
 
 // 节流处理滚动事件
-aggregator.throttle('ui:scroll', 100).on(scrollData => {
+aggregator.throttle('ui:scroll', 100).on((scrollData) => {
   console.log('节流滚动事件:', scrollData)
   // 更新滚动位置
 })
@@ -625,7 +628,7 @@ class EventStore {
   }
 
   // 回放事件
-  async replay(events?: Array<{ name: string; data: any }>, delay = 0) {
+  async replay(events?: Array<{ name: string, data: any }>, delay = 0) {
     const eventsToReplay = events || this.events
 
     for (const event of eventsToReplay) {
@@ -647,7 +650,7 @@ class EventStore {
   }
 
   // 导入事件
-  import(data: { events: any[]; exportTime: number; version: string }) {
+  import(data: { events: any[], exportTime: number, version: string }) {
     this.events = [...this.events, ...data.events]
   }
 
@@ -727,15 +730,15 @@ const orderBus = new DomainEventBus(engine, 'order')
 const paymentBus = orderBus.createSubBus('payment')
 
 // 使用领域事件总线
-userBus.on('registered', user => {
+userBus.on('registered', (user) => {
   console.log('新用户注册:', user)
 })
 
-orderBus.on('created', order => {
+orderBus.on('created', (order) => {
   console.log('订单创建:', order)
 })
 
-paymentBus.on('completed', payment => {
+paymentBus.on('completed', (payment) => {
   console.log('支付完成:', payment)
 })
 
@@ -777,7 +780,7 @@ class EventPool {
 
   private resetEvent(event: any) {
     // 重置事件对象的属性
-    Object.keys(event).forEach(key => {
+    Object.keys(event).forEach((key) => {
       delete event[key]
     })
   }
@@ -818,7 +821,8 @@ class EventBatcher {
     // 达到批处理大小，立即发送
     if (batch.length >= this.batchSize) {
       this.flushBatch(eventName)
-    } else {
+    }
+    else {
       // 设置定时器
       this.resetTimer(eventName)
     }
@@ -856,7 +860,7 @@ class EventBatcher {
 const batcher = new EventBatcher(engine)
 
 // 监听批处理事件
-engine.events.on('analytics:batch', events => {
+engine.events.on('analytics:batch', (events) => {
   console.log('批量发送分析数据:', events)
   // 批量发送到分析服务
 })

@@ -61,7 +61,8 @@ class EnhancedDevServer {
       // 4. 启动包开发服务器
       if (this.options.packages?.length) {
         await this.startPackageServers()
-      } else {
+      }
+      else {
         await this.startMainServer()
       }
 
@@ -75,7 +76,8 @@ class EnhancedDevServer {
 
       console.log(chalk.green('\n✅ 开发环境启动完成!'))
       this.printStatus()
-    } catch (error) {
+    }
+    catch (error) {
       console.error(chalk.red('❌ 启动失败:'), error)
       process.exit(1)
     }
@@ -93,14 +95,15 @@ class EnhancedDevServer {
 
     if (!this.compareVersions(nodeVersion.slice(1), requiredVersion)) {
       throw new Error(
-        `需要 Node.js >= ${requiredVersion}，当前版本: ${nodeVersion}`
+        `需要 Node.js >= ${requiredVersion}，当前版本: ${nodeVersion}`,
       )
     }
 
     // 检查 pnpm
     try {
       execSync('pnpm --version', { stdio: 'pipe' })
-    } catch {
+    }
+    catch {
       throw new Error('未找到 pnpm，请先安装: npm install -g pnpm')
     }
 
@@ -134,12 +137,14 @@ class EnhancedDevServer {
         timeout: 30000,
       })
       console.log(chalk.green('✅ 代码检查通过'))
-    } catch (error) {
+    }
+    catch (error) {
       console.log(chalk.yellow('⚠️ 发现代码问题，尝试自动修复...'))
       try {
         execSync('pnpm lint:fix', { stdio: 'inherit', cwd: rootDir })
         console.log(chalk.green('✅ 代码问题已修复'))
-      } catch {
+      }
+      catch {
         console.log(chalk.red('❌ 代码检查失败，请手动修复'))
       }
     }
@@ -170,7 +175,7 @@ class EnhancedDevServer {
     }
 
     const packageJson = JSON.parse(
-      readFileSync(join(packageDir, 'package.json'), 'utf-8')
+      readFileSync(join(packageDir, 'package.json'), 'utf-8'),
     )
 
     if (!packageJson.scripts?.dev) {
@@ -192,7 +197,7 @@ class EnhancedDevServer {
 
     this.processes.set(`package-${packageName}`, process)
 
-    process.on('error', error => {
+    process.on('error', (error) => {
       console.error(chalk.red(`❌ ${packageName} 启动失败:`), error)
     })
   }
@@ -214,7 +219,7 @@ class EnhancedDevServer {
 
     this.processes.set('main', process)
 
-    process.on('error', error => {
+    process.on('error', (error) => {
       console.error(chalk.red('❌ 主服务器启动失败:'), error)
     })
   }
@@ -232,7 +237,7 @@ class EnhancedDevServer {
 
     this.processes.set('test', process)
 
-    process.on('error', error => {
+    process.on('error', (error) => {
       console.error(chalk.red('❌ 测试监听启动失败:'), error)
     })
   }
@@ -275,9 +280,10 @@ class EnhancedDevServer {
         const port = this.options.port! + index
         console.log(chalk.cyan(`  📦 ${pkg}: http://localhost:${port}`))
       }
-    } else {
+    }
+    else {
       console.log(
-        chalk.cyan(`\n🌐 主服务器: http://localhost:${this.options.port}`)
+        chalk.cyan(`\n🌐 主服务器: http://localhost:${this.options.port}`),
       )
     }
 
@@ -295,8 +301,10 @@ class EnhancedDevServer {
       const v1Part = v1Parts[i] || 0
       const v2Part = v2Parts[i] || 0
 
-      if (v1Part > v2Part) return true
-      if (v1Part < v2Part) return false
+      if (v1Part > v2Part)
+        return true
+      if (v1Part < v2Part)
+        return false
     }
 
     return true

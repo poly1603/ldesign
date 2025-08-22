@@ -54,9 +54,7 @@ export function createRollupConfig(options: RollupConfigOptions = []) {
   function getPlugins(format = 'es') {
     const plugins = [
       alias({
-        entries: [
-          { find: '@', replacement: path.resolve(packagePath, 'src') },
-        ],
+        entries: [{ find: '@', replacement: path.resolve(packagePath, 'src') }],
       }),
       nodeResolve({
         preferBuiltins: false,

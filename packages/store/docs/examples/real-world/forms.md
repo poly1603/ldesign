@@ -1,6 +1,7 @@
 # 大型表单状态管理
 
-本示例展示了如何使用 @ldesign/store 构建复杂的表单状态管理系统，包括多步骤表单、动态字段、验证规则、草稿保存等功能。
+本示例展示了如何使用 @ldesign/store 构建复杂的表单状态管理系统，包括多步骤表单、动态字段、验证规则、
+草稿保存等功能。
 
 ## 系统架构
 
@@ -127,7 +128,7 @@ export class FormStore extends BaseStore {
     this.errors = {}
     this.touched = {}
 
-    fields.forEach((field) => {
+    fields.forEach(field => {
       this.fields[field.name] = field
       this.values[field.name] = field.defaultValue
       this.errors[field.name] = []
@@ -140,8 +141,7 @@ export class FormStore extends BaseStore {
 
   @Action()
   setFieldValue(fieldName: string, value: any) {
-    if (!this.fields[fieldName])
-      return
+    if (!this.fields[fieldName]) return
 
     this.values[fieldName] = value
     this.touched[fieldName] = true
@@ -176,7 +176,7 @@ export class FormStore extends BaseStore {
 
   @Action()
   resetForm() {
-    Object.keys(this.fields).forEach((fieldName) => {
+    Object.keys(this.fields).forEach(fieldName => {
       this.values[fieldName] = this.fields[fieldName].defaultValue
       this.errors[fieldName] = []
       this.touched[fieldName] = false
@@ -190,8 +190,7 @@ export class FormStore extends BaseStore {
   @AsyncAction()
   async validateField(fieldName: string) {
     const field = this.fields[fieldName]
-    if (!field)
-      return
+    if (!field) return
 
     const validationStore = new ValidationStore('validation')
     const errors = await validationStore.validateField(field, this.values[fieldName], this.values)
@@ -212,8 +211,7 @@ export class FormStore extends BaseStore {
 
   @AsyncAction()
   async submitForm() {
-    if (this.submitting)
-      return
+    if (this.submitting) return
 
     this.submitting = true
     this.submitError = null
@@ -236,19 +234,17 @@ export class FormStore extends BaseStore {
       draftStore.clearDraft(this.formId)
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       this.submitError = error instanceof Error ? error.message : '提交失败'
       throw error
-    }
-    finally {
+    } finally {
       this.submitting = false
     }
   }
 
   private processDependencies() {
-    Object.values(this.fields).forEach((field) => {
-      field.dependencies.forEach((dependency) => {
+    Object.values(this.fields).forEach(field => {
+      field.dependencies.forEach(dependency => {
         const dependentValue = this.values[dependency.field]
         const shouldTrigger = this.evaluateCondition(
           dependentValue,
@@ -270,7 +266,9 @@ export class FormStore extends BaseStore {
       case 'not_equals':
         return value !== targetValue
       case 'contains':
-        return Array.isArray(value) ? value.includes(targetValue) : String(value).includes(targetValue)
+        return Array.isArray(value)
+          ? value.includes(targetValue)
+          : String(value).includes(targetValue)
       case 'greater_than':
         return Number(value) > Number(targetValue)
       case 'less_than':
@@ -282,8 +280,7 @@ export class FormStore extends BaseStore {
 
   private applyDependencyAction(fieldName: string, dependency: FieldDependency) {
     const field = this.fields[fieldName]
-    if (!field)
-      return
+    if (!field) return
 
     switch (dependency.action) {
       case 'show':
@@ -344,10 +341,9 @@ export class FormStore extends BaseStore {
   @CachedGetter(['values', 'fields'])
   get completionRate() {
     const requiredFields = this.requiredFields
-    if (requiredFields.length === 0)
-      return 100
+    if (requiredFields.length === 0) return 100
 
-    const completedFields = requiredFields.filter((field) => {
+    const completedFields = requiredFields.filter(field => {
       const value = this.values[field.name]
       return value !== null && value !== undefined && value !== ''
     })
@@ -358,7 +354,7 @@ export class FormStore extends BaseStore {
   @Getter()
   get fieldErrors() {
     const allErrors: ValidationError[] = []
-    Object.values(this.errors).forEach((fieldErrors) => {
+    Object.values(this.errors).forEach(fieldErrors => {
       allErrors.push(...fieldErrors)
     })
     return allErrors
@@ -389,7 +385,7 @@ export class ValidationStore extends BaseStore {
     pattern: '格式不正确',
     email: '请输入有效的邮箱地址',
     phone: '请输入有效的手机号码',
-    url: '请输入有效的网址'
+    url: '请输入有效的网址',
   }
 
   @Action()
@@ -403,7 +399,11 @@ export class ValidationStore extends BaseStore {
   }
 
   @CachedAction(1000)
-  async validateField(field: FormField, value: any, formData: Record<string, any>): Promise<ValidationError[]> {
+  async validateField(
+    field: FormField,
+    value: any,
+    formData: Record<string, any>
+  ): Promise<ValidationError[]> {
     const errors: ValidationError[] = []
 
     for (const rule of field.validation) {
@@ -414,7 +414,7 @@ export class ValidationStore extends BaseStore {
           field: field.name,
           rule: rule.type,
           message: this.formatMessage(rule.message, rule),
-          value
+          value,
         })
       }
     }
@@ -445,38 +445,28 @@ export class ValidationStore extends BaseStore {
   }
 
   private validateRequired(value: any): boolean {
-    if (value === null || value === undefined)
-      return false
-    if (typeof value === 'string')
-      return value.trim().length > 0
-    if (Array.isArray(value))
-      return value.length > 0
+    if (value === null || value === undefined) return false
+    if (typeof value === 'string') return value.trim().length > 0
+    if (Array.isArray(value)) return value.length > 0
     return true
   }
 
   private validateMin(value: any, min: number): boolean {
-    if (typeof value === 'number')
-      return value >= min
-    if (typeof value === 'string')
-      return value.length >= min
-    if (Array.isArray(value))
-      return value.length >= min
+    if (typeof value === 'number') return value >= min
+    if (typeof value === 'string') return value.length >= min
+    if (Array.isArray(value)) return value.length >= min
     return true
   }
 
   private validateMax(value: any, max: number): boolean {
-    if (typeof value === 'number')
-      return value <= max
-    if (typeof value === 'string')
-      return value.length <= max
-    if (Array.isArray(value))
-      return value.length <= max
+    if (typeof value === 'number') return value <= max
+    if (typeof value === 'string') return value.length <= max
+    if (Array.isArray(value)) return value.length <= max
     return true
   }
 
   private validatePattern(value: any, pattern: string | RegExp): boolean {
-    if (!value)
-      return true
+    if (!value) return true
     const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern
     return regex.test(String(value))
   }
@@ -521,8 +511,7 @@ export class ValidationStore extends BaseStore {
 
     // 密码强度验证
     this.registerValidator('strongPassword', (value: string) => {
-      if (!value)
-        return true
+      if (!value) return true
       const hasLower = /[a-z]/.test(value)
       const hasUpper = /[A-Z]/.test(value)
       const hasNumber = /\d/.test(value)
@@ -534,14 +523,12 @@ export class ValidationStore extends BaseStore {
 
     // 异步验证：检查用户名是否可用
     this.registerValidator('uniqueUsername', async (value: string) => {
-      if (!value)
-        return true
+      if (!value) return true
 
       try {
         const response = await api.checkUsername(value)
         return response.available
-      }
-      catch (error) {
+      } catch (error) {
         return false
       }
     })
@@ -610,8 +597,7 @@ export class StepStore extends BaseStore {
   @Action()
   async validateCurrentStep() {
     const currentStepData = this.steps[this.currentStep]
-    if (!currentStepData)
-      return false
+    if (!currentStepData) return false
 
     const formStore = new FormStore('form')
 
@@ -654,15 +640,13 @@ export class StepStore extends BaseStore {
 
   @Getter()
   get progress() {
-    if (this.steps.length === 0)
-      return 0
+    if (this.steps.length === 0) return 0
     return Math.round(((this.currentStep + 1) / this.steps.length) * 100)
   }
 
   @Getter()
   get completionProgress() {
-    if (this.steps.length === 0)
-      return 0
+    if (this.steps.length === 0) return 0
     return Math.round((this.completedSteps.length / this.steps.length) * 100)
   }
 
@@ -673,18 +657,16 @@ export class StepStore extends BaseStore {
       index,
       isCurrent: index === this.currentStep,
       isAccessible: index <= this.currentStep || step.completed,
-      status: this.getStepStatus(index)
+      status: this.getStepStatus(index),
     }))
   }
 
   private getStepStatus(stepIndex: number): 'pending' | 'current' | 'completed' | 'error' {
     if (stepIndex < this.currentStep) {
       return this.steps[stepIndex].completed ? 'completed' : 'error'
-    }
-    else if (stepIndex === this.currentStep) {
+    } else if (stepIndex === this.currentStep) {
       return 'current'
-    }
-    else {
+    } else {
       return 'pending'
     }
   }
@@ -721,7 +703,7 @@ export class DraftStore extends BaseStore {
       step,
       createdAt: this.drafts.get(formId)?.createdAt || now,
       updatedAt: now,
-      expiresAt
+      expiresAt,
     }
 
     this.drafts.set(formId, draft)
@@ -732,8 +714,7 @@ export class DraftStore extends BaseStore {
   loadDraft(formId: string): FormDraft | null {
     const draft = this.drafts.get(formId)
 
-    if (!draft)
-      return null
+    if (!draft) return null
 
     // 检查是否过期
     if (draft.expiresAt && new Date() > draft.expiresAt) {
@@ -782,8 +763,7 @@ export class DraftStore extends BaseStore {
     for (const draft of draftsToSync) {
       try {
         await draftApi.saveDraft(draft)
-      }
-      catch (error) {
+      } catch (error) {
         console.error('同步草稿失败:', error)
       }
     }
@@ -794,11 +774,10 @@ export class DraftStore extends BaseStore {
     try {
       const serverDrafts = await draftApi.getDrafts()
 
-      serverDrafts.forEach((draft) => {
+      serverDrafts.forEach(draft => {
         this.drafts.set(draft.formId, draft)
       })
-    }
-    catch (error) {
+    } catch (error) {
       console.error('加载服务器草稿失败:', error)
     }
   }
@@ -893,8 +872,7 @@ const currentStepFields = computed(() => {
   }
 
   const currentStep = stepStore.currentStepData
-  if (!currentStep)
-    return []
+  if (!currentStep) return []
 
   return currentStep.fields
     .map(fieldName => formStore.fields[fieldName])
@@ -902,9 +880,8 @@ const currentStepFields = computed(() => {
 })
 
 const canProceed = computed(() => {
-  return currentStepFields.value.every((field) => {
-    if (!field.required)
-      return true
+  return currentStepFields.value.every(field => {
+    if (!field.required) return true
     const value = formStore.values[field.name]
     return value !== null && value !== undefined && value !== ''
   })
@@ -937,8 +914,7 @@ async function handleSubmit() {
   try {
     await formStore.submitForm()
     // 提交成功处理
-  }
-  catch (error) {
+  } catch (error) {
     console.error('提交失败:', error)
   }
 }
@@ -1020,14 +996,9 @@ function handleClearDraft() {
     <!-- 进度指示器 -->
     <div class="form-progress">
       <div class="progress-bar">
-        <div
-          class="progress-fill"
-          :style="{ width: `${formStore.completionRate}%` }"
-        />
+        <div class="progress-fill" :style="{ width: `${formStore.completionRate}%` }" />
       </div>
-      <span class="progress-text">
-        完成度: {{ formStore.completionRate }}%
-      </span>
+      <span class="progress-text"> 完成度: {{ formStore.completionRate }}% </span>
     </div>
   </div>
 </template>
@@ -1099,7 +1070,7 @@ export class LazyFieldStore extends BaseStore {
   @Action()
   preloadCommonFields() {
     const commonFields = ['text', 'email', 'select', 'checkbox']
-    commonFields.forEach((fieldType) => {
+    commonFields.forEach(fieldType => {
       this.loadFieldDefinition(fieldType)
     })
   }
@@ -1116,7 +1087,7 @@ export class FormSerializerStore extends BaseStore {
     const serialized = {
       version: '1.0',
       timestamp: Date.now(),
-      data: this.processForSerialization(formData)
+      data: this.processForSerialization(formData),
     }
 
     return JSON.stringify(serialized)
@@ -1127,8 +1098,7 @@ export class FormSerializerStore extends BaseStore {
     try {
       const parsed = JSON.parse(serializedData)
       return this.processForDeserialization(parsed.data)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('反序列化失败:', error)
       return {}
     }
@@ -1140,11 +1110,9 @@ export class FormSerializerStore extends BaseStore {
     for (const [key, value] of Object.entries(data)) {
       if (value instanceof Date) {
         processed[key] = { __type: 'Date', value: value.toISOString() }
-      }
-      else if (value instanceof File) {
+      } else if (value instanceof File) {
         processed[key] = { __type: 'File', name: value.name, size: value.size }
-      }
-      else {
+      } else {
         processed[key] = value
       }
     }
@@ -1168,8 +1136,7 @@ export class FormSerializerStore extends BaseStore {
           default:
             processed[key] = value.value
         }
-      }
-      else {
+      } else {
         processed[key] = value
       }
     }
@@ -1191,7 +1158,7 @@ export class FormStateManager {
       values: { ...formStore.values },
       errors: { ...formStore.errors },
       touched: { ...formStore.touched },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
 
     this.snapshots.set(formId, snapshot)
@@ -1199,8 +1166,7 @@ export class FormStateManager {
 
   restoreSnapshot(formId: string, formStore: FormStore): boolean {
     const snapshot = this.snapshots.get(formId)
-    if (!snapshot)
-      return false
+    if (!snapshot) return false
 
     formStore.values = { ...snapshot.values }
     formStore.errors = { ...snapshot.errors }

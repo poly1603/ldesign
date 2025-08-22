@@ -160,8 +160,8 @@ class PerformancePlugin {
 // 插件接口
 interface RouterPlugin {
   name: string
-  install(router: Router, options?: any): void
-  uninstall?(router: Router): void
+  install: (router: Router, options?: any) => void
+  uninstall?: (router: Router) => void
 }
 
 // 插件示例
@@ -220,8 +220,8 @@ class ReactiveRoute {
 ```typescript
 // 预加载策略
 interface PreloadStrategy {
-  shouldPreload(link: HTMLElement, route: RouteLocation): boolean
-  preload(route: RouteLocation): Promise<void>
+  shouldPreload: (link: HTMLElement, route: RouteLocation) => boolean
+  preload: (route: RouteLocation) => Promise<void>
 }
 
 class HoverPreloadStrategy implements PreloadStrategy {

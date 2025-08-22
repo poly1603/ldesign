@@ -7,30 +7,30 @@
 ```typescript
 interface PluginManager {
   // 插件注册
-  register(plugin: Plugin): Promise<void>
-  unregister(name: string): Promise<void>
+  register: (plugin: Plugin) => Promise<void>
+  unregister: (name: string) => Promise<void>
 
   // 插件查询
-  isRegistered(name: string): boolean
-  get(name: string): Plugin | undefined
-  getAll(): Plugin[]
+  isRegistered: (name: string) => boolean
+  get: (name: string) => Plugin | undefined
+  getAll: () => Plugin[]
 
   // 依赖管理
-  resolveDependencies(plugins: Plugin[]): Plugin[]
-  checkDependencies(plugin: Plugin): boolean
+  resolveDependencies: (plugins: Plugin[]) => Plugin[]
+  checkDependencies: (plugin: Plugin) => boolean
 
   // 生命周期
-  enable(name: string): Promise<void>
-  disable(name: string): Promise<void>
-  isEnabled(name: string): boolean
+  enable: (name: string) => Promise<void>
+  disable: (name: string) => Promise<void>
+  isEnabled: (name: string) => boolean
 
   // 插件信息
-  getInfo(name: string): PluginInfo | undefined
-  getStats(): PluginStats
+  getInfo: (name: string) => PluginInfo | undefined
+  getStats: () => PluginStats
 
   // 事件
-  on(event: string, handler: Function): () => void
-  emit(event: string, data?: any): void
+  on: (event: string, handler: Function) => () => void
+  emit: (event: string, data?: any) => void
 }
 ```
 
@@ -54,7 +54,7 @@ interface PluginManager {
 const myPlugin = {
   name: 'my-plugin',
   version: '1.0.0',
-  install: engine => {
+  install: (engine) => {
     console.log('插件安装完成')
   },
 }
@@ -430,7 +430,7 @@ interface PluginStats {
 const loggerPlugin = {
   name: 'logger',
   version: '1.0.0',
-  install: engine => {
+  install: (engine) => {
     engine.logger.info('Logger plugin installed')
   },
 }
@@ -449,7 +449,7 @@ console.log('插件已启用:', engine.plugins.isEnabled('logger'))
 // 基础插件
 const basePlugin = {
   name: 'base',
-  install: engine => {
+  install: (engine) => {
     engine.state.set('base.ready', true)
   },
 }
@@ -458,7 +458,7 @@ const basePlugin = {
 const dependentPlugin = {
   name: 'dependent',
   dependencies: ['base'],
-  install: engine => {
+  install: (engine) => {
     const baseReady = engine.state.get('base.ready')
     if (baseReady) {
       console.log('依赖插件安装成功')
@@ -480,7 +480,7 @@ for (const plugin of resolved) {
 ```typescript
 const asyncPlugin = {
   name: 'async-plugin',
-  install: async engine => {
+  install: async (engine) => {
     // 异步初始化
     const config = await fetch('/api/plugin-config').then(r => r.json())
     engine.state.set('async-plugin.config', config)
@@ -488,7 +488,7 @@ const asyncPlugin = {
     console.log('异步插件安装完成')
   },
 
-  uninstall: async engine => {
+  uninstall: async (engine) => {
     // 异步清理
     await cleanup()
     engine.state.remove('async-plugin.config')
@@ -524,7 +524,8 @@ async function loadPlugin(pluginName: string) {
     const { default: plugin } = await import(`./plugins/${pluginName}`)
     await engine.plugins.register(plugin)
     console.log(`插件 ${pluginName} 加载成功`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`插件 ${pluginName} 加载失败:`, error)
   }
 }

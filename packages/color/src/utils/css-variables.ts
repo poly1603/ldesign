@@ -3,7 +3,12 @@
  * 用于将生成的颜色注入到CSS自定义属性中
  */
 
-import type { ColorConfig, ColorMode, ColorScale, NeutralColors } from '../core/types'
+import type {
+  ColorConfig,
+  ColorMode,
+  ColorScale,
+  NeutralColors,
+} from '../core/types'
 
 /**
  * CSS变量注入器
@@ -218,7 +223,9 @@ export function toggleThemeMode(
 export function getCSSVariableValue(name: string): string {
   if (typeof document === 'undefined')
     return ''
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim()
 }
 
 /**

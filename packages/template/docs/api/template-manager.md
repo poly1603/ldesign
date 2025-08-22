@@ -23,7 +23,7 @@ const manager = new TemplateManager({
   autoDetectDevice: true,
   cacheEnabled: true,
   cacheSize: 100,
-  cacheTTL: 10 * 60 * 1000
+  cacheTTL: 10 * 60 * 1000,
 })
 ```
 
@@ -118,8 +118,8 @@ const result = await manager.render({
   template: 'login',
   props: {
     title: '用户登录',
-    onLogin: handleLogin
-  }
+    onLogin: handleLogin,
+  },
 })
 ```
 
@@ -141,12 +141,12 @@ const allTemplates = await manager.getTemplates()
 
 // 获取指定分类的模板
 const authTemplates = await manager.getTemplates({
-  category: 'auth'
+  category: 'auth',
 })
 
 // 获取指定设备的模板
 const mobileTemplates = await manager.getTemplates({
-  device: 'mobile'
+  device: 'mobile',
 })
 ```
 
@@ -190,7 +190,7 @@ manager.clearCache('auth', 'desktop', 'login')
 ```typescript
 await manager.preload([
   { category: 'auth', device: 'desktop', template: 'login' },
-  { category: 'dashboard', device: 'desktop', template: 'admin' }
+  { category: 'dashboard', device: 'desktop', template: 'admin' },
 ])
 ```
 
@@ -208,7 +208,7 @@ console.log('缓存统计:', {
   hits: stats.hits,
   misses: stats.misses,
   size: stats.size,
-  hitRate: stats.hits / (stats.hits + stats.misses)
+  hitRate: stats.hits / (stats.hits + stats.misses),
 })
 ```
 
@@ -269,17 +269,17 @@ console.log('检测到的设备:', detectedDevice)
 
 ```typescript
 // 监听模板加载事件
-manager.on('template:load', (event) => {
+manager.on('template:load', event => {
   console.log('模板加载成功:', event.template)
 })
 
 // 监听模板错误事件
-manager.on('template:error', (event) => {
+manager.on('template:error', event => {
   console.error('模板加载失败:', event.error)
 })
 
 // 监听设备变化事件
-manager.on('device:change', (event) => {
+manager.on('device:change', event => {
   console.log('设备变化:', event.oldDevice, '->', event.newDevice)
 })
 ```
@@ -336,7 +336,7 @@ manager.registerTemplate({
   device: 'desktop',
   template: 'special',
   component: SpecialComponent,
-  config: specialConfig
+  config: specialConfig,
 })
 ```
 
@@ -369,7 +369,9 @@ manager.unregisterTemplate('custom', 'desktop', 'special')
 ```typescript
 manager.setLoader(async (category, device, template) => {
   // 自定义加载逻辑
-  const component = await import(`./templates/${category}/${device}/${template}/index.vue`)
+  const component = await import(
+    `./templates/${category}/${device}/${template}/index.vue`
+  )
   return component.default
 })
 ```
@@ -393,7 +395,7 @@ manager.setErrorHandler({
   },
   onValidationError: (error, config) => {
     console.error('验证错误:', error)
-  }
+  },
 })
 ```
 

@@ -40,7 +40,9 @@ describe('hash Algorithms', () => {
 
     it('should support different encodings', () => {
       const hexResult = hasher.hash(testData, 'SHA256', { encoding: 'hex' })
-      const base64Result = hasher.hash(testData, 'SHA256', { encoding: 'base64' })
+      const base64Result = hasher.hash(testData, 'SHA256', {
+        encoding: 'base64',
+      })
 
       expect(hexResult.encoding).toBe('hex')
       expect(base64Result.encoding).toBe('base64')
@@ -56,7 +58,14 @@ describe('hash Algorithms', () => {
     })
 
     it('should handle all supported algorithms', () => {
-      const algorithms: HashAlgorithm[] = ['MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512']
+      const algorithms: HashAlgorithm[] = [
+        'MD5',
+        'SHA1',
+        'SHA224',
+        'SHA256',
+        'SHA384',
+        'SHA512',
+      ]
 
       algorithms.forEach((algorithm) => {
         const result = hasher.hash(testData, algorithm)
@@ -89,13 +98,25 @@ describe('hash Algorithms', () => {
 
     it('should verify HMAC correctly', () => {
       const result = hmacHasher.hmac(testData, testKey, 'SHA256')
-      expect(hmacHasher.verify(testData, testKey, result.hash, 'SHA256')).toBe(true)
-      expect(hmacHasher.verify(testData, 'wrong-key', result.hash, 'SHA256')).toBe(false)
-      expect(hmacHasher.verify('wrong data', testKey, result.hash, 'SHA256')).toBe(false)
+      expect(hmacHasher.verify(testData, testKey, result.hash, 'SHA256')).toBe(
+        true,
+      )
+      expect(
+        hmacHasher.verify(testData, 'wrong-key', result.hash, 'SHA256'),
+      ).toBe(false)
+      expect(
+        hmacHasher.verify('wrong data', testKey, result.hash, 'SHA256'),
+      ).toBe(false)
     })
 
     it('should support all HMAC algorithms', () => {
-      const algorithms: HashAlgorithm[] = ['MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512']
+      const algorithms: HashAlgorithm[] = [
+        'MD5',
+        'SHA1',
+        'SHA256',
+        'SHA384',
+        'SHA512',
+      ]
 
       algorithms.forEach((algorithm) => {
         const result = hmacHasher.hmac(testData, testKey, algorithm)
@@ -106,8 +127,12 @@ describe('hash Algorithms', () => {
     })
 
     it('should throw error for empty data or key', () => {
-      expect(() => hmacHasher.hmac('', testKey, 'SHA256')).toThrow('Data cannot be empty')
-      expect(() => hmacHasher.hmac(testData, '', 'SHA256')).toThrow('Key cannot be empty')
+      expect(() => hmacHasher.hmac('', testKey, 'SHA256')).toThrow(
+        'Data cannot be empty',
+      )
+      expect(() => hmacHasher.hmac(testData, '', 'SHA256')).toThrow(
+        'Key cannot be empty',
+      )
     })
   })
 
@@ -138,7 +163,9 @@ describe('hash Algorithms', () => {
     it('should verify HMACs with convenience functions', () => {
       const hmacSha256 = hmac.sha256(testData, testKey)
       expect(hmac.verify(testData, testKey, hmacSha256, 'SHA256')).toBe(true)
-      expect(hmac.verify(testData, 'wrong-key', hmacSha256, 'SHA256')).toBe(false)
+      expect(hmac.verify(testData, 'wrong-key', hmacSha256, 'SHA256')).toBe(
+        false,
+      )
     })
   })
 

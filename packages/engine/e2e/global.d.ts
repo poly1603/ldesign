@@ -7,6 +7,7 @@ import type { Engine } from '../src/types'
 declare global {
   interface Window {
     LDesignEngine?: unknown
+    engine: Engine
     __VUE_APP__?: {
       $engine?: Engine
     }

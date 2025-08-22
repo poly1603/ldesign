@@ -11,7 +11,7 @@
 ### HTML 结构
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -53,7 +53,6 @@
     <script type="module" src="./main.js"></script>
   </body>
 </html>
-
 ```
 
 ### JavaScript 实现
@@ -74,8 +73,8 @@ async function initI18n() {
       storage: 'localStorage',
       cache: {
         enabled: true,
-        maxSize: 1000
-      }
+        maxSize: 1000,
+      },
     })
 
     // 监听语言变更事件
@@ -112,8 +111,9 @@ function updateUI() {
     const langInfo = i18n.getCurrentLanguageInfo()
 
     // 更新当前语言显示
-    document.getElementById('current-language').textContent
-            = `当前语言: ${langInfo?.nativeName || currentLang} (${currentLang})`
+    document.getElementById('current-language').textContent = `当前语言: ${
+      langInfo?.nativeName || currentLang
+    } (${currentLang})`
 
     // 更新按钮状态
     document.querySelectorAll('.controls button').forEach((btn) => {
@@ -128,10 +128,13 @@ function updateUI() {
     document.getElementById('text-cancel').textContent = i18n.t('common.cancel')
 
     // 插值翻译
-    document.getElementById('text-welcome').textContent
-            = i18n.t('common.welcome', { name: 'JavaScript' })
-    document.getElementById('text-page-info').textContent
-            = i18n.t('common.pageOf', { current: 1, total: 10 })
+    document.getElementById('text-welcome').textContent = i18n.t('common.welcome', {
+      name: 'JavaScript',
+    })
+    document.getElementById('text-page-info').textContent = i18n.t('common.pageOf', {
+      current: 1,
+      total: 10,
+    })
   }
   catch (error) {
     console.error('Error updating UI:', error)
@@ -161,7 +164,7 @@ function updatePageLanguage(locale) {
   const titles = {
     'en': '@ldesign/i18n - Vanilla JavaScript Example',
     'zh-CN': '@ldesign/i18n - 原生 JavaScript 示例',
-    'ja': '@ldesign/i18n - Vanilla JavaScript サンプル'
+    'ja': '@ldesign/i18n - Vanilla JavaScript サンプル',
   }
   document.title = titles[locale] || titles.en
 }
@@ -209,7 +212,7 @@ function updateButtons() {
     'common.save',
     'common.delete',
     'common.edit',
-    'common.cancel'
+    'common.cancel',
   ])
 
   // 更新按钮文本
@@ -315,11 +318,15 @@ i18n.on('loadError', (locale, error) => {
   console.error(`Language load error for ${locale}:`, error)
 
   // 显示用户友好的错误消息
-  const errorMessage = i18n.t('errors.languageLoadFailed', {
-    language: locale
-  }, {
-    defaultValue: `Failed to load language: ${locale}`
-  })
+  const errorMessage = i18n.t(
+    'errors.languageLoadFailed',
+    {
+      language: locale,
+    },
+    {
+      defaultValue: `Failed to load language: ${locale}`,
+    }
+  )
 
   showNotification(errorMessage, 'error')
 })

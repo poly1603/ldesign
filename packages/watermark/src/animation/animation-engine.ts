@@ -118,7 +118,7 @@ export class AnimationEngine implements IAnimationEngine {
       throw new WatermarkError(
         'Animation not supported in this browser',
         WatermarkErrorCode.BROWSER_NOT_SUPPORTED,
-        ErrorSeverity.HIGH
+        ErrorSeverity.HIGH,
       )
     }
   }
@@ -129,7 +129,7 @@ export class AnimationEngine implements IAnimationEngine {
   async createAnimation(
     instanceId: string,
     type: AnimationType,
-    config: Partial<AnimationConfig> = {}
+    config: Partial<AnimationConfig> = {},
   ): Promise<string> {
     const animationId = generateId('animation')
     const animationConfig = { ...this.config, ...config }
@@ -164,7 +164,7 @@ export class AnimationEngine implements IAnimationEngine {
       throw new WatermarkError(
         'No elements found for animation',
         WatermarkErrorCode.ANIMATION_FAILED,
-        ErrorSeverity.MEDIUM
+        ErrorSeverity.MEDIUM,
       )
     }
 
@@ -176,8 +176,8 @@ export class AnimationEngine implements IAnimationEngine {
         typeof animationConfig.iteration === 'number'
           ? animationConfig.iteration
           : animationConfig.iteration === 'infinite'
-          ? Infinity
-          : 1,
+            ? Infinity
+            : 1,
       direction: animationConfig.direction,
       fill: animationConfig.fillMode,
     })
@@ -200,7 +200,7 @@ export class AnimationEngine implements IAnimationEngine {
     if (!animation || !state) {
       throw new WatermarkError(
         `Animation ${animationId} not found`,
-        WatermarkErrorCode.ANIMATION_NOT_FOUND
+        WatermarkErrorCode.ANIMATION_NOT_FOUND,
       )
     }
 
@@ -299,7 +299,7 @@ export class AnimationEngine implements IAnimationEngine {
       type: AnimationType
       config: Partial<AnimationConfig>
       delay?: number
-    }>
+    }>,
   ): Promise<string> {
     const timelineId = generateId('timeline')
 
@@ -319,12 +319,12 @@ export class AnimationEngine implements IAnimationEngine {
         {
           ...animConfig.config,
           delay: totalDelay + (animConfig.delay || 0),
-        }
+        },
       )
 
       timeline.animations.push(animationId)
-      totalDelay +=
-        (animConfig.config.duration || 1000) + (animConfig.delay || 0)
+      totalDelay
+        += (animConfig.config.duration || 1000) + (animConfig.delay || 0)
     }
 
     timeline.duration = totalDelay
@@ -341,7 +341,7 @@ export class AnimationEngine implements IAnimationEngine {
     if (!timeline) {
       throw new WatermarkError(
         `Timeline ${timelineId} not found`,
-        WatermarkErrorCode.ANIMATION_NOT_FOUND
+        WatermarkErrorCode.ANIMATION_NOT_FOUND,
       )
     }
 
@@ -362,7 +362,7 @@ export class AnimationEngine implements IAnimationEngine {
     fromState: Record<string, any>,
     // eslint-disable-next-line ts/no-explicit-any
     toState: Record<string, any>,
-    config: TransitionConfig
+    config: TransitionConfig,
   ): Promise<string> {
     const transitionId = generateId('transition')
 
@@ -373,7 +373,7 @@ export class AnimationEngine implements IAnimationEngine {
     if (elements.length === 0) {
       throw new WatermarkError(
         'No elements found for transition',
-        WatermarkErrorCode.ANIMATION_FAILED
+        WatermarkErrorCode.ANIMATION_FAILED,
       )
     }
 
@@ -394,7 +394,7 @@ export class AnimationEngine implements IAnimationEngine {
   async applyEffect(
     instanceId: string,
     effectType: string,
-    config: EffectConfig
+    config: EffectConfig,
   ): Promise<string> {
     const animationConfig: Partial<AnimationConfig> = {
       type: effectType as AnimationType,
@@ -418,7 +418,7 @@ export class AnimationEngine implements IAnimationEngine {
       default:
         throw new WatermarkError(
           `Unknown effect type: ${effectType}`,
-          WatermarkErrorCode.ANIMATION_FAILED
+          WatermarkErrorCode.ANIMATION_FAILED,
         )
     }
   }
@@ -442,7 +442,7 @@ export class AnimationEngine implements IAnimationEngine {
    */
   addEventListener(
     animationId: string,
-    callback: (event: AnimationEvent) => void
+    callback: (event: AnimationEvent) => void,
   ): void {
     if (!this.callbacks.has(animationId)) {
       this.callbacks.set(animationId, [])
@@ -455,7 +455,7 @@ export class AnimationEngine implements IAnimationEngine {
    */
   removeEventListener(
     animationId: string,
-    callback: (event: AnimationEvent) => void
+    callback: (event: AnimationEvent) => void,
   ): boolean {
     const callbacks = this.callbacks.get(animationId)
     if (!callbacks) {
@@ -530,13 +530,13 @@ export class AnimationEngine implements IAnimationEngine {
     // 这里需要从实例管理器获取元素
     // 暂时返回空数组，实际实现时需要注入实例管理器
     return Array.from(
-      document.querySelectorAll(`[data-watermark-instance="${instanceId}"]`)
+      document.querySelectorAll(`[data-watermark-instance="${instanceId}"]`),
     )
   }
 
   private createKeyframes(
     type: AnimationType,
-    config: AnimationConfig
+    config: AnimationConfig,
   ): Keyframe[] {
     switch (type) {
       case 'fade':
@@ -566,7 +566,8 @@ export class AnimationEngine implements IAnimationEngine {
         { opacity: 0, offset: 0 },
         { opacity: 1, offset: 1 },
       ]
-    } else {
+    }
+    else {
       return [
         { opacity: 1, offset: 0 },
         { opacity: 0, offset: 1 },
@@ -659,7 +660,7 @@ export class AnimationEngine implements IAnimationEngine {
     // eslint-disable-next-line ts/no-explicit-any
     fromState: Record<string, any>,
     // eslint-disable-next-line ts/no-explicit-any
-    toState: Record<string, any>
+    toState: Record<string, any>,
   ): Keyframe[] {
     return [fromState, toState]
   }
@@ -689,7 +690,7 @@ export class AnimationEngine implements IAnimationEngine {
 
   private setupAnimationListeners(
     animation: Animation,
-    animationId: string
+    animationId: string,
   ): void {
     const state = this.states.get(animationId)
     if (!state) {
@@ -713,7 +714,7 @@ export class AnimationEngine implements IAnimationEngine {
       if (animation.currentTime !== null && state.duration > 0) {
         state.progress = Math.min(
           (animation.currentTime as number) / state.duration,
-          1
+          1,
         )
         state.currentTime = animation.currentTime as number
         this.emitEvent(animationId, 'progress', {})
@@ -732,7 +733,7 @@ export class AnimationEngine implements IAnimationEngine {
   private emitEvent(
     animationId: string,
     type: AnimationEvent['type'],
-    data: Partial<AnimationEvent>
+    data: Partial<AnimationEvent>,
   ): void {
     const event: AnimationEvent = {
       type,
@@ -742,10 +743,11 @@ export class AnimationEngine implements IAnimationEngine {
     }
 
     const callbacks = this.callbacks.get(animationId) || []
-    callbacks.forEach(callback => {
+    callbacks.forEach((callback) => {
       try {
         callback(event)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Animation event callback error:', error)
       }
     })

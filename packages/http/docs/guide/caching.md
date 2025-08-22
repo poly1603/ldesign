@@ -13,7 +13,7 @@ const http = createHttpClient({
   cache: {
     enabled: true,
     ttl: 300000, // 5 分钟缓存
-  }
+  },
 })
 
 // 第一次请求 - 从网络获取
@@ -31,8 +31,8 @@ const http = createHttpClient({
     enabled: true, // 启用缓存
     ttl: 300000, // 缓存时间（毫秒）
     storage: 'memory', // 存储类型：'memory' | 'localStorage'
-    keyGenerator: config => `${config.method}:${config.url}` // 自定义键生成器
-  }
+    keyGenerator: config => `${config.method}:${config.url}`, // 自定义键生成器
+  },
 })
 ```
 
@@ -48,8 +48,8 @@ import { createHttpClient, createMemoryStorage } from '@ldesign/http'
 const http = createHttpClient({
   cache: {
     enabled: true,
-    storage: createMemoryStorage()
-  }
+    storage: createMemoryStorage(),
+  },
 })
 ```
 
@@ -74,8 +74,8 @@ import { createHttpClient, createLocalStorage } from '@ldesign/http'
 const http = createHttpClient({
   cache: {
     enabled: true,
-    storage: createLocalStorage('my_app_cache_') // 可选前缀
-  }
+    storage: createLocalStorage('my_app_cache_'), // 可选前缀
+  },
 })
 ```
 
@@ -121,8 +121,8 @@ class CustomCacheStorage implements CacheStorage {
 const http = createHttpClient({
   cache: {
     enabled: true,
-    storage: new CustomCacheStorage()
-  }
+    storage: new CustomCacheStorage(),
+  },
 })
 ```
 
@@ -137,14 +137,14 @@ const http = createHttpClient({
   cache: {
     enabled: true,
     ttl: 300000, // 5 分钟
-  }
+  },
 })
 
 // 也可以为单个请求设置 TTL
 await http.get('/api/users', {
   cache: {
-    ttl: 600000 // 10 分钟
-  }
+    ttl: 600000, // 10 分钟
+  },
 })
 ```
 
@@ -160,8 +160,8 @@ const http = createHttpClient({
       // 包含查询参数的缓存键
       const params = new URLSearchParams(config.params).toString()
       return `${config.method}:${config.url}${params ? `?${params}` : ''}`
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -179,8 +179,8 @@ const http = createHttpClient({
         return null // 返回 null 表示不缓存
       }
       return `${config.method}:${config.url}`
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -194,15 +194,15 @@ const http = createHttpClient({
 // 方法 1：禁用单次请求的缓存
 const response = await http.get('/api/users', {
   cache: {
-    enabled: false
-  }
+    enabled: false,
+  },
 })
 
 // 方法 2：使用特殊参数
 const response2 = await http.get('/api/users', {
   params: {
-    _nocache: Date.now()
-  }
+    _nocache: Date.now(),
+  },
 })
 ```
 
@@ -216,7 +216,7 @@ await http.clearCache()
 const cacheManager = http.getCacheManager()
 await cacheManager.delete({
   url: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 ```
 
@@ -260,15 +260,12 @@ import { useMutation, useQuery } from '@ldesign/http/vue'
 
 const { data, invalidate } = useQuery('users', { url: '/api/users' })
 
-const { mutate: createUser } = useMutation(
-  userData => http.post('/api/users', userData),
-  {
-    onSuccess: () => {
-      // 创建成功后使缓存失效
-      invalidate()
-    }
-  }
-)
+const { mutate: createUser } = useMutation(userData => http.post('/api/users', userData), {
+  onSuccess: () => {
+    // 创建成功后使缓存失效
+    invalidate()
+  },
+})
 </script>
 ```
 
@@ -314,15 +311,9 @@ class TaggedCacheStorage implements CacheStorage {
 
 ```typescript
 async function warmupCache() {
-  const criticalEndpoints = [
-    '/api/user/profile',
-    '/api/app/config',
-    '/api/menu/items'
-  ]
+  const criticalEndpoints = ['/api/user/profile', '/api/app/config', '/api/menu/items']
 
-  await Promise.all(
-    criticalEndpoints.map(url => http.get(url))
-  )
+  await Promise.all(criticalEndpoints.map(url => http.get(url)))
 }
 
 // 应用启动时调用
@@ -351,12 +342,15 @@ class SyncedCacheStorage implements CacheStorage {
     await this.baseStorage.set(key, value, ttl)
 
     // 通知其他标签页
-    localStorage.setItem(`cache_sync_${key}`, JSON.stringify({
-      action: 'set',
-      value,
-      ttl,
-      timestamp: Date.now()
-    }))
+    localStorage.setItem(
+      `cache_sync_${key}`,
+      JSON.stringify({
+        action: 'set',
+        value,
+        ttl,
+        timestamp: Date.now(),
+      })
+    )
   }
 
   // ... 其他方法
@@ -382,7 +376,7 @@ class LimitedCacheStorage implements CacheStorage {
     this.cache.set(key, {
       value,
       timestamp: Date.now(),
-      ttl
+      ttl,
     })
   }
 
@@ -431,8 +425,8 @@ const http = createHttpClient({
         return { key: `config:${config.url}`, ttl: 3600000 } // 1小时
       }
       return { key: config.url, ttl: 300000 } // 默认5分钟
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -466,7 +460,7 @@ class MonitoredCacheStorage implements CacheStorage {
       this.misses++
     }
 
-    console.log(`缓存命中率: ${(this.hits / (this.hits + this.misses) * 100).toFixed(2)}%`)
+    console.log(`缓存命中率: ${((this.hits / (this.hits + this.misses)) * 100).toFixed(2)}%`)
 
     return value
   }
@@ -475,4 +469,5 @@ class MonitoredCacheStorage implements CacheStorage {
 }
 ```
 
-缓存系统是提升应用性能的重要工具，合理使用可以显著改善用户体验。记住要根据数据的特性和业务需求来配置缓存策略。
+缓存系统是提升应用性能的重要工具，合理使用可以显著改善用户体验。记住要根据数据的特性和业务需求来配置
+缓存策略。

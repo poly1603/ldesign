@@ -1,6 +1,7 @@
 # Provider 使用指南
 
-Provider 模式提供了依赖注入的方式来管理状态，让你可以在应用的任何地方访问 Store，而不需要手动传递实例。
+Provider 模式提供了依赖注入的方式来管理状态，让你可以在应用的任何地方访问 Store，而不需要手动传递实
+例。
 
 ## 基础 Provider 使用
 
@@ -16,7 +17,7 @@ import { CartStore, SettingsStore, UserStore } from '@/stores'
 const stores = {
   user: UserStore,
   cart: CartStore,
-  settings: SettingsStore
+  settings: SettingsStore,
 }
 </script>
 
@@ -53,8 +54,7 @@ async function handleLogin() {
     await userStore.login({ email: email.value, password: password.value })
     email.value = ''
     password.value = ''
-  }
-  catch (error) {
+  } catch (error) {
     console.error('登录失败:', error)
   }
 }
@@ -67,19 +67,17 @@ async function logout() {
 <template>
   <div class="user-profile">
     <div v-if="userStore.isLoggedIn" class="profile-info">
-      <img :src="userStore.userAvatar" :alt="userStore.userName">
+      <img :src="userStore.userAvatar" :alt="userStore.userName" />
       <h2>{{ userStore.userName }}</h2>
       <p>{{ userStore.userEmail }}</p>
-      <button @click="logout">
-        退出登录
-      </button>
+      <button @click="logout">退出登录</button>
     </div>
 
     <div v-else class="login-form">
       <h2>请登录</h2>
       <form @submit.prevent="handleLogin">
-        <input v-model="email" type="email" placeholder="邮箱">
-        <input v-model="password" type="password" placeholder="密码">
+        <input v-model="email" type="email" placeholder="邮箱" />
+        <input v-model="password" type="password" placeholder="密码" />
         <button type="submit" :disabled="userStore.loading">
           {{ userStore.loading ? '登录中...' : '登录' }}
         </button>
@@ -106,23 +104,18 @@ export const storeConfig = {
   // 立即创建的 Store
   immediate: {
     settings: SettingsStore,
-    user: UserStore
+    user: UserStore,
   },
 
   // 懒加载的 Store
   lazy: {
     cart: CartStore,
-    products: ProductStore
-  }
+    products: ProductStore,
+  },
 }
 
 // 导出所有 Store
-export {
-  CartStore,
-  ProductStore,
-  SettingsStore,
-  UserStore
-}
+export { CartStore, ProductStore, SettingsStore, UserStore }
 ```
 
 ```vue
@@ -136,17 +129,12 @@ const isDev = import.meta.env.DEV
 // 合并所有 Store 配置
 const allStores = {
   ...storeConfig.immediate,
-  ...storeConfig.lazy
+  ...storeConfig.lazy,
 }
 </script>
 
 <template>
-  <StoreProvider
-    :pinia="pinia"
-    :stores="allStores"
-    :global="true"
-    :devtools="isDev"
-  >
+  <StoreProvider :pinia="pinia" :stores="allStores" :global="true" :devtools="isDev">
     <RouterView />
   </StoreProvider>
 </template>
@@ -164,15 +152,17 @@ import App from './App.vue'
 const app = createApp(App)
 
 // 使用 Store Provider 插件
-app.use(createStoreProviderPlugin({
-  pinia,
-  stores: {
-    ...storeConfig.immediate,
-    ...storeConfig.lazy
-  },
-  global: true,
-  devtools: true
-}))
+app.use(
+  createStoreProviderPlugin({
+    pinia,
+    stores: {
+      ...storeConfig.immediate,
+      ...storeConfig.lazy,
+    },
+    global: true,
+    devtools: true,
+  })
+)
 
 app.mount('#app')
 ```
@@ -190,12 +180,12 @@ class StoreRegistry {
   private stores = reactive(new Map<string, StoreRegistration>())
   private instances = reactive(new Map<string, any>())
 
-  register(id: string, storeClass: any, options: { lazy?: boolean, singleton?: boolean } = {}) {
+  register(id: string, storeClass: any, options: { lazy?: boolean; singleton?: boolean } = {}) {
     this.stores.set(id, {
       id,
       factory: () => new storeClass(id),
       lazy: options.lazy ?? false,
-      singleton: options.singleton ?? true
+      singleton: options.singleton ?? true,
     })
 
     // 如果不是懒加载，立即创建实例
@@ -227,8 +217,7 @@ class StoreRegistry {
       }
 
       return instance
-    }
-    catch (error) {
+    } catch (error) {
       console.error(`Failed to create store "${id}":`, error)
       return undefined
     }
@@ -285,19 +274,13 @@ function registerDynamicStore() {
     <ul>
       <li v-for="storeId in registeredStores" :key="storeId">
         {{ storeId }}
-        <button @click="loadStore(storeId)">
-          加载
-        </button>
-        <button @click="unloadStore(storeId)">
-          卸载
-        </button>
+        <button @click="loadStore(storeId)">加载</button>
+        <button @click="unloadStore(storeId)">卸载</button>
       </li>
     </ul>
 
     <h2>动态注册新 Store</h2>
-    <button @click="registerDynamicStore">
-      注册动态 Store
-    </button>
+    <button @click="registerDynamicStore">注册动态 Store</button>
   </div>
 </template>
 ```
@@ -346,24 +329,25 @@ export function useState<T = any>(storeId: string, stateKey: string) {
 
   const value = computed({
     get: () => (store as any)[stateKey],
-    set: (newValue) => {
+    set: newValue => {
       if (typeof (store as any)[`set${capitalize(stateKey)}`] === 'function') {
-        (store as any)[`set${capitalize(stateKey)}`](newValue)
+        ;(store as any)[`set${capitalize(stateKey)}`](newValue)
+      } else {
+        ;(store as any)[stateKey] = newValue
       }
-      else {
-        (store as any)[stateKey] = newValue
-      }
-    }
+    },
   })
 
   return {
     value,
-    setValue: (newValue: T) => { value.value = newValue },
+    setValue: (newValue: T) => {
+      value.value = newValue
+    },
     reset: () => {
       if (typeof (store as any)[`reset${capitalize(stateKey)}`] === 'function') {
-        (store as any)[`reset${capitalize(stateKey)}`]()
+        ;(store as any)[`reset${capitalize(stateKey)}`]()
       }
-    }
+    },
   }
 }
 
@@ -379,10 +363,7 @@ function capitalize(str: string): string {
 import { computed, ref } from 'vue'
 import { useStore } from './useStore'
 
-export function useAction<T extends (...args: any[]) => any>(
-  storeId: string,
-  actionName: string
-) {
+export function useAction<T extends (...args: any[]) => any>(storeId: string, actionName: string) {
   const store = useStore(storeId)
   const loading = ref(false)
   const error = ref<Error | null>(null)
@@ -401,12 +382,10 @@ export function useAction<T extends (...args: any[]) => any>(
       const result = await action(...args)
       data.value = result
       return result
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -422,7 +401,7 @@ export function useAction<T extends (...args: any[]) => any>(
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     data: computed(() => data.value),
-    reset
+    reset,
   }
 }
 ```
@@ -439,7 +418,7 @@ import { SettingsStore, UserStore } from '@/stores'
 
 const globalStores = {
   user: UserStore,
-  settings: SettingsStore
+  settings: SettingsStore,
 }
 </script>
 
@@ -458,7 +437,7 @@ import { CartStore, ProductStore } from '@/stores'
 
 const shoppingStores = {
   cart: CartStore,
-  products: ProductStore
+  products: ProductStore,
 }
 </script>
 
@@ -489,27 +468,17 @@ function addToCart(product: Product) {
 
 <template>
   <div class="product-list">
-    <div v-if="userStore.isLoggedIn" class="user-info">
-      欢迎，{{ userStore.userName }}！
-    </div>
+    <div v-if="userStore.isLoggedIn" class="user-info">欢迎，{{ userStore.userName }}！</div>
 
     <div class="products">
-      <div
-        v-for="product in productStore.products"
-        :key="product.id"
-        class="product-item"
-      >
+      <div v-for="product in productStore.products" :key="product.id" class="product-item">
         <h3>{{ product.name }}</h3>
         <p>{{ product.price }}</p>
-        <button @click="addToCart(product)">
-          加入购物车
-        </button>
+        <button @click="addToCart(product)">加入购物车</button>
       </div>
     </div>
 
-    <div class="cart-summary">
-      购物车商品数量: {{ cartStore.itemCount }}
-    </div>
+    <div class="cart-summary">购物车商品数量: {{ cartStore.itemCount }}</div>
   </div>
 </template>
 ```
@@ -524,20 +493,14 @@ function addToCart(product: Product) {
 import { StoreProvider } from '@ldesign/store/vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import {
-  AdminStore,
-  AnalyticsStore,
-  CartStore,
-  ProductStore,
-  UserStore
-} from '@/stores'
+import { AdminStore, AnalyticsStore, CartStore, ProductStore, UserStore } from '@/stores'
 
 const route = useRoute()
 
 // 根据路由动态提供不同的 Store
 const currentStores = computed(() => {
   const baseStores = {
-    user: UserStore
+    user: UserStore,
   }
 
   // 购物相关页面
@@ -545,7 +508,7 @@ const currentStores = computed(() => {
     return {
       ...baseStores,
       cart: CartStore,
-      products: ProductStore
+      products: ProductStore,
     }
   }
 
@@ -554,7 +517,7 @@ const currentStores = computed(() => {
     return {
       ...baseStores,
       admin: AdminStore,
-      analytics: AnalyticsStore
+      analytics: AnalyticsStore,
     }
   }
 
@@ -578,19 +541,14 @@ const currentStores = computed(() => {
 import { StoreProvider } from '@ldesign/store/vue'
 import { computed } from 'vue'
 import { useUserStore } from '@/composables/useStore'
-import {
-  AdminStore,
-  PublicStore,
-  SuperAdminStore,
-  UserStore
-} from '@/stores'
+import { AdminStore, PublicStore, SuperAdminStore, UserStore } from '@/stores'
 
 const userStore = useUserStore()
 
 // 根据用户权限提供不同的 Store
 const authorizedStores = computed(() => {
   const stores: Record<string, any> = {
-    public: PublicStore
+    public: PublicStore,
   }
 
   if (userStore.isLoggedIn) {
@@ -648,7 +606,7 @@ export class StoreLifecycleManager {
   }
 
   cleanup() {
-    this.activeStores.forEach((storeId) => {
+    this.activeStores.forEach(storeId => {
       // 执行清理逻辑
       console.log(`清理 Store: ${storeId}`)
     })
@@ -692,9 +650,7 @@ function retry() {
   <div v-if="hasError" class="store-error">
     <h2>Store 加载失败</h2>
     <p>{{ error }}</p>
-    <button @click="retry">
-      重试
-    </button>
+    <button @click="retry">重试</button>
   </div>
   <StoreProvider v-else :stores="stores" @error="handleError">
     <slot />

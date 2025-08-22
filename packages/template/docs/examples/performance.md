@@ -54,6 +54,18 @@ onMounted(async () => {
 ### 3. 懒加载组件
 
 ```vue
+<script setup lang="ts">
+import { LazyTemplate } from '@ldesign/template'
+
+function onTemplateLoad(template: any) {
+  console.log('模板加载成功:', template)
+}
+
+function onTemplateError(error: Error) {
+  console.error('模板加载失败:', error)
+}
+</script>
+
 <template>
   <div class="performance-demo">
     <!-- 使用懒加载渲染器 -->
@@ -67,7 +79,7 @@ onMounted(async () => {
       <!-- 自定义加载占位符 -->
       <template #loading>
         <div class="loading-placeholder">
-          <div class="spinner"></div>
+          <div class="spinner" />
           <p>正在加载图表模板...</p>
         </div>
       </template>
@@ -82,18 +94,6 @@ onMounted(async () => {
     </LazyTemplate>
   </div>
 </template>
-
-<script setup lang="ts">
-import { LazyTemplate } from '@ldesign/template'
-
-function onTemplateLoad(template: any) {
-  console.log('模板加载成功:', template)
-}
-
-function onTemplateError(error: Error) {
-  console.error('模板加载失败:', error)
-}
-</script>
 ```
 
 ## 高级性能优化
@@ -103,7 +103,7 @@ function onTemplateError(error: Error) {
 ```vue
 <script setup lang="ts">
 import { PerformanceMonitor, useTemplate } from '@ldesign/template'
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const performanceData = ref({})
 const { clearCache } = useTemplate()
@@ -166,7 +166,7 @@ onMounted(() => {
 ```vue
 <script setup lang="ts">
 import { useVirtualScroll } from '@ldesign/template'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 // 大量模板数据
 const templates = ref(

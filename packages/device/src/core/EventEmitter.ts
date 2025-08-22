@@ -3,7 +3,9 @@ import type { EventListener } from '../types'
 /**
  * 简单的事件发射器实现
  */
-export class EventEmitter<T extends Record<string, unknown> = Record<string, unknown>> {
+export class EventEmitter<
+  T extends Record<string, unknown> = Record<string, unknown>,
+> {
   private events: Map<keyof T, Set<EventListener<unknown>>> = new Map()
 
   /**

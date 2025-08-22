@@ -1,4 +1,4 @@
-import type { HttpError, RequestConfig } from '@/types'
+import type { HttpError, RequestConfig } from '../types'
 
 /**
  * 合并配置对象
@@ -16,11 +16,15 @@ export function mergeConfig(
       if (key === 'headers' && typeof value === 'object' && value !== null) {
         merged.headers = { ...merged.headers, ...value }
       }
-      else if (key === 'params' && typeof value === 'object' && value !== null) {
+      else if (
+        key === 'params'
+        && typeof value === 'object'
+        && value !== null
+      ) {
         merged.params = { ...merged.params, ...value }
       }
       else {
-        ; (merged as any)[key] = value
+        ;(merged as any)[key] = value
       }
     }
   })
@@ -54,7 +58,11 @@ export function buildQueryString(params: Record<string, any>): string {
 /**
  * 构建完整的 URL
  */
-export function buildURL(url: string, baseURL?: string, params?: Record<string, any>): string {
+export function buildURL(
+  url: string,
+  baseURL?: string,
+  params?: Record<string, any>,
+): string {
   let fullURL = url
 
   // 处理 baseURL
@@ -132,8 +140,10 @@ export function delay(ms: number): Promise<void> {
  * 生成唯一 ID
  */
 export function generateId(): string {
-  return Math.random().toString(36).substring(2, 15)
+  return (
+    Math.random().toString(36).substring(2, 15)
     + Math.random().toString(36).substring(2, 15)
+  )
 }
 
 /**
@@ -155,7 +165,7 @@ export function deepClone<T>(obj: T): T {
   if (typeof obj === 'object') {
     const cloned = {} as T
     Object.keys(obj).forEach((key) => {
-      ; (cloned as any)[key] = deepClone((obj as any)[key])
+      ;(cloned as any)[key] = deepClone((obj as any)[key])
     })
     return cloned
   }
@@ -188,5 +198,7 @@ export function isArrayBuffer(data: any): data is ArrayBuffer {
  * 判断是否为 URLSearchParams
  */
 export function isURLSearchParams(data: any): data is URLSearchParams {
-  return typeof URLSearchParams !== 'undefined' && data instanceof URLSearchParams
+  return (
+    typeof URLSearchParams !== 'undefined' && data instanceof URLSearchParams
+  )
 }

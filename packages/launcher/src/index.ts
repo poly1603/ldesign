@@ -1,0 +1,179 @@
+/**
+ * Vite 前端项目启动器
+ * 提供开箱即用的 Vite 项目创建、开发、构建和预览功能
+ *
+ * @author Vite Launcher Team
+ * @version 1.0.0
+ */
+
+import type { 
+  BuildOptions, 
+  DevOptions, 
+  LauncherOptions, 
+  PreviewOptions, 
+  ProjectType,
+  CreateProjectOptions 
+} from './types'
+import { ViteLauncher } from './core/ViteLauncher'
+import { ProjectDetector } from './services/ProjectDetector.new'
+
+// 核心类导出
+export { ViteLauncher } from './core/ViteLauncher'
+export { ErrorHandler } from './services/ErrorHandler'
+export { ProjectDetector } from './services/ProjectDetector.new'
+export { ConfigManager } from './services/ConfigManager'
+export { PluginManager } from './services/PluginManager'
+
+// 工具函数导出
+export * from './utils'
+
+// 常量导出
+export * from './constants'
+
+// 类型定义导出
+export type * from './types'
+
+// 默认配置
+const defaultOptions: LauncherOptions = {
+  logLevel: 'info',
+  mode: 'development',
+  autoDetect: true,
+}
+
+const viteLauncher = new ViteLauncher(defaultOptions)
+
+// 类型定义导出
+export type {
+  BuildOptions,
+  // 结果类型
+  BuildResult,
+  BuildStats,
+  ConfigMergeOptions,
+  CSSPreprocessor,
+
+  DetectionReport,
+  DetectionResult,
+  DetectionStep,
+  DevOptions,
+  FrameworkType,
+
+  IConfigManager,
+  IErrorHandler,
+  IPluginManager,
+  IProjectDetector,
+  // 核心接口
+  IViteLauncher,
+
+  // 错误类型
+  LauncherError,
+  // 选项类型
+  LauncherOptions,
+  // 基础类型
+  LogLevel,
+  PluginConfig,
+  // 配置类型
+  PresetConfig,
+  PreviewOptions,
+
+  ProjectInfo,
+  ProjectType,
+
+  RunMode,
+} from './types'
+
+// 常量导出
+export { ERROR_CODES } from './types'
+
+// 默认实例导出（便于快速使用）
+export default viteLauncher
+
+/**
+ * 快速创建项目的便捷函数
+ * @param projectPath 项目路径
+ * @param projectType 项目类型
+ * @param options 创建选项
+ */
+export async function createProject(
+  projectPath: string,
+  projectType: ProjectType,
+  options?: CreateProjectOptions,
+) {
+  return viteLauncher.create(projectPath, projectType, options)
+}
+
+/**
+ * 快速启动开发服务器的便捷函数
+ * @param projectPath 项目路径
+ * @param options 开发选项
+ */
+export async function startDev(
+  projectPath?: string,
+  options?: DevOptions,
+) {
+  return viteLauncher.dev(projectPath, options)
+}
+
+/**
+ * 快速构建项目的便捷函数
+ * @param projectPath 项目路径
+ * @param options 构建选项
+ */
+export async function buildProject(
+  projectPath?: string,
+  options?: BuildOptions,
+) {
+  return viteLauncher.build(projectPath, options)
+}
+
+/**
+ * 快速启动预览服务器的便捷函数
+ * @param projectPath 项目路径
+ * @param options 预览选项
+ */
+export async function startPreview(
+  projectPath?: string,
+  options?: PreviewOptions,
+) {
+  return viteLauncher.preview(projectPath, options)
+}
+
+/**
+ * 获取项目信息的便捷函数
+ * @param projectPath 项目路径
+ */
+export async function getProjectInfo(projectPath?: string) {
+  return viteLauncher.getProjectInfo(projectPath)
+}
+
+/**
+ * 停止开发服务器的便捷函数
+ */
+export async function stopDev() {
+  return viteLauncher.stop()
+}
+
+// 简化的便捷函数别名
+export const create = createProject
+export const dev = startDev
+export const build = buildProject
+export const preview = startPreview
+export const info = getProjectInfo
+export const stop = stopDev
+
+/**
+ * 创建自定义配置的启动器实例
+ * @param options 启动器配置选项
+ * @returns ViteLauncher实例
+ */
+export function createLauncher(options?: LauncherOptions): ViteLauncher {
+  return new ViteLauncher(options)
+}
+
+/**
+ * 检测项目类型的便捷函数
+ * @param projectPath 项目路径
+ */
+export async function detectProject(projectPath?: string) {
+  const detector = new ProjectDetector()
+  return detector.detectProjectType(projectPath || process.cwd())
+}

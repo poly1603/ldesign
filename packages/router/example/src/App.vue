@@ -12,7 +12,7 @@ const router = useRouter()
 
 onMounted(() => {
   // 监听性能事件
-  router.afterEach((to, from) => {
+  router.afterEach((_to, _from) => {
     // 模拟性能数据收集
     performanceMetrics.value.navigationTime = Math.random() * 100
     performanceMetrics.value.componentLoadTime = Math.random() * 50
@@ -28,13 +28,27 @@ onMounted(() => {
         <h1>@ldesign/router 示例</h1>
       </div>
       <div class="navbar-nav">
-        <RouterLink to="/" class="nav-link"> 首页 </RouterLink>
-        <RouterLink to="/basic" class="nav-link"> 基础路由 </RouterLink>
-        <RouterLink to="/nested" class="nav-link"> 嵌套路由 </RouterLink>
-        <RouterLink to="/dynamic/123" class="nav-link"> 动态路由 </RouterLink>
-        <RouterLink to="/guards" class="nav-link"> 路由守卫 </RouterLink>
-        <RouterLink to="/lazy" class="nav-link"> 懒加载 </RouterLink>
-        <RouterLink to="/plugins" class="nav-link"> 插件演示 </RouterLink>
+        <RouterLink to="/" class="nav-link">
+          首页
+        </RouterLink>
+        <RouterLink to="/basic" class="nav-link">
+          基础路由
+        </RouterLink>
+        <RouterLink to="/nested" class="nav-link">
+          嵌套路由
+        </RouterLink>
+        <RouterLink to="/dynamic/123" class="nav-link">
+          动态路由
+        </RouterLink>
+        <RouterLink to="/guards" class="nav-link">
+          路由守卫
+        </RouterLink>
+        <RouterLink to="/lazy" class="nav-link">
+          懒加载
+        </RouterLink>
+        <RouterLink to="/plugins" class="nav-link">
+          插件演示
+        </RouterLink>
       </div>
     </nav>
 
@@ -56,7 +70,9 @@ onMounted(() => {
           <span>{{ performanceMetrics.componentLoadTime }}ms</span>
         </div>
       </div>
-      <button @click="showPerformance = false">关闭</button>
+      <button @click="showPerformance = false">
+        关闭
+      </button>
     </div>
 
     <!-- 性能监控切换按钮 -->

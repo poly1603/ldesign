@@ -2,7 +2,7 @@
  * @ldesign/theme - 主题切换 E2E 测试
  */
 
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('主题切换功能', () => {
   test.beforeEach(async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe('主题切换功能', () => {
 
     // 验证装饰元素出现
     await expect(
-      page.locator('[data-decoration-type="snowflake"]')
+      page.locator('[data-decoration-type="snowflake"]'),
     ).toBeVisible()
   })
 
@@ -70,7 +70,7 @@ test.describe('主题切换功能', () => {
 
     // 验证烟花效果
     await expect(
-      page.locator('[data-decoration-type="firework"]')
+      page.locator('[data-decoration-type="firework"]'),
     ).toBeVisible()
   })
 

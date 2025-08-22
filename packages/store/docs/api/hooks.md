@@ -42,9 +42,9 @@ export const useCounter = createStore('counter', () => {
   const step = ref(1)
 
   // 动作
-  const increment = () => count.value += step.value
-  const decrement = () => count.value -= step.value
-  const reset = () => count.value = 0
+  const increment = () => (count.value += step.value)
+  const decrement = () => (count.value -= step.value)
+  const reset = () => (count.value = 0)
 
   // 计算属性
   const doubleCount = computed(() => count.value * 2)
@@ -53,7 +53,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count, step },
     actions: { increment, decrement, reset },
-    getters: { doubleCount, isPositive }
+    getters: { doubleCount, isPositive },
   }
 })
 
@@ -122,10 +122,13 @@ export const useUserState = createStore('user', () => {
   const [name, setName] = useState('', { persist: true })
 
   // 复杂状态
-  const [profile, setProfile] = useState({
-    email: '',
-    avatar: null
-  }, { reactive: true, persist: true })
+  const [profile, setProfile] = useState(
+    {
+      email: '',
+      avatar: null,
+    },
+    { reactive: true, persist: true }
+  )
 
   // 只读状态
   const [version] = useState('1.0.0', { readonly: true })
@@ -133,7 +136,7 @@ export const useUserState = createStore('user', () => {
   return {
     state: { name, profile, version },
     actions: { setName, setProfile },
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -176,32 +179,38 @@ export const useSearchStore = createStore('search', () => {
   const loading = ref(false)
 
   // 防抖搜索
-  const search = useAction(async (q: string) => {
-    query.value = q
-    if (!q.trim()) {
-      results.value = []
-      return
-    }
+  const search = useAction(
+    async (q: string) => {
+      query.value = q
+      if (!q.trim()) {
+        results.value = []
+        return
+      }
 
-    const response = await searchApi.search(q)
-    results.value = response.data
-  }, {
-    debounce: 300,
-    loading
-  })
+      const response = await searchApi.search(q)
+      results.value = response.data
+    },
+    {
+      debounce: 300,
+      loading,
+    }
+  )
 
   // 缓存的数据获取
-  const fetchData = useAction(async (id: string) => {
-    const response = await api.getData(id)
-    return response.data
-  }, {
-    cache: 60000 // 缓存 1 分钟
-  })
+  const fetchData = useAction(
+    async (id: string) => {
+      const response = await api.getData(id)
+      return response.data
+    },
+    {
+      cache: 60000, // 缓存 1 分钟
+    }
+  )
 
   return {
     state: { query, results, loading },
     actions: { search, fetchData },
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -245,13 +254,14 @@ export const useShoppingCart = createStore('cart', () => {
   const taxRate = ref(0.1)
 
   // 基础计算属性
-  const itemCount = useGetter(() =>
-    items.value.reduce((sum, item) => sum + item.quantity, 0)
-  )
+  const itemCount = useGetter(() => items.value.reduce((sum, item) => sum + item.quantity, 0))
 
   // 缓存的计算属性
-  const subtotal = useGetter(() =>
-    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0), [items], { cache: true })
+  const subtotal = useGetter(
+    () => items.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [items],
+    { cache: true }
+  )
 
   // 依赖其他计算属性
   const tax = useGetter(() => subtotal.value * taxRate.value)
@@ -260,7 +270,7 @@ export const useShoppingCart = createStore('cart', () => {
   return {
     state: { items, taxRate },
     actions: {},
-    getters: { itemCount, subtotal, tax, total }
+    getters: { itemCount, subtotal, tax, total },
   }
 })
 ```
@@ -307,25 +317,29 @@ export const useSettings = createStore('settings', () => {
   const [theme, setTheme] = usePersist('theme', 'light')
 
   // 自定义序列化
-  const [preferences, setPreferences] = usePersist('preferences', {
-    language: 'zh-CN',
-    notifications: true
-  }, {
-    serializer: {
-      read: value => JSON.parse(value),
-      write: value => JSON.stringify(value)
+  const [preferences, setPreferences] = usePersist(
+    'preferences',
+    {
+      language: 'zh-CN',
+      notifications: true,
+    },
+    {
+      serializer: {
+        read: value => JSON.parse(value),
+        write: value => JSON.stringify(value),
+      },
     }
-  })
+  )
 
   // 使用 sessionStorage
   const [sessionData, setSessionData] = usePersist('session', null, {
-    storage: 'sessionStorage'
+    storage: 'sessionStorage',
   })
 
   return {
     state: { theme, preferences, sessionData },
     actions: { setTheme, setPreferences, setSessionData },
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -358,12 +372,16 @@ export const useDataSync = createStore('dataSync', () => {
   const lastSync = ref(null)
 
   // 监听数据变化并同步
-  useWatch(data, async (newData, oldData) => {
-    if (newData.length !== oldData.length) {
-      await syncToServer(newData)
-      lastSync.value = new Date()
-    }
-  }, { deep: true })
+  useWatch(
+    data,
+    async (newData, oldData) => {
+      if (newData.length !== oldData.length) {
+        await syncToServer(newData)
+        lastSync.value = new Date()
+      }
+    },
+    { deep: true }
+  )
 
   // 监听多个源
   useWatch([data, lastSync], ([newData, newLastSync]) => {
@@ -373,7 +391,7 @@ export const useDataSync = createStore('dataSync', () => {
   return {
     state: { data, lastSync },
     actions: {},
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -417,12 +435,12 @@ export const useCounter = createStore('counter', () => {
 
   // 计算属性
   const doubleCount = computed(() => count.value * 2)
-  const status = computed(() => isActive.value ? 'active' : 'inactive')
+  const status = computed(() => (isActive.value ? 'active' : 'inactive'))
 
   return {
     state: { count, isActive },
     actions: { increment, decrement },
-    getters: { doubleCount, status }
+    getters: { doubleCount, status },
   }
 })
 ```
@@ -442,12 +460,8 @@ const counter = useCounter()
     <p>状态: {{ counter.status }}</p>
     <p>双倍值: {{ counter.doubleCount }}</p>
 
-    <button @click="counter.increment">
-      +1
-    </button>
-    <button @click="counter.decrement">
-      -1
-    </button>
+    <button @click="counter.increment">+1</button>
+    <button @click="counter.decrement">-1</button>
   </div>
 </template>
 ```
@@ -474,13 +488,13 @@ export const useApp = createStore('app', () => {
   const appStatus = computed(() => ({
     user: user.isLoggedIn,
     cartItems: cart.itemCount,
-    theme: settings.theme
+    theme: settings.theme,
   }))
 
   return {
     state: {},
     actions: { logout },
-    getters: { appStatus }
+    getters: { appStatus },
   }
 })
 ```
@@ -493,8 +507,7 @@ export function useConditionalStore(type: 'admin' | 'user') {
   return createStore(`${type}-store`, () => {
     if (type === 'admin') {
       return setupAdminStore()
-    }
-    else {
+    } else {
       return setupUserStore()
     }
   })
@@ -507,14 +520,13 @@ function setupAdminStore() {
   const addUser = (user: User) => users.value.push(user)
   const removeUser = (id: string) => {
     const index = users.value.findIndex(u => u.id === id)
-    if (index > -1)
-      users.value.splice(index, 1)
+    if (index > -1) users.value.splice(index, 1)
   }
 
   return {
     state: { users, permissions },
     actions: { addUser, removeUser },
-    getters: {}
+    getters: {},
   }
 }
 
@@ -522,12 +534,12 @@ function setupUserStore() {
   const profile = ref(null)
   const preferences = ref({})
 
-  const updateProfile = (data: any) => profile.value = data
+  const updateProfile = (data: any) => (profile.value = data)
 
   return {
     state: { profile, preferences },
     actions: { updateProfile },
-    getters: {}
+    getters: {},
   }
 }
 ```
@@ -553,25 +565,26 @@ interface CounterGetters {
   isPositive: boolean
 }
 
-export const useTypedCounter = createStore<
-  CounterState & CounterActions & CounterGetters
->('typed-counter', () => {
-  const count = ref(0)
-  const step = ref(1)
+export const useTypedCounter = createStore<CounterState & CounterActions & CounterGetters>(
+  'typed-counter',
+  () => {
+    const count = ref(0)
+    const step = ref(1)
 
-  const increment = () => count.value += step.value
-  const decrement = () => count.value -= step.value
-  const setStep = (newStep: number) => step.value = newStep
+    const increment = () => (count.value += step.value)
+    const decrement = () => (count.value -= step.value)
+    const setStep = (newStep: number) => (step.value = newStep)
 
-  const doubleCount = computed(() => count.value * 2)
-  const isPositive = computed(() => count.value > 0)
+    const doubleCount = computed(() => count.value * 2)
+    const isPositive = computed(() => count.value > 0)
 
-  return {
-    state: { count, step },
-    actions: { increment, decrement, setStep },
-    getters: { doubleCount, isPositive }
+    return {
+      state: { count, step },
+      actions: { increment, decrement, setStep },
+      getters: { doubleCount, isPositive },
+    }
   }
-})
+)
 ```
 
 ## 常见问题
@@ -612,7 +625,7 @@ const useSettings = createStore('settings', () => {
   return {
     state: { theme, lang },
     actions: {},
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -629,7 +642,7 @@ const useTypedStore = createStore('typed', () => {
   return {
     state: { count, items },
     actions: {},
-    getters: {}
+    getters: {},
   }
 })
 ```

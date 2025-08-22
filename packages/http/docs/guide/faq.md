@@ -20,8 +20,9 @@ yarn add @ldesign/http
 ### Q: 支持哪些环境？
 
 A: @ldesign/http 支持：
+
 - **浏览器**: 现代浏览器 (Chrome 63+, Firefox 57+, Safari 12+)
-- **Node.js**: 16.0+ 
+- **Node.js**: 16.0+
 - **框架**: Vue 3, React, Angular 等
 - **构建工具**: Vite, Webpack, Rollup 等
 
@@ -54,12 +55,12 @@ const http = createHttpClient({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer token'
+    'Authorization': 'Bearer token',
   },
   retry: {
     retries: 3,
-    retryDelay: 1000
-  }
+    retryDelay: 1000,
+  },
 })
 ```
 
@@ -73,7 +74,7 @@ http.interceptors.response.use((response) => {
   if (response.data && 'data' in response.data) {
     return {
       ...response,
-      data: response.data.data
+      data: response.data.data,
     }
   }
   return response
@@ -88,7 +89,7 @@ A: 使用 AbortController：
 const controller = new AbortController()
 
 const response = await http.get('/users', {
-  signal: controller.signal
+  signal: controller.signal,
 })
 
 // 取消请求
@@ -116,7 +117,8 @@ const http = createHttpClient({}, 'fetch')
 
 ### Q: 各个适配器有什么区别？
 
-A: 
+A:
+
 - **FetchAdapter**: 基于原生 fetch API，现代浏览器原生支持
 - **AxiosAdapter**: 基于 axios，功能丰富，兼容性好
 - **AlovaAdapter**: 基于 alova，轻量级，性能优秀
@@ -138,7 +140,7 @@ class MyAdapter extends BaseAdapter {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config
+      config,
     }
   }
 
@@ -154,17 +156,18 @@ const http = createHttpClient({}, new MyAdapter())
 
 ### Q: 拦截器的执行顺序是什么？
 
-A: 
+A:
+
 - **请求拦截器**: 后添加的先执行 (LIFO)
 - **响应拦截器**: 先添加的先执行 (FIFO)
 
 ```typescript
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   console.log('第二个执行')
   return config
 })
 
-http.interceptors.request.use(config => {
+http.interceptors.request.use((config) => {
   console.log('第一个执行')
   return config
 })
@@ -190,7 +193,7 @@ http.interceptors.request.use((config) => {
   // 修改配置
   config.headers.Authorization = 'Bearer new-token'
   config.timeout = 5000
-  
+
   // 必须返回配置
   return config
 })
@@ -225,7 +228,8 @@ await http.cache.delete('/users')
 
 ### Q: 缓存支持哪些存储方式？
 
-A: 
+A:
+
 - **内存缓存**: 默认，页面刷新后丢失
 - **localStorage**: 持久化存储
 - **sessionStorage**: 会话级存储
@@ -234,8 +238,8 @@ A:
 const http = createHttpClient({
   cache: {
     enabled: true,
-    storage: 'localStorage' // 或 'memory', 'sessionStorage'
-  }
+    storage: 'localStorage', // 或 'memory', 'sessionStorage'
+  },
 })
 ```
 
@@ -243,7 +247,8 @@ const http = createHttpClient({
 
 ### Q: useQuery 和 useRequest 有什么区别？
 
-A: 
+A:
+
 - **useQuery**: 自动执行，适合获取数据
 - **useRequest**: 手动执行，适合用户操作
 
@@ -260,16 +265,12 @@ const { data, execute } = useRequest(http, () => http.get('/users'))
 A: 使用 onError 回调或 error 状态：
 
 ```typescript
-const { data, error } = useQuery(
-  http,
-  () => http.get('/users'),
-  {
-    onError: (error) => {
-      console.error('请求失败:', error)
-      showNotification(error.message, 'error')
-    }
-  }
-)
+const { data, error } = useQuery(http, () => http.get('/users'), {
+  onError: (error) => {
+    console.error('请求失败:', error)
+    showNotification(error.message, 'error')
+  },
+})
 
 // 或者在模板中处理
 // <div v-if="error">错误: {{ error.message }}</div>
@@ -282,13 +283,9 @@ A: 使用 enabled 选项：
 ```typescript
 const userId = ref(null)
 
-const { data } = useQuery(
-  http,
-  () => http.get(`/users/${userId.value}`),
-  {
-    enabled: computed(() => userId.value !== null)
-  }
-)
+const { data } = useQuery(http, () => http.get(`/users/${userId.value}`), {
+  enabled: computed(() => userId.value !== null),
+})
 ```
 
 ## ⚡ 性能优化
@@ -300,8 +297,8 @@ A: 启用请求去重：
 ```typescript
 const http = createHttpClient({
   concurrency: {
-    deduplication: true
-  }
+    deduplication: true,
+  },
 })
 ```
 
@@ -312,8 +309,8 @@ A: 设置并发限制：
 ```typescript
 const http = createHttpClient({
   concurrency: {
-    maxConcurrent: 6
-  }
+    maxConcurrent: 6,
+  },
 })
 ```
 
@@ -324,9 +321,9 @@ A: 使用分页 hook：
 ```typescript
 const { data, loading, loadMore, hasMore } = usePagination(
   http,
-  (page) => http.get(`/users?page=${page}`),
+  page => http.get(`/users?page=${page}`),
   {
-    pageSize: 20
+    pageSize: 20,
   }
 )
 ```
@@ -353,7 +350,7 @@ A: 在响应拦截器中处理：
 
 ```typescript
 http.interceptors.response.use(
-  (response) => response,
+  response => response,
   (error) => {
     if (error.response?.status === 401) {
       // 清除本地认证信息
@@ -401,8 +398,8 @@ const http = createHttpClient({
   timeout: 10000, // 10秒超时
   retry: {
     retries: 2,
-    retryCondition: (error) => error.isTimeoutError
-  }
+    retryCondition: error => error.isTimeoutError,
+  },
 })
 ```
 
@@ -413,12 +410,15 @@ A: 使用错误类型判断：
 ```typescript
 try {
   await http.get('/users')
-} catch (error) {
+}
+catch (error) {
   if (error.isNetworkError) {
     showMessage('网络连接失败，请检查网络')
-  } else if (error.isTimeoutError) {
+  }
+  else if (error.isTimeoutError) {
     showMessage('请求超时，请稍后重试')
-  } else {
+  }
+  else {
     showMessage(`请求失败: ${error.message}`)
   }
 }

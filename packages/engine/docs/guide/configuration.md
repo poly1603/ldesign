@@ -265,10 +265,10 @@ const engine = createEngine({
     csp: {
       enabled: true,
       directives: {
-        'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'"],
-        'style-src': ["'self'", "'unsafe-inline'"],
-        'img-src': ["'self'", 'data:', 'https:'],
+        'default-src': ['\'self\''],
+        'script-src': ['\'self\'', '\'unsafe-inline\''],
+        'style-src': ['\'self\'', '\'unsafe-inline\''],
+        'img-src': ['\'self\'', 'data:', 'https:'],
       },
       reportOnly: false,
       reportUri: '/api/csp-report',
@@ -477,7 +477,7 @@ engine.updateConfig({
 })
 
 // 监听配置变化
-engine.events.on('config:updated', changes => {
+engine.events.on('config:updated', (changes) => {
   console.log('配置已更新:', changes)
 })
 ```
@@ -493,7 +493,8 @@ async function loadRemoteConfig() {
 
     engine.updateConfig(remoteConfig)
     console.log('远程配置加载成功')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('远程配置加载失败:', error)
   }
 }
@@ -529,7 +530,7 @@ const validate = ajv.compile(configSchema)
 function validateConfig(config: any) {
   const valid = validate(config)
   if (!valid) {
-    throw new Error('配置验证失败: ' + ajv.errorsText(validate.errors))
+    throw new Error(`配置验证失败: ${ajv.errorsText(validate.errors)}`)
   }
   return config
 }

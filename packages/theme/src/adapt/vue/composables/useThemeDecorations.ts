@@ -4,19 +4,19 @@
  * 提供装饰元素管理的响应式接口
  */
 
-import {
-  inject,
-  ref,
-  computed,
-  onUnmounted,
-  type Ref,
-  type ComputedRef,
-} from 'vue'
 import type {
+  DecorationConfig,
   UseThemeDecorationsReturn,
   VueThemeContext,
-  DecorationConfig,
 } from '../types'
+import {
+  computed,
+  type ComputedRef,
+  inject,
+  onUnmounted,
+  ref,
+  type Ref,
+} from 'vue'
 import { VueThemeContextKey } from '../types'
 
 /**
@@ -35,26 +35,26 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
 
   // 更新装饰列表
   const updateDecorations = () => {
-    if (themeContext.themeManager) {
-      decorations.value = themeContext.themeManager.getDecorations()
+    if (themeContext.themeManager.value) {
+      decorations.value = themeContext.themeManager.value.getDecorations()
     }
   }
 
   // 监听装饰变化事件
-  if (themeContext.themeManager) {
-    themeContext.themeManager.on('decoration-added', updateDecorations)
-    themeContext.themeManager.on('decoration-removed', updateDecorations)
+  if (themeContext.themeManager.value) {
+    themeContext.themeManager.value.on('decoration-added', updateDecorations)
+    themeContext.themeManager.value.on('decoration-removed', updateDecorations)
   }
 
   /**
    * 添加装饰元素
    */
   const addDecoration = (decoration: DecorationConfig): void => {
-    if (!themeContext.themeManager) {
+    if (!themeContext.themeManager.value) {
       throw new Error('Theme manager is not initialized')
     }
 
-    themeContext.themeManager.addDecoration(decoration)
+    themeContext.themeManager.value.addDecoration(decoration)
     updateDecorations()
   }
 
@@ -62,11 +62,11 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    * 移除装饰元素
    */
   const removeDecoration = (id: string): void => {
-    if (!themeContext.themeManager) {
+    if (!themeContext.themeManager.value) {
       return
     }
 
-    themeContext.themeManager.removeDecoration(id)
+    themeContext.themeManager.value.removeDecoration(id)
     updateDecorations()
   }
 
@@ -75,13 +75,13 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    */
   const updateDecoration = (
     id: string,
-    updates: Partial<DecorationConfig>
+    updates: Partial<DecorationConfig>,
   ): void => {
-    if (!themeContext.themeManager) {
+    if (!themeContext.themeManager.value) {
       return
     }
 
-    themeContext.themeManager.updateDecoration(id, updates)
+    themeContext.themeManager.value.updateDecoration(id, updates)
     updateDecorations()
   }
 
@@ -89,13 +89,13 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    * 清空所有装饰元素
    */
   const clearDecorations = (): void => {
-    if (!themeContext.themeManager) {
+    if (!themeContext.themeManager.value) {
       return
     }
 
     const currentDecorations = decorations.value
-    currentDecorations.forEach(decoration => {
-      themeContext.themeManager!.removeDecoration(decoration.id)
+    currentDecorations.forEach((decoration) => {
+      themeContext.themeManager.value!.removeDecoration(decoration.id)
     })
 
     updateDecorations()
@@ -114,7 +114,7 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
    * 获取装饰元素
    */
   const getDecoration = (
-    id: string
+    id: string,
   ): ComputedRef<DecorationConfig | undefined> => {
     return computed(() => {
       return decorations.value.find(decoration => decoration.id === id)
@@ -126,9 +126,12 @@ export function useThemeDecorations(): UseThemeDecorationsReturn {
 
   // 清理事件监听器
   onUnmounted(() => {
-    if (themeContext.themeManager) {
-      themeContext.themeManager.off('decoration-added', updateDecorations)
-      themeContext.themeManager.off('decoration-removed', updateDecorations)
+    if (themeContext.themeManager.value) {
+      themeContext.themeManager.value.off('decoration-added', updateDecorations)
+      themeContext.themeManager.value.off(
+        'decoration-removed',
+        updateDecorations,
+      )
     }
   })
 
@@ -171,7 +174,7 @@ export function useDecorationFilter(): {
 
     if (currentFilter.value.type) {
       filtered = filtered.filter(
-        decoration => decoration.type === currentFilter.value.type
+        decoration => decoration.type === currentFilter.value.type,
       )
     }
 
@@ -223,8 +226,8 @@ export function useDecorationBatch(): {
   updateSelected: (updates: Partial<DecorationConfig>) => void
   isSelected: (id: string) => ComputedRef<boolean>
 } {
-  const { decorations, removeDecoration, updateDecoration } =
-    useThemeDecorations()
+  const { decorations, removeDecoration, updateDecoration }
+    = useThemeDecorations()
 
   const selectedDecorations = ref<string[]>([])
 
@@ -243,7 +246,7 @@ export function useDecorationBatch(): {
 
   const selectAll = () => {
     selectedDecorations.value = decorations.value.map(
-      decoration => decoration.id
+      decoration => decoration.id,
     )
   }
 
@@ -254,20 +257,21 @@ export function useDecorationBatch(): {
   const toggleSelection = (id: string) => {
     if (selectedDecorations.value.includes(id)) {
       deselectDecoration(id)
-    } else {
+    }
+    else {
       selectDecoration(id)
     }
   }
 
   const removeSelected = () => {
-    selectedDecorations.value.forEach(id => {
+    selectedDecorations.value.forEach((id) => {
       removeDecoration(id)
     })
     selectedDecorations.value = []
   }
 
   const updateSelected = (updates: Partial<DecorationConfig>) => {
-    selectedDecorations.value.forEach(id => {
+    selectedDecorations.value.forEach((id) => {
       updateDecoration(id, updates)
     })
   }

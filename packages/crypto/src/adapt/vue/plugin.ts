@@ -33,7 +33,13 @@ export interface CryptoPluginOptions {
     defaultRSAKeySize?: 1024 | 2048 | 3072 | 4096
 
     // 默认哈希算法
-    defaultHashAlgorithm?: 'MD5' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'
+    defaultHashAlgorithm?:
+      | 'MD5'
+      | 'SHA1'
+      | 'SHA224'
+      | 'SHA256'
+      | 'SHA384'
+      | 'SHA512'
 
     // 默认编码类型
     defaultEncoding?: 'base64' | 'hex' | 'utf8'
@@ -134,7 +140,10 @@ export const CryptoPlugin: Plugin = {
     }
 
     // 开发模式下的调试信息
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+    if (
+      typeof process !== 'undefined'
+      && process.env?.NODE_ENV === 'development'
+    ) {
       console.warn('[LDesign Crypto] Plugin installed successfully')
       console.warn('[LDesign Crypto] Global property:', globalPropertyName)
       console.warn('[LDesign Crypto] Config:', config)

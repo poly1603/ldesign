@@ -31,43 +31,23 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
-    },
-    "./vue": {
-      "types": "./types/adapt/vue/index.d.ts",
-      "import": "./es/adapt/vue/index.js",
-      "require": "./lib/adapt/vue/index.js"
-    },
-    "./decorations": {
-      "types": "./types/decorations/index.d.ts",
-      "import": "./es/decorations/index.js",
-      "require": "./lib/decorations/index.js"
-    },
-    "./animations": {
-      "types": "./types/animations/index.d.ts",
-      "import": "./es/animations/index.js",
-      "require": "./lib/animations/index.js"
-    },
-    "./themes": {
-      "types": "./types/themes/index.d.ts",
-      "import": "./es/themes/index.js",
-      "require": "./lib/themes/index.js"
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "lib/index.js",
-  "module": "es/index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "types": "types/index.d.ts",
-  "browser": "dist/index.js",
+  "browser": "dist/index.min.js",
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "assets",
+    "cjs",
     "dist",
-    "es",
-    "lib",
-    "types",
-    "assets"
+    "esm",
+    "types"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -85,17 +65,13 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "deploy": "tsx ../../tools/deploy/package-deployer.ts theme",
     "deploy:beta": "tsx ../../tools/deploy/package-deployer.ts theme --tag beta",
     "deploy:alpha": "tsx ../../tools/deploy/package-deployer.ts theme --tag alpha",
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts theme --dry-run"
-  },
-  "dependencies": {
-    "@ldesign/color": "workspace:*",
-    "tslib": "^2.6.2"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
@@ -104,6 +80,10 @@
     "vue": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "@ldesign/color": "workspace:*",
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",

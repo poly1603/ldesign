@@ -18,7 +18,11 @@ export interface CacheConfig {
   strategy: CacheStrategy
 }
 
-export type CacheStrategy = 'memory' | 'localStorage' | 'sessionStorage' | 'indexedDB'
+export type CacheStrategy =
+  | 'memory'
+  | 'localStorage'
+  | 'sessionStorage'
+  | 'indexedDB'
 
 export interface CacheItem {
   data: any
@@ -332,7 +336,11 @@ export class HttpCacheManager {
   /**
    * 检查响应是否可缓存
    */
-  static isCacheable(method: string, status: number, headers: Record<string, string> = {}): boolean {
+  static isCacheable(
+    method: string,
+    status: number,
+    headers: Record<string, string> = {},
+  ): boolean {
     // 只缓存GET请求
     if (method.toUpperCase() !== 'GET') {
       return false
@@ -346,7 +354,10 @@ export class HttpCacheManager {
     // 检查Cache-Control头
     const cacheControl = headers['cache-control'] || headers['Cache-Control']
     if (cacheControl) {
-      if (cacheControl.includes('no-cache') || cacheControl.includes('no-store')) {
+      if (
+        cacheControl.includes('no-cache')
+        || cacheControl.includes('no-store')
+      ) {
         return false
       }
     }
@@ -358,7 +369,9 @@ export class HttpCacheManager {
 /**
  * 创建HTTP缓存管理器
  */
-export function createHttpCacheManager(config?: Partial<CacheConfig>): HttpCacheManager {
+export function createHttpCacheManager(
+  config?: Partial<CacheConfig>,
+): HttpCacheManager {
   return new HttpCacheManager(config)
 }
 

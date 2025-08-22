@@ -129,11 +129,7 @@ onMounted(async () => {
             <option value="">
               请选择分类
             </option>
-            <option
-              v-for="category in availableCategories"
-              :key="category"
-              :value="category"
-            >
+            <option v-for="category in availableCategories" :key="category" :value="category">
               {{ category }}
             </option>
           </select>
@@ -141,20 +137,11 @@ onMounted(async () => {
 
         <div class="control-group">
           <label for="device-select">设备类型:</label>
-          <select
-            id="device-select"
-            v-model="selectedDevice"
-            data-testid="device-select"
-            @change="onDeviceChange"
-          >
+          <select id="device-select" v-model="selectedDevice" data-testid="device-select" @change="onDeviceChange">
             <option value="">
               请选择设备
             </option>
-            <option
-              v-for="device in availableDevices"
-              :key="device"
-              :value="device"
-            >
+            <option v-for="device in availableDevices" :key="device" :value="device">
               {{ device }}
             </option>
           </select>
@@ -171,21 +158,13 @@ onMounted(async () => {
             <option value="">
               请选择模板
             </option>
-            <option
-              v-for="template in availableTemplates"
-              :key="template.template"
-              :value="template.template"
-            >
+            <option v-for="template in availableTemplates" :key="template.template" :value="template.template">
               {{ template.config.name }}
             </option>
           </select>
         </div>
 
-        <button
-          class="refresh-btn"
-          :disabled="loading"
-          @click="refreshTemplates"
-        >
+        <button class="refresh-btn" :disabled="loading" @click="refreshTemplates">
           {{ loading ? '加载中...' : '刷新模板' }}
         </button>
       </div>
@@ -206,10 +185,7 @@ onMounted(async () => {
           :data-category="selectedCategory"
           :data-device="selectedDevice"
         >
-          <component
-            :is="currentTemplateComponent"
-            v-bind="templateProps"
-          />
+          <component :is="currentTemplateComponent" v-bind="templateProps" />
         </div>
 
         <div v-else class="placeholder">

@@ -30,13 +30,13 @@ const myPlugin = {
     })
 
     // 监听事件
-    manager.on('template:load', (event) => {
+    manager.on('template:load', event => {
       console.log('插件监听到模板加载:', event.template)
     })
 
     // 添加自定义配置
     manager.setConfig('myPlugin', options)
-  }
+  },
 }
 ```
 
@@ -89,7 +89,7 @@ class AdvancedPlugin {
     this.manager.directive('my-template', {
       mounted(el, binding) {
         // 自定义指令逻辑
-      }
+      },
     })
   }
 }
@@ -109,7 +109,7 @@ const manager = new TemplateManager()
 manager.use(myPlugin, {
   // 插件选项
   option1: 'value1',
-  option2: 'value2'
+  option2: 'value2',
 })
 ```
 
@@ -124,9 +124,7 @@ import myPlugin from './plugins/my-plugin'
 const app = createApp(App)
 
 app.use(TemplatePlugin, {
-  plugins: [
-    [myPlugin, { option: 'value' }]
-  ]
+  plugins: [[myPlugin, { option: 'value' }]],
 })
 ```
 
@@ -139,11 +137,7 @@ const cachePlugin = {
   name: 'cache-plugin',
 
   install(manager, options = {}) {
-    const {
-      maxSize = 100,
-      ttl = 30 * 60 * 1000,
-      strategy = 'lru'
-    } = options
+    const { maxSize = 100, ttl = 30 * 60 * 1000, strategy = 'lru' } = options
 
     // 创建缓存实例
     const cache = new LRUCache(maxSize, ttl)
@@ -168,7 +162,7 @@ const cachePlugin = {
         cache.set(key, context.result)
       }
     })
-  }
+  },
 }
 ```
 
@@ -179,15 +173,12 @@ const loggerPlugin = {
   name: 'logger-plugin',
 
   install(manager, options = {}) {
-    const {
-      level = 'info',
-      format = 'json'
-    } = options
+    const { level = 'info', format = 'json' } = options
 
     const logger = createLogger({ level, format })
 
     // 监听所有事件
-    manager.on('*', (event) => {
+    manager.on('*', event => {
       logger.log(event.type, event.data)
     })
 
@@ -195,7 +186,7 @@ const loggerPlugin = {
     manager.addMethod('log', (message, level = 'info') => {
       logger.log(level, message)
     })
-  }
+  },
 }
 ```
 
@@ -209,11 +200,11 @@ const performancePlugin = {
     const metrics = new Map()
 
     // 监控模板加载时间
-    manager.on('template:beforeLoad', (event) => {
+    manager.on('template:beforeLoad', event => {
       metrics.set(event.id, Date.now())
     })
 
-    manager.on('template:afterLoad', (event) => {
+    manager.on('template:afterLoad', event => {
       const startTime = metrics.get(event.id)
       if (startTime) {
         const loadTime = Date.now() - startTime
@@ -242,7 +233,7 @@ const performancePlugin = {
 
   generateReport() {
     // 生成性能报告的实现
-  }
+  },
 }
 ```
 
@@ -300,8 +291,8 @@ export const defaultConfig = {
   cache: {
     enabled: true,
     maxSize: 50,
-    ttl: 10 * 60 * 1000
-  }
+    ttl: 10 * 60 * 1000,
+  },
 }
 
 export function validateConfig(config: any) {
@@ -314,7 +305,7 @@ export function validateConfig(config: any) {
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   }
 }
 ```
@@ -354,12 +345,12 @@ const manager = new TemplateManager()
 
 manager.use(cachePlugin, {
   maxSize: 200,
-  ttl: 60 * 60 * 1000 // 1小时
+  ttl: 60 * 60 * 1000, // 1小时
 })
 
 manager.use(remotePlugin, {
   baseUrl: 'https://templates.example.com',
-  timeout: 10000
+  timeout: 10000,
 })
 ```
 
@@ -372,10 +363,10 @@ manager.use(remotePlugin, {
 const pluginA = {
   name: 'plugin-a',
   install(manager) {
-    manager.on('custom:event', (data) => {
+    manager.on('custom:event', data => {
       console.log('插件A收到事件:', data)
     })
-  }
+  },
 }
 
 // 插件B
@@ -384,7 +375,7 @@ const pluginB = {
   install(manager) {
     // 触发自定义事件
     manager.emit('custom:event', { message: 'Hello from Plugin B' })
-  }
+  },
 }
 ```
 
@@ -398,12 +389,12 @@ const sharedState = {
     const state = reactive({
       user: null,
       theme: 'light',
-      language: 'zh-CN'
+      language: 'zh-CN',
     })
 
     // 将状态注入到管理器
     manager.provide('sharedState', state)
-  }
+  },
 }
 
 // 在其他插件中使用
@@ -413,10 +404,13 @@ const consumerPlugin = {
     const state = manager.inject('sharedState')
 
     // 监听状态变化
-    watch(() => state.theme, (newTheme) => {
-      console.log('主题变化:', newTheme)
-    })
-  }
+    watch(
+      () => state.theme,
+      newTheme => {
+        console.log('主题变化:', newTheme)
+      }
+    )
+  },
 }
 ```
 
@@ -466,7 +460,7 @@ describe('插件集成测试', () => {
     const app = createApp({})
 
     app.use(TemplatePlugin, {
-      plugins: [[myPlugin, { option: 'test' }]]
+      plugins: [[myPlugin, { option: 'test' }]],
     })
 
     // 测试插件功能

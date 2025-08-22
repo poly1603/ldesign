@@ -2,10 +2,9 @@
  * 尺寸切换器组件
  */
 
+import type { SizeMode } from '../types'
 import { defineComponent, type PropType } from 'vue'
-import type { SizeMode, VueSizeComponentProps } from '../types'
 import { useSizeSwitcher } from './composables'
-import { getSizeModeDisplayName } from '../utils'
 
 /**
  * 尺寸切换器组件
@@ -57,7 +56,7 @@ export const SizeSwitcher = defineComponent({
     const renderButtonSwitcher = () => (
       <div class={`size-switcher size-switcher--button ${props.className}`}>
         <div class="size-switcher__buttons">
-          {availableModes.map((mode) => (
+          {availableModes.map(mode => (
             <button
               key={mode}
               class={[
@@ -85,7 +84,7 @@ export const SizeSwitcher = defineComponent({
             handleModeChange(target.value as SizeMode)
           }}
         >
-          {availableModes.map((mode) => (
+          {availableModes.map(mode => (
             <option key={mode} value={mode}>
               {getModeDisplayName(mode)}
             </option>
@@ -97,7 +96,7 @@ export const SizeSwitcher = defineComponent({
     const renderRadioSwitcher = () => (
       <div class={`size-switcher size-switcher--radio ${props.className}`}>
         <div class="size-switcher__radios">
-          {availableModes.map((mode) => (
+          {availableModes.map(mode => (
             <label key={mode} class="size-switcher__radio-label">
               <input
                 type="radio"
@@ -133,11 +132,7 @@ export const SizeSwitcher = defineComponent({
         return null
       }
 
-      return (
-        <div class="size-switcher-wrapper">
-          {renderSwitcher()}
-        </div>
-      )
+      return <div class="size-switcher-wrapper">{renderSwitcher()}</div>
     }
   },
 })
@@ -168,12 +163,16 @@ export const SizeIndicator = defineComponent({
       <div class={`size-indicator ${props.className}`}>
         {props.showMode && (
           <span class="size-indicator__mode">
-            当前尺寸: {currentModeDisplayName.value}
+            当前尺寸:
+            {' '}
+            {currentModeDisplayName.value}
           </span>
         )}
         {props.showScale && (
           <span class="size-indicator__scale">
-            ({currentMode.value})
+            (
+            {currentMode.value}
+            )
           </span>
         )}
       </div>

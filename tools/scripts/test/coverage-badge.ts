@@ -21,10 +21,14 @@ interface CoverageSummary {
  * 获取徽章颜色
  */
 function getBadgeColor(percentage: number): string {
-  if (percentage >= 90) return 'brightgreen'
-  if (percentage >= 80) return 'green'
-  if (percentage >= 70) return 'yellow'
-  if (percentage >= 60) return 'orange'
+  if (percentage >= 90)
+    return 'brightgreen'
+  if (percentage >= 80)
+    return 'green'
+  if (percentage >= 70)
+    return 'yellow'
+  if (percentage >= 60)
+    return 'orange'
   return 'red'
 }
 
@@ -73,7 +77,7 @@ async function main() {
 
   // 读取覆盖率数据
   const coverageData: CoverageSummary = JSON.parse(
-    readFileSync(coverageSummaryPath, 'utf-8')
+    readFileSync(coverageSummaryPath, 'utf-8'),
   )
 
   // 创建徽章目录
@@ -103,12 +107,12 @@ async function main() {
   ]
 
   // 计算总体覆盖率
-  const overallCoverage =
-    (coverageData.total.lines.pct +
-      coverageData.total.statements.pct +
-      coverageData.total.functions.pct +
-      coverageData.total.branches.pct) /
-    4
+  const overallCoverage
+    = (coverageData.total.lines.pct
+      + coverageData.total.statements.pct
+      + coverageData.total.functions.pct
+      + coverageData.total.branches.pct)
+    / 4
 
   badges.push({ name: 'coverage', label: 'Coverage', value: overallCoverage })
 
@@ -142,15 +146,16 @@ function updateReadmeBadges(coverage: number) {
   // 更新覆盖率徽章（如果存在）
   const coverageBadgeRegex = /!\[Coverage\]\([^)]+\)/g
   const newBadge = `![Coverage](https://img.shields.io/badge/Coverage-${coverage.toFixed(
-    1
+    1,
   )}%25-${getBadgeColor(coverage)})`
 
   if (coverageBadgeRegex.test(readme)) {
     readme = readme.replace(coverageBadgeRegex, newBadge)
-  } else {
+  }
+  else {
     // 如果没有找到覆盖率徽章，添加到标题后面
     const titleRegex = /^# .+$/m
-    readme = readme.replace(titleRegex, match => {
+    readme = readme.replace(titleRegex, (match) => {
       return `${match}\n\n${newBadge}`
     })
   }

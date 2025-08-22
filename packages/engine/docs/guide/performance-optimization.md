@@ -35,7 +35,7 @@ const engine = createEngine({
 })
 
 // 监听性能警告
-engine.events.on('performance:budget-exceeded', metric => {
+engine.events.on('performance:budget-exceeded', (metric) => {
   console.warn(`性能预算超标: ${metric.name}`, metric)
 })
 ```
@@ -92,7 +92,7 @@ if (window.requestIdleCallback) {
 ```typescript
 const heavyPlugin = {
   name: 'heavy-plugin',
-  install: async engine => {
+  install: async (engine) => {
     // 异步初始化，不阻塞应用启动
     setTimeout(async () => {
       const config = await loadHeavyConfig()
@@ -144,7 +144,7 @@ const engine = createEngine({
       interval: 10000, // 10秒检查一次
       threshold: 50 * 1024 * 1024, // 50MB阈值
 
-      onThresholdExceeded: memoryInfo => {
+      onThresholdExceeded: (memoryInfo) => {
         console.warn('内存使用过高:', memoryInfo)
 
         // 执行内存清理
@@ -270,7 +270,7 @@ engine.events
     size: 10, // 批量大小
     timeout: 1000, // 超时时间
   })
-  .on(events => {
+  .on((events) => {
     // 批量处理事件
     sendAnalyticsBatch(events)
   })
@@ -354,7 +354,8 @@ async function fetchWithDeduplication(url: string) {
   try {
     const result = await promise
     return result
-  } finally {
+  }
+  finally {
     pendingRequests.delete(url)
   }
 }
@@ -367,19 +368,19 @@ async function fetchWithDeduplication(url: string) {
 function preloadCriticalResources() {
   const criticalUrls = ['/api/user/profile', '/api/app/config', '/api/menu/items']
 
-  criticalUrls.forEach(url => {
+  criticalUrls.forEach((url) => {
     fetch(url)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
       })
-      .then(data => {
+      .then((data) => {
         // 预缓存数据
         const cacheKey = url.replace('/api/', '')
         engine.cache.set(cacheKey, data, 600000) // 10分钟
       })
-      .catch(error => {
+      .catch((error) => {
         console.warn('预加载失败:', url, error)
       })
   })
@@ -479,8 +480,8 @@ export default defineConfig({
 ```typescript
 // 按需导入
 import { createEngine } from '@ldesign/engine/core'
-import { statePlugin } from '@ldesign/engine/state'
 import { eventsPlugin } from '@ldesign/engine/events'
+import { statePlugin } from '@ldesign/engine/state'
 
 // 而不是
 // import { createEngine, statePlugin, eventsPlugin } from '@ldesign/engine'

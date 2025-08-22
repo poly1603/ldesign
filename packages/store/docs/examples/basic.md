@@ -170,7 +170,7 @@ const newItem = {
   id: Date.now(),
   name: '新项目',
   category: 'default',
-  value: 100
+  value: 100,
 }
 </script>
 
@@ -178,9 +178,7 @@ const newItem = {
   <div>
     <h1>{{ store.name }}</h1>
     <p>项目数量: {{ store.itemCount }}</p>
-    <button @click="store.addItem(newItem)">
-      添加项目
-    </button>
+    <button @click="store.addItem(newItem)">添加项目</button>
   </div>
 </template>
 ```
@@ -191,14 +189,21 @@ const newItem = {
 import { watch } from 'vue'
 
 // 监听状态变化
-watch(() => store.items, (newItems, oldItems) => {
-  console.log('项目列表变化:', newItems)
-}, { deep: true })
+watch(
+  () => store.items,
+  (newItems, oldItems) => {
+    console.log('项目列表变化:', newItems)
+  },
+  { deep: true }
+)
 
 // 监听计算属性
-watch(() => store.itemCount, (newCount) => {
-  console.log('项目数量:', newCount)
-})
+watch(
+  () => store.itemCount,
+  newCount => {
+    console.log('项目数量:', newCount)
+  }
+)
 
 // 使用 Store 的订阅方法
 const unsubscribe = store.$subscribe((mutation, state) => {

@@ -4,14 +4,14 @@
  * 提供主题管理的响应式接口
  */
 
-import { inject, computed, ref, type ComputedRef, type Ref } from 'vue'
 import type {
+  ThemeConfig,
+  ThemeEventListener,
+  ThemeEventType,
   UseThemeReturn,
   VueThemeContext,
-  ThemeConfig,
-  ThemeEventType,
-  ThemeEventListener,
 } from '../types'
+import { computed, type ComputedRef, inject, type Ref } from 'vue'
 import { VueThemeContextKey } from '../types'
 
 /**
@@ -25,20 +25,21 @@ export function useTheme(): UseThemeReturn {
     throw new Error('useTheme must be used within a ThemeProvider')
   }
 
-  const { themeManager, currentTheme, availableThemes, isLoading, error } =
-    themeContext
+  const { themeManager, currentTheme, availableThemes, isLoading, error }
+    = themeContext
 
   /**
    * 设置主题
    */
   const setTheme = async (name: string): Promise<void> => {
-    if (!themeManager) {
+    if (!themeManager.value) {
       throw new Error('Theme manager is not initialized')
     }
 
     try {
-      await themeManager.setTheme(name)
-    } catch (err) {
+      await themeManager.value.setTheme(name)
+    }
+    catch (err) {
       error.value = err as Error
       throw err
     }
@@ -48,55 +49,55 @@ export function useTheme(): UseThemeReturn {
    * 获取主题配置
    */
   const getTheme = (name: string): ThemeConfig | undefined => {
-    if (!themeManager) {
+    if (!themeManager.value) {
       return undefined
     }
 
-    return themeManager.getTheme(name)
+    return themeManager.value.getTheme(name)
   }
 
   /**
    * 添加主题
    */
   const addTheme = (theme: ThemeConfig): void => {
-    if (!themeManager) {
+    if (!themeManager.value) {
       throw new Error('Theme manager is not initialized')
     }
 
-    themeManager.addTheme(theme)
+    themeManager.value.addTheme(theme)
   }
 
   /**
    * 移除主题
    */
   const removeTheme = (name: string): void => {
-    if (!themeManager) {
+    if (!themeManager.value) {
       throw new Error('Theme manager is not initialized')
     }
 
-    themeManager.removeTheme(name)
+    themeManager.value.removeTheme(name)
   }
 
   /**
    * 添加事件监听器
    */
   const on = (event: ThemeEventType, listener: ThemeEventListener): void => {
-    if (!themeManager) {
+    if (!themeManager.value) {
       throw new Error('Theme manager is not initialized')
     }
 
-    themeManager.on(event, listener)
+    themeManager.value.on(event, listener)
   }
 
   /**
    * 移除事件监听器
    */
   const off = (event: ThemeEventType, listener: ThemeEventListener): void => {
-    if (!themeManager) {
+    if (!themeManager.value) {
       return
     }
 
-    themeManager.off(event, listener)
+    themeManager.value.off(event, listener)
   }
 
   return {
@@ -237,7 +238,7 @@ export function useThemePreload(): {
   const preloadError = ref<Error | null>(null)
 
   const preloadTheme = async (name: string): Promise<void> => {
-    if (!themeContext.themeManager) {
+    if (!themeContext.themeManager.value) {
       throw new Error('Theme manager is not initialized')
     }
 
@@ -245,11 +246,13 @@ export function useThemePreload(): {
       isPreloading.value = true
       preloadError.value = null
 
-      await themeContext.themeManager.preloadResources(name)
-    } catch (err) {
+      await themeContext.themeManager.value.preloadResources(name)
+    }
+    catch (err) {
       preloadError.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       isPreloading.value = false
     }
   }
@@ -260,7 +263,8 @@ export function useThemePreload(): {
     for (const theme of themes) {
       try {
         await preloadTheme(theme)
-      } catch (err) {
+      }
+      catch (err) {
         console.warn(`Failed to preload theme: ${theme}`, err)
       }
     }

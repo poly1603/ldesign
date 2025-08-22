@@ -118,7 +118,9 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   /**
    * 动态加载扩展模块
    */
-  async loadModule<T extends DeviceModule = DeviceModule>(name: string): Promise<T> {
+  async loadModule<T extends DeviceModule = DeviceModule>(
+    name: string,
+  ): Promise<T> {
     if (this.isDestroyed) {
       throw new Error('DeviceDetector has been destroyed')
     }
@@ -250,11 +252,15 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       }, this.options.debounceDelay)
 
       // 监听 orientationchange 事件
-      window.addEventListener('orientationchange', this.orientationHandler, { passive: true })
+      window.addEventListener('orientationchange', this.orientationHandler, {
+        passive: true,
+      })
 
       // 同时监听 resize 事件作为备选方案
       if (!this.options.enableResize) {
-        window.addEventListener('resize', this.orientationHandler, { passive: true })
+        window.addEventListener('resize', this.orientationHandler, {
+          passive: true,
+        })
       }
     }
   }
@@ -281,8 +287,14 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       }
 
       // 检查尺寸是否发生变化
-      if (oldDeviceInfo.width !== newDeviceInfo.width || oldDeviceInfo.height !== newDeviceInfo.height) {
-        this.emit('resize', { width: newDeviceInfo.width, height: newDeviceInfo.height })
+      if (
+        oldDeviceInfo.width !== newDeviceInfo.width
+        || oldDeviceInfo.height !== newDeviceInfo.height
+      ) {
+        this.emit('resize', {
+          width: newDeviceInfo.width,
+          height: newDeviceInfo.height,
+        })
       }
     }
   }
@@ -290,7 +302,10 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   /**
    * 检查设备信息是否发生变化
    */
-  private hasDeviceInfoChanged(oldInfo: DeviceInfo, newInfo: DeviceInfo): boolean {
+  private hasDeviceInfoChanged(
+    oldInfo: DeviceInfo,
+    newInfo: DeviceInfo,
+  ): boolean {
     return (
       oldInfo.type !== newInfo.type
       || oldInfo.orientation !== newInfo.orientation

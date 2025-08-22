@@ -49,11 +49,7 @@ export {
 } from './directives/vDevice'
 
 // 插件
-export {
-  createDevicePlugin,
-  DevicePlugin,
-  useDeviceDetector,
-} from './plugin'
+export { createDevicePlugin, DevicePlugin, useDeviceDetector } from './plugin'
 
 // 默认导出插件
 export { DevicePlugin as default } from './plugin'

@@ -72,11 +72,11 @@ blog-system/
 ```typescript
 // src/engine.ts
 import { createEngine } from '@ldesign/engine'
+import { analyticsMiddleware } from './middleware/analytics'
+import { authMiddleware } from './middleware/auth'
 import { authPlugin } from './plugins/auth-plugin'
 import { blogPlugin } from './plugins/blog-plugin'
 import { themePlugin } from './plugins/theme-plugin'
-import { authMiddleware } from './middleware/auth'
-import { analyticsMiddleware } from './middleware/analytics'
 
 export const engine = createEngine({
   config: {
@@ -153,16 +153,16 @@ export const engine = createEngine({
 ### 认证插件
 
 ```typescript
+import type { User } from '../types/user'
 // src/plugins/auth-plugin.ts
 import { createPlugin } from '@ldesign/engine'
-import type { User } from '../types/user'
 import { authService } from '../services/auth'
 
 export const authPlugin = createPlugin({
   name: 'auth',
   version: '1.0.0',
 
-  install: engine => {
+  install: (engine) => {
     // 注册认证相关状态
     engine.state.set('auth.initialized', false)
 
@@ -187,10 +187,12 @@ export const authPlugin = createPlugin({
           engine.notifications.success('登录成功')
 
           return user
-        } catch (error) {
-          engine.notifications.error('登录失败: ' + error.message)
+        }
+        catch (error) {
+          engine.notifications.error(`登录失败: ${error.message}`)
           throw error
-        } finally {
+        }
+        finally {
           engine.state.set('ui.loading', false)
         }
       },
@@ -211,7 +213,8 @@ export const authPlugin = createPlugin({
           engine.events.emit('auth:logout')
 
           engine.notifications.success('已退出登录')
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('退出登录失败')
         }
       },
@@ -227,17 +230,20 @@ export const authPlugin = createPlugin({
           engine.notifications.success('注册成功，请登录')
 
           return user
-        } catch (error) {
-          engine.notifications.error('注册失败: ' + error.message)
+        }
+        catch (error) {
+          engine.notifications.error(`注册失败: ${error.message}`)
           throw error
-        } finally {
+        }
+        finally {
           engine.state.set('ui.loading', false)
         }
       },
 
       async checkAuth() {
         const token = engine.state.get('auth.token')
-        if (!token) return false
+        if (!token)
+          return false
 
         try {
           const response = await authService.verify(token)
@@ -247,7 +253,8 @@ export const authPlugin = createPlugin({
           engine.state.set('user.isAuthenticated', true)
 
           return true
-        } catch (error) {
+        }
+        catch (error) {
           // Token 无效，清除认证信息
           await this.logout()
           return false
@@ -279,9 +286,9 @@ export const authPlugin = createPlugin({
 ### 博客插件
 
 ```typescript
+import type { Article, Category, Tag } from '../types/blog'
 // src/plugins/blog-plugin.ts
 import { createPlugin } from '@ldesign/engine'
-import type { Article, Category, Tag } from '../types/blog'
 import { blogService } from '../services/blog'
 
 export const blogPlugin = createPlugin({
@@ -289,7 +296,7 @@ export const blogPlugin = createPlugin({
   version: '1.0.0',
   dependencies: ['auth'],
 
-  install: engine => {
+  install: (engine) => {
     const blog = {
       // 文章管理
       async getArticles(params?: ArticleQuery) {
@@ -314,10 +321,12 @@ export const blogPlugin = createPlugin({
           engine.state.set('blog.articles', articles)
 
           return articles
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('获取文章失败')
           throw error
-        } finally {
+        }
+        finally {
           engine.state.set('ui.loading', false)
         }
       },
@@ -345,7 +354,8 @@ export const blogPlugin = createPlugin({
           engine.events.emit('blog:article:view', { id, title: article.title })
 
           return article
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('获取文章失败')
           throw error
         }
@@ -369,10 +379,12 @@ export const blogPlugin = createPlugin({
           engine.notifications.success('文章创建成功')
 
           return article
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('创建文章失败')
           throw error
-        } finally {
+        }
+        finally {
           engine.state.set('ui.loading', false)
         }
       },
@@ -402,10 +414,12 @@ export const blogPlugin = createPlugin({
           engine.notifications.success('文章更新成功')
 
           return article
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('更新文章失败')
           throw error
-        } finally {
+        }
+        finally {
           engine.state.set('ui.loading', false)
         }
       },
@@ -429,7 +443,8 @@ export const blogPlugin = createPlugin({
 
           engine.events.emit('blog:article:deleted', { id })
           engine.notifications.success('文章删除成功')
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('删除文章失败')
           throw error
         }
@@ -441,7 +456,8 @@ export const blogPlugin = createPlugin({
           const cacheKey = `comments:${articleId}`
           const cached = engine.cache.get(cacheKey)
 
-          if (cached) return cached
+          if (cached)
+            return cached
 
           const response = await blogService.getComments(articleId)
           const comments = response.data
@@ -449,7 +465,8 @@ export const blogPlugin = createPlugin({
           engine.cache.set(cacheKey, comments, 180000) // 3分钟
 
           return comments
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('获取评论失败')
           throw error
         }
@@ -472,7 +489,8 @@ export const blogPlugin = createPlugin({
           engine.notifications.success('评论发表成功')
 
           return comment
-        } catch (error) {
+        }
+        catch (error) {
           engine.notifications.error('发表评论失败')
           throw error
         }
@@ -498,7 +516,7 @@ export const themePlugin = createPlugin({
   name: 'theme',
   version: '1.0.0',
 
-  install: engine => {
+  install: (engine) => {
     const theme = {
       setTheme(themeName: string) {
         // 更新状态
@@ -535,7 +553,7 @@ export const themePlugin = createPlugin({
     // 监听系统主题变化
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.addEventListener('change', e => {
+      mediaQuery.addEventListener('change', (e) => {
         if (!engine.state.get('user.preferences.theme')) {
           theme.setTheme(e.matches ? 'dark' : 'light')
         }
@@ -638,11 +656,11 @@ export const analyticsMiddleware = createMiddleware({
 ### 文章卡片组件
 
 ```tsx
-// src/components/ArticleCard.tsx
-import { defineComponent, computed } from 'vue'
-import { ElCard, ElTag, ElButton } from 'element-plus'
-import { useEngine } from '@ldesign/engine/vue'
 import type { Article } from '../types/blog'
+import { useEngine } from '@ldesign/engine/vue'
+import { ElButton, ElCard, ElTag } from 'element-plus'
+// src/components/ArticleCard.tsx
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ArticleCard',
@@ -668,38 +686,41 @@ export default defineComponent({
       try {
         await engine.blog.likeArticle(props.article.id)
         engine.notifications.success('点赞成功')
-      } catch (error) {
+      }
+      catch (error) {
         engine.notifications.error('点赞失败')
       }
     }
 
     return () => (
-      <ElCard class='article-card' shadow='hover'>
-        <div class='article-header'>
-          <h3 class='article-title' onClick={handleView}>
+      <ElCard class="article-card" shadow="hover">
+        <div class="article-header">
+          <h3 class="article-title" onClick={handleView}>
             {props.article.title}
           </h3>
-          <span class='article-date'>{formattedDate.value}</span>
+          <span class="article-date">{formattedDate.value}</span>
         </div>
 
-        <div class='article-content'>
-          <p class='article-summary'>{props.article.summary}</p>
+        <div class="article-content">
+          <p class="article-summary">{props.article.summary}</p>
         </div>
 
-        <div class='article-tags'>
+        <div class="article-tags">
           {props.article.tags?.map(tag => (
-            <ElTag key={tag.id} size='small'>
+            <ElTag key={tag.id} size="small">
               {tag.name}
             </ElTag>
           ))}
         </div>
 
-        <div class='article-actions'>
-          <ElButton type='primary' size='small' onClick={handleView}>
+        <div class="article-actions">
+          <ElButton type="primary" size="small" onClick={handleView}>
             阅读全文
           </ElButton>
-          <ElButton size='small' onClick={handleLike}>
-            👍 {props.article.likes || 0}
+          <ElButton size="small" onClick={handleLike}>
+            👍
+            {' '}
+            {props.article.likes || 0}
           </ElButton>
         </div>
       </ElCard>

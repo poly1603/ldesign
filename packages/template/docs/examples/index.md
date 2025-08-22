@@ -9,11 +9,7 @@
 学习如何创建和使用第一个模板，包括模板组件、配置文件和基本渲染。
 
 ```vue
-<LTemplateRenderer
-  category="login"
-  device="desktop"
-  template="classic"
-/>
+<LTemplateRenderer category="login" device="desktop" template="classic" />
 ```
 
 ### [响应式模板](./responsive.md)
@@ -22,10 +18,7 @@
 
 ```vue
 <!-- 自动根据设备选择合适的模板 -->
-<LTemplateRenderer
-  category="dashboard"
-  template="admin"
-/>
+<LTemplateRenderer category="dashboard" template="admin" />
 ```
 
 ### [动态切换](./dynamic.md)
@@ -36,21 +29,12 @@
 <template>
   <div>
     <select v-model="currentTheme" @change="switchTheme">
-      <option value="classic">
-        经典主题
-      </option>
-      <option value="modern">
-        现代主题
-      </option>
-      <option value="dark">
-        暗黑主题
-      </option>
+      <option value="classic">经典主题</option>
+      <option value="modern">现代主题</option>
+      <option value="dark">暗黑主题</option>
     </select>
 
-    <LTemplateRenderer
-      category="layout"
-      :template="currentTheme"
-    />
+    <LTemplateRenderer category="layout" :template="currentTheme" />
   </div>
 </template>
 ```
@@ -69,7 +53,7 @@
   :template-props="{
     steps: formSteps,
     onStepChange: handleStepChange,
-    onSubmit: handleSubmit
+    onSubmit: handleSubmit,
   }"
 >
   <template #header>
@@ -167,8 +151,8 @@ const baseConfig = {
   version: '1.0.0',
   author: 'LDesign Team',
   compatibility: {
-    vue: '>=3.2.0'
-  }
+    vue: '>=3.2.0',
+  },
 }
 
 // 继承基础配置
@@ -177,7 +161,7 @@ export const config = {
   name: 'modern-login',
   title: '现代登录页',
   category: 'login',
-  device: 'desktop'
+  device: 'desktop',
 }
 ```
 
@@ -228,11 +212,7 @@ export const config = {
       template="user"
     />
 
-    <LTemplateRenderer
-      v-else
-      category="auth"
-      template="login"
-    />
+    <LTemplateRenderer v-else category="auth" template="login" />
   </div>
 </template>
 ```
@@ -246,11 +226,11 @@ import { TemplateManager } from '@ldesign/template'
 
 const manager = new TemplateManager({
   debug: true, // 启用调试模式
-  logLevel: 'debug' // 设置日志级别
+  logLevel: 'debug', // 设置日志级别
 })
 
 // 监听所有事件
-manager.on('*', (event) => {
+manager.on('*', event => {
   console.log('模板事件:', event)
 })
 ```
@@ -279,26 +259,20 @@ function handleLoad(component) {
   >
     <!-- 加载状态 -->
     <template #loading>
-      <div class="loading">
-        正在加载模板...
-      </div>
+      <div class="loading">正在加载模板...</div>
     </template>
 
     <!-- 错误状态 -->
     <template #error="{ error, retry }">
       <div class="error">
         <p>模板加载失败: {{ error.message }}</p>
-        <button @click="retry">
-          重试
-        </button>
+        <button @click="retry">重试</button>
       </div>
     </template>
 
     <!-- 空状态 -->
     <template #empty>
-      <div class="empty">
-        未找到指定模板
-      </div>
+      <div class="empty">未找到指定模板</div>
     </template>
   </LTemplateRenderer>
 </template>
@@ -317,7 +291,7 @@ const { preload } = useTemplate()
 preload([
   { category: 'layout', template: 'header' },
   { category: 'layout', template: 'footer' },
-  { category: 'dashboard', template: 'admin' }
+  { category: 'dashboard', template: 'admin' },
 ])
 ```
 

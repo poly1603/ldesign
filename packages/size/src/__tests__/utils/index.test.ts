@@ -2,21 +2,21 @@
  * 工具函数测试
  */
 
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
-  isValidSizeMode,
+  calculateSizeScale,
+  compareSizeModes,
+  debounce,
+  deepMergeConfig,
+  formatCSSValue,
   getNextSizeMode,
   getPreviousSizeMode,
-  compareSizeModes,
   getSizeModeDisplayName,
-  parseSizeMode,
-  calculateSizeScale,
-  formatCSSValue,
-  parseCSSValue,
-  deepMergeConfig,
-  debounce,
-  throttle,
   isValidInput,
+  isValidSizeMode,
+  parseCSSValue,
+  parseSizeMode,
+  throttle,
 } from '../../utils'
 
 describe('utils', () => {

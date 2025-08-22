@@ -19,7 +19,7 @@ export function useMutation<T = any, V = any>(
     variables: V,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>,
-  options: UseMutationOptions<T, V> = {}
+  options: UseMutationOptions<T, V> = {},
 ): UseMutationReturn<T, V> {
   // 响应式状态
   const data = ref<T | null>(null)
@@ -35,7 +35,7 @@ export function useMutation<T = any, V = any>(
    */
   const mutate = async (
     variables: V,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseData<T>> => {
     // 重置状态
     loading.value = true
@@ -67,7 +67,8 @@ export function useMutation<T = any, V = any>(
       }
 
       return response
-    } catch (err) {
+    }
+    catch (err) {
       const httpError = err as HttpError
 
       // 如果不是取消错误，更新错误状态
@@ -82,7 +83,8 @@ export function useMutation<T = any, V = any>(
       }
 
       throw httpError
-    } finally {
+    }
+    finally {
       loading.value = false
 
       // 调用完成回调
@@ -131,47 +133,47 @@ export function useMutation<T = any, V = any>(
 export function usePost<T = any, D = any>(
   client: HttpClient,
   url: string,
-  options?: UseMutationOptions<T, D>
+  options?: UseMutationOptions<T, D>,
 ): UseMutationReturn<T, D> {
   return useMutation(
     client,
     (data: D, config?: RequestConfig) => client.post<T>(url, data, config),
-    options
+    options,
   )
 }
 
 export function usePut<T = any, D = any>(
   client: HttpClient,
   url: string,
-  options?: UseMutationOptions<T, D>
+  options?: UseMutationOptions<T, D>,
 ): UseMutationReturn<T, D> {
   return useMutation(
     client,
     (data: D, config?: RequestConfig) => client.put<T>(url, data, config),
-    options
+    options,
   )
 }
 
 export function usePatch<T = any, D = any>(
   client: HttpClient,
   url: string,
-  options?: UseMutationOptions<T, D>
+  options?: UseMutationOptions<T, D>,
 ): UseMutationReturn<T, D> {
   return useMutation(
     client,
     (data: D, config?: RequestConfig) => client.patch<T>(url, data, config),
-    options
+    options,
   )
 }
 
 export function useDelete<T = any>(
   client: HttpClient,
   url: string,
-  options?: UseMutationOptions<T, void>
+  options?: UseMutationOptions<T, void>,
 ): UseMutationReturn<T, void> {
   return useMutation(
     client,
     (_, config?: RequestConfig) => client.delete<T>(url, config),
-    options
+    options,
   )
 }

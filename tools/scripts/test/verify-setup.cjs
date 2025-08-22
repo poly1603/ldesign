@@ -35,11 +35,13 @@ function verifyProjectStructure() {
   ]
 
   rootFiles.forEach((file) => {
-    results.push(test(
-      `根目录文件: ${file}`,
-      existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
-    ))
+    results.push(
+      test(
+        `根目录文件: ${file}`,
+        existsSync(file),
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+      ),
+    )
   })
 
   // 检查目录结构
@@ -53,11 +55,13 @@ function verifyProjectStructure() {
   ]
 
   directories.forEach((dir) => {
-    results.push(test(
-      `目录: ${dir}`,
-      existsSync(dir),
-      `${dir} ${existsSync(dir) ? '存在' : '不存在'}`,
-    ))
+    results.push(
+      test(
+        `目录: ${dir}`,
+        existsSync(dir),
+        `${dir} ${existsSync(dir) ? '存在' : '不存在'}`,
+      ),
+    )
   })
 
   return results
@@ -76,11 +80,13 @@ function verifyToolsStructure() {
   ]
 
   toolsFiles.forEach((file) => {
-    results.push(test(
-      `工具文件: ${file}`,
-      existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
-    ))
+    results.push(
+      test(
+        `工具文件: ${file}`,
+        existsSync(file),
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+      ),
+    )
   })
 
   // 检查旧文件是否已移动
@@ -93,11 +99,13 @@ function verifyToolsStructure() {
   ]
 
   oldFiles.forEach((file) => {
-    results.push(test(
-      `旧文件已移动: ${file}`,
-      !existsSync(file),
-      `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`,
-    ))
+    results.push(
+      test(
+        `旧文件已移动: ${file}`,
+        !existsSync(file),
+        `${file} ${existsSync(file) ? '仍然存在（应该已移动）' : '已移动'}`,
+      ),
+    )
   })
 
   return results
@@ -116,11 +124,13 @@ function verifyDocsStructure() {
   ]
 
   docsFiles.forEach((file) => {
-    results.push(test(
-      `文档文件: ${file}`,
-      existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
-    ))
+    results.push(
+      test(
+        `文档文件: ${file}`,
+        existsSync(file),
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+      ),
+    )
   })
 
   // 检查根目录是否已清理
@@ -133,11 +143,15 @@ function verifyDocsStructure() {
   ]
 
   rootDocsFiles.forEach((file) => {
-    results.push(test(
-      `根目录文档已移动: ${file}`,
-      !existsSync(file),
-      `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`,
-    ))
+    results.push(
+      test(
+        `根目录文档已移动: ${file}`,
+        !existsSync(file),
+        `${file} ${
+          existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'
+        }`,
+      ),
+    )
   })
 
   return results
@@ -163,19 +177,19 @@ function verifyPackageJson() {
     ]
 
     expectedScripts.forEach((script) => {
-      results.push(test(
-        `脚本: ${script}`,
-        !!packageJson.scripts[script],
-        `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`,
-      ))
+      results.push(
+        test(
+          `脚本: ${script}`,
+          !!packageJson.scripts[script],
+          `${script} ${packageJson.scripts[script] ? '已配置' : '未配置'}`,
+        ),
+      )
     })
   }
   catch (error) {
-    results.push(test(
-      'package.json 解析',
-      false,
-      `无法解析 package.json: ${error}`,
-    ))
+    results.push(
+      test('package.json 解析', false, `无法解析 package.json: ${error}`),
+    )
   }
 
   return results
@@ -196,11 +210,13 @@ function verifyDockerFiles() {
   ]
 
   dockerFiles.forEach((file) => {
-    results.push(test(
-      `Docker文件: ${file}`,
-      existsSync(file),
-      `${file} ${existsSync(file) ? '存在' : '不存在'}`,
-    ))
+    results.push(
+      test(
+        `Docker文件: ${file}`,
+        existsSync(file),
+        `${file} ${existsSync(file) ? '存在' : '不存在'}`,
+      ),
+    )
   })
 
   return results
@@ -230,7 +246,10 @@ function runVerification() {
     )
   })
 
-  log(`\n总计: ${passed}/${total} 项检查通过`, passed === total ? 'success' : 'error')
+  log(
+    `\n总计: ${passed}/${total} 项检查通过`,
+    passed === total ? 'success' : 'error',
+  )
 
   if (passed < total) {
     log('存在问题需要修复', 'error')

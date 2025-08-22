@@ -1,4 +1,4 @@
-import type { RequestConfig, ResponseData } from '@/types'
+import type { RequestConfig, ResponseData } from '../types'
 import { BaseAdapter } from './base'
 
 /**
@@ -33,7 +33,9 @@ export class AxiosAdapter extends BaseAdapter {
    */
   async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
     if (!this.isSupported()) {
-      throw new Error('Axios is not available. Please install axios: npm install axios')
+      throw new Error(
+        'Axios is not available. Please install axios: npm install axios',
+      )
     }
 
     const processedConfig = this.processConfig(config)

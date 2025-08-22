@@ -40,9 +40,9 @@ class UserStore extends BaseStore {
     super('user', {
       persist: {
         key: 'user-store',
-        storage: 'localStorage'
+        storage: 'localStorage',
       },
-      devtools: true
+      devtools: true,
     })
   }
 }
@@ -98,11 +98,11 @@ $patch(mutator: (state: State) => void): void
 // 对象方式更新
 store.$patch({
   count: 10,
-  name: 'Updated Name'
+  name: 'Updated Name',
 })
 
 // 函数方式更新
-store.$patch((state) => {
+store.$patch(state => {
   state.count++
   state.items.push(newItem)
 })
@@ -179,13 +179,16 @@ interface SubscriptionOptions {
 **示例：**
 
 ```typescript
-const unsubscribe = store.$subscribe((mutation, state) => {
-  console.log('状态变化:', mutation.type, mutation.payload)
-  console.log('当前状态:', state)
-}, {
-  immediate: true,
-  deep: true
-})
+const unsubscribe = store.$subscribe(
+  (mutation, state) => {
+    console.log('状态变化:', mutation.type, mutation.payload)
+    console.log('当前状态:', state)
+  },
+  {
+    immediate: true,
+    deep: true,
+  }
+)
 
 // 取消订阅
 unsubscribe()
@@ -220,19 +223,14 @@ type ActionCallback = (context: {
 **示例：**
 
 ```typescript
-const unsubscribe = store.$onAction(({
-  name,
-  args,
-  after,
-  onError
-}) => {
+const unsubscribe = store.$onAction(({ name, args, after, onError }) => {
   console.log(`开始执行 Action: ${name}`, args)
 
   after(() => {
     console.log(`Action ${name} 执行完成`)
   })
 
-  onError((error) => {
+  onError(error => {
     console.error(`Action ${name} 执行失败:`, error)
   })
 })
@@ -409,11 +407,7 @@ Store 相关错误的基类。
 
 ```typescript
 class StoreError extends Error {
-  constructor(
-    message: string,
-    public storeId: string,
-    public cause?: Error
-  )
+  constructor(message: string, public storeId: string, public cause?: Error)
 }
 ```
 
@@ -429,12 +423,7 @@ Action 执行错误。
 
 ```typescript
 class ActionError extends StoreError {
-  constructor(
-    message: string,
-    public actionName: string,
-    storeId: string,
-    cause?: Error
-  )
+  constructor(message: string, public actionName: string, storeId: string, cause?: Error)
 }
 ```
 
@@ -448,12 +437,7 @@ class ActionError extends StoreError {
 
 ```typescript
 class ValidationError extends StoreError {
-  constructor(
-    message: string,
-    public field: string,
-    public value: any,
-    storeId: string
-  )
+  constructor(message: string, public field: string, public value: any, storeId: string)
 }
 ```
 
@@ -493,12 +477,7 @@ interface Store {
 Store 定义接口。
 
 ```typescript
-interface StoreDefinition<
-  Id extends string = string,
-  S = {},
-  G = {},
-  A = {}
-> {
+interface StoreDefinition<Id extends string = string, S = {}, G = {}, A = {}> {
   id: Id
   state?: () => S
   getters?: G & GettersTree<S, G>
@@ -578,9 +557,9 @@ function useStorePool(options?: StorePoolOptions): StorePool
 
 ```typescript
 interface StorePoolOptions {
-  maxSize?: number      // 池的最大大小，默认 50
-  maxIdleTime?: number  // 最大空闲时间（毫秒），默认 300000（5分钟）
-  enableGC?: boolean    // 是否启用垃圾回收，默认 true
+  maxSize?: number // 池的最大大小，默认 50
+  maxIdleTime?: number // 最大空闲时间（毫秒），默认 300000（5分钟）
+  enableGC?: boolean // 是否启用垃圾回收，默认 true
 }
 ```
 
@@ -605,7 +584,7 @@ import { useStorePool } from '@ldesign/store'
 const pool = useStorePool({
   maxSize: 20,
   maxIdleTime: 600000, // 10分钟
-  enableGC: true
+  enableGC: true,
 })
 
 // 获取池化的 Store 实例
@@ -683,7 +662,11 @@ monitor.clearMetrics()
 Action 性能监控装饰器。
 
 ```typescript
-function MonitorAction(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor
+function MonitorAction(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor
 ```
 
 **示例：**
@@ -705,7 +688,11 @@ class MonitoredStore extends BaseStore {
 Getter 性能监控装饰器。
 
 ```typescript
-function MonitorGetter(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor
+function MonitorGetter(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor
 ```
 
 **示例：**

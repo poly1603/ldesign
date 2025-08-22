@@ -1,52 +1,53 @@
-# 入门指南
+# 🏁 快速开始
 
-欢迎使用 Vue3 Engine！这是一个强大的 Vue3 应用引擎，提供了插件系统、中间件、状态管理、事件系统、日志记录、通知管理等丰富功能。
+欢迎使用 LDesign Engine！这个指南将帮助你在5分钟内快速上手，体验引擎的强大功能。
 
-## 安装
+## 📦 安装
 
-### 使用包管理器
+### 环境要求
 
-::: code-group
+- **Node.js** >= 16.0.0
+- **npm** >= 8.0.0 或 **pnpm** >= 7.0.0 (推荐)
+- **TypeScript** >= 4.9.0 (可选，但强烈推荐)
 
-```bash [npm]
-npm install @ldesign/engine
-```
+### 安装引擎
 
-```bash [pnpm]
+```bash
+# 使用 pnpm (推荐)
 pnpm add @ldesign/engine
-```
 
-```bash [yarn]
+# 使用 npm
+npm install @ldesign/engine
+
+# 使用 yarn
 yarn add @ldesign/engine
 ```
 
-:::
+## 🚀 第一个应用
 
-### CDN 引入
-
-```html
-<script src="https://unpkg.com/@ldesign/engine@latest/dist/index.umd.js"></script>
-```
-
-## 快速开始
-
-### 简化API（推荐）
-
-使用新的简化API，无需手动创建Vue应用：
+### 1. 创建引擎实例
 
 ```typescript
-import { createApp, presets } from '@ldesign/engine'
-// main.ts
-import App from './App.vue'
+import { createEngine } from '@ldesign/engine'
 
-// 一行代码创建应用和引擎
-const engine = createApp(App, {
+// 创建引擎实例
+const engine = createEngine({
+  appName: 'My First App',
+  debug: true,
+  features: {
+    enableHotReload: true,
+    enableDevTools: true,
+    enablePerformanceMonitoring: true
+  }
+})
+
+console.log('引擎创建成功！', engine.getConfig('appName'))
   ...presets.development(), // 使用开发环境预设
   config: {
     debug: true,
     appName: 'My First Engine App',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 
 // 挂载应用
@@ -56,7 +57,7 @@ engine.mount('#app')
 export { engine }
 ```
 
-### 传统API
+### 传统 API
 
 如果你需要更多控制，也可以使用传统方式：
 
@@ -71,8 +72,8 @@ const engine = createEngine({
   config: {
     debug: true,
     appName: 'My First Engine App',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 })
 
 // 创建 Vue 应用
@@ -100,16 +101,16 @@ import App from './App.vue'
 const engine = createApp(App, {
   ...presets.development(),
   config: {
-    appName: 'My App'
-  }
+    appName: 'My App',
+  },
 })
 
 // 使用简化API + 生产环境预设
 const engine = createApp(App, {
   ...presets.production(),
   config: {
-    appName: 'My App'
-  }
+    appName: 'My App',
+  },
 })
 
 // 传统API方式
@@ -137,7 +138,7 @@ function showNotification() {
   engine.notifications.show({
     type: 'success',
     title: '操作成功',
-    message: '这是一个成功通知！'
+    message: '这是一个成功通知！',
   })
 }
 
@@ -145,7 +146,7 @@ function showNotification() {
 function logMessage() {
   engine.logger.info('用户点击了日志按钮', {
     timestamp: new Date().toISOString(),
-    userAgent: navigator.userAgent
+    userAgent: navigator.userAgent,
   })
 }
 
@@ -154,7 +155,7 @@ function updateState() {
   engine.state.set('user', {
     name: 'John Doe',
     email: 'john@example.com',
-    loginTime: new Date().toISOString()
+    loginTime: new Date().toISOString(),
   })
 }
 
@@ -166,7 +167,7 @@ onMounted(() => {
     engine.notifications.show({
       type: 'info',
       title: '欢迎回来',
-      message: `欢迎 ${userData.name}！`
+      message: `欢迎 ${userData.name}！`,
     })
   })
 
@@ -229,10 +230,14 @@ button:hover {
 const engine = createEngine({
   config: {
     debug: true,
-    appName: 'My App'
+    appName: 'My App',
   },
-  plugins: [/* 插件列表 */],
-  middleware: [/* 中间件列表 */]
+  plugins: [
+    /* 插件列表 */
+  ],
+  middleware: [
+    /* 中间件列表 */
+  ],
 })
 
 // 访问各个管理器
@@ -322,7 +327,8 @@ unsubscribe() // 取消监听
 
 ### Q: 如何在现有 Vue3 项目中集成 Engine？
 
-A: 只需要安装 `@ldesign/engine` 包，然后在 `main.ts` 中创建引擎实例并安装到 Vue 应用即可。Engine 不会影响现有代码。
+A: 只需要安装 `@ldesign/engine` 包，然后在 `main.ts` 中创建引擎实例并安装到 Vue 应用即可。Engine 不
+会影响现有代码。
 
 ### Q: Engine 会增加多少包体积？
 

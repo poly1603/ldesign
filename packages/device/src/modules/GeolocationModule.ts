@@ -57,10 +57,7 @@ export class GeolocationModule implements DeviceModule {
    * 检查是否支持地理位置 API
    */
   isSupported(): boolean {
-    return safeNavigatorAccess(
-      nav => 'geolocation' in nav,
-      false,
-    )
+    return safeNavigatorAccess(nav => 'geolocation' in nav, false)
   }
 
   /**
@@ -106,7 +103,10 @@ export class GeolocationModule implements DeviceModule {
         callback?.(info)
       },
       (error) => {
-        console.error('Geolocation watch error:', this.parseGeolocationError(error))
+        console.error(
+          'Geolocation watch error:',
+          this.parseGeolocationError(error),
+        )
       },
       this.options,
     )
@@ -174,16 +174,21 @@ export class GeolocationModule implements DeviceModule {
   /**
    * 计算两点之间的距离（米）
    */
-  calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371e3 // 地球半径（米）
-    const φ1 = lat1 * Math.PI / 180
-    const φ2 = lat2 * Math.PI / 180
-    const Δφ = (lat2 - lat1) * Math.PI / 180
-    const Δλ = (lon2 - lon1) * Math.PI / 180
+    const φ1 = (lat1 * Math.PI) / 180
+    const φ2 = (lat2 * Math.PI) / 180
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180
 
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2)
-      + Math.cos(φ1) * Math.cos(φ2)
-      * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+    const a
+      = Math.sin(Δφ / 2) * Math.sin(Δφ / 2)
+        + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
     return R * c

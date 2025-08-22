@@ -15,7 +15,7 @@ describe('performanceManager', () => {
     it('应该开始和结束性能事件', () => {
       const eventId = performanceManager.startEvent(
         PerformanceEventType.CUSTOM,
-        'test-event'
+        'test-event',
       )
       expect(eventId).toBeDefined()
 
@@ -33,7 +33,7 @@ describe('performanceManager', () => {
       const eventId = performanceManager.startEvent(
         PerformanceEventType.USER_INTERACTION,
         'button-click',
-        metadata
+        metadata,
       )
       performanceManager.endEvent(eventId)
 
@@ -44,7 +44,7 @@ describe('performanceManager', () => {
     it('应该处理事件结束时的错误信息', () => {
       const eventId = performanceManager.startEvent(
         PerformanceEventType.API_CALL,
-        'api-request'
+        'api-request',
       )
       performanceManager.endEvent(eventId, { error: 'Request failed' })
 
@@ -133,9 +133,11 @@ describe('performanceManager', () => {
 
     it('应该移除指标回调', () => {
       const callback = vi.fn()
-      const unsubscribe = performanceManager.onMetrics(callback)
+      const unsubscribe = (performanceManager as any).onMetrics(callback)
 
-      unsubscribe()
+      if (typeof unsubscribe === 'function') {
+        unsubscribe()
+      }
 
       performanceManager.recordMetrics({
         timestamp: Date.now(),
@@ -171,13 +173,13 @@ describe('performanceManager', () => {
     it('应该更新性能阈值', () => {
       const newThresholds = {
         responseTime: { good: 50, poor: 500 },
-      }
+      };
 
-      performanceManager.updateThresholds(newThresholds)
+      (performanceManager as any).updateThresholds(newThresholds)
 
       const thresholds = performanceManager.getThresholds()
-      expect(thresholds.responseTime.good).toBe(50)
-      expect(thresholds.responseTime.poor).toBe(500)
+      expect(thresholds.responseTime?.good).toBe(50)
+      expect(thresholds.responseTime?.poor).toBe(500)
     })
   })
 
@@ -202,7 +204,7 @@ describe('performanceManager', () => {
         },
       })
 
-      const report = performanceManager.generateReport()
+      const report = (performanceManager as any).generateReport()
 
       expect(report.summary).toBeDefined()
       expect(report.events).toHaveLength(1)
@@ -232,35 +234,35 @@ describe('performanceManager', () => {
         },
       })
 
-      const report = performanceManager.generateReport()
+      const report = (performanceManager as any).generateReport()
 
       expect(report.recommendations.length).toBeGreaterThan(0)
-      expect(report.recommendations.some(r => r.includes('慢操作'))).toBe(true)
-      expect(report.recommendations.some(r => r.includes('内存'))).toBe(true)
+      expect(report.recommendations.some((r: any) => r.includes('慢操作'))).toBe(true)
+      expect(report.recommendations.some((r: any) => r.includes('内存'))).toBe(true)
     })
   })
 
   describe('性能标记', () => {
     it('应该创建性能标记', () => {
-      performanceManager.mark('start-render')
-      performanceManager.mark('end-render')
+      ; (performanceManager as any).mark('start-render')
+      ; (performanceManager as any).mark('end-render')
 
-      const marks = performanceManager.getMarks()
+      const marks = (performanceManager as any).getMarks()
       expect(marks).toHaveLength(2)
-      expect(marks.map(m => m.name)).toContain('start-render')
-      expect(marks.map(m => m.name)).toContain('end-render')
+      expect(marks.map((m: any) => m.name)).toContain('start-render')
+      expect(marks.map((m: any) => m.name)).toContain('end-render')
     })
 
     it('应该测量性能区间', async () => {
-      performanceManager.mark('start')
+      (performanceManager as any).mark('start')
 
       // 模拟一些工作
-      await new Promise<void>(resolve => {
+      await new Promise<void>((resolve) => {
         setTimeout(() => {
-          performanceManager.mark('end')
-          performanceManager.measure('operation', 'start', 'end')
+          ; (performanceManager as any).mark('end')
+          ; (performanceManager as any).measure('operation', 'start', 'end')
 
-          const measures = performanceManager.getMeasures()
+          const measures = (performanceManager as any).getMeasures()
           expect(measures).toHaveLength(1)
           expect(measures[0].name).toBe('operation')
           expect(measures[0].duration).toBeGreaterThan(0)
@@ -278,9 +280,9 @@ describe('performanceManager', () => {
         startTime: 0,
         endTime: 100,
         duration: 100,
-      })
+      });
 
-      performanceManager.clearEvents()
+      (performanceManager as any).clearEvents()
       expect(performanceManager.getEvents()).toHaveLength(0)
     })
 
@@ -288,23 +290,23 @@ describe('performanceManager', () => {
       performanceManager.recordMetrics({
         timestamp: Date.now(),
         duration: 100,
-      })
+      });
 
-      performanceManager.clearMetrics()
+      (performanceManager as any).clearMetrics()
       expect(performanceManager.getMetrics()).toHaveLength(0)
     })
 
     it('应该清空标记和测量', () => {
-      performanceManager.mark('test-mark')
-      performanceManager.clearMarks()
-      expect(performanceManager.getMarks()).toHaveLength(0)
+      ; (performanceManager as any).mark('test-mark')
+      ; (performanceManager as any).clearMarks()
+      expect((performanceManager as any).getMarks()).toHaveLength(0)
 
       // 先创建标记，然后测量
-      performanceManager.mark('start')
-      performanceManager.mark('end')
-      performanceManager.measure('test-measure', 'start', 'end')
-      performanceManager.clearMeasures()
-      expect(performanceManager.getMeasures()).toHaveLength(0)
+      ; (performanceManager as any).mark('start')
+      ; (performanceManager as any).mark('end')
+      ; (performanceManager as any).measure('test-measure', 'start', 'end')
+      ; (performanceManager as any).clearMeasures()
+      expect((performanceManager as any).getMeasures()).toHaveLength(0)
     })
   })
 

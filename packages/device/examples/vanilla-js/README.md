@@ -68,7 +68,7 @@ import { DeviceDetector } from '@ldesign/device'
 const detector = new DeviceDetector({
   enableResize: true,
   enableOrientation: true,
-  debounceDelay: 300
+  debounceDelay: 300,
 })
 
 // 获取设备信息
@@ -80,12 +80,12 @@ console.log(deviceInfo.type) // 'mobile' | 'tablet' | 'desktop'
 
 ```javascript
 // 监听设备变化
-detector.on('deviceChange', (deviceInfo) => {
+detector.on('deviceChange', deviceInfo => {
   console.log('设备信息变化:', deviceInfo)
 })
 
 // 监听方向变化
-detector.on('orientationChange', (orientation) => {
+detector.on('orientationChange', orientation => {
   console.log('屏幕方向变化:', orientation)
 })
 

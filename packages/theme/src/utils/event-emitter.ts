@@ -5,26 +5,25 @@
  */
 
 import type {
-  ThemeEventType,
-  ThemeEventListener,
   ThemeEventData,
+  ThemeEventListener,
+  ThemeEventType,
 } from '../core/types'
 
 /**
  * 事件发射器接口
  */
 export interface EventEmitter {
-  on(event: ThemeEventType, listener: ThemeEventListener): void
-  off(event: ThemeEventType, listener: ThemeEventListener): void
-  emit(
+  on: (event: ThemeEventType, listener: ThemeEventListener) => void
+  off: (event: ThemeEventType, listener: ThemeEventListener) => void
+  emit: (
     event: ThemeEventType,
     data: Omit<ThemeEventData, 'type' | 'timestamp'>
-  ): void
-  once(event: ThemeEventType, listener: ThemeEventListener): void
-  removeAllListeners(event?: ThemeEventType): void
-  listenerCount(event: ThemeEventType): number
-  listeners(event: ThemeEventType): ThemeEventListener[]
-  destroy(): void
+  ) => void
+  once: (event: ThemeEventType, listener: ThemeEventListener) => void
+  removeAllListeners: (event?: ThemeEventType) => void
+  listenerCount: (event: ThemeEventType) => number
+  listeners: (event: ThemeEventType) => ThemeEventListener[]
 }
 
 /**
@@ -71,7 +70,7 @@ export class EventEmitterImpl implements EventEmitter {
    */
   emit(
     event: ThemeEventType,
-    data: Omit<ThemeEventData, 'type' | 'timestamp'>
+    data: Omit<ThemeEventData, 'type' | 'timestamp'>,
   ): void {
     const eventData: ThemeEventData = {
       type: event,
@@ -82,10 +81,11 @@ export class EventEmitterImpl implements EventEmitter {
     // 触发普通监听器
     const listeners = this.events.get(event)
     if (listeners) {
-      listeners.forEach(listener => {
+      listeners.forEach((listener) => {
         try {
           listener(eventData)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in event listener for ${event}:`, error)
         }
       })
@@ -98,10 +98,11 @@ export class EventEmitterImpl implements EventEmitter {
       onceListeners.clear()
       this.onceEvents.delete(event)
 
-      listenersArray.forEach(listener => {
+      listenersArray.forEach((listener) => {
         try {
           listener(eventData)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error in once event listener for ${event}:`, error)
         }
       })
@@ -125,7 +126,8 @@ export class EventEmitterImpl implements EventEmitter {
     if (event) {
       this.events.delete(event)
       this.onceEvents.delete(event)
-    } else {
+    }
+    else {
       this.events.clear()
       this.onceEvents.clear()
     }

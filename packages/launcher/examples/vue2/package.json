@@ -1,0 +1,7 @@
+{
+  "name": "launcher-example-vue2",
+  "type": "module",
+  "private": true,
+  "description": "Vue2 example powered by @ldesign/launcher programmatic API",
+  "license": "MIT"
+}

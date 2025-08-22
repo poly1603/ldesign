@@ -1,28 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-
 import {
+  LanguageSwitcher,
   useBatchTranslation,
   useConditionalTranslation,
   useI18n,
-  useLanguageSwitcher,
-} from '../../src/vue/index'
+} from '@ldesign/i18n/vue'
 
-// 使用 I18n 组合式 API
-const { t, i18n } = useI18n()
-const { locale, availableLanguages, isChanging, switchLanguage } =
-  useLanguageSwitcher()
+import { computed, onMounted, reactive, ref } from 'vue'
 
-// 添加语言切换的调试信息
-async function handleLanguageSwitch(lang: string) {
-  console.log('Switching to language:', lang)
-  try {
-    await switchLanguage(lang)
-    console.log('Language switched successfully to:', lang)
-  } catch (error) {
-    console.error('Failed to switch language:', error)
-  }
-}
+// 使用 I18n 组合式 API - 统一获取所有需要的功能
+const { t, i18n, locale, availableLanguages } = useI18n()
 
 // 错误状态
 const error = ref<string>('')
@@ -42,7 +29,7 @@ const isOnline = ref(true)
 const conditionalStatus = useConditionalTranslation(
   isOnline,
   'common.online',
-  'common.offline'
+  'common.offline',
 )
 
 // 翻译键分类展开状态
@@ -97,13 +84,14 @@ const translationKeysByCategory = computed(() => {
       'date.duration.days',
     ]
 
-    allKeys.forEach(key => {
+    allKeys.forEach((key) => {
       const category = key.split('.')[0]
       if (categories[category]) {
         categories[category].push(key)
       }
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error getting translation keys:', error)
   }
 
@@ -120,7 +108,8 @@ function getTranslationValue(key: string) {
   try {
     const translation = t(key)
     return translation === key ? '[Missing]' : translation
-  } catch {
+  }
+  catch {
     return '[Error]'
   }
 }
@@ -157,21 +146,21 @@ Translations per second: ${Math.round(1000 / avgTime).toLocaleString()}
 
 // 存储状态
 const storageValue = computed(
-  () => localStorage.getItem('i18n-locale') || 'null'
+  () => localStorage.getItem('i18n-locale') || 'null',
 )
 
 // 错误处理示例
 const fallbackExample = computed(() => t('nonexistent.key'))
 const defaultValueExample = computed(() =>
-  t('nonexistent.key', {}, { defaultValue: 'Default Text' })
+  t('nonexistent.key', {}, { defaultValue: 'Default Text' }),
 )
 
 // 组件挂载时的初始化
 onMounted(() => {
-  console.log('Vue I18n example mounted')
-  console.log('Current locale:', locale.value)
-  console.log('Available languages:', availableLanguages.value)
-  console.log('I18n instance:', i18n)
+  console.warn('Vue I18n example mounted')
+  console.warn('Current locale:', locale.value)
+  console.warn('Available languages:', availableLanguages.value)
+  console.warn('I18n instance:', i18n)
 })
 </script>
 
@@ -184,36 +173,7 @@ onMounted(() => {
 
       <!-- Language Switcher -->
       <div class="language-switcher">
-        <button
-          class="lang-btn"
-          :class="[{ active: 'en' === locale }]"
-          :disabled="isChanging"
-          @click="handleLanguageSwitch('en')"
-        >
-          English
-          <span v-if="isChanging && 'en' === locale" class="loading-spinner" />
-        </button>
-        <button
-          class="lang-btn"
-          :class="[{ active: 'zh-CN' === locale }]"
-          :disabled="isChanging"
-          @click="handleLanguageSwitch('zh-CN')"
-        >
-          中文
-          <span
-            v-if="isChanging && 'zh-CN' === locale"
-            class="loading-spinner"
-          />
-        </button>
-        <button
-          class="lang-btn"
-          :class="[{ active: 'ja' === locale }]"
-          :disabled="isChanging"
-          @click="handleLanguageSwitch('ja')"
-        >
-          日本語
-          <span v-if="isChanging && 'ja' === locale" class="loading-spinner" />
-        </button>
+        <LanguageSwitcher />
       </div>
 
       <!-- Current Language Display -->
@@ -253,22 +213,30 @@ onMounted(() => {
 
         <!-- Basic Translation -->
         <div class="example-section">
-          <div class="example-header">Basic Translation</div>
+          <div class="example-header">
+            Basic Translation
+          </div>
           <div class="example-content">
             <div class="example-item">
-              <div class="code-block">t('common.ok')</div>
+              <div class="code-block">
+                t('common.ok')
+              </div>
               <div class="result-block">
                 {{ t('common.ok') }}
               </div>
             </div>
             <div class="example-item">
-              <div class="code-block">t('common.cancel')</div>
+              <div class="code-block">
+                t('common.cancel')
+              </div>
               <div class="result-block">
                 {{ t('common.cancel') }}
               </div>
             </div>
             <div class="example-item">
-              <div class="code-block">t('common.loading')</div>
+              <div class="code-block">
+                t('common.loading')
+              </div>
               <div class="result-block">
                 {{ t('common.loading') }}
               </div>
@@ -278,7 +246,9 @@ onMounted(() => {
 
         <!-- Parameter Interpolation -->
         <div class="example-section">
-          <div class="example-header">Parameter Interpolation</div>
+          <div class="example-header">
+            Parameter Interpolation
+          </div>
           <div class="example-content">
             <div class="example-item">
               <div class="code-block">
@@ -303,7 +273,9 @@ onMounted(() => {
 
         <!-- Pluralization -->
         <div class="example-section">
-          <div class="example-header">Pluralization</div>
+          <div class="example-header">
+            Pluralization
+          </div>
           <div class="example-content">
             <div class="example-item">
               <div class="code-block">
@@ -326,7 +298,9 @@ onMounted(() => {
 
         <!-- Vue Directive -->
         <div class="example-section">
-          <div class="example-header">Vue v-t Directive</div>
+          <div class="example-header">
+            Vue v-t Directive
+          </div>
           <div class="example-content">
             <div class="example-item">
               <div class="code-block">
@@ -341,29 +315,37 @@ onMounted(() => {
               <input
                 v-t="{ key: 'common.searchPlaceholder' }"
                 class="input-example"
-              />
+              >
             </div>
           </div>
         </div>
 
         <!-- Nested Keys -->
         <div class="example-section">
-          <div class="example-header">Nested Keys</div>
+          <div class="example-header">
+            Nested Keys
+          </div>
           <div class="example-content">
             <div class="example-item">
-              <div class="code-block">t('menu.file.new')</div>
+              <div class="code-block">
+                t('menu.file.new')
+              </div>
               <div class="result-block">
                 {{ t('menu.file.new') }}
               </div>
             </div>
             <div class="example-item">
-              <div class="code-block">t('menu.edit.copy')</div>
+              <div class="code-block">
+                t('menu.edit.copy')
+              </div>
               <div class="result-block">
                 {{ t('menu.edit.copy') }}
               </div>
             </div>
             <div class="example-item">
-              <div class="code-block">t('validation.username.required')</div>
+              <div class="code-block">
+                t('validation.username.required')
+              </div>
               <div class="result-block">
                 {{ t('validation.username.required') }}
               </div>
@@ -373,10 +355,14 @@ onMounted(() => {
 
         <!-- Batch Translation -->
         <div class="example-section">
-          <div class="example-header">Batch Translation</div>
+          <div class="example-header">
+            Batch Translation
+          </div>
           <div class="example-content">
             <div class="example-item">
-              <div class="code-block">batchTranslations</div>
+              <div class="code-block">
+                batchTranslations
+              </div>
               <div class="result-block">
                 <pre>{{ JSON.stringify(batchTranslations, null, 2) }}</pre>
               </div>
@@ -386,24 +372,32 @@ onMounted(() => {
 
         <!-- Conditional Translation -->
         <div class="example-section">
-          <div class="example-header">Conditional Translation</div>
+          <div class="example-header">
+            Conditional Translation
+          </div>
           <div class="example-content">
             <div class="example-item">
               <label class="checkbox-label">
-                <input v-model="isOnline" type="checkbox" />
+                <input v-model="isOnline" type="checkbox">
                 {{ t('common.online') }} / {{ t('common.offline') }}
               </label>
-              <div class="result-block">Status: {{ conditionalStatus }}</div>
+              <div class="result-block">
+                Status: {{ conditionalStatus }}
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Language Information -->
         <div class="example-section">
-          <div class="example-header">Language Information</div>
+          <div class="example-header">
+            Language Information
+          </div>
           <div class="example-content">
             <div class="example-item">
-              <div class="code-block">getCurrentLanguageInfo()</div>
+              <div class="code-block">
+                getCurrentLanguageInfo()
+              </div>
               <div class="result-block">
                 <pre>{{ JSON.stringify(currentLanguageInfo, null, 2) }}</pre>
               </div>
@@ -413,16 +407,22 @@ onMounted(() => {
 
         <!-- Storage & Detection -->
         <div class="example-section">
-          <div class="example-header">Storage & Detection</div>
+          <div class="example-header">
+            Storage & Detection
+          </div>
           <div class="example-content">
             <div class="example-item">
-              <div class="code-block">localStorage.getItem('i18n-locale')</div>
+              <div class="code-block">
+                localStorage.getItem('i18n-locale')
+              </div>
               <div class="result-block">
                 {{ storageValue }}
               </div>
             </div>
             <div class="example-item">
-              <div class="code-block">getCurrentLanguage()</div>
+              <div class="code-block">
+                getCurrentLanguage()
+              </div>
               <div class="result-block">
                 {{ locale }}
               </div>
@@ -432,10 +432,14 @@ onMounted(() => {
 
         <!-- Error Handling -->
         <div class="example-section">
-          <div class="example-header">Error Handling & Fallback</div>
+          <div class="example-header">
+            Error Handling & Fallback
+          </div>
           <div class="example-content">
             <div class="example-item">
-              <div class="code-block">t('nonexistent.key')</div>
+              <div class="code-block">
+                t('nonexistent.key')
+              </div>
               <div class="result-block">
                 {{ fallbackExample }}
               </div>
@@ -453,7 +457,9 @@ onMounted(() => {
 
         <!-- Performance Test -->
         <div class="example-section">
-          <div class="example-header">Performance & Caching</div>
+          <div class="example-header">
+            Performance & Caching
+          </div>
           <div class="example-content">
             <div class="example-item">
               <button class="perf-btn" @click="runPerformanceTest">
@@ -522,67 +528,8 @@ onMounted(() => {
 /* Language Switcher */
 .language-switcher {
   display: flex;
-  gap: 15px;
   justify-content: center;
   margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.lang-btn {
-  padding: 15px 30px;
-  border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 16px;
-  font-weight: 600;
-  min-width: 140px;
-  position: relative;
-  overflow: hidden;
-}
-
-.lang-btn:hover:not(:disabled) {
-  background: white;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.lang-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.lang-btn.active {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.lang-btn.active:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
-}
-
-.loading-spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ffffff40;
-  border-top: 2px solid #ffffff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-left: 8px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .current-language {

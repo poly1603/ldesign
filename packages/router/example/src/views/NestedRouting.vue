@@ -17,15 +17,23 @@ const paramValue = ref('')
 // 匹配的路由
 const matchedRoutes = computed(() => matched.value)
 
-// 路由深度
+// 路由深度 - 添加安全检查
 const routeDepth = computed(() => {
-  return route.path.split('/').filter(Boolean).length
+  if (!route.value?.path)
+    return 0
+  return route.value.path.split('/').filter(Boolean).length
 })
 
-// 面包屑导航
+// 面包屑导航 - 添加安全检查
 const breadcrumbs = computed(() => {
   const crumbs = []
-  const pathSegments = route.path.split('/').filter(Boolean)
+
+  // 安全检查：确保路由对象和路径存在
+  if (!route.value?.path) {
+    return [{ name: '首页', path: '/' }]
+  }
+
+  const pathSegments = route.value.path.split('/').filter(Boolean)
 
   crumbs.push({ name: '首页', path: '/' })
 
@@ -35,7 +43,8 @@ const breadcrumbs = computed(() => {
 
     if (index === 0) {
       crumbs.push({ name: '嵌套路由', path: currentPath })
-    } else {
+    }
+    else {
       crumbs.push({
         name: `子路由 ${index}`,
         path: currentPath,
@@ -62,7 +71,7 @@ function navigateToDefault() {
 function navigateWithParams() {
   router.push({
     path: '/nested/child1',
-    query: { param: paramValue.value, timestamp: Date.now() },
+    query: { param: paramValue.value, timestamp: Date.now().toString() },
   })
 }
 </script>
@@ -105,7 +114,7 @@ function navigateWithParams() {
           <h4>路由层级信息</h4>
           <div class="depth-info">
             <div class="info-item">
-              <strong>当前路径:</strong> {{ route.path }}
+              <strong>当前路径:</strong> {{ route?.path || '/' }}
             </div>
             <div class="info-item">
               <strong>匹配的路由:</strong> {{ matchedRoutes.length }} 层
@@ -119,12 +128,14 @@ function navigateWithParams() {
             <h5>匹配的路由组件:</h5>
             <ul>
               <li
-                v-for="(matched, index) in matchedRoutes"
+                v-for="(matchedRoute, index) in matchedRoutes"
                 :key="index"
                 class="matched-item"
               >
-                <span class="route-name">{{ matched.name || '匿名路由' }}</span>
-                <span class="route-path">{{ matched.path }}</span>
+                <span class="route-name">{{
+                  matchedRoute.name || '匿名路由'
+                }}</span>
+                <span class="route-path">{{ matchedRoute.path }}</span>
               </li>
             </ul>
           </div>
@@ -147,21 +158,36 @@ function navigateWithParams() {
               <span
                 v-if="index < breadcrumbs.length - 1"
                 class="breadcrumb-separator"
-                >/</span
-              >
+              >/</span>
             </span>
           </div>
         </div>
 
         <!-- 子路由视图 -->
         <div class="nested-view">
-          <RouterView v-slot="{ Component, route: childRoute }">
+          <RouterView
+            v-slot="{ Component, route: childRoute, isLoading, error }"
+          >
             <transition name="nested-fade" mode="out-in">
               <component
                 :is="Component"
-                :key="childRoute.path"
+                v-if="Component"
+                :key="childRoute?.path || 'default'"
                 :route-info="childRoute"
               />
+              <div v-else-if="isLoading" class="loading-component">
+                <div class="spinner" />
+                <p>正在加载子路由组件...</p>
+              </div>
+              <div v-else-if="error" class="error-component">
+                <p>加载组件时出错：{{ error.message }}</p>
+                <button @click="router.go(0)">
+                  重新加载
+                </button>
+              </div>
+              <div v-else class="empty-component">
+                <p>没有找到匹配的子路由组件</p>
+              </div>
             </transition>
           </RouterView>
         </div>
@@ -192,7 +218,7 @@ function navigateWithParams() {
               v-model="paramValue"
               class="input"
               placeholder="输入参数值"
-            />
+            >
           </div>
           <button class="btn btn-info" @click="navigateWithParams">
             带参数导航
@@ -350,6 +376,66 @@ function navigateWithParams() {
 .nested-view {
   padding: @spacing-lg;
   min-height: 300px;
+}
+
+.loading-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: @spacing-xl;
+  color: @gray-600;
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid @gray-200;
+    border-top: 3px solid @primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: @spacing-md;
+  }
+}
+
+.error-component {
+  padding: @spacing-lg;
+  text-align: center;
+  color: #dc3545;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: @border-radius-md;
+
+  button {
+    margin-top: @spacing-md;
+    padding: @spacing-sm @spacing-md;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: @border-radius-sm;
+    cursor: pointer;
+
+    &:hover {
+      background: #c82333;
+    }
+  }
+}
+
+.empty-component {
+  padding: @spacing-lg;
+  text-align: center;
+  color: @gray-500;
+  background: @gray-50;
+  border: 1px solid @gray-200;
+  border-radius: @border-radius-md;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .nested-actions {

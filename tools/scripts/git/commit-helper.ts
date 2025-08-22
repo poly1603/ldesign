@@ -78,7 +78,9 @@ class CommitHelper {
 
   // 获取影响范围
   private async getScope(): Promise<string> {
-    const scope = await this.question('\n🎯 影响范围 (可选，如: engine, color, http): ')
+    const scope = await this.question(
+      '\n🎯 影响范围 (可选，如: engine, color, http): ',
+    )
     return scope.trim()
   }
 
@@ -164,7 +166,9 @@ class CommitHelper {
       execSync('git add .', { stdio: 'inherit' })
 
       // 提交
-      execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, { stdio: 'inherit' })
+      execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, {
+        stdio: 'inherit',
+      })
 
       console.log('✅ 提交成功!')
 
@@ -205,7 +209,14 @@ class CommitHelper {
       const isBreaking = await this.isBreakingChange()
 
       // 构建提交消息
-      const message = this.buildCommitMessage(type, scope, description, body, issues, isBreaking)
+      const message = this.buildCommitMessage(
+        type,
+        scope,
+        description,
+        body,
+        issues,
+        isBreaking,
+      )
 
       // 确认并提交
       const confirmed = await this.confirmCommit(message)
@@ -227,13 +238,22 @@ class CommitHelper {
   async quickCommit(type: string, message: string, scope?: string) {
     this.checkWorkingDirectory()
 
-    const commitMessage = this.buildCommitMessage(type, scope || '', message, '', '', false)
+    const commitMessage = this.buildCommitMessage(
+      type,
+      scope || '',
+      message,
+      '',
+      '',
+      false,
+    )
 
     console.log('📋 快速提交:', commitMessage)
 
     try {
       execSync('git add .', { stdio: 'inherit' })
-      execSync(`git commit -m "${commitMessage.replace(/"/g, '\\"')}"`, { stdio: 'inherit' })
+      execSync(`git commit -m "${commitMessage.replace(/"/g, '\\"')}"`, {
+        stdio: 'inherit',
+      })
       console.log('✅ 提交成功!')
     }
     catch (error) {

@@ -27,6 +27,8 @@ export default defineConfig({
           text: '基础',
           items: [
             { text: '路由配置', link: '/guide/route-configuration' },
+            { text: '嵌套路由', link: '/guide/nested-routes' },
+            { text: '动态路由', link: '/guide/dynamic-routes' },
             { text: '导航', link: '/guide/navigation' },
             { text: '路由守卫', link: '/guide/route-guards' },
           ],
@@ -40,12 +42,21 @@ export default defineConfig({
           ],
         },
         {
+          text: '设备适配',
+          items: [
+            { text: '设备路由', link: '/guide/device-routing' },
+            { text: '模板系统', link: '/guide/template-system' },
+            { text: '设备守卫', link: '/guide/device-guards' },
+          ],
+        },
+        {
           text: '高级',
           items: [
             { text: '权限控制', link: '/guide/permission-control' },
             { text: '预加载策略', link: '/guide/preloading' },
             { text: '性能监控', link: '/guide/performance-monitoring' },
             { text: '自定义插件', link: '/guide/custom-plugins' },
+            { text: '引擎集成', link: '/guide/engine-integration' },
           ],
         },
         {

@@ -31,10 +31,13 @@ export const validation = {
   passwordTooWeak: 'Password is too weak',
   passwordMismatch: 'Passwords do not match',
   passwordMinLength: 'Password must be at least {{min}} characters',
-  passwordRequireUppercase: 'Password must contain at least one uppercase letter',
-  passwordRequireLowercase: 'Password must contain at least one lowercase letter',
+  passwordRequireUppercase:
+    'Password must contain at least one uppercase letter',
+  passwordRequireLowercase:
+    'Password must contain at least one lowercase letter',
   passwordRequireNumber: 'Password must contain at least one number',
-  passwordRequireSpecial: 'Password must contain at least one special character',
+  passwordRequireSpecial:
+    'Password must contain at least one special character',
 
   // URL 验证
   url: 'Invalid URL',

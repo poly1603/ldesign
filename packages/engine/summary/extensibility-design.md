@@ -74,7 +74,7 @@ const authPlugin: Plugin = {
   version: '1.0.0',
   description: '用户认证插件',
 
-  install: engine => {
+  install: (engine) => {
     // 注册认证服务
     engine.auth = new AuthService(engine)
 
@@ -137,12 +137,12 @@ const elementPlusPlugin: Plugin = {
   version: '1.0.0',
   dependencies: ['theme'],
 
-  install: engine => {
+  install: (engine) => {
     // 重写通知系统
     engine.notifications = new ElementPlusNotifications()
 
     // 集成主题系统
-    engine.theme.onThemeChange(theme => {
+    engine.theme.onThemeChange((theme) => {
       updateElementPlusTheme(theme)
     })
 
@@ -204,7 +204,8 @@ const loggingMiddleware: Middleware = {
 
       const duration = performance.now() - startTime
       engine.logger.debug(`[${phase}] 执行完成`, { duration })
-    } catch (error) {
+    }
+    catch (error) {
       const duration = performance.now() - startTime
       engine.logger.error(`[${phase}] 执行失败`, { error, duration })
       throw error
@@ -251,12 +252,12 @@ const permissionMiddleware: Middleware = {
 interface Manager {
   name: string
 
-  initialize(engine: Engine, config?: any): void | Promise<void>
-  destroy(): void | Promise<void>
+  initialize: (engine: Engine, config?: any) => void | Promise<void>
+  destroy: () => void | Promise<void>
 
   // 扩展接口
-  extend(extension: ManagerExtension): void
-  getExtensions(): ManagerExtension[]
+  extend: (extension: ManagerExtension) => void
+  getExtensions: () => ManagerExtension[]
 }
 
 interface ManagerExtension {
@@ -312,12 +313,12 @@ interface Adapter<TTarget, TAdapted> {
   name: string
   target: string
 
-  adapt(target: TTarget, engine: Engine): TAdapted
-  isCompatible(target: TTarget): boolean
+  adapt: (target: TTarget, engine: Engine) => TAdapted
+  isCompatible: (target: TTarget) => boolean
 
   // 生命周期
-  beforeAdapt?(target: TTarget, engine: Engine): void
-  afterAdapt?(adapted: TAdapted, engine: Engine): void
+  beforeAdapt?: (target: TTarget, engine: Engine) => void
+  afterAdapt?: (adapted: TAdapted, engine: Engine) => void
 }
 ```
 
@@ -349,14 +350,14 @@ class VueRouterAdapter implements Adapter<Router, EngineRouter> {
       },
 
       // 路由守卫
-      beforeEach: guard => {
+      beforeEach: (guard) => {
         return router.beforeEach((to, from, next) => {
           const context = { to, from, next, engine }
           return guard(context)
         })
       },
 
-      afterEach: hook => {
+      afterEach: (hook) => {
         return router.afterEach((to, from) => {
           const context = { to, from, engine }
           return hook(context)
@@ -424,9 +425,9 @@ interface Hook<T = any> {
   name: string
   type: 'sync' | 'async' | 'waterfall' | 'bail'
 
-  tap(name: string, handler: HookHandler<T>): void
-  call(...args: any[]): T
-  callAsync(...args: any[]): Promise<T>
+  tap: (name: string, handler: HookHandler<T>) => void
+  call: (...args: any[]) => T
+  callAsync: (...args: any[]) => Promise<T>
 }
 
 interface HookHandler<T> {
@@ -533,13 +534,13 @@ class Engine {
 const hookPlugin: Plugin = {
   name: 'hook-plugin',
 
-  install: engine => {
+  install: (engine) => {
     // 注册钩子处理器
-    engine.hooks.beforeMount.tap('hook-plugin', async app => {
+    engine.hooks.beforeMount.tap('hook-plugin', async (app) => {
       console.log('应用即将挂载')
     })
 
-    engine.hooks.processData.tap('hook-plugin', data => {
+    engine.hooks.processData.tap('hook-plugin', (data) => {
       // 数据预处理
       return { ...data, processed: true }
     })
@@ -555,10 +556,10 @@ const hookPlugin: Plugin = {
 interface ServiceProvider<T = any> {
   name: string
 
-  register(engine: Engine): void
-  boot?(engine: Engine): void | Promise<void>
+  register: (engine: Engine) => void
+  boot?: (engine: Engine) => void | Promise<void>
 
-  provide(): T
+  provide: () => T
 
   dependencies?: string[]
   singleton?: boolean
@@ -603,7 +604,7 @@ class ApiServiceProvider implements ServiceProvider<ApiClient> {
 const apiPlugin: Plugin = {
   name: 'api',
 
-  install: engine => {
+  install: (engine) => {
     const provider = new ApiServiceProvider()
     engine.registerServiceProvider(provider)
   },
@@ -649,8 +650,8 @@ interface ExtensionPoint {
   description?: string
   schema?: any
 
-  onExtensionAdded?(extension: Extension): void
-  onExtensionRemoved?(extension: Extension): void
+  onExtensionAdded?: (extension: Extension) => void
+  onExtensionRemoved?: (extension: Extension) => void
 }
 
 interface Extension {
@@ -682,7 +683,7 @@ engine.extensionPoints.registerExtensionPoint(menuExtensionPoint)
 const menuPlugin: Plugin = {
   name: 'menu-plugin',
 
-  install: engine => {
+  install: (engine) => {
     engine.extensionPoints.registerExtension('menu', {
       name: 'user-menu',
       point: 'menu',

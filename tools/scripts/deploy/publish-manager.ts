@@ -38,7 +38,10 @@ class PublishManager {
     console.log(`${prefix} [${timestamp}] ${message}`)
   }
 
-  private async executeCommand(command: string, cwd?: string): Promise<{ success: boolean, output: string, error?: string }> {
+  private async executeCommand(
+    command: string,
+    cwd?: string,
+  ): Promise<{ success: boolean, output: string, error?: string }> {
     try {
       const output = execSync(command, {
         cwd: cwd || process.cwd(),
@@ -176,7 +179,10 @@ class PublishManager {
       }
     }
     catch (error: any) {
-      this.log(`❌ ${packageName}@${version} 发布失败: ${error.message}`, 'error')
+      this.log(
+        `❌ ${packageName}@${version} 发布失败: ${error.message}`,
+        'error',
+      )
       return {
         package: packageName,
         registry,
@@ -252,7 +258,8 @@ class PublishManager {
     }
 
     // 确定要发布的包
-    const packagesToPublish = options.packages || Object.keys(this.config.packages)
+    const packagesToPublish
+      = options.packages || Object.keys(this.config.packages)
 
     // 确定目标仓库
     const targetRegistry = options.registry || 'npm'
@@ -280,7 +287,11 @@ class PublishManager {
         continue
       }
 
-      const result = await this.publishPackage(packageName, targetRegistry, options)
+      const result = await this.publishPackage(
+        packageName,
+        targetRegistry,
+        options,
+      )
       this.results.push(result)
     }
 

@@ -22,13 +22,13 @@ import { createHttpClient } from '@ldesign/http'
 
 // 默认使用 fetch 适配器
 const http = createHttpClient({
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 
 // 显式指定 fetch 适配器
 const http2 = createHttpClient({
   adapter: 'fetch',
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -56,7 +56,7 @@ import { createHttpClient } from '@ldesign/http'
 
 const http = createHttpClient({
   adapter: 'axios',
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -84,7 +84,7 @@ import { createHttpClient } from '@ldesign/http'
 
 const http = createHttpClient({
   adapter: 'alova',
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -101,7 +101,7 @@ const http = createHttpClient({
 ```typescript
 // 自动选择最佳适配器
 const http = createHttpClient({
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -116,12 +116,12 @@ import { AxiosAdapter } from '@ldesign/http'
 
 const http = createHttpClient({
   adapter: 'axios',
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 
 const http2 = createHttpClient({
   adapter: new AxiosAdapter(),
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -197,7 +197,7 @@ AdapterFactory.register('custom', () => new CustomAdapter())
 // 使用自定义适配器
 const http = createHttpClient({
   adapter: 'custom',
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -248,7 +248,7 @@ const http = createHttpClient({
   // Fetch 特定配置
   credentials: 'include', // 发送 cookies
   mode: 'cors', // CORS 模式
-  cache: 'no-cache' // 缓存策略
+  cache: 'no-cache', // 缓存策略
 })
 ```
 
@@ -261,7 +261,7 @@ const http = createHttpClient({
   maxRedirects: 5, // 最大重定向次数
   validateStatus: status => status < 400, // 状态验证
   transformRequest: [data => JSON.stringify(data)], // 请求转换
-  transformResponse: [data => JSON.parse(data)] // 响应转换
+  transformResponse: [data => JSON.parse(data)], // 响应转换
 })
 ```
 
@@ -273,7 +273,7 @@ const http = createHttpClient({
   // Alova 特定配置
   cacheFor: 300000, // 缓存时间
   staleTime: 60000, // 数据过期时间
-  enableCache: true // 启用缓存
+  enableCache: true, // 启用缓存
 })
 ```
 
@@ -288,7 +288,7 @@ const adapter = process.env.NODE_ENV === 'development' ? 'axios' : 'fetch'
 
 const http = createHttpClient({
   adapter,
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -351,7 +351,7 @@ if (available.length === 0) {
 // 明确指定适配器
 const http = createHttpClient({
   adapter: 'fetch', // 强制使用 fetch
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 ```
 
@@ -367,4 +367,5 @@ const http1 = createHttpClient({ adapter })
 const http2 = createHttpClient({ adapter }) // 复用同一个适配器
 ```
 
-适配器系统让 @ldesign/http 具有极大的灵活性，你可以根据项目需求选择最合适的底层实现，同时保持 API 的一致性。
+适配器系统让 @ldesign/http 具有极大的灵活性，你可以根据项目需求选择最合适的底层实现，同时保持 API 的
+一致性。

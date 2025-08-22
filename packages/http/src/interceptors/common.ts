@@ -1,4 +1,9 @@
-import type { ErrorInterceptor, HttpError, RequestInterceptor, ResponseInterceptor } from '@/types'
+import type {
+  ErrorInterceptor,
+  HttpError,
+  RequestInterceptor,
+  ResponseInterceptor,
+} from '../types'
 
 /**
  * 请求日志拦截器
@@ -41,7 +46,9 @@ export const errorLoggerInterceptor: ErrorInterceptor = (error) => {
 /**
  * 认证拦截器工厂
  */
-export function createAuthInterceptor(getToken: () => string | null): RequestInterceptor {
+export function createAuthInterceptor(
+  getToken: () => string | null,
+): RequestInterceptor {
   return (config) => {
     const token = getToken()
     if (token) {
@@ -105,7 +112,11 @@ export const timestampInterceptor: RequestInterceptor = (config) => {
  * 内容类型拦截器
  */
 export const contentTypeInterceptor: RequestInterceptor = (config) => {
-  if (config.data && !config.headers?.['Content-Type'] && !config.headers?.['content-type']) {
+  if (
+    config.data
+    && !config.headers?.['Content-Type']
+    && !config.headers?.['content-type']
+  ) {
     if (typeof config.data === 'object' && !(config.data instanceof FormData)) {
       config.headers = {
         ...config.headers,
@@ -127,7 +138,8 @@ export function createResponseTimeInterceptor(): {
 
   return {
     request: (config) => {
-      const requestId = config.headers?.['X-Request-ID'] || Math.random().toString(36)
+      const requestId
+        = config.headers?.['X-Request-ID'] || Math.random().toString(36)
       startTimes.set(requestId, Date.now())
       config.headers = {
         ...config.headers,
@@ -141,7 +153,9 @@ export function createResponseTimeInterceptor(): {
         const startTime = startTimes.get(requestId)!
         const duration = Date.now() - startTime
         // eslint-disable-next-line no-console
-        console.log(`[HTTP Response Time] ${response.config.url}: ${duration}ms`)
+        console.log(
+          `[HTTP Response Time] ${response.config.url}: ${duration}ms`,
+        )
         startTimes.delete(requestId)
       }
       return response
@@ -205,10 +219,12 @@ export function createRetryInterceptor(
     }
 
     // 增加重试次数
-    ; (config as any).__retryCount = retryCount + 1
+    ;(config as any).__retryCount = retryCount + 1
 
     // 延迟重试
-    await new Promise(resolve => setTimeout(resolve, retryDelay * 2 ** retryCount))
+    await new Promise(resolve =>
+      setTimeout(resolve, retryDelay * 2 ** retryCount),
+    )
 
     // 这里需要重新发送请求，但由于拦截器的限制，我们只能返回错误
     // 实际的重试逻辑应该在 HttpClient 中实现

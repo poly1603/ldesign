@@ -53,7 +53,7 @@ app.use(engine)
 - 泛型支持
 
 ```typescript
-import type { Engine, Plugin, EngineConfig } from '@ldesign/engine'
+import type { Engine, EngineConfig, Plugin } from '@ldesign/engine'
 
 const config: EngineConfig = {
   debug: true,
@@ -118,15 +118,15 @@ const prodEngine = createEngine({
 ```typescript
 // 只导入需要的功能
 import { createEngine } from '@ldesign/engine/core'
-import { statePlugin } from '@ldesign/engine/state'
 import { eventsPlugin } from '@ldesign/engine/events'
+import { statePlugin } from '@ldesign/engine/state'
 
 const engine = createEngine({
   plugins: [statePlugin, eventsPlugin],
 })
 
 // 动态导入大型插件
-const loadHeavyPlugin = async () => {
+async function loadHeavyPlugin() {
   const { heavyPlugin } = await import('@ldesign/engine/heavy-plugin')
   engine.use(heavyPlugin)
 }
@@ -139,9 +139,12 @@ const loadHeavyPlugin = async () => {
 **A:** 有多种方式：
 
 ```typescript
+import type { Engine } from '@ldesign/engine'
+// 2. 使用 composable
+import { useEngine } from '@ldesign/engine/vue'
+
 // 1. 使用 inject (推荐)
 import { inject } from 'vue'
-import type { Engine } from '@ldesign/engine'
 
 export default {
   setup() {
@@ -149,9 +152,6 @@ export default {
     return { engine }
   },
 }
-
-// 2. 使用 composable
-import { useEngine } from '@ldesign/engine/vue'
 
 export default {
   setup() {
@@ -176,7 +176,7 @@ export default {
 // 插件 A：设置共享数据
 const pluginA = {
   name: 'plugin-a',
-  install: engine => {
+  install: (engine) => {
     engine.state.set('shared.data', { value: 42 })
     engine.events.emit('plugin-a:ready', { data: 'hello' })
   },
@@ -186,12 +186,12 @@ const pluginA = {
 const pluginB = {
   name: 'plugin-b',
   dependencies: ['plugin-a'],
-  install: engine => {
+  install: (engine) => {
     // 获取共享状态
     const sharedData = engine.state.get('shared.data')
 
     // 监听其他插件事件
-    engine.events.on('plugin-a:ready', data => {
+    engine.events.on('plugin-a:ready', (data) => {
       console.log('收到插件A的数据:', data)
     })
   },
@@ -205,7 +205,7 @@ const pluginB = {
 ```typescript
 const asyncPlugin = {
   name: 'async-plugin',
-  install: async engine => {
+  install: async (engine) => {
     // 异步初始化
     const config = await fetch('/api/plugin-config').then(r => r.json())
 
@@ -298,7 +298,7 @@ const engine = createEngine({
 })
 
 // 监听内存警告
-engine.events.on('performance:memory-warning', info => {
+engine.events.on('performance:memory-warning', (info) => {
   console.warn('内存使用过高:', info)
 
   // 执行清理操作
@@ -324,7 +324,7 @@ const throttledHandler = engine.utils.throttle(handler, 100)
 engine.events.on('scroll', throttledHandler)
 
 // 3. 事件批处理
-engine.events.batch('analytics', 10, 1000).on(events => {
+engine.events.batch('analytics', 10, 1000).on((events) => {
   // 批量处理分析事件
   sendAnalytics(events)
 })
@@ -345,11 +345,12 @@ onUnmounted(() => unsubscribe())
 // 1. 插件级错误处理
 const robustPlugin = {
   name: 'robust-plugin',
-  install: engine => {
+  install: (engine) => {
     try {
       // 插件初始化逻辑
       initializePlugin()
-    } catch (error) {
+    }
+    catch (error) {
       engine.logger.error('插件初始化失败:', error)
 
       // 降级处理
@@ -370,7 +371,7 @@ engine.events.on('plugin:error', ({ plugin, error }) => {
 const dependentPlugin = {
   name: 'dependent-plugin',
   dependencies: ['base-plugin'],
-  install: engine => {
+  install: (engine) => {
     if (!engine.plugins.isRegistered('base-plugin')) {
       throw new Error('依赖插件未找到')
     }
@@ -477,7 +478,7 @@ const engine = createEngine({
     endpoint: '/api/errors',
 
     // 错误过滤
-    filter: error => {
+    filter: (error) => {
       // 过滤掉网络错误等
       return !error.message.includes('Network Error')
     },

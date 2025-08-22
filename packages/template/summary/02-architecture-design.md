@@ -1,10 +1,24 @@
-# 架构设计
+# 架构设计与优化分析
 
-## 整体架构
+## 🔍 当前架构分析
 
-LDesign Template 采用分层架构设计，确保高内聚、低耦合的模块组织。
+### 整体架构评估
 
-### 🏗️ 架构层次
+LDesign Template 采用分层架构设计，整体结构清晰，但存在一些可优化的地方：
+
+**✅ 优势：**
+- 分层架构清晰，职责分离良好
+- TypeScript 类型定义完整
+- Vue 3 集成深度良好
+- 支持多种使用方式（组件、组合式函数、插件）
+
+**⚠️ 需要优化的地方：**
+- 临时实现的设备检测和缓存代码应替换为外部包
+- 部分文件过大，需要拆分
+- 缺少统一的错误处理机制
+- 性能监控功能不够完善
+
+### 🏗️ 优化后的架构层次
 
 ```
 ┌─────────────────────────────────────┐
@@ -12,54 +26,224 @@ LDesign Template 采用分层架构设计，确保高内聚、低耦合的模块
 │  (组件、指令、插件、组合式函数)      │
 ├─────────────────────────────────────┤
 │           核心业务层                │
-│  (模板管理、设备检测、缓存系统)      │
+│  (模板管理、加载器、扫描器)          │
+├─────────────────────────────────────┤
+│           服务层                    │
+│  (存储服务、性能监控、错误处理)      │
 ├─────────────────────────────────────┤
 │           工具函数层                │
-│  (设备检测、扫描器、性能监控)        │
+│  (路径处理、主题管理、工具函数)      │
+├─────────────────────────────────────┤
+│           外部依赖层                │
+│  (@ldesign/device, @ldesign/cache)  │
 ├─────────────────────────────────────┤
 │           类型定义层                │
 │  (接口定义、类型约束、配置选项)      │
 └─────────────────────────────────────┘
 ```
 
-### 📦 模块划分
+### 📦 优化后的模块划分
 
-#### 1. 核心模块 (core/)
+#### 1. 核心模块 (core/) - 重构优化
 
-**职责**: 提供系统的核心功能和业务逻辑
+**当前问题：**
+- `manager.ts` 文件过大（732行），职责过多
+- 包含临时的设备检测实现
+- 缺少统一的错误处理
 
+**优化方案：**
 ```typescript
 core/
-├── TemplateManager.ts      # 模板管理器 - 核心协调者
-├── device.ts              # 设备检测 - 基础功能
-├── cache/                 # 缓存系统
-│   ├── index.ts          # 模板专用缓存
-│   └── LRUCache.ts       # LRU 缓存算法
-├── scanner/              # 模板扫描器
-│   └── index.ts          # 自动发现和注册
-├── template-loader.ts    # 模板加载器
-└── template-registry.ts  # 模板注册表
+├── manager.ts              # 模板管理器 - 精简核心逻辑
+├── loader.ts              # 模板加载器 - 动态加载
+├── scanner.ts             # 模板扫描器 - 自动发现
+├── storage.ts             # 存储管理器 - 持久化
+├── registry.ts            # 模板注册表 - 新增
+├── events.ts              # 事件系统 - 新增
+└── index.ts               # 统一导出
 ```
 
-**设计原则**:
+#### 2. 服务层 (services/) - 新增
 
-- 单一职责：每个模块只负责一个核心功能
-- 依赖注入：通过配置注入依赖，便于测试和扩展
-- 事件驱动：使用事件机制解耦模块间通信
+**职责**: 提供业务服务和中间件功能
 
-#### 2. Vue 集成模块 (vue/)
+```typescript
+services/
+├── error-handler.ts       # 统一错误处理
+├── performance-monitor.ts # 性能监控服务
+├── cache-service.ts       # 缓存服务封装
+├── storage-service.ts     # 存储服务
+├── device-service.ts      # 设备检测服务
+└── index.ts               # 统一导出
+```
 
-**职责**: 提供 Vue 3 深度集成功能
+#### 3. Vue 集成模块 (vue/) - 优化
+
+**当前状态：** 结构良好，但可以进一步优化
+
+```typescript
+vue/
+├── components/            # Vue 组件
+│   ├── TemplateRenderer.tsx    # 模板渲染器
+│   ├── TemplateSelector.tsx    # 模板选择器
+│   ├── TemplateProvider.tsx    # 模板提供者
+│   ├── LazyTemplate.tsx        # 懒加载模板
+│   ├── PerformanceMonitor.tsx  # 性能监控组件
+│   └── index.ts               # 组件导出
+├── composables/           # 组合式函数
+│   ├── useTemplate.ts         # 模板管理
+│   ├── useTemplateSelector.ts # 模板选择
+│   ├── useTemplateProvider.ts # 模板提供
+│   ├── useVirtualScroll.ts    # 虚拟滚动
+│   ├── usePerformance.ts      # 性能监控 - 新增
+│   └── index.ts               # 组合式函数导出
+├── directives/            # 指令
+│   ├── template.ts            # 模板指令
+│   ├── lazy-load.ts           # 懒加载指令 - 新增
+│   └── index.ts               # 指令导出
+├── plugins/               # 插件
+│   ├── template-plugin.ts     # 模板插件
+│   ├── global-components.ts   # 全局组件注册 - 新增
+│   └── index.ts               # 插件导出
+├── plugin.ts              # Vue 插件主文件
+└── index.ts               # Vue 模块统一导出
+```
+
+#### 4. 工具函数层 (utils/) - 优化
+
+**当前状态：** 功能分散，需要重新组织
+
+```typescript
+utils/
+├── path.ts                # 路径处理工具
+├── theme.ts               # 主题管理工具
+├── performance.ts         # 性能工具
+├── device.ts              # 设备工具（临时）
+├── cache.ts               # 缓存工具（临时）
+├── icons.ts               # 图标工具
+├── background.ts          # 背景工具
+├── validation.ts          # 验证工具 - 新增
+├── logger.ts              # 日志工具 - 新增
+└── index.ts               # 工具函数统一导出
+```
+
+#### 5. 类型定义层 (types/) - 完善
+
+**优化重点：** 消除 `any` 类型，完善类型定义
+
+```typescript
+types/
+├── index.ts               # 主要类型导出
+├── core.ts                # 核心类型定义 - 新增
+├── vue.ts                 # Vue 相关类型 - 新增
+├── events.ts              # 事件类型定义 - 新增
+├── config.ts              # 配置类型定义 - 新增
+└── utils.ts               # 工具类型定义 - 新增
+```
+
+## 🔧 架构优化实施计划
+
+### 阶段一：核心模块重构
+
+1. **拆分 TemplateManager**
+   - 提取事件系统到独立模块
+   - 提取存储逻辑到服务层
+   - 简化核心管理逻辑
+
+2. **创建服务层**
+   - 统一错误处理机制
+   - 性能监控服务
+   - 缓存服务封装
+
+3. **完善类型系统**
+   - 消除所有 `any` 类型
+   - 添加严格的类型约束
+   - 完善泛型支持
+
+### 阶段二：Vue 集成优化
+
+1. **组件优化**
+   - 性能优化和内存管理
+   - 添加更多的可配置选项
+   - 改进错误边界处理
+
+2. **组合式函数增强**
+   - 添加性能监控 hook
+   - 改进状态管理
+   - 增强错误处理
+
+3. **指令系统完善**
+   - 添加懒加载指令
+   - 改进模板指令功能
+   - 增加性能优化指令
+
+### 阶段三：工具和服务完善
+
+1. **工具函数重构**
+   - 统一工具函数接口
+   - 添加验证和日志工具
+   - 改进性能工具
+
+2. **外部依赖集成**
+   - 替换临时设备检测实现
+   - 集成 @ldesign/cache
+   - 优化依赖管理
+
+## 📊 架构质量指标
+
+### 代码质量目标
+
+- **类型覆盖率**: 100% (消除所有 `any`)
+- **测试覆盖率**: 100%
+- **ESLint 合规**: 0 错误 0 警告
+- **文档覆盖率**: 100%
+
+### 性能指标
+
+- **包大小**: < 55KB (已配置)
+- **加载时间**: < 100ms
+- **内存使用**: < 10MB
+- **缓存命中率**: > 90%
+
+### 可维护性指标
+
+- **圈复杂度**: < 10
+- **文件行数**: < 300 行/文件
+- **函数行数**: < 50 行/函数
+- **依赖深度**: < 5 层
+
+## 🚀 实施优先级
+
+### 高优先级 (立即执行)
+1. 修复 ESLint 错误和警告
+2. 消除 `any` 类型使用
+3. 拆分过大的文件
+4. 完善错误处理
+
+### 中优先级 (本周内)
+1. 创建服务层架构
+2. 重构核心模块
+3. 优化 Vue 组件
+4. 完善测试覆盖
+
+### 低优先级 (后续迭代)
+1. 性能优化
+2. 文档完善
+3. 示例项目
+4. 外部依赖集成
 
 ```typescript
 vue/
 ├── components/           # Vue 组件
-│   ├── TemplateRenderer.tsx    # 模板渲染器
+│   ├── TemplateRenderer.tsx    # 模板渲染器（支持内置选择器）
+│   ├── TemplateSelector.tsx    # 独立模板选择器
+│   ├── TemplateProvider.tsx    # 全局模板提供者
 │   ├── LazyTemplate.tsx        # 懒加载组件
 │   └── PerformanceMonitor.tsx  # 性能监控组件
 ├── composables/         # 组合式函数
-│   ├── useTemplate.ts          # 模板管理 Hook
-│   ├── useTemplateSystem.ts    # 模板系统 Hook
+│   ├── useTemplate.ts          # 独立模板管理 Hook
+│   ├── useTemplateSelector.ts  # 模板选择器 Hook
+│   ├── useTemplateProvider.ts  # Provider上下文 Hook
 │   └── useVirtualScroll.ts     # 虚拟滚动 Hook
 ├── directives/          # 自定义指令
 │   └── template.ts             # 模板指令
@@ -135,7 +319,7 @@ class TemplateManager {
 
 ```typescript
 interface DeviceDetectionStrategy {
-  detect(config: DeviceConfig): DeviceType
+  detect: (config: DeviceConfig) => DeviceType
 }
 
 class ViewportStrategy implements DeviceDetectionStrategy {
@@ -332,8 +516,8 @@ class PerformanceMonitor {
 interface TemplatePlugin {
   name: string
   version: string
-  install(manager: TemplateManager): void
-  uninstall?(manager: TemplateManager): void
+  install: (manager: TemplateManager) => void
+  uninstall?: (manager: TemplateManager) => void
 }
 
 // 插件注册
@@ -357,8 +541,8 @@ interface TemplateHooks {
 
 ```typescript
 interface TemplateLoader {
-  canLoad(identifier: TemplateIdentifier): boolean
-  load(identifier: TemplateIdentifier): Promise<Component>
+  canLoad: (identifier: TemplateIdentifier) => boolean
+  load: (identifier: TemplateIdentifier) => Promise<Component>
 }
 
 // 自定义加载器示例
@@ -379,7 +563,10 @@ class RemoteTemplateLoader implements TemplateLoader {
 
 ```typescript
 interface TemplateValidator {
-  validate(component: Component, metadata: TemplateMetadata): ValidationResult
+  validate: (
+    component: Component,
+    metadata: TemplateMetadata
+  ) => ValidationResult
 }
 
 class SecurityValidator implements TemplateValidator {

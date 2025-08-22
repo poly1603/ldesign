@@ -68,19 +68,19 @@ class PackageTemplate {
       types: 'dist/index.d.ts',
       files: ['dist'],
       scripts: {
-        build: 'rollup -c',
+        'build': 'rollup -c',
         'build:watch': 'rollup -c -w',
-        dev: 'rollup -c -w',
+        'dev': 'rollup -c -w',
         'type-check': 'vue-tsc --noEmit',
-        lint: 'eslint . --fix',
+        'lint': 'eslint . --fix',
         'lint:check': 'eslint .',
-        test: 'vitest',
+        'test': 'vitest',
         'test:ui': 'vitest --ui',
         'test:run': 'vitest run',
         'test:coverage': 'vitest run --coverage',
-        clean: 'rimraf dist es lib types coverage .nyc_output',
+        'clean': 'rimraf dist es lib types coverage .nyc_output',
         'size-check': 'size-limit',
-        prepublishOnly: 'pnpm run clean && pnpm run build && pnpm run test:run',
+        'prepublishOnly': 'pnpm run clean && pnpm run build && pnpm run test:run',
       },
       peerDependencies: {
         vue: '^3.3.0',
@@ -102,21 +102,21 @@ class PackageTemplate {
         '@vitejs/plugin-vue': '^5.0.3',
         '@vitest/ui': '^2.0.0',
         '@vue/test-utils': '^2.4.4',
-        eslint: '^9.0.0',
-        jsdom: '^24.0.0',
-        rollup: '^4.9.6',
+        'eslint': '^9.0.0',
+        'jsdom': '^24.0.0',
+        'rollup': '^4.9.6',
         'rollup-plugin-dts': '^6.1.0',
-        typescript: '^5.6.0',
-        vite: '^5.0.12',
-        vitest: '^2.0.0',
-        vue: '^3.4.15',
+        'typescript': '^5.6.0',
+        'vite': '^5.0.12',
+        'vitest': '^2.0.0',
+        'vue': '^3.4.15',
         'vue-tsc': '^1.8.27',
       },
     }
 
     writeFileSync(
       join(packageDir, 'package.json'),
-      `${JSON.stringify(packageJson, null, 2)}\n`
+      `${JSON.stringify(packageJson, null, 2)}\n`,
     )
   }
 
@@ -135,7 +135,7 @@ class PackageTemplate {
 
     writeFileSync(
       join(packageDir, 'tsconfig.json'),
-      `${JSON.stringify(tsConfig, null, 2)}\n`
+      `${JSON.stringify(tsConfig, null, 2)}\n`,
     )
   }
 
@@ -168,7 +168,7 @@ export { default } from './${packageName}'
 
     // src/{packageName}.ts
     const mainContent = `import type { ${capitalize(
-      packageName
+      packageName,
     )}Options } from './types'
 
 /**
@@ -286,7 +286,7 @@ describe('${capitalize(packageName)}', () => {
 
     writeFileSync(
       join(packageDir, '__tests__', `${packageName}.test.ts`),
-      testContent
+      testContent,
     )
   }
 
@@ -312,7 +312,7 @@ describe('${capitalize(packageName)}', () => {
     instance.init()
     
     document.getElementById('demo').textContent = '${capitalize(
-      packageName
+      packageName,
     )} 已初始化'
   </script>
 </body>
@@ -326,7 +326,7 @@ describe('${capitalize(packageName)}', () => {
   private generateDocFiles(
     packageDir: string,
     packageName: string,
-    description: string
+    description: string,
   ) {
     const readmeContent = `# @ldesign/${packageName}
 
@@ -408,7 +408,8 @@ MIT
       console.log(`🎉 包 @ldesign/${options.name} 创建完成!`)
       console.log(`📁 位置: packages/${options.name}`)
       console.log(`🔧 下一步: cd packages/${options.name} && pnpm dev`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('❌ 创建包失败:', error)
       throw error
     }

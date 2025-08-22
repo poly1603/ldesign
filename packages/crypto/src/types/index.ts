@@ -1,7 +1,15 @@
 /**
  * 加密算法类型
  */
-export type EncryptionAlgorithm = 'AES' | 'RSA' | 'DES' | '3DES' | 'Blowfish' | 'DES' | '3DES' | 'Blowfish'
+export type EncryptionAlgorithm =
+  | 'AES'
+  | 'RSA'
+  | 'DES'
+  | '3DES'
+  | 'Blowfish'
+  | 'DES'
+  | '3DES'
+  | 'Blowfish'
 
 /**
  * AES 加密模式
@@ -16,12 +24,23 @@ export type AESKeySize = 128 | 192 | 256
 /**
  * 哈希算法类型
  */
-export type HashAlgorithm = 'MD5' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'
+export type HashAlgorithm =
+  | 'MD5'
+  | 'SHA1'
+  | 'SHA224'
+  | 'SHA256'
+  | 'SHA384'
+  | 'SHA512'
 
 /**
  * HMAC 算法类型
  */
-export type HMACAlgorithm = 'HMAC-MD5' | 'HMAC-SHA1' | 'HMAC-SHA256' | 'HMAC-SHA384' | 'HMAC-SHA512'
+export type HMACAlgorithm =
+  | 'HMAC-MD5'
+  | 'HMAC-SHA1'
+  | 'HMAC-SHA256'
+  | 'HMAC-SHA384'
+  | 'HMAC-SHA512'
 
 /**
  * 编码类型
@@ -149,23 +168,47 @@ export interface KeyGenerationOptions {
  */
 export interface IEncryptor {
   encrypt: (data: string, key: string, options?: any) => EncryptResult
-  decrypt: (encryptedData: string | EncryptResult, key: string, options?: any) => DecryptResult
+  decrypt: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: any
+  ) => DecryptResult
 }
 
 /**
  * 哈希器接口
  */
 export interface IHasher {
-  hash: (data: string, algorithm?: HashAlgorithm, options?: HashOptions) => HashResult
-  verify: (data: string, expectedHash: string, algorithm?: HashAlgorithm, options?: HashOptions) => boolean
+  hash: (
+    data: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => HashResult
+  verify: (
+    data: string,
+    expectedHash: string,
+    algorithm?: HashAlgorithm,
+    options?: HashOptions
+  ) => boolean
 }
 
 /**
  * HMAC 接口
  */
 export interface IHMACer {
-  hmac: (data: string, key: string, algorithm: HMACAlgorithm, options?: HMACOptions) => HashResult
-  verify: (data: string, key: string, hmac: string, algorithm: HMACAlgorithm, options?: HMACOptions) => boolean
+  hmac: (
+    data: string,
+    key: string,
+    algorithm: HMACAlgorithm,
+    options?: HMACOptions
+  ) => HashResult
+  verify: (
+    data: string,
+    key: string,
+    hmac: string,
+    algorithm: HMACAlgorithm,
+    options?: HMACOptions
+  ) => boolean
 }
 
 /**

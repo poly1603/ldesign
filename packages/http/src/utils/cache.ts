@@ -1,4 +1,9 @@
-import type { CacheConfig, CacheStorage, RequestConfig, ResponseData } from '@/types'
+import type {
+  CacheConfig,
+  CacheStorage,
+  RequestConfig,
+  ResponseData,
+} from '../types'
 
 /**
  * 缓存项接口
@@ -199,13 +204,20 @@ export class CacheManager {
   /**
    * 设置缓存
    */
-  async set<T = any>(config: RequestConfig, response: ResponseData<T>): Promise<void> {
+  async set<T = any>(
+    config: RequestConfig,
+    response: ResponseData<T>,
+  ): Promise<void> {
     if (!this.config.enabled) {
       return
     }
 
     // 只缓存成功的 GET 请求
-    if (config.method !== 'GET' || response.status < 200 || response.status >= 300) {
+    if (
+      config.method !== 'GET'
+      || response.status < 200
+      || response.status >= 300
+    ) {
       return
     }
 
@@ -250,7 +262,9 @@ export class CacheManager {
    */
   private getCachedKey(config: RequestConfig): string {
     // 创建一个简单的配置标识符用于缓存查找
-    const configId = `${config.method || 'GET'}:${config.url}:${JSON.stringify(config.params || {})}:${JSON.stringify(config.data || {})}`
+    const configId = `${config.method || 'GET'}:${config.url}:${JSON.stringify(
+      config.params || {},
+    )}:${JSON.stringify(config.data || {})}`
 
     if (this.keyCache.has(configId)) {
       return this.keyCache.get(configId)!
@@ -282,9 +296,7 @@ export class CacheManager {
     // 添加查询参数
     const paramKeys = Object.keys(params).sort()
     if (paramKeys.length > 0) {
-      const paramString = paramKeys
-        .map(k => `${k}=${params[k]}`)
-        .join('&')
+      const paramString = paramKeys.map(k => `${k}=${params[k]}`).join('&')
       key += `?${paramString}`
     }
 
@@ -326,7 +338,7 @@ function simpleHash(str: string): string {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash // 转换为 32 位整数
   }
   return Math.abs(hash).toString(36)

@@ -4,8 +4,8 @@
  * 负责主题动画的管理和控制
  */
 
-import type { AnimationManagerInstance, AnimationConfig } from './types'
 import type { EventEmitter } from '../utils/event-emitter'
+import type { AnimationConfig, AnimationManagerInstance } from './types'
 
 /**
  * 动画实例
@@ -226,7 +226,7 @@ export class AnimationManager implements AnimationManagerInstance {
     }
 
     const keyframeRules = config.keyframes
-      .map(keyframe => {
+      .map((keyframe) => {
         const percentage = Math.round(keyframe.offset * 100)
         const properties = Object.entries(keyframe.properties)
           .map(([prop, value]) => `${this.camelToKebab(prop)}: ${value}`)
@@ -349,7 +349,7 @@ export class AnimationManager implements AnimationManagerInstance {
     document.head.appendChild(instance.styleElement)
 
     // 为元素添加动画类
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       element.classList.add(instance.config.name)
     })
   }
@@ -359,7 +359,7 @@ export class AnimationManager implements AnimationManagerInstance {
    */
   private stopCSSAnimation(instance: CSSAnimationInstance): void {
     // 移除动画类
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       element.classList.remove(instance.config.name)
     })
 
@@ -373,7 +373,7 @@ export class AnimationManager implements AnimationManagerInstance {
    * 暂停 CSS 动画
    */
   private pauseCSSAnimation(instance: CSSAnimationInstance): void {
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       element.style.animationPlayState = 'paused'
     })
   }
@@ -382,7 +382,7 @@ export class AnimationManager implements AnimationManagerInstance {
    * 恢复 CSS 动画
    */
   private resumeCSSAnimation(instance: CSSAnimationInstance): void {
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       element.style.animationPlayState = 'running'
     })
   }
@@ -410,7 +410,8 @@ export class AnimationManager implements AnimationManagerInstance {
 
       if (progress < 1) {
         instance.animationId = requestAnimationFrame(animate)
-      } else {
+      }
+      else {
         this.handleAnimationComplete(instance)
       }
     }
@@ -451,7 +452,7 @@ export class AnimationManager implements AnimationManagerInstance {
    */
   private updateJSAnimation(
     instance: JSAnimationInstance,
-    progress: number
+    progress: number,
   ): void {
     if (!instance.config.keyframes) {
       return
@@ -464,8 +465,8 @@ export class AnimationManager implements AnimationManagerInstance {
 
     for (let i = 0; i < keyframes.length - 1; i++) {
       if (
-        progress >= keyframes[i].offset &&
-        progress <= keyframes[i + 1].offset
+        progress >= keyframes[i].offset
+        && progress <= keyframes[i + 1].offset
       ) {
         currentKeyframe = keyframes[i]
         nextKeyframe = keyframes[i + 1]
@@ -478,19 +479,19 @@ export class AnimationManager implements AnimationManagerInstance {
     }
 
     // 计算插值
-    const localProgress =
-      nextKeyframe.offset === currentKeyframe.offset
+    const localProgress
+      = nextKeyframe.offset === currentKeyframe.offset
         ? 0
-        : (progress - currentKeyframe.offset) /
-          (nextKeyframe.offset - currentKeyframe.offset)
+        : (progress - currentKeyframe.offset)
+          / (nextKeyframe.offset - currentKeyframe.offset)
 
     // 应用插值后的样式
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       this.applyInterpolatedStyles(
         element,
         currentKeyframe.properties,
         nextKeyframe.properties,
-        localProgress
+        localProgress,
       )
     })
   }
@@ -502,7 +503,7 @@ export class AnimationManager implements AnimationManagerInstance {
     element: HTMLElement,
     from: Record<string, any>,
     to: Record<string, any>,
-    progress: number
+    progress: number,
   ): void {
     for (const prop in from) {
       const fromValue = from[prop]
@@ -510,7 +511,7 @@ export class AnimationManager implements AnimationManagerInstance {
       const interpolatedValue = this.interpolateValue(
         fromValue,
         toValue,
-        progress
+        progress,
       )
 
       element.style.setProperty(this.camelToKebab(prop), interpolatedValue)
@@ -538,11 +539,13 @@ export class AnimationManager implements AnimationManagerInstance {
     if (iterations === 'infinite') {
       // 重新开始
       this.startJSAnimation(instance)
-    } else if (typeof iterations === 'number' && iterations > 1) {
+    }
+    else if (typeof iterations === 'number' && iterations > 1) {
       // 减少迭代次数并重新开始
       instance.config.iterations = iterations - 1
       this.startJSAnimation(instance)
-    } else {
+    }
+    else {
       // 动画结束
       instance.isRunning = false
       this.eventEmitter.emit('animation-ended', {
@@ -564,7 +567,7 @@ export class AnimationManager implements AnimationManagerInstance {
  */
 export function createAnimationManager(
   container: HTMLElement,
-  eventEmitter: EventEmitter
+  eventEmitter: EventEmitter,
 ): AnimationManagerInstance {
   return new AnimationManager(container, eventEmitter)
 }

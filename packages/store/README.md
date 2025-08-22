@@ -1,6 +1,7 @@
 # @ldesign/store
 
-> 🚀 一个基于Pinia的Vue3状态管理库，支持类、Hook、Provider、装饰器等多种使用方式，性能优越，功能丰富！
+> 🚀 一个基于 Pinia 的 Vue3 状态管理库，支持类、Hook、Provider、装饰器等多种使用方式，性能优越，功能
+> 丰富！
 
 [![npm version](https://badge.fury.io/js/@ldesign%2Fstore.svg)](https://badge.fury.io/js/@ldesign%2Fstore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,8 +12,8 @@
 🎯 **四种使用方式，随心所欲**
 
 - 🏛️ **类式**：面向对象，装饰器加持，优雅如诗
-- 🪝 **Hook式**：函数式编程，简洁明了，React开发者的最爱
-- 🔌 **Provider式**：依赖注入，解耦合，架构师的选择
+- 🪝 **Hook 式**：函数式编程，简洁明了，React 开发者的最爱
+- 🔌 **Provider 式**：依赖注入，解耦合，架构师的选择
 - 🧩 **组合式**：Vue3 Composition API，原生体验
 
 ⚡ **性能爆表，快如闪电**
@@ -26,7 +27,7 @@
 - 🎨 装饰器支持（@State、@Action、@Getter）
 - 💾 持久化存储，数据永不丢失
 - 📦 批量操作，效率翻倍
-- 🔒 TypeScript 类型安全，bug无处遁形
+- 🔒 TypeScript 类型安全，bug 无处遁形
 - 🔧 开发工具支持，调试如虎添翼
 
 📦 **打包友好，兼容性强**
@@ -48,7 +49,7 @@ yarn add @ldesign/store pinia vue reflect-metadata
 pnpm add @ldesign/store pinia vue reflect-metadata
 ```
 
-### 30秒上手 - 装饰器方式
+### 30 秒上手 - 装饰器方式
 
 ```typescript
 import { Action, BaseStore, Getter, State } from '@ldesign/store'
@@ -85,7 +86,7 @@ store.increment()
 console.log(store.displayText) // "My Awesome Counter: 1 🔥"
 ```
 
-### Vue组件中的魔法时刻
+### Vue 组件中的魔法时刻
 
 ```vue
 <script setup lang="ts">
@@ -102,12 +103,8 @@ const store = new CounterStore('counter')
       <span class="count">{{ store.count }}</span>
     </div>
     <div class="button-group">
-      <button class="btn btn-plus" @click="store.increment">
-        ➕ 增加
-      </button>
-      <button class="btn btn-minus" @click="store.decrement">
-        ➖ 减少
-      </button>
+      <button class="btn btn-plus" @click="store.increment">➕ 增加</button>
+      <button class="btn btn-minus" @click="store.decrement">➖ 减少</button>
     </div>
   </div>
 </template>
@@ -163,8 +160,7 @@ class UserStore extends BaseStore {
     try {
       this.user = await api.login(credentials)
       console.log('🎉 登录成功！')
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -176,7 +172,7 @@ class UserStore extends BaseStore {
 }
 ```
 
-### 🪝 Hook式（函数式爱好者）
+### 🪝 Hook 式（函数式爱好者）
 
 ```typescript
 import { createStore } from '@ldesign/store'
@@ -195,12 +191,12 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count, title },
     actions: { increment },
-    getters: { displayText }
+    getters: { displayText },
   }
 })
 ```
 
-### 🔌 Provider式（架构师之选）
+### 🔌 Provider 式（架构师之选）
 
 ```vue
 <script setup lang="ts">
@@ -209,7 +205,7 @@ import { StoreProvider } from '@ldesign/store/vue'
 const stores = {
   user: UserStore,
   cart: ShoppingCartStore,
-  notifications: NotificationStore
+  notifications: NotificationStore,
 }
 </script>
 
@@ -296,8 +292,7 @@ class ShoppingCartStore extends BaseStore {
     const existingItem = this.items.find(item => item.id === product.id)
     if (existingItem) {
       existingItem.quantity += quantity
-    }
-    else {
+    } else {
       this.items.push({ ...product, quantity })
     }
     console.log(`🛒 已添加 ${product.name} 到购物车`)
@@ -330,8 +325,7 @@ class ShoppingCartStore extends BaseStore {
       await api.checkout(this.items)
       this.items = []
       console.log('🎉 结账成功！')
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -341,11 +335,11 @@ class ShoppingCartStore extends BaseStore {
 ## 📚 文档导航
 
 - 📖 [完整文档](https://ldesign-store.netlify.app) - 详细的使用指南
-- 🚀 [快速开始](https://ldesign-store.netlify.app/guide/getting-started) - 5分钟上手
+- 🚀 [快速开始](https://ldesign-store.netlify.app/guide/getting-started) - 5 分钟上手
 - 🎨 [装饰器指南](https://ldesign-store.netlify.app/guide/decorators) - 装饰器魔法
-- 🪝 [Hook使用](https://ldesign-store.netlify.app/guide/hooks) - 函数式编程
-- 🔌 [Provider模式](https://ldesign-store.netlify.app/guide/provider) - 依赖注入
-- 📋 [API参考](https://ldesign-store.netlify.app/api/) - 完整API文档
+- 🪝 [Hook 使用](https://ldesign-store.netlify.app/guide/hooks) - 函数式编程
+- 🔌 [Provider 模式](https://ldesign-store.netlify.app/guide/provider) - 依赖注入
+- 📋 [API 参考](https://ldesign-store.netlify.app/api/) - 完整 API 文档
 
 ## 🤝 贡献指南
 

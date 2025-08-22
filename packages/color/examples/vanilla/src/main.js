@@ -39,8 +39,9 @@ class ColorDemo {
       // 显示当前主题色阶
       this.displayCurrentThemeScales()
 
-      console.log('🎨 Color Demo 初始化完成')
-    } catch (error) {
+      // Color Demo initialization completed
+    }
+    catch (error) {
       console.error('初始化失败:', error)
       this.showError(`初始化失败: ${error.message}`)
     }
@@ -56,7 +57,7 @@ class ColorDemo {
       systemTheme: document.getElementById('system-theme'),
       themesContainer: document.getElementById('themes-container'),
       currentScalesContainer: document.getElementById(
-        'current-scales-container'
+        'current-scales-container',
       ),
     }
   }
@@ -65,12 +66,12 @@ class ColorDemo {
     this.themeManager = await createThemeManagerWithPresets({
       defaultTheme: 'default',
       autoDetect: true,
-      onThemeChanged: (theme, mode) => {
-        console.log(`主题已切换: ${theme} - ${mode}`)
+      onThemeChanged: (_theme, _mode) => {
+        // Theme switched
         this.updateUI()
         this.displayCurrentThemeScales()
       },
-      onError: error => {
+      onError: (error) => {
         console.error('主题管理器错误:', error)
         this.showError(`主题错误: ${error.message}`)
       },
@@ -84,7 +85,7 @@ class ColorDemo {
     const themes = this.themeManager.getThemeNames()
     this.elements.themeSelect.innerHTML = ''
 
-    themes.forEach(themeName => {
+    themes.forEach((themeName) => {
       const option = document.createElement('option')
       option.value = themeName
       option.textContent = this.getThemeDisplayName(themeName)
@@ -101,7 +102,7 @@ class ColorDemo {
     const themes = this.themeManager.getThemeNames()
     this.elements.themesContainer.innerHTML = ''
 
-    themes.forEach(themeName => {
+    themes.forEach((themeName) => {
       const themeCard = this.createThemeCard(themeName)
       this.elements.themesContainer.appendChild(themeCard)
     })
@@ -122,7 +123,7 @@ class ColorDemo {
     let previewColors
     try {
       const generatedColors = generateColorConfig(
-        themeConfig?.light?.primary || '#1890ff'
+        themeConfig?.light?.primary || '#1890ff',
       )
       previewColors = {
         primary: themeConfig?.light?.primary || '#1890ff',
@@ -130,7 +131,8 @@ class ColorDemo {
         warning: generatedColors.warning || '#faad14',
         danger: generatedColors.danger || '#f5222d',
       }
-    } catch (error) {
+    }
+    catch {
       // 降级到默认颜色
       previewColors = {
         primary: themeConfig?.light?.primary || '#1890ff',
@@ -141,7 +143,7 @@ class ColorDemo {
     }
 
     const colorTypes = ['primary', 'success', 'warning', 'danger']
-    colorTypes.forEach(type => {
+    colorTypes.forEach((type) => {
       const colorDiv = document.createElement('div')
       colorDiv.className = 'theme-color'
       colorDiv.style.backgroundColor = previewColors[type]
@@ -181,16 +183,16 @@ class ColorDemo {
     const themeConfig = this.themeManager.getThemeConfig(currentTheme)
 
     if (!themeConfig) {
-      this.elements.currentScalesContainer.innerHTML =
-        '<p>无法获取当前主题配置</p>'
+      this.elements.currentScalesContainer.innerHTML
+        = '<p>无法获取当前主题配置</p>'
       return
     }
 
-    const modeColors =
-      currentMode === 'light' ? themeConfig.light : themeConfig.dark
+    const modeColors
+      = currentMode === 'light' ? themeConfig.light : themeConfig.dark
     if (!modeColors) {
-      this.elements.currentScalesContainer.innerHTML =
-        '<p>当前模式下无颜色配置</p>'
+      this.elements.currentScalesContainer.innerHTML
+        = '<p>当前模式下无颜色配置</p>'
       return
     }
 
@@ -199,7 +201,8 @@ class ColorDemo {
     let generatedColors = null
     try {
       generatedColors = generateColorConfig(modeColors.primary)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('生成颜色配置失败:', error)
     }
 
@@ -214,7 +217,8 @@ class ColorDemo {
     try {
       const scales = generateColorScales(colors, currentMode)
       this.renderScales(scales)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('生成色阶失败:', error)
       this.elements.currentScalesContainer.innerHTML = '<p>生成色阶失败</p>'
     }
@@ -251,12 +255,12 @@ class ColorDemo {
 
   bindEvents() {
     // 主题选择器
-    this.elements.themeSelect.addEventListener('change', e => {
+    this.elements.themeSelect.addEventListener('change', (e) => {
       this.themeManager.setTheme(e.target.value)
     })
 
     // 模式选择器
-    this.elements.modeSelect.addEventListener('change', e => {
+    this.elements.modeSelect.addEventListener('change', (e) => {
       this.themeManager.setMode(e.target.value)
       // 强制刷新色阶显示
       setTimeout(() => {
@@ -278,12 +282,12 @@ class ColorDemo {
     const currentTheme = this.themeManager.getCurrentTheme()
     const currentMode = this.themeManager.getCurrentMode()
 
-    this.elements.currentTheme.textContent =
-      this.getThemeDisplayName(currentTheme)
-    this.elements.currentMode.textContent =
-      currentMode === 'light' ? '亮色' : '暗色'
-    this.elements.systemTheme.textContent =
-      currentMode === 'light' ? '亮色' : '暗色'
+    this.elements.currentTheme.textContent
+      = this.getThemeDisplayName(currentTheme)
+    this.elements.currentMode.textContent
+      = currentMode === 'light' ? '亮色' : '暗色'
+    this.elements.systemTheme.textContent
+      = currentMode === 'light' ? '亮色' : '暗色'
 
     this.elements.themeSelect.value = currentTheme
     this.elements.modeSelect.value = currentMode
@@ -293,7 +297,8 @@ class ColorDemo {
     try {
       await navigator.clipboard.writeText(color)
       this.showNotification(`已复制颜色值: ${color}`, 'success')
-    } catch (error) {
+    }
+    catch {
       // 降级方案
       const textArea = document.createElement('textarea')
       textArea.value = color
@@ -322,4 +327,5 @@ class ColorDemo {
 }
 
 // 启动应用
+// eslint-disable-next-line no-new
 new ColorDemo()

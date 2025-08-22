@@ -16,30 +16,35 @@ import {
   computed,
   defineComponent,
   h,
+  inject,
   KeepAlive,
   markRaw,
-  onMounted,
   onUnmounted,
   type PropType,
+  provide,
   ref,
   Suspense,
   Transition,
   type VNode,
   watch,
 } from 'vue'
-import { useRoute, useRouter } from '../composables'
+import { useRoute } from '../composables'
 import { DEFAULT_VIEW_NAME } from '../core/constants'
+
+// RouterView 深度注入键
+const ROUTER_VIEW_DEPTH_KEY = Symbol('RouterViewDepth')
 
 // ==================== 缓存管理器 ====================
 
 class ComponentCache {
   private cache = new Map<string, CacheItem>()
   private maxSize: number
-  private strategy: CacheStrategy
+  // 缓存策略，用于后续扩展
+  private _strategy: CacheStrategy
 
   constructor(maxSize: number = 10, strategy: CacheStrategy = 'memory') {
     this.maxSize = maxSize
-    this.strategy = strategy
+    this._strategy = strategy
   }
 
   get(key: string): CacheItem | undefined {
@@ -192,345 +197,315 @@ export const RouterView = defineComponent({
   ],
 
   setup(props, { slots, attrs, emit }) {
-    const router = useRouter()
-    const currentRoute = useRoute()
+    // 获取路由信息
+    const injectedRoute = useRoute()
+    const currentRoute = computed(() => props.route || injectedRoute.value)
 
-    // 状态管理
+    // 获取视图深度
+    const depth = inject(ROUTER_VIEW_DEPTH_KEY, 0)
+    const childDepth = depth + 1
+    provide(ROUTER_VIEW_DEPTH_KEY, childDepth)
+
+    // 缓存管理
+    const cache = new ComponentCache(props.maxCache, props.cacheStrategy)
+
+    // 组件状态
     const isLoading = ref(false)
-    const error = ref<Error | null>(null)
-    const componentCache = new ComponentCache(
-      props.maxCache,
-      props.cacheStrategy
-    )
-    const loadingTimer = ref<number>()
+    const hasError = ref(false)
+    const errorInfo = ref<Error | null>(null)
+    const retryCount = ref(0)
+    const maxRetries = 3
 
-    // 当前路由和组件
-    const route = computed(() => props.route || currentRoute.value)
-    const currentComponent = ref<Component | null>(null)
+    // 异步组件加载状态
+    const componentLoadingPromises = new Map<string, Promise<Component>>()
 
-    // 缓存键生成
-    const getCacheKey = (route: RouteLocationNormalized): string => {
-      return `${route.path}-${JSON.stringify(route.params)}-${JSON.stringify(
-        route.query
-      )}`
-    }
+    // 匹配的路由记录和组件
+    const matchedRoute = computed(() => {
+      const route = currentRoute.value
+      return route.matched[depth] || null
+    })
 
-    // 检查是否应该缓存
-    const shouldCache = (componentName: string): boolean => {
-      if (!props.keepAlive) return false
-
-      if (props.include) {
-        const include = Array.isArray(props.include)
-          ? props.include
-          : [props.include]
-        return include.some(pattern => {
-          if (typeof pattern === 'string') {
-            return componentName === pattern
-          }
-          return pattern.test(componentName)
-        })
-      }
-
-      if (props.exclude) {
-        const exclude = Array.isArray(props.exclude)
-          ? props.exclude
-          : [props.exclude]
-        return !exclude.some(pattern => {
-          if (typeof pattern === 'string') {
-            return componentName === pattern
-          }
-          return pattern.test(componentName)
-        })
-      }
-
-      return true
-    }
-
-    // 加载组件
-    const loadComponent = async (
-      route: RouteLocationNormalized
-    ): Promise<Component | null> => {
-      const cacheKey = getCacheKey(route)
-
-      // 检查缓存
-      if (props.keepAlive && componentCache.has(cacheKey)) {
-        const cached = componentCache.get(cacheKey)
-        return cached?.component || null
-      }
-
-      // 获取匹配的路由记录
-      const matched = route.matched[route.matched.length - 1]
-      if (!matched || !matched.components) {
+    const viewComponent = computed(() => {
+      const route = matchedRoute.value
+      if (!route)
         return null
+
+      const components = route.components || {}
+      return components[props.name] || null
+    })
+
+    // 组件解析和缓存
+    const resolvedComponent = ref<Component | null>(null)
+
+    // 异步组件加载函数（优化版）
+    const loadComponent = async (component: Component): Promise<Component> => {
+      // 如果不是函数组件，直接返回
+      if (typeof component !== 'function') {
+        return component
       }
 
-      const component = matched.components[props.name]
-      if (!component) {
-        return null
-      }
+      // 生成缓存键
+      const cacheKey = `${currentRoute.value.fullPath}_${props.name}_${depth}`
 
       try {
-        // 异步组件加载
-        let resolvedComponent: Component
-        if (typeof component === 'function') {
-          const result = await (component as () => Promise<any>)()
-          // 检查是否是模块对象（动态导入的结果）
-          if (result && typeof result === 'object' && 'default' in result) {
-            resolvedComponent = result.default
-          } else {
-            resolvedComponent = result
+        // 检查是否已在加载中
+        const existingPromise = componentLoadingPromises.get(cacheKey)
+        if (existingPromise) {
+          return await existingPromise
+        }
+
+        // 检查缓存
+        if (props.keepAlive) {
+          const cached = cache.get(cacheKey)
+          if (cached) {
+            return cached.component
           }
-        } else {
-          resolvedComponent = component
         }
 
-        // 验证组件是否有效
-        if (
-          !resolvedComponent ||
-          (typeof resolvedComponent !== 'function' &&
-            typeof resolvedComponent !== 'object')
-        ) {
-          throw new Error(
-            'Invalid component: component must be a function or object'
-          )
-        }
+        // 标记为加载中
+        isLoading.value = true
+        hasError.value = false
+        errorInfo.value = null
 
-        // 使用 markRaw 避免组件被响应式化
-        const rawComponent = markRaw(resolvedComponent)
+        // 创建加载Promise，带超时和取消机制
+        const abortController = new AbortController()
+        const timeoutId = setTimeout(() => {
+          abortController.abort()
+        }, props.timeout)
+
+        const loadingPromise = Promise.race([
+          Promise.resolve((component as () => Promise<Component>)()),
+          new Promise<never>((_, reject) => {
+            abortController.signal.addEventListener('abort', () => {
+              reject(new Error(`组件加载超时 (${props.timeout}ms)`))
+            })
+          }),
+        ]) as Promise<Component>
+
+        componentLoadingPromises.set(cacheKey, loadingPromise)
+
+        const loadedComponent = await loadingPromise
+        clearTimeout(timeoutId)
+
+        // 验证加载的组件
+        if (!loadedComponent || typeof loadedComponent !== 'object') {
+          throw new Error('加载的组件无效')
+        }
 
         // 缓存组件
-        if (props.keepAlive && shouldCache(rawComponent.name || 'Anonymous')) {
-          componentCache.set(cacheKey, rawComponent, route)
+        if (props.keepAlive) {
+          cache.set(cacheKey, markRaw(loadedComponent), currentRoute.value)
         }
 
-        return rawComponent
-      } catch (err) {
-        throw new Error(`Failed to load component: ${err}`)
+        // 重置重试计数
+        retryCount.value = 0
+
+        return loadedComponent
+      }
+      catch (error) {
+        // 记录错误
+        hasError.value = true
+        errorInfo.value = error as Error
+
+        // 发出错误事件
+        emit('error', error)
+
+        // 如果有重试机制且未达到最大重试次数
+        if (retryCount.value < maxRetries) {
+          console.warn(`组件加载失败，尝试 ${retryCount.value + 1}/${maxRetries}:`, error)
+          // 不抛出错误，允许重试
+          return component
+        }
+
+        throw error
+      }
+      finally {
+        // 清理加载状态
+        componentLoadingPromises.delete(cacheKey)
+        isLoading.value = false
       }
     }
 
-    // 重试加载
+    // 重试函数
     const retry = async () => {
-      error.value = null
-      await loadCurrentComponent()
-      emit('retry')
+      if (retryCount.value < maxRetries && viewComponent.value) {
+        retryCount.value++
+        emit('retry', retryCount.value)
+
+        try {
+          const component = await loadComponent(viewComponent.value)
+          if (component) {
+            resolvedComponent.value = component
+            hasError.value = false
+            errorInfo.value = null
+          }
+        }
+        catch (error) {
+          console.error('Retry failed:', error)
+        }
+      }
     }
 
-    // 加载当前组件
-    const loadCurrentComponent = async () => {
-      if (isLoading.value) return
+    // 监听路由变化，解析组件
+    watch([viewComponent, currentRoute], async ([component, route]) => {
+      if (!component || !route) {
+        resolvedComponent.value = null
+        return
+      }
 
       try {
-        isLoading.value = true
-        error.value = null
-
-        // 延迟显示加载状态
-        if (props.showLoading && props.loadingDelay > 0) {
-          loadingTimer.value = window.setTimeout(() => {
-            // 加载状态已经在这里设置了
-          }, props.loadingDelay)
+        const resolved = await loadComponent(component)
+        if (resolved) {
+          resolvedComponent.value = resolved
         }
+      }
+      catch (error) {
+        console.error('Component loading failed:', error)
+        // 组件已设置错误状态，这里不需要额外处理
+      }
+    }, { immediate: true })
 
-        const component = await Promise.race([
-          loadComponent(route.value),
-          new Promise<never>((_, reject) => {
-            setTimeout(
-              () => reject(new Error('Component load timeout')),
-              props.timeout
-            )
-          }),
-        ])
-
-        currentComponent.value = component
-      } catch (err) {
-        error.value = err as Error
-        emit('error', err)
-      } finally {
-        isLoading.value = false
-        if (loadingTimer.value) {
-          clearTimeout(loadingTimer.value)
-          loadingTimer.value = undefined
-        }
+    // 清理函数
+    const cleanup = () => {
+      // 清理所有加载中的Promise
+      componentLoadingPromises.clear()
+      // 如果需要，清理缓存
+      if (props.cacheStrategy === 'memory') {
+        cache.clear()
       }
     }
 
-    // 监听路由变化
-    watch(
-      () => route.value,
-      (newRoute, oldRoute) => {
-        if (
-          !newRoute ||
-          (oldRoute && getCacheKey(newRoute) === getCacheKey(oldRoute))
-        ) {
-          return
-        }
-        loadCurrentComponent()
-      },
-      { immediate: true }
-    )
-
-    // 动画事件处理
-    const handleBeforeEnter = (el: Element) => {
-      emit('beforeEnter', el)
-    }
-
-    const handleEnter = (el: Element, done: () => void) => {
-      emit('enter', el, done)
-      done()
-    }
-
-    const handleAfterEnter = (el: Element) => {
-      emit('afterEnter', el)
-    }
-
-    const handleBeforeLeave = (el: Element) => {
-      emit('beforeLeave', el)
-    }
-
-    const handleLeave = (el: Element, done: () => void) => {
-      emit('leave', el, done)
-      done()
-    }
-
-    const handleAfterLeave = (el: Element) => {
-      emit('afterLeave', el)
-    }
-
-    // 生命周期
-    onMounted(() => {
-      loadCurrentComponent()
-    })
-
+    // 组件卸载时清理
     onUnmounted(() => {
-      if (loadingTimer.value) {
-        clearTimeout(loadingTimer.value)
-      }
-      componentCache.clear()
+      cleanup()
     })
-
-    // 插槽属性
-    const slotProps: RouterViewSlotProps = {
-      Component: currentComponent.value,
-      route: route.value,
-      isLoading: isLoading.value,
-      error: error.value,
-      retry,
-    }
 
     // 渲染函数
-    return () => {
-      // 自定义渲染
-      if (slots.default) {
-        return slots.default(slotProps)
-      }
+    const renderComponent = (): VNode | null => {
+      const route = currentRoute.value
+      const component = resolvedComponent.value
 
-      // 错误状态
-      if (error.value) {
-        if (props.error) {
-          return h(props.error as any, { error: error.value, retry })
-        }
-        return (
-          <div class='router-view__error'>
-            <p>
-              加载失败:
-              {error.value.message}
-            </p>
-            <button onClick={retry}>重试</button>
-          </div>
-        )
+      // 没有匹配的路由
+      if (!matchedRoute.value) {
+        return props.empty ? h(props.empty) : null
       }
 
       // 加载状态
       if (isLoading.value && props.showLoading) {
-        if (props.loading) {
-          return h(props.loading as any)
+        return props.loading ? h(props.loading) : h('div', 'Loading...')
+      }
+
+      // 错误状态
+      if (hasError.value && errorInfo.value) {
+        if (props.error) {
+          return h(props.error, {
+            error: errorInfo.value,
+            retry,
+            retryCount: retryCount.value,
+            maxRetries,
+          })
         }
-        return (
-          <div class='router-view__loading'>
-            <div class='router-view__spinner' />
-            <p>加载中...</p>
-          </div>
-        )
+
+        // 默认错误UI
+        return h('div', {
+          class: 'router-view-error',
+        }, [
+          h('p', 'Component loading failed'),
+          h('p', { class: 'error-message' }, errorInfo.value.message),
+          retryCount.value < maxRetries
+            ? h('button', { onClick: retry }, `Retry (${retryCount.value}/${maxRetries})`)
+            : null,
+        ])
       }
 
-      // 空状态
-      if (!currentComponent.value) {
-        if (props.empty) {
-          return h(props.empty as any)
-        }
-        return (
-          <div class='router-view__empty'>
-            <p>没有找到匹配的组件</p>
-          </div>
-        )
+      // 没有组件
+      if (!component) {
+        return props.empty ? h(props.empty) : null
       }
 
-      // 渲染组件
-      const renderComponent = () => {
-        const Component = currentComponent.value!
-        return h(Component as any, { key: getCacheKey(route.value), ...attrs })
+      // 创建组件实例
+      const componentInstance = h(component, {
+        ...attrs,
+        key: route.fullPath,
+      })
+
+      // 包装slot内容
+      const slotProps: RouterViewSlotProps = {
+        Component: component,
+        route,
+        isLoading: isLoading.value,
+        error: errorInfo.value,
+        retry,
       }
 
-      // 包装缓存
-      const wrapWithKeepAlive = (content: VNode) => {
-        if (!props.keepAlive) return content
-
-        return (
-          <KeepAlive
-            include={props.include}
-            exclude={props.exclude}
-            max={props.maxCache}
-          >
-            {content}
-          </KeepAlive>
-        )
+      if (slots.default) {
+        const slotResult = slots.default(slotProps)
+        return Array.isArray(slotResult) ? slotResult[0] : slotResult
       }
-
-      // 包装动画
-      const wrapWithTransition = (content: VNode) => {
-        if (props.animation === 'none') return content
-
-        return (
-          <Transition
-            name={`router-view-${props.animation}`}
-            mode='out-in'
-            duration={props.animationDuration}
-            onBeforeEnter={handleBeforeEnter}
-            onEnter={handleEnter}
-            onAfterEnter={handleAfterEnter}
-            onBeforeLeave={handleBeforeLeave}
-            onLeave={handleLeave}
-            onAfterLeave={handleAfterLeave}
-          >
-            {content}
-          </Transition>
-        )
-      }
-
-      // 包装 Suspense
-      const wrapWithSuspense = (content: VNode) => {
-        return (
-          <Suspense>
-            {{
-              default: () => content,
-              fallback: () =>
-                props.loading ? (
-                  h(props.loading as any)
-                ) : (
-                  <div class='router-view__loading'>加载中...</div>
-                ),
-            }}
-          </Suspense>
-        )
-      }
-
-      let content = renderComponent()
-      content = wrapWithKeepAlive(content)
-      content = wrapWithTransition(content)
-      content = wrapWithSuspense(content)
-
-      return content
+      return componentInstance
     }
+
+    // 过渡和缓存包装
+    const renderWithFeatures = (): VNode | null => {
+      const content = renderComponent()
+
+      if (!content)
+        return null
+
+      let wrappedContent = content
+
+      // KeepAlive 包装
+      if (props.keepAlive) {
+        wrappedContent = h(KeepAlive, {
+          include: props.include,
+          exclude: props.exclude,
+          max: props.maxCache,
+        }, () => wrappedContent)
+      }
+
+      // Suspense 包装（异步组件支持）
+      wrappedContent = h(Suspense, {
+        timeout: props.timeout,
+        onResolve: () => {
+          isLoading.value = false
+        },
+        onReject: (error: Error) => {
+          hasError.value = true
+          errorInfo.value = error
+          emit('error', error)
+        },
+      }, {
+        default: () => wrappedContent,
+        fallback: () => props.loading ? h(props.loading) : h('div', 'Loading...'),
+      })
+
+      // Transition 包装
+      if (props.animation !== 'none') {
+        const transitionProps = {
+          name: `router-${props.animation}`,
+          mode: 'out-in' as const,
+          duration: props.animationDuration,
+          onBeforeEnter: (el: Element) => emit('beforeEnter', el),
+          onEnter: (el: Element, done: () => void) => {
+            emit('enter', el)
+            setTimeout(done, props.animationDuration)
+          },
+          onAfterEnter: (el: Element) => emit('afterEnter', el),
+          onBeforeLeave: (el: Element) => emit('beforeLeave', el),
+          onLeave: (el: Element, done: () => void) => {
+            emit('leave', el)
+            setTimeout(done, props.animationDuration)
+          },
+          onAfterLeave: (el: Element) => emit('afterLeave', el),
+        }
+
+        wrappedContent = h(Transition, transitionProps, () => wrappedContent)
+      }
+
+      return wrappedContent
+    }
+
+    return renderWithFeatures
   },
 })
 

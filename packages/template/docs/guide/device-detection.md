@@ -45,17 +45,41 @@ const device = detectDevice()
 console.log('设备类型:', device)
 ```
 
-## 自动检测配置
+## 自动检测与模板切换
 
-在模板管理器中启用自动设备检测：
+### 在 useTemplate 中启用（推荐）
+
+使用 `useTemplate` 组合函数可以同时启用设备检测和自动模板切换：
+
+```typescript
+import { useTemplate } from '@ldesign/template/vue'
+
+const { currentDevice, currentTemplate, availableTemplates, switchTemplate } =
+  useTemplate({
+    category: 'login',
+    autoScan: true,
+    autoDetectDevice: true, // 启用自动设备检测和模板切换
+    debug: true, // 启用调试模式查看切换过程
+  })
+```
+
+**自动切换逻辑：**
+
+1. 当设备类型发生变化时（如窗口缩放）
+2. 系统会自动查找新设备类型的可用模板
+3. 优先选择当前模板在新设备上的对应版本
+4. 如果对应版本不存在，则选择该设备的第一个可用模板
+5. 自动切换到选中的模板
+
+### 在模板管理器中启用
 
 ```typescript
 const manager = new TemplateManager({
   autoDetectDevice: true,
   deviceBreakpoints: {
     mobile: 767,
-    tablet: 1023
-  }
+    tablet: 1023,
+  },
 })
 ```
 
@@ -86,11 +110,11 @@ onUnmounted(() => {
 ```typescript
 const customBreakpoints = {
   mobile: 600, // 移动端最大宽度
-  tablet: 900 // 平板端最大宽度
+  tablet: 900, // 平板端最大宽度
 }
 
 const manager = new TemplateManager({
-  deviceBreakpoints: customBreakpoints
+  deviceBreakpoints: customBreakpoints,
 })
 ```
 
@@ -118,7 +142,7 @@ const currentDevice = ref(detectDevice())
 let deviceWatcher: (() => void) | null = null
 
 onMounted(() => {
-  deviceWatcher = createDeviceWatcher((newDevice) => {
+  deviceWatcher = createDeviceWatcher(newDevice => {
     currentDevice.value = newDevice
   })
 })
@@ -128,15 +152,13 @@ onUnmounted(() => {
 })
 
 const dashboardProps = {
-  title: '响应式仪表板'
+  title: '响应式仪表板',
 }
 </script>
 
 <template>
   <div class="responsive-container">
-    <div class="device-info">
-      当前设备: {{ currentDevice }}
-    </div>
+    <div class="device-info">当前设备: {{ currentDevice }}</div>
 
     <!-- 根据设备自动选择模板 -->
     <LTemplateRenderer

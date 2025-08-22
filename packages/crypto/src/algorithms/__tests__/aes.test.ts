@@ -37,9 +37,15 @@ describe('aES Encryption', () => {
       expect(encrypted256.algorithm).toBe('AES-256-CBC')
 
       // Verify decryption works
-      expect(encryptor.decrypt(encrypted128, testKey, options128).data).toBe(testData)
-      expect(encryptor.decrypt(encrypted192, testKey, options192).data).toBe(testData)
-      expect(encryptor.decrypt(encrypted256, testKey, options256).data).toBe(testData)
+      expect(encryptor.decrypt(encrypted128, testKey, options128).data).toBe(
+        testData,
+      )
+      expect(encryptor.decrypt(encrypted192, testKey, options192).data).toBe(
+        testData,
+      )
+      expect(encryptor.decrypt(encrypted256, testKey, options256).data).toBe(
+        testData,
+      )
     })
 
     it('should encrypt with different modes', () => {
@@ -78,11 +84,15 @@ describe('aES Encryption', () => {
     })
 
     it('should throw error for empty data', () => {
-      expect(() => encryptor.encrypt('', testKey)).toThrow('Data cannot be empty')
+      expect(() => encryptor.encrypt('', testKey)).toThrow(
+        'Data cannot be empty',
+      )
     })
 
     it('should throw error for empty key', () => {
-      expect(() => encryptor.encrypt(testData, '')).toThrow('Key cannot be empty')
+      expect(() => encryptor.encrypt(testData, '')).toThrow(
+        'Key cannot be empty',
+      )
     })
   })
 
@@ -111,7 +121,9 @@ describe('aES Encryption', () => {
 
     it('should handle string input for decryption', () => {
       const encrypted = aes.encrypt(testData, testKey)
-      const decrypted = aes.decrypt(encrypted.data || '', testKey, { iv: encrypted.iv })
+      const decrypted = aes.decrypt(encrypted.data || '', testKey, {
+        iv: encrypted.iv,
+      })
 
       expect(decrypted.success).toBe(true)
       expect(decrypted.data).toBe(testData)

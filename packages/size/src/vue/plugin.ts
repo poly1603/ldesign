@@ -3,7 +3,7 @@
  */
 
 import type { App, Plugin } from 'vue'
-import type { VueSizePluginOptions, SizeManager } from '../types'
+import type { SizeManager, VueSizePluginOptions } from '../types'
 import { createSizeManager } from '../core/size-manager'
 
 /**

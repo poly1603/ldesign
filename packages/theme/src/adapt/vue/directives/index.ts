@@ -5,21 +5,21 @@
  */
 
 export {
-  vThemeDecoration,
-  getElementDecoration,
-  hasElementDecoration,
-  clearAllDecorations,
-  default as themeDecoration,
-} from './theme-decoration'
-
-export {
-  vThemeAnimation,
+  clearAllAnimations,
   getElementAnimation,
   hasElementAnimation,
-  triggerElementAnimation,
-  stopElementAnimation,
   pauseElementAnimation,
   resumeElementAnimation,
-  clearAllAnimations,
+  stopElementAnimation,
   default as themeAnimation,
+  triggerElementAnimation,
+  vThemeAnimation,
 } from './theme-animation'
+
+export {
+  clearAllDecorations,
+  getElementDecoration,
+  hasElementDecoration,
+  default as themeDecoration,
+  vThemeDecoration,
+} from './theme-decoration'

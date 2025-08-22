@@ -1,68 +1,9 @@
-<template>
-  <div id="app">
-    <header class="demo-header">
-      <h1>🎨 Template Renderer 演示</h1>
-      <p>展示模板渲染组件的样式和功能</p>
-    </header>
-
-    <main class="demo-main">
-      <!-- 基础 TemplateRenderer 演示 -->
-      <section class="demo-section">
-        <h2>基础模板渲染器</h2>
-        <div class="demo-container">
-          <TemplateRenderer
-            category="login"
-            :show-selector="true"
-            selector-mode="modal"
-            :show-device-info="true"
-            @template-change="onTemplateChange"
-            @device-change="onDeviceChange"
-          />
-        </div>
-      </section>
-
-      <!-- 不同模式的选择器演示 -->
-      <section class="demo-section">
-        <h2>不同选择器模式</h2>
-        <div class="demo-grid">
-          <div class="demo-item">
-            <h3>下拉模式</h3>
-            <TemplateRenderer category="login" :show-selector="true" selector-mode="dropdown" selector-size="small" />
-          </div>
-
-          <div class="demo-item">
-            <h3>按钮模式</h3>
-            <TemplateRenderer category="login" :show-selector="true" selector-mode="buttons" selector-size="medium" />
-          </div>
-
-          <div class="demo-item">
-            <h3>网格模式</h3>
-            <TemplateRenderer category="login" :show-selector="true" selector-mode="grid" selector-size="large" />
-          </div>
-        </div>
-      </section>
-
-      <!-- 事件日志 -->
-      <section class="demo-section">
-        <h2>事件日志</h2>
-        <div class="event-log">
-          <div v-for="(event, index) in eventLog" :key="index" class="event-item">
-            <span class="event-time">{{ event.time }}</span>
-            <span class="event-type">{{ event.type }}</span>
-            <span class="event-data">{{ event.data }}</span>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import { TemplateRenderer } from '@ldesign/template/vue'
+import { ref } from 'vue'
 
 // 事件日志
-const eventLog = ref<Array<{ time: string; type: string; data: string }>>([])
+const eventLog = ref<Array<{ time: string, type: string, data: string }>>([])
 
 function addEvent(type: string, data: any) {
   eventLog.value.unshift({
@@ -85,6 +26,84 @@ function onDeviceChange(deviceType: string) {
   addEvent('device-change', { deviceType })
 }
 </script>
+
+<template>
+  <div id="app">
+    <header class="demo-header">
+      <h1>🎨 Template Renderer 演示</h1>
+      <p>展示模板渲染组件的样式和功能</p>
+    </header>
+
+    <main class="demo-main">
+      <!-- 基础 TemplateRenderer 演示 -->
+      <section class="demo-section">
+        <h2>基础模板渲染器</h2>
+        <div class="demo-container">
+          <TemplateRenderer
+            category="login"
+            template="default"
+            :show-selector="true"
+            selector-mode="modal"
+            :show-device-info="true"
+            @template-change="onTemplateChange"
+            @device-change="onDeviceChange"
+          />
+        </div>
+      </section>
+
+      <!-- 不同模式的选择器演示 -->
+      <section class="demo-section">
+        <h2>不同选择器模式</h2>
+        <div class="demo-grid">
+          <div class="demo-item">
+            <h3>下拉模式</h3>
+            <TemplateRenderer
+              category="login"
+              template="default"
+              :show-selector="true"
+              selector-mode="dropdown"
+              selector-size="small"
+            />
+          </div>
+
+          <div class="demo-item">
+            <h3>按钮模式</h3>
+            <TemplateRenderer
+              category="login"
+              template="classic"
+              :show-selector="true"
+              selector-mode="buttons"
+              selector-size="medium"
+            />
+          </div>
+
+          <div class="demo-item">
+            <h3>网格模式</h3>
+            <TemplateRenderer
+              category="login"
+              template="modern"
+              :show-selector="true"
+              selector-mode="grid"
+              selector-size="large"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- 事件日志 -->
+      <section class="demo-section">
+        <h2>事件日志</h2>
+        <div class="event-log">
+          <div v-for="(event, index) in eventLog" :key="index" class="event-item">
+            <span class="event-time">{{ event.time }}</span>
+            <span class="event-type">{{ event.type }}</span>
+            <span class="event-data">{{ event.data }}</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .demo-header {

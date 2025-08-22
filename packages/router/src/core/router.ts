@@ -9,6 +9,7 @@ import type {
   HistoryLocation,
   NavigationFailure,
   NavigationGuard,
+  NavigationGuardReturn,
   NavigationHookAfter,
   NavigationInformation,
   RouteLocationNormalized,
@@ -19,6 +20,7 @@ import type {
   RouterOptions,
 } from '../types'
 import { ref } from 'vue'
+import { MemoryManager } from '../utils/memory-manager'
 import {
   NavigationFailureType,
   ROUTE_INJECTION_SYMBOL,
@@ -27,10 +29,20 @@ import {
 } from './constants'
 import { RouteMatcher } from './matcher'
 
+/**
+ * 导航重定向错误
+ */
+class NavigationRedirectError extends Error {
+  constructor(public to: RouteLocationNormalized) {
+    super('Navigation redirected')
+    this.name = 'NavigationRedirectError'
+  }
+}
+
 // ==================== 路由器实现 ====================
 
 /**
- * 路由器类
+ * 路由器类（增强版）
  */
 export class RouterImpl implements Router {
   private matcher: RouteMatcher
@@ -40,7 +52,12 @@ export class RouterImpl implements Router {
   private errorHandlers: Array<(error: Error) => void> = []
   private isReadyPromise?: Promise<void>
   private isReadyResolve?: () => void
-  private pendingLocation?: RouteLocationNormalized
+  // 待处理的路由位置，用于导航状态管理
+  private _pendingLocation?: RouteLocationNormalized
+
+  // 内存管理
+  private memoryManager: MemoryManager
+  private guardCleanupFunctions: Array<() => void> = []
 
   public readonly currentRoute: Ref<RouteLocationNormalized>
   public readonly options: RouterOptions
@@ -50,8 +67,19 @@ export class RouterImpl implements Router {
     this.matcher = new RouteMatcher()
     this.currentRoute = ref(START_LOCATION)
 
+    // 初始化内存管理器
+    this.memoryManager = new MemoryManager(
+      {
+        warning: 50,
+        critical: 100,
+        maxCache: 20,
+        maxListeners: 1000,
+      },
+      'moderate',
+    )
+
     // 创建 isReady Promise
-    this.isReadyPromise = new Promise(resolve => {
+    this.isReadyPromise = new Promise((resolve) => {
       this.isReadyResolve = resolve
     })
 
@@ -65,6 +93,9 @@ export class RouterImpl implements Router {
 
     // 初始化当前路由
     this.initializeCurrentRoute()
+
+    // 启动内存管理
+    this.memoryManager.start()
   }
 
   // ==================== 路由管理 ====================
@@ -73,14 +104,15 @@ export class RouterImpl implements Router {
   addRoute(parentName: string | symbol, route: RouteRecordRaw): () => void
   addRoute(
     parentNameOrRoute: string | symbol | RouteRecordRaw,
-    route?: RouteRecordRaw
+    route?: RouteRecordRaw,
   ): () => void {
     let normalizedRecord: RouteRecordNormalized
 
     if (typeof parentNameOrRoute === 'object') {
       // addRoute(route)
       normalizedRecord = this.matcher.addRoute(parentNameOrRoute)
-    } else {
+    }
+    else {
       // addRoute(parentName, route)
       const parent = this.matcher.matchByName(parentNameOrRoute)
       if (!parent) {
@@ -110,7 +142,7 @@ export class RouterImpl implements Router {
 
   resolve(
     to: RouteLocationRaw,
-    currentLocation?: RouteLocationNormalized
+    currentLocation?: RouteLocationNormalized,
   ): RouteLocationNormalized {
     return this.matcher.resolve(to, currentLocation || this.currentRoute.value)
   }
@@ -118,13 +150,13 @@ export class RouterImpl implements Router {
   // ==================== 导航控制 ====================
 
   async push(
-    to: RouteLocationRaw
+    to: RouteLocationRaw,
   ): Promise<NavigationFailure | void | undefined> {
     return this.pushWithRedirect(to, false)
   }
 
   async replace(
-    to: RouteLocationRaw
+    to: RouteLocationRaw,
   ): Promise<NavigationFailure | void | undefined> {
     return this.pushWithRedirect(to, true)
   }
@@ -145,12 +177,20 @@ export class RouterImpl implements Router {
 
   beforeEach(guard: NavigationGuard): () => void {
     this.beforeGuards.push(guard)
-    return () => {
+
+    // 注册到内存监控
+    this.memoryManager.getMemoryMonitor().registerListener(guard as () => void)
+
+    const cleanup = () => {
       const index = this.beforeGuards.indexOf(guard)
       if (index >= 0) {
         this.beforeGuards.splice(index, 1)
       }
+      this.memoryManager.getMemoryMonitor().unregisterListener(guard as () => void)
     }
+
+    this.guardCleanupFunctions.push(cleanup)
+    return cleanup
   }
 
   beforeResolve(guard: NavigationGuard): () => void {
@@ -201,120 +241,290 @@ export class RouterImpl implements Router {
     // 这里会在组件实现后添加
   }
 
+  /**
+   * 销毁路由器，清理所有资源
+   */
+  destroy(): void {
+    // 停止内存管理
+    this.memoryManager.stop()
+
+    // 清理所有守卫
+    this.guardCleanupFunctions.forEach(cleanup => cleanup())
+    this.guardCleanupFunctions = []
+
+    // 清理数组
+    this.beforeGuards = []
+    this.beforeResolveGuards = []
+    this.afterHooks = []
+    this.errorHandlers = []
+
+    // 清理匹配器缓存
+    this.matcher.clearCache()
+
+    // 清理历史监听器
+    this.options.history.destroy()
+  }
+
+  /**
+   * 获取内存统计信息
+   */
+  getMemoryStats() {
+    return {
+      memory: this.memoryManager.getMemoryMonitor().getStats(),
+      matcher: this.matcher.getStats(),
+      guards: {
+        beforeGuards: this.beforeGuards.length,
+        beforeResolveGuards: this.beforeResolveGuards.length,
+        afterHooks: this.afterHooks.length,
+        errorHandlers: this.errorHandlers.length,
+      },
+    }
+  }
+
   // ==================== 私有方法 ====================
+
+  // 重定向跟踪，防止无限重定向
+  private redirectCount = 0
+  private readonly MAX_REDIRECTS = 10
+  private redirectStartTime = 0
+  private readonly REDIRECT_TIMEOUT = 5000 // 5秒超时
 
   private async pushWithRedirect(
     to: RouteLocationRaw,
-    replace: boolean
+    replace: boolean,
   ): Promise<NavigationFailure | void | undefined> {
+    // 重置重定向计数器（如果是新的导航）
+    const now = Date.now()
+    if (now - this.redirectStartTime > this.REDIRECT_TIMEOUT) {
+      this.redirectCount = 0
+      this.redirectStartTime = now
+    }
+
+    // 检查重定向次数限制
+    if (this.redirectCount >= this.MAX_REDIRECTS) {
+      const error = new Error(`Maximum redirect limit (${this.MAX_REDIRECTS}) exceeded`)
+      this.handleError(error)
+      return this.createNavigationFailure(
+        NavigationFailureType.aborted,
+        this.currentRoute.value,
+        this.resolve(to),
+      )
+    }
+
     const targetLocation = this.resolve(to)
     const from = this.currentRoute.value
 
     // 检查是否重复导航
     if (this.isSameRouteLocation(targetLocation, from)) {
+      this.redirectCount = 0 // 重置计数器
       return this.createNavigationFailure(
         NavigationFailureType.duplicated,
         from,
-        targetLocation
+        targetLocation,
       )
     }
 
     try {
-      // 执行导航守卫
-      await this.runNavigationGuards(targetLocation, from)
+      // 执行导航守卫，可能会返回重定向的路由
+      const finalLocation = await this.runNavigationGuards(targetLocation, from)
 
       // 更新历史记录
-      const historyLocation =
-        this.routeLocationToHistoryLocation(targetLocation)
+      const historyLocation = this.routeLocationToHistoryLocation(finalLocation)
       if (replace) {
-        this.options.history.replace(historyLocation, { ...targetLocation })
-      } else {
-        this.options.history.push(historyLocation, { ...targetLocation })
+        this.options.history.replace(historyLocation, { ...finalLocation })
+      }
+      else {
+        this.options.history.push(historyLocation, { ...finalLocation })
       }
 
       // 更新当前路由
-      this.updateCurrentRoute(targetLocation, from)
+      this.updateCurrentRoute(finalLocation, from)
 
       // 执行后置钩子
-      this.runAfterHooks(targetLocation, from)
-    } catch (error) {
+      this.runAfterHooks(finalLocation, from)
+    }
+    catch (error) {
+      // 处理重定向错误
+      if (error instanceof NavigationRedirectError) {
+        // 增加重定向计数
+        this.redirectCount++
+
+        // 递归处理重定向
+        return this.pushWithRedirect(error.to, replace)
+      }
+
       if (error instanceof Error) {
         this.handleError(error)
+        this.redirectCount = 0 // 重置计数器
         return this.createNavigationFailure(
           NavigationFailureType.aborted,
           from,
-          targetLocation
+          targetLocation,
         )
       }
+
+      this.redirectCount = 0 // 重置计数器
       throw error
     }
+
+    // 成功导航后重置计数器
+    this.redirectCount = 0
   }
 
   private async runNavigationGuards(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
-  ): Promise<void> {
+    from: RouteLocationNormalized,
+  ): Promise<RouteLocationNormalized> {
+    let currentTo = to
+
+    // 首先检查路由记录的重定向配置
+    const redirectResult = this.handleRouteRedirect(currentTo, 0)
+
+    // 如果发生了重定向（比较路径），抛出重定向错误
+    if (redirectResult.path !== currentTo.path) {
+      throw new NavigationRedirectError(redirectResult)
+    }
+
+    currentTo = redirectResult
+
     // 执行全局前置守卫
     for (const guard of this.beforeGuards) {
-      const result = await this.runGuard(guard, to, from)
-      if (result !== undefined) {
+      const result = await this.runGuard(guard, currentTo, from)
+      if (result === false) {
         throw new Error('Navigation aborted by guard')
+      }
+      else if (
+        result
+        && (typeof result === 'string' || typeof result === 'object')
+      ) {
+        // 重定向
+        currentTo = this.resolve(result)
       }
     }
 
     // 执行路由级守卫
-    for (const record of to.matched) {
+    for (const record of currentTo.matched) {
       if (record.beforeEnter) {
-        const result = await this.runGuard(record.beforeEnter, to, from)
-        if (result !== undefined) {
+        const result = await this.runGuard(record.beforeEnter, currentTo, from)
+        if (result === false) {
           throw new Error('Navigation aborted by route guard')
+        }
+        else if (
+          result
+          && (typeof result === 'string' || typeof result === 'object')
+        ) {
+          // 重定向
+          currentTo = this.resolve(result)
         }
       }
     }
 
     // 执行全局解析守卫
     for (const guard of this.beforeResolveGuards) {
-      const result = await this.runGuard(guard, to, from)
-      if (result !== undefined) {
+      const result = await this.runGuard(guard, currentTo, from)
+      if (result === false) {
         throw new Error('Navigation aborted by resolve guard')
       }
+      else if (
+        result
+        && (typeof result === 'string' || typeof result === 'object')
+      ) {
+        // 重定向
+        currentTo = this.resolve(result)
+      }
     }
+
+    return currentTo
+  }
+
+  /**
+   * 处理路由记录的重定向配置
+   */
+  private handleRouteRedirect(
+    to: RouteLocationNormalized,
+    redirectCount: number = 0,
+  ): RouteLocationNormalized {
+    // 防止无限重定向
+    if (redirectCount > 10) {
+      throw new Error(`Too many redirects when navigating to ${to.path}`)
+    }
+
+    // 检查最后匹配的路由记录是否有重定向配置
+    const lastMatched = to.matched[to.matched.length - 1]
+
+    if (lastMatched?.redirect) {
+      const redirect = lastMatched.redirect
+      let redirectTarget: RouteLocationNormalized
+
+      // 如果重定向是字符串，直接解析
+      if (typeof redirect === 'string') {
+        redirectTarget = this.resolve(redirect)
+      }
+      // 如果重定向是函数，调用函数获取重定向目标
+      else if (typeof redirect === 'function') {
+        const redirectResult = redirect(to)
+        if (redirectResult) {
+          redirectTarget = this.resolve(redirectResult)
+        }
+        else {
+          return to
+        }
+      }
+      // 如果重定向是对象，直接解析
+      else if (typeof redirect === 'object') {
+        redirectTarget = this.resolve(redirect)
+      }
+      else {
+        return to
+      }
+
+      // 递归处理重定向目标，防止链式重定向
+      return this.handleRouteRedirect(redirectTarget, redirectCount + 1)
+    }
+
+    return to
   }
 
   private async runGuard(
     guard: NavigationGuard,
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
-  ): Promise<any> {
+    from: RouteLocationNormalized,
+  ): Promise<RouteLocationNormalized> {
     return new Promise((resolve, reject) => {
-      const next = (result?: any) => {
+      const next = (result?: NavigationGuardReturn) => {
         if (result === false) {
           reject(new Error('Navigation cancelled'))
-        } else if (result instanceof Error) {
+        }
+        else if (result instanceof Error) {
           reject(result)
-        } else if (result && typeof result === 'object') {
-          // 重定向
-          reject(new Error('Navigation redirected'))
-        } else {
+        }
+        else {
+          // 包括重定向在内的所有结果都通过 resolve 返回
           resolve(result)
         }
       }
 
       const guardResult = guard(to, from, next)
-      if (guardResult && typeof guardResult.then === 'function') {
-        guardResult.then(resolve, reject)
+      if (
+        guardResult
+        && typeof guardResult === 'object'
+        && 'then' in guardResult
+        && typeof guardResult.then === 'function'
+      ) {
+        ; (guardResult as Promise<NavigationGuardReturn>).then(resolve, reject)
       }
     })
   }
 
   private runAfterHooks(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
+    from: RouteLocationNormalized,
   ): void {
     for (const hook of this.afterHooks) {
       try {
         hook(to, from)
-      } catch (error) {
+      }
+      catch (error) {
         this.handleError(error as Error)
       }
     }
@@ -322,15 +532,15 @@ export class RouterImpl implements Router {
 
   private updateCurrentRoute(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized
+    _from: RouteLocationNormalized,
   ): void {
     this.currentRoute.value = to
-    this.pendingLocation = undefined
+    this._pendingLocation = undefined as any
 
     // 触发准备就绪
     if (this.isReadyResolve) {
       this.isReadyResolve()
-      this.isReadyResolve = undefined
+      this.isReadyResolve = undefined as any
     }
   }
 
@@ -342,17 +552,21 @@ export class RouterImpl implements Router {
 
   private async handleHistoryChange(
     to: HistoryLocation,
-    from: HistoryLocation,
-    info: NavigationInformation
+    _from: HistoryLocation,
+    _info: NavigationInformation,
   ): Promise<void> {
     const targetLocation = this.historyLocationToRouteLocation(to)
     const fromLocation = this.currentRoute.value
 
     try {
-      await this.runNavigationGuards(targetLocation, fromLocation)
-      this.updateCurrentRoute(targetLocation, fromLocation)
-      this.runAfterHooks(targetLocation, fromLocation)
-    } catch (error) {
+      const finalLocation = await this.runNavigationGuards(
+        targetLocation,
+        fromLocation,
+      )
+      this.updateCurrentRoute(finalLocation, fromLocation)
+      this.runAfterHooks(finalLocation, fromLocation)
+    }
+    catch (error) {
       this.handleError(error as Error)
     }
   }
@@ -360,17 +574,43 @@ export class RouterImpl implements Router {
   private initializeCurrentRoute(): void {
     const location = this.options.history.location
     const routeLocation = this.historyLocationToRouteLocation(location)
-    this.currentRoute.value = routeLocation
 
-    // 直接解析 isReady Promise，因为这是初始化，不需要运行导航守卫
-    if (this.isReadyResolve) {
-      this.isReadyResolve()
-      this.isReadyResolve = undefined
+    // 检查是否需要重定向
+    const redirectResult = this.handleRouteRedirect(routeLocation, 0)
+
+    if (redirectResult.path !== routeLocation.path) {
+      // 需要重定向，使用 replace 模式避免在历史记录中留下原始路径
+      this.replace(redirectResult.path)
+        .then(() => {
+          // 重定向完成后解析 isReady Promise
+          if (this.isReadyResolve) {
+            this.isReadyResolve()
+            this.isReadyResolve = undefined as any
+          }
+        })
+        .catch((error) => {
+          this.handleError(error)
+          // 即使重定向失败也要解析 isReady Promise
+          if (this.isReadyResolve) {
+            this.isReadyResolve()
+            this.isReadyResolve = undefined as any
+          }
+        })
+    }
+    else {
+      // 不需要重定向，直接设置当前路由
+      this.currentRoute.value = routeLocation
+
+      // 直接解析 isReady Promise
+      if (this.isReadyResolve) {
+        this.isReadyResolve()
+        this.isReadyResolve = undefined as any
+      }
     }
   }
 
   private routeLocationToHistoryLocation(
-    location: RouteLocationNormalized
+    location: RouteLocationNormalized,
   ): HistoryLocation {
     return {
       pathname: location.path,
@@ -380,7 +620,7 @@ export class RouterImpl implements Router {
   }
 
   private historyLocationToRouteLocation(
-    location: HistoryLocation
+    location: HistoryLocation,
   ): RouteLocationNormalized {
     const path = location.pathname
     const query = this.parseQuery(location.search)
@@ -388,7 +628,8 @@ export class RouterImpl implements Router {
 
     try {
       return this.matcher.resolve({ path, query, hash })
-    } catch {
+    }
+    catch {
       // 如果匹配失败，返回 404 路由或默认路由
       return {
         ...START_LOCATION,
@@ -435,19 +676,19 @@ export class RouterImpl implements Router {
 
   private isSameRouteLocation(
     a: RouteLocationNormalized,
-    b: RouteLocationNormalized
+    b: RouteLocationNormalized,
   ): boolean {
     return (
-      a.path === b.path &&
-      JSON.stringify(a.query) === JSON.stringify(b.query) &&
-      a.hash === b.hash
+      a.path === b.path
+      && JSON.stringify(a.query) === JSON.stringify(b.query)
+      && a.hash === b.hash
     )
   }
 
   private createNavigationFailure(
     type: NavigationFailureType,
     from: RouteLocationNormalized,
-    to: RouteLocationNormalized
+    to: RouteLocationNormalized,
   ): NavigationFailure {
     const error = new Error(`Navigation failed`) as NavigationFailure
     error.type = type
@@ -460,7 +701,8 @@ export class RouterImpl implements Router {
     for (const handler of this.errorHandlers) {
       try {
         handler(error)
-      } catch (handlerError) {
+      }
+      catch (handlerError) {
         console.error('Error in error handler:', handlerError)
       }
     }

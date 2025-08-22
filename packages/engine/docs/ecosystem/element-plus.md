@@ -20,13 +20,13 @@ pnpm add -D unplugin-vue-components unplugin-auto-import
 ### 基础设置
 
 ```typescript
-// src/main.ts
-import { createApp } from 'vue'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { createEngine } from '@ldesign/engine'
+import ElementPlus from 'element-plus'
+// src/main.ts
+import { createApp } from 'vue'
 import App from './App.vue'
+import 'element-plus/dist/index.css'
 
 const app = createApp(App)
 
@@ -52,12 +52,12 @@ app.mount('#app')
 ### 按需导入配置
 
 ```typescript
-// vite.config.ts
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import Components from 'unplugin-vue-components/vite'
+// vite.config.ts
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
@@ -83,7 +83,7 @@ import { createPlugin } from '@ldesign/engine'
 export const themePlugin = createPlugin({
   name: 'element-theme',
 
-  install: engine => {
+  install: (engine) => {
     const theme = {
       // 当前主题
       current: 'light',
@@ -121,7 +121,8 @@ export const themePlugin = createPlugin({
       // 应用主题
       applyTheme(themeName: string) {
         const themeConfig = this.themes[themeName]
-        if (!themeConfig) return
+        if (!themeConfig)
+          return
 
         // 设置 CSS 变量
         const root = document.documentElement
@@ -179,7 +180,7 @@ export const themePlugin = createPlugin({
     // 监听系统主题变化
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.addEventListener('change', e => {
+      mediaQuery.addEventListener('change', (e) => {
         if (!engine.state.get('ui.themeManual')) {
           theme.setTheme(e.matches ? 'dark' : 'light')
         }
@@ -193,20 +194,10 @@ export const themePlugin = createPlugin({
 
 ```vue
 <!-- src/components/ThemeToggle.vue -->
-<template>
-  <el-switch
-    v-model="isDark"
-    inline-prompt
-    :active-icon="Moon"
-    :inactive-icon="Sunny"
-    @change="handleThemeChange"
-  />
-</template>
-
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Moon, Sunny } from '@element-plus/icons-vue'
 import { useEngine } from '@ldesign/engine/vue'
+import { computed } from 'vue'
 
 const engine = useEngine()
 
@@ -219,12 +210,22 @@ const isDark = computed({
   },
 })
 
-const handleThemeChange = (value: boolean) => {
+function handleThemeChange(value: boolean) {
   const theme = value ? 'dark' : 'light'
   engine.theme.setTheme(theme)
   engine.notifications.success(`已切换到${theme === 'dark' ? '深色' : '浅色'}主题`)
 }
 </script>
+
+<template>
+  <el-switch
+    v-model="isDark"
+    inline-prompt
+    :active-icon="Moon"
+    :inactive-icon="Sunny"
+    @change="handleThemeChange"
+  />
+</template>
 ```
 
 ## 通知系统集成
@@ -232,14 +233,14 @@ const handleThemeChange = (value: boolean) => {
 ### Element Plus 通知插件
 
 ```typescript
-// src/plugins/element-notifications.ts
-import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import { createPlugin } from '@ldesign/engine'
+// src/plugins/element-notifications.ts
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 
 export const elementNotificationsPlugin = createPlugin({
   name: 'element-notifications',
 
-  install: engine => {
+  install: (engine) => {
     // 重写通知管理器
     engine.notifications = {
       // 消息提示
@@ -347,7 +348,7 @@ export const elementNotificationsPlugin = createPlugin({
     }
 
     // 监听引擎事件，自动显示通知
-    engine.events.on('user:login', user => {
+    engine.events.on('user:login', (user) => {
       engine.notifications.success(`欢迎回来，${user.name}！`)
     })
 
@@ -355,7 +356,7 @@ export const elementNotificationsPlugin = createPlugin({
       engine.notifications.info('您已安全退出')
     })
 
-    engine.events.on('error:occurred', error => {
+    engine.events.on('error:occurred', (error) => {
       engine.notifications.error('操作失败', error.message)
     })
   },
@@ -374,7 +375,7 @@ import { createPlugin } from '@ldesign/engine'
 export const formValidationPlugin = createPlugin({
   name: 'form-validation',
 
-  install: engine => {
+  install: (engine) => {
     const validation = {
       // 常用验证规则
       rules: {
@@ -403,7 +404,8 @@ export const formValidationPlugin = createPlugin({
           return (rule: any, value: string, callback: Function) => {
             if (value !== password) {
               callback(new Error('两次输入的密码不一致'))
-            } else {
+            }
+            else {
               callback()
             }
           }
@@ -413,9 +415,11 @@ export const formValidationPlugin = createPlugin({
         username: (rule: any, value: string, callback: Function) => {
           if (!value) {
             callback(new Error('请输入用户名'))
-          } else if (!/^[a-zA-Z0-9_]{3,16}$/.test(value)) {
+          }
+          else if (!/^\w{3,16}$/.test(value)) {
             callback(new Error('用户名只能包含字母、数字和下划线，长度3-16位'))
-          } else {
+          }
+          else {
             callback()
           }
         },
@@ -431,10 +435,12 @@ export const formValidationPlugin = createPlugin({
             const exists = await engine.api.checkUsername(value)
             if (exists) {
               callback(new Error('用户名已存在'))
-            } else {
+            }
+            else {
               callback()
             }
-          } catch (error) {
+          }
+          catch (error) {
             callback(new Error('验证失败，请重试'))
           }
         },
@@ -451,41 +457,10 @@ export const formValidationPlugin = createPlugin({
 
 ```vue
 <!-- src/components/UserForm.vue -->
-<template>
-  <el-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-width="100px"
-    @submit.prevent="handleSubmit"
-  >
-    <el-form-item label="用户名" prop="username">
-      <el-input v-model="form.username" placeholder="请输入用户名" />
-    </el-form-item>
-
-    <el-form-item label="邮箱" prop="email">
-      <el-input v-model="form.email" type="email" placeholder="请输入邮箱" />
-    </el-form-item>
-
-    <el-form-item label="密码" prop="password">
-      <el-input v-model="form.password" type="password" placeholder="请输入密码" />
-    </el-form-item>
-
-    <el-form-item label="确认密码" prop="confirmPassword">
-      <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" />
-    </el-form-item>
-
-    <el-form-item>
-      <el-button type="primary" @click="handleSubmit" :loading="loading"> 提交 </el-button>
-      <el-button @click="handleReset">重置</el-button>
-    </el-form-item>
-  </el-form>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
 import type { FormInstance } from 'element-plus'
 import { useEngine } from '@ldesign/engine/vue'
+import { computed, reactive, ref } from 'vue'
 
 const engine = useEngine()
 const formRef = ref<FormInstance>()
@@ -514,8 +489,9 @@ const rules = computed(() =>
   })
 )
 
-const handleSubmit = async () => {
-  if (!formRef.value) return
+async function handleSubmit() {
+  if (!formRef.value)
+    return
 
   try {
     await formRef.value.validate()
@@ -529,20 +505,57 @@ const handleSubmit = async () => {
 
     // 重置表单
     handleReset()
-  } catch (error) {
+  }
+  catch (error) {
     if (error !== false) {
       // 不是验证错误
       engine.notifications.error('创建用户失败')
     }
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
-const handleReset = () => {
+function handleReset() {
   formRef.value?.resetFields()
 }
 </script>
+
+<template>
+  <el-form
+    ref="formRef"
+    :model="form"
+    :rules="rules"
+    label-width="100px"
+    @submit.prevent="handleSubmit"
+  >
+    <el-form-item label="用户名" prop="username">
+      <el-input v-model="form.username" placeholder="请输入用户名" />
+    </el-form-item>
+
+    <el-form-item label="邮箱" prop="email">
+      <el-input v-model="form.email" type="email" placeholder="请输入邮箱" />
+    </el-form-item>
+
+    <el-form-item label="密码" prop="password">
+      <el-input v-model="form.password" type="password" placeholder="请输入密码" />
+    </el-form-item>
+
+    <el-form-item label="确认密码" prop="confirmPassword">
+      <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" />
+    </el-form-item>
+
+    <el-form-item>
+      <el-button type="primary" :loading="loading" @click="handleSubmit">
+        提交
+      </el-button>
+      <el-button @click="handleReset">
+        重置
+      </el-button>
+    </el-form-item>
+  </el-form>
+</template>
 ```
 
 ## 表格集成
@@ -556,7 +569,7 @@ import { createPlugin } from '@ldesign/engine'
 export const tableEnhancementPlugin = createPlugin({
   name: 'table-enhancement',
 
-  install: engine => {
+  install: (engine) => {
     const table = {
       // 创建分页配置
       createPagination(total: number, pageSize = 10, currentPage = 1) {
@@ -594,7 +607,8 @@ export const tableEnhancementPlugin = createPlugin({
 
       // 转换为 CSV
       convertToCSV(data: any[]): string {
-        if (!data.length) return ''
+        if (!data.length)
+          return ''
 
         const headers = Object.keys(data[0])
         const csvContent = [
@@ -634,7 +648,7 @@ export const tableEnhancementPlugin = createPlugin({
 
 ```typescript
 // 封装常用的 Element Plus 组件
-export const useElementComponents = () => {
+export function useElementComponents() {
   const engine = useEngine()
 
   return {
@@ -685,10 +699,10 @@ export const useElementComponents = () => {
 ### 3. 国际化
 
 ```typescript
+import en from 'element-plus/dist/locale/en.mjs'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 // src/plugins/i18n.ts
 import { createI18n } from 'vue-i18n'
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
-import en from 'element-plus/dist/locale/en.mjs'
 
 const i18n = createI18n({
   locale: 'zh-cn',
@@ -697,7 +711,7 @@ const i18n = createI18n({
       el: zhCn.el,
       // 自定义消息
     },
-    en: {
+    'en': {
       el: en.el,
       // 自定义消息
     },

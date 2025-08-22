@@ -12,7 +12,9 @@ import dts from 'rollup-plugin-dts'
  * @param {object} options - 配置选项
  */
 export function createRollupConfig(packageDir, options = {}) {
-  const pkg = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf-8'))
+  const pkg = JSON.parse(
+    readFileSync(resolve(packageDir, 'package.json'), 'utf-8'),
+  )
   const input = resolve(packageDir, 'src/index.ts')
 
   const external = [

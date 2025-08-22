@@ -246,15 +246,8 @@ console.log('Hex 解码:', hexDecoded)
 import { useCrypto } from '@ldesign/crypto/vue'
 import { ref } from 'vue'
 
-const {
-  encodeBase64,
-  decodeBase64,
-  encodeHex,
-  decodeHex,
-  isEncoding,
-  isDecoding,
-  lastError
-} = useCrypto()
+const { encodeBase64, decodeBase64, encodeHex, decodeHex, isEncoding, isDecoding, lastError } =
+  useCrypto()
 
 const inputData = ref('Hello, Vue Encoding!')
 const encodingType = ref('base64')
@@ -276,8 +269,7 @@ async function encode() {
         break
     }
     decodedResult.value = ''
-  }
-  catch (err) {
+  } catch (err) {
     console.error('编码失败:', err)
   }
 }
@@ -295,8 +287,7 @@ async function decode() {
         decodedResult.value = await decodeBase64Url(encodedResult.value)
         break
     }
-  }
-  catch (err) {
+  } catch (err) {
     console.error('解码失败:', err)
   }
 }
@@ -312,15 +303,9 @@ async function decode() {
       <div>
         <label>编码类型:</label>
         <select v-model="encodingType">
-          <option value="base64">
-            Base64
-          </option>
-          <option value="hex">
-            Hex
-          </option>
-          <option value="base64url">
-            URL 安全 Base64
-          </option>
+          <option value="base64">Base64</option>
+          <option value="hex">Hex</option>
+          <option value="base64url">URL 安全 Base64</option>
         </select>
       </div>
 
@@ -342,9 +327,7 @@ async function decode() {
       <p>{{ decodedResult }}</p>
     </div>
 
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
+    <div v-if="error" class="error">错误: {{ error }}</div>
   </div>
 </template>
 ```
@@ -367,8 +350,7 @@ class DataTransferEncoder {
     try {
       const jsonString = decrypt.base64(encodedData)
       return JSON.parse(jsonString)
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('API 响应解码失败')
     }
   }
@@ -418,8 +400,7 @@ class URLParameterEncoder {
     try {
       const jsonString = decrypt.base64Url(encodedParam)
       return JSON.parse(jsonString)
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('URL 参数解码失败')
     }
   }
@@ -447,7 +428,7 @@ class URLParameterEncoder {
 const params = {
   userId: 123,
   action: 'view',
-  filters: { category: 'tech', status: 'active' }
+  filters: { category: 'tech', status: 'active' },
 }
 
 const url = URLParameterEncoder.buildUrlWithParams('https://api.example.com/data', params)
@@ -470,8 +451,7 @@ class ConfigEncoder {
       const configJson = JSON.stringify(config, null, 2)
       const encodedConfig = encrypt.base64(configJson)
       localStorage.setItem(this.CONFIG_KEY, encodedConfig)
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('配置保存失败')
     }
   }
@@ -486,8 +466,7 @@ class ConfigEncoder {
 
       const configJson = decrypt.base64(encodedConfig)
       return JSON.parse(configJson)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('配置读取失败:', error)
       return null
     }
@@ -509,8 +488,7 @@ class ConfigEncoder {
       const configJson = decrypt.base64(encodedConfig)
       const config = JSON.parse(configJson)
       this.saveConfig(config)
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('配置导入失败')
     }
   }
@@ -523,8 +501,8 @@ const appConfig = {
   apiEndpoint: 'https://api.example.com',
   features: {
     notifications: true,
-    analytics: false
-  }
+    analytics: false,
+  },
 }
 
 ConfigEncoder.saveConfig(appConfig)
@@ -538,14 +516,11 @@ console.log('加载的配置:', loadedConfig)
 // 二维码数据编码
 class QRCodeDataEncoder {
   // 编码二维码数据
-  static encodeQRData(data: {
-    type: 'url' | 'text' | 'contact' | 'wifi'
-    content: any
-  }): string {
+  static encodeQRData(data: { type: 'url' | 'text' | 'contact' | 'wifi'; content: any }): string {
     const qrData = {
       ...data,
       timestamp: Date.now(),
-      version: '1.0'
+      version: '1.0',
     }
 
     const jsonString = JSON.stringify(qrData)
@@ -557,8 +532,7 @@ class QRCodeDataEncoder {
     try {
       const jsonString = decrypt.base64Url(encodedData)
       return JSON.parse(jsonString)
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('二维码数据解码失败')
     }
   }
@@ -571,8 +545,8 @@ class QRCodeDataEncoder {
         ssid,
         password,
         security,
-        hidden: false
-      }
+        hidden: false,
+      },
     })
   }
 
@@ -585,7 +559,7 @@ class QRCodeDataEncoder {
   }): string {
     return this.encodeQRData({
       type: 'contact',
-      content: contact
+      content: contact,
     })
   }
 }
@@ -598,7 +572,7 @@ const contactQR = QRCodeDataEncoder.generateContactQR({
   name: 'John Doe',
   phone: '+1234567890',
   email: 'john@example.com',
-  organization: 'Example Corp'
+  organization: 'Example Corp',
 })
 console.log('联系人二维码数据:', contactQR)
 ```
@@ -673,13 +647,16 @@ function chooseEncoding(purpose: string, data: string) {
 function safeEncode(data: string, type: 'base64' | 'hex' | 'base64url') {
   try {
     switch (type) {
-      case 'base64': return encrypt.base64(data)
-      case 'hex': return encrypt.hex(data)
-      case 'base64url': return encrypt.base64Url(data)
-      default: throw new Error('不支持的编码类型')
+      case 'base64':
+        return encrypt.base64(data)
+      case 'hex':
+        return encrypt.hex(data)
+      case 'base64url':
+        return encrypt.base64Url(data)
+      default:
+        throw new Error('不支持的编码类型')
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('编码失败:', error)
     return null
   }
@@ -688,13 +665,16 @@ function safeEncode(data: string, type: 'base64' | 'hex' | 'base64url') {
 function safeDecode(encodedData: string, type: 'base64' | 'hex' | 'base64url') {
   try {
     switch (type) {
-      case 'base64': return decrypt.base64(encodedData)
-      case 'hex': return decrypt.hex(encodedData)
-      case 'base64url': return decrypt.base64Url(encodedData)
-      default: throw new Error('不支持的解码类型')
+      case 'base64':
+        return decrypt.base64(encodedData)
+      case 'hex':
+        return decrypt.hex(encodedData)
+      case 'base64url':
+        return decrypt.base64Url(encodedData)
+      default:
+        throw new Error('不支持的解码类型')
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('解码失败:', error)
     return null
   }

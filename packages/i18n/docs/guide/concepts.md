@@ -38,7 +38,7 @@ import { I18n } from '@ldesign/i18n'
 
 const i18n = new I18n({
   defaultLocale: 'en',
-  fallbackLocale: 'en'
+  fallbackLocale: 'en',
 })
 ```
 
@@ -66,14 +66,14 @@ const enPackage = {
     nativeName: 'English',
     code: 'en',
     direction: 'ltr',
-    dateFormat: 'MM/DD/YYYY'
+    dateFormat: 'MM/DD/YYYY',
   },
   translations: {
     common: {
       ok: 'OK',
-      cancel: 'Cancel'
-    }
-  }
+      cancel: 'Cancel',
+    },
+  },
 }
 ```
 
@@ -153,9 +153,9 @@ const translations = {
   user: {
     profile: {
       name: 'Name',
-      email: 'Email'
-    }
-  }
+      email: 'Email',
+    },
+  },
 }
 
 // 访问嵌套键
@@ -219,8 +219,8 @@ const template = 'Welcome {{user.name}}, you have {{user.messages}} messages'
 i18n.t('welcome', {
   user: {
     name: 'John',
-    messages: 5
-  }
+    messages: 5,
+  },
 })
 ```
 
@@ -230,7 +230,7 @@ i18n.t('welcome', {
 
 ```typescript
 i18n.t('message', {
-  content: '<script>alert("xss")</script>'
+  content: '<script>alert("xss")</script>',
 })
 // 输出: "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"
 ```

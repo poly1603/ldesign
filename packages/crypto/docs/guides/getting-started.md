@@ -54,7 +54,7 @@ const key = 'super-secret-key-256-bits'
 // 使用 AES-256-CBC 模式
 const encrypted = aes.encrypt(data, key, {
   keySize: 256,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 console.log('加密数据:', encrypted.data)
@@ -63,7 +63,7 @@ console.log('初始化向量:', encrypted.iv)
 // 解密时需要相同的参数
 const decrypted = aes.decrypt(encrypted.data, key, {
   keySize: 256,
-  mode: 'CBC'
+  mode: 'CBC',
 })
 
 console.log('解密结果:', decrypted.data)
@@ -175,7 +175,7 @@ import { cryptoManager } from '@ldesign/crypto'
 cryptoManager.configure({
   defaultAlgorithm: 'AES',
   enableCache: true,
-  maxCacheSize: 1000
+  maxCacheSize: 1000,
 })
 
 // 使用管理器进行操作
@@ -207,9 +207,7 @@ app.mount('#app')
     <button @click="handleEncrypt" :disabled="isEncrypting">
       {{ isEncrypting ? '加密中...' : '加密' }}
     </button>
-    <div v-if="encryptedData">
-      加密结果: {{ encryptedData }}
-    </div>
+    <div v-if="encryptedData">加密结果: {{ encryptedData }}</div>
   </div>
 </template>
 
@@ -243,7 +241,7 @@ import { hash, RandomUtils } from '@ldesign/crypto'
 function hashPassword(password: string): { hash: string; salt: string } {
   const salt = RandomUtils.generateRandomHex(32)
   const hashedPassword = hash.sha256(password + salt)
-  
+
   return { hash: hashedPassword, salt }
 }
 
@@ -267,28 +265,28 @@ import { aes, keyGenerator } from '@ldesign/crypto'
 
 class DataVault {
   private masterKey = process.env.MASTER_KEY!
-  
+
   encrypt(data: string): { encrypted: string; iv: string } {
     const iv = keyGenerator.generateIV(16)
     const encrypted = aes.encrypt(data, this.masterKey, {
       keySize: 256,
       mode: 'CBC',
-      iv
+      iv,
     })
-    
+
     return {
       encrypted: encrypted.data!,
-      iv: encrypted.iv!
+      iv: encrypted.iv!,
     }
   }
-  
+
   decrypt(encrypted: string, iv: string): string {
     const decrypted = aes.decrypt(encrypted, this.masterKey, {
       keySize: 256,
       mode: 'CBC',
-      iv
+      iv,
     })
-    
+
     return decrypted.data!
   }
 }
@@ -335,7 +333,14 @@ const timestamp = Date.now()
 const signature = generateAPISignature('POST', '/api/data', '{"key":"value"}', timestamp, 'secret')
 
 // 服务端验证签名
-const isValid = verifyAPISignature('POST', '/api/data', '{"key":"value"}', timestamp, signature, 'secret')
+const isValid = verifyAPISignature(
+  'POST',
+  '/api/data',
+  '{"key":"value"}',
+  timestamp,
+  signature,
+  'secret'
+)
 ```
 
 ## 错误处理
@@ -347,7 +352,7 @@ import { aes } from '@ldesign/crypto'
 
 try {
   const encrypted = aes.encrypt('data', 'key')
-  
+
   if (encrypted.success) {
     console.log('加密成功:', encrypted.data)
   } else {
@@ -388,7 +393,7 @@ import { cryptoManager } from '@ldesign/crypto'
 cryptoManager.configure({
   enableCache: true,
   maxCacheSize: 1000,
-  cacheTimeout: 300000 // 5分钟
+  cacheTimeout: 300000, // 5分钟
 })
 ```
 
@@ -402,7 +407,7 @@ const optimizer = new PerformanceOptimizer()
 const operations = [
   { type: 'encrypt', data: 'data1', key: 'key1', algorithm: 'AES' },
   { type: 'encrypt', data: 'data2', key: 'key2', algorithm: 'AES' },
-  { type: 'hash', data: 'data3', algorithm: 'SHA256' }
+  { type: 'hash', data: 'data3', algorithm: 'SHA256' },
 ]
 
 const results = await optimizer.processBatch(operations)
@@ -411,11 +416,13 @@ const results = await optimizer.processBatch(operations)
 ## 安全最佳实践
 
 1. **密钥管理**
+
    - 使用环境变量存储密钥
    - 定期轮换密钥
    - 使用强随机数生成器
 
 2. **算法选择**
+
    - 优先使用 AES-256 进行对称加密
    - 使用 RSA-2048 或更高位数进行非对称加密
    - 使用 SHA-256 或更强的哈希算法
@@ -432,4 +439,5 @@ const results = await optimizer.processBatch(operations)
 - 参考 [Vue 集成指南](../frameworks/vue-integration.md) 了解框架集成
 - 查看 [性能优化指南](./performance-optimization.md) 提升应用性能
 
-如果遇到问题，请查看 [故障排除指南](./troubleshooting.md) 或提交 [GitHub Issue](https://github.com/ldesign/crypto/issues)。
+如果遇到问题，请查看 [故障排除指南](./troubleshooting.md) 或提交
+[GitHub Issue](https://github.com/ldesign/crypto/issues)。

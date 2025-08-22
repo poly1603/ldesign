@@ -1,14 +1,14 @@
-import { createApp } from 'vue'
+import { createI18n } from '@ldesign/i18n'
 
-import { createI18nWithBuiltinLocales } from '../../src/index'
-import { createI18n } from '../../src/vue/index'
+import { createI18n as createVueI18nPlugin } from '@ldesign/i18n/vue'
+import { createApp } from 'vue'
 
 import App from './App.vue'
 
 async function bootstrap() {
   try {
     // 创建 I18n 实例
-    const i18nInstance = await createI18nWithBuiltinLocales({
+    const i18nInstance = await createI18n({
       defaultLocale: 'en',
       fallbackLocale: 'en',
       autoDetect: true,
@@ -19,7 +19,7 @@ async function bootstrap() {
         maxSize: 1000,
       },
       onLanguageChanged: (locale: string) => {
-        console.log('Language changed to:', locale)
+        console.warn('Language changed to:', locale)
         document.documentElement.lang = locale
       },
       onLoadError: (locale: string, error: Error) => {
@@ -28,7 +28,7 @@ async function bootstrap() {
     })
 
     // 创建 Vue I18n 插件
-    const vueI18nPlugin = createI18n(i18nInstance)
+    const vueI18nPlugin = createVueI18nPlugin(i18nInstance)
 
     // 创建 Vue 应用
     const app = createApp(App)
@@ -59,7 +59,7 @@ async function bootstrap() {
     // 为每种语言添加示例翻译
     const languages = ['en', 'zh-CN', 'ja']
     const exampleTranslationsLocalized = {
-      en: {
+      'en': {
         examples: {
           basic: 'Basic Translation',
           interpolation: 'Interpolation',
@@ -85,7 +85,7 @@ async function bootstrap() {
           status: '状态',
         },
       },
-      ja: {
+      'ja': {
         examples: {
           basic: '基本翻訳',
           interpolation: '補間翻訳',
@@ -107,7 +107,7 @@ async function bootstrap() {
         if (packageData) {
           Object.assign(
             packageData.translations,
-            (exampleTranslationsLocalized as Record<string, unknown>)[lang]
+            (exampleTranslationsLocalized as Record<string, unknown>)[lang],
           )
         }
       }
@@ -116,10 +116,11 @@ async function bootstrap() {
     // 挂载应用
     app.mount('#app')
 
-    console.log('Vue I18n example app started successfully')
-    console.log('Current language:', i18nInstance.getCurrentLanguage())
-    console.log('Available languages:', i18nInstance.getAvailableLanguages())
-  } catch (error) {
+    console.warn('Vue I18n example app started successfully')
+    console.warn('Current language:', i18nInstance.getCurrentLanguage())
+    console.warn('Available languages:', i18nInstance.getAvailableLanguages())
+  }
+  catch (error) {
     console.error('Failed to bootstrap Vue I18n example:', error)
 
     // 显示错误信息

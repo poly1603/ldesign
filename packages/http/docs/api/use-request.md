@@ -40,15 +40,17 @@ interface RequestConfig {
 // 静态配置
 const { data } = useRequest({
   url: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 
 // 响应式配置
 const userId = ref(1)
-const { data } = useRequest(computed(() => ({
-  url: `/api/users/${userId.value}`,
-  method: 'GET'
-})))
+const { data } = useRequest(
+  computed(() => ({
+    url: `/api/users/${userId.value}`,
+    method: 'GET',
+  }))
+)
 ```
 
 ### options
@@ -81,10 +83,7 @@ interface UseRequestOptions<T> {
 const { data } = useRequest({ url: '/api/users' })
 
 // 手动执行
-const { data, execute } = useRequest(
-  { url: '/api/users' },
-  { immediate: false }
-)
+const { data, execute } = useRequest({ url: '/api/users' }, { immediate: false })
 
 // 稍后手动执行
 execute()
@@ -101,7 +100,7 @@ execute()
 const { data } = useRequest(
   { url: '/api/users' },
   {
-    initialData: [] // 初始为空数组
+    initialData: [], // 初始为空数组
   }
 )
 ```
@@ -125,9 +124,9 @@ const { data } = useRequest<User[]>(
     transform: (rawData) => {
       return rawData.map(user => ({
         ...user,
-        displayName: `${user.name} (${user.email})`
+        displayName: `${user.name} (${user.email})`,
       }))
-    }
+    },
   }
 )
 ```
@@ -145,7 +144,7 @@ const { data } = useRequest(
     onSuccess: (data, response) => {
       console.log('请求成功:', data)
       console.log('响应状态:', response.status)
-    }
+    },
   }
 )
 ```
@@ -165,7 +164,7 @@ const { data } = useRequest(
       if (error.response?.status === 404) {
         showNotification('数据不存在')
       }
-    }
+    },
   }
 )
 ```
@@ -183,7 +182,7 @@ const { data } = useRequest(
     onFinally: () => {
       console.log('请求完成')
       hideLoadingSpinner()
-    }
+    },
   }
 )
 ```
@@ -199,7 +198,7 @@ const { data } = useRequest(
 const { data } = useRequest(
   { url: '/api/users' },
   {
-    cancelOnUnmount: false // 组件卸载时不取消请求
+    cancelOnUnmount: false, // 组件卸载时不取消请求
   }
 )
 ```
@@ -308,17 +307,14 @@ watch(finished, (isFinished) => {
 - **类型：** `(config?: RequestConfig) => Promise<ResponseData<T>>`
 
 ```typescript
-const { execute } = useRequest(
-  { url: '/api/users' },
-  { immediate: false }
-)
+const { execute } = useRequest({ url: '/api/users' }, { immediate: false })
 
 // 执行请求
 const response = await execute()
 
 // 使用新配置执行请求
 const response2 = await execute({
-  params: { page: 2 }
+  params: { page: 2 },
 })
 ```
 
@@ -405,7 +401,7 @@ interface User {
 
 const { data, loading, error, refresh, cancel, canCancel } = useRequest<User[]>({
   url: '/api/users',
-  method: 'GET'
+  method: 'GET',
 })
 </script>
 
@@ -450,8 +446,8 @@ const { data, loading } = useRequest(
   computed(() => ({
     url: `/api/users/${userId.value}`,
     params: {
-      include: includeProfile.value ? 'profile' : undefined
-    }
+      include: includeProfile.value ? 'profile' : undefined,
+    },
   }))
 )
 
@@ -472,14 +468,14 @@ const { data, loading, execute } = useRequest(
   { url: '/api/search' },
   {
     immediate: false,
-    transform: data => data.results
+    transform: data => data.results,
   }
 )
 
 async function handleSearch() {
   if (searchTerm.value.trim()) {
     await execute({
-      params: { q: searchTerm.value }
+      params: { q: searchTerm.value },
     })
   }
 }

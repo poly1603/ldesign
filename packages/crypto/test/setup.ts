@@ -49,8 +49,8 @@ export const testUtils = {
 
   // 生成随机字符串
   generateRandomString: (length: number = 16): string => {
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const chars
+      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -61,7 +61,7 @@ export const testUtils = {
   // 测试性能
   measurePerformance: async (
     fn: () => void | Promise<void>,
-    iterations: number = 1
+    iterations: number = 1,
   ): Promise<{
     totalTime: number
     averageTime: number
@@ -137,7 +137,7 @@ With special chars: !@#$%^&*()`,
   // 已知测试向量
   TEST_VECTORS: {
     SHA256: {
-      abc: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+      'abc': 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
       '': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
     },
     SHA512: {

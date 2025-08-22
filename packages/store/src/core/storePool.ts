@@ -176,14 +176,14 @@ export class StorePool {
         className,
         poolSize: pool.instances.length,
         activeInstances: pool.lastUsed.size - pool.instances.length,
-      })
+      }),
     )
 
     return {
       totalPools: this.pools.size,
       totalInstances: poolDetails.reduce(
         (sum, detail) => sum + detail.poolSize + detail.activeInstances,
-        0
+        0,
       ),
       poolDetails,
     }
@@ -249,7 +249,8 @@ export class StorePool {
     if (options.enableGC !== undefined) {
       if (options.enableGC && !this.gcTimer) {
         this.startGC()
-      } else if (!options.enableGC && this.gcTimer) {
+      }
+      else if (!options.enableGC && this.gcTimer) {
         clearInterval(this.gcTimer)
         this.gcTimer = undefined
       }
@@ -270,7 +271,7 @@ export function useStorePool(options?: StorePoolOptions): StorePool {
  */
 export function PooledStore(options?: StorePoolOptions) {
   return function <T extends new (...args: any[]) => BaseStore>(
-    constructor: T
+    constructor: T,
   ) {
     const pool = StorePool.getInstance(options)
 

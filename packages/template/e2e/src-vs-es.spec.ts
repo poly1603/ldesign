@@ -81,7 +81,7 @@ async function waitForPageLoad(page: Page) {
 /**
  * 测试模板加载功能
  */
-async function testTemplateLoading(page: Page, testCase: typeof TEST_CASES[0]) {
+async function testTemplateLoading(page: Page, testCase: (typeof TEST_CASES)[0]) {
   // 导航到模板选择页面
   await page.goto('/')
   await waitForPageLoad(page)
@@ -153,7 +153,7 @@ async function testResponsiveFeatures(page: Page) {
 /**
  * 比较两个环境的DOM结构
  */
-async function compareDOMStructure(devPage: Page, prodPage: Page, testCase: typeof TEST_CASES[0]) {
+async function compareDOMStructure(devPage: Page, prodPage: Page, testCase: (typeof TEST_CASES)[0]) {
   // 在两个环境中加载相同的模板
   for (const page of [devPage, prodPage]) {
     await page.goto('/')

@@ -28,7 +28,7 @@ const app = createApp(App)
 app.use(CryptoPlugin, {
   // 插件配置选项
   globalPropertyName: '$crypto', // 全局属性名称
-  registerComposables: true,     // 是否注册 Composables
+  registerComposables: true, // 是否注册 Composables
   config: {
     defaultAlgorithm: 'AES',
     enableCache: true,
@@ -37,8 +37,8 @@ app.use(CryptoPlugin, {
     autoGenerateIV: true,
     keyDerivation: false,
     debug: false,
-    logLevel: 'error'
-  }
+    logLevel: 'error',
+  },
 })
 
 app.mount('#app')
@@ -50,19 +50,19 @@ app.mount('#app')
 <template>
   <div class="crypto-demo">
     <h2>加密演示</h2>
-    
+
     <div class="form-section">
       <input v-model="plaintext" placeholder="输入要加密的文本" />
       <input v-model="secretKey" placeholder="输入密钥" />
       <button @click="handleEncrypt">加密</button>
       <button @click="handleDecrypt" :disabled="!encrypted">解密</button>
     </div>
-    
+
     <div class="result-section" v-if="encrypted">
       <h3>加密结果:</h3>
       <pre>{{ encrypted }}</pre>
     </div>
-    
+
     <div class="result-section" v-if="decrypted">
       <h3>解密结果:</h3>
       <p>{{ decrypted }}</p>
@@ -88,9 +88,9 @@ const handleEncrypt = () => {
   try {
     const result = $crypto.aes.encrypt(plaintext.value, secretKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
-    
+
     if (result.success) {
       encrypted.value = result.data
     } else {
@@ -106,9 +106,9 @@ const handleDecrypt = () => {
   try {
     const result = $crypto.aes.decrypt(encrypted.value, secretKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
-    
+
     if (result.success) {
       decrypted.value = result.data
     } else {
@@ -129,45 +129,45 @@ const handleDecrypt = () => {
 <template>
   <div class="crypto-composable-demo">
     <h2>Composition API 加密演示</h2>
-    
+
     <div class="form-section">
       <input v-model="inputData" placeholder="输入数据" />
       <input v-model="inputKey" placeholder="输入密钥" />
-      
+
       <div class="button-group">
         <button @click="performEncryption" :disabled="isEncrypting">
           {{ isEncrypting ? '加密中...' : '🔒 AES 加密' }}
         </button>
-        
+
         <button @click="performDecryption" :disabled="isDecrypting || !encryptedResult">
           {{ isDecrypting ? '解密中...' : '🔓 AES 解密' }}
         </button>
-        
+
         <button @click="generateRSAKeys" :disabled="isGeneratingKeys">
           {{ isGeneratingKeys ? '生成中...' : '🔑 生成 RSA 密钥' }}
         </button>
       </div>
     </div>
-    
+
     <!-- 错误显示 -->
     <div v-if="lastError" class="error-message">
       ❌ {{ lastError }}
       <button @click="clearError">清除</button>
     </div>
-    
+
     <!-- 加密结果 -->
     <div v-if="encryptedResult" class="result-section">
       <h3>🔒 加密结果:</h3>
       <pre>{{ encryptedResult }}</pre>
       <button @click="copyToClipboard(encryptedResult)">📋 复制</button>
     </div>
-    
+
     <!-- 解密结果 -->
     <div v-if="decryptedResult" class="result-section">
       <h3>🔓 解密结果:</h3>
       <p class="decrypted-text">{{ decryptedResult }}</p>
     </div>
-    
+
     <!-- RSA 密钥对 -->
     <div v-if="rsaKeyPair" class="key-section">
       <h3>🔑 RSA 密钥对:</h3>
@@ -194,24 +194,24 @@ const {
   // AES 加密方法
   encryptAES,
   decryptAES,
-  
+
   // RSA 密钥生成
   generateRSAKeyPair,
-  
+
   // 编码方法
   encodeBase64,
   decodeBase64,
-  
+
   // 状态
   isEncrypting,
   isDecrypting,
   isGeneratingKeys,
   lastError,
   lastResult,
-  
+
   // 操作方法
   clearError,
-  reset
+  reset,
 } = useCrypto()
 
 // 组件状态
@@ -226,7 +226,7 @@ const performEncryption = async () => {
   try {
     const result = await encryptAES(inputData.value, inputKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
     encryptedResult.value = result
     decryptedResult.value = '' // 清空解密结果
@@ -240,7 +240,7 @@ const performDecryption = async () => {
   try {
     const result = await decryptAES(encryptedResult.value, inputKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
     decryptedResult.value = result
   } catch (error) {
@@ -397,14 +397,10 @@ const copyToClipboard = async (text: string) => {
 <template>
   <div class="hash-demo">
     <h2>哈希算法演示</h2>
-    
+
     <div class="form-section">
-      <textarea 
-        v-model="inputData" 
-        placeholder="输入要哈希的数据..."
-        rows="4"
-      ></textarea>
-      
+      <textarea v-model="inputData" placeholder="输入要哈希的数据..." rows="4"></textarea>
+
       <select v-model="selectedAlgorithm">
         <option value="md5">MD5</option>
         <option value="sha1">SHA1</option>
@@ -413,30 +409,26 @@ const copyToClipboard = async (text: string) => {
         <option value="sha384">SHA384</option>
         <option value="sha512">SHA512</option>
       </select>
-      
+
       <button @click="calculateHash" :disabled="isHashing">
         {{ isHashing ? '计算中...' : '🔍 计算哈希' }}
       </button>
-      
+
       <button @click="calculateHMAC" :disabled="isHashing">
         {{ isHashing ? '计算中...' : '🔐 计算 HMAC' }}
       </button>
     </div>
-    
+
     <div class="hmac-section" v-if="showHMACInput">
-      <input 
-        v-model="hmacKey" 
-        placeholder="输入 HMAC 密钥"
-        type="password"
-      />
+      <input v-model="hmacKey" placeholder="输入 HMAC 密钥" type="password" />
     </div>
-    
+
     <div v-if="hashResult" class="result-section">
       <h3>{{ selectedAlgorithm.toUpperCase() }} 哈希结果:</h3>
       <div class="hash-result">{{ hashResult }}</div>
       <button @click="copyToClipboard(hashResult)">📋 复制</button>
     </div>
-    
+
     <div v-if="hmacResult" class="result-section">
       <h3>{{ selectedAlgorithm.toUpperCase() }} HMAC 结果:</h3>
       <div class="hash-result">{{ hmacResult }}</div>
@@ -458,7 +450,7 @@ const {
   sha256,
   sha384,
   sha512,
-  
+
   // HMAC 方法
   hmacMd5,
   hmacSha1,
@@ -466,17 +458,17 @@ const {
   hmacSha256,
   hmacSha384,
   hmacSha512,
-  
+
   // 验证方法
   verify,
   verifyHmac,
-  
+
   // 状态
   isHashing,
   lastError,
-  
+
   // 操作
-  clearError
+  clearError,
 } = useHash()
 
 // 组件状态
@@ -491,7 +483,7 @@ const showHMACInput = ref(false)
 const calculateHash = async () => {
   try {
     let result: string
-    
+
     switch (selectedAlgorithm.value) {
       case 'md5':
         result = await md5(inputData.value)
@@ -514,7 +506,7 @@ const calculateHash = async () => {
       default:
         result = await sha256(inputData.value)
     }
-    
+
     hashResult.value = result
     hmacResult.value = '' // 清空 HMAC 结果
     showHMACInput.value = false
@@ -526,15 +518,15 @@ const calculateHash = async () => {
 // 计算 HMAC
 const calculateHMAC = async () => {
   showHMACInput.value = true
-  
+
   if (!hmacKey.value) {
     alert('请输入 HMAC 密钥')
     return
   }
-  
+
   try {
     let result: string
-    
+
     switch (selectedAlgorithm.value) {
       case 'md5':
         result = await hmacMd5(inputData.value, hmacKey.value)
@@ -557,7 +549,7 @@ const calculateHMAC = async () => {
       default:
         result = await hmacSha256(inputData.value, hmacKey.value)
     }
-    
+
     hmacResult.value = result
     hashResult.value = '' // 清空普通哈希结果
   } catch (error) {
@@ -596,8 +588,8 @@ export const cryptoConfig: CryptoPluginOptions = {
     autoGenerateIV: true,
     keyDerivation: false,
     debug: process.env.NODE_ENV === 'development',
-    logLevel: 'warn'
-  }
+    logLevel: 'warn',
+  },
 }
 
 // main.ts
@@ -634,13 +626,13 @@ import { watch } from 'vue'
 const { lastError, clearError } = useCrypto()
 
 // 监听错误并处理
-watch(lastError, (error) => {
+watch(lastError, error => {
   if (error) {
     console.error('加密操作错误:', error)
-    
+
     // 显示用户友好的错误消息
     showErrorNotification(error)
-    
+
     // 自动清除错误（可选）
     setTimeout(() => {
       clearError()
@@ -760,7 +752,7 @@ const performEncryption = async () => {
     // 并行执行加密和哈希
     const [encrypted, hashed] = await Promise.all([
       encryptAES(inputText.value, encryptionKey.value, { keySize: 256 }),
-      sha256(inputText.value)
+      sha256(inputText.value),
     ])
 
     encryptedResult.value = encrypted
@@ -947,9 +939,7 @@ watch([inputText, encryptionKey], handleRealTimeEncryption)
         <label>
           <input v-model="encryptionKey" placeholder="加密密钥" type="password" />
         </label>
-        <button @click="generateSecureKey" class="key-gen-btn">
-          🔑 生成安全密钥
-        </button>
+        <button @click="generateSecureKey" class="key-gen-btn">🔑 生成安全密钥</button>
       </div>
     </div>
 
@@ -983,12 +973,7 @@ watch([inputText, encryptionKey], handleRealTimeEncryption)
             💾 下载
           </button>
 
-          <button
-            @click="removeFile(file.id)"
-            class="remove-btn"
-          >
-            🗑️ 删除
-          </button>
+          <button @click="removeFile(file.id)" class="remove-btn">🗑️ 删除</button>
         </div>
 
         <div v-if="file.status === 'encrypting'" class="progress-bar">
@@ -1049,7 +1034,8 @@ const triggerFileInput = () => {
 // 处理文件
 const processFiles = async (fileList: File[]) => {
   for (const file of fileList) {
-    if (file.size > 5 * 1024 * 1024) { // 5MB 限制
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB 限制
       alert(`文件 ${file.name} 过大，最大支持 5MB`)
       continue
     }
@@ -1061,7 +1047,7 @@ const processFiles = async (fileList: File[]) => {
       size: file.size,
       content,
       status: 'ready',
-      progress: 0
+      progress: 0,
     }
 
     files.value.push(fileItem)
@@ -1097,7 +1083,7 @@ const encryptFile = async (file: FileItem) => {
     // 加密文件内容
     const encrypted = await encryptAES(file.content, encryptionKey.value, {
       keySize: 256,
-      mode: 'CBC'
+      mode: 'CBC',
     })
 
     clearInterval(progressInterval)
@@ -1112,7 +1098,6 @@ const encryptFile = async (file: FileItem) => {
     setTimeout(() => {
       file.progress = 0
     }, 1000)
-
   } catch (error) {
     file.status = 'error'
     console.error('文件加密失败:', error)
@@ -1128,11 +1113,11 @@ const downloadEncryptedFile = (file: FileItem) => {
     encryptedData: file.encryptedData,
     hash: file.hash,
     timestamp: new Date().toISOString(),
-    algorithm: 'AES-256-CBC'
+    algorithm: 'AES-256-CBC',
   }
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-    type: 'application/json'
+    type: 'application/json',
   })
 
   const url = URL.createObjectURL(blob)
@@ -1173,7 +1158,7 @@ const getStatusText = (status: string): string => {
     ready: '准备就绪',
     encrypting: '加密中...',
     encrypted: '已加密',
-    error: '错误'
+    error: '错误',
   }
   return statusMap[status] || status
 }
@@ -1397,8 +1382,8 @@ describe('Crypto Integration', () => {
   it('should encrypt and decrypt data correctly', async () => {
     const wrapper = mount(YourComponent, {
       global: {
-        plugins: [CryptoPlugin]
-      }
+        plugins: [CryptoPlugin],
+      },
     })
 
     // 测试加密功能
@@ -1411,8 +1396,8 @@ describe('Crypto Integration', () => {
   it('should handle encryption errors gracefully', async () => {
     const wrapper = mount(YourComponent, {
       global: {
-        plugins: [CryptoPlugin]
-      }
+        plugins: [CryptoPlugin],
+      },
     })
 
     // 模拟错误情况

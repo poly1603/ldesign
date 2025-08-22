@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import type { WatermarkConfig } from '../../types'
-import type { WatermarkProviderContext, WatermarkProviderProps } from '../types'
+import type { WatermarkProviderContext } from '../types'
 import { computed, provide } from 'vue'
 import { DEFAULT_WATERMARK_CONFIG } from '../../types/config'
 
-// 组件属性
-const props = withDefaults(defineProps<WatermarkProviderProps>(), {
-  globalSecurity: true,
-  globalResponsive: true,
+// 组件属性（使用运行时声明以避免 TS 类型解析在构建时的限制）
+const props = defineProps({
+  config: Object as PropType<Partial<WatermarkConfig>>,
+  globalSecurity: { type: Boolean, default: true },
+  globalResponsive: { type: Boolean, default: true },
+  globalStyle: Object as PropType<WatermarkConfig['style']>,
+  globalLayout: Object as PropType<WatermarkConfig['layout']>,
 })
 
 // 全局配置
@@ -64,12 +68,12 @@ function mergeConfig(localConfig: Partial<WatermarkConfig>): WatermarkConfig {
       ...localConfig.security,
       // 如果全局启用安全，确保安全级别不为none
       level:
-        globalSecurity.value &&
-        (!localConfig.security?.level || localConfig.security.level === 'none')
+        globalSecurity.value
+        && (!localConfig.security?.level || localConfig.security.level === 'none')
           ? 'basic'
-          : localConfig.security?.level ||
-            DEFAULT_WATERMARK_CONFIG.security?.level ||
-            'none',
+          : localConfig.security?.level
+            || DEFAULT_WATERMARK_CONFIG.security?.level
+            || 'none',
     },
     // 响应式配置合并
     responsive: {
@@ -78,10 +82,10 @@ function mergeConfig(localConfig: Partial<WatermarkConfig>): WatermarkConfig {
       ...localConfig.responsive,
       // 如果全局启用响应式，确保响应式功能开启
       enabled:
-        globalResponsive.value ||
-        localConfig.responsive?.enabled ||
-        DEFAULT_WATERMARK_CONFIG.responsive?.enabled ||
-        false,
+        globalResponsive.value
+        || localConfig.responsive?.enabled
+        || DEFAULT_WATERMARK_CONFIG.responsive?.enabled
+        || false,
     },
     // 动画配置合并
     animation: {

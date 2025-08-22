@@ -1,0 +1,52 @@
+{
+  "name": "@ldesign/app-demo",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LDesign 完整应用演示 - 基于 LDesign Engine 和 Router 的现代化应用",
+  "author": "LDesign Team",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "ldesign",
+    "engine",
+    "router",
+    "demo",
+    "typescript",
+    "performance",
+    "spa"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:check": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@ldesign/engine": "workspace:*",
+    "@ldesign/i18n": "workspace:*",
+    "@ldesign/router": "workspace:*",
+    "@ldesign/template": "workspace:*",
+    "pinia": "^2.3.1",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "@vue/compiler-sfc": "^3.5.18",
+    "@vue/runtime-core": "^3.5.18",
+    "@vue/runtime-dom": "^3.5.18",
+    "less": "^4.2.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vue-tsc": "^3.0.5"
+  }
+}

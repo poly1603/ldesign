@@ -1,5 +1,5 @@
-import type { RequestConfig, ResponseData } from '@/types'
-import { isArrayBuffer, isBlob, isFormData, isURLSearchParams } from '@/utils'
+import type { RequestConfig, ResponseData } from '../types'
+import { isArrayBuffer, isBlob, isFormData, isURLSearchParams } from '../utils'
 import { BaseAdapter } from './base'
 
 /**
@@ -12,7 +12,9 @@ export class FetchAdapter extends BaseAdapter {
    * 检查是否支持 fetch API
    */
   isSupported(): boolean {
-    return typeof fetch !== 'undefined' && typeof AbortController !== 'undefined'
+    return (
+      typeof fetch !== 'undefined' && typeof AbortController !== 'undefined'
+    )
   }
 
   /**
@@ -23,7 +25,9 @@ export class FetchAdapter extends BaseAdapter {
 
     try {
       // 创建超时控制器
-      const timeoutController = this.createTimeoutController(processedConfig.timeout)
+      const timeoutController = this.createTimeoutController(
+        processedConfig.timeout,
+      )
 
       // 合并 AbortSignal
       const signal = this.mergeAbortSignals([
@@ -36,12 +40,21 @@ export class FetchAdapter extends BaseAdapter {
         method: processedConfig.method,
         headers: this.buildHeaders(processedConfig),
         signal,
-        credentials: processedConfig.withCredentials ? 'include' : 'same-origin',
+        credentials: processedConfig.withCredentials
+          ? 'include'
+          : 'same-origin',
       }
 
       // 处理请求体
-      if (processedConfig.data && processedConfig.method !== 'GET' && processedConfig.method !== 'HEAD') {
-        fetchOptions.body = this.buildBody(processedConfig.data, processedConfig.headers)
+      if (
+        processedConfig.data
+        && processedConfig.method !== 'GET'
+        && processedConfig.method !== 'HEAD'
+      ) {
+        fetchOptions.body = this.buildBody(
+          processedConfig.data,
+          processedConfig.headers,
+        )
       }
 
       // 发送请求
@@ -105,7 +118,8 @@ export class FetchAdapter extends BaseAdapter {
     }
 
     // 对象类型，根据 Content-Type 处理
-    const contentType = headers?.['content-type'] || headers?.['Content-Type'] || ''
+    const contentType
+      = headers?.['content-type'] || headers?.['Content-Type'] || ''
 
     if (contentType.includes('application/x-www-form-urlencoded')) {
       const params = new URLSearchParams()
@@ -139,7 +153,14 @@ export class FetchAdapter extends BaseAdapter {
       const error = this.processError(
         new Error(`Request failed with status ${response.status}`),
         config,
-        this.processResponse(data, response.status, response.statusText, headers, config, response),
+        this.processResponse(
+          data,
+          response.status,
+          response.statusText,
+          headers,
+          config,
+          response,
+        ),
       )
       throw error
     }

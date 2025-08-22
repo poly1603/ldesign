@@ -156,12 +156,16 @@ const workflow = new DevWorkflow()
 
 switch (command) {
   case 'dev':
-    workflow.startDev({
-      packages: args.includes('--packages') ? args[args.indexOf('--packages') + 1]?.split(',') : undefined,
-      watch: !args.includes('--no-watch'),
-      test: args.includes('--test'),
-      lint: !args.includes('--no-lint'),
-    }).catch(console.error)
+    workflow
+      .startDev({
+        packages: args.includes('--packages')
+          ? args[args.indexOf('--packages') + 1]?.split(',')
+          : undefined,
+        watch: !args.includes('--no-watch'),
+        test: args.includes('--test'),
+        lint: !args.includes('--no-lint'),
+      })
+      .catch(console.error)
     break
 
   case 'build':

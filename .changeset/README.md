@@ -13,13 +13,14 @@ pnpm changeset
 ```
 
 这将启动一个交互式向导，帮助你：
+
 - 选择哪些包受到了影响
 - 选择变更类型（patch/minor/major）
 - 编写变更描述
 
 ### 2. 变更类型说明
 
-- **patch** (0.0.X) - 修复bug，向后兼容
+- **patch** (0.0.X) - 修复 bug，向后兼容
 - **minor** (0.X.0) - 新增功能，向后兼容
 - **major** (X.0.0) - 破坏性变更，不向后兼容
 
@@ -32,6 +33,7 @@ pnpm changeset version
 ```
 
 这将：
+
 - 更新所有受影响包的版本号
 - 更新 CHANGELOG.md 文件
 - 删除已处理的变更集文件
@@ -51,6 +53,7 @@ pnpm release
 ## 自动化发布
 
 我们的 GitHub Actions 会自动：
+
 1. 在 PR 中检测变更集
 2. 在合并到 main 分支后创建发布 PR
 3. 当发布 PR 被合并时自动发布到 npm

@@ -1,18 +1,18 @@
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { resolve } from 'node:path'
+import process from 'node:process'
+import { createRollupConfig } from '../../tools/build/rollup.config.base.js'
 
 export default createRollupConfig({
-  packageDir: __dirname,
-  vue: true,
-  external: ['vue', '@ldesign/engine'],
-  globalName: 'LDesignRouter',
+  packageDir: process.cwd(),
+  external: ['vue', '@ldesign/device', '@ldesign/engine', '@ldesign/template'],
+  packageName: 'LDesignRouter',
+  formats: ['es', 'cjs', 'umd'],
   globals: {
-    vue: 'Vue',
+    'vue': 'Vue',
+    '@ldesign/device': 'LDesignDevice',
     '@ldesign/engine': 'LDesignEngine',
+    '@ldesign/template': 'LDesignTemplate',
   },
-  // 排除 examples 目录
-  excludePatterns: ['examples/**/*', 'test/**/*', '**/*.test.*', '**/*.spec.*'],
+  vue: true,
+  tsconfig: resolve(process.cwd(), 'tsconfig.build.json'),
 })

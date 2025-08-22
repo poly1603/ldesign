@@ -5,11 +5,13 @@
 ### 1. 基础使用流程
 
 **第一步：安装**
+
 ```bash
 pnpm add @ldesign/size
 ```
 
 **第二步：导入和初始化**
+
 ```javascript
 import { globalSizeManager } from '@ldesign/size'
 
@@ -17,7 +19,8 @@ import { globalSizeManager } from '@ldesign/size'
 globalSizeManager.setMode('medium')
 ```
 
-**第三步：在CSS中使用变量**
+**第三步：在 CSS 中使用变量**
+
 ```css
 .my-component {
   font-size: var(--ls-font-size-base);
@@ -27,12 +30,13 @@ globalSizeManager.setMode('medium')
 ```
 
 **第四步：添加尺寸切换功能**
+
 ```javascript
 // 切换到大尺寸
 globalSizeManager.setMode('large')
 
 // 监听尺寸变化
-globalSizeManager.onSizeChange((event) => {
+globalSizeManager.onSizeChange(event => {
   console.log(`尺寸从 ${event.previousMode} 变为 ${event.currentMode}`)
 })
 ```
@@ -42,72 +46,73 @@ globalSizeManager.onSizeChange((event) => {
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title>尺寸缩放示例</title>
-  <style>
-    .container {
-      padding: var(--ls-spacing-lg);
-      font-size: var(--ls-font-size-base);
-      border-radius: var(--ls-border-radius-base);
-      background: #f5f5f5;
-      transition: all 0.3s ease;
-    }
-    
-    .button {
-      height: var(--ls-button-height-medium);
-      padding: 0 var(--ls-spacing-base);
-      font-size: var(--ls-font-size-sm);
-      border: none;
-      border-radius: var(--ls-border-radius-base);
-      background: #1890ff;
-      color: white;
-      cursor: pointer;
-      margin-right: var(--ls-spacing-sm);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>页面尺寸缩放演示</h1>
-    <p>点击按钮切换不同的尺寸模式，观察页面元素的变化。</p>
-    
-    <button class="button" onclick="setSize('small')">小尺寸</button>
-    <button class="button" onclick="setSize('medium')">中尺寸</button>
-    <button class="button" onclick="setSize('large')">大尺寸</button>
-    <button class="button" onclick="setSize('extra-large')">超大尺寸</button>
-    
-    <p>当前模式: <span id="current-mode">medium</span></p>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>尺寸缩放示例</title>
+    <style>
+      .container {
+        padding: var(--ls-spacing-lg);
+        font-size: var(--ls-font-size-base);
+        border-radius: var(--ls-border-radius-base);
+        background: #f5f5f5;
+        transition: all 0.3s ease;
+      }
 
-  <script type="module">
-    import { globalSizeManager } from '@ldesign/size'
-    
-    // 全局函数
-    window.setSize = (mode) => {
-      globalSizeManager.setMode(mode)
-    }
-    
-    // 更新显示
-    const updateDisplay = () => {
-      document.getElementById('current-mode').textContent = globalSizeManager.getCurrentMode()
-    }
-    
-    // 监听变化
-    globalSizeManager.onSizeChange(updateDisplay)
-    
-    // 初始化显示
-    updateDisplay()
-  </script>
-</body>
+      .button {
+        height: var(--ls-button-height-medium);
+        padding: 0 var(--ls-spacing-base);
+        font-size: var(--ls-font-size-sm);
+        border: none;
+        border-radius: var(--ls-border-radius-base);
+        background: #1890ff;
+        color: white;
+        cursor: pointer;
+        margin-right: var(--ls-spacing-sm);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>页面尺寸缩放演示</h1>
+      <p>点击按钮切换不同的尺寸模式，观察页面元素的变化。</p>
+
+      <button class="button" onclick="setSize('small')">小尺寸</button>
+      <button class="button" onclick="setSize('medium')">中尺寸</button>
+      <button class="button" onclick="setSize('large')">大尺寸</button>
+      <button class="button" onclick="setSize('extra-large')">超大尺寸</button>
+
+      <p>当前模式: <span id="current-mode">medium</span></p>
+    </div>
+
+    <script type="module">
+      import { globalSizeManager } from '@ldesign/size'
+
+      // 全局函数
+      window.setSize = mode => {
+        globalSizeManager.setMode(mode)
+      }
+
+      // 更新显示
+      const updateDisplay = () => {
+        document.getElementById('current-mode').textContent = globalSizeManager.getCurrentMode()
+      }
+
+      // 监听变化
+      globalSizeManager.onSizeChange(updateDisplay)
+
+      // 初始化显示
+      updateDisplay()
+    </script>
+  </body>
 </html>
 ```
 
-## 🎨 Vue项目集成
+## 🎨 Vue 项目集成
 
 ### 1. 插件方式使用
 
 **安装插件**：
+
 ```javascript
 // main.js
 import { createApp } from 'vue'
@@ -120,13 +125,14 @@ const app = createApp(App)
 app.use(VueSizePlugin, {
   defaultMode: 'medium',
   prefix: '--ls',
-  autoInject: true
+  autoInject: true,
 })
 
 app.mount('#app')
 ```
 
 **在组件中使用全局属性**：
+
 ```vue
 <template>
   <div>
@@ -139,21 +145,22 @@ app.mount('#app')
 export default {
   mounted() {
     console.log('当前配置:', this.$getSizeConfig())
-  }
+  },
 }
 </script>
 ```
 
-### 2. Composition API使用
+### 2. Composition API 使用
 
-**基础Hook使用**：
+**基础 Hook 使用**：
+
 ```vue
 <template>
   <div>
     <h2>当前模式: {{ currentModeDisplayName }}</h2>
     <p>基础字体: {{ currentConfig.fontSize.base }}</p>
     <p>基础间距: {{ currentConfig.spacing.base }}</p>
-    
+
     <div class="controls">
       <button @click="previousMode">上一个</button>
       <button @click="nextMode">下一个</button>
@@ -166,14 +173,8 @@ export default {
 <script setup>
 import { useSize } from '@ldesign/size/vue'
 
-const {
-  currentMode,
-  currentConfig,
-  currentModeDisplayName,
-  setMode,
-  nextMode,
-  previousMode
-} = useSize({ global: true })
+const { currentMode, currentConfig, currentModeDisplayName, setMode, nextMode, previousMode } =
+  useSize({ global: true })
 
 // 监听模式变化
 watch(currentMode, (newMode, oldMode) => {
@@ -182,7 +183,8 @@ watch(currentMode, (newMode, oldMode) => {
 </script>
 ```
 
-**响应式Hook使用**：
+**响应式 Hook 使用**：
+
 ```vue
 <template>
   <div>
@@ -190,17 +192,17 @@ watch(currentMode, (newMode, oldMode) => {
       <h3>移动端布局</h3>
       <p>紧凑的单列布局</p>
     </div>
-    
+
     <div v-else-if="isMedium" class="tablet-layout">
       <h3>平板布局</h3>
       <p>双列布局</p>
     </div>
-    
+
     <div v-else class="desktop-layout">
       <h3>桌面布局</h3>
       <p>多列布局</p>
     </div>
-    
+
     <div class="info">
       <p>至少中等尺寸: {{ isAtLeast('medium') ? '是' : '否' }}</p>
       <p>最多大尺寸: {{ isAtMost('large') ? '是' : '否' }}</p>
@@ -211,42 +213,33 @@ watch(currentMode, (newMode, oldMode) => {
 <script setup>
 import { useSizeResponsive } from '@ldesign/size/vue'
 
-const {
-  isSmall,
-  isMedium,
-  isLarge,
-  isExtraLarge,
-  isAtLeast,
-  isAtMost
-} = useSizeResponsive()
+const { isSmall, isMedium, isLarge, isExtraLarge, isAtLeast, isAtMost } = useSizeResponsive()
 </script>
 ```
 
 ### 3. 组件使用
 
 **尺寸切换器组件**：
+
 ```vue
 <template>
   <div class="demo-page">
     <!-- 页面头部的尺寸控制 -->
     <header class="header">
       <h1>我的应用</h1>
-      <SizeControlPanel 
+      <SizeControlPanel
         :show-switcher="true"
         :show-indicator="true"
         switcher-style="button"
         @change="handleSizeChange"
       />
     </header>
-    
+
     <!-- 侧边栏的简单切换器 -->
     <aside class="sidebar">
-      <SizeSwitcher 
-        switcher-style="select"
-        @change="handleSizeChange"
-      />
+      <SizeSwitcher switcher-style="select" @change="handleSizeChange" />
     </aside>
-    
+
     <!-- 主内容区 -->
     <main class="main">
       <SizeIndicator :show-scale="true" />
@@ -256,13 +249,9 @@ const {
 </template>
 
 <script setup>
-import { 
-  SizeSwitcher, 
-  SizeIndicator, 
-  SizeControlPanel 
-} from '@ldesign/size/vue'
+import { SizeSwitcher, SizeIndicator, SizeControlPanel } from '@ldesign/size/vue'
 
-const handleSizeChange = (mode) => {
+const handleSizeChange = mode => {
   console.log('尺寸变化:', mode)
   // 可以在这里执行额外的逻辑
 }
@@ -278,11 +267,11 @@ import { createSizeManager } from '@ldesign/size'
 
 // 创建自定义管理器
 const customManager = createSizeManager({
-  prefix: '--my-app',           // 自定义CSS变量前缀
-  defaultMode: 'large',         // 默认尺寸模式
-  styleId: 'my-size-vars',      // 样式标签ID
-  selector: '.app-container',   // CSS选择器
-  autoInject: false             // 手动控制CSS注入
+  prefix: '--my-app', // 自定义CSS变量前缀
+  defaultMode: 'large', // 默认尺寸模式
+  styleId: 'my-size-vars', // 样式标签ID
+  selector: '.app-container', // CSS选择器
+  autoInject: false, // 手动控制CSS注入
 })
 
 // 手动注入CSS
@@ -299,19 +288,19 @@ customManager.setMode('extra-large')
 const headerSizeManager = createSizeManager({
   prefix: '--header',
   selector: '.header',
-  defaultMode: 'medium'
+  defaultMode: 'medium',
 })
 
 const sidebarSizeManager = createSizeManager({
   prefix: '--sidebar',
   selector: '.sidebar',
-  defaultMode: 'small'
+  defaultMode: 'small',
 })
 
 const mainSizeManager = createSizeManager({
   prefix: '--main',
   selector: '.main-content',
-  defaultMode: 'large'
+  defaultMode: 'large',
 })
 
 // 独立控制各个区域的尺寸
@@ -326,9 +315,9 @@ mainSizeManager.setMode('extra-large')
 import { globalSizeManager } from '@ldesign/size'
 
 // 基础事件监听
-const unsubscribe = globalSizeManager.onSizeChange((event) => {
+const unsubscribe = globalSizeManager.onSizeChange(event => {
   console.log('尺寸变化事件:', event)
-  
+
   // 根据尺寸变化执行不同逻辑
   switch (event.currentMode) {
     case 'small':
@@ -344,7 +333,7 @@ const unsubscribe = globalSizeManager.onSizeChange((event) => {
 })
 
 // 条件监听
-const conditionalUnsubscribe = globalSizeManager.onSizeChange((event) => {
+const conditionalUnsubscribe = globalSizeManager.onSizeChange(event => {
   // 只在特定条件下处理
   if (event.currentMode === 'extra-large' && event.previousMode !== 'extra-large') {
     // 进入演示模式
@@ -372,19 +361,19 @@ const conditionalUnsubscribe = globalSizeManager.onSizeChange((event) => {
         <UserMenu />
       </div>
     </header>
-    
+
     <!-- 侧边栏 -->
     <aside class="admin-sidebar" :class="sidebarClass">
       <Navigation :collapsed="isSmall" />
     </aside>
-    
+
     <!-- 主内容 -->
     <main class="admin-main">
       <div class="content-header">
         <Breadcrumb />
         <SizeIndicator />
       </div>
-      
+
       <div class="content-body" :class="contentClass">
         <router-view />
       </div>
@@ -401,21 +390,21 @@ const { isSmall, isMedium, currentMode } = useSizeResponsive()
 // 根据尺寸调整布局
 const sidebarClass = computed(() => ({
   'sidebar--collapsed': isSmall.value,
-  'sidebar--expanded': !isSmall.value
+  'sidebar--expanded': !isSmall.value,
 }))
 
 const contentClass = computed(() => ({
   'content--compact': isSmall.value || isMedium.value,
-  'content--spacious': !isSmall.value && !isMedium.value
+  'content--spacious': !isSmall.value && !isMedium.value,
 }))
 </script>
 
 <style>
 .admin-layout {
   display: grid;
-  grid-template-areas: 
-    "header header"
-    "sidebar main";
+  grid-template-areas:
+    'header header'
+    'sidebar main';
   grid-template-rows: var(--ls-button-height-large) 1fr;
   grid-template-columns: var(--sidebar-width, 250px) 1fr;
   height: 100vh;
@@ -469,30 +458,26 @@ const contentClass = computed(() => ({
     <div class="product-images" :class="imageLayoutClass">
       <ProductGallery :size="imageSize" />
     </div>
-    
+
     <!-- 产品信息区域 -->
     <div class="product-info" :class="infoLayoutClass">
       <h1 class="product-title">{{ product.title }}</h1>
       <div class="product-price">¥{{ product.price }}</div>
-      
+
       <!-- 根据尺寸显示不同详细程度的信息 -->
       <div v-if="showDetailedInfo" class="product-details">
         <ProductSpecs :specs="product.specs" />
         <ProductReviews :reviews="product.reviews" />
       </div>
-      
+
       <div v-else class="product-summary">
         <p>{{ product.summary }}</p>
       </div>
-      
+
       <!-- 购买按钮 -->
       <div class="purchase-actions">
-        <button class="btn-primary" :class="buttonSizeClass">
-          立即购买
-        </button>
-        <button class="btn-secondary" :class="buttonSizeClass">
-          加入购物车
-        </button>
+        <button class="btn-primary" :class="buttonSizeClass">立即购买</button>
+        <button class="btn-secondary" :class="buttonSizeClass">加入购物车</button>
       </div>
     </div>
   </div>
@@ -507,11 +492,16 @@ const { currentMode, isSmall, isAtLeast } = useSizeResponsive()
 // 根据尺寸调整图片大小
 const imageSize = computed(() => {
   switch (currentMode.value) {
-    case 'small': return 'small'
-    case 'medium': return 'medium'
-    case 'large': return 'large'
-    case 'extra-large': return 'extra-large'
-    default: return 'medium'
+    case 'small':
+      return 'small'
+    case 'medium':
+      return 'medium'
+    case 'large':
+      return 'large'
+    case 'extra-large':
+      return 'extra-large'
+    default:
+      return 'medium'
   }
 })
 
@@ -521,17 +511,17 @@ const showDetailedInfo = computed(() => isAtLeast('medium'))
 // 布局类名
 const imageLayoutClass = computed(() => ({
   'images--mobile': isSmall.value,
-  'images--desktop': !isSmall.value
+  'images--desktop': !isSmall.value,
 }))
 
 const infoLayoutClass = computed(() => ({
   'info--compact': isSmall.value,
-  'info--expanded': !isSmall.value
+  'info--expanded': !isSmall.value,
 }))
 
 const buttonSizeClass = computed(() => ({
   'btn--small': isSmall.value,
-  'btn--large': isAtLeast('large')
+  'btn--large': isAtLeast('large'),
 }))
 </script>
 ```
@@ -545,12 +535,9 @@ const buttonSizeClass = computed(() => ({
     <div class="reader-controls" v-show="showControls">
       <div class="control-group">
         <label>字体大小:</label>
-        <SizeSwitcher 
-          switcher-style="button"
-          @change="handleFontSizeChange"
-        />
+        <SizeSwitcher switcher-style="button" @change="handleFontSizeChange" />
       </div>
-      
+
       <div class="control-group">
         <label>行间距:</label>
         <select v-model="lineHeight">
@@ -560,7 +547,7 @@ const buttonSizeClass = computed(() => ({
         </select>
       </div>
     </div>
-    
+
     <!-- 阅读内容 -->
     <article class="reader-content" :style="contentStyle">
       <h1>{{ article.title }}</h1>
@@ -568,7 +555,7 @@ const buttonSizeClass = computed(() => ({
         <span>作者: {{ article.author }}</span>
         <span>发布时间: {{ article.publishTime }}</span>
       </div>
-      
+
       <div class="article-body" v-html="article.content"></div>
     </article>
   </div>
@@ -588,20 +575,25 @@ const contentStyle = computed(() => ({
   lineHeight: lineHeight.value,
   padding: currentConfig.value.spacing.lg,
   maxWidth: getMaxWidth(),
-  margin: '0 auto'
+  margin: '0 auto',
 }))
 
 const getMaxWidth = () => {
   switch (currentConfig.value.fontSize.base) {
-    case '12px': return '600px'  // 小字体，窄一些
-    case '16px': return '800px'  // 标准字体
-    case '18px': return '900px'  // 大字体
-    case '20px': return '1000px' // 超大字体
-    default: return '800px'
+    case '12px':
+      return '600px' // 小字体，窄一些
+    case '16px':
+      return '800px' // 标准字体
+    case '18px':
+      return '900px' // 大字体
+    case '20px':
+      return '1000px' // 超大字体
+    default:
+      return '800px'
   }
 }
 
-const handleFontSizeChange = (mode) => {
+const handleFontSizeChange = mode => {
   // 可以添加阅读进度保存等逻辑
   saveReadingPreferences({ fontSize: mode, lineHeight: lineHeight.value })
 }
@@ -610,7 +602,7 @@ const handleFontSizeChange = (mode) => {
 
 ## 💡 最佳实践
 
-### 1. CSS变量使用规范
+### 1. CSS 变量使用规范
 
 ```css
 /* ✅ 推荐：使用语义化的CSS变量 */
@@ -626,7 +618,7 @@ const handleFontSizeChange = (mode) => {
   padding: 16px;
   font-size: 14px;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* ✅ 推荐：提供回退值 */
@@ -691,7 +683,7 @@ onUnmounted(() => {
 // ✅ 推荐：使用防抖处理频繁的尺寸切换
 import { debounce } from '@ldesign/size'
 
-const debouncedHandler = debounce((mode) => {
+const debouncedHandler = debounce(mode => {
   // 处理尺寸变化
 }, 300)
 
@@ -700,4 +692,5 @@ globalSizeManager.onSizeChange(debouncedHandler)
 
 ---
 
-*通过这些详细的使用指南和最佳实践，你可以充分发挥@ldesign/size的强大功能，为用户提供优秀的尺寸缩放体验。*
+_通过这些详细的使用指南和最佳实践，你可以充分发挥@ldesign/size 的强大功能，为用户提供优秀的尺寸缩放
+体验。_

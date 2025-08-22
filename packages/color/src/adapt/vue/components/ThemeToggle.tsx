@@ -68,14 +68,10 @@ export default defineComponent({
               class="l-theme-toggle__input"
             />
             <span class="l-theme-toggle__slider">
-              <span class="l-theme-toggle__icon">
-                {currentIcon.value}
-              </span>
+              <span class="l-theme-toggle__icon">{currentIcon.value}</span>
             </span>
             {props.showText && (
-              <span class="l-theme-toggle__text">
-                {currentText.value}
-              </span>
+              <span class="l-theme-toggle__text">{currentText.value}</span>
             )}
           </label>
         )
@@ -88,13 +84,9 @@ export default defineComponent({
           onClick={handleToggle}
           title={`切换到${isLight.value ? '深色' : '浅色'}模式`}
         >
-          <span class="l-theme-toggle__icon">
-            {currentIcon.value}
-          </span>
+          <span class="l-theme-toggle__icon">{currentIcon.value}</span>
           {props.showText && (
-            <span class="l-theme-toggle__text">
-              {currentText.value}
-            </span>
+            <span class="l-theme-toggle__text">{currentText.value}</span>
           )}
         </button>
       )

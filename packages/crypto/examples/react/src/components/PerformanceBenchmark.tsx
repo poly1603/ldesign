@@ -19,8 +19,8 @@ export const PerformanceBenchmark: React.FC = () => {
 
   // 生成测试数据
   const generateTestData = (size: number): string => {
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const chars
+      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
     for (let i = 0; i < size; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -30,15 +30,18 @@ export const PerformanceBenchmark: React.FC = () => {
 
   // 格式化数据大小
   const formatDataSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    if (bytes < 1024)
+      return `${bytes} B`
+    if (bytes < 1024 * 1024)
+      return `${(bytes / 1024).toFixed(1)} KB`
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
   // 计算吞吐量
   const calculateThroughput = (dataSize: number, timeMs: number): string => {
     const bytesPerSecond = (dataSize * 1000) / timeMs
-    if (bytesPerSecond < 1024) return `${bytesPerSecond.toFixed(0)} B/s`
+    if (bytesPerSecond < 1024)
+      return `${bytesPerSecond.toFixed(0)} B/s`
     if (bytesPerSecond < 1024 * 1024)
       return `${(bytesPerSecond / 1024).toFixed(1)} KB/s`
     return `${(bytesPerSecond / (1024 * 1024)).toFixed(1)} MB/s`
@@ -50,7 +53,7 @@ export const PerformanceBenchmark: React.FC = () => {
     operation: string,
     testFunction: () => void,
     dataSize: number,
-    iterations: number = 100
+    iterations: number = 100,
   ): Promise<BenchmarkResult> => {
     // 预热
     for (let i = 0; i < 10; i++) {
@@ -97,7 +100,7 @@ export const PerformanceBenchmark: React.FC = () => {
             'AES-256',
             '加密',
             () => aes.encrypt(testData[index], password, { keySize: 256 }),
-            size
+            size,
           ),
       })),
 
@@ -116,7 +119,7 @@ export const PerformanceBenchmark: React.FC = () => {
                 encrypted.success && encrypted.data
                   ? aes.decrypt(encrypted.data, password, { keySize: 256 })
                   : null,
-              size
+              size,
             ),
         }
       }),
@@ -129,7 +132,7 @@ export const PerformanceBenchmark: React.FC = () => {
             'DES',
             '加密',
             () => des.encrypt(testData[index], password),
-            size
+            size,
           ),
       })),
 
@@ -142,7 +145,7 @@ export const PerformanceBenchmark: React.FC = () => {
             '哈希',
             () => hash.sha256(testData[index]),
             size,
-            200 // 哈希操作更快，增加迭代次数
+            200, // 哈希操作更快，增加迭代次数
           ),
       })),
 
@@ -154,7 +157,7 @@ export const PerformanceBenchmark: React.FC = () => {
             '哈希',
             () => hash.md5(testData[index]),
             size,
-            200
+            200,
           ),
       })),
 
@@ -167,7 +170,7 @@ export const PerformanceBenchmark: React.FC = () => {
             '编码',
             () => base64.encode(testData[index]),
             size,
-            500
+            500,
           ),
       })),
 
@@ -179,7 +182,7 @@ export const PerformanceBenchmark: React.FC = () => {
             '编码',
             () => hex.encode(testData[index]),
             size,
-            500
+            500,
           ),
       })),
     ]
@@ -198,7 +201,8 @@ export const PerformanceBenchmark: React.FC = () => {
 
         // 添加小延迟以避免阻塞UI
         await new Promise(resolve => setTimeout(resolve, 50))
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`测试失败: ${tests[i].name}`, error)
       }
     }
@@ -223,10 +227,10 @@ export const PerformanceBenchmark: React.FC = () => {
       summary: {
         totalTests: results.length,
         fastestOperation: results.reduce((fastest, current) =>
-          current.avgTime < fastest.avgTime ? current : fastest
+          current.avgTime < fastest.avgTime ? current : fastest,
         ),
         slowestOperation: results.reduce((slowest, current) =>
-          current.avgTime > slowest.avgTime ? current : slowest
+          current.avgTime > slowest.avgTime ? current : slowest,
         ),
       },
     }
@@ -245,15 +249,15 @@ export const PerformanceBenchmark: React.FC = () => {
   }, [results])
 
   return (
-    <div className='performance-benchmark'>
+    <div className="performance-benchmark">
       <h2>⚡ 性能基准测试</h2>
 
-      <div className='benchmark-controls'>
-        <div className='control-buttons'>
+      <div className="benchmark-controls">
+        <div className="control-buttons">
           <button
             onClick={runFullBenchmark}
             disabled={isRunning}
-            className='btn-primary'
+            className="btn-primary"
           >
             {isRunning ? '测试进行中...' : '🚀 开始基准测试'}
           </button>
@@ -261,7 +265,7 @@ export const PerformanceBenchmark: React.FC = () => {
           <button
             onClick={clearResults}
             disabled={isRunning || results.length === 0}
-            className='btn-secondary'
+            className="btn-secondary"
           >
             🗑️ 清除结果
           </button>
@@ -269,27 +273,28 @@ export const PerformanceBenchmark: React.FC = () => {
           <button
             onClick={exportResults}
             disabled={results.length === 0}
-            className='btn-export'
+            className="btn-export"
           >
             💾 导出结果
           </button>
         </div>
 
         {isRunning && (
-          <div className='progress-section'>
-            <div className='progress-info'>
+          <div className="progress-section">
+            <div className="progress-info">
               <p>
                 当前测试:
                 {currentTest}
               </p>
               <p>
                 进度:
-                {Math.round(progress)}%
+                {Math.round(progress)}
+                %
               </p>
             </div>
-            <div className='progress-bar'>
+            <div className="progress-bar">
               <div
-                className='progress-fill'
+                className="progress-fill"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -297,10 +302,10 @@ export const PerformanceBenchmark: React.FC = () => {
         )}
       </div>
 
-      <div className='test-info'>
+      <div className="test-info">
         <h3>测试说明</h3>
-        <div className='info-grid'>
-          <div className='info-item'>
+        <div className="info-grid">
+          <div className="info-item">
             <h4>测试数据大小</h4>
             <ul>
               <li>1 KB - 小文本数据</li>
@@ -308,7 +313,7 @@ export const PerformanceBenchmark: React.FC = () => {
               <li>100 KB - 大型文档</li>
             </ul>
           </div>
-          <div className='info-item'>
+          <div className="info-item">
             <h4>测试算法</h4>
             <ul>
               <li>AES-256 (加密/解密)</li>
@@ -317,7 +322,7 @@ export const PerformanceBenchmark: React.FC = () => {
               <li>Base64, Hex (编码)</li>
             </ul>
           </div>
-          <div className='info-item'>
+          <div className="info-item">
             <h4>性能指标</h4>
             <ul>
               <li>平均执行时间 (ms)</li>
@@ -330,11 +335,16 @@ export const PerformanceBenchmark: React.FC = () => {
       </div>
 
       {results.length > 0 && (
-        <div className='results-section'>
-          <h3>测试结果 ({results.length} 项测试)</h3>
+        <div className="results-section">
+          <h3>
+            测试结果 (
+            {results.length}
+            {' '}
+            项测试)
+          </h3>
 
-          <div className='results-table-container'>
-            <table className='results-table'>
+          <div className="results-table-container">
+            <table className="results-table">
               <thead>
                 <tr>
                   <th>算法</th>
@@ -349,77 +359,82 @@ export const PerformanceBenchmark: React.FC = () => {
               <tbody>
                 {results.map((result, index) => (
                   <tr key={index}>
-                    <td className='algorithm-cell'>{result.algorithm}</td>
-                    <td className='operation-cell'>{result.operation}</td>
-                    <td className='size-cell'>{result.dataSize}</td>
-                    <td className='iterations-cell'>{result.iterations}</td>
-                    <td className='time-cell'>{result.totalTime}</td>
-                    <td className='avg-time-cell'>{result.avgTime}</td>
-                    <td className='throughput-cell'>{result.throughput}</td>
+                    <td className="algorithm-cell">{result.algorithm}</td>
+                    <td className="operation-cell">{result.operation}</td>
+                    <td className="size-cell">{result.dataSize}</td>
+                    <td className="iterations-cell">{result.iterations}</td>
+                    <td className="time-cell">{result.totalTime}</td>
+                    <td className="avg-time-cell">{result.avgTime}</td>
+                    <td className="throughput-cell">{result.throughput}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className='performance-summary'>
+          <div className="performance-summary">
             <h4>性能总结</h4>
-            <div className='summary-grid'>
-              <div className='summary-item'>
+            <div className="summary-grid">
+              <div className="summary-item">
                 <h5>最快操作</h5>
                 <p>
                   {
                     results.reduce((fastest, current) =>
-                      current.avgTime < fastest.avgTime ? current : fastest
+                      current.avgTime < fastest.avgTime ? current : fastest,
                     ).algorithm
-                  }{' '}
+                  }
+                  {' '}
                   {
                     results.reduce((fastest, current) =>
-                      current.avgTime < fastest.avgTime ? current : fastest
+                      current.avgTime < fastest.avgTime ? current : fastest,
                     ).operation
                   }
                 </p>
-                <span className='time-value'>
+                <span className="time-value">
                   {
                     results.reduce((fastest, current) =>
-                      current.avgTime < fastest.avgTime ? current : fastest
+                      current.avgTime < fastest.avgTime ? current : fastest,
                     ).avgTime
-                  }{' '}
+                  }
+                  {' '}
                   ms
                 </span>
               </div>
 
-              <div className='summary-item'>
+              <div className="summary-item">
                 <h5>最慢操作</h5>
                 <p>
                   {
                     results.reduce((slowest, current) =>
-                      current.avgTime > slowest.avgTime ? current : slowest
+                      current.avgTime > slowest.avgTime ? current : slowest,
                     ).algorithm
-                  }{' '}
+                  }
+                  {' '}
                   {
                     results.reduce((slowest, current) =>
-                      current.avgTime > slowest.avgTime ? current : slowest
+                      current.avgTime > slowest.avgTime ? current : slowest,
                     ).operation
                   }
                 </p>
-                <span className='time-value'>
+                <span className="time-value">
                   {
                     results.reduce((slowest, current) =>
-                      current.avgTime > slowest.avgTime ? current : slowest
+                      current.avgTime > slowest.avgTime ? current : slowest,
                     ).avgTime
-                  }{' '}
+                  }
+                  {' '}
                   ms
                 </span>
               </div>
 
-              <div className='summary-item'>
+              <div className="summary-item">
                 <h5>平均执行时间</h5>
-                <span className='time-value'>
+                <span className="time-value">
                   {(
-                    results.reduce((sum, result) => sum + result.avgTime, 0) /
-                    results.length
-                  ).toFixed(2)}{' '}
+                    results.reduce((sum, result) => sum + result.avgTime, 0)
+                    / results.length
+                  ).toFixed(2)}
+                  {' '}
                   ms
                 </span>
               </div>
@@ -428,7 +443,7 @@ export const PerformanceBenchmark: React.FC = () => {
         </div>
       )}
 
-      <div className='benchmark-notes'>
+      <div className="benchmark-notes">
         <h4>📝 注意事项</h4>
         <ul>
           <li>测试结果受浏览器、设备性能和当前系统负载影响</li>

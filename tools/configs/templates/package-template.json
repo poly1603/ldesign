@@ -14,11 +14,7 @@
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
   },
-  "keywords": [
-    "ldesign",
-    "vue3",
-    "typescript"
-  ],
+  "keywords": ["ldesign", "vue3", "typescript"],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -49,14 +45,7 @@
   "module": "es/index.js",
   "types": "types/index.d.ts",
   "browser": "dist/index.js",
-  "files": [
-    "CHANGELOG.md",
-    "README.md",
-    "dist",
-    "es",
-    "lib",
-    "types"
-  ],
+  "files": ["CHANGELOG.md", "README.md", "dist", "es", "lib", "types"],
   "scripts": {
     "build": "rollup -c",
     "build:watch": "rollup -c -w",

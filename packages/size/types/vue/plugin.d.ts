@@ -1,6 +1,5 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
+import { Plugin } from 'vue';
 import { SizeManager, VueSizePluginOptions } from '../types/index.js';
-import { Plugin } from '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
 
 /**
  * Vue 插件

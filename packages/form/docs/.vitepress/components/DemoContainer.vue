@@ -26,10 +26,14 @@ const demoFormData = ref({ ...props.initialData })
 // 代码标签页
 const codeTabs = computed(() => {
   const tabs = []
-  if (props.code.vue) tabs.push({ key: 'vue', label: 'Vue' })
-  if (props.code.js) tabs.push({ key: 'js', label: 'JavaScript' })
-  if (props.code.ts) tabs.push({ key: 'ts', label: 'TypeScript' })
-  if (props.code.html) tabs.push({ key: 'html', label: 'HTML' })
+  if (props.code.vue)
+    tabs.push({ key: 'vue', label: 'Vue' })
+  if (props.code.js)
+    tabs.push({ key: 'js', label: 'JavaScript' })
+  if (props.code.ts)
+    tabs.push({ key: 'ts', label: 'TypeScript' })
+  if (props.code.html)
+    tabs.push({ key: 'html', label: 'HTML' })
   return tabs
 })
 
@@ -53,7 +57,8 @@ async function copyCode() {
   try {
     await navigator.clipboard.writeText(currentCode.value)
     // 可以添加复制成功的提示
-  } catch (err) {
+  }
+  catch (err) {
     console.error('复制失败:', err)
   }
 }
@@ -74,10 +79,10 @@ function updateConfig(config) {
 // 监听数据变化
 watch(
   demoFormData,
-  newData => {
+  (newData) => {
     emit('update:data', newData)
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 初始化

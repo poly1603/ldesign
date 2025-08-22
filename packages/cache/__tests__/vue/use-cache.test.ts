@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { nextTick } from 'vue'
-import { mount } from '@vue/test-utils'
-import { useCache } from '../../src/vue/use-cache'
 import type { UseCacheOptions } from '../../src/types'
+import { mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { nextTick } from 'vue'
+import { useCache } from '../../src/vue/use-cache'
 
 // 测试组件
 const TestComponent = {
@@ -120,7 +120,7 @@ describe('useCache', () => {
       const { cache } = wrapper.vm
       const reactiveCache = cache.useReactiveCache(
         'reactive-key',
-        'default-value'
+        'default-value',
       )
 
       // 初始值应该是默认值
@@ -175,7 +175,8 @@ describe('useCache', () => {
 
       try {
         await reactiveCache.save(circularObj)
-      } catch {
+      }
+      catch {
         // 预期会抛出错误
       }
 

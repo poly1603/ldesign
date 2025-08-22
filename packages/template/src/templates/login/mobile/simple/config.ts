@@ -7,18 +7,12 @@ export const config: TemplateConfig = {
   category: 'login',
   device: 'mobile',
   variant: 'simple',
-  isDefault: true, // 设为移动端默认模板
+  isDefault: false, // 不再是默认模板
   version: '1.0.0',
   author: 'LDesign Team',
   tags: ['简洁', '移动端', '触摸友好', '流畅'],
   preview: '/previews/login-mobile-simple.png',
-  features: [
-    '全屏设计',
-    '大按钮操作',
-    '简化表单',
-    '快速登录',
-    '触摸友好',
-  ],
+  features: ['全屏设计', '大按钮操作', '简化表单', '快速登录', '触摸友好'],
   props: {
     title: {
       type: 'string',

@@ -74,7 +74,7 @@ function updateDeviceInfo() {
 
   // 更新性能统计
   detectionCount++
-  totalDetectionTime += (endTime - startTime)
+  totalDetectionTime += endTime - startTime
 
   elements.deviceType.textContent = deviceInfo.type
   elements.orientation.textContent = deviceInfo.orientation
@@ -101,8 +101,12 @@ function updateNetworkInfo(networkInfo) {
   elements.networkStatus.textContent = networkInfo.status
   elements.networkStatus.className = `status ${networkInfo.status}`
   elements.networkType.textContent = networkInfo.type || '未知'
-  elements.networkDownlink.textContent = networkInfo.downlink ? `${networkInfo.downlink} Mbps` : '未知'
-  elements.networkRtt.textContent = networkInfo.rtt ? `${networkInfo.rtt} ms` : '未知'
+  elements.networkDownlink.textContent = networkInfo.downlink
+    ? `${networkInfo.downlink} Mbps`
+    : '未知'
+  elements.networkRtt.textContent = networkInfo.rtt
+    ? `${networkInfo.rtt} ms`
+    : '未知'
 }
 
 // 更新电池信息显示
@@ -116,11 +120,21 @@ function updateBatteryInfo(batteryInfo) {
   }
 
   elements.batteryLevel.textContent = `${Math.round(batteryInfo.level * 100)}%`
-  elements.batteryCharging.textContent = batteryInfo.charging ? '充电中' : '未充电'
-  elements.batteryCharging.className = `status ${batteryInfo.charging ? 'charging' : 'not-charging'}`
+  elements.batteryCharging.textContent = batteryInfo.charging
+    ? '充电中'
+    : '未充电'
+  elements.batteryCharging.className = `status ${
+    batteryInfo.charging ? 'charging' : 'not-charging'
+  }`
 
-  const chargingTime = batteryInfo.chargingTime === Infinity ? '未知' : `${Math.round(batteryInfo.chargingTime / 60)} 分钟`
-  const dischargingTime = batteryInfo.dischargingTime === Infinity ? '未知' : `${Math.round(batteryInfo.dischargingTime / 60)} 分钟`
+  const chargingTime
+    = batteryInfo.chargingTime === Infinity
+      ? '未知'
+      : `${Math.round(batteryInfo.chargingTime / 60)} 分钟`
+  const dischargingTime
+    = batteryInfo.dischargingTime === Infinity
+      ? '未知'
+      : `${Math.round(batteryInfo.dischargingTime / 60)} 分钟`
 
   elements.batteryChargingTime.textContent = chargingTime
   elements.batteryDischargingTime.textContent = dischargingTime
@@ -138,16 +152,21 @@ function updateGeolocationInfo(position) {
 
   elements.geoLatitude.textContent = position.latitude.toFixed(6)
   elements.geoLongitude.textContent = position.longitude.toFixed(6)
-  elements.geoAccuracy.textContent = position.accuracy ? `${Math.round(position.accuracy)}m` : '未知'
-  elements.geoAltitude.textContent = position.altitude ? `${Math.round(position.altitude)}m` : '未知'
+  elements.geoAccuracy.textContent = position.accuracy
+    ? `${Math.round(position.accuracy)}m`
+    : '未知'
+  elements.geoAltitude.textContent = position.altitude
+    ? `${Math.round(position.altitude)}m`
+    : '未知'
 }
 
 // 更新性能信息显示
 function updatePerformanceInfo() {
   elements.detectionCount.textContent = detectionCount
-  elements.avgDetectionTime.textContent = detectionCount > 0
-    ? `${(totalDetectionTime / detectionCount).toFixed(2)}ms`
-    : '-'
+  elements.avgDetectionTime.textContent
+    = detectionCount > 0
+      ? `${(totalDetectionTime / detectionCount).toFixed(2)}ms`
+      : '-'
 
   // 获取内存使用情况（如果支持）
   if (performance.memory) {
@@ -161,7 +180,8 @@ function updatePerformanceInfo() {
 
   // 获取已加载模块
   const loadedModules = detector.getLoadedModules()
-  elements.loadedModules.textContent = loadedModules.length > 0 ? loadedModules.join(', ') : '无'
+  elements.loadedModules.textContent
+    = loadedModules.length > 0 ? loadedModules.join(', ') : '无'
 }
 
 // 更新位置监听状态
@@ -185,7 +205,10 @@ async function performanceTest() {
   const endTime = performance.now()
   const avgTime = (endTime - startTime) / iterations
 
-  addLog(`性能测试完成: ${iterations}次检测，平均耗时 ${avgTime.toFixed(2)}ms`, 'success')
+  addLog(
+    `性能测试完成: ${iterations}次检测，平均耗时 ${avgTime.toFixed(2)}ms`,
+    'success',
+  )
 }
 
 // 模拟窗口变化
@@ -203,7 +226,10 @@ function simulateResize() {
 
 // 事件监听器
 detector.on('deviceChange', (deviceInfo) => {
-  addLog(`设备信息变化: ${deviceInfo.type} (${deviceInfo.width}×${deviceInfo.height})`, 'info')
+  addLog(
+    `设备信息变化: ${deviceInfo.type} (${deviceInfo.width}×${deviceInfo.height})`,
+    'info',
+  )
   updateDeviceInfo()
 })
 
@@ -221,7 +247,12 @@ detector.on('networkChange', (networkInfo) => {
 })
 
 detector.on('batteryChange', (batteryInfo) => {
-  addLog(`电池状态变化: ${Math.round(batteryInfo.level * 100)}% (${batteryInfo.charging ? '充电中' : '未充电'})`, 'success')
+  addLog(
+    `电池状态变化: ${Math.round(batteryInfo.level * 100)}% (${
+      batteryInfo.charging ? '充电中' : '未充电'
+    })`,
+    'success',
+  )
   updateBatteryInfo(batteryInfo)
 })
 
@@ -263,7 +294,12 @@ elements.loadGeolocationBtn.addEventListener('click', async () => {
     const position = geolocationModule.getData()
     updateGeolocationInfo(position)
     if (position) {
-      addLog(`地理位置: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)}`, 'success')
+      addLog(
+        `地理位置: ${position.latitude.toFixed(
+          6,
+        )}, ${position.longitude.toFixed(6)}`,
+        'success',
+      )
     }
     else {
       addLog('地理位置模块加载成功，但未获取到位置信息', 'warning')
@@ -286,7 +322,12 @@ elements.startWatchingBtn.addEventListener('click', async () => {
   try {
     watchId = await geolocationModule.startWatching((position) => {
       updateGeolocationInfo(position)
-      addLog(`位置更新: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)}`, 'info')
+      addLog(
+        `位置更新: ${position.latitude.toFixed(
+          6,
+        )}, ${position.longitude.toFixed(6)}`,
+        'info',
+      )
     })
     updateWatchingStatus(true)
     addLog('开始监听位置变化', 'success')

@@ -1,7 +1,9 @@
-import '../node_modules/.pnpm/@vue_runtime-dom@3.5.18/node_modules/@vue/runtime-dom/dist/runtime-dom.d.js';
 import { SizeMode, SizeConfig, SizeManager, SizeChangeEvent } from '../types/index.js';
-import { Ref, ComputedRef } from '../node_modules/.pnpm/@vue_reactivity@3.5.18/node_modules/@vue/reactivity/dist/reactivity.d.js';
-import '../node_modules/.pnpm/@vue_runtime-core@3.5.18/node_modules/@vue/runtime-core/dist/runtime-core.d.js';
+import { Ref } from 'vue';
+
+/**
+ * Vue Composition API Hooks
+ */
 
 /**
  * useSize Hook 选项
@@ -83,11 +85,11 @@ declare function useSizeSwitcher(options?: UseSizeOptions): {
  * 使用尺寸响应式 Hook
  */
 declare function useSizeResponsive(breakpoints?: Partial<Record<SizeMode, boolean>>): {
-    currentMode: Ref<SizeMode, SizeMode>;
-    isSmall: ComputedRef<boolean>;
-    isMedium: ComputedRef<boolean>;
-    isLarge: ComputedRef<boolean>;
-    isExtraLarge: ComputedRef<boolean>;
+    currentMode: Ref<SizeMode>;
+    isSmall: any;
+    isMedium: any;
+    isLarge: any;
+    isExtraLarge: any;
     isAtLeast: (mode: SizeMode) => boolean;
     isAtMost: (mode: SizeMode) => boolean;
 };

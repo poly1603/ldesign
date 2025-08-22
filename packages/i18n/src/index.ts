@@ -25,12 +25,50 @@ export {
   ManualDetector,
 } from './core/detector'
 
+// 导出错误处理系统
+export {
+  CacheError,
+  ConfigurationError,
+  DefaultErrorHandler,
+  DevelopmentErrorHandler,
+  ErrorManager,
+  globalErrorManager,
+  handleErrors,
+  I18nError,
+  InitializationError,
+  InterpolationError,
+  LanguageLoadError,
+  PluralRuleError,
+  SilentErrorHandler,
+  TranslationKeyError,
+} from './core/errors'
+
+export type { ErrorHandler } from './core/errors'
+
 // 导出核心类和接口
 export { I18n } from './core/i18n'
 
 // 导出加载器
 export { DefaultLoader, HttpLoader, StaticLoader } from './core/loader'
 
+// 导出性能管理器
+export {
+  globalPerformanceManager,
+  PerformanceManager,
+  performanceMonitor,
+} from './core/performance'
+
+export type { PerformanceConfig, PerformanceMetrics } from './core/performance'
+// 导出管理器注册表
+export {
+  globalRegistry,
+  I18nCoreManager,
+  inject,
+  ManagerRegistry,
+  registerManager,
+} from './core/registry'
+
+export type { Manager, ManagerFactory } from './core/registry'
 // 导出存储实现
 export {
   CookieStorage,
@@ -73,16 +111,18 @@ export type {
   TranslationOptions,
   TranslationParams,
 } from './core/types'
-
-// 导出 Engine 插件
-export * from './engine/plugin'
-
 // 导出内置语言包
 export { default as enLanguagePackage } from './locales/en'
 
 export { default as jaLanguagePackage } from './locales/ja'
 
 export { default as zhCNLanguagePackage } from './locales/zh-CN'
+
+// 导出插件系统
+export * from './plugins'
+
+// 导出 Engine 插件
+export * from './plugins/engine'
 export {
   batchInterpolate,
   extractInterpolationKeys,
@@ -114,18 +154,16 @@ export {
   registerPluralRule,
 } from './utils/pluralization'
 
-// 便捷的创建函数
-export function createI18n(options?: I18nOptions): I18nInstance {
-  return new I18n(options)
-}
-
 /**
- * 创建带有内置语言包的 I18n 实例
+ * 创建 I18n 实例
+ *
+ * 默认自动加载所有内置语言包（en、zh-CN、ja）
+ *
  * @param options I18n 配置选项
  * @returns I18n 实例
  */
-export async function createI18nWithBuiltinLocales(
-  options?: I18nOptions
+export async function createI18n(
+  options?: I18nOptions,
 ): Promise<I18nInstance> {
   const { StaticLoader } = await import('./core/loader')
   const enPkg = await import('./locales/en')
@@ -133,32 +171,9 @@ export async function createI18nWithBuiltinLocales(
   const jaPkg = await import('./locales/ja')
 
   const loader = new StaticLoader()
-  loader.registerPackages({
-    en: enPkg.default,
-    'zh-CN': zhCNPkg.default,
-    ja: jaPkg.default,
-  })
-
-  const i18n = new I18n(options)
-  i18n.setLoader(loader)
-
-  await i18n.init()
-  return i18n
-}
-
-/**
- * 创建简单的 I18n 实例（仅英语）
- * @param options I18n 配置选项
- * @returns I18n 实例
- */
-export async function createSimpleI18n(
-  options?: I18nOptions
-): Promise<I18nInstance> {
-  const { StaticLoader } = await import('./core/loader')
-  const enPkg = await import('./locales/en')
-
-  const loader = new StaticLoader()
   loader.registerPackage('en', enPkg.default)
+  loader.registerPackage('zh-CN', zhCNPkg.default)
+  loader.registerPackage('ja', jaPkg.default)
 
   const i18n = new I18n({ defaultLocale: 'en', ...options })
   i18n.setLoader(loader)
@@ -174,6 +189,12 @@ export const version = '0.1.0'
 
 // 导出 Vue 集成（可选，需要单独导入）
 export * as vue from './vue'
+
+// 导出 Vue 组件（直接导出以便使用）
+export { LanguageSwitcher } from './vue/components'
+
+// 导出 Web Components
+export * from './web-components'
 
 /**
  * 默认导出（主要的 I18n 类）

@@ -34,7 +34,7 @@ export class ColorScaleGenerator {
   generateScale(
     baseColor: string,
     category: ColorCategory,
-    mode: ColorMode = 'light'
+    mode: ColorMode = 'light',
   ): ColorScale {
     if (!isValidHex(baseColor)) {
       throw new Error(`Invalid hex color: ${baseColor}`)
@@ -47,7 +47,8 @@ export class ColorScaleGenerator {
 
     if (category === 'gray') {
       colors = this.generateGrayScale(normalizedColor, config.count, mode)
-    } else {
+    }
+    else {
       colors = this.generateColorScale(normalizedColor, config.count, mode)
     }
 
@@ -73,7 +74,7 @@ export class ColorScaleGenerator {
   private generateColorScale(
     baseColor: string,
     count: number,
-    mode: ColorMode
+    mode: ColorMode,
   ): string[] {
     const colors: string[] = []
 
@@ -94,11 +95,13 @@ export class ColorScaleGenerator {
         const extraColor = this.generateExtraLightColor(baseColor, i + 1)
         if (mode === 'dark') {
           colors.push(extraColor) // 暗黑模式下添加到末尾（更浅）
-        } else {
+        }
+        else {
           colors.unshift(extraColor) // 亮色模式下添加到开头（更浅）
         }
       }
-    } else if (count < 10) {
+    }
+    else if (count < 10) {
       return colors.slice(0, count)
     }
 
@@ -133,12 +136,14 @@ export class ColorScaleGenerator {
       let hue: number
       if (h >= 60 && h <= 240) {
         hue = isLight ? h - hueStep * index : h + hueStep * index
-      } else {
+      }
+      else {
         hue = isLight ? h + hueStep * index : h - hueStep * index
       }
       if (hue < 0) {
         hue += 360
-      } else if (hue >= 360) {
+      }
+      else if (hue >= 360) {
         hue -= 360
       }
       return Math.round(hue)
@@ -148,9 +153,10 @@ export class ColorScaleGenerator {
     function getNewSaturation(isLight: boolean, index: number): number {
       let newSaturation: number
       if (isLight) {
-        newSaturation =
-          s <= minSaturationStep ? s : s - ((s - minSaturationStep) / 5) * index
-      } else {
+        newSaturation
+          = s <= minSaturationStep ? s : s - ((s - minSaturationStep) / 5) * index
+      }
+      else {
         newSaturation = s + ((maxSaturationStep - s) / 4) * index
       }
       return newSaturation
@@ -161,18 +167,19 @@ export class ColorScaleGenerator {
       return isLight
         ? v + ((maxValue - v) / 5) * index
         : v <= minValue
-        ? v
-        : v - ((v - minValue) / 4) * index
+          ? v
+          : v - ((v - minValue) / 4) * index
     }
 
     const isLight = i < 6
     const index = isLight ? 6 - i : i - 6
 
-    let resultHsv: { h: number; s: number; v: number }
+    let resultHsv: { h: number, s: number, v: number }
     if (i === 6) {
       // 基准色
       resultHsv = { h, s, v }
-    } else {
+    }
+    else {
       resultHsv = {
         h: getNewHue(isLight, index),
         s: getNewSaturation(isLight, index),
@@ -190,7 +197,7 @@ export class ColorScaleGenerator {
    */
   private generateExtraLightColor(
     baseColor: string,
-    extraIndex: number
+    extraIndex: number,
   ): string {
     const baseHsl = hexToHsl(baseColor)
     if (!baseHsl) {
@@ -214,7 +221,7 @@ export class ColorScaleGenerator {
   /**
    * Hex转RGB
    */
-  private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  private hexToRgb(hex: string): { r: number, g: number, b: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
       ? {
@@ -230,7 +237,7 @@ export class ColorScaleGenerator {
    */
   private rgbToHex(r: number, g: number, b: number): string {
     return `#${[r, g, b]
-      .map(x => {
+      .map((x) => {
         const hex = Math.round(x).toString(16)
         return hex.length === 1 ? `0${hex}` : hex
       })
@@ -243,8 +250,8 @@ export class ColorScaleGenerator {
   private rgbToHsv(
     r: number,
     g: number,
-    b: number
-  ): { h: number; s: number; v: number } {
+    b: number,
+  ): { h: number, s: number, v: number } {
     r = r / 255
     g = g / 255
     b = b / 255
@@ -257,14 +264,17 @@ export class ColorScaleGenerator {
     if (diff !== 0) {
       if (max === r) {
         h = ((g - b) / diff) % 6
-      } else if (max === g) {
+      }
+      else if (max === g) {
         h = (b - r) / diff + 2
-      } else {
+      }
+      else {
         h = (r - g) / diff + 4
       }
     }
     h = h * 60
-    if (h < 0) h += 360
+    if (h < 0)
+      h += 360
 
     const s = max === 0 ? 0 : (diff / max) * 100
     const v = max * 100
@@ -278,8 +288,8 @@ export class ColorScaleGenerator {
   private hsvToRgb(
     h: number,
     s: number,
-    v: number
-  ): { r: number; g: number; b: number } {
+    v: number,
+  ): { r: number, g: number, b: number } {
     s = s / 100
     v = v / 100
 
@@ -295,23 +305,28 @@ export class ColorScaleGenerator {
       r = c
       g = x
       b = 0
-    } else if (h >= 60 && h < 120) {
+    }
+    else if (h >= 60 && h < 120) {
       r = x
       g = c
       b = 0
-    } else if (h >= 120 && h < 180) {
+    }
+    else if (h >= 120 && h < 180) {
       r = 0
       g = c
       b = x
-    } else if (h >= 180 && h < 240) {
+    }
+    else if (h >= 180 && h < 240) {
       r = 0
       g = x
       b = c
-    } else if (h >= 240 && h < 300) {
+    }
+    else if (h >= 240 && h < 300) {
       r = x
       g = 0
       b = c
-    } else if (h >= 300 && h < 360) {
+    }
+    else if (h >= 300 && h < 360) {
       r = c
       g = 0
       b = x
@@ -330,7 +345,7 @@ export class ColorScaleGenerator {
   private generateGrayScale(
     _baseColor: string,
     count: number,
-    mode: ColorMode
+    mode: ColorMode,
   ): string[] {
     if (mode === 'dark') {
       // 优化的暗色模式中性灰色（从深到浅）
@@ -347,7 +362,8 @@ export class ColorScaleGenerator {
         '#f5f5f5',
       ]
       return neutralGrayDark.slice(0, count)
-    } else {
+    }
+    else {
       // 优化的亮色模式中性灰色（从浅到深）
       const neutralGrayLight = [
         '#fafafa',
@@ -370,26 +386,27 @@ export class ColorScaleGenerator {
    */
   generateScales<T extends ColorCategory>(
     colors: Record<T, ColorValue>,
-    mode: ColorMode = 'light'
+    mode: ColorMode = 'light',
   ): Record<T, ColorScale> {
     const scales: Record<T, ColorScale> = {} as Record<T, ColorScale>
 
     for (const [category, color] of Object.entries(colors) as [
       T,
-      ColorValue
+      ColorValue,
     ][]) {
       try {
         scales[category] = this.generateScale(
           color,
           category as ColorCategory,
-          mode
+          mode,
         )
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to generate scale for ${category}:`, error)
         // 提供回退色阶
         scales[category] = this.createFallbackScale(
           category as ColorCategory,
-          mode
+          mode,
         )
       }
     }
@@ -402,7 +419,7 @@ export class ColorScaleGenerator {
    */
   private createFallbackScale(
     category: ColorCategory,
-    _mode: ColorMode
+    _mode: ColorMode,
   ): ColorScale {
     const config = SCALE_CONFIGS[category]
     const colors: string[] = []
@@ -449,7 +466,7 @@ export const colorScaleGenerator = new ColorScaleGenerator()
 // 导出便捷函数
 export function generateColorScales<T extends ColorCategory>(
   colors: Record<T, ColorValue>,
-  mode: ColorMode = 'light'
+  mode: ColorMode = 'light',
 ): Record<T, ColorScale> {
   return colorScaleGenerator.generateScales(colors, mode)
 }
@@ -457,7 +474,7 @@ export function generateColorScales<T extends ColorCategory>(
 export function generateColorScale(
   baseColor: string,
   category: ColorCategory,
-  mode: ColorMode = 'light'
+  mode: ColorMode = 'light',
 ): ColorScale {
   return colorScaleGenerator.generateScale(baseColor, category, mode)
 }

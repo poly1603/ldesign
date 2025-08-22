@@ -88,7 +88,9 @@
   padding: 1.5rem;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .password-card:hover {
@@ -122,7 +124,7 @@
 }
 
 .password-display {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   background: #f7fafc;
   padding: 0.25rem 0.5rem;
   border-radius: 5px;
@@ -228,7 +230,7 @@
 }
 
 .hash-display {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   background: #f7fafc;
   padding: 0.25rem 0.5rem;
   border-radius: 3px;
@@ -333,7 +335,7 @@
 .key-textarea {
   width: 100%;
   min-height: 120px;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-size: 0.8rem;
   background: #f7fafc;
   border: 1px solid #e2e8f0;
@@ -369,7 +371,7 @@
 .signature-textarea {
   width: 100%;
   min-height: 100px;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-size: 0.9rem;
   resize: vertical;
 }
@@ -588,7 +590,7 @@
 }
 
 .size-cell {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   color: #d69e2e;
 }
 
@@ -599,13 +601,13 @@
 
 .time-cell,
 .avg-time-cell {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   text-align: right;
   color: #e53e3e;
 }
 
 .throughput-cell {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   text-align: right;
   color: #38a169;
   font-weight: 600;
@@ -652,7 +654,7 @@
 }
 
 .time-value {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-weight: 600;
   color: #805ad5;
   font-size: 1.1rem;

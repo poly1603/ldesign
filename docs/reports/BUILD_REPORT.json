@@ -2,82 +2,42 @@
   "color": {
     "success": true,
     "duration": 7134,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "crypto": {
     "success": true,
     "duration": 8871,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "device": {
     "success": true,
     "duration": 7265,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "engine": {
     "success": true,
     "duration": 6496,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "http": {
     "success": true,
     "duration": 11216,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "i18n": {
     "success": true,
     "duration": 9238,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "router": {
     "success": true,
     "duration": 7995,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "store": {
     "success": true,
     "duration": 9672,
-    "artifacts": [
-      "dist",
-      "es",
-      "lib",
-      "types"
-    ]
+    "artifacts": ["dist", "es", "lib", "types"]
   },
   "template": {
     "success": false,

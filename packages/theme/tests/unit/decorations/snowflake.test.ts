@@ -2,19 +2,19 @@
  * @ldesign/theme - 雪花装饰元素单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { DecorationConfig } from '@/core/types'
 import {
-  SnowflakeDecoration,
-  createSnowfallEffect,
-} from '@/decorations/elements/snowflake'
-import {
+  cleanup,
   createMockDecorationConfig,
   createMockElement,
-  cleanup,
 } from '@tests/setup'
-import type { DecorationConfig } from '@/core/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  createSnowfallEffect,
+  SnowflakeDecoration,
+} from '@/decorations/elements/snowflake'
 
-describe('SnowflakeDecoration', () => {
+describe('snowflakeDecoration', () => {
   let container: HTMLElement
   let config: DecorationConfig
   let snowflake: SnowflakeDecoration
@@ -36,7 +36,7 @@ describe('SnowflakeDecoration', () => {
       ok: true,
       text: () =>
         Promise.resolve(
-          '<svg><path d="M12 2L13.09 8.26L19 7L17.74 9.74L24 12L17.74 14.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L6.26 14.26L0 12L6.26 9.74L5 7L10.91 8.26L12 2Z" fill="white"/></svg>'
+          '<svg><path d="M12 2L13.09 8.26L19 7L17.74 9.74L24 12L17.74 14.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L6.26 14.26L0 12L6.26 9.74L5 7L10.91 8.26L12 2Z" fill="white"/></svg>',
         ),
     })
 

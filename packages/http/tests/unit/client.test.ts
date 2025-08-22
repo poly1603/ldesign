@@ -48,12 +48,9 @@ describe('httpClientImpl', () => {
 
       expect(config.baseURL).toBe('https://api.example.com')
       expect(config.timeout).toBe(5000)
-      expect(config.headers).toEqual(
-        expect.objectContaining({
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer token',
-        }),
-      )
+      expect(config.headers).toEqual({
+        Authorization: 'Bearer token',
+      })
     })
 
     it('should throw error if no adapter provided', () => {
@@ -209,7 +206,9 @@ describe('httpClientImpl', () => {
       const mockError = createMockError('Original error')
       vi.mocked(mockAdapter.request).mockRejectedValue(mockError)
 
-      await expect(client.get('/test')).rejects.toThrow('Intercepted: Original error')
+      await expect(client.get('/test')).rejects.toThrow(
+        'Intercepted: Original error',
+      )
       expect(errorInterceptor).toHaveBeenCalled()
     })
   })
@@ -238,11 +237,13 @@ describe('httpClientImpl', () => {
       expect(mockAdapter.request).toHaveBeenCalledWith(
         expect.objectContaining({
           baseURL: 'https://api.example.com',
-          headers: expect.objectContaining({
+          headers: {
             'Authorization': 'Bearer token',
             'X-Custom': 'test',
-            'Content-Type': 'application/json',
-          }),
+          },
+          method: 'GET',
+          timeout: 10000,
+          url: '/users',
         }),
       )
     })

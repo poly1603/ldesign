@@ -271,13 +271,7 @@
     <h4>初始化引擎</h4>
     <pre><code class="language-typescript">import { Engine } from '@ldesign/engine'
 
-const engine = new Engine({
-debug: true,
-performance: {
-monitoring: true,
-threshold: 100
-}
-})
+const engine = new Engine({ debug: true, performance: { monitoring: true, threshold: 100 } })
 
 engine.start()</code></pre>
 
@@ -287,18 +281,8 @@ engine.start()</code></pre>
     <h4>配置路由</h4>
     <pre><code class="language-typescript">import { Router } from '@ldesign/router'
 
-const router = new Router({
-routes: [
-{
-path: '/',
-component: () => import('./Home.vue')
-},
-{
-path: '/about',
-component: () => import('./About.vue')
-}
-]
-})</code></pre>
+const router = new Router({ routes: [ { path: '/', component: () => import('./Home.vue') }, { path:
+'/about', component: () => import('./About.vue') } ] })</code></pre>
 
   </div>
 
@@ -306,10 +290,7 @@ component: () => import('./About.vue')
     <h4>HTTP请求</h4>
     <pre><code class="language-typescript">import { HttpClient } from '@ldesign/http'
 
-const http = new HttpClient({
-baseURL: 'https://api.example.com',
-timeout: 5000
-})
+const http = new HttpClient({ baseURL: 'https://api.example.com', timeout: 5000 })
 
 const data = await http.get('/users')</code></pre>
 
@@ -319,8 +300,7 @@ const data = await http.get('/users')</code></pre>
     <h4>数据加密</h4>
     <pre><code class="language-typescript">import { AESCrypto } from '@ldesign/crypto'
 
-const crypto = new AESCrypto('your-secret-key')
-const encrypted = crypto.encrypt('sensitive data')
+const crypto = new AESCrypto('your-secret-key') const encrypted = crypto.encrypt('sensitive data')
 const decrypted = crypto.decrypt(encrypted)</code></pre>
 
   </div>
@@ -340,10 +320,7 @@ const decrypted = crypto.decrypt(encrypted)</code></pre>
   middleware?: Middleware[]
 }
 
-interface PerformanceConfig {
-monitoring?: boolean
-threshold?: number
-sampling?: number
+interface PerformanceConfig { monitoring?: boolean threshold?: number sampling?: number
 }</code></pre>
 
   </div>
@@ -358,10 +335,7 @@ sampling?: number
 
 type EventHandler<T = any> = (data: T) => void | Promise<void>
 
-interface EventBusOptions {
-maxListeners?: number
-async?: boolean
-}</code></pre>
+interface EventBusOptions { maxListeners?: number async?: boolean }</code></pre>
 
   </div>
 
@@ -375,11 +349,7 @@ async?: boolean
   beforeEnter?: NavigationGuard
 }
 
-interface RouteMeta {
-title?: string
-requiresAuth?: boolean
-roles?: string[]
-}</code></pre>
+interface RouteMeta { title?: string requiresAuth?: boolean roles?: string[] }</code></pre>
 
   </div>
 </div>

@@ -1,114 +1,10 @@
-<template>
-  <div class="demo-card">
-    <h3>📊 性能监控演示</h3>
-    <p>实时监控缓存性能和使用情况</p>
-
-    <div class="demo-section">
-      <h4>缓存统计</h4>
-      <button @click="refreshStats" class="btn">刷新统计</button>
-      <button @click="toggleAutoRefresh" class="btn secondary">
-        {{ autoRefresh ? '停止' : '开始' }}自动刷新
-      </button>
-
-      <div v-if="formattedStats" class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-value">{{ formattedStats.totalItems }}</div>
-          <div class="stat-label">总缓存项</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ formattedStats.totalSizeFormatted }}</div>
-          <div class="stat-label">总大小</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ formattedStats.hitRatePercentage }}%</div>
-          <div class="stat-label">命中率</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ formattedStats.expiredItems }}</div>
-          <div class="stat-label">过期项</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>引擎使用情况</h4>
-      <div v-if="engineUsage.length > 0" class="engine-stats">
-        <div
-          v-for="engine in engineUsage"
-          :key="engine.engine"
-          class="engine-stat"
-        >
-          <div class="engine-header">
-            <span class="engine-name">{{ engine.engine }}</span>
-            <span
-              class="engine-status"
-              :class="{ available: engine.available }"
-            >
-              {{ engine.available ? '可用' : '不可用' }}
-            </span>
-          </div>
-          <div class="engine-details">
-            <span>项目数: {{ engine.itemCount }}</span>
-            <span>大小: {{ engine.sizeFormatted }}</span>
-            <span>使用率: {{ engine.usage }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>性能测试</h4>
-      <button @click="runPerformanceTest" class="btn">运行性能测试</button>
-      <button @click="runBatchTest" class="btn">批量操作测试</button>
-
-      <div v-if="performanceResults.length > 0" class="performance-results">
-        <div
-          v-for="result in performanceResults"
-          :key="result.id"
-          class="performance-result"
-        >
-          <div class="result-title">{{ result.name }}</div>
-          <div class="result-metrics">
-            <span>耗时: {{ result.duration }}ms</span>
-            <span>操作数: {{ result.operations }}</span>
-            <span>平均: {{ result.average }}ms/op</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>内存管理</h4>
-      <button @click="fillMemoryCache" class="btn">填充内存缓存</button>
-      <button @click="triggerCleanup" class="btn secondary">触发清理</button>
-      <button @click="clearMemoryCache" class="btn danger">清空内存缓存</button>
-
-      <div v-if="memoryStats" class="code">
-        <div><strong>内存统计:</strong></div>
-        <div>总项目: {{ memoryStats.totalItems }}</div>
-        <div>总大小: {{ memoryStats.totalSizeFormatted }}</div>
-        <div>过期项: {{ memoryStats.expiredItems }}</div>
-        <div v-if="memoryStats.oldestItem">
-          最旧项: {{ memoryStats.oldestItem.key }} ({{
-            Math.round(memoryStats.oldestItem.age / 1000)
-          }}秒前)
-        </div>
-      </div>
-    </div>
-
-    <div v-if="loading" class="status info">处理中...</div>
-
-    <div v-if="error" class="status error">错误: {{ error.message }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 // import { useCacheStats } from '@ldesign/cache/vue'
 // import { createCache } from '@ldesign/cache'
 
 // 临时模拟功能
-const useCacheStats = (options: any = {}) => {
+function useCacheStats(options: any = {}) {
   const formattedStats = ref({
     totalItems: 0,
     totalSizeFormatted: '0 B',
@@ -142,12 +38,12 @@ const useCacheStats = (options: any = {}) => {
 
   const refresh = async () => {
     const keys = Object.keys(localStorage).filter(key =>
-      key.startsWith('perf_')
+      key.startsWith('perf_'),
     )
     formattedStats.value.totalItems = keys.length
 
     let totalSize = 0
-    keys.forEach(key => {
+    keys.forEach((key) => {
       totalSize += localStorage.getItem(key)?.length || 0
     })
 
@@ -172,7 +68,7 @@ const useCacheStats = (options: any = {}) => {
   }
 }
 
-const createCache = (options: any = {}) => {
+function createCache(options: any = {}) {
   return {
     set: async (key: string, value: any, opts?: any) => {
       const data = { value, timestamp: Date.now(), ...opts }
@@ -189,7 +85,7 @@ const createCache = (options: any = {}) => {
     clear: async (engine?: string) => {
       const prefix = engine ? `${engine}_` : 'perf_'
       const keysToRemove = Object.keys(localStorage).filter(key =>
-        key.startsWith(prefix)
+        key.startsWith(prefix),
       )
       keysToRemove.forEach(key => localStorage.removeItem(key))
     },
@@ -209,12 +105,13 @@ const createCache = (options: any = {}) => {
   }
 }
 
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
+function formatBytes(bytes: number): string {
+  if (bytes === 0)
+    return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 // 使用缓存统计
@@ -250,23 +147,24 @@ const performanceResults = ref<
 const memoryStats = ref<any>(null)
 
 // 刷新统计
-const refreshStats = async () => {
+async function refreshStats() {
   await refresh()
 }
 
 // 切换自动刷新
-const toggleAutoRefresh = () => {
+function toggleAutoRefresh() {
   if (autoRefresh.value) {
     stopAutoRefresh()
     autoRefresh.value = false
-  } else {
+  }
+  else {
     startAutoRefresh(2000)
     autoRefresh.value = true
   }
 }
 
 // 运行性能测试
-const runPerformanceTest = async () => {
+async function runPerformanceTest() {
   loading.value = true
   error.value = null
 
@@ -303,7 +201,7 @@ const runPerformanceTest = async () => {
         duration: Math.round(getDuration),
         operations,
         average: Number((getDuration / operations).toFixed(3)),
-      }
+      },
     )
 
     // 只保留最近6个结果
@@ -312,15 +210,17 @@ const runPerformanceTest = async () => {
     }
 
     await refreshStats()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 批量操作测试
-const runBatchTest = async () => {
+async function runBatchTest() {
   loading.value = true
   error.value = null
 
@@ -361,19 +261,21 @@ const runBatchTest = async () => {
         duration: Math.round(batchDuration),
         operations: batchSize,
         average: Number((batchDuration / batchSize).toFixed(3)),
-      }
+      },
     )
 
     await refreshStats()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 填充内存缓存
-const fillMemoryCache = async () => {
+async function fillMemoryCache() {
   loading.value = true
 
   try {
@@ -388,51 +290,57 @@ const fillMemoryCache = async () => {
         },
         {
           ttl: i % 2 === 0 ? 10000 : undefined, // 一半的数据10秒后过期
-        }
+        },
       )
     }
 
     await updateMemoryStats()
     await refreshStats()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 触发清理
-const triggerCleanup = async () => {
+async function triggerCleanup() {
   loading.value = true
 
   try {
     await perfCache.cleanup()
     await updateMemoryStats()
     await refreshStats()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 清空内存缓存
-const clearMemoryCache = async () => {
+async function clearMemoryCache() {
   loading.value = true
 
   try {
     await perfCache.clear('memory')
     await updateMemoryStats()
     await refreshStats()
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err as Error
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
 
 // 更新内存统计
-const updateMemoryStats = async () => {
+async function updateMemoryStats() {
   try {
     const stats = await perfCache.getStats()
     const memoryEngine = stats.engines.memory
@@ -445,7 +353,8 @@ const updateMemoryStats = async () => {
         oldestItem: null, // 简化显示
       }
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Failed to update memory stats:', err)
   }
 }
@@ -464,6 +373,144 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<template>
+  <div class="demo-card">
+    <h3>📊 性能监控演示</h3>
+    <p>实时监控缓存性能和使用情况</p>
+
+    <div class="demo-section">
+      <h4>缓存统计</h4>
+      <button class="btn" @click="refreshStats">
+        刷新统计
+      </button>
+      <button class="btn secondary" @click="toggleAutoRefresh">
+        {{ autoRefresh ? '停止' : '开始' }}自动刷新
+      </button>
+
+      <div v-if="formattedStats" class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ formattedStats.totalItems }}
+          </div>
+          <div class="stat-label">
+            总缓存项
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ formattedStats.totalSizeFormatted }}
+          </div>
+          <div class="stat-label">
+            总大小
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ formattedStats.hitRatePercentage }}%
+          </div>
+          <div class="stat-label">
+            命中率
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ formattedStats.expiredItems }}
+          </div>
+          <div class="stat-label">
+            过期项
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>引擎使用情况</h4>
+      <div v-if="engineUsage.length > 0" class="engine-stats">
+        <div
+          v-for="engine in engineUsage"
+          :key="engine.engine"
+          class="engine-stat"
+        >
+          <div class="engine-header">
+            <span class="engine-name">{{ engine.engine }}</span>
+            <span
+              class="engine-status"
+              :class="{ available: engine.available }"
+            >
+              {{ engine.available ? '可用' : '不可用' }}
+            </span>
+          </div>
+          <div class="engine-details">
+            <span>项目数: {{ engine.itemCount }}</span>
+            <span>大小: {{ engine.sizeFormatted }}</span>
+            <span>使用率: {{ engine.usage }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>性能测试</h4>
+      <button class="btn" @click="runPerformanceTest">
+        运行性能测试
+      </button>
+      <button class="btn" @click="runBatchTest">
+        批量操作测试
+      </button>
+
+      <div v-if="performanceResults.length > 0" class="performance-results">
+        <div
+          v-for="result in performanceResults"
+          :key="result.id"
+          class="performance-result"
+        >
+          <div class="result-title">
+            {{ result.name }}
+          </div>
+          <div class="result-metrics">
+            <span>耗时: {{ result.duration }}ms</span>
+            <span>操作数: {{ result.operations }}</span>
+            <span>平均: {{ result.average }}ms/op</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>内存管理</h4>
+      <button class="btn" @click="fillMemoryCache">
+        填充内存缓存
+      </button>
+      <button class="btn secondary" @click="triggerCleanup">
+        触发清理
+      </button>
+      <button class="btn danger" @click="clearMemoryCache">
+        清空内存缓存
+      </button>
+
+      <div v-if="memoryStats" class="code">
+        <div><strong>内存统计:</strong></div>
+        <div>总项目: {{ memoryStats.totalItems }}</div>
+        <div>总大小: {{ memoryStats.totalSizeFormatted }}</div>
+        <div>过期项: {{ memoryStats.expiredItems }}</div>
+        <div v-if="memoryStats.oldestItem">
+          最旧项: {{ memoryStats.oldestItem.key }} ({{
+            Math.round(memoryStats.oldestItem.age / 1000)
+          }}秒前)
+        </div>
+      </div>
+    </div>
+
+    <div v-if="loading" class="status info">
+      处理中...
+    </div>
+
+    <div v-if="error" class="status error">
+      错误: {{ error.message }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .engine-stats {

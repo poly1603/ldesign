@@ -22,7 +22,10 @@ const colorScales = computed(() => {
     return {}
 
   const scales = generatedTheme[currentMode.value].scales
-  const result: Record<string, { colors: string[], indices: Record<string, string> }> = {}
+  const result: Record<
+    string,
+    { colors: string[], indices: Record<string, string> }
+  > = {}
 
   // 转换色阶数据格式
   for (const [category, scale] of Object.entries(scales)) {
@@ -109,7 +112,9 @@ async function copyColor(color: string) {
             @mouseleave="hoveredColor = null"
           >
             <span class="scale-index">{{ index + 1 }}</span>
-            <span v-if="hoveredColor === color" class="color-value">{{ color }}</span>
+            <span v-if="hoveredColor === color" class="color-value">{{
+              color
+            }}</span>
           </div>
         </div>
       </div>

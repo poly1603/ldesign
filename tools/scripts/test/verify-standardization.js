@@ -141,7 +141,10 @@ function verifyPackage(packageName) {
   if (fs.existsSync(rollupConfigPath)) {
     console.log('🏗️  检查 rollup.config.js:')
     const rollupConfig = fs.readFileSync(rollupConfigPath, 'utf-8')
-    if (rollupConfig.includes('createRollupConfig') && rollupConfig.includes('../../tools/build/rollup.config.base.js')) {
+    if (
+      rollupConfig.includes('createRollupConfig')
+      && rollupConfig.includes('../../tools/build/rollup.config.base.js')
+    ) {
       console.log('  ✅ 使用统一构建配置')
     }
     else {
@@ -156,7 +159,10 @@ function verifyPackage(packageName) {
   if (fs.existsSync(vitestConfigPath)) {
     console.log('🧪 检查 vitest.config.ts:')
     const vitestConfig = fs.readFileSync(vitestConfigPath, 'utf-8')
-    if (vitestConfig.includes('createVitestConfig') && vitestConfig.includes('../../tools/test/vitest.config.base')) {
+    if (
+      vitestConfig.includes('createVitestConfig')
+      && vitestConfig.includes('../../tools/test/vitest.config.base')
+    ) {
       console.log('  ✅ 使用统一测试配置')
     }
     else {
@@ -171,7 +177,10 @@ function verifyPackage(packageName) {
   if (fs.existsSync(playwrightConfigPath)) {
     console.log('🎭 检查 playwright.config.ts:')
     const playwrightConfig = fs.readFileSync(playwrightConfigPath, 'utf-8')
-    if (playwrightConfig.includes('createPlaywrightConfig') && playwrightConfig.includes('../../tools/test/playwright.config.base')) {
+    if (
+      playwrightConfig.includes('createPlaywrightConfig')
+      && playwrightConfig.includes('../../tools/test/playwright.config.base')
+    ) {
       console.log('  ✅ 使用统一E2E配置')
     }
     else {
@@ -202,7 +211,10 @@ function verifyAllPackages() {
   const packagesDir = path.resolve(__dirname, '../../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
-    return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
+    return (
+      fs.statSync(packagePath).isDirectory()
+      && fs.existsSync(path.join(packagePath, 'package.json'))
+    )
   })
 
   let allPackagesValid = true
@@ -233,7 +245,11 @@ function verifyAllPackages() {
   for (const [packageName, result] of Object.entries(results)) {
     const status = result.valid ? '✅ 通过' : '❌ 失败'
     const issueCount = result.issues ? result.issues.length : 0
-    console.log(`${packageName.padEnd(12)} ${status} ${issueCount > 0 ? `(${issueCount} 问题)` : ''}`)
+    console.log(
+      `${packageName.padEnd(12)} ${status} ${
+        issueCount > 0 ? `(${issueCount} 问题)` : ''
+      }`,
+    )
 
     if (result.valid)
       validCount++

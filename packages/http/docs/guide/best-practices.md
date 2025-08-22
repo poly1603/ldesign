@@ -16,8 +16,8 @@ export const http = createHttpClient({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 
 // 添加全局拦截器
@@ -30,7 +30,7 @@ http.interceptors.request.use((config) => {
 })
 
 http.interceptors.response.use(
-  (response) => response,
+  response => response,
   (error) => {
     if (error.response?.status === 401) {
       // 处理认证失败
@@ -79,7 +79,7 @@ export const userService = {
 
   async deleteUser(id: number): Promise<void> {
     await http.delete(`/users/${id}`)
-  }
+  },
 }
 ```
 
@@ -124,7 +124,7 @@ const response = await http.get<ApiResponse<User[]>>('/users')
 // response.data 的类型是 ApiResponse<User[]>
 
 // 避免使用 any
-const response = await http.get('/users') as any // ❌ 不推荐
+const response = (await http.get('/users')) as any // ❌ 不推荐
 ```
 
 ## 🔧 拦截器使用
@@ -164,7 +164,7 @@ http.interceptors.response.use((response) => {
   if (response.data && typeof response.data === 'object' && 'data' in response.data) {
     return {
       ...response,
-      data: response.data.data
+      data: response.data.data,
     }
   }
   return response
@@ -172,12 +172,12 @@ http.interceptors.response.use((response) => {
 
 // 错误处理拦截器
 http.interceptors.response.use(
-  (response) => response,
+  response => response,
   (error) => {
     // 统一错误处理
     if (error.response) {
       const { status, data } = error.response
-      
+
       switch (status) {
         case 401:
           handleAuthError()
@@ -191,12 +191,14 @@ http.interceptors.response.use(
         default:
           handleGenericError(data.message || error.message)
       }
-    } else if (error.isNetworkError) {
+    }
+    else if (error.isNetworkError) {
       handleNetworkError()
-    } else if (error.isTimeoutError) {
+    }
+    else if (error.isTimeoutError) {
       handleTimeoutError()
     }
-    
+
     throw error
   }
 )
@@ -212,16 +214,16 @@ const staticDataHttp = createHttpClient({
   baseURL: '/api',
   cache: {
     enabled: true,
-    ttl: 600000 // 10分钟
-  }
+    ttl: 600000, // 10分钟
+  },
 })
 
 // 为实时数据禁用缓存
 const realtimeHttp = createHttpClient({
   baseURL: '/api',
   cache: {
-    enabled: false
-  }
+    enabled: false,
+  },
 })
 ```
 
@@ -235,7 +237,7 @@ const http = createHttpClient({
       // 自定义缓存键生成
       const { method, url, params, data } = config
       const key = `${method}:${url}`
-      
+
       if (params) {
         const sortedParams = Object.keys(params)
           .sort()
@@ -243,10 +245,10 @@ const http = createHttpClient({
           .join('&')
         return `${key}?${sortedParams}`
       }
-      
+
       return key
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -257,16 +259,16 @@ const http = createHttpClient({
 ```typescript
 // 全局错误处理（拦截器层）
 http.interceptors.response.use(
-  (response) => response,
+  response => response,
   (error) => {
     // 记录错误日志
     console.error('HTTP Error:', error)
-    
+
     // 显示全局错误提示
     if (error.isNetworkError) {
       showNotification('网络连接失败，请检查网络设置', 'error')
     }
-    
+
     throw error
   }
 )
@@ -275,7 +277,8 @@ http.interceptors.response.use(
 export async function getUserWithErrorHandling(id: number): Promise<User | null> {
   try {
     return await userService.getUser(id)
-  } catch (error) {
+  }
+  catch (error) {
     // 业务特定的错误处理
     if (error.response?.status === 404) {
       console.warn(`用户 ${id} 不存在`)
@@ -286,16 +289,12 @@ export async function getUserWithErrorHandling(id: number): Promise<User | null>
 }
 
 // 组件层错误处理
-const { data, error } = useQuery(
-  http,
-  () => getUserWithErrorHandling(userId.value),
-  {
-    onError: (error) => {
-      // 组件特定的错误处理
-      showErrorMessage(`获取用户信息失败: ${error.message}`)
-    }
-  }
-)
+const { data, error } = useQuery(http, () => getUserWithErrorHandling(userId.value), {
+  onError: (error) => {
+    // 组件特定的错误处理
+    showErrorMessage(`获取用户信息失败: ${error.message}`)
+  },
+})
 ```
 
 ### 2. 重试策略
@@ -304,13 +303,12 @@ const { data, error } = useQuery(
 const http = createHttpClient({
   retry: {
     retries: 3,
-    retryDelay: (retryCount) => Math.pow(2, retryCount) * 1000, // 指数退避
+    retryDelay: retryCount => 2 ** retryCount * 1000, // 指数退避
     retryCondition: (error) => {
       // 只重试网络错误和 5xx 错误
-      return error.isNetworkError || 
-             (error.response?.status >= 500 && error.response?.status < 600)
-    }
-  }
+      return error.isNetworkError || (error.response?.status >= 500 && error.response?.status < 600)
+    },
+  },
 })
 ```
 
@@ -323,11 +321,12 @@ const http = createHttpClient({
 ```typescript
 // composables/useUsers.ts
 export function useUsers() {
-  const { data: users, loading, error, refresh } = useQuery(
-    http,
-    () => userService.getUsers(),
-    { immediate: true }
-  )
+  const {
+    data: users,
+    loading,
+    error,
+    refresh,
+  } = useQuery(http, () => userService.getUsers(), { immediate: true })
 
   const { mutate: createUser, loading: creating } = useMutation(
     http,
@@ -336,7 +335,7 @@ export function useUsers() {
       onSuccess: () => {
         refresh() // 刷新用户列表
         showNotification('用户创建成功', 'success')
-      }
+      },
     }
   )
 
@@ -346,7 +345,7 @@ export function useUsers() {
     error,
     refresh,
     createUser,
-    creating
+    creating,
   }
 }
 ```
@@ -356,14 +355,10 @@ export function useUsers() {
 ```typescript
 const userId = ref<number | null>(null)
 
-const { data: user } = useQuery(
-  http,
-  () => userService.getUser(userId.value!),
-  {
-    immediate: false,
-    enabled: computed(() => userId.value !== null)
-  }
-)
+const { data: user } = useQuery(http, () => userService.getUser(userId.value!), {
+  immediate: false,
+  enabled: computed(() => userId.value !== null),
+})
 
 // 当 userId 变化时自动重新请求
 watch(userId, (newId) => {
@@ -381,8 +376,8 @@ watch(userId, (newId) => {
 const http = createHttpClient({
   concurrency: {
     maxConcurrent: 6, // 限制并发数
-    deduplication: true // 启用请求去重
-  }
+    deduplication: true, // 启用请求去重
+  },
 })
 ```
 
@@ -393,7 +388,7 @@ const http = createHttpClient({
 export function preloadCriticalData() {
   // 预加载用户信息
   userService.getUsers()
-  
+
   // 预加载配置信息
   configService.getConfig()
 }
@@ -431,8 +426,8 @@ await http.get(`/users?token=${sensitiveToken}`)
 // ✅ 安全
 await http.get('/users', {
   headers: {
-    Authorization: `Bearer ${sensitiveToken}`
-  }
+    Authorization: `Bearer ${sensitiveToken}`,
+  },
 })
 ```
 

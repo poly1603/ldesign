@@ -15,8 +15,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@ldesign/i18n': resolve(__dirname, '../../src/index.ts'),
-      '@ldesign/i18n/vue': resolve(__dirname, '../../src/vue/index.ts'),
     },
   },
   build: {

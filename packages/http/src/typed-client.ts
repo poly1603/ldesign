@@ -12,19 +12,25 @@ import type {
 /**
  * 类型安全的 HTTP 客户端包装器
  */
-export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpClient<TBaseResponse> {
-  constructor(private client: HttpClient) {}
+export class TypedHttpClientWrapper<TBaseResponse = any>
+implements TypedHttpClient<TBaseResponse> {
+  constructor(private client: HttpClient) { }
 
   // 代理所有基础方法
   get interceptors() {
     return this.client.interceptors
   }
 
-  async request<T = TBaseResponse>(config: RequestConfig): Promise<ResponseData<T>> {
+  async request<T = TBaseResponse>(
+    config: RequestConfig,
+  ): Promise<ResponseData<T>> {
     return this.client.request<T>(config)
   }
 
-  async get<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async get<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig,
+  ): Promise<ResponseData<T>> {
     return this.client.get<T>(url, config)
   }
 
@@ -44,7 +50,10 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
     return this.client.put<T>(url, data, config)
   }
 
-  async delete<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async delete<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig,
+  ): Promise<ResponseData<T>> {
     return this.client.delete<T>(url, config)
   }
 
@@ -56,11 +65,17 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
     return this.client.patch<T>(url, data, config)
   }
 
-  async head<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async head<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig,
+  ): Promise<ResponseData<T>> {
     return this.client.head<T>(url, config)
   }
 
-  async options<T = TBaseResponse>(url: string, config?: RequestConfig): Promise<ResponseData<T>> {
+  async options<T = TBaseResponse>(
+    url: string,
+    config?: RequestConfig,
+  ): Promise<ResponseData<T>> {
     return this.client.options<T>(url, config)
   }
 
@@ -129,11 +144,9 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
   /**
    * 批量请求
    */
-  async batch<T extends Record<string, any>>(
-    requests: {
-      [K in keyof T]: () => Promise<ResponseData<T[K]>>
-    },
-  ): Promise<{ [K in keyof T]: ResponseData<T[K]> }> {
+  async batch<T extends Record<string, any>>(requests: {
+    [K in keyof T]: () => Promise<ResponseData<T[K]>>
+  }): Promise<{ [K in keyof T]: ResponseData<T[K]> }> {
     const keys = Object.keys(requests) as Array<keyof T>
     const promises = keys.map(key => requests[key]())
 
@@ -154,7 +167,8 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
     condition: boolean | (() => boolean),
     config: RequestConfig,
   ): Promise<ResponseData<T> | null> {
-    const shouldExecute = typeof condition === 'function' ? condition() : condition
+    const shouldExecute
+      = typeof condition === 'function' ? condition() : condition
 
     if (!shouldExecute) {
       return null
@@ -171,7 +185,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
     maxAttempts = 5,
     delay = 1000,
   ): Promise<ResponseData<T>> {
-    let lastError: Error
+    let lastError: Error | undefined
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -188,7 +202,7 @@ export class TypedHttpClientWrapper<TBaseResponse = any> implements TypedHttpCli
       }
     }
 
-    throw lastError!
+    throw lastError || new Error('Retry failed')
   }
 
   /**
@@ -267,6 +281,9 @@ export class ApiEndpointBuilder<TResponse = any, TRequest = any> {
 /**
  * 创建 API 端点构建器
  */
-export function createEndpoint<TResponse = any, TRequest = any>(): ApiEndpointBuilder<TResponse, TRequest> {
+export function createEndpoint<
+  TResponse = any,
+  TRequest = any,
+>(): ApiEndpointBuilder<TResponse, TRequest> {
   return new ApiEndpointBuilder<TResponse, TRequest>()
 }

@@ -103,7 +103,9 @@ describe('dES 加密算法', () => {
     const encryptor = new DESEncryptor()
 
     it('应该处理无效的加密数据', () => {
-      const result = encryptor.decrypt('invalid_data', testKey, { iv: '1234567890abcdef' })
+      const result = encryptor.decrypt('invalid_data', testKey, {
+        iv: '1234567890abcdef',
+      })
       expect(result.success).toBe(false)
     })
   })

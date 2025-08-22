@@ -1,0 +1,85 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "jsx": "preserve",
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
+    /* Path mapping */
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/types/*": ["src/types/*"],
+      "@/core/*": ["src/core/*"],
+      "@/components/*": ["src/components/*"],
+      "@/plugins/*": ["src/plugins/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/workers/*": ["src/workers/*"],
+      "@/styles/*": ["styles/*"],
+      "@/assets/*": ["assets/*"],
+      "@ldesign/pdf": ["../../src/index.ts"]
+    },
+    "resolveJsonModule": true,
+
+    /* Type definitions */
+    "types": [
+      "node",
+      "vite/client",
+      "vitest/globals"
+    ],
+    "allowImportingTsExtensions": true,
+
+    /* Linting */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "importHelpers": true,
+    "noEmit": true,
+
+    /* Bundler mode */
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": false,
+    "sourceMap": true,
+    /* Advanced */
+    "skipLibCheck": true
+  },
+  "references": [
+    {
+      "path": "../../tsconfig.json"
+    }
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "**/*.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "test-results",
+    "playwright-report"
+  ]
+}

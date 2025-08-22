@@ -1,11 +1,10 @@
 /**
- * 缓存工具类
+ * 缓存工具模块
+ *
+ * 提供 LRU 缓存和模板缓存功能
  */
 
-/**
- * 缓存项接口
- */
-interface CacheItem<T> {
+export interface CacheItem<T = any> {
   value: T
   timestamp: number
   ttl?: number
@@ -17,56 +16,59 @@ interface CacheItem<T> {
 export class LRUCache<T = any> {
   private cache = new Map<string, CacheItem<T>>()
   private maxSize: number
+  private defaultTTL?: number
 
-  constructor(maxSize = 100) {
+  constructor(maxSize = 100, defaultTTL?: number) {
     this.maxSize = maxSize
+    this.defaultTTL = defaultTTL
   }
 
   get(key: string): T | undefined {
     const item = this.cache.get(key)
-    if (!item) {
+    if (!item)
       return undefined
-    }
 
     // 检查是否过期
-    if (item.ttl && Date.now() - item.timestamp > item.ttl) {
+    if (this.isExpired(item)) {
       this.cache.delete(key)
       return undefined
     }
 
-    // 重新设置以更新访问顺序
+    // 移动到最前面（LRU 策略）
     this.cache.delete(key)
     this.cache.set(key, item)
+
     return item.value
   }
 
   set(key: string, value: T, ttl?: number): void {
-    const item: CacheItem<T> = {
-      value,
-      timestamp: Date.now(),
-      ttl,
-    }
-
+    // 如果已存在，先删除
     if (this.cache.has(key)) {
       this.cache.delete(key)
-    } else if (this.cache.size >= this.maxSize) {
-      // 删除最旧的项目
+    }
+
+    // 如果超过最大容量，删除最旧的项
+    if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
-      if (firstKey !== undefined) {
+      if (firstKey) {
         this.cache.delete(firstKey)
       }
     }
-    this.cache.set(key, item)
+
+    // 添加新项
+    this.cache.set(key, {
+      value,
+      timestamp: Date.now(),
+      ttl: ttl || this.defaultTTL,
+    })
   }
 
   has(key: string): boolean {
     const item = this.cache.get(key)
-    if (!item) {
+    if (!item)
       return false
-    }
 
-    // 检查是否过期
-    if (item.ttl && Date.now() - item.timestamp > item.ttl) {
+    if (this.isExpired(item)) {
       this.cache.delete(key)
       return false
     }
@@ -86,153 +88,108 @@ export class LRUCache<T = any> {
     return this.cache.size
   }
 
-  keys(): IterableIterator<string> {
-    return this.cache.keys()
+  keys(): string[] {
+    return Array.from(this.cache.keys())
   }
 
-  values(): IterableIterator<T> {
-    const values: T[] = []
-    for (const [key, item] of this.cache.entries()) {
-      // 检查是否过期
-      if (item.ttl && Date.now() - item.timestamp > item.ttl) {
-        this.cache.delete(key)
-        continue
-      }
-      values.push(item.value)
-    }
-    return values[Symbol.iterator]()
-  }
-
-  entries(): IterableIterator<[string, T]> {
-    const entries: [string, T][] = []
-    for (const [key, item] of this.cache.entries()) {
-      // 检查是否过期
-      if (item.ttl && Date.now() - item.timestamp > item.ttl) {
-        this.cache.delete(key)
-        continue
-      }
-      entries.push([key, item.value])
-    }
-    return entries[Symbol.iterator]()
+  private isExpired(item: CacheItem<T>): boolean {
+    if (!item.ttl)
+      return false
+    return Date.now() - item.timestamp > item.ttl
   }
 }
 
 /**
  * 模板缓存类
  */
-export class TemplateCache extends LRUCache<any> {
+export class TemplateCache {
+  private cache: LRUCache<any>
   private stats = {
     hits: 0,
     misses: 0,
-    sets: 0,
-    deletes: 0,
   }
 
-  constructor(maxSize = 50) {
-    super(maxSize)
+  constructor(maxSize = 50, defaultTTL = 5 * 60 * 1000) {
+    // 默认 5 分钟 TTL
+    this.cache = new LRUCache(maxSize, defaultTTL)
   }
 
-  get(key: string): any {
-    const value = super.get(key)
-    if (value !== undefined) {
-      this.stats.hits++
-    } else {
-      this.stats.misses++
-    }
-    return value
-  }
-
-  set(key: string, value: any, ttl?: number): void {
-    super.set(key, value, ttl)
-    this.stats.sets++
-  }
-
-  delete(key: string): boolean {
-    const result = super.delete(key)
+  get(key: string) {
+    const result = this.cache.get(key)
     if (result) {
-      this.stats.deletes++
+      this.stats.hits++
+    }
+    else {
+      this.stats.misses++
     }
     return result
   }
 
+  set(key: string, template: any, ttl?: number) {
+    this.cache.set(key, template, ttl)
+  }
+
+  has(key: string): boolean {
+    return this.cache.has(key)
+  }
+
+  delete(key: string): boolean {
+    return this.cache.delete(key)
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+
+  get size(): number {
+    return this.cache.size
+  }
+
+  keys(): string[] {
+    return this.cache.keys()
+  }
+
+  // 生成缓存键
+  generateKey(category: string, device: string, template: string): string {
+    return `${category}:${device}:${template}`
+  }
+
+  // 缓存模板
+  cacheTemplate(category: string, device: string, template: string, component: any, ttl?: number) {
+    const key = this.generateKey(category, device, template)
+    this.set(key, component, ttl)
+  }
+
+  // 获取缓存的模板
+  getCachedTemplate(category: string, device: string, template: string) {
+    const key = this.generateKey(category, device, template)
+    return this.get(key)
+  }
+
+  // 检查模板是否已缓存
+  hasTemplate(category: string, device: string, template: string): boolean {
+    const key = this.generateKey(category, device, template)
+    return this.has(key)
+  }
+
+  // 删除模板缓存
+  deleteTemplate(category: string, device: string, template: string): boolean {
+    const key = this.generateKey(category, device, template)
+    return this.delete(key)
+  }
+
+  // 获取缓存统计
   getStats() {
     return {
       ...this.stats,
-      size: this.size,
+      size: this.cache.size,
       hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) || 0,
     }
   }
 
-  resetStats(): void {
-    this.stats = {
-      hits: 0,
-      misses: 0,
-      sets: 0,
-      deletes: 0,
-    }
-  }
-
-  // 模板特定方法
-  setTemplate(category: string, device: string, template: string, component: any): void {
-    const key = `${category}:${device}:${template}`
-    this.set(key, {
-      component,
-      timestamp: Date.now(),
-      category,
-      device,
-      template,
-    })
-  }
-
-  getTemplate(category: string, device: string, template: string): any {
-    const key = `${category}:${device}:${template}`
-    return this.get(key)
-  }
-
-  hasTemplate(category: string, device: string, template: string): boolean {
-    const key = `${category}:${device}:${template}`
-    return this.has(key)
-  }
-
-  deleteTemplate(category: string, device: string, template: string): boolean {
-    const key = `${category}:${device}:${template}`
-    return this.delete(key)
-  }
-
-  getTemplatesByCategory(category: string): any[] {
-    const results: any[] = []
-    for (const [key, value] of this.entries()) {
-      if (key.startsWith(`${category}:`)) {
-        results.push(value)
-      }
-    }
-    return results
-  }
-
-  getTemplatesByDevice(device: string): any[] {
-    const results: any[] = []
-    for (const [key, value] of this.entries()) {
-      const parts = key.split(':')
-      if (parts[1] === device) {
-        results.push(value)
-      }
-    }
-    return results
-  }
-
-  cleanup(maxAge = 3600000): number {
-    const now = Date.now()
-    let cleaned = 0
-
-    for (const [key, value] of this.entries()) {
-      if (value && typeof value === 'object' && value.timestamp) {
-        if (now - value.timestamp > maxAge) {
-          this.delete(key)
-          cleaned++
-        }
-      }
-    }
-
-    return cleaned
+  // 重置统计
+  resetStats() {
+    this.stats.hits = 0
+    this.stats.misses = 0
   }
 }

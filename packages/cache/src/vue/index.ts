@@ -1,11 +1,11 @@
-// Vue 3 集成导出
-export { useCache } from './use-cache'
+// 类型导出
+export type { CacheOptions, UseCacheOptions } from '../types'
 export {
   CacheProvider,
-  useCacheManager,
   provideCacheManager,
+  useCacheManager,
 } from './cache-provider'
-export { useCacheStats } from './use-cache-stats'
+// Vue 3 集成导出
+export { useCache } from './use-cache'
 
-// 类型导出
-export type { UseCacheOptions, CacheOptions } from '../types'
+export { useCacheStats } from './use-cache-stats'

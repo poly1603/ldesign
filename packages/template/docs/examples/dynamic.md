@@ -12,14 +12,14 @@ const themes = [
   { name: 'classic', label: '经典主题' },
   { name: 'modern', label: '现代主题' },
   { name: 'dark', label: '暗黑主题' },
-  { name: 'minimal', label: '极简主题' }
+  { name: 'minimal', label: '极简主题' },
 ]
 
 const currentTheme = ref('classic')
 
 const layoutProps = ref({
   title: '动态主题切换',
-  content: '这是一个动态切换主题的示例'
+  content: '这是一个动态切换主题的示例',
 })
 
 function switchTheme(themeName: string) {
@@ -118,8 +118,8 @@ const layoutProps = computed(() => ({
   items: [
     { id: 1, title: '项目 1', content: '内容 1' },
     { id: 2, title: '项目 2', content: '内容 2' },
-    { id: 3, title: '项目 3', content: '内容 3' }
-  ]
+    { id: 3, title: '项目 3', content: '内容 3' },
+  ],
 }))
 
 function onLayoutChange() {
@@ -132,18 +132,10 @@ function onLayoutChange() {
     <div class="layout-controls">
       <h2>选择布局</h2>
       <select v-model="currentLayout" @change="onLayoutChange">
-        <option value="sidebar">
-          侧边栏布局
-        </option>
-        <option value="topbar">
-          顶部导航布局
-        </option>
-        <option value="grid">
-          网格布局
-        </option>
-        <option value="card">
-          卡片布局
-        </option>
+        <option value="sidebar">侧边栏布局</option>
+        <option value="topbar">顶部导航布局</option>
+        <option value="grid">网格布局</option>
+        <option value="card">卡片布局</option>
       </select>
     </div>
 
@@ -193,7 +185,7 @@ import { computed, ref } from 'vue'
 const roles = [
   { name: 'admin', label: '管理员' },
   { name: 'user', label: '普通用户' },
-  { name: 'guest', label: '访客' }
+  { name: 'guest', label: '访客' },
 ]
 
 const currentRole = ref('user')
@@ -203,7 +195,7 @@ const dashboardTemplate = computed(() => {
   const templateMap = {
     admin: 'admin-dashboard',
     user: 'user-dashboard',
-    guest: 'guest-dashboard'
+    guest: 'guest-dashboard',
   }
   return templateMap[currentRole.value] || 'guest-dashboard'
 })
@@ -211,7 +203,7 @@ const dashboardTemplate = computed(() => {
 const dashboardProps = computed(() => ({
   userRole: currentRole.value,
   userName: `${currentRole.value}用户`,
-  permissions: getPermissions(currentRole.value)
+  permissions: getPermissions(currentRole.value),
 }))
 
 function switchRole(role: string) {
@@ -223,7 +215,7 @@ function getPermissions(role: string) {
   const permissionMap = {
     admin: ['read', 'write', 'delete', 'manage'],
     user: ['read', 'write'],
-    guest: ['read']
+    guest: ['read'],
   }
   return permissionMap[role] || []
 }
@@ -293,19 +285,13 @@ function getPermissions(role: string) {
 import { useTemplate } from '@ldesign/template'
 import { computed, ref } from 'vue'
 
-const {
-  currentTemplate,
-  loading,
-  error,
-  render,
-  preload,
-  clearCache
-} = useTemplate()
+const { currentTemplate, loading, error, render, preload, clearCache } =
+  useTemplate()
 
 const availableTemplates = [
   { category: 'greeting', template: 'hello' },
   { category: 'dashboard', template: 'admin' },
-  { category: 'layout', template: 'sidebar' }
+  { category: 'layout', template: 'sidebar' },
 ]
 
 const currentTemplateName = ref('')
@@ -314,13 +300,12 @@ const fromCache = ref(false)
 
 const templateProps = computed(() => ({
   title: `动态加载的${currentTemplateName.value}模板`,
-  message: '这是通过 Composable 动态加载的模板'
+  message: '这是通过 Composable 动态加载的模板',
 }))
 
 async function loadRandomTemplate() {
-  const randomTemplate = availableTemplates[
-    Math.floor(Math.random() * availableTemplates.length)
-  ]
+  const randomTemplate =
+    availableTemplates[Math.floor(Math.random() * availableTemplates.length)]
 
   const startTime = Date.now()
 
@@ -328,29 +313,29 @@ async function loadRandomTemplate() {
     const result = await render({
       category: randomTemplate.category,
       device: 'desktop',
-      template: randomTemplate.template
+      template: randomTemplate.template,
     })
 
     loadTime.value = Date.now() - startTime
     fromCache.value = result?.fromCache || false
     currentTemplateName.value = randomTemplate.template
-  }
-  catch (err) {
+  } catch (err) {
     console.error('加载模板失败:', err)
   }
 }
 
 async function preloadTemplates() {
   try {
-    await preload(availableTemplates.map(t => ({
-      category: t.category,
-      device: 'desktop',
-      template: t.template
-    })))
+    await preload(
+      availableTemplates.map(t => ({
+        category: t.category,
+        device: 'desktop',
+        template: t.template,
+      }))
+    )
 
     console.log('模板预加载完成')
-  }
-  catch (err) {
+  } catch (err) {
     console.error('预加载失败:', err)
   }
 }
@@ -368,15 +353,9 @@ function retryLoad() {
 <template>
   <div class="app">
     <div class="controls">
-      <button @click="loadRandomTemplate">
-        加载随机模板
-      </button>
-      <button @click="preloadTemplates">
-        预加载模板
-      </button>
-      <button @click="clearCurrentTemplate">
-        清空模板
-      </button>
+      <button @click="loadRandomTemplate">加载随机模板</button>
+      <button @click="preloadTemplates">预加载模板</button>
+      <button @click="clearCurrentTemplate">清空模板</button>
     </div>
 
     <div v-if="currentTemplate" class="template-info">
@@ -386,15 +365,11 @@ function retryLoad() {
     </div>
 
     <div class="template-display">
-      <div v-if="loading" class="loading">
-        正在加载模板...
-      </div>
+      <div v-if="loading" class="loading">正在加载模板...</div>
 
       <div v-else-if="error" class="error">
         加载失败: {{ error.message }}
-        <button @click="retryLoad">
-          重试
-        </button>
+        <button @click="retryLoad">重试</button>
       </div>
 
       <component
@@ -403,9 +378,7 @@ function retryLoad() {
         v-bind="templateProps"
       />
 
-      <div v-else class="empty">
-        点击按钮加载模板
-      </div>
+      <div v-else class="empty">点击按钮加载模板</div>
     </div>
   </div>
 </template>

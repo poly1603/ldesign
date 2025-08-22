@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { MemoryEngine } from '../../src/engines/memory-engine'
 
-describe('MemoryEngine', () => {
+describe('memoryEngine', () => {
   let engine: MemoryEngine
 
   beforeEach(() => {
@@ -81,7 +81,7 @@ describe('MemoryEngine', () => {
     })
   })
 
-  describe('TTL 功能', () => {
+  describe('tTL 功能', () => {
     it('应该支持过期时间', async () => {
       const key = 'test-ttl'
       const value = 'expires-soon'
@@ -136,14 +136,15 @@ describe('MemoryEngine', () => {
         // 尝试添加大数据，应该触发清理
         await smallEngine.setItem(
           'key3',
-          'this-is-a-much-larger-value-that-should-trigger-cleanup-of-old-items'
+          'this-is-a-much-larger-value-that-should-trigger-cleanup-of-old-items',
         )
 
         // 验证有项被清理（总数应该减少）
         const finalKeys = await smallEngine.keys()
         expect(finalKeys.length).toBeLessThan(3) // 不是所有3个项都能存储
         expect(finalKeys).toContain('key3') // 新项应该存在
-      } finally {
+      }
+      finally {
         await smallEngine.destroy()
       }
     })
@@ -169,10 +170,10 @@ describe('MemoryEngine', () => {
 
       // 测试特殊字符键名
       await expect(
-        engine.setItem('key with spaces', 'value')
+        engine.setItem('key with spaces', 'value'),
       ).resolves.not.toThrow()
       await expect(
-        engine.setItem('key/with/slashes', 'value')
+        engine.setItem('key/with/slashes', 'value'),
       ).resolves.not.toThrow()
     })
 
@@ -180,7 +181,7 @@ describe('MemoryEngine', () => {
       const largeValue = 'x'.repeat(10000) // 10KB 数据
 
       await expect(
-        engine.setItem('large-key', largeValue)
+        engine.setItem('large-key', largeValue),
       ).resolves.not.toThrow()
 
       const result = await engine.getItem('large-key')

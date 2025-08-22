@@ -19,10 +19,10 @@ export const useCounter = createStore('counter', () => {
   const step = ref(1)
 
   // 动作
-  const increment = () => count.value += step.value
-  const decrement = () => count.value -= step.value
-  const reset = () => count.value = 0
-  const setStep = (newStep: number) => step.value = Math.max(1, newStep)
+  const increment = () => (count.value += step.value)
+  const decrement = () => (count.value -= step.value)
+  const reset = () => (count.value = 0)
+  const setStep = (newStep: number) => (step.value = Math.max(1, newStep))
 
   // 计算属性
   const displayText = computed(() => `Count: ${count.value}`)
@@ -32,7 +32,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count, step },
     actions: { increment, decrement, reset, setStep },
-    getters: { displayText, isPositive, isNegative }
+    getters: { displayText, isPositive, isNegative },
   }
 })
 ```
@@ -50,34 +50,19 @@ const counter = useCounter()
   <div class="counter">
     <h2>{{ counter.getters.displayText }}</h2>
     <p>当前计数: {{ counter.state.count }}</p>
-    <p v-if="counter.getters.isPositive" class="positive">
-      正数
-    </p>
-    <p v-if="counter.getters.isNegative" class="negative">
-      负数
-    </p>
+    <p v-if="counter.getters.isPositive" class="positive">正数</p>
+    <p v-if="counter.getters.isNegative" class="negative">负数</p>
 
     <div class="controls">
       <label>
         步长:
-        <input
-          v-model.number="counter.state.step"
-          type="number"
-          min="1"
-          max="10"
-        >
+        <input v-model.number="counter.state.step" type="number" min="1" max="10" />
       </label>
 
       <div class="buttons">
-        <button @click="counter.actions.decrement">
-          -{{ counter.state.step }}
-        </button>
-        <button @click="counter.actions.reset">
-          重置
-        </button>
-        <button @click="counter.actions.increment">
-          +{{ counter.state.step }}
-        </button>
+        <button @click="counter.actions.decrement">-{{ counter.state.step }}</button>
+        <button @click="counter.actions.reset">重置</button>
+        <button @click="counter.actions.increment">+{{ counter.state.step }}</button>
       </div>
     </div>
   </div>
@@ -115,7 +100,7 @@ export const useTodos = createStore('todos', () => {
         text: text.trim(),
         completed: false,
         createdAt: new Date(),
-        priority
+        priority,
       })
     }
   }
@@ -151,7 +136,7 @@ export const useTodos = createStore('todos', () => {
 
   const markAllCompleted = () => {
     const hasIncomplete = todos.value.some(todo => !todo.completed)
-    todos.value.forEach((todo) => {
+    todos.value.forEach(todo => {
       todo.completed = hasIncomplete
     })
   }
@@ -163,19 +148,16 @@ export const useTodos = createStore('todos', () => {
 
     try {
       const response = await fetch('/api/todos')
-      if (!response.ok)
-        throw new Error('获取待办事项失败')
+      if (!response.ok) throw new Error('获取待办事项失败')
 
       const data = await response.json()
       todos.value = data.map((todo: any) => ({
         ...todo,
-        createdAt: new Date(todo.createdAt)
+        createdAt: new Date(todo.createdAt),
       }))
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : '未知错误'
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -188,16 +170,13 @@ export const useTodos = createStore('todos', () => {
       const response = await fetch('/api/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(todos.value)
+        body: JSON.stringify(todos.value),
       })
 
-      if (!response.ok)
-        throw new Error('保存失败')
-    }
-    catch (err) {
+      if (!response.ok) throw new Error('保存失败')
+    } catch (err) {
       error.value = err instanceof Error ? err.message : '保存失败'
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -220,16 +199,14 @@ export const useTodos = createStore('todos', () => {
 
   const todosByPriority = computed(() => {
     return todos.value.reduce((acc, todo) => {
-      if (!acc[todo.priority])
-        acc[todo.priority] = []
+      if (!acc[todo.priority]) acc[todo.priority] = []
       acc[todo.priority].push(todo)
       return acc
     }, {} as Record<Todo['priority'], Todo[]>)
   })
 
   const completionRate = computed(() => {
-    if (totalCount.value === 0)
-      return 0
+    if (totalCount.value === 0) return 0
     return Math.round((completedCount.value / totalCount.value) * 100)
   })
 
@@ -241,7 +218,7 @@ export const useTodos = createStore('todos', () => {
       todos,
       filter,
       loading,
-      error
+      error,
     },
     actions: {
       addTodo,
@@ -252,7 +229,7 @@ export const useTodos = createStore('todos', () => {
       clearCompleted,
       markAllCompleted,
       fetchTodos,
-      saveTodos
+      saveTodos,
     },
     getters: {
       filteredTodos,
@@ -262,8 +239,8 @@ export const useTodos = createStore('todos', () => {
       todosByPriority,
       completionRate,
       hasCompleted,
-      allCompleted
-    }
+      allCompleted,
+    },
   }
 })
 ```
@@ -303,8 +280,7 @@ export const useAuth = createStore('auth', () => {
     token.value = newToken
     if (newToken) {
       localStorage.setItem('auth_token', newToken)
-    }
-    else {
+    } else {
       localStorage.removeItem('auth_token')
     }
   }
@@ -326,7 +302,7 @@ export const useAuth = createStore('auth', () => {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify(credentials),
       })
 
       if (!response.ok) {
@@ -338,13 +314,11 @@ export const useAuth = createStore('auth', () => {
       setToken(data.token)
 
       return data.user
-    }
-    catch (err) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '登录失败'
       setError(errorMessage)
       throw new Error(errorMessage)
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -357,15 +331,13 @@ export const useAuth = createStore('auth', () => {
         await fetch('/api/auth/logout', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token.value}`
-          }
+            Authorization: `Bearer ${token.value}`,
+          },
         })
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.error('登出请求失败:', err)
-    }
-    finally {
+    } finally {
       setUser(null)
       setToken(null)
       clearError()
@@ -381,7 +353,7 @@ export const useAuth = createStore('auth', () => {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(userData),
       })
 
       if (!response.ok) {
@@ -393,13 +365,11 @@ export const useAuth = createStore('auth', () => {
       setToken(data.token)
 
       return data.user
-    }
-    catch (err) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '注册失败'
       setError(errorMessage)
       throw new Error(errorMessage)
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -417,9 +387,9 @@ export const useAuth = createStore('auth', () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token.value}`
+          Authorization: `Bearer ${token.value}`,
         },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       })
 
       if (!response.ok) {
@@ -430,49 +400,43 @@ export const useAuth = createStore('auth', () => {
       setUser({ ...user.value, ...updatedUser })
 
       return updatedUser
-    }
-    catch (err) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '更新失败'
       setError(errorMessage)
       throw new Error(errorMessage)
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
 
   const checkAuth = async () => {
-    if (!token.value)
-      return false
+    if (!token.value) return false
 
     loading.value = true
 
     try {
       const response = await fetch('/api/auth/me', {
         headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+          Authorization: `Bearer ${token.value}`,
+        },
       })
 
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
         return true
-      }
-      else {
+      } else {
         // Token 无效，清除认证信息
         setUser(null)
         setToken(null)
         return false
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.error('检查认证状态失败:', err)
       setUser(null)
       setToken(null)
       return false
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -484,10 +448,11 @@ export const useAuth = createStore('auth', () => {
   const userRole = computed(() => user.value?.role || 'user')
   const isAdmin = computed(() => userRole.value === 'admin')
   const userAvatar = computed(() => {
-    if (user.value?.avatar)
-      return user.value.avatar
+    if (user.value?.avatar) return user.value.avatar
     if (user.value?.name) {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.value.name)}&background=random`
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        user.value.name
+      )}&background=random`
     }
     return '/default-avatar.png'
   })
@@ -499,7 +464,7 @@ export const useAuth = createStore('auth', () => {
       user,
       loading,
       error,
-      token
+      token,
     },
     actions: {
       login,
@@ -510,7 +475,7 @@ export const useAuth = createStore('auth', () => {
       setUser,
       setToken,
       setError,
-      clearError
+      clearError,
     },
     getters: {
       isLoggedIn,
@@ -519,8 +484,8 @@ export const useAuth = createStore('auth', () => {
       userRole,
       isAdmin,
       userAvatar,
-      hasError
-    }
+      hasError,
+    },
   }
 })
 ```
@@ -550,8 +515,7 @@ import { createAsyncAction } from '@ldesign/store'
 // 创建异步操作 Hook
 export const useFetchUser = createAsyncAction(async (userId: number) => {
   const response = await fetch(`/api/users/${userId}`)
-  if (!response.ok)
-    throw new Error('获取用户失败')
+  if (!response.ok) throw new Error('获取用户失败')
   return response.json()
 })
 
@@ -563,8 +527,7 @@ async function handleFetch() {
   try {
     const user = await fetchUser.execute(123)
     console.log('用户数据:', user)
-  }
-  catch (error) {
+  } catch (error) {
     console.error('错误:', fetchUser.error.value)
   }
 }
@@ -584,7 +547,7 @@ import { createPersistedState } from '@ldesign/store'
 export const useSettings = createPersistedState('app-settings', {
   theme: 'light',
   language: 'zh-CN',
-  notifications: true
+  notifications: true,
 })
 
 // 使用
@@ -594,7 +557,7 @@ const settings = useSettings()
 settings.setValue({
   theme: 'dark',
   language: 'en-US',
-  notifications: false
+  notifications: false,
 })
 
 // 手动操作
@@ -645,7 +608,7 @@ export function useUserSession() {
 
     // 组合的动作
     loginAndLoadSettings,
-    logoutAndClearSettings
+    logoutAndClearSettings,
   }
 }
 ```
@@ -672,33 +635,28 @@ export function createListHook<T>(
 
       try {
         items.value = await fetchFn()
-      }
-      catch (err) {
+      } catch (err) {
         error.value = err instanceof Error ? err.message : '获取失败'
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
 
     const createItem = async (itemData: Omit<T, 'id'>) => {
-      if (!createFn)
-        throw new Error('创建功能未实现')
+      if (!createFn) throw new Error('创建功能未实现')
 
       loading.value = true
       try {
         const newItem = await createFn(itemData)
         items.value.push(newItem)
         return newItem
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
 
     const updateItem = async (id: string, updates: Partial<T>) => {
-      if (!updateFn)
-        throw new Error('更新功能未实现')
+      if (!updateFn) throw new Error('更新功能未实现')
 
       loading.value = true
       try {
@@ -708,15 +666,13 @@ export function createListHook<T>(
           items.value[index] = updatedItem
         }
         return updatedItem
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
 
     const deleteItem = async (id: string) => {
-      if (!deleteFn)
-        throw new Error('删除功能未实现')
+      if (!deleteFn) throw new Error('删除功能未实现')
 
       loading.value = true
       try {
@@ -725,8 +681,7 @@ export function createListHook<T>(
         if (index > -1) {
           items.value.splice(index, 1)
         }
-      }
-      finally {
+      } finally {
         loading.value = false
       }
     }
@@ -737,8 +692,8 @@ export function createListHook<T>(
       getters: {
         count: computed(() => items.value.length),
         hasItems: computed(() => items.value.length > 0),
-        hasError: computed(() => error.value !== null)
-      }
+        hasError: computed(() => error.value !== null),
+      },
     }
   })
 }
@@ -759,13 +714,23 @@ export const useProducts = createListHook(
 
 ```typescript
 // ✅ 好的命名
-export const useCounter = createStore('counter', () => { /* ... */ })
-export const useAuth = createStore('auth', () => { /* ... */ })
-export const useTodos = createStore('todos', () => { /* ... */ })
+export const useCounter = createStore('counter', () => {
+  /* ... */
+})
+export const useAuth = createStore('auth', () => {
+  /* ... */
+})
+export const useTodos = createStore('todos', () => {
+  /* ... */
+})
 
 // ❌ 不好的命名
-export const counter = createStore('counter', () => { /* ... */ })
-export const authStore = createStore('auth', () => { /* ... */ })
+export const counter = createStore('counter', () => {
+  /* ... */
+})
+export const authStore = createStore('auth', () => {
+  /* ... */
+})
 ```
 
 ### 2. 状态结构
@@ -773,9 +738,15 @@ export const authStore = createStore('auth', () => { /* ... */ })
 ```typescript
 // ✅ 清晰的状态结构
 return {
-  state: { /* 响应式状态 */ },
-  actions: { /* 动作方法 */ },
-  getters: { /* 计算属性 */ }
+  state: {
+    /* 响应式状态 */
+  },
+  actions: {
+    /* 动作方法 */
+  },
+  getters: {
+    /* 计算属性 */
+  },
 }
 
 // ❌ 混乱的结构
@@ -784,7 +755,7 @@ return {
   increment,
   displayText,
   loading,
-  fetchData
+  fetchData,
 }
 ```
 
@@ -798,12 +769,10 @@ async function fetchData() {
 
   try {
     data.value = await api.getData()
-  }
-  catch (err) {
+  } catch (err) {
     error.value = err instanceof Error ? err.message : '未知错误'
     console.error('获取数据失败:', err)
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }

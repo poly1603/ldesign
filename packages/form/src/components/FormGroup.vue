@@ -61,7 +61,7 @@ const groupState = reactive<GroupState>({
 })
 
 // 初始化字段值
-props.group.fields.forEach(field => {
+props.group.fields.forEach((field) => {
   fieldValues[field.name] = props.modelValue?.[field.name] ?? field.defaultValue
 })
 
@@ -72,7 +72,8 @@ const expanded = computed({
     groupState.expanded = value
     if (value) {
       emit('expand')
-    } else {
+    }
+    else {
       emit('collapse')
     }
   },
@@ -216,20 +217,20 @@ function handleFieldBlur(fieldName: string, event: FocusEvent) {
 // 监听器
 watch(
   () => props.modelValue,
-  newValue => {
+  (newValue) => {
     if (newValue) {
       Object.assign(fieldValues, newValue)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 watch(
   fieldValues,
-  newValues => {
+  (newValues) => {
     groupState.data = { ...newValues }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 如果有分组管理器，同步状态
@@ -238,7 +239,8 @@ if (groupManager) {
   if (existingState) {
     Object.assign(groupState, existingState)
     Object.assign(fieldValues, existingState.data)
-  } else {
+  }
+  else {
     groupManager.addGroup(props.group)
   }
 }

@@ -1,5 +1,10 @@
 <script setup>
-import { useBattery, useDevice, useGeolocation, useNetwork } from '@ldesign/device/vue'
+import {
+  useBattery,
+  useDevice,
+  useGeolocation,
+  useNetwork,
+} from '@ldesign/device/vue'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const { detector, deviceInfo } = useDevice()
@@ -70,7 +75,12 @@ async function getCurrentPos() {
     addLog('正在获取当前位置...', 'info')
     await getCurrentPosition()
     if (position.value) {
-      addLog(`位置获取成功: ${position.value.latitude.toFixed(6)}, ${position.value.longitude.toFixed(6)}`, 'success')
+      addLog(
+        `位置获取成功: ${position.value.latitude.toFixed(
+          6,
+        )}, ${position.value.longitude.toFixed(6)}`,
+        'success',
+      )
     }
   }
   catch (error) {
@@ -133,7 +143,9 @@ function exportDeviceInfo() {
     eventCounts: eventCounts.value,
   }
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

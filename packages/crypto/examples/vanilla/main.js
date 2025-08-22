@@ -58,7 +58,9 @@ function initAESHandlers() {
 
       const data = document.getElementById('aes-data').value
       const key = document.getElementById('aes-key').value
-      const keySize = Number.parseInt(document.getElementById('aes-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('aes-key-size').value,
+      )
       const mode = document.getElementById('aes-mode').value
 
       if (!data.trim()) {
@@ -89,9 +91,12 @@ function initAESHandlers() {
       setLoading('aes-decrypt-btn', true)
       hideError('aes-error')
 
-      const encryptedData = document.getElementById('aes-encrypted-data').textContent
+      const encryptedData
+        = document.getElementById('aes-encrypted-data').textContent
       const key = document.getElementById('aes-key').value
-      const keySize = Number.parseInt(document.getElementById('aes-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('aes-key-size').value,
+      )
       const mode = document.getElementById('aes-mode').value
       const iv = document.getElementById('aes-iv').textContent
 
@@ -124,7 +129,9 @@ function initAESHandlers() {
     try {
       setLoading('aes-generate-key-btn', true)
 
-      const keySize = Number.parseInt(document.getElementById('aes-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('aes-key-size').value,
+      )
       const keyLength = keySize / 8 // 转换为字节
       const generatedKey = keyGenerator.generateKey(keyLength)
 
@@ -152,11 +159,15 @@ function initRSAHandlers() {
       setLoading('rsa-generate-keypair-btn', true)
       hideError('rsa-error')
 
-      const keySize = Number.parseInt(document.getElementById('rsa-key-size').value)
+      const keySize = Number.parseInt(
+        document.getElementById('rsa-key-size').value,
+      )
       currentRSAKeyPair = rsa.generateKeyPair(keySize)
 
-      document.getElementById('rsa-public-key').value = currentRSAKeyPair.publicKey
-      document.getElementById('rsa-private-key').value = currentRSAKeyPair.privateKey
+      document.getElementById('rsa-public-key').value
+        = currentRSAKeyPair.publicKey
+      document.getElementById('rsa-private-key').value
+        = currentRSAKeyPair.privateKey
       showElement('rsa-keypair-result')
 
       // 启用其他按钮
@@ -204,7 +215,8 @@ function initRSAHandlers() {
       setLoading('rsa-decrypt-btn', true)
       hideError('rsa-error')
 
-      const encryptedData = document.getElementById('rsa-encrypted-data').textContent
+      const encryptedData
+        = document.getElementById('rsa-encrypted-data').textContent
       if (!encryptedData) {
         throw new Error('请先进行RSA加密操作')
       }
@@ -241,7 +253,10 @@ function initRSAHandlers() {
         throw new Error('请先生成RSA密钥对')
       }
 
-      const signature = digitalSignature.sign(data, currentRSAKeyPair.privateKey)
+      const signature = digitalSignature.sign(
+        data,
+        currentRSAKeyPair.privateKey,
+      )
       document.getElementById('rsa-signature-data').textContent = signature
       showElement('rsa-signature-result')
     }
@@ -259,7 +274,8 @@ function initRSAHandlers() {
       hideError('rsa-error')
 
       const data = document.getElementById('rsa-data').value
-      const signature = document.getElementById('rsa-signature-data').textContent
+      const signature
+        = document.getElementById('rsa-signature-data').textContent
 
       if (!data.trim()) {
         throw new Error('请输入要验证的数据')
@@ -271,8 +287,14 @@ function initRSAHandlers() {
         throw new Error('请先生成RSA密钥对')
       }
 
-      const isValid = digitalSignature.verify(data, signature, currentRSAKeyPair.publicKey)
-      document.getElementById('rsa-verify-data').textContent = isValid ? '✅ 签名验证成功' : '❌ 签名验证失败'
+      const isValid = digitalSignature.verify(
+        data,
+        signature,
+        currentRSAKeyPair.publicKey,
+      )
+      document.getElementById('rsa-verify-data').textContent = isValid
+        ? '✅ 签名验证成功'
+        : '❌ 签名验证失败'
       showElement('rsa-verify-result')
     }
     catch (error) {
@@ -442,7 +464,9 @@ function initHMACHandlers() {
 
       currentHMACValue = result
       document.getElementById('hmac-value').textContent = result
-      document.getElementById('hmac-algorithm-used').textContent = `HMAC-${algorithm}`
+      document.getElementById(
+        'hmac-algorithm-used',
+      ).textContent = `HMAC-${algorithm}`
       showElement('hmac-result')
     }
     catch (error) {
@@ -493,7 +517,9 @@ function initHMACHandlers() {
           throw new Error('不支持的HMAC算法')
       }
 
-      document.getElementById('hmac-verify-value').textContent = isValid ? '✅ HMAC验证成功' : '❌ HMAC验证失败'
+      document.getElementById('hmac-verify-value').textContent = isValid
+        ? '✅ HMAC验证成功'
+        : '❌ HMAC验证失败'
       showElement('hmac-verify-result')
     }
     catch (error) {
@@ -555,7 +581,9 @@ function initBase64Handlers() {
       setLoading('base64-decode-btn', true)
       hideError('base64-error')
 
-      const encodedData = document.getElementById('base64-encoded-data').textContent
+      const encodedData = document.getElementById(
+        'base64-encoded-data',
+      ).textContent
       if (!encodedData) {
         throw new Error('请先进行Base64编码操作')
       }
@@ -600,7 +628,9 @@ function initBase64Handlers() {
       setLoading('base64-url-decode-btn', true)
       hideError('base64-error')
 
-      const encodedData = document.getElementById('base64-encoded-data').textContent
+      const encodedData = document.getElementById(
+        'base64-encoded-data',
+      ).textContent
       if (!encodedData) {
         throw new Error('请先进行Base64编码操作')
       }
@@ -630,7 +660,9 @@ function initKeyGenerationHandlers() {
       setLoading('generate-key-btn', true)
       hideError('key-gen-error')
 
-      const length = Number.parseInt(document.getElementById('key-length').value)
+      const length = Number.parseInt(
+        document.getElementById('key-length').value,
+      )
       if (length < 1 || length > 128) {
         throw new Error('密钥长度必须在1-128字节之间')
       }
@@ -652,7 +684,9 @@ function initKeyGenerationHandlers() {
       setLoading('generate-salt-btn', true)
       hideError('key-gen-error')
 
-      const length = Number.parseInt(document.getElementById('salt-length').value)
+      const length = Number.parseInt(
+        document.getElementById('salt-length').value,
+      )
       if (length < 1 || length > 64) {
         throw new Error('盐值长度必须在1-64字节之间')
       }
@@ -696,9 +730,15 @@ function initKeyGenerationHandlers() {
       setLoading('generate-all-btn', true)
       hideError('key-gen-error')
 
-      const keyLength = Number.parseInt(document.getElementById('key-length').value)
-      const saltLength = Number.parseInt(document.getElementById('salt-length').value)
-      const ivLength = Number.parseInt(document.getElementById('iv-length').value)
+      const keyLength = Number.parseInt(
+        document.getElementById('key-length').value,
+      )
+      const saltLength = Number.parseInt(
+        document.getElementById('salt-length').value,
+      )
+      const ivLength = Number.parseInt(
+        document.getElementById('iv-length').value,
+      )
 
       if (keyLength < 1 || keyLength > 128) {
         throw new Error('密钥长度必须在1-128字节之间')

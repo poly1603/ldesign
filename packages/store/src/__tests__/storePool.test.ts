@@ -189,7 +189,8 @@ describe('垃圾回收功能', () => {
 
       // 由于过期，应该创建新实例而不是复用
       expect(newStore).toBeInstanceOf(TestPoolStore)
-    } finally {
+    }
+    finally {
       pool.destroy()
     }
   })
@@ -242,7 +243,7 @@ describe('内存管理', () => {
     }
 
     // 归还所有实例
-    stores.forEach(store => {
+    stores.forEach((store) => {
       const disposeSpy = vi.spyOn(store, '$dispose')
       pool.returnStore(store)
 

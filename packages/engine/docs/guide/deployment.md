@@ -1,6 +1,6 @@
 # 部署指南
 
-本指南介绍如何将使用Vue3 Engine构建的应用部署到不同的环境中。
+本指南介绍如何将使用 Vue3 Engine 构建的应用部署到不同的环境中。
 
 ## 构建准备
 
@@ -15,7 +15,7 @@ export const productionConfig = {
     appName: '我的应用',
     version: process.env.VUE_APP_VERSION || '1.0.0',
     debug: false,
-    apiBaseURL: process.env.VUE_APP_API_BASE_URL || 'https://api.example.com'
+    apiBaseURL: process.env.VUE_APP_API_BASE_URL || 'https://api.example.com',
   },
   logger: {
     level: 'warn', // 生产环境只记录警告和错误
@@ -23,25 +23,25 @@ export const productionConfig = {
     outputs: [
       {
         type: 'console',
-        level: 'error'
+        level: 'error',
       },
       {
         type: 'remote',
         level: 'warn',
-        endpoint: '/api/logs'
-      }
-    ]
+        endpoint: '/api/logs',
+      },
+    ],
   },
   state: {
     persist: true,
     storage: 'localStorage',
-    encryption: true // 生产环境启用加密
+    encryption: true, // 生产环境启用加密
   },
   notifications: {
     position: 'top-right',
     duration: 3000,
-    maxCount: 5
-  }
+    maxCount: 5,
+  },
 }
 ```
 
@@ -52,16 +52,16 @@ export const developmentConfig = {
     appName: '我的应用 (开发)',
     version: 'dev',
     debug: true,
-    apiBaseURL: 'http://localhost:3000/api'
+    apiBaseURL: 'http://localhost:3000/api',
   },
   logger: {
     level: 'debug',
-    format: 'pretty'
+    format: 'pretty',
   },
   state: {
     persist: true,
-    storage: 'localStorage'
-  }
+    storage: 'localStorage',
+  },
 }
 ```
 
@@ -75,9 +75,10 @@ import { developmentConfig } from './config/development'
 import { productionConfig } from './config/production'
 
 // 根据环境选择配置
-const config = process.env.NODE_ENV === 'production'
-  ? { ...presets.production(), ...productionConfig }
-  : { ...presets.development(), ...developmentConfig }
+const config
+  = process.env.NODE_ENV === 'production'
+    ? { ...presets.production(), ...productionConfig }
+    : { ...presets.development(), ...developmentConfig }
 
 const engine = createApp(App, config)
 
@@ -90,14 +91,14 @@ if (process.env.NODE_ENV === 'production') {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
-      stack: event.error?.stack
+      stack: event.error?.stack,
     })
   })
 
   // Promise 错误捕获
   window.addEventListener('unhandledrejection', (event) => {
     engine.logger.error('未处理的Promise错误', {
-      reason: event.reason
+      reason: event.reason,
     })
   })
 }
@@ -134,9 +135,9 @@ export default defineConfig({
           // 将Vue相关代码分离
           vue: ['vue', 'vue-router'],
           // 将工具库分离
-          utils: ['lodash', 'dayjs']
-        }
-      }
+          utils: ['lodash', 'dayjs'],
+        },
+      },
     },
 
     // 压缩配置
@@ -145,22 +146,22 @@ export default defineConfig({
       compress: {
         // 移除console.log（保留error和warn）
         drop_console: true,
-        drop_debugger: true
-      }
-    }
+        drop_debugger: true,
+      },
+    },
   },
 
   // 别名配置
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
 
   // 环境变量
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version)
-  }
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  },
 })
 ```
 
@@ -391,25 +392,25 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Home.vue'),
   },
   {
     path: '/about',
     name: 'About',
-    component: () => import('../views/About.vue')
+    component: () => import('../views/About.vue'),
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue'),
     // 预加载
-    meta: { preload: true }
-  }
+    meta: { preload: true },
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 // 路由预加载
@@ -454,14 +455,10 @@ export const performancePlugin = creators.plugin('performance', (engine) => {
 
   // 预加载关键资源
   const preloadCriticalResources = () => {
-    const criticalResources = [
-      '/api/user/profile',
-      '/api/app/config'
-    ]
+    const criticalResources = ['/api/user/profile', '/api/app/config']
 
     criticalResources.forEach((url) => {
-      fetch(url, { method: 'HEAD' })
-        .catch(() => {}) // 忽略错误
+      fetch(url, { method: 'HEAD' }).catch(() => {}) // 忽略错误
     })
   }
 
@@ -499,11 +496,11 @@ export const sentryPlugin = creators.plugin('sentry', (engine) => {
         if (user) {
           event.user = {
             id: user.id,
-            email: user.email
+            email: user.email,
           }
         }
         return event
-      }
+      },
     })
 
     // 集成引擎日志
@@ -512,10 +509,10 @@ export const sentryPlugin = creators.plugin('sentry', (engine) => {
       handler: (level, message, data) => {
         if (level === 'error') {
           Sentry.captureException(new Error(message), {
-            extra: data
+            extra: data,
           })
         }
-      }
+      },
     })
   }
 })
@@ -532,7 +529,7 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
   const trackPageView = (path: string) => {
     if (typeof gtag !== 'undefined') {
       gtag('config', process.env.VUE_APP_ANALYTICS_ID, {
-        page_path: path
+        page_path: path,
       })
     }
   }
@@ -542,7 +539,7 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
     if (typeof gtag !== 'undefined') {
       gtag('event', action, {
         event_category: category,
-        event_label: label
+        event_label: label,
       })
     }
   }
@@ -550,7 +547,9 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
   // 性能指标统计
   const trackPerformance = () => {
     if ('performance' in window) {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming
 
       // 页面加载时间
       const loadTime = navigation.loadEventEnd - navigation.fetchStart
@@ -563,7 +562,7 @@ export const analyticsPlugin = creators.plugin('analytics', (engine) => {
   engine.analytics = {
     trackPageView,
     trackEvent,
-    trackPerformance
+    trackPerformance,
   }
 
   // 自动统计
@@ -638,7 +637,7 @@ export function decryptStorage(encryptedData: string) {
 
 - [ ] 应用正常启动
 - [ ] 路由功能正常
-- [ ] API接口连接正常
+- [ ] API 接口连接正常
 - [ ] 静态资源加载正常
 - [ ] 错误监控正常工作
 - [ ] 性能指标在可接受范围内
@@ -652,4 +651,4 @@ export function decryptStorage(encryptedData: string) {
 - [ ] 告警规则已设置
 - [ ] 备份策略已实施
 
-通过遵循这个部署指南，你可以确保Vue3 Engine应用在生产环境中稳定、安全、高效地运行。
+通过遵循这个部署指南，你可以确保 Vue3 Engine 应用在生产环境中稳定、安全、高效地运行。

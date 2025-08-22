@@ -2,15 +2,13 @@
  * CSS注入器测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  CSSInjector,
   createCSSInjector,
-  globalCSSInjector,
-  injectGlobalVariables,
-  removeGlobalVariables,
-  isVariablesInjected,
+  CSSInjector,
   getCSSVariableValue,
+  injectGlobalVariables,
+  isVariablesInjected,
   setCSSVariableValue,
 } from '../../core/css-injector'
 
@@ -43,7 +41,7 @@ Object.defineProperty(global, 'window', {
   writable: true,
 })
 
-describe('CSSInjector', () => {
+describe('cSSInjector', () => {
   let injector: CSSInjector
   let mockStyleElement: any
 
@@ -103,7 +101,9 @@ describe('CSSInjector', () => {
       expect(mockStyleElement.textContent).toContain(':root {')
       expect(mockStyleElement.textContent).toContain('--test-var: value1;')
       expect(mockStyleElement.textContent).toContain('--test-var2: value2;')
-      expect(mockDocument.head.appendChild).toHaveBeenCalledWith(mockStyleElement)
+      expect(mockDocument.head.appendChild).toHaveBeenCalledWith(
+        mockStyleElement,
+      )
     })
 
     it('应该移除现有的样式元素', () => {
@@ -112,7 +112,9 @@ describe('CSSInjector', () => {
 
       injector.injectVariables({ '--test': 'value' })
 
-      expect(mockDocument.getElementById).toHaveBeenCalledWith('ldesign-size-variables')
+      expect(mockDocument.getElementById).toHaveBeenCalledWith(
+        'ldesign-size-variables',
+      )
       expect(existingElement.remove).toHaveBeenCalled()
     })
 
@@ -121,11 +123,13 @@ describe('CSSInjector', () => {
       // @ts-ignore
       delete global.document
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       injector.injectVariables({ '--test': 'value' })
 
-      expect(consoleSpy).toHaveBeenCalledWith('CSS injection is only available in browser environment')
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'CSS injection is only available in browser environment',
+      )
 
       global.document = originalDocument
       consoleSpy.mockRestore()
@@ -139,7 +143,9 @@ describe('CSSInjector', () => {
       injector.injectCSS(cssString)
 
       expect(mockStyleElement.textContent).toBe(cssString)
-      expect(mockDocument.head.appendChild).toHaveBeenCalledWith(mockStyleElement)
+      expect(mockDocument.head.appendChild).toHaveBeenCalledWith(
+        mockStyleElement,
+      )
     })
   })
 
@@ -150,7 +156,9 @@ describe('CSSInjector', () => {
 
       injector.removeCSS()
 
-      expect(mockDocument.getElementById).toHaveBeenCalledWith('ldesign-size-variables')
+      expect(mockDocument.getElementById).toHaveBeenCalledWith(
+        'ldesign-size-variables',
+      )
       expect(existingElement.remove).toHaveBeenCalled()
     })
 
@@ -249,7 +257,9 @@ describe('工厂函数和便捷函数', () => {
       mockDocument.getElementById.mockReturnValue(mockStyleElement)
       expect(isVariablesInjected()).toBe(true)
 
-      expect(mockDocument.getElementById).toHaveBeenCalledWith('ldesign-size-variables')
+      expect(mockDocument.getElementById).toHaveBeenCalledWith(
+        'ldesign-size-variables',
+      )
     })
 
     it('应该检查自定义样式ID', () => {

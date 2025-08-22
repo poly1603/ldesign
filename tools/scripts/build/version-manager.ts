@@ -28,25 +28,27 @@ class VersionManager {
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
 
-    this.packages = packageDirs.map((dir) => {
-      const packagePath = join(this.packagesDir, dir)
-      const packageJsonPath = join(packagePath, 'package.json')
+    this.packages = packageDirs
+      .map((dir) => {
+        const packagePath = join(this.packagesDir, dir)
+        const packageJsonPath = join(packagePath, 'package.json')
 
-      try {
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-        return {
-          name: packageJson.name,
-          version: packageJson.version,
-          path: packagePath,
-          dependencies: packageJson.dependencies,
-          devDependencies: packageJson.devDependencies,
+        try {
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+          return {
+            name: packageJson.name,
+            version: packageJson.version,
+            path: packagePath,
+            dependencies: packageJson.dependencies,
+            devDependencies: packageJson.devDependencies,
+          }
         }
-      }
-      catch (error) {
-        console.warn(`无法读取包配置: ${packageJsonPath}`)
-        return null
-      }
-    }).filter(Boolean) as PackageInfo[]
+        catch (error) {
+          console.warn(`无法读取包配置: ${packageJsonPath}`)
+          return null
+        }
+      })
+      .filter(Boolean) as PackageInfo[]
 
     console.log(`发现 ${this.packages.length} 个包:`)
     this.packages.forEach((pkg) => {
@@ -80,14 +82,19 @@ class VersionManager {
     }
   }
 
-  private updatePackageJson(packageInfo: PackageInfo, newVersion: string): void {
+  private updatePackageJson(
+    packageInfo: PackageInfo,
+    newVersion: string,
+  ): void {
     const packageJsonPath = join(packageInfo.path, 'package.json')
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
     packageJson.version = newVersion
 
     writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
-    console.log(`更新 ${packageInfo.name}: ${packageInfo.version} -> ${newVersion}`)
+    console.log(
+      `更新 ${packageInfo.name}: ${packageInfo.version} -> ${newVersion}`,
+    )
   }
 
   private updateInternalDependencies(newVersions: Map<string, string>): void {
@@ -110,14 +117,19 @@ class VersionManager {
       if (packageJson.devDependencies) {
         Object.keys(packageJson.devDependencies).forEach((depName) => {
           if (newVersions.has(depName)) {
-            packageJson.devDependencies[depName] = `^${newVersions.get(depName)}`
+            packageJson.devDependencies[depName] = `^${newVersions.get(
+              depName,
+            )}`
             updated = true
           }
         })
       }
 
       if (updated) {
-        writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+        writeFileSync(
+          packageJsonPath,
+          `${JSON.stringify(packageJson, null, 2)}\n`,
+        )
         console.log(`更新 ${pkg.name} 的内部依赖`)
       }
     })
@@ -126,7 +138,9 @@ class VersionManager {
   private commitChanges(version: string, type: VersionType): void {
     try {
       execSync('git add .', { stdio: 'inherit' })
-      execSync(`git commit -m "chore: bump version to ${version} (${type})"`, { stdio: 'inherit' })
+      execSync(`git commit -m "chore: bump version to ${version} (${type})"`, {
+        stdio: 'inherit',
+      })
       execSync(`git tag v${version}`, { stdio: 'inherit' })
       console.log(`已提交版本更新并创建标签 v${version}`)
     }
@@ -135,7 +149,11 @@ class VersionManager {
     }
   }
 
-  async bumpVersion(type: VersionType, packageName?: string, commit: boolean = true): Promise<void> {
+  async bumpVersion(
+    type: VersionType,
+    packageName?: string,
+    commit: boolean = true,
+  ): Promise<void> {
     console.log(`开始更新版本 (${type})...`)
 
     if (packageName) {
@@ -237,14 +255,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   switch (command) {
     case 'bump':
       const type = (args[1] || 'patch') as VersionType
-      const packageName = args.includes('--package') ? args[args.indexOf('--package') + 1] : undefined
+      const packageName = args.includes('--package')
+        ? args[args.indexOf('--package') + 1]
+        : undefined
       const noCommit = args.includes('--no-commit')
 
-      versionManager.bumpVersion(type, packageName, !noCommit)
-        .catch((error) => {
-          console.error('版本更新失败:', error.message)
-          process.exit(1)
-        })
+      versionManager.bumpVersion(type, packageName, !noCommit).catch((error) => {
+        console.error('版本更新失败:', error.message)
+        process.exit(1)
+      })
       break
 
     case 'list':
@@ -252,11 +271,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       break
 
     case 'sync':
-      versionManager.syncVersions()
-        .catch((error) => {
-          console.error('版本同步失败:', error.message)
-          process.exit(1)
-        })
+      versionManager.syncVersions().catch((error) => {
+        console.error('版本同步失败:', error.message)
+        process.exit(1)
+      })
       break
 
     default:

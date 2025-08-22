@@ -7,19 +7,10 @@ import {
 } from '@ldesign/color/vue'
 
 // useTheme 演示
-const {
-  currentTheme,
-  currentMode,
-  isDark,
-  availableThemes,
-} = useTheme()
+const { currentTheme, currentMode, isDark, availableThemes } = useTheme()
 
 // useThemeToggle 演示
-const {
-  currentMode: toggleCurrentMode,
-  toggle,
-  isLight,
-} = useThemeToggle()
+const { currentMode: toggleCurrentMode, toggle, isLight } = useThemeToggle()
 
 // useThemeSelector 演示
 const {
@@ -29,11 +20,7 @@ const {
 } = useThemeSelector()
 
 // useSystemThemeSync 演示
-const {
-  systemTheme,
-  isSystemDark,
-  syncWithSystem,
-} = useSystemThemeSync()
+const { systemTheme, isSystemDark, syncWithSystem } = useSystemThemeSync()
 </script>
 
 <template>

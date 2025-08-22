@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { useTheme } from '@ldesign/color/vue'
 
-const {
-  currentTheme,
-  currentMode,
-  isDark,
-  availableThemes,
-  toggleMode,
-} = useTheme()
+const { currentTheme, currentMode, isDark, availableThemes, toggleMode }
+  = useTheme()
 </script>
 
 <template>

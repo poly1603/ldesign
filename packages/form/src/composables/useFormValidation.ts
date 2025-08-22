@@ -114,7 +114,7 @@ export interface UseFormValidationReturn {
  * useFormValidation Hook
  */
 export function useFormValidation(
-  options: UseFormValidationOptions = {}
+  options: UseFormValidationOptions = {},
 ): UseFormValidationReturn {
   const {
     fields = [],
@@ -135,11 +135,11 @@ export function useFormValidation(
   })
 
   const fieldValidationStates = reactive<Record<string, FieldValidationState>>(
-    {}
+    {},
   )
 
   // 初始化字段验证状态
-  fields.forEach(field => {
+  fields.forEach((field) => {
     fieldValidationStates[field.name] = {
       valid: true,
       errors: [],
@@ -158,17 +158,18 @@ export function useFormValidation(
     async (fieldName: string, value: any, data: FormData) => {
       await validateFieldInternal(fieldName, value, data)
     },
-    validateDelay
+    validateDelay,
   )
 
   // 内部字段验证方法
   const validateFieldInternal = async (
     fieldName: string,
     value: any,
-    data: FormData
+    data: FormData,
   ): Promise<boolean> => {
     const fieldState = fieldValidationStates[fieldName]
-    if (!fieldState) return true
+    if (!fieldState)
+      return true
 
     fieldState.validating = true
 
@@ -184,7 +185,7 @@ export function useFormValidation(
         value,
         field.rules,
         data,
-        fieldName
+        fieldName,
       )
 
       fieldState.valid = result.valid
@@ -194,12 +195,14 @@ export function useFormValidation(
       updateOverallValidationState()
 
       return result.valid
-    } catch (error) {
+    }
+    catch (error) {
       fieldState.valid = false
       fieldState.errors = [`验证过程中发生错误: ${error.message}`]
       updateOverallValidationState()
       return false
-    } finally {
+    }
+    finally {
       fieldState.validating = false
     }
   }
@@ -207,12 +210,12 @@ export function useFormValidation(
   // 更新整体验证状态
   const updateOverallValidationState = () => {
     const allValid = Object.values(fieldValidationStates).every(
-      state => state.valid
+      state => state.valid,
     )
     const allErrors = Object.fromEntries(
       Object.entries(fieldValidationStates)
         .filter(([_, state]) => state.errors.length > 0)
-        .map(([name, state]) => [name, state.errors])
+        .map(([name, state]) => [name, state.errors]),
     )
 
     validationState.valid = allValid
@@ -237,7 +240,8 @@ export function useFormValidation(
       updateOverallValidationState()
 
       return validationState.valid
-    } finally {
+    }
+    finally {
       validationState.validating = false
     }
   }
@@ -246,14 +250,15 @@ export function useFormValidation(
   const validateField = async (
     fieldName: string,
     value?: any,
-    data: FormData = formData
+    data: FormData = formData,
   ): Promise<boolean> => {
     const fieldValue = value !== undefined ? value : data[fieldName]
 
     if (autoValidate) {
       debouncedValidateField(fieldName, fieldValue, data)
       return true // 防抖验证不等待结果
-    } else {
+    }
+    else {
       return await validateFieldInternal(fieldName, fieldValue, data)
     }
   }
@@ -261,10 +266,10 @@ export function useFormValidation(
   // 批量验证字段
   const validateFields = async (
     fieldNames: string[],
-    data: FormData = formData
+    data: FormData = formData,
   ): Promise<boolean> => {
     const promises = fieldNames.map(fieldName =>
-      validateFieldInternal(fieldName, data[fieldName], data)
+      validateFieldInternal(fieldName, data[fieldName], data),
     )
 
     const results = await Promise.all(promises)
@@ -273,7 +278,7 @@ export function useFormValidation(
 
   // 清空所有验证错误
   const clearValidation = () => {
-    Object.values(fieldValidationStates).forEach(state => {
+    Object.values(fieldValidationStates).forEach((state) => {
       state.valid = true
       state.errors = []
     })
@@ -370,7 +375,7 @@ export function useFormValidation(
         fieldValidationStates[fieldName].errors = result.errors
         updateOverallValidationState()
       }
-    }
+    },
   )
 
   // 清理资源

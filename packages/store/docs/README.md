@@ -78,7 +78,6 @@ docs/
 这是一个待办事项示例：
 
 <TodoDemo />
-
 ```
 
 ### 代码高亮
@@ -142,7 +141,6 @@ const store = new CounterStore('counter')
   --vp-c-brand-1: #3182ce;
   --vp-c-brand-2: #2c5aa0;
 }
-
 ```
 
 ### 组件注册
@@ -154,7 +152,7 @@ export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
     app.component('MyComponent', MyComponent)
-  }
+  },
 }
 ```
 

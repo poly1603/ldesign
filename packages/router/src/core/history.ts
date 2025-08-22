@@ -71,7 +71,8 @@ abstract class BaseHistory implements RouterHistory {
   }
 
   protected normalizeBase(base: string): string {
-    if (!base) return ''
+    if (!base)
+      return ''
     base = base.replace(/^\/+/, '/').replace(/\/+$/, '')
     return base === '/' ? '' : base
   }
@@ -82,7 +83,7 @@ abstract class BaseHistory implements RouterHistory {
   protected triggerListeners(
     to: HistoryLocation,
     from: HistoryLocation,
-    info: NavigationInformation
+    info: NavigationInformation,
   ): void {
     for (const listener of this.listeners) {
       listener(to, from, info)
@@ -91,7 +92,7 @@ abstract class BaseHistory implements RouterHistory {
 
   protected createNavigationInfo(
     type: NavigationType,
-    delta: number = 0
+    delta: number = 0,
   ): NavigationInformation {
     return {
       type,
@@ -101,8 +102,10 @@ abstract class BaseHistory implements RouterHistory {
   }
 
   protected getNavigationDirection(delta: number): NavigationDirection {
-    if (delta > 0) return 'forward'
-    if (delta < 0) return 'backward'
+    if (delta > 0)
+      return 'forward'
+    if (delta < 0)
+      return 'backward'
     return 'unknown'
   }
 
@@ -116,22 +119,25 @@ abstract class BaseHistory implements RouterHistory {
       // 只保留基本类型和简单对象
       if (value === null || value === undefined) {
         sanitized[key] = value
-      } else if (
-        typeof value === 'string' ||
-        typeof value === 'number' ||
-        typeof value === 'boolean'
+      }
+      else if (
+        typeof value === 'string'
+        || typeof value === 'number'
+        || typeof value === 'boolean'
       ) {
         sanitized[key] = value
-      } else if (Array.isArray(value)) {
+      }
+      else if (Array.isArray(value)) {
         // 递归处理数组
         sanitized[key] = value
           .map(item =>
             typeof item === 'object' && item !== null
               ? this.sanitizeStateData(item)
-              : item
+              : item,
           )
           .filter(item => item !== undefined && typeof item !== 'function')
-      } else if (typeof value === 'object' && value.constructor === Object) {
+      }
+      else if (typeof value === 'object' && value.constructor === Object) {
         // 递归处理普通对象
         sanitized[key] = this.sanitizeStateData(value as HistoryState)
       }
@@ -183,7 +189,7 @@ class HTML5History extends BaseHistory {
     this.triggerListeners(to, from, this.createNavigationInfo('replace'))
   }
 
-  go(delta: number, triggerListeners: boolean = true): void {
+  go(delta: number, _triggerListeners: boolean = true): void {
     history.go(delta)
     // popstate 事件会触发监听器
   }
@@ -228,7 +234,8 @@ class HTML5History extends BaseHistory {
   }
 
   private stripBase(pathname: string): string {
-    if (!this._base) return pathname
+    if (!this._base)
+      return pathname
     if (pathname.startsWith(this._base)) {
       return pathname.slice(this._base.length) || '/'
     }
@@ -257,7 +264,8 @@ class HashHistory extends BaseHistory {
     if (SUPPORTS_HISTORY) {
       const serializableData = this.sanitizeStateData(data || {})
       history.pushState(serializableData, '', url)
-    } else {
+    }
+    else {
       window.location.hash = this.buildHash(to)
     }
 
@@ -274,7 +282,8 @@ class HashHistory extends BaseHistory {
     if (SUPPORTS_HISTORY) {
       const serializableData = this.sanitizeStateData(data || {})
       history.replaceState(serializableData, '', url)
-    } else {
+    }
+    else {
       window.location.replace(url)
     }
 
@@ -284,7 +293,7 @@ class HashHistory extends BaseHistory {
     this.triggerListeners(to, from, this.createNavigationInfo('replace'))
   }
 
-  go(delta: number, triggerListeners: boolean = true): void {
+  go(delta: number, _triggerListeners: boolean = true): void {
     history.go(delta)
   }
 
@@ -341,7 +350,7 @@ class HashHistory extends BaseHistory {
  * Memory History 模式（用于 SSR 或测试）
  */
 class MemoryHistory extends BaseHistory {
-  private stack: Array<{ location: HistoryLocation; state: HistoryState }> = []
+  private stack: Array<{ location: HistoryLocation, state: HistoryState }> = []
   private index: number = -1
 
   constructor(base?: string, initialLocation?: HistoryLocation) {
@@ -389,7 +398,11 @@ class MemoryHistory extends BaseHistory {
     }
 
     const from = { ...this._location }
-    const { location, state } = this.stack[newIndex]
+    const stackEntry = this.stack[newIndex]
+    if (!stackEntry) {
+      return // 无法导航，堆栈条目不存在
+    }
+    const { location, state } = stackEntry
 
     this.index = newIndex
     this._location = location
@@ -399,7 +412,7 @@ class MemoryHistory extends BaseHistory {
       this.triggerListeners(
         location,
         from,
-        this.createNavigationInfo('pop', delta)
+        this.createNavigationInfo('pop', delta),
       )
     }
   }
@@ -421,13 +434,13 @@ class MemoryHistory extends BaseHistory {
 export function createWebHistory(base?: string): RouterHistory {
   if (typeof window === 'undefined') {
     throw new TypeError(
-      'createWebHistory() can only be used in browser environment'
+      'createWebHistory() can only be used in browser environment',
     )
   }
 
   if (!SUPPORTS_HISTORY) {
     console.warn(
-      'HTML5 History API is not supported, falling back to hash mode'
+      'HTML5 History API is not supported, falling back to hash mode',
     )
     return createWebHashHistory(base)
   }
@@ -441,7 +454,7 @@ export function createWebHistory(base?: string): RouterHistory {
 export function createWebHashHistory(base?: string): RouterHistory {
   if (typeof window === 'undefined') {
     throw new TypeError(
-      'createWebHashHistory() can only be used in browser environment'
+      'createWebHashHistory() can only be used in browser environment',
     )
   }
 
@@ -453,7 +466,7 @@ export function createWebHashHistory(base?: string): RouterHistory {
  */
 export function createMemoryHistory(
   base?: string,
-  initialLocation?: HistoryLocation
+  initialLocation?: HistoryLocation,
 ): RouterHistory {
   return new MemoryHistory(base, initialLocation)
 }

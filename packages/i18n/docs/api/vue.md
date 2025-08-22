@@ -31,7 +31,7 @@ const vueI18nPlugin = createI18n(i18nInstance)
 
 app.use(vueI18nPlugin, {
   globalInjection: true,
-  globalPropertyName: '$t'
+  globalPropertyName: '$t',
 })
 ```
 
@@ -53,7 +53,7 @@ function createI18nWithOptions(options: VueI18nOptions): VueI18nPlugin
 const vueI18nPlugin = createI18nWithOptions({
   defaultLocale: 'en',
   fallbackLocale: 'en',
-  globalInjection: true
+  globalInjection: true,
 })
 ```
 
@@ -102,11 +102,7 @@ async function handleLanguageChange() {
     <p>{{ t('common.currentLanguage') }}: {{ locale }}</p>
 
     <select v-model="selectedLocale" @change="handleLanguageChange">
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>
@@ -127,7 +123,47 @@ function useLanguageSwitcher(): {
 
 专门用于语言切换的组合式 API。
 
-**示例：**
+> **⚠️ 注意：** 推荐使用 `useI18n()` 来获取语言切换功能，它提供了更统一的API。`useLanguageSwitcher()` 主要用于需要 `isChanging` 状态的特殊场景。
+
+**推荐用法（使用 useI18n）：**
+
+```vue
+<script setup lang="ts">
+import { useI18n } from '@ldesign/i18n/vue'
+import { ref } from 'vue'
+
+const { locale, availableLanguages, changeLanguage } = useI18n()
+const isChanging = ref(false)
+
+async function handleLanguageChange(langCode: string) {
+  if (isChanging.value) return
+
+  try {
+    isChanging.value = true
+    await changeLanguage(langCode)
+  } finally {
+    isChanging.value = false
+  }
+}
+</script>
+
+<template>
+  <div class="language-switcher">
+    <button
+      v-for="lang in availableLanguages"
+      :key="lang.code"
+      :class="{ active: locale === lang.code }"
+      :disabled="isChanging"
+      @click="handleLanguageChange(lang.code)"
+    >
+      {{ lang.nativeName }}
+      <span v-if="isChanging && locale === lang.code">...</span>
+    </button>
+  </div>
+</template>
+```
+
+**传统用法（使用 useLanguageSwitcher）：**
 
 ```vue
 <script setup lang="ts">
@@ -174,11 +210,7 @@ function useBatchTranslation(keys: string[]): ComputedRef<Record<string, string>
 <script setup lang="ts">
 import { useBatchTranslation } from '@ldesign/i18n/vue'
 
-const translations = useBatchTranslation([
-  'common.save',
-  'common.cancel',
-  'common.delete'
-])
+const translations = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
 </script>
 
 <template>
@@ -217,11 +249,7 @@ import { ref } from 'vue'
 
 const isOnline = ref(true)
 
-const statusText = useConditionalTranslation(
-  isOnline,
-  'common.online',
-  'common.offline'
-)
+const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.offline')
 </script>
 
 <template>
@@ -295,11 +323,13 @@ const { t } = useI18nWithInstance(customI18n)
 **指令参数类型：**
 
 ```typescript
-type I18nDirectiveBinding = string | {
-  key: string
-  params?: TranslationParams
-  options?: TranslationOptions
-}
+type I18nDirectiveBinding =
+  | string
+  | {
+    key: string
+    params?: TranslationParams
+    options?: TranslationOptions
+  }
 ```
 
 ## 全局属性
@@ -355,7 +385,7 @@ app.use(vueI18nPlugin, {
 
   // Vue 特定选项
   globalInjection: true,
-  globalPropertyName: '$t'
+  globalPropertyName: '$t',
 })
 ```
 
@@ -540,11 +570,7 @@ watch(locale, (newLocale) => {
 import { useBatchTranslation } from '@ldesign/i18n/vue'
 
 // ✅ 批量翻译减少函数调用
-const buttonTexts = useBatchTranslation([
-  'common.save',
-  'common.cancel',
-  'common.delete'
-])
+const buttonTexts = useBatchTranslation(['common.save', 'common.cancel', 'common.delete'])
 
 // ❌ 避免：多次单独调用
 // const saveText = t('common.save')

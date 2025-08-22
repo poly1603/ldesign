@@ -273,8 +273,10 @@ async function testModalManager() {
 }
 
 // 运行测试
-testModalManager().then(() => {
-  console.log('\n✨ 弹窗功能测试完成')
-}).catch((error) => {
-  console.error('\n💥 测试过程中出现错误:', error)
-})
+testModalManager()
+  .then(() => {
+    console.log('\n✨ 弹窗功能测试完成')
+  })
+  .catch((error) => {
+    console.error('\n💥 测试过程中出现错误:', error)
+  })

@@ -2,7 +2,11 @@
  * 事件发射器实现
  */
 
-import type { EventEmitter, ThemeEventListener, ThemeEventType } from '../core/types'
+import type {
+  EventEmitter,
+  ThemeEventListener,
+  ThemeEventType,
+} from '../core/types'
 
 /**
  * 事件发射器实现类
@@ -13,7 +17,10 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 添加事件监听器
    */
-  on<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  on<T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>,
+  ): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
@@ -23,7 +30,10 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 移除事件监听器
    */
-  off<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  off<T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>,
+  ): void {
     const eventListeners = this.listeners.get(event)
     if (eventListeners) {
       eventListeners.delete(listener as ThemeEventListener)
@@ -53,7 +63,10 @@ export class EventEmitterImpl implements EventEmitter {
   /**
    * 添加一次性事件监听器
    */
-  once<T = unknown>(event: ThemeEventType, listener: ThemeEventListener<T>): void {
+  once<T = unknown>(
+    event: ThemeEventType,
+    listener: ThemeEventListener<T>,
+  ): void {
     const onceListener = (data: T) => {
       listener(data)
       this.off(event, onceListener)

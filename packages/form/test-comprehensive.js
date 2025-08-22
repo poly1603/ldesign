@@ -112,7 +112,9 @@ class MockFormManager {
 
   validate(key) {
     const errors = []
-    const items = key ? [this.config.items.find(item => item.key === key)] : this.config.items
+    const items = key
+      ? [this.config.items.find(item => item.key === key)]
+      : this.config.items
 
     items.forEach((item) => {
       if (!item)
@@ -305,7 +307,9 @@ class MockFormGroupManager {
   }
 
   emitEvent(type, groupKey, expanded) {
-    this.eventListeners.forEach(callback => callback({ type, groupKey, expanded }))
+    this.eventListeners.forEach(callback =>
+      callback({ type, groupKey, expanded }),
+    )
   }
 
   destroy() {
@@ -353,7 +357,9 @@ class MockJSAdapter {
   }
 
   validate(key) {
-    return this.formManager ? this.formManager.validate(key) : { valid: false, errors: [] }
+    return this.formManager
+      ? this.formManager.validate(key)
+      : { valid: false, errors: [] }
   }
 
   isMounted() {
@@ -458,7 +464,9 @@ async function runComprehensiveTests() {
     const newForm = new MockFormManager({ items: [] }, {})
     newForm.deserialize(serialized)
 
-    return newForm.getValue('name') === '张三' && newForm.getState().layout.expanded
+    return (
+      newForm.getValue('name') === '张三' && newForm.getState().layout.expanded
+    )
   })
 
   // 2. 展开收起功能测试
@@ -538,13 +546,19 @@ async function runComprehensiveTests() {
 
     const grouped = groupManager.assignItemsToGroups(items)
 
-    return grouped.has('basic') && grouped.has('contact')
-      && grouped.get('basic').length === 1 && grouped.get('contact').length === 1
+    return (
+      grouped.has('basic')
+      && grouped.has('contact')
+      && grouped.get('basic').length === 1
+      && grouped.get('contact').length === 1
+    )
   })
 
   test('分组展开收起', () => {
     const groupManager = new MockFormGroupManager()
-    groupManager.setupGroups([{ key: 'test', title: '测试分组', expanded: true }])
+    groupManager.setupGroups([
+      { key: 'test', title: '测试分组', expanded: true },
+    ])
 
     let eventFired = false
     groupManager.onGroupEvent((event) => {
@@ -689,7 +703,9 @@ async function runComprehensiveTests() {
   console.log(`总测试数: ${testResults.total}`)
   console.log(`通过: ${testResults.passed} ✅`)
   console.log(`失败: ${testResults.failed} ❌`)
-  console.log(`成功率: ${((testResults.passed / testResults.total) * 100).toFixed(1)}%`)
+  console.log(
+    `成功率: ${((testResults.passed / testResults.total) * 100).toFixed(1)}%`,
+  )
 
   if (testResults.failed > 0) {
     console.log('\n❌ 失败的测试:')
@@ -699,7 +715,11 @@ async function runComprehensiveTests() {
   }
 
   const allPassed = testResults.failed === 0
-  console.log(`\n${allPassed ? '🎉' : '⚠️'} 综合测试${allPassed ? '全部通过' : '存在失败'}!`)
+  console.log(
+    `\n${allPassed ? '🎉' : '⚠️'} 综合测试${
+      allPassed ? '全部通过' : '存在失败'
+    }!`,
+  )
 
   if (allPassed) {
     console.log('\n✨ 自适应表单布局系统功能验证完成')
@@ -711,9 +731,11 @@ async function runComprehensiveTests() {
 }
 
 // 运行测试
-runComprehensiveTests().then((success) => {
-  process.exit(success ? 0 : 1)
-}).catch((error) => {
-  console.error('💥 测试过程中出现严重错误:', error)
-  process.exit(1)
-})
+runComprehensiveTests()
+  .then((success) => {
+    process.exit(success ? 0 : 1)
+  })
+  .catch((error) => {
+    console.error('💥 测试过程中出现严重错误:', error)
+    process.exit(1)
+  })

@@ -61,7 +61,7 @@ engine.performance.enableAutoAnalysis({
   responseTimeThreshold: 1000,
 
   // 自动优化建议
-  autoOptimization: true
+  autoOptimization: true,
 })
 ```
 
@@ -83,7 +83,7 @@ engine.performance.setBudget({
   cls: 0.1,
 
   // 内存使用限制（MB）
-  memory: 50
+  memory: 50,
 })
 ```
 
@@ -99,7 +99,7 @@ engine.events.on('performance:budget-exceeded', (metric) => {
     type: 'warning',
     title: '性能警告',
     message: `${metric.name} 超出预算 ${metric.budget}`,
-    duration: 5000
+    duration: 5000,
   })
 })
 ```
@@ -129,7 +129,7 @@ engine.performance.defineMetric('api-response-time', {
   collector: () => {
     // 自定义指标收集逻辑
     return measureApiResponseTime()
-  }
+  },
 })
 
 // 收集自定义指标
@@ -149,8 +149,8 @@ engine.performance.monitorResources({
     script: 1000,
     stylesheet: 500,
     image: 2000,
-    fetch: 1000
-  }
+    fetch: 1000,
+  },
 })
 
 // 获取资源性能数据
@@ -177,7 +177,7 @@ engine.performance.enableAutoOptimization({
   caching: true,
 
   // 内存清理
-  memoryCleanup: true
+  memoryCleanup: true,
 })
 ```
 
@@ -203,14 +203,14 @@ const report = engine.performance.generateReport({
   // 报告时间范围
   timeRange: {
     start: Date.now() - 3600000, // 1小时前
-    end: Date.now()
+    end: Date.now(),
   },
 
   // 包含的指标
   metrics: ['all'],
 
   // 报告格式
-  format: 'detailed'
+  format: 'detailed',
 })
 
 // 导出报告
@@ -236,7 +236,7 @@ const engine = createEngine({
       interval: 1000,
 
       // 数据保留时间（毫秒）
-      retention: 3600000
+      retention: 3600000,
     },
 
     // 性能预算
@@ -244,7 +244,7 @@ const engine = createEngine({
       fcp: 1500,
       lcp: 2500,
       fid: 100,
-      cls: 0.1
+      cls: 0.1,
     },
 
     // 优化配置
@@ -253,9 +253,9 @@ const engine = createEngine({
       auto: true,
 
       // 优化策略
-      strategies: ['lazy-loading', 'code-splitting', 'caching']
-    }
-  }
+      strategies: ['lazy-loading', 'code-splitting', 'caching'],
+    },
+  },
 })
 ```
 
@@ -292,17 +292,13 @@ class PerformanceMonitor {
   }
 
   private monitorUserInteractions() {
-    ['click', 'scroll', 'input'].forEach((event) => {
+    ;['click', 'scroll', 'input'].forEach((event) => {
       document.addEventListener(event, () => {
         this.engine.performance.mark(`${event}-start`)
 
         requestIdleCallback(() => {
           this.engine.performance.mark(`${event}-end`)
-          this.engine.performance.measure(
-            `${event}-duration`,
-            `${event}-start`,
-            `${event}-end`
-          )
+          this.engine.performance.measure(`${event}-duration`, `${event}-start`, `${event}-end`)
         })
       })
     })
@@ -382,7 +378,7 @@ class PerformanceBudgetManager {
       metric,
       actual,
       budget,
-      excess: actual - budget
+      excess: actual - budget,
     })
   }
 }
@@ -400,7 +396,7 @@ class PerformanceProfiler {
   startProfile(name: string) {
     this.profiles.set(name, {
       startTime: performance.now(),
-      startMemory: this.getMemoryUsage()
+      startMemory: this.getMemoryUsage(),
     })
   }
 
@@ -415,7 +411,7 @@ class PerformanceProfiler {
     const result = {
       duration: endTime - profile.startTime,
       memoryDelta: endMemory - profile.startMemory,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     this.engine.logger.info(`性能分析 [${name}]:`, result)
@@ -441,7 +437,7 @@ function identifyPerformanceHotspots() {
     minCalls: 5,
 
     // 分析时间窗口
-    timeWindow: 60000
+    timeWindow: 60000,
   })
 
   hotspots.forEach((hotspot) => {
@@ -487,7 +483,7 @@ engine.events.on('performance:threshold-exceeded', (alert) => {
     type: 'warning',
     title: '性能警告',
     message: alert.message,
-    duration: 5000
+    duration: 5000,
   })
 })
 ```

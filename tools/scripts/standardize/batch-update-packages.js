@@ -87,19 +87,33 @@ packageDirs.forEach((dir) => {
     packageJson.scripts = {
       ...standardScripts,
       // 保留一些特殊脚本
-      ...(packageJson.scripts?.['docs:dev'] && { 'docs:dev': packageJson.scripts['docs:dev'] }),
-      ...(packageJson.scripts?.['docs:build'] && { 'docs:build': packageJson.scripts['docs:build'] }),
-      ...(packageJson.scripts?.['docs:preview'] && { 'docs:preview': packageJson.scripts['docs:preview'] }),
+      ...(packageJson.scripts?.['docs:dev'] && {
+        'docs:dev': packageJson.scripts['docs:dev'],
+      }),
+      ...(packageJson.scripts?.['docs:build'] && {
+        'docs:build': packageJson.scripts['docs:build'],
+      }),
+      ...(packageJson.scripts?.['docs:preview'] && {
+        'docs:preview': packageJson.scripts['docs:preview'],
+      }),
     }
 
     // 标准化开发依赖
     packageJson.devDependencies = {
       ...standardDevDependencies,
       // 保留包特有的依赖
-      ...(packageJson.dependencies?.['@types/chroma-js'] && { '@types/chroma-js': '^3.1.1' }),
-      ...(packageJson.dependencies?.['@types/crypto-js'] && { '@types/crypto-js': '^4.2.2' }),
-      ...(packageJson.dependencies?.['@types/node-forge'] && { '@types/node-forge': '^1.3.11' }),
-      ...(packageJson.devDependencies?.['@playwright/test'] && { '@playwright/test': '^1.40.1' }),
+      ...(packageJson.dependencies?.['@types/chroma-js'] && {
+        '@types/chroma-js': '^3.1.1',
+      }),
+      ...(packageJson.dependencies?.['@types/crypto-js'] && {
+        '@types/crypto-js': '^4.2.2',
+      }),
+      ...(packageJson.dependencies?.['@types/node-forge'] && {
+        '@types/node-forge': '^1.3.11',
+      }),
+      ...(packageJson.devDependencies?.['@playwright/test'] && {
+        '@playwright/test': '^1.40.1',
+      }),
     }
 
     // 标准化peer依赖

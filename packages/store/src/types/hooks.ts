@@ -26,7 +26,9 @@ export interface StoreHookReturn<T extends Store = Store> {
   /** 更新状态 */
   patch: (partialState: Partial<T['$state']>) => void
   /** 订阅状态变化 */
-  subscribe: (callback: (mutation: any, state: T['$state']) => void) => () => void
+  subscribe: (
+    callback: (mutation: any, state: T['$state']) => void
+  ) => () => void
   /** 订阅 Action */
   onAction: (callback: (context: any) => void) => () => void
 }
@@ -46,7 +48,9 @@ export interface StateHookReturn<T = any> {
 /**
  * Action Hook 返回类型
  */
-export interface ActionHookReturn<T extends (...args: any[]) => any = (...args: any[]) => any> {
+export interface ActionHookReturn<
+  T extends (...args: any[]) => any = (...args: any[]) => any
+> {
   /** 执行 Action */
   execute: T
   /** 是否正在执行 */

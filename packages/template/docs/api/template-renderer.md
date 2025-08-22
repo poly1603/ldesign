@@ -73,11 +73,7 @@
 **示例:**
 
 ```vue
-<LTemplateRenderer
-  category="auth"
-  template="login"
-  @load="onTemplateLoad"
-/>
+<LTemplateRenderer category="auth" template="login" @load="onTemplateLoad" />
 
 <script setup>
 function onTemplateLoad(component, metadata) {
@@ -97,11 +93,7 @@ function onTemplateLoad(component, metadata) {
 **示例:**
 
 ```vue
-<LTemplateRenderer
-  category="auth"
-  template="login"
-  @error="onTemplateError"
-/>
+<LTemplateRenderer category="auth" template="login" @error="onTemplateError" />
 
 <script setup>
 function onTemplateError(error) {
@@ -196,14 +188,14 @@ const selectedDevice = ref('desktop')
 const templateProps = computed(() => ({
   title: `${selectedTemplate.value} - ${selectedDevice.value}`,
   onSubmit: handleSubmit,
-  onCancel: handleCancel
+  onCancel: handleCancel,
 }))
 
 function onTemplateLoad(component, metadata) {
   console.log('模板加载成功:', {
     name: metadata.name,
     version: metadata.config.version,
-    device: metadata.device
+    device: metadata.device,
   })
 }
 
@@ -234,24 +226,14 @@ function resetTemplate() {
   <div class="app">
     <div class="controls">
       <select v-model="selectedTemplate">
-        <option value="login">
-          登录页
-        </option>
-        <option value="register">
-          注册页
-        </option>
+        <option value="login">登录页</option>
+        <option value="register">注册页</option>
       </select>
 
       <select v-model="selectedDevice">
-        <option value="desktop">
-          桌面端
-        </option>
-        <option value="tablet">
-          平板端
-        </option>
-        <option value="mobile">
-          移动端
-        </option>
+        <option value="desktop">桌面端</option>
+        <option value="tablet">平板端</option>
+        <option value="mobile">移动端</option>
       </select>
     </div>
 
@@ -280,12 +262,8 @@ function resetTemplate() {
             <h3>😞 加载失败</h3>
             <p>{{ error.message }}</p>
             <div class="error-actions">
-              <button class="retry-btn" @click="retry">
-                重新加载
-              </button>
-              <button class="reset-btn" @click="resetTemplate">
-                重置
-              </button>
+              <button class="retry-btn" @click="retry">重新加载</button>
+              <button class="reset-btn" @click="resetTemplate">重置</button>
             </div>
           </div>
         </template>
@@ -417,13 +395,13 @@ const currentCategory = ref('auth')
 const currentTemplate = ref('login')
 
 // 使用 key 强制重新渲染
-const templateKey = computed(() =>
-  `${currentCategory.value}-${currentTemplate.value}`
+const templateKey = computed(
+  () => `${currentCategory.value}-${currentTemplate.value}`
 )
 
 const dynamicProps = computed(() => ({
   // 根据模板类型返回不同的属性
-  ...(currentTemplate.value === 'login' ? loginProps : registerProps)
+  ...(currentTemplate.value === 'login' ? loginProps : registerProps),
 }))
 </script>
 
@@ -454,9 +432,7 @@ const shouldRenderTemplate = computed(() => {
     :template-props="templateProps"
   />
 
-  <div v-else class="fallback">
-    使用默认内容
-  </div>
+  <div v-else class="fallback">使用默认内容</div>
 </template>
 ```
 

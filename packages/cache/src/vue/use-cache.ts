@@ -1,5 +1,5 @@
-import { ref, computed, onUnmounted, watch } from 'vue'
-import type { UseCacheOptions, SetOptions, CacheStats } from '../types'
+import type { CacheStats, SetOptions, UseCacheOptions } from '../types'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { CacheManager } from '../core/cache-manager'
 
 /**
@@ -20,17 +20,19 @@ export function useCache(options?: UseCacheOptions) {
   const set = async <T = any>(
     key: string,
     value: T,
-    setOptions?: SetOptions
+    setOptions?: SetOptions,
   ): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
       await cacheManager.set(key, value, setOptions)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -44,10 +46,12 @@ export function useCache(options?: UseCacheOptions) {
 
     try {
       return await cacheManager.get<T>(key)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -61,10 +65,12 @@ export function useCache(options?: UseCacheOptions) {
 
     try {
       await cacheManager.remove(key)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -73,17 +79,19 @@ export function useCache(options?: UseCacheOptions) {
    * 清空缓存
    */
   const clear = async (
-    engine?: import('../types').StorageEngine
+    engine?: import('../types').StorageEngine,
   ): Promise<void> => {
     loading.value = true
     error.value = null
 
     try {
       await cacheManager.clear(engine)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -94,7 +102,8 @@ export function useCache(options?: UseCacheOptions) {
   const has = async (key: string): Promise<boolean> => {
     try {
       return await cacheManager.has(key)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return false
     }
@@ -104,11 +113,12 @@ export function useCache(options?: UseCacheOptions) {
    * 获取所有键名
    */
   const keys = async (
-    engine?: import('../types').StorageEngine
+    engine?: import('../types').StorageEngine,
   ): Promise<string[]> => {
     try {
       return await cacheManager.keys(engine)
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return []
     }
@@ -120,7 +130,8 @@ export function useCache(options?: UseCacheOptions) {
   const getStats = async (): Promise<void> => {
     try {
       stats.value = await cacheManager.getStats()
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
     }
   }
@@ -132,7 +143,8 @@ export function useCache(options?: UseCacheOptions) {
     try {
       await cacheManager.cleanup()
       await getStats() // 更新统计信息
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
     }
   }
@@ -153,10 +165,12 @@ export function useCache(options?: UseCacheOptions) {
       try {
         const cached = await get<T>(key)
         value.value = cached !== null ? cached : defaultValue || null
-      } catch (err) {
+      }
+      catch (err) {
         cacheError.value = err as Error
         value.value = defaultValue || null
-      } finally {
+      }
+      finally {
         isLoading.value = false
       }
     }
@@ -169,10 +183,12 @@ export function useCache(options?: UseCacheOptions) {
       try {
         await set(key, newValue, setOptions)
         value.value = newValue
-      } catch (err) {
+      }
+      catch (err) {
         cacheError.value = err as Error
         throw err
-      } finally {
+      }
+      finally {
         isLoading.value = false
       }
     }
@@ -185,10 +201,12 @@ export function useCache(options?: UseCacheOptions) {
       try {
         await remove(key)
         value.value = defaultValue || null
-      } catch (err) {
+      }
+      catch (err) {
         cacheError.value = err as Error
         throw err
-      } finally {
+      }
+      finally {
         isLoading.value = false
       }
     }
@@ -199,17 +217,19 @@ export function useCache(options?: UseCacheOptions) {
         value,
         async (newValue, oldValue) => {
           // 跳过初始值设置
-          if (oldValue === undefined) return
+          if (oldValue === undefined)
+            return
 
           if (newValue !== null && newValue !== undefined) {
             try {
               await set(key, newValue, setOptions)
-            } catch (err) {
+            }
+            catch (err) {
               cacheError.value = err as Error
             }
           }
         },
-        { deep: true, flush: 'post' }
+        { deep: true, flush: 'post' },
       )
     }
 
@@ -234,7 +254,8 @@ export function useCache(options?: UseCacheOptions) {
     onUnmounted(async () => {
       try {
         await cacheManager.destroy()
-      } catch (err) {
+      }
+      catch (err) {
         console.error('Failed to cleanup cache manager:', err)
       }
     })

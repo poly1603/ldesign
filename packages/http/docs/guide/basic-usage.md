@@ -13,8 +13,8 @@ const http = createHttpClient({
   baseURL: 'https://api.example.com',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 ```
 
@@ -41,8 +41,8 @@ const users = await http.get('/users', {
   params: {
     page: 1,
     limit: 10,
-    search: 'john'
-  }
+    search: 'john',
+  },
 })
 ```
 
@@ -53,7 +53,7 @@ const users = await http.get('/users', {
 const newUser = await http.post('/users', {
   name: 'John Doe',
   email: 'john@example.com',
-  age: 30
+  age: 30,
 })
 
 // 上传文件
@@ -63,8 +63,8 @@ formData.append('description', 'Profile picture')
 
 const uploadResponse = await http.post('/upload', formData, {
   headers: {
-    'Content-Type': 'multipart/form-data'
-  }
+    'Content-Type': 'multipart/form-data',
+  },
 })
 ```
 
@@ -74,7 +74,7 @@ const uploadResponse = await http.post('/upload', formData, {
 // 更新用户信息
 const updatedUser = await http.put('/users/1', {
   name: 'Jane Doe',
-  email: 'jane@example.com'
+  email: 'jane@example.com',
 })
 ```
 
@@ -87,8 +87,8 @@ await http.delete('/users/1')
 // 批量删除
 await http.delete('/users', {
   data: {
-    ids: [1, 2, 3, 4, 5]
-  }
+    ids: [1, 2, 3, 4, 5],
+  },
 })
 ```
 
@@ -97,7 +97,7 @@ await http.delete('/users', {
 ```typescript
 // 部分更新用户信息
 const patchedUser = await http.patch('/users/1', {
-  email: 'newemail@example.com'
+  email: 'newemail@example.com',
 })
 ```
 
@@ -125,7 +125,7 @@ const users: User[] = response.data // 自动类型推断
 // 类型安全的 POST 请求
 const newUser = await http.post<User, CreateUserRequest>('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 ```
 
@@ -138,11 +138,11 @@ const response = await http.get('/users', {
   timeout: 5000, // 覆盖全局超时设置
   headers: {
     'Authorization': 'Bearer token123',
-    'X-Custom-Header': 'value'
+    'X-Custom-Header': 'value',
   },
   params: {
-    include: 'profile,settings'
-  }
+    include: 'profile,settings',
+  },
 })
 ```
 
@@ -211,14 +211,14 @@ catch (error) {
 const [users, posts, comments] = await Promise.all([
   http.get('/users'),
   http.get('/posts'),
-  http.get('/comments')
+  http.get('/comments'),
 ])
 
 // 使用 Promise.allSettled（处理部分失败）
 const results = await Promise.allSettled([
   http.get('/users'),
   http.get('/posts'),
-  http.get('/comments')
+  http.get('/comments'),
 ])
 
 results.forEach((result, index) => {
@@ -240,7 +240,7 @@ const controller = new AbortController()
 
 // 发送可取消的请求
 const requestPromise = http.get('/users', {
-  signal: controller.signal
+  signal: controller.signal,
 })
 
 // 5 秒后取消请求
@@ -268,13 +268,13 @@ class UserService {
   private http = createHttpClient({
     baseURL: 'https://api.example.com',
     headers: {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   })
 
   async getUsers(page = 1, limit = 10) {
     return this.http.get<User[]>('/users', {
-      params: { page, limit }
+      params: { page, limit },
     })
   }
 
@@ -304,7 +304,7 @@ const users = await userService.getUsers(1, 20)
 // 创建新用户
 const newUser = await userService.createUser({
   name: 'Alice Smith',
-  email: 'alice@example.com'
+  email: 'alice@example.com',
 })
 ```
 
@@ -317,14 +317,14 @@ async function uploadFile(file: File, onProgress?: (progress: number) => void) {
 
   return http.post('/upload', formData, {
     headers: {
-      'Content-Type': 'multipart/form-data'
+      'Content-Type': 'multipart/form-data',
     },
     onUploadProgress: (progressEvent) => {
       if (onProgress && progressEvent.total) {
         const progress = (progressEvent.loaded / progressEvent.total) * 100
         onProgress(Math.round(progress))
       }
-    }
+    },
   })
 }
 

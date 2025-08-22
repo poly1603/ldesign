@@ -6,7 +6,7 @@
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number,
-  immediate = false
+  immediate = false,
 ): T & { cancel: () => void } {
   let timeoutId: number | undefined
   let lastCallTime: number | undefined
@@ -48,7 +48,7 @@ export function debounce<T extends (...args: any[]) => any>(
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   delay: number,
-  options: { leading?: boolean; trailing?: boolean } = {}
+  options: { leading?: boolean, trailing?: boolean } = {},
 ): T & { cancel: () => void } {
   const { leading = true, trailing = true } = options
   let timeoutId: number | undefined
@@ -74,7 +74,8 @@ export function throttle<T extends (...args: any[]) => any>(
       }
       lastCallTime = now
       func.apply(this, args)
-    } else if (!timeoutId && trailing) {
+    }
+    else if (!timeoutId && trailing) {
       timeoutId = window.setTimeout(() => {
         lastCallTime = !leading ? 0 : Date.now()
         timeoutId = undefined
@@ -102,7 +103,7 @@ export function throttle<T extends (...args: any[]) => any>(
  * requestAnimationFrame 节流
  */
 export function rafThrottle<T extends (...args: any[]) => any>(
-  func: T
+  func: T,
 ): T & { cancel: () => void } {
   let rafId: number | undefined
   let lastArgs: Parameters<T> | undefined
@@ -139,7 +140,7 @@ export function rafThrottle<T extends (...args: any[]) => any>(
  */
 export function concurrent<T extends (...args: any[]) => Promise<any>>(
   func: T,
-  limit: number = 1
+  limit: number = 1,
 ): T {
   let running = 0
   const queue: Array<{
@@ -160,9 +161,11 @@ export function concurrent<T extends (...args: any[]) => Promise<any>>(
     try {
       const result = await func.apply(context, args)
       resolve(result)
-    } catch (error) {
+    }
+    catch (error) {
       reject(error)
-    } finally {
+    }
+    finally {
       running--
       execute() // 处理队列中的下一个任务
     }
@@ -183,7 +186,7 @@ export function retry<T extends (...args: any[]) => Promise<any>>(
   func: T,
   maxAttempts: number = 3,
   delay: number = 1000,
-  backoff: number = 2
+  backoff: number = 2,
 ): T {
   return async function (this: any, ...args: Parameters<T>) {
     let lastError: any
@@ -192,7 +195,8 @@ export function retry<T extends (...args: any[]) => Promise<any>>(
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await func.apply(this, args)
-      } catch (error) {
+      }
+      catch (error) {
         lastError = error
 
         if (attempt === maxAttempts) {
@@ -215,8 +219,8 @@ export function retry<T extends (...args: any[]) => Promise<any>>(
 export function memoize<T extends (...args: any[]) => any>(
   func: T,
   keyGenerator?: (...args: Parameters<T>) => string,
-  maxSize: number = 100
-): T & { cache: Map<string, ReturnType<T>>; clear: () => void } {
+  maxSize: number = 100,
+): T & { cache: Map<string, ReturnType<T>>, clear: () => void } {
   const cache = new Map<string, ReturnType<T>>()
 
   const memoized = function (this: any, ...args: Parameters<T>): ReturnType<T> {
@@ -236,7 +240,7 @@ export function memoize<T extends (...args: any[]) => any>(
 
     cache.set(key, result)
     return result
-  } as T & { cache: Map<string, ReturnType<T>>; clear: () => void }
+  } as T & { cache: Map<string, ReturnType<T>>, clear: () => void }
 
   memoized.cache = cache
   memoized.clear = () => cache.clear()
@@ -249,7 +253,7 @@ export function memoize<T extends (...args: any[]) => any>(
  */
 export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
   func: T,
-  delay: number
+  delay: number,
 ): T & { cancel: () => void } {
   let timeoutId: number | undefined
   let currentPromise: Promise<any> | undefined
@@ -277,11 +281,13 @@ export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
           if (currentResolve) {
             currentResolve(result)
           }
-        } catch (error) {
+        }
+        catch (error) {
           if (currentReject) {
             currentReject(error)
           }
-        } finally {
+        }
+        finally {
           timeoutId = undefined
           currentPromise = undefined
           currentResolve = undefined
@@ -312,7 +318,7 @@ export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
 export function batch<T, R>(
   func: (items: T[]) => Promise<R[]>,
   batchSize: number = 10,
-  delay: number = 100
+  delay: number = 100,
 ): (item: T) => Promise<R> {
   const batch: Array<{
     item: T
@@ -322,7 +328,8 @@ export function batch<T, R>(
   let timeoutId: number | undefined
 
   const processBatch = async () => {
-    if (batch.length === 0) return
+    if (batch.length === 0)
+      return
 
     const currentBatch = batch.splice(0, batchSize)
     const items = currentBatch.map(b => b.item)
@@ -332,8 +339,9 @@ export function batch<T, R>(
       currentBatch.forEach((b, index) => {
         b.resolve(results[index])
       })
-    } catch (error) {
-      currentBatch.forEach(b => {
+    }
+    catch (error) {
+      currentBatch.forEach((b) => {
         b.reject(error)
       })
     }
@@ -354,7 +362,8 @@ export function batch<T, R>(
           timeoutId = undefined
         }
         processBatch()
-      } else if (!timeoutId) {
+      }
+      else if (!timeoutId) {
         timeoutId = window.setTimeout(processBatch, delay)
       }
     })
@@ -366,7 +375,7 @@ export function batch<T, R>(
  */
 export function measure<T extends (...args: any[]) => any>(
   func: T,
-  name?: string
+  name?: string,
 ): T {
   return function (this: any, ...args: Parameters<T>): ReturnType<T> {
     const label = name || func.name || 'anonymous'
@@ -386,7 +395,8 @@ export function measure<T extends (...args: any[]) => any>(
       const end = performance.now()
       console.log(`${label} took ${end - start} milliseconds`)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const end = performance.now()
       console.log(`${label} failed after ${end - start} milliseconds`)
       throw error

@@ -12,7 +12,7 @@ const mockPerformance = {
 }
 
 // Mock requestAnimationFrame
-const mockRequestAnimationFrame = vi.fn(callback => {
+const mockRequestAnimationFrame = vi.fn((callback) => {
   setTimeout(callback, 16) // 60fps
   return 1
 })

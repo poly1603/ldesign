@@ -1,196 +1,180 @@
-import type { Directive, DirectiveBinding } from 'vue'
-import type { DeviceType, TemplateDirectiveBinding } from '../../types'
-import { createTemplateManager } from '../composables/useTemplate'
-
 /**
- * 指令绑定的元素数据
+ * 模板指令
+ *
+ * 提供 v-template 指令用于动态渲染模板
  */
-interface TemplateDirectiveElement extends HTMLElement {
-  __templateDirective?: {
-    manager: ReturnType<typeof createTemplateManager>
-    currentTemplate?: string
-    cleanup?: () => void
-  }
+
+import type { App, Directive, DirectiveBinding } from 'vue'
+import type { DeviceType } from '../../types'
+import { createApp } from 'vue'
+import { TemplateManager } from '../../core/manager'
+
+export interface TemplateDirectiveValue {
+  category: string
+  device?: DeviceType
+  template?: string
+  props?: Record<string, any>
+  events?: Record<string, (...args: any[]) => void>
 }
 
-/**
- * 解析指令绑定值
- */
-function parseBinding(binding: DirectiveBinding): TemplateDirectiveBinding | null {
-  const { value } = binding
-
-  if (!value) return null
-
-  // 支持字符串格式: "category:device:template"
-  if (typeof value === 'string') {
-    const parts = value.split(':')
-    if (parts.length >= 2) {
-      return {
-        category: parts[0],
-        device: parts[1] as DeviceType,
-        template: parts[2] || parts[1],
-        props: {},
-      }
-    }
-    return null
-  }
-
-  // 支持对象格式
-  if (typeof value === 'object') {
-    const { category, device, template, props = {} } = value
-    if (category && template) {
-      return { category, device, template, props }
-    }
-  }
-
-  return null
-}
-
-/**
- * 渲染模板到元素
- */
-async function renderTemplate(el: TemplateDirectiveElement, binding: TemplateDirectiveBinding): Promise<void> {
-  const data = el.__templateDirective
-  if (!data) return
-
-  try {
-    // 显示加载状态
-    el.innerHTML = '<div class="template-directive-loading">加载中...</div>'
-    el.classList.add('template-directive-loading-state')
-
-    // 渲染模板
-    const component = await data.manager.render({
-      category: binding.category,
-      device: binding.device,
-      template: binding.template,
-      props: binding.props,
-    })
-
-    // 创建 Vue 应用实例来渲染组件
-    const { createApp } = await import('vue')
-    const app = createApp(component, binding.props)
-
-    // 清空元素内容
-    el.innerHTML = ''
-    el.classList.remove('template-directive-loading-state', 'template-directive-error-state')
-    el.classList.add('template-directive-loaded-state')
-
-    // 挂载组件
-    app.mount(el)
-
-    // 保存清理函数
-    data.cleanup = () => {
-      app.unmount()
-    }
-
-    data.currentTemplate = `${binding.category}:${binding.device}:${binding.template}`
-  } catch (error) {
-    console.error('Template directive render error:', error)
-
-    // 显示错误状态
-    el.innerHTML = `
-      <div class="template-directive-error">
-        <div class="template-directive-error__message">模板加载失败</div>
-        <div class="template-directive-error__detail">${(error as Error).message}</div>
-      </div>
-    `
-    el.classList.remove('template-directive-loading-state', 'template-directive-loaded-state')
-    el.classList.add('template-directive-error-state')
-  }
-}
+// 存储每个元素的 Vue 应用实例
+const elementApps = new WeakMap<HTMLElement, App>()
 
 /**
  * 模板指令实现
  */
-export const templateDirective: Directive<TemplateDirectiveElement, unknown> = {
-  /**
-   * 指令挂载时
-   */
-  mounted(el, binding) {
-    const parsedBinding = parseBinding(binding)
-    if (!parsedBinding) {
-      console.warn('Invalid template directive binding:', binding.value)
-      return
-    }
+export const templateDirective: Directive = {
+  mounted(el: HTMLElement, binding: any) {
+    updateTemplate(el, binding)
+  },
 
-    // 初始化指令数据
-    el.__templateDirective = {
-      manager: createTemplateManager(),
-      currentTemplate: undefined,
-      cleanup: undefined,
+  updated(el: HTMLElement, binding: any) {
+    if (binding.value !== binding.oldValue) {
+      updateTemplate(el, binding)
     }
+  },
 
-    // 添加基础样式类
-    el.classList.add('template-directive')
+  unmounted(el: HTMLElement) {
+    // 清理 Vue 应用实例
+    const app = elementApps.get(el)
+    if (app) {
+      app.unmount()
+      elementApps.delete(el)
+    }
+    // 清空元素内容
+    el.innerHTML = ''
+  },
+}
+
+/**
+ * 更新模板
+ */
+async function updateTemplate(el: HTMLElement, binding: DirectiveBinding<TemplateDirectiveValue | null>) {
+  // 检查 binding.value 是否存在
+  if (!binding.value) {
+    console.warn('[v-template] directive value is required')
+    return
+  }
+
+  const { category, device, template, props = {}, events = {} } = binding.value
+
+  if (!category) {
+    console.warn('[v-template] category is required')
+    return
+  }
+
+  try {
+    // 创建模板管理器实例
+    const manager = new TemplateManager()
 
     // 渲染模板
-    renderTemplate(el, parsedBinding)
-  },
+    const result = await manager.render({
+      category,
+      device: (device as DeviceType) || 'desktop',
+      template: template || 'default',
+    })
 
-  /**
-   * 指令更新时
-   */
-  updated(el, binding) {
-    const parsedBinding = parseBinding(binding)
-    if (!parsedBinding) {
-      console.warn('Invalid template directive binding:', binding.value)
-      return
+    if (result && result.component) {
+      // 渲染组件到元素
+      renderComponentToElement(el, result.component, props, events)
     }
-
-    const data = el.__templateDirective
-    if (!data) return
-
-    const newTemplate = `${parsedBinding.category}:${parsedBinding.device}:${parsedBinding.template}`
-
-    // 如果模板没有变化，只更新属性
-    if (data.currentTemplate === newTemplate) {
-      // TODO: 更新组件属性
-      return
+    else {
+      el.innerHTML = `<div class="template-error">Failed to load template</div>`
     }
+  }
+  catch (error) {
+    console.error('[v-template] Error loading template:', error)
+    el.innerHTML = `<div class="template-error">Template loading error</div>`
+  }
+}
 
-    // 清理旧组件
-    if (data.cleanup) {
-      data.cleanup()
-      data.cleanup = undefined
-    }
+/**
+ * 将组件渲染到元素
+ */
+function renderComponentToElement(
+  el: HTMLElement,
+  component: any,
+  props: Record<string, any>,
+  events: Record<string, (...args: any[]) => void> = {},
+) {
+  // 清理之前的应用实例
+  const existingApp = elementApps.get(el)
+  if (existingApp) {
+    existingApp.unmount()
+    elementApps.delete(el)
+  }
 
-    // 渲染新模板
-    renderTemplate(el, parsedBinding)
-  },
+  // 清空元素内容
+  el.innerHTML = ''
 
-  /**
-   * 指令卸载时
-   */
-  unmounted(el) {
-    const data = el.__templateDirective
-    if (!data) return
+  try {
+    // 创建新的 Vue 应用实例
+    const app = createApp(component, {
+      ...props,
+      // 将事件作为 props 传递
+      ...Object.fromEntries(
+        Object.entries(events).map(([key, handler]) => [`on${key.charAt(0).toUpperCase()}${key.slice(1)}`, handler]),
+      ),
+    })
 
-    // 清理组件
-    if (data.cleanup) {
-      data.cleanup()
-    }
+    // 挂载应用到元素
+    app.mount(el)
 
-    // 销毁管理器
-    data.manager.destroy()
-
-    // 清理数据
-    delete el.__templateDirective
-
-    // 移除样式类
-    el.classList.remove(
-      'template-directive',
-      'template-directive-loading-state',
-      'template-directive-loaded-state',
-      'template-directive-error-state'
-    )
-  },
+    // 存储应用实例以便后续清理
+    elementApps.set(el, app)
+  }
+  catch (error) {
+    console.error('[v-template] Error rendering component:', error)
+    el.innerHTML = `<div class="template-error">Component render error</div>`
+  }
 }
 
 /**
  * 注册模板指令
  */
-export function registerTemplateDirective(app: any): void {
+export function registerTemplateDirective(app: any) {
   app.directive('template', templateDirective)
 }
 
+/**
+ * 指令选项
+ */
+export interface TemplateDirectiveOptions {
+  name?: string
+  defaultDevice?: string
+  errorTemplate?: string
+}
+
+/**
+ * 创建模板指令
+ */
+export function createTemplateDirective(options: TemplateDirectiveOptions = {}): Directive {
+  const { name = 'template', defaultDevice = 'desktop', errorTemplate } = options
+
+  return {
+    mounted(el, binding) {
+      const value = {
+        device: defaultDevice,
+        ...binding.value,
+      }
+      updateTemplate(el, { ...binding, value })
+    },
+
+    updated(el, binding) {
+      if (binding.value !== binding.oldValue) {
+        const value = {
+          device: defaultDevice,
+          ...binding.value,
+        }
+        updateTemplate(el, { ...binding, value })
+      }
+    },
+
+    unmounted(el) {
+      el.innerHTML = ''
+    },
+  }
+}
+
+// 默认导出
 export default templateDirective

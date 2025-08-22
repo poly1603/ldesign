@@ -39,13 +39,13 @@ export default {
     nativeName: 'English',
     code: 'en',
     direction: 'ltr',
-    dateFormat: 'MM/DD/YYYY'
+    dateFormat: 'MM/DD/YYYY',
   },
   translations: {
     common,
     pages,
-    components
-  }
+    components,
+  },
 }
 ```
 
@@ -58,7 +58,7 @@ import home from './home'
 export default {
   home,
   about,
-  contact
+  contact,
 }
 ```
 
@@ -163,7 +163,7 @@ interface OrderSummaryParams {
 // 使用时保持类型安全
 const welcomeMessage = t('welcome', {
   userName: 'John',
-  messageCount: 5
+  messageCount: 5,
 } as WelcomeParams)
 ```
 
@@ -224,7 +224,7 @@ const ct = (key: string, params?: any) => t(`${COMPONENT_PREFIX}.${key}`, params
 
 const form = reactive({
   name: '',
-  email: ''
+  email: '',
 })
 
 function handleSubmit() {
@@ -240,18 +240,12 @@ function handleSubmit() {
     <form @submit="handleSubmit">
       <div class="field">
         <label>{{ ct('form.name') }}</label>
-        <input
-          v-model="form.name"
-          :placeholder="ct('form.namePlaceholder')"
-        >
+        <input v-model="form.name" :placeholder="ct('form.namePlaceholder')">
       </div>
 
       <div class="field">
         <label>{{ ct('form.email') }}</label>
-        <input
-          v-model="form.email"
-          :placeholder="ct('form.emailPlaceholder')"
-        >
+        <input v-model="form.email" :placeholder="ct('form.emailPlaceholder')">
       </div>
 
       <button type="submit">
@@ -280,24 +274,20 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   tag: 'span',
-  escapeHtml: true
+  escapeHtml: true,
 })
 
 const { t } = useI18n()
 
 const translatedText = computed(() => {
   return t(props.translationKey, props.params, {
-    escapeValue: props.escapeHtml
+    escapeValue: props.escapeHtml,
   })
 })
 </script>
 
 <template>
-  <component
-    :is="tag"
-    :class="className"
-    v-html="translatedText"
-  />
+  <component :is="tag" :class="className" v-html="translatedText" />
 </template>
 ```
 
@@ -310,8 +300,8 @@ const translatedText = computed(() => {
 const i18n = new I18n({
   cache: {
     enabled: true,
-    maxSize: 1000 // 根据应用大小调整
-  }
+    maxSize: 1000, // 根据应用大小调整
+  },
 })
 
 // 监控缓存性能
@@ -327,9 +317,7 @@ const commonLanguages = ['en', 'zh-CN', 'es', 'fr']
 
 async function preloadLanguages() {
   const promises = commonLanguages.map(locale =>
-    i18n.preloadLanguage(locale).catch(error =>
-      console.warn(`Failed to preload ${locale}:`, error)
-    )
+    i18n.preloadLanguage(locale).catch(error => console.warn(`Failed to preload ${locale}:`, error))
   )
 
   await Promise.allSettled(promises)
@@ -347,7 +335,7 @@ const buttonTexts = useBatchTranslation([
   'common.save',
   'common.cancel',
   'common.delete',
-  'common.edit'
+  'common.edit',
 ])
 
 // ❌ 避免：多次单独调用
@@ -380,14 +368,11 @@ const i18n = new I18n({
     // 发送错误报告
     analytics.track('i18n_load_error', {
       locale,
-      error: error.message
+      error: error.message,
     })
 
     // 显示用户友好的错误消息
-    showNotification(
-      t('errors.languageLoadFailed', { language: locale }),
-      'error'
-    )
+    showNotification(t('errors.languageLoadFailed', { language: locale }), 'error')
   },
 
   missingKeyHandler: (key, locale) => {
@@ -397,7 +382,7 @@ const i18n = new I18n({
     if (process.env.NODE_ENV === 'development') {
       showDevWarning(`Missing translation: ${key}`)
     }
-  }
+  },
 })
 ```
 
@@ -456,7 +441,7 @@ describe('I18n Translation Keys', () => {
 
     const testCases = [
       { key: 'welcome', params: { name: 'John' } },
-      { key: 'pageOf', params: { current: 1, total: 10 } }
+      { key: 'pageOf', params: { current: 1, total: 10 } },
     ]
 
     testCases.forEach(({ key, params }) => {
@@ -494,15 +479,15 @@ import UserProfile from '@/components/UserProfile.vue'
 describe('UserProfile', () => {
   it('should display translated text', async () => {
     const i18nInstance = new I18n({
-      defaultLocale: 'en'
+      defaultLocale: 'en',
     })
 
     const vueI18nPlugin = createI18n(i18nInstance)
 
     const wrapper = mount(UserProfile, {
       global: {
-        plugins: [vueI18nPlugin]
-      }
+        plugins: [vueI18nPlugin],
+      },
     })
 
     expect(wrapper.text()).toContain('User Profile')
@@ -526,11 +511,11 @@ export default defineConfig({
       output: {
         manualChunks: {
           // 将 i18n 相关代码分离到单独的 chunk
-          i18n: ['@ldesign/i18n']
-        }
-      }
-    }
-  }
+          i18n: ['@ldesign/i18n'],
+        },
+      },
+    },
+  },
 })
 ```
 
@@ -606,9 +591,9 @@ const i18n = new I18n({
     analytics.track('translation_used', {
       key,
       locale,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
-  }
+  },
 })
 ```
 
@@ -621,7 +606,8 @@ function measureTranslationPerformance(key: string, fn: () => string) {
   const result = fn()
   const end = performance.now()
 
-  if (end - start > 10) { // 超过 10ms 的翻译
+  if (end - start > 10) {
+    // 超过 10ms 的翻译
     console.warn(`Slow translation for key '${key}': ${end - start}ms`)
   }
 

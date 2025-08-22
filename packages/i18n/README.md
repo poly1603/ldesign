@@ -1,19 +1,41 @@
 # @ldesign/i18n
 
-一个功能完整的框架无关多语言管理系统，提供 Vue 3 集成支持。
+🌍 一个现代化、高性能的国际化解决方案，专为 LDesign 生态系统设计。经过全面优化，提供企业级的性能和可
+靠性。
 
 ## ✨ 特性
 
-- 🌍 **框架无关**：可在任何 JavaScript 环境中使用
-- 🎯 **Vue 3 集成**：提供完整的 Vue 3 插件和组合式 API
-- 🔒 **TypeScript 支持**：完整的类型定义和类型安全
-- ⚡ **高性能缓存**：内置 LRU 缓存机制
-- 🔄 **动态加载**：支持语言包的懒加载和预加载
-- 🌐 **自动检测**：智能检测浏览器语言偏好
-- 💾 **持久化存储**：支持多种存储方式
-- 🔤 **插值支持**：强大的字符串插值功能
-- 📊 **复数处理**：支持多语言复数规则
-- 🎨 **嵌套键**：支持点分隔的嵌套翻译键
+### 🚀 性能优化
+
+- **智能缓存系统**：基于 LRU 算法的多层缓存，支持缓存预热和统计分析
+- **懒加载机制**：按需加载语言包，减少初始加载时间
+- **批量操作优化**：支持批量翻译和并行处理，提升大量翻译场景的性能
+- **内存管理**：自动内存清理和对象池优化，防止内存泄漏
+- **性能监控**：实时性能指标收集、分析和优化建议
+
+### 🛡️ 可靠性保障
+
+- **错误处理系统**：统一的错误管理、分类和优雅降级
+- **类型安全**：完整的 TypeScript 支持，编译时错误检查
+- **测试覆盖**：全面的单元测试、性能测试和 E2E 测试
+- **管理器架构**：模块化设计，支持依赖注入和生命周期管理
+
+### 🔧 开发体验
+
+- **Vue 3 深度集成**：完整的 Vue 3 插件和组合式 API
+- **Engine 集成**：与 @ldesign/engine 深度集成，支持插件化架构
+- **开发工具**：性能分析、错误统计、调试支持和热重载
+- **零依赖**：轻量级设计，无外部依赖
+
+### 🌐 国际化功能
+
+- **多语言支持**：支持任意数量的语言和地区
+- **智能检测**：自动检测浏览器语言偏好
+- **复数规则**：智能复数处理和格式化
+- **插值和格式化**：灵活的参数插值和字符串处理
+- **回退机制**：多级语言回退策略
+- **嵌套键支持**：点分隔的嵌套翻译键
+- **持久化存储**：支持多种存储方式
 
 ## 📦 安装
 
@@ -39,7 +61,7 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
   fallbackLocale: 'en',
-  autoDetect: true
+  autoDetect: true,
 })
 
 // 基础翻译
@@ -49,9 +71,54 @@ console.log(i18n.t('common.ok')) // "OK"
 console.log(i18n.t('common.pageOf', { current: 1, total: 10 }))
 // "Page 1 of 10"
 
+// 批量翻译（性能优化）
+const batchResult = i18n.batchTranslate(['common.ok', 'common.cancel'])
+console.log(batchResult.translations) // { 'common.ok': 'OK', 'common.cancel': 'Cancel' }
+console.log(batchResult.successCount) // 2
+
 // 切换语言
 await i18n.changeLanguage('zh-CN')
 console.log(i18n.t('common.ok')) // "确定"
+```
+
+### 性能监控
+
+```typescript
+// 获取性能指标
+const metrics = i18n.getPerformanceMetrics()
+console.log(metrics.translationCalls) // 翻译调用次数
+console.log(metrics.averageTranslationTime) // 平均翻译时间
+console.log(metrics.cacheHitRate) // 缓存命中率
+
+// 生成性能报告
+const report = i18n.generatePerformanceReport()
+console.log(report)
+
+// 获取优化建议
+const suggestions = i18n.getOptimizationSuggestions()
+console.log(suggestions)
+
+// 预热缓存（提升性能）
+i18n.warmUpCache(['common.ok', 'common.cancel', 'common.save'])
+```
+
+### 错误处理
+
+```typescript
+import { globalErrorManager, I18nError } from '@ldesign/i18n'
+
+// 自定义错误处理器
+globalErrorManager.addHandler({
+  canHandle: error => error instanceof I18nError,
+  handle: (error) => {
+    console.error('I18n Error:', error.getDetails())
+    // 发送到错误监控服务
+  },
+})
+
+// 获取错误统计
+const errorStats = i18n.getErrorStats()
+console.log(errorStats)
 ```
 
 ### Vue 3 集成
@@ -67,7 +134,7 @@ async function bootstrap() {
   // 创建 I18n 实例
   const i18nInstance = await createI18nWithBuiltinLocales({
     defaultLocale: 'en',
-    fallbackLocale: 'en'
+    fallbackLocale: 'en',
   })
 
   // 创建 Vue 插件
@@ -100,16 +167,43 @@ const { t, availableLanguages, changeLanguage } = useI18n()
 
     <!-- 语言切换 -->
     <select @change="changeLanguage($event.target.value)">
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>
   </div>
 </template>
+```
+
+### Engine 集成
+
+```typescript
+import { createEngine } from '@ldesign/engine'
+import { createI18nEnginePlugin } from '@ldesign/i18n'
+
+// 创建 Engine 实例
+const engine = createEngine()
+
+// 创建 I18n 插件
+const i18nPlugin = createI18nEnginePlugin({
+  defaultLanguage: 'en',
+  fallbackLanguage: 'en',
+  enablePerformanceMonitoring: true,
+  enableErrorReporting: true,
+  preloadLanguages: ['en', 'zh-CN'],
+})
+
+// 安装插件
+await engine.use(i18nPlugin)
+
+// 监听 I18n 事件
+engine.events.on('i18n:languageChanged', ({ locale }) => {
+  console.log('Language changed to:', locale)
+})
+
+engine.events.on('i18n:performanceReport', ({ metrics }) => {
+  console.log('Performance metrics:', metrics)
+})
 ```
 
 ## 📚 API 文档
@@ -138,7 +232,26 @@ class I18n {
 
   // 预加载
   async preloadLanguage(locale: string): Promise<void>
+  async batchPreloadLanguages(locales: string[]): Promise<void>
   isLanguageLoaded(locale: string): boolean
+
+  // 性能监控
+  getPerformanceMetrics(): PerformanceMetrics
+  generatePerformanceReport(): string
+  getOptimizationSuggestions(): string[]
+  warmUpCache(keys: string[]): void
+  cleanupCache(): void
+
+  // 错误处理
+  getErrorStats(): Record<string, number>
+  resetErrorStats(): void
+
+  // 工具方法
+  exists(key: string, locale?: string): boolean
+  getKeys(locale?: string): string[]
+  getSuggestions(partialKey: string, limit?: number): string[]
+  hasInterpolation(key: string): boolean
+  hasPlural(key: string): boolean
 
   // 工具方法
   exists(key: string, locale?: string): boolean
@@ -160,7 +273,8 @@ interface I18nOptions {
   storageKey?: string // 存储键名
   autoDetect?: boolean // 自动检测浏览器语言
   preload?: string[] // 预加载的语言列表
-  cache?: { // 缓存配置
+  cache?: {
+    // 缓存配置
     enabled: boolean
     maxSize: number
   }
@@ -253,7 +367,7 @@ import { CookieStorage } from '@ldesign/i18n'
 const cookieStorage = new CookieStorage('my-locale', {
   expires: 30, // 30天
   path: '/',
-  secure: true
+  secure: true,
 })
 
 const i18n = new I18n()
@@ -265,15 +379,15 @@ i18n.setStorage(cookieStorage)
 ```typescript
 // 支持 ICU 复数语法
 i18n.t('items', {
-  count: 0
+  count: 0,
 }) // "no items"
 
 i18n.t('items', {
-  count: 1
+  count: 1,
 }) // "1 item"
 
 i18n.t('items', {
-  count: 5
+  count: 5,
 }) // "5 items"
 ```
 
@@ -282,15 +396,19 @@ i18n.t('items', {
 ```typescript
 // HTML 转义（默认开启）
 i18n.t('message', {
-  content: '<script>alert("xss")</script>'
+  content: '<script>alert("xss")</script>',
 })
 
 // 禁用转义
-i18n.t('message', {
-  content: '<strong>Bold</strong>'
-}, {
-  escapeValue: false
-})
+i18n.t(
+  'message',
+  {
+    content: '<strong>Bold</strong>',
+  },
+  {
+    escapeValue: false,
+  }
+)
 ```
 
 ## 🧪 测试

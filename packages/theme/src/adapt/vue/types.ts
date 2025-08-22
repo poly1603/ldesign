@@ -4,14 +4,24 @@
  * 定义 Vue 集成相关的类型
  */
 
-import type { Ref, ComputedRef, InjectionKey } from 'vue'
+import type { ComputedRef, InjectionKey, Ref } from 'vue'
 import type {
-  ThemeConfig,
-  ThemeManagerInstance,
-  DecorationConfig,
   AnimationConfig,
+  DecorationConfig,
+  ThemeConfig,
   ThemeEventListener,
   ThemeEventType,
+  ThemeManagerInstance,
+} from '../../core/types'
+
+// 重新导出核心类型以供组件使用
+export type {
+  AnimationConfig,
+  DecorationConfig,
+  ThemeConfig,
+  ThemeEventListener,
+  ThemeEventType,
+  ThemeManagerInstance,
 } from '../../core/types'
 
 // 重新导出核心类型供Vue组件使用
@@ -47,8 +57,8 @@ export interface VueThemeContext {
 /**
  * Vue 主题上下文注入键
  */
-export const VueThemeContextKey: InjectionKey<VueThemeContext> =
-  Symbol('vue-theme-context')
+export const VueThemeContextKey: InjectionKey<VueThemeContext>
+  = Symbol('vue-theme-context')
 
 /**
  * useTheme 组合式函数返回类型

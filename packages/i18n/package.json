@@ -16,27 +16,34 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./vue": {
       "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.js"
-    }
+      "import": "./esm/vue/index.js",
+      "require": "./cjs/vue/index.js"
+    },
+    "./web-components": {
+      "types": "./types/web-components/index.d.ts",
+      "import": "./esm/web-components/index.js",
+      "require": "./cjs/web-components/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "main": "lib/index.js",
-  "module": "es/index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "types": "types/index.d.ts",
-  "browser": "es/index.js",
+  "browser": "dist/index.min.js",
   "files": [
-    "es",
-    "lib",
-    "types",
+    "cjs",
+    "dist",
+    "esm",
     "types"
   ],
   "scripts": {
     "build": "rollup -c",
+    "build:verbose": "rollup -c",
     "build:watch": "rollup -c -w",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
@@ -48,7 +55,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
@@ -68,6 +75,7 @@
     }
   },
   "dependencies": {
+    "lit": "^3.0.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
@@ -76,6 +84,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^5.0.3",
+    "@vitejs/plugin-vue-jsx": "^5.0.1",
     "@vitest/ui": "^3.2.4",
     "@vue/runtime-core": "^3.5.18",
     "@vue/test-utils": "^2.4.4",
@@ -84,7 +93,7 @@
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
     "size-limit": "^11.0.0",
-    "typescript": "^5.6.0",
+    "typescript": "^5.9.2",
     "vite": "^5.0.12",
     "vitest": "^3.2.4",
     "vue": "^3.4.15",
@@ -92,8 +101,12 @@
   },
   "size-limit": [
     {
-      "path": "dist/index.js",
+      "path": "esm/index.js",
       "limit": "35 KB"
+    },
+    {
+      "path": "dist/index.min.js",
+      "limit": "40 KB"
     }
   ]
 }

@@ -104,9 +104,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   resolve: {
     alias: {
-      '@ldesign/http': '@ldesign/http/es'
-    }
-  }
+      '@ldesign/http': '@ldesign/http/es',
+    },
+  },
 })
 ```
 
@@ -118,9 +118,9 @@ export default defineConfig({
 module.exports = {
   resolve: {
     alias: {
-      '@ldesign/http': '@ldesign/http/es'
-    }
-  }
+      '@ldesign/http': '@ldesign/http/es',
+    },
+  },
 }
 ```
 
@@ -133,7 +133,7 @@ module.exports = {
 import { createHttpClient } from '@ldesign/http'
 
 const http = createHttpClient({
-  baseURL: 'https://jsonplaceholder.typicode.com'
+  baseURL: 'https://jsonplaceholder.typicode.com',
 })
 
 async function test() {

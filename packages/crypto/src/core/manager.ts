@@ -7,7 +7,11 @@ import type {
   RSAKeyPair,
 } from '../types'
 import { Decrypt, Encrypt, Hash, HMAC, KeyGenerator } from './crypto'
-import { type BatchOperation, type BatchResult, PerformanceOptimizer } from './performance'
+import {
+  type BatchOperation,
+  type BatchResult,
+  PerformanceOptimizer,
+} from './performance'
 
 /**
  * 加密配置选项
@@ -82,7 +86,10 @@ export class CryptoManager {
 
       const result = this.encrypt.encrypt(data, key, targetAlgorithm, options)
 
-      this.log('debug', `Encryption completed`, { algorithm: targetAlgorithm, success: result.success })
+      this.log('debug', `Encryption completed`, {
+        algorithm: targetAlgorithm,
+        success: result.success,
+      })
 
       return result
     }
@@ -90,7 +97,8 @@ export class CryptoManager {
       this.log('error', 'Encryption failed', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown encryption error',
+        error:
+          error instanceof Error ? error.message : 'Unknown encryption error',
         algorithm: targetAlgorithm,
       }
     }
@@ -108,7 +116,12 @@ export class CryptoManager {
     try {
       this.log('debug', `Decrypting data`)
 
-      const result = this.decrypt.decrypt(encryptedData, key, algorithm, options)
+      const result = this.decrypt.decrypt(
+        encryptedData,
+        key,
+        algorithm,
+        options,
+      )
 
       this.log('debug', `Decryption completed`, { success: result.success })
 
@@ -118,7 +131,8 @@ export class CryptoManager {
       this.log('error', 'Decryption failed', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown decryption error',
+        error:
+          error instanceof Error ? error.message : 'Unknown decryption error',
         algorithm: algorithm || 'Unknown',
       }
     }
@@ -127,12 +141,19 @@ export class CryptoManager {
   /**
    * 批量加密
    */
-  async batchEncrypt(operations: BatchOperation[]): Promise<Array<{ id: string, result: EncryptResult }>> {
+  async batchEncrypt(
+    operations: BatchOperation[],
+  ): Promise<Array<{ id: string, result: EncryptResult }>> {
     if (!this.config.enableParallel || operations.length <= 1) {
       // 串行处理
       const results = []
       for (const op of operations) {
-        const result = await this.encryptData(op.data, op.key, op.algorithm, op.options)
+        const result = await this.encryptData(
+          op.data,
+          op.key,
+          op.algorithm,
+          op.options,
+        )
         results.push({ id: op.id, result })
       }
       return results
@@ -145,12 +166,19 @@ export class CryptoManager {
   /**
    * 批量解密
    */
-  async batchDecrypt(operations: BatchOperation[]): Promise<Array<{ id: string, result: DecryptResult }>> {
+  async batchDecrypt(
+    operations: BatchOperation[],
+  ): Promise<Array<{ id: string, result: DecryptResult }>> {
     if (!this.config.enableParallel || operations.length <= 1) {
       // 串行处理
       const results = []
       for (const op of operations) {
-        const result = await this.decryptData(op.data, op.key, op.algorithm, op.options)
+        const result = await this.decryptData(
+          op.data,
+          op.key,
+          op.algorithm,
+          op.options,
+        )
         results.push({ id: op.id, result })
       }
       return results
@@ -163,21 +191,32 @@ export class CryptoManager {
   /**
    * 哈希计算
    */
-  hashData(data: string, algorithm: HashAlgorithm = 'SHA256', options?: HashOptions): string {
+  hashData(
+    data: string,
+    algorithm: HashAlgorithm = 'SHA256',
+    options?: HashOptions,
+  ): string {
     return this.hash.hash(data, algorithm, options)
   }
 
   /**
    * HMAC 计算
    */
-  hmacData(data: string, key: string, algorithm: HashAlgorithm = 'SHA256'): string {
+  hmacData(
+    data: string,
+    key: string,
+    algorithm: HashAlgorithm = 'SHA256',
+  ): string {
     return this.hmac.hmac(data, key, `HMAC-${algorithm}` as any)
   }
 
   /**
    * 生成密钥
    */
-  generateKey(algorithm: EncryptionAlgorithm, keySize?: number): string | RSAKeyPair {
+  generateKey(
+    algorithm: EncryptionAlgorithm,
+    keySize?: number,
+  ): string | RSAKeyPair {
     switch (algorithm.toUpperCase()) {
       case 'AES':
         return this.keyGenerator.generateKey((keySize || 256) / 8)
@@ -190,7 +229,9 @@ export class CryptoManager {
       case 'BLOWFISH':
         return this.keyGenerator.generateRandomBytes(keySize || 16)
       default:
-        throw new Error(`Unsupported algorithm for key generation: ${algorithm}`)
+        throw new Error(
+          `Unsupported algorithm for key generation: ${algorithm}`,
+        )
     }
   }
 
@@ -234,7 +275,11 @@ export class CryptoManager {
   /**
    * 日志记录
    */
-  private log(level: 'error' | 'warn' | 'info' | 'debug', message: string, data?: any): void {
+  private log(
+    level: 'error' | 'warn' | 'info' | 'debug',
+    message: string,
+    data?: any,
+  ): void {
     if (!this.config.debug)
       return
 

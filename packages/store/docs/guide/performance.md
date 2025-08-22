@@ -19,17 +19,16 @@ class DataAnalysisStore extends BaseStore {
     console.log('执行复杂计算...') // 只在数据变化时执行
     return this.largeDataset.map(point => ({
       ...point,
-      processed: this.expensiveProcessing(point)
+      processed: this.expensiveProcessing(point),
     }))
   }
 
   // 记忆化缓存，支持参数
   @MemoizedGetter({ maxSize: 100, ttl: 60000 })
   getFilteredData(category: string, dateRange: [Date, Date]) {
-    return this.processedData.filter(point =>
-      point.category === category
-      && point.date >= dateRange[0]
-      && point.date <= dateRange[1]
+    return this.processedData.filter(
+      point =>
+        point.category === category && point.date >= dateRange[0] && point.date <= dateRange[1]
     )
   }
 
@@ -69,7 +68,7 @@ class ApiStore extends BaseStore {
       // 复杂的计算逻辑
       return {
         ...metrics,
-        [item.id]: this.performComplexCalculation(item)
+        [item.id]: this.performComplexCalculation(item),
       }
     }, {})
   }
@@ -112,8 +111,7 @@ class SearchStore extends BaseStore {
     try {
       const response = await searchApi.search(query)
       this.results = response.data
-    }
-    finally {
+    } finally {
       this.searching = false
     }
   }
@@ -220,7 +218,7 @@ async function loadHeavyComponent() {
     const [component] = await Promise.all([
       import('@/components/HeavyComponent.vue'),
       // 预加载相关 Store
-      storeRegistry.getInstance('heavyData')
+      storeRegistry.getInstance('heavyData'),
     ])
 
     heavyComponent.value = component.default
@@ -230,9 +228,7 @@ async function loadHeavyComponent() {
 
 <template>
   <div>
-    <button @click="loadHeavyComponent">
-      加载重型组件
-    </button>
+    <button @click="loadHeavyComponent">加载重型组件</button>
     <component :is="heavyComponent" v-if="heavyComponent" />
   </div>
 </template>
@@ -263,7 +259,7 @@ class MemoryManagedStore extends BaseStore {
   addToCache(key: string, value: any, ttl: number = 300000) {
     this.cache.set(key, {
       value,
-      expires: Date.now() + ttl
+      expires: Date.now() + ttl,
     })
   }
 
@@ -362,17 +358,13 @@ class BatchUpdateStore extends BaseStore {
   addItemsBatch(newItems: Item[]) {
     // 使用 $patch 进行批量更新
     this.$patch({
-      items: [...this.items, ...newItems]
+      items: [...this.items, ...newItems],
     })
   }
 
   // 批量更新多个状态
   @Action()
-  batchUpdate(updates: {
-    items?: Item[]
-    updating?: boolean
-    [key: string]: any
-  }) {
+  batchUpdate(updates: { items?: Item[]; updating?: boolean; [key: string]: any }) {
     this.$patch(updates)
   }
 
@@ -392,10 +384,9 @@ class BatchUpdateStore extends BaseStore {
       this.$patch({
         items: sortedItems,
         updating: false,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       })
-    }
-    catch (error) {
+    } catch (error) {
       this.updating = false
       throw error
     }
@@ -406,7 +397,7 @@ class BatchUpdateStore extends BaseStore {
     return {
       ...item,
       processed: true,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 }
@@ -448,7 +439,7 @@ class VirtualizedListStore extends BaseStore {
     return this.allItems.slice(startIndex, endIndex).map((item, index) => ({
       ...item,
       virtualIndex: startIndex + index,
-      top: (startIndex + index) * this.itemHeight
+      top: (startIndex + index) * this.itemHeight,
     }))
   }
 
@@ -496,7 +487,7 @@ class PaginatedStore extends BaseStore {
     try {
       const response = await api.getItems({
         page,
-        pageSize: this.pageSize
+        pageSize: this.pageSize,
       })
 
       this.pages.set(page, response.items)
@@ -504,8 +495,7 @@ class PaginatedStore extends BaseStore {
       this.currentPage = page
 
       return response.items
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -584,7 +574,7 @@ class OptimizedStore extends BaseStore {
 const pool = useStorePool({
   maxSize: 20,
   maxIdleTime: 600000, // 10分钟
-  enableGC: true
+  enableGC: true,
 })
 
 // 获取池化的 Store 实例
@@ -605,16 +595,16 @@ console.log('池统计:', stats)
 
 ```typescript
 interface StorePoolOptions {
-  maxSize?: number      // 池的最大大小，默认 50
-  maxIdleTime?: number  // 最大空闲时间（毫秒），默认 5分钟
-  enableGC?: boolean    // 是否启用垃圾回收，默认 true
+  maxSize?: number // 池的最大大小，默认 50
+  maxIdleTime?: number // 最大空闲时间（毫秒），默认 5分钟
+  enableGC?: boolean // 是否启用垃圾回收，默认 true
 }
 
 // 自定义池配置
 const customPool = useStorePool({
   maxSize: 100,
   maxIdleTime: 1800000, // 30分钟
-  enableGC: true
+  enableGC: true,
 })
 ```
 
@@ -629,7 +619,7 @@ import {
   MonitorAction,
   MonitorGetter,
   usePerformanceMonitor,
-  getOptimizationSuggestions
+  getOptimizationSuggestions,
 } from '@ldesign/store'
 
 class MonitoredStore extends BaseStore {
@@ -683,7 +673,7 @@ export function useStorePerformance() {
   return {
     report,
     suggestions,
-    clearMetrics: () => monitor.clearMetrics()
+    clearMetrics: () => monitor.clearMetrics(),
   }
 }
 ```
@@ -702,7 +692,9 @@ if (process.env.NODE_ENV === 'development') {
     if (report.slowActions.length > 0) {
       console.group('🐌 慢速 Actions')
       report.slowActions.forEach(action => {
-        console.log(`${action.name}: 平均 ${action.avgTime.toFixed(2)}ms, 最大 ${action.maxTime.toFixed(2)}ms`)
+        console.log(
+          `${action.name}: 平均 ${action.avgTime.toFixed(2)}ms, 最大 ${action.maxTime.toFixed(2)}ms`
+        )
       })
       console.groupEnd()
     }
@@ -710,7 +702,9 @@ if (process.env.NODE_ENV === 'development') {
     if (report.slowGetters.length > 0) {
       console.group('🐌 慢速 Getters')
       report.slowGetters.forEach(getter => {
-        console.log(`${getter.name}: 平均 ${getter.avgTime.toFixed(2)}ms, 最大 ${getter.maxTime.toFixed(2)}ms`)
+        console.log(
+          `${getter.name}: 平均 ${getter.avgTime.toFixed(2)}ms, 最大 ${getter.maxTime.toFixed(2)}ms`
+        )
       })
       console.groupEnd()
     }
@@ -743,19 +737,27 @@ if (process.env.NODE_ENV === 'development') {
 class OptimizedStore extends BaseStore {
   // 频繁变化的数据使用节流
   @ThrottledAction(100)
-  updateFrequentData(data: any) { /* ... */ }
+  updateFrequentData(data: any) {
+    /* ... */
+  }
 
   // 搜索使用防抖
   @DebouncedAction(300)
-  search(query: string) { /* ... */ }
+  search(query: string) {
+    /* ... */
+  }
 
   // 计算密集的使用缓存
   @CachedGetter(['largeDataset'])
-  get expensiveCalculation() { /* ... */ }
+  get expensiveCalculation() {
+    /* ... */
+  }
 
   // API 请求使用缓存
   @CachedAction(300000)
-  async fetchData() { /* ... */ }
+  async fetchData() {
+    /* ... */
+  }
 }
 ```
 
@@ -778,7 +780,9 @@ class ReasonablyOptimizedStore extends BaseStore {
   }
 
   @CachedAction(60000) // 只对需要的操作使用缓存
-  async fetchExpensiveData() { /* ... */ }
+  async fetchExpensiveData() {
+    /* ... */
+  }
 }
 ```
 

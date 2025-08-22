@@ -2,30 +2,34 @@
  * 预设配置测试
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  smallSizeConfig,
-  mediumSizeConfig,
-  largeSizeConfig,
   extraLargeSizeConfig,
-  sizeConfigs,
-  getSizeConfig,
   getAvailableModes,
+  getSizeConfig,
+  largeSizeConfig,
+  mediumSizeConfig,
+  sizeConfigs,
+  smallSizeConfig,
 } from '../../core/presets'
-import type { SizeMode } from '../../types'
 
 describe('presets', () => {
   describe('预设配置', () => {
     it('应该包含所有必需的配置属性', () => {
-      const configs = [smallSizeConfig, mediumSizeConfig, largeSizeConfig, extraLargeSizeConfig]
-      
+      const configs = [
+        smallSizeConfig,
+        mediumSizeConfig,
+        largeSizeConfig,
+        extraLargeSizeConfig,
+      ]
+
       configs.forEach((config) => {
         expect(config).toHaveProperty('fontSize')
         expect(config).toHaveProperty('spacing')
         expect(config).toHaveProperty('component')
         expect(config).toHaveProperty('borderRadius')
         expect(config).toHaveProperty('shadow')
-        
+
         // 检查字体大小配置
         expect(config.fontSize).toHaveProperty('xs')
         expect(config.fontSize).toHaveProperty('sm')
@@ -39,7 +43,7 @@ describe('presets', () => {
         expect(config.fontSize).toHaveProperty('h4')
         expect(config.fontSize).toHaveProperty('h5')
         expect(config.fontSize).toHaveProperty('h6')
-        
+
         // 检查间距配置
         expect(config.spacing).toHaveProperty('xs')
         expect(config.spacing).toHaveProperty('sm')
@@ -47,13 +51,13 @@ describe('presets', () => {
         expect(config.spacing).toHaveProperty('lg')
         expect(config.spacing).toHaveProperty('xl')
         expect(config.spacing).toHaveProperty('xxl')
-        
+
         // 检查组件配置
         expect(config.component).toHaveProperty('buttonHeight')
         expect(config.component).toHaveProperty('inputHeight')
         expect(config.component).toHaveProperty('iconSize')
         expect(config.component).toHaveProperty('avatarSize')
-        
+
         // 检查边框圆角配置
         expect(config.borderRadius).toHaveProperty('none')
         expect(config.borderRadius).toHaveProperty('sm')
@@ -61,7 +65,7 @@ describe('presets', () => {
         expect(config.borderRadius).toHaveProperty('lg')
         expect(config.borderRadius).toHaveProperty('xl')
         expect(config.borderRadius).toHaveProperty('full')
-        
+
         // 检查阴影配置
         expect(config.shadow).toHaveProperty('none')
         expect(config.shadow).toHaveProperty('sm')
@@ -72,11 +76,13 @@ describe('presets', () => {
     })
 
     it('应该有正确的尺寸递增关系', () => {
-      const baseSmall = parseFloat(smallSizeConfig.fontSize.base)
-      const baseMedium = parseFloat(mediumSizeConfig.fontSize.base)
-      const baseLarge = parseFloat(largeSizeConfig.fontSize.base)
-      const baseExtraLarge = parseFloat(extraLargeSizeConfig.fontSize.base)
-      
+      const baseSmall = Number.parseFloat(smallSizeConfig.fontSize.base)
+      const baseMedium = Number.parseFloat(mediumSizeConfig.fontSize.base)
+      const baseLarge = Number.parseFloat(largeSizeConfig.fontSize.base)
+      const baseExtraLarge = Number.parseFloat(
+        extraLargeSizeConfig.fontSize.base,
+      )
+
       expect(baseSmall).toBeLessThan(baseMedium)
       expect(baseMedium).toBeLessThan(baseLarge)
       expect(baseLarge).toBeLessThan(baseExtraLarge)

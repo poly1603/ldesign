@@ -16,23 +16,24 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "types": "./types/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./vue": {
       "types": "./types/adapt/vue/index.d.ts",
-      "import": "./es/adapt/vue/index.js",
-      "require": "./lib/adapt/vue/index.js"
-    }
+      "import": "./esm/adapt/vue/index.js",
+      "require": "./cjs/adapt/vue/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "es/index.js",
-  "types": "dist/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
   "files": [
+    "cjs",
     "dist",
-    "es",
-    "lib",
+    "esm",
     "types"
   ],
   "scripts": {
@@ -48,13 +49,16 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
     "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
+    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
@@ -95,5 +99,6 @@
       "path": "dist/index.js",
       "limit": "30 KB"
     }
-  ]
+  ],
+  "browser": "dist/index.min.js"
 }

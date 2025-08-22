@@ -1,5 +1,10 @@
-import type { HttpAdapter, HttpError, RequestConfig, ResponseData } from '@/types'
-import { buildURL, createHttpError } from '@/utils'
+import type {
+  HttpAdapter,
+  HttpError,
+  RequestConfig,
+  ResponseData,
+} from '../types'
+import { buildURL, createHttpError } from '../utils'
 
 /**
  * 适配器基类
@@ -117,7 +122,9 @@ export abstract class BaseAdapter implements HttpAdapter {
 
     if (timeout && timeout > 0) {
       timeoutId = setTimeout(() => {
-        controller.abort()
+        if (controller && typeof controller.abort === 'function') {
+          controller.abort()
+        }
       }, timeout)
     }
 
@@ -134,9 +141,11 @@ export abstract class BaseAdapter implements HttpAdapter {
   /**
    * 合并 AbortSignal
    */
-  protected mergeAbortSignals(signals: (AbortSignal | undefined)[]): AbortSignal {
-    const validSignals = signals.filter((signal): signal is AbortSignal =>
-      signal !== undefined,
+  protected mergeAbortSignals(
+    signals: (AbortSignal | undefined)[],
+  ): AbortSignal {
+    const validSignals = signals.filter(
+      (signal): signal is AbortSignal => signal !== undefined,
     )
 
     if (validSignals.length === 0) {
@@ -168,7 +177,9 @@ export abstract class BaseAdapter implements HttpAdapter {
   /**
    * 解析响应头
    */
-  protected parseHeaders(headers: Headers | Record<string, string>): Record<string, string> {
+  protected parseHeaders(
+    headers: Headers | Record<string, string>,
+  ): Record<string, string> {
     const result: Record<string, string> = {}
 
     if (headers instanceof Headers) {

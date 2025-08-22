@@ -15,32 +15,35 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "types": "./types/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./vue": {
       "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.js"
-    }
+      "import": "./esm/vue/index.js",
+      "require": "./cjs/vue/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "es/index.js",
-  "types": "dist/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
+  "browser": "dist/index.min.js",
   "files": [
+    "cjs",
     "dist",
-    "es",
-    "lib",
+    "esm",
     "types"
   ],
   "scripts": {
     "build": "rollup -c",
-    "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
-    "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
-    "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "build:rollup": "rollup -c",
+    "build:clean": "node scripts/build.js --clean",
+    "build:types": "node scripts/build.js --types",
+    "build:analyze": "node scripts/analyze-bundle.js",
     "build:watch": "rollup -c -w",
+    "build:check": "pnpm run build && pnpm run build:analyze",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
@@ -51,12 +54,14 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
-    "prepublishOnly": "pnpm run clean && pnpm run build:check && pnpm run test:run",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "dev:examples": "vite serve examples --port 5173",
+    "serve:examples": "vite preview examples --port 5173"
   },
   "peerDependencies": {
     "vue": "^3.5.18"

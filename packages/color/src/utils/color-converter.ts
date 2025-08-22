@@ -175,7 +175,10 @@ export function isValidHex(hex: string): boolean {
 export function normalizeHex(hex: string): string {
   hex = hex.replace('#', '')
   if (hex.length === 3) {
-    hex = hex.split('').map(char => char + char).join('')
+    hex = hex
+      .split('')
+      .map(char => char + char)
+      .join('')
   }
   return `#${hex.toLowerCase()}`
 }

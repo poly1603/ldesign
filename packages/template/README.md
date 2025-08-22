@@ -32,7 +32,50 @@ yarn add @ldesign/template
 
 ## 🚀 快速开始
 
-### 1. 插件方式 (推荐)
+### 1. Provider 方式 (推荐)
+
+```typescript
+// main.ts
+import { createApp } from 'vue'
+import { TemplateProvider } from '@ldesign/template'
+import App from './App.vue'
+
+const app = createApp(App)
+app.mount('#app')
+```
+
+```vue
+<!-- App.vue -->
+<template>
+  <TemplateProvider :config="providerConfig">
+    <router-view />
+  </TemplateProvider>
+</template>
+
+<script setup lang="ts">
+import {
+  TemplateProvider,
+  createTemplateProviderConfig,
+} from '@ldesign/template'
+
+const providerConfig = createTemplateProviderConfig({
+  enableCache: true,
+  autoDetectDevice: true,
+  defaultSelectorConfig: {
+    enabled: true,
+    position: 'top',
+    showPreview: true,
+    layout: 'grid',
+  },
+  theme: {
+    primaryColor: '#1890ff',
+    borderRadius: '8px',
+  },
+})
+</script>
+```
+
+### 2. 插件方式
 
 ```typescript
 import TemplatePlugin from '@ldesign/template'
@@ -43,9 +86,14 @@ import App from './App.vue'
 const app = createApp(App)
 
 app.use(TemplatePlugin, {
-  templateRoot: 'src/templates',
   enableCache: true,
-  enablePreload: true
+  autoDetectDevice: true,
+  providerConfig: {
+    defaultSelectorConfig: {
+      enabled: true,
+      position: 'top',
+    },
+  },
 })
 
 app.mount('#app')
@@ -57,11 +105,7 @@ app.mount('#app')
 <script setup lang="ts">
 import { TemplateRenderer, useTemplate } from '@ldesign/template'
 
-const {
-  currentDevice,
-  switchTemplate,
-  availableTemplates
-} = useTemplate()
+const { currentDevice, switchTemplate, availableTemplates } = useTemplate()
 
 const selectedTemplate = ref(null)
 
@@ -69,16 +113,14 @@ async function switchToLogin() {
   await switchTemplate('login', currentDevice.value, 'classic')
   selectedTemplate.value = {
     category: 'login',
-    template: 'classic'
+    template: 'classic',
   }
 }
 </script>
 
 <template>
   <div>
-    <button @click="switchToLogin">
-      切换到登录页
-    </button>
+    <button @click="switchToLogin">切换到登录页</button>
     <TemplateRenderer
       v-if="selectedTemplate"
       :category="selectedTemplate.category"
@@ -89,16 +131,54 @@ async function switchToLogin() {
 </template>
 ```
 
-### 3. 组件方式
+### 3. 内置模板选择器
+
+```vue
+<template>
+  <!-- 带顶部选择器的模板渲染器 -->
+  <TemplateRenderer
+    category="login"
+    :selector="{
+      enabled: true,
+      position: 'top',
+      showPreview: true,
+      showSearch: true,
+      layout: 'grid',
+      columns: 3,
+    }"
+  />
+
+  <!-- 带覆盖层选择器的模板渲染器 -->
+  <TemplateRenderer
+    category="dashboard"
+    :selector="{
+      enabled: true,
+      position: 'overlay',
+      trigger: 'manual',
+      showPreview: true,
+    }"
+    :template="{
+      desktop: 'full-layout',
+      tablet: 'compact-layout',
+      mobile: 'simple-layout',
+    }"
+  />
+
+  <!-- 简单布尔值启用默认选择器 -->
+  <TemplateRenderer category="profile" :selector="true" />
+</template>
+
+<script setup>
+import { TemplateRenderer } from '@ldesign/template'
+</script>
+```
+
+### 4. 组件方式
 
 ```vue
 <template>
   <!-- 基础用法 -->
-  <LTemplateRenderer
-    category="login"
-    device="desktop"
-    template="classic"
-  />
+  <LTemplateRenderer category="login" device="desktop" template="classic" />
 
   <!-- 带属性传递 -->
   <LTemplateRenderer
@@ -116,24 +196,53 @@ async function switchToLogin() {
     @error="onTemplateError"
   >
     <template #loading>
-      <div class="custom-loading">
-        加载中...
-      </div>
+      <div class="custom-loading">加载中...</div>
     </template>
 
     <template #error="{ error, retry }">
       <div class="custom-error">
         <p>{{ error.message }}</p>
-        <button @click="retry">
-          重试
-        </button>
+        <button @click="retry">重试</button>
       </div>
     </template>
   </LTemplateRenderer>
 </template>
 ```
 
-### 4. 指令方式
+### 5. Provider 模式使用
+
+```vue
+<template>
+  <div>
+    <!-- 在Provider上下文中使用组合式函数 -->
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">{{ error.message }}</div>
+    <div v-else>
+      <h3>当前设备: {{ currentDevice }}</h3>
+      <button @click="handleSwitchTemplate">切换模板</button>
+
+      <!-- 简化的模板渲染器，自动使用Provider配置 -->
+      <TemplateRenderer category="login" :selector="true" />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { TemplateRenderer, useTemplateProvider } from '@ldesign/template'
+
+const { currentDevice, loading, error, switchTemplate, getTemplates } =
+  useTemplateProvider()
+
+const handleSwitchTemplate = async () => {
+  const templates = getTemplates('login', currentDevice.value)
+  if (templates.length > 0) {
+    await switchTemplate('login', currentDevice.value, templates[0].template)
+  }
+}
+</script>
+```
+
+### 6. 指令方式
 
 ```vue
 <template>
@@ -200,7 +309,7 @@ export default {
   minWidth: 1200,
   maxWidth: undefined,
   createdAt: '2024-01-01',
-  updatedAt: '2024-01-15'
+  updatedAt: '2024-01-15',
 } as TemplateConfig
 ```
 
@@ -216,17 +325,17 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      default: '系统登录'
+      default: '系统登录',
     },
     onLogin: {
       type: Function,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   setup(props) {
     const form = ref({
       username: '',
-      password: ''
+      password: '',
     })
 
     const handleLogin = () => {
@@ -237,10 +346,7 @@ export default defineComponent({
       <div class="classic-login">
         <h1>{props.title}</h1>
         <form onSubmit={handleLogin}>
-          <input
-            v-model={form.value.username}
-            placeholder="用户名"
-          />
+          <input v-model={form.value.username} placeholder="用户名" />
           <input
             v-model={form.value.password}
             type="password"
@@ -250,7 +356,7 @@ export default defineComponent({
         </form>
       </div>
     )
-  }
+  },
 })
 ```
 
@@ -274,7 +380,7 @@ app.use(TemplatePlugin, {
     customDetector: () => {
       // 自定义设备检测逻辑
       return 'desktop'
-    }
+    },
   },
 
   // 缓存配置
@@ -283,10 +389,7 @@ app.use(TemplatePlugin, {
 
   // 预加载配置
   enablePreload: true,
-  preloadTemplates: [
-    'login:desktop:classic',
-    'login:mobile:simple'
-  ],
+  preloadTemplates: ['login:desktop:classic', 'login:mobile:simple'],
 
   // 默认设备类型
   defaultDevice: 'desktop',
@@ -295,7 +398,7 @@ app.use(TemplatePlugin, {
   componentPrefix: 'L',
   registerComponents: true,
   registerDirectives: true,
-  provideGlobalProperties: true
+  provideGlobalProperties: true,
 })
 ```
 
@@ -309,7 +412,7 @@ import { useTemplate } from '@ldesign/template'
 const { currentDevice, switchTemplate } = useTemplate()
 
 // 监听设备变化
-watch(currentDevice, (newDevice) => {
+watch(currentDevice, newDevice => {
   console.log('设备类型变化:', newDevice)
   // 自动切换到对应设备的模板
 })
@@ -317,12 +420,59 @@ watch(currentDevice, (newDevice) => {
 
 ## 🎪 API 参考
 
-### useTemplate()
+### TemplateProvider 组件
+
+全局模板配置提供者，为子组件提供统一的模板管理上下文：
+
+```typescript
+interface TemplateProviderProps {
+  config?: TemplateProviderConfig
+}
+
+interface TemplateProviderConfig {
+  enableCache?: boolean
+  autoDetectDevice?: boolean
+  defaultSelectorConfig?: TemplateSelectorConfig
+  globalTemplateProps?: Record<string, unknown>
+  enableGlobalState?: boolean
+  autoScan?: boolean
+  theme?: {
+    primaryColor?: string
+    borderRadius?: string
+    spacing?: string
+  }
+}
+```
+
+### useTemplateProvider()
+
+在 Provider 上下文中使用的组合式函数：
 
 ```typescript
 const {
   // 状态
-  manager, // 模板管理器实例
+  isInProvider, // 是否在Provider上下文中
+  config, // 全局配置
+  currentDevice, // 当前设备类型
+  loading, // 加载状态
+  error, // 错误信息
+
+  // 方法
+  getTemplates, // 获取模板列表
+  switchTemplate, // 切换模板
+  refreshTemplates, // 刷新模板列表
+  clearCache, // 清空缓存
+  hasTemplate, // 检查模板是否存在
+} = useTemplateProvider()
+```
+
+### useTemplate()
+
+独立的模板管理组合式函数：
+
+```typescript
+const {
+  // 状态
   currentTemplate, // 当前模板
   currentDevice, // 当前设备类型
   loading, // 加载状态
@@ -338,26 +488,120 @@ const {
   getTemplates, // 获取模板列表
   hasTemplate, // 检查模板是否存在
   clearCache, // 清空缓存
-  refresh // 刷新模板列表
+  refresh, // 刷新模板列表
 } = useTemplate(options)
 ```
 
 ### TemplateRenderer 组件
 
+支持内置模板选择器的模板渲染组件：
+
 ```typescript
 interface TemplateRendererProps {
+  // 基础属性
   category: string // 模板分类
   device?: DeviceType // 设备类型
-  template: string // 模板名称
-  templateProps?: object // 传递给模板的属性
+  template?: string | Record<DeviceType, string> // 模板名称
+  templateProps?: Record<string, unknown> // 传递给模板的属性
+
+  // 缓存和性能
   cache?: boolean // 是否启用缓存
-  loading?: Component // 加载组件
-  error?: Component // 错误组件
-  empty?: Component // 空状态组件
-  timeout?: number // 加载超时时间
-  autoRetry?: boolean // 是否自动重试
-  retryCount?: number // 重试次数
+  preload?: boolean // 是否预加载
+
+  // 动画效果
+  transition?: boolean // 是否启用切换动画
+  transitionDuration?: number // 动画持续时间
+  transitionType?: 'fade' | 'slide' | 'scale' | 'flip' // 动画类型
+
+  // 状态控制
+  loading?: boolean // 是否显示加载状态
+  error?: boolean // 是否显示错误状态
+
+  // 内置模板选择器
+  selector?: boolean | TemplateSelectorConfig // 选择器配置
+  allowTemplateSwitch?: boolean // 是否允许用户切换模板
+  canSwitchTemplate?: (template: string) => boolean // 模板切换权限检查
+
+  // 自定义插槽
+  slots?: SlotConfig[] // 自定义插槽配置
 }
+
+interface TemplateSelectorConfig {
+  enabled?: boolean // 是否显示选择器
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'overlay' | 'inline' // 选择器位置
+  showPreview?: boolean // 是否显示预览
+  showSearch?: boolean // 是否显示搜索
+  layout?: 'grid' | 'list' // 布局模式
+  columns?: number // 网格列数
+  showInfo?: boolean // 是否显示模板信息
+  trigger?: 'click' | 'hover' | 'manual' // 触发方式
+  animation?: boolean // 动画效果
+}
+```
+
+### TemplateSelector 组件
+
+模板选择器组件提供了智能的模板浏览和选择功能：
+
+```vue
+<template>
+  <TemplateSelector
+    category="login"
+    device="desktop"
+    :current-template="selectedTemplate"
+    :templates="availableTemplates"
+    :show-preview="true"
+    :show-search="true"
+    layout="grid"
+    :columns="3"
+    @template-change="handleTemplateChange"
+    @template-preview="handleTemplatePreview"
+  />
+</template>
+```
+
+#### 组件属性
+
+```typescript
+interface TemplateSelectorProps {
+  category: string // 模板分类
+  device?: DeviceType // 设备类型
+  currentTemplate?: string // 当前选中的模板
+  showPreview?: boolean // 是否显示预览
+  showSearch?: boolean // 是否显示搜索
+  layout?: 'grid' | 'list' // 布局模式
+  columns?: number // 网格列数
+  showInfo?: boolean // 是否显示模板信息
+  onTemplateChange?: (template: string) => void // 模板变化回调
+  onTemplatePreview?: (template: string) => void // 模板预览回调
+}
+```
+
+#### 功能特性
+
+- 🎯 **智能分类**：根据模板分类自动分组显示
+- 📱 **设备适配**：根据设备类型动态筛选模板
+- 🔍 **实时搜索**：支持模板名称、描述、标签搜索
+- 👀 **预览功能**：鼠标悬停即可预览模板
+- 🎨 **多种布局**：支持网格和列表两种布局模式
+- ⚡ **实时响应**：设备类型变化时自动更新模板列表
+
+### useTemplateSelector Hook
+
+```typescript
+const {
+  availableTemplates, // 可用模板列表
+  filteredTemplates, // 过滤后的模板列表
+  searchQuery, // 搜索查询
+  selectedTemplate, // 选中的模板
+  loading, // 加载状态
+  error, // 错误信息
+  selectTemplate, // 选择模板
+  previewTemplate, // 预览模板
+  searchTemplates, // 搜索模板
+  refreshTemplates, // 刷新模板列表
+  reset, // 重置选择器
+} = useTemplateSelector(options)
 ```
 
 ## 🧪 测试

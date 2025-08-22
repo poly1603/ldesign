@@ -117,12 +117,12 @@ const engine = createEngine({
 })
 
 // 自定义日志格式
-engine.logger.addFormatter('custom', entry => {
+engine.logger.addFormatter('custom', (entry) => {
   return `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}`
 })
 
 // 日志过滤
-engine.logger.addFilter(entry => {
+engine.logger.addFilter((entry) => {
   // 过滤敏感信息
   if (entry.message.includes('password')) {
     entry.message = entry.message.replace(/password:\s*\S+/g, 'password: ***')
@@ -227,12 +227,12 @@ const engine = createEngine({
 
 // 监听文件变化
 if (import.meta.hot) {
-  import.meta.hot.accept('./plugins/my-plugin.ts', newModule => {
+  import.meta.hot.accept('./plugins/my-plugin.ts', (newModule) => {
     // 重新加载插件
     engine.plugins.reload('my-plugin', newModule.default)
   })
 
-  import.meta.hot.accept('./middleware/auth.ts', newModule => {
+  import.meta.hot.accept('./middleware/auth.ts', (newModule) => {
     // 重新加载中间件
     engine.middleware.reload('auth', newModule.default)
   })
@@ -402,7 +402,7 @@ const engine = createEngine({
 })
 
 // 监听性能警告
-engine.events.on('performance:budget-exceeded', metric => {
+engine.events.on('performance:budget-exceeded', (metric) => {
   console.warn(`性能预算超标: ${metric.name}`, metric)
 })
 ```
@@ -428,7 +428,7 @@ setInterval(() => {
 engine.performance.detectMemoryLeaks({
   interval: 30000, // 30秒检测一次
   threshold: 10 * 1024 * 1024, // 10MB增长阈值
-  callback: leak => {
+  callback: (leak) => {
     console.error('检测到内存泄漏:', leak)
   },
 })
@@ -468,7 +468,7 @@ engine.state.subscribe('user', (newValue, oldValue) => {
 })
 
 // 状态验证
-engine.state.addValidator('user', value => {
+engine.state.addValidator('user', (value) => {
   if (value && !value.id) {
     console.error('用户对象缺少ID字段')
     return false
@@ -524,10 +524,10 @@ engine.events.on('plugin:dependency-missing', ({ plugin, dependency }) => {
 ### Vite 配置
 
 ```typescript
+import { ldesignEngine } from '@ldesign/engine/vite'
+import vue from '@vitejs/plugin-vue'
 // vite.config.ts
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { ldesignEngine } from '@ldesign/engine/vite'
 
 export default defineConfig({
   plugins: [

@@ -1,4 +1,4 @@
-import type { ConcurrencyConfig, RequestConfig, ResponseData } from '@/types'
+import type { ConcurrencyConfig, RequestConfig, ResponseData } from '../types'
 
 /**
  * 请求任务接口
@@ -182,11 +182,10 @@ export class DeduplicationManager {
     }
 
     // 创建新的请求
-    const requestPromise = requestFn()
-      .finally(() => {
-        // 请求完成后清理
-        this.pendingRequests.delete(key)
-      })
+    const requestPromise = requestFn().finally(() => {
+      // 请求完成后清理
+      this.pendingRequests.delete(key)
+    })
 
     this.pendingRequests.set(key, requestPromise)
     return requestPromise
@@ -305,7 +304,9 @@ export class RateLimitManager {
 /**
  * 创建并发管理器
  */
-export function createConcurrencyManager(config?: ConcurrencyConfig): ConcurrencyManager {
+export function createConcurrencyManager(
+  config?: ConcurrencyConfig,
+): ConcurrencyManager {
   return new ConcurrencyManager(config)
 }
 

@@ -64,9 +64,8 @@ test.describe('Engine E2E Tests', () => {
     await page.waitForLoadState('networkidle')
 
     // 过滤掉一些已知的无害错误
-    const filteredErrors = errors.filter(error =>
-      !error.includes('favicon.ico')
-      && !error.includes('404'),
+    const filteredErrors = errors.filter(
+      error => !error.includes('favicon.ico') && !error.includes('404'),
     )
 
     expect(filteredErrors).toHaveLength(0)

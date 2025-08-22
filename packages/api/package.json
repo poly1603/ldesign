@@ -30,38 +30,26 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
     },
     "./vue": {
       "types": "./types/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.js"
-    },
-    "./es": {
-      "types": "./types/index.d.ts",
-      "import": "./es/index.js"
-    },
-    "./lib": {
-      "types": "./types/index.d.ts",
-      "require": "./lib/index.js"
-    },
-    "./dist": {
-      "types": "./types/index.d.ts",
-      "browser": "./dist/index.js"
+      "import": "./esm/vue/index.js",
+      "require": "./cjs/vue/index.js"
     },
     "./package.json": "./package.json"
   },
-  "main": "lib/index.js",
-  "module": "es/index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "types": "types/index.d.ts",
-  "browser": "dist/index.js",
+  "browser": "dist/index.min.js",
   "files": [
     "CHANGELOG.md",
     "README.md",
+    "cjs",
     "dist",
-    "es",
-    "lib",
+    "esm",
     "types"
   ],
   "scripts": {
@@ -80,7 +68,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "clean": "rimraf dist es lib types coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "deploy": "tsx ../../tools/deploy/package-deployer.ts api",

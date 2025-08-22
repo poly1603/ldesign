@@ -47,9 +47,9 @@ export function compareSizeModes(mode1: SizeMode, mode2: SizeMode): number {
  */
 export function getSizeModeDisplayName(mode: SizeMode): string {
   const displayNames: Record<SizeMode, string> = {
-    small: '小',
-    medium: '中',
-    large: '大',
+    'small': '小',
+    'medium': '中',
+    'large': '大',
     'extra-large': '超大',
   }
   return displayNames[mode]
@@ -68,14 +68,14 @@ export function parseSizeMode(value: string): SizeMode | null {
 
   // 别名匹配
   const aliases: Record<string, SizeMode> = {
-    's': 'small',
-    'm': 'medium',
-    'l': 'large',
-    'xl': 'extra-large',
-    '小': 'small',
-    '中': 'medium',
-    '大': 'large',
-    '超大': 'extra-large',
+    s: 'small',
+    m: 'medium',
+    l: 'large',
+    xl: 'extra-large',
+    小: 'small',
+    中: 'medium',
+    大: 'large',
+    超大: 'extra-large',
   }
 
   return aliases[normalizedValue] || null
@@ -84,13 +84,16 @@ export function parseSizeMode(value: string): SizeMode | null {
 /**
  * 计算尺寸缩放比例
  */
-export function calculateSizeScale(fromMode: SizeMode, toMode: SizeMode): number {
+export function calculateSizeScale(
+  fromMode: SizeMode,
+  toMode: SizeMode,
+): number {
   const fromConfig = getSizeConfig(fromMode)
   const toConfig = getSizeConfig(toMode)
 
   // 使用基础字体大小计算缩放比例
-  const fromSize = parseFloat(fromConfig.fontSize.base)
-  const toSize = parseFloat(toConfig.fontSize.base)
+  const fromSize = Number.parseFloat(fromConfig.fontSize.base)
+  const toSize = Number.parseFloat(toConfig.fontSize.base)
 
   return toSize / fromSize
 }
@@ -108,11 +111,11 @@ export function formatCSSValue(value: string | number, unit?: string): string {
 /**
  * 解析CSS值
  */
-export function parseCSSValue(value: string): { number: number; unit: string } {
-  const match = value.match(/^(-?\d*\.?\d+)(.*)$/)
+export function parseCSSValue(value: string): { number: number, unit: string } {
+  const match = value.match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)$/)
   if (match) {
     return {
-      number: parseFloat(match[1]),
+      number: Number.parseFloat(match[1]),
       unit: match[2] || 'px',
     }
   }
@@ -131,15 +134,16 @@ export function deepMergeConfig<T extends Record<string, any>>(
   for (const key in source) {
     if (source[key] !== undefined) {
       if (
-        typeof source[key] === 'object' &&
-        source[key] !== null &&
-        !Array.isArray(source[key]) &&
-        typeof target[key] === 'object' &&
-        target[key] !== null &&
-        !Array.isArray(target[key])
+        typeof source[key] === 'object'
+        && source[key] !== null
+        && !Array.isArray(source[key])
+        && typeof target[key] === 'object'
+        && target[key] !== null
+        && !Array.isArray(target[key])
       ) {
         result[key] = deepMergeConfig(target[key], source[key])
-      } else {
+      }
+      else {
         result[key] = source[key] as T[Extract<keyof T, string>]
       }
     }

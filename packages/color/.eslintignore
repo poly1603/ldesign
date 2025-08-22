@@ -1,0 +1,17 @@
+# Markdown files
+*.md
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Dependency directories
+node_modules/
+
+# Configuration files
+*.config.js
+*.config.ts
+
+# Documentation
+docs/

@@ -13,7 +13,7 @@ import { cryptoManager } from '@ldesign/crypto'
 cryptoManager.configure({
   enableCache: true,
   maxCacheSize: 1000,
-  cacheTimeout: 300000 // 5分钟
+  cacheTimeout: 300000, // 5分钟
 })
 
 // 缓存会自动应用于重复的加密操作
@@ -35,32 +35,32 @@ import { LRUCache } from 'lru-cache'
 class CustomCryptoCache {
   private cache = new LRUCache<string, any>({
     max: 500,
-    ttl: 1000 * 60 * 10 // 10分钟
+    ttl: 1000 * 60 * 10, // 10分钟
   })
-  
+
   generateKey(data: string, key: string, algorithm: string): string {
     return `${algorithm}:${key}:${data.length}:${this.hashData(data)}`
   }
-  
+
   private hashData(data: string): string {
     // 使用快速哈希算法生成缓存键
     let hash = 0
     for (let i = 0; i < data.length; i++) {
       const char = data.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // 转换为32位整数
     }
     return hash.toString(36)
   }
-  
+
   get(cacheKey: string) {
     return this.cache.get(cacheKey)
   }
-  
+
   set(cacheKey: string, value: any) {
     this.cache.set(cacheKey, value)
   }
-  
+
   clear() {
     this.cache.clear()
   }
@@ -71,19 +71,19 @@ const customCache = new CustomCryptoCache()
 
 function cachedEncrypt(data: string, key: string, algorithm: string) {
   const cacheKey = customCache.generateKey(data, key, algorithm)
-  
+
   // 检查缓存
   let result = customCache.get(cacheKey)
   if (result) {
     return result
   }
-  
+
   // 执行加密
   result = cryptoManager.encryptData(data, key, algorithm)
-  
+
   // 存储到缓存
   customCache.set(cacheKey, result)
-  
+
   return result
 }
 ```
@@ -97,30 +97,32 @@ import { PerformanceOptimizer } from '@ldesign/crypto'
 
 class BatchCryptoProcessor {
   private optimizer = new PerformanceOptimizer()
-  
-  async batchEncrypt(items: Array<{
-    data: string
-    key: string
-    algorithm: string
-  }>) {
+
+  async batchEncrypt(
+    items: Array<{
+      data: string
+      key: string
+      algorithm: string
+    }>
+  ) {
     // 使用批量操作优化性能
     const operations = items.map(item => ({
       type: 'encrypt' as const,
       data: item.data,
       key: item.key,
-      algorithm: item.algorithm
+      algorithm: item.algorithm,
     }))
-    
+
     return await this.optimizer.processBatch(operations)
   }
-  
+
   async batchHash(data: string[], algorithm: string = 'SHA256') {
     const operations = data.map(item => ({
       type: 'hash' as const,
       data: item,
-      algorithm
+      algorithm,
     }))
-    
+
     return await this.optimizer.processBatch(operations)
   }
 }
@@ -131,7 +133,7 @@ const processor = new BatchCryptoProcessor()
 const items = [
   { data: 'data1', key: 'key1', algorithm: 'AES' },
   { data: 'data2', key: 'key2', algorithm: 'AES' },
-  { data: 'data3', key: 'key3', algorithm: 'AES' }
+  { data: 'data3', key: 'key3', algorithm: 'AES' },
 ]
 
 const results = await processor.batchEncrypt(items)
@@ -142,7 +144,7 @@ const results = await processor.batchEncrypt(items)
 ```typescript
 class ParallelCryptoProcessor {
   private maxConcurrency = navigator.hardwareConcurrency || 4
-  
+
   async processInParallel<T, R>(
     items: T[],
     processor: (item: T) => Promise<R>,
@@ -150,31 +152,36 @@ class ParallelCryptoProcessor {
   ): Promise<R[]> {
     const results: R[] = []
     const executing: Promise<void>[] = []
-    
+
     for (const item of items) {
       const promise = processor(item).then(result => {
         results.push(result)
       })
-      
+
       executing.push(promise)
-      
+
       if (executing.length >= concurrency) {
         await Promise.race(executing)
-        executing.splice(executing.findIndex(p => p === promise), 1)
+        executing.splice(
+          executing.findIndex(p => p === promise),
+          1
+        )
       }
     }
-    
+
     await Promise.all(executing)
     return results
   }
-  
-  async encryptMultiple(items: Array<{
-    data: string
-    key: string
-  }>) {
+
+  async encryptMultiple(
+    items: Array<{
+      data: string
+      key: string
+    }>
+  ) {
     return this.processInParallel(
       items,
-      async (item) => {
+      async item => {
         return aes.encrypt(item.data, item.key, { keySize: 256 })
       },
       4 // 并发数
@@ -187,7 +194,7 @@ const parallelProcessor = new ParallelCryptoProcessor()
 
 const largeDataSet = Array.from({ length: 1000 }, (_, i) => ({
   data: `data-${i}`,
-  key: `key-${i}`
+  key: `key-${i}`,
 }))
 
 const results = await parallelProcessor.encryptMultiple(largeDataSet)
@@ -201,26 +208,26 @@ const results = await parallelProcessor.encryptMultiple(largeDataSet)
 class MemoryPool {
   private bufferPool: ArrayBuffer[] = []
   private maxPoolSize = 100
-  
+
   getBuffer(size: number): ArrayBuffer {
     // 尝试从池中获取合适大小的缓冲区
     const index = this.bufferPool.findIndex(buffer => buffer.byteLength >= size)
-    
+
     if (index !== -1) {
       return this.bufferPool.splice(index, 1)[0]
     }
-    
+
     // 创建新的缓冲区
     return new ArrayBuffer(size)
   }
-  
+
   returnBuffer(buffer: ArrayBuffer) {
     // 将缓冲区返回到池中
     if (this.bufferPool.length < this.maxPoolSize) {
       this.bufferPool.push(buffer)
     }
   }
-  
+
   clear() {
     this.bufferPool = []
   }
@@ -229,11 +236,11 @@ class MemoryPool {
 // 使用内存池的加密器
 class OptimizedEncryptor {
   private memoryPool = new MemoryPool()
-  
+
   encrypt(data: string, key: string): string {
     // 获取缓冲区
     const buffer = this.memoryPool.getBuffer(data.length * 2)
-    
+
     try {
       // 执行加密操作
       const result = this.performEncryption(data, key, buffer)
@@ -243,7 +250,7 @@ class OptimizedEncryptor {
       this.memoryPool.returnBuffer(buffer)
     }
   }
-  
+
   private performEncryption(data: string, key: string, buffer: ArrayBuffer): string {
     // 实际的加密逻辑
     return aes.encrypt(data, key).data || ''
@@ -256,7 +263,7 @@ class OptimizedEncryptor {
 ```typescript
 class StreamCryptoProcessor {
   private chunkSize = 64 * 1024 // 64KB 块大小
-  
+
   async encryptLargeData(
     data: string,
     key: string,
@@ -264,30 +271,30 @@ class StreamCryptoProcessor {
   ): Promise<string> {
     const chunks = this.splitIntoChunks(data, this.chunkSize)
     const encryptedChunks: string[] = []
-    
+
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i]
-      
+
       // 加密块
       const encrypted = aes.encrypt(chunk, key, { keySize: 256 })
       if (encrypted.success && encrypted.data) {
         encryptedChunks.push(encrypted.data)
       }
-      
+
       // 报告进度
       if (onProgress) {
-        onProgress((i + 1) / chunks.length * 100)
+        onProgress(((i + 1) / chunks.length) * 100)
       }
-      
+
       // 让出控制权，避免阻塞UI
       if (i % 10 === 0) {
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
-    
+
     return encryptedChunks.join('|')
   }
-  
+
   private splitIntoChunks(data: string, chunkSize: number): string[] {
     const chunks: string[] = []
     for (let i = 0; i < data.length; i += chunkSize) {
@@ -295,7 +302,7 @@ class StreamCryptoProcessor {
     }
     return chunks
   }
-  
+
   async decryptLargeData(
     encryptedData: string,
     key: string,
@@ -303,27 +310,27 @@ class StreamCryptoProcessor {
   ): Promise<string> {
     const encryptedChunks = encryptedData.split('|')
     const decryptedChunks: string[] = []
-    
+
     for (let i = 0; i < encryptedChunks.length; i++) {
       const chunk = encryptedChunks[i]
-      
+
       // 解密块
       const decrypted = aes.decrypt(chunk, key, { keySize: 256 })
       if (decrypted.success && decrypted.data) {
         decryptedChunks.push(decrypted.data)
       }
-      
+
       // 报告进度
       if (onProgress) {
-        onProgress((i + 1) / encryptedChunks.length * 100)
+        onProgress(((i + 1) / encryptedChunks.length) * 100)
       }
-      
+
       // 让出控制权
       if (i % 10 === 0) {
         await new Promise(resolve => setTimeout(resolve, 0))
       }
     }
-    
+
     return decryptedChunks.join('')
   }
 }
@@ -332,10 +339,8 @@ class StreamCryptoProcessor {
 const streamProcessor = new StreamCryptoProcessor()
 
 const largeData = 'x'.repeat(1024 * 1024) // 1MB 数据
-const encrypted = await streamProcessor.encryptLargeData(
-  largeData,
-  'secret-key',
-  (progress) => console.log(`加密进度: ${progress.toFixed(1)}%`)
+const encrypted = await streamProcessor.encryptLargeData(largeData, 'secret-key', progress =>
+  console.log(`加密进度: ${progress.toFixed(1)}%`)
 )
 ```
 
@@ -348,10 +353,10 @@ class AlgorithmBenchmark {
   async benchmarkEncryption(data: string, iterations: number = 1000) {
     const algorithms = ['AES', 'DES', 'Blowfish']
     const results: Record<string, number> = {}
-    
+
     for (const algorithm of algorithms) {
       const startTime = performance.now()
-      
+
       for (let i = 0; i < iterations; i++) {
         switch (algorithm) {
           case 'AES':
@@ -365,21 +370,21 @@ class AlgorithmBenchmark {
             break
         }
       }
-      
+
       const endTime = performance.now()
       results[algorithm] = endTime - startTime
     }
-    
+
     return results
   }
-  
+
   async benchmarkHashing(data: string, iterations: number = 1000) {
     const algorithms = ['MD5', 'SHA1', 'SHA256', 'SHA512']
     const results: Record<string, number> = {}
-    
+
     for (const algorithm of algorithms) {
       const startTime = performance.now()
-      
+
       for (let i = 0; i < iterations; i++) {
         switch (algorithm) {
           case 'MD5':
@@ -396,18 +401,15 @@ class AlgorithmBenchmark {
             break
         }
       }
-      
+
       const endTime = performance.now()
       results[algorithm] = endTime - startTime
     }
-    
+
     return results
   }
-  
-  recommendAlgorithm(
-    dataSize: number,
-    securityLevel: 'low' | 'medium' | 'high'
-  ): string {
+
+  recommendAlgorithm(dataSize: number, securityLevel: 'low' | 'medium' | 'high'): string {
     if (securityLevel === 'high') {
       return dataSize > 1024 * 1024 ? 'AES' : 'AES' // 总是推荐AES用于高安全性
     } else if (securityLevel === 'medium') {
@@ -440,12 +442,12 @@ console.log('推荐算法:', recommended)
 // crypto-worker.ts
 import { aes, hash } from '@ldesign/crypto'
 
-self.onmessage = function(e) {
+self.onmessage = function (e) {
   const { type, data, key, algorithm, id } = e.data
-  
+
   try {
     let result
-    
+
     switch (type) {
       case 'encrypt':
         result = aes.encrypt(data, key, { keySize: 256 })
@@ -459,13 +461,13 @@ self.onmessage = function(e) {
       default:
         throw new Error('未知操作类型')
     }
-    
+
     self.postMessage({ id, success: true, result })
   } catch (error) {
-    self.postMessage({ 
-      id, 
-      success: false, 
-      error: error.message 
+    self.postMessage({
+      id,
+      success: false,
+      error: error.message,
     })
   }
 }
@@ -473,23 +475,26 @@ self.onmessage = function(e) {
 // main thread
 class WorkerCryptoManager {
   private worker: Worker
-  private pendingOperations = new Map<string, {
-    resolve: (value: any) => void
-    reject: (error: Error) => void
-  }>()
-  
+  private pendingOperations = new Map<
+    string,
+    {
+      resolve: (value: any) => void
+      reject: (error: Error) => void
+    }
+  >()
+
   constructor() {
     this.worker = new Worker('/crypto-worker.js')
     this.worker.onmessage = this.handleWorkerMessage.bind(this)
   }
-  
+
   private handleWorkerMessage(e: MessageEvent) {
     const { id, success, result, error } = e.data
     const operation = this.pendingOperations.get(id)
-    
+
     if (operation) {
       this.pendingOperations.delete(id)
-      
+
       if (success) {
         operation.resolve(result)
       } else {
@@ -497,37 +502,37 @@ class WorkerCryptoManager {
       }
     }
   }
-  
+
   async encrypt(data: string, key: string): Promise<any> {
     const id = Math.random().toString(36)
-    
+
     return new Promise((resolve, reject) => {
       this.pendingOperations.set(id, { resolve, reject })
-      
+
       this.worker.postMessage({
         type: 'encrypt',
         data,
         key,
-        id
+        id,
       })
     })
   }
-  
+
   async hash(data: string, algorithm: string): Promise<string> {
     const id = Math.random().toString(36)
-    
+
     return new Promise((resolve, reject) => {
       this.pendingOperations.set(id, { resolve, reject })
-      
+
       this.worker.postMessage({
         type: 'hash',
         data,
         algorithm,
-        id
+        id,
       })
     })
   }
-  
+
   destroy() {
     this.worker.terminate()
     this.pendingOperations.clear()
@@ -555,7 +560,7 @@ class CryptoPerformanceMonitor {
     duration: number
     timestamp: number
   }> = []
-  
+
   async measureOperation<T>(
     operation: string,
     algorithm: string,
@@ -563,69 +568,69 @@ class CryptoPerformanceMonitor {
     fn: () => Promise<T>
   ): Promise<T> {
     const startTime = performance.now()
-    
+
     try {
       const result = await fn()
       const duration = performance.now() - startTime
-      
+
       this.metrics.push({
         operation,
         algorithm,
         dataSize,
         duration,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
-      
+
       return result
     } catch (error) {
       const duration = performance.now() - startTime
-      
+
       this.metrics.push({
         operation: `${operation}_error`,
         algorithm,
         dataSize,
         duration,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
-      
+
       throw error
     }
   }
-  
+
   getAveragePerformance(operation: string, algorithm: string) {
     const relevantMetrics = this.metrics.filter(
       m => m.operation === operation && m.algorithm === algorithm
     )
-    
+
     if (relevantMetrics.length === 0) return null
-    
+
     const totalDuration = relevantMetrics.reduce((sum, m) => sum + m.duration, 0)
     const averageDuration = totalDuration / relevantMetrics.length
-    
+
     const totalDataSize = relevantMetrics.reduce((sum, m) => sum + m.dataSize, 0)
     const averageDataSize = totalDataSize / relevantMetrics.length
-    
+
     return {
       averageDuration,
       averageDataSize,
       throughput: averageDataSize / averageDuration, // bytes per ms
-      sampleCount: relevantMetrics.length
+      sampleCount: relevantMetrics.length,
     }
   }
-  
+
   exportMetrics() {
     return {
       metrics: this.metrics,
-      summary: this.generateSummary()
+      summary: this.generateSummary(),
     }
   }
-  
+
   private generateSummary() {
     const operations = [...new Set(this.metrics.map(m => m.operation))]
     const algorithms = [...new Set(this.metrics.map(m => m.algorithm))]
-    
+
     const summary: Record<string, any> = {}
-    
+
     for (const operation of operations) {
       summary[operation] = {}
       for (const algorithm of algorithms) {
@@ -635,7 +640,7 @@ class CryptoPerformanceMonitor {
         }
       }
     }
-    
+
     return summary
   }
 }
@@ -644,11 +649,8 @@ class CryptoPerformanceMonitor {
 const monitor = new CryptoPerformanceMonitor()
 
 // 监控加密操作
-const encrypted = await monitor.measureOperation(
-  'encrypt',
-  'AES',
-  1024,
-  () => aes.encrypt('test data', 'secret-key')
+const encrypted = await monitor.measureOperation('encrypt', 'AES', 1024, () =>
+  aes.encrypt('test data', 'secret-key')
 )
 
 // 获取性能报告

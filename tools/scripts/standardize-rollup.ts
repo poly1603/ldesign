@@ -5,9 +5,16 @@
  * 自动将所有包标准化为使用Rollup构建，删除Vite配置，统一脚本
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
-import { resolve, join } from 'node:path'
-import { readdirSync, statSync } from 'node:fs'
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs'
+
+import { join, resolve } from 'node:path'
 
 interface PackageInfo {
   name: string
@@ -29,11 +36,11 @@ function getAllPackages(): PackageInfo[] {
     return packages
   }
 
-  const dirs = readdirSync(packagesDir).filter(name => {
+  const dirs = readdirSync(packagesDir).filter((name) => {
     const packagePath = join(packagesDir, name)
     return (
-      statSync(packagePath).isDirectory() &&
-      existsSync(join(packagePath, 'package.json'))
+      statSync(packagePath).isDirectory()
+      && existsSync(join(packagePath, 'package.json'))
     )
   })
 
@@ -48,9 +55,9 @@ function getAllPackages(): PackageInfo[] {
       )
 
       // 检查是否有JSX文件
-      const hasJsx =
-        existsSync(join(packagePath, 'src')) &&
-        checkForJsxFiles(join(packagePath, 'src'))
+      const hasJsx
+        = existsSync(join(packagePath, 'src'))
+          && checkForJsxFiles(join(packagePath, 'src'))
 
       packages.push({
         name: dir,
@@ -59,7 +66,8 @@ function getAllPackages(): PackageInfo[] {
         hasJsx,
         packageJson,
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`⚠️  无法读取包 ${dir} 的package.json:`, error)
     }
   }
@@ -75,10 +83,11 @@ function checkForJsxFiles(dir: string): boolean {
     const files = readdirSync(dir, { recursive: true })
     return files.some(
       (file: any) =>
-        typeof file === 'string' &&
-        (file.endsWith('.tsx') || file.endsWith('.jsx'))
+        typeof file === 'string'
+        && (file.endsWith('.tsx') || file.endsWith('.jsx')),
     )
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -111,7 +120,8 @@ export default createRollupConfig({
   vue: true,
 })
 `
-  } else {
+  }
+  else {
     return `import { createRollupConfig } from '../../tools/configs/build/rollup.config.base.js'
 
 export default createRollupConfig({
@@ -130,9 +140,9 @@ function standardizePackageScripts(packageInfo: PackageInfo) {
 
   // 标准化脚本
   const standardScripts = {
-    build: 'rollup -c',
+    'build': 'rollup -c',
     'build:watch': 'rollup -c -w',
-    dev: 'rollup -c -w',
+    'dev': 'rollup -c -w',
     'build:check':
       'pnpm run build && node ../../tools/scripts/build/bundle-validator.js',
     'build:analyze':
@@ -142,9 +152,9 @@ function standardizePackageScripts(packageInfo: PackageInfo) {
     'build:browser-test':
       'pnpm run build && node ../../tools/scripts/build/browser-tester.js',
     'type-check': 'vue-tsc --noEmit',
-    lint: 'eslint . --fix',
+    'lint': 'eslint . --fix',
     'lint:check': 'eslint .',
-    test: 'vitest',
+    'test': 'vitest',
     'test:ui': 'vitest --ui',
     'test:run': 'vitest run',
     'test:coverage': 'vitest run --coverage',
@@ -153,9 +163,9 @@ function standardizePackageScripts(packageInfo: PackageInfo) {
     'docs:dev': 'vitepress dev docs',
     'docs:build': 'vitepress build docs',
     'docs:preview': 'vitepress preview docs',
-    clean: 'rimraf dist es lib types coverage .nyc_output',
+    'clean': 'rimraf dist es lib types coverage .nyc_output',
     'size-check': 'size-limit',
-    prepublishOnly: 'pnpm run clean && pnpm run build && pnpm run test:run',
+    'prepublishOnly': 'pnpm run clean && pnpm run build && pnpm run test:run',
   }
 
   // 更新脚本，保留现有的其他脚本
@@ -164,7 +174,7 @@ function standardizePackageScripts(packageInfo: PackageInfo) {
     ...standardScripts,
   }
 
-  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n')
+  writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
   console.log(`  ✅ 标准化脚本`)
 }
 
@@ -189,7 +199,8 @@ function standardizePackage(packageInfo: PackageInfo) {
     const rollupConfigContent = generateRollupConfig(packageInfo)
     writeFileSync(rollupConfigPath, rollupConfigContent)
     console.log(`  ✨ 创建 rollup.config.js`)
-  } else {
+  }
+  else {
     console.log(`  ✅ rollup.config.js 已存在`)
   }
 
@@ -217,7 +228,8 @@ function validateStandardization(packages: PackageInfo[]) {
     // 检查rollup配置是否存在
     if (existsSync(rollupConfigPath)) {
       console.log(`  ✅ rollup.config.js 存在`)
-    } else {
+    }
+    else {
       console.log(`  ❌ rollup.config.js 不存在`)
       allValid = false
     }
@@ -225,7 +237,8 @@ function validateStandardization(packages: PackageInfo[]) {
     // 检查vite配置是否已删除
     if (!existsSync(viteConfigPath)) {
       console.log(`  ✅ vite.config.ts 已删除`)
-    } else {
+    }
+    else {
       console.log(`  ⚠️  vite.config.ts 仍然存在`)
     }
 
@@ -236,11 +249,13 @@ function validateStandardization(packages: PackageInfo[]) {
 
       if (packageJson.scripts?.build === 'rollup -c') {
         console.log(`  ✅ 构建脚本已标准化`)
-      } else {
+      }
+      else {
         console.log(`  ❌ 构建脚本未标准化`)
         allValid = false
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.log(`  ❌ 无法验证package.json`)
       allValid = false
     }
@@ -266,11 +281,11 @@ async function main() {
   }
 
   console.log(`📦 找到 ${packages.length} 个包:\n`)
-  packages.forEach(pkg => {
+  packages.forEach((pkg) => {
     console.log(
       `  - ${pkg.name} (Vue: ${pkg.hasVue ? '✅' : '❌'}, JSX: ${
         pkg.hasJsx ? '✅' : '❌'
-      })`
+      })`,
     )
   })
   console.log()
@@ -289,7 +304,8 @@ async function main() {
     console.log('  1. 运行 pnpm install 确保依赖正确')
     console.log('  2. 运行 pnpm build 测试构建')
     console.log('  3. 运行 pnpm test:run 确保测试通过')
-  } else {
+  }
+  else {
     console.log('❌ 标准化过程中出现问题，请检查上述错误')
     process.exit(1)
   }

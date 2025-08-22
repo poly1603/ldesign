@@ -4,7 +4,7 @@
  * 提供装饰元素的基础功能和通用方法
  */
 
-import type { DecorationConfig, Position, Size } from '../../core/types'
+import type { DecorationConfig, Position } from '../../core/types'
 
 /**
  * 装饰元素基础类
@@ -77,7 +77,8 @@ export abstract class BaseDecoration {
   protected setPositionValue(property: string, value: number | string): void {
     if (typeof value === 'number') {
       this.element.style.setProperty(property, `${value}px`)
-    } else {
+    }
+    else {
       this.element.style.setProperty(property, value)
     }
   }
@@ -115,7 +116,7 @@ export abstract class BaseDecoration {
     if (transforms.length > 0) {
       const currentTransform = this.element.style.transform || ''
       this.element.style.transform = `${transforms.join(
-        ' '
+        ' ',
       )} ${currentTransform}`.trim()
     }
   }
@@ -128,8 +129,8 @@ export abstract class BaseDecoration {
     const offsetX = typeof offset.x === 'number' ? `${offset.x}px` : offset.x
     const offsetY = typeof offset.y === 'number' ? `${offset.y}px` : offset.y
 
-    this.element.style.transform =
-      `${currentTransform} translate(${offsetX}, ${offsetY})`.trim()
+    this.element.style.transform
+      = `${currentTransform} translate(${offsetX}, ${offsetY})`.trim()
   }
 
   /**
@@ -149,14 +150,14 @@ export abstract class BaseDecoration {
 
     if (style.rotation !== undefined) {
       const currentTransform = this.element.style.transform || ''
-      this.element.style.transform =
-        `${currentTransform} rotate(${style.rotation}deg)`.trim()
+      this.element.style.transform
+        = `${currentTransform} rotate(${style.rotation}deg)`.trim()
     }
 
     if (style.scale !== undefined) {
       const currentTransform = this.element.style.transform || ''
-      this.element.style.transform =
-        `${currentTransform} scale(${style.scale})`.trim()
+      this.element.style.transform
+        = `${currentTransform} scale(${style.scale})`.trim()
     }
 
     if (style.zIndex !== undefined) {
@@ -187,7 +188,8 @@ export abstract class BaseDecoration {
   protected setSizeValue(property: string, value: number | string): void {
     if (typeof value === 'number') {
       this.element.style.setProperty(property, `${value}px`)
-    } else {
+    }
+    else {
       this.element.style.setProperty(property, value)
     }
   }
@@ -212,17 +214,17 @@ export abstract class BaseDecoration {
     this.element.addEventListener('click', this.handleClick.bind(this))
     this.element.addEventListener(
       'mouseenter',
-      this.handleMouseEnter.bind(this)
+      this.handleMouseEnter.bind(this),
     )
     this.element.addEventListener(
       'mouseleave',
-      this.handleMouseLeave.bind(this)
+      this.handleMouseLeave.bind(this),
     )
 
     // 添加触摸事件支持
     this.element.addEventListener(
       'touchstart',
-      this.handleTouchStart.bind(this)
+      this.handleTouchStart.bind(this),
     )
     this.element.addEventListener('touchend', this.handleTouchEnd.bind(this))
   }
@@ -250,7 +252,7 @@ export abstract class BaseDecoration {
     this.onInteract('leave', event)
     this.element.style.transform = this.element.style.transform.replace(
       ' scale(1.1)',
-      ''
+      '',
     )
   }
 
@@ -384,19 +386,19 @@ export abstract class BaseDecoration {
       this.element.removeEventListener('click', this.handleClick.bind(this))
       this.element.removeEventListener(
         'mouseenter',
-        this.handleMouseEnter.bind(this)
+        this.handleMouseEnter.bind(this),
       )
       this.element.removeEventListener(
         'mouseleave',
-        this.handleMouseLeave.bind(this)
+        this.handleMouseLeave.bind(this),
       )
       this.element.removeEventListener(
         'touchstart',
-        this.handleTouchStart.bind(this)
+        this.handleTouchStart.bind(this),
       )
       this.element.removeEventListener(
         'touchend',
-        this.handleTouchEnd.bind(this)
+        this.handleTouchEnd.bind(this),
       )
     }
 

@@ -1,34 +1,15 @@
-import { resolve } from 'node:path'
-import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vitest/config'
+import { createVitestConfig } from '../../tools/test/vitest.config.base'
 
-export default defineConfig({
-  plugins: [vue()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['tests/setup.ts'],
-    globals: true,
-    include: ['tests/unit/**/*.test.ts'],
-    exclude: ['tests/e2e/**/*'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        'dist/',
-        'es/',
-        'lib/',
-        'types/',
-        '**/*.d.ts',
-        'examples/',
-        'docs/',
-      ],
-    },
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-    },
-  },
+export default createVitestConfig({
+  vue: true,
+  environment: 'node',
+  setupFiles: ['tests/setup.ts'],
+  exclude: [
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/cypress/**',
+    '**/.{idea,git,cache,output,temp}/**',
+    '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+    '**/e2e/**', // 排除E2E测试
+  ],
 })

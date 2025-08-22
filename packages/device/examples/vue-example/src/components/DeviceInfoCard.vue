@@ -30,7 +30,8 @@ const {
 
       <div class="info-item">
         <span class="label">屏幕尺寸:</span>
-        <span class="value">{{ deviceInfo?.width || '-' }} × {{ deviceInfo?.height || '-' }}</span>
+        <span class="value">{{ deviceInfo?.width || '-' }} ×
+          {{ deviceInfo?.height || '-' }}</span>
       </div>
 
       <div class="info-item">
@@ -45,29 +46,37 @@ const {
 
       <div class="info-item">
         <span class="label">移动设备:</span>
-        <span class="value" :class="{ highlight: isMobile }">{{ isMobile ? '是' : '否' }}</span>
+        <span class="value" :class="{ highlight: isMobile }">{{
+          isMobile ? '是' : '否'
+        }}</span>
       </div>
 
       <div class="info-item">
         <span class="label">平板设备:</span>
-        <span class="value" :class="{ highlight: isTablet }">{{ isTablet ? '是' : '否' }}</span>
+        <span class="value" :class="{ highlight: isTablet }">{{
+          isTablet ? '是' : '否'
+        }}</span>
       </div>
 
       <div class="info-item">
         <span class="label">桌面设备:</span>
-        <span class="value" :class="{ highlight: isDesktop }">{{ isDesktop ? '是' : '否' }}</span>
+        <span class="value" :class="{ highlight: isDesktop }">{{
+          isDesktop ? '是' : '否'
+        }}</span>
       </div>
     </div>
 
     <div class="system-info">
       <div class="info-item">
         <span class="label">操作系统:</span>
-        <span class="value">{{ deviceInfo?.os?.name || '-' }} {{ deviceInfo?.os?.version || '' }}</span>
+        <span class="value">{{ deviceInfo?.os?.name || '-' }}
+          {{ deviceInfo?.os?.version || '' }}</span>
       </div>
 
       <div class="info-item">
         <span class="label">浏览器:</span>
-        <span class="value">{{ deviceInfo?.browser?.name || '-' }} {{ deviceInfo?.browser?.version || '' }}</span>
+        <span class="value">{{ deviceInfo?.browser?.name || '-' }}
+          {{ deviceInfo?.browser?.version || '' }}</span>
       </div>
     </div>
 

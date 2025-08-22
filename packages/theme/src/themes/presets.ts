@@ -4,12 +4,10 @@
  * 提供所有预设主题的统一管理和导出
  */
 
-import type { ThemeConfig, ThemeCategory, FestivalType } from '../core/types'
+import type { FestivalType, ThemeCategory, ThemeConfig } from '../core/types'
 import { christmasTheme } from './festivals/christmas'
-import { springFestivalTheme } from './festivals/spring-festival'
 import { halloweenTheme } from './festivals/halloween'
-import { valentineTheme } from './festivals/valentine'
-import { midAutumnTheme } from './festivals/mid-autumn'
+import { springFestivalTheme } from './festivals/spring-festival'
 
 /**
  * 所有预设主题
@@ -18,33 +16,25 @@ export const presetThemes: ThemeConfig[] = [
   christmasTheme,
   springFestivalTheme,
   halloweenTheme,
-  valentineTheme,
-  midAutumnTheme,
 ]
 
 /**
  * 节日主题映射
  */
 export const festivalThemes: Record<FestivalType, ThemeConfig> = {
-  christmas: christmasTheme,
+  'christmas': christmasTheme,
   'spring-festival': springFestivalTheme,
-  halloween: halloweenTheme,
-  valentine: valentineTheme,
-  easter: springFestivalTheme, // 暂时使用春节主题
-  thanksgiving: midAutumnTheme, // 使用中秋节主题
+  'halloween': halloweenTheme,
+  'valentine': christmasTheme, // 暂时使用圣诞节主题
+  'easter': springFestivalTheme, // 暂时使用春节主题
+  'thanksgiving': halloweenTheme, // 暂时使用万圣节主题
 }
 
 /**
  * 按类别分组的主题
  */
 export const themesByCategory: Record<ThemeCategory, ThemeConfig[]> = {
-  festival: [
-    christmasTheme,
-    springFestivalTheme,
-    halloweenTheme,
-    valentineTheme,
-    midAutumnTheme,
-  ],
+  festival: [christmasTheme, springFestivalTheme, halloweenTheme],
   seasonal: [],
   custom: [],
   business: [],
@@ -55,33 +45,33 @@ export const themesByCategory: Record<ThemeCategory, ThemeConfig[]> = {
  */
 export const themesByTag: Record<string, ThemeConfig[]> = {
   // 节日标签
-  festival: [christmasTheme, springFestivalTheme, halloweenTheme],
-  christmas: [christmasTheme],
+  'festival': [christmasTheme, springFestivalTheme, halloweenTheme],
+  'christmas': [christmasTheme],
   'spring-festival': [springFestivalTheme],
   'chinese-new-year': [springFestivalTheme],
-  halloween: [halloweenTheme],
+  'halloween': [halloweenTheme],
 
   // 颜色标签
-  red: [christmasTheme, springFestivalTheme],
-  green: [christmasTheme],
-  gold: [springFestivalTheme],
-  orange: [halloweenTheme],
-  black: [halloweenTheme],
+  'red': [christmasTheme, springFestivalTheme],
+  'green': [christmasTheme],
+  'gold': [springFestivalTheme],
+  'orange': [halloweenTheme],
+  'black': [halloweenTheme],
 
   // 季节标签
-  winter: [christmasTheme],
-  spring: [springFestivalTheme],
-  autumn: [halloweenTheme],
+  'winter': [christmasTheme],
+  'spring': [springFestivalTheme],
+  'autumn': [halloweenTheme],
 
   // 装饰标签
-  snow: [christmasTheme],
-  lantern: [springFestivalTheme],
-  pumpkin: [halloweenTheme],
+  'snow': [christmasTheme],
+  'lantern': [springFestivalTheme],
+  'pumpkin': [halloweenTheme],
 
   // 动画标签
-  falling: [christmasTheme, springFestivalTheme],
-  floating: [halloweenTheme],
-  glowing: [christmasTheme, springFestivalTheme, halloweenTheme],
+  'falling': [christmasTheme, springFestivalTheme],
+  'floating': [halloweenTheme],
+  'glowing': [christmasTheme, springFestivalTheme, halloweenTheme],
 }
 
 /**
@@ -123,7 +113,7 @@ export function getThemesByTag(tag: string): ThemeConfig[] {
  * 获取节日主题
  */
 export function getFestivalTheme(
-  festival: FestivalType
+  festival: FestivalType,
 ): ThemeConfig | undefined {
   return festivalThemes[festival]
 }
@@ -138,9 +128,11 @@ export function getSeasonalThemes(): ThemeConfig[] {
   // 根据月份推荐主题
   if (month === 12 || month === 1) {
     return [christmasTheme]
-  } else if (month === 2) {
+  }
+  else if (month === 2) {
     return [springFestivalTheme]
-  } else if (month === 10) {
+  }
+  else if (month === 10) {
     return [halloweenTheme]
   }
 
@@ -159,7 +151,7 @@ export function getRandomPresetTheme(): ThemeConfig {
  * 根据时间获取应该激活的主题
  */
 export function getActiveThemeByTime(
-  date: Date = new Date()
+  date: Date = new Date(),
 ): ThemeConfig | undefined {
   for (const theme of presetThemes) {
     if (theme.timeRange && isInTimeRange(date, theme.timeRange)) {
@@ -174,7 +166,7 @@ export function getActiveThemeByTime(
  */
 function isInTimeRange(
   date: Date,
-  timeRange: { start: string; end: string }
+  timeRange: { start: string, end: string },
 ): boolean {
   const month = date.getMonth() + 1
   const day = date.getDate()
@@ -187,7 +179,8 @@ function isInTimeRange(
   // 处理跨年的情况（如圣诞节主题：12-01 到 01-07）
   if (start > end) {
     return currentDate >= start || currentDate <= end
-  } else {
+  }
+  else {
     return currentDate >= start && currentDate <= end
   }
 }
@@ -198,7 +191,7 @@ function isInTimeRange(
 export function searchThemes(query: string): ThemeConfig[] {
   const lowerQuery = query.toLowerCase()
 
-  return presetThemes.filter(theme => {
+  return presetThemes.filter((theme) => {
     // 搜索名称
     if (theme.name.toLowerCase().includes(lowerQuery)) {
       return true
@@ -267,8 +260,8 @@ export function getThemeStats() {
       stats.withDecorations++
     }
     if (
-      theme.resources.sounds &&
-      Object.keys(theme.resources.sounds).length > 0
+      theme.resources.sounds
+      && Object.keys(theme.resources.sounds).length > 0
     ) {
       stats.withSounds++
     }
@@ -337,7 +330,7 @@ export function validateTheme(theme: ThemeConfig): {
 export function createCustomTheme(
   name: string,
   displayName: string,
-  options: Partial<ThemeConfig> = {}
+  options: Partial<ThemeConfig> = {},
 ): ThemeConfig {
   return {
     name,

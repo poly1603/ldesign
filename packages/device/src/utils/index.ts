@@ -41,12 +41,21 @@ class LRUCache<K, V> {
 }
 
 // 全局缓存实例
-const userAgentCache = new LRUCache<string, { os: { name: string, version: string }, browser: { name: string, version: string } }>(20)
+const userAgentCache = new LRUCache<
+  string,
+  {
+    os: { name: string, version: string }
+    browser: { name: string, version: string }
+  }
+>(20)
 
 /**
  * 解析用户代理字符串（带缓存）
  */
-function parseUserAgent(userAgent: string): { os: { name: string, version: string }, browser: { name: string, version: string } } {
+function parseUserAgent(userAgent: string): {
+  os: { name: string, version: string }
+  browser: { name: string, version: string }
+} {
   // 检查缓存
   const cached = userAgentCache.get(userAgent)
   if (cached) {
@@ -227,8 +236,11 @@ export function isMobileDevice(userAgent?: string): boolean {
   if (typeof window === 'undefined' && !userAgent)
     return false
 
-  const ua = userAgent || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+  const ua
+    = userAgent
+      || (typeof window !== 'undefined' ? window.navigator.userAgent : '')
+  const mobileRegex
+    = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
   return mobileRegex.test(ua)
 }
 
@@ -242,7 +254,8 @@ export function isTouchDevice(): boolean {
   return (
     'ontouchstart' in window
     || navigator.maxTouchPoints > 0
-    || ((navigator as unknown as Record<string, unknown>).msMaxTouchPoints as number || 0) > 0
+    || (((navigator as unknown as Record<string, unknown>)
+      .msMaxTouchPoints as number) || 0) > 0
   )
 }
 
@@ -265,9 +278,16 @@ export function getDeviceTypeByWidth(
  * @param width - 可选的屏幕宽度，如果不提供则使用当前窗口宽度
  * @param height - 可选的屏幕高度，如果不提供则使用当前窗口高度
  */
-export function getScreenOrientation(width?: number, height?: number): Orientation {
-  if (typeof window === 'undefined' && (width === undefined || height === undefined))
+export function getScreenOrientation(
+  width?: number,
+  height?: number,
+): Orientation {
+  if (
+    typeof window === 'undefined'
+    && (width === undefined || height === undefined)
+  ) {
     return 'landscape'
+  }
 
   // 如果提供了宽高参数，直接使用参数判断
   if (width !== undefined && height !== undefined) {
@@ -275,8 +295,11 @@ export function getScreenOrientation(width?: number, height?: number): Orientati
   }
 
   // 优先使用 screen.orientation API
-  if (typeof window !== 'undefined' && screen.orientation)
-    return screen.orientation.angle === 0 || screen.orientation.angle === 180 ? 'portrait' : 'landscape'
+  if (typeof window !== 'undefined' && screen.orientation) {
+    return screen.orientation.angle === 0 || screen.orientation.angle === 180
+      ? 'portrait'
+      : 'landscape'
+  }
 
   // 降级到窗口尺寸判断
   if (typeof window !== 'undefined')
@@ -295,7 +318,10 @@ export function parseOS(userAgent: string): { name: string, version: string } {
 /**
  * 解析用户代理字符串获取浏览器信息（带缓存）
  */
-export function parseBrowser(userAgent: string): { name: string, version: string } {
+export function parseBrowser(userAgent: string): {
+  name: string
+  version: string
+} {
   return parseUserAgent(userAgent).browser
 }
 
@@ -316,7 +342,10 @@ export function isAPISupported(api: string): boolean {
     return false
 
   const parts = api.split('.')
-  let obj: Record<string, unknown> = window as unknown as Record<string, unknown>
+  let obj: Record<string, unknown> = window as unknown as Record<
+    string,
+    unknown
+  >
 
   for (const part of parts) {
     if (!(part in obj))
@@ -332,11 +361,11 @@ export function isAPISupported(api: string): boolean {
  */
 export function safeNavigatorAccess<T>(
   accessor: (navigator: Navigator) => T,
-  fallback: T,
+  fallback: T
 ): T
 export function safeNavigatorAccess<K extends keyof Navigator>(
   property: K,
-  fallback?: Navigator[K],
+  fallback?: Navigator[K]
 ): Navigator[K] | undefined
 export function safeNavigatorAccess<T, K extends keyof Navigator>(
   accessorOrProperty: ((navigator: Navigator) => T) | K,
@@ -379,6 +408,8 @@ export function formatBytes(bytes: number, decimals = 2): string {
  * @param prefix - 可选的前缀
  */
 export function generateId(prefix?: string): string {
-  const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  const id
+    = Math.random().toString(36).substring(2, 15)
+      + Math.random().toString(36).substring(2, 15)
   return prefix ? `${prefix}-${id}` : id
 }

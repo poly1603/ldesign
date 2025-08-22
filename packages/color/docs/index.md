@@ -2,8 +2,8 @@
 layout: home
 
 hero:
-  name: "@ldesign/color"
-  text: "主题色管理系统"
+  name: '@ldesign/color'
+  text: '主题色管理系统'
   tagline: 功能完整、性能优化、框架无关的主题色管理解决方案
   image:
     src: /logo.svg
@@ -56,7 +56,7 @@ import { createThemeManagerWithPresets } from '@ldesign/color'
 // 创建主题管理器
 const themeManager = await createThemeManagerWithPresets({
   defaultTheme: 'default',
-  autoDetect: true // 自动检测系统主题
+  autoDetect: true, // 自动检测系统主题
 })
 
 // 切换主题
@@ -68,13 +68,7 @@ await themeManager.setMode('dark')
 <script setup>
 import { useTheme } from '@ldesign/color/vue'
 
-const {
-  currentTheme,
-  currentMode,
-  availableThemes,
-  setTheme,
-  toggleMode
-} = useTheme()
+const { currentTheme, currentMode, availableThemes, setTheme, toggleMode } = useTheme()
 </script>
 
 <template>
@@ -115,19 +109,23 @@ console.log(colors)
 
 ### 🚀 高性能设计
 
-采用闲时处理机制，使用 `requestIdleCallback` 在浏览器空闲时预生成主题，确保不影响主线程性能。内置 LRU 缓存避免重复计算，提供即时的主题切换体验。
+采用闲时处理机制，使用 `requestIdleCallback` 在浏览器空闲时预生成主题，确保不影响主线程性能。内置
+LRU 缓存避免重复计算，提供即时的主题切换体验。
 
 ### 🎨 智能颜色系统
 
-基于色彩理论和 HSL 颜色空间，从单一主色调智能生成和谐的配套颜色。支持多种生成策略：默认、柔和、鲜艳、单色等，满足不同设计需求。
+基于色彩理论和 HSL 颜色空间，从单一主色调智能生成和谐的配套颜色。支持多种生成策略：默认、柔和、鲜艳
+、单色等，满足不同设计需求。
 
 ### 🌈 完整色阶支持
 
-集成业界领先的 @arco-design/color 库，为每个颜色生成 10 级完整色阶，同时支持亮色和暗色模式，为设计系统提供丰富的颜色选择。
+集成业界领先的 @arco-design/color 库，为每个颜色生成 10 级完整色阶，同时支持亮色和暗色模式，为设计系
+统提供丰富的颜色选择。
 
 ### 🔧 开发体验优秀
 
-提供完整的 TypeScript 类型定义，丰富的便捷函数，简单直观的 API 设计。支持框架无关使用，同时为 Vue 3 提供专门的组合式 API 集成。
+提供完整的 TypeScript 类型定义，丰富的便捷函数，简单直观的 API 设计。支持框架无关使用，同时为 Vue 3
+提供专门的组合式 API 集成。
 
 ## 立即开始
 

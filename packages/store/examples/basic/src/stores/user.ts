@@ -1,4 +1,11 @@
-import { Action, AsyncAction, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import {
+  Action,
+  AsyncAction,
+  BaseStore,
+  Getter,
+  PersistentState,
+  State,
+} from '@ldesign/store'
 
 export interface User {
   id: number

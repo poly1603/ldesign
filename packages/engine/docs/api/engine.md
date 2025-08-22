@@ -1,6 +1,6 @@
 # Engine API
 
-本文档详细介绍了Vue3 Engine的完整API接口。
+本文档详细介绍了 Vue3 Engine 的完整 API 接口。
 
 ## Engine 实例
 
@@ -9,7 +9,7 @@
 #### `app`
 
 - **类型**: `App<Element>`
-- **描述**: Vue应用实例
+- **描述**: Vue 应用实例
 - **只读**: 是
 
 ```typescript
@@ -81,10 +81,10 @@ engine.notifications.error('操作失败')
 
 #### `mount(container)`
 
-挂载Vue应用到指定容器。
+挂载 Vue 应用到指定容器。
 
 - **参数**:
-  - `container` (string | Element): 挂载容器的选择器或DOM元素
+  - `container` (string | Element): 挂载容器的选择器或 DOM 元素
 - **返回值**: `Engine`
 - **示例**:
 
@@ -99,7 +99,7 @@ engine.mount(container)
 
 #### `unmount()`
 
-卸载Vue应用。
+卸载 Vue 应用。
 
 - **返回值**: `void`
 - **示例**:
@@ -123,7 +123,7 @@ import { myPlugin } from './plugins/my-plugin'
 
 engine.use(myPlugin, {
   option1: 'value1',
-  option2: 'value2'
+  option2: 'value2',
 })
 ```
 
@@ -533,7 +533,7 @@ componentLogger.info('组件渲染') // 自动包含 component: 'UserList'
 - **参数**:
   - `message` (string): 通知消息
   - `options?` (NotificationOptions): 通知选项
-- **返回值**: `string` (通知ID)
+- **返回值**: `string` (通知 ID)
 - **示例**:
 
 ```typescript
@@ -542,7 +542,7 @@ const id = engine.notifications.success('操作成功')
 // 带选项
 engine.notifications.success('保存成功', {
   duration: 3000,
-  position: 'top-right'
+  position: 'top-right',
 })
 ```
 
@@ -553,7 +553,7 @@ engine.notifications.success('保存成功', {
 - **参数**:
   - `message` (string): 通知消息
   - `options?` (NotificationOptions): 通知选项
-- **返回值**: `string` (通知ID)
+- **返回值**: `string` (通知 ID)
 - **示例**:
 
 ```typescript
@@ -567,7 +567,7 @@ engine.notifications.info('这是一条信息')
 - **参数**:
   - `message` (string): 通知消息
   - `options?` (NotificationOptions): 通知选项
-- **返回值**: `string` (通知ID)
+- **返回值**: `string` (通知 ID)
 - **示例**:
 
 ```typescript
@@ -581,7 +581,7 @@ engine.notifications.warning('请注意')
 - **参数**:
   - `message` (string): 通知消息
   - `options?` (NotificationOptions): 通知选项
-- **返回值**: `string` (通知ID)
+- **返回值**: `string` (通知 ID)
 - **示例**:
 
 ```typescript
@@ -593,7 +593,7 @@ engine.notifications.error('操作失败')
 关闭指定通知。
 
 - **参数**:
-  - `id` (string): 通知ID
+  - `id` (string): 通知 ID
 - **返回值**: `boolean`
 - **示例**:
 

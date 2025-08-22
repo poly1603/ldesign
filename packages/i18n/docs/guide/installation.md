@@ -41,7 +41,6 @@ yarn add @ldesign/i18n
 
 <!-- Vue 集成 -->
 <script src="https://unpkg.com/@ldesign/i18n/dist/vue.min.js"></script>
-
 ```
 
 ### 通过 jsDelivr
@@ -52,7 +51,6 @@ yarn add @ldesign/i18n
 
 <!-- 指定版本 -->
 <script src="https://cdn.jsdelivr.net/npm/@ldesign/i18n@0.1.0/dist/index.min.js"></script>
-
 ```
 
 ## 不同环境的安装配置
@@ -70,7 +68,7 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 ### 浏览器环境
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <script src="https://unpkg.com/@ldesign/i18n/dist/index.min.js"></script>
@@ -82,13 +80,12 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 
       createI18nWithBuiltinLocales({
         defaultLocale: 'en',
-      }).then((i18n) => {
+      }).then(i18n => {
         console.log(i18n.t('common.ok'))
       })
     </script>
   </body>
 </html>
-
 ```
 
 ### Webpack 环境
@@ -98,9 +95,9 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 module.exports = {
   resolve: {
     alias: {
-      '@ldesign/i18n': '@ldesign/i18n/es'
-    }
-  }
+      '@ldesign/i18n': '@ldesign/i18n/es',
+    },
+  },
 }
 ```
 
@@ -113,9 +110,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   resolve: {
     alias: {
-      '@ldesign/i18n': '@ldesign/i18n/es'
-    }
-  }
+      '@ldesign/i18n': '@ldesign/i18n/es',
+    },
+  },
 })
 ```
 
@@ -191,7 +188,7 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 async function testInstallation() {
   try {
     const i18n = await createI18nWithBuiltinLocales({
-      defaultLocale: 'en'
+      defaultLocale: 'en',
     })
 
     console.log('✅ 安装成功!')
@@ -281,7 +278,7 @@ import { BrowserDetector } from '@ldesign/i18n/core/detector'
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
   autoDetect: false, // 禁用浏览器语言检测
-  storage: 'none' // 禁用本地存储
+  storage: 'none', // 禁用本地存储
 })
 ```
 

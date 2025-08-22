@@ -35,10 +35,10 @@ const props = withDefaults(defineProps<FormDatePickerProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | Date | null]
-  change: [value: string | Date | null, event: Event]
-  blur: [event: FocusEvent]
-  focus: [event: FocusEvent]
-  clear: []
+  'change': [value: string | Date | null, event: Event]
+  'blur': [event: FocusEvent]
+  'focus': [event: FocusEvent]
+  'clear': []
 }>()
 
 const inputRef = ref<HTMLInputElement>()
@@ -46,17 +46,17 @@ const inputValue = ref<string>('')
 
 // 生成唯一ID
 const inputId = computed(
-  () => `form-date-picker-${Math.random().toString(36).substr(2, 9)}`
+  () => `form-date-picker-${Math.random().toString(36).substr(2, 9)}`,
 )
 
 // 输入类型映射
 const inputType = computed(() => {
   const typeMap = {
-    date: 'date',
+    'date': 'date',
     'datetime-local': 'datetime-local',
-    time: 'time',
-    month: 'month',
-    week: 'week',
+    'time': 'time',
+    'month': 'month',
+    'week': 'week',
   }
   return typeMap[props.type] || 'date'
 })
@@ -64,21 +64,24 @@ const inputType = computed(() => {
 // 监听外部值变化
 watch(
   () => props.modelValue,
-  newValue => {
+  (newValue) => {
     if (newValue instanceof Date) {
       inputValue.value = formatDateForInput(newValue)
-    } else if (typeof newValue === 'string') {
+    }
+    else if (typeof newValue === 'string') {
       inputValue.value = newValue
-    } else {
+    }
+    else {
       inputValue.value = ''
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // 格式化日期为输入框格式
 function formatDateForInput(date: Date): string {
-  if (!date || !(date instanceof Date)) return ''
+  if (!date || !(date instanceof Date))
+    return ''
 
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -106,7 +109,7 @@ function formatDateForInput(date: Date): string {
 // 获取周数
 function getWeekNumber(date: Date): number {
   const d = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
   )
   const dayNum = d.getUTCDay() || 7
   d.setUTCDate(d.getUTCDate() + 4 - dayNum)
@@ -153,7 +156,8 @@ function handleInput(event: Event) {
   if (emitValue && props.format !== 'string') {
     try {
       emitValue = new Date(target.value)
-    } catch {
+    }
+    catch {
       emitValue = target.value
     }
   }
@@ -168,7 +172,8 @@ function handleChange(event: Event) {
   if (emitValue && props.format !== 'string') {
     try {
       emitValue = new Date(target.value)
-    } catch {
+    }
+    catch {
       emitValue = target.value
     }
   }
@@ -232,7 +237,7 @@ defineExpose({
         @change="handleChange"
         @blur="handleBlur"
         @focus="handleFocus"
-      />
+      >
 
       <div
         v-if="clearable && inputValue && !disabled && !readonly"

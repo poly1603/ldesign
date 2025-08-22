@@ -3,10 +3,18 @@
  */
 
 // 动画类型
-export type AnimationType = 'none' | 'rotate' | 'move' | 'fade' | 'pulse' | 'scale' | 'bounce' | 'swing'
+export type AnimationType =
+  | 'none'
+  | 'rotate'
+  | 'move'
+  | 'fade'
+  | 'pulse'
+  | 'scale'
+  | 'bounce'
+  | 'swing'
 
 // 缓动函数类型
-export type EasingFunction = 
+export type EasingFunction =
   | 'linear'
   | 'ease'
   | 'ease-in'
@@ -16,7 +24,11 @@ export type EasingFunction =
   | ((t: number) => number)
 
 // 动画方向
-export type AnimationDirection = 'normal' | 'reverse' | 'alternate' | 'alternate-reverse'
+export type AnimationDirection =
+  | 'normal'
+  | 'reverse'
+  | 'alternate'
+  | 'alternate-reverse'
 
 // 动画填充模式
 export type AnimationFillMode = 'none' | 'forwards' | 'backwards' | 'both'
@@ -165,5 +177,5 @@ export const DEFAULT_ANIMATION_CONFIG: Required<AnimationConfig> = {
   direction: 'normal',
   fillMode: 'none',
   playState: 'running',
-  params: {}
+  params: {},
 }

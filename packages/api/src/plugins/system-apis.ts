@@ -187,7 +187,7 @@ export function createSystemApiPlugin(config: SystemApiConfig = {}): ApiPlugin {
         data: params,
       }),
       cache: { enabled: false }, // 刷新令牌不缓存
-      transform: transformResponse<{ accessToken: string; expiresIn: number }>,
+      transform: transformResponse<{ accessToken: string, expiresIn: number }>,
     },
 
     /**
@@ -195,7 +195,7 @@ export function createSystemApiPlugin(config: SystemApiConfig = {}): ApiPlugin {
      */
     changePassword: {
       name: 'changePassword',
-      config: (params: { oldPassword: string; newPassword: string }) => ({
+      config: (params: { oldPassword: string, newPassword: string }) => ({
         method: 'POST',
         url: buildUrl(finalEndpoints.changePassword),
         data: params,
@@ -222,16 +222,16 @@ export function createSystemApiPlugin(config: SystemApiConfig = {}): ApiPlugin {
     name: 'system-apis',
     version: '1.0.0',
     apis,
-    install: engine => {
+    install: (engine) => {
       // 插件安装时的逻辑
       if (engine.config.debug) {
         console.warn(
           '[System APIs Plugin] Installed with endpoints:',
-          finalEndpoints
+          finalEndpoints,
         )
       }
     },
-    uninstall: engine => {
+    uninstall: (engine) => {
       // 插件卸载时的逻辑
       if (engine.config.debug) {
         console.warn('[System APIs Plugin] Uninstalled')

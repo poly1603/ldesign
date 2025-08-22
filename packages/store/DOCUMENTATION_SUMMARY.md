@@ -61,11 +61,13 @@
 ### 组件列表
 
 1. **CounterDemo** (`components/CounterDemo.vue`)
+
    - 基础计数器功能
    - 展示状态管理、动作调用、计算属性
    - 包含操作历史和代码展示
 
 2. **TodoDemo** (`components/TodoDemo.vue`)
+
    - 待办事项管理
    - 展示持久化、过滤、CRUD 操作
    - 包含统计信息和批量操作

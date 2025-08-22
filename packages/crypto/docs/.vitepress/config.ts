@@ -2,7 +2,8 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: '@ldesign/crypto',
-  description: '一个全面的加解密库，支持所有主流 JavaScript 框架，并专门为 Vue 3 生态系统提供了深度集成',
+  description:
+    '一个全面的加解密库，支持所有主流 JavaScript 框架，并专门为 Vue 3 生态系统提供了深度集成',
 
   base: '/crypto/',
 
@@ -136,7 +137,8 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/ldesign/crypto/edit/main/packages/crypto/docs/:path',
+      pattern:
+        'https://github.com/ldesign/crypto/edit/main/packages/crypto/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
 

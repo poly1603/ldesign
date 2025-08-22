@@ -378,31 +378,31 @@ body {
   .container {
     padding: var(--ls-spacing-base, 16px);
   }
-  
+
   .header {
     padding: var(--ls-spacing-lg, 24px) 0;
   }
-  
+
   .demo-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .demo-actions {
     flex-direction: column;
   }
-  
+
   .size-controls {
     padding: var(--ls-spacing-base, 16px);
   }
-  
+
   .size-switcher {
     flex-wrap: wrap;
   }

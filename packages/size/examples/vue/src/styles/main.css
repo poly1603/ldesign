@@ -125,7 +125,7 @@ body {
   .container {
     padding: var(--ls-spacing-base, 16px);
   }
-  
+
   .demo-grid {
     grid-template-columns: 1fr;
   }

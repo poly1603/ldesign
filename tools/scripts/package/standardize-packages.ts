@@ -33,7 +33,11 @@ const packageConfigs: Record<string, PackageConfig> = {
   color: {
     external: ['vue', '@arco-design/color', 'chroma-js'],
     globalName: 'LDesignColor',
-    globals: { 'vue': 'Vue', '@arco-design/color': 'ArcoColor', 'chroma-js': 'chroma' },
+    globals: {
+      'vue': 'Vue',
+      '@arco-design/color': 'ArcoColor',
+      'chroma-js': 'chroma',
+    },
     vue: true,
     environment: 'jsdom',
     setupFiles: ['__tests__/setup.ts'],
@@ -236,7 +240,10 @@ export default createVitestConfig({
 /**
  * 更新 Playwright 配置
  */
-function updatePlaywrightConfig(packageDir: string, config: PackageConfig): void {
+function updatePlaywrightConfig(
+  packageDir: string,
+  config: PackageConfig,
+): void {
   const playwrightConfigPath = path.join(packageDir, 'playwright.config.ts')
 
   let content = `import { createPlaywrightConfig } from '../../tools/test/playwright.config.base'
@@ -347,7 +354,10 @@ export function standardizeAllPackages(): void {
   const packagesDir = path.resolve(__dirname, '../../../packages')
   const packages = fs.readdirSync(packagesDir).filter((name) => {
     const packagePath = path.join(packagesDir, name)
-    return fs.statSync(packagePath).isDirectory() && fs.existsSync(path.join(packagePath, 'package.json'))
+    return (
+      fs.statSync(packagePath).isDirectory()
+      && fs.existsSync(path.join(packagePath, 'package.json'))
+    )
   })
 
   for (const packageName of packages) {

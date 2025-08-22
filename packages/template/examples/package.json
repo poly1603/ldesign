@@ -1,8 +1,8 @@
 {
-  "name": "@ldesign/template-example",
+  "name": "@ldesign/template-examples",
   "type": "module",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "LDesign Template System 示例应用",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
@@ -11,22 +11,16 @@
   },
   "dependencies": {
     "@ldesign/template": "workspace:*",
-    "esbuild": "^0.25.8",
-    "pinia": "^2.2.8",
-    "vue": "^3.5.18",
-    "vue-router": "^4.4.5"
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^26.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-terser": "^0.4.0",
-    "@rollup/plugin-typescript": "^12.0.0",
+    "@types/node": "^22.10.2",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "less": "^4.2.1",
-    "rollup": "^4.0.0",
-    "typescript": "^5.8.3",
-    "vite": "^6.0.7",
-    "vue-tsc": "^3.0.5"
+    "typescript": "^5.7.2",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.1.10"
   }
 }

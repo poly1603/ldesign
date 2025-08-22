@@ -33,19 +33,19 @@ function bindControlPanelEvents() {
   // 实时更新数值显示
   const fontSizeSlider = document.getElementById('font-size')
   const fontSizeValue = document.getElementById('font-size-value')
-  fontSizeSlider.addEventListener('input', e => {
+  fontSizeSlider.addEventListener('input', (e) => {
     fontSizeValue.textContent = `${e.target.value}px`
   })
 
   const opacitySlider = document.getElementById('opacity')
   const opacityValue = document.getElementById('opacity-value')
-  opacitySlider.addEventListener('input', e => {
+  opacitySlider.addEventListener('input', (e) => {
     opacityValue.textContent = e.target.value
   })
 
   const rotateSlider = document.getElementById('rotate')
   const rotateValue = document.getElementById('rotate-value')
-  rotateSlider.addEventListener('input', e => {
+  rotateSlider.addEventListener('input', (e) => {
     rotateValue.textContent = `${e.target.value}°`
   })
 
@@ -94,7 +94,8 @@ async function createDefaultWatermark() {
     })
     // eslint-disable-next-line no-console
     console.log('✅ 默认水印创建成功', currentMainWatermark)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建默认水印失败:', error)
   }
 }
@@ -113,7 +114,8 @@ async function applyMainWatermark() {
     await createDefaultWatermark()
 
     showNotification('✅ 水印配置已应用', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 应用水印失败:', error)
     showNotification('❌ 应用水印失败', 'error')
   }
@@ -127,14 +129,15 @@ function toggleMainWatermark() {
     const isVisible = currentMainWatermark.visible
     if (isVisible) {
       // 隐藏水印
-      currentMainWatermark.elements.forEach(el => {
+      currentMainWatermark.elements.forEach((el) => {
         el.style.display = 'none'
       })
       currentMainWatermark.visible = false
       showNotification('🙈 水印已隐藏', 'info')
-    } else {
+    }
+    else {
       // 显示水印
-      currentMainWatermark.elements.forEach(el => {
+      currentMainWatermark.elements.forEach((el) => {
         el.style.display = 'block'
       })
       currentMainWatermark.visible = true
@@ -153,7 +156,8 @@ async function clearMainWatermark() {
       currentMainWatermark = null
       showNotification('🗑️ 水印已清除', 'info')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 清除水印失败:', error)
     showNotification('❌ 清除水印失败', 'error')
   }
@@ -188,7 +192,8 @@ window.createBasicWatermark = async function () {
     watermarkInstances.set(instanceId, instance)
     updateStatus('status-basic', true)
     showNotification('✅ 基础水印创建成功', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建基础水印失败:', error)
     showNotification('❌ 创建基础水印失败', 'error')
   }
@@ -233,7 +238,8 @@ window.createImageWatermark = async function () {
     watermarkInstances.set(instanceId, instance)
     updateStatus('status-image', true)
     showNotification('✅ 图片水印创建成功', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建图片水印失败:', error)
     showNotification('❌ 创建图片水印失败', 'error')
   }
@@ -269,7 +275,8 @@ window.createCanvasWatermark = async function () {
     watermarkInstances.set(instanceId, instance)
     updateStatus('status-canvas', true)
     showNotification('✅ Canvas 水印创建成功', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建 Canvas 水印失败:', error)
     showNotification('❌ 创建 Canvas 水印失败', 'error')
   }
@@ -309,7 +316,8 @@ window.createAnimationWatermark = async function () {
     watermarkInstances.set(instanceId, instance)
     updateStatus('status-animation', true)
     showNotification('✅ 动画水印创建成功', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建动画水印失败:', error)
     showNotification('❌ 创建动画水印失败', 'error')
   }
@@ -356,7 +364,8 @@ window.createResponsiveWatermark = async function () {
     watermarkInstances.set(instanceId, instance)
     updateStatus('status-responsive', true)
     showNotification('✅ 响应式水印创建成功', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建响应式水印失败:', error)
     showNotification('❌ 创建响应式水印失败', 'error')
   }
@@ -397,7 +406,8 @@ window.createSecurityWatermark = async function () {
     watermarkInstances.set(instanceId, instance)
     updateStatus('status-security', true)
     showNotification('✅ 安全水印创建成功', 'success')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 创建安全水印失败:', error)
     showNotification('❌ 创建安全水印失败', 'error')
   }

@@ -67,9 +67,7 @@ export function createVitestConfig(options = {}) {
     test: {
       globals: true,
       environment,
-      setupFiles: [
-        ...setupFiles.map(file => resolve(packageDir, file)),
-      ],
+      setupFiles: [...setupFiles.map(file => resolve(packageDir, file))],
       coverage: defaultCoverage,
       include: [
         'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',

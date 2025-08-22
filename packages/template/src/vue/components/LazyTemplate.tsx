@@ -1,29 +1,26 @@
 /**
- * 懒加载模板组件
+ * LazyTemplate 组件 - 懒加载模板组件
+ *
  * 支持 Intersection Observer API 进行可视区域检测
+ * 提供懒加载、占位符、错误处理等功能
  */
 
+import type { PropType } from 'vue'
 import type { DeviceType } from '../../types'
-import { defineComponent, onMounted, onUnmounted, type PropType, ref } from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { TemplateRenderer } from './TemplateRenderer'
 
 export interface LazyTemplateProps {
-  /** 模板分类 */
   category: string
-  /** 设备类型 */
-  device: DeviceType
-  /** 模板名称 */
+  device?: DeviceType
   template: string
-  /** 占位符高度 */
-  placeholderHeight?: number
-  /** 根边距 */
-  rootMargin?: string
-  /** 阈值 */
-  threshold?: number
-  /** 是否启用懒加载 */
   lazy?: boolean
+  placeholderHeight?: number
+  rootMargin?: string
+  threshold?: number | number[]
 }
 
-export default defineComponent({
+export const LazyTemplate = defineComponent({
   name: 'LazyTemplate',
   props: {
     category: {
@@ -32,140 +29,141 @@ export default defineComponent({
     },
     device: {
       type: String as PropType<DeviceType>,
-      required: true,
+      default: 'desktop',
     },
     template: {
       type: String,
       required: true,
     },
+    lazy: {
+      type: Boolean,
+      default: true,
+    },
     placeholderHeight: {
       type: Number,
-      default: 200,
+      default: 300,
     },
     rootMargin: {
       type: String,
       default: '50px',
     },
     threshold: {
-      type: Number,
+      type: [Number, Array] as PropType<number | number[]>,
       default: 0.1,
     },
-    lazy: {
-      type: Boolean,
-      default: true,
-    },
   },
-  emits: ['load', 'error', 'visible'],
-  setup(props, { emit, slots, expose }) {
+  emits: ['load', 'visible', 'error'],
+  setup(props: any, { emit, slots }: any) {
     const containerRef = ref<HTMLElement>()
-    const isVisible = ref(false)
+    const isVisible = ref(!props.lazy) // 非懒加载模式下立即可见
     const isLoaded = ref(false)
-    const isLoading = ref(false)
     const error = ref<Error | null>(null)
-    const templateComponent = ref<any>(null)
+    const observer = ref<IntersectionObserver | null>(null)
 
-    let observer: IntersectionObserver | null = null
+    // 计算样式
+    const containerStyle = computed(() => ({
+      minHeight: props.lazy && !isVisible.value ? `${props.placeholderHeight}px` : 'auto',
+    }))
 
-    // 加载模板
-    const loadTemplate = async () => {
-      if (isLoaded.value || isLoading.value) return
-
-      isLoading.value = true
-      error.value = null
-
-      try {
-        // 这里应该调用模板管理器的加载方法
-        // 为了演示，我们使用动态导入
-        const module = await import(`../../templates/${props.category}/${props.device}/${props.template}/index.tsx`)
-
-        templateComponent.value = module.default
-        isLoaded.value = true
-        emit('load', templateComponent.value)
-      } catch (err) {
-        error.value = err as Error
-        emit('error', err)
-      } finally {
-        isLoading.value = false
-      }
-    }
-
-    // 创建 Intersection Observer
-    const createObserver = () => {
-      if (!props.lazy) {
-        loadTemplate()
+    // 初始化 Intersection Observer
+    const initObserver = () => {
+      if (!props.lazy || !containerRef.value || typeof IntersectionObserver === 'undefined') {
         return
       }
 
-      observer = new IntersectionObserver(
-        entries => {
-          const entry = entries[0]
-          if (entry.isIntersecting && !isLoaded.value && !isLoading.value) {
-            isVisible.value = true
-            emit('visible')
-            loadTemplate()
-          }
+      observer.value = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !isVisible.value) {
+              isVisible.value = true
+              emit('visible')
+              // 一旦可见就停止观察
+              if (observer.value) {
+                observer.value.disconnect()
+              }
+            }
+          })
         },
         {
           rootMargin: props.rootMargin,
           threshold: props.threshold,
-        }
+        },
       )
 
-      if (containerRef.value) {
-        observer.observe(containerRef.value)
-      }
+      observer.value.observe(containerRef.value)
+    }
+
+    // 处理模板加载成功
+    const handleLoad = (result: any) => {
+      isLoaded.value = true
+      error.value = null
+      emit('load', result)
+    }
+
+    // 处理模板加载错误
+    const handleError = (err: Error) => {
+      error.value = err
+      emit('error', err)
     }
 
     // 重试加载
     const retry = () => {
       error.value = null
-      loadTemplate()
+      isLoaded.value = false
     }
 
+    // 监听 lazy 属性变化
+    watch(
+      () => props.lazy,
+      (newLazy) => {
+        if (!newLazy) {
+          isVisible.value = true
+          if (observer.value) {
+            observer.value.disconnect()
+          }
+        }
+        else if (!isVisible.value) {
+          initObserver()
+        }
+      },
+    )
+
     onMounted(() => {
-      createObserver()
+      if (props.lazy) {
+        initObserver()
+      }
     })
 
     onUnmounted(() => {
-      // 清理 Intersection Observer
-      if (observer) {
-        observer.disconnect()
-        observer = null
+      if (observer.value) {
+        observer.value.disconnect()
       }
-
-      // 清理模板组件引用，防止内存泄漏
-      templateComponent.value = null
-      error.value = null
-    })
-
-    // 暴露状态供测试使用
-    expose({
-      isVisible,
-      isLoaded,
-      isLoading,
-      error,
-      templateComponent,
-      loadTemplate,
-      retry,
-      containerRef,
     })
 
     return () => {
-      const { placeholderHeight } = props
-
-      // 如果已加载，渲染模板组件
-      if (isLoaded.value && templateComponent.value) {
-        const Component = templateComponent.value
-        return <Component {...props} />
+      // 如果不可见，显示占位符
+      if (!isVisible.value) {
+        return (
+          <div ref={containerRef} class="lazy-template-placeholder" style={containerStyle.value}>
+            {slots.placeholder?.() || (
+              <div class="lazy-template-default-placeholder">
+                <div class="lazy-template-skeleton" />
+              </div>
+            )}
+          </div>
+        )
       }
 
       // 如果有错误，显示错误状态
       if (error.value) {
         return (
-          <div ref={containerRef} class="lazy-template-error" style={{ minHeight: `${placeholderHeight}px` }}>
+          <div class="lazy-template-error">
             {slots.error?.({ error: error.value, retry }) || (
-              <div class="error-content">
-                <p>模板加载失败</p>
+              <div class="lazy-template-default-error">
+                <p>
+                  ❌ 模板加载失败:
+                  {error.value.message}
+                </p>
                 <button onClick={retry}>重试</button>
               </div>
             )}
@@ -174,12 +172,12 @@ export default defineComponent({
       }
 
       // 如果正在加载，显示加载状态
-      if (isLoading.value) {
+      if (!isLoaded.value) {
         return (
-          <div ref={containerRef} class="lazy-template-loading" style={{ minHeight: `${placeholderHeight}px` }}>
+          <div class="lazy-template-loading">
             {slots.loading?.() || (
-              <div class="loading-content">
-                <div class="loading-spinner"></div>
+              <div class="lazy-template-default-loading">
+                <div class="lazy-template-spinner" />
                 <p>正在加载模板...</p>
               </div>
             )}
@@ -187,16 +185,20 @@ export default defineComponent({
         )
       }
 
-      // 默认占位符
+      // 渲染实际模板
       return (
-        <div ref={containerRef} class="lazy-template-placeholder" style={{ minHeight: `${placeholderHeight}px` }}>
-          {slots.placeholder?.() || (
-            <div class="placeholder-content">
-              <div class="placeholder-skeleton"></div>
-            </div>
-          )}
+        <div ref={containerRef} class="lazy-template-content">
+          <TemplateRenderer
+            category={props.category}
+            device={props.device}
+            template={props.template}
+            onLoad={handleLoad}
+            onError={handleError}
+          />
         </div>
       )
     }
   },
 })
+
+export default LazyTemplate

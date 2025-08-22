@@ -56,7 +56,11 @@ packageDirs.forEach((dir) => {
     }
 
     writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
-    console.log(`✅ 添加 size-limit: ${packageJson.name} (${sizeLimits[packageName] || '50 KB'})`)
+    console.log(
+      `✅ 添加 size-limit: ${packageJson.name} (${
+        sizeLimits[packageName] || '50 KB'
+      })`,
+    )
   }
   catch (error) {
     console.error(`❌ 添加失败: ${dir}`, error.message)

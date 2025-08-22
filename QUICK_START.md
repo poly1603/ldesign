@@ -11,11 +11,13 @@
 ## ⚡ 快速开始
 
 ### 1. 安装依赖
+
 ```bash
 pnpm install
 ```
 
 ### 2. 启动开发环境
+
 ```bash
 # 启动增强开发服务器（推荐）
 pnpm dev:enhanced
@@ -25,6 +27,7 @@ pnpm dev
 ```
 
 ### 3. 运行测试
+
 ```bash
 # 运行所有测试
 pnpm test
@@ -34,6 +37,7 @@ pnpm test:coverage
 ```
 
 ### 4. 构建项目
+
 ```bash
 # 构建所有包
 pnpm build
@@ -45,6 +49,7 @@ pnpm size
 ## 🎯 常用命令
 
 ### 开发相关
+
 ```bash
 pnpm dev:enhanced          # 增强开发模式
 pnpm dev:debug            # 调试模式
@@ -54,6 +59,7 @@ pnpm type-check           # 类型检查
 ```
 
 ### 测试相关
+
 ```bash
 pnpm test                 # 运行测试
 pnpm test:watch           # 监听测试
@@ -62,6 +68,7 @@ pnpm test:generate:all    # 生成测试文件
 ```
 
 ### 构建相关
+
 ```bash
 pnpm build                # 构建所有包
 pnpm build:packages       # 构建特定包
@@ -70,6 +77,7 @@ pnpm size:analyze         # 详细分析
 ```
 
 ### 文档相关
+
 ```bash
 pnpm docs:dev             # 启动文档服务器
 pnpm docs:build           # 构建文档
@@ -80,6 +88,7 @@ pnpm docs:validate:all    # 验证示例代码
 ## 🛠️ 开发工作流
 
 ### 创建新包
+
 ```bash
 # 1. 创建包目录
 mkdir packages/my-package
@@ -92,6 +101,7 @@ pnpm dev:enhanced --packages my-package
 ```
 
 ### 开发现有包
+
 ```bash
 # 1. 启动开发服务器
 pnpm dev:enhanced
@@ -104,6 +114,7 @@ pnpm lint
 ```
 
 ### 提交代码
+
 ```bash
 # 1. 运行所有检查
 pnpm test && pnpm lint && pnpm type-check
@@ -119,6 +130,7 @@ git commit -m "feat: add new feature"
 ## 🔧 工具使用
 
 ### 性能分析
+
 ```bash
 # 分析包大小
 pnpm size:analyze
@@ -131,6 +143,7 @@ tsx tools/performance/bundle-analyzer.ts
 ```
 
 ### 测试工具
+
 ```bash
 # 生成测试文件
 tsx tools/testing/test-generator.ts color
@@ -140,6 +153,7 @@ tsx tools/testing/coverage-reporter.ts
 ```
 
 ### 文档工具
+
 ```bash
 # 生成 API 文档
 tsx tools/scripts/docs/documentation-generator.ts color
@@ -151,6 +165,7 @@ tsx tools/scripts/docs/example-validator.ts color
 ## 🌟 高级功能
 
 ### 微前端开发
+
 ```bash
 # 微前端部署
 pnpm microfrontend:deploy:dev
@@ -160,6 +175,7 @@ tsx tools/configs/microfrontend/module-federation.config.ts
 ```
 
 ### 插件开发
+
 ```bash
 # 创建插件
 pnpm ecosystem:plugin:scaffold my-plugin
@@ -169,6 +185,7 @@ pnpm ecosystem:plugin:search
 ```
 
 ### 高级缓存
+
 ```bash
 # 缓存基准测试
 pnpm advanced:cache:benchmark
@@ -199,24 +216,28 @@ ldesign/
 ## 🎯 开发技巧
 
 ### 1. 使用增强开发模式
+
 ```bash
 # 启动增强开发服务器，获得更好的开发体验
 pnpm dev:enhanced
 ```
 
 ### 2. 实时测试监听
+
 ```bash
 # 在开发时保持测试运行
 pnpm test:watch
 ```
 
 ### 3. 代码质量检查
+
 ```bash
 # 提交前运行完整检查
 pnpm lint && pnpm type-check && pnpm test
 ```
 
 ### 4. 性能监控
+
 ```bash
 # 定期检查包大小
 pnpm size
@@ -226,6 +247,7 @@ pnpm performance:analyze
 ```
 
 ### 5. 文档同步
+
 ```bash
 # 代码变更后更新文档
 pnpm docs:generate:all
@@ -234,6 +256,7 @@ pnpm docs:generate:all
 ## ❓ 常见问题
 
 ### Q: 开发服务器启动失败？
+
 ```bash
 # 清理依赖重新安装
 rm -rf node_modules
@@ -244,6 +267,7 @@ lsof -i :3000
 ```
 
 ### Q: 测试失败？
+
 ```bash
 # 重新生成测试文件
 pnpm test:generate:all
@@ -253,6 +277,7 @@ pnpm test --clearCache
 ```
 
 ### Q: 构建失败？
+
 ```bash
 # 检查类型错误
 pnpm type-check
@@ -263,6 +288,7 @@ pnpm build
 ```
 
 ### Q: 包大小过大？
+
 ```bash
 # 分析包内容
 pnpm size:analyze

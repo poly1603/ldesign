@@ -1,4 +1,9 @@
-import type { DecryptResult, DESOptions, EncryptResult, IEncryptor } from '../types'
+import type {
+  DecryptResult,
+  DESOptions,
+  EncryptResult,
+  IEncryptor,
+} from '../types'
 import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
@@ -68,7 +73,11 @@ export class DESEncryptor implements IEncryptor {
   /**
    * DES 解密
    */
-  decrypt(encryptedData: string | EncryptResult, key: string, options: DESOptions = {}): DecryptResult {
+  decrypt(
+    encryptedData: string | EncryptResult,
+    key: string,
+    options: DESOptions = {},
+  ): DecryptResult {
     try {
       // 处理输入数据
       let ciphertext: string
@@ -84,7 +93,10 @@ export class DESEncryptor implements IEncryptor {
       }
 
       if (ValidationUtils.isEmpty(ciphertext)) {
-        throw ErrorUtils.createDecryptionError('Encrypted data cannot be empty', 'DES')
+        throw ErrorUtils.createDecryptionError(
+          'Encrypted data cannot be empty',
+          'DES',
+        )
       }
 
       if (ValidationUtils.isEmpty(key)) {
@@ -98,7 +110,10 @@ export class DESEncryptor implements IEncryptor {
 
       // 准备 IV
       if (!opts.iv) {
-        throw ErrorUtils.createDecryptionError('IV is required for decryption', 'DES')
+        throw ErrorUtils.createDecryptionError(
+          'IV is required for decryption',
+          'DES',
+        )
       }
       const ivWordArray = CryptoJS.enc.Hex.parse(opts.iv)
 
@@ -117,7 +132,10 @@ export class DESEncryptor implements IEncryptor {
       const decryptedText = decrypted.toString(CryptoJS.enc.Utf8)
 
       if (!decryptedText) {
-        throw ErrorUtils.createDecryptionError('Failed to decrypt data - invalid key or corrupted data', 'DES')
+        throw ErrorUtils.createDecryptionError(
+          'Failed to decrypt data - invalid key or corrupted data',
+          'DES',
+        )
       }
 
       return {
@@ -187,7 +205,11 @@ export const des = {
   /**
    * 解密
    */
-  decrypt: (encryptedData: string | EncryptResult, key: string, options?: DESOptions): DecryptResult => {
+  decrypt: (
+    encryptedData: string | EncryptResult,
+    key: string,
+    options?: DESOptions,
+  ): DecryptResult => {
     const encryptor = new DESEncryptor()
     return encryptor.decrypt(encryptedData, key, options)
   },

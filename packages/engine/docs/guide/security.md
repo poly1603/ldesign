@@ -1,6 +1,7 @@
 # 安全管理
 
-Vue3 Engine 提供了完整的安全管理功能，帮助开发者防范常见的安全威胁，包括 XSS 攻击、CSRF 攻击、恶意输入等。
+Vue3 Engine 提供了完整的安全管理功能，帮助开发者防范常见的安全威胁，包括 XSS 攻击、CSRF 攻击、恶意输
+入等。
 
 ## 基础用法
 
@@ -52,7 +53,7 @@ engine.security.setCSP({
   'default-src': ['\'self\''],
   'script-src': ['\'self\'', '\'unsafe-inline\''],
   'style-src': ['\'self\'', '\'unsafe-inline\''],
-  'img-src': ['\'self\'', 'data:', 'https:']
+  'img-src': ['\'self\'', 'data:', 'https:'],
 })
 ```
 
@@ -64,7 +65,7 @@ engine.security.setSecurityHeaders({
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 })
 ```
 
@@ -75,7 +76,7 @@ engine.security.setSecurityHeaders({
 const validationRules = {
   email: /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/,
   phone: /^\+?[\d\s-()]+$/,
-  username: /^\w{3,20}$/
+  username: /^\w{3,20}$/,
 }
 
 // 验证输入
@@ -112,7 +113,7 @@ engine.security.addHandler('custom-threat', (input, context) => {
       threat: true,
       type: 'custom-threat',
       severity: 'high',
-      message: '检测到自定义威胁模式'
+      message: '检测到自定义威胁模式',
     }
   }
   return { threat: false }
@@ -142,7 +143,7 @@ const engine = createEngine({
     customRules: {
       allowedTags: ['div', 'span', 'p', 'a', 'img'],
       allowedAttributes: ['class', 'id', 'href', 'src', 'alt'],
-      allowedSchemes: ['http', 'https', 'mailto']
+      allowedSchemes: ['http', 'https', 'mailto'],
     },
 
     // 威胁检测配置
@@ -150,9 +151,9 @@ const engine = createEngine({
       xss: true,
       sqlInjection: true,
       pathTraversal: true,
-      commandInjection: true
-    }
-  }
+      commandInjection: true,
+    },
+  },
 })
 ```
 

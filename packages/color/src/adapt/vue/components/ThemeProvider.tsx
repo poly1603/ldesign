@@ -3,7 +3,11 @@
  */
 
 import type { PropType } from 'vue'
-import type { ColorMode, ThemeConfig, ThemeManagerInstance } from '../../../core/types'
+import type {
+  ColorMode,
+  ThemeConfig,
+  ThemeManagerInstance,
+} from '../../../core/types'
 import { defineComponent, onMounted, provide, watch } from 'vue'
 import { ThemeManager } from '../../../core/theme-manager'
 import { useSystemThemeSync } from '../composables/useSystemThemeSync'
@@ -77,11 +81,7 @@ export default defineComponent({
     )
 
     return () => {
-      return (
-        <div class="l-theme-provider">
-          {slots.default?.()}
-        </div>
-      )
+      return <div class="l-theme-provider">{slots.default?.()}</div>
     }
   },
 })

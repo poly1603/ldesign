@@ -128,7 +128,8 @@ export default defineComponent({
       if (newProfile && !oldProfile) {
         // 用户登录
         handleUserLogin(newProfile)
-      } else if (!newProfile && oldProfile) {
+      }
+      else if (!newProfile && oldProfile) {
         // 用户登出
         handleUserLogout()
       }
@@ -198,8 +199,10 @@ class SmartCache {
 
   // 根据数据类型动态设置 TTL
   private getTTL(key: string): number {
-    if (key.startsWith('user:')) return 60 * 60 * 1000 // 1小时
-    if (key.startsWith('config:')) return 24 * 60 * 60 * 1000 // 24小时
+    if (key.startsWith('user:'))
+      return 60 * 60 * 1000 // 1小时
+    if (key.startsWith('config:'))
+      return 24 * 60 * 60 * 1000 // 24小时
     return 5 * 60 * 1000 // 默认5分钟
   }
 
@@ -271,7 +274,8 @@ class EventHandler {
         title: '登录成功',
         message: `欢迎回来，${user.name}！`,
       })
-    } catch (error) {
+    }
+    catch (error) {
       engine.errors.captureError(error, null, '用户登录处理失败')
     }
   }
@@ -395,7 +399,7 @@ class PerformanceService {
     engine.performance.startMonitoring()
 
     // 监听性能违规
-    engine.performance.onViolation(violation => {
+    engine.performance.onViolation((violation) => {
       engine.logger.warn('性能警告', violation)
 
       // 发送性能数据到监控服务
@@ -411,7 +415,8 @@ class PerformanceService {
       const result = await apiCall()
       engine.performance.endEvent(eventId, { success: true })
       return result
-    } catch (error) {
+    }
+    catch (error) {
       engine.performance.endEvent(eventId, { success: false, error: error.message })
       throw error
     }
@@ -422,7 +427,7 @@ class PerformanceService {
     fetch('/api/performance', {
       method: 'POST',
       body: JSON.stringify(data),
-    }).catch(error => {
+    }).catch((error) => {
       engine.logger.error('性能数据发送失败', error)
     })
   }
@@ -544,8 +549,12 @@ function reportError() {
   <div v-if="hasError" class="error-boundary">
     <h3>🚨 出现了一些问题</h3>
     <p>{{ errorMessage }}</p>
-    <button @click="retry">重试</button>
-    <button @click="reportError">报告问题</button>
+    <button @click="retry">
+      重试
+    </button>
+    <button @click="reportError">
+      报告问题
+    </button>
   </div>
   <slot v-else />
 </template>
@@ -695,12 +704,12 @@ const engine = createEngine({
 class ProductionMonitor {
   init() {
     // 性能监控
-    engine.performance.onViolation(violation => {
+    engine.performance.onViolation((violation) => {
       this.sendAlert('performance', violation)
     })
 
     // 错误监控
-    engine.errors.onError(error => {
+    engine.errors.onError((error) => {
       if (error.level === 'error') {
         this.sendAlert('error', error)
       }
@@ -719,7 +728,8 @@ class ProductionMonitor {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, data, timestamp: Date.now() }),
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('告警发送失败:', error)
     }
   }

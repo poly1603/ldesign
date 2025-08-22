@@ -5,8 +5,8 @@ describe('编码算法测试', () => {
   const testData = 'Hello, Encoding!'
   const emptyData = ''
   const unicodeData = '🔐 Hello, 世界! 🌟'
-  const binaryData =
-    '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
+  const binaryData
+    = '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
   const largeData = 'A'.repeat(10000)
 
   describe('base64 编码测试', () => {
@@ -68,7 +68,7 @@ describe('编码算法测试', () => {
         'Line1\nLine2\nLine3',
       ]
 
-      testCases.forEach(testCase => {
+      testCases.forEach((testCase) => {
         const encoded = base64.encode(testCase)
         const decoded = base64.decode(encoded)
         expect(decoded).toBe(testCase)
@@ -179,7 +179,7 @@ describe('编码算法测试', () => {
         '\x00\x01\x02\x03',
       ]
 
-      testCases.forEach(testCase => {
+      testCases.forEach((testCase) => {
         const encoded = hex.encode(testCase)
         const decoded = hex.decode(encoded)
         expect(decoded).toBe(testCase)
@@ -197,7 +197,7 @@ describe('编码算法测试', () => {
     it('编码长度应该是原始数据的两倍', () => {
       const testCases = ['A', 'AB', 'ABC', 'ABCD']
 
-      testCases.forEach(testCase => {
+      testCases.forEach((testCase) => {
         const encoded = hex.encode(testCase)
         // 每个字节编码为2个十六进制字符
         const expectedLength = new TextEncoder().encode(testCase).length * 2
@@ -234,7 +234,7 @@ describe('编码算法测试', () => {
     it('base64 编码通常比 Hex 编码更紧凑', () => {
       const testCases = ['Hello', 'Hello World!', largeData.substring(0, 1000)]
 
-      testCases.forEach(testCase => {
+      testCases.forEach((testCase) => {
         const base64Encoded = base64.encode(testCase)
         const hexEncoded = hex.encode(testCase)
 
@@ -248,7 +248,7 @@ describe('编码算法测试', () => {
     it('两种编码都应该正确处理相同的数据', () => {
       const testCases = [testData, unicodeData, binaryData]
 
-      testCases.forEach(testCase => {
+      testCases.forEach((testCase) => {
         const base64Encoded = base64.encode(testCase)
         const base64Decoded = base64.decode(base64Encoded)
 
@@ -327,8 +327,8 @@ describe('编码算法测试', () => {
     })
 
     it('应该处理控制字符', () => {
-      const controlChars =
-        '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
+      const controlChars
+        = '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
 
       const base64Encoded = base64.encode(controlChars)
       const base64Decoded = base64.decode(base64Encoded)

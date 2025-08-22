@@ -195,7 +195,7 @@ export class IdleProcessorImpl implements IdleProcessor {
         this.taskQueue.length > 0
         && this.isRunning
         && (deadline.timeRemaining() > 0 || deadline.didTimeout)
-        && (performance.now() - startTime) < this.options.maxProcessingTime
+        && performance.now() - startTime < this.options.maxProcessingTime
       ) {
         const task = this.taskQueue.shift()
         if (!task)
@@ -242,7 +242,9 @@ export class IdleProcessorImpl implements IdleProcessor {
 /**
  * 创建闲时处理器实例
  */
-export function createIdleProcessor(options?: IdleProcessorOptions): IdleProcessor {
+export function createIdleProcessor(
+  options?: IdleProcessorOptions,
+): IdleProcessor {
   return new IdleProcessorImpl(options)
 }
 
@@ -254,17 +256,22 @@ export const defaultIdleProcessor = new IdleProcessorImpl()
 /**
  * 便捷函数：添加闲时任务到默认处理器
  */
-export function addIdleTask(task: () => void | Promise<void>, priority?: number): void {
+export function addIdleTask(
+  task: () => void | Promise<void>,
+  priority?: number,
+): void {
   defaultIdleProcessor.addTask(task, priority)
 }
 
 /**
  * 便捷函数：批量添加闲时任务
  */
-export function addIdleTasks(tasks: Array<{
-  task: () => void | Promise<void>
-  priority?: number
-}>): void {
+export function addIdleTasks(
+  tasks: Array<{
+    task: () => void | Promise<void>
+    priority?: number
+  }>,
+): void {
   tasks.forEach(({ task, priority }) => {
     defaultIdleProcessor.addTask(task, priority)
   })

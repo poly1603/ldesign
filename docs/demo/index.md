@@ -1,6 +1,6 @@
 # 在线演示
 
-体验 LDesign Vue引擎的强大功能，所有演示都可以在浏览器中直接运行。
+体验 LDesign Vue 引擎的强大功能，所有演示都可以在浏览器中直接运行。
 
 ## 🎮 功能演示
 
@@ -130,7 +130,7 @@
   </div>
 </div>
 
-### HTTP客户端演示 {#http-demo}
+### HTTP 客户端演示 {#http-demo}
 
 <div class="interactive-demo">
   <div class="demo-container">

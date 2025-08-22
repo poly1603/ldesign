@@ -132,7 +132,7 @@ const app = createApp(App)
 app.use(ThemePlugin, {
   defaultTheme: 'default',
   autoDetect: true,
-  idleProcessing: true
+  idleProcessing: true,
 })
 
 app.mount('#app')
@@ -144,13 +144,7 @@ app.mount('#app')
 <script setup>
 import { useTheme } from '@ldesign/color/vue'
 
-const {
-  currentTheme,
-  currentMode,
-  availableThemes,
-  setTheme,
-  toggleMode
-} = useTheme()
+const { currentTheme, currentMode, availableThemes, setTheme, toggleMode } = useTheme()
 </script>
 
 <template>
@@ -302,7 +296,7 @@ export function useCustomTheme() {
 
   return {
     isCustomTheme,
-    createAndApplyTheme
+    createAndApplyTheme,
   }
 }
 ```

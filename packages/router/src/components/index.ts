@@ -3,8 +3,10 @@
  */
 
 // 组件
+export { default as DeviceUnsupported } from './DeviceUnsupported'
+export type { DeviceUnsupportedProps } from './DeviceUnsupported'
 export { RouterLink } from './RouterLink'
-export { RouterView } from './RouterView'
 
+export { RouterView } from './RouterView'
 // 类型
 export type * from './types'

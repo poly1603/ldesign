@@ -50,7 +50,10 @@ class BuildManager {
     console.log(logMessage)
   }
 
-  private async executeCommand(command: string, cwd?: string): Promise<{ success: boolean, output: string, error?: string }> {
+  private async executeCommand(
+    command: string,
+    cwd?: string,
+  ): Promise<{ success: boolean, output: string, error?: string }> {
     try {
       const output = execSync(command, {
         cwd: cwd || process.cwd(),
@@ -76,14 +79,18 @@ class BuildManager {
       // 类型检查（可选）
       if (!this.options.skipTypeCheck) {
         this.log('执行类型检查...')
-        const typeCheckResult = await this.executeCommand('pnpm type-check:packages')
+        const typeCheckResult = await this.executeCommand(
+          'pnpm type-check:packages',
+        )
         if (!typeCheckResult.success) {
           this.log(`类型检查失败: ${typeCheckResult.error}`, 'warn')
         }
       }
 
       // 构建所有包
-      const buildCommand = this.options.watch ? 'pnpm build:watch:legacy' : 'pnpm build:legacy'
+      const buildCommand = this.options.watch
+        ? 'pnpm build:watch:legacy'
+        : 'pnpm build:legacy'
       const buildResult = await this.executeCommand(buildCommand)
 
       if (!buildResult.success) {
@@ -251,7 +258,11 @@ class BuildManager {
     const successCount = this.buildResults.filter(r => r.success).length
     const totalCount = this.buildResults.length
 
-    this.log(`构建完成! 成功: ${successCount}/${totalCount}, 总耗时: ${Math.round(totalDuration)}ms`)
+    this.log(
+      `构建完成! 成功: ${successCount}/${totalCount}, 总耗时: ${Math.round(
+        totalDuration,
+      )}ms`,
+    )
 
     if (successCount < totalCount) {
       process.exit(1)

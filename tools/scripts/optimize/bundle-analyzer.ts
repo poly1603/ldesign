@@ -29,7 +29,8 @@ interface OptimizationSuggestion {
  * 获取目录大小
  */
 function getDirectorySize(dir: string): number {
-  if (!existsSync(dir)) return 0
+  if (!existsSync(dir))
+    return 0
 
   let size = 0
   const files = readdirSync(dir)
@@ -40,7 +41,8 @@ function getDirectorySize(dir: string): number {
 
     if (stats.isDirectory()) {
       size += getDirectorySize(filePath)
-    } else {
+    }
+    else {
       size += stats.size
     }
   }
@@ -52,7 +54,8 @@ function getDirectorySize(dir: string): number {
  * 格式化文件大小
  */
 function formatSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
+  if (bytes === 0)
+    return '0 B'
 
   const units = ['B', 'KB', 'MB', 'GB']
   const index = Math.floor(Math.log(bytes) / Math.log(1024))
@@ -99,7 +102,7 @@ function analyzePackage(packagePath: string): PackageInfo {
  * 生成优化建议
  */
 function generateOptimizationSuggestions(
-  packages: PackageInfo[]
+  packages: PackageInfo[],
 ): OptimizationSuggestion[] {
   const suggestions: OptimizationSuggestion[] = []
 
@@ -128,7 +131,7 @@ function generateOptimizationSuggestions(
     // 检查是否有大型依赖
     const heavyDeps = ['lodash', 'moment', 'jquery']
     const foundHeavyDeps = pkg.dependencies.filter(dep =>
-      heavyDeps.some(heavy => dep.includes(heavy))
+      heavyDeps.some(heavy => dep.includes(heavy)),
     )
 
     if (foundHeavyDeps.length > 0) {
@@ -171,7 +174,8 @@ async function runBundleAnalysis(packageName?: string) {
       process.exit(1)
     }
     packageDirs = [packagePath]
-  } else {
+  }
+  else {
     packageDirs = readdirSync(packagesDir)
       .map(name => join(packagesDir, name))
       .filter(path => statSync(path).isDirectory())
@@ -196,7 +200,8 @@ async function runBundleAnalysis(packageName?: string) {
       }
       console.log(`   依赖: ${info.dependencies.length}个`)
       console.log('')
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`❌ 分析 ${dir} 失败:`, error)
     }
   }
@@ -223,19 +228,20 @@ async function runBundleAnalysis(packageName?: string) {
       console.log(
         `${priorityEmoji} [${suggestion.priority.toUpperCase()}] ${
           suggestion.package
-        }`
+        }`,
       )
       console.log(`   问题: ${suggestion.issue}`)
       console.log(`   建议: ${suggestion.suggestion}\n`)
     }
-  } else {
+  }
+  else {
     console.log('\n✅ 没有发现明显的优化问题')
   }
 
   // 生成总体统计
   const totalDistSize = packages.reduce(
     (sum, pkg) => sum + (pkg.distSize || 0),
-    0
+    0,
   )
   const totalEsSize = packages.reduce((sum, pkg) => sum + (pkg.esSize || 0), 0)
   const totalDeps = new Set(packages.flatMap(pkg => pkg.dependencies)).size
@@ -273,7 +279,8 @@ async function runWebpackAnalyzer(packageName: string) {
       cwd: packagePath,
       stdio: 'inherit',
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ 分析失败:', error)
   }
 }
@@ -285,6 +292,7 @@ const packageName = args[1]
 
 if (command === 'webpack' && packageName) {
   runWebpackAnalyzer(packageName).catch(console.error)
-} else {
+}
+else {
   runBundleAnalysis(packageName).catch(console.error)
 }

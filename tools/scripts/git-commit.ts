@@ -92,7 +92,8 @@ class GitCommitTool {
       hasChanges: statusResult.success && statusResult.output.length > 0,
       currentBranch: branchResult.success ? branchResult.output : 'unknown',
       isClean: statusResult.success && statusResult.output.length === 0,
-      hasUnpushedCommits: unpushedResult.success && unpushedResult.output.length > 0,
+      hasUnpushedCommits:
+        unpushedResult.success && unpushedResult.output.length > 0,
     }
   }
 
@@ -130,7 +131,9 @@ class GitCommitTool {
 
       // 检查是否有远程更新
       const behindResult = this.safeExec('git rev-list HEAD..@{u} --count')
-      const behind = behindResult.success ? Number.parseInt(behindResult.output) : 0
+      const behind = behindResult.success
+        ? Number.parseInt(behindResult.output)
+        : 0
 
       if (behind > 0) {
         console.log(`📥 发现 ${behind} 个远程提交，正在执行 rebase...`)
@@ -184,7 +187,9 @@ class GitCommitTool {
       // 检查是否需要设置上游分支
       const upstreamResult = this.safeExec('git rev-parse --abbrev-ref @{u}')
       if (!upstreamResult.success) {
-        const shouldSetUpstream = await this.confirm('🔗 是否设置上游分支并推送？')
+        const shouldSetUpstream = await this.confirm(
+          '🔗 是否设置上游分支并推送？',
+        )
         if (shouldSetUpstream) {
           this.exec(`git push --set-upstream origin ${branch}`)
           console.log('✅ 上游分支设置完成并推送成功')
@@ -234,7 +239,9 @@ class GitCommitTool {
 
       // 如果有未推送的提交，询问是否直接推送
       if (!status.hasChanges && status.hasUnpushedCommits) {
-        const shouldPush = await this.confirm('🚀 发现未推送的提交，是否直接推送？')
+        const shouldPush = await this.confirm(
+          '🚀 发现未推送的提交，是否直接推送？',
+        )
         if (shouldPush) {
           await this.push(status.currentBranch)
           this.rl.close()

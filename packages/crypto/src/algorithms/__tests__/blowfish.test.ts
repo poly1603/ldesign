@@ -101,7 +101,8 @@ describe('blowfish 加密算法', () => {
     })
 
     it('应该处理长密钥', () => {
-      const longKey = 'this_is_a_very_long_key_for_testing_purposes_and_more_content'
+      const longKey
+        = 'this_is_a_very_long_key_for_testing_purposes_and_more_content'
       const result = encryptor.encrypt(testData, longKey)
       expect(result.success).toBe(true)
     })
@@ -127,7 +128,11 @@ describe('blowfish 加密算法', () => {
 
       blowfish.encrypt(testData, testKey)
 
-      expect(warnings.some(w => w.includes('Blowfish algorithm is not natively supported'))).toBe(true)
+      expect(
+        warnings.some(w =>
+          w.includes('Blowfish algorithm is not natively supported'),
+        ),
+      ).toBe(true)
 
       // 恢复原始的 console.warn
       console.warn = originalWarn

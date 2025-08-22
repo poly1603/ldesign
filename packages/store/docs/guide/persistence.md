@@ -74,42 +74,26 @@ watch([theme, language], () => {
     <div class="setting-item">
       <label>主题:</label>
       <select v-model="theme">
-        <option value="light">
-          浅色
-        </option>
-        <option value="dark">
-          深色
-        </option>
+        <option value="light">浅色</option>
+        <option value="dark">深色</option>
       </select>
     </div>
 
     <div class="setting-item">
       <label>语言:</label>
       <select v-model="language">
-        <option value="zh-CN">
-          中文
-        </option>
-        <option value="en-US">
-          English
-        </option>
+        <option value="zh-CN">中文</option>
+        <option value="en-US">English</option>
       </select>
     </div>
 
     <div class="actions">
-      <button @click="save">
-        手动保存
-      </button>
-      <button @click="load">
-        重新加载
-      </button>
-      <button @click="clear">
-        清除设置
-      </button>
+      <button @click="save">手动保存</button>
+      <button @click="load">重新加载</button>
+      <button @click="clear">清除设置</button>
     </div>
 
-    <p v-if="isPersisted">
-      ✅ 设置已保存
-    </p>
+    <p v-if="isPersisted">✅ 设置已保存</p>
   </div>
 </template>
 ```
@@ -124,7 +108,7 @@ class UserPreferencesStore extends BaseStore {
   @PersistentState({
     default: {},
     key: 'user_preferences_v2', // 自定义键名
-    storage: 'localStorage' // 指定存储类型
+    storage: 'localStorage', // 指定存储类型
   })
   preferences: UserPreferences = {}
 
@@ -132,7 +116,7 @@ class UserPreferencesStore extends BaseStore {
   @PersistentState({
     default: null,
     key: 'current_session',
-    storage: 'sessionStorage'
+    storage: 'sessionStorage',
   })
   currentSession: Session | null = null
 
@@ -141,7 +125,7 @@ class UserPreferencesStore extends BaseStore {
     default: new Date(),
     key: 'last_visit',
     serialize: (date: Date) => date.toISOString(),
-    deserialize: (str: string) => new Date(str)
+    deserialize: (str: string) => new Date(str),
   })
   lastVisit: Date = new Date()
 }
@@ -157,7 +141,7 @@ class ConditionalPersistStore extends BaseStore {
   @PersistentState({
     default: [],
     // 只有在用户登录时才持久化
-    condition: () => this.user !== null
+    condition: () => this.user !== null,
   })
   userSpecificData: any[] = []
 
@@ -225,8 +209,7 @@ export class IndexedDBAdapter implements StorageAdapter {
   }
 
   async getItem(key: string): Promise<string | null> {
-    if (!this.db)
-      await this.init()
+    if (!this.db) await this.init()
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readonly')
@@ -239,8 +222,7 @@ export class IndexedDBAdapter implements StorageAdapter {
   }
 
   async setItem(key: string, value: string): Promise<void> {
-    if (!this.db)
-      await this.init()
+    if (!this.db) await this.init()
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite')
@@ -253,8 +235,7 @@ export class IndexedDBAdapter implements StorageAdapter {
   }
 
   async removeItem(key: string): Promise<void> {
-    if (!this.db)
-      await this.init()
+    if (!this.db) await this.init()
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite')
@@ -267,8 +248,7 @@ export class IndexedDBAdapter implements StorageAdapter {
   }
 
   async clear(): Promise<void> {
-    if (!this.db)
-      await this.init()
+    if (!this.db) await this.init()
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite')
@@ -314,13 +294,11 @@ export class EncryptedStorageAdapter implements StorageAdapter {
 
   getItem(key: string): string | null {
     const encrypted = this.baseAdapter.getItem(key)
-    if (!encrypted)
-      return null
+    if (!encrypted) return null
 
     try {
       return this.decrypt(encrypted)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('解密失败:', error)
       return null
     }
@@ -359,22 +337,19 @@ import { EncryptedStorageAdapter, IndexedDBAdapter } from '@/storage/adapters'
 
 class AdvancedPersistStore extends BaseStore {
   private indexedDBAdapter = new IndexedDBAdapter()
-  private encryptedAdapter = new EncryptedStorageAdapter(
-    localStorage,
-    'my-secret-key'
-  )
+  private encryptedAdapter = new EncryptedStorageAdapter(localStorage, 'my-secret-key')
 
   // 使用 IndexedDB 存储大量数据
   @PersistentState({
     default: [],
-    adapter: this.indexedDBAdapter
+    adapter: this.indexedDBAdapter,
   })
   largeDataset: any[] = []
 
   // 使用加密存储敏感数据
   @PersistentState({
     default: null,
-    adapter: this.encryptedAdapter
+    adapter: this.encryptedAdapter,
   })
   sensitiveData: SensitiveData | null = null
 
@@ -409,8 +384,8 @@ class VersionedPersistStore extends BaseStore {
       version: 2,
       migrate: oldData => ({
         ...oldData,
-        newField: 'default value'
-      })
+        newField: 'default value',
+      }),
     },
     {
       version: 3,
@@ -418,16 +393,16 @@ class VersionedPersistStore extends BaseStore {
         ...oldData,
         settings: {
           ...oldData.settings,
-          theme: oldData.theme || 'light'
-        }
-      })
-    }
+          theme: oldData.theme || 'light',
+        },
+      }),
+    },
   ]
 
   @PersistentState({
     default: { version: VersionedPersistStore.CURRENT_VERSION },
     key: 'app_data',
-    beforeLoad: this.migrateData.bind(this)
+    beforeLoad: this.migrateData.bind(this),
   })
   appData: AppData = { version: VersionedPersistStore.CURRENT_VERSION }
 
@@ -449,8 +424,7 @@ class VersionedPersistStore extends BaseStore {
       }
 
       return JSON.stringify(data)
-    }
-    catch (error) {
+    } catch (error) {
       console.error('数据迁移失败:', error)
       return rawData
     }
@@ -473,7 +447,7 @@ class BackupRestoreStore extends BaseStore {
       data: {
         userData: this.userData,
         // 其他需要导出的数据
-      }
+      },
     }
 
     return JSON.stringify(exportData, null, 2)
@@ -497,8 +471,7 @@ class BackupRestoreStore extends BaseStore {
 
       console.log('数据导入成功')
       return true
-    }
-    catch (error) {
+    } catch (error) {
       console.error('数据导入失败:', error)
       return false
     }
@@ -544,11 +517,11 @@ class BackupRestoreStore extends BaseStore {
 
   private validateImportData(data: any): boolean {
     return (
-      data
-      && typeof data.version === 'number'
-      && typeof data.timestamp === 'string'
-      && data.data
-      && typeof data.data === 'object'
+      data &&
+      typeof data.version === 'number' &&
+      typeof data.timestamp === 'string' &&
+      data.data &&
+      typeof data.data === 'object'
     )
   }
 
@@ -576,7 +549,7 @@ class OptimizedPersistStore extends BaseStore {
   @PersistentState({
     default: {},
     lazy: true, // 延迟持久化
-    debounce: 1000 // 1秒后保存
+    debounce: 1000, // 1秒后保存
   })
   frequentlyChangedData: any = {}
 
@@ -602,7 +575,7 @@ class OptimizedPersistStore extends BaseStore {
     if (this.pendingChanges.size > 0) {
       // 只持久化有变化的数据
       const changedData = {}
-      this.pendingChanges.forEach((key) => {
+      this.pendingChanges.forEach(key => {
         changedData[key] = this.frequentlyChangedData[key]
       })
 
@@ -634,10 +607,10 @@ class CompressedPersistStore extends BaseStore {
     default: [],
     compress: true,
     serialize: data => LZString.compress(JSON.stringify(data)),
-    deserialize: (compressed) => {
+    deserialize: compressed => {
       const decompressed = LZString.decompress(compressed)
       return decompressed ? JSON.parse(decompressed) : null
-    }
+    },
   })
   largeDataArray: any[] = []
 
@@ -714,10 +687,10 @@ class RobustPersistStore extends BaseStore {
       // 发送错误报告
       errorReporting.report(error)
     },
-    fallback: (key) => {
+    fallback: key => {
       // 提供降级方案
       return this.getDefaultValue(key)
-    }
+    },
   })
   criticalData: any = {}
 

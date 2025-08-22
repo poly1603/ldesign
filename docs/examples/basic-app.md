@@ -6,7 +6,7 @@
 
 - ✅ 基础引擎配置
 - ✅ 路由系统
-- ✅ HTTP请求
+- ✅ HTTP 请求
 - ✅ 状态管理
 - ✅ 错误处理
 - ✅ 性能监控
@@ -88,22 +88,22 @@ const http = createHttpClient({
   timeout: 10000,
   interceptors: {
     request: [
-      (config) => {
+      config => {
         console.log('发送请求:', config.url)
         return config
-      }
+      },
     ],
     response: [
-      (response) => {
+      response => {
         console.log('收到响应:', response.status)
         return response
       },
-      (error) => {
+      error => {
         console.error('请求失败:', error.message)
         return Promise.reject(error)
-      }
-    ]
-  }
+      },
+    ],
+  },
 })
 
 // 创建引擎
@@ -114,13 +114,13 @@ const engine = createEngine({
     thresholds: {
       responseTime: 1000,
       fps: 30,
-      memory: 50 * 1024 * 1024 // 50MB
-    }
+      memory: 50 * 1024 * 1024, // 50MB
+    },
   },
   cache: {
     strategy: 'lru',
     maxSize: 50,
-    ttl: 5 * 60 * 1000 // 5分钟
+    ttl: 5 * 60 * 1000, // 5分钟
   },
   errorHandler: (error, instance, info) => {
     console.error('应用错误:', error)
@@ -129,7 +129,7 @@ const engine = createEngine({
     if (import.meta.env.PROD) {
       // sendErrorToMonitoring(error, info)
     }
-  }
+  },
 })
 
 // 安装插件
@@ -148,7 +148,7 @@ if (import.meta.env.DEV) {
   console.log('引擎实例:', engine)
 
   // 性能监控
-  engine.performance.on('violation', (violation) => {
+  engine.performance.on('violation', violation => {
     console.warn('性能警告:', violation)
   })
 }
@@ -171,8 +171,8 @@ const router = createRouter({
       component: Home,
       meta: {
         title: '首页',
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
       path: '/about',
@@ -180,8 +180,8 @@ const router = createRouter({
       component: About,
       meta: {
         title: '关于我们',
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
       path: '/users',
@@ -189,18 +189,18 @@ const router = createRouter({
       component: Users,
       meta: {
         title: '用户列表',
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../views/NotFound.vue'),
       meta: {
-        title: '页面未找到'
-      }
-    }
-  ]
+        title: '页面未找到',
+      },
+    },
+  ],
 })
 
 // 全局前置守卫
@@ -266,12 +266,10 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await http.get<User[]>('/users')
       users.value = response.data
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : '获取用户列表失败'
       console.error('获取用户失败:', err)
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -284,13 +282,11 @@ export const useUserStore = defineStore('user', () => {
       const response = await http.get<User>(`/users/${id}`)
       currentUser.value = response.data
       return response.data
-    }
-    catch (err) {
+    } catch (err) {
       error.value = err instanceof Error ? err.message : '获取用户详情失败'
       console.error('获取用户详情失败:', err)
       throw err
-    }
-    finally {
+    } finally {
       loading.value = false
     }
   }
@@ -321,7 +317,7 @@ export const useUserStore = defineStore('user', () => {
     fetchUsers,
     getUserById,
     clearError,
-    reset
+    reset,
   }
 })
 ```
@@ -354,12 +350,12 @@ onErrorCaptured((err, instance, info) => {
 
 // 监听全局错误
 onMounted(() => {
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     console.error('全局错误:', event.error)
     error.value = `全局错误: ${event.error?.message || '未知错误'}`
   })
 
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     console.error('未处理的Promise拒绝:', event.reason)
     error.value = `Promise错误: ${event.reason?.message || '未知错误'}`
   })
@@ -383,9 +379,7 @@ onMounted(() => {
     <!-- 错误提示 -->
     <div v-if="error" class="error-toast">
       {{ error }}
-      <button @click="clearError">
-        ×
-      </button>
+      <button @click="clearError">×</button>
     </div>
 
     <!-- 性能监控面板（开发环境） -->
@@ -460,12 +454,12 @@ const engine = useEngine()
 
 const engineInfo = ref({
   version: '1.0.0',
-  pluginCount: 0
+  pluginCount: 0,
 })
 
 const performanceInfo = ref({
   fps: 0,
-  memory: 0
+  memory: 0,
 })
 
 let performanceTimer: number
@@ -474,7 +468,7 @@ let performanceTimer: number
 function getEngineInfo() {
   engineInfo.value = {
     version: engine.version || '1.0.0',
-    pluginCount: engine.plugins?.size || 0
+    pluginCount: engine.plugins?.size || 0,
   }
 }
 
@@ -484,7 +478,7 @@ function getPerformanceInfo() {
     const metrics = engine.performance.getMetrics()
     performanceInfo.value = {
       fps: Math.round(metrics.fps || 0),
-      memory: Math.round((metrics.memory?.used || 0) / 1024 / 1024)
+      memory: Math.round((metrics.memory?.used || 0) / 1024 / 1024),
     }
   }
 }
@@ -512,44 +506,32 @@ onUnmounted(() => {
         基于Vue3的现代化前端开发引擎，提供完整的插件化架构和跨框架兼容性
       </p>
       <div class="hero-actions">
-        <router-link to="/users" class="btn btn-primary">
-          查看用户列表
-        </router-link>
-        <router-link to="/about" class="btn btn-secondary">
-          了解更多
-        </router-link>
+        <router-link to="/users" class="btn btn-primary"> 查看用户列表 </router-link>
+        <router-link to="/about" class="btn btn-secondary"> 了解更多 </router-link>
       </div>
     </div>
 
     <div class="features">
       <div class="feature-card">
-        <div class="feature-icon">
-          🚀
-        </div>
+        <div class="feature-icon">🚀</div>
         <h3>高性能</h3>
         <p>基于Vue3构建，提供卓越的性能表现和开发体验</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">
-          🔧
-        </div>
+        <div class="feature-icon">🔧</div>
         <h3>插件化</h3>
         <p>完整的插件系统，支持按需加载和热插拔</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">
-          📱
-        </div>
+        <div class="feature-icon">📱</div>
         <h3>跨平台</h3>
         <p>支持多种平台和设备类型，一套代码多端运行</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">
-          🛡️
-        </div>
+        <div class="feature-icon">🛡️</div>
         <h3>安全可靠</h3>
         <p>内置安全防护机制，保障应用和数据安全</p>
       </div>
@@ -560,36 +542,28 @@ onUnmounted(() => {
         <div class="stat-number">
           {{ engineInfo.version }}
         </div>
-        <div class="stat-label">
-          引擎版本
-        </div>
+        <div class="stat-label">引擎版本</div>
       </div>
 
       <div class="stat-item">
         <div class="stat-number">
           {{ engineInfo.pluginCount }}
         </div>
-        <div class="stat-label">
-          已加载插件
-        </div>
+        <div class="stat-label">已加载插件</div>
       </div>
 
       <div class="stat-item">
         <div class="stat-number">
           {{ performanceInfo.fps }}
         </div>
-        <div class="stat-label">
-          当前FPS
-        </div>
+        <div class="stat-label">当前FPS</div>
       </div>
 
       <div class="stat-item">
         <div class="stat-number">
           {{ performanceInfo.memory }}
         </div>
-        <div class="stat-label">
-          内存使用(MB)
-        </div>
+        <div class="stat-label">内存使用(MB)</div>
       </div>
     </div>
   </div>
@@ -751,29 +725,29 @@ onUnmounted(() => {
 ### 1. 引擎配置
 
 - **调试模式**: 开发环境自动启用
-- **性能监控**: 实时监控FPS、内存等指标
-- **缓存策略**: LRU缓存，提升应用性能
+- **性能监控**: 实时监控 FPS、内存等指标
+- **缓存策略**: LRU 缓存，提升应用性能
 - **错误处理**: 全局错误捕获和处理
 
 ### 2. 路由系统
 
 - **路由守卫**: 全局前置和后置守卫
 - **元信息**: 页面标题、认证要求等
-- **懒加载**: 404页面懒加载
+- **懒加载**: 404 页面懒加载
 - **过渡动画**: 页面切换动画
 
-### 3. HTTP客户端
+### 3. HTTP 客户端
 
 - **拦截器**: 请求和响应拦截
 - **错误处理**: 统一错误处理机制
-- **超时设置**: 10秒请求超时
-- **基础URL**: 统一API地址配置
+- **超时设置**: 10 秒请求超时
+- **基础 URL**: 统一 API 地址配置
 
 ### 4. 状态管理
 
-- **响应式状态**: 基于Vue3响应式系统
+- **响应式状态**: 基于 Vue3 响应式系统
 - **计算属性**: 派生状态自动更新
-- **异步操作**: 支持async/await
+- **异步操作**: 支持 async/await
 - **错误处理**: 操作级别的错误处理
 
 ## 📊 性能优化
@@ -796,8 +770,8 @@ const http = createHttpClient({
   cache: {
     enabled: true,
     ttl: 5 * 60 * 1000, // 5分钟
-    maxSize: 100
-  }
+    maxSize: 100,
+  },
 })
 ```
 
@@ -820,9 +794,9 @@ const engine = createEngine({
     thresholds: {
       responseTime: 1000, // 1秒
       fps: 30, // 30FPS
-      memory: 50 * 1024 * 1024 // 50MB
-    }
-  }
+      memory: 50 * 1024 * 1024, // 50MB
+    },
+  },
 })
 ```
 
@@ -893,7 +867,7 @@ vercel --prod
 ## 📚 扩展阅读
 
 - [路由系统详解](../packages/router/)
-- [HTTP客户端使用指南](../packages/http/)
+- [HTTP 客户端使用指南](../packages/http/)
 - [状态管理最佳实践](../guide/state)
 - [性能优化技巧](../guide/performance)
 

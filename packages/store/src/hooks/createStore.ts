@@ -49,7 +49,11 @@ export function createStore<
   })
 
   // 返回 Hook 函数
-  return function useCreatedStore(): UseStoreReturn<TState, TActions, TGetters> {
+  return function useCreatedStore(): UseStoreReturn<
+    TState,
+    TActions,
+    TGetters
+  > {
     const store = storeDefinition()
 
     // 创建响应式状态引用
@@ -89,13 +93,11 @@ export function createStore<
 /**
  * 创建简单状态的 Hook
  */
-export function createState<T>(
-  initialValue: T,
-): () => {
-    value: Ref<T>
-    setValue: (newValue: T | ((oldValue: T) => T)) => void
-    reset: () => void
-  } {
+export function createState<T>(initialValue: T): () => {
+  value: Ref<T>
+  setValue: (newValue: T | ((oldValue: T) => T)) => void
+  reset: () => void
+} {
   return function useState() {
     const value = ref(initialValue) as Ref<T>
 
@@ -123,12 +125,10 @@ export function createState<T>(
 /**
  * 创建计算属性的 Hook
  */
-export function createComputed<T>(
-  getter: () => T,
-): () => {
-    value: ComputedRef<T>
-    refresh: () => void
-  } {
+export function createComputed<T>(getter: () => T): () => {
+  value: ComputedRef<T>
+  refresh: () => void
+} {
   return function useComputed() {
     const value = computed(getter)
 
@@ -161,7 +161,9 @@ export function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
     const error = ref<Error | null>(null)
     const data = ref<Awaited<ReturnType<T>> | null>(null)
 
-    const execute = async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+    const execute = async (
+      ...args: Parameters<T>
+    ): Promise<Awaited<ReturnType<T>>> => {
       loading.value = true
       error.value = null
 

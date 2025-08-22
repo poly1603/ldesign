@@ -1,4 +1,4 @@
-import type { RequestConfig, ResponseData } from '@/types'
+import type { RequestConfig, ResponseData } from '../types'
 import { BaseAdapter } from './base'
 
 /**
@@ -38,14 +38,17 @@ export class AlovaAdapter extends BaseAdapter {
    */
   async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
     if (!this.isSupported()) {
-      throw new Error('Alova is not available. Please install alova: npm install alova')
+      throw new Error(
+        'Alova is not available. Please install alova: npm install alova',
+      )
     }
 
     const processedConfig = this.processConfig(config)
 
     try {
       // 如果没有 alova 实例，创建一个默认的
-      const alovaInstance = this.alovaInstance || this.createDefaultAlovaInstance()
+      const alovaInstance
+        = this.alovaInstance || this.createDefaultAlovaInstance()
 
       // 创建 alova 方法
       const method = this.createAlovaMethod(alovaInstance, processedConfig)
@@ -154,7 +157,7 @@ export class AlovaAdapter extends BaseAdapter {
     if (config.signal) {
       alovaMethod.abort = () => {
         if (config.signal && !config.signal.aborted) {
-          ; (config.signal as any).abort()
+          ;(config.signal as any).abort()
         }
       }
     }

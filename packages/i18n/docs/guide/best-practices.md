@@ -110,20 +110,20 @@ class LazyI18nLoader implements Loader {
     const [common, navigation, forms] = await Promise.all([
       import(`../locales/${locale}/common.json`),
       import(`../locales/${locale}/navigation.json`),
-      import(`../locales/${locale}/forms.json`)
+      import(`../locales/${locale}/forms.json`),
     ])
 
     const languagePackage: LanguagePackage = {
       info: {
         name: this.getLanguageName(locale),
         code: locale,
-        direction: this.getLanguageDirection(locale)
+        direction: this.getLanguageDirection(locale),
       },
       translations: {
         common: common.default,
         navigation: navigation.default,
-        forms: forms.default
-      }
+        forms: forms.default,
+      },
     }
 
     this.cache.set(locale, languagePackage)
@@ -133,9 +133,9 @@ class LazyI18nLoader implements Loader {
 
 // ❌ 不推荐：一次性加载所有语言
 const allLocales = {
-  en: require('./locales/en/index.json'),
+  'en': require('./locales/en/index.json'),
   'zh-CN': require('./locales/zh-CN/index.json'),
-  ja: require('./locales/ja/index.json')
+  'ja': require('./locales/ja/index.json'),
 }
 ```
 
@@ -148,9 +148,9 @@ const allLocales = {
 const i18n = new I18n({
   cache: {
     enabled: true,
-    maxSize: 1000,        // 限制缓存大小
-    ttl: 5 * 60 * 1000   // 5分钟过期
-  }
+    maxSize: 1000, // 限制缓存大小
+    ttl: 5 * 60 * 1000, // 5分钟过期
+  },
 })
 
 // 预加载常用翻译
@@ -172,9 +172,9 @@ const router = createRouter({
         // 加载仪表板相关翻译
         await i18n.loadNamespace('dashboard')
         next()
-      }
-    }
-  ]
+      },
+    },
+  ],
 })
 ```
 
@@ -186,15 +186,19 @@ const router = createRouter({
 
 ```typescript
 // ✅ 推荐：提供默认值
-const message = t('user.welcome', { name: userName }, {
-  defaultValue: 'Welcome!'
-})
+const message = t(
+  'user.welcome',
+  { name: userName },
+  {
+    defaultValue: 'Welcome!',
+  }
+)
 
 // ✅ 推荐：使用降级语言
 const i18n = new I18n({
   defaultLocale: 'en',
-  fallbackLocale: 'en',  // 确保有降级选项
-  fallbackChain: ['en', 'zh-CN']  // 多级降级
+  fallbackLocale: 'en', // 确保有降级选项
+  fallbackChain: ['en', 'zh-CN'], // 多级降级
 })
 ```
 
@@ -206,20 +210,20 @@ const i18n = new I18n({
 i18n.on('translationMissing', (key, locale) => {
   // 记录缺失的翻译
   console.warn(`Missing translation: ${key} for locale: ${locale}`)
-  
+
   // 发送到错误监控服务
   errorReporting.captureMessage(`Missing translation: ${key}`, {
-    extra: { locale, key }
+    extra: { locale, key },
   })
 })
 
 i18n.on('translationError', (error, key, locale) => {
   // 记录翻译错误
   console.error(`Translation error for ${key}:`, error)
-  
+
   // 发送到错误监控服务
   errorReporting.captureException(error, {
-    extra: { locale, key }
+    extra: { locale, key },
   })
 })
 ```
@@ -255,16 +259,13 @@ interface TranslationKeys {
 // 扩展 I18n 类型
 declare module '@ldesign/i18n' {
   interface I18nInstance {
-    t<K extends keyof TranslationKeys>(
-      key: K,
-      params?: Record<string, any>
-    ): string
+    t<K extends keyof TranslationKeys>(key: K, params?: Record<string, any>): string
   }
 }
 
 // 使用时获得类型提示
-const title = t('pages.home.title')  // ✅ 类型安全
-const invalid = t('invalid.key')     // ❌ TypeScript 错误
+const title = t('pages.home.title') // ✅ 类型安全
+const invalid = t('invalid.key') // ❌ TypeScript 错误
 ```
 
 ### 自动生成类型
@@ -273,26 +274,25 @@ const invalid = t('invalid.key')     // ❌ TypeScript 错误
 
 ```typescript
 // scripts/generate-i18n-types.ts
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 function generateTypesFromTranslations(localeDir: string) {
-  const enTranslations = JSON.parse(
-    fs.readFileSync(path.join(localeDir, 'en/index.json'), 'utf-8')
-  )
+  const enTranslations = JSON.parse(fs.readFileSync(path.join(localeDir, 'en/index.json'), 'utf-8'))
 
   function generateInterface(obj: any, indent = 0): string {
     const spaces = '  '.repeat(indent)
     let result = '{\n'
-    
+
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'object' && value !== null) {
         result += `${spaces}  ${key}: ${generateInterface(value, indent + 1)}\n`
-      } else {
+      }
+      else {
         result += `${spaces}  ${key}: string\n`
       }
     }
-    
+
     result += `${spaces}}`
     return result
   }
@@ -301,10 +301,7 @@ function generateTypesFromTranslations(localeDir: string) {
 export interface TranslationKeys ${generateInterface(enTranslations)}
   `
 
-  fs.writeFileSync(
-    path.join(localeDir, '../types/i18n.ts'),
-    typeDefinition
-  )
+  fs.writeFileSync(path.join(localeDir, '../types/i18n.ts'), typeDefinition)
 }
 ```
 
@@ -323,7 +320,7 @@ describe('I18n', () => {
 
   beforeEach(async () => {
     i18n = await createI18nWithBuiltinLocales({
-      defaultLocale: 'en'
+      defaultLocale: 'en',
     })
   })
 
@@ -355,10 +352,10 @@ describe('I18n', () => {
 测试组件中的翻译：
 
 ```typescript
-// __tests__/components/UserProfile.test.ts
-import { mount } from '@vue/test-utils'
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 import { createI18n } from '@ldesign/i18n/vue'
+// __tests__/components/UserProfile.test.ts
+import { mount } from '@vue/test-utils'
 import UserProfile from '@/components/UserProfile.vue'
 
 describe('UserProfile', () => {
@@ -368,8 +365,8 @@ describe('UserProfile', () => {
 
     const wrapper = mount(UserProfile, {
       global: {
-        plugins: [vueI18nPlugin]
-      }
+        plugins: [vueI18nPlugin],
+      },
     })
 
     expect(wrapper.text()).toContain('User Profile')
@@ -382,8 +379,8 @@ describe('UserProfile', () => {
 
     const wrapper = mount(UserProfile, {
       global: {
-        plugins: [vueI18nPlugin]
-      }
+        plugins: [vueI18nPlugin],
+      },
     })
 
     // 切换到中文
@@ -454,7 +451,7 @@ class TenantI18nService {
 
     const i18n = new I18n({
       defaultLocale: 'en',
-      loader: new TenantLoader(tenantId)
+      loader: new TenantLoader(tenantId),
     })
 
     await i18n.init()
@@ -477,8 +474,8 @@ class TenantLoader implements Loader {
       info: baseTranslations.info,
       translations: {
         ...baseTranslations.translations,
-        ...tenantTranslations
-      }
+        ...tenantTranslations,
+      },
     }
   }
 }
@@ -564,8 +561,8 @@ jobs:
 
 ```typescript
 // scripts/validate-translations.ts
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 interface ValidationResult {
   locale: string
@@ -616,7 +613,8 @@ class TranslationValidator {
 
       if (typeof value === 'object' && value !== null) {
         keys.push(...this.flattenKeys(value, fullKey))
-      } else {
+      }
+      else {
         keys.push(fullKey)
       }
     }

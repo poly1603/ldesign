@@ -15,10 +15,14 @@ class UserStore extends BaseStore {
   currentUser: User | null = null
 
   @AsyncAction()
-  async login(credentials: LoginCredentials) { /* ... */ }
+  async login(credentials: LoginCredentials) {
+    /* ... */
+  }
 
   @AsyncAction()
-  async logout() { /* ... */ }
+  async logout() {
+    /* ... */
+  }
 
   @Getter()
   get isLoggedIn() {
@@ -31,10 +35,14 @@ class CartStore extends BaseStore {
   items: CartItem[] = []
 
   @Action()
-  addItem(product: Product) { /* ... */ }
+  addItem(product: Product) {
+    /* ... */
+  }
 
   @Action()
-  removeItem(productId: string) { /* ... */ }
+  removeItem(productId: string) {
+    /* ... */
+  }
 }
 
 // ❌ 不好的设计 - 职责混乱
@@ -95,7 +103,7 @@ class ShoppingStore extends BaseStore {
     // 执行结账逻辑
     const order = await orderApi.create({
       userId: this.userStore.currentUser!.id,
-      items: this.cartStore.items
+      items: this.cartStore.items,
     })
 
     this.cartStore.clear()
@@ -240,7 +248,7 @@ class TypeSafeUserStore extends BaseStore {
     if (this.currentUser) {
       this.currentUser.preferences = {
         ...this.currentUser.preferences,
-        ...updates
+        ...updates,
       }
     }
   }
@@ -311,14 +319,12 @@ class ErrorHandlingStore extends BaseStore {
     try {
       const data = await api.getData(id)
       this.data = data
-    }
-    catch (error) {
+    } catch (error) {
       this.error = this.normalizeError(error)
       // 记录错误日志
       this.logError(error, 'fetchData', { id })
       throw error // 重新抛出，让调用者处理
-    }
-    finally {
+    } finally {
       this.loading = false
     }
   }
@@ -328,13 +334,13 @@ class ErrorHandlingStore extends BaseStore {
       return {
         message: error.message,
         code: 'UNKNOWN_ERROR',
-        timestamp: new Date()
+        timestamp: new Date(),
       }
     }
     return {
       message: '未知错误',
       code: 'UNKNOWN_ERROR',
-      timestamp: new Date()
+      timestamp: new Date(),
     }
   }
 
@@ -364,8 +370,7 @@ class OptimisticUpdateStore extends BaseStore {
   async toggleTodoOptimistic(id: string) {
     // 立即更新 UI
     const todo = this.todos.find(t => t.id === id)
-    if (!todo)
-      return
+    if (!todo) return
 
     const originalCompleted = todo.completed
     todo.completed = !todo.completed
@@ -373,8 +378,7 @@ class OptimisticUpdateStore extends BaseStore {
     try {
       // 发送到服务器
       await todoApi.update(id, { completed: todo.completed })
-    }
-    catch (error) {
+    } catch (error) {
       // 失败时回滚
       todo.completed = originalCompleted
       throw error
@@ -389,7 +393,7 @@ class OptimisticUpdateStore extends BaseStore {
       id: tempId,
       text,
       completed: false,
-      pending: true
+      pending: true,
     }
 
     // 立即添加到列表
@@ -404,8 +408,7 @@ class OptimisticUpdateStore extends BaseStore {
       if (index > -1) {
         this.todos[index] = { ...savedTodo, pending: false }
       }
-    }
-    catch (error) {
+    } catch (error) {
       // 失败时移除临时项目
       const index = this.todos.findIndex(t => t.id === tempId)
       if (index > -1) {
@@ -455,8 +458,8 @@ class BatchOperationStore extends BaseStore {
 
   // ✅ 批量更新
   @Action()
-  updateItemsBatch(updates: Array<{ id: string, changes: Partial<Item> }>) {
-    const updatedItems = this.items.map((item) => {
+  updateItemsBatch(updates: Array<{ id: string; changes: Partial<Item> }>) {
+    const updatedItems = this.items.map(item => {
       const update = updates.find(u => u.id === item.id)
       return update ? { ...item, ...update.changes } : item
     })
@@ -513,9 +516,9 @@ describe('UserStore', () => {
   it('should handle login error', async () => {
     vi.mocked(userApi.login).mockRejectedValue(new Error('Invalid credentials'))
 
-    await expect(store.login({ email: 'test@example.com', password: 'wrong' }))
-      .rejects
-      .toThrow('Invalid credentials')
+    await expect(store.login({ email: 'test@example.com', password: 'wrong' })).rejects.toThrow(
+      'Invalid credentials'
+    )
 
     expect(store.currentUser).toBeNull()
     expect(store.isLoggedIn).toBe(false)
@@ -615,7 +618,9 @@ class UserManagementStore extends BaseStore {
   currentUser: User | null = null
 
   @AsyncAction()
-  async authenticateUser(credentials: LoginCredentials) { /* ... */ }
+  async authenticateUser(credentials: LoginCredentials) {
+    /* ... */
+  }
 
   @Getter()
   get isUserAuthenticated() {
@@ -629,7 +634,9 @@ class Store extends BaseStore {
   data: any = null
 
   @AsyncAction()
-  async doSomething(params: any) { /* ... */ }
+  async doSomething(params: any) {
+    /* ... */
+  }
 
   @Getter()
   get result() {
@@ -671,7 +678,7 @@ class DebuggableStore extends BaseStore {
         console.log(`✅ Action ${name} completed in ${Date.now() - startTime}ms`)
       })
 
-      onError((error) => {
+      onError(error => {
         console.error(`❌ Action ${name} failed:`, error)
       })
     })
@@ -692,22 +699,21 @@ class MonitoredStore extends BaseStore {
     try {
       this.analytics.trackEvent('critical_operation_start', {
         operationId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       const result = await this.executeCriticalLogic(data)
 
       this.analytics.trackEvent('critical_operation_success', {
         operationId,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       })
 
       return result
-    }
-    catch (error) {
+    } catch (error) {
       this.analytics.trackEvent('critical_operation_error', {
         operationId,
-        error: error.message
+        error: error.message,
       })
       throw error
     }
@@ -726,7 +732,7 @@ class MigratableStore extends BaseStore {
 
   @PersistentState({
     default: { version: MigratableStore.CURRENT_VERSION },
-    beforeLoad: this.migrateData.bind(this)
+    beforeLoad: this.migrateData.bind(this),
   })
   data: AppData = { version: MigratableStore.CURRENT_VERSION }
 
@@ -740,8 +746,7 @@ class MigratableStore extends BaseStore {
       }
 
       return rawData
-    }
-    catch (error) {
+    } catch (error) {
       console.error('数据迁移失败:', error)
       return JSON.stringify({ version: MigratableStore.CURRENT_VERSION })
     }
@@ -755,7 +760,7 @@ class MigratableStore extends BaseStore {
       migrated = {
         ...migrated,
         newField: 'default value',
-        version: 2
+        version: 2,
       }
     }
 

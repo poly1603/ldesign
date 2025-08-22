@@ -1,0 +1,118 @@
+/* LDesign LESS Mixins */
+
+/* Button mixins */
+.button-variant(@color; @background; @border) {
+  color: @color;
+  background-color: @background;
+  border-color: @border;
+
+  &:hover {
+    color: @color;
+    background-color: lighten(@background, 5%);
+    border-color: lighten(@border, 5%);
+  }
+
+  &:active {
+    color: @color;
+    background-color: darken(@background, 5%);
+    border-color: darken(@border, 5%);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px fade(@background, 20%);
+  }
+}
+
+.button-size(@height; @padding; @font-size; @border-radius) {
+  height: @height;
+  padding: 0 @padding;
+  font-size: @font-size;
+  border-radius: @border-radius;
+}
+
+/* Input mixins */
+.input-variant(@border-color; @focus-color) {
+  border-color: @border-color;
+
+  &:focus {
+    border-color: @focus-color;
+    box-shadow: 0 0 0 2px fade(@focus-color, 20%);
+  }
+}
+
+.input-size(@height; @padding; @font-size) {
+  height: @height;
+  padding: @padding;
+  font-size: @font-size;
+}
+
+/* Utility mixins */
+.clearfix() {
+  &::before,
+  &::after {
+    content: '';
+    display: table;
+  }
+
+  &::after {
+    clear: both;
+  }
+}
+
+.text-overflow() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.center-block() {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Animation mixins */
+.transition(@property: all; @duration: var(--ld-animation-duration-base); @timing-function: ease; @delay: 0s) {
+  transition: @property @duration @timing-function @delay;
+}
+
+.transform(@transform) {
+  transform: @transform;
+}
+
+/* Layout mixins */
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between() {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.absolute-center() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Shadow mixins */
+.box-shadow(@shadow) {
+  box-shadow: @shadow;
+}
+
+.elevation(@level) when (@level = 1) {
+  box-shadow: var(--ld-box-shadow-sm);
+}
+
+.elevation(@level) when (@level = 2) {
+  box-shadow: var(--ld-box-shadow-base);
+}
+
+.elevation(@level) when (@level = 3) {
+  box-shadow: var(--ld-box-shadow-lg);
+}

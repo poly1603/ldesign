@@ -26,11 +26,15 @@ const builtinFunctions: BuiltinConditionalFunctions = {
   lte: (a, b) => a <= b,
   includes: (arr, item) => Array.isArray(arr) && arr.includes(item),
   excludes: (arr, item) => Array.isArray(arr) && !arr.includes(item),
-  isEmpty: value => {
-    if (value === null || value === undefined) return true
-    if (typeof value === 'string') return value.trim() === ''
-    if (Array.isArray(value)) return value.length === 0
-    if (typeof value === 'object') return Object.keys(value).length === 0
+  isEmpty: (value) => {
+    if (value === null || value === undefined)
+      return true
+    if (typeof value === 'string')
+      return value.trim() === ''
+    if (Array.isArray(value))
+      return value.length === 0
+    if (typeof value === 'object')
+      return Object.keys(value).length === 0
     return false
   },
   isNotEmpty: value => !builtinFunctions.isEmpty(value),
@@ -41,30 +45,30 @@ const builtinFunctions: BuiltinConditionalFunctions = {
     typeof value === 'object' && value !== null && !Array.isArray(value),
   matches: (value, pattern) => typeof value === 'string' && pattern.test(value),
   lengthEq: (value, length) => {
-    const len =
-      typeof value === 'string'
+    const len
+      = typeof value === 'string'
         ? value.length
         : Array.isArray(value)
-        ? value.length
-        : 0
+          ? value.length
+          : 0
     return len === length
   },
   lengthGt: (value, length) => {
-    const len =
-      typeof value === 'string'
+    const len
+      = typeof value === 'string'
         ? value.length
         : Array.isArray(value)
-        ? value.length
-        : 0
+          ? value.length
+          : 0
     return len > length
   },
   lengthLt: (value, length) => {
-    const len =
-      typeof value === 'string'
+    const len
+      = typeof value === 'string'
         ? value.length
         : Array.isArray(value)
-        ? value.length
-        : 0
+          ? value.length
+          : 0
     return len < length
   },
   inRange: (value, min, max) =>
@@ -104,14 +108,15 @@ class ConditionalWatcherImpl implements ConditionalWatcher {
   trigger(field: string, value: any): void {
     const fieldWatchers = this.watchers.get(field)
     if (fieldWatchers) {
-      fieldWatchers.forEach(callback => {
+      fieldWatchers.forEach((callback) => {
         try {
           // 这里需要从外部获取上下文，暂时传入空对象
           callback(field, value, undefined, {} as ConditionalContext)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(
             `Error in conditional watcher for field "${field}":`,
-            error
+            error,
           )
         }
       })
@@ -132,11 +137,10 @@ class ConditionalWatcherImpl implements ConditionalWatcher {
  */
 export class ConditionalRenderer
   extends SimpleEventEmitter
-  implements ConditionalEngine
-{
+  implements ConditionalEngine {
   private rules: Map<string, ConditionalRule> = new Map()
-  private cache: Map<string, { result: ConditionalResult; timestamp: number }> =
-    new Map()
+  private cache: Map<string, { result: ConditionalResult, timestamp: number }>
+    = new Map()
 
   private watcher: ConditionalWatcher = new ConditionalWatcherImpl()
   private executionCounts: Map<string, number> = new Map()
@@ -191,8 +195,8 @@ export class ConditionalRenderer
     if (context.field.conditionalRender?.cache !== false) {
       const cached = this.cache.get(cacheKey)
       if (
-        cached &&
-        this.isCacheValid(cached, context.field.conditionalRender?.cacheTime)
+        cached
+        && this.isCacheValid(cached, context.field.conditionalRender?.cacheTime)
       ) {
         return cached.result
       }
@@ -207,14 +211,14 @@ export class ConditionalRenderer
       // 获取依赖字段的值
       const dependentValues = this.getDependentValues(
         condition.dependsOn,
-        context.formData
+        context.formData,
       )
 
       // 执行条件判断
       const matched = condition.condition(
         context.formData,
         field,
-        context.allFields
+        context.allFields,
       )
 
       // 执行动态配置
@@ -228,7 +232,7 @@ export class ConditionalRenderer
         config,
         startTime,
         undefined,
-        cacheKey
+        cacheKey,
       )
 
       // 缓存结果
@@ -245,12 +249,13 @@ export class ConditionalRenderer
 
       this.emit('conditionExecuted', field.name, result)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       const errorResult = this.createResult(
         false,
         undefined,
         startTime,
-        error.message
+        error.message,
       )
       this.emit('conditionError', field.name, error)
       return errorResult
@@ -309,12 +314,12 @@ export class ConditionalRenderer
    */
   private getDependentValues(
     dependsOn: string | string[],
-    formData: FormData
+    formData: FormData,
   ): Record<string, any> {
     const dependencies = Array.isArray(dependsOn) ? dependsOn : [dependsOn]
     const values: Record<string, any> = {}
 
-    dependencies.forEach(dep => {
+    dependencies.forEach((dep) => {
       values[dep] = get(formData, dep)
     })
 
@@ -327,13 +332,14 @@ export class ConditionalRenderer
   private generateCacheKey(context: ConditionalContext): string {
     const field = context.field
     const condition = field.conditionalRender
-    if (!condition) return ''
+    if (!condition)
+      return ''
 
     const dependencies = Array.isArray(condition.dependsOn)
       ? condition.dependsOn
       : [condition.dependsOn]
     const dependentValues = dependencies.map(
-      dep => `${dep}:${JSON.stringify(get(context.formData, dep))}`
+      dep => `${dep}:${JSON.stringify(get(context.formData, dep))}`,
     )
 
     return `${field.name}:${dependentValues.join('|')}`
@@ -343,8 +349,8 @@ export class ConditionalRenderer
    * 检查缓存是否有效
    */
   private isCacheValid(
-    cached: { result: ConditionalResult; timestamp: number },
-    cacheTime?: number
+    cached: { result: ConditionalResult, timestamp: number },
+    cacheTime?: number,
   ): boolean {
     const maxAge = cacheTime || 5000 // 默认5秒
     return Date.now() - cached.timestamp < maxAge
@@ -358,7 +364,7 @@ export class ConditionalRenderer
     config?: Partial<FormItemConfig>,
     startTime?: number,
     error?: string,
-    cacheKey?: string
+    cacheKey?: string,
   ): ConditionalResult {
     const endTime = performance.now()
     return {
@@ -395,7 +401,7 @@ export class ConditionalRenderer
     disabledRules: number
   } {
     const enabledRules = Array.from(this.rules.values()).filter(
-      rule => rule.enabled !== false
+      rule => rule.enabled !== false,
     ).length
     const disabledRules = this.rules.size - enabledRules
 

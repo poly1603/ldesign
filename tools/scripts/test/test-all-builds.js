@@ -66,7 +66,9 @@ for (const packageName of packages) {
       }
     }
     else {
-      console.log(`  ❌ ${packageName} 构建产物不完整，缺少: ${missingDirs.join(', ')}`)
+      console.log(
+        `  ❌ ${packageName} 构建产物不完整，缺少: ${missingDirs.join(', ')}`,
+      )
       results[packageName] = {
         success: false,
         error: `缺少构建产物: ${missingDirs.join(', ')}`,

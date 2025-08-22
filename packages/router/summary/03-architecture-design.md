@@ -75,6 +75,16 @@ class TrieRouteMatcher implements RouteMatcher {
   match(path: string): RouteMatch | null
   resolve(location: RouteLocationRaw): RouteLocation
   addRoute(record: RouteRecordRaw): RouteRecordNormalized
+
+  // 嵌套路由支持
+  private matchSegments(
+    node: TrieNode,
+    segments: string[],
+    index: number,
+    params: RouteParams,
+    matchedSegments: string[],
+    matchedRecords: RouteRecordNormalized[]
+  ): MatchResult | null
 }
 ```
 
@@ -275,8 +285,8 @@ interface RouterPlugin {
   version?: string
   dependencies?: string[]
 
-  install(router: Router, options?: any): void
-  uninstall?(router: Router): void
+  install: (router: Router, options?: any) => void
+  uninstall?: (router: Router) => void
 }
 
 // 插件管理器
@@ -295,10 +305,10 @@ class PluginManager {
 ```typescript
 // 插件生命周期钩子
 interface PluginHooks {
-  beforeInstall?(router: Router, options: any): void
-  afterInstall?(router: Router, options: any): void
-  beforeUninstall?(router: Router): void
-  afterUninstall?(router: Router): void
+  beforeInstall?: (router: Router, options: any) => void
+  afterInstall?: (router: Router, options: any) => void
+  beforeUninstall?: (router: Router) => void
+  afterUninstall?: (router: Router) => void
 }
 ```
 

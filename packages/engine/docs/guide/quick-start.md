@@ -1,6 +1,6 @@
 # 快速开始
 
-本指南将帮助你在几分钟内开始使用Vue3 Engine。
+本指南将帮助你在几分钟内开始使用 Vue3 Engine。
 
 ## 安装
 
@@ -26,7 +26,7 @@ pnpm add @ldesign/engine
 
 ### 1. 基础设置
 
-创建一个新的Vue项目或在现有项目中使用引擎：
+创建一个新的 Vue 项目或在现有项目中使用引擎：
 
 ```typescript
 import { createApp } from '@ldesign/engine'
@@ -77,20 +77,20 @@ const engine = createApp(App, {
   config: {
     appName: '我的应用',
     version: '1.0.0',
-    debug: true
+    debug: true,
   },
   logger: {
     level: 'info',
-    format: 'pretty'
+    format: 'pretty',
   },
   state: {
     persist: true,
-    storage: 'localStorage'
+    storage: 'localStorage',
   },
   notifications: {
     position: 'top-right',
-    duration: 3000
-  }
+    duration: 3000,
+  },
 })
 
 engine.mount('#app')
@@ -116,7 +116,7 @@ function login() {
   engine.state.set('user', {
     id: 1,
     name: '张三',
-    email: 'zhangsan@example.com'
+    email: 'zhangsan@example.com',
   })
 
   // 显示成功通知
@@ -215,7 +215,7 @@ export async function fetchUserData(userId: string) {
     // 记录成功
     engine.logger.info('用户数据获取成功', {
       userId,
-      dataSize: JSON.stringify(data).length
+      dataSize: JSON.stringify(data).length,
     })
 
     return data
@@ -224,7 +224,7 @@ export async function fetchUserData(userId: string) {
     // 记录错误
     engine.logger.error('用户数据获取失败', {
       userId,
-      error: error.message
+      error: error.message,
     })
 
     throw error
@@ -247,16 +247,16 @@ const engine = createApp(App, {
     plugins.router({
       routes: [
         { path: '/', component: Home },
-        { path: '/about', component: About }
-      ]
+        { path: '/about', component: About },
+      ],
     }),
 
     // HTTP客户端插件
     plugins.http({
       baseURL: '/api',
-      timeout: 5000
-    })
-  ]
+      timeout: 5000,
+    }),
+  ],
 })
 
 engine.mount('#app')
@@ -289,7 +289,7 @@ export const counterPlugin = creators.plugin('counter', (engine) => {
     reset: () => {
       engine.state.set('counter.value', 0)
       engine.events.emit('counter:reset')
-    }
+    },
   }
 
   engine.logger.info('计数器插件已安装')
@@ -297,7 +297,7 @@ export const counterPlugin = creators.plugin('counter', (engine) => {
 
 // 使用插件
 const engine = createApp(App, {
-  plugins: [counterPlugin]
+  plugins: [counterPlugin],
 })
 ```
 
@@ -321,7 +321,7 @@ export const performanceMiddleware = creators.middleware('performance', async (c
   // 记录性能数据
   context.engine.logger.info('阶段执行时间', {
     phase: context.phase,
-    duration: `${duration.toFixed(2)}ms`
+    duration: `${duration.toFixed(2)}ms`,
   })
 
   // 性能警告
@@ -334,7 +334,7 @@ export const performanceMiddleware = creators.middleware('performance', async (c
 
 // 使用中间件
 const engine = createApp(App, {
-  middleware: [performanceMiddleware]
+  middleware: [performanceMiddleware],
 })
 ```
 
@@ -351,8 +351,8 @@ const engine = createApp(App, {
   ...presets.development(),
   config: {
     appName: '我的应用',
-    debug: true
-  }
+    debug: true,
+  },
 })
 
 engine.mount('#app')
@@ -369,8 +369,8 @@ const engine = createApp(App, {
   ...presets.production(),
   config: {
     appName: '我的应用',
-    version: process.env.VUE_APP_VERSION
-  }
+    version: process.env.VUE_APP_VERSION,
+  },
 })
 
 engine.mount('#app')
@@ -383,11 +383,11 @@ engine.mount('#app')
 ```typescript
 const engine = createApp(App, {
   config: {
-    debug: true
+    debug: true,
   },
   logger: {
-    level: 'debug'
-  }
+    level: 'debug',
+  },
 })
 ```
 
@@ -423,7 +423,7 @@ A: 有几种方式：
 import { engine } from '../main'
 ```
 
-2. 使用组合式API：
+2. 使用组合式 API：
 
 ```typescript
 import { inject } from 'vue'
@@ -449,7 +449,7 @@ const asyncPlugin = creators.plugin('async', async (engine) => {
 })
 
 const engine = createApp(App, {
-  plugins: [asyncPlugin]
+  plugins: [asyncPlugin],
 })
 
 // 等待所有插件安装完成
@@ -461,22 +461,26 @@ await engine.mount('#app')
 A: 使用插件依赖：
 
 ```typescript
-const dependentPlugin = creators.plugin('dependent', (engine) => {
-  // 检查依赖
-  if (!engine.hasPlugin('auth')) {
-    throw new Error('dependent插件需要auth插件')
-  }
+const dependentPlugin = creators.plugin(
+  'dependent',
+  (engine) => {
+    // 检查依赖
+    if (!engine.hasPlugin('auth')) {
+      throw new Error('dependent插件需要auth插件')
+    }
 
-  // 使用其他插件的功能
-  const authPlugin = engine.getPlugin('auth')
-}, {
-  dependencies: ['auth']
-})
+    // 使用其他插件的功能
+    const authPlugin = engine.getPlugin('auth')
+  },
+  {
+    dependencies: ['auth'],
+  }
+)
 ```
 
 ## 下一步
 
-现在你已经了解了Vue3 Engine的基本用法，可以继续学习：
+现在你已经了解了 Vue3 Engine 的基本用法，可以继续学习：
 
 - [插件系统](./plugins.md) - 深入了解插件开发
 - [中间件系统](./middleware.md) - 学习中间件的高级用法
@@ -484,4 +488,4 @@ const dependentPlugin = creators.plugin('dependent', (engine) => {
 - [事件系统](./events.md) - 了解事件系统的高级特性
 - [示例](../examples/basic.md) - 查看更多实际应用示例
 
-如果遇到问题，请查看[API文档](../api/engine.md)或提交Issue。
+如果遇到问题，请查看[API 文档](../api/engine.md)或提交 Issue。

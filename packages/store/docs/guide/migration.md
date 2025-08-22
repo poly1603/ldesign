@@ -14,7 +14,7 @@ import { defineStore } from 'pinia'
 export const useCounterStore = defineStore('counter', {
   state: () => ({
     count: 0,
-    name: 'Counter'
+    name: 'Counter',
   }),
 
   actions: {
@@ -25,13 +25,13 @@ export const useCounterStore = defineStore('counter', {
     async fetchData() {
       const response = await api.getData()
       this.data = response
-    }
+    },
   },
 
   getters: {
     doubleCount: state => state.count * 2,
-    displayText: state => `${state.name}: ${state.count}`
-  }
+    displayText: state => `${state.name}: ${state.count}`,
+  },
 })
 ```
 
@@ -109,7 +109,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count, name },
     actions: { increment },
-    getters: { doubleCount }
+    getters: { doubleCount },
   }
 })
 ```
@@ -125,7 +125,7 @@ const userModule = {
   namespaced: true,
   state: {
     currentUser: null,
-    loading: false
+    loading: false,
   },
 
   mutations: {
@@ -134,7 +134,7 @@ const userModule = {
     },
     SET_LOADING(state, loading) {
       state.loading = loading
-    }
+    },
   },
 
   actions: {
@@ -143,17 +143,16 @@ const userModule = {
       try {
         const user = await authApi.login(credentials)
         commit('SET_USER', user)
-      }
-      finally {
+      } finally {
         commit('SET_LOADING', false)
       }
-    }
+    },
   },
 
   getters: {
     isLoggedIn: state => state.currentUser !== null,
-    userName: state => state.currentUser?.name || 'Guest'
-  }
+    userName: state => state.currentUser?.name || 'Guest',
+  },
 }
 ```
 
@@ -199,12 +198,12 @@ import { mapActions, mapGetters, mapState } from 'vuex'
 export default {
   computed: {
     ...mapState('user', ['loading']),
-    ...mapGetters('user', ['userName'])
+    ...mapGetters('user', ['userName']),
   },
 
   methods: {
-    ...mapActions('user', ['login'])
-  }
+    ...mapActions('user', ['login']),
+  },
 }
 </script>
 
@@ -273,13 +272,12 @@ function counterReducer(state = { count: 0, loading: false }, action) {
 
 // Async actions (with redux-thunk)
 function fetchData() {
-  return async (dispatch) => {
+  return async dispatch => {
     dispatch(setLoading(true))
     try {
       const data = await api.getData()
       dispatch({ type: 'SET_DATA', payload: data })
-    }
-    finally {
+    } finally {
       dispatch(setLoading(false))
     }
   }
@@ -407,7 +405,7 @@ export const useCounter = createStore('counter', () => {
   return {
     state: { count },
     actions: { increment },
-    getters: {}
+    getters: {},
   }
 })
 ```
@@ -485,33 +483,21 @@ function migratePiniaStore(content) {
   )
 
   // 替换 state 定义
-  content = content.replace(
-    /state: \(\) => \(\{([\s\S]*?)\}\),/g,
-    (match, stateContent) => {
-      return stateContent.replace(
-        /(\w+): (.+)/g,
-        '@State({ default: $2 })\n  $1: any = $2'
-      )
-    }
-  )
+  content = content.replace(/state: \(\) => \(\{([\s\S]*?)\}\),/g, (match, stateContent) => {
+    return stateContent.replace(/(\w+): (.+)/g, '@State({ default: $2 })\n  $1: any = $2')
+  })
 
   // 替换 actions
-  content = content.replace(
-    /actions: \{([\s\S]*?)\},/g,
-    (match, actionsContent) => {
-      return actionsContent.replace(
-        /(\w+)\((.*?)\) \{/g,
-        '@Action()\n  $1($2) {'
-      )
-    }
-  )
+  content = content.replace(/actions: \{([\s\S]*?)\},/g, (match, actionsContent) => {
+    return actionsContent.replace(/(\w+)\((.*?)\) \{/g, '@Action()\n  $1($2) {')
+  })
 
   return content
 }
 
 // 使用脚本迁移文件
 const storeFiles = fs.readdirSync('./src/stores')
-storeFiles.forEach((file) => {
+storeFiles.forEach(file => {
   if (file.endsWith('.ts')) {
     const content = fs.readFileSync(`./src/stores/${file}`, 'utf8')
     const migrated = migratePiniaStore(content)
@@ -569,7 +555,8 @@ describe('Migration Verification', () => {
 
 ### Q: 迁移后性能如何？
 
-A: @ldesign/store 基于 Pinia，性能相当。装饰器和额外功能带来的开销很小，而内置的缓存和优化功能通常能提升整体性能。
+A: @ldesign/store 基于 Pinia，性能相当。装饰器和额外功能带来的开销很小，而内置的缓存和优化功能通常能
+提升整体性能。
 
 ### Q: 可以渐进式迁移吗？
 

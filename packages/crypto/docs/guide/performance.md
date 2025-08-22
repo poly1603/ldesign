@@ -13,11 +13,9 @@ import { decrypt, encrypt } from '@ldesign/crypto'
 function optimizeAESKeySize(dataSize: number) {
   if (dataSize < 1024) {
     return 128 // 小数据使用 AES-128
-  }
-  else if (dataSize < 10240) {
+  } else if (dataSize < 10240) {
     return 192 // 中等数据使用 AES-192
-  }
-  else {
+  } else {
     return 256 // 大数据使用 AES-256
   }
 }
@@ -80,13 +78,18 @@ function selectHashAlgorithm(purpose: string) {
 function batchHash(dataList: string[], algorithm = 'SHA256') {
   const startTime = performance.now()
 
-  const results = dataList.map((data) => {
+  const results = dataList.map(data => {
     switch (algorithm) {
-      case 'MD5': return hash.md5(data)
-      case 'SHA1': return hash.sha1(data)
-      case 'SHA256': return hash.sha256(data)
-      case 'SHA512': return hash.sha512(data)
-      default: return hash.sha256(data)
+      case 'MD5':
+        return hash.md5(data)
+      case 'SHA1':
+        return hash.sha1(data)
+      case 'SHA256':
+        return hash.sha256(data)
+      case 'SHA512':
+        return hash.sha512(data)
+      default:
+        return hash.sha256(data)
     }
   })
 
@@ -106,7 +109,8 @@ function batchHash(dataList: string[], algorithm = 'SHA256') {
 class ChunkedCrypto {
   private chunkSize: number
 
-  constructor(chunkSize = 64 * 1024) { // 64KB 块
+  constructor(chunkSize = 64 * 1024) {
+    // 64KB 块
     this.chunkSize = chunkSize
   }
 
@@ -120,7 +124,7 @@ class ChunkedCrypto {
       encryptedChunks.push({
         index: i,
         data: encrypted,
-        size: chunk.length
+        size: chunk.length,
       })
 
       // 释放内存
@@ -235,8 +239,7 @@ class LRUCache<K, V> {
   set(key: K, value: V): void {
     if (this.cache.has(key)) {
       this.cache.delete(key)
-    }
-    else if (this.cache.size >= this.maxSize) {
+    } else if (this.cache.size >= this.maxSize) {
       // 删除最久未使用的项
       const firstKey = this.cache.keys().next().value
       this.cache.delete(firstKey)
@@ -267,7 +270,7 @@ class CachedCrypto {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // 转换为32位整数
     }
     return hash.toString(36)
@@ -296,11 +299,20 @@ class CachedCrypto {
     }
 
     switch (algorithm) {
-      case 'MD5': result = hash.md5(data); break
-      case 'SHA1': result = hash.sha1(data); break
-      case 'SHA256': result = hash.sha256(data); break
-      case 'SHA512': result = hash.sha512(data); break
-      default: result = hash.sha256(data)
+      case 'MD5':
+        result = hash.md5(data)
+        break
+      case 'SHA1':
+        result = hash.sha1(data)
+        break
+      case 'SHA256':
+        result = hash.sha256(data)
+        break
+      case 'SHA512':
+        result = hash.sha512(data)
+        break
+      default:
+        result = hash.sha256(data)
     }
 
     this.hashCache.set(cacheKey, result)
@@ -315,7 +327,7 @@ class CachedCrypto {
   getCacheStats() {
     return {
       encryptCacheSize: this.encryptCache.size(),
-      hashCacheSize: this.hashCache.size()
+      hashCacheSize: this.hashCache.size(),
     }
   }
 }
@@ -351,8 +363,7 @@ self.onmessage = function (e) {
     }
 
     self.postMessage({ id, success: true, result })
-  }
-  catch (error) {
+  } catch (error) {
     self.postMessage({ id, success: false, error: error.message })
   }
 }
@@ -371,15 +382,14 @@ class CryptoWorkerPool {
   private createWorker(): Worker {
     const worker = new Worker('/crypto-worker.js')
 
-    worker.onmessage = (e) => {
+    worker.onmessage = e => {
       const { id, success, result, error } = e.data
       const task = this.taskQueue.find(t => t.id === id)
 
       if (task) {
         if (success) {
           task.resolve(result)
-        }
-        else {
+        } else {
           task.reject(new Error(error))
         }
 
@@ -398,8 +408,7 @@ class CryptoWorkerPool {
     }
 
     const task = this.taskQueue.find(t => !t.processing)
-    if (!task)
-      return
+    if (!task) return
 
     task.processing = true
     this.activeWorkers++
@@ -414,7 +423,7 @@ class CryptoWorkerPool {
       data: task.data,
       key: task.key,
       options: task.options,
-      id: task.id
+      id: task.id,
     })
   }
 
@@ -430,7 +439,7 @@ class CryptoWorkerPool {
         options,
         resolve,
         reject,
-        processing: false
+        processing: false,
       })
 
       this.processQueue()
@@ -469,15 +478,15 @@ class BatchCrypto {
     this.batchTimeout = batchTimeout
   }
 
-  async batchEncrypt(items: Array<{ data: string, key: string }>): Promise<any[]> {
-    return new Promise((resolve) => {
+  async batchEncrypt(items: Array<{ data: string; key: string }>): Promise<any[]> {
+    return new Promise(resolve => {
       const batchId = Math.random().toString(36).substr(2, 9)
 
       this.processingQueue.push({
         batchId,
         items,
         resolve,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       this.scheduleBatchProcessing()
@@ -491,8 +500,7 @@ class BatchCrypto {
 
     if (this.processingQueue.length >= this.batchSize) {
       this.processBatch()
-    }
-    else {
+    } else {
       this.timeoutId = setTimeout(() => {
         this.processBatch()
       }, this.batchTimeout)
@@ -500,17 +508,14 @@ class BatchCrypto {
   }
 
   private async processBatch(): void {
-    if (this.processingQueue.length === 0)
-      return
+    if (this.processingQueue.length === 0) return
 
     const batch = this.processingQueue.splice(0, this.batchSize)
 
     // 并行处理批次中的所有项目
-    const promises = batch.map(async (batchItem) => {
+    const promises = batch.map(async batchItem => {
       const results = await Promise.all(
-        batchItem.items.map(item =>
-          encrypt.aes(item.data, item.key)
-        )
+        batchItem.items.map(item => encrypt.aes(item.data, item.key))
       )
 
       batchItem.resolve(results)
@@ -531,7 +536,7 @@ const batchCrypto = new BatchCrypto()
 const items = [
   { data: 'data1', key: 'key1' },
   { data: 'data2', key: 'key2' },
-  { data: 'data3', key: 'key3' }
+  { data: 'data3', key: 'key3' },
 ]
 
 const results = await batchCrypto.batchEncrypt(items)
@@ -558,7 +563,7 @@ class CryptoPerformanceMonitor {
       id: timingId,
       startTime,
       endTime: null,
-      duration: null
+      duration: null,
     })
 
     return timingId
@@ -578,9 +583,7 @@ class CryptoPerformanceMonitor {
 
   getStats(operation: string) {
     const timings = this.metrics.get(operation) || []
-    const durations = timings
-      .filter(t => t.duration !== null)
-      .map(t => t.duration)
+    const durations = timings.filter(t => t.duration !== null).map(t => t.duration)
 
     if (durations.length === 0) {
       return null
@@ -595,7 +598,7 @@ class CryptoPerformanceMonitor {
       avg: durations.reduce((a, b) => a + b, 0) / durations.length,
       median: sorted[Math.floor(sorted.length / 2)],
       p95: sorted[Math.floor(sorted.length * 0.95)],
-      p99: sorted[Math.floor(sorted.length * 0.99)]
+      p99: sorted[Math.floor(sorted.length * 0.99)],
     }
   }
 
@@ -667,7 +670,7 @@ export function useOptimizedCrypto() {
   return {
     ...crypto,
     encryptionResults,
-    batchProcess
+    batchProcess,
   }
 }
 ```

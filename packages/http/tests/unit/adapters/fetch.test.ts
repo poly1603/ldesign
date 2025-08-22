@@ -42,6 +42,7 @@ describe('fetchAdapter', () => {
         status: 200,
         statusText: 'OK',
         headers: new Map([['content-type', 'application/json']]),
+        body: 'mock-body', // 添加body属性
         json: vi.fn().mockResolvedValue(mockResponseData),
         text: vi.fn().mockResolvedValue(JSON.stringify(mockResponseData)),
       }
@@ -57,11 +58,12 @@ describe('fetchAdapter', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.example.com/users/1',
-        expect.objectContaining({
+        {
           method: 'GET',
-          headers: expect.any(Object),
-          signal: expect.any(Object),
-        }),
+          headers: {},
+          credentials: 'same-origin',
+          signal: undefined,
+        },
       )
 
       expect(response).toEqual({
@@ -69,7 +71,11 @@ describe('fetchAdapter', () => {
         status: 200,
         statusText: 'OK',
         headers: expect.any(Object),
-        config,
+        config: expect.objectContaining({
+          url: 'https://api.example.com/users/1',
+          method: 'GET',
+          headers: {},
+        }),
         raw: mockResponse,
       })
     })
@@ -82,7 +88,9 @@ describe('fetchAdapter', () => {
         status: 201,
         statusText: 'Created',
         headers: new Map([['content-type', 'application/json']]),
+        body: 'mock-body', // 添加body属性
         json: vi.fn().mockResolvedValue(mockResponseData),
+        text: vi.fn().mockResolvedValue(JSON.stringify(mockResponseData)),
       }
 
       mockFetch.mockResolvedValue(mockResponse)
@@ -100,14 +108,15 @@ describe('fetchAdapter', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.example.com/users',
-        expect.objectContaining({
+        {
           method: 'POST',
-          headers: expect.objectContaining({
+          headers: {
             'Content-Type': 'application/json',
-          }),
+          },
           body: JSON.stringify(requestData),
-          signal: expect.any(Object),
-        }),
+          credentials: 'same-origin',
+          signal: undefined,
+        },
       )
 
       expect(response.data).toEqual(mockResponseData)
@@ -211,10 +220,11 @@ describe('fetchAdapter', () => {
 
     it('should handle timeout', async () => {
       // 模拟超时
-      mockFetch.mockImplementation(() =>
-        new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('timeout')), 100)
-        }),
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('timeout')), 100)
+          }),
       )
 
       const config: RequestConfig = {

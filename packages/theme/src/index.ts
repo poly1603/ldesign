@@ -7,59 +7,53 @@
  * @author LDesign Team
  */
 
-// 导出核心类型
-export type {
-  ThemeCategory,
-  FestivalType,
-  DecorationType,
-  AnimationType,
-  Position,
-  Size,
-  TimeRange,
-  DecorationPosition,
-  DecorationStyle,
-  DecorationConfig,
-  DecorationCondition,
-  AnimationConfig,
-  AnimationKeyframe,
-  AnimationPerformance,
-  ResourceConfig,
-  ThemeConfig,
-  ThemeCompatibility,
-  ThemeManagerOptions,
-  PerformanceOptions,
-  StorageOptions,
-  ThemeEventType,
-  ThemeEventData,
-  ThemeEventListener,
-  ThemeManagerInstance,
-  DecorationManagerInstance,
-  AnimationManagerInstance,
-  ResourceManagerInstance,
-  ResourceStats,
-} from './core/types'
+import { createThemeManager, ThemeManager } from './core/theme-manager'
+// 导出 Vue 适配层
+export * from './adapt/vue'
 
-// 导出核心管理器
-export { ThemeManager, createThemeManager } from './core/theme-manager'
-export {
-  DecorationManager,
-  createDecorationManager,
-} from './core/decoration-manager'
 export {
   AnimationManager,
   createAnimationManager,
 } from './core/animation-manager'
-export { ResourceManager, createResourceManager } from './core/resource-manager'
-
-// 导出工具函数
 export {
-  EventEmitterImpl,
-  createEventEmitter,
-  defaultEventEmitter,
-} from './utils/event-emitter'
+  createDecorationManager,
+  DecorationManager,
+} from './core/decoration-manager'
+export { createResourceManager, ResourceManager } from './core/resource-manager'
+// 导出核心管理器
+export { createThemeManager, ThemeManager }
 
-// 导出主题预设
-export * from './themes/presets'
+// 导出核心类型
+export type {
+  AnimationConfig,
+  AnimationKeyframe,
+  AnimationManagerInstance,
+  AnimationPerformance,
+  AnimationType,
+  DecorationCondition,
+  DecorationConfig,
+  DecorationManagerInstance,
+  DecorationPosition,
+  DecorationStyle,
+  DecorationType,
+  FestivalType,
+  PerformanceOptions,
+  Position,
+  ResourceConfig,
+  ResourceManagerInstance,
+  ResourceStats,
+  Size,
+  StorageOptions,
+  ThemeCategory,
+  ThemeCompatibility,
+  ThemeConfig,
+  ThemeEventData,
+  ThemeEventListener,
+  ThemeEventType,
+  ThemeManagerInstance,
+  ThemeManagerOptions,
+  TimeRange,
+} from './core/types'
 
 // 导出装饰元素
 export * from './decorations'
@@ -67,89 +61,18 @@ export * from './decorations'
 // 导出动画效果
 export * from './decorations/animations'
 
-// 导出节日主题系统
-export type {
-  FestivalThemeConfig,
-  WidgetConfig,
-  WidgetType,
-  WidgetPosition,
-  WidgetSize,
-  WidgetAnimation,
-  SVGIcon,
-} from './widgets/element-decorations'
-
-export type { ThemeSwitchEvent } from './core/theme-switcher'
-
-export {
-  createFestivalTheme,
-  validateFestivalTheme,
-  mergeFestivalThemes,
-} from './core/festival-theme-config'
-
-// 导出挂件管理器
-export { createWidgetManager, globalWidgetManager } from './core/widget-manager'
-
-// 导出主题切换器
-export {
-  ThemeSwitcher,
-  createThemeSwitcher,
-  globalThemeSwitcher,
-} from './core/theme-switcher'
-
-// 导出挂件辅助函数
-export {
-  applyWidget,
-  removeWidget,
-  switchTheme,
-  getCurrentTheme,
-  getAvailableThemes,
-  applyWidgets,
-  applyButtonWidget,
-  applyHeaderWidget,
-  applyCardWidget,
-  applyPanelWidget,
-  applyBackgroundWidget,
-  applySidebarWidget,
-  applyInputWidget,
-  applyNavigationWidget,
-  applyFooterWidget,
-  applyModalWidget,
-  autoApplyWidgets,
-  clearAllWidgets,
-  initializeWidgetSystem,
-  onThemeChange,
-  enableDebugMode,
-  disableDebugMode,
-} from './core/widget-helpers'
-
-// 导出节日主题配置
-export {
-  allFestivalThemes,
-  getThemeConfig,
-  getAllThemeConfigs,
-  getSupportedThemeIds,
-  isSupportedThemeId,
-  getRecommendedTheme,
-  defaultThemeConfig,
-  springFestivalThemeConfig,
-  christmasThemeConfig,
-} from './themes/festivals'
-
-// 导出图标资源
-export {
-  allThemeIcons,
-  getThemeIcons,
-  getCachedThemeIcons,
-  getSupportedThemes,
-  isSupportedTheme,
-  preloadThemeIcons,
-} from './resources/icons'
-
-// 导出 Vue 适配层
-export * from './adapt/vue'
+// 导出主题预设
+export * from './themes/presets'
 
 // 导出所有类型
 export * from './types'
+
+// 导出工具函数
+export {
+  createEventEmitter,
+  defaultEventEmitter,
+  EventEmitterImpl,
+} from './utils/event-emitter'
 
 // 版本信息
 export const version = '0.1.0'
@@ -158,11 +81,4 @@ export const version = '0.1.0'
 export default {
   version,
   createThemeManager,
-  createWidgetManager,
-  createThemeSwitcher,
-  globalWidgetManager,
-  globalThemeSwitcher,
-  initializeWidgetSystem,
-  switchTheme,
-  applyWidget,
 }

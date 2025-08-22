@@ -32,7 +32,7 @@ import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
   fallbackLocale: 'en',
-  autoDetect: true
+  autoDetect: true,
 })
 ```
 
@@ -85,7 +85,7 @@ async function bootstrap() {
   // 创建 I18n 实例
   const i18nInstance = await createI18nWithBuiltinLocales({
     defaultLocale: 'en',
-    fallbackLocale: 'en'
+    fallbackLocale: 'en',
   })
 
   // 创建 Vue 插件
@@ -130,11 +130,7 @@ async function handleLanguageChange() {
 
     <!-- 语言切换器 -->
     <select v-model="currentLocale" @change="handleLanguageChange">
-      <option
-        v-for="lang in availableLanguages"
-        :key="lang.code"
-        :value="lang.code"
-      >
+      <option v-for="lang in availableLanguages" :key="lang.code" :value="lang.code">
         {{ lang.nativeName }}
       </option>
     </select>
@@ -165,7 +161,7 @@ const i18n = await createI18nWithBuiltinLocales({
   // 缓存配置
   cache: {
     enabled: true,
-    maxSize: 1000
+    maxSize: 1000,
   },
 
   // 事件回调
@@ -176,7 +172,7 @@ const i18n = await createI18nWithBuiltinLocales({
 
   onLoadError: (locale, error) => {
     console.error(`Failed to load language '${locale}':`, error)
-  }
+  },
 })
 ```
 
@@ -238,14 +234,14 @@ const customLanguage = {
     nativeName: 'Français',
     code: 'fr',
     direction: 'ltr',
-    dateFormat: 'DD/MM/YYYY'
+    dateFormat: 'DD/MM/YYYY',
   },
   translations: {
     common: {
       ok: 'OK',
-      cancel: 'Annuler'
-    }
-  }
+      cancel: 'Annuler',
+    },
+  },
 }
 
 const loader = new StaticLoader()
@@ -264,7 +260,7 @@ A: 在 SSR 环境中，您需要禁用自动检测并手动设置语言：
 const i18n = await createI18nWithBuiltinLocales({
   defaultLocale: 'en',
   autoDetect: false, // 禁用自动检测
-  storage: 'none' // 禁用存储
+  storage: 'none', // 禁用存储
 })
 
 // 根据请求头或其他方式设置语言

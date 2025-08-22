@@ -42,7 +42,7 @@ test.describe('Vue 主题集成测试', () => {
     // 验证CSS变量已更新
     const primaryColor = await page.evaluate(() => {
       return getComputedStyle(document.body).getPropertyValue(
-        '--l-color-primary'
+        '--l-color-primary',
       )
     })
     expect(primaryColor.trim()).toBe('#1890ff')
@@ -65,7 +65,7 @@ test.describe('Vue 主题集成测试', () => {
 
     // 验证颜色已更新
     const preview = colorPicker.locator('.l-color-picker__preview')
-    const backgroundColor = await preview.evaluate(el => {
+    const backgroundColor = await preview.evaluate((el) => {
       return getComputedStyle(el).backgroundColor
     })
     expect(backgroundColor).toBeTruthy()
@@ -140,14 +140,14 @@ test.describe('Vue 主题集成测试', () => {
     // 这个测试需要根据具体实现调整
     await page.waitForTimeout(100)
 
-    const body = page.locator('body')
+    const _body = page.locator('body')
     // 注意：这个测试可能需要根据实际的系统主题同步实现来调整
   })
 
   test('错误处理', async ({ page }) => {
     // 测试无效主题名称的处理
     await page.evaluate(() => {
-      // @ts-ignore
+      // @ts-expect-error - Testing invalid theme name handling
       window.themeManager?.setTheme('invalid-theme-name')
     })
 

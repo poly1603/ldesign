@@ -51,7 +51,8 @@ function getFilterCount(filter: 'all' | 'active' | 'completed') {
       <button
         v-for="filterOption in filters"
         :key="filterOption.value"
-        class="filter-btn" :class="[{ active: store.filter === filterOption.value }]"
+        class="filter-btn"
+        :class="[{ active: store.filter === filterOption.value }]"
         @click="store.setFilter(filterOption.value)"
       >
         {{ filterOption.label }}
@@ -63,7 +64,8 @@ function getFilterCount(filter: 'all' | 'active' | 'completed') {
       <div
         v-for="todo in store.filteredTodos"
         :key="todo.id"
-        class="todo-item" :class="[{ completed: todo.completed }]"
+        class="todo-item"
+        :class="[{ completed: todo.completed }]"
       >
         <input
           type="checkbox"

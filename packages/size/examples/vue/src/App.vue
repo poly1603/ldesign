@@ -1,3 +1,16 @@
+<script setup lang="ts">
+import type { SizeMode } from '../../../src/types'
+import { SizeControlPanel } from '../../../src/vue'
+import ComponentDemo from './components/ComponentDemo.vue'
+import CompositionApiDemo from './components/CompositionApiDemo.vue'
+import RealWorldDemo from './components/RealWorldDemo.vue'
+import ResponsiveDemo from './components/ResponsiveDemo.vue'
+
+function handleSizeChange(mode: SizeMode) {
+  console.log('尺寸模式变化:', mode)
+}
+</script>
+
 <template>
   <div class="app">
     <!-- 头部控制面板 -->
@@ -5,9 +18,9 @@
       <div class="container">
         <h1>@ldesign/size Vue 示例</h1>
         <p>展示页面尺寸缩放功能在Vue项目中的各种使用方式</p>
-        
+
         <!-- 尺寸控制面板 -->
-        <SizeControlPanel 
+        <SizeControlPanel
           class="header-control"
           :show-switcher="true"
           :show-indicator="true"
@@ -21,61 +34,64 @@
       <div class="container">
         <!-- Plugin 使用示例 -->
         <section class="section">
-          <h2 class="section-title">1. Vue Plugin 使用</h2>
+          <h2 class="section-title">
+            1. Vue Plugin 使用
+          </h2>
           <p>通过全局插件访问尺寸管理功能</p>
-          
+
           <div class="demo-card">
             <h3>全局属性访问</h3>
             <p>当前模式: {{ $getSizeMode() }}</p>
-            <p>当前配置: {{ JSON.stringify($getSizeConfig().fontSize, null, 2) }}</p>
-            
+            <p>
+              当前配置: {{ JSON.stringify($getSizeConfig().fontSize, null, 2) }}
+            </p>
+
             <div class="demo-actions">
-              <button class="btn btn-primary" @click="$setSize('small')">设置为小尺寸</button>
-              <button class="btn btn-primary" @click="$setSize('large')">设置为大尺寸</button>
+              <button class="btn btn-primary" @click="$setSize('small')">
+                设置为小尺寸
+              </button>
+              <button class="btn btn-primary" @click="$setSize('large')">
+                设置为大尺寸
+              </button>
             </div>
           </div>
         </section>
 
         <!-- Composition API 使用示例 -->
         <section class="section">
-          <h2 class="section-title">2. Composition API 使用</h2>
+          <h2 class="section-title">
+            2. Composition API 使用
+          </h2>
           <CompositionApiDemo />
         </section>
 
         <!-- 组件使用示例 -->
         <section class="section">
-          <h2 class="section-title">3. 组件使用示例</h2>
+          <h2 class="section-title">
+            3. 组件使用示例
+          </h2>
           <ComponentDemo />
         </section>
 
         <!-- 响应式示例 -->
         <section class="section">
-          <h2 class="section-title">4. 响应式使用示例</h2>
+          <h2 class="section-title">
+            4. 响应式使用示例
+          </h2>
           <ResponsiveDemo />
         </section>
 
         <!-- 实际应用示例 -->
         <section class="section">
-          <h2 class="section-title">5. 实际应用示例</h2>
+          <h2 class="section-title">
+            5. 实际应用示例
+          </h2>
           <RealWorldDemo />
         </section>
       </div>
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import { SizeControlPanel } from '../../../src/vue'
-import CompositionApiDemo from './components/CompositionApiDemo.vue'
-import ComponentDemo from './components/ComponentDemo.vue'
-import ResponsiveDemo from './components/ResponsiveDemo.vue'
-import RealWorldDemo from './components/RealWorldDemo.vue'
-import type { SizeMode } from '../../../src/types'
-
-const handleSizeChange = (mode: SizeMode) => {
-  console.log('尺寸模式变化:', mode)
-}
-</script>
 
 <style scoped>
 .app {
@@ -127,7 +143,7 @@ const handleSizeChange = (mode: SizeMode) => {
   .header {
     padding: var(--ls-spacing-lg, 24px) 0;
   }
-  
+
   .demo-actions {
     flex-direction: column;
   }

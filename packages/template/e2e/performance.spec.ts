@@ -20,7 +20,7 @@ test.describe('性能测试', () => {
       return performance.getEntriesByType('navigation')[0]
     })
 
-    expect(performanceEntries.loadEventEnd - performanceEntries.loadEventStart).toBeLessThan(1000)
+    expect((performanceEntries as any).loadEventEnd - (performanceEntries as any).loadEventStart).toBeLessThan(1000)
   })
 
   test('模板切换性能', async ({ page }) => {
@@ -86,7 +86,7 @@ test.describe('性能测试', () => {
     // 快速滚动测试
     const scrollStartTime = performance.now()
     for (let i = 0; i < 10; i++) {
-      await container.scroll({ top: i * 1000 })
+      await container.evaluate((el, scrollTop) => (el.scrollTop = scrollTop), i * 1000)
       await page.waitForTimeout(50)
     }
     const scrollEndTime = performance.now()
@@ -140,16 +140,16 @@ test.describe('性能测试', () => {
     const startTime = performance.now()
     for (let i = 0; i < 5; i++) {
       promises.push(
-        page.evaluate(template => {
+        page.evaluate((template) => {
           // 模拟并发加载
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             setTimeout(() => {
               const event = new CustomEvent('load-template', { detail: { template } })
               window.dispatchEvent(event)
               resolve(template)
             }, Math.random() * 100)
           })
-        }, templates[i % templates.length])
+        }, templates[i % templates.length]),
       )
     }
 
@@ -208,7 +208,7 @@ test.describe('性能测试', () => {
 
   test('网络性能测试', async ({ page }) => {
     // 模拟慢速网络
-    await page.route('**/*.js', route => {
+    await page.route('**/*.js', (route) => {
       setTimeout(() => route.continue(), 200)
     })
 
@@ -229,8 +229,8 @@ test.describe('性能测试', () => {
 
   test('资源使用优化', async ({ page }) => {
     // 监控网络请求
-    const requests = []
-    page.on('request', request => {
+    const requests: any[] = []
+    page.on('request', (request) => {
       requests.push({
         url: request.url(),
         method: request.method(),

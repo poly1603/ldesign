@@ -14,7 +14,9 @@ import { useTheme } from './useTheme'
  * @param manager 可选的主题管理器实例
  * @returns 颜色生成相关的响应式状态和方法
  */
-export function useColorGenerator(manager?: ThemeManagerInstance): UseColorGeneratorReturn {
+export function useColorGenerator(
+  manager?: ThemeManagerInstance,
+): UseColorGeneratorReturn {
   const { registerTheme } = useTheme(manager)
 
   const isGenerating = ref(false)
@@ -29,7 +31,8 @@ export function useColorGenerator(manager?: ThemeManagerInstance): UseColorGener
       return colors
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to generate colors'
+      error.value
+        = err instanceof Error ? err.message : 'Failed to generate colors'
       throw err
     }
     finally {
@@ -37,7 +40,9 @@ export function useColorGenerator(manager?: ThemeManagerInstance): UseColorGener
     }
   }
 
-  const generateColorScales = async (colors: ColorConfig): Promise<Record<string, string[]>> => {
+  const generateColorScales = async (
+    colors: ColorConfig,
+  ): Promise<Record<string, string[]>> => {
     isGenerating.value = true
     error.value = null
 
@@ -52,7 +57,8 @@ export function useColorGenerator(manager?: ThemeManagerInstance): UseColorGener
       return scales
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to generate color scales'
+      error.value
+        = err instanceof Error ? err.message : 'Failed to generate color scales'
       throw err
     }
     finally {
@@ -67,7 +73,8 @@ export function useColorGenerator(manager?: ThemeManagerInstance): UseColorGener
       return colors
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to preview colors'
+      error.value
+        = err instanceof Error ? err.message : 'Failed to preview colors'
       throw err
     }
   }
@@ -87,7 +94,8 @@ export function useColorGenerator(manager?: ThemeManagerInstance): UseColorGener
       registerTheme(customTheme)
     }
     catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to apply generated colors'
+      error.value
+        = err instanceof Error ? err.message : 'Failed to apply generated colors'
       throw err
     }
     finally {

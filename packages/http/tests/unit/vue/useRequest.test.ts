@@ -50,7 +50,7 @@ describe('useRequest', () => {
       ref(config),
       {
         immediate: false,
-      }
+      },
     )
 
     expect(data.value).toBeNull()
@@ -80,7 +80,7 @@ describe('useRequest', () => {
       ref(config),
       {
         immediate: false,
-      }
+      },
     )
 
     const promise = execute()
@@ -109,7 +109,7 @@ describe('useRequest', () => {
       ref(config),
       {
         immediate: false,
-      }
+      },
     )
 
     await expect(execute()).rejects.toThrow('Request failed')
@@ -200,7 +200,7 @@ describe('useRequest', () => {
     await refresh()
 
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining(config)
+      expect.objectContaining(config),
     )
   })
 
@@ -252,7 +252,7 @@ describe('useRequest', () => {
 
     await nextTick()
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({ url: '/test1' })
+      expect.objectContaining({ url: '/test1' }),
     )
 
     // 更改配置
@@ -260,14 +260,14 @@ describe('useRequest', () => {
     await nextTick()
 
     expect(mockClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({ url: '/test2' })
+      expect.objectContaining({ url: '/test2' }),
     )
   })
 
   it('should handle cancellation', async () => {
     // 模拟长时间运行的请求
     vi.mocked(mockClient.request).mockImplementation(
-      () => new Promise(resolve => setTimeout(resolve, 1000))
+      () => new Promise(resolve => setTimeout(resolve, 1000)),
     )
 
     const config: RequestConfig = { url: '/test', method: 'GET' }

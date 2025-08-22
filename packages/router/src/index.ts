@@ -8,7 +8,9 @@
 // ==================== 核心功能导出 ====================
 
 // Vue 组件
-export { RouterLink, RouterView } from './components'
+export { DeviceUnsupported, RouterLink, RouterView } from './components'
+// 设备适配组件类型
+export type { DeviceUnsupportedProps } from './components'
 // 组件类型
 export type {
   AnimationConfig,
@@ -47,6 +49,15 @@ export { onBeforeRouteLeave, onBeforeRouteUpdate } from './composables'
 // 工具 Hooks
 export { hasRoute, hasRouter } from './composables'
 
+// 设备适配 Hooks
+export { useDeviceComponent, useDeviceRoute } from './composables'
+export type {
+  UseDeviceComponentOptions,
+  UseDeviceComponentReturn,
+  UseDeviceRouteOptions,
+  UseDeviceRouteReturn,
+} from './composables'
+
 // ==================== 组件导出 ====================
 
 // 组合式 API 类型
@@ -65,14 +76,14 @@ export {
   START_LOCATION,
 } from './core/constants'
 
-// ==================== 组合式 API 导出 ====================
-
 // 历史管理
 export {
   createMemoryHistory,
   createWebHashHistory,
   createWebHistory,
 } from './core/history'
+
+// ==================== 组合式 API 导出 ====================
 
 // 路由匹配
 export { RouteMatcher } from './core/matcher'
@@ -82,6 +93,23 @@ export { createRouter } from './core/router'
 
 export type { RouterImpl } from './core/router'
 
+// 设备适配核心功能
+export {
+  createDeviceRouterPlugin,
+  DeviceComponentResolver,
+  DeviceRouteGuard,
+  TemplateRouteResolver,
+} from './device'
+
+// 设备适配工具函数
+export {
+  checkDeviceSupport,
+  createUnsupportedDeviceRoute,
+  resolveDeviceComponent,
+} from './device/utils'
+
+// ==================== 插件系统导出 ====================
+
 // Engine 插件
 export {
   createDefaultRouterEnginePlugin,
@@ -89,9 +117,8 @@ export {
   routerPlugin,
 } from './engine'
 
-// ==================== 插件系统导出 ====================
-
 export type { RouterEnginePluginOptions } from './engine'
+
 export {
   combineGuards,
   createAuthGuard,
@@ -121,8 +148,8 @@ export {
   getAnimationDuration,
   supportsAnimations,
 } from './plugins/animation'
-
 export type { AnimationPluginOptions } from './plugins/animation'
+
 // 缓存插件
 export {
   CacheManager,
@@ -130,8 +157,10 @@ export {
   createCachePlugin,
   supportsCaching,
 } from './plugins/cache'
-
 export type { CachePluginOptions } from './plugins/cache'
+
+// ==================== 路由守卫导出 ====================
+
 // 性能监控插件
 export {
   createPerformanceConfig,
@@ -143,9 +172,9 @@ export {
   withPerformanceMonitoring,
 } from './plugins/performance'
 
-// ==================== 路由守卫导出 ====================
-
 export type { PerformancePluginOptions } from './plugins/performance'
+
+// ==================== 工具函数导出 ====================
 
 // 预加载插件
 export {
@@ -158,11 +187,11 @@ export {
   VisibilityPreloadStrategy,
 } from './plugins/preload'
 
-// ==================== 工具函数导出 ====================
+// ==================== Engine 集成导出 ====================
 
 export type { PreloadPluginOptions } from './plugins/preload'
 
-// ==================== Engine 集成导出 ====================
+// ==================== 设备适配功能 ====================
 
 // 核心类型
 export type {
@@ -194,6 +223,16 @@ export type {
   UseRouteReturn,
   UseRouterReturn,
 } from './types'
+
+// 设备适配类型
+export type {
+  DeviceComponentResolution,
+  DeviceGuardOptions,
+  DeviceRouteConfig,
+  DeviceRouterPluginOptions,
+  TemplateRouteConfig,
+} from './types'
+
 export {
   buildPath,
   // 工具函数
@@ -231,25 +270,28 @@ export {
 /**
  * 创建完整的路由器实例（包含所有插件）
  */
-export function createFullRouter(options: {
-  history: RouterHistory
-  routes: RouteRecordRaw[]
+export async function createFullRouter(options: {
+  history: import('./types').RouterHistory
+  routes: import('./types').RouteRecordRaw[]
   // 动画配置
   animation?: {
     enabled?: boolean
-    defaultAnimation?: AnimationType
-    customAnimations?: Record<string, AnimationConfig>
+    defaultAnimation?: import('./core/constants').AnimationType
+    customAnimations?: Record<
+      string,
+      import('./components/types').AnimationConfig
+    >
   }
   // 缓存配置
   cache?: {
     enabled?: boolean
-    strategy?: CacheStrategy
+    strategy?: import('./core/constants').CacheStrategy
     maxSize?: number
   }
   // 预加载配置
   preload?: {
     enabled?: boolean
-    strategy?: PreloadStrategy
+    strategy?: import('./core/constants').PreloadStrategy
     autoPreloadRelated?: boolean
   }
   // 性能监控配置
@@ -261,9 +303,16 @@ export function createFullRouter(options: {
   // 其他路由器选项
   linkActiveClass?: string
   linkExactActiveClass?: string
-  scrollBehavior?: ScrollBehavior
+  scrollBehavior?: import('./types').ScrollBehavior
 }) {
-  const router = createRouter({
+  const { createRouter: createVueRouter } = await import('./core/router')
+  // 导入插件函数
+  const { createAnimationPlugin } = await import('./plugins/animation')
+  const { createCachePlugin } = await import('./plugins/cache')
+  const { createPerformancePlugin } = await import('./plugins/performance')
+  const { createPreloadPlugin } = await import('./plugins/preload')
+
+  const router = createVueRouter({
     history: options.history,
     routes: options.routes,
     linkActiveClass: options.linkActiveClass,
@@ -271,7 +320,7 @@ export function createFullRouter(options: {
     scrollBehavior: options.scrollBehavior,
   })
 
-  const plugins = []
+  const plugins: any[] = []
 
   // 动画插件
   if (options.animation?.enabled !== false) {
@@ -279,7 +328,7 @@ export function createFullRouter(options: {
       createAnimationPlugin({
         defaultAnimation: options.animation?.defaultAnimation,
         customAnimations: options.animation?.customAnimations,
-      })
+      }),
     )
   }
 
@@ -289,7 +338,7 @@ export function createFullRouter(options: {
       createCachePlugin({
         strategy: options.cache?.strategy,
         maxSize: options.cache?.maxSize,
-      })
+      }),
     )
   }
 
@@ -299,7 +348,7 @@ export function createFullRouter(options: {
       createPreloadPlugin({
         strategy: options.preload?.strategy,
         autoPreloadRelated: options.preload?.autoPreloadRelated,
-      })
+      }),
     )
   }
 
@@ -309,7 +358,7 @@ export function createFullRouter(options: {
       createPerformancePlugin({
         warningThreshold: options.performance?.warningThreshold,
         errorThreshold: options.performance?.errorThreshold,
-      })
+      }),
     )
   }
 
@@ -318,7 +367,7 @@ export function createFullRouter(options: {
     plugins,
     install(app: any) {
       app.use(router)
-      plugins.forEach(plugin => {
+      plugins.forEach((plugin) => {
         if (plugin.install) {
           plugin.install(app, router)
         }

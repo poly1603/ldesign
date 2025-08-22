@@ -12,7 +12,10 @@ export class Encoder implements IEncoder {
   encode(data: string, encoding: EncodingType): string {
     try {
       if (ValidationUtils.isEmpty(data)) {
-        throw ErrorUtils.createEncryptionError('Data cannot be empty', 'Encoding')
+        throw ErrorUtils.createEncryptionError(
+          'Data cannot be empty',
+          'Encoding',
+        )
       }
 
       switch (encoding.toLowerCase()) {
@@ -23,14 +26,20 @@ export class Encoder implements IEncoder {
         case 'utf8':
           return data // UTF-8 是默认编码，无需转换
         default:
-          throw ErrorUtils.createEncryptionError(`Unsupported encoding type: ${encoding}`, 'Encoding')
+          throw ErrorUtils.createEncryptionError(
+            `Unsupported encoding type: ${encoding}`,
+            'Encoding',
+          )
       }
     }
     catch (error) {
       if (error instanceof Error) {
         throw error
       }
-      throw ErrorUtils.createEncryptionError('Unknown encoding error', 'Encoding')
+      throw ErrorUtils.createEncryptionError(
+        'Unknown encoding error',
+        'Encoding',
+      )
     }
   }
 
@@ -40,7 +49,10 @@ export class Encoder implements IEncoder {
   decode(encodedData: string, encoding: EncodingType): string {
     try {
       if (ValidationUtils.isEmpty(encodedData)) {
-        throw ErrorUtils.createDecryptionError('Encoded data cannot be empty', 'Decoding')
+        throw ErrorUtils.createDecryptionError(
+          'Encoded data cannot be empty',
+          'Decoding',
+        )
       }
 
       switch (encoding.toLowerCase()) {
@@ -51,14 +63,20 @@ export class Encoder implements IEncoder {
         case 'utf8':
           return encodedData // UTF-8 是默认编码，无需转换
         default:
-          throw ErrorUtils.createDecryptionError(`Unsupported encoding type: ${encoding}`, 'Decoding')
+          throw ErrorUtils.createDecryptionError(
+            `Unsupported encoding type: ${encoding}`,
+            'Decoding',
+          )
       }
     }
     catch (error) {
       if (error instanceof Error) {
         throw error
       }
-      throw ErrorUtils.createDecryptionError('Unknown decoding error', 'Decoding')
+      throw ErrorUtils.createDecryptionError(
+        'Unknown decoding error',
+        'Decoding',
+      )
     }
   }
 
@@ -77,7 +95,10 @@ export class Encoder implements IEncoder {
       }
     }
     catch {
-      throw ErrorUtils.createEncryptionError('Failed to encode Base64', 'Base64')
+      throw ErrorUtils.createEncryptionError(
+        'Failed to encode Base64',
+        'Base64',
+      )
     }
   }
 
@@ -88,7 +109,10 @@ export class Encoder implements IEncoder {
     try {
       // 验证 Base64 格式
       if (!ValidationUtils.isValidBase64(encodedData)) {
-        throw ErrorUtils.createDecryptionError('Invalid Base64 format', 'Base64')
+        throw ErrorUtils.createDecryptionError(
+          'Invalid Base64 format',
+          'Base64',
+        )
       }
 
       // 优先使用浏览器原生 API
@@ -97,11 +121,16 @@ export class Encoder implements IEncoder {
       }
       else {
         // 使用 CryptoJS 作为后备
-        return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(encodedData))
+        return CryptoJS.enc.Utf8.stringify(
+          CryptoJS.enc.Base64.parse(encodedData),
+        )
       }
     }
     catch {
-      throw ErrorUtils.createDecryptionError('Failed to decode Base64', 'Base64')
+      throw ErrorUtils.createDecryptionError(
+        'Failed to decode Base64',
+        'Base64',
+      )
     }
   }
 

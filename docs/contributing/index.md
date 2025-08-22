@@ -578,8 +578,7 @@ pnpm changeset version
 
 # 提交版本变更
 
-git add .
-git commit -m "chore: release packages"</code></pre>
+git add . git commit -m "chore: release packages"</code></pre>
 
 </div>
 
@@ -697,7 +696,8 @@ pnpm changeset publish</code></pre>
 
 ## 📜 行为准则
 
-我们致力于为所有人提供友好、安全和欢迎的环境。请阅读我们的 [行为准则](./code-of-conduct.md) 了解详情。
+我们致力于为所有人提供友好、安全和欢迎的环境。请阅读我们的 [行为准则](./code-of-conduct.md) 了解详情
+。
 
 ### 核心原则
 

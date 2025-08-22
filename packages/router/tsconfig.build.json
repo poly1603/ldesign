@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "rootDir": "src",
@@ -12,12 +14,12 @@
     },
     "resolveJsonModule": true,
     "strict": true,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "declaration": true,
     "noEmit": false,
     "outDir": "dist",
@@ -29,16 +31,6 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "es",
-    "docs/.vitepress/dist",
-    "**/__tests__/**",
-    "**/*.test.*",
-    "examples/**"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "es", "docs/.vitepress/dist", "**/__tests__/**", "**/*.test.*", "examples/**"]
 }

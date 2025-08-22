@@ -24,7 +24,10 @@ await manager.preloadCommonTemplates()
 
 // 获取性能指标
 const metrics = manager.getPerformanceMetrics()
-console.log('缓存命中率:', metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses))
+console.log(
+  '缓存命中率:',
+  metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses)
+)
 console.log('平均加载时间:', metrics.averageLoadTime)
 ```
 
@@ -65,6 +68,22 @@ console.log('平均加载时间:', metrics.averageLoadTime)
 对于大量模板列表，使用新的虚拟滚动 Hook：
 
 ```vue
+<script setup>
+import { useVirtualScroll } from '@ldesign/template/vue'
+import { ref } from 'vue'
+
+const templates = ref([
+  /* 大量模板数据 */
+])
+
+const { containerRef, visibleItems, totalHeight, handleScroll, scrollToItem } =
+  useVirtualScroll(templates, {
+    containerHeight: 400,
+    itemHeight: 60,
+    buffer: 5,
+  })
+</script>
+
 <template>
   <div
     ref="containerRef"
@@ -72,15 +91,15 @@ console.log('平均加载时间:', metrics.averageLoadTime)
     :style="{ height: '400px', overflow: 'auto' }"
     @scroll="handleScroll"
   >
-    <div :style="{ height: totalHeight + 'px', position: 'relative' }">
+    <div :style="{ height: `${totalHeight}px`, position: 'relative' }">
       <div
         v-for="item in visibleItems"
         :key="item.id"
         :style="{
           position: 'absolute',
-          top: item.top + 'px',
+          top: `${item.top}px`,
           height: '60px',
-          width: '100%'
+          width: '100%',
         }"
       >
         <TemplateCard :template="item" />
@@ -88,25 +107,6 @@ console.log('平均加载时间:', metrics.averageLoadTime)
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useVirtualScroll } from '@ldesign/template/vue'
-
-const templates = ref([/* 大量模板数据 */])
-
-const {
-  containerRef,
-  visibleItems,
-  totalHeight,
-  handleScroll,
-  scrollToItem,
-} = useVirtualScroll(templates, {
-  containerHeight: 400,
-  itemHeight: 60,
-  buffer: 5,
-})
-</script>
 ```
 
 ### 实时性能监控
@@ -114,6 +114,27 @@ const {
 新的 `PerformanceMonitor` 组件提供实时性能监控：
 
 ```vue
+<script setup>
+function onPerformanceUpdate(data) {
+  // 性能警告
+  if (data.rendering?.fps < 30) {
+    console.warn('FPS 过低:', data.rendering.fps)
+  }
+
+  if (data.memory?.percentage > 80) {
+    console.warn('内存使用率过高:', `${data.memory.percentage}%`)
+  }
+}
+
+function onLoadStart() {
+  console.log('模板开始加载')
+}
+
+function onLoadEnd({ renderTime }) {
+  console.log('模板加载完成，耗时:', renderTime, 'ms')
+}
+</script>
+
 <template>
   <div class="app">
     <TemplateRenderer
@@ -132,27 +153,6 @@ const {
     />
   </div>
 </template>
-
-<script setup>
-const onPerformanceUpdate = (data) => {
-  // 性能警告
-  if (data.rendering?.fps < 30) {
-    console.warn('FPS 过低:', data.rendering.fps)
-  }
-
-  if (data.memory?.percentage > 80) {
-    console.warn('内存使用率过高:', data.memory.percentage + '%')
-  }
-}
-
-const onLoadStart = () => {
-  console.log('模板开始加载')
-}
-
-const onLoadEnd = ({ renderTime }) => {
-  console.log('模板加载完成，耗时:', renderTime, 'ms')
-}
-</script>
 ```
 
 ## 加载优化
@@ -163,8 +163,8 @@ const onLoadEnd = ({ renderTime }) => {
 
 ```typescript
 // 模板组件使用动态导入
-const LazyTemplate = defineAsyncComponent(() =>
-  import('./templates/dashboard/admin/index.vue')
+const LazyTemplate = defineAsyncComponent(
+  () => import('./templates/dashboard/admin/index.vue')
 )
 
 // 在模板配置中使用
@@ -187,22 +187,21 @@ const routes = [
     component: () => import('@/views/Dashboard.vue'),
     meta: {
       // 预加载该路由需要的模板
-      preloadTemplates: [
-        'dashboard/admin',
-        'layout/sidebar'
-      ]
-    }
-  }
+      preloadTemplates: ['dashboard/admin', 'layout/sidebar'],
+    },
+  },
 ]
 
 // 在路由守卫中预加载
-router.beforeEach(async (to) => {
+router.beforeEach(async to => {
   const templates = to.meta?.preloadTemplates || []
   if (templates.length > 0) {
-    await templateManager.preload(templates.map((t) => {
-      const [category, template] = t.split('/')
-      return { category, template, device: 'desktop' }
-    }))
+    await templateManager.preload(
+      templates.map(t => {
+        const [category, template] = t.split('/')
+        return { category, template, device: 'desktop' }
+      })
+    )
   }
 })
 ```
@@ -217,7 +216,7 @@ async function preloadCoreTemplates() {
   const coreTemplates = [
     { category: 'layout', template: 'header' },
     { category: 'layout', template: 'footer' },
-    { category: 'auth', template: 'login' }
+    { category: 'auth', template: 'login' },
   ]
 
   await templateManager.preload(coreTemplates)
@@ -228,12 +227,12 @@ async function preloadUserTemplates(userRole: string) {
   const roleTemplates = {
     admin: [
       { category: 'admin', template: 'dashboard' },
-      { category: 'admin', template: 'users' }
+      { category: 'admin', template: 'users' },
     ],
     user: [
       { category: 'user', template: 'dashboard' },
-      { category: 'user', template: 'profile' }
-    ]
+      { category: 'user', template: 'profile' },
+    ],
   }
 
   const templates = roleTemplates[userRole] || []
@@ -260,7 +259,7 @@ const manager = new TemplateManager({
 
   // 性能配置
   loadTimeout: 10000, // 10秒加载超时
-  retryAttempts: 3 // 重试次数
+  retryAttempts: 3, // 重试次数
 })
 ```
 
@@ -277,8 +276,7 @@ class MultiLevelCache {
   get(key: string) {
     // L1 缓存
     let value = this.l1Cache.get(key)
-    if (value)
-      return value
+    if (value) return value
 
     // L2 缓存
     value = this.l2Cache.get(key)
@@ -325,7 +323,7 @@ async function warmupCache() {
   const criticalTemplates = [
     { category: 'layout', template: 'header', priority: 'high' },
     { category: 'layout', template: 'footer', priority: 'high' },
-    { category: 'auth', template: 'login', priority: 'medium' }
+    { category: 'auth', template: 'login', priority: 'medium' },
   ]
 
   await Promise.all(
@@ -339,8 +337,7 @@ async function warmupCache() {
 
         // 设置缓存优先级
         cache.set(getCacheKey(template), component, priority)
-      }
-      catch (error) {
+      } catch (error) {
         console.warn('预热缓存失败:', template, error)
       }
     })
@@ -360,11 +357,7 @@ async function warmupCache() {
 ```vue
 <template>
   <div class="template-list">
-    <VirtualList
-      :items="templates"
-      :item-height="200"
-      :visible-count="10"
-    >
+    <VirtualList :items="templates" :item-height="200" :visible-count="10">
       <template #default="{ item }">
         <LTemplateRenderer
           :category="item.category"
@@ -405,7 +398,11 @@ class ComponentPool {
 const componentPool = new ComponentPool()
 
 // 在模板管理器中使用组件池
-async function loadTemplateWithPool(category: string, device: string, template: string) {
+async function loadTemplateWithPool(
+  category: string,
+  device: string,
+  template: string
+) {
   const type = `${category}:${device}:${template}`
 
   // 尝试从池中获取
@@ -435,16 +432,13 @@ class RenderBatcher {
   }
 
   private async process() {
-    if (this.isProcessing)
-      return
+    if (this.isProcessing) return
     this.isProcessing = true
 
     while (this.queue.length > 0) {
       const batch = this.queue.splice(0, 5) // 每批处理5个
 
-      await Promise.all(
-        batch.map(task => this.renderTemplate(task))
-      )
+      await Promise.all(batch.map(task => this.renderTemplate(task)))
 
       // 让出控制权，避免阻塞UI
       await new Promise(resolve => setTimeout(resolve, 0))
@@ -461,8 +455,7 @@ class RenderBatcher {
         task.template
       )
       task.resolve(component)
-    }
-    catch (error) {
+    } catch (error) {
       task.reject(error)
     }
   }
@@ -479,7 +472,8 @@ class RenderBatcher {
 class MemoryMonitor {
   private checkInterval: number
 
-  constructor(interval = 60000) { // 每分钟检查一次
+  constructor(interval = 60000) {
+    // 每分钟检查一次
     this.checkInterval = setInterval(() => {
       this.checkMemoryUsage()
     }, interval)
@@ -492,11 +486,14 @@ class MemoryMonitor {
     console.log('内存使用情况:', {
       缓存大小: stats.size,
       内存使用: `${(memoryUsage / 1024 / 1024).toFixed(2)}MB`,
-      命中率: `${((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(2)}%`
+      命中率: `${((stats.hits / (stats.hits + stats.misses)) * 100).toFixed(
+        2
+      )}%`,
     })
 
     // 内存使用过高时清理
-    if (memoryUsage > 100 * 1024 * 1024) { // 100MB
+    if (memoryUsage > 100 * 1024 * 1024) {
+      // 100MB
       this.cleanup()
     }
   }
@@ -547,8 +544,7 @@ class TemplateRegistry {
       const component = ref.deref()
       if (component) {
         return component
-      }
-      else {
+      } else {
         // 组件已被垃圾回收，清理引用
         this.refs.delete(key)
       }
@@ -557,7 +553,11 @@ class TemplateRegistry {
     return null
   }
 
-  private getKey(metadata: { category: string, device: string, template: string }) {
+  private getKey(metadata: {
+    category: string
+    device: string
+    template: string
+  }) {
     return `${metadata.category}:${metadata.device}:${metadata.template}`
   }
 }
@@ -579,9 +579,9 @@ export default defineConfig({
           // 将模板分组打包
           'templates-auth': ['src/templates/auth/**'],
           'templates-dashboard': ['src/templates/dashboard/**'],
-          'templates-layout': ['src/templates/layout/**']
-        }
-      }
+          'templates-layout': ['src/templates/layout/**'],
+        },
+      },
     },
 
     // 启用压缩
@@ -589,10 +589,10 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true, // 生产环境移除 console
-        drop_debugger: true
-      }
-    }
-  }
+        drop_debugger: true,
+      },
+    },
+  },
 })
 ```
 
@@ -628,14 +628,13 @@ const templateLoader = {
       if (response.ok) {
         return await response.text()
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.warn('CDN 加载失败，回退到本地:', error)
     }
 
     // 回退到本地加载
     return await this.loadFromLocal(category, device, template)
-  }
+  },
 }
 ```
 
@@ -663,8 +662,7 @@ class PerformanceTracker {
 
   getStats(name: string) {
     const values = this.metrics.get(name) || []
-    if (values.length === 0)
-      return null
+    if (values.length === 0) return null
 
     const sorted = [...values].sort((a, b) => a - b)
 
@@ -675,7 +673,7 @@ class PerformanceTracker {
       avg: values.reduce((a, b) => a + b, 0) / values.length,
       p50: sorted[Math.floor(sorted.length * 0.5)],
       p90: sorted[Math.floor(sorted.length * 0.9)],
-      p99: sorted[Math.floor(sorted.length * 0.99)]
+      p99: sorted[Math.floor(sorted.length * 0.99)],
     }
   }
 
@@ -691,7 +689,7 @@ class PerformanceTracker {
 const tracker = new PerformanceTracker()
 
 // 在模板加载时记录性能
-templateManager.on('template:load', (event) => {
+templateManager.on('template:load', event => {
   tracker.track('template-load-time', event.loadTime)
   tracker.track('template-size', event.size)
 })
@@ -703,7 +701,7 @@ templateManager.on('template:load', (event) => {
 
 ```typescript
 // 监控首次内容绘制时间
-const observer = new PerformanceObserver((list) => {
+const observer = new PerformanceObserver(list => {
   for (const entry of list.getEntries()) {
     if (entry.name === 'first-contentful-paint') {
       tracker.track('fcp', entry.startTime)
@@ -714,7 +712,7 @@ const observer = new PerformanceObserver((list) => {
 observer.observe({ entryTypes: ['paint'] })
 
 // 监控最大内容绘制时间
-const lcpObserver = new PerformanceObserver((list) => {
+const lcpObserver = new PerformanceObserver(list => {
   for (const entry of list.getEntries()) {
     tracker.track('lcp', entry.startTime)
   }

@@ -91,17 +91,11 @@ onUnmounted(() => {
     </div>
 
     <div class="sync-actions">
-      <button
-        class="btn btn-primary btn-sm"
-        @click="syncWithSystem"
-      >
+      <button class="btn btn-primary btn-sm" @click="syncWithSystem">
         🔄 同步系统主题
       </button>
 
-      <button
-        class="btn btn-secondary btn-sm"
-        @click="toggleAutoSync"
-      >
+      <button class="btn btn-secondary btn-sm" @click="toggleAutoSync">
         {{ autoSync ? '🔓 关闭自动同步' : '🔒 开启自动同步' }}
       </button>
     </div>

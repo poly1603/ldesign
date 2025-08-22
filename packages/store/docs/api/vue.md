@@ -27,12 +27,14 @@ const pinia = createPinia()
 app.use(pinia)
 
 // 安装 @ldesign/store 插件
-app.use(createStorePlugin({
-  devtools: true,
-  persist: {
-    storage: 'localStorage'
-  }
-}))
+app.use(
+  createStorePlugin({
+    devtools: true,
+    persist: {
+      storage: 'localStorage',
+    },
+  })
+)
 
 app.mount('#app')
 ```
@@ -52,7 +54,7 @@ const userStore = new UserStore('user')
 // 响应式数据
 const newProfile = ref({
   name: '',
-  email: ''
+  email: '',
 })
 
 // 生命周期
@@ -80,13 +82,9 @@ onUnmounted(() => {
     <p>邮箱: {{ userStore.email }}</p>
     <p>状态: {{ userStore.isOnline ? '在线' : '离线' }}</p>
 
-    <button @click="userStore.updateProfile(newProfile)">
-      更新资料
-    </button>
+    <button @click="userStore.updateProfile(newProfile)">更新资料</button>
 
-    <div v-if="userStore.loading">
-      加载中...
-    </div>
+    <div v-if="userStore.loading">加载中...</div>
     <div v-if="userStore.error" class="error">
       {{ userStore.error }}
     </div>
@@ -106,7 +104,7 @@ export default defineComponent({
 
   data() {
     return {
-      counter: new CounterStore('counter')
+      counter: new CounterStore('counter'),
     }
   },
 
@@ -122,19 +120,15 @@ export default defineComponent({
       this.unsubscribe()
     }
     this.counter.$dispose()
-  }
+  },
 })
 </script>
 
 <template>
   <div class="counter">
     <h1>{{ counter.displayText }}</h1>
-    <button @click="counter.increment">
-      +1
-    </button>
-    <button @click="counter.decrement">
-      -1
-    </button>
+    <button @click="counter.increment">+1</button>
+    <button @click="counter.decrement">-1</button>
   </div>
 </template>
 ```
@@ -166,7 +160,7 @@ export class ReactiveStore extends BaseStore {
     super(id)
 
     // 监听 Vue 响应式数据
-    watch(this.debouncedQuery, (newQuery) => {
+    watch(this.debouncedQuery, newQuery => {
       this.performSearch(newQuery)
     })
   }
@@ -183,11 +177,8 @@ export class ReactiveStore extends BaseStore {
 
   @Getter()
   get filteredItems() {
-    if (!this.filter)
-      return this.items
-    return this.items.filter(item =>
-      item.name.toLowerCase().includes(this.filter.toLowerCase())
-    )
+    if (!this.filter) return this.items
+    return this.items.filter(item => item.name.toLowerCase().includes(this.filter.toLowerCase()))
   }
 }
 ```
@@ -205,26 +196,27 @@ const store = new ReactiveStore('reactive')
 const hasResults = computed(() => store.filteredItems.length > 0)
 
 // Vue 监听器可以监听 Store 状态
-watch(() => store.items.length, (newLength, oldLength) => {
-  console.log(`项目数量从 ${oldLength} 变为 ${newLength}`)
-})
+watch(
+  () => store.items.length,
+  (newLength, oldLength) => {
+    console.log(`项目数量从 ${oldLength} 变为 ${newLength}`)
+  }
+)
 
 // 双向绑定 Store 状态
 const searchQuery = computed({
   get: () => store.searchQuery,
-  set: value => store.setSearchQuery(value)
+  set: value => store.setSearchQuery(value),
 })
 </script>
 
 <template>
   <div>
     <!-- 直接绑定 Store 状态 -->
-    <input v-model="store.searchQuery" placeholder="搜索...">
+    <input v-model="store.searchQuery" placeholder="搜索..." />
 
     <!-- 使用计算属性 -->
-    <div class="results-count">
-      找到 {{ store.filteredItems.length }} 个结果
-    </div>
+    <div class="results-count">找到 {{ store.filteredItems.length }} 个结果</div>
 
     <!-- 列表渲染 -->
     <div v-for="item in store.filteredItems" :key="item.id">
@@ -453,11 +445,11 @@ export const loggerPlugin: StorePlugin = {
         console.log(`✅ [${store.$id}] Action ${name} completed in ${Date.now() - startTime}ms`)
       })
 
-      onError((error) => {
+      onError(error => {
         console.error(`❌ [${store.$id}] Action ${name} failed:`, error)
       })
     })
-  }
+  },
 }
 ```
 
@@ -468,9 +460,11 @@ export const loggerPlugin: StorePlugin = {
 import { createStorePlugin } from '@ldesign/store'
 import { loggerPlugin } from '@/plugins/logger'
 
-app.use(createStorePlugin({
-  plugins: [loggerPlugin]
-}))
+app.use(
+  createStorePlugin({
+    plugins: [loggerPlugin],
+  })
+)
 ```
 
 ## 开发工具
@@ -498,14 +492,14 @@ export class DevToolsStore extends BaseStore {
     // 自定义 DevTools 标签
     this.$devtools = {
       label: 'Counter Store',
-      color: '#42b883'
+      color: '#42b883',
     }
 
     // 添加自定义检查器
     this.$addInspector({
       id: 'counter-inspector',
       label: 'Counter Inspector',
-      icon: '🔢'
+      icon: '🔢',
     })
   }
 
@@ -519,8 +513,8 @@ export class DevToolsStore extends BaseStore {
       event: {
         title: 'Counter Incremented',
         subtitle: `New value: ${this.count}`,
-        data: { count: this.count }
-      }
+        data: { count: this.count },
+      },
     })
   }
 }
@@ -547,7 +541,7 @@ export function createDebugStore<T extends BaseStore>(
       getState: () => store.$state,
       getHistory: () => store.$history,
       reset: () => store.$reset(),
-      subscribe: (callback: Function) => store.$subscribe(callback)
+      subscribe: (callback: Function) => store.$subscribe(callback),
     }
   }
 
@@ -566,10 +560,7 @@ const userStore = createDebugStore(UserStore, 'user')
 // composables/useLazyStore.ts
 import { ref, Ref } from 'vue'
 
-export function useLazyStore<T>(
-  factory: () => T,
-  condition?: () => boolean
-): Ref<T | null> {
+export function useLazyStore<T>(factory: () => T, condition?: () => boolean): Ref<T | null> {
   const store = ref<T | null>(null)
 
   const initialize = () => {
@@ -581,7 +572,7 @@ export function useLazyStore<T>(
   // 可以在需要时手动初始化
   return {
     ...store,
-    initialize
+    initialize,
   } as Ref<T | null> & { initialize: () => void }
 }
 
@@ -617,11 +608,9 @@ onUnmounted(() => {
 
 <template>
   <div class="form-component">
-    <input v-model="formStore.name">
-    <input v-model="formStore.email">
-    <button @click="formStore.submit">
-      提交
-    </button>
+    <input v-model="formStore.name" />
+    <input v-model="formStore.email" />
+    <button @click="formStore.submit">提交</button>
   </div>
 </template>
 ```
@@ -687,13 +676,13 @@ describe('UserProfile', () => {
     userStore.currentUser = {
       id: '1',
       name: 'Test User',
-      email: 'test@example.com'
+      email: 'test@example.com',
     }
 
     const wrapper = mount(UserProfile, {
       global: {
-        plugins: [pinia]
-      }
+        plugins: [pinia],
+      },
     })
 
     expect(wrapper.text()).toContain('Test User')

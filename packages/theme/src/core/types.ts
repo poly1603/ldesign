@@ -5,7 +5,7 @@
  * 基于@ldesign/color的颜色系统，专注于节日装饰和动画
  */
 
-import type { ThemeConfig as ColorThemeConfig, ColorMode } from '@ldesign/color'
+import type { ThemeConfig as ColorThemeConfig } from '@ldesign/color'
 
 /**
  * 主题类别
@@ -313,81 +313,81 @@ export type ThemeEventListener = (data: ThemeEventData) => void
  */
 export interface ThemeManagerInstance {
   // 主题管理
-  setTheme(name: string): Promise<void>
-  getTheme(name: string): ThemeConfig | undefined
-  getCurrentTheme(): string | undefined
-  getAvailableThemes(): string[]
-  addTheme(theme: ThemeConfig): void
-  removeTheme(name: string): void
+  setTheme: (name: string) => Promise<void>
+  getTheme: (name: string) => ThemeConfig | undefined
+  getCurrentTheme: () => string | undefined
+  getAvailableThemes: () => string[]
+  addTheme: (theme: ThemeConfig) => void
+  removeTheme: (name: string) => void
 
   // 装饰管理
-  addDecoration(decoration: DecorationConfig): void
-  removeDecoration(id: string): void
-  updateDecoration(id: string, updates: Partial<DecorationConfig>): void
-  getDecorations(): DecorationConfig[]
+  addDecoration: (decoration: DecorationConfig) => void
+  removeDecoration: (id: string) => void
+  updateDecoration: (id: string, updates: Partial<DecorationConfig>) => void
+  getDecorations: () => DecorationConfig[]
 
   // 动画管理
-  startAnimation(name: string): void
-  stopAnimation(name: string): void
-  pauseAnimation(name: string): void
-  resumeAnimation(name: string): void
+  startAnimation: (name: string) => void
+  stopAnimation: (name: string) => void
+  pauseAnimation: (name: string) => void
+  resumeAnimation: (name: string) => void
 
   // 资源管理
-  preloadResources(theme: string): Promise<void>
-  clearResources(theme?: string): void
+  preloadResources: (theme: string) => Promise<void>
+  clearResources: (theme?: string) => void
 
   // 事件管理
-  on(event: ThemeEventType, listener: ThemeEventListener): void
-  off(event: ThemeEventType, listener: ThemeEventListener): void
-  emit(
+  on: (event: ThemeEventType, listener: ThemeEventListener) => void
+  off: (event: ThemeEventType, listener: ThemeEventListener) => void
+  emit: (
     event: ThemeEventType,
     data: Omit<ThemeEventData, 'type' | 'timestamp'>
-  ): void
+  ) => void
 
   // 生命周期
-  init(): Promise<void>
-  destroy(): void
+  init: () => Promise<void>
+  destroy: () => void
 }
 
 /**
  * 装饰管理器接口
  */
 export interface DecorationManagerInstance {
-  add(decoration: DecorationConfig): void
-  remove(id: string): void
-  update(id: string, updates: Partial<DecorationConfig>): void
-  get(id: string): DecorationConfig | undefined
-  getAll(): DecorationConfig[]
-  clear(): void
-  render(): void
-  destroy(): void
+  add: (decoration: DecorationConfig) => void
+  remove: (id: string) => void
+  update: (id: string, updates: Partial<DecorationConfig>) => void
+  get: (id: string) => DecorationConfig | undefined
+  getAll: () => DecorationConfig[]
+  clear: () => void
+  render: () => void
+  destroy: () => void
 }
 
 /**
  * 动画管理器接口
  */
 export interface AnimationManagerInstance {
-  register(animation: AnimationConfig): void
-  unregister(name: string): void
-  start(name: string): void
-  stop(name: string): void
-  pause(name: string): void
-  resume(name: string): void
-  getAll(): AnimationConfig[]
-  isRunning(name: string): boolean
-  destroy(): void
+  register: (animation: AnimationConfig) => void
+  unregister: (name: string) => void
+  start: (name: string) => void
+  stop: (name: string) => void
+  pause: (name: string) => void
+  resume: (name: string) => void
+  getAll: () => AnimationConfig[]
+  isRunning: (name: string) => boolean
+  destroy: () => void
 }
 
 /**
  * 资源管理器接口
  */
 export interface ResourceManagerInstance {
-  load(src: string, type?: string): Promise<any>
-  preload(resources: string[]): Promise<void>
-  get(src: string): any
-  clear(pattern?: string): void
-  getStats(): ResourceStats
-  destroy(): void
+  load: (src: string, type?: string) => Promise<any>
+  preload: (resources: string[]) => Promise<void>
+  get: (src: string) => any
+  clear: (pattern?: string) => void
+  getStats: () => ResourceStats
+  destroy: () => void
 }
 
 /**

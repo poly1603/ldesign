@@ -5,7 +5,7 @@
  */
 
 import type { Directive, DirectiveBinding } from 'vue'
-import type { VThemeDecorationBinding, DecorationConfig } from '../types'
+import type { DecorationConfig, VThemeDecorationBinding } from '../types'
 import { DecorationFactory } from '../../../decorations/factory'
 
 /**
@@ -16,18 +16,18 @@ const decorationMap = new WeakMap<HTMLElement, any>()
 /**
  * v-theme-decoration 指令实现
  */
-export const vThemeDecoration: Directive<HTMLElement, VThemeDecorationBinding> =
-  {
+export const vThemeDecoration: Directive<HTMLElement, VThemeDecorationBinding>
+  = {
     mounted(
       el: HTMLElement,
-      binding: DirectiveBinding<VThemeDecorationBinding>
+      binding: DirectiveBinding<VThemeDecorationBinding>,
     ) {
       createDecoration(el, binding)
     },
 
     updated(
       el: HTMLElement,
-      binding: DirectiveBinding<VThemeDecorationBinding>
+      binding: DirectiveBinding<VThemeDecorationBinding>,
     ) {
       updateDecoration(el, binding)
     },
@@ -42,7 +42,7 @@ export const vThemeDecoration: Directive<HTMLElement, VThemeDecorationBinding> =
  */
 function createDecoration(
   el: HTMLElement,
-  binding: DirectiveBinding<VThemeDecorationBinding>
+  binding: DirectiveBinding<VThemeDecorationBinding>,
 ) {
   const {
     decoration,
@@ -78,7 +78,8 @@ function createDecoration(
         interactive,
         responsive: true,
       }
-    } else {
+    }
+    else {
       // 对象类型，使用提供的配置
       decorationConfig = decoration
     }
@@ -98,7 +99,7 @@ function createDecoration(
     // 创建装饰实例
     const decorationInstance = DecorationFactory.create(
       decorationConfig,
-      targetContainer as HTMLElement
+      targetContainer as HTMLElement,
     )
 
     // 显示装饰
@@ -109,7 +110,8 @@ function createDecoration(
 
     // 添加修饰符处理
     handleModifiers(el, binding, decorationInstance)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('[v-theme-decoration] Failed to create decoration:', error)
   }
 }
@@ -119,7 +121,7 @@ function createDecoration(
  */
 function updateDecoration(
   el: HTMLElement,
-  binding: DirectiveBinding<VThemeDecorationBinding>
+  binding: DirectiveBinding<VThemeDecorationBinding>,
 ) {
   const decorationInstance = decorationMap.get(el)
   const { visible = true } = binding.value
@@ -133,7 +135,8 @@ function updateDecoration(
   if (!visible) {
     // 隐藏装饰
     decorationInstance.hide()
-  } else {
+  }
+  else {
     // 显示装饰
     decorationInstance.show()
 
@@ -166,7 +169,7 @@ function removeDecoration(el: HTMLElement) {
 function handleModifiers(
   el: HTMLElement,
   binding: DirectiveBinding<VThemeDecorationBinding>,
-  decorationInstance: any
+  decorationInstance: any,
 ) {
   const { modifiers } = binding
 
@@ -189,7 +192,8 @@ function handleModifiers(
     el.addEventListener('click', () => {
       if (decorationInstance.isShown()) {
         decorationInstance.hide()
-      } else {
+      }
+      else {
         decorationInstance.show()
       }
     })
@@ -205,9 +209,11 @@ function handleModifiers(
 
     if (modifiers.hover) {
       el.addEventListener('mouseenter', showOnce)
-    } else if (modifiers.click) {
+    }
+    else if (modifiers.click) {
       el.addEventListener('click', showOnce)
-    } else {
+    }
+    else {
       // 立即显示一次
       decorationInstance.show()
     }
@@ -215,7 +221,7 @@ function handleModifiers(
 
   // .delay 修饰符 - 延迟显示
   if (modifiers.delay) {
-    const delay = parseInt(binding.arg || '1000', 10)
+    const delay = Number.parseInt(binding.arg || '1000', 10)
 
     setTimeout(() => {
       decorationInstance.show()

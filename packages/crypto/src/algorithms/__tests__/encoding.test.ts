@@ -66,12 +66,18 @@ describe('encoding Algorithms', () => {
 
     it('should throw error for empty data', () => {
       expect(() => encoder.encode('', 'base64')).toThrow('Data cannot be empty')
-      expect(() => encoder.decode('', 'base64')).toThrow('Encoded data cannot be empty')
+      expect(() => encoder.decode('', 'base64')).toThrow(
+        'Encoded data cannot be empty',
+      )
     })
 
     it('should throw error for unsupported encoding', () => {
-      expect(() => encoder.encode(testData, 'invalid' as EncodingType)).toThrow('Unsupported encoding type')
-      expect(() => encoder.decode('data', 'invalid' as EncodingType)).toThrow('Unsupported encoding type')
+      expect(() => encoder.encode(testData, 'invalid' as EncodingType)).toThrow(
+        'Unsupported encoding type',
+      )
+      expect(() => encoder.decode('data', 'invalid' as EncodingType)).toThrow(
+        'Unsupported encoding type',
+      )
     })
   })
 

@@ -1,9 +1,13 @@
 #!/usr/bin/env tsx
 
+// 设置Node.js内存和垃圾回收选项
+import type { ChildProcess } from 'node:child_process'
 import { execSync, spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+process.env.NODE_OPTIONS = '--expose-gc --max-old-space-size=8192'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const rootDir = resolve(__dirname, '../../../')
@@ -32,10 +36,72 @@ class BatchBuilder {
   private packages: PackageInfo[] = []
   private results: BuildResult[] = []
   private startTime = Date.now()
+  private activeProcesses = new Set<ChildProcess>()
+  private maxConcurrentBuilds = 3 // 限制并发构建数量，避免内存过载
 
   constructor() {
     this.scanPackages()
     this.calculateDependencyLevels()
+    this.setupProcessCleanup()
+  }
+
+  /**
+   * 设置进程清理机制
+   */
+  private setupProcessCleanup(): void {
+    // 监听进程退出信号，确保清理所有子进程
+    const cleanup = () => {
+      console.log('\n🧹 清理进程中...')
+      this.activeProcesses.forEach((process) => {
+        if (!process.killed) {
+          process.kill('SIGTERM')
+        }
+      })
+      this.activeProcesses.clear()
+
+      // 强制垃圾回收（如果可用）
+      if (global.gc) {
+        global.gc()
+      }
+    }
+
+    process.on('SIGINT', cleanup)
+    process.on('SIGTERM', cleanup)
+    process.on('exit', cleanup)
+  }
+
+  /**
+   * 清理已完成的进程并释放内存
+   */
+  private cleanupProcess(childProcess: ChildProcess): void {
+    this.activeProcesses.delete(childProcess)
+
+    // 确保进程已终止
+    if (!childProcess.killed) {
+      childProcess.kill()
+    }
+
+    // 清理进程的所有监听器
+    childProcess.removeAllListeners()
+
+    // 建议垃圾回收
+    if (global.gc) {
+      global.gc()
+    }
+  }
+
+  /**
+   * 获取当前内存使用情况
+   */
+  private getMemoryUsage(): string {
+    const usage = process.memoryUsage()
+    const formatBytes = (bytes: number) => {
+      return `${(bytes / 1024 / 1024).toFixed(2)} MB`
+    }
+
+    return `RSS: ${formatBytes(usage.rss)}, Heap: ${formatBytes(
+      usage.heapUsed,
+    )}/${formatBytes(usage.heapTotal)}`
   }
 
   /**
@@ -44,18 +110,22 @@ class BatchBuilder {
   private scanPackages(): void {
     try {
       const packagesDir = resolve(rootDir, 'packages')
+      // 暂时排除的包（开发中或有问题的包）
+      const excludePackages = ['theme']
+
       // 使用跨平台的方式获取目录列表
       const packageDirs = execSync(
         process.platform === 'win32' ? 'dir /b /ad' : 'ls -d */',
         {
           cwd: packagesDir,
           encoding: 'utf-8',
-        }
+        },
       )
         .trim()
         .split(/\r?\n/)
         .filter(Boolean)
         .map(dir => dir.replace(/\/$/, '')) // 移除末尾的斜杠
+        .filter(dir => !excludePackages.includes(dir)) // 排除指定的包
 
       for (const dir of packageDirs) {
         const packagePath = resolve(packagesDir, dir)
@@ -64,7 +134,7 @@ class BatchBuilder {
         if (existsSync(packageJsonPath)) {
           try {
             const packageJson = JSON.parse(
-              readFileSync(packageJsonPath, 'utf-8')
+              readFileSync(packageJsonPath, 'utf-8'),
             )
             const hasScript = packageJson.scripts && packageJson.scripts.build
 
@@ -75,7 +145,7 @@ class BatchBuilder {
             }
             const dependencies = Object.keys(allDeps || {})
             const workspaceDependencies = dependencies.filter(dep =>
-              dep.startsWith('@ldesign/')
+              dep.startsWith('@ldesign/'),
             )
 
             this.packages.push({
@@ -86,14 +156,19 @@ class BatchBuilder {
               workspaceDependencies,
               level: 0, // 将在 calculateDependencyLevels 中计算
             })
-          } catch (error) {
+          }
+          catch (error) {
             console.warn(`⚠️  无法解析 ${packageJsonPath}:`, error)
           }
         }
       }
 
       console.log(`📦 发现 ${this.packages.length} 个包`)
-    } catch (error) {
+      if (excludePackages.length > 0) {
+        console.log(`⏭️  已排除: ${excludePackages.join(', ')}`)
+      }
+    }
+    catch (error) {
       console.error('❌ 扫描包失败:', error)
       process.exit(1)
     }
@@ -149,7 +224,7 @@ class BatchBuilder {
 
     console.log(`📊 依赖层级分析:`)
     const levelGroups = new Map<number, string[]>()
-    this.packages.forEach(pkg => {
+    this.packages.forEach((pkg) => {
       if (!levelGroups.has(pkg.level)) {
         levelGroups.set(pkg.level, [])
       }
@@ -163,12 +238,12 @@ class BatchBuilder {
   }
 
   /**
-   * 构建单个包
+   * 构建单个包（优化版本，包含进程管理和内存清理）
    */
   private async buildPackage(pkg: PackageInfo): Promise<BuildResult> {
     const startTime = Date.now()
 
-    console.log(`🔨 构建 ${pkg.name}...`)
+    console.log(`🔨 构建 ${pkg.name}... [内存: ${this.getMemoryUsage()}]`)
 
     if (!pkg.hasScript) {
       console.log(`⏭️  ${pkg.name} 没有构建脚本，跳过`)
@@ -180,34 +255,50 @@ class BatchBuilder {
       }
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const child = spawn('pnpm', ['run', 'build'], {
         cwd: pkg.path,
         stdio: ['pipe', 'pipe', 'pipe'],
         shell: process.platform === 'win32',
+        // 设置子进程的内存限制
+        env: {
+          ...process.env,
+          NODE_OPTIONS: '--max-old-space-size=4096', // 限制Node.js内存使用
+        },
       })
+
+      // 将进程添加到活跃进程集合
+      this.activeProcesses.add(child)
 
       let stdout = ''
       let stderr = ''
 
-      child.stdout?.on('data', data => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString()
       })
 
-      child.stderr?.on('data', data => {
+      child.stderr?.on('data', (data) => {
         stderr += data.toString()
       })
 
-      child.on('close', code => {
+      child.on('close', (code) => {
         const duration = Date.now() - startTime
         const success = code === 0
 
         if (success) {
-          console.log(`✅ ${pkg.name} 构建成功 (${duration}ms)`)
-        } else {
+          console.log(
+            `✅ ${
+              pkg.name
+            } 构建成功 (${duration}ms) [内存: ${this.getMemoryUsage()}]`,
+          )
+        }
+        else {
           console.log(`❌ ${pkg.name} 构建失败 (${duration}ms)`)
           console.log(`错误输出: ${stderr}`)
         }
+
+        // 清理进程
+        this.cleanupProcess(child)
 
         resolve({
           package: pkg.name,
@@ -217,10 +308,13 @@ class BatchBuilder {
         })
       })
 
-      child.on('error', error => {
+      child.on('error', (error) => {
         const duration = Date.now() - startTime
         console.log(`❌ ${pkg.name} 构建失败 (${duration}ms)`)
         console.log(`错误: ${error.message}`)
+
+        // 清理进程
+        this.cleanupProcess(child)
 
         resolve({
           package: pkg.name,
@@ -229,6 +323,16 @@ class BatchBuilder {
           error: error.message,
         })
       })
+
+      // 设置超时机制，避免进程卡死
+      const timeout = setTimeout(() => {
+        console.log(`⏰ ${pkg.name} 构建超时，强制终止`)
+        child.kill('SIGTERM')
+      }, 5 * 60 * 1000) // 5分钟超时
+
+      child.on('close', () => {
+        clearTimeout(timeout)
+      })
     })
   }
 
@@ -236,16 +340,16 @@ class BatchBuilder {
    * 智能并行构建所有包
    */
   async buildAll(
-    mode: 'serial' | 'parallel' | 'smart' = 'smart'
+    mode: 'serial' | 'parallel' | 'smart' = 'smart',
   ): Promise<void> {
     console.log(
       `🚀 开始批量构建 (${
         mode === 'smart'
           ? '智能并行'
           : mode === 'parallel'
-          ? '完全并行'
-          : '串行'
-      } 模式)`
+            ? '完全并行'
+            : '串行'
+      } 模式)`,
     )
     console.log('='.repeat(60))
 
@@ -276,46 +380,114 @@ class BatchBuilder {
   }
 
   /**
-   * 完全并行构建
+   * 完全并行构建（优化版本，限制并发数量）
    */
   private async buildParallel(): Promise<void> {
-    const promises = this.packages.map(pkg => this.buildPackage(pkg))
-    this.results = await Promise.all(promises)
+    console.log(`📊 限制最大并发构建数量: ${this.maxConcurrentBuilds}`)
+
+    // 使用批次处理，避免同时启动过多进程
+    const batches: PackageInfo[][] = []
+    for (let i = 0; i < this.packages.length; i += this.maxConcurrentBuilds) {
+      batches.push(this.packages.slice(i, i + this.maxConcurrentBuilds))
+    }
+
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i]
+      console.log(
+        `\n🔄 处理第 ${i + 1}/${batches.length} 批次 (${batch.length} 个包)`,
+      )
+
+      const promises = batch.map(pkg => this.buildPackage(pkg))
+      const batchResults = await Promise.all(promises)
+      this.results.push(...batchResults)
+
+      // 批次间稍作停顿，让系统回收内存
+      if (i < batches.length - 1) {
+        console.log('⏳ 等待内存回收...')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        // 强制垃圾回收
+        if (global.gc) {
+          global.gc()
+        }
+      }
+    }
   }
 
   /**
-   * 智能并行构建（按依赖层级）
+   * 智能并行构建（按依赖层级，优化版本）
    */
   private async buildSmart(): Promise<void> {
     const levelGroups = new Map<number, PackageInfo[]>()
 
     // 按层级分组
-    this.packages.forEach(pkg => {
+    this.packages.forEach((pkg) => {
       if (!levelGroups.has(pkg.level)) {
         levelGroups.set(pkg.level, [])
       }
       levelGroups.get(pkg.level)!.push(pkg)
     })
 
-    // 按层级顺序构建，同层级内并行
+    // 按层级顺序构建，同层级内限制并发
     const sortedLevels = Array.from(levelGroups.keys()).sort((a, b) => a - b)
 
     for (const level of sortedLevels) {
       const packages = levelGroups.get(level)!
-      console.log(`🔨 构建层级 ${level} (${packages.length} 个包)...`)
+      console.log(
+        `\n🔨 构建层级 ${level} (${
+          packages.length
+        } 个包) [内存: ${this.getMemoryUsage()}]`,
+      )
 
-      // 同层级内并行构建
-      const promises = packages.map(pkg => this.buildPackage(pkg))
-      const results = await Promise.all(promises)
-      this.results.push(...results)
+      // 同层级内限制并发构建
+      if (packages.length <= this.maxConcurrentBuilds) {
+        // 包数量少于并发限制，直接并行
+        const promises = packages.map(pkg => this.buildPackage(pkg))
+        const results = await Promise.all(promises)
+        this.results.push(...results)
+      }
+      else {
+        // 包数量多，分批处理
+        const batches: PackageInfo[][] = []
+        for (let i = 0; i < packages.length; i += this.maxConcurrentBuilds) {
+          batches.push(packages.slice(i, i + this.maxConcurrentBuilds))
+        }
+
+        for (let i = 0; i < batches.length; i++) {
+          const batch = batches[i]
+          console.log(
+            `  📦 处理第 ${i + 1}/${batches.length} 批次 (${batch.length} 个包)`,
+          )
+
+          const promises = batch.map(pkg => this.buildPackage(pkg))
+          const batchResults = await Promise.all(promises)
+          this.results.push(...batchResults)
+
+          // 批次间稍作停顿
+          if (i < batches.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+            if (global.gc)
+              global.gc()
+          }
+        }
+      }
 
       // 检查是否有失败的包
-      const failed = results.filter(r => !r.success)
+      const levelResults = this.results.slice(-packages.length)
+      const failed = levelResults.filter(r => !r.success)
       if (failed.length > 0) {
         console.log(
-          `❌ 层级 ${level} 中有 ${failed.length} 个包构建失败，停止后续构建`
+          `❌ 层级 ${level} 中有 ${failed.length} 个包构建失败，停止后续构建`,
         )
         break
+      }
+
+      // 层级间稍作停顿，让系统回收内存
+      if (level < Math.max(...sortedLevels)) {
+        console.log('⏳ 等待内存回收...')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        if (global.gc)
+          global.gc()
       }
     }
   }
@@ -328,7 +500,7 @@ class BatchBuilder {
     const successful = this.results.filter(r => r.success)
     const failed = this.results.filter(r => !r.success)
 
-    console.log('\n' + '='.repeat(60))
+    console.log(`\n${'='.repeat(60)}`)
     console.log('📊 构建摘要')
     console.log('='.repeat(60))
     console.log(`⏱️  总耗时: ${totalDuration}ms`)
@@ -338,14 +510,14 @@ class BatchBuilder {
 
     if (successful.length > 0) {
       console.log('\n🎉 构建成功的包:')
-      successful.forEach(result => {
+      successful.forEach((result) => {
         console.log(`  ✅ ${result.package} (${result.duration}ms)`)
       })
     }
 
     if (failed.length > 0) {
       console.log('\n💥 构建失败的包:')
-      failed.forEach(result => {
+      failed.forEach((result) => {
         console.log(`  ❌ ${result.package} (${result.duration}ms)`)
         if (result.error) {
           console.log(`     错误: ${result.error.split('\n')[0]}`)
@@ -353,7 +525,7 @@ class BatchBuilder {
       })
     }
 
-    console.log('\n' + '='.repeat(60))
+    console.log(`\n${'='.repeat(60)}`)
 
     // 如果有失败的包，退出码为 1
     if (failed.length > 0) {
@@ -371,9 +543,11 @@ async function main() {
   let mode: 'serial' | 'parallel' | 'smart' = 'smart'
   if (args.includes('--serial') || args.includes('-s')) {
     mode = 'serial'
-  } else if (args.includes('--parallel') || args.includes('-p')) {
+  }
+  else if (args.includes('--parallel') || args.includes('-p')) {
     mode = 'parallel'
-  } else if (args.includes('--smart') || args.includes('--intelligent')) {
+  }
+  else if (args.includes('--smart') || args.includes('--intelligent')) {
     mode = 'smart'
   }
 

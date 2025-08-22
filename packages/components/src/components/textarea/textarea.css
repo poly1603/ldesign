@@ -1,0 +1,106 @@
+:host {
+  display: inline-block;
+  width: 100%;
+  font-family: var(--ld-font-family);
+}
+
+.ld-textarea {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  transition: all var(--ld-transition-duration) var(--ld-transition-timing);
+}
+
+.ld-textarea__inner {
+  width: 100%;
+  padding: var(--ld-input-padding-y) var(--ld-input-padding-x);
+  font-size: var(--ld-input-font-size);
+  line-height: var(--ld-input-line-height);
+  color: var(--ld-text-color);
+  background-color: var(--ld-input-bg-color);
+  border: var(--ld-input-border-width) solid var(--ld-input-border-color);
+  border-radius: var(--ld-input-border-radius);
+  outline: none;
+  transition: all var(--ld-transition-duration) var(--ld-transition-timing);
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+.ld-textarea__inner::placeholder {
+  color: var(--ld-text-color-placeholder);
+}
+.ld-textarea__inner:hover:not(:disabled):not(:read-only) {
+  border-color: var(--ld-input-border-color-hover);
+}
+.ld-textarea__inner:focus {
+  border-color: var(--ld-primary-color);
+  box-shadow: 0 0 0 2px var(--ld-primary-color-light);
+}
+.ld-textarea__inner:disabled {
+  background-color: var(--ld-input-bg-color-disabled);
+  border-color: var(--ld-input-border-color);
+  cursor: not-allowed;
+  resize: none;
+}
+.ld-textarea__inner:read-only {
+  background-color: var(--ld-input-bg-color-readonly);
+  cursor: default;
+  resize: none;
+}
+
+.ld-textarea__count {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+  padding: 0 4px;
+  font-size: var(--ld-font-size-sm);
+  color: var(--ld-text-color-secondary);
+  line-height: 1;
+}
+
+.ld-textarea--small .ld-textarea__inner {
+  padding: var(--ld-input-padding-y-sm) var(--ld-input-padding-x-sm);
+  font-size: var(--ld-input-font-size-sm);
+  line-height: var(--ld-input-line-height-sm);
+  border-radius: var(--ld-input-border-radius-sm);
+  min-height: 60px;
+}
+.ld-textarea--small .ld-textarea__count {
+  font-size: 11px;
+}
+
+.ld-textarea--large .ld-textarea__inner {
+  padding: var(--ld-input-padding-y-lg) var(--ld-input-padding-x-lg);
+  font-size: var(--ld-input-font-size-lg);
+  line-height: var(--ld-input-line-height-lg);
+  border-radius: var(--ld-input-border-radius-lg);
+  min-height: 100px;
+}
+
+.ld-textarea--focused .ld-textarea__inner {
+  border-color: var(--ld-primary-color);
+  box-shadow: 0 0 0 2px var(--ld-primary-color-light);
+}
+.ld-textarea--disabled .ld-textarea__count {
+  color: var(--ld-text-color-disabled);
+}
+.ld-textarea--readonly .ld-textarea__inner {
+  resize: none;
+}
+
+.ld-textarea--autosize .ld-textarea__inner {
+  resize: none;
+  overflow: hidden;
+}
+
+.ld-textarea--show-count .ld-textarea__inner {
+  padding-bottom: calc(var(--ld-input-padding-y) - 2px);
+}
+.ld-textarea--show-count.ld-textarea--small .ld-textarea__inner {
+  padding-bottom: calc(var(--ld-input-padding-y-sm) - 2px);
+}
+.ld-textarea--show-count.ld-textarea--large .ld-textarea__inner {
+  padding-bottom: calc(var(--ld-input-padding-y-lg) - 2px);
+}

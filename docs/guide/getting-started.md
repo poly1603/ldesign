@@ -1,6 +1,6 @@
 # 快速开始
 
-本指南将帮助您快速上手 LDesign Vue引擎，从安装到创建第一个应用。
+本指南将帮助您快速上手 LDesign Vue 引擎，从安装到创建第一个应用。
 
 ## 环境要求
 
@@ -61,7 +61,7 @@ pnpm add @ldesign/i18n
 
 ### 1. 基础设置
 
-创建一个新的Vue项目或在现有项目中集成LDesign：
+创建一个新的 Vue 项目或在现有项目中集成 LDesign：
 
 ```typescript
 import { createEngine } from '@ldesign/engine'
@@ -73,7 +73,7 @@ import App from './App.vue'
 const engine = createEngine({
   // 引擎配置
   debug: true, // 开发模式下启用调试
-  performance: true // 启用性能监控
+  performance: true, // 启用性能监控
 })
 
 // 创建Vue应用
@@ -100,14 +100,14 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: Home
+      component: Home,
     },
     {
       path: '/about',
       name: 'About',
-      component: About
-    }
-  ]
+      component: About,
+    },
+  ],
 })
 
 // 创建引擎并安装路由
@@ -118,7 +118,7 @@ const app = engine.createApp(App)
 app.mount('#app')
 ```
 
-### 3. 配置HTTP客户端
+### 3. 配置 HTTP 客户端
 
 ```typescript
 // main.ts
@@ -132,23 +132,23 @@ const http = createHttpClient({
   interceptors: {
     request: [
       // 请求拦截器
-      (config) => {
+      config => {
         // 添加认证头
         config.headers.Authorization = `Bearer ${getToken()}`
         return config
-      }
+      },
     ],
     response: [
       // 响应拦截器
-      (response) => {
+      response => {
         return response.data
       },
-      (error) => {
+      error => {
         console.error('请求失败:', error)
         return Promise.reject(error)
-      }
-    ]
-  }
+      },
+    ],
+  },
 })
 
 // 创建引擎并安装HTTP客户端
@@ -176,12 +176,8 @@ console.log('引擎实例:', engine)
 <template>
   <div id="app">
     <nav>
-      <router-link to="/">
-        首页
-      </router-link>
-      <router-link to="/about">
-        关于
-      </router-link>
+      <router-link to="/"> 首页 </router-link>
+      <router-link to="/about"> 关于 </router-link>
     </nav>
 
     <main>
@@ -228,11 +224,9 @@ async function fetchData() {
   try {
     const result = await http.get('/api/data')
     data.value = result
-  }
-  catch (error) {
+  } catch (error) {
     console.error('获取数据失败:', error)
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -260,12 +254,8 @@ async function fetchData() {
       </div>
     </div>
 
-    <button @click="fetchData">
-      获取数据
-    </button>
-    <div v-if="loading">
-      加载中...
-    </div>
+    <button @click="fetchData">获取数据</button>
+    <div v-if="loading">加载中...</div>
     <div v-else-if="data">
       {{ data }}
     </div>
@@ -325,15 +315,15 @@ const engine = createEngine({
     thresholds: {
       responseTime: 1000,
       fps: 30,
-      memory: 100 * 1024 * 1024 // 100MB
-    }
+      memory: 100 * 1024 * 1024, // 100MB
+    },
   },
 
   // 缓存配置
   cache: {
     strategy: 'lru',
     maxSize: 100,
-    ttl: 5 * 60 * 1000 // 5分钟
+    ttl: 5 * 60 * 1000, // 5分钟
   },
 
   // 安全配置
@@ -343,17 +333,17 @@ const engine = createEngine({
     csp: {
       enabled: true,
       directives: {
-        'default-src': ['\'self\''],
-        'script-src': ['\'self\'', '\'unsafe-inline\'']
-      }
-    }
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'"],
+      },
+    },
   },
 
   // 错误处理
   errorHandler: (error, instance, info) => {
     console.error('应用错误:', error, info)
     // 可以发送错误到监控服务
-  }
+  },
 })
 ```
 
@@ -385,7 +375,7 @@ export {}
 
 ## 常见问题
 
-### Q: 如何在现有Vue项目中集成LDesign？
+### Q: 如何在现有 Vue 项目中集成 LDesign？
 
 A: 只需要将 `createApp` 替换为 `engine.createApp` 即可：
 
@@ -398,7 +388,7 @@ const engine = createEngine()
 const app = engine.createApp(App)
 ```
 
-### Q: 是否支持Vue 2？
+### Q: 是否支持 Vue 2？
 
 A: LDesign 专为 Vue 3 设计，不支持 Vue 2。如果您使用的是 Vue 2，建议先升级到 Vue 3。
 
@@ -408,7 +398,7 @@ A: 在创建引擎时设置 `debug: true`：
 
 ```typescript
 const engine = createEngine({
-  debug: true
+  debug: true,
 })
 ```
 
@@ -423,6 +413,6 @@ const engine = createEngine({
     console.error('错误:', error)
     // 发送到错误监控服务
     errorReporting.captureException(error)
-  }
+  },
 })
 ```

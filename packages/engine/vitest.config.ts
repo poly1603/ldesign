@@ -1,46 +1,25 @@
-import vue from '@vitejs/plugin-vue'
+import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [vue()],
   test: {
-    environment: 'jsdom',
-    setupFiles: ['tests/setup.ts'],
     globals: true,
-    include: ['tests/**/*.test.ts'],
-    exclude: [
-      'node_modules/',
-      'dist/',
-      'es/',
-      'lib/',
-      'types/',
-      'coverage/',
-      'e2e/',
-      'docs/',
-      'example/',
-      '**/*.spec.ts',
+    environment: 'jsdom',
+    include: [
+      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'dist/',
-        'es/',
-        'lib/',
-        'types/',
-        'coverage/',
-        '**/*.d.ts',
-        'tests/setup.ts',
-        'e2e/',
-        'docs/',
-        'example/',
-      ],
-    },
+    exclude: ['node_modules', 'dist', 'lib', 'es', 'types'],
+    setupFiles: ['./tests/setup.ts'],
   },
   resolve: {
     alias: {
-      '@': new URL('./src', import.meta.url).pathname,
+      '@': resolve(__dirname, 'src'),
+      '@tests': resolve(__dirname, 'tests'),
     },
+  },
+  esbuild: {
+    target: 'es2020',
   },
 })

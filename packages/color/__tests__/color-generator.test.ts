@@ -115,14 +115,30 @@ describe('color-generator', () => {
     })
 
     it('should generate different results with different presets', () => {
-      const defaultConfig = generateColorConfig('#1890ff', COLOR_GENERATION_PRESETS.default)
-      const softConfig = generateColorConfig('#1890ff', COLOR_GENERATION_PRESETS.soft)
-      const vibrantConfig = generateColorConfig('#1890ff', COLOR_GENERATION_PRESETS.vibrant)
-      const monochromeConfig = generateColorConfig('#1890ff', COLOR_GENERATION_PRESETS.monochrome)
+      const defaultConfig = generateColorConfig(
+        '#1890ff',
+        COLOR_GENERATION_PRESETS.default,
+      )
+      const softConfig = generateColorConfig(
+        '#1890ff',
+        COLOR_GENERATION_PRESETS.soft,
+      )
+      const vibrantConfig = generateColorConfig(
+        '#1890ff',
+        COLOR_GENERATION_PRESETS.vibrant,
+      )
+      const monochromeConfig = generateColorConfig(
+        '#1890ff',
+        COLOR_GENERATION_PRESETS.monochrome,
+      )
 
       // 验证配置确实不同
-      expect(COLOR_GENERATION_PRESETS.default.saturationRange).not.toEqual(COLOR_GENERATION_PRESETS.soft.saturationRange)
-      expect(COLOR_GENERATION_PRESETS.default.successHueOffset).not.toBe(COLOR_GENERATION_PRESETS.monochrome.successHueOffset)
+      expect(COLOR_GENERATION_PRESETS.default.saturationRange).not.toEqual(
+        COLOR_GENERATION_PRESETS.soft.saturationRange,
+      )
+      expect(COLOR_GENERATION_PRESETS.default.successHueOffset).not.toBe(
+        COLOR_GENERATION_PRESETS.monochrome.successHueOffset,
+      )
 
       // 所有配置都应该生成有效的颜色
       expect(defaultConfig.success).toMatch(/^#[0-9a-f]{6}$/i)
@@ -132,7 +148,10 @@ describe('color-generator', () => {
     })
 
     it('should generate monochrome colors correctly', () => {
-      const config = generateColorConfig('#1890ff', COLOR_GENERATION_PRESETS.monochrome)
+      const config = generateColorConfig(
+        '#1890ff',
+        COLOR_GENERATION_PRESETS.monochrome,
+      )
 
       // 单色配置应该基于相同的色相
       // 这里我们只验证配置被正确应用

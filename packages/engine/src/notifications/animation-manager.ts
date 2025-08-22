@@ -197,7 +197,7 @@ export class NotificationAnimationManager {
    * 获取位置相关的动画变量
    */
   private getPositionVariables(
-    position: NotificationPosition
+    position: NotificationPosition,
   ): Record<string, string> {
     const variables: Record<string, string> = {}
 
@@ -248,7 +248,7 @@ export class NotificationAnimationManager {
    */
   private applyPositionVariables(
     element: HTMLElement,
-    position: NotificationPosition
+    position: NotificationPosition,
   ): void {
     const variables = this.getPositionVariables(position)
     Object.entries(variables).forEach(([key, value]) => {
@@ -263,7 +263,7 @@ export class NotificationAnimationManager {
     element: HTMLElement,
     animation: NotificationAnimation = 'slide',
     position: NotificationPosition = 'top-right',
-    config?: Partial<AnimationConfig>
+    config?: Partial<AnimationConfig>,
   ): Promise<void> {
     const finalConfig = { ...this.defaultConfig, ...config }
     const keyframes = this.animations[animation]
@@ -283,7 +283,7 @@ export class NotificationAnimationManager {
       fill: 'forwards',
     })
 
-    return animationInstance.finished
+    await animationInstance.finished
   }
 
   /**
@@ -293,7 +293,7 @@ export class NotificationAnimationManager {
     element: HTMLElement,
     animation: NotificationAnimation = 'slide',
     position: NotificationPosition = 'top-right',
-    config?: Partial<AnimationConfig>
+    config?: Partial<AnimationConfig>,
   ): Promise<void> {
     const finalConfig = { ...this.defaultConfig, ...config }
     const keyframes = this.animations[animation]
@@ -313,7 +313,7 @@ export class NotificationAnimationManager {
       fill: 'forwards',
     })
 
-    return animationInstance.finished
+    await animationInstance.finished
   }
 
   /**
@@ -334,7 +334,7 @@ export class NotificationAnimationManager {
    * 注册自定义动画
    */
   registerAnimation(name: string, keyframes: AnimationKeyframes): void {
-    ;(this.animations as any)[name] = keyframes
+    ; (this.animations as any)[name] = keyframes
   }
 
   /**

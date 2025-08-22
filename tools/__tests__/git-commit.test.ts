@@ -63,7 +63,9 @@ describe('git Commit Tool', () => {
       mockExecSync.mockReturnValueOnce(Buffer.from('main'))
 
       // Mock git log @{u}..HEAD --oneline (has unpushed commits)
-      mockExecSync.mockReturnValueOnce(Buffer.from('abc123 feat: add new feature\ndef456 fix: resolve bug'))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from('abc123 feat: add new feature\ndef456 fix: resolve bug'),
+      )
 
       expect(true).toBe(true)
     })
@@ -79,7 +81,9 @@ describe('git Commit Tool', () => {
     })
 
     it('should handle git pull --rebase successfully', () => {
-      mockExecSync.mockReturnValueOnce(Buffer.from('Successfully rebased and updated refs/heads/main.'))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from('Successfully rebased and updated refs/heads/main.'),
+      )
 
       expect(() => {
         execSync('git pull --rebase origin')
@@ -96,7 +100,9 @@ describe('git Commit Tool', () => {
 
     it('should handle git commit successfully', () => {
       const commitMessage = 'feat: add new feature'
-      mockExecSync.mockReturnValueOnce(Buffer.from(`[main abc123] ${commitMessage}`))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from(`[main abc123] ${commitMessage}`),
+      )
 
       expect(() => {
         execSync(`git commit -m "${commitMessage}"`)
@@ -104,7 +110,9 @@ describe('git Commit Tool', () => {
     })
 
     it('should handle git push successfully', () => {
-      mockExecSync.mockReturnValueOnce(Buffer.from('To origin\n   abc123..def456  main -> main'))
+      mockExecSync.mockReturnValueOnce(
+        Buffer.from('To origin\n   abc123..def456  main -> main'),
+      )
 
       expect(() => {
         execSync('git push origin main')
@@ -149,7 +157,9 @@ describe('git Commit Tool', () => {
 
     it('should handle push failures (e.g., no upstream branch)', () => {
       mockExecSync.mockImplementationOnce(() => {
-        const error = new Error('fatal: The current branch has no upstream branch.')
+        const error = new Error(
+          'fatal: The current branch has no upstream branch.',
+        )
         throw error
       })
 

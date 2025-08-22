@@ -46,10 +46,4 @@ export {
 } from './preload'
 export type { PreloadPluginOptions } from './preload'
 
-// 默认导出
-export default {
-  animation: { createAnimationPlugin },
-  cache: { createCachePlugin },
-  preload: { createPreloadPlugin },
-  performance: { createPerformancePlugin },
-}
+// 插件集合导出 - 所有插件函数已通过单独的 export 导出

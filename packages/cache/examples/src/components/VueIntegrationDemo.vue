@@ -1,114 +1,8 @@
-<template>
-  <div class="demo-card">
-    <h3>🎨 Vue 集成演示</h3>
-    <p>演示与 Vue 3 的深度集成功能</p>
-
-    <div class="demo-section">
-      <h4>响应式缓存</h4>
-      <input
-        v-model="reactiveKey"
-        placeholder="缓存键名"
-        style="
-          margin-right: 10px;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-        "
-      />
-      <input
-        v-model="reactiveValue.value"
-        placeholder="缓存值"
-        style="
-          margin-right: 10px;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-        "
-      />
-      <button @click="updateReactiveCache" class="btn">更新缓存</button>
-
-      <div v-if="reactiveValue.value" class="status success">
-        当前缓存值: {{ reactiveValue.value }}
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>自动保存</h4>
-      <label>
-        <input type="checkbox" v-model="autoSaveEnabled" />
-        启用自动保存
-      </label>
-
-      <textarea
-        v-model="autoSaveContent"
-        placeholder="输入内容，将自动保存到缓存..."
-        rows="4"
-        style="
-          width: 100%;
-          margin-top: 10px;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          resize: vertical;
-        "
-      ></textarea>
-
-      <div v-if="autoSaveStatus" class="status" :class="autoSaveStatus.type">
-        {{ autoSaveStatus.message }}
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <h4>缓存状态监控</h4>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-value">{{ cacheStats.totalItems || 0 }}</div>
-          <div class="stat-label">总缓存项</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">
-            {{ cacheStats.totalSizeFormatted || '0 B' }}
-          </div>
-          <div class="stat-label">总大小</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ cacheStats.hitRatePercentage || 0 }}%</div>
-          <div class="stat-label">命中率</div>
-        </div>
-      </div>
-
-      <button @click="refreshStats" class="btn secondary">刷新统计</button>
-    </div>
-
-    <div class="demo-section">
-      <h4>生命周期管理</h4>
-      <button @click="createTempCache" class="btn">创建临时缓存</button>
-      <button @click="cleanupExpired" class="btn secondary">清理过期项</button>
-
-      <div v-if="tempCacheItems.length > 0" class="temp-cache-list">
-        <h5>临时缓存项:</h5>
-        <div
-          v-for="item in tempCacheItems"
-          :key="item.key"
-          class="temp-cache-item"
-        >
-          <span>{{ item.key }}: {{ item.value }}</span>
-          <span class="ttl">{{ item.remainingTime }}s</span>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="loading" class="status info">处理中...</div>
-
-    <div v-if="error" class="status error">错误: {{ error.message }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 // 模拟 useCache 功能（实际应该从 @ldesign/cache/vue 导入）
-const useCache = (options: any = {}) => {
+function useCache(options: any = {}) {
   const loading = ref(false)
   const error = ref<Error | null>(null)
 
@@ -117,11 +11,13 @@ const useCache = (options: any = {}) => {
     try {
       localStorage.setItem(
         `demo_${key}`,
-        JSON.stringify({ value, timestamp: Date.now(), ...opts })
+        JSON.stringify({ value, timestamp: Date.now(), ...opts }),
       )
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -134,7 +30,8 @@ const useCache = (options: any = {}) => {
         return parsed.value
       }
       return null
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err as Error
       return null
     }
@@ -146,7 +43,7 @@ const useCache = (options: any = {}) => {
 
   const clear = async () => {
     const keys = Object.keys(localStorage).filter(key =>
-      key.startsWith('demo_')
+      key.startsWith('demo_'),
     )
     keys.forEach(key => localStorage.removeItem(key))
   }
@@ -161,7 +58,7 @@ const useCache = (options: any = {}) => {
 }
 
 // 模拟 useCacheStats 功能
-const useCacheStats = () => {
+function useCacheStats() {
   const stats = ref({
     totalItems: 0,
     totalSizeFormatted: '0 B',
@@ -170,12 +67,12 @@ const useCacheStats = () => {
 
   const refresh = async () => {
     const keys = Object.keys(localStorage).filter(key =>
-      key.startsWith('demo_')
+      key.startsWith('demo_'),
     )
     stats.value.totalItems = keys.length
 
     let totalSize = 0
-    keys.forEach(key => {
+    keys.forEach((key) => {
       totalSize += localStorage.getItem(key)?.length || 0
     })
 
@@ -199,20 +96,20 @@ const reactiveKey = ref('user-preference')
 const reactiveValue = ref({ value: '' })
 const autoSaveEnabled = ref(true)
 const autoSaveContent = ref('')
-const autoSaveStatus = ref<{ type: string; message: string } | null>(null)
+const autoSaveStatus = ref<{ type: string, message: string } | null>(null)
 const tempCacheItems = ref<
-  Array<{ key: string; value: any; remainingTime: number }>
+  Array<{ key: string, value: any, remainingTime: number }>
 >([])
 
 // 更新响应式缓存
-const updateReactiveCache = async () => {
+async function updateReactiveCache() {
   await set(reactiveKey.value, reactiveValue.value.value)
   autoSaveStatus.value = { type: 'success', message: '缓存已更新' }
 }
 
 // 监听自动保存内容变化（手动防抖）
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
-watch(autoSaveContent, async newContent => {
+watch(autoSaveContent, async (newContent) => {
   if (autoSaveEnabled.value && newContent) {
     if (autoSaveTimer) {
       clearTimeout(autoSaveTimer)
@@ -225,7 +122,7 @@ watch(autoSaveContent, async newContent => {
 })
 
 // 创建临时缓存
-const createTempCache = async () => {
+async function createTempCache() {
   const tempKey = `temp-${Date.now()}`
   const tempValue = `临时数据 ${new Date().toLocaleTimeString()}`
 
@@ -244,7 +141,7 @@ const createTempCache = async () => {
       item.remainingTime--
       if (item.remainingTime <= 0) {
         tempCacheItems.value = tempCacheItems.value.filter(
-          i => i.key !== tempKey
+          i => i.key !== tempKey,
         )
         clearInterval(countdown)
       }
@@ -253,20 +150,21 @@ const createTempCache = async () => {
 }
 
 // 清理过期项
-const cleanupExpired = async () => {
+async function cleanupExpired() {
   tempCacheItems.value = tempCacheItems.value.filter(
-    item => item.remainingTime > 0
+    item => item.remainingTime > 0,
   )
   autoSaveStatus.value = { type: 'success', message: '过期项已清理' }
 }
 
 // 工具函数
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
+function formatBytes(bytes: number): string {
+  if (bytes === 0)
+    return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
 // 生命周期
@@ -290,6 +188,134 @@ onUnmounted(() => {
   // 清理资源
 })
 </script>
+
+<template>
+  <div class="demo-card">
+    <h3>🎨 Vue 集成演示</h3>
+    <p>演示与 Vue 3 的深度集成功能</p>
+
+    <div class="demo-section">
+      <h4>响应式缓存</h4>
+      <input
+        v-model="reactiveKey"
+        placeholder="缓存键名"
+        style="
+          margin-right: 10px;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        "
+      >
+      <input
+        v-model="reactiveValue.value"
+        placeholder="缓存值"
+        style="
+          margin-right: 10px;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        "
+      >
+      <button class="btn" @click="updateReactiveCache">
+        更新缓存
+      </button>
+
+      <div v-if="reactiveValue.value" class="status success">
+        当前缓存值: {{ reactiveValue.value }}
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>自动保存</h4>
+      <label>
+        <input v-model="autoSaveEnabled" type="checkbox">
+        启用自动保存
+      </label>
+
+      <textarea
+        v-model="autoSaveContent"
+        placeholder="输入内容，将自动保存到缓存..."
+        rows="4"
+        style="
+          width: 100%;
+          margin-top: 10px;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          resize: vertical;
+        "
+      />
+
+      <div v-if="autoSaveStatus" class="status" :class="autoSaveStatus.type">
+        {{ autoSaveStatus.message }}
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h4>缓存状态监控</h4>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ cacheStats.totalItems || 0 }}
+          </div>
+          <div class="stat-label">
+            总缓存项
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ cacheStats.totalSizeFormatted || '0 B' }}
+          </div>
+          <div class="stat-label">
+            总大小
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ cacheStats.hitRatePercentage || 0 }}%
+          </div>
+          <div class="stat-label">
+            命中率
+          </div>
+        </div>
+      </div>
+
+      <button class="btn secondary" @click="refreshStats">
+        刷新统计
+      </button>
+    </div>
+
+    <div class="demo-section">
+      <h4>生命周期管理</h4>
+      <button class="btn" @click="createTempCache">
+        创建临时缓存
+      </button>
+      <button class="btn secondary" @click="cleanupExpired">
+        清理过期项
+      </button>
+
+      <div v-if="tempCacheItems.length > 0" class="temp-cache-list">
+        <h5>临时缓存项:</h5>
+        <div
+          v-for="item in tempCacheItems"
+          :key="item.key"
+          class="temp-cache-item"
+        >
+          <span>{{ item.key }}: {{ item.value }}</span>
+          <span class="ttl">{{ item.remainingTime }}s</span>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="loading" class="status info">
+      处理中...
+    </div>
+
+    <div v-if="error" class="status error">
+      错误: {{ error.message }}
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .temp-cache-list {

@@ -2,7 +2,8 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: '@ldesign/store',
-  description: '一个基于Pinia的Vue3状态管理库，支持类、Hook、Provider、装饰器等多种使用方式',
+  description:
+    '一个基于Pinia的Vue3状态管理库，支持类、Hook、Provider、装饰器等多种使用方式',
 
   vue: {
     template: {

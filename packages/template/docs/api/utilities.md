@@ -62,7 +62,9 @@ import { detectDeviceByUserAgent } from '@ldesign/template'
 const device1 = detectDeviceByUserAgent()
 
 // 使用指定 User Agent
-const device2 = detectDeviceByUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)')
+const device2 = detectDeviceByUserAgent(
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)'
+)
 console.log('iPhone 设备类型:', device2) // 'mobile'
 ```
 
@@ -122,8 +124,8 @@ const cleanup = createDeviceWatcher(
     immediate: true,
     breakpoints: {
       mobile: 600,
-      tablet: 900
-    }
+      tablet: 900,
+    },
   }
 )
 ```
@@ -359,14 +361,13 @@ const config = {
   title: '登录页',
   category: 'auth',
   device: 'desktop',
-  version: '1.0.0'
+  version: '1.0.0',
 }
 
 const result = validateTemplateConfig(config)
 if (result.valid) {
   console.log('配置有效')
-}
-else {
+} else {
   console.error('配置错误:', result.errors)
 }
 ```
@@ -399,12 +400,12 @@ import { validateTemplateProps } from '@ldesign/template'
 
 const props = {
   title: 'Hello',
-  count: 42
+  count: 42,
 }
 
 const schema = {
   title: { type: 'string', required: true },
-  count: { type: 'number', required: false }
+  count: { type: 'number', required: false },
 }
 
 const result = validateTemplateProps(props, schema)
@@ -468,7 +469,7 @@ import {
   enableDebugMode,
   parseTemplatePath,
   TemplateCache,
-  validateTemplateConfig
+  validateTemplateConfig,
 } from '@ldesign/template'
 
 // 启用调试模式
@@ -498,7 +499,7 @@ const config = {
   title: '登录页',
   category: 'auth',
   device: 'desktop',
-  version: '1.0.0'
+  version: '1.0.0',
 }
 
 const validation = validateTemplateConfig(config)

@@ -1,6 +1,7 @@
 # @ldesign/i18n 示例项目
 
-本目录包含了 @ldesign/i18n 的完整使用示例，展示了如何在不同环境中集成和使用多语言功能。每个示例都是一个完整的应用程序，演示了所有核心功能和最佳实践。
+本目录包含了 @ldesign/i18n 的完整使用示例，展示了如何在不同环境中集成和使用多语言功能。每个示例都是
+一个完整的应用程序，演示了所有核心功能和最佳实践。
 
 ## ✨ 功能特性
 
@@ -61,7 +62,7 @@ pnpm install
 pnpm dev
 ```
 
-示例将在 http://localhost:5174 启动，展示以下功能：
+示例将在 http://localhost:3000 启动，展示以下功能：
 
 - ✅ **基础翻译**：`i18n.t('common.ok')` 简单键值翻译
 - ✅ **字符串插值**：`i18n.t('common.pageOf', { current: 1, total: 10 })` 动态参数
@@ -86,7 +87,7 @@ pnpm install
 pnpm dev
 ```
 
-示例将在 http://localhost:5173 启动，展示以下功能：
+示例将在 http://localhost:3001 启动，展示以下功能：
 
 - ✅ **Vue 组合式 API**：`useI18n()` 钩子函数的完整使用
 - ✅ **v-t 指令**：`<div v-t="'common.save'"></div>` 模板指令翻译
@@ -103,12 +104,14 @@ pnpm dev
 ### 🟡 Vanilla JavaScript 示例
 
 **核心特性：**
+
 - 纯 JavaScript ES6+ 模块化开发
 - 手动 DOM 操作和事件处理
 - 完整的错误处理和用户反馈
 - 现代化的 UI 设计和交互
 
 **代码示例：**
+
 ```javascript
 // 初始化 i18n
 import { createI18nWithBuiltinLocales } from '@ldesign/i18n'
@@ -136,41 +139,44 @@ await i18n.changeLanguage('zh-CN')
 ### 🟢 Vue 3 示例
 
 **核心特性：**
+
 - Vue 3 Composition API + TypeScript
 - 响应式数据和自动更新
 - 组件化设计和可复用钩子
 - 现代 Vue 开发最佳实践
 
 **代码示例：**
+
 ```vue
 <script setup lang="ts">
 import {
+  useBatchTranslation,
+  useConditionalTranslation,
   useI18n,
   useLanguageSwitcher,
-  useBatchTranslation,
-  useConditionalTranslation
 } from '@ldesign/i18n/vue'
 
-// 基础翻译钩子
-const { t, i18n } = useI18n()
-
-// 语言切换钩子
-const { locale, switchLanguage, isChanging } = useLanguageSwitcher()
+// 统一使用 useI18n 钩子获取所有功能
+const { t, i18n, locale, availableLanguages, changeLanguage } = useI18n()
 
 // 批量翻译钩子
-const batchTranslations = useBatchTranslation([
-  'common.save',
-  'common.delete',
-  'common.edit'
-])
+const batchTranslations = useBatchTranslation(['common.save', 'common.delete', 'common.edit'])
 
 // 条件翻译钩子
 const isOnline = ref(true)
-const statusText = useConditionalTranslation(
-  isOnline,
-  'common.online',
-  'common.offline'
-)
+const statusText = useConditionalTranslation(isOnline, 'common.online', 'common.offline')
+
+// 如果需要语言切换的加载状态，可以自己管理
+const isChanging = ref(false)
+async function handleLanguageChange(langCode: string) {
+  if (isChanging.value) return
+  try {
+    isChanging.value = true
+    await changeLanguage(langCode)
+  } finally {
+    isChanging.value = false
+  }
+}
 </script>
 
 <template>
@@ -178,13 +184,13 @@ const statusText = useConditionalTranslation(
   <h1>{{ t('common.title') }}</h1>
 
   <!-- 指令翻译 -->
-  <div v-t="'common.save'"></div>
+  <div v-t="'common.save'" />
 
   <!-- 插值翻译 -->
   <p>{{ t('common.pageOf', { current: 1, total: 10 }) }}</p>
 
   <!-- 语言切换 -->
-  <button @click="switchLanguage('zh-CN')" :disabled="isChanging">
+  <button :disabled="isChanging" @click="handleLanguageChange('zh-CN')">
     中文
   </button>
 </template>
@@ -201,8 +207,8 @@ const statusText = useConditionalTranslation(
 export default defineConfig({
   server: {
     port: 3000, // 修改为您想要的端口
-    open: true
-  }
+    open: true,
+  },
 })
 ```
 
@@ -211,8 +217,8 @@ export default defineConfig({
 export default defineConfig({
   server: {
     port: 3001, // 修改为您想要的端口
-    open: true
-  }
+    open: true,
+  },
 })
 ```
 
@@ -245,10 +251,12 @@ pnpm build
 ### 常见问题
 
 1. **模块找不到错误**
+
    - 确保已经构建了主项目：`cd packages/i18n && pnpm build`
    - 检查 vite.config 中的 alias 配置是否正确
 
 2. **类型错误**
+
    - 确保 TypeScript 配置正确
    - 运行 `pnpm type-check` 检查类型问题
 

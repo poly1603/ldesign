@@ -2,16 +2,21 @@
  * Vue Composition API Hooks
  */
 
-import { ref, computed, onUnmounted, inject, watch, type Ref } from 'vue'
-import type { SizeMode, SizeManager, SizeConfig, SizeChangeEvent } from '../types'
+import type {
+  SizeChangeEvent,
+  SizeConfig,
+  SizeManager,
+  SizeMode,
+} from '../types'
+import { computed, inject, onUnmounted, ref, type Ref } from 'vue'
 import { createSizeManager, globalSizeManager } from '../core/size-manager'
-import { VueSizeSymbol } from './plugin'
 import {
-  getSizeModeDisplayName,
   getNextSizeMode,
   getPreviousSizeMode,
+  getSizeModeDisplayName,
   isValidSizeMode,
 } from '../utils'
+import { VueSizeSymbol } from './plugin'
 
 /**
  * useSize Hook 选项
@@ -66,9 +71,11 @@ export function useSize(options: UseSizeOptions = {}): UseSizeReturn {
   let sizeManager: SizeManager
   if (global) {
     sizeManager = globalSizeManager
-  } else if (injectedManager) {
+  }
+  else if (injectedManager) {
     sizeManager = injectedManager
-  } else {
+  }
+  else {
     sizeManager = createSizeManager({
       defaultMode: initialMode,
       autoInject,
@@ -80,7 +87,9 @@ export function useSize(options: UseSizeOptions = {}): UseSizeReturn {
   const currentConfig = ref<SizeConfig>(sizeManager.getConfig())
 
   // 计算属性
-  const currentModeDisplayName = computed(() => getSizeModeDisplayName(currentMode.value))
+  const currentModeDisplayName = computed(() =>
+    getSizeModeDisplayName(currentMode.value),
+  )
 
   // 监听尺寸变化
   const unsubscribe = sizeManager.onSizeChange((event: SizeChangeEvent) => {
@@ -178,7 +187,9 @@ export function useSizeSwitcher(options: UseSizeOptions = {}) {
 /**
  * 使用尺寸响应式 Hook
  */
-export function useSizeResponsive(breakpoints?: Partial<Record<SizeMode, boolean>>) {
+export function useSizeResponsive(
+  breakpoints?: Partial<Record<SizeMode, boolean>>,
+) {
   const { currentMode } = useSize({ global: true })
 
   const isSmall = computed(() => currentMode.value === 'small')

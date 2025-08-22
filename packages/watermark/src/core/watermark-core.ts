@@ -95,12 +95,13 @@ export class WatermarkCore {
         customType: 'core:initialized',
         payload: { core: this },
       })
-    } catch (error) {
+    }
+    catch (error) {
       const watermarkError = new WatermarkError(
         'Failed to initialize WatermarkCore',
         WatermarkErrorCode.UNKNOWN_ERROR,
         ErrorSeverity.CRITICAL,
-        { originalError: error as Error }
+        { originalError: error as Error },
       )
 
       await this.errorManager.handleError(watermarkError)
@@ -114,7 +115,7 @@ export class WatermarkCore {
   async create(
     container: HTMLElement,
     config: Partial<WatermarkConfig>,
-    options: CreateInstanceOptions = {}
+    options: CreateInstanceOptions = {},
   ): Promise<WatermarkInstance> {
     this.ensureInitialized()
 
@@ -168,8 +169,8 @@ export class WatermarkCore {
 
       // 设置安全管理器
       if (
-        options.enableSecurity !== false &&
-        validatedConfig.security?.level !== 'none'
+        options.enableSecurity !== false
+        && validatedConfig.security?.level !== 'none'
       ) {
         instance.securityManager = this.securityManager.state
         await this.securityManager.enableProtection(instance)
@@ -177,8 +178,8 @@ export class WatermarkCore {
 
       // 设置响应式管理器
       if (
-        options.enableResponsive !== false &&
-        validatedConfig.responsive?.enabled
+        options.enableResponsive !== false
+        && validatedConfig.responsive?.enabled
       ) {
         // 暂时注释掉，因为类型不匹配
         // instance.responsiveManager = this.responsiveManager
@@ -195,8 +196,8 @@ export class WatermarkCore {
 
       // 设置动画
       if (
-        options.enableAnimation !== false &&
-        validatedConfig.animation?.type !== 'none'
+        options.enableAnimation !== false
+        && validatedConfig.animation?.type !== 'none'
       ) {
         await this.setupAnimations(instance)
       }
@@ -214,12 +215,13 @@ export class WatermarkCore {
       })
 
       return instance
-    } catch (error) {
+    }
+    catch (error) {
       const watermarkError = new WatermarkError(
         'Failed to create watermark instance',
         WatermarkErrorCode.INSTANCE_CREATION_FAILED,
         ErrorSeverity.HIGH,
-        { originalError: error as Error }
+        { originalError: error as Error },
       )
 
       await this.errorManager.handleError(watermarkError)
@@ -233,7 +235,7 @@ export class WatermarkCore {
   async update(
     instanceId: string,
     config: Partial<WatermarkConfig>,
-    options: UpdateInstanceOptions = {}
+    options: UpdateInstanceOptions = {},
   ): Promise<void> {
     this.ensureInitialized()
 
@@ -242,7 +244,7 @@ export class WatermarkCore {
       throw new WatermarkError(
         `Instance with id ${instanceId} not found`,
         WatermarkErrorCode.INSTANCE_NOT_FOUND,
-        ErrorSeverity.MEDIUM
+        ErrorSeverity.MEDIUM,
       )
     }
 
@@ -256,8 +258,8 @@ export class WatermarkCore {
 
       // 重新渲染
       if (
-        options.forceRerender ||
-        this.configManager.hasRenderingChanges(oldConfig, newConfig)
+        options.forceRerender
+        || this.configManager.hasRenderingChanges(oldConfig, newConfig)
       ) {
         await this.renderInstance(instance)
       }
@@ -290,14 +292,15 @@ export class WatermarkCore {
         instanceId,
         instance,
       })
-    } catch (error) {
+    }
+    catch (error) {
       instance.state = 'active' // 恢复状态
 
       const watermarkError = new WatermarkError(
         'Failed to update watermark instance',
         WatermarkErrorCode.INSTANCE_UPDATE_FAILED,
         ErrorSeverity.MEDIUM,
-        { instanceId, originalError: error as Error }
+        { instanceId, originalError: error as Error },
       )
 
       await this.errorManager.handleError(watermarkError)
@@ -339,7 +342,8 @@ export class WatermarkCore {
       for (const cleanup of instance.cleanupFunctions) {
         try {
           cleanup()
-        } catch (error) {
+        }
+        catch (error) {
           console.warn('Cleanup function failed:', error)
         }
       }
@@ -359,12 +363,13 @@ export class WatermarkCore {
         instanceId,
         instance,
       })
-    } catch (error) {
+    }
+    catch (error) {
       const watermarkError = new WatermarkError(
         'Failed to destroy watermark instance',
         WatermarkErrorCode.INSTANCE_DESTROY_FAILED,
         ErrorSeverity.MEDIUM,
-        { instanceId, originalError: error as Error }
+        { instanceId, originalError: error as Error },
       )
 
       await this.errorManager.handleError(watermarkError)
@@ -391,7 +396,8 @@ export class WatermarkCore {
    */
   async pause(instanceId: string): Promise<void> {
     const instance = this.instanceManager.get(instanceId)
-    if (!instance) return
+    if (!instance)
+      return
 
     instance.state = 'paused'
     await this.pauseAnimations(instance)
@@ -402,7 +408,8 @@ export class WatermarkCore {
    */
   async resume(instanceId: string): Promise<void> {
     const instance = this.instanceManager.get(instanceId)
-    if (!instance) return
+    if (!instance)
+      return
 
     instance.state = 'active'
     await this.resumeAnimations(instance)
@@ -413,10 +420,11 @@ export class WatermarkCore {
    */
   show(instanceId: string): void {
     const instance = this.instanceManager.get(instanceId)
-    if (!instance) return
+    if (!instance)
+      return
 
     instance.visible = true
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       element.style.display = ''
     })
   }
@@ -426,10 +434,11 @@ export class WatermarkCore {
    */
   hide(instanceId: string): void {
     const instance = this.instanceManager.get(instanceId)
-    if (!instance) return
+    if (!instance)
+      return
 
     instance.visible = false
-    instance.elements.forEach(element => {
+    instance.elements.forEach((element) => {
       element.style.display = 'none'
     })
   }
@@ -439,10 +448,11 @@ export class WatermarkCore {
    */
   async enableSecurity(
     instanceId: string,
-    level: SecurityLevel
+    level: SecurityLevel,
   ): Promise<void> {
     const instance = this.instanceManager.get(instanceId)
-    if (!instance) return
+    if (!instance)
+      return
 
     instance.config.security = { ...instance.config.security, level }
     instance.securityManager = this.securityManager.state
@@ -454,7 +464,7 @@ export class WatermarkCore {
    */
   on<T extends WatermarkEvent>(
     type: WatermarkEventType,
-    listener: EventListener<T>
+    listener: EventListener<T>,
   ): void {
     this.eventManager.on(type, listener)
   }
@@ -464,7 +474,7 @@ export class WatermarkCore {
    */
   off<T extends WatermarkEvent>(
     type: WatermarkEventType,
-    listener: EventListener<T>
+    listener: EventListener<T>,
   ): void {
     this.eventManager.off(type, listener)
   }
@@ -473,7 +483,8 @@ export class WatermarkCore {
    * 销毁核心系统
    */
   async dispose(): Promise<void> {
-    if (!this.initialized) return
+    if (!this.initialized)
+      return
 
     // 销毁所有实例
     const instances = this.instanceManager.getAll()
@@ -498,7 +509,7 @@ export class WatermarkCore {
       throw new WatermarkError(
         'WatermarkCore is not initialized',
         WatermarkErrorCode.UNKNOWN_ERROR,
-        ErrorSeverity.HIGH
+        ErrorSeverity.HIGH,
       )
     }
   }
@@ -533,21 +544,21 @@ export class WatermarkCore {
     // 渲染新元素
     const elements = await instance.renderer.render(
       instance.config,
-      instance.renderContext
+      instance.renderContext,
     )
 
     instance.elements = elements
 
     // 添加到容器
-    elements.forEach(element => {
+    elements.forEach((element) => {
       instance.container.appendChild(element)
     })
   }
 
   private async setupAnimations(instance: WatermarkInstance): Promise<void> {
     if (
-      !instance.config.animation ||
-      instance.config.animation.type === 'none'
+      !instance.config.animation
+      || instance.config.animation.type === 'none'
     ) {
       return
     }
@@ -555,7 +566,7 @@ export class WatermarkCore {
     for (const element of instance.elements) {
       await this.animationEngine.createAnimation(
         element.id || element.tagName,
-        instance.config.animation?.type || 'none'
+        instance.config.animation?.type || 'none',
       )
 
       // 这里需要获取动画实例，但AnimationEngine接口需要完善
@@ -596,22 +607,22 @@ export class WatermarkCore {
 
   private setupErrorHandling(): void {
     // 设置全局错误处理
-    window.addEventListener('error', event => {
+    window.addEventListener('error', (event) => {
       const error = new WatermarkError(
         event.message,
         WatermarkErrorCode.UNKNOWN_ERROR,
         ErrorSeverity.MEDIUM,
-        { context: { filename: event.filename, lineno: event.lineno } }
+        { context: { filename: event.filename, lineno: event.lineno } },
       )
       this.errorManager.handleError(error)
     })
 
-    window.addEventListener('unhandledrejection', event => {
+    window.addEventListener('unhandledrejection', (event) => {
       const error = new WatermarkError(
         'Unhandled promise rejection',
         WatermarkErrorCode.UNKNOWN_ERROR,
         ErrorSeverity.MEDIUM,
-        { originalError: event.reason }
+        { originalError: event.reason },
       )
       this.errorManager.handleError(error)
     })
@@ -621,10 +632,11 @@ export class WatermarkCore {
     // 监听页面可见性变化
     document.addEventListener('visibilitychange', () => {
       const instances = this.instanceManager.getAll()
-      instances.forEach(instance => {
+      instances.forEach((instance) => {
         if (document.hidden) {
           this.pauseAnimations(instance)
-        } else {
+        }
+        else {
           this.resumeAnimations(instance)
         }
       })

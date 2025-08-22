@@ -10,7 +10,7 @@
 import { createHttpClient } from '@ldesign/http'
 
 const http = createHttpClient({
-  baseURL: 'https://jsonplaceholder.typicode.com'
+  baseURL: 'https://jsonplaceholder.typicode.com',
 })
 ```
 
@@ -24,16 +24,16 @@ const http = createHttpClient({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
   },
   cache: {
     enabled: true,
-    ttl: 300000 // 5 分钟缓存
+    ttl: 300000, // 5 分钟缓存
   },
   retry: {
     retries: 3,
-    retryDelay: 1000
-  }
+    retryDelay: 1000,
+  },
 })
 ```
 
@@ -50,8 +50,8 @@ console.log(response.data)
 const posts = await http.get('/posts', {
   params: {
     userId: 1,
-    _limit: 10
-  }
+    _limit: 10,
+  },
 })
 
 // 类型安全的 GET 请求
@@ -73,7 +73,7 @@ const posts: Post[] = typedResponse.data
 const newPost = await http.post('/posts', {
   title: 'My New Post',
   body: 'This is the content of my post.',
-  userId: 1
+  userId: 1,
 })
 
 console.log('Created post:', newPost.data)
@@ -95,7 +95,7 @@ interface Post {
 const createResponse = await http.post<Post, CreatePostRequest>('/posts', {
   title: 'TypeScript Post',
   body: 'This post was created with TypeScript.',
-  userId: 1
+  userId: 1,
 })
 ```
 
@@ -107,7 +107,7 @@ const updatedPost = await http.put('/posts/1', {
   id: 1,
   title: 'Updated Title',
   body: 'Updated content.',
-  userId: 1
+  userId: 1,
 })
 
 console.log('Updated post:', updatedPost.data)
@@ -123,8 +123,8 @@ console.log('Post deleted')
 // 批量删除
 await http.delete('/posts', {
   data: {
-    ids: [1, 2, 3, 4, 5]
-  }
+    ids: [1, 2, 3, 4, 5],
+  },
 })
 ```
 
@@ -281,13 +281,13 @@ async function loadDashboardData() {
     const [users, posts, comments] = await Promise.all([
       http.get('/users'),
       http.get('/posts'),
-      http.get('/comments')
+      http.get('/comments'),
     ])
 
     return {
       users: users.data,
       posts: posts.data,
-      comments: comments.data
+      comments: comments.data,
     }
   }
   catch (error) {
@@ -302,11 +302,7 @@ async function loadDashboardData() {
 ```typescript
 // 并发请求，处理部分失败
 async function loadOptionalData() {
-  const requests = [
-    http.get('/users'),
-    http.get('/posts'),
-    http.get('/comments')
-  ]
+  const requests = [http.get('/users'), http.get('/posts'), http.get('/comments')]
 
   const results = await Promise.allSettled(requests)
 
@@ -337,7 +333,7 @@ async function loadOptionalData() {
 const controller = new AbortController()
 
 const requestPromise = http.get('/api/data', {
-  signal: controller.signal
+  signal: controller.signal,
 })
 
 // 5 秒后取消请求
@@ -377,7 +373,7 @@ class DataService {
     try {
       const response = await http.get('/users/search', {
         params: { q: query },
-        signal: this.currentRequest.signal
+        signal: this.currentRequest.signal,
       })
 
       this.currentRequest = null
@@ -406,8 +402,8 @@ async function uploadFile(file: File) {
   try {
     const response = await http.post('/upload', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     })
 
     console.log('Upload successful:', response.data)
@@ -433,8 +429,8 @@ async function uploadMultipleFiles(files: FileList) {
   try {
     const response = await http.post('/upload/multiple', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     })
 
     return response.data
@@ -457,7 +453,7 @@ class ApiService {
   // 用户相关 API
   async getUsers(page = 1, limit = 10) {
     return this.http.get('/users', {
-      params: { page, limit }
+      params: { page, limit },
     })
   }
 
@@ -480,7 +476,7 @@ class ApiService {
   // 文章相关 API
   async getPosts(userId?: number) {
     return this.http.get('/posts', {
-      params: userId ? { userId } : {}
+      params: userId ? { userId } : {},
     })
   }
 
@@ -502,7 +498,7 @@ const users = await api.getUsers(1, 20)
 // 创建新用户
 const newUser = await api.createUser({
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 ```
 

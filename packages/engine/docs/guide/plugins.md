@@ -40,7 +40,7 @@ const myPlugin = creators.plugin('my-plugin', (engine) => {
 
 // 使用插件
 const engine = createApp(App, {
-  plugins: [myPlugin]
+  plugins: [myPlugin],
 })
 ```
 
@@ -71,7 +71,7 @@ const dependentPlugin = {
     }
 
     engine.logger.info('Dependent plugin installed')
-  }
+  },
 }
 ```
 
@@ -82,7 +82,7 @@ const dependentPlugin = {
 ```typescript
 // 在创建引擎时注册
 const engine = createApp(App, {
-  plugins: [myPlugin, asyncPlugin]
+  plugins: [myPlugin, asyncPlugin],
 })
 
 // 动态注册插件
@@ -101,7 +101,7 @@ const removablePlugin = {
   uninstall: (engine) => {
     engine.logger.info('Plugin uninstalled')
     // 清理资源
-  }
+  },
 }
 
 // 卸载插件
@@ -126,7 +126,10 @@ if (plugin) {
 
 // 获取所有插件
 const allPlugins = engine.plugins.getAll()
-console.log('Registered plugins:', allPlugins.map(p => p.name))
+console.log(
+  'Registered plugins:',
+  allPlugins.map(p => p.name)
+)
 ```
 
 ## 插件通信
@@ -195,7 +198,7 @@ const cleanPlugin = {
       clearInterval(timer)
       engine.state.remove('cleanPluginTimer')
     }
-  }
+  },
 }
 ```
 
@@ -212,7 +215,7 @@ function configurablePlugin(options: MyPluginOptions) {
     // 使用配置
     engine.state.set('apiConfig', {
       url: options.apiUrl,
-      timeout: options.timeout
+      timeout: options.timeout,
     })
   })
 }
@@ -222,9 +225,9 @@ const engine = createApp(App, {
   plugins: [
     configurablePlugin({
       apiUrl: 'https://api.example.com',
-      timeout: 5000
-    })
-  ]
+      timeout: 5000,
+    }),
+  ],
 })
 ```
 
@@ -251,9 +254,9 @@ engine.events.on('plugin:unregistered', (pluginName) => {
 ```typescript
 const engine = createApp(App, {
   config: {
-    debug: true // 启用调试模式
+    debug: true, // 启用调试模式
   },
-  plugins: [myPlugin]
+  plugins: [myPlugin],
 })
 
 // 在浏览器控制台中查看插件信息

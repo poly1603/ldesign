@@ -1,122 +1,137 @@
 <div align="center">
 
-# LDesign Engine
+# 🚀 LDesign Engine
 
-![LDesign Engine Logo](./docs/assets/logo.svg)
-
-**强大的 Vue3 应用引擎，提供插件化架构和完整的开发工具链**
+**现代化、模块化的前端引擎，为构建高性能Web应用提供强大的基础设施**
 
 [![npm version](https://img.shields.io/npm/v/@ldesign/engine.svg)](https://www.npmjs.com/package/@ldesign/engine)
 [![npm downloads](https://img.shields.io/npm/dm/@ldesign/engine.svg)](https://www.npmjs.com/package/@ldesign/engine)
 [![License](https://img.shields.io/npm/l/@ldesign/engine.svg)](https://github.com/ldesign/engine/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![Vue 3](https://img.shields.io/badge/Vue-3.3+-green.svg)](https://vuejs.org/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ldesign/engine/ci.yml)](https://github.com/ldesign/engine/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/ldesign/engine)](https://codecov.io/gh/ldesign/engine)
 
-[📖 文档](https://ldesign.github.io/engine/) ·
-[🚀 快速开始](https://ldesign.github.io/engine/guide/quick-start.html) ·
-[🎯 示例](https://ldesign.github.io/engine/examples/) ·
+[📖 文档](./docs/README.md) ·
+[🚀 快速开始](./docs/guide/getting-started.md) ·
+[🎯 示例](./examples/README.md) ·
 [💬 讨论](https://github.com/ldesign/engine/discussions)
 
 </div>
 
 ---
 
-一个现代化、功能丰富的 Vue 3 应用程序引擎，为企业级应用提供完整的基础设施支持。
+一个现代化、功能丰富的前端应用引擎，为企业级应用提供完整的基础设施支持。就像给你的应用装上了涡轮增压器！💨
 
-## 🎉 最新更新 - 通知系统全面升级
+## 🎉 最新更新 - 引擎核心架构全面升级
 
-我们刚刚完成了通知系统的重大升级，带来了令人兴奋的新功能：
+我们刚刚完成了引擎核心架构的重大升级，带来了令人兴奋的新功能：
 
-### 🎯 新增功能
+### 🎯 核心新功能
 
-- **🎪 多位置支持**: 6 个不同位置的通知显示（左上、上中、右上、左下、下中、右下）
-- **🎨 平滑动画效果**: 5 种内置动画（滑入、淡入、弹跳、缩放、翻转），包含高度自适应
-- **✨ 即时响应**: 通知消失时，其他通知立即开始平滑移动，提供即时视觉反馈
-- **🌈 主题系统**: 浅色、深色、自动主题切换
-- **🔘 操作按钮**: 支持自定义操作按钮和确认对话框
-- **📊 进度通知**: 内置进度条显示
-- **⏳ 加载状态**: 优雅的加载动画
-- **🎯 高级交互**: 点击回调、关闭回调、显示回调
-- **📦 批量管理**: 批量显示、分组管理
-- **⭐ 优先级系统**: 通知优先级排序
-- **📌 持久化选项**: 支持持久通知
-- **📱 响应式设计**: 适配各种屏幕尺寸
-- **♿ 无障碍支持**: 完整的键盘导航和屏幕阅读器支持
+- **🔧 全局配置管理**: 统一的配置系统，支持热更新、验证和持久化
+- **🏗️ 管理器注册表**: 智能的依赖管理和初始化顺序控制
+- **🎯 类型安全增强**: 完整的TypeScript类型支持，泛型和类型推断
+- **🌍 环境检测适配**: 智能检测运行环境，自动适配不同平台和设备
+- **🔄 生命周期钩子**: 完整的生命周期管理，支持异步钩子和优先级控制
+- **⚡ 懒加载机制**: 按需加载管理器，提升启动性能
+- **📊 性能监控**: 实时性能分析和优化建议
+- **🛡️ 安全防护**: 多层安全机制，XSS/CSRF防护
+- **📢 通知系统**: 丰富的通知类型和动画效果
+- **🚨 错误处理**: 完善的错误捕获、分析和恢复机制
 
-### 🎨 视觉体验
+### 🏗️ 架构优势
 
-- **GPU 加速动画**: 基于 Web Animations API 的流畅动画
-- **高度自适应**: 所有动画都包含平滑的高度变化
-- **即时响应**: 其他通知立即开始移动，无需等待前一个通知完全消失
-- **现代设计**: 毛玻璃效果、阴影和自适应颜色
-- **自然缓动**: 使用贝塞尔曲线提供自然的动画感觉
+- **模块化设计**: 每个管理器都是独立模块，可单独使用
+- **依赖管理**: 智能的依赖解析和初始化顺序
+- **类型安全**: 全面的TypeScript支持，提升开发体验
+- **性能优化**: 懒加载、缓存、环境适配等多重优化
+- **扩展性**: 插件系统、中间件、生命周期钩子支持无限扩展
 
 ### 🚀 快速体验
 
 ```typescript
-import { createNotificationManager, createNotificationHelpers } from '@ldesign/engine'
+import { createEngine } from '@ldesign/engine'
 
-// 创建通知管理器
-const notificationManager = createNotificationManager()
-const notifications = createNotificationHelpers(notificationManager)
-
-// 显示不同类型的通知
-notifications.success('操作成功！', '成功', {
-  position: 'top-right',
-  animation: 'bounce',
+// 创建引擎实例 - 就这么简单！
+const engine = createEngine({
+  appName: 'My Awesome App',
+  debug: true,
+  features: {
+    enableHotReload: true,
+    enableDevTools: true,
+    enablePerformanceMonitoring: true
+  }
 })
 
-notifications.error('操作失败', '错误', {
-  position: 'bottom-center',
-  animation: 'shake',
-  actions: [
-    { label: '重试', style: 'primary', action: () => retry() },
-    { label: '取消', style: 'secondary', action: () => cancel() },
-  ],
+// 环境检测
+const envInfo = engine.environment.detect()
+console.log('运行环境:', envInfo.environment) // 'development' | 'production' | 'test'
+console.log('平台:', envInfo.platform) // 'browser' | 'node' | 'electron'
+console.log('浏览器:', envInfo.browser.name) // 'chrome' | 'firefox' | 'safari'
+
+// 生命周期钩子
+engine.lifecycle.on('afterInit', (context) => {
+  console.log('引擎初始化完成！', context.timestamp)
 })
 
-// 进度通知
-const progress = notifications.progress('正在上传...', 0)
-// 更新进度...
-progress.complete('上传完成！')
+// 状态管理
+engine.state.set('user', { name: 'John', role: 'admin' })
+engine.state.watch('user', (newUser) => {
+  console.log('用户状态更新:', newUser)
+})
 
-// 确认对话框
-const confirmed = await notifications.confirm('确定要删除吗？')
+// 事件系统
+engine.events.on('user:login', (data) => {
+  engine.notifications.show({
+    type: 'success',
+    message: `欢迎回来，${data.name}！`
+  })
+})
 ```
 
-[🎮 查看完整演示](./docs/examples/notification-demo.html)
+[🎮 查看完整演示](./examples/README.md)
 
-## ✨ 为什么选择 LDesign Engine？
+## ✨ 特性亮点
 
-### 🎯 专注开发体验
+### 🚀 **高性能**
+- 优化的架构设计，支持懒加载和按需加载，让你的应用飞起来
+- 智能缓存策略，减少重复计算和网络请求
+- 性能监控和分析，实时优化建议
 
-- **TypeScript 优先** - 完整的类型支持和智能提示
-- **热重载支持** - 快速开发迭代
-- **丰富的调试工具** - 强大的开发者工具
-- **详细的错误信息** - 快速定位问题
+### 🔧 **模块化**
+- 松耦合的模块设计，想用哪个用哪个，自由搭配
+- 每个管理器都是独立模块，可以单独使用
+- 清晰的依赖关系，智能初始化顺序
 
-### 🔧 生产就绪
+### 🎯 **类型安全**
+- 完整的TypeScript支持，告别运行时错误的烦恼
+- 泛型支持，强类型推断，提升开发体验
+- 严格的类型约束，编译时发现问题
 
-- **性能优化** - 内置性能监控和优化
-- **安全防护** - 多层安全机制
-- **错误处理** - 完善的错误捕获和报告
-- **可扩展性** - 插件化架构支持无限扩展
+### 🔌 **插件系统**
+- 强大的插件架构，扩展功能就像搭积木一样简单
+- 依赖管理，生命周期控制，插件间通信
+- 丰富的插件生态，满足各种需求
 
-### 📈 企业级特性
+### 🌍 **环境适配**
+- 智能环境检测，自动适配不同运行环境
+- 浏览器、设备、特性检测，精准适配
+- 环境优化策略，提升用户体验
 
-- **状态持久化** - 支持多种存储方式
-- **多环境配置** - 灵活的配置管理
-- **监控和分析** - 实时性能和用户行为分析
-- **国际化支持** - 多语言和本地化
+### 🔄 **生命周期**
+- 完整的生命周期钩子系统，精确控制每个阶段
+- 异步钩子支持，优先级控制，错误处理
+- 灵活的扩展点，满足复杂业务需求
 
-### 🤝 社区驱动
+### 🛡️ **安全防护**
+- 内置安全防护机制，让黑客无从下手
+- XSS防护、CSRF防护、输入验证
+- 安全策略配置，多层防护体系
 
-- **开源免费** - MIT 许可证
-- **活跃社区** - 持续更新和维护
-- **丰富生态** - 大量插件和扩展
-- **专业支持** - 企业级技术支持
+### 📱 **响应式**
+- 支持多设备适配，从手机到大屏都完美
+- 响应式设计，自适应布局
+- 设备特性检测，优化用户体验
 
 ## 🚀 核心特性
 
@@ -127,7 +142,7 @@ const confirmed = await notifications.confirm('确定要删除吗？')
 ```typescript
 const myPlugin = {
   name: 'my-plugin',
-  install: engine => {
+  install: (engine) => {
     // 插件逻辑
   },
 }
@@ -155,7 +170,7 @@ const authMiddleware = {
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
 })
 
@@ -172,7 +187,7 @@ engine.events.emit('user:login', userData)
 engine.state.set('user.profile', userProfile)
 
 // 监听状态变化
-engine.state.subscribe('user.profile', newValue => {
+engine.state.subscribe('user.profile', (newValue) => {
   console.log('用户资料更新:', newValue)
 })
 ```
@@ -221,8 +236,8 @@ yarn add @ldesign/engine
 ### 基础使用
 
 ```typescript
-import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 创建引擎实例
@@ -247,21 +262,9 @@ app.mount('#app')
 ### 在组件中使用
 
 ```vue
-<template>
-  <div>
-    <h1>{{ appName }}</h1>
-    <p>用户: {{ user?.name || '未登录' }}</p>
-    <button @click="login">登录</button>
-
-    <!-- 使用内置指令 -->
-    <input v-debounce="handleInput" placeholder="防抖输入" />
-    <div v-loading="isLoading">加载中...</div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { useEngine } from '@ldesign/engine/vue'
+import { computed, ref } from 'vue'
 
 const engine = useEngine()
 
@@ -269,25 +272,43 @@ const appName = computed(() => engine.config.appName)
 const user = computed(() => engine.state.get('user.profile'))
 const isLoading = ref(false)
 
-const login = async () => {
+async function login() {
   try {
     isLoading.value = true
     const userData = await loginUser()
     engine.state.set('user.profile', userData)
     engine.events.emit('user:login', userData)
     engine.notifications.success('登录成功')
-  } catch (error) {
+  }
+  catch (error) {
     engine.notifications.error('登录失败')
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
 
-const handleInput = (value: string) => {
+function handleInput(value: string) {
   engine.logger.debug('输入内容:', value)
   engine.cache.set('user-input', value, 60000) // 缓存1分钟
 }
 </script>
+
+<template>
+  <div>
+    <h1>{{ appName }}</h1>
+    <p>用户: {{ user?.name || '未登录' }}</p>
+    <button @click="login">
+      登录
+    </button>
+
+    <!-- 使用内置指令 -->
+    <input v-debounce="handleInput" placeholder="防抖输入">
+    <div v-loading="isLoading">
+      加载中...
+    </div>
+  </div>
+</template>
 ```
 
 ## 📚 核心功能
@@ -322,7 +343,7 @@ engine.plugins.enable('my-plugin')
 
 ```typescript
 // 监听事件
-engine.events.on('user:login', user => {
+engine.events.on('user:login', (user) => {
   console.log('用户登录:', user)
 })
 
@@ -445,26 +466,36 @@ engine.cache.setStrategy('api-data', {
 ```vue
 <template>
   <!-- 防抖处理 -->
-  <input v-debounce:input="handleInput" placeholder="防抖输入" />
+  <input v-debounce:input="handleInput" placeholder="防抖输入">
 
   <!-- 节流处理 -->
-  <button v-throttle:click="handleClick">节流点击</button>
+  <button v-throttle:click="handleClick">
+    节流点击
+  </button>
 
   <!-- 点击外部 -->
-  <div v-click-outside="handleClickOutside">点击外部关闭</div>
+  <div v-click-outside="handleClickOutside">
+    点击外部关闭
+  </div>
 
   <!-- 自动聚焦 -->
-  <input v-focus="shouldFocus" placeholder="自动聚焦" />
+  <input v-focus="shouldFocus" placeholder="自动聚焦">
 
   <!-- 复制功能 -->
-  <button v-copy="textToCopy">复制文本</button>
+  <button v-copy="textToCopy">
+    复制文本
+  </button>
 
   <!-- 懒加载 -->
-  <img v-lazy="handleLazyLoad" data-src="image.jpg" />
+  <img v-lazy="handleLazyLoad" data-src="image.jpg">
 
   <!-- 权限控制 -->
-  <button v-permission="'admin'">管理员按钮</button>
-  <div v-permission.hide="'user'">用户隐藏内容</div>
+  <button v-permission="'admin'">
+    管理员按钮
+  </button>
+  <div v-permission.hide="'user'">
+    用户隐藏内容
+  </div>
 </template>
 ```
 
@@ -485,7 +516,7 @@ const networkErrors = engine.errors.getErrorsByType('NetworkError')
 engine.errors.clearErrors()
 
 // 设置错误处理器
-engine.errors.setErrorHandler(error => {
+engine.errors.setErrorHandler((error) => {
   console.error('全局错误处理:', error)
 
   // 发送错误报告

@@ -23,7 +23,7 @@ import { createHttpClient } from '@ldesign/http'
 
 const http = createHttpClient({
   baseURL: 'https://api.example.com',
-  timeout: 10000
+  timeout: 10000,
 })
 ```
 
@@ -87,7 +87,7 @@ request<T = any>(config: RequestConfig): Promise<ResponseData<T>>
 const response = await http.request({
   url: '/users',
   method: 'GET',
-  params: { page: 1 }
+  params: { page: 1 },
 })
 ```
 
@@ -119,7 +119,7 @@ post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<Response
 ```typescript
 const newUser = await http.post('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 ```
 

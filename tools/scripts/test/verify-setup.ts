@@ -20,7 +20,10 @@ class SetupVerifier {
     })
   }
 
-  private log(message: string, level: 'info' | 'success' | 'error' = 'info'): void {
+  private log(
+    message: string,
+    level: 'info' | 'success' | 'error' = 'info',
+  ): void {
     const prefix = level === 'success' ? '✅' : level === 'error' ? '❌' : 'ℹ️'
     console.log(`${prefix} ${message}`)
   }
@@ -138,7 +141,9 @@ class SetupVerifier {
       this.test(
         `根目录文档已移动: ${file}`,
         !existsSync(file),
-        `${file} ${existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'}`,
+        `${file} ${
+          existsSync(file) ? '仍在根目录（应该已移动）' : '已移动到docs'
+        }`,
       )
     })
   }
@@ -181,16 +186,16 @@ class SetupVerifier {
         this.test(
           `脚本路径: ${script}`,
           actualScript && actualScript.includes(expectedPath),
-          `${script} 路径 ${actualScript && actualScript.includes(expectedPath) ? '正确' : '需要更新'}`,
+          `${script} 路径 ${
+            actualScript && actualScript.includes(expectedPath)
+              ? '正确'
+              : '需要更新'
+          }`,
         )
       })
     }
     catch (error) {
-      this.test(
-        'package.json 解析',
-        false,
-        `无法解析 package.json: ${error}`,
-      )
+      this.test('package.json 解析', false, `无法解析 package.json: ${error}`)
     }
   }
 
@@ -238,7 +243,10 @@ class SetupVerifier {
       )
     })
 
-    this.log(`\n总计: ${passed}/${total} 项检查通过`, passed === total ? 'success' : 'error')
+    this.log(
+      `\n总计: ${passed}/${total} 项检查通过`,
+      passed === total ? 'success' : 'error',
+    )
 
     if (passed < total) {
       this.log('存在问题需要修复', 'error')

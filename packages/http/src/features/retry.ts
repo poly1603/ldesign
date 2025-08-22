@@ -120,7 +120,8 @@ export class RetryExecutor {
         state.errors.push(error)
 
         // 检查是否应该重试
-        const shouldRetry = this.config.shouldRetry?.(error, state.attempt) ?? true
+        const shouldRetry
+          = this.config.shouldRetry?.(error, state.attempt) ?? true
 
         if (state.attempt > this.config.maxRetries || !shouldRetry) {
           return {
@@ -162,7 +163,9 @@ export class RetryExecutor {
 /**
  * 创建重试执行器
  */
-export function createRetryExecutor(config?: Partial<RetryConfig>): RetryExecutor {
+export function createRetryExecutor(
+  config?: Partial<RetryConfig>,
+): RetryExecutor {
   return new RetryExecutor(config)
 }
 
@@ -170,12 +173,18 @@ export function createRetryExecutor(config?: Partial<RetryConfig>): RetryExecuto
  * 重试装饰器
  */
 export function retry(config?: Partial<RetryConfig>) {
-  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (
+    _target: any,
+    _propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) {
     const originalMethod = descriptor.value
     const executor = createRetryExecutor(config)
 
     descriptor.value = async function (...args: any[]) {
-      const result = await executor.execute(() => originalMethod.apply(this, args))
+      const result = await executor.execute(() =>
+        originalMethod.apply(this, args),
+      )
       if (result.success) {
         return result.data
       }

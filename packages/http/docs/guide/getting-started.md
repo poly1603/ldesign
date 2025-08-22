@@ -33,8 +33,8 @@ const http = createHttpClient({
   baseURL: 'https://api.example.com',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 ```
 
@@ -48,12 +48,12 @@ console.log(users.data)
 // POST 请求
 const newUser = await http.post('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 
 // PUT 请求
 const updatedUser = await http.put('/users/1', {
-  name: 'Jane Doe'
+  name: 'Jane Doe',
 })
 
 // DELETE 请求
@@ -82,7 +82,7 @@ const users: User[] = response.data
 
 const newUser = await http.post<User, CreateUserRequest>('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 })
 ```
 
@@ -98,12 +98,12 @@ const app = createApp({})
 
 // 创建 HTTP 客户端
 const httpClient = createHttpClient({
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 })
 
 // 安装插件
 app.use(HttpPlugin, {
-  client: httpClient
+  client: httpClient,
 })
 ```
 
@@ -119,12 +119,15 @@ interface User {
   email: string
 }
 
-const { data, loading, error, refresh } = useRequest<User[]>({
-  url: '/users',
-  method: 'GET'
-}, {
-  immediate: true
-})
+const { data, loading, error, refresh } = useRequest<User[]>(
+  {
+    url: '/users',
+    method: 'GET',
+  },
+  {
+    immediate: true,
+  }
+)
 </script>
 
 <template>
@@ -176,7 +179,7 @@ import { ref } from 'vue'
 
 const form = ref({
   name: '',
-  email: ''
+  email: '',
 })
 
 const { mutate, loading, error } = useMutation(
@@ -188,7 +191,7 @@ const { mutate, loading, error } = useMutation(
     },
     onError: (error) => {
       console.error('创建失败:', error)
-    }
+    },
   }
 )
 
@@ -223,7 +226,7 @@ const http = createHttpClient({
   // 默认请求头
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
   },
 
   // 缓存配置
@@ -236,14 +239,14 @@ const http = createHttpClient({
   retry: {
     retries: 3,
     retryDelay: 1000,
-    retryCondition: error => error.isNetworkError
+    retryCondition: error => error.isNetworkError,
   },
 
   // 并发控制
   concurrency: {
     maxConcurrent: 10,
-    maxQueueSize: 100
-  }
+    maxQueueSize: 100,
+  },
 })
 ```
 
@@ -254,11 +257,11 @@ const http = createHttpClient({
 const response = await http.get('/users', {
   timeout: 5000,
   headers: {
-    Authorization: 'Bearer token'
+    Authorization: 'Bearer token',
   },
   cache: {
-    enabled: false
-  }
+    enabled: false,
+  },
 })
 ```
 

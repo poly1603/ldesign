@@ -295,7 +295,7 @@ engine.directives.register('highlight', {
 
   updated(el, binding) {
     el.style.backgroundColor = binding.value || 'yellow'
-  }
+  },
 })
 
 // 使用指令
@@ -334,7 +334,7 @@ engine.directives.register('lifecycle-demo', {
   // 绑定元素的父组件卸载后调用
   unmounted(el, binding, vnode, prevVnode) {
     console.log('unmounted')
-  }
+  },
 })
 ```
 
@@ -366,7 +366,7 @@ engine.directives.register('lazy', {
     if (el._lazyObserver) {
       el._lazyObserver.disconnect()
     }
-  }
+  },
 })
 
 // 权限控制指令
@@ -387,7 +387,7 @@ engine.directives.register('permission', {
     const hasPermission = engine.auth.hasPermission(permission)
 
     el.style.display = hasPermission ? '' : 'none'
-  }
+  },
 })
 
 // 无限滚动指令
@@ -396,15 +396,18 @@ engine.directives.register('infinite-scroll', {
     const callback = binding.value
     const options = binding.modifiers
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          callback()
-        }
-      })
-    }, {
-      threshold: options.threshold || 0.1
-    })
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            callback()
+          }
+        })
+      },
+      {
+        threshold: options.threshold || 0.1,
+      }
+    )
 
     // 创建触发元素
     const trigger = document.createElement('div')
@@ -424,7 +427,7 @@ engine.directives.register('infinite-scroll', {
     if (el._infiniteScrollTrigger) {
       el._infiniteScrollTrigger.remove()
     }
-  }
+  },
 })
 ```
 
@@ -444,7 +447,7 @@ const engine = createEngine({
       loading: true,
       showAnimate: true,
       drag: true,
-      resize: true
+      resize: true,
     },
 
     // 自定义指令配置
@@ -453,24 +456,24 @@ const engine = createEngine({
       highlight: {
         mounted(el, binding) {
           el.style.backgroundColor = binding.value
-        }
-      }
+        },
+      },
     },
 
     // 指令默认配置
     defaults: {
       debounce: {
-        delay: 300
+        delay: 300,
       },
       throttle: {
-        delay: 100
+        delay: 100,
       },
       tooltip: {
         placement: 'top',
-        delay: 0
-      }
-    }
-  }
+        delay: 0,
+      },
+    },
+  },
 })
 ```
 
@@ -480,16 +483,26 @@ const engine = createEngine({
 
 ```typescript
 // 使用有意义的名称
-engine.directives.register('auto-focus', { /* ... */ })
-engine.directives.register('click-outside', { /* ... */ })
-engine.directives.register('scroll-spy', { /* ... */ })
+engine.directives.register('auto-focus', {
+  /* ... */
+})
+engine.directives.register('click-outside', {
+  /* ... */
+})
+engine.directives.register('scroll-spy', {
+  /* ... */
+})
 
 // 避免与内置指令冲突
 // ❌ 不好
-engine.directives.register('show', { /* ... */ })
+engine.directives.register('show', {
+  /* ... */
+})
 
 // ✅ 好
-engine.directives.register('custom-show', { /* ... */ })
+engine.directives.register('custom-show', {
+  /* ... */
+})
 ```
 
 ### 2. 性能优化
@@ -507,7 +520,7 @@ engine.directives.register('optimized-scroll', {
     if (el._scrollHandler) {
       el.removeEventListener('scroll', el._scrollHandler)
     }
-  }
+  },
 })
 
 // 避免内存泄漏
@@ -528,7 +541,7 @@ engine.directives.register('safe-directive', {
       el._cleanup.forEach(cleanup => cleanup())
       el._cleanup = null
     }
-  }
+  },
 })
 ```
 
@@ -555,7 +568,7 @@ engine.directives.register('safe-directive', {
 
   fallbackSetup(el, binding) {
     // 降级逻辑
-  }
+  },
 })
 ```
 
@@ -568,20 +581,20 @@ function createFormDirectives() {
     'form-validate': {
       mounted(el, binding) {
         // 表单验证逻辑
-      }
+      },
     },
 
     'form-submit': {
       mounted(el, binding) {
         // 表单提交逻辑
-      }
+      },
     },
 
     'form-reset': {
       mounted(el, binding) {
         // 表单重置逻辑
-      }
-    }
+      },
+    },
   }
 }
 
@@ -643,9 +656,9 @@ engine.directives.register('debug', {
   updated(el, binding, vnode, prevVnode) {
     console.log(`指令更新: ${binding.arg || 'debug'}`, {
       oldValue: prevVnode.props?.[binding.arg],
-      newValue: binding.value
+      newValue: binding.value,
     })
-  }
+  },
 })
 ```
 
@@ -661,7 +674,7 @@ engine.directives.register('event-bridge', {
       engine.events.emit(`directive:${eventName}`, {
         element: el,
         event,
-        value: binding.value
+        value: binding.value,
       })
     }
 
@@ -673,7 +686,7 @@ engine.directives.register('event-bridge', {
     if (el._eventHandler) {
       el.removeEventListener(binding.arg, el._eventHandler)
     }
-  }
+  },
 })
 ```
 
@@ -701,6 +714,6 @@ engine.directives.register('state-sync', {
     if (el._stateUnwatch) {
       el._stateUnwatch()
     }
-  }
+  },
 })
 ```

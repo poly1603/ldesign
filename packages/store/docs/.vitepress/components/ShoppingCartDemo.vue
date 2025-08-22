@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { Action, BaseStore, Getter, PersistentState, State } from '@ldesign/store'
+import {
+  Action,
+  BaseStore,
+  Getter,
+  PersistentState,
+  State,
+} from '@ldesign/store'
 import { computed, onUnmounted, ref } from 'vue'
 
 interface Product {
@@ -153,7 +159,10 @@ class ShoppingCartStore extends BaseStore {
 
   @Getter()
   get total() {
-    return Math.max(0, this.subtotal - this.discountAmount + this.shippingFee + this.tax)
+    return Math.max(
+      0,
+      this.subtotal - this.discountAmount + this.shippingFee + this.tax,
+    )
   }
 
   @Getter()
@@ -179,7 +188,13 @@ const products = ref<Product[]>([
 const availableCoupons: Record<string, Coupon> = {
   SAVE10: { code: 'SAVE10', type: 'percentage', value: 10, minAmount: 100 },
   SAVE50: { code: 'SAVE50', type: 'fixed', value: 50, minAmount: 200 },
-  VIP20: { code: 'VIP20', type: 'percentage', value: 20, minAmount: 500, maxDiscount: 200 },
+  VIP20: {
+    code: 'VIP20',
+    type: 'percentage',
+    value: 20,
+    minAmount: 500,
+    maxDiscount: 200,
+  },
 }
 
 const couponCode = ref('')
@@ -216,12 +231,24 @@ function checkout() {
   // 重置库存
   products.value.forEach((product) => {
     switch (product.id) {
-      case '1': product.stock = 5; break
-      case '2': product.stock = 10; break
-      case '3': product.stock = 15; break
-      case '4': product.stock = 8; break
-      case '5': product.stock = 12; break
-      case '6': product.stock = 20; break
+      case '1':
+        product.stock = 5
+        break
+      case '2':
+        product.stock = 10
+        break
+      case '3':
+        product.stock = 15
+        break
+      case '4':
+        product.stock = 8
+        break
+      case '5':
+        product.stock = 12
+        break
+      case '6':
+        product.stock = 20
+        break
     }
   })
 }
@@ -363,7 +390,10 @@ const highlightedCode = computed(() => {
   const code = codeExamples[activeTab.value]
   return code
     .replace(/(@\w+)/g, '<span class="decorator">$1</span>')
-    .replace(/(class|interface|import|export|from|const|let|var)/g, '<span class="keyword">$1</span>')
+    .replace(
+      /(class|interface|import|export|from|const|let|var)/g,
+      '<span class="keyword">$1</span>',
+    )
     .replace(/(string|number|boolean|void)/g, '<span class="type">$1</span>')
     .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
 })
@@ -438,11 +468,7 @@ onUnmounted(() => {
         </div>
 
         <div v-else class="cart-items">
-          <div
-            v-for="item in cartStore.items"
-            :key="item.id"
-            class="cart-item"
-          >
+          <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
             <div class="item-image">
               {{ item.emoji }}
             </div>
@@ -510,8 +536,9 @@ onUnmounted(() => {
           </div>
           <div v-if="cartStore.appliedCoupon" class="applied-coupon">
             <span class="coupon-info">
-              已使用优惠券: {{ cartStore.appliedCoupon.code }}
-              (-¥{{ cartStore.discountAmount.toFixed(2) }})
+              已使用优惠券: {{ cartStore.appliedCoupon.code }} (-¥{{
+                cartStore.discountAmount.toFixed(2)
+              }})
             </span>
           </div>
         </div>
@@ -528,7 +555,11 @@ onUnmounted(() => {
           </div>
           <div class="summary-row">
             <span>运费:</span>
-            <span>{{ cartStore.shippingFee === 0 ? '免费' : `¥${cartStore.shippingFee.toFixed(2)}` }}</span>
+            <span>{{
+              cartStore.shippingFee === 0
+                ? '免费'
+                : `¥${cartStore.shippingFee.toFixed(2)}`
+            }}</span>
           </div>
           <div class="summary-row">
             <span>税费:</span>
@@ -539,16 +570,17 @@ onUnmounted(() => {
             <span>¥{{ cartStore.total.toFixed(2) }}</span>
           </div>
           <div class="shipping-notice">
-            {{ cartStore.subtotal >= 99 ? '🎉 已享受免运费' : `还差 ¥${(99 - cartStore.subtotal).toFixed(2)} 即可免运费` }}
+            {{
+              cartStore.subtotal >= 99
+                ? '🎉 已享受免运费'
+                : `还差 ¥${(99 - cartStore.subtotal).toFixed(2)} 即可免运费`
+            }}
           </div>
         </div>
 
         <!-- 结算按钮 -->
         <div v-if="!cartStore.isEmpty" class="checkout-section">
-          <button
-            class="btn btn-primary btn-large"
-            @click="checkout"
-          >
+          <button class="btn btn-primary btn-large" @click="checkout">
             立即结算 (¥{{ cartStore.total.toFixed(2) }})
           </button>
         </div>

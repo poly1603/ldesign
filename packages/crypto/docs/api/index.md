@@ -207,7 +207,7 @@ const {
   // 直接访问
   encrypt,
   decrypt,
-  keyGenerator
+  keyGenerator,
 } = useCrypto()
 ```
 
@@ -246,7 +246,7 @@ const {
 
   // 操作
   clearError,
-  reset
+  reset,
 } = useHash()
 ```
 
@@ -268,7 +268,7 @@ const {
 
   // 操作
   clearError,
-  reset
+  reset,
 } = useSignature()
 ```
 
@@ -389,15 +389,12 @@ try {
   if (!decrypted.success) {
     console.error('解密失败:', decrypted.error)
   }
-}
-catch (error) {
+} catch (error) {
   if (error instanceof EncryptionError) {
     console.error('加密错误:', error.message)
-  }
-  else if (error instanceof DecryptionError) {
+  } else if (error instanceof DecryptionError) {
     console.error('解密错误:', error.message)
-  }
-  else {
+  } else {
     console.error('未知错误:', error.message)
   }
 }
@@ -414,16 +411,16 @@ import { setDefaultConfig } from '@ldesign/crypto'
 setDefaultConfig({
   aes: {
     keySize: 256,
-    mode: 'CBC'
+    mode: 'CBC',
   },
   rsa: {
     keySize: 2048,
-    keyFormat: 'pem'
+    keyFormat: 'pem',
   },
   hash: {
     algorithm: 'SHA256',
-    encoding: 'hex'
-  }
+    encoding: 'hex',
+  },
 })
 ```
 
@@ -438,8 +435,8 @@ app.use(CryptoPlugin, {
     defaultAESKeySize: 256,
     defaultRSAKeySize: 2048,
     defaultHashAlgorithm: 'SHA256',
-    defaultEncoding: 'hex'
-  }
+    defaultEncoding: 'hex',
+  },
 })
 ```
 

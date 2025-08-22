@@ -74,7 +74,7 @@ engine.cache.setStrategy('api-data', {
   evictionPolicy: 'lru', // 最近最少使用
 
   // 序列化方式
-  serializer: 'json'
+  serializer: 'json',
 })
 ```
 
@@ -162,7 +162,7 @@ console.log('缓存统计:', {
   命中率: stats.hitRate,
   未命中数: stats.misses,
   命中数: stats.hits,
-  内存使用: stats.memoryUsage
+  内存使用: stats.memoryUsage,
 })
 ```
 
@@ -191,7 +191,7 @@ const engine = createEngine({
       serializer: 'json', // 'json' | 'msgpack' | 'custom'
 
       // 压缩
-      compression: true
+      compression: true,
     },
 
     // 持久化配置
@@ -203,7 +203,7 @@ const engine = createEngine({
       storage: 'localStorage',
 
       // 持久化键前缀
-      keyPrefix: 'engine-cache:'
+      keyPrefix: 'engine-cache:',
     },
 
     // 性能配置
@@ -215,9 +215,9 @@ const engine = createEngine({
       cleanupInterval: 60000,
 
       // 批量操作大小
-      batchSize: 100
-    }
-  }
+      batchSize: 100,
+    },
+  },
 })
 ```
 
@@ -262,10 +262,7 @@ class UserService {
 class ConfigService {
   async setConfig(key: string, value: any) {
     // 同时写入缓存和持久化存储
-    await Promise.all([
-      engine.cache.set(`config:${key}`, value),
-      this.saveConfigToDB(key, value)
-    ])
+    await Promise.all([engine.cache.set(`config:${key}`, value), this.saveConfigToDB(key, value)])
   }
 
   async getConfig(key: string) {
@@ -332,7 +329,7 @@ const cacheKeys = {
   user: (id: string) => `user:${id}`,
   userProfile: (id: string) => `user:${id}:profile`,
   userPosts: (id: string, page: number) => `user:${id}:posts:${page}`,
-  apiResponse: (endpoint: string, params: string) => `api:${endpoint}:${params}`
+  apiResponse: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
 }
 
 // 使用键前缀进行分组
@@ -368,11 +365,7 @@ class CacheInvalidationService {
 ```typescript
 class CachePreloader {
   async preloadCriticalData() {
-    const tasks = [
-      this.preloadUserData(),
-      this.preloadConfigData(),
-      this.preloadStaticData()
-    ]
+    const tasks = [this.preloadUserData(), this.preloadConfigData(), this.preloadStaticData()]
 
     await Promise.all(tasks)
     engine.logger.info('关键数据预加载完成')
@@ -381,9 +374,7 @@ class CachePreloader {
   private async preloadUserData() {
     const activeUsers = await this.getActiveUsers()
 
-    const promises = activeUsers.map(user =>
-      engine.cache.set(`user:${user.id}`, user, 3600000)
-    )
+    const promises = activeUsers.map(user => engine.cache.set(`user:${user.id}`, user, 3600000))
 
     await Promise.all(promises)
   }
@@ -429,7 +420,7 @@ class CacheMonitor {
 const batchData = new Map([
   ['user:1', userData1],
   ['user:2', userData2],
-  ['user:3', userData3]
+  ['user:3', userData3],
 ])
 
 await engine.cache.setMany(batchData)
@@ -469,7 +460,7 @@ engine.cache.configure({
       // 清理最少使用的缓存
       engine.cache.evictLRU(0.1) // 清理10%
     }
-  }
+  },
 })
 ```
 
@@ -531,6 +522,6 @@ const cacheMiddleware = {
     else {
       context.response = response
     }
-  }
+  },
 }
 ```

@@ -26,19 +26,28 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./es/index.js",
-      "require": "./lib/index.js"
-    }
+      "types": "./types/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "es/index.js",
-  "types": "dist/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types/index.d.ts",
+  "browser": "dist/index.min.js",
   "files": [
+    "CHANGELOG.md",
+    "README.md",
+    "cjs",
     "dist",
-    "es",
-    "lib"
+    "esm",
+    "types"
   ],
+  "engines": {
+    "node": ">=16.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "scripts": {
     "build": "rollup -c",
     "build:watch": "rollup -c -w",
@@ -51,9 +60,12 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:performance": "node scripts/performance-test.js",
+    "benchmark": "node scripts/performance-benchmark.js",
+    "benchmark:regression": "node scripts/performance-regression.js",
+    "benchmark:baseline": "node scripts/performance-regression.js --create-baseline",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf dist es lib coverage .nyc_output",
+    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
     "size-check": "size-limit",
     "analyze": "rollup -c --bundleConfigAsCjs --environment ANALYZE",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
@@ -63,23 +75,44 @@
     "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
     "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
-    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js"
+    "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
+    "validate": "pnpm run type-check && pnpm run test:run && pnpm run build",
+    "validate:quick": "pnpm run type-check",
+    "commit": "git-cz",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "commit-msg": "commitlint --edit",
+    "commit:interactive": "node scripts/commit.js",
+    "validate:full": "node scripts/validate.js",
+    "validate:e2e": "node scripts/validate.js --e2e"
   },
   "peerDependencies": {
+    "@ldesign/device": "^1.0.0",
     "@ldesign/engine": "^1.0.0",
+    "@ldesign/template": "^1.0.0",
     "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
+    "@ldesign/device": {
+      "optional": false
+    },
     "@ldesign/engine": {
+      "optional": true
+    },
+    "@ldesign/template": {
       "optional": true
     },
     "vue": {
       "optional": true
     }
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ldesign/device": "workspace:*"
+  },
   "devDependencies": {
     "@ldesign/engine": "workspace:*",
+    "@ldesign/template": "workspace:*",
+    "@playwright/test": "^1.54.2",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
@@ -112,14 +145,18 @@
     },
     {
       "name": "ES Module",
-      "path": "es/index.js",
+      "path": "esm/index.js",
       "limit": "40 KB",
       "import": "{ createRouter }"
     },
     {
       "name": "CommonJS",
-      "path": "lib/index.js",
+      "path": "cjs/index.js",
       "limit": "40 KB"
     }
-  ]
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }
