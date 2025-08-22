@@ -549,7 +549,7 @@ importers:
         version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.9(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+        version: 2.1.9(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
       vue-tsc:
         specifier: ^1.8.27
         version: 1.8.27(typescript@5.9.2)
@@ -685,7 +685,7 @@ importers:
         version: 7.18.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
       '@vitest/coverage-v8':
         specifier: ^2.0.0
-        version: 2.1.9(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))
+        version: 2.1.9(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))
       '@vitest/ui':
         specifier: ^2.0.0
         version: 2.1.9(vitest@2.1.9)
@@ -724,7 +724,7 @@ importers:
         version: 1.6.4(@algolia/client-search@5.34.1)(@types/node@22.16.5)(@types/react@18.3.23)(async-validator@4.2.5)(axios@1.11.0)(fuse.js@7.1.0)(less@4.4.0)(lightningcss@1.30.1)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.90.0)(sass@1.89.2)(search-insights@2.17.3)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.2)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
+        version: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
 
   packages/crypto:
     dependencies:
@@ -1026,35 +1026,6 @@ importers:
         specifier: ^3.4.0
         version: 3.5.18(typescript@5.9.2)
 
-<<<<<<< HEAD
-  packages/engine/examples/comprehensive-demo:
-    dependencies:
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.18(typescript@5.9.2)
-      vue-router:
-        specifier: ^4.2.0
-        version: 4.5.1(vue@3.5.18(typescript@5.9.2))
-    devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))
-      '@vue/tsconfig':
-        specifier: ^0.5.0
-        version: 0.5.1
-      less:
-        specifier: ^4.2.0
-        version: 4.4.0
-      typescript:
-        specifier: ^5.3.0
-        version: 5.9.2
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
-      vue-tsc:
-        specifier: ^1.8.0
-        version: 1.8.27(typescript@5.9.2)
-
   packages/engine/examples/vue-complete-demo:
     dependencies:
       '@ldesign/engine':
@@ -1083,8 +1054,6 @@ importers:
         specifier: ^3.0.5
         version: 3.0.5(typescript@5.9.2)
 
-=======
->>>>>>> 294a802e16ea12fd4b3ade4f305b51d7272cfa9c
   packages/form:
     dependencies:
       vue:
@@ -1503,7 +1472,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
 
   packages/launcher/examples/react: {}
 
@@ -1514,36 +1483,87 @@ importers:
   packages/pdf:
     dependencies:
       pdfjs-dist:
-        specifier: ^4.0.0
+        specifier: ^4.0.379
         version: 4.10.38
-      vue:
-        specifier: ^3.0.0
-        version: 3.5.18(typescript@5.9.2)
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../builder
+      '@playwright/test':
+        specifier: ^1.40.0
+        version: 1.54.2
+      '@rollup/plugin-commonjs':
+        specifier: ^25.0.7
+        version: 25.0.8(rollup@4.46.1)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.3
+        version: 15.3.1(rollup@4.46.1)
+      '@rollup/plugin-typescript':
+        specifier: ^11.1.5
+        version: 11.1.6(rollup@4.46.1)(tslib@2.8.1)(typescript@5.9.2)
+      '@size-limit/preset-small-lib':
+        specifier: ^10.0.2
+        version: 10.0.3(size-limit@10.0.3)
       '@types/node':
-        specifier: ^20.0.0
+        specifier: ^20.9.0
         version: 20.19.9
       '@typescript-eslint/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: ^6.12.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
       '@typescript-eslint/parser':
-        specifier: ^6.0.0
+        specifier: ^6.12.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
+      '@vitest/coverage-v8':
+        specifier: ^0.34.6
+        version: 0.34.6(vitest@0.34.6(@vitest/ui@0.34.7)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(playwright@1.54.2)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+      '@vitest/ui':
+        specifier: ^0.34.6
+        version: 0.34.7(vitest@0.34.6)
+      '@vue/test-utils':
+        specifier: ^2.4.2
+        version: 2.4.6
       eslint:
-        specifier: ^8.0.0
+        specifier: ^8.54.0
         version: 8.57.1
-      jest:
-        specifier: ^29.0.0
-        version: 29.7.0(@types/node@20.19.9)(babel-plugin-macros@3.1.0)
+      jsdom:
+        specifier: ^22.1.0
+        version: 22.1.0(canvas@2.11.2(encoding@0.1.13))
+      playwright:
+        specifier: ^1.40.0
+        version: 1.54.2
       prettier:
-        specifier: ^3.0.0
+        specifier: ^3.1.0
         version: 3.6.2
       rimraf:
-        specifier: ^5.0.0
+        specifier: ^5.0.5
         version: 5.0.10
+      rollup:
+        specifier: ^4.5.0
+        version: 4.46.1
+      rollup-plugin-dts:
+        specifier: ^6.1.0
+        version: 6.2.1(rollup@4.46.1)(typescript@5.9.2)
+      size-limit:
+        specifier: ^10.0.2
+        version: 10.0.3
       typescript:
-        specifier: ^5.0.0
+        specifier: ^5.2.2
         version: 5.9.2
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vitepress:
+        specifier: ^1.0.0-rc.31
+        version: 1.6.4(@algolia/client-search@5.34.1)(@types/node@20.19.9)(@types/react@18.3.23)(async-validator@4.2.5)(axios@1.11.0)(fuse.js@7.1.0)(less@4.4.0)(lightningcss@1.30.1)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass-embedded@1.90.0)(sass@1.90.0)(search-insights@2.17.3)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.2)
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6(@vitest/ui@0.34.7)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(playwright@1.54.2)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vue:
+        specifier: ^3.3.8
+        version: 3.5.18(typescript@5.9.2)
+      vue-tsc:
+        specifier: ^1.8.22
+        version: 1.8.27(typescript@5.9.2)
 
   packages/pdf/examples/advanced-features:
     dependencies:
@@ -1601,7 +1621,7 @@ importers:
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
       '@vitest/coverage-v8':
         specifier: ^1.1.0
-        version: 1.6.1(vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
+        version: 1.6.1(vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
       '@vitest/ui':
         specifier: ^1.1.0
         version: 1.6.1(vitest@1.6.1)
@@ -1634,7 +1654,7 @@ importers:
         version: 0.7.0
       vitest:
         specifier: ^1.1.0
-        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+        version: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
       worker-loader:
         specifier: ^3.0.8
         version: 3.0.8(webpack@5.101.3)
@@ -1712,6 +1732,58 @@ importers:
       vite:
         specifier: ^5.0.0
         version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+
+  packages/pdf/examples/vue-demo:
+    dependencies:
+      '@ldesign/pdf':
+        specifier: workspace:*
+        version: link:../..
+      pdfjs-dist:
+        specifier: ^4.0.379
+        version: 4.10.38
+      vue:
+        specifier: ^3.3.8
+        version: 3.5.18(typescript@5.9.2)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.9.0
+        version: 20.19.9
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.12.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
+      '@typescript-eslint/parser':
+        specifier: ^6.12.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))
+      '@vue/eslint-config-prettier':
+        specifier: ^8.0.0
+        version: 8.0.0(@types/eslint@9.6.1)(eslint@8.57.1)(prettier@3.6.2)
+      '@vue/eslint-config-typescript':
+        specifier: ^12.0.0
+        version: 12.0.0(eslint-plugin-vue@9.33.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.2)
+      '@vue/tsconfig':
+        specifier: ^0.4.0
+        version: 0.4.0
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      eslint-plugin-vue:
+        specifier: ^9.18.1
+        version: 9.33.0(eslint@8.57.1)
+      prettier:
+        specifier: ^3.1.0
+        version: 3.6.2
+      typescript:
+        specifier: ^5.2.2
+        version: 5.9.2
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vue-tsc:
+        specifier: ^1.8.22
+        version: 1.8.27(typescript@5.9.2)
 
   packages/pdf/examples/vue-example:
     dependencies:
@@ -4900,17 +4972,34 @@ packages:
   '@sinonjs/fake-timers@8.1.0':
     resolution: {integrity: sha512-OAPJUAtgeINhh/TAlUID4QTs53Njm7xzddaVlEs/SXwgtiD1tW22zAB/W1wdqfrpmikgaWQ9Fw6Ws+hsiRm5Vg==}
 
+  '@size-limit/esbuild@10.0.3':
+    resolution: {integrity: sha512-5z7qhfKqR3zJJMsbgIiFiqZmBqBYboG67g6vzIovBI/CyOvKTWUrvhx17BHYWNwi+cZgkR+oJjhgJc5hO7rYxQ==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    peerDependencies:
+      size-limit: 10.0.3
+
   '@size-limit/esbuild@11.2.0':
     resolution: {integrity: sha512-vSg9H0WxGQPRzDnBzeDyD9XT0Zdq0L+AI3+77/JhxznbSCMJMMr8ndaWVQRhOsixl97N0oD4pRFw2+R1Lcvi6A==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
       size-limit: 11.2.0
 
+  '@size-limit/file@10.0.3':
+    resolution: {integrity: sha512-q+AlmVwSU7Adw3TwSwxr8ITZfVt16Lb1Uq7JTD0Ng2+ZnLDu9wY1cVE15yG4l2hN5pOQfdHZ1p9kb6unYmYT3w==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    peerDependencies:
+      size-limit: 10.0.3
+
   '@size-limit/file@11.2.0':
     resolution: {integrity: sha512-OZHE3putEkQ/fgzz3Tp/0hSmfVo3wyTpOJSRNm6AmcwX4Nm9YtTfbQQ/hZRwbBFR23S7x2Sd9EbqYzngKwbRoA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
       size-limit: 11.2.0
+
+  '@size-limit/preset-small-lib@10.0.3':
+    resolution: {integrity: sha512-NUu/DnTh0YuodfZJ/98doYrvhcDcLe1yX9MblChzWx//onvcUbq2HpzbP4cxXLjoZG5v5ms+7lnHKyLfPftklQ==}
+    peerDependencies:
+      size-limit: 10.0.3
 
   '@size-limit/preset-small-lib@11.2.0':
     resolution: {integrity: sha512-RFbbIVfv8/QDgTPyXzjo5NKO6CYyK5Uq5xtNLHLbw5RgSKrgo8WpiB/fNivZuNd/5Wk0s91PtaJ9ThNcnFuI3g==}
@@ -6092,6 +6181,12 @@ packages:
   '@vue/devtools-shared@7.7.7':
     resolution: {integrity: sha512-+udSj47aRl5aKb0memBvcUG9koarqnxNM5yjuREvqwK6T3ap4mn3Zqqc17QrBFTqSMjr3HK1cvStEZpMDpfdyw==}
 
+  '@vue/eslint-config-prettier@8.0.0':
+    resolution: {integrity: sha512-55dPqtC4PM/yBjhAr+yEw6+7KzzdkBuLmnhBrDfp4I48+wy+Giqqj9yUr5T2uD/BkBROjjmqnLZmXRdOx/VtQg==}
+    peerDependencies:
+      eslint: '>= 8.0.0'
+      prettier: '>= 3.0.0'
+
   '@vue/eslint-config-prettier@9.0.0':
     resolution: {integrity: sha512-z1ZIAAUS9pKzo/ANEfd2sO+v2IUalz7cM/cTLOZ7vRFOPk5/xuRKQteOu1DErFLAh/lYGXMVZ0IfYKlyInuDVg==}
     peerDependencies:
@@ -6152,6 +6247,9 @@ packages:
 
   '@vue/test-utils@2.4.6':
     resolution: {integrity: sha512-FMxEjOpYNYiFe0GkaHsnJPXFHxQ6m4t8vI/ElPGpMWxZKpmRvQ33OIrvRXemy6yha03RxhOlQuy+gZMC3CQSow==}
+
+  '@vue/tsconfig@0.4.0':
+    resolution: {integrity: sha512-CPuIReonid9+zOG/CGTT05FXrPYATEqoDGNrEaqS4hwcw5BUNM2FguC0mOwJD4Jr16UpRVl9N0pY3P+srIbqmg==}
 
   '@vue/tsconfig@0.5.1':
     resolution: {integrity: sha512-VcZK7MvpjuTPx2w6blwnwZAu5/LgBUtejFOi3pPGQFXQN5Ela03FUtd2Qtg4yWGGissVL0dr6Ro1LfOFh+PCuQ==}
@@ -7872,6 +7970,12 @@ packages:
     resolution: {integrity: sha512-wjBmJ8TAb67G2or/gBp/H62uCIkDCjpCmlGPSG41/7QagUjMgh+iegVB3gY8eNYhTAmecjKtclT4wGAjHz5yWA==}
     peerDependencies:
       eslint: ^9.5.0
+
+  eslint-config-prettier@8.10.2:
+    resolution: {integrity: sha512-/IGJ6+Dka158JnP5n5YFMOszjDWrXggGz1LaK/guZq9vZTmniaKlHcsscvkAhn9y4U+BU3JuUdYvtAMcv30y4A==}
+    hasBin: true
+    peerDependencies:
+      eslint: '>=7.0.0'
 
   eslint-config-prettier@9.1.2:
     resolution: {integrity: sha512-iI1f+D2ViGn+uvv5HuHVUamg8ll4tN+JRHGc6IJi4TP9Kl976C57fzPXgseXNs8v0iA8aSJpHsTWjDb9QJamGQ==}
@@ -11554,7 +11658,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qrcode@1.5.4:
@@ -12305,6 +12408,11 @@ packages:
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
+
+  size-limit@10.0.3:
+    resolution: {integrity: sha512-5k1k2Kykueq5K/PJQclKx2GS1prz4WNNvm+x5CQ2oWLHwmuFnb1z1g412O9aoOFqafXicJTZgZHXRyIe2GZQfA==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
 
   size-limit@11.2.0:
     resolution: {integrity: sha512-2kpQq2DD/pRpx3Tal/qRW1SYwcIeQ0iq8li5CJHQgOC+FtPn2BVmuDtzUCgNnpCrbgtfEHqh+iWzxK+Tq6C+RQ==}
@@ -16757,15 +16865,31 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 1.8.6
 
+  '@size-limit/esbuild@10.0.3(size-limit@10.0.3)':
+    dependencies:
+      esbuild: 0.25.8
+      nanoid: 5.1.5
+      size-limit: 10.0.3
+
   '@size-limit/esbuild@11.2.0(size-limit@11.2.0)':
     dependencies:
       esbuild: 0.25.8
       nanoid: 5.1.5
       size-limit: 11.2.0
 
+  '@size-limit/file@10.0.3(size-limit@10.0.3)':
+    dependencies:
+      size-limit: 10.0.3
+
   '@size-limit/file@11.2.0(size-limit@11.2.0)':
     dependencies:
       size-limit: 11.2.0
+
+  '@size-limit/preset-small-lib@10.0.3(size-limit@10.0.3)':
+    dependencies:
+      '@size-limit/esbuild': 10.0.3(size-limit@10.0.3)
+      '@size-limit/file': 10.0.3(size-limit@10.0.3)
+      size-limit: 10.0.3
 
   '@size-limit/preset-small-lib@11.2.0(size-limit@11.2.0)':
     dependencies:
@@ -18221,7 +18345,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))':
+  '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -18236,11 +18360,11 @@ snapshots:
       std-env: 3.9.0
       strip-literal: 2.1.1
       test-exclude: 6.0.0
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@2.1.9(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))':
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -18254,7 +18378,7 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
+      vitest: 2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -18484,7 +18608,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 2.1.9(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vitest: 2.1.9(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
     optional: true
 
   '@vitest/ui@2.1.9(vitest@2.1.9)':
@@ -18748,6 +18872,15 @@ snapshots:
     dependencies:
       rfdc: 1.4.1
 
+  '@vue/eslint-config-prettier@8.0.0(@types/eslint@9.6.1)(eslint@8.57.1)(prettier@3.6.2)':
+    dependencies:
+      eslint: 8.57.1
+      eslint-config-prettier: 8.10.2(eslint@8.57.1)
+      eslint-plugin-prettier: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@8.10.2(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2)
+      prettier: 3.6.2
+    transitivePeerDependencies:
+      - '@types/eslint'
+
   '@vue/eslint-config-prettier@9.0.0(@types/eslint@9.6.1)(eslint@8.57.1)(prettier@3.6.2)':
     dependencies:
       eslint: 8.57.1
@@ -18778,6 +18911,18 @@ snapshots:
       vue-eslint-parser: 9.4.3(eslint@8.57.1)
     optionalDependencies:
       typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vue/eslint-config-typescript@12.0.0(eslint-plugin-vue@9.33.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.2)':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.2)
+      eslint: 8.57.1
+      eslint-plugin-vue: 9.33.0(eslint@8.57.1)
+      vue-eslint-parser: 9.4.3(eslint@8.57.1)
+    optionalDependencies:
+      typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
 
@@ -18915,6 +19060,8 @@ snapshots:
     dependencies:
       js-beautify: 1.15.4
       vue-component-type-helpers: 2.2.12
+
+  '@vue/tsconfig@0.4.0': {}
 
   '@vue/tsconfig@0.5.1': {}
 
@@ -20858,6 +21005,10 @@ snapshots:
       '@eslint/compat': 1.3.1(eslint@9.32.0(jiti@2.5.1))
       eslint: 9.32.0(jiti@2.5.1)
 
+  eslint-config-prettier@8.10.2(eslint@8.57.1):
+    dependencies:
+      eslint: 8.57.1
+
   eslint-config-prettier@9.1.2(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
@@ -21193,6 +21344,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
       - typescript
+
+  eslint-plugin-prettier@5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@8.10.2(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2):
+    dependencies:
+      eslint: 8.57.1
+      prettier: 3.6.2
+      prettier-linter-helpers: 1.0.0
+      synckit: 0.11.11
+    optionalDependencies:
+      '@types/eslint': 9.6.1
+      eslint-config-prettier: 8.10.2(eslint@8.57.1)
 
   eslint-plugin-prettier@5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@9.1.2(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2):
     dependencies:
@@ -26735,6 +26896,15 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
+  size-limit@10.0.3:
+    dependencies:
+      bytes-iec: 3.1.1
+      chokidar: 3.6.0
+      globby: 14.1.0
+      lilconfig: 2.1.0
+      nanospinner: 1.2.2
+      picocolors: 1.1.1
+
   size-limit@11.2.0:
     dependencies:
       bytes-iec: 3.1.1
@@ -28439,6 +28609,43 @@ snapshots:
       - supports-color
       - terser
 
+  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1):
+    dependencies:
+      '@vitest/expect': 1.6.1
+      '@vitest/runner': 1.6.1
+      '@vitest/snapshot': 1.6.1
+      '@vitest/spy': 1.6.1
+      '@vitest/utils': 1.6.1
+      acorn-walk: 8.3.4
+      chai: 4.5.0
+      debug: 4.4.1
+      execa: 8.0.1
+      local-pkg: 0.5.1
+      magic-string: 0.30.17
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      std-env: 3.9.0
+      strip-literal: 2.1.1
+      tinybench: 2.9.0
+      tinypool: 0.8.4
+      vite: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      vite-node: 1.6.1(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 20.19.9
+      '@vitest/ui': 1.6.1(vitest@1.6.1)
+      happy-dom: 18.0.1
+      jsdom: 22.1.0(canvas@2.11.2(encoding@0.1.13))
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1):
     dependencies:
       '@vitest/expect': 1.6.1
@@ -28476,44 +28683,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1):
-    dependencies:
-      '@vitest/expect': 1.6.1
-      '@vitest/runner': 1.6.1
-      '@vitest/snapshot': 1.6.1
-      '@vitest/spy': 1.6.1
-      '@vitest/utils': 1.6.1
-      acorn-walk: 8.3.4
-      chai: 4.5.0
-      debug: 4.4.1
-      execa: 8.0.1
-      local-pkg: 0.5.1
-      magic-string: 0.30.17
-      pathe: 1.1.2
-      picocolors: 1.1.1
-      std-env: 3.9.0
-      strip-literal: 2.1.1
-      tinybench: 2.9.0
-      tinypool: 0.8.4
-      vite: 5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
-      vite-node: 1.6.1(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 20.19.9
-      '@vitest/ui': 1.6.1(vitest@1.6.1)
-      happy-dom: 18.0.1
-      jsdom: 24.1.3(canvas@2.11.2(encoding@0.1.13))
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  vitest@2.1.9(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1):
+  vitest@2.1.9(@types/node@20.19.9)(@vitest/ui@1.6.1)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@20.19.9)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.90.0)(stylus@0.64.0)(terser@5.43.1))
@@ -28539,7 +28709,7 @@ snapshots:
       '@types/node': 20.19.9
       '@vitest/ui': 1.6.1(vitest@2.1.9)
       happy-dom: 18.0.1
-      jsdom: 24.1.3(canvas@2.11.2(encoding@0.1.13))
+      jsdom: 22.1.0(canvas@2.11.2(encoding@0.1.13))
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -28551,7 +28721,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@24.1.3(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1):
+  vitest@2.1.9(@types/node@22.16.5)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@22.1.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.19(@types/node@22.16.5)(less@4.4.0)(lightningcss@1.30.1)(sass-embedded@1.90.0)(sass@1.89.2)(stylus@0.64.0)(terser@5.43.1))
@@ -28577,7 +28747,7 @@ snapshots:
       '@types/node': 22.16.5
       '@vitest/ui': 2.1.9(vitest@2.1.9)
       happy-dom: 18.0.1
-      jsdom: 24.1.3(canvas@2.11.2(encoding@0.1.13))
+      jsdom: 22.1.0(canvas@2.11.2(encoding@0.1.13))
     transitivePeerDependencies:
       - less
       - lightningcss
