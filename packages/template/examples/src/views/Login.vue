@@ -4,9 +4,7 @@ import LoginPanel from '@/components/LoginPanel.vue'
 </script>
 
 <template>
-  <TemplateRenderer category="login">
-    <template #login-panel>
-      <LoginPanel />
-    </template>
+  <TemplateRenderer title="永兴元智慧协同工作平台" category="login">
+    <LoginPanel />
   </TemplateRenderer>
 </template>

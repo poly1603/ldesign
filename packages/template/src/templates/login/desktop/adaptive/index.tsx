@@ -10,12 +10,12 @@ export default defineComponent({
   props: {
     ...props,
   },
-  setup(props) {
+  setup(props, { slots }) {
     const renderTNodeJSX = useTNodeJSX()
 
     const loginPanelNode = computed(() => renderTNodeJSX('loginPanel'))
 
-    console.log(renderTNodeJSX('loginPanel'))
+    console.log(props, slots)
     return {
       loginPanelNode,
     }
@@ -24,6 +24,9 @@ export default defineComponent({
     return (
       <div class="ldesign-login">
         <div class="ldesign-login__panel">
+          {
+            this.title
+          }
           {
             this.loginPanelNode
           }

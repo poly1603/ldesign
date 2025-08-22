@@ -18,7 +18,6 @@ import process from 'node:process'
 import { build, createServer, preview } from 'vite'
 import { ERROR_CODES } from '@/types'
 import { ConfigManager, ErrorHandler, PluginManager, ProjectDetector } from '../services'
-import { DEFAULT_CONFIG } from '@/constants'
 
 /**
  * Vite 前端项目启动器核心类
@@ -122,7 +121,7 @@ export class ViteLauncher implements IViteLauncher {
       const absolutePath = path.resolve(projectPath)
 
       // 检测项目类型
-      const detection = await this.projectDetector.detect(absolutePath)
+      const detection = await this.projectDetector.detectProjectType(absolutePath)
       if (detection.projectType === 'unknown') {
         this.log('检测到非 Vite 项目，将使用默认配置', 'warn')
       }
@@ -361,7 +360,7 @@ export class ViteLauncher implements IViteLauncher {
     projectPath: string,
     projectType: ProjectType,
     mode: RunMode,
-    options: DevOptions | BuildOptions | PreviewOptions = {},
+    options: any = {},
   ): Promise<InlineConfig> {
     // 获取预设配置
     const presetConfig = await this.configManager.loadPreset(projectType)
@@ -383,20 +382,18 @@ export class ViteLauncher implements IViteLauncher {
 
     // 根据模式调整配置
     if (mode === 'development') {
-      const devOptions = options as DevOptions
       baseConfig.server = {
-        port: devOptions.port || DEFAULT_CONFIG.DEV_PORT,
-        host: devOptions.host || 'localhost',
-        open: devOptions.open || false,
+        port: options.port || 5173,
+        host: options.host || 'localhost',
+        open: options.open || false,
         ...baseConfig.server,
       }
     }
     else if (mode === 'production') {
-      const buildOptions = options as BuildOptions
       baseConfig.build = {
-        outDir: buildOptions.outDir || DEFAULT_CONFIG.OUTPUT_DIR,
-        sourcemap: buildOptions.sourcemap || false,
-        minify: buildOptions.minify !== false,
+        outDir: options.outDir || 'dist',
+        sourcemap: options.sourcemap || false,
+        minify: options.minify !== false,
         ...baseConfig.build,
       }
     }
@@ -427,10 +424,7 @@ export class ViteLauncher implements IViteLauncher {
     await fs.writeFile(path.join(projectPath, 'index.html'), indexHtml)
 
     // 生成 Vite 配置文件
-    const viteConfig = this.configManager.generateConfigFile(projectType, {
-      typescript: projectType.includes('ts'),
-      plugins: requiredPlugins.map(p => p.name),
-    })
+    const viteConfig = await this.configManager.generateConfigFile(projectType)
     await fs.writeFile(path.join(projectPath, 'vite.config.ts'), viteConfig)
 
     // 创建 src 目录和基础文件
