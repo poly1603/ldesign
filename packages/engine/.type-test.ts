@@ -8,7 +8,7 @@ import type * as MainModule from '@ldesign/engine'
 import type * as VueModule from '@ldesign/engine/vue'
 
 // 类型测试
-type TestMainModule = keyof typeof MainModule
-type TestVueModule = keyof typeof VueModule
+type _TestMainModule = keyof typeof MainModule
+type _TestVueModule = keyof typeof VueModule
 
-export {}
+export { }

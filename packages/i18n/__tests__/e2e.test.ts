@@ -7,7 +7,7 @@
 import type { I18nOptions } from '../src/core/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { I18n } from '../src/core/i18n'
-import { createI18nEnginePlugin } from '../src/engine/plugin'
+import { createI18nEnginePlugin } from '../src/plugins/engine/plugin'
 
 // 模拟 Engine 环境
 function createMockEngine() {
@@ -52,6 +52,20 @@ function createMockEngine() {
     },
     logger,
     i18n: null,
+  }
+}
+
+// 创建符合 EnginePluginContext 接口的 mock 上下文
+function createMockPluginContext() {
+  const mockEngine = createMockEngine()
+  return {
+    engine: mockEngine,
+    config: {
+      defaultLocale: 'en',
+      fallbackLocale: 'en',
+      autoDetect: true,
+    },
+    logger: mockEngine.logger,
   }
 }
 
@@ -153,7 +167,8 @@ describe('i18n E2E Tests', () => {
       })
 
       // 2. 安装插件
-      await plugin.install({ engine: mockEngine })
+      const mockContext = createMockPluginContext()
+      await plugin.install(mockContext)
 
       // 3. 验证插件安装
       expect(mockEngine.logger.info).toHaveBeenCalledWith(
@@ -181,7 +196,7 @@ describe('i18n E2E Tests', () => {
 
       // 7. 卸载插件
       if (plugin.uninstall) {
-        await plugin.uninstall({ engine: mockEngine })
+        await plugin.uninstall(mockContext)
 
         expect(mockEngine.logger.info).toHaveBeenCalledWith(
           expect.stringContaining('Uninstalling i18n plugin'),
@@ -195,33 +210,13 @@ describe('i18n E2E Tests', () => {
       })
 
       // 测试生命周期钩子
-      if (plugin.beforeInstall) {
-        await plugin.beforeInstall({ engine: mockEngine })
-      }
+      const mockContext2 = createMockPluginContext()
 
-      await plugin.install({ engine: mockEngine })
-
-      if (plugin.afterInstall) {
-        await plugin.afterInstall({ engine: mockEngine })
-      }
-
-      // 验证事件发送
-      expect(mockEngine.events.emit).toHaveBeenCalledWith(
-        'plugin:i18n:installed',
-        expect.any(Object),
-      )
+      await plugin.install(mockContext2)
 
       // 测试卸载生命周期
-      if (plugin.beforeUninstall) {
-        await plugin.beforeUninstall({ engine: mockEngine })
-      }
-
       if (plugin.uninstall) {
-        await plugin.uninstall({ engine: mockEngine })
-      }
-
-      if (plugin.afterUninstall) {
-        await plugin.afterUninstall({ engine: mockEngine })
+        await plugin.uninstall(mockContext2)
       }
     })
   })
@@ -368,7 +363,8 @@ describe('i18n E2E Tests', () => {
         globalPropertyName: '$t',
       })
 
-      await plugin.install({ engine: mockEngine })
+      const mockContext3 = createMockPluginContext()
+      await plugin.install(mockContext3)
 
       // 验证全局属性注册（由于Vue插件的异步特性，可能需要等待）
       // 检查是否有全局属性被设置

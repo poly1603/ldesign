@@ -95,9 +95,6 @@ const translatedText = computed(() => {
   }
 
   try {
-    isLoading.value = true
-    error.value = null
-
     const translationParams = { ...props.params }
     if (props.count !== undefined) {
       translationParams.count = props.count
@@ -107,17 +104,10 @@ const translatedText = computed(() => {
       defaultValue: fallbackText.value,
     })
 
-    emit('translated', result, resolvedKey.value)
     return result
   }
-  catch (err) {
-    const translationError = err instanceof Error ? err : new Error(String(err))
-    error.value = translationError
-    emit('error', translationError, resolvedKey.value)
+  catch {
     return fallbackText.value
-  }
-  finally {
-    isLoading.value = false
   }
 })
 
@@ -173,9 +163,27 @@ watch(resolvedKey, () => {
   emit('loading', resolvedKey.value)
 }, { immediate: true })
 
+// 监听翻译结果变化，处理副作用
+watch(translatedText, (newValue) => {
+  try {
+    isLoading.value = true
+    error.value = null
+
+    emit('translated', newValue, resolvedKey.value)
+  }
+  catch (err) {
+    const translationError = err instanceof Error ? err : new Error(String(err))
+    error.value = translationError
+    emit('error', translationError, resolvedKey.value)
+  }
+  finally {
+    isLoading.value = false
+  }
+}, { immediate: true })
+
 onMounted(() => {
   if (props.debug) {
-    console.log(`[TranslationText] Mounted with key: ${resolvedKey.value}`)
+    console.warn(`[TranslationText] Mounted with key: ${resolvedKey.value}`)
   }
 })
 </script>

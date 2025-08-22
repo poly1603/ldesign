@@ -61,13 +61,6 @@ export type {
 export function registerI18nComponents(): void {
   // 组件会在导入时自动注册，这里只是确保所有组件都被导入
   // 实际的注册通过 @customElement 装饰器完成
-
-  console.log('[I18n Web Components] All components registered successfully')
-  console.log('[I18n Web Components] Available components:')
-  console.log('  - <i18n-text key="..."></i18n-text>')
-  console.log('  - <i18n-input placeholder-key="..."></i18n-input>')
-  console.log('  - <i18n-button text-key="..."></i18n-button>')
-  console.log('  - <i18n-language-switcher></i18n-language-switcher>')
 }
 
 /**
@@ -77,6 +70,10 @@ export function registerI18nComponents(): void {
  *
  * @param i18n - i18n实例
  * @param options - 初始化选项
+ * @param options.debug - 是否启用调试模式
+ * @param options.autoRetry - 是否自动重试
+ * @param options.retryInterval - 重试间隔
+ * @param options.maxRetries - 最大重试次数
  *
  * @example
  * ```typescript
@@ -101,7 +98,7 @@ export function initI18nComponents(
     (window as any).i18n = i18n
 
     // 暴露 getI18nConnector 函数到全局作用域，以便 WebComponent 可以访问
-    (window as any).getI18nConnector = getI18nConnector
+    ; (window as any).getI18nConnector = getI18nConnector
 
     // 发出i18n实例就绪事件
     const event = new CustomEvent('i18n-instance-ready', {
@@ -115,8 +112,8 @@ export function initI18nComponents(
   registerI18nComponents()
 
   if (options.debug) {
-    console.log('[I18n Web Components] Initialized successfully with i18n instance')
-    console.log('[I18n Web Components] getI18nConnector function exposed to global scope')
+    console.warn('[I18n Web Components] Initialized successfully with i18n instance')
+    console.warn('[I18n Web Components] getI18nConnector function exposed to global scope')
   }
 }
 

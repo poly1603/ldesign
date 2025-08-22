@@ -43,25 +43,20 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
     global,
     plugins: pluginManager,
     async install(app: App, options: Partial<VueI18nOptions> = {}) {
-      console.log('🔧 Vue plugin install started')
       const opts = { ...DEFAULT_PLUGIN_OPTIONS, ...options }
 
       // 确保 I18n 实例已初始化
       if (!global.isReady()) {
-        console.log('🔧 Initializing I18n instance')
         await global.init()
       }
 
       // 设置插件管理器上下文
-      console.log('🔧 Setting plugin manager context')
       pluginManager.setContext(app, global, opts)
 
       // 提供 I18n 实例给子组件
-      console.log('🔧 Providing I18n instance to components')
       app.provide(I18N_INJECTION_KEY, global)
 
       // 注入全局属性
-      console.log('🔧 Injecting global properties')
       if (opts.globalInjection) {
         // 确保 t 方法存在
         if (typeof global.t === 'function') {
@@ -84,9 +79,7 @@ export function createI18n(i18nInstance?: I18nInstance): VueI18nPlugin {
 
       // 注册增强的 v-t 指令系统
       // 主要的 v-t 指令（支持修饰符）
-      console.log('🔧 Creating modifiable v-t directive')
       const tDirective = createModifiableVTDirective(global)
-      console.log('🔧 Registering v-t directive')
       app.directive('t', tDirective)
 
       // 专用指令

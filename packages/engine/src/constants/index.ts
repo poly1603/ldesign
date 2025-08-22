@@ -1,288 +1,296 @@
 /**
- * 全局常量定义
+ * 引擎常量定义
+ * 包含系统中使用的各种常量值
  */
-
-/**
- * 引擎版本信息
- */
-export const ENGINE_VERSION = '0.1.0'
-
-/**
- * 引擎名称
- */
-export const ENGINE_NAME = '@ldesign/engine'
 
 /**
  * 默认配置常量
+ * 🎯 提供引擎的默认配置值
  */
 export const DEFAULT_CONFIG = {
-  // 日志配置
-  LOG_LEVEL: 'info' as const,
-  LOG_MAX_SIZE: 1000,
-
-  // 缓存配置
-  CACHE_MAX_SIZE: 1000,
-  CACHE_DEFAULT_TTL: 5 * 60 * 1000, // 5分钟
-
-  // 性能监控配置
-  PERFORMANCE_SAMPLE_RATE: 0.1,
-  PERFORMANCE_MAX_ENTRIES: 1000,
-
-  // 通知配置
-  NOTIFICATION_DEFAULT_DURATION: 3000,
-  NOTIFICATION_MAX_COUNT: 5,
-
-  // 插件配置
-  PLUGIN_LOAD_TIMEOUT: 10000,
-
-  // 中间件配置
-  MIDDLEWARE_TIMEOUT: 5000,
+  debug: false,
+  appName: 'Vue3 Engine App',
+  version: '1.0.0',
 } as const
 
 /**
  * 事件名称常量
+ * 📡 定义引擎系统中所有事件的标准名称
  */
 export const EVENTS = {
   // 引擎生命周期事件
-  ENGINE_INIT: 'engine:init',
-  ENGINE_MOUNT: 'engine:mount',
-  ENGINE_UNMOUNT: 'engine:unmount',
-  ENGINE_DESTROY: 'engine:destroy',
+  ENGINE_MOUNTED: 'engine:mounted',
+  ENGINE_UNMOUNTED: 'engine:unmounted',
   ENGINE_ERROR: 'engine:error',
+  ENGINE_READY: 'engine:ready',
+  ENGINE_DESTROYED: 'engine:destroyed',
 
-  // 插件事件
-  PLUGIN_REGISTER: 'plugin:register',
-  PLUGIN_UNREGISTER: 'plugin:unregister',
-  PLUGIN_ENABLE: 'plugin:enable',
-  PLUGIN_DISABLE: 'plugin:disable',
+  // 插件相关事件
+  PLUGIN_REGISTERED: 'plugin:registered',
+  PLUGIN_UNREGISTERED: 'plugin:unregistered',
+  PLUGIN_INSTALLED: 'plugin:installed',
+  PLUGIN_UNINSTALLED: 'plugin:uninstalled',
   PLUGIN_ERROR: 'plugin:error',
 
-  // 中间件事件
-  MIDDLEWARE_ADD: 'middleware:add',
-  MIDDLEWARE_REMOVE: 'middleware:remove',
-  MIDDLEWARE_EXECUTE: 'middleware:execute',
-  MIDDLEWARE_ERROR: 'middleware:error',
+  // 中间件相关事件
+  MIDDLEWARE_ADDED: 'middleware:added',
+  MIDDLEWARE_REMOVED: 'middleware:removed',
+  MIDDLEWARE_EXECUTED: 'middleware:executed',
 
   // 状态管理事件
-  STATE_CHANGE: 'state:change',
+  STATE_CHANGED: 'state:changed',
   STATE_RESET: 'state:reset',
-  STATE_ERROR: 'state:error',
 
-  // 缓存事件
-  CACHE_SET: 'cache:set',
-  CACHE_GET: 'cache:get',
-  CACHE_DELETE: 'cache:delete',
-  CACHE_CLEAR: 'cache:clear',
-  CACHE_EVICT: 'cache:evict',
+  // 错误处理事件
+  ERROR_CAPTURED: 'error:captured',
+  ERROR_HANDLED: 'error:handled',
 
-  // 通知事件
-  NOTIFICATION_SHOW: 'notification:show',
-  NOTIFICATION_HIDE: 'notification:hide',
-  NOTIFICATION_CLEAR: 'notification:clear',
+  // 通知相关事件
+  NOTIFICATION_SHOWN: 'notification:shown',
+  NOTIFICATION_HIDDEN: 'notification:hidden',
+  NOTIFICATION_CLICKED: 'notification:clicked',
 
-  // 性能事件
+  // 性能监控事件
   PERFORMANCE_MARK: 'performance:mark',
   PERFORMANCE_MEASURE: 'performance:measure',
-  PERFORMANCE_REPORT: 'performance:report',
+  PERFORMANCE_THRESHOLD_VIOLATION: 'performance:threshold:violation',
 
-  // 安全事件
+  // 缓存相关事件
+  CACHE_HIT: 'cache:hit',
+  CACHE_MISS: 'cache:miss',
+  CACHE_EVICTED: 'cache:evicted',
+
+  // 安全相关事件
   SECURITY_VIOLATION: 'security:violation',
-  SECURITY_SANITIZE: 'security:sanitize',
+  SECURITY_BLOCKED: 'security:blocked',
 
-  // 错误事件
-  ERROR_CAPTURE: 'error:capture',
-  ERROR_HANDLE: 'error:handle',
-  ERROR_REPORT: 'error:report',
-} as const
+  // 配置相关事件
+  CONFIG_CHANGED: 'config:changed',
+  CONFIG_SAVED: 'config:saved',
+  CONFIG_LOADED: 'config:loaded',
 
-/**
- * 错误代码常量
- */
-export const ERROR_CODES = {
-  // 通用错误
-  UNKNOWN_ERROR: 'E_UNKNOWN',
-  INVALID_ARGUMENT: 'E_INVALID_ARGUMENT',
-  NOT_FOUND: 'E_NOT_FOUND',
-  PERMISSION_DENIED: 'E_PERMISSION_DENIED',
-  TIMEOUT: 'E_TIMEOUT',
-
-  // 引擎错误
-  ENGINE_NOT_INITIALIZED: 'E_ENGINE_NOT_INITIALIZED',
-  ENGINE_ALREADY_MOUNTED: 'E_ENGINE_ALREADY_MOUNTED',
-  ENGINE_NOT_MOUNTED: 'E_ENGINE_NOT_MOUNTED',
-
-  // 插件错误
-  PLUGIN_NOT_FOUND: 'E_PLUGIN_NOT_FOUND',
-  PLUGIN_ALREADY_REGISTERED: 'E_PLUGIN_ALREADY_REGISTERED',
-  PLUGIN_DEPENDENCY_MISSING: 'E_PLUGIN_DEPENDENCY_MISSING',
-  PLUGIN_CIRCULAR_DEPENDENCY: 'E_PLUGIN_CIRCULAR_DEPENDENCY',
-  PLUGIN_LOAD_FAILED: 'E_PLUGIN_LOAD_FAILED',
-  PLUGIN_INVALID_FORMAT: 'E_PLUGIN_INVALID_FORMAT',
-
-  // 中间件错误
-  MIDDLEWARE_NOT_FOUND: 'E_MIDDLEWARE_NOT_FOUND',
-  MIDDLEWARE_EXECUTION_FAILED: 'E_MIDDLEWARE_EXECUTION_FAILED',
-
-  // 状态管理错误
-  STATE_INVALID_PATH: 'E_STATE_INVALID_PATH',
-  STATE_READONLY: 'E_STATE_READONLY',
-  STATE_TYPE_MISMATCH: 'E_STATE_TYPE_MISMATCH',
-
-  // 缓存错误
-  CACHE_FULL: 'E_CACHE_FULL',
-  CACHE_EXPIRED: 'E_CACHE_EXPIRED',
-  CACHE_INVALID_KEY: 'E_CACHE_INVALID_KEY',
-
-  // 安全错误
-  SECURITY_XSS_DETECTED: 'E_SECURITY_XSS',
-  SECURITY_INJECTION_DETECTED: 'E_SECURITY_INJECTION',
-  SECURITY_INVALID_INPUT: 'E_SECURITY_INVALID_INPUT',
-
-  // 网络错误
-  NETWORK_ERROR: 'E_NETWORK',
-  NETWORK_TIMEOUT: 'E_NETWORK_TIMEOUT',
-  NETWORK_OFFLINE: 'E_NETWORK_OFFLINE',
+  // 生命周期事件
+  LIFECYCLE_BEFORE_INIT: 'lifecycle:before:init',
+  LIFECYCLE_AFTER_INIT: 'lifecycle:after:init',
+  LIFECYCLE_BEFORE_START: 'lifecycle:before:start',
+  LIFECYCLE_AFTER_START: 'lifecycle:after:start',
+  LIFECYCLE_BEFORE_STOP: 'lifecycle:before:stop',
+  LIFECYCLE_AFTER_STOP: 'lifecycle:after:stop',
+  LIFECYCLE_BEFORE_DESTROY: 'lifecycle:before:destroy',
+  LIFECYCLE_AFTER_DESTROY: 'lifecycle:after:destroy',
 } as const
 
 /**
  * 日志级别常量
+ * 📝 定义日志系统的标准级别
  */
-export const LOG_LEVELS = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3,
-} as const
-
-/**
- * 缓存策略常量
- */
-export const CACHE_STRATEGIES = {
-  LRU: 'lru',
-  FIFO: 'fifo',
-  TTL: 'ttl',
-} as const
+export const LOG_LEVELS = ['debug', 'info', 'warn', 'error'] as const
 
 /**
  * 通知类型常量
+ * 🔔 定义通知系统的标准类型
  */
-export const NOTIFICATION_TYPES = {
-  SUCCESS: 'success',
-  INFO: 'info',
-  WARNING: 'warning',
-  ERROR: 'error',
+export const NOTIFICATION_TYPES = ['success', 'error', 'warning', 'info'] as const
+
+/**
+ * 通知位置常量
+ * 📍 定义通知显示的标准位置
+ */
+export const NOTIFICATION_POSITIONS = [
+  'top-left',
+  'top-center',
+  'top-right',
+  'bottom-left',
+  'bottom-center',
+  'bottom-right',
+] as const
+
+/**
+ * 通知动画常量
+ * ✨ 定义通知显示的标准动画效果
+ */
+export const NOTIFICATION_ANIMATIONS = [
+  'slide',
+  'fade',
+  'bounce',
+  'scale',
+  'flip',
+] as const
+
+/**
+ * 通知主题常量
+ * 🎨 定义通知显示的标准主题
+ */
+export const NOTIFICATION_THEMES = ['light', 'dark', 'auto'] as const
+
+/**
+ * 缓存策略常量
+ * 💾 定义缓存系统的标准策略
+ */
+export const CACHE_STRATEGIES = ['lru', 'lfu', 'fifo', 'ttl'] as const
+
+/**
+ * 环境类型常量
+ * 🌍 定义系统支持的标准环境
+ */
+export const ENVIRONMENTS = ['development', 'production', 'test'] as const
+
+/**
+ * 功能开关常量
+ * 🎛️ 定义引擎功能的标准开关名称
+ */
+export const FEATURE_FLAGS = {
+  ENABLE_HOT_RELOAD: 'enableHotReload',
+  ENABLE_DEV_TOOLS: 'enableDevTools',
+  ENABLE_PERFORMANCE_MONITORING: 'enablePerformanceMonitoring',
+  ENABLE_ERROR_REPORTING: 'enableErrorReporting',
+  ENABLE_SECURITY_PROTECTION: 'enableSecurityProtection',
+  ENABLE_CACHING: 'enableCaching',
+  ENABLE_NOTIFICATIONS: 'enableNotifications',
 } as const
 
 /**
- * 中间件优先级常量
+ * 性能阈值常量
+ * ⚡ 定义性能监控的标准阈值
  */
-export const MIDDLEWARE_PRIORITIES = {
-  HIGHEST: 1000,
-  HIGH: 750,
-  NORMAL: 500,
-  LOW: 250,
-  LOWEST: 0,
+export const PERFORMANCE_THRESHOLDS = {
+  RESPONSE_TIME: {
+    GOOD: 100, // 100ms
+    POOR: 1000, // 1s
+  },
+  FPS: {
+    GOOD: 60, // 60fps
+    POOR: 30, // 30fps
+  },
+  MEMORY: {
+    WARNING: 50, // 50MB
+    CRITICAL: 100, // 100MB
+  },
 } as const
 
 /**
- * 性能指标常量
+ * 安全配置常量
+ * 🔒 定义安全系统的标准配置
  */
-export const PERFORMANCE_METRICS = {
-  // 时间指标
-  FIRST_PAINT: 'first-paint',
-  FIRST_CONTENTFUL_PAINT: 'first-contentful-paint',
-  LARGEST_CONTENTFUL_PAINT: 'largest-contentful-paint',
-  FIRST_INPUT_DELAY: 'first-input-delay',
-  CUMULATIVE_LAYOUT_SHIFT: 'cumulative-layout-shift',
-
-  // 自定义指标
-  ENGINE_INIT_TIME: 'engine-init-time',
-  PLUGIN_LOAD_TIME: 'plugin-load-time',
-  COMPONENT_RENDER_TIME: 'component-render-time',
-  API_RESPONSE_TIME: 'api-response-time',
+export const SECURITY_CONFIG = {
+  XSS: {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'span', 'div', 'p'],
+    ALLOWED_ATTRIBUTES: {
+      a: ['href', 'title', 'target'],
+      img: ['src', 'alt', 'title'],
+    },
+  },
+  CSP: {
+    DIRECTIVES: {
+      'default-src': ['self'],
+      'script-src': ['self', 'unsafe-inline'],
+      'style-src': ['self', 'unsafe-inline'],
+      'img-src': ['self', 'data:', 'https:'],
+    },
+  },
 } as const
 
 /**
- * 环境常量
- */
-export const ENVIRONMENT = {
-  DEVELOPMENT: 'development',
-  PRODUCTION: 'production',
-  TEST: 'test',
-} as const
-
-/**
- * 浏览器特性检测常量
- */
-export const BROWSER_FEATURES = {
-  SUPPORTS_MODULES: 'supportsModules',
-  SUPPORTS_DYNAMIC_IMPORT: 'supportsDynamicImport',
-  SUPPORTS_WEB_WORKERS: 'supportsWebWorkers',
-  SUPPORTS_SERVICE_WORKER: 'supportsServiceWorker',
-  SUPPORTS_INTERSECTION_OBSERVER: 'supportsIntersectionObserver',
-  SUPPORTS_RESIZE_OBSERVER: 'supportsResizeObserver',
-  SUPPORTS_MUTATION_OBSERVER: 'supportsMutationObserver',
-} as const
-
-/**
- * 存储键名常量
+ * 存储键常量
+ * 🔑 定义本地存储使用的标准键名
  */
 export const STORAGE_KEYS = {
-  ENGINE_CONFIG: 'ldesign_engine_config',
-  USER_PREFERENCES: 'ldesign_user_preferences',
-  CACHE_DATA: 'ldesign_cache_data',
-  PERFORMANCE_DATA: 'ldesign_performance_data',
-  ERROR_LOGS: 'ldesign_error_logs',
+  ENGINE_CONFIG: 'engine-config',
+  ENGINE_LOGS: 'engine-logs',
+  ENGINE_CACHE: 'engine-cache',
+  ENGINE_STATE: 'engine-state',
+  ENGINE_NOTIFICATIONS: 'engine-notifications',
 } as const
 
 /**
- * 正则表达式常量
+ * 错误代码常量
+ * 🚨 定义系统错误的标准代码
  */
-export const REGEX_PATTERNS = {
-  EMAIL: /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/,
-  URL: /^https?:\/\/.+/,
-  PHONE: /^[\d\s\-+()]+$/,
-  ALPHANUMERIC: /^[a-z0-9]+$/i,
-  SLUG: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-  VERSION: /^\d+\.\d+\.\d+(?:-[a-z0-9]+)?$/i,
-  HEX_COLOR: /^#([A-F0-9]{6}|[A-F0-9]{3})$/i,
-  IPV4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})$/,
+export const ERROR_CODES = {
+  // 配置相关错误
+  CONFIG_INVALID: 'CONFIG_INVALID',
+  CONFIG_MISSING: 'CONFIG_MISSING',
+  CONFIG_VALIDATION_FAILED: 'CONFIG_VALIDATION_FAILED',
+
+  // 插件相关错误
+  PLUGIN_INSTALL_FAILED: 'PLUGIN_INSTALL_FAILED',
+  PLUGIN_DEPENDENCY_MISSING: 'PLUGIN_DEPENDENCY_MISSING',
+  PLUGIN_CONFLICT: 'PLUGIN_CONFLICT',
+
+  // 中间件相关错误
+  MIDDLEWARE_EXECUTION_FAILED: 'MIDDLEWARE_EXECUTION_FAILED',
+  MIDDLEWARE_NOT_FOUND: 'MIDDLEWARE_NOT_FOUND',
+
+  // 状态相关错误
+  STATE_INVALID: 'STATE_INVALID',
+  STATE_ACCESS_DENIED: 'STATE_ACCESS_DENIED',
+
+  // 缓存相关错误
+  CACHE_FULL: 'CACHE_FULL',
+  CACHE_INVALID_KEY: 'CACHE_INVALID_KEY',
+
+  // 安全相关错误
+  SECURITY_VIOLATION: 'SECURITY_VIOLATION',
+  SECURITY_BLOCKED: 'SECURITY_BLOCKED',
+
+  // 性能相关错误
+  PERFORMANCE_THRESHOLD_EXCEEDED: 'PERFORMANCE_THRESHOLD_EXCEEDED',
+  PERFORMANCE_MONITORING_FAILED: 'PERFORMANCE_MONITORING_FAILED',
 } as const
 
 /**
- * HTTP 状态码常量
+ * 版本常量
+ * 📦 定义引擎版本相关信息
  */
-export const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  NO_CONTENT: 204,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  METHOD_NOT_ALLOWED: 405,
-  CONFLICT: 409,
-  INTERNAL_SERVER_ERROR: 500,
-  BAD_GATEWAY: 502,
-  SERVICE_UNAVAILABLE: 503,
+export const VERSION = {
+  CURRENT: '0.1.0',
+  MIN_SUPPORTED: '0.1.0',
+  API_VERSION: '1.0.0',
 } as const
 
 /**
- * 键盘按键常量
+ * 时间常量
+ * ⏰ 定义系统中使用的标准时间值
  */
-export const KEYBOARD_KEYS = {
-  ENTER: 'Enter',
-  ESCAPE: 'Escape',
-  SPACE: ' ',
-  TAB: 'Tab',
-  ARROW_UP: 'ArrowUp',
-  ARROW_DOWN: 'ArrowDown',
-  ARROW_LEFT: 'ArrowLeft',
-  ARROW_RIGHT: 'ArrowRight',
-  BACKSPACE: 'Backspace',
-  DELETE: 'Delete',
-  HOME: 'Home',
-  END: 'End',
-  PAGE_UP: 'PageUp',
-  PAGE_DOWN: 'PageDown',
+export const TIME = {
+  SECOND: 1000,
+  MINUTE: 60 * 1000,
+  HOUR: 60 * 60 * 1000,
+  DAY: 24 * 60 * 60 * 1000,
+
+  // 默认间隔
+  DEFAULT_AUTO_SAVE_INTERVAL: 30000, // 30秒
+  DEFAULT_CACHE_CLEANUP_INTERVAL: 60000, // 1分钟
+  DEFAULT_PERFORMANCE_CHECK_INTERVAL: 5000, // 5秒
+  DEFAULT_HEALTH_CHECK_INTERVAL: 30000, // 30秒
+} as const
+
+/**
+ * 大小限制常量
+ * 📏 定义系统中各种大小限制
+ */
+export const LIMITS = {
+  // 缓存限制
+  MAX_CACHE_SIZE: 1000,
+  MAX_CACHE_ENTRY_SIZE: 1024 * 1024, // 1MB
+
+  // 日志限制
+  MAX_LOG_ENTRIES: 10000,
+  MAX_LOG_ENTRY_SIZE: 1024, // 1KB
+
+  // 通知限制
+  MAX_NOTIFICATIONS: 100,
+  MAX_NOTIFICATION_DURATION: 10000, // 10秒
+
+  // 插件限制
+  MAX_PLUGINS: 100,
+  MAX_PLUGIN_DEPENDENCIES: 50,
+
+  // 中间件限制
+  MAX_MIDDLEWARE: 100,
+  MAX_MIDDLEWARE_PRIORITY: 1000,
+
+  // 状态限制
+  MAX_STATE_KEYS: 10000,
+  MAX_STATE_VALUE_SIZE: 1024 * 1024, // 1MB
 } as const

@@ -83,7 +83,7 @@ export class VueI18nPluginManagerImpl implements VueI18nPluginManager {
         await plugin.afterInstall(context)
       }
 
-      console.log(`Vue I18n plugin "${plugin.name}" registered successfully`)
+      console.warn(`Vue I18n plugin "${plugin.name}" registered successfully`)
     }
     catch (error) {
       // 注册失败时清理
@@ -149,7 +149,7 @@ export class VueI18nPluginManagerImpl implements VueI18nPluginManager {
         this.loadOrder.splice(index, 1)
       }
 
-      console.log(`Vue I18n plugin "${name}" unregistered successfully`)
+      console.warn(`Vue I18n plugin "${name}" unregistered successfully`)
     }
     catch (error) {
       console.error(`Failed to unregister Vue I18n plugin "${name}"`, error)

@@ -35,8 +35,6 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
   }
 
   const finalConfig = { ...defaultConfig, ...config }
-  let isInstalled = false
-  let context: VueI18nPluginContext | null = null
 
   return {
     name: 'vue-i18n-debug',
@@ -45,9 +43,9 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
     author: 'LDesign Team',
     config: finalConfig,
 
-    async beforeInstall(ctx: VueI18nPluginContext) {
+    async beforeInstall(_ctx: VueI18nPluginContext) {
       if (finalConfig.enableConsoleLog) {
-        console.log('[Vue I18n Debug] Installing debug plugin...')
+        console.warn('[Vue I18n Debug] Installing debug plugin...')
       }
     },
 
@@ -60,6 +58,7 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
         ctx.app.config.globalProperties.$i18nDebug = {
           logTranslation: (key: string, result: string, params?: any) => {
             if (finalConfig.logLevel === 'debug') {
+              // eslint-disable-next-line no-console
               console.debug(`[I18n] ${key} -> ${result}`, params)
             }
           },
@@ -103,7 +102,7 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
       ctx.i18n.on('languageChanged', (...args: unknown[]) => {
         const newLocale = args[0] as string
         if (finalConfig.enableConsoleLog) {
-          console.log(`[I18n Debug] Language changed to: ${newLocale}`)
+          console.warn(`[I18n Debug] Language changed to: ${newLocale}`)
         }
       })
 
@@ -113,15 +112,15 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
       }
     },
 
-    async afterInstall(ctx: VueI18nPluginContext) {
+    async afterInstall(_ctx: VueI18nPluginContext) {
       if (finalConfig.enableConsoleLog) {
-        console.log('[Vue I18n Debug] Debug plugin installed successfully')
+        console.warn('[Vue I18n Debug] Debug plugin installed successfully')
       }
     },
 
-    async beforeUninstall(ctx: VueI18nPluginContext) {
+    async beforeUninstall(_ctx: VueI18nPluginContext) {
       if (finalConfig.enableConsoleLog) {
-        console.log('[Vue I18n Debug] Uninstalling debug plugin...')
+        console.warn('[Vue I18n Debug] Uninstalling debug plugin...')
       }
     },
 
@@ -138,9 +137,9 @@ export function createDebugPlugin(config: DebugPluginConfig = {}): VueI18nPlugin
       context = null
     },
 
-    async afterUninstall(ctx: VueI18nPluginContext) {
+    async afterUninstall(_ctx: VueI18nPluginContext) {
       if (finalConfig.enableConsoleLog) {
-        console.log('[Vue I18n Debug] Debug plugin uninstalled successfully')
+        console.warn('[Vue I18n Debug] Debug plugin uninstalled successfully')
       }
     },
   }
@@ -260,9 +259,9 @@ export const debugPlugin = createDebugPlugin()
  * 开发环境调试插件（仅在开发环境启用）
  */
 export const devDebugPlugin = createDebugPlugin({
-  enableConsoleLog: process.env.NODE_ENV === 'development',
-  enablePerformanceMonitor: process.env.NODE_ENV === 'development',
-  enableKeyValidation: process.env.NODE_ENV === 'development',
+  enableConsoleLog: globalThis.process?.env?.NODE_ENV === 'development',
+  enablePerformanceMonitor: globalThis.process?.env?.NODE_ENV === 'development',
+  enableKeyValidation: globalThis.process?.env?.NODE_ENV === 'development',
   showDebugPanel: false,
   logLevel: 'debug',
 })

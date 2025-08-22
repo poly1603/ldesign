@@ -346,7 +346,7 @@ export class I18nConnector {
    */
   private log(message: string, ...args: any[]): void {
     if (this.config.debug) {
-      console.log(`[I18nConnector] ${message}`, ...args)
+      console.warn(`[I18nConnector] ${message}`, ...args)
     }
   }
 

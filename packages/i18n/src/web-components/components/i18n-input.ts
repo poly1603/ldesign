@@ -313,7 +313,7 @@ export class I18nInput extends LitElement {
   /**
    * 处理焦点事件
    */
-  private handleFocus(event: FocusEvent): void {
+  private handleFocus(_event: FocusEvent): void {
     this.dispatchEvent(new CustomEvent('focus', {
       detail: { value: this.value },
       bubbles: true,
@@ -323,7 +323,7 @@ export class I18nInput extends LitElement {
   /**
    * 处理失焦事件
    */
-  private handleBlur(event: FocusEvent): void {
+  private handleBlur(_event: FocusEvent): void {
     this.dispatchEvent(new CustomEvent('blur', {
       detail: { value: this.value },
       bubbles: true,

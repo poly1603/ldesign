@@ -191,7 +191,8 @@ class XSSProtector {
 
   private filterTags(html: string, threats: string[]): string {
     // 匹配完整的标签，包括自闭合标签和开闭标签对
-    const tagRegex = /<\/?([a-z]\w*)[^>]*>/giu
+    // eslint-disable-next-line regexp/no-super-linear-backtracking, regexp/optimal-quantifier-concatenation
+    const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/giu
 
     return html.replace(tagRegex, (match, tagName) => {
       const tag = tagName.toLowerCase()
@@ -208,23 +209,28 @@ class XSSProtector {
   }
 
   private filterAttributes(html: string, threats: string[]): string {
-    const tagRegex = /<([a-z]\w*)([^>]*)>/giu
+    // eslint-disable-next-line regexp/no-super-linear-backtracking, regexp/optimal-quantifier-concatenation
+    const tagRegex = /<([a-z][a-z0-9]*)[^>]*>/giu
 
-    return html.replace(tagRegex, (match, tagName, attributes) => {
+    return html.replace(tagRegex, (match, tagName) => {
       const tag = tagName.toLowerCase()
       const allowedAttrs = this.allowedAttributes.get(tag) || new Set()
 
-      if (!attributes || !attributes.trim()) {
+      // 提取属性部分 - 从标签名后开始到 '>' 之前
+      const tagNameEndIndex = match.indexOf(tagName) + tagName.length
+      const attributesStr = match.substring(tagNameEndIndex, match.length - 1)
+
+      if (!attributesStr || !attributesStr.trim()) {
         return `<${tag}>`
       }
 
       const attrRegex = /\s+([a-z][a-z0-9-]*)\s*=\s*["']([^"']*)["']/giu
       let filteredAttributes = ''
-      let attrMatch
+      let attrExecMatch
 
       // eslint-disable-next-line no-cond-assign
-      while ((attrMatch = attrRegex.exec(attributes)) !== null) {
-        const [, attrName, attrValue] = attrMatch
+      while ((attrExecMatch = attrRegex.exec(attributesStr)) !== null) {
+        const [, attrName, attrValue] = attrExecMatch
         const attr = attrName.toLowerCase()
 
         if (allowedAttrs.has(attr)) {

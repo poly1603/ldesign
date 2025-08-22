@@ -38,35 +38,90 @@ import { createSecurityManager } from '../security/security-manager'
 import { createStateManager } from '../state/state-manager'
 import { ManagerRegistry } from './manager-registry'
 
+/**
+ * 引擎核心实现类
+ *
+ * 这个类是整个引擎系统的核心，负责：
+ * - 管理所有子管理器的生命周期
+ * - 提供统一的插件系统
+ * - 集成Vue应用
+ * - 协调各个模块之间的通信
+ *
+ * @example
+ * ```typescript
+ * const engine = createEngine({
+ *   debug: true,
+ *   performance: { enabled: true }
+ * })
+ *
+ * await engine.mount('#app')
+ * ```
+ */
 export class EngineImpl implements Engine {
+  /** Vue应用实例 */
   private _app?: App
+
+  /** 引擎是否已挂载 */
   private _mounted = false
+
+  /** 挂载目标元素 */
   private _mountTarget?: string | Element
 
+  /** 配置管理器 - 负责管理所有配置项 */
   readonly config: ConfigManager
+
+  /** 插件管理器 - 负责插件的加载、卸载和生命周期管理 */
   plugins!: PluginManager
+
+  /** 中间件管理器 - 提供请求/响应处理管道 */
   middleware!: MiddlewareManager
+
+  /** 事件管理器 - 负责事件的发布订阅机制 */
   events!: EventManager
+
+  /** 状态管理器 - 管理应用的全局状态 */
   state!: StateManager
+
+  /** 环境管理器 - 检测和管理运行环境信息 */
   readonly environment: EnvironmentManager
+
+  /** 生命周期管理器 - 管理组件和应用的生命周期钩子 */
   readonly lifecycle: LifecycleManager
+
+  /** 指令管理器 - 管理Vue自定义指令 */
   directives!: DirectiveManager
+
+  /** 错误管理器 - 统一的错误处理和报告 */
   errors!: ErrorManager
+
+  /** 日志记录器 - 提供分级日志记录功能 */
   readonly logger: Logger
+
+  /** 通知管理器 - 管理用户通知和提示 */
   notifications!: NotificationManager
 
-  // 懒加载的管理器
+  /** 缓存管理器实例 - 懒加载，提供多级缓存策略 */
   private _cache?: CacheManager
+
+  /** 性能管理器实例 - 懒加载，监控和优化应用性能 */
   private _performance?: PerformanceManager
+
+  /** 安全管理器实例 - 懒加载，提供安全防护机制 */
   private _security?: SecurityManager
 
-  // 管理器注册表
+  /** 管理器注册表 - 管理所有管理器的依赖关系和初始化顺序 */
   private readonly managerRegistry: ManagerRegistry
 
-  // 扩展接口
+  /** 路由适配器 - 可选的路由集成接口 */
   router?: RouterAdapter
+
+  /** 状态适配器 - 可选的状态管理集成接口 */
   store?: StateAdapter
+
+  /** 国际化适配器 - 可选的多语言支持接口 */
   i18n?: I18nAdapter
+
+  /** 主题适配器 - 可选的主题切换接口 */
   theme?: ThemeAdapter
 
   // 懒加载的管理器访问器
@@ -109,36 +164,49 @@ export class EngineImpl implements Engine {
     return this._security!
   }
 
+  /**
+   * 构造函数 - 按照依赖顺序初始化所有管理器
+   *
+   * 初始化顺序非常重要：
+   * 1. 配置管理器 - 其他组件需要读取配置
+   * 2. 日志器 - 所有组件都需要记录日志
+   * 3. 管理器注册表 - 管理组件依赖关系
+   * 4. 环境管理器 - 提供运行环境信息
+   * 5. 生命周期管理器 - 管理组件生命周期
+   * 6. 其他核心管理器 - 按依赖关系顺序初始化
+   *
+   * @param config 引擎配置对象
+   */
   constructor(config: EngineConfig = {}) {
-    // 1. 首先创建配置管理器
+    // 1. 首先创建配置管理器 - 所有其他组件都可能需要读取配置
     this.config = createConfigManager({
       debug: false,
       ...config,
     })
 
-    // 设置默认配置Schema
+    // 设置默认配置Schema，确保配置项的类型安全
     this.config.setSchema(defaultConfigSchema)
 
-    // 2. 基于配置创建日志器
+    // 2. 基于配置创建日志器 - 所有组件都需要记录日志
     this.logger = createLogger(this.config.get('debug', false) ? 'debug' : 'info')
 
-    // 3. 创建管理器注册表
+    // 3. 创建管理器注册表 - 管理所有管理器的依赖关系和初始化顺序
     this.managerRegistry = new ManagerRegistry(this.logger)
     this.registerManagers()
 
-    // 4. 初始化环境管理器（优先级高，其他管理器可能依赖环境信息）
+    // 4. 初始化环境管理器（优先级最高，其他管理器可能依赖环境信息）
     this.environment = createEnvironmentManager(this.logger)
 
-    // 5. 初始化生命周期管理器
+    // 5. 初始化生命周期管理器 - 管理整个应用的生命周期钩子
     this.lifecycle = createLifecycleManager(this.logger)
 
-    // 6. 按依赖顺序初始化核心管理器
+    // 6. 按依赖顺序初始化核心管理器 - 确保依赖关系正确
     this.initializeManagers()
 
-    // 设置错误处理
+    // 设置全局错误处理机制
     this.setupErrorHandling()
 
-    // 设置配置监听
+    // 设置配置变化监听器，实现响应式配置
     this.setupConfigWatchers()
 
     this.logger.info('Engine initialized', {
