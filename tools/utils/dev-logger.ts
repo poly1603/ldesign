@@ -3,7 +3,19 @@
  * 提供更好的错误提示和调试信息
  */
 
-import chalk from 'chalk'
+// 轻量ANSI颜色工具，避免对外部依赖的强绑定
+const chalk = {
+  gray: (s: string) => `\x1b[90m${s}\x1b[0m`,
+  blue: (s: string) => `\x1b[34m${s}\x1b[0m`,
+  cyan: (s: string) => `\x1b[36m${s}\x1b[0m`,
+  yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
+  red: (s: string) => `\x1b[31m${s}\x1b[0m`,
+  green: (s: string) => `\x1b[32m${s}\x1b[0m`,
+  magenta: (s: string) => `\x1b[35m${s}\x1b[0m`,
+  bold: {
+    white: (s: string) => `\x1b[1m\x1b[37m${s}\x1b[0m`,
+  },
+}
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success'
 
@@ -141,25 +153,44 @@ export class DevLogger {
     if (title) {
       this.info(title)
     }
-    console.table(data)
+    try {
+      // 仅当 console.table 可用时再调用
+      if (typeof (console as any).table === 'function') {
+        ; (console as any).table(data)
+      }
+      else {
+        console.log(JSON.stringify(data, null, 2))
+      }
+    }
+    catch {
+      console.log(JSON.stringify(data))
+    }
   }
 
   progress(current: number, total: number, message: string) {
-    const percentage = Math.round((current / total) * 100)
-    const progressBar
-      = '█'.repeat(Math.round(percentage / 5))
-        + '░'.repeat(20 - Math.round(percentage / 5))
-    const formatted = `${chalk.cyan(
-      '📊',
-    )} ${message} [${progressBar}] ${percentage}% (${current}/${total})`
+    const safeTotal = Math.max(1, total)
+    const clamped = Math.min(Math.max(current, 0), safeTotal)
+    const ratio = clamped / safeTotal
+    const percentage = Math.round(ratio * 100)
+    const filled = Math.round(percentage / 5)
+    const empty = Math.max(0, 20 - filled)
+    const progressBar = '█'.repeat(filled) + '░'.repeat(empty)
+    const formatted = `${chalk.cyan('📊')} ${message} [${progressBar}] ${percentage}% (${clamped}/${safeTotal})`
 
-    // 清除当前行并打印新的进度
-    process.stdout.clearLine(0)
-    process.stdout.cursorTo(0)
-    process.stdout.write(formatted)
-
-    if (current === total) {
-      process.stdout.write('\n')
+    const isTTY = Boolean(process.stdout && process.stdout.isTTY)
+    try {
+      if (isTTY && typeof (process.stdout as any).clearLine === 'function' && typeof (process.stdout as any).cursorTo === 'function') {
+        ; (process.stdout as any).clearLine(0)
+          ; (process.stdout as any).cursorTo(0)
+        process.stdout.write(formatted)
+        if (clamped === safeTotal) process.stdout.write('\n')
+      }
+      else {
+        console.log(formatted)
+      }
+    }
+    catch {
+      console.log(formatted)
     }
   }
 
@@ -167,25 +198,48 @@ export class DevLogger {
     const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
     let i = 0
 
+    const isTTY = Boolean(process.stdout && process.stdout.isTTY)
     const interval = setInterval(() => {
-      process.stdout.clearLine(0)
-      process.stdout.cursorTo(0)
-      process.stdout.write(`${chalk.cyan(frames[i])} ${message}`)
+      try {
+        if (isTTY && typeof (process.stdout as any).clearLine === 'function' && typeof (process.stdout as any).cursorTo === 'function') {
+          ; (process.stdout as any).clearLine(0)
+            ; (process.stdout as any).cursorTo(0)
+          process.stdout.write(`${chalk.cyan(frames[i])} ${message}`)
+        }
+        else if (i % 5 === 0) {
+          // 非 TTY 环境下降低刷屏频率
+          console.log(`${chalk.cyan(frames[i])} ${message}`)
+        }
+      }
+      catch {
+        // 回退到普通日志输出
+        if (i % 5 === 0) console.log(`${chalk.cyan(frames[i])} ${message}`)
+      }
       i = (i + 1) % frames.length
     }, 100)
 
     return promise
       .then((result) => {
         clearInterval(interval)
-        process.stdout.clearLine(0)
-        process.stdout.cursorTo(0)
+        try {
+          if (isTTY && typeof (process.stdout as any).clearLine === 'function' && typeof (process.stdout as any).cursorTo === 'function') {
+            ; (process.stdout as any).clearLine(0)
+              ; (process.stdout as any).cursorTo(0)
+          }
+        }
+        catch { }
         this.success(message)
         return result
       })
       .catch((error) => {
         clearInterval(interval)
-        process.stdout.clearLine(0)
-        process.stdout.cursorTo(0)
+        try {
+          if (isTTY && typeof (process.stdout as any).clearLine === 'function' && typeof (process.stdout as any).cursorTo === 'function') {
+            ; (process.stdout as any).clearLine(0)
+              ; (process.stdout as any).cursorTo(0)
+          }
+        }
+        catch { }
         this.error(`${message} 失败`, error)
         throw error
       })

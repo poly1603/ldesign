@@ -12,7 +12,7 @@ import type { Component, Ref, VNode } from 'vue'
 /**
  * 表单字段值类型
  */
-export type FormFieldValue = string | number | boolean | Date | null | undefined | FormFieldValue[] | Record<string, FormFieldValue>
+export type FormFieldValue = string | number | boolean | Date | null | undefined | Array<string | number | boolean | Date | null | undefined> | Record<string, string | number | boolean | Date | null | undefined>
 
 /**
  * 表单数据类型
@@ -66,16 +66,16 @@ export type ValidatorFunction = (value: FormFieldValue, allValues: FormData) => 
 /**
  * 内置验证规则类型
  */
-export type BuiltInValidatorType = 
-  | 'required' 
-  | 'email' 
-  | 'phone' 
-  | 'url' 
-  | 'number' 
-  | 'min' 
-  | 'max' 
-  | 'minLength' 
-  | 'maxLength' 
+export type BuiltInValidatorType =
+  | 'required'
+  | 'email'
+  | 'phone'
+  | 'url'
+  | 'number'
+  | 'min'
+  | 'max'
+  | 'minLength'
+  | 'maxLength'
   | 'pattern'
 
 /**

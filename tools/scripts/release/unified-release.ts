@@ -4,6 +4,7 @@ import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process from 'node:process'
+import { logger } from '../../utils/dev-logger'
 
 interface ReleaseOptions {
   type: 'patch' | 'minor' | 'major' | 'prerelease'
@@ -15,6 +16,20 @@ interface ReleaseOptions {
 
 class UnifiedRelease {
   private rootDir: string
+  private run(command: string, inherit: boolean = true): { stdout: string } {
+    try {
+      const stdout = execSync(command, { stdio: inherit ? 'inherit' : 'pipe', encoding: 'utf-8' })
+      return { stdout: stdout || '' }
+    }
+    catch (error: any) {
+      const msg = error?.message || '命令执行失败'
+      const stderr: string = error?.stderr?.toString?.() || ''
+      const stdout: string = error?.stdout?.toString?.() || ''
+      logger.error(`${command} 执行失败`, undefined, { prefix: 'RELEASE' })
+      if (!inherit) logger.warn([msg, stderr, stdout].filter(Boolean).join('\n'), { prefix: 'RELEASE' })
+      throw error
+    }
+  }
 
   constructor() {
     this.rootDir = resolve(process.cwd())
@@ -22,7 +37,8 @@ class UnifiedRelease {
 
   // 执行发布流程
   async release(options: ReleaseOptions) {
-    console.log(`🚀 开始 ${options.type} 版本发布...`)
+    logger.banner('LDesign Release')
+    logger.info(`开始 ${options.type} 版本发布...`, { prefix: 'RELEASE' })
 
     try {
       // 1. 预检查
@@ -57,21 +73,21 @@ class UnifiedRelease {
         await this.pushToRemote()
       }
 
-      console.log('✅ 发布完成!')
+      logger.success('发布完成!', { prefix: 'RELEASE' })
     }
     catch (error) {
-      console.error('❌ 发布失败:', error)
+      logger.error('发布失败', error as Error, { prefix: 'RELEASE' })
       throw error
     }
   }
 
   // 预发布检查
   private async preReleaseChecks() {
-    console.log('🔍 预发布检查...')
+    logger.info('预发布检查...', { prefix: 'RELEASE' })
 
     // 检查工作区是否干净
     try {
-      const status = execSync('git status --porcelain', { encoding: 'utf-8' })
+      const status = this.run('git status --porcelain', false).stdout
       if (status.trim()) {
         throw new Error('工作区不干净，请先提交或暂存更改')
       }
@@ -81,78 +97,74 @@ class UnifiedRelease {
     }
 
     // 检查当前分支
-    const branch = execSync('git branch --show-current', {
-      encoding: 'utf-8',
-    }).trim()
+    const branch = this.run('git branch --show-current', false).stdout.trim()
     if (branch !== 'main' && branch !== 'master') {
-      console.warn(`⚠️ 当前分支: ${branch}，建议在 main/master 分支发布`)
+      logger.warn(`当前分支: ${branch}，建议在 main/master 分支发布`, { prefix: 'RELEASE' })
     }
 
     // 检查远程同步
     try {
-      execSync('git fetch origin', { stdio: 'inherit' })
-      const behind = execSync(`git rev-list --count HEAD..origin/${branch}`, {
-        encoding: 'utf-8',
-      }).trim()
+      this.run('git fetch origin', true)
+      const behind = this.run(`git rev-list --count HEAD..origin/${branch}`, false).stdout.trim()
       if (Number.parseInt(behind) > 0) {
         throw new Error(`本地分支落后远程 ${behind} 个提交，请先拉取最新代码`)
       }
     }
     catch {
-      console.warn('⚠️ 无法检查远程同步状态')
+      logger.warn('无法检查远程同步状态', { prefix: 'RELEASE' })
     }
   }
 
   // 运行测试
   private async runTests() {
-    console.log('🧪 运行测试...')
-    execSync('pnpm test:run', { stdio: 'inherit' })
-    execSync('pnpm type-check', { stdio: 'inherit' })
-    execSync('pnpm lint:check', { stdio: 'inherit' })
+    logger.info('运行测试...', { prefix: 'RELEASE' })
+    this.run('pnpm test:run')
+    this.run('pnpm type-check')
+    this.run('pnpm lint:check')
   }
 
   // 构建包
   private async buildPackages() {
-    console.log('📦 构建包...')
-    execSync('pnpm clean', { stdio: 'inherit' })
-    execSync('pnpm build', { stdio: 'inherit' })
-    execSync('pnpm size-check', { stdio: 'inherit' })
+    logger.info('构建包...', { prefix: 'RELEASE' })
+    this.run('pnpm clean')
+    this.run('pnpm build')
+    this.run('pnpm size-check')
   }
 
   // 更新版本
   private async updateVersions(options: ReleaseOptions) {
-    console.log('📝 更新版本...')
+    logger.info('更新版本...', { prefix: 'RELEASE' })
 
     if (options.type === 'prerelease') {
       const prereleaseId = options.tag || 'beta'
-      execSync(`changeset pre enter ${prereleaseId}`, { stdio: 'inherit' })
+      this.run(`changeset pre enter ${prereleaseId}`)
     }
 
     // 创建 changeset
     if (options.dryRun) {
-      console.log('🔍 预览版本更新...')
-      execSync('changeset status', { stdio: 'inherit' })
+      logger.info('预览版本更新...', { prefix: 'RELEASE' })
+      this.run('changeset status')
     }
     else {
-      execSync('changeset version', { stdio: 'inherit' })
+      this.run('changeset version')
     }
   }
 
   // 生成变更日志
   private async generateChangelog() {
-    console.log('📋 生成变更日志...')
+    logger.info('生成变更日志...', { prefix: 'RELEASE' })
     // changeset 会自动生成 CHANGELOG.md
-    console.log('✅ 变更日志已更新')
+    logger.success('变更日志已更新', { prefix: 'RELEASE' })
   }
 
   // 提交和标签
   private async commitAndTag(options: ReleaseOptions) {
     if (options.dryRun) {
-      console.log('🔍 跳过 Git 提交 (dry-run)')
+      logger.info('跳过 Git 提交 (dry-run)', { prefix: 'RELEASE' })
       return
     }
 
-    console.log('📝 提交更改...')
+    logger.info('提交更改...', { prefix: 'RELEASE' })
 
     // 读取根 package.json 获取新版本
     const rootPackage = JSON.parse(
@@ -160,14 +172,14 @@ class UnifiedRelease {
     )
     const version = rootPackage.version
 
-    execSync('git add .', { stdio: 'inherit' })
-    execSync(`git commit -m "chore: release v${version}"`, { stdio: 'inherit' })
-    execSync(`git tag -a v${version} -m "v${version}"`, { stdio: 'inherit' })
+    this.run('git add .')
+    this.run(`git commit -m "chore: release v${version}"`)
+    this.run(`git tag -a v${version} -m "v${version}"`)
   }
 
   // 发布到 npm
   private async publishToNpm(options: ReleaseOptions) {
-    console.log('📤 发布到 npm...')
+    logger.info('发布到 npm...', { prefix: 'RELEASE' })
 
     const publishArgs = ['changeset', 'publish']
 
@@ -175,32 +187,32 @@ class UnifiedRelease {
       publishArgs.push('--tag', options.tag)
     }
 
-    execSync(publishArgs.join(' '), { stdio: 'inherit' })
+    this.run(publishArgs.join(' '))
   }
 
   // 推送到远程
   private async pushToRemote() {
-    console.log('⬆️ 推送到远程...')
-    execSync('git push origin --follow-tags', { stdio: 'inherit' })
+    logger.info('推送到远程...', { prefix: 'RELEASE' })
+    this.run('git push origin --follow-tags')
   }
 
   // 回滚发布
   async rollback(version: string) {
-    console.log(`🔄 回滚到版本 ${version}...`)
+    logger.info(`回滚到版本 ${version}...`, { prefix: 'RELEASE' })
 
     try {
       // 回滚 Git 标签
-      execSync(`git tag -d v${version}`, { stdio: 'inherit' })
-      execSync(`git push origin :refs/tags/v${version}`, { stdio: 'inherit' })
+      this.run(`git tag -d v${version}`)
+      this.run(`git push origin :refs/tags/v${version}`)
 
       // 回滚 Git 提交
-      execSync('git reset --hard HEAD~1', { stdio: 'inherit' })
-      execSync('git push origin --force-with-lease', { stdio: 'inherit' })
+      this.run('git reset --hard HEAD~1')
+      this.run('git push origin --force-with-lease')
 
-      console.log('✅ 回滚完成')
+      logger.success('回滚完成', { prefix: 'RELEASE' })
     }
     catch (error) {
-      console.error('❌ 回滚失败:', error)
+      logger.error('回滚失败', error as Error, { prefix: 'RELEASE' })
       throw error
     }
   }
