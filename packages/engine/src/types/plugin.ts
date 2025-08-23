@@ -20,7 +20,7 @@ export interface PluginMetadata {
 }
 
 // 插件上下文
-export interface PluginContext<TEngine = Engine> {
+export interface PluginContext<_TEngine = Engine> {
   readonly engine: TEngine
   readonly logger: any
   readonly config: any
@@ -49,7 +49,7 @@ export interface Plugin<TEngine = Engine> extends BasePlugin {
 export type PluginStatus = 'pending' | 'installing' | 'installed' | 'uninstalling' | 'error'
 
 // 插件信息
-export interface PluginInfo<_TEngine = Engine> {
+export interface PluginInfo<TEngine = Engine> {
   readonly plugin: Plugin<TEngine>
   readonly status: PluginStatus
   readonly installTime?: number
@@ -59,7 +59,7 @@ export interface PluginInfo<_TEngine = Engine> {
 }
 
 // 插件管理器接口
-export interface PluginManager<_TEngine = Engine> extends BaseManager {
+export interface PluginManager<TEngine = Engine> extends BaseManager {
   register: (plugin: Plugin<TEngine>) => Promise<void>
   unregister: (name: string) => Promise<void>
   get: (name: string) => Plugin<TEngine> | undefined
@@ -90,6 +90,7 @@ export interface PluginManager<_TEngine = Engine> extends BaseManager {
     pending: number
     errors: number
     averageInstallTime: number
+    timestamp: number
   }
 
   // 插件查询
@@ -99,7 +100,7 @@ export interface PluginManager<_TEngine = Engine> extends BaseManager {
 }
 
 // 插件加载器接口
-export interface PluginLoader<_TEngine = Engine> {
+export interface PluginLoader<TEngine = Engine> {
   load: (path: string) => Promise<Plugin<TEngine>>
   loadFromURL: (url: string) => Promise<Plugin<TEngine>>
   loadFromPackage: (packageName: string) => Promise<Plugin<TEngine>>
@@ -108,7 +109,7 @@ export interface PluginLoader<_TEngine = Engine> {
 }
 
 // 插件热重载接口
-export interface PluginHotReload<_TEngine = Engine> {
+export interface PluginHotReload<TEngine = Engine> {
   enable: () => void
   disable: () => void
   isEnabled: () => boolean
@@ -119,7 +120,7 @@ export interface PluginHotReload<_TEngine = Engine> {
 }
 
 // 插件市场接口
-export interface PluginMarketplace<_TEngine = Engine> {
+export interface PluginMarketplace<TEngine = Engine> {
   search: (query: string) => Promise<Plugin<TEngine>[]>
   getCategories: () => Promise<string[]>
   getPopular: () => Promise<Plugin<TEngine>[]>
@@ -131,7 +132,7 @@ export interface PluginMarketplace<_TEngine = Engine> {
 }
 
 // 插件验证器接口
-export interface PluginValidator<_TEngine = Engine> {
+export interface PluginValidator<TEngine = Engine> {
   validate: (plugin: Plugin<TEngine>) => { valid: boolean, errors: string[], warnings: string[] }
   validateDependencies: (plugin: Plugin<TEngine>, installed: Plugin<TEngine>[]) => { satisfied: boolean, missing: string[] }
   validateSecurity: (plugin: Plugin<TEngine>) => { safe: boolean, risks: string[] }
@@ -139,7 +140,7 @@ export interface PluginValidator<_TEngine = Engine> {
 }
 
 // 插件隔离器接口
-export interface PluginIsolator<_TEngine = Engine> {
+export interface PluginIsolator<TEngine = Engine> {
   isolate: (plugin: Plugin<TEngine>) => Promise<void>
   deisolate: (plugin: Plugin<TEngine>) => Promise<void>
   isIsolated: (plugin: Plugin<TEngine>) => boolean

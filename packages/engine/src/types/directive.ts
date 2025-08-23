@@ -3,8 +3,8 @@
  * 包含指令管理器、指令类型等相关类型
  */
 
-// 指令接口
-export interface Directive {
+// 引擎指令接口
+export interface EngineDirective {
   name: string
   description?: string
   version: string
@@ -43,16 +43,17 @@ export interface DirectiveLifecycle {
 
 // 指令管理器接口
 export interface DirectiveManager {
-  register: (directive: Directive) => void
+  register: (name: string, directive: EngineDirective) => void
+  registerBatch: (directives: Record<string, EngineDirective>) => void
   unregister: (name: string) => void
-  get: (name: string) => Directive | undefined
-  getAll: () => Directive[]
-  getByCategory: (category: string) => Directive[]
-  getByTag: (tag: string) => Directive[]
+  get: (name: string) => EngineDirective | undefined
+  getAll: () => EngineDirective[]
+  getByCategory: (category: string) => EngineDirective[]
+  getByTag: (tag: string) => EngineDirective[]
   enable: (name: string) => void
   disable: (name: string) => void
   reload: (name: string) => void
-  validate: (directive: Directive) => DirectiveValidationResult
+  validate: (directive: EngineDirective) => DirectiveValidationResult
 }
 
 // 指令验证结果
@@ -65,18 +66,18 @@ export interface DirectiveValidationResult {
 
 // 指令加载器接口
 export interface DirectiveLoader {
-  load: (path: string) => Promise<Directive>
-  loadFromUrl: (url: string) => Promise<Directive>
-  loadFromPackage: (packageName: string) => Promise<Directive>
+  load: (path: string) => Promise<EngineDirective>
+  loadFromUrl: (url: string) => Promise<EngineDirective>
+  loadFromPackage: (packageName: string) => Promise<EngineDirective>
   validate: (directive: unknown) => DirectiveValidationResult
-  getDependencies: (directive: Directive) => string[]
+  getDependencies: (directive: EngineDirective) => string[]
 }
 
 // 指令热重载接口
 export interface DirectiveHotReload {
-  enable: (directive: Directive) => void
-  disable: (directive: Directive) => void
-  reload: (directive: Directive) => void
+  enable: (directive: EngineDirective) => void
+  disable: (directive: EngineDirective) => void
+  reload: (directive: EngineDirective) => void
   watch: (path: string, callback: () => void) => void
   unwatch: (path: string) => void
   isWatching: (path: string) => boolean
@@ -84,12 +85,12 @@ export interface DirectiveHotReload {
 
 // 指令市场接口
 export interface DirectiveMarketplace {
-  search: (query: string) => Promise<Directive[]>
-  browse: (category?: string, tags?: string[]) => Promise<Directive[]>
-  getFeatured: () => Promise<Directive[]>
-  getPopular: () => Promise<Directive[]>
-  getRecent: () => Promise<Directive[]>
-  install: (directive: Directive) => Promise<void>
+  search: (query: string) => Promise<EngineDirective[]>
+  browse: (category?: string, tags?: string[]) => Promise<EngineDirective[]>
+  getFeatured: () => Promise<EngineDirective[]>
+  getPopular: () => Promise<EngineDirective[]>
+  getRecent: () => Promise<EngineDirective[]>
+  install: (directive: EngineDirective) => Promise<void>
   uninstall: (name: string) => Promise<void>
   update: (name: string) => Promise<void>
   rate: (name: string, rating: number, review?: string) => Promise<void>
@@ -97,20 +98,20 @@ export interface DirectiveMarketplace {
 
 // 指令验证器接口
 export interface DirectiveValidator {
-  validate: (directive: Directive) => DirectiveValidationResult
+  validate: (directive: EngineDirective) => DirectiveValidationResult
   validateSchema: (schema: unknown) => DirectiveValidationResult
-  validateDependencies: (directive: Directive) => DirectiveValidationResult
-  validateCompatibility: (directive: Directive, target: string) => DirectiveValidationResult
+  validateDependencies: (directive: EngineDirective) => DirectiveValidationResult
+  validateCompatibility: (directive: EngineDirective, target: string) => DirectiveValidationResult
   getSchema: () => unknown
   setSchema: (schema: unknown) => void
 }
 
 // 指令隔离器接口
 export interface DirectiveIsolator {
-  isolate: (directive: Directive) => void
+  isolate: (directive: EngineDirective) => void
   unisolate: (name: string) => void
   isIsolated: (name: string) => boolean
-  getIsolated: () => Directive[]
+  getIsolated: () => EngineDirective[]
   setSandbox: (enabled: boolean) => void
   getSandboxConfig: () => SandboxConfig
 }

@@ -5,8 +5,9 @@
     "rootDir": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "outDir": "dist"
   },
   "include": ["src/**/*", "__tests__/**/*", "tests/**/*", "test/**/*", "e2e/**/*"],
-  "exclude": ["examples/**/*", "node_modules", "dist", "lib", "es"]
+  "exclude": ["examples/**/*", "node_modules", "dist", "lib", "es", "types"]
 }

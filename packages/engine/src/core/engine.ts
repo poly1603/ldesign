@@ -128,14 +128,14 @@ export class EngineImpl implements Engine {
   get cache(): CacheManager {
     if (!this._cache) {
       const startTime = Date.now()
-      this._cache = createCacheManager(this.config.get('cache', {}))
+      this._cache = createCacheManager(this.config.get('cache', {}) as any)
       const initTime = Date.now() - startTime
       this.managerRegistry.markInitialized('cache')
       this.logger.debug('Cache manager initialized lazily', {
         initTime: `${initTime}ms`,
       })
     }
-    return this._cache
+    return this._cache!
   }
 
   get performance(): PerformanceManager {
@@ -195,10 +195,10 @@ export class EngineImpl implements Engine {
     this.registerManagers()
 
     // 4. 初始化环境管理器（优先级最高，其他管理器可能依赖环境信息）
-    this.environment = createEnvironmentManager(this.logger)
+    this.environment = createEnvironmentManager(this.logger) as any
 
     // 5. 初始化生命周期管理器 - 管理整个应用的生命周期钩子
-    this.lifecycle = createLifecycleManager(this.logger)
+    this.lifecycle = createLifecycleManager(this.logger) as any
 
     // 6. 按依赖顺序初始化核心管理器 - 确保依赖关系正确
     this.initializeManagers()
@@ -215,7 +215,7 @@ export class EngineImpl implements Engine {
     })
 
     // 执行初始化后的生命周期钩子
-    this.lifecycle.execute('afterInit', this).catch((error) => {
+    this.lifecycle.execute('afterInit').catch((error) => {
       this.logger.error('Error in afterInit lifecycle hooks', error)
     })
   }
@@ -242,13 +242,13 @@ export class EngineImpl implements Engine {
 
   private setupConfigWatchers(): void {
     // 监听调试模式变化
-    this.config.watch('debug', (newValue: boolean) => {
+    this.config.watch('debug', (newValue: unknown) => {
       this.logger.setLevel(newValue ? 'debug' : 'info')
       this.logger.info('Debug mode changed', { debug: newValue })
     })
 
     // 监听日志级别变化
-    this.config.watch('logger.level', (newValue: string) => {
+    this.config.watch('logger.level', (newValue: unknown) => {
       this.logger.setLevel(newValue as any)
       this.logger.info('Log level changed', { level: newValue })
     })
@@ -310,7 +310,7 @@ export class EngineImpl implements Engine {
     // 注册全局指令
     const directives = this.directives.getAll()
     Object.entries(directives).forEach(([name, directive]) => {
-      app.directive(name, directive)
+      app.directive(name, directive as any)
     })
 
     // 设置Vue错误处理
@@ -353,7 +353,7 @@ export class EngineImpl implements Engine {
     }
 
     // 执行挂载前的生命周期钩子
-    await this.lifecycle.execute('beforeMount', this, { selector })
+    await this.lifecycle.execute('beforeMount')
 
     this._mountTarget = selector
     this._app.mount(selector)
@@ -363,7 +363,7 @@ export class EngineImpl implements Engine {
     this.events.emit('engine:mounted', { target: selector })
 
     // 执行挂载后的生命周期钩子
-    await this.lifecycle.execute('afterMount', this, { selector })
+    await this.lifecycle.execute('afterMount')
   }
 
   async unmount(): Promise<void> {
@@ -373,7 +373,7 @@ export class EngineImpl implements Engine {
     }
 
     // 执行卸载前的生命周期钩子
-    await this.lifecycle.execute('beforeUnmount', this)
+    await this.lifecycle.execute('beforeUnmount')
 
     this._app.unmount()
     this._mounted = false
@@ -382,7 +382,7 @@ export class EngineImpl implements Engine {
     this.events.emit('engine:unmounted')
 
     // 执行卸载后的生命周期钩子
-    await this.lifecycle.execute('afterUnmount', this)
+    await this.lifecycle.execute('afterUnmount')
   }
 
   // 扩展方法
@@ -436,7 +436,7 @@ export class EngineImpl implements Engine {
   // 销毁引擎
   async destroy(): Promise<void> {
     // 执行销毁前的生命周期钩子
-    await this.lifecycle.execute('beforeDestroy', this)
+    await this.lifecycle.execute('beforeDestroy')
 
     if (this._mounted) {
       await this.unmount()
@@ -463,7 +463,7 @@ export class EngineImpl implements Engine {
     this.logger.info('Engine destroyed')
 
     // 执行销毁后的生命周期钩子
-    await this.lifecycle.execute('afterDestroy', this)
+    await this.lifecycle.execute('afterDestroy')
   }
 
   // 配置相关方法
@@ -473,7 +473,7 @@ export class EngineImpl implements Engine {
   }
 
   getConfig<T = any>(path: string, defaultValue?: T): T {
-    return this.config.get(path, defaultValue)
+    return this.config.get(path, defaultValue) as T
   }
 
   setConfig(path: string, value: any): void {

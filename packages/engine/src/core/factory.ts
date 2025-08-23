@@ -51,7 +51,7 @@ export function createEngine(options: CreateEngineOptions = {}): Engine {
 
   // 设置自定义配置Schema
   if (configSchema) {
-    engine.config.setSchema(configSchema)
+    engine.config.setSchema(configSchema as any)
   }
 
   // 启用配置自动保存

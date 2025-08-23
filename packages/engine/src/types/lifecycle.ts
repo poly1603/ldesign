@@ -11,6 +11,18 @@ export type LifecyclePhase =
   | 'running'
   | 'shutdown'
   | 'cleanup'
+  | 'beforeInit'
+  | 'init'
+  | 'afterInit'
+  | 'beforeMount'
+  | 'mount'
+  | 'afterMount'
+  | 'beforeUnmount'
+  | 'unmount'
+  | 'afterUnmount'
+  | 'beforeDestroy'
+  | 'destroy'
+  | 'afterDestroy'
   | 'error'
 
 // 生命周期状态
@@ -58,6 +70,13 @@ export interface LifecycleManager {
   getCurrentPhase: () => LifecyclePhase
   getEvents: () => LifecycleEvent[]
   reset: () => void
+}
+
+// 验证结果类型
+export interface ValidationResult {
+  valid: boolean
+  errors: string[]
+  warnings: string[]
 }
 
 // 生命周期管道接口

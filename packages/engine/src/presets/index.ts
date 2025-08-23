@@ -96,6 +96,8 @@ export function development(): CreateEngineOptions {
         defaultPosition: 'top-right',
         defaultTheme: 'auto',
       },
+      env: {},
+      custom: {},
     },
     enableAutoSave: true,
     autoSaveInterval: 10000, // 10秒
@@ -198,6 +200,8 @@ export function production(): CreateEngineOptions {
         defaultPosition: 'top-center',
         defaultTheme: 'auto',
       },
+      env: {},
+      custom: {},
     },
     enableAutoSave: true,
     autoSaveInterval: 60000, // 1分钟
@@ -293,6 +297,8 @@ export function test(): CreateEngineOptions {
         defaultPosition: 'top-right',
         defaultTheme: 'auto',
       },
+      env: {},
+      custom: {},
     },
     enableAutoSave: false,
     autoSaveInterval: 0,
@@ -385,6 +391,8 @@ export function minimal(): CreateEngineOptions {
         defaultPosition: 'top-right',
         defaultTheme: 'auto',
       },
+      env: {},
+      custom: {},
     },
     enableAutoSave: false,
     autoSaveInterval: 0,
@@ -483,6 +491,8 @@ export function mobile(): CreateEngineOptions {
         defaultPosition: 'top-center',
         defaultTheme: 'auto',
       },
+      env: {},
+      custom: {},
     },
     enableAutoSave: true,
     autoSaveInterval: 120000, // 2分钟
@@ -586,6 +596,8 @@ export function enterprise(): CreateEngineOptions {
         defaultPosition: 'top-right',
         defaultTheme: 'auto',
       },
+      env: {},
+      custom: {},
     },
     enableAutoSave: true,
     autoSaveInterval: 300000, // 5分钟

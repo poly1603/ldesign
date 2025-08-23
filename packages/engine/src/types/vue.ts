@@ -3,7 +3,9 @@
  * 包含Vue插件、组件等相关类型
  */
 
-import type { App, Component, Directive, Plugin } from 'vue'
+import type { App, Component, Directive } from 'vue'
+import type { EnhancedEngineConfig } from './config'
+import type { Engine } from './engine'
 
 // Vue应用接口
 export interface VueApp extends App {
@@ -12,7 +14,7 @@ export interface VueApp extends App {
 }
 
 // Vue插件接口
-export interface VuePlugin extends Plugin {
+export interface VuePlugin {
   name: string
   version: string
   install: (app: App, options?: VuePluginOptions) => void | Promise<void>
@@ -31,22 +33,35 @@ export interface VuePluginOptions {
 }
 
 // Vue组件接口
-export interface VueComponent extends Component {
+export interface VueComponent {
   name?: string
   engine?: Engine
   $engine?: Engine
-  engineConfig?: EngineConfig
+  engineConfig?: EnhancedEngineConfig
   engineMethods?: Record<string, (...args: unknown[]) => unknown>
   engineComputed?: Record<string, (...args: unknown[]) => unknown>
   engineWatch?: Record<string, (...args: unknown[]) => unknown>
+  // 包含Vue组件的基本属性
+  setup?: (...args: any[]) => any
+  render?: (...args: any[]) => any
+  template?: string
+  props?: any
+  emits?: any
 }
 
 // Vue指令接口
-export interface VueDirective extends Directive {
+export interface VueDirective {
   name: string
   engine?: Engine
   engineConfig?: Record<string, unknown>
   engineMethods?: Record<string, (...args: unknown[]) => unknown>
+  // 包含Vue指令的基本属性
+  beforeMount?: (...args: any[]) => any
+  mounted?: (...args: any[]) => any
+  beforeUpdate?: (...args: any[]) => any
+  updated?: (...args: any[]) => any
+  beforeUnmount?: (...args: any[]) => any
+  unmounted?: (...args: any[]) => any
 }
 
 // Vue混入接口
@@ -146,7 +161,7 @@ export interface VueAppConfig {
   name?: string
   version?: string
   engine?: Engine
-  engineConfig?: EngineConfig
+  engineConfig?: EnhancedEngineConfig
   plugins?: VuePlugin[]
   components?: Record<string, Component>
   directives?: Record<string, Directive>
@@ -160,7 +175,7 @@ export interface VueAppConfig {
 export interface VueComponentConfig {
   name?: string
   engine?: Engine
-  engineConfig?: EngineConfig
+  engineConfig?: EnhancedEngineConfig
   props?: Record<string, any>
   emits?: string[]
   slots?: Record<string, any>
@@ -247,9 +262,6 @@ export interface VNode {
   asyncMeta?: any
   isAsyncPlaceholder?: boolean
   ssrContext?: any
-  fnContext?: Component
-  fnOptions?: ComponentOptions
-  fnScopeId?: string
 }
 
 // Vue节点数据
@@ -322,15 +334,8 @@ export interface ComponentOptions {
   comments?: boolean
   delimiters?: [string, string]
   functional?: boolean
-  model?: {
-    prop?: string
-    event?: string
-  }
   propsData?: Record<string, any>
   el?: string | HTMLElement
-  template?: string
-  render?: (...args: unknown[]) => unknown
-  renderError?: (...args: unknown[]) => unknown
   _compiled?: boolean
   _isDestroyed?: boolean
   _isBeingDestroyed?: boolean
@@ -363,29 +368,11 @@ export interface ComponentOptions {
   _p?: (...args: unknown[]) => unknown
   _z?: (...args: unknown[]) => unknown
   _oe?: (...args: unknown[]) => unknown
-  _n?: (...args: unknown[]) => unknown
-  _s?: (...args: unknown[]) => unknown
-  _l?: (...args: unknown[]) => unknown
-  _t?: (...args: unknown[]) => unknown
-  _q?: (...args: unknown[]) => unknown
-  _i?: (...args: unknown[]) => unknown
-  _m?: (...args: unknown[]) => unknown
-  _f?: (...args: unknown[]) => unknown
-  _k?: (...args: unknown[]) => unknown
-  _b?: (...args: unknown[]) => unknown
-  _v?: (...args: unknown[]) => unknown
-  _e?: (...args: unknown[]) => unknown
-  _u?: (...args: unknown[]) => unknown
-  _g?: (...args: unknown[]) => unknown
-  _d?: (...args: unknown[]) => unknown
-  _p?: (...args: unknown[]) => unknown
-  _z?: (...args: unknown[]) => unknown
-  _oe?: (...args: unknown[]) => unknown
 }
 
 // Vue节点组件选项
 export interface VNodeComponentOptions {
-  Ctor: typeof Component
+  Ctor: any
   propsData?: Record<string, any>
   listeners?: Record<string, (...args: unknown[]) => unknown>
   tag?: string
